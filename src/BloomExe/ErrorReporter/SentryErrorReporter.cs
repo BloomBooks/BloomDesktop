@@ -33,6 +33,11 @@ namespace Bloom
 			NonFatalProblem.ReportSentryOnly(e);
 		}
 
+		public void NotifyUserOfProblem(IRepeatNoticePolicy policy, Exception error, string message)
+		{
+			NonFatalProblem.ReportSentryOnly(error, message);
+		}
+
 		public ErrorResult NotifyUserOfProblem(IRepeatNoticePolicy policy, string alternateButton1Label,
 			ErrorResult resultIfAlternateButtonPressed, string message)
 		{

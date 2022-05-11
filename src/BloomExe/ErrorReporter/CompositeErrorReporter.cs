@@ -33,6 +33,14 @@ namespace Bloom.ErrorReporter
 			this.PrimaryReporter = primaryReporter ?? reporters.First();
 		}
 
+		public void NotifyUserOfProblem(IRepeatNoticePolicy policy, Exception exception, string message)
+		{
+			foreach (var reporter in Reporters)
+			{
+				reporter.NotifyUserOfProblem(policy, exception, message);
+			}
+		}
+
 		public ErrorResult NotifyUserOfProblem(IRepeatNoticePolicy policy, string alternateButton1Label, ErrorResult resultIfAlternateButtonPressed, string message)
 		{
 			ErrorResult? primaryResult = null;

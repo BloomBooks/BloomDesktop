@@ -94,10 +94,20 @@ namespace Bloom
 
 		public static SynchronizationContext MainContext { get; private set; }
 
+		// Here to make it easy to tell which thread is the main thread.
+		// Only the one thread that executes the class constructor runs the initializer for ThreadStatic variables; thus, on all other threads, it will have its default false value
+		// Note: This mechanism is NOT compatible with .NET Core.
+		// As of May 2022, this mechanism is not used for any super-essential logic. If we need to move to .NET core,
+		// consider just deleting this variable entirely.
+		[ThreadStatic]
+		public static readonly bool IsMainThread = true;	
+
 		[STAThread]
 		[HandleProcessCorruptedStateExceptions]
 		static int Main(string[] args1)
 		{
+			// AttachConsole(-1);	// Enable this to allow Console.Out.WriteLine to be viewable (must run Bloom from terminal, AFAIK)
+
 			_uiThreadId = Thread.CurrentThread.ManagedThreadId;
 			Logger.Init();
 			// Configure TempFile to create temp files with a "bloom" prefix so we can

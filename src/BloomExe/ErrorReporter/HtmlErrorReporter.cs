@@ -40,6 +40,8 @@ namespace Bloom.ErrorReporter
 
 		internal string DefaultReportLabel { get; private set; }
 
+		public static bool IsWaitAllowed { get; set; } = false;
+
 		static object _lock = new object();
 
 		#region Dependencies exposed for unit tests to mock
@@ -255,6 +257,18 @@ namespace Bloom.ErrorReporter
 		/// </returns>
 		public ErrorResult NotifyUserOfProblem(IRepeatNoticePolicy policy, string alternateButton1Label, ErrorResult resultIfAlternateButtonPressed, string message)
 		{
+			Debug.Assert(Program.IsMainThread || IsWaitAllowed, "NotifyUserOfProblem (Advanced) running off the main thread. This thread will wait while the UI pops up. This has not been thoroughly tested to prevent deadlock. If the caller is sure this is safe, the caller should set IsWaitAllowed to true before invoking this method");
+			return NotifyUserOfProblemInternal(policy, null, message, alternateButton1Label, resultIfAlternateButtonPressed, letCallerHandleClicks: true);
+		}
+
+		public void NotifyUserOfProblem(IRepeatNoticePolicy policy, Exception exception, string message)
+		{
+			string reportButtonLabel = GetReportButtonLabel(exception != null ? DefaultReportLabel : null);
+			NotifyUserOfProblemInternal(policy, exception, message, reportButtonLabel, ErrorResult.Yes, letCallerHandleClicks: false);
+		}
+
+		private ErrorResult NotifyUserOfProblemInternal(IRepeatNoticePolicy policy, Exception exception, string message, string reportButtonLabel, ErrorResult reportPressedResult, bool letCallerHandleClicks)
+		{
 			// Let this thread try to acquire the lock, if necessary
 			// Note: It is expected that sometimes this function will need to acquire the lock for this thread,
 			//       and sometimes it'll already be acquired.
@@ -274,8 +288,7 @@ namespace Bloom.ErrorReporter
 				if (policy.ShouldShowMessage(message))
 				{
 					ErrorReport.OnShowDetails = null;
-					var reportButtonLabel = GetReportButtonLabel(alternateButton1Label);
-					result = ShowNotifyDialog(ProblemLevel.kNotify, message, null, reportButtonLabel, resultIfAlternateButtonPressed, this.SecondaryActionButtonLabel, this.SecondaryActionResult);
+					result = ShowNotifyDialog(ProblemLevel.kNotify, message, exception, reportButtonLabel, reportPressedResult, this.SecondaryActionButtonLabel, this.SecondaryActionResult, letCallerHandleClicks);
 				}
 
 				ResetToDefaults();
@@ -389,109 +402,140 @@ namespace Bloom.ErrorReporter
 
 		private ErrorResult ShowNotifyDialog(string severity, string messageText, Exception exception,
 			string reportButtonLabel, ErrorResult reportPressedResult,
-			string secondaryButtonLabel, ErrorResult? secondaryPressedResult)
-        {
-			// Before we do anything that might be "risky", put the problem in the log.
-			ProblemReportApi.LogProblem(exception, messageText, severity);
-
+			string secondaryButtonLabel, ErrorResult? secondaryPressedResult,
+			bool letCallerHandleClicks)
+		{
 			ErrorResult returnResult = ErrorResult.OK;
 
-			// ENHANCE: Allow the caller to pass in the control, which would be at the front of this.
-			//System.Windows.Forms.Control control = Form.ActiveForm ?? FatalExceptionHandler.ControlOnUIThread;
-			var control = GetControlToUse();
-			SafeInvoke.InvokeIfPossible("Show Error Reporter", control, false, () =>
+			try
 			{
-				// Uses a browser dialog to show the problem report
-				try
+				// Before we do anything that might be "risky", put the problem in the log.
+				ProblemReportApi.LogProblem(exception, messageText, severity);
+
+				// ENHANCE: Allow the caller to pass in the control, which would be at the front of this.
+				//System.Windows.Forms.Control control = Form.ActiveForm ?? FatalExceptionHandler.ControlOnUIThread;
+				var control = GetControlToUse();
+				var isSyncRequired = letCallerHandleClicks;
+				SafeInvoke.InvokeIfPossible("Show Error Reporter", control, isSyncRequired, () =>
 				{
-					StartupScreenManager.CloseSplashScreen(); // if it's still up, it'll be on top of the dialog
-
-					var message = GetMessage(messageText, exception);
-
-					if (!Api.BloomServer.ServerIsListening)
+					// Uses a browser dialog to show the problem report
+					try
 					{
-						// There's no hope of using the HtmlErrorReporter dialog if our server is not yet running.
-						// We'll likely get errors, maybe Javascript alerts, that won't lead to a clean fallback to
-						// the exception handler below. Besides, failure of HtmlErrorReporter in these circumstances
-						// is expected; we just want to cleanly report the original problem, not to report a
-						// failure of error handling.
+						StartupScreenManager.CloseSplashScreen(); // if it's still up, it'll be on top of the dialog
 
-						// Note: HtmlErrorReporter supports up to 3 buttons (OK, Report, and [Secondary action]), but the fallback reporter only supports a max of two.
-						// Well, just going to have to drop the secondary action.
+						var message = GetMessage(messageText, exception);
 
-						returnResult = (ErrorResult)ShowFallbackProblemDialog(severity, exception, messageText, null, false, reportButtonLabel, reportPressedResult);
-						return;
+						if (!Api.BloomServer.ServerIsListening)
+						{
+							// There's no hope of using the HtmlErrorReporter dialog if our server is not yet running.
+							// We'll likely get errors, maybe Javascript alerts, that won't lead to a clean fallback to
+							// the exception handler below. Besides, failure of HtmlErrorReporter in these circumstances
+							// is expected; we just want to cleanly report the original problem, not to report a
+							// failure of error handling.
+
+							// Note: HtmlErrorReporter supports up to 3 buttons (OK, Report, and [Secondary action]), but the fallback reporter only supports a max of two.
+							// Well, just going to have to drop the secondary action.
+
+							returnResult = (ErrorResult)ShowFallbackProblemDialog(severity, exception, messageText, null, false, reportButtonLabel, reportPressedResult);
+							return;
+						}
+
+						object props = new { level = ProblemLevel.kNotify, reportLabel = reportButtonLabel, secondaryLabel = secondaryButtonLabel, message = message };
+
+						// Precondition: we must be on the UI thread for Gecko to work.
+						using (var dlg = BrowserDialogFactory.CreateReactDialog("problemReportBundle", props))
+						{
+							dlg.FormBorderStyle = FormBorderStyle.FixedToolWindow;  // Allows the window to be dragged around
+							dlg.ControlBox = true;  // Add controls like the X button back to the top bar
+							dlg.Text = "";  // Remove the title from the WinForms top bar
+
+							dlg.Width = 620;
+
+							// 360px was experimentally determined as what was needed for the longest known text for NotifyUserOfProblem
+							// (which is "Before saving, Bloom did an integrity check of your book [...]" from BookStorage.cs)
+							// You can make this height taller if need be.
+							// A scrollbar will appear if the height is not tall enough for the text
+							dlg.Height = 360;
+
+							// ShowDialog will cause this thread to be blocked (because it spins up a modal) until the dialog is closed.
+							BloomServer.RegisterThreadBlocking();
+
+							try
+							{
+								dlg.ShowDialog();
+
+								// Take action if the user clicked a button other than Close
+								if (dlg.CloseSource == "closedByAlternateButton")
+								{
+									if (!letCallerHandleClicks)
+									{
+										// Simple case: Process the click ourselves.
+										if (OnSecondaryActionPressed != null)
+										{
+											OnSecondaryActionPressed(exception, message);
+										}
+									}
+									else
+									{
+										// Advanced case: Libpalaso wants to deal with the call result itself. [not recommended]
+										// OnShowDetails will be invoked if this method returns {resultIfAlternateButtonPressed}
+										// FYI, setting to null is OK. It should cause ErrorReport to reset to default handler.
+										ErrorReport.OnShowDetails = OnSecondaryActionPressed;
+
+										returnResult = secondaryPressedResult ?? reportPressedResult;
+									}
+								}
+								else if (dlg.CloseSource == "closedByReportButton")
+								{
+									if (!letCallerHandleClicks)
+									{
+										// Simple case: Process the click ourselves.
+										OnReportPressed(exception, message);
+									}
+									else
+									{
+										// Advanced case: Libpalaso wants to deal with the call result itself. [not recommended]
+										ErrorReport.OnShowDetails = OnReportPressed;
+										returnResult = reportPressedResult;
+									}
+								}
+
+								// Note: With the way LibPalaso's ErrorReport is designed,
+								// its intention is that after OnShowDetails is invoked and closed, you will not come back to the Notify Dialog
+								// This code has been implemented to follow that model
+								//
+								// But now that we have more options, it might be nice to come back to this dialog.
+								// If so, you'd need to add/update some code in this section.
+							}
+							finally
+							{
+								BloomServer.RegisterThreadUnblocked();
+							}
+						}
 					}
-
-					object props = new { level = ProblemLevel.kNotify, reportLabel = reportButtonLabel, secondaryLabel = secondaryButtonLabel, message = message };
-
-					// Precondition: we must be on the UI thread for Gecko to work.
-					using (var dlg = BrowserDialogFactory.CreateReactDialog("problemReportBundle", props))
+					catch (Exception errorReporterException)
 					{
-						dlg.FormBorderStyle = FormBorderStyle.FixedToolWindow;	// Allows the window to be dragged around
-						dlg.ControlBox = true;	// Add controls like the X button back to the top bar
-						dlg.Text = "";	// Remove the title from the WinForms top bar
+						Logger.WriteError("*** HtmlErrorReporter threw an exception trying to display", errorReporterException);
+						// At this point our problem reporter has failed for some reason, so we want the old WinForms handler
+						// to report both the original error for which we tried to open our dialog and this new one where
+						// the dialog itself failed.
+						// In order to do that, we create a new exception with the original exception (if there was one) as the
+						// inner exception. We include the message of the exception we just caught. Then we call the
+						// old WinForms fatal exception report directly.
+						// In any case, both of the errors will be logged by now.
+						var message = "Bloom's error reporting failed: " + errorReporterException.Message;
 
-						dlg.Width = 620;
-
-						// 360px was experimentally determined as what was needed for the longest known text for NotifyUserOfProblem
-						// (which is "Before saving, Bloom did an integrity check of your book [...]" from BookStorage.cs)
-						// You can make this height taller if need be.
-						// A scrollbar will appear if the height is not tall enough for the text
-						dlg.Height = 360;
-
-						// ShowDialog will cause this thread to be blocked (because it spins up a modal) until the dialog is closed.
-						BloomServer.RegisterThreadBlocking();
-
-						try
-						{
-							dlg.ShowDialog();
-
-							// Take action if the user clicked a button other than Close
-							if (dlg.CloseSource == "closedByAlternateButton")
-							{
-								// OnShowDetails will be invoked if this method returns {resultIfAlternateButtonPressed}
-								// FYI, setting to null is OK. It should cause ErrorReport to reset to default handler.
-								ErrorReport.OnShowDetails = OnSecondaryActionPressed;
-
-								returnResult = secondaryPressedResult ?? reportPressedResult;
-							}
-							else if (dlg.CloseSource == "closedByReportButton")
-							{
-								ErrorReport.OnShowDetails = OnReportPressed;
-								returnResult = reportPressedResult;
-							}
-
-							// Note: With the way LibPalaso's ErrorReport is designed,
-							// its intention is that after OnShowDetails is invoked and closed, you will not come back to the Notify Dialog
-							// This code has been implemented to follow that model
-							//
-							// But now that we have more options, it might be nice to come back to this dialog.
-							// If so, you'd need to add/update some code in this section.
-						}
-						finally
-						{
-							BloomServer.RegisterThreadUnblocked();
-						}
+						// Fallback to Winforms in case of trouble getting the browser to work
+						var fallbackReporter = new WinFormsErrorReporter();
+						fallbackReporter.ReportFatalException(new ApplicationException(message, exception ?? errorReporterException));
 					}
-				}
-				catch (Exception errorReporterException)
-				{
-					Logger.WriteError("*** HtmlErrorReporter threw an exception trying to display", errorReporterException);
-					// At this point our problem reporter has failed for some reason, so we want the old WinForms handler
-					// to report both the original error for which we tried to open our dialog and this new one where
-					// the dialog itself failed.
-					// In order to do that, we create a new exception with the original exception (if there was one) as the
-					// inner exception. We include the message of the exception we just caught. Then we call the
-					// old WinForms fatal exception report directly.
-					// In any case, both of the errors will be logged by now.
-					var message = "Bloom's error reporting failed: " + errorReporterException.Message;
-
-					// Fallback to Winforms in case of trouble getting the browser to work
-					var fallbackReporter = new WinFormsErrorReporter();
-					fallbackReporter.ReportFatalException(new ApplicationException(message, exception ?? errorReporterException));
-				}
-			});
+				});
+			}
+			finally
+			{
+				// Reset IsWaitAllowed after the SafeInvoke call (or any error)
+				IsWaitAllowed = false;
+			}
 
 			return returnResult;
 		}
