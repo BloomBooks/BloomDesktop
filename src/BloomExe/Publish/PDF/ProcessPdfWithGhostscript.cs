@@ -111,7 +111,7 @@ namespace Bloom.Publish.PDF
 		/// C:\Program Files\gs\gs9.21\bin\gswin64c.exe or C:\Program Files\gs\gs9.21\bin\gswin64.exe.
 		/// The former uses the current console window, the latter pops up its own command window.
 		/// </remarks>
-		private string FindGhostcriptOnWindows()
+		public static string FindGhostcriptOnWindows()
 		{
 			// Look first for the barebones version distributed with Bloom 4.0 (and later presumably).
 			// Don't give up if you can't find it.
