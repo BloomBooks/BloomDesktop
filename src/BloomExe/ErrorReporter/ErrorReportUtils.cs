@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Windows.Forms;
 
 namespace Bloom.ErrorReporter
@@ -132,7 +133,17 @@ namespace Bloom.ErrorReporter
 
 
 			if (checkAllowed)
+			{
+				// Run on the current thread (Should be the main thread)
 				CheckForFakeTestErrors(title);
+
+				//// Use this version to test running off the main thread
+				//// (This is just a toy example, don't assume that just because this thread works, your code will never deadlock or anything like that
+				//new Thread(() =>
+				//{
+				//	CheckForFakeTestErrors(title);
+				//}).Start();
+			}
 		}
 
 		/// <summary>
@@ -149,6 +160,17 @@ namespace Bloom.ErrorReporter
 				// Tests a path through libPalaso directly (goes thru overloads 1, 2, 5)
 				ErrorReport.NotifyUserOfProblem(fakeProblemMessage);
 			}
+			else if (title == "Error NotifyUser NoReport 2")
+			{
+				// Tests a path through libPalaso directly (goes thru overloads 1, 2, 5)
+				ErrorReport.NotifyUserOfProblem((Exception)null, fakeProblemMessage);
+			}
+			else if (title == "Error NotifyUser NoReport 3")
+			{
+				// Tests a path where you need to go through the ErrorReportUtils adapters
+				// (follow-up actions automatically invoked)
+				ErrorReportUtils.NotifyUserOfProblem("", null, null, fakeProblemMessage);
+			}
 			else if (title == "Error NotifyUser LongMessage")
 			{
 				var longMessageBuilder = new StringBuilder();
@@ -160,18 +182,13 @@ namespace Bloom.ErrorReporter
 			else if (title == "Error NotifyUser Report NoRetry")
 			{
 				// Tests another path through libPalaso directly (goes thru overloads 3, 4, 5)
-				ErrorReport.NotifyUserOfProblem((Exception)null, fakeProblemMessage);
-			}
-			else if (title == "Error NotifyUser ReportException NoRetry")
-			{
-				// Tests another path through libPalaso directly (goes thru overloads 3, 4, 5)
 				ErrorReport.NotifyUserOfProblem(fakeException, fakeProblemMessage);
 			}
 			else if (title == "Error NotifyUser Report NoRetry 2")
 			{
 				// Tests a path where you need to go through the ErrorReportUtils adapters
 				// (follow-up actions automatically invoked)
-				ErrorReportUtils.NotifyUserOfProblem("", null, null, fakeProblemMessage);
+				ErrorReportUtils.NotifyUserOfProblem("", null, fakeException, fakeProblemMessage);
 			}
 			else if (title == "Error NotifyUser Report Retry")
 			{

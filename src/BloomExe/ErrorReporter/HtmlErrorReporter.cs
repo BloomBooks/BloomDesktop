@@ -40,6 +40,8 @@ namespace Bloom.ErrorReporter
 
 		internal string DefaultReportLabel { get; private set; }
 
+		public static bool IsWaitAllowed { get; set; } = false;
+
 		static object _lock = new object();
 
 		#region Dependencies exposed for unit tests to mock
@@ -255,6 +257,18 @@ namespace Bloom.ErrorReporter
 		/// </returns>
 		public ErrorResult NotifyUserOfProblem(IRepeatNoticePolicy policy, string alternateButton1Label, ErrorResult resultIfAlternateButtonPressed, string message)
 		{
+			Debug.Assert(Program.IsMainThread || IsWaitAllowed, "NotifyUserOfProblem (Advanced) running off the main thread. This thread will wait while the UI pops up. This has not been thoroughly tested to prevent deadlock. If the caller is sure this is safe, the caller should set IsWaitAllowed to true before invoking this method");
+			return NotifyUserOfProblemInternal(policy, null, message, alternateButton1Label, resultIfAlternateButtonPressed, letCallerHandleClicks: true);
+		}
+
+		public void NotifyUserOfProblem(IRepeatNoticePolicy policy, Exception exception, string message)
+		{
+			string reportButtonLabel = GetReportButtonLabel(exception != null ? DefaultReportLabel : null);
+			NotifyUserOfProblemInternal(policy, exception, message, reportButtonLabel, ErrorResult.Yes, letCallerHandleClicks: false);
+		}
+
+		private ErrorResult NotifyUserOfProblemInternal(IRepeatNoticePolicy policy, Exception exception, string message, string reportButtonLabel, ErrorResult reportPressedResult, bool letCallerHandleClicks)
+		{
 			// Let this thread try to acquire the lock, if necessary
 			// Note: It is expected that sometimes this function will need to acquire the lock for this thread,
 			//       and sometimes it'll already be acquired.
@@ -274,8 +288,7 @@ namespace Bloom.ErrorReporter
 				if (policy.ShouldShowMessage(message))
 				{
 					ErrorReport.OnShowDetails = null;
-					var reportButtonLabel = GetReportButtonLabel(alternateButton1Label);
-					result = ShowNotifyDialog(ProblemLevel.kNotify, message, null, reportButtonLabel, resultIfAlternateButtonPressed, this.SecondaryActionButtonLabel, this.SecondaryActionResult);
+					result = ShowNotifyDialog(ProblemLevel.kNotify, message, exception, reportButtonLabel, reportPressedResult, this.SecondaryActionButtonLabel, this.SecondaryActionResult, letCallerHandleClicks);
 				}
 
 				ResetToDefaults();
@@ -389,8 +402,9 @@ namespace Bloom.ErrorReporter
 
 		private ErrorResult ShowNotifyDialog(string severity, string messageText, Exception exception,
 			string reportButtonLabel, ErrorResult reportPressedResult,
-			string secondaryButtonLabel, ErrorResult? secondaryPressedResult)
-        {
+			string secondaryButtonLabel, ErrorResult? secondaryPressedResult,
+			bool letCallerHandleClicks)
+		{
 			// Before we do anything that might be "risky", put the problem in the log.
 			ProblemReportApi.LogProblem(exception, messageText, severity);
 
@@ -399,7 +413,8 @@ namespace Bloom.ErrorReporter
 			// ENHANCE: Allow the caller to pass in the control, which would be at the front of this.
 			//System.Windows.Forms.Control control = Form.ActiveForm ?? FatalExceptionHandler.ControlOnUIThread;
 			var control = GetControlToUse();
-			SafeInvoke.InvokeIfPossible("Show Error Reporter", control, false, () =>
+			var isSyncRequired = letCallerHandleClicks;
+			SafeInvoke.InvokeIfPossible("Show Error Reporter", control, isSyncRequired, () =>
 			{
 				// Uses a browser dialog to show the problem report
 				try
@@ -428,9 +443,9 @@ namespace Bloom.ErrorReporter
 					// Precondition: we must be on the UI thread for Gecko to work.
 					using (var dlg = BrowserDialogFactory.CreateReactDialog("problemReportBundle", props))
 					{
-						dlg.FormBorderStyle = FormBorderStyle.FixedToolWindow;	// Allows the window to be dragged around
-						dlg.ControlBox = true;	// Add controls like the X button back to the top bar
-						dlg.Text = "";	// Remove the title from the WinForms top bar
+						dlg.FormBorderStyle = FormBorderStyle.FixedToolWindow;  // Allows the window to be dragged around
+						dlg.ControlBox = true;  // Add controls like the X button back to the top bar
+						dlg.Text = "";  // Remove the title from the WinForms top bar
 
 						dlg.Width = 620;
 
@@ -450,16 +465,37 @@ namespace Bloom.ErrorReporter
 							// Take action if the user clicked a button other than Close
 							if (dlg.CloseSource == "closedByAlternateButton")
 							{
-								// OnShowDetails will be invoked if this method returns {resultIfAlternateButtonPressed}
-								// FYI, setting to null is OK. It should cause ErrorReport to reset to default handler.
-								ErrorReport.OnShowDetails = OnSecondaryActionPressed;
+								if (!letCallerHandleClicks)
+								{
+									// Simple case: Process the click ourselves.
+									if (OnSecondaryActionPressed != null)
+									{
+										OnSecondaryActionPressed(exception, message);
+									}
+								}
+								else
+								{
+									// Advanced case: Libpalaso wants to deal with the call result itself. [not recommended]
+									// OnShowDetails will be invoked if this method returns {resultIfAlternateButtonPressed}
+									// FYI, setting to null is OK. It should cause ErrorReport to reset to default handler.
+									ErrorReport.OnShowDetails = OnSecondaryActionPressed;
 
-								returnResult = secondaryPressedResult ?? reportPressedResult;
+									returnResult = secondaryPressedResult ?? reportPressedResult;
+								}								
 							}
 							else if (dlg.CloseSource == "closedByReportButton")
 							{
-								ErrorReport.OnShowDetails = OnReportPressed;
-								returnResult = reportPressedResult;
+								if (!letCallerHandleClicks)
+								{
+									// Simple case: Process the click ourselves.
+									OnReportPressed(exception, message);
+								}
+								else
+								{
+									// Advanced case: Libpalaso wants to deal with the call result itself. [not recommended]
+									ErrorReport.OnShowDetails = OnReportPressed;
+									returnResult = reportPressedResult;
+								}
 							}
 
 							// Note: With the way LibPalaso's ErrorReport is designed,
@@ -492,6 +528,9 @@ namespace Bloom.ErrorReporter
 					fallbackReporter.ReportFatalException(new ApplicationException(message, exception ?? errorReporterException));
 				}
 			});
+
+			// Reset IsWaitAllowed after the SafeInvoke call
+			IsWaitAllowed = false;
 
 			return returnResult;
 		}
