@@ -4,14 +4,13 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
 using Bloom.Api;
-using Bloom.Book;
 using Bloom.Publish.Android;
 using SIL.PlatformUtilities;
 
 namespace Bloom.Publish.Video
 {
 	/// <summary>
-	/// API calls starting with publish/video, used in the Publish panel for Video
+	/// API calls starting with publish/av, used in the Publish panel for Video
 	/// </summary>
 	public class PublishAudioVideoAPI
 	{

@@ -5,8 +5,9 @@ using System.Linq;
 using System.Text;
 using System.Windows.Forms;
 using Bloom.Api;
-using Bloom.Book;
+using Bloom.MiscUI;
 using Bloom.Utils;
+using Bloom.web;
 using L10NSharp;
 using SIL.IO;
 using SIL.Reporting;
@@ -306,23 +307,36 @@ namespace Bloom.Publish.Video
 		/// <param name="soundLogJson"></param>
 		public void StopRecording(string soundLogJson)
 		{
-			StopRecordingInternal(soundLogJson);
-
 			// Couldn't get this to work. See comment in constructor. If we do get it working,
 			// make sure it gets turned off, however things turn out. Or maybe we can turn it
 			// off much sooner, without waiting for the recording to finish? Waiting until this
 			// point didn't seem to help.
 			//SetThreadDpiAwarenessContext(_originalAwareness);
 
-			// Many early returns in this method, but we always want to close this.
 			Close();
+
+			BrowserProgressDialog.DoWorkWithProgressDialog(
+				_webSocketServer,
+				"Processing Video",
+				(progress, worker) =>
+				{
+					StopRecordingInternal(progress, soundLogJson);
+
+					// determines if progress dialog closes automatically
+					return progress.HaveProblemsBeenReported;
+				},
+				null,
+				Shell.GetShellOrOtherOpenForm(),
+				height: 400);
 		}
 
-		private void StopRecordingInternal(string soundLogJson)
+		private void StopRecordingInternal(IWebSocketProgress progress, string soundLogJson)
 		{
 			var haveVideo = _codec != Codec.MP3;
 			if (haveVideo)
 			{
+				progress.Message("PublishTab.RecordVideo.FinishingInitialVideoRecording", "", "Finishing initial video recording");
+
 				// Leaving this in temporarily since there have been reports that the window sometimes doesn't close.
 				Debug.WriteLine("Telling ffmpeg to quit");
 				_ffmpegProcess.StandardInput.WriteLine("q");
@@ -332,7 +346,8 @@ namespace Bloom.Publish.Video
 				var errors = _errorData.ToString();
 				if (!File.Exists(_videoOnlyPath) || new FileInfo(_videoOnlyPath).Length < 100)
 				{
-					ErrorReport.NotifyUserOfProblem(new ApplicationException(errors), "Video capture failed");
+					Logger.WriteError(new ApplicationException(errors));
+					progress.MessageWithoutLocalizing("Video capture failed", ProgressKind.Error);
 					_recording = false;
 					return;
 				}
@@ -379,8 +394,12 @@ namespace Bloom.Publish.Video
 				GotFullRecording = true;
 				// Allows the Check and Save buttons to be enabled, now we have something we can play or save.
 				_webSocketServer.SendString("recordVideo", "ready", "true");
+				progress.Message("Common.Done", "", "Done");
 				return;
 			}
+
+			progress.Message("PublishTab.RecordVideo.ProcessingAudio", "", "Processing audio");
+
 			// Narration is never truncated, so always has a default endTime.
 			// If the last music ends up not being truncated (unlikely), I think we can let
 			// it play to its natural end. In this case pathologically we might fade some earlier music.
@@ -491,25 +510,35 @@ namespace Bloom.Publish.Video
 			           + "-map [out] " // send the output of the audio mix to the output
 			           + finalOutputPath; //and this is where we send it (until the user saves it elsewhere).
 			// Debug.WriteLine("ffmpeg merge args: " + args);
+
+			if (haveVideo)
+				progress.Message("PublishTab.RecordVideo.MergingAudioVideo", "", "Merging audio and video");
+			else
+				progress.Message("PublishTab.RecordVideo.FinalizingAudio", "", "Finalizing audio");
+
 			RunFfmpeg(args);
 			_ffmpegProcess.WaitForExit();
 			var mergeErrors = _errorData.ToString();
 			if (!File.Exists(_finalVideo.Path) || new FileInfo(_finalVideo.Path).Length < 100)
 			{
-				ErrorReport.NotifyUserOfProblem(new ApplicationException(mergeErrors), "Merging audio and video failed");
+				Logger.WriteError(new ApplicationException(mergeErrors));
+				progress.MessageWithoutLocalizing("Merging audio and video failed", ProgressKind.Error);
 				_recording = false;
 				return;
 			}
-			//Debug.WriteLine("ffmpeg merge errors:");
-			//Debug.WriteLine( _errorData.ToString());
 			_recording = false;
 			GotFullRecording = true;
 			// Allows the Check and Save buttons to be enabled, now we have something we can play or save.
-			_webSocketServer.SendString("recordVideo","ready", "true");
+			_webSocketServer.SendString("recordVideo", "ready", "true");
 			// Don't think this ever happens now...if we allowed the user to click Save before the recording
 			// was complete, this would be the time to proceed with saving.
 			if (_saveReceived)
+			{
+				// Reusing id from epub. (not creating a new one or extracting to common at this point as we don't think this is ever called)
+				progress.Message("PublishTab.Epub.Saving", "", "Saving");
 				SaveVideo(); // now we really can.
+			}
+			progress.Message("Common.Done", "", "Done");
 		}
 
 		private void RunFfmpeg(string args)
