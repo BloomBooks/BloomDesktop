@@ -1586,6 +1586,10 @@ cp -p "$(SolutionDir)lib/dotnet/GeckofxHtmlToPdf.exe.config" "$(OutDir)BloomPdfM
   <Import Project="..\..\packages\LargeAddressAware.1.0.5\build\LargeAddressAware.targets" Condition="'$(OS)'=='Windows_NT' AND Exists('..\..\packages\LargeAddressAware.1.0.5\build\LargeAddressAware.targets')" />
   <Import Project="..\..\packages\NDesk.DBus.0.15.0\build\NDesk.DBus.targets" Condition="Exists('..\..\packages\NDesk.DBus.0.15.0\build\NDesk.DBus.targets')" />
   <Import Project="..\..\packages\Mono.Posix.5.4.0.201\build\net45\Mono.Posix.targets" Condition="'$(OS)'=='Windows_NT' AND Exists('..\..\packages\Mono.Posix.5.4.0.201\build\net45\Mono.Posix.targets')" />
+  <Import Project="..\..\packages\SQLitePCLRaw.lib.e_sqlite3.2.0.3\build\net461\SQLitePCLRaw.lib.e_sqlite3.targets" Condition="Exists('..\..\packages\SQLitePCLRaw.lib.e_sqlite3.2.0.3\build\net461\SQLitePCLRaw.lib.e_sqlite3.targets')" />  
+  <Import Project="..\..\packages\SIL.Media.9.0.0-beta0176\build\SIL.Media.targets" Condition="Exists('..\..\packages\SIL.Media.9.0.0-beta0176\build\SIL.Media.targets')" />
+  <Import Project="..\..\packages\SIL.Windows.Forms.9.0.0-beta0176\build\SIL.Windows.Forms.targets" Condition="Exists('..\..\packages\SIL.Windows.Forms.9.0.0-beta0176\build\SIL.Windows.Forms.targets')" />
+  <Import Project="..\..\packages\SIL.Windows.Forms.Keyboarding.9.0.0-beta0176\build\SIL.Windows.Forms.Keyboarding.targets" Condition="Exists('..\..\packages\SIL.Windows.Forms.Keyboarding.9.0.0-beta0176\build\SIL.Windows.Forms.Keyboarding.targets')" />
   <Target Name="AfterBuild">
     <Copy SourceFiles="@(SourceFiles)" DestinationFolder="$(OutDir)" />
     <Copy SourceFiles="@(LameFiles)" DestinationFolder="../../DistFiles" Condition="'$(OS)'=='Windows_NT'" />
@@ -1651,10 +1655,6 @@ cp -p "$(SolutionDir)lib/dotnet/GeckofxHtmlToPdf.exe.config" "$(OutDir)BloomPdfM
     <Delete Files="@(DeleteForLinux)" TreatErrorsAsWarnings="true" />
     <RemoveDir Directories="@(RemoveForLinux)" />
   </Target>
-  <Import Project="..\..\packages\SQLitePCLRaw.lib.e_sqlite3.2.0.3\build\net461\SQLitePCLRaw.lib.e_sqlite3.targets" Condition="Exists('..\..\packages\SQLitePCLRaw.lib.e_sqlite3.2.0.3\build\net461\SQLitePCLRaw.lib.e_sqlite3.targets')" />
-  <Import Project="..\..\packages\SIL.Media.9.0.0-beta0176\build\SIL.Media.targets" Condition="Exists('..\..\packages\SIL.Media.9.0.0-beta0176\build\SIL.Media.targets')" />
-  <Import Project="..\..\packages\SIL.Windows.Forms.9.0.0-beta0176\build\SIL.Windows.Forms.targets" Condition="Exists('..\..\packages\SIL.Windows.Forms.9.0.0-beta0176\build\SIL.Windows.Forms.targets')" />
-  <Import Project="..\..\packages\SIL.Windows.Forms.Keyboarding.9.0.0-beta0176\build\SIL.Windows.Forms.Keyboarding.targets" Condition="Exists('..\..\packages\SIL.Windows.Forms.Keyboarding.9.0.0-beta0176\build\SIL.Windows.Forms.Keyboarding.targets')" />
   <!-- Note: Visual Studio automatically inserts any imports from installing packages into the end here,
   but the AfterBuild target may not run if .targets files are imported after it.
   I recommend you move the Import statements before the "AfterBuild" target,
