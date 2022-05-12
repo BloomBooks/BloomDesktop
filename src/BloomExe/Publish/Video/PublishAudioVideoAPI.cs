@@ -56,9 +56,13 @@ namespace Bloom.Publish.Video
 				if (request.HttpMethod == HttpMethods.Get)
 				{
 					var settings = request.CurrentBook.BookInfo.PublishSettings.AudioVideo;
-					var lastPageIndex = request.CurrentBook.GetPages().Count() - 1;
-					// this default might be too high but I don't think it will ever be too low.
-					// The HTML side will handle it being too high.
+					// It doesn't matter how high we set this default value, used here if the
+					// user has not configured a page range.
+					// The HTML side will reduce it as needed to the actual number of pages.
+					// (Note that such a check would be needed even if we used the number of pages in
+					// the book as a default, since pages may be removed...and just conceivably added?
+					// in the course of converting to a bloomPub for video-making.)
+					var lastPageIndex = int.MaxValue;
 					var pageRange = new[] { 0, lastPageIndex };
 					if (settings.PageRange!= null && settings.PageRange.Length == 2)
 					{

@@ -90,9 +90,15 @@ export const AudioVideoOptionsGroup: React.FunctionComponent<{
         });
     }, [props.format]);
     const [pageLabels, setPageLabels] = useState([]);
-    useSubscribeToWebSocketForObject("publishPageLabels", "ready", data =>
-        setPageLabels((data as any).labels)
-    );
+    useSubscribeToWebSocketForObject("publishPageLabels", "ready", data => {
+        const labels = (data as any).labels;
+        // This is useful to stick in if you want to play with a long page list,
+        // but not wait for a 100-page book to be formatted whenever you relod.
+        // for (let i = 20; i < 120; i++) {
+        //     labels.push(i);
+        // }
+        setPageLabels(labels);
+    });
 
     const setPageRange = (range: number[]) => {
         if (range[0] === 0 && range[1] === pageLabels.length - 1) {
@@ -102,7 +108,13 @@ export const AudioVideoOptionsGroup: React.FunctionComponent<{
         }
     };
 
-    const pageRange = Array.from(props.pageRange);
+    // This starts out matching props.pageRange and is updated while dragging.
+    // props.pageRange only changes (via props.setPageRange, called from our setPageRange)
+    // when dragging is committed by mouse-up. This reduces flicker in the preview
+    // and may help to make dragging more responsive.
+    const [localPageRange, setLocalPageRange] = useState(props.pageRange);
+
+    const pageRange = Array.from(localPageRange);
     if (pageLabels.length) {
         if (pageRange.length == 0) {
             // we want them all
@@ -125,6 +137,7 @@ export const AudioVideoOptionsGroup: React.FunctionComponent<{
             setPageRange(pageRange);
         }
     }
+    const [sliderKey, setSliderKey] = useState(0);
 
     // "marks" are usually tick marks along the slider at equal intervals, but we're using
     // it unconventionally with just two marks that correspond to the thumb positions, to show the
@@ -192,6 +205,27 @@ export const AudioVideoOptionsGroup: React.FunctionComponent<{
             props.onFormatChanged(firstNonDisabledFormat);
         }
     }, [props.format, disabledFormats]);
+
+    // The MUI default is to center the label under the thumb. This is great if there is only one
+    // (or if they are not very close together), but we have two and if the book has many pages they
+    // could get very close. Then the labels start to overlap. So mostly we want the left
+    // one right-aligned and the right one left-aligned so both can be read.
+    // The one exception is when the controls are dragged together to indicate a single page;
+    // if we mess with the alignment in that case, we get two copies of the same number hard against
+    // each other. If we leave the default behavior, they are so exactly on top of each other that it
+    // looks like a single label.
+    // Enhance: possibly it would be nicer to center them if they aren't too close together?
+    let adjustPageSliderCss = "";
+    if (pageRange && pageRange.length == 2 && pageRange[0] !== pageRange[1]) {
+        adjustPageSliderCss = `.MuiSlider-markLabel[data-index="0"] {
+            transform: translateX(
+                calc(-100% + 2px)
+            );
+        }
+        .MuiSlider-markLabel[data-index="1"] {
+            transform: translateX(0);
+        }`;
+    }
 
     return (
         <SettingsGroup label={useL10n("Options", "Common.Options")}>
@@ -320,7 +354,12 @@ export const AudioVideoOptionsGroup: React.FunctionComponent<{
                                 >
                                     %0 seconds
                                 </Div>
-                                <div className="bgSliderWrapper">
+                                <div
+                                    className="bgSliderWrapper"
+                                    css={css`
+                                        padding-left: 14px;
+                                    `}
+                                >
                                     <Slider
                                         max={10}
                                         min={1}
@@ -364,16 +403,32 @@ export const AudioVideoOptionsGroup: React.FunctionComponent<{
                             css={css`
                                 // The label can extend well beyond the end of the slider, so we need some extra space.
                                 padding-right: 30px;
+                                padding-left: 14px;
                             `}
                         >
                             {pageLabels.length && (
                                 <Slider
+                                    key={sliderKey}
                                     css={css`
                                         .MuiSlider-markLabel {
                                             max-width: 40px; // encourages wrapping, but long words can still overflow, and short ones center
                                             white-space: normal; // allows wrapping
                                             text-align: center;
                                         }
+                                        .MuiSlider-thumb[data-index="0"] {
+                                            border-top-right-radius: 0 !important;
+                                            border-bottom-right-radius: 0 !important;
+                                            margin-left: -11px;
+                                        }
+                                        .MuiSlider-thumb[data-index="1"] {
+                                            border-top-left-radius: 0 !important;
+                                            border-bottom-left-radius: 0 !important;
+                                            margin-left: 1px;
+                                        }
+                                        /* .MuiSlider-markLabel {
+                                            white-space: pre;
+                                        } */
+                                        ${adjustPageSliderCss}
                                     `}
                                     max={pageLabels.length - 1}
                                     min={0}
@@ -385,8 +440,22 @@ export const AudioVideoOptionsGroup: React.FunctionComponent<{
                                             newVal[0] != pageRange[0] ||
                                             newVal[1] != pageRange[1]
                                         ) {
+                                            setLocalPageRange(newVal);
+                                        }
+                                    }}
+                                    onChangeCommitted={(event, value) => {
+                                        var newVal = value as number[];
+                                        if (
+                                            newVal[0] != props.pageRange[0] ||
+                                            newVal[1] != props.pageRange[1]
+                                        ) {
                                             setPageRange(newVal);
                                         }
+                                        // This forces a re-render of the slider after the page range changes.
+                                        // Without this, what appears to be a bug in Slider sometimes causes
+                                        // obsolete marks (not at the two boundaries) to go on showing, especially
+                                        // after the range has been temporarily collapsed to a single page.
+                                        setSliderKey(sliderKey + 1);
                                     }}
                                     marks={marks}
                                 />
