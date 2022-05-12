@@ -269,17 +269,19 @@ export const CollectionsTabBookPane: React.FunctionComponent<{
                             >
                                 {editOrMakeButton}
                             </div>
-                            <iframe
-                                src={`/book-preview/index.htm?dummy=${(selectedBookId ??
-                                    "") + reload}`}
-                                height="100%"
-                                width="100%"
-                                css={css`
-                                    flex-grow: 1;
-                                    border: none;
-                                `}
-                                ref={iframeRef}
-                            />
+                            {selectedBookId && (
+                                <iframe
+                                    src={`/book-preview/index.htm?dummy=${selectedBookId +
+                                        reload}`}
+                                    height="100%"
+                                    width="100%"
+                                    css={css`
+                                        flex-grow: 1;
+                                        border: none;
+                                    `}
+                                    ref={iframeRef}
+                                />
+                            )}
                         </div>
                     </TabPanel>
                     {enterpriseAvailable && selectedBookId && (
