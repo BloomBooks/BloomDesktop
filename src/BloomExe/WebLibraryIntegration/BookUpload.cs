@@ -481,7 +481,7 @@ namespace Bloom.WebLibraryIntegration
 			PublishHelper.RemoveEnterpriseFeaturesIfNeeded(copiedBook, pages, warningMessages);
 			PublishHelper.SendBatchedWarningMessagesToProgress(warningMessages, progress);
 			copiedBook.Save();
-			copiedBook.Storage.UpdateSupportFiles();
+			copiedBook.UpdateSupportFiles();
 			book = copiedBook;
 			return true;
 
@@ -585,7 +585,7 @@ namespace Bloom.WebLibraryIntegration
 			finally
 			{
 				// Put back all the branding files which we removed above in the call to CleanupUnusedSupportFiles()
-				book.Storage.UpdateSupportFiles();
+				book.UpdateSupportFiles();
 
 				// NB: alternatively, we considered refactoring CleanupUnusedSupportFiles() to give us a list of files
 				// to not upload.

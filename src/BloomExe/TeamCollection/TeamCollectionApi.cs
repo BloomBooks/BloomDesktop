@@ -354,7 +354,7 @@ namespace Bloom.TeamCollection
 					// In both cases, the current selected book is in view. The only way to tell
 					// these two situations apart is that in (1) book.IsSaveable is true
 					// and in (2) it is not.
-					if (book.IsSaveable)
+					if (book?.IsSaveable??true)
 					{
 						whoHasBookLocked = CurrentUser;
 						newLocalBook = true;
