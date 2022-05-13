@@ -556,17 +556,18 @@ namespace Bloom.Book
 			}
 			var pageDom = GetHtmlDomWithJustOnePage(page);
 			pageDom.RemoveModeStyleSheets();
-			// note: order is significant here, but I added branding.css at the end (the most powerful position) arbitrarily, until
-			// such time as it's clear if it matters.
-			foreach (var cssFileName in new[] { @"basePage.css","previewMode.css", "origami.css", "langVisibility.css"})
+			// Note: order is significant here, but I added branding.css at the end of the list of CSS
+			// files to link (the most powerful position) arbitrarily, until such time as it's clear
+			// if it matters.
+			// As of 20 May 2022, we have decided to always reference 'branding.css'. A book always has
+			// SOME branding, even if it's incomplete.
+			foreach (var cssFileName in BookStorage.CssFilesToLink)
 			{
 				pageDom.AddStyleSheet(cssFileName);
 			}
-			// Only add brandingCSS is there is one for the current branding
 			// Note: it would be a fine enhancement here to first check for "branding-{flavor}.css",
 			// but we'll leave that until we need it.
-			var brandingCssPath = BloomFileLocator.GetBrowserFile(true, "branding", CollectionSettings.GetBrandingFolderName(), "branding.css");
-			if (!string.IsNullOrEmpty(brandingCssPath))
+			if (CollectionSettings.HaveEnterpriseFeatures)
 			{
 				pageDom.AddStyleSheet("branding.css");
 			}
@@ -4152,7 +4153,17 @@ namespace Bloom.Book
 			//      The only thing on this page is language-neutral text.
 			//      It has to be language-neutral to make sure we don't strip it out if the language isn't part of the book.
 			//      However, then PageHasTextInLanguage() won't return true.
-			return HtmlDom.HasClass(pageElement, "bloom-force-publish");
+			// 3) (Not Afghan xmatter-related) Any page containing data-book="outside-back-cover-branding-bottom-html"
+			//      if the current Branding is incomplete, since the message we put up is added by css (like #1 above)
+			return HtmlDom.HasClass(pageElement, "bloom-force-publish") ||
+				IsPageDisplayingIncompleteBranding(pageElement);
+		}
+
+		private bool IsPageDisplayingIncompleteBranding(XmlElement pageElement)
+		{
+			var nodes = pageElement.SafeSelectNodes(".//div[@data-book='outside-back-cover-branding-bottom-html']");
+			var brandingIsIncomplete = CollectionSettings.HasIncompleteBranding(Storage.GetFileLocator() as BloomFileLocator);
+			return brandingIsIncomplete && nodes.Count > 0;
 		}
 
 		private bool PageHasVisibleText(XmlElement page)

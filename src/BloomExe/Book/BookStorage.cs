@@ -1830,26 +1830,26 @@ namespace Bloom.Book
 
 				// delete any existing branding css so that if they change to one without one, the old one isn't sticking around
 				var brandingPath = Path.Combine(FolderPath, "branding.css");
-				if (RobustFile.Exists(brandingPath))
-				{
-					try
-					{
-						RobustFile.Delete(brandingPath);
-					}
-					catch (System.UnauthorizedAccessException error)
-					{
-						InitialLoadErrors = error.Message;
-						var msg = string.Format("<p>{0}</p><p>{1}</p><p>{2}</p>",
-							LocalizationManager.GetString("Errors.ReadOnlyBookFolder", "This book cannot be edited because its folder is read-only."),
-							WebUtility.HtmlEncode(error.Message),
-							GetHelpLinkForFilePermissions());
-						ErrorMessagesHtml = msg;
-						ErrorAllowsReporting = false;	// we can't really help them remotely with odd permission failures.
-						Logger.WriteEvent("*** ERROR cannot delete old branding.css file in ExpensiveInitialization(" + fullyUpdateBookFiles + ")");
-						Logger.WriteEvent("*** ERROR: " + error.Message.Replace("{", "{{").Replace("}", "}}"));
-						return;
-					}
-				}
+				//if (RobustFile.Exists(brandingPath))
+				//{
+				//	try
+				//	{
+				//		RobustFile.Delete(brandingPath);
+				//	}
+				//	catch (System.UnauthorizedAccessException error)
+				//	{
+				//		InitialLoadErrors = error.Message;
+				//		var msg = string.Format("<p>{0}</p><p>{1}</p><p>{2}</p>",
+				//			LocalizationManager.GetString("Errors.ReadOnlyBookFolder", "This book cannot be edited because its folder is read-only."),
+				//			WebUtility.HtmlEncode(error.Message),
+				//			GetHelpLinkForFilePermissions());
+				//		ErrorMessagesHtml = msg;
+				//		ErrorAllowsReporting = false;	// we can't really help them remotely with odd permission failures.
+				//		Logger.WriteEvent("*** ERROR cannot delete old branding.css file in ExpensiveInitialization(" + fullyUpdateBookFiles + ")");
+				//		Logger.WriteEvent("*** ERROR: " + error.Message.Replace("{", "{{").Replace("}", "}}"));
+				//		return;
+				//	}
+				//}
 
 				Dom = new HtmlDom(xmlDomFromHtmlFile); //with throw if there are errors
 				// Don't let spaces between <strong>, <em>, or <u> elements be removed. (BL-2484)
@@ -2084,29 +2084,43 @@ namespace Bloom.Book
 			}
 			else
 			{
-				Update("placeHolder.png");
-				Update("basePage.css");
-				Update("previewMode.css");
-				Update("origami.css");
-				Update("langVisibility.css");
+				var supportFilesToAlwaysUpdate = new[] { "placeHolder.png", "basePage.css", "previewMode.css", "origami.css", "langVisibility.css" };
+				foreach (var supportFile in supportFilesToAlwaysUpdate)
+				{
+					Update(supportFile);
+				}
 
+				// Now we want to look for any other .css files, besides those listed above and update them.
+				// There are a few we want to skip, however.
+				// In BL-5824, we got bit by design decisions we made that allow stylesheets installed via
+				// bloompack and by new Bloom versions to replace local ones. This was done so that we could
+				// send out new Bloom implementation stylesheets via bloompack and in new Bloom versions
+				// and have those used in all the books. This works well for most stylesheets.
+				//
+				// But customBookStyles.css  and customCollectionStyles.css are exceptions;
+				// their whole purpose is to let the local book or collection override Bloom's normal
+				// behavior or anything in a bloompack.
+				//
+				// And defaultLangStyles.css is another file that should not be updated because it is always
+				// generated from the local collection settings.
+				//
+				// Also, we don't want to update branding.css because the update process may pull it from
+				// who knows where (gjm-on my machine it tried to replace an existing branding.css with one
+				// from Story Primer!) and the branding file will get updated more reliably elsewhere.
+				var cssFilesToSkipInThisPhase =	new[] {
+					// Files we just updated
+					"basepage.css", "previewmode.css", "origami.css", "langvisibility.css",
+					// Custom files
+					"custombookstyles.css", "customcollectionstyles.css",
+					// Other files we want to skip
+					"defaultlangstyles.css", "branding.css" };
 				foreach (var path in Directory.GetFiles(FolderPath, "*.css"))
 				{
 					var file = Path.GetFileName(path);
+					if (cssFilesToSkipInThisPhase.Contains(file.ToLowerInvariant()))
+						continue;
 
-					// In BL-5824, we got bit by design decisions we made that allow stylesheets installed via bloompack and by new Bloom versions
-					// to replace local ones. This was done so that we could send out new Bloom implementation stylesheets via bloompack and in new Bloom versions
-					// and have those used in all the books. This works well for most stylesheets.
-					// But customBookStyles.css  and customCollectionStyles.css are exceptions; their whole purpose is to let the local book or collection
-					// override Bloom's normal behavior or anything in a bloompack.
-					// defaultLangStyles.css is another file that should not be updated because it is always generated from the local collection settings.
-					// So customBookStyles.css, customCollectionStyles.css, and defaultLangStyles.css are not overridden (BloomServer) or replaced (here).
-					if (!file.ToLowerInvariant().Contains("custombookstyles") &&
-						!file.ToLowerInvariant().Contains("customcollectionstyles") &&
-						!file.ToLowerInvariant().Contains("defaultlangstyles"))
-					{
-						Update(file);
-					}
+					Update(file);
 				}
 			}
 
@@ -2406,22 +2420,19 @@ namespace Bloom.Book
 			dom.AddStyleSheet(path);
 		}
 
-		//while in Bloom, we could have and edit style sheet or (someday) other modes. But when stored,
-		//we want to make sure it's ready to be opened in a browser.
+		public readonly static string[] CssFilesToLink =
+			{ "basePage.css", "previewMode.css", "origami.css", "langVisibility.css", "branding.css" };
+
+		// While in Bloom, we could have an edit style sheet or (someday) other modes. But when stored,
+		// we want to make sure it's ready to be opened in a browser.
 		private void MakeCssLinksAppropriateForStoredFile(HtmlDom dom)
 		{
 			dom.RemoveModeStyleSheets();
-			dom.AddStyleSheet("previewMode.css");
-			dom.AddStyleSheet("basePage.css");
-			dom.AddStyleSheet("origami.css");
-			dom.AddStyleSheet("langVisibility.css");
-
-			// only add brandingCSS is there is one for the current branding
-			var brandingCssPath = BloomFileLocator.GetBrowserFile(true, "branding", _collectionSettings.GetBrandingFolderName(), "branding.css");
-			if (!String.IsNullOrEmpty(brandingCssPath))
+			foreach (var cssFileName in CssFilesToLink)
 			{
-				dom.AddStyleSheet("branding.css");
+				dom.AddStyleSheetIfMissing(cssFileName);
 			}
+
 			EnsureHasLinksToStylesheets(dom);
 			dom.SortStyleSheetLinks();
 			dom.RemoveFileProtocolFromStyleSheetLinks();

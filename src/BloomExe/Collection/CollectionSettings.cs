@@ -638,6 +638,10 @@ namespace Bloom.Collection
 			return folderName;
 		}
 
+		public bool HasIncompleteBranding(BloomFileLocator locator)
+		{
+			return HaveEnterpriseFeatures && locator.GetBrandingFile(true, "branding.css") == null;
+		}
 
 		public string SubscriptionCode { get; set; }
 
