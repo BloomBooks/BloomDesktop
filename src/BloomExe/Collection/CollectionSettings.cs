@@ -638,7 +638,6 @@ namespace Bloom.Collection
 			return folderName;
 		}
 
-
 		public string SubscriptionCode { get; set; }
 
 		public int OneTimeCheckVersionNumber { get; set; }

@@ -1044,7 +1044,7 @@ namespace Bloom.Publish.Epub
 				if(name == "fonts.css")
 					continue; // generated file for this book, already copied to output.
 				string path;
-				if (name == "customCollectionStyles.css" || name == "defaultLangStyles.css")
+				if (name == "customCollectionStyles.css" || name == "defaultLangStyles.css" || name == "branding.css")
 				{
 					// These files should be in the book's folder, not in some arbitrary place in our search path.
 					path = Path.Combine(_originalBook.FolderPath, name);
@@ -1148,11 +1148,8 @@ namespace Bloom.Publish.Epub
 				// See https://issues.bloomlibrary.org/youtrack/issue/BL-5495.
 				RemoveRegularStylesheets(pageDom);
 				pageDom.AddStyleSheet(Storage.GetFileLocator().LocateFileWithThrow(@"baseEPUB.css").ToLocalhost());
-				var brandingPath = Storage.GetFileLocator().LocateOptionalFile(@"branding.css");
-				if (!string.IsNullOrEmpty(brandingPath))
-				{
-					pageDom.AddStyleSheet(brandingPath.ToLocalhost());
-				}
+				var brandingPath = Path.Combine(Storage.FolderPath, "branding.css"); // should always exist in local folder.
+				pageDom.AddStyleSheet(brandingPath.ToLocalhost());
 			}
 			else
 			{
@@ -1543,6 +1540,10 @@ namespace Bloom.Publish.Epub
 						return false;
 				}
 			}
+			// Some elements we mark with this class because their content comes from CSS and will
+			// not be detected by normal algorithms.
+			if (pageElement.SafeSelectNodes(".//div[contains(@class, 'bloom-force-publish')]").Count > 0)
+				return false;
 			return true;
 		}
 
