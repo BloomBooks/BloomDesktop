@@ -207,6 +207,13 @@ export class PageChooser {
             ),
             10
         );
+        const selectedTemplateWidgetCount = parseInt(
+            this.getAttributeStringSafely(
+                this._selectedGridItem,
+                "data-widgetCount"
+            ),
+            10
+        );
 
         const page = <HTMLIFrameElement>(
             window.parent.document.getElementById("page")
@@ -232,12 +239,16 @@ export class PageChooser {
         const currentVideoCount = current.getElementsByClassName(
             "bloom-videoContainer"
         ).length;
+        const currentWidgetCount = current.getElementsByClassName(
+            "bloom-widgetContainer"
+        ).length;
 
         return (
             selectedTemplateTranslationGroupCount <
                 currentTranslationGroupCount ||
             selectedTemplatePictureCount < currentPictureCount ||
-            selectedTemplateVideoCount < currentVideoCount
+            selectedTemplateVideoCount < currentVideoCount ||
+            selectedTemplateWidgetCount < currentWidgetCount
         );
     }
 
@@ -295,7 +306,9 @@ export class PageChooser {
                 {
                     pageId: pageId,
                     templateBookPath: templateBookPath,
-                    convertWholeBook: convertWholeBookChecked
+                    convertWholeBook: convertWholeBookChecked,
+                    numberToAdd: 1, // meaningless here, but prevents throwing an exception in C#
+                    allowDataLoss: convertAnywayChecked
                 },
                 PageChooser.closeup
             );
@@ -305,8 +318,9 @@ export class PageChooser {
                 {
                     templateBookPath: templateBookPath,
                     pageId: pageId,
-                    convertWholeBook: false,
-                    numberToAdd: numberToAdd
+                    convertWholeBook: false, // meaningless here, but keeps C# happy
+                    numberToAdd: numberToAdd,
+                    allowDataLoss: convertAnywayChecked // meaningless here, but keeps C# happy
                 },
                 PageChooser.closeup
             );
@@ -566,6 +580,12 @@ export class PageChooser {
                 "data-videoCount",
                 currentPageDiv
                     .getElementsByClassName("bloom-videoContainer")
+                    .length.toString()
+            );
+            currentGridItemHtml.setAttribute(
+                "data-widgetCount",
+                currentPageDiv
+                    .getElementsByClassName("bloom-widgetContainer")
                     .length.toString()
             );
             const helpLink = currentPageDiv.getAttribute("help-link");

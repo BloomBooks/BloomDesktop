@@ -738,6 +738,16 @@ namespace Bloom.Book
 			return false;
 		}
 
+		public static (int textCount, int imageCount, int videoCount, int widgetCount) GetEditableDataCounts(XmlElement page)
+		{
+			return (
+				// See comment on GetTranslationGroupsInternal() below.
+				GetTranslationGroupCount(page),
+				GetAllDivsWithClass(page, "bloom-imageContainer").Count,
+				GetAllDivsWithClass(page, "bloom-videoContainer").Count,
+				GetAllDivsWithClass(page, "bloom-widgetContainer").Count);
+		}
+
 		/// <summary>
 		/// Replace page in its parent with an element which is a clone of template, but with the contents
 		/// of page transferred as far as possible. Retain the id of the page. Set its lineage to the supplied value
@@ -751,14 +761,10 @@ namespace Bloom.Book
 		{
 			if (!allowDataLoss)
 			{
-				// See comment on GetTranslationGroupsInternal() below.
-				var oldTextCount = GetTranslationGroupCount(page);
-				var newTextCount = GetTranslationGroupCount(template);
-				var oldImageCount = GetAllDivsWithClass(page, "bloom-imageContainer").Count;
-				var newImageCount = GetAllDivsWithClass(template, "bloom-imageContainer").Count;
-				var oldVideoCount = GetAllDivsWithClass(page, "bloom-videoContainer").Count;
-				var newVideoCount = GetAllDivsWithClass(template, "bloom-videoContainer").Count;
-				if (newTextCount < oldTextCount || newImageCount < oldImageCount || newVideoCount < oldVideoCount)
+				
+				var (oldTextCount,  oldImageCount,  oldVideoCount, oldWidgetCount) = GetEditableDataCounts(page);
+				var (newTextCount, newImageCount, newVideoCount, newWidgetCount) = GetEditableDataCounts(template);
+				if (newTextCount < oldTextCount || newImageCount < oldImageCount || newVideoCount < oldVideoCount || newWidgetCount < oldWidgetCount)
 				{
 					didChange = false;
 					return null;
@@ -803,19 +809,21 @@ namespace Bloom.Book
 			MigrateChildrenWithCommonClass(page, "bloom-imageContainer", newPage);
 			// migrate videos
 			MigrateChildrenWithCommonClass(page, "bloom-videoContainer", newPage);
+			// migrate HTML widgets
+			MigrateChildrenWithCommonClass(page, "bloom-widgetContainer", newPage);
 			RemovePlaceholderVideoClass(newPage);
 			didChange = true;
 			return oldLineage;
 		}
 
-		private int GetTranslationGroupCount(XmlElement pageElement)
+		private static int GetTranslationGroupCount(XmlElement pageElement)
 		{
 			var result = GetTranslationGroups(pageElement);
 
 			return result.Count;
 		}
 
-		private List<XmlElement> GetTranslationGroups(XmlElement pageElement)
+		private static List<XmlElement> GetTranslationGroups(XmlElement pageElement)
 		{
 			var result = new List<XmlElement>();
 			GetTranslationGroupsInternal(pageElement, ref result);
@@ -831,7 +839,7 @@ namespace Bloom.Book
 		// We could just do this with an xpath if bloom-textOverPicture divs and bloom-imageDescription divs had
 		// the same structure internally, but text over picture CONTAINS a translationGroup,
 		// whereas image description IS a translationGroup.
-		private void GetTranslationGroupsInternal(XmlElement currentElement, ref List<XmlElement> result)
+		private static void GetTranslationGroupsInternal(XmlElement currentElement, ref List<XmlElement> result)
 		{
 			if (currentElement.HasAttribute("class"))
 			{
@@ -1089,13 +1097,20 @@ namespace Bloom.Book
 		private static void MigrateChildren(IReadOnlyList<XmlElement> oldParentElements,
 			IReadOnlyList<XmlElement> templateParentElements)
 		{
-			// 'xParentElements' are either 'bloom-translationGroup', 'bloom-imageContainer', or 'bloom-videoContainer'
+			// 'xParentElements' are either 'bloom-translationGroup', 'bloom-imageContainer', 'bloom-widgetContainer', or 'bloom-videoContainer'
 			// The Math.Min is not needed yet; in fact, we don't yet have any cases where there is more than one
 			// thing to copy or where the numbers are not equal. It's just a precaution.
 			for (var i = 0; i < Math.Min(templateParentElements.Count, oldParentElements.Count); i++)
 			{
 				var oldParent = oldParentElements[i];
 				var newParent = templateParentElements[i];
+				// Special case for HTML widgets: we need to remove this class if it doesn't apply.
+				if ((newParent.Attributes["class"]?.Value ?? "").Contains("bloom-noWidgetSelected")
+				    && !(oldParent.Attributes["class"]?.Value ?? "").Contains("bloom-noWidgetSelected"))
+				{
+					newParent.SetAttribute("class",
+						newParent.Attributes["class"].Value.Replace("bloom-noWidgetSelected", ""));
+				}
 				// Our template page may have style classes on bloom-editables (or possibly other elements
 				// inside of the container element). We want to preserve them when we copy the child nodes into the new page,
 				// so we collect them by lang attribute value.
