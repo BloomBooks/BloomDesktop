@@ -738,6 +738,16 @@ namespace Bloom.Book
 			return false;
 		}
 
+		public static (int textCount, int imageCount, int videoCount, int widgetCount) GetEditableDataCounts(XmlElement page)
+		{
+			return (
+				// See comment on GetTranslationGroupsInternal() below.
+				GetTranslationGroupCount(page),
+				GetAllDivsWithClass(page, "bloom-imageContainer").Count,
+				GetAllDivsWithClass(page, "bloom-videoContainer").Count,
+				GetAllDivsWithClass(page, "bloom-widgetContainer").Count);
+		}
+
 		/// <summary>
 		/// Replace page in its parent with an element which is a clone of template, but with the contents
 		/// of page transferred as far as possible. Retain the id of the page. Set its lineage to the supplied value
@@ -751,14 +761,10 @@ namespace Bloom.Book
 		{
 			if (!allowDataLoss)
 			{
-				// See comment on GetTranslationGroupsInternal() below.
-				var oldTextCount = GetTranslationGroupCount(page);
-				var newTextCount = GetTranslationGroupCount(template);
-				var oldImageCount = GetAllDivsWithClass(page, "bloom-imageContainer").Count;
-				var newImageCount = GetAllDivsWithClass(template, "bloom-imageContainer").Count;
-				var oldVideoCount = GetAllDivsWithClass(page, "bloom-videoContainer").Count;
-				var newVideoCount = GetAllDivsWithClass(template, "bloom-videoContainer").Count;
-				if (newTextCount < oldTextCount || newImageCount < oldImageCount || newVideoCount < oldVideoCount)
+				
+				var (oldTextCount,  oldImageCount,  oldVideoCount, oldWidgetCount) = GetEditableDataCounts(page);
+				var (newTextCount, newImageCount, newVideoCount, newWidgetCount) = GetEditableDataCounts(template);
+				if (newTextCount < oldTextCount || newImageCount < oldImageCount || newVideoCount < oldVideoCount || newWidgetCount < oldWidgetCount)
 				{
 					didChange = false;
 					return null;
@@ -803,19 +809,22 @@ namespace Bloom.Book
 			MigrateChildrenWithCommonClass(page, "bloom-imageContainer", newPage);
 			// migrate videos
 			MigrateChildrenWithCommonClass(page, "bloom-videoContainer", newPage);
+			// migrate HTML widgets
+			MigrateChildrenWithCommonClass(page, "bloom-widgetContainer", newPage);
 			RemovePlaceholderVideoClass(newPage);
+			RemovePlaceholderWidgetClass(newPage);
 			didChange = true;
 			return oldLineage;
 		}
 
-		private int GetTranslationGroupCount(XmlElement pageElement)
+		private static int GetTranslationGroupCount(XmlElement pageElement)
 		{
 			var result = GetTranslationGroups(pageElement);
 
 			return result.Count;
 		}
 
-		private List<XmlElement> GetTranslationGroups(XmlElement pageElement)
+		private static List<XmlElement> GetTranslationGroups(XmlElement pageElement)
 		{
 			var result = new List<XmlElement>();
 			GetTranslationGroupsInternal(pageElement, ref result);
@@ -831,7 +840,7 @@ namespace Bloom.Book
 		// We could just do this with an xpath if bloom-textOverPicture divs and bloom-imageDescription divs had
 		// the same structure internally, but text over picture CONTAINS a translationGroup,
 		// whereas image description IS a translationGroup.
-		private void GetTranslationGroupsInternal(XmlElement currentElement, ref List<XmlElement> result)
+		private static void GetTranslationGroupsInternal(XmlElement currentElement, ref List<XmlElement> result)
 		{
 			if (currentElement.HasAttribute("class"))
 			{
@@ -1048,6 +1057,20 @@ namespace Bloom.Book
 				}
 			}
 		}
+		private static void RemovePlaceholderWidgetClass(XmlElement newPage)
+		{
+			const string widgetPlaceholderClass = "bloom-noWidgetSelected";
+			var nodesWithPlaceholder = newPage.SelectNodes("//div[contains(@class,'" + widgetPlaceholderClass + "')]");
+			foreach (XmlNode placeholderDiv in nodesWithPlaceholder)
+			{
+				if (placeholderDiv.HasChildNodes && placeholderDiv.FirstChild.Name == "iframe")
+				{
+					// We migrated a widget node into here, delete the placeholder class.
+					XmlUtils.SetAttribute(placeholderDiv, "class", XmlUtils.GetStringAttribute(placeholderDiv, "class").
+						Replace(widgetPlaceholderClass, String.Empty));
+				}
+			}
+		}
 
 		internal static string TransferOrientation(string classes, string newClasses)
 		{
@@ -1089,7 +1112,7 @@ namespace Bloom.Book
 		private static void MigrateChildren(IReadOnlyList<XmlElement> oldParentElements,
 			IReadOnlyList<XmlElement> templateParentElements)
 		{
-			// 'xParentElements' are either 'bloom-translationGroup', 'bloom-imageContainer', or 'bloom-videoContainer'
+			// 'xParentElements' are either 'bloom-translationGroup', 'bloom-imageContainer', 'bloom-widgetContainer', or 'bloom-videoContainer'
 			// The Math.Min is not needed yet; in fact, we don't yet have any cases where there is more than one
 			// thing to copy or where the numbers are not equal. It's just a precaution.
 			for (var i = 0; i < Math.Min(templateParentElements.Count, oldParentElements.Count); i++)
