@@ -556,20 +556,13 @@ namespace Bloom.Book
 			}
 			var pageDom = GetHtmlDomWithJustOnePage(page);
 			pageDom.RemoveModeStyleSheets();
-			// note: order is significant here, but I added branding.css at the end (the most powerful position) arbitrarily, until
-			// such time as it's clear if it matters.
-			foreach (var cssFileName in new[] { @"basePage.css","previewMode.css", "origami.css", "langVisibility.css"})
+			foreach (var cssFileName in BookStorage.CssFilesToLink)
 			{
 				pageDom.AddStyleSheet(cssFileName);
 			}
-			// Only add brandingCSS is there is one for the current branding
 			// Note: it would be a fine enhancement here to first check for "branding-{flavor}.css",
 			// but we'll leave that until we need it.
-			var brandingCssPath = BloomFileLocator.GetBrowserFile(true, "branding", CollectionSettings.GetBrandingFolderName(), "branding.css");
-			if (!string.IsNullOrEmpty(brandingCssPath))
-			{
-				pageDom.AddStyleSheet("branding.css");
-			}
+
 			pageDom.SortStyleSheetLinks();
 
 			AddPreviewJavascript(pageDom);//review: this is just for thumbnails... should we be having the javascript run?
@@ -4142,9 +4135,14 @@ namespace Bloom.Book
 			OrderOrNumberOfPagesChanged();
 		}
 
+		public void UpdateSupportFiles()
+		{
+			Storage.UpdateSupportFiles();
+		}
+
 		private bool IsPageProtectedFromRemoval(XmlElement pageElement)
 		{
-			// One final check to see if we have explicitly disallowed this page from being removed.
+			// One final check to see if we have explicitly disallowed this page (or one of its children) from being removed.
 			// As of May 2020, this is used to protect the Afghan xmatters from having these pages removed:
 			// 1) The national anthem page
 			//      The only thing on this page is an image which is added by css, so PageHasImages() doesn't see it.
@@ -4152,7 +4150,10 @@ namespace Bloom.Book
 			//      The only thing on this page is language-neutral text.
 			//      It has to be language-neutral to make sure we don't strip it out if the language isn't part of the book.
 			//      However, then PageHasTextInLanguage() won't return true.
-			return HtmlDom.HasClass(pageElement, "bloom-force-publish");
+			// It is also used on divs that have data-book="outside-back-cover-branding-bottom-html"
+			// since if the current Branding is incomplete, the message we show is added by css (like #1 above)
+			return HtmlDom.HasClass(pageElement, "bloom-force-publish") ||
+			       pageElement.SafeSelectNodes(".//div[contains(@class, 'bloom-force-publish')]").Count > 0;
 		}
 
 		private bool PageHasVisibleText(XmlElement page)

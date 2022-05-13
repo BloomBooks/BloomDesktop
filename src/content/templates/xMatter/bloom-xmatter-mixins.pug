@@ -87,10 +87,13 @@ mixin outside-back-cover-branding-top
 		div(data-book='outside-back-cover-branding-top-html' lang="*")
 
 mixin outside-back-cover-branding-bottom
-	div(data-book='outside-back-cover-branding-bottom-html' lang="*")
-		//- this can be overridden in the branding.json file of any branding
-		img(src="full-bloom-logo-grey.svg")
-
+	//- we want to force any page that contains this to be published, because
+	//- when working with a new branding, we generate placeholder text for this
+	//- element in a CSS before: rule, and so it looks as though the element
+	//- is empty, which can lead to the page being omitted in various contexts.
+	//- This has no content by default, but it can be controlled by a data-book
+	//- value in the branding.json for any particular branding.
+	div.bloom-force-publish(data-book='outside-back-cover-branding-bottom-html' lang="*")
 
 //- -------------------------------------------------------------------------------
 //-	Unless every page of your xmatter pack needs to be different than the "factory"
