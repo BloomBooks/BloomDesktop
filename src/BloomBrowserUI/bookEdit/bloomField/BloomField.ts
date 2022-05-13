@@ -3,6 +3,7 @@
 
 import AudioRecording from "../toolbox/talkingBook/audioRecording";
 import { BloomApi } from "../../utils/bloomApi";
+import theOneLocalizationManager from "../../lib/localizationManager/localizationManager";
 
 // This class is actually just a group of static functions with a single public method. It does whatever we need to to make Firefox's contenteditable
 // element have the behavior we need.
@@ -186,10 +187,26 @@ export default class BloomField {
                     }
                     const anchor = document.createElement("a");
                     anchor.href = result.data;
-                    const selText = document
-                        .getSelection()
-                        ?.getRangeAt(0)
-                        ?.surroundContents(anchor);
+                    try {
+                        document
+                            .getSelection()
+                            ?.getRangeAt(0)
+                            ?.surroundContents(anchor);
+                    } catch (ex) {
+                        console.log(
+                            "Bloom was not able to make a link. Try selecting only simple text. " +
+                                ex
+                        );
+                        theOneLocalizationManager
+                            .asyncGetText(
+                                "EditTab.HyperlinkPasteFailure",
+                                "Bloom was not able to make a link. Try selecting only simple text.",
+                                "Shows when a hyperlink cannot be pasted due to invalid selection."
+                            )
+                            .done(translatedText => {
+                                alert(translatedText);
+                            });
+                    }
                 });
                 return true; // probaby means success, but I'm not sure. Typescript says this function has to return a boolean.
             }
