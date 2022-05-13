@@ -186,10 +186,20 @@ export default class BloomField {
                     }
                     const anchor = document.createElement("a");
                     anchor.href = result.data;
-                    const selText = document
-                        .getSelection()
-                        ?.getRangeAt(0)
-                        ?.surroundContents(anchor);
+                    try {
+                        document
+                            .getSelection()
+                            ?.getRangeAt(0)
+                            ?.surroundContents(anchor);
+                    } catch (ex) {
+                        console.log(
+                            "Pasting hyperlink did not work, try selecting only simple text. " +
+                                ex
+                        );
+                        alert(
+                            "Pasting hyperlink did not work, try selecting only simple text."
+                        );
+                    }
                 });
                 return true; // probaby means success, but I'm not sure. Typescript says this function has to return a boolean.
             }
