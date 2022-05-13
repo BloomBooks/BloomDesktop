@@ -474,13 +474,17 @@ namespace Bloom.Api
 				return true;
 			}
 
-			if (localPath.StartsWith(OriginalImageMarker) && IsImageTypeThatCanBeDegraded(localPath))
-			{
+			if (localPath.StartsWith(OriginalImageMarker)) {
 				// Path relative to simulated page file, and we want the file contents without modification.
 				// (Note that the simulated page file's own URL starts with this, so it's important to check
 				// for that BEFORE we do this check.)
+				// BL-11162 If we get here with the 'OriginalImageMarker' prefix and it's not an image type
+				// that can be degraded, there's no point in continuing on with the prefix!
 				localPath = localPath.Substring(OriginalImageMarker.Length + 1);
-				return ProcessAnyFileContent(info, localPath);
+				if (IsImageTypeThatCanBeDegraded(localPath))
+				{
+					return ProcessAnyFileContent(info, localPath);
+				}
 			}
 
 			if (localPath.StartsWith("localhost/", StringComparison.InvariantCulture))
@@ -626,7 +630,6 @@ namespace Bloom.Api
 		{
 			if (localPath.EndsWith(".css"))
 			{
-				
 				return ProcessCssFile(info, localPath);
 			}
 
@@ -896,9 +899,10 @@ namespace Bloom.Api
 			// to override local ones. This was done so that we could send out new custom stylesheets via webpack
 			// and have those used in all the books. Fine. But that is indiscriminate; it also was grabbing
 			// any "customBookStyles.css" from those sources and using it instead (here) and replacing that of your book (in BookStorage).
-			// Similarly, we always want the branding.css found in this book.
+			// Also, we make sure in BookStorage.UpdateSupportFiles that the correct branding.css is present in the
+			// book folder; searching our usual path might find an undesirable one in some other collection.
 			string path = "";
-			var localWins = new string[] { "custombookstyles" };
+			var localWins = new string[] { "custombookstyles", "branding.css" };
 			if (RobustFile.Exists(localPath) &&
 			    localWins.Any(s => fileName.ToLowerInvariant().Contains(s)))
 			{
@@ -906,22 +910,8 @@ namespace Bloom.Api
 			}
 			else
 			{
-				// When developing brandings, it's convenient to just use the very-latest build
-				// which will be sitting in the output/browser/branding/<branding name>/ folder,
-				// rather than the one that is already in the book.  It's also possible that the
-				// branding hasn't even been developed beyond assigning a license key.
-				if (fileName == "branding.css")
-				{
-					path = _fileLocator.GetBrandingFile(true, "branding.css");
-					if (String.IsNullOrEmpty(path))
-						return UsePlaceHolderBrandingCss(info);
-				}
-				else
-				{
-					path = _fileLocator.LocateFile(fileName);
-				}
+				path = _fileLocator.LocateFile(fileName);
 			}
-			// if still not found, and localPath is an actual file path, use it
 			// if still not found, and localPath is an actual file path, use it
 			if (String.IsNullOrEmpty(path) && RobustFile.Exists(localPath))
 			{
@@ -941,59 +931,12 @@ namespace Bloom.Api
 					path = p;
 			}
 
-
 			// return false if the file was not found
 			if (String.IsNullOrEmpty(path)) return false;
 
 			info.ResponseContentType = "text/css";
 			info.ReplyWithFileContent(path);
 			return true;
-		}
-
-		private bool UsePlaceHolderBrandingCss(IRequestInfo info)
-		{
-			var subscriptionCode = CurrentCollectionSettings.SubscriptionCode;
-			var brandingName = CollectionSettingsApi.GetBrandingFromCode(subscriptionCode);
-			if (String.IsNullOrEmpty(brandingName))
-				return false;
-			// We don't yet have this branding apparently.  Answer with a fake file we create here and now.
-			info.ResponseContentType = "text/css";
-			using (var tempFile = TempFile.WithFilename("branding.css"))
-			{
-				// Collect the book's language codes in use, adding a fallback to English if necessary.
-				var langsInPriorityOrder = new List<string>(3);
-				if (!String.IsNullOrEmpty(CurrentBook?.Language2IsoCode))
-					langsInPriorityOrder.Add(CurrentBook.Language2IsoCode);
-				if (!String.IsNullOrEmpty(CurrentBook?.Language1IsoCode) && !langsInPriorityOrder.Contains(CurrentBook.Language1IsoCode))
-					langsInPriorityOrder.Add(CurrentBook.Language1IsoCode);
-				if (!langsInPriorityOrder.Contains("en"))
-					langsInPriorityOrder.Add("en");
-				var msgFmt = LocalizationManager.GetString("BackCover.NewBrandingNotice",
-					"A future update of Bloom will contain the branding assets for this project, “{0}”.  Thank you for your patience.",
-					"The {0} is replaced at runtime with the name of the new branding project.",
-					langsInPriorityOrder,
-					out string idUsed);
-				var msg = String.Format(msgFmt, brandingName);
-				RobustFile.WriteAllText(tempFile.Path, @"/* place-holder */
-[data-book*=""branding""] {
-    display: flex;
-    flex-direction: column;
-}
-[data-book=""outside-back-cover-branding-bottom-html""] {
-    width: 100%;
-}
-[data-book=""outside-back-cover-branding-bottom-html""]::before {
-    font-size: 20pt;
-    text-align: center;
-    content: """ + msg + @""";
-}
-[data-book=""outside-back-cover-branding-bottom-html""] img {
-    display: none;	/* hide the default Bloom project image */
-}
-");
-				info.ReplyWithFileContent(tempFile.Path);
-				return true;
-			}
 		}
 
 		#region Startup
@@ -1415,9 +1358,16 @@ namespace Bloom.Api
 				return false;
 
 			var localPath = GetLocalPathWithoutQuery(info);
-			// We don't need even a toast for missing files in the book folder. That's the user's problem and should be adequately
-			// documented by the browser message saying the file is missing.
-			if (currentBookFolderPath != null && localPath.StartsWith(currentBookFolderPath.Replace("\\", "/")))
+			var localFolderTestPath = localPath;
+			// We don't need even a toast for missing files in the book folder. That's the user's problem
+			// and should be adequately documented by the browser message saying the file is missing.
+			// BL-11162 This includes showing up here with "OriginalImages" prefixed to the url for
+			// publishing.
+			if (localFolderTestPath.StartsWith(OriginalImageMarker))
+			{
+				localFolderTestPath = localFolderTestPath.Substring(OriginalImageMarker.Length + 1);
+			}
+			if (currentBookFolderPath != null && localFolderTestPath.StartsWith(currentBookFolderPath.Replace("\\", "/")))
 				return false;
 			// Likewise if it's part of the current book we're publishing. If we didn't give a message about something being
 			// missing while creating the book, it's just confusing to do so when they create a publication preview. See BL-9738
