@@ -1422,6 +1422,8 @@ namespace Bloom.Book
 			// To allow migration, pretend it has no ID if there is not yet a meta.json.
 			bookDOM.RemoveMetaElement("bloomBookId", () => (RobustFile.Exists(BookInfo.MetaDataPath) ? BookInfo.Id : null),
 				val => BookInfo.Id = val);
+			// BL-11162 Repair existing books, if they didn't have this reference.
+			bookDOM.AddStyleSheetIfMissing("branding.css");
 
 			// Title should be replicated in json
 			//if (!string.IsNullOrWhiteSpace(Title)) // check just in case we somehow have more useful info in json.

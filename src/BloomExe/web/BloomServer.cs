@@ -474,13 +474,17 @@ namespace Bloom.Api
 				return true;
 			}
 
-			if (localPath.StartsWith(OriginalImageMarker) && IsImageTypeThatCanBeDegraded(localPath))
-			{
+			if (localPath.StartsWith(OriginalImageMarker)) {
 				// Path relative to simulated page file, and we want the file contents without modification.
 				// (Note that the simulated page file's own URL starts with this, so it's important to check
 				// for that BEFORE we do this check.)
+				// BL-11162 If we get here with the 'OriginalImageMarker' prefix and it's not an image type
+				// that can be degraded, there's no point in continuing on with the prefix!
 				localPath = localPath.Substring(OriginalImageMarker.Length + 1);
-				return ProcessAnyFileContent(info, localPath);
+				if (IsImageTypeThatCanBeDegraded(localPath))
+				{
+					return ProcessAnyFileContent(info, localPath);
+				}
 			}
 
 			if (localPath.StartsWith("localhost/", StringComparison.InvariantCulture))
@@ -1415,9 +1419,16 @@ namespace Bloom.Api
 				return false;
 
 			var localPath = GetLocalPathWithoutQuery(info);
-			// We don't need even a toast for missing files in the book folder. That's the user's problem and should be adequately
-			// documented by the browser message saying the file is missing.
-			if (currentBookFolderPath != null && localPath.StartsWith(currentBookFolderPath.Replace("\\", "/")))
+			var localFolderTestPath = localPath;
+			// We don't need even a toast for missing files in the book folder. That's the user's problem
+			// and should be adequately documented by the browser message saying the file is missing.
+			// BL-11162 This includes showing up here with "OriginalImages" prefixed to the url for
+			// publishing.
+			if (localFolderTestPath.StartsWith(OriginalImageMarker))
+			{
+				localFolderTestPath = localFolderTestPath.Substring(OriginalImageMarker.Length + 1);
+			}
+			if (currentBookFolderPath != null && localFolderTestPath.StartsWith(currentBookFolderPath.Replace("\\", "/")))
 				return false;
 			// Likewise if it's part of the current book we're publishing. If we didn't give a message about something being
 			// missing while creating the book, it's just confusing to do so when they create a publication preview. See BL-9738
