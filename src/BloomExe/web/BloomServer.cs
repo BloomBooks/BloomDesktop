@@ -775,11 +775,12 @@ namespace Bloom.Api
 					modPath = Path.ChangeExtension(modPath, AudioRecording.kPublishableExtension);
 				}
 			}
-
-			if (!RobustFile.Exists(path) && path.Length > "/bloom/".Length)
+			const string kBloomPrefix = "/bloom/";
+			if (!RobustFile.Exists(path) && path.Length > kBloomPrefix.Length && path.StartsWith(kBloomPrefix))
 			{
-				// On developer machines, we can lose part of path earlier.  Try one more thing.
-				path = info.LocalPathWithoutQuery.Substring("/bloom/".Length);
+				// On developer machines, we can lose part of path earlier.  Try one more thing, the
+				// local path starts with this prefix.
+				path = info.LocalPathWithoutQuery.Substring(kBloomPrefix.Length);
 			}
 			// We no longer copy this file to the book folder.  For Bloom Desktop, we get it from browser/templates/...
 			// For Bloom Reader, bloom-player has its own copy.
