@@ -18,10 +18,10 @@ namespace Bloom.web.controllers
 		private readonly PageSelection _pageSelection;
 		private readonly SourceCollectionsList _sourceCollectionsList;
 
-		public AddOrChangePageApi(	TemplateInsertionCommand templateInsertionCommand,
-									PageRefreshEvent pageRefreshEvent,
-									PageSelection pageSelection,
-									SourceCollectionsList sourceCollectionsList)
+		public AddOrChangePageApi(TemplateInsertionCommand templateInsertionCommand,
+			PageRefreshEvent pageRefreshEvent,
+			PageSelection pageSelection,
+			SourceCollectionsList sourceCollectionsList)
 		{
 			_templateInsertionCommand = templateInsertionCommand;
 			_pageRefreshEvent = pageRefreshEvent;
@@ -33,12 +33,13 @@ namespace Bloom.web.controllers
 		{
 			// Both of these display UI, expect to require UI thread.
 			apiHandler.RegisterEndpointLegacy("addPage", HandleAddPage, true).Measureable("Add Page");
-			apiHandler.RegisterEndpointLegacy("changeLayout", HandleChangeLayout, true).Measureable("Change Layout"); ;
+			apiHandler.RegisterEndpointLegacy("changeLayout", HandleChangeLayout, true).Measureable("Change Layout");
+			;
 		}
 
 		private void HandleAddPage(ApiRequest request)
 		{
-			(IPage templatePage, bool dummy, int numberOfPagesToAdd) = GetPageTemplateAndUserStyles(request);
+			(IPage templatePage, bool dummy, int numberOfPagesToAdd, bool _) = GetPageTemplateAndUserStyles(request);
 			if (templatePage == null || numberOfPagesToAdd < 1) // just in case
 				return;
 			CopyVideoPlaceHolderIfNeeded(templatePage);
@@ -69,7 +70,8 @@ namespace Bloom.web.controllers
 
 		private void HandleChangeLayout(ApiRequest request)
 		{
-			(IPage templatePage, bool changeWholeBook, int dummy) = GetPageTemplateAndUserStyles(request);
+			(IPage templatePage, bool changeWholeBook, int dummy, bool allowDataLoss) =
+				GetPageTemplateAndUserStyles(request);
 			if (templatePage == null)
 				return;
 			CopyVideoPlaceHolderIfNeeded(templatePage);
@@ -77,7 +79,7 @@ namespace Bloom.web.controllers
 			if (templatePage.Book != null) // may be null in unit tests that are unconcerned with stylesheets
 				HtmlDom.AddStylesheetFromAnotherBook(templatePage.Book.OurHtmlDom, pageToChange.Book.OurHtmlDom);
 			if (changeWholeBook)
-				ChangeSimilarPagesInEntireBook(pageToChange, templatePage);
+				ChangeSimilarPagesInEntireBook(pageToChange, templatePage, allowDataLoss);
 			else
 				pageToChange.Book.UpdatePageToTemplateAndUpdateLineage(pageToChange, templatePage);
 
@@ -85,21 +87,46 @@ namespace Bloom.web.controllers
 			request.PostSucceeded();
 		}
 
-		private static void ChangeSimilarPagesInEntireBook(IPage currentSelectedPage, IPage newTemplatePage)
+		private static void ChangeSimilarPagesInEntireBook(IPage currentSelectedPage, IPage newTemplatePage,
+			bool allowDataLoss)
 		{
 			var book = currentSelectedPage.Book;
 			var ancestorPageId = currentSelectedPage.IdOfFirstAncestor;
+			// besides being more efficient, it's important to get these first because
+			// currentPage is one that will certainly be changed.
+			var (oldTextCount, oldImageCount, oldVideoCount, oldWidgetCount) =
+				HtmlDom.GetEditableDataCounts(currentSelectedPage.GetDivNodeForThisPage());
 			foreach (var page in book.GetPages())
 			{
+				// We need to decide whether a page is 'similar' to the selected page, which the user
+				// has said to change to newTemplatePage. We first require it to have been derived originally
+				// from the same template. This is not necessarily much help in the origami world, since
+				// two very dissimilar pages could both have been created from 'custom page' or even
+				// 'basic text and picture'. But if someone is working from a specialized template, it might
+				// restrict things usefully. (We don't of course ever change xmatter with this tool.)
 				if (page.IsXMatter || page.IdOfFirstAncestor != ancestorPageId)
 					continue;
-				// The user has explicitly allowed possible data loss.
+				var (textCount, imageCount, videoCount, widgetCount) =
+					HtmlDom.GetEditableDataCounts(page.GetDivNodeForThisPage());
+				// Even if the pages have the same original template, and the user has OK'd the kind of data
+				// loss to be anticipated on the selected page, if another page has been edited to have a different number
+				// of editable blocks of some kind, it's too dangerous to migrate it; it's not 'similar' enough.
+				// For an extreme example, the user might have a custom page with an extra block at the end
+				// to hold a footnote, and attempt to change layout to a single text block to delete all the footnotes.
+				// But if all the pages in the book were derived from custom layout, this could delete all but the first
+				// text block from everything!
+				// (This is somewhat arbitrary; see the discussion in BL-11147 for further examples.)
+				if (textCount != oldTextCount || imageCount != oldImageCount || videoCount != oldVideoCount ||
+				    widgetCount != oldWidgetCount)
+					continue;
+
+				// The user may have explicitly allowed possible data loss.
 				// See https://issues.bloomlibrary.org/youtrack/issue/BL-6921.
-				book.UpdatePageToTemplateAndUpdateLineage(page, newTemplatePage, true);
+				book.UpdatePageToTemplateAndUpdateLineage(page, newTemplatePage, allowDataLoss);
 			}
 		}
 
-		private (IPage templatePage, bool convertWholeBook, int numberToAdd) GetPageTemplateAndUserStyles(ApiRequest request)
+		private (IPage templatePage, bool convertWholeBook, int numberToAdd, bool allowDataLoss) GetPageTemplateAndUserStyles(ApiRequest request)
 		{
 			var convertWholeBook = false;
 			var requestData = DynamicJson.Parse(request.RequiredPostJson());
@@ -108,18 +135,19 @@ namespace Bloom.web.controllers
 			if(templateBook == null)
 			{
 				request.Failed("Could not find template book " + templateBookPath);
-				return (null, false, -1);
+				return (null, false, -1, false);
 			}
 
 			var pageDictionary = templateBook.GetTemplatePagesIdDictionary();
 			if(!pageDictionary.TryGetValue(requestData.pageId, out IPage page))
 			{
 				request.Failed("Could not find the page " + requestData.pageId + " in the template book " + requestData.templateBookUrl);
-				return (null, false, -1);
+				return (null, false, -1, false);
 			}
 
 			if (requestData.convertWholeBook)
 				convertWholeBook = true;
+			var allowDataLoss = requestData.allowDataLoss;
 
 			int addNum;
 			// Unfortunately, a try-catch is the only reliable way to know if 'numberToAdd' is defined or not.
@@ -132,7 +160,7 @@ namespace Bloom.web.controllers
 				addNum = 1;
 			}
 				
-			return (page, convertWholeBook, addNum);
+			return (page, convertWholeBook, addNum, allowDataLoss);
 		}
 	}
 }
