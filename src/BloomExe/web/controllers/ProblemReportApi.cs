@@ -623,7 +623,7 @@ namespace Bloom.web.controllers
 
 			// NOTE: This call should ideally be invoked after _showingProblemReport is back to false,
 			// so that the resources will be available to this call.
-			ErrorReportUtils.NotifyUserOfProblem(message);
+			ErrorReport.NotifyUserOfProblem(message);
 		}
 
 		/// <summary>
