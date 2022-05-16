@@ -413,7 +413,7 @@ namespace Bloom.Publish.BloomLibrary
 			if ( _uploadSource.SelectedIndex > 0 && missingDefaultBookshelf)
 			{
 				// Intentionally not localized ( because it's complicated, rare, and generally advanced )
-				ErrorReportUtils.NotifyUserOfProblem("Before sending all of your books to BloomLibrary.org, you probably want to tell Bloom which bookshelf this collection belongs in. Please go to Collection Tab : Settings: Book Making and set the \"Bloom Library Bookshelf\".");
+				ErrorReport.NotifyUserOfProblem("Before sending all of your books to BloomLibrary.org, you probably want to tell Bloom which bookshelf this collection belongs in. Please go to Collection Tab : Settings: Book Making and set the \"Bloom Library Bookshelf\".");
 				return;
 			}
 			if (_uploadSource.SelectedIndex == 1)

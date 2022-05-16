@@ -94,14 +94,6 @@ namespace Bloom
 
 		public static SynchronizationContext MainContext { get; private set; }
 
-		// Here to make it easy to tell which thread is the main thread.
-		// Only the one thread that executes the class constructor runs the initializer for ThreadStatic variables; thus, on all other threads, it will have its default false value
-		// Note: This mechanism is NOT compatible with .NET Core.
-		// As of May 2022, this mechanism is not used for any super-essential logic. If we need to move to .NET core,
-		// consider just deleting this variable entirely.
-		[ThreadStatic]
-		public static readonly bool IsMainThread = true;	
-
 		[STAThread]
 		[HandleProcessCorruptedStateExceptions]
 		static int Main(string[] args1)
@@ -1353,6 +1345,17 @@ namespace Bloom
 		private static bool _errorHandlingHasBeenSetUp;
 		private static IDisposable _sentry;
 
+		private static IBloomErrorReporter _errorReporter;
+		internal static IBloomErrorReporter ErrorReporter
+		{
+			get => _errorReporter;
+			set
+			{
+				_errorReporter = value;
+				ErrorReport.SetErrorReporter(value);
+			}
+		}
+
 		/// ------------------------------------------------------------------------------------
 		internal static void SetUpErrorHandling()
 		{
@@ -1384,9 +1387,9 @@ namespace Bloom
 				}
 			}
 
-			var orderedReporters = new IErrorReporter[] { SentryErrorReporter.Instance, HtmlErrorReporter.Instance };
+			var orderedReporters = new IBloomErrorReporter[] { SentryErrorReporter.Instance, HtmlErrorReporter.Instance };
 			var htmlAndSentryReporter = new CompositeErrorReporter(orderedReporters, primaryReporter: HtmlErrorReporter.Instance);
-			ErrorReport.SetErrorReporter(htmlAndSentryReporter);
+			ErrorReporter = htmlAndSentryReporter;
 
 			var msgTemplate = @"If you don't care who reads your bug report, you can skip this notice.
 

@@ -8,10 +8,10 @@ namespace Bloom.ErrorReporter
 	/// <summary>
 	/// An error reporter that combines the actions of multiple error reporters.
 	/// </summary>
-	class CompositeErrorReporter : IErrorReporter
+	class CompositeErrorReporter : IBloomErrorReporter
 	{
 		// The reporters whose actions should be combined. It should be ordered in the order that the actions should execute.
-		private IList<IErrorReporter> Reporters { get; set; }
+		private IList<IBloomErrorReporter> Reporters { get; set; }
 
 		// For methods that return a value, the result of the CompositeErrorReporter will be the value from PrimaryReporter
 		private IErrorReporter PrimaryReporter { get; set; }
@@ -22,7 +22,7 @@ namespace Bloom.ErrorReporter
 		/// <param name="reporters">1 or more error reporters, ordered in the order you want them to run.</param>
 		/// <param name="primaryReporter"If an interface method has a return value, the composite will return the value that the {primaryReporter} returns.
 		/// Note: The primaryReporter should also be included in {reporters}</param>
-		public CompositeErrorReporter(IList<IErrorReporter> reporters, IErrorReporter primaryReporter)
+		public CompositeErrorReporter(IList<IBloomErrorReporter> reporters, IErrorReporter primaryReporter)
 		{
 			if (reporters == null)
 			{
@@ -55,6 +55,17 @@ namespace Bloom.ErrorReporter
 			}
 			
 			return primaryResult.Value;
+		}
+
+		/// <summary>
+		/// Calls the SetNotifyUserOfProblemCustomParams required by IBloomErrorReporter on each of the child error reporters
+		/// </summary>
+		public void SetNotifyUserOfProblemCustomParams(string reportButtonLabel, Action<Exception, string> onReportButtonPressed, string extraButtonLabel, Action<Exception, string> onExtraButtonPressed)
+		{
+			foreach (var reporter in Reporters)
+			{
+				reporter.SetNotifyUserOfProblemCustomParams(reportButtonLabel, onReportButtonPressed, extraButtonLabel, onExtraButtonPressed);
+			}
 		}
 
 		public void ReportFatalException(Exception e)
