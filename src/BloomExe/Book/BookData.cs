@@ -1137,37 +1137,50 @@ namespace Bloom.Book
 						// but it contains no data for lang.
 						DataSetElementValue dsv;
 						bool added = false; // did we add a new value?
-						if (!data.TextVariables.TryGetValue(key, out dsv))
+						// If we already decided this key/lang should be deleted (we found a definite empty value for it),
+						// ignore anything we find later in the document for that combination.
+						// This was relevant in an anomalous situation where a title was deleted on the cover,
+						// the first sync failed to delete it on the title page, and a subsequent sync saw the
+						// empty title on the cover and made an entry in itemsToDelete, but later found
+						// the undeleted title on the title page and resurrected it. I'm not sure we need this test now that is fixed,
+						// but our principle is that the first element we find for a given key/lang combination wins,
+						// so I thought this should be fixed too.
+						if (itemsToDelete == null || !itemsToDelete.Contains(Tuple.Create(key, lang)))
 						{
-							var t = new MultiTextBase();
-							t.SetAlternative(lang, value);
-							dsv = new DataSetElementValue(t, isCollectionValue);
-							data.TextVariables.Add(key, dsv);
-							added = true;
-						}
-						else if (!dsv.TextAlternatives.ContainsAlternative(lang))
-						{
-							MultiTextBase t = dsv.TextAlternatives;
-							t.SetAlternative(lang, value);
-							added = true;
-						}
-
-						if (added)
-						{
-							if (isVariableUrlEncoded)
+							if (!data.TextVariables.TryGetValue(key, out dsv))
 							{
-								if (value.Contains("%20%20"))
-								{
-									// This can be catastrophic. See BL-9145. Tidy will reduce the double space to a single space, and then it won't be the string
-									// we tried to save. UrlEncoded things are often filenames or other resource locators, so removing a space means we won't find it.
-									// Currently, the only data we think gets this urlencoded behavior is image sources, and we're preventing them from having
-									// names with multiple spaces. Need to do the same for any other data where exactly preserving the content is essential.
-									ErrorReport.ReportNonFatalMessageWithStackTrace($"Trying to save URL-encoded value '{value}' for {key} with multiple spaces. This will probably cause problems. Please report it and, if possible, avoid the multiple spaces.");
-								}
-								KeysOfVariablesThatAreUrlEncoded.Add(key);
+								var t = new MultiTextBase();
+								t.SetAlternative(lang, value);
+								dsv = new DataSetElementValue(t, isCollectionValue);
+								data.TextVariables.Add(key, dsv);
+								added = true;
+							}
+							else if (!dsv.TextAlternatives.ContainsAlternative(lang))
+							{
+								MultiTextBase t = dsv.TextAlternatives;
+								t.SetAlternative(lang, value);
+								added = true;
 							}
 
-							dsv.SetAttributeList(lang, GetAttributesToSave(node));
+							if (added)
+							{
+								if (isVariableUrlEncoded)
+								{
+									if (value.Contains("%20%20"))
+									{
+										// This can be catastrophic. See BL-9145. Tidy will reduce the double space to a single space, and then it won't be the string
+										// we tried to save. UrlEncoded things are often filenames or other resource locators, so removing a space means we won't find it.
+										// Currently, the only data we think gets this urlencoded behavior is image sources, and we're preventing them from having
+										// names with multiple spaces. Need to do the same for any other data where exactly preserving the content is essential.
+										ErrorReport.ReportNonFatalMessageWithStackTrace(
+											$"Trying to save URL-encoded value '{value}' for {key} with multiple spaces. This will probably cause problems. Please report it and, if possible, avoid the multiple spaces.");
+									}
+
+									KeysOfVariablesThatAreUrlEncoded.Add(key);
+								}
+
+								dsv.SetAttributeList(lang, GetAttributesToSave(node));
+							}
 						}
 					}
 
@@ -1344,7 +1357,14 @@ namespace Bloom.Book
 							//REVIEW: what affect will this have in other pages, other circumstances. Will it make it impossible to clear a value?
 							//Hoping not, as we are differentiating between "" and just not being in the multitext at all.
 							//don't overwrite a datadiv alternative with empty just becuase this page has no value for it.
-							if (s == "" && !dsv.TextAlternatives.ContainsAlternative(lang))
+							// JohnT update: if we simply do nothing when dsv.TextAlternatives doesn't contain lang,
+							// that DOES prevent deleting stuff. We often got away with it, because the edited page would
+							// have the empty content from being edited, and itemsToDelete would list this key/lang combination
+							// as a result, and a couple of calls up the stack, UpdateVariablesAndDataDiv() would typically
+							// delete it from the data-div while processing itemsToDelete. But if we're looking at the bookTitle,
+							// which is typically on more than one page, there's still a page where it's not deleted, and the
+							// next update will pick that as preferred value. See BL-10739
+							if (s == "" && !dsv.TextAlternatives.ContainsAlternative(lang) && !itemsToDelete.Contains(Tuple.Create(key, lang)))
 								continue;
 
 							//hack: until I think of a more elegant way to avoid repeating the language name in N2 when it's the exact same as N1...

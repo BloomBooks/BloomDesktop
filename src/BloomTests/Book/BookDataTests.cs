@@ -262,6 +262,48 @@ namespace BloomTests.Book
 			Assert.AreEqual("changed", data.GetVariableOrNull("bookTitle", "xyz").Xml);
 		}
 
+		// This simulates a case where the English title has been deleted on the cover.
+		// It should get deleted everywhere.
+		[Test]
+		public void SuckInDataFromEditedDom_TitleRemovedFromEditedDom_RemovesEverywhere()
+		{
+			HtmlDom bookDom = new HtmlDom(@"<html ><head></head><body>
+				<div id='bloomDataDiv'>
+					<div data-book='bookTitle' lang='dcc'>DccTitle</div>
+					<div data-book='bookTitle' lang='en'>EnTitle</div>
+				</div>
+				<div class='bloom-page cover' id='guid4'>
+					<div class='bloom-translationGroup'>
+						<div class='bloom-editable' data-book='bookTitle' lang='dcc'>DccTitle</div>
+						<div class='bloom-editable' data-book='bookTitle' lang='en'>EnTitle</div>
+					</div>
+				</div>
+				<div class='bloom-page titlePage' id='guid5'>
+					<div class='bloom-translationGroup'>
+						<div class='bloom-editable' data-book='bookTitle' lang='dcc'>DccTitle</div>
+						<div class='bloom-editable' data-book='bookTitle' lang='en'>EnTitle</div>
+					</div>
+				</div>
+				</body></html>");
+
+			var data = new BookData(bookDom, _collectionSettings, null);
+
+			HtmlDom editedPageDom = new HtmlDom(@"<html ><head></head><body>
+				<div class='bloom-page cover' id='guid4'>
+					<div class='bloom-translationGroup'>
+						<div class='bloom-editable' data-book='bookTitle' lang='dcc'>DccTitle</div>
+						<div class='bloom-editable' data-book='bookTitle' lang='en'><p></p></div>
+					</div>
+				</div>
+			 </body></html>");
+
+			data.SuckInDataFromEditedDom(editedPageDom);
+
+			var assertThatHtml = AssertThatXmlIn.Dom(bookDom.RawDom);
+			assertThatHtml.HasNoMatchForXpath("//div[@data-book='bookTitle' and contains(text(), 'EnTitle')]");
+			assertThatHtml.HasSpecifiedNumberOfMatchesForXpath("//div[@data-book='bookTitle' and contains(text(), 'DccTitle')]", 3);
+		}
+
 		// BRANDING-RELATED TESTS
 
 		[Test]
