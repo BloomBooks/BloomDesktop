@@ -1790,6 +1790,11 @@
         <source xml:lang="en">To use this hyperlink, go to the page where you are making a Table of Contents. Next, select some text and then click on the image of chain link. This will turn the selected text into a hyperlink to this page.</source>
         <note>ID: EditTab.HowToUseHyperlink</note>
       </trans-unit>
+      <trans-unit id="EditTab.HyperlinkPasteFailure">
+        <source xml:lang="en">Bloom was not able to make a link. Try selecting only simple text.</source>
+        <note>ID: EditTab.HyperlinkPasteFailure</note>
+        <note>Shows when a hyperlink cannot be pasted due to invalid selection.</note>
+      </trans-unit>
       <trans-unit id="EditTab.Image.AltMsg">
         <source xml:lang="en">This picture, {0}, is missing or was loading too slowly.</source>
         <note>ID: EditTab.Image.AltMsg</note>
