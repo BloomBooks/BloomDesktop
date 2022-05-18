@@ -124,6 +124,11 @@ namespace Bloom.MiscUI
 
 		private void GoDownTimerTick(object sender, EventArgs e)
 		{
+			if (IsDisposed || (Owner != null && Owner.IsDisposed)) {
+				_goDownTimer.Stop();
+				return;
+			}
+
 			//Debug.WriteLine(String.Format("DEBUG Begin Toast.GoDownTimerTick(): Bounds = {0}", this.DesktopBounds));
 			//Lower window by 5 pixels
 			startPosY += 5;
