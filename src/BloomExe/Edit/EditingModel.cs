@@ -747,6 +747,17 @@ namespace Bloom.Edit
 			_view.UpdateSingleDisplayedPage(_pageSelection.CurrentSelection);
 		}
 
+		public void UpdateMetaData(string url)
+		{
+			var match = UrlPathString.CreateFromUnencodedString(url).UrlEncoded;
+			var imgElt = _pageSelection.CurrentSelection.GetDivNodeForThisPage().SafeSelectNodes($".//img[@src='{match}']")
+				.Cast<XmlElement>().FirstOrDefault();
+			if (imgElt == null)
+				return; // log? unexpected
+			ImageUpdater.UpdateImgMetadataAttributesToMatchImage(CurrentBook.FolderPath, imgElt, new NullProgress());
+			RefreshDisplayOfCurrentPage();
+		}
+
 		private DataSet _pageDataBeforeEdits;
 		private string _featureRequirementsBeforeEdits;
 
