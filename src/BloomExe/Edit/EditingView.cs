@@ -762,6 +762,11 @@ namespace Bloom.Edit
 			return true;
 		}
 
+		private void UpdateMetadataForCurrentImage()
+		{
+			_model.UpdateMetaData(_fileNameOfImageBeingModified);
+		}
+
 		private void LaunchCopyrightAndLicenseDialogForImage(Metadata imageMetadata)
 		{
 			var dialogTitle = LocalizationManager.GetString("CopyrightAndLicense", "Copyright and License");
@@ -795,6 +800,10 @@ namespace Bloom.Edit
 				_model.RefreshDisplayOfCurrentPage();
 
 				Cursor = Cursors.Default;
+			}
+			else
+			{
+				UpdateMetadataForCurrentImage(); // Need to get things up to date on the current page.
 			}
 		}
 
