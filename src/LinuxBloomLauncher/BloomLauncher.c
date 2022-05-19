@@ -9,6 +9,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
+#include <ctype.h>
 #include <gtk/gtk.h>
 #include <fcntl.h>
 
@@ -36,9 +37,12 @@ static gchar ** GetEnvpForBloom(void);
 static int CreateFlagFile(void);
 static void BloomDiedEarly(GPid pid, gint status, gpointer user_data);
 static gboolean ShouldUseSystemMono();
+static gboolean AreWeInsideFlatpak();
  
-/* global variable set early on */
+/* global variables set early on */
 static gboolean useSystemMono = false;
+static gboolean inFlatpak = false;
+static FILE * fpLog = NULL;
 
 /******************************************************************************
  * NAME
@@ -50,8 +54,22 @@ static gboolean useSystemMono = false;
  */
 int main(int argc, char *argv[])
 {
+	const char * debugLauncher = g_getenv("DEBUG_LAUNCHER");
+	if (debugLauncher != NULL)
+	{
+		char debug = tolower(debugLauncher[0]);
+		if (debug == 't' || debug == 'y' || debug == '1')
+			fpLog = fopen("/tmp/BloomLauncher.log", "w");
+	}
 	if (CreateFlagFile())
+	{
+		if (fpLog != NULL)
+		{
+			fprintf(fpLog, "Cannot create flag file\n");
+			fclose(fpLog);
+		}
 		return 1;
+	}
 
 	/* initialize Gtk and create the main window (which is very bare bones) */
 	gtk_init(&argc, &argv);
@@ -76,18 +94,47 @@ int main(int argc, char *argv[])
 	{
 		// Report error to user, and free error
 		fprintf(stderr, "Unable to read image resource: %s\n", error->message);
+		if (fpLog != NULL)
+		{
+			fprintf(fpLog, "Unable to read image resource: %s\n", error->message);
+			fclose(fpLog);
+		}
 		g_error_free(error);
 		unlink(flagFile);
 		return 1;
 	}
 
 	useSystemMono = ShouldUseSystemMono();
-
+	inFlatpak = AreWeInsideFlatpak();
+	if (fpLog != NULL)
+	{
+		if (inFlatpak)
+			fprintf(fpLog, "Using system mono inside flatpak.\n");
+		else if (useSystemMono)
+			fprintf(fpLog, "Using system mono.\n");
+		else
+			fprintf(fpLog, "Using mono5-sil.\n");
+	}
+	
 	/* start the real Bloom program */
 	gchar ** argvBloom = GetArgvForBloom(argc, argv);
 	if (argvBloom == NULL)
+	{
+		if (fpLog != NULL)
+		{
+			fprintf(fpLog, "GetArgvForBloom returned NULL\n");
+			fclose(fpLog);
+		}
 		return 1;
+	}
 	gchar ** envpBloom = GetEnvpForBloom();
+	if (fpLog != NULL)
+	{
+		fprintf(fpLog, "Environment for running Bloom:\n");
+		for (int i = 0; envpBloom[i] != NULL; ++i)
+			fprintf(fpLog, "    %s\n", envpBloom[i]);
+	}
+
 	gboolean okay = g_spawn_async(NULL, argvBloom, envpBloom, G_SPAWN_DO_NOT_REAP_CHILD,
 		NULL, NULL, &bloomPid, &error);
 	if (!okay || error != NULL)
@@ -96,6 +143,14 @@ int main(int argc, char *argv[])
 			fprintf(stderr, "Unable to start Bloom: %s\n", error->message);
 		else
 			fprintf(stderr, "Unable to start Bloom\n");
+		if (fpLog != NULL)
+		{
+			if (error != NULL)
+				fprintf(fpLog, "Unable to start Bloom: %s\n", error->message);
+			else
+				fprintf(fpLog, "Unable to start Bloom\n");
+			fclose(fpLog);
+		}
 		g_error_free(error);
 		unlink(flagFile);
 		return 1;
@@ -110,7 +165,11 @@ int main(int argc, char *argv[])
 	gtk_main();
 
 	unlink(flagFile);	// just in case...  ignore any errors
-
+	if (fpLog != NULL)
+	{
+		fprintf(fpLog, "Startup program finished successfully!\n");
+		fclose(fpLog);
+	}
 	return 0;
 }
 
@@ -164,7 +223,7 @@ static gchar ** GetArgvForBloom(int argcOrig, char ** argvOrig)
 	// of Linux.  From Ubuntu 22.04 on (or in flatpak packages), Bloom must use the standard
 	// system mono.
 
-	argvNew[0] = g_strdup(useSystemMono ? "/usr/bin/mono" : "/opt/mono5-sil/bin/mono");
+	argvNew[0] = g_strdup(inFlatpak ? "/app/bin/mono" : (useSystemMono ? "/usr/bin/mono" : "/opt/mono5-sil/bin/mono"));
 	// Sacrifice line numbers in stack dumps for speed -- often don't see them anyway.
 	// If we do reinstate the "--debug", then the "+ 2" and "1 new" above need to be
 	// incremented, and the "[1]", "[i+1]", and "[argcOrig+1]" below need to be incremented.
@@ -176,12 +235,16 @@ static gchar ** GetArgvForBloom(int argcOrig, char ** argvOrig)
 	if (progpath == NULL)
 	{
 		fprintf(stderr, "insufficient memory\n");
+		if (fpLog != NULL)
+			fprintf(fpLog, "insufficient memory\n");
 		return NULL;
 	}
 	ssize_t len = readlink("/proc/self/exe", progpath, PATH_MAX);
 	if (len < 0)
 	{
 		perror("readlink failed");
+		if (fpLog != NULL)
+			fprintf(fpLog, "readlink failed\n");
 		free(progpath);
 		return NULL;
 	}
@@ -189,6 +252,8 @@ static gchar ** GetArgvForBloom(int argcOrig, char ** argvOrig)
 	char * enddirs = strrchr(progpath, '/');
 	if (enddirs == NULL)
 	{
+		if (fpLog != NULL)
+			fprintf(fpLog, "enddirs == NULL?  progpath='%s'\n", progpath);
 		free(progpath);
 		return NULL;
 	}
@@ -196,6 +261,8 @@ static gchar ** GetArgvForBloom(int argcOrig, char ** argvOrig)
 	++enddirs;
 	if (enddirs + strlen("Bloom.exe") > progpath + PATH_MAX)
 	{
+		if (fpLog != NULL)
+			fprintf(fpLog, "path too long: progpath='%s'\n", progpath);
 		free(progpath);
 		return NULL;
 	}
@@ -203,6 +270,8 @@ static gchar ** GetArgvForBloom(int argcOrig, char ** argvOrig)
 	// access returns 0 if file can be read and executed, -1 if either is not true.
 	if (access(progpath, R_OK|X_OK) != 0)
 	{
+		if (fpLog != NULL)
+			fprintf(fpLog, "Bloom.exe not accessible: progpath='%s'\n", progpath);
 		free(progpath);
 		return NULL;
 	}
@@ -212,9 +281,11 @@ static gchar ** GetArgvForBloom(int argcOrig, char ** argvOrig)
 		argvNew[i+1] = g_strdup(argvOrig[i]);
 	argvNew[argcOrig+1] = NULL;
 
-	//for (int i = 0; argvNew[i] != NULL; ++i)
-	//	printf("argvNew[%d] = '%s'\n", i, argvNew[i]);
-
+	if (fpLog != NULL)
+	{
+		for (int i = 0; argvNew[i] != NULL; ++i)
+			fprintf(fpLog, "DEBUG BloomLauncher spawn: argvNew[%d] = '%s'\n", i, argvNew[i]);
+	}
 	return argvNew;
 }
 
@@ -249,15 +320,16 @@ static gchar ** GetEnvpForBloom()
 	envp = g_environ_setenv(envp, "LD_LIBRARY_PATH", libpath, true);
 
 	/* also set MONO_PREFIX, other MONO related values, and PATH */
-	envp = g_environ_setenv(envp, "MONO_PREFIX", g_strdup(useSystemMono ? "/usr" : "/opt/mono5-sil"), true);
+	envp = g_environ_setenv(envp, "MONO_PREFIX",
+							g_strdup(inFlatpak ? "/app" : (useSystemMono ? "/usr" : "/opt/mono5-sil")), true);
 	envp = g_environ_setenv(envp, "MONO_RUNTIME", g_strdup("v4.0.30319"), true);
 	envp = g_environ_setenv(envp, "MONO_DEBUG", g_strdup("explicit-null-checks"), true);
 	envp = g_environ_setenv(envp, "MONO_ENV_OPTIONS", g_strdup("-O=-gshared"), true);
 	envp = g_environ_setenv(envp, "MONO_TRACE_LISTENER", g_strdup("Console.Out"), true);
 	envp = g_environ_setenv(envp, "MONO_MWF_SCALING", g_strdup("disable"), true);
 	envp = g_environ_setenv(envp, "MONO_PATH", g_strconcat(programDirectory, ":/usr/lib/cli/gdk-sharp-2.0", NULL), true);
-	envp = g_environ_setenv(envp, "MONO_GAC_PREFIX", g_strdup(useSystemMono ? "/usr" : "/opt/mono5-sil:/usr"), true);
-
+	envp = g_environ_setenv(envp, "MONO_GAC_PREFIX",
+							g_strdup(inFlatpak ? "/app" : (useSystemMono ? "/usr" : "/opt/mono5-sil:/usr")), true);
 	const char * pathOld = g_environ_getenv(envp, "PATH");
 	const char * path;
 	if (pathOld == NULL || strlen(pathOld) == 0)
@@ -314,4 +386,18 @@ static void BloomDiedEarly(GPid pid, gint status, gpointer user_data)
 static gboolean ShouldUseSystemMono()
 {
 	return access("/opt/mono5-sil/bin/mono", F_OK) != 0;
+}
+
+/******************************************************************************
+ * NAME
+ *    AreWeInsideFlatpak
+ * DESCRIPTION
+ *    Check whether or not the program is running inside a flatpak environment.
+ * RETURN VALUE
+ *    true if running inside a flatpak environment for Bloom
+ */
+static gboolean AreWeInsideFlatpak()
+{
+	const char * flatpakId = g_getenv("FLATPAK_ID");
+	return flatpakId != NULL && strncmp(flatpakId, "org.sil.Bloom", 13) == 0;
 }
