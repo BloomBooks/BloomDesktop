@@ -1,3 +1,6 @@
+#if !debug
+using Bloom.WebLibraryIntegration;
+#endif
 using L10NSharp;
 using SIL.Reporting;
 using System;
