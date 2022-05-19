@@ -290,6 +290,8 @@ namespace Bloom.Workspace
 			_webSocketServer.SendString("book-selection", "changed", result);
 		}
 
+		string _tempBookInfoHtmlPath;
+
 		public string GetCurrentSelectedBookInfo()
 		{
 			var book = _bookSelection.CurrentSelection;
@@ -313,12 +315,33 @@ namespace Bloom.Workspace
 			{
 				collectionKind = "factory";
 			}
+
+			string aboutBookInfoUrl = null;
+			if (book != null && book.HasAboutBookInformationToShow)
+			{
+				if (RobustFile.Exists(book.AboutBookHtmlPath))
+				{
+					aboutBookInfoUrl = book.AboutBookHtmlPath.ToLocalhost();
+				}
+				else if (RobustFile.Exists(book.AboutBookMdPath))
+				{
+					var md = new MarkdownDeep.Markdown();
+					var mdContent = RobustFile.ReadAllText(book.AboutBookMdPath);
+					var htmlContent = string.Format("<html><head><meta charset=\"utf-8\"/></head><body>{0}</body></html>", md.Transform(mdContent));
+					if (_tempBookInfoHtmlPath != null && RobustFile.Exists(_tempBookInfoHtmlPath))
+						RobustFile.Delete(_tempBookInfoHtmlPath);
+					_tempBookInfoHtmlPath = Path.Combine(Path.GetTempPath(), Path.GetFileNameWithoutExtension(book.AboutBookMdPath) + ".html");
+					RobustFile.WriteAllText(_tempBookInfoHtmlPath, htmlContent);
+					aboutBookInfoUrl = _tempBookInfoHtmlPath.ToLocalhost();
+				}
+			}
 			// notify browser components that are listening to this event
 			var result = JsonConvert.SerializeObject(new
 			{
 				id = book?.ID,
 				saveable = _bookSelection.CurrentSelection?.IsSaveable ?? false,
-				collectionKind
+				collectionKind,
+				aboutBookInfoUrl
 			});
 			return result;
 		}
