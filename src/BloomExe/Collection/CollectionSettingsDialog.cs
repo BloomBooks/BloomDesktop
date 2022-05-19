@@ -312,10 +312,11 @@ namespace Bloom.Collection
 			_collectionSettings.DefaultBookshelf = PendingDefaultBookshelf;
 			_collectionSettings.Save();
 			Close();
-			if (!AnyReasonToRestart())
-			{
-				_pageRefreshEvent.Raise(PageRefreshEvent.SaveBehavior.SaveBeforeRefresh);
-			}
+			// BL-11135 We used to save the current page here, because we used to have this dialog
+			// available in the Edit/Publish tabs too. Now the dialog is only available in the Collection
+			// tab and other tabs' work gets saved before switching tabs.
+			// Let's not try to save some last edited page again here and possible cause an error.
+			// We're primarily here to edit CollectionSettings and those changes were just saved above.
 			DialogResult = AnyReasonToRestart() ? DialogResult.Yes : DialogResult.OK;
 		}
 
