@@ -98,6 +98,8 @@ namespace Bloom
 		[HandleProcessCorruptedStateExceptions]
 		static int Main(string[] args1)
 		{
+			// AttachConsole(-1);	// Enable this to allow Console.Out.WriteLine to be viewable (must run Bloom from terminal, AFAIK)
+
 			_uiThreadId = Thread.CurrentThread.ManagedThreadId;
 			Logger.Init();
 			// Configure TempFile to create temp files with a "bloom" prefix so we can
@@ -1343,6 +1345,17 @@ namespace Bloom
 		private static bool _errorHandlingHasBeenSetUp;
 		private static IDisposable _sentry;
 
+		private static IBloomErrorReporter _errorReporter;
+		internal static IBloomErrorReporter ErrorReporter
+		{
+			get => _errorReporter;
+			set
+			{
+				_errorReporter = value;
+				ErrorReport.SetErrorReporter(value);
+			}
+		}
+
 		/// ------------------------------------------------------------------------------------
 		internal static void SetUpErrorHandling()
 		{
@@ -1374,9 +1387,9 @@ namespace Bloom
 				}
 			}
 
-			var orderedReporters = new IErrorReporter[] { SentryErrorReporter.Instance, HtmlErrorReporter.Instance };
+			var orderedReporters = new IBloomErrorReporter[] { SentryErrorReporter.Instance, HtmlErrorReporter.Instance };
 			var htmlAndSentryReporter = new CompositeErrorReporter(orderedReporters, primaryReporter: HtmlErrorReporter.Instance);
-			ErrorReport.SetErrorReporter(htmlAndSentryReporter);
+			ErrorReporter = htmlAndSentryReporter;
 
 			var msgTemplate = @"If you don't care who reads your bug report, you can skip this notice.
 

@@ -1,15 +1,13 @@
 ﻿using System;
-using System.Diagnostics;
-using Sentry;
 using SIL.Reporting;
 
-namespace Bloom
+namespace Bloom.ErrorReporter
 {
 	/// <summary>
 	/// An ErrorReporter that just forwards the errors to Sentry
 	/// Note: This is largely derived from the old NotifyUserOfProblemLogger, but with the forwarding to WinFormsErrorReporter removed.
 	/// </summary>
-	public class SentryErrorReporter: IErrorReporter
+	public class SentryErrorReporter: IBloomErrorReporter
 	{
 		private SentryErrorReporter()
 		{
@@ -33,11 +31,21 @@ namespace Bloom
 			NonFatalProblem.ReportSentryOnly(e);
 		}
 
+		public void NotifyUserOfProblem(IRepeatNoticePolicy policy, Exception error, string message)
+		{
+			NonFatalProblem.ReportSentryOnly(error, message);
+		}
+
 		public ErrorResult NotifyUserOfProblem(IRepeatNoticePolicy policy, string alternateButton1Label,
 			ErrorResult resultIfAlternateButtonPressed, string message)
 		{
 			NonFatalProblem.ReportSentryOnly(message);
 			return ErrorResult.OK;
+		}
+
+		public void SetNotifyUserOfProblemCustomParams(string reportButtonLabel, Action<Exception, string> onReportButtonPressed, string extraButtonLabel, Action<Exception, string> onExtraButtonPressed)
+		{
+			// No need for this class to do anything when this function is called
 		}
 
 		public void ReportNonFatalException(Exception exception, IRepeatNoticePolicy policy)
