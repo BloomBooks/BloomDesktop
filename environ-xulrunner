@@ -3,10 +3,10 @@
 # but on the root of the repository on developer machines.  This requires a bit of
 # hackery to reliably find the proper location of the Firefox/xulrunner libraries.
 tmpbasedir=$(pwd | sed s=usr/share/=usr/lib/=)
-if (echo $tmpbasedir | grep /usr/lib >/dev/null); then
-  export XULRUNNER=$(dirname $(find $tmpbasedir -name libxul.so | grep /Firefox/))
+if (echo $tmpbasedir | grep /usr/lib/bloom-desktop >/dev/null); then
+  export XULRUNNER=$(dirname $(find $tmpbasedir -name libxul.so))
 else
-  export XULRUNNER=$(dirname $(find $tmpbasedir -name libxul.so | grep /$BUILD/Firefox/))
+  export XULRUNNER=$(dirname $(find ${tmpbasedir}/output/${BUILD} -name libxul.so))
 fi
 export LD_LIBRARY_PATH="${XULRUNNER}:${LD_LIBRARY_PATH}"
 export LD_PRELOAD="${XULRUNNER}/libgeckofix.so"
