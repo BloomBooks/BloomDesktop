@@ -384,10 +384,7 @@ namespace Bloom.Collection
 			_collectionSettings.DefaultBookshelf = PendingDefaultBookshelf;
 			_collectionSettings.Save();
 			Close();
-			if (!AnyReasonToRestart())
-			{
-				_pageRefreshEvent.Raise(PageRefreshEvent.SaveBehavior.SaveBeforeRefresh);
-			}
+
 			DialogResult = AnyReasonToRestart() ? DialogResult.Yes : DialogResult.OK;
 		}
 
