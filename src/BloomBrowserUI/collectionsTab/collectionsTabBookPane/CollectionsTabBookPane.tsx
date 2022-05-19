@@ -44,7 +44,8 @@ export const CollectionsTabBookPane: React.FunctionComponent<{
     const {
         id: selectedBookId,
         saveable,
-        collectionKind
+        collectionKind,
+        aboutBookInfoUrl
     } = useMonitorBookSelection();
 
     React.useEffect(() => {
@@ -79,6 +80,7 @@ export const CollectionsTabBookPane: React.FunctionComponent<{
         isTeamCollection;
 
     const iframeRef = useRef<HTMLIFrameElement>(null);
+    const iframeInfoRef = useRef<HTMLIFrameElement>(null);
 
     React.useEffect(() => {
         BloomApi.getBoolean(
@@ -280,6 +282,28 @@ export const CollectionsTabBookPane: React.FunctionComponent<{
                                         border: none;
                                     `}
                                     ref={iframeRef}
+                                />
+                            )}
+                            {aboutBookInfoUrl && selectedBookId && (
+                                // provide a clearcut division between the book preview and book information panes
+                                <div
+                                    css={css`
+                                        height: 5px;
+                                    `}
+                                >
+                                    <hr />
+                                </div>
+                            )}
+                            {aboutBookInfoUrl && selectedBookId && (
+                                <iframe
+                                    src={aboutBookInfoUrl}
+                                    height="100%"
+                                    width="100%"
+                                    css={css`
+                                        flex-grow: 1;
+                                        border: none;
+                                    `}
+                                    ref={iframeInfoRef}
                                 />
                             )}
                         </div>

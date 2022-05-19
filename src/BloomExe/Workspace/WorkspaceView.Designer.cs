@@ -20,7 +20,12 @@ namespace Bloom.Workspace
             {
 	            components.Dispose();
             }
-            base.Dispose(disposing);
+			if (_tempBookInfoHtmlPath != null && SIL.IO.RobustFile.Exists(_tempBookInfoHtmlPath))
+			{
+				SIL.IO.RobustFile.Delete(_tempBookInfoHtmlPath);
+				_tempBookInfoHtmlPath = null;
+			}
+			base.Dispose(disposing);
         }
 
         #region Component Designer generated code
