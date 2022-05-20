@@ -101,18 +101,8 @@ namespace Bloom.ErrorReporter
 			
 			if (title == "Error NotifyUser NoReport")
 			{
-				// Exercises a path through libPalaso directly (goes thru overloads 1, 2, 4)
-				ErrorReport.NotifyUserOfProblem(fakeProblemMessage);
-			}
-			else if (title == "Error NotifyUser NoReport 2")
-			{
-				// Exercises a path through libPalaso directly (goes thru overloads 3, 4)
-				ErrorReport.NotifyUserOfProblem((Exception)null, fakeProblemMessage);
-			}
-			else if (title == "Error NotifyUser NoReport 3")
-			{
-				// Exercises a path where you go through the ErrorReportUtils adapters
-				ErrorReportUtils.NotifyUserOfProblem(fakeProblemMessage);
+				// Exercises a path where the report button is disabled
+				ErrorReportUtils.NotifyUserOfProblem(fakeProblemMessage, reportButtonLabel: "");				
 			}
 			else if (title == "Error NotifyUser LongMessage")
 			{
@@ -122,15 +112,27 @@ namespace Bloom.ErrorReporter
 
 				ErrorReport.NotifyUserOfProblem(longMessageBuilder.ToString());
 			}
-			else if (title == "Error NotifyUser Report NoRetry")
+			else if (title == "Error NotifyUser ReportException NoRetry")
 			{
-				// Exercises another path through libPalaso directly (goes thru overloads 3, 4)
+				// Exercises another path through libPalaso directly (goes thru overloads 3, 4),
+				// with non-null exception
 				ErrorReport.NotifyUserOfProblem(fakeException, fakeProblemMessage);
 			}
-			else if (title == "Error NotifyUser Report NoRetry 2")
+			else if (title == "Error NotifyUser ReportException NoRetry 2")
 			{
 				// Exercises a path where you go through the ErrorReportUtils adapters
 				ErrorReportUtils.NotifyUserOfProblem(fakeProblemMessage, fakeException);
+			}
+			else if (title == "Error NotifyUser Report NoRetry")
+			{
+				// Exercises a path through libPalaso directly (goes thru overloads 1, 2, 4)
+				ErrorReport.NotifyUserOfProblem(fakeProblemMessage);
+			}
+			else if (title == "Error NotifyUser Report NoRetry 2")
+			{
+				// Exercises a path through libPalaso directly (goes thru overloads 3, 4),
+				// with explicit null exception
+				ErrorReport.NotifyUserOfProblem((Exception)null, fakeProblemMessage);
 			}
 			else if (title == "Error NotifyUser Report Retry")
 			{

@@ -156,7 +156,7 @@ namespace Bloom.ErrorReporter
 			{
 				if (policy.ShouldShowMessage(message))
 				{
-					string reportButtonLabel = GetReportButtonLabel(exception != null ? DefaultReportLabel : null);	// Don't want Report Button to show up if exception is null
+					string reportButtonLabel = GetReportButtonLabel(DefaultReportLabel);	// FYI: Even if exception is null, we want Report Button to show up
 					ShowNotifyDialog(ProblemLevel.kNotify, message, exception, reportButtonLabel, this.SecondaryActionButtonLabel);
 				}
 

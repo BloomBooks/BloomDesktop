@@ -136,11 +136,11 @@ namespace BloomTests.ErrorReporter
 		}
 
 		/// <summary>
-		/// Tests that when you use NotifyUserOfProblem with the default parameters, when you don't pass in an exception,
-		/// no report button is generated (notably, the label should be null or "").
+		/// Tests that when you use NotifyUserOfProblem with the default parameters,
+		/// the report button is generated even if the exception is null
 		/// </summary>
 		[Test]
-		public void NotifyUserOfProblem_ExceptionNotProvided_EmptyReportLabel()
+		public void NotifyUserOfProblem_ExceptionNotProvided_DefaultReportLabel()
 		{
 			var mockFactory = GetDefaultMockReactDialogFactory();
 			var reporter = new HtmlErrorReporterBuilder()
@@ -154,7 +154,7 @@ namespace BloomTests.ErrorReporter
 			mockFactory.Verify(x => x.CreateReactDialog(
 				It.Is<string>(b => b == "problemReportBundle"),
 				It.Is<object>(props => (string)props.GetType().GetProperty("level").GetValue(props) == ProblemLevel.kNotify &&
-					String.IsNullOrEmpty((string)props.GetType().GetProperty("reportLabel").GetValue(props)))
+					(string)props.GetType().GetProperty("reportLabel").GetValue(props) == "Report")
 			));
 		}
 		#endregion
@@ -238,7 +238,7 @@ namespace BloomTests.ErrorReporter
 			);
 		}
 
-		[TestCase(null)]	// If the report button label is manually specified, we'll allow the report button to show even if exception is null. (Normally, libpalaso doesn't show report button if exception is null)
+		[TestCase(null)]	// Tests that the report button label works even if exception is null)
 		[TestCase("fake exception")]
 		public void SetNotifyUserOfProblemCustomParams_ReportButtonPresent(string exceptionMessage)
 		{
