@@ -32,9 +32,7 @@ var child_process = require("child_process");
 const version = engines.node;
 if (!semver.satisfies(process.version, version)) {
     console.log(
-        `Required node version ${version} not satisfied with current version ${
-            process.version
-        }.`
+        `Required node version ${version} not satisfied with current version ${process.version}.`
     );
     process.exit(1);
 }
@@ -56,7 +54,13 @@ var paths = {
     // Notice that, unlike with less, we are still compiling the content pug here. This is because
     // we haven't found a good cross-platform way of using a glob with pug yet outside of gulp, and
     // the /content project is trying to get away form using gulp.
-    pug: ["./**/*.pug", "!./node_modules/**/*.pug","../content/**/*.pug", "!../content/node_modules/**/*.pug",  "!./**/*mixins.pug"],
+    pug: [
+        "./**/*.pug",
+        "!./node_modules/**/*.pug",
+        "../content/**/*.pug",
+        "!../content/node_modules/**/*.pug",
+        "!./**/*mixins.pug"
+    ],
 
     //files we are *not* running through some compiler that need to make it into the outputDir directory.
     filesThatMightBeNeededInOutput: [
@@ -67,7 +71,8 @@ var paths = {
         "!./**/*.md",
         "!./**/*.less",
         "!./**/*.bat",
-        "!./**/node_modules/**/*.*"
+        "!./**/node_modules/**/*.*",
+        "!./**/tsconfig.json"
     ],
     nodeFilesNeededInOutput: [
         // The * after bloomPlayer is there because BloomPlayer is now
@@ -301,9 +306,7 @@ gulp.task("translateHtmlFiles", function() {
                     child_process.exec(cmd, function(err, stdout, stderr) {
                         if (err) {
                             console.error(
-                                `\nTRANSLATE ${
-                                    file.path
-                                } WITH ${xliffFile}\n${stdout}\n\n${stderr}`
+                                `\nTRANSLATE ${file.path} WITH ${xliffFile}\n${stdout}\n\n${stderr}`
                             );
                         }
                     });
@@ -332,9 +335,7 @@ gulp.task("createXliffFiles", function() {
                 child_process.exec(cmd, function(err, stdout, stderr) {
                     if (err) {
                         console.error(
-                            `\nCREATE ${xliffFile} FROM ${
-                                file.path
-                            }\n${stdout}\n\n${stderr}`
+                            `\nCREATE ${xliffFile} FROM ${file.path}\n${stdout}\n\n${stderr}`
                         );
                     }
                 });
