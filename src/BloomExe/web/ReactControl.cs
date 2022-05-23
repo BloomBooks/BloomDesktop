@@ -1,4 +1,4 @@
-﻿using SIL.IO;
+using SIL.IO;
 using SIL.Windows.Forms.Extensions;
 using System;
 using System.ComponentModel;
@@ -101,6 +101,16 @@ namespace Bloom.web
 			_browser.WebBrowser.DocumentCompleted += (unused, args) =>
 			{
 				Controls.Add(_browser);
+
+				// This allows us to bring up a react control/dialog with focus already set to a specific element.
+				// For example, for BloomMessageBox, we set the Cancel button to have focus so the user
+				// can hit the Enter key to close the dialog.
+				// The first attempt to allow this behavior called root.click() in WireUpWinform.tsx
+				// which then caused Browser.OnBrowser_DomClick to fire which called
+				// WebBrowserFocus.Activate(). But that was causing the Shell to lose focus.
+				// The problem was that Browser didn't have a Parent at that point.
+				// By making the Activate call here, we seem to solve both issues. See BL-11092.
+				_browser.WebBrowser.WebBrowserFocus.Activate();
 			};
 			_browser.NavigateToTempFileThenRemoveIt(tempFile.Path);
 		}
