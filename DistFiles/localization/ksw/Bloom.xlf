@@ -319,6 +319,7 @@
       <trans-unit id="BookMetadata.License">
         <source xml:lang="en">License</source>
         <note>ID: BookMetadata.License</note>
+        <note>Obsolete as of Bloom 5.3 (replaced by Common.License)</note>
         <target xml:lang="ksw" state="needs-translation">License</target>
       </trans-unit>
       <trans-unit id="BookMetadata.metapicture">
@@ -434,11 +435,19 @@
         <note>ID: CollectionSettingsDialog.AndikaNewBasicUpdate2</note>
         <target xml:lang="ksw" state="needs-translation">This will improve the printed output for most languages. If your language is one of the few that need "Andika", you can switch it back in Settings:Book Making.</target>
       </trans-unit>
+      <!-- <trans-unit id="CollectionSettingsDialog.BloomLibraryBookshelf"> -->
+      <!-- <source xml:lang="en">Bloom Library Bookshelf</source> -->
+      <!-- <note>ID: CollectionSettingsDialog.BloomLibraryBookshelf</note> -->
+      <!-- </trans-unit> -->
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.BookMakingTabLabel">
         <source xml:lang="en">Book Making</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.BookMakingTabLabel</note>
         <target xml:lang="ksw" state="needs-translation">Book Making</target>
       </trans-unit>
+      <!-- <trans-unit id="CollectionSettingsDialog.BookMakingTab.BookshelfDescription" sil:dynamic="true"> -->
+      <!-- <source xml:lang="en">Projects that have Bloom Enterprise subscriptions can arrange for one or more bookshelves on the Bloom Library. All books uploaded from this collection will go into the selected bookshelf.</source> -->
+      <!-- <note>ID: CollectionSettingsDialog.BookMakingTab.BookshelfDescription</note> -->
+      <!-- </trans-unit> -->
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.Branding.None" sil:dynamic="true">
         <source xml:lang="en">None</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.Branding.None</note>
@@ -491,6 +500,10 @@
         <note>Name of a Front/Back Matter Pack that is used for talking/animating experiences</note>
         <target xml:lang="ksw" state="needs-translation">Video</target>
       </trans-unit>
+      <!-- <trans-unit id="CollectionSettingsDialog.BookMakingTab.NoBookshelvesFromServer" sil:dynamic="true"> -->
+      <!-- <source xml:lang="en">Bloom could not reach server to get the list of bookshelves.</source> -->
+      <!-- <note>ID: CollectionSettingsDialog.BookMakingTab.NoBookshelvesFromServer</note> -->
+      <!-- </trans-unit> -->
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Arabic-Indic" sil:dynamic="true">
         <source xml:lang="en">Arabic-Indic</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Arabic-Indic</note>
@@ -752,6 +765,7 @@
       <trans-unit id="CollectionTab.AdvancedToolStripMenuItem">
         <source xml:lang="en">Advanced</source>
         <note>ID: CollectionTab.AdvancedToolStripMenuItem</note>
+        <note>Obsolete for 5.3 and later</note>
         <target xml:lang="ksw" state="needs-translation">Advanced</target>
       </trans-unit>
       <trans-unit id="CollectionTab.Applying">
@@ -814,24 +828,41 @@
         <target xml:lang="ksw" state="needs-translation">Export to XML for InDesign...</target>
       </trans-unit>
       <trans-unit id="CollectionTab.BookMenu.ImportContentFromSpreadsheet">
-        <source xml:lang="en">Import content from Spreadsheet...</source>
+        <source xml:lang="en">Import Content from Spreadsheet...</source>
         <note>ID: CollectionTab.BookMenu.ImportContentFromSpreadsheet</note>
-        <target xml:lang="ksw" state="needs-translation">Import content from Spreadsheet...</target>
+        <target xml:lang="ksw" state="needs-translation">Import Content from Spreadsheet...</target>
       </trans-unit>
       <trans-unit id="CollectionTab.BookMenu.MakeBloomPack">
         <source xml:lang="en">Make Bloom Pack...</source>
         <note>ID: CollectionTab.BookMenu.MakeBloomPack</note>
+        <note>Obsolete for 5.3 and later</note>
         <target xml:lang="ksw" state="needs-translation">Make Bloom Pack...</target>
       </trans-unit>
       <trans-unit id="CollectionTab.BookMenu.Rename">
         <source xml:lang="en">Rename</source>
         <note>ID: CollectionTab.BookMenu.Rename</note>
+        <note>Obsolete for Bloom 5.3 and later</note>
         <target xml:lang="ksw" state="needs-translation">Rename</target>
       </trans-unit>
+      <trans-unit id="CollectionTab.BookMenu.RenameBook">
+        <source xml:lang="en">Rename Book</source>
+        <note>ID: CollectionTab.BookMenu.RenameBook</note>
+        <target xml:lang="ksw" state="needs-translation">Rename Book</target>
+      </trans-unit>
+      <trans-unit id="CollectionTab.BookMenu.SaveAsBloomPackContextMenuItem">
+        <source xml:lang="en">Save as Bloom Pack (*.BloomPack)</source>
+        <note>ID: CollectionTab.BookMenu.SaveAsBloomPackContextMenuItem</note>
+        <target xml:lang="ksw" state="needs-translation">Save as Bloom Pack (*.BloomPack)</target>
+      </trans-unit>
       <trans-unit id="CollectionTab.BookMenu.SaveAsBloomToolStripMenuItem">
-        <source xml:lang="en">Save as single file (.bloomSource)...</source>
+        <source xml:lang="en">Save as Single File (*.bloomSource)...</source>
         <note>ID: CollectionTab.BookMenu.SaveAsBloomToolStripMenuItem</note>
-        <target xml:lang="ksw" state="needs-translation">Save as single file (.bloomSource)...</target>
+        <target xml:lang="ksw" state="needs-translation">Save as Single File (*.bloomSource)...</target>
+      </trans-unit>
+      <trans-unit id="CollectionTab.BookMenu.ShowInFileExplorer">
+        <source xml:lang="en">Show in File Explorer</source>
+        <note>ID: CollectionTab.BookMenu.ShowInFileExplorer</note>
+        <target xml:lang="ksw" state="needs-translation">Show in File Explorer</target>
       </trans-unit>
       <trans-unit id="CollectionTab.BookMenu.UpdateFrontMatterToolStrip">
         <source xml:lang="en">Update Book</source>
@@ -903,10 +934,21 @@
         <note>ID: CollectionTab.ConfirmRecycleDescription</note>
         <target xml:lang="ksw" state="needs-translation">The book '{0}'</target>
       </trans-unit>
+      <trans-unit id="CollectionTab.ContextMenu.More">
+        <source xml:lang="en">More</source>
+        <note>ID: CollectionTab.ContextMenu.More</note>
+        <target xml:lang="ksw" state="needs-translation">More</target>
+      </trans-unit>
       <trans-unit id="CollectionTab.ContextMenu.OpenFolderOnDisk">
         <source xml:lang="en">Open Folder on Disk</source>
         <note>ID: CollectionTab.ContextMenu.OpenFolderOnDisk</note>
+        <note>Obsolete for Bloom 5.3 and later</note>
         <target xml:lang="ksw" state="needs-translation">Open Folder on Disk</target>
+      </trans-unit>
+      <trans-unit id="CollectionTab.ContextMenu.Troubleshooting">
+        <source xml:lang="en">Troubleshooting</source>
+        <note>ID: CollectionTab.ContextMenu.Troubleshooting</note>
+        <target xml:lang="ksw" state="needs-translation">Troubleshooting</target>
       </trans-unit>
       <trans-unit id="CollectionTab.EditBookButton">
         <source xml:lang="en">Edit this book</source>
@@ -932,7 +974,14 @@
       <trans-unit id="CollectionTab.MakeBloomPackButton">
         <source xml:lang="en">Make Bloom Pack</source>
         <note>ID: CollectionTab.MakeBloomPackButton</note>
+        <note>This string is obsolete as of Bloom version 5.3.</note>
         <target xml:lang="ksw" state="needs-translation">Make Bloom Pack</target>
+      </trans-unit>
+      <trans-unit id="CollectionTab.MakeBloomPackOfShellBooks">
+        <source xml:lang="en">Make Bloom Pack of Shell Books</source>
+        <note>Shell Books are books that are meant to be translated.</note>
+        <note>ID: CollectionTab.MakeBloomPackOfShellBooks</note>
+        <target xml:lang="ksw" state="needs-translation">Make Bloom Pack of Shell Books</target>
       </trans-unit>
       <trans-unit id="CollectionTab.MakeBookUsingThisTemplate">
         <source xml:lang="en">Make a book using this source</source>
@@ -1094,6 +1143,12 @@
         <note>In a wizard, this button takes you to the previous step.</note>
         <target xml:lang="ksw" state="needs-translation">Back</target>
       </trans-unit>
+      <trans-unit id="Common.BloomEnterpriseFeature">
+        <source xml:lang="en">Bloom Enterprise Feature</source>
+        <note>ID: Common.BloomEnterpriseFeature</note>
+        <note>This tooltip shows over the Bloom Enterprise icon.</note>
+        <target xml:lang="ksw" state="needs-translation">Bloom Enterprise Feature</target>
+      </trans-unit>
       <trans-unit id="Common.Cancel">
         <source xml:lang="en">Cancel</source>
         <note>This is shown at the bottom of a dialog box. It is paired with an action button like "OK" and it means "do not do the action".  In English, this is the same as "Common.CancelProcess", but could be different in your language.</note>
@@ -1137,6 +1192,11 @@
         <source xml:lang="en">Copy</source>
         <note>ID: Common.Copy</note>
         <target xml:lang="ksw" state="needs-translation">Copy</target>
+      </trans-unit>
+      <trans-unit id="Common.Copyright">
+        <source xml:lang="en">Copyright</source>
+        <note>ID: Common.Copyright</note>
+        <target xml:lang="ksw" state="needs-translation">Copyright</target>
       </trans-unit>
       <trans-unit id="Common.Delete">
         <source xml:lang="en">Delete</source>
@@ -1189,6 +1249,11 @@
         <note>This is the same as Settings.Enterprise.LearnMore</note>
         <target xml:lang="ksw" state="needs-translation">Learn More</target>
       </trans-unit>
+      <trans-unit id="Common.License" sil:dynamic="true">
+        <source xml:lang="en">License</source>
+        <note>ID: Common.License</note>
+        <target xml:lang="ksw" state="needs-translation">License</target>
+      </trans-unit>
       <trans-unit id="Common.Loading" sil:dynamic="true">
         <source xml:lang="en">Loading...</source>
         <note>ID: Common.Loading</note>
@@ -1228,6 +1293,11 @@
         <note>ID: Common.Optional</note>
         <target xml:lang="ksw" state="needs-translation">optional</target>
       </trans-unit>
+      <trans-unit id="Common.Other" sil:dynamic="true">
+        <source xml:lang="en">Other</source>
+        <note>ID: Common.Other</note>
+        <target xml:lang="ksw" state="needs-translation">Other</target>
+      </trans-unit>
       <trans-unit id="Common.Pause" sil:dynamic="true">
         <source xml:lang="en">Pause</source>
         <note>ID: Common.Pause</note>
@@ -1260,6 +1330,16 @@
         <note>Used for a link that signifies "Bring up a dialog for sending a report of a problem. We usually want all-caps, unless inappropriate in a particular language"</note>
         <target xml:lang="ksw" state="needs-translation">REPORT</target>
       </trans-unit>
+      <!-- 5.3
+      <trans-unit id="Common.Save">
+        <source xml:lang="en">Save</source>
+        <note>ID: Common.Save</note>
+      </trans-unit>
+      <trans-unit id="Common.Seconds">
+        <source xml:lang="en">%0 seconds</source>
+        <note>ID: Common.Seconds</note>
+      </trans-unit>
+      -->
       <trans-unit id="Common.SeeWebPage">
         <source xml:lang="en">See {0}.</source>
         <note>ID: Common.SeeWebPage</note>
@@ -1310,6 +1390,41 @@
         <note>This is usually a link to an explanatory document.</note>
         <target xml:lang="ksw" state="needs-translation">What caused this problem?</target>
       </trans-unit>
+      <!--5.3
+      <trans-unit id="Copyright.CopyrightHolder" sil:dynamic="true">
+        <source xml:lang="en">Copyright Holder</source>
+        <note>ID: Copyright.CopyrightHolder</note>
+      </trans-unit>
+      <trans-unit id="Copyright.CopyrightYear" sil:dynamic="true">
+        <source xml:lang="en">Copyright Year</source>
+        <note>ID: Copyright.CopyrightYear</note>
+      </trans-unit>
+      <trans-unit id="Copyright.FollowSILGuidelines" sil:dynamic="true">
+        <source xml:lang="en">Before publishing as SIL, ensure that you follow [SIL corporate guidelines].</source>
+        <note>ID: Copyright.FollowSILGuidelines</note>
+        <note>The text inside the [square brackets] will become a link to a website.</note>
+      </trans-unit>
+      <trans-unit id="Copyright.IllustratorOrPhotographer" sil:dynamic="true">
+        <source xml:lang="en">Illustrator/Photographer</source>
+        <note>ID: Copyright.IllustratorOrPhotographer</note>
+      </trans-unit>
+      <trans-unit id="Copyright.NotATranslation" sil:dynamic="true">
+        <source xml:lang="en">Not a translation or new version</source>
+        <note>ID: Copyright.NotATranslation</note>
+      </trans-unit>
+      <trans-unit id="Copyright.PublishingAsSIL" sil:dynamic="true">
+        <source xml:lang="en">Publishing as SIL</source>
+        <note>ID: Copyright.PublishingAsSIL</note>
+      </trans-unit>
+      <trans-unit id="Copyright.UseOriginalCopyright" sil:dynamic="true">
+        <source xml:lang="en">Continue to use the same copyright and license as the original book:</source>
+        <note>ID: Copyright.UseOriginalCopyright</note>
+      </trans-unit>
+      <trans-unit id="CopyrightAndLicense" sil:dynamic="true">
+        <source xml:lang="en">Copyright and License</source>
+        <note>ID: CopyrightAndLicense</note>
+      </trans-unit>
+-->
       <trans-unit id="Download.Completed">
         <source xml:lang="en">Your download ({0}) is complete. You can see it in the 'Books from BloomLibrary.org' section of your Collections.</source>
         <note>ID: Download.Completed</note>
@@ -2072,6 +2187,12 @@
         <note>ID: EditTab.HowToUseHyperlink</note>
         <target xml:lang="ksw" state="needs-translation">To use this hyperlink, go to the page where you are making a Table of Contents. Next, select some text and then click on the image of chain link. This will turn the selected text into a hyperlink to this page.</target>
       </trans-unit>
+      <trans-unit id="EditTab.HyperlinkPasteFailure">
+        <source xml:lang="en">Bloom was not able to make a link. Try selecting only simple text.</source>
+        <note>ID: EditTab.HyperlinkPasteFailure</note>
+        <note>Shows when a hyperlink cannot be pasted due to invalid selection.</note>
+        <target xml:lang="ksw" state="needs-translation">Bloom was not able to make a link. Try selecting only simple text.</target>
+      </trans-unit>
       <trans-unit id="EditTab.Image.AltMsg">
         <source xml:lang="en">This picture, {0}, is missing or was loading too slowly.</source>
         <note>ID: EditTab.Image.AltMsg</note>
@@ -2320,18 +2441,6 @@
         <note>ID: EditTab.TextBoxProperties.LanguageTab</note>
         <target xml:lang="ksw" state="needs-translation">Language</target>
       </trans-unit>
-      <trans-unit id="EditTab.TextBoxProperties.LocalLanguage" sil:dynamic="true">
-        <source xml:lang="en">Local Language</source>
-        <note>ID: EditTab.TextBoxProperties.LocalLanguage</note>
-        <note>Obsolete for Bloom 5.1 and later</note>
-        <target xml:lang="ksw" state="needs-translation">Local Language</target>
-      </trans-unit>
-      <trans-unit id="EditTab.TextBoxProperties.NationalLanguage" sil:dynamic="true">
-        <source xml:lang="en">National Language</source>
-        <note>ID: EditTab.TextBoxProperties.NationalLanguage</note>
-        <note>Obsolete for Bloom 5.1 and later</note>
-        <target xml:lang="ksw" state="needs-translation">National Language</target>
-      </trans-unit>
       <trans-unit id="EditTab.TextBoxProperties.Normal" sil:dynamic="true">
         <source xml:lang="en">Normal</source>
         <note>ID: EditTab.TextBoxProperties.Normal</note>
@@ -2346,12 +2455,6 @@
         <source xml:lang="en">Use one of these for simple text boxes that are always in only one language.</source>
         <note>ID: EditTab.TextBoxProperties.OtherLanguagesLabel</note>
         <target xml:lang="ksw" state="needs-translation">Use one of these for simple text boxes that are always in only one language.</target>
-      </trans-unit>
-      <trans-unit id="EditTab.TextBoxProperties.RegionalLanguage" sil:dynamic="true">
-        <source xml:lang="en">Regional Language</source>
-        <note>ID: EditTab.TextBoxProperties.RegionalLanguage</note>
-        <note>Obsolete for Bloom 5.1 and later</note>
-        <target xml:lang="ksw" state="needs-translation">Regional Language</target>
       </trans-unit>
       <trans-unit id="EditTab.TextBoxProperties.SelectedLanguage" sil:dynamic="true">
         <source xml:lang="en">Selected Language 1</source>
@@ -2741,18 +2844,6 @@
         <note>ID: EditTab.Toolbox.DecodableReaderTool.SortByWordLength</note>
         <target xml:lang="ksw" state="needs-translation">Sort by word length</target>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.DecodableReaderTool.Stage" sil:dynamic="true">
-        <source xml:lang="en">Stage</source>
-        <note>ID: EditTab.Toolbox.DecodableReaderTool.Stage</note>
-        <note>Obsolete as of Bloom 5.0</note>
-        <target xml:lang="ksw" state="needs-translation">Stage</target>
-      </trans-unit>
-      <trans-unit id="EditTab.Toolbox.DecodableReaderTool.StageOf" sil:dynamic="true">
-        <source xml:lang="en">of</source>
-        <note>ID: EditTab.Toolbox.DecodableReaderTool.StageOf</note>
-        <note>Obsolete as of Bloom 5.0</note>
-        <target xml:lang="ksw" state="needs-translation">of</target>
-      </trans-unit>
       <trans-unit id="EditTab.Toolbox.DecodableReaderTool.StageNofM" sil:dynamic="true">
         <source xml:lang="en">Stage {0} of {1}</source>
         <note>ID: EditTab.Toolbox.DecodableReaderTool.StageNofM</note>
@@ -2890,20 +2981,6 @@
         <source xml:lang="en">Keep in mind</source>
         <note>ID: EditTab.Toolbox.LeveledReaderTool.KeepInMind</note>
         <target xml:lang="ksw" state="needs-translation">Keep in mind</target>
-      </trans-unit>
-      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.Level" sil:dynamic="true">
-        <source xml:lang="en">Level</source>
-        <note>ID: EditTab.Toolbox.LeveledReaderTool.Level</note>
-        <note>Used to create string "Level # of #". The space after this word is added programmatically.</note>
-        <note>Obsolete as of Bloom 5.0</note>
-        <target xml:lang="ksw" state="needs-translation">Level</target>
-      </trans-unit>
-      <trans-unit id="EditTab.Toolbox.LeveledReaderTool.LevelOf" sil:dynamic="true">
-        <source xml:lang="en">of</source>
-        <note>ID: EditTab.Toolbox.LeveledReaderTool.LevelOf</note>
-        <note>Used to create string "Level # of #". The spaces on each side of this word are added programmatically.</note>
-        <note>Obsolete as of Bloom 5.0</note>
-        <target xml:lang="ksw" state="needs-translation">of</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.LeveledReaderTool.LevelNofM" sil:dynamic="true">
         <source xml:lang="en">Level {0} of {1}</source>
@@ -3318,6 +3395,11 @@
         <note>"Report" as in "Report this problem to Bloom Support"</note>
         <target xml:lang="ksw" state="needs-translation">Report</target>
       </trans-unit>
+      <trans-unit id="Errors.PathTooLong">
+        <source xml:lang="en">Please move your collection closer to the root of your hard drive and try again. A file Bloom was working with had a path that was too long. This is usually caused by your collection being too deeply nested in many folders on your hard drive.</source>
+        <note>ID: Errors.PathTooLong</note>
+        <target xml:lang="ksw" state="needs-translation">Please move your collection closer to the root of your hard drive and try again. A file Bloom was working with had a path that was too long. This is usually caused by your collection being too deeply nested in many folders on your hard drive.</target>
+      </trans-unit>
       <trans-unit id="Errors.BookProblem">
         <source xml:lang="en">Bloom had a problem showing this book. This doesn't mean your work is lost, but it does mean that something is out of date, is missing, or has gone wrong.</source>
         <note>ID: Errors.BookProblem</note>
@@ -3478,6 +3560,42 @@
         <note>ID: Errors.ZoneAlarm</note>
         <target xml:lang="ksw" state="needs-translation">Bloom cannot start properly, and this symptom has been observed on machines with ZoneAlarm installed. Note: disabling ZoneAlarm does not help. Nor does restarting with it turned off. Something about the installation of ZoneAlarm causes the problem, and so far only uninstalling ZoneAlarm has been shown to fix the problem.</target>
       </trans-unit>
+      <trans-unit id="FontInformationPane.FontOkay">
+        <source xml:lang="en">The metadata inside this font indicates that it is legal to use for all Bloom purposes.</source>
+        <note>ID: FontInformationPane.FontOkay</note>
+        <note>This shows in the popup when hovering over a useable font.</note>
+        <target xml:lang="ksw" state="needs-translation">The metadata inside this font indicates that it is legal to use for all Bloom purposes.</target>
+      </trans-unit>
+      <trans-unit id="FontInformationPane.FontUnknown">
+        <source xml:lang="en">Bloom cannot determine what rules govern the use of this font. Please read the license and make sure it allows embedding in ebooks and the web. Before publishing to bloomlibrary.org, you will probably have to make a special request to the Bloom team to investigate this font so that we can make sure we won't get in trouble for hosting it.</source>
+        <note>ID: FontInformationPane.FontUnknown</note>
+        <note>This shows in the popup when hovering over a font when Bloom can't determine if it is useable legally.</note>
+        <target xml:lang="ksw" state="needs-translation">Bloom cannot determine what rules govern the use of this font. Please read the license and make sure it allows embedding in ebooks and the web. Before publishing to bloomlibrary.org, you will probably have to make a special request to the Bloom team to investigate this font so that we can make sure we won't get in trouble for hosting it.</target>
+      </trans-unit>
+      <trans-unit id="FontInformationPane.FontFormatUnsuitable">
+        <source xml:lang="en">This font is in a file format that Bloom cannot use for ebooks. Please use a different font.</source>
+        <note>ID: FontInformationPane.FontFormatUnsuitable</note>
+        <note>This shows in the popup when hovering over a font that Bloom can't legally host on its website.</note>
+        <target xml:lang="ksw" state="needs-translation">This font is in a file format that Bloom cannot use for ebooks. Please use a different font.</target>
+      </trans-unit>
+      <trans-unit id="FontInformationPane.FontUnsuitable">
+        <source xml:lang="en">The metadata inside this font tells us that it may not be embedded for free in ebooks and the web. Please use a different font.</source>
+        <note>ID: FontInformationPane.FontUnsuitable</note>
+        <note>This shows in the popup when hovering over a font that Bloom can't legally host on its website.</note>
+        <target xml:lang="ksw" state="needs-translation">The metadata inside this font tells us that it may not be embedded for free in ebooks and the web. Please use a different font.</target>
+      </trans-unit>
+      <trans-unit id="FontInformationPane.Styles">
+        <source xml:lang="en">Styles</source>
+        <note>ID: FontInformationPane.Styles</note>
+        <note>This shows in the popup before the types of variants in the font (e.g. bold, italic).</note>
+        <target xml:lang="ksw" state="needs-translation">Styles</target>
+      </trans-unit>
+      <trans-unit id="FontInformationPane.Version">
+        <source xml:lang="en">Version</source>
+        <note>ID: FontInformationPane.Version</note>
+        <note>This shows in the popup before the font's version number.</note>
+        <target xml:lang="ksw" state="needs-translation">Version</target>
+      </trans-unit>
       <trans-unit id="HelpMenu.AskAQuestionMenuItem">
         <source xml:lang="en">Ask a Question</source>
         <note>ID: HelpMenu.AskAQuestionMenuItem</note>
@@ -3516,12 +3634,6 @@
         <note>ID: HelpMenu.Help Menu_ToolTip_</note>
         <target xml:lang="ksw" state="needs-translation">Get Help</target>
       </trans-unit>
-      <trans-unit id="HelpMenu.KeyBloomConceptsToolStripMenuItem">
-        <source xml:lang="en">Key Bloom Concepts</source>
-        <note>ID: HelpMenu.KeyBloomConceptsToolStripMenuItem</note>
-        <note>Obsolete as of Bloom 5.0</note>
-        <target xml:lang="ksw" state="needs-translation">Key Bloom Concepts</target>
-      </trans-unit>
       <trans-unit id="HelpMenu.MakeASuggestionMenuItem">
         <source xml:lang="en">Request a Feature</source>
         <note>ID: HelpMenu.MakeASuggestionMenuItem</note>
@@ -3543,12 +3655,6 @@
         <source xml:lang="en">Report a Problem...</source>
         <note>ID: HelpMenu.ReportAProblemToolStripMenuItem</note>
         <target xml:lang="ksw" state="needs-translation">Report a Problem...</target>
-      </trans-unit>
-      <trans-unit id="HelpMenu.ShowEventLogMenuItem">
-        <source xml:lang="en">Show Event Log</source>
-        <note>ID: HelpMenu.ShowEventLogMenuItem</note>
-        <note>Obsolete as of Bloom 5.0</note>
-        <target xml:lang="ksw" state="needs-translation">Show Event Log</target>
       </trans-unit>
       <trans-unit id="HelpMenu.UsingReaderTemplatesMenuItem">
         <source xml:lang="en">Using Reader Templates </source>
@@ -3696,6 +3802,90 @@
         <note>ID: LayoutChoices.ComicPortrait</note>
         <target xml:lang="ksw" state="needs-translation">Comic Portrait</target>
       </trans-unit>
+      <!--5.3
+      <trans-unit id="License.About" sil:dynamic="true">
+        <source xml:lang="en">About %0</source>
+        <note>ID: License.About</note>
+        <note>%0 is a shorthand version of the Creative Commons license, such as "CC-BY"</note>
+      </trans-unit>
+      <trans-unit id="License.AllRightsReserved" sil:dynamic="true">
+        <source xml:lang="en">All Rights Reserved</source>
+        <note>ID: License.AllRightsReserved</note>
+      </trans-unit>
+      <trans-unit id="License.AllRightsReserved.Description" sil:dynamic="true">
+        <source xml:lang="en">No one can modify or copy it without explicit permission. We will not be sharing it via Bloom Reader or BloomLibrary.org.</source>
+        <note>ID: License.AllRightsReserved.Description</note>
+      </trans-unit>
+      <trans-unit id="License.CannotChangeLicense" sil:dynamic="true">
+        <source xml:lang="en">The license of the original book does not allow changing the license in new versions.</source>
+        <note>ID: License.CannotChangeLicense</note>
+      </trans-unit>
+      <trans-unit id="License.CopyrightHolderAllows.Book" sil:dynamic="true">
+        <source xml:lang="en">The copyright holder allows others to use the book in this way:</source>
+        <note>ID: License.CopyrightHolderAllows.Book</note>
+      </trans-unit>
+      <trans-unit id="License.CopyrightHolderAllows.Image" sil:dynamic="true">
+        <source xml:lang="en">The copyright holder allows others to use the image in this way:</source>
+        <note>ID: License.CopyrightHolderAllows.Image</note>
+      </trans-unit>
+      <trans-unit id="License.CreativeCommons.Additional" sil:dynamic="true">
+        <source xml:lang="en">You may use this space to clarify or grant additional permissions (for example, that translations are allowed), but not to alter the license.</source>
+        <note>ID: License.CreativeCommons.Additional</note>
+      </trans-unit>
+      <trans-unit id="License.CreativeCommons.AllowCommercial.Book" sil:dynamic="true">
+        <source xml:lang="en">use the book in a commercial way</source>
+        <note>ID: License.CreativeCommons.AllowCommercial.Book</note>
+      </trans-unit>
+      <trans-unit id="License.CreativeCommons.AllowCommercial.Image" sil:dynamic="true">
+        <source xml:lang="en">use the image in a commercial way</source>
+        <note>ID: License.CreativeCommons.AllowCommercial.Image</note>
+      </trans-unit>
+      <trans-unit id="License.CreativeCommons.CopyForFree.Book" sil:dynamic="true">
+        <source xml:lang="en">copy this book for free</source>
+        <note>ID: License.CreativeCommons.CopyForFree.Book</note>
+      </trans-unit>
+      <trans-unit id="License.CreativeCommons.CopyForFree.Image" sil:dynamic="true">
+        <source xml:lang="en">copy this image for free</source>
+        <note>ID: License.CreativeCommons.CopyForFree.Image</note>
+      </trans-unit>
+      <trans-unit id="License.CreativeCommons.DifferentLicense.Book" sil:dynamic="true">
+        <source xml:lang="en">apply a different license to new versions of this book</source>
+        <note>ID: License.CreativeCommons.DifferentLicense.Book</note>
+      </trans-unit>
+      <trans-unit id="License.CreativeCommons.DifferentLicense.Image" sil:dynamic="true">
+        <source xml:lang="en">apply a different license to new versions of this image</source>
+        <note>ID: License.CreativeCommons.DifferentLicense.Image</note>
+      </trans-unit>
+      <trans-unit id="License.CreativeCommons.Intro" sil:dynamic="true">
+        <source xml:lang="en">Everyone is allowed to:</source>
+        <note>ID: License.CreativeCommons.Intro</note>
+      </trans-unit>
+      <trans-unit id="License.CreativeCommons.ShareAlike.Book" sil:dynamic="true">
+        <source xml:lang="en">make new versions of this book, but they must keep the author, illustrator, and other credits</source>
+        <note>ID: License.CreativeCommons.ShareAlike.Book</note>
+      </trans-unit>
+      <trans-unit id="License.CreativeCommons.ShareAlike.Image" sil:dynamic="true">
+        <source xml:lang="en">make new versions of this image, but they must keep the illustrator and other credits</source>
+        <note>ID: License.CreativeCommons.ShareAlike.Image</note>
+      </trans-unit>
+      <trans-unit id="License.Custom" sil:dynamic="true">
+        <source xml:lang="en">Custom</source>
+        <note>ID: License.Custom</note>
+      </trans-unit>
+      <trans-unit id="License.Custom.AvoidIfPossible" sil:dynamic="true">
+        <source xml:lang="en">Avoid writing a custom license if at all possible. They are difficult to write, interpret, and enforce.</source>
+        <note>ID: License.Custom.AvoidIfPossible</note>
+      </trans-unit>
+      <trans-unit id="License.OriginalLicense" sil:dynamic="true">
+        <source xml:lang="en">The original version of this book is %0</source>
+        <note>ID: License.OriginalLicense</note>
+        <note>%0 is a shorthand version of the license such as "CC-BY"</note>
+      </trans-unit>
+      <trans-unit id="License.PublicDomain" sil:dynamic="true">
+        <source xml:lang="en">Anyone can use it however they want.</source>
+        <note>ID: License.PublicDomain</note>
+      </trans-unit>
+-->
       <trans-unit id="LicenseDialog.WindowTitle">
         <source xml:lang="en">Bloom {0}</source>
         <note>ID: LicenseDialog.WindowTitle</note>
@@ -3863,12 +4053,6 @@
         <note>ID: NewCollectionWizard.NewCollectionWindowTitle</note>
         <target xml:lang="ksw" state="needs-translation">Create New Bloom Collection</target>
       </trans-unit>
-      <trans-unit id="NewCollectionWizard.ProjectName">
-        <source xml:lang="en">Project Name</source>
-        <note>ID: NewCollectionWizard.ProjectName</note>
-        <note>Obsolete as of Bloom 5.0</note>
-        <target xml:lang="ksw" state="needs-translation">Project Name</target>
-      </trans-unit>
       <trans-unit id="NewCollectionWizard.UnableToCreateANewCollectionUsingThatName">
         <source xml:lang="en">Unable to create a new collection using that name.</source>
         <note>ID: NewCollectionWizard.UnableToCreateANewCollectionUsingThatName</note>
@@ -3997,14 +4181,31 @@
       <trans-unit id="PublishTab.Android.BloomD.Hint.Heading" sil:dynamic="true">
         <source xml:lang="en">Sharing .bloomd Files</source>
         <note>ID: PublishTab.Android.BloomD.Hint.Heading</note>
-        <note/>
+        <note>Obsolete in 5.3+</note>
         <target xml:lang="ksw" state="needs-translation">Sharing .bloomd Files</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.BloomD.Hint" sil:dynamic="true">
         <source xml:lang="en">You can use sharing apps like email, Dropbox, and WhatsApp to get your .bloomd file onto a device.</source>
         <note>ID: PublishTab.Android.BloomD.Hint</note>
-        <note/>
+        <note>Obsolete in 5.3+</note>
         <target xml:lang="ksw" state="needs-translation">You can use sharing apps like email, Dropbox, and WhatsApp to get your .bloomd file onto a device.</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Android.BloomPUB.Hint.Heading" sil:dynamic="true">
+        <source xml:lang="en">Sharing BloomPUB Files</source>
+        <note>ID: PublishTab.Android.BloomPUB.Hint.Heading</note>
+        <target xml:lang="ksw" state="needs-translation">Sharing BloomPUB Files</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Android.BloomPUB.Hint" sil:dynamic="true">
+        <source xml:lang="en">You can use SD cards and sharing apps like email, Google Drive, and WhatsApp to get your .bloompub file onto a device that has &lt;a href="https://bloomlibrary.org/page/create/bloom-reader"&gt;Bloom Reader&lt;/a&gt; (Android) or &lt;a href="https://github.com/BloomBooks/bloompub-viewer/releases"&gt;BloomPUB Viewer&lt;/a&gt; (Windows). You can also create a stand-alone app using &lt;a href="https://software.sil.org/readingappbuilder/"&gt;Reading App Builder&lt;/a&gt;.</source>
+        <note>ID: PublishTab.Android.BloomPUB.Hint</note>
+        <note>The 3 links should be left untranslated as well as the file type '.bloompub'. Beware of machine translations that eliminate the 'b'.</note>
+        <target xml:lang="ksw" state="needs-translation">You can use SD cards and sharing apps like email, Google Drive, and WhatsApp to get your .bloompub file onto a device that has &lt;a href="https://bloomlibrary.org/page/create/bloom-reader"&gt;Bloom Reader&lt;/a&gt; (Android) or &lt;a href="https://github.com/BloomBooks/bloompub-viewer/releases"&gt;BloomPUB Viewer&lt;/a&gt; (Windows). You can also create a stand-alone app using &lt;a href="https://software.sil.org/readingappbuilder/"&gt;Reading App Builder&lt;/a&gt;.</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Android.BloomPUB.Hint2" sil:dynamic="true">
+        <source xml:lang="en">Note that when you upload your book to &lt;a href="https://bloomlibrary.org/"&gt;BloomLibrary.org&lt;/a&gt;, we will create a BloomPUB file for you that people can download.</source>
+        <note>ID: PublishTab.Android.BloomPUB.Hint2</note>
+        <note>The link should be left untranslated as well as the file type 'BloomPUB'.</note>
+        <target xml:lang="ksw" state="needs-translation">Note that when you upload your book to &lt;a href="https://bloomlibrary.org/"&gt;BloomLibrary.org&lt;/a&gt;, we will create a BloomPUB file for you that people can download.</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.USB.Hint.Heading" sil:dynamic="true">
         <source xml:lang="en"> USB is Difficult</source>
@@ -4060,7 +4261,13 @@
       <trans-unit id="PublishTab.Android.ChooseFile" sil:dynamic="true">
         <source xml:lang="en">Save Bloom Reader File</source>
         <note>ID: PublishTab.Android.ChooseFile</note>
+        <note>Obsolete in 5.3+</note>
         <target xml:lang="ksw" state="needs-translation">Save Bloom Reader File</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Android.ChooseBloomPUBFile" sil:dynamic="true">
+        <source xml:lang="en">Save BloomPUB File</source>
+        <note>ID: PublishTab.Android.ChooseBloomPUBFile</note>
+        <target xml:lang="ksw" state="needs-translation">Save BloomPUB File</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.ChooseLandscapeForMotion" sil:dynamic="true">
         <source xml:lang="en">Choose landscape to activate Motion Book mode</source>
@@ -4112,6 +4319,12 @@
         <note>ID: PublishTab.Android.File.Progress.Embedding</note>
         <note>{1} is a number with one decimal place, the number of megabytes the font file takes up</note>
         <target xml:lang="ksw" state="needs-translation">Embedding font {0} at a cost of {1} megs</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Android.File.Progress.IncompatibleFontFileFormat" sil:dynamic="true">
+        <source xml:lang="en">This book has text in a font named \"{0}\". Bloom cannot publish this font's format ({1}).</source>
+        <note>ID: PublishTab.Android.File.Progress.IncompatibleFontFileFormat</note>
+        <note>{0} is a font name, {1} is a file extension (for example: .ttc)</note>
+        <target xml:lang="ksw" state="needs-translation">This book has text in a font named \"{0}\". Bloom cannot publish this font's format ({1}).</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.File.Progress.LicenseForbids" sil:dynamic="true">
         <source xml:lang="en">This book has text in a font named \"{0}\". The license for \"{0}\" does not permit Bloom to embed the font in the book.</source>
@@ -4236,12 +4449,6 @@
         <note>ID: PublishTab.Android.Usb.Progress.DeviceOutOfMemory</note>
         <note>{0} is the size of the book that Bloom is trying to copy over to the Android device.</note>
         <target xml:lang="ksw" state="needs-translation">The device reported that it does not have enough space for this book. The book is {0} MB.</target>
-      </trans-unit>
-      <trans-unit id="PublishTab.Android.Usb.Progress.DeviceWithoutBloomReader" sil:dynamic="true">
-        <source xml:lang="en">The following devices are connected but do not seem to have Bloom Reader running:</source>
-        <note>ID: PublishTab.Android.Usb.Progress.DeviceWithoutBloomReader</note>
-        <note>Obsolete as of Bloom 5.0</note>
-        <target xml:lang="ksw" state="needs-translation">The following devices are connected but do not seem to have Bloom Reader running:</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.Usb.Progress.FailureToSend" sil:dynamic="true">
         <source xml:lang="en">An error occurred and the book was not sent to your Android device.</source>
@@ -4394,6 +4601,12 @@
         <note>ID: PublishTab.BodyOnlyRadio</note>
         <target xml:lang="ksw" state="needs-translation">Booklet Insides</target>
       </trans-unit>
+      <trans-unit id="PublishTab.bloomPUBButton">
+        <source xml:lang="en">BloomPUB</source>
+        <note>ID: PublishTab.bloomPUBButton</note>
+        <note>This is the label under the BloomPUB icon on the left side of the Publish screen.</note>
+        <target xml:lang="ksw" state="needs-translation">BloomPUB</target>
+      </trans-unit>
       <trans-unit id="PublishTab.BodyOnlyRadio-tooltip" sil:dynamic="true">
         <source xml:lang="en">Make a booklet from the inside pages of the book.\nPages will be laid out and reordered so that when you fold it, you'll have a booklet.\n</source>
         <note>ID: PublishTab.BodyOnlyRadio-tooltip</note>
@@ -4525,13 +4738,6 @@
         <source xml:lang="en">No recorded audio image descriptions</source>
         <note>ID: PublishTab.Epub.NoAudioDescriptions</note>
         <target xml:lang="ksw" state="needs-translation">No recorded audio image descriptions</target>
-      </trans-unit>
-      <trans-unit id="PublishTab.Epub.NoComicSupport">
-        <source xml:lang="en">Sorry, Bloom cannot produce ePUBs if there are any comic bubbles. The first comic bubble is on page {0}.</source>
-        <note>ID: PublishTab.Epub.NoComicSupport</note>
-        <note>The {0} will be replaced with the page number (or name of page). For example, it might be replaced by "1" or "Front Cover"</note>
-        <note>Obsolete as of Bloom 5.0</note>
-        <target xml:lang="ksw" state="needs-translation">Sorry, Bloom cannot produce ePUBs if there are any comic bubbles. The first comic bubble is on page {0}.</target>
       </trans-unit>
       <trans-unit id="PublishTab.Epub.OmittedPages">
         <source xml:lang="en">The following pages were removed because they are not supported in ePUBs:</source>
@@ -4833,6 +5039,128 @@
         <note>ID: PublishTab.Publish</note>
         <target xml:lang="ksw" state="needs-translation">Publish</target>
       </trans-unit>
+      <!-- 5.3
+      <trans-unit id="PublishTab.RecordVideo.ActivitiesSkipped">
+        <source xml:lang="en">Activities will be skipped</source>
+        <note>ID: PublishTab.RecordVideo.ActivitiesSkipped</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.RecordVideo.ChangeScale100">
+        <source xml:lang="en">Please change your display scaling to 100% while making videos. Without this, videos will come out at the wrong resolution, or not record at all.</source>
+        <note>ID: PublishTab.RecordVideo.ChangeScale100</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.RecordVideo.CheckRecording">
+        <source xml:lang="en">Check Recording</source>
+        <note>ID: PublishTab.RecordVideo.CheckRecording</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.RecordVideo.ConfigureAndPreview">
+        <source xml:lang="en">Configure &amp; Preview</source>
+        <note>ID: PublishTab.RecordVideo.ConfigureAndPreview</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.RecordVideo.DisplaySettings">
+        <source xml:lang="en">Display Settings</source>
+        <note>ID: PublishTab.RecordVideo.DisplaySettings</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.RecordVideo.DisableScaling">
+        <source xml:lang="en">Disable Display Scaling</source>
+        <note>ID: PublishTab.RecordVideo.DisableScaling</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.RecordVideo.Facebook">
+        <source xml:lang="en">Facebook</source>
+        <note>ID: PublishTab.RecordVideo.Facebook</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.RecordVideo.FeaturePhone">
+        <source xml:lang="en">Feature Phone</source>
+        <note>ID: PublishTab.RecordVideo.FeaturePhone</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.RecordVideo.FinalizingAudio">
+        <source xml:lang="en">Finalizing audio</source>
+        <note>ID: PublishTab.RecordVideo.FinalizingAudio</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.RecordVideo.FinishingInitialVideoRecording">
+        <source xml:lang="en">Finishing initial video recording</source>
+        <note>ID: PublishTab.RecordVideo.FinishingInitialVideoRecording</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.RecordVideo.Format">
+        <source xml:lang="en">Format</source>
+        <note>ID: PublishTab.RecordVideo.Format</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.RecordVideo.Instructions">
+        <source xml:lang="en">If your book has multiple languages or other options, you will see a row of red buttons. Use these to set up the book for recording.</source>
+        <note>ID: PublishTab.RecordVideo.Instructions</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.RecordVideo.MakeRecording">
+        <source xml:lang="en">Make Recording</source>
+        <note>ID: PublishTab.RecordVideo.MakeRecording</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.RecordVideo.MergingAudioVideo">
+        <source xml:lang="en">Merging audio and video</source>
+        <note>ID: PublishTab.RecordVideo.MergingAudioVideo</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.RecordVideo.Mp3">
+        <source xml:lang="en">Mp3 Audio</source>
+        <note>ID: PublishTab.RecordVideo.Mp3</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.RecordVideo.OverviewHelpLink">
+        <source xml:lang="en">Publishing Audio or Video Books</source>
+        <note>ID: PublishTab.RecordVideo.OverviewHelpLink</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.RecordVideo.Play">
+        <source xml:lang="en">Play Recording</source>
+        <note>ID: PublishTab.RecordVideo.Play</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.RecordVideo.ProcessingAudio">
+        <source xml:lang="en">Processing audio</source>
+        <note>ID: PublishTab.RecordVideo.ProcessingAudio</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.RecordVideo.Record">
+        <source xml:lang="en">Record</source>
+        <note>ID: PublishTab.RecordVideo.Record</note>
+		<note>"Record" as in "Record a video recording"</note>
+      </trans-unit>
+	  <trans-unit id="PublishTab.RecordVideo.RecordingInProgress">
+        <source xml:lang="en">Recording in Progress...</source>
+        <note>ID: PublishTab.RecordVideo.RecordingInProgress</note>
+      </trans-unit>
+	  <trans-unit id="PublishTab.RecordVideo.RecordingInProgressSideways">
+        <source xml:lang="en">Recording in Progress. Showing sideways in order to fit on your screen.</source>
+        <note>ID: PublishTab.RecordVideo.RecordingInProgressSideways</note>
+      </trans-unit>
+	  <trans-unit id="PublishTab.RecordVideo.TurnPageAfter">
+        <source xml:lang="en">Turn pages without narration after:</source>
+        <note>ID: PublishTab.RecordVideo.TurnPageAfter</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.RecordVideo.ScreenTooSmall">
+        <source xml:lang="en">Ideally, this video target should be {0}. However that is larger than your screen, so Bloom will produce a video that is {1}.</source>
+        <note>ID: PublishTab.RecordVideo.ScreenTooSmall</note>
+		<note>{0} will be replaced by the target resolution of the video. For example, "1920 x 1080".</note>
+		<note>{1} will be replaced by the actual resolution of the video. For example, "1280 x 720".</note>
+		<note>Please ensure that the translation includes the {0} and {1} placeholders in an appropriate location in the translated text.</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.RecordVideo.WillOpenProgram">
+        <source xml:lang="en">
+          This will open the program on your computer
+          that is associated with this file type.
+        </source>
+        <note>ID: PublishTab.RecordVideo.WillOpenProgram</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.RecordVideo.WillOpenRecordingWindow">
+        <source xml:lang="en">
+          This will open a window and play the whole
+          book. Bloom will record it to match the
+          “Format” option in the upper right of this
+          screen.
+        </source>
+        <note>ID: PublishTab.RecordVideo.WillOpenRecordingWindow</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.RecordVideo.YouTube">
+        <source xml:lang="en">YouTube</source>
+        <note>ID: PublishTab.RecordVideo.YouTube</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.RecordVideoButton">
+        <source xml:lang="en">Audio or Video</source>
+        <note>ID: PublishTab.RecordVideoButton</note>
+      </trans-unit>
+      -->
       <trans-unit id="PublishTab.PublishRequiresEnterprise.FirstOverlayPage">
         <source xml:lang="en">Page {0} is the first page that uses Overlay elements.</source>
         <note>ID: PublishTab.PublishRequiresEnterprise.FirstOverlayPage</note>
@@ -4920,6 +5248,7 @@
       <trans-unit id="PublishTab.Upload.Copyright">
         <source xml:lang="en">Copyright</source>
         <note>ID: PublishTab.Upload.Copyright</note>
+        <note>Obsolete as of Bloom 5.3 (replaced by Common.Copyright)</note>
         <target xml:lang="ksw" state="needs-translation">Copyright</target>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.Credits">
@@ -4946,6 +5275,33 @@
         <source xml:lang="en">Sorry, "{0}" was not successfully uploaded. Sometimes this is caused by temporary problems with the servers we use. It's worth trying again in an hour or two. If you regularly get this problem please report it to us.</source>
         <note>ID: PublishTab.Upload.FinalUploadFailureNotice</note>
         <target xml:lang="ksw" state="needs-translation">Sorry, "{0}" was not successfully uploaded. Sometimes this is caused by temporary problems with the servers we use. It's worth trying again in an hour or two. If you regularly get this problem please report it to us.</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.FontProblem">
+        <source xml:lang="en">This book has a font, “{0}”, which has the following problem:</source>
+        <note>ID: PublishTab.FontProblem</note>
+        <note>{0} is replaced by the name of the font.  Do not try to translate it.</note>
+        <target xml:lang="ksw" state="needs-translation">This book has a font, “{0}”, which has the following problem:</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.FontProblem.Exception">
+        <source xml:lang="en">The font's file cannot be processed by Bloom and may be corrupted or not a font file.</source>
+        <note>ID: PublishTab.FontProblem.Exception</note>
+        <target xml:lang="ksw" state="needs-translation">The font's file cannot be processed by Bloom and may be corrupted or not a font file.</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.FontProblem.Format">
+        <source xml:lang="en">Bloom cannot publish ebooks with this font's format ({0}).</source>
+        <note>ID: PublishTab.FontProblem.Format</note>
+        <note>{0} is replaced by the filename extension of the font (something like ".ttc").  Do not try to translate it.</note>
+        <target xml:lang="ksw" state="needs-translation">Bloom cannot publish ebooks with this font's format ({0}).</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.FontProblem.License">
+        <source xml:lang="en">The metadata inside this font tells us that it may not be embedded for free in ebooks and the web.</source>
+        <note>ID: PublishTab.FontProblem.License</note>
+        <target xml:lang="ksw" state="needs-translation">The metadata inside this font tells us that it may not be embedded for free in ebooks and the web.</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.FontProblem.Result">
+        <source xml:lang="en">BloomLibrary.org will display the PDF and allow downloads for translation, but cannot offer the “READ” button or downloads for BloomPUB or ePUB.</source>
+        <note>ID: PublishTab.FontProblem.Result</note>
+        <target xml:lang="ksw" state="needs-translation">BloomLibrary.org will display the PDF and allow downloads for translation, but cannot offer the “READ” button or downloads for BloomPUB or ePUB.</target>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.Gaurantee">
         <source xml:lang="en">By uploading, you confirm your agreement with the Bloom Library Terms of Use and grant the rights it describes.</source>
@@ -5277,6 +5633,12 @@ Do you want to go ahead?</note>
         <note>This is the dialog title</note>
         <target xml:lang="ksw" state="needs-translation">Is this an update of your existing book?</target>
       </trans-unit>
+      <!-- 5.3
+      <trans-unit id="PublishTab.VideoFile">
+        <source xml:lang="en">Video file</source>
+        <note>ID: PublishTab.VideoFile</note>
+      </trans-unit>
+      -->
       <trans-unit id="Quiz.CheckYourUnderstanding" sil:dynamic="true">
         <source xml:lang="en">Check Your Understanding</source>
         <note>ID: Quiz.CheckYourUnderstanding</note>
@@ -5761,13 +6123,6 @@ Do you want to go ahead?</note>
         <note>ID: RegisterDialog.WindowTitle</note>
         <note>Place a {0} where the name of the program goes.</note>
         <target xml:lang="ksw" state="needs-translation">Register {0}</target>
-      </trans-unit>
-      <trans-unit id="ReportProblemDialog.Close">
-        <source xml:lang="en">Close</source>
-        <note>ID: ReportProblemDialog.Close</note>
-        <note>Shown in the button that closes the dialog after a successful report submission.</note>
-        <note>Obsolete as of Bloom 5.0</note>
-        <target xml:lang="ksw" state="needs-translation">Close</target>
       </trans-unit>
       <trans-unit id="ReportProblemDialog.CouldNotSendToServer">
         <source xml:lang="en">Bloom was not able to submit your report directly to our server. Please retry or email {0} to {1}.</source>
