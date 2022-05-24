@@ -440,7 +440,7 @@
         <source xml:lang="en">You may adapt and add to this work, but you may distribute the resulting work only under the same or similar license to this one.</source>
         <note>ID: MetadataDisplay.Licenses.CreativeCommons.DerivativesWithShareAndShareAlike</note>
         <note>See http://creativecommons.org/ to find out how this is normally translated in your language. What we're aiming for here is an easy to understand summary.</note>
-        <target xml:lang="es-ES" state="final">Se puede adaptar y añadir a esta obra, pero la obra resultante solo se puede distribuir bajo una licencia igual o similar a esta.</target>
+        <target xml:lang="es-ES" state="final">Se puede adaptar y añadir algún contenido de esta obra. Sin embargo, la nueva producción solo se puede distribuir bajo una licencia igual o similar a esta.</target>
       </trans-unit>
       <trans-unit id="MetadataDisplay.Licenses.CreativeCommons.NoDerivatives" sil:dynamic="true" approved="yes">
         <source xml:lang="en">You may not make changes or build upon this work without permission.</source>
