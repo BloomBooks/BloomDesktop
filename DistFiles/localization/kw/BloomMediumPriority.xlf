@@ -2,13 +2,25 @@
 <xliff xmlns:sil="http://sil.org/software/XLiff" xmlns:html="http://www.w3.org/TR/html" xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
   <file original="BloomMediumPriority.exe" source-language="en" datatype="plaintext" product-version="3.1.000.0" sil:hard-linebreak-replacement="\n" target-language="kw">
     <header>
-      <note>This file is not yet being used.  We are in the process of moving strings from Bloom.xlf to BloomMediumPriority.xlf and BloomLowPriority.xlf while trying very hard to preserve translations and approval status.</note>
+      <note>We are in the process of moving strings from Bloom.xlf to BloomMediumPriority.xlf and BloomLowPriority.xlf while trying very hard to preserve translations and approval status.</note>
     </header>
     <body>
       <trans-unit id="ReaderSetup.SentencePunctuation.Header" sil:dynamic="true">
         <source xml:lang="en">Special Sentence-Ending Punctuation</source>
         <note>ID: ReaderSetup.SentencePunctuation.Header</note>
         <target xml:lang="kw" state="needs-translation">Special Sentence-Ending Punctuation</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.RecordVideo.NotOnLinux" sil:dynamic="true">
+        <source xml:lang="en">Not available on Linux</source>
+        <note>ID: PublishTab.RecordVideo.NotOnLinux</note>
+        <note>"Linux" is an operating system name which may not translate.</note>
+        <target xml:lang="kw" state="needs-translation">Not available on Linux</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.RecordVideo.ApologiesForNoLinux" sil:dynamic="true">
+        <source xml:lang="en">This feature is available only on the Windows version of Bloom. We apologize for the inconvenience.</source>
+        <note>ID: PublishTab.RecordVideo.ApologiesForNoLinux</note>
+        <note>"Windows" and "Linux" are operating system names which may not translate.</note>
+        <target xml:lang="kw" state="needs-translation">This feature is available only on the Windows version of Bloom. We apologize for the inconvenience.</target>
       </trans-unit>
     </body>
   </file>

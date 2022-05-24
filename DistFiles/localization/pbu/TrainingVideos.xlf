@@ -95,15 +95,22 @@
         <target xml:lang="pbu" state="final">که تاسو غواړئ چې هره یوه له دې ویډیو ګانو څخه ښکته کړئ څو د انټرنېټ د نه شتون په وخت کې يې ښکاره او شریکه کړئ، نو تاسو کولی شئ ویډیو ګانې خپل کمپیوټر ته ښکته کړئ:</target>
         <note>ID: training.videos.download</note>
       </trans-unit>
+      <trans-unit id="training.videos.download.2">
+        <source xml:lang="en">Under the video that you want to download, there should be a Download button.</source>
+        <target xml:lang="pbu" state="needs-translation">Under the video that you want to download, there should be a Download button.</target>
+        <note>ID: training.videos.download.2</note>
+      </trans-unit>
       <trans-unit id="training.videos.hires" approved="yes">
         <source xml:lang="en"><g id="genid-10" ctype="x-html-a" html:href="http://tiny.cc/bloomHDVideos">High Resolution</g> (Large files)</source>
         <target xml:lang="pbu" state="final"><g id="genid-10" ctype="x-html-a" html:href="http://tiny.cc/bloomHDVideos">لوړ کیفیت</g> (غټ فایلونه)</target>
         <note>ID: training.videos.hires</note>
+        <note>Obsolete for Bloom 5.3</note>
       </trans-unit>
       <trans-unit id="training.videos.lores" approved="yes">
         <source xml:lang="en"><g id="genid-11" ctype="x-html-a" html:href="http://tiny.cc/bloomSDVideos">Low Resolution</g> (Smaller files)</source>
         <target xml:lang="pbu" state="final"><g id="genid-11" ctype="x-html-a" html:href="http://tiny.cc/bloomSDVideos">ټیټ کیفیت</g> (واړه فایلونه)</target>
         <note>ID: training.videos.lores</note>
+        <note>Obsolete for Bloom 5.3</note>
       </trans-unit>
     </body>
   </file>
