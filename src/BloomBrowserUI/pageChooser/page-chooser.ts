@@ -228,20 +228,23 @@ export class PageChooser {
         const currentTranslationGroupCount = this.countTranslationGroupsForChangeLayout(
             current
         );
-        const currentPictureCount = current.getElementsByClassName(
+        const currentPictureCount = this.countEltsOfClassNotInImageContainer(
+            current,
             "bloom-imageContainer"
-        ).length;
+        );
         // ".bloom-videoContainer:not(.bloom-noVideoSelected)" is not working reliably as a selector.
         // It's also insufficient if we allow the user to change multiple pages at once to look at
         // only the current page for content.  Not checking for actual video content matches what is
         // done for text and pictures, and means that the check is equally valid for any number of
         // pages with the same layout.  See https://issues.bloomlibrary.org/youtrack/issue/BL-6921.
-        const currentVideoCount = current.getElementsByClassName(
+        const currentVideoCount = this.countEltsOfClassNotInImageContainer(
+            current,
             "bloom-videoContainer"
-        ).length;
-        const currentWidgetCount = current.getElementsByClassName(
+        );
+        const currentWidgetCount = this.countEltsOfClassNotInImageContainer(
+            current,
             "bloom-widgetContainer"
-        ).length;
+        );
 
         return (
             selectedTemplateTranslationGroupCount <
@@ -572,21 +575,24 @@ export class PageChooser {
             );
             currentGridItemHtml.setAttribute(
                 "data-pictureCount",
-                currentPageDiv
-                    .getElementsByClassName("bloom-imageContainer")
-                    .length.toString()
+                this.countEltsOfClassNotInImageContainer(
+                    currentPageDiv,
+                    "bloom-imageContainer"
+                ).toString()
             );
             currentGridItemHtml.setAttribute(
                 "data-videoCount",
-                currentPageDiv
-                    .getElementsByClassName("bloom-videoContainer")
-                    .length.toString()
+                this.countEltsOfClassNotInImageContainer(
+                    currentPageDiv,
+                    "bloom-videoContainer"
+                ).toString()
             );
             currentGridItemHtml.setAttribute(
                 "data-widgetCount",
-                currentPageDiv
-                    .getElementsByClassName("bloom-widgetContainer")
-                    .length.toString()
+                this.countEltsOfClassNotInImageContainer(
+                    currentPageDiv,
+                    "bloom-widgetContainer"
+                ).toString()
             );
             const helpLink = currentPageDiv.getAttribute("help-link");
             if (helpLink) {
@@ -713,6 +719,24 @@ export class PageChooser {
             );
         }
     } // loadPageFromGroup
+
+    private countEltsOfClassNotInImageContainer(
+        currentPageDiv: HTMLElement,
+        className: string
+    ): number {
+        return (
+            (Array.from(
+                currentPageDiv.getElementsByClassName(className)
+            ) as HTMLElement[])
+                // filter out the ones inside an image container (but not ones that ARE image containers,
+                // since that might be the class we're looking for.)
+                .filter(
+                    e =>
+                        e.parentElement?.closest(".bloom-imageContainer") ===
+                        null
+                ).length
+        );
+    }
 
     // We want to count all the translationGroups that do not occur inside of a bloom-imageContainer div.
     // The reason for this is that images can have textOverPicture divs and imageDescription divs inside of them

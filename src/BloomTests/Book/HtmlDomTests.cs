@@ -1149,20 +1149,30 @@ p {
 		}
 
 		[Test]
-		public void MigrateChildren_MigratesTextOverPicture_DoesNotLoseText()
+		public void MigrateChildren_MigratesOverlays_DoesNotLoseOverlays()
 		{
+			// The original has two images, two translation groups, a video, and a widget, in the order picture, text, video, widget, text, picture.
+			// The image contains text, video, image, and widget overlays.
 			var pageDom = new HtmlDom(@"<html><head></head><body>
 					<div class='bloom-page' id='pageGuid'>
 						<div class='split-pane-component-inner'>
-							<div class='bloom-translationGroup'>
-								<div class='bloom-editable ' contenteditable='true' lang='en'>First text contents</div>
-							</div>
 							<div class='bloom-imageContainer'>
 								<div class='bloom-textOverPicture'>
 									<div class='bloom-translationGroup'>
 										<div class='bloom-editable'>
 											<p>Text over picture text</p>
 										</div>
+									</div>
+									<div class='bloom-videoContainer'>
+										<video>
+											<source src='video/videoGuidOverlay.mp4' type='video/mp4'></source>
+										</video>
+									</div>
+									<div class='bloom-imageContainer'>
+										<img src='myImageFileOverlay.png'></img>
+									</div>
+									<div class='bloom-widgetContainer'>
+										<iframe src='activities/balldragTouch/indexOverlay.html'>Must have a closing tag in HTML</iframe>
 									</div>
 								</div>
 								<img src='myImageFile.png'></img>
@@ -1176,27 +1186,48 @@ p {
 						<div class='split-pane-divider vertical-divider'></div>
 						<div class='split-pane-component-inner'>
 							<div class='bloom-translationGroup'>
+								<div class='bloom-editable ' contenteditable='true' lang='en'>First text contents</div>
+							</div>
+							<div class='bloom-videoContainer'>
+								<video>
+									<source src='video/videoGuid.mp4' type='video/mp4'></source>
+								</video>
+							</div>
+							<div class='bloom-widgetContainer'>
+								<iframe src='activities/balldragTouch/index.html'>Must have a closing tag in HTML</iframe>
+							</div>
+							<div class='bloom-translationGroup'>
 								<div class='bloom-editable ' contenteditable='true' lang='en'>Second text contents</div>
+							</div>
+							<div class='bloom-imageContainer'>
+								<img src='myImageFile2.png'></img>
 							</div>
 						</div>
 					</div>
 				</body></html>");
+			// The output has slots for a widget, video, text, image, another text, and another image.
+			// We particularly want to check that the overlay items are not moved to the top level, but preserved
+			// as overlays of the moved image.
 			var templateDom = new HtmlDom(@"<html><head></head><body>
 					<div class='bloom-page' id='templateGuid'>
 						<div class='split-pane-component-inner'>
-							<div class='bloom-videoContainer bloom-noVideoSelected' />
+							<div id='outerWidget' class='bloom-widgetContainer'></div>
+							<div id='outerVideo' class='bloom-videoContainer bloom-noVideoSelected' />
 							<div class='bloom-translationGroup'>
 								<div class='bloom-editable ' contenteditable='true' lang='en'></div>
 							</div>
 						</div>
 						<div class='split-pane-component-inner'>
-							<div title='placeHolder.png' class='bloom-imageContainer'>
+							<div id='overlaySlot' title='placeHolder.png' class='bloom-imageContainer'>
 								<img src='placeHolder.png' alt=''></img>
 							</div>
 						</div>
 						<div class='split-pane-component-inner'>
 							<div class='bloom-translationGroup'>
 								<div class='bloom-editable ' contenteditable='true' lang='en'></div>
+							</div>
+							<div id='imageSlot2' title='placeHolder.png' class='bloom-imageContainer'>
+								<img src='placeHolder.png' alt=''></img>
 							</div>
 						</div>
 					</div>
@@ -1211,17 +1242,27 @@ p {
 
 			// Verification
 			Assert.That(didChange, Is.True);
-			AssertThatXmlIn.Dom(pageDom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@data-pagelineage='someGuid']", 1);
+			var assertThatOutput = AssertThatXmlIn.Dom(pageDom.RawDom);
+			assertThatOutput.HasSpecifiedNumberOfMatchesForXpath("//div[@data-pagelineage='someGuid']", 1);
 			var firstTextXpath = "//div[contains(@class,'bloom-editable') and text()='First text contents']";
 			var secondTextXpath = "//div[contains(@class,'bloom-editable') and text()='Second text contents']";
 			var topTextXpath = "//div[contains(@class,'bloom-imageContainer')]//div[contains(@class,'bloom-editable')]/p[text()='Text over picture text']";
 			var imageDescXpath = "//div[contains(@class,'bloom-imageContainer')]/div[contains(@class,'bloom-imageDescription')]//p[text()='Image description text']";
-			AssertThatXmlIn.Dom(pageDom.RawDom).HasNoMatchForXpath("//div[@id='templateGuid']");
-			AssertThatXmlIn.Dom(pageDom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@id='pageGuid']", 1);
-			AssertThatXmlIn.Dom(pageDom.RawDom).HasSpecifiedNumberOfMatchesForXpath(firstTextXpath, 1);
-			AssertThatXmlIn.Dom(pageDom.RawDom).HasSpecifiedNumberOfMatchesForXpath(secondTextXpath, 1);
-			AssertThatXmlIn.Dom(pageDom.RawDom).HasSpecifiedNumberOfMatchesForXpath(topTextXpath, 1);
-			AssertThatXmlIn.Dom(pageDom.RawDom).HasSpecifiedNumberOfMatchesForXpath(imageDescXpath, 1);
+			assertThatOutput.HasNoMatchForXpath("//div[@id='templateGuid']");
+			assertThatOutput.HasSpecifiedNumberOfMatchesForXpath("//div[@id='pageGuid']", 1);
+			assertThatOutput.HasSpecifiedNumberOfMatchesForXpath(firstTextXpath, 1);
+			assertThatOutput.HasSpecifiedNumberOfMatchesForXpath(secondTextXpath, 1);
+			assertThatOutput.HasSpecifiedNumberOfMatchesForXpath(topTextXpath, 1);
+			assertThatOutput.HasSpecifiedNumberOfMatchesForXpath(imageDescXpath, 1);
+			// second image slot should be filled from second top-level input image, not from overlay
+			// likewise for video and widget
+			assertThatOutput.HasSpecifiedNumberOfMatchesForXpath("//div[@id='imageSlot2']/img[@src='myImageFile2.png']", 1);
+			assertThatOutput.HasSpecifiedNumberOfMatchesForXpath("//div[@id='outerWidget']/iframe[@src='activities/balldragTouch/index.html']", 1);
+			assertThatOutput.HasSpecifiedNumberOfMatchesForXpath("//div[@id='outerVideo']/video/source[@src='video/videoGuid.mp4']", 1);
+			// overlays should become overlays of first image
+			assertThatOutput.HasSpecifiedNumberOfMatchesForXpath("//div[@id='overlaySlot']//img[@src='myImageFileOverlay.png']", 1);
+			assertThatOutput.HasSpecifiedNumberOfMatchesForXpath("//div[@id='overlaySlot']//iframe[@src='activities/balldragTouch/indexOverlay.html']", 1);
+			assertThatOutput.HasSpecifiedNumberOfMatchesForXpath("//div[@id='overlaySlot']//video/source[@src='video/videoGuidOverlay.mp4']", 1);
 		}
 
 		[Test]
