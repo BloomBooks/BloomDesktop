@@ -310,6 +310,7 @@ namespace BloomTests.Book
 			var dom = book.RawDom;// book.GetEditableHtmlDomForPage(book.GetPages().First());
 			var textarea1 = dom.SelectSingleNodeHonoringDefaultNS("//textarea[@id='2' and @lang='xyz']");
 			textarea1.InnerText = "peace";
+			book.BookData.SuckInDataFromEditedDom(new HtmlDom(dom.SelectSingleNode("//div[@id='guid1']").OuterXml));
 			book.BringBookUpToDate(new NullProgress());
 			var textarea2 = dom.SelectSingleNodeHonoringDefaultNS("//textarea[@idc='copyOfVTitle'  and @lang='xyz']");
 			Assert.AreEqual("peace", textarea2.InnerText);
@@ -1740,6 +1741,9 @@ namespace BloomTests.Book
 					<link rel='stylesheet' href='../../previewMode.css' type='text/css' />;
 				</head>
 				<body>
+					<div id='bloomDataDiv'>
+						<div data-book='bookTitle' lang='en'>my nice title</div>
+					</div>
 					<div class='bloom-page'>
 						<div class='bloom-page' id='guid2'>
 							<textarea lang='en' data-book='bookTitle'>my nice title</textarea>
