@@ -365,62 +365,64 @@ namespace Bloom.Publish
 					}
 				}
 
-				using (var dlg = new DialogAdapters.SaveFileDialogAdapter())
+				var portion = "";
+				switch (BookletPortion)
 				{
-					if (!string.IsNullOrEmpty(_lastDirectory) && Directory.Exists(_lastDirectory))
-						dlg.InitialDirectory = _lastDirectory;
-					var portion = "";
-					switch (BookletPortion)
-					{
-						case BookletPortions.None:
-							Debug.Fail("Save should not be enabled");
-							return;
-						case BookletPortions.AllPagesNoBooklet:
-							portion = "Pages";
-							break;
-						case BookletPortions.BookletCover:
-							portion = "Cover";
-							break;
-						case BookletPortions.BookletPages:
-							portion = "Inside";
-							break;
-						default:
-							throw new ArgumentOutOfRangeException();
-					}
-
-					string forPrintShop =
-						_currentlyLoadedBook.UserPrefs.CmykPdf || _currentlyLoadedBook.UserPrefs.FullBleed
-							? "-printshop"
-							: "";
-					string suggestedName = string.Format($"{Path.GetFileName(_currentlyLoadedBook.FolderPath)}-{_currentlyLoadedBook.GetFilesafeLanguage1Name("en")}-{portion}{forPrintShop}.pdf");
-					dlg.FileName = suggestedName;
-					var pdfFileLabel = L10NSharp.LocalizationManager.GetString(@"PublishTab.PdfMaker.PdfFile",
-						"PDF File",
-						@"displayed as file type for Save File dialog.");
-
-					pdfFileLabel = pdfFileLabel.Replace("|", "");
-					dlg.Filter = String.Format("{0}|*.pdf", pdfFileLabel);
-					dlg.OverwritePrompt = true;
-					if (DialogResult.OK == dlg.ShowDialog())
-					{
-						_lastDirectory = Path.GetDirectoryName(dlg.FileName);
-						if (_currentlyLoadedBook.UserPrefs.CmykPdf)
-						{
-							// PDF for Printshop (CMYK US Web Coated V2)
-							ProcessPdfFurtherAndSave(ProcessPdfWithGhostscript.OutputType.Printshop, dlg.FileName);
-						} else {
-							// we want the simple PDF we already made.
-							RobustFile.Copy(PdfFilePath, dlg.FileName, true);
-						}
-						Analytics.Track("Save PDF", new Dictionary<string, string>()
-							{
-								{"Portion",  Enum.GetName(typeof(BookletPortions), BookletPortion)},
-								{"Layout", PageLayout.ToString()},
-								{"BookId", BookSelection.CurrentSelection.ID },
-								{"Country", _collectionSettings.Country}
-							});
-					}
+					case BookletPortions.None:
+						Debug.Fail("Save should not be enabled");
+						return;
+					case BookletPortions.AllPagesNoBooklet:
+						portion = "Pages";
+						break;
+					case BookletPortions.BookletCover:
+						portion = "Cover";
+						break;
+					case BookletPortions.BookletPages:
+						portion = "Inside";
+						break;
+					default:
+						throw new ArgumentOutOfRangeException();
 				}
+				string forPrintShop =
+					_currentlyLoadedBook.UserPrefs.CmykPdf || _currentlyLoadedBook.UserPrefs.FullBleed
+						? "-printshop"
+						: "";
+				string suggestedName = string.Format($"{Path.GetFileName(_currentlyLoadedBook.FolderPath)}-{_currentlyLoadedBook.GetFilesafeLanguage1Name("en")}-{portion}{forPrintShop}.pdf");
+				var pdfFileLabel = L10NSharp.LocalizationManager.GetString(@"PublishTab.PdfMaker.PdfFile",
+					"PDF File",
+					@"displayed as file type for Save File dialog.");
+
+				pdfFileLabel = pdfFileLabel.Replace("|", "");
+				var pdfFilter = String.Format("{0}|*.pdf", pdfFileLabel);
+
+				var startingFolder = (!string.IsNullOrEmpty(_lastDirectory) && Directory.Exists(_lastDirectory)) ?
+							_lastDirectory :
+							Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+				var initialPath = Path.Combine(startingFolder, suggestedName);
+				var collectionFolder = Path.GetDirectoryName(BookSelection.CurrentSelection.FolderPath);
+
+				var destFileName = Utils.MiscUtils.GetOutputFilePathOutsideCollectionFolder(initialPath, pdfFilter, collectionFolder);
+				if (String.IsNullOrEmpty(destFileName))
+					return;
+
+				_lastDirectory = Path.GetDirectoryName(destFileName);
+				if (_currentlyLoadedBook.UserPrefs.CmykPdf)
+				{
+					// PDF for Printshop (CMYK US Web Coated V2)
+					ProcessPdfFurtherAndSave(ProcessPdfWithGhostscript.OutputType.Printshop, destFileName);
+				}
+				else
+				{
+					// we want the simple PDF we already made.
+					RobustFile.Copy(PdfFilePath, destFileName, true);
+				}
+				Analytics.Track("Save PDF", new Dictionary<string, string>()
+								{
+									{"Portion",  Enum.GetName(typeof(BookletPortions), BookletPortion)},
+									{"Layout", PageLayout.ToString()},
+									{"BookId", BookSelection.CurrentSelection.ID },
+									{"Country", _collectionSettings.Country}
+								});
 			}
 			catch (Exception err)
 			{

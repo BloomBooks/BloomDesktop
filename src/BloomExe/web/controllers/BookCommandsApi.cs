@@ -274,29 +274,36 @@ namespace Bloom.web.controllers
 
 		private void HandleMakeBloompack(Book.Book book)
 		{
-			using (var dlg = new DialogAdapters.SaveFileDialogAdapter())
-			{
-				var extension = Path.GetExtension(_collectionModel.GetSuggestedBloomPackPath());
-				var filename = book.Storage.FolderName;
-				dlg.FileName = $"{book.Storage.FolderName}{extension}";
-				dlg.Filter = "BloomPack|*.BloomPack";
-				dlg.RestoreDirectory = true;
-				dlg.OverwritePrompt = true;
-				if (DialogResult.Cancel == dlg.ShowDialog())
-				{
-					return;
-				}
-				_collectionModel.MakeSingleBookBloomPack(dlg.FileName, book.Storage.FolderPath);
-			}
+			string chosenFilename = GetOutputFileOutsideBookFolder(".BloomPack", "BloomPack files|*.BloomPack|All files (*.*)|*.*", book.Storage);
+			if (String.IsNullOrEmpty(chosenFilename))
+				return;
+			_collectionModel.MakeSingleBookBloomPack(chosenFilename, book.Storage.FolderPath);
+		}
+
+		public string GetOutputFileOutsideBookFolder(string defaultExtension, string filter, IBookStorage bookStorage)
+		{
+			var folder = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+			if (!string.IsNullOrEmpty(_previousTargetSaveAs) && Directory.Exists(_previousTargetSaveAs))
+				folder = _previousTargetSaveAs;
+			var initialPath = Path.Combine(folder, bookStorage.FolderName + defaultExtension);
+			var collectionFolder = Path.GetDirectoryName(bookStorage.FolderPath);
+
+			var destFileName = Utils.MiscUtils.GetOutputFilePathOutsideCollectionFolder(initialPath, filter, collectionFolder);
+
+			if (!String.IsNullOrEmpty(destFileName))
+				_previousTargetSaveAs = Path.GetDirectoryName(destFileName);
+			return destFileName;
 		}
 
 		private void HandleExportToWord(Book.Book book)
 		{
 			try
 			{
+				var destPath = GetOutputFileOutsideBookFolder(".doc", "Document files|*.doc|All files (*.*)|*.*", book.Storage);
+				if (String.IsNullOrEmpty(destPath))
+					return;
 				MessageBox.Show(LocalizationManager.GetString("CollectionTab.BookMenu.ExportDocMessage",
 					"Bloom will now open this HTML document in your word processing program (normally Word or LibreOffice). You will be able to work with the text and images of this book. These programs normally don't do well with preserving the layout, so don't expect much."));
-				var destPath = book.GetPathHtmlFile().Replace(".htm", ".doc");
 				_collectionModel.ExportDocFormat(destPath);
 				PathUtilities.OpenFileInApplication(destPath);
 				Analytics.Track("Exported To Doc format");
@@ -321,33 +328,14 @@ namespace Bloom.web.controllers
 
 		internal void HandleSaveAsDotBloomSource(Book.Book book)
 		{
-			const string bloomFilter = "Bloom files (*.bloomSource)|*.bloomSource|All files (*.*)|*.*";
-
 			HandleBringBookUpToDate(book);
 
-			var srcFolderName = book.StoragePageFolder;
-
-			// Save As dialog, initially proposing My Documents, then defaulting to last target folder
-			// Review: Do we need to persist this to some settings somewhere, or just for the current run?
-			var dlg = new SaveFileDialog
-			{
-				AddExtension = true,
-				OverwritePrompt = true,
-				DefaultExt = "bloomSource",
-				FileName = Path.GetFileName(srcFolderName),
-				Filter = bloomFilter,
-				InitialDirectory = _previousTargetSaveAs != null ?
-					_previousTargetSaveAs :
-					Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments)
-			};
-			var result = dlg.ShowDialog(Form.ActiveForm);
-			if (result != DialogResult.OK)
+			const string bloomFilter = "Bloom Source files (*.bloomSource)|*.bloomSource|All files (*.*)|*.*";
+			var destFileName = GetOutputFileOutsideBookFolder(".bloomSource", bloomFilter, book.Storage);
+			if (String.IsNullOrEmpty(destFileName))
 				return;
 
-			var destFileName = dlg.FileName;
-			_previousTargetSaveAs = Path.GetDirectoryName(destFileName);
-
-			if (!CollectionModel.SaveAsBloomSourceFile(srcFolderName, destFileName, out var exception))
+			if (!CollectionModel.SaveAsBloomSourceFile(book.StoragePageFolder, destFileName, out var exception))
 			{
 				// Purposefully not adding to the L10N burden...
 				NonFatalProblem.Report(ModalIf.All, PassiveIf.None,
