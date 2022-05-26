@@ -42,5 +42,7 @@ namespace Bloom.MiscUI
 		public string Id;
 		[JsonProperty("default")]
 		public bool Default;
+		[JsonProperty("style")]
+		public string Style; // Currently allowed options: contained, text, outlined
 	}
 }

@@ -1,9 +1,13 @@
 /// <reference path="../../typings/jquery/jquery.d.ts" />
 /// <reference path="../../typings/ckeditor/ckeditor.d.ts" />
 
+import React = require("react");
+import ReactDOM = require("react-dom");
 import AudioRecording from "../toolbox/talkingBook/audioRecording";
 import { BloomApi } from "../../utils/bloomApi";
 import theOneLocalizationManager from "../../lib/localizationManager/localizationManager";
+import { BloomMessageBox } from "../../utils/BloomMessageBox";
+import { getEditTabBundleExports } from "../js/bloomFrames";
 
 // This class is actually just a group of static functions with a single public method. It does whatever we need to to make Firefox's contenteditable
 // element have the behavior we need.
@@ -203,8 +207,24 @@ export default class BloomField {
                                 "Bloom was not able to make a link. Try selecting only simple text.",
                                 "Shows when a hyperlink cannot be pasted due to invalid selection."
                             )
-                            .done(translatedText => {
-                                alert(translatedText);
+                            .done((pasteFailureMsg: string) => {
+                                theOneLocalizationManager
+                                    .asyncGetText(
+                                        "Common.LearnMore",
+                                        "Learn More",
+                                        "A link or button that leads to something that tells the user more about what they just read."
+                                    )
+                                    .done((learnMoreText: string) => {
+                                        theOneLocalizationManager
+                                            .asyncGetText("Common.OK", "OK", "")
+                                            .done(okText =>
+                                                BloomField.ShowMessageBox(
+                                                    pasteFailureMsg,
+                                                    learnMoreText,
+                                                    okText
+                                                )
+                                            );
+                                    });
                             });
                     }
                 });
@@ -223,6 +243,55 @@ export default class BloomField {
         // This makes it easy to find the right editor instance. There may be some ckeditor built-in way, but
         // I wasn't able to find one.
         (<any>bloomEditableDiv).bloomCkEditor = ckeditor;
+    }
+
+    private static ShowMessageBox(
+        pasteFailureMsg: string,
+        learnMoreText: string,
+        okText: string
+    ) {
+        const container = getEditTabBundleExports().getModalDialogContainer();
+        if (!container) {
+            // Fallback to alert
+            alert(pasteFailureMsg);
+            return;
+        }
+        ReactDOM.render(
+            React.createElement(BloomMessageBox, {
+                messageHtml: pasteFailureMsg,
+                icon: "warning",
+                rightButtons: [
+                    {
+                        text: okText,
+                        id: "OKButton",
+                        default: true,
+                        style: "contained"
+                    }
+                ],
+                leftButton: {
+                    text: learnMoreText,
+                    id: "MoreButton",
+                    default: false,
+                    style: "text"
+                },
+                dialogEnvironment: {
+                    dialogFrameProvidedExternally: false,
+                    initiallyOpen: true
+                },
+                fromTypescript: true,
+                buttonClicked: this.gotoShowMoreLink
+            }),
+            container
+        );
+    }
+
+    private static gotoShowMoreLink(buttonId: string) {
+        if (buttonId !== "MoreButton") return;
+        BloomApi.postString(
+            "externalLinkGeneric",
+            //"https://docs.google.com/document/d/1GCEc74vra5s_mBcUb4psrAJZwSAfVc3AXEpzKRnpVCc/edit?usp=sharing"
+            "https://docs.google.com/document/d/1GCEc74vra5s_mBcUb4psrAJZwSAfVc3AXEpzKRnpVCc/edit"
+        );
     }
 
     // If the original clipboard had no paragraph markup, but only (plain text) newlines (\n)

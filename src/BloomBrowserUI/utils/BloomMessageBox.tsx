@@ -9,6 +9,7 @@ import WarningOutlinedIcon from "@material-ui/icons/WarningOutlined";
 import {
     BloomDialog,
     DialogBottomButtons,
+    DialogBottomLeftButtons,
     DialogMiddle,
     DialogTitle
 } from "../react_components/BloomDialog/BloomDialog";
@@ -21,6 +22,7 @@ export interface MessageBoxButton {
     text: string;
     id: string;
     default: boolean; // Only one button should have this true
+    style: "contained" | "text" | "outlined";
 }
 
 // Designed to be a partial replacement for a WinForms messageBox, both from C# and Typescript (eventually...needs work).
@@ -28,12 +30,14 @@ export interface MessageBoxButton {
 export const BloomMessageBox: React.FunctionComponent<{
     messageHtml: string; // The localized message to notify the user about. Can contain HTML.
     rightButtons: MessageBoxButton[];
+    leftButton?: MessageBoxButton;
     icon?: "warning" | undefined; // Effectively an enumeration, which we will add to as needed
     dialogEnvironment?: IBloomDialogEnvironmentParams;
+    fromTypescript?: boolean; // If undefined, the request came from C#-land and the response is via api.
     // For use from Typescript, provide a callback to invoke when a button is clicked?
     // Probably also need a way to control whether it is open.
     // And maybe turn off the BloomApi behavior.
-    // callback? : (messageId: string, buttonId:string) => void
+    buttonClicked?: (buttonId: string) => void;
 }> = props => {
     const {
         showDialog,
@@ -42,10 +46,16 @@ export const BloomMessageBox: React.FunctionComponent<{
     } = useSetupBloomDialog(props.dialogEnvironment);
 
     const closeDialogForButton = buttonId => {
-        // Enhance: do something else if called from Typescript. Close the dialog and somehow
-        // report what was clicked.
-        BloomApi.postString("common/closeReactDialog", buttonId);
+        if (props.fromTypescript) {
+            closeDialog();
+            if (props.buttonClicked) {
+                props.buttonClicked(buttonId);
+            }
+        } else {
+            BloomApi.postString("common/closeReactDialog", buttonId);
+        }
     };
+
     const rightButtons = props.rightButtons.map(button => (
         <BloomButton
             className={button.default ? "initialFocus" : ""}
@@ -54,13 +64,35 @@ export const BloomMessageBox: React.FunctionComponent<{
             l10nKey=""
             alreadyLocalized={true}
             hasText={true}
-            variant={button.default ? "contained" : "outlined"}
+            variant={button.style}
             onClick={() => closeDialogForButton(button.id)}
-            disableRipple // I have nothing against ripple, but when a default buttons shows with a ripple even though your'e not clicking or even pointing at it... it looks dumb.
+            // I have nothing against ripple, but when a default button shows with a ripple even though
+            // you're not clicking or even pointing at it... it looks dumb.
+            disableRipple
         >
             {button.text}
         </BloomButton>
     ));
+
+    const leftButton = props.leftButton ? (
+        <DialogBottomLeftButtons>
+            <BloomButton
+                className={""}
+                key={props.leftButton.id}
+                enabled={true}
+                l10nKey=""
+                alreadyLocalized={true}
+                hasText={true}
+                variant={props.leftButton.style}
+                onClick={() => closeDialogForButton(props.leftButton!.id)}
+                disableRipple
+            >
+                {props.leftButton.text}
+            </BloomButton>
+        </DialogBottomLeftButtons>
+    ) : (
+        undefined
+    );
 
     return (
         <BloomDialog {...propsForBloomDialog}>
@@ -74,7 +106,6 @@ export const BloomMessageBox: React.FunctionComponent<{
                     `}
                 >
                     {/* InnerHTML is used so that we can insert markup like <br> into the message. */}
-
                     {props.icon === "warning" && (
                         <WarningOutlinedIcon
                             css={css`
@@ -96,7 +127,10 @@ export const BloomMessageBox: React.FunctionComponent<{
                     />
                 </div>
             </DialogMiddle>
-            <DialogBottomButtons>{rightButtons}</DialogBottomButtons>
+            <DialogBottomButtons>
+                {props.leftButton && leftButton}
+                {rightButtons}
+            </DialogBottomButtons>
         </BloomDialog>
     );
 };

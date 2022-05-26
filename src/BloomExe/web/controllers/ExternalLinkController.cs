@@ -18,6 +18,9 @@ namespace Bloom.web
 		{
 			// Opening a page, better be in UI thread.
 			apiHandler.RegisterEndpointLegacy(kPrefix+"/.*", HandleRequest, true);
+			// This one is for links to Google Drive docs, or (eventually) the new online documentation
+			// system.
+			apiHandler.RegisterEndpointHandler(kPrefix+"Generic", HandleGenericLink, true);
 		}
 
 		/// <summary>
@@ -50,6 +53,26 @@ namespace Bloom.web
 			var urlToOpenInExternalBrowser = $"http://localhost:{BloomServer.portForHttp}/bloom/{cleanUrl}";
 			SIL.Program.Process.SafeStart(urlToOpenInExternalBrowser);
 			request.ExternalLinkSucceeded();
+		}
+
+		public static void HandleGenericLink(ApiRequest request)
+		{
+			if (request.HttpMethod == HttpMethods.Post)
+			{
+				var linkUrl = request.RequiredPostString();
+				if (!string.IsNullOrEmpty(linkUrl))
+				{
+					SIL.Program.Process.SafeStart(linkUrl);
+					request.ExternalLinkSucceeded();
+					return;
+				}
+				request.Failed("RequiredPostString was empty.");
+			}
+			else
+			{
+				System.Diagnostics.Debug.Fail("This should be a 'get'.");
+				request.PostSucceeded();
+			}
 		}
 	}
 }
