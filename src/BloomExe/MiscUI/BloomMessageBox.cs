@@ -18,8 +18,10 @@ namespace Bloom.MiscUI
 			using (var dlg = new ReactDialog("messageBoxBundle", new
 			{
 				messageHtml,
-				rightButtons,
-				icon = icon.ToString().ToLowerInvariant()
+				rightButtonDefinitions = rightButtons,
+				icon = icon.ToString().ToLowerInvariant(),
+				closeWithAPICall = true
+
 			}))
 			{
 				dlg.Width = 500;
@@ -42,5 +44,7 @@ namespace Bloom.MiscUI
 		public string Id;
 		[JsonProperty("default")]
 		public bool Default;
+		[JsonProperty("style")]
+		public string Style; // Currently allowed options: contained, text, outlined
 	}
 }

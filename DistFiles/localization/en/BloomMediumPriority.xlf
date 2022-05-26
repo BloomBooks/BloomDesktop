@@ -2,13 +2,23 @@
 <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:sil="http://sil.org/software/XLiff" xmlns:html="http://www.w3.org/TR/html" version="1.2">
   <file original="BloomMediumPriority.exe" source-language="en" datatype="plaintext" product-version="3.1.000.0" sil:hard-linebreak-replacement="\n">
     <header>
-      <note>This file is not yet being used.  We are in the process of moving strings from Bloom.xlf to BloomMediumPriority.xlf and BloomLowPriority.xlf while trying very hard to preserve translations and approval status.</note>
+      <note>We are in the process of moving strings from Bloom.xlf to BloomMediumPriority.xlf and BloomLowPriority.xlf while trying very hard to preserve translations and approval status.</note>
     </header>
     <body>
       <trans-unit id="ReaderSetup.SentencePunctuation.Header" sil:dynamic="true">
         <source xml:lang="en">Special Sentence-Ending Punctuation</source>
         <note>ID: ReaderSetup.SentencePunctuation.Header</note>
       </trans-unit>
+      <trans-unit id="hyperlink.2">
+        <source xml:lang="en">In this context, "simple" text means text that is selected from within a single paragraph and is not associated with multiple audio recordings or split audio segments. Also certain selections involving formatted text can be a problem if the whole word is not selected.</source>
+        <note>ID: hyperlink.2</note>
+        <note>Text of help document that shows after clicking "Learn More".</note>
+      </trans-unit>
+      <trans-unit id="hyperlink.title">
+        <source xml:lang="en">Can't Paste Hyperlink</source>
+        <note>ID: hyperlink.title</note>
+        <note>Title of help document that shows after clicking "Learn More".</note>
+       </trans-unit>
     </body>
   </file>
 </xliff>
