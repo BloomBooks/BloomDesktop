@@ -339,5 +339,58 @@ namespace Bloom.Utils
 				return sb.ToString();
 			}
 		}
+
+		/// <summary>
+		/// Wrap a "Save File" dialog to prevent saving files inside the book's collection folder.
+		/// </summary>
+		/// <returns>The output file path, or null if canceled.</returns>
+		public static string GetOutputFilePathOutsideCollectionFolder(string initialPath, string filter, string collectionFolder)
+		{
+			string initialFolder = Path.GetDirectoryName(initialPath);
+			string initialFilename = Path.GetFileName(initialPath);
+			string defaultExtension = Path.GetExtension(initialPath);
+			var destFileName = String.Empty;
+			var repeat = false;
+			do
+			{
+				using (var dlg = new DialogAdapters.SaveFileDialogAdapter())
+				{
+					dlg.AddExtension = true;
+					dlg.DefaultExt = defaultExtension;
+					dlg.FileName = initialFilename;
+					dlg.Filter = filter;
+					dlg.RestoreDirectory = false;
+					dlg.OverwritePrompt = true;
+					dlg.InitialDirectory = initialFolder;
+					if (DialogResult.Cancel == dlg.ShowDialog())
+						return null;
+					destFileName = dlg.FileName;
+				}
+				repeat = destFileName.StartsWith(collectionFolder,
+					Platform.IsWindows ? StringComparison.InvariantCultureIgnoreCase : StringComparison.InvariantCulture);
+				if (repeat)
+				{
+					WarnUserOfInvalidFolderChoice(collectionFolder, destFileName);
+					// Change the initialFolder to just above the collection folder, or to the documents folder
+					// if that ends up empty.
+					initialFolder = Path.GetDirectoryName(collectionFolder);
+					if (String.IsNullOrEmpty(initialFolder))
+						initialFolder = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+				}
+			} while (repeat);
+			return destFileName;
+		}
+
+		public static void WarnUserOfInvalidFolderChoice(string collectionFolder, string chosenDestination)
+		{
+			var msgFmt = L10NSharp.LocalizationManager.GetString("MiscUtils.CannotSaveToCollectionFolder",
+				"Bloom cannot save files inside the collection folder ({0}).  Please choose another location.");
+			var msg = String.Format(msgFmt, collectionFolder);
+			var buttons = new[]
+				{
+					new MiscUI.MessageBoxButton { Default = true, Text = L10NSharp.LocalizationManager.GetString("Common.OK","OK"), Id = "ok" }
+				};
+			MiscUI.BloomMessageBox.Show(Form.ActiveForm, $"<p>{msg}</p><p></p><p>{chosenDestination}</p>", buttons, MessageBoxIcon.Warning);
+		}
 	}
 }

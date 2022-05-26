@@ -151,6 +151,10 @@ namespace Bloom.web.controllers
 				return Path.GetDirectoryName(folder);
 			}
 
+			// Prevent previous saved values from allowing us to store in the collection's folder. (BL-11188)
+			if (folder.StartsWith(book.Storage.FolderPath, StringComparison.InvariantCulture))
+				return Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+
 			return folder; // save folder itself for import
 		}
 
