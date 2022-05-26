@@ -314,5 +314,44 @@ namespace Bloom.Utils
 			return path.StartsWith(ProjectContext.GetInstalledCollectionsDirectory())
 				|| path.StartsWith(BloomFileLocator.FactoryTemplateBookDirectory);
 		}
+
+		/// <summary>
+		/// Wrap a "Save File" dialog to prevent saving files inside the book's collection folder.
+		/// </summary>
+		/// <returns>The output file path, or null if canceled.</returns>
+		public static string GetOutputFilePathOutsideCollectionFolder(string initialPath, string filter, string collectionFolder)
+		{
+			string initialFolder = Path.GetDirectoryName(initialPath);
+			string initialFilename = Path.GetFileName(initialPath);
+			string defaultExtension = Path.GetExtension(initialPath);
+			var destFileName = String.Empty;
+			var repeat = false;
+			do
+			{
+				using (var dlg = new DialogAdapters.SaveFileDialogAdapter())
+				{
+					dlg.AddExtension = true;
+					dlg.DefaultExt = defaultExtension;
+					dlg.FileName = initialFilename;
+					dlg.Filter = filter;
+					dlg.RestoreDirectory = false;
+					dlg.OverwritePrompt = true;
+					dlg.InitialDirectory = initialFolder;
+					if (DialogResult.Cancel == dlg.ShowDialog())
+						return null;
+					destFileName = dlg.FileName;
+				}
+				repeat = destFileName.StartsWith(collectionFolder, StringComparison.InvariantCulture);
+				if (repeat)
+				{
+					var msgFmt = L10NSharp.LocalizationManager.GetString("MiscUtils.CannotSaveToCollectionFolder",
+						"Bloom cannot save files inside the collection folder ({0}).  Please choose another location.");
+					var msg = String.Format(msgFmt, collectionFolder);
+					MessageBox.Show(msg + Environment.NewLine + Environment.NewLine + destFileName,
+						L10NSharp.LocalizationManager.GetString("Warning", "Warning"));
+				}
+			} while (repeat);
+			return destFileName;
+		}
 	}
 }
