@@ -1,9 +1,13 @@
 /// <reference path="../../typings/jquery/jquery.d.ts" />
 /// <reference path="../../typings/ckeditor/ckeditor.d.ts" />
 
+import React = require("react");
+import ReactDOM = require("react-dom");
 import AudioRecording from "../toolbox/talkingBook/audioRecording";
 import { BloomApi } from "../../utils/bloomApi";
 import theOneLocalizationManager from "../../lib/localizationManager/localizationManager";
+import { BloomMessageBox } from "../../utils/BloomMessageBox";
+import { getEditTabBundleExports } from "../js/bloomFrames";
 
 // This class is actually just a group of static functions with a single public method. It does whatever we need to to make Firefox's contenteditable
 // element have the behavior we need.
@@ -203,8 +207,15 @@ export default class BloomField {
                                 "Bloom was not able to make a link. Try selecting only simple text.",
                                 "Shows when a hyperlink cannot be pasted due to invalid selection."
                             )
-                            .done(translatedText => {
-                                alert(translatedText);
+                            .done((pasteFailureMsg: string) => {
+                                theOneLocalizationManager
+                                    .asyncGetText("Common.OK", "OK", "")
+                                    .done(okText =>
+                                        BloomField.ShowMessageBox(
+                                            pasteFailureMsg,
+                                            okText
+                                        )
+                                    );
                             });
                     }
                 });
@@ -223,6 +234,35 @@ export default class BloomField {
         // This makes it easy to find the right editor instance. There may be some ckeditor built-in way, but
         // I wasn't able to find one.
         (<any>bloomEditableDiv).bloomCkEditor = ckeditor;
+    }
+
+    private static ShowMessageBox(pasteFailureMsg: string, okText: string) {
+        const container = getEditTabBundleExports().getModalDialogContainer();
+        if (!container) {
+            // Fallback to alert
+            alert(pasteFailureMsg);
+            return;
+        }
+        ReactDOM.render(
+            React.createElement(BloomMessageBox, {
+                messageHtml: pasteFailureMsg,
+                icon: "warning",
+                rightButtonDefinitions: [
+                    {
+                        text: okText,
+                        id: "OKButton",
+                        default: true,
+                        style: "contained"
+                    }
+                ],
+                helpButtonUrl: "CantPasteHyperlink",
+                dialogEnvironment: {
+                    dialogFrameProvidedExternally: false,
+                    initiallyOpen: true
+                }
+            }),
+            container
+        );
     }
 
     // If the original clipboard had no paragraph markup, but only (plain text) newlines (\n)

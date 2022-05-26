@@ -402,8 +402,8 @@ namespace Bloom.Spreadsheet
 					var msg = string.Format(msgTemplate, outputFolder);
 					var messageBoxButtons = new[]
 					{
-						new MessageBoxButton() { Text = "Overwrite", Id = "overwrite" },
-						new MessageBoxButton() { Text = "Cancel", Id = "cancel", Default = true }
+						new MessageBoxButton() { Text = "Overwrite", Id = "overwrite", Style = "outlined" },
+						new MessageBoxButton() { Text = "Cancel", Id = "cancel", Default = true, Style = "contained"  }
 					};
 					if (appearsToBeBloomBookFolder)
 					{
