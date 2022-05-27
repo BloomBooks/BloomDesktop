@@ -228,7 +228,9 @@ export const DialogMiddle: React.FunctionComponent<{}> = props => {
                     margin-block-end: 1em;
                 }
 
-                min-height: 100px;
+                // This was 100px. Not sure why we need it at all, but 100px is too much for
+                // dialogs like the number-of-duplciates dialogs or simple message boxes.
+                min-height: 50px;
             `}
             {...props}
         >
