@@ -164,10 +164,11 @@ namespace Bloom.web.controllers
 			_collectionModel.GetBookCollections().ForEach(c =>
 			{
 				Debug.WriteLine($"collection: {c.Name}-->{c.PathToDirectory}");
-				// For this purpose there's no point in returning empty collections (except the editable one),
+				// For this purpose there's no point in returning empty collections
+				// (except the editable one and books from bloom library, which might add items later),
 				// and in particular this filters out our xmatter folders which aren't really
 				// collections.
-				if (c.Type == BookCollection.CollectionType.TheOneEditableCollection || c.GetBookInfos().Any())
+				if (c.Type == BookCollection.CollectionType.TheOneEditableCollection || c.ContainsDownloadedBooks || c.GetBookInfos().Any())
 				{
 					output.Add(
 						new
