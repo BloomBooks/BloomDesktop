@@ -99,7 +99,7 @@ namespace Bloom
 		static int Main(string[] args1)
 		{
 			// AttachConsole(-1);	// Enable this to allow Console.Out.WriteLine to be viewable (must run Bloom from terminal, AFAIK)
-
+			bool gotUniqueToken = false;
 			_uiThreadId = Thread.CurrentThread.ManagedThreadId;
 			Logger.Init();
 			// Configure TempFile to create temp files with a "bloom" prefix so we can
@@ -314,6 +314,7 @@ namespace Bloom
 										ErrorReport.NotifyUserOfProblem(msg);
 										return 1;
 									}
+									gotUniqueToken = true;
 
 									if (projectContext.TeamCollectionManager.CurrentCollection == null)
 									{
@@ -362,6 +363,7 @@ namespace Bloom
 						// and now we need to get the lock as usual before going on to load the new collection.
 						if (!UniqueToken.AcquireToken(_mutexId, "Bloom"))
 							return 1;
+						gotUniqueToken = true;
 					}
 					else
 					if (IsBloomBookOrder(args))
@@ -371,6 +373,7 @@ namespace Bloom
 						// carry on with starting up normally.  See https://silbloom.myjetbrains.com/youtrack/issue/BL-3822.
 						if (!UniqueToken.AcquireTokenQuietly(_mutexId))
 							return 0;
+						gotUniqueToken = true;
 					}
 					else
 					{
@@ -380,6 +383,7 @@ namespace Bloom
 						// (A message will pop up to tell the user about this situation if it happens.)
 						if (!UniqueToken.AcquireToken(_mutexId, "Bloom"))
 							return 1;
+						gotUniqueToken = true;
 					}
 					OldVersionCheck();
 
@@ -484,12 +488,18 @@ namespace Bloom
 			{
 				// Check memory one final time for the benefit of developers.  The user won't see anything.
 				Bloom.Utils.MemoryManagement.CheckMemory(true, "Bloom finished and exiting", false);
-				UniqueToken.ReleaseToken();
+				if (gotUniqueToken)
+					UniqueToken.ReleaseToken();
 
 				_sentry?.Dispose();
-#if ! Debug
-				// In a debug build we want to be able to see if we're leaving garbage around.
-				TempFile.CleanupTempFolder();
+				// In a debug build we want to be able to see if we're leaving garbage around. (Note: this doesn't seem to be working.)
+#if !Debug
+				// We should not clean up garbage if we didn't get the token.
+				// - we might delete something in use by the instance that has the token
+				// - we would delete the token itself (since _mutexid and NamePrefix happen to be the same),
+				// allowing a later duplicate process to start normally.
+				if (gotUniqueToken)
+					TempFile.CleanupTempFolder();
 #endif
 			}
 			Settings.Default.FirstTimeRun = false;
