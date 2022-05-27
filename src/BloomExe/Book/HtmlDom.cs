@@ -741,11 +741,11 @@ namespace Bloom.Book
 		public static (int textCount, int imageCount, int videoCount, int widgetCount) GetEditableDataCounts(XmlElement page)
 		{
 			return (
-				// See comment on GetTranslationGroupsInternal() below.
-				GetTranslationGroupCount(page),
-				GetAllDivsWithClass(page, "bloom-imageContainer").Count,
-				GetAllDivsWithClass(page, "bloom-videoContainer").Count,
-				GetAllDivsWithClass(page, "bloom-widgetContainer").Count);
+				// See comment on GetEltsWithClassNotInImageContainerInternal() below.
+				GetTranslationGroupNotInImageContainerCount(page),
+				GetEltsWithClassNotInImageContainer(page, "bloom-imageContainer").Count,
+				GetEltsWithClassNotInImageContainer(page, "bloom-videoContainer").Count,
+				GetEltsWithClassNotInImageContainer(page, "bloom-widgetContainer").Count);
 		}
 
 		/// <summary>
@@ -804,7 +804,7 @@ namespace Bloom.Book
 			// migrate text (between visible translation groups!)
 			// enhance: I wish there was a better way to detect invisible translation groups than just knowing about one class
 			// that currently hides them.
-			MigrateChildren(GetTranslationGroups(page), GetTranslationGroups(newPage));
+			MigrateChildren(GetTranslationGroupsNotInImageContainer(page), GetTranslationGroupsNotInImageContainer(newPage));
 			// migrate images
 			MigrateChildrenWithCommonClass(page, "bloom-imageContainer", newPage);
 			// migrate videos
@@ -817,17 +817,22 @@ namespace Bloom.Book
 			return oldLineage;
 		}
 
-		private static int GetTranslationGroupCount(XmlElement pageElement)
+		private static int GetTranslationGroupNotInImageContainerCount(XmlElement pageElement)
 		{
-			var result = GetTranslationGroups(pageElement);
+			var result = GetTranslationGroupsNotInImageContainer(pageElement);
 
 			return result.Count;
 		}
 
-		private static List<XmlElement> GetTranslationGroups(XmlElement pageElement)
+		private static List<XmlElement> GetTranslationGroupsNotInImageContainer(XmlElement pageElement)
+		{
+			return GetEltsWithClassNotInImageContainer(pageElement, "bloom-translationGroup");
+		}
+
+		private static List<XmlElement> GetEltsWithClassNotInImageContainer(XmlElement pageElement, string targetClass)
 		{
 			var result = new List<XmlElement>();
-			GetTranslationGroupsInternal(pageElement, ref result);
+			GetEltsWithClassNotInImageContainerInternal(pageElement, ref result, targetClass);
 
 			return result;
 		}
@@ -840,14 +845,12 @@ namespace Bloom.Book
 		// We could just do this with an xpath if bloom-textOverPicture divs and bloom-imageDescription divs had
 		// the same structure internally, but text over picture CONTAINS a translationGroup,
 		// whereas image description IS a translationGroup.
-		private static void GetTranslationGroupsInternal(XmlElement currentElement, ref List<XmlElement> result)
+		private static void GetEltsWithClassNotInImageContainerInternal(XmlElement currentElement, ref List<XmlElement> result, string targetClass)
 		{
 			if (currentElement.HasAttribute("class"))
 			{
 				var classes = currentElement.Attributes["class"].Value;
-				if (classes.Contains("bloom-imageContainer"))
-					return; // don't drill down inside of this one
-				if (classes.Contains("bloom-translationGroup"))
+				if (classes.Contains(targetClass))
 				{
 					// box-header-off/on appears to be vestigial at this point,
 					// but suffice it to say "box-header-off" translationGroups are not visible.
@@ -857,6 +860,9 @@ namespace Bloom.Book
 					}
 					return; // don't drill down further
 				}
+				// Test this AFTER looking for targetClass; we do want to find the TOP bloom-imageContainers.
+				if (classes.Contains("bloom-imageContainer"))
+					return; // don't drill down inside of this one
 			}
 
 			if (!currentElement.HasChildNodes)
@@ -867,7 +873,7 @@ namespace Bloom.Book
 				if (childElement == null) // if the node is not castable to XmlElement
 					continue;
 
-				GetTranslationGroupsInternal(childElement, ref result);
+				GetEltsWithClassNotInImageContainerInternal(childElement, ref result, targetClass);
 			}
 		}
 
@@ -1101,8 +1107,8 @@ namespace Bloom.Book
 		/// <param name="newPage"></param>
 		private static void MigrateChildrenWithCommonClass(XmlElement page, string className, XmlElement newPage)
 		{
-			var oldParents = new List<XmlElement>(GetAllDivsWithClass(page, className).Cast<XmlElement>());
-			var newParents = new List<XmlElement>(GetAllDivsWithClass(newPage, className).Cast<XmlElement>());
+			var oldParents = new List<XmlElement>(GetEltsWithClassNotInImageContainer(page, className).Cast<XmlElement>());
+			var newParents = new List<XmlElement>(GetEltsWithClassNotInImageContainer(newPage, className).Cast<XmlElement>());
 			MigrateChildren(oldParents, newParents);
 		}
 
