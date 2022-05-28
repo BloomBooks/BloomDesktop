@@ -70,7 +70,7 @@ cd -
 # build: Bloom-Default-Linux64-Continuous (bt403)
 # project: Bloom
 # URL: https://build.palaso.org/viewType.html?buildTypeId=bt403
-# VCS: git://github.com/BloomBooks/BloomDesktop.git [master]
+# VCS: https://github.com/BloomBooks/BloomDesktop.git [master]
 # dependencies:
 # [0] build: bloom-win32-static-dependencies (bt396)
 #     project: Bloom
