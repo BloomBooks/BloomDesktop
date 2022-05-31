@@ -33,6 +33,7 @@ namespace Bloom.Publish.Video
 		private string _ffmpegPath;
 		private TempFile _htmlFile;
 		private TempFile _initialVideo;
+		private TempFile _capturedVideo;
 		private TempFile _finalVideo;
 		private bool _recording = true;
 		private bool _saveReceived;
@@ -67,6 +68,13 @@ namespace Bloom.Publish.Video
 			var dummy = Handle; // force handle to be created
 			var dummy2 = _content.Handle;
 		}
+
+		// Used for various kinds of cleanup, previously hooked to the Close event.
+		// In normal recording, this is raised when we are done with the post-processing
+		// of a recording (which now happens distinctly after this window is closed).
+		// It also gets raised if the user aborts the recording by closing the
+		// recording window.
+		public event EventHandler FinishedProcessingRecording;
 
 		public static RecordVideoWindow Create(BloomWebSocketServer webSocketServer)
 		{
@@ -280,7 +288,7 @@ namespace Bloom.Publish.Video
 				+ $"-i title=\"{Text}\" " // identifies the window for gdigrab
 				
 				+ videoArgs
-				+ _videoOnlyPath; // the intermediate output file for the recording.
+				+ "\"" +_videoOnlyPath + "\""; // the intermediate output file for the recording.
 			//Debug.WriteLine("ffmpeg capture args: " + args);
 			RunFfmpeg(args);
 			_startTime = DateTime.Now;
@@ -313,6 +321,10 @@ namespace Bloom.Publish.Video
 			// point didn't seem to help.
 			//SetThreadDpiAwarenessContext(_originalAwareness);
 
+			// Make sure that OnClosed() won't dispose of anything we need.
+			_capturedVideo = _initialVideo; // save so we can dispose eventually
+			_initialVideo = null; // prevent automatic dispose in OnClosed
+
 			Close();
 
 			BrowserProgressDialog.DoWorkWithProgressDialog(
@@ -321,6 +333,7 @@ namespace Bloom.Publish.Video
 				(progress, worker) =>
 				{
 					StopRecordingInternal(progress, soundLogJson);
+					FinishedProcessingRecording?.Invoke(this, new EventArgs());
 
 					// determines if progress dialog closes automatically
 					return progress.HaveProblemsBeenReported;
@@ -574,6 +587,11 @@ namespace Bloom.Publish.Video
 
 		protected override void OnClosed(EventArgs e)
 		{
+			// Careful here! We want to clean up in case the user manually closes the window,
+			// which amounts to a cancel. But we also close it when the recording finishes
+			// properly, BEFORE we do the next stage of processing the video; don't clean
+			// up anything we will need for that. See code at start of StopRecording,
+			// which sets things up so that Close will not mess things up.
 			_saveReceived = false;
 			base.OnClosed(e);
 			if (_recording && _ffmpegProcess != null)
@@ -583,7 +601,14 @@ namespace Bloom.Publish.Video
 
 			_htmlFile?.Dispose();
 			_htmlFile = null;
-			_initialVideo?.Dispose();
+			if (_initialVideo != null)
+			{
+				_initialVideo.Dispose();
+				// We haven't exactly finished processing it, but on this path,
+				// the user canceled, and we want to allow clients to clean things up.
+				FinishedProcessingRecording?.Invoke(this, new EventArgs());
+			}
+
 			_initialVideo = null;
 		}
 
@@ -598,6 +623,8 @@ namespace Bloom.Publish.Video
 			_finalVideo = null;
 			_initialVideo?.Dispose();
 			_initialVideo = null;
+			_capturedVideo?.Dispose();
+			_capturedVideo = null;
 		}
 
 		protected override void OnHandleCreated(EventArgs e)

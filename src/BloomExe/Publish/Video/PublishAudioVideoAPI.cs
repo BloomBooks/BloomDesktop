@@ -286,7 +286,7 @@ namespace Bloom.Publish.Video
 			_recordVideoWindow.SetPageReadTime(request.CurrentBook.BookInfo.PublishSettings.AudioVideo.PageTurnDelayDouble.ToString());
 			_recordVideoWindow.SetVideoSettingsFromPreview(request.CurrentBook.BookInfo.PublishSettings.AudioVideo.PlayerSettings);
 			_recordVideoWindow.SetPageRange(request.CurrentBook.BookInfo.PublishSettings.AudioVideo.PageRange);
-			_recordVideoWindow.Closed += (sender, args) =>
+			_recordVideoWindow.FinishedProcessingRecording += (sender, args) =>
 			{
 				if (!_recordVideoWindow.GotFullRecording)
 				{
