@@ -349,7 +349,8 @@ namespace Bloom.Publish.Video
 				},
 				null,
 				Shell.GetShellOrOtherOpenForm(),
-				height: 400);
+				height: 400,
+				showCancelButton: false);
 		}
 
 		private void StopRecordingInternal(IWebSocketProgress progress, string soundLogJson)

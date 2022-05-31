@@ -42,7 +42,8 @@ namespace Bloom.MiscUI
 			Action<Form> doWhenMainActionFalse = null,
 			IWin32Window owner = null,
 			int width = 620,
-			int height = 550)
+			int height = 550,
+			bool showCancelButton = true)
 		{
 			var kProgressContextName = "progress";
 			DoWorkWithProgressDialog(
@@ -57,7 +58,7 @@ namespace Bloom.MiscUI
 							titleBackgroundColor = Palette.kBloomBlueHex,
 							webSocketContext = kProgressContextName,
 							showReportButton = "if-error",
-							showCancelButton = true
+							showCancelButton = showCancelButton
 						}, title)
 					{Width = width, Height = height}, // winforms dialog properties
 				doWhat,
