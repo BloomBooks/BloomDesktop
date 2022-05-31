@@ -2,6 +2,7 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Windows.Forms;
 using Bloom.Api;
@@ -325,6 +326,7 @@ namespace Bloom.Publish.Video
 			_capturedVideo = _initialVideo; // save so we can dispose eventually
 			_initialVideo = null; // prevent automatic dispose in OnClosed
 
+			ClearTimer();
 			Close();
 
 			BrowserProgressDialog.DoWorkWithProgressDialog(
@@ -554,6 +556,39 @@ namespace Bloom.Publish.Video
 			progress.Message("Common.Done", "", "Done");
 		}
 
+#if __MonoCS__
+// Todo: Anything for Linux?
+#else
+		[FlagsAttribute]
+		public enum EXECUTION_STATE : uint
+		{
+			ES_AWAYMODE_REQUIRED = 0x00000040,
+			ES_CONTINUOUS = 0x80000000,
+			ES_DISPLAY_REQUIRED = 0x00000002,
+			ES_SYSTEM_REQUIRED = 0x00000001
+			// Legacy flag, should not be used.
+			// ES_USER_PRESENT = 0x00000004
+		}
+
+		[DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+		static extern EXECUTION_STATE SetThreadExecutionState(EXECUTION_STATE esFlags);
+
+#endif
+		void PreventSleep()
+		{
+#if __MonoCS__
+// Todo: Linux
+#else
+			// Reset system and display idle timers
+			// It's probably possible to do something with ES_CONTINUOUS so we don't have to do this
+			// repeatedly, but the documentation is less clear, and the danger of preventing sleep
+			// permanently seems greater.
+			SetThreadExecutionState(EXECUTION_STATE.ES_SYSTEM_REQUIRED | EXECUTION_STATE.ES_DISPLAY_REQUIRED);
+#endif
+		}
+
+		private Timer _preventSleepTimer;
+
 		private void RunFfmpeg(string args)
 		{
 			_ffmpegProcess = new Process
@@ -581,6 +616,12 @@ namespace Bloom.Publish.Video
 			// but it's harmless (and necessary if were using ErrorDataReceived as above)
 			_ffmpegProcess.BeginOutputReadLine();
 			_ffmpegProcess.BeginErrorReadLine();
+			_preventSleepTimer = new Timer();
+			_preventSleepTimer.Tick += (sender, eventArgs) => PreventSleep();
+			// Every 20s should prevent even the most aggressive sleep; the lowest setting in my
+			// control panel is 1 minute.
+			_preventSleepTimer.Interval = 20000;
+			_preventSleepTimer.Start();
 		}
 
 		public bool GotFullRecording { get; private set; }
@@ -610,6 +651,16 @@ namespace Bloom.Publish.Video
 			}
 
 			_initialVideo = null;
+			ClearTimer();
+		}
+
+		void ClearTimer()
+		{
+			if (_preventSleepTimer == null)
+				return;
+			_preventSleepTimer.Stop();
+			_preventSleepTimer.Dispose();
+			_preventSleepTimer = null;
 		}
 
 		// When the window is closed we will automatically be Disposed. But we might still be asked to
@@ -617,6 +668,7 @@ namespace Bloom.Publish.Video
 		// when we're sure we need it no more.
 		public void Cleanup()
 		{
+			ClearTimer();
 			_htmlFile?.Dispose();
 			_htmlFile = null;
 			_finalVideo?.Dispose();
