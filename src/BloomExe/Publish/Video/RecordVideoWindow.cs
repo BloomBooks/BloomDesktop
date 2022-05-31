@@ -556,31 +556,42 @@ namespace Bloom.Publish.Video
 
 		private void RunFfmpeg(string args)
 		{
-			_ffmpegProcess = new Process
+			try
 			{
-				StartInfo =
+				_ffmpegProcess = new Process
 				{
-					FileName = _ffmpegPath,
-					Arguments = args,
-					UseShellExecute = false, // enables CreateNoWindow
-					CreateNoWindow = true, // don't need a DOS box
-					RedirectStandardOutput = true,
-					RedirectStandardError = true,
-					RedirectStandardInput = true,
-				}
-			};
-			_errorData.Clear(); // no longer need any errors from first ffmpeg run
-			// Configure for async capture of stderror. See comment below.
-			_ffmpegProcess.ErrorDataReceived += (o, receivedEventArgs) => { _errorData.AppendLine(receivedEventArgs.Data); };
-			_ffmpegProcess.Start();
-			// Nothing seems to come over the output stream, but it seems to be important to
-			// have something running that will accept input on these streams, otherwise the 'q'
-			// that we send on standard input is not received. A comment I saw elsewhere indicated
-			// that a deadlock in ffmpeg might be involved.
-			// We may not need this in the merge rn, since we're not using 'q' to force an early exit,
-			// but it's harmless (and necessary if were using ErrorDataReceived as above)
-			_ffmpegProcess.BeginOutputReadLine();
-			_ffmpegProcess.BeginErrorReadLine();
+					StartInfo =
+					{
+						FileName = _ffmpegPath,
+						Arguments = args,
+						UseShellExecute = false, // enables CreateNoWindow
+						CreateNoWindow = true, // don't need a DOS box
+						RedirectStandardOutput = true,
+						RedirectStandardError = true,
+						RedirectStandardInput = true,
+					}
+				};
+				_errorData.Clear(); // no longer need any errors from first ffmpeg run
+				// Configure for async capture of stderror. See comment below.
+				_ffmpegProcess.ErrorDataReceived += (o, receivedEventArgs) =>
+				{
+					_errorData.AppendLine(receivedEventArgs.Data);
+				};
+				_ffmpegProcess.Start();
+				// Nothing seems to come over the output stream, but it seems to be important to
+				// have something running that will accept input on these streams, otherwise the 'q'
+				// that we send on standard input is not received. A comment I saw elsewhere indicated
+				// that a deadlock in ffmpeg might be involved.
+				// We may not need this in the merge rn, since we're not using 'q' to force an early exit,
+				// but it's harmless (and necessary if were using ErrorDataReceived as above)
+				_ffmpegProcess.BeginOutputReadLine();
+				_ffmpegProcess.BeginErrorReadLine();
+			}
+			catch (Exception ex)
+			{
+				Logger.WriteError("Starting ffmpeg failed: command line was " + args, ex);
+				throw;
+			}
 		}
 
 		public bool GotFullRecording { get; private set; }
