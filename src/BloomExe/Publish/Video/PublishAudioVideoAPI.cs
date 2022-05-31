@@ -154,7 +154,7 @@ namespace Bloom.Publish.Video
 
 			apiHandler.RegisterEndpointHandler(kApiUrlPart + "startRecording", request =>
 			{
-				_recordVideoWindow?.StartFfmpeg();
+				_recordVideoWindow?.StartFfmpegForVideoCapture();
 				request.PostSucceeded();
 			}, true, false);
 
