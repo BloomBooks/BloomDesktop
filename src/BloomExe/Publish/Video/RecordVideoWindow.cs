@@ -589,41 +589,53 @@ namespace Bloom.Publish.Video
 
 		private void RunFfmpeg(string args)
 		{
-			if (_errorData == null)
-				_errorData = new StringBuilder();
-			if (_ffmpegPath == null)
-				_ffmpegPath = MiscUtils.FindFfmpegProgram();
-			_ffmpegProcess = new Process
+			try
 			{
-				StartInfo =
+				if (_errorData == null)
+					_errorData = new StringBuilder();
+				if (_ffmpegPath == null)
+					_ffmpegPath = MiscUtils.FindFfmpegProgram();
+
+				_ffmpegProcess = new Process
 				{
-					FileName = _ffmpegPath,
-					Arguments = args,
-					UseShellExecute = false, // enables CreateNoWindow
-					CreateNoWindow = true, // don't need a DOS box
-					RedirectStandardOutput = true,
-					RedirectStandardError = true,
-					RedirectStandardInput = true,
-				}
-			};
-			_errorData.Clear(); // no longer need any errors from first ffmpeg run
-			// Configure for async capture of stderror. See comment below.
-			_ffmpegProcess.ErrorDataReceived += (o, receivedEventArgs) => { _errorData.AppendLine(receivedEventArgs.Data); };
-			_ffmpegProcess.Start();
-			// Nothing seems to come over the output stream, but it seems to be important to
-			// have something running that will accept input on these streams, otherwise the 'q'
-			// that we send on standard input is not received. A comment I saw elsewhere indicated
-			// that a deadlock in ffmpeg might be involved.
-			// We may not need this in the merge rn, since we're not using 'q' to force an early exit,
-			// but it's harmless (and necessary if were using ErrorDataReceived as above)
-			_ffmpegProcess.BeginOutputReadLine();
-			_ffmpegProcess.BeginErrorReadLine();
-			_preventSleepTimer = new Timer();
-			_preventSleepTimer.Tick += (sender, eventArgs) => PreventSleep();
-			// Every 20s should prevent even the most aggressive sleep; the lowest setting in my
-			// control panel is 1 minute.
-			_preventSleepTimer.Interval = 20000;
-			_preventSleepTimer.Start();
+					StartInfo =
+					{
+						FileName = _ffmpegPath,
+						Arguments = args,
+						UseShellExecute = false, // enables CreateNoWindow
+						CreateNoWindow = true, // don't need a DOS box
+						RedirectStandardOutput = true,
+						RedirectStandardError = true,
+						RedirectStandardInput = true,
+					}
+				};
+				_errorData.Clear(); // no longer need any errors from first ffmpeg run
+				// Configure for async capture of stderror. See comment below.
+				_ffmpegProcess.ErrorDataReceived += (o, receivedEventArgs) =>
+				{
+					_errorData.AppendLine(receivedEventArgs.Data);
+				};
+				_ffmpegProcess.Start();
+				// Nothing seems to come over the output stream, but it seems to be important to
+				// have something running that will accept input on these streams, otherwise the 'q'
+				// that we send on standard input is not received. A comment I saw elsewhere indicated
+				// that a deadlock in ffmpeg might be involved.
+				// We may not need this in the merge rn, since we're not using 'q' to force an early exit,
+				// but it's harmless (and necessary if were using ErrorDataReceived as above)
+				_ffmpegProcess.BeginOutputReadLine();
+				_ffmpegProcess.BeginErrorReadLine();
+				_preventSleepTimer = new Timer();
+				_preventSleepTimer.Tick += (sender, eventArgs) => PreventSleep();
+				// Every 20s should prevent even the most aggressive sleep; the lowest setting in my
+				// control panel is 1 minute.
+				_preventSleepTimer.Interval = 20000;
+				_preventSleepTimer.Start();
+			}
+			catch (Exception ex)
+			{
+				Logger.WriteError("Starting ffmpeg failed: command line was " + args, ex);
+				throw;
+			}
 		}
 
 		public bool AnyVideoHasAudio(string videoList, string basePath)
