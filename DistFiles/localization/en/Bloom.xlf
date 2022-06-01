@@ -3953,6 +3953,10 @@
         <note>ID: PublishTab.NoBookletsMessage</note>
         <note>If a book has a paper size that is too big (like A4), Bloom does not know how to make booklets with it. So the controls for booklets get disabled and this message is shown.</note>
       </trans-unit>
+      <trans-unit id="PublishTab.Notifications.AdobeForPrint">
+        <source xml:lang="en">If you want to print directly from Bloom, you will need to install the free Adobe Reader and then re-start Bloom. Or instead, you can save the PDF, open it in some other program, and then print from there.</source>
+        <note>ID: PublishTab.Notifications.AdobeForPrint</note>
+      </trans-unit>
       <trans-unit id="PublishTab.Notifications.AdobeReaderRecommendation">
         <source xml:lang="en">This PDF viewer can be improved by installing the free Adobe Reader on this computer.</source>
         <note>ID: PublishTab.Notifications.AdobeReaderRecommendation</note>
