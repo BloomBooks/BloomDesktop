@@ -344,8 +344,11 @@ namespace Bloom.Publish.Video
 					StopRecordingInternal(progress, soundLogJson);
 					FinishedProcessingRecording?.Invoke(this, new EventArgs());
 
-					// determines if progress dialog closes automatically
-					return progress.HaveProblemsBeenReported;
+					// we decided to always show this until the user closes it
+					return true;
+
+					// if we want to close it automatically if there are no errors:
+					//return progress.HaveProblemsBeenReported;
 				},
 				null,
 				Shell.GetShellOrOtherOpenForm(),
