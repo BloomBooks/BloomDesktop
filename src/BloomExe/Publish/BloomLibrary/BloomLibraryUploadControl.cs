@@ -979,5 +979,10 @@ namespace Bloom.Publish.BloomLibrary
 		{
 			_model.SaveAudioLanguageSelection(_narrationAudioCheckBox.Checked);
 		}
+
+		private void _helpLink_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
+		{
+			HelpLauncher.Show(this, "Tasks/Publish_tasks/Upload.htm");
+		}
 	}
 }
