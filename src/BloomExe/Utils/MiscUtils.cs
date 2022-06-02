@@ -314,5 +314,31 @@ namespace Bloom.Utils
 			return path.StartsWith(ProjectContext.GetInstalledCollectionsDirectory())
 				|| path.StartsWith(BloomFileLocator.FactoryTemplateBookDirectory);
 		}
+
+		/// <summary>
+		/// Reads all text (like File.ReadAllText) from a file. Works even if that file may
+		/// be written to one or more times.
+		/// e.g. reading the progress output file of ffmpeg while ffmpeg is running.
+		/// </summary>
+		/// <param name="path">path of the file to read</param>
+		/// <returns>the contents of the file as a string</returns>
+		public static string ReadAllTextFromFileWhichMightGetWrittenTo(string path)
+		{
+			FileStream logFileStream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+			StreamReader logFileReader = new StreamReader(logFileStream);
+			StringBuilder sb = new StringBuilder();
+
+			while (!logFileReader.EndOfStream)
+			{
+				string line = logFileReader.ReadLine();
+				sb.AppendLine(line);
+			}
+
+			// Clean up
+			logFileReader.Close();
+			logFileStream.Close();
+
+			return sb.ToString();
+		}
 	}
 }

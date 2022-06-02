@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using Bloom.Api;
 using Bloom.MiscUI;
@@ -28,8 +29,9 @@ namespace Bloom.Publish.Video
 	{
 		private Browser _content;
 		private Process _ffmpegProcess;
+		private Boolean _ffmpegExited;
 		private StringBuilder _errorData;
-		private DateTime _startTime;
+		private DateTime _startTimeForVideoCapture;
 		private string _videoOnlyPath;
 		private string _ffmpegPath;
 		private TempFile _htmlFile;
@@ -57,6 +59,9 @@ namespace Bloom.Publish.Video
 		// this approach (targeting a newer H263) seems like a dead end.
 		private const bool _rotatePortraitH263Videos = false;
 
+		// 30fps is standard for SD video
+		private const int kFrameRate = 30; 
+
 		public RecordVideoWindow(BloomWebSocketServer webSocketServer)
 		{
 			InitializeComponent();
@@ -66,8 +71,10 @@ namespace Bloom.Publish.Video
 			_content.AutoScaleMode = AutoScaleMode.None;
 			Controls.Add(_content);
 			AutoScaleMode = AutoScaleMode.None;
-			var dummy = Handle; // force handle to be created
-			var dummy2 = _content.Handle;
+
+			// force handles to be created
+			_ = Handle; 
+			_ = _content.Handle;
 		}
 
 		// Used for various kinds of cleanup, previously hooked to the Close event.
@@ -235,7 +242,7 @@ namespace Bloom.Publish.Video
 		/// We get a notification through the API when bloom player has loaded the first page content
 		/// and is in a good state for us to start recording video from the window content.
 		/// </summary>
-		public void StartFfmpeg()
+		public void StartFfmpegForVideoCapture()
 		{
 			// We do these steps unconditionally because they are used later when we run
 			// ffmpeg (for the second time, if recording video).
@@ -247,7 +254,7 @@ namespace Bloom.Publish.Video
 			// visually, but we don't need to record what happens.
 			if (_codec == Codec.MP3)
 			{
-				_startTime = DateTime.Now;
+				_startTimeForVideoCapture = DateTime.Now;
 				return;
 			}
 
@@ -284,7 +291,7 @@ namespace Bloom.Publish.Video
 			// I believe ffmpeg has an option to capture the content of an XWindow.
 			var args =
 				"-f gdigrab " // basic command for using a window (in a Windows OS) as a video input stream
-				+ "-framerate 30 " // frames per second to capture (30fps is standard for SD video)
+				+ $"-framerate {kFrameRate} " // frames per second to capture
 				+ "-draw_mouse 0 " // don't capture any mouse movement over the window
 				+ $"-i title=\"{Text}\" " // identifies the window for gdigrab
 				
@@ -292,7 +299,7 @@ namespace Bloom.Publish.Video
 				+ "\"" +_videoOnlyPath + "\""; // the intermediate output file for the recording.
 			//Debug.WriteLine("ffmpeg capture args: " + args);
 			RunFfmpeg(args);
-			_startTime = DateTime.Now;
+			_startTimeForVideoCapture = DateTime.Now;
 		}
 
 		// convert urls received in sound log to actual local file paths.
@@ -326,7 +333,7 @@ namespace Bloom.Publish.Video
 			_capturedVideo = _initialVideo; // save so we can dispose eventually
 			_initialVideo = null; // prevent automatic dispose in OnClosed
 
-			ClearTimer();
+			ClearPreventSleepTimer();
 			Close();
 
 			BrowserProgressDialog.DoWorkWithProgressDialog(
@@ -337,25 +344,42 @@ namespace Bloom.Publish.Video
 					StopRecordingInternal(progress, soundLogJson);
 					FinishedProcessingRecording?.Invoke(this, new EventArgs());
 
-					// determines if progress dialog closes automatically
-					return progress.HaveProblemsBeenReported;
+					// we decided to always show this until the user closes it
+					return true;
+
+					// if we want to close it automatically if there are no errors:
+					//return progress.HaveProblemsBeenReported;
 				},
 				null,
 				Shell.GetShellOrOtherOpenForm(),
-				height: 400);
+				height: 400,
+				showCancelButton: false);
 		}
 
 		private void StopRecordingInternal(IWebSocketProgress progress, string soundLogJson)
 		{
+			var videoDuration = DateTime.Now - _startTimeForVideoCapture;
 			var haveVideo = _codec != Codec.MP3;
 			if (haveVideo)
 			{
-				progress.Message("PublishTab.RecordVideo.FinishingInitialVideoRecording", "", "Finishing initial video recording");
+				progress.Message("PublishTab.RecordVideo.FinishingInitialVideoRecording", message: "Finishing initial video recording");
 
 				// Leaving this in temporarily since there have been reports that the window sometimes doesn't close.
 				Debug.WriteLine("Telling ffmpeg to quit");
 				_ffmpegProcess.StandardInput.WriteLine("q");
 				_ffmpegProcess.WaitForExit();
+
+				// Leaving this here in case we decide it is helpful to report to the user.
+				// It can also be helpful when debugging certain things.
+				//var msg = string.Format(
+				//	LocalizationManager.GetDynamicString(
+				//		"Bloom",
+				//		"PublishTab.RecordVideo.VideoDuration",
+				//		"Video duration is {0:hh\\:mm\\:ss}",
+				//		"The parameter is a duration in hours, minutes, and seconds"),
+				//	videoDuration);
+				//progress.MessageWithoutLocalizing($"- {msg}");
+
 				// Enhance: if something goes wrong, it may be useful to capture this somehow.
 				//Debug.WriteLine("full ffmpeg error log: " + _errorData.ToString());
 				var errors = _errorData.ToString();
@@ -390,7 +414,7 @@ namespace Bloom.Publish.Video
 					sound.endTime = DateTime.Parse(item.endTime);
 				}
 
-				sound.startOffset = sound.startTime - _startTime;
+				sound.startOffset = sound.startTime - _startTimeForVideoCapture;
 
 				soundLog[i] = sound;
 			}
@@ -409,11 +433,11 @@ namespace Bloom.Publish.Video
 				GotFullRecording = true;
 				// Allows the Check and Save buttons to be enabled, now we have something we can play or save.
 				_webSocketServer.SendString("recordVideo", "ready", "true");
-				progress.Message("Common.Done", "", "Done");
+				progress.MessageWithParams("Common.DoneAt", "The parameter is a time", "Done at {0:hh:mm tt}", ProgressKind.Progress, DateTime.Now);
 				return;
 			}
 
-			progress.Message("PublishTab.RecordVideo.ProcessingAudio", "", "Processing audio");
+			progress.Message("PublishTab.RecordVideo.ProcessingAudio", message: "Processing audio");
 
 			// Narration is never truncated, so always has a default endTime.
 			// If the last music ends up not being truncated (unlikely), I think we can let
@@ -450,7 +474,7 @@ namespace Bloom.Publish.Video
 				}
 
 				// Add instructions to delay it by the right amount
-				var delay = item.startTime - _startTime;
+				var delay = item.startTime - _startTimeForVideoCapture;
 				// all=1: in case the input is stereo, all channels of it will be delayed.
 				// We shouldn't get negative delays, since startTime
 				// is recorded during a method that completes before we return
@@ -506,33 +530,59 @@ namespace Bloom.Publish.Video
 					throw new NotImplementedException();
 			}
 
-			var args = ""
-			           + inputs // the audio files are inputs, which may be referred to as [1:a], [2:a], etc.
-			           + (haveVideo ? $"-i \"{_videoOnlyPath}\" " : "") // last input (videoIndex) is the original video (if any)
-			           + "-filter_complex \""// the next bit specifies a filter with multiple inputs
-			           + audioFilters // specifies the inputs to the mixer
-			           // mix those inputs to a single stream called out. Note that, because most of our audio
-					   // streams don't overlap, and the background music volume is presumed to have already
-					   // been suitably adjusted, we do NOT want the default behavior of 'normalizing' volume
-					   // by reducing it to 1/n where n is the total number of input streams.
-			           + mixInputs + $"amix=inputs={soundLog.Length}:normalize=0[out]\" "
-			           // copy the video channel (of input videoIndex) unchanged (if we have video).
-					   // (here 'copy' is a pseudo codec...instead of encoding it in some particular way,
-					   // we just copy the original.
-					   + (haveVideo ? $"-map {videoIndex}:v -vcodec copy " : "")
-					   
-			           + audioArgs
-			           + "-map [out] " // send the output of the audio mix to the output
-			           + finalOutputPath; //and this is where we send it (until the user saves it elsewhere).
-			// Debug.WriteLine("ffmpeg merge args: " + args);
+			using (var tempProgressOutputFile = TempFile.CreateAndGetPathButDontMakeTheFile())
+			{
+				var args = ""
+						   + inputs // the audio files are inputs, which may be referred to as [1:a], [2:a], etc.
+						   + (haveVideo ? $"-i \"{_videoOnlyPath}\" " : "") // last input (videoIndex) is the original video (if any)
+						   + "-filter_complex \""// the next bit specifies a filter with multiple inputs
+						   + audioFilters // specifies the inputs to the mixer
+										  // mix those inputs to a single stream called out. Note that, because most of our audio
+										  // streams don't overlap, and the background music volume is presumed to have already
+										  // been suitably adjusted, we do NOT want the default behavior of 'normalizing' volume
+										  // by reducing it to 1/n where n is the total number of input streams.
+						   + mixInputs + $"amix=inputs={soundLog.Length}:normalize=0[out]\" "
+						   // copy the video channel (of input videoIndex) unchanged (if we have video).
+						   // (here 'copy' is a pseudo codec...instead of encoding it in some particular way,
+						   // we just copy the original.
+						   + (haveVideo ? $"-map {videoIndex}:v -vcodec copy " : "")
 
-			if (haveVideo)
-				progress.Message("PublishTab.RecordVideo.MergingAudioVideo", "", "Merging audio and video");
-			else
-				progress.Message("PublishTab.RecordVideo.FinalizingAudio", "", "Finalizing audio");
+						   + audioArgs
+						   + "-map [out] " // send the output of the audio mix to the output
+						   + finalOutputPath //and this is where we send it (until the user saves it elsewhere).
+						   + $" -progress {tempProgressOutputFile.Path}";
+				// Debug.WriteLine("ffmpeg merge args: " + args);
 
-			RunFfmpeg(args);
-			_ffmpegProcess.WaitForExit();
+				if (haveVideo)
+					progress.MessageWithParams(
+						"PublishTab.RecordVideo.MergingAudioVideo",
+						"The parameter is a time",
+						"Merging audio and video, starting at {0:hh:mm tt}",
+						ProgressKind.Progress,
+						DateTime.Now);
+				else
+					progress.Message("PublishTab.RecordVideo.FinalizingAudio", message: "Finalizing audio");
+
+				var startTimeForFinalMix = DateTime.Now;
+				RunFfmpeg(args);
+
+				// System.Threading.Timer is the only one which will fire during _ffmpegProcess.WaitForExit()
+				var createEstimateTimer = new System.Threading.Timer((state) =>
+				{
+					if (_ffmpegExited) return;
+
+					OutputTimeRemainingEstimate(progress, tempProgressOutputFile, startTimeForFinalMix, videoDuration);
+				},
+				null,
+				5000, // initially at 5 seconds
+				300000 // then every 5 minutes thereafter
+				);
+
+				_ffmpegProcess.WaitForExit();
+
+				createEstimateTimer.Dispose();
+			}
+
 			var mergeErrors = _errorData.ToString();
 			if (!File.Exists(_finalVideo.Path) || new FileInfo(_finalVideo.Path).Length < 100)
 			{
@@ -550,10 +600,83 @@ namespace Bloom.Publish.Video
 			if (_saveReceived)
 			{
 				// Reusing id from epub. (not creating a new one or extracting to common at this point as we don't think this is ever called)
-				progress.Message("PublishTab.Epub.Saving", "", "Saving");
+				progress.Message("PublishTab.Epub.Saving", message: "Saving");
 				SaveVideo(); // now we really can.
 			}
-			progress.Message("Common.Done", "", "Done");
+			progress.MessageWithParams("Common.DoneAt", "The parameter is a time", "Done at {0:hh:mm tt}", ProgressKind.Progress, DateTime.Now);
+		}
+
+		private void OutputTimeRemainingEstimate(IWebSocketProgress progress, TempFile progressFile, DateTime startTime, TimeSpan totalDuration)
+		{
+			try
+			{
+				var progressFileContents = MiscUtils.ReadAllTextFromFileWhichMightGetWrittenTo(progressFile.Path);
+
+				if (string.IsNullOrWhiteSpace(progressFileContents))
+					return;
+
+				// If progress=end, the process has finished and there is no point in estimating
+				if (GetLastOccurenceOfKeyValue(progressFileContents, "progress", out string progressValue) && progressValue == "end")
+					return;
+
+				if (!GetLastOccurenceOfKeyValue(progressFileContents, "frame", out string framesSoFarStr))
+					return;
+
+				var framesSoFar = int.Parse(framesSoFarStr);
+				if (framesSoFar < 1) return;
+
+				var timeSoFar = DateTime.Now - startTime;
+
+				double timePerFrameSoFar = (double)timeSoFar.TotalMilliseconds / framesSoFar;
+				var framesTotal = totalDuration.TotalSeconds * kFrameRate;
+				var framesRemaining = framesTotal - framesSoFar;
+				if (framesRemaining < 1) return;
+
+				var estimatedTimeRemaining = timePerFrameSoFar * framesRemaining;
+				//Debug.WriteLine($"totalFrames:{framesTotal}, framesSoFar:{framesSoFar}, framesRemaining:{framesRemaining}");
+				//Debug.WriteLine($"totalDuration:{totalDuration}, timeSoFar:{timeSoFar}, timePerFrameSoFar:{timePerFrameSoFar}");
+
+				if (!_ffmpegExited)
+					progress.MessageWithoutLocalizing($"- {GetEstimateMessageFromMillis(estimatedTimeRemaining)}");
+			}
+			catch (Exception e)
+			{
+				MiscUtils.SuppressUnusedExceptionVarWarning(e);
+			}
+		}
+
+		private string GetEstimateMessageFromMillis(double millisRemaining)
+		{
+			var estimateStr = millisRemaining < 60000 ?
+				LocalizationManager.GetString("PublishTab.RecordVideo.AboutOneMinute", "less than one minute") :
+				string.Format(
+					LocalizationManager.GetString(
+						"PublishTab.RecordVideo.AboutNMinutes",
+						"about {0} minutes",
+						"The parameter is a number of minutes"),
+					Math.Ceiling(millisRemaining / 60000));
+			return string.Format(
+				LocalizationManager.GetString(
+					"PublishTab.RecordVideo.EstimatedTimeRemaining",
+					"Estimated time remaining: {0}",
+					"The parameter is text describing the amount of time such as 'less than one minute' or 'about 3 minutes'"),
+				estimateStr);
+		}
+
+		private bool GetLastOccurenceOfKeyValue(string content, string key, out string value)
+		{
+			value = null;
+
+			var pattern = $"\\n{key}=(.*)\\n";
+			var lastOccurenceRegex = new Regex($"{pattern}(?![\\s\\S]*{pattern})");
+			var match = lastOccurenceRegex.Match(content);
+
+			if (!match.Success)
+				return false;
+
+			value = match.Groups[1].Value;
+
+			return !string.IsNullOrEmpty(value);
 		}
 
 #if __MonoCS__
@@ -604,6 +727,9 @@ namespace Bloom.Publish.Video
 					RedirectStandardInput = true,
 				}
 			};
+			_ffmpegExited = false;
+			_ffmpegProcess.EnableRaisingEvents = true;
+			_ffmpegProcess.Exited += (object sender, EventArgs e) => { _ffmpegExited = true; };
 			_errorData.Clear(); // no longer need any errors from first ffmpeg run
 			// Configure for async capture of stderror. See comment below.
 			_ffmpegProcess.ErrorDataReceived += (o, receivedEventArgs) => { _errorData.AppendLine(receivedEventArgs.Data); };
@@ -651,10 +777,10 @@ namespace Bloom.Publish.Video
 			}
 
 			_initialVideo = null;
-			ClearTimer();
+			ClearPreventSleepTimer();
 		}
 
-		void ClearTimer()
+		void ClearPreventSleepTimer()
 		{
 			if (_preventSleepTimer == null)
 				return;
@@ -668,7 +794,7 @@ namespace Bloom.Publish.Video
 		// when we're sure we need it no more.
 		public void Cleanup()
 		{
-			ClearTimer();
+			ClearPreventSleepTimer();
 			_htmlFile?.Dispose();
 			_htmlFile = null;
 			_finalVideo?.Dispose();

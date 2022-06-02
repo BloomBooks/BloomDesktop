@@ -154,7 +154,7 @@ namespace Bloom.web
 		// Use with care: if the first parameter is a string, you can leave out one of the earlier arguments with no compiler warning.
 		public string GetMessageWithParams(string idSuffix, string comment, string message, params object[] parameters)
 		{
-			Debug.Assert(message.Contains("{0}"));
+			Debug.Assert(message.Contains("{0}") || message.Contains("{0:"));
 			var localized = LocalizationManager.GetDynamicString(appId: "Bloom", id: GetL10nId(idSuffix, true), englishText: message,
 				comment: comment);
 			var formatted = String.Format(localized, parameters);
