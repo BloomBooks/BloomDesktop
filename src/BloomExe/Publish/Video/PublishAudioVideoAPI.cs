@@ -175,7 +175,7 @@ namespace Bloom.Publish.Video
 						return;
 					}
 				}
-				_recordVideoWindow?.StartFfmpeg();
+				_recordVideoWindow?.StartFfmpegForVideoCapture();
 				request.PostSucceeded();
 			}, true, false);
 
