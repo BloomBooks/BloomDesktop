@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using Bloom.Publish.Video;
 using NUnit.Framework;
+using SIL.IO;
 
 namespace BloomTests.Publish.Video
 {
@@ -76,6 +77,20 @@ namespace BloomTests.Publish.Video
 
 			var expectedResult = new Resolution(1080, 1920);
 			Assert.AreEqual(expectedResult.ToString(), result.ToString());
+		}
+
+		private const string _pathToTestImages = "src/BloomTests/Publish/Video";
+
+		[TestCase("testVideo1.mp4", true)]
+		// It's important that this file name contains the string 'Audio',
+		// to verify that finding it in the file name does not make the function
+		// think it contains audio.
+		[TestCase("videoWithoutAudio.mp4", false)]
+		public void VideoHasAudio_correctResult(string fileName, bool result)
+		{
+			var rvw = new RecordVideoWindow(null);
+			var path = FileLocationUtilities.GetFileDistributedWithApplication(_pathToTestImages, fileName);
+			Assert.That(rvw.VideoHasAudio(path), Is.EqualTo(result));
 		}
 	}
 }

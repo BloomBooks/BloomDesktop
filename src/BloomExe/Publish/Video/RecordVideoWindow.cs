@@ -4,12 +4,14 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using Bloom.Api;
 using Bloom.MiscUI;
 using Bloom.Utils;
 using Bloom.web;
 using L10NSharp;
+using Sentry;
 using SIL.IO;
 using SIL.Reporting;
 
@@ -237,10 +239,6 @@ namespace Bloom.Publish.Video
 		/// </summary>
 		public void StartFfmpeg()
 		{
-			// We do these steps unconditionally because they are used later when we run
-			// ffmpeg (for the second time, if recording video).
-			_errorData = new StringBuilder();
-			_ffmpegPath = MiscUtils.FindFfmpegProgram();
 			// Enhance: what on earth should we do if it's not found??
 
 			// If we're doing audio there's no more to do just now; we will play the book
@@ -591,6 +589,10 @@ namespace Bloom.Publish.Video
 
 		private void RunFfmpeg(string args)
 		{
+			if (_errorData == null)
+				_errorData = new StringBuilder();
+			if (_ffmpegPath == null)
+				_ffmpegPath = MiscUtils.FindFfmpegProgram();
 			_ffmpegProcess = new Process
 			{
 				StartInfo =
@@ -622,6 +624,43 @@ namespace Bloom.Publish.Video
 			// control panel is 1 minute.
 			_preventSleepTimer.Interval = 20000;
 			_preventSleepTimer.Start();
+		}
+
+		public bool AnyVideoHasAudio(string videoList, string basePath)
+		{
+			// The separator here must match the one used by bloom player (see bloom-player-core getVideoList())
+			foreach (var path in videoList.Split('|'))
+			{
+				if (VideoHasAudio(Path.Combine(basePath, path)))
+					return true;
+			}
+
+			return false;
+		}
+
+		internal bool VideoHasAudio(string path)
+		{
+			try
+			{
+				// This is a kludge. With a single input and no output, Ffmpeg gives an error;
+				// but it also gives its usual report of the streams in the input. If any of them
+				// is identified as an audio stream we report a possible problem.
+				var args = "-i \"" + path + "\"";
+				RunFfmpeg(args);
+				_ffmpegProcess.WaitForExit();
+				var output = _errorData.ToString();
+				return Regex.IsMatch(output, "Stream #.*Audio");
+			}
+			catch (Exception ex)
+			{
+				SentrySdk.CaptureException(ex);
+				// Not obvious what to do here. Doesn't seem worth bothering the user if something
+				// went wrong while we're trying to decide whether to warn them that audio in video
+				// won't be captured. Maybe we should return true, ensuring that the warning shows?
+				// But if one video has audio, probably others do, too, and it's not very serious
+				// if we don't show the warning...it's mainly to prevent too many bug reports!
+				return false;
+			}
 		}
 
 		public bool GotFullRecording { get; private set; }
