@@ -9,16 +9,6 @@
         <source xml:lang="en">Special Sentence-Ending Punctuation</source>
         <note>ID: ReaderSetup.SentencePunctuation.Header</note>
       </trans-unit>
-      <trans-unit id="hyperlink.2">
-        <source xml:lang="en">In this context, "simple" text means text that is selected from within a single paragraph and is not associated with multiple audio recordings or split audio segments. Also certain selections involving formatted text can be a problem if the whole word is not selected.</source>
-        <note>ID: hyperlink.2</note>
-        <note>Text of help document that shows after clicking "Learn More".</note>
-      </trans-unit>
-      <trans-unit id="hyperlink.title">
-        <source xml:lang="en">Can't Paste Hyperlink</source>
-        <note>ID: hyperlink.title</note>
-        <note>Title of help document that shows after clicking "Learn More".</note>
-       </trans-unit>
     </body>
   </file>
 </xliff>
