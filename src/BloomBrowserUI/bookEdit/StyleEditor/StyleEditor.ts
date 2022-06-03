@@ -1082,7 +1082,9 @@ export default class StyleEditor {
                                     fontMetadata: fontMetadata,
                                     currentFontName: current.fontName,
                                     languageNumber: 0,
-                                    onChangeFont: name => this.changeFont(name)
+                                    onChangeFont: name => this.changeFont(name),
+                                    // Needed to make sure the font menu that pops up is above the BloomDialog.
+                                    popoverZindex: "60001"
                                 }),
                                 document.getElementById("fontSelectComponent")
                             );

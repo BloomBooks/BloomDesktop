@@ -20,6 +20,9 @@ interface FormsSelectProps {
     idKey?: string;
     onChangeHandler: (event: any) => void;
     currentValue: string;
+    // Use this if you need to modify the style of popup menus by increasing z-index
+    // (e.g., to make the popup be in front of the bloom font dialog)
+    popoverZindex?: string;
 }
 
 // This component initially attempted to imitate a winforms combobox in React.
@@ -36,15 +39,16 @@ const WinFormsStyleSelect: React.FunctionComponent<FormsSelectProps> = props => 
         getContentAnchorEl: null
     };
 
-    lightTheme.overrides = {
-        ...lightTheme.overrides,
-        MuiPopover: {
-            root: {
-                // Needed to make sure the font menu that pops up is above the BloomDialog.
-                zIndex: "60001 !important" as any
+    if (props.popoverZindex) {
+        lightTheme.overrides = {
+            ...lightTheme.overrides,
+            MuiPopover: {
+                root: {
+                    zIndex: (props.popoverZindex + " !important") as any
+                }
             }
-        }
-    };
+        };
+    }
 
     // Match the border color of the other selects in the Edit tab cog Format dialog.
     // Without this, the gray border on this one is too light in comparison to the others.
