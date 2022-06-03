@@ -1005,6 +1005,13 @@
         <note>ID: Common.Finish</note>
         <note>Used for the Finish button in wizards, like that used for making a New Collection</note>
       </trans-unit>
+<!-- 5.3
+      <trans-unit id="Common.FinishedAt">
+        <source xml:lang="en">Finished at {0:hh:mm tt}</source>
+        <note>ID: Common.FinishedAt</note>
+        <note>{0:hh:mm tt} is a time</note>
+      </trans-unit>
+-->
       <trans-unit id="Common.Help" sil:dynamic="true">
         <source xml:lang="en">Help</source>
         <note>ID: Common.Help</note>
@@ -4144,7 +4151,16 @@
         <source xml:lang="en">Publish</source>
         <note>ID: PublishTab.Publish</note>
       </trans-unit>
-	  <!-- 5.3 (Low or medium priority?)
+      <!-- 5.3 (Low or medium priority?)
+      <trans-unit id="PublishTab.RecordVideo.AboutOneMinute">
+        <source xml:lang="en">less than one minute</source>
+        <note>ID: PublishTab.RecordVideo.AboutOneMinute</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.RecordVideo.AboutNMinutes">
+        <source xml:lang="en">about {0} minutes</source>
+        <note>ID: PublishTab.RecordVideo.AboutNMinutes</note>
+        <note>{0} is a number of minutes</note>
+      </trans-unit>
       <trans-unit id="PublishTab.RecordVideo.ActivitiesSkipped">
         <source xml:lang="en">Activities will be skipped</source>
         <note>ID: PublishTab.RecordVideo.ActivitiesSkipped</note>
@@ -4168,6 +4184,11 @@
       <trans-unit id="PublishTab.RecordVideo.DisableScaling">
         <source xml:lang="en">Disable Display Scaling</source>
         <note>ID: PublishTab.RecordVideo.DisableScaling</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.RecordVideo.EstimatedTimeRemaining">
+        <source xml:lang="en">Estimated time remaining: {0}</source>
+        <note>ID: PublishTab.RecordVideo.EstimatedTimeRemaining</note>
+        <note>{0} is text describing the amount of time such as 'less than one minute' or 'about 3 minutes'</note>
       </trans-unit>
       <trans-unit id="PublishTab.RecordVideo.Facebook">
         <source xml:lang="en">Facebook</source>
@@ -4198,8 +4219,9 @@
         <note>ID: PublishTab.RecordVideo.MakeRecording</note>
       </trans-unit>
       <trans-unit id="PublishTab.RecordVideo.MergingAudioVideo">
-        <source xml:lang="en">Merging audio and video</source>
+        <source xml:lang="en">Merging audio and video, starting at {0:hh:mm tt}</source>
         <note>ID: PublishTab.RecordVideo.MergingAudioVideo</note>
+        <note>{0:hh:mm tt} is a time</note>
       </trans-unit>
       <trans-unit id="PublishTab.RecordVideo.Mp3">
         <source xml:lang="en">Mp3 Audio</source>
