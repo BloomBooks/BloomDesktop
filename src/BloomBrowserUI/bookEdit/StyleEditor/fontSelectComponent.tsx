@@ -34,6 +34,9 @@ interface FontSelectProps {
     // will be in the DOM at a time increases. So we'll just require a number to use as a key.
     languageNumber: number;
     onChangeFont?: (fontname: string) => void;
+    // Use this if you need to modify the style of popup menus by increasing z-index
+    // (e.g., to make the popup be in front of the bloom font dialog)
+    popoverZindex?: string;
 }
 
 const FontSelectComponent: React.FunctionComponent<FontSelectProps> = props => {
@@ -121,6 +124,7 @@ const FontSelectComponent: React.FunctionComponent<FontSelectProps> = props => {
                 idKey={finalKey}
                 currentValue={textValue}
                 onChangeHandler={handleFontChange}
+                popoverZindex={props.popoverZindex}
             >
                 {getMenuItemsFromFontMetaData()}
             </WinFormsStyleSelect>
