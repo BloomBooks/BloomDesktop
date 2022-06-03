@@ -118,6 +118,12 @@ const PublishAudioVideoInternalInternal: React.FunctionComponent<{
         pageRange: []
     });
 
+    const recording = BloomApi.useWatchBooleanEvent(
+        false,
+        "recordVideo",
+        "recording"
+    );
+
     const [debouncedPageTurnDelay] = useDebounce(
         avSettings.pageTurnDelay,
         1000
@@ -474,7 +480,7 @@ const PublishAudioVideoInternalInternal: React.FunctionComponent<{
                                     </ErrorBox>
                                 )}
                                 <BloomButton
-                                    enabled={true}
+                                    enabled={!recording}
                                     l10nKey="PublishTab.RecordVideo.Record"
                                     clickApiEndpoint="publish/av/recordVideo"
                                     temporarilyDisableI18nWarning={true}

@@ -233,6 +233,7 @@ namespace Bloom.Publish.Video
 		protected override void OnLoad(EventArgs e)
 		{
 			base.OnLoad(e);
+			_webSocketServer.SendString("recordVideo", "recording", "true");
 			_webSocketServer.SendString("recordVideo", "ready", "false");
 			_initialVideo = BloomTemp.TempFileUtils.GetTempFileWithPrettyExtension(_codec.ToExtension());
 			_videoOnlyPath = _initialVideo.Path;
@@ -808,6 +809,7 @@ namespace Bloom.Publish.Video
 			// up anything we will need for that. See code at start of StopRecording,
 			// which sets things up so that Close will not mess things up.
 			_saveReceived = false;
+			_webSocketServer.SendString("recordVideo", "recording", "false");
 			base.OnClosed(e);
 			if (_recording && _ffmpegProcess != null)
 			{
