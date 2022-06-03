@@ -944,6 +944,8 @@
         <source xml:lang="en">&amp;Cancel</source>
         <note>This is identical to Common.Cancel. The duplication was introduced by a mistake.</note>
         <note>This is shown at the bottom of a dialog box. It is paired with an action button like "OK" and it means "do not do the action".</note>
+        <!-- The ampersand is used to indicate a mnemonic in C# WinForms. Ugh, I'm not happy that we expose it to the translators -->
+        <note>If you include "&amp;" (which represents an ampersand) in your translation, it will not be visible in Bloom. Instead, the letter following it will be a keyboard shortcut (e.g., &amp;Cancel means that alt-C can be used to activate the Cancel button.) The letter marked with ampersand is usually the first one but does not have to be. It is important not to mark the same letter in two different controls in the same dialog. If you are not sure, just don't include the "amp;"; the only consequence is that this control cannot be activated using an alt-key shortcut.</note>
         <note>ID: Common.CancelButton</note>
       </trans-unit>
       <trans-unit id="Common.Close">
