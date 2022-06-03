@@ -349,49 +349,52 @@ export const AudioVideoOptionsGroup: React.FunctionComponent<{
                                 ></MuiCheckbox>
                             </FormGroup>
                         )}
-                        <Div
-                            l10nKey="PublishTab.RecordVideo.RecordThesePages"
-                            temporarilyDisableI18nWarning={true}
-                            css={css`
-                                margin-bottom: 2px;
-                                margin-top: 20px;
-                                font-weight: bold;
-                            `}
-                        >
-                            Record These Pages:
-                        </Div>
-                        <div
-                            css={css`
-                                // The label can extend well beyond the end of the slider, so we need some extra space.
-                                padding-right: 30px;
-                            `}
-                        >
-                            {pageLabels.length && (
-                                <Slider
+                        {/* We need the > 0 here to force a boolean...the number zero will actually be shown */}
+                        {pageLabels.length > 0 && (
+                            <React.Fragment>
+                                <Div
+                                    l10nKey="PublishTab.RecordVideo.RecordThesePages"
+                                    temporarilyDisableI18nWarning={true}
                                     css={css`
-                                        .MuiSlider-markLabel {
-                                            max-width: 40px; // encourages wrapping, but long words can still overflow, and short ones center
-                                            white-space: normal; // allows wrapping
-                                            text-align: center;
-                                        }
+                                        margin-bottom: 2px;
+                                        margin-top: 20px;
+                                        font-weight: bold;
                                     `}
-                                    max={pageLabels.length - 1}
-                                    min={0}
-                                    value={pageRange}
-                                    step={1}
-                                    onChange={(event, value) => {
-                                        var newVal = value as number[];
-                                        if (
-                                            newVal[0] != pageRange[0] ||
-                                            newVal[1] != pageRange[1]
-                                        ) {
-                                            setPageRange(newVal);
-                                        }
-                                    }}
-                                    marks={marks}
-                                />
-                            )}
-                        </div>
+                                >
+                                    Record These Pages:
+                                </Div>
+                                <div
+                                    css={css`
+                                        // The label can extend well beyond the end of the slider, so we need some extra space.
+                                        padding-right: 30px;
+                                    `}
+                                >
+                                    <Slider
+                                        css={css`
+                                            .MuiSlider-markLabel {
+                                                max-width: 40px; // encourages wrapping, but long words can still overflow, and short ones center
+                                                white-space: normal; // allows wrapping
+                                                text-align: center;
+                                            }
+                                        `}
+                                        max={pageLabels.length - 1}
+                                        min={0}
+                                        value={pageRange}
+                                        step={1}
+                                        onChange={(event, value) => {
+                                            var newVal = value as number[];
+                                            if (
+                                                newVal[0] != pageRange[0] ||
+                                                newVal[1] != pageRange[1]
+                                            ) {
+                                                setPageRange(newVal);
+                                            }
+                                        }}
+                                        marks={marks}
+                                    />
+                                </div>
+                            </React.Fragment>
+                        )}
                     </Typography>
                 </FormControl>
             </FormGroup>
