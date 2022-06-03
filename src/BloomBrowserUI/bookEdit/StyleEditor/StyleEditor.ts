@@ -1082,7 +1082,23 @@ export default class StyleEditor {
                                     fontMetadata: fontMetadata,
                                     currentFontName: current.fontName,
                                     languageNumber: 0,
-                                    onChangeFont: name => this.changeFont(name)
+                                    onChangeFont: name => this.changeFont(name),
+                                    // Needed to make sure the font menu that pops up is above the BloomDialog.
+                                    // This is ugly...I'd much rather we didn't need this prop on either
+                                    // FontSelectComponent or WinFormsStyleSelect. It would be preferable to
+                                    // bring our z-index scheme in line with material-UIs and have the dialog
+                                    // lower than the 1300 which is material UI's default for the popover.
+                                    // But, see the long explanation in bloomDilog.less of why @dialogZindex
+                                    // is 60,000. Looks like fixing that would be a project.
+                                    // (Earlier, this high z-index was built into WinFormsStyleSelect, but
+                                    // in other contexts, such as the Book Making tab, we need to NOT mess with
+                                    // the z-index. See BL-11271.)
+                                    // Another option worth considering is to make a wrapper for the FontSelectComponent
+                                    // when it is used in this context, move the Theme management into the wrapper,
+                                    // and let the wrapper mess with the lightTheme in the way that WinFormsStyleSelect
+                                    // currently does. Feels more complicated, and it's also ugly to mess with a theme
+                                    // to patch a child component. I'm not sure which is worse.
+                                    popoverZindex: "60001"
                                 }),
                                 document.getElementById("fontSelectComponent")
                             );
