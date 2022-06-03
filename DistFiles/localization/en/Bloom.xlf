@@ -969,6 +969,11 @@
         <source xml:lang="en">Yellow</source>
         <note>ID: Common.Colors.Yellow</note>
       </trans-unit>
+      <trans-unit id="Common.Continue">
+        <source xml:lang="en">Continue</source>
+        <note>This is shown at the bottom of a dialog box and means to go ahead with some action. It is often paired with "Cancel"</note>
+        <note>ID: Common.Continue</note>
+      </trans-unit>
       <trans-unit id="Common.Copy">
         <source xml:lang="en">Copy</source>
         <note>ID: Common.Copy</note>
@@ -4139,7 +4144,7 @@
         <source xml:lang="en">Publish</source>
         <note>ID: PublishTab.Publish</note>
       </trans-unit>
-	  <!-- 5.3
+	  <!-- 5.3 (Low or medium priority?)
       <trans-unit id="PublishTab.RecordVideo.ActivitiesSkipped">
         <source xml:lang="en">Activities will be skipped</source>
         <note>ID: PublishTab.RecordVideo.ActivitiesSkipped</note>
@@ -4199,6 +4204,10 @@
       <trans-unit id="PublishTab.RecordVideo.Mp3">
         <source xml:lang="en">Mp3 Audio</source>
         <note>ID: PublishTab.RecordVideo.Mp3</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.RecordVideo.NoAudioInVideo">
+        <source xml:lang="en">Currently, Bloom does not support including audio from Sign Language videos in video output.</source>
+        <note>ID: PublishTab.RecordVideo.NoAudioInVideo</note>
       </trans-unit>
       <trans-unit id="PublishTab.RecordVideo.OverviewHelpLink">
         <source xml:lang="en">Publishing Audio or Video Books</source>

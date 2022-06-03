@@ -4,7 +4,9 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
 using Bloom.Api;
+using Bloom.MiscUI;
 using Bloom.Publish.Android;
+using L10NSharp;
 using SIL.PlatformUtilities;
 
 namespace Bloom.Publish.Video
@@ -154,6 +156,25 @@ namespace Bloom.Publish.Video
 
 			apiHandler.RegisterEndpointHandler(kApiUrlPart + "startRecording", request =>
 			{
+				var videoList = request.GetPostStringOrNull();
+				var anyVideoHasAudio = _recordVideoWindow?.AnyVideoHasAudio(videoList, request.CurrentBook.FolderPath) ?? false;
+				if (anyVideoHasAudio)
+				{
+					var messageBoxButtons = new[]
+					{
+						new MessageBoxButton() { Text = LocalizationManager.GetString("Common.Continue","Continue"), Id = "continue" },
+						new MessageBoxButton() { Text = LocalizationManager.GetString("Common.Cancel", "Cancel"), Id = "cancel", Default = true }
+					};
+					if (BloomMessageBox.Show(null,
+						    LocalizationManager.GetString("PublishTab.RecordVideo.NoAudioInVideo",
+							"Currently, Bloom does not support including audio from Sign Language videos in video output."),
+						    messageBoxButtons) == "cancel")
+					{
+						request.Failed("canceled");
+						_recordVideoWindow.Close();
+						return;
+					}
+				}
 				_recordVideoWindow?.StartFfmpeg();
 				request.PostSucceeded();
 			}, true, false);
