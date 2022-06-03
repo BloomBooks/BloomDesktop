@@ -1844,7 +1844,7 @@ namespace Bloom.Book
 							WebUtility.HtmlEncode(error.Message),
 							GetHelpLinkForFilePermissions());
 						ErrorMessagesHtml = msg;
-						ErrorAllowsReporting = false;	// we can't really help them remotely with odd permission failures.
+						ErrorAllowsReporting = false;   // we can't really help them remotely with odd permission failures.
 						Logger.WriteEvent("*** ERROR cannot delete old branding.css file in ExpensiveInitialization(" + fullyUpdateBookFiles + ")");
 						Logger.WriteEvent("*** ERROR: " + error.Message.Replace("{", "{{").Replace("}", "}}"));
 						return;
@@ -2084,30 +2084,48 @@ namespace Bloom.Book
 			}
 			else
 			{
-				Update("placeHolder.png");
-				Update("basePage.css");
-				Update("previewMode.css");
-				Update("origami.css");
-				Update("langVisibility.css");
+				var supportFilesToAlwaysUpdate = new[] { "placeHolder.png", "basePage.css", "previewMode.css", "origami.css", "langVisibility.css" };
+				foreach (var supportFile in supportFilesToAlwaysUpdate)
+				{
+					Update(supportFile);
+				}
 
+				// Now we want to look for any other .css files, besides those listed above and update them.
+				// There are a few we want to skip, however.
+				// In BL-5824, we got bit by design decisions we made that allow stylesheets installed via
+				// bloompack and by new Bloom versions to replace local ones. This was done so that we could
+				// send out new Bloom implementation stylesheets via bloompack and in new Bloom versions
+				// and have those used in all the books. This works well for most stylesheets.
+				//
+				// But customBookStyles.css  and customCollectionStyles.css are exceptions;
+				// their whole purpose is to let the local book or collection override Bloom's normal
+				// behavior or anything in a bloompack.
+				//
+				// And defaultLangStyles.css is another file that should not be updated because it is always
+				// generated from the local collection settings.
+				//
+				// Also, we don't want to update branding.css here because the default update process may pull it from
+				// who knows where; it doesn't come from one of the directories we search early.
+				// Instead, normally one is fetched from the right branding in CopyBrandingFiles,
+				// or if the branding is under development we generate a placeholder, or if there is no branding
+				// we generate an empty placeholder.
+				var cssFilesToSkipInThisPhase =	new[] {
+					// Files we just updated
+					"basepage.css", "previewmode.css", "origami.css", "langvisibility.css",
+					// Custom files
+					"custombookstyles.css", "customcollectionstyles.css",
+					// Other files we want to skip
+					"defaultlangstyles.css", "branding.css" };
 				foreach (var path in Directory.GetFiles(FolderPath, "*.css"))
 				{
 					var file = Path.GetFileName(path);
+					if (cssFilesToSkipInThisPhase.Contains(file.ToLowerInvariant()))
+						continue;
 
-					// In BL-5824, we got bit by design decisions we made that allow stylesheets installed via bloompack and by new Bloom versions
-					// to replace local ones. This was done so that we could send out new Bloom implementation stylesheets via bloompack and in new Bloom versions
-					// and have those used in all the books. This works well for most stylesheets.
-					// But customBookStyles.css  and customCollectionStyles.css are exceptions; their whole purpose is to let the local book or collection
-					// override Bloom's normal behavior or anything in a bloompack.
-					// defaultLangStyles.css is another file that should not be updated because it is always generated from the local collection settings.
-					// So customBookStyles.css, customCollectionStyles.css, and defaultLangStyles.css are not overridden (BloomServer) or replaced (here).
-					if (!file.ToLowerInvariant().Contains("custombookstyles") &&
-						!file.ToLowerInvariant().Contains("customcollectionstyles") &&
-						!file.ToLowerInvariant().Contains("defaultlangstyles"))
-					{
-						Update(file);
-					}
+					Update(file);
 				}
+
+
 			}
 
 			try
@@ -2122,6 +2140,82 @@ namespace Bloom.Book
 			}
 
 			CopyBrandingFiles();
+
+			// Typically CopyBrandingFiles() will copy a branding.css into the book folder
+			// if we are in enterprise mode.
+			// If not, and if we have a branding (typically one in the process of being added),
+			// we need to make a placeholder for it. (If we're not in enterprise mode,
+			// we'll generate an empty placeholder as protection against our server searching
+			// and finding an irrelevant one elsewhere.)
+			var brandingPath = Path.Combine(FolderPath, "branding.css");
+			if (!RobustFile.Exists(brandingPath))
+			{
+				MakePlaceHolderBrandingCss();
+			}
+		}
+
+		/// <summary>
+		/// Make a branding.css with the project name and localized message and
+		/// store it in the book where it will be used until we ship the official one.
+		/// Or, make an empty one if we're not in enterprise mode at all.
+		/// </summary>
+		public void MakePlaceHolderBrandingCss()
+		{
+			var subscriptionCode = CollectionSettings.SubscriptionCode;
+			var brandingName = CollectionSettingsApi.GetBrandingFromCode(subscriptionCode);
+			var brandingPath = Path.Combine(FolderPath, "branding.css");
+			if (String.IsNullOrEmpty(brandingName))
+			{
+				// We don't need any branding settings, so make a completely empty one.
+				// This helps to prevent undesirable ones being found in various searches.
+				RobustFile.WriteAllText(brandingPath, "");
+				return;
+			}
+
+			// Collect the collection's language codes in use, adding a fallback to English if necessary.
+			// (An earlier version of this code used the book's languages, which currently are the same,
+			// but might be allowed to be different eventually. But BookStorage does not have access to these.
+			// It will probably have to get that access somehow if we eventually allow them to be different,
+			// but the change will be horrendous, and this is not the time to attempt it.
+			// This fallback css file is only to be used until the proper one for the branding is released,
+			// so I think we can live with a slight imperfection in the language list logic.
+			var langsInPriorityOrder = new List<string>(3);
+			if (!String.IsNullOrEmpty(_collectionSettings.Language2Iso639Code))
+				langsInPriorityOrder.Add(_collectionSettings.Language2Iso639Code);
+			if (!String.IsNullOrEmpty(_collectionSettings.Language1Iso639Code) &&
+			    !langsInPriorityOrder.Contains(_collectionSettings.Language1Iso639Code))
+				langsInPriorityOrder.Add(_collectionSettings.Language1Iso639Code);
+			if (!langsInPriorityOrder.Contains("en"))
+				langsInPriorityOrder.Add("en");
+			var msgFmt = LocalizationManager.GetString("BackCover.NewBrandingNotice",
+				"A future update of Bloom will contain the branding assets for this project, \x201C{0}\x201D.  Thank you for your patience.",
+				"The {0} is replaced at runtime with the name of the new branding project.",
+				langsInPriorityOrder,
+				out string dummy);
+			// It's an absolute disaster if this string contains a double quote character, because it's
+			// going to be inserted into a CSS file between double quotes as the value of a content attribute,
+			// and an early double quote will result in an invalid property value and nothing appearing.
+			msgFmt = Regex.Replace(msgFmt, "\"(.*?)\"","\x201C$1\x201D");
+			msgFmt = msgFmt.Replace("\"", ""); // for paranoia, remove any remaining unmatched double quote.
+
+			var msg = String.Format(msgFmt, brandingName);
+			RobustFile.WriteAllText(brandingPath, @"/* place-holder */
+[data-book*=""branding""] {
+    display: flex;
+    flex-direction: column;
+}
+[data-book=""outside-back-cover-branding-bottom-html""] {
+    width: 100%;
+}
+[data-book=""outside-back-cover-branding-bottom-html""]::before {
+    font-size: 20pt;
+    text-align: center;
+    content: """ + msg + @""";
+}
+[data-book=""outside-back-cover-branding-bottom-html""] img {
+    display: none;	/* hide the default Bloom project image */
+}
+");
 		}
 
 		// Brandings come with logos and such... we want them in the book folder itself so that they work
@@ -2406,22 +2500,21 @@ namespace Bloom.Book
 			dom.AddStyleSheet(path);
 		}
 
-		//while in Bloom, we could have and edit style sheet or (someday) other modes. But when stored,
-		//we want to make sure it's ready to be opened in a browser.
+		// note: order is significant here, but I added branding.css at the end (the most powerful position) arbitrarily, until
+		// such time as it's clear if it matters.
+		public readonly static string[] CssFilesToLink =
+			{ "basePage.css", "previewMode.css", "origami.css", "langVisibility.css", "branding.css" };
+
+		// While in Bloom, we could have an edit style sheet or (someday) other modes. But when stored,
+		// we want to make sure it's ready to be opened in a browser.
 		private void MakeCssLinksAppropriateForStoredFile(HtmlDom dom)
 		{
 			dom.RemoveModeStyleSheets();
-			dom.AddStyleSheet("previewMode.css");
-			dom.AddStyleSheet("basePage.css");
-			dom.AddStyleSheet("origami.css");
-			dom.AddStyleSheet("langVisibility.css");
-
-			// only add brandingCSS is there is one for the current branding
-			var brandingCssPath = BloomFileLocator.GetBrowserFile(true, "branding", _collectionSettings.GetBrandingFolderName(), "branding.css");
-			if (!String.IsNullOrEmpty(brandingCssPath))
+			foreach (var cssFileName in CssFilesToLink)
 			{
-				dom.AddStyleSheet("branding.css");
+				dom.AddStyleSheetIfMissing(cssFileName);
 			}
+
 			EnsureHasLinksToStylesheets(dom);
 			dom.SortStyleSheetLinks();
 			dom.RemoveFileProtocolFromStyleSheetLinks();
