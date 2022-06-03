@@ -3,7 +3,7 @@ import { jsx, css } from "@emotion/core";
 import * as React from "react";
 import { makeStyles, ThemeProvider } from "@material-ui/styles";
 import { lightTheme } from "../bloomMaterialUITheme";
-import { FormControl, Select } from "@material-ui/core";
+import { FormControl, MenuProps, Select } from "@material-ui/core";
 
 // This seems to be the only way to affect the css of the popped up list, since it's a completely
 // separate html element from this component.
@@ -27,10 +27,13 @@ interface FormsSelectProps {
 const WinFormsStyleSelect: React.FunctionComponent<FormsSelectProps> = props => {
     const classes = useStyles();
 
-    const selectMenuProps = {
+    const selectMenuProps: Partial<MenuProps> = {
         classes: {
             paper: classes.menuPaper
-        }
+        },
+        // This works around a bug in MUI v4 (https://github.com/mui/material-ui/issues/19245)
+        // which caused the list to jump if it was scrolled and we re-rendered. See BL-11258.
+        getContentAnchorEl: null
     };
 
     lightTheme.overrides = {
