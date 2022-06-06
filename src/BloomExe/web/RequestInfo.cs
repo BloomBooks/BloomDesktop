@@ -300,6 +300,14 @@ namespace Bloom.Api
 			// when switching branding (BL-6538).
 			if (Path.GetFileName(path) == "branding.css")
 				return false;
+			// The preview iframe uses urls like /book-preview/index.htm, which means urls
+			// inside it like "src='image.jpg'" translate to something like
+			// /book-preview/image.jpg, which is not book-specific.
+			// If we allow these to be cached, we could use an image
+			// from one book when displaying another book. And pathologically, it might not
+			// actually be the same image! See BL-11239.
+			if (RawUrl.StartsWith("/book-preview/"))
+				return false;
 
 			return _cacheableExtensions.Contains(Path.GetExtension(path));
 		}
