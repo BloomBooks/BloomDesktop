@@ -94,6 +94,7 @@ namespace Bloom.CollectionChoosing
 			const int kRowOffsetForMRUChoices = 1;
 			var button = AddChoice(Path.GetFileNameWithoutExtension(path), path, true, OnOpenRecentCollection,
 								   index % MaxMruRows + kRowOffsetForMRUChoices, column);
+			button.TextAlign = ContentAlignment.MiddleLeft;
 			button.Tag = path;
 		}
 
