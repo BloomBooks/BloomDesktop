@@ -1,9 +1,9 @@
 [Desktop Entry]
 Version=1.0
-Name=Bloom Alpha
+Name=Bloom BetaInternal
 Comment=Literacy materials development for language communities
-Exec=bloom-alpha %u
-Icon=bloom-alpha
+Exec=bloom-betainternal %u
+Icon=bloom-betainternal
 Terminal=false
 Type=Application
 Categories=Education;

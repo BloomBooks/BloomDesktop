@@ -1,3 +1,10 @@
+bloom-desktop-betainternal (5.3.0) stable; urgency=medium
+
+  * Change Bloom 5.3 to BetaInternal.
+  * More bug fixes and enhancements: see the source repository log for details.
+
+ -- Stephen McConnel <stephen_mcconnel@sil.org>  Mon, 06 Jun 2022 14:17:36 -0600
+
 bloom-desktop-alpha (5.3.0) stable; urgency=medium
 
   * Up the version number on the master (alpha) branch to 5.3.
