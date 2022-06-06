@@ -22,5 +22,6 @@ If you are connected to the internet now, you can watch videos in your web brows
 
 If you would like to download any of these videos to show and share when there is no internet connection, you can download videos to your computer: {i18n="training.videos.download"}
 
-- [High Resolution](http://tiny.cc/bloomHDVideos) (Large files) {i18n="training.videos.hires"}
-- [Low Resolution](http://tiny.cc/bloomSDVideos) (Smaller files) {i18n="training.videos.lores"}
+Under the video that you want to download, there should be a Download button. {i18n="training.videos.download.2"}
+
+![](https://i.imgur.com/jZwpoZz.png "Vimeo download button")
