@@ -869,35 +869,38 @@ namespace Bloom.Publish.Video
 			Process.Start(_finalVideo.Path);
 		}
 
+		string _previousVideoFolder;
+
 		// Note: this method is normally called after the window is closed and therefore disposed.
 		public void SaveVideo()
 		{
 			_saveReceived = true;
 			if (!GotFullRecording)
 				return; // nothing to save, this shouldn't have happened.
-			using (var dlg = new DialogAdapters.SaveFileDialogAdapter())
+			var extension = _codec.ToExtension();
+			string suggestedName = string.Format($"{Path.GetFileName(_pathToRealBook)}{extension}");
+			var folder = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+			if (!String.IsNullOrEmpty(_previousVideoFolder) && Directory.Exists(_previousVideoFolder))
+				folder = _previousVideoFolder;
+			var initialPath = Path.Combine(folder, suggestedName);
+			var outputFileLabel = L10NSharp.LocalizationManager.GetString(@"PublishTab.VideoFile",
+				"Video File",
+				@"displayed as file type for Save File dialog.");
+			if (_codec == Codec.MP3)
 			{
-				
-				var extension = _codec.ToExtension();
-				string suggestedName = string.Format($"{Path.GetFileName(_pathToRealBook)}{extension}");
-				dlg.FileName = suggestedName;
-				var outputFileLabel = L10NSharp.LocalizationManager.GetString(@"PublishTab.VideoFile",
-					"Video File",
+				outputFileLabel = L10NSharp.LocalizationManager.GetString(@"PublishTab.AudioFile",
+					"Audio File",
 					@"displayed as file type for Save File dialog.");
-				if (_codec == Codec.MP3)
-				{
-					outputFileLabel = L10NSharp.LocalizationManager.GetString(@"PublishTab.AudioFile",
-						"Audio File",
-						@"displayed as file type for Save File dialog.");
-				}
+			}
+			outputFileLabel = outputFileLabel.Replace("|", "");
+			var filter = String.Format("{0}|*{1}", outputFileLabel, extension);
+			var collectionFolder = Path.GetDirectoryName(Path.GetDirectoryName(_pathToRealBook));
 
-				outputFileLabel = outputFileLabel.Replace("|", "");
-				dlg.Filter = String.Format("{0}|*{1}", outputFileLabel, extension);
-				dlg.OverwritePrompt = true;
-				if (DialogResult.OK == dlg.ShowDialog())
-				{
-					RobustFile.Copy(_finalVideo.Path, dlg.FileName, true);
-				}
+			var destFileName = MiscUtils.GetOutputFilePathOutsideCollectionFolder(initialPath, filter, collectionFolder);
+			if (!String.IsNullOrEmpty(destFileName))
+			{
+				_previousVideoFolder = Path.GetDirectoryName(destFileName);
+				RobustFile.Copy(_finalVideo.Path, destFileName, true);
 			}
 		}
 

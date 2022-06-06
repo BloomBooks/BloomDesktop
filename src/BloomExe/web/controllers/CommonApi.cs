@@ -499,17 +499,24 @@ namespace Bloom.web.controllers
 
 		public void HandleChooseFolder(ApiRequest request)
 		{	
-			string path;
+			var initialPath = request.GetParamOrNull("path");
+			var description = request.GetParamOrNull("description");
+			var forOutput = request.GetParamOrNull("forOutput");
+
 			dynamic result = new DynamicJson();
-			using (var dlg = new FolderBrowserDialog())
+			var book = _bookSelection?.CurrentSelection;
+			string collectionFolder = null;
+			if (book != null && !String.IsNullOrEmpty(book.FolderPath))
+				collectionFolder = Path.GetDirectoryName(book.FolderPath);
+			bool repeat = false;
+			do
+			{
+				using (var dlg = new FolderBrowserDialog())
 				{
-					path = request.GetParamOrNull("path");
-					if (!String.IsNullOrEmpty(path))
-						dlg.SelectedPath = path;
+					if (!String.IsNullOrEmpty(initialPath))
+						dlg.SelectedPath = initialPath;
 					dlg.ShowNewFolderButton = true;
 
-					var description = request.GetParamOrNull("description");
-					
 					if (!string.IsNullOrEmpty(description))
 					{
 						dlg.Description = description;
@@ -517,7 +524,20 @@ namespace Bloom.web.controllers
 
 					result.success = dlg.ShowDialog() == DialogResult.OK;
 					result.path = result.success  ? dlg.SelectedPath : "";
+					repeat = result.success && forOutput && !String.IsNullOrEmpty(collectionFolder) &&
+						result.path.StartsWith(collectionFolder, Platform.IsWindows ? StringComparison.InvariantCultureIgnoreCase : StringComparison.InvariantCulture);
+					if (repeat)
+					{
+						Utils.MiscUtils.WarnUserOfInvalidFolderChoice(collectionFolder, result.path);
+						// Change the initialFolder to just above the collection folder, or to the documents folder
+						// if that ends up empty.
+						initialPath = Path.GetDirectoryName(collectionFolder);
+						if (String.IsNullOrEmpty(initialPath))
+							initialPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+					}
 				}
+			} while (repeat);
+
 				// We send the result through a websocket rather than simply returning it because
 				// if the user is very slow (one site said FF times out after 90s) the browser may
 				// abandon the request before it completes. The POST result is ignored and the

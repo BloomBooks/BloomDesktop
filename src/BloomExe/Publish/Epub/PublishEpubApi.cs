@@ -103,47 +103,7 @@ namespace Bloom.Publish.Epub
 
 		public void RegisterWithApiHandler(BloomApiHandler apiHandler)
 		{
-			apiHandler.RegisterEndpointLegacy(kApiUrlPart + "save", request =>
-			{
-				{
-					string suggestedName = string.Format("{0}-{1}.epub", Path.GetFileName(_bookSelection.CurrentSelection.FolderPath),
-						_bookSelection.CurrentSelection.BookData.Language1.GetNameInLanguage("en"));
-					using (var dlg = new DialogAdapters.SaveFileDialogAdapter())
-					{
-						if (!string.IsNullOrEmpty(_lastDirectory) && Directory.Exists(_lastDirectory))
-							dlg.InitialDirectory = _lastDirectory;
-						dlg.FileName = suggestedName;
-						dlg.Filter = "EPUB|*.epub";
-						dlg.OverwritePrompt = true;
-						if (DialogResult.OK == dlg.ShowDialog())
-						{
-							_lastDirectory = Path.GetDirectoryName(dlg.FileName);
-							lock (_epubMakerLock)
-							{
-								_pendingSaveAsPath = dlg.FileName;
-								if (!_stagingEpub)
-								{
-									// we can do it right now. No need to check version etc., because anything
-									// that will change the epub we want to save will immediately trigger a new
-									// preview, and we will be staging it until we have it.
-									SaveAsEpub();
-								}
-								// If we ARE in the middle of staging the epub...quite possible since this
-								// handler is registered with permission to execute in parallel with other
-								// API handlers, the user just has to click Save before the preview is finished...
-								// then we need not do any more here. A call to SaveAsEpub at the end of the
-								// preview generation process will pick up the pending request in _pendingSaveAsPath
-								// and complete the Save.
-							}
-
-							ReportProgress(LocalizationManager.GetString("PublishTab.Epub.Done", "Done"));
-							ReportAnalytics("Save ePUB");
-						}
-					}
-
-					request.PostSucceeded();
-				}
-			}, true, false);
+			apiHandler.RegisterEndpointHandler(kApiUrlPart + "save", HandleEpubSave, true, false);
 
 			apiHandler.RegisterEndpointLegacy(kApiUrlPart + "epubSettings", request =>
 			{
@@ -198,6 +158,44 @@ namespace Bloom.Publish.Epub
 
 				request.PostSucceeded();
 			}, false, false);
+		}
+
+		private void HandleEpubSave(ApiRequest request)
+		{
+			string suggestedName = string.Format("{0}-{1}.epub", Path.GetFileName(_bookSelection.CurrentSelection.FolderPath),
+				_bookSelection.CurrentSelection.BookData.Language1.GetNameInLanguage("en"));
+			var folder = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+			if (!string.IsNullOrEmpty(_lastDirectory) && Directory.Exists(_lastDirectory))
+				folder = _lastDirectory;
+			var initialPath = Path.Combine(folder, suggestedName);
+			var collectionFolder = Path.GetDirectoryName(_bookSelection.CurrentSelection.FolderPath);
+
+			var destFileName = Utils.MiscUtils.GetOutputFilePathOutsideCollectionFolder(initialPath, "ePUB files|*.epub", collectionFolder);
+			if (!string.IsNullOrEmpty(destFileName))
+			{
+				_lastDirectory = Path.GetDirectoryName(destFileName);
+				lock (_epubMakerLock)
+				{
+					_pendingSaveAsPath = destFileName;
+					if (!_stagingEpub)
+					{
+						// we can do it right now. No need to check version etc., because anything
+						// that will change the epub we want to save will immediately trigger a new
+						// preview, and we will be staging it until we have it.
+						SaveAsEpub();
+					}
+					// If we ARE in the middle of staging the epub...quite possible since this
+					// handler is registered with permission to execute in parallel with other
+					// API handlers, the user just has to click Save before the preview is finished...
+					// then we need not do any more here. A call to SaveAsEpub at the end of the
+					// preview generation process will pick up the pending request in _pendingSaveAsPath
+					// and complete the Save.
+				}
+
+				ReportProgress(LocalizationManager.GetString("PublishTab.Epub.Done", "Done"));
+				ReportAnalytics("Save ePUB");
+			}
+			request.PostSucceeded();
 		}
 
 		public void AbortMakingEpub()
