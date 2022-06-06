@@ -211,7 +211,7 @@ namespace Bloom.CollectionTab
 			get { return _collectionSettings.VernacularCollectionNamePhrase; }
 		}
 
-		public bool IsShellProject
+		public bool IsSourceCollection
 		{
 			get { return _collectionSettings.IsSourceCollection; }
 		}

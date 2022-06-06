@@ -175,7 +175,7 @@ namespace Bloom.web.controllers
 						{
 							id = c.PathToDirectory,
 							name = c.Name,
-							isShellProject = _collectionModel.IsShellProject
+							isSourceCollection = _collectionModel.IsSourceCollection
 						});
 				}
 			});

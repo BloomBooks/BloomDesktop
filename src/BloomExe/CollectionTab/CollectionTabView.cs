@@ -31,7 +31,7 @@ namespace Bloom.CollectionTab
 		public CollectionTabView(CollectionModel model,
 			SelectedTabChangedEvent selectedTabChangedEvent,
 			TeamCollectionManager tcManager, BookSelection bookSelection,
-			WorkspaceTabSelection tabSelection, BloomWebSocketServer webSocketServer)
+			WorkspaceTabSelection tabSelection, BloomWebSocketServer webSocketServer, LocalizationChangedEvent localizationChangedEvent)
 		{
 			_model = model;
 			_tabSelection = tabSelection;
@@ -42,6 +42,7 @@ namespace Bloom.CollectionTab
 			BookCollection.CollectionCreated += OnBookCollectionCreated;
 
 			InitializeComponent();
+			_reactControl.SetLocalizationChangedEvent(localizationChangedEvent); // after InitializeComponent, which creates it.
 			BackColor = _reactControl.BackColor = Palette.GeneralBackground;
 			_toolStrip.Renderer = new NoBorderToolStripRenderer();
 			_toolStripLeft.Renderer = new NoBorderToolStripRenderer();
@@ -218,7 +219,7 @@ namespace Bloom.CollectionTab
 
 		public string CollectionTabLabel
 		{
-			get { return LocalizationManager.GetString("CollectionTab.CollectionTabLabel", "Collections"); }//_model.IsShellProject ? "Shell Collection" : "Collection"; }
+			get { return LocalizationManager.GetString("CollectionTab.CollectionTabLabel", "Collections"); }//_model.IsSourceCollection ? "Shell Collection" : "Collection"; }
 
 		}
 
@@ -226,7 +227,7 @@ namespace Bloom.CollectionTab
 		{
 			get
 			{
-				if (_model.IsShellProject)
+				if (_model.IsSourceCollection)
 				{
 					return "/Tasks/Source_Collection_tasks/Source_Collection_tasks_overview.htm";
 				}
