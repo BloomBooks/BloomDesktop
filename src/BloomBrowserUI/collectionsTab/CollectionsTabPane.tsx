@@ -23,6 +23,8 @@ import {
 } from "../react_components/localizableMenuItem";
 import { TeamCollectionDialogLauncher } from "../teamCollection/TeamCollectionDialog";
 import { SpreadsheetExportDialogLauncher } from "./spreadsheet/SpreadsheetExportDialog";
+import { H1 } from "../react_components/l10nComponents";
+import { useL10n } from "../react_components/l10nHooks";
 
 const kResizerSize = 10;
 
@@ -135,7 +137,7 @@ export const CollectionsTabPane: React.FunctionComponent<{}> = () => {
             l10nId: "CollectionTab.MakeBloomPackOfShellBooks",
             command: "collections/makeShellBooksBloompack",
             addEllipsis: true,
-            shouldShow: () => collections[0].isShellProject
+            shouldShow: () => collections[0].isSourceCollection
         },
         {
             label: "Make Reader Template Bloom Pack...",
@@ -184,20 +186,27 @@ export const CollectionsTabPane: React.FunctionComponent<{}> = () => {
     );
 
     const sourcesCollections = collections.slice(1);
+    // Enhance: may want to sort these by local name, though probably keeping Templates
+    // and possibly Sample Shells at the top.
     const collectionComponents = sourcesCollections.map(c => {
         return (
-            <div key={"frag:" + c.id}>
-                <h2>{c.name}</h2>
-                <BooksOfCollection
-                    collectionId={c.id}
-                    isEditableCollection={false}
-                    manager={manager}
-                    lazyLoadCollection={true}
-                    isSpreadsheetFeatureActive={isSpreadsheetFeatureActive}
-                />
-            </div>
+            <BooksOfCollectionWithHeading
+                name={c.name}
+                id={c.id}
+                manager={manager}
+                isSpreadsheetFeatureActive={isSpreadsheetFeatureActive}
+            />
         );
     });
+
+    const editingSourceCollection =
+        collections.length > 0 ? collections[0].isSourceCollection : false;
+    const collectionsHeaderKey = editingSourceCollection
+        ? "CollectionTab.SourcesForNewShellsHeading"
+        : "CollectionTab.BookSourceHeading";
+    const collectionsHeaderText = editingSourceCollection
+        ? "Sources For New Shells"
+        : "Sources For New Books";
 
     return (
         <div
@@ -333,13 +342,14 @@ export const CollectionsTabPane: React.FunctionComponent<{}> = () => {
                                 `}
                                 className={`group fade-${state}`}
                             >
-                                <h1
+                                <H1
+                                    l10nKey={collectionsHeaderKey}
                                     css={css`
                                         padding-bottom: 20px;
                                     `}
                                 >
-                                    Sources For New Books
-                                </h1>
+                                    {collectionsHeaderText}
+                                </H1>
 
                                 <ShowAfterDelay
                                     waitBeforeShow={100} // REview: we really want to wait for an event that indicates the main collection is mostly painted
@@ -527,6 +537,29 @@ export const makeMenuItems = (
             (index > 0 &&
                 index < menuItemsT.length - 1 &&
                 !isDivider(menuItemsT[index + 1]!))
+    );
+};
+
+const BooksOfCollectionWithHeading: React.FunctionComponent<{
+    name: string;
+    id: string;
+    manager: BookSelectionManager;
+    isSpreadsheetFeatureActive: boolean;
+}> = props => {
+    // Using this rather than our H2 component because we want to NOT highlight anything that is missing
+    // localization. Most collections will not have a localized name in our system.
+    const localName = useL10n(props.name, "CollectionTab." + props.name);
+    return (
+        <div key={"frag:" + props.id}>
+            <h2>{localName}</h2>
+            <BooksOfCollection
+                collectionId={props.id}
+                isEditableCollection={false}
+                manager={props.manager}
+                lazyLoadCollection={true}
+                isSpreadsheetFeatureActive={props.isSpreadsheetFeatureActive}
+            />
+        </div>
     );
 };
 
