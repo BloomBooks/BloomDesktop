@@ -1095,7 +1095,7 @@ namespace BloomTests.Book
 				</div>");
 
 			// Need to make sure we get the unencoded form here, otherwise we will add more and more layers of escaping when the book is saved.
-			Assert.AreEqual($"Adapted from original, <cite data-book=\"originalTitle\">{unencodedOriginalTitle}</cite>, Copyright © 2007, Foo Publishing. Licensed under CC BY-NC 3.0.", GetEnglishOriginalCopyrightAndLicense(dom));
+			Assert.AreEqual($"This book is an adaptation of the original, <cite data-book=\"originalTitle\">{unencodedOriginalTitle}</cite>, Copyright © 2007, Foo Publishing. Licensed under CC BY-NC 3.0.", GetEnglishOriginalCopyrightAndLicense(dom));
 			AssertOriginalCopyrightAndLicense(dom, "Copyright © 2007, Foo Publishing", "http://creativecommons.org/licenses/by-nc/3.0/");
 		}
 
@@ -1127,7 +1127,7 @@ namespace BloomTests.Book
 					</div>
 					<div data-book='originalTitle' lang='*'>How to manage titles</div>
 				</div>");
-			Assert.AreEqual("Adapted from original without a copyright notice, <cite data-book=\"originalTitle\">How to manage titles</cite>. Licensed under CC BY 4.0. You can do anything you want if your name is Fred.", GetEnglishOriginalCopyrightAndLicense(dom));
+			Assert.AreEqual("This book is an adaptation of the original without a copyright notice, <cite data-book=\"originalTitle\">How to manage titles</cite>. Licensed under CC BY 4.0. You can do anything you want if your name is Fred.", GetEnglishOriginalCopyrightAndLicense(dom));
 			AssertOriginalCopyrightAndLicense(dom, "", "http://creativecommons.org/licenses/by/4.0/", "You can do anything you want if your name is Fred.");
 		}
 		[Test]
@@ -1141,7 +1141,7 @@ namespace BloomTests.Book
 					</div>
 					<div data-book='originalTitle' lang='*'>This is another title</div>
 				</div>");
-			Assert.AreEqual("Adapted from original without a copyright notice, <cite data-book=\"originalTitle\">This is another title</cite>. You can do anything you want if your name is Fred.", GetEnglishOriginalCopyrightAndLicense(dom));
+			Assert.AreEqual("This book is an adaptation of the original without a copyright notice, <cite data-book=\"originalTitle\">This is another title</cite>. You can do anything you want if your name is Fred.", GetEnglishOriginalCopyrightAndLicense(dom));
 			AssertOriginalCopyrightAndLicense(dom, "", "", "You can do anything you want if your name is Fred.");
 		}
 
@@ -1177,7 +1177,7 @@ namespace BloomTests.Book
 						</div>
 					<div data-book='originalTitle' lang='*'>How to manage titles</div>
 					</div>");
-			Assert.AreEqual("Adapted from original without a copyright notice, <cite data-book=\"originalTitle\">How to manage titles</cite>. Licensed under CC BY 4.0.", GetEnglishOriginalCopyrightAndLicense(dom));
+			Assert.AreEqual("This book is an adaptation of the original without a copyright notice, <cite data-book=\"originalTitle\">How to manage titles</cite>. Licensed under CC BY 4.0.", GetEnglishOriginalCopyrightAndLicense(dom));
 			AssertOriginalCopyrightAndLicense(dom, "", "http://creativecommons.org/licenses/by/4.0/");
 		}
 
@@ -1191,7 +1191,7 @@ namespace BloomTests.Book
 					<div data-book='originalTitle' lang='*'>How to manage titles</div>
 					</div>");
 
-			Assert.AreEqual("Adapted from original, <cite data-book=\"originalTitle\">How to manage titles</cite>, Copyright © 2007, Some Old Publisher.", GetEnglishOriginalCopyrightAndLicense(dom));
+			Assert.AreEqual("This book is an adaptation of the original, <cite data-book=\"originalTitle\">How to manage titles</cite>, Copyright © 2007, Some Old Publisher.", GetEnglishOriginalCopyrightAndLicense(dom));
 			AssertOriginalCopyrightAndLicense(dom, "Copyright © 2007, Some Old Publisher", "", "");
 		}
 
@@ -1223,7 +1223,7 @@ namespace BloomTests.Book
 			AppendDataDivElement(dataDiv, "licenseNotes", "*", "You can do almost anything if your name is John");
 			var bookData = new BookData(dom, _alternateCollectionSettings, null);
 			BookStarter.SetOriginalCopyrightAndLicense(dom, bookData, _alternateCollectionSettings);
-			Assert.AreEqual($"Adapted from original, <cite data-book=\"originalTitle\">{unencodedOriginalTitle}</cite>, Copyright © 2007, Foo Publishers. Licensed under CC BY 4.0. You can do anything you want if your name is Fred.", GetEnglishOriginalCopyrightAndLicense(dom));
+			Assert.AreEqual($"This book is an adaptation of the original, <cite data-book=\"originalTitle\">{unencodedOriginalTitle}</cite>, Copyright © 2007, Foo Publishers. Licensed under CC BY 4.0. You can do anything you want if your name is Fred.", GetEnglishOriginalCopyrightAndLicense(dom));
 			AssertOriginalCopyrightAndLicense(dom, "Copyright © 2007, Foo Publishers", "http://creativecommons.org/licenses/by/4.0/", "You can do anything you want if your name is Fred.");
 		}
 
@@ -1265,13 +1265,13 @@ namespace BloomTests.Book
 
 			BookStarter.SetOriginalCopyrightAndLicense(dom, bookData, _alternateCollectionSettings);
 			var originalCopyright = GetEnglishOriginalCopyrightAndLicense(dom);
-			Assert.AreEqual("Adapted from original, <cite data-book=\"originalTitle\">HTML Lesson 1: <strong> & <em> tags</cite>, Copyright © 2011, LASI & SILA. Licensed under CC BY-NC-SA 4.0.", originalCopyright);
+			Assert.AreEqual("This book is an adaptation of the original, <cite data-book=\"originalTitle\">HTML Lesson 1: <strong> & <em> tags</cite>, Copyright © 2011, LASI & SILA. Licensed under CC BY-NC-SA 4.0.", originalCopyright);
 
 			BookCopyrightAndLicense.UpdateDomFromDataDiv(dom, null, bookData, false);
 			var nodes1 = dom.RawDom.SelectNodes("/html/body//div[@data-derived='originalCopyrightAndLicense']");
 			Assert.AreEqual(1, nodes1.Count);
-			Assert.AreEqual("Adapted from original, HTML Lesson 1: <strong> & <em> tags, Copyright © 2011, LASI & SILA. Licensed under CC BY-NC-SA 4.0.", nodes1.Item(0).InnerText);
-			Assert.AreEqual("Adapted from original, <cite data-book=\"originalTitle\">HTML Lesson 1: &lt;strong&gt; &amp; &lt;em&gt; tags</cite>, Copyright © 2011, LASI &amp; SILA. Licensed under CC BY-NC-SA 4.0.", nodes1.Item(0).InnerXml);
+			Assert.AreEqual("This book is an adaptation of the original, HTML Lesson 1: <strong> & <em> tags, Copyright © 2011, LASI & SILA. Licensed under CC BY-NC-SA 4.0.", nodes1.Item(0).InnerText);
+			Assert.AreEqual("This book is an adaptation of the original, <cite data-book=\"originalTitle\">HTML Lesson 1: &lt;strong&gt; &amp; &lt;em&gt; tags</cite>, Copyright © 2011, LASI &amp; SILA. Licensed under CC BY-NC-SA 4.0.", nodes1.Item(0).InnerXml);
 			BookStarterTests.AssertOriginalCopyrightAndLicense(dom, "Copyright © 2011, LASI &amp; SILA", "http://creativecommons.org/licenses/by-nc-sa/4.0/");
 		}
 
