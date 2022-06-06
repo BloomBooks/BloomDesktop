@@ -3631,6 +3631,14 @@
         <source xml:lang="en">About Book Features</source>
         <note>ID: PublishTab.Android.AboutBookFeatures</note>
       </trans-unit>
+      <trans-unit id="PublishTab.Android.BloomPUB" sil:dynamic="true">
+        <source xml:lang="en">Publishing to Bloom Reader</source>
+        <note>ID: PublishTab.Android.BloomPUB</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.DigitalPublishingOptions" sil:dynamic="true">
+        <source xml:lang="en">Digital Publishing Options</source>
+        <note>ID: PublishTab.DigitalPublishingOptions</note>
+      </trans-unit>
       <trans-unit id="PublishTab.Android.Settings" sil:dynamic="true">
         <source xml:lang="en">Settings</source>
         <note>ID: PublishTab.Android.Settings</note>

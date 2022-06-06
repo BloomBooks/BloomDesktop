@@ -198,6 +198,18 @@ const ReaderPublishScreenInternal: React.FunctionComponent<{
                         >
                             About Bloom Reader
                         </HelpLink>
+                        <HelpLink
+                            l10nKey="PublishTab.Android.BloomPUB"
+                            helpId="Tasks/Publish_tasks/Bloom_Reader.htm"
+                        >
+                            Publishing to Bloom Reader
+                        </HelpLink>
+                        <HelpLink
+                            l10nKey="PublishTab.DigitalPublishingOptions"
+                            helpId="Tasks/Publish_tasks/Digital_publishing_options.htm"
+                        >
+                            Digital Publishing Options
+                        </HelpLink>
                         <div className="icon-link-row get-bloom-reader">
                             <a href="https://play.google.com/store/search?q=%22sil%20international%22%2B%22bloom%20reader%22&amp;c=apps">
                                 <img
