@@ -135,6 +135,7 @@ namespace Bloom.CollectionChoosing
 			this._templateButton.Size = new System.Drawing.Size(254, 39);
 			this._templateButton.TabIndex = 23;
 			this._templateButton.Text = "template collection button";
+			this._templateButton.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
 			this._templateButton.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageBeforeText;
 			this._templateButton.UseVisualStyleBackColor = true;
 			// 
