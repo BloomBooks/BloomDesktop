@@ -90,6 +90,7 @@ const SpreadsheetExportDialog: React.FunctionComponent<{
                     path={folderPath}
                     setPath={setFolderPath}
                     description={chooseFolderDescription}
+                    forOutput={true}
                 />
             </DialogMiddle>
             <DialogBottomButtons>

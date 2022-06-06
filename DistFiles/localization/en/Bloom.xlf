@@ -3245,6 +3245,11 @@
         <source xml:lang="en">Sign in to BloomLibrary.org</source>
         <note>ID: LoginDialog.WindowTitle</note>
       </trans-unit>
+      <trans-unit id="MiscUtils.CannotSaveToCollectionFolder">
+        <source xml:lang="en">Bloom cannot save files inside the collection folder ({0}).  Please choose another location.</source>
+        <note>ID: MiscUtils.CannotSaveToCollectionFolder</note>
+	<note>{0} is a placeholder for the actual collection folder string.</note>
+      </trans-unit>
       <trans-unit id="NewCollectionWizard.AlreadyCollectionWithThatName">
         <source xml:lang="en">There is already a collection with that name, at &lt;a href='file://{0}'&gt;{0}&lt;/a&gt;.\nPlease pick a unique name.</source>
         <note>ID: NewCollectionWizard.AlreadyCollectionWithThatName</note>

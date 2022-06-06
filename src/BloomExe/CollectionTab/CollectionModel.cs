@@ -30,7 +30,7 @@ namespace Bloom.CollectionTab
 	public class CollectionModel
 	{
 		private readonly BookSelection _bookSelection;
-		private readonly string _pathToLibrary;
+		private readonly string _pathToCollection;
 		private readonly CollectionSettings _collectionSettings;
 		private readonly SourceCollectionsList _sourceCollectionsList;
 		private readonly BookCollection.Factory _bookCollectionFactory;
@@ -44,7 +44,7 @@ namespace Bloom.CollectionTab
 		private LocalizationChangedEvent _localizationChangedEvent;
 		private BookCollectionHolder _bookCollectionHolder;
 
-		public CollectionModel(string pathToLibrary, CollectionSettings collectionSettings,
+		public CollectionModel(string pathToCollection, CollectionSettings collectionSettings,
 			BookSelection bookSelection,
 			SourceCollectionsList sourceCollectionsList,
 			BookCollection.Factory bookCollectionFactory,
@@ -59,7 +59,7 @@ namespace Bloom.CollectionTab
 			LocalizationChangedEvent localizationChangedEvent)
 		{
 			_bookSelection = bookSelection;
-			_pathToLibrary = pathToLibrary;
+			_pathToCollection = pathToCollection;
 			_collectionSettings = collectionSettings;
 			_sourceCollectionsList = sourceCollectionsList;
 			_bookCollectionFactory = bookCollectionFactory;
@@ -206,12 +206,12 @@ namespace Bloom.CollectionTab
 		}
 
 		
-		public string VernacularLibraryNamePhrase
+		public string VernacularCollectionNamePhrase
 		{
 			get { return _collectionSettings.VernacularCollectionNamePhrase; }
 		}
 
-		public bool IsShellProject
+		public bool IsSourceCollection
 		{
 			get { return _collectionSettings.IsSourceCollection; }
 		}
@@ -257,7 +257,7 @@ namespace Bloom.CollectionTab
 			BookCollection editableCollection;
 			using (PerformanceMeasurement.Global?.Measure("Creating Primary Collection"))
 			{
-				editableCollection = _bookCollectionFactory(_pathToLibrary,
+				editableCollection = _bookCollectionFactory(_pathToCollection,
 					BookCollection.CollectionType.TheOneEditableCollection);
 				if (_bookCollectionHolder != null)
 					_bookCollectionHolder.TheOneEditableCollection = editableCollection;
@@ -279,21 +279,21 @@ namespace Bloom.CollectionTab
 
 		private Form MainShell => Application.OpenForms.Cast<Form>().FirstOrDefault(f => f is Shell);
 
+		private string _bloomPackFolder;
+
 		// Not entirely happy that this method which launches a dialog is in the Model.
 		// but with the Collection UI moving to JS I don't see a good alternative
 		public void MakeBloomPack(bool forReaderTools)
 		{
-			using (var dlg = new DialogAdapters.SaveFileDialogAdapter())
+			var folder = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+			if (!string.IsNullOrEmpty(_bloomPackFolder) && Directory.Exists(_bloomPackFolder))
+				folder = _bloomPackFolder;
+			var initialPath = Path.Combine(folder, GetSuggestedBloomPackPath());
+			var destFileName = MiscUtils.GetOutputFilePathOutsideCollectionFolder(initialPath, "BloomPack files|*.BloomPack", _pathToCollection);
+			if (!string.IsNullOrEmpty(destFileName))
 			{
-				dlg.FileName = GetSuggestedBloomPackPath();
-				dlg.Filter = "BloomPack|*.BloomPack";
-				dlg.RestoreDirectory = true;
-				dlg.OverwritePrompt = true;
-				if (DialogResult.Cancel == dlg.ShowDialog(MainShell))
-				{
-					return;
-				}
-				MakeBloomPack(dlg.FileName, forReaderTools);
+				_bloomPackFolder = Path.GetDirectoryName(destFileName);
+				MakeBloomPack(destFileName, forReaderTools);
 			}
 		}
 

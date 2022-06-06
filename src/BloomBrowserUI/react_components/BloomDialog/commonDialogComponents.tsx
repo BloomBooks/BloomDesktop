@@ -98,6 +98,7 @@ export const DialogFolderChooser: React.FunctionComponent<{
     path: string;
     setPath: (path: string) => void;
     description?: string;
+    forOutput?: boolean;
 }> = props => {
     // Since a user will have as much time as they want to deal with the dialog,
     // we can't just wait for the api call to return. Instead we get called back
@@ -113,7 +114,8 @@ export const DialogFolderChooser: React.FunctionComponent<{
     );
     const params = new URLSearchParams({
         path: props.path,
-        description: props.description || ""
+        description: props.description || "",
+        forOutput: props.forOutput ? "true" : "false"
     }).toString();
     return (
         <DialogFolderChooserWithApi
