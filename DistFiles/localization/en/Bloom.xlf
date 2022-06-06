@@ -3631,6 +3631,30 @@
         <source xml:lang="en">About Book Features</source>
         <note>ID: PublishTab.Android.AboutBookFeatures</note>
       </trans-unit>
+      <trans-unit id="PublishTab.Android.BloomPUB" sil:dynamic="true">
+        <source xml:lang="en">BloomPUB (Android devices)</source>
+        <note>ID: PublishTab.Android.BloomPUB</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Android.InstallBloomReader" sil:dynamic="true">
+        <source xml:lang="en">Install the Bloom Reader app</source>
+        <note>ID: PublishTab.Android.InstallBloomReader</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Android.LaunchBloomReader" sil:dynamic="true">
+        <source xml:lang="en">Launch the Bloom Reader app</source>
+        <note>ID: PublishTab.Android.LaunchBloomReader</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Android.ConnectAndroidDevice" sil:dynamic="true">
+        <source xml:lang="en">Connect your Android Device</source>
+        <note>ID: PublishTab.Android.ConnectAndroidDevice</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Android.SendBookToBloomReader" sil:dynamic="true">
+        <source xml:lang="en">Send Your Book to the Bloom Reader Android app</source>
+        <note>ID: PublishTab.Android.SendBookToBloomReader</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.DigitalPublishingOptions" sil:dynamic="true">
+        <source xml:lang="en">Digital Publishing Options</source>
+        <note>ID: PublishTab.DigitalPublishingOptions</note>
+      </trans-unit>
       <trans-unit id="PublishTab.Android.Settings" sil:dynamic="true">
         <source xml:lang="en">Settings</source>
         <note>ID: PublishTab.Android.Settings</note>

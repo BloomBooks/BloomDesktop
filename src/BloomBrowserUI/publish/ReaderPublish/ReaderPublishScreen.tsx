@@ -198,6 +198,42 @@ const ReaderPublishScreenInternal: React.FunctionComponent<{
                         >
                             About Bloom Reader
                         </HelpLink>
+                        <HelpLink
+                            l10nKey="PublishTab.Android.BloomPUB"
+                            helpId="Tasks/Publish_tasks/BloomPUB.htm"
+                        >
+                            BloomPUB (Android devices)
+                        </HelpLink>
+                        <HelpLink
+                            l10nKey="PublishTab.Android.InstallBloomReader"
+                            helpId="Tasks/Publish_tasks/Install_Bloom_Reader_app.htm"
+                        >
+                            Install the Bloom Reader app
+                        </HelpLink>
+                        <HelpLink
+                            l10nKey="PublishTab.Android.LaunchBloomReader"
+                            helpId="Tasks/Publish_tasks/Launch_the_Bloom_Reader_app.htm"
+                        >
+                            Launch the Bloom Reader app
+                        </HelpLink>
+                        <HelpLink
+                            l10nKey="PublishTab.Android.ConnectAndroidDevice"
+                            helpId="Tasks/Publish_tasks/Connect_your_Android_device.htm"
+                        >
+                            Connect your Android device
+                        </HelpLink>
+                        <HelpLink
+                            l10nKey="PublishTab.Android.SendBookToBloomReader"
+                            helpId="Tasks/Publish_tasks/Send_your_book_to_Bloom_Reader_Android_app.htm"
+                        >
+                            Send Your Book to the Bloom Reader Android app
+                        </HelpLink>
+                        <HelpLink
+                            l10nKey="PublishTab.DigitalPublishingOptions"
+                            helpId="Tasks/Publish_tasks/Digital_publishing_options.htm"
+                        >
+                            Digital Publishing Options
+                        </HelpLink>
                         <div className="icon-link-row get-bloom-reader">
                             <a href="https://play.google.com/store/search?q=%22sil%20international%22%2B%22bloom%20reader%22&amp;c=apps">
                                 <img
