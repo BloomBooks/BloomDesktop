@@ -959,7 +959,7 @@ namespace Bloom
 			}
 
 			ErrorResult reportPressedResult = ErrorResult.Yes;
-			string errorMessage = $"Bloom had a problem loading the {Path.GetFileNameWithoutExtension(projectPath)} project. Send us a report and we'll help you get things fixed up.";
+			string errorMessage = $"Bloom had a problem loading the {Path.GetFileNameWithoutExtension(projectPath)} collection. Email us at issues@bloomlibrary.org, and we'll help you get things fixed up.";
 			var result = SIL.Reporting.ErrorReport.NotifyUserOfProblem(
 				new SIL.Reporting.ShowAlwaysPolicy(), "Report", reportPressedResult,
 				errorMessage
