@@ -5,7 +5,7 @@ import * as React from "react";
 import { useState, useEffect } from "react";
 import { BloomApi } from "../utils/bloomApi";
 import Button from "@material-ui/core/Button";
-import { kBloomBlueLight, lightTheme } from "../bloomMaterialUITheme";
+import { kBloomBlue50Transparent, lightTheme } from "../bloomMaterialUITheme";
 import { ThemeProvider } from "@material-ui/styles";
 import { Div } from "./l10nComponents";
 import { useL10n } from "./l10nHooks";
@@ -158,13 +158,20 @@ export const RequiresBloomEnterpriseOverlayWrapper: React.FunctionComponent = pr
                         left: 0;
                         right: 0;
                         bottom: 0;
-                        background-color: ${kBloomBlueLight};
+                        background-color: ${kBloomBlue50Transparent};
                         z-index: 2; // Specify a stack order in case you're using a different order for other elements
                         display: flex;
-                        flex-direction: column;
+                        align-items: center; // center vertically
                     `}
                 >
-                    <RequiresBloomEnterpriseNotice darkTheme={true} />
+                    <div // center horizontally
+                        css={css`
+                            margin-left: auto;
+                            margin-right: auto;
+                        `}
+                    >
+                        <RequiresBloomEnterpriseNotice darkTheme={true} />
+                    </div>
                 </div>
             )}
         </div>

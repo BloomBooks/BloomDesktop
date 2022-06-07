@@ -1,7 +1,7 @@
 import { createTheme } from "@material-ui/core/styles";
 
 export const kBloomBlue = "#1d94a4";
-export const kBloomBlueLight = "#8ecad2"; // This is BloomBlue at 50% transparency on a white background
+export const kBloomBlue50Transparent = "#8ecad280";
 export const kBloomPurple = "#96668f";
 const kDialogTopBottomGray = "#F1F3F4";
 const kGreyOnDarkColor = "#988b8b";
