@@ -2197,7 +2197,7 @@ namespace Bloom.Book
 			}
 		}
 
-		public BookInfo BookInfo { get; protected set; }
+		public virtual BookInfo BookInfo { get; protected set; }
 
 		public UserPrefs UserPrefs { get; private set; }
 
