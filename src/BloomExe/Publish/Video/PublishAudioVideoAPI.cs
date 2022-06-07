@@ -196,6 +196,9 @@ namespace Bloom.Publish.Video
 					// This shouldn't be possible, but just in case, we'll kick off the recording now.
 					RecordVideo(request);
 				}
+
+				_recordVideoWindow?.SetBook(request.CurrentBook);
+
 				// If we bring up the dialog inside this API call, it may time out.
 				Application.Idle += SaveVideoOnIdle;
 				request.PostSucceeded();
