@@ -221,7 +221,7 @@ namespace Bloom.Book
 		/// This stores a Json string representing lang:title pairs, e.g.,
 		/// {"en":"my nice title","de":"Mein schönen Titel","es":"мy buen título"}.
 		/// </summary>
-		public string AllTitles
+		public virtual string AllTitles
 		{
 			get { return MetaData.AllTitles; }
 			set { MetaData.AllTitles = value; }

@@ -267,7 +267,7 @@ namespace Bloom.Book
 		/// is intended to allow more relevant controls to be added to BP without changing
 		/// Bloom Editor.
 		/// One downside is that quotes in the PlayerSettings JSON must be escaped in the
-		/// file. We think is is worth this to keep the content of this string opaque to BE.
+		/// file. We think it is worth this to keep the content of this string opaque to BE.
 		/// </summary>
 		[JsonProperty("playerSettings")]
 		public string PlayerSettings { get; set; }
