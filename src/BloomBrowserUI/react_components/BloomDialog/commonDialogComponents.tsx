@@ -5,7 +5,7 @@ import {
     kDialogPadding,
     kBloomBlue,
     kBorderRadiusForSpecialBlocks,
-    kBloomBlueLight
+    kBloomBlue50Transparent
 } from "../../bloomMaterialUITheme";
 import { BloomApi } from "../../utils/bloomApi";
 import BloomButton from "../bloomButton";
@@ -213,7 +213,7 @@ export const NoteBox: React.FunctionComponent<{
     let border = css``;
     if (props.addBorder) {
         border = css`
-            border: solid 1px ${kBloomBlueLight};
+            border: solid 1px ${kBloomBlue50Transparent};
         `;
     }
     const { addBorder, ...propsToPass } = props;

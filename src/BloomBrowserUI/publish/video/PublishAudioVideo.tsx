@@ -20,7 +20,7 @@ import { ThemeProvider } from "@material-ui/styles";
 import {
     darkTheme,
     kBloomBlue,
-    kBloomBlueLight,
+    kBloomBlue50Transparent,
     lightTheme
 } from "../../bloomMaterialUITheme";
 import { StorybookContext } from "../../.storybook/StoryBookContext";
@@ -393,7 +393,7 @@ const PublishAudioVideoInternalInternal: React.FunctionComponent<{
                                             <PauseIcon
                                                 css={css`
                                                     color: ${isPauseButtonDisabled
-                                                        ? kBloomBlueLight
+                                                        ? kBloomBlue50Transparent
                                                         : kBloomBlue};
                                                     font-size: 2rem !important;
                                                 `}
