@@ -959,7 +959,9 @@ namespace Bloom
 			}
 
 			ErrorResult reportPressedResult = ErrorResult.Yes;
-			string errorMessage = $"Bloom had a problem loading the {Path.GetFileNameWithoutExtension(projectPath)} collection. Email us at issues@bloomlibrary.org, and we'll help you get things fixed up.";
+			// NB: I added the email to this directly because, at least on my machine, the old error report dialog had become unworkable
+			// because, presumably, I haven't set things up properly with gmail.
+			string errorMessage = $"Bloom had a problem loading the {Path.GetFileNameWithoutExtension(projectPath)} collection. Click the Report button or just email us at issues@bloomlibrary.org, and we'll help you get things fixed up.";
 			var result = SIL.Reporting.ErrorReport.NotifyUserOfProblem(
 				new SIL.Reporting.ShowAlwaysPolicy(), "Report", reportPressedResult,
 				errorMessage
