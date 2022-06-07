@@ -156,7 +156,7 @@ namespace BloomTests.Book
 					</div>
 					<div class='bloom-page credits bloom-frontMatter'>
 						<div class='copyright Credits-Page-style' data-derived='originalCopyrightAndLicense' lang='*'>
-			                Adapted from original, <cite data-book='originalTitle'>The Moon and the Cap</cite>, Copyright © 2007, Pratham Books. Licensed under CC BY 4.0.
+			                This book is an adaptation of the original, <cite data-book='originalTitle'>The Moon and the Cap</cite>, Copyright © 2007, Pratham Books. Licensed under CC BY 4.0.
 			            </div>
 					</div>
 				</body></html>");

@@ -344,7 +344,7 @@ namespace Bloom.Book
 			// At the very least it's easier to localize into the format the language wants to use.
 			var fullFormatString = LocalizationManager.GetString(
 				"EditTab.FrontMatter.FullOriginalCopyrightLicenseSentence",
-				"Adapted from original, {0}, {1}. Licensed under {2}.",
+				"This book is an adaptation of the original, {0}, {1}. Licensed under {2}.",
 				"On the Credits page of a book being translated, Bloom shows the original copyright. {0} is original title, {1} is original copyright, and {2} is license information.",
 				languagePriorityIdsNotLang1,
 				out string langUsed);
@@ -370,7 +370,7 @@ namespace Bloom.Book
 			if (string.IsNullOrWhiteSpace(rawOriginalCopyright))
 			{
 				var noCopyrightSentence = LocalizationManager.GetString("EditTab.FrontMatter.OriginalHadNoCopyrightSentence",
-					"Adapted from original without a copyright notice.",
+					"This book is an adaptation of the original without a copyright notice.",
 					"On the Credits page of a book being translated, Bloom shows this if the original book did not have a copyright notice.",
 					languagePriorityIds, out _);
 
@@ -380,8 +380,8 @@ namespace Bloom.Book
 				return noCopyrightSentence;
 			}
 			var originalCopyrightSentence = LocalizationManager.GetString("EditTab.FrontMatter.OriginalCopyrightSentence",
-				"Adapted from original, {0}.",
-				"On the Credits page of a book being translated, Bloom shows the original copyright. Put {0} in the translation where the copyright notice should go. For example in English, 'Adapted from original, {0}.' comes out like 'Adapted from original, Copyright 2011 SIL'.",
+				"This book is an adaptation of the original, {0}.",
+				"On the Credits page of a book being translated, Bloom shows the original copyright. Put {0} in the translation where the copyright notice should go. For example in English, 'This book is an adaptation of the original, {0}.' comes out like 'This book is an adaptation of the original, Copyright 2011 SIL'.",
 				languagePriorityIds, out _);
 			return string.Format(originalCopyrightSentence, titleCitation + ", " + rawOriginalCopyright);
 		}
