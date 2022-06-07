@@ -3,6 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Bloom.Publish.Video;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Moq;
+using Assert = NUnit.Framework.Assert;
 using NUnit.Framework;
 using SIL.IO;
 
@@ -91,6 +94,50 @@ namespace BloomTests.Publish.Video
 			var rvw = new RecordVideoWindow(null);
 			var path = FileLocationUtilities.GetFileDistributedWithApplication(_pathToTestImages, fileName);
 			Assert.That(rvw.VideoHasAudio(path), Is.EqualTo(result));
+		}
+
+		[Test]
+		public void GetSuggestedSaveFileNameBase_Simple()
+		{
+			var obj = new RecordVideoWindow(null);
+			var invoker = new PrivateObject(obj);
+			invoker.SetFieldOrProperty("_pathToRealBook", @"C:\MyCollection\bookTitleL1");
+			var result = obj.GetSuggestedSaveFileNameBase();
+
+			Assert.AreEqual("bookTitleL1", result);
+		}
+
+		[Test]
+		public void GetSuggestedSaveFileNameBase_GivenVideoSettingsSpecifiesL2_SuggestedFileNameUsesL2()
+		{
+			///////////
+			// Setup //
+			///////////
+			var obj = new RecordVideoWindow(null);
+
+			// Setup videoSettings (the settings from the Bloom Player preview)
+			obj.SetVideoSettingsFromPreview("{\"lang\":\"l2\"}");
+
+			// Setup AllTitles
+			var mockBook = new Mock<Bloom.Book.Book>();
+			var mockBookInfo = new Mock<Bloom.Book.BookInfo>();
+			mockBookInfo.SetupGet(x => x.AllTitles).Returns("{ \"l1\": \"bookTitleL1\", \"l2\": \"bookTitleL2\"}");
+			mockBook.Setup(book => book.BookInfo).Returns(mockBookInfo.Object);
+			obj.SetBook(mockBook.Object);
+
+			// Setup _pathToRealBook
+			var invoker = new PrivateObject(obj);
+			invoker.SetFieldOrProperty("_pathToRealBook", @"C:\MyCollection\bookTitleL1");
+
+			///////////////////////
+			// System Under Test //
+			///////////////////////
+			var result = obj.GetSuggestedSaveFileNameBase();
+
+			//////////////////
+			// Verification //
+			//////////////////
+			Assert.AreEqual("bookTitleL2", result);
 		}
 	}
 }

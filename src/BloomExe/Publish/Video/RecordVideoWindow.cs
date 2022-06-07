@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -11,6 +12,7 @@ using Bloom.MiscUI;
 using Bloom.Utils;
 using Bloom.web;
 using L10NSharp;
+using Newtonsoft.Json;
 using Sentry;
 using SIL.IO;
 using SIL.Reporting;
@@ -41,6 +43,7 @@ namespace Bloom.Publish.Video
 		private TempFile _finalVideo;
 		private bool _recording = true;
 		private bool _saveReceived;
+		private Book.Book _book;
 		private string _pathToRealBook;
 		private BloomWebSocketServer _webSocketServer;
 		private int _videoHeight = 720; // default, facebook
@@ -869,6 +872,48 @@ namespace Bloom.Publish.Video
 			Process.Start(_finalVideo.Path);
 		}
 
+		/// <summary>
+		/// Gets the suggested file basename to use in the save file dialog
+		/// </summary>
+		/// <returns>The base name (the filename WITHOUT THE EXTENSION nor the path)</returns>
+		public string GetSuggestedSaveFileNameBase()
+		{
+			// If _videoSettingsFromPreview has been set (e.g. on multilingual books),
+			// check the video settings from the Bloom Player preview to see
+			// if the user has selected a specific language. If so, use the title in that lang
+			if (!String.IsNullOrEmpty(_videoSettingsFromPreview) && _book != null)
+			{
+				dynamic videoSettings;
+				string langCode = null;
+				try
+				{
+					videoSettings = DynamicJson.Parse(_videoSettingsFromPreview);
+					langCode = videoSettings.lang;
+				}
+				catch (Exception ex)
+				{
+					// If there's an error parsing the videoSettings, just report it if debug
+					// and fallback to the legacy behavior.
+					Debug.Fail($"Error while parsing _videoSettingsFromPreview JSON (\"{_videoSettingsFromPreview}\"): ${ex.ToString()}\n(Will be ignored in production)");
+				}
+				
+				if (!String.IsNullOrEmpty(langCode) && !String.IsNullOrEmpty(_book.BookInfo.AllTitles))
+				{
+					// Try to find the title in that language
+					var allTitlesDict = JsonConvert.DeserializeObject<Dictionary<string, string>>(_book.BookInfo.AllTitles);
+					if (allTitlesDict.TryGetValue(langCode, out string titleForRequestedLangCode))
+					{
+						return titleForRequestedLangCode;
+					}
+				}
+
+				// In case of any unexpected errors above, just fallback to the legacy way which just uses the path to the book.
+			}
+
+			// Default method
+			return Path.GetFileName(_pathToRealBook);
+		}
+
 		string _previousVideoFolder;
 
 		// Note: this method is normally called after the window is closed and therefore disposed.
@@ -878,7 +923,7 @@ namespace Bloom.Publish.Video
 			if (!GotFullRecording)
 				return; // nothing to save, this shouldn't have happened.
 			var extension = _codec.ToExtension();
-			string suggestedName = string.Format($"{Path.GetFileName(_pathToRealBook)}{extension}");
+			string suggestedName = $"{GetSuggestedSaveFileNameBase()}{extension}";
 			var folder = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
 			if (!String.IsNullOrEmpty(_previousVideoFolder) && Directory.Exists(_previousVideoFolder))
 				folder = _previousVideoFolder;
@@ -1118,6 +1163,11 @@ namespace Bloom.Publish.Video
 		public void SetVideoSettingsFromPreview(string videoSettings)
 		{
 			_videoSettingsFromPreview = videoSettings;
+		}
+
+		public void SetBook(Book.Book book)
+		{
+			_book = book;
 		}
 	}
 
