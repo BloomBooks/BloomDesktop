@@ -344,8 +344,7 @@ namespace Bloom.Book
 			// At the very least it's easier to localize into the format the language wants to use.
 			var fullFormatString = LocalizationManager.GetString(
 				"EditTab.FrontMatter.FullOriginalCopyrightLicenseSentence",
-				//"Adapted from original, {0}, {1}. Licensed under {2}.",
-				"This book is an adaptation of original, {0}, {1}. Licensed under {2}.",
+				"Adapted from original, {0}, {1}. Licensed under {2}.",
 				"On the Credits page of a book being translated, Bloom shows the original copyright. {0} is original title, {1} is original copyright, and {2} is license information.",
 				languagePriorityIdsNotLang1,
 				out string langUsed);
