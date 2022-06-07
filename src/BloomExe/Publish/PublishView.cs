@@ -195,7 +195,7 @@ namespace Bloom.Publish
 			LocalizeSuperToolTip(_bookletBodyRadio, "PublishTab.BodyOnlyRadio");
 			LocalizeSuperToolTip(_uploadRadio, "PublishTab.ButtonThatShowsUploadForm");
 			LocalizeSuperToolTip(_bloomPUBRadio, "PublishTab.AndroidButton");
-			LocalizeSuperToolTip(_recordVideoRadio, "PublishTab.PublishTab.RecordVideoButton");
+			LocalizeSuperToolTip(_recordVideoRadio, "PublishTab.RecordVideoButton");
 		}
 
 		// Used by LocalizeSuperToolTip to remember original English keys

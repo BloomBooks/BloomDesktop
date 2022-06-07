@@ -1005,13 +1005,11 @@
         <note>ID: Common.Finish</note>
         <note>Used for the Finish button in wizards, like that used for making a New Collection</note>
       </trans-unit>
-<!-- 5.3
       <trans-unit id="Common.FinishedAt">
         <source xml:lang="en">Finished at {0:hh:mm tt}</source>
         <note>ID: Common.FinishedAt</note>
         <note>{0:hh:mm tt} is a time</note>
       </trans-unit>
--->
       <trans-unit id="Common.Help" sil:dynamic="true">
         <source xml:lang="en">Help</source>
         <note>ID: Common.Help</note>
@@ -1097,7 +1095,10 @@
         <note>ID: Common.Report</note>
         <note>Used for a link that signifies "Bring up a dialog for sending a report of a problem. We usually want all-caps, unless inappropriate in a particular language"</note>
       </trans-unit>
-      <!-- 5.3
+      <trans-unit id="Common.Options" sil:dynamic="true">
+        <source xml:lang="en">Options</source>
+        <note>ID: Common.Options</note>
+      </trans-unit>
       <trans-unit id="Common.Save">
         <source xml:lang="en">Save</source>
         <note>ID: Common.Save</note>
@@ -1105,8 +1106,8 @@
       <trans-unit id="Common.Seconds">
         <source xml:lang="en">%0 seconds</source>
         <note>ID: Common.Seconds</note>
+        <note>%0 is a number of seconds</note>
       </trans-unit>
-      -->
       <trans-unit id="Common.SeeWebPage">
         <source xml:lang="en">See {0}.</source>
         <note>ID: Common.SeeWebPage</note>
@@ -1148,7 +1149,6 @@
         <note>ID: Common.WhatCausedThisProblem</note>
         <note>This is usually a link to an explanatory document.</note>
       </trans-unit>
-<!--5.3
       <trans-unit id="Copyright.CopyrightHolder" sil:dynamic="true">
         <source xml:lang="en">Copyright Holder</source>
         <note>ID: Copyright.CopyrightHolder</note>
@@ -1182,7 +1182,6 @@
         <source xml:lang="en">Copyright and License</source>
         <note>ID: CopyrightAndLicense</note>
       </trans-unit>
--->
       <trans-unit id="Download.Completed">
         <source xml:lang="en">Your download ({0}) is complete. You can see it in the 'Books from BloomLibrary.org' section of your Collections.</source>
         <note>ID: Download.Completed</note>
@@ -3121,7 +3120,6 @@
         <source xml:lang="en">Comic Portrait</source>
         <note>ID: LayoutChoices.ComicPortrait</note>
       </trans-unit>
-<!--5.3
       <trans-unit id="License.About" sil:dynamic="true">
         <source xml:lang="en">About %0</source>
         <note>ID: License.About</note>
@@ -3204,7 +3202,6 @@
         <source xml:lang="en">Anyone can use it however they want.</source>
         <note>ID: License.PublicDomain</note>
       </trans-unit>
--->
       <trans-unit id="LicenseDialog.WindowTitle">
         <source xml:lang="en">Bloom {0}</source>
         <note>ID: LicenseDialog.WindowTitle</note>
@@ -3248,7 +3245,7 @@
       <trans-unit id="MiscUtils.CannotSaveToCollectionFolder">
         <source xml:lang="en">Bloom cannot save files inside the collection folder ({0}).  Please choose another location.</source>
         <note>ID: MiscUtils.CannotSaveToCollectionFolder</note>
-	<note>{0} is a placeholder for the actual collection folder string.</note>
+        <note>{0} is a placeholder for the actual collection folder string.</note>
       </trans-unit>
       <trans-unit id="NewCollectionWizard.AlreadyCollectionWithThatName">
         <source xml:lang="en">There is already a collection with that name, at &lt;a href='file://{0}'&gt;{0}&lt;/a&gt;.\nPlease pick a unique name.</source>
@@ -4156,7 +4153,20 @@
         <source xml:lang="en">Publish</source>
         <note>ID: PublishTab.Publish</note>
       </trans-unit>
-      <!-- 5.3 (Low or medium priority?)
+      <trans-unit id="PublishTab.PublishRequiresEnterprise.FirstOverlayPage">
+        <source xml:lang="en">Page {0} is the first page that uses Overlay elements.</source>
+        <note>ID: PublishTab.PublishRequiresEnterprise.FirstOverlayPage</note>
+        <note>The {0} will be replaced by a page number.</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.PublishRequiresEnterprise.Options">
+        <source xml:lang="en">In order to publish your book, you need to either activate Bloom Enterprise, or remove the Overlay elements from your book.</source>
+        <note>ID: PublishTab.PublishRequiresEnterprise.Options</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.PublishRequiresEnterprise.ProblemExplanation">
+        <source xml:lang="en">The book titled '{0}' adds new Overlay elements. Overlay elements are a Bloom Enterprise feature.</source>
+        <note>ID: PublishTab.PublishRequiresEnterprise.ProblemExplanation</note>
+        <note>{0} will be replaced with the book's title.</note>
+      </trans-unit>
       <trans-unit id="PublishTab.RecordVideo.AboutOneMinute">
         <source xml:lang="en">less than one minute</source>
         <note>ID: PublishTab.RecordVideo.AboutOneMinute</note>
@@ -4169,6 +4179,11 @@
       <trans-unit id="PublishTab.RecordVideo.ActivitiesSkipped">
         <source xml:lang="en">Activities will be skipped</source>
         <note>ID: PublishTab.RecordVideo.ActivitiesSkipped</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.RecordVideo.AudioFile">
+        <source xml:lang="en">Audio File</source>
+        <note>ID: PublishTab.RecordVideo.AudioFile</note>
+        <note>displayed as file type for Save File dialog</note>
       </trans-unit>
       <trans-unit id="PublishTab.RecordVideo.ChangeScale100">
         <source xml:lang="en">Please change your display scaling to 100% while making videos. Without this, videos will come out at the wrong resolution, or not record at all.</source>
@@ -4214,6 +4229,7 @@
       <trans-unit id="PublishTab.RecordVideo.Format">
         <source xml:lang="en">Format</source>
         <note>ID: PublishTab.RecordVideo.Format</note>
+        <note>a heading to select which audio or video format to record</note>
       </trans-unit>
       <trans-unit id="PublishTab.RecordVideo.Instructions">
         <source xml:lang="en">If your book has multiple languages or other options, you will see a row of red buttons. Use these to set up the book for recording.</source>
@@ -4232,10 +4248,6 @@
         <source xml:lang="en">Mp3 Audio</source>
         <note>ID: PublishTab.RecordVideo.Mp3</note>
       </trans-unit>
-      <trans-unit id="PublishTab.RecordVideo.NoAudioInVideo">
-        <source xml:lang="en">Currently, Bloom does not support including audio from Sign Language videos in video output.</source>
-        <note>ID: PublishTab.RecordVideo.NoAudioInVideo</note>
-      </trans-unit>
       <trans-unit id="PublishTab.RecordVideo.OverviewHelpLink">
         <source xml:lang="en">Publishing Audio or Video Books</source>
         <note>ID: PublishTab.RecordVideo.OverviewHelpLink</note>
@@ -4251,26 +4263,35 @@
       <trans-unit id="PublishTab.RecordVideo.Record">
         <source xml:lang="en">Record</source>
         <note>ID: PublishTab.RecordVideo.Record</note>
-		<note>"Record" as in "Record a video recording"</note>
+        <note>'Record' as in 'Record a video recording'</note>
       </trans-unit>
-	  <trans-unit id="PublishTab.RecordVideo.RecordingInProgress">
+      <trans-unit id="PublishTab.RecordVideo.RecordingInProgress">
         <source xml:lang="en">Recording in Progress...</source>
         <note>ID: PublishTab.RecordVideo.RecordingInProgress</note>
       </trans-unit>
-	  <trans-unit id="PublishTab.RecordVideo.RecordingInProgressSideways">
+      <trans-unit id="PublishTab.RecordVideo.RecordingInProgressSideways">
         <source xml:lang="en">Recording in Progress. Showing sideways in order to fit on your screen.</source>
         <note>ID: PublishTab.RecordVideo.RecordingInProgressSideways</note>
       </trans-unit>
-	  <trans-unit id="PublishTab.RecordVideo.TurnPageAfter">
+      <trans-unit id="PublishTab.RecordVideo.RecordThesePages" sil:dynamic="true">
+        <source xml:lang="en">Record These Pages:</source>
+        <note>ID: PublishTab.RecordVideo.RecordThesePages</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.RecordVideo.TurnPageAfter">
         <source xml:lang="en">Turn pages without narration after:</source>
         <note>ID: PublishTab.RecordVideo.TurnPageAfter</note>
       </trans-unit>
       <trans-unit id="PublishTab.RecordVideo.ScreenTooSmall">
         <source xml:lang="en">Ideally, this video target should be {0}. However that is larger than your screen, so Bloom will produce a video that is {1}.</source>
         <note>ID: PublishTab.RecordVideo.ScreenTooSmall</note>
-		<note>{0} will be replaced by the target resolution of the video. For example, "1920 x 1080".</note>
-		<note>{1} will be replaced by the actual resolution of the video. For example, "1280 x 720".</note>
-		<note>Please ensure that the translation includes the {0} and {1} placeholders in an appropriate location in the translated text.</note>
+        <note>{0} will be replaced by the target resolution of the video. For example, "1920 x 1080".</note>
+        <note>{1} will be replaced by the actual resolution of the video. For example, "1280 x 720".</note>
+        <note>Please ensure that the translation includes the {0} and {1} placeholders in an appropriate location in the translated text.</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.RecordVideo.VideoFile">
+        <source xml:lang="en">Video File</source>
+        <note>ID: PublishTab.RecordVideo.VideoFile</note>
+        <note>displayed as file type for Save File dialog</note>
       </trans-unit>
       <trans-unit id="PublishTab.RecordVideo.WillOpenProgram">
         <source xml:lang="en">
@@ -4281,10 +4302,10 @@
       </trans-unit>
       <trans-unit id="PublishTab.RecordVideo.WillOpenRecordingWindow">
         <source xml:lang="en">
-          This will open a window and play the whole
-          book. Bloom will record it to match the
-          “Format” option in the upper right of this
-          screen.
+          This will open a window and play the
+          selected pages. Bloom will record it to
+          match the “Format” option in the upper right
+          of this screen.
         </source>
         <note>ID: PublishTab.RecordVideo.WillOpenRecordingWindow</note>
       </trans-unit>
@@ -4296,20 +4317,9 @@
         <source xml:lang="en">Audio or Video</source>
         <note>ID: PublishTab.RecordVideoButton</note>
       </trans-unit>
-      -->
-      <trans-unit id="PublishTab.PublishRequiresEnterprise.FirstOverlayPage">
-        <source xml:lang="en">Page {0} is the first page that uses Overlay elements.</source>
-        <note>ID: PublishTab.PublishRequiresEnterprise.FirstOverlayPage</note>
-        <note>The {0} will be replaced by a page number.</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.PublishRequiresEnterprise.Options">
-        <source xml:lang="en">In order to publish your book, you need to either activate Bloom Enterprise, or remove the Overlay elements from your book.</source>
-        <note>ID: PublishTab.PublishRequiresEnterprise.Options</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.PublishRequiresEnterprise.ProblemExplanation">
-        <source xml:lang="en">The book titled '{0}' adds new Overlay elements. Overlay elements are a Bloom Enterprise feature.</source>
-        <note>ID: PublishTab.PublishRequiresEnterprise.ProblemExplanation</note>
-        <note>{0} will be replaced with the book's title.</note>
+      <trans-unit id="PublishTab.RecordVideoButton-tooltip" sil:dynamic="true">
+        <source xml:lang="en">Create a video of the book being read</source>
+        <note>ID: PublishTab.RecordVideoButton-tooltip</note>
       </trans-unit>
       <trans-unit id="PublishTab.Save" sil:dynamic="true">
         <source xml:lang="en">Save...</source>
@@ -4680,12 +4690,6 @@ Do you want to go ahead?</note>
         <note>ID: PublishTab.UploadCollisionDialog.SameBook</note>
         <note>This is the dialog title</note>
       </trans-unit>
-      <!-- 5.3
-      <trans-unit id="PublishTab.VideoFile">
-        <source xml:lang="en">Video file</source>
-        <note>ID: PublishTab.VideoFile</note>
-      </trans-unit>
-      -->
       <trans-unit id="Quiz.CheckYourUnderstanding" sil:dynamic="true">
         <source xml:lang="en">Check Your Understanding</source>
         <note>ID: Quiz.CheckYourUnderstanding</note>

@@ -883,14 +883,14 @@ namespace Bloom.Publish.Video
 			if (!String.IsNullOrEmpty(_previousVideoFolder) && Directory.Exists(_previousVideoFolder))
 				folder = _previousVideoFolder;
 			var initialPath = Path.Combine(folder, suggestedName);
-			var outputFileLabel = L10NSharp.LocalizationManager.GetString(@"PublishTab.VideoFile",
+			var outputFileLabel = L10NSharp.LocalizationManager.GetString(@"PublishTab.RecordVideo.VideoFile",
 				"Video File",
-				@"displayed as file type for Save File dialog.");
+				@"displayed as file type for Save File dialog");
 			if (_codec == Codec.MP3)
 			{
-				outputFileLabel = L10NSharp.LocalizationManager.GetString(@"PublishTab.AudioFile",
+				outputFileLabel = L10NSharp.LocalizationManager.GetString(@"PublishTab.RecordVideo.AudioFile",
 					"Audio File",
-					@"displayed as file type for Save File dialog.");
+					@"displayed as file type for Save File dialog");
 			}
 			outputFileLabel = outputFileLabel.Replace("|", "");
 			var filter = String.Format("{0}|*{1}", outputFileLabel, extension);
