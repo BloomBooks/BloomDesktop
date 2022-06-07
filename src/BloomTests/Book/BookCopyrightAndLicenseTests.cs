@@ -357,7 +357,7 @@ namespace BloomTests.Book
 			BookCopyrightAndLicense.UpdateDomFromDataDiv(bookDom, "", bookData, false);
 			// This is an abbreviated version of the text we expect in originalCopyrightAndLicense. Now that we have an embedded <cite> element, matching the whole thing
 			// is difficult. We have other tests that deal with exactly what goes in this field; here we're just concerned with getting the right number of copies.
-			AssertThatXmlIn.Dom(bookDom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@class='test']/*[@data-derived='originalCopyrightAndLicense' and @lang='*' and contains(text(),'Adapted from original')]", 2);
+			AssertThatXmlIn.Dom(bookDom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@class='test']/*[@data-derived='originalCopyrightAndLicense' and @lang='*' and contains(text(),'This book is an adaptation of the original')]", 2);
 			AssertThatXmlIn.Dom(bookDom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@class='test']/*[@data-derived='copyright' and @lang='*' and contains(text(),'Copyright © 2008, Bar Publishers')]", 2);
 
 			// Changing the useOriginalCopyright flag should empty out the data-derived='originalCopyrightAndLicense' divs.
@@ -396,7 +396,7 @@ namespace BloomTests.Book
 			BookCopyrightAndLicense.SetMetadata(metadata, bookDom, "", bookData, false);
 			// This is an abbreviated version of the text we expect in originalCopyrightAndLicense. Now that we have an embedded <cite> element, matching the whole thing
 			// is difficult. We have other tests that deal with exactly what goes in this field; here we're just concerned with generating it or not.
-			AssertThatXmlIn.Dom(bookDom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@class='test']/*[@data-derived='originalCopyrightAndLicense' and @lang='*' and contains(text(),'Adapted from original')]", 2);
+			AssertThatXmlIn.Dom(bookDom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@class='test']/*[@data-derived='originalCopyrightAndLicense' and @lang='*' and contains(text(),'This book is an adaptation of the original')]", 2);
 			AssertThatXmlIn.Dom(bookDom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@class='test']/*[@data-derived='copyright' and @lang='*' and contains(text(),'Copyright © 2019, Foo-Bar Publishers')]", 2);
 
 			AssertThatXmlIn.Dom(bookDom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']/div[@data-book='copyright' and contains(text(), 'Copyright © 2019, Foo-Bar Publishers')]", 1);
@@ -507,7 +507,7 @@ namespace BloomTests.Book
 					<div data-book='originalCopyright' lang='*'> Copyright © 2007, Foo Publishing </div>
 					<div data-book='originalLicenseUrl' lang='*'> http://creativecommons.org/licenses/by-nc/3.0/ </div>
 				</div>");
-			Assert.AreEqual("Adapted from original, <cite data-book=\"originalTitle\" class=\"missingOriginalTitle\"></cite>, Copyright © 2007, Foo Publishing. Licensed under CC BY-NC 3.0.", GetEnglishOriginalCopyrightAndLicense(dom));
+			Assert.AreEqual("This book is an adaptation of the original, <cite data-book=\"originalTitle\" class=\"missingOriginalTitle\"></cite>, Copyright © 2007, Foo Publishing. Licensed under CC BY-NC 3.0.", GetEnglishOriginalCopyrightAndLicense(dom));
 		}
 
 		[Test]
@@ -519,7 +519,7 @@ namespace BloomTests.Book
 					<div data-book='licenseUrl' lang='*'> http://creativecommons.org/licenses/by-nc/3.0/ </div>
 					<div data-book='originalLicenseUrl' lang='*'> http://creativecommons.org/licenses/by-nc/3.0/ </div>
 				</div>");
-			Assert.AreEqual("Adapted from original without a copyright notice, <cite data-book=\"originalTitle\" class=\"missingOriginalTitle\"></cite>. Licensed under CC BY-NC 3.0.", GetEnglishOriginalCopyrightAndLicense(dom));
+			Assert.AreEqual("This book is an adaptation of the original without a copyright notice, <cite data-book=\"originalTitle\" class=\"missingOriginalTitle\"></cite>. Licensed under CC BY-NC 3.0.", GetEnglishOriginalCopyrightAndLicense(dom));
 		}
 
 		[Test]
@@ -536,7 +536,7 @@ namespace BloomTests.Book
 				</div>");
 			var result = GetFrenchOriginalCopyrightAndLicense(dom);
 			// We could try to mock what L10NSharp returns for this one test..., or we could just test that it's not using English.
-			Assert.That(result.StartsWith("Adapted from original"), Is.False);
+			Assert.That(result.StartsWith("This book is an adaptation of the original"), Is.False);
 			Assert.That(result.Contains("Licensed under CC BY 4.0"), Is.False);
 		}
 

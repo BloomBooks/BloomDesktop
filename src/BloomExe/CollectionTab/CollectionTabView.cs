@@ -105,15 +105,6 @@ namespace Bloom.CollectionTab
 				return;
 			if (book.IsEditable)
 				_model.UpdateThumbnailAsync(book);
-			// This may help to free up memory. More importantly, we allow files that are not in
-			// the current collection to be cached by the browser. The preview iframe uses urls
-			// like /book-preview/index.htm, which means urls inside it like "src='image.jpg'"
-			// translate to something like /book-preview/image.jpg, which is not book-specific.
-			// If the preview is of a book not in the editable collection, we allow files to be
-			// cached. So if we don't clear the cache when switching books, we could use an image
-			// from one book when displaying another book. And pathologically, it might not
-			// actually be the same image! See BL-11239.
-			Browser.ClearCache();
 			book.ContentsChanged += (sender, args) =>
 			{
 				if (_tabSelection.ActiveTab == WorkspaceTab.collection)
