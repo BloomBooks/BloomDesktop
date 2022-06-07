@@ -213,7 +213,7 @@ export const AudioVideoOptionsGroup: React.FunctionComponent<{
                                     font-weight: bold;
                                 `}
                                 l10nKey="PublishTab.RecordVideo.Format"
-                                temporarilyDisableI18nWarning={true}
+                                l10nComment="a heading to select which audio or video format to record"
                             >
                                 Format
                             </Div>
@@ -300,7 +300,6 @@ export const AudioVideoOptionsGroup: React.FunctionComponent<{
                             >
                                 <Div
                                     l10nKey="PublishTab.RecordVideo.TurnPageAfter"
-                                    temporarilyDisableI18nWarning={true}
                                     css={css`
                                         margin-bottom: 2px;
                                         margin-top: 20px;
@@ -316,7 +315,7 @@ export const AudioVideoOptionsGroup: React.FunctionComponent<{
                                     `}
                                     l10nKey="Common.Seconds"
                                     l10nParam0={props.pageTurnDelay.toString()}
-                                    temporarilyDisableI18nWarning={true}
+                                    l10nComment="%0 is a number of seconds"
                                 >
                                     %0 seconds
                                 </Div>
@@ -354,7 +353,6 @@ export const AudioVideoOptionsGroup: React.FunctionComponent<{
                             <React.Fragment>
                                 <Div
                                     l10nKey="PublishTab.RecordVideo.RecordThesePages"
-                                    temporarilyDisableI18nWarning={true}
                                     css={css`
                                         margin-bottom: 2px;
                                         margin-top: 20px;
@@ -434,7 +432,6 @@ const VideoFormatItem: React.FunctionComponent<IProps> = props => {
                 {props.icon}
                 <Div
                     l10nKey={props.l10nKey}
-                    temporarilyDisableI18nWarning={true}
                     css={css`
                         margin-left: 8px;
                     `}
