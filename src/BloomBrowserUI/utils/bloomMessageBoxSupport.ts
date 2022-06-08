@@ -1,6 +1,6 @@
 import React = require("react");
 import ReactDOM = require("react-dom");
-import { BloomMessageBox } from "./BloomMessageBox";
+import { BloomMessageBox, showBloomMessageBox } from "./BloomMessageBox";
 import { getEditTabBundleExports } from "../bookEdit/js/bloomFrames";
 import theOneLocalizationManager from "../lib/localizationManager/localizationManager";
 
@@ -44,11 +44,12 @@ export default class BloomMessageBoxSupport {
                                 helpButtonFileId,
                                 dialogEnvironment: {
                                     dialogFrameProvidedExternally: false,
-                                    initiallyOpen: true
+                                    initiallyOpen: false
                                 }
                             }),
                             container
                         );
+                        showBloomMessageBox();
                     });
             });
     }
