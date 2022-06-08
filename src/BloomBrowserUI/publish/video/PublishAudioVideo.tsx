@@ -52,9 +52,38 @@ import {
     NoteBox
 } from "../../react_components/BloomDialog/commonDialogComponents";
 import { useEffect } from "react";
+import { isLinux } from "../../utils/isLinux";
 import { MuiCheckbox } from "../../react_components/muiCheckBox";
 
 export const PublishAudioVideo = () => {
+    if (isLinux()) {
+        return (
+            <div
+                css={css`
+                    padding: 20px;
+                `}
+            >
+                <ErrorBox>
+                    <div>
+                        <Div
+                            css={css`
+                                font-style: italic;
+                                font-weight: bold;
+                            `}
+                            l10nKey="PublishTab.RecordVideo.NotOnLinux"
+                        >
+                            Not available on Linux
+                        </Div>
+                        <Div l10nKey="PublishTab.RecordVideo.ApologiesForNoLinux">
+                            This feature is available only on the Windows
+                            version of Bloom. We apologize for the
+                            inconvenience.
+                        </Div>
+                    </div>
+                </ErrorBox>
+            </div>
+        );
+    }
     // When the user changes some features, included languages, etc., we
     // need to rebuild the book and re-run all of our Bloom API queries.
     // This requires a hard-reset of the whole screen, which we do by
