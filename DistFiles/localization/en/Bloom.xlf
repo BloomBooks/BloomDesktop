@@ -4295,17 +4295,13 @@
       </trans-unit>
       <trans-unit id="PublishTab.RecordVideo.WillOpenProgram">
         <source xml:lang="en">
-          This will open the program on your computer
-          that is associated with this file type.
+          This will open the program on your computer that is associated with this file type.
         </source>
         <note>ID: PublishTab.RecordVideo.WillOpenProgram</note>
       </trans-unit>
       <trans-unit id="PublishTab.RecordVideo.WillOpenRecordingWindow">
         <source xml:lang="en">
-          This will open a window and play the
-          selected pages. Bloom will record it to
-          match the “Format” option in the upper right
-          of this screen.
+          This will open a window and play the selected pages. Bloom will record it to match the “Format” option in the upper right of this screen.
         </source>
         <note>ID: PublishTab.RecordVideo.WillOpenRecordingWindow</note>
       </trans-unit>
