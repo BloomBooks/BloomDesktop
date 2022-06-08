@@ -344,7 +344,7 @@ namespace Bloom.Utils
 		/// Wrap a "Save File" dialog to prevent saving files inside the book's collection folder.
 		/// </summary>
 		/// <returns>The output file path, or null if canceled.</returns>
-		public static string GetOutputFilePathOutsideCollectionFolder(string initialPath, string filter, string collectionFolder)
+		public static string GetOutputFilePathOutsideCollectionFolder(string initialPath, string filter)
 		{
 			string initialFolder = Path.GetDirectoryName(initialPath);
 			string initialFilename = Path.GetFileName(initialPath);
@@ -366,8 +366,8 @@ namespace Bloom.Utils
 						return null;
 					destFileName = dlg.FileName;
 				}
-				repeat = destFileName.StartsWith(collectionFolder,
-					Platform.IsWindows ? StringComparison.InvariantCultureIgnoreCase : StringComparison.InvariantCulture);
+				string collectionFolder;
+				repeat = IsFolderInsideBloomCollection(Path.GetDirectoryName(destFileName), out collectionFolder);
 				if (repeat)
 				{
 					WarnUserOfInvalidFolderChoice(collectionFolder, destFileName);
@@ -381,6 +381,28 @@ namespace Bloom.Utils
 			return destFileName;
 		}
 
+		/// <summary>
+		/// Check whether the given folder is a collection folder or inside a collection folder at
+		/// any depth.  If so, return true and set collectionFolder for use in a warning message.
+		/// If not, return false and set collectionFolder to null.
+		/// </summary>
+		public static bool IsFolderInsideBloomCollection(string folder, out string collectionFolder)
+		{
+			collectionFolder = null;
+			if (String.IsNullOrEmpty(folder) || !Directory.Exists(folder))
+				return false;
+			if (Directory.EnumerateFiles(folder, "*.bloomCollection").Any())
+			{
+				collectionFolder = folder;
+				return true;
+			}
+			var personalFolder = Environment.GetFolderPath(Environment.SpecialFolder.Personal);
+			var userProfileFolder = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+			if (folder == personalFolder || folder == userProfileFolder)
+				return false;	// There should be no need to go further.
+			return IsFolderInsideBloomCollection(Path.GetDirectoryName(folder), out collectionFolder);
+		}
+
 		public static void WarnUserOfInvalidFolderChoice(string collectionFolder, string chosenDestination)
 		{
 			var msgFmt = L10NSharp.LocalizationManager.GetString("MiscUtils.CannotSaveToCollectionFolder",
@@ -390,7 +412,7 @@ namespace Bloom.Utils
 				{
 					new MiscUI.MessageBoxButton { Default = true, Text = L10NSharp.LocalizationManager.GetString("Common.OK","OK"), Id = "ok" }
 				};
-			MiscUI.BloomMessageBox.Show(Form.ActiveForm, $"<p>{msg}</p><p></p><p>{chosenDestination}</p>", buttons, MessageBoxIcon.Warning);
+			MiscUI.BloomMessageBox.Show(Form.ActiveForm, $"<p>{msg}</p><p>{chosenDestination}</p>", buttons, MessageBoxIcon.Warning);
 		}
 	}
 }

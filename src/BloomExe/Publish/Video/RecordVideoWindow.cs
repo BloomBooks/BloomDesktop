@@ -939,9 +939,8 @@ namespace Bloom.Publish.Video
 			}
 			outputFileLabel = outputFileLabel.Replace("|", "");
 			var filter = String.Format("{0}|*{1}", outputFileLabel, extension);
-			var collectionFolder = Path.GetDirectoryName(Path.GetDirectoryName(_pathToRealBook));
 
-			var destFileName = MiscUtils.GetOutputFilePathOutsideCollectionFolder(initialPath, filter, collectionFolder);
+			var destFileName = MiscUtils.GetOutputFilePathOutsideCollectionFolder(initialPath, filter);
 			if (!String.IsNullOrEmpty(destFileName))
 			{
 				_previousVideoFolder = Path.GetDirectoryName(destFileName);
