@@ -9,6 +9,16 @@
         <source xml:lang="en">Special Sentence-Ending Punctuation</source>
         <note>ID: ReaderSetup.SentencePunctuation.Header</note>
       </trans-unit>
+      <trans-unit id="PublishTab.RecordVideo.NotOnLinux" sil:dynamic="true">
+        <source xml:lang="en">Not available on Linux</source>
+        <note>ID: PublishTab.RecordVideo.NotOnLinux</note>
+        <note>"Linux" is an operating system name which may not translate.</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.RecordVideo.ApologiesForNoLinux" sil:dynamic="true">
+        <source xml:lang="en">This feature is available only on the Windows version of Bloom. We apologize for the inconvenience.</source>
+        <note>ID: PublishTab.RecordVideo.ApologiesForNoLinux</note>
+        <note>"Windows" and "Linux" are operating system names which may not translate.</note>
+      </trans-unit>
     </body>
   </file>
 </xliff>
