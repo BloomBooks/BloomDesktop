@@ -31,6 +31,10 @@
         <source xml:lang="en">It looks like you are trying to open a Bloom Collection from inside of a ZIP file. You need to first unzip the ZIP file, and then open the collection.</source>
         <note>ID: OpenCreateCloneControl.InZipFileMessage</note>
       </trans-unit>
+      <trans-unit id="PublishTab.RecordVideo.NoAudioInVideo">
+        <source xml:lang="en">Currently, Bloom does not support including audio from Sign Language videos in video output.</source>
+        <note>ID: PublishTab.RecordVideo.NoAudioInVideo</note>
+      </trans-unit>
       <trans-unit id="PublishTab.Upload.CheckEmailFailed">
         <source xml:lang="en">Bloom needs to verify your email, but our attempt to resend the request failed, possibly because you made too many requests too close together. Please check your email, and if you can't find the message, try again later.</source>
         <note>ID: PublishTab.Upload.CheckEmailFailed</note>
