@@ -2248,7 +2248,7 @@ namespace Bloom.Book
 		/// a key in the dictionary unless includeLangsOccurringOnlyInXmatter is true.
 		///
 		/// For determining which Text Languages to display in Publish -> Android and which pages to delete
-		/// from a .bloomd file, we pass the parameter as true. I (gjm) am unclear as to why historically
+		/// from a .bloompub file, we pass the parameter as true. I (gjm) am unclear as to why historically
 		/// we did it this way, but BL-7967 might be part of the problem
 		/// (where xmatter pages only in L2 were erroneously deleted).
 		/// </summary>
@@ -4095,7 +4095,7 @@ namespace Bloom.Book
 		}
 
 		/// <summary>
-		/// The primary focus of this method is removing pages we don't want in bloomd files,
+		/// The primary focus of this method is removing pages we don't want in bloompub files,
 		/// particularly xmatter pages that often don't have content but just might.
 		/// It will detect pages with img elements or bloom-imageContainer elements with
 		/// background images, and as long as the image isn't our placeholder, such pages

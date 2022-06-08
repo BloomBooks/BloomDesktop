@@ -524,8 +524,8 @@ namespace Bloom.Publish.Android
 
 		/// <summary>
 		/// This is the core of sending a book to a device. We need a book and a bookServer in order to come up
-		/// with the .bloomd file.
-		/// We are either simply saving the .bloomd to destFileName, or else we will make a temporary .bloomd file and
+		/// with the .bloompub file.
+		/// We are either simply saving the .bloompub to destFileName, or else we will make a temporary .bloompub file and
 		/// actually send it using sendAction.
 		/// We report important progress on the progress control. This includes reporting that we are starting
 		/// the actual transmission using startingMessageAction, which is passed the safe file name (for checking pre-existence
@@ -566,7 +566,7 @@ namespace Bloom.Publish.Android
 				progress.MessageWithoutLocalizing(startingMessageFunction(publishedFileName, bookTitle));
 			if (destFileName == null)
 			{
-				// wifi or usb...make the .bloomd in a temp folder.
+				// wifi or usb...make the .bloompub in a temp folder.
 				using (var bloomdTempFile = TempFile.WithFilenameInTempFolder(publishedFileName))
 				{
 					BloomPubMaker.CreateBloomPub(bloomdTempFile.Path, book, bookServer,  progress, settings);
@@ -589,14 +589,9 @@ namespace Bloom.Publish.Android
 		private static TemporaryFolder _stagingFolder;
 
 		/// <summary>
-		/// Generates a .bloomd file (bloompub) from the book
+		/// Generates a .bloompub file from the book
 		/// </summary>
-		/// <param name="book"></param>
-		/// <param name="bookServer"></param>
-		/// <param name="progress"></param>
-		/// <param name="backColor"></param>
-		/// <param name="settings"></param>
-		/// <returns>A valid, well-formed URL on localhost that points to the bloomd</returns>
+		/// <returns>A valid, well-formed URL on localhost that points to the bloompub</returns>
 		public string MakeBloomPubForPreview(Book.Book book, BookServer bookServer, WebSocketProgress progress, Color backColor, AndroidPublishSettings settings = null)
 		{
 			progress.Message("PublishTab.Epub.PreparingPreview", "Preparing Preview");	// message shared with Epub publishing
