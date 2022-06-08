@@ -939,7 +939,11 @@ namespace Bloom.Publish.Video
 			}
 			outputFileLabel = outputFileLabel.Replace("|", "");
 			var filter = String.Format("{0}|*{1}", outputFileLabel, extension);
+			// collectionFolder is actually the parent of the collection's folder (typically "C:\Users\UserName\Documents\Bloom"
+			// on Windows or "/home/username/Bloom" on Linux.)
 			var collectionFolder = Path.GetDirectoryName(Path.GetDirectoryName(_pathToRealBook));
+			if (String.IsNullOrEmpty(collectionFolder))
+				collectionFolder = Path.GetDirectoryName(_pathToRealBook);
 
 			var destFileName = MiscUtils.GetOutputFilePathOutsideCollectionFolder(initialPath, filter, collectionFolder);
 			if (!String.IsNullOrEmpty(destFileName))

@@ -399,7 +399,11 @@ namespace Bloom.Publish
 							_lastDirectory :
 							Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
 				var initialPath = Path.Combine(startingFolder, suggestedName);
-				var collectionFolder = Path.GetDirectoryName(BookSelection.CurrentSelection.FolderPath);
+				// collectionFolder is actually the parent of the collection's folder (typically "C:\Users\UserName\Documents\Bloom"
+				// on Windows or "/home/username/Bloom" on Linux.)
+				var collectionFolder = Path.GetDirectoryName(Path.GetDirectoryName(BookSelection.CurrentSelection.FolderPath));
+				if (String.IsNullOrEmpty(collectionFolder))
+					collectionFolder = Path.GetDirectoryName(BookSelection.CurrentSelection.FolderPath);
 
 				var destFileName = Utils.MiscUtils.GetOutputFilePathOutsideCollectionFolder(initialPath, pdfFilter, collectionFolder);
 				if (String.IsNullOrEmpty(destFileName))

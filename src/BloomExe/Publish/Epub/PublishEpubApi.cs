@@ -168,8 +168,11 @@ namespace Bloom.Publish.Epub
 			if (!string.IsNullOrEmpty(_lastDirectory) && Directory.Exists(_lastDirectory))
 				folder = _lastDirectory;
 			var initialPath = Path.Combine(folder, suggestedName);
-			var collectionFolder = Path.GetDirectoryName(_bookSelection.CurrentSelection.FolderPath);
-
+			// collectionFolder is actually the parent of the collection's folder (typically "C:\Users\UserName\Documents\Bloom"
+			// on Windows or "/home/username/Bloom" on Linux.)
+			var collectionFolder = Path.GetDirectoryName(Path.GetDirectoryName(_bookSelection.CurrentSelection.FolderPath));
+			if (String.IsNullOrEmpty(collectionFolder))
+				collectionFolder = Path.GetDirectoryName(_bookSelection.CurrentSelection.FolderPath);
 			var destFileName = Utils.MiscUtils.GetOutputFilePathOutsideCollectionFolder(initialPath, "ePUB files|*.epub", collectionFolder);
 			if (!string.IsNullOrEmpty(destFileName))
 			{

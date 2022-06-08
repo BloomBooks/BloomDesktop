@@ -289,7 +289,12 @@ namespace Bloom.CollectionTab
 			if (!string.IsNullOrEmpty(_bloomPackFolder) && Directory.Exists(_bloomPackFolder))
 				folder = _bloomPackFolder;
 			var initialPath = Path.Combine(folder, GetSuggestedBloomPackPath());
-			var destFileName = MiscUtils.GetOutputFilePathOutsideCollectionFolder(initialPath, "BloomPack files|*.BloomPack", _pathToCollection);
+			// collectionFolder is actually the parent of the collection's folder (typically "C:\Users\UserName\Documents\Bloom"
+			// on Windows or "/home/username/Bloom" on Linux.)
+			var collectionFolder = Path.GetDirectoryName(_pathToCollection);
+			if (String.IsNullOrEmpty(collectionFolder))
+				collectionFolder = _pathToCollection;
+			var destFileName = MiscUtils.GetOutputFilePathOutsideCollectionFolder(initialPath, "BloomPack files|*.BloomPack", collectionFolder);
 			if (!string.IsNullOrEmpty(destFileName))
 			{
 				_bloomPackFolder = Path.GetDirectoryName(destFileName);

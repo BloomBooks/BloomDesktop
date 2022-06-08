@@ -349,6 +349,8 @@ namespace Bloom.Utils
 			string initialFolder = Path.GetDirectoryName(initialPath);
 			string initialFilename = Path.GetFileName(initialPath);
 			string defaultExtension = Path.GetExtension(initialPath);
+			if (!collectionFolder.EndsWith(Path.DirectorySeparatorChar.ToString()))
+				collectionFolder = collectionFolder + Path.DirectorySeparatorChar;
 			var destFileName = String.Empty;
 			var repeat = false;
 			do
@@ -385,7 +387,7 @@ namespace Bloom.Utils
 		{
 			var msgFmt = L10NSharp.LocalizationManager.GetString("MiscUtils.CannotSaveToCollectionFolder",
 				"Bloom cannot save files inside the collection folder ({0}).  Please choose another location.");
-			var msg = String.Format(msgFmt, collectionFolder);
+			var msg = String.Format(msgFmt, collectionFolder.TrimEnd(Path.DirectorySeparatorChar));
 			var buttons = new[]
 				{
 					new MiscUI.MessageBoxButton { Default = true, Text = L10NSharp.LocalizationManager.GetString("Common.OK","OK"), Id = "ok" }

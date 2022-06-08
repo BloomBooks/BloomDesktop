@@ -286,7 +286,11 @@ namespace Bloom.web.controllers
 			if (!string.IsNullOrEmpty(_previousTargetSaveAs) && Directory.Exists(_previousTargetSaveAs))
 				folder = _previousTargetSaveAs;
 			var initialPath = Path.Combine(folder, bookStorage.FolderName + defaultExtension);
-			var collectionFolder = Path.GetDirectoryName(bookStorage.FolderPath);
+			// collectionFolder is actually the parent of the collection's folder (typically "C:\Users\UserName\Documents\Bloom"
+			// on Windows or "/home/username/Bloom" on Linux.)
+			var collectionFolder = Path.GetDirectoryName(Path.GetDirectoryName(bookStorage.FolderPath));
+			if (String.IsNullOrEmpty(collectionFolder))
+				collectionFolder = Path.GetDirectoryName(bookStorage.FolderPath);
 
 			var destFileName = Utils.MiscUtils.GetOutputFilePathOutsideCollectionFolder(initialPath, filter, collectionFolder);
 

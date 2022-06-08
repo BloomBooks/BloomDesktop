@@ -502,12 +502,21 @@ namespace Bloom.web.controllers
 			var initialPath = request.GetParamOrNull("path");
 			var description = request.GetParamOrNull("description");
 			var forOutput = request.GetParamOrNull("forOutput");
+			var isForOutput = !String.IsNullOrEmpty(forOutput) && forOutput.ToLowerInvariant() == "true";
 
 			dynamic result = new DynamicJson();
 			var book = _bookSelection?.CurrentSelection;
 			string collectionFolder = null;
 			if (book != null && !String.IsNullOrEmpty(book.FolderPath))
-				collectionFolder = Path.GetDirectoryName(book.FolderPath);
+			{
+				// collectionFolder is actually the parent of the collection's folder (typically
+				// "C:\Users\UserName\Documents\Bloom" on Windows or "/home/username/Bloom" on Linux.)
+				collectionFolder = Path.GetDirectoryName(Path.GetDirectoryName(book.FolderPath));
+				if (String.IsNullOrEmpty(collectionFolder))
+					collectionFolder = Path.GetDirectoryName(book.FolderPath);
+				if (!String.IsNullOrEmpty(collectionFolder))
+					collectionFolder = collectionFolder + Path.DirectorySeparatorChar;
+			}
 			bool repeat = false;
 			do
 			{
@@ -524,8 +533,9 @@ namespace Bloom.web.controllers
 
 					result.success = dlg.ShowDialog() == DialogResult.OK;
 					result.path = result.success  ? dlg.SelectedPath : "";
-					repeat = result.success && forOutput && !String.IsNullOrEmpty(collectionFolder) &&
-						result.path.StartsWith(collectionFolder, Platform.IsWindows ? StringComparison.InvariantCultureIgnoreCase : StringComparison.InvariantCulture);
+					repeat = result.success && isForOutput && !String.IsNullOrEmpty(collectionFolder) &&
+						(result.path + Path.DirectorySeparatorChar).StartsWith(collectionFolder,
+							Platform.IsWindows ? StringComparison.InvariantCultureIgnoreCase : StringComparison.InvariantCulture);
 					if (repeat)
 					{
 						Utils.MiscUtils.WarnUserOfInvalidFolderChoice(collectionFolder, result.path);

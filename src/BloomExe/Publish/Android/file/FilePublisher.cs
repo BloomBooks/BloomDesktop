@@ -31,7 +31,11 @@ namespace Bloom.Publish.Android.file
 				"This is shown in the 'Save' dialog when you save a bloom book in the format that works with the Bloom Reader Android App");
 			var filter = $"{bloomdFileDescription}|*{BookCompressor.BloomPubExtensionWithDot}";
 
-			var collectionFolder = Path.GetDirectoryName(book.FolderPath);
+			// collectionFolder is actually the parent of the collection's folder (typically "C:\Users\UserName\Documents\Bloom"
+			// on Windows or "/home/username/Bloom" on Linux.)
+			var collectionFolder = Path.GetDirectoryName(Path.GetDirectoryName(book.FolderPath));
+			if (String.IsNullOrEmpty(collectionFolder))
+				collectionFolder = Path.GetDirectoryName(book.FolderPath);
 
 			var destFileName = Utils.MiscUtils.GetOutputFilePathOutsideCollectionFolder(initialPath, filter, collectionFolder);
 			if (String.IsNullOrEmpty(destFileName))
