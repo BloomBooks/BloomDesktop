@@ -141,7 +141,7 @@ export const LicensePanel: React.FunctionComponent<{
         return props.isForBook ? "book" : "image";
     }
     function getL10nIdForBookOrImage(idBase: string): string {
-        return idBase + props.isForBook ? ".Book" : ".Image";
+        return idBase + (props.isForBook ? ".Book" : ".Image");
     }
 
     return (

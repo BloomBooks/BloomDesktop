@@ -107,7 +107,7 @@ const PublishAudioVideoInternalInternal: React.FunctionComponent<{
         "Check Recording",
         "PublishTab.RecordVideo.CheckRecording"
     );
-    const save = useL10n("Save", "PublishTab.RecordVideo.Save");
+    const save = useL10n("Save", "Common.Save");
     const [closePending, setClosePending] = useState(false);
     const [avSettings, setAvSettings] = BloomApi.useApiState<
         IAudioVideoSettings
@@ -311,7 +311,6 @@ const PublishAudioVideoInternalInternal: React.FunctionComponent<{
                                             ${blurbClasses}
                                         `}
                                         l10nKey="PublishTab.RecordVideo.Instructions"
-                                        temporarilyDisableI18nWarning={true}
                                     >
                                         If your book has multiple languages or
                                         other options, you will see a row of red
@@ -419,7 +418,6 @@ const PublishAudioVideoInternalInternal: React.FunctionComponent<{
                                         ${blurbClasses}
                                     `}
                                     l10nKey="PublishTab.RecordVideo.WillOpenRecordingWindow"
-                                    temporarilyDisableI18nWarning={true}
                                 >
                                     This will open a window and play the
                                     selected pages. Bloom will record it to
@@ -435,9 +433,6 @@ const PublishAudioVideoInternalInternal: React.FunctionComponent<{
                                                     font-weight: bold;
                                                 `}
                                                 l10nKey="PublishTab.RecordVideo.DisableScaling"
-                                                temporarilyDisableI18nWarning={
-                                                    true
-                                                }
                                             >
                                                 Disable Display Scaling
                                             </Div>
@@ -446,12 +441,7 @@ const PublishAudioVideoInternalInternal: React.FunctionComponent<{
                                                     margin: 0;
                                                 `}
                                             >
-                                                <Span
-                                                    l10nKey="PublishTab.RecordVideo.ChangeScale100"
-                                                    temporarilyDisableI18nWarning={
-                                                        true
-                                                    }
-                                                >
+                                                <Span l10nKey="PublishTab.RecordVideo.ChangeScale100">
                                                     Please change your display
                                                     scaling to 100% while making
                                                     videos. Without this, videos
@@ -464,9 +454,6 @@ const PublishAudioVideoInternalInternal: React.FunctionComponent<{
                                                         text-decoration: underline;
                                                     `}
                                                     l10nKey="PublishTab.RecordVideo.DisplaySettings"
-                                                    temporarilyDisableI18nWarning={
-                                                        true
-                                                    }
                                                     onClick={() =>
                                                         BloomApi.post(
                                                             "publish/av/displaySettings"
@@ -482,8 +469,8 @@ const PublishAudioVideoInternalInternal: React.FunctionComponent<{
                                 <BloomButton
                                     enabled={!recording}
                                     l10nKey="PublishTab.RecordVideo.Record"
+                                    l10nComment="'Record' as in 'Record a video recording'"
                                     clickApiEndpoint="publish/av/recordVideo"
-                                    temporarilyDisableI18nWarning={true}
                                     iconBeforeText={
                                         <RecordIcon
                                             css={css`
@@ -504,7 +491,6 @@ const PublishAudioVideoInternalInternal: React.FunctionComponent<{
                                         ${blurbClasses}
                                     `}
                                     l10nKey="PublishTab.RecordVideo.WillOpenProgram"
-                                    temporarilyDisableI18nWarning={true}
                                 >
                                     This will open the program on your computer
                                     that is associated with this file type.
@@ -512,7 +498,6 @@ const PublishAudioVideoInternalInternal: React.FunctionComponent<{
                                 <BloomButton
                                     enabled={gotRecording}
                                     l10nKey="PublishTab.RecordVideo.Play"
-                                    temporarilyDisableI18nWarning={true}
                                     clickApiEndpoint="publish/av/playVideo"
                                     iconBeforeText={
                                         <PlayIcon
@@ -536,7 +521,6 @@ const PublishAudioVideoInternalInternal: React.FunctionComponent<{
                                 <BloomButton
                                     enabled={gotRecording}
                                     l10nKey="PublishTab.Save"
-                                    temporarilyDisableI18nWarning={true}
                                     clickApiEndpoint="publish/av/saveVideo"
                                     iconBeforeText={
                                         <SaveIcon
@@ -591,7 +575,6 @@ const PublishAudioVideoInternalInternal: React.FunctionComponent<{
                         <HelpLink
                             l10nKey="PublishTab.RecordVideo.OverviewHelpLink"
                             helpId="Tasks/Publish_tasks/Create_audio_or_video_of_book.htm"
-                            temporarilyDisableI18nWarning={true}
                         >
                             Publishing Audio or Video Books
                         </HelpLink>
