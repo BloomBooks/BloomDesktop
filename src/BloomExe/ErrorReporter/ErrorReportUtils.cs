@@ -97,7 +97,17 @@ namespace Bloom.ErrorReporter
 		private static void CheckForFakeTestErrors(string title)
 		{
 			const string fakeProblemMessage = "Fake problem for development/testing purposes";
-			var fakeException = new ApplicationException("Fake exception for development/testing purposes");
+			Exception fakeException;
+
+			// Throwing/catching the exception populates the stack trace
+			try
+			{
+				throw new ApplicationException("Fake exception for development/testing purposes");
+			}
+			catch (ApplicationException e)
+			{
+				fakeException = e;
+			}
 			
 			if (title == "Error NotifyUser NoReport")
 			{
