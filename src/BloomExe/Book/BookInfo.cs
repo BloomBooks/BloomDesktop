@@ -1006,7 +1006,7 @@ namespace Bloom.Book
 		public bool IsSuitableForVernacularLibrary { get; set; }
 
 		/// <summary>
-		/// This version number is set when making a meta.json to embed in a bloomd file.
+		/// This version number is set when making a meta.json to embed in a bloompub file.
 		/// We increment it whenever something changes that bloom-player or some other
 		/// client might need to know about. It is NOT intended that the player would
 		/// refuse to open a book with a higher number than it knows about; we may one day
@@ -1014,7 +1014,7 @@ namespace Bloom.Book
 		/// newer player which accommodates older books to know which of those accommodations
 		/// are needed.
 		/// See the one place where it is set for a history of the versions and what each
-		/// indicates about the bloomd content.
+		/// indicates about the bloompub content.
 		/// </summary>
 		[JsonProperty("bloomdVersion")]
 		public int BloomdVersion { get; set; }

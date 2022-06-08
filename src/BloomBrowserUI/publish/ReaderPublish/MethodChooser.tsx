@@ -25,7 +25,7 @@ const methodNameToImageUrl = {
     file: fileImage
 };
 
-// Lets the user choose how they want to "publish" the bloomd, along with a button to start that process.
+// Lets the user choose how they want to "publish" the bloompub, along with a button to start that process.
 // This is a set of radio buttons and image that goes with each choice, plus a button to start off the sharing/saving
 export const MethodChooser: React.FunctionComponent = () => {
     const [method, setMethod] = BloomApi.useApiStringState(
@@ -77,7 +77,7 @@ function getStartButton(method: string) {
             return (
                 <BloomButton
                     l10nKey="PublishTab.Save"
-                    l10nComment="Button that tells Bloom to save the book as a .bloomD file."
+                    l10nComment="Button that tells Bloom to save the book in the current format."
                     clickApiEndpoint="publish/android/file/save"
                     enabled={true}
                     hasText={true}

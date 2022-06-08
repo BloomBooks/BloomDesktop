@@ -532,6 +532,8 @@ namespace Bloom.Publish
 			{
 				dlg.ShowAndDoWork(progress => _currentlyLoadedBook.BringBookUpToDate(progress));
 			}
+
+			CanPublish = DeterminePublishability(); // in case the user edited the book without changing the selected book
 		}
 
 		[Import("GetPublishingMenuCommands")]//, AllowDefault = true)]

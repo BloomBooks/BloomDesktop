@@ -25,6 +25,11 @@ export interface IMessageBoxButton {
     default: boolean; // Only one button should have this true
 }
 
+// This function is only used from Typescript-land to give us control over repeated opening and closing.
+export let showBloomMessageBox: () => void = () => {
+    window.alert("showBloomMessageBox is not set up yet.");
+};
+
 // Designed to be a partial replacement for a WinForms messageBox, both from C# and Typescript (eventually...needs work).
 // More flexible in that buttons can be fully configured, and uses our MaterialUI dialog look and feel.
 export const BloomMessageBox: React.FunctionComponent<{
@@ -47,6 +52,7 @@ export const BloomMessageBox: React.FunctionComponent<{
         closeDialog,
         propsForBloomDialog
     } = useSetupBloomDialog(props.dialogEnvironment);
+    showBloomMessageBox = showDialog;
 
     const closeDialogForButton = buttonId => {
         if (props.closeWithAPICall) {

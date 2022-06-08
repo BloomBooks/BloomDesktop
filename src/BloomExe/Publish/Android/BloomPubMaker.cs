@@ -17,9 +17,9 @@ using SIL.Xml;
 namespace Bloom.Publish.Android
 {
 	/// <summary>
-	/// This class is the beginnings of a separate place to put code for creating .bloomd files.
+	/// This class is the beginnings of a separate place to put code for creating .bloompub files.
 	/// Much of the logic is still in BookCompressor. Eventually we might move more of it here,
-	/// so that making a bloomd actually starts here and calls BookCompressor.
+	/// so that making a bloompub actually starts here and calls BookCompressor.
 	/// </summary>
 	public static class BloomPubMaker
 	{
@@ -56,9 +56,9 @@ namespace Bloom.Publish.Android
 		}
 
 		/// <summary>
-		/// Create a Bloom Digital book (the zipped .bloomd file) as used by BloomReader (and Bloom Library etc)
+		/// Create a Bloom Digital book (the zipped .bloompub file) as used by BloomReader (and Bloom Library etc)
 		/// </summary>
-		/// <param name="outputPath">The path to create the zipped .bloomd output file at</param>
+		/// <param name="outputPath">The path to create the zipped .bloompub output file at</param>
 		/// <param name="bookFolderPath">The path to the input book</param>
 		/// <param name="bookServer"></param>
 		/// <param name="backColor"></param>
@@ -67,7 +67,7 @@ namespace Bloom.Publish.Android
 		/// <param name="creator">value for &lt;meta name="creator" content="..."/&gt; (defaults to "bloom")</param>
 		/// <param name="isTemplateBook"></param>
 		/// <param name="settings"></param>
-		/// <returns>Path to the unzipped .bloomd</returns>
+		/// <returns>Path to the unzipped .bloompub</returns>
 		public static string CreateBloomPub(string outputPath, string bookFolderPath, BookServer bookServer,
 			IWebSocketProgress progress, TemporaryFolder tempFolder, string creator = kCreatorBloom, bool isTemplateBook=false,
 			AndroidPublishSettings settings = null)
@@ -115,7 +115,7 @@ namespace Bloom.Publish.Android
 
 			// Right here, let's maintain the history of what the BloomdVersion signifies to a reader.
 			// Version 1 (as opposed to no BloomdVersion field): the bookFeatures property may be
-			// used to report features analytics (with earlier bloomd's, the reader must use its own logic)
+			// used to report features analytics (with earlier bloompub's, the reader must use its own logic)
 			modifiedBook.Storage.BookInfo.MetaData.BloomdVersion = 1;
 
 			modifiedBook.Storage.BookInfo.UpdateOneSingletonTag("distribution", settings?.DistributionTag);
@@ -172,7 +172,7 @@ namespace Bloom.Publish.Android
 			modifiedBook.RemoveObsoleteAudioMarkup();
 
 			// We want these to run after RemoveUnwantedContent() so that the metadata will more accurately reflect
-			// the subset of contents that are included in the .bloomd
+			// the subset of contents that are included in the .bloompub
 			// Note that we generally want to disable features here, but not enable them, especially while
 			// running harvester!  See https://issues.bloomlibrary.org/youtrack/issue/BL-8995.
 			var enableBlind = modifiedBook.BookInfo.MetaData.Feature_Blind || !Program.RunningHarvesterMode;
