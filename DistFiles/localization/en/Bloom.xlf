@@ -2891,6 +2891,7 @@
       <trans-unit id="Errors.ReadOnlyBookFolder">
         <source xml:lang="en">This book cannot be edited because its folder is read-only.</source>
         <note>ID: Errors.ReadOnlyBookFolder</note>
+        <note>Obsolete as of Bloom 5.3 (no code currently reports this problem, though it's possible we might want to again one day)</note>
       </trans-unit>
       <trans-unit id="Errors.RemoveExcessHtml">
         <source xml:lang="en">Please remove all but one of the files ending in .htm.  Bloom will now open this folder for you.</source>
