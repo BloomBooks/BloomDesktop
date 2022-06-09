@@ -286,9 +286,8 @@ namespace Bloom.web.controllers
 			if (!string.IsNullOrEmpty(_previousTargetSaveAs) && Directory.Exists(_previousTargetSaveAs))
 				folder = _previousTargetSaveAs;
 			var initialPath = Path.Combine(folder, bookStorage.FolderName + defaultExtension);
-			var collectionFolder = Path.GetDirectoryName(bookStorage.FolderPath);
 
-			var destFileName = Utils.MiscUtils.GetOutputFilePathOutsideCollectionFolder(initialPath, filter, collectionFolder);
+			var destFileName = Utils.MiscUtils.GetOutputFilePathOutsideCollectionFolder(initialPath, filter);
 
 			if (!String.IsNullOrEmpty(destFileName))
 				_previousTargetSaveAs = Path.GetDirectoryName(destFileName);

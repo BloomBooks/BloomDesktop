@@ -168,9 +168,7 @@ namespace Bloom.Publish.Epub
 			if (!string.IsNullOrEmpty(_lastDirectory) && Directory.Exists(_lastDirectory))
 				folder = _lastDirectory;
 			var initialPath = Path.Combine(folder, suggestedName);
-			var collectionFolder = Path.GetDirectoryName(_bookSelection.CurrentSelection.FolderPath);
-
-			var destFileName = Utils.MiscUtils.GetOutputFilePathOutsideCollectionFolder(initialPath, "ePUB files|*.epub", collectionFolder);
+			var destFileName = Utils.MiscUtils.GetOutputFilePathOutsideCollectionFolder(initialPath, "ePUB files|*.epub");
 			if (!string.IsNullOrEmpty(destFileName))
 			{
 				_lastDirectory = Path.GetDirectoryName(destFileName);

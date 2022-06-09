@@ -502,12 +502,10 @@ namespace Bloom.web.controllers
 			var initialPath = request.GetParamOrNull("path");
 			var description = request.GetParamOrNull("description");
 			var forOutput = request.GetParamOrNull("forOutput");
+			var isForOutput = !String.IsNullOrEmpty(forOutput) && forOutput.ToLowerInvariant() == "true";
 
 			dynamic result = new DynamicJson();
 			var book = _bookSelection?.CurrentSelection;
-			string collectionFolder = null;
-			if (book != null && !String.IsNullOrEmpty(book.FolderPath))
-				collectionFolder = Path.GetDirectoryName(book.FolderPath);
 			bool repeat = false;
 			do
 			{
@@ -523,9 +521,9 @@ namespace Bloom.web.controllers
 					}
 
 					result.success = dlg.ShowDialog() == DialogResult.OK;
-					result.path = result.success  ? dlg.SelectedPath : "";
-					repeat = result.success && forOutput && !String.IsNullOrEmpty(collectionFolder) &&
-						result.path.StartsWith(collectionFolder, Platform.IsWindows ? StringComparison.InvariantCultureIgnoreCase : StringComparison.InvariantCulture);
+					result.path = result.success ? dlg.SelectedPath : "";
+					string collectionFolder = string.Empty;
+					repeat = result.success && isForOutput && Utils.MiscUtils.IsFolderInsideBloomCollection(result.path, out collectionFolder);
 					if (repeat)
 					{
 						Utils.MiscUtils.WarnUserOfInvalidFolderChoice(collectionFolder, result.path);
