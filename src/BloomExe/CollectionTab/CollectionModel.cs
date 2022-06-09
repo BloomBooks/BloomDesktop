@@ -289,7 +289,7 @@ namespace Bloom.CollectionTab
 			if (!string.IsNullOrEmpty(_bloomPackFolder) && Directory.Exists(_bloomPackFolder))
 				folder = _bloomPackFolder;
 			var initialPath = Path.Combine(folder, GetSuggestedBloomPackPath());
-			var destFileName = MiscUtils.GetOutputFilePathOutsideCollectionFolder(initialPath, "BloomPack files|*.BloomPack", _pathToCollection);
+			var destFileName = MiscUtils.GetOutputFilePathOutsideCollectionFolder(initialPath, "BloomPack files|*.BloomPack");
 			if (!string.IsNullOrEmpty(destFileName))
 			{
 				_bloomPackFolder = Path.GetDirectoryName(destFileName);

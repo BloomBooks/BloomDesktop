@@ -399,9 +399,8 @@ namespace Bloom.Publish
 							_lastDirectory :
 							Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
 				var initialPath = Path.Combine(startingFolder, suggestedName);
-				var collectionFolder = Path.GetDirectoryName(BookSelection.CurrentSelection.FolderPath);
 
-				var destFileName = Utils.MiscUtils.GetOutputFilePathOutsideCollectionFolder(initialPath, pdfFilter, collectionFolder);
+				var destFileName = Utils.MiscUtils.GetOutputFilePathOutsideCollectionFolder(initialPath, pdfFilter);
 				if (String.IsNullOrEmpty(destFileName))
 					return;
 

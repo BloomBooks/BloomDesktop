@@ -6,6 +6,9 @@
 // this bundle is one of two loaded by pageThumbnailList.pug. It is imported last,
 // so things it exports are accessible from outside the bundle using editTabBundle.
 
+/** @jsx jsx **/
+import { jsx, css } from "@emotion/core";
+
 import * as React from "react";
 import { useState, useEffect, useMemo } from "react";
 import * as ReactDOM from "react-dom";
@@ -246,6 +249,11 @@ const PageList: React.FunctionComponent<{ pageSize: string }> = props => {
                             ? " gridSelected"
                             : "")
                     }
+                    css={css`
+                        .lazyload-wrapper {
+                            height: 100%;
+                        }
+                    `}
                 >
                     <LazyLoad
                         height={rowHeight}
