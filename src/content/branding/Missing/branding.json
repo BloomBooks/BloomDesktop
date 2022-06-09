@@ -1,0 +1,10 @@
+{
+    "presets": [
+        {
+            "data-book": "outside-back-cover-branding-bottom-html",
+            "lang": "*",
+            "content": "A future update of Bloom will contain the branding assets for this Enterprise Subscription.  Thank you for your patience.",
+            "condition": "always"
+        }
+    ]
+}
