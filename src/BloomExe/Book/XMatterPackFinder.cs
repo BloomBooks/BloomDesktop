@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
+using Gecko;
 using SIL.Extensions;
 
 namespace Bloom.Book
@@ -32,20 +33,33 @@ namespace Bloom.Book
 				return _all;
 			}
 		}
-		public   IEnumerable<XMatterInfo> GetXMattersToOfferInSettings(string selectKey)
+
+		string[] packsToSkip = new string[] { "null", "bigbook", "shrp", "sharp", "forunittest", "templatestarter" };
+		public   IEnumerable<XMatterInfo> GetXMattersToOfferInSettings(string xmatterKeyForcedByBranding)
 		{
 		
 				if (_factoryXMatters == null || _customInstalledXMatters == null)
 					FindAll();
-				if (string.IsNullOrEmpty(selectKey))
+				if (string.IsNullOrEmpty(xmatterKeyForcedByBranding))
 				{
 					return _factoryXMatters.Where(p => !p.PathToFolder.Contains("project-specific"))
-						.Concat(_customInstalledXMatters);
+						.Concat(_customInstalledXMatters)
+						.Where(pack => !packsToSkip.Any(s => pack.Key.ToLowerInvariant().Contains(s)));
 				}
 				else // this is a Bloom Enterprise Project with a Branding that selects the xmatter 
 				{
-					return _factoryXMatters.Where(p => p.Key == selectKey);
+					return _factoryXMatters.Where(p => p.Key == xmatterKeyForcedByBranding);
 				}
+		}
+
+		public string GetValidXmatter(string xmatterKeyForcedByBranding, string proposedXmatter)
+		{
+			var possibleXmatters = GetXMattersToOfferInSettings(xmatterKeyForcedByBranding).ToArray();
+			if (possibleXmatters.Any(x => x.Key == proposedXmatter))
+				return proposedXmatter;
+			if (possibleXmatters.Length == 1)
+				return possibleXmatters[0].Key; // Only one is allowed for current branding
+			return FactoryDefault.Key;
 		}
 
 		/// <summary>
