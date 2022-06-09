@@ -5,7 +5,7 @@ import { jsx, css } from "@emotion/core";
 import * as React from "react";
 import { useEffect, useState } from "react";
 
-import { kMutedTextGray } from "../../bloomMaterialUITheme";
+import { kBloomBlue, kMutedTextGray } from "../../bloomMaterialUITheme";
 import { NoteBox } from "../../react_components/BloomDialog/commonDialogComponents";
 import { Div } from "../../react_components/l10nComponents";
 import { MuiCheckbox } from "../../react_components/muiCheckBox";
@@ -186,6 +186,10 @@ export const CopyrightPanel: React.FunctionComponent<{
                                 margin-top: 5px;
                                 p {
                                     margin-block-end: 0 !important; // override DialogMiddle setting and browser default
+                                }
+                                // Somehow just putting a color rule on "PWithLink" doesn't work, so we put it here.
+                                a {
+                                    color: ${kBloomBlue};
                                 }
                             `}
                         >
