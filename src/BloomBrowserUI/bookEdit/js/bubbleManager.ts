@@ -178,18 +178,6 @@ export class BubbleManager {
         });
     }
 
-    // When switching to the comicTool from elsewhere (notably the sign language tool), we remove
-    // the 'bloom-selected' class, so the container doesn't have a yellow border like it does in the
-    // sign language tool.
-    public deselectVideoContainers() {
-        const videoContainers: HTMLElement[] = Array.from(
-            document.getElementsByClassName(kVideoContainerClass) as any
-        );
-        videoContainers.forEach(container => {
-            container.classList.remove("bloom-selected");
-        });
-    }
-
     private getAllVisibleFocusableDivs(
         overPictureContainerElement: HTMLElement
     ): Element[] {

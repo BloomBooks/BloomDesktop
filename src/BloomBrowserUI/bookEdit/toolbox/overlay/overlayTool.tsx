@@ -109,7 +109,6 @@ const OverlayToolControls: React.FunctionComponent = () => {
 
         bubbleManager.turnOnBubbleEditing();
         bubbleManager.turnOnHidingImageButtons();
-        bubbleManager.deselectVideoContainers();
 
         const bubbleSpec = bubbleManager.getSelectedFamilySpec();
 
@@ -832,6 +831,8 @@ export default OverlayToolControls;
 export class OverlayTool extends ToolboxToolReactAdaptor {
     public static theOneOverlayTool: OverlayTool | undefined;
 
+    public static kToolId = "overlay";
+
     public callOnNewPageReady: () => void | undefined;
 
     public constructor() {
@@ -849,7 +850,7 @@ export class OverlayTool extends ToolboxToolReactAdaptor {
     }
 
     public id(): string {
-        return "overlay";
+        return OverlayTool.kToolId;
     }
 
     public isExperimental(): boolean {

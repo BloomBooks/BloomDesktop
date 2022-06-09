@@ -11,6 +11,8 @@ import {
     SignLanguageToolControls,
     SignLanguageTool
 } from "../toolbox/signLanguage/signLanguageTool";
+import { getTheOneToolbox, ToolBox } from "../toolbox/toolbox";
+import { OverlayTool } from "../toolbox/overlay/overlayTool";
 
 const mouseOverFunction = e => {
     const target = e.target as HTMLElement;
@@ -179,12 +181,21 @@ function SetupClickToShowSignLanguageTool(containerDiv: Element) {
     // if the user clicks on the video placeholder (or the video for that matter--see BL-6149),
     // bring up the sign language tool
     $(containerDiv).click(() => {
-        if (containerDiv.classList.contains("bloom-selected")) {
-            // In comic mode, we remove this class, so the click handler won't take us to the sign
-            // language tool, but when we are in the sign language tool and click on a video element
-            // the class gets re-added.
-            showSignLanguageTool();
+        // In comic mode (overlay tool), suppress the click handler so it won't take us to the sign
+        // language tool, but everywhere else we want a click on a video element to take us to the SL tool
+        const toolbox = getToolboxBundleExports()?.getTheOneToolbox();
+        const currentToolId = toolbox?.getCurrentTool()?.id();
+
+        if (
+            toolbox?.toolboxIsShowing() &&
+            currentToolId &&
+            currentToolId === OverlayTool.kToolId
+        ) {
+            // Looks like the overlay tool is selected (and the toolbox is open). Abort early.
+            return;
         }
+
+        showSignLanguageTool();
     });
 }
 
