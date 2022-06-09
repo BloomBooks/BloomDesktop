@@ -40,6 +40,8 @@ namespace Bloom.Book
 		string Key { get; }
 		string FolderName { get; }
 		string FolderPath { get; }
+
+		void CompleteFullyUpdatingFilesIfNeeded();
 		string PathToExistingHtml { get; }
 		bool TryGetPremadeThumbnail(string fileName, out Image image);
 		//bool DeleteBook();
@@ -1692,6 +1694,24 @@ namespace Bloom.Book
 		// already to prevent this from happening.
 		private static HashSet<string> _booksWithMultipleHtmlFiles = new HashSet<string>();
 
+
+		private bool _bookFilesFullyUpdated;
+
+		/// <summary>
+		/// Usually if a book is selected and being worked on, we should recently have called
+		/// ExpensiveInitializtion(true). However, it's hard to be certain that is always true.
+		/// What is definitely true is that any time we select a book or do anything else
+		/// important with it, we bring it up to date. I actually think some or all of what
+		/// happens in ExpensiveInitialization when fullyUpdateBookFiles is true might be better
+		/// moved to BBUD, and we could then remove the argument. However, that's a difficult
+		/// and risky refactoring. For now, I've just added this method, which BBUD can use
+		/// to make sure it's been done.
+		/// </summary>
+		public void CompleteFullyUpdatingFilesIfNeeded()
+		{
+			if (!_bookFilesFullyUpdated)
+				ExpensiveInitialization(true);
+		}
 		/// <summary>
 		/// Do whatever is needed to do more than just show a title and thumbnail
 		/// </summary>
@@ -1708,6 +1728,7 @@ namespace Bloom.Book
 		private void ExpensiveInitialization(bool fullyUpdateBookFiles = false)
 		{
 			Debug.WriteLine($"ExpensiveInitialization({fullyUpdateBookFiles}) for {FolderPath}");
+			_bookFilesFullyUpdated = true;
 			Dom = new HtmlDom();
 			//the fileLocator we get doesn't know anything about this particular book.
 			_fileLocator.AddPath(FolderPath);
