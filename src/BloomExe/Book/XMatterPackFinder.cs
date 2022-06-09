@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
+using Gecko;
 using SIL.Extensions;
 
 namespace Bloom.Book
@@ -32,6 +33,8 @@ namespace Bloom.Book
 				return _all;
 			}
 		}
+
+		string[] packsToSkip = new string[] { "null", "bigbook", "shrp", "sharp", "forunittest", "templatestarter" };
 		public   IEnumerable<XMatterInfo> GetXMattersToOfferInSettings(string selectKey)
 		{
 		
@@ -40,12 +43,23 @@ namespace Bloom.Book
 				if (string.IsNullOrEmpty(selectKey))
 				{
 					return _factoryXMatters.Where(p => !p.PathToFolder.Contains("project-specific"))
-						.Concat(_customInstalledXMatters);
+						.Concat(_customInstalledXMatters)
+						.Where(pack => !packsToSkip.Any(s => pack.Key.ToLowerInvariant().Contains(s)));
 				}
 				else // this is a Bloom Enterprise Project with a Branding that selects the xmatter 
 				{
 					return _factoryXMatters.Where(p => p.Key == selectKey);
 				}
+		}
+
+		public string GetValidXmatter(string selectKey, string proposedXmatter)
+		{
+			var possibleXmatters = GetXMattersToOfferInSettings(selectKey).ToArray();
+			if (possibleXmatters.Any(x => x.Key == proposedXmatter))
+				return proposedXmatter;
+			if (possibleXmatters.Length == 1)
+				return possibleXmatters[0].Key; // Only one is allowed for current branding
+			return FactoryDefault.Key;
 		}
 
 		/// <summary>
