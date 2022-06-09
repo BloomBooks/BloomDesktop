@@ -263,7 +263,7 @@ namespace Bloom.Publish
 			superToolTipInfo1.BackgroundGradientBegin = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(255)))), ((int)(((byte)(255)))));
 			superToolTipInfo1.BackgroundGradientEnd = System.Drawing.Color.FromArgb(((int)(((byte)(202)))), ((int)(((byte)(218)))), ((int)(((byte)(239)))));
 			superToolTipInfo1.BackgroundGradientMiddle = System.Drawing.Color.FromArgb(((int)(((byte)(242)))), ((int)(((byte)(246)))), ((int)(((byte)(251)))));
-			superToolTipInfo1.BodyText = "Publish to an bloomPUB device.";
+			superToolTipInfo1.BodyText = "Make a BloomPUB for Bloom Reader or Reading App Builder.";
 			superToolTipInfo1.OffsetForWhereToDisplay = new System.Drawing.Point(120, 0);
 			superToolTipInfo1.ShowHeader = false;
 			superToolTipInfoWrapper1.SuperToolTipInfo = superToolTipInfo1;
@@ -290,7 +290,7 @@ namespace Bloom.Publish
 			superToolTipInfo7.BackgroundGradientBegin = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(255)))), ((int)(((byte)(255)))));
 			superToolTipInfo7.BackgroundGradientEnd = System.Drawing.Color.FromArgb(((int)(((byte)(202)))), ((int)(((byte)(218)))), ((int)(((byte)(239)))));
 			superToolTipInfo7.BackgroundGradientMiddle = System.Drawing.Color.FromArgb(((int)(((byte)(242)))), ((int)(((byte)(246)))), ((int)(((byte)(251)))));
-			superToolTipInfo7.BodyText = "Create a video of the book being read";
+			superToolTipInfo7.BodyText = "Make an audio or video file of the book being read.";
 			superToolTipInfo7.OffsetForWhereToDisplay = new System.Drawing.Point(120, 0);
 			superToolTipInfo7.ShowHeader = false;
 			superToolTipInfoWrapper7.SuperToolTipInfo = superToolTipInfo7;
@@ -318,7 +318,7 @@ namespace Bloom.Publish
 			superToolTipInfo2.BackgroundGradientEnd = System.Drawing.Color.FromArgb(((int)(((byte)(202)))), ((int)(((byte)(218)))), ((int)(((byte)(239)))));
 			superToolTipInfo2.BackgroundGradientMiddle = System.Drawing.Color.FromArgb(((int)(((byte)(242)))), ((int)(((byte)(246)))), ((int)(((byte)(251)))));
 			superToolTipInfo2.BodyText = "Upload your book to BloomLibrary.org so that other people can read it, download i" +
-    "t to their devices and share it with other people.";
+	"t to their devices, and share it with other people.";
 			superToolTipInfo2.OffsetForWhereToDisplay = new System.Drawing.Point(120, 0);
 			superToolTipInfo2.ShowHeader = false;
 			superToolTipInfoWrapper2.SuperToolTipInfo = superToolTipInfo2;
@@ -326,7 +326,7 @@ namespace Bloom.Publish
 			this._superToolTip.SetSuperStuff(this._uploadRadio, superToolTipInfoWrapper2);
 			this._uploadRadio.TabIndex = 21;
 			this._uploadRadio.TabStop = true;
-			this._uploadRadio.Text = "Share on the Web";
+			this._uploadRadio.Text = "Web";
 			this._uploadRadio.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
 			this._uploadRadio.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
 			this._uploadRadio.UseVisualStyleBackColor = true;
