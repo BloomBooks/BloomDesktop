@@ -21,6 +21,7 @@ namespace Bloom.Collection
 
 		private readonly CollectionSettings _collectionSettings;
 		private readonly QueueRenameOfCollection _queueRenameOfCollection;
+		private readonly XMatterPackFinder _xmatterPackFinder;
 		private readonly PageRefreshEvent _pageRefreshEvent;
 		private bool _restartRequired;
 		private bool _loaded;
@@ -50,11 +51,12 @@ namespace Bloom.Collection
 
 		public CollectionSettingsDialog(CollectionSettings collectionSettings,
 			QueueRenameOfCollection queueRenameOfCollection, PageRefreshEvent pageRefreshEvent,
-			TeamCollectionManager tcManager)
+			TeamCollectionManager tcManager, XMatterPackFinder xmatterPackFinder)
 		{
 			_collectionSettings = collectionSettings;
 			_queueRenameOfCollection = queueRenameOfCollection;
 			_pageRefreshEvent = pageRefreshEvent;
+			_xmatterPackFinder = xmatterPackFinder;
 			InitializeComponent();
 
 			_language1Name.UseMnemonic = false; // Allow & to be part of the language display names.
@@ -293,10 +295,15 @@ namespace Bloom.Collection
 			}
 
 			_collectionSettings.PageNumberStyle = PendingNumberingStyle; // non-localized key
-			_collectionSettings.XMatterPackName = PendingXmatter;
+			
 
 			_collectionSettings.BrandingProjectKey = _brand;
 			_collectionSettings.SubscriptionCode = _subscriptionCode;
+
+			string xmatterKeyForcedByBranding = _collectionSettings.GetXMatterPackNameSpecifiedByBrandingOrNull();
+			PendingXmatter =
+				this._xmatterPackFinder.GetValidXmatter(xmatterKeyForcedByBranding, PendingXmatter);
+			_collectionSettings.XMatterPackName = PendingXmatter;
 
 			//no point in letting them have the Nat lang 2 be the same as 1
 			if (_collectionSettings.Language2Iso639Code == _collectionSettings.Language3Iso639Code)
