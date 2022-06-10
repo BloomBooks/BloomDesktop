@@ -254,33 +254,24 @@ namespace Bloom.web.controllers
 
 		private object SetupXMatterList()
 		{
-			string currentXmatter = null;
 			var xmatterOfferings = new List<object>();
-			var packsToSkip = new string[] { "null", "bigbook", "SHRP", "SHARP", "ForUnitTest", "TemplateStarter" };
 
-			string lockedDownXMatterKey = null;
-			var xmatterFromBranding = _collectionSettings.GetXMatterPackNameSpecifiedByBrandingOrNull();
-			if (null != xmatterFromBranding)
-			{
-				lockedDownXMatterKey = xmatterFromBranding;
-			}
-			var offerings = _xmatterPackFinder.GetXMattersToOfferInSettings(lockedDownXMatterKey);
+			string xmatterKeyForcedByBranding =  _collectionSettings.GetXMatterPackNameSpecifiedByBrandingOrNull();
+
+			var offerings = _xmatterPackFinder.GetXMattersToOfferInSettings(xmatterKeyForcedByBranding);
 
 			foreach (var pack in offerings)
 			{
-				if (packsToSkip.Any(s => pack.Key.ToLowerInvariant().Contains(s.ToLower())))
-					continue;
-
 				var labelToShow = LocalizationManager.GetDynamicString("Bloom", "CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack." + pack.EnglishLabel, pack.EnglishLabel, "Name of a Front/Back Matter Pack");
 				var description = pack.GetDescription(); // already localized, if available
 				var item = new { displayName = labelToShow, internalName = pack.Key, description };
 				xmatterOfferings.Add(item);
-				if (pack.Key == _collectionSettings.XMatterPackName)
-					currentXmatter = pack.Key;
 			}
-			// If we haven't found the pack that used to be selected in the collection, use the default factory item.
-			if (currentXmatter == null)
-				currentXmatter = _xmatterPackFinder.FactoryDefault.Key;
+
+			// This will switch to the default factory xmatter if the current one is not valid.
+			var currentXmatter =
+				_xmatterPackFinder.GetValidXmatter(xmatterKeyForcedByBranding, _collectionSettings.XMatterPackName);
+			
 			return new { currentXmatter, xmatterOfferings = xmatterOfferings.ToArray() };
 		}
 
