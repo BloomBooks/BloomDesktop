@@ -3776,10 +3776,12 @@
       <trans-unit id="PublishTab.AndroidButton">
         <source xml:lang="en">Bloom Reader</source>
         <note>ID: PublishTab.AndroidButton</note>
+        <note>Obsolete in 5.3+</note>
       </trans-unit>
       <trans-unit id="PublishTab.AndroidButton-tooltip" sil:dynamic="true">
         <source xml:lang="en">Publish to an Android device.</source>
         <note>ID: PublishTab.AndroidButton-tooltip</note>
+        <note>Obsolete in 5.3+</note>
       </trans-unit>
       <trans-unit id="PublishTab.Audio.ElementsMissingId">
         <source xml:lang="en">Some audio elements are missing ids</source>
@@ -3794,6 +3796,10 @@
         <source xml:lang="en">BloomPUB</source>
         <note>ID: PublishTab.bloomPUBButton</note>
         <note>This is the label under the BloomPUB icon on the left side of the Publish screen.</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.bloomPUBButton-tooltip" sil:dynamic="true">
+        <source xml:lang="en">Make a BloomPUB for Bloom Reader or Reading App Builder.</source>
+        <note>ID: PublishTab.bloomPUBButton-tooltip</note>
       </trans-unit>
       <trans-unit id="PublishTab.BodyOnlyRadio-tooltip" sil:dynamic="true">
         <source xml:lang="en">Make a booklet from the inside pages of the book.\nPages will be laid out and reordered so that when you fold it, you'll have a booklet.\n</source>
@@ -3831,12 +3837,11 @@
         <note>ID: Publish.BulkBloomPub.ProduceBloomShelf</note>
       </trans-unit>
       <trans-unit id="PublishTab.ButtonThatShowsUploadForm">
-        <source xml:lang="en">Share on the Web</source>
+        <source xml:lang="en">Web</source>
         <note>ID: PublishTab.ButtonThatShowsUploadForm</note>
-        <note xml:lang="en">OLD TEXT (before 3.9, reworded): Upload</note>
       </trans-unit>
       <trans-unit id="PublishTab.ButtonThatShowsUploadForm-tooltip" sil:dynamic="true">
-        <source xml:lang="en">Upload your book to BloomLibrary.org so that other people can read it, download it to their devices and share it with other people.</source>
+        <source xml:lang="en">Upload your book to BloomLibrary.org so that other people can read it, download it to their devices, and share it with other people.</source>
         <note>ID: PublishTab.ButtonThatShowsUploadForm-tooltip</note>
       </trans-unit>
       <trans-unit id="PublishTab.CoverOnlyRadio">
@@ -4315,7 +4320,7 @@
         <note>ID: PublishTab.RecordVideoButton</note>
       </trans-unit>
       <trans-unit id="PublishTab.RecordVideoButton-tooltip" sil:dynamic="true">
-        <source xml:lang="en">Create a video of the book being read</source>
+        <source xml:lang="en">Make an audio or video file of the book being read.</source>
         <note>ID: PublishTab.RecordVideoButton-tooltip</note>
       </trans-unit>
       <trans-unit id="PublishTab.Save" sil:dynamic="true">
