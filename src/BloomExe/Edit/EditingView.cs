@@ -109,8 +109,13 @@ namespace Bloom.Edit
 			//we're giving it to the parent control through the TopBarControls property
 			Controls.Remove(_topBarPanel);
 			SetupBrowserContextMenu();
-			bookRenamedEvent.Subscribe((book) =>
+			bookRenamedEvent.Subscribe((oldToNewPath) =>
 			{
+				// If the selected book is renamed, we should update our saved CurrentBookPath
+				if (oldToNewPath.Value == _model.CurrentBook.FolderPath)
+				{
+					Settings.Default.CurrentBookPath = oldToNewPath.Value;
+				}
 				UpdatePageList(true);
 			});
 #if __MonoCS__
