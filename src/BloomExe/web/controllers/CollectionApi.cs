@@ -71,7 +71,8 @@ namespace Bloom.web.controllers
 						request.ReplyWithText("" + _collectionModel.GetSelectedBookOrNull()?.ID);
 						break;
 					case HttpMethods.Post:
-						var book = GetBookObjectFromPost(request);
+						// We're selecting the book, make sure everything is up to date.
+						var book = GetBookObjectFromPost(request, true);
 						if (book.FolderPath != _bookSelection?.CurrentSelection?.FolderPath)
 						{
 							_collectionModel.SelectBook(book);
@@ -84,7 +85,7 @@ namespace Bloom.web.controllers
 
 			apiHandler.RegisterEndpointHandler(kApiUrlPart + "selectAndEditBook", request =>
 			{
-				var book = GetBookObjectFromPost(request);
+				var book = GetBookObjectFromPost(request, true);
 				if (book.FolderPath != _bookSelection?.CurrentSelection?.FolderPath)
 				{
 					_collectionModel.SelectBook(book);
@@ -287,10 +288,10 @@ namespace Bloom.web.controllers
 			return GetCollectionOfRequest(request).GetBookInfos().FirstOrDefault(info => info.Id == bookId);
 		}
 
-		private Book.Book GetBookObjectFromPost(ApiRequest request)
+		private Book.Book GetBookObjectFromPost(ApiRequest request, bool fullyUpdateBookFiles = false)
 		{
 			var info = GetBookInfoFromPost(request);
-			return _collectionModel.GetBookFromBookInfo(info);
+			return _collectionModel.GetBookFromBookInfo(info, fullyUpdateBookFiles);
 
 		}
 	}
