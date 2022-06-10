@@ -105,7 +105,9 @@ export const CollectionHistoryTable: React.FunctionComponent<{
                         `}
                     >
                         <HeaderCell>When</HeaderCell>
-                        <HeaderCell colSpan={2}>Title</HeaderCell>
+                        {currentBookOnly || (
+                            <HeaderCell colSpan={2}>Title</HeaderCell>
+                        )}
                         <HeaderCell colSpan={2}>Who</HeaderCell>
                         <HeaderCell>What</HeaderCell>
                         <HeaderCell>Comment</HeaderCell>
@@ -126,19 +128,21 @@ export const CollectionHistoryTable: React.FunctionComponent<{
                             key={index}
                         >
                             <TextCell>{e.When.substring(0, 10)}</TextCell>
-                            <td
-                                css={css`
-                                    padding-right: 4px !important;
-                                `}
-                            >
-                                <img
+                            {currentBookOnly || (
+                                <td
                                     css={css`
-                                        height: 2em;
+                                        padding-right: 4px !important;
                                     `}
-                                    src={e.ThumbnailPath}
-                                />
-                            </td>
-                            <TextCell>{e.Title}</TextCell>
+                                >
+                                    <img
+                                        css={css`
+                                            height: 2em;
+                                        `}
+                                        src={e.ThumbnailPath}
+                                    />
+                                </td>
+                            )}
+                            {currentBookOnly || <TextCell>{e.Title}</TextCell>}
                             <td
                                 css={css`
                                     padding-right: 2px !important;
