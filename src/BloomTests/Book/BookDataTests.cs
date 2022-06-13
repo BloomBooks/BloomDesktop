@@ -735,6 +735,56 @@ namespace BloomTests.Book
 			}
 		}
 
+
+		[Test]
+		public void MergeBrandingSettings_HasPreviousBrandingData_Removed()
+		{
+			HtmlDom bookDom = new HtmlDom(@"<html><head></head><body>
+				<div id='bloomDataDiv'>
+						<div data-book='branding-foo' lang='*'>foo</div>
+				</div>
+			 </body></html>");
+			using (var tempFolder = new TemporaryFolder("MergeBrandingSettings_HasPreviousBrandingData_Removed"))
+			{
+				File.WriteAllText(Path.Combine(tempFolder.Path, "branding.json"),
+					@"{
+	""presets"": [{
+		""data-book"": ""branding-blah"",
+		""lang"": ""*"",
+		""content"": ""blah"",
+		""condition"":""always""
+	}]
+}");
+				var data = new BookData(bookDom, _collectionSettings, null);
+				data.MergeBrandingSettings(tempFolder.Path);
+				Assert.That(data.GetVariableOrNull("branding-foo", "*").Xml, Is.Null); // removed because it wasn't mentioned in the new branding
+				Assert.That(data.GetVariableOrNull("branding-blah", "*").Xml, Is.EqualTo("blah"));
+			}
+		}
+
+		[Test]
+		public void MergeBrandingSettings_HasPreviousFullBleedFlag_Removed()
+		{
+			// About "fullBleed": see https://issues.bloomlibrary.org/youtrack/issue/BL-11290. This key
+			// didn't have the word "branding" in it because logically it didn't belong
+			// in there, but nevertheless it created the same problems.
+
+			HtmlDom bookDom = new HtmlDom(@"<html><head></head><body>
+				<div id='bloomDataDiv'>
+						<div data-book='fullBleed' lang='*'>true</div>
+				</div>
+			 </body></html>");
+			using (var tempFolder = new TemporaryFolder("MergeBrandingSettings_HasPreviousBrandingData_Removed"))
+			{
+				File.WriteAllText(Path.Combine(tempFolder.Path, "branding.json"),
+					@"{	""presets"": [{	}]}");
+				var data = new BookData(bookDom, _collectionSettings, null);
+				data.MergeBrandingSettings(tempFolder.Path);
+				Assert.That(data.GetVariableOrNull("fullBleed", "*").Xml, Is.Null); // removed because it wasn't mentioned in the new branding
+			}
+		}
+
+
 		[Test]
 		public void
 			SuckInDataFromEditedDom_XmatterPageAttributeAddedToXmatterPage_XmatterPageAttributeAddedToBookDataAndDataDiv()
