@@ -200,7 +200,7 @@ const ReaderPublishScreenInternal: React.FunctionComponent<{
                         </HelpLink>
                         <HelpLink
                             l10nKey="PublishTab.Android.BloomPUB"
-                            helpId="Tasks/Publish_tasks/Bloom_Reader.htm"
+                            helpId="Tasks/Publish_tasks/Make_a_BloomPUB_file_overview.htm"
                         >
                             Publishing to Bloom Reader
                         </HelpLink>
