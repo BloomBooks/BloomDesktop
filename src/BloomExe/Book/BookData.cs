@@ -1867,11 +1867,7 @@ namespace Bloom.Book
 			// old stuff hanging around.
 			foreach (var key in _dataset.TextVariables.Keys.ToArray())
 			{
-				// About "fullBleed": see https://issues.bloomlibrary.org/youtrack/issue/BL-11290. This key
-				// didn't have the word "branding" in it because logically it didn't belong
-				// in there, but nevertheless it created the same problems.
-
-				if (key.ToLowerInvariant().Contains("branding") || key == "fullBleed")
+				if (key.ToLowerInvariant().Contains("branding"))
 				{
 					RemoveAllForms(key);
 				}
