@@ -111,9 +111,22 @@ namespace Bloom.Edit
 			SetupBrowserContextMenu();
 			bookRenamedEvent.Subscribe((oldToNewPath) =>
 			{
-				// If the selected book is renamed, we should update our saved CurrentBookPath
-				if (oldToNewPath.Value == _model.CurrentBook.FolderPath)
+				// If the selected book is renamed, we should update our saved CurrentBookPath.
+				if (model.CurrentBook == null)
 				{
+					// Note: possibly all we need is this branch, which doesn't actually depend
+					// on model.CurrentBook being null. However, if we do have a model.CurrentBook,
+					// that's the definitive source of truth. We don't want by any chance to
+					// be updating our settings to indicate that anything else is selected.
+					// So I decided to use this only when we don't have that...usually only
+					// during startup, I think because of a duplicate name.
+					if (oldToNewPath.Key == Settings.Default.CurrentBookPath)
+					{
+						Settings.Default.CurrentBookPath = oldToNewPath.Value;
+					}
+				} else if (oldToNewPath.Value == _model.CurrentBook?.FolderPath)
+				{
+					// This is the usual path, updating the settings to match the model's current book.
 					Settings.Default.CurrentBookPath = oldToNewPath.Value;
 				}
 				UpdatePageList(true);
