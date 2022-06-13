@@ -106,7 +106,7 @@ namespace Bloom.Publish.Video
 
 					_recordVideoWindow?.SetPageReadTime(settings.PageTurnDelayDouble.ToString());
 					_recordVideoWindow?.SetFormat(request.CurrentBook.BookInfo.PublishSettings.AudioVideo.Format,
-						ShouldRecordAsLandscape(request.CurrentBook));
+						ShouldRecordAsLandscape(request.CurrentBook), request.CurrentBook.GetLayout());
 					if (settings.Motion != oldMotion)
 					{
 						UpdatePreview(request); // does its own success/fail
@@ -179,12 +179,23 @@ namespace Bloom.Publish.Video
 				request.PostSucceeded();
 			}, true, false);
 
+			apiHandler.RegisterEndpointHandler(kApiUrlPart + "shouldUseOriginalPageSize",
+				request =>
+				{
+					RecordVideoWindow.GetDataForFormat(request.CurrentBook.BookInfo.PublishSettings.AudioVideo.Format,
+						ShouldRecordAsLandscape(request.CurrentBook), request.CurrentBook.GetLayout(),
+						out _, out _, out _, out bool useOriginalPageSize);
+					request.ReplyWithBoolean(useOriginalPageSize);
+				},
+				 true, // has to be on UI thread because it uses Bloom's main window to find the right screen
+				false);
+
 			apiHandler.RegisterEndpointHandler(kApiUrlPart + "tooBigForScreenMsg",
 				request =>
 				{
 					request.ReplyWithText(RecordVideoWindow.GetDataForFormat(request.CurrentBook.BookInfo.PublishSettings.AudioVideo.Format,
-						ShouldRecordAsLandscape(request.CurrentBook),
-						out _, out _, out _));
+						ShouldRecordAsLandscape(request.CurrentBook), request.CurrentBook.GetLayout(),
+						out _, out _, out _, out _));
 				},
 				 true, // has to be on UI thread because it uses Bloom's main window to find the right screen
 				false);
@@ -306,7 +317,7 @@ namespace Bloom.Publish.Video
 		{
 			_recordVideoWindow = RecordVideoWindow.Create(_webSocketServer);
 			_recordVideoWindow.SetFormat(request.CurrentBook.BookInfo.PublishSettings.AudioVideo.Format,
-				ShouldRecordAsLandscape(request.CurrentBook));
+				ShouldRecordAsLandscape(request.CurrentBook), request.CurrentBook.GetLayout());
 			_recordVideoWindow.SetPageReadTime(request.CurrentBook.BookInfo.PublishSettings.AudioVideo.PageTurnDelayDouble.ToString());
 			_recordVideoWindow.SetVideoSettingsFromPreview(request.CurrentBook.BookInfo.PublishSettings.AudioVideo.PlayerSettings);
 			_recordVideoWindow.SetPageRange(request.CurrentBook.BookInfo.PublishSettings.AudioVideo.PageRange);
