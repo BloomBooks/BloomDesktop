@@ -2897,6 +2897,10 @@ namespace Bloom.Book
 		public static void InsertFullBleedMarkup(XmlElement body)
 		{
 			AddClassIfMissing(body, "bloom-fullBleed");
+			// Note: at the moment, as far as I can tell, this is a runtime-only structure change. It does not get saved
+			// because we only save at the div.bloom-page level, and this div.bloom-mediaBox is a wrapper around the page.
+			// This is important in the scenario where a book was full-bleed, but then is re-purposed elsewhere.
+			// See https://issues.bloomlibrary.org/youtrack/issue/BL-11290
 			foreach (XmlElement page in body.SafeSelectNodes("//div[contains(@class, 'bloom-page')]").Cast<XmlElement>().ToArray())
 			{
 				var mediaBoxDiv = page.OwnerDocument.CreateElement("div");
