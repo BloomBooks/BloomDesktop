@@ -37,6 +37,7 @@ import * as tinycolor from "tinycolor2";
 import { showSignLanguageTool } from "../../js/bloomVideo";
 import { kBloomBlue } from "../../../bloomMaterialUITheme";
 import { RequiresBloomEnterpriseOverlayWrapper } from "../../../react_components/requiresBloomEnterprise";
+import { kOverlayToolId } from "../toolIds";
 
 const OverlayToolControls: React.FunctionComponent = () => {
     const l10nPrefix = "ColorPicker.";
@@ -849,7 +850,7 @@ export class OverlayTool extends ToolboxToolReactAdaptor {
     }
 
     public id(): string {
-        return "overlay";
+        return kOverlayToolId;
     }
 
     public isExperimental(): boolean {

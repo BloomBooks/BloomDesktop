@@ -417,6 +417,10 @@ export class ToolBox {
             setCurrentTool(toolId);
         }
     }
+
+    public getCurrentTool() {
+        return currentTool;
+    }
 }
 
 const toolbox = new ToolBox();
