@@ -16,9 +16,11 @@ mixin numberCircle
 		span.numberLabel
 		div(data-book="levelOrStageNumber" lang="*")
 
-block cover-bottom-row
+block cover-bottom-row-before-branding
+	//- nothing; overrides default which has language(s) and topic
+
+block cover-bottom-row-after-branding
 	.bottomRow
-		div(data-book='cover-branding-bottom-html' lang="*")
 		div(data-book='cover-branding-bottom2-html' lang="en")
 
 mixin decodableStageLettersRow

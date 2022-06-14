@@ -137,11 +137,12 @@ mixin standard-cover-contents
 					+field-prototypeDeclaredExplicity("V")
 						+editable(kLanguageForPrototypeOnly).smallCoverCredits.Cover-Default-style(data-book='smallCoverCredits')
 
-			block cover-bottom-row
+			block cover-bottom-row-before-branding
 				.bottomRow
 					.coverBottomLangName.Cover-Default-style(data-derived='languagesOfBook')
 					+chooser-topic.coverBottomBookTopic
 			+cover-branding-bottom
+			block cover-bottom-row-after-branding
 
 
 
