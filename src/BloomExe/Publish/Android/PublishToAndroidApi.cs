@@ -55,6 +55,9 @@ namespace Bloom.Publish.Android
 		private const string kWebsocketEventId_Preview = "androidPreview";
 		public const string StagingFolder = "PlaceForStagingBook";
 
+		// This constant must match the ID used for the useWatchString called by the React component MethodChooser.
+		private const string kWebsocketState_LicenseOK = "publish/licenseOK";
+
 		public static string PreviewUrl { get; set; }
 		
 		public PublishToAndroidApi(CollectionSettings collectionSettings, BloomWebSocketServer bloomWebSocketServer, BookServer bookServer, BulkBloomPubCreator bulkBloomPubCreator)
@@ -592,13 +595,8 @@ namespace Bloom.Publish.Android
 		/// <summary>
 		/// Generates a .bloomd file (bloompub) from the book
 		/// </summary>
-		/// <param name="book"></param>
-		/// <param name="bookServer"></param>
-		/// <param name="progress"></param>
-		/// <param name="backColor"></param>
-		/// <param name="settings"></param>
 		/// <returns>A valid, well-formed URL on localhost that points to the bloomd</returns>
-		public static string MakeBloomPubForPreview(Book.Book book, BookServer bookServer, WebSocketProgress progress, Color backColor, AndroidPublishSettings settings = null)
+		public string MakeBloomPubForPreview(Book.Book book, BookServer bookServer, WebSocketProgress progress, Color backColor, AndroidPublishSettings settings = null)
 		{
 			progress.Message("PublishTab.Epub.PreparingPreview", "Preparing Preview");	// message shared with Epub publishing
 			if (settings?.LanguagesToInclude != null)
@@ -607,9 +605,11 @@ namespace Bloom.Publish.Android
 				if (message != null)
 				{
 					progress.MessageWithoutLocalizing(message, ProgressKind.Error);
+					_webSocketServer.SendString(kWebSocketContext, kWebsocketState_LicenseOK, "false");
 					return null;
 				}
 			}
+			_webSocketServer.SendString(kWebSocketContext, kWebsocketState_LicenseOK, "true");
 
 			_stagingFolder?.Dispose();
 			if (AudioProcessor.IsAnyCompressedAudioMissing(book.FolderPath, book.RawDom))

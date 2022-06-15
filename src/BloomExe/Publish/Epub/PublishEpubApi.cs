@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Windows.Forms;
 using Bloom.Api;
 using Bloom.Book;
@@ -68,6 +69,9 @@ namespace Bloom.Publish.Epub
 		private const string kWebsocketContext = "publish-epub";
 
 		private const string kWebsocketEventId_epubReady = "newEpubReady";
+
+		// This constant must match the ID used for the useWatchString called by the React component EPUBPublishScreenInternal.
+		private const string kWebsocketState_LicenseOK = "publish/licenseOK";
 
 		private string _lastDirectory; // where we saved the most recent previous epub, if any
 
@@ -190,6 +194,11 @@ namespace Bloom.Publish.Epub
 			{
 				RefreshPreview(_desiredEpubSettings);
 				request.PostSucceeded();
+				if (request.CurrentBook?.ActiveLanguages != null)
+				{
+					var message = new LicenseChecker().CheckBook(request.CurrentBook, request.CurrentBook.ActiveLanguages.ToArray());
+					_webSocketServer.SendString(kWebsocketContext, kWebsocketState_LicenseOK, (message == null) ? "true" : "false");
+				}
 			}, false); // in fact, must NOT be on UI thread
 
 			apiHandler.RegisterEndpointHandler(kApiUrlPart + "abortPreview", request =>
