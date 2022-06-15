@@ -9,6 +9,12 @@ namespace Bloom.Collection
 		public ScriptSettingsDialog()
 		{
 			InitializeComponent();
+			// Localized strings in the dialog can be too long to display which causes problems in
+			// showing the OK button on Linux.  When the OK button is anchored to the right, and a
+			// label in another control is too wide to fully display, then the OK button can be
+			// displayed outside the dialog (actually flowLayoutPanel) boundaries.  See BL-11334.
+			if (SIL.PlatformUtilities.Platform.IsLinux)
+				_okButton.Anchor = AnchorStyles.Bottom;
 			SetLineHeightList();
 			LoadFontSizeCombo();
 			_languageNameLabel.UseMnemonic = false;
