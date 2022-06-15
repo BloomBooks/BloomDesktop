@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Net.Sockets;
@@ -42,6 +42,10 @@ namespace Bloom.Api
 
 		public void Init(string port)
 		{
+			// abort if already initialized. This is a guard against the possibility of eventually
+			// creating more than one ProjectContext.
+			if (_allSockets != null)
+				return; 
 			FleckLog.Level = LogLevel.Warn;
 			_allSockets = new List<IWebSocketConnection>();
 			var websocketaddr = "ws://127.0.0.1:" + port;

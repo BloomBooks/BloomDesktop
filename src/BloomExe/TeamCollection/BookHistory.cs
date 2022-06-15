@@ -203,6 +203,7 @@ public class BookHistory
 				 e);
 			// swallow... we don't want to prevent whatever was about to happen.
 		}
+		ApplicationContainer.WebSocketServer.SendEvent("bookHistory","eventAdded");
 	}
 
 	private static BookHistoryBook GetOrMakeBookRecord(Book book, SQLiteConnection db)

@@ -146,7 +146,6 @@ namespace Bloom
 							typeof(ReadersApi),
 							typeof(PageTemplatesApi),
 							typeof(AddOrChangePageApi),
-							typeof(BloomWebSocketServer),
 							typeof(PerformanceMeasurement),
 							typeof(KeyboardingConfigApi),
 							typeof(ImageApi),
@@ -322,7 +321,14 @@ namespace Bloom
 			server.StartListening();
 			_scope.Resolve<AudioRecording>().RegisterWithApiHandler(server.ApiHandler);
 
+			// This is somewhat ugly. The BloomWebSocketServer is an application singleton;
+			// BloomServer really wants to be, too, but currently it has some knowledge of
+			// the particular project. However, currently it's the BloomServer that figures
+			// out which pair of ports it and the socket server will use, so we can't
+			// actually initialize the socket server until we initialize the BloomServer.
+			// So, we do it here. The socket server is guarded against multiple inits.
 			_scope.Resolve<BloomWebSocketServer>().Init((BloomServer.portForHttp + 1).ToString(CultureInfo.InvariantCulture));
+
 			HelpLauncher.RegisterWithApiHandler(server.ApiHandler);
 			ExternalLinkController.RegisterWithApiHandler(server.ApiHandler);
 			ToolboxView.RegisterWithApiHandler(server.ApiHandler);
