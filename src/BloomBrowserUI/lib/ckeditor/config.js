@@ -69,7 +69,7 @@ CKEDITOR.editorConfig = function(config) {
     // indicates that an href is required, not that it is forbidden. (Without annotations, listing a tag
     // means it may be pasted, but any attributes in the original will be removed.)
     // Therefore for now we're limiting pasting to things that a translator could also do:
-    config.pasteFilter = "p b br em i strong sup u a[!href];";
+    config.pasteFilter = "p b br em i strong sup u; a[!href];";
 
     //BL-3009: don't remove empty spans, since we use <span class="bloom-linebreak"></span> when you press shift-enter.
     //http://stackoverflow.com/a/23983357/723299
