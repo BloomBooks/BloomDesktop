@@ -608,10 +608,10 @@ const PublishAudioVideoInternalInternal: React.FunctionComponent<{
                             Publishing Audio or Video Books
                         </HelpLink>
                         <HelpLink
-                            l10nKey="PublishTab.DigitalPublishingOptions"
-                            helpId="Tasks/Publish_tasks/Digital_publishing_options.htm"
+                            l10nKey="PublishTab.TasksOverview"
+                            helpId="Tasks/Publish_tasks/Publish_tasks_overview.htm"
                         >
-                            Digital Publishing Options
+                            Publish tab tasks overview
                         </HelpLink>
                     </HelpGroup>
                 </SettingsPanel>

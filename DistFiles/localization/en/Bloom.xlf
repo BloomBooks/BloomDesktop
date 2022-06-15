@@ -3628,14 +3628,11 @@
       <trans-unit id="PublishTab.Android.AboutBookFeatures" sil:dynamic="true">
         <source xml:lang="en">About Book Features</source>
         <note>ID: PublishTab.Android.AboutBookFeatures</note>
+        <note>obsolete as of Bloom 5.3</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Android.BloomPUB" sil:dynamic="true">
-        <source xml:lang="en">Publishing to Bloom Reader</source>
-        <note>ID: PublishTab.Android.BloomPUB</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.DigitalPublishingOptions" sil:dynamic="true">
-        <source xml:lang="en">Digital Publishing Options</source>
-        <note>ID: PublishTab.DigitalPublishingOptions</note>
+      <trans-unit id="PublishTab.Android.AboutBloomPUB" sil:dynamic="true">
+        <source xml:lang="en">About BloomPUB</source>
+        <note>ID: PublishTab.Android.AboutBloomPUB</note>
       </trans-unit>
       <trans-unit id="PublishTab.Android.Settings" sil:dynamic="true">
         <source xml:lang="en">Settings</source>
@@ -3658,6 +3655,7 @@
       <trans-unit id="PublishTab.Android.Troubleshooting" sil:dynamic="true">
         <source xml:lang="en">Troubleshooting Tips</source>
         <note>ID: PublishTab.Android.Troubleshooting</note>
+        <note>obsolete as of Bloom 5.3</note>
       </trans-unit>
       <trans-unit id="PublishTab.Android.Usb.Progress.BookSent" sil:dynamic="true">
         <source xml:lang="en">You can now read "{0}" in Bloom Reader!</source>
@@ -3894,10 +3892,12 @@
       <trans-unit id="PublishTab.Epub.Help.EReaders">
         <source xml:lang="en">Compatible ePUB Readers</source>
         <note>ID: PublishTab.Epub.Help.EReaders</note>
+        <note>obsolete as of Bloom 5.3</note>
       </trans-unit>
       <trans-unit id="PublishTab.Epub.Help.Publishing">
         <source xml:lang="en">Getting ePUBs onto a device</source>
         <note>ID: PublishTab.Epub.Help.Publishing</note>
+        <note>obsolete as of Bloom 5.3</note>
       </trans-unit>
       <trans-unit id="PublishTab.Epub.ImageDescriptionLinkLabel">
         <source xml:lang="en">Image Description</source>
@@ -4343,6 +4343,10 @@
       <trans-unit id="PublishTab.SaveEpub">
         <source xml:lang="en">&amp;Save ePUB...</source>
         <note>ID: PublishTab.SaveEpub</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.TasksOverview">
+        <source xml:lang="en">Publish tab tasks overview</source>
+        <note>ID: PublishTab.TasksOverview</note>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.AccessibleToBlind">
         <source xml:lang="en">Accessible to the Blind</source>
