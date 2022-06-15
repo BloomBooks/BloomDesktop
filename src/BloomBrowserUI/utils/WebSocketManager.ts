@@ -13,7 +13,8 @@ export interface IBloomWebSocketProgressEvent extends IBloomWebSocketEvent {
         | "Progress"
         | "Note"
         | "Instruction"
-        | "Heading";
+        | "Heading"
+        | "Fatal";
 }
 
 export function useWebSocketListener(

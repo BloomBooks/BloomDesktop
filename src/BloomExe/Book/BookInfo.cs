@@ -715,7 +715,7 @@ namespace Bloom.Book
 					// than one member of a duplicate set to be in a TC is hopefully vanishingly rare. If it happens,
 					// I think it's worth hearing about.
 					var problemPaths = string.Join(", ",sortedFilepaths.Values.Except(filePathsToChange).Select(Path.GetFileName));
-					throw new ApplicationException("Bloom found two or more books that are already shared in your Team Collection and have the same ID ("
+					throw new FatalException("Bloom found two or more books that are already shared in your Team Collection and have the same ID ("
 					+ problemPaths + "). You will need help from the Bloom Team to sort this out.");
 				}
 

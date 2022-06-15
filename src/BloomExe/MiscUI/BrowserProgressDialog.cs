@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using Bloom.Api;
+using Bloom.Utils;
 using Bloom.web;
 using Bloom.web.controllers;
 
@@ -102,7 +103,8 @@ namespace Bloom.MiscUI
 						// and gives the user some idea things are not right.
 						socketServer.SendEvent(socketContext, "finished");
 						waitForUserToCloseDialogOrReportProblems = true;
-						progress.MessageWithoutLocalizing("Something went wrong: " + ex.Message, ProgressKind.Error);
+						progress.MessageWithoutLocalizing("Something went wrong: " + ex.Message,
+							ex is FatalException? ProgressKind.Fatal:ProgressKind.Error);
 					}
 
 					// stop the spinner
@@ -129,6 +131,10 @@ namespace Bloom.MiscUI
 
 				worker.RunWorkerAsync();
 				dlg.ShowDialog(owner); // returns when dialog closed
+				if (progress.HasFatalProblemBeenReported)
+				{
+					Application.Exit();
+				}
 
 				ProgressDialogApi.SetCancelHandler(null);
 			}
