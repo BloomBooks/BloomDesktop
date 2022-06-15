@@ -201,6 +201,11 @@ const PublishAudioVideoInternalInternal: React.FunctionComponent<{
         false
     );
 
+    const [
+        useOriginalPageSize,
+        setUseOriginalPageSize
+    ] = BloomApi.useApiBoolean("publish/av/shouldUseOriginalPageSize", false);
+
     const [playing, setPlaying] = useState(false);
     useSubscribeToWebSocketForStringMessage(
         "publish-android",
@@ -361,7 +366,7 @@ const PublishAudioVideoInternalInternal: React.FunctionComponent<{
                                             debouncedPageTurnDelay +
                                             "&url=" +
                                             encodeURIComponent(bookUrl) + // Need to apply encoding to the bookUrl again as data to use it as a parameter of another URL
-                                            "&independent=false&host=bloomdesktop&skipActivities=true&hideNavButtons=true" +
+                                            `&independent=false&host=bloomdesktop&useOriginalPageSize=${useOriginalPageSize}&skipActivities=true&hideNavButtons=true` +
                                             videoSettingsParam +
                                             pageRangeSetting
                                         }
@@ -573,9 +578,15 @@ const PublishAudioVideoInternalInternal: React.FunctionComponent<{
                             setAvSettings({ ...avSettings, pageTurnDelay: n })
                         }
                         format={avSettings.format}
-                        onFormatChanged={(f: string) =>
-                            setAvSettings({ ...avSettings, format: f })
-                        }
+                        onFormatChanged={(f: string) => {
+                            setAvSettings({ ...avSettings, format: f });
+                            BloomApi.getBoolean(
+                                "publish/av/shouldUseOriginalPageSize",
+                                value => {
+                                    setUseOriginalPageSize(value);
+                                }
+                            );
+                        }}
                         pageRange={avSettings.pageRange}
                         onSetPageRange={(range: number[]) =>
                             setAvSettings({ ...avSettings, pageRange: range })

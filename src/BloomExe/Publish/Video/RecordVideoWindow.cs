@@ -8,6 +8,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using Bloom.Api;
+using Bloom.Book;
 using Bloom.MiscUI;
 using Bloom.Utils;
 using Bloom.web;
@@ -52,6 +53,7 @@ namespace Bloom.Publish.Video
 		private string _pageReadTime = "3.0"; // default for pages without narration
 		private string _videoSettingsFromPreview;
 		private bool _shouldRotateBook = false;
+		private bool _shouldUseOriginalPageSize = false;
 		private int[] _pageRange = new int[0];
 
 		// H.263, at least in its original revision, only supports certain specific resolutions, e.g. CIF = 352x288
@@ -138,10 +140,11 @@ namespace Bloom.Publish.Video
 			var pageReadTime = (_codec == Codec.MP3 ? "0" : _pageReadTime);
 			string pageRangeParams = _pageRange.Length == 2
 				? $"&start-page={_pageRange[0]}&autoplay-count={_pageRange[1] - _pageRange[0] + 1}" : "";
+			
 			var bloomPlayerUrl = BloomServer.ServerUrlWithBloomPrefixEndingInSlash
 			                     + "bloom-player/dist/bloomplayer.htm?centerVertically=true&reportSoundLog=true&initiallyShowAppBar=false&autoplay=yes&hideNavButtons=true&url="
-			                     + bookUrl
-			                     + $"&independent=false&host=bloomdesktop&defaultDuration={pageReadTime}&skipActivities=true{pageRangeParams}";
+								 + bookUrl
+			                     + $"&independent=false&host=bloomdesktop&defaultDuration={pageReadTime}&useOriginalPageSize={_shouldUseOriginalPageSize}&skipActivities=true{pageRangeParams}";
 			// The user can make choices in the preview instance of BloomPlayer...currently language and
 			// whether to play image descriptions...that need to be communicated to the recording window.
 			// If we received any, pass them on.
@@ -969,10 +972,11 @@ namespace Bloom.Publish.Video
 		/// </summary>
 		/// <returns>A warning message, if we can't make the window big enough to record
 		/// the optimum resolution for the format; otherwise, an empty string.</returns>
-		public static string GetDataForFormat(string format, bool landscape, 
-			out Resolution actualResolution, out Codec codec, out bool shouldRotateBook)
+		public static string GetDataForFormat(string format, bool landscape, Layout pageLayout,
+			out Resolution actualResolution, out Codec codec, out bool shouldRotateBook, out bool shouldUseOriginalPageSize)
 		{
 			shouldRotateBook = false;
+			shouldUseOriginalPageSize = false;
 
 			int desiredWidth;
 			int desiredHeight;
@@ -980,8 +984,53 @@ namespace Bloom.Publish.Video
 			{
 				default:
 				case "facebook":
-					desiredHeight = landscape ? 720 : 1280;
-					desiredWidth = landscape ? 1280 : 720;
+					if (landscape)
+					{
+						// It handles 16:9 videos just fine, so just let it stay 16:9 since Bloom Player will show it as Device 16x9 Landscape layout
+						desiredHeight = 720;
+						desiredWidth = 1280;
+					}
+					else // Portrait
+					{
+						// Portrait videos are trickier.
+						// As of 2022, The FB mobile app doesn't display 9:16 (1:1.77) well, or anything > 2:3 (1:1.5).
+						// On the news feed or the video details page, it shows in up to a 2:3 area,
+						// so the 9:16 videos will be cut off. Page numbers won't show, xmatter at the bottom of the page, etc.
+						// (It shows up okay if the user clicks the Expand icon on the video details page, but that's 3 clicks away)
+						// (FYI, even if the video has accompanying text in the post, the video is still allotted up to the 2:3 area.)
+						//
+						// Note: this is for user-uploaded videos, not ads.
+						//    My guess is that our users will be primarily doing these as uploads, not as ad videos. But that's just a guess.
+						// For ad placements on the news feed, FB recommends 4:5 (1:1.25). If the ad video appears with a card underneath,
+						// this will leave room to fit the card text/link etc to 2:3 (1:1.5) total.
+						// If users want to target FB ads, there are a couple options:
+						//    * We could specifically add 4:5 page layout for them, and fix this if condition to handle layouts other than "A5 Portrait" properly
+						//    * We can add a "format" called "Facebook Ad" (in addition to the existing "Facebook")
+						//    * In the meantime, they can use 13cm Square. Alternatively, Letter (Portrait) is very close to 4:5, just a tiny bit bigger (1.29 instead of 1.25).
+
+
+						//////////////
+						// ENHANCE: //
+						//////////////
+						// Actually what this if condition should entail is "any book layout between square (1:1)  and 2:3 (1:1.5) aspect ratio,"
+						// but it doesn't seem trivial to determine that. Since A5 represents most books, we'll settle for just A5 for now.
+						if (pageLayout?.DisplayName == "A5 Portrait")
+						{
+							// Books with aspect ratio < 2:3 can just use their original page size as is.
+							shouldUseOriginalPageSize = true;
+							// ENHANCE: It'd be better if we could calculate these based on the page layout instead of hardcoding it based on page layout
+							desiredHeight = 1022;
+							desiredWidth = 720;
+						}
+						else
+						{
+							// 2:3 aspect ratio.
+							// ENHANCE: The video will be this size, but Bloom Player will be 9:16 still, so you will get black bars, which is not ideal.
+							// It would be better if Bloom Player used a page layout with the proper size (we'd need to make a new page layout)
+							desiredHeight = 1080;
+							desiredWidth = 720;
+						}
+					}
 					codec = Codec.H264;
 					break;
 				case "feature":
@@ -1147,9 +1196,9 @@ namespace Bloom.Publish.Video
 			return actual;
 		}
 
-		public void SetFormat(string format, bool landscape)
+		public void SetFormat(string format, bool landscape, Layout pageLayout)
 		{
-			GetDataForFormat(format, landscape, out Resolution videoResolution, out _codec, out _shouldRotateBook);
+			GetDataForFormat(format, landscape, pageLayout, out Resolution videoResolution, out _codec, out _shouldRotateBook, out _shouldUseOriginalPageSize);
 			_videoWidth = videoResolution.Width;
 			_videoHeight = videoResolution.Height;
 		}
