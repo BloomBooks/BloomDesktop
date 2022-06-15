@@ -108,6 +108,7 @@ export const ProgressBox: React.FunctionComponent<IProgressBoxProps> = props => 
                         writeLine(msg, "black", "font-weight:bold");
                         break;
                     case "Error":
+                    case "Fatal":
                         writeLine(msg, kErrorColor);
                         break;
                     case "Warning":
