@@ -214,10 +214,12 @@ namespace Bloom.Publish.Android
 			apiHandler.RegisterEndpointHandler(kApiUrlPart + "usb/start", request =>
 			{
 #if !__MonoCS__
-
-				SetState("UsbStarted");
-				UpdatePreviewIfNeeded(request);
-				_usbPublisher.Connect(request.CurrentBook, _thumbnailBackgroundColor, GetSettings());
+				if (_licenseAllowsPublishing)
+				{
+					SetState("UsbStarted");
+					UpdatePreviewIfNeeded(request);
+					_usbPublisher.Connect(request.CurrentBook, _thumbnailBackgroundColor, GetSettings());
+				}
 #endif
 				request.PostSucceeded();
 			}, true);
@@ -225,32 +227,43 @@ namespace Bloom.Publish.Android
 			apiHandler.RegisterEndpointHandler(kApiUrlPart + "usb/stop", request =>
 			{
 #if !__MonoCS__
-				_usbPublisher.Stop();
-				SetState("stopped");
+				if (_licenseAllowsPublishing)
+				{
+					_usbPublisher.Stop();
+					SetState("stopped");
+				}
 #endif
 				request.PostSucceeded();
 			}, true);
 			apiHandler.RegisterEndpointHandler(kApiUrlPart + "wifi/start", request =>
 			{
-				SetState("ServingOnWifi");
-				UpdatePreviewIfNeeded(request);
-				_wifiPublisher.Start(request.CurrentBook, request.CurrentCollectionSettings, _thumbnailBackgroundColor, GetSettings());
-				
+				if (_licenseAllowsPublishing)
+				{
+					SetState("ServingOnWifi");
+					UpdatePreviewIfNeeded(request);
+					_wifiPublisher.Start(request.CurrentBook, request.CurrentCollectionSettings, _thumbnailBackgroundColor, GetSettings());
+				}
 				request.PostSucceeded();
 			}, true);
 
 			apiHandler.RegisterEndpointHandler(kApiUrlPart + "wifi/stop", request =>
 			{
-				_wifiPublisher.Stop();
-				SetState("stopped");
+				if (_licenseAllowsPublishing)
+				{
+					_wifiPublisher.Stop();
+					SetState("stopped");
+				}
 				request.PostSucceeded();
 			}, true);
 
 			apiHandler.RegisterEndpointHandler(kApiUrlPart + "file/save", request =>
 			{
-				UpdatePreviewIfNeeded(request);
-				FilePublisher.Save(request.CurrentBook, _bookServer, _thumbnailBackgroundColor, _progress, GetSettings());
-				SetState("stopped");
+				if (_licenseAllowsPublishing)
+				{
+					UpdatePreviewIfNeeded(request);
+					FilePublisher.Save(request.CurrentBook, _bookServer, _thumbnailBackgroundColor, _progress, GetSettings());
+					SetState("stopped");
+				}
 				request.PostSucceeded();
 			}, true);
 
@@ -588,6 +601,7 @@ namespace Bloom.Publish.Android
 		}
 
 		private static TemporaryFolder _stagingFolder;
+		private static bool _licenseAllowsPublishing;
 
 		/// <summary>
 		/// Generates a .bloomd file (bloompub) from the book
@@ -606,10 +620,12 @@ namespace Bloom.Publish.Android
 				var message = new LicenseChecker().CheckBook(book, settings.LanguagesToInclude.ToArray());
 				if (message != null)
 				{
+					_licenseAllowsPublishing = false;
 					progress.MessageWithoutLocalizing(message, ProgressKind.Error);
 					return null;
 				}
 			}
+			_licenseAllowsPublishing = true;
 
 			_stagingFolder?.Dispose();
 			if (AudioProcessor.IsAnyCompressedAudioMissing(book.FolderPath, book.RawDom))

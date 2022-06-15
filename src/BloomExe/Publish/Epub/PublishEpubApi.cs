@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Windows.Forms;
 using Bloom.Api;
 using Bloom.Book;
@@ -105,6 +106,8 @@ namespace Bloom.Publish.Epub
 		{
 			apiHandler.RegisterEndpointHandler(kApiUrlPart + "save", request =>
 			{
+				var message = new LicenseChecker().CheckBook(request.CurrentBook, request.CurrentBook.ActiveLanguages.ToArray());
+				if (message == null)
 				{
 					string suggestedName = string.Format("{0}-{1}.epub", Path.GetFileName(_bookSelection.CurrentSelection.FolderPath),
 						_bookSelection.CurrentSelection.BookData.Language1.GetNameInLanguage("en"));
@@ -140,9 +143,8 @@ namespace Bloom.Publish.Epub
 							ReportAnalytics("Save ePUB");
 						}
 					}
-
-					request.PostSucceeded();
 				}
+				request.PostSucceeded();
 			}, true, false);
 
 			apiHandler.RegisterEndpointHandler(kApiUrlPart + "epubSettings", request =>
