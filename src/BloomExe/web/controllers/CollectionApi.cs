@@ -11,6 +11,7 @@ using Bloom.Collection;
 using Bloom.CollectionTab;
 using Bloom.MiscUI;
 using Bloom.Properties;
+using Bloom.Utils;
 using Bloom.Workspace;
 using L10NSharp;
 using Newtonsoft.Json;
@@ -72,10 +73,21 @@ namespace Bloom.web.controllers
 						break;
 					case HttpMethods.Post:
 						// We're selecting the book, make sure everything is up to date.
-						var book = GetBookObjectFromPost(request, true);
-						if (book.FolderPath != _bookSelection?.CurrentSelection?.FolderPath)
+						// This first method does minimal processing to come up with the right collection and BookInfo object
+						// without actually loading all the files. We need the title for the Performance Measurement and later
+						// we'll use the BookInfo object to get the fully updated book.
+						var newBookInfo = GetBookInfoFromPost(request);
+						var titleString = newBookInfo.QuickTitleUserDisplay;
+						using (PerformanceMeasurement.Global?.Measure("select book", titleString))
 						{
-							_collectionModel.SelectBook(book);
+							// We could just put the PerformanceMeasurement in the CollectionModel.SelectBook() method,
+							// but this GetUpdatedBookObjectFromBookInfo() actually does a non-trivial amount of work,
+							// because it asks the CollectionModel to update the book files (including BringBookUpToDate).
+							var book = GetUpdatedBookObjectFromBookInfo(newBookInfo);
+							if (book.FolderPath != _bookSelection?.CurrentSelection?.FolderPath)
+							{
+								_collectionModel.SelectBook(book);
+							}
 						}
 
 						request.PostSucceeded();
@@ -293,6 +305,11 @@ namespace Bloom.web.controllers
 			var info = GetBookInfoFromPost(request);
 			return _collectionModel.GetBookFromBookInfo(info, fullyUpdateBookFiles);
 
+		}
+
+		private Book.Book GetUpdatedBookObjectFromBookInfo(BookInfo info)
+		{
+			return _collectionModel.GetBookFromBookInfo(info, true);
 		}
 	}
 }
