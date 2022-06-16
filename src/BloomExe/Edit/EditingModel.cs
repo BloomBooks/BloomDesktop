@@ -446,7 +446,9 @@ namespace Bloom.Edit
 						_contentLanguages.Add(item3);
 					}
 				}
-				// update which ones are selected
+				// update which ones are selected. Since there may be ones with Selected true from a previous book,
+				// clear them first, so we end up with selections appropriate to this one.
+				_contentLanguages.ForEach(l => l.Selected = false);
 				var lang1 = _contentLanguages.FirstOrDefault(l =>
 					l.Iso639Code == _bookSelection.CurrentSelection.Language1IsoCode);
 				// We must have one language selected. If nothing matches, select the first.
@@ -570,14 +572,21 @@ namespace Bloom.Edit
 		{
 			if (_currentlyDisplayedBook != CurrentBook)
 			{
-				if (_contentLanguages.Count == 0)
-				{
-					// BL-5973 GetMultilingualContentLanguages() doesn't want to update _contentLanguages
-					// normally, but in this case we do.
-					var dummy = ContentLanguages; // updates _contentLanguages based on CurrentBook and collection settings
-				}
+				// We must update the ContentLanguages. We've switched books, and it is supposed to reflect
+				// which languages are selected in the current book. Note that this code makes sure that
+				// the LIST of languages reflects the current collection settings, but which ones are
+				// SELECTED reflects the current book.
+				// I'm retaining the following comment because previously we did not call ContentLanguages
+				// unless _contentLanguages.Count was zero. That was wrong (BL-11318) but the issue reference
+				// just might be useful if there is some reason we did NOT want to do it, in which case we'll
+				// need more hard thought how to prevent BL-11318.
+				//		BL-5973 GetMultilingualContentLanguages() doesn't want to update _contentLanguages
+				//		normally, but in this case we do.
+				var dummy = ContentLanguages; // updates _contentLanguages based on CurrentBook and collection settings
 				// Reset the book's languages in case the user changed the collection's languages.
 				// See https://issues.bloomlibrary.org/youtrack/issue/BL-5444.
+				// But (see above) this should NOT mess with which languages are selected for display in the book
+				// (unless a previously selected language is no longer a valid collection language).
 				var contentLanguages = GetMultilingualContentLanguages();
 				CurrentBook.SetMultilingualContentLanguages(contentLanguages);
 				CurrentBook.PrepareForEditing();

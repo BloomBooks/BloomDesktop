@@ -1767,6 +1767,19 @@ namespace Bloom.Book
 		{
 			var fileLocator = Storage.GetFileLocator();
 			var helper = new XMatterHelper(bookDOM, CollectionSettings.XMatterPackName, fileLocator, BookInfo.UseDeviceXMatter);
+
+			// Before applying the xmatter, check to see if the previous was Kyrgystan2020, which through to this version, 5.2,
+			// unfortunately has a branding that pollutes the data-div with this fullBleed, which isn't wanted if the book
+			// is re-used in another project. See https://issues.bloomlibrary.org/youtrack/issue/BL-11290.
+			// The one scenario we know this would break would be a book from the Kyr project was re-purposed in another project,
+			// and that book used the "Paper Comic" which does have to have full bleed.
+			if (!helper.GetStyleSheetFileName().Contains("Kyrgyzstan2020") && // we're not going (or more likely staying) in Kyrgyzstan
+				_bookData.GetVariableOrNull("xmatter", "*").Xml == "Kyrgyzstan2020") // but we are coming from it
+			{
+				Logger.WriteEvent("Removing fullBleed because the previous xmatter was Kyrgystan2020.");
+				_bookData.RemoveAllForms("fullBleed"); // this is fine if it doesn't find it.
+			}
+
 			// If it's not the real book DOM we won't copy branding images into the real book folder, for fear
 			// of messing up the real book, if the temporary one is in a different orientation.
 			if (bookDOM != OurHtmlDom)

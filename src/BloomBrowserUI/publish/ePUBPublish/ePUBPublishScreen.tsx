@@ -29,6 +29,7 @@ import { PublishProgressDialog } from "../commonPublish/PublishProgressDialog";
 import BookMetadataDialog from "../metadata/BookMetadataDialog";
 import { useL10n } from "../../react_components/l10nHooks";
 import { ProgressState } from "../commonPublish/PublishProgressDialogInner";
+import { BloomApi } from "../../utils/bloomApi";
 
 export const EPUBPublishScreen = () => {
     // When the user changes some features, included languages, etc., we
@@ -80,6 +81,11 @@ const EPUBPublishScreenInternal: React.FunctionComponent<{
             setClosePending(true);
         }
     );
+    const saveButtonEnabled = BloomApi.useWatchString(
+        "true",
+        "publish-epub",
+        "publish/licenseOK"
+    );
 
     return (
         <>
@@ -103,7 +109,7 @@ const EPUBPublishScreenInternal: React.FunctionComponent<{
                 <PublishPanel>
                     <BloomButton
                         className="save-button"
-                        enabled={true}
+                        enabled={saveButtonEnabled.toLowerCase() === "true"}
                         clickApiEndpoint={"publish/epub/save"}
                         hasText={true}
                         l10nKey="PublishTab.Save"
