@@ -31,6 +31,11 @@ export const MethodChooser: React.FunctionComponent = () => {
         "publish/android/method",
         "wifi"
     );
+    const saveButtonEnabled = BloomApi.useWatchString(
+        "true",
+        "publish-android",
+        "publish/licenseOK"
+    );
 
     const methodImage = (methodNameToImageUrl as any)[method];
     return (
@@ -55,7 +60,10 @@ export const MethodChooser: React.FunctionComponent = () => {
                             )
                         }}
                     />
-                    {getStartButton(method)}
+                    {getStartButton(
+                        method,
+                        saveButtonEnabled.toLowerCase() === "true"
+                    )}
                 </div>
                 <div className={"column2"}>
                     <img
@@ -69,7 +77,7 @@ export const MethodChooser: React.FunctionComponent = () => {
     );
 };
 
-function getStartButton(method: string) {
+function getStartButton(method: string, licenseOK: boolean) {
     switch (method) {
         case "file":
             return (
@@ -77,7 +85,7 @@ function getStartButton(method: string) {
                     l10nKey="PublishTab.Save"
                     l10nComment="Button that tells Bloom to save the book as a .bloomD file."
                     clickApiEndpoint="publish/android/file/save"
-                    enabled={true}
+                    enabled={licenseOK}
                     hasText={true}
                 >
                     Save...
