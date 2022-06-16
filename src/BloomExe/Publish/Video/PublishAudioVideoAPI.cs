@@ -230,6 +230,7 @@ namespace Bloom.Publish.Video
 		private void UpdatePreview(ApiRequest request)
 		{
 			_publishToAndroidApi.MakeBloompubPreview(request, true);
+			_webSocketServer.SendString("recordVideo", "publish/licenseOK", _publishToAndroidApi.LicenseOK ? "true" : "false");
 		}
 
 

@@ -492,7 +492,7 @@ namespace Bloom.Publish.Android
 			// BloomPlayer is capable of skipping these, but they confuse the page list we use to populate
 			// the page-range control.
 			_lastSettings.RemoveInteractivePages = forVideo;
-			PreviewUrl = MakeBloomPubForPreview(request.CurrentBook, _bookServer, _progress, _thumbnailBackgroundColor, _lastSettings);
+			PreviewUrl = MakeBloomPubForPreview(request.CurrentBook, _bookServer, _progress, _thumbnailBackgroundColor, _lastSettings, forVideo);
 			_webSocketServer.SendString(kWebSocketContext, kWebsocketEventId_Preview, PreviewUrl);
 		}
 
@@ -591,11 +591,14 @@ namespace Bloom.Publish.Android
 
 		private static TemporaryFolder _stagingFolder;
 
+		internal bool LicenseOK;
+
 		/// <summary>
 		/// Generates a .bloompub file from the book
 		/// </summary>
 		/// <returns>A valid, well-formed URL on localhost that points to the bloompub</returns>
-		public string MakeBloomPubForPreview(Book.Book book, BookServer bookServer, WebSocketProgress progress, Color backColor, AndroidPublishSettings settings = null)
+		public string MakeBloomPubForPreview(Book.Book book, BookServer bookServer, WebSocketProgress progress, Color backColor,
+			AndroidPublishSettings settings = null, bool forVideo = false)
 		{
 			progress.Message("PublishTab.Epub.PreparingPreview", "Preparing Preview");	// message shared with Epub publishing
 			if (settings?.LanguagesToInclude != null)
@@ -604,12 +607,22 @@ namespace Bloom.Publish.Android
 				if (message != null)
 				{
 					progress.MessageWithoutLocalizing(message, ProgressKind.Error);
+					LicenseOK = false;
 					_webSocketServer.SendString(kWebSocketContext, kWebsocketState_LicenseOK, "false");
-					return null;
+					if (!forVideo)
+						return null;
+				}
+				else
+				{
+					LicenseOK = true;
+					_webSocketServer.SendString(kWebSocketContext, kWebsocketState_LicenseOK, "true");
 				}
 			}
-			_webSocketServer.SendString(kWebSocketContext, kWebsocketState_LicenseOK, "true");
-
+			else
+			{
+				LicenseOK = true;
+				_webSocketServer.SendString(kWebSocketContext, kWebsocketState_LicenseOK, "true");
+			}
 			_stagingFolder?.Dispose();
 			if (AudioProcessor.IsAnyCompressedAudioMissing(book.FolderPath, book.RawDom))
 			{

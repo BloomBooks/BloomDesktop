@@ -778,7 +778,8 @@ namespace Bloom.Publish.BloomLibrary
 			var message = checker.CheckBook(book, LanguagesCheckedToUpload.ToArray());
 			if (message != null)
 			{
-				_progressBox.WriteError(message);
+				// Using WriteError allows users to send bug reports: this isn't a bug!
+				_progressBox.WriteMessageWithColor(Color.Red, message);
 				e.Result = "quiet"; // suppress other completion/fail messages
 				return;
 			}
