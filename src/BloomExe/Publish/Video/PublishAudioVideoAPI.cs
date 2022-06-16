@@ -4,6 +4,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
 using Bloom.Api;
+using Bloom.Book;
 using Bloom.MiscUI;
 using Bloom.Publish.Android;
 using L10NSharp;
@@ -230,6 +231,11 @@ namespace Bloom.Publish.Video
 		private void UpdatePreview(ApiRequest request)
 		{
 			_publishToAndroidApi.MakeBloompubPreview(request, true);
+			if (request.CurrentBook?.ActiveLanguages != null)
+			{
+				var message = new LicenseChecker().CheckBook(request.CurrentBook, request.CurrentBook.ActiveLanguages.ToArray());
+				_webSocketServer.SendString("recordVideo", "publish/licenseOK", (message == null) ? "true" : "false");
+			}
 		}
 
 

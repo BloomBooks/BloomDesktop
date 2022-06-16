@@ -32,8 +32,8 @@ export const MethodChooser: React.FunctionComponent = () => {
         "publish/android/method",
         "wifi"
     );
-    const saveButtonEnabled = BloomApi.useWatchString(
-        "true",
+    const isLicenseOK = BloomApi.useWatchBooleanEvent(
+        true,
         "publish-android",
         "publish/licenseOK"
     );
@@ -62,10 +62,7 @@ export const MethodChooser: React.FunctionComponent = () => {
                             )
                         }}
                     />
-                    {getStartButton(
-                        method,
-                        saveButtonEnabled.toLowerCase() === "true"
-                    )}
+                    {getStartButton(method, isLicenseOK)}
                 </div>
                 <div className={"column2"}>
                     <img
