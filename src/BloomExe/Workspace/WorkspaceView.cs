@@ -210,7 +210,7 @@ namespace Bloom.Workspace
 			// the code that updates the preview, which is quite slow. We need the button
 			// to respond quickly.
 			// We'll need to do something even trickier if there start to be slow things that
-			// happen in response to the book selection changed websocked message.
+			// happen in response to the book selection changed websocket message.
 			bookSelection.SelectionChangedHighPriority += HandleBookSelectionChanged;
 			bookStatusChangeEvent.Subscribe(args => { HandleBookStatusChange(args); });
 		}
@@ -286,8 +286,14 @@ namespace Bloom.Workspace
 		private void HandleBookSelectionChanged(object sender, BookSelectionChangedEventArgs e)
 		{
 			var result = GetCurrentSelectedBookInfo();
-			// Important for at least the TeamCollectionBookStatusPanel and the CollectionsTabBookPanel.
-			_webSocketServer.SendString("book-selection", "changed", result);
+			var titleString = _bookSelection.CurrentSelection == null
+				? "No Book Selected"
+				: _bookSelection.CurrentSelection.BookInfo.QuickTitleUserDisplay;
+			using (PerformanceMeasurement.Global?.Measure("select book", titleString))
+			{
+				// Important for at least the TeamCollectionBookStatusPanel and the CollectionsTabBookPanel.
+				_webSocketServer.SendString("book-selection", "changed", result);
+			}
 		}
 
 		string _tempBookInfoHtmlPath;
