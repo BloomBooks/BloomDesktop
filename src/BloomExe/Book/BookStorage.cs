@@ -2448,7 +2448,7 @@ namespace Bloom.Book
 		// note: order is significant here, but I added branding.css at the end (the most powerful position) arbitrarily, until
 		// such time as it's clear if it matters.
 		public readonly static string[] CssFilesToLink =
-			{ "basePage.css", "previewMode.css", "origami.css", "langVisibility.css", "branding.css" };
+			{ "basePage.css", "origami.css", "langVisibility.css", "branding.css" };
 
 		// While in Bloom, we could have an edit style sheet or (someday) other modes. But when stored,
 		// we want to make sure it's ready to be opened in a browser.
