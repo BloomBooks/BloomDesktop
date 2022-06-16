@@ -153,6 +153,12 @@ const PublishAudioVideoInternalInternal: React.FunctionComponent<{
         "recording"
     );
 
+    const isLicenseOK = BloomApi.useWatchBooleanEvent(
+        true,
+        "recordVideo",
+        "publish/licenseOK"
+    );
+
     const [debouncedPageTurnDelay] = useDebounce(
         avSettings.pageTurnDelay,
         1000
@@ -378,7 +384,10 @@ const PublishAudioVideoInternalInternal: React.FunctionComponent<{
                                             justify-content: center;
                                         `}
                                     >
-                                        <Button onClick={reset}>
+                                        <Button
+                                            onClick={reset}
+                                            disabled={!isLicenseOK}
+                                        >
                                             <SkipPreviousIcon
                                                 // unfortunately this icon doesn't come in a variant with a built-in circle.
                                                 // To make it match the other two we have to shrink it, make it white,
@@ -410,7 +419,10 @@ const PublishAudioVideoInternalInternal: React.FunctionComponent<{
                                                 size="1.6rem"
                                             ></CircularProgress>
                                         ) : (
-                                            <Button onClick={play}>
+                                            <Button
+                                                onClick={play}
+                                                disabled={!isLicenseOK}
+                                            >
                                                 <PlayIcon
                                                     css={css`
                                                         color: ${kBloomBlue};
@@ -421,7 +433,10 @@ const PublishAudioVideoInternalInternal: React.FunctionComponent<{
                                         )}
                                         <Button
                                             onClick={pause}
-                                            disabled={isPauseButtonDisabled}
+                                            disabled={
+                                                isPauseButtonDisabled ||
+                                                !isLicenseOK
+                                            }
                                         >
                                             <PauseIcon
                                                 css={css`
@@ -501,7 +516,7 @@ const PublishAudioVideoInternalInternal: React.FunctionComponent<{
                                     </ErrorBox>
                                 )}
                                 <BloomButton
-                                    enabled={!recording}
+                                    enabled={!recording && isLicenseOK}
                                     l10nKey="PublishTab.RecordVideo.Record"
                                     l10nComment="'Record' as in 'Record a video recording'"
                                     clickApiEndpoint="publish/av/recordVideo"
@@ -530,7 +545,7 @@ const PublishAudioVideoInternalInternal: React.FunctionComponent<{
                                     that is associated with this file type.
                                 </Div>
                                 <BloomButton
-                                    enabled={gotRecording}
+                                    enabled={gotRecording && isLicenseOK}
                                     l10nKey="PublishTab.RecordVideo.Play"
                                     clickApiEndpoint="publish/av/playVideo"
                                     iconBeforeText={
@@ -553,7 +568,7 @@ const PublishAudioVideoInternalInternal: React.FunctionComponent<{
                             <StepLabel>{save}</StepLabel>
                             <StepContent>
                                 <BloomButton
-                                    enabled={gotRecording}
+                                    enabled={gotRecording && isLicenseOK}
                                     l10nKey="PublishTab.Save"
                                     clickApiEndpoint="publish/av/saveVideo"
                                     iconBeforeText={
