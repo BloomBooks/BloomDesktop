@@ -35,6 +35,31 @@ namespace Bloom.Api
 		private WebSocketServer _server;
 		private List<IWebSocketConnection> _allSockets;
 
+		// The one instance which any client may use.
+		// BloomWebSocketServer wants to be an application singleton, but currently,
+		// it is tied to BloomServer, which has some knowledge of the current collection
+		// and so is a ProjectContext singleton, and therefore BloomWebSocketServer is, too.
+		// However, we only have one Project/Collection open at a time, so there is only
+		// one instance of either to worry about. This variable currently gives the most
+		// recent instance; if we're ever able to make it an application singleton,
+		// it will be the only instance.
+		// It's something of a judgment call whether to use this field or to receive
+		// an IBloomWebSocketServer as a constructor argument from AutoFac. The latter is
+		// helpful if the class that wants one is already created by AutoFac, especially if
+		// you want the option of passing in a test stub instead. On the other hand, some
+		// objects that want to send notifications are not created by AutoFac, and it
+		// becomes messy passing the BloomWebSocketServer through (possibly many) layers of
+		// object that don't want to know about it from some AutoFac-created object to the
+		// one that needs it. It's even worse if a static method needs to do it. In such
+		// cases, using this field can make things cleaner. I've made the property internal
+		// so that tests can set it if necessary, but only the constructor here sets it
+		// in normal operation.
+		public static IBloomWebSocketServer Instance { get; internal set; }
+		public BloomWebSocketServer()
+		{
+			Instance = this;
+		}
+
 		public bool IsSocketOpen(string name)
 		{
 			return _allSockets.Exists(s => s.ConnectionInfo?.SubProtocol == name);
