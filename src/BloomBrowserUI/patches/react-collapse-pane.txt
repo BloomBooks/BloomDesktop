@@ -1,0 +1,21 @@
+The patch to react-collapse-pane looks messy but is really very slight...but the minimized version
+is all one line, so the patch includes two versions of the whole thing.
+What's actually going on is the same change to all three versions of the code, since I'm not sure
+which one Bloom actually uses, or even if it might use differnt ones for different build types.
+The original code depends on FlexBox to achieve the desired distribution of space between the
+different panes, and controls it by setting the flex-basis of each to the size the user dragged to
+(or the SplitPane's initialSizes). And something sets flex-grow to 1. This means that as the user
+grows the window, the flex-basis values add up to less than its width, and the extra space is
+evenly distributed to each child. At the end of the drag, react-collapse-pane adjusts the
+flex-basis to the new sizes. When the panes are unequal in size, this changes the ratios.
+The effect is that shrinking the window and growing it again changes the splitter position.
+Worst of all, minimizing the window somehow seems to shrink the size to zero or close to it,
+so when it is restored all the width is assigned to "grow" and we end up with the splitter
+centered, quite different from the default or where the user might have put it.
+The change simply sets flex-grow to the same value as flex-basis, which causes the browser
+to assign the extra space as the window grows to each child in proportion to its current size.
+Thus, all changes in size, including restoring from minimized, preserve the previous ratio.
+There may be small rounding errors that will occasionally move the splitter a pixel or so from
+the place it would ideally be, but it's a big improvement.
+I'm not sure why we don't need to do the same with flex-shrink; I think the browser must have
+a differnt algorithm for dealing with a shortage of space that already does what we want.

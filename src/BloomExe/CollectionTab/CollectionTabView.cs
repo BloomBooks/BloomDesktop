@@ -99,6 +99,22 @@ namespace Bloom.CollectionTab
 			bookSelection.SelectionChanged += (sender, e) => BookSelectionChanged(bookSelection.CurrentSelection);
 		}
 
+		private bool _minimized;
+
+		protected override void OnSizeChanged(EventArgs e)
+		{
+			base.OnSizeChanged(e);
+			// To correct a weird SplitPane behavior in CollectionsTabPane, we need
+			// a notification when our window changes state from minimized to something else.
+			bool minimized = ParentForm?.WindowState == FormWindowState.Minimized;
+			if (!minimized && _minimized)
+			{
+				_webSocketServer.SendEvent("window","restored");
+			}
+
+			_minimized = minimized;
+		}
+
 		private void BookSelectionChanged(Book.Book book)
 		{
 			if (book == null)
