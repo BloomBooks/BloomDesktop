@@ -2,6 +2,7 @@
 using Bloom.Api;
 using Bloom.Collection;
 using Bloom.Properties;
+using Bloom.Utils;
 using SIL.Progress;
 
 namespace Bloom.Book
@@ -32,24 +33,27 @@ namespace Bloom.Book
 
 		public void SelectBook(Book book, bool aboutToEdit = false)
 		{
-			if (_currentSelection == book)
-				return;
-			// We don't need to reload the collection just because we make changes bringing the book up to date.
-			if (book != null)
-				BookCollection.TemporariliyIgnoreChangesToFolder(book.FolderPath);
-
-			// The bookdata null test prevents doing this on books not sufficiently initialized to
-			// BringUpToDate, typically only in unit tests.
-			if (book!=null && book.BookData != null && book.IsEditable)
+			using (PerformanceMeasurement.Global?.Measure("select book", book?.BookInfo?.QuickTitleUserDisplay ?? "null"))
 			{
-				book?.BringBookUpToDate(new NullProgress());
-			}
+				if (_currentSelection == book)
+					return;
+				// We don't need to reload the collection just because we make changes bringing the book up to date.
+				if (book != null)
+					BookCollection.TemporariliyIgnoreChangesToFolder(book.FolderPath);
 
-			_currentSelection = book;
+				// The bookdata null test prevents doing this on books not sufficiently initialized to
+				// BringUpToDate, typically only in unit tests.
+				if (book != null && book.BookData != null && book.IsEditable)
+				{
+					book?.BringBookUpToDate(new NullProgress());
+				}
 
-			InvokeSelectionChanged(aboutToEdit);
-			Settings.Default.CurrentBookPath = book?.FolderPath ?? "";
-			Settings.Default.Save();
+				_currentSelection = book;
+
+				InvokeSelectionChanged(aboutToEdit);
+				Settings.Default.CurrentBookPath = book?.FolderPath ?? "";
+				Settings.Default.Save();
+			}			
 		}
 
 		// virtual for mocking
