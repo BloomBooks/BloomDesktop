@@ -683,6 +683,11 @@ namespace Bloom.Book
 			AddClass((XmlElement)dom.SelectSingleNode("//body"), className);
 		}
 
+		public static void RemoveClassFromBody(XmlDocument dom, string className)
+		{
+			RemoveClass((XmlElement)dom.SelectSingleNode("//body"), className);
+		}
+
 		public static void AddRightToLeftClassToBody(XmlDocument dom)
 		{
 			AddClass((XmlElement) dom.SelectSingleNode("//body"), "rightToLeft");

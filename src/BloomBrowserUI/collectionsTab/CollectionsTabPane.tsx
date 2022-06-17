@@ -25,6 +25,7 @@ import { TeamCollectionDialogLauncher } from "../teamCollection/TeamCollectionDi
 import { SpreadsheetExportDialogLauncher } from "./spreadsheet/SpreadsheetExportDialog";
 import { H1 } from "../react_components/l10nComponents";
 import { useL10n } from "../react_components/l10nHooks";
+import { useSubscribeToWebSocketForEvent } from "../utils/WebSocketManager";
 
 const kResizerSize = 10;
 
@@ -36,6 +37,23 @@ export const CollectionsTabPane: React.FunctionComponent<{}> = () => {
         isSpreadsheetFeatureActive,
         setIsSpreadsheetFeatureActive
     ] = useState(false);
+
+    // Initially (when Bloom first starts, until we persist splitter settings) the vertical
+    // splitter between the editable collection and the others is set to give them equal space.
+    // When the user drags the splitter, we use a callback to update this, so it will be right
+    // if we need to use it again.
+    // It is passed to the vertical splitter as the "initialSizes", which is ignored except
+    // for the very first render of a particular SplitPane. So to get it to take effect later,
+    // we have to modify the key of the SplitPane, forcing React to create a whole new one.
+    // The only time we currently need to do this is when Bloom is restored from being
+    // minimized, which somehow puts the vertical splitter into a weird state where apparently
+    // both panes are collapsed and there is nothing to see. As far as I can tell, all other
+    // changes to window size are handled nicely by the SplitPane.
+    const [splitHeights, setSplitHeights] = useState([1, 1]);
+    const [generation, setGeneration] = useState(0);
+    useSubscribeToWebSocketForEvent("window", "restored", () => {
+        setGeneration(old => old + 1);
+    });
 
     const manager: BookSelectionManager = useMemo(() => {
         const manager = new BookSelectionManager();
@@ -268,9 +286,11 @@ export const CollectionsTabPane: React.FunctionComponent<{}> = () => {
                 // }}
             >
                 <SplitPane
+                    key={"gen" + generation}
                     split="horizontal"
                     // TODO: the splitter library lets us specify a height, but it doesn't apply it correctly an so the pane that follows
                     // does not get pushed down to make room for the thicker resizer
+                    initialSizes={splitHeights}
                     resizerOptions={{
                         css: {
                             height: `${kResizerSize}px`,
@@ -284,6 +304,9 @@ export const CollectionsTabPane: React.FunctionComponent<{}> = () => {
                     hooks={{
                         onDragStarted: () => {
                             setDraggingSplitter(true);
+                        },
+                        onSaveSizes: sizes => {
+                            setSplitHeights(sizes);
                         }
                     }}
                 >
@@ -455,13 +478,15 @@ export const makeMenuItems = (
                     collectionId,
                     includeSpreadsheetItems
                 );
-                return (
+                return submenuItems.length ? (
                     <LocalizableNestedMenuItem
                         english={spec.label}
                         l10nId={spec.l10nId!}
                     >
                         {submenuItems}
                     </LocalizableNestedMenuItem>
+                ) : (
+                    undefined
                 );
             }
             if (spec.shouldShow) {

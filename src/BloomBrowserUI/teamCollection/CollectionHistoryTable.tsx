@@ -5,6 +5,7 @@ import * as React from "react";
 import { BloomApi } from "../utils/bloomApi";
 import { BloomAvatar } from "../react_components/bloomAvatar";
 import { useEffect, useState } from "react";
+import { useSubscribeToWebSocketForEvent } from "../utils/WebSocketManager";
 
 interface IBookHistoryEvent {
     Title: string;
@@ -69,6 +70,10 @@ export const CollectionHistoryTable: React.FunctionComponent<{
     // This is a trick to force the API call to run again when the selected book changes.
     const [generation, setGeneration] = useState(0);
     useEffect(() => setGeneration(gen => gen + 1), [props.selectedBook]);
+    // Likewise force a re-run when there is a new event.
+    useSubscribeToWebSocketForEvent("bookHistory", "eventAdded", () =>
+        setGeneration(gen => gen + 1)
+    );
     const events = BloomApi.useApiData<IBookHistoryEvent[]>(
         "teamCollection/getHistory" +
             (currentBookOnly

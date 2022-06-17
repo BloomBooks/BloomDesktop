@@ -130,14 +130,14 @@ function SetupImageContainer(containerDiv: HTMLElement) {
 
     $(containerDiv)
         .mouseenter(function() {
-            const $this = $(this);
-            let img = $this.find("img");
+            let img = getImgFromContainer(this);
             if (img.length === 0)
                 // This case is probably a left over from some previous Bloom where
                 // we were using background images instead of <img>? But it does
                 // no harm so I'm leaving it in.
                 img = $(containerDiv); //using a backgroundImage
 
+            const $this = $(this);
             if ($this.find(kPlaybackOrderContainerSelector).length > 0) {
                 return; // Playback order controls are active, deactivate image container stuff.
             }
@@ -212,10 +212,14 @@ function SetupImageContainer(containerDiv: HTMLElement) {
                 );
                 const button = `<button class="editMetadataButton imageButton imageOverlayButton ${buttonModifier}" title="${title}"></button>`;
                 $this.prepend(button);
-                const imageUrl = GetRawImageUrl(img);
-                $(".editMetadataButton").attr(
+                $this.find("button.editMetadataButton").attr(
                     "onClick",
-                    `(window.parent || window).editTabBundle.showCopyrightAndLicenseDialog('${imageUrl}');`
+                    // Originally, we tried to determine the imageUrl at setup time and put that string in the onClick handler string below.
+                    // However, it turns out that we must rely on the click handler knowing what element we clicked on ("this") at click time.
+                    // Otherwise, we can get an incorrect imageUrl. For example, a picture on picture might give the parent picture imageUrl.
+                    // We have to do this strange editTabBundle stuff because at the time of the click, we are in a context where that is all we can access.
+                    `(window.parent || window).editTabBundle.showCopyrightAndLicenseDialog(
+                        (window.parent || window).editTabBundle.getImageUrlFromImageButton(this));`
                 );
                 $this.find(".miniButton").each(function() {
                     $(this).removeClass("disabled");
@@ -234,6 +238,23 @@ function SetupImageContainer(containerDiv: HTMLElement) {
                 }
             });
         });
+}
+
+export function getImageUrlFromImageButton(button: HTMLButtonElement): string {
+    const imageContainer = button?.parentElement;
+    if (!imageContainer) return "";
+    return GetRawImageUrl(getImgFromContainer(imageContainer));
+}
+
+function getImgFromContainer(imageContainer: HTMLElement) {
+    // FF60 doesn't seem to do this properly, so I'm punting and using jquery...
+    // return imageContainer.querySelector(
+    //     "img:not(.bloom-ui > img, .bloom-ui)"
+    // );
+    return $(imageContainer)
+        .find("img")
+        .not(".bloom-ui") // e.g. dragHandle.svg
+        .not(".bloom-ui img"); // e.g. cog.svg
 }
 
 function SetImageTooltip(container: HTMLElement) {

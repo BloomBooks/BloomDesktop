@@ -37,6 +37,7 @@ import "errorHandler";
 import { reportError } from "../lib/errorHandler";
 import { IToolboxFrameExports } from "./toolbox/toolboxBootstrap";
 import { showCopyrightAndLicenseInfoOrDialog } from "./copyrightAndLicense/CopyrightAndLicenseDialog";
+export { getImageUrlFromImageButton } from "./js/bloomImages";
 
 //Called by c# using editTabBundle.handleUndo()
 export function handleUndo(): void {

@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Bloom;
+using Bloom.Api;
 using Bloom.Book;
 using Bloom.Collection;
 using Bloom.TeamCollection;
@@ -203,6 +204,7 @@ public class BookHistory
 				 e);
 			// swallow... we don't want to prevent whatever was about to happen.
 		}
+		BloomWebSocketServer.Instance.SendEvent("bookHistory","eventAdded");
 	}
 
 	private static BookHistoryBook GetOrMakeBookRecord(Book book, SQLiteConnection db)
