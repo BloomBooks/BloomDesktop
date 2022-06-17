@@ -1290,6 +1290,13 @@ namespace Bloom.Book
 				// this will turn on rules in previewMode.css that show the structure of the template and names of pages
 				HtmlDom.AddClassToBody(RawDom, "template");
 			}
+			else
+			{
+				// It might be there when not appropriate, because this is a new book created from a template,
+				// or one that was created from a template in an earlier version of Bloom without this fix!
+				// Make sure it's not.
+				HtmlDom.RemoveClassFromBody(RawDom, "template");
+			}
 		}
 
 		private void AddLanguageAttributesToBody(HtmlDom bookDom)
