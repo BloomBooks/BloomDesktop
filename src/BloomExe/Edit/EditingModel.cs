@@ -512,7 +512,9 @@ namespace Bloom.Edit
 
 			//Reload to display these changes
 			CurrentBook.SetMultilingualContentLanguages(contentLanguages);	// set langs before saving page
-			SaveNow();
+			// The language choice is saved in the data-div, so we must do a full save even if this
+			// page doesn't contain anything else that has non-local effects.
+			SaveNow(true);
 			CurrentBook.PrepareForEditing();
 			RefreshDisplayOfCurrentPage();
 			_view.UpdatePageList(true);//counting on this to redo the thumbnails
@@ -1042,7 +1044,7 @@ namespace Bloom.Edit
 		// (e.g., BL-2634, BL-6296). It may also prevent some wasted Saves and thus improve performance.
 		public bool NavigatingSoSuspendSaving = false;
 
-		public void SaveNow()
+		public void SaveNow(bool forceFullSave = false)
 		{
 			if (_domForCurrentPage != null && !_inProcessOfSaving && !NavigatingSoSuspendSaving)
 			{
@@ -1061,7 +1063,7 @@ namespace Bloom.Edit
 					if (_view.InvokeRequired)
 					{
 						NonFatalProblem.Report(ModalIf.Beta, PassiveIf.Beta, "SaveNow called on wrong thread", null);
-						_view.Invoke((Action)(SaveNow));
+						_view.Invoke((Action)(() => SaveNow(forceFullSave)));
 						watch.Stop();
 						return;
 					}
@@ -1105,7 +1107,7 @@ namespace Bloom.Edit
 					CheckForBL2634("save");
 					//OK, looks safe, time to save.
 					var newPageData = GetPageData(_domForCurrentPage.RawDom);
-					_pageSelection.CurrentSelection.Book.SavePage(_domForCurrentPage, NeedToDoFullSave(newPageData));
+					_pageSelection.CurrentSelection.Book.SavePage(_domForCurrentPage, forceFullSave || NeedToDoFullSave(newPageData));
 					_pageHasUnsavedDataDerivedChange = false;
 					CheckForBL2634("finished save");
 				}
