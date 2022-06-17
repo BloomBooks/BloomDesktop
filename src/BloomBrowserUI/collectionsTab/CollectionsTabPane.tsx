@@ -478,13 +478,15 @@ export const makeMenuItems = (
                     collectionId,
                     includeSpreadsheetItems
                 );
-                return (
+                return submenuItems.length ? (
                     <LocalizableNestedMenuItem
                         english={spec.label}
                         l10nId={spec.l10nId!}
                     >
                         {submenuItems}
                     </LocalizableNestedMenuItem>
+                ) : (
+                    undefined
                 );
             }
             if (spec.shouldShow) {
