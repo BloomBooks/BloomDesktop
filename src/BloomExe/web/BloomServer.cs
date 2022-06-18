@@ -741,13 +741,21 @@ namespace Bloom.Api
 					}
 				}
 			}
+			// This was REMOVED to fix BL-11319. Problems with it:
+			// 1) it is now testing localPath AFTER we've already moved on to "path"
+			// 2) it is tesing the infor.RawUrl, again, after we've already move on to locaPath and then path
+			// 3) I can't reproduce the original problem of BL-3835 any more, if I remove it.
+			// 4) The unit test that came with the PR now passes without this code. (https://github.com/BloomBooks/BloomDesktop/pull/1221)
+			/*
+			 * 
 			// Use '%25' to detect that the % in a Url encoded character (for example space encoded as %20) was encoded as %25.
 			// In this example we would have %2520 in info.RawUrl and %20 in localPath instead of a space.  Note that if an
 			// image has a % in the filename, like 'The other 50%', and it isn't doubly encoded, then this shouldn't be a
 			// problem because we're triggering here only if the file isn't found.
+			//
 			if (!RobustFile.Exists(localPath) && info.RawUrl.Contains("%25"))
 			{
-				// possibly doubly encoded?  decode one more time and try.  See https://silbloom.myjetbrains.com/youtrack/issue/BL-3835.
+				// possibly doubly encoded?  decode one more time and try.  See https://issues.bloomlibrary.org/youtrack/issue/BL-3835.
 				// Some existing books have somehow acquired Url encoded coverImage data like the following:
 				// <div data-book="coverImage" lang="*">
 				//     The%20Moon%20and%20The%20Cap_Cover.png
@@ -756,6 +764,7 @@ namespace Bloom.Api
 				// Html/Xml encoded (using &), not Url encoded (using %).
 				path = HttpUtility.UrlDecode(localPath);
 			}
+			*/
 			if (!RobustFile.Exists(path) && IsImageTypeThatCanBeReturned(localPath) && _bookSelection?.CurrentSelection != null)
 			{
 				// last resort...maybe we are in the process of renaming a book (BL-3345) and something mysteriously is still using
