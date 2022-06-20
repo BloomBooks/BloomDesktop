@@ -591,6 +591,8 @@ namespace Bloom.Publish.Android
 
 		private static TemporaryFolder _stagingFolder;
 
+		internal bool LicenseOK;
+
 		/// <summary>
 		/// Generates a .bloompub file from the book
 		/// </summary>
@@ -604,10 +606,12 @@ namespace Bloom.Publish.Android
 				if (message != null)
 				{
 					progress.MessageWithoutLocalizing(message, ProgressKind.Error);
+					LicenseOK = false;
 					_webSocketServer.SendString(kWebSocketContext, kWebsocketState_LicenseOK, "false");
 					return null;
 				}
 			}
+			LicenseOK = true;
 			_webSocketServer.SendString(kWebSocketContext, kWebsocketState_LicenseOK, "true");
 
 			_stagingFolder?.Dispose();
