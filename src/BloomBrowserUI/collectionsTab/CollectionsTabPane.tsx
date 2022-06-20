@@ -211,6 +211,7 @@ export const CollectionsTabPane: React.FunctionComponent<{}> = () => {
             <BooksOfCollectionWithHeading
                 name={c.name}
                 id={c.id}
+                shouldLocalizeName={c.shouldLocalizeName}
                 manager={manager}
                 isSpreadsheetFeatureActive={isSpreadsheetFeatureActive}
             />
@@ -568,12 +569,13 @@ export const makeMenuItems = (
 const BooksOfCollectionWithHeading: React.FunctionComponent<{
     name: string;
     id: string;
+    shouldLocalizeName: boolean;
     manager: BookSelectionManager;
     isSpreadsheetFeatureActive: boolean;
 }> = props => {
-    // Using this rather than our H2 component because we want to NOT highlight anything that is missing
-    // localization. Most collections will not have a localized name in our system.
-    const localName = useL10n(props.name, "CollectionTab." + props.name);
+    const localName = props.shouldLocalizeName
+        ? useL10n(props.name, "CollectionTab." + props.name)
+        : props.name;
     return (
         <div key={"frag:" + props.id}>
             <h2>{localName}</h2>
