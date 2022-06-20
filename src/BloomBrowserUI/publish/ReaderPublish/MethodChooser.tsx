@@ -98,7 +98,7 @@ function getStartButton(method: string, licenseOK: boolean) {
                 <BloomButton
                     l10nKey="PublishTab.Android.Usb.Start"
                     l10nComment="Button that tells Bloom to send the book to a device via USB cable."
-                    enabled={true}
+                    enabled={licenseOK}
                     clickApiEndpoint="publish/android/usb/start"
                     hidden={isLinux()}
                     hasText={true}
@@ -111,7 +111,7 @@ function getStartButton(method: string, licenseOK: boolean) {
                 <BloomButton
                     l10nKey="PublishTab.Android.Wifi.Start"
                     l10nComment="Button that tells Bloom to begin offering this book on the wifi network."
-                    enabled={true}
+                    enabled={licenseOK}
                     clickApiEndpoint="publish/android/wifi/start"
                     hasText={true}
                 >
