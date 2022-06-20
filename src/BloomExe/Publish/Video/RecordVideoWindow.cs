@@ -1012,22 +1012,21 @@ namespace Bloom.Publish.Video
 						//////////////
 						// ENHANCE: //
 						//////////////
-						// Actually what this if condition should entail is "any book layout between square (1:1)  and 2:3 (1:1.5) aspect ratio,"
-						// but it doesn't seem trivial to determine that. Since A5 represents most books, we'll settle for just A5 for now.
-						if (pageLayout?.DisplayName == "A5 Portrait")
+						// Actually what this if condition should entail is "any book layout between square (1:1)  and 4:5 (1:1.25) aspect ratio,"
+						// but right now we only support square ones. ("13cm Square"  is the only layout that qualifies currently anyway).
+						if (pageLayout != null && pageLayout.SizeAndOrientation.IsSquare)
 						{
-							// Books with aspect ratio < 2:3 can just use their original page size as is.
+							// Books with aspect ratio < 4:5 can just use their original page size as is.
 							shouldUseOriginalPageSize = true;
-							// ENHANCE: It'd be better if we could calculate these based on the page layout instead of hardcoding it based on page layout
-							desiredHeight = 1022;
+							desiredHeight = 720;	// Enhance: Determine {desiredHeight} programatically for non-square layouts
 							desiredWidth = 720;
 						}
 						else
 						{
-							// 2:3 aspect ratio.
+							// 4:5 aspect ratio.
 							// ENHANCE: The video will be this size, but Bloom Player will be 9:16 still, so you will get black bars, which is not ideal.
-							// It would be better if Bloom Player used a page layout with the proper size (we'd need to make a new page layout)
-							desiredHeight = 1080;
+							// It would be better if Bloom Player used a page layout with the proper size (we'd need to make a new Device4x5 page layout)
+							desiredHeight = 900;
 							desiredWidth = 720;
 						}
 					}
