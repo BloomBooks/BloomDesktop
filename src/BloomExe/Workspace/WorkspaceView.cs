@@ -240,7 +240,7 @@ namespace Bloom.Workspace
 			// if the book has been renamed remotely but not yet here, we may not be able to tell that it
 			// needs to be checked out before BringBookUpToDate renames it here.
 			StartupScreenManager.AddStartupAction(() =>
-				SelectPreviouslySelectedBook(),
+				SelectBookAtStartup(),
 				// We want to delay this until the buttons get drawn,
 				// since it ties up the UI thread for a while.
 				// Enhance: the code in CollectionsApi that raises this event is crude; it just
@@ -265,9 +265,9 @@ namespace Bloom.Workspace
 		/// <remarks>
 		/// See https://issues.bloomlibrary.org/youtrack/issue/BL-10225.
 		/// </remarks>
-		private void SelectPreviouslySelectedBook()
+		private void SelectBookAtStartup()
 		{
-			var selBookPath = Settings.Default.CurrentBookPath;
+			var selBookPath = Program.PathToBookDownloadedAtStartup ?? Settings.Default.CurrentBookPath;
 			if (string.IsNullOrEmpty(selBookPath) || !Directory.Exists(selBookPath))
 				return;
 			var selBookCollectionFolder = Path.GetDirectoryName(selBookPath);
