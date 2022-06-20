@@ -242,7 +242,7 @@ namespace Bloom.Publish.Video
 		/// <returns></returns>
 		public static bool ShouldRecordAsLandscape(Book.Book book)
 		{
-			return book.BookInfo.PublishSettings.AudioVideo.Motion || book.GetLayout().SizeAndOrientation.IsLandScape;
+			return book.BookInfo.PublishSettings.AudioVideo.Motion || (book.GetLayout().SizeAndOrientation.IsLandScape && !book.GetLayout().SizeAndOrientation.IsSquare);
 		}
 
 		private bool IsScalingActive()
