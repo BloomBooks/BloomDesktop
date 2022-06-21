@@ -188,7 +188,8 @@ namespace Bloom.web.controllers
 						{
 							id = c.PathToDirectory,
 							name = c.Name,
-							isSourceCollection = _collectionModel.IsSourceCollection
+							isSourceCollection = _collectionModel.IsSourceCollection,
+							shouldLocalizeName = c.PathToDirectory.StartsWith(BloomFileLocator.FactoryCollectionsDirectory) || c.ContainsDownloadedBooks
 						});
 				}
 			});
