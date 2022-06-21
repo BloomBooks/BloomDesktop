@@ -1,9 +1,0 @@
-bloom-desktop-beta: unstripped-binary-or-object
-bloom-desktop-beta: embedded-library
-bloom-desktop-beta: embedded-javascript-library
-bloom-desktop-beta: binary-without-manpage
-bloom-desktop-beta: hardening-no-pie usr/lib/bloom-desktop-beta/Firefox/plugin-container
-
-# Maybe these files should be in a separate "non-free" package someday (error can't be overridden)
-#bloom-desktop-beta: license-problem-md5sum-non-free-file DistFiles/ColorProfiles/CMYK/USWebCoatedSWOP.icc *
-#bloom-desktop-beta: license-problem-md5sum-non-free-file DistFiles/ColorProfiles/RGB/AdobeRGB1998.icc *
