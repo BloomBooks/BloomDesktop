@@ -594,9 +594,9 @@ namespace Bloom.Publish.Android
 		internal bool LicenseOK;
 
 		/// <summary>
-		/// Generates a .bloompub file from the book
+		/// Generates an unzipped, staged BloomPUB from the book
 		/// </summary>
-		/// <returns>A valid, well-formed URL on localhost that points to the bloompub</returns>
+		/// <returns>A valid, well-formed URL on localhost that points to the staged book's htm file</returns>
 		public string MakeBloomPubForPreview(Book.Book book, BookServer bookServer, WebSocketProgress progress, Color backColor, AndroidPublishSettings settings = null)
 		{
 			progress.Message("PublishTab.Epub.PreparingPreview", "Preparing Preview");	// message shared with Epub publishing
@@ -652,7 +652,7 @@ namespace Bloom.Publish.Android
 				_webSocketServer.SendBundle("publishPageLabels", "ready", messageBundle);
 			}
 
-			return modifiedBook.FolderPath.ToLocalhost();
+			return modifiedBook.GetPathHtmlFile().ToLocalhost();
 		}
 
 		/// <summary>
