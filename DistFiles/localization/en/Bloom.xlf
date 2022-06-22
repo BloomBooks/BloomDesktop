@@ -3807,6 +3807,16 @@
         <source xml:lang="en">Make a BloomPUB for Bloom Reader or Reading App Builder.</source>
         <note>ID: PublishTab.bloomPUBButton-tooltip</note>
       </trans-unit>
+      <trans-unit id="PublishTab.BloomPUB.BannerDescription">
+        <source xml:lang="en">BloomPUBs are a kind of eBook that can be read on phone apps ([Bloom Reader](https://bloomlibrary.org/page/create/bloom-reader) and [Reading App Builder](https://software.sil.org/readingappbuilder/)) and on Windows using [Bloom Viewer](https://github.com/BloomBooks/bloompub-viewer/releases). They offer many advantages over ePUBs, including WYSIWYG fidelity and the full range of Bloom digital book features.</source>
+        <note>ID: PublishTab.BloomPUB.BannerDescription</note>
+        <note>Task description at the top of the BloomPUB Publishing page</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.BloomPUB.BannerTitle">
+        <source xml:lang="en">Publish as BloomPUB</source>
+        <note>ID: PublishTab.BloomPUB.BannerTitle</note>
+        <note>Header on BloomPUB Publishing page</note>
+      </trans-unit>
       <trans-unit id="PublishTab.BodyOnlyRadio-tooltip" sil:dynamic="true">
         <source xml:lang="en">Make a booklet from the inside pages of the book.\nPages will be laid out and reordered so that when you fold it, you'll have a booklet.\n</source>
         <note>ID: PublishTab.BodyOnlyRadio-tooltip</note>
@@ -3871,6 +3881,16 @@
         <source xml:lang="en">Accessibility</source>
         <note>ID: PublishTab.Epub.Accessibility</note>
         <note>Here, the English 'Accessibility' is a common way of refering to technologies that are usable by people with disabilities. With computers, this usually means people with visual impairments. It includes botht he blind and people who might need text to be larger, or who are colorblind, etc.</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Epub.BannerDescription">
+        <source xml:lang="en">Make an electronic book that can be read in EPUB readers on all devices.</source>
+        <note>ID: PublishTab.Epub.BannerDescription</note>
+        <note>Task description at the top of the ePUB Publishing page</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Epub.BannerTitle">
+        <source xml:lang="en">Publish as ePUB</source>
+        <note>ID: PublishTab.Epub.BannerTitle</note>
+        <note>Header on ePUB Publishing page</note>
       </trans-unit>
       <trans-unit id="PublishTab.Epub.BuildingEPub">
         <source xml:lang="en">Building ePUB</source>
@@ -4198,6 +4218,16 @@
         <source xml:lang="en">Audio File</source>
         <note>ID: PublishTab.RecordVideo.AudioFile</note>
         <note>displayed as file type for Save File dialog</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.RecordVideo.BannerDescription">
+        <source xml:lang="en">Create video files that you can upload to sites like Facebook and YouTube. You can also make videos to share with people who use inexpensive “feature phones” and even audio-only files for listening.</source>
+        <note>ID: PublishTab.RecordVideo.BannerDescription</note>
+        <note>Task description at the top of the Audio or Video Publishing page</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.RecordVideo.BannerTitle">
+        <source xml:lang="en">Publish as Audio or Video</source>
+        <note>ID: PublishTab.RecordVideo.BannerTitle</note>
+        <note>Header on Audio or Video Publishing page</note>
       </trans-unit>
       <trans-unit id="PublishTab.RecordVideo.ChangeScale100">
         <source xml:lang="en">Please change your display scaling to 100% while making videos. Without this, videos will come out at the wrong resolution, or not record at all.</source>
