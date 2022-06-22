@@ -143,8 +143,12 @@ namespace Bloom.Publish.Video
 			
 			var bloomPlayerUrl = BloomServer.ServerUrlWithBloomPrefixEndingInSlash
 			                     + "bloom-player/dist/bloomplayer.htm?centerVertically=true&reportSoundLog=true&initiallyShowAppBar=false&autoplay=yes&hideNavButtons=true&url="
-								 + bookUrl
-			                     + $"&independent=false&host=bloomdesktop&defaultDuration={pageReadTime}&useOriginalPageSize={_shouldUseOriginalPageSize}&skipActivities=true{pageRangeParams}";
+								 // This is strange. bookUrl is already partially encoded. For example, a title of `a%` is already `a%25`.
+								 // But what we actually need for `a%` is `a%2525`. This is confusing but matches what we do for the preview in js code:
+								 // encodeURIComponent(bookUrl) + // Need to apply encoding to the bookUrl again as data to use it as a parameter of another URL
+								 // See BL-11319.
+								 + UrlPathString.CreateFromUnencodedString(bookUrl, true).UrlEncoded
+								 + $"&independent=false&host=bloomdesktop&defaultDuration={pageReadTime}&useOriginalPageSize={_shouldUseOriginalPageSize}&skipActivities=true{pageRangeParams}";
 			// The user can make choices in the preview instance of BloomPlayer...currently language and
 			// whether to play image descriptions...that need to be communicated to the recording window.
 			// If we received any, pass them on.

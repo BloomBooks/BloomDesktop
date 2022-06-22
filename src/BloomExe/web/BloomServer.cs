@@ -443,14 +443,14 @@ namespace Bloom.Api
 			if (ProcessImageFileRequest(info))
 				return true;
 
-			if(localPath.Contains("CURRENTPAGE")) //useful when debugging. E.g. http://localhost:8091/bloom/CURRENTPAGE.htm will always show the page we're on.
+			if(localPath.Contains("CURRENTPAGE")) //useful when debugging. E.g. http://localhost:8089/bloom/CURRENTPAGE.htm will always show the page we're on.
 			{
 				localPath = _keyToCurrentPage;
 			}
-			if (localPath.ToLower().Contains("current-bloompub-url")) //useful when debugging. E.g. http://localhost:8091/bloom/current-bloompub-url.htm will always show the page we're on.
+			if (localPath.ToLower().Contains("current-bloompub-url")) //useful when debugging. E.g. http://localhost:8089/bloom/current-bloompub-url will always show the page we're on.
 			{
-				info.ResponseContentType = "text/plain";
-				info.WriteCompleteOutput(PublishToAndroidApi.PreviewUrl);
+				info.ResponseContentType = "text/html";
+				info.WriteCompleteOutput($"<meta http-equiv=\"Refresh\" content=\"0; url='{PublishToAndroidApi.PreviewUrl}'\" />");
 				return true;
 			}
 

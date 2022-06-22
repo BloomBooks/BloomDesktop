@@ -81,8 +81,8 @@ const EPUBPublishScreenInternal: React.FunctionComponent<{
             setClosePending(true);
         }
     );
-    const saveButtonEnabled = BloomApi.useWatchString(
-        "true",
+    const isLicenseOK = BloomApi.useWatchBooleanEvent(
+        true,
         "publish-epub",
         "publish/licenseOK"
     );
@@ -109,7 +109,7 @@ const EPUBPublishScreenInternal: React.FunctionComponent<{
                 <PublishPanel>
                     <BloomButton
                         className="save-button"
-                        enabled={saveButtonEnabled.toLowerCase() === "true"}
+                        enabled={isLicenseOK}
                         clickApiEndpoint={"publish/epub/save"}
                         hasText={true}
                         l10nKey="PublishTab.Save"
