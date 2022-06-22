@@ -377,12 +377,7 @@ gulp.task(
             "markdownInfoPages",
             "markdownDistInfo"
         ),
-        gulp.parallel(
-            "webpack",
-            "translateHtmlFiles",
-            "createXliffFiles",
-            "compileTemplateTypescript"
-        )
+        gulp.parallel("webpack", "compileTemplateTypescript")
     )
 );
 
@@ -395,6 +390,13 @@ gulp.task(
         gulp.parallel("less", "pug"),
         gulp.parallel("webpack")
     )
+);
+
+// Run when needing to test l10n on user machines, or when markdown/html content
+// changes and xliff files need to be updated for checkin.
+gulp.task(
+    "build-translate",
+    gulp.parallel("translateHtmlFiles", "createXliffFiles")
 );
 
 gulp.task(
