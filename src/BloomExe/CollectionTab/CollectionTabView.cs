@@ -14,6 +14,7 @@ using Bloom.TeamCollection;
 using Bloom.ToPalaso;
 using Bloom.web;
 using SIL.Windows.Forms.SettingProtection;
+using System.Diagnostics;
 
 namespace Bloom.CollectionTab
 {
@@ -151,7 +152,10 @@ namespace Bloom.CollectionTab
 				c.FolderContentChanged += (sender, eventArgs) =>
 				{
 					if (IsDisposed)
+					{
+						Debug.Fail("FolderContentChanged handler invoked from a CollectionTabView that has already been disposed. Did the collection have cleanup such as StopWatchingDirectory() occur?");
 						return;
+					}
 					if (_tabSelection.ActiveTab == WorkspaceTab.collection)
 					{
 						// We got a new or modified book in the downloaded books collection.

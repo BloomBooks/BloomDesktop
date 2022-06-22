@@ -399,7 +399,7 @@ namespace Bloom.Collection
 		}
 
 		/// <summary>
-		/// This could plausibly be a Dispose(), but I don't want to make BoolCollection Disposable, as most of them don't need it.
+		/// This could plausibly be a Dispose(), but I don't want to make BookCollection Disposable, as most of them don't need it.
 		/// </summary>
 		public void StopWatchingDirectory()
 		{

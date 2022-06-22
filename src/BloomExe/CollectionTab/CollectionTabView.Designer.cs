@@ -17,10 +17,16 @@ namespace Bloom.CollectionTab
 		/// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
 		protected override void Dispose(bool disposing)
 		{
-			if (disposing && (components != null))
+			if (disposing)
 			{
 				BookCollection.CollectionCreated -= OnBookCollectionCreated;
-				components.Dispose();
+
+				var collections = _model?.GetBookCollections() ?? System.Linq.Enumerable.Empty<BookCollection>();
+				foreach (var collection in collections)
+					collection?.StopWatchingDirectory();
+
+				if (components != null)
+					components.Dispose();
 			}
 			base.Dispose(disposing);
 		}
