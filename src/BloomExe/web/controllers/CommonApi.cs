@@ -498,43 +498,17 @@ namespace Bloom.web.controllers
 		}
 
 		public void HandleChooseFolder(ApiRequest request)
-		{	
+		{
 			var initialPath = request.GetParamOrNull("path");
 			var description = request.GetParamOrNull("description");
 			var forOutput = request.GetParamOrNull("forOutput");
 			var isForOutput = !String.IsNullOrEmpty(forOutput) && forOutput.ToLowerInvariant() == "true";
 
+			var resultPath = Utils.MiscUtils.GetOutputFolderOutsideCollectionFolder(initialPath, description, isForOutput);
+
 			dynamic result = new DynamicJson();
-			var book = _bookSelection?.CurrentSelection;
-			bool repeat = false;
-			do
-			{
-				using (var dlg = new FolderBrowserDialog())
-				{
-					if (!String.IsNullOrEmpty(initialPath))
-						dlg.SelectedPath = initialPath;
-					dlg.ShowNewFolderButton = true;
-
-					if (!string.IsNullOrEmpty(description))
-					{
-						dlg.Description = description;
-					}
-
-					result.success = dlg.ShowDialog() == DialogResult.OK;
-					result.path = result.success ? dlg.SelectedPath : "";
-					string collectionFolder = string.Empty;
-					repeat = result.success && isForOutput && Utils.MiscUtils.IsFolderInsideBloomCollection(result.path, out collectionFolder);
-					if (repeat)
-					{
-						Utils.MiscUtils.WarnUserOfInvalidFolderChoice(collectionFolder, result.path);
-						// Change the initialFolder to just above the collection folder, or to the documents folder
-						// if that ends up empty.
-						initialPath = Path.GetDirectoryName(collectionFolder);
-						if (String.IsNullOrEmpty(initialPath))
-							initialPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-					}
-				}
-			} while (repeat);
+			result.success = !String.IsNullOrEmpty(resultPath);
+			result.path = resultPath;
 
 				// We send the result through a websocket rather than simply returning it because
 				// if the user is very slow (one site said FF times out after 90s) the browser may
