@@ -1,5 +1,4 @@
 /** @jsx jsx **/
-/** @jsxFrag React.Fragment */
 import { jsx, css } from "@emotion/core";
 
 import * as React from "react";
@@ -164,7 +163,7 @@ export const LicenseBadge: React.FunctionComponent<{
         case LicenseType.Custom:
             return createNonCcBadge(licenseShorthand);
         default:
-            return <></>;
+            return <React.Fragment></React.Fragment>;
     }
 };
 
