@@ -350,7 +350,8 @@ function getChangedSettings(): ReaderSettings {
     for (let j: number = 0; j < levels.length; j++) {
         const level: ReaderLevel = new ReaderLevel((j + 1).toString());
 
-        delete level.name; //I don't know why this has a name, but it's apparently just part of the UI that we don't want to save
+        // (Hatton) inserted this "as any" because this broke with modern typescript, which will not go along with level.delete: "The operand of a 'delete' operator must be optional.""
+        delete (level as any).name; //I don't know why this has a name, but it's apparently just part of the UI that we don't want to save
         const row: HTMLTableRowElement = <HTMLTableRowElement>levels[j];
         for (let k = 0; k < levelSettings.length; k++) {
             const levelSetting = levelSettings[k];
