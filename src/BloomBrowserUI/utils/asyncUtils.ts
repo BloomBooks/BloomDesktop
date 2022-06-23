@@ -5,10 +5,10 @@
 // 2) Upgrading GeckoFx to 71
 export function allPromiseSettled(promises) {
     // To store our results
-    var results = Array(promises.length);
+    const results = Array(promises.length);
 
     // To keep track of how many promises resolved
-    var counter = 0;
+    let counter = 0;
 
     // If not iterable throw an error
     if (!isIterable(promises)) {

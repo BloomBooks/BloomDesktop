@@ -14,7 +14,7 @@ describe("readerTools-libSynphony tests", () => {
         //so we need another way to clear out this global, for testing purposes
         getTheOneReaderToolsModel().clearForTest();
 
-        var settings: any = {};
+        const settings: any = {};
         settings.letters =
             "a b c d e f g h i j k l m n o p q r s t u v w x y z th";
         settings.moreWords = "one two three";
@@ -30,10 +30,10 @@ describe("readerTools-libSynphony tests", () => {
         });
         settings.stages.push({ letters: "i l n th", sightWords: "rodent" });
 
-        var sampleFileContents =
+        const sampleFileContents =
             "The cat sat on the mat. The rat sat on the cat.";
 
-        var synphony = new ReadersSynphonyWrapper();
+        const synphony = new ReadersSynphonyWrapper();
         getTheOneReaderToolsModel().synphony = synphony;
         synphony.loadSettings(settings);
 
@@ -49,14 +49,14 @@ describe("readerTools-libSynphony tests", () => {
         //so we need another way to clear out this global, for testing purposes
         getTheOneReaderToolsModel().clearForTest();
 
-        var settings: any = {};
+        const settings: any = {};
         settings.stages = [];
 
         settings.stages.push({ letters: "", sightWords: "canine feline" });
         settings.stages.push({ letters: "", sightWords: "carnivore omnivore" });
         settings.stages.push({ letters: "", sightWords: "rodent" });
 
-        var synphony = new ReadersSynphonyWrapper();
+        const synphony = new ReadersSynphonyWrapper();
         getTheOneReaderToolsModel().synphony = synphony;
         synphony.loadSettings(settings);
 
@@ -65,15 +65,15 @@ describe("readerTools-libSynphony tests", () => {
     }
 
     function addDiv(id) {
-        var div = document.createElement("div");
+        const div = document.createElement("div");
         div.id = id;
         document.body.appendChild(div);
         return div;
     }
 
-    var divTextEntry1;
-    var divTextEntry2;
-    var divTextEntry3;
+    let divTextEntry1;
+    let divTextEntry2;
+    let divTextEntry3;
 
     beforeEach(() => {
         divTextEntry1 = addDiv("text_entry1");
@@ -89,7 +89,7 @@ describe("readerTools-libSynphony tests", () => {
 
     it("addWordsFromFile", () => {
         getTheOneReaderToolsModel().clearForTest();
-        var fileContents = "The cat sat on the mat. The rat sat on the cat.";
+        const fileContents = "The cat sat on the mat. The rat sat on the cat.";
 
         getTheOneReaderToolsModel().addWordsFromFile(fileContents);
         expect(getTheOneReaderToolsModel().allWords).toEqual({
@@ -104,7 +104,7 @@ describe("readerTools-libSynphony tests", () => {
 
     it("addWordsFromFile properly handles paragraphs", () => {
         getTheOneReaderToolsModel().clearForTest();
-        var fileContents = "one\r\ntwo\nthree four five.\r\n six. seven";
+        const fileContents = "one\r\ntwo\nthree four five.\r\n six. seven";
 
         getTheOneReaderToolsModel().addWordsFromFile(fileContents);
         expect(getTheOneReaderToolsModel().allWords).toEqual({
@@ -144,7 +144,7 @@ describe("readerTools-libSynphony tests", () => {
     it("markupEndsWithBreakTag", () => {
         generateTestData();
 
-        var knownGraphemes = [
+        const knownGraphemes = [
             "a",
             "b",
             "c",
@@ -172,7 +172,7 @@ describe("readerTools-libSynphony tests", () => {
             "y",
             "z"
         ];
-        var text1 = $("#text_entry1");
+        const text1 = $("#text_entry1");
 
         // test empty div (just a <br>)
         text1
@@ -207,8 +207,8 @@ describe("readerTools-libSynphony tests", () => {
     it("sightWordOnlyStages", () => {
         generateSightWordsOnlyTestData();
 
-        var knownGraphemes = [];
-        var text1 = $("#text_entry1");
+        const knownGraphemes = [];
+        const text1 = $("#text_entry1");
 
         // test empty div (just a <br>)
         text1

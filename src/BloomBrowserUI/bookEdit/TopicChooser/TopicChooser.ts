@@ -6,19 +6,19 @@ import { BloomApi } from "../../utils/bloomApi";
 
 // This must not be renamed. It s called directly from Bloom via RunJavaScript()
 // ReSharper disable once InconsistentNaming
-var ShowTopicChooser = () => {
+const ShowTopicChooser = () => {
     TopicChooser.showTopicChooser();
 };
 
 export default class TopicChooser {
     public static showTopicChooser() {
-        var currentTopicKey = $("div[data-book='topic']")
+        const currentTopicKey = $("div[data-book='topic']")
             .parent()
             .find("[lang='en']")
             .text();
 
         TopicChooser.createTopicDialogDiv(currentTopicKey);
-        var dlg = <any>$("#topicChooser").dialog({
+        const dlg = <any>$("#topicChooser").dialog({
             autoOpen: true,
             modal: true,
             position: {
@@ -32,10 +32,10 @@ export default class TopicChooser {
                     text: "OK",
                     width: 100,
                     click() {
-                        var t = $("ol#topicList li.ui-selected");
+                        const t = $("ol#topicList li.ui-selected");
                         //Ask the Model to set or clear the topic variable
                         if (t.length) {
-                            var key = t[0].dataset["key"];
+                            const key = t[0].dataset["key"];
                             //notice here that we are not changing the topic on the page.
                             //Doing so here would mean duplicating the logic we have to have
                             //in c# anyhow. Instead, we are doing more of a react-style
@@ -55,7 +55,7 @@ export default class TopicChooser {
 
         //make a double click on an item close the dialog
         dlg.find("li").dblclick(() => {
-            var x = dlg.dialog("option", "buttons");
+            const x = dlg.dialog("option", "buttons");
             x["OK"].apply(dlg);
         });
     }
@@ -80,14 +80,15 @@ export default class TopicChooser {
 
     private static populateTopics(currentTopicKey: string) {
         BloomApi.get("topics", result => {
-            var topics = result.data;
+            const topics = result.data;
             // Here, topics will be an object with a property for each known topic. Each property is a key:value pair
             // where the key is the English, and the value is the topic in the UI Language
 
             // add all the other topics, selecting the one that matches the currentTopic, if any
-            for (var i in Object.keys(topics)) {
-                var key = Object.keys(topics)[i];
-                var extraClass = key === currentTopicKey ? " ui-selected " : "";
+            for (const i in Object.keys(topics)) {
+                const key = Object.keys(topics)[i];
+                const extraClass =
+                    key === currentTopicKey ? " ui-selected " : "";
                 $("ol#topicList").append(
                     "<li class='ui-widget-content " +
                         extraClass +

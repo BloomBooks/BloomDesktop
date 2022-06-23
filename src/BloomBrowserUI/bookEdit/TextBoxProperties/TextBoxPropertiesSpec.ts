@@ -4,7 +4,7 @@ import TextBoxProperties from "./TextBoxProperties";
 "use strict";
 
 describe("TextBoxProperties", () => {
-    var dialog;
+    let dialog;
     // most perplexingly, jasmine doesn't reset the dom between tests
     beforeEach(() => {
         $("body").html("");

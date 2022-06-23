@@ -56,9 +56,7 @@ export class CheckItem extends React.Component<IProps, IState> {
                             {
                                 // note "file not found" here may have nothing to do with files
                                 // it may just be a poor choice of return codes.
-                                message: `Error from Bloom Server: ${
-                                    error.message
-                                } ${error.response.statusText}`,
+                                message: `Error from Bloom Server: ${error.message} ${error.response.statusText}`,
                                 problemText: ""
                             }
                         ]
@@ -68,7 +66,7 @@ export class CheckItem extends React.Component<IProps, IState> {
     }
 
     public render() {
-        let labelKey = "AccessibilityCheck." + this.props.apiCheckName;
+        const labelKey = "AccessibilityCheck." + this.props.apiCheckName;
         return (
             <li className={`checkItem ${this.state.checkResult.resultClass}`}>
                 <Label l10nKey={labelKey}>{this.props.label}</Label>

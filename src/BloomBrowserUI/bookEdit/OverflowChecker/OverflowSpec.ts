@@ -6,16 +6,16 @@ import "jasmine-jquery";
 import OverflowChecker from "../../bookEdit/OverflowChecker/OverflowChecker";
 import { removeTestRoot } from "../../utils/testHelper";
 
-var consoleDef = false;
+let consoleDef = false;
 
 function RunTest(index, value) {
-    var testHtml = $(value);
-    var nameAttr = testHtml.attr("name");
+    const testHtml = $(value);
+    let nameAttr = testHtml.attr("name");
     if (typeof nameAttr === "undefined")
         nameAttr = "***** This test needs a name! *****";
     if (consoleDef) console.log("\nBeginning test # " + index + " " + nameAttr);
-    var overflowingSelf = OverflowChecker.IsOverflowingSelf(testHtml[0]);
-    var testExpectation = testHtml.hasClass("expectToOverflow");
+    const overflowingSelf = OverflowChecker.IsOverflowingSelf(testHtml[0]);
+    const testExpectation = testHtml.hasClass("expectToOverflow");
     if (consoleDef) {
         console.log(
             "  scrollH: " +
@@ -24,14 +24,14 @@ function RunTest(index, value) {
                 testHtml[0].clientHeight
         );
         console.log("    Height: " + testHtml.height());
-        var styleAttr = testHtml.attr("style");
+        let styleAttr = testHtml.attr("style");
         if (typeof styleAttr === "undefined") styleAttr = "No styles";
         console.log("   Test Style: " + styleAttr);
-        var cs = window.getComputedStyle(testHtml[0], null);
-        var lineH = cs.getPropertyValue("line-height");
-        var fontS = cs.getPropertyValue("font-size");
-        var font = cs.getPropertyValue("font-family");
-        var padding = cs.getPropertyValue("padding");
+        const cs = window.getComputedStyle(testHtml[0], null);
+        const lineH = cs.getPropertyValue("line-height");
+        const fontS = cs.getPropertyValue("font-size");
+        const font = cs.getPropertyValue("font-family");
+        const padding = cs.getPropertyValue("padding");
         console.log(
             "     Computed Style: line-height " +
                 lineH +
@@ -48,14 +48,16 @@ function RunTest(index, value) {
 }
 
 function RunAncestorMarginTest(index: number, value: HTMLElement) {
-    var testHtml = $(value);
-    var nameAttr = testHtml.attr("name");
+    const testHtml = $(value);
+    let nameAttr = testHtml.attr("name");
     if (typeof nameAttr === "undefined")
         nameAttr = "***** This test needs a name! *****";
     if (consoleDef) console.log("\nBeginning test # " + index + " " + nameAttr);
-    var overflowingAncestor = OverflowChecker.overflowingAncestor(testHtml[0]);
-    var overflowingMargins = overflowingAncestor != null;
-    var testExpectation = testHtml.hasClass("expectToOverflow");
+    const overflowingAncestor = OverflowChecker.overflowingAncestor(
+        testHtml[0]
+    );
+    const overflowingMargins = overflowingAncestor != null;
+    const testExpectation = testHtml.hasClass("expectToOverflow");
     if (consoleDef) {
         console.log(
             "  scrollH: " +
@@ -64,14 +66,14 @@ function RunAncestorMarginTest(index: number, value: HTMLElement) {
                 testHtml[0].clientHeight
         );
         console.log("    Height: " + testHtml.height());
-        var styleAttr = testHtml.attr("style");
+        let styleAttr = testHtml.attr("style");
         if (typeof styleAttr === "undefined") styleAttr = "No styles";
         console.log("   Test Style: " + styleAttr);
-        var cs = window.getComputedStyle(testHtml[0], null);
-        var lineH = cs.getPropertyValue("line-height");
-        var fontS = cs.getPropertyValue("font-size");
-        var font = cs.getPropertyValue("font-family");
-        var padding = cs.getPropertyValue("padding");
+        const cs = window.getComputedStyle(testHtml[0], null);
+        const lineH = cs.getPropertyValue("line-height");
+        const fontS = cs.getPropertyValue("font-size");
+        const font = cs.getPropertyValue("font-family");
+        const padding = cs.getPropertyValue("padding");
         console.log(
             "     Computed Style: line-height " +
                 lineH +

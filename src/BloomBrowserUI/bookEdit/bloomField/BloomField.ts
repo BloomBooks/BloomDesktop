@@ -391,7 +391,7 @@ export default class BloomField {
             return;
         }
 
-        var divToProtect = $(field).find(
+        const divToProtect = $(field).find(
             ".bloom-keepFirstInField.bloom-preventRemoval"
         )[0];
 
@@ -508,12 +508,12 @@ export default class BloomField {
 
     private static ConvertTopLevelTextNodesToParagraphs(field: HTMLElement) {
         //enhance: this will leave <span>'s that are direct children alone; ideally we would incorporate those into paragraphs
-        var nodes = field.childNodes;
-        for (var n = 0; n < nodes.length; n++) {
-            var node = nodes[n];
+        const nodes = field.childNodes;
+        for (let n = 0; n < nodes.length; n++) {
+            const node = nodes[n];
             if (node.nodeType === 3) {
                 //Node.TEXT_NODE
-                var paragraph = document.createElement("p");
+                const paragraph = document.createElement("p");
                 if (
                     node.textContent != null &&
                     node.textContent.trim() !== ""
@@ -670,7 +670,7 @@ export default class BloomField {
     //In PrepareNonParagraphField(), to work around a FF bug, we made a text box non-empty so that the cursor would show up correctly.
     //Now, they have entered something, so remove it
     private static FixUpOnFirstInput(event: any) {
-        var field = event.target;
+        const field = event.target;
         //when this was wired up, we used ".one()", but actually we're getting multiple calls for some reason,
         //and that gets characters in the wrong place because this messes with the insertion point. So now
         //we check to see if the space is still there before touching it
@@ -687,11 +687,11 @@ export default class BloomField {
 
             //so now we do the following business, where we select the &nbsp; we want to delete, moments before the character is typed or text pasted
 
-            var selection: FFSelection = window.getSelection() as FFSelection;
+            const selection: FFSelection = window.getSelection() as FFSelection;
 
             //if we're at the start of the text, we're to the left of the character we want to replace
             if (selection.anchorOffset === 0) {
-                var doNotDeleteOrMove = false;
+                let doNotDeleteOrMove = false;
                 // if we've typed a backspace, delete, or arrow key, don't do it and call this method again next time.
                 // see https://silbloom.myjetbrains.com/youtrack/issue/BL-2274.
                 if (typeof event.charCode == "number" && event.charCode == 0) {

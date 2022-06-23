@@ -126,7 +126,7 @@ export const CollectionsTabPane: React.FunctionComponent<{}> = () => {
         // user can then right-click again.
         // This is a known bug in Material-UI, fixed in version 5, so we may be able to do better
         // when we switch to that. See https://github.com/mui/material-ui/issues/19145.
-        var menuBackdrop = (event.target as HTMLElement).closest(
+        const menuBackdrop = (event.target as HTMLElement).closest(
             ".MuiPopover-root"
         );
         if (menuBackdrop) {
@@ -470,7 +470,7 @@ export const makeMenuItems = (
                 return <Divider />;
             }
             if (spec.submenu) {
-                var submenuItems = makeMenuItems(
+                const submenuItems = makeMenuItems(
                     spec.submenu,
                     isEditableCollection,
                     isBookSavable,

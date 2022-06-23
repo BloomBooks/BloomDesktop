@@ -27,15 +27,15 @@ export default class TextBoxProperties {
     public AttachToBox(targetBox: HTMLElement) {
         // REVIEW: this may in fact be unneeded but I'm just trying to get eslint set up and conceivably it is intentional
         // eslint-disable-next-line @typescript-eslint/no-this-alias
-        var propDlg = this;
+        const propDlg = this;
         this._previousBox = targetBox;
 
         // Put the format button in the text box itself, so that it's always in the right place.
         $(targetBox).append(propDlg.getDialogActivationButton());
 
         // BL-2476: Readers made from BloomPacks should have formatting dialogs disabled
-        var suppress = $(document).find('meta[name="lockFormatting"]');
-        var noFormatChange =
+        const suppress = $(document).find('meta[name="lockFormatting"]');
+        const noFormatChange =
             suppress.length > 0 &&
             suppress.attr("content").toLowerCase() === "true";
 
@@ -45,12 +45,12 @@ export default class TextBoxProperties {
             BloomApi.get(
                 "bookEdit/TextBoxProperties/TextBoxProperties.html",
                 result => {
-                    var html = result.data;
+                    const html = result.data;
                     propDlg.boxBeingEdited = targetBox;
 
                     // If this text box has had properties set already, get them so we can setup the dialog contents
                     // if not already set, this will return 'Auto'
-                    var languageGroup = propDlg.getTextBoxLanguage(targetBox);
+                    const languageGroup = propDlg.getTextBoxLanguage(targetBox);
 
                     $("#text-properties-dialog").remove(); // in case there's still one somewhere else
                     $("body").append(html);
@@ -82,7 +82,7 @@ export default class TextBoxProperties {
                         ).prop("checked", true);
                     }
 
-                    var dialogElement = $("#text-properties-dialog");
+                    const dialogElement = $("#text-properties-dialog");
                     dialogElement.find("*[data-i18n]").localize();
                     dialogElement.draggable({
                         distance: 10,
@@ -103,7 +103,7 @@ export default class TextBoxProperties {
                     // http://stackoverflow.com/questions/779379/why-is-settimeoutfn-0-sometimes-useful
                     setTimeout(() => {
                         // Make sure we get the right button!
-                        var orientOnButton = $(propDlg.boxBeingEdited).find(
+                        const orientOnButton = $(propDlg.boxBeingEdited).find(
                             ".formatButton"
                         );
                         EditableDivUtils.positionDialogAndSetDraggable(
@@ -176,31 +176,31 @@ export default class TextBoxProperties {
     }
 
     private removeButtonSelection() {
-        var buttonIds = this.getButtonIds();
-        for (var i = 0; i < buttonIds.length; i++) {
+        const buttonIds = this.getButtonIds();
+        for (let i = 0; i < buttonIds.length; i++) {
             $("#" + buttonIds[i]).removeClass("selectedIcon");
         }
     }
 
     private setButtonClickActions() {
-        var buttonIds = this.getButtonIds();
-        for (var idIndex = 0; idIndex < buttonIds.length; idIndex++) {
-            var button = $("#" + buttonIds[idIndex]);
+        const buttonIds = this.getButtonIds();
+        for (let idIndex = 0; idIndex < buttonIds.length; idIndex++) {
+            const button = $("#" + buttonIds[idIndex]);
             button.click(e => this.buttonClick(e.currentTarget));
         }
     }
 
     // set uiChangeOnly to true to change only the appearance of buttons
     private buttonClick(buttonDiv, uiChangeOnly = false) {
-        var button = $(buttonDiv);
-        var id = button.attr("id");
-        var index = id.indexOf("-");
+        const button = $(buttonDiv);
+        const id = button.attr("id");
+        const index = id.indexOf("-");
         if (index >= 0) {
             // buttons in a group are given ids starting with group-
             button.addClass("selectedIcon");
-            var group = id.substring(0, index);
+            const group = id.substring(0, index);
             $(".propButton").each((index, b) => {
-                var item = $(b);
+                const item = $(b);
                 if (
                     b !== button.get(0) &&
                     item.attr("id").startsWith(group + "-")
@@ -240,8 +240,8 @@ export default class TextBoxProperties {
 
     private changeLanguageGroup() {
         // get radio button value and set 'data-default-languages' attribute
-        var radioValue = $('input[name="languageRadioGroup"]:checked').val();
-        var targetGroup = $(
+        const radioValue = $('input[name="languageRadioGroup"]:checked').val();
+        const targetGroup = $(
             this.getAffectedTranslationGroup(this.boxBeingEdited)
         );
         // currently 'radioValue' should be one of: 'Auto', 'N1', 'N2', or 'V'
@@ -257,7 +257,7 @@ export default class TextBoxProperties {
     }
 
     private initializeAlignment() {
-        var targetGroup = $(
+        const targetGroup = $(
             this.getAffectedTranslationGroup(this.boxBeingEdited)
         );
         if (targetGroup) {
@@ -272,7 +272,7 @@ export default class TextBoxProperties {
     }
 
     private changeAlignment() {
-        var targetGroup = $(
+        const targetGroup = $(
             this.getAffectedTranslationGroup(this.boxBeingEdited)
         );
         targetGroup.removeClass("bloom-vertical-align-center");
@@ -287,7 +287,7 @@ export default class TextBoxProperties {
     }
 
     private initializeBorderStyle() {
-        var targetGroup = $(
+        const targetGroup = $(
             this.getAffectedTranslationGroup(this.boxBeingEdited)
         );
         if (targetGroup) {
@@ -402,7 +402,7 @@ export default class TextBoxProperties {
     }
 
     private initializeBackground() {
-        var targetGroup = $(
+        const targetGroup = $(
             this.getAffectedTranslationGroup(this.boxBeingEdited)
         );
         if (targetGroup) {
@@ -428,17 +428,17 @@ export default class TextBoxProperties {
     }
 
     private getTextBoxLanguage(targetBox: HTMLElement): string {
-        var targetGroup = $(this.getAffectedTranslationGroup(targetBox));
+        const targetGroup = $(this.getAffectedTranslationGroup(targetBox));
         if (!targetGroup || !targetGroup.hasAttr("data-default-languages")) {
             return "Auto";
         }
-        var result = targetGroup.attr("data-default-languages");
+        const result = targetGroup.attr("data-default-languages");
         const acceptable = ["Auto", "N1", "N2", "V"];
         return acceptable.indexOf(result) > -1 ? result : "Auto";
     }
 
     private getAffectedTranslationGroup(targetBox: HTMLElement): HTMLElement {
-        var container = $(targetBox).parent();
+        const container = $(targetBox).parent();
         // I'm not sure (gjm) how often another translationGroup with box-header-off shows up,
         // but I found at least one instance, so make sure that's not the one we grab.
         return container.find(
@@ -459,7 +459,7 @@ export default class TextBoxProperties {
     private makeLanguageSelect() {
         // items comes back as something like languages: [{label: 'English', tag: 'en'},{label: 'French', tag: 'fr'} ]
         BloomApi.get("uiLanguages", result => {
-            var items: Array<any> = (<any>result.data).languages;
+            const items: Array<any> = (<any>result.data).languages;
             this.makeSelectItems(items, "en", "lang-select");
         });
         $("#lang-select").change(e => {
@@ -470,7 +470,7 @@ export default class TextBoxProperties {
     // Assumes a <select> with the specified id already exists. Makes the child elements and selects the current one.
     // This version assumes items is an array of objects with label and tag (see example in makeLanguageSelect).
     private makeSelectItems(items: any[], current, id, maxlength?) {
-        var result = "";
+        let result = "";
         // May need this someday to handle missing items.
         // if (current && items.indexOf(current.toString()) === -1) {
         //     //we have a custom point size, so make that an option in addition to the standard ones
@@ -481,12 +481,12 @@ export default class TextBoxProperties {
             return a.label.toLowerCase().localeCompare(b.label.toLowerCase());
         });
 
-        for (var i = 0; i < items.length; i++) {
-            var selected: string = "";
+        for (let i = 0; i < items.length; i++) {
+            let selected: string = "";
             if (current === items[i].tag) {
                 selected = " selected";
             }
-            var text = items[i].label;
+            let text = items[i].label;
             text = text.replace(/-/g, " "); //show users a space instead of dashes
             if (maxlength && text.length > maxlength) {
                 text = text.substring(0, maxlength) + "...";
@@ -500,7 +500,7 @@ export default class TextBoxProperties {
                 text +
                 "</option>";
         }
-        var parent = $("#" + id);
+        const parent = $("#" + id);
         parent.html(result);
     }
 
@@ -532,13 +532,13 @@ export default class TextBoxProperties {
     }
 
     private updateHintTabControls() {
-        var groupCanHaveMoreThanOneLanguage =
+        const groupCanHaveMoreThanOneLanguage =
             $('input[name="languageRadioGroup"]:checked').val() == "Auto";
-        var showHintOnEachGroupDiv = $("#show-hint-on-each-group");
-        var includeLangLabel = $("#include-lang");
+        const showHintOnEachGroupDiv = $("#show-hint-on-each-group");
+        const includeLangLabel = $("#include-lang");
         if (groupCanHaveMoreThanOneLanguage) {
             showHintOnEachGroupDiv.show();
-            var showHintOnEach = $(
+            const showHintOnEach = $(
                 this.getAffectedTranslationGroup(this.boxBeingEdited)
             ).hasClass(this.classNameForHintOnEach());
             if (showHintOnEach) {
@@ -557,16 +557,16 @@ export default class TextBoxProperties {
     }
 
     private showHintOnEachIsSelected() {
-        var selectedItem = $("#hint-scope option:selected");
+        const selectedItem = $("#hint-scope option:selected");
         return selectedItem.attr("id") === "show-on-each";
     }
 
     private changeShowHintOnEach() {
-        var targetGroup = $(
+        const targetGroup = $(
             this.getAffectedTranslationGroup(this.boxBeingEdited)
         );
-        var showOnEach = this.showHintOnEachIsSelected();
-        var includeLangLabel = $("#include-lang");
+        const showOnEach = this.showHintOnEachIsSelected();
+        const includeLangLabel = $("#include-lang");
         if (showOnEach) {
             targetGroup.addClass(this.classNameForHintOnEach());
             includeLangLabel.show();
@@ -587,12 +587,12 @@ export default class TextBoxProperties {
         // common interchange language among Bloom users.
         this.setHintTextForLang("en");
         $("#hint-content").on("input", e => {
-            let lang = $("#lang-select").val();
-            let text = $("#hint-content").text();
-            let targetGroup = $(
+            const lang = $("#lang-select").val();
+            const text = $("#hint-content").text();
+            const targetGroup = $(
                 this.getAffectedTranslationGroup(this.boxBeingEdited)
             );
-            var langLabel = targetGroup.find("label[lang=" + lang + "]");
+            let langLabel = targetGroup.find("label[lang=" + lang + "]");
             if (!text) {
                 langLabel.remove(); // don't let empty ones hang around
             } else {
@@ -609,10 +609,10 @@ export default class TextBoxProperties {
     }
 
     private setHintTextForLang(lang: string) {
-        var targetGroup = $(
+        const targetGroup = $(
             this.getAffectedTranslationGroup(this.boxBeingEdited)
         );
-        var langLabel = targetGroup.find("label[lang=" + lang + "]");
+        const langLabel = targetGroup.find("label[lang=" + lang + "]");
         if (langLabel.length > 0) {
             $("#hint-content").text(langLabel.text());
         } else {

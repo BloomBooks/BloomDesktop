@@ -1350,7 +1350,7 @@ export class ReaderToolsModel {
     }
 
     private getSentences(pageStrings: any[]): TextFragment[][] {
-        let result: TextFragment[][] = [];
+        const result: TextFragment[][] = [];
         for (let i = 0; i < pageStrings.length; i++) {
             const page = pageStrings[i];
             let fragments: TextFragment[] = theOneLibSynphony.stringToSentences(

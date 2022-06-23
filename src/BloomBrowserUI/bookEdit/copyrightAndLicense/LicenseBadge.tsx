@@ -194,7 +194,7 @@ export function useGetLicenseShorthand(licenseInfo?: ILicenseInfo): string {
 function getCcToken(licenseInfo: ILicenseInfo) {
     if (licenseInfo.licenseType === LicenseType.PublicDomain) return "cc0";
 
-    var token = "cc-by-";
+    let token = "cc-by-";
     if (licenseInfo.creativeCommonsInfo.allowCommercial === "no")
         token += "nc-";
     switch (licenseInfo.creativeCommonsInfo.allowDerivatives) {

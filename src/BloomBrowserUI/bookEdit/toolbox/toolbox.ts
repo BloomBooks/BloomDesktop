@@ -846,7 +846,7 @@ function beginAddTool(
     }
 }
 
-var keydownEventCounter = 0;
+let keydownEventCounter = 0;
 
 function handleKeyboardInput(): void {
     // BL-599: "Unresponsive script" while typing in text.
@@ -860,7 +860,7 @@ function handleKeyboardInput(): void {
     //if (this.keypressTimer && $.isFunction(this.keypressTimer.clearTimeout)) {
     //  this.keypressTimer.clearTimeout();
     //}
-    var counterValueThatIdentifiesThisKeyDown = ++keydownEventCounter;
+    const counterValueThatIdentifiesThisKeyDown = ++keydownEventCounter;
     if (keypressTimer) clearTimeout(keypressTimer);
     keypressTimer = setTimeout(async () => {
         // This happens 500ms after the user stops typing.
@@ -997,7 +997,7 @@ function handleKeyboardInput(): void {
 // insertion point at the start.
 export function removeCommentsFromEditableHtml(editable: HTMLElement) {
     // [\s\S] is a hack representing every character (including newline)
-    var fixedHtml = editable.innerHTML.replace(/<!--[\s\S]*?-->/g, "");
+    const fixedHtml = editable.innerHTML.replace(/<!--[\s\S]*?-->/g, "");
     // This test makes it less likely we will move the selection. But you should still allow for
     // the possibility.
     if (fixedHtml != editable.innerHTML) {

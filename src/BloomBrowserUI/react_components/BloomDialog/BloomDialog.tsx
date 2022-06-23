@@ -84,7 +84,7 @@ export const BloomDialog: React.FunctionComponent<IBloomDialogProps> = props => 
         // UseEffect allows this to happen just once (so the user can later move focus)
         // but AFTER react has created the actual DOM so we can find the element we want
         // to focus.
-        var initialFocus = document.getElementsByClassName(
+        const initialFocus = document.getElementsByClassName(
             "initialFocus"
         )[0] as HTMLButtonElement;
         if (!initialFocus) {

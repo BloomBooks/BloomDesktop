@@ -15,47 +15,47 @@ import StyleEditor from "./StyleEditor";
 //}
 
 function MakeBigger() {
-    var target = $(document).find("#testTarget");
-    var editor = new StyleEditor(
+    const target = $(document).find("#testTarget");
+    const editor = new StyleEditor(
         "file://" + "C:/dev/Bloom/src/BloomBrowserUI/bookEdit"
     );
     editor.MakeBigger(<HTMLElement>target[0]);
 }
 
 function MakeBigger2(target: string) {
-    var jQueryTarget = $(document).find(target);
-    var editor = new StyleEditor(
+    const jQueryTarget = $(document).find(target);
+    const editor = new StyleEditor(
         "file://" + "C:/dev/Bloom/src/BloomBrowserUI/bookEdit"
     );
     editor.MakeBigger(<HTMLElement>jQueryTarget[0]);
 }
 
 function MakeSmaller(target: string) {
-    var jQueryTarget = $(document).find(target);
-    var editor = new StyleEditor(
+    const jQueryTarget = $(document).find(target);
+    const editor = new StyleEditor(
         "file://" + "C:/dev/Bloom/src/BloomBrowserUI/bookEdit"
     );
     editor.MakeSmaller(<HTMLElement>jQueryTarget[0]);
 }
 
 function GetFontSize(target: string): number {
-    var jQueryTarget = $(document).find(target);
-    var editor = new StyleEditor(
+    const jQueryTarget = $(document).find(target);
+    const editor = new StyleEditor(
         "file://" + "C:/dev/Bloom/src/BloomBrowserUI/bookEdit"
     );
     return editor.GetCalculatedFontSizeInPoints(<HTMLElement>jQueryTarget[0]);
 }
 
 function ChangeSizeAbsolute(target: string, newSize: number) {
-    var jQueryTarget = $(document).find(target);
-    var editor = new StyleEditor(
+    const jQueryTarget = $(document).find(target);
+    const editor = new StyleEditor(
         "file://" + "C:/dev/Bloom/src/BloomBrowserUI/bookEdit"
     );
     editor.ChangeSizeAbsolute(<HTMLElement>jQueryTarget[0], newSize);
 }
 
 function GetUserModifiedStyleSheet(): any {
-    for (var i = 0; i < document.styleSheets.length; i++) {
+    for (let i = 0; i < document.styleSheets.length; i++) {
         if (document.styleSheets[i].title == "userModifiedStyles")
             return <CSSStyleSheet>document.styleSheets[i];
     }
@@ -65,30 +65,31 @@ function GetUserModifiedStyleSheet(): any {
 }
 
 function GetFooStyleRuleFontSize(): number {
-    var sizeString = $(".foo-style").css("font-size");
+    const sizeString = $(".foo-style").css("font-size");
     return parseInt(sizeString.substr(0, sizeString.length - 2));
 }
 
 function GetFontSizeRuleByLang(lang: string): number {
-    var rule = GetRuleMatchingSelector('.foo-style[lang="' + lang + '"]');
+    const rule = GetRuleMatchingSelector('.foo-style[lang="' + lang + '"]');
     if (rule == null) return -1;
     return ParseRuleForFontSize(rule.cssText);
 }
 
 function ParseRuleForFontSize(ruleText: string): number {
-    var ruleString = "font-size: ";
-    var beginPoint = ruleText.indexOf(ruleString) + ruleString.length;
+    const ruleString = "font-size: ";
+    const beginPoint = ruleText.indexOf(ruleString) + ruleString.length;
     //var endPoint = ruleText.indexOf(' !important');
-    var endPoint = ruleText.indexOf(" !");
+    const endPoint = ruleText.indexOf(" !");
     if (beginPoint < 1 || endPoint < beginPoint) return -1;
-    var sizeString = ruleText.substr(beginPoint, endPoint - beginPoint);
+    const sizeString = ruleText.substr(beginPoint, endPoint - beginPoint);
     return parseFloat(sizeString); // parseFloat() handles units fine!
 }
 
 function GetRuleForFooStyle(): CSSRule | null {
-    var x: CSSRuleList = (<CSSStyleSheet>GetUserModifiedStyleSheet()).cssRules;
+    const x: CSSRuleList = (<CSSStyleSheet>GetUserModifiedStyleSheet())
+        .cssRules;
 
-    for (var i = 0; i < x.length; i++) {
+    for (let i = 0; i < x.length; i++) {
         if (x[i].cssText.indexOf("foo-style") > -1) {
             return x[i];
         }
@@ -97,10 +98,11 @@ function GetRuleForFooStyle(): CSSRule | null {
 }
 
 function GetRuleForNormalStyle(): CSSRule | null {
-    var x: CSSRuleList = (<CSSStyleSheet>GetUserModifiedStyleSheet()).cssRules;
+    const x: CSSRuleList = (<CSSStyleSheet>GetUserModifiedStyleSheet())
+        .cssRules;
     if (!x) return null;
 
-    for (var i = 0; i < x.length; i++) {
+    for (let i = 0; i < x.length; i++) {
         if (x[i].cssText.indexOf("normal-style") > -1) {
             return x[i];
         }
@@ -109,9 +111,10 @@ function GetRuleForNormalStyle(): CSSRule | null {
 }
 
 function GetRuleForCoverTitleStyle(): CSSRule | null {
-    var x: CSSRuleList = (<CSSStyleSheet>GetUserModifiedStyleSheet()).cssRules;
+    const x: CSSRuleList = (<CSSStyleSheet>GetUserModifiedStyleSheet())
+        .cssRules;
     if (!x) return null;
-    for (var i = 0; i < x.length; i++) {
+    for (let i = 0; i < x.length; i++) {
         if (x[i].cssText.indexOf("Title-On-Cover-style") > -1) {
             return x[i];
         }
@@ -120,17 +123,17 @@ function GetRuleForCoverTitleStyle(): CSSRule | null {
 }
 
 function GetCalculatedFontSize(target: string): number {
-    var jQueryTarget = $(document).find(target);
-    var editor = new StyleEditor(
+    const jQueryTarget = $(document).find(target);
+    const editor = new StyleEditor(
         "file://" + "C:/dev/Bloom/src/BloomBrowserUI/bookEdit"
     );
     return editor.GetCalculatedFontSizeInPoints(<HTMLElement>jQueryTarget[0]);
 }
 
 function GetRuleMatchingSelector(selector: string): CSSRule | null {
-    var x = (<CSSStyleSheet>GetUserModifiedStyleSheet()).cssRules;
-    var count = 0;
-    for (var i = 0; i < x.length; i++) {
+    const x = (<CSSStyleSheet>GetUserModifiedStyleSheet()).cssRules;
+    const count = 0;
+    for (let i = 0; i < x.length; i++) {
         if (x[i].cssText.indexOf(selector) > -1) {
             return x[i];
         }
@@ -139,9 +142,9 @@ function GetRuleMatchingSelector(selector: string): CSSRule | null {
 }
 
 function HasRuleMatchingThisSelector(selector: string): boolean {
-    var x = (<CSSStyleSheet>GetUserModifiedStyleSheet()).cssRules;
-    var count = 0;
-    for (var i = 0; i < x.length; i++) {
+    const x = (<CSSStyleSheet>GetUserModifiedStyleSheet()).cssRules;
+    let count = 0;
+    for (let i = 0; i < x.length; i++) {
         if (x[i].cssText.indexOf(selector) > -1) {
             ++count;
         }
@@ -228,11 +231,11 @@ describe("StyleEditor", () => {
         MakeBigger();
         MakeBigger();
         MakeBigger();
-        var x: CSSRuleList = (<CSSStyleSheet>GetUserModifiedStyleSheet())
+        const x: CSSRuleList = (<CSSStyleSheet>GetUserModifiedStyleSheet())
             .cssRules;
 
-        var count = 0;
-        for (var i = 0; i < x.length; i++) {
+        let count = 0;
+        for (let i = 0; i < x.length; i++) {
             if (x[i].cssText.indexOf("foo-style") > -1) {
                 ++count;
             }
@@ -245,10 +248,10 @@ describe("StyleEditor", () => {
             "<div id='testTarget' class='foo-style' lang='xyz'></div><div id='testTarget2' class='normal-style'></div>"
         );
         MakeBigger2("#testTarget");
-        var x = (<CSSStyleSheet>GetUserModifiedStyleSheet()).cssRules;
+        const x = (<CSSStyleSheet>GetUserModifiedStyleSheet()).cssRules;
 
-        var count = 0;
-        for (var i = 0; i < x.length; i++) {
+        let count = 0;
+        for (let i = 0; i < x.length; i++) {
             if (x[i].cssText.indexOf('foo-style[lang="xyz"]') > -1) {
                 ++count;
             }
@@ -275,10 +278,10 @@ describe("StyleEditor", () => {
             "<div id='testTarget' class='foo-style' lang='xyz'></div><div id='testTarget2' class='normal-style'></div>"
         );
         MakeBigger2("#testTarget");
-        var x = (<CSSStyleSheet>GetUserModifiedStyleSheet()).cssRules;
+        const x = (<CSSStyleSheet>GetUserModifiedStyleSheet()).cssRules;
 
-        var count = 0;
-        for (var i = 0; i < x.length; i++) {
+        let count = 0;
+        for (let i = 0; i < x.length; i++) {
             if (x[i].cssText.indexOf('foo-style[lang="xyz"]') > -1) {
                 ++count;
             }
@@ -294,7 +297,7 @@ describe("StyleEditor", () => {
         ChangeSizeAbsolute("#testTarget", 20);
 
         expect(HasRuleMatchingThisSelector("foo-style:not([lang])")).toBe(true);
-        let rule = GetRuleForFooStyle();
+        const rule = GetRuleForFooStyle();
         expect(rule).not.toBeNull();
         if (rule != null) expect(ParseRuleForFontSize(rule.cssText)).toBe(20);
     });
@@ -307,10 +310,10 @@ describe("StyleEditor", () => {
             "<div id='testTarget' class='foo-style' lang='xyz'></div><div id='testTarget2' class='normal-style'></div>"
         );
         ChangeSizeAbsolute("#testTarget", 20);
-        var x = (<CSSStyleSheet>GetUserModifiedStyleSheet()).cssRules;
+        const x = (<CSSStyleSheet>GetUserModifiedStyleSheet()).cssRules;
 
-        var count = 0;
-        for (var i = 0; i < x.length; i++) {
+        let count = 0;
+        for (let i = 0; i < x.length; i++) {
             if (x[i].cssText.indexOf('foo-style[lang="xyz"]') > -1) {
                 ++count;
             }
@@ -324,10 +327,10 @@ describe("StyleEditor", () => {
             "<div id='testTarget' class='foo-style' lang='xyz'></div><div id='testTarget2' class='normal-style'></div>"
         );
         ChangeSizeAbsolute("#testTarget", 20);
-        var x = (<CSSStyleSheet>GetUserModifiedStyleSheet()).cssRules;
+        const x = (<CSSStyleSheet>GetUserModifiedStyleSheet()).cssRules;
 
-        var count = 0;
-        for (var i = 0; i < x.length; i++) {
+        let count = 0;
+        for (let i = 0; i < x.length; i++) {
             if (x[i].cssText.indexOf('foo-style[lang="xyz"]') > -1) {
                 ++count;
             }
@@ -372,10 +375,10 @@ describe("StyleEditor", () => {
             "<div id='testTarget' class='foo-style' lang='xyz'></div><div id='testTarget2' class='normal-style'></div>"
         );
         MakeSmaller("#testTarget");
-        var x = (<CSSStyleSheet>GetUserModifiedStyleSheet()).cssRules;
+        const x = (<CSSStyleSheet>GetUserModifiedStyleSheet()).cssRules;
 
-        var count = 0;
-        for (var i = 0; i < x.length; i++) {
+        let count = 0;
+        for (let i = 0; i < x.length; i++) {
             if (x[i].cssText.indexOf('foo-style[lang="xyz"]') > -1) {
                 ++count;
             }
@@ -392,13 +395,13 @@ describe("StyleEditor", () => {
             "<div id='testTarget' class='foo-style' lang='xyz'></div><div id='testTarget2' class='normal-style'></div>"
         );
 
-        var before = GetFontSize("#testTarget");
+        const before = GetFontSize("#testTarget");
         MakeSmaller("#testTarget");
 
-        var x = (<CSSStyleSheet>GetUserModifiedStyleSheet()).cssRules;
+        const x = (<CSSStyleSheet>GetUserModifiedStyleSheet()).cssRules;
 
-        var count = 0;
-        for (var i = 0; i < x.length; i++) {
+        let count = 0;
+        for (let i = 0; i < x.length; i++) {
             if (x[i].cssText.indexOf('foo-style[lang="xyz"]') > -1) {
                 ++count;
             }

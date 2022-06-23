@@ -198,7 +198,7 @@ export default class BookMetadataTable extends React.Component<IProps> {
         );
     }
     private capitalizeFirstChar(hazardName: string): string {
-        let uc = hazardName[0].toUpperCase();
+        const uc = hazardName[0].toUpperCase();
         return uc + hazardName.substr(1, hazardName.length - 1);
     }
 

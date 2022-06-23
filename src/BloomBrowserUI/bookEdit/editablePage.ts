@@ -60,7 +60,7 @@ export {
 import { origamiCanUndo, origamiUndo } from "./js/origami";
 export { origamiCanUndo, origamiUndo };
 
-var styleSheets = [
+const styleSheets = [
     "themes/bloom-jqueryui-theme/jquery-ui-1.8.16.custom.css",
     "themes/bloom-jqueryui-theme/jquery-ui-dialog.custom.css",
     "lib/jquery.qtip.css",
@@ -108,7 +108,7 @@ export function ckeditorUndo() {
     (<any>CKEDITOR.currentInstance).undoManager.undo();
 }
 
-for (var j = 0; j < styleSheets.length; j++) {
+for (let j = 0; j < styleSheets.length; j++) {
     document.write(
         '<link rel="stylesheet" type="text/css" href="/bloom/' +
             styleSheets[j] +

@@ -6,7 +6,7 @@ import { getTheOneReaderToolsModel } from "./readerToolsModel";
 import ReadersSynphonyWrapper from "./ReadersSynphonyWrapper";
 
 describe("Bloom Edit Controls tests", () => {
-    var classValues;
+    let classValues;
 
     let stageNOfMElement = document.createElement("div");
     let levelNOfMElement = document.createElement("div");
@@ -22,7 +22,7 @@ describe("Bloom Edit Controls tests", () => {
 
         getTheOneReaderToolsModel().clearForTest(); /// brute force way to reset global state
 
-        var settings: any = {};
+        const settings: any = {};
         settings.letters =
             "a b c d e f g h i j k l m n o p q r s t u v w x y z";
         settings.moreWords = "catty sat rate bob fob big wig fig rig";
@@ -58,11 +58,11 @@ describe("Bloom Edit Controls tests", () => {
             thingsToRemember: [""]
         });
 
-        var api = new ReadersSynphonyWrapper();
+        const api = new ReadersSynphonyWrapper();
         getTheOneReaderToolsModel().synphony = api;
         api.loadSettings(settings);
 
-        var sampleFileContents =
+        const sampleFileContents =
             "catty catty, sat sat sat sat sat sat sat sat, bob bob bob, fob fob, wig, fig fig fig fig fig fig, rig, catty, sat bob fob fig, sat fig, sat";
         getTheOneReaderToolsModel().addWordsFromFile(sampleFileContents);
 
@@ -93,7 +93,7 @@ describe("Bloom Edit Controls tests", () => {
             elementId,
             attrName
         ) => {
-            var result = classValues[elementId];
+            const result = classValues[elementId];
             if (result) {
                 return result;
             }

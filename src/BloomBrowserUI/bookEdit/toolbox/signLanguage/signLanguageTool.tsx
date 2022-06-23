@@ -46,7 +46,7 @@ interface IComponentState {
     videoInfoLoaded: boolean;
 }
 
-declare var MediaRecorder: {
+declare let MediaRecorder: {
     prototype: MediaRecorder;
     new (s: MediaStream, options: any): MediaRecorder;
 };

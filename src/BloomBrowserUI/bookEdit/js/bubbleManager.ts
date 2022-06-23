@@ -669,7 +669,7 @@ export class BubbleManager {
         if (parentBubble) {
             this.setActiveElement(parentBubble.content);
         }
-        let newBackgroundColors = colors;
+        const newBackgroundColors = colors;
         if (opacity && opacity < 1) {
             newBackgroundColors[0] = getRgbaColorStringFromColorAndOpacity(
                 colors[0],

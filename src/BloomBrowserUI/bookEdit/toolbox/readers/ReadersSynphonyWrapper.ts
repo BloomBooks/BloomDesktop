@@ -40,10 +40,10 @@ export default class ReadersSynphonyWrapper {
             );
         }
 
-        var stgs = this.source.stages;
+        const stgs = this.source.stages;
         if (stgs) {
             this.stages = [];
-            for (var j = 0; j < stgs.length; j++) {
+            for (let j = 0; j < stgs.length; j++) {
                 this.AddStage(
                     <ReaderStage>(
                         jQuery.extend(
@@ -56,10 +56,10 @@ export default class ReadersSynphonyWrapper {
             }
         }
 
-        var lvls = this.source.levels;
+        const lvls = this.source.levels;
         if (lvls) {
             this.levels = [];
-            for (var i = 0; i < lvls.length; i++) {
+            for (let i = 0; i < lvls.length; i++) {
                 this.addLevel(
                     <ReaderLevel>(
                         jQuery.extend(
@@ -80,7 +80,7 @@ export default class ReadersSynphonyWrapper {
         if (!this.source) this.source = new ReaderSettings();
 
         if (this.source.letters === "") {
-            var sorted = langData.LanguageSortOrder.join(" ")
+            let sorted = langData.LanguageSortOrder.join(" ")
                 .toLowerCase()
                 .split(" ");
             sorted = _.uniq(sorted);
@@ -101,10 +101,10 @@ export default class ReadersSynphonyWrapper {
     public static addWords(words: Object) {
         if (!words) return;
 
-        var wordNames = Object.keys(words);
+        const wordNames = Object.keys(words);
 
         //if (!lang_data) lang_data = new LanguageData(); now initialized in global declaration
-        for (var i = 0; i < wordNames.length; i++) {
+        for (let i = 0; i < wordNames.length; i++) {
             theOneLanguageDataInstance.addWord(
                 wordNames[i],
                 words[wordNames[i]]

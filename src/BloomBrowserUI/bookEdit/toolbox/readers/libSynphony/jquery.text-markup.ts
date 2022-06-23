@@ -17,12 +17,12 @@ import { ReaderToolsModel } from "../readerToolsModel";
  * @param {jQuery} $
  */
 ($ => {
-    var cssSentenceTooLong = "sentence-too-long";
-    var cssSightWord = "sight-word";
-    var cssWordNotFound = "word-not-found";
-    var cssPossibleWord = "possible-word";
-    var cssDesiredGrapheme = "desired-grapheme";
-    var cssTooMuchStuffOnPage = "page-too-many-words-or-sentences";
+    const cssSentenceTooLong = "sentence-too-long";
+    const cssSightWord = "sight-word";
+    const cssWordNotFound = "word-not-found";
+    const cssPossibleWord = "possible-word";
+    const cssDesiredGrapheme = "desired-grapheme";
+    const cssTooMuchStuffOnPage = "page-too-many-words-or-sentences";
     const cssWordTooLong = "word-too-long";
 
     /**
@@ -31,7 +31,7 @@ import { ReaderToolsModel } from "../readerToolsModel";
      * @returns {Object}
      */
     $.fn.checkLeveledReader = function(options) {
-        var allWords = "";
+        let allWords = "";
         const longWords: string[] = [];
 
         const opts = $.extend(
@@ -59,22 +59,24 @@ import { ReaderToolsModel } from "../readerToolsModel";
         this.removeSynphonyMarkup();
 
         // initialize words per page
-        var totalWordCount = 0;
+        let totalWordCount = 0;
         // initialize sentences per page
         let totalSentenceCount = 0;
 
-        var checkLeaf = leaf => {
+        const checkLeaf = leaf => {
             stashNonTextUIElementsInEditBox(leaf);
             // split into sentences. We need it both with markup
             // (to preserve bold/italic/ckEditor landmarks in the output)
             // and without (because some markup, especially ckEditor invisible landmarks,
             // may alter word counts and lists)
-            var fragments = theOneLibSynphony.stringToSentences($(leaf).html());
+            const fragments = theOneLibSynphony.stringToSentences(
+                $(leaf).html()
+            );
 
-            var newHtml = "";
+            let newHtml = "";
 
-            for (var i = 0; i < fragments.length; i++) {
-                var fragment = fragments[i];
+            for (let i = 0; i < fragments.length; i++) {
+                const fragment = fragments[i];
 
                 if (fragment.isSpace) {
                     // this is inter-sentence space
@@ -109,7 +111,7 @@ import { ReaderToolsModel } from "../readerToolsModel";
                             }
                         }
                     }
-                    var sentenceWordCount = words.length;
+                    const sentenceWordCount = words.length;
                     totalWordCount += sentenceWordCount;
                     allWords += cleanText;
                     if (sentenceWordCount) ++totalSentenceCount;
@@ -149,11 +151,11 @@ import { ReaderToolsModel } from "../readerToolsModel";
         };
 
         var checkRoot = root => {
-            var children = root.children();
-            var processedChild = false; // Did we find a significant child?
-            for (var i = 0; i < children.length; i++) {
-                var child = children[i];
-                var name = child.nodeName.toLowerCase();
+            const children = root.children();
+            let processedChild = false; // Did we find a significant child?
+            for (let i = 0; i < children.length; i++) {
+                const child = children[i];
+                const name = child.nodeName.toLowerCase();
                 // Review: is there a better way to pick out the elements that can occur within content elements?
                 if (
                     name != "span" &&
@@ -210,7 +212,7 @@ import { ReaderToolsModel } from "../readerToolsModel";
      * @returns {Object}
      */
     $.fn.checkDecodableReader = function(options) {
-        var opts = $.extend(
+        const opts = $.extend(
             {
                 focusWords: [],
                 previousWords: [],
@@ -219,7 +221,7 @@ import { ReaderToolsModel } from "../readerToolsModel";
             },
             options
         );
-        var text = "";
+        let text = "";
 
         // remove previous synphony markup
         this.removeSynphonyMarkup();
@@ -232,7 +234,7 @@ import { ReaderToolsModel } from "../readerToolsModel";
         /**
          * @type StoryCheckResults
          */
-        var results = theOneLibSynphony.checkStory(
+        const results = theOneLibSynphony.checkStory(
             opts.focusWords,
             opts.previousWords,
             opts.knownGraphemes,
@@ -243,7 +245,7 @@ import { ReaderToolsModel } from "../readerToolsModel";
         // markup
         this.each(function() {
             stashNonTextUIElementsInEditBox(this);
-            var html = $(this).html();
+            let html = $(this).html();
 
             // ignore empty elements
             if (html.trim().length > 0 && text.trim().length > 0) {
@@ -261,7 +263,7 @@ import { ReaderToolsModel } from "../readerToolsModel";
                 );
 
                 // remove numbers from list of bad words
-                var notFound = _.difference(
+                const notFound = _.difference(
                     results.remaining_words,
                     results.getNumbers()
                 );
@@ -285,11 +287,11 @@ import { ReaderToolsModel } from "../readerToolsModel";
      * @returns {int}
      */
     $.fn.getMaxSentenceLength = function() {
-        var maxWords = 0;
+        let maxWords = 0;
 
         this.each(function() {
             // split into sentences
-            var fragments = theOneLibSynphony.stringToSentences(
+            let fragments = theOneLibSynphony.stringToSentences(
                 removeAllHtmlMarkupFromString($(this).html())
             );
 
@@ -300,7 +302,7 @@ import { ReaderToolsModel } from "../readerToolsModel";
                 return frag.isSentence;
             });
 
-            var subMax = Math.max.apply(
+            const subMax = Math.max.apply(
                 Math,
                 fragments.map(frag => {
                     return frag.wordCount();
@@ -318,11 +320,11 @@ import { ReaderToolsModel } from "../readerToolsModel";
      * @returns {int}
      */
     $.fn.getTotalWordCount = function() {
-        var wordCount = 0;
+        let wordCount = 0;
 
         this.each(function() {
             // split into sentences
-            var fragments = theOneLibSynphony.stringToSentences(
+            let fragments = theOneLibSynphony.stringToSentences(
                 removeAllHtmlMarkupFromString($(this).html())
             );
 
@@ -332,7 +334,7 @@ import { ReaderToolsModel } from "../readerToolsModel";
             });
 
             // sum of word counts
-            for (var i = 0; i < fragments.length; i++)
+            for (let i = 0; i < fragments.length; i++)
                 wordCount += fragments[i].wordCount();
         });
 
@@ -371,7 +373,7 @@ import { ReaderToolsModel } from "../readerToolsModel";
         });
 
         // remove page markup
-        var page = parent.window.document.getElementById(
+        const page = parent.window.document.getElementById(
             "page"
         ) as HTMLIFrameElement;
         if (!page || !page.contentWindow)
@@ -396,12 +398,12 @@ import { ReaderToolsModel } from "../readerToolsModel";
             // for backward compatibility
             if (Array.isArray(word)) return oldMarkup(word, gpcForm);
 
-            var returnVal = "";
+            let returnVal = "";
 
             // loop through GPCForm
-            for (var i = 0; i < gpcForm.length; i++) {
-                var offset = gpcForm[i].length;
-                var chars = word.substr(0, offset);
+            for (let i = 0; i < gpcForm.length; i++) {
+                const offset = gpcForm[i].length;
+                const chars = word.substr(0, offset);
 
                 if (desiredGPCs.indexOf(gpcForm[i]) > -1)
                     returnVal +=
@@ -441,10 +443,10 @@ import { ReaderToolsModel } from "../readerToolsModel";
     });
 
     function oldMarkup(gpcForm, desiredGPCs) {
-        var returnVal = "";
+        let returnVal = "";
 
         // loop through GPCForm
-        for (var i = 0; i < gpcForm.length; i++) {
+        for (let i = 0; i < gpcForm.length; i++) {
             if (desiredGPCs.indexOf(gpcForm[i]) > -1)
                 returnVal +=
                     '<span class="' +
@@ -463,7 +465,7 @@ import { ReaderToolsModel } from "../readerToolsModel";
      * It should be restored witha a call to restoreFormatButton();
      **/
 
-    var stashedFormatButton;
+    let stashedFormatButton;
 
     function stashNonTextUIElementsInEditBox(element) {
         stashedFormatButton = $(element).find("#formatButton");
@@ -490,7 +492,7 @@ import { ReaderToolsModel } from "../readerToolsModel";
  */
 export function removeAllHtmlMarkupFromString(textHtml: string): string {
     // ensure spaces after line breaks and paragraph breaks
-    var regex = /(<br><\/br>|<br>|<br ?\/>|<p><\/p>|<\/?p>|<p ?\/>|\n)/g;
+    const regex = /(<br><\/br>|<br>|<br ?\/>|<p><\/p>|<\/?p>|<p ?\/>|\n)/g;
     textHtml = textHtml.replace(regex, " ");
 
     // This regex is rather specific to the spans ckeditor sticks in as
@@ -500,15 +502,15 @@ export function removeAllHtmlMarkupFromString(textHtml: string): string {
     // or with single quotes around the style or with different white space.
     // However, we don't have a current need for it, so the extra
     // complication doesn't seem worthwhile.
-    var ckeRegex = /<span [^>]*style="display: none;"[^>]*>[^<]*<\/span>/g;
+    const ckeRegex = /<span [^>]*style="display: none;"[^>]*>[^<]*<\/span>/g;
     textHtml = textHtml.replace(ckeRegex, "");
 
     // Both open and close tags for markup
-    var markupRegex = /<\/?(strong|em|sup|u|i|b|a|span)>/g;
+    const markupRegex = /<\/?(strong|em|sup|u|i|b|a|span)>/g;
     textHtml = textHtml.replace(markupRegex, "");
 
     // Open tags for more complex markup (ie, span and a tags).
-    var complexMarkupRegex = /<(span|a)[ \r\n\t][^>]*>/g;
+    const complexMarkupRegex = /<(span|a)[ \r\n\t][^>]*>/g;
     textHtml = textHtml.replace(complexMarkupRegex, "");
 
     return $("<div>" + textHtml + "</div>").text();
