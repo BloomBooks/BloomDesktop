@@ -501,6 +501,27 @@ namespace Bloom.CollectionTab
 				"<meta http-equiv=\"content-type\" content=\"text/html; charset=utf-8\">");
 			var xmlDoc = RepairWordVisibility(fixedContent);
 			XmlHtmlConverter.SaveDOMAsHtml5(xmlDoc, path); // writes file and returns path
+			// We need to copy the CSS and image files from the book's folder to the destination folder.
+			// We don't need other files from there for this export. (audio, video, etc)
+			var sourceFolder = Path.GetDirectoryName(sourcePath);
+			var destFolder = Path.GetDirectoryName(path);
+			foreach (var sourceFilePath in Directory.EnumerateFiles(sourceFolder, "*.*"))
+			{
+				var filename = Path.GetFileName(sourceFilePath);
+				switch (Path.GetExtension(filename).ToLowerInvariant())
+				{
+					case ".css":
+					case ".png":
+					case ".jpg":
+					case ".jpeg":
+					case ".svg":
+						var destFilePath = Path.Combine(destFolder, filename);
+						RobustFile.Copy(sourceFilePath, destFilePath, true);
+						break;
+					default:
+						break;
+				}
+			}
 		}
 
 		// BL-5998 Apparently Word doesn't read our CSS rules for bloom-visibility correctly.

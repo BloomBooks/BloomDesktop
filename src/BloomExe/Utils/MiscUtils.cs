@@ -382,6 +382,43 @@ namespace Bloom.Utils
 		}
 
 		/// <summary>
+		/// Wrap a "Choose Folder" dialog to prevent saving the selection being inside a book's collection folder.
+		/// </summary>
+		/// <returns>The output folder path, or an empty string if canceled.</returns>
+		public static string GetOutputFolderOutsideCollectionFolder(string initialPath, string description, bool isForOutput)
+		{
+			var resultPath = string.Empty;
+			bool repeat = false;
+			do
+			{
+				using (var dlg = new FolderBrowserDialog())
+				{
+					if (!String.IsNullOrEmpty(initialPath))
+						dlg.SelectedPath = initialPath;
+					dlg.ShowNewFolderButton = true;
+
+					if (!string.IsNullOrEmpty(description))
+						dlg.Description = description;
+
+					var success = dlg.ShowDialog() == DialogResult.OK;
+					resultPath = success ? dlg.SelectedPath : "";
+					string collectionFolder = string.Empty;
+					repeat = success && isForOutput && Utils.MiscUtils.IsFolderInsideBloomCollection(resultPath, out collectionFolder);
+					if (repeat)
+					{
+						Utils.MiscUtils.WarnUserOfInvalidFolderChoice(collectionFolder, resultPath);
+						// Change the initialFolder to just above the collection folder, or to the documents folder
+						// if that ends up empty.
+						initialPath = Path.GetDirectoryName(collectionFolder);
+						if (String.IsNullOrEmpty(initialPath))
+							initialPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+					}
+				}
+			} while (repeat);
+			return resultPath;
+		}
+
+		/// <summary>
 		/// Check whether the given folder is a collection folder or inside a collection folder at
 		/// any depth.  If so, return true and set collectionFolder for use in a warning message.
 		/// If not, return false and set collectionFolder to null.
