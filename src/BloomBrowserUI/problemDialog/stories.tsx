@@ -50,14 +50,12 @@ storiesOf("ReportDialog", module)
         <ProblemDialog level={ProblemKind.Fatal} message={message} />
     ))
     .add('ProblemDialog "fatal"', () => (
-        // @ts-ignore
         // We want to prove that the string "notify" works even though the type is ProblemKind.
         // That's because this prop actually comes from C# which is only able to send strings.
         <ProblemDialog level={"fatal"} message={message} />
     ))
     .add("ProblemDialog notify", () => (
         <ProblemDialog
-            // @ts-ignore
             // We want to prove that the string "notify" works even though the type is ProblemKind.
             // That's because this prop actually comes from C# which is only able to send strings.
             level={"notify"}

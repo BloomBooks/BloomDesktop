@@ -155,7 +155,7 @@ export const SelectedTemplatePageControls: React.FunctionComponent<ISelectedTemp
                                     continueChecked,
                                     !!props.willLoseData,
                                     convertWholeBookChecked,
-                                    !!props.forChangeLayout ? -1 : numberToAdd
+                                    props.forChangeLayout ? -1 : numberToAdd
                                 )
                             }
                         >

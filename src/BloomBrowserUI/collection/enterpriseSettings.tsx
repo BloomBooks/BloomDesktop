@@ -81,7 +81,9 @@ export class EnterpriseSettings extends React.Component<{}, IState> {
                 "subscriptionCodeInput"
             ) as HTMLInputElement;
             codeElt.selectionStart = codeElt.selectionEnd = this.oldSelectionPosition;
-        } catch (e) {}
+        } catch (e) {
+            //swallow
+        }
     }
 
     private codesUrl =

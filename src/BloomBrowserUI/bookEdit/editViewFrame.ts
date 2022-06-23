@@ -74,7 +74,9 @@ export function switchContentPage(newSource: string) {
         // problems, but don't let them stop us loading the new page.
         try {
             reportError(e.message, e.stack);
-        } catch (e2) {}
+        } catch (e2) {
+            // swallow
+        }
     }
     let iframe = <HTMLIFrameElement>document.getElementById("page");
     // We want to call getToolboxBundleExports().applyToolboxStateToPage() to allow

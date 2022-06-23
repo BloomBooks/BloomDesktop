@@ -25,6 +25,8 @@ export default class TextBoxProperties {
     // This method is called when the origami panel gets focus.
     // targetBox is actually the '.textBox-identifier' div that overlaps with the '.bloom-translationGroup' we want.
     public AttachToBox(targetBox: HTMLElement) {
+        // REVIEW: this may in fact be unneeded but I'm just trying to get eslint set up and conceivably it is intentional
+        // eslint-disable-next-line @typescript-eslint/no-this-alias
         var propDlg = this;
         this._previousBox = targetBox;
 

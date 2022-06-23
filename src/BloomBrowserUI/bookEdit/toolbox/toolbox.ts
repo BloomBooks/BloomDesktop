@@ -647,6 +647,8 @@ function getToolElement(tool: ITool): HTMLElement | null {
             .find("> h3")
             .each(function() {
                 if ($(this).attr("data-toolId") === toolName) {
+                    // REVIEW: this may in fact be unneeded but I'm just trying to get eslint set up and conceivably it is intentional
+                    // eslint-disable-next-line @typescript-eslint/no-this-alias
                     toolElement = this;
                     return false; // break from the each() loop
                 }

@@ -562,6 +562,8 @@ export default class AudioRecording {
         includeCheckForText: boolean = true,
         includeCheckForPlaybackOrder: boolean = true
     ): HTMLElement[] {
+        // REVIEW: this may in fact be unneeded but I'm just trying to get eslint set up and conceivably it is intentional
+        // eslint-disable-next-line @typescript-eslint/no-this-alias
         const $this = this;
         const pageBody = this.getPageDocBody();
         if (!pageBody) {
@@ -1653,6 +1655,8 @@ export default class AudioRecording {
     }
 
     private selectInputDevice(): void {
+        // REVIEW: this may in fact be unneeded but I'm just trying to get eslint set up and conceivably it is intentional
+        // eslint-disable-next-line @typescript-eslint/no-this-alias
         var thisClass = this;
         BloomApi.get("audio/devices", result => {
             var data = result.data; // Axios apparently recognizes the JSON and parses it automatically.
@@ -3285,7 +3289,7 @@ export default class AudioRecording {
         text = text.replace(/\r/g, "").replace(/\n/g, ""); // Raw form may inject extraneous newlines upon inserting punctuation like '('
         text = text.replace(/<br \/>/g, ""); // Processing form will contain <br />.
         text = text.replace(/&nbsp;/g, String.fromCharCode(160)); // Saved form will store multiple spaces as Unicode decimal 160 = non-breaking space
-        text = text.replace(/  /g, " "); // Handle consecutive spaces
+        text = text.replace(/ {2}/g, " "); // Handle consecutive spaces
 
         return text;
     }

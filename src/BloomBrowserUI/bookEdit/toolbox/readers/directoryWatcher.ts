@@ -105,6 +105,7 @@ export class DirectoryWatcher {
      * @param listenerNameAndContext Name and context that identifies the handler to remove.
      */
     public offChanged(listenerNameAndContext: string): void {
+        // eslint-disable-next-line no-prototype-builtins
         if (this.changeEventHandlers.hasOwnProperty(listenerNameAndContext))
             delete this.changeEventHandlers[listenerNameAndContext];
     }

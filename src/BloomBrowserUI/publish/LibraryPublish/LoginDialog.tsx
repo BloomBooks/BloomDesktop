@@ -176,12 +176,12 @@ export const LoginDialog: React.FunctionComponent<{}> = props => {
     }, [done]);
     return (
         <ErrorBoundary>
-            // The box is plenty big enough for its contents, and the browser
+            {/*The box is plenty big enough for its contents, and the browser
             indicates // they are actually not big enough to overflow; but we
             get a scroll bar. // It appears some descendent, perhaps a hidden
             one, overflows greatly, // somewhere in the StyledFirebaseAuth.
             Hiding overflow is the only way // I've found to get rid of the
-            scroll bar.
+            scroll bar. */}
             <div style={{ overflow: "hidden" }}>
                 {done || (
                     <Dialog
