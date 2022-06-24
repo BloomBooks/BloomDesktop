@@ -15,11 +15,11 @@ import { getEditTabBundleExports } from "../../../js/bloomFrames";
 import { BloomApi } from "../../../../utils/bloomApi";
 
 function getDialogHtml(title) {
-    var dialogContents = $(
+    const dialogContents = $(
         '<div id="synphonyConfig" title="' + title + '"/>'
     ).appendTo($(parentDocument()).find("body"));
 
-    var html =
+    const html =
         '<iframe id="settings_frame" src="/bloom/bookEdit/toolbox/readers/readerSetup/ReaderSetup.html" scrolling="no" ' +
         'style="width: 100%; height: 100%; border-width: 0; margin: 0; position: absolute" ' +
         "onload=\"document.getElementById('toolbox').contentWindow.toolboxBundle.initializeReaderSetupDialog()\"></iframe>";
@@ -39,7 +39,7 @@ function settingsFrameWindow() {
     )).contentWindow;
 }
 
-var setupDialogElement: JQuery;
+let setupDialogElement: JQuery;
 
 export function showSetupDialog(showWhat) {
     //var toolbox = window;
@@ -47,7 +47,7 @@ export function showSetupDialog(showWhat) {
         getSettingsDialogLocalizedStrings(),
         null,
         () => {
-            var title;
+            let title;
             if (showWhat == "stages")
                 title = theOneLocalizationManager.getText(
                     "ReaderSetup.SetUpDecodableReaderTool",
@@ -59,16 +59,16 @@ export function showSetupDialog(showWhat) {
                     "Set up Leveled Reader Tool"
                 );
 
-            var h = 600;
-            var w = 720;
-            var size = getAppropriateDialogSize(h, w);
+            let h = 600;
+            let w = 720;
+            const size = getAppropriateDialogSize(h, w);
             h = size[0];
             w = size[1];
 
             getTheOneReaderToolsModel().setupType = showWhat;
 
             BloomApi.get("readers/io/readerSettingsEditForbidden", result => {
-                var buttons: any = {
+                const buttons: any = {
                     Cancel: {
                         text: theOneLocalizationManager.getText(
                             "Common.Cancel",
@@ -142,11 +142,11 @@ export function showSetupDialog(showWhat) {
 }
 
 function getAppropriateDialogSize(preferredHeight, preferredWidth) {
-    var h = preferredHeight;
-    var w = preferredWidth;
+    let h = preferredHeight;
+    let w = preferredWidth;
 
     // This height and width will fit inside the "800 x 600" settings
-    var sw = parentDocument().body.scrollWidth;
+    const sw = parentDocument().body.scrollWidth;
     if (sw < 583) {
         h = 460;
         w = 390;
@@ -163,7 +163,7 @@ function getAppropriateDialogSize(preferredHeight, preferredWidth) {
 
 function getSettingsDialogLocalizedStrings() {
     // Without preloading these, they are not available when the dialog is created
-    var pairs = {};
+    const pairs = {};
     pairs["ReaderSetup.SetUpDecodableReaderTool"] =
         "Set up Decodable Reader Tool";
     pairs["ReaderSetup.SetUpLeveledReaderTool"] = "Set up Leveled Reader Tool";
@@ -184,10 +184,10 @@ export function initializeReaderSetupDialog() {
     ) {
         throw new Error("ReaderToolsModel was not loaded with settings");
     }
-    var sourceMsg =
+    const sourceMsg =
         "Data\n" + JSON.stringify(getTheOneReaderToolsModel().synphony.source);
-    var fontMsg = "Font\n" + getTheOneReaderToolsModel().fontName;
-    var window = settingsFrameWindow();
+    const fontMsg = "Font\n" + getTheOneReaderToolsModel().fontName;
+    const window = settingsFrameWindow();
     if (window) {
         window.postMessage(sourceMsg, "*");
         window.postMessage(fontMsg, "*");
@@ -201,12 +201,12 @@ export function closeSetupDialog() {
 // Get replacement settings dialog content when editing settings is forbidden.
 // message is the value we got from the API which should explain why we can't edit them.
 function getSettingsForbidden(title: string, message: any): string | JQuery {
-    var dialogContents = $(
+    const dialogContents = $(
         '<div id="synphonyConfig" title="' + title + '"/>'
     ).appendTo($(parentDocument()).find("body"));
 
     // overide some styles from Dialog to make it compatible with the main title.
-    var html = `<div style="padding: 10px; color: black;font-size:10pt;">${message}</div>`;
+    const html = `<div style="padding: 10px; color: black;font-size:10pt;">${message}</div>`;
 
     dialogContents.append(html);
 

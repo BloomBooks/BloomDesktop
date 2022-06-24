@@ -9,7 +9,7 @@ import { BloomApi } from "../utils/bloomApi";
 // NB: this function does not have access to the PageChooser object which will eventually be created and called
 // in the context of the ready function for the dialog iframe content window.
 export function showAddPageDialog(forChooseLayout: boolean) {
-    var theDialog;
+    let theDialog;
 
     //reviewSlog. I don't see why the localiationManager should live on the page. Where stuff is equally relevant to all frames,
     //it should if anything belong to the root frmate (this one)
@@ -21,8 +21,8 @@ export function showAddPageDialog(forChooseLayout: boolean) {
         return;
     }
 
-    var key = "EditTab.AddPageDialog.Title";
-    var english = "Add Page...";
+    let key = "EditTab.AddPageDialog.Title";
+    let english = "Add Page...";
 
     if (forChooseLayout) {
         key = "EditTab.AddPageDialog.ChooseLayoutTitle";
@@ -30,7 +30,7 @@ export function showAddPageDialog(forChooseLayout: boolean) {
     }
 
     theOneLocalizationManager.asyncGetText(key, english, "").done(title => {
-        var dialogContents = CreateAddPageDiv();
+        const dialogContents = CreateAddPageDiv();
 
         theDialog = $(dialogContents).dialog({
             //reviewslog Typescript didn't like this class: "addPageDialog",
@@ -66,10 +66,10 @@ export function showAddPageDialog(forChooseLayout: boolean) {
 }
 
 function CreateAddPageDiv() {
-    var dialogContents = $('<div id="addPageConfig"/>').appendTo($("body"));
+    const dialogContents = $('<div id="addPageConfig"/>').appendTo($("body"));
 
     // For some reason when the height is 100% we get an unwanted scroll bar on the far right.
-    var html =
+    const html =
         '<iframe id="addPage_frame" src="/bloom/pageChooser/page-chooser-main.html" scrolling="no" style="width: 100%; height: 99%; border: none; margin: 0"></iframe>';
     dialogContents.append(html);
     return dialogContents;

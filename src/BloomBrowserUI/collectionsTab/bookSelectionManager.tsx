@@ -60,7 +60,7 @@ export class BookSelectionManager {
         bookId: string,
         callback: (selected: boolean) => void
     ) {
-        var callbacks = this.registrations[bookId] as Array<
+        let callbacks = this.registrations[bookId] as Array<
             (x: boolean) => void
         >;
         if (!callbacks) {
@@ -77,7 +77,7 @@ export class BookSelectionManager {
         bookId: string,
         callback: (selected: boolean) => void
     ) {
-        var callbacks = this.registrations[bookId] as Array<
+        const callbacks = this.registrations[bookId] as Array<
             (x: boolean) => void
         >;
         if (!callbacks) {

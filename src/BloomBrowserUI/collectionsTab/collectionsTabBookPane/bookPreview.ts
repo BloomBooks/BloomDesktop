@@ -7,11 +7,11 @@ import { CollectionsTabBookPane } from "./CollectionsTabBookPane";
 $.fn.CenterVerticallyInParent = function() {
     return this.each(function(i) {
         //TODO: this height() thing is a mystery. Whereas Firebug will say the box is, say, 53px, this will say 675, so that no centering is possible
-        var ah = $(this).height();
-        var ph = $(this)
+        const ah = $(this).height();
+        const ph = $(this)
             .parent()
             .height();
-        var mh = Math.ceil((ph - ah) / 2);
+        const mh = Math.ceil((ph - ah) / 2);
         $(this).css("margin-top", mh);
     });
 };
@@ -34,7 +34,7 @@ $(document).ready(() => {
     // In preview mode we set videos to be preload="none" to prevent a memory leak. This observer is set up
     // so that videos that are scrolled into view will be loaded, so the user can see
     // the first frame, not just a placholder. See book.PreventVideoAutoLoad()
-    var videos = [].slice.call(document.querySelectorAll("video"));
+    const videos = [].slice.call(document.querySelectorAll("video"));
     var videoObserver = new IntersectionObserver(function(entries, observer) {
         entries.forEach(function(video) {
             if (video.isIntersecting) {

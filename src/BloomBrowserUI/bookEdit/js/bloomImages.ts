@@ -86,10 +86,10 @@ export function SetupImage(image: JQuery) {
 }
 
 export function GetButtonModifier(container) {
-    var buttonModifier = "";
-    var imageButtonWidth = 87;
-    var imageButtonHeight = 52;
-    var $container = $(container);
+    let buttonModifier = "";
+    const imageButtonWidth = 87;
+    const imageButtonHeight = 52;
+    const $container = $(container);
     if ($container.height() < imageButtonHeight * 2) {
         buttonModifier = "smallButtonHeight";
     }
@@ -431,7 +431,7 @@ function GetRawImageUrl(imgOrDivWithBackgroundImage) {
     }
     //handle divs with background-image in an inline style attribute
     if ($(imgOrDivWithBackgroundImage).hasAttr("style")) {
-        var style = $(imgOrDivWithBackgroundImage).attr("style");
+        const style = $(imgOrDivWithBackgroundImage).attr("style");
         // see http://stackoverflow.com/questions/9723889/regex-to-match-urls-in-inline-styles-div-style-url
         //var result = (/url\(\s*(['"]?)(.*?)\1\s*\)/.exec(style) || [])[2];
         return (/url\s*\(\s*(['"]?)(.*?)\1\s*\)/.exec(style) || [])[2];
@@ -464,7 +464,7 @@ export function SetOverlayForImagesWithoutMetadata(container) {
         .find(".bloom-imageContainer")
         .each(function() {
             // BL-9976: now that we can have images on images, only look one level down from the container.
-            var img = $(this).find("> img");
+            const img = $(this).find("> img");
             SetOverlayForImagesWithoutMetadataInner($(img).parent(), img);
         });
 }
@@ -492,12 +492,12 @@ function UpdateOverlay(container, img) {
         });
 
     //review: should we also require copyright, illustrator, etc? In many contexts the id of the work-for-hire illustrator isn't available
-    var copyright = $(img).attr("data-copyright");
+    const copyright = $(img).attr("data-copyright");
     if (!copyright || copyright.length === 0) {
-        var buttonClasses = `editMetadataButton imageButton imgMetadataProblem ${GetButtonModifier(
+        const buttonClasses = `editMetadataButton imageButton imgMetadataProblem ${GetButtonModifier(
             container
         )}`;
-        var englishText =
+        const englishText =
             "Image is missing information on Credits, Copyright, or License";
         theOneLocalizationManager
             .asyncGetText(
@@ -506,7 +506,7 @@ function UpdateOverlay(container, img) {
                 "tooltip text"
             )
             .done(translation => {
-                var title = translation.replace(/'/g, "&apos;");
+                const title = translation.replace(/'/g, "&apos;");
                 $(container).prepend(
                     `<button class='${buttonClasses}' title='${title}'></button>`
                 );
@@ -609,7 +609,7 @@ export function SetupResizableElement(element) {
 
 //jquery resizable normally uses pixels. This makes it use percentages, which are mor robust across page size/orientation changes
 function ResizeUsingPercentages(e, ui) {
-    var parent = ui.element.parent();
+    const parent = ui.element.parent();
     ui.element.css({
         width: (ui.element.width() / parent.width()) * 100 + "%",
         height: (ui.element.height() / parent.height()) * 100 + "%"

@@ -143,7 +143,7 @@ export class MeasureText {
         width: number,
         height: number
     ): HTMLCanvasElement {
-        let canvas = document.createElement("canvas");
+        const canvas = document.createElement("canvas");
         canvas.width = width;
         canvas.height = height;
         // May be helpful to reinstate this for debugging; lets you
@@ -185,7 +185,7 @@ export class MeasureText {
     }
 
     private static resetCanvas(canvas: HTMLCanvasElement): void {
-        let context = canvas.getContext("2d");
+        const context = canvas.getContext("2d");
         if (context != null) {
             // not just black but transparent black, so all four bytes for each pixel are zero.
             // We only look at the first byte for each pixel, so 'black' would work, but this
@@ -264,7 +264,7 @@ export class MeasureText {
     ) {
         let highestValue = 0;
         for (let column = 0; column < length; column += 1) {
-            let pixelValue = imageData[offset + column * 4];
+            const pixelValue = imageData[offset + column * 4];
             if (pixelValue > highestValue) {
                 highestValue = pixelValue;
             }

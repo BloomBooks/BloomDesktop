@@ -42,13 +42,13 @@ export { getImageUrlFromImageButton } from "./js/bloomImages";
 //Called by c# using editTabBundle.handleUndo()
 export function handleUndo(): void {
     // First see if origami is active and knows about something we can undo.
-    var contentWindow = getEditablePageBundleExports();
+    const contentWindow = getEditablePageBundleExports();
     if (contentWindow && contentWindow.origamiCanUndo()) {
         contentWindow.origamiUndo();
     }
     // Undoing changes made by commands and dialogs in the toolbox can't be undone using
     // ckeditor, and has its own mechanism. Look next to see whether we know about any Undos there.
-    var toolboxWindow = getToolboxBundleExports();
+    const toolboxWindow = getToolboxBundleExports();
     if (toolboxWindow && toolboxWindow.canUndo()) {
         toolboxWindow.undo();
     } else if (contentWindow && contentWindow.ckeditorCanUndo()) {
@@ -74,9 +74,11 @@ export function switchContentPage(newSource: string) {
         // problems, but don't let them stop us loading the new page.
         try {
             reportError(e.message, e.stack);
-        } catch (e2) {}
+        } catch (e2) {
+            // swallow
+        }
     }
-    let iframe = <HTMLIFrameElement>document.getElementById("page");
+    const iframe = <HTMLIFrameElement>document.getElementById("page");
     // We want to call getToolboxBundleExports().applyToolboxStateToPage() to allow
     // any tool that is active to update its state to match the new page content.
     // This gets a bit complicated because we want the tool to actually see the new
@@ -114,7 +116,7 @@ export function showDialog(
     dialogContents: string | JQuery,
     options: any
 ): JQuery {
-    var dialogElement = $(dialogContents).appendTo($("body"));
+    const dialogElement = $(dialogContents).appendTo($("body"));
     dialogElement.dialog(options);
     return dialogElement;
 }

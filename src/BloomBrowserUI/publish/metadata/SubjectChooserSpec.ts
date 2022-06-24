@@ -3,22 +3,22 @@ import { SubjectTreeNode } from "./SubjectTreeNode";
 
 describe("SubjectChooser tests", () => {
     it("handleSubjectChange deletes Subjects correctly", () => {
-        let list: Array<SubjectTreeNode> = [];
-        var sub1: SubjectTreeNode = {
+        const list: Array<SubjectTreeNode> = [];
+        const sub1: SubjectTreeNode = {
             value: "MNP",
             label: "Plastic & reconstructive surgery",
             notes: "some notes",
             checked: true,
             children: []
         };
-        var sub2: SubjectTreeNode = {
+        const sub2: SubjectTreeNode = {
             value: "Y",
             label: "Children’s, Teenage & Educational",
             notes: "some notes",
             checked: true,
             children: []
         };
-        var sub3: SubjectTreeNode = {
+        const sub3: SubjectTreeNode = {
             value: "THV",
             label: "Alternative & renewable energy sources & technology",
             notes: "some notes",
@@ -28,9 +28,9 @@ describe("SubjectChooser tests", () => {
         list.push(sub1);
         list.push(sub2);
         list.push(sub3);
-        let props: IProps = { subjects: { value: list } };
-        let chooser = new SubjectChooser(props);
-        let currentNode: SubjectTreeNode = {
+        const props: IProps = { subjects: { value: list } };
+        const chooser = new SubjectChooser(props);
+        const currentNode: SubjectTreeNode = {
             value: "MNP",
             label: "Plastic & reconstructive surgery",
             notes: "some notes",
@@ -42,22 +42,22 @@ describe("SubjectChooser tests", () => {
         chooser.handleSubjectChange(currentNode, null);
 
         // verify unchecked subject is deleted from props value
-        let result = props.subjects.value;
+        const result = props.subjects.value;
         expect(result.length).toBe(2);
         expect(result[0].value).toBe("THV"); // verifies sorting too
         expect(result[1].value).toBe("Y");
     });
 
     it("handleSubjectChange adds a new Subject and sorts correctly", () => {
-        let list: Array<SubjectTreeNode> = [];
-        var sub1: SubjectTreeNode = {
+        const list: Array<SubjectTreeNode> = [];
+        const sub1: SubjectTreeNode = {
             value: "MNP",
             label: "Plastic & reconstructive surgery",
             notes: "some notes",
             checked: true,
             children: []
         };
-        var sub2: SubjectTreeNode = {
+        const sub2: SubjectTreeNode = {
             value: "Y",
             label: "Children’s, Teenage & Educational",
             notes: "some notes",
@@ -66,9 +66,9 @@ describe("SubjectChooser tests", () => {
         };
         list.push(sub1);
         list.push(sub2);
-        let props: IProps = { subjects: { value: list } };
-        let chooser = new SubjectChooser(props);
-        let currentNode: SubjectTreeNode = {
+        const props: IProps = { subjects: { value: list } };
+        const chooser = new SubjectChooser(props);
+        const currentNode: SubjectTreeNode = {
             value: "THV",
             label: "Alternative & renewable energy sources & technology",
             notes: "some notes",
@@ -80,7 +80,7 @@ describe("SubjectChooser tests", () => {
         chooser.handleSubjectChange(currentNode, null);
 
         // verify newly checked subject is added to props value
-        let result = props.subjects.value;
+        const result = props.subjects.value;
         expect(result.length).toBe(3);
         expect(result[0].value).toBe("MNP");
         expect(result[1].value).toBe("THV"); // verifies correct sorting too

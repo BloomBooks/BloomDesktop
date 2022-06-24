@@ -24,9 +24,9 @@ interface JQuery {
      */
     $.fn.localize = function(callbackDone?: any) {
         // get all the localization keys not already in the dictionary
-        var d = {};
+        const d = {};
         this.each(function() {
-            var key = this.dataset["i18n"];
+            const key = this.dataset["i18n"];
             if (!theOneLocalizationManager.dictionary[key])
                 d[key] = $(this).text();
         });

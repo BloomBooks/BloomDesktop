@@ -48,12 +48,12 @@ export class DirectoryWatcher {
      * @param {DirectoryWatcher} self
      */
     public ifChangedFireEvents(responseData, self): void {
-        var changed = responseData === "yes";
+        const changed = responseData === "yes";
 
         // if there were changes, call the registered onChanged handlers
         if (changed) {
-            var handlers = Object.keys(self.changeEventHandlers);
-            for (var j = 0; j < handlers.length; j++)
+            const handlers = Object.keys(self.changeEventHandlers);
+            for (let j = 0; j < handlers.length; j++)
                 self.changeEventHandlers[handlers[j]]();
         }
 
@@ -81,7 +81,7 @@ export class DirectoryWatcher {
      * @param {Object} [postKeyValueDataObject] Values passed in the post.
      */
     public watcherAjaxPost(url, self, postKeyValueDataObject): void {
-        var ajaxSettings = { type: "POST", url: url };
+        const ajaxSettings = { type: "POST", url: url };
         if (postKeyValueDataObject)
             ajaxSettings["data"] = postKeyValueDataObject;
 
@@ -105,6 +105,7 @@ export class DirectoryWatcher {
      * @param listenerNameAndContext Name and context that identifies the handler to remove.
      */
     public offChanged(listenerNameAndContext: string): void {
+        // eslint-disable-next-line no-prototype-builtins
         if (this.changeEventHandlers.hasOwnProperty(listenerNameAndContext))
             delete this.changeEventHandlers[listenerNameAndContext];
     }

@@ -67,7 +67,7 @@ export class SubjectChooser extends React.Component<IProps> {
         subjects: SubjectTreeNode[],
         subjectToRemove: SubjectTreeNode
     ) {
-        let matches = subjects.filter(subj => {
+        const matches = subjects.filter(subj => {
             return subj.value === subjectToRemove.value;
         });
         if (matches.length !== 1) {

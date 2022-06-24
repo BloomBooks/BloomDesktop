@@ -200,7 +200,7 @@ const OverlayToolControls: React.FunctionComponent = () => {
             };
 
             // BL-8537: If we are choosing "caption" style, we make sure that the background color is opaque.
-            let backgroundColorArray = currentFamilySpec?.backgroundColors;
+            const backgroundColorArray = currentFamilySpec?.backgroundColors;
             if (
                 newStyle === "caption" &&
                 backgroundColorArray &&
@@ -974,7 +974,7 @@ export class OverlayTool extends ToolboxToolReactAdaptor {
 }
 
 function setOpaque(color: string) {
-    let firstColor = new tinycolor(color);
+    const firstColor = new tinycolor(color);
     firstColor.setAlpha(1.0);
     return firstColor.toHexString();
 }

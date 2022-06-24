@@ -11,7 +11,7 @@ import bloomQtipUtils from "./bloomQtipUtils";
 
 export default class BloomNotices {
     public static addExperimentalNotice(container: HTMLElement): void {
-        var experimental = theOneLocalizationManager.getText(
+        const experimental = theOneLocalizationManager.getText(
             "EditTab.ExperimentalNotice",
             "This page is an experimental prototype which may have many problems, for which we apologize."
         );
@@ -39,11 +39,11 @@ export default class BloomNotices {
     }
 
     public static addEditingNotAllowedMessages(container: HTMLElement): void {
-        var notAllowed = theOneLocalizationManager.getText(
+        const notAllowed = theOneLocalizationManager.getText(
             "EditTab.EditNotAllowed",
             "You cannot change these because this is not the original copy."
         );
-        var readOnly = theOneLocalizationManager.getText(
+        const readOnly = theOneLocalizationManager.getText(
             "EditTab.ReadOnlyInAuthorMode",
             "You cannot put anything in there while making an original book."
         );
@@ -51,12 +51,12 @@ export default class BloomNotices {
             .find("*[data-hint]")
             .each(function() {
                 if ($(this).css("cursor") == "not-allowed") {
-                    var whyDisabled = notAllowed;
+                    let whyDisabled = notAllowed;
                     if ($(this).hasClass("bloom-ReadOnlyInAuthorMode")) {
                         whyDisabled = readOnly;
                     }
 
-                    var whatToSay = $(this).attr("data-hint"); //don't use .data(), as that will trip over any } in the hint and try to interpret it as json
+                    let whatToSay = $(this).attr("data-hint"); //don't use .data(), as that will trip over any } in the hint and try to interpret it as json
 
                     whatToSay =
                         theOneLocalizationManager.getLocalizedHint(
@@ -65,8 +65,8 @@ export default class BloomNotices {
                         ) +
                         " <br/>" +
                         whyDisabled;
-                    var theClasses = "ui-tooltip-shadow ui-tooltip-red";
-                    var pos = {
+                    const theClasses = "ui-tooltip-shadow ui-tooltip-red";
+                    const pos = {
                         at: "right center",
                         my: "left center"
                     };

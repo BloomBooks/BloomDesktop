@@ -1,5 +1,4 @@
 /** @jsx jsx **/
-/** @jsxFrag React.Fragment */
 import { jsx, css } from "@emotion/core";
 
 import * as React from "react";
@@ -124,7 +123,7 @@ export const CopyrightPanel: React.FunctionComponent<{
             `}
         >
             {!props.isForBook && (
-                <>
+                <React.Fragment>
                     <MuiTextField
                         label={"Illustrator/Photographer"}
                         l10nKey={"Copyright.IllustratorOrPhotographer"}
@@ -137,7 +136,7 @@ export const CopyrightPanel: React.FunctionComponent<{
                             margin-bottom: 20px !important;
                         `}
                     />
-                </>
+                </React.Fragment>
             )}
             <MuiTextField
                 label="Copyright Year"
@@ -208,7 +207,7 @@ export const CopyrightPanel: React.FunctionComponent<{
                 </NoteBox>
             )}
             {props.derivativeInfo?.isBookDerivative && (
-                <>
+                <React.Fragment>
                     <MuiCheckbox
                         label="Not a translation or new version"
                         checked={useOriginalCopyrightAndLicense}
@@ -245,7 +244,7 @@ export const CopyrightPanel: React.FunctionComponent<{
                             </div>
                         </div>
                     </div>
-                </>
+                </React.Fragment>
             )}
         </div>
     );

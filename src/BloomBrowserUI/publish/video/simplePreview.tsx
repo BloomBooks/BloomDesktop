@@ -23,20 +23,20 @@ export const SimplePreview: React.FunctionComponent<{
     const screenWidth = 9 * scale;
     const screenHeight = 16 * scale;
 
-    var width = (props.landscapeWidth * 9) / 16;
-    var height = props.landscapeWidth;
+    let width = (props.landscapeWidth * 9) / 16;
+    let height = props.landscapeWidth;
     if (props.landscape) {
         const temp = width;
         width = height;
         height = temp;
     }
 
-    var minBorder = 10; // required on sides and bottom, but not top, since nav bar provides visual border there.
-    var rootWidth = props.landscapeWidth + 2 * minBorder;
-    var rootHeight = height + minBorder;
-    var sidePadding = (rootWidth - width) / 2;
-    var topPadding = 0;
-    var bottomPadding = topPadding + minBorder;
+    const minBorder = 10; // required on sides and bottom, but not top, since nav bar provides visual border there.
+    const rootWidth = props.landscapeWidth + 2 * minBorder;
+    const rootHeight = height + minBorder;
+    const sidePadding = (rootWidth - width) / 2;
+    const topPadding = 0;
+    const bottomPadding = topPadding + minBorder;
 
     return (
         <div>

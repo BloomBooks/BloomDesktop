@@ -223,7 +223,7 @@ const PublishAudioVideoInternalInternal: React.FunctionComponent<{
     const pathToOutputBrowser = inStorybookMode ? "./" : "../../";
 
     const sendMessageToPlayer = (msg: any) => {
-        var preview = document.getElementById(
+        const preview = document.getElementById(
             "simple-preview"
         ) as HTMLIFrameElement;
         msg.messageType = "control";

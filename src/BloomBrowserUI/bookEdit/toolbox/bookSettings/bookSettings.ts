@@ -4,7 +4,7 @@ import { ITool } from "../toolbox";
 $(document).ready(() => {
     // request our model and set the controls
     BloomApi.get("book/settings", result => {
-        var settings = result.data;
+        const settings = result.data;
 
         // Only show this if we are editing a shell book. Otherwise, it's already not locked.
         if (!settings.isRecordedAsLockedDown) {
@@ -27,9 +27,9 @@ $(document).ready(() => {
 export function handleBookSettingCheckboxClick(clickedButton: any) {
     // read our controls and send the model back to c#
     // enhance: this is just dirt-poor serialization of checkboxes for now
-    var inputs = $("#bookSettings :input");
-    var o = {};
-    var settings = $.map(inputs, (input, i) => {
+    const inputs = $("#bookSettings :input");
+    const o = {};
+    const settings = $.map(inputs, (input, i) => {
         o[input.name] = $(input).prop("checked");
         return o;
     })[0];
@@ -43,7 +43,7 @@ export class BookSettings implements ITool {
     }
     public beginRestoreSettings(settings: string): JQueryPromise<void> {
         // Nothing to do, so return an already-resolved promise.
-        var result = $.Deferred<void>();
+        const result = $.Deferred<void>();
         result.resolve();
         return result;
     }

@@ -32,6 +32,7 @@ export function getEditTabBundleExports(): IEditViewFrameExports {
     const rootWindow = getRootWindow();
     if (!rootWindow["editTabBundle"]) {
         alert("no editTabBundle!");
+        // eslint-disable-next-line no-debugger
         debugger;
     }
     return (<any>getRootWindow()).editTabBundle as IEditViewFrameExports;

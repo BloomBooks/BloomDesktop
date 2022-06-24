@@ -59,7 +59,6 @@ export function useContentful(
         // We want to depend on query, but not in a way that causes a
         // new http request just because the client's render creates
         // a new object with the same content on each call.
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [queryString, locale]);
 
     if (!query) {

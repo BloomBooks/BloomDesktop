@@ -1,5 +1,4 @@
 /** @jsx jsx **/
-/** @jsxFrag React.Fragment */
 import { jsx, css } from "@emotion/core";
 
 import * as React from "react";
@@ -41,7 +40,7 @@ export const MethodChooser: React.FunctionComponent = () => {
     const methodImage = (methodNameToImageUrl as any)[method];
 
     return (
-        <>
+        <React.Fragment>
             <div className={"methodChooserRoot"}>
                 <div className={"column1"}>
                     <RadioGroup
@@ -72,7 +71,7 @@ export const MethodChooser: React.FunctionComponent = () => {
                     {getHint(method)}
                 </div>
             </div>
-        </>
+        </React.Fragment>
     );
 };
 
@@ -124,7 +123,7 @@ function getHint(method: string) {
     switch (method) {
         case "file":
             return (
-                <>
+                <React.Fragment>
                     <div className="hint-heading">
                         <InfoIcon color="primary" />
                         <Typography variant="h6">
@@ -188,11 +187,11 @@ function getHint(method: string) {
                             can download.
                         </LocalizedString>
                     </Typography>
-                </>
+                </React.Fragment>
             );
         case "usb":
             return (
-                <>
+                <React.Fragment>
                     <Typography
                         css={css`
                             margin-bottom: 10px;
@@ -222,11 +221,11 @@ function getHint(method: string) {
                             modify settings on your phone.
                         </LocalizedString>
                     </Typography>
-                </>
+                </React.Fragment>
             );
         case "wifi":
             return (
-                <>
+                <React.Fragment>
                     <div className="hint-heading">
                         <InfoIcon color="primary" />
                         <Typography variant="h6">
@@ -254,7 +253,7 @@ function getHint(method: string) {
                             Learn More
                         </HtmlHelpLink>
                     </Typography>
-                </>
+                </React.Fragment>
             );
         default:
             throw new Error("Unhandled method choice");

@@ -104,6 +104,7 @@ export const PublishProgressDialog: React.FunctionComponent<{
                     // deliberately fall through
                     case "Progress":
 
+                    // eslint-disable-next-line no-fallthrough
                     case "Note":
                         setAccumulatedMessages(
                             oldMessages => oldMessages + html

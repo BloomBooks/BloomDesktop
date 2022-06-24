@@ -45,10 +45,10 @@ export default class bloomQtipUtils {
         if ($(element).hasClass("bloom-alwaysShowBubble")) {
             return false;
         }
-        var availableWidth = $(element)
+        const availableWidth = $(element)
             .closest(".marginBox")
             .width();
-        var kTolerancePixels = 10; //if the box is just a tiny bit smaller, there's not going to be anything to overlap
+        const kTolerancePixels = 10; //if the box is just a tiny bit smaller, there's not going to be anything to overlap
         return $(element).width() < availableWidth - kTolerancePixels;
     }
 

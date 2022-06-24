@@ -7,16 +7,16 @@ describe("ReadersSynphonyWrapper tests", () => {
         expect(true).toBe(true);
     });
     it("initially has empty list of stages", () => {
-        var api = new ReadersSynphonyWrapper();
+        const api = new ReadersSynphonyWrapper();
         expect(api.getStages()).toEqual([]);
     });
     it("remembers added stages", () => {
-        var api = new ReadersSynphonyWrapper();
-        var stage1 = new ReaderStage("1");
+        const api = new ReadersSynphonyWrapper();
+        const stage1 = new ReaderStage("1");
         api.AddStage(stage1);
         expect(api.getStages()[0]).toBe(stage1);
 
-        var stage2 = new ReaderStage("2");
+        const stage2 = new ReaderStage("2");
         api.AddStage(stage2);
         expect(api.getStages()[0]).toBe(stage1);
         expect(api.getStages()[1]).toBe(stage2);
@@ -25,7 +25,7 @@ describe("ReadersSynphonyWrapper tests", () => {
 
 describe("Stage tests", () => {
     it("remembers its name", () => {
-        var stage = new ReaderStage("X");
+        const stage = new ReaderStage("X");
         expect(stage.getName()).toBe("X");
     });
 });

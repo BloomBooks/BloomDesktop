@@ -80,7 +80,7 @@ const ColorPickerDialog: React.FC<IColorPickerDialogProps> = props => {
     };
 
     React.useEffect(() => {
-        var parent = dlgRef.current;
+        const parent = dlgRef.current;
         if (!parent) {
             return;
         }
@@ -91,7 +91,7 @@ const ColorPickerDialog: React.FC<IColorPickerDialogProps> = props => {
         // box after each keystroke. This code arranges that when one of our inputs gets
         // focused, we pass that information to our client, which uses it to refocus
         // the appropriate control once things stabilize in the overlay.
-        var inputs = Array.from(parent.getElementsByTagName("input"));
+        const inputs = Array.from(parent.getElementsByTagName("input"));
         inputs.forEach(input => input.addEventListener("focus", focusFunc));
 
         // In addition to this cleanup, I feel as if we should be doing something like
@@ -111,7 +111,7 @@ const ColorPickerDialog: React.FC<IColorPickerDialogProps> = props => {
         // If somehow something messes with color some other way, well, if the dialog is not
         // open I'm pretty sure the system won't set focus to one of its controls.
         return () => {
-            var inputs = Array.from(parent!.getElementsByTagName("input"));
+            const inputs = Array.from(parent!.getElementsByTagName("input"));
             inputs.forEach(input =>
                 input.removeEventListener("focus", focusFunc)
             );

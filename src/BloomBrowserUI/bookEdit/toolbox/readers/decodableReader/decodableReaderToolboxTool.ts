@@ -19,12 +19,12 @@ export class DecodableReaderToolboxTool implements ITool {
     public beginRestoreSettings(settings: string): JQueryPromise<void> {
         return beginInitializeDecodableReaderTool().then(() => {
             if (settings["decodableReaderState"]) {
-                var state = new DRTState();
-                var decState = settings["decodableReaderState"];
+                const state = new DRTState();
+                const decState = settings["decodableReaderState"];
                 if (decState.startsWith("stage:")) {
-                    var parts = decState.split(";");
-                    var stage = parseInt(parts[0].substring("stage:".length));
-                    var sort = parts[1].substring("sort:".length);
+                    const parts = decState.split(";");
+                    const stage = parseInt(parts[0].substring("stage:".length));
+                    const sort = parts[1].substring("sort:".length);
                     // The true's passed here prevent re-saving the state we just read.
                     // One non-obvious implication is that simply opening a stage-4 book
                     // will not switch the default stage for new books to 4. That only
@@ -98,7 +98,7 @@ export class DecodableReaderToolboxTool implements ITool {
         // DRT has sort buttons with tooltips that are HTML 'i' elements with 'title' attributes.
         // Update those 'title' attributes from localizationManager.
 
-        var doc = paneDOM.ownerDocument;
+        const doc = paneDOM.ownerDocument;
         theOneLocalizationManager
             .asyncGetText(
                 "EditTab.Toolbox.DecodableReaderTool.SortAlphabetically",

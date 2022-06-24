@@ -36,7 +36,7 @@ export function getBloomApiPrefix(): string {
     return "/bloom/api/";
 }
 
-export let mockReplies = {};
+export const mockReplies = {};
 
 export class BloomApi {
     private static pageIsClosing: boolean = false;

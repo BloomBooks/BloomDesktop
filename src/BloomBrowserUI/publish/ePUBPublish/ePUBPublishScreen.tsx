@@ -1,5 +1,4 @@
 /** @jsx jsx **/
-/** @jsxFrag React.Fragment */
 import { jsx, css } from "@emotion/core";
 
 import * as React from "react";
@@ -12,7 +11,7 @@ import {
 } from "../commonPublish/BasePublishScreen";
 import "./ePUBPublish.less";
 import { DeviceAndControls } from "../commonPublish/DeviceAndControls";
-import ReactDOM = require("react-dom");
+import * as ReactDOM from "react-dom";
 import ThemeProvider from "@material-ui/styles/ThemeProvider";
 import { lightTheme } from "../../bloomMaterialUITheme";
 import { StorybookContext } from "../../.storybook/StoryBookContext";
@@ -88,7 +87,7 @@ const EPUBPublishScreenInternal: React.FunctionComponent<{
     );
 
     return (
-        <>
+        <React.Fragment>
             <BasePublishScreen className="ePUBPublishScreen">
                 <PreviewPanel>
                     <DeviceAndControls
@@ -139,7 +138,7 @@ const EPUBPublishScreenInternal: React.FunctionComponent<{
                 setClosePending={setClosePending}
             />
             <BookMetadataDialog />
-        </>
+        </React.Fragment>
     );
 };
 

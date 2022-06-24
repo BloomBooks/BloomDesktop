@@ -27,21 +27,21 @@ interface JQueryStatic {
          * @param {String} cssClassName
          */
         divsToColumns: cssClassName => {
-            var div = $("div." + cssClassName + ":first");
+            const div = $("div." + cssClassName + ":first");
             if (div.length === 0) return;
 
-            var minWidth = parseInt(div.css("min-width"));
-            var marginLeft = parseInt(div.css("margin-left"));
-            var marginRight = parseInt(div.css("margin-right"));
+            const minWidth = parseInt(div.css("min-width"));
+            const marginLeft = parseInt(div.css("margin-left"));
+            const marginRight = parseInt(div.css("margin-right"));
 
             // limit the list to elements with text wider than min-width allows
-            var elements = $("div." + cssClassName).filter(function() {
+            const elements = $("div." + cssClassName).filter(function() {
                 return this.offsetWidth > minWidth;
             });
 
             elements.css("width", () => {
-                var w = this.offsetWidth;
-                var i = Math.ceil(w / minWidth);
+                let w = this.offsetWidth;
+                const i = Math.ceil(w / minWidth);
                 w = minWidth * i + (i - 1) * (marginLeft + marginRight);
                 return w + "px";
             });
@@ -57,18 +57,18 @@ interface JQueryStatic {
             cssClassName: string,
             longestWord: string
         ) => {
-            var div = $("div." + cssClassName + ":first");
+            const div = $("div." + cssClassName + ":first");
             if (div.length === 0) return;
 
-            var parent = div.parent();
-            var parentWidth = parent.width() - 20;
+            const parent = div.parent();
+            const parentWidth = parent.width() - 20;
 
-            var elements = $("div." + cssClassName);
+            const elements = $("div." + cssClassName);
             if (elements.length === 0) return;
 
-            var maxWidth: number = textWidth(div, longestWord);
+            const maxWidth: number = textWidth(div, longestWord);
 
-            var colCount = Math.floor(parentWidth / maxWidth);
+            let colCount = Math.floor(parentWidth / maxWidth);
             if (colCount === 0) colCount = 1;
             parent.css("column-count", colCount);
         }
@@ -81,17 +81,17 @@ interface JQueryStatic {
      * @returns {number}
      */
     function textWidth(div: JQuery, text: string): number {
-        var _t = jQuery(div);
-        var html_calcS = "<span>" + text + "</span>";
+        const _t = jQuery(div);
+        const html_calcS = "<span>" + text + "</span>";
         jQuery("body").append(html_calcS);
 
-        var _lastSpan = jQuery("span").last();
+        const _lastSpan = jQuery("span").last();
         _lastSpan.css({
             "font-size": _t.css("font-size"),
             "font-family": _t.css("font-family")
         });
 
-        var width = _lastSpan.width() + 5;
+        const width = _lastSpan.width() + 5;
 
         _lastSpan.remove();
         return width;

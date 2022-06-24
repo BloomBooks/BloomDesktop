@@ -53,7 +53,7 @@ export function cleanupOrigami() {
     $(".split-pane-resize-shim").remove();
 }
 function isEmpty(el) {
-    var temp = $.trim(el[0].textContent);
+    const temp = $.trim(el[0].textContent);
     //alert("-" + temp + "- equals empty string: " + (temp == "").toString());
     return temp === "";
 }
@@ -156,7 +156,7 @@ function GetTextBoxPropertiesDialog() {
 
 // Event handler to split the current box in half (vertically or horizontally)
 function splitClickHandler() {
-    var myInner = $(this).closest(".split-pane-component-inner");
+    const myInner = $(this).closest(".split-pane-component-inner");
     if ($(this).hasClass("add-top"))
         performSplit(myInner, "horizontal", "bottom", "top", true);
     else if ($(this).hasClass("add-right"))
@@ -179,7 +179,7 @@ function performSplit(
     addUndoPoint();
     innerElement.wrap(getSplitPaneHtml(verticalOrHorizontal));
     innerElement.wrap(getSplitPaneComponentHtml(existingContentPosition));
-    var newSplitPane = innerElement.closest(".split-pane");
+    const newSplitPane = innerElement.closest(".split-pane");
     if (prependNew) {
         newSplitPane.prepend(getSplitPaneDividerHtml(verticalOrHorizontal));
         newSplitPane.prepend(
@@ -201,7 +201,7 @@ var origamiUndoIndex = 0; // of item that should be redone next, if any
 // would make sense to Undo in origami mode.
 function addUndoPoint() {
     origamiUndoStack.length = origamiUndoIndex; // truncate any redo items
-    var origamiRoot = $(".marginBox");
+    const origamiRoot = $(".marginBox");
     // Currently the only thing in each undo entry is a clone of the marginBox at the
     // moment just before the original change. I decided to leave it an object in case
     // at some point we want to attach some more data (e.g., a name of what can be undone).
@@ -215,7 +215,7 @@ export function origamiCanUndo() {
 
 export function origamiUndo() {
     if (origamiCanUndo()) {
-        var origamiRoot = $(".marginBox");
+        const origamiRoot = $(".marginBox");
         // index may be 'out of range' but JS doesn't care
         // If there's already been an undo this is redundant but safe.
         // The main point is that the first Undo should make a new clone
@@ -244,24 +244,24 @@ function origamiRedo() {
 function closeClickHandler() {
     if (!$(".split-pane").length) {
         // We're at the topmost element
-        var marginBox = $(this).closest(".marginBox");
+        const marginBox = $(this).closest(".marginBox");
         addUndoPoint();
         marginBox.empty();
         marginBox.append(getSplitPaneComponentInner());
         return;
     }
     // the div/cell being removed
-    var myComponent = $(this).closest(".split-pane-component");
+    const myComponent = $(this).closest(".split-pane-component");
     //reviewSlog was doing a first('div') which is actually bogus, now parameters allowed.
     // the other div/cell in the same pane
-    var sibling = myComponent
+    const sibling = myComponent
         .siblings(".split-pane-component")
         .filter("div")
         .first();
     // the div/cell containing the pane that contains the siblings above
-    var toReplace = myComponent.parent().parent();
-    var positionClass = toReplace.attr("class");
-    var positionStyle = toReplace.attr("style");
+    const toReplace = myComponent.parent().parent();
+    const positionClass = toReplace.attr("class");
+    let positionStyle = toReplace.attr("style");
     if (!positionStyle) {
         // If positionStyle is undefined, the assignment below doesn't actually change the style attribute.
         // See http://issues.bloomlibrary.org/youtrack/issue/BL-4168 for what could happen.
@@ -291,7 +291,7 @@ function getSplitPaneComponentHtml(position) {
     );
 }
 function getSplitPaneDividerHtml(verticalOrHorizontal) {
-    var divider = $(
+    const divider = $(
         "<div class='split-pane-divider " +
             verticalOrHorizontal +
             "-divider'></div>"
@@ -299,12 +299,14 @@ function getSplitPaneDividerHtml(verticalOrHorizontal) {
     return divider;
 }
 function getSplitPaneComponentWithNewContent(position) {
-    var spc = $("<div class='split-pane-component position-" + position + "'>");
+    const spc = $(
+        "<div class='split-pane-component position-" + position + "'>"
+    );
     spc.append(getSplitPaneComponentInner());
     return spc;
 }
 function getSplitPaneComponentInner() {
-    var spci = $("<div class='split-pane-component-inner'></div>");
+    const spci = $("<div class='split-pane-component-inner'></div>");
     spci.append(getTypeSelectors());
     spci.append(getButtons());
     return spci;
@@ -327,7 +329,9 @@ function getOrigamiControl(): JQuery {
 }
 
 function getButtons() {
-    var buttons = $("<div class='origami-controls bloom-ui origami-ui'></div>");
+    const buttons = $(
+        "<div class='origami-controls bloom-ui origami-ui'></div>"
+    );
     buttons
         .append(getHorizontalButtons())
         .append(getCloseButtonWrapper())
@@ -335,7 +339,7 @@ function getButtons() {
     return buttons;
 }
 function getVerticalButtons() {
-    var buttons = $("<div class='adders horizontal-adders'></div>");
+    const buttons = $("<div class='adders horizontal-adders'></div>");
     buttons
         .append(getVSplitButton(true))
         .append("<div class='separator'></div>")
@@ -343,14 +347,14 @@ function getVerticalButtons() {
     return buttons;
 }
 function getVSplitButton(left) {
-    var vSplitButton;
+    let vSplitButton;
     if (left) vSplitButton = $("<a class='button  add-left'>&#10010;</a>");
     else vSplitButton = $("<a class='button  add-right'>&#10010;</a>");
     vSplitButton.click(splitClickHandler);
     return vSplitButton.wrap("<div></div>");
 }
 function getHorizontalButtons() {
-    var buttons = $("<div class='adders vertical-adders'></div>");
+    const buttons = $("<div class='adders vertical-adders'></div>");
     buttons
         .append(getHSplitButton(true))
         .append("<div class='separator'></div>")
@@ -358,39 +362,41 @@ function getHorizontalButtons() {
     return buttons;
 }
 function getHSplitButton(top) {
-    var hSplitButton;
+    let hSplitButton;
     if (top) hSplitButton = $("<a class='button  add-top'>&#10010;</a>");
     else hSplitButton = $("<a class='button  add-bottom'>&#10010;</a>");
     hSplitButton.click(splitClickHandler);
     return hSplitButton.wrap("<div></div>");
 }
 function getCloseButtonWrapper() {
-    var wrapper = $("<div class='close-button-wrapper'></div>");
+    const wrapper = $("<div class='close-button-wrapper'></div>");
     wrapper.append(getCloseButton);
     return wrapper;
 }
 function getCloseButton() {
-    var closeButton = $("<a class='button  close'>&#10005;</a>");
+    const closeButton = $("<a class='button  close'>&#10005;</a>");
     closeButton.click(closeClickHandler);
     return closeButton;
 }
 
 // N.B. If we ever add a new type, make sure you also modify 'bloomContainerClasses'.
 function createTypeSelectors(includeWidget: boolean) {
-    var space = " ";
-    var links = $("<div class='selector-links bloom-ui origami-ui'></div>");
-    var pictureLink = $(
+    const space = " ";
+    const links = $("<div class='selector-links bloom-ui origami-ui'></div>");
+    const pictureLink = $(
         "<a href='' data-i18n='EditTab.CustomPage.Picture'>Picture</a>"
     );
     pictureLink.click(makePictureFieldClickHandler);
-    var textLink = $("<a href='' data-i18n='EditTab.CustomPage.Text'>Text</a>");
+    const textLink = $(
+        "<a href='' data-i18n='EditTab.CustomPage.Text'>Text</a>"
+    );
     textLink.click(makeTextFieldClickHandler);
-    var videoLink = $(
+    const videoLink = $(
         "<a href='' data-i18n='EditTab.CustomPage.Video'>Video</a>"
     );
     videoLink.click(makeVideoFieldClickHandler);
-    var orDiv = $("<div data-i18n='EditTab.CustomPage.Or'>or</div>");
-    var htmlWidgetLink = $(
+    const orDiv = $("<div data-i18n='EditTab.CustomPage.Or'>or</div>");
+    const htmlWidgetLink = $(
         "<a href='' data-i18n='EditTab.CustomPage.HtmlWidget'>HTML Widget</a>"
     );
     htmlWidgetLink.click(makeHtmlWidgetFieldClickHandler);
@@ -420,7 +426,7 @@ function createTypeSelectors(includeWidget: boolean) {
     ).append(links);
 }
 function createTextBoxIdentifier() {
-    var textBoxId = $(
+    const textBoxId = $(
         "<div class='textBox-identifier bloom-ui origami-ui' data-i18n='EditTab.CustomPage.TextBox'>Text Box</div>"
     );
     return $(
@@ -435,11 +441,11 @@ function getTextBoxIdentifier() {
 }
 function makeTextFieldClickHandler(e) {
     e.preventDefault();
-    var container = $(this).closest(".split-pane-component-inner");
+    const container = $(this).closest(".split-pane-component-inner");
     addUndoPoint();
     //note, we're leaving it to some other part of the system, later, to add the needed .bloom-editable
     //   divs (and set the right classes on them) inside of this new .bloom-translationGroup.
-    var translationGroup = $(
+    const translationGroup = $(
         "<div class='bloom-translationGroup bloom-trailingElement'></div>"
     );
     $(translationGroup).addClass("normal-style"); // replaces above to make new text boxes normal
@@ -448,20 +454,20 @@ function makeTextFieldClickHandler(e) {
         .closest(".selector-links")
         .remove();
     // hook up TextBoxProperties dialog to this new Text Box (via its origami overlay)
-    var dialog = GetTextBoxPropertiesDialog();
-    var overlays = container.find(".textBox-identifier");
+    const dialog = GetTextBoxPropertiesDialog();
+    const overlays = container.find(".textBox-identifier");
     overlays.each(function() {
         dialog.AttachToBox(this);
     });
 }
 function makePictureFieldClickHandler(e) {
     e.preventDefault();
-    var container = $(this).closest(".split-pane-component-inner");
+    const container = $(this).closest(".split-pane-component-inner");
     addUndoPoint();
-    var imageContainer = $(
+    const imageContainer = $(
         "<div class='bloom-imageContainer bloom-leadingElement'></div>"
     );
-    var image = $(
+    const image = $(
         "<img src='placeHolder.png' alt='Could not load the picture'/>"
     );
     imageContainer.append(image);
@@ -474,9 +480,9 @@ function makePictureFieldClickHandler(e) {
 
 function makeVideoFieldClickHandler(e) {
     e.preventDefault();
-    var container = $(this).closest(".split-pane-component-inner");
+    const container = $(this).closest(".split-pane-component-inner");
     addUndoPoint();
-    var videoContainer = $(
+    const videoContainer = $(
         "<div class='bloom-videoContainer bloom-leadingElement bloom-noVideoSelected'></div>"
     );
     container.append(videoContainer);
@@ -492,9 +498,9 @@ function makeVideoFieldClickHandler(e) {
 
 function makeHtmlWidgetFieldClickHandler(e) {
     e.preventDefault();
-    var container = $(this).closest(".split-pane-component-inner");
+    const container = $(this).closest(".split-pane-component-inner");
     addUndoPoint();
-    var widgetContainer = $(
+    const widgetContainer = $(
         "<div class='bloom-widgetContainer bloom-leadingElement bloom-noWidgetSelected'></div>"
     );
     container.append(widgetContainer);

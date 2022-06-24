@@ -112,7 +112,7 @@ export const AudioVideoOptionsGroup: React.FunctionComponent<{
         // validate pageRange and notify parent if it is corrected.
         // Needing to correct is normal since the initial guess is based on pages
         // in the original book, but the bloomPub version may well omit some.
-        var changed = false;
+        let changed = false;
         if (pageRange[1] >= pageLabels.length) {
             pageRange[1] = pageLabels.length - 1;
             changed = true;
@@ -130,8 +130,8 @@ export const AudioVideoOptionsGroup: React.FunctionComponent<{
     // it unconventionally with just two marks that correspond to the thumb positions, to show the
     // corresponding page labels.
     const marks: Array<{ value: number; label: string }> = [];
-    for (var i = 0; i < pageRange.length; i++) {
-        var index = pageRange[i];
+    for (let i = 0; i < pageRange.length; i++) {
+        const index = pageRange[i];
         marks[i] = { value: index, label: pageLabels[index] };
     }
 
@@ -380,7 +380,7 @@ export const AudioVideoOptionsGroup: React.FunctionComponent<{
                                         value={pageRange}
                                         step={1}
                                         onChange={(event, value) => {
-                                            var newVal = value as number[];
+                                            const newVal = value as number[];
                                             if (
                                                 newVal[0] != pageRange[0] ||
                                                 newVal[1] != pageRange[1]

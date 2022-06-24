@@ -15,7 +15,7 @@ export const StringWithOptionalLink: React.FunctionComponent<{
         /^(.*?)<a[^>]*?href='([^>']+)'[^>]*>(.*?)<\/a>(.*)$/
     );
     if (match) {
-        var href = match[2].replace("/bloom/api/", "");
+        const href = match[2].replace("/bloom/api/", "");
         return (
             <React.Fragment>
                 <span>{match[1]}</span>

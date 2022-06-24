@@ -1,5 +1,4 @@
 /** @jsx jsx **/
-/** @jsxFrag React.Fragment */
 import { jsx, css } from "@emotion/core";
 
 import * as React from "react";
@@ -54,7 +53,7 @@ export const LicensePanel: React.FunctionComponent<{
             The original version of this book is %0
         </LocalizedString>
     ) : (
-        <></>
+        <React.Fragment></React.Fragment>
     );
 
     function canChangeOriginalLicense(): boolean {
@@ -320,7 +319,7 @@ const CustomNote: React.FunctionComponent<{
     onChange: (value: string) => void;
 }> = props => {
     return (
-        <>
+        <React.Fragment>
             <Div
                 l10nKey={props.l10nKey}
                 css={css`
@@ -337,7 +336,7 @@ const CustomNote: React.FunctionComponent<{
                 value={props.value}
                 onChange={e => props.onChange(e.target.value)}
             />
-        </>
+        </React.Fragment>
     );
 };
 

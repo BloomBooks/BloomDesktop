@@ -107,7 +107,7 @@ export const getRgbaColorStringFromColorAndOpacity = (
     color: string,
     opacity: number
 ): string => {
-    let rgbColor = tinycolor(color).toRgb();
+    const rgbColor = tinycolor(color).toRgb();
     rgbColor.a = opacity;
     return tinycolor(rgbColor).toRgbString(); // actually format is "rgba(r, g, b, a)"
 };

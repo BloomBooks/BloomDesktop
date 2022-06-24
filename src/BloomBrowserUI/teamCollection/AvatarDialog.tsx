@@ -28,7 +28,7 @@ export const AvatarDialog: React.FunctionComponent<{
     currentUser: string;
     currentUserName: string;
 }> = props => {
-    var title = useL10n(
+    const title = useL10n(
         "Your Team Collection Avatar & Name",
         "TeamCollection.AvatarAndName",
         undefined,

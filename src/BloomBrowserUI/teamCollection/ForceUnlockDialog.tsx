@@ -29,7 +29,7 @@ export const ForceUnlockDialog: React.FunctionComponent<{
     open: boolean;
     close: () => void;
 }> = props => {
-    var title = useL10n(
+    const title = useL10n(
         "Force Unlock (Administrator Only)",
         "TeamCollection.ForceUnlockTitle",
         undefined,

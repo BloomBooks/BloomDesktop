@@ -65,7 +65,7 @@ describe("SourceBubbles", () => {
     });
 
     it("Run CreateDropdownIfNecessary with pre-defined settings", () => {
-        var testHtml = $(
+        const testHtml = $(
             [
                 "<div id='testTarget' class='bloom-translationGroup'>",
                 "   <nav>",
@@ -82,7 +82,7 @@ describe("SourceBubbles", () => {
             ].join("\n")
         );
         $("body").append(testHtml);
-        var result = BloomSourceBubbles.CreateDropdownIfNecessary(
+        const result = BloomSourceBubbles.CreateDropdownIfNecessary(
             $("body").find("#testTarget")
         );
         // result should contain:
@@ -101,30 +101,30 @@ describe("SourceBubbles", () => {
         // <div class='bloom-editable' lang='es'>Spanish text</div> (order not important here)
         // <div class='bloom-editable' lang='fr'>French text</div>
         // <div class='bloom-editable' lang='tpi'>Tok Pisin text</div>
-        var listItems = result.find("nav > ul > li");
+        const listItems = result.find("nav > ul > li");
         expect(listItems.length).toBe(3);
         expect(listItems.first().html()).toBe(
             '<a class="sourceTextTab" href="#tpi">Tok Pisin</a>'
         );
-        var frenchTab = result.find("li#fr");
+        const frenchTab = result.find("li#fr");
         expect(frenchTab.html()).toBe(
             '<a class="sourceTextTab" href="#fr">français</a>'
         );
-        var dropdown = listItems.last();
+        const dropdown = listItems.last();
         expect(dropdown.hasClass("dropdown-menu")).toBe(true);
-        var dropItems = dropdown.find("ul li");
+        const dropItems = dropdown.find("ul li");
         expect(dropItems.length).toBe(1);
         expect(dropItems.first().html()).toBe(
             '<a class="sourceTextTab" href="#es">español</a>'
         );
-        var dropChildren = dropdown.children();
+        const dropChildren = dropdown.children();
         expect(dropChildren.length).toBe(2); // including div holding number and ul holding dropdown items
-        var topLevelDivs = $("#testTarget > div");
+        const topLevelDivs = $("#testTarget > div");
         expect(topLevelDivs.length).toBe(3);
     });
 
     it("CreateDropdownIfNecessary doesn't if doesn't need to", () => {
-        var testHtml = $(
+        const testHtml = $(
             [
                 "<div id='testTarget' class='bloom-translationGroup'>",
                 "   <nav>",
@@ -139,19 +139,19 @@ describe("SourceBubbles", () => {
             ].join("\n")
         );
         $("body").append(testHtml);
-        var result = BloomSourceBubbles.CreateDropdownIfNecessary(
+        const result = BloomSourceBubbles.CreateDropdownIfNecessary(
             $("body").find("#testTarget")
         );
-        var listItems = result.find("nav > ul > li");
+        const listItems = result.find("nav > ul > li");
         expect(listItems.length).toBe(2); // this is why we don't need a dropdown
         expect(listItems.first().html()).toBe(
             '<a class="sourceTextTab" href="#tpi">Tok Pisin</a>'
         );
-        var frenchTab = listItems.last();
+        const frenchTab = listItems.last();
         expect(frenchTab.html()).toBe(
             '<a class="sourceTextTab" href="#fr">français</a>'
         );
-        var srcTexts = result.find(".source-text");
+        const srcTexts = result.find(".source-text");
         expect(srcTexts.length).toBe(2);
     });
 });

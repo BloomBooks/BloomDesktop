@@ -1,5 +1,4 @@
 /** @jsx jsx **/
-/** @jsxFrag React.Fragment */
 import { jsx, css } from "@emotion/core";
 
 import * as React from "react";
@@ -164,7 +163,7 @@ export const LicenseBadge: React.FunctionComponent<{
         case LicenseType.Custom:
             return createNonCcBadge(licenseShorthand);
         default:
-            return <></>;
+            return <React.Fragment></React.Fragment>;
     }
 };
 
@@ -194,7 +193,7 @@ export function useGetLicenseShorthand(licenseInfo?: ILicenseInfo): string {
 function getCcToken(licenseInfo: ILicenseInfo) {
     if (licenseInfo.licenseType === LicenseType.PublicDomain) return "cc0";
 
-    var token = "cc-by-";
+    let token = "cc-by-";
     if (licenseInfo.creativeCommonsInfo.allowCommercial === "no")
         token += "nc-";
     switch (licenseInfo.creativeCommonsInfo.allowDerivatives) {

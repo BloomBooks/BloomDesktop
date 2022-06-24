@@ -28,7 +28,7 @@ export const ForgetChangesDialog: React.FunctionComponent<{
     open: boolean;
     close: () => void;
 }> = props => {
-    var title = useL10n(
+    const title = useL10n(
         "Forget Changes & Check in Book",
         "TeamCollection.ForgetChangesDialogTitle",
         undefined,

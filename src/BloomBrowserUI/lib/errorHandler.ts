@@ -70,7 +70,7 @@ window.onerror = (msg, url, line, col, error) => {
     reportPreliminaryError(msg.toString(), error.stack);
     // Try to make the report using source stack.
     StackTrace.fromError(error).then(stackframes => {
-        var stringifiedStack = stackframes
+        const stringifiedStack = stackframes
             .map(sf => {
                 return sf.toString();
             })

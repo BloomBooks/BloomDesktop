@@ -46,11 +46,11 @@ const SpreadsheetExportDialog: React.FunctionComponent<{
     propsForBloomDialog: IBloomDialogProps;
     folderPath: string;
 }> = props => {
-    var title = useL10n(
+    const title = useL10n(
         "Export to Spreadsheet...",
         "CollectionTab.BookMenu.ExportToSpreadsheet" // same as the menu
     );
-    var chooseFolderDescription = useL10n(
+    const chooseFolderDescription = useL10n(
         "Target folder for the spreadsheet and images:",
         "Spreadsheet.ExportDialog.folderLabel"
     );

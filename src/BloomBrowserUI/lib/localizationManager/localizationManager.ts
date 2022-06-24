@@ -55,7 +55,7 @@ export class LocalizationManager {
     public loadStrings(keyValuePairs, elementsToLocalize, callbackDone): void {
         // NOTE: This function is not used in Bloom 2.0, but will be used in Bloom 2.1
 
-        var ajaxSettings: JQueryAjaxSettings = <JQueryAjaxSettings>{
+        const ajaxSettings: JQueryAjaxSettings = <JQueryAjaxSettings>{
             type: "POST",
             url: "/bloom/api/i18n/loadStrings"
         };
@@ -140,18 +140,18 @@ export class LocalizationManager {
         englishText = englishText || stringId;
 
         // get the translation
-        var text = this.dictionary[stringId];
+        let text = this.dictionary[stringId];
         if (!text) {
             text = this.dictionary[stringId.replace("&", "&amp;")];
         }
 
         // try to get from L10NSharp
         if (!text) {
-            var ajaxSettings: JQueryAjaxSettings = <JQueryAjaxSettings>{
+            const ajaxSettings: JQueryAjaxSettings = <JQueryAjaxSettings>{
                 type: "POST",
                 url: "/bloom/api/i18n/loadStrings"
             };
-            var pair = {};
+            const pair = {};
             pair[stringId] = englishText;
             ajaxSettings["data"] = pair;
 
@@ -338,11 +338,11 @@ export class LocalizationManager {
      * @param element
      */
     public setElementText(element): void {
-        var key = element.dataset["i18n"];
+        const key = element.dataset["i18n"];
         if (!key) return;
 
-        var elem = $(element);
-        var text = this.getText(key, elem.html());
+        const elem = $(element);
+        const text = this.getText(key, elem.html());
 
         // Hmm... theoretically an XSS vulnerability,
         // but the translations need to be approved, I would think any XSS injections should be obviously wrong and get rejected.
@@ -357,12 +357,12 @@ export class LocalizationManager {
      * @returns {String}
      */
     public getLocalizedHint(whatToSay, targetElement: any): string {
-        var args = Array.prototype.slice.call(arguments);
+        const args = Array.prototype.slice.call(arguments);
         args[1] = null; //we're passing null into the gettext englishText arg
         // this awkward, fragile method call sends along the 2 fixed arguments
         // to the method, plus any extra arguments we might have been called with,
         // as parameters for a  c#-style template string
-        var translated = this.getText.apply(this, args);
+        const translated = this.getText.apply(this, args);
 
         // stick in the language
         return this.insertLangIntoHint(translated, targetElement);
@@ -370,11 +370,11 @@ export class LocalizationManager {
 
     // Hints sometimes have a {lang} tag in the text that needs to be substituted.
     public insertLangIntoHint(whatToSay, targetElement: any) {
-        var translated = whatToSay;
+        let translated = whatToSay;
         if (translated.indexOf("{lang}") != -1) {
             //This is the preferred approach, but it's not working yet.
             //var languageName = localizationManager.dictionary[$(targetElement).attr('lang')];
-            var languageName = GetInlineDictionary()[
+            const languageName = GetInlineDictionary()[
                 $(targetElement).attr("lang")
             ];
             if (!languageName) {

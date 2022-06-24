@@ -162,7 +162,7 @@ export class EditableDivUtils {
     }
 
     public static getPageFrame(): HTMLIFrameElement | null {
-        var doc = window.top?.document;
+        const doc = window.top?.document;
         return doc ? <HTMLIFrameElement>doc.getElementById("page") : null;
     }
 
