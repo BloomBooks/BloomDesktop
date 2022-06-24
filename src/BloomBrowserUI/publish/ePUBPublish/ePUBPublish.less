@@ -13,12 +13,6 @@
         margin-top: auto;
         margin-bottom: 20px;
     }
-    .save-button {
-        margin-top: 30px;
-        margin-left: 176px;
-        // without this, it grows to the width of the column
-        align-self: flex-start;
-    }
 
     .preview {
         display: flex;
@@ -32,11 +26,12 @@
     .MuiLink-root.disabled {
         color: rgba(0, 0, 0, 0.38);
     }
+}
 
-    .settingsGroup {
-        a {
-            margin-top: 1em;
-            display: block;
-        }
+// In the new PublishScreenTemplate, settingsGroup is no longer part of the main screen.
+section.settingsGroup {
+    a {
+        margin-top: 1em;
+        display: block;
     }
 }

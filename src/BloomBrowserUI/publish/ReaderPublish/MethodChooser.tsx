@@ -41,7 +41,69 @@ export const MethodChooser: React.FunctionComponent = () => {
 
     return (
         <React.Fragment>
-            <div className={"methodChooserRoot"}>
+            <div
+                css={css`
+                    display: flex;
+                    flex-direction: row;
+                    // Setting the height to 100% here makes the box layout extend below where it should go by the
+                    // amount of the padding-top.  (8px of that is swallowed up by the default 8px margin on body.)
+                    // We don't really need to set the height here anyway: it displays just fine without being
+                    // explicitly set.  See https://issues.bloomlibrary.org/youtrack/issue/BL-7506.
+                    padding-top: 10px;
+                    .column1 {
+                        display: flex;
+                        flex-direction: column;
+                        flex-shrink: 0;
+                        // leave room for the image, wrap radios if translations are really long
+                        //max-width: calc(100% - 280px);
+                        padding-right: 20px;
+                        button {
+                            // without this, it grows to the width of the column.
+                            align-self: flex-end;
+                        }
+                        .MuiFormControl-root {
+                            margin-top: 0;
+                        }
+                    }
+                    .column2 {
+                        max-width: 400px; // this is just to limit the hint text length on a big monitor.
+                        display: flex;
+                        flex-direction: column;
+                        flex-grow: 1;
+                        padding-left: 40px;
+                        padding-right: 40px;
+                        //background-color: #f7f9fa;
+                        .hint-heading {
+                            //margin-top: auto; //push to bottom
+                            display: flex;
+
+                            align-items: center;
+                            h6 {
+                                margin-left: 10px;
+                            }
+                            .warning {
+                                color: @bloom-warning;
+                            }
+                        }
+                    }
+                    img {
+                        width: 200px;
+                        //margin-left: 30px;
+                        object-fit: contain;
+                        // margin-left: auto;
+                        // margin-right: auto;
+                        margin-bottom: 20px;
+                    }
+
+                    // The center of a selected radio button is drawn with an <svg> element by materialui.
+                    // For some reason, in Firefox 45, in Publish:Reader, the "left" says 20.4667px, whereas
+                    // it says 0px in modern browsers. A mystery. Anyhow this resets it.
+                    // (I expected unset to fix it, but it doesn't.)
+                    .MuiRadio-root svg {
+                        left: 0;
+                    }
+                `}
+            >
                 <div className={"column1"}>
                     <RadioGroup
                         value={method}

@@ -4,6 +4,7 @@ import * as React from "react";
 import { useL10n } from "../../react_components/l10nHooks";
 import Typography from "@material-ui/core/Typography";
 import { Div } from "../../react_components/l10nComponents";
+import { kBloomBlue } from "../../bloomMaterialUITheme";
 
 export const PublishScreenBanner: React.FunctionComponent<{
     titleEnglish: string;
@@ -44,6 +45,9 @@ export const PublishScreenBanner: React.FunctionComponent<{
                         css={css`
                             font-size: 9pt;
                             max-width: 60%;
+                            a {
+                                color: ${kBloomBlue};
+                            }
                         `}
                         l10nKey={props.descriptionL10nId}
                     >

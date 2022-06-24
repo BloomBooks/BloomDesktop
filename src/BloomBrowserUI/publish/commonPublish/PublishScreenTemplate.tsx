@@ -1,4 +1,3 @@
-/** @jsxFrag React.Fragment */
 /** @jsx jsx **/
 import { jsx, css } from "@emotion/core";
 import * as React from "react";
@@ -57,6 +56,7 @@ export const MainPanel: React.FunctionComponent = props => (
             background-color: #fafafa;
             padding: 1.5rem 0 0 1.5rem; // top and left
             overflow-y: auto;
+            flex-direction: column;
         `}
     >
         {props.children}
@@ -69,7 +69,7 @@ export const OptionPanel: React.FunctionComponent = props => (
         css={css`
             background-color: #f1f3f4;
             padding-left: 20px;
-            width: 250px;
+            min-width: 250px;
             flex: 1 0;
             display: flex;
             flex-direction: column;

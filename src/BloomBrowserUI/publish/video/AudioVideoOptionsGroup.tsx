@@ -2,7 +2,7 @@
 import { jsx, css } from "@emotion/core";
 import * as React from "react";
 import FormGroup from "@material-ui/core/FormGroup";
-import { SettingsGroup } from "../commonPublish/BasePublishScreen";
+import { SettingsGroup } from "../commonPublish/PublishScreenBaseComponents";
 import { useL10n } from "../../react_components/l10nHooks";
 import { BloomApi } from "../../utils/bloomApi";
 import { Div } from "../../react_components/l10nComponents";
