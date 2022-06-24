@@ -1,5 +1,5 @@
 import * as React from "react";
-import { SettingsGroup } from "../commonPublish/BasePublishScreen";
+import { SettingsGroup } from "../commonPublish/PublishScreenBaseComponents";
 import { ColorChooser } from "../../react_components/colorChooser";
 import { BloomApi } from "../../utils/bloomApi";
 import { StorybookContext } from "../../.storybook/StoryBookContext";

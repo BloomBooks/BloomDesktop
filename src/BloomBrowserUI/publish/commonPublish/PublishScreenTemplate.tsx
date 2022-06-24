@@ -1,8 +1,11 @@
-/** @jsxFrag React.Fragment */
 /** @jsx jsx **/
 import { jsx, css } from "@emotion/core";
 import * as React from "react";
 import PublishScreenBanner from "./PublishScreenBanner";
+import {
+    kMainPanelBackgroundColor,
+    kOptionPanelBackgroundColor
+} from "../../bloomMaterialUITheme";
 
 export const PublishScreenTemplate: React.FunctionComponent<{
     bannerRightSideControls?: React.ReactNode;
@@ -54,9 +57,10 @@ export const MainPanel: React.FunctionComponent = props => (
         css={css`
             flex: 5; // The MainPanel fills out the rest of the width not taken by the OptionPanel.
             display: flex;
-            background-color: #fafafa;
+            background-color: ${kMainPanelBackgroundColor};
             padding: 1.5rem 0 0 1.5rem; // top and left
             overflow-y: auto;
+            flex-direction: column;
         `}
     >
         {props.children}
@@ -67,9 +71,9 @@ export const MainPanel: React.FunctionComponent = props => (
 export const OptionPanel: React.FunctionComponent = props => (
     <div
         css={css`
-            background-color: #f1f3f4;
+            background-color: ${kOptionPanelBackgroundColor};
             padding-left: 20px;
-            width: 250px;
+            min-width: 250px;
             flex: 1 0;
             display: flex;
             flex-direction: column;

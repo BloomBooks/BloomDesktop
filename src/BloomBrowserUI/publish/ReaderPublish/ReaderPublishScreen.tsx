@@ -4,17 +4,16 @@ import * as React from "react";
 import { useState, useContext } from "react";
 
 import {
-    BasePublishScreen,
     PreviewPanel,
     PublishPanel,
     HelpGroup,
     SettingsPanel,
     CommandsGroup
-} from "../commonPublish/BasePublishScreen";
+} from "../commonPublish/PublishScreenBaseComponents";
 import { MethodChooser } from "./MethodChooser";
 import { PublishFeaturesGroup } from "./PublishFeaturesGroup";
 import { ThumbnailGroup } from "./ThumbnailGroup";
-import "./ReaderPublish.less";
+import PublishScreenTemplate from "../commonPublish/PublishScreenTemplate";
 import { DeviceAndControls } from "../commonPublish/DeviceAndControls";
 import ReactDOM = require("react-dom");
 import { ThemeProvider } from "@material-ui/styles";
@@ -26,7 +25,6 @@ import {
 } from "../../utils/WebSocketManager";
 import { BloomApi } from "../../utils/bloomApi";
 import HelpLink from "../../react_components/helpLink";
-import HtmlHelpLink from "../../react_components/htmlHelpLink";
 import { Link, LinkWithDisabledStyles } from "../../react_components/link";
 import {
     RequiresBloomEnterpriseAdjacentIconWrapper,
@@ -126,97 +124,119 @@ const ReaderPublishScreenInternal: React.FunctionComponent<{
             }
         }
     );
+
+    const mainPanel = (
+        <React.Fragment>
+            <PreviewPanel>
+                <ThemeProvider theme={darkTheme}>
+                    <DeviceAndControls
+                        defaultLandscape={defaultLandscape}
+                        canRotate={canRotate}
+                        url={
+                            pathToOutputBrowser +
+                            "bloom-player/dist/bloomplayer.htm?centerVertically=true&url=" +
+                            encodeURIComponent(bookUrl) + // Need to apply encoding to the bookUrl again as data to use it as a parameter of another URL
+                            "&independent=false&host=bloomdesktop"
+                        }
+                        showRefresh={true}
+                        highlightRefreshIcon={highlightRefresh}
+                        onRefresh={() => props.onReset()}
+                    />
+                </ThemeProvider>
+            </PreviewPanel>
+            <PublishPanel
+                css={css`
+                    display: block;
+                    flex-grow: 1;
+                `}
+            >
+                <MethodChooser />
+            </PublishPanel>
+        </React.Fragment>
+    );
+
+    const optionsPanel = (
+        <SettingsPanel>
+            <PublishFeaturesGroup
+                onChange={() => {
+                    props.onReset();
+                }}
+            />
+            <ThumbnailGroup onChange={() => props.onReset()} />
+            <PublishLanguagesGroup onChange={() => setHighlightRefresh(true)} />
+            {/* push everything to the bottom */}
+            <div
+                css={css`
+                    margin-top: auto;
+                `}
+            />
+            <CommandsGroup>
+                <RequiresBloomEnterpriseAdjacentIconWrapper>
+                    <LinkWithDisabledStyles
+                        l10nKey="PublishTab.BulkBloomPub.MakeAllBloomPubs"
+                        onClick={() => {
+                            showBulkBloomPubDialog();
+                        }}
+                    >
+                        Make All BloomPUBs from Collection
+                    </LinkWithDisabledStyles>
+                </RequiresBloomEnterpriseAdjacentIconWrapper>
+            </CommandsGroup>
+            <HelpGroup>
+                <HelpLink
+                    l10nKey="PublishTab.Android.AboutBloomPUB"
+                    helpId="Tasks/Publish_tasks/Make_a_BloomPUB_file_overview.htm"
+                >
+                    About BloomPUB
+                </HelpLink>
+                <HelpLink
+                    l10nKey="PublishTab.Android.AboutBloomReader"
+                    helpId="Concepts/Bloom_Reader_App.htm"
+                >
+                    About Bloom Reader
+                </HelpLink>
+                <HelpLink
+                    l10nKey="PublishTab.TasksOverview"
+                    helpId="Tasks/Publish_tasks/Publish_tasks_overview.htm"
+                >
+                    Publish tab tasks overview
+                </HelpLink>
+                <div className="icon-link-row get-bloom-reader">
+                    <a href="https://play.google.com/store/search?q=%22sil%20international%22%2B%22bloom%20reader%22&amp;c=apps">
+                        <img
+                            css={css`
+                                height: 1.5em;
+                                margin-right: 10px;
+                            `}
+                            src="Google_Play_symbol_2016.svg"
+                        />
+                    </a>
+                    <Link
+                        id="getBloomReaderLink"
+                        href="https://play.google.com/store/search?q=%22sil%20international%22%2B%22bloom%20reader%22&amp;c=apps"
+                        l10nKey="PublishTab.Android.GetBloomReader"
+                        l10nComment="Link to find Bloom Reader on Google Play Store"
+                    >
+                        Get Bloom Reader App
+                    </Link>
+                </div>
+            </HelpGroup>
+        </SettingsPanel>
+    );
+
     return (
         <React.Fragment>
             <BulkBloomPubDialog />
             <RequiresBloomEnterpriseDialog />
-            <BasePublishScreen className="ReaderPublishScreen">
-                <PreviewPanel>
-                    <ThemeProvider theme={darkTheme}>
-                        <DeviceAndControls
-                            defaultLandscape={defaultLandscape}
-                            canRotate={canRotate}
-                            url={
-                                pathToOutputBrowser +
-                                "bloom-player/dist/bloomplayer.htm?centerVertically=true&url=" +
-                                encodeURIComponent(bookUrl) + // Need to apply encoding to the bookUrl again as data to use it as a parameter of another URL
-                                "&independent=false&host=bloomdesktop"
-                            }
-                            showRefresh={true}
-                            highlightRefreshIcon={highlightRefresh}
-                            onRefresh={() => props.onReset()}
-                        />
-                    </ThemeProvider>
-                </PreviewPanel>
-                <PublishPanel>
-                    <MethodChooser />
-                </PublishPanel>
-                <SettingsPanel>
-                    <PublishFeaturesGroup
-                        onChange={() => {
-                            props.onReset();
-                        }}
-                    />
-                    <ThumbnailGroup onChange={() => props.onReset()} />
-                    <PublishLanguagesGroup
-                        onChange={() => setHighlightRefresh(true)}
-                    />
-                    {/* push everything to the bottom */}
-                    <div
-                        css={css`
-                            margin-top: auto;
-                        `}
-                    />
-                    <CommandsGroup>
-                        <RequiresBloomEnterpriseAdjacentIconWrapper>
-                            <LinkWithDisabledStyles
-                                l10nKey="PublishTab.BulkBloomPub.MakeAllBloomPubs"
-                                onClick={() => {
-                                    showBulkBloomPubDialog();
-                                }}
-                            >
-                                Make All BloomPUBs from Collection
-                            </LinkWithDisabledStyles>
-                        </RequiresBloomEnterpriseAdjacentIconWrapper>
-                    </CommandsGroup>
-                    <HelpGroup>
-                        <HelpLink
-                            l10nKey="PublishTab.Android.AboutBloomPUB"
-                            helpId="Tasks/Publish_tasks/Make_a_BloomPUB_file_overview.htm"
-                        >
-                            About BloomPUB
-                        </HelpLink>
-                        <HelpLink
-                            l10nKey="PublishTab.Android.AboutBloomReader"
-                            helpId="Concepts/Bloom_Reader_App.htm"
-                        >
-                            About Bloom Reader
-                        </HelpLink>
-                        <HelpLink
-                            l10nKey="PublishTab.TasksOverview"
-                            helpId="Tasks/Publish_tasks/Publish_tasks_overview.htm"
-                        >
-                            Publish tab tasks overview
-                        </HelpLink>
-                        <div className="icon-link-row get-bloom-reader">
-                            <a href="https://play.google.com/store/search?q=%22sil%20international%22%2B%22bloom%20reader%22&amp;c=apps">
-                                <img
-                                    className="playIcon"
-                                    src="Google_Play_symbol_2016.svg"
-                                />
-                            </a>
-                            <Link
-                                id="getBloomReaderLink"
-                                href="https://play.google.com/store/search?q=%22sil%20international%22%2B%22bloom%20reader%22&amp;c=apps"
-                                l10nKey="PublishTab.Android.GetBloomReader"
-                                l10nComment="Link to find Bloom Reader on Google Play Store"
-                            >
-                                Get Bloom Reader App
-                            </Link>
-                        </div>
-                    </HelpGroup>
-                </SettingsPanel>
-            </BasePublishScreen>
+            <PublishScreenTemplate
+                bannerTitleEnglish="Publish as BloomPUB"
+                bannerTitleL10nId="PublishTab.BloomPUB.BannerTitle"
+                bannerDescriptionMarkdown="BloomPUBs are a kind of eBook that can be read on phone apps ([Bloom Reader](https://bloomlibrary.org/page/create/bloom-reader) and [Reading App Builder](https://software.sil.org/readingappbuilder/)) and on Windows using [Bloom Viewer](https://github.com/BloomBooks/bloompub-viewer/releases). They offer many advantages over ePUBs, including WYSIWYG fidelity and the full range of Bloom digital book features."
+                bannerDescriptionL10nId="PublishTab.BloomPUB.BannerDescription"
+                optionsPanelContents={optionsPanel}
+            >
+                {mainPanel}
+            </PublishScreenTemplate>
             {/* In storybook, there's no bloom backend to run the progress dialog */}
             {inStorybookMode || (
                 <PublishProgressDialog

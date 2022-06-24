@@ -1,6 +1,6 @@
 import * as React from "react";
 import { FormGroup } from "@material-ui/core";
-import { SettingsGroup } from "./BasePublishScreen";
+import { SettingsGroup } from "./PublishScreenBaseComponents";
 
 export const AudioGroup: React.FunctionComponent = () => (
     <SettingsGroup label="Audio todo localize">

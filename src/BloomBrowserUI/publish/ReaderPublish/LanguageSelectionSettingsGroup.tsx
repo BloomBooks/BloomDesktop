@@ -1,7 +1,9 @@
+/** @jsx jsx **/
+import { jsx, css } from "@emotion/core";
 import { FormGroup, Checkbox, FormControlLabel } from "@material-ui/core";
 import * as React from "react";
 import { useL10n } from "../../react_components/l10nHooks";
-import { SettingsGroup } from "../commonPublish/BasePublishScreen";
+import { SettingsGroup } from "../commonPublish/PublishScreenBaseComponents";
 
 export interface LangCheckboxValue {
     code; // the language code
@@ -58,7 +60,19 @@ export const LanguageSelectionSettingsGroup: React.FunctionComponent<{
     return (
         <div className="publishLanguagesGroup">
             <SettingsGroup label={props.label}>
-                <FormGroup className="scrollingFeature">
+                <FormGroup
+                    css={css`
+                        overflow-y: auto;
+                        max-height: 150px;
+                        flex-wrap: nowrap; // mockup has a single column, but it works quite well with default wrap
+                        margin-right: 20px;
+                        // These two "cancel out" except that they defeat a bug in the HTML spec that prevents
+                        // overflow-x from being visible when overflow-y is hidden. The check box shadows can
+                        // 'overflow' from the normal space occupied by the scrollingFeature.
+                        padding-left: 11px;
+                        margin-left: -11px;
+                    `}
+                >
                     {languageCheckboxes}
                 </FormGroup>
             </SettingsGroup>

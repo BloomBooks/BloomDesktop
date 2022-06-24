@@ -9,12 +9,10 @@ import SaveIcon from "@material-ui/icons/Save";
 import RecordIcon from "@material-ui/icons/RadioButtonChecked";
 import { useDebounce } from "use-debounce";
 import {
-    BasePublishScreen,
     PublishPanel,
     HelpGroup,
     SettingsPanel
-} from "../commonPublish/BasePublishScreen";
-import "../ReaderPublish/ReaderPublish.less";
+} from "../commonPublish/PublishScreenBaseComponents";
 import ReactDOM = require("react-dom");
 import { ThemeProvider } from "@material-ui/styles";
 import {
@@ -36,7 +34,6 @@ import BloomButton from "../../react_components/bloomButton";
 import {
     Button,
     CircularProgress,
-    FormGroup,
     Step,
     StepContent,
     StepLabel,
@@ -53,7 +50,7 @@ import {
 } from "../../react_components/BloomDialog/commonDialogComponents";
 import { useEffect } from "react";
 import { isLinux } from "../../utils/isLinux";
-import { MuiCheckbox } from "../../react_components/muiCheckBox";
+import PublishScreenTemplate from "../commonPublish/PublishScreenTemplate";
 
 export const PublishAudioVideo = () => {
     if (isLinux()) {
@@ -309,6 +306,317 @@ const PublishAudioVideoInternalInternal: React.FunctionComponent<{
     max-width: ${landscapeWidth}px;
     margin-bottom:5px;
     color: grey;`;
+    const mainPanel = (
+        <PublishPanel>
+            <Stepper
+                activeStep={activeStep}
+                orientation="vertical"
+                // defeat Material-UI's attempt to make the step numbers and text look disabled.
+                css={css`
+                    .MuiStepLabel-label {
+                        color: black !important;
+                        font-size: larger;
+                    }
+                    .MuiStepIcon-root {
+                        color: ${kBloomBlue} !important;
+                    }
+                `}
+            >
+                <Step expanded={true}>
+                    <StepLabel>{configAndPreview}</StepLabel>
+                    <StepContent>
+                        <ThemeProvider theme={darkTheme}>
+                            <Div
+                                css={css`
+                                    ${blurbClasses}
+                                `}
+                                l10nKey="PublishTab.RecordVideo.Instructions"
+                            >
+                                If your book has multiple languages or other
+                                options, you will see a row of red buttons. Use
+                                these to set up the book for recording.
+                            </Div>
+                            <SimplePreview
+                                // using this key ensures that the preview is regenerated when motion changes,
+                                // which would not otherwise happen because it's not part of the props
+                                key={avSettings.motion.toString()}
+                                landscape={
+                                    defaultLandscape || avSettings.motion
+                                }
+                                landscapeWidth={landscapeWidth}
+                                url={
+                                    pathToOutputBrowser +
+                                    "bloom-player/dist/bloomplayer.htm?centerVertically=true&videoPreviewMode=true&autoplay=yes&paused=true&defaultDuration=" +
+                                    debouncedPageTurnDelay +
+                                    "&url=" +
+                                    encodeURIComponent(bookUrl) + // Need to apply encoding to the bookUrl again as data to use it as a parameter of another URL
+                                    `&independent=false&host=bloomdesktop&useOriginalPageSize=${useOriginalPageSize}&skipActivities=true&hideNavButtons=true` +
+                                    videoSettingsParam +
+                                    pageRangeSetting
+                                }
+                            />
+                            <div
+                                css={css`
+                                    display: flex;
+                                    width: ${landscapeWidth}px;
+                                    justify-content: center;
+                                `}
+                            >
+                                <Button onClick={reset} disabled={!isLicenseOK}>
+                                    <SkipPreviousIcon
+                                        // unfortunately this icon doesn't come in a variant with a built-in circle.
+                                        // To make it match the other two we have to shrink it, make it white,
+                                        // and carefully position an independent circle behind it.
+                                        css={css`
+                                            color: white;
+                                            font-size: 1.5rem;
+                                            z-index: 1;
+                                        `}
+                                    />
+                                    <div
+                                        css={css`
+                                            border: ${circleHeight} solid
+                                                ${kBloomBlue};
+                                            border-radius: ${circleHeight};
+                                            position: absolute;
+                                            top: 0.5rem;
+                                            left: 1.1rem;
+                                        `}
+                                    ></div>
+                                </Button>
+                                {playing ? (
+                                    <CircularProgress
+                                        css={css`
+                                            margin-top: 8px;
+                                            margin-left: 19px;
+                                            margin-right: 19px;
+                                        `}
+                                        size="1.6rem"
+                                    ></CircularProgress>
+                                ) : (
+                                    <Button
+                                        onClick={play}
+                                        disabled={!isLicenseOK}
+                                    >
+                                        <PlayIcon
+                                            css={css`
+                                                color: ${kBloomBlue};
+                                                font-size: 2rem !important;
+                                            `}
+                                        />
+                                    </Button>
+                                )}
+                                <Button
+                                    onClick={pause}
+                                    disabled={
+                                        isPauseButtonDisabled || !isLicenseOK
+                                    }
+                                >
+                                    <PauseIcon
+                                        css={css`
+                                            color: ${isPauseButtonDisabled
+                                                ? kBloomBlue50Transparent
+                                                : kBloomBlue};
+                                            font-size: 2rem !important;
+                                        `}
+                                    />
+                                </Button>
+                            </div>
+                        </ThemeProvider>
+                    </StepContent>
+                </Step>
+                <Step expanded={true} disabled={false}>
+                    <StepLabel onClick={() => setActiveStep(1)}>
+                        {makeRecording}
+                    </StepLabel>
+                    <StepContent
+                        css={css`
+                            .MuiButtonBase-root {
+                                background-color: ${kBloomRed} !important;
+                            }
+                        `}
+                    >
+                        <Div
+                            css={css`
+                                ${blurbClasses}
+                            `}
+                            l10nKey="PublishTab.RecordVideo.WillOpenRecordingWindow"
+                        >
+                            This will open a window and play the selected pages.
+                            Bloom will record it to match the “Format” option in
+                            the upper right of this screen.
+                        </Div>
+                        {isScalingActive && recordingVideo && (
+                            <ErrorBox>
+                                <div>
+                                    <Div
+                                        css={css`
+                                            font-style: italic;
+                                            font-weight: bold;
+                                        `}
+                                        l10nKey="PublishTab.RecordVideo.DisableScaling"
+                                    >
+                                        Disable Display Scaling
+                                    </Div>
+                                    <p
+                                        css={css`
+                                            margin: 0;
+                                        `}
+                                    >
+                                        <Span l10nKey="PublishTab.RecordVideo.ChangeScale100">
+                                            Please change your display scaling
+                                            to 100% while making videos. Without
+                                            this, videos will come out at the
+                                            wrong resolution, or not record at
+                                            all.
+                                        </Span>{" "}
+                                        <Link
+                                            css={css`
+                                                text-decoration: underline;
+                                            `}
+                                            l10nKey="PublishTab.RecordVideo.DisplaySettings"
+                                            onClick={() =>
+                                                BloomApi.post(
+                                                    "publish/av/displaySettings"
+                                                )
+                                            }
+                                        >
+                                            Display Settings
+                                        </Link>
+                                    </p>
+                                </div>
+                            </ErrorBox>
+                        )}
+                        <BloomButton
+                            enabled={!recording && isLicenseOK}
+                            l10nKey="PublishTab.RecordVideo.Record"
+                            l10nComment="'Record' as in 'Record a video recording'"
+                            clickApiEndpoint="publish/av/recordVideo"
+                            iconBeforeText={
+                                <RecordIcon
+                                    css={css`
+                                        color: white;
+                                    `}
+                                />
+                            }
+                        >
+                            Record
+                        </BloomButton>
+                    </StepContent>
+                </Step>
+                <Step expanded={true} disabled={false}>
+                    <StepLabel>{checkRecording}</StepLabel>
+                    <StepContent>
+                        <Div
+                            css={css`
+                                ${blurbClasses}
+                            `}
+                            l10nKey="PublishTab.RecordVideo.WillOpenProgram"
+                        >
+                            This will open the program on your computer that is
+                            associated with this file type.
+                        </Div>
+                        <BloomButton
+                            enabled={gotRecording && isLicenseOK}
+                            l10nKey="PublishTab.RecordVideo.Play"
+                            clickApiEndpoint="publish/av/playVideo"
+                            iconBeforeText={
+                                <PlayIcon
+                                    css={css`
+                                        color: white;
+                                    `}
+                                />
+                            }
+                        >
+                            Play Recording
+                        </BloomButton>
+                    </StepContent>
+                </Step>
+                <Step
+                    expanded={true}
+                    disabled={false}
+                    onClick={() => setActiveStep(3)}
+                >
+                    <StepLabel>{save}</StepLabel>
+                    <StepContent>
+                        <BloomButton
+                            enabled={gotRecording && isLicenseOK}
+                            l10nKey="PublishTab.Save"
+                            clickApiEndpoint="publish/av/saveVideo"
+                            iconBeforeText={
+                                <SaveIcon
+                                    css={css`
+                                        color: white;
+                                    `}
+                                />
+                            }
+                        >
+                            Save...
+                        </BloomButton>
+                    </StepContent>
+                </Step>
+            </Stepper>
+        </PublishPanel>
+    );
+
+    const optionsPanel = (
+        <SettingsPanel>
+            <AudioVideoOptionsGroup
+                pageTurnDelay={avSettings.pageTurnDelay}
+                onSetPageTurnDelay={(n: number) =>
+                    setAvSettings({ ...avSettings, pageTurnDelay: n })
+                }
+                format={avSettings.format}
+                onFormatChanged={(f: string) => {
+                    setAvSettings({ ...avSettings, format: f });
+                    BloomApi.getBoolean(
+                        "publish/av/shouldUseOriginalPageSize",
+                        value => {
+                            setUseOriginalPageSize(value);
+                        }
+                    );
+                }}
+                pageRange={avSettings.pageRange}
+                onSetPageRange={(range: number[]) =>
+                    setAvSettings({ ...avSettings, pageRange: range })
+                }
+                motion={avSettings.motion}
+                onMotionChange={m => {
+                    setAvSettings({
+                        ...avSettings,
+                        motion: m!
+                    });
+                    // Will restart due to regenerating, we want the controls to show not playing.
+                    pause();
+                }}
+            ></AudioVideoOptionsGroup>
+
+            {/* push everything to the bottom */}
+            <div
+                css={css`
+                    margin-top: auto;
+                `}
+            />
+            {hasActivities && (
+                <NoteBox addBorder={true}>{activitiesSkipped}</NoteBox>
+            )}
+            <HelpGroup>
+                <HelpLink
+                    l10nKey="PublishTab.RecordVideo.OverviewHelpLink"
+                    helpId="Tasks/Publish_tasks/Create_audio_or_video_of_book.htm"
+                >
+                    Publishing Audio or Video Books
+                </HelpLink>
+                <HelpLink
+                    l10nKey="PublishTab.TasksOverview"
+                    helpId="Tasks/Publish_tasks/Publish_tasks_overview.htm"
+                >
+                    Publish tab tasks overview
+                </HelpLink>
+            </HelpGroup>
+        </SettingsPanel>
+    );
+
     return (
         <Typography
             component={"div"}
@@ -317,331 +625,15 @@ const PublishAudioVideoInternalInternal: React.FunctionComponent<{
             `}
         >
             <RequiresBloomEnterpriseDialog />
-            <BasePublishScreen
-                className="ReaderPublishScreen"
-                css={css`
-                    .publish {
-                        padding: 0;
-                    }
-                `}
-                // Be careful! only specified children (PreviewPanel, PublishPanel, SettingsPanel, HelpGroup)
-                // will be shown!
+            <PublishScreenTemplate
+                bannerTitleEnglish="Publish as Audio or Video"
+                bannerTitleL10nId="PublishTab.RecordVideo.BannerTitle"
+                bannerDescriptionMarkdown="Create video files that you can upload to sites like Facebook and YouTube. You can also make videos to share with people who use inexpensive “feature phones” and even audio-only files for listening."
+                bannerDescriptionL10nId="PublishTab.RecordVideo.BannerDescription"
+                optionsPanelContents={optionsPanel}
             >
-                <PublishPanel>
-                    <Stepper
-                        activeStep={activeStep}
-                        orientation="vertical"
-                        // defeat Material-UI's attempt to make the step numbers and text look disabled.
-                        css={css`
-                            .MuiStepLabel-label {
-                                color: black !important;
-                                font-size: larger;
-                            }
-                            .MuiStepIcon-root {
-                                color: ${kBloomBlue} !important;
-                            }
-                        `}
-                    >
-                        <Step expanded={true}>
-                            <StepLabel>{configAndPreview}</StepLabel>
-                            <StepContent>
-                                <ThemeProvider theme={darkTheme}>
-                                    <Div
-                                        css={css`
-                                            ${blurbClasses}
-                                        `}
-                                        l10nKey="PublishTab.RecordVideo.Instructions"
-                                    >
-                                        If your book has multiple languages or
-                                        other options, you will see a row of red
-                                        buttons. Use these to set up the book
-                                        for recording.
-                                    </Div>
-                                    <SimplePreview
-                                        // using this key ensures that the preview is regenerated when motion changes,
-                                        // which would not otherwise happen because it's not part of the props
-                                        key={avSettings.motion.toString()}
-                                        landscape={
-                                            defaultLandscape ||
-                                            avSettings.motion
-                                        }
-                                        landscapeWidth={landscapeWidth}
-                                        url={
-                                            pathToOutputBrowser +
-                                            "bloom-player/dist/bloomplayer.htm?centerVertically=true&videoPreviewMode=true&autoplay=yes&paused=true&defaultDuration=" +
-                                            debouncedPageTurnDelay +
-                                            "&url=" +
-                                            encodeURIComponent(bookUrl) + // Need to apply encoding to the bookUrl again as data to use it as a parameter of another URL
-                                            `&independent=false&host=bloomdesktop&useOriginalPageSize=${useOriginalPageSize}&skipActivities=true&hideNavButtons=true` +
-                                            videoSettingsParam +
-                                            pageRangeSetting
-                                        }
-                                    />
-                                    <div
-                                        css={css`
-                                            display: flex;
-                                            width: ${landscapeWidth}px;
-                                            justify-content: center;
-                                        `}
-                                    >
-                                        <Button
-                                            onClick={reset}
-                                            disabled={!isLicenseOK}
-                                        >
-                                            <SkipPreviousIcon
-                                                // unfortunately this icon doesn't come in a variant with a built-in circle.
-                                                // To make it match the other two we have to shrink it, make it white,
-                                                // and carefully position an independent circle behind it.
-                                                css={css`
-                                                    color: white;
-                                                    font-size: 1.5rem;
-                                                    z-index: 1;
-                                                `}
-                                            />
-                                            <div
-                                                css={css`
-                                                    border: ${circleHeight}
-                                                        solid ${kBloomBlue};
-                                                    border-radius: ${circleHeight};
-                                                    position: absolute;
-                                                    top: 0.5rem;
-                                                    left: 1.1rem;
-                                                `}
-                                            ></div>
-                                        </Button>
-                                        {playing ? (
-                                            <CircularProgress
-                                                css={css`
-                                                    margin-top: 8px;
-                                                    margin-left: 19px;
-                                                    margin-right: 19px;
-                                                `}
-                                                size="1.6rem"
-                                            ></CircularProgress>
-                                        ) : (
-                                            <Button
-                                                onClick={play}
-                                                disabled={!isLicenseOK}
-                                            >
-                                                <PlayIcon
-                                                    css={css`
-                                                        color: ${kBloomBlue};
-                                                        font-size: 2rem !important;
-                                                    `}
-                                                />
-                                            </Button>
-                                        )}
-                                        <Button
-                                            onClick={pause}
-                                            disabled={
-                                                isPauseButtonDisabled ||
-                                                !isLicenseOK
-                                            }
-                                        >
-                                            <PauseIcon
-                                                css={css`
-                                                    color: ${isPauseButtonDisabled
-                                                        ? kBloomBlue50Transparent
-                                                        : kBloomBlue};
-                                                    font-size: 2rem !important;
-                                                `}
-                                            />
-                                        </Button>
-                                    </div>
-                                </ThemeProvider>
-                            </StepContent>
-                        </Step>
-                        <Step expanded={true} disabled={false}>
-                            <StepLabel onClick={() => setActiveStep(1)}>
-                                {makeRecording}
-                            </StepLabel>
-                            <StepContent
-                                css={css`
-                                    .MuiButtonBase-root {
-                                        background-color: ${kBloomRed} !important;
-                                    }
-                                `}
-                            >
-                                <Div
-                                    css={css`
-                                        ${blurbClasses}
-                                    `}
-                                    l10nKey="PublishTab.RecordVideo.WillOpenRecordingWindow"
-                                >
-                                    This will open a window and play the
-                                    selected pages. Bloom will record it to
-                                    match the “Format” option in the upper right
-                                    of this screen.
-                                </Div>
-                                {isScalingActive && recordingVideo && (
-                                    <ErrorBox>
-                                        <div>
-                                            <Div
-                                                css={css`
-                                                    font-style: italic;
-                                                    font-weight: bold;
-                                                `}
-                                                l10nKey="PublishTab.RecordVideo.DisableScaling"
-                                            >
-                                                Disable Display Scaling
-                                            </Div>
-                                            <p
-                                                css={css`
-                                                    margin: 0;
-                                                `}
-                                            >
-                                                <Span l10nKey="PublishTab.RecordVideo.ChangeScale100">
-                                                    Please change your display
-                                                    scaling to 100% while making
-                                                    videos. Without this, videos
-                                                    will come out at the wrong
-                                                    resolution, or not record at
-                                                    all.
-                                                </Span>{" "}
-                                                <Link
-                                                    css={css`
-                                                        text-decoration: underline;
-                                                    `}
-                                                    l10nKey="PublishTab.RecordVideo.DisplaySettings"
-                                                    onClick={() =>
-                                                        BloomApi.post(
-                                                            "publish/av/displaySettings"
-                                                        )
-                                                    }
-                                                >
-                                                    Display Settings
-                                                </Link>
-                                            </p>
-                                        </div>
-                                    </ErrorBox>
-                                )}
-                                <BloomButton
-                                    enabled={!recording && isLicenseOK}
-                                    l10nKey="PublishTab.RecordVideo.Record"
-                                    l10nComment="'Record' as in 'Record a video recording'"
-                                    clickApiEndpoint="publish/av/recordVideo"
-                                    iconBeforeText={
-                                        <RecordIcon
-                                            css={css`
-                                                color: white;
-                                            `}
-                                        />
-                                    }
-                                >
-                                    Record
-                                </BloomButton>
-                            </StepContent>
-                        </Step>
-                        <Step expanded={true} disabled={false}>
-                            <StepLabel>{checkRecording}</StepLabel>
-                            <StepContent>
-                                <Div
-                                    css={css`
-                                        ${blurbClasses}
-                                    `}
-                                    l10nKey="PublishTab.RecordVideo.WillOpenProgram"
-                                >
-                                    This will open the program on your computer
-                                    that is associated with this file type.
-                                </Div>
-                                <BloomButton
-                                    enabled={gotRecording && isLicenseOK}
-                                    l10nKey="PublishTab.RecordVideo.Play"
-                                    clickApiEndpoint="publish/av/playVideo"
-                                    iconBeforeText={
-                                        <PlayIcon
-                                            css={css`
-                                                color: white;
-                                            `}
-                                        />
-                                    }
-                                >
-                                    Play Recording
-                                </BloomButton>
-                            </StepContent>
-                        </Step>
-                        <Step
-                            expanded={true}
-                            disabled={false}
-                            onClick={() => setActiveStep(3)}
-                        >
-                            <StepLabel>{save}</StepLabel>
-                            <StepContent>
-                                <BloomButton
-                                    enabled={gotRecording && isLicenseOK}
-                                    l10nKey="PublishTab.Save"
-                                    clickApiEndpoint="publish/av/saveVideo"
-                                    iconBeforeText={
-                                        <SaveIcon
-                                            css={css`
-                                                color: white;
-                                            `}
-                                        />
-                                    }
-                                >
-                                    Save...
-                                </BloomButton>
-                            </StepContent>
-                        </Step>
-                    </Stepper>
-                </PublishPanel>
-
-                <SettingsPanel>
-                    <AudioVideoOptionsGroup
-                        pageTurnDelay={avSettings.pageTurnDelay}
-                        onSetPageTurnDelay={(n: number) =>
-                            setAvSettings({ ...avSettings, pageTurnDelay: n })
-                        }
-                        format={avSettings.format}
-                        onFormatChanged={(f: string) => {
-                            setAvSettings({ ...avSettings, format: f });
-                            BloomApi.getBoolean(
-                                "publish/av/shouldUseOriginalPageSize",
-                                value => {
-                                    setUseOriginalPageSize(value);
-                                }
-                            );
-                        }}
-                        pageRange={avSettings.pageRange}
-                        onSetPageRange={(range: number[]) =>
-                            setAvSettings({ ...avSettings, pageRange: range })
-                        }
-                        motion={avSettings.motion}
-                        onMotionChange={m => {
-                            setAvSettings({
-                                ...avSettings,
-                                motion: m!
-                            });
-                            // Will restart due to regenerating, we want the controls to show not playing.
-                            pause();
-                        }}
-                    ></AudioVideoOptionsGroup>
-
-                    {/* push everything to the bottom */}
-                    <div
-                        css={css`
-                            margin-top: auto;
-                        `}
-                    />
-                    {hasActivities && (
-                        <NoteBox addBorder={true}>{activitiesSkipped}</NoteBox>
-                    )}
-                    <HelpGroup>
-                        <HelpLink
-                            l10nKey="PublishTab.RecordVideo.OverviewHelpLink"
-                            helpId="Tasks/Publish_tasks/Create_audio_or_video_of_book.htm"
-                        >
-                            Publishing Audio or Video Books
-                        </HelpLink>
-                        <HelpLink
-                            l10nKey="PublishTab.TasksOverview"
-                            helpId="Tasks/Publish_tasks/Publish_tasks_overview.htm"
-                        >
-                            Publish tab tasks overview
-                        </HelpLink>
-                    </HelpGroup>
-                </SettingsPanel>
-            </BasePublishScreen>
+                {mainPanel}
+            </PublishScreenTemplate>
             {/* In storybook, there's no bloom backend to run the progress dialog */}
             {inStorybookMode || (
                 <PublishProgressDialog

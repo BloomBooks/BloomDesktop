@@ -1,3 +1,5 @@
+/** @jsx jsx **/
+import { jsx, css } from "@emotion/core";
 import * as React from "react";
 import "./DeviceFrame.less";
 import { useState, useEffect } from "react";
@@ -38,7 +40,12 @@ export const DeviceAndControls: React.FunctionComponent<{
     );
 
     return (
-        <div className="deviceAndControls">
+        <div
+            className="deviceAndControls"
+            css={css`
+                min-width: 400px;
+            `}
+        >
             <div
                 className={
                     "deviceFrame fullSize " +
@@ -52,7 +59,7 @@ export const DeviceAndControls: React.FunctionComponent<{
                 />
             </div>
             {props.canRotate && (
-                <>
+                <React.Fragment>
                     <OrientationButton
                         selected={!landscape}
                         landscape={false}
@@ -63,7 +70,7 @@ export const DeviceAndControls: React.FunctionComponent<{
                         landscape={true}
                         onClick={() => setLandscape(true)}
                     />
-                </>
+                </React.Fragment>
             )}
             {props.showRefresh && (
                 <div
