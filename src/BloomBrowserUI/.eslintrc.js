@@ -27,7 +27,6 @@ module.exports = {
         "prettier/prettier": "off",
         "no-var": "warn",
         "prefer-const": "warn",
-        "no-bitwise": "warn",
         "no-useless-escape": "off",
         "no-warning-comments": [
             1,
