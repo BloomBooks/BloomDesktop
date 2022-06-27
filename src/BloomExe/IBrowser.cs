@@ -4,7 +4,7 @@ using System;
 
 namespace Bloom
 {
-	// this is just a through-away thing to centralize switching during
+	// this is just a throw-away thing to centralize switching during
 	// my coding. 
 	public class BrowserMaker
 	{

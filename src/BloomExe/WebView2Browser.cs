@@ -1,24 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Diagnostics;
-using System.Drawing;
-using System.Drawing.Text;
-using System.IO;
-using System.Linq;
-using System.Net;
-using System.Reflection;
-using System.Text;
 using System.Windows.Forms;
-using System.Xml;
 using Bloom.Book;
 using Bloom.Api;
-using Bloom.Edit;
-using SIL.IO;
-using SIL.Reporting;
-using SIL.Windows.Forms.Miscellaneous;
-using L10NSharp;
-using SimulatedPageFileSource = Bloom.Api.BloomServer.SimulatedPageFileSource;
 using Microsoft.Web.WebView2.Core;
 
 namespace Bloom
@@ -29,7 +12,6 @@ namespace Bloom
 		public WebView2Browser()
 		{
 			InitializeComponent();
-			_webview.BackColor = Color.Red;
 
 			_webview.CoreWebView2InitializationCompleted += (object sender, CoreWebView2InitializationCompletedEventArgs args) =>
 			{
