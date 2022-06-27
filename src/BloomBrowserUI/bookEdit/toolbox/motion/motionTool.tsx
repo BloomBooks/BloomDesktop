@@ -93,9 +93,7 @@ export class MotionTool extends ToolboxToolReactAdaptor {
             initAttr: string,
             color: string
         ): JQuery => {
-            let needToSaveThisRectangle: boolean;
-            let left: number, top: number, width: number, height: number;
-            [
+            const [
                 left,
                 top,
                 width,
