@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -25,7 +25,7 @@ using SimulatedPageFileSource = Bloom.Api.BloomServer.SimulatedPageFileSource;
 
 namespace Bloom
 {
-	public partial class Browser : UserControl
+	public partial class GeckoFxBrowser : UserControl, IBrowser
 	{
 		protected GeckoWebBrowser _browser;
 		bool _browserIsReadyToNavigate;
@@ -43,6 +43,7 @@ namespace Bloom
 		private CutCommand _cutCommand;
 		private bool _disposed;
 		public event EventHandler OnBrowserClick;
+		public event EventHandler DocumentCompleted;
 		// We need some way to pass the cursor location in the Browser context to the EditingView command handlers
 		// for Add/Delete TextOverPicture textboxes. These will store the cursor location when the context menu is
 		// generated.
@@ -190,10 +191,17 @@ namespace Bloom
 			}
 		}
 
-		public Browser()
+		public GeckoFxBrowser()
 		{
 			InitializeComponent();
 			_isolator = NavigationIsolator.GetOrCreateTheOneNavigationIsolator();
+		}
+
+		// previously clients had to access the Handle to make the control ready to talk to,
+		// this just isolates that a bit
+		public void EnsureHandleCreated()
+		{
+			var x = this.Handle; // gets the WebBrowser created
 		}
 
 		/// <summary>
@@ -439,16 +447,27 @@ namespace Bloom
 
 			_browser.FrameEventsPropagateToMainWindow = true; // we want clicks in iframes to propagate all the way up to C#
 
-			RaiseGeckoReady();
+			RaiseBrowserReady();
+		}
+
+		private void _browser_DocumentCompleted(object sender, GeckoDocumentCompletedEventArgs e)
+		{
+			if(DocumentCompleted != null) // review
+				DocumentCompleted(sender, e);
 		}
 
 		// We'd like to suppress them just in one browser. But it seems to be unpredictable which
 		// browser instance(s) get the messages when something goes wrong in one of them.
 		public static Boolean SuppressJavaScriptErrors { get; set; }
 
+		public void ActivateFocussed() // review what should this be called?
+		{
+			_browser.WebBrowserFocus.Activate();
+		}
+
 		private void OnConsoleMessage(object sender, ConsoleMessageEventArgs e)
 		{
-			if(e.Message.StartsWith("[JavaScript Warning"))
+			if (e.Message.StartsWith("[JavaScript Warning"))
 				return;
 			if (e.Message.StartsWith("[JavaScript Error"))
 			{
@@ -459,10 +478,6 @@ namespace Bloom
 				}
 			}
 			Debug.WriteLine(e.Message);
-		}
-
-		private void _browser_DocumentCompleted(object sender, EventArgs e)
-		{
 		}
 
 		/// <summary>
@@ -1285,11 +1300,11 @@ namespace Bloom
 			//_browser.WebBrowser.Navigate("javascript:void(alert($(\"form\").serialize()))");
 
 			*/
-		public event EventHandler GeckoReady;
+		public event EventHandler BrowserReady;
 
-		public void RaiseGeckoReady()
+		public void RaiseBrowserReady()
 		{
-			EventHandler handler = GeckoReady;
+			EventHandler handler = BrowserReady;
 			if (handler != null) handler(this, null);
 		}
 
