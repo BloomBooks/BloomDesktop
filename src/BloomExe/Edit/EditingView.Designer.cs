@@ -1,4 +1,4 @@
-﻿namespace Bloom.Edit
+namespace Bloom.Edit
 {
     partial class EditingView
     {
@@ -61,7 +61,7 @@
 			this._menusToolStrip = new System.Windows.Forms.ToolStrip();
 			this._contentLanguagesDropdown = new System.Windows.Forms.ToolStripDropDownButton();
 			this._layoutChoices = new System.Windows.Forms.ToolStripDropDownButton();
-			this._browser1 = new Bloom.Browser();
+			this._browser1 = new Bloom.GeckoFxBrowser();
 			this._splitTemplateAndSource = new Bloom.ToPalaso.BetterSplitContainer(this.components);
 			this._betterToolTip1 = new Bloom.ToPalaso.BetterToolTip(this.components);
 			((System.ComponentModel.ISupportInitialize)(this._L10NSharpExtender)).BeginInit();
@@ -409,7 +409,7 @@
         #endregion
 
         private Bloom.ToPalaso.BetterSplitContainer _splitContainer2;
-        private Browser _browser1;
+        private GeckoFxBrowser _browser1;
 		private Bloom.ToPalaso.BetterSplitContainer _splitTemplateAndSource;
         private System.Windows.Forms.Timer _editButtonsUpdateTimer;
 		private System.Windows.Forms.Timer _handleMessageTimer;

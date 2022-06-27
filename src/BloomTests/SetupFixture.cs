@@ -17,7 +17,7 @@ namespace BloomTests
 		[OneTimeSetUp]
 		public void Setup()
 		{
-			Browser.SetUpXulRunner();
+			GeckoFxBrowser.SetUpXulRunner();
 		}
 
 		[OneTimeTearDown]

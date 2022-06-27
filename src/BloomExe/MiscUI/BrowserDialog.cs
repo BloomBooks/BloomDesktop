@@ -31,7 +31,7 @@ namespace Bloom.MiscUI
 
 	public partial class BrowserDialog : Form, IBrowserDialog
 	{
-		private Browser _browser;
+		private GeckoFxBrowser _browser;
 		private Boolean _hidden;
 
 		// This applies only to cases where the dialog is created but not shown (hidden is true)
@@ -127,11 +127,11 @@ namespace Bloom.MiscUI
 
 			// The Size setting is needed on Linux to keep the browser from coming up as a small
 			// rectangle in the upper left corner...
-			_browser = new Browser { Dock = DockStyle.Fill, Location = new Point(3, 3), Size = new Size(this.Width - 6, this.Height - 6) };
+			_browser = new GeckoFxBrowser { Dock = DockStyle.Fill, Location = new Point(3, 3), Size = new Size(this.Width - 6, this.Height - 6) };
 			_browser.BackColor = Color.White;
 
 			var dummy = _browser.Handle; // gets the WebBrowser created
-			_browser.WebBrowser.DocumentCompleted += (sender, args) =>
+			_browser.DocumentCompleted += (sender, args) =>
 			{
 				if (!hidden)
 				{

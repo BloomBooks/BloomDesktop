@@ -20,7 +20,7 @@ namespace Bloom.MiscUI
 		{
 			// Display the fonts in sorted order.
 			var fontNames = new List<string>();
-			fontNames.AddRange(Browser.NamesOfFontsThatBrowserCanRender());
+			fontNames.AddRange(GeckoFxBrowser.NamesOfFontsThatBrowserCanRender());
 			fontNames.Sort();
 			var defaultFont = WritingSystem.GetDefaultFontName();
 			foreach (var font in fontNames)

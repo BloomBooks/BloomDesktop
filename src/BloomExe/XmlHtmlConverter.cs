@@ -52,13 +52,13 @@ namespace Bloom
 			// fix for > and similar in <style> element protected by CDATA.
 			// At present we only need to account for this occurring once.
 			// See Browser.SaveCustomizedCssRules.
-			var startOfCdata = content.IndexOf(Browser.CdataPrefix, StringComparison.InvariantCulture);
+			var startOfCdata = content.IndexOf(GeckoFxBrowser.CdataPrefix, StringComparison.InvariantCulture);
 			const string restoreCdataHere = "/****RestoreCDATAHere*****/";
-			var endOfCdata = content.IndexOf(Browser.CdataSuffix, StringComparison.InvariantCulture);
+			var endOfCdata = content.IndexOf(GeckoFxBrowser.CdataSuffix, StringComparison.InvariantCulture);
 			var savedCdata = "";
 			if (startOfCdata >= 0 && endOfCdata >= startOfCdata)
 			{
-				endOfCdata += Browser.CdataSuffix.Length;
+				endOfCdata += GeckoFxBrowser.CdataSuffix.Length;
 				savedCdata = content.Substring(startOfCdata, endOfCdata - startOfCdata);
 				content = content.Substring(0, startOfCdata) + restoreCdataHere + content.Substring(endOfCdata, content.Length - endOfCdata);
 			}

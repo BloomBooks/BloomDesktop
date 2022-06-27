@@ -10,24 +10,25 @@ namespace Bloom.Publish
 	/// </summary>
 	public partial class HtmlPublishPanel : UserControl
 	{
-		private Browser _browser;
+		private IBrowser _browser;
 
 		public HtmlPublishPanel(string pathToHtmlFile)
 		{
 			InitializeComponent();
 
-			_browser = new Browser();
-			_browser.Dock = DockStyle.Fill;
-			Controls.Add(_browser);
+			_browser = BrowserMaker.MakeBrowser();
+			var browserControl = (UserControl)_browser;
+			browserControl.Dock = DockStyle.Fill;
+			Controls.Add(browserControl);
 			// Has to be in front of the panel docked top for Fill to work.
-			_browser.BringToFront();
+			browserControl.BringToFront();
 			_browser.Navigate(pathToHtmlFile.ToLocalhost() + GetUrlParams(), false);
-			_browser.OnBrowserClick += Browser.HandleExternalLinkClick;
+			_browser.OnBrowserClick += GeckoFxBrowser.HandleExternalLinkClick;
 
 			VisibleChanged += OnVisibleChanged;
 		}
 
-		public Browser Browser => _browser;
+		public IBrowser Browser => _browser;
 
 		private string GetUrlParams()
 		{
@@ -45,7 +46,7 @@ namespace Bloom.Publish
 		private void Deactivate()
 		{
 			// This is important so the react stuff can do its cleanup
-			_browser.WebBrowser.Navigate("about:blank");
+			_browser.Navigate("about:blank",false);
 		}
 
 	}

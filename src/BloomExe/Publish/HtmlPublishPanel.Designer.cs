@@ -1,4 +1,6 @@
-﻿namespace Bloom.Publish
+﻿using System.Windows.Forms;
+
+namespace Bloom.Publish
 {
 	partial class HtmlPublishPanel
 	{
@@ -23,7 +25,7 @@
 					components.Dispose();
 				if (_browser != null)
 				{
-					_browser.Dispose();
+					((UserControl)_browser).Dispose();
 					_browser = null;
 				}
 			}

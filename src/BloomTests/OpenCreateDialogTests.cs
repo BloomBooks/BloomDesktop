@@ -14,7 +14,7 @@ namespace BloomTests.ToPalaso
 		[Test, Ignore("By hand only")]
 		public void LaunchDemoDialog()
 		{
-			Browser.SetUpXulRunner();
+			GeckoFxBrowser.SetUpXulRunner();
 			var mru = new MostRecentPathsList();
 			foreach (var dir in Directory.GetDirectories(NewCollectionWizard.DefaultParentDirectoryForCollections))
 			{

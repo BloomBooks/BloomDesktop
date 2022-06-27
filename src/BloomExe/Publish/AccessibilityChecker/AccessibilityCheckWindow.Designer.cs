@@ -20,7 +20,7 @@
 			this.components = new System.ComponentModel.Container();
 			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(AccessibilityCheckWindow));
 			this._L10NSharpExtender = new L10NSharp.UI.L10NSharpExtender(this.components);
-			this._browser = new Bloom.Browser();
+			this._browser = new Bloom.GeckoFxBrowser();
 			((System.ComponentModel.ISupportInitialize)(this._L10NSharpExtender)).BeginInit();
 			this.SuspendLayout();
 			// 
@@ -64,7 +64,7 @@
 
 		#endregion
 
-		private Browser _browser;
+		private GeckoFxBrowser _browser;
 		private L10NSharp.UI.L10NSharpExtender _L10NSharpExtender;
 	}
 }

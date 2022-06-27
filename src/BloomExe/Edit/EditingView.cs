@@ -90,7 +90,7 @@ namespace Bloom.Edit
 			copyrightAndLicenseApi.View = this;
 			_browser1.SetEditingCommands(cutCommand, copyCommand, pasteCommand, undoCommand);
 
-			_browser1.GeckoReady += new EventHandler(OnGeckoReady);
+			_browser1.BrowserReady += new EventHandler(OnBrowserReady);
 
 			_browser1.ControlKeyEvent = controlKeyEvent;
 
@@ -377,7 +377,7 @@ namespace Bloom.Edit
 			_pendingMessageHandler = null;
 		}
 
-		private void OnGeckoReady(object sender, EventArgs e)
+		private void OnBrowserReady(object sender, EventArgs e)
 		{
 #if TooExpensive
 			_browser1.WebBrowser.DomFocus += new EventHandler<GeckoDomEventArgs>(OnBrowserFocusChanged);
@@ -1943,6 +1943,6 @@ namespace Bloom.Edit
 		}
 
 		// intended for use only by the EditingModel
-		internal Browser Browser => _browser1;
+		internal GeckoFxBrowser Browser => _browser1;
 	}
 }

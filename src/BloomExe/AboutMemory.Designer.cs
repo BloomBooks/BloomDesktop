@@ -28,7 +28,7 @@
 		/// </summary>
 		private void InitializeComponent()
 		{
-			this._browser1 = new Bloom.Browser();
+			this._browser1 = new Bloom.GeckoFxBrowser();
 			this._linkLabel1 = new System.Windows.Forms.LinkLabel();
 			this._linkLabel2 = new System.Windows.Forms.LinkLabel();
 			this.SuspendLayout();
@@ -91,7 +91,7 @@
 
 		#endregion
 
-		private Browser _browser1;
+		private GeckoFxBrowser _browser1;
 		private System.Windows.Forms.LinkLabel _linkLabel1;
 		private System.Windows.Forms.LinkLabel _linkLabel2;
 	}
