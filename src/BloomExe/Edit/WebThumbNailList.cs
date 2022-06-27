@@ -33,7 +33,7 @@ namespace Bloom.Edit
 	{
 		public HtmlThumbNailer Thumbnailer;
 		public event EventHandler PageSelectedChanged;
-		private Bloom.Browser _browser;
+		private Bloom.GeckoFxBrowser _browser;
 		internal EditingModel Model;
 		private static string _thumbnailInterval;
 		private string _baseForRelativePaths;
@@ -78,7 +78,7 @@ namespace Bloom.Edit
 
 			if (!ReallyDesignMode)
 			{
-				_browser = new Browser();
+				_browser = new GeckoFxBrowser();
 				_browser.BackColor = Color.DarkGray;
 				_browser.Dock = DockStyle.Fill;
 				_browser.Location = new Point(0, 0);
@@ -277,7 +277,7 @@ namespace Bloom.Edit
 				OptimizeForLinux(pageListDom);
 
 			pageListDom = Model.CurrentBook.GetHtmlDomReadyToAddPages(pageListDom);
-			_browser.WebBrowser.DocumentCompleted += WebBrowser_DocumentCompleted;
+			_browser.DocumentCompleted += WebBrowser_DocumentCompleted;
 
 			_baseForRelativePaths = pageListDom.BaseForRelativePaths;
 			_browser.Navigate(pageListDom, source:BloomServer.SimulatedPageFileSource.Pagelist);
@@ -293,10 +293,10 @@ namespace Bloom.Edit
 			pageListDom.RawDom.GetElementsByTagName("head")[0].AppendChild(style);
 		}
 
-		void WebBrowser_DocumentCompleted(object sender, Gecko.Events.GeckoDocumentCompletedEventArgs e)
+		void WebBrowser_DocumentCompleted(object sender, EventArgs e)
 		{
 			SelectPage(PageListApi?.SelectedPage);
-			_browser.WebBrowser.DocumentCompleted -= WebBrowser_DocumentCompleted;	// need to do this only once
+			_browser.DocumentCompleted -= WebBrowser_DocumentCompleted;	// need to do this only once
 		}
 
 		internal void PageClicked(IPage page)

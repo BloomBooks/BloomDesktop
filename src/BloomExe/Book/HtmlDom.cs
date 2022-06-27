@@ -1343,7 +1343,7 @@ namespace Bloom.Book
 			Guard.AgainstNull(existingUserStyleNode, "existingUserStyleNode");
 
 			if (insertedPageUserStyleNode == null || insertedPageUserStyleNode.InnerXml == String.Empty)
-				return Browser.WrapUserStyleInCdata(existingUserStyleNode.InnerText);
+				return GeckoFxBrowser.WrapUserStyleInCdata(existingUserStyleNode.InnerText);
 
 			var existingStyleKeyDict = GetUserStyleKeyDict(existingUserStyleNode);
 			var existingStyleNames = new HashSet<string>();
@@ -1358,7 +1358,7 @@ namespace Bloom.Book
 					continue;
 				existingStyleKeyDict.Add(keyPair);
 			}
-			return Browser.WrapUserStyleInCdata(GetCompleteFilteredUserStylesInnerText(existingStyleKeyDict));
+			return GeckoFxBrowser.WrapUserStyleInCdata(GetCompleteFilteredUserStylesInnerText(existingStyleKeyDict));
 		}
 
 		private static string GetCompleteFilteredUserStylesInnerText(IDictionary<string, string> desiredKeys )

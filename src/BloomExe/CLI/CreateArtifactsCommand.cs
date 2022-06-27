@@ -79,7 +79,7 @@ namespace Bloom.CLI
 				using (var applicationContainer = new ApplicationContainer())
 				{
 					Program.SetUpLocalization(applicationContainer);
-					Browser.SetUpXulRunner();
+					GeckoFxBrowser.SetUpXulRunner();
 					LocalizationManager.SetUILanguage(Settings.Default.UserInterfaceLanguage, false);   // Unclear if this line is needed or not.
 					if (DesktopAnalytics.Analytics.AllowTracking)
 					{

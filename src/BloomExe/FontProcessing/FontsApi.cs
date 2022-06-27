@@ -34,7 +34,7 @@ namespace Bloom.FontProcessing
 
 		public static IEnumerable<string> SortedListOfFontNames()
 		{
-			var list = new List<string>(Browser.NamesOfFontsThatBrowserCanRender());
+			var list = new List<string>(GeckoFxBrowser.NamesOfFontsThatBrowserCanRender());
 			list.Sort();
 			return list;
 		}

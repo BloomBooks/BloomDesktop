@@ -31,7 +31,7 @@ namespace Bloom.Publish.Video
 	/// </summary>
 	public partial class RecordVideoWindow : Form
 	{
-		private Browser _content;
+		private GeckoFxBrowser _content;
 		private Process _ffmpegProcess;
 		private bool _ffmpegExited;
 		private StringBuilder _errorData;
@@ -72,7 +72,7 @@ namespace Bloom.Publish.Video
 		{
 			InitializeComponent();
 			_webSocketServer = webSocketServer;
-			_content = new Browser();
+			_content = new GeckoFxBrowser();
 			_content.Dock = DockStyle.Fill;
 			_content.AutoScaleMode = AutoScaleMode.None;
 			Controls.Add(_content);

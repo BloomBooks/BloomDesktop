@@ -1255,7 +1255,7 @@ namespace Bloom.Edit
 		/// This is needed only on Linux to allow hooking up an OnBrowserClick used to work around a Mono bug.
 		/// See https://issues.bloomlibrary.org/youtrack/issue/BL-6753.
 		/// </remarks>
-		internal Browser GetEditingBrowser()
+		internal GeckoFxBrowser GetEditingBrowser()
 		{
 			return _view.Browser;
 		}
