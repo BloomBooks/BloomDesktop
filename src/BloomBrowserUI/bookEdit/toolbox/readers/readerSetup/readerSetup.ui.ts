@@ -27,7 +27,7 @@ function process_UI_Message(event: MessageEvent): void {
     const params: string[] = event.data.split("\n");
 
     switch (params[0]) {
-        case "Files":
+        case "Files": {
             let s: string = params[1];
             if (s.length > 0) {
                 const files: string[] = s.split("\r");
@@ -76,15 +76,17 @@ function process_UI_Message(event: MessageEvent): void {
                 document.getElementById("dls_word_lists")
             )).innerHTML = fileList.replace(/\r/g, "<br>");
             return;
+        }
 
-        case "UpdateWordsDisplay":
+        case "UpdateWordsDisplay": {
             const useSampleWords =
                 $('input[name="words-or-letters"]:checked').val() === "1";
             if (useSampleWords) displayAllowedWordsForSelectedStage(params[1]);
             else displayWordsForSelectedStage(params[1]);
             return;
+        }
 
-        case "ConfigureActiveTab":
+        case "ConfigureActiveTab": {
             //noinspection JSJQueryEfficiency
             const tabs: JQuery = $("#dlstabs");
             if (params[1] === "stages") {
@@ -107,15 +109,17 @@ function process_UI_Message(event: MessageEvent): void {
             });
 
             return;
+        }
 
-        case "Font":
+        case "Font": {
             const style: HTMLStyleElement = document.createElement("style");
             style.type = "text/css";
             style.innerHTML = ".book-font { font-family: " + params[1] + "; }";
             document.getElementsByTagName("head")[0].appendChild(style);
             return;
+        }
 
-        case "Help":
+        case "Help": {
             let helpFile: string = "";
             //noinspection JSJQueryEfficiency
             switch ($("#dlstabs").tabs("option", "active")) {
@@ -143,6 +147,7 @@ function process_UI_Message(event: MessageEvent): void {
             }
             if (helpFile) BloomApi.post("help/" + helpFile);
             return;
+        }
 
         default:
     }
@@ -690,7 +695,8 @@ function tabBeforeActivate(ui): void {
  */
 function handleThingsToRemember(jqueryEvent: JQueryEventObject): void {
     switch (jqueryEvent.which) {
-        case 13: // carriage return - add new li
+        case 13: {
+            // carriage return - add new li
             const x = $('<li contenteditable="true"></li>').insertAfter(
                 jqueryEvent.target
             );
@@ -698,18 +704,24 @@ function handleThingsToRemember(jqueryEvent: JQueryEventObject): void {
             addForcePlainTextPasteHandler(x[0]);
             x.focus();
             break;
+        }
 
-        case 38: // up arrow
+        case 38: {
+            // up arrow
             const prev = $(jqueryEvent.target).prev();
             if (prev.length) prev.focus();
             break;
+        }
 
-        case 40: // down arrow
+        case 40: {
+            // down arrow
             const next = $(jqueryEvent.target).next();
             if (next.length) next.focus();
             break;
+        }
 
-        case 8: // backspace
+        case 8: {
+            // backspace
             const thisItem = $(jqueryEvent.target);
 
             // if the item is not blank, return
@@ -724,6 +736,7 @@ function handleThingsToRemember(jqueryEvent: JQueryEventObject): void {
             thisItem.remove();
             otherItem.focus();
             break;
+        }
 
         default:
     }

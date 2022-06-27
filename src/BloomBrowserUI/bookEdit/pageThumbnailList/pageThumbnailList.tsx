@@ -112,11 +112,12 @@ const PageList: React.FunctionComponent<{ pageSize: string }> = props => {
                 case "selecting":
                     setSelectedPageId(event.message);
                     break;
-                case "pageNeedsRefresh":
+                case "pageNeedsRefresh": {
                     const problemPageId = event.message;
                     const callback = pageIdToRefreshMap.get(problemPageId);
                     if (callback) callback();
                     break;
+                }
                 case "pageListNeedsRefresh":
                     // pass function so we're not incrementing a stale value captured
                     // when we set up this function. Bumping this number triggers

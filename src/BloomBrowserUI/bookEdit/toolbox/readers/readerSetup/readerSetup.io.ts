@@ -120,10 +120,7 @@ function process_IO_Message(event: MessageEvent): void {
 
         case "Data":
             loadReaderSetupData(params[1]);
-            const win = toolboxWindow();
-            if (win) {
-                win.postMessage("SetupType", "*");
-            }
+            toolboxWindow()?.postMessage("SetupType", "*");
             return;
 
         default:

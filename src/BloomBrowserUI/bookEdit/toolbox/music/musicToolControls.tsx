@@ -290,7 +290,7 @@ export class MusicToolControls extends React.Component<{}, IMusicState> {
                 this.setState({ musicName: "" });
                 this.pausePlaying(); // pauses player and sets playing state to false
                 break;
-            case "continueMusic":
+            case "continueMusic": {
                 const bloomPage = ToolboxToolReactAdaptor.getBloomPage();
                 if (bloomPage) {
                     bloomPage.removeAttribute(MusicToolControls.musicAttrName);
@@ -298,6 +298,7 @@ export class MusicToolControls extends React.Component<{}, IMusicState> {
                 this.setState({ musicName: "" });
                 // In any case don't change the state of playing/not playing
                 break;
+            }
             // choosing the third button doesn't change anything, until you actually choose a file.
         }
     }

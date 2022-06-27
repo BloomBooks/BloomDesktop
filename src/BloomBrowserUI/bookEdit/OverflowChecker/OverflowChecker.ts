@@ -265,9 +265,9 @@ export default class OverflowChecker {
         //          then backspace to remove the newly added line. It still indicates overflow (because it was was scrolled down, I guess).
         //          However, if you press the up arrow long enough until you get it to scroll back up, it will reset to Not Overflowing.
         //          Reloading the page will also clear it.
-        let [overflowX, overflowY] = OverflowChecker.getSelfOverflowAmounts(
-            box
-        );
+        const overflowAmounts = OverflowChecker.getSelfOverflowAmounts(box);
+        const overflowX = overflowAmounts[0];
+        let overflowY = overflowAmounts[1];
         if (BubbleManager.growOverflowingBox(box, overflowY)) {
             overflowY = 0;
         }

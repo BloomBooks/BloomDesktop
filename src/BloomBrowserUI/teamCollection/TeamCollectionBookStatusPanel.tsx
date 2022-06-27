@@ -382,7 +382,7 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<IBookTeamCol
                         }
                     />
                 );
-            case "unlocked":
+            case "unlocked": {
                 const checkoutHandler = () => {
                     setBusy(true);
                     BloomApi.post(
@@ -421,7 +421,8 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<IBookTeamCol
                         menu={menu}
                     />
                 );
-            case "lockedByMe":
+            }
+            case "lockedByMe": {
                 const checkinHandler = () => {
                     setBusy(true);
                     setCheckinProgress(0.0001); // just enough to show the bar at once
@@ -536,6 +537,7 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<IBookTeamCol
                         )}
                     </StatusPanelCommon>
                 );
+            }
             case "lockedByMeElsewhere":
                 return (
                     <StatusPanelCommon
