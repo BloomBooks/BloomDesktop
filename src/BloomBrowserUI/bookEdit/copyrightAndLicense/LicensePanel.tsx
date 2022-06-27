@@ -67,8 +67,10 @@ export const LicensePanel: React.FunctionComponent<{
             case LicenseType.Custom:
                 return false;
             default:
-                const creativeCommonsInfo = originalLicense.creativeCommonsInfo;
-                return creativeCommonsInfo.allowDerivatives !== "no";
+                return (
+                    originalLicense.creativeCommonsInfo.allowDerivatives !==
+                    "no"
+                );
         }
     }
 

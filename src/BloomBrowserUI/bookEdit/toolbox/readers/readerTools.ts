@@ -62,7 +62,8 @@ function processDLRMessage(event: MessageEvent): void {
             }
             return;
 
-        case "Words": // request from setup dialog for a list of words for a stage
+        case "Words": {
+            // request from setup dialog for a list of words for a stage
             let words: any;
             if (getTheOneReaderToolsModel().synphony.source.useAllowedWords) {
                 //reviewslog
@@ -94,6 +95,7 @@ function processDLRMessage(event: MessageEvent): void {
                 );
             }
             return;
+        }
 
         case "SetupType":
             if (setupDialogWindow) {

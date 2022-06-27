@@ -1077,7 +1077,7 @@ export class ReaderToolsModel {
                 this.displayBookTotals();
                 break;
 
-            case MarkupType.Decodable:
+            case MarkupType.Decodable: {
                 if (!this.synphony || editableElements.length == 0) return;
 
                 // get current stage and all previous stages
@@ -1109,6 +1109,7 @@ export class ReaderToolsModel {
                 });
 
                 break;
+            }
 
             default:
         }
