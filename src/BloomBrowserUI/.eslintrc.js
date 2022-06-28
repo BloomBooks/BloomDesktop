@@ -41,7 +41,7 @@ module.exports = {
         "react/prop-types": "off", // review
         "react/no-children-prop": "off",
         "@typescript-eslint/ban-types": "off",
-        "@typescript-eslint/no-empty-interface": "off",
+        "@typescript-eslint/no-empty-interface": "warn",
         "no-case-declarations": "warn",
         "@typescript-eslint/no-var-requires": "off",
         "@typescript-eslint/triple-slash-reference": "off",

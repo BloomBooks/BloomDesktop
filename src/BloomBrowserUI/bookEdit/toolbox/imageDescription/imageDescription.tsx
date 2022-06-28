@@ -18,7 +18,7 @@ interface IImageDescriptionState {
     descriptionNotNeeded: boolean;
     isXmatterPage: boolean;
 }
-interface IProps {}
+
 // This react class implements the UI for image description toolbox.
 // (The ImageDescriptionAdapter class below implements the interface required for interaction with
 // the toolbox.)
@@ -27,7 +27,7 @@ interface IProps {}
 // The toolbox is included in the list of tools because of the one line of immediately-executed code
 // which passes an instance of ImageDescriptionTool to ToolBox.registerTool().
 export class ImageDescriptionToolControls extends React.Component<
-    IProps,
+    {},
     IImageDescriptionState
 > {
     public readonly state: IImageDescriptionState = {
