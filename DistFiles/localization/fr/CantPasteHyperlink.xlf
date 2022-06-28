@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xliff xmlns:html="http://www.w3.org/TR/html" xmlns:sil="http://sil.org/software/XLiff" xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
+  <file original="CantPasteHyperlink-en.htm" datatype="html" source-language="en" target-language="fr">
+    <body>
+      <trans-unit id="hyperlink.title" approved="yes">
+        <source xml:lang="en">Can't Paste Hyperlink</source>
+        <target xml:lang="fr" state="final">Impossible de Coller l'Hyperlien</target>
+        <note>ID: hyperlink.title</note>
+      </trans-unit>
+      <trans-unit id="EditTab.HyperlinkPasteFailure" approved="yes">
+        <source xml:lang="en">Bloom was not able to make a link. Try selecting only simple text.</source>
+        <target xml:lang="fr" state="final">Bloom n'a pas pu créer un lien. Essayez de ne sélectionner que du texte simple.</target>
+        <note>ID: EditTab.HyperlinkPasteFailure</note>
+      </trans-unit>
+      <trans-unit id="hyperlink.2" approved="yes">
+        <source xml:lang="en">In this context, "simple" text means text that is selected from within a single paragraph and is not associated with multiple audio recordings or split audio segments. Also certain selections involving formatted text can be a problem if the whole word is not selected.</source>
+        <target xml:lang="fr" state="final">Dans ce contexte, « simple » signifie du texte sélectionné dans un seul paragraphe et qui n'est pas associé à plusieurs enregistrements audio ou à des segments audio fractionnés. De même, certaines sélections de texte formaté peuvent poser problème si le mot entier n'est pas sélectionné.</target>
+        <note>ID: hyperlink.2</note>
+      </trans-unit>
+    </body>
+  </file>
+</xliff>
