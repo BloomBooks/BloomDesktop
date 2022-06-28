@@ -403,9 +403,10 @@ export class LocalizedString extends LocalizableElement<
     }
 }
 
-export interface ILabelProps extends ILocalizationProps {}
-
-export class Label extends LocalizableElement<ILabelProps, ILocalizationState> {
+export class Label extends LocalizableElement<
+    ILocalizationProps,
+    ILocalizationState
+> {
     public render() {
         return (
             <label
