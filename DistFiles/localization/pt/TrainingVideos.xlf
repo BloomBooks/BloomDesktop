@@ -31,11 +31,11 @@
         <target xml:lang="pt-PT" state="final"><g id="genid-2" ctype="x-html-a" html:href="https://vimeo.com/114043219">Bloom: Para quem é</g></target>
         <note>ID: training.videos.whofor</note>
       </trans-unit>
-      <trans-unit id="training.videos.templates">
+      <trans-unit id="training.videos.templates" approved="yes">
         <source xml:lang="en">
           <g id="genid-3" ctype="x-html-a" html:href="https://vimeo.com/114024308">Understanding Templates and Shell Books</g>
         </source>
-        <target xml:lang="pt-PT" state="translated"><g id="genid-3" ctype="x-html-a" html:href="https://vimeo.com/114024308">Entendendo os Modelos e os Livros Pré-desenhados</g></target>
+        <target xml:lang="pt-PT" state="final"><g id="genid-3" ctype="x-html-a" html:href="https://vimeo.com/114024308">Entendendo os Modelos e os Livros Pré-desenhados</g></target>
         <note>ID: training.videos.templates</note>
       </trans-unit>
       <trans-unit id="training.videos.basicbook" approved="yes">
@@ -95,9 +95,9 @@
         <target xml:lang="pt-PT" state="final">Se você quiser baixar qualquer um desses vídeos para mostrar e compartilhar quando não há conexão de Internet, você pode baixar os vídeos em seu computador:</target>
         <note>ID: training.videos.download</note>
       </trans-unit>
-      <trans-unit id="training.videos.download.2">
+      <trans-unit id="training.videos.download.2" approved="yes">
         <source xml:lang="en">Under the video that you want to download, there should be a Download button.</source>
-        <target xml:lang="pt-PT" state="needs-translation">Under the video that you want to download, there should be a Download button.</target>
+        <target xml:lang="pt-PT" state="final">Sob o vídeo que você deseja baixar, deve haver um botão de download.</target>
         <note>ID: training.videos.download.2</note>
       </trans-unit>
       <trans-unit id="training.videos.hires" approved="yes">
