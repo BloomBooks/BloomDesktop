@@ -7,9 +7,9 @@
         <target xml:lang="pt-PT" state="final">Vocabulário</target>
         <note>ID: leveled.reader.vocabulary</note>
       </trans-unit>
-      <trans-unit id="leveled.reader.start.simple">
+      <trans-unit id="leveled.reader.start.simple" approved="yes">
         <source xml:lang="en">At beginning levels, use simple words that are familiar to children. If it is possible in your language, use words with only one syllable. As children move up to higher levels, you can begin to use words with more syllables. You can begin to use less familiar words. Children should be able to guess the meaning of these less familiar words from the context of the surrounding words and sentences, as well as from the illustrations.</source>
-        <target xml:lang="pt-PT" state="translated">Nos níveis iniciais, use palavras simples que as crianças conheçam. Se possível em seu idioma, use palavras monossilábicas. À medida que as crianças progridem para níveis mais altos, as palavras com mais sílabas podem ser usadas. E você pode começar a usar palavras menos conhecidas. As crianças devem poder adivinhar os significados dessas palavras pelo contexto das palavras e orações nas proximidades, e pelas ilustrações.</target>
+        <target xml:lang="pt-PT" state="final">Nos níveis iniciais, use palavras simples que as crianças conheçam. Se possível em seu idioma, use palavras monossilábicas. À medida que as crianças progridem para níveis mais altos, as palavras com mais sílabas podem ser usadas. E você pode começar a usar palavras menos conhecidas. As crianças devem poder adivinhar os significados dessas palavras pelo contexto das palavras e orações nas proximidades, e pelas ilustrações.</target>
         <note>ID: leveled.reader.start.simple</note>
       </trans-unit>
       <trans-unit id="leveled.reader.formatting" approved="yes">
@@ -22,9 +22,9 @@
         <target xml:lang="pt-PT" state="final">Novos leitores se beneficiarão com o uso de fontes maiores e espaços maiores entre palavras. Também é recomendado colocar palavras ou frases no mesmo local em cada página. À medida que os leitores avançam, fontes e espaços entre palavras podem diminuir e as frases podem ser colocadas em diferentes lugares.</target>
         <note>ID: leveled.reader.start.large</note>
       </trans-unit>
-      <trans-unit id="leveled.reader.increase.sizes">
+      <trans-unit id="leveled.reader.increase.sizes" approved="yes">
         <source xml:lang="en">To increase the font size, line-spacing, and word-spacing in Bloom, click in a text box and then on the grey "cog" icon in the lower left-hand corner. If you do this and then make a template book, books made with that template will also use those font settings.</source>
-        <target xml:lang="pt-PT" state="translated">Para aumentar o tamanho da fonte, espaçamento e espaço entre as palavras, clique em uma caixa de texto e, em seguida, no ícone "engrenagem" cinza no canto inferior esquerdo. Se você fizer um livro de modelos, os livros feitos com esse modelo também usarão essas configurações.</target>
+        <target xml:lang="pt-PT" state="final">Para aumentar o tamanho da fonte, espaçamento e espaço entre as palavras, clique em uma caixa de texto e, em seguida, no ícone "engrenagem" cinza no canto inferior esquerdo. Se você fizer um livro de modelos, os livros feitos com esse modelo também usarão essas configurações.</target>
         <note>ID: leveled.reader.increase.sizes</note>
       </trans-unit>
       <trans-unit id="leveled.reader.predictability" approved="yes">
@@ -32,34 +32,34 @@
         <target xml:lang="pt-PT" state="final">Previsibilidade</target>
         <note>ID: leveled.reader.predictability</note>
       </trans-unit>
-      <trans-unit id="leveled.reader.repeat.patterns">
+      <trans-unit id="leveled.reader.repeat.patterns" approved="yes">
         <source xml:lang="en"><g id="genid-1" ctype="x-html-em">Predictability</g> in a text means that the reader can guess what would come next. You can increase predictability by using repeated patterns. Here are some patterns you can use:</source>
-        <target xml:lang="pt-PT" state="translated"><g id="genid-1" ctype="x-html-em">Previsibilidade</g> em um texto significa que um leitor pode adivinhar o que viria a seguir. O uso de padrões repetidos pode aumentar a previsibilidade. Aqui estão alguns padrões que você pode usar:</target>
+        <target xml:lang="pt-PT" state="final"><g id="genid-1" ctype="x-html-em">Previsibilidade</g> em um texto significa que um leitor pode adivinhar o que viria a seguir. O uso de padrões repetidos pode aumentar a previsibilidade. Aqui estão alguns padrões que você pode usar:</target>
         <note>ID: leveled.reader.repeat.patterns</note>
       </trans-unit>
-      <trans-unit id="leveled.reader.repetition">
+      <trans-unit id="leveled.reader.repetition" approved="yes">
         <source xml:lang="en">Repetition - repeating parts of the text, for example, using the same sentence with each page and just changing one word in the sentence</source>
-        <target xml:lang="pt-PT" state="translated">Repita - repetindo partes do texto. Por exemplo, use a mesma frase em cada página e simplesmente mude uma palavra na frase</target>
+        <target xml:lang="pt-PT" state="final">Repita - repetindo partes do texto. Por exemplo, use a mesma frase em cada página e simplesmente mude uma palavra na frase</target>
         <note>ID: leveled.reader.repetition</note>
       </trans-unit>
-      <trans-unit id="leveled.reader.sequencing">
+      <trans-unit id="leveled.reader.sequencing" approved="yes">
         <source xml:lang="en">Sequencing - a story with a known sequence such as the days of the week or that uses numbers in a pattern</source>
-        <target xml:lang="pt-PT" state="translated">Seqüenciamento - uma história com uma seqüência conhecida como dias da semana ou usando números em um padrão</target>
+        <target xml:lang="pt-PT" state="final">Seqüenciamento - uma história com uma seqüência conhecida como dias da semana ou usando números em um padrão</target>
         <note>ID: leveled.reader.sequencing</note>
       </trans-unit>
-      <trans-unit id="leveled.reader.building.sequence">
+      <trans-unit id="leveled.reader.building.sequence" approved="yes">
         <source xml:lang="en">Building Sequence - a story with a pattern that is repeated and added to with each new page</source>
-        <target xml:lang="pt-PT" state="translated">Seqüência crescente - uma história com um padrão de repetição e a qual é adicionado em cada nova página</target>
+        <target xml:lang="pt-PT" state="final">Seqüência crescente - uma história com um padrão de repetição e a qual é adicionado em cada nova página</target>
         <note>ID: leveled.reader.building.sequence</note>
       </trans-unit>
-      <trans-unit id="leveled.reader.rhyme">
+      <trans-unit id="leveled.reader.rhyme" approved="yes">
         <source xml:lang="en">Rhyme - a story with a pattern or sequence that also includes rhyme. For example:
         <g id="genid-2" ctype="x-html-blockquote" html:class="poetry"><g id="genid-3" ctype="x-html-pre">Brown Bear, Brown Bear, What do you see?
 I see a red bird looking at me.
 Red Bird, Red Bird, What do you see?
 I see a yellow duck looking at me.
 Yellow Duck, Yellow Duck, What do you see?</g><g id="genid-4" ctype="x-html-div" html:class="author">- Bill Martin, Jr. and Eric Carle</g></g></source>
-        <target xml:lang="pt-PT" state="translated">Rima - Uma história com um padrão ou sequência que também inclui rima. Por exemplo:
+        <target xml:lang="pt-PT" state="final">Rima - Uma história com um padrão ou sequência que também inclui rima. Por exemplo:
         <g id="genid-2" ctype="x-html-blockquote" html:class="poesia">
           <g id="genid-3" ctype="x-html-pre">Toda criança no mundo
 Deve ser bem protegida
@@ -95,9 +95,9 @@ Contra os rigores da vida.
         <target xml:lang="pt-PT" state="final">Para os <g id="genid-8" ctype="x-html-strong">Leitores fluidos</g> as ilustrações devem oferecer pouco ou nenhum apoio ao enredo. O entendimento do leitor depende mais do texto do que as ilustrações. As ilustrações podem ser ainda mais complexas.</target>
         <note>ID: leveled.reader.fluent.reader</note>
       </trans-unit>
-      <trans-unit id="leveled.reader.topic.choice">
+      <trans-unit id="leveled.reader.topic.choice" approved="yes">
         <source xml:lang="en">Choice of Topic</source>
-        <target xml:lang="pt-PT" state="translated">Escolha do tema</target>
+        <target xml:lang="pt-PT" state="final">Escolha do tema</target>
         <note>ID: leveled.reader.topic.choice</note>
       </trans-unit>
       <trans-unit id="leveled.reader.topic.choice.discussion" approved="yes">
