@@ -69,9 +69,9 @@ Há duas maneiras pelas quais as pessoas podem usar seu modelo. O primeiro camin
         <target xml:lang="pt-PT" state="translated">Compartilhar seu modelo</target>
         <note>ID: template.starter.share</note>
       </trans-unit>
-      <trans-unit id="template.starter.share.publish">
+      <trans-unit id="template.starter.share.publish" approved="yes">
         <source xml:lang="en">Remember that Bloom is about planting seeds, about sharing. So plan to share your template on the BloomLibrary for people around the world to find. This takes just a few clicks in the Publish Tab.</source>
-        <target xml:lang="pt-PT" state="translated">Lembre-se de que Bloom é sobre plantar sementes e compartilhá-las. Portanto, planeje compartilhar seu modelo na Bloom Library para que as pessoas em todo o mundo possam encontrá-los. Isso requer apenas alguns cliques na guia "Publicar".</target>
+        <target xml:lang="pt-PT" state="final">Lembre-se de que Bloom é sobre plantar sementes e compartilhá-las. Portanto, planeie compartilhar seu modelo na Biblioteca Bloom para que as pessoas em todo o mundo possam encontrá-los. Isso requer apenas alguns cliques na guia "Publicar".</target>
         <note>ID: template.starter.share.publish</note>
       </trans-unit>
       <trans-unit id="template.starter.share.bloompack" approved="yes">

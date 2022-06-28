@@ -2,12 +2,6 @@
 <xliff xmlns:sil="http://sil.org/software/XLiff" xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
   <file original="BloomLowPriority.exe" source-language="en" datatype="plaintext" product-version="3.1.000.0" sil:hard-linebreak-replacement="\n" target-language="quc">
     <body>
-      <trans-unit id="BackCover.NewBrandingNotice">
-        <source xml:lang="en">A future update of Bloom will contain the branding assets for this project, “{0}”.  Thank you for your patience.</source>
-        <note>ID: BackCover.NewBrandingNotice</note>
-        <note>The {0} is replaced at runtime with the name of the new branding project.</note>
-        <target xml:lang="quc" state="needs-translation">A future update of Bloom will contain the branding assets for this project, “{0}”.  Thank you for your patience.</target>
-      </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.ESpeakPreview.ConversionFileUsed" approved="yes">
         <source xml:lang="en">Conversion file used:</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.ESpeakPreview.ConversionFileUsed</note>
@@ -36,6 +30,11 @@
         <source xml:lang="en">It looks like you are trying to open a Bloom Collection from inside of a ZIP file. You need to first unzip the ZIP file, and then open the collection.</source>
         <note>ID: OpenCreateCloneControl.InZipFileMessage</note>
         <target xml:lang="quc" state="needs-translation">It looks like you are trying to open a Bloom Collection from inside of a ZIP file. You need to first unzip the ZIP file, and then open the collection.</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.RecordVideo.NoAudioInVideo">
+        <source xml:lang="en">Currently, Bloom does not support including audio from Sign Language videos in video output.</source>
+        <note>ID: PublishTab.RecordVideo.NoAudioInVideo</note>
+        <target xml:lang="quc" state="needs-translation">Currently, Bloom does not support including audio from Sign Language videos in video output.</target>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.CheckEmailFailed">
         <source xml:lang="en">Bloom needs to verify your email, but our attempt to resend the request failed, possibly because you made too many requests too close together. Please check your email, and if you can't find the message, try again later.</source>
