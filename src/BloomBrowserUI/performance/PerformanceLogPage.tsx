@@ -6,7 +6,7 @@ import "./PerformanceLogPage.less";
 import { ScatterPlot } from "@nivo/scatterplot";
 import ReactDOM = require("react-dom");
 import { Button } from "@material-ui/core";
-const filesize = require("filesize");
+import * as filesize from "filesize";
 
 interface IMeasurement {
     action?: string;

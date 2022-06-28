@@ -14,9 +14,10 @@ import { default as InfoIcon } from "@material-ui/icons/InfoOutlined";
 import HtmlHelpLink from "../../react_components/htmlHelpLink";
 import { kMutedTextGray } from "../../bloomMaterialUITheme";
 
-const wifiImage = require("./publish-via-wifi.svg");
-const usbImage = require("./publish-via-usb.svg");
-const fileImage = require("./publish-to-file.svg");
+// Needs require. import ... from ... syntax compiles, but doesn't load the image.
+import wifiImage = require("./publish-via-wifi.svg");
+import usbImage = require("./publish-via-usb.svg");
+import fileImage = require("./publish-to-file.svg");
 
 const methodNameToImageUrl = {
     wifi: wifiImage,

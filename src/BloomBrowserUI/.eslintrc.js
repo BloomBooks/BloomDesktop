@@ -43,7 +43,7 @@ module.exports = {
         "@typescript-eslint/ban-types": "off",
         "@typescript-eslint/no-empty-interface": "warn",
         "no-case-declarations": "warn",
-        "@typescript-eslint/no-var-requires": "off",
+        "@typescript-eslint/no-var-requires": "warn",
         "@typescript-eslint/triple-slash-reference": "off",
         "prefer-rest-params": "warn",
         "prefer-spread": "warn",
