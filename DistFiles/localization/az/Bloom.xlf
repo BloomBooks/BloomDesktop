@@ -1421,7 +1421,7 @@
         <target xml:lang="az" state="translated">Müəllif Hüquqları İli</target>
       </trans-unit>
       <trans-unit id="Copyright.FollowSILGuidelines" sil:dynamic="true">
-        <source xml:lang="en">Before publishing as SIL, ensure that you follow [SIL corporate guidelines].</source>
+        <source xml:lang="en">SIL has corporate guidelines around what kinds of materials may be copyrighted by SIL. Please check [this page] in order to ensure that this book qualifies.</source>
         <note>ID: Copyright.FollowSILGuidelines</note>
         <note>The text inside the [square brackets] will become a link to a website.</note>
         <target xml:lang="az" state="translated">SIL kimi dərc etməzdən əvvəl [SIL korporativ göstərişlərinə] əməl etdiyinizə əmin olun.</target>
@@ -1437,9 +1437,9 @@
         <target xml:lang="az" state="translated">Bu tərcümə yaxud yeni versiyası deyil</target>
       </trans-unit>
       <trans-unit id="Copyright.PublishingAsSIL" sil:dynamic="true">
-        <source xml:lang="en">Publishing as SIL</source>
+        <source xml:lang="en">Using "SIL" in a Copyright</source>
         <note>ID: Copyright.PublishingAsSIL</note>
-        <target xml:lang="az" state="needs-translation">Publishing as SIL</target>
+        <target xml:lang="az" state="needs-translation">Using "SIL" in a Copyright</target>
       </trans-unit>
       <trans-unit id="Copyright.UseOriginalCopyright" sil:dynamic="true">
         <source xml:lang="en">Continue to use the same copyright and license as the original book:</source>
@@ -4672,6 +4672,18 @@
         <note>ID: PublishTab.bloomPUBButton-tooltip</note>
         <target xml:lang="az" state="needs-translation">Make a BloomPUB for Bloom Reader or Reading App Builder.</target>
       </trans-unit>
+      <trans-unit id="PublishTab.BloomPUB.BannerDescription">
+        <source xml:lang="en">BloomPUBs are a kind of eBook that can be read on phone apps ([Bloom Reader](https://bloomlibrary.org/page/create/bloom-reader) and [Reading App Builder](https://software.sil.org/readingappbuilder/)) and on Windows using [BloomPUB Viewer](https://bloomlibrary.org/page/create/downloads#related-software). They offer many advantages over ePUBs, including WYSIWYG fidelity and the full range of Bloom digital book features.</source>
+        <note>ID: PublishTab.BloomPUB.BannerDescription</note>
+        <note>Task description at the top of the BloomPUB Publishing page</note>
+        <target xml:lang="az" state="needs-translation">BloomPUBs are a kind of eBook that can be read on phone apps ([Bloom Reader](https://bloomlibrary.org/page/create/bloom-reader) and [Reading App Builder](https://software.sil.org/readingappbuilder/)) and on Windows using [BloomPUB Viewer](https://bloomlibrary.org/page/create/downloads#related-software). They offer many advantages over ePUBs, including WYSIWYG fidelity and the full range of Bloom digital book features.</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.BloomPUB.BannerTitle">
+        <source xml:lang="en">Publish as BloomPUB</source>
+        <note>ID: PublishTab.BloomPUB.BannerTitle</note>
+        <note>Header on BloomPUB Publishing page</note>
+        <target xml:lang="az" state="needs-translation">Publish as BloomPUB</target>
+      </trans-unit>
       <trans-unit id="PublishTab.BodyOnlyRadio-tooltip" sil:dynamic="true">
         <source xml:lang="en">Make a booklet from the inside pages of the book.\nPages will be laid out and reordered so that when you fold it, you'll have a booklet.\n</source>
         <note>ID: PublishTab.BodyOnlyRadio-tooltip</note>
@@ -4750,6 +4762,18 @@
         <note>ID: PublishTab.Epub.Accessibility</note>
         <note>Here, the English 'Accessibility' is a common way of refering to technologies that are usable by people with disabilities. With computers, this usually means people with visual impairments. It includes botht he blind and people who might need text to be larger, or who are colorblind, etc.</note>
         <target xml:lang="az" state="needs-translation">Accessibility</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Epub.BannerDescription">
+        <source xml:lang="en">Make an electronic book that can be read in EPUB readers on all devices.</source>
+        <note>ID: PublishTab.Epub.BannerDescription</note>
+        <note>Task description at the top of the ePUB Publishing page</note>
+        <target xml:lang="az" state="needs-translation">Make an electronic book that can be read in EPUB readers on all devices.</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Epub.BannerTitle">
+        <source xml:lang="en">Publish as ePUB</source>
+        <note>ID: PublishTab.Epub.BannerTitle</note>
+        <note>Header on ePUB Publishing page</note>
+        <target xml:lang="az" state="needs-translation">Publish as ePUB</target>
       </trans-unit>
       <trans-unit id="PublishTab.Epub.BuildingEPub">
         <source xml:lang="en">Building ePUB</source>
@@ -5148,6 +5172,18 @@
         <note>ID: PublishTab.RecordVideo.AudioFile</note>
         <note>displayed as file type for Save File dialog</note>
         <target xml:lang="az" state="needs-translation">Audio File</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.RecordVideo.BannerDescription">
+        <source xml:lang="en">Create video files that you can upload to sites like Facebook and YouTube. You can also make videos to share with people who use inexpensive “feature phones” and even audio-only files for listening.</source>
+        <note>ID: PublishTab.RecordVideo.BannerDescription</note>
+        <note>Task description at the top of the Audio or Video Publishing page</note>
+        <target xml:lang="az" state="needs-translation">Create video files that you can upload to sites like Facebook and YouTube. You can also make videos to share with people who use inexpensive “feature phones” and even audio-only files for listening.</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.RecordVideo.BannerTitle">
+        <source xml:lang="en">Publish as Audio or Video</source>
+        <note>ID: PublishTab.RecordVideo.BannerTitle</note>
+        <note>Header on Audio or Video Publishing page</note>
+        <target xml:lang="az" state="needs-translation">Publish as Audio or Video</target>
       </trans-unit>
       <trans-unit id="PublishTab.RecordVideo.ChangeScale100">
         <source xml:lang="en">Please change your display scaling to 100% while making videos. Without this, videos will come out at the wrong resolution, or not record at all.</source>
