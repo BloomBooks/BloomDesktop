@@ -22,7 +22,6 @@ export class ArrowKeyWorkaroundManager {
     private debug: boolean = false;
 
     private direction: "up" | "down";
-    public constructor() {}
 
     // Checks a keyboard event to see if we want to modify the behavior.
     // If so, calls moveAnchor() and stops the event's default behavior.

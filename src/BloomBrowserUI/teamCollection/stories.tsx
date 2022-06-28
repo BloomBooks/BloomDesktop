@@ -322,7 +322,7 @@ const menuItems: (SimpleMenuItem | "-")[] = [
     {
         text: "About my Avatar...",
         l10nKey: "TeamCollection.AboutAvatar",
-        action: () => {}
+        action: () => undefined
     }
 ];
 const menuBoxStyles: React.CSSProperties = {
@@ -349,7 +349,7 @@ storiesOf("Team Collection components/Menu component", module).add(
 );
 
 storiesOf("BloomDialog", module).add("Test drag & resize", () => (
-    <BloomDialog onClose={() => {}} open={true}>
+    <BloomDialog onClose={() => undefined} open={true}>
         <DialogTitle title="Drag Me" />
         <DialogMiddle>
             <p>Blah</p>
@@ -364,7 +364,7 @@ storiesOf("BloomDialog", module).add("Test drag & resize", () => (
             <p>Blah</p>
         </DialogMiddle>
         <DialogBottomButtons>
-            <DialogCancelButton onClick={() => {}} />
+            <DialogCancelButton onClick={() => undefined} />
         </DialogBottomButtons>
     </BloomDialog>
 ));

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-empty-function */
 import { lightTheme } from "../bloomMaterialUITheme";
 import * as React from "react";
 import { ThemeProvider } from "@material-ui/styles";
@@ -49,7 +50,6 @@ storiesOf("Publish/ProgressDialog", module)
                 heading={"Working hard..."}
                 instruction={"Just sit there and watch it spin."}
                 onUserClosed={() => {}}
-                onUserCanceled={() => {}}
                 onUserStopped={() => {}}
             />
         </div>
@@ -60,7 +60,6 @@ storiesOf("Publish/ProgressDialog", module)
                 progressState={ProgressState.Done}
                 messages={testText}
                 onUserClosed={() => {}}
-                onUserCanceled={() => {}}
                 onUserStopped={() => {}}
             />
         </div>
@@ -73,7 +72,6 @@ storiesOf("Publish/ProgressDialog", module)
                 messages={testText}
                 heading={"Sky is falling"}
                 onUserClosed={() => {}}
-                onUserCanceled={() => {}}
                 onUserStopped={() => {}}
             />
         </div>

@@ -60,7 +60,6 @@ export const WhatsThisBlock: React.FunctionComponent<{
                 variant="text"
                 enabled={true}
                 l10nKey="Common.WhatsThis"
-                onClick={() => {}}
                 css={css`
                     position: absolute !important;
                     right: 0;

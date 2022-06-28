@@ -124,7 +124,6 @@ export const PublishProgressDialog: React.FunctionComponent<{
             messages={accumulatedMessages}
             progressState={props.progressState}
             onUserStopped={() => props.onUserStopped && props.onUserStopped()}
-            onUserCanceled={() => {}}
             onUserClosed={() => {
                 setAccumulatedMessages("");
                 setErrorEncountered(false);

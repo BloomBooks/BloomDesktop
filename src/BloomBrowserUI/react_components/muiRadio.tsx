@@ -11,7 +11,7 @@ export const MuiRadio: React.FunctionComponent<ILocalizationProps & {
     label: string;
     value?: string;
     disabled?: boolean;
-    onChanged: (v: boolean | undefined) => void;
+    onChanged?: (v: boolean | undefined) => void;
 }> = props => {
     const localizedLabel = useL10n(
         props.label,
@@ -40,7 +40,9 @@ export const MuiRadio: React.FunctionComponent<ILocalizationProps & {
                         value={props.value}
                         disabled={props.disabled}
                         onChange={(e, newState) => {
-                            props.onChanged(newState);
+                            if (props.onChanged) {
+                                props.onChanged(newState);
+                            }
                         }}
                         color="primary"
                     />

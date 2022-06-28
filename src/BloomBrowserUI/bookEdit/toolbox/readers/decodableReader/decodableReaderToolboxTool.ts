@@ -173,7 +173,7 @@ export class DecodableReaderToolboxTool implements ITool {
     }
     public async updateMarkupAsync() {
         throw "not implemented...use updateMarkup";
-        return () => {};
+        return () => undefined;
     }
 
     public isUpdateMarkupAsync(): boolean {

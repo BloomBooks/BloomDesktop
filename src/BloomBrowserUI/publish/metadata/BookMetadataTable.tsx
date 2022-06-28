@@ -29,7 +29,6 @@ export default class BookMetadataTable extends React.Component<IProps> {
     constructor(props) {
         super(props);
     }
-    public componentDidMount() {}
     public render() {
         return (
             <div>

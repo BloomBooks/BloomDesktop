@@ -106,11 +106,7 @@ export const ForceUnlockDialog: React.FunctionComponent<{
                         onClick={() => {
                             props.close();
                             // Do nothing here on either success or failure. (C# code will have already reported failure).
-                            BloomApi.post(
-                                "teamCollection/forceUnlock",
-                                () => {},
-                                () => {}
-                            );
+                            BloomApi.post("teamCollection/forceUnlock");
                         }}
                         hasText={true}
                     >

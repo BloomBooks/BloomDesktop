@@ -34,7 +34,9 @@ export class LeveledReaderToolboxTool implements ITool {
         });
     }
 
-    public configureElements(container: HTMLElement) {}
+    public configureElements(container: HTMLElement) {
+        // Implements ITool interface, but no work needs to be done.
+    }
     public isAlwaysEnabled(): boolean {
         return false;
     }
@@ -71,7 +73,7 @@ export class LeveledReaderToolboxTool implements ITool {
     }
     public async updateMarkupAsync() {
         throw "not implemented...use updateMarkup";
-        return () => {};
+        return () => undefined;
     }
 
     public isUpdateMarkupAsync(): boolean {

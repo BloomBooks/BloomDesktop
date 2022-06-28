@@ -410,7 +410,7 @@ export class BloomApi {
                         "Content-Type": "text/plain"
                     }
                 })
-                .then(successCallback ? successCallback : () => {})
+                .then(successCallback)
         );
     }
 
@@ -442,7 +442,7 @@ export class BloomApi {
         BloomApi.wrapAxios(
             axios
                 .post(getBloomApiPrefix() + urlSuffix)
-                .then(successCallback ? successCallback : () => {}) // do nothing on success if no callback
+                .then(successCallback) // (no-ops if successCallback is undefined)
                 .catch(
                     failureCallback
                         ? failureCallback
@@ -483,7 +483,7 @@ export class BloomApi {
         return BloomApi.wrapAxios(
             axios
                 .post(getBloomApiPrefix() + urlSuffix, data)
-                .then(successCallback ? successCallback : () => {})
+                .then(successCallback)
                 .catch(r => {
                     if (errorCallback) {
                         errorCallback(r);

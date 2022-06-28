@@ -33,6 +33,8 @@ export default abstract class ToolboxToolReactAdaptor
         result.resolve();
         return result;
     }
+    // We need these to implement the interface, but don't need them to do anything.
+    /* eslint-disable @typescript-eslint/no-empty-function */
     public showTool() {}
     public hideTool() {}
     public updateMarkup() {}
@@ -47,6 +49,7 @@ export default abstract class ToolboxToolReactAdaptor
     public detachFromPage() {}
     public configureElements(container: HTMLElement) {}
     public finishToolLocalization(pane: HTMLElement) {}
+    /* eslint-enable @typescript-eslint/no-empty-function */
 
     public static getPageFrame(): HTMLIFrameElement {
         return parent.window.document.getElementById(
