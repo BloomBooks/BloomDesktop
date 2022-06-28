@@ -2560,16 +2560,19 @@ export default class AudioRecording {
         if (editables.length === 0) {
             // no editable text on this page.
             this.changeStateAndSetExpectedAsync("");
-            return () => {};
+            return () => {
+                // No updates needed because no editables
+            };
         }
 
         // First, see if we should update the Current Highlight to the element with the active focus instead.
         await this.moveCurrentTextboxIfNeededAsync();
         const currentTextBox = this.getCurrentTextBox();
         if (!currentTextBox) {
-            // This could be reached if you create a new page with the talking book tool open.
-            // It's fine. Don't bother doing anything.
-            return () => {};
+            return () => {
+                // This could be reached if you create a new page with the talking book tool open.
+                // It's fine. Don't bother doing anything.
+            };
         }
 
         // Now we can carry on with changing the HTML markup with the audio-sentence classes, ids, etc.
@@ -2649,10 +2652,11 @@ export default class AudioRecording {
                 playbackMode
             );
         } else {
-            // Just keep the code from changing the splits.
-            // No notification right now, which I think in many cases would be fine
-            // But if you want to add some notification UI, it can go here.
-            return () => {};
+            return () => {
+                // Just keep the code from changing the splits.
+                // No notification right now, which I think in many cases would be fine
+                // But if you want to add some notification UI, it can go here.
+            };
         }
     }
 
@@ -4048,6 +4052,7 @@ export default class AudioRecording {
 
     public processAutoSegmentResponse(
         result: AxiosResponse<any>,
+        // eslint-disable-next-line @typescript-eslint/no-empty-function
         doneCallback = () => {}
     ): void {
         const isSuccess = result && result.data;

@@ -71,9 +71,7 @@ export const ForgetChangesDialog: React.FunctionComponent<{
                             props.close();
                             // Do nothing here on either success or failure. (C# code will have already reported failure).
                             BloomApi.post(
-                                "teamCollection/forgetChangesInSelectedBook",
-                                () => {},
-                                () => {}
+                                "teamCollection/forgetChangesInSelectedBook"
                             );
                         }}
                         hasText={true}

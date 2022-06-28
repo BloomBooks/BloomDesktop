@@ -29,7 +29,7 @@ export const ProgressDialogInner: React.FunctionComponent<{
     errorEncountered?: boolean; // do something visual to indicate there was a problem
     onUserClosed: () => void;
     onUserStopped: () => void;
-    onUserCanceled: () => void;
+    // onUserCanceled: () => void;  // Not implemented yet
 }> = props => {
     const messagesDivRef = React.useRef<HTMLDivElement>(null);
     const messageEndRef = React.useRef<HTMLDivElement>(null);

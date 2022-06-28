@@ -58,9 +58,8 @@ export class BookSettings implements ITool {
         return false;
     }
     // We need these to implement the interface, but don't need them to do anything.
-    /* tslint:disable:no-empty */ public configureElements(
-        container: HTMLElement
-    ) {}
+    /* eslint-disable @typescript-eslint/no-empty-function */
+    public configureElements(container: HTMLElement) {}
     public showTool() {}
     public hideTool() {}
     public updateMarkup() {}
@@ -73,5 +72,5 @@ export class BookSettings implements ITool {
     public newPageReady() {}
     public detachFromPage() {}
     public finishToolLocalization(pane: HTMLElement) {}
-    /* tslint:enable:no-empty */
+    /* eslint-enable @typescript-eslint/no-empty-function */
 }

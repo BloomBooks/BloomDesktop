@@ -112,7 +112,9 @@ const FontInformationPane: React.FunctionComponent<{
                 startIcon={<CloseIcon htmlColor="white" />}
                 size="small"
                 // Clicking anywhere on the pane works, but w/o the button the user might not know this.
-                onClick={() => {}}
+                onClick={() => {
+                    // Do nothing
+                }}
                 css={css`
                     order: 1; // put icon in upper right corner
                     padding: 2px !important;

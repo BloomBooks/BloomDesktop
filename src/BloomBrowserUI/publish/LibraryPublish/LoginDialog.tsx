@@ -140,7 +140,7 @@ export const LoginDialog: React.FunctionComponent<{}> = props => {
                 //Sentry.captureException(error); // probably won't happen, nothing seems to bring us here
                 console.error("!!!!!!!!!!! signInFailure");
                 alert("signInFailure");
-                return new Promise((r, x) => {});
+                return;
             },
             // The API supports these, but I haven't found them to do anything.
             // Terms of service url.

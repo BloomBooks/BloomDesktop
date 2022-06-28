@@ -211,14 +211,10 @@ const PageList: React.FunctionComponent<{ pageSize: string }> = props => {
                 const pageElt = e.currentTarget.closest("[id]")!;
                 const pageId = pageElt.getAttribute("id");
                 const caption = pageElt.getAttribute("data-caption");
-                BloomApi.postJson(
-                    "pageList/pageClicked",
-                    {
-                        pageId,
-                        detail: caption
-                    },
-                    () => {}
-                );
+                BloomApi.postJson("pageList/pageClicked", {
+                    pageId,
+                    detail: caption
+                });
             }
         }
     };
@@ -407,21 +403,16 @@ function onDragStop(
         // the page clicked. (Note however that this seems to get fired on any click,
         // even just closing a popup menu, so it's possible that we might get more
         // click events than we really want.)
-        BloomApi.postJson(
-            "pageList/pageClicked",
-            { pageId: movedPageId, detail: "unknown" },
-            () => {}
-        );
+        BloomApi.postJson("pageList/pageClicked", {
+            pageId: movedPageId,
+            detail: "unknown"
+        });
         return;
     }
     // Needs more smarts if we ever do other than two columns.
     const newIndex = newItem.y * 2 + newItem.x;
 
-    BloomApi.postJson(
-        "pageList/pageMoved",
-        { movedPageId, newIndex },
-        () => {}
-    );
+    BloomApi.postJson("pageList/pageMoved", { movedPageId, newIndex });
 }
 
 function ContinueAutomatedPageClicking(

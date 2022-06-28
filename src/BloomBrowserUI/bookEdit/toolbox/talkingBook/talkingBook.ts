@@ -21,7 +21,9 @@ export default class TalkingBookTool implements ITool {
         return false;
     }
 
-    public configureElements(container: HTMLElement) {}
+    public configureElements(container: HTMLElement) {
+        // Implements ITool interface, but we don't need to do anything
+    }
 
     // When are showTool, newPageReady, and updateMarkup called?
     // Some scenarios:

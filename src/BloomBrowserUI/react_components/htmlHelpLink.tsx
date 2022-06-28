@@ -25,7 +25,11 @@ export default class HtmlHelpLink extends LocalizableElement<
             // the correct behavior.
             <Link
                 target="_blank"
-                onClick={() => BloomApi.getString(this.target, dummy => {})}
+                onClick={() =>
+                    BloomApi.getString(this.target, dummy => {
+                        // Do nothing
+                    })
+                }
             >
                 {this.getLocalizedContent()}
             </Link>

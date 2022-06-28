@@ -34,7 +34,7 @@ module.exports = {
         ],
         // turned these on when first using eslint. TODO: Review these
         "@typescript-eslint/no-explicit-any": "off",
-        "@typescript-eslint/no-empty-function": "off",
+        "@typescript-eslint/no-empty-function": "warn",
         "@typescript-eslint/no-inferrable-types": "off",
         "@typescript-eslint/no-unused-vars": "off",
         "react/no-unescaped-entities": "off", // review

@@ -78,13 +78,11 @@ export const DialogFolderChooserWithApi: React.FunctionComponent<{
                 variant="text"
                 onClick={() =>
                     BloomApi.post(
-                        props.apiCommandToChooseAndSetFolder,
+                        props.apiCommandToChooseAndSetFolder
                         // nothing to do either on success or failure, including possible timeout,
                         // or the user canceling. This is because the "result" comes back to browser-land
                         // via a websocket that sets the new result. This approach is needed because otherwise
                         // the browser would time out while waiting for the user to finish using the system folder-choosing dialog.
-                        () => {},
-                        () => {}
                     )
                 }
             >

@@ -187,7 +187,9 @@ export const LicensePanel: React.FunctionComponent<{
                             checked={
                                 licenseType === LicenseType.CreativeCommons
                             }
-                            onCheckChanged={() => {}}
+                            onCheckChanged={() => {
+                                // No handler needed because the checkbox is disabled.
+                            }}
                         />
                         <MuiCheckbox
                             label={`use the ${getBookOrImage()} in a commercial way`}
@@ -351,8 +353,7 @@ const Radio: React.FunctionComponent<{
         <MuiRadio
             label={props.label}
             l10nKey={props.l10nKey}
-            onChanged={() => {}}
             value={props.value}
-        ></MuiRadio>
+        />
     );
 };

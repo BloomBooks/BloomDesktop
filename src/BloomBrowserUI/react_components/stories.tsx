@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-empty-function */
 /** @jsxFrag React.Fragment */
 /** @jsx jsx **/
 import { jsx, css } from "@emotion/core";
@@ -291,7 +292,6 @@ storiesOf("Localizable Widgets/MuiRadio", module).add("MuiRadio", () =>
                     "Bacon ipsum dolor amet ribeye spare ribs bresaola t-bone. Strip steak turkey shankle pig ground round, biltong t-bone kevin alcatra flank ribeye beef ribs meatloaf filet mignon. Buffalo ham t-bone short ribs. Sausage alcatra tail, sirloin andouille pork belly corned beef shoulder meatloaf venison rump frankfurter bresaola chicken. Ball tip strip steak burgdoggen spare ribs picanha, turducken filet mignon ham hock short loin porchetta rump andouille t-bone boudin."
                 }
                 l10nKey={""}
-                onChanged={() => {}}
             />
             <hr />
             original mui radio:
@@ -309,7 +309,7 @@ storiesOf("Localizable Widgets/MuiRadio", module).add("MuiRadio", () =>
                     display: flex;
                 `}
             >
-                <MuiRadio label={"short"} l10nKey={""} onChanged={() => {}} />
+                <MuiRadio label={"short"} l10nKey={""} />
                 <FormControlLabel control={<Radio />} label={"short"} />
             </div>
         </MuiRadioGroup>

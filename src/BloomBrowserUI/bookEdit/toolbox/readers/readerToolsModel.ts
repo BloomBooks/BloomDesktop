@@ -90,7 +90,9 @@ export class ReaderToolsModel {
     /**
      * @summary Performs synchronous initialization. Call initAsync() after constructor to do the asynchronous initialization
      */
-    public constructor() {}
+    public constructor() {
+        // Nothing needed here anymore, everything happens in initAsync now.
+    }
 
     // Should be called after the constructor.
     // Performs any initialization that should happen in the constructor, but is asynchronous.
