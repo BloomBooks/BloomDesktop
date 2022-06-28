@@ -298,9 +298,21 @@ namespace Bloom.web.controllers
 		{
 			try
 			{
+				var initialPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+				var destFolder = Utils.MiscUtils.GetOutputFolderOutsideCollectionFolder(initialPath, "", true);
+				if (String.IsNullOrEmpty(destFolder))
+					return;
+
 				MessageBox.Show(LocalizationManager.GetString("CollectionTab.BookMenu.ExportDocMessage",
 					"Bloom will now open this HTML document in your word processing program (normally Word or LibreOffice). You will be able to work with the text and images of this book. These programs normally don't do well with preserving the layout, so don't expect much."));
-				var destPath = book.GetPathHtmlFile().Replace(".htm", ".doc"); 
+
+				// It's too dangerous to use the output path they gave us, since we're going to wipe out any existing
+				// content of the directory we pass to ExportDocFormat. If they give us a parent folder by mistake, that
+				// could be something huge, like "my documents". So assume it IS a parent folder, and make one within it.
+				var bookHtmlPath = book.GetPathHtmlFile();
+				var outputFolderPath = Path.Combine(destFolder, Path.GetFileName(Path.GetDirectoryName(bookHtmlPath)));
+				var destPath = Path.Combine(outputFolderPath, Path.GetFileName(bookHtmlPath).Replace(".htm", ".doc"));
+
 				_collectionModel.ExportDocFormat(destPath);
 				PathUtilities.OpenFileInApplication(destPath);
 				Analytics.Track("Exported To Doc format");

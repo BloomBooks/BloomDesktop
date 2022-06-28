@@ -10,6 +10,7 @@ using System.Xml;
 using Bloom.Api;
 using Bloom.Book;
 using Bloom.Collection;
+using Bloom.MiscUI;
 using Bloom.Properties;
 using Bloom.TeamCollection;
 using Bloom.ToPalaso;
@@ -22,8 +23,8 @@ using SIL.IO;
 using SIL.Progress;
 using SIL.Reporting;
 using SIL.Windows.Forms;
-using SIL.Xml;
 using SIL.Windows.Forms.FileSystem;
+using SIL.Xml;
 
 namespace Bloom.CollectionTab
 {
@@ -483,13 +484,56 @@ namespace Bloom.CollectionTab
 		/// should open the file, and the program (whether Microsoft Word or LibreOffice
 		/// or OpenOffice) seems to handle HTML content just fine.
 		/// </remarks>
-		public void ExportDocFormat(string path)
+		public void ExportDocFormat(string destDocPath)
 		{
-			var sourcePath = _bookSelection.CurrentSelection.GetPathHtmlFile();
-			if (RobustFile.Exists(path))
+			var outputFolder = Path.GetDirectoryName(destDocPath);
+			if (Directory.Exists(outputFolder))
 			{
-				RobustFile.Delete(path);
+				// Clean out everything from the destination folder unless it appears to be a bloom
+				// book folder (which shouldn't happen).
+				var appearsToBeBloomBookFolder = Directory.EnumerateFiles(outputFolder, "*.htm").Any();
+				if (appearsToBeBloomBookFolder)
+				{
+					var msgTemplate = LocalizationManager.GetString("Spreadsheet.OverwriteBook",
+							"The folder named {0} already exists and looks like it might be a Bloom book folder!");
+					var msg = string.Format(msgTemplate, outputFolder);
+					var messageBoxButtons = new[]
+					{
+						new MessageBoxButton() { Text = "Cancel", Id = "cancel", Default = true }
+					};
+					var formToInvokeOn = Application.OpenForms.Cast<Form>().FirstOrDefault(f => f is Shell);
+					formToInvokeOn.Invoke((Action)(() =>
+					{
+						BloomMessageBox.Show(formToInvokeOn, msg, messageBoxButtons, MessageBoxIcon.Warning);
+					}));
+					return;
+				}
+				if (Directory.EnumerateFileSystemEntries(outputFolder).Any())
+				{
+					var msgTemplate = LocalizationManager.GetString("Spreadsheet.Overwrite",
+						"You are about to replace the existing folder named {0}");
+					var msg = string.Format(msgTemplate, outputFolder);
+					var messageBoxButtons = new[]
+					{
+						new MessageBoxButton() { Text = "Overwrite", Id = "overwrite" },
+						new MessageBoxButton() { Text = "Cancel", Id = "cancel", Default = true }
+					};
+					string result = null;
+					var formToInvokeOn = Application.OpenForms.Cast<Form>().FirstOrDefault(f => f is Shell);
+					formToInvokeOn.Invoke((Action)(() =>
+					{
+						result = BloomMessageBox.Show(formToInvokeOn, msg, messageBoxButtons,
+							MessageBoxIcon.Warning);
+					}));
+					if (result != "overwrite")
+						return;
+				}
+				// In case there's a previous export, get rid of it.
+				SIL.IO.RobustIO.DeleteDirectoryAndContents(outputFolder);
 			}
+			Directory.CreateDirectory(outputFolder);
+
+			var sourcePath = _bookSelection.CurrentSelection.GetPathHtmlFile();
 			// Linux (Trusty) LibreOffice requires slightly different metadata at the beginning
 			// of the file in order to recognize it as HTML.  Otherwise it opens the file as raw
 			// HTML (See https://silbloom.myjetbrains.com/youtrack/issue/BL-2276 if you don't
@@ -500,7 +544,20 @@ namespace Bloom.CollectionTab
 			var fixedContent = content.Replace("<meta charset=\"UTF-8\">",
 				"<meta http-equiv=\"content-type\" content=\"text/html; charset=utf-8\">");
 			var xmlDoc = RepairWordVisibility(fixedContent);
-			XmlHtmlConverter.SaveDOMAsHtml5(xmlDoc, path); // writes file and returns path
+			XmlHtmlConverter.SaveDOMAsHtml5(xmlDoc, destDocPath); // writes file and returns path
+			// We need to copy the CSS and image files from the book's folder to the destination folder.
+			// We don't need other files from there for this export. (audio, video, etc)
+			var sourceFolder = Path.GetDirectoryName(sourcePath);
+			foreach (var sourceFilePath in Directory.EnumerateFiles(sourceFolder, "*.*"))
+			{
+				var filename = Path.GetFileName(sourceFilePath);
+				var extension = Path.GetExtension(filename).ToLowerInvariant();
+				if (BookCompressor.ImageFileExtensions.Contains(extension) || extension == ".svg" || extension == ".css")
+				{
+					var destFilePath = Path.Combine(outputFolder, filename);
+					RobustFile.Copy(sourceFilePath, destFilePath, true);
+				}
+			}
 		}
 
 		// BL-5998 Apparently Word doesn't read our CSS rules for bloom-visibility correctly.
