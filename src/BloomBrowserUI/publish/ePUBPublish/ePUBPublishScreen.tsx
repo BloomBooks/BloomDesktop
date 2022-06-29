@@ -4,12 +4,11 @@ import { jsx, css } from "@emotion/core";
 import * as React from "react";
 import { useState, useContext } from "react";
 import {
-    BasePublishScreen,
     PreviewPanel,
     PublishPanel,
     SettingsPanel
-} from "../commonPublish/BasePublishScreen";
-import "./ePUBPublish.less";
+} from "../commonPublish/PublishScreenBaseComponents";
+import PublishScreenTemplate from "../commonPublish/PublishScreenTemplate";
 import { DeviceAndControls } from "../commonPublish/DeviceAndControls";
 import * as ReactDOM from "react-dom";
 import ThemeProvider from "@material-ui/styles/ThemeProvider";
@@ -86,28 +85,53 @@ const EPUBPublishScreenInternal: React.FunctionComponent<{
         "publish/licenseOK"
     );
 
-    return (
-        <React.Fragment>
-            <BasePublishScreen className="ePUBPublishScreen">
-                <PreviewPanel>
-                    <DeviceAndControls
-                        defaultLandscape={false}
-                        canRotate={false}
-                        url={bookUrl}
-                    />
-                    <Typography className="readium-credit">
-                        <PWithLink
-                            l10nKey="PublishTab.Epub.ReadiumCredit"
-                            href="https://readium.org/"
-                        >
-                            This ePUB preview is provided by [Readium]. This
-                            book may render differently in various ePUB readers.
-                        </PWithLink>
-                    </Typography>
-                </PreviewPanel>
-                <PublishPanel>
+    const mainPanel = (
+        <div className="ePUBPublishScreen">
+            <PreviewPanel>
+                <DeviceAndControls
+                    defaultLandscape={false}
+                    canRotate={false}
+                    url={bookUrl}
+                />
+                <Typography
+                    css={css`
+                        color: whitesmoke;
+                        width: 200px;
+                        margin-top: auto !important; // The two "!important"s here are to override
+                        margin-bottom: 20px !important; // MUI Typography's default margins.
+                    `}
+                >
+                    <PWithLink
+                        css={css`
+                            a {
+                                display: inline;
+                            }
+                            a:link,
+                            a:visited {
+                                color: whitesmoke;
+                                text-decoration: underline;
+                            }
+                        `}
+                        l10nKey="PublishTab.Epub.ReadiumCredit"
+                        href="https://readium.org/"
+                    >
+                        This ePUB preview is provided by [Readium]. This book
+                        may render differently in various ePUB readers.
+                    </PWithLink>
+                </Typography>
+            </PreviewPanel>
+            <PublishPanel>
+                <div
+                    css={css`
+                        margin-top: 30px;
+                        margin-left: 176px;
+                    `}
+                >
                     <BloomButton
-                        className="save-button"
+                        css={css`
+                            // without this, it grows to the width of the column
+                            align-self: flex-start;
+                        `}
                         enabled={isLicenseOK}
                         clickApiEndpoint={"publish/epub/save"}
                         hasText={true}
@@ -115,19 +139,35 @@ const EPUBPublishScreenInternal: React.FunctionComponent<{
                     >
                         Save...
                     </BloomButton>
-                </PublishPanel>
-                <SettingsPanel>
-                    <EPUBSettingsGroup />
-                    {/* push everything below this to the bottom */}
-                    <div
-                        css={css`
-                            margin-top: auto;
-                        `}
-                    />
-                    <EPUBHelpGroup />
-                </SettingsPanel>
-            </BasePublishScreen>
+                </div>
+            </PublishPanel>
+        </div>
+    );
 
+    const optionsPanel = (
+        <SettingsPanel>
+            <EPUBSettingsGroup />
+            {/* push everything below this to the bottom */}
+            <div
+                css={css`
+                    margin-top: auto;
+                `}
+            />
+            <EPUBHelpGroup />
+        </SettingsPanel>
+    );
+
+    return (
+        <React.Fragment>
+            <PublishScreenTemplate
+                bannerTitleEnglish="Publish as ePUB"
+                bannerTitleL10nId="PublishTab.Epub.BannerTitle"
+                bannerDescriptionMarkdown="Make an electronic book that can be read in EPUB readers on all devices."
+                bannerDescriptionL10nId="PublishTab.Epub.BannerDescription"
+                optionsPanelContents={optionsPanel}
+            >
+                {mainPanel}
+            </PublishScreenTemplate>
             <PublishProgressDialog
                 heading={useL10n("Creating ePUB", "PublishTab.Epub.Creating")}
                 webSocketClientContext="publish-epub"

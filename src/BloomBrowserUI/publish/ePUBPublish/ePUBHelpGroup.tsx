@@ -1,4 +1,4 @@
-import { HelpGroup } from "../commonPublish/BasePublishScreen";
+import { HelpGroup } from "../commonPublish/PublishScreenBaseComponents";
 import HelpLink from "../../react_components/helpLink";
 import React = require("react");
 

@@ -23,6 +23,9 @@ import {
     UploadCollisionDlg
 } from "./LibraryPublish/uploadCollisionDlg";
 import { PublishAudioVideo } from "./video/PublishAudioVideo";
+import PublishScreenTemplate from "./commonPublish/PublishScreenTemplate";
+import PublishScreenBanner from "./commonPublish/PublishScreenBanner";
+import { Button, Typography } from "@material-ui/core";
 
 addDecorator(withA11y as any);
 
@@ -110,9 +113,55 @@ storiesOf("Publish/DeviceFrame", module)
         </DeviceAndControls>
     ));
 
+const someButton = (
+    <Button variant="contained" color="primary">
+        Some random controls
+    </Button>
+);
+
+const optionHeader = (
+    <div>
+        <Typography variant="h6">Options Panel here:</Typography>
+        <p>{loremIpsum({ count: 5 })}</p>
+    </div>
+);
+
+const testMainPanelContents = (
+    <div>
+        <Typography variant="h2">Main Panel Contents here:</Typography>
+        <p>{loremIpsum({ count: 5 })}</p>
+        <p>{loremIpsum({ count: 7 })}</p>
+        <p>{loremIpsum({ count: 3 })}</p>
+        <p>{loremIpsum({ count: 4 })}</p>
+    </div>
+);
+
+storiesOf("Publish/BaseTemplate", module)
+    .add("PublishScreenTemplate", () => (
+        <PublishScreenTemplate
+            bannerTitleEnglish="Publish as Audio or Video"
+            bannerTitleL10nId="PublishTab.RecordVideo.BannerTitle"
+            bannerDescriptionL10nId="PublishTab.RecordVideo.BannerDescription"
+            bannerDescriptionMarkdown="Create video files that you can upload to sites like Facebook and [YouTube](https://www.youtube.com). You can also make videos to share with people who use inexpensive “feature phones” and even audio-only files for listening."
+            bannerRightSideControls={someButton}
+            optionsPanelContents={optionHeader}
+        >
+            {testMainPanelContents}
+        </PublishScreenTemplate>
+    ))
+    .add("PublishScreenBanner/ePUB", () => (
+        <PublishScreenBanner
+            titleEnglish="Publish as ePUB"
+            titleL10nId="PublishTab.Epub.BannerTitle"
+        >
+            {someButton}
+        </PublishScreenBanner>
+    ));
+
 storiesOf("Publish/Bloom Reader", module).add("ReaderPublishScreen", () => (
     <ReaderPublishScreen />
 ));
+
 storiesOf("Publish/Video", module).add("RecordVideoWindow", () => (
     <PublishAudioVideo />
 ));

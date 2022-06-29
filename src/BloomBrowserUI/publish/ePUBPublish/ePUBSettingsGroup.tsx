@@ -3,19 +3,19 @@ import { jsx, css } from "@emotion/core";
 import React = require("react");
 import BookMetadataDialog from "../metadata/BookMetadataDialog";
 import { BloomApi } from "../../utils/bloomApi";
-import { Typography, FormGroup, Tooltip, Popover } from "@material-ui/core";
-import { LocalizedString } from "../../react_components/l10nComponents";
 import { ApiCheckbox } from "../../react_components/ApiCheckbox";
 import { Link } from "../../react_components/link";
-import { SettingsGroup } from "../commonPublish/BasePublishScreen";
+import { SettingsGroup } from "../commonPublish/PublishScreenBaseComponents";
 import { useL10n } from "../../react_components/l10nHooks";
-import { default as InfoIcon } from "@material-ui/icons/InfoOutlined";
-import { InfoTooltip } from "../../react_components/icons/InfoTooltip";
 import { RequiresCheckoutInfo } from "../../react_components/requiresCheckoutInfo";
 
 export const EPUBSettingsGroup = () => {
     //const [includeImageDescriptionOnPage,setIncludeImageDescriptionOnPage] = BloomApi.useApiBoolean("publish/epub/imageDescriptionSetting", true);
     const canModifyCurrentBook = BloomApi.useCanModifyCurrentBook();
+    const linkCss = "margin-top: 1em !important; display: block;";
+    const disabledLinkCss = canModifyCurrentBook
+        ? ""
+        : "color: rgba(0, 0, 0, 0.38) !important;";
 
     return (
         <SettingsGroup
@@ -41,6 +41,9 @@ export const EPUBSettingsGroup = () => {
             />
             {/* l10nKey is intentionally not under PublishTab.Epub... we may end up with this link in other places */}
             <Link
+                css={css`
+                    ${linkCss}
+                `}
                 id="a11yCheckerLink"
                 l10nKey="AccessibilityCheck.AccessibilityChecker"
                 onClick={() =>
@@ -57,6 +60,10 @@ export const EPUBSettingsGroup = () => {
             >
                 <Link
                     id="bookMetadataDialogLink"
+                    css={css`
+                        ${linkCss}
+                        ${disabledLinkCss}
+                    `}
                     l10nKey="PublishTab.BookMetadata"
                     l10nComment="This link opens a dialog box that lets you put in information someone (often a librarian) might use to search for a book with particular characteristics."
                     onClick={() => BookMetadataDialog.show()}

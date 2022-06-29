@@ -2,7 +2,6 @@
 import { jsx, css } from "@emotion/core";
 
 import * as React from "react";
-import "./ReaderPublish.less";
 import { RadioGroup } from "../../react_components/RadioGroup";
 import BloomButton from "../../react_components/bloomButton";
 import { BloomApi } from "../../utils/bloomApi";
@@ -13,6 +12,7 @@ import { LocalizedString } from "../../react_components/l10nComponents";
 import { default as InfoIcon } from "@material-ui/icons/InfoOutlined";
 import HtmlHelpLink from "../../react_components/htmlHelpLink";
 import { kMutedTextGray } from "../../bloomMaterialUITheme";
+import { kBloomWarning } from "../../utils/colorUtils";
 
 // Needs require. import ... from ... syntax compiles, but doesn't load the image.
 import wifiImage = require("./publish-via-wifi.svg");
@@ -42,8 +42,37 @@ export const MethodChooser: React.FunctionComponent = () => {
 
     return (
         <React.Fragment>
-            <div className={"methodChooserRoot"}>
-                <div className={"column1"}>
+            <div
+                css={css`
+                    display: flex;
+                    flex-direction: row;
+                    // Setting the height to 100% here makes the box layout extend below where it should go by the
+                    // amount of the padding-top.  (8px of that is swallowed up by the default 8px margin on body.)
+                    // We don't really need to set the height here anyway: it displays just fine without being
+                    // explicitly set.  See https://issues.bloomlibrary.org/youtrack/issue/BL-7506.
+                    padding-top: 10px;
+
+                    // The center of a selected radio button is drawn with an <svg> element by materialui.
+                    // For some reason, in Firefox 45, in Publish:Reader, the "left" says 20.4667px, whereas
+                    // it says 0px in modern browsers. A mystery. Anyhow this resets it.
+                    // (I expected unset to fix it, but it doesn't.)
+                    .MuiRadio-root svg {
+                        left: 0;
+                    }
+                `}
+            >
+                <div
+                    css={css`
+                        display: flex;
+                        flex-direction: column;
+                        flex-shrink: 0;
+                        // leave room for the image, wrap radios if translations are really long
+                        padding-right: 20px;
+                        .MuiFormControl-root {
+                            margin-top: 0;
+                        }
+                    `}
+                >
                     <RadioGroup
                         value={method}
                         onChange={m => setMethod(m)}
@@ -64,8 +93,22 @@ export const MethodChooser: React.FunctionComponent = () => {
                     />
                     {getStartButton(method, isLicenseOK)}
                 </div>
-                <div className={"column2"}>
+                <div
+                    css={css`
+                        max-width: 400px; // this is just to limit the hint text length on a big monitor.
+                        display: flex;
+                        flex-direction: column;
+                        flex-grow: 1;
+                        padding-left: 40px;
+                        padding-right: 40px;
+                    `}
+                >
                     <img
+                        css={css`
+                            width: 200px;
+                            object-fit: contain;
+                            margin-bottom: 20px;
+                        `}
                         src={methodImage}
                         alt="An image that just illustrates the currently selected publishing method."
                     />
@@ -77,10 +120,14 @@ export const MethodChooser: React.FunctionComponent = () => {
 };
 
 function getStartButton(method: string, licenseOK: boolean) {
+    const buttonCss = "align-self: flex-end;";
     switch (method) {
         case "file":
             return (
                 <BloomButton
+                    css={css`
+                        ${buttonCss}
+                    `}
                     l10nKey="PublishTab.Save"
                     l10nComment="Button that tells Bloom to save the book in the current format."
                     clickApiEndpoint="publish/android/file/save"
@@ -93,6 +140,9 @@ function getStartButton(method: string, licenseOK: boolean) {
         case "usb":
             return (
                 <BloomButton
+                    css={css`
+                        ${buttonCss}
+                    `}
                     l10nKey="PublishTab.Android.Usb.Start"
                     l10nComment="Button that tells Bloom to send the book to a device via USB cable."
                     enabled={licenseOK}
@@ -106,6 +156,9 @@ function getStartButton(method: string, licenseOK: boolean) {
         case "wifi":
             return (
                 <BloomButton
+                    css={css`
+                        ${buttonCss}
+                    `}
                     l10nKey="PublishTab.Android.Wifi.Start"
                     l10nComment="Button that tells Bloom to begin offering this book on the wifi network."
                     enabled={licenseOK}
@@ -121,11 +174,19 @@ function getStartButton(method: string, licenseOK: boolean) {
 }
 
 function getHint(method: string) {
+    // Despite Typography using 'variant="h6"', the actual element used is "h1", so we target that.
+    // Also, the "!important" below is needed to overrule MUI's typography default.
+    const hintHeadingCss =
+        "display: flex;\nalign-items: center;\nh1 { margin-left: 10px !important; }";
     switch (method) {
         case "file":
             return (
                 <React.Fragment>
-                    <div className="hint-heading">
+                    <div
+                        css={css`
+                            ${hintHeadingCss}
+                        `}
+                    >
                         <InfoIcon color="primary" />
                         <Typography variant="h6">
                             <LocalizedString l10nKey="PublishTab.Android.BloomPUB.Hint.Heading">
@@ -203,8 +264,12 @@ function getHint(method: string) {
                             menu and choose 'Receive books via USB'.
                         </LocalizedString>
                     </Typography>
-                    <div className="hint-heading">
-                        <InfoIcon className="warning" />
+                    <div
+                        css={css`
+                            ${hintHeadingCss}
+                        `}
+                    >
+                        <InfoIcon htmlColor={kBloomWarning} />
                         <Typography variant="h6">
                             <LocalizedString l10nKey="PublishTab.Android.USB.Hint.Heading">
                                 USB is Difficult
@@ -227,7 +292,11 @@ function getHint(method: string) {
         case "wifi":
             return (
                 <React.Fragment>
-                    <div className="hint-heading">
+                    <div
+                        css={css`
+                            ${hintHeadingCss}
+                        `}
+                    >
                         <InfoIcon color="primary" />
                         <Typography variant="h6">
                             <LocalizedString l10nKey="PublishTab.Android.WiFi.Hint.Heading">
