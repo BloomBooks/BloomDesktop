@@ -39,7 +39,6 @@ module.exports = {
         "@typescript-eslint/no-unused-vars": "off",
         "react/no-unescaped-entities": "off", // review
         "react/prop-types": "off", // review
-        "react/no-children-prop": "off",
         "@typescript-eslint/ban-types": "off",
         "@typescript-eslint/no-empty-interface": "warn",
         "no-case-declarations": "warn",
