@@ -391,28 +391,19 @@ namespace Bloom.Utils
 			bool repeat = false;
 			do
 			{
-				using (var dlg = new FolderBrowserDialog())
+				resultPath = MiscUI.BloomFolderChooser.ChooseFolder(initialPath, description);
+				if (string.IsNullOrEmpty(resultPath))
+					return null;
+				string collectionFolder = string.Empty;
+				repeat = isForOutput && IsFolderInsideBloomCollection(resultPath, out collectionFolder);
+				if (repeat)
 				{
-					if (!String.IsNullOrEmpty(initialPath))
-						dlg.SelectedPath = initialPath;
-					dlg.ShowNewFolderButton = true;
-
-					if (!string.IsNullOrEmpty(description))
-						dlg.Description = description;
-
-					var success = dlg.ShowDialog() == DialogResult.OK;
-					resultPath = success ? dlg.SelectedPath : "";
-					string collectionFolder = string.Empty;
-					repeat = success && isForOutput && Utils.MiscUtils.IsFolderInsideBloomCollection(resultPath, out collectionFolder);
-					if (repeat)
-					{
-						Utils.MiscUtils.WarnUserOfInvalidFolderChoice(collectionFolder, resultPath);
-						// Change the initialFolder to just above the collection folder, or to the documents folder
-						// if that ends up empty.
-						initialPath = Path.GetDirectoryName(collectionFolder);
-						if (String.IsNullOrEmpty(initialPath))
-							initialPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-					}
+					WarnUserOfInvalidFolderChoice(collectionFolder, resultPath);
+					// Change the initialFolder to just above the collection folder, or to the documents folder
+					// if that ends up empty.
+					initialPath = Path.GetDirectoryName(collectionFolder);
+					if (string.IsNullOrEmpty(initialPath))
+						initialPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
 				}
 			} while (repeat);
 			return resultPath;

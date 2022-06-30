@@ -14,25 +14,27 @@ namespace Bloom.MiscUI
 	/// </summary>
 	public static class BloomFolderChooser
 	{
-		public static string ChooseFolder(string initialFolderPath)
+		public static string ChooseFolder(string initialFolderPath, string description = null)
 		{
 			if (SIL.PlatformUtilities.Platform.IsWindows)
 			{
 				// Split into a separate method to prevent the Mono runtime from trying to
 				// reference Windows-only assemblies on Linux.
-				return SelectFolderOnWindows(initialFolderPath);
+				return SelectFolderOnWindows(initialFolderPath, description);
 			}
 			else
 			{
 				var dialog = new DialogAdapters.FolderBrowserDialogAdapter();
 				dialog.SelectedPath = initialFolderPath;
+				if (!string.IsNullOrEmpty(description))
+					dialog.Description = description;
 				if (dialog.ShowDialog() == DialogResult.OK)
 					return dialog.SelectedPath;
 			}
 			return null;
 		}
 
-		private static string SelectFolderOnWindows(string initialFolderPath)
+		private static string SelectFolderOnWindows(string initialFolderPath, string description)
 		{
 #if !__MonoCS__
 			// Note, this is Windows only.
@@ -41,6 +43,8 @@ namespace Bloom.MiscUI
 				InitialDirectory = initialFolderPath,
 				IsFolderPicker = true
 			};
+			if (!string.IsNullOrEmpty(description))
+				dialog.Title = description;
 			// If we can find Bloom's main window, bring the dialog up on that screen.
 			var rootForm = Application.OpenForms.Cast<Form>().FirstOrDefault(f => f is Shell);
 			var result = rootForm == null ? dialog.ShowDialog() : dialog.ShowDialog(rootForm.Handle);
