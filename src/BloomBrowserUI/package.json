@@ -173,6 +173,7 @@
         "less-loader": "^7.2.1",
         "less-watch-compiler": "^1.13.0",
         "lessc-glob": "^1.0.9",
+        "lint-staged": "^13.0.3",
         "lorem-ipsum": "^2.0.2",
         "markdown-it-attrs": "^2.3.3",
         "markdown-it-container": "^2.0.0",
@@ -196,9 +197,13 @@
         "webpack-stream": "^6.1.1",
         "yarn": "^1.22.19"
     },
+    "lint-staged": {
+        "!(*.d).{ts,tsx}": "eslint"
+    },
     "husky": {
         "hooks": {
-            "pre-commit": "pretty-quick --staged"
+            "pre-commit": "pretty-quick --staged && lint-staged --no-stash",
+            "pre-commit-comments": "// The '--no-stash' option makes linting much faster and is safe since our lint-staged doesn't currently modify any files. If it did modify files, you could still use --no-stash but there are some corner cases where you'd need to manually resolve conflicts."
         }
     },
     "comments": {
