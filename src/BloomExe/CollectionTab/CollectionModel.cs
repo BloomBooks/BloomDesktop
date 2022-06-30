@@ -300,16 +300,12 @@ namespace Bloom.CollectionTab
 
 		public void RescueMissingImages()
 		{
-			using (var dlg = new FolderBrowserDialog())
-			{
-				dlg.ShowNewFolderButton = false;
-				dlg.Description = "Select the folder where replacement images can be found";
-				if (DialogResult.OK == dlg.ShowDialog(MainShell))
-				{
-					AttemptMissingImageReplacements(dlg.SelectedPath);
-				}
-			}
+			var initialPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+			var selectedPath = BloomFolderChooser.ChooseFolder(initialPath, "Select the folder where replacement images can be found");
+			if (!string.IsNullOrEmpty(selectedPath))
+				AttemptMissingImageReplacements(selectedPath);
 		}
+
 		public void MakeReaderTemplateBloompack()
 		{
 			using (var dlg = new MakeReaderTemplateBloomPackDlg())
