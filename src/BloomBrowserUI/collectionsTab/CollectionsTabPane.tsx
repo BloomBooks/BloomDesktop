@@ -209,6 +209,7 @@ export const CollectionsTabPane: React.FunctionComponent<{}> = () => {
     const collectionComponents = sourcesCollections.map(c => {
         return (
             <BooksOfCollectionWithHeading
+                key={c.id}
                 name={c.name}
                 id={c.id}
                 shouldLocalizeName={c.shouldLocalizeName}
@@ -540,6 +541,7 @@ export const makeMenuItems = (
                 return undefined;
             return (
                 <LocalizableMenuItem
+                    key={spec.l10nId}
                     english={spec.label}
                     l10nId={spec.l10nId!}
                     onClick={clickAction}
@@ -553,7 +555,7 @@ export const makeMenuItems = (
 
     // Can't find a really good way to tell that an element is a Divider.
     // But we only have Dividers and LocalizableMenuItems in this list,
-    // so it's a Dividier if it doesn't have one of the required props of LocalizableMenuItem.
+    // so it's a Divider if it doesn't have one of the required props of LocalizableMenuItem.
     const isDivider = (element: JSX.Element): boolean => {
         return !element.props.english;
     };
