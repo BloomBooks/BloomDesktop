@@ -24,6 +24,8 @@ module.exports = {
         }
     },
     rules: {
+        // Rules to apply on top of the baseline ones (from "extends")
+        // FYI, to see all the rule settings, run "eslint --print-config *.ts"
         "prettier/prettier": "off",
         "no-var": "warn",
         "prefer-const": "warn",
@@ -32,21 +34,21 @@ module.exports = {
             1,
             { terms: ["nocommit"], location: "anywhere" }
         ],
-        // turned these on when first using eslint. TODO: Review these
-        "@typescript-eslint/no-explicit-any": "off",
+        // Downgraded from error to warnings
         "@typescript-eslint/no-empty-function": "warn",
-        "@typescript-eslint/no-inferrable-types": "off",
-        "@typescript-eslint/no-unused-vars": "off",
-        "react/no-unescaped-entities": "off", // review
-        "react/prop-types": "off", // review
-        "react/no-children-prop": "off",
-        "@typescript-eslint/ban-types": "off",
         "@typescript-eslint/no-empty-interface": "warn",
-        "no-case-declarations": "warn",
+        "@typescript-eslint/no-explicit-any": "warn",
+        "@typescript-eslint/no-unused-vars": "warn",
         "@typescript-eslint/no-var-requires": "warn",
-        "@typescript-eslint/triple-slash-reference": "off",
+        "no-case-declarations": "warn",
         "prefer-rest-params": "warn",
         "prefer-spread": "warn",
-        "react/jsx-key": "warn"
+        "react/jsx-key": "warn",
+        // Disabled
+        "@typescript-eslint/ban-types": "off", // Record<string, never> is not intuitive for us compared to {}
+        "@typescript-eslint/no-inferrable-types": "off", // not worth worrying about (not even convinced it's a problem at all)
+        "@typescript-eslint/triple-slash-reference": "off", // a lot of our legacy code still uses this
+        "react/no-unescaped-entities": "off", // Complains about some special chars that sort of work, but due to the burden that enocded chars present to localizers, we'd prefer not to encode them if not necessary.
+        "react/prop-types": "off" // Seems to require validation on the props parameter itself, but Typescript can already figure out the types through annotations in different places, seems unnecessary
     }
 };

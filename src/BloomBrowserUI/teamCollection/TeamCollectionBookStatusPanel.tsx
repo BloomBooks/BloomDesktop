@@ -545,9 +545,10 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<IBookTeamCol
                         title={mainTitleLockedElsewhere}
                         subTitle={subTitleLockedElsewhere}
                         icon={avatar}
-                        children={getLockedInfoChild(lockedElsewhereInfo)}
                         menu={menu}
-                    />
+                    >
+                        {getLockedInfoChild(lockedElsewhereInfo)}
+                    </StatusPanelCommon>
                 );
             case "locked":
                 return (
@@ -556,9 +557,10 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<IBookTeamCol
                         title={mainTitleLocked}
                         subTitle={subTitleLocked}
                         icon={avatar}
-                        children={getLockedInfoChild(lockedInfo)}
                         menu={menu}
-                    />
+                    >
+                        {getLockedInfoChild(lockedInfo)}
+                    </StatusPanelCommon>
                 );
             case "problem":
                 return (
@@ -567,7 +569,6 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<IBookTeamCol
                         title={mainTitleNeedsReload}
                         subTitle={subTitleHasProblem}
                         icon={avatar}
-                        children={getLockedInfoChild("")}
                         button={getBloomButton(
                             "Reload",
                             "TeamCollection.Reload",
@@ -576,7 +577,9 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<IBookTeamCol
                             () => BloomApi.post("common/reloadCollection")
                         )}
                         menu={menu}
-                    />
+                    >
+                        {getLockedInfoChild("")}
+                    </StatusPanelCommon>
                 );
             case "hasInvalidRepoData":
                 return (
@@ -595,7 +598,6 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<IBookTeamCol
                         title={mainTitleNeedsReload}
                         subTitle={subTitleNeedsReload}
                         icon={avatar}
-                        children={getLockedInfoChild("")}
                         button={getBloomButton(
                             "Reload",
                             "TeamCollection.Reload",
@@ -604,7 +606,9 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<IBookTeamCol
                             () => BloomApi.post("common/reloadCollection")
                         )}
                         menu={menu}
-                    />
+                    >
+                        {getLockedInfoChild("")}
+                    </StatusPanelCommon>
                 );
             case "disconnected":
                 return (

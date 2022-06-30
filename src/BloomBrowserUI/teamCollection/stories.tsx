@@ -143,9 +143,10 @@ storiesOf("Team Collection components/StatusPanelCommon", module)
                 subTitle="Are you done for now? Click this button to send your changes to your team."
                 icon={avatar(true)}
                 button={checkinButton}
-                children={messageLogStub}
                 menu={<div style={menuStyles}>Menu</div>}
-            />
+            >
+                {messageLogStub}
+            </StatusPanelCommon>
         );
     })
     .add("Checked out by (Fred)", () =>
@@ -155,10 +156,11 @@ storiesOf("Team Collection components/StatusPanelCommon", module)
                 title="This book is checked out to Fred"
                 subTitle="You cannot edit the book until Fred checks it in."
                 icon={avatar(false)}
-                children={getLockedInfoChild(
+            >
+                {getLockedInfoChild(
                     "Fred checked out this book on 10 February 2021."
                 )}
-            />
+            </StatusPanelCommon>
         )
     )
     .add("Problem state", () =>
@@ -168,9 +170,10 @@ storiesOf("Team Collection components/StatusPanelCommon", module)
                 title="The Team Collection folder received a changed version of the book you were editing."
                 subTitle="The Checkin/Checkout system should normally prevent this, but it has happened. Bloom cannot automatically join the work that came in with the work you were doing; you will need Bloom team support for that. Bloom will move your version of the book to the Team Collection Lost & Found when you Reload."
                 icon={emptyAvatarForProblemState}
-                children={getLockedInfoChild("")}
                 button={reloadButton}
-            />
+            >
+                {getLockedInfoChild("")}
+            </StatusPanelCommon>
         )
     )
     .add("Checked out by me on MyTablet", () =>
@@ -180,10 +183,11 @@ storiesOf("Team Collection components/StatusPanelCommon", module)
                 title="This book is checked out to you, but on a different computer"
                 subTitle="You cannot edit the book on this computer, until you check it in on MyTablet."
                 icon={avatar(false)}
-                children={getLockedInfoChild(
+            >
+                {getLockedInfoChild(
                     "You checked out this book on 14 February 2021."
                 )}
-            />
+            </StatusPanelCommon>
         )
     );
 

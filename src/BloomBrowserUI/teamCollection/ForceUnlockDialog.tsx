@@ -77,7 +77,7 @@ export const ForceUnlockDialog: React.FunctionComponent<{
                             l10nKey="Warning"
                             temporarilyDisableI18nWarning={true}
                         >
-                            Warniung
+                            Warning
                         </Div>
                         <Div
                             l10nKey="TeamCollection.ForceUnlockWarning"
