@@ -3,14 +3,18 @@
     .marginBox {
         display: flex;
         flex-direction: column;
+
         .Prompt-style {
+            // not that .Prompt-style is also a user-modifiable style in the .htm file
             margin-bottom: 10px;
         }
+
         .player-button {
             display: block;
             border: none;
             margin-bottom: 15px;
             margin-right: 7px; // need room to show any button shadows
+
             .bloom-translationGroup {
                 &.childOverflowingThis {
                     border-bottom: unset !important; // ENHANCE: instead, we shouldn't set this flag. We need a way to tell the JS that sets it not to.
@@ -19,6 +23,10 @@
                 .bloom-editable {
                     border: none; // don't show the grey box
                     min-height: unset;
+                    // this allows the text-align:center, defined elsewhere, to actually work
+                    // this number, 95px, was chosen to use the space available in 16x9 portrait, with these text samples: སྔགས་ཀྱི་ཀློག་བས་ཤེས་རབ་མི
+
+                    line-height: 95px !important;
                 }
             }
         }
@@ -45,13 +53,21 @@
         .imageThenChoices {
             flex-direction: row;
             align-items: center; // nb: messes up the img size unless the image container has a explicit height
+
             div.bloom-imageContainer {
                 margin-right: 10px;
                 width: 50%;
                 height: 80%; // undesirable but see note above about align-items:center on the parent, imageAndChoices
             }
+
             .choices {
                 width: 50%;
+                height: 258px; // the actual value is a hack. The importance is vertical centering the stack
+            }
+
+            .player-button .bloom-translationGroup .bloom-editable {
+                line-height: 75px !important;
+                font-size: 31pt !important;
             }
         }
     }
@@ -60,6 +76,7 @@
     &[class*="Portrait"] {
         .imageThenChoices {
             flex-direction: column;
+
             div.bloom-imageContainer {
                 height: 40% !important;
                 margin-bottom: 10px;
@@ -71,14 +88,17 @@
     &.Cm13Landscape {
         .imageThenChoices {
             flex-direction: column;
+
             div.bloom-imageContainer {
                 height: 70% !important;
                 margin-bottom: 10px;
             }
+
             .choices {
                 flex-direction: row;
                 justify-content: space-between;
                 width: 100%;
+
                 .player-button {
                     padding: 10px;
                 }
@@ -95,12 +115,14 @@
         // NB: without this overflow:hidden, the .choices div grows larger than necessary whe either we give it a margin-block-start:auto or tell
         // imageThenChoices to justify-content:space-between.
         overflow: hidden;
+
         .choices {
             // stack the buttons over each other
             display: flex;
             flex-direction: column;
             flex-grow: 1;
             overflow: hidden; // TODO Boost up?
+
             .player-button {
                 .bloom-imageContainer {
                     // NB: a transparent background is fine in edit, where there is an <img>, but in bloomPUB (for some reason?) the image is places as a background-image
@@ -110,9 +132,10 @@
                     margin-left: auto;
                     margin-right: auto;
                 }
+
                 // This padding on the button is required to keep the image from covering the corners of the button and to leave
                 // room to see the color (e.g. green for right answer) if the image has no transparency.
-                padding: 5px;
+                padding: 10px;
             }
         }
     }
@@ -122,14 +145,17 @@
             flex-direction: row;
             align-items: center; // nb: messes up the img size unless the image container has a explicit height
             justify-content: space-around; // the screen is actually too wide... so move everything in towards the center
+
             .word-to-match {
                 margin-right: 10px;
                 // width: 50%;
             }
+
             .choices {
                 max-width: 30%;
                 height: 100%;
                 justify-content: space-between;
+
                 .player-button {
                     height: 26%;
                 }
@@ -140,30 +166,37 @@
     &[class*="Portrait"] {
         .marginBox .wordThenChoices {
             flex-direction: column;
+
             .word-to-match {
                 // height: 40% !important;
                 margin-bottom: 10px;
             }
+
             .choices {
                 flex-grow: 1;
+
                 .player-button {
                     height: 27%;
                 }
             }
         }
     }
+
     // image on top, with a row of buttons below it
     &.Cm13Landscape {
         .marginBox .wordThenChoices {
             flex-direction: column;
+
             .word-to-match {
                 //   height: 70% !important;
                 margin-bottom: 30px;
             }
+
             .choices {
                 flex-direction: row;
                 justify-content: space-between;
                 min-width: 100%;
+
                 .player-button {
                     height: 30%;
                     width: 30%;
@@ -185,6 +218,7 @@
             color: white;
         }
     }
+
     .player-button {
         //box-shadow: 0px 4px 0px rgba(0, 0, 0, 0.32);
         box-shadow: 0 10px 20px rgba(0, 0, 0, 0.19),
@@ -192,14 +226,17 @@
         border-radius: 10px;
         background-color: white;
         color: #0069f0;
+
         &.chosen-correct {
             color: white;
-            background-color: #6cd05a;
+            background-color: #ffb453;
         }
+
         &.chosen-wrong {
             color: white;
             background-color: #848484;
         }
+
         // when the button is depressed
         &:active {
             //text-shadow: -1px -1px 0px #777, -1px -1px 0px #777;
@@ -220,6 +257,7 @@
         .TextToMatch-style {
             color: white;
         }
+
         .bloom-imageContainer {
             background-color: white;
         }
