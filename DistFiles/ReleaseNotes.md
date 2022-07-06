@@ -1,10 +1,8 @@
-If you run Bloom on the_beta_ channel, you are a crucial part of the Bloom team. Your help ensures that folks who don't have easy access to technical support get a solid product when the beta becomes the _release_ version. **Thank you!**
-
 ## Reminder for SILers
 
 Most SIL projects can freely use the SIL internal Enterprise License. Questions? Please shoot us an email at **enterprise (preposition) bloomlibrary.org**.
 
-# 5.2 (beta)
+# 5.2
 
 ## Decodable Reader
 
