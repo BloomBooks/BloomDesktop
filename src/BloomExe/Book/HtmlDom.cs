@@ -2310,7 +2310,15 @@ namespace Bloom.Book
 		// "Widgets" are HTML Activities that the user creates outside of Bloom, as distinct from our built-in activities.
 		public bool HasWidgetPages()
 		{
-			var nodes = _dom.SafeSelectNodes("//*[@data-activity]");
+			var nodes = _dom.SafeSelectNodes("//*[@data-activity='iframe']");
+			return nodes?.Count >= 1;
+		}
+
+		// "Multiple-Choice" are simple built-in activities where the prompt is a text
+		// or an image, and the choices are a text or a image.
+		public bool HasMultipleChoicePages()
+		{
+			var nodes = _dom.SafeSelectNodes("//*[@data-activity='multiple-choice']");
 			return nodes?.Count >= 1;
 		}
 

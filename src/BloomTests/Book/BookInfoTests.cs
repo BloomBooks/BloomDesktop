@@ -543,6 +543,14 @@ namespace BloomTests.Book
 			bool expectedResult = containsWidget;
 			Assert.AreEqual(expectedResult, result.Contains("widget"));
 		}
+		[TestCase(false)]
+		[TestCase(true)]
+		public void FeaturesGetter_MultipleChoice(bool containsMultipleChoice)
+		{
+			var metadata = new BookMetaData();
+			metadata.Feature_MultipleChoice = containsMultipleChoice;
+			Assert.AreEqual(containsMultipleChoice, metadata.Features.Contains("multiple-choice"));
+		}
 
 		[TestCase(false, true)]
 		[TestCase(true, false)]

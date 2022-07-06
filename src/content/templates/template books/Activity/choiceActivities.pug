@@ -1,7 +1,7 @@
 mixin textButtonChoice
 	//- .player-button causes Bloom Player to replace this div with a real button at runtime
 	.player-button&attributes(attributes)
-		+field("N1").bloom-ignoreOverflow.ButtonText-style
+		+field("L1").bloom-ignoreOverflow.ButtonText-style
 			block
 
 mixin imageButtonChoice
@@ -14,8 +14,8 @@ mixin correctAnswerBubble
 	label.bubble Put the correct answer here. Bloom will shuffle the buttons each time the book is read.
 
 mixin chooseWordFromPicture
-	+page("Choose Word from Picture", "An interactive page with an image and some text buttons.").bloom-ignoreForReaderStats.bloom-interactive-page.enterprise-only.numberedPage#3325A8B6-EA15-4FB7-9F8D-271D7B3C8D33(data-page='extra' data-analyticsCategories="simple-choice word-from-picture" data-activity="multiple-choice")
-		+field-withEnglishText("N1").Prompt-style.disableHighlight
+	+page("Choose Word from Picture", "An interactive page with an image and some text buttons.").bloom-ignoreForReaderStats.bloom-interactive-page.enterprise-only.numberedPage#3325A8B6-EA15-4FB7-9F8D-271D7B3C8D33(data-page='extra' data-analyticscategories="multiple-choice word-from-picture" data-activity="multiple-choice")
+		+field-withEnglishText("L1").Prompt-style.disableHighlight
 			| Choose the matching word
 		.imageThenChoices
 			+image
@@ -27,11 +27,11 @@ mixin chooseWordFromPicture
 					+textButtonChoice(data-activityRole="wrong-answer")
 
 mixin choosePictureFromWord
-	+page("Choose Picture from Word", "An interactive page with a text and some picture buttons.").bloom-ignoreForReaderStats.bloom-interactive-page.enterprise-only.numberedPage#fe7acd9d-c05c-449b-9f99-841d54856924(data-page='extra' data-analyticsCategories="simple-choice picture-from-word" data-activity="multiple-choice")
-		+field-withEnglishText("N1").Prompt-style.disableHighlight
+	+page("Choose Picture from Word", "An interactive page with a text and some picture buttons.").bloom-ignoreForReaderStats.bloom-interactive-page.enterprise-only.numberedPage#fe7acd9d-c05c-449b-9f99-841d54856924(data-page='extra' data-analyticscategories="multiple-choice picture-from-word" data-activity="multiple-choice")
+		+field-withEnglishText("L1").Prompt-style.disableHighlight
 			| Choose the matching picture
 		.wordThenChoices
-			+field("N1").bloom-ignoreOverflow.word-to-match.TextToMatch-style
+			+field("L1").bloom-ignoreOverflow.word-to-match.TextToMatch-style
 			.choices.player-shuffle-buttons
 				//- we put .chosen-correct on one button to turn on the styling during edit.
 				+imageButtonChoice(data-activityRole="correct-answer").chosen-correct

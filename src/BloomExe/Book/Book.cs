@@ -4262,7 +4262,6 @@ namespace Bloom.Book
 		public bool HasMotionPages => OurHtmlDom.HasMotionPages();
 
 		public bool HasQuizPages => OurHtmlDom.HasQuizPages();
-
 		public bool HasActivities => OurHtmlDom.HasActivityPages();
 
 		public bool HasOverlayPages => OurHtmlDom.HasOverlayPages();
@@ -4303,6 +4302,7 @@ namespace Bloom.Book
 
 			// Language-independent features
 			UpdateQuizFeature();
+			UpdateMultipleChoiceFeature();
 			UpdateMotionFeature();
 			UpdateComicFeature();
 			UpdateWidgetFeature();
@@ -4397,6 +4397,11 @@ namespace Bloom.Book
 			// If we wanted to, it is also possible to compute it as a language-specific feature.
 			// (That is, check if the languages in the book have non-empty text for part of the quiz section)
 			BookInfo.MetaData.Feature_Quiz = CollectionSettings.HaveEnterpriseFeatures && HasQuizPages;
+		}
+
+		private void UpdateMultipleChoiceFeature()
+		{
+			BookInfo.MetaData.Feature_MultipleChoice = CollectionSettings.HaveEnterpriseFeatures &&  OurHtmlDom.HasMultipleChoicePages();
 		}
 
 		/// <summary>
