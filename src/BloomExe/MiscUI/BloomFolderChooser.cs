@@ -25,7 +25,8 @@ namespace Bloom.MiscUI
 			else
 			{
 				var dialog = new DialogAdapters.FolderBrowserDialogAdapter();
-				dialog.SelectedPath = initialFolderPath;
+				if (!string.IsNullOrEmpty(initialFolderPath))
+					dialog.SelectedPath = initialFolderPath;
 				if (!string.IsNullOrEmpty(description))
 					dialog.Description = description;
 				if (dialog.ShowDialog() == DialogResult.OK)
