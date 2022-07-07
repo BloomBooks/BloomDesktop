@@ -144,9 +144,9 @@ export const LoginDialog: React.FunctionComponent<{}> = props => {
             },
             // The API supports these, but I haven't found them to do anything.
             // Terms of service url.
-            tosUrl: "https://next.bloomlibrary.org/page/termsOfUse",
+            tosUrl: "https://bloomlibrary.org/page/termsOfUse",
             // Privacy policy url.
-            privacyPolicyUrl: "https://next.bloomlibrary.org/page/privacyNotice"
+            privacyPolicyUrl: "https://bloomlibrary.org/page/privacyNotice"
         }
     };
     useEffect(() => {
