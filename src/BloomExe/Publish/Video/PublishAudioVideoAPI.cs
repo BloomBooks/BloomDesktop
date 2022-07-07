@@ -105,8 +105,10 @@ namespace Bloom.Publish.Video
 					request.CurrentBook.BookInfo.SavePublishSettings();
 
 					_recordVideoWindow?.SetPageReadTime(settings.PageTurnDelayDouble.ToString());
-					_recordVideoWindow?.SetFormat(request.CurrentBook.BookInfo.PublishSettings.AudioVideo.Format,
-						ShouldRecordAsLandscape(request.CurrentBook), request.CurrentBook.GetLayout());
+
+					string format = request.CurrentBook.BookInfo.PublishSettings.AudioVideo.Format;
+					_recordVideoWindow?.SetFormat(format,
+						ShouldRecordAsLandscape(request.CurrentBook, format), request.CurrentBook.GetLayout());
 					if (settings.Motion != oldMotion)
 					{
 						UpdatePreview(request); // does its own success/fail
@@ -182,8 +184,9 @@ namespace Bloom.Publish.Video
 			apiHandler.RegisterEndpointHandler(kApiUrlPart + "shouldUseOriginalPageSize",
 				request =>
 				{
-					RecordVideoWindow.GetDataForFormat(request.CurrentBook.BookInfo.PublishSettings.AudioVideo.Format,
-						ShouldRecordAsLandscape(request.CurrentBook), request.CurrentBook.GetLayout(),
+					string format = request.CurrentBook.BookInfo.PublishSettings.AudioVideo.Format;
+					RecordVideoWindow.GetDataForFormat(format,
+						ShouldRecordAsLandscape(request.CurrentBook, format), request.CurrentBook.GetLayout(),
 						out _, out _, out _, out _, out bool useOriginalPageSize);
 					request.ReplyWithBoolean(useOriginalPageSize);
 				},
@@ -193,8 +196,9 @@ namespace Bloom.Publish.Video
 			apiHandler.RegisterEndpointHandler(kApiUrlPart + "tooBigForScreenMsg",
 				request =>
 				{
-					request.ReplyWithText(RecordVideoWindow.GetDataForFormat(request.CurrentBook.BookInfo.PublishSettings.AudioVideo.Format,
-						ShouldRecordAsLandscape(request.CurrentBook), request.CurrentBook.GetLayout(),
+					string format = request.CurrentBook.BookInfo.PublishSettings.AudioVideo.Format;
+					request.ReplyWithText(RecordVideoWindow.GetDataForFormat(format,
+						ShouldRecordAsLandscape(request.CurrentBook, format), request.CurrentBook.GetLayout(),
 						out _, out _, out _, out _, out _));
 				},
 				 true, // has to be on UI thread because it uses Bloom's main window to find the right screen
@@ -210,7 +214,7 @@ namespace Bloom.Publish.Video
 					var targetResolutionDataList = formatNames.Select(formatName =>
 					{
 						RecordVideoWindow.GetDataForFormat(formatName,
-							ShouldRecordAsLandscape(request.CurrentBook), request.CurrentBook.GetLayout(),
+							ShouldRecordAsLandscape(request.CurrentBook, formatName), request.CurrentBook.GetLayout(),
 							out Resolution desiredResolution, out Resolution actualResolution, out _, out _, out _);
 
 						return new FormatDimensionsResponseEntry(formatName, desiredResolution, actualResolution);
@@ -263,9 +267,25 @@ namespace Bloom.Publish.Video
 		/// </summary>
 		/// <param name="book"></param>
 		/// <returns></returns>
-		public static bool ShouldRecordAsLandscape(Book.Book book)
+		public static bool ShouldRecordAsLandscape(Book.Book book, string format)
 		{
-			return book.BookInfo.PublishSettings.AudioVideo.Motion || (book.GetLayout().SizeAndOrientation.IsLandScape && !book.GetLayout().SizeAndOrientation.IsSquare);
+			if (book.BookInfo.PublishSettings.AudioVideo.Motion)
+				return true;
+
+			var bookLayout = book.GetLayout();
+			// NOTE! Square books return true for both IsSquare and IsLandscape,
+			// so make sure to check for IsSquare first.
+			if (bookLayout.SizeAndOrientation.IsSquare)
+			{
+				// On FB, square videos work better using our portrait algorithm
+				// Otherwise, by default we'd rather think of these as landscape videos (especially for YouTube)
+				if (format == "facebook")
+					return false;
+				else
+					return true;
+			}
+			else
+				return bookLayout.SizeAndOrientation.IsLandScape;
 		}
 
 		private bool IsScalingActive()
@@ -339,8 +359,9 @@ namespace Bloom.Publish.Video
 		private void RecordVideo(ApiRequest request)
 		{
 			_recordVideoWindow = RecordVideoWindow.Create(_webSocketServer);
-			_recordVideoWindow.SetFormat(request.CurrentBook.BookInfo.PublishSettings.AudioVideo.Format,
-				ShouldRecordAsLandscape(request.CurrentBook), request.CurrentBook.GetLayout());
+			string format = request.CurrentBook.BookInfo.PublishSettings.AudioVideo.Format;
+			_recordVideoWindow.SetFormat(format,
+				ShouldRecordAsLandscape(request.CurrentBook, format), request.CurrentBook.GetLayout());
 			_recordVideoWindow.SetPageReadTime(request.CurrentBook.BookInfo.PublishSettings.AudioVideo.PageTurnDelayDouble.ToString());
 			_recordVideoWindow.SetVideoSettingsFromPreview(request.CurrentBook.BookInfo.PublishSettings.AudioVideo.PlayerSettings);
 			_recordVideoWindow.SetPageRange(request.CurrentBook.BookInfo.PublishSettings.AudioVideo.PageRange);
