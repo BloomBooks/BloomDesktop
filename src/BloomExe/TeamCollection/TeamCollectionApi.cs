@@ -704,28 +704,19 @@ namespace Bloom.TeamCollection
 		{
 			try
 			{
-				string sharedFolder;
 				// One of the few places that knows we're using a particular implementation
 				// of TeamRepo. But we have to know that to create it. And of course the user
 				// has to chose a folder to get things started.
 				// We'll need a different API or something similar if we ever want to create
 				// some other kind of repo.
-				using (var dlg = new FolderBrowserDialog())
+				var dropboxFolder = DropboxUtils.GetDropboxFolderPath();
+				var description = LocalizationManager.GetString("TeamCollection.SelectFolder",
+					"Select or create the folder where this collection will be shared");
+				var sharedFolder = BloomFolderChooser.ChooseFolder(dropboxFolder, description);
+				if (string.IsNullOrEmpty(sharedFolder))
 				{
-					// Default to the Dropbox folder if one is found.
-					var dropboxFolder = DropboxUtils.GetDropboxFolderPath();
-					if (!String.IsNullOrEmpty(dropboxFolder))
-						dlg.SelectedPath = dropboxFolder;
-					dlg.ShowNewFolderButton = true;
-					dlg.Description = LocalizationManager.GetString("TeamCollection.SelectFolder",
-						"Select or create the folder where this collection will be shared");
-					if (DialogResult.OK != dlg.ShowDialog())
-					{
-						request.Failed();
-						return;
-					}
-
-					sharedFolder = dlg.SelectedPath;
+					request.Failed();
+					return;
 				}
 				// We send the result through a websocket rather than simply returning it because
 				// if the user is very slow (one site said FF times out after 90s) the browser may
