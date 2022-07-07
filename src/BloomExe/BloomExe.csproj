@@ -393,6 +393,7 @@
       <DependentUpon>RecordVideoWindow.cs</DependentUpon>
     </Compile>
     <Compile Include="Publish\Video\Resolution.cs" />
+    <Compile Include="Publish\Video\FormatDimensionsResponseEntry.cs" />
     <Compile Include="Spreadsheet\Header.cs" />
     <Compile Include="FontProcessing\FontFileFinder.cs" />
     <Compile Include="FontProcessing\FontGroup.cs" />
@@ -527,6 +528,7 @@
     <Compile Include="Utils\MemoryUtils.cs" />
     <Compile Include="Utils\FileSystemWatcherExtensions.cs" />
     <Compile Include="Utils\MiscUtils.cs" />
+    <Compile Include="Utils\NumUtils.cs" />
     <Compile Include="Utils\PerformanceMeasurement.cs" />
     <Compile Include="Utils\RobustZip.cs" />
     <Compile Include="WebLibraryIntegration\BookDownload.cs" />

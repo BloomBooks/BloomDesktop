@@ -977,7 +977,7 @@ namespace Bloom.Publish.Video
 		/// <returns>A warning message, if we can't make the window big enough to record
 		/// the optimum resolution for the format; otherwise, an empty string.</returns>
 		public static string GetDataForFormat(string format, bool landscape, Layout pageLayout,
-			out Resolution actualResolution, out Codec codec, out bool shouldRotateBook, out bool shouldUseOriginalPageSize)
+			out Resolution desiredResolution, out Resolution actualResolution, out Codec codec, out bool shouldRotateBook, out bool shouldUseOriginalPageSize)
 		{
 			shouldRotateBook = false;
 			shouldUseOriginalPageSize = false;
@@ -1057,7 +1057,7 @@ namespace Bloom.Publish.Video
 					break;
 			}
 
-			var desiredResolution = new Resolution(desiredWidth, desiredHeight);
+			desiredResolution = new Resolution(desiredWidth, desiredHeight);
 			actualResolution = desiredResolution;
 
 			var mainWindow = Application.OpenForms.Cast<Form>().FirstOrDefault(f => f is Shell);
@@ -1201,7 +1201,7 @@ namespace Bloom.Publish.Video
 
 		public void SetFormat(string format, bool landscape, Layout pageLayout)
 		{
-			GetDataForFormat(format, landscape, pageLayout, out Resolution videoResolution, out _codec, out _shouldRotateBook, out _shouldUseOriginalPageSize);
+			GetDataForFormat(format, landscape, pageLayout, out _, out Resolution videoResolution, out _codec, out _shouldRotateBook, out _shouldUseOriginalPageSize);
 			_videoWidth = videoResolution.Width;
 			_videoHeight = videoResolution.Height;
 		}
