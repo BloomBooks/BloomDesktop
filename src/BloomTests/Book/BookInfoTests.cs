@@ -545,11 +545,11 @@ namespace BloomTests.Book
 		}
 		[TestCase(false)]
 		[TestCase(true)]
-		public void FeaturesGetter_MultipleChoice(bool containsMultipleChoice)
+		public void FeaturesGetter_SimpleDomChoice(bool containsSimpleDomChoice)
 		{
 			var metadata = new BookMetaData();
-			metadata.Feature_MultipleChoice = containsMultipleChoice;
-			Assert.AreEqual(containsMultipleChoice, metadata.Features.Contains("multiple-choice"));
+			metadata.Feature_SimpleDomChoice = containsSimpleDomChoice;
+			Assert.AreEqual(containsSimpleDomChoice, metadata.Features.Contains("simple-dom-choice"));
 		}
 
 		[TestCase(false, true)]

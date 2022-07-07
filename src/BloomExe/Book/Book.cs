@@ -4302,7 +4302,7 @@ namespace Bloom.Book
 
 			// Language-independent features
 			UpdateQuizFeature();
-			UpdateMultipleChoiceFeature();
+			UpdateSimpleDomChoiceFeature();
 			UpdateMotionFeature();
 			UpdateComicFeature();
 			UpdateWidgetFeature();
@@ -4399,9 +4399,9 @@ namespace Bloom.Book
 			BookInfo.MetaData.Feature_Quiz = CollectionSettings.HaveEnterpriseFeatures && HasQuizPages;
 		}
 
-		private void UpdateMultipleChoiceFeature()
+		private void UpdateSimpleDomChoiceFeature()
 		{
-			BookInfo.MetaData.Feature_MultipleChoice = CollectionSettings.HaveEnterpriseFeatures &&  OurHtmlDom.HasMultipleChoicePages();
+			BookInfo.MetaData.Feature_SimpleDomChoice = CollectionSettings.HaveEnterpriseFeatures &&  OurHtmlDom.HasSimpleDomChoicePages();
 		}
 
 		/// <summary>

@@ -1323,7 +1323,7 @@ namespace Bloom.Book
 				if (Feature_Activity) features.Add("activity");
 				if (Feature_Quiz) features.Add("quiz");
 				if (Feature_Widget) features.Add("widget");
-				if (Feature_MultipleChoice) features.Add("multiple-choice");
+				if (Feature_SimpleDomChoice) features.Add("simple-dom-choice");
 
 				return features.ToArray();
 			}
@@ -1335,7 +1335,7 @@ namespace Bloom.Book
 				// no need to set Feature_Activity, it's automatically derived
 				Feature_Quiz = value.Contains("quiz");
 				Feature_Widget = value.Contains("widget");
-				Feature_MultipleChoice = value.Contains("multiple-choice");
+				Feature_SimpleDomChoice = value.Contains("multiple-choice");
 
 				Feature_Blind_LangCodes = new HashSet<string>();
 				Feature_TalkingBook_LangCodes = new HashSet<string>();
@@ -1419,7 +1419,7 @@ namespace Bloom.Book
 		//   count as the more general "activity", and each of these will also get a more
 		//   specific tag applied too.
 		[JsonIgnore]
-		public bool Feature_Activity => Feature_Quiz || Feature_Widget || Feature_MultipleChoice;
+		public bool Feature_Activity => Feature_Quiz || Feature_Widget || Feature_SimpleDomChoice;
 
 		[JsonIgnore]
 		public bool Feature_Blind { get { return Feature_Blind_LangCodes?.Any() == true; } }
@@ -1443,7 +1443,7 @@ namespace Bloom.Book
 		public bool Feature_Widget { get; set; }
 		
 		[JsonIgnore]
-		public bool Feature_MultipleChoice { get; set; }
+		public bool Feature_SimpleDomChoice { get; set; }
 		
 
 

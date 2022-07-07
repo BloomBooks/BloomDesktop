@@ -2314,11 +2314,11 @@ namespace Bloom.Book
 			return nodes?.Count >= 1;
 		}
 
-		// "Multiple-Choice" are simple built-in activities where the prompt is a text
+		// "simple-dom-choice" are simple built-in activities where the prompt is a text
 		// or an image, and the choices are a text or a image.
-		public bool HasMultipleChoicePages()
+		public bool HasSimpleDomChoicePages()
 		{
-			var nodes = _dom.SafeSelectNodes("//*[@data-activity='multiple-choice']");
+			var nodes = _dom.SafeSelectNodes("//*[@data-activity='simple-dom-choice']");
 			return nodes?.Count >= 1;
 		}
 

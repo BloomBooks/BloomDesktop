@@ -136,7 +136,8 @@ const ReaderPublishScreenInternal: React.FunctionComponent<{
                             pathToOutputBrowser +
                             "bloom-player/dist/bloomplayer.htm?centerVertically=true&url=" +
                             encodeURIComponent(bookUrl) + // Need to apply encoding to the bookUrl again as data to use it as a parameter of another URL
-                            "&independent=false&host=bloomdesktop"
+                            //nocommit "&independent=false" + // you can temporarily comment this out to send BloomPlayer analytics from Bloom Editor
+                            "&host=bloomdesktop"
                         }
                         showRefresh={true}
                         highlightRefreshIcon={highlightRefresh}
