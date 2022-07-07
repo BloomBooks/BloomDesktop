@@ -16,14 +16,17 @@ import { NoteBox } from "../../react_components/BloomDialog/commonDialogComponen
 import { BloomTooltip } from "../../react_components/BloomToolTip";
 import { MuiCheckbox } from "../../react_components/muiCheckBox";
 import { useSubscribeToWebSocketForObject } from "../../utils/WebSocketManager";
+import { IFormatDimensionsResponseEntry } from "./IFormatDimensionsResponseEntry";
 
 // The things that define each item in the Format menu
 interface IFormatItem {
     format: string; // to pass to BloomApi
     label: string;
     l10nKey: string; // for label
-    dimension: string; // like 1280x720; assuming does not need localization
-    codec: string; // like MP4 H.264; assuming does not need localization
+    idealDimension: string; // like 1920x1080; assuming does not need localization
+    actualDimension?: string | undefined; // like 1280x720; assuming does not need localization
+    fileFormat: string; // like MP4; assuming does not need localization
+    codec?: string | undefined; // like "H.264"; assuming does not need localization
     icon: React.ReactNode;
 }
 
@@ -135,37 +138,50 @@ export const AudioVideoOptionsGroup: React.FunctionComponent<{
         marks[i] = { value: index, label: pageLabels[index] };
     }
 
-    const formatItems: IFormatItem[] = [
+    // Pretty-prints the resolution in a format like so: "1280x720 (16:9)"
+    const prettyPrintResolution = (
+        width: number,
+        height: number,
+        aspectRatio: string
+    ) => {
+        return `${width}x${height} (${aspectRatio})`;
+    };
+
+    const [formatItems, setFormatItems] = useState<IFormatItem[]>([
         {
             format: "facebook",
             label: "Facebook",
             l10nKey: "PublishTab.RecordVideo.Facebook",
-            dimension: "1280x720",
-            codec: "MP4 H.264",
+            idealDimension: prettyPrintResolution(1280, 720, "16:9"),
+            fileFormat: "MP4",
+            codec: "H.264",
             icon: <img src="facebook.png" height="16px" />
         },
         {
             format: "feature",
             label: "Feature Phone",
             l10nKey: "PublishTab.RecordVideo.FeaturePhone",
-            dimension: "352x288",
-            codec: "3GP H.263",
+            idealDimension: prettyPrintResolution(352, 288, "5:4"),
+            fileFormat: "3GP",
+            codec: "H.263",
             icon: <img src="featurephone.svg" height="16px" />
         },
         {
             format: "youtube",
             label: "YouTube",
             l10nKey: "PublishTab.RecordVideo.YouTube",
-            dimension: "1920x1080",
-            codec: "MP4 H.264",
+            idealDimension: prettyPrintResolution(1920, 1080, "16:9"),
+            fileFormat: "MP4",
+            codec: "H.264",
             icon: <img src="youtube.png" height="16px" />
         },
         {
             format: "mp3",
             label: "Mp3 Audio",
             l10nKey: "PublishTab.RecordVideo.Mp3",
-            dimension: "64 kbps",
-            codec: "MP3",
+            idealDimension: "64 kbps", // For audio, use the bitrate instead.
+            fileFormat: "MP3",
+            codec: undefined,
             icon: (
                 <AudioIcon
                     css={css`
@@ -175,7 +191,62 @@ export const AudioVideoOptionsGroup: React.FunctionComponent<{
                 />
             )
         }
-    ];
+    ]);
+
+    const updatedFormatDimensionsList = BloomApi.useApiData<
+        IFormatDimensionsResponseEntry[] | undefined
+    >(`publish/av/getUpdatedFormatDimensions`, undefined);
+
+    // Handle updates when we get the response back from the 'publish/av/getUpdatedFormatDimensions' API call.
+    useEffect(() => {
+        if (!updatedFormatDimensionsList) {
+            // Nothing to do yet.
+            return;
+        }
+
+        const newFormatItems = formatItems.map(item => {
+            const newDimensions = updatedFormatDimensionsList.find(
+                x => x.format === item.format
+            );
+
+            if (!newDimensions) {
+                return item;
+            }
+            const newIdealDimensionStr = prettyPrintResolution(
+                newDimensions.desiredWidth,
+                newDimensions.desiredHeight,
+                newDimensions.aspectRatio
+            );
+
+            const isActualDifferentThanIdeal =
+                newDimensions.actualWidth !== newDimensions.desiredWidth ||
+                newDimensions.actualHeight !== newDimensions.desiredHeight;
+
+            const newActualDimensionStr = isActualDifferentThanIdeal
+                ? prettyPrintResolution(
+                      newDimensions.actualWidth,
+                      newDimensions.actualHeight,
+                      newDimensions.aspectRatio
+                  )
+                : undefined;
+
+            const isItemChanged =
+                newIdealDimensionStr !== item.idealDimension ||
+                newActualDimensionStr !== item.actualDimension;
+            if (!isItemChanged) {
+                // Unchanged, return existing copy
+                return item;
+            } else {
+                // Changed, make a copy. (Shallow copy is fine)
+                const newItem = { ...item };
+                newItem.idealDimension = newIdealDimensionStr;
+                newItem.actualDimension = newActualDimensionStr;
+                return newItem;
+            }
+        });
+
+        setFormatItems(newFormatItems);
+    }, [updatedFormatDimensionsList]);
 
     useEffect(() => {
         // Ensure selection is not disabled
@@ -418,8 +489,16 @@ const VideoFormatItem: React.FunctionComponent<IProps> = props => {
                         align-items: center;
                     `}
                 >
-                    <div>{props.dimension}</div>
-                    <div>{props.codec}</div>
+                    <div>
+                        {props.actualDimension
+                            ? `Ideal: ${props.idealDimension}`
+                            : props.idealDimension}
+                    </div>
+                    {props.actualDimension && (
+                        <div>Actual: {props.actualDimension}</div>
+                    )}
+                    <div>{props.fileFormat}</div>
+                    {props.codec && <div>{props.codec}</div>}
                 </div>
             }
         >

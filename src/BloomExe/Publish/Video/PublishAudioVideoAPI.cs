@@ -184,7 +184,7 @@ namespace Bloom.Publish.Video
 				{
 					RecordVideoWindow.GetDataForFormat(request.CurrentBook.BookInfo.PublishSettings.AudioVideo.Format,
 						ShouldRecordAsLandscape(request.CurrentBook), request.CurrentBook.GetLayout(),
-						out _, out _, out _, out bool useOriginalPageSize);
+						out _, out _, out _, out _, out bool useOriginalPageSize);
 					request.ReplyWithBoolean(useOriginalPageSize);
 				},
 				 true, // has to be on UI thread because it uses Bloom's main window to find the right screen
@@ -195,7 +195,28 @@ namespace Bloom.Publish.Video
 				{
 					request.ReplyWithText(RecordVideoWindow.GetDataForFormat(request.CurrentBook.BookInfo.PublishSettings.AudioVideo.Format,
 						ShouldRecordAsLandscape(request.CurrentBook), request.CurrentBook.GetLayout(),
-						out _, out _, out _, out _));
+						out _, out _, out _, out _, out _));
+				},
+				 true, // has to be on UI thread because it uses Bloom's main window to find the right screen
+				false);
+
+			// Returns an array of FormatDimensionsResponseEntry for formats that could be updated based on the book.
+			apiHandler.RegisterEndpointHandler(kApiUrlPart + "getUpdatedFormatDimensions",
+				request =>
+				{
+					// Currently, just hardcode the list to lookup for ease. The requested formats don't change dynamically, so this should be ok
+					string[] formatNames = new string[] { "facebook", "feature", "youtube" };	// mp3 excluded, it's not updated and we have no plans to need it.
+
+					var targetResolutionDataList = formatNames.Select(formatName =>
+					{
+						RecordVideoWindow.GetDataForFormat(formatName,
+							ShouldRecordAsLandscape(request.CurrentBook), request.CurrentBook.GetLayout(),
+							out Resolution desiredResolution, out Resolution actualResolution, out _, out _, out _);
+
+						return new FormatDimensionsResponseEntry(formatName, desiredResolution, actualResolution);
+					}).ToArray();
+
+					request.ReplyWithJson(targetResolutionDataList);
 				},
 				 true, // has to be on UI thread because it uses Bloom's main window to find the right screen
 				false);
