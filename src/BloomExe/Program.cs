@@ -27,6 +27,7 @@ using System.Linq;
 using System.Xml;
 using Bloom.CLI;
 using Bloom.CollectionChoosing;
+using Bloom.ErrorReporter;
 using Bloom.TeamCollection;
 using Bloom.MiscUI;
 using Bloom.web;
@@ -36,7 +37,6 @@ using Sentry.Protocol;
 using SIL.Windows.Forms.HtmlBrowser;
 using SIL.WritingSystems;
 using SIL.Xml;
-using Bloom.ErrorReporter;
 
 namespace Bloom
 {
@@ -1357,17 +1357,6 @@ namespace Bloom
 		private static bool _errorHandlingHasBeenSetUp;
 		private static IDisposable _sentry;
 
-		private static IBloomErrorReporter _errorReporter;
-		internal static IBloomErrorReporter ErrorReporter
-		{
-			get => _errorReporter;
-			set
-			{
-				_errorReporter = value;
-				ErrorReport.SetErrorReporter(value);
-			}
-		}
-
 		/// ------------------------------------------------------------------------------------
 		internal static void SetUpErrorHandling()
 		{
@@ -1401,8 +1390,8 @@ namespace Bloom
 
 			var orderedReporters = new IBloomErrorReporter[] { SentryErrorReporter.Instance, HtmlErrorReporter.Instance };
 			var htmlAndSentryReporter = new CompositeErrorReporter(orderedReporters, primaryReporter: HtmlErrorReporter.Instance);
-			ErrorReporter = htmlAndSentryReporter;
-
+			ErrorReport.SetErrorReporter(htmlAndSentryReporter);
+			
 			var msgTemplate = @"If you don't care who reads your bug report, you can skip this notice.
 
 When you submit a crash report or other issue, the contents of your email go in our issue tracking system, ""YouTrack"", which is available via the web at {0}. This is the normal way to handle issues in an open-source project.

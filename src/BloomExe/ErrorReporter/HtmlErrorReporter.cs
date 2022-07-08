@@ -69,75 +69,89 @@ namespace Bloom.ErrorReporter
 		}
 		#endregion
 
-		#region Additional NotifyUserOfProblem parameters saved as instance vars
-		protected string ReportButtonLabel { get; set; }
-		protected Action<Exception, string> OnReportButtonPressed { get; set; } = null;
-
-		protected string SecondaryActionButtonLabel { get; set; }
-		protected Action<Exception, string> OnSecondaryActionPressed { get; set; } = null;
-		#endregion
-
 		private void ResetToDefaults()
 		{
-			ReportButtonLabel = null;
-			OnReportButtonPressed = null;
-			SecondaryActionButtonLabel = null;
-			OnSecondaryActionPressed = null;
 			Control = null;
 		}
 
-		/// <summary>
-		/// Sets all the extra parameters required to customize the buttons/extra buttons when calling NotifyUserOfProblem
-		/// They can't be directly added to NotifyUserOfProblem because it needs to match the IErrorReporter interface.
-		/// As a result, we work around that by having class instance variables that you set before invoking NotifyUserOfProblem.
-		/// </summary>
-		/// <param name="reportButtonLabel">The localized text for the report button. Passing null means default behavior ("Report"). Passing "" disables it.</param>
-		/// <param name="onReportButtonPressed">The action to execute after the report button is pressed. Passing null means default behavior (bring up non-fatal problem report).</param>
-		/// <param name="extraButtonLabel">The localized text for the Secondary Action button.  For example, you might offer a "Retry" button.
-		/// Passing null means default behavior (disabled). Passing "" also disables it.</param>
-		/// <param name="onExtraButtonPressed">The action to execute after the secondary action button is pressed. Passing null means default behavior (disabled).</param>
-		public void SetNotifyUserOfProblemCustomParams(string reportButtonLabel, Action<Exception, string> onReportButtonPressed, string extraButtonLabel, Action<Exception, string> onExtraButtonPressed)
-		{
-			this.ReportButtonLabel = reportButtonLabel;
-			this.OnReportButtonPressed = onReportButtonPressed;
-			this.SecondaryActionButtonLabel = extraButtonLabel;
-			this.OnSecondaryActionPressed = onExtraButtonPressed;			
-		}
-
-		#region IErrorReporter interface
+		#region IBloomErrorReporter interface
 		/// <summary>
 		/// Notifies the user of a problem, using a browser-based dialog.
 		/// Note: This is a legacy method designed to be called by LibPalaso's ErrorReport class.
 		/// </summary>
+		/// <remarks>Implements legacy IErrorReporter method</remarks>
 		/// <param name="policy">Checks if we should notify the user, based on the contents of {message}</param>
-		/// <param name="alternateButton1Label">The text that goes on the alternate button (aka "Details" in WinFormsErrorReporter or "Report" in Bloom's HtmlErrorReporter).</param>
-		/// <param name="resultIfAlternateButtonPressed">This is the value that this method should return so that the caller (mainly LibPalaso ErrorReport)
-		/// can know if the alternate button was pressed, and if so, invoke whatever actions are desired.</param>
+		/// <param name="alternateButton1Label">The text that goes on the alternate button (aka "Details" in WinFormsErrorReporter or "Report" in Bloom's HtmlErrorReporter).
+		/// If "Details" (the old default) is passed in, it will be converted to "Report" (the new default).
+		/// To explicitly specify "Details", please use the new API instead. (See <see cref="NotifyUserOfProblem(IRepeatNoticePolicy, Exception, string)"/>)</param>
+		/// <param name="resultIfAlternateButtonClicked">This is the value that this method should return so that the caller (mainly LibPalaso ErrorReport)
+		/// can know if the alternate button was clicked, and if so, invoke whatever actions are desired.</param>
 		/// <param name="message">The message to show to the user</param>
-		/// <returns>If closed normally, returns ErrorResult.OK
-		/// If the report button was pressed, returns {resultIfAlternateButtonPressed}.
+		/// <returns>If closed normally, returns ErrorResult.OK.
+		/// If the report button was clicked, returns the parameter <paramref name="resultIfAlternateButtonClicked"/>.
 		/// </returns>
 		[Obsolete("Please use the simpler overload NotifyUserOfProblem(policy, exception, message) instead")]
-		public ErrorResult NotifyUserOfProblem(IRepeatNoticePolicy policy, string alternateButton1Label, ErrorResult resultIfAlternateButtonPressed, string message)
+		public ErrorResult NotifyUserOfProblem(IRepeatNoticePolicy policy, string alternateButton1Label, ErrorResult resultIfAlternateButtonClicked, string message)
 		{
 			var returnResult = ErrorResult.OK;
-			ReportButtonLabel = GetReportButtonLabel(alternateButton1Label);
+			if (alternateButton1Label == "Details")
+				alternateButton1Label = DefaultReportLabel;
 
-			OnReportButtonPressed = (exceptionParam, messageParam) =>
+			Action<string, Exception> onAlternateButtonClicked = (messageParam, exceptionParam) =>
 			{
-				returnResult = resultIfAlternateButtonPressed;
+				returnResult = resultIfAlternateButtonClicked;
 			};
 
 			var control = GetControlToUse();
 			var forceSynchronous = true;
 			SafeInvoke.InvokeIfPossible("Show Error Reporter", control, forceSynchronous, () =>
 			{
-				NotifyUserOfProblem(policy, null, message);
+				NotifyUserOfProblemInternal(message, (Exception)null, policy, alternateButton1Label, onAlternateButtonClicked);
 			});
 			return returnResult;
 		}
 
+		/// <summary>
+		/// Notifies the user of a problem, using a browser-based dialog.
+		/// </summary>
+		/// <remarks>Implements IErrorReporter method</remarks>
 		public void NotifyUserOfProblem(IRepeatNoticePolicy policy, Exception exception, string message)
+			=> NotifyUserOfProblem(message, exception, new NotifyUserOfProblemSettings(AllowSendReport.AllowIfException), policy);
+
+		/// <summary>
+		/// Notifies the user of a problem, using a browser-based dialog.
+		/// Allows customization of whether the "Report" button appears as well as an optional extra button.
+		/// </summary>
+		/// <remarks>Implements our own IBloomErrorReporter method</remarks>
+		/// <param name="message">The message to show the user</param>
+		/// <param name="settings">The customization settings controlling which/how extra buttons show up</param>
+		/// <param name="policy">The policy to use to decide whether to show the notification.</param>
+		public void NotifyUserOfProblem(string message, NotifyUserOfProblemSettings settings, IRepeatNoticePolicy policy)
+			=> NotifyUserOfProblem(message, null, settings, policy);
+
+		/// <summary>
+		/// Notifies the user of a problem, using a browser-based dialog.
+		/// Allows customization of whether the "Report" button appears as well as an optional extra button.
+		/// </summary>
+		/// <remarks>Implements our own IBloomErrorReporter method</remarks>
+		/// <param name="message">The message to show the user</param>
+		/// <param name="exception">Any accompanying exception</param>
+		/// <param name="settings">The customization settings controlling which/how extra buttons show up</param>
+		/// <param name="policy">The policy to use to decide whether to show the notification.</param>
+		public void NotifyUserOfProblem(string message, Exception exception, NotifyUserOfProblemSettings settings, IRepeatNoticePolicy policy)
+		{
+			bool shouldShowReportButton = settings.AllowSendReport.IsSendReportAllowed(new AllowSendReportContext(exception));
+			string reportButtonLabel = shouldShowReportButton ? DefaultReportLabel : "";
+			NotifyUserOfProblemInternal(message, exception, policy, reportButtonLabel, DefaultOnReportClicked, settings.ExtraButtonLabel, settings.OnExtraButtonClicked);
+		}
+
+		/// <summary>
+		/// Internal implementation of NotifyUserOfProblem that is generic enough to handle both the obsoleted legacy {resultIfAlternateButton1Pressed} approach
+		/// and the modern approach using IBloomErrorReporter interface
+		/// </summary>
+		private void NotifyUserOfProblemInternal(string message, Exception exception, IRepeatNoticePolicy policy,
+			string reportButtonLabel, Action<string, Exception> onReportButtonClicked,
+			string extraButtonLabel = null, Action<string, Exception> onExtraButtonClicked = null)
 		{
 			// Let this thread try to acquire the lock, if necessary
 			// Note: It is expected that sometimes this function will need to acquire the lock for this thread,
@@ -154,10 +168,14 @@ namespace Bloom.ErrorReporter
 
 			try
 			{
+				if (policy == null)
+				{
+					policy = new ShowAlwaysPolicy();
+				}
+
 				if (policy.ShouldShowMessage(message))
 				{
-					string reportButtonLabel = GetReportButtonLabel(exception != null ? DefaultReportLabel : null);	// Don't want Report Button to show up if exception is null
-					ShowNotifyDialog(ProblemLevel.kNotify, message, exception, reportButtonLabel, this.SecondaryActionButtonLabel);
+					ShowNotifyDialog(ProblemLevel.kNotify, message, exception, reportButtonLabel, onReportButtonClicked, extraButtonLabel, onExtraButtonClicked);
 				}
 
 				return;
@@ -247,26 +265,9 @@ namespace Bloom.ErrorReporter
 
 		private static void Quit() => Process.GetCurrentProcess().Kill();	// Same way WinFormsErrorReporter quits
 
-		protected string GetReportButtonLabel(string labelFromCaller)
-		{
-			// Note: We use null to indicate Not Set, so it will fall back to labelFromCaller
-			// "" is used to indicate that it was explicitly set and the desire is to disable the Report button.
-			if (this.ReportButtonLabel != null)
-			{
-				return this.ReportButtonLabel;
-			}
-			else if (labelFromCaller != "Details")
-			{
-				return labelFromCaller;
-			}
-			else
-			{
-				return DefaultReportLabel;
-			}
-		}
-
 		private void ShowNotifyDialog(string severity, string messageText, Exception exception,
-			string reportButtonLabel, string secondaryButtonLabel)
+			string reportButtonLabel, Action<string, Exception> onReportButtonClicked,
+			string extraButtonLabel, Action<string, Exception> onExtraButtonClicked)
 		{
 			// Before we do anything that might be "risky", put the problem in the log.
 			ProblemReportApi.LogProblem(exception, messageText, severity);
@@ -299,7 +300,7 @@ namespace Bloom.ErrorReporter
 						return;
 					}
 
-					object props = new { level = ProblemLevel.kNotify, reportLabel = reportButtonLabel, secondaryLabel = secondaryButtonLabel, message = message };
+					object props = new { level = ProblemLevel.kNotify, reportLabel = reportButtonLabel, secondaryLabel = extraButtonLabel, message = message };
 
 					// Precondition: we must be on the UI thread for Gecko to work.
 					using (var dlg = BrowserDialogFactory.CreateReactDialog("problemReportBundle", props))
@@ -324,20 +325,14 @@ namespace Bloom.ErrorReporter
 							dlg.ShowDialog();
 
 							// Take action if the user clicked a button other than Close
-							if (dlg.CloseSource == "closedByAlternateButton" && OnSecondaryActionPressed != null)
+							if (dlg.CloseSource == "closedByAlternateButton" && onExtraButtonClicked != null)
 							{
-								OnSecondaryActionPressed(exception, message);
+								onExtraButtonClicked(message, exception);
 							}
 							else if (dlg.CloseSource == "closedByReportButton")
 							{
-								if (OnReportButtonPressed != null)
-								{
-									OnReportButtonPressed(exception, message);
-								}
-								else
-								{
-									DefaultOnReportPressed(exception, message);
-								}
+								var onClicked = onReportButtonClicked != null ? onReportButtonClicked : DefaultOnReportClicked;
+								onClicked(message, exception);
 							}
 
 							// Note: With the way LibPalaso's ErrorReport is designed,
@@ -379,7 +374,7 @@ namespace Bloom.ErrorReporter
 			return !string.IsNullOrEmpty(detailedMessage) ? detailedMessage : exception.Message;
 		}
 
-		public static void DefaultOnReportPressed(Exception error, string message)
+		public static void DefaultOnReportClicked(string message, Exception error)
 		{
 			ErrorReport.ReportNonFatalExceptionWithMessage(error, message);
 		}

@@ -31,21 +31,22 @@ namespace Bloom.ErrorReporter
 			NonFatalProblem.ReportSentryOnly(e);
 		}
 
-		public void NotifyUserOfProblem(IRepeatNoticePolicy policy, Exception error, string message)
-		{
-			NonFatalProblem.ReportSentryOnly(error, message);
-		}
+		public void NotifyUserOfProblem(IRepeatNoticePolicy policy, Exception exception, string message)
+			=> NotifyUserOfProblem(message, exception, null, policy);
 
 		public ErrorResult NotifyUserOfProblem(IRepeatNoticePolicy policy, string alternateButton1Label,
 			ErrorResult resultIfAlternateButtonPressed, string message)
 		{
-			NonFatalProblem.ReportSentryOnly(message);
+			NotifyUserOfProblem(message, null, null, policy);
 			return ErrorResult.OK;
 		}
 
-		public void SetNotifyUserOfProblemCustomParams(string reportButtonLabel, Action<Exception, string> onReportButtonPressed, string extraButtonLabel, Action<Exception, string> onExtraButtonPressed)
+		public void NotifyUserOfProblem(string message, NotifyUserOfProblemSettings settings, IRepeatNoticePolicy policy)
+			=> NotifyUserOfProblem(message, null, settings, policy);
+
+		public void NotifyUserOfProblem(string message, Exception exception, NotifyUserOfProblemSettings settings, IRepeatNoticePolicy policy)
 		{
-			// No need for this class to do anything when this function is called
+			NonFatalProblem.ReportSentryOnly(exception, message);
 		}
 
 		public void ReportNonFatalException(Exception exception, IRepeatNoticePolicy policy)
