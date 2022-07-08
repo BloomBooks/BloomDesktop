@@ -178,7 +178,7 @@ export const CopyrightPanel: React.FunctionComponent<{
                 <NoteBox addBorder={true}>
                     <div>
                         <Div l10nKey={"Copyright.PublishingAsSIL"}>
-                            Publishing as SIL
+                            Using "SIL" in a Copyright
                         </Div>
                         <div
                             css={css`
@@ -200,8 +200,10 @@ export const CopyrightPanel: React.FunctionComponent<{
                                     "https://docs.bloomlibrary.org/sil-corporate-guidelines"
                                 }
                             >
-                                Before publishing as SIL, ensure that you follow
-                                [SIL corporate guidelines].
+                                SIL has corporate guidelines around what kinds
+                                of materials may be copyrighted by SIL. Please
+                                check [this page] in order to ensure that this
+                                book qualifies.
                             </PWithLink>
                         </div>
                     </div>
