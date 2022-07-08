@@ -57,14 +57,13 @@ namespace Bloom.ErrorReporter
 			return primaryResult.Value;
 		}
 
-		/// <summary>
-		/// Calls the SetNotifyUserOfProblemCustomParams required by IBloomErrorReporter on each of the child error reporters
-		/// </summary>
-		public void SetNotifyUserOfProblemCustomParams(string reportButtonLabel, Action<Exception, string> onReportButtonPressed, string extraButtonLabel, Action<Exception, string> onExtraButtonPressed)
+		public void NotifyUserOfProblemCustom(string message, Exception exception, IRepeatNoticePolicy policy,
+			AllowSendReport allowSendReport,
+			string extraButtonLabel, Action<string, Exception> onExtraButtonClicked)
 		{
 			foreach (var reporter in Reporters)
 			{
-				reporter.SetNotifyUserOfProblemCustomParams(reportButtonLabel, onReportButtonPressed, extraButtonLabel, onExtraButtonPressed);
+				reporter.NotifyUserOfProblemCustom(message, exception, policy, allowSendReport, extraButtonLabel, onExtraButtonClicked);
 			}
 		}
 
