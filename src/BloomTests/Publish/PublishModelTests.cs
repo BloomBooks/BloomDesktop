@@ -67,14 +67,15 @@ namespace BloomTests.Publish
 			VerifyDataDivValues(dom);
 
 			// SUT
-			PublishModel.RemoveUnwantedLanguageData(dom, new[] {"en"});
+			PublishModel.RemoveUnwantedLanguageData(dom, new[] {"en"}, false, null, null);
 
 			// Check occurrences in modified HTML.  This should be exactly the same as before.
 			VerifyDataDivValues(dom);
 		}
 
-		[Test]
-		public void RemoveUnwantedLanguageData_BloomDataDiv_RemovesNothingEvenWithN1()
+		[TestCase("en")]
+		[TestCase("fr")]
+		public void RemoveUnwantedLanguageData_BloomDataDiv_RemovesNothingEvenWithN1(string metadataLang1Code)
 		{
 			var dom = new HtmlDom(kDataDivHtml);
 
@@ -82,7 +83,7 @@ namespace BloomTests.Publish
 			VerifyDataDivValues(dom);
 
 			// SUT
-			PublishModel.RemoveUnwantedLanguageData(dom, new[] {"en"}, "en");
+			PublishModel.RemoveUnwantedLanguageData(dom, new[] {"en"}, true, metadataLang1Code, null);
 
 			// Check occurrences in modified HTML.  This should be exactly the same as before.
 			VerifyDataDivValues(dom);
@@ -179,7 +180,7 @@ namespace BloomTests.Publish
 			VerifyFrontCoverValues(dom, false);
 
 			// SUT
-			PublishModel.RemoveUnwantedLanguageData(dom, new[] {"en"});
+			PublishModel.RemoveUnwantedLanguageData(dom, new[] {"en"}, false, null, null);
 
 			// Check occurrences in modified HTML.  This should be exactly the same as before.
 			VerifyFrontCoverValues(dom, false);
@@ -193,7 +194,7 @@ namespace BloomTests.Publish
 			VerifyFrontCoverValues(dom, false);
 
 			// SUT
-			PublishModel.RemoveUnwantedLanguageData(dom, new[] {"tl"}, "en");
+			PublishModel.RemoveUnwantedLanguageData(dom, new[] {"tl"}, true, "en", null);
 
 			// Check occurrences in modified HTML.  This should NOT be exactly the same as before.
 			VerifyFrontCoverValues(dom, true);
@@ -282,7 +283,7 @@ namespace BloomTests.Publish
 			VerifyCreditsPageValues(dom, false);
 
 			// SUT
-			PublishModel.RemoveUnwantedLanguageData(dom, new[] {"en"});
+			PublishModel.RemoveUnwantedLanguageData(dom, new[] {"en"}, false, null, null);
 
 			// Check occurrences in modified HTML.  This should be exactly the same as before.
 			VerifyCreditsPageValues(dom, false);
@@ -296,7 +297,7 @@ namespace BloomTests.Publish
 			VerifyCreditsPageValues(dom, false);
 
 			// SUT
-			PublishModel.RemoveUnwantedLanguageData(dom, new[] {"en"}, "en");
+			PublishModel.RemoveUnwantedLanguageData(dom, new[] {"en"}, true, "en", null);
 
 			// Check occurrences in modified HTML.  This should NOT be exactly the same as before.
 			VerifyCreditsPageValues(dom, true);
@@ -373,7 +374,7 @@ namespace BloomTests.Publish
 			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang and @testRemoves='true']", 2);
 
 			// SUT
-			PublishModel.RemoveUnwantedLanguageData(dom, new[] {"en"});
+			PublishModel.RemoveUnwantedLanguageData(dom, new[] {"en"}, false, null, null);
 
 			// Check occurrences in modified HTML.
 			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='' and contains(@class, 'bloom-page')]", 1);	// unchanged
@@ -425,7 +426,7 @@ namespace BloomTests.Publish
 			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang and @testRemoves='true']", 1);
 
 			// SUT
-			PublishModel.RemoveUnwantedLanguageData(dom, new[] {"tl"});
+			PublishModel.RemoveUnwantedLanguageData(dom, new[] {"tl"}, false, null, null);
 
 			// Check occurrences in modified HTML.
 			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='' and contains(@class, 'bloom-page')]", 1);	// unchanged
@@ -466,7 +467,7 @@ namespace BloomTests.Publish
 			VerifyOriginalEmbeddedDivsAreAllThere(dom);
 
 			// SUT
-			PublishModel.RemoveUnwantedLanguageData(dom, new[] {"en"});
+			PublishModel.RemoveUnwantedLanguageData(dom, new[] {"en"}, false, null, null);
 
 			// Check occurrences in modified HTML.
 			VerifyOnlyUnwantedEmbeddedDivsAreRemoved(dom, false);
@@ -480,7 +481,7 @@ namespace BloomTests.Publish
 			VerifyOriginalEmbeddedDivsAreAllThere(dom);
 
 			// SUT
-			PublishModel.RemoveUnwantedLanguageData(dom, new[] {"en"}, "de");
+			PublishModel.RemoveUnwantedLanguageData(dom, new[] {"en"}, true, "de", null);
 
 			// Check occurrences in modified HTML: should be same for content page regardless of specifying national language.
 			VerifyOnlyUnwantedEmbeddedDivsAreRemoved(dom, false);
@@ -513,7 +514,7 @@ namespace BloomTests.Publish
 			VerifyOriginalEmbeddedDivsAreAllThere(dom);
 
 			// SUT
-			PublishModel.RemoveUnwantedLanguageData(dom, new[] {"en"});
+			PublishModel.RemoveUnwantedLanguageData(dom, new[] {"en"}, false, null, null);
 
 			// Check occurrences in modified HTML: nothing removed from xmatter unless national language is specified.
 			VerifyOriginalEmbeddedDivsAreAllThere(dom);
@@ -528,7 +529,7 @@ namespace BloomTests.Publish
 			VerifyOriginalEmbeddedDivsAreAllThere(dom);
 
 			// SUT
-			PublishModel.RemoveUnwantedLanguageData(dom, new[] {"en"}, "de");
+			PublishModel.RemoveUnwantedLanguageData(dom, new[] {"en"}, true, "de", null);
 
 			// Check occurrences in modified HTML: German should be preserved, French and Spanish removed.
 			VerifyOnlyUnwantedEmbeddedDivsAreRemoved(dom, true);
