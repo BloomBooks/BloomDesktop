@@ -640,7 +640,8 @@ namespace Bloom.Publish
 		/// See https://issues.bloomlibrary.org/youtrack/issue/BL-7124.
 		/// See https://issues.bloomlibrary.org/youtrack/issue/BL-7998 for when we need to prune xmatter pages.
 		/// </remarks>
-		public static void RemoveUnwantedLanguageData(HtmlDom dom, IEnumerable<string> languagesToInclude, string nationalLang=null)
+		public static void RemoveUnwantedLanguageData(HtmlDom dom, IEnumerable<string> languagesToInclude, bool shouldPruneXmatter,
+			string metadataLang1Code, string metadataLang2Code)
 		{
 			//Debug.Write("PublishModel.RemoveUnwantedLanguageData(): languagesToInclude =");
 			//foreach (var lang in languagesToInclude)
@@ -666,12 +667,19 @@ namespace Bloom.Publish
 			foreach (var page in dom.RawDom.SafeSelectNodes("//div[contains(@class,'bloom-page')]").Cast<XmlElement>().ToList())
 			{
 				var isXMatter = !String.IsNullOrWhiteSpace(page.GetAttribute("data-xmatter-page"));
-				if (isXMatter && nationalLang == null)
-					continue;	// default behavior is to skip pruning data from xmatter
+				if (isXMatter && !shouldPruneXmatter)
+					continue;
+
+				// We must preserve M1 and M2 in xmatter.
+				// Most xmatters do not contain M2, but the mxb ones do.
+				bool shouldOtherwisePreserve(string langCode) {
+					return isXMatter && (langCode == metadataLang1Code || langCode == metadataLang2Code);
+				}
+
 				foreach (var div in page.SafeSelectNodes(".//div[@lang]").Cast<XmlElement>().ToList())
 				{
 					var lang = div.GetAttribute("lang");
-					if (String.IsNullOrEmpty(lang) || contentLanguages.Contains(lang) || (isXMatter && lang == nationalLang))
+					if (String.IsNullOrEmpty(lang) || contentLanguages.Contains(lang) || shouldOtherwisePreserve(lang))
 						continue;
 					var classAttr = div.GetAttribute("class");
 					// retain the .pageLabel and .pageDescription divs (which are always lang='en')
@@ -687,7 +695,7 @@ namespace Bloom.Publish
 						var sublang = subdiv.GetAttribute("lang");
 						if (String.IsNullOrEmpty(sublang))
 							continue;
-						if (contentLanguages.Contains(sublang) || (isXMatter && sublang == nationalLang))
+						if (contentLanguages.Contains(sublang) || shouldOtherwisePreserve(sublang))
 						{
 							deleteDiv = false;
 							break;
@@ -703,7 +711,9 @@ namespace Bloom.Publish
 			if (stylesNode != null)
 			{
 				var cssTextOrig = stylesNode.InnerXml;   // InnerXml needed to preserve CDATA markup
-				var cssText = HtmlDom.RemoveUnwantedLanguageRulesFromCss(cssTextOrig, languagesToInclude);
+				// For 5.3, we wholesale keep all L2/L3 rules even though this might result in incorrect error messages about fonts. (BL-11357)
+				// In 5.4, we hope to clean up all this font determination stuff by using a real browser to determine what is used.
+				var cssText = HtmlDom.RemoveUnwantedLanguageRulesFromCss(cssTextOrig, languagesToInclude.Append(metadataLang1Code).Append(metadataLang2Code));
 				if (cssText != cssTextOrig)
 					stylesNode.InnerXml = cssText;
 			}

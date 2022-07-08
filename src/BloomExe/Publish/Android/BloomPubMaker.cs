@@ -132,10 +132,15 @@ namespace Bloom.Publish.Android
 					page.ParentNode.RemoveChild(page);
 			}
 
+			var mdLang1Code = modifiedBook.BookData.MetadataLanguage1IsoCode;
+			var mdLang2Code = modifiedBook.BookData.MetadataLanguage2IsoCode;
 			if (settings?.LanguagesToInclude != null)
 			{
-				PublishModel.RemoveUnwantedLanguageData(modifiedBook.OurHtmlDom, settings.LanguagesToInclude, modifiedBook.BookData.MetadataLanguage1IsoCode);
-				PublishModel.RemoveUnwantedLanguageRulesFromCssFiles(modifiedBook.FolderPath, settings.LanguagesToInclude);
+				PublishModel.RemoveUnwantedLanguageData(modifiedBook.OurHtmlDom, settings.LanguagesToInclude,
+					shouldPruneXmatter: true, mdLang1Code, mdLang2Code);
+				// For 5.3, we wholesale keep all L2/L3 rules even though this might result in incorrect error messages about fonts. (BL-11357)
+				// In 5.4, we hope to clean up all this font determination stuff by using a real browser to determine what is used.
+				PublishModel.RemoveUnwantedLanguageRulesFromCssFiles(modifiedBook.FolderPath, settings.LanguagesToInclude.Append(mdLang1Code).Append(mdLang2Code));
 			}
 			else if (Program.RunningHarvesterMode && modifiedBook.OurHtmlDom.SelectSingleNode(BookStorage.ComicalXpath) != null)
 			{
@@ -147,7 +152,8 @@ namespace Bloom.Publish.Android
 				// eventually improve this. In the meantime, switching language would have bad effects,
 				// and if you can't switch language, there's no point in the book containing more than one.
 				var languagesToInclude = new string[1] { modifiedBook.BookData.Language1.Iso639Code };
-				PublishModel.RemoveUnwantedLanguageData(modifiedBook.OurHtmlDom, languagesToInclude, modifiedBook.BookData.MetadataLanguage1IsoCode);
+				PublishModel.RemoveUnwantedLanguageData(modifiedBook.OurHtmlDom, languagesToInclude,
+					shouldPruneXmatter: true, mdLang1Code, mdLang2Code);
 			}
 
 			// Do this after processing interactive pages, as they can satisfy the criteria for being 'blank'
