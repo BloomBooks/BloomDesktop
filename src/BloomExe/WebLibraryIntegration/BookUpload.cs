@@ -145,15 +145,14 @@ namespace Bloom.WebLibraryIntegration
 		/// <summary>
 		/// Only for use in tests
 		/// </summary>
-		public string UploadBook(string bookFolder, IProgress progress)
+		internal string UploadBook(string bookFolder, IProgress progress)
 		{
-			string parseId;
-			return UploadBook(bookFolder, progress, out parseId);
+			return UploadBook(bookFolder, progress, out _, null, null, null, null, null, null, null);
 		}
 
 		private string UploadBook(string bookFolder, IProgress progress, out string parseId,
-			string pdfToInclude = null, ISet<string> audioFilesToInclude = null, IEnumerable<string> videoFilesToInclude = null, string[] languages = null,
-			CollectionSettings collectionSettings = null)
+			string pdfToInclude, ISet<string> audioFilesToInclude, IEnumerable<string> videoFilesToInclude, string[] languages,
+			CollectionSettings collectionSettings, string metadataLang1Code, string metadataLang2Code)
 		{
 			// Books in the library should generally show as locked-down, so new users are automatically in localization mode.
 			// Occasionally we may want to upload a new authoring template, that is, a 'book' that is suitableForMakingShells.
@@ -228,7 +227,8 @@ namespace Bloom.WebLibraryIntegration
 				parseId = "";
 				try
 				{
-					_s3Client.UploadBook(s3BookId, bookFolder, progress, pdfToInclude, audioFilesToInclude, videoFilesToInclude, languages);
+					_s3Client.UploadBook(s3BookId, bookFolder, progress, pdfToInclude, audioFilesToInclude, videoFilesToInclude, languages,
+						metadataLang1Code, metadataLang2Code);
 					metadata.BaseUrl = _s3Client.BaseUrl;
 					metadata.BookOrder = _s3Client.BookOrderUrlOfRecentUpload;
 					var metaMsg = LocalizationManager.GetString("PublishTab.Upload.UploadingBookMetadata", "Uploading book metadata", "In this step, Bloom is uploading things like title, languages, and topic tags to the BloomLibrary.org database.");
@@ -580,7 +580,9 @@ namespace Bloom.WebLibraryIntegration
 					GetAudioFilesToInclude(book, bookParams.ExcludeMusic),
 					videoFiles,
 					languagesToUpload,
-					book.CollectionSettings);
+					book.CollectionSettings,
+					book.BookData.MetadataLanguage1IsoCode,
+					book.BookData.MetadataLanguage2IsoCode);
 			}
 			finally
 			{

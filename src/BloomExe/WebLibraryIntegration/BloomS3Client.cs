@@ -208,7 +208,8 @@ namespace Bloom.WebLibraryIntegration
 		/// except the one we want.
 		/// </summary>
 		public void UploadBook(string storageKeyOfBookFolder, string pathToBloomBookDirectory, IProgress progress,
-			string pdfToInclude = null, ISet<string> audioFilesToInclude = null, IEnumerable<string> videoFilesToInclude = null, string[] languagesToInclude = null)
+			string pdfToInclude, ISet<string> audioFilesToInclude, IEnumerable<string> videoFilesToInclude,
+			string[] languagesToInclude, string metadataLang1Code, string metadataLang2Code)
 		{
 			BaseUrl = null;
 			BookOrderUrlOfRecentUpload = null;
@@ -259,7 +260,7 @@ namespace Bloom.WebLibraryIntegration
 			BookStorage.RemoveLocalOnlyFiles(destDirName);
 
 			if (languagesToInclude != null && languagesToInclude.Count() > 0)
-				RemoveUnwantedLanguageData(destDirName, languagesToInclude);
+				RemoveUnwantedLanguageData(destDirName, languagesToInclude, metadataLang1Code, metadataLang2Code);
 
 			PublishHelper.ReportInvalidFonts(destDirName, progress);
 
@@ -333,7 +334,8 @@ namespace Bloom.WebLibraryIntegration
 			fileSystemInfo.Delete();
 		}
 
-		public void RemoveUnwantedLanguageData(string destDirName, IEnumerable<string> languagesToInclude)
+		public void RemoveUnwantedLanguageData(string destDirName, IEnumerable<string> languagesToInclude,
+			string metadataLang1Code, string metadataLang2Code)
 		{
 			// There should be only one html file with the same name as the directory it's in, but let's
 			// not make any assumptions here.
@@ -341,11 +343,13 @@ namespace Bloom.WebLibraryIntegration
 			{
 				var xmlDomFromHtmlFile = XmlHtmlConverter.GetXmlDomFromHtmlFile(filepath, false);
 				var dom = new HtmlDom(xmlDomFromHtmlFile);
-				PublishModel.RemoveUnwantedLanguageData(dom, languagesToInclude);
+				PublishModel.RemoveUnwantedLanguageData(dom, languagesToInclude, false, metadataLang1Code, metadataLang2Code);
 				XmlHtmlConverter.SaveDOMAsHtml5(dom.RawDom, filepath);
 			}
 			// Remove language specific style settings from all CSS files for unwanted languages.
-			PublishModel.RemoveUnwantedLanguageRulesFromCssFiles(destDirName, languagesToInclude);
+			// For 5.3, we wholesale keep all L2/L3 rules even though this might result in incorrect error messages about fonts. (BL-11357)
+			// In 5.4, we hope to clean up all this font determination stuff by using a real browser to determine what is used.
+			PublishModel.RemoveUnwantedLanguageRulesFromCssFiles(destDirName, languagesToInclude.Append(metadataLang1Code).Append(metadataLang2Code));
 		}
 
 		//Note: there is a similar list for BloomPacks, but it is not identical, so don't just copy/paste
