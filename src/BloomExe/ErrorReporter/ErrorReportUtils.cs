@@ -10,49 +10,14 @@ using System.Windows.Forms;
 
 namespace Bloom.ErrorReporter
 {
-	internal interface IBloomErrorReporter : IErrorReporter
-	{
-		/// <summary>
-		/// Sets all the extra parameters required to customize the buttons/extra buttons when calling NotifyUserOfProblem
-		/// They can't be directly added to NotifyUserOfProblem because it needs to match the IErrorReporter interface.
-		/// As a result, we work around that by having class instance variables that you set before invoking NotifyUserOfProblem.
-		/// </summary>
-		/// <param name="reportButtonLabel">The localized text of the report button. Pass null for default behavior. Pass "" to disable.</param>
-		/// <param name="onReportButtonPressed">The action to execute after the report button is pressed. Pass null to use the default behavior.</param>
-		/// <param name="extraButtonLabel">The localized text of the extra button. Pass null for default behavior. Pass "" to disable.</param>
-		/// <param name="onExtraButtonPressed">The action to execute after the extra button is pressed. Pass null to use the default behavior.</param>
-		void SetNotifyUserOfProblemCustomParams(string reportButtonLabel = null, Action<Exception, string> onReportButtonPressed = null,
-			string extraButtonLabel = null, Action<Exception, string> onExtraButtonPressed = null);
-	}
-
 	/// <summary>
 	/// This class is based on LibPalaso's <see cref="ErrorReport"/> class,
 	/// but adds methods to call NotifyUserOfProblem with more button customization
 	/// </summary>
 	public class ErrorReportUtils
 	{
-		/// <summary>
-		/// Customized version of ErrorReport.NotifyUserOfProblem that allows customization of the button labels and what they do.
-		/// (This will eventually call <see cref="ErrorReport.NotifyUserOfProblem(IRepeatNoticePolicy, Exception, string, object[])"/>)
-		/// </summary>
-		/// <param name="message">The message to report to the user.</param>
-		/// <param name="exception">Optional - Any exception accompanying the message.</param>
-		/// <param name="reportButtonLabel">Optional - The localized text of the report button. Pass null to use the default behavior.</param>
-		/// <param name="onReportButtonPressed">Optional - The action to execute after the report button is pressed. Pass null to use the default behavior.</param>
-		/// <param name="extraButtonLabel">Optional - The localized text of the secondary action button. Pass null to use the default behavior.</param>
-		/// <param name="onExtraButtonPressed">Optional - The action to execute after the secondary action button is pressed. Pass null to use the default behavior.</param>
-		/// <param name="policy">Optional - The policy for how often to show the message. If null or not set, then ShowAlwaysPolicy will be used.</param>
-		public static void NotifyUserOfProblem(string message, Exception exception = null,
-			string reportButtonLabel = null, Action<Exception, string> onReportButtonPressed = null,
-			string extraButtonLabel = null, Action<Exception, string> onExtraButtonPressed = null,
-			IRepeatNoticePolicy policy = null)
-		{
-			Program.ErrorReporter.SetNotifyUserOfProblemCustomParams(reportButtonLabel, onReportButtonPressed, extraButtonLabel, onExtraButtonPressed);
-			ErrorReport.NotifyUserOfProblem(policy ?? new ShowAlwaysPolicy(), exception, message);
-		}
-
 		#region Premade Alternate Actions
-		internal static void TestAction(Exception error, string message)
+		internal static void TestAction(string message, Exception error)
 		{
 			MessageBox.Show("Secondary Action button pressed.");
 		}
@@ -122,7 +87,7 @@ namespace Bloom.ErrorReporter
 			else if (title == "Error NotifyUser NoReport 3")
 			{
 				// Exercises a path where you go through the ErrorReportUtils adapters
-				ErrorReportUtils.NotifyUserOfProblem(fakeProblemMessage);
+				BloomErrorReport.NotifyUserOfProblem(fakeProblemMessage, new NotifyUserOfProblemSettings());
 			}
 			else if (title == "Error NotifyUser LongMessage")
 			{
@@ -139,20 +104,14 @@ namespace Bloom.ErrorReporter
 			}
 			else if (title == "Error NotifyUser Report NoRetry 2")
 			{
-				// Exercises a path where you go through the ErrorReportUtils adapters
-				ErrorReportUtils.NotifyUserOfProblem(fakeProblemMessage, fakeException);
+				// Exercises a path where you go through BloomErrorReport
+				BloomErrorReport.NotifyUserOfProblem(fakeProblemMessage, fakeException, new NotifyUserOfProblemSettings());
 			}
 			else if (title == "Error NotifyUser Report Retry")
 			{
-				// Exercises a path where you need to go through the ErrorReportUtils adapters
+				// Exercises a path where you need to go through BloomErrorReport
 				var secondaryButtonLabel = LocalizationManager.GetString("ErrorReportDialog.Retry", "Retry");
-				ErrorReportUtils.NotifyUserOfProblem(fakeProblemMessage, fakeException, null, null, secondaryButtonLabel, ErrorReportUtils.TestAction);
-			}
-			else if (title == "Error NotifyUser Custom")
-			{
-				// Exercises a path where you need to go through the ErrorReportUtils adapters
-				var secondaryButtonLabel = LocalizationManager.GetString("ErrorReportDialog.Retry", "Retry");
-				ErrorReportUtils.NotifyUserOfProblem(fakeProblemMessage, fakeException, "CustomReport", (ex, msg) => { MessageBox.Show("CustomReport button pressed."); }, secondaryButtonLabel, ErrorReportUtils.TestAction);
+				BloomErrorReport.NotifyUserOfProblem(fakeProblemMessage, fakeException, new NotifyUserOfProblemSettings(secondaryButtonLabel, ErrorReportUtils.TestAction), new ShowAlwaysPolicy());
 			}
 			else if (title == "Error NotifyUser LegacyInterface")
 			{
