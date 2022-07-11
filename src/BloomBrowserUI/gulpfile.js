@@ -395,7 +395,7 @@ gulp.task(
 // Run when needing to test l10n on user machines, or when markdown/html content
 // changes and xliff files need to be updated for checkin.
 gulp.task(
-    "build:l10n",
+    "build-l10n",
     gulp.parallel("translateHtmlFiles", "createXliffFiles")
 );
 
