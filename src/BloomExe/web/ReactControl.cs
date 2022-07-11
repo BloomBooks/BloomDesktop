@@ -50,7 +50,7 @@ namespace Bloom.web
 		}
 
 		public bool UseEditContextMenu;
-		private IBrowser _browser;
+		private Browser _browser;
 
 		private void ReactControl_Load(object sender, System.EventArgs e)
 		{

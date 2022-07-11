@@ -6,7 +6,7 @@ using Microsoft.Web.WebView2.Core;
 
 namespace Bloom
 {
-	public partial class WebView2Browser : UserControl, IBrowser
+	public partial class WebView2Browser :  Browser
 	{
 
 		public WebView2Browser()
@@ -34,60 +34,60 @@ namespace Bloom
 		public event EventHandler DocumentCompleted;
 
 		// needed by geckofx but not webview2
-		public void EnsureHandleCreated()
+		public override void EnsureHandleCreated()
 		{		
 		}
 
-		public void AddScriptContent(string content)
+		public override void AddScriptContent(string content)
 		{
 			throw new NotImplementedException();
 		}
 
-		public void ActivateFocussed() 
+		public override void ActivateFocussed() 
 		{
 			//TODO
 		}
 
-		public void AddScriptSource(string filename)
+		public override void AddScriptSource(string filename)
 		{
 			throw new NotImplementedException();
 		}
 
-		public void Copy()
+		public override void Copy()
 		{
 			throw new NotImplementedException();
 		}
 
-		//public void HandleLinkClick(GeckoAnchorElement anchor, DomEventArgs eventArgs, string workingDirectoryForFileLinks)
+		//public override void HandleLinkClick(GeckoAnchorElement anchor, DomEventArgs eventArgs, string workingDirectoryForFileLinks)
 		//{
 		//	throw new NotImplementedException();
 		//}
 
-		public void Navigate(HtmlDom htmlDom, HtmlDom htmlEditDom, bool setAsCurrentPageForDebugging, BloomServer.SimulatedPageFileSource source)
+		public override void Navigate(HtmlDom htmlDom, HtmlDom htmlEditDom, bool setAsCurrentPageForDebugging, BloomServer.SimulatedPageFileSource source)
 		{
 			var html = XmlHtmlConverter.ConvertDomToHtml5(htmlDom.RawDom);
 			_webview.NavigateToString(html);
 		}
 
-		public async void Navigate(string url, bool cleanupFileAfterNavigating)
+		public async override void Navigate(string url, bool cleanupFileAfterNavigating)
 		{
 			await _webview.EnsureCoreWebView2Async();
 			_webview.CoreWebView2.Navigate(url);
 		}
 
-		public bool NavigateAndWaitTillDone(HtmlDom htmlDom, int timeLimit, string source, Func<bool> cancelCheck, bool throwOnTimeout)
+		public override bool NavigateAndWaitTillDone(HtmlDom htmlDom, int timeLimit, string source, Func<bool> cancelCheck, bool throwOnTimeout)
 		{
 			var html = XmlHtmlConverter.ConvertDomToHtml5(htmlDom.RawDom);
 			_webview.NavigateToString(html);
 			return true;
 		}
 
-		public void NavigateRawHtml(string html)
+		public override void NavigateRawHtml(string html)
 		{
 			_webview.NavigateToString(html);
 		}
 
-		public void NavigateToTempFileThenRemoveIt(string path, string urlQueryParams)
+		public override void NavigateToTempFileThenRemoveIt(string path, string urlQueryParams)
 		{
 			// Convert from path to URL
 			if (!String.IsNullOrEmpty(urlQueryParams))
@@ -99,52 +99,52 @@ namespace Bloom
 			this.Navigate(url, false);
 		}
 
-		public void OnGetTroubleShootingInformation(object sender, EventArgs e)
+		public override void OnGetTroubleShootingInformation(object sender, EventArgs e)
 		{
 			throw new NotImplementedException();
 		}
 
-		public void OnOpenPageInSystemBrowser(object sender, EventArgs e)
+		public override void OnOpenPageInSystemBrowser(object sender, EventArgs e)
 		{
 			throw new NotImplementedException();
 		}
 
-		public void RaiseBrowserReady()
+		public override void RaiseBrowserReady()
 		{
 			
 		}
 
-		public void ReadEditableAreasNow(string bodyHtml, string userCssContent)
+		public override void ReadEditableAreasNow(string bodyHtml, string userCssContent)
 		{
 			
 		}
 
-		public string RunJavaScript(string script)
+		public override string RunJavaScript(string script)
 		{
 			return null;
 		}
 
-		public void SaveHTML(string path)
+		public override void SaveHTML(string path)
 		{
 			throw new NotImplementedException();
 		}
 
-		public void SetEditDom(HtmlDom editDom)
+		public override void SetEditDom(HtmlDom editDom)
 		{
 			throw new NotImplementedException();
 		}
 
-		public void SetEditingCommands(CutCommand cutCommand, CopyCommand copyCommand, PasteCommand pasteCommand, UndoCommand undoCommand)
+		public override void SetEditingCommands(CutCommand cutCommand, CopyCommand copyCommand, PasteCommand pasteCommand, UndoCommand undoCommand)
 		{
 			
 		}
 
-		public void ShowHtml(string html)
+		public override void ShowHtml(string html)
 		{
 			throw new NotImplementedException();
 		}
 
-		public void UpdateEditButtons()
+		public override void UpdateEditButtons()
 		{
 			
 		}

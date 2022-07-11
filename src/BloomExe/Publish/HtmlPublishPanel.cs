@@ -10,7 +10,7 @@ namespace Bloom.Publish
 	/// </summary>
 	public partial class HtmlPublishPanel : UserControl
 	{
-		private IBrowser _browser;
+		private Browser _browser;
 
 		public HtmlPublishPanel(string pathToHtmlFile)
 		{
@@ -28,7 +28,7 @@ namespace Bloom.Publish
 			VisibleChanged += OnVisibleChanged;
 		}
 
-		public IBrowser Browser => _browser;
+		public Browser Browser => _browser;
 
 		private string GetUrlParams()
 		{

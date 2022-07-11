@@ -1,6 +1,7 @@
 ﻿using Bloom.Api;
 using Bloom.Book;
 using System;
+using System.Windows.Forms;
 
 namespace Bloom
 {
@@ -8,46 +9,46 @@ namespace Bloom
 	// my coding. 
 	public class BrowserMaker
 	{
-		public static IBrowser MakeBrowser()
+		public static Browser MakeBrowser()
 		{
 			//return new WebView2Browser();
 			return new GeckoFxBrowser();
 		}
 	}
 
-	public interface IBrowser 
+	public abstract class Browser : UserControl
 	{
 		//Func<GeckoContextMenuEventArgs, bool> ContextMenuProvider { get; set; }
 		ControlKeyEvent ControlKeyEvent { get; set; }
 		int VerticalScrollDistance { get; set; }
 		//GeckoWebBrowser WebBrowser { get; }
 
-		void EnsureHandleCreated();
+		public abstract void EnsureHandleCreated();
 
-		event EventHandler BrowserReady;
-		event EventHandler OnBrowserClick;
-		event EventHandler DocumentCompleted;
+		public event EventHandler BrowserReady;
+		public event EventHandler OnBrowserClick;
+		public event EventHandler DocumentCompleted;
 
-		void ActivateFocussed(); // review what should this be called?
+		public abstract void ActivateFocussed(); // review what should this be called?
 
-		void AddScriptContent(string content);
-		void AddScriptSource(string filename);
-		void Copy();
-		//void HandleLinkClick(GeckoAnchorElement anchor, DomEventArgs eventArgs, string workingDirectoryForFileLinks);
-		void Navigate(HtmlDom htmlDom, HtmlDom htmlEditDom = null, bool setAsCurrentPageForDebugging = false, BloomServer.SimulatedPageFileSource source = BloomServer.SimulatedPageFileSource.Nav);
-		void Navigate(string url, bool cleanupFileAfterNavigating);
-		bool NavigateAndWaitTillDone(HtmlDom htmlDom, int timeLimit, string source = "nav", Func<bool> cancelCheck = null, bool throwOnTimeout = true);
-		void NavigateRawHtml(string html);
-		void NavigateToTempFileThenRemoveIt(string path, string urlQueryParams = "");
-		void OnGetTroubleShootingInformation(object sender, EventArgs e);
-		void OnOpenPageInSystemBrowser(object sender, EventArgs e);
-		void RaiseBrowserReady();
-		void ReadEditableAreasNow(string bodyHtml, string userCssContent);
-		string RunJavaScript(string script);
-		void SaveHTML(string path);
-		void SetEditDom(HtmlDom editDom);
-		void SetEditingCommands(CutCommand cutCommand, CopyCommand copyCommand, PasteCommand pasteCommand, UndoCommand undoCommand);
-		void ShowHtml(string html);
-		void UpdateEditButtons();
+		public abstract void AddScriptContent(string content);
+		public abstract void AddScriptSource(string filename);
+		public abstract void Copy();
+		//public abstract void HandleLinkClick(GeckoAnchorElement anchor, DomEventArgs eventArgs, string workingDirectoryForFileLinks);
+		public abstract void Navigate(HtmlDom htmlDom, HtmlDom htmlEditDom = null, bool setAsCurrentPageForDebugging = false, BloomServer.SimulatedPageFileSource source = BloomServer.SimulatedPageFileSource.Nav);
+		public abstract void Navigate(string url, bool cleanupFileAfterNavigating);
+		public abstract bool NavigateAndWaitTillDone(HtmlDom htmlDom, int timeLimit, string source = "nav", Func<bool> cancelCheck = null, bool throwOnTimeout = true);
+		public abstract void NavigateRawHtml(string html);
+		public abstract void NavigateToTempFileThenRemoveIt(string path, string urlQueryParams = "");
+		public abstract void OnGetTroubleShootingInformation(object sender, EventArgs e);
+		public abstract void OnOpenPageInSystemBrowser(object sender, EventArgs e);
+		public abstract void RaiseBrowserReady();
+		public abstract void ReadEditableAreasNow(string bodyHtml, string userCssContent);
+		public abstract string RunJavaScript(string script);
+		public abstract void SaveHTML(string path);
+		public abstract void SetEditDom(HtmlDom editDom);
+		public abstract void SetEditingCommands(CutCommand cutCommand, CopyCommand copyCommand, PasteCommand pasteCommand, UndoCommand undoCommand);
+		public abstract void ShowHtml(string html);
+		public abstract void UpdateEditButtons();
 	}
 }

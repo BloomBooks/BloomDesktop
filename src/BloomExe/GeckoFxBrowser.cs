@@ -25,7 +25,7 @@ using SimulatedPageFileSource = Bloom.Api.BloomServer.SimulatedPageFileSource;
 
 namespace Bloom
 {
-	public partial class GeckoFxBrowser : UserControl, IBrowser
+	public partial class GeckoFxBrowser : Browser
 	{
 		protected GeckoWebBrowser _browser;
 		bool _browserIsReadyToNavigate;
@@ -199,7 +199,7 @@ namespace Bloom
 
 		// previously clients had to access the Handle to make the control ready to talk to,
 		// this just isolates that a bit
-		public void EnsureHandleCreated()
+		public override void EnsureHandleCreated()
 		{
 			var x = this.Handle; // gets the WebBrowser created
 		}
@@ -215,7 +215,7 @@ namespace Bloom
 		/// </summary>
 		private NavigationIsolator _isolator;
 
-		public void SetEditingCommands(CutCommand cutCommand, CopyCommand copyCommand, PasteCommand pasteCommand, UndoCommand undoCommand)
+		public override void SetEditingCommands(CutCommand cutCommand, CopyCommand copyCommand, PasteCommand pasteCommand, UndoCommand undoCommand)
 		{
 			_cutCommand = cutCommand;
 			_copyCommand = copyCommand;
@@ -259,7 +259,7 @@ namespace Bloom
 		//	return selectionText;
 		//}
 
-		public void SaveHTML(string path)
+		public override void SaveHTML(string path)
 		{
 			if (InvokeRequired)
 			{
@@ -269,7 +269,7 @@ namespace Bloom
 			_browser.SaveDocument(path, "text/html");
 		}
 
-		public void UpdateEditButtons()
+		public override void UpdateEditButtons()
 		{
 			if (_copyCommand == null)
 				return;
@@ -460,7 +460,7 @@ namespace Bloom
 		// browser instance(s) get the messages when something goes wrong in one of them.
 		public static Boolean SuppressJavaScriptErrors { get; set; }
 
-		public void ActivateFocussed() // review what should this be called?
+		public override void ActivateFocussed() // review what should this be called?
 		{
 			_browser.WebBrowserFocus.Activate();
 		}
@@ -641,7 +641,7 @@ namespace Bloom
 			form.Show();    // NOT Modal!
 		}
 
-		public void OnGetTroubleShootingInformation(object sender, EventArgs e)
+		public override void OnGetTroubleShootingInformation(object sender, EventArgs e)
 		{
 			Debug.Assert(!InvokeRequired);
 
@@ -684,7 +684,7 @@ namespace Bloom
 			}
 		}
 
-		public void OnOpenPageInSystemBrowser(object sender, EventArgs e)
+		public override void OnOpenPageInSystemBrowser(object sender, EventArgs e)
 		{
 			Debug.Assert(!InvokeRequired);
 			bool isWindows = SIL.PlatformUtilities.Platform.IsWindows;
@@ -792,7 +792,7 @@ namespace Bloom
 		/// This string should be a valid, appropriately encoded string ready to insert into a URL
 		/// You may include or omit the "?" at the beginning, either way is fine.
 		/// </param>
-		public void NavigateToTempFileThenRemoveIt(string path, string urlQueryParams = "")
+		public override void NavigateToTempFileThenRemoveIt(string path, string urlQueryParams = "")
 		{
 			if (InvokeRequired)
 			{
@@ -812,7 +812,7 @@ namespace Bloom
 			UpdateDisplay();
 		}
 
-		public void Navigate(string url, bool cleanupFileAfterNavigating)
+		public override void Navigate(string url, bool cleanupFileAfterNavigating)
 		{
 			// BL-513: Navigating to "about:blank" is causing the Pages panel to not be updated for a new book on Linux.
 			if (url == "about:blank")
@@ -862,7 +862,7 @@ namespace Bloom
 
         }
 
-		public void SetEditDom(HtmlDom editDom)
+		public override void SetEditDom(HtmlDom editDom)
 		{
 			_pageEditDom = editDom.RawDom;
 		}
@@ -873,7 +873,7 @@ namespace Bloom
 		// contain references to files in the directory of the original HTML file it is derived from,
 		// 'cause that provides the information needed
 		// to fake out the browser about where the 'file' is so internal references work.
-		public void Navigate(HtmlDom htmlDom, HtmlDom htmlEditDom = null, bool setAsCurrentPageForDebugging = false,
+		public override void Navigate(HtmlDom htmlDom, HtmlDom htmlEditDom = null, bool setAsCurrentPageForDebugging = false,
 			SimulatedPageFileSource source = SimulatedPageFileSource.Nav)
 		{
 			if (InvokeRequired)
@@ -922,7 +922,7 @@ namespace Bloom
 			UpdateDisplay();
 		}
 
-		public bool NavigateAndWaitTillDone(HtmlDom htmlDom, int timeLimit, string source = "nav", Func<bool> cancelCheck = null, bool throwOnTimeout = true)
+		public override bool NavigateAndWaitTillDone(HtmlDom htmlDom, int timeLimit, string source = "nav", Func<bool> cancelCheck = null, bool throwOnTimeout = true)
 		{
 			// Should be called on UI thread. Since it is quite typical for this method to create the
 			// window handle and browser, it can't do its own Invoke, which depends on already having a handle.
@@ -970,7 +970,7 @@ namespace Bloom
 			return true;
 		}
 
-		public void NavigateRawHtml(string html)
+		public override void NavigateRawHtml(string html)
 		{
 			if (InvokeRequired)
 			{
@@ -1173,7 +1173,7 @@ namespace Bloom
 		/// <summary>
 		/// This is needed if we want to save before getting a natural Validating event.
 		/// </summary>
-		public void ReadEditableAreasNow(string bodyHtml, string userCssContent)
+		public override void ReadEditableAreasNow(string bodyHtml, string userCssContent)
 		{
 			if (_url != "about:blank")
 			{
@@ -1183,7 +1183,7 @@ namespace Bloom
 			}
 		}
 
-		public void Copy()
+		public override void Copy()
 		{
 			Debug.Assert(!InvokeRequired);
 			_browser.CopySelection();
@@ -1193,7 +1193,7 @@ namespace Bloom
 		/// add a jscript source file
 		/// </summary>
 		/// <param name="filename"></param>
-		public void AddScriptSource(string filename)
+		public override void AddScriptSource(string filename)
 		{
 			Debug.Assert(!InvokeRequired);
 			if (!RobustFile.Exists(Path.Combine(Path.GetDirectoryName(_url), filename)))
@@ -1208,7 +1208,7 @@ namespace Bloom
 			head.AppendChild(script);
 		}
 
-		public void AddScriptContent(string content)
+		public override void AddScriptContent(string content)
 		{
 			Debug.Assert(!InvokeRequired);
 			GeckoDocument doc = WebBrowser.Document;
@@ -1220,7 +1220,7 @@ namespace Bloom
 			head.AppendChild(script);
 		}
 
-		public string RunJavaScript(string script)
+		public override string RunJavaScript(string script)
 		{
 			Debug.Assert(!InvokeRequired);
 			return RunJavaScriptOn(_browser, script);
@@ -1302,13 +1302,13 @@ namespace Bloom
 			*/
 		public event EventHandler BrowserReady;
 
-		public void RaiseBrowserReady()
+		public override void RaiseBrowserReady()
 		{
 			EventHandler handler = BrowserReady;
 			if (handler != null) handler(this, null);
 		}
 
-		public void ShowHtml(string html)
+		public override void ShowHtml(string html)
 		{
 			Debug.Assert(!InvokeRequired);
 			_browser.LoadHtml(html);
