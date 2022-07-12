@@ -42,8 +42,7 @@ namespace Bloom
 		private UndoCommand _undoCommand;
 		private CutCommand _cutCommand;
 		private bool _disposed;
-		public event EventHandler OnBrowserClick;
-		public event EventHandler DocumentCompleted;
+
 		// We need some way to pass the cursor location in the Browser context to the EditingView command handlers
 		// for Add/Delete TextOverPicture textboxes. These will store the cursor location when the context menu is
 		// generated.
@@ -452,8 +451,7 @@ namespace Bloom
 
 		private void _browser_DocumentCompleted(object sender, GeckoDocumentCompletedEventArgs e)
 		{
-			if(DocumentCompleted != null) // review
-				DocumentCompleted(sender, e);
+			RaiseDocumentCompleted(sender, e);
 		}
 
 		// We'd like to suppress them just in one browser. But it seems to be unpredictable which
@@ -538,13 +536,14 @@ namespace Bloom
 				_browser.Paste();
 			//}
 		}
-
-		/// <summary>
-		/// This Function will be passed a GeckoContextMenuEventArgs to which appropriate menu items
-		/// can be added. If it returns true these are in place of our standard extensions; if false, the
-		/// standard ones will follow whatever it adds.
-		/// </summary>
-		public Func<GeckoContextMenuEventArgs, bool> ContextMenuProvider { get; set; }
+		public override void CopySelection()
+		{
+			_browser.CopySelection();
+		}
+		public override void SelectAll()
+		{
+			_browser.SelectAll();
+		}
 
 		void OnShowContextMenu(object sender, GeckoContextMenuEventArgs e)
 		{
@@ -727,9 +726,7 @@ namespace Bloom
 			//it loses its focus.
 			_browser.WebBrowserFocus.Activate();//trying to help the disappearing cursor problem
 
-			EventHandler handler = OnBrowserClick;
-			if (handler != null)
-				handler(this, e);
+			RaiseBrowserClick(sender,e);
 		}
 
 		void _browser_Navigating(object sender, GeckoNavigatingEventArgs e)
@@ -1300,13 +1297,9 @@ namespace Bloom
 			//_browser.WebBrowser.Navigate("javascript:void(alert($(\"form\").serialize()))");
 
 			*/
-		public event EventHandler BrowserReady;
+		//public override event EventHandler BrowserReady;
 
-		public override void RaiseBrowserReady()
-		{
-			EventHandler handler = BrowserReady;
-			if (handler != null) handler(this, null);
-		}
+
 
 		public override void ShowHtml(string html)
 		{

@@ -25,7 +25,7 @@ namespace Bloom.Publish
 					components.Dispose();
 				if (_browser != null)
 				{
-					((UserControl)_browser).Dispose();
+					_browser.Dispose();
 					_browser = null;
 				}
 			}

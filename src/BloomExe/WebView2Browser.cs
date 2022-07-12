@@ -17,27 +17,33 @@ namespace Bloom
 			{
 				_webview.CoreWebView2.NavigationCompleted += (object sender2, CoreWebView2NavigationCompletedEventArgs args2) =>
 					{
-						if(DocumentCompleted!=null)
-							DocumentCompleted(sender2, args2);
+						RaiseDocumentCompleted(sender2, args2);
 					};
 			};
 		}
-		//Func<GeckoContextMenuEventArgs, bool> ContextMenuProvider { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+	
 		public ControlKeyEvent ControlKeyEvent { get; set; }
 		public int VerticalScrollDistance { get; set; }
-
-		//GeckoWebBrowser WebBrowser => throw new NotImplementedException();
-
-		public event EventHandler BrowserReady;
-
-		public event EventHandler OnBrowserClick;
-		public event EventHandler DocumentCompleted;
 
 		// needed by geckofx but not webview2
 		public override void EnsureHandleCreated()
 		{		
 		}
+		public override void CopySelection()
+		{
+			// I think it's fine that this is async but we aren't waiting, as long as this
+			// is only used for user actions and not by code that would immediately try to
+			// do something.
+			_webview.ExecuteScriptAsync("document.execCommand(\"Copy\")");
 
+		}
+		public override void SelectAll()
+		{
+			// I think it's fine that this is async but we aren't waiting, as long as this
+			// is only used for user actions and not by code that would immediately try to
+			// do something.
+			_webview.ExecuteScriptAsync("document.execCommand(\"SelectAll\")");
+		}
 		public override void AddScriptContent(string content)
 		{
 			throw new NotImplementedException();
@@ -107,11 +113,6 @@ namespace Bloom
 		public override void OnOpenPageInSystemBrowser(object sender, EventArgs e)
 		{
 			throw new NotImplementedException();
-		}
-
-		public override void RaiseBrowserReady()
-		{
-			
 		}
 
 		public override void ReadEditableAreasNow(string bodyHtml, string userCssContent)

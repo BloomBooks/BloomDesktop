@@ -29,6 +29,34 @@ namespace Bloom
 		public event EventHandler OnBrowserClick;
 		public event EventHandler DocumentCompleted;
 
+
+		/// <summary>
+		/// This Function will be passed a GeckoContextMenuEventArgs to which appropriate menu items
+		/// can be added. If it returns true these are in place of our standard extensions; if false, the
+		/// standard ones will follow whatever it adds.
+		/// </summary>
+		/// TODO: obviously this is GeckoFx-specific. It is here because it is non-trivial to introduce
+		/// a generic mechanism that will work with WebView2, so we are leaving that for another time.
+		public Func<Gecko.GeckoContextMenuEventArgs, bool> ContextMenuProvider { get; set; }
+
+		public abstract void CopySelection();
+		public abstract void SelectAll();
+
+
+		protected void RaiseBrowserReady()
+		{
+			EventHandler handler = BrowserReady;
+			if (handler != null) handler(this, null);
+		}
+
+		protected void RaiseDocumentCompleted(object sender, EventArgs e)
+		{
+			DocumentCompleted?.Invoke(sender, e);
+		}
+		protected void RaiseBrowserClick(object sender, EventArgs e)
+		{
+			OnBrowserClick?.Invoke(sender, e);
+		}
 		public abstract void ActivateFocussed(); // review what should this be called?
 
 		public abstract void AddScriptContent(string content);
@@ -42,7 +70,6 @@ namespace Bloom
 		public abstract void NavigateToTempFileThenRemoveIt(string path, string urlQueryParams = "");
 		public abstract void OnGetTroubleShootingInformation(object sender, EventArgs e);
 		public abstract void OnOpenPageInSystemBrowser(object sender, EventArgs e);
-		public abstract void RaiseBrowserReady();
 		public abstract void ReadEditableAreasNow(string bodyHtml, string userCssContent);
 		public abstract string RunJavaScript(string script);
 		public abstract void SaveHTML(string path);
