@@ -97,7 +97,7 @@
       </trans-unit>
       <trans-unit id="training.videos.download.2">
         <source xml:lang="en">Under the video that you want to download, there should be a Download button.</source>
-        <target xml:lang="es-ES" state="needs-translation">Under the video that you want to download, there should be a Download button.</target>
+        <target xml:lang="es-ES" state="translated">Debajo del vídeo que desea descargar, debe haber un botón de Descarga.</target>
         <note>ID: training.videos.download.2</note>
       </trans-unit>
       <trans-unit id="training.videos.hires" approved="yes">

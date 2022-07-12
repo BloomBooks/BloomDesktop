@@ -698,25 +698,25 @@
         <note>ID: WSFontControl.Font</note>
         <target xml:lang="pt-PT" state="final">&amp;Fonte:</target>
       </trans-unit>
-      <trans-unit id="WSFontControl.FontNotAvailable">
+      <trans-unit id="WSFontControl.FontNotAvailable" approved="yes">
         <source xml:lang="en">(The selected font is not available on this machine. Using default.)</source>
         <note>ID: WSFontControl.FontNotAvailable</note>
-        <target xml:lang="pt-PT" state="translated">(A fonte selecionada não está disponível nesta máquina. Usando padrão.)</target>
+        <target xml:lang="pt-PT" state="final">(A fonte selecionada não está disponível nesta máquina. Usando padrão.)</target>
       </trans-unit>
-      <trans-unit id="WSFontControl.RightToLeftWS">
+      <trans-unit id="WSFontControl.RightToLeftWS" approved="yes">
         <source xml:lang="en">This is a &amp;right to left writing system.</source>
         <note>ID: WSFontControl.RightToLeftWS</note>
-        <target xml:lang="pt-PT" state="translated">Este é um &amp;sistema de escrita direito para esquerda.</target>
+        <target xml:lang="pt-PT" state="final">Este é um &amp;sistema de escrita direito para esquerda.</target>
       </trans-unit>
       <trans-unit id="WSFontControl.Size" approved="yes">
         <source xml:lang="en">&amp;Size:</source>
         <note>ID: WSFontControl.Size</note>
         <target xml:lang="pt-PT" state="final">&amp;Tamanho:</target>
       </trans-unit>
-      <trans-unit id="WSFontControl.TestArea">
+      <trans-unit id="WSFontControl.TestArea" approved="yes">
         <source xml:lang="en">&amp;Test Area:</source>
         <note>ID: WSFontControl.TestArea</note>
-        <target xml:lang="pt-PT" state="translated">&amp;Área de teste:</target>
+        <target xml:lang="pt-PT" state="final">&amp;Área de teste:</target>
       </trans-unit>
       <trans-unit id="WSIdentifierView.betterLabel4" approved="yes">
         <source xml:lang="en">Abbreviation</source>
@@ -742,76 +742,76 @@
         <note>Only translate text inside of the parentheses ()</note>
         <target xml:lang="pt-PT" state="final">Êmico (usar fonologia do idioma)</target>
       </trans-unit>
-      <trans-unit id="WSIdentifiers.IpaIdentifierView.Etic">
+      <trans-unit id="WSIdentifiers.IpaIdentifierView.Etic" approved="yes">
         <source xml:lang="en">Etic (raw phonetic transcription)</source>
         <note>ID: WSIdentifiers.IpaIdentifierView.Etic</note>
         <note>Only translate text inside of the parentheses ()</note>
-        <target xml:lang="pt-PT" state="translated">Ético (transcrição fonética pura)</target>
+        <target xml:lang="pt-PT" state="final">Ético (transcrição fonética pura)</target>
       </trans-unit>
       <trans-unit id="WSKeyboardControl.KeyboardNotListed" approved="yes">
         <source xml:lang="en">If the keyboard you need is not listed, click the appropriate link below to set it up</source>
         <note>ID: WSKeyboardControl.KeyboardNotListed</note>
         <target xml:lang="pt-PT" state="final">Se o teclado que você precisa não esta listado, clique no link apropriado abaixo para configurá-lo</target>
       </trans-unit>
-      <trans-unit id="WSKeyboardControl.KeyboardSettingsLink">
+      <trans-unit id="WSKeyboardControl.KeyboardSettingsLink" approved="yes">
         <source xml:lang="en">Windows keyboard settings</source>
         <note>ID: WSKeyboardControl.KeyboardSettingsLink</note>
-        <target xml:lang="pt-PT" state="translated">Configurações de teclado do Windows</target>
+        <target xml:lang="pt-PT" state="final">Configurações de teclado do Windows</target>
       </trans-unit>
-      <trans-unit id="WSKeyboardControl.KeyboardsAvailable">
+      <trans-unit id="WSKeyboardControl.KeyboardsAvailable" approved="yes">
         <source xml:lang="en">Available keyboards</source>
         <note>ID: WSKeyboardControl.KeyboardsAvailable</note>
-        <target xml:lang="pt-PT" state="translated">Teclados disponíveis</target>
+        <target xml:lang="pt-PT" state="final">Teclados disponíveis</target>
       </trans-unit>
-      <trans-unit id="WSKeyboardControl.KeyboardsPreviouslyUsed">
+      <trans-unit id="WSKeyboardControl.KeyboardsPreviouslyUsed" approved="yes">
         <source xml:lang="en">Previously used keyboards</source>
         <note>ID: WSKeyboardControl.KeyboardsPreviouslyUsed</note>
-        <target xml:lang="pt-PT" state="translated">Teclados usados anteriormente</target>
+        <target xml:lang="pt-PT" state="final">Teclados usados anteriormente</target>
       </trans-unit>
-      <trans-unit id="WSKeyboardControl.KeymanConfigurationLink">
+      <trans-unit id="WSKeyboardControl.KeymanConfigurationLink" approved="yes">
         <source xml:lang="en">Keyman Configuration</source>
         <note>ID: WSKeyboardControl.KeymanConfigurationLink</note>
-        <target xml:lang="pt-PT" state="translated">Configuração Keyman</target>
+        <target xml:lang="pt-PT" state="final">Configuração Keyman</target>
       </trans-unit>
-      <trans-unit id="WSKeyboardControl.KeymanNotInstalled">
+      <trans-unit id="WSKeyboardControl.KeymanNotInstalled" approved="yes">
         <source xml:lang="en">Keyman 5.0 or later is not Installed.</source>
         <note>ID: WSKeyboardControl.KeymanNotInstalled</note>
-        <target xml:lang="pt-PT" state="translated">Keyman 5.0 ou posterior não está instalado.</target>
+        <target xml:lang="pt-PT" state="final">Keyman 5.0 ou posterior não está instalado.</target>
       </trans-unit>
-      <trans-unit id="WSKeyboardControl.SelectKeyboardLabel">
+      <trans-unit id="WSKeyboardControl.SelectKeyboardLabel" approved="yes">
         <source xml:lang="en">Select the &amp;keyboard with which to type {0} text</source>
         <note>ID: WSKeyboardControl.SelectKeyboardLabel</note>
-        <target xml:lang="pt-PT" state="translated">Selecione o &amp;teclado com o qual deseja digitar texto {0}</target>
+        <target xml:lang="pt-PT" state="final">Selecione o &amp;teclado com o qual deseja digitar texto {0}</target>
       </trans-unit>
-      <trans-unit id="WSKeyboardControl.SetupKeyboards">
+      <trans-unit id="WSKeyboardControl.SetupKeyboards" approved="yes">
         <source xml:lang="en">Set up keyboards</source>
         <note>ID: WSKeyboardControl.SetupKeyboards</note>
-        <target xml:lang="pt-PT" state="translated">Configurar os teclados</target>
+        <target xml:lang="pt-PT" state="final">Configurar os teclados</target>
       </trans-unit>
-      <trans-unit id="WSKeyboardControl.TestAreaCaption">
+      <trans-unit id="WSKeyboardControl.TestAreaCaption" approved="yes">
         <source xml:lang="en">&amp;Test Area (Use this area to type something to test out your keyboard.)</source>
         <note>ID: WSKeyboardControl.TestAreaCaption</note>
-        <target xml:lang="pt-PT" state="translated">&amp;Área de teste (Use esta área para digitar algo para testar o teclado.)</target>
+        <target xml:lang="pt-PT" state="final">&amp;Área de teste (Use esta área para digitar algo para testar o teclado.)</target>
       </trans-unit>
       <trans-unit id="Warning" approved="yes">
         <source xml:lang="en">Warning</source>
         <note>ID: Warning</note>
         <target xml:lang="pt-PT" state="final">Aviso</target>
       </trans-unit>
-      <trans-unit id="WritingSystemSetupView.UnableToConnectToSldrCaption">
+      <trans-unit id="WritingSystemSetupView.UnableToConnectToSldrCaption" approved="yes">
         <source xml:lang="en">Unable to connect to SLDR</source>
         <note>ID: WritingSystemSetupView.UnableToConnectToSldrCaption</note>
-        <target xml:lang="pt-PT" state="translated">Impossível conectar ao SLDR</target>
+        <target xml:lang="pt-PT" state="final">Impossível conectar ao SLDR</target>
       </trans-unit>
       <trans-unit id="WritingSystemSetupView.UnableToConnectToSldrText" approved="yes">
         <source xml:lang="en">The application is unable to connect to the SIL Locale Data Repository to retrieve the latest information about this language. If you create this writing system, the default settings might be incorrect or out of date. Are you sure you want to create a new writing system?</source>
         <note>ID: WritingSystemSetupView.UnableToConnectToSldrText</note>
         <target xml:lang="pt-PT" state="final">Não foi possível conectar ao Repositório de Dados do Local da SIL para obter as últimas informações sobre este idioma. Se você criar este sistema de escrita, as configurações padrão podem estar incorretas ou desatualizadas. Tem certeza de que deseja criar um sistema de escrita?</target>
       </trans-unit>
-      <trans-unit id="XkbKeyboardAdaptor.MissingKeyboard">
+      <trans-unit id="XkbKeyboardAdaptor.MissingKeyboard" approved="yes">
         <source xml:lang="en">[Missing] {0} ({1})</source>
         <note>ID: XkbKeyboardAdaptor.MissingKeyboard</note>
-        <target xml:lang="pt-PT" state="translated">[Faltando] {0} ({1})</target>
+        <target xml:lang="pt-PT" state="final">[Faltando] {0} ({1})</target>
       </trans-unit>
     </body>
   </file>

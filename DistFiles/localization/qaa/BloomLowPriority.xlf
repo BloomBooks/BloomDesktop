@@ -2,6 +2,12 @@
 <xliff xmlns:sil="http://sil.org/software/XLiff" xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
   <file original="BloomLowPriority.exe" source-language="en" datatype="plaintext" product-version="3.1.000.0" sil:hard-linebreak-replacement="\n" target-language="qaa-x-test">
     <body>
+      <trans-unit id="Installer.InstallationInProgress">
+        <source xml:lang="en">Installing...</source>
+        <note>This isn't used by code, but rather we harvest some of these for use in making the GIF that shows when the software is installing.</note>
+        <note> In English, given the context, just "Installing..." is enough. But your translation can be verbose, like "Software Installation in Progress...".</note>
+        <target xml:lang="qaa-x-test" state="needs-translation">Installing...</target>
+      </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.ESpeakPreview.ConversionFileUsed">
         <source xml:lang="en">Conversion file used:</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.ESpeakPreview.ConversionFileUsed</note>
