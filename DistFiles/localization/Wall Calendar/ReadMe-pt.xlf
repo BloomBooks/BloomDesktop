@@ -17,9 +17,9 @@
         <target xml:lang="pt-PT" state="final">Limitações desta versão</target>
         <note>ID: wall.calendar.limits</note>
       </trans-unit>
-      <trans-unit id="wall.calendar.noshells">
+      <trans-unit id="wall.calendar.noshells" approved="yes">
         <source xml:lang="en">Currently, you cannot make a "shell" for other languages to use.</source>
-        <target xml:lang="pt-PT" state="translated">Atualmente, você não pode fazer um "shell" que pode ser utilizado em outros idiomas.</target>
+        <target xml:lang="pt-PT" state="final">Atualmente, você não pode fazer um modelo que pode ser utilizado em outros idiomas.</target>
         <note>ID: wall.calendar.noshells</note>
       </trans-unit>
       <trans-unit id="wall.calendar.credits" approved="yes">

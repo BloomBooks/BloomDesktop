@@ -14,13 +14,13 @@
         <source xml:lang="en">Not available on Linux</source>
         <note>ID: PublishTab.RecordVideo.NotOnLinux</note>
         <note>"Linux" is an operating system name which may not translate.</note>
-        <target xml:lang="es-ES" state="needs-translation">Not available on Linux</target>
+        <target xml:lang="es-ES" state="translated">No está disponible en Linux</target>
       </trans-unit>
       <trans-unit id="PublishTab.RecordVideo.ApologiesForNoLinux" sil:dynamic="true">
         <source xml:lang="en">This feature is available only on the Windows version of Bloom. We apologize for the inconvenience.</source>
         <note>ID: PublishTab.RecordVideo.ApologiesForNoLinux</note>
         <note>"Windows" and "Linux" are operating system names which may not translate.</note>
-        <target xml:lang="es-ES" state="needs-translation">This feature is available only on the Windows version of Bloom. We apologize for the inconvenience.</target>
+        <target xml:lang="es-ES" state="translated">Esta función sólo está disponible en la versión de Windows de Bloom. Pedimos disculpas por cualquier inconveniente.</target>
       </trans-unit>
     </body>
   </file>
