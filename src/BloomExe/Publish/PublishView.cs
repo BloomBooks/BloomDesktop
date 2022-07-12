@@ -182,6 +182,7 @@ namespace Bloom.Publish
 			_simpleAllPagesRadio.AutoCheck = autoCheck;
 			_bookletCoverRadio.AutoCheck = autoCheck;
 			_bookletBodyRadio.AutoCheck = autoCheck;
+			_pdfPrintRadio.AutoCheck = autoCheck;
 			_uploadRadio.AutoCheck = autoCheck;
 			_epubRadio.AutoCheck = autoCheck;
 			_bloomPUBRadio.AutoCheck = autoCheck;
@@ -193,6 +194,7 @@ namespace Bloom.Publish
 			LocalizeSuperToolTip(_simpleAllPagesRadio, "PublishTab.OnePagePerPaperRadio");
 			LocalizeSuperToolTip(_bookletCoverRadio, "PublishTab.CoverOnlyRadio");
 			LocalizeSuperToolTip(_bookletBodyRadio, "PublishTab.BodyOnlyRadio");
+			LocalizeSuperToolTip(_pdfPrintRadio, "PublishTab.PdfPrint.Button");
 			LocalizeSuperToolTip(_uploadRadio, "PublishTab.ButtonThatShowsUploadForm");
 			LocalizeSuperToolTip(_bloomPUBRadio, "PublishTab.bloomPUBButton");
 			LocalizeSuperToolTip(_recordVideoRadio, "PublishTab.RecordVideoButton");
@@ -260,7 +262,7 @@ namespace Bloom.Publish
 		private void ClearRadioButtons()
 		{
 			_bookletCoverRadio.Checked = _bookletBodyRadio.Checked =
-				_simpleAllPagesRadio.Checked = _uploadRadio.Checked = _epubRadio.Checked = _bloomPUBRadio.Checked = _recordVideoRadio.Checked = false;
+				_simpleAllPagesRadio.Checked = _pdfPrintRadio.Checked = _uploadRadio.Checked = _epubRadio.Checked = _bloomPUBRadio.Checked = _recordVideoRadio.Checked = false;
 		}
 
 		internal bool IsMakingPdf
@@ -346,7 +348,9 @@ namespace Bloom.Publish
 			{
 				// Upload and ePUB display modes simply depend on the appropriate button being checked.
 				// If any of the other buttons is checked, we display the preview IF we have it.
-				if (_uploadRadio.Checked)
+				if (_pdfPrintRadio.Checked)
+					_model.DisplayMode = PublishModel.DisplayModes.PdfPrint;
+				else if (_uploadRadio.Checked)
 					_model.DisplayMode = PublishModel.DisplayModes.Upload;
 				else if (_epubRadio.Checked)
 					_model.DisplayMode = PublishModel.DisplayModes.EPUB;
@@ -376,6 +380,7 @@ namespace Bloom.Publish
 			_bookletCoverRadio.Checked = _model.BookletPortion == PublishModel.BookletPortions.BookletCover && !_model.UploadMode;
 			_bookletBodyRadio.Checked = _model.BookletPortion == PublishModel.BookletPortions.BookletPages && !_model.UploadMode;
 			_simpleAllPagesRadio.Checked = _model.BookletPortion == PublishModel.BookletPortions.AllPagesNoBooklet && !_model.UploadMode;
+			_pdfPrintRadio.Checked = _model.PdfPrintMode;
 			_uploadRadio.Checked = _model.UploadMode;
 			_epubRadio.Checked = _model.EpubMode;
 
@@ -383,6 +388,8 @@ namespace Bloom.Publish
 			{
 			   //this doesn't actually show when disabled		        _superToolTip.GetSuperStuff(_uploadRadio).SuperToolTipInfo.BodyText = "This creator of this book, or its template, has marked it as not being appropriate for upload to BloomLibrary.org";
 			}
+
+			_pdfPrintRadio.Enabled = _model.AllowPdf;
 			_uploadRadio.Enabled = _model.AllowUpload;
 			_simpleAllPagesRadio.Enabled = _model.AllowPdf;
 			_bookletBodyRadio.Enabled = _model.AllowPdfBooklet;
@@ -591,6 +598,11 @@ namespace Bloom.Publish
 					}
 					break;
 				}
+				case PublishModel.DisplayModes.PdfPrint:
+					_saveButton.Enabled = _printButton.Enabled = false; // We actually CAN print and save from here, but don't want these buttons.
+					BloomPubMaker.ControlForInvoke = ParentForm; // something created on UI thread that won't go away
+					ShowHtmlPanel(BloomFileLocator.GetBrowserFile(false, "publish", "PDFPrintPublish", "PublishPdfPrint.html"));
+					break;
 				case PublishModel.DisplayModes.Android:
 					_saveButton.Enabled = _printButton.Enabled = false; // Can't print or save in this mode...wouldn't be obvious what would be saved.
 					BloomPubMaker.ControlForInvoke = ParentForm; // something created on UI thread that won't go away
@@ -725,8 +737,14 @@ namespace Bloom.Publish
 		{
 			_model.UploadMode = _uploadRadio.Checked;
 			_model.EpubMode = _epubRadio.Checked;
-			bool pdfPreviewMode = false;
-			if (_simpleAllPagesRadio.Checked)
+			var pdfPreviewMode = false;
+			if (_pdfPrintRadio.Checked)
+			{
+				_model.PdfPrintMode = _pdfPrintRadio.Checked;
+				_model.DisplayMode = PublishModel.DisplayModes.PdfPrint;
+				//pdfPreviewMode = true;
+			}
+			else if (_simpleAllPagesRadio.Checked)
 			{
 				_model.BookletPortion = PublishModel.BookletPortions.AllPagesNoBooklet;
 				pdfPreviewMode = true;

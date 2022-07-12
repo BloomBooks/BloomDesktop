@@ -656,6 +656,16 @@ namespace Bloom.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap PdfPrint {
+            get {
+                object obj = ResourceManager.GetObject("PdfPrint", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap placeHolderBookThumbnail {
             get {
                 object obj = ResourceManager.GetObject("placeHolderBookThumbnail", resourceCulture);

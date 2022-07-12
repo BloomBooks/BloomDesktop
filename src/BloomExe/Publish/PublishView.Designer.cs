@@ -57,6 +57,8 @@ namespace Bloom.Publish
 			SIL.Windows.Forms.SuperToolTip.SuperToolTipInfo superToolTipInfo6 = new SIL.Windows.Forms.SuperToolTip.SuperToolTipInfo();
 			SIL.Windows.Forms.SuperToolTip.SuperToolTipInfoWrapper superToolTipInfoWrapper7 = new SIL.Windows.Forms.SuperToolTip.SuperToolTipInfoWrapper();
 			SIL.Windows.Forms.SuperToolTip.SuperToolTipInfo superToolTipInfo7 = new SIL.Windows.Forms.SuperToolTip.SuperToolTipInfo();
+			SIL.Windows.Forms.SuperToolTip.SuperToolTipInfoWrapper superToolTipInfoWrapper8 = new SIL.Windows.Forms.SuperToolTip.SuperToolTipInfoWrapper();
+			SIL.Windows.Forms.SuperToolTip.SuperToolTipInfo superToolTipInfo8 = new SIL.Windows.Forms.SuperToolTip.SuperToolTipInfo();
 			this._loadTimer = new System.Windows.Forms.Timer(this.components);
 			this._makePdfBackgroundWorker = new System.ComponentModel.BackgroundWorker();
 			this._workingIndicator = new System.Windows.Forms.Panel();
@@ -71,6 +73,7 @@ namespace Bloom.Publish
 			this._bloomPUBRadio = new System.Windows.Forms.RadioButton();
 			this._recordVideoRadio = new System.Windows.Forms.RadioButton();
 			this._uploadRadio = new System.Windows.Forms.RadioButton();
+			this._pdfPrintRadio = new System.Windows.Forms.RadioButton();
 			this._menusToolStrip = new System.Windows.Forms.ToolStrip();
 			this._pdfOptions = new System.Windows.Forms.ToolStripDropDownButton();
 			this._bookletCoverRadio = new System.Windows.Forms.RadioButton();
@@ -174,9 +177,10 @@ namespace Bloom.Publish
 			this.tableLayoutPanel1.ColumnCount = 1;
 			this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
 			this.tableLayoutPanel1.ContextMenuStrip = this._contextMenuStrip;
-			this.tableLayoutPanel1.Controls.Add(this._bloomPUBRadio, 0, 8);
-			this.tableLayoutPanel1.Controls.Add(this._recordVideoRadio, 0, 9);
-			this.tableLayoutPanel1.Controls.Add(this._uploadRadio, 0, 7);
+			this.tableLayoutPanel1.Controls.Add(this._bloomPUBRadio, 0, 9);
+			this.tableLayoutPanel1.Controls.Add(this._recordVideoRadio, 0, 10);
+			this.tableLayoutPanel1.Controls.Add(this._uploadRadio, 0, 8);
+			this.tableLayoutPanel1.Controls.Add(this._pdfPrintRadio, 0, 7);
 			this.tableLayoutPanel1.Controls.Add(this._menusToolStrip, 0, 0);
 			this.tableLayoutPanel1.Controls.Add(this._bookletCoverRadio, 0, 3);
 			this.tableLayoutPanel1.Controls.Add(this.label1, 0, 5);
@@ -257,7 +261,7 @@ namespace Bloom.Publish
 			this._L10NSharpExtender.SetLocalizableToolTip(this._bloomPUBRadio, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._bloomPUBRadio, "This is the label under the BloomPUB icon on the left side of the Publish screen.");
 			this._L10NSharpExtender.SetLocalizingId(this._bloomPUBRadio, "PublishTab.bloomPUBButton");
-			this._bloomPUBRadio.Location = new System.Drawing.Point(3, 448);
+			this._bloomPUBRadio.Location = new System.Drawing.Point(3, 602);
 			this._bloomPUBRadio.Name = "_bloomPUBRadio";
 			this._bloomPUBRadio.Size = new System.Drawing.Size(105, 71);
 			superToolTipInfo1.BackgroundGradientBegin = System.Drawing.Color.FromArgb(((int)(((byte)(252)))), ((int)(((byte)(253)))), ((int)(((byte)(254)))));
@@ -269,7 +273,7 @@ namespace Bloom.Publish
 			superToolTipInfoWrapper1.SuperToolTipInfo = superToolTipInfo1;
 			superToolTipInfoWrapper1.UseSuperToolTip = true;
 			this._superToolTip.SetSuperStuff(this._bloomPUBRadio, superToolTipInfoWrapper1);
-			this._bloomPUBRadio.TabIndex = 22;
+			this._bloomPUBRadio.TabIndex = 23;
 			this._bloomPUBRadio.TabStop = true;
 			this._bloomPUBRadio.Text = "BloomPUB";
 			this._bloomPUBRadio.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
@@ -284,7 +288,7 @@ namespace Bloom.Publish
 			this._L10NSharpExtender.SetLocalizableToolTip(this._recordVideoRadio, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._recordVideoRadio, null);
 			this._L10NSharpExtender.SetLocalizingId(this._recordVideoRadio, "PublishTab.RecordVideoButton");
-			this._recordVideoRadio.Location = new System.Drawing.Point(3, 448);
+			this._recordVideoRadio.Location = new System.Drawing.Point(3, 679);
 			this._recordVideoRadio.Name = "_recordVideoRadio";
 			this._recordVideoRadio.Size = new System.Drawing.Size(105, 71);
 			superToolTipInfo7.BackgroundGradientBegin = System.Drawing.Color.FromArgb(((int)(((byte)(252)))), ((int)(((byte)(253)))), ((int)(((byte)(254)))));
@@ -296,7 +300,7 @@ namespace Bloom.Publish
 			superToolTipInfoWrapper7.SuperToolTipInfo = superToolTipInfo7;
 			superToolTipInfoWrapper7.UseSuperToolTip = true;
 			this._superToolTip.SetSuperStuff(this._recordVideoRadio, superToolTipInfoWrapper7);
-			this._recordVideoRadio.TabIndex = 22;
+			this._recordVideoRadio.TabIndex = 24;
 			this._recordVideoRadio.TabStop = true;
 			this._recordVideoRadio.Text = "Audio or Video";
 			this._recordVideoRadio.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
@@ -324,13 +328,41 @@ namespace Bloom.Publish
 			superToolTipInfoWrapper2.SuperToolTipInfo = superToolTipInfo2;
 			superToolTipInfoWrapper2.UseSuperToolTip = true;
 			this._superToolTip.SetSuperStuff(this._uploadRadio, superToolTipInfoWrapper2);
-			this._uploadRadio.TabIndex = 21;
+			this._uploadRadio.TabIndex = 22;
 			this._uploadRadio.TabStop = true;
 			this._uploadRadio.Text = "Web";
 			this._uploadRadio.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
 			this._uploadRadio.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
 			this._uploadRadio.UseVisualStyleBackColor = true;
 			this._uploadRadio.CheckedChanged += new System.EventHandler(this.OnPublishRadioChanged);
+			// 
+			// _pdfPrintRadio
+			// 
+			this._pdfPrintRadio.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this._pdfPrintRadio.Image = global::Bloom.Properties.Resources.PdfPrint;
+			this._L10NSharpExtender.SetLocalizableToolTip(this._pdfPrintRadio, null);
+			this._L10NSharpExtender.SetLocalizationComment(this._pdfPrintRadio,
+				"Text under button to select Print and PDF preview");
+			this._L10NSharpExtender.SetLocalizingId(this._pdfPrintRadio, "PublishTab.PdfPrint.Button");
+			this._pdfPrintRadio.Location = new System.Drawing.Point(3, 448);
+			this._pdfPrintRadio.Name = "_pdfPrintRadio";
+			this._pdfPrintRadio.Size = new System.Drawing.Size(105, 89);
+			superToolTipInfo8.BackgroundGradientBegin = System.Drawing.Color.FromArgb(((int)(((byte)(252)))), ((int)(((byte)(253)))), ((int)(((byte)(254)))));
+			superToolTipInfo8.BackgroundGradientEnd = System.Drawing.Color.FromArgb(((int)(((byte)(166)))), ((int)(((byte)(227)))), ((int)(((byte)(235)))));
+			superToolTipInfo8.BackgroundGradientMiddle = System.Drawing.Color.FromArgb(((int)(((byte)(208)))), ((int)(((byte)(240)))), ((int)(((byte)(245)))));
+			superToolTipInfo8.BodyText = "Generate a PDF document and/or print your book.";
+			superToolTipInfo8.OffsetForWhereToDisplay = new System.Drawing.Point(120, 0);
+			superToolTipInfo8.ShowHeader = false;
+			superToolTipInfoWrapper8.SuperToolTipInfo = superToolTipInfo8;
+			superToolTipInfoWrapper8.UseSuperToolTip = true;
+			this._superToolTip.SetSuperStuff(this._pdfPrintRadio, superToolTipInfoWrapper8);
+			this._pdfPrintRadio.TabIndex = 21;
+			this._pdfPrintRadio.TabStop = true;
+			this._pdfPrintRadio.Text = "PDF and Print";
+			this._pdfPrintRadio.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+			this._pdfPrintRadio.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
+			this._pdfPrintRadio.UseVisualStyleBackColor = true;
+			this._pdfPrintRadio.CheckedChanged += new System.EventHandler(this.OnPublishRadioChanged);
 			// 
 			// _menusToolStrip
 			// 
@@ -468,7 +500,7 @@ namespace Bloom.Publish
 			this._L10NSharpExtender.SetLocalizableToolTip(this._epubRadio, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._epubRadio, null);
 			this._L10NSharpExtender.SetLocalizingId(this._epubRadio, "PublishTab.EpubButton");
-			this._epubRadio.Location = new System.Drawing.Point(3, 366);
+			this._epubRadio.Location = new System.Drawing.Point(3, 756);
 			this._epubRadio.Name = "_epubRadio";
 			this._epubRadio.Size = new System.Drawing.Size(105, 76);
 			superToolTipInfo6.BackgroundGradientBegin = System.Drawing.Color.FromArgb(((int)(((byte)(252)))), ((int)(((byte)(253)))), ((int)(((byte)(254)))));
@@ -481,7 +513,7 @@ namespace Bloom.Publish
 			superToolTipInfoWrapper6.SuperToolTipInfo = superToolTipInfo6;
 			superToolTipInfoWrapper6.UseSuperToolTip = true;
 			this._superToolTip.SetSuperStuff(this._epubRadio, superToolTipInfoWrapper6);
-			this._epubRadio.TabIndex = 23;
+			this._epubRadio.TabIndex = 25;
 			this._epubRadio.TabStop = true;
 			this._epubRadio.Text = "ePUB";
 			this._epubRadio.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
@@ -643,6 +675,7 @@ namespace Bloom.Publish
         private System.Windows.Forms.Label label1;
 		private System.Windows.Forms.RadioButton _bloomPUBRadio;
 		private System.Windows.Forms.RadioButton _recordVideoRadio;
+		private System.Windows.Forms.RadioButton _pdfPrintRadio;
 		private System.Windows.Forms.RadioButton _uploadRadio;
 		private System.Windows.Forms.RadioButton _epubRadio;
 		private System.Windows.Forms.Label _noBookletsMessage;

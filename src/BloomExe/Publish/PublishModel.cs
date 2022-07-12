@@ -45,6 +45,7 @@ namespace Bloom.Publish
 			Android,
 			AudioVideo,
 			EPUB,
+			PdfPrint,
 			NotPublishable
 		}
 
@@ -100,6 +101,9 @@ namespace Bloom.Publish
 
 		// True when showing an ePUB preview.
 		public bool EpubMode;
+
+		// True when showing the controls for PDF generation and printing.
+		public bool PdfPrintMode;
 
 		public bool PdfGenerationSucceeded { get; set; }
 
