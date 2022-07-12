@@ -70,7 +70,7 @@ namespace Bloom.web
 			// rectangle in the upper left corner...
 			//_browser = new GeckoFxBrowser
 			_browser = BrowserMaker.MakeBrowser();
-			var browserControl = (UserControl)_browser;
+			var browserControl = _browser;
 
 			browserControl.Dock = DockStyle.Fill;
 			browserControl.Location = new Point(3, 3);
@@ -84,14 +84,17 @@ namespace Bloom.web
 			// code in Bloom. This means, for example, that the "See how it works here" link
 			// will open the URL in the user's default browser.
 			_browser.OnBrowserClick += GeckoFxBrowser.HandleExternalLinkClick;
-			//if (UseEditContextMenu)
-			//	_browser.ContextMenuProvider = args => {
-			//		args.ContextMenu.MenuItems.Add(new MenuItem(L10NSharp.LocalizationManager.GetString("Common.Copy", "Copy"),
-			//				(s1, e1) => { _browser.WebBrowser.CopySelection(); }));
-			//		args.ContextMenu.MenuItems.Add(new MenuItem(L10NSharp.LocalizationManager.GetString("Common.SelectAll", "Select all"),
-			//				(s1, e1) => { _browser.WebBrowser.SelectAll(); }));
-			//		return true;
-			//	};
+
+			// currently this is used only in ReactDialog. E.g., "Report a problem".
+			if (UseEditContextMenu)
+				_browser.ContextMenuProvider = args =>
+				{
+					args.ContextMenu.MenuItems.Add(new MenuItem(L10NSharp.LocalizationManager.GetString("Common.Copy", "Copy"),
+							(s1, e1) => { _browser.CopySelection(); }));
+					args.ContextMenu.MenuItems.Add(new MenuItem(L10NSharp.LocalizationManager.GetString("Common.SelectAll", "Select all"),
+							(s1, e1) => { _browser.SelectAll(); }));
+					return true;
+				};
 
 			_browser.EnsureHandleCreated();
 
