@@ -95,9 +95,9 @@
         <target xml:lang="es-ES" state="final">Si desea descargar alguno de estos vídeos para mostrar y compartir fuera de línea, puede descargarlos a su computadora:</target>
         <note>ID: training.videos.download</note>
       </trans-unit>
-      <trans-unit id="training.videos.download.2">
+      <trans-unit id="training.videos.download.2" approved="yes">
         <source xml:lang="en">Under the video that you want to download, there should be a Download button.</source>
-        <target xml:lang="es-ES" state="translated">Debajo del vídeo que desea descargar, debe haber un botón de Descarga.</target>
+        <target xml:lang="es-ES" state="final">Debajo del vídeo que desea descargar, debe haber un botón de Descarga.</target>
         <note>ID: training.videos.download.2</note>
       </trans-unit>
       <trans-unit id="training.videos.hires" approved="yes">
