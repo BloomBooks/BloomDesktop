@@ -22,9 +22,9 @@
         <target xml:lang="pt-PT" state="final">Para informar-se sobre o uso de livros descodificáveis em Bloom, pode:</target>
         <note>ID: decodable.learn</note>
       </trans-unit>
-      <trans-unit id="decodable.learn.videos">
+      <trans-unit id="decodable.learn.videos" approved="yes">
         <source xml:lang="en">Watch <g id="genid-7" ctype="x-html-a" html:href="http://tiny.cc/8vbwux">these instructional videos</g>.</source>
-        <target xml:lang="pt-PT" state="translated">Ver <g id="genid-7" ctype="x-html-a" html:href="http://tiny.cc/8vbwux">vídeos instructivos</g>.</target>
+        <target xml:lang="pt-PT" state="final">Ver <g id="genid-7" ctype="x-html-a" html:href="http://tiny.cc/8vbwux">vídeos instructivos</g>.</target>
         <note>ID: decodable.learn.videos</note>
       </trans-unit>
       <trans-unit id="decodable.learn.helpindex" approved="yes">
@@ -32,9 +32,9 @@
         <target xml:lang="pt-PT" state="final">Consulte o menu de Ajuda, escolha 'Documentação' e veja debaixo do índice "Livros Descodificáveis".</target>
         <note>ID: decodable.learn.helpindex</note>
       </trans-unit>
-      <trans-unit id="decodable.learn.helpmenu">
+      <trans-unit id="decodable.learn.helpmenu" approved="yes">
         <source xml:lang="en">Go to the Help menu and choose: "Building Reader Templates".</source>
-        <target xml:lang="pt-PT" state="translated">Consulte o menu de Ajuda e escolha: "Criação de Modelos de Cartilha".</target>
+        <target xml:lang="pt-PT" state="final">Consulte o menu de Ajuda e escolha: "Criação de Modelos de Cartilha".</target>
         <note>ID: decodable.learn.helpmenu</note>
       </trans-unit>
     </body>

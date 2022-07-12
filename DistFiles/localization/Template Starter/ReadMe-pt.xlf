@@ -2,56 +2,56 @@
 <xliff xmlns:html="http://www.w3.org/TR/html" xmlns:sil="http://sil.org/software/XLiff" xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
   <file original="ReadMe-en.htm" datatype="html" source-language="en" target-language="pt-PT">
     <body>
-      <trans-unit id="template.starter">
+      <trans-unit id="template.starter" approved="yes">
         <source xml:lang="en">How to use the Template Starter</source>
-        <target xml:lang="pt-PT" state="translated">Como usar o Iniciador de Modelos</target>
+        <target xml:lang="pt-PT" state="final">Como usar o Iniciador de Modelos</target>
         <note>ID: template.starter</note>
       </trans-unit>
-      <trans-unit id="template.starter.firstusage">
+      <trans-unit id="template.starter.firstusage" approved="yes">
         <source xml:lang="en">This special template lets you make your own templates. A template provides a set of related page layouts that an author can choose from in writing an original book. Usually the text blocks and picture blocks on template pages will be empty, ready for an author to fill in. Sometimes there may be standard text or pictures that should be on every copy of the page.
 There are two ways people can use your template. The first way is to start new books. For example, imagine student books that have one page for each school day of the week. You could make a template with 5 pages, each with places to type in text and choose pictures. Curriculum authors could select your template and make a new book, one for each week<g id="genid-1" ctype="x-html-sup"><g id="genid-2" ctype="x-html-a" html:href="#note1">1</g></g>.</source>
-        <target xml:lang="pt-PT" state="translated">Este modelo especial permite que você crie seus próprios modelos. Um modelo fornece um conjunto de layouts de páginas relacionados que um autor pode escolher escrever um livro original. Normalmente, as caixas de texto e as imagens de imagens nas páginas do modelo estarão vazias, pronto para um autor preencher. Às vezes, pode haver texto padrão ou imagens padrão que devem estar em cada cópia da página.
+        <target xml:lang="pt-PT" state="final">Este modelo especial permite que você crie seus próprios modelos. Um modelo fornece um conjunto de layouts de páginas relacionados que um autor pode escolher escrever um livro original. Normalmente, as caixas de texto e as imagens de imagens nas páginas do modelo estarão vazias, pronto para um autor preencher. Às vezes, pode haver texto padrão ou imagens padrão que devem estar em cada cópia da página.
 Há duas maneiras pelas quais as pessoas podem usar seu modelo. O primeiro caminho é começar novos livros. Por exemplo, imagine livros para estudantes que tenham uma página para cada dia escolar da semana. Você pode fazer um modelo com 5 páginas, cada uma com caixas para inserir texto e escolher imagens. Os autores do currículo podem selecionar seu modelo e criar um novo livro, um para cada semana<g id="genid-1" ctype="x-html-sup"><g id="genid-2" ctype="x-html-a" html:href="#note1">1</g></g>.</target>
         <note>ID: template.starter.firstusage</note>
       </trans-unit>
-      <trans-unit id="template.starter.secondusage">
+      <trans-unit id="template.starter.secondusage" approved="yes">
         <source xml:lang="en">The second way people can use templates is as source of new pages, regardless of how they started the book. For example, in some places, each book requires a page as part of a government approval process. You might make a template containing that page and give it to others in your country. Then, when people translate a shellbook, they go to the end of the book and click “Add Page”. The page you made will appear in their list of choices. Some other ideas for templates are alphabet charts, glossaries, and instructions on how to use the book in a classroom. <g id="genid-3" ctype="x-html-sup"><g id="genid-4" ctype="x-html-a" html:href="#note2">2</g></g></source>
-        <target xml:lang="pt-PT" state="translated">A segunda maneira que as pessoas podem usar modelos é como uma fonte para novas páginas, não importa como eles começaram o livro. Por exemplo, em alguns lugares, cada livro requer uma página específica como parte de um processo de aprovação do governo. Você pode criar um modelo que contenha essa página e entregue a outras pessoas em seu país. Então, quando outros traduzem um livro pré-concebido, eles podem ir ao final do livro e clicar em "Adicionar página". A página que você criou aparecerá na lista de opções. Algumas outras idéias para modelos incluem tabelas de alfabetos, glossários e instruções sobre como usar o livro em uma sala de aula. <g id="genid-3" ctype="x-html-sup"><g id="genid-4" ctype="x-html-a" html:href="#note2">2</g></g></target>
+        <target xml:lang="pt-PT" state="final">A segunda maneira que as pessoas podem usar modelos é como uma fonte para novas páginas, não importa como eles começaram o livro. Por exemplo, em alguns lugares, cada livro requer uma página específica como parte de um processo de aprovação do governo. Você pode criar um modelo que contenha essa página e entregue a outras pessoas em seu país. Então, quando outros traduzem um livro pré-concebido, eles podem ir ao final do livro e clicar em "Adicionar página". A página que você criou aparecerá na lista de opções. Algumas outras idéias para modelos incluem tabelas de alfabetos, glossários e instruções sobre como usar o livro em uma sala de aula. <g id="genid-3" ctype="x-html-sup"><g id="genid-4" ctype="x-html-a" html:href="#note2">2</g></g></target>
         <note>ID: template.starter.secondusage</note>
       </trans-unit>
-      <trans-unit id="template.starter.waystohelp">
+      <trans-unit id="template.starter.waystohelp" approved="yes">
         <source xml:lang="en">Making templates is just like making any other custom book; all the same controls are available for making and customizing pages. But since you will probably be sharing with other people, there are a number of things you can do to help users of your template:</source>
-        <target xml:lang="pt-PT" state="translated">Os modelos são feitos da mesma maneira que qualquer outro livro personalizado; Todos os mesmos controles estão disponíveis para criar e personalizar as páginas. Mas como você provavelmente estará compartilhando modelos com outras pessoas, há várias coisas que você pode fazer para ajudar seus usuários de modelos:</target>
+        <target xml:lang="pt-PT" state="final">Os modelos são feitos da mesma maneira que qualquer outro livro personalizado; Todos os mesmos controles estão disponíveis para criar e personalizar as páginas. Mas como você provavelmente estará compartilhando modelos com outras pessoas, há várias coisas que você pode fazer para ajudar seus usuários de modelos:</target>
         <note>ID: template.starter.waystohelp</note>
       </trans-unit>
-      <trans-unit id="template.starter.labelpages">
+      <trans-unit id="template.starter.labelpages" approved="yes">
         <source xml:lang="en">Label Your Pages</source>
-        <target xml:lang="pt-PT" state="translated">Marca suas páginas</target>
+        <target xml:lang="pt-PT" state="final">Marca suas páginas</target>
         <note>ID: template.starter.labelpages</note>
       </trans-unit>
-      <trans-unit id="template.starter.labeleachpage">
+      <trans-unit id="template.starter.labeleachpage" approved="yes">
         <source xml:lang="en">When you add pages to your template, make sure to give each one a useful label<g id="genid-5" ctype="x-html-sup"><g id="genid-6" ctype="x-html-a" html:href="#note3">3</g>,<g id="genid-7" ctype="x-html-a" html:href="#note4">4</g></g>:</source>
-        <target xml:lang="pt-PT" state="translated">Quando você adiciona páginas ao seu modelo, forneça a cada página um rótulo útil<g id="genid-5" ctype="x-html-sup"> <g id="genid-6" ctype="x-html-a" html:href="#note2"> 3</g>, <g id="genid-7" ctype="x-html-a" html:href="@note3"> 4</g></g>:</target>
+        <target xml:lang="pt-PT" state="final">Quando você adiciona páginas ao seu modelo, forneça a cada página um rótulo útil<g id="genid-5" ctype="x-html-sup"> <g id="genid-6" ctype="x-html-a" html:href="#note2"> 3</g>, <g id="genid-7" ctype="x-html-a" html:href="@note3"> 4</g></g>:</target>
         <note>ID: template.starter.labeleachpage</note>
       </trans-unit>
-      <trans-unit id="template.starter.thumbnails">
+      <trans-unit id="template.starter.thumbnails" approved="yes">
         <source xml:lang="en">Check Your Thumbnails</source>
-        <target xml:lang="pt-PT" state="translated">Verifique suas miniaturas</target>
+        <target xml:lang="pt-PT" state="final">Verifique suas miniaturas</target>
         <note>ID: template.starter.thumbnails</note>
       </trans-unit>
-      <trans-unit id="template.starter.thumbnails.onlyonce">
+      <trans-unit id="template.starter.thumbnails.onlyonce" approved="yes">
         <source xml:lang="en">To speed things up, Bloom only makes this thumbnail once, and stores it in the "template" subdirectory of your template:</source>
-        <target xml:lang="pt-PT" state="translated">Para ser mais eficiente, o Bloom apenas faz esta miniatura uma vez e a salva no subdiretório "modelo" de seu modelo:</target>
+        <target xml:lang="pt-PT" state="final">Para ser mais eficiente, o Bloom apenas faz esta miniatura uma vez e a salva no subdiretório "modelo" de seu modelo:</target>
         <note>ID: template.starter.thumbnails.onlyonce</note>
       </trans-unit>
-      <trans-unit id="template.starter.thumbnails.update">
+      <trans-unit id="template.starter.thumbnails.update" approved="yes">
         <source xml:lang="en">If you later make a change to the page, the thumbnail will be out of date. To fix that, click the "Add Page" button, and Bloom will regenerate those thumbnails. If the automatically generated thumbnail doesn't convey the purpose of the page, you can make your own. Just make sure to mark the file as "Read Only" so that Bloom doesn't overwrite it. You can also make your thumbnails as svgs, if you like (that's what we do for templates we ship with Bloom).  In any case, make sure to click "Add Page" at least once before distributing your template, so that all the thumbnails are already generated.</source>
-        <target xml:lang="pt-PT" state="translated">Se você fizer uma alteração na página, a miniatura da imagem será obsoleta. Para corrigi-lo, clique no botão "Adicionar página" e o Bloom irá regenerar as miniaturas. Se a miniatura gerada automaticamente não comunicar bem a finalidade da página, você pode criar sua própria miniatura. Mas é importante marcar esse arquivo com "Somente Leitura" para que o Bloom não escreva sobre isso. Se você preferir, você também pode fazer suas miniaturas como arquivos svgs. (É o que fazemos para os modelos que enviamos com o Bloom). Em qualquer caso, você deve clicar em "Adicionar página" pelo menos uma vez antes de distribuir o modelo para que todas as miniaturas sejam geradas.</target>
+        <target xml:lang="pt-PT" state="final">Se você fizer uma alteração na página, a miniatura da imagem será obsoleta. Para corrigi-lo, clique no botão "Adicionar página" e o Bloom irá regenerar as miniaturas. Se a miniatura gerada automaticamente não comunicar bem a finalidade da página, você pode criar sua própria miniatura. Mas é importante marcar esse arquivo com "Somente Leitura" para que o Bloom não escreva sobre isso. Se você preferir, você também pode fazer suas miniaturas como arquivos svgs. (É o que fazemos para os modelos que enviamos com o Bloom). Em qualquer caso, você deve clicar em "Adicionar página" pelo menos uma vez antes de distribuir o modelo para que todas as miniaturas sejam geradas.</target>
         <note>ID: template.starter.thumbnails.update</note>
       </trans-unit>
-      <trans-unit id="template.starter.document">
+      <trans-unit id="template.starter.document" approved="yes">
         <source xml:lang="en">Document Your Template</source>
-        <target xml:lang="pt-PT" state="translated">Documentar seu modelo</target>
+        <target xml:lang="pt-PT" state="final">Documentar seu modelo</target>
         <note>ID: template.starter.document</note>
       </trans-unit>
       <trans-unit id="template.starter.describeyours" approved="yes">
@@ -59,14 +59,14 @@ Há duas maneiras pelas quais as pessoas podem usar seu modelo. O primeiro camin
         <target xml:lang="pt-PT" state="final">Também considere adicionar uma descrição do seu modelo, como o que você está lendo agora. Para fazer isso, coloque um arquivo de texto chamado <g id="genid-8" ctype="x-html-code">ReadMe-en.md</g> na pasta que contém o seu modelo. Este arquivo deve seguir o protocolo <g id="genid-9" ctype="x-html-a" html:href="http://spec.commonmark.org/dingus/">markdown standard</g>. Para fornecer as instruções em outros idiomas, você deve fazer versões desse arquivo que alterem o "in" para duas letras do código de cada idioma. Por exemplo, <g id="genid-10" ctype="x-html-code">ReadMe-fr.md</g> será mostrado quando Bloom for configurado para mostrar rótulos em espanhol. Você também pode incluir screenshots, como os que temos neste documento. Coloque todas as imagens que você usa em uma pasta chamada "ReadMeImages", de modo que as imagens sejam referenciadas desta maneira:</target>
         <note>ID: template.starter.describeyours</note>
       </trans-unit>
-      <trans-unit id="template.starter.thumbnailsshown">
+      <trans-unit id="template.starter.thumbnailsshown" approved="yes">
         <source xml:lang="en">When the Add Page dialog box shows your template pages, it will show a thumbnail:</source>
-        <target xml:lang="pt-PT" state="translated">Quando a caixa de diálogo "Adicionar página" mostra suas páginas de modelo, ela mostrará uma miniatura:</target>
+        <target xml:lang="pt-PT" state="final">Quando a caixa de diálogo "Adicionar página" mostra suas páginas de modelo, ela mostrará uma miniatura:</target>
         <note>ID: template.starter.thumbnailsshown</note>
       </trans-unit>
-      <trans-unit id="template.starter.share">
+      <trans-unit id="template.starter.share" approved="yes">
         <source xml:lang="en">Share Your Template</source>
-        <target xml:lang="pt-PT" state="translated">Compartilhar seu modelo</target>
+        <target xml:lang="pt-PT" state="final">Compartilhar seu modelo</target>
         <note>ID: template.starter.share</note>
       </trans-unit>
       <trans-unit id="template.starter.share.publish" approved="yes">
@@ -79,29 +79,29 @@ Há duas maneiras pelas quais as pessoas podem usar seu modelo. O primeiro camin
         <target xml:lang="pt-PT" state="final">Para colegas locais, uma maneira fácil de distribuir seu modelo é através de um Bloom Pack. Na aba Coleções, clique o botão direito na miniatura do modelo. Escolha 'Fazer um Bloom Pack'. Salve-o em algum lugar, por exemplo, em uma flash USB. Em seguida, conecte-o a outro computador, clique duas vezes no arquivo que você criou e seu modelo será adicionado às "Fontes para novos livros" nesse computador.</target>
         <note>ID: template.starter.share.bloompack</note>
       </trans-unit>
-      <trans-unit id="template.starter.notes">
+      <trans-unit id="template.starter.notes" approved="yes">
         <source xml:lang="en">Notes</source>
-        <target xml:lang="pt-PT" state="translated">Notas</target>
+        <target xml:lang="pt-PT" state="final">Notas</target>
         <note>ID: template.starter.notes</note>
       </trans-unit>
-      <trans-unit id="template.starter.nothingautomatic">
+      <trans-unit id="template.starter.nothingautomatic" approved="yes">
         <source xml:lang="en"><g id="genid-11" ctype="x-html-a" html:id="note1">1</g>: These books could later be combined using the forthcoming Folio feature. Note that Bloom does not yet give you a way to indicate that a page should be automatically included in new books; the author will have to add each one from the Add Page dialog.</source>
-        <target xml:lang="pt-PT" state="translated"><g id="genid-11" ctype="x-html-a" html:name="note1">1</g>: Estes livros poderiam ser combinados no futuro com o papel iminente do Folio. Observe que o Bloom ainda não possui um mecanismo para indicar que uma página deve ser automaticamente incluída nos novos livros; o autor terá que adicionar cada página da caixa de diálogo "Adicionar página".</target>
+        <target xml:lang="pt-PT" state="final"><g id="genid-11" ctype="x-html-a" html:name="note1">1</g>: Estes livros poderiam ser combinados no futuro com o papel iminente do Folio. Observe que o Bloom ainda não possui um mecanismo para indicar que uma página deve ser automaticamente incluída nos novos livros; o autor terá que adicionar cada página da caixa de diálogo "Adicionar página".</target>
         <note>ID: template.starter.nothingautomatic</note>
       </trans-unit>
-      <trans-unit id="template.starter.nametonotaddpage">
+      <trans-unit id="template.starter.nametonotaddpage" approved="yes">
         <source xml:lang="en"><g id="genid-12" ctype="x-html-a" html:id="note2">2</g>: If you don't want the pages in your template to show up in the Add Page dialog, you can indicate this to Bloom by creating a file in the book's template folder called NotForAddPage.txt.</source>
-        <target xml:lang="pt-PT" state="translated"><g id="genid-12" ctype="x-html-a" html:name="note2">2</g>: Se você não quiser que suas páginas de modelo sejam exibidas na caixa de diálogo "Adicionar página", você pode indicar isso no Bloom criando um arquivo chamado "NotForAddPage.txt". na pasta Modelos de livros.</target>
+        <target xml:lang="pt-PT" state="final"><g id="genid-12" ctype="x-html-a" html:name="note2">2</g>: Se você não quiser que suas páginas de modelo sejam exibidas na caixa de diálogo "Adicionar página", você pode indicar isso no Bloom criando um arquivo chamado "NotForAddPage.txt". na pasta Modelos de livros.</target>
         <note>ID: template.starter.nametonotaddpage</note>
       </trans-unit>
-      <trans-unit id="template.starter.labelsnottranslatable">
+      <trans-unit id="template.starter.labelsnottranslatable" approved="yes">
         <source xml:lang="en"><g id="genid-13" ctype="x-html-a" html:id="note3">3</g>: People will not be able to translate your labels and descriptions into other national languages. If this is a problem, please contact the Bloom team.</source>
-        <target xml:lang="pt-PT" state="translated"><g id="genid-13" ctype="x-html-a" html:name="note3">3</g>: Outras pessoas não poderão traduzir seus rótulos e descrições para outras línguas nacionais. Se isso for problemático, entre em contato com a equipe técnica da Bloom.</target>
+        <target xml:lang="pt-PT" state="final"><g id="genid-13" ctype="x-html-a" html:name="note3">3</g>: Outras pessoas não poderão traduzir seus rótulos e descrições para outras línguas nacionais. Se isso for problemático, entre em contato com a equipe técnica da Bloom.</target>
         <note>ID: template.starter.labelsnottranslatable</note>
       </trans-unit>
-      <trans-unit id="template.starter.editrawhtml">
+      <trans-unit id="template.starter.editrawhtml" approved="yes">
         <source xml:lang="en"><g id="genid-14" ctype="x-html-a" html:id="note4">4</g>: If you want the Add Page screen to also provide a short description of the page, you'll need to quit Bloom and edit the template's html in Notepad, like this: <x id="genid-15" ctype="image" html:src="ReadMeImages/pageDescription.png" html:alt=""/></source>
-        <target xml:lang="pt-PT" state="translated"><g id="genid-14" ctype="x-html-a" html:name="note4">4</g>: Se você quiser que a tela "Adicionar página" também forneça uma breve descrição da página, você terá que sair do Bloom e editar o arquivo html do modelo em "Bloco de notas", como este: <x id="genid-15" ctype="image" html:src="ReadMeImages/pageDescription.png" html:alt=""/></target>
+        <target xml:lang="pt-PT" state="final"><g id="genid-14" ctype="x-html-a" html:name="note4">4</g>: Se você quiser que a tela "Adicionar página" também forneça uma breve descrição da página, você terá que sair do Bloom e editar o arquivo html do modelo em "Bloco de notas", como este: <x id="genid-15" ctype="image" html:src="ReadMeImages/pageDescription.png" html:alt=""/></target>
         <note>ID: template.starter.editrawhtml</note>
       </trans-unit>
     </body>

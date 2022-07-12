@@ -1239,7 +1239,7 @@ Luego suelte la tecla que apretó para mostrar esta lista.</target>
         <source xml:lang="en">Finished at {0:hh:mm tt}</source>
         <note>ID: Common.FinishedAt</note>
         <note>{0:hh:mm tt} is a time</note>
-        <target xml:lang="es-ES" state="needs-translation">Finished at {0:hh:mm tt}</target>
+        <target xml:lang="es-ES" state="translated">Terminado a las {0:hh:mm tt}</target>
       </trans-unit>
       <trans-unit id="Common.Help" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Help</source>
@@ -1422,30 +1422,30 @@ Luego suelte la tecla que apretó para mostrar esta lista.</target>
         <target xml:lang="es-ES" state="final">Año de los derechos de autor</target>
       </trans-unit>
       <trans-unit id="Copyright.FollowSILGuidelines" sil:dynamic="true">
-        <source xml:lang="en">Before publishing as SIL, ensure that you follow [SIL corporate guidelines].</source>
+        <source xml:lang="en">SIL has corporate guidelines around what kinds of materials may be copyrighted by SIL. Please check [this page] in order to ensure that this book qualifies.</source>
         <note>ID: Copyright.FollowSILGuidelines</note>
         <note>The text inside the [square brackets] will become a link to a website.</note>
-        <target xml:lang="es-ES" state="needs-translation">Before publishing as SIL, ensure that you follow [SIL corporate guidelines].</target>
+        <target xml:lang="es-ES" state="translated">Antes de publicar como SIL, asegúrese de seguir [las directrices corporativas de SIL].</target>
       </trans-unit>
       <trans-unit id="Copyright.IllustratorOrPhotographer" sil:dynamic="true">
         <source xml:lang="en">Illustrator/Photographer</source>
         <note>ID: Copyright.IllustratorOrPhotographer</note>
-        <target xml:lang="es-ES" state="needs-translation">Illustrator/Photographer</target>
+        <target xml:lang="es-ES" state="translated">Ilustrador/Fotógrafo</target>
       </trans-unit>
       <trans-unit id="Copyright.NotATranslation" sil:dynamic="true">
         <source xml:lang="en">Not a translation or new version</source>
         <note>ID: Copyright.NotATranslation</note>
-        <target xml:lang="es-ES" state="needs-translation">Not a translation or new version</target>
+        <target xml:lang="es-ES" state="translated">No es una traducción ni una nueva versión</target>
       </trans-unit>
       <trans-unit id="Copyright.PublishingAsSIL" sil:dynamic="true">
-        <source xml:lang="en">Publishing as SIL</source>
+        <source xml:lang="en">Using "SIL" in a Copyright</source>
         <note>ID: Copyright.PublishingAsSIL</note>
-        <target xml:lang="es-ES" state="needs-translation">Publishing as SIL</target>
+        <target xml:lang="es-ES" state="translated">Publicando como SIL</target>
       </trans-unit>
       <trans-unit id="Copyright.UseOriginalCopyright" sil:dynamic="true">
         <source xml:lang="en">Continue to use the same copyright and license as the original book:</source>
         <note>ID: Copyright.UseOriginalCopyright</note>
-        <target xml:lang="es-ES" state="needs-translation">Continue to use the same copyright and license as the original book:</target>
+        <target xml:lang="es-ES" state="translated">Sigue utilizando los mismos derechos de autor y la misma licencia que el libro original:</target>
       </trans-unit>
       <trans-unit id="CopyrightAndLicense" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Copyright and License</source>
@@ -3835,82 +3835,82 @@ Por ejemplo, darle crédito al traductor de esta versión.</target>
         <source xml:lang="en">About %0</source>
         <note>ID: License.About</note>
         <note>%0 is a shorthand version of the Creative Commons license, such as "CC-BY"</note>
-        <target xml:lang="es-ES" state="needs-translation">About %0</target>
+        <target xml:lang="es-ES" state="translated">Acerca de %0</target>
       </trans-unit>
       <trans-unit id="License.AllRightsReserved" sil:dynamic="true">
         <source xml:lang="en">All Rights Reserved</source>
         <note>ID: License.AllRightsReserved</note>
-        <target xml:lang="es-ES" state="needs-translation">All Rights Reserved</target>
+        <target xml:lang="es-ES" state="translated">Todos los derechos reservados</target>
       </trans-unit>
       <trans-unit id="License.AllRightsReserved.Description" sil:dynamic="true">
         <source xml:lang="en">No one can modify or copy it without explicit permission. We will not be sharing it via Bloom Reader or BloomLibrary.org.</source>
         <note>ID: License.AllRightsReserved.Description</note>
-        <target xml:lang="es-ES" state="needs-translation">No one can modify or copy it without explicit permission. We will not be sharing it via Bloom Reader or BloomLibrary.org.</target>
+        <target xml:lang="es-ES" state="translated">Nadie puede modificarlo o copiarlo sin permiso explícito. No lo compartiremos a través de Bloom Reader o BloomLibrary.org.</target>
       </trans-unit>
       <trans-unit id="License.CannotChangeLicense" sil:dynamic="true">
         <source xml:lang="en">The license of the original book does not allow changing the license in new versions.</source>
         <note>ID: License.CannotChangeLicense</note>
-        <target xml:lang="es-ES" state="needs-translation">The license of the original book does not allow changing the license in new versions.</target>
+        <target xml:lang="es-ES" state="translated">La licencia del libro original no permite cambiar la licencia en nuevas versiones.</target>
       </trans-unit>
       <trans-unit id="License.CopyrightHolderAllows.Book" sil:dynamic="true">
         <source xml:lang="en">The copyright holder allows others to use the book in this way:</source>
         <note>ID: License.CopyrightHolderAllows.Book</note>
-        <target xml:lang="es-ES" state="needs-translation">The copyright holder allows others to use the book in this way:</target>
+        <target xml:lang="es-ES" state="translated">El titular de los derechos de autor permite a otros utilizar el libro de esta manera:</target>
       </trans-unit>
       <trans-unit id="License.CopyrightHolderAllows.Image" sil:dynamic="true">
         <source xml:lang="en">The copyright holder allows others to use the image in this way:</source>
         <note>ID: License.CopyrightHolderAllows.Image</note>
-        <target xml:lang="es-ES" state="needs-translation">The copyright holder allows others to use the image in this way:</target>
+        <target xml:lang="es-ES" state="translated">El titular de los derechos de autor permite que otros utilicen la imagen de esta manera:</target>
       </trans-unit>
       <trans-unit id="License.CreativeCommons.Additional" sil:dynamic="true">
         <source xml:lang="en">You may use this space to clarify or grant additional permissions (for example, that translations are allowed), but not to alter the license.</source>
         <note>ID: License.CreativeCommons.Additional</note>
-        <target xml:lang="es-ES" state="needs-translation">You may use this space to clarify or grant additional permissions (for example, that translations are allowed), but not to alter the license.</target>
+        <target xml:lang="es-ES" state="translated">Puede utilizar este espacio para aclarar o otorgar permisos adicionales (por ejemplo, que las traducciones están permitidas), pero no para alterar la licencia.</target>
       </trans-unit>
       <trans-unit id="License.CreativeCommons.AllowCommercial.Book" sil:dynamic="true">
         <source xml:lang="en">use the book in a commercial way</source>
         <note>ID: License.CreativeCommons.AllowCommercial.Book</note>
-        <target xml:lang="es-ES" state="needs-translation">use the book in a commercial way</target>
+        <target xml:lang="es-ES" state="translated">utilizar el libro de forma comercial</target>
       </trans-unit>
       <trans-unit id="License.CreativeCommons.AllowCommercial.Image" sil:dynamic="true">
         <source xml:lang="en">use the image in a commercial way</source>
         <note>ID: License.CreativeCommons.AllowCommercial.Image</note>
-        <target xml:lang="es-ES" state="needs-translation">use the image in a commercial way</target>
+        <target xml:lang="es-ES" state="translated">utilizar la imagen de forma comercial</target>
       </trans-unit>
       <trans-unit id="License.CreativeCommons.CopyForFree.Book" sil:dynamic="true">
         <source xml:lang="en">copy this book for free</source>
         <note>ID: License.CreativeCommons.CopyForFree.Book</note>
-        <target xml:lang="es-ES" state="needs-translation">copy this book for free</target>
+        <target xml:lang="es-ES" state="translated">copiar este libro gratuitamente</target>
       </trans-unit>
       <trans-unit id="License.CreativeCommons.CopyForFree.Image" sil:dynamic="true">
         <source xml:lang="en">copy this image for free</source>
         <note>ID: License.CreativeCommons.CopyForFree.Image</note>
-        <target xml:lang="es-ES" state="needs-translation">copy this image for free</target>
+        <target xml:lang="es-ES" state="translated">copiar esta imagen gratuitamente</target>
       </trans-unit>
       <trans-unit id="License.CreativeCommons.DifferentLicense.Book" sil:dynamic="true">
         <source xml:lang="en">apply a different license to new versions of this book</source>
         <note>ID: License.CreativeCommons.DifferentLicense.Book</note>
-        <target xml:lang="es-ES" state="needs-translation">apply a different license to new versions of this book</target>
+        <target xml:lang="es-ES" state="translated">aplicar una licencia diferente a nuevas versiones de este libro</target>
       </trans-unit>
       <trans-unit id="License.CreativeCommons.DifferentLicense.Image" sil:dynamic="true">
         <source xml:lang="en">apply a different license to new versions of this image</source>
         <note>ID: License.CreativeCommons.DifferentLicense.Image</note>
-        <target xml:lang="es-ES" state="needs-translation">apply a different license to new versions of this image</target>
+        <target xml:lang="es-ES" state="translated">aplicar una licencia diferente a nuevas versiones de esta imagen</target>
       </trans-unit>
       <trans-unit id="License.CreativeCommons.Intro" sil:dynamic="true">
         <source xml:lang="en">Everyone is allowed to:</source>
         <note>ID: License.CreativeCommons.Intro</note>
-        <target xml:lang="es-ES" state="needs-translation">Everyone is allowed to:</target>
+        <target xml:lang="es-ES" state="translated">Todos están permitidos:</target>
       </trans-unit>
       <trans-unit id="License.CreativeCommons.ShareAlike.Book" sil:dynamic="true">
         <source xml:lang="en">make new versions of this book, but they must keep the author, illustrator, and other credits</source>
         <note>ID: License.CreativeCommons.ShareAlike.Book</note>
-        <target xml:lang="es-ES" state="needs-translation">make new versions of this book, but they must keep the author, illustrator, and other credits</target>
+        <target xml:lang="es-ES" state="translated">crear nuevas versiones de este libro, pero deben mantener el autor, el ilustrador y otros créditos</target>
       </trans-unit>
       <trans-unit id="License.CreativeCommons.ShareAlike.Image" sil:dynamic="true">
         <source xml:lang="en">make new versions of this image, but they must keep the illustrator and other credits</source>
         <note>ID: License.CreativeCommons.ShareAlike.Image</note>
-        <target xml:lang="es-ES" state="needs-translation">make new versions of this image, but they must keep the illustrator and other credits</target>
+        <target xml:lang="es-ES" state="translated">crear nuevas versiones de esta imagen, pero deben mantener el ilustrador y otros créditos</target>
       </trans-unit>
       <trans-unit id="License.Custom" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Custom</source>
@@ -3920,18 +3920,18 @@ Por ejemplo, darle crédito al traductor de esta versión.</target>
       <trans-unit id="License.Custom.AvoidIfPossible" sil:dynamic="true">
         <source xml:lang="en">Avoid writing a custom license if at all possible. They are difficult to write, interpret, and enforce.</source>
         <note>ID: License.Custom.AvoidIfPossible</note>
-        <target xml:lang="es-ES" state="needs-translation">Avoid writing a custom license if at all possible. They are difficult to write, interpret, and enforce.</target>
+        <target xml:lang="es-ES" state="translated">Evite escribir una licencia personalizada si es posible. Son difíciles de escribir, interpretar y hacer respetar.</target>
       </trans-unit>
       <trans-unit id="License.OriginalLicense" sil:dynamic="true">
         <source xml:lang="en">The original version of this book is %0</source>
         <note>ID: License.OriginalLicense</note>
         <note>%0 is a shorthand version of the license such as "CC-BY"</note>
-        <target xml:lang="es-ES" state="needs-translation">The original version of this book is %0</target>
+        <target xml:lang="es-ES" state="translated">La versión original de este libro es %0</target>
       </trans-unit>
       <trans-unit id="License.PublicDomain" sil:dynamic="true">
         <source xml:lang="en">Anyone can use it however they want.</source>
         <note>ID: License.PublicDomain</note>
-        <target xml:lang="es-ES" state="needs-translation">Anyone can use it however they want.</target>
+        <target xml:lang="es-ES" state="translated">Cualquiera puede utilizarlo como quiera.</target>
       </trans-unit>
       <trans-unit id="LicenseDialog.WindowTitle" approved="yes">
         <source xml:lang="en">Bloom {0}</source>
@@ -4460,7 +4460,7 @@ Por ejemplo, darle crédito al traductor de esta versión.</target>
       <trans-unit id="PublishTab.Android.AboutBloomPUB" sil:dynamic="true">
         <source xml:lang="en">About BloomPUB</source>
         <note>ID: PublishTab.Android.AboutBloomPUB</note>
-        <target xml:lang="es-ES" state="needs-translation">About BloomPUB</target>
+        <target xml:lang="es-ES" state="translated">Acerca de BloomPUB</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.Settings" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Settings</source>
@@ -4670,7 +4670,19 @@ Por ejemplo, darle crédito al traductor de esta versión.</target>
       <trans-unit id="PublishTab.bloomPUBButton-tooltip" sil:dynamic="true">
         <source xml:lang="en">Make a BloomPUB for Bloom Reader or Reading App Builder.</source>
         <note>ID: PublishTab.bloomPUBButton-tooltip</note>
-        <target xml:lang="es-ES" state="needs-translation">Make a BloomPUB for Bloom Reader or Reading App Builder.</target>
+        <target xml:lang="es-ES" state="translated">Crear un BloomPUB para Bloom Reader o Reading App Builder.</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.BloomPUB.BannerDescription">
+        <source xml:lang="en">BloomPUBs are a kind of eBook that can be read on phone apps ([Bloom Reader](https://bloomlibrary.org/page/create/bloom-reader) and [Reading App Builder](https://software.sil.org/readingappbuilder/)) and on Windows using [BloomPUB Viewer](https://bloomlibrary.org/page/create/downloads#related-software). They offer many advantages over ePUBs, including WYSIWYG fidelity and the full range of Bloom digital book features.</source>
+        <note>ID: PublishTab.BloomPUB.BannerDescription</note>
+        <note>Task description at the top of the BloomPUB Publishing page</note>
+        <target xml:lang="es-ES" state="translated">Los BloomPUB son un tipo de libro electrónico que puede leerse en aplicaciones para teléfonos ([Bloom Reader](https://bloomlibrary.org/page/create/bloom-reader) y [Reading App Builder](https://software.sil.org/readingappbuilder/)) y en Windows utilizando el [BloomPUB Viewer](https://bloomlibrary.org/page/create/downloads#related-software). Ofrecen muchas ventajas sobre los ePUB, como la fidelidad WYSIWYG y la gama completa de funciones de los libros digitales de Bloom.</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.BloomPUB.BannerTitle">
+        <source xml:lang="en">Publish as BloomPUB</source>
+        <note>ID: PublishTab.BloomPUB.BannerTitle</note>
+        <note>Header on BloomPUB Publishing page</note>
+        <target xml:lang="es-ES" state="translated">Publicar como BloomPUB</target>
       </trans-unit>
       <trans-unit id="PublishTab.BodyOnlyRadio-tooltip" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Make a booklet from the inside pages of the book.\nPages will be laid out and reordered so that when you fold it, you'll have a booklet.\n</source>
@@ -4750,6 +4762,18 @@ Por ejemplo, darle crédito al traductor de esta versión.</target>
         <note>ID: PublishTab.Epub.Accessibility</note>
         <note>Here, the English 'Accessibility' is a common way of refering to technologies that are usable by people with disabilities. With computers, this usually means people with visual impairments. It includes botht he blind and people who might need text to be larger, or who are colorblind, etc.</note>
         <target xml:lang="es-ES" state="final">Accesibilidad</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Epub.BannerDescription">
+        <source xml:lang="en">Make an electronic book that can be read in EPUB readers on all devices.</source>
+        <note>ID: PublishTab.Epub.BannerDescription</note>
+        <note>Task description at the top of the ePUB Publishing page</note>
+        <target xml:lang="es-ES" state="translated">Crear un libro electrónico que se pueda leer en lectores EPUB en cualquier dispositivo.</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Epub.BannerTitle">
+        <source xml:lang="en">Publish as ePUB</source>
+        <note>ID: PublishTab.Epub.BannerTitle</note>
+        <note>Header on ePUB Publishing page</note>
+        <target xml:lang="es-ES" state="translated">Publicar como ePUB</target>
       </trans-unit>
       <trans-unit id="PublishTab.Epub.BuildingEPub" approved="yes">
         <source xml:lang="en">Building ePUB</source>
@@ -5130,18 +5154,18 @@ Por ejemplo, darle crédito al traductor de esta versión.</target>
       <trans-unit id="PublishTab.RecordVideo.AboutOneMinute">
         <source xml:lang="en">less than one minute</source>
         <note>ID: PublishTab.RecordVideo.AboutOneMinute</note>
-        <target xml:lang="es-ES" state="needs-translation">less than one minute</target>
+        <target xml:lang="es-ES" state="translated">menos de un minuto</target>
       </trans-unit>
       <trans-unit id="PublishTab.RecordVideo.AboutNMinutes">
         <source xml:lang="en">about {0} minutes</source>
         <note>ID: PublishTab.RecordVideo.AboutNMinutes</note>
         <note>{0} is a number of minutes</note>
-        <target xml:lang="es-ES" state="needs-translation">about {0} minutes</target>
+        <target xml:lang="es-ES" state="translated">aproximadamente {0} minutos</target>
       </trans-unit>
       <trans-unit id="PublishTab.RecordVideo.ActivitiesSkipped">
         <source xml:lang="en">Activities will be skipped</source>
         <note>ID: PublishTab.RecordVideo.ActivitiesSkipped</note>
-        <target xml:lang="es-ES" state="needs-translation">Activities will be skipped</target>
+        <target xml:lang="es-ES" state="translated">Las actividades serán omitidas</target>
       </trans-unit>
       <trans-unit id="PublishTab.RecordVideo.AudioFile">
         <source xml:lang="en">Audio File</source>
@@ -5149,124 +5173,136 @@ Por ejemplo, darle crédito al traductor de esta versión.</target>
         <note>displayed as file type for Save File dialog</note>
         <target xml:lang="es-ES" state="translated">Archivo de audio</target>
       </trans-unit>
+      <trans-unit id="PublishTab.RecordVideo.BannerDescription">
+        <source xml:lang="en">Create video files that you can upload to sites like Facebook and YouTube. You can also make videos to share with people who use inexpensive “feature phones” and even audio-only files for listening.</source>
+        <note>ID: PublishTab.RecordVideo.BannerDescription</note>
+        <note>Task description at the top of the Audio or Video Publishing page</note>
+        <target xml:lang="es-ES" state="translated">Crear vídeos que pueden ser cargados a sitios como Facebook y YouTube. También se puede crear vídeos para compartirlos con personas que utilizan "teléfonos con funciones" económicos. O puede crear archivos sólo de audio para ser escuchados.</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.RecordVideo.BannerTitle">
+        <source xml:lang="en">Publish as Audio or Video</source>
+        <note>ID: PublishTab.RecordVideo.BannerTitle</note>
+        <note>Header on Audio or Video Publishing page</note>
+        <target xml:lang="es-ES" state="translated">Publicar como audio o vídeo</target>
+      </trans-unit>
       <trans-unit id="PublishTab.RecordVideo.ChangeScale100">
         <source xml:lang="en">Please change your display scaling to 100% while making videos. Without this, videos will come out at the wrong resolution, or not record at all.</source>
         <note>ID: PublishTab.RecordVideo.ChangeScale100</note>
-        <target xml:lang="es-ES" state="needs-translation">Please change your display scaling to 100% while making videos. Without this, videos will come out at the wrong resolution, or not record at all.</target>
+        <target xml:lang="es-ES" state="translated">Por favor, cambie la escala de su pantalla al 100% durante la creación de vídeos. En caso contrario, los vídeos saldrán con una resolución incorrecta, o no se grabarán.</target>
       </trans-unit>
       <trans-unit id="PublishTab.RecordVideo.CheckRecording">
         <source xml:lang="en">Check Recording</source>
         <note>ID: PublishTab.RecordVideo.CheckRecording</note>
-        <target xml:lang="es-ES" state="needs-translation">Check Recording</target>
+        <target xml:lang="es-ES" state="translated">Revisar grabación</target>
       </trans-unit>
       <trans-unit id="PublishTab.RecordVideo.ConfigureAndPreview">
         <source xml:lang="en">Configure &amp; Preview</source>
         <note>ID: PublishTab.RecordVideo.ConfigureAndPreview</note>
-        <target xml:lang="es-ES" state="needs-translation">Configure &amp; Preview</target>
+        <target xml:lang="es-ES" state="translated">Configurar y previsualizar</target>
       </trans-unit>
       <trans-unit id="PublishTab.RecordVideo.DisplaySettings">
         <source xml:lang="en">Display Settings</source>
         <note>ID: PublishTab.RecordVideo.DisplaySettings</note>
-        <target xml:lang="es-ES" state="needs-translation">Display Settings</target>
+        <target xml:lang="es-ES" state="translated">Configuración de la pantalla</target>
       </trans-unit>
       <trans-unit id="PublishTab.RecordVideo.DisableScaling">
         <source xml:lang="en">Disable Display Scaling</source>
         <note>ID: PublishTab.RecordVideo.DisableScaling</note>
-        <target xml:lang="es-ES" state="needs-translation">Disable Display Scaling</target>
+        <target xml:lang="es-ES" state="translated">Desactivar la escalación de la pantalla</target>
       </trans-unit>
       <trans-unit id="PublishTab.RecordVideo.EstimatedTimeRemaining">
         <source xml:lang="en">Estimated time remaining: {0}</source>
         <note>ID: PublishTab.RecordVideo.EstimatedTimeRemaining</note>
         <note>{0} is text describing the amount of time such as 'less than one minute' or 'about 3 minutes'</note>
-        <target xml:lang="es-ES" state="needs-translation">Estimated time remaining: {0}</target>
+        <target xml:lang="es-ES" state="translated">Tiempo restante estimado: {0}</target>
       </trans-unit>
       <trans-unit id="PublishTab.RecordVideo.Facebook">
         <source xml:lang="en">Facebook</source>
         <note>ID: PublishTab.RecordVideo.Facebook</note>
-        <target xml:lang="es-ES" state="needs-translation">Facebook</target>
+        <target xml:lang="es-ES" state="translated">Facebook</target>
       </trans-unit>
       <trans-unit id="PublishTab.RecordVideo.FeaturePhone">
         <source xml:lang="en">Feature Phone</source>
         <note>ID: PublishTab.RecordVideo.FeaturePhone</note>
-        <target xml:lang="es-ES" state="needs-translation">Feature Phone</target>
+        <target xml:lang="es-ES" state="translated">Teléfono con funciones</target>
       </trans-unit>
       <trans-unit id="PublishTab.RecordVideo.FinalizingAudio">
         <source xml:lang="en">Finalizing audio</source>
         <note>ID: PublishTab.RecordVideo.FinalizingAudio</note>
-        <target xml:lang="es-ES" state="needs-translation">Finalizing audio</target>
+        <target xml:lang="es-ES" state="translated">Finalizando el audio</target>
       </trans-unit>
       <trans-unit id="PublishTab.RecordVideo.FinishingInitialVideoRecording">
         <source xml:lang="en">Finishing initial video recording</source>
         <note>ID: PublishTab.RecordVideo.FinishingInitialVideoRecording</note>
-        <target xml:lang="es-ES" state="needs-translation">Finishing initial video recording</target>
+        <target xml:lang="es-ES" state="translated">Finalizando la grabación inicial del vídeo</target>
       </trans-unit>
       <trans-unit id="PublishTab.RecordVideo.Format">
         <source xml:lang="en">Format</source>
         <note>ID: PublishTab.RecordVideo.Format</note>
         <note>a heading to select which audio or video format to record</note>
-        <target xml:lang="es-ES" state="needs-translation">Format</target>
+        <target xml:lang="es-ES" state="translated">Formato</target>
       </trans-unit>
       <trans-unit id="PublishTab.RecordVideo.Instructions">
         <source xml:lang="en">If your book has multiple languages or other options, you will see a row of red buttons. Use these to set up the book for recording.</source>
         <note>ID: PublishTab.RecordVideo.Instructions</note>
-        <target xml:lang="es-ES" state="needs-translation">If your book has multiple languages or other options, you will see a row of red buttons. Use these to set up the book for recording.</target>
+        <target xml:lang="es-ES" state="translated">Si su libro tiene varios idiomas u otras opciones, verá una fila de botones rojos. Utilícelos para configurar el libro para la grabación.</target>
       </trans-unit>
       <trans-unit id="PublishTab.RecordVideo.MakeRecording">
         <source xml:lang="en">Make Recording</source>
         <note>ID: PublishTab.RecordVideo.MakeRecording</note>
-        <target xml:lang="es-ES" state="needs-translation">Make Recording</target>
+        <target xml:lang="es-ES" state="translated">Grabar audio</target>
       </trans-unit>
       <trans-unit id="PublishTab.RecordVideo.MergingAudioVideo">
         <source xml:lang="en">Merging audio and video, starting at {0:hh:mm tt}</source>
         <note>ID: PublishTab.RecordVideo.MergingAudioVideo</note>
         <note>{0:hh:mm tt} is a time</note>
-        <target xml:lang="es-ES" state="needs-translation">Merging audio and video, starting at {0:hh:mm tt}</target>
+        <target xml:lang="es-ES" state="translated">Combinando el audio y el vídeo, a partir de {0:hh:mm tt}</target>
       </trans-unit>
       <trans-unit id="PublishTab.RecordVideo.Mp3">
         <source xml:lang="en">Mp3 Audio</source>
         <note>ID: PublishTab.RecordVideo.Mp3</note>
-        <target xml:lang="es-ES" state="needs-translation">Mp3 Audio</target>
+        <target xml:lang="es-ES" state="translated">Audio MP3</target>
       </trans-unit>
       <trans-unit id="PublishTab.RecordVideo.OverviewHelpLink">
         <source xml:lang="en">Publishing Audio or Video Books</source>
         <note>ID: PublishTab.RecordVideo.OverviewHelpLink</note>
-        <target xml:lang="es-ES" state="needs-translation">Publishing Audio or Video Books</target>
+        <target xml:lang="es-ES" state="translated">Publicando Audiolibros or Vídeolibros</target>
       </trans-unit>
       <trans-unit id="PublishTab.RecordVideo.Play">
         <source xml:lang="en">Play Recording</source>
         <note>ID: PublishTab.RecordVideo.Play</note>
-        <target xml:lang="es-ES" state="needs-translation">Play Recording</target>
+        <target xml:lang="es-ES" state="translated">Reproducir grabación</target>
       </trans-unit>
       <trans-unit id="PublishTab.RecordVideo.ProcessingAudio">
         <source xml:lang="en">Processing audio</source>
         <note>ID: PublishTab.RecordVideo.ProcessingAudio</note>
-        <target xml:lang="es-ES" state="needs-translation">Processing audio</target>
+        <target xml:lang="es-ES" state="translated">Procesando el audio</target>
       </trans-unit>
       <trans-unit id="PublishTab.RecordVideo.Record">
         <source xml:lang="en">Record</source>
         <note>ID: PublishTab.RecordVideo.Record</note>
         <note>'Record' as in 'Record a video recording'</note>
-        <target xml:lang="es-ES" state="needs-translation">Record</target>
+        <target xml:lang="es-ES" state="translated">Grabar</target>
       </trans-unit>
       <trans-unit id="PublishTab.RecordVideo.RecordingInProgress">
         <source xml:lang="en">Recording in Progress...</source>
         <note>ID: PublishTab.RecordVideo.RecordingInProgress</note>
-        <target xml:lang="es-ES" state="needs-translation">Recording in Progress...</target>
+        <target xml:lang="es-ES" state="translated">Grabación en proceso...</target>
       </trans-unit>
       <trans-unit id="PublishTab.RecordVideo.RecordingInProgressSideways">
         <source xml:lang="en">Recording in Progress. Showing sideways in order to fit on your screen.</source>
         <note>ID: PublishTab.RecordVideo.RecordingInProgressSideways</note>
-        <target xml:lang="es-ES" state="needs-translation">Recording in Progress. Showing sideways in order to fit on your screen.</target>
+        <target xml:lang="es-ES" state="translated">Grabación en marcha. Mostrando de lado para que quepa en su pantalla.</target>
       </trans-unit>
       <trans-unit id="PublishTab.RecordVideo.RecordThesePages" sil:dynamic="true">
         <source xml:lang="en">Record These Pages:</source>
         <note>ID: PublishTab.RecordVideo.RecordThesePages</note>
-        <target xml:lang="es-ES" state="needs-translation">Record These Pages:</target>
+        <target xml:lang="es-ES" state="translated">Grabar estas páginas:</target>
       </trans-unit>
       <trans-unit id="PublishTab.RecordVideo.TurnPageAfter">
         <source xml:lang="en">Turn pages without narration after:</source>
         <note>ID: PublishTab.RecordVideo.TurnPageAfter</note>
-        <target xml:lang="es-ES" state="needs-translation">Turn pages without narration after:</target>
+        <target xml:lang="es-ES" state="translated">Cambia las páginas sin narración después de:</target>
       </trans-unit>
       <trans-unit id="PublishTab.RecordVideo.ScreenTooSmall">
         <source xml:lang="en">Ideally, this video target should be {0}. However that is larger than your screen, so Bloom will produce a video that is {1}.</source>
@@ -5274,21 +5310,21 @@ Por ejemplo, darle crédito al traductor de esta versión.</target>
         <note>{0} will be replaced by the target resolution of the video. For example, "1920 x 1080".</note>
         <note>{1} will be replaced by the actual resolution of the video. For example, "1280 x 720".</note>
         <note>Please ensure that the translation includes the {0} and {1} placeholders in an appropriate location in the translated text.</note>
-        <target xml:lang="es-ES" state="needs-translation">Ideally, this video target should be {0}. However that is larger than your screen, so Bloom will produce a video that is {1}.</target>
+        <target xml:lang="es-ES" state="translated">Idealmente, este objeto de vídeo debería ser {0}. Pero es más grande que su pantalla. Por lo tanto, Bloom producirá un vídeo que es {1}.</target>
       </trans-unit>
       <trans-unit id="PublishTab.RecordVideo.VideoFile">
         <source xml:lang="en">Video File</source>
         <note>ID: PublishTab.RecordVideo.VideoFile</note>
         <note>displayed as file type for Save File dialog</note>
-        <target xml:lang="es-ES" state="needs-translation">Video File</target>
+        <target xml:lang="es-ES" state="translated">Achivo de vídeo</target>
       </trans-unit>
       <trans-unit id="PublishTab.RecordVideo.WillOpenProgram">
         <source xml:lang="en">
           This will open the program on your computer that is associated with this file type.
         </source>
         <note>ID: PublishTab.RecordVideo.WillOpenProgram</note>
-        <target xml:lang="es-ES" state="needs-translation">
-          This will open the program on your computer that is associated with this file type.
+        <target xml:lang="es-ES" state="translated">
+          Esto abrirá el programa en su computadora que está asociado con este tipo de archivo.
         </target>
       </trans-unit>
       <trans-unit id="PublishTab.RecordVideo.WillOpenRecordingWindow">
@@ -5296,24 +5332,24 @@ Por ejemplo, darle crédito al traductor de esta versión.</target>
           This will open a window and play the selected pages. Bloom will record it to match the “Format” option in the upper right of this screen.
         </source>
         <note>ID: PublishTab.RecordVideo.WillOpenRecordingWindow</note>
-        <target xml:lang="es-ES" state="needs-translation">
-          This will open a window and play the selected pages. Bloom will record it to match the “Format” option in the upper right of this screen.
+        <target xml:lang="es-ES" state="translated">
+          Esto abrirá una ventanilla y reproducirá las páginas seleccionadas. Bloom la grabará para que coincida con el "Formato" seleccionado en la parte superior derecha de esta pantalla.
         </target>
       </trans-unit>
       <trans-unit id="PublishTab.RecordVideo.YouTube">
         <source xml:lang="en">YouTube</source>
         <note>ID: PublishTab.RecordVideo.YouTube</note>
-        <target xml:lang="es-ES" state="needs-translation">YouTube</target>
+        <target xml:lang="es-ES" state="translated">YouTube</target>
       </trans-unit>
       <trans-unit id="PublishTab.RecordVideoButton">
         <source xml:lang="en">Audio or Video</source>
         <note>ID: PublishTab.RecordVideoButton</note>
-        <target xml:lang="es-ES" state="needs-translation">Audio or Video</target>
+        <target xml:lang="es-ES" state="translated">Audio o vídeo</target>
       </trans-unit>
       <trans-unit id="PublishTab.RecordVideoButton-tooltip" sil:dynamic="true">
         <source xml:lang="en">Make an audio or video file of the book being read.</source>
         <note>ID: PublishTab.RecordVideoButton-tooltip</note>
-        <target xml:lang="es-ES" state="needs-translation">Make an audio or video file of the book being read.</target>
+        <target xml:lang="es-ES" state="translated">Crear un archivo de audio o vídeo de la lectura del libro.</target>
       </trans-unit>
       <trans-unit id="PublishTab.Save" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Save...</source>
@@ -5334,7 +5370,7 @@ Por ejemplo, darle crédito al traductor de esta versión.</target>
       <trans-unit id="PublishTab.TasksOverview">
         <source xml:lang="en">Publish tab tasks overview</source>
         <note>ID: PublishTab.TasksOverview</note>
-        <target xml:lang="es-ES" state="needs-translation">Publish tab tasks overview</target>
+        <target xml:lang="es-ES" state="translated">Resumen de las funciones en la pestaña "Publicar"</target>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.AccessibleToBlind" approved="yes">
         <source xml:lang="en">Accessible to the Blind</source>

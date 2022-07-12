@@ -422,54 +422,54 @@
         <source xml:lang="en">You must keep the copyright and credits for authors, illustrators, etc.</source>
         <note>ID: MetadataDisplay.Licenses.CreativeCommons.AttributionRequired</note>
         <note>See http://creativecommons.org/ to find out how this is normally translated in your language. What we're aiming for here is an easy to understand summary.</note>
-        <target xml:lang="th" state="needs-translation">You must keep the copyright and credits for authors, illustrators, etc.</target>
+        <target xml:lang="th" state="translated">ต้องรักษาไว้ซึ่งลิขสิทธิ์และเครดิตให้แก่ผู้เขียน ผู้วาดภาพ ฯลฯ</target>
       </trans-unit>
       <trans-unit id="MetadataDisplay.Licenses.CreativeCommons.CommercialUseAllowed" sil:dynamic="true">
         <source xml:lang="en">You are free to make commercial use of this work.</source>
         <note>ID: MetadataDisplay.Licenses.CreativeCommons.CommercialUseAllowed</note>
         <note>See http://creativecommons.org/ to find out how this is normally translated in your language. What we're aiming for here is an easy to understand summary.</note>
-        <target xml:lang="th" state="needs-translation">You are free to make commercial use of this work.</target>
+        <target xml:lang="th" state="translated">สามารถใช้งานนี้ในเชิงพาณิชย์ได้</target>
       </trans-unit>
       <trans-unit id="MetadataDisplay.Licenses.CreativeCommons.Derivatives" sil:dynamic="true">
         <source xml:lang="en">You may adapt and add to this work.</source>
         <note>ID: MetadataDisplay.Licenses.CreativeCommons.Derivatives</note>
         <note>See http://creativecommons.org/ to find out how this is normally translated in your language. What we're aiming for here is an easy to understand summary.</note>
-        <target xml:lang="th" state="needs-translation">You may adapt and add to this work.</target>
+        <target xml:lang="th" state="translated">สามารถปรับเปลี่ยนหรือเพิ่มเติมในงานนี้ได้</target>
       </trans-unit>
       <trans-unit id="MetadataDisplay.Licenses.CreativeCommons.DerivativesWithShareAndShareAlike" sil:dynamic="true">
         <source xml:lang="en">You may adapt and add to this work, but you may distribute the resulting work only under the same or similar license to this one.</source>
         <note>ID: MetadataDisplay.Licenses.CreativeCommons.DerivativesWithShareAndShareAlike</note>
         <note>See http://creativecommons.org/ to find out how this is normally translated in your language. What we're aiming for here is an easy to understand summary.</note>
-        <target xml:lang="th" state="needs-translation">You may adapt and add to this work, but you may distribute the resulting work only under the same or similar license to this one.</target>
+        <target xml:lang="th" state="translated">สามารถปรับเปลี่ยนหรือเพิ่มเติมในงานนี้ได้ แต่ให้เผยแพร่งานที่สำเร็จภายใต้สิทธิขออนุญาตอันเดียวกันหรือที่คล้ายคลึงกันกับงานนี้เท่านั้น</target>
       </trans-unit>
       <trans-unit id="MetadataDisplay.Licenses.CreativeCommons.NoDerivatives" sil:dynamic="true">
         <source xml:lang="en">You may not make changes or build upon this work without permission.</source>
         <note>ID: MetadataDisplay.Licenses.CreativeCommons.NoDerivatives</note>
         <note>See http://creativecommons.org/ to find out how this is normally translated in your language. What we're aiming for here is an easy to understand summary.</note>
-        <target xml:lang="th" state="needs-translation">You may not make changes or build upon this work without permission.</target>
+        <target xml:lang="th" state="translated">ห้ามมิให้เปลี่ยนแปลงหรือสร้างงานอื่นจากงานนี้ โดยไม่ได้รับอนุญาต</target>
       </trans-unit>
       <trans-unit id="MetadataDisplay.Licenses.CreativeCommons.NonCommercial" sil:dynamic="true">
         <source xml:lang="en">You may not use this work for commercial purposes.</source>
         <note>ID: MetadataDisplay.Licenses.CreativeCommons.NonCommercial</note>
         <note>See http://creativecommons.org/ to find out how this is normally translated in your language. What we're aiming for here is an easy to understand summary.</note>
-        <target xml:lang="th" state="translated">ไม่อนุญาตให้จำหน่ายเพื่อประโยชน์เชิงธุรกิจ</target>
+        <target xml:lang="th" state="translated">ไม่สามารถใช้งานนี้ในเชิงพาณิชย์ได้</target>
       </trans-unit>
       <trans-unit id="MetadataDisplay.Licenses.CreativeCommons.PublicDomain" sil:dynamic="true">
         <source xml:lang="en">You can copy, modify, and distribute this work, even for commercial purposes, all without asking permission.</source>
         <note>ID: MetadataDisplay.Licenses.CreativeCommons.PublicDomain</note>
         <note>See http://creativecommons.org/ to find out how this is normally translated in your language. What we're aiming for here is an easy to understand summary.</note>
-        <target xml:lang="th" state="needs-translation">You can copy, modify, and distribute this work, even for commercial purposes, all without asking permission.</target>
+        <target xml:lang="th" state="translated">สามารถคัดลอก แก้ไขและเผยแพร่งานนี้ได้แม้เพื่อวัตถุประสงค์ทางการค้า โดยไม่ต้องขออนุญาต</target>
       </trans-unit>
       <trans-unit id="MetadataDisplay.Licenses.NullLicense" sil:dynamic="true">
         <source xml:lang="en">For permission to reuse, contact the copyright holder.</source>
         <note>ID: MetadataDisplay.Licenses.NullLicense</note>
         <note>This is used when all we have is a copyright, no other license.</note>
-        <target xml:lang="th" state="translated">หากมีการนำสื่อไบใช้ในโครงการใด ขอความกรุณาแจ้งให้เจ้าของลิขสิทธิ์</target>
+        <target xml:lang="th" state="translated">สำหรับการขออนุญาตใช้สิทธิอีกครั้ง กรุณาติดต่อผู้ถือลิขสิทธิ์</target>
       </trans-unit>
       <trans-unit id="MetadataDisplay.NoLicense">
         <source xml:lang="en">No license specified</source>
         <note>ID: MetadataDisplay.NoLicense</note>
-        <target xml:lang="th" state="needs-translation">No license specified</target>
+        <target xml:lang="th" state="translated">ไม่มีใบอนุญาตที่ระบุเฉพาะ</target>
       </trans-unit>
       <trans-unit id="MetadataEditor.AllowCommercialUse">
         <source xml:lang="en">Allow commercial uses of your work?</source>

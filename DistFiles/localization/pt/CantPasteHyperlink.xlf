@@ -2,19 +2,19 @@
 <xliff xmlns:html="http://www.w3.org/TR/html" xmlns:sil="http://sil.org/software/XLiff" xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
   <file original="CantPasteHyperlink-en.htm" datatype="html" source-language="en" target-language="pt-PT">
     <body>
-      <trans-unit id="hyperlink.title">
+      <trans-unit id="hyperlink.title" approved="yes">
         <source xml:lang="en">Can't Paste Hyperlink</source>
-        <target xml:lang="pt-PT" state="needs-translation">Can't Paste Hyperlink</target>
+        <target xml:lang="pt-PT" state="final">Não é possível colar Hyperlink</target>
         <note>ID: hyperlink.title</note>
       </trans-unit>
-      <trans-unit id="EditTab.HyperlinkPasteFailure">
+      <trans-unit id="EditTab.HyperlinkPasteFailure" approved="yes">
         <source xml:lang="en">Bloom was not able to make a link. Try selecting only simple text.</source>
-        <target xml:lang="pt-PT" state="needs-translation">Bloom was not able to make a link. Try selecting only simple text.</target>
+        <target xml:lang="pt-PT" state="final">Bloom não conseguiu fazer um link. Tente selecionar apenas um texto simples.</target>
         <note>ID: EditTab.HyperlinkPasteFailure</note>
       </trans-unit>
-      <trans-unit id="hyperlink.2">
+      <trans-unit id="hyperlink.2" approved="yes">
         <source xml:lang="en">In this context, "simple" text means text that is selected from within a single paragraph and is not associated with multiple audio recordings or split audio segments. Also certain selections involving formatted text can be a problem if the whole word is not selected.</source>
-        <target xml:lang="pt-PT" state="needs-translation">In this context, "simple" text means text that is selected from within a single paragraph and is not associated with multiple audio recordings or split audio segments. Also certain selections involving formatted text can be a problem if the whole word is not selected.</target>
+        <target xml:lang="pt-PT" state="final">Neste contexto, Texto "simples" significa o texto que é selecionado dentro de um único parágrafo e não está associado a várias gravações de áudio ou segmentos de áudio. Também algumas seleções que envolvem texto formatado podem ser um problema se a palavra inteira não for selecionada.</target>
         <note>ID: hyperlink.2</note>
       </trans-unit>
     </body>
