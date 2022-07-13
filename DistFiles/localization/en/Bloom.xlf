@@ -4174,6 +4174,28 @@
         <note>ID: PublishTab.PdfNotSavedWhy</note>
         <note>explanation that file was not saved displayed in a message box</note>
       </trans-unit>
+      <!-- for 5.4
+      <trans-unit id="PublishTab.PdfPrint.Button">
+        <source xml:lang="en">PDF and Print</source>
+        <note>ID: PublishTab.PdfPrint.Button</note>
+        <note>Text under button to select Print and PDF preview</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.PdfPrint.BannerTitle">
+        <source xml:lang="en">Publish to PDF &amp; Print</source>
+        <note>ID: PublishTab.PdfPrint.BannerTitle</note>
+        <note>Header on PDF/Print Publishing page</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.PdfPrint.BookletModes">
+        <source xml:lang="en">Booklet Mode</source>
+        <note>ID: PublishTab.PdfPrint.BookletModes</note>
+        <note>Heading above Option panel to right of PDF preview</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.PdfPrint.PrintshopOptions">
+        <source xml:lang="en">Prepare for Printshop</source>
+        <note>ID: PublishTab.PdfPrint.PrintshopOptions</note>
+        <note>Heading over lower part of Option panel to right of PDF preview</note>
+      </trans-unit>
+      -->
       <trans-unit id="PublishTab.PrintButton">
         <source xml:lang="en">&amp;Print...</source>
         <note>ID: PublishTab.PrintButton</note>
