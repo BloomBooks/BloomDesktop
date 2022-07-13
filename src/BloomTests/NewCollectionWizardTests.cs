@@ -15,7 +15,7 @@ namespace BloomTests
 		{
 			Application.EnableVisualStyles();
 
-			Browser.SetUpXulRunner();
+			GeckoFxBrowser.SetUpXulRunner();
 			using (var dlg = new NewCollectionWizard(false))
 			{
 				dlg.ShowDialog();
@@ -27,7 +27,7 @@ namespace BloomTests
 		{
 			Application.EnableVisualStyles();
 
-			Browser.SetUpXulRunner();
+			GeckoFxBrowser.SetUpXulRunner();
 			using (var dlg = new NewCollectionWizard(true))
 			{
 				dlg.ShowDialog();

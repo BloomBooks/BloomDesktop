@@ -1,4 +1,6 @@
-﻿namespace Bloom.Publish
+﻿using System.Windows.Forms;
+
+namespace Bloom.Publish
 {
 	partial class HtmlPublishPanel
 	{
