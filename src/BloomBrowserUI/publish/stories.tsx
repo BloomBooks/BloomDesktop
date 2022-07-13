@@ -162,7 +162,7 @@ storiesOf("Publish/Bloom Reader", module).add("ReaderPublishScreen", () => (
     <ReaderPublishScreen />
 ));
 
-storiesOf("Publish/Video", module).add("RecordVideoWindow", () => (
+storiesOf("Publish/Video", module).add("PublishAudioVideo", () => (
     <PublishAudioVideo />
 ));
 
