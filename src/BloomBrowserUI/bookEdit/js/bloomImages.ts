@@ -102,6 +102,112 @@ export function GetButtonModifier(container) {
     return buttonModifier;
 }
 
+export function addImageEditingButtons(containerDiv: HTMLElement): void {
+    if (containerDiv.classList.contains("hoverUp")) {
+        return;
+    }
+    let img = getImgFromContainer(this);
+    if (img.length === 0)
+        // This case is probably a left over from some previous Bloom where
+        // we were using background images instead of <img>? But it does
+        // no harm so I'm leaving it in.
+        img = $(containerDiv); //using a backgroundImage
+
+    const $containerDiv = $(containerDiv);
+    if ($containerDiv.find(kPlaybackOrderContainerSelector).length > 0) {
+        return; // Playback order controls are active, deactivate image container stuff.
+    }
+    const buttonModifier = GetButtonModifier($containerDiv);
+
+    $containerDiv.prepend(
+        '<button class="miniButton cutImageButton imageOverlayButton disabled ' +
+            buttonModifier +
+            '" title="' +
+            theOneLocalizationManager.getText("EditTab.Image.CutImage") +
+            '"></button>'
+    );
+    $containerDiv.prepend(
+        '<button class="miniButton copyImageButton imageOverlayButton disabled ' +
+            buttonModifier +
+            '" title="' +
+            theOneLocalizationManager.getText("EditTab.Image.CopyImage") +
+            '"></button>'
+    );
+    $containerDiv.prepend(
+        '<button class="pasteImageButton imageButton imageOverlayButton ' +
+            buttonModifier +
+            '" title="' +
+            theOneLocalizationManager.getText("EditTab.Image.PasteImage") +
+            '"></button>'
+    );
+    $containerDiv.prepend(
+        '<button class="changeImageButton imageButton imageOverlayButton ' +
+            buttonModifier +
+            '" title="' +
+            theOneLocalizationManager.getText("EditTab.Image.ChangeImage") +
+            '"></button>'
+    );
+
+    // As part of BL-9976 JH decided to remove this button as users were getting confused.
+    // if (
+    //     // Only show this button if the toolbox is also offering it. It might not offer it
+    //     // if it's experimental and that settings isn't on, or for Bloom Enterprise reasons, or whatever.
+    //     getToolboxFrameExports()
+    //         ?.getTheOneToolbox()
+    //         .getToolIfOffered(ImageDescriptionAdapter.kToolID)
+    // ) {
+    //     $this.prepend(
+    //         '<button class="imageDescriptionButton imageButton imageOverlayButton ' +
+    //             buttonModifier +
+    //             '" title="' +
+    //             theOneLocalizationManager.getText(
+    //                 "EditTab.Toolbox.ImageDescriptionTool" // not quite the "Show Image Description Tool", but... feeling parsimonious
+    //             ) +
+    //             '"></button>'
+    //     );
+    //     $this.find(".imageDescriptionButton").click(() => {
+    //         getToolboxFrameExports()
+    //             ?.getTheOneToolbox()
+    //             .activateToolFromId(ImageDescriptionAdapter.kToolID);
+    //     });
+    // }
+
+    SetImageTooltip(containerDiv);
+
+    if (IsImageReal(img)) {
+        const title = theOneLocalizationManager.getText(
+            "EditTab.Image.EditMetadata"
+        );
+        const button = `<button class="editMetadataButton imageButton imageOverlayButton ${buttonModifier}" title="${title}"></button>`;
+        $containerDiv.prepend(button);
+        $containerDiv.find("button.editMetadataButton").attr(
+            "onClick",
+            // Originally, we tried to determine the imageUrl at setup time and put that string in the onClick handler string below.
+            // However, it turns out that we must rely on the click handler knowing what element we clicked on ("this") at click time.
+            // Otherwise, we can get an incorrect imageUrl. For example, a picture on picture might give the parent picture imageUrl.
+            // We have to do this strange editTabBundle stuff because at the time of the click, we are in a context where that is all we can access.
+            `(window.parent || window).editTabBundle.showCopyrightAndLicenseDialog(
+                (window.parent || window).editTabBundle.getImageUrlFromImageButton(this));`
+        );
+        $containerDiv.find(".miniButton").each(function() {
+            $(this).removeClass("disabled");
+        });
+    }
+
+    $containerDiv.addClass("hoverUp");
+}
+
+export function removeImageEditingButtons(containerDiv: HTMLElement): void {
+    const $containerDiv = $(containerDiv);
+    $containerDiv.removeClass("hoverUp");
+    $containerDiv.find(".imageOverlayButton").each(function() {
+        // leave the problem indicator visible
+        if (!$(this).hasClass("imgMetadataProblem")) {
+            $(this).remove();
+        }
+    });
+}
+
 // Bloom "imageContainer"s are <div>'s which wrap an <img>, and automatically proportionally resize
 // the img to fit the available space.
 // Precondition: containerDiv must be just a single HTMLElement
@@ -130,113 +236,10 @@ function SetupImageContainer(containerDiv: HTMLElement) {
 
     $(containerDiv)
         .mouseenter(function() {
-            let img = getImgFromContainer(this);
-            if (img.length === 0)
-                // This case is probably a left over from some previous Bloom where
-                // we were using background images instead of <img>? But it does
-                // no harm so I'm leaving it in.
-                img = $(containerDiv); //using a backgroundImage
-
-            const $this = $(this);
-            if ($this.find(kPlaybackOrderContainerSelector).length > 0) {
-                return; // Playback order controls are active, deactivate image container stuff.
-            }
-            const buttonModifier = GetButtonModifier($this);
-
-            $this.prepend(
-                '<button class="miniButton cutImageButton imageOverlayButton disabled ' +
-                    buttonModifier +
-                    '" title="' +
-                    theOneLocalizationManager.getText(
-                        "EditTab.Image.CutImage"
-                    ) +
-                    '"></button>'
-            );
-            $this.prepend(
-                '<button class="miniButton copyImageButton imageOverlayButton disabled ' +
-                    buttonModifier +
-                    '" title="' +
-                    theOneLocalizationManager.getText(
-                        "EditTab.Image.CopyImage"
-                    ) +
-                    '"></button>'
-            );
-            $this.prepend(
-                '<button class="pasteImageButton imageButton imageOverlayButton ' +
-                    buttonModifier +
-                    '" title="' +
-                    theOneLocalizationManager.getText(
-                        "EditTab.Image.PasteImage"
-                    ) +
-                    '"></button>'
-            );
-            $this.prepend(
-                '<button class="changeImageButton imageButton imageOverlayButton ' +
-                    buttonModifier +
-                    '" title="' +
-                    theOneLocalizationManager.getText(
-                        "EditTab.Image.ChangeImage"
-                    ) +
-                    '"></button>'
-            );
-
-            // As part of BL-9976 JH decided to remove this button as users were getting confused.
-            // if (
-            //     // Only show this button if the toolbox is also offering it. It might not offer it
-            //     // if it's experimental and that settings isn't on, or for Bloom Enterprise reasons, or whatever.
-            //     getToolboxFrameExports()
-            //         ?.getTheOneToolbox()
-            //         .getToolIfOffered(ImageDescriptionAdapter.kToolID)
-            // ) {
-            //     $this.prepend(
-            //         '<button class="imageDescriptionButton imageButton imageOverlayButton ' +
-            //             buttonModifier +
-            //             '" title="' +
-            //             theOneLocalizationManager.getText(
-            //                 "EditTab.Toolbox.ImageDescriptionTool" // not quite the "Show Image Description Tool", but... feeling parsimonious
-            //             ) +
-            //             '"></button>'
-            //     );
-            //     $this.find(".imageDescriptionButton").click(() => {
-            //         getToolboxFrameExports()
-            //             ?.getTheOneToolbox()
-            //             .activateToolFromId(ImageDescriptionAdapter.kToolID);
-            //     });
-            // }
-
-            SetImageTooltip(containerDiv);
-
-            if (IsImageReal(img)) {
-                const title = theOneLocalizationManager.getText(
-                    "EditTab.Image.EditMetadata"
-                );
-                const button = `<button class="editMetadataButton imageButton imageOverlayButton ${buttonModifier}" title="${title}"></button>`;
-                $this.prepend(button);
-                $this.find("button.editMetadataButton").attr(
-                    "onClick",
-                    // Originally, we tried to determine the imageUrl at setup time and put that string in the onClick handler string below.
-                    // However, it turns out that we must rely on the click handler knowing what element we clicked on ("this") at click time.
-                    // Otherwise, we can get an incorrect imageUrl. For example, a picture on picture might give the parent picture imageUrl.
-                    // We have to do this strange editTabBundle stuff because at the time of the click, we are in a context where that is all we can access.
-                    `(window.parent || window).editTabBundle.showCopyrightAndLicenseDialog(
-                        (window.parent || window).editTabBundle.getImageUrlFromImageButton(this));`
-                );
-                $this.find(".miniButton").each(function() {
-                    $(this).removeClass("disabled");
-                });
-            }
-
-            $this.addClass("hoverUp");
+            addImageEditingButtons(this);
         })
         .mouseleave(function() {
-            const $this = $(this);
-            $this.removeClass("hoverUp");
-            $this.find(".imageOverlayButton").each(function() {
-                // leave the problem indicator visible
-                if (!$(this).hasClass("imgMetadataProblem")) {
-                    $(this).remove();
-                }
-            });
+            removeImageEditingButtons(this);
         });
 }
 

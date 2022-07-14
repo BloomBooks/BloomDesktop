@@ -166,7 +166,7 @@ div.readOnlyInTranslationMode {
 .imageButton {
     width: 87px;
     height: 52px;
-    z-index: 100;
+    z-index: @imageEditingButtonZIndex;
     position: absolute;
     background-repeat: no-repeat;
     background-size: contain;
@@ -320,7 +320,7 @@ button.miniButton {
     background-repeat: no-repeat;
     background-size: contain;
     background-color: transparent;
-    z-index: 120;
+    z-index: @miniImageEditingButtonZIndex;
     &:hover {
         border: 1px inset @ImageButtonBorder;
     }

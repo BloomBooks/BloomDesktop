@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Drawing;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -9,6 +8,7 @@ using System.Net;
 using System.Security;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Web.UI.WebControls;
 using System.Xml;
 using Bloom.Api;
 using Bloom.Collection;
@@ -28,6 +28,7 @@ using SIL.Progress;
 using SIL.Reporting;
 using SIL.Xml;
 using Bloom.Utils;
+using Image = System.Drawing.Image;
 
 namespace Bloom.Book
 {
@@ -124,8 +125,9 @@ namespace Bloom.Book
 		/// History of this number:
 		///   Bloom 4.9: 1 = Ensure that all images are opaque and no larger than our desired maximum size.
 		///              2 = Remove any 'comical-generated' svgs that are transparent.
+		///				 3 = Ensure main img comes first in image container
 		/// </summary>
-		public const int kMaintenanceLevel = 2;
+		public const int kMaintenanceLevel = 3;
 
 		public const string PrefixForCorruptHtmFiles = "_broken_";
 		private IChangeableFileLocator _fileLocator;
@@ -2753,7 +2755,8 @@ namespace Bloom.Book
 				if (Program.RunningUnitTests)
 				{
 					// TeamCity enforces not showing modal dialogs during unit tests on Windows 10.
-					ImageUtils.FixSizeAndTransparencyOfImagesInFolder(FolderPath, new List<string>(),  new NullProgress());
+					ImageUtils.FixSizeAndTransparencyOfImagesInFolder(FolderPath, new List<string>(),
+						new NullProgress());
 				}
 				else
 				{
@@ -2761,7 +2764,8 @@ namespace Bloom.Book
 					{
 						dlg.Text = "Updating Image Files";
 						dlg.ShowAndDoWork((progress, args) =>
-							ImageUtils.FixSizeAndTransparencyOfImagesInFolder(FolderPath, new List<string>(), progress));
+							ImageUtils.FixSizeAndTransparencyOfImagesInFolder(FolderPath, new List<string>(),
+								progress));
 					}
 				}
 			}
@@ -2823,6 +2827,34 @@ namespace Bloom.Book
 					}
 				}
 			}
+
+			if (level < 3)
+			{
+				// Make sure that in every image container, the first element is the img.
+				// This is important because, since 5.4, we don't use a z-index to put overlays above the base image
+				// (so the overlay image container does not become a stacking context, so we can use
+				// z-index on its children to put them above the comicaljs canvas),
+				// which means we depend on the img being first to make sure the overlays are on top of it.
+				// (I'm not sure we ever created situations where the img was not first, but now it's vital,
+				// so I added this maintenance to make sure of it.)
+				var imageContainers = Dom.SafeSelectNodes("//*[contains(@class, 'bloom-imageContainer')]")
+					.Cast<XmlElement>();
+				foreach (var ic in imageContainers)
+				{
+					var firstImage = ic.ChildNodes.Cast<XmlNode>()
+						.FirstOrDefault(x => x is XmlElement && ((XmlElement)x).Name == "img");
+					if (firstImage == null)
+						continue;
+					var firstElement = ic.ChildNodes.Cast<XmlNode>()
+						.FirstOrDefault(x => x is XmlElement);
+					if (firstElement != firstImage)
+					{
+						ic.InsertBefore(firstImage, firstElement);
+					}
+				}
+
+			}
+
 			// future additional levels will add additional "if (level < N)" blocks.
 			Dom.UpdateMetaElement("maintenanceLevel", kMaintenanceLevel.ToString(CultureInfo.InvariantCulture));
 		}
