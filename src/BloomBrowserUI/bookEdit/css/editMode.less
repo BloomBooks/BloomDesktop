@@ -166,7 +166,7 @@ div.readOnlyInTranslationMode {
 .imageButton {
     width: 87px;
     height: 52px;
-    z-index: 100;
+    z-index: @imageEditingButtonZIndex;
     position: absolute;
     background-repeat: no-repeat;
     background-size: contain;
@@ -320,7 +320,7 @@ button.miniButton {
     background-repeat: no-repeat;
     background-size: contain;
     background-color: transparent;
-    z-index: 120;
+    z-index: @miniImageEditingButtonZIndex;
     &:hover {
         border: 1px inset @ImageButtonBorder;
     }
@@ -693,7 +693,7 @@ div.long-press-popup {
     background: aliceblue;
     color: @bloom-blue;
     font-size: 40px;
-    z-index: @imageContainerZIndex + 50; // stay above videoContainer
+    z-index: @baseZIndexForContainers + 50; // stay above videoContainer
 }
 
 // This seems to produce about the amount of yellowing and blurring and darkness

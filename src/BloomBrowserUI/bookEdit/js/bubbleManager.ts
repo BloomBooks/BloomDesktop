@@ -20,6 +20,10 @@ import { isLinux } from "../../utils/isLinux";
 import { reportError } from "../../lib/errorHandler";
 import { getRgbaColorStringFromColorAndOpacity } from "../toolbox/overlay/overlayToolColorHelper";
 import { SetupElements, attachToCkEditor } from "./bloomEditing";
+import {
+    addImageEditingButtons,
+    removeImageEditingButtons
+} from "./bloomImages";
 
 const kComicalGeneratedClass: string = "comical-generated";
 // We could rename this class to "bloom-overPictureElement", but that would involve a migration.
@@ -605,6 +609,13 @@ export class BubbleManager {
         if (this.activeElement === element) {
             return;
         }
+        if (this.activeElement) {
+            removeImageEditingButtons(
+                this.activeElement.getElementsByClassName(
+                    "bloom-imageContainer"
+                )[0] as HTMLElement
+            );
+        }
         this.activeElement = element;
         if (this.notifyBubbleChange) {
             this.notifyBubbleChange(this.getSelectedFamilySpec());
@@ -827,6 +838,18 @@ export class BubbleManager {
             coordinates.getUnscaledY()
         );
 
+        if (
+            Comical.isDraggableNear(
+                container,
+                coordinates.getUnscaledX(),
+                coordinates.getUnscaledY()
+            )
+        ) {
+            // If we're starting to drag something, typically a tail handle, in Comical,
+            // don't do any other mouse activity.
+            return;
+        }
+
         if (bubble) {
             const positionInfo = bubble.content.getBoundingClientRect();
 
@@ -834,6 +857,14 @@ export class BubbleManager {
                 // Move action started
                 this.bubbleToDrag = bubble;
                 this.activeContainer = container;
+                // mouse is presumably moving inside this image, it should have the buttons.
+                // (It does not get them in the usual way by mouseEnter, because that event is
+                // suppressed by the comicaljs canvas, which is above the image container.)
+                addImageEditingButtons(
+                    container.getElementsByClassName(
+                        "bloom-imageContainer"
+                    )[0] as HTMLElement
+                );
 
                 // Remember the offset between the top-left of the content box and the initial
                 // location of the mouse pointer.
@@ -910,16 +941,51 @@ export class BubbleManager {
             return;
         }
 
-        const hoveredBubble = Comical.getBubbleHit(
+        let hoveredBubble = Comical.getBubbleHit(
             container,
             coordinates.getUnscaledX(),
             coordinates.getUnscaledY()
         );
 
+        // Now there are several options depending on various conditions. There's some
+        // overlap in the conditions and it is tempting to try to comine into a single compound
+        // "if" statement. But note, this first one may change hoveredBubble to undefined,
+        // which then changes which of the following options is chosen. Be careful!
+        if (hoveredBubble && hoveredBubble.content !== this.activeElement) {
+            // The hovered bubble is not selected. If it's an image, the user might
+            // want to drag a tail tip there, which is hard to do with a grab cursor,
+            // so don't switch.
+            if (this.isPictureOverPictureElement(hoveredBubble.content)) {
+                hoveredBubble = undefined;
+            }
+        }
+
         if (!hoveredBubble) {
             // Cleanup the previous iteration's state
             this.cleanupMouseMoveHover(container);
+            if (this.activeElement) {
+                removeImageEditingButtons(
+                    this.activeElement.getElementsByClassName(
+                        "bloom-imageContainer"
+                    )[0] as HTMLElement
+                );
+            }
             return;
+        }
+
+        if (
+            hoveredBubble &&
+            hoveredBubble.content === this.activeElement &&
+            this.isPictureOverPictureElement(hoveredBubble.content)
+        ) {
+            // Make sure the image editing buttons are present as expected.
+            // (It does not get them in the usual way by mouseEnter, because that event is
+            // suppressed by the comicaljs canvas, which is above the image container.)
+            addImageEditingButtons(
+                hoveredBubble.content.getElementsByClassName(
+                    "bloom-imageContainer"
+                )[0] as HTMLElement
+            );
         }
 
         const isVideo = this.isVideoOverPictureElement(hoveredBubble.content);
@@ -1917,6 +1983,10 @@ export class BubbleManager {
             "'>" +
             internalHtml +
             "</div>";
+        // It's especially important that the new overlay comes AFTER the main image,
+        // since that's all that keeps it on top of the image. We're deliberately not
+        // using z-index so that the image-container is not a stacking context so we
+        // can use z-index on the buttons inside it to put them above the comicaljs canvas.
         const wrapperJQuery = $(wrapperHtml).insertAfter(lastContainerChild);
         this.setDefaultWrapperBoxHeight(wrapperJQuery);
         const contentElement = wrapperJQuery.get(0);
