@@ -1335,7 +1335,7 @@ namespace Bloom.Book
 				// no need to set Feature_Activity, it's automatically derived
 				Feature_Quiz = value.Contains("quiz");
 				Feature_Widget = value.Contains("widget");
-				Feature_SimpleDomChoice = value.Contains("multiple-choice");
+				Feature_SimpleDomChoice = value.Contains("simple-dom-choice");
 
 				Feature_Blind_LangCodes = new HashSet<string>();
 				Feature_TalkingBook_LangCodes = new HashSet<string>();
