@@ -1,8 +1,8 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="..\..\packages\SIL.Windows.Forms.Keyboarding.9.0.1-beta0015\build\SIL.Windows.Forms.Keyboarding.props" Condition="Exists('..\..\packages\SIL.Windows.Forms.Keyboarding.9.0.1-beta0015\build\SIL.Windows.Forms.Keyboarding.props')" />
+  <Import Project="..\..\packages\SIL.Windows.Forms.Keyboarding.10.0.0-beta0063\build\SIL.Windows.Forms.Keyboarding.props" Condition="Exists('..\..\packages\SIL.Windows.Forms.Keyboarding.10.0.0-beta0063\build\SIL.Windows.Forms.Keyboarding.props')" />
+  <Import Project="..\..\packages\NUnit.3.13.3\build\NUnit.props" Condition="Exists('..\..\packages\NUnit.3.13.3\build\NUnit.props')" />
   <Import Project="..\..\packages\NUnit3TestAdapter.4.2.1\build\net35\NUnit3TestAdapter.props" Condition="Exists('..\..\packages\NUnit3TestAdapter.4.2.1\build\net35\NUnit3TestAdapter.props')" />
-  <Import Project="..\..\packages\NUnit.3.13.2\build\NUnit.props" Condition="Exists('..\..\packages\NUnit.3.13.2\build\NUnit.props')" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
@@ -144,10 +144,10 @@
       <HintPath>..\..\packages\icu.net.2.7.1\lib\net451\icu.net.dll</HintPath>
     </Reference>
     <Reference Include="L10NSharp, Version=5.0.0.0, Culture=neutral, PublicKeyToken=fd0b3e309a5b7c28, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\L10NSharp.5.0.0-beta0088\lib\net461\L10NSharp.dll</HintPath>
+      <HintPath>..\..\packages\L10NSharp.5.0.0\lib\net461\L10NSharp.dll</HintPath>
     </Reference>
-    <Reference Include="Markdig.Signed, Version=0.22.0.0, Culture=neutral, PublicKeyToken=870da25a133885f8, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Markdig.Signed.0.22.0\lib\net452\Markdig.Signed.dll</HintPath>
+    <Reference Include="Markdig.Signed, Version=0.30.0.0, Culture=neutral, PublicKeyToken=870da25a133885f8, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Markdig.Signed.0.30.2\lib\net452\Markdig.Signed.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="Microsoft.DotNet.PlatformAbstractions, Version=3.1.6.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
@@ -169,11 +169,11 @@
     <Reference Include="NDesk.DBus, Version=1.0.0.0, Culture=neutral, PublicKeyToken=f6716e4f9b2ed099, processorArchitecture=MSIL">
       <HintPath>..\..\packages\NDesk.DBus.0.15.0\lib\NDesk.DBus.dll</HintPath>
     </Reference>
-    <Reference Include="Newtonsoft.Json, Version=12.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Newtonsoft.Json.12.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
+    <Reference Include="Newtonsoft.Json, Version=13.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Newtonsoft.Json.13.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
-    <Reference Include="nunit.framework, Version=3.13.2.0, Culture=neutral, PublicKeyToken=2638cd05610744eb, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\NUnit.3.13.2\lib\net45\nunit.framework.dll</HintPath>
+    <Reference Include="nunit.framework, Version=3.13.3.0, Culture=neutral, PublicKeyToken=2638cd05610744eb, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\NUnit.3.13.3\lib\net45\nunit.framework.dll</HintPath>
     </Reference>
     <Reference Include="PangoSharp, Version=3.22.24.37, Culture=neutral, PublicKeyToken=313398f2149d753f, processorArchitecture=MSIL">
       <HintPath>..\..\packages\PangoSharp-signed.3.22.24.37\lib\netstandard2.0\PangoSharp.dll</HintPath>
@@ -182,29 +182,29 @@
     <Reference Include="RestSharp, Version=106.12.0.0, Culture=neutral, PublicKeyToken=598062e77f915f75, processorArchitecture=MSIL">
       <HintPath>..\..\packages\RestSharp.106.12.0\lib\net452\RestSharp.dll</HintPath>
     </Reference>
-    <Reference Include="SIL.Core, Version=9.0.0.0, Culture=neutral, PublicKeyToken=cab3c8c5232dfcf2, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\SIL.Core.9.0.1-beta0015\lib\net461\SIL.Core.dll</HintPath>
+    <Reference Include="SIL.Core, Version=10.0.0.0, Culture=neutral, PublicKeyToken=cab3c8c5232dfcf2, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\SIL.Core.10.0.0-beta0063\lib\net461\SIL.Core.dll</HintPath>
     </Reference>
-    <Reference Include="SIL.Core.Desktop, Version=9.0.0.0, Culture=neutral, PublicKeyToken=cab3c8c5232dfcf2, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\SIL.Core.Desktop.9.0.1-beta0015\lib\net461\SIL.Core.Desktop.dll</HintPath>
+    <Reference Include="SIL.Core.Desktop, Version=10.0.0.0, Culture=neutral, PublicKeyToken=cab3c8c5232dfcf2, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\SIL.Core.Desktop.10.0.0-beta0063\lib\net461\SIL.Core.Desktop.dll</HintPath>
     </Reference>
-    <Reference Include="SIL.Media, Version=9.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\SIL.Media.9.0.1-beta0015\lib\net461\SIL.Media.dll</HintPath>
+    <Reference Include="SIL.Media, Version=10.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\SIL.Media.10.0.0-beta0063\lib\net461\SIL.Media.dll</HintPath>
     </Reference>
-    <Reference Include="SIL.TestUtilities, Version=9.0.0.0, Culture=neutral, PublicKeyToken=cab3c8c5232dfcf2, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\SIL.TestUtilities.9.0.1-beta0015\lib\net461\SIL.TestUtilities.dll</HintPath>
+    <Reference Include="SIL.TestUtilities, Version=10.0.0.0, Culture=neutral, PublicKeyToken=cab3c8c5232dfcf2, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\SIL.TestUtilities.10.0.0-beta0063\lib\net461\SIL.TestUtilities.dll</HintPath>
     </Reference>
-    <Reference Include="SIL.Windows.Forms, Version=9.0.0.0, Culture=neutral, PublicKeyToken=cab3c8c5232dfcf2, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\SIL.Windows.Forms.9.0.1-beta0015\lib\net461\SIL.Windows.Forms.dll</HintPath>
+    <Reference Include="SIL.Windows.Forms, Version=10.0.0.0, Culture=neutral, PublicKeyToken=cab3c8c5232dfcf2, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\SIL.Windows.Forms.10.0.0-beta0063\lib\net461\SIL.Windows.Forms.dll</HintPath>
     </Reference>
-    <Reference Include="SIL.Windows.Forms.Keyboarding, Version=9.0.0.0, Culture=neutral, PublicKeyToken=cab3c8c5232dfcf2, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\SIL.Windows.Forms.Keyboarding.9.0.1-beta0015\lib\net461\SIL.Windows.Forms.Keyboarding.dll</HintPath>
+    <Reference Include="SIL.Windows.Forms.Keyboarding, Version=10.0.0.0, Culture=neutral, PublicKeyToken=cab3c8c5232dfcf2, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\SIL.Windows.Forms.Keyboarding.10.0.0-beta0063\lib\net461\SIL.Windows.Forms.Keyboarding.dll</HintPath>
     </Reference>
-    <Reference Include="SIL.Windows.Forms.WritingSystems, Version=9.0.0.0, Culture=neutral, PublicKeyToken=cab3c8c5232dfcf2, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\SIL.Windows.Forms.WritingSystems.9.0.1-beta0015\lib\net461\SIL.Windows.Forms.WritingSystems.dll</HintPath>
+    <Reference Include="SIL.Windows.Forms.WritingSystems, Version=10.0.0.0, Culture=neutral, PublicKeyToken=cab3c8c5232dfcf2, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\SIL.Windows.Forms.WritingSystems.10.0.0-beta0063\lib\net461\SIL.Windows.Forms.WritingSystems.dll</HintPath>
     </Reference>
-    <Reference Include="SIL.WritingSystems, Version=9.0.0.0, Culture=neutral, PublicKeyToken=cab3c8c5232dfcf2, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\SIL.WritingSystems.9.0.1-beta0015\lib\net461\SIL.WritingSystems.dll</HintPath>
+    <Reference Include="SIL.WritingSystems, Version=10.0.0.0, Culture=neutral, PublicKeyToken=cab3c8c5232dfcf2, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\SIL.WritingSystems.10.0.0-beta0063\lib\net461\SIL.WritingSystems.dll</HintPath>
     </Reference>
     <Reference Include="Spart, Version=1.0.0.0, Culture=neutral, PublicKeyToken=14d24e064e474331, processorArchitecture=MSIL">
       <HintPath>..\..\packages\Spart.1.0.0\lib\net461\Spart.dll</HintPath>
@@ -227,8 +227,8 @@
     <Reference Include="System.IO.FileSystem, Version=4.0.2.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\..\packages\System.IO.FileSystem.4.3.0\lib\net46\System.IO.FileSystem.dll</HintPath>
     </Reference>
-    <Reference Include="System.IO.FileSystem.AccessControl, Version=4.0.5.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\System.IO.FileSystem.AccessControl.4.7.0\lib\net461\System.IO.FileSystem.AccessControl.dll</HintPath>
+    <Reference Include="System.IO.FileSystem.AccessControl, Version=5.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\System.IO.FileSystem.AccessControl.5.0.0\lib\net461\System.IO.FileSystem.AccessControl.dll</HintPath>
     </Reference>
     <Reference Include="System.Management" />
     <Reference Include="System.Memory, Version=4.0.1.1, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
@@ -447,17 +447,17 @@
     <Error Condition="!Exists('..\..\packages\NDesk.DBus.0.15.0\build\NDesk.DBus.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\NDesk.DBus.0.15.0\build\NDesk.DBus.targets'))" />
     <Error Condition="'$(OS)'=='Windows_NT' AND !Exists('..\..\packages\Mono.Posix.5.4.0.201\build\net45\Mono.Posix.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\Mono.Posix.5.4.0.201\build\net45\Mono.Posix.targets'))" />
     <Error Condition="!Exists('..\..\packages\NUnit3TestAdapter.4.2.1\build\net35\NUnit3TestAdapter.props')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\NUnit3TestAdapter.4.2.1\build\net35\NUnit3TestAdapter.props'))" />
-    <Error Condition="!Exists('..\..\packages\NUnit.3.13.2\build\NUnit.props')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\NUnit.3.13.2\build\NUnit.props'))" />
-    <Error Condition="!Exists('..\..\packages\SIL.Media.9.0.1-beta0015\build\SIL.Media.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\SIL.Media.9.0.1-beta0015\build\SIL.Media.targets'))" />
-    <Error Condition="!Exists('..\..\packages\SIL.Windows.Forms.Keyboarding.9.0.1-beta0015\build\SIL.Windows.Forms.Keyboarding.props')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\SIL.Windows.Forms.Keyboarding.9.0.1-beta0015\build\SIL.Windows.Forms.Keyboarding.props'))" />
-    <Error Condition="!Exists('..\..\packages\SIL.Windows.Forms.Keyboarding.9.0.1-beta0015\build\SIL.Windows.Forms.Keyboarding.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\SIL.Windows.Forms.Keyboarding.9.0.1-beta0015\build\SIL.Windows.Forms.Keyboarding.targets'))" />
-    <Error Condition="!Exists('..\..\packages\SIL.Windows.Forms.9.0.1-beta0015\build\SIL.Windows.Forms.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\SIL.Windows.Forms.9.0.1-beta0015\build\SIL.Windows.Forms.targets'))" />
+    <Error Condition="!Exists('..\..\packages\SIL.Media.10.0.0-beta0063\build\SIL.Media.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\SIL.Media.10.0.0-beta0063\build\SIL.Media.targets'))" />
+    <Error Condition="!Exists('..\..\packages\NUnit.3.13.3\build\NUnit.props')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\NUnit.3.13.3\build\NUnit.props'))" />
+    <Error Condition="!Exists('..\..\packages\SIL.Windows.Forms.Keyboarding.10.0.0-beta0063\build\SIL.Windows.Forms.Keyboarding.props')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\SIL.Windows.Forms.Keyboarding.10.0.0-beta0063\build\SIL.Windows.Forms.Keyboarding.props'))" />
+    <Error Condition="!Exists('..\..\packages\SIL.Windows.Forms.Keyboarding.10.0.0-beta0063\build\SIL.Windows.Forms.Keyboarding.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\SIL.Windows.Forms.Keyboarding.10.0.0-beta0063\build\SIL.Windows.Forms.Keyboarding.targets'))" />
+    <Error Condition="!Exists('..\..\packages\SIL.Windows.Forms.10.0.0-beta0063\build\SIL.Windows.Forms.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\SIL.Windows.Forms.10.0.0-beta0063\build\SIL.Windows.Forms.targets'))" />
   </Target>
   <Import Project="..\..\packages\NDesk.DBus.0.15.0\build\NDesk.DBus.targets" Condition="Exists('..\..\packages\NDesk.DBus.0.15.0\build\NDesk.DBus.targets')" />
   <Import Project="..\..\packages\Mono.Posix.5.4.0.201\build\net45\Mono.Posix.targets" Condition="'$(OS)'=='Windows_NT' AND Exists('..\..\packages\Mono.Posix.5.4.0.201\build\net45\Mono.Posix.targets')" />
-  <Import Project="..\..\packages\SIL.Media.9.0.1-beta0015\build\SIL.Media.targets" Condition="Exists('..\..\packages\SIL.Media.9.0.1-beta0015\build\SIL.Media.targets')" />
-  <Import Project="..\..\packages\SIL.Windows.Forms.Keyboarding.9.0.1-beta0015\build\SIL.Windows.Forms.Keyboarding.targets" Condition="Exists('..\..\packages\SIL.Windows.Forms.Keyboarding.9.0.1-beta0015\build\SIL.Windows.Forms.Keyboarding.targets')" />
-  <Import Project="..\..\packages\SIL.Windows.Forms.9.0.1-beta0015\build\SIL.Windows.Forms.targets" Condition="Exists('..\..\packages\SIL.Windows.Forms.9.0.1-beta0015\build\SIL.Windows.Forms.targets')" />
+  <Import Project="..\..\packages\SIL.Media.10.0.0-beta0063\build\SIL.Media.targets" Condition="Exists('..\..\packages\SIL.Media.10.0.0-beta0063\build\SIL.Media.targets')" />
+  <Import Project="..\..\packages\SIL.Windows.Forms.Keyboarding.10.0.0-beta0063\build\SIL.Windows.Forms.Keyboarding.targets" Condition="Exists('..\..\packages\SIL.Windows.Forms.Keyboarding.10.0.0-beta0063\build\SIL.Windows.Forms.Keyboarding.targets')" />
+  <Import Project="..\..\packages\SIL.Windows.Forms.10.0.0-beta0063\build\SIL.Windows.Forms.targets" Condition="Exists('..\..\packages\SIL.Windows.Forms.10.0.0-beta0063\build\SIL.Windows.Forms.targets')" />
   <!-- msbuild mistakenly copies the 64-bit version of irrKlang.NET4.dll to $(Output) as it resolves
        SIL.Media.dll in our 32-bit build.  It also always copies both the 32-bit and 64-bit versions
        of the library files to $(Output)\lib\win-xXX.  We correct those errors here.  (We can't do
