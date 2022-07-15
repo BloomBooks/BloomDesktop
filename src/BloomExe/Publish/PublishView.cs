@@ -155,8 +155,8 @@ namespace Bloom.Publish
 				_htmlControl.Dispose();
 				_htmlControl = null;
 			}
-			Browser.SuppressJavaScriptErrors = false;
-			Browser.ClearCache(); // of anything used in publish mode; may help free memory.
+			GeckoFxBrowser.SuppressJavaScriptErrors = false;
+			GeckoFxBrowser.ClearCache(); // of anything used in publish mode; may help free memory.
 			PublishHelper.Cancel();
 			PublishHelper.InPublishTab = false;
 		}
@@ -182,6 +182,7 @@ namespace Bloom.Publish
 			_simpleAllPagesRadio.AutoCheck = autoCheck;
 			_bookletCoverRadio.AutoCheck = autoCheck;
 			_bookletBodyRadio.AutoCheck = autoCheck;
+			_pdfPrintRadio.AutoCheck = autoCheck;
 			_uploadRadio.AutoCheck = autoCheck;
 			_epubRadio.AutoCheck = autoCheck;
 			_bloomPUBRadio.AutoCheck = autoCheck;
@@ -193,6 +194,7 @@ namespace Bloom.Publish
 			LocalizeSuperToolTip(_simpleAllPagesRadio, "PublishTab.OnePagePerPaperRadio");
 			LocalizeSuperToolTip(_bookletCoverRadio, "PublishTab.CoverOnlyRadio");
 			LocalizeSuperToolTip(_bookletBodyRadio, "PublishTab.BodyOnlyRadio");
+			LocalizeSuperToolTip(_pdfPrintRadio, "PublishTab.PdfPrint.Button");
 			LocalizeSuperToolTip(_uploadRadio, "PublishTab.ButtonThatShowsUploadForm");
 			LocalizeSuperToolTip(_bloomPUBRadio, "PublishTab.bloomPUBButton");
 			LocalizeSuperToolTip(_recordVideoRadio, "PublishTab.RecordVideoButton");
@@ -260,7 +262,7 @@ namespace Bloom.Publish
 		private void ClearRadioButtons()
 		{
 			_bookletCoverRadio.Checked = _bookletBodyRadio.Checked =
-				_simpleAllPagesRadio.Checked = _uploadRadio.Checked = _epubRadio.Checked = _bloomPUBRadio.Checked = _recordVideoRadio.Checked = false;
+				_simpleAllPagesRadio.Checked = _pdfPrintRadio.Checked = _uploadRadio.Checked = _epubRadio.Checked = _bloomPUBRadio.Checked = _recordVideoRadio.Checked = false;
 		}
 
 		internal bool IsMakingPdf
@@ -376,6 +378,7 @@ namespace Bloom.Publish
 			_bookletCoverRadio.Checked = _model.BookletPortion == PublishModel.BookletPortions.BookletCover && !_model.UploadMode;
 			_bookletBodyRadio.Checked = _model.BookletPortion == PublishModel.BookletPortions.BookletPages && !_model.UploadMode;
 			_simpleAllPagesRadio.Checked = _model.BookletPortion == PublishModel.BookletPortions.AllPagesNoBooklet && !_model.UploadMode;
+			_pdfPrintRadio.Checked = _model.PdfPrintMode;
 			_uploadRadio.Checked = _model.UploadMode;
 			_epubRadio.Checked = _model.EpubMode;
 
@@ -383,6 +386,8 @@ namespace Bloom.Publish
 			{
 			   //this doesn't actually show when disabled		        _superToolTip.GetSuperStuff(_uploadRadio).SuperToolTipInfo.BodyText = "This creator of this book, or its template, has marked it as not being appropriate for upload to BloomLibrary.org";
 			}
+
+			_pdfPrintRadio.Enabled = _model.AllowPdf;
 			_uploadRadio.Enabled = _model.AllowUpload;
 			_simpleAllPagesRadio.Enabled = _model.AllowPdf;
 			_bookletBodyRadio.Enabled = _model.AllowPdfBooklet;
@@ -504,8 +509,8 @@ namespace Bloom.Publish
 		public void SetDisplayMode(PublishModel.DisplayModes displayMode)
 		{
 			// This is only supposed to be active in one mode of PublishView.
-			Browser.SuppressJavaScriptErrors = false;
-			Browser.ClearCache(); // try to free memory when switching
+			GeckoFxBrowser.SuppressJavaScriptErrors = false;
+			GeckoFxBrowser.ClearCache(); // try to free memory when switching
 			// Abort any work we're doing to prepare a preview (at least stop it interfering with other navigation).
 			PublishHelper.Cancel();
 
@@ -532,16 +537,17 @@ namespace Bloom.Publish
 			ResetCantPublishMessage();
 			_publishToVideoApi.AbortMakingVideo();
 
+			// This method and the buttons it refers to can be stripped out when we eliminate the non-React printing options.
+			SetTopBarButtonProperties(displayMode);
+
 			switch (displayMode)
 			{
 				case PublishModel.DisplayModes.WaitForUserToChooseSomething:
-					_printButton.Enabled = _saveButton.Enabled = false;
 					Cursor = Cursors.Default;
 					_workingIndicator.Visible = false;
 					_pdfViewer.Visible = false;
 					break;
 				case PublishModel.DisplayModes.Working:
-					_printButton.Enabled = _saveButton.Enabled = false;
 					_workingIndicator.Cursor = Cursors.WaitCursor;
 					Cursor = Cursors.WaitCursor;
 					_workingIndicator.Visible = true;
@@ -554,15 +560,12 @@ namespace Bloom.Publish
 						_pdfViewer.Visible = true;
 						_workingIndicator.Visible = false;
 						Cursor = Cursors.Default;
-						_saveButton.Enabled = true;
-						_printButton.Enabled = _pdfViewer.ShowPdf(_model.PdfFilePath);
 					}
 					break;
 				case PublishModel.DisplayModes.Printing:
 					_simpleAllPagesRadio.Enabled = false;
 					_bookletCoverRadio.Enabled = false;
 					_bookletBodyRadio.Enabled = false;
-					_printButton.Enabled = _saveButton.Enabled = false;
 					_workingIndicator.Cursor = Cursors.WaitCursor;
 					Cursor = Cursors.WaitCursor;
 					_workingIndicator.Visible = true;
@@ -573,15 +576,12 @@ namespace Bloom.Publish
 					_pdfViewer.Visible = true;
 					_workingIndicator.Visible = false;
 					Cursor = Cursors.Default;
-					_saveButton.Enabled = true;
-					_printButton.Enabled = true;
 					_pdfViewer.Visible = true;
 					break;
 				case PublishModel.DisplayModes.Upload:
 				{
 					Logger.WriteEvent("Entering Publish Upload Screen");
 					_workingIndicator.Visible = false; // If we haven't finished creating the PDF, we will indicate that in the progress window.
-					_saveButton.Enabled = _printButton.Enabled = false; // Can't print or save in this mode...wouldn't be obvious what would be saved.
 					_pdfViewer.Visible = false;
 					Cursor = Cursors.Default;
 
@@ -591,24 +591,25 @@ namespace Bloom.Publish
 					}
 					break;
 				}
+				case PublishModel.DisplayModes.PdfPrint:
+					BloomPubMaker.ControlForInvoke = ParentForm; // something created on UI thread that won't go away
+					ShowHtmlPanel(BloomFileLocator.GetBrowserFile(false, "publish", "PDFPrintPublish", "PublishPdfPrint.html"));
+					break;
 				case PublishModel.DisplayModes.Android:
-					_saveButton.Enabled = _printButton.Enabled = false; // Can't print or save in this mode...wouldn't be obvious what would be saved.
 					BloomPubMaker.ControlForInvoke = ParentForm; // something created on UI thread that won't go away
 					ShowHtmlPanel(BloomFileLocator.GetBrowserFile(false, "publish", "ReaderPublish", "loader.html"));
 					break;
 				case PublishModel.DisplayModes.AudioVideo:
-					_saveButton.Enabled = _printButton.Enabled = false; // Can't print or save in this mode...wouldn't be obvious what would be saved.
 					BloomPubMaker.ControlForInvoke = ParentForm; // something created on UI thread that won't go away
 					ShowHtmlPanel(BloomFileLocator.GetBrowserFile(false, "publish", "video", "PublishAudioVideo.html"));
 					break;
 				case PublishModel.DisplayModes.EPUB:
-					_saveButton.Enabled = _printButton.Enabled = false; // Can't print or save in this mode...wouldn't be obvious what would be saved.
 					// We rather mangled the Readium code in the process of cutting away its own navigation
 					// and other controls. It produces all kinds of JavaScript errors, but it seems to do
 					// what we want in our preview. So just suppress the toasts for all of them. This is unfortunate because
 					// we'll lose them for all the other JS code in this pane. But I don't have a better solution.
 					// We still get them in the output window, in case we really want to look for one.
-					Browser.SuppressJavaScriptErrors = true;
+					GeckoFxBrowser.SuppressJavaScriptErrors = true;
 					PublishEpubApi.ControlForInvoke = ParentForm; // something created on UI thread that won't go away
 					ShowHtmlPanel(BloomFileLocator.GetBrowserFile(false, "publish", "ePUBPublish", "loader.html"));
 					break;
@@ -618,6 +619,32 @@ namespace Bloom.Publish
 			}
 			ResumeLayout(true);
 			UpdateSaveButton();
+		}
+
+		private void SetTopBarButtonProperties(PublishModel.DisplayModes displayMode)
+		{
+			if (displayMode == PublishModel.DisplayModes.ShowPdf ||
+			    displayMode == PublishModel.DisplayModes.ResumeAfterPrint ||
+			    displayMode == PublishModel.DisplayModes.Printing ||
+			    displayMode == PublishModel.DisplayModes.Working)
+			{
+				_saveButton.Visible = _printButton.Visible = true;
+				_saveButton.Enabled = _printButton.Enabled = true;
+				if (displayMode == PublishModel.DisplayModes.Printing ||
+				    displayMode == PublishModel.DisplayModes.Working)
+				{
+					_saveButton.Enabled = _printButton.Enabled = false;
+				}
+
+				if (displayMode == PublishModel.DisplayModes.ShowPdf)
+				{
+					_printButton.Enabled = _pdfViewer.ShowPdf(_model.PdfFilePath);
+				}
+			}
+			else
+			{
+				_saveButton.Visible = _printButton.Visible = false;
+			}
 		}
 
 		private void ShowCantPublishMessage()
@@ -725,8 +752,15 @@ namespace Bloom.Publish
 		{
 			_model.UploadMode = _uploadRadio.Checked;
 			_model.EpubMode = _epubRadio.Checked;
-			bool pdfPreviewMode = false;
-			if (_simpleAllPagesRadio.Checked)
+			var pdfPreviewMode = false;
+			_model.PdfPrintMode = false;
+			if (_pdfPrintRadio.Checked)
+			{
+				_model.PdfPrintMode = _pdfPrintRadio.Checked;
+				_model.DisplayMode = PublishModel.DisplayModes.PdfPrint;
+				//pdfPreviewMode = true;
+			}
+			else if (_simpleAllPagesRadio.Checked)
 			{
 				_model.BookletPortion = PublishModel.BookletPortions.AllPagesNoBooklet;
 				pdfPreviewMode = true;

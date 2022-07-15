@@ -55,7 +55,14 @@ export const PublishScreenBanner: React.FunctionComponent<{
                     </Div>
                 )}
             </div>
-            {props.children}
+            <div
+                css={css`
+                    display: flex;
+                    flex-direction: row;
+                `}
+            >
+                {props.children}
+            </div>
         </div>
     );
 };

@@ -68,14 +68,14 @@ namespace Bloom.web
 
 			// The Size setting is needed on Linux to keep the browser from coming up as a small
 			// rectangle in the upper left corner...
-			_browser = new Browser
-			{
-				Dock = DockStyle.Fill,
-				Location = new Point(3, 3),
-				Size = new Size(Width - 6, Height - 6),
-				BackColor = this.BackColor
-				
-			};
+			//_browser = new GeckoFxBrowser
+			_browser = BrowserMaker.MakeBrowser();
+			var browserControl = _browser;
+
+			browserControl.Dock = DockStyle.Fill;
+			browserControl.Location = new Point(3, 3);
+			browserControl.Size = new Size(Width - 6, Height - 6);
+			
 			// This is mainly so that the mailTo: link in the Team Collection settings panel
 			// works with the user's default mail program rather than whatever GeckoFx60 does,
 			// which seems to be very buggy (BL-10050). However, I'm pretty sure there are
@@ -83,24 +83,27 @@ namespace Bloom.web
 			// browser to handle itself, so for now, I'm making them all use the more reliable
 			// code in Bloom. This means, for example, that the "See how it works here" link
 			// will open the URL in the user's default browser.
-			_browser.OnBrowserClick += Browser.HandleExternalLinkClick;
+			_browser.OnBrowserClick += GeckoFxBrowser.HandleExternalLinkClick;
+
+			// currently this is used only in ReactDialog. E.g., "Report a problem".
 			if (UseEditContextMenu)
-				_browser.ContextMenuProvider = args => {
+				_browser.ContextMenuProvider = args =>
+				{
 					args.ContextMenu.MenuItems.Add(new MenuItem(L10NSharp.LocalizationManager.GetString("Common.Copy", "Copy"),
-							(s1, e1) => { _browser.WebBrowser.CopySelection(); }));
+							(s1, e1) => { _browser.CopySelection(); }));
 					args.ContextMenu.MenuItems.Add(new MenuItem(L10NSharp.LocalizationManager.GetString("Common.SelectAll", "Select all"),
-							(s1, e1) => { _browser.WebBrowser.SelectAll(); }));
+							(s1, e1) => { _browser.SelectAll(); }));
 					return true;
 				};
 
-			var dummy = _browser.Handle; // gets the WebBrowser created
+			_browser.EnsureHandleCreated();
 
 			// If the control gets added before it has navigated somewhere,
 			// it shows as solid black, despite setting the BackColor to white.
 			// So just don't show it at all until it contains what we want to see.
-			_browser.WebBrowser.DocumentCompleted += (unused, args) =>
+			_browser.DocumentCompleted += (unused, args) =>
 			{
-				Controls.Add(_browser);
+				Controls.Add((UserControl)_browser);//review this cast
 
 				// This allows us to bring up a react control/dialog with focus already set to a specific element.
 				// For example, for BloomMessageBox, we set the Cancel button to have focus so the user
@@ -110,7 +113,7 @@ namespace Bloom.web
 				// WebBrowserFocus.Activate(). But that was causing the Shell to lose focus.
 				// The problem was that Browser didn't have a Parent at that point.
 				// By making the Activate call here, we seem to solve both issues. See BL-11092.
-				_browser.WebBrowser.WebBrowserFocus.Activate();
+				_browser.ActivateFocussed();
 			};
 			_browser.NavigateToTempFileThenRemoveIt(tempFile.Path);
 		}

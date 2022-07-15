@@ -21,10 +21,16 @@ namespace Bloom.CollectionTab
 			{
 				BookCollection.CollectionCreated -= OnBookCollectionCreated;
 
-				var collections = _model?.GetBookCollections() ?? System.Linq.Enumerable.Empty<BookCollection>();
-				foreach (var collection in collections)
-					collection?.StopWatchingDirectory();
-
+				try
+				{
+					var collections = _model?.GetBookCollections() ?? System.Linq.Enumerable.Empty<BookCollection>();
+					foreach (var collection in collections)
+						collection?.StopWatchingDirectory();
+				}
+				catch (System.Exception e)
+				{
+					System.Diagnostics.Debug.WriteLine("Caught exception in CollectionTabView.Dispose(): {0}", e);
+				}
 				if (components != null)
 					components.Dispose();
 			}

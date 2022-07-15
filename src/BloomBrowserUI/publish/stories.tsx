@@ -114,9 +114,14 @@ storiesOf("Publish/DeviceFrame", module)
     ));
 
 const someButton = (
-    <Button variant="contained" color="primary">
-        Some random controls
-    </Button>
+    <div>
+        <Button variant="contained" color="primary">
+            Some control 1
+        </Button>
+        <Button variant="contained" color="primary">
+            Some control 2
+        </Button>
+    </div>
 );
 
 const optionHeader = (
@@ -162,7 +167,7 @@ storiesOf("Publish/Bloom Reader", module).add("ReaderPublishScreen", () => (
     <ReaderPublishScreen />
 ));
 
-storiesOf("Publish/Video", module).add("RecordVideoWindow", () => (
+storiesOf("Publish/Video", module).add("PublishAudioVideo", () => (
     <PublishAudioVideo />
 ));
 

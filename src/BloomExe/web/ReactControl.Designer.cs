@@ -3,12 +3,12 @@ namespace Bloom.web
 {
 	partial class ReactControl
 	{
-		/// <summary> 
+		/// <summary>
 		/// Required designer variable.
 		/// </summary>
 		private System.ComponentModel.IContainer components = null;
 
-		/// <summary> 
+		/// <summary>
 		/// Clean up any resources being used.
 		/// </summary>
 		/// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
@@ -23,17 +23,17 @@ namespace Bloom.web
 
 		#region Component Designer generated code
 
-		/// <summary> 
-		/// Required method for Designer support - do not modify 
+		/// <summary>
+		/// Required method for Designer support - do not modify
 		/// the contents of this method with the code editor.
 		/// </summary>
 		private void InitializeComponent()
 		{
 			this._settingsDisplay = new System.Windows.Forms.TextBox();
 			this.SuspendLayout();
-			// 
+			//
 			// _settingsDisplay
-			// 
+			//
 			this._settingsDisplay.BackColor = System.Drawing.Color.Honeydew;
 			this._settingsDisplay.BorderStyle = System.Windows.Forms.BorderStyle.None;
 			this._settingsDisplay.Location = new System.Drawing.Point(20, 17);
@@ -43,19 +43,18 @@ namespace Bloom.web
 			this._settingsDisplay.TabIndex = 0;
 			this._settingsDisplay.Text = "_settingsDisplay";
 			this._settingsDisplay.Visible = false;
-			// 
+			//
 			// ReactControl
-			// 
+			//
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-			this.BackColor = System.Drawing.Color.Honeydew;
+			this.BackColor = System.Drawing.Color.GreenYellow;
 			this.Controls.Add(this._settingsDisplay);
 			this.Name = "ReactControl";
 			this.Size = new System.Drawing.Size(401, 150);
 			this.Load += new System.EventHandler(this.ReactControl_Load);
 			this.ResumeLayout(false);
 			this.PerformLayout();
-
 		}
 
 		#endregion

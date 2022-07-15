@@ -24,6 +24,7 @@ export const PreviewPanel: React.FunctionComponent = props => {
                 padding-top: 20px;
                 box-sizing: border-box;
                 display: flex;
+                flex-shrink: 0;
             `}
         >
             {props.children}
@@ -39,6 +40,9 @@ export const PublishPanel: React.FunctionComponent = props => {
                 flex-direction: column;
                 padding-left: 20px;
                 padding-top: 10px;
+                // We want to keep at least the MainPanel border even if nothing is here.
+                // Calculation is MainPanel padding less the above padding-top.
+                min-height: calc(1.5rem - 10px);
             `}
         >
             {props.children}

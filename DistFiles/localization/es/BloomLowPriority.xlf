@@ -2,6 +2,12 @@
 <xliff xmlns:sil="http://sil.org/software/XLiff" xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
   <file original="BloomLowPriority.exe" source-language="en" datatype="plaintext" product-version="3.1.000.0" sil:hard-linebreak-replacement="\n" target-language="es-ES">
     <body>
+      <trans-unit id="Installer.InstallationInProgress">
+        <source xml:lang="en">Installing...</source>
+        <note>This isn't used by code, but rather we harvest some of these for use in making the GIF that shows when the software is installing.</note>
+        <note> In English, given the context, just "Installing..." is enough. But your translation can be verbose, like "Software Installation in Progress...".</note>
+        <target xml:lang="es-ES" state="translated">Instalando...</target>
+      </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.ESpeakPreview.ConversionFileUsed" approved="yes">
         <source xml:lang="en">Conversion file used:</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.ESpeakPreview.ConversionFileUsed</note>
@@ -34,7 +40,7 @@
       <trans-unit id="PublishTab.RecordVideo.NoAudioInVideo">
         <source xml:lang="en">Currently, Bloom does not support including audio from Sign Language videos in video output.</source>
         <note>ID: PublishTab.RecordVideo.NoAudioInVideo</note>
-        <target xml:lang="es-ES" state="needs-translation">Currently, Bloom does not support including audio from Sign Language videos in video output.</target>
+        <target xml:lang="es-ES" state="translated">Actualmente, Bloom no permite la inclusión del audio incluído en vídeos de lengua de signos en el vídeo rendido.</target>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.CheckEmailFailed" approved="yes">
         <source xml:lang="en">Bloom needs to verify your email, but our attempt to resend the request failed, possibly because you made too many requests too close together. Please check your email, and if you can't find the message, try again later.</source>
