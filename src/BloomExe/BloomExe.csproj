@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="..\..\packages\SIL.Windows.Forms.Keyboarding.9.0.1-beta0015\build\SIL.Windows.Forms.Keyboarding.props" Condition="Exists('..\..\packages\SIL.Windows.Forms.Keyboarding.9.0.1-beta0015\build\SIL.Windows.Forms.Keyboarding.props')" />
+  <Import Project="..\..\packages\SIL.Windows.Forms.Keyboarding.10.0.0-beta0063\build\SIL.Windows.Forms.Keyboarding.props" Condition="Exists('..\..\packages\SIL.Windows.Forms.Keyboarding.10.0.0-beta0063\build\SIL.Windows.Forms.Keyboarding.props')" />
   <PropertyGroup>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <ProjectGuid>{304D5612-167C-4725-AF27-B9F2BB788B57}</ProjectGuid>
@@ -81,12 +81,12 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(OS)'=='Windows_NT'">
     <!-- Uses a LargeAddressAware nuget package to specify that this executable is large address aware.
-	This means that we promise to the OS that we/our dependencies handle pointers in the upper address space (from 2GB to 4GB range) correctly (hopefully!).
-	In exchange, the OS allows the program to use up to 4 GB of virtual address space instead of 2 GB of virtual address space.
-	This will be relevant if run on 64-bit Windows (or if the user set the 3GB/IncreaseUserVa switch on 32-bit Windows)
+    This means that we promise to the OS that we/our dependencies handle pointers in the upper address space (from 2GB to 4GB range) correctly (hopefully!).
+    In exchange, the OS allows the program to use up to 4 GB of virtual address space instead of 2 GB of virtual address space.
+    This will be relevant if run on 64-bit Windows (or if the user set the 3GB/IncreaseUserVa switch on 32-bit Windows)
 
-	I believe this is unnecessary on Linux, they usually already have 4 GB virtual address space available.
-	-->
+    I believe this is unnecessary on Linux, they usually already have 4 GB virtual address space available.
+    -->
     <LargeAddressAware>true</LargeAddressAware>
   </PropertyGroup>
   <PropertyGroup>
@@ -168,10 +168,10 @@
       <HintPath>..\..\packages\icu.net.2.7.1\lib\net451\icu.net.dll</HintPath>
     </Reference>
     <Reference Include="L10NSharp, Version=5.0.0.0, Culture=neutral, PublicKeyToken=fd0b3e309a5b7c28, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\L10NSharp.5.0.0-beta0088\lib\net461\L10NSharp.dll</HintPath>
+      <HintPath>..\..\packages\L10NSharp.5.0.0\lib\net461\L10NSharp.dll</HintPath>
     </Reference>
-    <Reference Include="Markdig.Signed, Version=0.22.0.0, Culture=neutral, PublicKeyToken=870da25a133885f8, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Markdig.Signed.0.22.0\lib\net452\Markdig.Signed.dll</HintPath>
+    <Reference Include="Markdig.Signed, Version=0.30.0.0, Culture=neutral, PublicKeyToken=870da25a133885f8, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Markdig.Signed.0.30.2\lib\net452\Markdig.Signed.dll</HintPath>
     </Reference>
     <Reference Include="MarkdownDeep, Version=1.5.4615.26275, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -212,8 +212,8 @@
     <Reference Include="NDesk.DBus, Version=1.0.0.0, Culture=neutral, PublicKeyToken=f6716e4f9b2ed099, processorArchitecture=MSIL">
       <HintPath>..\..\packages\NDesk.DBus.0.15.0\lib\NDesk.DBus.dll</HintPath>
     </Reference>
-    <Reference Include="Newtonsoft.Json, Version=12.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Newtonsoft.Json.12.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
+    <Reference Include="Newtonsoft.Json, Version=13.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Newtonsoft.Json.13.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="NuGet.Squirrel" Condition="'$(OS)'=='Windows_NT'">
       <HintPath>..\..\lib\dotnet\NuGet.Squirrel.dll</HintPath>
@@ -242,29 +242,29 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>../../packages/SharpFont.3.1.0/lib/net20/SharpFont.dll</HintPath>
     </Reference>
-    <Reference Include="SIL.Core, Version=9.0.0.0, Culture=neutral, PublicKeyToken=cab3c8c5232dfcf2, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\SIL.Core.9.0.1-beta0015\lib\net461\SIL.Core.dll</HintPath>
+    <Reference Include="SIL.Core, Version=10.0.0.0, Culture=neutral, PublicKeyToken=cab3c8c5232dfcf2, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\SIL.Core.10.0.0-beta0063\lib\net461\SIL.Core.dll</HintPath>
     </Reference>
-    <Reference Include="SIL.Core.Desktop, Version=9.0.0.0, Culture=neutral, PublicKeyToken=cab3c8c5232dfcf2, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\SIL.Core.Desktop.9.0.1-beta0015\lib\net461\SIL.Core.Desktop.dll</HintPath>
+    <Reference Include="SIL.Core.Desktop, Version=10.0.0.0, Culture=neutral, PublicKeyToken=cab3c8c5232dfcf2, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\SIL.Core.Desktop.10.0.0-beta0063\lib\net461\SIL.Core.Desktop.dll</HintPath>
     </Reference>
-    <Reference Include="SIL.Media, Version=9.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\SIL.Media.9.0.1-beta0015\lib\net461\SIL.Media.dll</HintPath>
+    <Reference Include="SIL.Media, Version=10.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\SIL.Media.10.0.0-beta0063\lib\net461\SIL.Media.dll</HintPath>
     </Reference>
-    <Reference Include="SIL.Windows.Forms, Version=9.0.0.0, Culture=neutral, PublicKeyToken=cab3c8c5232dfcf2, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\SIL.Windows.Forms.9.0.1-beta0015\lib\net461\SIL.Windows.Forms.dll</HintPath>
+    <Reference Include="SIL.Windows.Forms, Version=10.0.0.0, Culture=neutral, PublicKeyToken=cab3c8c5232dfcf2, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\SIL.Windows.Forms.10.0.0-beta0063\lib\net461\SIL.Windows.Forms.dll</HintPath>
     </Reference>
-    <Reference Include="SIL.Windows.Forms.GeckoBrowserAdapter, Version=9.0.0.0, Culture=neutral, PublicKeyToken=cab3c8c5232dfcf2, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\SIL.Windows.Forms.GeckoBrowserAdapter.9.0.1-beta0015\lib\net461\SIL.Windows.Forms.GeckoBrowserAdapter.dll</HintPath>
+    <Reference Include="SIL.Windows.Forms.GeckoBrowserAdapter, Version=10.0.0.0, Culture=neutral, PublicKeyToken=cab3c8c5232dfcf2, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\SIL.Windows.Forms.GeckoBrowserAdapter.10.0.0-beta0063\lib\net461\SIL.Windows.Forms.GeckoBrowserAdapter.dll</HintPath>
     </Reference>
-    <Reference Include="SIL.Windows.Forms.Keyboarding, Version=9.0.0.0, Culture=neutral, PublicKeyToken=cab3c8c5232dfcf2, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\SIL.Windows.Forms.Keyboarding.9.0.1-beta0015\lib\net461\SIL.Windows.Forms.Keyboarding.dll</HintPath>
+    <Reference Include="SIL.Windows.Forms.Keyboarding, Version=10.0.0.0, Culture=neutral, PublicKeyToken=cab3c8c5232dfcf2, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\SIL.Windows.Forms.Keyboarding.10.0.0-beta0063\lib\net461\SIL.Windows.Forms.Keyboarding.dll</HintPath>
     </Reference>
-    <Reference Include="SIL.Windows.Forms.WritingSystems, Version=9.0.0.0, Culture=neutral, PublicKeyToken=cab3c8c5232dfcf2, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\SIL.Windows.Forms.WritingSystems.9.0.1-beta0015\lib\net461\SIL.Windows.Forms.WritingSystems.dll</HintPath>
+    <Reference Include="SIL.Windows.Forms.WritingSystems, Version=10.0.0.0, Culture=neutral, PublicKeyToken=cab3c8c5232dfcf2, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\SIL.Windows.Forms.WritingSystems.10.0.0-beta0063\lib\net461\SIL.Windows.Forms.WritingSystems.dll</HintPath>
     </Reference>
-    <Reference Include="SIL.WritingSystems, Version=9.0.0.0, Culture=neutral, PublicKeyToken=cab3c8c5232dfcf2, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\SIL.WritingSystems.9.0.1-beta0015\lib\net461\SIL.WritingSystems.dll</HintPath>
+    <Reference Include="SIL.WritingSystems, Version=10.0.0.0, Culture=neutral, PublicKeyToken=cab3c8c5232dfcf2, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\SIL.WritingSystems.10.0.0-beta0063\lib\net461\SIL.WritingSystems.dll</HintPath>
     </Reference>
     <Reference Include="SourceMapDotNet, Version=1.0.5478.26629, Culture=neutral, PublicKeyToken=d357635542166cea, processorArchitecture=MSIL">
       <HintPath>..\..\packages\SourceMapDotNet.1.0.5478.26629\lib\SourceMapDotNet.dll</HintPath>
@@ -313,8 +313,8 @@
       <HintPath>..\..\packages\System.Drawing.Common.6.0.0\lib\net461\System.Drawing.Common.dll</HintPath>
     </Reference>
     <Reference Include="System.IO.Compression.FileSystem" />
-    <Reference Include="System.IO.FileSystem.AccessControl, Version=4.0.5.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\System.IO.FileSystem.AccessControl.4.7.0\lib\net461\System.IO.FileSystem.AccessControl.dll</HintPath>
+    <Reference Include="System.IO.FileSystem.AccessControl, Version=5.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\System.IO.FileSystem.AccessControl.5.0.0\lib\net461\System.IO.FileSystem.AccessControl.dll</HintPath>
     </Reference>
     <Reference Include="System.Management" />
     <Reference Include="System.Memory">
@@ -392,6 +392,10 @@
     <Compile Include="Book\PublishSettings.cs" />
     <Compile Include="Book\SaveContext.cs" />
     <Compile Include="Collection\BookCollectionHolder.cs" />
+    <Compile Include="ErrorReporter\BloomErrorReport.cs" />
+    <Compile Include="ErrorReporter\IBloomErrorReporter.cs" />
+    <Compile Include="ErrorReporter\AllowSendReport.cs" />
+    <Compile Include="ErrorReporter\NotifyUserOfProblemSettings.cs" />
     <Compile Include="WebView2Browser.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -1485,12 +1489,12 @@ cp -p "$(SolutionDir)lib/dotnet/GeckofxHtmlToPdf.exe.config" "$(OutDir)BloomPdfM
     <Exec Command="mkdir $(OutDir)Firefox" Condition="!Exists('$(OutDir)Firefox')" />
     <Exec Command="copy /Y &quot;$(SolutionDir)packages\Geckofx60.32.60.0.50\content\Firefox\*.*&quot; $(OutDir)Firefox" />
     <!-- Firefox relies on some dlls (namely msvcp140.dll and vcruntime140.dll) from the Visual C++ Redistributable.
-		The Geckofx package doesn't include them. I tried to get them included but got outvoted. (Note that Firefox itself installs them.)
-		The other option, and what some of our products do, is include the Redistributable in the installer.
-		But that is even more complicated and inflates the installer by 14MB.
-		Be careful if you ever think about getting rid of this. The problem only shows up on machines
-		which don't already have Visual Studio or the Redistributable and thus don't have these dlls in \Windows\System32.
-		In that case, the app crashes on load. BL-9065 -->
+        The Geckofx package doesn't include them. I tried to get them included but got outvoted. (Note that Firefox itself installs them.)
+        The other option, and what some of our products do, is include the Redistributable in the installer.
+        But that is even more complicated and inflates the installer by 14MB.
+        Be careful if you ever think about getting rid of this. The problem only shows up on machines
+        which don't already have Visual Studio or the Redistributable and thus don't have these dlls in \Windows\System32.
+        In that case, the app crashes on load. BL-9065 -->
     <Exec Command="copy /Y &quot;$(SolutionDir)lib\FirefoxDependencies\*.*&quot; $(OutDir)Firefox" />
   </Target>
   <!-- these operations cannot all be done BeforeBuild, because the nuget download occurs as part of Build after BeforeBuild -->
@@ -1612,9 +1616,9 @@ cp -p "$(SolutionDir)lib/dotnet/GeckofxHtmlToPdf.exe.config" "$(OutDir)BloomPdfM
   <Import Project="..\..\packages\NDesk.DBus.0.15.0\build\NDesk.DBus.targets" Condition="Exists('..\..\packages\NDesk.DBus.0.15.0\build\NDesk.DBus.targets')" />
   <Import Project="..\..\packages\Mono.Posix.5.4.0.201\build\net45\Mono.Posix.targets" Condition="'$(OS)'=='Windows_NT' AND Exists('..\..\packages\Mono.Posix.5.4.0.201\build\net45\Mono.Posix.targets')" />
   <Import Project="..\..\packages\SQLitePCLRaw.lib.e_sqlite3.2.0.3\build\net461\SQLitePCLRaw.lib.e_sqlite3.targets" Condition="Exists('..\..\packages\SQLitePCLRaw.lib.e_sqlite3.2.0.3\build\net461\SQLitePCLRaw.lib.e_sqlite3.targets')" />
-  <Import Project="..\..\packages\SIL.Media.9.0.1-beta0015\build\SIL.Media.targets" Condition="Exists('..\..\packages\SIL.Media.9.0.1-beta0015\build\SIL.Media.targets')" />
-  <Import Project="..\..\packages\SIL.Windows.Forms.Keyboarding.9.0.1-beta0015\build\SIL.Windows.Forms.Keyboarding.targets" Condition="Exists('..\..\packages\SIL.Windows.Forms.Keyboarding.9.0.1-beta0015\build\SIL.Windows.Forms.Keyboarding.targets')" />
-  <Import Project="..\..\packages\SIL.Windows.Forms.9.0.1-beta0015\build\SIL.Windows.Forms.targets" Condition="Exists('..\..\packages\SIL.Windows.Forms.9.0.1-beta0015\build\SIL.Windows.Forms.targets')" />
+  <Import Project="..\..\packages\SIL.Media.10.0.0-beta0063\build\SIL.Media.targets" Condition="Exists('..\..\packages\SIL.Media.10.0.0-beta0063\build\SIL.Media.targets')" />
+  <Import Project="..\..\packages\SIL.Windows.Forms.10.0.0-beta0063\build\SIL.Windows.Forms.targets" Condition="Exists('..\..\packages\SIL.Windows.Forms.10.0.0-beta0063\build\SIL.Windows.Forms.targets')" />
+  <Import Project="..\..\packages\SIL.Windows.Forms.Keyboarding.10.0.0-beta0063\build\SIL.Windows.Forms.Keyboarding.targets" Condition="Exists('..\..\packages\SIL.Windows.Forms.Keyboarding.10.0.0-beta0063\build\SIL.Windows.Forms.Keyboarding.targets')" />
   <Target Name="AfterBuild">
     <Copy SourceFiles="@(SourceFiles)" DestinationFolder="$(OutDir)" />
     <Copy SourceFiles="@(LameFiles)" DestinationFolder="../../DistFiles" Condition="'$(OS)'=='Windows_NT'" />
@@ -1634,10 +1638,10 @@ cp -p "$(SolutionDir)lib/dotnet/GeckofxHtmlToPdf.exe.config" "$(OutDir)BloomPdfM
     <Error Condition="'$(OS)'=='Windows_NT' AND !Exists('..\..\packages\LargeAddressAware.1.0.5\build\LargeAddressAware.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\LargeAddressAware.1.0.5\build\LargeAddressAware.targets'))" />
     <Error Condition="!Exists('..\..\packages\NDesk.DBus.0.15.0\build\NDesk.DBus.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\NDesk.DBus.0.15.0\build\NDesk.DBus.targets'))" />
     <Error Condition="'$(OS)'=='Windows_NT' AND !Exists('..\..\packages\Mono.Posix.5.4.0.201\build\net45\Mono.Posix.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\Mono.Posix.5.4.0.201\build\net45\Mono.Posix.targets'))" />
-    <Error Condition="!Exists('..\..\packages\SIL.Media.9.0.1-beta0015\build\SIL.Media.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\SIL.Media.9.0.1-beta0015\build\SIL.Media.targets'))" />
-    <Error Condition="!Exists('..\..\packages\SIL.Windows.Forms.Keyboarding.9.0.1-beta0015\build\SIL.Windows.Forms.Keyboarding.props')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\SIL.Windows.Forms.Keyboarding.9.0.1-beta0015\build\SIL.Windows.Forms.Keyboarding.props'))" />
-    <Error Condition="!Exists('..\..\packages\SIL.Windows.Forms.Keyboarding.9.0.1-beta0015\build\SIL.Windows.Forms.Keyboarding.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\SIL.Windows.Forms.Keyboarding.9.0.1-beta0015\build\SIL.Windows.Forms.Keyboarding.targets'))" />
-    <Error Condition="!Exists('..\..\packages\SIL.Windows.Forms.9.0.1-beta0015\build\SIL.Windows.Forms.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\SIL.Windows.Forms.9.0.1-beta0015\build\SIL.Windows.Forms.targets'))" />
+    <Error Condition="!Exists('..\..\packages\SIL.Media.10.0.0-beta0063\build\SIL.Media.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\SIL.Media.10.0.0-beta0063\build\SIL.Media.targets'))" />
+    <Error Condition="!Exists('..\..\packages\SIL.Windows.Forms.10.0.0-beta0063\build\SIL.Windows.Forms.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\SIL.Windows.Forms.10.0.0-beta0063\build\SIL.Windows.Forms.targets'))" />
+    <Error Condition="!Exists('..\..\packages\SIL.Windows.Forms.Keyboarding.10.0.0-beta0063\build\SIL.Windows.Forms.Keyboarding.props')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\SIL.Windows.Forms.Keyboarding.10.0.0-beta0063\build\SIL.Windows.Forms.Keyboarding.props'))" />
+    <Error Condition="!Exists('..\..\packages\SIL.Windows.Forms.Keyboarding.10.0.0-beta0063\build\SIL.Windows.Forms.Keyboarding.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\SIL.Windows.Forms.Keyboarding.10.0.0-beta0063\build\SIL.Windows.Forms.Keyboarding.targets'))" />
     <Error Condition="!Exists('..\..\packages\Microsoft.Web.WebView2.1.0.1054.31\build\Microsoft.Web.WebView2.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\Microsoft.Web.WebView2.1.0.1054.31\build\Microsoft.Web.WebView2.targets'))" />
   </Target>
   <!-- msbuild mistakenly copies the 64-bit version of irrKlang.NET4.dll to $(Output) as it resolves
