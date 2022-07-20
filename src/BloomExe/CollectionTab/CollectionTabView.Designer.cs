@@ -29,7 +29,10 @@ namespace Bloom.CollectionTab
 				}
 				catch (System.Exception e)
 				{
+					// The exception is almost expected in ConsoleMode, but not otherwise.
 					System.Diagnostics.Debug.WriteLine("Caught exception in CollectionTabView.Dispose(): {0}", e);
+					if (!Program.RunningInConsoleMode)
+						throw;
 				}
 				if (components != null)
 					components.Dispose();
