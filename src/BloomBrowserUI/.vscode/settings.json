@@ -17,7 +17,8 @@
         "statusBar.background": "#75416E",
         "statusBar.debuggingBackground": "#75416E",
         "statusBar.noFolderBackground": "#75416E",
-        "statussBar.prominentBackground": "#75416E"
+        "statussBar.prominentBackground": "#D65649"
     },
+
     "cSpell.words": ["localizable", "Winform", "Winforms", "xmatter"]
 }

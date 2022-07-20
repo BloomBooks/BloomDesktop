@@ -1,8 +1,24 @@
 // scope everything so we don't accidentally mess with other pages
-[data-activity="multiple-choice"].bloom-interactive-page {
+[data-activity="simple-dom-choice"].bloom-interactive-page {
     .marginBox {
         display: flex;
         flex-direction: column;
+
+        // Currently our layout is not smart enough to cope with the
+        // situation where the book has L2 and/or L3 also showing. A possible enhancement would be to
+        // make the layout so dynamic that it could handle multiple languages.
+        .bloom-content2,
+        .bloom-content3 {
+            display: none;
+        }
+
+        // When an image is the prompt, it looks bad if a closely-cropped image is right up against the colored background of the page.
+        // When an image is the answer, there is a white border but it still looks better with some padding. These don't necessarily
+        // need to be the same padding, but at the moment they are.
+        img {
+            padding: 5px;
+            box-sizing: border-box;
+        }
 
         .Prompt-style {
             // not that .Prompt-style is also a user-modifiable style in the .htm file
@@ -12,7 +28,7 @@
         .player-button {
             display: block;
             border: none;
-            margin-bottom: 15px;
+            margin-bottom: 11px;
             margin-right: 7px; // need room to show any button shadows
 
             .bloom-translationGroup {
@@ -45,6 +61,8 @@
             // stack the buttons over each other
             display: flex;
             flex-direction: column;
+            height: 100%;
+            justify-content: space-evenly;
         }
     }
 
@@ -100,7 +118,7 @@
                 width: 100%;
 
                 .player-button {
-                    padding: 10px;
+                    padding: 6px;
                 }
             }
         }
@@ -116,11 +134,16 @@
         // imageThenChoices to justify-content:space-between.
         overflow: hidden;
 
+        .bloom-translationGroup {
+            min-width: 40%;
+            flex-grow: 1;
+        }
+
         .choices {
             // stack the buttons over each other
             display: flex;
             flex-direction: column;
-            flex-grow: 1;
+            min-width: 40%;
             overflow: hidden; // TODO Boost up?
 
             .player-button {
@@ -135,7 +158,7 @@
 
                 // This padding on the button is required to keep the image from covering the corners of the button and to leave
                 // room to see the color (e.g. green for right answer) if the image has no transparency.
-                padding: 10px;
+                padding: 6px;
             }
         }
     }
@@ -221,11 +244,10 @@
 
     .player-button {
         //box-shadow: 0px 4px 0px rgba(0, 0, 0, 0.32);
-        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.19),
+        box-shadow: 0 5px 10px rgba(0, 0, 0, 0.19),
             0 6px 6px rgba(0, 0, 0, 0.09);
         border-radius: 10px;
         background-color: white;
-        color: #0069f0;
 
         &.chosen-correct {
             color: white;

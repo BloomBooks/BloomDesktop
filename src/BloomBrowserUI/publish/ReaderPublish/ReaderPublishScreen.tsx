@@ -8,7 +8,7 @@ import {
     PublishPanel,
     HelpGroup,
     SettingsPanel,
-    CommandsGroup
+    CommandsGroup,
 } from "../commonPublish/PublishScreenBaseComponents";
 import { MethodChooser } from "./MethodChooser";
 import { PublishFeaturesGroup } from "./PublishFeaturesGroup";
@@ -21,14 +21,14 @@ import { darkTheme, lightTheme } from "../../bloomMaterialUITheme";
 import { StorybookContext } from "../../.storybook/StoryBookContext";
 import {
     useSubscribeToWebSocketForStringMessage,
-    useSubscribeToWebSocketForEvent
+    useSubscribeToWebSocketForEvent,
 } from "../../utils/WebSocketManager";
 import { BloomApi } from "../../utils/bloomApi";
 import HelpLink from "../../react_components/helpLink";
 import { Link, LinkWithDisabledStyles } from "../../react_components/link";
 import {
     RequiresBloomEnterpriseAdjacentIconWrapper,
-    RequiresBloomEnterpriseDialog
+    RequiresBloomEnterpriseDialog,
 } from "../../react_components/requiresBloomEnterprise";
 import { PublishProgressDialog } from "../commonPublish/PublishProgressDialog";
 import { useL10n } from "../../react_components/l10nHooks";
@@ -36,7 +36,7 @@ import { ProgressState } from "../commonPublish/PublishProgressDialogInner";
 import { PublishLanguagesGroup } from "./PublishLanguagesGroup";
 import {
     BulkBloomPubDialog,
-    showBulkBloomPubDialog
+    showBulkBloomPubDialog,
 } from "./BulkBloomPub/BulkBloomPubDialog";
 
 export const ReaderPublishScreen = () => {
@@ -57,7 +57,7 @@ export const ReaderPublishScreen = () => {
 
 const ReaderPublishScreenInternal: React.FunctionComponent<{
     onReset: () => void;
-}> = props => {
+}> = (props) => {
     const inStorybookMode = useContext(StorybookContext);
     const [heading, setHeading] = useState(
         useL10n("Creating Digital Book", "PublishTab.Android.Creating")
@@ -90,7 +90,7 @@ const ReaderPublishScreenInternal: React.FunctionComponent<{
     useSubscribeToWebSocketForStringMessage(
         "publish-android",
         "androidPreview",
-        url => {
+        (url) => {
             setBookUrl(url);
         }
     );
@@ -101,7 +101,7 @@ const ReaderPublishScreenInternal: React.FunctionComponent<{
     useSubscribeToWebSocketForEvent(
         "publish-android",
         "publish/android/state",
-        e => {
+        (e) => {
             switch (e.message) {
                 case "stopped":
                     setClosePending(true);
@@ -136,7 +136,8 @@ const ReaderPublishScreenInternal: React.FunctionComponent<{
                             pathToOutputBrowser +
                             "bloom-player/dist/bloomplayer.htm?centerVertically=true&url=" +
                             encodeURIComponent(bookUrl) + // Need to apply encoding to the bookUrl again as data to use it as a parameter of another URL
-                            "&independent=false&host=bloomdesktop"
+                            "&independent=false" + // you can temporarily comment this out to send BloomPlayer analytics from Bloom Editor
+                            "&host=bloomdesktop"
                         }
                         showRefresh={true}
                         highlightRefreshIcon={highlightRefresh}

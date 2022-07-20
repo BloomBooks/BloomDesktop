@@ -543,6 +543,14 @@ namespace BloomTests.Book
 			bool expectedResult = containsWidget;
 			Assert.AreEqual(expectedResult, result.Contains("widget"));
 		}
+		[TestCase(false)]
+		[TestCase(true)]
+		public void FeaturesGetter_SimpleDomChoice(bool containsSimpleDomChoice)
+		{
+			var metadata = new BookMetaData();
+			metadata.Feature_SimpleDomChoice = containsSimpleDomChoice;
+			Assert.AreEqual(containsSimpleDomChoice, metadata.Features.Contains("simple-dom-choice"));
+		}
 
 		[TestCase(false, true)]
 		[TestCase(true, false)]

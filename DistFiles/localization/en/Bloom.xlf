@@ -3476,705 +3476,705 @@
                 <source xml:lang="en">To Send via USB, you may need to get the right
                             cable, install phone drivers on your computer, or
                             modify settings on your phone.</source>
-        <note>ID: PublishTab.Android.USB.Hint</note>
-        <note></note>
-      </trans-unit>
-      <trans-unit id="PublishTab.Android.USB.OpenMenuItem" sil:dynamic="true">
-        <source xml:lang="en">On the Android device, run Bloom Reader, open the menu and choose 'Receive books via USB'.</source>
-        <note>ID: PublishTab.Android.USB.OpenMenuItem</note>
-        <note></note>
-      </trans-unit>
-      <trans-unit id="PublishTab.Android.WiFi.Hint.Heading" sil:dynamic="true">
-        <source xml:lang="en">No Wi-Fi Network?</source>
-        <note>ID: PublishTab.Android.WiFi.Hint.Heading</note>
-        <note></note>
-      </trans-unit>
-      <trans-unit id="PublishTab.Android.WiFi.Hint" sil:dynamic="true">
-        <source xml:lang="en">There are several ways to start a temporary one.</source>
-        <note>ID: </note>
-        <note>This is preceded by a heading that says 'No Wi-Fi Network'. 'one' here refers to 'Wi Fi' network.</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.Android.AboutMotionBooks" sil:dynamic="true">
-        <source xml:lang="en">About Motion Books</source>
-        <note>ID: PublishTab.Android.AboutMotionBooks</note>
-        <note>Help link under Motion Book checkbox</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.Android.Bookshelf" sil:dynamic="true">
-        <source xml:lang="en">Bloom Reader Bookshelf</source>
-        <note>ID: PublishTab.Android.BookShelf</note>
-        <note>A heading in the Publish to Android screen.</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.Android.CantGetLicenseInfo" sil:dynamic="true">
-        <source xml:lang="en">To publish this book, Bloom must check which languages the copyright owner has permitted, but Bloom is having trouble reaching the server that has this information.</source>
-        <note>ID: PublishTab.Android.CantGetLicenseInfo</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.Android.ChooseFile" sil:dynamic="true">
-        <source xml:lang="en">Save Bloom Reader File</source>
-        <note>ID: PublishTab.Android.ChooseFile</note>
-        <note>Obsolete in 5.3+</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.Android.ChooseBloomPUBFile" sil:dynamic="true">
-        <source xml:lang="en">Save BloomPUB File</source>
-        <note>ID: PublishTab.Android.ChooseBloomPUBFile</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.Android.ChooseLandscapeForMotion" sil:dynamic="true">
-        <source xml:lang="en">Choose landscape to activate Motion Book mode</source>
-        <note>ID: PublishTab.Android.ChooseLandscapeForMotion</note>
-        <note>Appears in portrait mode when Motion checkbox is checked</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.Android.ChooseUSB" sil:dynamic="true">
-        <source xml:lang="en">Send over USB Cable</source>
-        <note>ID: PublishTab.Android.ChooseUSB</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.Android.ChooseWifi" sil:dynamic="true">
-        <source xml:lang="en">Share over Wi-Fi</source>
-        <note>ID: PublishTab.Android.ChooseWifi</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.Android.Control" sil:dynamic="true">
-        <source xml:lang="en">Send or Save</source>
-        <note>ID: PublishTab.Android.Control</note>
-        <note>This is the heading above various buttons that control the publishing of the book to Android.</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.Android.CopyToClipboard" sil:dynamic="true">
-        <source xml:lang="en">Copy to Clipboard</source>
-        <note>ID: PublishTab.Android.CopyToClipboard</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.Android.Features" sil:dynamic="true">
-        <source xml:lang="en">Features</source>
-        <note>ID: PublishTab.Android.Features</note>
-        <note>The second heading in the Settings section, which shows a checklist of various features.</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.Android.UnlicensedLanguages" sil:dynamic="true">
-        <source xml:lang="en">The copyright holder of this book has not licensed it for publishing in {0}. Please contact the copyright holder to learn more about licensing.</source>
-        <note>ID: PublishTab.Android.UnlicensedLanguages</note>
-        <note>{0} will be a language name or a list of them</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.Android.File.Progress.CheckFontOK" sil:dynamic="true">
-        <source xml:lang="en">Checking {0} font: License OK for embedding.</source>
-        <note>ID: PublishTab.Android.File.Progress.CheckFontOK</note>
-        <note>{0} is a font name</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.Android.File.Progress.Embedding" sil:dynamic="true">
-        <source xml:lang="en">Embedding font {0} at a cost of {1} megs</source>
-        <note>ID: PublishTab.Android.File.Progress.Embedding</note>
-        <note>{1} is a number with one decimal place, the number of megabytes the font file takes up</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.Android.File.Progress.IncompatibleFontFileFormat" sil:dynamic="true">
-        <source xml:lang="en">This book has text in a font named \"{0}\". Bloom cannot publish this font's format ({1}).</source>
-        <note>ID: PublishTab.Android.File.Progress.IncompatibleFontFileFormat</note>
-        <note>{0} is a font name, {1} is a file extension (for example: .ttc)</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.Android.File.Progress.LicenseForbids" sil:dynamic="true">
-        <source xml:lang="en">This book has text in a font named \"{0}\". The license for \"{0}\" does not permit Bloom to embed the font in the book.</source>
-        <note>ID: PublishTab.Android.File.Progress.LicenseForbids</note>
-        <note>{0} is a font name</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.Android.File.Progress.NoFontFound" sil:dynamic="true">
-        <source xml:lang="en">This book has text in a font named \"{0}\", but Bloom could not find that font on this computer.</source>
-        <note>ID: PublishTab.Android.File.Progress.NoFontFound</note>
-        <note>{0} is a font name</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.Android.File.Progress.PackagingBook" sil:dynamic="true">
-        <source xml:lang="en">Packaging "{0}" for use with Bloom Reader...</source>
-        <note>ID: PublishTab.Android.File.Progress.PackagingBook</note>
-        <note>{0} is a book title</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.Android.File.Progress.Saving" sil:dynamic="true">
-        <source xml:lang="en">Saving as {0}</source>
-        <note>ID: PublishTab.Android.File.Progress.Saving</note>
-        <note>{0} is a file path</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.Android.File.Progress.SubstitutingAndika" sil:dynamic="true">
-        <source xml:lang="en">Bloom will substitute \"{0}\" instead."</source>
-        <note>ID: PublishTab.Android.File.Progress.SubstitutingAndika</note>
-        <note>{0} is a font name</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.Android.GetBloomReader" sil:dynamic="true">
-        <source xml:lang="en">Get Bloom Reader App</source>
-        <note>ID: PublishTab.Android.GetBloomReader</note>
-        <note>Link to find Bloom Reader on Google Play Store</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.Android.Intro" sil:dynamic="true">
-        <source xml:lang="en">Send Your Book to the Bloom Reader Android App</source>
-        <note>ID: PublishTab.Android.Intro</note>
-        <note>This is displayed at the top of the Android screen.</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.Android.Method" sil:dynamic="true">
-        <source xml:lang="en">Choose how to send to device</source>
-        <note>ID: PublishTab.Android.Method</note>
-        <note>There are several methods for pushing a book to android. This is the heading above the chooser.</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.Android.MotionBookMode" sil:dynamic="true">
-        <source xml:lang="en">Motion Book</source>
-        <note>ID: PublishTab.Android.MotionBookMode</note>
-        <note>Motion Book checkbox label</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.Android.Preview" sil:dynamic="true">
-        <source xml:lang="en">Preview</source>
-        <note>ID: PublishTab.Android.Preview</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.Android.Publish" sil:dynamic="true">
-        <source xml:lang="en">Publish</source>
-        <note>ID: PublishTab.Android.Publish</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.Android.Creating" sil:dynamic="true">
-        <source xml:lang="en">Creating Digital Book</source>
-        <note>ID: PublishTab.Android.Creating</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.Android.AboutBloomReader" sil:dynamic="true">
-        <source xml:lang="en">About Bloom Reader</source>
-        <note>ID: PublishTab.Android.AboutBloomReader</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.Android.AboutBookFeatures" sil:dynamic="true">
-        <source xml:lang="en">About Book Features</source>
-        <note>ID: PublishTab.Android.AboutBookFeatures</note>
-        <note>obsolete as of Bloom 5.3</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.Android.AboutBloomPUB" sil:dynamic="true">
-        <source xml:lang="en">About BloomPUB</source>
-        <note>ID: PublishTab.Android.AboutBloomPUB</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.Android.Settings" sil:dynamic="true">
-        <source xml:lang="en">Settings</source>
-        <note>ID: PublishTab.Android.Settings</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.Android.TalkingBookLanguages" sil:dynamic="true">
-        <source xml:lang="en">Talking Book Languages</source>
-        <note>ID: PublishTab.Android.TalkingBookLanguages</note>
-        <note>Which languages will have the "Talking Book" (books with both text and narrated audio) feature enabled</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.Android.TextLanguages" sil:dynamic="true">
-        <source xml:lang="en">Text Languages</source>
-        <note>ID: PublishTab.Android.TextLanguages</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.Android.Thumbnail" sil:dynamic="true">
-        <source xml:lang="en">Thumbnail</source>
-        <note>ID: PublishTab.Android.Thumbnail</note>
-        <note>The heading at the top of the Settings section, which shows a thumbnail of the front cover and can be used to change the underlying page color.</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.Android.Troubleshooting" sil:dynamic="true">
-        <source xml:lang="en">Troubleshooting Tips</source>
-        <note>ID: PublishTab.Android.Troubleshooting</note>
-        <note>obsolete as of Bloom 5.3</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.Android.Usb.Progress.BookSent" sil:dynamic="true">
-        <source xml:lang="en">You can now read "{0}" in Bloom Reader!</source>
-        <note>ID: PublishTab.Android.Usb.Progress.BookSent</note>
-        <note>{0} is a book title</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.Android.Usb.Progress.Connected" sil:dynamic="true">
-        <source xml:lang="en">Connected to {0} via USB...</source>
-        <note>ID: PublishTab.Android.Usb.Progress.Connected</note>
-        <note>{0} is a the name of the device Bloom connected to</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.Android.Usb.Progress.DeviceOutOfMemory" sil:dynamic="true">
-        <source xml:lang="en">The device reported that it does not have enough space for this book. The book is {0} MB.</source>
-        <note>ID: PublishTab.Android.Usb.Progress.DeviceOutOfMemory</note>
-        <note>{0} is the size of the book that Bloom is trying to copy over to the Android device.</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.Android.Usb.Progress.FailureToSend" sil:dynamic="true">
-        <source xml:lang="en">An error occurred and the book was not sent to your Android device.</source>
-        <note>ID: PublishTab.Android.Usb.Progress.FailureToSend</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.Android.Usb.Progress.LookingForDevice" sil:dynamic="true">
-        <source xml:lang="en">Looking for an Android device connected by USB cable and set up for file transfer (MTP)...</source>
-        <note>ID: PublishTab.Android.Usb.Progress.LookingForDevice</note>
-        <note>This is a progress message; MTP is an acronym for the system that allows computers to access files on devices.</note>
-        <note>Prior to 5.0, this was "Looking for an Android device connected by USB cable and set up for MTP..."</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.Android.Usb.Progress.LookingForExisting" sil:dynamic="true">
-        <source xml:lang="en">Looking for an existing "{0}"...</source>
-        <note>ID: PublishTab.Android.Usb.Progress.LookingForExisting</note>
-        <note>{0} is a book title</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.Android.Usb.Progress.MoreThanOne" sil:dynamic="true">
-        <source xml:lang="en">Please connect only one of the following devices.</source>
-        <note>ID: PublishTab.Android.Usb.Progress.MoreThanOne</note>
-        <note>Prior to 5.0, this was "The following connected devices all have Bloom Reader installed. Please connect only one of these devices."</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.Android.Usb.Progress.NoDeviceFound" sil:dynamic="true">
-        <source xml:lang="en">No device found. Still looking...</source>
-        <note>ID: PublishTab.Android.Usb.Progress.NoDeviceFound</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.Android.Usb.Progress.PackagingBook" sil:dynamic="true">
-        <source xml:lang="en">Packaging "{0}" for use with Bloom Reader...</source>
-        <note>ID: PublishTab.Android.Usb.Progress.PackagingBook</note>
-        <note>{0} is a book title</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.Android.Usb.Progress.ReplacingBook" sil:dynamic="true">
-        <source xml:lang="en">Replacing existing "{0}"...</source>
-        <note>ID: PublishTab.Android.Usb.Progress.ReplacingBook</note>
-        <note>{0} is a book title</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.Android.Usb.Progress.SendingBook" sil:dynamic="true">
-        <source xml:lang="en">Sending "{0}" to your Android device...</source>
-        <note>ID: PublishTab.Android.Usb.Progress.SendingBook</note>
-        <note>{0} is a book title</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.Android.Usb.Progress.Stopped" sil:dynamic="true">
-        <source xml:lang="en">Stopped</source>
-        <note>ID: PublishTab.Android.Usb.Progress.Stopped</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.Android.Usb.Progress.UnableToConnect" sil:dynamic="true">
-        <source xml:lang="en">Unable to connect to any Android device.</source>
-        <note>ID: PublishTab.Android.Usb.Progress.UnableToConnect</note>
-        <note>Prior to 5.0, this was "Unable to connect to any Android device which has Bloom Reader."</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.Android.Usb.Start" sil:dynamic="true">
-        <source xml:lang="en">Connect with USB cable</source>
-        <note>ID: PublishTab.Android.Usb.Start</note>
-        <note>Button that tells Bloom to send the book to a device via USB cable.</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.Android.Usb.Stop" sil:dynamic="true">
-        <source xml:lang="en">Stop Trying</source>
-        <note>ID: PublishTab.Android.Usb.Stop</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.Android.Wifi.Progress.BadBookRequest" sil:dynamic="true">
-        <source xml:lang="en">Got a book request we could not process. Possibly the device is running an incompatible version of BloomReader?</source>
-        <note>ID: PublishTab.Android.Wifi.Progress.BadBookRequest</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.Android.Wifi.Progress.Failed" sil:dynamic="true">
-        <source xml:lang="en">Sending the book failed. Possibly the device was disconnected? If you can't see a reason for this the following may be helpful to report to the developers:</source>
-        <note>ID: PublishTab.Android.Wifi.Progress.Failed</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.Android.Wifi.Progress.Finished" sil:dynamic="true">
-        <source xml:lang="en">Finished sending "{0}" to device {1}</source>
-        <note>ID: PublishTab.Android.Wifi.Progress.Finished</note>
-        <note>{0} is the name of the book, {1} is the name of the device</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.Android.Wifi.Progress.Sending" sil:dynamic="true">
-        <source xml:lang="en">Sending "{0}" to device {1}</source>
-        <note>ID: PublishTab.Android.Wifi.Progress.Sending</note>
-        <note>{0} is the name of the book, {1} is the name of the device</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.Android.Wifi.Progress.Stopped" sil:dynamic="true">
-        <source xml:lang="en">Stopped Advertising.</source>
-        <note>ID: PublishTab.Android.Wifi.Progress.Stopped</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.Android.Wifi.Progress.WifiInstructions1" sil:dynamic="true">
-        <source xml:lang="en">On the Android, run Bloom Reader, open the menu and choose 'Receive Books via WiFi'.</source>
-        <note>ID: PublishTab.Android.Wifi.Progress.WifiInstructions1</note>
-        <note>Prior to 5.0, this was "On the Android, run Bloom Reader, open the menu and choose 'Receive Books from computer'."</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.Android.Wifi.Progress.WifiInstructions2" sil:dynamic="true">
-        <source xml:lang="en">You can do this on as many devices as you like. Make sure each device is connected to the same network as this computer.</source>
-        <note>ID: PublishTab.Android.Wifi.Progress.WifiInstructions2</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.Android.Wifi.Progress.beginAdvertising" sil:dynamic="true">
-        <source xml:lang="en">Advertising book to Bloom Readers on local network...</source>
-        <note>ID: PublishTab.Android.Wifi.Progress.beginAdvertising</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.Android.Wifi.Start" sil:dynamic="true">
-        <source xml:lang="en">Share</source>
-        <note>ID: PublishTab.Android.Wifi.Start</note>
-        <note>Button that tells Bloom to begin offering this book on the wifi network.</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.Android.WrongLayout.Message">
-        <source xml:lang="en">The layout of this book is currently "{0}". Bloom Reader will display it using "{1}", so text might not fit. To see if anything needs adjusting, go back to the Edit Tab and change the layout to "{1}".</source>
-        <note>ID: PublishTab.Android.WrongLayout.Message</note>
-        <note>{0} and {1} are book layout tags.</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.Android.bloomdFileFormatLabel">
-        <source xml:lang="en">Bloom Book for Devices</source>
-        <note>ID: PublishTab.Android.bloomdFileFormatLabel</note>
-        <note>This is shown in the 'Save' dialog when you save a bloom book in the format that works with the Bloom Reader Android App</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.AndroidButton">
-        <source xml:lang="en">Bloom Reader</source>
-        <note>ID: PublishTab.AndroidButton</note>
-        <note>Obsolete in 5.3+</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.AndroidButton-tooltip" sil:dynamic="true">
-        <source xml:lang="en">Publish to an Android device.</source>
-        <note>ID: PublishTab.AndroidButton-tooltip</note>
-        <note>Obsolete in 5.3+</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.Audio.ElementsMissingId">
-        <source xml:lang="en">Some audio elements are missing ids</source>
-        <note>ID: PublishTab.Audio.ElementsMissingId</note>
-        <note>Message briefly displayed to the user in a toast</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.BodyOnlyRadio">
-        <source xml:lang="en">Booklet Insides</source>
-        <note>ID: PublishTab.BodyOnlyRadio</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.bloomPUBButton">
-        <source xml:lang="en">BloomPUB</source>
-        <note>ID: PublishTab.bloomPUBButton</note>
-        <note>This is the label under the BloomPUB icon on the left side of the Publish screen.</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.bloomPUBButton-tooltip" sil:dynamic="true">
-        <source xml:lang="en">Make a BloomPUB for Bloom Reader or Reading App Builder.</source>
-        <note>ID: PublishTab.bloomPUBButton-tooltip</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.BloomPUB.BannerDescription">
-        <source xml:lang="en">BloomPUBs are a kind of eBook that can be read on phone apps ([Bloom Reader](https://bloomlibrary.org/page/create/bloom-reader) and [Reading App Builder](https://software.sil.org/readingappbuilder/)) and on Windows using [BloomPUB Viewer](https://bloomlibrary.org/page/create/downloads#related-software). They offer many advantages over ePUBs, including WYSIWYG fidelity and the full range of Bloom digital book features.</source>
-        <note>ID: PublishTab.BloomPUB.BannerDescription</note>
-        <note>Task description at the top of the BloomPUB Publishing page</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.BloomPUB.BannerTitle">
-        <source xml:lang="en">Publish as BloomPUB</source>
-        <note>ID: PublishTab.BloomPUB.BannerTitle</note>
-        <note>Header on BloomPUB Publishing page</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.BodyOnlyRadio-tooltip" sil:dynamic="true">
-        <source xml:lang="en">Make a booklet from the inside pages of the book.\nPages will be laid out and reordered so that when you fold it, you'll have a booklet.\n</source>
-        <note>ID: PublishTab.BodyOnlyRadio-tooltip</note>
-        <note xml:lang="en">OLD TEXT (before 3.9, add newline): Make a booklet from the inside pages of the book. Pages will be laid out and reordered so that when you fold it, you'll have a booklet.\n</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.BookMetadata">
-        <source xml:lang="en">Book Metadata</source>
-        <note>ID: PublishTab.BookMetadata</note>
-        <note>This link opens a dialog box that lets you put in information someone (often a librarian) might use to search for a book with particular characteristics.</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.BulkBloomPub.Explanation" sil:dynamic="true">
-        <source xml:lang="en">This file will cause these books to be grouped under a single bookshelf in Bloom Reader. This collection's bookshelf is set to "{0}".</source>
-        <note>ID: Publish.BulkBloomPub.Explanation</note>
-        <note>{0} will be replaced with the name of the bookshelf. Make sure to place the {0} at the appropriate place in the translation. The double quotes ("") around it can be replaced with whatever kind of quotation marks are appropriate in the language you are translating to.</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.BulkBloomPub.Make" sil:dynamic="true">
-        <source xml:lang="en">Make</source>
-        <note>ID: Publish.BulkBloomPub.Make</note>
-        <note>"Make" is the label of a button that will make the selected file</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.BulkBloomPub.MakeAllBloomPubs" sil:dynamic="true">
-        <source xml:lang="en">Make All BloomPUBs from Collection</source>
-        <note>ID: PublishTab.BulkBloomPub.MakeAllBloomPubs</note>
-        <note>A BloomPUB is a type of file format that can be used to read books on the Bloom Reader app</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.BulkBloomPub.MakeBloomBundle" sil:dynamic="true">
-        <source xml:lang="en">Compress into a single .bloombundle file</source>
-        <note>ID: Publish.BulkBloomPub.MakeBloomBundle</note>
-        <note>"Compress" means to take multiple things and turn them into a single combined file. (The result is smaller than the sum of the parts.)</note>
-        <note>.bloombundle is the file extension. It is in lowercase. It will be the same extension regardless of the user's language settings.</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.BulkBloomPub.ProduceBloomShelf" sil:dynamic="true">
-        <source xml:lang="en">Produce a .bloomshelf file</source>
-        <note>ID: Publish.BulkBloomPub.ProduceBloomShelf</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.ButtonThatShowsUploadForm">
-        <source xml:lang="en">Web</source>
-        <note>ID: PublishTab.ButtonThatShowsUploadForm</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.ButtonThatShowsUploadForm-tooltip" sil:dynamic="true">
-        <source xml:lang="en">Upload your book to BloomLibrary.org so that other people can read it, download it to their devices, and share it with other people.</source>
-        <note>ID: PublishTab.ButtonThatShowsUploadForm-tooltip</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.CoverOnlyRadio">
-        <source xml:lang="en">Booklet Cover</source>
-        <note>ID: PublishTab.CoverOnlyRadio</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.CoverOnlyRadio-tooltip" sil:dynamic="true">
-        <source xml:lang="en">Make a PDF of just the front and back (both sides), so you can  print on colored paper.</source>
-        <note>ID: PublishTab.CoverOnlyRadio-tooltip</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.Epub.BackLinkLabel">
-        <source xml:lang="en">Back</source>
-        <note>ID: PublishTab.Epub.BackLinkLabel</note>
-        <note>Used in Epubs as the text of a link that leads from the image description back to the main page</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.Epub.Accessible.MainContent">
-        <source xml:lang="en">Main Content</source>
-        <note>ID: PublishTab.Epub.Accessible.MainContent</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.Epub.Accessibility">
-        <source xml:lang="en">Accessibility</source>
-        <note>ID: PublishTab.Epub.Accessibility</note>
-        <note>Here, the English 'Accessibility' is a common way of refering to technologies that are usable by people with disabilities. With computers, this usually means people with visual impairments. It includes botht he blind and people who might need text to be larger, or who are colorblind, etc.</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.Epub.BannerDescription">
-        <source xml:lang="en">Make an electronic book that can be read in EPUB readers on all devices.</source>
-        <note>ID: PublishTab.Epub.BannerDescription</note>
-        <note>Task description at the top of the ePUB Publishing page</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.Epub.BannerTitle">
-        <source xml:lang="en">Publish as ePUB</source>
-        <note>ID: PublishTab.Epub.BannerTitle</note>
-        <note>Header on ePUB Publishing page</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.Epub.BuildingEPub">
-        <source xml:lang="en">Building ePUB</source>
-        <note>ID: PublishTab.Epub.BuildingEPub</note>
-        <note>Shown in a progress box when Bloom is starting to create an ePUB</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.Epub.Creating">
-        <source xml:lang="en">Creating ePUB...</source>
-        <note>ID: PublishTab.Epub.Creating</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.Epub.Done">
-        <source xml:lang="en">Done</source>
-        <note>ID: PublishTab.Epub.Done</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.Epub.Help.AboutEpubs">
-        <source xml:lang="en">About ePUBs</source>
-        <note>ID: PublishTab.Epub.Help.AboutEpubs</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.Epub.Help.EReaders">
-        <source xml:lang="en">Compatible ePUB Readers</source>
-        <note>ID: PublishTab.Epub.Help.EReaders</note>
-        <note>obsolete as of Bloom 5.3</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.Epub.Help.Publishing">
-        <source xml:lang="en">Getting ePUBs onto a device</source>
-        <note>ID: PublishTab.Epub.Help.Publishing</note>
-        <note>obsolete as of Bloom 5.3</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.Epub.ImageDescriptionLinkLabel">
-        <source xml:lang="en">Image Description</source>
-        <note>ID: PublishTab.Epub.ImageDescriptionLinkLabel</note>
-        <note>Used in Epubs as the text of a link that leads to the description of an image</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.Epub.LocalLinksProblem">
-        <source xml:lang="en">Links to other pages do not work in ePUBs. They will be changed to plain text that does not look like a link.</source>
-        <note>ID: PublishTab.Epub.LocalLinksProblem</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.Epub.IncludeOnPage">
-        <source xml:lang="en">Include image descriptions on page</source>
-        <note>ID: PublishTab.Epub.IncludeOnPage</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.Epub.NoAudioDescriptions">
-        <source xml:lang="en">No recorded audio image descriptions</source>
-        <note>ID: PublishTab.Epub.NoAudioDescriptions</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.Epub.OmittedPages">
-        <source xml:lang="en">The following pages were removed because they are not supported in ePUBs:</source>
-        <note>ID: PublishTab.Epub.OmittedPages</note>
-        <note>Shown in a progress box when Bloom finds interactive pages in an EPUB. Followed by a list of page labels.</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.Epub.NoOverlaySupport">
-        <source xml:lang="en">Sorry, Bloom cannot produce ePUBs if there are any overlays. The first overlay is on page {0}.</source>
-        <note>ID: PublishTab.Epub.NoOverlaySupport</note>
-        <note>The {0} will be replaced with the page number (or name of page). For example, it might be replaced by "1" or "Front Cover"</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.Epub.PageLabel.Content">
-        <source xml:lang="en">Content</source>
-        <note>ID: PublishTab.Epub.PageLabel.Content</note>
-        <note>label for the book content in the ePUB's Table of Contents</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.Epub.PreparingDoc">
-        <source xml:lang="en">Preparing document</source>
-        <note>ID: PublishTab.Epub.PreparingDoc</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.Epub.PreparingPreview">
-        <source xml:lang="en">Preparing Preview</source>
-        <note>ID: PublishTab.Epub.PreparingPreview</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.Epub.ReadiumCredit">
-        <source xml:lang="en">This ePUB preview is provided by [Readium]. This book may render differently in various ePUB readers.</source>
-        <note>ID: PublishTab.Epub.ReadiumCredit</note>
-        <note>[Readium] should be left untranslated as a noun.  It will be changed into an HTML link to the Readium web page (https://readium.org/).  If the term "Readium" has been translated on a translated version of that web page, then the translated term may be substituted within the square brackets.  (Be sure to keep the square brackets [] around Readium or its translation!)</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.Epub.RemoveFontSizes">
-        <source xml:lang="en">Use ePUB reader's text size</source>
-        <note>ID: PublishTab.Epub.RemoveFontSizes</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.Epub.Saving">
-        <source xml:lang="en">Saving</source>
-        <note>ID: PublishTab.Epub.Saving</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.Epub.Title">
-        <source xml:lang="en">Create an ePUB book</source>
-        <note>ID: PublishTab.Epub.Title</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.EpubButton">
-        <source xml:lang="en">ePUB</source>
-        <note>ID: PublishTab.EpubButton</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.EpubRadio-tooltip" sil:dynamic="true">
-        <source xml:lang="en">Make an ePUB (electronic book) out of this book, allowing it to be read on various electronic reading devices.</source>
-        <note>ID: PublishTab.EpubRadio-tooltip</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.InDesignDialog.DontShowThisAgainButton">
-        <source xml:lang="en">Don't Show This Again</source>
-        <note>ID: PublishTab.InDesignDialog.DontShowThisAgainButton</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.InDesignDialog.WindowTitle">
-        <source xml:lang="en">InDesign XML Information</source>
-        <note>ID: PublishTab.InDesignDialog.WindowTitle</note>
-        <note>This is the title of a dialog about exporting a Bloom book to the InDesign XML format</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.LessMemoryPdfMode">
-        <source xml:lang="en">Use less memory (slower)</source>
-        <note>ID: PublishTab.LessMemoryPdfMode</note>
-        <note>The parenthesized word indicates the negative effect of using this option. This text is for a menu item.</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.NoBookletsMessage">
-        <source xml:lang="en">Bloom cannot make booklets using the current page size.</source>
-        <note>ID: PublishTab.NoBookletsMessage</note>
-        <note>If a book has a paper size that is too big (like A4), Bloom does not know how to make booklets with it. So the controls for booklets get disabled and this message is shown.</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.Notifications.AdobeForPrint">
-        <source xml:lang="en">If you want to print directly from Bloom, you will need to install the free Adobe Reader and then re-start Bloom. Or instead, you can save the PDF, open it in some other program, and then print from there.</source>
-        <note>ID: PublishTab.Notifications.AdobeForPrint</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.Notifications.AdobeReaderRecommendation">
-        <source xml:lang="en">This PDF viewer can be improved by installing the free Adobe Reader on this computer.</source>
-        <note>ID: PublishTab.Notifications.AdobeReaderRecommendation</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.OnePagePerPaperRadio">
-        <source xml:lang="en">Simple</source>
-        <note>ID: PublishTab.OnePagePerPaperRadio</note>
-        <note>Instead of making a booklet, just make normal pages</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.OnePagePerPaperRadio-tooltip" sil:dynamic="true">
-        <source xml:lang="en">Make a PDF of every page of the book, one page per piece of paper.</source>
-        <note>ID: PublishTab.OnePagePerPaperRadio-tooltip</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.OpenThePDFInTheSystemPDFViewer">
-        <source xml:lang="en">Open the PDF in the default system PDF viewer</source>
-        <note>ID: PublishTab.OpenThePDFInTheSystemPDFViewer</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.Options">
-        <source xml:lang="en">PDF Options</source>
-        <note>ID: PublishTab.Options</note>
-        <note>menu header in the Publish tab</note>
-        <note>was previously just "Options"</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.OptionsMenu.PreparePrintshop">
-        <source xml:lang="en">Prepare for Print Shop:</source>
-        <note>ID: PublishTab.OptionsMenu.PreparePrintshop</note>
-        <note>Header for a region of the menu which lists various options useful for jobs that will be printed at a commercial print shop</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.Options_ToolTip_">
-        <source xml:lang="en">Choose print shop setup</source>
-        <note>ID: PublishTab.Options_ToolTip_</note>
-        <note>tooltip for the menu header in the Publish tab</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.OverwriteWarning.ReplaceExistingButton">
-        <source xml:lang="en">Replace Existing</source>
-        <note>ID: PublishTab.OverwriteWarning.ReplaceExistingButton</note>
-        <note>Obsolete for Bloom 5.2 and later</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.OverwriteWarning.WindowTitle">
-        <source xml:lang="en">Notice</source>
-        <note>ID: PublishTab.OverwriteWarning.WindowTitle</note>
-        <note>Obsolete for Bloom 5.2 and later</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.PDF.Error.Failed">
-        <source xml:lang="en">Bloom was not able to create the PDF file ({0}).{1}{1}Details: BloomPdfMaker (command line) did not produce the expected document.</source>
-        <note>ID: PublishTab.PDF.Error.Failed</note>
-        <note>Error message displayed in a message dialog box. {0} is the filename, {1} is a newline character.</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.PDF.Error.PrinterError">
-        <source xml:lang="en">Bloom requires access to a printer in order to make a PDF, even though you are not printing.  Windows gave this error when Bloom tried to access the default printer: {0}</source>
-        <note>ID: PublishTab.PDF.Error.PrinterError</note>
-        <note>Error message displayed in a message dialog box.  {0} is replaced by a Windows error message at runtime</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.PDF.Error.NoPrinter">
-        <source xml:lang="en">Bloom needs you to have a printer selected on this computer before it can make a PDF, even though you are not printing.  It appears that you might not have a printer set as the default.  Please go to Devices and Printers and select a printer as a default. If you don't have a real printer attached, just select the Microsoft XPS or PDF printers.</source>
-        <note>ID: PublishTab.PDF.Error.NoPrinter</note>
-        <note>Error message displayed in a message dialog box.</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.PDF.Error.TrySinglePage">
-        <source xml:lang="en">The book's images might have exceeded the amount of RAM memory available. Please turn on the "Use Less Memory" option which is slower but uses less memory.</source>
-        <note>ID: PublishTab.PDF.Error.TrySinglePage</note>
-        <note>Error message displayed in a message dialog box.</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.PdfMaker.BadPdf">
-        <source xml:lang="en">Bloom had a problem making a PDF of this book. You may need technical help or to contact the developers. But here are some things you can try:</source>
-        <note>ID: PublishTab.PdfMaker.BadPdf</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.PdfMaker.BadPdfShort">
-        <source xml:lang="en">Bloom had a problem making a PDF of this book.</source>
-        <note>ID: PublishTab.PdfMaker.BadPdfShort</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.PdfMaker.Compress">
-        <source xml:lang="en">Compressing PDF</source>
-        <note>ID: PublishTab.PdfMaker.Compress</note>
-        <note>Message displayed in a progress report dialog box</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.PdfMaker.CompressConvertColor">
-        <source xml:lang="en">Compressing PDF &amp; Converting Color to CMYK</source>
-        <note>ID: PublishTab.PdfMaker.CompressConvertColor</note>
-        <note>Message displayed in a progress report dialog box</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.PdfMaker.Creating">
-        <source xml:lang="en">Creating PDF...</source>
-        <note>ID: PublishTab.PdfMaker.Creating</note>
-        <note>Message displayed in a progress report dialog box</note>
-        <note xml:lang="en">OLD TEXT (before 4.0, removed space): Creating PDF ...</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.PdfMaker.ErrorProcessing">
-        <source xml:lang="en">Error creating, compressing, or recoloring the PDF file</source>
-        <note>ID: PublishTab.PdfMaker.ErrorProcessing</note>
-        <note>Message briefly displayed to the user in a toast</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.PdfMaker.ErrorSaving">
-        <source xml:lang="en">Error compressing or recoloring the PDF file</source>
-        <note>ID: PublishTab.PdfMaker.ErrorProcessing</note>
-        <note>Message briefly displayed to the user in a toast</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.PdfMaker.Finished">
-        <source xml:lang="en">Finished making PDF from HTML</source>
-        <note>ID: PublishTab.PdfMaker.Finished</note>
-        <note>Message displayed in a progress report dialog box</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.PdfMaker.FullBleed">
-        <source xml:lang="en">Full Bleed</source>
-        <note>ID: PublishTab.PdfMaker.FullBleed</note>
-        <note>displayed as an option in the PDF Options menu in Publish tab. Be careful, "full bleed" is a technical term in printing, meaning to print into an area outside the main page content that is ideally trimmed off; do not translate literally</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.PdfMaker.MakingFromHtml">
-        <source xml:lang="en">Making PDF from HTML</source>
-        <note>ID: PublishTab.PdfMaker.MakingFromHtml</note>
-        <note>Message displayed in a progress report dialog box</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.PdfMaker.MakingPageOfPdf">
-        <source xml:lang="en">Making Page {0} of the PDF</source>
-        <note>ID: PublishTab.PdfMaker.MakingPageOfPdf</note>
-        <note>Message displayed in a progress report dialog box, {0} is replaced by the page number</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.PdfMaker.NoFullBleed">
-        <source xml:lang="en">Full Bleed has not been set up for this book</source>
-        <note>ID: PublishTab.PdfMaker.NoFullBleed</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.PdfMaker.NoFullBleedBooklet">
-        <source xml:lang="en">Full Bleed is not applicable to booklet printing</source>
-        <note>ID: PublishTab.PdfMaker.NoFullBleedBooklet</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.PdfMaker.OutOfMemory">
-        <source xml:lang="en">Bloom ran out of memory while making the PDF. See {0}this article{1} for some suggestions to try.</source>
-        <note>ID: PublishTab.PdfMaker.OutOfMemory</note>
-        <note>{0} and {1} are HTML link markup.  You can think of them as fancy quotation marks.</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.PdfMaker.PdfFile">
-        <source xml:lang="en">PDF file</source>
-        <note>ID: PublishTab.PdfMaker.PdfFile</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.PdfMaker.PdfWithCmykSwopV2">
-        <source xml:lang="en">CMYK color (U.S. Web Coated (SWOP) v2)</source>
-        <note>ID: PublishTab.PdfMaker.PdfWithCmykSwopV2</note>
-        <note>displayed as a checkable menu option for the Publish tab, PDF options menu. The content in parentheses may not be translatable. 'CMYK' may not be translatable, it is a print shop standard.</note>
-        <note>Previously this item was "PDF with CMYK ..." and it occurred as an option within the Save dialog for PDF files</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.PdfMaker.Saving">
-        <source xml:lang="en">Saving PDF...</source>
-        <note>ID: PublishTab.PdfMaker.Saving</note>
-        <note>Message displayed in a progress report dialog box</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.PdfMaker.TryMoreMemory">
-        <source xml:lang="en">Try doing this on a computer with more memory</source>
-        <note>ID: PublishTab.PdfMaker.TryMoreMemory</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.PdfMaker.TryRestart">
-        <source xml:lang="en">Restart your computer and try this again right away</source>
-        <note>ID: PublishTab.PdfMaker.TryRestart</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.PdfMaker.TrySmallerImages">
-        <source xml:lang="en">Replace large, high-resolution images in your document with lower-resolution ones</source>
-        <note>ID: PublishTab.PdfMaker.TrySmallerImages</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.PdfNotSaved">
-        <source xml:lang="en">PDF Not Saved</source>
-        <note>ID: PublishTab.PdfNotSaved</note>
-        <note>title for the message box</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.PdfNotSavedWhy">
-        <source xml:lang="en">The PDF file has not been saved because you chose not to allow producing a "PDF for print shop".</source>
-        <note>ID: PublishTab.PdfNotSavedWhy</note>
-        <note>explanation that file was not saved displayed in a message box</note>
-      </trans-unit>
-      <!-- for 5.4
+                <note>ID: PublishTab.Android.USB.Hint</note>
+                <note></note>
+            </trans-unit>
+            <trans-unit id="PublishTab.Android.USB.OpenMenuItem" sil:dynamic="true">
+                <source xml:lang="en">On the Android device, run Bloom Reader, open the menu and choose 'Receive books via USB'.</source>
+                <note>ID: PublishTab.Android.USB.OpenMenuItem</note>
+                <note></note>
+            </trans-unit>
+            <trans-unit id="PublishTab.Android.WiFi.Hint.Heading" sil:dynamic="true">
+                <source xml:lang="en">No Wi-Fi Network?</source>
+                <note>ID: PublishTab.Android.WiFi.Hint.Heading</note>
+                <note></note>
+            </trans-unit>
+            <trans-unit id="PublishTab.Android.WiFi.Hint" sil:dynamic="true">
+                <source xml:lang="en">There are several ways to start a temporary one.</source>
+                <note>ID: </note>
+                <note>This is preceded by a heading that says 'No Wi-Fi Network'. 'one' here refers to 'Wi Fi' network.</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.Android.AboutMotionBooks" sil:dynamic="true">
+                <source xml:lang="en">About Motion Books</source>
+                <note>ID: PublishTab.Android.AboutMotionBooks</note>
+                <note>Help link under Motion Book checkbox</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.Android.Bookshelf" sil:dynamic="true">
+                <source xml:lang="en">Bloom Reader Bookshelf</source>
+                <note>ID: PublishTab.Android.BookShelf</note>
+                <note>A heading in the Publish to Android screen.</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.Android.CantGetLicenseInfo" sil:dynamic="true">
+                <source xml:lang="en">To publish this book, Bloom must check which languages the copyright owner has permitted, but Bloom is having trouble reaching the server that has this information.</source>
+                <note>ID: PublishTab.Android.CantGetLicenseInfo</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.Android.ChooseFile" sil:dynamic="true">
+                <source xml:lang="en">Save Bloom Reader File</source>
+                <note>ID: PublishTab.Android.ChooseFile</note>
+                <note>Obsolete in 5.3+</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.Android.ChooseBloomPUBFile" sil:dynamic="true">
+                <source xml:lang="en">Save BloomPUB File</source>
+                <note>ID: PublishTab.Android.ChooseBloomPUBFile</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.Android.ChooseLandscapeForMotion" sil:dynamic="true">
+                <source xml:lang="en">Choose landscape to activate Motion Book mode</source>
+                <note>ID: PublishTab.Android.ChooseLandscapeForMotion</note>
+                <note>Appears in portrait mode when Motion checkbox is checked</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.Android.ChooseUSB" sil:dynamic="true">
+                <source xml:lang="en">Send over USB Cable</source>
+                <note>ID: PublishTab.Android.ChooseUSB</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.Android.ChooseWifi" sil:dynamic="true">
+                <source xml:lang="en">Share over Wi-Fi</source>
+                <note>ID: PublishTab.Android.ChooseWifi</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.Android.Control" sil:dynamic="true">
+                <source xml:lang="en">Send or Save</source>
+                <note>ID: PublishTab.Android.Control</note>
+                <note>This is the heading above various buttons that control the publishing of the book to Android.</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.Android.CopyToClipboard" sil:dynamic="true">
+                <source xml:lang="en">Copy to Clipboard</source>
+                <note>ID: PublishTab.Android.CopyToClipboard</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.Android.Features" sil:dynamic="true">
+                <source xml:lang="en">Features</source>
+                <note>ID: PublishTab.Android.Features</note>
+                <note>The second heading in the Settings section, which shows a checklist of various features.</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.Android.UnlicensedLanguages" sil:dynamic="true">
+                <source xml:lang="en">The copyright holder of this book has not licensed it for publishing in {0}. Please contact the copyright holder to learn more about licensing.</source>
+                <note>ID: PublishTab.Android.UnlicensedLanguages</note>
+                <note>{0} will be a language name or a list of them</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.Android.File.Progress.CheckFontOK" sil:dynamic="true">
+                <source xml:lang="en">Checking {0} font: License OK for embedding.</source>
+                <note>ID: PublishTab.Android.File.Progress.CheckFontOK</note>
+                <note>{0} is a font name</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.Android.File.Progress.Embedding" sil:dynamic="true">
+                <source xml:lang="en">Embedding font {0} at a cost of {1} megs</source>
+                <note>ID: PublishTab.Android.File.Progress.Embedding</note>
+                <note>{1} is a number with one decimal place, the number of megabytes the font file takes up</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.Android.File.Progress.IncompatibleFontFileFormat" sil:dynamic="true">
+                <source xml:lang="en">This book has text in a font named \"{0}\". Bloom cannot publish this font's format ({1}).</source>
+                <note>ID: PublishTab.Android.File.Progress.IncompatibleFontFileFormat</note>
+                <note>{0} is a font name, {1} is a file extension (for example: .ttc)</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.Android.File.Progress.LicenseForbids" sil:dynamic="true">
+                <source xml:lang="en">This book has text in a font named \"{0}\". The license for \"{0}\" does not permit Bloom to embed the font in the book.</source>
+                <note>ID: PublishTab.Android.File.Progress.LicenseForbids</note>
+                <note>{0} is a font name</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.Android.File.Progress.NoFontFound" sil:dynamic="true">
+                <source xml:lang="en">This book has text in a font named \"{0}\", but Bloom could not find that font on this computer.</source>
+                <note>ID: PublishTab.Android.File.Progress.NoFontFound</note>
+                <note>{0} is a font name</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.Android.File.Progress.PackagingBook" sil:dynamic="true">
+                <source xml:lang="en">Packaging "{0}" for use with Bloom Reader...</source>
+                <note>ID: PublishTab.Android.File.Progress.PackagingBook</note>
+                <note>{0} is a book title</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.Android.File.Progress.Saving" sil:dynamic="true">
+                <source xml:lang="en">Saving as {0}</source>
+                <note>ID: PublishTab.Android.File.Progress.Saving</note>
+                <note>{0} is a file path</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.Android.File.Progress.SubstitutingAndika" sil:dynamic="true">
+                <source xml:lang="en">Bloom will substitute \"{0}\" instead."</source>
+                <note>ID: PublishTab.Android.File.Progress.SubstitutingAndika</note>
+                <note>{0} is a font name</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.Android.GetBloomReader" sil:dynamic="true">
+                <source xml:lang="en">Get Bloom Reader App</source>
+                <note>ID: PublishTab.Android.GetBloomReader</note>
+                <note>Link to find Bloom Reader on Google Play Store</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.Android.Intro" sil:dynamic="true">
+                <source xml:lang="en">Send Your Book to the Bloom Reader Android App</source>
+                <note>ID: PublishTab.Android.Intro</note>
+                <note>This is displayed at the top of the Android screen.</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.Android.Method" sil:dynamic="true">
+                <source xml:lang="en">Choose how to send to device</source>
+                <note>ID: PublishTab.Android.Method</note>
+                <note>There are several methods for pushing a book to android. This is the heading above the chooser.</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.Android.MotionBookMode" sil:dynamic="true">
+                <source xml:lang="en">Motion Book</source>
+                <note>ID: PublishTab.Android.MotionBookMode</note>
+                <note>Motion Book checkbox label</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.Android.Preview" sil:dynamic="true">
+                <source xml:lang="en">Preview</source>
+                <note>ID: PublishTab.Android.Preview</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.Android.Publish" sil:dynamic="true">
+                <source xml:lang="en">Publish</source>
+                <note>ID: PublishTab.Android.Publish</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.Android.Creating" sil:dynamic="true">
+                <source xml:lang="en">Creating Digital Book</source>
+                <note>ID: PublishTab.Android.Creating</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.Android.AboutBloomReader" sil:dynamic="true">
+                <source xml:lang="en">About Bloom Reader</source>
+                <note>ID: PublishTab.Android.AboutBloomReader</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.Android.AboutBookFeatures" sil:dynamic="true">
+                <source xml:lang="en">About Book Features</source>
+                <note>ID: PublishTab.Android.AboutBookFeatures</note>
+                <note>obsolete as of Bloom 5.3</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.Android.AboutBloomPUB" sil:dynamic="true">
+                <source xml:lang="en">About BloomPUB</source>
+                <note>ID: PublishTab.Android.AboutBloomPUB</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.Android.Settings" sil:dynamic="true">
+                <source xml:lang="en">Settings</source>
+                <note>ID: PublishTab.Android.Settings</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.Android.TalkingBookLanguages" sil:dynamic="true">
+                <source xml:lang="en">Talking Book Languages</source>
+                <note>ID: PublishTab.Android.TalkingBookLanguages</note>
+                <note>Which languages will have the "Talking Book" (books with both text and narrated audio) feature enabled</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.Android.TextLanguages" sil:dynamic="true">
+                <source xml:lang="en">Text Languages</source>
+                <note>ID: PublishTab.Android.TextLanguages</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.Android.Thumbnail" sil:dynamic="true">
+                <source xml:lang="en">Thumbnail</source>
+                <note>ID: PublishTab.Android.Thumbnail</note>
+                <note>The heading at the top of the Settings section, which shows a thumbnail of the front cover and can be used to change the underlying page color.</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.Android.Troubleshooting" sil:dynamic="true">
+                <source xml:lang="en">Troubleshooting Tips</source>
+                <note>ID: PublishTab.Android.Troubleshooting</note>
+                <note>obsolete as of Bloom 5.3</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.Android.Usb.Progress.BookSent" sil:dynamic="true">
+                <source xml:lang="en">You can now read "{0}" in Bloom Reader!</source>
+                <note>ID: PublishTab.Android.Usb.Progress.BookSent</note>
+                <note>{0} is a book title</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.Android.Usb.Progress.Connected" sil:dynamic="true">
+                <source xml:lang="en">Connected to {0} via USB...</source>
+                <note>ID: PublishTab.Android.Usb.Progress.Connected</note>
+                <note>{0} is a the name of the device Bloom connected to</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.Android.Usb.Progress.DeviceOutOfMemory" sil:dynamic="true">
+                <source xml:lang="en">The device reported that it does not have enough space for this book. The book is {0} MB.</source>
+                <note>ID: PublishTab.Android.Usb.Progress.DeviceOutOfMemory</note>
+                <note>{0} is the size of the book that Bloom is trying to copy over to the Android device.</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.Android.Usb.Progress.FailureToSend" sil:dynamic="true">
+                <source xml:lang="en">An error occurred and the book was not sent to your Android device.</source>
+                <note>ID: PublishTab.Android.Usb.Progress.FailureToSend</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.Android.Usb.Progress.LookingForDevice" sil:dynamic="true">
+                <source xml:lang="en">Looking for an Android device connected by USB cable and set up for file transfer (MTP)...</source>
+                <note>ID: PublishTab.Android.Usb.Progress.LookingForDevice</note>
+                <note>This is a progress message; MTP is an acronym for the system that allows computers to access files on devices.</note>
+                <note>Prior to 5.0, this was "Looking for an Android device connected by USB cable and set up for MTP..."</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.Android.Usb.Progress.LookingForExisting" sil:dynamic="true">
+                <source xml:lang="en">Looking for an existing "{0}"...</source>
+                <note>ID: PublishTab.Android.Usb.Progress.LookingForExisting</note>
+                <note>{0} is a book title</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.Android.Usb.Progress.MoreThanOne" sil:dynamic="true">
+                <source xml:lang="en">Please connect only one of the following devices.</source>
+                <note>ID: PublishTab.Android.Usb.Progress.MoreThanOne</note>
+                <note>Prior to 5.0, this was "The following connected devices all have Bloom Reader installed. Please connect only one of these devices."</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.Android.Usb.Progress.NoDeviceFound" sil:dynamic="true">
+                <source xml:lang="en">No device found. Still looking...</source>
+                <note>ID: PublishTab.Android.Usb.Progress.NoDeviceFound</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.Android.Usb.Progress.PackagingBook" sil:dynamic="true">
+                <source xml:lang="en">Packaging "{0}" for use with Bloom Reader...</source>
+                <note>ID: PublishTab.Android.Usb.Progress.PackagingBook</note>
+                <note>{0} is a book title</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.Android.Usb.Progress.ReplacingBook" sil:dynamic="true">
+                <source xml:lang="en">Replacing existing "{0}"...</source>
+                <note>ID: PublishTab.Android.Usb.Progress.ReplacingBook</note>
+                <note>{0} is a book title</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.Android.Usb.Progress.SendingBook" sil:dynamic="true">
+                <source xml:lang="en">Sending "{0}" to your Android device...</source>
+                <note>ID: PublishTab.Android.Usb.Progress.SendingBook</note>
+                <note>{0} is a book title</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.Android.Usb.Progress.Stopped" sil:dynamic="true">
+                <source xml:lang="en">Stopped</source>
+                <note>ID: PublishTab.Android.Usb.Progress.Stopped</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.Android.Usb.Progress.UnableToConnect" sil:dynamic="true">
+                <source xml:lang="en">Unable to connect to any Android device.</source>
+                <note>ID: PublishTab.Android.Usb.Progress.UnableToConnect</note>
+                <note>Prior to 5.0, this was "Unable to connect to any Android device which has Bloom Reader."</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.Android.Usb.Start" sil:dynamic="true">
+                <source xml:lang="en">Connect with USB cable</source>
+                <note>ID: PublishTab.Android.Usb.Start</note>
+                <note>Button that tells Bloom to send the book to a device via USB cable.</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.Android.Usb.Stop" sil:dynamic="true">
+                <source xml:lang="en">Stop Trying</source>
+                <note>ID: PublishTab.Android.Usb.Stop</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.Android.Wifi.Progress.BadBookRequest" sil:dynamic="true">
+                <source xml:lang="en">Got a book request we could not process. Possibly the device is running an incompatible version of BloomReader?</source>
+                <note>ID: PublishTab.Android.Wifi.Progress.BadBookRequest</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.Android.Wifi.Progress.Failed" sil:dynamic="true">
+                <source xml:lang="en">Sending the book failed. Possibly the device was disconnected? If you can't see a reason for this the following may be helpful to report to the developers:</source>
+                <note>ID: PublishTab.Android.Wifi.Progress.Failed</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.Android.Wifi.Progress.Finished" sil:dynamic="true">
+                <source xml:lang="en">Finished sending "{0}" to device {1}</source>
+                <note>ID: PublishTab.Android.Wifi.Progress.Finished</note>
+                <note>{0} is the name of the book, {1} is the name of the device</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.Android.Wifi.Progress.Sending" sil:dynamic="true">
+                <source xml:lang="en">Sending "{0}" to device {1}</source>
+                <note>ID: PublishTab.Android.Wifi.Progress.Sending</note>
+                <note>{0} is the name of the book, {1} is the name of the device</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.Android.Wifi.Progress.Stopped" sil:dynamic="true">
+                <source xml:lang="en">Stopped Advertising.</source>
+                <note>ID: PublishTab.Android.Wifi.Progress.Stopped</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.Android.Wifi.Progress.WifiInstructions1" sil:dynamic="true">
+                <source xml:lang="en">On the Android, run Bloom Reader, open the menu and choose 'Receive Books via WiFi'.</source>
+                <note>ID: PublishTab.Android.Wifi.Progress.WifiInstructions1</note>
+                <note>Prior to 5.0, this was "On the Android, run Bloom Reader, open the menu and choose 'Receive Books from computer'."</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.Android.Wifi.Progress.WifiInstructions2" sil:dynamic="true">
+                <source xml:lang="en">You can do this on as many devices as you like. Make sure each device is connected to the same network as this computer.</source>
+                <note>ID: PublishTab.Android.Wifi.Progress.WifiInstructions2</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.Android.Wifi.Progress.beginAdvertising" sil:dynamic="true">
+                <source xml:lang="en">Advertising book to Bloom Readers on local network...</source>
+                <note>ID: PublishTab.Android.Wifi.Progress.beginAdvertising</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.Android.Wifi.Start" sil:dynamic="true">
+                <source xml:lang="en">Share</source>
+                <note>ID: PublishTab.Android.Wifi.Start</note>
+                <note>Button that tells Bloom to begin offering this book on the wifi network.</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.Android.WrongLayout.Message">
+                <source xml:lang="en">The layout of this book is currently "{0}". Bloom Reader will display it using "{1}", so text might not fit. To see if anything needs adjusting, go back to the Edit Tab and change the layout to "{1}".</source>
+                <note>ID: PublishTab.Android.WrongLayout.Message</note>
+                <note>{0} and {1} are book layout tags.</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.Android.bloomdFileFormatLabel">
+                <source xml:lang="en">Bloom Book for Devices</source>
+                <note>ID: PublishTab.Android.bloomdFileFormatLabel</note>
+                <note>This is shown in the 'Save' dialog when you save a bloom book in the format that works with the Bloom Reader Android App</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.AndroidButton">
+                <source xml:lang="en">Bloom Reader</source>
+                <note>ID: PublishTab.AndroidButton</note>
+                <note>Obsolete in 5.3+</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.AndroidButton-tooltip" sil:dynamic="true">
+                <source xml:lang="en">Publish to an Android device.</source>
+                <note>ID: PublishTab.AndroidButton-tooltip</note>
+                <note>Obsolete in 5.3+</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.Audio.ElementsMissingId">
+                <source xml:lang="en">Some audio elements are missing ids</source>
+                <note>ID: PublishTab.Audio.ElementsMissingId</note>
+                <note>Message briefly displayed to the user in a toast</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.BodyOnlyRadio">
+                <source xml:lang="en">Booklet Insides</source>
+                <note>ID: PublishTab.BodyOnlyRadio</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.bloomPUBButton">
+                <source xml:lang="en">BloomPUB</source>
+                <note>ID: PublishTab.bloomPUBButton</note>
+                <note>This is the label under the BloomPUB icon on the left side of the Publish screen.</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.bloomPUBButton-tooltip" sil:dynamic="true">
+                <source xml:lang="en">Make a BloomPUB for Bloom Reader or Reading App Builder.</source>
+                <note>ID: PublishTab.bloomPUBButton-tooltip</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.BloomPUB.BannerDescription">
+                <source xml:lang="en">BloomPUBs are a kind of eBook that can be read on phone apps ([Bloom Reader](https://bloomlibrary.org/page/create/bloom-reader) and [Reading App Builder](https://software.sil.org/readingappbuilder/)) and on Windows using [BloomPUB Viewer](https://bloomlibrary.org/page/create/downloads#related-software). They offer many advantages over ePUBs, including WYSIWYG fidelity and the full range of Bloom digital book features.</source>
+                <note>ID: PublishTab.BloomPUB.BannerDescription</note>
+                <note>Task description at the top of the BloomPUB Publishing page</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.BloomPUB.BannerTitle">
+                <source xml:lang="en">Publish as BloomPUB</source>
+                <note>ID: PublishTab.BloomPUB.BannerTitle</note>
+                <note>Header on BloomPUB Publishing page</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.BodyOnlyRadio-tooltip" sil:dynamic="true">
+                <source xml:lang="en">Make a booklet from the inside pages of the book.\nPages will be laid out and reordered so that when you fold it, you'll have a booklet.\n</source>
+                <note>ID: PublishTab.BodyOnlyRadio-tooltip</note>
+                <note xml:lang="en">OLD TEXT (before 3.9, add newline): Make a booklet from the inside pages of the book. Pages will be laid out and reordered so that when you fold it, you'll have a booklet.\n</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.BookMetadata">
+                <source xml:lang="en">Book Metadata</source>
+                <note>ID: PublishTab.BookMetadata</note>
+                <note>This link opens a dialog box that lets you put in information someone (often a librarian) might use to search for a book with particular characteristics.</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.BulkBloomPub.Explanation" sil:dynamic="true">
+                <source xml:lang="en">This file will cause these books to be grouped under a single bookshelf in Bloom Reader. This collection's bookshelf is set to "{0}".</source>
+                <note>ID: Publish.BulkBloomPub.Explanation</note>
+                <note>{0} will be replaced with the name of the bookshelf. Make sure to place the {0} at the appropriate place in the translation. The double quotes ("") around it can be replaced with whatever kind of quotation marks are appropriate in the language you are translating to.</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.BulkBloomPub.Make" sil:dynamic="true">
+                <source xml:lang="en">Make</source>
+                <note>ID: Publish.BulkBloomPub.Make</note>
+                <note>"Make" is the label of a button that will make the selected file</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.BulkBloomPub.MakeAllBloomPubs" sil:dynamic="true">
+                <source xml:lang="en">Make All BloomPUBs from Collection</source>
+                <note>ID: PublishTab.BulkBloomPub.MakeAllBloomPubs</note>
+                <note>A BloomPUB is a type of file format that can be used to read books on the Bloom Reader app</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.BulkBloomPub.MakeBloomBundle" sil:dynamic="true">
+                <source xml:lang="en">Compress into a single .bloombundle file</source>
+                <note>ID: Publish.BulkBloomPub.MakeBloomBundle</note>
+                <note>"Compress" means to take multiple things and turn them into a single combined file. (The result is smaller than the sum of the parts.)</note>
+                <note>.bloombundle is the file extension. It is in lowercase. It will be the same extension regardless of the user's language settings.</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.BulkBloomPub.ProduceBloomShelf" sil:dynamic="true">
+                <source xml:lang="en">Produce a .bloomshelf file</source>
+                <note>ID: Publish.BulkBloomPub.ProduceBloomShelf</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.ButtonThatShowsUploadForm">
+                <source xml:lang="en">Web</source>
+                <note>ID: PublishTab.ButtonThatShowsUploadForm</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.ButtonThatShowsUploadForm-tooltip" sil:dynamic="true">
+                <source xml:lang="en">Upload your book to BloomLibrary.org so that other people can read it, download it to their devices, and share it with other people.</source>
+                <note>ID: PublishTab.ButtonThatShowsUploadForm-tooltip</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.CoverOnlyRadio">
+                <source xml:lang="en">Booklet Cover</source>
+                <note>ID: PublishTab.CoverOnlyRadio</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.CoverOnlyRadio-tooltip" sil:dynamic="true">
+                <source xml:lang="en">Make a PDF of just the front and back (both sides), so you can  print on colored paper.</source>
+                <note>ID: PublishTab.CoverOnlyRadio-tooltip</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.Epub.BackLinkLabel">
+                <source xml:lang="en">Back</source>
+                <note>ID: PublishTab.Epub.BackLinkLabel</note>
+                <note>Used in Epubs as the text of a link that leads from the image description back to the main page</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.Epub.Accessible.MainContent">
+                <source xml:lang="en">Main Content</source>
+                <note>ID: PublishTab.Epub.Accessible.MainContent</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.Epub.Accessibility">
+                <source xml:lang="en">Accessibility</source>
+                <note>ID: PublishTab.Epub.Accessibility</note>
+                <note>Here, the English 'Accessibility' is a common way of refering to technologies that are usable by people with disabilities. With computers, this usually means people with visual impairments. It includes botht he blind and people who might need text to be larger, or who are colorblind, etc.</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.Epub.BannerDescription">
+                <source xml:lang="en">Make an electronic book that can be read in EPUB readers on all devices.</source>
+                <note>ID: PublishTab.Epub.BannerDescription</note>
+                <note>Task description at the top of the ePUB Publishing page</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.Epub.BannerTitle">
+                <source xml:lang="en">Publish as ePUB</source>
+                <note>ID: PublishTab.Epub.BannerTitle</note>
+                <note>Header on ePUB Publishing page</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.Epub.BuildingEPub">
+                <source xml:lang="en">Building ePUB</source>
+                <note>ID: PublishTab.Epub.BuildingEPub</note>
+                <note>Shown in a progress box when Bloom is starting to create an ePUB</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.Epub.Creating">
+                <source xml:lang="en">Creating ePUB...</source>
+                <note>ID: PublishTab.Epub.Creating</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.Epub.Done">
+                <source xml:lang="en">Done</source>
+                <note>ID: PublishTab.Epub.Done</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.Epub.Help.AboutEpubs">
+                <source xml:lang="en">About ePUBs</source>
+                <note>ID: PublishTab.Epub.Help.AboutEpubs</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.Epub.Help.EReaders">
+                <source xml:lang="en">Compatible ePUB Readers</source>
+                <note>ID: PublishTab.Epub.Help.EReaders</note>
+                <note>obsolete as of Bloom 5.3</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.Epub.Help.Publishing">
+                <source xml:lang="en">Getting ePUBs onto a device</source>
+                <note>ID: PublishTab.Epub.Help.Publishing</note>
+                <note>obsolete as of Bloom 5.3</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.Epub.ImageDescriptionLinkLabel">
+                <source xml:lang="en">Image Description</source>
+                <note>ID: PublishTab.Epub.ImageDescriptionLinkLabel</note>
+                <note>Used in Epubs as the text of a link that leads to the description of an image</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.Epub.LocalLinksProblem">
+                <source xml:lang="en">Links to other pages do not work in ePUBs. They will be changed to plain text that does not look like a link.</source>
+                <note>ID: PublishTab.Epub.LocalLinksProblem</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.Epub.IncludeOnPage">
+                <source xml:lang="en">Include image descriptions on page</source>
+                <note>ID: PublishTab.Epub.IncludeOnPage</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.Epub.NoAudioDescriptions">
+                <source xml:lang="en">No recorded audio image descriptions</source>
+                <note>ID: PublishTab.Epub.NoAudioDescriptions</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.Epub.OmittedPages">
+                <source xml:lang="en">The following pages were removed because they are not supported in ePUBs:</source>
+                <note>ID: PublishTab.Epub.OmittedPages</note>
+                <note>Shown in a progress box when Bloom finds interactive pages in an EPUB. Followed by a list of page labels.</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.Epub.NoOverlaySupport">
+                <source xml:lang="en">Sorry, Bloom cannot produce ePUBs if there are any overlays. The first overlay is on page {0}.</source>
+                <note>ID: PublishTab.Epub.NoOverlaySupport</note>
+                <note>The {0} will be replaced with the page number (or name of page). For example, it might be replaced by "1" or "Front Cover"</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.Epub.PageLabel.Content">
+                <source xml:lang="en">Content</source>
+                <note>ID: PublishTab.Epub.PageLabel.Content</note>
+                <note>label for the book content in the ePUB's Table of Contents</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.Epub.PreparingDoc">
+                <source xml:lang="en">Preparing document</source>
+                <note>ID: PublishTab.Epub.PreparingDoc</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.Epub.PreparingPreview">
+                <source xml:lang="en">Preparing Preview</source>
+                <note>ID: PublishTab.Epub.PreparingPreview</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.Epub.ReadiumCredit">
+                <source xml:lang="en">This ePUB preview is provided by [Readium]. This book may render differently in various ePUB readers.</source>
+                <note>ID: PublishTab.Epub.ReadiumCredit</note>
+                <note>[Readium] should be left untranslated as a noun.  It will be changed into an HTML link to the Readium web page (https://readium.org/).  If the term "Readium" has been translated on a translated version of that web page, then the translated term may be substituted within the square brackets.  (Be sure to keep the square brackets [] around Readium or its translation!)</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.Epub.RemoveFontSizes">
+                <source xml:lang="en">Use ePUB reader's text size</source>
+                <note>ID: PublishTab.Epub.RemoveFontSizes</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.Epub.Saving">
+                <source xml:lang="en">Saving</source>
+                <note>ID: PublishTab.Epub.Saving</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.Epub.Title">
+                <source xml:lang="en">Create an ePUB book</source>
+                <note>ID: PublishTab.Epub.Title</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.EpubButton">
+                <source xml:lang="en">ePUB</source>
+                <note>ID: PublishTab.EpubButton</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.EpubRadio-tooltip" sil:dynamic="true">
+                <source xml:lang="en">Make an ePUB (electronic book) out of this book, allowing it to be read on various electronic reading devices.</source>
+                <note>ID: PublishTab.EpubRadio-tooltip</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.InDesignDialog.DontShowThisAgainButton">
+                <source xml:lang="en">Don't Show This Again</source>
+                <note>ID: PublishTab.InDesignDialog.DontShowThisAgainButton</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.InDesignDialog.WindowTitle">
+                <source xml:lang="en">InDesign XML Information</source>
+                <note>ID: PublishTab.InDesignDialog.WindowTitle</note>
+                <note>This is the title of a dialog about exporting a Bloom book to the InDesign XML format</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.LessMemoryPdfMode">
+                <source xml:lang="en">Use less memory (slower)</source>
+                <note>ID: PublishTab.LessMemoryPdfMode</note>
+                <note>The parenthesized word indicates the negative effect of using this option. This text is for a menu item.</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.NoBookletsMessage">
+                <source xml:lang="en">Bloom cannot make booklets using the current page size.</source>
+                <note>ID: PublishTab.NoBookletsMessage</note>
+                <note>If a book has a paper size that is too big (like A4), Bloom does not know how to make booklets with it. So the controls for booklets get disabled and this message is shown.</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.Notifications.AdobeForPrint">
+                <source xml:lang="en">If you want to print directly from Bloom, you will need to install the free Adobe Reader and then re-start Bloom. Or instead, you can save the PDF, open it in some other program, and then print from there.</source>
+                <note>ID: PublishTab.Notifications.AdobeForPrint</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.Notifications.AdobeReaderRecommendation">
+                <source xml:lang="en">This PDF viewer can be improved by installing the free Adobe Reader on this computer.</source>
+                <note>ID: PublishTab.Notifications.AdobeReaderRecommendation</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.OnePagePerPaperRadio">
+                <source xml:lang="en">Simple</source>
+                <note>ID: PublishTab.OnePagePerPaperRadio</note>
+                <note>Instead of making a booklet, just make normal pages</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.OnePagePerPaperRadio-tooltip" sil:dynamic="true">
+                <source xml:lang="en">Make a PDF of every page of the book, one page per piece of paper.</source>
+                <note>ID: PublishTab.OnePagePerPaperRadio-tooltip</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.OpenThePDFInTheSystemPDFViewer">
+                <source xml:lang="en">Open the PDF in the default system PDF viewer</source>
+                <note>ID: PublishTab.OpenThePDFInTheSystemPDFViewer</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.Options">
+                <source xml:lang="en">PDF Options</source>
+                <note>ID: PublishTab.Options</note>
+                <note>menu header in the Publish tab</note>
+                <note>was previously just "Options"</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.OptionsMenu.PreparePrintshop">
+                <source xml:lang="en">Prepare for Print Shop:</source>
+                <note>ID: PublishTab.OptionsMenu.PreparePrintshop</note>
+                <note>Header for a region of the menu which lists various options useful for jobs that will be printed at a commercial print shop</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.Options_ToolTip_">
+                <source xml:lang="en">Choose print shop setup</source>
+                <note>ID: PublishTab.Options_ToolTip_</note>
+                <note>tooltip for the menu header in the Publish tab</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.OverwriteWarning.ReplaceExistingButton">
+                <source xml:lang="en">Replace Existing</source>
+                <note>ID: PublishTab.OverwriteWarning.ReplaceExistingButton</note>
+                <note>Obsolete for Bloom 5.2 and later</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.OverwriteWarning.WindowTitle">
+                <source xml:lang="en">Notice</source>
+                <note>ID: PublishTab.OverwriteWarning.WindowTitle</note>
+                <note>Obsolete for Bloom 5.2 and later</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.PDF.Error.Failed">
+                <source xml:lang="en">Bloom was not able to create the PDF file ({0}).{1}{1}Details: BloomPdfMaker (command line) did not produce the expected document.</source>
+                <note>ID: PublishTab.PDF.Error.Failed</note>
+                <note>Error message displayed in a message dialog box. {0} is the filename, {1} is a newline character.</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.PDF.Error.PrinterError">
+                <source xml:lang="en">Bloom requires access to a printer in order to make a PDF, even though you are not printing.  Windows gave this error when Bloom tried to access the default printer: {0}</source>
+                <note>ID: PublishTab.PDF.Error.PrinterError</note>
+                <note>Error message displayed in a message dialog box.  {0} is replaced by a Windows error message at runtime</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.PDF.Error.NoPrinter">
+                <source xml:lang="en">Bloom needs you to have a printer selected on this computer before it can make a PDF, even though you are not printing.  It appears that you might not have a printer set as the default.  Please go to Devices and Printers and select a printer as a default. If you don't have a real printer attached, just select the Microsoft XPS or PDF printers.</source>
+                <note>ID: PublishTab.PDF.Error.NoPrinter</note>
+                <note>Error message displayed in a message dialog box.</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.PDF.Error.TrySinglePage">
+                <source xml:lang="en">The book's images might have exceeded the amount of RAM memory available. Please turn on the "Use Less Memory" option which is slower but uses less memory.</source>
+                <note>ID: PublishTab.PDF.Error.TrySinglePage</note>
+                <note>Error message displayed in a message dialog box.</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.PdfMaker.BadPdf">
+                <source xml:lang="en">Bloom had a problem making a PDF of this book. You may need technical help or to contact the developers. But here are some things you can try:</source>
+                <note>ID: PublishTab.PdfMaker.BadPdf</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.PdfMaker.BadPdfShort">
+                <source xml:lang="en">Bloom had a problem making a PDF of this book.</source>
+                <note>ID: PublishTab.PdfMaker.BadPdfShort</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.PdfMaker.Compress">
+                <source xml:lang="en">Compressing PDF</source>
+                <note>ID: PublishTab.PdfMaker.Compress</note>
+                <note>Message displayed in a progress report dialog box</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.PdfMaker.CompressConvertColor">
+                <source xml:lang="en">Compressing PDF &amp; Converting Color to CMYK</source>
+                <note>ID: PublishTab.PdfMaker.CompressConvertColor</note>
+                <note>Message displayed in a progress report dialog box</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.PdfMaker.Creating">
+                <source xml:lang="en">Creating PDF...</source>
+                <note>ID: PublishTab.PdfMaker.Creating</note>
+                <note>Message displayed in a progress report dialog box</note>
+                <note xml:lang="en">OLD TEXT (before 4.0, removed space): Creating PDF ...</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.PdfMaker.ErrorProcessing">
+                <source xml:lang="en">Error creating, compressing, or recoloring the PDF file</source>
+                <note>ID: PublishTab.PdfMaker.ErrorProcessing</note>
+                <note>Message briefly displayed to the user in a toast</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.PdfMaker.ErrorSaving">
+                <source xml:lang="en">Error compressing or recoloring the PDF file</source>
+                <note>ID: PublishTab.PdfMaker.ErrorProcessing</note>
+                <note>Message briefly displayed to the user in a toast</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.PdfMaker.Finished">
+                <source xml:lang="en">Finished making PDF from HTML</source>
+                <note>ID: PublishTab.PdfMaker.Finished</note>
+                <note>Message displayed in a progress report dialog box</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.PdfMaker.FullBleed">
+                <source xml:lang="en">Full Bleed</source>
+                <note>ID: PublishTab.PdfMaker.FullBleed</note>
+                <note>displayed as an option in the PDF Options menu in Publish tab. Be careful, "full bleed" is a technical term in printing, meaning to print into an area outside the main page content that is ideally trimmed off; do not translate literally</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.PdfMaker.MakingFromHtml">
+                <source xml:lang="en">Making PDF from HTML</source>
+                <note>ID: PublishTab.PdfMaker.MakingFromHtml</note>
+                <note>Message displayed in a progress report dialog box</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.PdfMaker.MakingPageOfPdf">
+                <source xml:lang="en">Making Page {0} of the PDF</source>
+                <note>ID: PublishTab.PdfMaker.MakingPageOfPdf</note>
+                <note>Message displayed in a progress report dialog box, {0} is replaced by the page number</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.PdfMaker.NoFullBleed">
+                <source xml:lang="en">Full Bleed has not been set up for this book</source>
+                <note>ID: PublishTab.PdfMaker.NoFullBleed</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.PdfMaker.NoFullBleedBooklet">
+                <source xml:lang="en">Full Bleed is not applicable to booklet printing</source>
+                <note>ID: PublishTab.PdfMaker.NoFullBleedBooklet</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.PdfMaker.OutOfMemory">
+                <source xml:lang="en">Bloom ran out of memory while making the PDF. See {0}this article{1} for some suggestions to try.</source>
+                <note>ID: PublishTab.PdfMaker.OutOfMemory</note>
+                <note>{0} and {1} are HTML link markup.  You can think of them as fancy quotation marks.</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.PdfMaker.PdfFile">
+                <source xml:lang="en">PDF file</source>
+                <note>ID: PublishTab.PdfMaker.PdfFile</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.PdfMaker.PdfWithCmykSwopV2">
+                <source xml:lang="en">CMYK color (U.S. Web Coated (SWOP) v2)</source>
+                <note>ID: PublishTab.PdfMaker.PdfWithCmykSwopV2</note>
+                <note>displayed as a checkable menu option for the Publish tab, PDF options menu. The content in parentheses may not be translatable. 'CMYK' may not be translatable, it is a print shop standard.</note>
+                <note>Previously this item was "PDF with CMYK ..." and it occurred as an option within the Save dialog for PDF files</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.PdfMaker.Saving">
+                <source xml:lang="en">Saving PDF...</source>
+                <note>ID: PublishTab.PdfMaker.Saving</note>
+                <note>Message displayed in a progress report dialog box</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.PdfMaker.TryMoreMemory">
+                <source xml:lang="en">Try doing this on a computer with more memory</source>
+                <note>ID: PublishTab.PdfMaker.TryMoreMemory</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.PdfMaker.TryRestart">
+                <source xml:lang="en">Restart your computer and try this again right away</source>
+                <note>ID: PublishTab.PdfMaker.TryRestart</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.PdfMaker.TrySmallerImages">
+                <source xml:lang="en">Replace large, high-resolution images in your document with lower-resolution ones</source>
+                <note>ID: PublishTab.PdfMaker.TrySmallerImages</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.PdfNotSaved">
+                <source xml:lang="en">PDF Not Saved</source>
+                <note>ID: PublishTab.PdfNotSaved</note>
+                <note>title for the message box</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.PdfNotSavedWhy">
+                <source xml:lang="en">The PDF file has not been saved because you chose not to allow producing a "PDF for print shop".</source>
+                <note>ID: PublishTab.PdfNotSavedWhy</note>
+                <note>explanation that file was not saved displayed in a message box</note>
+            </trans-unit>
+            <!-- for 5.4
       <trans-unit id="PublishTab.PdfPrint.Button">
         <source xml:lang="en">PDF and Print</source>
         <note>ID: PublishTab.PdfPrint.Button</note>
@@ -4196,171 +4196,171 @@
         <note>Heading over lower part of Option panel to right of PDF preview</note>
       </trans-unit>
       -->
-      <trans-unit id="PublishTab.PrintButton">
-        <source xml:lang="en">&amp;Print...</source>
-        <note>ID: PublishTab.PrintButton</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.PrologToAdobeEula">
-        <source xml:lang="en">Bloom uses Adobe color profiles to convert PDF files from using RGB color to using CMYK color.  This is part of preparing a "PDF for print shop".  You must agree to the following license in order to perform this task in Bloom.</source>
-        <note>ID: PublishTab.PrologToAdobeEula</note>
-        <note>Brief explanation of what this license is and why the user needs to agree to it</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.Publish">
-        <source xml:lang="en">Publish</source>
-        <note>ID: PublishTab.Publish</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.PublishRequiresEnterprise.FirstOverlayPage">
-        <source xml:lang="en">Page {0} is the first page that uses Overlay elements.</source>
-        <note>ID: PublishTab.PublishRequiresEnterprise.FirstOverlayPage</note>
-        <note>The {0} will be replaced by a page number.</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.PublishRequiresEnterprise.Options">
-        <source xml:lang="en">In order to publish your book, you need to either activate Bloom Enterprise, or remove the Overlay elements from your book.</source>
-        <note>ID: PublishTab.PublishRequiresEnterprise.Options</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.PublishRequiresEnterprise.ProblemExplanation">
-        <source xml:lang="en">The book titled '{0}' adds new Overlay elements. Overlay elements are a Bloom Enterprise feature.</source>
-        <note>ID: PublishTab.PublishRequiresEnterprise.ProblemExplanation</note>
-        <note>{0} will be replaced with the book's title.</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.RecordVideo.AboutOneMinute">
-        <source xml:lang="en">less than one minute</source>
-        <note>ID: PublishTab.RecordVideo.AboutOneMinute</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.RecordVideo.AboutNMinutes">
-        <source xml:lang="en">about {0} minutes</source>
-        <note>ID: PublishTab.RecordVideo.AboutNMinutes</note>
-        <note>{0} is a number of minutes</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.RecordVideo.ActivitiesSkipped">
-        <source xml:lang="en">Activities will be skipped</source>
-        <note>ID: PublishTab.RecordVideo.ActivitiesSkipped</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.RecordVideo.AudioFile">
-        <source xml:lang="en">Audio File</source>
-        <note>ID: PublishTab.RecordVideo.AudioFile</note>
-        <note>displayed as file type for Save File dialog</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.RecordVideo.BannerDescription">
-        <source xml:lang="en">Create video files that you can upload to sites like Facebook and YouTube. You can also make videos to share with people who use inexpensive “feature phones” and even audio-only files for listening.</source>
-        <note>ID: PublishTab.RecordVideo.BannerDescription</note>
-        <note>Task description at the top of the Audio or Video Publishing page</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.RecordVideo.BannerTitle">
-        <source xml:lang="en">Publish as Audio or Video</source>
-        <note>ID: PublishTab.RecordVideo.BannerTitle</note>
-        <note>Header on Audio or Video Publishing page</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.RecordVideo.ChangeScale100">
-        <source xml:lang="en">Please change your display scaling to 100% while making videos. Without this, videos will come out at the wrong resolution, or not record at all.</source>
-        <note>ID: PublishTab.RecordVideo.ChangeScale100</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.RecordVideo.CheckRecording">
-        <source xml:lang="en">Check Recording</source>
-        <note>ID: PublishTab.RecordVideo.CheckRecording</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.RecordVideo.ConfigureAndPreview">
-        <source xml:lang="en">Configure &amp; Preview</source>
-        <note>ID: PublishTab.RecordVideo.ConfigureAndPreview</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.RecordVideo.DisplaySettings">
-        <source xml:lang="en">Display Settings</source>
-        <note>ID: PublishTab.RecordVideo.DisplaySettings</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.RecordVideo.DisableScaling">
-        <source xml:lang="en">Disable Display Scaling</source>
-        <note>ID: PublishTab.RecordVideo.DisableScaling</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.RecordVideo.EstimatedTimeRemaining">
-        <source xml:lang="en">Estimated time remaining: {0}</source>
-        <note>ID: PublishTab.RecordVideo.EstimatedTimeRemaining</note>
-        <note>{0} is text describing the amount of time such as 'less than one minute' or 'about 3 minutes'</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.RecordVideo.Facebook">
-        <source xml:lang="en">Facebook</source>
-        <note>ID: PublishTab.RecordVideo.Facebook</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.RecordVideo.FeaturePhone">
-        <source xml:lang="en">Feature Phone</source>
-        <note>ID: PublishTab.RecordVideo.FeaturePhone</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.RecordVideo.FinalizingAudio">
-        <source xml:lang="en">Finalizing audio</source>
-        <note>ID: PublishTab.RecordVideo.FinalizingAudio</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.RecordVideo.FinishingInitialVideoRecording">
-        <source xml:lang="en">Finishing initial video recording</source>
-        <note>ID: PublishTab.RecordVideo.FinishingInitialVideoRecording</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.RecordVideo.Format">
-        <source xml:lang="en">Format</source>
-        <note>ID: PublishTab.RecordVideo.Format</note>
-        <note>a heading to select which audio or video format to record</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.RecordVideo.Instructions">
-        <source xml:lang="en">If your book has multiple languages or other options, you will see a row of red buttons. Use these to set up the book for recording.</source>
-        <note>ID: PublishTab.RecordVideo.Instructions</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.RecordVideo.MakeRecording">
-        <source xml:lang="en">Make Recording</source>
-        <note>ID: PublishTab.RecordVideo.MakeRecording</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.RecordVideo.MergingAudioVideo">
-        <source xml:lang="en">Merging audio and video, starting at {0:hh:mm tt}</source>
-        <note>ID: PublishTab.RecordVideo.MergingAudioVideo</note>
-        <note>{0:hh:mm tt} is a time</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.RecordVideo.Mp3">
-        <source xml:lang="en">Mp3 Audio</source>
-        <note>ID: PublishTab.RecordVideo.Mp3</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.RecordVideo.OverviewHelpLink">
-        <source xml:lang="en">Publishing Audio or Video Books</source>
-        <note>ID: PublishTab.RecordVideo.OverviewHelpLink</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.RecordVideo.Play">
-        <source xml:lang="en">Play Recording</source>
-        <note>ID: PublishTab.RecordVideo.Play</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.RecordVideo.ProcessingAudio">
-        <source xml:lang="en">Processing audio</source>
-        <note>ID: PublishTab.RecordVideo.ProcessingAudio</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.RecordVideo.Record">
-        <source xml:lang="en">Record</source>
-        <note>ID: PublishTab.RecordVideo.Record</note>
-        <note>'Record' as in 'Record a video recording'</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.RecordVideo.RecordingInProgress">
-        <source xml:lang="en">Recording in Progress...</source>
-        <note>ID: PublishTab.RecordVideo.RecordingInProgress</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.RecordVideo.RecordingInProgressSideways">
-        <source xml:lang="en">Recording in Progress. Showing sideways in order to fit on your screen.</source>
-        <note>ID: PublishTab.RecordVideo.RecordingInProgressSideways</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.RecordVideo.RecordThesePages" sil:dynamic="true">
-        <source xml:lang="en">Record These Pages:</source>
-        <note>ID: PublishTab.RecordVideo.RecordThesePages</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.RecordVideo.TurnPageAfter">
-        <source xml:lang="en">Turn pages without narration after:</source>
-        <note>ID: PublishTab.RecordVideo.TurnPageAfter</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.RecordVideo.ScreenTooSmall">
-        <source xml:lang="en">Ideally, this video target should be {0}. However that is larger than your screen, so Bloom will produce a video that is {1}.</source>
-        <note>ID: PublishTab.RecordVideo.ScreenTooSmall</note>
-        <note>{0} will be replaced by the target resolution of the video. For example, "1920 x 1080".</note>
-        <note>{1} will be replaced by the actual resolution of the video. For example, "1280 x 720".</note>
-        <note>Please ensure that the translation includes the {0} and {1} placeholders in an appropriate location in the translated text.</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.RecordVideo.VideoFile">
-        <source xml:lang="en">Video File</source>
-        <note>ID: PublishTab.RecordVideo.VideoFile</note>
-        <note>displayed as file type for Save File dialog</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.RecordVideo.WillOpenProgram">
-        <source xml:lang="en">
+            <trans-unit id="PublishTab.PrintButton">
+                <source xml:lang="en">&amp;Print...</source>
+                <note>ID: PublishTab.PrintButton</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.PrologToAdobeEula">
+                <source xml:lang="en">Bloom uses Adobe color profiles to convert PDF files from using RGB color to using CMYK color.  This is part of preparing a "PDF for print shop".  You must agree to the following license in order to perform this task in Bloom.</source>
+                <note>ID: PublishTab.PrologToAdobeEula</note>
+                <note>Brief explanation of what this license is and why the user needs to agree to it</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.Publish">
+                <source xml:lang="en">Publish</source>
+                <note>ID: PublishTab.Publish</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.PublishRequiresEnterprise.FirstOverlayPage">
+                <source xml:lang="en">Page {0} is the first page that uses Overlay elements.</source>
+                <note>ID: PublishTab.PublishRequiresEnterprise.FirstOverlayPage</note>
+                <note>The {0} will be replaced by a page number.</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.PublishRequiresEnterprise.Options">
+                <source xml:lang="en">In order to publish your book, you need to either activate Bloom Enterprise, or remove the Overlay elements from your book.</source>
+                <note>ID: PublishTab.PublishRequiresEnterprise.Options</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.PublishRequiresEnterprise.ProblemExplanation">
+                <source xml:lang="en">The book titled '{0}' adds new Overlay elements. Overlay elements are a Bloom Enterprise feature.</source>
+                <note>ID: PublishTab.PublishRequiresEnterprise.ProblemExplanation</note>
+                <note>{0} will be replaced with the book's title.</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.RecordVideo.AboutOneMinute">
+                <source xml:lang="en">less than one minute</source>
+                <note>ID: PublishTab.RecordVideo.AboutOneMinute</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.RecordVideo.AboutNMinutes">
+                <source xml:lang="en">about {0} minutes</source>
+                <note>ID: PublishTab.RecordVideo.AboutNMinutes</note>
+                <note>{0} is a number of minutes</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.RecordVideo.ActivitiesSkipped">
+                <source xml:lang="en">Activities will be skipped</source>
+                <note>ID: PublishTab.RecordVideo.ActivitiesSkipped</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.RecordVideo.AudioFile">
+                <source xml:lang="en">Audio File</source>
+                <note>ID: PublishTab.RecordVideo.AudioFile</note>
+                <note>displayed as file type for Save File dialog</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.RecordVideo.BannerDescription">
+                <source xml:lang="en">Create video files that you can upload to sites like Facebook and YouTube. You can also make videos to share with people who use inexpensive “feature phones” and even audio-only files for listening.</source>
+                <note>ID: PublishTab.RecordVideo.BannerDescription</note>
+                <note>Task description at the top of the Audio or Video Publishing page</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.RecordVideo.BannerTitle">
+                <source xml:lang="en">Publish as Audio or Video</source>
+                <note>ID: PublishTab.RecordVideo.BannerTitle</note>
+                <note>Header on Audio or Video Publishing page</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.RecordVideo.ChangeScale100">
+                <source xml:lang="en">Please change your display scaling to 100% while making videos. Without this, videos will come out at the wrong resolution, or not record at all.</source>
+                <note>ID: PublishTab.RecordVideo.ChangeScale100</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.RecordVideo.CheckRecording">
+                <source xml:lang="en">Check Recording</source>
+                <note>ID: PublishTab.RecordVideo.CheckRecording</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.RecordVideo.ConfigureAndPreview">
+                <source xml:lang="en">Configure &amp; Preview</source>
+                <note>ID: PublishTab.RecordVideo.ConfigureAndPreview</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.RecordVideo.DisplaySettings">
+                <source xml:lang="en">Display Settings</source>
+                <note>ID: PublishTab.RecordVideo.DisplaySettings</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.RecordVideo.DisableScaling">
+                <source xml:lang="en">Disable Display Scaling</source>
+                <note>ID: PublishTab.RecordVideo.DisableScaling</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.RecordVideo.EstimatedTimeRemaining">
+                <source xml:lang="en">Estimated time remaining: {0}</source>
+                <note>ID: PublishTab.RecordVideo.EstimatedTimeRemaining</note>
+                <note>{0} is text describing the amount of time such as 'less than one minute' or 'about 3 minutes'</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.RecordVideo.Facebook">
+                <source xml:lang="en">Facebook</source>
+                <note>ID: PublishTab.RecordVideo.Facebook</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.RecordVideo.FeaturePhone">
+                <source xml:lang="en">Feature Phone</source>
+                <note>ID: PublishTab.RecordVideo.FeaturePhone</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.RecordVideo.FinalizingAudio">
+                <source xml:lang="en">Finalizing audio</source>
+                <note>ID: PublishTab.RecordVideo.FinalizingAudio</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.RecordVideo.FinishingInitialVideoRecording">
+                <source xml:lang="en">Finishing initial video recording</source>
+                <note>ID: PublishTab.RecordVideo.FinishingInitialVideoRecording</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.RecordVideo.Format">
+                <source xml:lang="en">Format</source>
+                <note>ID: PublishTab.RecordVideo.Format</note>
+                <note>a heading to select which audio or video format to record</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.RecordVideo.Instructions">
+                <source xml:lang="en">If your book has multiple languages or other options, you will see a row of red buttons. Use these to set up the book for recording.</source>
+                <note>ID: PublishTab.RecordVideo.Instructions</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.RecordVideo.MakeRecording">
+                <source xml:lang="en">Make Recording</source>
+                <note>ID: PublishTab.RecordVideo.MakeRecording</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.RecordVideo.MergingAudioVideo">
+                <source xml:lang="en">Merging audio and video, starting at {0:hh:mm tt}</source>
+                <note>ID: PublishTab.RecordVideo.MergingAudioVideo</note>
+                <note>{0:hh:mm tt} is a time</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.RecordVideo.Mp3">
+                <source xml:lang="en">Mp3 Audio</source>
+                <note>ID: PublishTab.RecordVideo.Mp3</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.RecordVideo.OverviewHelpLink">
+                <source xml:lang="en">Publishing Audio or Video Books</source>
+                <note>ID: PublishTab.RecordVideo.OverviewHelpLink</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.RecordVideo.Play">
+                <source xml:lang="en">Play Recording</source>
+                <note>ID: PublishTab.RecordVideo.Play</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.RecordVideo.ProcessingAudio">
+                <source xml:lang="en">Processing audio</source>
+                <note>ID: PublishTab.RecordVideo.ProcessingAudio</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.RecordVideo.Record">
+                <source xml:lang="en">Record</source>
+                <note>ID: PublishTab.RecordVideo.Record</note>
+                <note>'Record' as in 'Record a video recording'</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.RecordVideo.RecordingInProgress">
+                <source xml:lang="en">Recording in Progress...</source>
+                <note>ID: PublishTab.RecordVideo.RecordingInProgress</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.RecordVideo.RecordingInProgressSideways">
+                <source xml:lang="en">Recording in Progress. Showing sideways in order to fit on your screen.</source>
+                <note>ID: PublishTab.RecordVideo.RecordingInProgressSideways</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.RecordVideo.RecordThesePages" sil:dynamic="true">
+                <source xml:lang="en">Record These Pages:</source>
+                <note>ID: PublishTab.RecordVideo.RecordThesePages</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.RecordVideo.TurnPageAfter">
+                <source xml:lang="en">Turn pages without narration after:</source>
+                <note>ID: PublishTab.RecordVideo.TurnPageAfter</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.RecordVideo.ScreenTooSmall">
+                <source xml:lang="en">Ideally, this video target should be {0}. However that is larger than your screen, so Bloom will produce a video that is {1}.</source>
+                <note>ID: PublishTab.RecordVideo.ScreenTooSmall</note>
+                <note>{0} will be replaced by the target resolution of the video. For example, "1920 x 1080".</note>
+                <note>{1} will be replaced by the actual resolution of the video. For example, "1280 x 720".</note>
+                <note>Please ensure that the translation includes the {0} and {1} placeholders in an appropriate location in the translated text.</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.RecordVideo.VideoFile">
+                <source xml:lang="en">Video File</source>
+                <note>ID: PublishTab.RecordVideo.VideoFile</note>
+                <note>displayed as file type for Save File dialog</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.RecordVideo.WillOpenProgram">
+                <source xml:lang="en">
           This will open the program on your computer that is associated with this file type.
         </source>
                 <note>ID: PublishTab.RecordVideo.WillOpenProgram</note>
@@ -6022,6 +6022,10 @@ Do you want to go ahead?</note>
             </trans-unit>
             <trans-unit id="Spreadsheet.ExportDialog.ExportButton">
                 <source xml:lang="en">Export</source>
+            </trans-unit>
+            <trans-unit id="SimpleChoiceActivity.CorrectAnswerIndicator">
+                <source xml:lang="en">Put the correct answer in this button. Bloom will shuffle the order later.</source>
+                <note>On the page where you create a "Simple Choice Activity", you have to put the correct answer in a certain button. This message points out where to put that correct answer. The word "shuffle" here is like what you do to a deck of cards.</note>
             </trans-unit>
         </body>
     </file>
