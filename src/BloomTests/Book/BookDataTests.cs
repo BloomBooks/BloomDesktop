@@ -444,7 +444,7 @@ namespace BloomTests.Book
 		""data-book"": ""insideBackCover"",
 		""lang"": ""xyz"",
 		""content"": ""stuff from settings"",
-		""condition"":""ifblEmpty""
+		""condition"":""ifEmpty""
 	}, {
 		""data-book"": ""insideBackCover"",
 		""lang"": ""en"",
