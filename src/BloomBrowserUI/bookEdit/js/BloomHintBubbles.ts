@@ -381,8 +381,13 @@ export default class BloomHintBubbles {
                 elementToAttachBubbleTo
             );
         } else {
+            // Most legacy label elements don't have data-i18n and are inserted into our
+            // localization dictionary with their English text as key. Newer ones can have
+            // explicit keys.
+            const l10nId =
+                elementWithBubbleAttributes.attr("data-i18n") || whatToSay;
             whatToSay = theOneLocalizationManager.getLocalizedHint(
-                whatToSay,
+                l10nId,
                 elementToAttachBubbleTo
             );
         }
