@@ -1,0 +1,41 @@
+{
+    "presets": [
+        {
+            "data-book": "xmatter",
+            "lang": "*",
+            "content": "MXBLiteracy",
+            "condition": "always"
+        },
+        {
+            "data-book": "copyright",
+            "lang": "*",
+            "content": "Instituto Lingüístico de Verano, A. C.",
+            "condition": "ifEmpty"
+        },
+        {
+            "data-book": "licenseUrl",
+            "lang": "*",
+            "content": "http://creativecommons.org/licenses/by-sa/4.0/",
+            "condition": "ifEmpty"
+        },
+
+        {
+            "data-book": "outside-back-cover-branding-bottom-html",
+            "lang": "*",
+            "content": "<img class='branding' src='Made with Bloom.png'/>",
+            "condition": "always"
+        },
+        {
+            "data-book": "funding",
+            "lang": "es",
+            "content": "Publicado por el <strong>Instituto Lingüístico de Verano, A. C.</strong> Oaxaca de Juárez",
+            "condition": "always"
+        },
+        {
+            "data-book": "title-page-branding-bottom-html",
+            "lang": "*",
+            "content": "<img class='branding' src='Logo Institucional.png'/>",
+            "condition": "always"
+        }
+    ]
+}

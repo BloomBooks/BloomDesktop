@@ -147,8 +147,6 @@ mixin standard-cover-contents
 			+cover-branding-bottom
 			block cover-bottom-row-after-branding
 
-
-
 //- Standard cover image has a (normally hidden) image description field.
 //- The usual code for creating image description on demand is not satisfactory,
 //- because the cover image description needs to have a data-book attribute
@@ -171,7 +169,7 @@ mixin editable-cover-image(language)
 mixin factoryStandard-outsideFrontCover
 	// FRONT COVER
 	+page-cover('Front Cover')(data-export='front-matter-cover', data-xmatter-page='frontCover')&attributes(attributes).frontCover.outsideFrontCover#74731b2d-18b0-420f-ac96-6de20f659810
-		+ standard-cover-contents
+		+standard-cover-contents
 		block front-cover-footer
 
 mixin factoryStandard-creditsInsideFrontCover
