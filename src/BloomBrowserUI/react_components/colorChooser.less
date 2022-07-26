@@ -2,6 +2,7 @@
 @cc-image-height: 50px;
 @cc-arrow-height: 6px;
 @cc-arrow-top-margin: @cc-image-height - @cc-arrow-height;
+@cc-color-size: 30px; //square
 @cc-color-radius: 5px;
 @cc-color-margin: 4px;
 @cc-hex-padding: 4px;
@@ -37,7 +38,7 @@
 .cc-pulldown-wrapper {
     display: flex;
     flex-direction: row;
-    width: 330px;
+    width: 6 * (@cc-color-size + 2 * @cc-color-margin); // 3 rows of colors, 6 on first 2 rows and 2 colors + hex number box on 3rd row.
     flex-wrap: wrap;
     position: absolute; // relative to background-color-arrow
     top: @cc-arrow-height + @cc-arrow-height;
@@ -46,8 +47,8 @@
     // BL-8115: z-index of 1 is not enough to cover a Mui checkbox, which also has z-index: 1)
     z-index: 5;
     .cc-pulldown-left & {
-        left: initial;
-        right: -@cc-arrow-height;
+        left: -67px;
+        right: initial;
     }
     &:after {
         content: "";
@@ -67,8 +68,8 @@
 }
 
 .cc-color-option {
-    height: 30px;
-    width: 30px;
+    height: @cc-color-size;
+    width: @cc-color-size;
     margin: @cc-color-margin;
     border-radius: @cc-color-radius;
 }
