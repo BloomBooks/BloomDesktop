@@ -227,6 +227,11 @@ namespace Bloom.Publish.PDF
 				case "USComic":
 					pageSize = PageSize.A3;	// Ledger would work as well.
 					break;
+				case "Size6x9":
+					// B5 (176mm x 250mm or 6.93" x 9.84") is pretty close to 6"x9".
+					// Twice as big as B5 would be B4, so we'll use B4 as a substitue for 9x12".
+					pageSize = PageSize.B4;	// 9.84in x 13.90 inches
+					break;
 				default:
 					throw new ApplicationException("PdfMaker.MakeBooklet() does not contain a map from " + incomingPaperSize + " to a PdfSharp paper size.");
 			}
