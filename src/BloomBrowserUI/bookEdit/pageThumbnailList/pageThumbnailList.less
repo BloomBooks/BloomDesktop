@@ -191,12 +191,26 @@ body {
             transform: scale(0.12);
         }
     }
-
     &.USComicPortrait {
         height: 63px;
         width: 41 px;
         .bloom-page {
             transform: scale(0.07);
+        }
+    }
+    &.Size6x9Portrait {
+        // selected the largest dimension to be similar to A5.
+        height: 66px;
+        width: 44px;
+        .bloom-page {
+            transform: scale(0.0764);
+        }
+    }
+    &.Size6x9Landscape {
+        height: 46px;
+        width: 69px;
+        .bloom-page {
+            transform: scale(0.08);
         }
     }
 

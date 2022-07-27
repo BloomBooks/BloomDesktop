@@ -119,9 +119,21 @@ namespace Bloom.Book
 					englishName = englishName + " (" + splitStyle + ")";
 				}
 
-				if (englishName.ToLower() == "uscomic portrait")
+				var englishNameLowerCase = englishName.ToLowerInvariant();
+				if (englishNameLowerCase == "uscomic portrait")
 				{
 					englishName = "US Comic Portrait";
+				}
+				else if (englishNameLowerCase == "size6x9 portrait")
+				{
+					// Note: Whatever you pass for englishName to Localizationmanager
+					// will win for English (over the value in the localization XLF,
+					// so we need to populate it correctly here.
+					englishName = "6\"x9\" Portrait";
+				}
+				else if (englishNameLowerCase == "size6x9 landscape")
+				{
+					englishName = "6\"x9\" Landscape";
 				}
 
 				englishName = englishName.Replace("letter", " Letter");
