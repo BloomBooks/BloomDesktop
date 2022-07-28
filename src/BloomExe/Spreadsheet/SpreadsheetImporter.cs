@@ -85,25 +85,11 @@ namespace Bloom.Spreadsheet
 
 		public SpreadsheetImportParams Params = new SpreadsheetImportParams();
 
-		public void ImportWithProgress(string inputFilepath)
+		public void ImportWithProgress(string inputFilepath, Action doWhenProgressCloses)
 		{
 			Debug.Assert(_pathToBookFolder != null,
 				"Somehow we made it into ImportWithProgress() without a path to the book folder");
-			var mainShell = Application.OpenForms.Cast<Form>().FirstOrDefault(f => f is Shell);
-			BrowserProgressDialog.DoWorkWithProgressDialog(_webSocketServer, "spreadsheet-import", () =>
-				new ReactDialog("progressDialogBundle",
-						// props to send to the react component
-						new
-						{
-							title = "Importing Spreadsheet",
-							titleIcon = "", // enhance: add icon if wanted
-							titleColor = "white",
-							titleBackgroundColor = Palette.kBloomBlueHex,
-							webSocketContext = "spreadsheet-import",
-							showReportButton = "if-error"
-						}, "Import Spreadsheet")
-					// winforms dialog properties
-					{ Width = 620, Height = 550 }, (progress, worker) =>
+			BrowserProgressDialog.DoWorkWithProgressDialog(_webSocketServer,   (progress, worker) =>
 			{
 				var hasAudio = _destinationDom.GetRecordedAudioSentences(_pathToBookFolder).Any();
 				var cannotImportEnding = " For this reason, we need to abandon the import. Instead, you can import into a blank book.";
@@ -128,7 +114,7 @@ namespace Bloom.Spreadsheet
 				progress.MessageWithoutLocalizing($"Backup completed (at {backupPath})");
 				Import(sheet, progress);
 				return true; // always leave the dialog up until the user chooses 'close'
-			}, null, mainShell);
+			}, "Importing Spreadsheet", doWhenDialogCloses: doWhenProgressCloses);
 		}
 
 		public bool Validate(InternalSpreadsheet sheet, IWebSocketProgress progress)

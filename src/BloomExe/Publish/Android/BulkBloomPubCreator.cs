@@ -36,7 +36,7 @@ namespace Bloom.Publish.Android
 		// Precondition: bulkSaveSettings must be non-null
 		public void PublishAllBooks(BulkBloomPubPublishSettings bulkSaveSettings)
 		{
-			BrowserProgressDialog.DoWorkWithProgressDialog(_webSocketServer, "Bulk Save BloomPubs",
+			BrowserProgressDialog.DoWorkWithProgressDialog(_webSocketServer,
 				(progress, worker) =>
 				{
 					var dest = new TemporaryFolder("BloomPubs");
@@ -97,7 +97,7 @@ namespace Bloom.Publish.Android
 					Process.SafeStart(dest.FolderPath);
 					// true means wait for the user, don't close automatically
 					return true;
-				});
+				}, "Bulk Save BloomPubs");
 		}
 
 

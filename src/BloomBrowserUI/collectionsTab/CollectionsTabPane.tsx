@@ -26,6 +26,7 @@ import { SpreadsheetExportDialogLauncher } from "./spreadsheet/SpreadsheetExport
 import { H1 } from "../react_components/l10nComponents";
 import { useL10n } from "../react_components/l10nHooks";
 import { useSubscribeToWebSocketForEvent } from "../utils/WebSocketManager";
+import { EmbeddedProgressDialog } from "../react_components/Progress/ProgressDialog";
 
 const kResizerSize = 10;
 
@@ -418,6 +419,7 @@ export const CollectionsTabPane: React.FunctionComponent<{}> = () => {
             )}
             <TeamCollectionDialogLauncher />
             <SpreadsheetExportDialogLauncher />
+            <EmbeddedProgressDialog />
         </div>
     );
 };
