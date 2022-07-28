@@ -501,10 +501,19 @@ namespace Bloom.Api
 				// GetBrowserFile adds output to the path on developer machines, but not user installs.
 				return ProcessContent(info, localPath);
 			}
+
+			// As of July 2022, map files are typically found with the corresponding JS bundle files
+			// in output/debug. The browser correctly includes that part of the path to the JS file
+			// when deriving a URL for the map, and removing it prevents the map file being found
+			// and greatly complicates debugging.
+			// The only reason I'm not completely deleting this code is I don't understand why
+			// it was ever needed or what changed so that it became harmful, so PERHAPS leaving
+			// it here commented out will provide a clue if we ever again encounter the situation
+			// where it was helpful.
 			//Firefox debugger, looking for a source map, was prefixing in this unexpected
 			//way.
-			if(localPath.EndsWith("map"))
-				localPath = localPath.Replace("output/browser/", "");
+			//if(localPath.EndsWith("map"))
+			//	localPath = localPath.Replace("output/browser/", "");
 
 			if (localPath == "")
 			{

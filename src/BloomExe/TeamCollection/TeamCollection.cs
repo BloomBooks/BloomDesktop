@@ -2008,18 +2008,19 @@ namespace Bloom.TeamCollection
 			return true;
 		}
 
-		// must match what is in ProgressDialog.tsx passed as clientContext to ProgressBox.
-		// (At least until we generalize that dialog for different Progress tasks...then, it will need
-		// to be configured to use this.)
-		internal const string kWebSocketContext = "TeamCollectionProgress";
-
 		public BloomWebSocketServer SocketServer;
 		public TeamCollectionManager TCManager;
 		private FileSystemWatcher _localFolderWatcher;
 
 		protected void ShowProgressDialog(string title, Func<IWebSocketProgress,BackgroundWorker, bool> doWhat, Action<Form> doWhenMainActionFalse = null)
 		{
-			BrowserProgressDialog.DoWorkWithProgressDialog(SocketServer, TeamCollection.kWebSocketContext,
+			// If you want to change this to use the new overload where the ProgressDialog is embedded in
+			// the open window, remember:
+			// - there has to be an HTML window open that has an EmbeddedProgressDialog somewhere
+			// - the new overload returns before doWhat finishes, so you will have to modify callers
+			// and turn whatever happens after this method returns into an action that can be passed
+			// as doWhenDialogCloses.
+			BrowserProgressDialog.DoWorkWithProgressDialog(SocketServer,
 				() => new ReactDialog("progressDialogBundle",
 					// props to send to the react component
 					new
@@ -2028,7 +2029,6 @@ namespace Bloom.TeamCollection
 						titleIcon = "Team Collection.svg",
 						titleColor = "white",
 						titleBackgroundColor = Palette.kBloomBlueHex,
-						webSocketContext = TeamCollection.kWebSocketContext,
 						showReportButton = "if-error"
 		}, "Sync Team Collection")
 					// winforms dialog properties

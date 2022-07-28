@@ -8,7 +8,6 @@ import { kBloomBlue } from "../../bloomMaterialUITheme";
 import { ProgressBox } from "./progressBox";
 import { normalDialogEnvironmentForStorybook } from "../BloomDialog/BloomDialogPlumbing";
 
-const kWebSocketMockContext = "mock_progress";
 interface IStoryMessage {
     id?: string;
     k?: "Error" | "Warning" | "Progress" | "Note" | "Instruction";
@@ -61,15 +60,12 @@ function sendNextEvent(events: Array<IStoryMessage>) {
         return;
     }
     const e = events.shift();
-    WebSocketManager.mockSend<IBloomWebSocketProgressEvent>(
-        kWebSocketMockContext,
-        {
-            clientContext: kWebSocketMockContext,
-            id: e!.id || "message",
-            progressKind: e!.k,
-            message: e!.m
-        }
-    );
+    WebSocketManager.mockSend<IBloomWebSocketProgressEvent>("progress", {
+        clientContext: "progress",
+        id: e!.id || "message",
+        progressKind: e!.k,
+        message: e!.m
+    });
 
     if (events.length)
         window.setTimeout(() => {
@@ -175,7 +171,6 @@ storiesOf("Progress Dialog", module)
                     titleColor="white"
                     titleBackgroundColor={kBloomBlue}
                     titleIcon="Team Collection.svg"
-                    webSocketContext={kWebSocketMockContext}
                     showReportButton={"if-error"}
                     onReadyToReceive={() =>
                         sendEvents([
@@ -217,7 +212,6 @@ storiesOf("Progress Dialog", module)
                     title="A Long Progress Dialog"
                     titleColor="black"
                     titleBackgroundColor="transparent"
-                    webSocketContext={kWebSocketMockContext}
                     showReportButton={"never"}
                     onReadyToReceive={() => sendEvents(kLongListOfAllTypes)}
                     dialogEnvironment={normalDialogEnvironmentForStorybook}
@@ -232,7 +226,6 @@ storiesOf("Progress Dialog", module)
                     title="Not wrapped in a material dialog (i.e. as when wrapped by winform dialog)"
                     titleColor="white"
                     titleBackgroundColor="green"
-                    webSocketContext={kWebSocketMockContext}
                     showReportButton={"never"}
                     onReadyToReceive={() =>
                         sendEvents([
@@ -272,7 +265,6 @@ storiesOf("Progress Dialog", module)
                     title="Not wrapped in a material dialog (i.e. as when wrapped by winform dialog)"
                     titleColor="white"
                     titleBackgroundColor="green"
-                    webSocketContext={kWebSocketMockContext}
                     showReportButton={"never"}
                     onReadyToReceive={() => sendEvents(kLongListOfAllTypes)}
                     {...noFrameProps}

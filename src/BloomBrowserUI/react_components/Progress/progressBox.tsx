@@ -24,6 +24,12 @@ export interface IProgressBoxProps {
     onGotErrorMessage?: () => void;
 
     preloadedProgressEvents?: Array<IBloomWebSocketProgressEvent>;
+
+    // For exteranl control of message state (e.g., where undesirable mounting/unmounting is possible)
+    // set both of these, typically by having a state like
+    // const [messages, setMessages] = React.useState<Array<JSX.Element>>([]);
+    messages?: Array<JSX.Element>;
+    setMessages?: React.Dispatch<React.SetStateAction<JSX.Element[]>>;
 }
 
 let indexForMessageKey = 0;
@@ -31,7 +37,20 @@ let indexForMessageKey = 0;
 // Note that this component does not do localization; we expect the progress messages
 // to already be localized when they are sent over the websocket.
 export const ProgressBox: React.FunctionComponent<IProgressBoxProps> = props => {
-    const [messages, setMessages] = React.useState<Array<JSX.Element>>([]);
+    const [localMessages, setLocalMessages] = React.useState<
+        Array<JSX.Element>
+    >([]);
+
+    let messages = localMessages;
+    let setMessages = setLocalMessages;
+    if (props.messages && props.setMessages) {
+        messages = props.messages;
+        setMessages = props.setMessages;
+    } else if (props.messages || props.setMessages) {
+        console.error(
+            "messages and setMessages must both be provided for controlled use of ProgressBox"
+        );
+    }
 
     // used for scrolling to bottom
     const bottomRef = React.useRef<HTMLDivElement>(null);

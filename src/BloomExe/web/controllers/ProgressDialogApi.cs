@@ -4,6 +4,7 @@ using System.Net;
 using System.Windows.Forms;
 using Bloom.Api;
 using Bloom.Book;
+using Bloom.MiscUI;
 using Bloom.Publish;
 using Bloom.Utils;
 using SIL.IO;
@@ -17,9 +18,12 @@ namespace Bloom.web.controllers
 		{
 			_cancelHandler = cancelHandler;
 		}
+
 		public void RegisterWithApiHandler(BloomApiHandler apiHandler)
 		{
 			apiHandler.RegisterEndpointLegacy("progress/cancel", Cancel, false, false);
+			apiHandler.RegisterEndpointHandler("progress/closed", BrowserProgressDialog.HandleProgressDialogClosed, false);
+			apiHandler.RegisterEndpointHandler("progress/ready", BrowserProgressDialog.HandleProgressReady, false);
 		}
 
 		private void Cancel(ApiRequest request)

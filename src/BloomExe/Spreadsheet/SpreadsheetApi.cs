@@ -111,15 +111,17 @@ namespace Bloom.web.controllers
 				}
 
 				var importer = new SpreadsheetImporter(_webSocketServer, book, Path.GetDirectoryName(inputFilepath));
-				importer.ImportWithProgress(inputFilepath);
+				importer.ImportWithProgress(inputFilepath, () =>
+				{
 
-				// The importer now does BringBookUpToDate() which accomplishes everything this did,
-				// plus it may have actually changed the folder (and subsequent 'bookPath')
-				// due to a newly imported title. That would cause this call to fail.
-				//XmlHtmlConverter.SaveDOMAsHtml5(book.OurHtmlDom.RawDom, bookPath);
-				book.ReloadFromDisk(null);
-				BookHistory.AddEvent(book, TeamCollection.BookHistoryEventType.ImportSpreadsheet);
-				_bookSelection.InvokeSelectionChanged(false);
+					// The importer now does BringBookUpToDate() which accomplishes everything this did,
+					// plus it may have actually changed the folder (and subsequent 'bookPath')
+					// due to a newly imported title. That would cause this call to fail.
+					//XmlHtmlConverter.SaveDOMAsHtml5(book.OurHtmlDom.RawDom, bookPath);
+					book.ReloadFromDisk(null);
+					BookHistory.AddEvent(book, TeamCollection.BookHistoryEventType.ImportSpreadsheet);
+					_bookSelection.InvokeSelectionChanged(false);
+				});
 			}
 			catch (Exception ex)
 			{

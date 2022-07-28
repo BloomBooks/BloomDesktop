@@ -81,12 +81,16 @@ export function useSubscribeToWebSocketForObject<T>(
     listener: (message: T) => void
 ) {
     useEffect(() => {
-        WebSocketManager.addListener(clientContext, e => {
+        const websocketListener = e => {
             if (e.id === eventId) {
                 listener((e as unknown) as T);
             }
-        });
-    }, []);
+        };
+        WebSocketManager.addListener(clientContext, websocketListener);
+        return () => {
+            WebSocketManager.removeListener(clientContext, websocketListener);
+        };
+    }, [clientContext]);
 }
 
 // Subscribe to an event where the "message" string is holding a JSON object
@@ -254,7 +258,7 @@ export default class WebSocketManager {
         WebSocketManager.clientContextCallbacks[
             clientContext
         ] = WebSocketManager.clientContextCallbacks[clientContext].filter(
-            l => l === listener
+            l => l !== listener
         );
     }
 
