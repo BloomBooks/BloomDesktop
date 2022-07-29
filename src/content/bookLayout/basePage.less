@@ -222,6 +222,13 @@ div#bloomDataDiv {
 @USComicPortrait-Height-Excess: @USComicPortrait-HeightFB -
     @RUSComicPortrait-Height;
 
+@RSize6x9Portrait-Width: @Size6x9Portrait-Width + @bleed + @bleed;
+@RSize6x9Portrait-Height: @Size6x9Portrait-Height + @bleed + @bleed;
+@RSize6x9-Scale: unit(@RSize6x9Portrait-Width / @Size6x9Portrait-Width);
+@Size6x9Portrait-HeightFB: @Size6x9Portrait-Height * @RSize6x9-Scale;
+@Size6x9Portrait-Height-Excess: @Size6x9Portrait-HeightFB -
+    @RSize6x9Portrait-Height;
+
 .bloom-fullBleed {
     //background-color: green;
     .bloom-page {
@@ -261,6 +268,16 @@ div#bloomDataDiv {
             // NB: transform order is rightmost first
             transform: translate(0, -@USComicPortrait-Height-Excess / 2)
                 scale(@RUSComic-Scale);
+        }
+        &.Size6x9Portrait {
+            // NB: transform order is rightmost first
+            transform: translate(0, -@Size6x9Portrait-Height-Excess / 2)
+                scale(@RSize6x9-Scale);
+        }
+        &.Size6x9Landscape {
+            // NB: transform order is rightmost first
+            transform: translate(-@Size6x9Portrait-Height-Excess / 2, 0)
+                scale(@RSize6x9-Scale);
         }
     }
 }
@@ -306,6 +323,14 @@ div#bloomDataDiv {
         width: @RUSComicPortrait-Width;
         height: @RUSComicPortrait-Height;
     }
+    &.Size6x9Portrait {
+        width: @RSize6x9Portrait-Width;
+        height: @RSize6x9Portrait-Height;
+    }
+    &.Size6x9Landscape {
+        width: @RSize6x9Portrait-Height;
+        height: @RSize6x9Portrait-Width;
+    }
     // Todo: this needs rules for every page size we support in full bleed (try to use a macro)
 }
 
@@ -328,6 +353,14 @@ body.publishingWithoutFullBleed {
         &.USComicPortrait {
             width: @USComicPortrait-Width;
             height: @USComicPortrait-Height;
+        }
+        &.Size6x9Portrait {
+            width: @Size6x9Portrait-Width;
+            height: @Size6x9Portrait-Height;
+        }
+        &.Size6x9Landscape {
+            width: @Size6x9Portrait-Height;
+            height: @Size6x9Portrait-Width;
         }
         // Todo: this needs rules for every page size we support in full bleed (try to use a macro)
     }
@@ -474,6 +507,18 @@ Changes here generally require similar changes in EpubMaker.FixPictureSizes() an
         min-height: @USComicPortrait-Height;
         max-height: @USComicPortrait-Height;
     }
+    &.Size6x9Portrait {
+        min-width: @Size6x9Portrait-Width;
+        max-width: @Size6x9Portrait-Width;
+        min-height: @Size6x9Portrait-Height;
+        max-height: @Size6x9Portrait-Height;
+    }
+    &.Size6x9Landscape {
+        min-width: @Size6x9Landscape-Width;
+        max-width: @Size6x9Landscape-Width;
+        min-height: @Size6x9Landscape-Height;
+        max-height: @Size6x9Landscape-Height;
+    }
 }
 /*Margins*/
 .textWholePage .marginBox {
@@ -563,6 +608,12 @@ Changes here generally require similar changes in EpubMaker.FixPictureSizes() an
     }
     .USComicPortrait & {
         .SetMarginBox(@USComicPortrait-Width, @USComicPortrait-Height);
+    }
+    .Size6x9Portrait & {
+        .SetMarginBox(@Size6x9Portrait-Width, @Size6x9Portrait-Height);
+    }
+    .Size6x9Landscape & {
+        .SetMarginBox(@Size6x9Landscape-Width, @Size6x9Landscape-Height);
     }
 }
 

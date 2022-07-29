@@ -189,6 +189,7 @@ namespace Bloom.Publish.PDF
 			var incomingPaperSize = specs.PaperSizeName;
 
 			PageSize pageSize;
+			System.Drawing.Printing.PaperSize customPageSize = null;
 			switch (incomingPaperSize)
 			{
 				case "A3":
@@ -226,6 +227,11 @@ namespace Bloom.Publish.PDF
 					break;
 				case "USComic":
 					pageSize = PageSize.A3;	// Ledger would work as well.
+					break;
+				case "Size6x9":
+					// 9"x12" can hold two 6"x9" pages.
+					pageSize = PageSize.Undefined;
+					customPageSize = new System.Drawing.Printing.PaperSize("9\"x12\"", 9*100, 12*100);
 					break;
 				default:
 					throw new ApplicationException("PdfMaker.MakeBooklet() does not contain a map from " + incomingPaperSize + " to a PdfSharp paper size.");
@@ -276,7 +282,21 @@ namespace Bloom.Publish.PDF
 					default:
 						throw new ArgumentOutOfRangeException("booketLayoutMethod");
 				}
-				var paperTarget = new PaperTarget("ZZ"/*we're not displaying this anyhwere, so we don't need to know the name*/, pageSize);
+
+				PaperTarget paperTarget;
+				const string paperTargetName = "ZZ"; // we're not displaying this anywhere, so we don't need to know the name
+				if (pageSize != PageSize.Undefined)
+				{
+					paperTarget = new PaperTarget(paperTargetName, pageSize);
+				}
+				else
+				{
+					if (customPageSize == null)
+						throw new NullReferenceException("customPageSize must be set if pageSize is Undefined, but customPageSize was null.");
+
+					paperTarget = new PaperTarget(paperTargetName, customPageSize);
+				}
+
 				var pdf = XPdfForm.FromFile(incoming.Path);//REVIEW: this whole giving them the pdf and the file too... I checked once and it wasn't wasting effort...the path was only used with a NullLayout option
 				method.Layout(pdf, incoming.Path, specs.OutputPdfPath, paperTarget, specs.LayoutPagesForRightToLeft, ShowCropMarks);
 			}

@@ -3081,6 +3081,14 @@
                 <source xml:lang="en">B5 Portrait</source>
                 <note>ID: LayoutChoices.B5Portrait</note>
             </trans-unit>
+            <trans-unit id="LayoutChoices.Cm13Landscape" sil:dynamic="true">
+                <source xml:lang="en">13cm Square</source>
+                <note>ID: LayoutChoices.Cm13Landscape</note>
+            </trans-unit>
+            <trans-unit id="LayoutChoices.ComicPortrait" sil:dynamic="true">
+                <source xml:lang="en">Comic Portrait</source>
+                <note>ID: LayoutChoices.ComicPortrait</note>
+            </trans-unit>
             <trans-unit id="LayoutChoices.Device16x9Landscape" sil:dynamic="true">
                 <source xml:lang="en">Device16x9 Landscape</source>
                 <note>ID: LayoutChoices.Device16x9Landscape</note>
@@ -3113,13 +3121,13 @@
                 <source xml:lang="en">QuarterLetter Portrait</source>
                 <note>ID: LayoutChoices.QuarterLetterPortrait</note>
             </trans-unit>
-            <trans-unit id="LayoutChoices.Cm13Landscape" sil:dynamic="true">
-                <source xml:lang="en">13cm Square</source>
-                <note>ID: LayoutChoices.Cm13Landscape</note>
+            <trans-unit id="LayoutChoices.Size6x9Landscape" sil:dynamic="true">
+                <source xml:lang="en">6"x9" Landscape</source>
+                <note>ID: LayoutChoices.Size6x9Landscape</note>
             </trans-unit>
-            <trans-unit id="LayoutChoices.ComicPortrait" sil:dynamic="true">
-                <source xml:lang="en">Comic Portrait</source>
-                <note>ID: LayoutChoices.ComicPortrait</note>
+            <trans-unit id="LayoutChoices.Size6x9Portrait" sil:dynamic="true">
+                <source xml:lang="en">6"x9" Portrait</source>
+                <note>ID: LayoutChoices.Size6x9Portrait</note>
             </trans-unit>
             <trans-unit id="License.About" sil:dynamic="true">
                 <source xml:lang="en">About %0</source>

@@ -168,6 +168,8 @@ namespace Bloom.Publish.PDF
 				@"Error message displayed in a message dialog box");
 		}
 
+		const double inchesToMM = 25.4;
+
 		const double A4PortraitHeight = 297; // mm
 		private const double A4PortraitWidth = 210; // mm
 		private const double A3PortraitWidth = A4PortraitHeight;
@@ -176,8 +178,11 @@ namespace Bloom.Publish.PDF
 		private const double bleedExtra = bleedWidth * 2;
 
 		// Trim size from Kingstone: 10.25 x 6.625 inches
-		private const double USComicPortraitHeight = 10.25 * 25.4;
-		private const double USComicPortraitWidth = 6.625 * 25.4;
+		private const double USComicPortraitHeight = 10.25 * inchesToMM;
+		private const double USComicPortraitWidth = 6.625 * inchesToMM;
+
+		private const double Size6x9PortraitHeight = 9 * inchesToMM;	// mm
+		private const double Size6x9PortraitWidth = 6 * inchesToMM;	// mm
 
 		//BottomMarginInMillimeters = 0,
 		//TopMarginInMillimeters = 0,
@@ -200,6 +205,13 @@ namespace Bloom.Publish.PDF
 			else if (specs.PaperSizeName == "USComic")
 			{
 				bldr.Append($" -h {USComicPortraitHeight} -w {USComicPortraitWidth}");
+			}
+			else if (specs.PaperSizeName == "Size6x9")
+			{
+				bldr.Append($" -h {Size6x9PortraitHeight} -w {Size6x9PortraitWidth}");
+
+				if (specs.Landscape)
+					bldr.Append(" -Landscape");
 			}
 			else
 			{
@@ -254,8 +266,12 @@ namespace Bloom.Publish.PDF
 					height = USComicPortraitHeight + bleedExtra;
 					width = USComicPortraitWidth + bleedExtra;
 					break;
+				case "size6x9":
+					height = Size6x9PortraitHeight + bleedExtra;
+					width = Size6x9PortraitWidth + bleedExtra;
+					break;
 				default:
-					throw new ArgumentException("Full bleed printing of paper sizes other than A5, A4, A3, and USComic is not yet implemented");
+					throw new ArgumentException("Full bleed printing of paper sizes other than A5, A4, A3, USComic, and Size6x9 is not yet implemented");
 			}
 
 			if (specs.Landscape)
