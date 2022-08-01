@@ -1,6 +1,11 @@
 
 include ../MXBLiteracy-XMatter/MXBCommon-XMatter.pug
 
+mixin mxb-chapterVerseRef
+	.creditsRow(data-hint='For Scripture books, use this space to indicate the Bible reference')
+		+field-prototypeDeclaredExplicity("V")
+			+editable(kLanguageForPrototypeOnly).smallCoverCredits.Cover-Default-style(data-book='smallCoverCredits')
+
 mixin mxb-frontCover-scripture
 	// Outside Front Cover
 	+page-cover('Front Cover')(data-export='front-matter-cover', data-xmatter-page='frontCover')&attributes(attributes).frontCover.outsideFrontCover#74731b2d-18b0-420f-ac96-6de20f659810
@@ -11,8 +16,8 @@ mixin mxb-frontCover-scripture
 			+field-prototypeDeclaredExplicity("V,N1").bookTitle
 				label.bubble Book title in {lang}
 				+editable(kLanguageForPrototypeOnly).bloom-nodefaultstylerule.Title-On-Cover-style.bloom-padForOverflow(data-book='bookTitle')
-		// Moved up from below
-		+mxb-frontCoverCredits
+
+		+mxb-chapterVerseRef
 
 		block front-cover-image
 			+standard-cover-image
@@ -37,8 +42,7 @@ mixin mxb-titlePage-scripture
 			label.bubble Book title in {lang}
 			+editable(kLanguageForPrototypeOnly).bloom-nodefaultstylerule.Title-On-Title-Page-style(data-book='bookTitle')
 
-		// Copied from front cover; Scripture use is for chapter/verse reference
-		+mxb-frontCoverCredits
+		+mxb-chapterVerseRef
 
 		#languageInformation.Credits-Page-style('lang'='N1')
 			.languagesOfBook(data-derived='languagesOfBook')
@@ -46,7 +50,7 @@ mixin mxb-titlePage-scripture
 			.langName('data-library'='dialect')
 			.langName(data-library='languageLocation').bloom-writeOnly
 		+field-prototypeDeclaredExplicity("N1")#funding
-			label.bubble Use this to acknowledge any funding agencies.
+			label.bubble Normally leave this space blank for books published under the LigaBíblica logo.
 			+editable(kLanguageForPrototypeOnly).funding.Funding-style.bloom-copyFromOtherLanguageIfNecessary(data-book='funding')
 		+title-page-branding-bottom
 
