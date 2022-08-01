@@ -673,7 +673,9 @@ namespace Bloom.Edit
 				}
 
 				// Let Gecko handle hrefs that are explicitly tagged "javascript"
-				if(anchor.Href.StartsWith("javascript")) //tied to, for example, data-functionOnHintClick="ShowTopicChooser()"
+				// Used to be tied to, for example, data-functionOnHintClick="ShowTopicChooser()".
+				// Now we do straight React, so that click is now in the above "clickWasAlreadyHandled" category.
+				if(anchor.Href.StartsWith("javascript"))
 				{
 					ge.Handled = false; // let gecko handle it
 					return;

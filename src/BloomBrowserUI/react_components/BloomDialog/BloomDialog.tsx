@@ -158,10 +158,12 @@ export const DialogTitle: React.FunctionComponent<{
     icon?: string;
     title: string; // note, this is prop instead of just a child so that we can ensure vertical alignment and bar height, which are easy to mess up.
     disableDragging?: boolean;
+    fontSize?: string;
 }> = props => {
     const color = props.color || "black";
     const background = props.backgroundColor || "transparent";
     const cursor = props.disableDragging ? "unset" : "move";
+    const fontSize = props.fontSize || "16px";
 
     // This is lame, but it's really what looks right to me. When there is a color bar, it looks better to have less padding at the top.
     const titleTopPadding =
@@ -182,7 +184,7 @@ export const DialogTitle: React.FunctionComponent<{
                 margin-right: -${kDialogTopPadding};
                 margin-bottom: ${kDialogPadding};
                 * {
-                    font-size: 16px;
+                    font-size: ${fontSize};
                     font-weight: bold;
                 }
             `}

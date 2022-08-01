@@ -18,7 +18,7 @@ import BloomNotices from "./bloomNotices";
 import BloomSourceBubbles from "../sourceBubbles/BloomSourceBubbles";
 import BloomHintBubbles from "./BloomHintBubbles";
 import { initializeBubbleManager, theOneBubbleManager } from "./bubbleManager";
-import TopicChooser from "../TopicChooser/TopicChooser";
+import { showTopicChooserDialog } from "../TopicChooser/TopicChooserDialog";
 import "jquery-ui/jquery-ui-1.10.3.custom.min.js";
 import "jquery.hasAttr.js"; //reviewSlog for CenterVerticallyInParent
 import "jquery.qtip.js";
@@ -709,10 +709,10 @@ export function SetupElements(container: HTMLElement) {
     //But clicking on the existing topic may be natural too, and this prevents
     //them from editing it by hand.
     $(container)
-        .find("div[data-book='topic']")
+        .find("div[data-derived='topic']")
         .click(function() {
             if ($(this).css("cursor") === "not-allowed") return;
-            TopicChooser.showTopicChooser();
+            showTopicChooserDialog();
         });
 
     // Copy source texts out to their own div, where we can make a bubble with tabs out of them

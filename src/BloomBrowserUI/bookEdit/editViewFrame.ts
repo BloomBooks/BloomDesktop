@@ -19,6 +19,7 @@ export interface IEditViewFrameExports {
     showConfirmDialog(props: IConfirmDialogProps): void;
     showColorPickerDialog(props: IColorPickerDialogProps): void;
     showCopyrightAndLicenseDialog(imageUrl?: string): void;
+    showEditViewTopicChooserDialog(): void;
 }
 
 export function SayHello() {
@@ -37,6 +38,7 @@ import "errorHandler";
 import { reportError } from "../lib/errorHandler";
 import { IToolboxFrameExports } from "./toolbox/toolboxBootstrap";
 import { showCopyrightAndLicenseInfoOrDialog } from "./copyrightAndLicense/CopyrightAndLicenseDialog";
+import { showTopicChooserDialog } from "./TopicChooser/TopicChooserDialog";
 export { getImageUrlFromImageButton } from "./js/bloomImages";
 
 //Called by c# using editTabBundle.handleUndo()
@@ -185,4 +187,8 @@ export function showColorPickerDialog(props: IColorPickerDialogProps): void {
 
 export function showCopyrightAndLicenseDialog(imageUrl?: string) {
     showCopyrightAndLicenseInfoOrDialog(imageUrl);
+}
+
+export function showEditViewTopicChooserDialog() {
+    showTopicChooserDialog();
 }

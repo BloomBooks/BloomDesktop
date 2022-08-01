@@ -5913,6 +5913,13 @@ Do you want to go ahead?</note>
                 <source xml:lang="en">Put a comprehension question here</source>
                 <note>ID: TemplateBooks.Quiz.HintBubble.Question</note>
             </trans-unit>
+            <!-- for 5.4
+            <trans-unit id="TopicChooser.Title" sil:dynamic="true">
+                <source xml:lang="en">Choose Topic</source>
+                <note>ID: TopicChooser.Title</note>
+                <note>Title of the topics chooser dialog in the edit tab</note>
+            </trans-unit>
+            -->
             <trans-unit id="Topics.Agriculture" sil:dynamic="true">
                 <source xml:lang="en">Agriculture</source>
                 <note>ID: Topics.Agriculture</note>
