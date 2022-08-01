@@ -1,0 +1,10 @@
+{
+    "presets": [
+        {
+            "data-book": "outside-back-cover-branding-bottom-html",
+            "lang": "*",
+            "content": "<img class='branding' src='Yumi Rid.png'/><img class='branding bloom-badge' src='made-with-bloom-badge-dark.svg'/>",
+            "condition": "always"
+        }
+    ]
+}
