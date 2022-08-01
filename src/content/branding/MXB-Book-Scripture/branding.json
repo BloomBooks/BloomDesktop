@@ -28,7 +28,7 @@
         {
             "data-book": "title-page-branding-bottom-html",
             "lang": "*",
-            "content": "<img class='branding' src='LigaBíblica.png'/>",
+            "content": "<img class='branding' src='LigaBiblica.png'/>",
             "condition": "always"
         }
     ]
