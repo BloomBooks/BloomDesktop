@@ -24,12 +24,13 @@ import * as ReactDOM from "react-dom";
 import FontSelectComponent, { IFontMetaData } from "./fontSelectComponent";
 import React = require("react");
 
+type Alignment = "left" | "center" | "right"; // Taken from CSS text-align, but "justify", "initial", and "inherit" are not supported currently.
 interface IFormattingValues {
     ptSize: string;
     fontName: string;
     lineHeight: string;
     wordSpacing: string;
-    center: boolean;
+    alignment: Alignment;
     paraSpacing: string;
     paraIndent: string;
     bold: boolean;
@@ -828,7 +829,14 @@ export default class StyleEditor {
 
         const italic = box.css("font-style") === "italic";
         const underline = box.css("text-decoration") === "underline";
-        const center = box.css("text-align") === "center";
+
+        const cssAlignment = box.css("text-align");
+        const alignment =
+            cssAlignment === "center"
+                ? "center"
+                : cssAlignment === "right"
+                ? "right"
+                : "left";
 
         // If we're going to base the initial values on current actual values, we have to get the
         // margin-below and text-indent values from one of the paragraphs they actually affect.
@@ -860,7 +868,7 @@ export default class StyleEditor {
             fontName: this.getFontNameFromTextBox(box),
             lineHeight: lineHeight,
             wordSpacing: wordSpacing,
-            center: center,
+            alignment,
             paraSpacing: paraSpacing,
             paraIndent: paraIndent,
             bold: bold,
@@ -1286,6 +1294,7 @@ export default class StyleEditor {
             "underline",
             "position-leading",
             "position-center",
+            "position-trailing",
             "indent-none",
             "indent-indented",
             "indent-hanging"
@@ -1296,8 +1305,9 @@ export default class StyleEditor {
         this.selectButton("bold", current.bold);
         this.selectButton("italic", current.italic);
         this.selectButton("underline", current.underline);
-        this.selectButton("position-center", current.center);
-        this.selectButton("position-leading", !current.center);
+        this.selectButton("position-center", current.alignment === "center");
+        this.selectButton("position-leading", current.alignment === "left");
+        this.selectButton("position-trailing", current.alignment === "right");
         this.selectButton("indent-" + current.paraIndent, true);
     }
 
@@ -1814,6 +1824,9 @@ export default class StyleEditor {
         let position = "initial";
         if ($("#position-center").hasClass("selectedIcon")) {
             position = "center";
+        } else if ($("#position-trailing").hasClass("selectedIcon")) {
+            // TODO: What if RTL?
+            position = "right";
         }
         if (rule != null) {
             rule.style.setProperty("text-align", position, "important");
