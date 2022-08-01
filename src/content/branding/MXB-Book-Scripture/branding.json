@@ -1,0 +1,35 @@
+{
+    "presets": [
+        {
+            "data-book": "xmatter",
+            "lang": "*",
+            "content": "MXBScripture",
+            "condition": "always"
+        },
+        {
+            "data-book": "copyright",
+            "lang": "*",
+            "content": "WPS",
+            "condition": "ifEmpty"
+        },
+        {
+            "data-book": "licenseUrl",
+            "lang": "*",
+            "content": "http://creativecommons.org/licenses/by-sa/4.0/",
+            "condition": "ifEmpty"
+        },
+
+        {
+            "data-book": "outside-back-cover-branding-bottom-html",
+            "lang": "*",
+            "content": "<img class='branding' src='Made with Bloom.png'/>",
+            "condition": "always"
+        },
+        {
+            "data-book": "title-page-branding-bottom-html",
+            "lang": "*",
+            "content": "<img class='branding' src='LigaBiblica.png'/>",
+            "condition": "always"
+        }
+    ]
+}
