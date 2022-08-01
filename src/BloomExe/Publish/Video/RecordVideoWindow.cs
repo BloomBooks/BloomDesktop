@@ -68,6 +68,8 @@ namespace Bloom.Publish.Video
 		// 30fps is standard for SD video
 		private const int kFrameRate = 30;
 
+		public bool LocalAudioNamesMessedUp = false;
+
 		public RecordVideoWindow(BloomWebSocketServer webSocketServer)
 		{
 			InitializeComponent();
@@ -454,9 +456,47 @@ namespace Bloom.Publish.Video
 			// then start repeating.
 			var lastMusic = soundLog.LastOrDefault(item => item.endTime != default(DateTime));
 
+			// In some very complex books, we are running into the 32K limit for the length of the args
+			// string that can be passed to Process.Start. We can put the complex_filter into a text file,
+			// but there appears to be no way to put the actual list of inputs into one. So the only
+			// way to shorten it is to use as little text as possible for each one. By setting a working
+			// directory for ffmpeg, we only have to give the file name relative to that directory.
+			// By generating a short name for each file, we use as few characters as possible: GetShortName
+			// will produce no more than 3-character names for up to about 46,000 files. Since most of
+			// them will be three-character names, the string we generate for each works out to be 11 characters.
+			// (-i<space>xxx.mp3<space>).
+			// Everything else is more-or-less fixed length, so we can cope with about 2900 audio files.
+			// If that isn't enough, we could go to multiple passes...but that really complicates
+			// the code, especially the code for estimating run time. The pathological picture dictionary
+			// in BL-11401 has 1388, so we should still have a good margin.
+			// Review: it would save a little time on nearly all books to NOT rename the files unless
+			// we need to. (That is, if the command line using the original names is too long.)
+			// But it would complicate the code to try to figure this out, and I don't think this is a
+			// major part of the time recording typically takes. Also, the rename branch would only get tested
+			// when a recording involves more than about 650 files, so we'd be unlikely to catch any
+			// new problems with it.
+			// Another reviewer noted that it's conceivable some anti-virus will consider wholesale
+			// file renaming to be suspicious behavior. Decided to wait and see if this happens.
+			var workingDirectory = Path.GetDirectoryName(soundLog[0].src);
+			LocalAudioNamesMessedUp = true;
+			for(int i = 0; i < soundLog.Length; i++)
+			{
+				var item = soundLog[i];
+				if (Path.GetDirectoryName(item.src) == workingDirectory)
+				{
+					var shortName = GetShortName(i) + Path.GetExtension(item.src);
+					RobustFile.Move(item.src, Path.Combine(workingDirectory, shortName));
+					item.shortName = shortName; // deliberately without the full path, we will set workingDirectory.
+				}
+				else
+				{
+					item.shortName = "\"" + item.src + "\"";
+				}
+			}
+
 			// configure ffmpeg to merge everything.
 			// each sound file becomes an input by prefixing the path with -i.
-			var inputs = string.Join(" ", soundLog.Select(item => $"-i \"{item.src}\" "));
+			var inputs = string.Join(" ", soundLog.Select(item => $"-i {item.shortName} "));
 
 			// arguments to configure 'filters' ahead of audio mixer which will combine the sounds into a single stream.
 			var audioFilters = string.Join(" ", soundLog.Select((item, index) =>
@@ -538,57 +578,90 @@ namespace Bloom.Publish.Video
 					throw new NotImplementedException();
 			}
 
-			using (var tempProgressOutputFile = TempFile.CreateAndGetPathButDontMakeTheFile())
-			{
-				var args = ""
-						   + inputs // the audio files are inputs, which may be referred to as [1:a], [2:a], etc.
-						   + (haveVideo ? $"-i \"{_videoOnlyPath}\" " : "") // last input (videoIndex) is the original video (if any)
-						   + "-filter_complex \""// the next bit specifies a filter with multiple inputs
-						   + audioFilters // specifies the inputs to the mixer
-										  // mix those inputs to a single stream called out. Note that, because most of our audio
-										  // streams don't overlap, and the background music volume is presumed to have already
-										  // been suitably adjusted, we do NOT want the default behavior of 'normalizing' volume
-										  // by reducing it to 1/n where n is the total number of input streams.
-						   + mixInputs + $"amix=inputs={soundLog.Length}:normalize=0[out]\" "
-						   // copy the video channel (of input videoIndex) unchanged (if we have video).
-						   // (here 'copy' is a pseudo codec...instead of encoding it in some particular way,
-						   // we just copy the original.
-						   + (haveVideo ? $"-map {videoIndex}:v -vcodec copy " : "")
+			var complexFilter = audioFilters // specifies the inputs to the mixer
+			                    // mix those inputs to a single stream called out. Note that, because most of our audio
+			                    // streams don't overlap, and the background music volume is presumed to have already
+			                    // been suitably adjusted, we do NOT want the default behavior of 'normalizing' volume
+			                    // by reducing it to 1/n where n is the total number of input streams.
+			                    + mixInputs + $"amix=inputs={soundLog.Length}:normalize=0[out]";
+			using (var filterFile = new TempFile(complexFilter)) {
 
-						   + audioArgs
-						   + "-map [out] " // send the output of the audio mix to the output
-						   + finalOutputPath //and this is where we send it (until the user saves it elsewhere).
-						   + $" -progress {tempProgressOutputFile.Path}";
-				// Debug.WriteLine("ffmpeg merge args: " + args);
-
-				if (haveVideo)
-					progress.MessageWithParams(
-						"PublishTab.RecordVideo.MergingAudioVideo",
-						"{0:hh:mm tt} is a time",
-						"Merging audio and video, starting at {0:hh:mm tt}",
-						ProgressKind.Progress,
-						DateTime.Now);
-				else
-					progress.Message("PublishTab.RecordVideo.FinalizingAudio", message: "Finalizing audio");
-
-				var startTimeForFinalMix = DateTime.Now;
-				RunFfmpeg(args);
-
-				// System.Threading.Timer is the only one which will fire during _ffmpegProcess.WaitForExit()
-				var createEstimateTimer = new System.Threading.Timer((state) =>
+				using (var tempProgressOutputFile = TempFile.CreateAndGetPathButDontMakeTheFile())
 				{
-					if (_ffmpegExited) return;
+					var args = ""
+					           + inputs // the audio files are inputs, which may be referred to as [1:a], [2:a], etc.
+					           + (haveVideo
+						           ? $"-i \"{_videoOnlyPath}\" "
+						           : "") // last input (videoIndex) is the original video (if any)
+					           + "-filter_complex_script \"" // the next bit specifies a filter with multiple inputs
+					           + filterFile.Path + "\" "
+					           // copy the video channel (of input videoIndex) unchanged (if we have video).
+					           // (here 'copy' is a pseudo codec...instead of encoding it in some particular way,
+					           // we just copy the original.
+					           + (haveVideo ? $"-map {videoIndex}:v -vcodec copy " : "")
 
-					OutputTimeRemainingEstimate(progress, tempProgressOutputFile, startTimeForFinalMix, videoDuration);
-				},
-				null,
-				5000, // initially at 5 seconds
-				300000 // then every 5 minutes thereafter
-				);
+					           + audioArgs
+					           + "-map [out] " // send the output of the audio mix to the output
+					           + finalOutputPath //and this is where we send it (until the user saves it elsewhere).
+					           + $" -progress {tempProgressOutputFile.Path}";
+					// Debug.WriteLine("ffmpeg merge args: " + args);
 
-				_ffmpegProcess.WaitForExit();
+					if (haveVideo)
+						progress.MessageWithParams(
+							"PublishTab.RecordVideo.MergingAudioVideo",
+							"{0:hh:mm tt} is a time",
+							"Merging audio and video, starting at {0:hh:mm tt}",
+							ProgressKind.Progress,
+							DateTime.Now);
+					else
+						progress.Message("PublishTab.RecordVideo.FinalizingAudio", message: "Finalizing audio");
 
-				createEstimateTimer.Dispose();
+					var startTimeForFinalMix = DateTime.Now;
+					// This magic number is documented at https://docs.microsoft.com/en-us/dotnet/api/system.diagnostics.processstartinfo.arguments?view=net-6.0
+					if (args.Length >= 32699)
+					{
+						// This API requires a localization ID, but as we hope no one will ever see it, I'm not actually
+						// adding it to the XLF.
+						progress.Message("PublishTab.RecordVideo.TooManyAudioFiles",
+							"This recording has more audio files than Bloom can handle. Try recording the book in smaller sections. You can then join the sections using some other video software.", ProgressKind.Error);
+					}
+					else
+					{
+						RunFfmpeg(args, workingDirectory);
+
+						// System.Threading.Timer is the only one which will fire during _ffmpegProcess.WaitForExit()
+						var createEstimateTimer = new System.Threading.Timer((state) =>
+							{
+								if (_ffmpegExited) return;
+
+								OutputTimeRemainingEstimate(progress, tempProgressOutputFile, startTimeForFinalMix,
+									videoDuration);
+							},
+							null,
+							5000, // initially at 5 seconds
+							300000 // then every 5 minutes thereafter
+						);
+
+						_ffmpegProcess.WaitForExit();
+
+						createEstimateTimer.Dispose();
+					}
+				}
+
+				// Restore original names, since that's what is expected if we preview the book or record again
+				// (the html is still referencing the original names...the renaming was solely for the process
+				// of running ffmpeg afterwards.)
+				// If anything goes wrong so that this doesn't happen, we should automatically rebuild the
+				// preview entirely.
+				foreach (var item in soundLog)
+				{
+					if (!item.shortName.StartsWith("\""))
+					{
+						RobustFile.Move(Path.Combine(workingDirectory,item.shortName), item.src);
+					}
+				}
+
+				LocalAudioNamesMessedUp = false;
 			}
 
 			var mergeErrors = _errorData.ToString();
@@ -612,6 +685,23 @@ namespace Bloom.Publish.Video
 				SaveVideo(); // now we really can.
 			}
 			progress.MessageWithParams("Common.FinishedAt", "{0:hh:mm tt} is a time", "Finished at {0:hh:mm tt}", ProgressKind.Progress, DateTime.Now);
+		}
+
+		private static char[] shortNameChars = "abcdefghijklmnopqrstuvwxyz0123456789".ToCharArray();
+
+		internal static string GetShortName(int index)
+		{
+			var result = "";
+			var remainder = index;
+			while (remainder >= shortNameChars.Length)
+			{
+				var next = remainder % shortNameChars.Length;
+				result += shortNameChars[next];
+				remainder = remainder / shortNameChars.Length;
+			}
+
+			result += shortNameChars[remainder];
+			return result;
 		}
 
 		private void OutputTimeRemainingEstimate(IWebSocketProgress progress, TempFile progressFile, DateTime startTime, TimeSpan totalDuration)
@@ -718,7 +808,7 @@ namespace Bloom.Publish.Video
 
 		private Timer _preventSleepTimer;
 
-		private void RunFfmpeg(string args)
+		private void RunFfmpeg(string args, string workingDirectory = null)
 		{
 			try
 			{
@@ -740,6 +830,10 @@ namespace Bloom.Publish.Video
 						RedirectStandardInput = true,
 					}
 				};
+				if (workingDirectory != null)
+				{
+					_ffmpegProcess.StartInfo.WorkingDirectory = workingDirectory;
+				}
 				_ffmpegExited = false;
 				_ffmpegProcess.EnableRaisingEvents = true;
 				_ffmpegProcess.Exited += (object sender, EventArgs e) => { _ffmpegExited = true; };
@@ -1225,6 +1319,7 @@ namespace Bloom.Publish.Video
 	class SoundLogItem
 	{
 		public string src;
+		public string shortName;
 		public double volume;
 		public DateTime startTime;
 		public TimeSpan startOffset;
