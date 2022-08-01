@@ -1,0 +1,89 @@
+
+include ../../bloom-xmatter-mixins.pug
+
+mixin mxb-printerStatement-insideBackCover
+	// Inside Back Cover
+	+page-xmatter('Inside Back Cover').cover.coverColor.insideBackCover.bloom-backMatter(data-export='back-matter-inside-back-cover')&attributes(attributes)#839e8eee-5e1a-45a7-bb01-2c171b56f8a4
+		+field-mono-meta("N1","printerStatement").Printer-Statement-style.bloom-copyFromOtherLanguageIfNecessary
+			label.bubble Printer's Statement goes here.
+
+mixin mxb-frontCover
+	// Outside Front Cover
+	+page-cover('Front Cover')(data-export='front-matter-cover', data-xmatter-page='frontCover')&attributes(attributes).frontCover.outsideFrontCover#74731b2d-18b0-420f-ac96-6de20f659810
+		block cover-above-title
+			+cover-branding-top
+
+		block cover-title
+			+field-prototypeDeclaredExplicity("V,N1").bookTitle
+				label.bubble Book title in {lang}
+				+editable(kLanguageForPrototypeOnly).bloom-nodefaultstylerule.Title-On-Cover-style.bloom-padForOverflow(data-book='bookTitle')
+
+		block front-cover-image
+			+standard-cover-image
+
+		// 2 columns: first for an optional logo, then text content
+		.bottomBlock
+			+cover-branding-bottom-left.bottom-left-branding
+
+			// 2 rows
+			.bottomTextContent
+				block cover-bottom-credits
+					+mxb-frontCoverCredits
+				block cover-bottom-row-before-branding
+					.bottomRow
+						.coverBottomLangName.Cover-Default-style(data-derived='languagesOfBook')
+						+chooser-topic.coverBottomBookTopic
+				+cover-branding-bottom
+				block cover-bottom-row-after-branding
+		block front-cover-footer
+
+mixin mxb-frontCoverCredits
+	//NB: don't convert this to an inline label; that interferes with the bloom-copyFromOtherLanguageIfNecessary,
+	// because it is never empty
+	.creditsRow(data-hint='You may use this space for author/illustrator, or anything else.')
+		+field-prototypeDeclaredExplicity("V")
+			+editable(kLanguageForPrototypeOnly).smallCoverCredits.Cover-Default-style(data-book='smallCoverCredits')
+
+mixin mxb-contributions
+	+field-prototypeDeclaredExplicity("N1")#contributions
+		label.bubble(data-link-text='Paste Image Credits' data-link-target='PasteImageCredits()')
+			| The contributions made by writers, illustrators, editors, etc., in {lang}
+		+editable(kLanguageForPrototypeOnly).contributions.OriginalContributions-style.bloom-copyFromOtherLanguageIfNecessary(data-book='originalContributions')
+
+
+mixin mxb-titlePage
+	+page-xmatter('Title Page').titlePage.bloom-frontMatter(data-export='front-matter-title-page', data-xmatter-page='titlePage')&attributes(attributes)#5dcd48df-e9ab-4a07-afd4-6a24d0398381
+		+field-prototypeDeclaredExplicity("V, N1, N2")#titlePageTitleBlock
+			label.bubble Book title in {lang}
+			+editable(kLanguageForPrototypeOnly).bloom-nodefaultstylerule.Title-On-Title-Page-style(data-book='bookTitle')
+		#languageInformation.Credits-Page-style('lang'='N1')
+			.languagesOfBook(data-derived='languagesOfBook')
+			.langName('data-library'='dialect')
+			.langName(data-library='languageLocation').bloom-writeOnly
+		+mxb-contributions
+		+field-prototypeDeclaredExplicity("N1")#funding
+			label.bubble Use this to acknowledge any funding agencies.
+			+editable(kLanguageForPrototypeOnly).funding.Funding-style.bloom-copyFromOtherLanguageIfNecessary(data-book='funding')
+		+title-page-branding-bottom
+
+mixin mxb-nationalSummaryCreditsPage-back-title-page
+	// Credits page back of Title page
+	+page-xmatter("Credits Page").bloom-frontMatter.credits(data-export='front-matter-credits', data-xmatter-page='credits')#69EF35AE-5BF1-49F1-89E7-2A932DAD932C
+		+field-mono-meta("N1","insideCredits").NationalLanguage-style.bloom-copyFromOtherLanguageIfNecessary
+			label.bubble If your publication is not diglot, you can include a national language summary here, which is the back of the title page.
+		+field-prototypeDeclaredExplicity("N1")#localizedAcknowledgments
+			label.bubble
+				| Acknowledgments for this version, in {lang}. For example, give credit to the translator for this version.
+			+editable(kLanguageForPrototypeOnly).versionAcknowledgments.LocalizedAcknowledgments-style.bloom-copyFromOtherLanguageIfNecessary(data-book="versionAcknowledgments")
+		+block-licenseAndCopyright
+		//- Here code puts in something like "From the original Copyright Pratham Books 2016. CC-BY. Any license notes here."
+		.copyright(data-derived="originalCopyrightAndLicense").Credits-Page-style.bloom-copyFromOtherLanguageIfNecessary
+		//- Moved from Title page
+		+field-prototypeDeclaredExplicity("N1")#originalAcknowledgments
+			label.bubble Original (or Shell) Acknowledgments in {lang}
+			+editable(kLanguageForPrototypeOnly).OriginalAcknowledgments-style.bloom-copyFromOtherLanguageIfNecessary(data-book='originalAcknowledgments')
+				| {Original Acknowledgments}
+		+field-ISBN
+		+field-prototypeDeclaredExplicity("N1")#printingHistory
+			label.bubble Use this for Printing History (1st Edition, etc.)
+			+editable(kLanguageForPrototypeOnly).PrintingHistory-style.bloom-copyFromOtherLanguageIfNecessary(data-book='printingInfo')

@@ -1,0 +1,17 @@
+
+include ./MXBCommon-XMatter.pug
+
+doctype html
+html
+	head
+		meta(charset='UTF-8')
+		meta(name='BloomFormatVersion', content='2.0')
+		title ILV Mexico Literacy Front & Back Matter
+		+stylesheets('MXBLiteracy-XMatter.css')
+	body
+		+factoryStandard-outsideFrontCover
+		+factory-insideFrontCover
+		+mxb-titlePage
+		+mxb-nationalSummaryCreditsPage-back-title-page
+		+mxb-printerStatement-insideBackCover
+		+factoryStandard-outsideBackCover
