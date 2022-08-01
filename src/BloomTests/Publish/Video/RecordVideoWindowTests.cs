@@ -139,5 +139,19 @@ namespace BloomTests.Publish.Video
 			//////////////////
 			Assert.AreEqual("bookTitleL2", result);
 		}
+
+		[Test]
+		public void GetShortName_GivesValidResults()
+		{
+			var results = new HashSet<string>();
+			// 37x37 gets us into three-letter names, since we are using 36 characters.
+			for (var i = 0; i < 37 * 37; i++)
+			{
+				var result = RecordVideoWindow.GetShortName(i);
+				Assert.That(result.Length < 4);
+				Assert.That(results, Does.Not.Contain(result));
+				results.Add(result);
+			}
+		}
 	}
 }
