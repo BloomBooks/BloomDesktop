@@ -253,6 +253,7 @@ const ColorPickerDialog: React.FC<IColorPickerDialogProps> = props => {
                     open={open}
                     ref={dlgRef}
                     PaperComponent={PaperComponent}
+                    onClick={e => e.stopPropagation()}
                     onClose={(_event, reason) => {
                         if (reason === "backdropClick")
                             onClose(DialogResult.OK); // BL-9930
@@ -261,6 +262,7 @@ const ColorPickerDialog: React.FC<IColorPickerDialogProps> = props => {
                     <DialogTitle
                         id="draggable-color-picker-title"
                         style={{ cursor: "move" }}
+                        onClick={e => e.stopPropagation()}
                     >
                         {props.localizedTitle}
                     </DialogTitle>
@@ -318,4 +320,60 @@ const doRender = (
     } catch (error) {
         console.error(error);
     }
+};
+
+// This array provides a useful default palette for the color picker dialog.
+// See the code below for mapping an array of strings like this into an array of
+// ISwatchDefn objects.
+export const defaultColorPalette: string[] = [
+    // black to white
+    "black",
+    //"gray",
+    //"lightgray",
+    "white",
+    // red to purple
+    "#ff1616",
+    "#ff5757",
+    "#ff66c4",
+    "#cb6ce6",
+    "#8c52ff",
+    // teal to blue
+    "#03989e",
+    "#00c2cb",
+    "#5ce1e6",
+    "#5271ff",
+    "#004aad",
+    // green to orange
+    "#007f37",
+    "#7ed957",
+    "#c9e265",
+    "#ffde59",
+    "#ff914d"
+];
+
+// The following interface and function provide a simpler interface to the color
+// choose dialog which doesn't depend on ISwatchDefn.
+export interface ISimpleColorPickerDialogProps {
+    localizedTitle: string;
+    noAlphaSlider?: boolean;
+    initialColor: string;
+    onChange: (color: string) => void;
+    onInputFocus: (input: HTMLElement) => void;
+}
+
+export const showSimpleColorPickerDialog = (
+    props: ISimpleColorPickerDialogProps
+) => {
+    const fullProps: IColorPickerDialogProps = {
+        localizedTitle: props.localizedTitle,
+        noAlphaSlider: props.noAlphaSlider,
+        noGradientSwatches: true,
+        initialColor: getSwatchFromBubbleSpecColor(props.initialColor),
+        defaultSwatchColors: defaultColorPalette.map(color =>
+            getSwatchFromBubbleSpecColor(color)
+        ),
+        onChange: (color: ISwatchDefn) => props.onChange(color.colors[0]),
+        onInputFocus: props.onInputFocus
+    };
+    showColorPickerDialog(fullProps);
 };
