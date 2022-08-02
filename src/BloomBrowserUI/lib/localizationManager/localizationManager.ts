@@ -1,6 +1,6 @@
 /// <reference path="../misc-types.d.ts" />
 ///<reference path="../../typings/bundledFromTSC.d.ts"/>
-import axios from "axios";
+import axios, { AxiosResponse } from "axios";
 import { getBloomApiPrefix } from "../../utils/bloomApi";
 
 /**
@@ -440,6 +440,33 @@ export class LocalizationManager {
         const reA = /\[([^\]]*)\]\(([^)]*)\)/g;
         newstr = newstr.replace(reA, '<a href="$2">$1</a>');
         return newstr;
+    }
+
+    /**
+     * Find the translation for the given id (and presumably the text) in the UI
+     * language.  This differs from asyncGetText() largely in returning a native
+     * AxiosResponse promise instead of a JQuery promise.  This allows it to be
+     * used inside an axios.all() collection of parallel calls.
+     *
+     * @param {String} id
+     * @param {String} text
+     * @param {String|undefined} comment (optional)
+     * @returns Promise<AxiosResponse<any>> for translated text
+     */
+    public getTextInUiLanguageAsync(
+        id: string,
+        text: string,
+        comment?: string
+    ): Promise<AxiosResponse<any>> {
+        return axios.get("/bloom/api/i18n/translate", {
+            params: {
+                key: id,
+                englishText: text,
+                langId: "UI",
+                comment: comment,
+                dontWarnIfMissing: true
+            }
+        });
     }
 }
 

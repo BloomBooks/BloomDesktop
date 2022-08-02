@@ -74,4 +74,25 @@ export const getBackgroundFromSwatch = (swatch: ISwatchDefn): string => {
     return backgroundString; // set this to the elements "background" CSS prop, NOT "background-color"
 };
 
+// Handles all types of color strings: special-named, hex, rgb(), or rgba().
+// If colorSpec entails opacity, this string should be of the form "rgba(r, g, b, a)".
+export const getSwatchFromColorSpec = (colorSpec: string): ISwatchDefn => {
+    // If colorSpec has transparency, the color will be an rgba() string.
+    // We need to pull out the "opacity" and add it to the swatch here.
+    const colorStruct = tinycolor(colorSpec);
+    const opacity = colorStruct.getAlpha();
+    // Complete transparency, though, is a special case.
+    // We want to continue using 'transparent' as the color in that case.
+    if (opacity === 0.0) {
+        return {
+            colors: ["transparent"],
+            opacity: opacity
+        };
+    }
+    return {
+        colors: [`#${colorStruct.toHex()}`],
+        opacity: opacity
+    };
+};
+
 export default ColorSwatch;
