@@ -53,6 +53,12 @@ namespace Bloom.Book
 			// Hard-coded localizations for 2.0
 			AddHtmlUiStrings(d);
 
+			// label elements with explicit localization keys.
+			// (legacy labels are handled using the hard-coded localizations above, but new ones can have
+			// explicit keys. We insert these here to keep the pattern of how BloomHintBubbles.getHintContent()
+			// works and avoid having to rewrite it as async code.
+			AddLabelTranslations(pageDom.Body, d);
+
 			// Do this last, on the off-chance that the page contains a localizable string that matches
 			// a language code.
 			AddLanguagesUsedInPage(pageDom.RawDom, d);
@@ -257,6 +263,21 @@ namespace Bloom.Book
 			if (!dictionary.ContainsKey(key))
 			{
 				dictionary.Add(key, translation);
+			}
+		}
+
+		private static void AddLabelTranslations(XmlElement root, Dictionary<string, string> dictionary)
+		{
+			var labels = root.SafeSelectNodes("//label[@data-i18n]");
+			foreach (XmlElement label in labels)
+			{
+				var key = label.GetAttribute("data-i18n");
+				// In similar code in AddTranslationToDictionaryUsingEnglishAsKey, we call GetDynamicString if
+				// _collectDynamicStrings is true (which it always is in this method). But I think
+				// use of GetDynamicString is obsolete and it's better not to add another use of it,
+				// so I'm just using the ordinary GetString here.
+				var translation = LocalizationManager.GetString(key, label.InnerText);
+				dictionary[key] = translation;
 			}
 		}
 
