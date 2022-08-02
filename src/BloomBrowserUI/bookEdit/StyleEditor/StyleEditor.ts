@@ -23,6 +23,10 @@ import { EditableDivUtils } from "../js/editableDivUtils";
 import * as ReactDOM from "react-dom";
 import FontSelectComponent, { IFontMetaData } from "./fontSelectComponent";
 import React = require("react");
+import { ISwatchDefn } from "../../react_components/colorSwatch";
+import { IColorPickerDialogProps } from "../../react_components/colorPickerDialog";
+import { getSwatchFromBubbleSpecColor } from "../toolbox/overlay/overlayToolColorHelper";
+import { getEditTabBundleExports } from "../js/bloomFrames";
 
 interface IFormattingValues {
     ptSize: string;
@@ -35,6 +39,7 @@ interface IFormattingValues {
     bold: boolean;
     italic: boolean;
     underline: boolean;
+    color: string;
 }
 
 // Class provides a convenient way to group a style id and display name
@@ -69,6 +74,7 @@ export default class StyleEditor {
     private styles: FormattingStyle[];
     private authorMode: boolean; // true if authoring (rather than translating)
     private xmatterMode: boolean; // true if we are in xmatter (and shouldn't change fixed style names)
+    private textColorTitle: string = "Text Color";
 
     constructor(supportFilesRoot: string) {
         this._supportFilesRoot = supportFilesRoot;
@@ -855,6 +861,9 @@ export default class StyleEditor {
             paraIndent = "hanging";
         }
 
+        let textColor = box.css("color");
+        if (!textColor) textColor = "rgba(0,0,0,1.0)";
+
         return {
             ptSize: ptSize.toString(),
             fontName: this.getFontNameFromTextBox(box),
@@ -865,7 +874,8 @@ export default class StyleEditor {
             paraIndent: paraIndent,
             bold: bold,
             italic: italic,
-            underline: underline
+            underline: underline,
+            color: textColor
         };
     }
 
@@ -1005,11 +1015,22 @@ export default class StyleEditor {
                         axios.get("/bloom/api/fonts/metadata"),
                         axios.get(
                             "/bloom/bookEdit/StyleEditor/StyleEditor.html"
-                        )
+                        ),
+                        axios.get("/bloom/api/i18n/translate", {
+                            params: {
+                                key:
+                                    "EditTab.Toolbox.ComicTool.Options.TextColor",
+                                englishText: "Text Color",
+                                langId: "UI",
+                                comment: "",
+                                dontWarnIfMissing: true
+                            }
+                        })
                     ])
                     .then(results => {
                         const fontMetadata: IFontMetaData[] = results[0].data;
                         const html = results[1].data;
+                        this.textColorTitle = results[2].data.text;
 
                         this.boxBeingEdited = targetBox;
                         styleName = StyleEditor.GetBaseStyleNameForElement(
@@ -1190,6 +1211,14 @@ export default class StyleEditor {
                             $("#para-spacing-select").change(() => {
                                 this.changeParaSpacing();
                             });
+                            this.setColorButtonColor(current.color);
+                            const colorButton = $("#colorSelectButton");
+                            colorButton?.click(() => {
+                                const style = getComputedStyle(colorButton[0]);
+                                const backgroundColor = style.backgroundColor;
+                                this.launchColorPicker(backgroundColor);
+                            });
+
                             this.selectButtons(current);
                             new WebFXTabPane($("#tabRoot").get(0), false);
                         }
@@ -1701,6 +1730,23 @@ export default class StyleEditor {
         }
     }
 
+    public changeColor(color: string) {
+        if (this.ignoreControlChanges) {
+            return;
+        }
+        const rule = this.getStyleRule(false);
+        if (rule != null) {
+            rule.style.setProperty("color", color, "important");
+            this.cleanupAfterStyleChange();
+        }
+        this.setColorButtonColor(color);
+    }
+
+    private setColorButtonColor(color: string) {
+        const colorButton = $("#colorSelectButton");
+        colorButton[0]?.setAttribute("style", `background-color:${color}`);
+    }
+
     // Return true if font-tab changes (other than font family) for the current element should be applied
     // to the default rule as well as a language-specific rule.
     // Currently this requires that the element's language is the project's first language, which happens
@@ -1985,5 +2031,32 @@ export default class StyleEditor {
             });
         //stop watching the scrolling event we used to keep the formatButton at the bottom
         $(element).off("scroll");
+    }
+
+    public launchColorPicker(backgroundColor: string) {
+        const textColorSwatch = getSwatchFromBubbleSpecColor(backgroundColor);
+        const colorPickerDialogProps: IColorPickerDialogProps = {
+            noAlphaSlider: true,
+            noGradientSwatches: true,
+            localizedTitle: this.textColorTitle,
+            initialColor: textColorSwatch,
+            defaultSwatchColors: [
+                { name: "black", colors: ["black"], opacity: 1 },
+                { name: "gray", colors: ["gray"], opacity: 1 },
+                { name: "lightgray", colors: ["lightgray"], opacity: 1 },
+                { name: "white", colors: ["white"], opacity: 1 }
+            ],
+            onChange: color => this.updateTextColor(color),
+            onInputFocus: this.noteInputFocused
+        };
+        getEditTabBundleExports().showColorPickerDialog(colorPickerDialogProps);
+    }
+
+    private noteInputFocused(input: HTMLElement): void {
+        return;
+    }
+
+    private updateTextColor(color: ISwatchDefn): void {
+        this.changeColor(color.colors[0]);
     }
 }

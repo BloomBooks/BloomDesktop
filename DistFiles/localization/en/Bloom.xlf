@@ -1495,6 +1495,10 @@
                 <source xml:lang="en">Characters</source>
                 <note>ID: EditTab.FormatDialog.CharactersTab</note>
             </trans-unit>
+            <trans-unit id="EditTab.FormatDialog.Color" sil:dynamic="true">
+                <source xml:lang="en">Color</source>
+                <note>ID: EditTab.FormatDialog.Color</note>
+            </trans-unit>
             <trans-unit id="EditTab.FormatDialog.Create" sil:dynamic="true">
                 <source xml:lang="en">Create</source>
                 <note>ID: EditTab.FormatDialog.Create</note>
