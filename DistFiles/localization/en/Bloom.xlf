@@ -953,6 +953,10 @@
                 <note>ID: Common.Close</note>
                 <note>Used typically for a button that closes a dialog box. Unlike "OK", "Close" is not agreeing to anything, it's just dismissing the dialog box.</note>
             </trans-unit>
+            <trans-unit id="Common.Color">
+                <source xml:lang="en">Color</source>
+                <note>ID: Common.Color</note>
+            </trans-unit>
             <trans-unit id="Common.Colors.Black">
                 <source xml:lang="en">Black</source>
                 <note>ID: Common.Colors.Black</note>
