@@ -487,11 +487,14 @@ export default class StyleEditor {
     // This is used for all of character tab when localizing, and always for font name.
     // if forChildParas is true, the rule sought will have a selector like ".mystyle-style p" to select paragraphs
     // inside the block that has the style.
+    // if forRightToLeft is true, the rule will only target the elements with attribute dir="rtl".
+    // This allows building rules just for right-to-left scripts.
     public GetOrCreateRuleForStyle(
         styleName: string,
         langAttrValue: string | null,
         ignoreLanguage: boolean,
-        forChildParas?: boolean
+        forChildParas?: boolean,
+        forRightToLeft?: boolean
     ): CSSStyleRule | null {
         const styleSheet = this.GetOrCreateUserModifiedStyleSheet();
         if (styleSheet == null) {
@@ -503,24 +506,28 @@ export default class StyleEditor {
             ruleList = new CSSRuleList();
         }
 
-        let styleAndLang = styleName;
+        let selector = styleName;
         // if we are authoring a book, style changes should apply to all translations of it
         // if we are translating, changes should only apply to this language.
         // a downside of this is that when authoring in multiple languages, to get a different
         // appearance for different languages a different style must be created.
         if (!ignoreLanguage) {
             if (langAttrValue && langAttrValue.length > 0) {
-                styleAndLang = styleName + '[lang="' + langAttrValue + '"]';
+                selector = styleName + '[lang="' + langAttrValue + '"]';
             } else {
-                styleAndLang = styleName + ":not([lang])";
+                selector = styleName + ":not([lang])";
             }
         }
 
-        if (forChildParas) {
-            styleAndLang += " > p";
+        if (forRightToLeft) {
+            selector += '[dir="rtl"]';
         }
 
-        const lookFor = styleAndLang.toLowerCase();
+        if (forChildParas) {
+            selector += " > p";
+        }
+
+        const lookFor = selector.toLowerCase();
 
         for (let i = 0; i < ruleList.length; i++) {
             const index = ruleList[i].cssText.indexOf("{");
@@ -538,7 +545,8 @@ export default class StyleEditor {
                 return <CSSStyleRule>ruleList[i];
             }
         }
-        styleSheet.insertRule("." + styleAndLang + " { }", ruleList.length);
+        selector = "." + selector;
+        styleSheet.insertRule(selector + " { }", ruleList.length);
 
         return <CSSStyleRule>ruleList[ruleList.length - 1]; //new guy is last
     }
@@ -1820,16 +1828,47 @@ export default class StyleEditor {
         if (this.ignoreControlChanges) {
             return;
         }
-        const rule = this.getStyleRule(true);
+
         let position = "initial";
+        let rtlPosition = "initial";
         if ($("#position-center").hasClass("selectedIcon")) {
-            position = "center";
-        } else if ($("#position-trailing").hasClass("selectedIcon")) {
-            // TODO: What if RTL?
-            position = "right";
+            position = rtlPosition = "center";
+        } else {
+            const positionTrailingButton = document.getElementById(
+                "position-trailing"
+            );
+            if (
+                positionTrailingButton &&
+                positionTrailingButton.classList.contains("selectedIcon")
+            ) {
+                position = "right";
+                rtlPosition = "left"; // Opposite for right-to-left elements.
+            }
         }
+
+        const rule = this.getStyleRule(true, undefined);
+        const rtlRule = this.getStyleRule(true, undefined, true);
         if (rule != null) {
             rule.style.setProperty("text-align", position, "important");
+
+            // Set adjusted rule for RTL scripts
+            //
+            // Keep in mind that this style can apply to both LTR and RTL languages
+            // (e.g. if you have a multilingual book that uses normal style across the board)
+            // I don't think it makes sense to try to ask whether "RTL is currently on,
+            // since it could be "on" for L1 but "off" for L2
+            // Instead, we have multiple rules, one that targets LTR and one that targets RTL
+            //
+            // FYI: The rtlRule has slightly higher specificity than the normal rule and overrides it.
+            // (That's good, makes this works with minimal hassle)
+            if (rtlRule != null) {
+                rtlRule.style.setProperty(
+                    "text-align",
+                    rtlPosition,
+                    "important"
+                );
+            }
+
             this.cleanupAfterStyleChange();
         }
     }
@@ -1962,7 +2001,8 @@ export default class StyleEditor {
 
     public getStyleRule(
         ignoreLanguage: boolean,
-        forChildPara?: boolean
+        forChildPara?: boolean,
+        forRightToLeft?: boolean
     ): CSSStyleRule | null {
         const target = this.boxBeingEdited;
         const styleName = StyleEditor.GetStyleNameForElement(target);
@@ -1974,7 +2014,8 @@ export default class StyleEditor {
             styleName,
             langAttrValue,
             ignoreLanguage,
-            forChildPara
+            forChildPara,
+            forRightToLeft
         );
     }
 
