@@ -370,6 +370,13 @@ namespace Bloom.Publish.Video
 				if (!_recordVideoWindow.GotFullRecording)
 				{
 					_recordVideoWindow.Cleanup();
+					if (_recordVideoWindow.LocalAudioNamesMessedUp)
+					{
+						// We've left things in a funny state. Rebuild the preview.
+						// Note, by this time the 'request' is obsolete...we already returned
+						// from that API call. So it's harmless to pass it to this method.
+						_publishToAndroidApi.MakeBloompubPreview(request, true);
+					}
 					_recordVideoWindow = null;
 				}
 			};
