@@ -253,6 +253,7 @@ const ColorPickerDialog: React.FC<IColorPickerDialogProps> = props => {
                     open={open}
                     ref={dlgRef}
                     PaperComponent={PaperComponent}
+                    onClick={e => e.stopPropagation()}
                     onClose={(_event, reason) => {
                         if (reason === "backdropClick")
                             onClose(DialogResult.OK); // BL-9930
@@ -261,6 +262,7 @@ const ColorPickerDialog: React.FC<IColorPickerDialogProps> = props => {
                     <DialogTitle
                         id="draggable-color-picker-title"
                         style={{ cursor: "move" }}
+                        onClick={e => e.stopPropagation()}
                     >
                         {props.localizedTitle}
                     </DialogTitle>

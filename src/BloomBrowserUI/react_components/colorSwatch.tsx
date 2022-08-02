@@ -74,4 +74,50 @@ export const getBackgroundFromSwatch = (swatch: ISwatchDefn): string => {
     return backgroundString; // set this to the elements "background" CSS prop, NOT "background-color"
 };
 
+// Handles all types of color strings: special-named, hex, rgb(), or rgba().
+// If colorSpec entails opacity, this string should be of the form "rgba(r, g, b, a)".
+export const getSwatchFromColorSpec = (colorSpec: string): ISwatchDefn => {
+    // If colorSpec has transparency, the color will be an rgba() string.
+    // We need to pull out the "opacity" and add it to the swatch here.
+    const colorStruct = tinycolor(colorSpec);
+    const opacity = colorStruct.getAlpha();
+    // Complete transparency, though, is a special case.
+    // We want to continue using 'transparent' as the color in that case.
+    if (opacity === 0.0) {
+        return {
+            colors: ["transparent"],
+            opacity: opacity
+        };
+    }
+    return {
+        colors: [`#${colorStruct.toHex()}`],
+        opacity: opacity
+    };
+};
+
+export const defaultSwatchColors: ISwatchDefn[] = [
+    // black to white
+    { name: "black", colors: ["black"], opacity: 1 },
+    { name: "gray", colors: ["gray"], opacity: 1 },
+    { name: "lightgray", colors: ["lightgray"], opacity: 1 },
+    { name: "white", colors: ["white"], opacity: 1 },
+    // red to purple
+    { name: "unused", colors: ["#ff1616"], opacity: 1 },
+    { name: "unused", colors: ["#ff5757"], opacity: 1 },
+    { name: "unused", colors: ["#ff66c4"], opacity: 1 },
+    { name: "unused", colors: ["#cb6ce6"], opacity: 1 },
+    { name: "unused", colors: ["#8c52ff"], opacity: 1 },
+    // teal to blue
+    { name: "unused", colors: ["#03989e"], opacity: 1 },
+    { name: "unused", colors: ["#00c2cb"], opacity: 1 },
+    { name: "unused", colors: ["#5ce1e6"], opacity: 1 },
+    { name: "unused", colors: ["#5271ff"], opacity: 1 },
+    { name: "unused", colors: ["#004aad"], opacity: 1 },
+    // green to orange
+    { name: "unused", colors: ["#007f37"], opacity: 1 },
+    { name: "unused", colors: ["#7ed957"], opacity: 1 },
+    { name: "unused", colors: ["#c9e265"], opacity: 1 },
+    { name: "unused", colors: ["#ffde59"], opacity: 1 },
+    { name: "unused", colors: ["#ff914d"], opacity: 1 }
+];
 export default ColorSwatch;
