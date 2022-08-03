@@ -61,7 +61,7 @@ export const DefaultBookshelfControl: React.FunctionComponent = () => {
             : undefined // no project means we don't want useContentful to do a query
     );
 
-    let bookshelves = [{ value: "none", label: "None" }]; // todo: should be localizable, eventually?
+    let bookshelves = [{ value: "none", label: "None", tooltip: "" }];
     if (!project) {
         // If we don't (yet) have a project, we want a completely empty list of options
         // to leave the combo blank.
@@ -77,9 +77,24 @@ export const DefaultBookshelfControl: React.FunctionComponent = () => {
             // has a list of collections connected to this branding, and will
             // now generate the list of menu items (prepending the 'None' we already made).
             bookshelves = bookshelves.concat(
-                collections.map<{ value: string; label: string }>((c: any) => ({
+                collections.map<{
+                    value: string;
+                    label: string;
+                    tooltip: string;
+                }>((c: any) => ({
                     value: c.fields.urlKey,
-                    label: c.fields.label
+                    // Note: the "label" here is the "url" key in Contentful. We
+                    //use to use the "label" field for label, but the label may
+                    //be optimized for how it will display, in context, on
+                    //Blorg. E.g. "books with a,b,c,d and e". But the person
+                    //choosing a bookshelf in Bloom Editor may need to also
+                    //select based on language, grade, etc. Example ABC
+                    //Philippines project. These bits of info are to be found in
+                    //the url key, so we switched to using it. If people
+                    //struggle with this, we could introduce a 3rd field just
+                    //for this choosing, like "selector label".
+                    label: c.fields.urlKey,
+                    tooltip: c.fields.label
                 }))
             );
         }
@@ -89,11 +104,12 @@ export const DefaultBookshelfControl: React.FunctionComponent = () => {
         // Note that as we don't yet have any better label, we use defaultShelf.
         bookshelves.push({
             value: defaultBookshelfUrlKey,
-            label: defaultBookshelfUrlKey
+            label: defaultBookshelfUrlKey,
+            tooltip: ""
         });
     }
     const items = bookshelves.map(x => (
-        <MenuItem key={x.value} value={x.value}>
+        <MenuItem key={x.value} value={x.value} title={x.tooltip}>
             {x.label}
         </MenuItem>
     ));
@@ -200,7 +216,7 @@ export const DefaultBookshelfControl: React.FunctionComponent = () => {
                     // Windows-style arrows; these don't seem to be configurable (except perhaps by
                     // some complex overlay) in an HTML input element.)
                     css={css`
-                        min-width: 200px;
+                        min-width: 320px;
                         background-color: white;
                         border: 1px solid #bbb;
                         font-size: 10pt;
