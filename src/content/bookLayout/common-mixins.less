@@ -50,74 +50,13 @@
 @defaultLineHeight: 1.5em; //no units! No em!!!! em makes children inside have a lineheight that matches the font of the overall box, regardless of the thing's font-size. See https://developer.mozilla.org/en-US/docs/Web/CSS/line-height
 
 // N.B. New formats must also work something out in pageThumbnailList.less.
-@Device16x9Portrait-Width: 100mm;
-@Device16x9Portrait-Height: @Device16x9Portrait-Width * 16 / 9;
-@Device16x9Landscape-Height: @Device16x9Portrait-Width;
-@Device16x9Landscape-Width: @Device16x9Portrait-Height;
+// There is some disagreement out there on the USComicPortrait size. The json file has the trim size from the recommendation of Kingstone Comics.
+@import "page-size-mixin.less";
+@Cm13Square-Side: 130mm;
+
 @DeviceMargin: 10px;
 @DeviceBottomMargin: 45px; // leave room for page number
 
-@PictureStoryLandscape-Height: @Device16x9Landscape-Height;
-@PictureStoryLandscape-Width: @Device16x9Landscape-Width;
-
-@A4Portrait-Height: 297mm;
-@A4Portrait-Width: 210mm;
-@A4Landscape-Height: @A4Portrait-Width;
-@A4Landscape-Width: @A4Portrait-Height;
-
-@A3Portrait-Height: @A4Portrait-Width * 2;
-@A3Portrait-Width: @A4Portrait-Height;
-@A3Landscape-Height: @A3Portrait-Width;
-@A3Landscape-Width: @A3Portrait-Height;
-
-@A5Portrait-Height: @A4Portrait-Width;
-@A5Portrait-Width: floor(@A4Portrait-Height / 2);
-@A5Landscape-Height: @A5Portrait-Width;
-@A5Landscape-Width: @A5Portrait-Height;
-
-@A6Portrait-Height: @A5Portrait-Width;
-@A6Portrait-Width: floor(@A4Portrait-Width / 2);
-@A6Landscape-Height: @A6Portrait-Width;
-@A6Landscape-Width: @A6Portrait-Height;
-
-@B5Portrait-Height: 250mm;
-@B5Portrait-Width: 176mm;
-
-@LetterPortrait-Height: 11in;
-@LetterPortrait-Width: 8.5in;
-@LetterLandscape-Height: @LetterPortrait-Width;
-@LetterLandscape-Width: @LetterPortrait-Height;
-
-@HalfLetterPortrait-Height: 8.5in;
-@HalfLetterPortrait-Width: 5.5in;
-@HalfLetterLandscape-Height: @HalfLetterPortrait-Width;
-@HalfLetterLandscape-Width: @HalfLetterPortrait-Height;
-
-@QuarterLetterPortrait-Height: 5.5in;
-@QuarterLetterPortrait-Width: 4.25in;
-@QuarterLetterLandscape-Height: @QuarterLetterPortrait-Width;
-@QuarterLetterLandscape-Width: @QuarterLetterPortrait-Height;
-
-@LegalPortrait-Height: 14in;
-@LegalPortrait-Width: 8.5in;
-@LegalLandscape-Height: @LegalPortrait-Width;
-@LegalLandscape-Width: @LegalPortrait-Height;
-
-@HalfLegalPortrait-Height: 8.5in;
-@HalfLegalPortrait-Width: 7in;
-@HalfLegalLandscape-Height: @HalfLegalPortrait-Width;
-@HalfLegalLandscape-Width: @HalfLegalPortrait-Height;
-
-@Cm13Square-Side: 130mm;
-
-// There is some disagreement out there on this size. This is the trim size from the recommendation of Kingstone Comics.
-@USComicPortrait-Height: 10.25in;
-@USComicPortrait-Width: 6.625in;
-
-@Size6x9Portrait-Height: 9in;
-@Size6x9Portrait-Width: 6in;
-@Size6x9Landscape-Height: @Size6x9Portrait-Width;
-@Size6x9Landscape-Width: @Size6x9Portrait-Height;
 
 @MarginTop: 15mm;
 @MarginOuter: 15mm;

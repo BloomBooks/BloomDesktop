@@ -167,6 +167,8 @@ namespace Bloom.Publish.Epub
 
 				request.PostSucceeded();
 			}, false, false);
+
+			apiHandler.RegisterBooleanEndpointHandler(kApiUrlPart + "landscape",request => request.CurrentBook.GetLayout().SizeAndOrientation.IsLandScape,null, false);
 		}
 
 		private void HandleEpubSave(ApiRequest request)
@@ -267,7 +269,7 @@ namespace Bloom.Publish.Epub
 			}
 
 			EpubMaker.Book = _bookSelection.CurrentSelection;
-			EpubMaker.Unpaginated = true; // Enhance: UI?
+			EpubMaker.Unpaginated = false; // Enhance: UI?
 			EpubMaker.OneAudioPerPage = true;
 		}
 

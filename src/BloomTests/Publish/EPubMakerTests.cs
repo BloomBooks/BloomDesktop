@@ -1,4 +1,5 @@
 ﻿using Bloom.Book;
+using Bloom.Publish.Epub;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NUnit.Framework;
 using SIL.Xml;
@@ -223,6 +224,17 @@ namespace BloomTests.Publish
 			var obj = new PrivateObject(new Bloom.Publish.Epub.EpubMaker(null, null));
 			obj.SetFieldOrProperty("PublishImageDescriptions", howTo);
 			obj.Invoke("HandleImageDescriptions", htmlDom);
+		}
+
+		[TestCase("A5Portrait", 559.37, 793.7)] // gets most common case right
+		[TestCase("A5Landscape", 793.7, 559.37)] // make sure orientation matters
+		[TestCase("LetterPortrait", 816, 1056)] // one where dimensions are inches
+		[TestCase("Garbage", 559.37, 793.7)] // default to A5Portrait
+		public void GetPageDimensions(string name, double expectedWidth, double expectedHeight)
+		{
+			EpubMaker.GetPageDimensions(name, out double width, out double height);
+			Assert.AreEqual(expectedWidth, width, 2);
+			Assert.AreEqual(expectedHeight, height, 2);
 		}
 	}
 }
