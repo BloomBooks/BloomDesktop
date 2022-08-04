@@ -12,6 +12,7 @@
         "The -a option says to run them all before watching": "",
         "watch:pug": "onchange -j 9 -a \"**/*.pug\" -- pug {{file}} --pretty --out ../../output/browser/{{fileDir}}",
         "//": "______________________________________________________________________________________________________",
+        "build:pageSizes": "ts-node pageSizes.ts",
         "build:less": "npm-run-all --parallel build:branding:less build:templates:less build:layout:less",
         "// there is no current way to exclude node_modules, so we can't just do the whole directory.": "https://github.com/jonycheung/deadsimple-less-watch-compiler/issues/72",
         "watch:less": "npm-run-all --parallel watch:branding:less watch:templates:less watch:layout:less",
@@ -20,7 +21,8 @@
         "build:branding:files": "cpx \"branding/**/!(source)/*.{png,jpg,svg,css,json,htm}\" ../../output/browser/branding -v",
         "build:branding:less": "less-watch-compiler --source-map --run-once branding ../../output/browser/branding",
         "build:templates:less": "less-watch-compiler --source-map --run-once  templates  ../../output/browser/templates",
-        "build:layout:less": "less-watch-compiler --source-map --run-once  bookLayout ../../output/browser/bookLayout",
+        "build:layout:less": "npm-run-all build:pageSizes build:layout-child:less",
+        "build:layout-child:less": "less-watch-compiler --source-map --run-once  bookLayout ../../output/browser/bookLayout",
         "watch:branding:files": "cpx \"branding/**/!(source)/*.{png,jpg,svg,css,json,htm,html,txt,js}\" ../../output/browser/branding --watch",
         "watch:branding:less": "less-watch-compiler --source-map branding ../../output/browser/branding",
         "watch:templates:less": "less-watch-compiler --source-map  templates  ../../output/browser/templates",
@@ -41,10 +43,12 @@
         "npm-run-all": "^4.1.5",
         "onchange": "^7.1.0",
         "pug": "^3.0.2",
-        "pug-cli": "^1.0.0-alpha6"
+        "pug-cli": "^1.0.0-alpha6",
+        "ts-node": "^10.9.1"
     },
     "license": "MIT",
     "dependencies": {
+        "@types/node": "^18.6.3",
         "typescript": "^4.6.3"
     }
 }

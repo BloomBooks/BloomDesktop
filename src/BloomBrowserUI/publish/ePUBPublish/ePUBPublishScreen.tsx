@@ -60,6 +60,8 @@ const EPUBPublishScreenInternal: React.FunctionComponent<{
             : "" // otherwise, wait for the websocket to deliver a url when the c# has finished creating the epub
     );
 
+    const [landscape] = BloomApi.useApiBoolean("publish/epub/landscape", false);
+
     useSubscribeToWebSocketForEvent(
         "publish-epub",
         "startingEbookCreation",
@@ -89,7 +91,7 @@ const EPUBPublishScreenInternal: React.FunctionComponent<{
         <div className="ePUBPublishScreen">
             <PreviewPanel>
                 <DeviceAndControls
-                    defaultLandscape={false}
+                    defaultLandscape={landscape}
                     canRotate={false}
                     url={bookUrl}
                 />
