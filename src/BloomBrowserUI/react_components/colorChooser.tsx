@@ -43,6 +43,16 @@ export const ColorChooser: React.FunctionComponent<IColorChooserProps> = props =
                     setChooserVisible(!chooserVisible);
                 }
             }}
+            onBlur={event => {
+                if (!props.disabled) {
+                    setChooserVisible(false);
+                }
+            }}
+            onKeyDown={event => {
+                if (event.code === "Escape" && !props.disabled) {
+                    setChooserVisible(false);
+                }
+            }}
             {...props} // allow styling from parent
         >
             {props.imagePath && (
