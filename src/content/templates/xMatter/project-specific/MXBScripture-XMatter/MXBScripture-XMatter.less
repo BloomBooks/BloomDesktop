@@ -1,10 +1,31 @@
+/*
+This json comment in a default Bloom template "locks" the book to only these layouts,
+whereas in a branding-induced xmatter pack it only acts to make this the default layout for a new book.
+STARTLAYOUTS
+{
+  "layouts": [
+    {
+      "HalfLetterPortrait": {
+        "Styles": [ "Default" ]
+      }
+    }
+  ]
+}
+ENDLAYOUTS
+*/
+
 @import "../MXBLiteracy-XMatter/MXBCommon-XMatter.less";
 
 @XMatterPackName: "MXB Scripture";
 
+.credits .licenseAndCopyrightBlock {
+    margin-top: auto;
+}
+
 .titlePage .creditsRow .smallCoverCredits.bloom-content1 {
     // for Scripture this is tucked up under the title and used for chapter/verse references
     margin-bottom: @MarginBetweenMajorItems;
+    font-size: 12pt;
 }
 
 .titlePage #titlePageTitleBlock {
