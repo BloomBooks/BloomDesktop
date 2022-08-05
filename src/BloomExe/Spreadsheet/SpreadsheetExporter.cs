@@ -68,27 +68,13 @@ namespace Bloom.Spreadsheet
 		public void ExportToFolderWithProgress(HtmlDom dom, string imagesFolderPath, string outputFolder,
 			Action<string> resultCallback)
 		{
-			var mainShell = Application.OpenForms.Cast<Form>().FirstOrDefault(f => f is Shell);
-			BrowserProgressDialog.DoWorkWithProgressDialog(_webSocketServer, "spreadsheet-export", () =>
-				new ReactDialog("progressDialogBundle",
-						// props to send to the react component
-						new
-						{
-							title = "Exporting Spreadsheet",
-							titleIcon = "", // enhance: add icon if wanted
-							titleColor = "white",
-							titleBackgroundColor = Palette.kBloomBlueHex,
-							webSocketContext = "spreadsheet-export",
-							showReportButton = "if-error"
-						}, "Export Spreadsheet")
-				// winforms dialog properties
-				{ Width = 620, Height = 550 }, (progress, worker) =>
+			BrowserProgressDialog.DoWorkWithProgressDialog(_webSocketServer, (progress, worker) =>
 		{
 			var spreadsheet = ExportToFolder(dom, imagesFolderPath, outputFolder, out string outputFilePath,
 				progress);
 			resultCallback(outputFilePath);
 			return progress.HaveProblemsBeenReported;
-		}, null, mainShell);
+		}, "Exporting Spreadsheet");
 		}
 
 		public SpreadsheetExportParams Params = new SpreadsheetExportParams();

@@ -348,7 +348,6 @@ namespace Bloom.Publish.Video
 
 			BrowserProgressDialog.DoWorkWithProgressDialog(
 				_webSocketServer,
-				"Processing Video",
 				(progress, worker) =>
 				{
 					StopRecordingInternal(progress, soundLogJson);
@@ -360,9 +359,7 @@ namespace Bloom.Publish.Video
 					// if we want to close it automatically if there are no errors:
 					//return progress.HaveProblemsBeenReported;
 				},
-				null,
-				Shell.GetShellOrOtherOpenForm(),
-				height: 400,
+				"Processing Video",
 				showCancelButton: false);
 		}
 

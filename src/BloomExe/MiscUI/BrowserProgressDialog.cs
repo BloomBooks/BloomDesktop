@@ -36,42 +36,20 @@ namespace Bloom.MiscUI
 	/// responding to paint events, a click on the buttons, and and so forth.</remarks>
 	public class BrowserProgressDialog
 	{
-		public static void DoWorkWithProgressDialog(
-			BloomWebSocketServer socketServer,
-			string title,
-			Func<IWebSocketProgress, BackgroundWorker, bool> doWhat,
-			Action<Form> doWhenMainActionFalse = null,
-			IWin32Window owner = null,
-			int width = 620,
-			int height = 550,
-			bool showCancelButton = true)
-		{
-			var kProgressContextName = "progress";
-			DoWorkWithProgressDialog(
-				socketServer,
-				kProgressContextName,
-				() => new ReactDialog("progressDialogBundle",
-						// props to send to the react component
-						new
-						{
-							title,
-							titleColor = "white",
-							titleBackgroundColor = Palette.kBloomBlueHex,
-							webSocketContext = kProgressContextName,
-							showReportButton = "if-error",
-							showCancelButton = showCancelButton
-						}, title)
-					{Width = width, Height = height}, // winforms dialog properties
-				doWhat,
-				doWhenMainActionFalse,
-				owner);
-		}
+		private static WebSocketProgress _progress;
 
-		public static void DoWorkWithProgressDialog(IBloomWebSocketServer socketServer, string socketContext,  Func<Form> makeDialog,
-			Func<IWebSocketProgress, BackgroundWorker, bool> doWhat, Action<Form> doWhenMainActionFalse = null, IWin32Window owner = null)
+		// This overload is almost obsolete; please use it only if you need a progress dialog and there
+		// is no available main web page that can host an embedded progress dialog.
+		public static void DoWorkWithProgressDialog(IBloomWebSocketServer socketServer,
+			Func<Form> makeDialog,
+			Func<IWebSocketProgress, BackgroundWorker, bool> doWhat, Action<Form> doWhenMainActionFalse = null,
+			IWin32Window owner = null)
 		{
+			// Decided to make this fixed, as it makes life much simpler when using ProgressDialog
+			// embedded in a larger document.
+			string socketContext = "progress";
 			var progress = new WebSocketProgress(socketServer, socketContext);
-			
+
 
 			// NOTE: This (specifically ShowDialog) blocks the main thread until the dialog is closed.
 			// Be careful to avoid deadlocks.
@@ -83,10 +61,7 @@ namespace Bloom.MiscUI
 				worker.WorkerSupportsCancellation = true;
 				worker.DoWork += (sender, args) =>
 				{
-					ProgressDialogApi.SetCancelHandler(() =>
-					{
-						worker.CancelAsync();
-					});
+					ProgressDialogApi.SetCancelHandler(() => { worker.CancelAsync(); });
 
 					// A way of waiting until the dialog is ready to receive progress messages
 					while (!socketServer.IsSocketOpen(socketContext))
@@ -104,7 +79,7 @@ namespace Bloom.MiscUI
 						socketServer.SendEvent(socketContext, "finished");
 						waitForUserToCloseDialogOrReportProblems = true;
 						progress.MessageWithoutLocalizing("Something went wrong: " + ex.Message,
-							ex is FatalException? ProgressKind.Fatal:ProgressKind.Error);
+							ex is FatalException ? ProgressKind.Fatal : ProgressKind.Error);
 					}
 
 					// stop the spinner
@@ -138,6 +113,134 @@ namespace Bloom.MiscUI
 
 				ProgressDialogApi.SetCancelHandler(null);
 			}
+		}
+
+		private static Action _doWhenProgressDialogCloses;
+
+		public static void DoWorkWithProgressDialog(IBloomWebSocketServer socketServer,
+			Func<IWebSocketProgress, BackgroundWorker, bool> doWhat,
+			string title,
+			bool showCancelButton = true,
+			Action doWhenMainActionFalse = null,
+			Action doWhenDialogCloses = null,
+			string titleIcon= null)
+		{
+			var props = new DynamicJson();
+			// same object, but the function call wants it to be DynamicJson,
+			// while it's easier to set the props when it is typed as dynamic.
+			dynamic props1 = props; 
+			props1.title = title;
+			props1.titleColor = "white";
+			props1.titleIcon = titleIcon;
+			props1.titleBackgroundColor = Palette.kBloomBlueHex;
+			props1.showReportButton = "if-error";
+			props1.showCancelButton = showCancelButton;
+			DoWorkWithProgressDialog(socketServer, props, doWhat, doWhenMainActionFalse, doWhenDialogCloses);
+		}
+
+		private static bool _readyForProgressReports;
+		/// <summary>
+		/// Show a progress dialog while doing a task.
+		/// Initializes it by sending props to the socketServer with the given context.
+		/// (props may include showCancelButton, a boolean.)
+		/// (Some callers also pass height and width as props. These are not currently used in
+		/// this overload.)
+		/// This should cause the dialog to appear.
+		/// Then this method begins executing doWhat on a background thread, and returns.
+		/// NOTE that unlike other (and previous) overloads, this method typically returns BEFORE
+		/// doWhat() finishes executing! (With the progress dialog embedded in the HTML side,
+		/// there's no obvious way to make it fully modal.)
+		/// When doWhat finishes, we send "finished" to the socket,
+		/// - if it returns true, or an exception occurs, we send "show-buttons" to the socket.
+		/// - if it returns false, execute doWhenMainActionFalse, or send "close-dialog" to the socket if
+		///   doWhenMainActionFalse is null.
+		/// (Note: unlike other overloads, none of the actions is guaranteed to execute on the UI thread.)
+		/// When the dialog closes, it will post progress/closed. At this point,
+		///  execute doWhenDialogCloses.
+		/// </summary>
+		public static void DoWorkWithProgressDialog(IBloomWebSocketServer socketServer,
+			DynamicJson props,
+			Func<IWebSocketProgress, BackgroundWorker, bool> doWhat, Action doWhenMainActionFalse = null,
+			Action doWhenDialogCloses = null)
+		{
+			// For now making this fixed for progress dialog. Making it configurable really complicates things,
+			// since a lot of init is done BEFORE we open the dialog, using a websocket message which we have
+			// to listen for, which PASSES the context!
+			string socketContext = "progress";
+			_doWhenProgressDialogCloses = doWhenDialogCloses;
+			_progress = new WebSocketProgress(socketServer, socketContext);
+
+			var worker = new BackgroundWorker();
+			worker.WorkerSupportsCancellation = true;
+			_readyForProgressReports = false;
+			worker.DoWork += (sender, args) =>
+			{
+				ProgressDialogApi.SetCancelHandler(() => { worker.CancelAsync(); });
+
+				// A way of waiting until the dialog is ready to receive progress messages
+				while (!socketServer.IsSocketOpen(socketContext) || !_readyForProgressReports)
+					Thread.Sleep(50);
+				bool waitForUserToCloseDialogOrReportProblems;
+				try
+				{
+					waitForUserToCloseDialogOrReportProblems = doWhat(_progress, worker);
+				}
+				catch (Exception ex)
+				{
+					// depending on the nature of the problem, we might want to do more or less than this.
+					// But at least this lets the dialog reach one of the states where it can be closed,
+					// and gives the user some idea things are not right.
+					socketServer.SendEvent(socketContext, "finished");
+					waitForUserToCloseDialogOrReportProblems = true;
+					_progress.MessageWithoutLocalizing("Something went wrong: " + ex.Message,
+						ex is FatalException ? ProgressKind.Fatal : ProgressKind.Error);
+				}
+
+				// stop the spinner
+				socketServer.SendEvent(socketContext, "finished");
+				if (waitForUserToCloseDialogOrReportProblems)
+				{
+					// Now the user is allowed to close the dialog or report problems.
+					// (ProgressDialog in JS-land is watching for this message, which causes it to turn
+					// on the buttons that allow the dialog to be manually closed (or a problem to be reported).
+					socketServer.SendBundle(socketContext, "show-buttons", new DynamicJson());
+				}
+				else
+				{
+
+					if (doWhenMainActionFalse != null)
+						doWhenMainActionFalse();
+					else
+						socketServer.SendBundle(socketContext, "close-progress", new DynamicJson());
+				}
+			};
+			// If we go back to allowing socketContext to be configurable, and it is configured by a setting in
+			// props, this might need to be literally "progress", since the JS side will not yet know to listen
+			// on the configured context. (Or maybe there's some other way it knows...this difficulty is a lot
+			// of the reason I decided it should NOT be configurable.)
+			socketServer.SendBundle(socketContext, "open-progress", props);
+			worker.RunWorkerAsync();
+		}
+
+		public static void HandleProgressDialogClosed(ApiRequest request)
+		{
+			if (_progress?.HasFatalProblemBeenReported ?? false)
+			{
+				Application.Exit();
+			}
+
+			_doWhenProgressDialogCloses?.Invoke();
+
+			_progress = null;
+
+			ProgressDialogApi.SetCancelHandler(null);
+			request.PostSucceeded();
+		}
+
+		public static void HandleProgressReady(ApiRequest request)
+		{
+			_readyForProgressReports = true;
+			request.PostSucceeded();
 		}
 	}
 }

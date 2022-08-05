@@ -24,6 +24,23 @@ export interface IProgressBoxProps {
     onGotErrorMessage?: () => void;
 
     preloadedProgressEvents?: Array<IBloomWebSocketProgressEvent>;
+
+    // For external control of message state (e.g., where undesirable mounting/unmounting is possible)
+    // set both of these, typically by having a state like
+    // const [messages, setMessages] = React.useState<Array<JSX.Element>>([]);
+    // and passing both those values on.
+    // Typically, you would try leaving these undefined. If ProgressBox is only mounted once
+    // for a given sequence of messages, it can manage its own state. This works, for example,
+    // when ProgressDialog is the root component of Browser.
+    // If you find that messages are mysteriously disappearing (or never seen), investigate the
+    // possibility that this component or a parent is being unmounted, and prevent it if possible.
+    // For example, when it is part of a BloomDialog (e.g., when ProgressDialog is just one component
+    // in a larger layout), unmounting seems to happen every time the BloomDialog is rendered.
+    // In these cases, unless you can prevent the unmounting,
+    // the only solution is to raise the list-of-messages state above the level where the
+    // mounting/unmounting is happening, as ProgressDialog does.
+    messages?: Array<JSX.Element>;
+    setMessages?: React.Dispatch<React.SetStateAction<JSX.Element[]>>;
 }
 
 let indexForMessageKey = 0;
@@ -31,7 +48,20 @@ let indexForMessageKey = 0;
 // Note that this component does not do localization; we expect the progress messages
 // to already be localized when they are sent over the websocket.
 export const ProgressBox: React.FunctionComponent<IProgressBoxProps> = props => {
-    const [messages, setMessages] = React.useState<Array<JSX.Element>>([]);
+    const [localMessages, setLocalMessages] = React.useState<
+        Array<JSX.Element>
+    >([]);
+
+    let messages = localMessages;
+    let setMessages = setLocalMessages;
+    if (props.messages && props.setMessages) {
+        messages = props.messages;
+        setMessages = props.setMessages;
+    } else if (props.messages || props.setMessages) {
+        console.error(
+            "messages and setMessages must both be provided for controlled use of ProgressBox"
+        );
+    }
 
     // used for scrolling to bottom
     const bottomRef = React.useRef<HTMLDivElement>(null);

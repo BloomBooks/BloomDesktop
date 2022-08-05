@@ -51,6 +51,7 @@ import {
 import { useEffect } from "react";
 import { isLinux } from "../../utils/isLinux";
 import PublishScreenTemplate from "../commonPublish/PublishScreenTemplate";
+import { EmbeddedProgressDialog } from "../../react_components/Progress/ProgressDialog";
 
 export const PublishAudioVideo = () => {
     if (isLinux()) {
@@ -649,6 +650,7 @@ const PublishAudioVideoInternalInternal: React.FunctionComponent<{
                     }}
                 />
             )}
+            <EmbeddedProgressDialog />
         </Typography>
     );
 };
