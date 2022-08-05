@@ -12,11 +12,25 @@
 // there are probably other sources of ui font size.
 @ui-font-size: 10pt;
 
-@bubbleCanvasZIndex: 2;
 @dragHandleVisibleZIndex: @bubbleCanvasZIndex - 1;
 
-@imageContainerZIndex: 1000;
-@textOverPictureZIndex: @imageContainerZIndex + 1;
+// This name is almost obsolete, we do NOT want bloom-imageContainer to have a z-index,
+// since that makes it a stacking context, and then we can't get child buttons to
+// be above the comicaljs canvas. However, I'm keeping it because it is a basis for
+// several things we want to be above image containers, and also used for videos and
+// widgets.
+@baseZIndexForContainers: 1000;
+
+// needs to be above overlay images so tails can cross into them
+@bubbleCanvasZIndex: @baseZIndexForContainers + 1;
+
+// Above the canvas so they can be clicked
+@imageEditingButtonZIndex: @bubbleCanvasZIndex + 5;
+// And these are on top of those main buttons
+@miniImageEditingButtonZIndex: @imageEditingButtonZIndex + 1;
+
+// Text in bubbles needs to be above the bubble so we can see and edit it.
+@textOverPictureZIndex: @bubbleCanvasZIndex + 1;
 @formatButtonZIndex: @textOverPictureZIndex + 1;
 @dragHandleEventZIndex: @textOverPictureZIndex + 1;
 

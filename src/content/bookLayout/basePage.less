@@ -127,7 +127,9 @@ div.ui-tooltip-content {
 }
 .bloom-imageContainer {
     min-height: 50px;
-    z-index: 100;
+    // image containers are ordered by document order so they can NOT be a stacking context,
+    // allowing their child buttons to be over the comicaljs canvas
+    //z-index: 100;
 }
 p {
     //without this, an empty paragraph will be invisible, making blank lines impossible
@@ -694,8 +696,10 @@ books may contain divs with box-header-off, so we need a rule to hide them.*/
         height: 100%;
         box-sizing: border-box; // need any borders inside that 100% sizing (otherwise they tend to be clipped on at least one side)
 
-        // above so buttons show
-        z-index: @imageContainerZIndex;
+        // NO z-index for image containers! They are ordered by document order.
+        // (This allows them NOT to be a stacking context, so their child buttons can
+        // be above the comicaljs canvas.)
+        // z-index: @baseZIndexForContainers;
         // Solves BL-1033 small picture frames cycling red overflow
         overflow: hidden;
     }
@@ -709,7 +713,7 @@ books may contain divs with box-header-off, so we need a rule to hide them.*/
         }
 
         // above so buttons show
-        z-index: @imageContainerZIndex;
+        z-index: @baseZIndexForContainers;
 
         video {
             // I don't know exactly why this works, but it makes the video shrink to fit,
@@ -742,7 +746,7 @@ books may contain divs with box-header-off, so we need a rule to hide them.*/
         }
 
         // above so buttons show
-        z-index: @imageContainerZIndex;
+        z-index: @baseZIndexForContainers;
     }
     .bloom-editable {
         overflow-y: hidden;

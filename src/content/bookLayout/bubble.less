@@ -38,6 +38,17 @@
     }
 }
 
+// This SHOULD be redundant; I've removed all rules setting a z-index for image containers.
+// I'm leaving it here in hopes that if someone tries to reinstate such a thing, it will be
+// prevented by this, and they will find this rule and comment.
+// We MUST NOT have a z-index on image overlays, otherwise the overlay image container becomes
+// a stacking context, and then its child buttons cannot be 'above' the comicaljs canvas,
+// and then those buttons can't be clicked! Instead, we make sure overlay images come after
+// the main img and so are on top of it for that reason.
+.bloom-imageContainer .bloom-imageContainer {
+    z-index: auto !important;
+}
+
 .bloom-imageContainer {
     &.grabbable:not(.bloom-resizing) {
         &,

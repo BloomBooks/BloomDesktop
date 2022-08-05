@@ -7131,9 +7131,11 @@ combined-stream@^1.0.5, combined-stream@^1.0.8, combined-stream@~1.0.5:
     delayed-stream "~1.0.0"
 
 comicaljs@^0.3.0:
-  version "0.3.83"
-  resolved "https://registry.yarnpkg.com/comicaljs/-/comicaljs-0.3.83.tgz#2d3582e54791b75337a6d8d697bc7948608324c0"
-  integrity sha512-xU7/gp/BCxR8T5LZWRpwFkF2ZEi4/rYETMe/J6qWk2Pr896bVJNcbLft5gJQgsfYfUGNYgjN1DynTmtSUS2Mbw==
+  version "0.3.91"
+  resolved "https://registry.yarnpkg.com/comicaljs/-/comicaljs-0.3.91.tgz#d078ac9e8aac588e4736000ce1574b08ac86bfa6"
+  integrity sha512-u1fo+1pYCOTx5DWWgUpjpUV6ZKS19E5ZEHCaeZ6n0JPITQOBELSHe8AsuJlVPiofaTnuLF6DhsEUK7pS6M9Hqw==
+  dependencies:
+    paper "0.12.8"
 
 comma-separated-tokens@^1.0.0:
   version "1.0.8"
@@ -13687,6 +13689,11 @@ pako@~1.0.5:
   version "1.0.11"
   resolved "https://registry.yarnpkg.com/pako/-/pako-1.0.11.tgz#6c9599d340d54dfd3946380252a35705a6b992bf"
   integrity sha512-4hLB8Py4zZce5s4yd9XzopqwVv/yGNhV1Bl8NTmCq1763HeK2+EwVTv+leGeL13Dnh2wfbqowVPXCIO0z4taYw==
+
+paper@0.12.8:
+  version "0.12.8"
+  resolved "https://registry.yarnpkg.com/paper/-/paper-0.12.8.tgz#fb8e5f1c565610088cd2cc8a4967ba55d161347c"
+  integrity sha512-aFzTOs4UgLPVJaCHkWp4KD9H3e5ibM61h+wNEjN4ZJu+JMLoivm1GKU2PdqL4DL/Ye490cQOIuUmeSz8dVdN6Q==
 
 parallel-transform@^1.1.0:
   version "1.2.0"

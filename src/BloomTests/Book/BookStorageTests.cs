@@ -6,6 +6,7 @@ using System.Drawing.Imaging;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Xml;
 using Bloom;
 using Bloom.Api;
 using Bloom.Book;
@@ -1298,6 +1299,36 @@ namespace BloomTests.Book
 			var maintLevel = storage.Dom.GetMetaValue("maintenanceLevel", "0");
 			Assert.That(maintLevel, Is.GreaterThanOrEqualTo("2"));
 			Assert.That(storage.Dom.SafeSelectNodes("//*[@class='comical-generated']").Count, Is.EqualTo(0));
+		}
+
+		[Test]
+		public void PerformNecessaryMaintenanceOnBook_EnsuresImgAtStartOfImageContainer()
+		{
+			var storage = GetInitialStorageWithCustomHtml(@"
+<html><head>
+	<link rel='stylesheet' href='Basic Book.css' type='text/css' />
+	<meta name='maintenanceLevel' content='2'></meta>
+</head>
+<body>
+	<div class='bloom-page'>
+		<div class='bloom-imageContainer'>
+			<div class='bloom-textOverPicture'/>
+			<div class='bloom-textOverPicture'/>
+			<img src='rubbish' id='moveMe' />
+		</div>
+	</div>
+</body></html>");
+
+			//SUT
+			storage.PerformNecessaryMaintenanceOnBook();
+
+			//Verification
+			var maintLevel = storage.Dom.GetMetaValue("maintenanceLevel", "0");
+			var container = storage.Dom.SelectSingleNode("//*[@class='bloom-imageContainer']");
+			Assert.That(container, Is.Not.Null);
+			var firstChild = container.ChildNodes.Cast<XmlNode>().FirstOrDefault(x => x is XmlElement) as XmlElement;
+			Assert.That(firstChild.Attributes["id"]?.Value, Is.EqualTo("moveMe"));
+			Assert.That(maintLevel, Is.GreaterThanOrEqualTo("3"));
 		}
 
 		[Test]
