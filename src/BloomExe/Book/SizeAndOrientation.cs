@@ -81,7 +81,7 @@ namespace Bloom.Book
 			{
 				var fileName = link.GetStringAttribute("href");
 				if (fileName.ToLowerInvariant().Contains("mode") || fileName.ToLowerInvariant().Contains("page") ||
-					fileName.ToLowerInvariant().Contains("matter") || fileName.ToLowerInvariant().Contains("languagedisplay") ||
+					fileName.ToLowerInvariant().Contains("languagedisplay") ||
 					fileName.ToLowerInvariant().Contains("origami") || fileName.ToLowerInvariant().Contains("defaultlangstyles") ||
 					fileName.ToLowerInvariant().Contains("customcollectionstyles") ||
 					// Ignore this obsolete styles file as well.  See https://issues.bloomlibrary.org/youtrack/issue/BL-9128.

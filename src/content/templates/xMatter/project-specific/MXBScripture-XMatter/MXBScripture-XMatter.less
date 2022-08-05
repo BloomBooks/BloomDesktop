@@ -1,10 +1,32 @@
+/*The following is json. Bloom reads it in order to know what size/orientation options this stylesheet supports
+This is a dummy rule used to transmit to javascript what size/orientations this stylesheet can handle.
+This used to "lock down" a template to only certain layouts, now it just seems to cause a new book to
+default to the first layout.
+STARTLAYOUTS
+{
+  "layouts": [
+    {
+      "HalfLetterPortrait": {
+        "Styles": [ "Default" ]
+      }
+    }
+  ]
+}
+ENDLAYOUTS
+*/
+
 @import "../MXBLiteracy-XMatter/MXBCommon-XMatter.less";
 
 @XMatterPackName: "MXB Scripture";
 
+.credits .licenseAndCopyrightBlock {
+    margin-top: auto;
+}
+
 .titlePage .creditsRow .smallCoverCredits.bloom-content1 {
     // for Scripture this is tucked up under the title and used for chapter/verse references
     margin-bottom: @MarginBetweenMajorItems;
+    font-size: 12pt;
 }
 
 .titlePage #titlePageTitleBlock {
