@@ -1,9 +1,11 @@
 using System;
+using System.Collections.Generic;
 using System.Dynamic;
 using System.IO;
 using System.Linq;
 using System.Windows.Forms;
 using Bloom.Api;
+using Bloom.Book;
 using Bloom.Edit;
 using L10NSharp;
 using SIL.IO;
@@ -31,6 +33,7 @@ namespace Bloom.web.controllers
 			apiHandler.RegisterEndpointLegacy("editView/isClipboardBookHyperlink", HandleIsClipboardBookHyperlink, false);
 			apiHandler.RegisterEndpointLegacy("editView/requestTranslationGroupContent", RequestDefaultTranslationGroupContent, true);
 			apiHandler.RegisterEndpointLegacy("editView/duplicatePageMany", HandleDuplicatePageMany, true);
+			apiHandler.RegisterEndpointHandler("editView/topics", HandleTopics, false);
 		}
 
 		// Answer true if the current clipboard contents are something that makes sense to paste into the href
@@ -194,6 +197,34 @@ namespace Bloom.web.controllers
 				topicString = "";
 			View.Model.SetTopic(topicString);
 			request.PostSucceeded();
+		}
+
+		public void HandleTopics(ApiRequest request)
+		{
+			var keyToLocalizedTopicDictionary = new Dictionary<string, string>();
+			foreach (var topic in BookInfo.TopicsKeys)
+			{
+				var localized = LocalizationManager.GetDynamicString("Bloom", "Topics." + topic, topic,
+					@"shows in the topics chooser in the edit tab");
+				keyToLocalizedTopicDictionary.Add(topic, localized);
+			}
+
+			var localizedNoTopic = LocalizationManager.GetDynamicString("Bloom", "Topics.NoTopic", "No Topic",
+				@"shows in the topics chooser in the edit tab");
+			var arrayOfKeyValuePairs = from key in keyToLocalizedTopicDictionary.Keys
+				orderby keyToLocalizedTopicDictionary[key]
+				select $"{{\"englishKey\":\"{key}\",\"translated\":\"{keyToLocalizedTopicDictionary[key]}\"}}";
+			var data = new List<string> { $"{{\"englishKey\":\"No Topic\",\"translated\":\"{localizedNoTopic}\"}}" };
+			data.AddRange(arrayOfKeyValuePairs);
+			dynamic answer = new ExpandoObject();
+			answer.Topics = data.ToArray();
+			var currentBook = View.Model.CurrentBook;
+			var currentTopicKey = currentBook.BookData.GetVariableOrNull("topic", "en").Unencoded;
+			if (string.IsNullOrEmpty(currentTopicKey))
+				currentTopicKey = "No Topic";
+			answer.Current = currentTopicKey;
+
+			request.ReplyWithJson(answer);
 		}
 	}
 }

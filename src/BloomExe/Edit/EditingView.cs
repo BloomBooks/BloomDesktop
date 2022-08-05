@@ -673,7 +673,7 @@ namespace Bloom.Edit
 				}
 
 				// Let Gecko handle hrefs that are explicitly tagged "javascript"
-				if(anchor.Href.StartsWith("javascript")) //tied to, for example, data-functionOnHintClick="ShowTopicChooser()"
+				if(anchor.Href.StartsWith("javascript"))
 				{
 					ge.Handled = false; // let gecko handle it
 					return;

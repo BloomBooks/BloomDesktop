@@ -6,9 +6,9 @@ using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
+using System.Linq;
 using Bloom.Book;
 using Bloom.Collection;
-using BloomTemp;
 using L10NSharp;
 using NUnit.Framework;
 using SIL.IO;
@@ -16,6 +16,7 @@ using Bloom;
 using Bloom.ImageProcessing;
 using Bloom.Api;
 using Bloom.web.controllers;
+using Newtonsoft.Json;
 using SIL.Reporting;
 using TemporaryFolder = SIL.TestUtilities.TemporaryFolder;
 
@@ -234,27 +235,35 @@ namespace BloomTests.web
 		[Test]
 		public void Topics_ReturnsFrenchFor_NoTopic_()
 		{
-			Assert.AreEqual("Aucun thème", QueryServerForJson("api/topics")["NoTopic"].ToString());
+			Assert.AreEqual("Aucun thème", QueryServerForJson("api/editView/topics").First(t => t.englishKey =="No Topic").translated.ToString());
 		}
 
 		[Test]
 		public void Topics_ReturnsFrenchFor_Dictionary_()
 		{
-			Assert.AreEqual("Dictionnaire", QueryServerForJson("api/topics")["Dictionary"]);
+			Assert.AreEqual("Dictionnaire", QueryServerForJson("api/editView/topics").First(t => t.englishKey =="Dictionary").translated.ToString());
 		}
 
-		private Dictionary<string, string> QueryServerForJson(string query)
+		private Topic[] QueryServerForJson(string query)
 		{
 			using (var server = CreateBloomServer())
 			{
-				var commonApi = new CommonApi(null,null,null);
+				var commonApi = new EditingViewApi();
 				commonApi.RegisterWithApiHandler(server.ApiHandler);
 				var transaction = new PretendRequestInfo(BloomServer.ServerUrlWithBloomPrefixEndingInSlash + query);
 				server.MakeReply(transaction);
 				Debug.WriteLine(transaction.ReplyContents);
-				var jss = new System.Web.Script.Serialization.JavaScriptSerializer();
-				return jss.Deserialize<Dictionary<string, string>>(transaction.ReplyContents);
+				return JsonConvert.DeserializeObject<Topic[]>(transaction.ReplyContents);
 			}
+		}
+
+		private class Topic
+		{
+			[JsonProperty]
+			public string englishKey { get; private set; }
+
+			[JsonProperty]
+			public string translated { get; private set; }
 		}
 
 		private BloomServer CreateBloomServer(BookInfo info = null)
