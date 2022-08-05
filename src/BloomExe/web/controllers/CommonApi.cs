@@ -50,7 +50,6 @@ namespace Bloom.web.controllers
 			apiHandler.RegisterEndpointLegacy("currentUiLanguage", HandleCurrentUiLanguage, false); // App
 			apiHandler.RegisterEndpointLegacy("bubbleLanguages", HandleBubbleLanguages, false); // Move to EditingViewApi
 			apiHandler.RegisterEndpointLegacy("authorMode", HandleAuthorMode, false); // Move to EditingViewApi
-			apiHandler.RegisterEndpointLegacy("topics", HandleTopics, false); // Move to EditingViewApi
 			apiHandler.RegisterEndpointLegacy("common/error", HandleJavascriptError, false); // Common
 			apiHandler.RegisterEndpointLegacy("common/preliminaryError", HandlePreliminaryJavascriptError, false); // Common
 			apiHandler.RegisterEndpointLegacy("common/saveChangesAndRethinkPageEvent", RethinkPageAndReloadIt, true); // Move to EditingViewApi
@@ -377,26 +376,6 @@ namespace Bloom.web.controllers
 			{
 				request.ReplyWithText(AuthorMode ? "true" : "false");
 			}
-		}
-
-		public void HandleTopics(ApiRequest request)
-		{
-			var keyToLocalizedTopicDictionary = new Dictionary<string, string>();
-			foreach (var topic in BookInfo.TopicsKeys)
-			{
-				var localized = LocalizationManager.GetDynamicString("Bloom", "Topics." + topic, topic,
-					@"shows in the topics chooser in the edit tab");
-				keyToLocalizedTopicDictionary.Add(topic, localized);
-			}
-			string localizedNoTopic = LocalizationManager.GetDynamicString("Bloom", "Topics.NoTopic", "No Topic",
-				@"shows in the topics chooser in the edit tab");
-			var arrayOfKeyValuePairs = from key in keyToLocalizedTopicDictionary.Keys
-				orderby keyToLocalizedTopicDictionary[key]
-				select string.Format("\"{0}\": \"{1}\"", key, keyToLocalizedTopicDictionary[key]);
-			var pairs = String.Join(",", arrayOfKeyValuePairs);
-			var data = string.Format("{{\"NoTopic\": \"{0}\", {1} }}", localizedNoTopic, pairs);
-
-			request.ReplyWithJson(data);
 		}
 
 		public void HandleJavascriptError(ApiRequest request)

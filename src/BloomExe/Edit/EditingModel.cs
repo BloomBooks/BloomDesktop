@@ -985,7 +985,7 @@ namespace Bloom.Edit
 //				this._view.ShowAddPageDialog();
 //		}
 
-		//invoked from TopicChooser.ts via API
+		//invoked from TopicChooserDialog.tsx via API
 		internal void SetTopic(string englishTopicAsKey)
 		{
 			//make the change in the data div

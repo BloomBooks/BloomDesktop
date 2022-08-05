@@ -434,7 +434,7 @@ export default class BloomHintBubbles {
                 bloomQtipUtils.mightCauseHorizontallyOverlappingBubbles(target);
 
             if (whatToSay != null && whatToSay.startsWith("*"))
-                whatToSay = whatToSay.substr(1);
+                whatToSay = whatToSay.substring(1);
             if (!whatToSay) return; // no empty bubbles
             let functionCall = source.data("functiononhintclick");
             let onClick;
@@ -447,6 +447,14 @@ export default class BloomHintBubbles {
                     functionCall = "clickWasAlreadyHandled";
                     onClick =
                         "onClick='(window.parent || window).editTabBundle.showCopyrightAndLicenseDialog();'";
+                }
+                if (functionCall.startsWith("ShowTopicChooser")) {
+                    // In C# land, the browser onClick will attempt to handle this.
+                    // This dummy function name simply indicates we've already done
+                    // all that is needed and prevents C# from interfering.
+                    functionCall = "clickWasAlreadyHandled";
+                    onClick =
+                        "onClick='(window.parent || window).editTabBundle.showEditViewTopicChooserDialog();'";
                 }
                 shouldShowAlways = true;
 

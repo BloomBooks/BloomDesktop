@@ -42,7 +42,7 @@ interface FontSelectProps {
 const FontSelectComponent: React.FunctionComponent<FontSelectProps> = props => {
     const getFontDataFromName = (fontName: string) => {
         if (!props.fontMetadata) return undefined;
-        return props.fontMetadata!.find(f => f.name === fontName);
+        return props.fontMetadata.find(f => f.name === fontName);
     };
 
     const [fontChoice, setFontChoice] = useState<IFontMetaData | undefined>(

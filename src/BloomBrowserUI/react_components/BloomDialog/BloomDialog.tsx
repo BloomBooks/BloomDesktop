@@ -182,7 +182,7 @@ export const DialogTitle: React.FunctionComponent<{
                 margin-right: -${kDialogTopPadding};
                 margin-bottom: ${kDialogPadding};
                 * {
-                    font-size: 16px;
+                    font-size: "16px";
                     font-weight: bold;
                 }
             `}

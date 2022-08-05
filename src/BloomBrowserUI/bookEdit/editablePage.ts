@@ -126,12 +126,6 @@ for (let j = 0; j < styleSheets.length; j++) {
 // for (var i = 0; i < scripts.length; i++) {
 //     document.write('<script type="text/javascript" src="/bloom/' + scripts[i] + '"></script>');
 // }
-import TopicChooser from "./TopicChooser/TopicChooser";
-
-//ShowTopicChooser() is called by a script tag on a <a> element in a tooltip
-window["ShowTopicChooser"] = () => {
-    TopicChooser.showTopicChooser();
-};
 
 //PasteImageCredits() is called by a script tag on a <a> element in a tooltip
 window["PasteImageCredits"] = () => {
