@@ -10,6 +10,7 @@ using System.Web;
 using System.Windows.Forms;
 using System.Xml;
 using System.Xml.Linq;
+using Bloom.Api;
 using Bloom.Book;
 using Bloom.FontProcessing;
 using Bloom.ToPalaso;
@@ -207,10 +208,14 @@ namespace Bloom.Publish.Epub
 
 		/// <summary>
 		/// Set to true for unpaginated output. This is something of a misnomer...any better ideas?
-		/// If it is true (which currently it always is), we remove the stylesheets for precise page layout
+		/// If it is true, we remove the stylesheets for precise page layout
 		/// and just output the text and pictures in order with a simple default stylesheet.
 		/// Rather to my surprise, the result still has page breaks where expected, though the reader may
 		/// add more if needed.
+		/// If it is false, we add some rendition and viewport metadata which causes at least some
+		/// readers (e.g., Readium, eKitab) to render each page file as a book page, pre3serving
+		/// layout remarkably well. (Note: in this mode, we may be using some CSS features not
+		/// officially supported in Epub3.)
 		/// </summary>
 		public bool Unpaginated { get; set; }
 
@@ -319,6 +324,15 @@ namespace Bloom.Publish.Epub
 			ISet<string> warningMessages = new HashSet<string>();
 
 			Book.OurHtmlDom.AddPublishClassToBody("epub");
+			if (!Unpaginated)
+			{
+				var viewport = Book.OurHtmlDom.RawDom.CreateElement("meta");
+				viewport.SetAttribute("name", "viewport");
+				var layout = Book.GetLayout();
+				GetPageDimensions(layout.SizeAndOrientation.PageSizeName + layout.SizeAndOrientation.OrientationName, out double width, out double height);
+				viewport.SetAttribute("content", $"width={width}, height={height}");
+				Book.OurHtmlDom.Head.AppendChild(viewport);
+			}
 
 			HandleImageDescriptions(Book.OurHtmlDom);
 			if (string.IsNullOrEmpty(SignLanguageApi.FfmpegProgram))
@@ -337,7 +351,7 @@ namespace Bloom.Publish.Epub
 				var pageLabelEnglish = HtmlDom.GetNumberOrLabelOfPageWhereElementLives(pageElement);
 				
 				var comicalMatches = pageElement.SafeSelectNodes(".//svg:svg[contains(@class, 'comical-generated')]", nsManager);
-				if (comicalMatches.Count > 0)
+				if (comicalMatches.Count > 0 && Unpaginated)
 				{
 					progress.Message("Common.Error", "Error", ProgressKind.Error, false);
 					progress.MessageWithParams("PublishTab.Epub.NoOverlaySupport", "Error shown if book contains overlays.", "Sorry, Bloom cannot produce ePUBs if there are any overlays. The first overlay is on page {0}.", ProgressKind.Error, pageLabelEnglish);
@@ -440,6 +454,35 @@ namespace Bloom.Publish.Epub
 			}
 		}
 
+		private static string basePageText;
+
+		public static void GetPageDimensions(string pageSize, out double width, out double height)
+		{
+			var path = FileLocationUtilities.GetFileDistributedWithApplication("pageSizes.json");
+			var json = File.ReadAllText(path);
+			var sizes = DynamicJson.Parse(json).sizes;
+			// FirstOrDefault would be cleaner, but I can't figure out how to use it with dynamic data.
+			for (int i = 0; i < sizes.Count; i++)
+			{
+				if (sizes[i].size == pageSize)
+				{
+					width = ConvertDimension(sizes[i].width);
+					height = ConvertDimension(sizes[i].height);
+					return;
+				}
+			}
+			// unknown: use first (which should be A5Portrait)
+			width = ConvertDimension(sizes[0].width);
+			height = ConvertDimension(sizes[0].height);
+		}
+
+		private static double ConvertDimension(string input)
+		{
+			string unit = input.Substring(input.Length - 2);
+			var num = Double.Parse(input.Substring(0, input.Length - 2));
+			return num * (unit == "mm" ? 96 / 25.4 : 96);
+		}
+
 		/// <summary>
 		/// Internal hyperlinks, typically from one page to another, cannot be made to work in Epubs
 		/// (at least not in any obvious way), since each page is a separate document. Certainly the
@@ -471,8 +514,10 @@ namespace Bloom.Publish.Epub
 			var rootElt = new XElement(opf + "package",
 				new XAttribute("version", "3.0"),
 				new XAttribute("unique-identifier", "I" + Book.ID),
-				new XAttribute("prefix", "a11y: http://www.idpf.org/epub/vocab/package/a11y/# epub32: https://w3c.github.io/publ-epub-revision/epub32/spec/epub-packages.html#"));
+				new XAttribute("prefix", "a11y: http://www.idpf.org/epub/vocab/package/a11y/# epub32: https://w3c.github.io/publ-epub-revision/epub32/spec/epub-packages.html#"
+				+ (Unpaginated ? "" : " http://www.idpf.org/vocab/rendition/#")));
 			// add metadata
+			XNamespace rendition = "http://www.idpf.org/vocab/rendition/#";
 			var dcNamespace = "http://purl.org/dc/elements/1.1/";
 			var source = GetBookSource();
 			XNamespace dc = dcNamespace;
@@ -532,6 +577,25 @@ namespace Bloom.Publish.Epub
 			var coverImage = Path.GetFileNameWithoutExtension(coverPageImageFile);
 			if (!string.IsNullOrEmpty(coverImage))
 				metadataElt.Add(new XElement("meta", new XAttribute("name", "cover"), new XAttribute("content", coverImage)));
+			if (!Unpaginated)
+			{
+				metadataElt.Add(new XElement("meta", new XAttribute("property","rendition:layout"), "pre-paginated"));
+				if (Book.GetLayout().SizeAndOrientation.IsLandScape)
+				{
+					metadataElt.Add(new XElement("meta", new XAttribute("property", "rendition:orientation"),
+						"landscape"));
+					// Bizarrely, our Readium preview and eKitab both default to displaying two landscape
+					// pages side by side. This prevents that behavior.
+					metadataElt.Add(new XElement("meta", new XAttribute("property", "rendition:spread"),
+						"none"));
+				}
+				// Enhance: currently, the reader is free to do what it likes with portrait books, even if
+				// the device is in landscape. Typically a single page will be shrunk to fit.
+				// We could specify rendition:spread as "landscape" to suggest putting two pages side by side
+				// only in landscape mode. This would give a feel much more like a paper book. However, depending
+				// on the exact device dimensions, this might result in shrinking pages even more. OTOH, if the
+				// user wants a larger single page view, the obvious thing is to rotate the device.
+			}
 			rootElt.Add(metadataElt);
 
 			var manifestElt = new XElement(opf + "manifest");
@@ -1153,9 +1217,6 @@ namespace Bloom.Publish.Epub
 			}
 			else
 			{
-				// Review: this branch is not currently used. Very likely we need SOME different stylesheets
-				// from the printed book, possibly including baseEPUB.css, if it's even possible to make
-				// useful fixed-layout books out of Bloom books that will work with current readers.
 				pageDom.AddStyleSheet(Storage.GetFileLocator().LocateFileWithThrow(@"basePage.css").ToLocalhost());
 				pageDom.AddStyleSheet(Storage.GetFileLocator().LocateFileWithThrow(@"previewMode.css"));
 				pageDom.AddStyleSheet(Storage.GetFileLocator().LocateFileWithThrow(@"origami.css"));
@@ -1187,7 +1248,8 @@ namespace Bloom.Publish.Epub
 			RemoveScripts(pageDom);
 			RemoveUnwantedAttributes(pageDom);
 			FixIllegalIds(pageDom);
-			FixPictureSizes(pageDom);
+			if (Unpaginated)
+				FixPictureSizes(pageDom);
 
 			// Check for a blank page before storing any data from this page or copying any files on disk.
 			if (IsBlankPage(pageDom.RawDom.DocumentElement))
