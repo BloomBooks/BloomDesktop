@@ -28,25 +28,6 @@
     }
 }
 
-// This mixin simply encapsulates the logic of how we add a border on top
-// of the edge of an image container instead of adding a regular border
-// which modifies the size of the container. See BL-10268.
-.borderOnTopOfElement(@color) {
-    &:after {
-        border: 1px solid @color;
-        content: "";
-        left: 0;
-        right: 0;
-        top: 0;
-        bottom: 0;
-        position: absolute;
-        // this ":after" is actually on top of the whole image, including its description
-        // if that is turned on. But we're only interested in putting a border around
-        // the image; we don't want to intercept clicks on the image (or its description).
-        pointer-events: none;
-    }
-}
-
 @defaultLineHeight: 1.5em; //no units! No em!!!! em makes children inside have a lineheight that matches the font of the overall box, regardless of the thing's font-size. See https://developer.mozilla.org/en-US/docs/Web/CSS/line-height
 
 // N.B. New formats must also work something out in pageThumbnailList.less.
@@ -56,7 +37,6 @@
 
 @DeviceMargin: 10px;
 @DeviceBottomMargin: 45px; // leave room for page number
-
 
 @MarginTop: 15mm;
 @MarginOuter: 15mm;
