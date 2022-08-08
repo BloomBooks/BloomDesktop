@@ -1,7 +1,27 @@
 /*This stylesheet applied when a book is being edited. It does things like show that images can be changed by click on them.*/
 @import "../../bloomUI.less";
 @import "../sourceBubbles/sourceBubbles.less";
-@import (reference) "../../../content/bookLayout/basePage.less"; // constants only
+
+@bleed: 3mm; // Duplicated from basePage.less to remove circular dependency between BloomBrowserUI and content
+
+// This mixin simply encapsulates the logic of how we add a border on top
+// of the edge of an image container instead of adding a regular border
+// which modifies the size of the container. See BL-10268.
+.borderOnTopOfElement(@color) {
+    &:after {
+        border: 1px solid @color;
+        content: "";
+        left: 0;
+        right: 0;
+        top: 0;
+        bottom: 0;
+        position: absolute;
+        // this ":after" is actually on top of the whole image, including its description
+        // if that is turned on. But we're only interested in putting a border around
+        // the image; we don't want to intercept clicks on the image (or its description).
+        pointer-events: none;
+    }
+}
 
 @EditBoxItemsColor: #0000001a;
 @MediumGray: #c0b9b9;

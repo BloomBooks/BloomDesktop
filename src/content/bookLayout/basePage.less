@@ -198,7 +198,7 @@ div#bloomDataDiv {
     text-align: center;
 }
 
-@bleed: 3mm;
+@bleed: 3mm; // Duplicated in editMode.less to remove circular dependency between BloomBrowserUI and content
 @RA5Portrait-Width: @A5Portrait-Width + @bleed + @bleed;
 @RA5Portrait-Height: @A5Portrait-Height + @bleed + @bleed;
 @RA5-Scale: unit(@RA5Portrait-Width / @A5Portrait-Width);
