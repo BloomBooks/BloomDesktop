@@ -24,7 +24,11 @@ import * as ReactDOM from "react-dom";
 import FontSelectComponent, { IFontMetaData } from "./fontSelectComponent";
 import React = require("react");
 
-type Alignment = "left" | "center" | "right"; // Taken from CSS text-align, but "justify", "initial", and "inherit" are not supported currently.
+// Controls the CSS text-align value
+// Note: CSS text-align W3 standard does not specify "start" or "end", but Firefox/Chrome/Edge do support it.
+// Note: CSS text-align also has values "justify", "initial", and "inherit", which we do not support currently.
+type Alignment = "start" | "center" | "end";
+
 interface IFormattingValues {
     ptSize: string;
     fontName: string;
@@ -487,14 +491,11 @@ export default class StyleEditor {
     // This is used for all of character tab when localizing, and always for font name.
     // if forChildParas is true, the rule sought will have a selector like ".mystyle-style p" to select paragraphs
     // inside the block that has the style.
-    // if forRightToLeft is true, the rule will only target the elements with attribute dir="rtl".
-    // This allows building rules just for right-to-left scripts.
     public GetOrCreateRuleForStyle(
         styleName: string,
         langAttrValue: string | null,
         ignoreLanguage: boolean,
-        forChildParas?: boolean,
-        forRightToLeft?: boolean
+        forChildParas?: boolean
     ): CSSStyleRule | null {
         const styleSheet = this.GetOrCreateUserModifiedStyleSheet();
         if (styleSheet == null) {
@@ -517,10 +518,6 @@ export default class StyleEditor {
             } else {
                 selector = styleName + ":not([lang])";
             }
-        }
-
-        if (forRightToLeft) {
-            selector += '[dir="rtl"]';
         }
 
         if (forChildParas) {
@@ -838,13 +835,8 @@ export default class StyleEditor {
         const italic = box.css("font-style") === "italic";
         const underline = box.css("text-decoration") === "underline";
 
-        const cssAlignment = box.css("text-align");
-        const alignment =
-            cssAlignment === "center"
-                ? "center"
-                : cssAlignment === "right"
-                ? "right"
-                : "left";
+        const textAlign = box.css("text-align");
+        const alignment = StyleEditor.ParseAlignmentFromTextAlign(textAlign);
 
         // If we're going to base the initial values on current actual values, we have to get the
         // margin-below and text-indent values from one of the paragraphs they actually affect.
@@ -883,6 +875,22 @@ export default class StyleEditor {
             italic: italic,
             underline: underline
         };
+    }
+
+    /**
+     * Convert from the various text-align CSS values to the limited Alignment options we support.
+     */
+    private static ParseAlignmentFromTextAlign(textAlign: string): Alignment {
+        switch (textAlign) {
+            case "center":
+                return "center";
+            case "end":
+                return "end";
+            case "start":
+            case "initial":
+            default:
+                return "start";
+        }
     }
 
     public AdjustFormatButton(element: Element): void {
@@ -1300,9 +1308,9 @@ export default class StyleEditor {
             "bold",
             "italic",
             "underline",
-            "position-leading",
+            "position-left",
             "position-center",
-            "position-trailing",
+            "position-right",
             "indent-none",
             "indent-indented",
             "indent-hanging"
@@ -1310,12 +1318,22 @@ export default class StyleEditor {
     }
 
     public selectButtons(current) {
+        const isRightToLeft = this.boxBeingEdited.getAttribute("dir") === "rtl";
+
         this.selectButton("bold", current.bold);
         this.selectButton("italic", current.italic);
         this.selectButton("underline", current.underline);
+        this.selectButton(
+            "position-left",
+            (current.alignment === "start" && !isRightToLeft) ||
+                (current.alignment === "end" && isRightToLeft)
+        );
         this.selectButton("position-center", current.alignment === "center");
-        this.selectButton("position-leading", current.alignment === "left");
-        this.selectButton("position-trailing", current.alignment === "right");
+        this.selectButton(
+            "position-right",
+            (current.alignment === "end" && !isRightToLeft) ||
+                (current.alignment === "start" && isRightToLeft)
+        );
         this.selectButton("indent-" + current.paraIndent, true);
     }
 
@@ -1824,52 +1842,60 @@ export default class StyleEditor {
         }
     }
 
+    /**
+     * Sets the alignment, using "start", "center", or "end"
+     * Clicking the align left button will cause the text to go to the left,
+     * meaning "start" for left-to-right boxes and "end" for right-to-left boxes
+     */
     public changePosition() {
         if (this.ignoreControlChanges) {
             return;
         }
 
-        let position = "initial";
-        let rtlPosition = "initial";
-        if ($("#position-center").hasClass("selectedIcon")) {
-            position = rtlPosition = "center";
+        const whichButtonClicked = this.getWhichAlignmentButtonClicked();
+
+        let position = "start";
+        if (whichButtonClicked === "center") {
+            position = "center";
         } else {
-            const positionTrailingButton = document.getElementById(
-                "position-trailing"
-            );
+            const textBoxDirection = this.boxBeingEdited.getAttribute("dir");
+            const isRightToLeft = textBoxDirection === "rtl";
+
             if (
-                positionTrailingButton &&
-                positionTrailingButton.classList.contains("selectedIcon")
+                (whichButtonClicked === "left" && !isRightToLeft) ||
+                (whichButtonClicked === "right" && isRightToLeft)
             ) {
-                position = "right";
-                rtlPosition = "left"; // Opposite for right-to-left elements.
+                position = "start";
+            } else {
+                position = "end";
             }
         }
 
         const rule = this.getStyleRule(true, undefined);
-        const rtlRule = this.getStyleRule(true, undefined, true);
         if (rule != null) {
             rule.style.setProperty("text-align", position, "important");
 
-            // Set adjusted rule for RTL scripts
-            //
-            // Keep in mind that this style can apply to both LTR and RTL languages
-            // (e.g. if you have a multilingual book that uses normal style across the board)
-            // I don't think it makes sense to try to ask whether "RTL is currently on,
-            // since it could be "on" for L1 but "off" for L2
-            // Instead, we have multiple rules, one that targets LTR and one that targets RTL
-            //
-            // FYI: The rtlRule has slightly higher specificity than the normal rule and overrides it.
-            // (That's good, makes this works with minimal hassle)
-            if (rtlRule != null) {
-                rtlRule.style.setProperty(
-                    "text-align",
-                    rtlPosition,
-                    "important"
-                );
-            }
-
             this.cleanupAfterStyleChange();
+        }
+    }
+
+    private getWhichAlignmentButtonClicked(): "left" | "center" | "right" {
+        const positionCenterButton = document.getElementById("position-center");
+        if (
+            positionCenterButton &&
+            positionCenterButton.classList.contains("selectedIcon")
+        ) {
+            return "center";
+        }
+
+        const positionRightButton = document.getElementById("position-right");
+        if (
+            positionRightButton &&
+            positionRightButton.classList.contains("selectedIcon")
+        ) {
+            return "right";
+        } else {
+            return "left";
         }
     }
 
@@ -2001,8 +2027,7 @@ export default class StyleEditor {
 
     public getStyleRule(
         ignoreLanguage: boolean,
-        forChildPara?: boolean,
-        forRightToLeft?: boolean
+        forChildPara?: boolean
     ): CSSStyleRule | null {
         const target = this.boxBeingEdited;
         const styleName = StyleEditor.GetStyleNameForElement(target);
@@ -2014,8 +2039,7 @@ export default class StyleEditor {
             styleName,
             langAttrValue,
             ignoreLanguage,
-            forChildPara,
-            forRightToLeft
+            forChildPara
         );
     }
 
