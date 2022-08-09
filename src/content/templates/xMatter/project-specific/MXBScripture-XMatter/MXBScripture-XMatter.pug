@@ -2,9 +2,15 @@
 include ../MXBLiteracy-XMatter/MXBCommon-XMatter.pug
 
 mixin mxb-chapterVerseRef
-	.creditsRow(data-hint='For Scripture books, use this space to indicate the Bible reference')
+	.creditsRow(data-hint='Este espacio es para indicar la cita bíblica en lugar de atribuir al autor/ilustrador.')
 		+field-prototypeDeclaredExplicity("V")
 			+editable(kLanguageForPrototypeOnly).smallCoverCredits.Cover-Default-style(data-book='smallCoverCredits')
+
+mixin mxb-contributions-scripture
+	+field-prototypeDeclaredExplicity("N1")#contributions
+		label.bubble(data-link-text='Paste Image Credits' data-link-target='PasteImageCredits()')
+			| Este espacio es para atribuir a colaboradores como ilustradores o diseñadores. No se deben incluir atribuciones de autores o traductores en una publicación de Escrituras.
+		+editable(kLanguageForPrototypeOnly).contributions.OriginalContributions-style.bloom-copyFromOtherLanguageIfNecessary(data-book='originalContributions')
 
 mixin mxb-frontCover-scripture
 	// Outside Front Cover
@@ -50,17 +56,17 @@ mixin mxb-titlePage-scripture
 			.langName('data-library'='dialect')
 			.langName(data-library='languageLocation').bloom-writeOnly
 		+field-prototypeDeclaredExplicity("N1")#funding
-			label.bubble Normally leave this space blank for books published under the LigaBíblica logo.
+			label.bubble Este espacio normalmente debe quedar en blanco para libros publicados con el logo de LigaBíblica.
 			+editable(kLanguageForPrototypeOnly).funding.Funding-style.bloom-copyFromOtherLanguageIfNecessary(data-book='funding')
 		+title-page-branding-bottom
 
 mixin mxb-creditsPage-scripture
 	// Credits page back of Title page
 	+page-xmatter("Credits Page").bloom-frontMatter.credits(data-export='front-matter-credits', data-xmatter-page='credits')#69EF35AE-5BF1-49F1-89E7-2A932DAD932C
-		+mxb-contributions
+		+mxb-contributions-scripture
 		+field-prototypeDeclaredExplicity("N1")#localizedAcknowledgments
 			label.bubble
-				| Acknowledgments for this version, in {lang}. For example, give credit to the translator for this version.
+				| Este espacio es para atribuir la publicación de donde se tomó el texto de esta porción bíblica. No incluya ningún nombre personal como “autor” o “traductor”.
 			+editable(kLanguageForPrototypeOnly).versionAcknowledgments.LocalizedAcknowledgments-style.bloom-copyFromOtherLanguageIfNecessary(data-book="versionAcknowledgments")
 		+block-licenseAndCopyright
 		//- Here code puts in something like "From the original Copyright Pratham Books 2016. CC-BY. Any license notes here."
@@ -81,7 +87,9 @@ html
 		meta(charset='UTF-8')
 		meta(name='BloomFormatVersion', content='2.0')
 		title ILV Mexico Scripture Front & Back Matter
-		+stylesheets('MXBScripture-XMatter.css')
+		//- Make stylesheets adjustable for Device version
+		block stylesheets
+			+stylesheets('MXBScripture-XMatter.css')
 	body
 		+mxb-frontCover-scripture
 		+factory-insideFrontCover
