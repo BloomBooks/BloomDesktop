@@ -269,19 +269,24 @@ namespace Bloom.Publish.BloomLibrary
 			foreach (var kvp in allLanguages)
 			{
 				var langCode = kvp.Key;
+				var isRequiredLang = IsRequiredLanguageForBook(langCode, book);
 
 				// First, check if the user has already explicitly set the value. If so, we'll just use that value and be done.
 				if (bookInfo.PublishSettings.BloomLibrary.TextLangs.TryGetValue(langCode, out InclusionSetting checkboxValFromSettings))
 				{
 					if (checkboxValFromSettings.IsSpecified())
 					{
+						// ...unless the check box will be disabled and checked, in which case we better make sure it isn't Exclude
+						if (isRequiredLang && checkboxValFromSettings == InclusionSetting.Exclude)
+							bookInfo.PublishSettings.BloomLibrary.TextLangs[langCode] = InclusionSetting.IncludeByDefault;
+
 						continue;
 					}
 				}
 
 				// Nope, either no value exists or the value was some kind of default value.
 				// Compute (or recompute) what the value should default to.
-				bool isChecked = kvp.Value || IsRequiredLanguageForBook(langCode, book);
+				bool isChecked = kvp.Value || isRequiredLang;
 
 				var newInitialValue = isChecked ? InclusionSetting.IncludeByDefault : InclusionSetting.ExcludeByDefault;
 				bookInfo.PublishSettings.BloomLibrary.TextLangs[langCode] = newInitialValue;
