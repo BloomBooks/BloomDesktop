@@ -1,4 +1,12 @@
 extends ../MXBScripture-XMatter/MXBScripture-XMatter.pug
 
-block append stylesheets
+block stylesheets
 	+stylesheets('MXBScripture-Device-XMatter.css')
+
+block afterFrontCoverPages
+		//- Title and Credits at the end
+		+page-xmatter("Title Page").titlePage.bloom-backMatter(data-xmatter-page='titlePage')&attributes(attributes)#898b6622-837b-49cd-9938-2de76f6d4b22
+			+mxb-titlePage-scripture-contents
+
+		+page-xmatter("Credits Page").credits.bloom-backMatter(data-xmatter-page='credits')&attributes(attributes)#898b6622-837b-49cd-9938-2de76f6d4b23
+			+mxb-creditsPage-scripture-contents
