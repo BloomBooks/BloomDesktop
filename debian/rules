@@ -124,6 +124,7 @@ override_dh_shlibdeps:
 # NAudio.dll is a Windows-specific assembly that SIL.Media now requires to be present even on Linux.
 # The following assemblies crash the mono5-sil version of ikdasm (called by dh_clideps):
 #     Autofac.dll
+#     Markdig.Signed.dll
 #     Newtonsoft.Json.dll
 #     Sentry.dll
 #     System.Collections.Immutable.dll
@@ -141,6 +142,7 @@ override_dh_clideps:
 	mv $(DESTDIR)/$(LIB)/System.Collections.Immutable.dll $(DESTDIR)/$(LIB)/System.Collections.Immutable.delel && \
 	mv $(DESTDIR)/$(LIB)/System.Runtime.CompilerServices.Unsafe.dll $(DESTDIR)/$(LIB)/System.Runtime.CompilerServices.Unsafe.delel && \
 	mv $(DESTDIR)/$(LIB)/System.Text.Json.dll $(DESTDIR)/$(LIB)/System.Text.Json.delel && \
+	mv $(DESTDIR)/$(LIB)/Markdig.Signed.dll  $(DESTDIR)/$(LIB)/Markdig.Signed.delel && \
 	mkdir -p debian/tmp/usr && ln -s $(MONO_PREFIX)/* debian/tmp/usr/ && \
 	PATH=$(MONO_PREFIX)/bin:$(PATH) \
 	dh_clideps internal-mono -l$(MONO_PREFIX)/lib \
@@ -160,8 +162,10 @@ override_dh_clideps:
 		--exclude-moduleref=libgio-2.0.so --exclude-moduleref=libglib-2.0.so \
 		--exclude-moduleref=libgobject-2.0.so \
 		--exclude-moduleref=dl --exclude-moduleref=propsys.dll --exclude-moduleref=powrprof.dll \
+		--exclude-moduleref=c --exclude-moduleref=libc.so \
 		--exclude-moduleref=i:ole32.dll --exclude-moduleref=version.dll && \
 	rm -rf debian/tmp/usr && \
+	mv $(DESTDIR)/$(LIB)/Markdig.Signed.delel  $(DESTDIR)/$(LIB)/Markdig.Signed.dll && \
 	mv $(DESTDIR)/$(LIB)/System.Runtime.CompilerServices.Unsafe.delel $(DESTDIR)/$(LIB)/System.Runtime.CompilerServices.Unsafe.dll && \
 	mv $(DESTDIR)/$(LIB)/System.Collections.Immutable.delel $(DESTDIR)/$(LIB)/System.Collections.Immutable.dll && \
 	mv $(DESTDIR)/$(LIB)/System.Text.Json.delel $(DESTDIR)/$(LIB)/System.Text.Json.dll && \
