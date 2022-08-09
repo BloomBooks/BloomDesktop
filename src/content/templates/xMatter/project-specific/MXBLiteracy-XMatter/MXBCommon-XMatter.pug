@@ -50,40 +50,44 @@ mixin mxb-contributions
 			| The contributions made by writers, illustrators, editors, etc., in {lang}
 		+editable(kLanguageForPrototypeOnly).contributions.OriginalContributions-style.bloom-copyFromOtherLanguageIfNecessary(data-book='originalContributions')
 
+mixin mxb-titlePage-contents
+	+field-prototypeDeclaredExplicity("V, N1, N2")#titlePageTitleBlock
+		label.bubble Book title in {lang}
+		+editable(kLanguageForPrototypeOnly).bloom-nodefaultstylerule.Title-On-Title-Page-style(data-book='bookTitle')
+	#languageInformation.Credits-Page-style('lang'='N1')
+		.languagesOfBook(data-derived='languagesOfBook')
+		.langName('data-library'='dialect')
+		.langName(data-library='languageLocation').bloom-writeOnly
+	+mxb-contributions
+	+field-prototypeDeclaredExplicity("N1")#funding
+		label.bubble Use this to acknowledge any funding agencies.
+		+editable(kLanguageForPrototypeOnly).funding.Funding-style.bloom-copyFromOtherLanguageIfNecessary(data-book='funding')
+	+title-page-branding-bottom
 
 mixin mxb-titlePage
-	+page-xmatter('Title Page').titlePage.bloom-frontMatter(data-export='front-matter-title-page', data-xmatter-page='titlePage')&attributes(attributes)#5dcd48df-e9ab-4a07-afd4-6a24d0398381
-		+field-prototypeDeclaredExplicity("V, N1, N2")#titlePageTitleBlock
-			label.bubble Book title in {lang}
-			+editable(kLanguageForPrototypeOnly).bloom-nodefaultstylerule.Title-On-Title-Page-style(data-book='bookTitle')
-		#languageInformation.Credits-Page-style('lang'='N1')
-			.languagesOfBook(data-derived='languagesOfBook')
-			.langName('data-library'='dialect')
-			.langName(data-library='languageLocation').bloom-writeOnly
-		+mxb-contributions
-		+field-prototypeDeclaredExplicity("N1")#funding
-			label.bubble Use this to acknowledge any funding agencies.
-			+editable(kLanguageForPrototypeOnly).funding.Funding-style.bloom-copyFromOtherLanguageIfNecessary(data-book='funding')
-		+title-page-branding-bottom
+	+page-xmatter('Title Page').titlePage(data-export='front-matter-title-page', data-xmatter-page='titlePage')&attributes(attributes)#5dcd48df-e9ab-4a07-afd4-6a24d0398381
+		+mxb-titlePage-contents
 
-mixin mxb-nationalSummaryCreditsPage-back-title-page
-	// Credits page back of Title page
-	+page-xmatter("Credits Page").bloom-frontMatter.credits(data-export='front-matter-credits', data-xmatter-page='credits')#69EF35AE-5BF1-49F1-89E7-2A932DAD932C
-		+field-mono-meta("N1","insideCredits").NationalLanguage-style.bloom-copyFromOtherLanguageIfNecessary
-			label.bubble If your publication is not diglot, you can include a national language summary here, which is the back of the title page.
-		+field-prototypeDeclaredExplicity("N1")#localizedAcknowledgments
-			label.bubble
-				| Acknowledgments for this version, in {lang}. For example, give credit to the translator for this version.
-			+editable(kLanguageForPrototypeOnly).versionAcknowledgments.LocalizedAcknowledgments-style.bloom-copyFromOtherLanguageIfNecessary(data-book="versionAcknowledgments")
-		+block-licenseAndCopyright
-		//- Here code puts in something like "From the original Copyright Pratham Books 2016. CC-BY. Any license notes here."
-		.copyright(data-derived="originalCopyrightAndLicense").Credits-Page-style.bloom-copyFromOtherLanguageIfNecessary
-		//- Moved from Title page
-		+field-prototypeDeclaredExplicity("N1")#originalAcknowledgments
-			label.bubble Original (or Shell) Acknowledgments in {lang}
-			+editable(kLanguageForPrototypeOnly).OriginalAcknowledgments-style.bloom-copyFromOtherLanguageIfNecessary(data-book='originalAcknowledgments')
-				| {Original Acknowledgments}
-		+field-ISBN
-		+field-prototypeDeclaredExplicity("N1")#printingHistory
-			label.bubble Use this for Printing History (1st Edition, etc.)
-			+editable(kLanguageForPrototypeOnly).PrintingHistory-style.bloom-copyFromOtherLanguageIfNecessary(data-book='printingInfo')
+mixin mxb-nationalSummaryCreditsPage-back-title-page-contents
+	+field-mono-meta("N1","insideCredits").NationalLanguage-style.bloom-copyFromOtherLanguageIfNecessary
+		label.bubble If your publication is not diglot, you can include a national language summary here, which is the back of the title page.
+	+field-prototypeDeclaredExplicity("N1")#localizedAcknowledgments
+		label.bubble
+			| Acknowledgments for this version, in {lang}. For example, give credit to the translator for this version.
+		+editable(kLanguageForPrototypeOnly).versionAcknowledgments.LocalizedAcknowledgments-style.bloom-copyFromOtherLanguageIfNecessary(data-book="versionAcknowledgments")
+	+block-licenseAndCopyright
+	//- Here code puts in something like "From the original Copyright Pratham Books 2016. CC-BY. Any license notes here."
+	.copyright(data-derived="originalCopyrightAndLicense").Credits-Page-style.bloom-copyFromOtherLanguageIfNecessary
+	//- Moved from Title page
+	+field-prototypeDeclaredExplicity("N1")#originalAcknowledgments
+		label.bubble Original (or Shell) Acknowledgments in {lang}
+		+editable(kLanguageForPrototypeOnly).OriginalAcknowledgments-style.bloom-copyFromOtherLanguageIfNecessary(data-book='originalAcknowledgments')
+			| {Original Acknowledgments}
+	+field-ISBN
+	+field-prototypeDeclaredExplicity("N1")#printingHistory
+		label.bubble Use this for Printing History (1st Edition, etc.)
+		+editable(kLanguageForPrototypeOnly).PrintingHistory-style.bloom-copyFromOtherLanguageIfNecessary(data-book='printingInfo')
+
+mixin mxb-creditsPage
+	+page-xmatter('Credits Page').credits(data-export='front-matter-credits', data-xmatter-page='credits')&attributes(attributes)#69EF35AE-5BF1-49F1-89E7-2A932DAD932C
+		+mxb-nationalSummaryCreditsPage-back-title-page-contents

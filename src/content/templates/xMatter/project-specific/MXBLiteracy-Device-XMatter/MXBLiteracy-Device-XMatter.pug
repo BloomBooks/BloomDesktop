@@ -1,4 +1,9 @@
 extends ../MXBLiteracy-XMatter/MXBLiteracy-XMatter.pug
 
-block append stylesheets
+block stylesheets
 	+stylesheets('MXBLiteracy-Device-XMatter.css')
+
+block afterFrontCoverPages
+	//- Title and Credits at the end
+	+mxb-titlePage.bloom-backMatter
+	+mxb-creditsPage.bloom-backMatter
