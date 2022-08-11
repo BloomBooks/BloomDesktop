@@ -169,7 +169,6 @@ namespace Bloom.Publish.Android
 				MakeBloompubPreview(request, false);
 			}, false);
 
-
 			apiHandler.RegisterEndpointLegacy(kApiUrlPart + "thumbnail", request =>
 			{
 				var coverImage = request.CurrentBook.GetCoverImagePath();

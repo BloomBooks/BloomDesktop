@@ -16,10 +16,10 @@ export const ThumbnailGroup: React.FunctionComponent<{
 const ThumbnailControl: React.FunctionComponent<{
     onChange?: () => void;
 }> = props => {
-    const [bookCoverColor, setBookCoverColor] = BloomApi.useApiStringState(
-        "publish/android/backColor",
-        "white"
-    );
+    const [
+        bookCoverColor,
+        setBookCoverColor
+    ] = BloomApi.useApiStringStatePromise("publish/android/backColor", "white");
     const [canModifyCurrentBook] = BloomApi.useApiBoolean(
         "common/canModifyCurrentBook",
         false
@@ -31,8 +31,8 @@ const ThumbnailControl: React.FunctionComponent<{
             disabled={!canModifyCurrentBook}
             imagePath="/bloom/api/publish/android/thumbnail?color="
             color={bookCoverColor}
-            onColorChanged={colorChoice => {
-                setBookCoverColor(colorChoice);
+            onColorChanged={async colorChoice => {
+                await setBookCoverColor(colorChoice);
                 if (props.onChange) {
                     props.onChange();
                 }
