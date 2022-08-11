@@ -72,10 +72,6 @@
         .bloom-dragHandle {
             cursor: grab;
 
-            &:not(.ui-draggable-handle) {
-                cursor: text;
-            }
-
             &.grabbing {
                 cursor: grabbing;
             }
@@ -133,17 +129,8 @@
             width: 22px;
             height: 22px;
             top: -15px;
-
-            &.visible {
-                // This z-index should be below the canvas
-                z-index: @dragHandleVisibleZIndex;
-            }
-
-            &.transparent {
-                // This z-index should be above the canvas
-                z-index: @dragHandleEventZIndex;
-                opacity: 0; // Fully transparent (aka invisible)
-            }
+            // This z-index should be above the canvas
+            z-index: @dragHandleEventZIndex;
         }
 
         // Overrides the inherited values from editMode.less, which are a slightly different shade of blue.
