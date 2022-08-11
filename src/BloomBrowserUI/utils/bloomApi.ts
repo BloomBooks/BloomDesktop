@@ -51,10 +51,10 @@ export class BloomApi {
     // You can also pass a get, post, etc. call without a .then().
     //
     // Returns a modified promise (the same promise you passed in, but with an error reporting catch included)
-    public static async wrapAxios(
-        call: Promise<void | AxiosResponse>,
+    public static async wrapAxios<T>(
+        call: Promise<void | AxiosResponse<T>>,
         report: boolean = true
-    ): Promise<void | AxiosResponse<any>> {
+    ): Promise<void | AxiosResponse<T>> {
         // Save the place where the original axios call was made.
         // The stack in the error passed to catch is usually not very
         // useful, containing just a few levels from the axios code
