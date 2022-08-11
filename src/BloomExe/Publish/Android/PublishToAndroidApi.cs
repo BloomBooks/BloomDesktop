@@ -164,13 +164,10 @@ namespace Bloom.Publish.Android
 				}
 			, true);
 
-			// FYI, handleOnUiThread needs to be true.
-			// Otherwise, when doing a backColor POST update, this may throw an exception as some file may be missing.
-			// Also, the client may receive the wrong background color.
 			apiHandler.RegisterEndpointHandler(kApiUrlPart + "updatePreview", request =>
 			{
 				MakeBloompubPreview(request, false);
-			}, true);
+			}, false);
 
 			apiHandler.RegisterEndpointLegacy(kApiUrlPart + "thumbnail", request =>
 			{

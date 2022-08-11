@@ -349,7 +349,72 @@ export class BloomApi {
         urlSuffix: string,
         defaultValue: string,
         conditional?: () => boolean
-    ): [string, (value: string) => void] {
+    ) {
+        const generateSetStateWrapper = (
+            setState: React.Dispatch<React.SetStateAction<string>>
+        ) => {
+            const setStateWrapper = (value: string) => {
+                BloomApi.postString(urlSuffix, value);
+                setState(value);
+            };
+
+            return setStateWrapper;
+        };
+
+        return this.useApiStringStateInternal(
+            urlSuffix,
+            defaultValue,
+            conditional,
+            generateSetStateWrapper
+        );
+    }
+
+    /**
+     * A react hook very much like useApiStringState, but with two timing-related differences:
+     * 1) waits for the POST request to succeed before setting the value.
+     * 2) The setter function returns a Promise so that the caller can wait until setting is fully complete.
+     */
+    public static useApiStringStatePromise(
+        urlSuffix: string,
+        defaultValue: string,
+        conditional?: () => boolean
+    ) {
+        const generateSetStateWrapper = (
+            setState: React.Dispatch<React.SetStateAction<string>>
+        ) => {
+            // Note that this returns Promise<void> instead of void
+            const setStateWrapper = async (value: string) => {
+                await BloomApi.postString(urlSuffix, value);
+                setState(value);
+            };
+
+            return setStateWrapper;
+        };
+
+        return this.useApiStringStateInternal(
+            urlSuffix,
+            defaultValue,
+            conditional,
+            generateSetStateWrapper
+        );
+    }
+
+    /**
+     * Internal helper method to handle shared code of useApiStringState and useApiStringStatePromise
+     *
+     * In addition to the shared parameters, this Internal function adds a generateSetStateWrapper parameter.
+     * This param is a function which generates the "setStateWrapper" which wraps up the standard setState function from React.useHook with some other functionality.
+     * The sole parameter to generateSetStateWrapperFunction is the underlying setState from React's useState hook.
+     * The return value should be a function that can be used in place of the underlying setState from React's useState hook.
+     */
+    private static useApiStringStateInternal<T>(
+        urlSuffix: string,
+        defaultValue: string,
+        conditional: (() => boolean) | undefined,
+        generateSetStateWrapper: (
+            setValue: React.Dispatch<React.SetStateAction<string>>
+        ) => T
+    ): [string, T] {
         const [value, setValue] = React.useState(defaultValue);
         React.useEffect(() => {
             if (!conditional || conditional()) {
@@ -359,11 +424,8 @@ export class BloomApi {
             }
         }, []);
 
-        const fn = (value: string) => {
-            BloomApi.postString(urlSuffix, value);
-            setValue(value);
-        };
-        return [value, fn];
+        const setterWrapperFunction = generateSetStateWrapper(setValue);
+        return [value, setterWrapperFunction];
     }
 
     public static getBoolean(
@@ -398,19 +460,13 @@ export class BloomApi {
         );
     }
 
-    public static postString(
-        urlSuffix: string,
-        value: string,
-        successCallback?: (r: AxiosResponse) => void
-    ) {
-        BloomApi.wrapAxios(
-            axios
-                .post(getBloomApiPrefix() + urlSuffix, value, {
-                    headers: {
-                        "Content-Type": "text/plain"
-                    }
-                })
-                .then(successCallback)
+    public static postString(urlSuffix: string, value: string) {
+        return BloomApi.wrapAxios(
+            axios.post(getBloomApiPrefix() + urlSuffix, value, {
+                headers: {
+                    "Content-Type": "text/plain"
+                }
+            })
         );
     }
 
