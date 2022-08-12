@@ -105,11 +105,13 @@ namespace Bloom.Publish.Epub
 			_webSocketServer.SendString(kWebsocketContext, kWebsocketEventId_Progress, message);
 		}
 
+		public static string EpubMode = "fixed";
+
 		public void RegisterWithApiHandler(BloomApiHandler apiHandler)
 		{
 			apiHandler.RegisterEndpointHandler(kApiUrlPart + "save", HandleEpubSave, true, false);
 
-			apiHandler.RegisterEndpointLegacy(kApiUrlPart + "epubSettings", request =>
+			apiHandler.RegisterEndpointHandler(kApiUrlPart + "epubSettings", request =>
 			{
 				if (request.HttpMethod == HttpMethods.Get)
 				{
@@ -119,6 +121,24 @@ namespace Bloom.Publish.Epub
 				{
 					// post is deprecated.
 					throw new ApplicationException("epubSettings POST is deprecated");
+				}
+			}, false);
+
+			apiHandler.RegisterEndpointHandler(kApiUrlPart + "epubMode", request =>
+			{
+				if (request.HttpMethod == HttpMethods.Get)
+				{
+					if (request.CurrentBook.OurHtmlDom.HasOverlayPages())
+						// If we have comic pages (now), we have to use fixed layout, even if flowable was set at some point.
+						request.ReplyWithText("fixed");
+					else
+						request.ReplyWithText(EpubMode);
+				}
+				else
+				{
+					EpubMode = request.RequiredPostString();
+					RefreshPreview(_desiredEpubSettings);
+					request.PostSucceeded();
 				}
 			}, false);
 
@@ -150,7 +170,7 @@ namespace Bloom.Publish.Epub
 				},
 				false);
 
-			apiHandler.RegisterEndpointLegacy(kApiUrlPart + "updatePreview", request =>
+			apiHandler.RegisterEndpointHandler(kApiUrlPart + "updatePreview", request =>
 			{
 				RefreshPreview(_desiredEpubSettings);
 				request.PostSucceeded();
@@ -161,7 +181,7 @@ namespace Bloom.Publish.Epub
 				}
 			}, false); // in fact, must NOT be on UI thread
 
-			apiHandler.RegisterEndpointLegacy(kApiUrlPart + "abortPreview", request =>
+			apiHandler.RegisterEndpointHandler(kApiUrlPart + "abortPreview", request =>
 			{
 				AbortMakingEpub();
 
@@ -169,6 +189,7 @@ namespace Bloom.Publish.Epub
 			}, false, false);
 
 			apiHandler.RegisterBooleanEndpointHandler(kApiUrlPart + "landscape",request => request.CurrentBook.GetLayout().SizeAndOrientation.IsLandScape,null, false);
+			apiHandler.RegisterBooleanEndpointHandler(kApiUrlPart + "overlays", request => request.CurrentBook.OurHtmlDom.HasOverlayPages(), null, false);
 		}
 
 		private void HandleEpubSave(ApiRequest request)
@@ -269,7 +290,7 @@ namespace Bloom.Publish.Epub
 			}
 
 			EpubMaker.Book = _bookSelection.CurrentSelection;
-			EpubMaker.Unpaginated = false; // Enhance: UI?
+			EpubMaker.Unpaginated = PublishEpubApi.EpubMode == "flowable";
 			EpubMaker.OneAudioPerPage = true;
 		}
 

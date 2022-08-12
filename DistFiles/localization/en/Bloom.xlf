@@ -3984,6 +3984,29 @@
                 <source xml:lang="en">Create an ePUB book</source>
                 <note>ID: PublishTab.Epub.Title</note>
             </trans-unit>
+            <!-- for 5.4 (new epub mode feature)
+            <trans-unit id="PublishTab.Epub.Fixed">
+              <source xml:lang="en">Fixed</source>
+              <note>ID: PublishTab.Epub.Fixed</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.Epub.Fixed.Description">
+              <source xml:lang="en">Ask ePUB reader to show pages exactly like you see them in Bloom</source>
+              <note>ID: PublishTab.Epub.Fixed.Description</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.Epub.Flowable">
+              <source xml:lang="en">Flowable</source>
+              <note>ID: PublishTab.Epub.Flowable</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.Epub.Flowable.Description">
+              <source xml:lang="en">Allow ePUB reader to lay out images and text however they want. The user is more likely to be able to increase font size. Custom page layouts will not look good. This mode is not available if your book has overlay pages (comics).</source>
+              <note>ID: PublishTab.Epub.Flowable.Description</note>
+            </trans-unit>
+            <trans-unit id="PublishTab.Epub.Mode">
+              <source xml:lang="en">ePUB mode</source>
+              <note>ID: PublishTab.Epub.Mode</note>
+              <note>a heading for two choices, Fixed or Flowable</note>
+            </trans-unit>
+            -->
             <trans-unit id="PublishTab.EpubButton">
                 <source xml:lang="en">ePUB</source>
                 <note>ID: PublishTab.EpubButton</note>

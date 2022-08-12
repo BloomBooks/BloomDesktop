@@ -2,7 +2,7 @@
 import { jsx, css } from "@emotion/core";
 import React = require("react");
 import { default as InfoIcon } from "@material-ui/icons/InfoOutlined";
-import { Popover, Typography } from "@material-ui/core";
+import { Popover, PopoverOrigin, Typography } from "@material-ui/core";
 
 // This class supports adding a tooltip to its children.
 // We use this for a more controllable tooltip than we get with title and similar properties.
@@ -36,6 +36,7 @@ export const BloomTooltip: React.FunctionComponent<{
     // of the popup to its parent, so we need a unique ID. The supplied ID will be applied to the popup.
     // Enhance: there's probably some way we could come up with a safe default for this.
     id: string;
+    side?: "bottom" | "left";
 }> = props => {
     // controls visibility and placement of the 'tooltip' (if props.changePopupAnchor is null).
     const [
@@ -57,6 +58,56 @@ export const BloomTooltip: React.FunctionComponent<{
         : localAnchorEl;
     const tooltipOpen = Boolean(anchorEl);
 
+    const anchorOrigin: PopoverOrigin =
+        props.side == "left"
+            ? {
+                  vertical: "top",
+                  // 10 pixels left of the anchor; leaves room for arrow and a little margin.
+                  horizontal: -20
+              }
+            : {
+                  vertical: "bottom",
+                  horizontal: "center"
+              };
+
+    const transformOrigin: PopoverOrigin =
+        props.side == "left"
+            ? {
+                  vertical: "top",
+                  horizontal: "right"
+              }
+            : {
+                  // 15 pixels below the bottom (based on anchorOrigin) of the anchor;
+                  // leaves room for arrow and a bit of margin.
+                  vertical: -15,
+                  horizontal: "center"
+              };
+
+    const arrowSize = 8;
+    // This css is used for the div that makes the arrow on the popover.
+    // I have not made it smart enough to move around if popover
+    // gets smart and places the popover in an unexpected place
+    // (e.g., so it fits in the window). This control is currently used in small
+    // enough screen regions that I don't think this is likely to happen.
+    const arrowCss =
+        props.side === "left"
+            ? css`
+                  border: solid ${arrowSize}px;
+                  position: absolute;
+                  border-color: transparent;
+                  right: -${arrowSize * 2}px;
+                  top: 5px;
+                  border-left-color: ${props.tooltipBackColor};
+              `
+            : css`
+                  border: solid ${arrowSize}px;
+                  position: absolute;
+                  border-color: transparent;
+                  top: ${1 - 2 * arrowSize}px;
+                  left: calc(50% - ${arrowSize / 2}px);
+                  border-bottom-color: ${props.tooltipBackColor};
+              `;
+
     // Handle an event that should close the popover.
     const handlePopoverClose = () => {
         if (props.changePopupAnchor) {
@@ -65,7 +116,7 @@ export const BloomTooltip: React.FunctionComponent<{
             setLocalAnchorEl(null);
         }
     };
-    const arrowSize = 8;
+
     return (
         <div
             aria-owns={tooltipOpen ? props.id : undefined}
@@ -100,16 +151,8 @@ export const BloomTooltip: React.FunctionComponent<{
                 //   }}
                 open={tooltipOpen}
                 anchorEl={anchorEl}
-                anchorOrigin={{
-                    vertical: "bottom",
-                    horizontal: "center"
-                }}
-                transformOrigin={{
-                    // 15 pixels below the bottom (based on anchorOrigin) of the anchor;
-                    // leaves room for arrow and a bit of margin.
-                    vertical: -15,
-                    horizontal: "center"
-                }}
+                anchorOrigin={anchorOrigin}
+                transformOrigin={transformOrigin}
                 onClose={handlePopoverClose}
                 disableRestoreFocus // most MUI examples have this, not sure what it does.
             >
@@ -122,21 +165,7 @@ export const BloomTooltip: React.FunctionComponent<{
                         position: relative;
                     `}
                 >
-                    <div
-                        css={css`
-                            // This div makes the arrow.
-                            // I have not made it smart enough to move around if popover
-                            // gets smart and places the popover in an unexpected place
-                            // (e.g., so it fits in the window). This control is currently used in a small
-                            // enough screen region that I don't think this is likely to happen.
-                            border: solid ${arrowSize}px;
-                            position: absolute;
-                            top: ${1 - 2 * arrowSize}px;
-                            left: calc(50% - ${arrowSize / 2}px);
-                            border-color: transparent;
-                            border-bottom-color: ${props.tooltipBackColor};
-                        `}
-                    ></div>
+                    <div css={arrowCss}></div>
                     <div
                         css={css`
                             background-color: ${props.tooltipBackColor};
