@@ -281,7 +281,7 @@ namespace Bloom.CLI
 			maker.ControlForInvoke = control;
 
 			maker.Book = _book;
-			maker.Unpaginated = true; // so far they all are
+			maker.Unpaginated = PublishEpubApi.EpubMode == "flowable";
 			maker.OneAudioPerPage = true; // default used in EpubApi
 										  // Enhance: maybe we want book to have image descriptions on page? use reader font sizes?
 			

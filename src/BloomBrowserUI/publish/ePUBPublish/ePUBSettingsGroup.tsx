@@ -8,14 +8,52 @@ import { Link } from "../../react_components/link";
 import { SettingsGroup } from "../commonPublish/PublishScreenBaseComponents";
 import { useL10n } from "../../react_components/l10nHooks";
 import { RequiresCheckoutInfo } from "../../react_components/requiresCheckoutInfo";
+import { Div } from "../../react_components/l10nComponents";
+import { MenuItem, Select } from "@material-ui/core";
+import { kBloomBlue } from "../../bloomMaterialUITheme";
+import { useState } from "react";
+import { BloomTooltip } from "../../react_components/BloomToolTip";
 
-export const EPUBSettingsGroup = () => {
+const epubModes: IEpubMode[] = [
+    {
+        mode: "fixed",
+        label: "Fixed",
+        l10nKey: "Publish.Epub.Fixed",
+        description:
+            "Ask ePUB reader to show pages exctly like you see them in Bloom",
+        descriptionL10nKey: "Publish.Epub.Fixed.Description"
+    },
+    {
+        mode: "flowable",
+        label: "Flowable",
+        l10nKey: "Publish.Epub.Flowable",
+        description:
+            "Allow ePUB reader to lay out images and text however they want. The user is more likely to be able to increase font size. Custom page layouts will not look good. This mode is not available if your book has overlay pages (comics).",
+        descriptionL10nKey: "Publish.Epub.Flowable.Description"
+    }
+];
+
+export const EPUBSettingsGroup: React.FunctionComponent = props => {
     //const [includeImageDescriptionOnPage,setIncludeImageDescriptionOnPage] = BloomApi.useApiBoolean("publish/epub/imageDescriptionSetting", true);
     const canModifyCurrentBook = BloomApi.useCanModifyCurrentBook();
     const linkCss = "margin-top: 1em !important; display: block;";
     const disabledLinkCss = canModifyCurrentBook
         ? ""
         : "color: rgba(0, 0, 0, 0.38) !important;";
+
+    const [epubMode, setEpubmode] = BloomApi.useApiStringState(
+        "publish/epub/epubMode",
+        "fixed"
+    );
+    const [modeDropdownIsOpen, setModeDropdownIsOpen] = useState(false);
+
+    // Manages visibility of the description popup for the main Mode label (that shows in the
+    // control when the dropdown is closed).
+    const [modePopupAnchor, setModePopupAnchor] = useState<HTMLElement | null>(
+        null
+    );
+
+    const [hasOverlays] = BloomApi.useApiBoolean("publish/epub/overlays", true);
 
     return (
         <SettingsGroup
@@ -32,11 +70,91 @@ export const EPUBSettingsGroup = () => {
                 disabled={false}
             />
 
+            <div
+                css={css`
+                    display: flex;
+                    margin-top: 20px;
+                    .MuiSelect-root {
+                        padding-top: 3px !important;
+                        padding-bottom: 4px !important;
+                    }
+                `}
+            >
+                <Div
+                    css={css`
+                        font-weight: bold;
+                    `}
+                    l10nKey="PublishTab.Epub.Mode"
+                    l10nComment="a heading for two choices, Fixed or Flowable"
+                    temporarilyDisableI18nWarning={true}
+                >
+                    ePUB mode
+                </Div>
+
+                <div
+                    css={css`
+                        margin-left: 20px;
+                    `}
+                >
+                    <Select
+                        css={css`
+                            background-color: white;
+                            &.MuiOutlinedInput-root {
+                                border-radius: 0 !important;
+
+                                .MuiOutlinedInput-notchedOutline {
+                                    border-width: 1px !important;
+                                    border-color: ${kBloomBlue} !important; // it usually is anyway, but not before MUI decides to focus it.
+                                }
+                            }
+                        `}
+                        value={epubMode}
+                        disabled={hasOverlays}
+                        open={modeDropdownIsOpen}
+                        onOpen={() => {
+                            //setFormatPopupAnchor(null);
+                            setModeDropdownIsOpen(true);
+                        }}
+                        onClose={() => setModeDropdownIsOpen(false)}
+                        onChange={e => {
+                            const newMode = e.target.value as string;
+                            setEpubmode(newMode);
+                        }}
+                        style={{ width: 100 }}
+                        renderValue={f => {
+                            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+                            const item = epubModes.find(
+                                item => item.mode === f
+                            )!;
+                            return (
+                                <EpubModeItem
+                                    {...item}
+                                    popupAnchorElement={modePopupAnchor}
+                                    changePopupAnchor={setModePopupAnchor}
+                                />
+                            );
+                        }}
+                    >
+                        {epubModes.map(item => {
+                            return (
+                                <MenuItem
+                                    value={item.mode}
+                                    key={item.mode}
+                                    disabled={false} // todo: disable flowable if comics
+                                >
+                                    <EpubModeItem {...item} />
+                                </MenuItem>
+                            );
+                        })}
+                    </Select>
+                </div>
+            </div>
+
             <ApiCheckbox
                 english="Use ePUB reader's text size"
                 apiEndpoint="publish/epub/removeFontSizesSetting"
                 l10nKey="PublishTab.Epub.RemoveFontSizes"
-                disabled={false}
+                disabled={epubMode === "fixed"}
                 //TODO: priorClickAction={() => this.abortPreview()}
             />
             {/* l10nKey is intentionally not under PublishTab.Epub... we may end up with this link in other places */}
@@ -79,5 +197,82 @@ export const EPUBSettingsGroup = () => {
                 />
             </div>
         </SettingsGroup>
+    );
+};
+
+interface IEpubMode {
+    mode: string; // to pass to BloomApi
+    label: string;
+    l10nKey: string; // for label
+    description: string; // more details
+    descriptionL10nKey: string;
+}
+
+// Props for the EpubModeOptions component, which displays an instance of IEpubMode
+interface IProps extends IEpubMode {
+    // The EpubModeItem may (when hovered over) display a popup with more details.
+    // Usually the EpubModeItem controls for itself whether this is shown; but we also permit
+    // this behavior to work in the controlled component mode, where the client controls
+    // its visibility. Technically, the appearance of the popup is controlled by keeping
+    // track of which component it is anchored to (if visible), or storing a null if it
+    // isn't. If the component is controlled, the client provides changePopupAnchor to
+    // receive notification that the control wishes to change this (because it is hovered over),
+    // and popupAnchorElement to actually control the presence (and placement) of the popup.
+    // The client should normally change popupAnchorElement to whatever changePopupAnchor
+    // tells it to, but may also set it to null to force the popup closed. It probably doesn't
+    // make sense to set it to anything other than a value received from changePopupAnchor or null.
+    changePopupAnchor?: (anchor: HTMLElement | null) => void;
+    popupAnchorElement?: HTMLElement | null;
+}
+
+const EpubModeItem: React.FunctionComponent<IProps> = props => {
+    const id = "mouse-over-popover-" + props.mode;
+    const popupColor = kBloomBlue;
+
+    return (
+        <BloomTooltip
+            id={id}
+            tooltipBackColor={popupColor}
+            popupAnchorElement={props.popupAnchorElement}
+            changePopupAnchor={props.changePopupAnchor}
+            side="left"
+            tooltipContent={
+                <div
+                    css={css`
+                        display: flex;
+                        flex-direction: column;
+                        align-items: center;
+                    `}
+                >
+                    <Div
+                        l10nKey={props.descriptionL10nKey}
+                        temporarilyDisableI18nWarning={true}
+                        css={css`
+                            max-width: 200px;
+                        `}
+                    >
+                        {props.description}
+                    </Div>
+                </div>
+            }
+        >
+            <div
+                css={css`
+                    display: flex;
+                    min-width: 100px;
+                `}
+            >
+                <Div
+                    l10nKey={props.l10nKey}
+                    css={css`
+                        margin-left: 8px;
+                    `}
+                    key={props.l10nKey} // prevents stale labels (BL-11179)
+                    temporarilyDisableI18nWarning={true}
+                >
+                    {props.label}
+                </Div>
+            </div>
+        </BloomTooltip>
     );
 };

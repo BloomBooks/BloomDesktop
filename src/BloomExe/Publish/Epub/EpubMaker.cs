@@ -454,6 +454,15 @@ namespace Bloom.Publish.Epub
 			}
 		}
 
+		public static bool HasComicPages(Book.Book book)
+		{
+			var nsManager = new XmlNamespaceManager(book.RawDom.NameTable);
+			nsManager.AddNamespace("svg", "http://www.w3.org/2000/svg");
+			var comicalMatches =
+				book.RawDom.SafeSelectNodes(".//svg:svg[contains(@class, 'comical-generated')]", nsManager);
+			return comicalMatches.Count > 0;
+		}
+
 		private static string basePageText;
 
 		public static void GetPageDimensions(string pageSize, out double width, out double height)

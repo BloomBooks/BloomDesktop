@@ -157,7 +157,7 @@ namespace BloomTests.Publish
 			var epubPath = Path.Combine(epubFolder.FolderPath, epubName);
 			using (var maker = CreateEpubMaker(book))
 			{
-				maker.Unpaginated = true; // Currently we always make unpaginated epubs.
+				maker.Unpaginated = true; // Unit tests currently expect this
 				maker.PublishImageDescriptions = howToPublishImageDescriptions;
 				extraInit?.Invoke(maker);
 				maker.SaveEpub(epubPath, new NullWebSocketProgress());
