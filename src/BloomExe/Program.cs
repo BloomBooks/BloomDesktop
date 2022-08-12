@@ -377,12 +377,19 @@ namespace Bloom
 					}
 					else
 					{
-						// Check whether another instance of Bloom is running.  That should happen only when downloading a book because
-						// BloomLibrary starts a new Bloom process even when one is already running.  But that is taken care of in the
-						// other branch of this if/else.  So quit if we find another instance of Bloom running at this point.
-						// (A message will pop up to tell the user about this situation if it happens.)
-						if (!UniqueToken.AcquireToken(_mutexId, "Bloom"))
-							return 1;
+						// bypass check if control key is held down
+						if ((Control.ModifierKeys & Keys.Control) != Keys.Control)
+						{
+							// August 2022 comment on the following comment: actually, Bloom goes into this code block when I just run Bloom
+							// nothing to do with Bloom Library:
+
+							// Check whether another instance of Bloom is running.  That should happen only when downloading a book because
+							// BloomLibrary starts a new Bloom process even when one is already running.  But that is taken care of in the
+							// other branch of this if/else.  So quit if we find another instance of Bloom running at this point.
+							// (A message will pop up to tell the user about this situation if it happens.)
+							if (!UniqueToken.AcquireToken(_mutexId, "Bloom"))
+								return 1;
+						}
 						gotUniqueToken = true;
 					}
 					OldVersionCheck();
