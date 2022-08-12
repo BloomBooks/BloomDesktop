@@ -141,7 +141,7 @@ export default class BloomHintBubbles {
             elementWithBubbleAttributes
         );
         if (whatToSay != null && whatToSay.startsWith("*"))
-            whatToSay = whatToSay.substr(1);
+            whatToSay = whatToSay.substring(1);
         if (!whatToSay) return; // just forget adding a hint if there's no text.
         // Don't use the corresponding svg from artwork here. Somehow it causes about a 4 second delay (on a fast workstation)
         headers.prepend(
@@ -152,8 +152,7 @@ export default class BloomHintBubbles {
             whatToSay +
             this.getPossibleHyperlink(
                 elementWithBubbleAttributes,
-                elementThatHasSourceBubble,
-                whatToSay
+                elementThatHasSourceBubble
             );
         // This is bizarre. We modified "jquery.easytabs.js" to target @lang attributes, rather than ids.
         // This allows us to have multiple source bubbles each with the same languages, whereas
@@ -177,12 +176,11 @@ export default class BloomHintBubbles {
                 preferredLangs
             );
             if (whatToSay != null && whatToSay.startsWith("*"))
-                whatToSay = whatToSay.substr(1);
+                whatToSay = whatToSay.substring(1);
             if (!whatToSay) return;
             const hyperlink = this.getPossibleHyperlink(
                 elementWithBubbleAttributes,
-                elementThatHasSourceBubble,
-                whatToSay
+                elementThatHasSourceBubble
             );
             content.find("p").text(whatToSay);
             if (hyperlink.length > 0) content.find("p").append(hyperlink);
@@ -408,14 +406,6 @@ export default class BloomHintBubbles {
 
         if (target.css("border-bottom-color") === "transparent") return; //don't put tips if they can't edit it. That's just confusing
 
-        // Anybody know why this was here!? BL-1125 complains about this very thing.
-        //if (target.hasClass('coverBottomBookTopic'))
-        //    pos.adjust = { y: -20 };
-
-        //temporarily disabling this; the problem is that its more natural to put the hint on enclosing 'translationgroup' element, but those elements are *never* empty.
-        //maybe we could have this logic, but change this logic so that for all items within a translation group, they get their a hint from a parent, and then use this isempty logic
-        //at the moment, the logic is all around whoever has the data-hint
-        //var shouldShowAlways = $(this).is(':empty'); //if it was empty when we drew the page, keep the tooltip there
         let shouldShowAlways = true;
 
         // get the default text/stringId
@@ -436,36 +426,16 @@ export default class BloomHintBubbles {
             if (whatToSay != null && whatToSay.startsWith("*"))
                 whatToSay = whatToSay.substring(1);
             if (!whatToSay) return; // no empty bubbles
-            let functionCall = source.data("functiononhintclick");
-            let onClick;
+            const functionCall: string = source.data("functiononhintclick");
             if (functionCall) {
-                if (functionCall === "bookMetadataEditor") {
+                if (functionCall.includes("showCopyrightAndLicenseDialog")) {
                     if (!BloomHintBubbles.canChangeBookLicense()) return;
-                    // In C# land, the browser onClick will attempt to handle this.
-                    // This dummy function name simply indicates we've already done
-                    // all that is needed and prevents C# from interfering.
-                    functionCall = "clickWasAlreadyHandled";
-                    onClick =
-                        "onClick='(window.parent || window).editTabBundle.showCopyrightAndLicenseDialog();'";
-                }
-                if (functionCall.startsWith("ShowTopicChooser")) {
-                    // In C# land, the browser onClick will attempt to handle this.
-                    // This dummy function name simply indicates we've already done
-                    // all that is needed and prevents C# from interfering.
-                    functionCall = "clickWasAlreadyHandled";
-                    onClick =
-                        "onClick='(window.parent || window).editTabBundle.showEditViewTopicChooserDialog();'";
                 }
                 shouldShowAlways = true;
 
-                if (functionCall.indexOf("(") > 0)
-                    functionCall = "javascript:" + functionCall + ";";
-
-                whatToSay = `<a href='${functionCall}' ${onClick}>${whatToSay}</a>`;
+                whatToSay = `<a href='${functionCall}'>${whatToSay}</a>`;
             }
-            whatToSay =
-                whatToSay +
-                this.getPossibleHyperlink(source, target, whatToSay);
+            whatToSay = whatToSay + this.getPossibleHyperlink(source, target);
             if (onFocusOnly) {
                 shouldShowAlways = false;
             }
@@ -476,8 +446,7 @@ export default class BloomHintBubbles {
     // Handle a second line in the bubble which links to something like a javascript function
     private static getPossibleHyperlink(
         bubbleSource: JQuery,
-        target: JQuery,
-        whatToSay: string
+        target: JQuery
     ): string {
         let linkText = bubbleSource.attr("data-link-text");
         let linkTarget = bubbleSource.attr("data-link-target");
