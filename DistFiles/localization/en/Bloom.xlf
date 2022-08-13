@@ -3986,7 +3986,7 @@
             </trans-unit>
             <!-- for 5.4 (new epub mode feature)
             <trans-unit id="PublishTab.Epub.Fixed">
-              <source xml:lang="en">Fixed</source>
+              <source xml:lang="en">Fixed – ePUB 3</source>
               <note>ID: PublishTab.Epub.Fixed</note>
             </trans-unit>
             <trans-unit id="PublishTab.Epub.Fixed.Description">
@@ -4004,7 +4004,7 @@
             <trans-unit id="PublishTab.Epub.Mode">
               <source xml:lang="en">ePUB mode</source>
               <note>ID: PublishTab.Epub.Mode</note>
-              <note>a heading for two choices, Fixed or Flowable</note>
+              <note>a heading for two choices, 'Fixed – ePUB 3' or Flowable</note>
             </trans-unit>
             -->
             <trans-unit id="PublishTab.EpubButton">

@@ -316,6 +316,11 @@ namespace Bloom.Book
 
 	public class EpubSettings
 	{
+
+		public EpubSettings()
+		{
+			Mode = "fixed";
+		}
 		/// <summary>
 		/// This item indicates how the user would like Epubs of this book to handle Image Descriptions
 		/// Current possibilities are 'None' and 'OnPage'; previous value 'Links' became obsolete in Bloom 4.6.
@@ -330,6 +335,58 @@ namespace Bloom.Book
 		/// persisted as epub_RemoveFontStyles</remarks>
 		[JsonProperty("removeFontSizes")]
 		public bool RemoveFontSizes;
+
+		public EpubSettings Clone()
+		{
+			return (EpubSettings)MemberwiseClone();
+		}
+
+		/// <summary>
+		/// Currently "fixed" and "flowable" are supported.
+		/// </summary>
+		[JsonProperty("mode")] public string Mode;
+
+		public override bool Equals(object obj)
+		{
+			var other = obj as EpubSettings;
+			if (other == null)
+				return false;
+			return Equals(other);
+		}
+
+		protected bool Equals(EpubSettings other)
+		{
+			return HowToPublishImageDescriptions == other.HowToPublishImageDescriptions && RemoveFontSizes == other.RemoveFontSizes && Mode == other.Mode;
+		}
+
+		public override int GetHashCode()
+		{
+			unchecked
+			{
+				var hashCode = (int)HowToPublishImageDescriptions;
+				hashCode = (hashCode * 397) ^ RemoveFontSizes.GetHashCode();
+				hashCode = (hashCode * 397) ^ (Mode != null ? Mode.GetHashCode() : 0);
+				return hashCode;
+			}
+		}
+
+		public static bool operator ==(EpubSettings a, EpubSettings b)
+		{
+			if (Object.ReferenceEquals(a, b)) return true; // same object, including both null
+			// If one is null, but not both, return false. The casts are needed to prevent
+			// calling this method again recursively (and infinitely).
+			if (((object)a == null) || ((object)b == null))
+			{
+				return false;
+			}
+
+			return a.Equals(b);
+		}
+
+		public static bool operator !=(EpubSettings a, EpubSettings b)
+		{
+			return !(a == b);
+		}
 	}
 
 	public class BloomLibrarySettings
