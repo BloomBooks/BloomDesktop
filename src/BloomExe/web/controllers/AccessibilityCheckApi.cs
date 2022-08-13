@@ -303,7 +303,7 @@ namespace Bloom.web.controllers
 
 		private string MakeEpub(string parentDirectory, WebSocketProgress progress)
 		{
-			var settings = new EpubPublishUiSettings();
+			var settings = new EpubSettings();
 			_epubApi.GetEpubSettingsForCurrentBook(settings);
 			var path = Path.Combine(parentDirectory, Guid.NewGuid().ToString() + ".epub");
 			_epubApi.UpdateAndSave(settings, path, true, _webSocketProgress.WithL10NPrefix("PublishTab.Epub."));

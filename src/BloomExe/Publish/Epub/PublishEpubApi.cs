@@ -34,7 +34,6 @@ namespace Bloom.Publish.Epub
 		// window's progress box.
 		private WebSocketProgress _progress;
 
-		private EpubPublishUiSettings _desiredEpubSettings = new EpubPublishUiSettings();
 		private string _previewSrc;
 		private string _bookVersion;
 		// lock for threads that test or change EpubMaker == null, _stagingEpub, EpubMaker.AbortRequested,
@@ -105,24 +104,9 @@ namespace Bloom.Publish.Epub
 			_webSocketServer.SendString(kWebsocketContext, kWebsocketEventId_Progress, message);
 		}
 
-		public static string EpubMode = "fixed";
-
 		public void RegisterWithApiHandler(BloomApiHandler apiHandler)
 		{
 			apiHandler.RegisterEndpointHandler(kApiUrlPart + "save", HandleEpubSave, true, false);
-
-			apiHandler.RegisterEndpointHandler(kApiUrlPart + "epubSettings", request =>
-			{
-				if (request.HttpMethod == HttpMethods.Get)
-				{
-					request.ReplyWithJson(GetEpubSettings());
-				}
-				else
-				{
-					// post is deprecated.
-					throw new ApplicationException("epubSettings POST is deprecated");
-				}
-			}, false);
 
 			apiHandler.RegisterEndpointHandler(kApiUrlPart + "epubMode", request =>
 			{
@@ -132,12 +116,13 @@ namespace Bloom.Publish.Epub
 						// If we have comic pages (now), we have to use fixed layout, even if flowable was set at some point.
 						request.ReplyWithText("fixed");
 					else
-						request.ReplyWithText(EpubMode);
+						request.ReplyWithText(request.CurrentBook.BookInfo.PublishSettings.Epub.Mode);
 				}
 				else
 				{
-					EpubMode = request.RequiredPostString();
-					RefreshPreview(_desiredEpubSettings);
+					request.CurrentBook.BookInfo.PublishSettings.Epub.Mode = request.RequiredPostString();
+					request.CurrentBook.BookInfo.Save();
+					RefreshPreview(request.CurrentBook.BookInfo.PublishSettings.Epub);
 					request.PostSucceeded();
 				}
 			}, false);
@@ -152,9 +137,7 @@ namespace Bloom.Publish.Epub
 						? BookInfo.HowToPublishImageDescriptions.OnPage
 						: BookInfo.HowToPublishImageDescriptions.None;
 					request.CurrentBook.BookInfo.Save();
-					var newSettings = _desiredEpubSettings.Clone();
-					newSettings.howToPublishImageDescriptions = request.CurrentBook.BookInfo.PublishSettings.Epub.HowToPublishImageDescriptions;
-					RefreshPreview(newSettings);
+					RefreshPreview(request.CurrentBook.BookInfo.PublishSettings.Epub);
 				},
 				false);
 
@@ -164,15 +147,13 @@ namespace Bloom.Publish.Epub
 				(request, booleanSetting) => {
 					request.CurrentBook.BookInfo.PublishSettings.Epub.RemoveFontSizes = booleanSetting;
 					request.CurrentBook.BookInfo.Save();
-					var newSettings = _desiredEpubSettings.Clone();
-					newSettings.removeFontSizes = booleanSetting;
-					RefreshPreview(newSettings);
+					RefreshPreview(request.CurrentBook.BookInfo.PublishSettings.Epub);
 				},
 				false);
 
 			apiHandler.RegisterEndpointHandler(kApiUrlPart + "updatePreview", request =>
 			{
-				RefreshPreview(_desiredEpubSettings);
+				RefreshPreview(request.CurrentBook.BookInfo.PublishSettings.Epub);
 				request.PostSucceeded();
 				if (request.CurrentBook?.ActiveLanguages != null)
 				{
@@ -240,7 +221,7 @@ namespace Bloom.Publish.Epub
 			}
 		}
 
-		private void RefreshPreview(EpubPublishUiSettings newSettings)
+		private void RefreshPreview(EpubSettings newSettings)
 		{
 			// We have seen some exceptions thrown during refresh that cause a pretty yellow
 			// dialog box pop up informing the user, e.g., that the program couldn't find
@@ -290,7 +271,7 @@ namespace Bloom.Publish.Epub
 			}
 
 			EpubMaker.Book = _bookSelection.CurrentSelection;
-			EpubMaker.Unpaginated = PublishEpubApi.EpubMode == "flowable";
+			EpubMaker.Unpaginated = _bookSelection.CurrentSelection.BookInfo.PublishSettings.Epub.Mode == "flowable";
 			EpubMaker.OneAudioPerPage = true;
 		}
 
@@ -312,9 +293,9 @@ namespace Bloom.Publish.Epub
 			// Enhance: this could be optimized (but it will require changes to EpubMaker, it assumes it only stages once)
 			PrepareToStageEpub();
 			// Initialize the settings to affect the first epub preview.  See https://issues.bloomlibrary.org/youtrack/issue/BL-7316.
-			GetEpubSettingsForCurrentBook(_desiredEpubSettings);
-			EpubMaker.PublishImageDescriptions = _desiredEpubSettings.howToPublishImageDescriptions;
-			EpubMaker.RemoveFontSizes = _desiredEpubSettings.removeFontSizes;
+			var settings = _bookSelection.CurrentSelection.BookInfo.PublishSettings.Epub;
+			EpubMaker.PublishImageDescriptions = settings.HowToPublishImageDescriptions;
+			EpubMaker.RemoveFontSizes = settings.RemoveFontSizes;
 			return SetupEpubControlContent();
 		}
 
@@ -360,22 +341,15 @@ namespace Bloom.Publish.Epub
 			return iframeSource;
 		}
 
-		internal string GetEpubSettings()
-		{
-			if (_bookSelection != null)
-				GetEpubSettingsForCurrentBook(_desiredEpubSettings);
-
-			return JsonConvert.SerializeObject(_desiredEpubSettings);
-		}
-
-		public void GetEpubSettingsForCurrentBook(EpubPublishUiSettings epubPublishUiSettings)
+		public void GetEpubSettingsForCurrentBook(EpubSettings epubPublishUiSettings)
 		{
 			var info = _bookSelection.CurrentSelection.BookInfo;
-			epubPublishUiSettings.howToPublishImageDescriptions = info.PublishSettings.Epub.HowToPublishImageDescriptions;
-			epubPublishUiSettings.removeFontSizes = info.PublishSettings.Epub.RemoveFontSizes;
+			epubPublishUiSettings.HowToPublishImageDescriptions = info.PublishSettings.Epub.HowToPublishImageDescriptions;
+			epubPublishUiSettings.RemoveFontSizes = info.PublishSettings.Epub.RemoveFontSizes;
+			epubPublishUiSettings.Mode = info.PublishSettings.Epub.Mode;
 		}
 
-		public void UpdateAndSave(EpubPublishUiSettings newSettings, string path, bool force, WebSocketProgress progress = null)
+		public void UpdateAndSave(EpubSettings newSettings, string path, bool force, WebSocketProgress progress = null)
 		{
 			bool succeeded;
 			do
@@ -392,7 +366,8 @@ namespace Bloom.Publish.Epub
 			} while (!succeeded && !EpubMaker.AbortRequested); // try until we get a complete epub, not interrupted by user changing something.
 		}
 
-		public bool UpdatePreview(EpubPublishUiSettings newSettings, bool force, WebSocketProgress progress = null)
+		private EpubSettings _lastPreviewSettings = null;
+		public bool UpdatePreview(EpubSettings newSettings, bool force, WebSocketProgress progress = null)
 		{
 			_progress = progress ?? _standardProgress.WithL10NPrefix("PublishTab.Epub.");
 			if (Program.RunningOnUiThread)
@@ -430,7 +405,7 @@ namespace Bloom.Publish.Epub
 				bool previewIsAlreadyCurrent;
 				lock (_epubMakerLock)
 				{
-					previewIsAlreadyCurrent = _desiredEpubSettings == newSettings && EpubMaker != null && newVersion == _bookVersion &&
+					previewIsAlreadyCurrent = _lastPreviewSettings == newSettings && EpubMaker != null && newVersion == _bookVersion &&
 												!EpubMaker.AbortRequested && !force;
 				}
 
@@ -440,7 +415,9 @@ namespace Bloom.Publish.Epub
 					return true; // preview is already up to date.
 				}
 
-				_desiredEpubSettings = newSettings;
+				// newSettings is typically the actual settigns object on the book, which could get updated by the UI.
+				// To be able to tell later whether it changed, we need a copy.
+				_lastPreviewSettings = newSettings.Clone();
 
 				// clear the obsolete preview, if any; this also ensures that when the new one gets done,
 				// we will really be changing the src attr in the preview iframe so the display will update.
