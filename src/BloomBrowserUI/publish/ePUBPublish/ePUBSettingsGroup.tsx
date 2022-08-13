@@ -23,10 +23,10 @@ import { BloomTooltip } from "../../react_components/BloomToolTip";
 const epubModes: IEpubMode[] = [
     {
         mode: "fixed",
-        label: "Fixed",
+        label: "Fixed – ePUB 3",
         l10nKey: "Publish.Epub.Fixed",
         description:
-            "Ask ePUB reader to show pages exactly like you see them in Bloom",
+            "Ask ePUB readers to show pages exactly like you see them in Bloom",
         descriptionL10nKey: "Publish.Epub.Fixed.Description"
     },
     {
@@ -82,7 +82,7 @@ export const EPUBSettingsGroup: React.FunctionComponent = props => {
                         <Typography variant="h6">
                             <Div
                                 l10nKey="PublishTab.Epub.Mode"
-                                l10nComment="a heading for two choices, Fixed or Flowable"
+                                l10nComment="a heading for two choices, 'Fixed – ePUB 3' or Flowable"
                                 temporarilyDisableI18nWarning={true}
                             >
                                 ePUB mode
@@ -91,7 +91,7 @@ export const EPUBSettingsGroup: React.FunctionComponent = props => {
 
                         <div
                             css={css`
-                                margin-left: 20px;
+                                margin-left: 10px;
                             `}
                         >
                             <Select
@@ -117,7 +117,7 @@ export const EPUBSettingsGroup: React.FunctionComponent = props => {
                                     const newMode = e.target.value as string;
                                     setEpubmode(newMode);
                                 }}
-                                style={{ width: 100 }}
+                                style={{ width: 145 }}
                                 renderValue={f => {
                                     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
                                     const item = epubModes.find(
