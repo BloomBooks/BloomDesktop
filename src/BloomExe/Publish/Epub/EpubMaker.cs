@@ -1046,8 +1046,19 @@ namespace Bloom.Publish.Epub
 		/// </summary>
 		private string MergeAudioElements(IEnumerable<XmlElement> elementsWithAudio)
 		{
+			// The elementsWithAudio need to be ordered the same way as in bloom-player
+			// (narrationUtils.ts): by data-audio-order if it exists, or by document order
+			// if data-audio-order does not exist (or has equal values), with all elements
+			// having data-audio-order coming before any elements without.  (BL-9016)
+			var count = elementsWithAudio.Count();
+			var elementArray = elementsWithAudio.ToArray();
+			var keys = new List<(int index, int order)>(count);
+			for (int i = 0; i < count; ++i)
+				keys.Add((i, int.Parse(elementArray[i].GetOptionalStringAttribute("data-audio-order","999"), CultureInfo.InvariantCulture)));
+			Array.Sort(keys.ToArray(), elementArray, new CompareAudioOrder());
+
 			var mergeFiles =
-				elementsWithAudio
+				elementArray
 					.Select(s => AudioProcessor.GetOrCreateCompressedAudio(Storage.FolderPath, s.Attributes["id"]?.Value))
 					.Where(s => !string.IsNullOrEmpty(s));
 			Directory.CreateDirectory(Path.Combine(_contentFolder, kAudioFolder));
@@ -1061,6 +1072,19 @@ namespace Bloom.Publish.Epub
 			Logger.WriteEvent("Failed to merge audio files for page " + _pageIndex + " " + errorMessage);
 			// and we will do it the old way. Works for some readers.
 			return null;
+		}
+
+		private class CompareAudioOrder : System.Collections.IComparer
+		{
+			public int Compare(object x, object y)
+			{
+				var xx = ((int index, int order))x;
+				var yy = ((int index, int order))y;
+				var order = xx.order - yy.order;
+				if (order != 0)
+					return order;
+				return xx.index - yy.index;
+			}
 		}
 
 		private static string GetOverlayName(string pageDocName)
@@ -2593,8 +2617,17 @@ namespace Bloom.Publish.Epub
 
 		private void RemoveUnwantedAttributes(HtmlDom pageDom)
 		{
+			// We need to preserve the tabIndex on the bloom-translationGroup as the audio ordering
+			// for the inner div with audio. (BL-9016)
 			foreach (var elt in pageDom.RawDom.SafeSelectNodes("//*[@tabindex]").Cast<XmlElement>().ToArray())
 			{
+				var tabIndex = elt.GetAttribute("tabindex");
+				var classes = elt.GetAttribute("class");
+				if (tabIndex != "0" && classes.Contains("bloom-translationGroup"))
+				{
+					foreach (var audioElt in HtmlDom.SelectAudioSentenceElements(elt).Cast<XmlElement>())
+						audioElt.SetAttribute("data-audio-order", tabIndex);
+				}
 				elt.RemoveAttribute("tabindex");
 			}
 		}
