@@ -666,14 +666,8 @@ namespace Bloom.Edit
 			}
 			if(anchor != null && anchor.Href != "" && anchor.Href != "#")
 			{
-				if (anchor.Href.EndsWith("clickWasAlreadyHandled"))
-				{
-					ge.Handled = true;
-					return;
-				}
-
 				// Let Gecko handle hrefs that are explicitly tagged "javascript"
-				if(anchor.Href.StartsWith("javascript")) //tied to, for example, data-functionOnHintClick="ShowTopicChooser()"
+				if(anchor.Href.StartsWith("javascript"))
 				{
 					ge.Handled = false; // let gecko handle it
 					return;

@@ -1086,7 +1086,7 @@ function loadToolboxTool(
     if (openTool && toolbox.toolboxIsShowing()) {
         toolboxElt.accordion("refresh");
         const id = header.attr("id");
-        const toolNumber = parseInt(id.substr(id.lastIndexOf("_")), 10);
+        const toolNumber = parseInt(id.substring(id.lastIndexOf("_")), 10);
         toolboxElt.accordion("option", "active", toolNumber); // must pass as integer
     }
 }
