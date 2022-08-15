@@ -281,7 +281,12 @@ namespace Bloom.CLI
 			maker.ControlForInvoke = control;
 
 			maker.Book = _book;
-			maker.Unpaginated = true; // so far they all are
+			// This is the previous default, but probably we should make it configurable, and possibly change the default.
+			// Note that it will end up Fixed if the presence of Comic bubbles requires it.
+			maker.Unpaginated = true;
+			// and if it has explicitly been set to fixed, make it that way.
+			if (_book.BookInfo?.PublishSettings?.Epub?.Mode == "fixed")
+				maker.Unpaginated = false;
 			maker.OneAudioPerPage = true; // default used in EpubApi
 										  // Enhance: maybe we want book to have image descriptions on page? use reader font sizes?
 			

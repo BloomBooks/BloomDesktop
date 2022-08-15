@@ -235,6 +235,10 @@ namespace Bloom.Publish.Epub
 		/// </summary>
 		public void StageEpub(WebSocketProgress progress, bool publishWithoutAudio = false)
 		{
+			if (Unpaginated && Book.OurHtmlDom.HasOverlayPages())
+				Unpaginated = false; // comics require fixed layout to align bubbles.
+			if (!Unpaginated)
+				RemoveFontSizes = false; // fixed layout requires specified font sizes
 			PublishWithoutAudio = publishWithoutAudio;
 			if (!string.IsNullOrEmpty(BookInStagingFolder))
 				return; //already staged

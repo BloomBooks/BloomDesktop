@@ -96,6 +96,7 @@ namespace BloomTests.Book
 			_fileLocator.Setup(x => x.LocateFileWithThrow("customCollectionStyles.css")).Returns(Path.Combine(_testFolder.Path, "customCollectionStyles.css"));
 			var basicBookPath = BloomFileLocator.GetCodeBaseFolder() + "/../browser/templates/template books/Basic Book/Basic Book.css";
 			_fileLocator.Setup(x => x.LocateFile("Basic Book.css")).Returns(basicBookPath);
+			_fileLocator.Setup(x => x.LocateFileWithThrow("Basic Book.css")).Returns(basicBookPath);
 
 			_fileLocator.Setup(x => x.LocateDirectory("Factory-XMatter")).Returns(xMatter.CombineForPath("Factory-XMatter"));
 			_fileLocator.Setup(x => x.LocateDirectoryWithThrow("Factory-XMatter")).Returns(xMatter.CombineForPath("Factory-XMatter"));
@@ -106,6 +107,7 @@ namespace BloomTests.Book
 			_fileLocator.Setup(x => x.LocateDirectoryWithThrow("Traditional-XMatter")).Returns(xMatter.CombineForPath("Traditional-XMatter"));
 			_fileLocator.Setup(x => x.LocateDirectory("Traditional-XMatter", It.IsAny<string>())).Returns(xMatter.CombineForPath("Traditional-XMatter"));
 			_fileLocator.Setup(x => x.LocateFileWithThrow("Traditional-XMatter".CombineForPath("Traditional-XMatter.htm"))).Returns(xMatter.CombineForPath("Traditional-XMatter", "Factory-XMatter.htm"));
+			_fileLocator.Setup(x => x.LocateFileWithThrow("Traditional-XMatter.css")).Returns(xMatter.CombineForPath("Traditional-XMatter", "Traditional-XMatter.css"));
 
 
 			_fileLocator.Setup(x => x.LocateDirectory("BigBook-XMatter")).Returns(xMatter.CombineForPath("BigBook-XMatter"));
