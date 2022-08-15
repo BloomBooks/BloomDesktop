@@ -8,7 +8,7 @@ namespace Bloom.web.controllers
 	{
 		public void RegisterWithApiHandler(BloomApiHandler apiHandler)
 		{
-			apiHandler.RegisterEndpointHandler("dialog/close",
+			apiHandler.RegisterEndpointLegacy("dialog/close",
 				(ApiRequest request) =>
 				{
 					// Closes the current dialog.

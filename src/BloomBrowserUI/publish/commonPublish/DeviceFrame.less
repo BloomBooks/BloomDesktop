@@ -4,7 +4,7 @@
 
 @phoneFeaturesColor: #ababab;
 @bezelWidth: 10px;
-@speaker-length : 80px; // prettier extension changes speakerLength to speakerlength. So weird.
+@speaker-length: 80px; // prettier extension changes speakerLength to speakerlength. So weird.
 @speakerHeight: 5px;
 
 @scale: 25;
@@ -58,6 +58,9 @@
         &.landscape {
             transform: translate(220px, 225px); // portrait, no rotation buttons
         }
+        // We don't know why this gets the height of its parent, but it does without this.
+        // We need to limit the height so we don't get extraneous vertical scroll bars.
+        height: 50px;
     }
 }
 

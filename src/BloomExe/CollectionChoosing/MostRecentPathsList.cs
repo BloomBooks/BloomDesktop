@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Xml.Serialization;
+using Bloom.Utils;
 using SIL.IO;
 
 namespace Bloom.CollectionChoosing
@@ -84,6 +86,8 @@ namespace Bloom.CollectionChoosing
 			{
 				throw new ArgumentNullException("path");
 			}
+			Debug.Assert(!LongPathAware.GetExceedsMaxPath(path), "AddNewPath() expects that paths that get here are short enough (BL-10012).");
+			// NB: this will be false if the path exceeds maxpath, and so we just don't add this collection to the MRU. (BL-10012)
 			if (!RobustFile.Exists(path) && ! Directory.Exists(path))
 			{
 				return false;

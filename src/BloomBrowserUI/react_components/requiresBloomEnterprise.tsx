@@ -5,7 +5,7 @@ import * as React from "react";
 import { useState, useEffect } from "react";
 import { BloomApi } from "../utils/bloomApi";
 import Button from "@material-ui/core/Button";
-import { lightTheme } from "../bloomMaterialUITheme";
+import { kBloomBlue50Transparent, lightTheme } from "../bloomMaterialUITheme";
 import { ThemeProvider } from "@material-ui/styles";
 import { Div } from "./l10nComponents";
 import { useL10n } from "./l10nHooks";
@@ -17,17 +17,19 @@ import {
     BloomDialog,
     DialogTitle,
     DialogMiddle,
-    DialogBottomButtons,
+    DialogBottomButtons
+} from "./BloomDialog/BloomDialog";
+import { kUiFontStack } from "../bloomMaterialUITheme";
+import {
     IBloomDialogEnvironmentParams,
     useSetupBloomDialog
-} from "./BloomDialog/BloomDialog";
-import { kUiFontStack } from "../bloomMaterialUITheme.ts";
+} from "./BloomDialog/BloomDialogPlumbing";
 
 /**
  * This function sets up the hooks to get the status of whether Bloom Enterprise is available or not
  * @returns A boolean, which is true if Bloom Enterprise is enabled and false otherwise
  */
-function useEnterpriseAvailable() {
+export function useEnterpriseAvailable() {
     const [enterpriseAvailable, setEnterpriseAvailable] = useState(true);
 
     useEffect(() => {
@@ -105,6 +107,30 @@ export const RequiresBloomEnterpriseAdjacentIconWrapper = (props: {
     );
 };
 
+export const BloomEnterpriseIcon = props => {
+    const enterpriseAvailable = useEnterpriseAvailable();
+
+    // Note: currently the tooltip only appears over the icon itself. But it might be nice if it could go over the children too?
+    const tooltip = enterpriseAvailable
+        ? useL10n("Bloom Enterprise Feature", "Common.BloomEnterpriseFeature")
+        : useL10n(
+              "To use this feature, you'll need to enable Bloom Enterprise.",
+              "EditTab.RequiresEnterprise"
+          );
+
+    return (
+        <img
+            css={css`
+                height: 1.5em;
+                margin-left: 1em;
+            `}
+            {...props} // let caller override the size and whatever
+            src="../images/bloom-enterprise-badge.svg"
+            title={tooltip}
+        />
+    );
+};
+
 /**
  * Checks the Bloom Enterprise settings and overlays a RequiresBloomEnterprise notice over the children if enterprise is off.
  */
@@ -132,13 +158,20 @@ export const RequiresBloomEnterpriseOverlayWrapper: React.FunctionComponent = pr
                         left: 0;
                         right: 0;
                         bottom: 0;
-                        background-color: ${kBloomBlue + "80"}; // alpha = 0.5
+                        background-color: ${kBloomBlue50Transparent};
                         z-index: 2; // Specify a stack order in case you're using a different order for other elements
                         display: flex;
-                        flex-direction: column;
+                        align-items: center; // center vertically
                     `}
                 >
-                    <RequiresBloomEnterpriseNotice darkTheme={true} />
+                    <div // center horizontally
+                        css={css`
+                            margin-left: auto;
+                            margin-right: auto;
+                        `}
+                    >
+                        <RequiresBloomEnterpriseNotice darkTheme={true} />
+                    </div>
                 </div>
             )}
         </div>
@@ -359,11 +392,10 @@ export const RequiresBloomEnterpriseDialog: React.FunctionComponent<{
         propsForBloomDialog
     } = useSetupBloomDialog(props.dialogEnvironment);
     showRequiresBloomEnterpriseDialog = showDialog;
-    const kBlockSeparation = "30px";
 
     const dialogTitle = useL10n(
         "Bloom Enterprise Feature",
-        "PublishTab.BulkBloomPub.BloomEnterpriseFeature"
+        "Common.BloomEnterpriseFeature"
     );
 
     return (

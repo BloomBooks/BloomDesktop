@@ -13,6 +13,7 @@ using Gecko.Interop;
 using L10NSharp;
 using Microsoft.Win32;
 using SIL.IO;
+using SIL.Reporting;
 #if !__MonoCS__
 #endif
 
@@ -186,6 +187,14 @@ namespace Bloom.Publish.PDF
 				return;
 			}
 
+			ErrorReport.NotifyUserOfProblem(LocalizationManager.GetString("PublishTab.Notifications.AdobeForPrint",
+				"If you want to print directly from Bloom, you will need to install the free Adobe Reader and then re-start Bloom. Or instead, you can save the PDF, open it in some other program, and then print from there."));
+			return;
+			// If we decide to have another go at this, see https://issues.bloomlibrary.org/youtrack/issue/BL-11113
+			// and the associated PR, https://github.com/BloomBooks/BloomDesktop/pull/5147.
+			// We decided that for now the ghostscript printing is also unreliable,
+			// and also, the resulting print dialogs are too different from the ones
+			// in our previews.
 			// PDFjs printing has proved unreliable, so GhostScript is preferable even on Windows.
 			if (TryGhostcriptPrint())
 				return;

@@ -66,6 +66,7 @@ lib/dotnet/Chorus*.*
 lib/lame/*
 lib/gm/*
 lib/FirefoxDependencies/*
+lib/RedistributableDlls/*
 DistFiles/exiftool.exe
 Copy*.bat
 !CopyLocalSquirrelToLocalBloom.bat

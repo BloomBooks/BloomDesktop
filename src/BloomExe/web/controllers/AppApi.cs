@@ -48,13 +48,13 @@ namespace Bloom.Api
 			/* It's not totally clear if these kinds of things fit well in this App api, or if we
 			 will want to introduce a separate api for dealing with these kinds of things. I'm
 			erring on the side of less classes, code, for now, easy to split later.*/
-			apiHandler.RegisterEndpointHandler(kAppUrlPrefix + "editSelectedBook",
+			apiHandler.RegisterEndpointLegacy(kAppUrlPrefix + "editSelectedBook",
 				request =>
 				{
 					_editBookCommand.Raise(_bookSelection.CurrentSelection);
 					request.PostSucceeded();
 				}, true);
-			apiHandler.RegisterEndpointHandler(kAppUrlPrefix + "makeFromSelectedBook",
+			apiHandler.RegisterEndpointLegacy(kAppUrlPrefix + "makeFromSelectedBook",
 				request =>
 				{
 					// Original in LibraryBookView had this...not sure if we might want it again.
@@ -73,7 +73,7 @@ namespace Bloom.Api
 
 					request.PostSucceeded();
 				}, true);
-			apiHandler.RegisterEndpointHandler(kAppUrlPrefix + "selectedBookInfo",
+			apiHandler.RegisterEndpointLegacy(kAppUrlPrefix + "selectedBookInfo",
 				request =>
 				{
 					// Requests the same information that is sent to the websocket

@@ -17,9 +17,9 @@ using SIL.Xml;
 namespace Bloom.Publish.Android
 {
 	/// <summary>
-	/// This class is the beginnings of a separate place to put code for creating .bloomd files.
+	/// This class is the beginnings of a separate place to put code for creating .bloompub files.
 	/// Much of the logic is still in BookCompressor. Eventually we might move more of it here,
-	/// so that making a bloomd actually starts here and calls BookCompressor.
+	/// so that making a bloompub actually starts here and calls BookCompressor.
 	/// </summary>
 	public static class BloomPubMaker
 	{
@@ -56,9 +56,9 @@ namespace Bloom.Publish.Android
 		}
 
 		/// <summary>
-		/// Create a Bloom Digital book (the zipped .bloomd file) as used by BloomReader (and Bloom Library etc)
+		/// Create a Bloom Digital book (the zipped .bloompub file) as used by BloomReader (and Bloom Library etc)
 		/// </summary>
-		/// <param name="outputPath">The path to create the zipped .bloomd output file at</param>
+		/// <param name="outputPath">The path to create the zipped .bloompub output file at</param>
 		/// <param name="bookFolderPath">The path to the input book</param>
 		/// <param name="bookServer"></param>
 		/// <param name="backColor"></param>
@@ -67,7 +67,7 @@ namespace Bloom.Publish.Android
 		/// <param name="creator">value for &lt;meta name="creator" content="..."/&gt; (defaults to "bloom")</param>
 		/// <param name="isTemplateBook"></param>
 		/// <param name="settings"></param>
-		/// <returns>Path to the unzipped .bloomd</returns>
+		/// <returns>Path to the unzipped .bloompub</returns>
 		public static string CreateBloomPub(string outputPath, string bookFolderPath, BookServer bookServer,
 			IWebSocketProgress progress, TemporaryFolder tempFolder, string creator = kCreatorBloom, bool isTemplateBook=false,
 			AndroidPublishSettings settings = null)
@@ -93,10 +93,14 @@ namespace Bloom.Publish.Android
 			// MakeDeviceXmatterTempBook needs to be able to copy customCollectionStyles.css etc into parent of bookFolderPath
 			// And bloom-player expects folder name to match html file name.
 			var htmPath = BookStorage.FindBookHtmlInFolder(bookFolderPath);
-			var tentativeBookFolderPath = Path.Combine(temp.FolderPath, Path.GetFileNameWithoutExtension(htmPath));
+			var tentativeBookFolderPath = Path.Combine(temp.FolderPath,
+				// Windows directory names cannot have trailing periods, but FileNameWithoutExtension can have these.  (BH-6097)
+				BookStorage.SanitizeNameForFileSystem(Path.GetFileNameWithoutExtension(htmPath)));
 			Directory.CreateDirectory(tentativeBookFolderPath);
 			var modifiedBook = PublishHelper.MakeDeviceXmatterTempBook(bookFolderPath, bookServer,
 				tentativeBookFolderPath, isTemplateBook);
+
+			modifiedBook.SetMotionAttributesOnBody(settings?.Motion ?? false);
 
 			// Although usually tentativeBookFolderPath and modifiedBook.FolderPath are the same, there are some exceptions
 			// In the process of bringing a book up-to-date (called by MakeDeviceXmatterTempBook), the folder path may change.
@@ -111,7 +115,7 @@ namespace Bloom.Publish.Android
 
 			// Right here, let's maintain the history of what the BloomdVersion signifies to a reader.
 			// Version 1 (as opposed to no BloomdVersion field): the bookFeatures property may be
-			// used to report features analytics (with earlier bloomd's, the reader must use its own logic)
+			// used to report features analytics (with earlier bloompub's, the reader must use its own logic)
 			modifiedBook.Storage.BookInfo.MetaData.BloomdVersion = 1;
 
 			modifiedBook.Storage.BookInfo.UpdateOneSingletonTag("distribution", settings?.DistributionTag);
@@ -120,9 +124,24 @@ namespace Bloom.Publish.Android
 				modifiedBook.Storage.BookInfo.UpdateOneSingletonTag("bookshelf", settings.BookshelfTag);
 			}
 
+			if (settings?.RemoveInteractivePages ?? false)
+			{
+				var activities = modifiedBook.GetPageElements().Cast<XmlNode>()
+					.Where(x => x is XmlElement elt && HtmlDom.IsActivityPage(elt)).ToArray();
+				foreach (var page in activities)
+					page.ParentNode.RemoveChild(page);
+			}
 
+			var mdLang1Code = modifiedBook.BookData.MetadataLanguage1IsoCode;
+			var mdLang2Code = modifiedBook.BookData.MetadataLanguage2IsoCode;
 			if (settings?.LanguagesToInclude != null)
-				PublishModel.RemoveUnwantedLanguageData(modifiedBook.OurHtmlDom, settings.LanguagesToInclude, modifiedBook.BookData.MetadataLanguage1IsoCode);
+			{
+				PublishModel.RemoveUnwantedLanguageData(modifiedBook.OurHtmlDom, settings.LanguagesToInclude,
+					shouldPruneXmatter: true, mdLang1Code, mdLang2Code);
+				// For 5.3, we wholesale keep all L2/L3 rules even though this might result in incorrect error messages about fonts. (BL-11357)
+				// In 5.4, we hope to clean up all this font determination stuff by using a real browser to determine what is used.
+				PublishModel.RemoveUnwantedLanguageRulesFromCssFiles(modifiedBook.FolderPath, settings.LanguagesToInclude.Append(mdLang1Code).Append(mdLang2Code));
+			}
 			else if (Program.RunningHarvesterMode && modifiedBook.OurHtmlDom.SelectSingleNode(BookStorage.ComicalXpath) != null)
 			{
 				// This indicates that we are harvesting a book with comic speech bubbles or other overlays (Overlay Tool).
@@ -133,7 +152,8 @@ namespace Bloom.Publish.Android
 				// eventually improve this. In the meantime, switching language would have bad effects,
 				// and if you can't switch language, there's no point in the book containing more than one.
 				var languagesToInclude = new string[1] { modifiedBook.BookData.Language1.Iso639Code };
-				PublishModel.RemoveUnwantedLanguageData(modifiedBook.OurHtmlDom, languagesToInclude, modifiedBook.BookData.MetadataLanguage1IsoCode);
+				PublishModel.RemoveUnwantedLanguageData(modifiedBook.OurHtmlDom, languagesToInclude,
+					shouldPruneXmatter: true, mdLang1Code, mdLang2Code);
 			}
 
 			// Do this after processing interactive pages, as they can satisfy the criteria for being 'blank'
@@ -142,7 +162,8 @@ namespace Bloom.Publish.Android
 			{
 				helper.ControlForInvoke = ControlForInvoke;
 				ISet<string> warningMessages = new HashSet<string>();
-				helper.RemoveUnwantedContent(modifiedBook.OurHtmlDom, modifiedBook, false, warningMessages);
+				helper.RemoveUnwantedContent(modifiedBook.OurHtmlDom, modifiedBook, false,
+					warningMessages, keepPageLabels:settings?.WantPageLabels??false);
 				PublishHelper.SendBatchedWarningMessagesToProgress(warningMessages, progress);
 				fontsUsed = helper.FontsUsed;
 			}
@@ -157,7 +178,7 @@ namespace Bloom.Publish.Android
 			modifiedBook.RemoveObsoleteAudioMarkup();
 
 			// We want these to run after RemoveUnwantedContent() so that the metadata will more accurately reflect
-			// the subset of contents that are included in the .bloomd
+			// the subset of contents that are included in the .bloompub
 			// Note that we generally want to disable features here, but not enable them, especially while
 			// running harvester!  See https://issues.bloomlibrary.org/youtrack/issue/BL-8995.
 			var enableBlind = modifiedBook.BookInfo.MetaData.Feature_Blind || !Program.RunningHarvesterMode;
@@ -391,43 +412,12 @@ namespace Bloom.Publish.Android
 		/// Create an extra css file (fonts.css) which tells the book to find the font files for those font families
 		/// in the local folder, and insert a link to it into the book.
 		/// </summary>
-		/// <param name="book"></param>
-		/// <param name="progress"></param>
 		/// <param name="fontFileFinder">use new FontFinder() for real, or a stub in testing</param>
 		public static void EmbedFonts(Book.Book book, IWebSocketProgress progress, HashSet<string> fontsWanted, IFontFinder fontFileFinder)
 		{
 			const string defaultFont = "Andika New Basic"; // already in BR, don't need to embed or make rule.
 			fontsWanted.Remove(defaultFont);
-			fontFileFinder.NoteFontsWeCantInstall = true;
-			var filesToEmbed = new List<string>();
-			foreach (var font in fontsWanted)
-			{
-				var fontFiles = fontFileFinder.GetFilesForFont(font);
-				if (fontFiles.Count() > 0)
-				{
-					filesToEmbed.AddRange(fontFiles);
-					progress.MessageWithParams("PublishTab.Android.File.Progress.CheckFontOK", "{0} is a font name", "Checking {0} font: License OK for embedding.", ProgressKind.Progress, font);
-					// Assumes only one font file per font; if we embed multiple ones will need to enhance this.
-					var size = new FileInfo(fontFiles.First()).Length;
-					var sizeToReport = (size / 1000000.0).ToString("F1"); // purposely locale-specific; might be e.g. 1,2
-					progress.MessageWithParams("PublishTab.Android.File.Progress.Embedding",
-						"{1} is a number with one decimal place, the number of megabytes the font file takes up",
-						"Embedding font {0} at a cost of {1} megs",
-						ProgressKind.Note,
-						font, sizeToReport);
-					continue;
-				}
-				if (fontFileFinder.FontsWeCantInstall.Contains(font))
-				{
-					//progress.Error("Common.Warning", "Warning");
-					progress.MessageWithParams("LicenseForbids","{0} is a font name", "This book has text in a font named \"{0}\". The license for \"{0}\" does not permit Bloom to embed the font in the book.",ProgressKind.Error, font);
-				}
-				else
-				{
-					progress.MessageWithParams("NoFontFound", "{0} is a font name", "This book has text in a font named \"{0}\", but Bloom could not find that font on this computer.", ProgressKind.Error, font);
-				}
-				progress.MessageWithParams("SubstitutingAndika", "{0} is a font name", "Bloom will substitute \"{0}\" instead.", ProgressKind.Error, defaultFont, font);
-			}
+			PublishHelper.CheckFontsForEmbedding(progress, fontsWanted, fontFileFinder, out List<string> filesToEmbed, out HashSet<string> badFonts);
 			foreach (var file in filesToEmbed)
 			{
 				// Enhance: do we need to worry about problem characters in font file names?
@@ -438,6 +428,8 @@ namespace Bloom.Publish.Android
 			var sb = new StringBuilder();
 			foreach (var font in fontsWanted)
 			{
+				if (badFonts.Contains(font))
+					continue;
 				var group = fontFileFinder.GetGroupForFont(font);
 				if (group != null)
 				{
@@ -452,6 +444,12 @@ namespace Bloom.Publish.Android
 			RobustFile.WriteAllText(Path.Combine(book.FolderPath, "fonts.css"), sb.ToString());
 			// Tell the document to use the new stylesheet.
 			book.OurHtmlDom.AddStyleSheet("fonts.css");
+			// Repair defaultLangStyles.css and other places in the output book if needed.
+			if (badFonts.Any())
+			{
+				PublishHelper.FixCssReferencesForBadFonts(book.FolderPath, defaultFont, badFonts);
+				PublishHelper.FixXmlDomReferencesForBadFonts(book.OurHtmlDom.RawDom, defaultFont, badFonts);
+			}
 		}
 
 		/// <summary>

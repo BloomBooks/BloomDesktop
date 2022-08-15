@@ -25,9 +25,9 @@ namespace Bloom.web.controllers
 
 		public void RegisterWithApiHandler(BloomApiHandler apiHandler)
 		{
-			apiHandler.RegisterEndpointHandler("fileIO/chooseFile", ChooseFile, true);
-			apiHandler.RegisterEndpointHandler("fileIO/getSpecialLocation", GetSpecialLocation, true);
-			apiHandler.RegisterEndpointHandler("fileIO/copyFile", CopyFile, true);
+			apiHandler.RegisterEndpointLegacy("fileIO/chooseFile", ChooseFile, true);
+			apiHandler.RegisterEndpointLegacy("fileIO/getSpecialLocation", GetSpecialLocation, true);
+			apiHandler.RegisterEndpointLegacy("fileIO/copyFile", CopyFile, true);
 		}
 
 		private void ChooseFile(ApiRequest request)

@@ -81,15 +81,16 @@ namespace Bloom.Publish.Android.usb
 			}
 		}
 
-		public void Stop()
+		public void Stop(bool disposing)
 		{
-			_progress.Message(idSuffix: "Stopped", message: "Stopped");
+			if (!disposing)
+				_progress.Message(idSuffix: "Stopped", message: "Stopped");
 			_androidDeviceUsbConnection.StopFindingDevice();
 		}
 
 		private void UsbFailConnect(Exception e)
 		{
-			Stop();
+			Stop(disposing: false);
 			_progress.Message(idSuffix: "UnableToConnect",
 				 message: "Unable to connect to any Android device.");
 

@@ -1,0 +1,34 @@
+/*
+This json comment in a default Bloom template "locks" the book to only these layouts,
+whereas in a branding-induced xmatter pack it only acts to make this the default layout for a new book.
+STARTLAYOUTS
+{
+  "layouts": [
+    {
+      "HalfLetterPortrait": {
+        "Styles": [ "Default" ]
+      }
+    }
+  ]
+}
+ENDLAYOUTS
+*/
+
+@import "./MXBCommon-XMatter.less";
+
+@XMatterPackName: "MXB Literacy";
+
+#localizedAcknowledgments {
+    margin-top: auto; // push this and all below it down
+}
+
+// Literacy book contributions on title page
+#contributions .bloom-editable {
+    font-size: 12pt;
+    line-height: 1.4;
+}
+
+#funding .bloom-editable {
+    font-size: 12pt;
+    line-height: 1.2;
+}

@@ -19,14 +19,14 @@ namespace Bloom.web.controllers
 	/// </summary>
 	public class SpreadsheetApi
 	{
-		private readonly LibraryModel _libraryModel;
+		private readonly CollectionModel _collectionModel;
 		private BookSelection _bookSelection;
 		private readonly BloomWebSocketServer _webSocketServer;
 
 
-		public SpreadsheetApi(LibraryModel libraryModel, BloomWebSocketServer webSocketServer, BookSelection bookSelection)
+		public SpreadsheetApi(CollectionModel collectionModel, BloomWebSocketServer webSocketServer, BookSelection bookSelection)
 		{
-			_libraryModel = libraryModel;
+			_collectionModel = collectionModel;
 			_webSocketServer = webSocketServer;
 			_bookSelection = bookSelection;
 		}
@@ -38,34 +38,23 @@ namespace Bloom.web.controllers
 			// go through a single "bookCommand/" API, so we don't register that here.
 			// Instead all we need to register is any api enpoints used by our own spreadsheet dialogs
 
-			apiHandler.RegisterEndpointHandler("spreadsheet/export", ExportToSpreadsheet, true);
+			apiHandler.RegisterEndpointLegacy("spreadsheet/export", ExportToSpreadsheet, true);
 		}
-		private ReactDialog _openDialog = null;
 		public void ShowExportToSpreadsheetUI(Book.Book book)
 		{
 			// Throw up a Requires Bloom Enterprise dialog if it's not turned on
-			if (!_libraryModel.CollectionSettings.HaveEnterpriseFeatures)
+			if (!_collectionModel.CollectionSettings.HaveEnterpriseFeatures)
 			{
 				Enterprise.ShowRequiresEnterpriseNotice(Form.ActiveForm, "Export to Spreadsheet");
 				return;
 			}
-			var folderPath = GetSpreadsheetFolderFor(book, true);
 
-			using (var dlg = new ReactDialog("exportSpreadsheetDialogBundle", new
-			{ folderPath }, "Export to Spreadsheet...")
-			{ Width = 550, Height = 450 })
-			{
-				_openDialog = dlg;
-				dlg.ShowDialog();
-			}
+			dynamic messageBundle = new DynamicJson();
+			messageBundle.folderPath = GetSpreadsheetFolderFor(book, true); 
+			_webSocketServer.LaunchDialog("SpreadsheetExportDialog", messageBundle);
 		}
 		private void ExportToSpreadsheet(ApiRequest request)
 		{
-			Debug.Assert(_openDialog != null);
-			_openDialog.Close();
-			_openDialog.Dispose();
-			_openDialog = null;
-
 			var book = _bookSelection.CurrentSelection;
 			var bookPath = book.GetPathHtmlFile();
 			try
@@ -97,7 +86,7 @@ namespace Bloom.web.controllers
 		/// </summary>
 		public void HandleImportContentFromSpreadsheet(Book.Book book)
 		{
-			if (!_libraryModel.CollectionSettings.HaveEnterpriseFeatures)
+			if (!_collectionModel.CollectionSettings.HaveEnterpriseFeatures)
 			{
 				Enterprise.ShowRequiresEnterpriseNotice(Form.ActiveForm, "Import to Spreadsheet");
 				return;
@@ -129,6 +118,7 @@ namespace Bloom.web.controllers
 				// due to a newly imported title. That would cause this call to fail.
 				//XmlHtmlConverter.SaveDOMAsHtml5(book.OurHtmlDom.RawDom, bookPath);
 				book.ReloadFromDisk(null);
+				BookHistory.AddEvent(book, TeamCollection.BookHistoryEventType.ImportSpreadsheet);
 				_bookSelection.InvokeSelectionChanged(false);
 			}
 			catch (Exception ex)
@@ -160,6 +150,10 @@ namespace Bloom.web.controllers
 				// (the folder in which we will create a folder for the spreadsheet)
 				return Path.GetDirectoryName(folder);
 			}
+
+			// Prevent previous saved values from allowing us to store in the collection's folder. (BL-11188)
+			if (folder.StartsWith(book.Storage.FolderPath, StringComparison.InvariantCulture))
+				return Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
 
 			return folder; // save folder itself for import
 		}

@@ -40,7 +40,6 @@ namespace Bloom.Edit
 		private readonly DeletePageCommand _deletePageCommand;
 		private readonly CollectionSettings _collectionSettings;
 		private readonly SourceCollectionsList _sourceCollectionsList;
-		//private readonly SendReceiver _sendReceiver;
 		private HtmlDom _domForCurrentPage;
 		// We dispose of this when we create a new one. It may hang around a little longer than needed, but memory
 		// is the only resource being used, and there is only one instance of this object.
@@ -85,10 +84,9 @@ namespace Bloom.Edit
 			DeletePageCommand deletePageCommand,
 			SelectedTabChangedEvent selectedTabChangedEvent,
 			SelectedTabAboutToChangeEvent selectedTabAboutToChangeEvent,
-			LibraryClosing libraryClosingEvent,
+			CollectionClosing collectionClosingEvent,
 			LocalizationChangedEvent localizationChangedEvent,
 			CollectionSettings collectionSettings,
-			//SendReceiver sendReceiver,
 			BloomServer server,
 			BloomWebSocketServer webSocketServer,
 			SourceCollectionsList sourceCollectionsList)
@@ -98,7 +96,6 @@ namespace Bloom.Edit
 			_duplicatePageCommand = duplicatePageCommand;
 			_deletePageCommand = deletePageCommand;
 			_collectionSettings = collectionSettings;
-			//_sendReceiver = sendReceiver;
 			_server = server;
 			_webSocketServer = webSocketServer;
 			_sourceCollectionsList = sourceCollectionsList;
@@ -135,7 +132,7 @@ namespace Bloom.Edit
 			deletePageCommand.Implementer = OnDeletePage;
 			pageListChangedEvent.Subscribe(x => _view.UpdatePageList(false));
 			relocatePageEvent.Subscribe(OnRelocatePage);
-			libraryClosingEvent.Subscribe(o =>
+			collectionClosingEvent.Subscribe(o =>
 			{
 				if (Visible)
 					SaveNow();
@@ -184,11 +181,6 @@ namespace Bloom.Edit
 				// things get into a very bad state indeed. So arrange to re-activate ourselves as soon as the dust settles.
 				_oldActiveForm = Form.ActiveForm;
 				Application.Idle += ReactivateFormOnIdle;
-				//note: if they didn't actually change anything, Chorus is not going to actually do a checkin, so this
-				//won't pollute the history
-				#if Chorus
-					_sendReceiver.CheckInNow(string.Format("Edited '{0}'", CurrentBook.TitleBestForUserDisplay));
-				#endif
 			}
 		}
 
@@ -454,7 +446,9 @@ namespace Bloom.Edit
 						_contentLanguages.Add(item3);
 					}
 				}
-				// update which ones are selected
+				// update which ones are selected. Since there may be ones with Selected true from a previous book,
+				// clear them first, so we end up with selections appropriate to this one.
+				_contentLanguages.ForEach(l => l.Selected = false);
 				var lang1 = _contentLanguages.FirstOrDefault(l =>
 					l.Iso639Code == _bookSelection.CurrentSelection.Language1IsoCode);
 				// We must have one language selected. If nothing matches, select the first.
@@ -518,7 +512,9 @@ namespace Bloom.Edit
 
 			//Reload to display these changes
 			CurrentBook.SetMultilingualContentLanguages(contentLanguages);	// set langs before saving page
-			SaveNow();
+			// The language choice is saved in the data-div, so we must do a full save even if this
+			// page doesn't contain anything else that has non-local effects.
+			SaveNow(true);
 			CurrentBook.PrepareForEditing();
 			RefreshDisplayOfCurrentPage();
 			_view.UpdatePageList(true);//counting on this to redo the thumbnails
@@ -578,14 +574,21 @@ namespace Bloom.Edit
 		{
 			if (_currentlyDisplayedBook != CurrentBook)
 			{
-				if (_contentLanguages.Count == 0)
-				{
-					// BL-5973 GetMultilingualContentLanguages() doesn't want to update _contentLanguages
-					// normally, but in this case we do.
-					var dummy = ContentLanguages; // updates _contentLanguages based on CurrentBook and collection settings
-				}
+				// We must update the ContentLanguages. We've switched books, and it is supposed to reflect
+				// which languages are selected in the current book. Note that this code makes sure that
+				// the LIST of languages reflects the current collection settings, but which ones are
+				// SELECTED reflects the current book.
+				// I'm retaining the following comment because previously we did not call ContentLanguages
+				// unless _contentLanguages.Count was zero. That was wrong (BL-11318) but the issue reference
+				// just might be useful if there is some reason we did NOT want to do it, in which case we'll
+				// need more hard thought how to prevent BL-11318.
+				//		BL-5973 GetMultilingualContentLanguages() doesn't want to update _contentLanguages
+				//		normally, but in this case we do.
+				var dummy = ContentLanguages; // updates _contentLanguages based on CurrentBook and collection settings
 				// Reset the book's languages in case the user changed the collection's languages.
 				// See https://issues.bloomlibrary.org/youtrack/issue/BL-5444.
+				// But (see above) this should NOT mess with which languages are selected for display in the book
+				// (unless a previously selected language is no longer a valid collection language).
 				var contentLanguages = GetMultilingualContentLanguages();
 				CurrentBook.SetMultilingualContentLanguages(contentLanguages);
 				CurrentBook.PrepareForEditing();
@@ -753,6 +756,17 @@ namespace Bloom.Edit
 		public void RefreshDisplayOfCurrentPage()
 		{
 			_view.UpdateSingleDisplayedPage(_pageSelection.CurrentSelection);
+		}
+
+		public void UpdateMetaData(string url)
+		{
+			var match = UrlPathString.CreateFromUnencodedString(url).UrlEncoded;
+			var imgElt = _pageSelection.CurrentSelection.GetDivNodeForThisPage().SafeSelectNodes($".//img[@src='{match}']")
+				.Cast<XmlElement>().FirstOrDefault();
+			if (imgElt == null)
+				return; // log? unexpected
+			ImageUpdater.UpdateImgMetadataAttributesToMatchImage(CurrentBook.FolderPath, imgElt, new NullProgress());
+			RefreshDisplayOfCurrentPage();
 		}
 
 		private DataSet _pageDataBeforeEdits;
@@ -1030,7 +1044,7 @@ namespace Bloom.Edit
 		// (e.g., BL-2634, BL-6296). It may also prevent some wasted Saves and thus improve performance.
 		public bool NavigatingSoSuspendSaving = false;
 
-		public void SaveNow()
+		public void SaveNow(bool forceFullSave = false)
 		{
 			if (_domForCurrentPage != null && !_inProcessOfSaving && !NavigatingSoSuspendSaving)
 			{
@@ -1049,7 +1063,7 @@ namespace Bloom.Edit
 					if (_view.InvokeRequired)
 					{
 						NonFatalProblem.Report(ModalIf.Beta, PassiveIf.Beta, "SaveNow called on wrong thread", null);
-						_view.Invoke((Action)(SaveNow));
+						_view.Invoke((Action)(() => SaveNow(forceFullSave)));
 						watch.Stop();
 						return;
 					}
@@ -1093,7 +1107,7 @@ namespace Bloom.Edit
 					CheckForBL2634("save");
 					//OK, looks safe, time to save.
 					var newPageData = GetPageData(_domForCurrentPage.RawDom);
-					_pageSelection.CurrentSelection.Book.SavePage(_domForCurrentPage, NeedToDoFullSave(newPageData));
+					_pageSelection.CurrentSelection.Book.SavePage(_domForCurrentPage, forceFullSave || NeedToDoFullSave(newPageData));
 					_pageHasUnsavedDataDerivedChange = false;
 					CheckForBL2634("finished save");
 				}
@@ -1577,6 +1591,9 @@ namespace Bloom.Edit
 				// know...  So strip the extension off the folder name to get the widget name.
 				widgetName = Path.GetFileNameWithoutExtension(widgetName);
 			}
+			// Ampersands cause problems for BloomPubReader, so replace them.  (BL-10045)
+			if (widgetName.Contains("&"))
+				widgetName = widgetName.Replace("&", "_");
 			var widgetPath = Path.Combine(Path.GetTempPath(), "Bloom", widgetName + ".wdgt");
 			using (TemporaryFolder temp = new TemporaryFolder("CreatingWidgetForBloom"))
 			{

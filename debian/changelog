@@ -1,23 +1,23 @@
-bloom-desktop (5.2.0) stable; urgency=medium
+bloom-desktop-beta (5.3.0) stable; urgency=medium
 
-  * Change 5.2 to release
+  * Change Bloom 5.3 to Beta.
   * More bug fixes and enhancements: see the source repository log for details.
 
- -- Stephen McConnel <stephen_mcconnel@sil.org>  Tue, 21 Jun 2022 10:02:55 -0600
+ -- Stephen McConnel <stephen_mcconnel@sil.org>  Thu, 30 Jun 2022 13:59:39 -0600
 
-bloom-desktop-beta (5.2.0) stable; urgency=medium
+bloom-desktop-betainternal (5.3.0) stable; urgency=medium
 
-  * Change 5.2 to beta
+  * Change Bloom 5.3 to BetaInternal.
   * More bug fixes and enhancements: see the source repository log for details.
 
- -- Stephen McConnel <stephen_mcconnel@sil.org>  Tue, 22 Feb 2022 09:55:42 -0700
+ -- Stephen McConnel <stephen_mcconnel@sil.org>  Mon, 06 Jun 2022 14:17:36 -0600
 
-bloom-desktop-betainternal (5.2.0) stable; urgency=medium
+bloom-desktop-alpha (5.3.0) stable; urgency=medium
 
-  * Change 5.2 to betainternal
+  * Up the version number on the master (alpha) branch to 5.3.
   * More bug fixes and enhancements: see the source repository log for details.
 
- -- Stephen McConnel <stephen_mcconnel@sil.org>  Tue, 08 Feb 2022 13:25:49 -0700
+ -- Stephen McConnel <stephen_mcconnel@sil.org>  Tue, 08 Feb 2022 13:40:53 -0700
 
 bloom-desktop-alpha (5.2.0) stable; urgency=medium
 

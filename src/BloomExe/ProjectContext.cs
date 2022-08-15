@@ -12,7 +12,6 @@ using Bloom.CollectionTab;
 using Bloom.Edit;
 using Bloom.FontProcessing;
 using Bloom.ImageProcessing;
-//using Bloom.SendReceive;
 using Bloom.WebLibraryIntegration;
 using Bloom.Workspace;
 using Bloom.Api;
@@ -20,11 +19,11 @@ using Bloom.TeamCollection;
 using Bloom.Publish.AccessibilityChecker;
 using Bloom.Publish.Android;
 using Bloom.Publish.Epub;
+using Bloom.Publish.Video;
 using Bloom.Utils;
 using Bloom.web;
 using Bloom.web.controllers;
 using BloomTests.web.controllers;
-//using Chorus;
 using SIL.Extensions;
 using SIL.IO;
 using SIL.Reporting;
@@ -70,7 +69,7 @@ namespace Bloom
 			_scope.Resolve<CollectionSettings>().CheckAndFixDependencies(_scope.Resolve<BloomFileLocator>());
 
 			if (!justEnoughForHtmlDialog)
-				ProjectWindow = _scope.Resolve <Shell>();
+			ProjectWindow = _scope.Resolve <Shell>();
 
 			string collectionDirectory = Path.GetDirectoryName(projectSettingsPath);
 
@@ -116,10 +115,9 @@ namespace Bloom
 						{
 							typeof (TemplateInsertionCommand),
 							typeof (EditBookCommand),
-							typeof (SendReceiveCommand),
 							typeof (SelectedTabAboutToChangeEvent),
 							typeof (SelectedTabChangedEvent),
-							typeof (LibraryClosing),
+							typeof (CollectionClosing),
 							typeof (PageListChangedEvent), // REMOVE+++++++++++++++++++++++++++
 							typeof (BookRefreshEvent),
 							typeof (BookSavedEvent),
@@ -139,6 +137,7 @@ namespace Bloom
 							typeof(SpreadsheetApi),
 							typeof(BookMetadataApi),
 							typeof(PublishToAndroidApi),
+							typeof(PublishAudioVideoAPI),
 							typeof(PublishEpubApi),
 							typeof(AccessibilityCheckApi),
 							typeof(CollectionSettingsApi),
@@ -172,7 +171,8 @@ namespace Bloom
 							typeof(LibraryPublishApi),
 							typeof(WorkspaceApi),
 							typeof(BookCollectionHolder),
-							typeof(WorkspaceTabSelection)
+							typeof(WorkspaceTabSelection),
+							typeof(CopyrightAndLicenseApi)
 						}.Contains(t));
 
 					builder.RegisterAssemblyTypes(Assembly.GetExecutingAssembly())
@@ -183,32 +183,6 @@ namespace Bloom
 
 					var bookRenameEvent = new BookRenamedEvent();
 					builder.Register(c => bookRenameEvent).AsSelf().InstancePerLifetimeScope();
-
-					try
-					{
-#if Chorus                      //nb: we split out the ChorusSystem.Init() so that this won't ever fail, so we have something registered even if we aren't
-						//going to be able to do HG for some reason.
-						var chorusSystem = new ChorusSystem(Path.GetDirectoryName(projectSettingsPath));
-						builder.Register<ChorusSystem>(c => chorusSystem).InstancePerLifetimeScope();
-						builder.Register<SendReceiver>(c => new SendReceiver(chorusSystem, () => ProjectWindow))
-							.InstancePerLifetimeScope();
-
-					chorusSystem.Init(string.Empty/*user name*/);
-#endif
-					}
-					catch (Exception error)
-					{
-						Bloom.Utils.MiscUtils.SuppressUnusedExceptionVarWarning(error);
-#if USING_CHORUS
-#if !DEBUG
-					SIL.Reporting.ErrorReport.NotifyUserOfProblem(error,
-						"There was a problem loading the Chorus Send/Receive system for this collection. Bloom will try to limp along, but you'll need technical help to resolve this. If you have no other choice, find this folder: {0}, move it somewhere safe, and restart Bloom.", Path.GetDirectoryName(projectSettingsPath).CombineForPath(".hg"));
-#endif
-					//swallow for develoeprs, because this happens if you don't have the Mercurial and "Mercurial Extensions" folders in the root, and our
-					//getdependencies doesn't yet do that.
-#endif
-					}
-
 
 					//This deserves some explanation:
 					//*every* collection has a "*.BloomCollection" settings file. But the one we make the most use of is the one editable collection
@@ -222,7 +196,7 @@ namespace Bloom
 							c.Resolve<BloomWebSocketServer>(), c.Resolve<BookRenamedEvent>(),
 							c.Resolve<BookStatusChangeEvent>(),
 							c.Resolve<BookSelection>(),
-							c.Resolve<LibraryClosing>(), c.Resolve<BookCollectionHolder>())).InstancePerLifetimeScope();
+							c.Resolve<CollectionClosing>(), c.Resolve<BookCollectionHolder>())).InstancePerLifetimeScope();
 						builder.Register<ITeamCollectionManager>(c => c.Resolve<TeamCollectionManager>()).InstancePerLifetimeScope();
 						builder.Register<CollectionSettings>(c =>
 						{
@@ -236,12 +210,9 @@ namespace Bloom
 					}
 
 
-					builder.Register<LibraryModel>(
+					builder.Register<CollectionModel>(
 						c =>
-							new LibraryModel(editableCollectionDirectory, c.Resolve<CollectionSettings>(),
-							#if Chorus
-								c.Resolve<SendReceiver>(),
-							#endif
+							new CollectionModel(editableCollectionDirectory, c.Resolve<CollectionSettings>(),
 								c.Resolve<BookSelection>(), c.Resolve<SourceCollectionsList>(), c.Resolve<BookCollection.Factory>(),
 								c.Resolve<EditBookCommand>(), c.Resolve<CreateFromSourceBookCommand>(), c.Resolve<BookServer>(),
 								c.Resolve<CurrentEditableCollectionSelection>(), c.Resolve<BookThumbNailer>(), c.Resolve<TeamCollectionManager>(),
@@ -326,7 +297,7 @@ namespace Bloom
 //					}
 //					else
 //					{
-						WorkspaceView wsv = factory(c.Resolve<LibraryView>());
+						WorkspaceView wsv = factory();
 						return wsv;
 //					}
 					});
@@ -346,7 +317,7 @@ namespace Bloom
 				MessageBox.Show("Bloom was not able to find all its bits. This sometimes happens when upgrading to a newer version. To fix it, please run the installer again and choose 'Repair', or uninstall and reinstall. We truly value your time and apologize for wasting it. The error was:"+Environment.NewLine+Environment.NewLine+error.Message,"Bloom Installation Problem",MessageBoxButtons.OK,MessageBoxIcon.Error);
 				Application.Exit();
 			}
-			
+
 			var server = _scope.Resolve<BloomServer>();
 			server.StartListening();
 			_scope.Resolve<AudioRecording>().RegisterWithApiHandler(server.ApiHandler);
@@ -358,6 +329,7 @@ namespace Bloom
 			_scope.Resolve<PageTemplatesApi>().RegisterWithApiHandler(server.ApiHandler);
 			_scope.Resolve<AddOrChangePageApi>().RegisterWithApiHandler(server.ApiHandler);
 			_scope.Resolve<PublishToAndroidApi>().RegisterWithApiHandler(server.ApiHandler);
+			_scope.Resolve<PublishAudioVideoAPI>().RegisterWithApiHandler(server.ApiHandler);
 			_scope.Resolve<PublishEpubApi>().RegisterWithApiHandler(server.ApiHandler);
 			_scope.Resolve<AccessibilityCheckApi>().RegisterWithApiHandler(server.ApiHandler);
 			_scope.Resolve<CollectionSettingsApi>().RegisterWithApiHandler(server.ApiHandler);
@@ -381,6 +353,7 @@ namespace Bloom
 			_scope.Resolve<AudioSegmentationApi>().RegisterWithApiHandler(server.ApiHandler);
 			_scope.Resolve<BrowserDialogApi>().RegisterWithApiHandler(server.ApiHandler);
 			_scope.Resolve<ProblemReportApi>().RegisterWithApiHandler(server.ApiHandler);
+			_scope.Resolve<CopyrightAndLicenseApi>().RegisterWithApiHandler(server.ApiHandler);
 			_scope.Resolve<I18NApi>().RegisterWithApiHandler(server.ApiHandler);
 			_scope.Resolve<FileIOApi>().RegisterWithApiHandler(server.ApiHandler);
 			_scope.Resolve<ProgressDialogApi>().RegisterWithApiHandler(server.ApiHandler);
@@ -681,13 +654,6 @@ namespace Bloom
 				 return GetBloomCommonDataFolder().CombineForPath("XMatter");
 			}
 		}
-
-#if CHORUS
-		public SendReceiver SendReceiver
-		{
-			get { return _scope.Resolve<SendReceiver>(); }
-		}
-#endif
 
 		internal BloomFileLocator OptimizedFileLocator
 		{

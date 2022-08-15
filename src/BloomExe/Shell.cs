@@ -28,7 +28,7 @@ namespace Bloom
 		}
 
 		private readonly CollectionSettings _collectionSettings;
-		private readonly LibraryClosing _libraryClosingEvent;
+		private readonly CollectionClosing _collectionClosingEvent;
 		private readonly ControlKeyEvent _controlKeyEvent;
 		private readonly WorkspaceView _workspaceView;
 
@@ -39,7 +39,7 @@ namespace Bloom
 		public Shell(Func<WorkspaceView> projectViewFactory,
 			CollectionSettings collectionSettings,
 			BookDownloadStartingEvent bookDownloadStartingEvent,
-			LibraryClosing libraryClosingEvent,
+			CollectionClosing collectionClosingEvent,
 			QueueRenameOfCollection queueRenameOfCollection,
 			ControlKeyEvent controlKeyEvent,
 			SignLanguageApi signLanguageApi)
@@ -47,7 +47,7 @@ namespace Bloom
 			queueRenameOfCollection.Subscribe(newName =>
 				_nameToChangeCollectionUponClosing = newName.Trim().SanitizeFilename('-'));
 			_collectionSettings = collectionSettings;
-			_libraryClosingEvent = libraryClosingEvent;
+			_collectionClosingEvent = collectionClosingEvent;
 			_controlKeyEvent = controlKeyEvent;
 			InitializeComponent();
 			Activated += (sender, args) =>
@@ -101,16 +101,6 @@ namespace Bloom
 			this.Controls.Add(this._workspaceView);
 
 			SetWindowText(null);
-
-			KeyPreview = true; // allows us to process keyboard events before children see them (for F2).
-
-			KeyUp += (sender, args) =>
-			{
-				if (args.KeyCode == Keys.F2)
-				{
-					_workspaceView.HandleRenameCommand();
-				}
-			};
 		}
 
 		public void CheckForInvalidBranding()
@@ -129,7 +119,7 @@ namespace Bloom
 		protected override void OnClosing(CancelEventArgs e)
 		{
 			//get everything saved (under the old collection name, if we are changing the name and restarting)
-			_libraryClosingEvent.Raise(null);
+			_collectionClosingEvent.Raise(null);
 
 			if (!string.IsNullOrEmpty(_nameToChangeCollectionUponClosing) &&
 			    _nameToChangeCollectionUponClosing != _collectionSettings.CollectionName &&

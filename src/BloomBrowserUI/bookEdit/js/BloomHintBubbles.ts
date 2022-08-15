@@ -432,19 +432,23 @@ export default class BloomHintBubbles {
                 whatToSay = whatToSay.substr(1);
             if (!whatToSay) return; // no empty bubbles
             var functionCall = source.data("functiononhintclick");
+            var onClick;
             if (functionCall) {
-                if (
-                    functionCall === "bookMetadataEditor" &&
-                    !BloomHintBubbles.canChangeBookLicense()
-                )
-                    return;
+                if (functionCall === "bookMetadataEditor") {
+                    if (!BloomHintBubbles.canChangeBookLicense()) return;
+                    // In C# land, the browser onClick will attempt to handle this.
+                    // This dummy function name simply indicates we've already done
+                    // all that is needed and prevents C# from interfering.
+                    functionCall = "clickWasAlreadyHandled";
+                    onClick =
+                        "onClick='(window.parent || window).editTabBundle.showCopyrightAndLicenseDialog();'";
+                }
                 shouldShowAlways = true;
 
                 if (functionCall.indexOf("(") > 0)
                     functionCall = "javascript:" + functionCall + ";";
 
-                whatToSay =
-                    "<a href='" + functionCall + "'>" + whatToSay + "</a>";
+                whatToSay = `<a href='${functionCall}' ${onClick}>${whatToSay}</a>`;
             }
             whatToSay =
                 whatToSay +

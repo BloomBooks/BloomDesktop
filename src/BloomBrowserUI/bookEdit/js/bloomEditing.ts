@@ -36,14 +36,6 @@ import { BloomApi } from "../../utils/bloomApi";
 import { showRequestStringDialog } from "../../react_components/RequestStringDialog";
 import { fixUpDownArrowEventHandler } from "./arrowKeyWorkaroundManager";
 
-export function GetDifferenceBetweenHeightAndParentHeight(jqueryNode) {
-    // function also declared and used in StyleEditor
-    if (!jqueryNode) {
-        return 0;
-    }
-    return jqueryNode.parent().height() - jqueryNode.height();
-}
-
 // Allows toolbox code to make an element properly in the context of this iframe.
 export function makeElement(
     html: string,
@@ -313,15 +305,6 @@ function SetBookCopyrightAndLicenseButtonVisibility(container) {
     $(container)
         .find("button#editCopyrightAndLicense")
         .css("display", shouldShowButton ? "inline" : "none");
-}
-
-function DecodeHtml(encodedString) {
-    return encodedString
-        .replace(/&amp;/g, "&")
-        .replace(/&lt;/g, "<")
-        .replace(/&gt;/g, ">")
-        .replace(/&#39;/g, "'")
-        .replace(/&#169;/g, "©");
 }
 
 function GetEditor() {
@@ -1361,6 +1344,17 @@ export function attachToCkEditor(element) {
                 const barHeight = bar.height();
                 bar.offset({ top: boxTop - barHeight, left: barLeft });
             }
+            // for some reason when the color-choices panel has been shown once, it keeps coming
+            // up immediately each time the toolbar is shown. Any change of selection is good reason
+            // to hide it again. I'm using this specific way of hiding it because that seems to be
+            // what CkEditor uses and therefore what it will change when the button is clicked to
+            // show the popup panel.
+            const colorPanels = Array.from(
+                document.getElementsByClassName("cke_panel")
+            );
+            colorPanels.forEach(
+                p => ((p as HTMLElement).style.display = "none")
+            );
         }
     });
 

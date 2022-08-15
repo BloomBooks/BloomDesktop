@@ -28,32 +28,32 @@ namespace Bloom.web.controllers
 	/// </summary>
 	public class BookCommandsApi
 	{
-		private readonly LibraryModel _libraryModel;
+		private readonly CollectionModel _collectionModel;
 		private BookSelection _bookSelection;
 		private readonly SpreadsheetApi _spreadsheetApi;
 		private readonly BloomWebSocketServer _webSocketServer;
 		private string _previousTargetSaveAs; // enhance: should this be shared with CollectionApi or other save as locations?
 
-		public BookCommandsApi(LibraryModel libraryModel, BloomWebSocketServer webSocketServer, BookSelection bookSelection, SpreadsheetApi spreadsheetApi)
+		public BookCommandsApi(CollectionModel collectionModel, BloomWebSocketServer webSocketServer, BookSelection bookSelection, SpreadsheetApi spreadsheetApi)
 		{
-			_libraryModel = libraryModel;
+			_collectionModel = collectionModel;
 			_webSocketServer = webSocketServer;
 			_bookSelection = bookSelection;
 			this._spreadsheetApi = spreadsheetApi;
-			_libraryModel.BookCommands = this;
+			_collectionModel.BookCommands = this;
 		}
 
 		public void RegisterWithApiHandler(BloomApiHandler apiHandler)
 		{
 			// Must not require sync, because it launches a Bloom dialog, which will make other api requests
 			// that will be blocked if this is locked.
-			apiHandler.RegisterEndpointHandlerExact("bookCommand/exportToSpreadsheet",
+			apiHandler.RegisterEndpointHandler("bookCommand/exportToSpreadsheet",
 				(request) =>
 				{
 					_spreadsheetApi.ShowExportToSpreadsheetUI(GetBookObjectFromPost(request));
 					request.PostSucceeded();
 				}, true, false);
-			apiHandler.RegisterEndpointHandlerExact("bookCommand/enhanceLabel", (request) =>
+			apiHandler.RegisterEndpointHandler("bookCommand/enhanceLabel", (request) =>
 			{
 				// We want this to be fast...many things are competing for api handling threads while
 				// Bloom is starting up, including many buttons sending this request...
@@ -63,15 +63,15 @@ namespace Bloom.web.controllers
 				RequestButtonLabelUpdate(collection, id);
 				request.PostSucceeded();
 			}, false, false);
-			apiHandler.RegisterBooleanEndpointHandlerExact("bookCommand/decodable",
-				request => { return _libraryModel.IsBookDecodable;},
-				(request, b) => { _libraryModel.SetIsBookDecodable(b);},
+			apiHandler.RegisterBooleanEndpointHandler("bookCommand/decodable",
+				request => { return _collectionModel.IsBookDecodable;},
+				(request, b) => { _collectionModel.SetIsBookDecodable(b);},
 				true);
-			apiHandler.RegisterBooleanEndpointHandlerExact("bookCommand/leveled",
-				request => { return _libraryModel.IsBookLeveled; },
-				(request, b) => { _libraryModel.SetIsBookLeveled(b); },
+			apiHandler.RegisterBooleanEndpointHandler("bookCommand/leveled",
+				request => { return _collectionModel.IsBookLeveled; },
+				(request, b) => { _collectionModel.SetIsBookLeveled(b); },
 				true);
-			apiHandler.RegisterEndpointHandler("bookCommand/", HandleBookCommand, true);
+			apiHandler.RegisterEndpointLegacy("bookCommand/", HandleBookCommand, true);
 		}
 
 		public void RequestButtonLabelUpdate(string collectionPath, string id)
@@ -152,10 +152,10 @@ namespace Bloom.web.controllers
 				}
 			}
 
-			var bookInfo = _libraryModel.BookInfoFromCollectionAndId(item.Item1, item.Item2);
+			var bookInfo = _collectionModel.BookInfoFromCollectionAndId(item.Item1, item.Item2);
 			if (bookInfo == null || bookInfo.FileNameLocked)
 				return; // the title it already has is the folder name which is the right locked name.
-			var langCodes = _libraryModel.CollectionSettings.GetAllLanguageCodes().ToList();
+			var langCodes = _collectionModel.CollectionSettings.GetAllLanguageCodes().ToList();
 			var bestTitle = bookInfo.GetBestTitleForUserDisplay(langCodes);
 			if (String.IsNullOrEmpty(bestTitle))
 			{
@@ -167,7 +167,7 @@ namespace Bloom.web.controllers
 				var book = LoadBookAndBringItUpToDate(bookInfo, out bool badBook);
 				if (book == null)
 					return; // can't get the book, can't improve title
-				bestTitle = book.TitleBestForUserDisplay;
+				bestTitle = book.NameBestForUserDisplay;
 			}
 
 			if (bestTitle != bookInfo.QuickTitleUserDisplay)
@@ -203,7 +203,7 @@ namespace Bloom.web.controllers
 			try
 			{
 				badBook = false;
-				return _libraryModel.GetBookFromBookInfo(bookInfo);
+				return _collectionModel.GetBookFromBookInfo(bookInfo);
 			}
 			catch (Exception error)
 			{
@@ -236,7 +236,7 @@ namespace Bloom.web.controllers
 					// Currently, the request comes with data to let us identify which book,
 					// but it will always be the current book, which is all the model api lets us open anyway.
 					//var book = GetBookObjectFromPost(request);
-					_libraryModel.OpenFolderOnDisk();
+					_collectionModel.OpenFolderOnDisk();
 					break;
 				case "exportToWord":
 					HandleExportToWord(book);
@@ -262,43 +262,36 @@ namespace Bloom.web.controllers
 			}
 			request.PostSucceeded();
 		}
-		// TODO: Delete me after all references removed.
-		[Obsolete("Wrapper to allow legacy (WinForms) code to share this code. New code should try to use the API/React-based paradigm instead.")]
-		public void HandleImportContentFromSpreadsheetWrapper(Book.Book book) => _spreadsheetApi.HandleImportContentFromSpreadsheet(book);
-
-		// TODO: Delete me after all references removed.
-		[Obsolete("Wrapper to allow legacy (WinForms) code to share this code. New code should try to use the API/React-based paradigm instead.")]
-		public void HandleExportToSpreadsheetWrapper(Book.Book book) => _spreadsheetApi.ShowExportToSpreadsheetUI(book);
-
 
 		private void HandleRename(Book.Book book, ApiRequest request)
 		{
 			var newName = request.RequiredParam("name");
 			book.SetAndLockBookName(newName);
 
-			_libraryModel.UpdateLabelOfBookInEditableCollection(book);
+			_collectionModel.UpdateLabelOfBookInEditableCollection(book);
 		}
 
 
-		// TODO: Delete me after all references removed.
-		[Obsolete("Wrapper to allow legacy (WinForms) code to share this code. New code should try to use the API/React-based paradigm instead.")]
-		public void HandleMakeBloompackWrapper(Book.Book book) => this.HandleMakeBloompack(book);
 		private void HandleMakeBloompack(Book.Book book)
 		{
-			using (var dlg = new DialogAdapters.SaveFileDialogAdapter())
-			{
-				var extension = Path.GetExtension(_libraryModel.GetSuggestedBloomPackPath());
-				var filename = book.Storage.FolderName;
-				dlg.FileName = $"{book.Storage.FolderName}{extension}";
-				dlg.Filter = "BloomPack|*.BloomPack";
-				dlg.RestoreDirectory = true;
-				dlg.OverwritePrompt = true;
-				if (DialogResult.Cancel == dlg.ShowDialog())
-				{
-					return;
-				}
-				_libraryModel.MakeSingleBookBloomPack(dlg.FileName, book.Storage.FolderPath);
-			}
+			string chosenFilename = GetOutputFileOutsideBookFolder(".BloomPack", "BloomPack files|*.BloomPack|All files (*.*)|*.*", book.Storage);
+			if (String.IsNullOrEmpty(chosenFilename))
+				return;
+			_collectionModel.MakeSingleBookBloomPack(chosenFilename, book.Storage.FolderPath);
+		}
+
+		public string GetOutputFileOutsideBookFolder(string defaultExtension, string filter, IBookStorage bookStorage)
+		{
+			var folder = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+			if (!string.IsNullOrEmpty(_previousTargetSaveAs) && Directory.Exists(_previousTargetSaveAs))
+				folder = _previousTargetSaveAs;
+			var initialPath = Path.Combine(folder, bookStorage.FolderName + defaultExtension);
+
+			var destFileName = Utils.MiscUtils.GetOutputFilePathOutsideCollectionFolder(initialPath, filter);
+
+			if (!String.IsNullOrEmpty(destFileName))
+				_previousTargetSaveAs = Path.GetDirectoryName(destFileName);
+			return destFileName;
 		}
 
 		private void HandleExportToWord(Book.Book book)
@@ -307,8 +300,8 @@ namespace Bloom.web.controllers
 			{
 				MessageBox.Show(LocalizationManager.GetString("CollectionTab.BookMenu.ExportDocMessage",
 					"Bloom will now open this HTML document in your word processing program (normally Word or LibreOffice). You will be able to work with the text and images of this book. These programs normally don't do well with preserving the layout, so don't expect much."));
-				var destPath = book.GetPathHtmlFile().Replace(".htm", ".doc");
-				_libraryModel.ExportDocFormat(destPath);
+				var destPath = book.GetPathHtmlFile().Replace(".htm", ".doc"); 
+				_collectionModel.ExportDocFormat(destPath);
 				PathUtilities.OpenFileInApplication(destPath);
 				Analytics.Track("Exported To Doc format");
 			}
@@ -327,38 +320,19 @@ namespace Bloom.web.controllers
 
 		private void ScheduleRefreshOfOneThumbnail(Book.Book book)
 		{
-			_libraryModel.UpdateThumbnailAsync(book);
+			_collectionModel.UpdateThumbnailAsync(book);
 		}
 
 		internal void HandleSaveAsDotBloomSource(Book.Book book)
 		{
-			const string bloomFilter = "Bloom files (*.bloomSource)|*.bloomSource|All files (*.*)|*.*";
-
 			HandleBringBookUpToDate(book);
 
-			var srcFolderName = book.StoragePageFolder;
-
-			// Save As dialog, initially proposing My Documents, then defaulting to last target folder
-			// Review: Do we need to persist this to some settings somewhere, or just for the current run?
-			var dlg = new SaveFileDialog
-			{
-				AddExtension = true,
-				OverwritePrompt = true,
-				DefaultExt = "bloomSource",
-				FileName = Path.GetFileName(srcFolderName),
-				Filter = bloomFilter,
-				InitialDirectory = _previousTargetSaveAs != null ?
-					_previousTargetSaveAs :
-					Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments)
-			};
-			var result = dlg.ShowDialog(Form.ActiveForm);
-			if (result != DialogResult.OK)
+			const string bloomFilter = "Bloom Source files (*.bloomSource)|*.bloomSource|All files (*.*)|*.*";
+			var destFileName = GetOutputFileOutsideBookFolder(".bloomSource", bloomFilter, book.Storage);
+			if (String.IsNullOrEmpty(destFileName))
 				return;
 
-			var destFileName = dlg.FileName;
-			_previousTargetSaveAs = Path.GetDirectoryName(destFileName);
-
-			if (!LibraryModel.SaveAsBloomSourceFile(srcFolderName, destFileName, out var exception))
+			if (!CollectionModel.SaveAsBloomSourceFile(book.StoragePageFolder, destFileName, out var exception))
 			{
 				// Purposefully not adding to the L10N burden...
 				NonFatalProblem.Report(ModalIf.All, PassiveIf.None,
@@ -374,7 +348,7 @@ namespace Bloom.web.controllers
 			{
 				// Currently this works on the current book, so the argument is ignored.
 				// That's OK for now as currently the book passed will always be the current one.
-				_libraryModel.BringBookUpToDate();
+				_collectionModel.BringBookUpToDate();
 			}
 			catch (Exception error)
 			{
@@ -392,13 +366,13 @@ namespace Bloom.web.controllers
 		private Book.Book GetBookObjectFromPost(ApiRequest request)
 		{
 			var info = GetBookInfoFromPost(request);
-			return _libraryModel.GetBookFromBookInfo(info);
+			return _collectionModel.GetBookFromBookInfo(info);
 
 		}
 		private BookCollection GetCollectionOfRequest(ApiRequest request)
 		{
 			var id = request.RequiredParam("collection-id").Trim();
-			var collection = _libraryModel.GetBookCollections().FirstOrDefault(c => c.PathToDirectory == id);
+			var collection = _collectionModel.GetBookCollections().FirstOrDefault(c => c.PathToDirectory == id);
 			if (collection == null)
 			{
 				request.Failed($"Collection named '{id}' was not found.");

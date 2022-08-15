@@ -7,7 +7,8 @@ namespace Bloom.web
 {
 	public enum ProgressKind
 	{
-		Error, Warning, Instruction, Note, Progress, Heading
+		Error, Warning, Instruction, Note, Progress, Heading,
+		Fatal // Like Error, but Bloom will have to quit after reporting.
 	};
 
 	// NB: This class is designed to map, via json, to IBloomWebSocketProgressEvent, so the
@@ -32,6 +33,9 @@ namespace Bloom.web
 			{
 				case ProgressKind.Error:
 					this.progressKind = "Error";
+					break;
+				case ProgressKind.Fatal:
+					this.progressKind = "Fatal";
 					break;
 				case ProgressKind.Warning:
 					this.progressKind = "Warning";
@@ -116,6 +120,10 @@ namespace Bloom.web
 			_bloomWebSocketServer.SendBundle(_clientContext, "message", messageBundle);
 			switch (kind)
 			{
+				case ProgressKind.Fatal:
+					HaveProblemsBeenReported = true;
+					HasFatalProblemBeenReported = true;
+					break;
 				case ProgressKind.Error:
 				case ProgressKind.Warning:
 					HaveProblemsBeenReported = true;
@@ -151,10 +159,12 @@ namespace Bloom.web
 
 		public bool HaveProblemsBeenReported { get; private set; }
 
+		public bool HasFatalProblemBeenReported { get; private set; }
+
 		// Use with care: if the first parameter is a string, you can leave out one of the earlier arguments with no compiler warning.
 		public string GetMessageWithParams(string idSuffix, string comment, string message, params object[] parameters)
 		{
-			Debug.Assert(message.Contains("{0}"));
+			Debug.Assert(message.Contains("{0}") || message.Contains("{0:"));
 			var localized = LocalizationManager.GetDynamicString(appId: "Bloom", id: GetL10nId(idSuffix, true), englishText: message,
 				comment: comment);
 			var formatted = String.Format(localized, parameters);

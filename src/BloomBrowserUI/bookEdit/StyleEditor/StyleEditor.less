@@ -18,9 +18,20 @@
     .spacing-fudge {
         margin: 0px 0px -2px 0px;
     }
+    .font-control-section {
+        display: flex;
+        align-items: center;
+        margin-top: -6px;
+        margin-bottom: 4px;
+    }
     #size-select {
         width: 43px;
         margin-left: 5px;
+        & + .select2 {
+            // match the size of the FontSelectComponent
+            margin-top: 2px;
+            margin-bottom: 4px;
+        }
     }
     #line-height-select {
         width: 45px;
@@ -81,9 +92,9 @@
     }
 }
 
-//the select2 dropdown gets appended to the body, not to our dialog, so its z-index must be at least as high as the dialog's z-index
+// The select2 dropdown gets appended to the body, not to our dialog, so its z-index must be at least as high as the dialog's z-index.
 .select2-container {
-    z-index: @dialogZindexPlusOne;
+    z-index: @dialogZindexPlusOne !important; // important is necessary for the popover case
 }
 
 #spacingRow {
@@ -121,9 +132,6 @@
 #para-spacing-select + .select2-container {
     width: 60px !important;
 }
-// #font-select + .select2-container{
-// 	width: 120px;
-// }
 
 .select2-container--open .select2-selection__rendered {
     background-color: lightblue;

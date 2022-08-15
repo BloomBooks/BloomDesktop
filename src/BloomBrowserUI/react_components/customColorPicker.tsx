@@ -1,7 +1,9 @@
+/** @jsx jsx **/
+import { jsx, css } from "@emotion/core";
 import * as React from "react";
 import { useState } from "react";
 import {
-    ChromePicker,
+    SketchPicker,
     ColorChangeHandler,
     ColorResult,
     RGBColor
@@ -64,7 +66,7 @@ export const CustomColorPicker: React.FunctionComponent<ICustomPicker> = props =
     };
 
     const getSwatchColors = () => (
-        <>
+        <React.Fragment>
             {props.swatchColors
                 .filter(swatch => {
                     if (props.noGradientSwatches) {
@@ -85,7 +87,7 @@ export const CustomColorPicker: React.FunctionComponent<ICustomPicker> = props =
                         opacity={swatchDefn.opacity}
                     />
                 ))}
-        </>
+        </React.Fragment>
     );
 
     const getRgbOfCurrentSwatch = (): RGBColor => {
@@ -97,13 +99,24 @@ export const CustomColorPicker: React.FunctionComponent<ICustomPicker> = props =
 
     return (
         <div className="custom-color-picker">
-            <ChromePicker
+            <SketchPicker
                 disableAlpha={props.noAlphaSlider}
                 // if the current color choice happens to be a gradient, this will be 'white'.
                 color={getRgbOfCurrentSwatch()}
                 onChange={handleColorChange}
+                // We do want to show a set of color presets, but as far as I could discover
+                // the SketchPicker can't display gradients, so we'll leave out its own ones
+                // and use our own.
+                presetColors={[]}
             />
-            <div className="swatch-row">{getSwatchColors()}</div>
+            <div
+                css={css`
+                    margin-top: 10px;
+                `}
+                className="swatch-row"
+            >
+                {getSwatchColors()}
+            </div>
         </div>
     );
 };

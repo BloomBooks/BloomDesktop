@@ -43,6 +43,7 @@ namespace Bloom.Publish
 			Printing,
 			ResumeAfterPrint,
 			Android,
+			AudioVideo,
 			EPUB,
 			NotPublishable
 		}
@@ -261,7 +262,7 @@ namespace Bloom.Publish
 			string path = null;
 
 			// Sanitize fileName first
-			string fileName = SanitizeFileName(fname);
+			string fileName = BookStorage.SanitizeNameForFileSystem(fname);
 
 			for (int i = 0; i < 100; i++)
 			{
@@ -280,21 +281,6 @@ namespace Bloom.Publish
 				}
 			}
 			return path;
-		}
-
-		/// <summary>
-		/// Ampersand in book title was causing Publish problems
-		/// </summary>
-		/// <param name="fileName"></param>
-		/// <returns></returns>
-		private static string SanitizeFileName(string fileName)
-		{
-			fileName = Path.GetInvalidFileNameChars().Aggregate(
-				fileName, (current, character) => current.Replace(character, ' '));
-			// I (GJM) set this up to keep ampersand out of the book title,
-			// but discovered that ampersand isn't one of the characters that GetInvalidFileNameChars returns!
-			fileName = fileName.Replace('&', ' ');
-			return fileName;
 		}
 
 		DisplayModes _currentDisplayMode = DisplayModes.WaitForUserToChooseSomething;
@@ -379,62 +365,63 @@ namespace Bloom.Publish
 					}
 				}
 
-				using (var dlg = new DialogAdapters.SaveFileDialogAdapter())
+				var portion = "";
+				switch (BookletPortion)
 				{
-					if (!string.IsNullOrEmpty(_lastDirectory) && Directory.Exists(_lastDirectory))
-						dlg.InitialDirectory = _lastDirectory;
-					var portion = "";
-					switch (BookletPortion)
-					{
-						case BookletPortions.None:
-							Debug.Fail("Save should not be enabled");
-							return;
-						case BookletPortions.AllPagesNoBooklet:
-							portion = "Pages";
-							break;
-						case BookletPortions.BookletCover:
-							portion = "Cover";
-							break;
-						case BookletPortions.BookletPages:
-							portion = "Inside";
-							break;
-						default:
-							throw new ArgumentOutOfRangeException();
-					}
-
-					string forPrintShop =
-						_currentlyLoadedBook.UserPrefs.CmykPdf || _currentlyLoadedBook.UserPrefs.FullBleed
-							? "-printshop"
-							: "";
-					string suggestedName = string.Format($"{Path.GetFileName(_currentlyLoadedBook.FolderPath)}-{_currentlyLoadedBook.GetFilesafeLanguage1Name("en")}-{portion}{forPrintShop}.pdf");
-					dlg.FileName = suggestedName;
-					var pdfFileLabel = L10NSharp.LocalizationManager.GetString(@"PublishTab.PdfMaker.PdfFile",
-						"PDF File",
-						@"displayed as file type for Save File dialog.");
-
-					pdfFileLabel = pdfFileLabel.Replace("|", "");
-					dlg.Filter = String.Format("{0}|*.pdf", pdfFileLabel);
-					dlg.OverwritePrompt = true;
-					if (DialogResult.OK == dlg.ShowDialog())
-					{
-						_lastDirectory = Path.GetDirectoryName(dlg.FileName);
-						if (_currentlyLoadedBook.UserPrefs.CmykPdf)
-						{
-							// PDF for Printshop (CMYK US Web Coated V2)
-							ProcessPdfFurtherAndSave(ProcessPdfWithGhostscript.OutputType.Printshop, dlg.FileName);
-						} else {
-							// we want the simple PDF we already made.
-							RobustFile.Copy(PdfFilePath, dlg.FileName, true);
-						}
-						Analytics.Track("Save PDF", new Dictionary<string, string>()
-							{
-								{"Portion",  Enum.GetName(typeof(BookletPortions), BookletPortion)},
-								{"Layout", PageLayout.ToString()},
-								{"BookId", BookSelection.CurrentSelection.ID },
-								{"Country", _collectionSettings.Country}
-							});
-					}
+					case BookletPortions.None:
+						Debug.Fail("Save should not be enabled");
+						return;
+					case BookletPortions.AllPagesNoBooklet:
+						portion = "Pages";
+						break;
+					case BookletPortions.BookletCover:
+						portion = "Cover";
+						break;
+					case BookletPortions.BookletPages:
+						portion = "Inside";
+						break;
+					default:
+						throw new ArgumentOutOfRangeException();
 				}
+				string forPrintShop =
+					_currentlyLoadedBook.UserPrefs.CmykPdf || _currentlyLoadedBook.UserPrefs.FullBleed
+						? "-printshop"
+						: "";
+				string suggestedName = string.Format($"{Path.GetFileName(_currentlyLoadedBook.FolderPath)}-{_currentlyLoadedBook.GetFilesafeLanguage1Name("en")}-{portion}{forPrintShop}.pdf");
+				var pdfFileLabel = L10NSharp.LocalizationManager.GetString(@"PublishTab.PdfMaker.PdfFile",
+					"PDF File",
+					@"displayed as file type for Save File dialog.");
+
+				pdfFileLabel = pdfFileLabel.Replace("|", "");
+				var pdfFilter = String.Format("{0}|*.pdf", pdfFileLabel);
+
+				var startingFolder = (!string.IsNullOrEmpty(_lastDirectory) && Directory.Exists(_lastDirectory)) ?
+							_lastDirectory :
+							Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+				var initialPath = Path.Combine(startingFolder, suggestedName);
+
+				var destFileName = Utils.MiscUtils.GetOutputFilePathOutsideCollectionFolder(initialPath, pdfFilter);
+				if (String.IsNullOrEmpty(destFileName))
+					return;
+
+				_lastDirectory = Path.GetDirectoryName(destFileName);
+				if (_currentlyLoadedBook.UserPrefs.CmykPdf)
+				{
+					// PDF for Printshop (CMYK US Web Coated V2)
+					ProcessPdfFurtherAndSave(ProcessPdfWithGhostscript.OutputType.Printshop, destFileName);
+				}
+				else
+				{
+					// we want the simple PDF we already made.
+					RobustFile.Copy(PdfFilePath, destFileName, true);
+				}
+				Analytics.Track("Save PDF", new Dictionary<string, string>()
+								{
+									{"Portion",  Enum.GetName(typeof(BookletPortions), BookletPortion)},
+									{"Layout", PageLayout.ToString()},
+									{"BookId", BookSelection.CurrentSelection.ID },
+									{"Country", _collectionSettings.Country}
+								});
 			}
 			catch (Exception err)
 			{
@@ -544,6 +531,8 @@ namespace Bloom.Publish
 			{
 				dlg.ShowAndDoWork(progress => _currentlyLoadedBook.BringBookUpToDate(progress));
 			}
+
+			CanPublish = DeterminePublishability(); // in case the user edited the book without changing the selected book
 		}
 
 		[Import("GetPublishingMenuCommands")]//, AllowDefault = true)]
@@ -651,7 +640,8 @@ namespace Bloom.Publish
 		/// See https://issues.bloomlibrary.org/youtrack/issue/BL-7124.
 		/// See https://issues.bloomlibrary.org/youtrack/issue/BL-7998 for when we need to prune xmatter pages.
 		/// </remarks>
-		public static void RemoveUnwantedLanguageData(HtmlDom dom, IEnumerable<string> languagesToInclude, string nationalLang=null)
+		public static void RemoveUnwantedLanguageData(HtmlDom dom, IEnumerable<string> languagesToInclude, bool shouldPruneXmatter,
+			string metadataLang1Code, string metadataLang2Code)
 		{
 			//Debug.Write("PublishModel.RemoveUnwantedLanguageData(): languagesToInclude =");
 			//foreach (var lang in languagesToInclude)
@@ -677,12 +667,19 @@ namespace Bloom.Publish
 			foreach (var page in dom.RawDom.SafeSelectNodes("//div[contains(@class,'bloom-page')]").Cast<XmlElement>().ToList())
 			{
 				var isXMatter = !String.IsNullOrWhiteSpace(page.GetAttribute("data-xmatter-page"));
-				if (isXMatter && nationalLang == null)
-					continue;	// default behavior is to skip pruning data from xmatter
+				if (isXMatter && !shouldPruneXmatter)
+					continue;
+
+				// We must preserve M1 and M2 in xmatter.
+				// Most xmatters do not contain M2, but the mxb ones do.
+				bool shouldOtherwisePreserve(string langCode) {
+					return isXMatter && (langCode == metadataLang1Code || langCode == metadataLang2Code);
+				}
+
 				foreach (var div in page.SafeSelectNodes(".//div[@lang]").Cast<XmlElement>().ToList())
 				{
 					var lang = div.GetAttribute("lang");
-					if (String.IsNullOrEmpty(lang) || contentLanguages.Contains(lang) || (isXMatter && lang == nationalLang))
+					if (String.IsNullOrEmpty(lang) || contentLanguages.Contains(lang) || shouldOtherwisePreserve(lang))
 						continue;
 					var classAttr = div.GetAttribute("class");
 					// retain the .pageLabel and .pageDescription divs (which are always lang='en')
@@ -698,7 +695,7 @@ namespace Bloom.Publish
 						var sublang = subdiv.GetAttribute("lang");
 						if (String.IsNullOrEmpty(sublang))
 							continue;
-						if (contentLanguages.Contains(sublang) || (isXMatter && sublang == nationalLang))
+						if (contentLanguages.Contains(sublang) || shouldOtherwisePreserve(sublang))
 						{
 							deleteDiv = false;
 							break;
@@ -708,6 +705,31 @@ namespace Bloom.Publish
 					if (deleteDiv)
 						div.ParentNode.RemoveChild(div);
 				}
+			}
+			// Remove language-specific style settings for unwanted languages
+			var stylesNode = dom.RawDom.SelectSingleNode("//head/style[@type='text/css' and @title='userModifiedStyles']");
+			if (stylesNode != null)
+			{
+				var cssTextOrig = stylesNode.InnerXml;   // InnerXml needed to preserve CDATA markup
+				// For 5.3, we wholesale keep all L2/L3 rules even though this might result in incorrect error messages about fonts. (BL-11357)
+				// In 5.4, we hope to clean up all this font determination stuff by using a real browser to determine what is used.
+				var cssText = HtmlDom.RemoveUnwantedLanguageRulesFromCss(cssTextOrig, languagesToInclude.Append(metadataLang1Code).Append(metadataLang2Code));
+				if (cssText != cssTextOrig)
+					stylesNode.InnerXml = cssText;
+			}
+		}
+
+		/// <summary>
+		/// Remove language specific style settings for unwanted languages from all CSS files in the given directory.
+		/// </summary>
+		public static void RemoveUnwantedLanguageRulesFromCssFiles(string dirName, IEnumerable<string> wantedLanguages)
+		{
+			foreach (var filepath in Directory.EnumerateFiles(dirName, "*.css"))
+			{
+				var cssTextOrig = RobustFile.ReadAllText(filepath);
+				var cssText = HtmlDom.RemoveUnwantedLanguageRulesFromCss(cssTextOrig, wantedLanguages);
+				if (cssText != cssTextOrig)
+					RobustFile.WriteAllText(filepath, cssText);
 			}
 		}
 

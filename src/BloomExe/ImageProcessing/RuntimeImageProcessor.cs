@@ -274,7 +274,7 @@ namespace Bloom.ImageProcessing
 
 					lock(ConvertWhiteToTransparent)
 					{
-						var imageAttributes = appearsToBeJpeg ? null : ConvertWhiteToTransparent;
+						var imageAttributes = appearsToBeJpeg || ImageUtils.HasTransparency(coverImage.Image) ? null : ConvertWhiteToTransparent;
 						g.DrawImage(
 							coverImage.Image, // finally, draw the cover image
 							destRect, // with a scaled and centered destination
@@ -307,6 +307,9 @@ namespace Bloom.ImageProcessing
 		}
 		public static Image MakePngBackgroundTransparent(PalasoImage originalImage)
 		{
+			if (ImageUtils.HasTransparency(originalImage.Image))
+				return originalImage.Image.Clone() as Image;
+
 			// If the image is indexed and opaque, convert the palette to have a transparent background.  This produces
 			// a much smaller image file than the process of redrawing the image with a transparent conversion.  That
 			// process always produces a 32-bit RGBA format image.  Changing the palette should also be faster than

@@ -58,10 +58,10 @@ namespace Bloom.web.controllers
 
 		public void RegisterWithApiHandler(BloomApiHandler apiHandler)
 		{
-			apiHandler.RegisterEndpointHandler(kApiUrlPart + "checkAutoSegmentDependencies", CheckAutoSegmentDependenciesMet, handleOnUiThread: false, requiresSync: false);
-			apiHandler.RegisterEndpointHandler(kApiUrlPart + "autoSegmentAudio", AutoSegment, handleOnUiThread: false, requiresSync : false);
-			apiHandler.RegisterEndpointHandler(kApiUrlPart + "getForcedAlignmentTimings", GetForcedAlignmentTimings, handleOnUiThread: false, requiresSync : false);
-			apiHandler.RegisterEndpointHandler(kApiUrlPart + "eSpeakPreview", ESpeakPreview, handleOnUiThread: false, requiresSync: false);
+			apiHandler.RegisterEndpointLegacy(kApiUrlPart + "checkAutoSegmentDependencies", CheckAutoSegmentDependenciesMet, handleOnUiThread: false, requiresSync: false);
+			apiHandler.RegisterEndpointLegacy(kApiUrlPart + "autoSegmentAudio", AutoSegment, handleOnUiThread: false, requiresSync : false);
+			apiHandler.RegisterEndpointLegacy(kApiUrlPart + "getForcedAlignmentTimings", GetForcedAlignmentTimings, handleOnUiThread: false, requiresSync : false);
+			apiHandler.RegisterEndpointLegacy(kApiUrlPart + "eSpeakPreview", ESpeakPreview, handleOnUiThread: false, requiresSync: false);
 		}
 
 		#region CheckAutoSegmentDependenciesMet

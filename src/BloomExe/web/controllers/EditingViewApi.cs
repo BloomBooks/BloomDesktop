@@ -20,17 +20,17 @@ namespace Bloom.web.controllers
 
 		public void RegisterWithApiHandler(BloomApiHandler apiHandler)
 		{
-			apiHandler.RegisterEndpointHandler("editView/setModalState", HandleSetModalState, true);
-			apiHandler.RegisterEndpointHandler("editView/chooseWidget", HandleChooseWidget, true);
-			apiHandler.RegisterEndpointHandler("editView/getBookColors", HandleGetColors, true);
-			apiHandler.RegisterEndpointHandler("editView/editPagePainted", HandleEditPagePainted, true);
-			apiHandler.RegisterEndpointHandler("editView/saveToolboxSetting", HandleSaveToolboxSetting, true);
-			apiHandler.RegisterEndpointHandler("editView/setTopic", HandleSetTopic, true);
-			apiHandler.RegisterEndpointHandler("editView/isTextSelected", HandleIsTextSelected, false);
-			apiHandler.RegisterEndpointHandler("editView/getBookLangs", HandleGetBookLangs, false);
-			apiHandler.RegisterEndpointHandler("editView/isClipboardBookHyperlink", HandleIsClipboardBookHyperlink, false);
-			apiHandler.RegisterEndpointHandler("editView/requestTranslationGroupContent", RequestDefaultTranslationGroupContent, true);
-			apiHandler.RegisterEndpointHandler("editView/duplicatePageMany", HandleDuplicatePageMany, true);
+			apiHandler.RegisterEndpointLegacy("editView/setModalState", HandleSetModalState, true);
+			apiHandler.RegisterEndpointLegacy("editView/chooseWidget", HandleChooseWidget, true);
+			apiHandler.RegisterEndpointLegacy("editView/getBookColors", HandleGetColors, true);
+			apiHandler.RegisterEndpointLegacy("editView/editPagePainted", HandleEditPagePainted, true);
+			apiHandler.RegisterEndpointLegacy("editView/saveToolboxSetting", HandleSaveToolboxSetting, true);
+			apiHandler.RegisterEndpointLegacy("editView/setTopic", HandleSetTopic, true);
+			apiHandler.RegisterEndpointLegacy("editView/isTextSelected", HandleIsTextSelected, false);
+			apiHandler.RegisterEndpointLegacy("editView/getBookLangs", HandleGetBookLangs, false);
+			apiHandler.RegisterEndpointLegacy("editView/isClipboardBookHyperlink", HandleIsClipboardBookHyperlink, false);
+			apiHandler.RegisterEndpointLegacy("editView/requestTranslationGroupContent", RequestDefaultTranslationGroupContent, true);
+			apiHandler.RegisterEndpointLegacy("editView/duplicatePageMany", HandleDuplicatePageMany, true);
 		}
 
 		// Answer true if the current clipboard contents are something that makes sense to paste into the href

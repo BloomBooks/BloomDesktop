@@ -1,5 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="..\..\packages\SIL.Windows.Forms.Keyboarding.9.0.1-beta0015\build\SIL.Windows.Forms.Keyboarding.props" Condition="Exists('..\..\packages\SIL.Windows.Forms.Keyboarding.9.0.1-beta0015\build\SIL.Windows.Forms.Keyboarding.props')" />
   <PropertyGroup>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <ProjectGuid>{304D5612-167C-4725-AF27-B9F2BB788B57}</ProjectGuid>
@@ -117,6 +118,7 @@
     <Reference Include="DesktopAnalytics, Version=1.2.4.11, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\..\packages\DesktopAnalytics.1.2.4.11\lib\net40\DesktopAnalytics.dll</HintPath>
     </Reference>
+    <!-- Don't let Nuget Package Manager automatically update (downgrade) this to DialogAdapters.Gtk2; it will break Bloom -->
     <Reference Include="DialogAdapters, Version=0.1.11.0, Culture=neutral, PublicKeyToken=7dc842182b0626dc, processorArchitecture=MSIL">
       <HintPath>..\..\packages\DialogAdapters.0.1.11\lib\net461\DialogAdapters.dll</HintPath>
     </Reference>
@@ -159,14 +161,14 @@
     <Reference Include="ibusdotnet, Version=2.0.0.0, Culture=neutral, PublicKeyToken=c9ab93f7b23223fb, processorArchitecture=MSIL">
       <HintPath>..\..\packages\ibusdotnet.2.0.3\lib\net461\ibusdotnet.dll</HintPath>
     </Reference>
-    <Reference Include="ICSharpCode.SharpZipLib, Version=1.3.0.8, Culture=neutral, PublicKeyToken=1b03e6acf1164f73, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\SharpZipLib.1.3.0\lib\net45\ICSharpCode.SharpZipLib.dll</HintPath>
+    <Reference Include="ICSharpCode.SharpZipLib, Version=1.3.3.11, Culture=neutral, PublicKeyToken=1b03e6acf1164f73, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\SharpZipLib.1.3.3\lib\net45\ICSharpCode.SharpZipLib.dll</HintPath>
     </Reference>
     <Reference Include="icu.net, Version=2.7.0.0, Culture=neutral, PublicKeyToken=416fdd914afa6b66, processorArchitecture=MSIL">
       <HintPath>..\..\packages\icu.net.2.7.1\lib\net451\icu.net.dll</HintPath>
     </Reference>
-    <Reference Include="L10NSharp, Version=4.2.0.0, Culture=neutral, PublicKeyToken=fd0b3e309a5b7c28, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\L10NSharp.4.2.0-beta0006\lib\net461\L10NSharp.dll</HintPath>
+    <Reference Include="L10NSharp, Version=5.0.0.0, Culture=neutral, PublicKeyToken=fd0b3e309a5b7c28, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\L10NSharp.5.0.0-beta0088\lib\net461\L10NSharp.dll</HintPath>
     </Reference>
     <Reference Include="Markdig.Signed, Version=0.22.0.0, Culture=neutral, PublicKeyToken=870da25a133885f8, processorArchitecture=MSIL">
       <HintPath>..\..\packages\Markdig.Signed.0.22.0\lib\net452\Markdig.Signed.dll</HintPath>
@@ -232,28 +234,28 @@
       <HintPath>../../packages/SharpFont.3.1.0/lib/net20/SharpFont.dll</HintPath>
     </Reference>
     <Reference Include="SIL.Core, Version=9.0.0.0, Culture=neutral, PublicKeyToken=cab3c8c5232dfcf2, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\SIL.Core.9.0.0-beta0119\lib\net461\SIL.Core.dll</HintPath>
+      <HintPath>..\..\packages\SIL.Core.9.0.1-beta0015\lib\net461\SIL.Core.dll</HintPath>
     </Reference>
     <Reference Include="SIL.Core.Desktop, Version=9.0.0.0, Culture=neutral, PublicKeyToken=cab3c8c5232dfcf2, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\SIL.Core.Desktop.9.0.0-beta0119\lib\net461\SIL.Core.Desktop.dll</HintPath>
+      <HintPath>..\..\packages\SIL.Core.Desktop.9.0.1-beta0015\lib\net461\SIL.Core.Desktop.dll</HintPath>
     </Reference>
     <Reference Include="SIL.Media, Version=9.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\SIL.Media.9.0.0-beta0119\lib\net461\SIL.Media.dll</HintPath>
+      <HintPath>..\..\packages\SIL.Media.9.0.1-beta0015\lib\net461\SIL.Media.dll</HintPath>
     </Reference>
     <Reference Include="SIL.Windows.Forms, Version=9.0.0.0, Culture=neutral, PublicKeyToken=cab3c8c5232dfcf2, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\SIL.Windows.Forms.9.0.0-beta0119\lib\net461\SIL.Windows.Forms.dll</HintPath>
+      <HintPath>..\..\packages\SIL.Windows.Forms.9.0.1-beta0015\lib\net461\SIL.Windows.Forms.dll</HintPath>
     </Reference>
     <Reference Include="SIL.Windows.Forms.GeckoBrowserAdapter, Version=9.0.0.0, Culture=neutral, PublicKeyToken=cab3c8c5232dfcf2, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\SIL.Windows.Forms.GeckoBrowserAdapter.9.0.0-beta0119\lib\net461\SIL.Windows.Forms.GeckoBrowserAdapter.dll</HintPath>
+      <HintPath>..\..\packages\SIL.Windows.Forms.GeckoBrowserAdapter.9.0.1-beta0015\lib\net461\SIL.Windows.Forms.GeckoBrowserAdapter.dll</HintPath>
     </Reference>
     <Reference Include="SIL.Windows.Forms.Keyboarding, Version=9.0.0.0, Culture=neutral, PublicKeyToken=cab3c8c5232dfcf2, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\SIL.Windows.Forms.Keyboarding.9.0.0-beta0119\lib\net461\SIL.Windows.Forms.Keyboarding.dll</HintPath>
+      <HintPath>..\..\packages\SIL.Windows.Forms.Keyboarding.9.0.1-beta0015\lib\net461\SIL.Windows.Forms.Keyboarding.dll</HintPath>
     </Reference>
     <Reference Include="SIL.Windows.Forms.WritingSystems, Version=9.0.0.0, Culture=neutral, PublicKeyToken=cab3c8c5232dfcf2, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\SIL.Windows.Forms.WritingSystems.9.0.0-beta0119\lib\net461\SIL.Windows.Forms.WritingSystems.dll</HintPath>
+      <HintPath>..\..\packages\SIL.Windows.Forms.WritingSystems.9.0.1-beta0015\lib\net461\SIL.Windows.Forms.WritingSystems.dll</HintPath>
     </Reference>
     <Reference Include="SIL.WritingSystems, Version=9.0.0.0, Culture=neutral, PublicKeyToken=cab3c8c5232dfcf2, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\SIL.WritingSystems.9.0.0-beta0119\lib\net461\SIL.WritingSystems.dll</HintPath>
+      <HintPath>..\..\packages\SIL.WritingSystems.9.0.1-beta0015\lib\net461\SIL.WritingSystems.dll</HintPath>
     </Reference>
     <Reference Include="SourceMapDotNet, Version=1.0.5478.26629, Culture=neutral, PublicKeyToken=d357635542166cea, processorArchitecture=MSIL">
       <HintPath>..\..\packages\SourceMapDotNet.1.0.5478.26629\lib\SourceMapDotNet.dll</HintPath>
@@ -289,10 +291,17 @@
     </Reference>
     <Reference Include="System.ComponentModel.Composition" />
     <Reference Include="System.Configuration" />
+    <Reference Include="System.Configuration.ConfigurationManager, Version=6.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\System.Configuration.ConfigurationManager.6.0.0\lib\net461\System.Configuration.ConfigurationManager.dll</HintPath>
+    </Reference>
     <Reference Include="System.Core" />
     <Reference Include="System.Data" />
+    <Reference Include="System.Data.OracleClient" />
     <Reference Include="System.Diagnostics.DiagnosticSource, Version=4.0.5.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>..\..\packages\System.Diagnostics.DiagnosticSource.4.7.1\lib\net46\System.Diagnostics.DiagnosticSource.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Drawing.Common, Version=6.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\System.Drawing.Common.6.0.0\lib\net461\System.Drawing.Common.dll</HintPath>
     </Reference>
     <Reference Include="System.IO.Compression.FileSystem" />
     <Reference Include="System.IO.FileSystem.AccessControl, Version=4.0.5.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
@@ -302,6 +311,7 @@
     <Reference Include="System.Memory">
       <HintPath>..\..\packages\System.Memory.4.5.4\lib\net461\System.Memory.dll</HintPath>
     </Reference>
+    <Reference Include="System.Net" />
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Printing" Condition="'$(OS)'=='Windows_NT'" />
     <Reference Include="System.Reflection.Metadata, Version=5.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
@@ -315,13 +325,17 @@
       <HintPath>..\..\packages\System.Numerics.Vectors.4.5.0\lib\net46\System.Numerics.Vectors.dll</HintPath>
     </Reference>
     <Reference Include="System.Security" />
-    <Reference Include="System.Security.AccessControl, Version=4.1.3.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\System.Security.AccessControl.4.7.0\lib\net461\System.Security.AccessControl.dll</HintPath>
+    <Reference Include="System.Security.AccessControl, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\System.Security.AccessControl.6.0.0\lib\net461\System.Security.AccessControl.dll</HintPath>
     </Reference>
-    <Reference Include="System.Security.Principal.Windows, Version=4.1.3.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\System.Security.Principal.Windows.4.7.0\lib\net461\System.Security.Principal.Windows.dll</HintPath>
+    <Reference Include="System.Security.Permissions, Version=6.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\System.Security.Permissions.6.0.0\lib\net461\System.Security.Permissions.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Security.Principal.Windows, Version=5.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\System.Security.Principal.Windows.5.0.0\lib\net461\System.Security.Principal.Windows.dll</HintPath>
     </Reference>
     <Reference Include="System.ServiceModel" />
+    <Reference Include="System.ServiceProcess" />
     <Reference Include="System.Text.Encodings.Web, Version=5.0.0.1, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>..\..\packages\System.Text.Encodings.Web.5.0.1\lib\net461\System.Text.Encodings.Web.dll</HintPath>
     </Reference>
@@ -329,8 +343,9 @@
       <HintPath>..\..\packages\System.Text.Json.5.0.2\lib\net461\System.Text.Json.dll</HintPath>
     </Reference>
     <Reference Include="System.Threading.Tasks, Version=4.0.11.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
+    <Reference Include="System.Transactions" />
     <Reference Include="System.ValueTuple, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\System.ValueTuple.4.5.0\lib\net461\System.ValueTuple.dll</HintPath>
+      <HintPath>..\..\packages\System.ValueTuple.4.5.0\lib\net47\System.ValueTuple.dll</HintPath>
     </Reference>
     <Reference Include="System.Web" />
     <Reference Include="System.Web.Extensions" />
@@ -365,9 +380,20 @@
     <Compile Include="AboutMemory.Designer.cs">
       <DependentUpon>AboutMemory.cs</DependentUpon>
     </Compile>
+    <Compile Include="Book\PublishSettings.cs" />
     <Compile Include="Book\SaveContext.cs" />
     <Compile Include="Collection\BookCollectionHolder.cs" />
     <Compile Include="MiscUI\BloomMessageBox.cs" />
+    <Compile Include="Publish\Video\Codec.cs" />
+    <Compile Include="Publish\Video\PublishAudioVideoAPI.cs" />
+    <Compile Include="Publish\Video\RecordVideoWindow.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Publish\Video\RecordVideoWindow.Designer.cs">
+      <DependentUpon>RecordVideoWindow.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Publish\Video\Resolution.cs" />
+    <Compile Include="Publish\Video\FormatDimensionsResponseEntry.cs" />
     <Compile Include="Spreadsheet\Header.cs" />
     <Compile Include="FontProcessing\FontFileFinder.cs" />
     <Compile Include="FontProcessing\FontGroup.cs" />
@@ -380,11 +406,11 @@
     <Compile Include="Book\LicenseChecker.cs" />
     <Compile Include="Spreadsheet\SpreadsheetExportCommand.cs" />
     <Compile Include="Spreadsheet\SpreadsheetImportCommand.cs" />
-    <Compile Include="CollectionTab\ReactCollectionTabView.cs">
+    <Compile Include="CollectionTab\CollectionTabView.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="CollectionTab\ReactCollectionTabView.Designer.cs">
-      <DependentUpon>ReactCollectionTabView.cs</DependentUpon>
+    <Compile Include="CollectionTab\CollectionTabView.Designer.cs">
+      <DependentUpon>CollectionTabView.cs</DependentUpon>
     </Compile>
     <Compile Include="CommonMessages.cs" />
     <Compile Include="ErrorReporter\CompositeErrorReporter.cs" />
@@ -497,9 +523,12 @@
     <Compile Include="Utils\BloomUnauthorizedAccessException.cs" />
     <Compile Include="Utils\ConsoleProgress.cs" />
     <Compile Include="Utils\DropboxUtils.cs" />
+    <Compile Include="Utils\FatalException.cs" />
+    <Compile Include="Utils\LongPathAware.cs" />
     <Compile Include="Utils\MemoryUtils.cs" />
     <Compile Include="Utils\FileSystemWatcherExtensions.cs" />
     <Compile Include="Utils\MiscUtils.cs" />
+    <Compile Include="Utils\NumUtils.cs" />
     <Compile Include="Utils\PerformanceMeasurement.cs" />
     <Compile Include="Utils\RobustZip.cs" />
     <Compile Include="WebLibraryIntegration\BookDownload.cs" />
@@ -509,6 +538,7 @@
     <Compile Include="Spreadsheet\SpreadsheetApi.cs" />
     <Compile Include="web\controllers\BookCommandsApi.cs" />
     <Compile Include="web\controllers\CollectionApi.cs" />
+    <Compile Include="web\controllers\CopyrightAndLicenseApi.cs" />
     <Compile Include="web\controllers\ProgressDialogApi.cs" />
     <Compile Include="web\controllers\LibraryPublishApi.cs" />
     <Compile Include="web\controllers\WorkspaceApi.cs" />
@@ -595,12 +625,6 @@
     </Compile>
     <Compile Include="Edit\ConfirmRemovePageDialog.designer.cs">
       <DependentUpon>ConfirmRemovePageDialog.cs</DependentUpon>
-    </Compile>
-    <Compile Include="CollectionTab\HistoryAndNotesDialog.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="CollectionTab\HistoryAndNotesDialog.Designer.cs">
-      <DependentUpon>HistoryAndNotesDialog.cs</DependentUpon>
     </Compile>
     <Compile Include="Edit\JpegWarningDialog.cs">
       <SubType>Form</SubType>
@@ -704,8 +728,6 @@
     <Compile Include="Registration\RegistrationDialog.Designer.cs">
       <DependentUpon>RegistrationDialog.cs</DependentUpon>
     </Compile>
-    <Compile Include="SendReceive\SendReceiver.cs" />
-    <Compile Include="SendReceive\BloomChorusRules.cs" />
     <Compile Include="ToPalaso\BetterSplitContainer.cs">
       <SubType>Component</SubType>
     </Compile>
@@ -836,12 +858,6 @@
     <Compile Include="WebLibraryIntegration\BookDownloadedEventArgs.cs" />
     <Compile Include="WebLibraryIntegration\BookUpload.cs" />
     <Compile Include="WebLibraryIntegration\AccessKeys.cs" />
-    <Compile Include="web\WebLibraryView.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="web\WebLibraryView.Designer.cs">
-      <DependentUpon>WebLibraryView.cs</DependentUpon>
-    </Compile>
     <Compile Include="Edit\ConfigurationDialog.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -919,19 +935,7 @@
     <Compile Include="HtmlThumbNailer.cs" />
     <Compile Include="Collection\BookCollection.cs" />
     <Compile Include="Book\BookSelection.cs" />
-    <Compile Include="CollectionTab\LibraryListView.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="CollectionTab\LibraryListView.Designer.cs">
-      <DependentUpon>LibraryListView.cs</DependentUpon>
-    </Compile>
-    <Compile Include="CollectionTab\LibraryModel.cs" />
-    <Compile Include="CollectionTab\LibraryView.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="CollectionTab\LibraryView.Designer.cs">
-      <DependentUpon>LibraryView.cs</DependentUpon>
-    </Compile>
+    <Compile Include="CollectionTab\CollectionModel.cs" />
     <Compile Include="Edit\PageListView.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -977,8 +981,8 @@
     <EmbeddedResource Include="CollectionTab\MakeReaderTemplateBloomPackDlg.resx">
       <DependentUpon>MakeReaderTemplateBloomPackDlg.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="CollectionTab\ReactCollectionTabView.resx">
-      <DependentUpon>ReactCollectionTabView.cs</DependentUpon>
+    <EmbeddedResource Include="CollectionTab\CollectionTabView.resx">
+      <DependentUpon>CollectionTabView.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Collection\ScriptSettingsDialog.resx">
       <DependentUpon>ScriptSettingsDialog.cs</DependentUpon>
@@ -989,9 +993,6 @@
     <EmbeddedResource Include="Collection\BloomPack\BloomPackInstallDialog.resx">
       <DependentUpon>BloomPackInstallDialog.cs</DependentUpon>
       <SubType>Designer</SubType>
-    </EmbeddedResource>
-    <EmbeddedResource Include="CollectionTab\HistoryAndNotesDialog.resx">
-      <DependentUpon>HistoryAndNotesDialog.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Edit\JpegWarningDialog.resx">
       <DependentUpon>JpegWarningDialog.cs</DependentUpon>
@@ -1026,6 +1027,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Publish\AccessibilityChecker\AccessibilityCheckWindow.resx">
       <DependentUpon>AccessibilityCheckWindow.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Publish\Video\RecordVideoWindow.resx">
+      <DependentUpon>RecordVideoWindow.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Publish\PDF\AdobeReaderControl.resx">
       <DependentUpon>AdobeReaderControl.cs</DependentUpon>
@@ -1081,9 +1085,6 @@
     <EmbeddedResource Include="web\ReactControl.resx">
       <DependentUpon>ReactControl.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="web\WebLibraryView.resx">
-      <DependentUpon>WebLibraryView.cs</DependentUpon>
-    </EmbeddedResource>
     <EmbeddedResource Include="Edit\ConfigurationDialog.resx">
       <DependentUpon>ConfigurationDialog.cs</DependentUpon>
     </EmbeddedResource>
@@ -1093,13 +1094,6 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Edit\SourceTextControl.resx">
       <DependentUpon>SourceTextControl.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="CollectionTab\LibraryListView.resx">
-      <DependentUpon>LibraryListView.cs</DependentUpon>
-      <SubType>Designer</SubType>
-    </EmbeddedResource>
-    <EmbeddedResource Include="CollectionTab\LibraryView.resx">
-      <DependentUpon>LibraryView.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Edit\PageListView.resx">
       <DependentUpon>PageListView.cs</DependentUpon>
@@ -1123,9 +1117,6 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Shell.resx">
       <DependentUpon>Shell.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="CollectionTab\LibraryBookView.resx">
-      <DependentUpon>LibraryBookView.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="SplashScreen.resx">
       <DependentUpon>SplashScreen.cs</DependentUpon>
@@ -1168,12 +1159,6 @@
       <DependentUpon>Shell.cs</DependentUpon>
     </Compile>
     <Compile Include="StyleSheetService.cs" />
-    <Compile Include="CollectionTab\LibraryBookView.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="CollectionTab\LibraryBookView.Designer.cs">
-      <DependentUpon>LibraryBookView.cs</DependentUpon>
-    </Compile>
     <Compile Include="Workspace\ZoomControl.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -1282,10 +1267,10 @@
     <None Include="Resources\Favicon16x16.png" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Resources\library16x16.png" />
+    <None Include="Resources\collection16x16.png" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Resources\library32x32.png" />
+    <None Include="Resources\collection32x32.png" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\settings16x16.png" />
@@ -1300,7 +1285,7 @@
     <None Include="Resources\feedback24x24.png" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Resources\OpenCreateLibrary24x24.png" />
+    <None Include="Resources\OpenCreateCollection24x24.png" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\help24x24.png" />
@@ -1354,7 +1339,7 @@
     <None Include="Resources\undo32x32.png" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Resources\newLibrary32x32.png" />
+    <None Include="Resources\newCollection32x32.png" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\newBook1.png" />
@@ -1423,9 +1408,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\sad_large.png" />
-    <None Include="Resources\sendreceiveToolbarButton.png" />
     <None Include="Resources\PackageFlat.png" />
-    <None Include="Resources\cloneFromChorusHub.png" />
     <None Include="Resources\cloneFromInternet.png" />
     <None Include="Resources\cloneFromUsb.png" />
     <None Include="Resources\placeHolderBookThumbnail.png" />
@@ -1463,6 +1446,7 @@
     <PostBuildEvent Condition="'$(OS)'=='Windows_NT'">
 copy /Y "$(SolutionDir)\lib\msvcr120.dll" $(OutDir)
 copy /Y "$(SolutionDir)\lib\ffmpeg.exe" $(OutDir)
+xcopy "$(SolutionDir)lib\RedistributableDlls" $(OutDir) /S /R /Y
 xcopy "$(SolutionDir)lib\gm" "$(OutDir)gm\" /S /R /Y
 copy /Y "$(SolutionDir)\lib\dotnet\libtidy.dll" $(OutDir)
 copy /Y "$(SolutionDir)\lib\dotnet\Interop.AcroPDFLib.dll" $(OutDir)
@@ -1492,7 +1476,7 @@ cp -p "$(SolutionDir)lib/dotnet/GeckofxHtmlToPdf.exe.config" "$(OutDir)BloomPdfM
   <!-- these operations cannot all be done BeforeBuild, because the nuget download occurs as part of Build after BeforeBuild -->
   <Target Name="BeforeResolveReferences" Condition="'$(OS)'!='Windows_NT'">
     <!-- compile the various typescript, jade, and less files in BloomBrowserUI. -->
-    <Exec Command="cd &quot;$(SolutionDir)/src/BloomBrowserUI&quot; &amp;&amp; ( [ -f node_modules/typescript/package.json ] || yarn config list &amp;&amp; yarn config set registry &quot;http://registry.npmjs.org&quot; &amp;&amp; yarn --network-timeout 600000) &amp;&amp; ( [ -f ../../output/browser/commonBundle.js ] || yarn build)" />
+    <Exec Command="cd &quot;$(SolutionDir)/src/content&quot; &amp;&amp; ( [ -f node_modules/less-watch-compiler/package.json ] || yarn config set registry &quot;http://registry.npmjs.org&quot; &amp;&amp; yarn --network-timeout 600000) &amp;&amp; cd &quot;$(SolutionDir)/src/BloomBrowserUI&quot; &amp;&amp; ( [ -f node_modules/typescript/package.json ] || yarn config set registry &quot;http://registry.npmjs.org&quot; &amp;&amp; yarn --network-timeout 600000) &amp;&amp; ( [ -f ../../output/browser/commonBundle.js ] || yarn build)" />
     <!-- copy the appropriate Geckofx60 files to the output directory, first creating it if necessary -->
     <Exec Command="mkdir -p $(OutDir)" />
     <Exec Command="rm -rf $(OutDir)Firefox" />
@@ -1517,7 +1501,7 @@ cp -p "$(SolutionDir)lib/dotnet/GeckofxHtmlToPdf.exe.config" "$(OutDir)BloomPdfM
     <None Include="Resources\settingsbw16x16.png" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Resources\OpenCreateLibrary16x16.png" />
+    <None Include="Resources\OpenCreateCollection16x16.png" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\help16x16.png" />
@@ -1569,6 +1553,8 @@ cp -p "$(SolutionDir)lib/dotnet/GeckofxHtmlToPdf.exe.config" "$(OutDir)BloomPdfM
     <Content Include="Firefox\sandboxbroker.dll" />
     <Content Include="Firefox\softokn3.dll" />
     <Content Include="Firefox\xul.dll" />
+    <None Include="Resources\BloomPUB.png" />
+    <None Include="Resources\publish video.png" />
     <None Include="Resources\bloom-enterprise-badge.png" />
     <None Include="Resources\Disconnected.png" />
     <None Include="Resources\Error32x32.png" />
@@ -1604,9 +1590,10 @@ cp -p "$(SolutionDir)lib/dotnet/GeckofxHtmlToPdf.exe.config" "$(OutDir)BloomPdfM
   <Import Project="..\..\packages\LargeAddressAware.1.0.5\build\LargeAddressAware.targets" Condition="'$(OS)'=='Windows_NT' AND Exists('..\..\packages\LargeAddressAware.1.0.5\build\LargeAddressAware.targets')" />
   <Import Project="..\..\packages\NDesk.DBus.0.15.0\build\NDesk.DBus.targets" Condition="Exists('..\..\packages\NDesk.DBus.0.15.0\build\NDesk.DBus.targets')" />
   <Import Project="..\..\packages\Mono.Posix.5.4.0.201\build\net45\Mono.Posix.targets" Condition="'$(OS)'=='Windows_NT' AND Exists('..\..\packages\Mono.Posix.5.4.0.201\build\net45\Mono.Posix.targets')" />
-  <Import Project="..\..\packages\SIL.Media.9.0.0-beta0119\build\SIL.Media.targets" Condition="Exists('..\..\packages\SIL.Media.9.0.0-beta0119\build\SIL.Media.targets')" />
-  <Import Project="..\..\packages\SIL.Windows.Forms.Keyboarding.9.0.0-beta0119\build\SIL.Windows.Forms.Keyboarding.targets" Condition="Exists('..\..\packages\SIL.Windows.Forms.Keyboarding.9.0.0-beta0119\build\SIL.Windows.Forms.Keyboarding.targets')" />
-  <Import Project="..\..\packages\SIL.Windows.Forms.9.0.0-beta0119\build\SIL.Windows.Forms.targets" Condition="Exists('..\..\packages\SIL.Windows.Forms.9.0.0-beta0119\build\SIL.Windows.Forms.targets')" />
+  <Import Project="..\..\packages\SQLitePCLRaw.lib.e_sqlite3.2.0.3\build\net461\SQLitePCLRaw.lib.e_sqlite3.targets" Condition="Exists('..\..\packages\SQLitePCLRaw.lib.e_sqlite3.2.0.3\build\net461\SQLitePCLRaw.lib.e_sqlite3.targets')" />
+  <Import Project="..\..\packages\SIL.Media.9.0.1-beta0015\build\SIL.Media.targets" Condition="Exists('..\..\packages\SIL.Media.9.0.1-beta0015\build\SIL.Media.targets')" />
+  <Import Project="..\..\packages\SIL.Windows.Forms.Keyboarding.9.0.1-beta0015\build\SIL.Windows.Forms.Keyboarding.targets" Condition="Exists('..\..\packages\SIL.Windows.Forms.Keyboarding.9.0.1-beta0015\build\SIL.Windows.Forms.Keyboarding.targets')" />
+  <Import Project="..\..\packages\SIL.Windows.Forms.9.0.1-beta0015\build\SIL.Windows.Forms.targets" Condition="Exists('..\..\packages\SIL.Windows.Forms.9.0.1-beta0015\build\SIL.Windows.Forms.targets')" />
   <Target Name="AfterBuild">
     <Copy SourceFiles="@(SourceFiles)" DestinationFolder="$(OutDir)" />
     <Copy SourceFiles="@(LameFiles)" DestinationFolder="../../DistFiles" Condition="'$(OS)'=='Windows_NT'" />
@@ -1626,9 +1613,10 @@ cp -p "$(SolutionDir)lib/dotnet/GeckofxHtmlToPdf.exe.config" "$(OutDir)BloomPdfM
     <Error Condition="'$(OS)'=='Windows_NT' AND !Exists('..\..\packages\LargeAddressAware.1.0.5\build\LargeAddressAware.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\LargeAddressAware.1.0.5\build\LargeAddressAware.targets'))" />
     <Error Condition="!Exists('..\..\packages\NDesk.DBus.0.15.0\build\NDesk.DBus.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\NDesk.DBus.0.15.0\build\NDesk.DBus.targets'))" />
     <Error Condition="'$(OS)'=='Windows_NT' AND !Exists('..\..\packages\Mono.Posix.5.4.0.201\build\net45\Mono.Posix.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\Mono.Posix.5.4.0.201\build\net45\Mono.Posix.targets'))" />
-    <Error Condition="!Exists('..\..\packages\SIL.Media.9.0.0-beta0119\build\SIL.Media.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\SIL.Media.9.0.0-beta0119\build\SIL.Media.targets'))" />
-    <Error Condition="!Exists('..\..\packages\SIL.Windows.Forms.Keyboarding.9.0.0-beta0119\build\SIL.Windows.Forms.Keyboarding.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\SIL.Windows.Forms.Keyboarding.9.0.0-beta0119\build\SIL.Windows.Forms.Keyboarding.targets'))" />
-    <Error Condition="!Exists('..\..\packages\SIL.Windows.Forms.9.0.0-beta0119\build\SIL.Windows.Forms.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\SIL.Windows.Forms.9.0.0-beta0119\build\SIL.Windows.Forms.targets'))" />
+    <Error Condition="!Exists('..\..\packages\SIL.Media.9.0.1-beta0015\build\SIL.Media.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\SIL.Media.9.0.1-beta0015\build\SIL.Media.targets'))" />
+    <Error Condition="!Exists('..\..\packages\SIL.Windows.Forms.Keyboarding.9.0.1-beta0015\build\SIL.Windows.Forms.Keyboarding.props')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\SIL.Windows.Forms.Keyboarding.9.0.1-beta0015\build\SIL.Windows.Forms.Keyboarding.props'))" />
+    <Error Condition="!Exists('..\..\packages\SIL.Windows.Forms.Keyboarding.9.0.1-beta0015\build\SIL.Windows.Forms.Keyboarding.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\SIL.Windows.Forms.Keyboarding.9.0.1-beta0015\build\SIL.Windows.Forms.Keyboarding.targets'))" />
+    <Error Condition="!Exists('..\..\packages\SIL.Windows.Forms.9.0.1-beta0015\build\SIL.Windows.Forms.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\SIL.Windows.Forms.9.0.1-beta0015\build\SIL.Windows.Forms.targets'))" />
   </Target>
   <!-- msbuild mistakenly copies the 64-bit version of irrKlang.NET4.dll to $(Output) as it resolves
        SIL.Media.dll in our 32-bit build.  It also always copies both the 32-bit and 64-bit versions
@@ -1671,7 +1659,6 @@ cp -p "$(SolutionDir)lib/dotnet/GeckofxHtmlToPdf.exe.config" "$(OutDir)BloomPdfM
     <Delete Files="@(DeleteForLinux)" TreatErrorsAsWarnings="true" />
     <RemoveDir Directories="@(RemoveForLinux)" />
   </Target>
-  <Import Project="..\..\packages\SQLitePCLRaw.lib.e_sqlite3.2.0.3\build\net461\SQLitePCLRaw.lib.e_sqlite3.targets" Condition="Exists('..\..\packages\SQLitePCLRaw.lib.e_sqlite3.2.0.3\build\net461\SQLitePCLRaw.lib.e_sqlite3.targets')" />
   <!-- Note: Visual Studio automatically inserts any imports from installing packages into the end here,
   but the AfterBuild target may not run if .targets files are imported after it.
   I recommend you move the Import statements before the "AfterBuild" target,

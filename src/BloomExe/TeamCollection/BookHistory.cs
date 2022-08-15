@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Bloom;
+using Bloom.Api;
 using Bloom.Book;
 using Bloom.Collection;
 using Bloom.TeamCollection;
@@ -34,8 +35,11 @@ namespace Bloom.TeamCollection
 		Created,
 		Renamed,
 		Uploaded,
-		ForcedUnlock
+		ForcedUnlock,
+		ImportSpreadsheet,
+		// NB: add them here, too: teamCollection\CollectionHistoryTable.tsx
 	}
+
 	[Table("events")]
 	public class BookHistoryEvent
 	{
@@ -50,6 +54,14 @@ namespace Bloom.TeamCollection
 		[Column(name:"username")] public string UserName { get; set; }
 		[Column("type")] public BookHistoryEventType Type { get; set; }
 		[Column("user_message")] public string Message { get; set; }
+
+		// I don't fully understand why, but this gets stored in the underlying table in such a way that
+		// the DateTimes that come back are Kind=unspecified. From inspecting the binary data, I _think_
+		// they are being stored as a bigint representing ticks. This means the underlying table
+		// doesn't inherently know whether the DateTime is local or UTC.
+		// Prior to March 10, 2022 we were storing local DateTimes (DateTime.Now), and therefore,
+		// sorting by retrieved DateTimes did not reliably put the events in true chronological order
+		// if they were created in different time zones. We now store the dates as UTC.
 		[Column("date")] public DateTime When { get; set; }
 
 		[Indexed]
@@ -65,14 +77,7 @@ public class CollectionHistory
 		{
 			if (Directory.Exists(bookInfo.FolderPath))
 			{
-				var events = BookHistory.GetHistory(bookInfo);
-				// add in the title, which isn't in the database (this could done in a way that involves less duplication)
-				events.ForEach(e =>
-				{
-					e.Title = bookInfo.Title;
-					e.ThumbnailPath = Path.Combine(bookInfo.FolderPath, "thumbnail.png").ToLocalhost();
-				});
-				return events;
+				return GetBookEvents(bookInfo);
 			}
 			else
 			{
@@ -86,6 +91,18 @@ public class CollectionHistory
 		var booksWithHistory =  from b in all where b.Any() select b;
 
 		return booksWithHistory.SelectMany(e => e);
+	}
+
+	public static List<BookHistoryEvent> GetBookEvents(BookInfo bookInfo)
+	{
+		var events = BookHistory.GetHistory(bookInfo);
+		// add in the title, which isn't in the database (this could done in a way that involves less duplication)
+		events.ForEach(e =>
+		{
+			e.Title = bookInfo.Title;
+			e.ThumbnailPath = Path.Combine(bookInfo.FolderPath, "thumbnail.png").ToLocalhost();
+		});
+		return events;
 	}
 }
 
@@ -172,7 +189,8 @@ public class BookHistory
 					UserId = TeamCollectionManager.CurrentUser,
 					UserName = TeamCollectionManager.CurrentUserFirstName,
 					Type = eventType,
-					When = DateTime.Now
+					// Be sure to use UTC, otherwise, order will not be preserved properly.
+					When = DateTime.UtcNow
 				};
 
 				db.Insert(evt);
@@ -186,6 +204,7 @@ public class BookHistory
 				 e);
 			// swallow... we don't want to prevent whatever was about to happen.
 		}
+		BloomWebSocketServer.Instance.SendEvent("bookHistory","eventAdded");
 	}
 
 	private static BookHistoryBook GetOrMakeBookRecord(Book book, SQLiteConnection db)

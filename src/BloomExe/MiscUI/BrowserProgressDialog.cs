@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using Bloom.Api;
+using Bloom.Utils;
 using Bloom.web;
 using Bloom.web.controllers;
 
@@ -35,10 +36,20 @@ namespace Bloom.MiscUI
 	/// responding to paint events, a click on the buttons, and and so forth.</remarks>
 	public class BrowserProgressDialog
 	{
-		public static void DoWorkWithProgressDialog(BloomWebSocketServer socketServer, string title, Func<IWebSocketProgress, BackgroundWorker,bool> doWhat, Action<Form> doWhenMainActionFalse = null, Action<Form> doWhenCancel = null)
+		public static void DoWorkWithProgressDialog(
+			BloomWebSocketServer socketServer,
+			string title,
+			Func<IWebSocketProgress, BackgroundWorker, bool> doWhat,
+			Action<Form> doWhenMainActionFalse = null,
+			IWin32Window owner = null,
+			int width = 620,
+			int height = 550,
+			bool showCancelButton = true)
 		{
 			var kProgressContextName = "progress";
-			BrowserProgressDialog.DoWorkWithProgressDialog(socketServer, kProgressContextName,
+			DoWorkWithProgressDialog(
+				socketServer,
+				kProgressContextName,
 				() => new ReactDialog("progressDialogBundle",
 						// props to send to the react component
 						new
@@ -48,10 +59,12 @@ namespace Bloom.MiscUI
 							titleBackgroundColor = Palette.kBloomBlueHex,
 							webSocketContext = kProgressContextName,
 							showReportButton = "if-error",
-							showCancelButton = true
+							showCancelButton = showCancelButton
 						}, title)
-					// winforms dialog properties
-					{Width = 620, Height = 550}, doWhat, doWhenMainActionFalse);
+					{Width = width, Height = height}, // winforms dialog properties
+				doWhat,
+				doWhenMainActionFalse,
+				owner);
 		}
 
 		public static void DoWorkWithProgressDialog(IBloomWebSocketServer socketServer, string socketContext,  Func<Form> makeDialog,
@@ -90,7 +103,8 @@ namespace Bloom.MiscUI
 						// and gives the user some idea things are not right.
 						socketServer.SendEvent(socketContext, "finished");
 						waitForUserToCloseDialogOrReportProblems = true;
-						progress.MessageWithoutLocalizing("Something went wrong: " + ex.Message, ProgressKind.Error);
+						progress.MessageWithoutLocalizing("Something went wrong: " + ex.Message,
+							ex is FatalException? ProgressKind.Fatal:ProgressKind.Error);
 					}
 
 					// stop the spinner
@@ -117,6 +131,10 @@ namespace Bloom.MiscUI
 
 				worker.RunWorkerAsync();
 				dlg.ShowDialog(owner); // returns when dialog closed
+				if (progress.HasFatalProblemBeenReported)
+				{
+					Application.Exit();
+				}
 
 				ProgressDialogApi.SetCancelHandler(null);
 			}

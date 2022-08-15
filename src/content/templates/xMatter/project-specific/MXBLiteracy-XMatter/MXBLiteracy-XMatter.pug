@@ -1,0 +1,23 @@
+
+include ./MXBCommon-XMatter.pug
+
+doctype html
+html
+	head
+		meta(charset='UTF-8')
+		meta(name='BloomFormatVersion', content='2.0')
+		title ILV Mexico Literacy Front & Back Matter
+		//- Make the stylesheets section adjustable for Device version.
+		block stylesheets
+			+stylesheets('MXBLiteracy-XMatter.css')
+	body
+		+factoryStandard-outsideFrontCover
+
+		//- Allow Device version to override page order
+		block afterFrontCoverPages
+			+factory-insideFrontCover
+			+mxb-titlePage.bloom-frontMatter
+			+mxb-creditsPage.bloom-frontMatter
+
+		+mxb-printerStatement-insideBackCover
+		+factoryStandard-outsideBackCover

@@ -113,7 +113,7 @@ namespace BloomTests.Publish
 		private static string MakeFakeBloomdFile(Bloom.Book.Book book)
 		{
 			var srcFile = Path.Combine(book.FolderPath, "book.htm");
-			var filePath = new TempFileForSafeWriting(Path.Combine(book.FolderPath, "book.bloomd")).TempFilePath;
+			var filePath = new TempFileForSafeWriting(Path.Combine(book.FolderPath, "book.bloompub")).TempFilePath;
 			var fileContents = File.ReadAllLines(srcFile);
 
 			for (var i = 0; i < 100; i++)

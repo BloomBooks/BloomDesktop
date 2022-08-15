@@ -1,0 +1,47 @@
+{
+    "presets": [
+        {
+            "data-book": "cover-branding-top-html",
+            "lang": "*",
+            "content": "<div class='standout'>Branding can include image and text here (cover-branding-top).</div><img style='margin-top: 10px; margin-bottom: 10px;' class='branding' src='sampleFiveLogos.png'/>",
+            "condition": "always"
+        },
+        {
+            "data-book": "cover-branding-bottom-html",
+            "lang": "*",
+            "content": "<img style='margin-top: 10px;' class='branding' src='sampleFiveLogos.png'/><div class='standout'>Branding can include image and text here (cover-branding-bottom).</div>",
+            "condition": "always"
+        },
+        {
+            "data-book": "credits-page-branding-top-html",
+            "lang": "*",
+            "content": "<img class='branding' src='sampleFiveLogos.png'/><div class='standout'>Branding can include image and text here (credits-page-branding-top). Note it is easy to have too much text such that this page overflows when a book is a derivative with its own set of original credits.</div>",
+            "condition": "always"
+        },
+        {
+            "data-book": "credits-page-branding-bottom-html",
+            "lang": "*",
+            "content": "<div  class='standout'>Branding can include image and text here (credits-page-branding-bottom). Note it is easy to have too much text such that this page overflows when a book is a derivative with its own set of original credits. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus semper venenatis neque, vitae consequat dolor finibus sit amet. </div><img class='branding' src='sampleFiveLogos.png'/>",
+            "condition": "always"
+        },
+        {
+            "data-book": "title-page-branding-bottom-html",
+            "lang": "*",
+            "content": "<img class='branding' src='sampleOneLogo.png'/>",
+            "condition": "always"
+        },
+
+        {
+            "data-book": "outside-back-cover-branding-top-html",
+            "lang": "*",
+            "content": "<img class='branding' src='sampleFiveLogos.png'/><div class='standout'>Branding can include image and text here (back-cover-branding-top). Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus semper venenatis neque, vitae consequat dolor finibus sit amet. Maecenas ac odio cursus, ornare turpis sodales, eleifend lacus. In hac habitasse platea dictumst. Morbi tempor venenatis interdum. Morbi fermentum est eu magna dignissim, eu sollicitudin ligula sagittis.</div>",
+            "condition": "always"
+        },
+        {
+            "data-book": "outside-back-cover-branding-bottom-html",
+            "lang": "*",
+            "content": "<div class='standout'>Branding can include image and text here but normally this is left for logos (back-cover-branding-bottom).<img class='branding' src='sampleFiveLogos.png'/>.</div>",
+            "condition": "always"
+        }
+    ]
+}

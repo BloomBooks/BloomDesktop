@@ -20,7 +20,12 @@ namespace Bloom.Workspace
             {
 	            components.Dispose();
             }
-            base.Dispose(disposing);
+			if (_tempBookInfoHtmlPath != null && SIL.IO.RobustFile.Exists(_tempBookInfoHtmlPath))
+			{
+				SIL.IO.RobustFile.Delete(_tempBookInfoHtmlPath);
+				_tempBookInfoHtmlPath = null;
+			}
+			base.Dispose(disposing);
         }
 
         #region Component Designer generated code
@@ -38,7 +43,6 @@ namespace Bloom.Workspace
 			this._toolSpecificPanel = new System.Windows.Forms.Panel();
 			this._L10NSharpExtender = new L10NSharp.UI.L10NSharpExtender(this.components);
 			this._tabStrip = new Messir.Windows.Forms.TabStrip();
-			this._legacyCollectionTab = new Messir.Windows.Forms.TabStripButton();
 			this._editTab = new Messir.Windows.Forms.TabStripButton();
 			this._publishTab = new Messir.Windows.Forms.TabStripButton();
 			this._toolStrip = new System.Windows.Forms.ToolStrip();
@@ -101,8 +105,7 @@ namespace Bloom.Workspace
 			this._tabStrip.ImageScalingSize = new System.Drawing.Size(32, 32);
 			this._tabStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
 			this._reactCollectionTab,
-			this._legacyCollectionTab,
-            this._editTab,
+			this._editTab,
             this._publishTab});
 			this._L10NSharpExtender.SetLocalizableToolTip(this._tabStrip, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._tabStrip, null);
@@ -117,28 +120,6 @@ namespace Bloom.Workspace
 			this._tabStrip.UseVisualStyles = false;
 			this._tabStrip.SelectedTabChanged += new System.EventHandler<Messir.Windows.Forms.SelectedTabChangedEventArgs>(this._tabStrip_SelectedTabChanged);
 			this._tabStrip.BackColorChanged += new System.EventHandler(this._tabStrip_BackColorChanged);
-			// 
-			// _legacyCollectionTab
-			// 
-			this._legacyCollectionTab.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(87)))), ((int)(((byte)(87)))), ((int)(((byte)(87)))));
-			this._legacyCollectionTab.BarColor = System.Drawing.Color.FromArgb(((int)(((byte)(29)))), ((int)(((byte)(148)))), ((int)(((byte)(164)))));
-			this._legacyCollectionTab.ForeColor = System.Drawing.Color.Black;
-			this._legacyCollectionTab.HotTextColor = System.Drawing.Color.Black;
-			this._legacyCollectionTab.Image = global::Bloom.Properties.Resources.library32x32;
-			this._legacyCollectionTab.ImageTransparentColor = System.Drawing.Color.Magenta;
-			this._legacyCollectionTab.IsSelected = false;
-			this._L10NSharpExtender.SetLocalizableToolTip(this._legacyCollectionTab, null);
-			this._L10NSharpExtender.SetLocalizationComment(this._legacyCollectionTab, null);
-			this._L10NSharpExtender.SetLocalizingId(this._legacyCollectionTab, "CollectionTab.Collections");
-			this._legacyCollectionTab.Margin = new System.Windows.Forms.Padding(0);
-			this._legacyCollectionTab.Name = "_legacyCollectionTab";
-			this._legacyCollectionTab.Padding = new System.Windows.Forms.Padding(0);
-			this._legacyCollectionTab.SelectedFont = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
-			this._legacyCollectionTab.SelectedTextColor = System.Drawing.Color.WhiteSmoke;
-			this._legacyCollectionTab.Size = new System.Drawing.Size(81, 71);
-			this._legacyCollectionTab.Text = "Collections";
-			this._legacyCollectionTab.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
-			this._legacyCollectionTab.TextChanged += new System.EventHandler(this.HandleTabTextChanged);
 			// 
 			// _editTab
 			// 
@@ -419,7 +400,7 @@ namespace Bloom.Workspace
 			this._reactCollectionTab.Checked = true;
 			this._reactCollectionTab.ForeColor = System.Drawing.Color.Black;
 			this._reactCollectionTab.HotTextColor = System.Drawing.Color.Black;
-			this._reactCollectionTab.Image = global::Bloom.Properties.Resources.library32x32;
+			this._reactCollectionTab.Image = global::Bloom.Properties.Resources.collection32x32;
 			this._reactCollectionTab.ImageTransparentColor = System.Drawing.Color.Magenta;
 			this._reactCollectionTab.IsSelected = true;
 			this._L10NSharpExtender.SetLocalizableToolTip(this._reactCollectionTab, null);
@@ -467,7 +448,6 @@ namespace Bloom.Workspace
 		private SIL.Windows.Forms.SettingProtection.SettingsProtectionHelper _settingsLauncherHelper;
 		private System.Windows.Forms.Panel _containerPanel;
 		private System.Windows.Forms.Panel _toolSpecificPanel;
-		private Messir.Windows.Forms.TabStripButton _legacyCollectionTab;
 		private Messir.Windows.Forms.TabStripButton _editTab;
 		private Messir.Windows.Forms.TabStripButton _publishTab;
 		private Messir.Windows.Forms.TabStrip _tabStrip;

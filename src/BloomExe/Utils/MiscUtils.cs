@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
+using System.Linq;
 using System.Management;
 using System.Security.AccessControl;
 using System.Security.Principal;
@@ -218,6 +219,200 @@ namespace Bloom.Utils
 		{
 			// thanks to http://stackoverflow.com/questions/982028/convert-net-color-objects-to-hex-codes-and-back
 			return string.Format("#{0:X2}{1:X2}{2:X2}", color.R, color.G, color.B);
+		}
+
+		/// <summary>
+		/// Find the custom build of ffmpeg that Bloom uses. Unlike most of our dependencies, as of
+		/// March 2022 (Bloom 5.3), the binary of this ffmpeg (for Windows) is checked in under our lib
+		/// directory. It is built from a fork of the ffmpeg code at https://github.com/BloomBooks/ffmpeg.
+		/// A quite complex custom build process is used to create an exe that is two orders of magnitude
+		/// smaller than the default build with most features enabled. It has just the features we actually
+		/// use. The process is documented in BuildingFFMpeg.md (in this repo, currently at DistFiles/ffmpeg,
+		/// though I think that's the wrong place for it; we don't need to ship this to Bloom users).
+		/// </summary>
+		/// <returns></returns>
+		public static string FindFfmpegProgram()
+		{
+			var ffmpeg = "/usr/bin/ffmpeg";     // standard Linux location
+			if (SIL.PlatformUtilities.Platform.IsWindows)
+				ffmpeg = Path.Combine(BloomFileLocator.GetCodeBaseFolder(), "ffmpeg.exe");
+			return RobustFile.Exists(ffmpeg) ? ffmpeg : string.Empty;
+		}
+
+		/// <summary>
+		/// Check whether the .bloomCollection file pointed to by path is either inside an uneditable source collection
+		/// or is inside a ZIP file that needs to be unzipped before using.
+		/// </summary>
+		/// <returns><c>true</c> if the path points to an invalid collection to edit, <c>false</c> otherwise.</returns>
+		public static bool ReportIfInvalidCollectionToEdit(string path)
+		{
+			if (IsInvalidCollectionToEdit(path))
+			{
+				var msg = L10NSharp.LocalizationManager.GetString("OpenCreateCloneControl.InSourceCollectionMessage",
+					"This collection is part of your 'Sources for new books' which you can see in the bottom left of the Collections tab. It cannot be opened for editing.");
+				MessageBox.Show(msg);
+				return true;
+			}
+			if (IsInsideZipFile(path))
+			{
+				var msg = L10NSharp.LocalizationManager.GetString("OpenCreateCloneControl.InZipFileMessage",
+					"It looks like you are trying to open a Bloom Collection from inside of a ZIP file. You need to first unzip the ZIP file, and then open the collection.");
+				MessageBox.Show(msg);
+				return true;
+			}
+			return false;
+		}
+
+		private static bool IsInsideZipFile(string path)
+		{
+			// Windows Explorer and 7-Zip both do a minimal extraction to the user's temp folder
+			// when the user double-clicks on a .bloomCollection file inside a zip archive.
+			// Something similar happens for archive programs on Linux.  Only Windows Explorer
+			// creates the file on disk as read-only, so that's not a general check.  But all
+			// of these create only the one (.bloomCollection) file in the temporary folder.
+			var tempDir = Path.GetTempPath();
+			var folder = Path.GetDirectoryName(path);
+			if (SIL.PlatformUtilities.Platform.IsWindows)
+			{
+				if (folder.StartsWith(tempDir, StringComparison.InvariantCulture) &&
+						(folder.Contains(@".zip\") ||   // Windows Explorer
+						folder.Contains(@"\7z")))       // 7-Zip
+				{
+					return IsSingleFileInFolder(folder);
+				}
+			}
+			else
+			{
+				var homeDir = Environment.GetFolderPath(Environment.SpecialFolder.Personal);
+				if (folder.StartsWith(Path.Combine(tempDir, ".fr-"), StringComparison.InvariantCulture) ||
+					folder.StartsWith(Path.Combine(tempDir, "xa-"), StringComparison.InvariantCulture) ||
+					folder.StartsWith(Path.Combine(homeDir, ".cache/.fr-"), StringComparison.InvariantCulture))
+				{
+					return IsSingleFileInFolder(folder);
+				}
+			}
+			return false;
+		}
+
+		/// <summary>
+		/// Check if only one file (presumably the .bloomCollection file) is available in the folder.
+		/// </summary>
+		private static bool IsSingleFileInFolder(string folder)
+		{
+			var fileCount = Directory.EnumerateFiles(folder).Count();
+			var dirCount = Directory.EnumerateDirectories(folder).Count();
+			return (fileCount == 1 && dirCount == 0);
+		}
+
+		/// <summary>
+		/// Check whether the path is inside either the installed collection folder or inside the folder
+		/// containing factory template books.  If either condition is true, the collection cannot be edited.
+		/// </summary>
+		/// <returns><c>true</c> if the collection pointed to by path is not valid to edit, <c>false</c> otherwise.</returns>
+		public static bool IsInvalidCollectionToEdit(string path)
+		{
+			return path.StartsWith(ProjectContext.GetInstalledCollectionsDirectory())
+				|| path.StartsWith(BloomFileLocator.FactoryTemplateBookDirectory);
+		}
+
+		/// <summary>
+		/// Reads all text (like File.ReadAllText) from a file. Works even if that file may
+		/// be written to one or more times.
+		/// e.g. reading the progress output file of ffmpeg while ffmpeg is running.
+		/// </summary>
+		/// <param name="path">path of the file to read</param>
+		/// <returns>the contents of the file as a string</returns>
+		public static string ReadAllTextFromFileWhichMightGetWrittenTo(string path)
+		{
+			using (FileStream logFileStream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+			using (StreamReader logFileReader = new StreamReader(logFileStream))
+			{
+				StringBuilder sb = new StringBuilder();
+
+				char[] buffer = new char[4096];
+				while (!logFileReader.EndOfStream)
+				{
+					logFileReader.ReadBlock(buffer, 0, buffer.Length);
+					sb.Append(buffer);
+				}
+
+				return sb.ToString();
+			}
+		}
+
+		/// <summary>
+		/// Wrap a "Save File" dialog to prevent saving files inside the book's collection folder.
+		/// </summary>
+		/// <returns>The output file path, or null if canceled.</returns>
+		public static string GetOutputFilePathOutsideCollectionFolder(string initialPath, string filter)
+		{
+			string initialFolder = Path.GetDirectoryName(initialPath);
+			string initialFilename = Path.GetFileName(initialPath);
+			string defaultExtension = Path.GetExtension(initialPath);
+			var destFileName = String.Empty;
+			var repeat = false;
+			do
+			{
+				using (var dlg = new DialogAdapters.SaveFileDialogAdapter())
+				{
+					dlg.AddExtension = true;
+					dlg.DefaultExt = defaultExtension;
+					dlg.FileName = initialFilename;
+					dlg.Filter = filter;
+					dlg.RestoreDirectory = false;
+					dlg.OverwritePrompt = true;
+					dlg.InitialDirectory = initialFolder;
+					if (DialogResult.Cancel == dlg.ShowDialog())
+						return null;
+					destFileName = dlg.FileName;
+				}
+				string collectionFolder;
+				repeat = IsFolderInsideBloomCollection(Path.GetDirectoryName(destFileName), out collectionFolder);
+				if (repeat)
+				{
+					WarnUserOfInvalidFolderChoice(collectionFolder, destFileName);
+					// Change the initialFolder to just above the collection folder, or to the documents folder
+					// if that ends up empty.
+					initialFolder = Path.GetDirectoryName(collectionFolder);
+					if (String.IsNullOrEmpty(initialFolder))
+						initialFolder = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+				}
+			} while (repeat);
+			return destFileName;
+		}
+
+		/// <summary>
+		/// Check whether the given folder is a collection folder or inside a collection folder at
+		/// any depth.  If so, return true and set collectionFolder for use in a warning message.
+		/// If not, return false and set collectionFolder to null.
+		/// </summary>
+		public static bool IsFolderInsideBloomCollection(string folder, out string collectionFolder)
+		{
+			collectionFolder = null;
+			if (String.IsNullOrEmpty(folder) || !Directory.Exists(folder))
+				return false;
+			if (Directory.EnumerateFiles(folder, "*.bloomCollection").Any())
+			{
+				collectionFolder = folder;
+				return true;
+			}
+			var personalFolder = Environment.GetFolderPath(Environment.SpecialFolder.Personal);
+			var userProfileFolder = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+			if (folder == personalFolder || folder == userProfileFolder)
+				return false;	// There should be no need to go further.
+			return IsFolderInsideBloomCollection(Path.GetDirectoryName(folder), out collectionFolder);
+		}
+
+		public static void WarnUserOfInvalidFolderChoice(string collectionFolder, string chosenDestination)
+		{
+			var msgFmt = L10NSharp.LocalizationManager.GetString("MiscUtils.CannotSaveToCollectionFolder",
+				"Bloom cannot save files inside the collection folder ({0}).  Please choose another location.");
+			var msg = String.Format(msgFmt, collectionFolder);
+			var buttons = new[]
+				{
+					new MiscUI.MessageBoxButton { Default = true, Text = L10NSharp.LocalizationManager.GetString("Common.OK","OK"), Id = "ok" }
+				};
+			MiscUI.BloomMessageBox.Show(Form.ActiveForm, $"<p>{msg}</p><p>{chosenDestination}</p>", buttons, MessageBoxIcon.Warning);
 		}
 	}
 }

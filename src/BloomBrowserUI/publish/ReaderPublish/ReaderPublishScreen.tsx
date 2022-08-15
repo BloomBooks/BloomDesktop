@@ -75,8 +75,8 @@ const ReaderPublishScreenInternal: React.FunctionComponent<{
             ? window.location.protocol +
                   "//" +
                   window.location.host +
-                  "/templates/Sample Shells/The Moon and the Cap" // Enhance: provide an actual bloomd in the source tree
-            : // otherwise, wait for the websocket to deliver a url when the c# has finished creating the bloomd.
+                  "/templates/Sample Shells/The Moon and the Cap" // Enhance: provide an actual bloompub in the source tree
+            : // otherwise, wait for the websocket to deliver a url when the c# has finished creating the bloompub.
               //BloomPlayer recognizes "working" as a special value; it will show some spinner or some such.
               "working"
     );
@@ -181,22 +181,22 @@ const ReaderPublishScreenInternal: React.FunctionComponent<{
                     </CommandsGroup>
                     <HelpGroup>
                         <HelpLink
-                            l10nKey="PublishTab.Android.AboutBookFeatures"
-                            helpId="Tasks/Publish_tasks/Features.htm"
+                            l10nKey="PublishTab.Android.AboutBloomPUB"
+                            helpId="Tasks/Publish_tasks/Make_a_BloomPUB_file_overview.htm"
                         >
-                            About Book Features
+                            About BloomPUB
                         </HelpLink>
-                        <HtmlHelpLink
-                            l10nKey="PublishTab.Android.Troubleshooting"
-                            fileid="Publish-Android-Troubleshooting"
-                        >
-                            Troubleshooting Tips
-                        </HtmlHelpLink>
                         <HelpLink
                             l10nKey="PublishTab.Android.AboutBloomReader"
                             helpId="Concepts/Bloom_Reader_App.htm"
                         >
                             About Bloom Reader
+                        </HelpLink>
+                        <HelpLink
+                            l10nKey="PublishTab.TasksOverview"
+                            helpId="Tasks/Publish_tasks/Publish_tasks_overview.htm"
+                        >
+                            Publish tab tasks overview
                         </HelpLink>
                         <div className="icon-link-row get-bloom-reader">
                             <a href="https://play.google.com/store/search?q=%22sil%20international%22%2B%22bloom%20reader%22&amp;c=apps">

@@ -138,9 +138,10 @@ export class EditableDivUtils {
             dialogBox[0].offsetHeight;
         const adjustmentFactor = 30;
         const pxAdjToScale = (adjustmentFactor / scale).toFixed(); // rounded to nearest integer
-        const myOptionValue = "left+" + pxAdjToScale + " top-" + pxAdjToScale;
+        const myOptionValue =
+            "left+" + pxAdjToScale + " center-" + pxAdjToScale;
 
-        // Set the dialog 30px (adjusted for 'scale') to the right and up from the gear icon.
+        // Set the dialog 30px (adjusted for 'scale') to the right and somewhat up from the gear icon.
         // If it won't fit there for some reason, .position() will 'fit' it in by moving it away from the viewport edges.
         dialogBox.position({
             my: myOptionValue,
@@ -161,9 +162,8 @@ export class EditableDivUtils {
     }
 
     public static getPageFrame(): HTMLIFrameElement | null {
-        return <HTMLIFrameElement | null>(
-            window.top.document.getElementById("page")
-        );
+        var doc = window.top?.document;
+        return doc ? <HTMLIFrameElement>doc.getElementById("page") : null;
     }
 
     // The body of the editable page, a root for searching for document content.

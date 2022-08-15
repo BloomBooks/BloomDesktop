@@ -18,55 +18,38 @@ We use [YouTrack](https://silbloom.myjetbrains.com) Kanban boards. Errors (via e
 
 ## Continuous Build System
 
-Each time code is checked in, an automatic build begins on our [TeamCity build server](http://build.palaso.org/project.html?projectId=project16&amp;tab=projectOverview), running all the unit tests. Similarly, when there is a new version of some Bloom dependency (e.g. Palaso, PdfDroplet, our fork of GeckoFX), that server automatically rebuilds Bloom. This automatic build doesn't publish a new installer, however. That kind of build is launched manually, by pressing a button on the TeamCity page. This "publish" process builds Bloom, makes and installer, rsyncs it to the distribution server, and writes out a little bit of html which the [Bloom download page](http://bloomlibrary.org/#/installers) then displays to the user.
+Each time code is checked in, an automatic build begins on our [TeamCity build server](https://build.palaso.org/project/Bloom), running all the unit tests. Similarly, when there is a new version of some Bloom dependency (e.g. Palaso, PdfDroplet, our fork of GeckoFX), that server automatically rebuilds Bloom. This automatic build doesn't publish a new installer, however. That kind of build is launched manually, by pressing a button on the TeamCity page. This "publish" process builds Bloom, makes and installer, rsyncs it to the distribution server, and writes out a little bit of html which the [Bloom download page](http://bloomlibrary.org/#/installers) then displays to the user.
 
-## Building Web Source Code ##
+## Building Browser Source Code ##
 
 Install yarn (https://yarnpkg.com/lang/en/docs/install/#windows-stable)
 
-You'll need [nodejs](https://nodejs.org/en/) installed.  As time goes on, the required version of nodejs changes.  Bloom 4.1 (and several earlier versions of Bloom) builds with nodejs 6.10.1.  Bloom 4.2 (and later versions of Bloom) builds with nodejs 8.10.0.  To make this feasible, we use [nvm-windows](https://github.com/coreybutler/nvm-windows) on Windows and [nvm](https://github.com/creationix/nvm) on Linux to install and manage which version of nodejs is active for the build process.  To install nvm on Windows, go to  [nvm-windows releases](https://github.com/coreybutler/nvm-windows/releases) and download the latest nvm-setup.zip file.  Unzip the downloaded file and run the nvm-setup.exe program to install nvm.  Once nvm has been installed for windows, run these commands in a command window to install the needed versions of nodejs.  This needs to be done only once.
+You'll need [nodejs](https://nodejs.org/en/) installed.  As time goes on, the required version of nodejs changes. Bloom 4.1 (and several earlier versions of Bloom) builds with nodejs 6.10.1. Bloom 4.2 (and later versions of Bloom) builds with nodejs 8.10.0. To make this feasible, we use [nvm-windows](https://github.com/coreybutler/nvm-windows) on Windows and [nvm](https://github.com/creationix/nvm) on Linux to install and manage which version of nodejs is active for the build process. To install nvm on Windows, go to  [nvm-windows releases](https://github.com/coreybutler/nvm-windows/releases) and download the latest nvm-setup.zip file. Unzip the downloaded file and run the nvm-setup.exe program to install nvm. Once nvm has been installed for windows, run these commands in a command window to install the needed versions of nodejs. This needs to be done only once.
 
-    nvm install 6.10.1
-    nvm install 8.10.0
-    nvm ls
+    nvm install 1.2.3 # or whatever the version should be. Check "engines" field of package.json.
+    nvm list
 
-To install nvm (and the needed versions of nodejs) on Linux, run these commands in a bash shell window.  Again, this needs to be done only once.  (The version of nvm may change over time.  Check the [nvm home page](https://github.com/creationix/nvm#install-script) for exact details.)
+To install nvm (and the needed versions of nodejs) on Linux, run these commands in a bash shell window. Again, this needs to be done only once. (The version of nvm may change over time. Check the [nvm home page](https://github.com/creationix/nvm#install-script) for exact details.)
 
     wget -qO- https://raw.githubusercontent.com/creationix/nvm/v0.33.8/install.sh | bash
     export NVM_DIR="$HOME/.nvm"
     [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh" # This loads nvm as a shell function
     command -v nvm                                   # This should respond with "nvm"
-    nvm install 6.10.1
-    nvm install 8.10.0
-    nvm ls
+    nvm install 1.2.3 # or whatever the version should be. Check "engines" field of package.json.
+    nvm list
 
 This will build and test the Typescript, javascript, less, and pug:
 
-    cd src/BloomBrowserUI
-    nvm use 8.10.0    # or 6.10.1 if building Bloom 4.1 or earlier
-    npm install
-    npm run build
-    npm test
+    nvm use 16.13.1    # or whatever the current package.json "engine" specifies
+    cd src/content
+    yarn
+    cd ../BloomBrowserUI
+    yarn
+    yarn build
+    yarn test
 
-To help keep all of these commands straight, a shell script named npm-build.sh is stored in the build folder (alongside the getDependencies shell scripts).  It can run either on Linux or in the git bash shell on Windows.  The command you type is very simple:
 
-    build/npm-build.sh
-
-There are command line options to disable either the 'npm install' and 'npm test' commands if all you want to do is build.  (--skip-install and --skip-test are the verbose forms of those options.)
-
-'npm run build' is really just running some gulp scripts, defined in gulpfile.js. Note that when you're using Visual Studio, the "Task Runner Explorer" can be used to start those gulp tasks, and VS should run the "default" gulp task each time it does a build. To make it run this each time you do a "run", though, make sure you've turned off this option:
-
-    Tools:Options:Projects and Solutions:Build and Run:Only build startup projects and dependencies on Run
-
-We use webpack for building the Typescript, running Javascript through Babel, and packing everything six top-level (apps (ugghhh)). When coding in Typescript/Javascript, then go to the src/BloomBrowserUI folder and run
-
-``webpack -w``
-
-Which will quickly update things each time you save a file.  Similarly, you can use
-
-``gulp watch``
-
-to keep less and pug up to date if you're working in those kinds of files.
+To watch code, use `yarn watchCode`
 
 ## Building C# Source Code ##
 
@@ -74,7 +57,7 @@ To build the .net/C# part of Bloom, on Windows you'll need at least a 2015 Commu
 
 It will avoid some complications if you update to master branch now, before adding the dependencies that follow.
 
-Before you'll be able to build you'll have to download some binary dependencies (see below).
+Before you'll be able to build, you'll have to download some binary dependencies (see below).
 
 On Linux you'll also have to make sure that you have installed some dependencies (see below).
 
@@ -82,26 +65,22 @@ To build Bloom you can open and build the solution in Visual Studio or MonoDevel
 
 ## Get Binary Dependencies
 
-In the `build` directory, run
+In the `build` directory, open a git bash shell and run
 
-`getDependencies-windows.sh`
+`./getDependencies-windows.sh`
 
 or
 
 `./getDependencies-linux.sh`
 
-That will take several minutes the first time, and afterwards will be quick as it only downloads what has changed. When you change branches, run this again.
+That will take several minutes the first time, and afterward will be quick as it only downloads what has changed. When you change branches, run this again.
 
 
 #### About Bloom Dependencies
 
 Javascript dependencies should be introduced using
 
-    npm install <modulename> --save
-
-Typescript definition files should be introduced using
-
-    tsd install <modulename> --save
+   yarn add <modulename>
 
 Our **[Palaso libraries](https://github.com/sillsdev/libpalaso)** hold the classes that are common to multiple products.
 
@@ -122,15 +101,6 @@ We don't want developer and tester runs (and crashes) polluting our statistics. 
 
 # Special instructions for building on Linux
 
-These notes were written by JohnT on 16 July 2014 based on previous two half-days working with
-Eberhard to get Bloom to build on a Precise Linux box. The computer was previously used to
-develop FLEx, so may have already had something that is needed. Sorry, I have not had the chance
-to try them on another system. If you do, please correct as needed.
-
-Note that as of 16 July 2014, Bloom does not work very well on Linux. Something more may be
-needed by the time we get it fully working. Hopefully these notes will be updated.
-
-Updated when Andrew was setting up his system on Precise Linux VM Oct. 2014. Note this VM also had previously been used for FLEx development.
 
 At various points you will be asked for your password.
 
@@ -241,10 +211,6 @@ Hopefully we can streamline this process eventually.
 # Registry settings
 
 One responsibility of Bloom desktop is to handle url's starting with "bloom://"", such as those used in the bloom library web site when the user clicks "open in Bloom." Making this work requires some registry settings. These are automatically created when you run Bloom. If you have multiple versions installed, just make sure that the one you ran most recently is the one you want to do the download.
-
-# Testers
-
-Please see [Tips for Testing Palaso Software](https://docs.google.com/document/d/1dkp0edjJ8iqkrYeXdbQJcz3UicyilLR7GxMRIUAGb1E/edit)
 
 # License
 

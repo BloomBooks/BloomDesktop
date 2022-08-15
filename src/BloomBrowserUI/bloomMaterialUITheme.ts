@@ -1,7 +1,7 @@
 import { createTheme } from "@material-ui/core/styles";
 
 export const kBloomBlue = "#1d94a4";
-export const kBloomLightBlue = "#1e94a4"; // review: was this meant to be BloomBlue? see use in BooksOfCollection.less
+export const kBloomBlue50Transparent = "#8ecad280";
 export const kBloomPurple = "#96668f";
 const kDialogTopBottomGray = "#F1F3F4";
 const kGreyOnDarkColor = "#988b8b";
@@ -12,7 +12,10 @@ export const kLogBackgroundColor = "#fcfcfc";
 export const kBloomYellow = "#FEBF00";
 export const kPanelBackground = "#2e2e2e";
 export const kDarkestBackground = "#1a1a1a";
+export const kDisabledControlGray = "#bbb";
+export const kMutedTextGray = "gray";
 export const kVerticalSpacingBetweenDialogSections = "20px";
+export const kBorderRadiusForSpecialBlocks = "3px";
 
 // Should match @UIFontStack in bloomWebFonts.less
 export const kUiFontStack = "NotoSans, Roboto, sans-serif";

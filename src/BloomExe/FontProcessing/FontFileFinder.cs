@@ -100,9 +100,14 @@ namespace Bloom.FontProcessing
 								if ((embeddingTypes & EmbeddingTypes.RestrictedLicense) == EmbeddingTypes.RestrictedLicense ||
 									(embeddingTypes & EmbeddingTypes.BitmapOnly) == EmbeddingTypes.BitmapOnly)
 								{
+									// Our font UI allows any font on the computer, but gives the user indications that some are more
+									// useable in publishing Bloom books. The NoteFontsWeCantInstall prop is only true when we call this
+									// from BloomPubMaker so that it can note that certain fonts are unsuitable for embedding in ePUBs.
 									if (NoteFontsWeCantInstall)
+									{
 										FontsWeCantInstall.Add(face.FamilyName);
-									continue;
+										continue;
+									}
 								}
 								var name = face.FamilyName;
 								// If you care about bold, italic, etc, you can filter here.
@@ -117,6 +122,7 @@ namespace Bloom.FontProcessing
 						}
 						catch (Exception)
 						{
+							continue;
 						}
 					}
 				}
@@ -133,23 +139,15 @@ namespace Bloom.FontProcessing
 					continue; // file is somehow corrupt or not really a font file? Just ignore it.
 				}
 
-				switch (gtf.EmbeddingRights)
+				// Our font UI allows any font on the computer, but gives the user indications that some are more
+				// useable in publishing Bloom books. The NoteFontsWeCantInstall prop is only true when we call this
+				// from BloomPubMaker so that it can note that certain fonts are unsuitable for embedding in ePUBs.
+				if (!FontIsEmbeddable(gtf.EmbeddingRights) && NoteFontsWeCantInstall)
 				{
-					case FontEmbeddingRight.Editable:
-					case FontEmbeddingRight.EditableButNoSubsetting:
-					case FontEmbeddingRight.Installable:
-					case FontEmbeddingRight.InstallableButNoSubsetting:
-					case FontEmbeddingRight.PreviewAndPrint:
-					case FontEmbeddingRight.PreviewAndPrintButNoSubsetting:
-						break;
-					default:
-						if (NoteFontsWeCantInstall)
-						{
-							string name1 = GetFontNameFromFile(fontFile);
-							if (name1 != null)
-								FontsWeCantInstall.Add(name1);
-						}
-						continue; // not allowed to embed
+					string name1 = GetFontNameFromFile(fontFile);
+					if (name1 != null)
+						FontsWeCantInstall.Add(name1);
+					continue; // not allowed to embed in ePUB
 				}
 
 				string name = GetFontNameFromFile(fontFile);
@@ -203,6 +201,21 @@ namespace Bloom.FontProcessing
 			fontFiles.AddRange(FindFontsInFolder(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),"Microsoft","Windows","Fonts")));
 			return fontFiles;
 		}
+
+		private bool FontIsEmbeddable(FontEmbeddingRight rights)
+		{
+			switch (rights)
+			{
+				case FontEmbeddingRight.Editable:
+				case FontEmbeddingRight.EditableButNoSubsetting:
+				case FontEmbeddingRight.Installable:
+				case FontEmbeddingRight.InstallableButNoSubsetting:
+				case FontEmbeddingRight.PreviewAndPrint:
+				case FontEmbeddingRight.PreviewAndPrintButNoSubsetting:
+					return true;
+			}
+			return false;
+		}
 #endif
 
 		IEnumerable<string> FindFontsInFolder(string folder)
@@ -214,18 +227,19 @@ namespace Bloom.FontProcessing
 					fontFiles.AddRange(FindFontsInFolder(subfolder));
 				foreach (var file in Directory.GetFiles(folder))
 				{
-					// ePUB only understands these types, so skip anything else.
-					switch (Path.GetExtension(file).ToLowerInvariant())
+					var extension = Path.GetExtension(file).ToLowerInvariant();
+					if (FontMetadata.fontFileTypesBloomKnows.Contains(extension))
 					{
-						case ".ttf":
-						case ".otf":
-						case ".woff":
-						case ".woff2":
-							fontFiles.Add(file);
-							break;
-						default:
-							break;
+						// ePUB only understands (and will embed) these types.
+						fontFiles.Add(file);
 					}
+					if (extension == ".compositefont" || extension == ".ttc")
+					{
+						// These will get marked as "unsuitable" in FontMetadata.cs, since Bloom
+						// does not understand them and can't embed them.
+						fontFiles.Add(file);
+					}
+					// All other files in the font folder we skip:
 				}
 			}
 			return fontFiles;

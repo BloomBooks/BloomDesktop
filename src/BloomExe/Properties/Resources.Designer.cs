@@ -83,16 +83,6 @@ namespace Bloom.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
-        internal static System.Drawing.Bitmap android {
-            get {
-                object obj = ResourceManager.GetObject("android", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
         internal static System.Drawing.Bitmap Bloom {
             get {
                 object obj = ResourceManager.GetObject("Bloom", resourceCulture);
@@ -123,9 +113,9 @@ namespace Bloom.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
-        internal static System.Drawing.Bitmap cloneFromChorusHub {
+        internal static System.Drawing.Bitmap BloomPUB {
             get {
-                object obj = ResourceManager.GetObject("cloneFromChorusHub", resourceCulture);
+                object obj = ResourceManager.GetObject("BloomPUB", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
@@ -156,6 +146,26 @@ namespace Bloom.Properties {
         internal static System.Drawing.Bitmap cloud {
             get {
                 object obj = ResourceManager.GetObject("cloud", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap collection16x16 {
+            get {
+                object obj = ResourceManager.GetObject("collection16x16", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap collection32x32 {
+            get {
+                object obj = ResourceManager.GetObject("collection32x32", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
@@ -436,16 +446,6 @@ namespace Bloom.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
-        internal static System.Drawing.Bitmap greyTriangleButton {
-            get {
-                object obj = ResourceManager.GetObject("greyTriangleButton", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
         internal static System.Drawing.Bitmap Hamburger {
             get {
                 object obj = ResourceManager.GetObject("Hamburger", resourceCulture);
@@ -516,26 +516,6 @@ namespace Bloom.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
-        internal static System.Drawing.Bitmap library16x16 {
-            get {
-                object obj = ResourceManager.GetObject("library16x16", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
-        internal static System.Drawing.Bitmap library32x32 {
-            get {
-                object obj = ResourceManager.GetObject("library32x32", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
         internal static System.Drawing.Bitmap LogoForSplashScreen {
             get {
                 object obj = ResourceManager.GetObject("LogoForSplashScreen", resourceCulture);
@@ -566,19 +546,9 @@ namespace Bloom.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
-        internal static System.Drawing.Bitmap newBook {
+        internal static System.Drawing.Bitmap newCollection32x32 {
             get {
-                object obj = ResourceManager.GetObject("newBook", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
-        internal static System.Drawing.Bitmap newLibrary32x32 {
-            get {
-                object obj = ResourceManager.GetObject("newLibrary32x32", resourceCulture);
+                object obj = ResourceManager.GetObject("newCollection32x32", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
@@ -596,9 +566,9 @@ namespace Bloom.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
-        internal static System.Drawing.Bitmap OpenCreateLibrary16x16 {
+        internal static System.Drawing.Bitmap OpenCreateCollection16x16 {
             get {
-                object obj = ResourceManager.GetObject("OpenCreateLibrary16x16", resourceCulture);
+                object obj = ResourceManager.GetObject("OpenCreateCollection16x16", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
@@ -606,9 +576,9 @@ namespace Bloom.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
-        internal static System.Drawing.Bitmap OpenCreateLibrary24x24 {
+        internal static System.Drawing.Bitmap OpenCreateCollection24x24 {
             get {
-                object obj = ResourceManager.GetObject("OpenCreateLibrary24x24", resourceCulture);
+                object obj = ResourceManager.GetObject("OpenCreateCollection24x24", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
@@ -706,6 +676,16 @@ namespace Bloom.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap publish_video {
+            get {
+                object obj = ResourceManager.GetObject("publish_video", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap publish32x32 {
             get {
                 object obj = ResourceManager.GetObject("publish32x32", resourceCulture);
@@ -739,16 +719,6 @@ namespace Bloom.Properties {
         internal static System.Drawing.Bitmap sad16x16 {
             get {
                 object obj = ResourceManager.GetObject("sad16x16", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
-        internal static System.Drawing.Bitmap sendreceiveToolbarButton {
-            get {
-                object obj = ResourceManager.GetObject("sendreceiveToolbarButton", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }

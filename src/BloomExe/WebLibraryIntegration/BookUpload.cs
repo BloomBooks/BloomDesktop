@@ -145,15 +145,14 @@ namespace Bloom.WebLibraryIntegration
 		/// <summary>
 		/// Only for use in tests
 		/// </summary>
-		public string UploadBook(string bookFolder, IProgress progress)
+		internal string UploadBook(string bookFolder, IProgress progress)
 		{
-			string parseId;
-			return UploadBook(bookFolder, progress, out parseId);
+			return UploadBook(bookFolder, progress, out _, null, null, null, null, null, null, null);
 		}
 
 		private string UploadBook(string bookFolder, IProgress progress, out string parseId,
-			string pdfToInclude = null, ISet<string> audioFilesToInclude = null, IEnumerable<string> videoFilesToInclude = null, string[] languages = null,
-			CollectionSettings collectionSettings = null)
+			string pdfToInclude, ISet<string> audioFilesToInclude, IEnumerable<string> videoFilesToInclude, string[] languages,
+			CollectionSettings collectionSettings, string metadataLang1Code, string metadataLang2Code)
 		{
 			// Books in the library should generally show as locked-down, so new users are automatically in localization mode.
 			// Occasionally we may want to upload a new authoring template, that is, a 'book' that is suitableForMakingShells.
@@ -228,7 +227,8 @@ namespace Bloom.WebLibraryIntegration
 				parseId = "";
 				try
 				{
-					_s3Client.UploadBook(s3BookId, bookFolder, progress, pdfToInclude, audioFilesToInclude, videoFilesToInclude, languages);
+					_s3Client.UploadBook(s3BookId, bookFolder, progress, pdfToInclude, audioFilesToInclude, videoFilesToInclude, languages,
+						metadataLang1Code, metadataLang2Code);
 					metadata.BaseUrl = _s3Client.BaseUrl;
 					metadata.BookOrder = _s3Client.BookOrderUrlOfRecentUpload;
 					var metaMsg = LocalizationManager.GetString("PublishTab.Upload.UploadingBookMetadata", "Uploading book metadata", "In this step, Bloom is uploading things like title, languages, and topic tags to the BloomLibrary.org database.");
@@ -481,7 +481,7 @@ namespace Bloom.WebLibraryIntegration
 			PublishHelper.RemoveEnterpriseFeaturesIfNeeded(copiedBook, pages, warningMessages);
 			PublishHelper.SendBatchedWarningMessagesToProgress(warningMessages, progress);
 			copiedBook.Save();
-			copiedBook.Storage.UpdateSupportFiles();
+			copiedBook.UpdateSupportFiles();
 			book = copiedBook;
 			return true;
 
@@ -500,12 +500,12 @@ namespace Bloom.WebLibraryIntegration
 				var bookFolder = book.FolderPath;
 				parseId = ""; // in case of early return
 
-				var languagesToUpload = book.BookInfo.MetaData.TextLangsToPublish.ForBloomLibrary.IncludedLanguages().ToArray();
+				var languagesToUpload = book.BookInfo.PublishSettings.BloomLibrary.TextLangs.IncludedLanguages().ToArray();
 				// When initializing, we may set the collection's sign language to IncludeByDefault so the checkbox on the publish screen
 				// gets set by default. Also, videos could have been removed since the user last visited the publish screen (e.g. bulk upload).
 				// So we need to make sure we have videos before including the sign language.
 				if (book.HasSignLanguageVideos())
-					languagesToUpload = languagesToUpload.Union(book.BookInfo.MetaData.SignLangsToPublish.ForBloomLibrary.IncludedLanguages()).ToArray();
+					languagesToUpload = languagesToUpload.Union(book.BookInfo.PublishSettings.BloomLibrary.SignLangs.IncludedLanguages()).ToArray();
 
 				// Set this in the metadata so it gets uploaded. Do this in the background task as it can take some time.
 				// These bits of data can't easily be set while saving the book because we save one page at a time
@@ -580,12 +580,14 @@ namespace Bloom.WebLibraryIntegration
 					GetAudioFilesToInclude(book, bookParams.ExcludeMusic),
 					videoFiles,
 					languagesToUpload,
-					book.CollectionSettings);
+					book.CollectionSettings,
+					book.BookData.MetadataLanguage1IsoCode,
+					book.BookData.MetadataLanguage2IsoCode);
 			}
 			finally
 			{
 				// Put back all the branding files which we removed above in the call to CleanupUnusedSupportFiles()
-				book.Storage.UpdateSupportFiles();
+				book.UpdateSupportFiles();
 
 				// NB: alternatively, we considered refactoring CleanupUnusedSupportFiles() to give us a list of files
 				// to not upload.
@@ -610,7 +612,7 @@ namespace Bloom.WebLibraryIntegration
 		private static ISet<string> GetAudioFilesToInclude(Book.Book book, bool excludeMusic)
 		{
 			HashSet<string> result = new HashSet<string>();
-			bool excludeNarrationAudio = !book.BookInfo.MetaData.IncludeAudioForBloomLibraryPublish;
+			bool excludeNarrationAudio = !book.BookInfo.PublishSettings.BloomLibrary.IncludeAudio;
 			if (!excludeNarrationAudio)
 				result.AddRange(book.Storage.GetNarrationAudioFileNamesReferencedInBook(false));
 			if (!excludeMusic)

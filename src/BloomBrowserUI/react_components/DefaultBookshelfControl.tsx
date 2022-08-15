@@ -7,19 +7,16 @@ import { BloomApi } from "../utils/bloomApi";
 import { Div } from "./l10nComponents";
 import { lightTheme, kBloomYellow } from "../bloomMaterialUITheme";
 import { ThemeProvider } from "@material-ui/styles";
-import BloomSelect from "./bloomSelect";
-import { makeStyles, MenuItem, Select } from "@material-ui/core";
+import { makeStyles, MenuItem, Select, Typography } from "@material-ui/core";
 import XRegExp = require("xregexp/types");
 import { useContentful } from "../contentful/UseContentful";
-import { WireUpForWinforms } from "../utils/WireUpWinform";
-
-const windowsSelectColor = "rgb(0,120,215)";
+import { BloomEnterpriseIcon } from "./requiresBloomEnterprise";
+import { useL10n } from "./l10nHooks";
 
 // This component is the chooser for a default bookshelf, currently in the bottom right corner
-// of the "Book Making" tab of the Settings dialog. Eventually the whole tab and whole dialog
-// should move to HTML, but currently this is the root of a ReactDialog.
+// of the "Book Making" tab of the Settings dialog.
 
-export const DefaultBookshelfControl: React.FunctionComponent = props => {
+export const DefaultBookshelfControl: React.FunctionComponent = () => {
     // Things get tricky because we have to run two queries here to get the
     // data we need, and the second depends on the results of the first.
     // Doing this under the rules of hooks is difficult. The first query is
@@ -64,7 +61,7 @@ export const DefaultBookshelfControl: React.FunctionComponent = props => {
             : undefined // no project means we don't want useContentful to do a query
     );
 
-    let bookshelves = [{ value: "none", label: "None" }]; // todo: should be localizable, eventually?
+    let bookshelves = [{ value: "none", label: "None", tooltip: "" }];
     if (!project) {
         // If we don't (yet) have a project, we want a completely empty list of options
         // to leave the combo blank.
@@ -80,9 +77,24 @@ export const DefaultBookshelfControl: React.FunctionComponent = props => {
             // has a list of collections connected to this branding, and will
             // now generate the list of menu items (prepending the 'None' we already made).
             bookshelves = bookshelves.concat(
-                collections.map<{ value: string; label: string }>((c: any) => ({
+                collections.map<{
+                    value: string;
+                    label: string;
+                    tooltip: string;
+                }>((c: any) => ({
                     value: c.fields.urlKey,
-                    label: c.fields.label
+                    // Note: the "label" here is the "url" key in Contentful. We
+                    //use to use the "label" field for label, but the label may
+                    //be optimized for how it will display, in context, on
+                    //Blorg. E.g. "books with a,b,c,d and e". But the person
+                    //choosing a bookshelf in Bloom Editor may need to also
+                    //select based on language, grade, etc. Example ABC
+                    //Philippines project. These bits of info are to be found in
+                    //the url key, so we switched to using it. If people
+                    //struggle with this, we could introduce a 3rd field just
+                    //for this choosing, like "selector label".
+                    label: c.fields.urlKey,
+                    tooltip: c.fields.label
                 }))
             );
         }
@@ -92,14 +104,45 @@ export const DefaultBookshelfControl: React.FunctionComponent = props => {
         // Note that as we don't yet have any better label, we use defaultShelf.
         bookshelves.push({
             value: defaultBookshelfUrlKey,
-            label: defaultBookshelfUrlKey
+            label: defaultBookshelfUrlKey,
+            tooltip: ""
         });
     }
     const items = bookshelves.map(x => (
-        <MenuItem key={x.value} value={x.value}>
+        <MenuItem key={x.value} value={x.value} title={x.tooltip}>
             {x.label}
         </MenuItem>
     ));
+
+    const BLBookshelfLabel = useL10n(
+        "Bloom Library Bookshelf",
+        "CollectionSettingsDialog.BloomLibraryBookshelf",
+        undefined,
+        undefined,
+        undefined,
+        true // don't localize for now
+    );
+
+    const errorCaseDescription = useL10n(
+        "Bloom could not reach server to get the list of bookshelves.",
+        "CollectionSettingsDialog.BookMakingTab.NoBookshelvesFromServer",
+        undefined,
+        undefined,
+        undefined,
+        true // don't localize for now
+    );
+
+    const defaultCaseDescription = useL10n(
+        "Projects that have Bloom Enterprise subscriptions can arrange for one or more bookshelves on the Bloom Library. All books uploaded from this collection will go into the selected bookshelf.",
+        "CollectionSettingsDialog.BookMakingTab.BookshelfDescription",
+        undefined,
+        undefined,
+        undefined,
+        true // don't localize for now
+    );
+
+    const commonDescriptionCss =
+        "margin-top: 1em;\nfont-size: 0.8rem !important;";
 
     // Here we have to use the Material-ui style system (or else go back to
     // importing a separate stylesheet) because the elements that make up
@@ -117,7 +160,6 @@ export const DefaultBookshelfControl: React.FunctionComponent = props => {
     const useStyles = makeStyles({
         select: {
             maxHeight: "calc(100% - 20px)",
-            border: `1px solid ${windowsSelectColor}`,
             borderRadius: 1,
             marginLeft: "-16px",
             "& ul": {
@@ -125,10 +167,6 @@ export const DefaultBookshelfControl: React.FunctionComponent = props => {
             },
             "& li": {
                 padding: "1px !important",
-                // It's annoying we have to set this again, but Material UI has a
-                // setting at this level which will override anything inherited
-                // if we don't.
-                fontFamily: "Segoe UI",
                 // This was especially tricky to discover. It makes no difference
                 // at larger window widths, but in the relatively narrow space we
                 // leave for the parent ReactControl, some MaterialUI javascript
@@ -137,10 +175,6 @@ export const DefaultBookshelfControl: React.FunctionComponent = props => {
                 // a different behavior in Gecko and FF, though actually the difference
                 // is window width).
                 minHeight: "auto"
-            },
-            "& li:hover": {
-                backgroundColor: `${windowsSelectColor} !important`,
-                color: "white"
             }
         }
     });
@@ -148,26 +182,28 @@ export const DefaultBookshelfControl: React.FunctionComponent = props => {
     return (
         <ThemeProvider theme={lightTheme}>
             <div
-                // Not sure whether we need to specify a different font for Linux, which probably doesn't
-                // have Segoe UI, or whether the default is OK. 10pt seems to be the size this dialog uses,
-                // so we push it fairly strongly, in more than one place, for consistency. The larger fonts
-                // MaterialUI normally uses are probably aimed at making touch-sized targets.
+                // 10pt seems to be the size this dialog uses, so we push it fairly strongly,
+                // in more than one place, for consistency. The larger fonts that Material-UI
+                // normally uses are probably aimed at making touch-sized targets.
                 css={css`
-                    font-family: "Segoe UI";
                     font-size: 10pt;
                 `}
             >
-                <Div
+                <div
                     css={css`
-                        ${project
-                            ? "font-family: 'Segoe UI Semibold'"
-                            : "color: grey"}
+                        display: flex;
                     `}
-                    l10nKey="CollectionSettingsDialog.BloomLibraryBookshelf"
-                    temporarilyDisableI18nWarning={true}
                 >
-                    Bloom Library Bookshelf
-                </Div>
+                    <Typography
+                        css={css`
+                            font-family: Segoe UI !important;
+                            font-weight: 700 !important;
+                        `}
+                    >
+                        {BLBookshelfLabel}
+                    </Typography>
+                    <BloomEnterpriseIcon />
+                </div>
                 <Select
                     // Using a MaterialUI Select here, though we have to fight it fairly hard
                     // to get an appearance that matches the rest of the dialog. Possibly there
@@ -180,22 +216,16 @@ export const DefaultBookshelfControl: React.FunctionComponent = props => {
                     // Windows-style arrows; these don't seem to be configurable (except perhaps by
                     // some complex overlay) in an HTML input element.)
                     css={css`
-                        min-width: 200px;
-                        background-color: #e1e1e1;
+                        min-width: 320px;
+                        background-color: white;
                         border: 1px solid #bbb;
                         font-size: 10pt;
+                        padding-left: 7px; // match what winforms is doing
                         &:before {
-                            content: none;
+                            content: none !important; // 'important' gets rid of dotted line under Select
                         }
                         &:after {
                             content: none;
-                        }
-                        &:hover {
-                            background-color: #e5f1fb;
-                            border-color: ${windowsSelectColor};
-                        }
-                        .MuiSelect-root {
-                            padding: 3px 3px 3px 2px;
                         }
                     `}
                     value={defaultBookshelfUrlKey}
@@ -223,34 +253,28 @@ export const DefaultBookshelfControl: React.FunctionComponent = props => {
                 </Select>
                 {error ? (
                     // We display this message if either of the contentful queries fail.
-                    <Div
+                    <Typography
                         css={css`
                             color: ${kBloomYellow};
+                            ${commonDescriptionCss}
                         `}
-                        l10nKey="CollectionSettingsDialog.NoBookshelvesFromServer"
-                        temporarilyDisableI18nWarning={true}
                     >
-                        Bloom could not reach server to get the list of
-                        bookshelves
-                    </Div>
+                        {errorCaseDescription}
+                    </Typography>
                 ) : (
                     // The normal case.
-                    <Div
+                    <Typography
                         css={css`
-                            color: dimgrey; // not darkgrey, which is lighter than grey!
+                            color: black;
+                            ${commonDescriptionCss}
                         `}
-                        l10nKey="CollectionSettingsDialog.DefaultBookshelfDescription"
-                        temporarilyDisableI18nWarning={true}
                     >
-                        Projects that have Bloom Enterprise subscriptions can
-                        arrange for one or more bookshelves on the Bloom
-                        Library. All books uploaded from this collection will go
-                        into the selected bookshelf.
-                    </Div>
+                        {defaultCaseDescription}
+                    </Typography>
                 )}
             </div>
         </ThemeProvider>
     );
 };
 
-WireUpForWinforms(DefaultBookshelfControl);
+export default DefaultBookshelfControl;

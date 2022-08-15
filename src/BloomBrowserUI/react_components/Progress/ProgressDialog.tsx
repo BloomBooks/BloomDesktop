@@ -16,15 +16,17 @@ import {
     DialogBottomButtons,
     DialogBottomLeftButtons,
     DialogMiddle,
-    DialogTitle,
-    IBloomDialogEnvironmentParams,
-    useSetupBloomDialog
+    DialogTitle
 } from "../BloomDialog/BloomDialog";
 import {
     DialogCancelButton,
     DialogCloseButton
 } from "../BloomDialog/commonDialogComponents";
 import { WireUpForWinforms } from "../../utils/WireUpWinform";
+import {
+    IBloomDialogEnvironmentParams,
+    useSetupBloomDialog
+} from "../BloomDialog/BloomDialogPlumbing";
 
 export const ProgressDialog: React.FunctionComponent<{
     title: string;
@@ -51,6 +53,7 @@ export const ProgressDialog: React.FunctionComponent<{
     const [showButtons, setShowButtons] = useState(false);
     const [sawAnError, setSawAnError] = useState(false);
     const [sawAWarning, setSawAWarning] = useState(false);
+    const [sawFatalError, setSawFatalError] = useState(false);
     const [messagesForErrorReporting, setMessagesForErrorReporting] = useState(
         ""
     );
@@ -72,6 +75,10 @@ export const ProgressDialog: React.FunctionComponent<{
             }
             if (e.id === "message" && e.progressKind === "Error") {
                 setSawAnError(true);
+            }
+            if (e.id === "message" && e.progressKind === "Fatal") {
+                setSawAnError(true);
+                setSawFatalError(true);
             }
             if (e.id === "message" && e.progressKind === "Warning") {
                 setSawAWarning(true);
@@ -170,7 +177,20 @@ export const ProgressDialog: React.FunctionComponent<{
                                 </BloomButton>
                             </DialogBottomLeftButtons>
                         )}
-                        <DialogCloseButton onClick={closeDialog} />
+                        {sawFatalError ? (
+                            <BloomButton
+                                l10nKey="ReportProblemDialog.Quit"
+                                hasText={true}
+                                enabled={true}
+                                variant="contained"
+                                temporarilyDisableI18nWarning={true} // only used in TC context so far
+                                onClick={closeDialog}
+                            >
+                                Quit
+                            </BloomButton>
+                        ) : (
+                            <DialogCloseButton onClick={closeDialog} />
+                        )}
                     </React.Fragment>
                 ) : // if we're not done, show the cancel button if that was called for...
                 props.showCancelButton ? (

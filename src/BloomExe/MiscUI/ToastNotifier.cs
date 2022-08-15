@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Drawing;
 using System.Windows.Forms;
 using System.Diagnostics;
@@ -124,6 +124,11 @@ namespace Bloom.MiscUI
 
 		private void GoDownTimerTick(object sender, EventArgs e)
 		{
+			if (IsDisposed || (Owner != null && Owner.IsDisposed)) {
+				_goDownTimer.Stop();
+				return;
+			}
+
 			//Debug.WriteLine(String.Format("DEBUG Begin Toast.GoDownTimerTick(): Bounds = {0}", this.DesktopBounds));
 			//Lower window by 5 pixels
 			startPosY += 5;
@@ -217,7 +222,7 @@ namespace Bloom.MiscUI
 			{
 				_pauseTimer.Interval = 1000 * seconds;
 			}
-			Show();
+			Show(Shell.GetShellOrOtherOpenForm());
 		}
 
 		public void UpdateMessage(string newMessage)

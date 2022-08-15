@@ -43,11 +43,6 @@ namespace Bloom.Workspace
 		private readonly SelectedTabChangedEvent _selectedTabChangedEvent;
 		private readonly LocalizationChangedEvent _localizationChangedEvent;
 		private readonly CollectionSettings _collectionSettings;
-#if CHORUS
-			private readonly ChorusSystem _chorusSystem;
-#else
-		// private readonly object _chorusSystem;
-#endif
 		private bool _viewInitialized;
 		private int _originalToolStripPanelWidth;
 		private int _originalToolSpecificPanelHorizPos;
@@ -57,10 +52,9 @@ namespace Bloom.Workspace
 		private string _originalHelpText;
 		private Image _originalHelpImage;
 		private string _originalUiLanguageSelection;
-		private LibraryView _legacyCollectionView;
 		private EditingView _editingView;
 		private PublishView _publishView;
-		private ReactCollectionTabView _reactCollectionTabView;
+		private CollectionTabView _collectionTabView;
 		private Control _previouslySelectedControl;
 		public event EventHandler CloseCurrentProject;
 		public event EventHandler ReopenCurrentProject;
@@ -69,7 +63,7 @@ namespace Bloom.Workspace
 		private ZoomControl _zoomControl;
 		private static LanguageLookupModel _lookupIsoCode = new LanguageLookupModel();
 
-		public delegate WorkspaceView Factory(Control libraryView);
+		public delegate WorkspaceView Factory();
 
 		private TeamCollectionManager _tcManager;
 		private BookSelection _bookSelection;
@@ -81,17 +75,14 @@ namespace Bloom.Workspace
 		//autofac uses this
 
 		public WorkspaceView(WorkspaceModel model,
-							Control libraryView,
-							ReactCollectionTabView.Factory reactCollectionsTabsViewFactory,
+							CollectionTabView.Factory reactCollectionsTabsViewFactory,
 							EditingView.Factory editingViewFactory,
 							PublishView.Factory pdfViewFactory,
 							CollectionSettingsDialog.Factory settingsDialogFactory,
 							EditBookCommand editBookCommand,
-							SendReceiveCommand sendReceiveCommand,
 							SelectedTabAboutToChangeEvent selectedTabAboutToChangeEvent,
 							SelectedTabChangedEvent selectedTabChangedEvent,
 							LocalizationChangedEvent localizationChangedEvent,
-							//ChorusSystem chorusSystem,
 							ILocalizationManager localizationManager,
 							CollectionSettings collectionSettings,
 							CommonApi commonApi,
@@ -159,18 +150,9 @@ namespace Bloom.Workspace
 			_settingsLauncherHelper.ManageComponent(_uiLanguageMenu);
 
 			editBookCommand.Subscribe(OnEditBook);
-			sendReceiveCommand.Subscribe(OnSendReceive);
 
 			Application.Idle += new EventHandler(Application_Idle);
 			Text = _model.ProjectName;
-
-			//
-			// _collectionView
-			//
-			this._legacyCollectionView = (LibraryView) libraryView;
-			_legacyCollectionView.ManageSettings(_settingsLauncherHelper);
-			this._legacyCollectionView.Dock = DockStyle.Fill;
-			_legacyCollectionTab.Tag = _legacyCollectionView;
 
 			//
 			// _editingView needs to be created before we select a tab, since the model
@@ -180,27 +162,12 @@ namespace Bloom.Workspace
 			this._editingView = editingViewFactory();
 			this._editingView.Dock = DockStyle.Fill;
 
-			if (ExperimentalFeatures.IsFeatureEnabled(ExperimentalFeatures.kNewCollectionTab))
-			{
-				_reactCollectionTabView = reactCollectionsTabsViewFactory();
-				_reactCollectionTabView.ManageSettings(_settingsLauncherHelper);
-				_reactCollectionTabView.Dock = DockStyle.Fill;
-				_reactCollectionTabView.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(87)))), ((int)(((byte)(87)))), ((int)(((byte)(87)))));
-				_reactCollectionTab.Tag = _reactCollectionTabView;
-				_tabStrip.SelectedTab = _reactCollectionTab;
-				_tabStrip.Items.Remove(_legacyCollectionTab);
-				// make sure we catch anything trying to use it in this mode
-				_legacyCollectionTab.Dispose();
-				_legacyCollectionTab = null;
-				_legacyCollectionView.Dispose();
-				_legacyCollectionView = null;
-			}
-			else
-			{
-				_tabStrip.SelectedTab = _legacyCollectionTab;
-				_tabStrip.Items.Remove(_reactCollectionTab);
-				_reactCollectionTab.Dispose();
-			}
+			_collectionTabView = reactCollectionsTabsViewFactory();
+			_collectionTabView.ManageSettings(_settingsLauncherHelper);
+			_collectionTabView.Dock = DockStyle.Fill;
+			_collectionTabView.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(87)))), ((int)(((byte)(87)))), ((int)(((byte)(87)))));
+			_reactCollectionTab.Tag = _collectionTabView;
+			_tabStrip.SelectedTab = _reactCollectionTab;
 
 			//
 			// _pdfView
@@ -214,18 +181,9 @@ namespace Bloom.Workspace
 			SetTabVisibility(_publishTab, false);
 			SetTabVisibility(_editTab, false);
 
-			if (ExperimentalFeatures.IsFeatureEnabled(ExperimentalFeatures.kNewCollectionTab))
-			{
-				this._reactCollectionTab.Text = _reactCollectionTabView.CollectionTabLabel;
-				_tabStrip.SelectedTab = _reactCollectionTab;
-				SelectPage(_reactCollectionTabView);
-			}
-			else
-			{
-				this._legacyCollectionTab.Text = _legacyCollectionView.CollectionTabLabel;
-				_tabStrip.SelectedTab = _legacyCollectionTab;
-				SelectPage(_legacyCollectionView);
-			}
+			this._reactCollectionTab.Text = _collectionTabView.CollectionTabLabel;
+			_tabStrip.SelectedTab = _reactCollectionTab;
+			SelectPage(_collectionTabView);
 
 			if (Platform.IsMono)
 			{
@@ -237,7 +195,11 @@ namespace Bloom.Workspace
 
 			_toolStrip.SizeChanged += ToolStripOnSizeChanged;
 
-			SetupUiLanguageMenu();
+			_uiLanguageMenu.DropDownOpening += (sender, args) =>
+			{
+				SetupUiLanguageMenu();
+			};
+			SetupUiLanguageMenu(true);
 			SetupZoomControl();
 			AdjustButtonTextsForLocale();
 			_viewInitialized = false;
@@ -248,15 +210,9 @@ namespace Bloom.Workspace
 			// the code that updates the preview, which is quite slow. We need the button
 			// to respond quickly.
 			// We'll need to do something even trickier if there start to be slow things that
-			// happen in response to the book selection changed websocked message.
+			// happen in response to the book selection changed websocket message.
 			bookSelection.SelectionChangedHighPriority += HandleBookSelectionChanged;
 			bookStatusChangeEvent.Subscribe(args => { HandleBookStatusChange(args); });
-		}
-
-		public void HandleRenameCommand()
-		{
-			if (CurrentTabView == _legacyCollectionView)
-				_legacyCollectionView.HandleRenameCommand();
 		}
 
 		protected override void OnLoad(EventArgs e)
@@ -284,30 +240,21 @@ namespace Bloom.Workspace
 			// if the book has been renamed remotely but not yet here, we may not be able to tell that it
 			// needs to be checked out before BringBookUpToDate renames it here.
 			StartupScreenManager.AddStartupAction(() =>
-				SelectPreviouslySelectedBook(),
-				// In the new collection tab, we want to delay this until the buttons get drawn,
-				// since it ties up the UI thread for a while. (In the legacy view, the buttons are
-				// drawn first on the UI thread so this isn't an issue. When we get rid of the legacy
-				// collection tab we can simplify this code.)
+				SelectBookAtStartup(),
+				// We want to delay this until the buttons get drawn,
+				// since it ties up the UI thread for a while.
 				// Enhance: the code in CollectionsApi that raises this event is crude; it just
 				// looks for the first two button thumbnails to be requested. It would be better if
 				// we had some way of knowing when the collection panes were fully rendered.
 				// It would be better still if most of the work of SelectPreviouslySelectedBook could
 				// be done on a background thread so it could make progress as quickly as possible
 				// without holding up drawing the collection panes.
-				waitForMilestone: CurrentTabView==_legacyCollectionView? null : "collectionButtonsDrawn");
+				waitForMilestone: "collectionButtonsDrawn");
 		}
 
 		private void ReadyToShowCollections()
 		{
-			if (ExperimentalFeatures.IsFeatureEnabled(ExperimentalFeatures.kNewCollectionTab))
-			{
-				_reactCollectionTabView.ReadyToShowCollections();
-			}
-			else
-			{
-				_legacyCollectionView.ReadyToShowCollections();
-			}
+			_collectionTabView.ReadyToShowCollections();
 		}
 
 		/// <summary>
@@ -318,9 +265,9 @@ namespace Bloom.Workspace
 		/// <remarks>
 		/// See https://issues.bloomlibrary.org/youtrack/issue/BL-10225.
 		/// </remarks>
-		private void SelectPreviouslySelectedBook()
+		private void SelectBookAtStartup()
 		{
-			var selBookPath = Settings.Default.CurrentBookPath;
+			var selBookPath = Program.PathToBookDownloadedAtStartup ?? Settings.Default.CurrentBookPath;
 			if (string.IsNullOrEmpty(selBookPath) || !Directory.Exists(selBookPath))
 				return;
 			var selBookCollectionFolder = Path.GetDirectoryName(selBookPath);
@@ -342,6 +289,8 @@ namespace Bloom.Workspace
 			// Important for at least the TeamCollectionBookStatusPanel and the CollectionsTabBookPanel.
 			_webSocketServer.SendString("book-selection", "changed", result);
 		}
+
+		string _tempBookInfoHtmlPath;
 
 		public string GetCurrentSelectedBookInfo()
 		{
@@ -366,12 +315,33 @@ namespace Bloom.Workspace
 			{
 				collectionKind = "factory";
 			}
+
+			string aboutBookInfoUrl = null;
+			if (book != null && book.HasAboutBookInformationToShow)
+			{
+				if (RobustFile.Exists(book.AboutBookHtmlPath))
+				{
+					aboutBookInfoUrl = book.AboutBookHtmlPath.ToLocalhost();
+				}
+				else if (RobustFile.Exists(book.AboutBookMdPath))
+				{
+					var md = new MarkdownDeep.Markdown();
+					var mdContent = RobustFile.ReadAllText(book.AboutBookMdPath);
+					var htmlContent = string.Format("<html><head><meta charset=\"utf-8\"/></head><body>{0}</body></html>", md.Transform(mdContent));
+					if (_tempBookInfoHtmlPath != null && RobustFile.Exists(_tempBookInfoHtmlPath))
+						RobustFile.Delete(_tempBookInfoHtmlPath);
+					_tempBookInfoHtmlPath = Path.Combine(Path.GetTempPath(), Path.GetFileNameWithoutExtension(book.AboutBookMdPath) + ".html");
+					RobustFile.WriteAllText(_tempBookInfoHtmlPath, htmlContent);
+					aboutBookInfoUrl = _tempBookInfoHtmlPath.ToLocalhost();
+				}
+			}
 			// notify browser components that are listening to this event
 			var result = JsonConvert.SerializeObject(new
 			{
 				id = book?.ID,
 				saveable = _bookSelection.CurrentSelection?.IsSaveable ?? false,
-				collectionKind
+				collectionKind,
+				aboutBookInfoUrl
 			});
 			return result;
 		}
@@ -395,7 +365,7 @@ namespace Bloom.Workspace
 				});
 			if (bookName != Path.GetFileName(_bookSelection.CurrentSelection?.FolderPath))
 				return; // change is not to the book we're interested in.
-			if (_tabStrip.SelectedTab == _legacyCollectionTab)
+			if (_tabStrip.SelectedTab == _reactCollectionTab)
 				return; // this toast is all about returning to the collection tab
 			if (_returnToCollectionTabNotifier != null)
 				return; // notification already up
@@ -412,7 +382,7 @@ namespace Bloom.Workspace
 					_returnToCollectionTabNotifier.ToastClicked += (sender, _) =>
 					{
 						_returnToCollectionTabNotifier.CloseSafely();
-						_tabStrip.SelectedTab = _legacyCollectionTab;
+						_tabStrip.SelectedTab = _reactCollectionTab;
 					};
 					_returnToCollectionTabNotifier.Show(msg, "", -1);
 				});
@@ -519,20 +489,6 @@ namespace Bloom.Workspace
 			}
 		}
 
-		private void OnSendReceive(object obj)
-		{
-#if CHORUS
-			using (SyncDialog dlg = (SyncDialog) _chorusSystem.WinForms.CreateSynchronizationDialog())
-			{
-				dlg.ShowDialog();
-				if(dlg.SyncResult.DidGetChangesFromOthers)
-				{
-					Invoke(ReopenCurrentProject);
-				}
-			}
-#endif
-		}
-
 		void OnSettingsProtectionChanged(object sender, PropertyChangedEventArgs e)
 		{
 			//when we need to use Ctrl+Shift to display stuff, we don't want it also firing up the localization dialog (which shouldn't be done by a user under settings protection anyhow)
@@ -543,9 +499,9 @@ namespace Bloom.Workspace
 
 		ToolStripMenuItem _showAllTranslationsItem;
 
-		private void SetupUiLanguageMenu()
+		private void SetupUiLanguageMenu(bool onlyActiveItem = false)
 		{
-			SetupUiLanguageMenuCommon(_uiLanguageMenu, FinishUiLanguageMenuItemClick);
+			SetupUiLanguageMenuCommon(_uiLanguageMenu, FinishUiLanguageMenuItemClick, onlyActiveItem);
 
 			// REVIEW: should this be part of SetupUiLanguageMenuCommon()?  should it be added only for alpha and beta?
 			_uiLanguageMenu.DropDownItems.Add("-");
@@ -626,21 +582,29 @@ namespace Bloom.Workspace
 		/// <summary>
 		/// This is also called by CollectionChoosing.OpenCreateCloneControl
 		/// </summary>
-		public static void SetupUiLanguageMenuCommon(ToolStripDropDownButton uiMenuControl, Action finishClickAction = null)
+		public static void SetupUiLanguageMenuCommon(ToolStripDropDownButton uiMenuControl, Action finishClickAction = null, bool onlyActiveItem = false)
 		{
 			var items = new List<LanguageItem>();
-			foreach (var lang in LocalizationManager.GetAvailableLocalizedLanguages())
+			if (onlyActiveItem)
 			{
-				// Require that at least 1% of the strings have been translated and approved for alphas,
-				// or 25% translated and approved for betas and release.
-				var approved = FractionApproved(lang);
-				if (Settings.Default.ShowUnapprovedLocalizations)
-					approved = FractionTranslated(lang);
-				var alpha = ApplicationUpdateSupport.IsDevOrAlpha;
-				if ((alpha && approved < 0.01F) || (!alpha && approved < 0.25F))
-					continue;
-				items.Add(CreateLanguageItem(lang));
+				items.Add(CreateLanguageItem(Settings.Default.UserInterfaceLanguage));
 			}
+			else
+			{
+				foreach (var lang in LocalizationManager.GetAvailableLocalizedLanguages())
+				{
+					// Require that at least 1% of the strings have been translated and approved for alphas,
+					// or 25% translated and approved for betas and release.
+					var approved = FractionApproved(lang);
+					if (Settings.Default.ShowUnapprovedLocalizations)
+						approved = FractionTranslated(lang);
+					var alpha = ApplicationUpdateSupport.IsDevOrAlpha;
+					if ((alpha && approved < 0.01F) || (!alpha && approved < 0.25F))
+						continue;
+					items.Add(CreateLanguageItem(lang));
+				}
+			}
+
 			items.Sort(compareLangItems);
 
 			var tooltipFormat = LocalizationManager.GetString("CollectionTab.UILanguageMenu.ItemTooltip", "{0}% translated",
@@ -663,7 +627,7 @@ namespace Bloom.Workspace
 				"The final item in the UI Language menu. When clicked, it opens Bloom's page in the Crowdin web-based translation system.");
 			var helpItem = uiMenuControl.DropDownItems.Add(message);
 			helpItem.Image = Resources.weblink;
-			helpItem.Click += (sender, args) => SIL.Program.Process.SafeStart(UrlLookup.LookupUrl(UrlType.LocalizingSystem));
+			helpItem.Click += (sender, args) => SIL.Program.Process.SafeStart(UrlLookup.LookupUrl(UrlType.LocalizingSystem, null));
 		}
 
 		private static int compareLangItems(LanguageItem a, LanguageItem b)
@@ -796,7 +760,7 @@ namespace Bloom.Workspace
 			tab.Visible = visible;
 		}
 
-		public void OpenCreateLibrary()
+		public void OpenCreateCollection()
 		{
 			_settingsLauncherHelper.LaunchSettingsIfAppropriate(() =>
 			{
@@ -848,7 +812,7 @@ namespace Bloom.Workspace
 						ErrorReport.NotifyUserOfProblem(MustBeAdminMessage);
 						return DialogResult.Cancel;
 					}
-					using (var dlg = _settingsDialogFactory ())
+					using (var dlg = _settingsDialogFactory())
 					{
 						_currentlyOpenSettingsDialog = dlg;
 						dlg.SetDesiredTab(tab);
@@ -985,7 +949,7 @@ namespace Bloom.Workspace
 				_tabSelection.ActiveTab = WorkspaceTab.publish;
 			else
 				_tabSelection.ActiveTab = WorkspaceTab.collection;
-			if (_returnToCollectionTabNotifier != null && _tabStrip.SelectedTab == _legacyCollectionTab)
+			if (_returnToCollectionTabNotifier != null && _tabStrip.SelectedTab == _reactCollectionTab)
 			{
 				_returnToCollectionTabNotifier.CloseSafely();
 				_returnToCollectionTabNotifier = null;
@@ -1023,7 +987,7 @@ namespace Bloom.Workspace
 
 		private void _webSiteMenuItem_Click(object sender, EventArgs e)
 		{
-			SIL.Program.Process.SafeStart(UrlLookup.LookupUrl(UrlType.LibrarySite));
+			SIL.Program.Process.SafeStart(UrlLookup.LookupUrl(UrlType.LibrarySite, null));
 		}
 
 		private void _releaseNotesMenuItem_Click(object sender, EventArgs e)
@@ -1044,12 +1008,12 @@ namespace Bloom.Workspace
 
 		private void _requestAFeatureMenuItem_Click(object sender, EventArgs e)
 		{
-			SIL.Program.Process.SafeStart(UrlLookup.LookupUrl(UrlType.UserSuggestions));
+			SIL.Program.Process.SafeStart(UrlLookup.LookupUrl(UrlType.UserSuggestions, null));
 		}
 
 		private void _askAQuestionMenuItem_Click(object sender, EventArgs e)
 		{
-			SIL.Program.Process.SafeStart(UrlLookup.LookupUrl(UrlType.Support));
+			SIL.Program.Process.SafeStart(UrlLookup.LookupUrl(UrlType.Support, null));
 		}
 
 		// Currently not used, but I'm leaving the method in case we want to put it
@@ -1253,8 +1217,6 @@ namespace Bloom.Workspace
 
 		public void SetStateOfNonPublishTabs(bool enable)
 		{
-			if (_legacyCollectionTab != null)
-				_legacyCollectionTab.Enabled = enable;
 			if (_reactCollectionTab != null)
 				_reactCollectionTab.Enabled = enable;
 			_editTab.Enabled = enable;

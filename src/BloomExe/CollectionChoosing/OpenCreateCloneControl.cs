@@ -6,7 +6,6 @@ using System.Windows.Forms;
 using Bloom.Collection;
 using Bloom.CollectionCreating;
 using Bloom.Properties;
-//using Chorus.UI.Clone;
 using SIL.Windows.Forms.Extensions;
 using SIL.i18n;
 using System.Linq;
@@ -18,10 +17,10 @@ namespace Bloom.CollectionChoosing
 	public partial class OpenCreateCloneControl : UserControl
 	{
 		private MostRecentPathsList _mruList;
-		private Func<string> _createNewLibraryAndReturnPath;
+		private Func<string> _createNewCollectionAndReturnPath;
 		private string _filterString;
 
-		public event EventHandler DoneChoosingOrCreatingLibrary;
+		public event EventHandler DoneChoosingOrCreatingCollection;
 
 		public string SelectedPath { get; private set; }
 
@@ -40,10 +39,10 @@ namespace Bloom.CollectionChoosing
 
 		public void Init(MostRecentPathsList mruList,
 						 string filterString,
-						 Func<string> createNewLibraryAndReturnPath)
+						 Func<string> createNewCollectionAndReturnPath)
 		{
 			_filterString = filterString;
-			_createNewLibraryAndReturnPath = createNewLibraryAndReturnPath;
+			_createNewCollectionAndReturnPath = createNewCollectionAndReturnPath;
 			_mruList = mruList;
 		}
 
@@ -95,6 +94,7 @@ namespace Bloom.CollectionChoosing
 			const int kRowOffsetForMRUChoices = 1;
 			var button = AddChoice(Path.GetFileNameWithoutExtension(path), path, true, OnOpenRecentCollection,
 								   index % MaxMruRows + kRowOffsetForMRUChoices, column);
+			button.TextAlign = ContentAlignment.MiddleLeft;
 			button.Tag = path;
 		}
 
@@ -129,58 +129,13 @@ namespace Bloom.CollectionChoosing
 			tableLayoutPanel2.SetColumn(button, column);
 			return button;
 		}
-#if Chorus
-		private void OnGetFromInternet(object sender, EventArgs e)
-		{
-			using (var dlg = new Chorus.UI.Clone.GetCloneFromInternetDialog(NewCollectionWizard.DefaultParentDirectoryForCollections))
-			{
-				SelectAndCloneProject(dlg);
-			}
-		}
 
-		private void OnGetFromUsb(object sender, EventArgs e)
-		{
-			using (var dlg = new Chorus.UI.Clone.GetCloneFromUsbDialog(NewCollectionWizard.DefaultParentDirectoryForCollections))
-			{
-				SelectAndCloneProject(dlg);
-			}
-		}
-		private void OnGetFromChorusHub(object sender, EventArgs e)
-		{
-			using (var dlg = new Chorus.UI.Clone.GetCloneFromChorusHubDialog(new GetCloneFromChorusHubModel(NewCollectionWizard.DefaultParentDirectoryForCollections)))
-			{
-				SelectAndCloneProject(dlg);
-			}
-		}
-
-		private void SelectAndCloneProject(ICloneSourceDialog dlg)
-		{
-			try
-			{
-				if (!Directory.Exists(NewCollectionWizard.DefaultParentDirectoryForCollections))
-				{
-					Directory.CreateDirectory(NewCollectionWizard.DefaultParentDirectoryForCollections);
-				}
-				dlg.SetFilePatternWhichMustBeFoundInHgDataFolder("*.bloom_collection.i");
-
-				if (DialogResult.Cancel == ((Form)dlg).ShowDialog())
-					return;
-
-				SelectCollectionAndClose(CollectionSettings.FindSettingsFileInFolder(dlg.PathToNewlyClonedFolder));
-			}
-			catch (Exception error)
-			{
-				SIL.Reporting.ErrorReport.NotifyUserOfProblem(error, "Bloom ran into a problem:\r\n{0}",
-																 error.Message);
-			}
-		}
-#endif
 		private void OnOpenRecentCollection(object sender, EventArgs e)
 		{
 			SelectCollectionAndClose(((Button) sender).Tag as string);
 		}
 
-		private void OnBrowseForExistingLibraryClick(object sender, EventArgs e)
+		private void OnBrowseForExistingCollectionClick(object sender, EventArgs e)
 		{
 			if (!Directory.Exists(NewCollectionWizard.DefaultParentDirectoryForCollections))
 			{
@@ -202,9 +157,9 @@ namespace Bloom.CollectionChoosing
 			}
 		}
 
-		private void CreateNewLibrary_LinkClicked(object sender, EventArgs e)
+		private void CreateNewCollection_LinkClicked(object sender, EventArgs e)
 		{
-			var desiredOrExistingSettingsFilePath = _createNewLibraryAndReturnPath();
+			var desiredOrExistingSettingsFilePath = _createNewCollectionAndReturnPath();
 			if (desiredOrExistingSettingsFilePath == null)
 				return;
 			var settings = new CollectionSettings(desiredOrExistingSettingsFilePath);
@@ -213,32 +168,20 @@ namespace Bloom.CollectionChoosing
 
 		public void SelectCollectionAndClose(string path)
 		{
+			if (Bloom.Utils.LongPathAware.GetExceedsMaxPath(path))
+			{
+				Utils.LongPathAware.ReportLongPath(path);
+				return; // don't close
+			}
+		
 			SelectedPath = path;
 			if (!string.IsNullOrEmpty(path))
 			{
-				if (ReportIfInvalidCollectionToEdit(path)) return;
+				if (Utils.MiscUtils.ReportIfInvalidCollectionToEdit(path)) return;
 				//CheckForBeingInDropboxFolder(path);
 				_mruList.AddNewPath(path);
-				Invoke(DoneChoosingOrCreatingLibrary);
+				Invoke(DoneChoosingOrCreatingCollection);
 			}
-		}
-
-		public static bool ReportIfInvalidCollectionToEdit(string path)
-		{
-			if (IsInvalidCollectionToEdit(path))
-			{
-				var msg = L10NSharp.LocalizationManager.GetString("OpenCreateCloneControl.InSourceCollectionMessage",
-					"This collection is part of your 'Sources for new books' which you can see in the bottom left of the Collections tab. It cannot be opened for editing.");
-				MessageBox.Show(msg);
-				return true;
-			}
-			return false;
-		}
-
-		public static bool IsInvalidCollectionToEdit(string path)
-		{
-			return path.StartsWith(ProjectContext.GetInstalledCollectionsDirectory())
-				|| path.StartsWith(BloomFileLocator.FactoryTemplateBookDirectory);
 		}
 
 #if NotOkToBeInDropbox
@@ -333,11 +276,6 @@ namespace Bloom.CollectionChoosing
 			}
 		}
 #endif
-
-		private void _readMoreLabel_Click(object sender, LinkLabelLinkClickedEventArgs e)
-		{
-			HelpLauncher.Show(null, "Chorus_Help.chm", "Chorus/Chorus_overview.htm");
-		}
 
 		public void UpdateUiLanguageMenuSelection()
 		{

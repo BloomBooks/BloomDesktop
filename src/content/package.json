@@ -1,0 +1,50 @@
+{
+    "scripts": {
+        "build": "npm-run-all build:pug build:less build:branding:files build:templates:files build:templates:typescript",
+        "watch": "npm-run-all watch:pug watch:less watch:branding:files",
+        "//1": "TODO: currently we haven't figured this out without gulp, so we're just building *all* pugs in this directory along with BloomBrowserUI/",
+        "//2": "See https://github.com/Qard/onchange/issues/118",
+        "//3": "The key to navigating these issues it to realize that the problem doesn't exist outside windows. Elsewhere, the terminal expands globs.",
+        "build:pug": "cd ../BloomBrowserUI && npm run-script build:pug",
+        "//NB we don't have a version of pug that handles globs, so we wrap with onchange": "",
+        "//Notice that onchange can steer files to the right folder, which isn't doable with the command with built-in glob handling": "",
+        "The -j option is how many jobs to do in parallel": "",
+        "The -a option says to run them all before watching": "",
+        "watch:pug": "onchange -j 9 -a \"**/*.pug\" -- pug {{file}} --pretty --out ../../output/browser/{{fileDir}}",
+        "//": "______________________________________________________________________________________________________",
+        "build:less": "npm-run-all --parallel build:branding:less build:templates:less build:layout:less",
+        "// there is no current way to exclude node_modules, so we can't just do the whole directory.": "https://github.com/jonycheung/deadsimple-less-watch-compiler/issues/72",
+        "watch:less": "npm-run-all --parallel watch:branding:less watch:templates:less watch:layout:less",
+        "build:templates:files": "cpx \"templates/**/!(tsconfig).{png,jpg,svg,css,json,htm,html,txt,js}\" \"../../output/browser/templates\" -v",
+        "build:templates:typescript": "cd \"templates/template books/Activity\" && npx tsc",
+        "build:branding:files": "cpx \"branding/**/!(source)/*.{png,jpg,svg,css,json,htm}\" ../../output/browser/branding -v",
+        "build:branding:less": "less-watch-compiler --source-map --run-once branding ../../output/browser/branding",
+        "build:templates:less": "less-watch-compiler --source-map --run-once  templates  ../../output/browser/templates",
+        "build:layout:less": "less-watch-compiler --source-map --run-once  bookLayout ../../output/browser/bookLayout",
+        "watch:branding:files": "cpx \"branding/**/!(source)/*.{png,jpg,svg,css,json,htm,html,txt,js}\" ../../output/browser/branding --watch",
+        "watch:branding:less": "less-watch-compiler --source-map branding ../../output/browser/branding",
+        "watch:templates:less": "less-watch-compiler --source-map  templates  ../../output/browser/templates",
+        "watch:layout:less": "less-watch-compiler --source-map  bookLayout ../../output/browser/bookLayout",
+        "///": "______________________________________________________________________________________________________",
+        "//This is  slow compared to less-watch-compiler: watch:less": "onchange -a \"**/*.less\" -- lessc {{file}} ../../output/browser/{{fileDir}}",
+        "//Note that this is really slow compared to cpx with the glob (buildBrandingFiles/watchBrandingFiles)": "//",
+        "//too slow: watch:files": "onchange -a \"branding/**/!(source)/*.{png,jpg,svg,css,json,htm}\" -- cpx {{file}} ../../output/browser/{{fileDir}} -v"
+    },
+    "//devDepencdencise": {
+        "less": "We are using 3.x because 4.0 changed the rules for division handling and did not provide migration instructions. See the `math` option."
+    },
+    "devDependencies": {
+        "cpx": "^1.5.0",
+        "less": "3.13.1",
+        "less-watch-compiler": "^1.13.0",
+        "lessc-glob": "^1.0.9",
+        "npm-run-all": "^4.1.5",
+        "onchange": "^7.1.0",
+        "pug": "^3.0.2",
+        "pug-cli": "^1.0.0-alpha6"
+    },
+    "license": "MIT",
+    "dependencies": {
+        "typescript": "^4.6.3"
+    }
+}

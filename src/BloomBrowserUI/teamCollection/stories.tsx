@@ -1,5 +1,8 @@
+/** @jsx jsx **/
+import { jsx, css } from "@emotion/core";
+
 // Storybook stories for Team Collection components
-import { lightTheme } from "../bloomMaterialUITheme";
+import { lightTheme, kBloomYellow } from "../bloomMaterialUITheme";
 import { ThemeProvider } from "@material-ui/styles";
 import * as React from "react";
 import { storiesOf, addDecorator } from "@storybook/react";
@@ -10,10 +13,21 @@ import "./TeamCollectionBookStatusPanel.less";
 import { Typography } from "@material-ui/core";
 import { BloomAvatar } from "../react_components/bloomAvatar";
 import { JoinTeamCollectionDialog } from "./JoinTeamCollectionDialog";
-import { TeamCollectionDialog } from "./TeamCollectionDialog";
+import { TeamCollectionDialogLauncher } from "./TeamCollectionDialog";
 import { TeamCollectionSettingsPanel } from "./TeamCollectionSettingsPanel";
 import { CreateTeamCollectionDialog } from "./CreateTeamCollection";
-import { normalDialogEnvironmentForStorybook } from "../react_components/BloomDialog/BloomDialog";
+import {
+    BloomDialog,
+    DialogBottomButtons,
+    DialogMiddle,
+    DialogTitle
+} from "../react_components/BloomDialog/BloomDialog";
+import { SimpleMenu, SimpleMenuItem } from "../react_components/simpleMenu";
+import { DialogCancelButton } from "../react_components/BloomDialog/commonDialogComponents";
+import {
+    normalDialogEnvironmentForStorybook,
+    StorybookDialogWrapper
+} from "../react_components/BloomDialog/BloomDialogPlumbing";
 
 addDecorator(storyFn => (
     <ThemeProvider theme={lightTheme}>
@@ -89,25 +103,51 @@ storiesOf("Team Collection components/StatusPanelCommon", module)
             />
         )
     )
-    .add("Checked out by me", () =>
-        testPage(
+    .add("Checked out by me", () => {
+        const messageLogStub = ( // copied from TCBookStatusPanel.tsx
+            <div
+                css={css`
+                    width: 320px;
+                `}
+            >
+                <div
+                    css={css`
+                        font-size: 11px;
+                    `}
+                >
+                    {"What changes did you make?"}
+                </div>
+                <input
+                    css={css`
+                        background-color: transparent;
+                        color: ${kBloomYellow};
+                        width: 100%;
+                        border: 1px solid #ffffffcc;
+                        border-radius: 4px;
+                        height: 36px;
+                    `}
+                    type="text"
+                    value={
+                        "test checkin message that's actually quite longish."
+                    }
+                    autoFocus={true}
+                    key="message"
+                />
+            </div>
+        );
+
+        return testPage(
             <StatusPanelCommon
                 lockState="lockedByMe"
                 title="This book is checked out to you"
                 subTitle="Are you done for now? Click this button to send your changes to your team."
                 icon={avatar(true)}
                 button={checkinButton}
-                children={
-                    <div className="userChanges">
-                        <Typography align="left" variant="subtitle2">
-                            Eventually this will be a change log area.
-                        </Typography>
-                    </div>
-                }
+                children={messageLogStub}
                 menu={<div style={menuStyles}>Menu</div>}
             />
-        )
-    )
+        );
+    })
     .add("Checked out by (Fred)", () =>
         testPage(
             <StatusPanelCommon
@@ -238,19 +278,20 @@ storiesOf("Team Collection components/JoinTeamCollection", module)
 
 storiesOf("Team Collection components/TeamCollectionDialog", module)
     .add("With reload button", () => (
-        <TeamCollectionDialog
-            showReloadButton={true}
-            dialogEnvironment={normalDialogEnvironmentForStorybook}
-        />
+        <StorybookDialogWrapper
+            id="TeamCollectionDialog"
+            params={{ showReloadButton: true }}
+        >
+            <TeamCollectionDialogLauncher />
+        </StorybookDialogWrapper>
     ))
-    .add("no dialog frame", () => (
-        <TeamCollectionDialog
-            dialogEnvironment={{
-                dialogFrameProvidedExternally: true,
-                initiallyOpen: true
-            }}
-            showReloadButton={false}
-        />
+    .add("Without reload button", () => (
+        <StorybookDialogWrapper
+            id="TeamCollectionDialog"
+            params={{ showReloadButton: false }}
+        >
+            <TeamCollectionDialogLauncher />
+        </StorybookDialogWrapper>
     ));
 
 storiesOf(
@@ -276,3 +317,54 @@ storiesOf("Team Collection components/CreateTeamCollection", module)
             errorForTesting="Commodo veniam laboris ut ut ea laboris Lorem Lorem laborum enim minim velit."
         />
     ));
+
+const menuItems: (SimpleMenuItem | "-")[] = [
+    {
+        text: "About my Avatar...",
+        l10nKey: "TeamCollection.AboutAvatar",
+        action: () => {}
+    }
+];
+const menuBoxStyles: React.CSSProperties = {
+    display: "flex",
+    justifyContent: "flex-end",
+    border: "1px solid red",
+    padding: 20,
+    backgroundColor: "black",
+    width: 150
+};
+
+storiesOf("Team Collection components/Menu component", module).add(
+    "SimpleMenu test",
+    () => (
+        <div style={menuBoxStyles}>
+            <SimpleMenu
+                text="..."
+                l10nKey="Common.Ellipsis"
+                temporarilyDisableI18nWarning={true}
+                items={menuItems}
+            ></SimpleMenu>
+        </div>
+    )
+);
+
+storiesOf("BloomDialog", module).add("Test drag & resize", () => (
+    <BloomDialog onClose={() => {}} open={true}>
+        <DialogTitle title="Drag Me" />
+        <DialogMiddle>
+            <p>Blah</p>
+            <p>Blah</p>
+            <p>
+                Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+                Curabitur in felis feugiat est pellentesque bibendum. Maecenas
+                non sem a augue vulputate ultricies. In hac habitasse platea
+                dictumst. Quisque augue quam, facilisis in laoreet ac,
+                consectetur luctus lectus. Cras eu condimentum sem.
+            </p>
+            <p>Blah</p>
+        </DialogMiddle>
+        <DialogBottomButtons>
+            <DialogCancelButton onClick={() => {}} />
+        </DialogBottomButtons>
+    </BloomDialog>
+));

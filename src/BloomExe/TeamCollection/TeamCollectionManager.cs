@@ -176,14 +176,14 @@ namespace Bloom.TeamCollection
 
 		public TeamCollectionManager(string localCollectionPath, BloomWebSocketServer webSocketServer,
 			BookRenamedEvent bookRenamedEvent, BookStatusChangeEvent bookStatusChangeEvent,
-			BookSelection bookSelection, LibraryClosing libraryClosingEvent, BookCollectionHolder bookCollectionHolder)
+			BookSelection bookSelection, CollectionClosing collectionClosingEvent, BookCollectionHolder bookCollectionHolder)
 		{
 			_webSocketServer = webSocketServer;
 			_bookStatusChangeEvent = bookStatusChangeEvent;
 			_localCollectionFolder = Path.GetDirectoryName(localCollectionPath);
 			_bookCollectionHolder = bookCollectionHolder;
 			BookSelection = bookSelection;
-			libraryClosingEvent?.Subscribe((x) =>
+			collectionClosingEvent?.Subscribe((x) =>
 			{
 				// When closing the collection...especially if we're restarting due to
 				// changed settings!...we need to save any settings changes to the repo.
@@ -319,7 +319,6 @@ namespace Bloom.TeamCollection
 			if (connectionProblem != null)
 			{
 				MakeDisconnected(connectionProblem, CurrentCollection.RepoDescription);
-				RaiseTeamCollectionStatusChanged(); // make the TC icon update
 				return false;
 			}
 
@@ -333,6 +332,7 @@ namespace Bloom.TeamCollection
 			CurrentCollectionEvenIfDisconnected = new DisconnectedTeamCollection(this, _localCollectionFolder, repoDescription);
 			CurrentCollectionEvenIfDisconnected.SocketServer = SocketServer;
 			CurrentCollectionEvenIfDisconnected.TCManager = this;
+			// Every call to MessageLog.WriteMessage() also raises the TeamCollectionStatusChanged event.
 			CurrentCollectionEvenIfDisconnected.MessageLog.WriteMessage(message);
 			CurrentCollectionEvenIfDisconnected.MessageLog.WriteMessage(MessageAndMilestoneType.Error, "TeamCollection.OperatingDisconnected", "When you have resolved this problem, please click \"Reload Collection\". Until then, your Team Collection will operate in \"Disconnected\" mode.",
 				null, null);

@@ -90,7 +90,7 @@ namespace Bloom.Publish.Epub
 		public const string kFontsFolder = "fonts";
 		public const string kVideoFolder = "video";
 		private Guid _thumbnailRequestId;
-		private HashSet<string> _omittedPageLabels = new HashSet<string>();
+		private Dictionary<string, int> _omittedPageLabels = new Dictionary<string, int>();
 
 		public static readonly string EpubExportRootFolder = Path.Combine(Path.GetTempPath(), kEPUBExportFolder);
 		private string _navPageLang;
@@ -360,10 +360,8 @@ namespace Bloom.Publish.Epub
 				progress.Message("OmittedPages",
 					"The following pages were removed because they are not supported in ePUBs:",
 					ProgressKind.Warning);
-				foreach (var label in _omittedPageLabels.OrderBy(x => x))
-				{
-					progress.MessageWithoutLocalizing(label, ProgressKind.Warning);
-				}
+				foreach (var label in _omittedPageLabels.Keys.OrderBy(x => x))
+					progress.MessageWithoutLocalizing($"{_omittedPageLabels[label]} {label}", ProgressKind.Warning);
 			}
 
 			var epubThumbnailImagePath = Path.Combine(Book.FolderPath, "epub-thumbnail.png");
@@ -412,7 +410,10 @@ namespace Bloom.Publish.Epub
 
 			CopyFileToEpub(epubThumbnailImagePath, true, true, kImagesFolder);
 
-			EmbedFonts(); // must call after copying stylesheets
+			var warnings = EmbedFonts(progress); // must call after copying stylesheets
+			if (warnings.Any())
+				PublishHelper.SendBatchedWarningMessagesToProgress(warnings, progress);
+
 			MakeNavPage();
 
 			//supporting files
@@ -1043,7 +1044,7 @@ namespace Bloom.Publish.Epub
 				if(name == "fonts.css")
 					continue; // generated file for this book, already copied to output.
 				string path;
-				if (name == "customCollectionStyles.css" || name == "defaultLangStyles.css")
+				if (name == "customCollectionStyles.css" || name == "defaultLangStyles.css" || name == "branding.css")
 				{
 					// These files should be in the book's folder, not in some arbitrary place in our search path.
 					path = Path.Combine(_originalBook.FolderPath, name);
@@ -1147,11 +1148,8 @@ namespace Bloom.Publish.Epub
 				// See https://issues.bloomlibrary.org/youtrack/issue/BL-5495.
 				RemoveRegularStylesheets(pageDom);
 				pageDom.AddStyleSheet(Storage.GetFileLocator().LocateFileWithThrow(@"baseEPUB.css").ToLocalhost());
-				var brandingPath = Storage.GetFileLocator().LocateOptionalFile(@"branding.css");
-				if (!string.IsNullOrEmpty(brandingPath))
-				{
-					pageDom.AddStyleSheet(brandingPath.ToLocalhost());
-				}
+				var brandingPath = Path.Combine(Storage.FolderPath, "branding.css"); // should always exist in local folder.
+				pageDom.AddStyleSheet(brandingPath.ToLocalhost());
 			}
 			else
 			{
@@ -1542,6 +1540,10 @@ namespace Bloom.Publish.Epub
 						return false;
 				}
 			}
+			// Some elements we mark with this class because their content comes from CSS and will
+			// not be detected by normal algorithms.
+			if (pageElement.SafeSelectNodes(".//div[contains(@class, 'bloom-force-publish')]").Count > 0)
+				return false;
 			return true;
 		}
 
@@ -1985,15 +1987,36 @@ namespace Bloom.Publish.Epub
 		/// <summary>
 		/// Try to embed the fonts we need.
 		/// </summary>
-		private void EmbedFonts()
+		/// <returns>
+		/// set of warning messages for any problems encountered (may be empty)
+		/// </returns>
+		private ISet<string> EmbedFonts(WebSocketProgress progress)
 		{
+			ISet<string> warningMessages = new HashSet<string>();
 			var fontFileFinder = FontFileFinder.GetInstance(Program.RunningUnitTests);
-			var filesToEmbed = _fontsUsedInBook.SelectMany(fontFileFinder.GetFilesForFont).ToArray();
+			const string defaultFont = "Andika New Basic";
+			PublishHelper.CheckFontsForEmbedding(progress, _fontsUsedInBook, fontFileFinder, out List<string> filesToEmbed, out HashSet<string> badFonts);
 			foreach (var file in filesToEmbed) {
-				CopyFileToEpub(file, subfolder:kFontsFolder);
+				var extension = Path.GetExtension(file).ToLowerInvariant();
+				if (FontMetadata.fontFileTypesBloomKnows.Contains(extension))
+				{
+					// ePUB only understands (and will embed) these types. [This check may now be redundant.]
+					CopyFileToEpub(file, subfolder: kFontsFolder);
+				}
+				else
+				{
+					warningMessages.Add($"Cannot embed font file {file}");
+				}
 			}
 			var sb = new StringBuilder ();
 			foreach (var font in _fontsUsedInBook) {
+				if (badFonts.Contains(font))
+					continue;
+				if (!fontFileFinder.GetFilesForFont(font).Any(file => FontMetadata.fontFileTypesBloomKnows.Contains(Path.GetExtension(file).ToLowerInvariant())))
+				{
+					// If we can't embed the font, no reason to refer to it in the css.
+					continue;
+				}
 				var group = fontFileFinder.GetGroupForFont (font);
 				if (group != null) {
 					// The fonts.css file is stored in a subfolder as are the font files.  They are in different
@@ -2011,9 +2034,35 @@ namespace Bloom.Publish.Epub
 					//AddFontFace(sb, font, "bold", "italic", group.BoldItalic);
 				}
 			}
+			if (badFonts.Any() && !_fontsUsedInBook.Contains(defaultFont))
+				AddFontFace(sb, defaultFont, "normal", "normal", fontFileFinder.GetGroupForFont(defaultFont).Normal, "../"+kFontsFolder+"/");
 			Directory.CreateDirectory(Path.Combine(_contentFolder, kCssFolder));
 			RobustFile.WriteAllText(Path.Combine(_contentFolder, kCssFolder, "fonts.css"), sb.ToString());
 			_manifestItems.Add(kCssFolder+"/" + "fonts.css");
+			// Repair defaultLangStyles.css and other places in the output book if needed.
+			if (badFonts.Any())
+			{
+				PublishHelper.FixCssReferencesForBadFonts(Path.Combine(_contentFolder, kCssFolder), defaultFont, badFonts);
+				FixXhtmlReferencesForBadFonts(_contentFolder, defaultFont, badFonts);
+			}
+
+			return warningMessages;
+		}
+
+		private void FixXhtmlReferencesForBadFonts(string contentFolder, string defaultFont, HashSet<string> badFonts)
+		{
+			foreach (var xhtmlFileName in Directory.EnumerateFiles(contentFolder, "*.xhtml"))
+			{
+				if (Path.GetFileName(xhtmlFileName) == "nav.xhtml")
+					continue;
+				var bookDoc = new XmlDocument();
+				bookDoc.PreserveWhitespace = true;
+				bookDoc.Load(xhtmlFileName);
+				var nsmgr = new XmlNamespaceManager(bookDoc.NameTable);
+				nsmgr.AddNamespace("x", "http://www.w3.org/1999/xhtml");
+				if (PublishHelper.FixXmlDomReferencesForBadFonts(bookDoc, defaultFont, badFonts, nsmgr, "x:"))
+					bookDoc.Save(xhtmlFileName);
+			}
 		}
 
 		internal static void AddFontFace (StringBuilder sb, string name, string weight, string style, string path, string relativePathFromCss="", bool sanitizeFileName = false)

@@ -35,7 +35,7 @@ namespace Bloom.web.controllers
 
 		public void RegisterWithApiHandler(BloomApiHandler apiHandler)
 		{
-			apiHandler.RegisterEndpointHandler("music/ui/chooseFile", HandleRequest, true);
+			apiHandler.RegisterEndpointLegacy("music/ui/chooseFile", HandleRequest, true);
 		}
 
 		public void HandleRequest(ApiRequest request)

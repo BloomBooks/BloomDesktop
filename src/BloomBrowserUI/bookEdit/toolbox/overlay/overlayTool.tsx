@@ -220,7 +220,8 @@ const OverlayToolControls: React.FunctionComponent = () => {
             const newSpec = bubbleMgr.updateSelectedFamilyBubbleSpec(
                 newBubbleProps
             );
-            setCurrentFamilySpec(newSpec); // we do this because the new style's spec may affect Show Tail too
+            // We do this because the new style's spec may affect Show Tail, or background opacity too.
+            setCurrentFamilySpec(newSpec);
         }
     };
 
@@ -278,8 +279,13 @@ const OverlayToolControls: React.FunctionComponent = () => {
             setTextColorSwatch(newColorSwatch);
 
             bubbleMgr.setTextColor(color);
+            // BL-9936/11104 Without this, bubble manager is up-to-date, but React doesn't know about it.
+            updateReactFromComical(bubbleMgr);
         }
     };
+
+    const noteInputFocused = (input: HTMLElement) =>
+        OverlayTool.bubbleManager()?.setThingToFocusAfterSettingColor(input);
 
     // We come into this from chooser change
     const updateBackgroundColor = (newColorSwatch: ISwatchDefn) => {
@@ -294,7 +300,17 @@ const OverlayToolControls: React.FunctionComponent = () => {
                 backgroundColors,
                 newColorSwatch.opacity
             );
+            // BL-9936/11104 Without this, bubble manager is up-to-date, but React doesn't know about it.
+            updateReactFromComical(bubbleMgr);
         }
+    };
+
+    // We use this to get React's 'currentFamilySpec' up-to-date with what comical has, since some minor
+    // React-initiated changes don't trigger BubbleManager's 'requestBubbleChangeNotification'.
+    // Changing 'currentFamilySpec' is what updates the UI of the toolbox in general.
+    const updateReactFromComical = (bubbleMgr: BubbleManager) => {
+        const newSpec = bubbleMgr.getSelectedFamilySpec();
+        setCurrentFamilySpec(newSpec);
     };
 
     // Callback when outline color of the bubble is changed
@@ -425,7 +441,8 @@ const OverlayToolControls: React.FunctionComponent = () => {
             localizedTitle: textColorTitle,
             initialColor: textColorSwatch,
             defaultSwatchColors: defaultTextColors,
-            onChange: color => updateTextColor(color)
+            onChange: color => updateTextColor(color),
+            onInputFocus: noteInputFocused
         };
         getEditTabBundleExports().showColorPickerDialog(colorPickerDialogProps);
     };
@@ -439,7 +456,8 @@ const OverlayToolControls: React.FunctionComponent = () => {
             localizedTitle: backgroundColorTitle,
             initialColor: backgroundColorSwatch,
             defaultSwatchColors: defaultBackgroundColors,
-            onChange: color => updateBackgroundColor(color)
+            onChange: color => updateBackgroundColor(color),
+            onInputFocus: noteInputFocused
         };
         // If the background color is fully transparent, change it to fully opaque
         // so that the user can choose a color immediately (and adjust opacity to
@@ -599,6 +617,9 @@ const OverlayToolControls: React.FunctionComponent = () => {
                                     onCheckChanged={v => {
                                         handleShowTailChanged(v as boolean);
                                     }}
+                                    deprecatedVersionWhichDoesntEnsureMultilineLabelsWork={
+                                        true
+                                    }
                                 />
                             </div>
                             <div className="comicCheckbox">
@@ -614,6 +635,9 @@ const OverlayToolControls: React.FunctionComponent = () => {
                                     onCheckChanged={newValue => {
                                         handleRoundedCornersChanged(newValue);
                                     }}
+                                    deprecatedVersionWhichDoesntEnsureMultilineLabelsWork={
+                                        true
+                                    }
                                 />
                             </div>
                         </FormControl>

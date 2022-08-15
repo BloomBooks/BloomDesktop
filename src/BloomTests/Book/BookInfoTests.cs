@@ -4,8 +4,10 @@ using System.Linq;
 using System.IO;
 using Bloom.Book;
 using Bloom.Edit;
+using Bloom.Publish;
 using Newtonsoft.Json.Linq;
 using NUnit.Framework;
+using SIL.IO;
 using SIL.TestUtilities;
 using SIL.Reflection;
 
@@ -33,11 +35,47 @@ namespace BloomTests.Book
 		public void Constructor_LoadsMetaDataFromJson()
 		{
 			var jsonPath = Path.Combine(_folder.Path, BookInfo.MetaDataFileName);
-			File.WriteAllText(jsonPath, @"{'folio':'true','experimental':'true','suitableForMakingShells':'true'}");
+			File.WriteAllText(jsonPath, @"{""folio"":""true"",""experimental"":""true"",""suitableForMakingShells"":""true""}");
+			var playerSettingsPath = Path.Combine(_folder.Path, BookInfo.PublishSettingsFileName);
+			File.WriteAllText(playerSettingsPath, @"{""audioVideo"": {""motion"":true, ""pageTurnDelay"":3500,
+						""format"":""feature"",
+					""playerSettings"": ""{\""lang\"":\""qaa\"",\""imageDescriptions\"":false}""},
+					""bloomPUB"": {""motion"": true},
+					""bloomLibrary"": {""textLangs"": {""de"":""ExcludeByDefault"",""en"":""Exclude""}}}");
 			var bi = new BookInfo(_folder.Path, true);
 			Assert.That(bi.IsExperimental);
 			Assert.That(bi.IsFolio);
 			Assert.That(bi.IsSuitableForMakingShells);
+			var ps = bi.PublishSettings;
+			Assert.That(ps.AudioVideo.Format, Is.EqualTo("feature"));
+			Assert.That(ps.AudioVideo.Motion, Is.True);
+			Assert.That(ps.AudioVideo.PageTurnDelay, Is.EqualTo(3500));
+			Assert.That(ps.AudioVideo.PlayerSettings, Is.EqualTo("{\"lang\":\"qaa\",\"imageDescriptions\":false}"));
+			Assert.That(ps.BloomPub.Motion, Is.True);
+			Assert.That(ps.BloomLibrary.TextLangs["de"], Is.EqualTo(InclusionSetting.ExcludeByDefault));
+			Assert.That(ps.BloomLibrary.TextLangs["en"], Is.EqualTo(InclusionSetting.Exclude));
+		}
+
+		[Test]
+		public void Constructor_OldJson_HasDefaultPublishProps()
+		{
+			var jsonPath = Path.Combine(_folder.Path, BookInfo.MetaDataFileName);
+			File.WriteAllText(jsonPath, @"{""folio"":""true"",""experimental"":""true"",""suitableForMakingShells"":""true""}");
+			var bi = new BookInfo(_folder.Path, true);
+			Assert.That(bi.IsExperimental);
+			Assert.That(bi.IsFolio);
+			Assert.That(bi.IsSuitableForMakingShells);
+			Assert.That(bi.PublishSettings.AudioVideo.Format, Is.EqualTo("facebook"));
+			Assert.That(bi.PublishSettings.AudioVideo.Motion, Is.False);
+			Assert.That(bi.PublishSettings.AudioVideo.PageTurnDelay, Is.EqualTo(3000));
+			Assert.That(bi.PublishSettings.AudioVideo.PlayerSettings, Is.EqualTo(""));
+			Assert.That(bi.PublishSettings.BloomPub.Motion, Is.False);
+			Assert.That(bi.PublishSettings.BloomLibrary.TextLangs, Is.Null);
+			Assert.That(bi.PublishSettings.BloomPub.TextLangs, Is.Null);
+			Assert.That(bi.PublishSettings.BloomLibrary.AudioLangs, Is.Null);
+			Assert.That(bi.PublishSettings.BloomPub.AudioLangs, Is.Null);
+			Assert.That(bi.PublishSettings.BloomLibrary.SignLangs, Is.Null);
+			Assert.That(bi.PublishSettings.BloomPub.SignLangs, Is.Null);
 		}
 
 		[Test]
@@ -50,6 +88,141 @@ namespace BloomTests.Book
 
 			// Verification
 			CollectionAssert.AreEquivalent(new string[] {"bookshelf:value1" }, bi.MetaData.Tags);
+		}
+
+		[Test]
+		public void LoadPublishSettings_AllSettings_Works()
+		{
+			var input =
+				@"{""audioVideo"": {""motion"":true, ""pageTurnDelay"":2500,
+					""format"":""feature"",
+					""playerSettings"": ""{\""lang\"":\""fr\"",\""imageDescriptions\"":true}""},
+					""bloomPUB"": {""motion"": true, ""textLangs"": {""baa"":""Include"",""es"":""Exclude""},
+						""audioLangs"": { ""baa"":""IncludeByDefault"",""es"":""ExcludeByDefault""},
+						""signLangs"": { ""asl"":""Include""}},
+					""epub"": {""howToPublishImageDescriptions"":1, ""removeFontSizes"":true},
+					""bloomLibrary"": {""textLangs"": {""def"":""Include"",""xyz"":""Exclude"", ""abc"":""ExcludeByDefault""},
+						""audioLangs"": { ""def"":""IncludeByDefault"",""xyz"":""ExcludeByDefault""},
+						""signLangs"": { ""asl"":""Include""}}}";
+			var ps = PublishSettings.FromString(input);
+
+			Assert.That(ps.AudioVideo.Format, Is.EqualTo("feature"));
+			Assert.That(ps.AudioVideo.Motion, Is.True);
+			Assert.That(ps.AudioVideo.PageTurnDelay, Is.EqualTo(2500));
+			Assert.That(ps.AudioVideo.PlayerSettings, Is.EqualTo("{\"lang\":\"fr\",\"imageDescriptions\":true}"));
+
+			Assert.That(ps.BloomPub.Motion, Is.True);
+			Assert.That(ps.BloomPub.TextLangs["baa"], Is.EqualTo(InclusionSetting.Include));
+			Assert.That(ps.BloomPub.TextLangs["es"], Is.EqualTo(InclusionSetting.Exclude));
+			Assert.That(ps.BloomPub.AudioLangs["baa"], Is.EqualTo(InclusionSetting.IncludeByDefault));
+			Assert.That(ps.BloomPub.AudioLangs["es"], Is.EqualTo(InclusionSetting.ExcludeByDefault));
+			Assert.That(ps.BloomPub.SignLangs["asl"], Is.EqualTo(InclusionSetting.Include));
+
+			Assert.That(ps.Epub.HowToPublishImageDescriptions, Is.EqualTo(BookInfo.HowToPublishImageDescriptions.OnPage));
+			Assert.That(ps.Epub.RemoveFontSizes, Is.True);
+
+			Assert.That(ps.BloomLibrary.TextLangs["def"], Is.EqualTo(InclusionSetting.Include));
+			Assert.That(ps.BloomLibrary.TextLangs["xyz"], Is.EqualTo(InclusionSetting.Exclude));
+			Assert.That(ps.BloomLibrary.TextLangs["abc"], Is.EqualTo(InclusionSetting.ExcludeByDefault));
+			Assert.That(ps.BloomLibrary.AudioLangs["def"], Is.EqualTo(InclusionSetting.IncludeByDefault));
+			Assert.That(ps.BloomLibrary.AudioLangs["xyz"], Is.EqualTo(InclusionSetting.ExcludeByDefault));
+			Assert.That(ps.BloomLibrary.SignLangs["asl"], Is.EqualTo(InclusionSetting.Include));
+		}
+
+		[Test]
+		public void PublishSettings_RoundTrip_Works()
+		{
+			var jsonPath = Path.Combine(_folder.Path, BookInfo.MetaDataFileName);
+			File.WriteAllText(jsonPath, @"{""suitableForMakingShells"":""true""}");
+			var original = new BookInfo(_folder.Path, true);
+			original.PublishSettings.AudioVideo.PlayerSettings = "{\"lang\":\"fr\",\"imageDescriptions\":true}";
+			original.Save();
+			var restored = new BookInfo(_folder.Path, true);
+			Assert.That(restored.PublishSettings.AudioVideo.PlayerSettings, Is.EqualTo(original.PublishSettings.AudioVideo.PlayerSettings));
+		}
+
+		[Test]
+		public void PublishSettings_MigrateFromOldSettings()
+		{
+			// Todo: when I have all the old settings migrating, Save the meta.json that this writes,
+			// use it to create the input here, and get rid of them from BookMetaData.
+			var jsonPath = Path.Combine(_folder.Path, BookInfo.MetaDataFileName);
+			File.WriteAllText(jsonPath, @"{""suitableForMakingShells"":""true"", ""epub_HowToPublishImageDescriptions"":0}");
+			var original = new BookInfo(_folder.Path, true);
+
+			// Reading the file we just wrote will have attempted a migration. It should get all default values.
+			Assert.That(original.PublishSettings.AudioVideo.Motion, Is.False);
+			Assert.That(original.PublishSettings.Epub.HowToPublishImageDescriptions, Is.EqualTo(BookInfo.HowToPublishImageDescriptions.None));
+			Assert.That(original.PublishSettings.Epub.RemoveFontSizes, Is.False);
+			Assert.That(original.PublishSettings.BloomPub.TextLangs, Is.Null);
+			Assert.That(original.PublishSettings.BloomLibrary.TextLangs, Is.Null);
+			Assert.That(original.PublishSettings.BloomPub.AudioLangs, Is.Null);
+			Assert.That(original.PublishSettings.BloomLibrary.AudioLangs, Is.Null);
+			Assert.That(original.PublishSettings.BloomPub.SignLangs, Is.Null);
+			Assert.That(original.PublishSettings.BloomLibrary.SignLangs, Is.Null);
+
+			// oldMetaJson was produced by the following code, which depends on the obsolete properties:
+			//original.MetaData.Feature_Motion = true;
+			//original.MetaData.A11y_NoEssentialInfoByColor = true;
+			//original.MetaData.A11y_NoTextIncludedInAnyImages = true;
+			//original.MetaData.Epub_HowToPublishImageDescriptions = BookInfo.HowToPublishImageDescriptions.OnPage;
+			//original.MetaData.Epub_RemoveFontSizes = true;
+
+			//original.MetaData.TextLangsToPublish = new LangsToPublishSetting()
+			//	{ForBloomLibrary = new Dictionary<string, InclusionSetting>(),ForBloomPUB = new Dictionary<string, InclusionSetting>()};
+			//original.MetaData.TextLangsToPublish.ForBloomLibrary["en"] = InclusionSetting.Include;
+			//original.MetaData.TextLangsToPublish.ForBloomLibrary["fr"] = InclusionSetting.Exclude;
+			//original.MetaData.TextLangsToPublish.ForBloomLibrary["tpi"] = InclusionSetting.IncludeByDefault;
+			//original.MetaData.TextLangsToPublish.ForBloomPUB["tpi"] = InclusionSetting.ExcludeByDefault;
+			//original.MetaData.TextLangsToPublish.ForBloomPUB["en"] = InclusionSetting.Exclude;
+
+			//original.MetaData.AudioLangsToPublish = new LangsToPublishSetting()
+			//	{ ForBloomLibrary = new Dictionary<string, InclusionSetting>(), ForBloomPUB = new Dictionary<string, InclusionSetting>() };
+			//original.MetaData.AudioLangsToPublish.ForBloomLibrary["en"] = InclusionSetting.ExcludeByDefault;
+			//original.MetaData.AudioLangsToPublish.ForBloomPUB["es"] = InclusionSetting.IncludeByDefault;
+
+			//original.MetaData.SignLangsToPublish = new LangsToPublishSetting()
+			//	{ ForBloomLibrary = new Dictionary<string, InclusionSetting>(), ForBloomPUB = new Dictionary<string, InclusionSetting>() };
+			//original.MetaData.SignLangsToPublish.ForBloomLibrary["qaa"] = InclusionSetting.Include;
+			//original.MetaData.SignLangsToPublish.ForBloomPUB["qed"] = InclusionSetting.Exclude;
+			//original.Save();
+
+			var oldMetaJson =
+				@"{""a11y_NoEssentialInfoByColor"":true,""a11y_NoTextIncludedInAnyImages"":true,""epub_HowToPublishImageDescriptions"":1,
+				""epub_RemoveFontStyles"":true,""bookInstanceId"":""738cf8ea-357d-4c50-88d2-60774ffbd32b"",""suitableForMakingShells"":true,
+				""suitableForMakingTemplates"":false,""suitableForVernacularLibrary"":true,""bloomdVersion"":0,""experimental"":false,
+				""brandingProjectName"":null,""nameLocked"":false,""folio"":false,""isRtl"":false,""title"":"""",""allTitles"":null,
+				""originalTitle"":null,""baseUrl"":null,""bookOrder"":null,""isbn"":null,""bookLineage"":"""",""downloadSource"":null,
+				""license"":null,""formatVersion"":null,""licenseNotes"":null,""copyright"":null,""credits"":null,""tags"":null,
+				""pageCount"":0,""languages"":[],""langPointers"":null,""summary"":null,""allowUploadingToBloomLibrary"":true,
+				""bookletMakingIsAppropriate"":true,""textLangsToPublish"":{""bloomPUB"":{""tpi"":""ExcludeByDefault"",""en"":""Exclude""},
+				""bloomLibrary"":{""en"":""Include"",""fr"":""Exclude"",""tpi"":""IncludeByDefault""}},
+				""audioLangsToPublish"":{""bloomPUB"":{""es"":""IncludeByDefault""},""bloomLibrary"":{""en"":""ExcludeByDefault""}},
+				""signLangsToPublish"":{""bloomPUB"":{""qed"":""Exclude""},""bloomLibrary"":{""qaa"":""Include""}},""country"":null,
+				""province"":null,""district"":null,""uploader"":null,""tools"":null,""toolboxIsOpen"":false,""author"":null,
+				""publisher"":null,""originalPublisher"":null,""subjects"":null,""hazards"":null,""a11yFeatures"":null,
+				""a11yLevel"":null,""a11yCertifier"":null,""readingLevelDescription"":null,""typicalAgeRange"":null,
+				""features"":[""motion""],""page-number-style"":null,""language-display-names"":null,""internetLimits"":null,
+				""use-original-copyright"":false,""imported-book-source-url"":null,""phashOfFirstContentImage"":null}";
+			File.WriteAllText(jsonPath, oldMetaJson);
+
+			var settingsPath = PublishSettings.PublishSettingsPath(_folder.Path);
+			RobustFile.Delete(settingsPath);
+			var restored = new BookInfo(_folder.Path, true);
+			Assert.That(restored.PublishSettings.AudioVideo.Motion, Is.True);
+			Assert.That(restored.PublishSettings.Epub.HowToPublishImageDescriptions, Is.EqualTo(BookInfo.HowToPublishImageDescriptions.OnPage));
+			Assert.That(restored.PublishSettings.Epub.RemoveFontSizes, Is.True);
+
+			Assert.That(restored.PublishSettings.BloomLibrary.TextLangs["en"], Is.EqualTo(InclusionSetting.Include));
+			Assert.That(restored.PublishSettings.BloomLibrary.TextLangs["fr"], Is.EqualTo(InclusionSetting.Exclude));
+			Assert.That(restored.PublishSettings.BloomLibrary.TextLangs["tpi"], Is.EqualTo(InclusionSetting.IncludeByDefault));
+			Assert.That(restored.PublishSettings.BloomPub.TextLangs["tpi"], Is.EqualTo(InclusionSetting.ExcludeByDefault));
+			Assert.That(restored.PublishSettings.BloomPub.TextLangs["en"], Is.EqualTo(InclusionSetting.Exclude));
+
+			Assert.That(restored.PublishSettings.BloomLibrary.AudioLangs["en"], Is.EqualTo(InclusionSetting.ExcludeByDefault));
+			Assert.That(restored.PublishSettings.BloomPub.AudioLangs["es"], Is.EqualTo(InclusionSetting.IncludeByDefault));
+			Assert.That(restored.PublishSettings.BloomLibrary.SignLangs["qaa"], Is.EqualTo(InclusionSetting.Include));
+			Assert.That(restored.PublishSettings.BloomPub.SignLangs["qed"], Is.EqualTo(InclusionSetting.Exclude));
 		}
 
 		[TestCase(new object[] { "bookshelf:oldValue" })]
@@ -100,7 +273,7 @@ namespace BloomTests.Book
 		{
 			var jsonPath = Path.Combine(_folder.Path, BookInfo.MetaDataFileName);
 			const string originalGuid = "3988218f-e01c-4a7a-b27d-4a31dd632ccb";
-			const string metaData = @"{'bookInstanceId':'" + originalGuid + @"','experimental':'false','suitableForMakingShells':'true'}";
+			const string metaData = @"{""bookInstanceId"":""" + originalGuid + @""",""experimental"":""false"",""suitableForMakingShells"":""true""}";
 			File.WriteAllText(jsonPath, metaData);
 			var bookOrderPath = BookInfo.BookOrderPath(_folder.Path);
 			File.WriteAllText(bookOrderPath, metaData);
@@ -131,7 +304,7 @@ namespace BloomTests.Book
 
 			// Check that json takes precedence
 			var jsonPath = Path.Combine(_folder.Path, BookInfo.MetaDataFileName);
-			File.WriteAllText(jsonPath, @"{'folio':'false','experimental':'true','suitableForMakingShells':'false'}");
+			File.WriteAllText(jsonPath, @"{""folio"":""false"",""experimental"":""true"",""suitableForMakingShells"":""false""}");
 			bi = new BookInfo(_folder.Path, true);
 			Assert.That(bi.IsExperimental);
 			Assert.That(bi.IsFolio, Is.False);
@@ -143,7 +316,7 @@ namespace BloomTests.Book
 		{
 			var jsonPath = Path.Combine(_folder.Path, BookInfo.MetaDataFileName);
 			File.WriteAllText(jsonPath,
-				"{'title':'<span class=\"sentence-too-long\" data-segment=\"sentence\">Book on &lt;span&gt;s\r\n</span>'}");
+				@"{""title"":""<span class='sentence-too-long' data-segment='sentence'>Book on &lt;span&gt;s\r\n</span>""}");
 			var bi = new BookInfo(_folder.Path, true); // loads metadata, but doesn't use Title setter
 			// SUT
 			bi.Title = bi.Title; // exercises setter
@@ -154,7 +327,7 @@ namespace BloomTests.Book
 		public void RoundTrips_AllowUploading()
 		{
 			var jsonPath = Path.Combine(_folder.Path, BookInfo.MetaDataFileName);
-			File.WriteAllText(jsonPath, @"{'allowUploadingToBloomLibrary':'false'}");
+			File.WriteAllText(jsonPath, @"{""allowUploadingToBloomLibrary"":""false""}");
 			var bi = new BookInfo(_folder.Path, true);
 			Assert.False(bi.AllowUploading, "CHECK YOUR FixBloomMetaInfo ENV variable! Initial Read Failed to get false. Contents: " + File.ReadAllText(jsonPath));
 			bi.Save();
@@ -256,33 +429,33 @@ namespace BloomTests.Book
 			Assert.That(differenceBetweenNowAndCreationOfJson, Is.LessThan(TimeSpan.FromSeconds(5)), "lastUploaded should be a valid date representing now-ish");
 		}
 
-		[TestCase("'Fiction'", "Fiction")]
-		[TestCase("'Math', 'Fiction'", "Math, Fiction")]
-		[TestCase("'topic:Fiction'", "Fiction")]
-		[TestCase("'Fiction','media:audio'", "Fiction")]
-		[TestCase("'media:audio','Fiction'", "Fiction")]
-		[TestCase("'topic:Math','Fiction'", "Math, Fiction")]
+		[TestCase(@"""Fiction""", "Fiction")]
+		[TestCase(@"""Math"", ""Fiction""", "Math, Fiction")]
+		[TestCase(@"""topic:Fiction""", "Fiction")]
+		[TestCase(@"""Fiction"",""media:audio""", "Fiction")]
+		[TestCase(@"""media:audio"",""Fiction""", "Fiction")]
+		[TestCase(@"""topic:Math"",""Fiction""", "Math, Fiction")]
 		public void TopicsList_GetsTopicsAndOnlyTopicsFromTagsList(string jsonTagsList, string expectedTopicsList)
 		{
 			var jsonPath = Path.Combine(_folder.Path, BookInfo.MetaDataFileName);
-			File.WriteAllText(jsonPath, @"{'tags':[" + jsonTagsList + @"]}");
+			File.WriteAllText(jsonPath, @"{""tags"":[" + jsonTagsList + @"]}");
 			var bi = new BookInfo(_folder.Path, true);
 			Assert.AreEqual(expectedTopicsList, bi.TopicsList);
 		}
 
-		[TestCase("'topic:Fiction'", "", "", new string[0])]
-		[TestCase("'media:audio'", "", "", new[] { "media:audio" })]
-		[TestCase("'media:audio', 'topic:Fiction'", "", "", new[] { "media:audio" })]
-		[TestCase("'Fiction'", "Math", "Math", new []{ "topic:Math" })]
-		[TestCase("'Fiction','Math'", "Math", "Math", new[] { "topic:Math" })]
-		[TestCase("'Fiction','Math','media:audio'", "Math", "Math", new[] { "media:audio", "topic:Math" })]
-		[TestCase("'media:audio'", "topic:Math", "Math", new[] { "media:audio", "topic:Math" })]
-		[TestCase("'media:audio','region:Asia'", "topic:Math,topic:Fiction", "Math, Fiction", new[] { "media:audio", "region:Asia", "topic:Math", "topic:Fiction" })]
-		[TestCase("'topic:Science'", "topic:Math,topic:Fiction", "Math, Fiction", new[] { "topic:Math", "topic:Fiction" })]
+		[TestCase(@"""topic:Fiction""", "", "", new string[0])]
+		[TestCase(@"""media:audio""", "", "", new[] { "media:audio" })]
+		[TestCase(@"""media:audio"", ""topic:Fiction""", "", "", new[] { "media:audio" })]
+		[TestCase(@"""Fiction""", "Math", "Math", new []{ "topic:Math" })]
+		[TestCase(@"""Fiction"",""Math""", "Math", "Math", new[] { "topic:Math" })]
+		[TestCase(@"""Fiction"",""Math"",""media:audio""", "Math", "Math", new[] { "media:audio", "topic:Math" })]
+		[TestCase(@"""media:audio""", "topic:Math", "Math", new[] { "media:audio", "topic:Math" })]
+		[TestCase(@"""media:audio"",""region:Asia""", "topic:Math,topic:Fiction", "Math, Fiction", new[] { "media:audio", "region:Asia", "topic:Math", "topic:Fiction" })]
+		[TestCase(@"""topic:Science""", "topic:Math,topic:Fiction", "Math, Fiction", new[] { "topic:Math", "topic:Fiction" })]
 		public void TopicsList_SetsTopicsWhileLeavingOtherTagsIntact(string jsonTagsList, string topicsListToSet, string expectedTopicsList, string[] expectedTags)
 		{
 			var jsonPath = Path.Combine(_folder.Path, BookInfo.MetaDataFileName);
-			File.WriteAllText(jsonPath, @"{'tags':[" + jsonTagsList + @"]}");
+			File.WriteAllText(jsonPath, @"{""tags"":[" + jsonTagsList + @"]}");
 			var bi = new BookInfo(_folder.Path, true);
 
 			//SUT
@@ -454,18 +627,22 @@ namespace BloomTests.Book
 			CollectionAssert.AreEqual(expectedResult, metadata.Feature_SignLanguage_LangCodes, "SL Language Codes");
 		}
 
-		[Test]
-		public void AudioLangsToPublishForBloomReader_GivenNonDefaultJson_DeserializesProperly()
-		{
-			var json = "{ \"audioLangsToPublish\": { \"bloomPUB\": { \"en\": \"Include\" } } }";
+		// JohnT March 2022: don't see what this test is getting at. The JSON appears to be
+		// perfectly normal for the now-obsolete way of storing audioLangsToPublish for bloomPub.
+		// Without understanding its purpose, I don't see how to migrate it to the new system.
+		// Certainly we have tests for successfully migrating data like this.
+		//[Test]
+		//public void AudioLangsToPublishForBloomReader_GivenNonDefaultJson_DeserializesProperly()
+		//{
+		//	var json = "{ \"audioLangsToPublish\": { \"bloomPUB\": { \"en\": \"Include\" } } }";
 
-			// System under test
-			var metadata = BookMetaData.FromString(json);
+		//	// System under test
+		//	var metadata = BookMetaData.FromString(json);
 
-			// Verification
-			var expected = new Dictionary<string, Bloom.Publish.InclusionSetting>();
-			expected.Add("en", Bloom.Publish.InclusionSetting.Include);
-			CollectionAssert.AreEquivalent(expected, metadata.AudioLangsToPublish.ForBloomPUB);
-		}
+		//	// Verification
+		//	var expected = new Dictionary<string, Bloom.Publish.InclusionSetting>();
+		//	expected.Add("en", Bloom.Publish.InclusionSetting.Include);
+		//	CollectionAssert.AreEquivalent(expected, metadata.AudioLangsToPublish.ForBloomPUB);
+		//}
 	}
 }

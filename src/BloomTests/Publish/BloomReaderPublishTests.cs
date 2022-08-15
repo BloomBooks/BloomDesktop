@@ -108,7 +108,7 @@ namespace BloomTests.Publish
 					var zip = paramObj.ZipFile;
 					foreach (var name in wantedFiles)
 					{
-						Assert.AreNotEqual(-1, zip.FindEntry(Path.GetFileName(name), true), "expected " + name + " to be part of .bloomd zip");
+						Assert.AreNotEqual(-1, zip.FindEntry(Path.GetFileName(name), true), "expected " + name + " to be part of .bloompub zip");
 					}
 					// A convenient place to check defaults on meta.json
 					var meta = BookMetaData.FromString(GetEntryContents(zip, "meta.json"));
@@ -123,7 +123,7 @@ namespace BloomTests.Publish
 		[Test]
 		public void CompressBookForDevice_OmitsUnwantedFiles()
 		{
-			// some files we don't want copied into the .bloomd
+			// some files we don't want copied into the .bloompub
 			var unwantedFiles = new List<string> {
 				"book.BloomBookOrder", "book.pdf", "thumbnail-256.png", "thumbnail-70.png", // these are artifacts of uploading book to BloomLibrary.org
 				"Traditional-XMatter.css" // since we're adding Device-XMatter.css, this is no longer needed
@@ -137,7 +137,7 @@ namespace BloomTests.Publish
 					File.Copy(SIL.IO.FileLocationUtilities.GetFileDistributedWithApplication(_pathToTestImages, "shirt.png"), Path.Combine(folderPath, "thumbnail.png"));
 					File.WriteAllText(Path.Combine(folderPath, "previewMode.css"), @"This is wanted");
 
-					// now some files we expect to be omitted from the .bloomd archive
+					// now some files we expect to be omitted from the .bloompub archive
 					File.WriteAllText(Path.Combine(folderPath, "book.BloomBookOrder"), @"This is unwanted");
 					File.WriteAllText(Path.Combine(folderPath, "book.pdf"), @"This is unwanted");
 					File.Copy(SIL.IO.FileLocationUtilities.GetFileDistributedWithApplication(_pathToTestImages, "shirt.png"), Path.Combine(folderPath, "thumbnail-256.png"));
@@ -149,7 +149,7 @@ namespace BloomTests.Publish
 					foreach (var name in unwantedFiles)
 					{
 						Assert.AreEqual(-1, zip.FindEntry(Path.GetFileName(name), true),
-							"expected " + name + " to not be part of .bloomd zip");
+							"expected " + name + " to not be part of .bloompub zip");
 					}
 				});
 		}
@@ -242,12 +242,12 @@ namespace BloomTests.Publish
 		/// This method needs to handle motion, image descriptions, and talking book.
 		/// </summary>
 		[Test]
-		public void CompressBookForDevice_SetsExpectedFeatures()
+		public void CompressBookForDevice_SetsExpectedFeaturesAndAttributes()
 		{
 			const string imgsToRemove = "<img src='nonsence.svg'/><img src=\"rubbish\"/>";
 			var htmlTemplate = @"
 <html>
-<body data-bfautoadvance='landscape;bloomReader' data-bfcanrotate='allOrientations;bloomReader' data-bfplayanimations='landscape;bloomReader' data-bfplaymusic='landscape;bloomReader' data-bfplaynarration='landscape;bloomReader' data-bffullscreenpicture='landscape;bloomReader'>
+<body>
 	<div class='bloom-page numberedPage customPage bloom-combinedPage A5Portrait side-right bloom-monolingual' data-page='' id='3dba74c5-adc9-4c0d-9934-e8484fb6e2e2' data-pagelineage='adcd48df-e9ab-4a07-afd4-6a24d0398382' data-page-number='4' lang=''>
 		<div class='marginBox'>
             <div style='min-height: 42px;' class='split-pane horizontal-percent'>
@@ -315,6 +315,19 @@ namespace BloomTests.Publish
 						@"this is a fake for testing");
 					File.WriteAllText(Path.Combine(audioFolder, "i2335f5ae-2cff-4029-a85c-951cc33256a4.wav"),
 						@"this is a fake for testing");
+					testBook.BookInfo.PublishSettings.BloomPub.Motion = true;
+					testBook.BookInfo.Save();
+				},
+				assertionsOnResultingHtmlString: html =>
+				{
+					var htmlDom = XmlHtmlConverter.GetXmlDomFromHtml(html);
+					var body = htmlDom.DocumentElement.GetElementsByTagName("body")[0];
+					Assert.That(body.Attributes["data-bfautoadvance"]?.Value, Is.EqualTo("landscape;bloomReader"));
+					Assert.That(body.Attributes["data-bfcanrotate"]?.Value, Is.EqualTo("allOrientations;bloomReader"));
+					Assert.That(body.Attributes["data-bfplayanimations"]?.Value, Is.EqualTo("landscape;bloomReader"));
+					Assert.That(body.Attributes["data-bfplaymusic"]?.Value, Is.EqualTo("landscape;bloomReader"));
+					Assert.That(body.Attributes["data-bfplaynarration"]?.Value, Is.EqualTo("landscape;bloomReader"));
+					Assert.That(body.Attributes["data-bffullscreenpicture"]?.Value, Is.EqualTo("landscape;bloomReader"));
 				},
 
 				assertionsOnZipArchive: paramObj =>
@@ -376,7 +389,7 @@ namespace BloomTests.Publish
 			// This requires a real book file (which a mocked book usually doesn't have).
 			// It's also important that the book contains something like contenteditable that will be removed when
 			// sending the book. The sha is based on the actual file contents of the book, not the
-			// content actually embedded in the bloomd.
+			// content actually embedded in the bloompub.
 			var bookHtml = @"<html>
 								<head>
 									<meta charset='UTF-8'></meta>
@@ -404,7 +417,7 @@ namespace BloomTests.Publish
 				},
 
 				assertionsOnZipArchive: paramObj =>
-					// This test worked when we didn't have to modify the book before making the .bloomd.
+					// This test worked when we didn't have to modify the book before making the .bloompub.
 					// Now that we do I haven't figured out a reasonable way to rewrite it to test this value again...
 					// Assert.That(GetEntryContents(zip, "version.txt"), Is.EqualTo(Bloom.Book.Book.MakeVersionCode(html, bookPath)));
 					// ... so for now we just make sure that it was added and looks like a hash code
@@ -1228,6 +1241,7 @@ namespace BloomTests.Publish
 						<style type='text/css' title='userModifiedStyles'>
 							/*<![CDATA[*/
 							.Times-style[lang='tpi'] { font-family: Times New Roman ! important; font-size: 12pt  }
+							.Times-style[lang='zh'] { font-family: Wen Yei ! important; font-size: 12pt  }
 							/*]]>*/
 						</style>
 					</head><body>
@@ -1235,42 +1249,58 @@ namespace BloomTests.Publish
 			</body></html>";
 			var testBook = CreateBookWithPhysicalFile(bookHtml, bringBookUpToDate: false);
 			var fontFileFinder = new StubFontFinder();
+			FontsApi.AvailableFontMetadataDictionary.Clear();
 			using (var tempFontFolder = new TemporaryFolder("EmbedFonts_EmbedsExpectedFontsAndReportsOthers"))
 			{
 				fontFileFinder.NoteFontsWeCantInstall = true;
 
-				// Font called for in HTML
+				// Fonts called for in HTML
 				var timesNewRomanFileName = "Times New Roman R.ttf";
 				var tnrPath = Path.Combine(tempFontFolder.Path, timesNewRomanFileName);
 				File.WriteAllText(tnrPath, "This is phony TNR");
+				var tnrGroup = new FontGroup {Normal=tnrPath};
+				var timesMeta = new FontMetadata("Times New Roman", tnrGroup);
+				timesMeta.SetSuitabilityForTest(FontMetadata.kOK);
+				FontsApi.AvailableFontMetadataDictionary.Add("Times New Roman", timesMeta);
+
+				var wenYeiFileName = "Wen Yei.ttc";
+				var wenYeiPath = Path.Combine(tempFontFolder.Path, wenYeiFileName);
+				File.WriteAllText(wenYeiPath, "This is phony Wen Yei font collection");
+				var wenYeiGroup = new FontGroup {Normal=wenYeiPath};
+				var wenYeiMeta = new FontMetadata("Wen Yei", wenYeiGroup);
+				// Code marks invalid based on .ttc filename extension
+				FontsApi.AvailableFontMetadataDictionary.Add("Wen Yei", wenYeiMeta);
 
 				// Font called for in custom styles CSS
 				var calibreFileName = "Calibre R.ttf";
 				var calibrePath = Path.Combine(tempFontFolder.Path, calibreFileName);
 				File.WriteAllBytes(calibrePath, new byte[200008]); // we want something with a size greater than zero in megs
+				var calibreGroup = new FontGroup{Normal=calibrePath};
+				var calibreMeta = new FontMetadata("Calibre", calibreGroup);
+				calibreMeta.SetSuitabilityForTest(FontMetadata.kOK);
+				FontsApi.AvailableFontMetadataDictionary.Add("Calibre", calibreMeta);
 
+				fontFileFinder.FontGroups["Times New Roman"] = tnrGroup;
 				fontFileFinder.FilesForFont["Times New Roman"] = new[] { tnrPath };
+				fontFileFinder.FontGroups["Wen Yei"] = wenYeiGroup;
+				fontFileFinder.FilesForFont["Wen Yei"] = new[] { wenYeiPath };
+				fontFileFinder.FontGroups["Calibre"] = calibreGroup;
 				fontFileFinder.FilesForFont["Calibre"] = new [] { calibrePath };
 				fontFileFinder.FontsWeCantInstall.Add("NotAllowed");
 				// And "NotFound" just doesn't get a mention anywhere.
+				PublishHelper.ClearFontMetadataMapForTests();
 
 				var stubProgress = new StubProgress();
 
-				var customStylesPath = Path.Combine(testBook.FolderPath, "CustomBookStyles.css");
-				File.WriteAllText(customStylesPath, ".someStyle {font-family:Calibre} .otherStyle {font-family: NotFound} .yetAnother {font-family:NotAllowed}");
-
-				var tnrGroup = new FontGroup();
-				tnrGroup.Normal = tnrPath;
-				fontFileFinder.FontGroups["Times New Roman"] = tnrGroup;
-				var calibreGroup = new FontGroup();
-				calibreGroup.Normal = calibrePath;
-				fontFileFinder.FontGroups["Calibre"] = calibreGroup;
+				var customStylesPath = Path.Combine(testBook.FolderPath, "customCollectionStyles.css");
+				File.WriteAllText(customStylesPath, ".someStyle {font-family:'Calibre';} .otherStyle {font-family: 'NotFound';} .yetAnother {font-family:'NotAllowed';}");
 
 				HashSet<string> fontsWanted = new HashSet<string>();
 				fontsWanted.Add("Times New Roman");
+				fontsWanted.Add("Wen Yei");
 				fontsWanted.Add("Calibre");
 				fontsWanted.Add("NotAllowed");
-				fontsWanted.Add("NotFound");	// probably wouldn't happen with new approach for fonts, but leave in the test
+				fontsWanted.Add("NotFound");    // probably wouldn't happen with new approach for fonts, but leave in the test
 
 				BloomPubMaker.EmbedFonts(testBook, stubProgress, fontsWanted, fontFileFinder);
 
@@ -1278,6 +1308,8 @@ namespace BloomTests.Publish
 				Assert.That(File.Exists(Path.Combine(testBook.FolderPath, calibreFileName)));
 				Assert.That(stubProgress.MessagesNotLocalized, Has.Member("Checking Times New Roman font: License OK for embedding."));
 				Assert.That(stubProgress.MessagesNotLocalized, Has.Member("Embedding font Times New Roman at a cost of 0.0 megs"));
+				Assert.That(stubProgress.MessagesNotLocalized, Has.Member("This book has text in a font named \"Wen Yei\". Bloom cannot publish this font's format (.ttc)."));
+				Assert.That(stubProgress.MessagesNotLocalized, Has.Member("Bloom will substitute \"Andika New Basic\" instead."));
 				Assert.That(stubProgress.MessagesNotLocalized, Has.Member("Checking Calibre font: License OK for embedding."));
 				Assert.That(stubProgress.MessagesNotLocalized,  Has.Member("Embedding font Calibre at a cost of 0.2 megs"));
 
@@ -1295,8 +1327,21 @@ namespace BloomTests.Publish
 					+ Environment.NewLine;
 				Assert.That(fontSource, Is.EqualTo(lineTimes + lineCalibre).Or.EqualTo(lineCalibre + lineTimes));
 				AssertThatXmlIn.Dom(testBook.RawDom).HasSpecifiedNumberOfMatchesForXpath("//link[@href='fonts.css']", 1);
-			}
 
+				var styleNode = testBook.OurHtmlDom.SelectSingleNode("//head/style[@type='text/css' and @title='userModifiedStyles']");
+				Assert.That(styleNode, Is.Not.Null);
+				var styleText = styleNode.InnerXml;
+				Assert.That(styleText.Contains(".Times-style[lang='tpi'] { font-family: Times New Roman ! important; font-size: 12pt  }"), Is.True, "Times New Roman reference unchanged");
+				Assert.That(styleText.Contains("Wen Yei"), Is.False, "Wen Yei reference has been removed");
+				Assert.That(styleText.Contains(".Times-style[lang='zh'] { font-family: Andika New Basic !important; font-size: 12pt  }"), Is.True, "Wen Yei reference replaced with Andika New Basic");
+
+				var customCss = File.ReadAllText(customStylesPath);
+				Assert.That(customCss.Contains(".someStyle {font-family:'Calibre';}"), Is.True, "Calibre reference unchanged");
+				Assert.That(customCss.Contains("NotFound"), Is.False, "NotFound reference has been removed");
+				Assert.That(customCss.Contains(".otherStyle {font-family: 'Andika New Basic';}"), Is.True, "NotFound reference replaced with Andika New Basic");
+				Assert.That(customCss.Contains("NotAllowed"), Is.False, "NotAllowed reference has been removed");
+				Assert.That(customCss.Contains(".yetAnother {font-family: 'Andika New Basic';}"), Is.True, "NotAllowed reference replaced with Andika New Basic");
+			}
 		}
 
 		private class ZipHtmlObj
@@ -1333,7 +1378,7 @@ namespace BloomTests.Publish
 			{
 				BloomPubMaker.CreateBloomPub(bloomdTempFile.Path, testBook.FolderPath, _bookServer,  new NullWebSocketProgress(),
 					isTemplateBook: false, creator: creator, 
-					settings: new AndroidPublishSettings() {LanguagesToInclude = languagesToInclude});
+					settings: new AndroidPublishSettings() {LanguagesToInclude = languagesToInclude, Motion = testBook.BookInfo.PublishSettings.BloomPub.Motion});
 				var zip = new ZipFile(bloomdTempFile.Path);
 				var newHtml = GetEntryContents(zip, bookFileName);
 				var paramObj = new ZipHtmlObj(zip, newHtml);

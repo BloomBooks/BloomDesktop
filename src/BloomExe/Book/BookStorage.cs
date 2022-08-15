@@ -40,6 +40,8 @@ namespace Bloom.Book
 		string Key { get; }
 		string FolderName { get; }
 		string FolderPath { get; }
+
+		void CompleteFullyUpdatingFilesIfNeeded();
 		string PathToExistingHtml { get; }
 		bool TryGetPremadeThumbnail(string fileName, out Image image);
 		//bool DeleteBook();
@@ -299,7 +301,7 @@ namespace Bloom.Book
 			{
 				var msg = LocalizationManager.GetString("Errors.NeedNewerVersion",
 					"{0} requires a newer version of Bloom. Download the latest version of Bloom from {1}", "{0} will get the name of the book, {1} will give a link to open the Bloom Library Web page.");
-				msg = String.Format(msg, path, $"<a href='{UrlLookup.LookupUrl(UrlType.LibrarySite)}'>BloomLibrary.org</a>");
+				msg = String.Format(msg, path, $"<a href='{UrlLookup.LookupUrl(UrlType.LibrarySite, null)}'>BloomLibrary.org</a>");
 				msg += $". (Format {versionString} vs. {kMaxBloomFormatVersionToRead})";
 				return msg;
 			}
@@ -373,7 +375,7 @@ namespace Bloom.Book
 					string message =
 						$"<strong>{messageNewVersionNeededHeader}</strong><br/><br/><br/>" +
 						$"{messageCurrentRunningVersion}. {messageFeatureRequiresNewerVersion}<br/><br/>" +
-						$"<a href='{UrlLookup.LookupUrl(UrlType.LibrarySite)}/installers'>{messageDownloadLatestVersion}</a>";  // Enhance: is there a market-specific version of Bloom Library? If so, ideal to link to it somehow.
+						$"<a href='{UrlLookup.LookupUrl(UrlType.LibrarySite, null)}/installers'>{messageDownloadLatestVersion}</a>";  // Enhance: is there a market-specific version of Bloom Library? If so, ideal to link to it somehow.
 
 					return message;
 				}
@@ -1692,6 +1694,24 @@ namespace Bloom.Book
 		// already to prevent this from happening.
 		private static HashSet<string> _booksWithMultipleHtmlFiles = new HashSet<string>();
 
+
+		private bool _bookFilesFullyUpdated;
+
+		/// <summary>
+		/// Usually if a book is selected and being worked on, we should recently have called
+		/// ExpensiveInitializtion(true). However, it's hard to be certain that is always true.
+		/// What is definitely true is that any time we select a book or do anything else
+		/// important with it, we bring it up to date. I actually think some or all of what
+		/// happens in ExpensiveInitialization when fullyUpdateBookFiles is true might be better
+		/// moved to BBUD, and we could then remove the argument. However, that's a difficult
+		/// and risky refactoring. For now, I've just added this method, which BBUD can use
+		/// to make sure it's been done.
+		/// </summary>
+		public void CompleteFullyUpdatingFilesIfNeeded()
+		{
+			if (!_bookFilesFullyUpdated)
+				ExpensiveInitialization(true);
+		}
 		/// <summary>
 		/// Do whatever is needed to do more than just show a title and thumbnail
 		/// </summary>
@@ -1708,6 +1728,7 @@ namespace Bloom.Book
 		private void ExpensiveInitialization(bool fullyUpdateBookFiles = false)
 		{
 			Debug.WriteLine($"ExpensiveInitialization({fullyUpdateBookFiles}) for {FolderPath}");
+			_bookFilesFullyUpdated = true;
 			Dom = new HtmlDom();
 			//the fileLocator we get doesn't know anything about this particular book.
 			_fileLocator.AddPath(FolderPath);
@@ -1723,6 +1744,12 @@ namespace Bloom.Book
 				return;
 			}
 			var backupPath = GetBackupFilePath();
+
+			if (Utils.LongPathAware.GetExceedsMaxPath(pathToExistingHtml))
+			{
+				Utils.LongPathAware.ReportLongPath(pathToExistingHtml);
+				return;
+			}
 
 			// If we have a single html file, or an html file whose name matches the folder, then we can proceed.
 			// ALternatively, if we want to fully update the book and we have a backup file, then we'll use that to proceed.
@@ -1821,30 +1848,7 @@ namespace Bloom.Book
 						return;
 					}
 				}
-
-				// delete any existing branding css so that if they change to one without one, the old one isn't sticking around
-				var brandingPath = Path.Combine(FolderPath, "branding.css");
-				if (RobustFile.Exists(brandingPath))
-				{
-					try
-					{
-						RobustFile.Delete(brandingPath);
-					}
-					catch (System.UnauthorizedAccessException error)
-					{
-						InitialLoadErrors = error.Message;
-						var msg = string.Format("<p>{0}</p><p>{1}</p><p>{2}</p>",
-							LocalizationManager.GetString("Errors.ReadOnlyBookFolder", "This book cannot be edited because its folder is read-only."),
-							WebUtility.HtmlEncode(error.Message),
-							GetHelpLinkForFilePermissions());
-						ErrorMessagesHtml = msg;
-						ErrorAllowsReporting = false;	// we can't really help them remotely with odd permission failures.
-						Logger.WriteEvent("*** ERROR cannot delete old branding.css file in ExpensiveInitialization(" + fullyUpdateBookFiles + ")");
-						Logger.WriteEvent("*** ERROR: " + error.Message.Replace("{", "{{").Replace("}", "}}"));
-						return;
-					}
-				}
-
+				
 				Dom = new HtmlDom(xmlDomFromHtmlFile); //with throw if there are errors
 				// Don't let spaces between <strong>, <em>, or <u> elements be removed. (BL-2484)
 				Dom.RawDom.PreserveWhitespace = true;
@@ -2078,30 +2082,48 @@ namespace Bloom.Book
 			}
 			else
 			{
-				Update("placeHolder.png");
-				Update("basePage.css");
-				Update("previewMode.css");
-				Update("origami.css");
-				Update("langVisibility.css");
+				var supportFilesToAlwaysUpdate = new[] { "placeHolder.png", "basePage.css", "previewMode.css", "origami.css", "langVisibility.css" };
+				foreach (var supportFile in supportFilesToAlwaysUpdate)
+				{
+					Update(supportFile);
+				}
 
+				// Now we want to look for any other .css files, besides those listed above and update them.
+				// There are a few we want to skip, however.
+				// In BL-5824, we got bit by design decisions we made that allow stylesheets installed via
+				// bloompack and by new Bloom versions to replace local ones. This was done so that we could
+				// send out new Bloom implementation stylesheets via bloompack and in new Bloom versions
+				// and have those used in all the books. This works well for most stylesheets.
+				//
+				// But customBookStyles.css  and customCollectionStyles.css are exceptions;
+				// their whole purpose is to let the local book or collection override Bloom's normal
+				// behavior or anything in a bloompack.
+				//
+				// And defaultLangStyles.css is another file that should not be updated because it is always
+				// generated from the local collection settings.
+				//
+				// Also, we don't want to update branding.css here because the default update process may pull it from
+				// who knows where; it doesn't come from one of the directories we search early.
+				// Instead, normally one is fetched from the right branding in CopyBrandingFiles,
+				// or if the branding is under development we generate a placeholder, or if there is no branding
+				// we generate an empty placeholder.
+				var cssFilesToSkipInThisPhase =	new[] {
+					// Files we just updated
+					"basepage.css", "previewmode.css", "origami.css", "langvisibility.css",
+					// Custom files
+					"custombookstyles.css", "customcollectionstyles.css",
+					// Other files we want to skip
+					"defaultlangstyles.css", "branding.css" };
 				foreach (var path in Directory.GetFiles(FolderPath, "*.css"))
 				{
 					var file = Path.GetFileName(path);
+					if (cssFilesToSkipInThisPhase.Contains(file.ToLowerInvariant()))
+						continue;
 
-					// In BL-5824, we got bit by design decisions we made that allow stylesheets installed via bloompack and by new Bloom versions
-					// to replace local ones. This was done so that we could send out new Bloom implementation stylesheets via bloompack and in new Bloom versions
-					// and have those used in all the books. This works well for most stylesheets.
-					// But customBookStyles.css  and customCollectionStyles.css are exceptions; their whole purpose is to let the local book or collection
-					// override Bloom's normal behavior or anything in a bloompack.
-					// defaultLangStyles.css is another file that should not be updated because it is always generated from the local collection settings.
-					// So customBookStyles.css, customCollectionStyles.css, and defaultLangStyles.css are not overridden (BloomServer) or replaced (here).
-					if (!file.ToLowerInvariant().Contains("custombookstyles") &&
-						!file.ToLowerInvariant().Contains("customcollectionstyles") &&
-						!file.ToLowerInvariant().Contains("defaultlangstyles"))
-					{
-						Update(file);
-					}
+					Update(file);
 				}
+
+
 			}
 
 			try
@@ -2132,31 +2154,55 @@ namespace Bloom.Book
 				// a template preview or a sample shell preview, which seems rather unimportant.
 				if (FolderPath.StartsWith(BloomFileLocator.FactoryCollectionsDirectory, StringComparison.Ordinal))
 					return;
-				if (!String.IsNullOrEmpty(_collectionSettings.BrandingProjectKey))
+				var key = _collectionSettings.BrandingProjectKey;
+				// I think this is redundant: BrandingProjectKey will be set to 'Default' if we don't have some definite one.
+				// Keeping this for paranoia, in case there's some path I don't know about where that doesn't happen.
+				if (String.IsNullOrEmpty(key))
+					key = "Default"; // The "default" Branding folder contains the branding-type stuff for non-enterprise books.
+				var brandingFolder = BloomFileLocator.GetBrandingFolder(key);
+				if (String.IsNullOrEmpty(brandingFolder))
 				{
-					var brandingFolder = BloomFileLocator.GetBrandingFolder(_collectionSettings.BrandingProjectKey);
-					if (String.IsNullOrEmpty(brandingFolder))
-						return;
+					// This special "branding" contains a message about being patient until the branding ships.
+					// Its purpose is to allow us to release a new branding code even before we release a version
+					// of Bloom that properly supports it. (Note that it is, purposely, not localizable; it's only
+					// intended to be seen by a few administrators until the branding ships.)
+					brandingFolder = BloomFileLocator.GetBrandingFolder("Missing");
+				}
 
-					var filesToCopy = Directory
-						.EnumerateFiles(brandingFolder) //<--- .NET 4.5
-						// note this is how the branding.css gets into a book folder
-						.Where(path => ".png,.svg,.jpg,.css".Split(',').Contains(Path.GetExtension(path).ToLowerInvariant()));
+				var filesToCopy = Directory
+					.EnumerateFiles(brandingFolder) //<--- .NET 4.5
+					// note this is how the branding.css gets into a book folder
+					.Where(path =>
+						".png,.svg,.jpg,.css".Split(',').Contains(Path.GetExtension(path).ToLowerInvariant()));
 
-					foreach (var sourcePath in filesToCopy)
+				foreach (var sourcePath in filesToCopy)
+				{
+					var fileName = Path.GetFileName(sourcePath);
+					var destPath = Path.Combine(FolderPath, fileName);
+					try
 					{
-						var fileName = Path.GetFileName(sourcePath);
-						var destPath = Path.Combine(FolderPath, fileName);
-						try
-						{
-							RobustFile.Copy(sourcePath, destPath, true);
-						}
-						catch (UnauthorizedAccessException err)
-						{
-							throw new BloomUnauthorizedAccessException(destPath, err);
-						}
-						_brandingImageNames.Add(fileName);
+						Utils.LongPathAware.ThrowIfExceedsMaxPath(destPath); //example: BL-8284
+						RobustFile.Copy(sourcePath, destPath, true);
 					}
+					catch (UnauthorizedAccessException err)
+					{
+						throw new BloomUnauthorizedAccessException(destPath, err);
+					}
+
+					_brandingImageNames.Add(fileName);
+				}
+
+				// Typically the above will copy a branding.css into the book folder.
+				// Check that, and attempt to recover if it didn't happen.
+				var brandingPath = Path.Combine(FolderPath, "branding.css");
+				if (!RobustFile.Exists(brandingPath))
+				{
+					Debug.Fail("Brandings MUST provide a branding.css");
+					// An empty branding.css is better than having the file server search who-knows-where
+					// and coming up with some arbitrary branding.css. At least all Bloom installations,
+					// including the evil dev one that introduced a branding without the required file,
+					// will behave the same.
+					RobustFile.WriteAllText(brandingPath, "");
 				}
 			}
 			catch (Exception err)
@@ -2399,22 +2445,21 @@ namespace Bloom.Book
 			dom.AddStyleSheet(path);
 		}
 
-		//while in Bloom, we could have and edit style sheet or (someday) other modes. But when stored,
-		//we want to make sure it's ready to be opened in a browser.
+		// note: order is significant here, but I added branding.css at the end (the most powerful position) arbitrarily, until
+		// such time as it's clear if it matters.
+		public readonly static string[] CssFilesToLink =
+			{ "basePage.css", "previewMode.css", "origami.css", "langVisibility.css", "branding.css" };
+
+		// While in Bloom, we could have an edit style sheet or (someday) other modes. But when stored,
+		// we want to make sure it's ready to be opened in a browser.
 		private void MakeCssLinksAppropriateForStoredFile(HtmlDom dom)
 		{
 			dom.RemoveModeStyleSheets();
-			dom.AddStyleSheet("previewMode.css");
-			dom.AddStyleSheet("basePage.css");
-			dom.AddStyleSheet("origami.css");
-			dom.AddStyleSheet("langVisibility.css");
-
-			// only add brandingCSS is there is one for the current branding
-			var brandingCssPath = BloomFileLocator.GetBrowserFile(true, "branding", _collectionSettings.GetBrandingFolderName(), "branding.css");
-			if (!String.IsNullOrEmpty(brandingCssPath))
+			foreach (var cssFileName in CssFilesToLink)
 			{
-				dom.AddStyleSheet("branding.css");
+				dom.AddStyleSheetIfMissing(cssFileName);
 			}
+
 			EnsureHasLinksToStylesheets(dom);
 			dom.SortStyleSheetLinks();
 			dom.RemoveFileProtocolFromStyleSheetLinks();

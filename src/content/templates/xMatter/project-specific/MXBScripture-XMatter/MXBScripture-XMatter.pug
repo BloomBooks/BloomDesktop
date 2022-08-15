@@ -1,0 +1,108 @@
+
+include ../MXBLiteracy-XMatter/MXBCommon-XMatter.pug
+
+mixin mxb-chapterVerseRef
+	.creditsRow(data-hint='Este espacio es para indicar la cita bíblica en lugar de atribuir al autor/ilustrador.')
+		+field-prototypeDeclaredExplicity("V")
+			+editable(kLanguageForPrototypeOnly).smallCoverCredits.Cover-Default-style(data-book='smallCoverCredits')
+
+mixin mxb-contributions-scripture
+	+field-prototypeDeclaredExplicity("N1")#contributions
+		label.bubble(data-link-text='Paste Image Credits' data-link-target='PasteImageCredits()')
+			| Este espacio es para atribuir a colaboradores como ilustradores o diseñadores. No se deben incluir atribuciones de autores o traductores en una publicación de Escrituras.
+		+editable(kLanguageForPrototypeOnly).contributions.OriginalContributions-style.bloom-copyFromOtherLanguageIfNecessary(data-book='originalContributions')
+
+mixin mxb-frontCover-scripture
+	// Outside Front Cover
+	+page-cover('Front Cover')(data-export='front-matter-cover', data-xmatter-page='frontCover')&attributes(attributes).frontCover.outsideFrontCover#74731b2d-18b0-420f-ac96-6de20f659810
+		block cover-above-title
+			+cover-branding-top
+
+		block cover-title
+			+field-prototypeDeclaredExplicity("V,N1").bookTitle
+				label.bubble Book title in {lang}
+				+editable(kLanguageForPrototypeOnly).bloom-nodefaultstylerule.Title-On-Cover-style.bloom-padForOverflow(data-book='bookTitle')
+
+		+mxb-chapterVerseRef
+
+		block front-cover-image
+			+standard-cover-image
+
+		// 2 columns: first for an optional logo, then text content
+		.bottomBlock
+			+cover-branding-bottom-left.bottom-left-branding
+
+			// 1 row
+			.bottomTextContent
+				block cover-bottom-row-before-branding
+					.bottomRow
+						.coverBottomLangName.Cover-Default-style(data-derived='languagesOfBook')
+						+chooser-topic.coverBottomBookTopic
+				+cover-branding-bottom
+				block cover-bottom-row-after-branding
+		block front-cover-footer
+
+mixin mxb-titlePage-scripture-contents
+	+field-prototypeDeclaredExplicity("V, N1, N2")#titlePageTitleBlock
+		label.bubble Book title in {lang}
+		+editable(kLanguageForPrototypeOnly).bloom-nodefaultstylerule.Title-On-Title-Page-style(data-book='bookTitle')
+
+	+mxb-chapterVerseRef
+
+	#languageInformation.Credits-Page-style('lang'='N1')
+		.languagesOfBook(data-derived='languagesOfBook')
+		//- review: can we get rid of these "langName" classes?
+		.langName('data-library'='dialect')
+		.langName(data-library='languageLocation').bloom-writeOnly
+	+field-prototypeDeclaredExplicity("N1")#funding
+		label.bubble Este espacio normalmente debe quedar en blanco para libros publicados con el logo de LigaBíblica.
+		+editable(kLanguageForPrototypeOnly).funding.Funding-style.bloom-copyFromOtherLanguageIfNecessary(data-book='funding')
+	+title-page-branding-bottom
+
+mixin mxb-titlePage-scripture
+	+page-xmatter('Title Page').titlePage(data-export='front-matter-title-page', data-xmatter-page='titlePage')&attributes(attributes)#5dcd48df-e9ab-4a07-afd4-6a24d0398381
+		+mxb-titlePage-scripture-contents
+
+mixin mxb-creditsPage-scripture-contents
+	+mxb-contributions-scripture
+	+field-prototypeDeclaredExplicity("N1")#localizedAcknowledgments
+		label.bubble
+			| Este espacio es para atribuir la publicación de donde se tomó el texto de esta porción bíblica. No incluya ningún nombre personal como “autor” o “traductor”.
+		+editable(kLanguageForPrototypeOnly).versionAcknowledgments.LocalizedAcknowledgments-style.bloom-copyFromOtherLanguageIfNecessary(data-book="versionAcknowledgments")
+	+block-licenseAndCopyright
+	//- Here code puts in something like "From the original Copyright Pratham Books 2016. CC-BY. Any license notes here."
+	.copyright(data-derived="originalCopyrightAndLicense").Credits-Page-style.bloom-copyFromOtherLanguageIfNecessary
+	//- Moved from Title page
+	+field-prototypeDeclaredExplicity("N1")#originalAcknowledgments
+		label.bubble Original (or Shell) Acknowledgments in {lang}
+		+editable(kLanguageForPrototypeOnly).OriginalAcknowledgments-style.bloom-copyFromOtherLanguageIfNecessary(data-book='originalAcknowledgments')
+			| {Original Acknowledgments}
+	+field-ISBN
+	+field-prototypeDeclaredExplicity("N1")#printingHistory
+		label.bubble Use this for Printing History (1st Edition, etc.)
+		+editable(kLanguageForPrototypeOnly).PrintingHistory-style.bloom-copyFromOtherLanguageIfNecessary(data-book='printingInfo')
+
+mixin mxb-creditsPage-scripture
+	+page-xmatter("Credits Page").credits(data-export='front-matter-credits', data-xmatter-page='credits')&attributes(attributes)#69EF35AE-5BF1-49F1-89E7-2A932DAD932C
+		+mxb-creditsPage-scripture-contents
+
+doctype html
+html
+	head
+		meta(charset='UTF-8')
+		meta(name='BloomFormatVersion', content='2.0')
+		title ILV Mexico Scripture Front & Back Matter
+		//- Make the stylesheets section adjustable for Device version.
+		block stylesheets
+			+stylesheets('MXBScripture-XMatter.css')
+	body
+		+mxb-frontCover-scripture
+
+		//- Allow Device version to override page order
+		block afterFrontCoverPages
+			+factory-insideFrontCover
+			+mxb-titlePage-scripture.bloom-frontMatter
+			+mxb-creditsPage-scripture.bloom-frontMatter
+
+		+mxb-printerStatement-insideBackCover
+		+factoryStandard-outsideBackCover

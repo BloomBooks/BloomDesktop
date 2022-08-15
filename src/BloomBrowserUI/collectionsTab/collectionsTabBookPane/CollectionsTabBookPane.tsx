@@ -12,6 +12,12 @@ import { useMonitorBookSelection } from "../../app/selectedBook";
 import BloomButton from "../../react_components/bloomButton";
 import { kDarkestBackground } from "../../bloomMaterialUITheme";
 import { useSubscribeToWebSocketForEvent } from "../../utils/WebSocketManager";
+import { useEnterpriseAvailable } from "../../react_components/requiresBloomEnterprise";
+import { Tab, TabList, TabPanel } from "react-tabs";
+import { LocalizedString } from "../../react_components/l10nComponents";
+import { CollectionHistoryTable } from "../../teamCollection/CollectionHistoryTable";
+import "react-tabs/style/react-tabs.less";
+import { BloomTabs } from "../../react_components/BloomTabs";
 
 export const CollectionsTabBookPane: React.FunctionComponent<{
     // If false, as it usually is, the overlay above the preview iframe
@@ -25,15 +31,21 @@ export const CollectionsTabBookPane: React.FunctionComponent<{
     const [isTeamCollection, setIsTeamCollection] = useState(false);
     const [bookStatus, setBookStatus] = useState(initialBookStatus);
     const [reload, setReload] = useState(0);
+    const [reloadStatus, setReloadStatus] = useState(0);
+    const enterpriseAvailable = useEnterpriseAvailable();
     // Force a reload when told the book changed, even if it's the same book [id]
     useSubscribeToWebSocketForEvent("bookContent", "reload", () =>
         setReload(old => old + 1)
+    );
+    useSubscribeToWebSocketForEvent("bookStatus", "reload", () =>
+        setReloadStatus(old => old + 1)
     );
 
     const {
         id: selectedBookId,
         saveable,
-        collectionKind
+        collectionKind,
+        aboutBookInfoUrl
     } = useMonitorBookSelection();
 
     React.useEffect(() => {
@@ -55,9 +67,17 @@ export const CollectionsTabBookPane: React.FunctionComponent<{
                 setBookStatus({ ...bookStatus, error: errorMessage });
             }
         );
-    }, [selectedBookId, saveable, reload]);
+    }, [selectedBookId, saveable, reload, reloadStatus]);
 
     const canMakeBook = collectionKind != "main";
+    // History, and thus the tab controls, are only relevant if there's a selected book
+    // that is in the main collection, and only allowed if enterprise is enabled.
+    // We currently only collect useful history in team collections, so hide it otherwise.
+    const showTabs =
+        selectedBookId &&
+        enterpriseAvailable &&
+        collectionKind == "main" &&
+        isTeamCollection;
 
     const iframeRef = useRef<HTMLIFrameElement>(null);
 
@@ -116,7 +136,7 @@ export const CollectionsTabBookPane: React.FunctionComponent<{
                     : "app/editSelectedBook"
             }
             mightNavigate={true}
-            enabledImageFile={canMakeBook ? "newBook.png" : "EditTab.svg"}
+            enabledImageFile={canMakeBook ? "New Book.svg" : "EditTab.svg"}
             disabledImageFile={canMakeBook ? undefined : "EditTab.svg"}
             hasText={true}
             color="secondary"
@@ -148,14 +168,6 @@ export const CollectionsTabBookPane: React.FunctionComponent<{
             `}
             {...props} // allows defining more css rules from container
         >
-            <div
-                css={css`
-                    margin-bottom: 10px;
-                    flex-grow: 0;
-                `}
-            >
-                {editOrMakeButton}
-            </div>
             <div
                 css={css`
                     // We want the preview to take up the available space, limiting the Team Collection panel
@@ -199,16 +211,100 @@ export const CollectionsTabBookPane: React.FunctionComponent<{
                         } */
                     `}
                 ></div>
-                <iframe
-                    src={`/book-preview/index.htm?dummy=${(selectedBookId ??
-                        "") + reload}`}
-                    height="100%"
-                    width="100%"
+                <BloomTabs
+                    id="tabs"
+                    defaultIndex={0}
+                    color="white"
+                    selectedColor="white"
+                    labelBackgroundColor={kDarkestBackground}
                     css={css`
-                        border: none;
+                        font-family: "segoe ui";
                     `}
-                    ref={iframeRef}
-                />
+                >
+                    <TabList>
+                        {// actually we want the (default) preview tab pane even we're not showing history.
+                        // but we don't need the tab label if there are no others.
+                        showTabs && (
+                            <Tab id="previewLabel">
+                                <LocalizedString l10nKey="Common.Preview">
+                                    Preview
+                                </LocalizedString>
+                            </Tab>
+                        )}
+                        {showTabs && (
+                            <Tab id="historyLabel">
+                                <LocalizedString
+                                    l10nKey="TeamCollection.History"
+                                    temporarilyDisableI18nWarning={true}
+                                >
+                                    History
+                                </LocalizedString>
+                            </Tab>
+                        )}
+                    </TabList>
+                    <TabPanel id="previewPanel">
+                        <div
+                            css={css`
+                                display: flex;
+                                flex-direction: column;
+                                /* height: calc(
+                                    100% - 4px
+                                ); // hack. JT+JH couldn't find why the parent was giving a scroll bar when everything was 100%. */
+                                height: 100%;
+                                position: relative; // this div exists so that we can provide this position relative which allows the "Edit This book" button to be absolutely positioned.
+                            `}
+                        >
+                            <div
+                                css={css`
+                                    //position: absolute;
+                                    //top: 20px;
+                                    //left: 10px;
+                                    // overrides a material-ui tabs rule that applies to any div in the selected tab!
+                                    padding: 0 !important;
+                                    // keep the white background inside the button.
+                                    border-radius: 5px;
+                                    flex-shrink: 0;
+                                    margin-top: 6px;
+                                    margin-bottom: 10px;
+                                `}
+                            >
+                                {editOrMakeButton}
+                            </div>
+                            {selectedBookId && (
+                                <iframe
+                                    src={`/book-preview/index.htm?dummy=${selectedBookId +
+                                        reload}`}
+                                    height="100%"
+                                    width="100%"
+                                    css={css`
+                                        flex-grow: 1;
+                                        border: none;
+                                    `}
+                                    ref={iframeRef}
+                                />
+                            )}
+                            {aboutBookInfoUrl && selectedBookId && (
+                                <iframe
+                                    src={aboutBookInfoUrl}
+                                    height="100%"
+                                    width="100%"
+                                    css={css`
+                                        margin-top: 5px;
+                                        flex-grow: 1;
+                                        border: none;
+                                    `}
+                                />
+                            )}
+                        </div>
+                    </TabPanel>
+                    {enterpriseAvailable && selectedBookId && (
+                        <TabPanel id="historyPanel">
+                            <CollectionHistoryTable
+                                selectedBook={selectedBookId}
+                            />
+                        </TabPanel>
+                    )}
+                </BloomTabs>
             </div>
             {// Currently, canMakeBook is a synonym for 'book is not in the current TC'
             // If that stops being true we might need another more specialized status flag.

@@ -16,11 +16,12 @@ import { EPUBPublishScreen } from "./ePUBPublish/ePUBPublishScreen";
 import BookMetadataDialog from "./metadata/BookMetadataDialog";
 import "./storiesApiMocks";
 import { AccessibilityCheckScreen } from "./accessibilityCheck/accessibilityCheckScreen";
-import { normalDialogEnvironmentForStorybook } from "../react_components/BloomDialog/BloomDialog";
+import { normalDialogEnvironmentForStorybook } from "../react_components/BloomDialog/BloomDialogPlumbing";
 import {
     IUploadCollisionDlgProps,
     UploadCollisionDlg
 } from "./LibraryPublish/uploadCollisionDlg";
+import { PublishAudioVideo } from "./video/PublishAudioVideo";
 
 addDecorator(withA11y as any);
 
@@ -113,6 +114,9 @@ storiesOf("Publish/DeviceFrame", module)
 
 storiesOf("Publish/Bloom Reader", module).add("ReaderPublishScreen", () => (
     <ReaderPublishScreen />
+));
+storiesOf("Publish/Video", module).add("RecordVideoWindow", () => (
+    <PublishAudioVideo />
 ));
 
 storiesOf("Publish/ePUB", module)

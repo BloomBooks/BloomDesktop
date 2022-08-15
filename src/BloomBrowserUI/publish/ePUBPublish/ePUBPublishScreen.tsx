@@ -1,3 +1,7 @@
+/** @jsx jsx **/
+/** @jsxFrag React.Fragment */
+import { jsx, css } from "@emotion/core";
+
 import * as React from "react";
 import { useState, useContext } from "react";
 import {
@@ -54,8 +58,8 @@ const EPUBPublishScreenInternal: React.FunctionComponent<{
             ? window.location.protocol +
                   "//" +
                   window.location.host +
-                  "/templates/Sample Shells/The Moon and the Cap" // Enhance: provide an actual bloomd in the source tree
-            : "" // otherwise, wait for the websocket to deliver a url when the c# has finished creating the bloomd
+                  "/templates/Sample Shells/The Moon and the Cap" // Enhance: provide an actual epub in the source tree
+            : "" // otherwise, wait for the websocket to deliver a url when the c# has finished creating the epub
     );
 
     useSubscribeToWebSocketForEvent(
@@ -77,8 +81,8 @@ const EPUBPublishScreenInternal: React.FunctionComponent<{
             setClosePending(true);
         }
     );
-    const saveButtonEnabled = BloomApi.useWatchString(
-        "true",
+    const isLicenseOK = BloomApi.useWatchBooleanEvent(
+        true,
         "publish-epub",
         "publish/licenseOK"
     );
@@ -105,7 +109,7 @@ const EPUBPublishScreenInternal: React.FunctionComponent<{
                 <PublishPanel>
                     <BloomButton
                         className="save-button"
-                        enabled={saveButtonEnabled.toLowerCase() === "true"}
+                        enabled={isLicenseOK}
                         clickApiEndpoint={"publish/epub/save"}
                         hasText={true}
                         l10nKey="PublishTab.Save"
@@ -115,6 +119,12 @@ const EPUBPublishScreenInternal: React.FunctionComponent<{
                 </PublishPanel>
                 <SettingsPanel>
                     <EPUBSettingsGroup />
+                    {/* push everything below this to the bottom */}
+                    <div
+                        css={css`
+                            margin-top: auto;
+                        `}
+                    />
                     <EPUBHelpGroup />
                 </SettingsPanel>
             </BasePublishScreen>

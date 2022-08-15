@@ -126,7 +126,7 @@ namespace Bloom.Publish.BloomLibrary
 
 			UpdateFeaturesCheckBoxesDisplay();
 
-			var languageSelectionsForThisBook = _model.Book.BookInfo.MetaData.TextLangsToPublish.ForBloomLibrary;
+			var languageSelectionsForThisBook = _model.Book.BookInfo.PublishSettings.BloomLibrary.TextLangs;
 			var allLanguages = _model.AllLanguages;
 			foreach (var lang in allLanguages.Keys)
 			{
@@ -227,7 +227,7 @@ namespace Bloom.Publish.BloomLibrary
 		{
 			var book = _model.Book;
 
-			_narrationAudioCheckBox.Checked = book.BookInfo.MetaData.IncludeAudioForBloomLibraryPublish;
+			_narrationAudioCheckBox.Checked = book.BookInfo.PublishSettings.BloomLibrary.IncludeAudio;
 
 			if (!book.Storage.GetNarrationAudioFileNamesReferencedInBook(false)
 				.Any(fileName => RobustFile.Exists(Path.Combine(AudioProcessor.GetAudioFolderPath(book.FolderPath), fileName))))
@@ -413,7 +413,7 @@ namespace Bloom.Publish.BloomLibrary
 			if ( _uploadSource.SelectedIndex > 0 && missingDefaultBookshelf)
 			{
 				// Intentionally not localized ( because it's complicated, rare, and generally advanced )
-				ErrorReportUtils.NotifyUserOfProblem("Before sending all of your books to BloomLibrary.org, you probably want to tell Bloom which bookshelf this collection belongs in. Please go to Collection Tab : Settings: Book Making and set the \"Bloom Library Bookshelf\".");
+				ErrorReport.NotifyUserOfProblem("Before sending all of your books to BloomLibrary.org, you probably want to tell Bloom which bookshelf this collection belongs in. Please go to Collection Tab : Settings: Book Making and set the \"Bloom Library Bookshelf\".");
 				return;
 			}
 			if (_uploadSource.SelectedIndex == 1)
@@ -755,7 +755,7 @@ namespace Bloom.Publish.BloomLibrary
 
 		public static string BloomLibraryUrlPrefix
 		{
-			get { return UrlLookup.LookupUrl(UrlType.LibrarySite, BookUpload.UseSandbox); }
+			get { return UrlLookup.LookupUrl(UrlType.LibrarySite, null, BookUpload.UseSandbox); }
 		}
 
 		private IEnumerable<string> LanguagesCheckedToUpload
@@ -778,7 +778,8 @@ namespace Bloom.Publish.BloomLibrary
 			var message = checker.CheckBook(book, LanguagesCheckedToUpload.ToArray());
 			if (message != null)
 			{
-				_progressBox.WriteError(message);
+				// Using WriteError allows users to send bug reports: this isn't a bug!
+				_progressBox.WriteMessageWithColor(Color.Red, message);
 				e.Result = "quiet"; // suppress other completion/fail messages
 				return;
 			}

@@ -8,7 +8,6 @@ using Bloom.Api;
 using Bloom.Book;
 using Bloom.Collection;
 using Bloom.ImageProcessing;
-using Bloom.MiscUI;
 using Bloom.Properties;
 using Bloom.Publish.Android.file;
 using SIL.Windows.Forms.Miscellaneous;
@@ -22,7 +21,6 @@ using BloomTemp;
 using DesktopAnalytics;
 using SIL.IO;
 using Newtonsoft.Json;
-using SIL.Xml;
 
 namespace Bloom.Publish.Android
 {
@@ -94,14 +92,13 @@ namespace Bloom.Publish.Android
 		{
 			return AndroidPublishSettings.FromBookInfo(_bookForLanguagesToPublish.BookInfo);
 		}
-
-
+		
 		public void RegisterWithApiHandler(BloomApiHandler apiHandler)
 		{
 			// This is just for storing the user preference of method
 			// If we had a couple of these, we could just have a generic preferences api
 			// that browser-side code could use.
-			apiHandler.RegisterEndpointHandler(kApiUrlPart + "method", request =>
+			apiHandler.RegisterEndpointLegacy(kApiUrlPart + "method", request =>
 			{
 				if(request.HttpMethod == HttpMethods.Get)
 				{
@@ -125,7 +122,7 @@ namespace Bloom.Publish.Android
 				}
 			}, true);
 
-			apiHandler.RegisterEndpointHandler(kApiUrlPart + "backColor", request =>
+			apiHandler.RegisterEndpointLegacy(kApiUrlPart + "backColor", request =>
 			{
 				if (request.HttpMethod == HttpMethods.Get)
 				{
@@ -156,45 +153,23 @@ namespace Bloom.Publish.Android
 					// If the user has taken off all possible motion, force not having motion in the
 					// Bloom Reader book.  See https://issues.bloomlibrary.org/youtrack/issue/BL-7680.
 					if (!readRequest.CurrentBook.HasMotionPages)
-						readRequest.CurrentBook.MotionMode = false;
-					return readRequest.CurrentBook.MotionMode;
+						readRequest.CurrentBook.BookInfo.PublishSettings.BloomPub.Motion = false;
+					return readRequest.CurrentBook.BookInfo.PublishSettings.BloomPub.Motion;
 				},
 				(writeRequest, value) =>
 				{
-					writeRequest.CurrentBook.MotionMode = value;
+					writeRequest.CurrentBook.BookInfo.PublishSettings.BloomPub.Motion = value;
+					writeRequest.CurrentBook.BookInfo.SavePublishSettings();
+					_webSocketServer.SendEvent("publish", "motionChanged");
 				}
 			, true);
 
 			apiHandler.RegisterEndpointHandler(kApiUrlPart + "updatePreview", request =>
 			{
-				if (request.HttpMethod == HttpMethods.Post)
-				{
-					// This is already running on a server thread, so there doesn't seem to be any need to kick off
-					// another background one and return before the preview is ready. But in case something in C#
-					// might one day kick of a new preview, or we find we do need a background thread,
-					// I've made it a websocket broadcast when it is ready.
-					// If we've already left the publish tab...we can get a few of these requests queued up when
-					// a tester rapidly toggles between views...abandon the attempt
-					if (!PublishHelper.InPublishTab)
-					{
-						request.Failed("aborted, no longer in publish tab");
-						return;
-					}
-					try
-					{
-						UpdatePreview(request);
-						request.PostSucceeded();
-					}
-					catch (Exception e)
-					{
-						request.Failed("Error while updating preview. Message: " + e.Message);
-						NonFatalProblem.Report(ModalIf.Alpha, PassiveIf.All, "Error while updating preview.", null, e, true);
-					}
-				}
+				MakeBloompubPreview(request, false);
 			}, true);
 
-
-			apiHandler.RegisterEndpointHandler(kApiUrlPart + "thumbnail", request =>
+			apiHandler.RegisterEndpointLegacy(kApiUrlPart + "thumbnail", request =>
 			{
 				var coverImage = request.CurrentBook.GetCoverImagePath();
 				if (coverImage == null)
@@ -228,12 +203,12 @@ namespace Bloom.Publish.Android
 			apiHandler.RegisterEndpointHandler(kApiUrlPart + "usb/stop", request =>
 			{
 #if !__MonoCS__
-				_usbPublisher.Stop();
+				_usbPublisher.Stop(disposing: false);
 				SetState("stopped");
 #endif
 				request.PostSucceeded();
 			}, true);
-			apiHandler.RegisterEndpointHandler(kApiUrlPart + "wifi/start", request =>
+			apiHandler.RegisterEndpointLegacy(kApiUrlPart + "wifi/start", request =>
 			{
 				SetState("ServingOnWifi");
 				UpdatePreviewIfNeeded(request);
@@ -242,14 +217,14 @@ namespace Bloom.Publish.Android
 				request.PostSucceeded();
 			}, true);
 
-			apiHandler.RegisterEndpointHandler(kApiUrlPart + "wifi/stop", request =>
+			apiHandler.RegisterEndpointLegacy(kApiUrlPart + "wifi/stop", request =>
 			{
 				_wifiPublisher.Stop();
 				SetState("stopped");
 				request.PostSucceeded();
 			}, true);
 
-			apiHandler.RegisterEndpointHandler(kApiUrlPart + "file/save", request =>
+			apiHandler.RegisterEndpointLegacy(kApiUrlPart + "file/save", request =>
 			{
 				UpdatePreviewIfNeeded(request);
 				FilePublisher.Save(request.CurrentBook, _bookServer, _thumbnailBackgroundColor, _progress, GetSettings());
@@ -257,12 +232,12 @@ namespace Bloom.Publish.Android
 				request.PostSucceeded();
 			}, true);
 
-			apiHandler.RegisterEndpointHandler(kApiUrlPart + "file/bulkSaveBloomPubsParams", request =>
+			apiHandler.RegisterEndpointLegacy(kApiUrlPart + "file/bulkSaveBloomPubsParams", request =>
 			{ 
 				request.ReplyWithJson(JsonConvert.SerializeObject(_collectionSettings.BulkPublishBloomPubSettings));
 			}, true);
 
-			apiHandler.RegisterEndpointHandler(kApiUrlPart + "file/bulkSaveBloomPubs", request =>
+			apiHandler.RegisterEndpointLegacy(kApiUrlPart + "file/bulkSaveBloomPubs", request =>
 			{
 				// update what's in the collection so that we remember for next time
 				_collectionSettings.BulkPublishBloomPubSettings = request.RequiredPostObject<BulkBloomPubPublishSettings>();
@@ -273,13 +248,7 @@ namespace Bloom.Publish.Android
 				request.PostSucceeded();
 			}, true);
 
-			apiHandler.RegisterEndpointHandler(kApiUrlPart + "cleanup", request =>
-			{
-				Stop();
-				request.PostSucceeded();
-			}, true);
-
-			apiHandler.RegisterEndpointHandler(kApiUrlPart + "textToClipboard", request =>
+			apiHandler.RegisterEndpointLegacy(kApiUrlPart + "textToClipboard", request =>
 			{
 				PortableClipboard.SetText(request.RequiredPostString());
 				request.PostSucceeded();
@@ -297,7 +266,7 @@ namespace Bloom.Publish.Android
 			apiHandler.RegisterBooleanEndpointHandler(kApiUrlPart + "canRotate",
 				request =>
 				{
-					return request.CurrentBook.MotionMode && request.CurrentBook.HasMotionPages;
+					return request.CurrentBook.BookInfo.PublishSettings.BloomPub.Motion && request.CurrentBook.HasMotionPages;
 				},
 				null, // no write action
 				false,
@@ -311,14 +280,14 @@ namespace Bloom.Publish.Android
 				null, // no write action
 				false,
 				true); // we don't really know, just safe default
-			apiHandler.RegisterEndpointHandler(kApiUrlPart + "languagesInBook", request =>
+			apiHandler.RegisterEndpointLegacy(kApiUrlPart + "languagesInBook", request =>
 			{
 				try
 				{
 					InitializeLanguagesInBook(request);
 
-					Dictionary<string, InclusionSetting> textLangsToPublish = request.CurrentBook.BookInfo.MetaData.TextLangsToPublish.ForBloomPUB;
-					Dictionary<string, InclusionSetting> audioLangsToPublish = request.CurrentBook.BookInfo.MetaData.AudioLangsToPublish.ForBloomPUB;
+					Dictionary<string, InclusionSetting> textLangsToPublish = request.CurrentBook.BookInfo.PublishSettings.BloomPub.TextLangs;
+					Dictionary<string, InclusionSetting> audioLangsToPublish = request.CurrentBook.BookInfo.PublishSettings.BloomPub.AudioLangs;
 					
 					var result = "[" + string.Join(",", _allLanguages.Select(kvp =>
 					{
@@ -357,7 +326,7 @@ namespace Bloom.Publish.Android
 					NonFatalProblem.Report(ModalIf.Alpha, PassiveIf.All, "Error determining which languages are in the book.", null, e, true);
 				}
 			}, false);
-			apiHandler.RegisterEndpointHandler(kApiUrlPart + "includeLanguage", request =>
+			apiHandler.RegisterEndpointLegacy(kApiUrlPart + "includeLanguage", request =>
 			{
 				var langCode = request.RequiredParam("langCode");
 				if (request.HttpMethod == HttpMethods.Post)
@@ -366,14 +335,14 @@ namespace Bloom.Publish.Android
 					if (includeTextValue != null)
 					{
 						var inclusionSetting = includeTextValue == "true" ? InclusionSetting.Include : InclusionSetting.Exclude;
-						request.CurrentBook.BookInfo.MetaData.TextLangsToPublish.ForBloomPUB[langCode] = inclusionSetting;
+						request.CurrentBook.BookInfo.PublishSettings.BloomPub.TextLangs[langCode] = inclusionSetting;
 					}
 
 					var includeAudioValue = request.GetParamOrNull("includeAudio");
 					if (includeAudioValue != null)
 					{
 						var inclusionSetting = includeAudioValue == "true" ? InclusionSetting.Include : InclusionSetting.Exclude;
-						request.CurrentBook.BookInfo.MetaData.AudioLangsToPublish.ForBloomPUB[langCode] = inclusionSetting;
+						request.CurrentBook.BookInfo.PublishSettings.BloomPub.AudioLangs[langCode] = inclusionSetting;
 					}
 
 					request.CurrentBook.BookInfo.Save();	// We updated the BookInfo, so need to persist the changes. (but only the bookInfo is necessary, not the whole book)
@@ -386,6 +355,35 @@ namespace Bloom.Publish.Android
 				//	request.ReplyWithText(_languagesToPublish.Contains(langCode) ? "true" : "false");
 				//}
 			}, false);
+		}
+
+		public void MakeBloompubPreview(ApiRequest request, bool forVideo)
+		{
+			if (request.HttpMethod == HttpMethods.Post)
+			{
+				// This is already running on a server thread, so there doesn't seem to be any need to kick off
+				// another background one and return before the preview is ready. But in case something in C#
+				// might one day kick of a new preview, or we find we do need a background thread,
+				// I've made it a websocket broadcast when it is ready.
+				// If we've already left the publish tab...we can get a few of these requests queued up when
+				// a tester rapidly toggles between views...abandon the attempt
+				if (!PublishHelper.InPublishTab)
+				{
+					request.Failed("aborted, no longer in publish tab");
+					return;
+				}
+
+				try
+				{
+					UpdatePreview(request, forVideo);
+					request.PostSucceeded();
+				}
+				catch (Exception e)
+				{
+					request.Failed("Error while updating preview. Message: " + e.Message);
+					NonFatalProblem.Report(ModalIf.Alpha, PassiveIf.All, "Error while updating preview.", null, e, true);
+				}
+			}
 		}
 
 		private AndroidPublishSettings _lastSettings;
@@ -422,14 +420,10 @@ namespace Bloom.Publish.Android
 		{
 			Debug.Assert(bookInfo?.MetaData != null, "Precondition: MetaData must not be null");
 
-			if (bookInfo.MetaData.TextLangsToPublish == null)
-			{
-				bookInfo.MetaData.TextLangsToPublish = new LangsToPublishSetting();
-			}
 
-			if (bookInfo.MetaData.TextLangsToPublish.ForBloomPUB == null)
+			if (bookInfo.PublishSettings.BloomPub.TextLangs == null)
 			{
-				bookInfo.MetaData.TextLangsToPublish.ForBloomPUB = new Dictionary<string, InclusionSetting>();
+				bookInfo.PublishSettings.BloomPub.TextLangs = new Dictionary<string, InclusionSetting>();
 			}
 
 			// reinitialize our list of which languages to publish, defaulting to the ones
@@ -439,7 +433,7 @@ namespace Bloom.Publish.Android
 				var langCode = kvp.Key;
 
 				// First, check if the user has already explicitly set the value. If so, we'll just use that value and be done.
-				if (bookInfo.MetaData.TextLangsToPublish.ForBloomPUB.TryGetValue(langCode, out InclusionSetting checkboxValFromSettings))
+				if (bookInfo.PublishSettings.BloomPub.TextLangs.TryGetValue(langCode, out InclusionSetting checkboxValFromSettings))
 				{
 					if (checkboxValFromSettings.IsSpecified())
 					{
@@ -457,22 +451,17 @@ namespace Bloom.Publish.Android
 					langCode == collectionSettings?.Language1Iso639Code;
 
 				var newInitialValue = isChecked ? InclusionSetting.IncludeByDefault : InclusionSetting.ExcludeByDefault;
-				bookInfo.MetaData.TextLangsToPublish.ForBloomPUB[langCode] = newInitialValue;
+				bookInfo.PublishSettings.BloomPub.TextLangs[langCode] = newInitialValue;
 			}
 
 			// Initialize the Talking Book Languages settings
-			if (bookInfo.MetaData.AudioLangsToPublish == null)
+			if (bookInfo.PublishSettings.BloomPub.AudioLangs == null)
 			{
-				bookInfo.MetaData.AudioLangsToPublish = new LangsToPublishSetting();
-			}
-
-			if (bookInfo.MetaData.AudioLangsToPublish.ForBloomPUB == null)
-			{
-				bookInfo.MetaData.AudioLangsToPublish.ForBloomPUB = new Dictionary<string, InclusionSetting>();
+				bookInfo.PublishSettings.BloomPub.AudioLangs = new Dictionary<string, InclusionSetting>();
 				var allLangCodes = allLanguages.Select(x => x.Key);
 				foreach (var langCode in allLangCodes)
 				{
-					bookInfo.MetaData.AudioLangsToPublish.ForBloomPUB[langCode] = InclusionSetting.IncludeByDefault;
+					bookInfo.PublishSettings.BloomPub.AudioLangs[langCode] = InclusionSetting.IncludeByDefault;
 				}					
 			}
 
@@ -487,11 +476,21 @@ namespace Bloom.Publish.Android
 		/// If the caller wants to insert this URL as a query parameter to another URL (e.g. like what is often done with Bloom Player),
 		/// it's the caller's responsibility to apply another layer of URL encoding to make the URL suitable to be passed as data inside another URL.
 		/// </summary>
-		private void UpdatePreview(ApiRequest request)
+		private void UpdatePreview(ApiRequest request, bool forVideo)
 		{
 			InitializeLanguagesInBook(request);
 			_lastSettings = GetSettings();
 			_lastThumbnailBackgroundColor = _thumbnailBackgroundColor;
+			if (forVideo)
+			{
+				_lastSettings = _lastSettings.WithAllLanguages(_allLanguages.Keys);
+			}
+
+			_lastSettings.Motion = forVideo ? request.CurrentBook.BookInfo.PublishSettings.AudioVideo.Motion : request.CurrentBook.BookInfo.PublishSettings.BloomPub.Motion;
+			_lastSettings.WantPageLabels = forVideo;
+			// BloomPlayer is capable of skipping these, but they confuse the page list we use to populate
+			// the page-range control.
+			_lastSettings.RemoveInteractivePages = forVideo;
 			PreviewUrl = MakeBloomPubForPreview(request.CurrentBook, _bookServer, _progress, _thumbnailBackgroundColor, _lastSettings);
 			_webSocketServer.SendString(kWebSocketContext, kWebsocketEventId_Preview, PreviewUrl);
 		}
@@ -503,16 +502,15 @@ namespace Bloom.Publish.Android
 			{
 				return;
 			}
-			UpdatePreview(request);
+			UpdatePreview(request, false);
 		}
 
-		public void Stop()
+		public void Dispose()
 		{
 #if !__MonoCS__
-			_usbPublisher.Stop();
+			_usbPublisher.Stop(disposing: true);
 #endif
 			_wifiPublisher.Stop();
-			SetState("stopped");
 			_stagingFolder?.Dispose();
 		}
 
@@ -528,8 +526,8 @@ namespace Bloom.Publish.Android
 
 		/// <summary>
 		/// This is the core of sending a book to a device. We need a book and a bookServer in order to come up
-		/// with the .bloomd file.
-		/// We are either simply saving the .bloomd to destFileName, or else we will make a temporary .bloomd file and
+		/// with the .bloompub file.
+		/// We are either simply saving the .bloompub to destFileName, or else we will make a temporary .bloompub file and
 		/// actually send it using sendAction.
 		/// We report important progress on the progress control. This includes reporting that we are starting
 		/// the actual transmission using startingMessageAction, which is passed the safe file name (for checking pre-existence
@@ -570,7 +568,7 @@ namespace Bloom.Publish.Android
 				progress.MessageWithoutLocalizing(startingMessageFunction(publishedFileName, bookTitle));
 			if (destFileName == null)
 			{
-				// wifi or usb...make the .bloomd in a temp folder.
+				// wifi or usb...make the .bloompub in a temp folder.
 				using (var bloomdTempFile = TempFile.WithFilenameInTempFolder(publishedFileName))
 				{
 					BloomPubMaker.CreateBloomPub(bloomdTempFile.Path, book, bookServer,  progress, settings);
@@ -592,10 +590,12 @@ namespace Bloom.Publish.Android
 
 		private static TemporaryFolder _stagingFolder;
 
+		internal bool LicenseOK;
+
 		/// <summary>
-		/// Generates a .bloomd file (bloompub) from the book
+		/// Generates an unzipped, staged BloomPUB from the book
 		/// </summary>
-		/// <returns>A valid, well-formed URL on localhost that points to the bloomd</returns>
+		/// <returns>A valid, well-formed URL on localhost that points to the staged book's htm file</returns>
 		public string MakeBloomPubForPreview(Book.Book book, BookServer bookServer, WebSocketProgress progress, Color backColor, AndroidPublishSettings settings = null)
 		{
 			progress.Message("PublishTab.Epub.PreparingPreview", "Preparing Preview");	// message shared with Epub publishing
@@ -605,10 +605,12 @@ namespace Bloom.Publish.Android
 				if (message != null)
 				{
 					progress.MessageWithoutLocalizing(message, ProgressKind.Error);
+					LicenseOK = false;
 					_webSocketServer.SendString(kWebSocketContext, kWebsocketState_LicenseOK, "false");
 					return null;
 				}
 			}
+			LicenseOK = true;
 			_webSocketServer.SendString(kWebSocketContext, kWebsocketState_LicenseOK, "true");
 
 			_stagingFolder?.Dispose();
@@ -627,7 +629,29 @@ namespace Bloom.Publish.Android
 			CurrentPublicationFolder = _stagingFolder.FolderPath;
 			var modifiedBook = BloomPubMaker.PrepareBookForBloomReader(book.FolderPath, bookServer, _stagingFolder, progress,book.IsTemplateBook, settings: settings);
 			progress.Message("Common.Done", "Shown in a list of messages when Bloom has completed a task.", "Done");
-			return modifiedBook.FolderPath.ToLocalhost();
+			if (settings?.WantPageLabels ?? false)
+			{
+				int pageNum = 0;
+				var labelData
+					= modifiedBook.GetPages().Select(p =>
+					{
+						var caption = p.GetCaptionOrPageNumber(ref pageNum, out string i18nId);
+						if (!string.IsNullOrEmpty(caption))
+							caption = I18NApi.GetTranslationDefaultMayNotBeEnglish(i18nId, caption);
+						return caption;
+					}).ToArray();
+				dynamic messageBundle = new DynamicJson();
+				messageBundle.labels = labelData;
+				// We send these through the websocket rather than getting them through an API because the
+				// API request would very likely come before we finish generating the preview so at best we'd
+				// have to delay the response. Then the request might time out on a long book. So we'd really
+				// need an event anyway to tell the Typescript code it is time to request the labels.
+				// And then it would take some nasty spaghetti code to get the labels to the PublishVideoApi
+				// class so it could reply to the request. Cleaner just to send it through the socket.
+				_webSocketServer.SendBundle("publishPageLabels", "ready", messageBundle);
+			}
+
+			return modifiedBook.GetPathHtmlFile().ToLocalhost();
 		}
 
 		/// <summary>

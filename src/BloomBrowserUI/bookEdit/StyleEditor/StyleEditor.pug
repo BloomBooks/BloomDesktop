@@ -22,13 +22,13 @@ mixin img(filename)
 						button#create-button(data-i18n="EditTab.FormatDialog.Create" disabled) Create
 					#please-use-alpha(style="color: red;" data-i18n="EditTab.FormatDialog.PleaseUseAlpha") Please use only alphabetical characters. Numbers at the end are ok, as in "part2".
 					#already-exists(style="color: red;" data-i18n="EditTab.FormatDialog.AlreadyExists") That style already exists. Please choose another name.
-		#formatPage.tab-page
+		.tab-page
 			h2.tab(data-i18n="EditTab.FormatDialog.CharactersTab") Characters
 			.bloomDialogMainPage
 				div
 					div(data-i18n="EditTab.FormatDialog.Font") Font
-					.control-section
-						select#font-select
+					.font-control-section
+						#fontSelectComponent
 						select#size-select.allowCustom
 					.spacing-fudge(data-i18n="EditTab.FormatDialog.Spacing") Spacing
 					#spacingRow

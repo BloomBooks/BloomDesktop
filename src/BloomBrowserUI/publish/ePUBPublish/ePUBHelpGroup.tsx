@@ -11,22 +11,10 @@ export const EPUBHelpGroup = () => (
             About ePUBs
         </HelpLink>
         <HelpLink
-            l10nKey="PublishTab.Epub.Accessibility"
-            helpId="Tasks/Publish_tasks/Accessibility.htm"
+            l10nKey="PublishTab.TasksOverview"
+            helpId="Tasks/Publish_tasks/Publish_tasks_overview.htm"
         >
-            Accessibility
-        </HelpLink>
-        <HelpLink
-            l10nKey="PublishTab.Epub.Help.EReaders"
-            helpId="Concepts/Epub_Readers.htm"
-        >
-            Compatible ePUB Readers
-        </HelpLink>
-        <HelpLink
-            l10nKey="PublishTab.Epub.Help.Publishing"
-            helpId="Tasks/Publish_tasks/Digital_publishing_options.htm"
-        >
-            Getting ePUBs onto a device
+            Publish tab tasks overview
         </HelpLink>
     </HelpGroup>
 );

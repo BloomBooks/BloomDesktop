@@ -310,6 +310,7 @@ namespace BloomTests.Book
 			var dom = book.RawDom;// book.GetEditableHtmlDomForPage(book.GetPages().First());
 			var textarea1 = dom.SelectSingleNodeHonoringDefaultNS("//textarea[@id='2' and @lang='xyz']");
 			textarea1.InnerText = "peace";
+			book.BookData.SuckInDataFromEditedDom(new HtmlDom(dom.SelectSingleNode("//div[@id='guid1']").OuterXml));
 			book.BringBookUpToDate(new NullProgress());
 			var textarea2 = dom.SelectSingleNodeHonoringDefaultNS("//textarea[@idc='copyOfVTitle'  and @lang='xyz']");
 			Assert.AreEqual("peace", textarea2.InnerText);
@@ -1740,6 +1741,9 @@ namespace BloomTests.Book
 					<link rel='stylesheet' href='../../previewMode.css' type='text/css' />;
 				</head>
 				<body>
+					<div id='bloomDataDiv'>
+						<div data-book='bookTitle' lang='en'>my nice title</div>
+					</div>
 					<div class='bloom-page'>
 						<div class='bloom-page' id='guid2'>
 							<textarea lang='en' data-book='bookTitle'>my nice title</textarea>
@@ -3538,9 +3542,11 @@ namespace BloomTests.Book
 		[Test]
 		public void UpdateMetadataFeatures_MotionAdded_MotionFeatureTrue()
 		{
+			// The content of the DOM no longer matters. I've deliberately deleted the body attributes
+			// that used to determine it.
 			_bookDom = new HtmlDom(
 @"<html>
-	<body data-bffullscreenpicture='landscape;bloomReader'>
+	<body>
 		 <div class='bloom-page numberedPage'>
 			<div class='marginBox'>
 				<div class='bloom-imageContainer' data-initialrect='0 0 1 1' data-finalrect='0.3 0.3 0.5 0.5'>
@@ -3555,6 +3561,7 @@ namespace BloomTests.Book
 </html>");
 
 			var book = CreateBook();
+			book.BookInfo.PublishSettings.BloomPub.Motion = true;
 
 			book.UpdateMetadataFeatures(false, false, false, null);
 

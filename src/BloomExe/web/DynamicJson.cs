@@ -212,6 +212,8 @@ namespace Bloom.Api
 			return IsArray && (xml.Elements().ElementAtOrDefault(index) != null);
 		}
 
+		public int Count => xml.Elements().Count();
+
 		/// <summary>delete property</summary>
 		public bool Delete(string name)
 		{
@@ -254,12 +256,33 @@ namespace Bloom.Api
 			{
 				value = ((DynamicJson)value).Deserialize(elementType);
 			}
+
+			if (elementType.IsEnum)
+			{
+				if (value is string valString)
+					return Enum.Parse(elementType, valString);
+				// DynamicJson converts things that look like numbers to double, even if really ints.
+				if (value is double valDouble)
+					return Enum.ToObject(elementType, (int)valDouble);
+			}
 			return Convert.ChangeType(value, elementType);
 		}
 
 		private object DeserializeObject(Type targetType)
 		{
 			var result = Activator.CreateInstance(targetType);
+			if (result is IDictionary dictResult)
+			{
+				// Enhance: currently assumes it is a dictionary with key type string.
+				var itemPropInfo = targetType.GetProperty("Item");
+				foreach (var item in xml.Elements())
+				{
+					var value = DeserializeValue(item, itemPropInfo.PropertyType);
+					dictResult[item.Name.LocalName] = value;
+				}
+
+				return result;
+			}
 			var dict = targetType.GetProperties(BindingFlags.Public | BindingFlags.Instance)
 				.Where(p => p.CanWrite)
 				.ToDictionary(pi => pi.Name, pi => pi);
@@ -361,6 +384,43 @@ namespace Bloom.Api
 			return (IsArray)
 				? TryGet(xml.Elements().ElementAtOrDefault(int.Parse(binder.Name)), out result)
 				: TryGet(xml.Element(binder.Name), out result);
+		}
+
+		public bool TryGet<T>(string name, out T result) where T : class
+		{
+			result = default(T);
+			if (!TryGet(xml.Element(name), out object val))
+				return false;
+			result = val as T;
+			if (result == null && val is DynamicJson valJ)
+			{
+				if (valJ.IsArray)
+				{
+					result = valJ.DeserializeArray(typeof(T)) as T;
+				}
+				else
+				{
+					result = valJ.Deserialize<T>();
+				}
+			}
+
+			return result != null;
+		}
+
+		public bool TryGetValue<T>(string name, out T result)
+		{
+			result = default(T);
+			if (!TryGet(xml.Element(name), out object val))
+				return false;
+			try
+			{
+				result = (T)val;
+			}
+			catch (InvalidCastException)
+			{
+				return false;
+			}
+			return true;
 		}
 
 		private bool TrySet(string name, object value)

@@ -1,0 +1,11 @@
+#!/bin/sh
+
+LIB=/usr/lib/bloom-desktop-beta
+SHARE=/usr/share/bloom-desktop-beta
+
+cd "$SHARE"
+RUNMODE=INSTALLED
+. ./environ
+cd "$OLDPWD"
+
+exec "$LIB"/BloomLauncher "$@"

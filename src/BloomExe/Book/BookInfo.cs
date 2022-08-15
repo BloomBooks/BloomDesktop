@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using Bloom.ImageProcessing;
 using System.Text.RegularExpressions;
@@ -45,7 +46,7 @@ namespace Bloom.Book
 		//for use by ErrorBookInfo
 		protected BookInfo()
 		{
-
+			PublishSettings = new PublishSettings();
 		}
 
 		internal BookInfo(string folderPath, bool isEditable)
@@ -58,7 +59,7 @@ namespace Bloom.Book
 				Guard.Against(!Program.RunningUnitTests, "Only use this ctor for tests and non-editable collections");
 		}
 
-		public BookInfo(string folderPath, bool isEditable, ISaveContext saveContext)
+		public BookInfo(string folderPath, bool isEditable, ISaveContext saveContext) : this()
 		{
 			Guard.AgainstNull(saveContext, "Please supply an actual saveContext");
 			
@@ -88,6 +89,8 @@ namespace Bloom.Book
 				}
 				// otherwise leave it null, first attempt to use will create a default one
 			}
+
+			PublishSettings = PublishSettings.FromFolder(FolderPath);
 		}
 
 		public enum HowToPublishImageDescriptions
@@ -218,7 +221,7 @@ namespace Bloom.Book
 		/// This stores a Json string representing lang:title pairs, e.g.,
 		/// {"en":"my nice title","de":"Mein schönen Titel","es":"мy buen título"}.
 		/// </summary>
-		public string AllTitles
+		public virtual string AllTitles
 		{
 			get { return MetaData.AllTitles; }
 			set { MetaData.AllTitles = value; }
@@ -337,6 +340,11 @@ namespace Bloom.Book
 			return false;
 		}
 
+		public void SavePublishSettings()
+		{
+			PublishSettings.WriteToFolder(FolderPath);
+		}
+
 		public void Save()
 		{
 			// https://jira.sil.org/browse/BL-354 "The requested operation cannot be performed on a file with a user-mapped section open"
@@ -347,6 +355,7 @@ namespace Bloom.Book
 				try
 				{
 					MetaData.WriteToFolder(FolderPath);
+					SavePublishSettings();
 					return;
 				}
 				catch (IOException e)
@@ -366,6 +375,12 @@ namespace Bloom.Book
 
 			} while (count < 5);
 		}
+
+
+		/// <summary>
+		/// Settings for the publish tab (and Harvester).
+		/// </summary>
+		public PublishSettings PublishSettings { get; private set; }
 
 		public string CountryName
 		{
@@ -397,6 +412,7 @@ namespace Bloom.Book
 		}
 
 		public const string MetaDataFileName = "meta.json";
+		public const string PublishSettingsFileName = "publish-settings.json";
 
 		public string Credits
 		{
@@ -699,7 +715,7 @@ namespace Bloom.Book
 					// than one member of a duplicate set to be in a TC is hopefully vanishingly rare. If it happens,
 					// I think it's worth hearing about.
 					var problemPaths = string.Join(", ",sortedFilepaths.Values.Except(filePathsToChange).Select(Path.GetFileName));
-					throw new ApplicationException("Bloom found two or more books that are already shared in your Team Collection and have the same ID ("
+					throw new FatalException("Bloom found two or more books that are already shared in your Team Collection and have the same ID ("
 					+ problemPaths + "). You will need help from the Bloom Team to sort this out.");
 				}
 
@@ -990,7 +1006,7 @@ namespace Bloom.Book
 		public bool IsSuitableForVernacularLibrary { get; set; }
 
 		/// <summary>
-		/// This version number is set when making a meta.json to embed in a bloomd file.
+		/// This version number is set when making a meta.json to embed in a bloompub file.
 		/// We increment it whenever something changes that bloom-player or some other
 		/// client might need to know about. It is NOT intended that the player would
 		/// refuse to open a book with a higher number than it knows about; we may one day
@@ -998,7 +1014,7 @@ namespace Bloom.Book
 		/// newer player which accommodates older books to know which of those accommodations
 		/// are needed.
 		/// See the one place where it is set for a history of the versions and what each
-		/// indicates about the bloomd content.
+		/// indicates about the bloompub content.
 		/// </summary>
 		[JsonProperty("bloomdVersion")]
 		public int BloomdVersion { get; set; }
@@ -1119,47 +1135,16 @@ namespace Bloom.Book
 		public bool BookletMakingIsAppropriate { get; set; }
 
 		/// <summary>
-		/// This is an item the user checks-off as part of claiming that the book is fully accessible
+		/// This is an item the user checks-off as part of claiming that the book is fully accessible.
 		/// </summary>
 		[JsonProperty("a11y_NoEssentialInfoByColor")]
 		public bool A11y_NoEssentialInfoByColor;
 
 		/// <summary>
-		/// This is an item the user checks-off as part of claiming that the book is fully accessible
+		/// This is an item the user checks-off as part of claiming that the book is fully accessible.
 		/// </summary>
 		[JsonProperty("a11y_NoTextIncludedInAnyImages")]
 		public bool A11y_NoTextIncludedInAnyImages;
-
-		/// <summary>
-		/// This item indicates how the user would like Epubs of this book to handle Image Descriptions
-		/// Current possibilities are 'None', 'OnPage', and 'Links'.
-		/// </summary>
-		[JsonProperty("epub_HowToPublishImageDescriptions")]
-		public BookInfo.HowToPublishImageDescriptions Epub_HowToPublishImageDescriptions;
-
-		/// <summary>
-		/// This corresponds to a checkbox indicating that the user wants to use the eReader's native font styles.
-		/// </summary>
-		[JsonProperty("epub_RemoveFontStyles")]
-		public bool Epub_RemoveFontSizes;
-
-		/// <summary>
-		/// This corresponds to the checkbox values of which languages the user wants to publish the text for
-		/// </summary>
-		[JsonProperty("textLangsToPublish")]
-		public LangsToPublishSetting TextLangsToPublish { get; set; }
-
-		/// <summary>
-		/// This corresponds to the checkbox values of which languages the user wants to publish the audio for
-		/// </summary>
-		[JsonProperty("audioLangsToPublish")]
-		public LangsToPublishSetting AudioLangsToPublish { get; set; }
-
-		/// <summary>
-		/// The sign language(s) -- currently we allow only one -- which the user wants to publish
-		/// </summary>
-		[JsonProperty("signLangsToPublish")]
-		public LangsToPublishSetting SignLangsToPublish { get; set; }
 
 		// About this ignore: this actually would be perfectly fine as a top-level bit of true metadata.
 		// However, it is currently also in the toolstate, so we're leaving it out of the meta.json so as not to
@@ -1502,10 +1487,6 @@ namespace Bloom.Book
 		private string GetUpdateSource() => $"BloomDesktop {Application.ProductVersion}";
 
 		private ParseServerDate GetCurrentDate() => new ParseServerDate { Iso = DateTime.UtcNow.ToString("o") };
-
-		// For now, the audio language selection is all or nothing for Bloom Library publish
-		[JsonIgnore]
-		public bool IncludeAudioForBloomLibraryPublish => AudioLangsToPublish.ForBloomLibrary.Any(al => al.Value.IsIncluded());
 	}
 
 	/// <summary>

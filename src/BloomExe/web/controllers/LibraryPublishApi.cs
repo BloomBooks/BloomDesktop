@@ -3,14 +3,17 @@ using Bloom.Publish.BloomLibrary;
 
 namespace Bloom.web.controllers
 {
+	/// <summary>
+	/// APIs related to the BloomLibraryUpload control.
+	/// </summary>
 	class LibraryPublishApi
 	{
 		private static BloomLibraryUploadControl _uploadControl;
 
 		public void RegisterWithApiHandler(BloomApiHandler apiHandler)
 		{
-			apiHandler.RegisterEndpointHandler("libraryPublish/upload", HandleUpload, true);
-			apiHandler.RegisterEndpointHandler("libraryPublish/cancel", HandleCancel, true);
+			apiHandler.RegisterEndpointLegacy("libraryPublish/upload", HandleUpload, true);
+			apiHandler.RegisterEndpointLegacy("libraryPublish/cancel", HandleCancel, true);
 		}
 
 		public static BloomLibraryUploadControl SetUploadControl

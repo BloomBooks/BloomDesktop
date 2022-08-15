@@ -35,11 +35,11 @@ module.exports = merge(core, {
         readerSetupBundle:
             "./bookEdit/toolbox/readers/readerSetup/readerSetup.ts",
         editablePageBundle: "./bookEdit/editablePage.ts",
+        // Surprisingly, this is still necessary with the React Preview to get previews
+        // to NOT allow editing.
         bookPreviewBundle:
             "./collectionsTab/collectionsTabBookPane/bookPreview.ts",
         toolboxBundle: "./bookEdit/toolbox/toolboxBootstrap.ts",
-        exportSpreadsheetDialogBundle:
-            "./collectionsTab/spreadsheet/SpreadsheetExportDialog.tsx",
         pageChooserBundle: "./pageChooser/page-chooser.ts",
         pageThumbnailListBundle:
             "./bookEdit/pageThumbnailList/pageThumbnailList.tsx",
@@ -65,14 +65,12 @@ module.exports = merge(core, {
         // These work with c# ReactControl:
         problemReportBundle: "./problemDialog/ProblemDialog.tsx",
         messageBoxBundle: "./utils/BloomMessageBox.tsx",
-        defaultBookshelfControlBundle:
-            "./react_components/DefaultBookshelfControl.tsx",
+        bookMakingSettingsBundle: "./collection/bookMakingSettingsControl.tsx",
         progressDialogBundle: "./react_components/Progress/ProgressDialog.tsx",
         requiresBloomEnterpriseBundle:
             "./react_components/requiresBloomEnterprise.tsx",
         createTeamCollectionDialogBundle:
             "./teamCollection/CreateTeamCollection.tsx",
-        teamCollectionDialogBundle: "./teamCollection/TeamCollectionDialog.tsx",
         teamCollectionSettingsBundle:
             "./teamCollection/TeamCollectionSettingsPanel.tsx",
         joinTeamCollectionDialogBundle:
@@ -82,18 +80,14 @@ module.exports = merge(core, {
         duplicateManyDlgBundle: "./bookEdit/duplicateManyDialog.tsx",
         uploadIDCollisionDlgBundle:
             "./publish/LibraryPublish/uploadCollisionDlg.tsx",
+        copyrightAndLicenseBundle:
+            "./bookEdit/copyrightAndLicense/CopyrightAndLicenseDialog.tsx",
 
-        collectionsTabPaneBundle: "./collectionsTab/CollectionsTabPane.tsx",
+        collectionsTabPaneBundle: "./collectionsTab/CollectionsTabPane.tsx"
 
-        // this is here for the "legacy" collections tab, though it's actually new for 5.1
-        // we decided that the "legacy" bit we are trying to preserve a bit longer is the left side, the list of books.
-        collectionsTabBookPaneBundle:
-            "./collectionsTab/collectionsTabBookPane/CollectionsTabBookPane.tsx",
-
-        legacyBookPreviewBundle:
-            "./collectionsTab/collectionsTabBookPane/bookPreview.ts"
-
-        //             testBundle: globule.find(["./**/*Spec.ts", "./**/*Spec.js", "!./node_modules/**"])//This slowed down webpack a ton, becuase the way it works is that it 1st it finds it all, then it excludes node_modules
+        // This slowed down webpack a ton, because the way it works is that it 1st finds it all,
+        // then it excludes node_modules
+        // testBundle: globule.find(["./**/*Spec.ts", "./**/*Spec.js", "!./node_modules/**"])
     },
 
     output: {

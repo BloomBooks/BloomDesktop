@@ -369,6 +369,7 @@ namespace Bloom
 			{
 				if (_browser != null)
 				{
+					// no need to disconnect event handlers that are connect to this instance's methods.
 					_browser.Dispose();
 					_browser = null;
 				}
@@ -383,6 +384,7 @@ namespace Bloom
 				{
 					components.Dispose();
 				}
+				Application.Idle -= Application_Idle;   // just in case...  Multiple disconnects hurt nothing.
 			}
 			base.Dispose(disposing);
 			_disposed = true;
@@ -496,7 +498,14 @@ namespace Bloom
 				Keys keyData = Keys.Control | Keys.N;
 				ControlKeyEvent.Raise(keyData);
 			}
+#if __MonoCS__
+			_controlPressed = e.CtrlKey && e.KeyChar == 'm';	// m for menu...
+#endif
 		}
+
+#if __MonoCS__
+		private bool _controlPressed;
+#endif
 
 		private void Paste()
 		{
@@ -527,8 +536,13 @@ namespace Bloom
 			// To allow Typescript code to implement right-click, we'll do our special developer menu
 			// only if the control key is down. Though, if ContextMenuProvider is non-null, we'll assume
 			// C# is supposed to handle the context menu here.
+#if __MonoCS__
+			if (!_controlPressed && ContextMenuProvider == null)
+				return;
+#else
 			if ((Control.ModifierKeys & Keys.Control) != Keys.Control && ContextMenuProvider == null)
 				return;
+#endif
 			MenuItem FFMenuItem = null;
 			Debug.Assert(!InvokeRequired);
 #if DEBUG
@@ -727,7 +741,7 @@ namespace Bloom
 		{
 			Debug.Assert(!InvokeRequired);
 
-			Application.Idle += new EventHandler(Application_Idle);
+			Application.Idle += Application_Idle;
 
 			//NO. We want to leave it around for debugging purposes. It will be deleted when the next page comes along, or when this class is disposed of
 			//    		if(_tempHtmlFile!=null)
@@ -748,7 +762,7 @@ namespace Bloom
 				Invoke(new Action<object, EventArgs>(Application_Idle), sender, e);
 				return;
 			}
-			Application.Idle -= new EventHandler(Application_Idle);
+			Application.Idle -= Application_Idle;
 		}
 
 		/// <summary>

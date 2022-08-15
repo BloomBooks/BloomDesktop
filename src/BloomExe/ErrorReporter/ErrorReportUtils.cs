@@ -1,114 +1,54 @@
-﻿using Bloom.WebLibraryIntegration;
+#if !debug
+using Bloom.WebLibraryIntegration;
+#endif
 using L10NSharp;
 using SIL.Reporting;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Windows.Forms;
 
 namespace Bloom.ErrorReporter
 {
+	internal interface IBloomErrorReporter : IErrorReporter
+	{
+		/// <summary>
+		/// Sets all the extra parameters required to customize the buttons/extra buttons when calling NotifyUserOfProblem
+		/// They can't be directly added to NotifyUserOfProblem because it needs to match the IErrorReporter interface.
+		/// As a result, we work around that by having class instance variables that you set before invoking NotifyUserOfProblem.
+		/// </summary>
+		/// <param name="reportButtonLabel">The localized text of the report button. Pass null for default behavior. Pass "" to disable.</param>
+		/// <param name="onReportButtonPressed">The action to execute after the report button is pressed. Pass null to use the default behavior.</param>
+		/// <param name="extraButtonLabel">The localized text of the extra button. Pass null for default behavior. Pass "" to disable.</param>
+		/// <param name="onExtraButtonPressed">The action to execute after the extra button is pressed. Pass null to use the default behavior.</param>
+		void SetNotifyUserOfProblemCustomParams(string reportButtonLabel = null, Action<Exception, string> onReportButtonPressed = null,
+			string extraButtonLabel = null, Action<Exception, string> onExtraButtonPressed = null);
+	}
+
 	/// <summary>
-	/// This class wraps LibPalaso's ErrorReport.cs class, particularly the NotifyUserOfProblem overloads.
-	/// The wrapper/adapter is there because HtmlErrorReporter has the concept of a secondary action button, in addition to the Report (Report the problem) button.
-	/// So, these wrapper functions expose parameters related to the secondary action button.
-	///
-	/// There are 5 overloads of NotifyUserOfProblem, which can largely be lumped into two different groups:
-	/// 1) Auto-Invoke versions (the button press handler actions are automatically invoked by ErrorReport.cs after the button is clicked), or
-	/// 2) Manual Invoke versions (the function returns a return value code which indicates which button was pressed)
-	/// 
-	/// If you want to know exactly what each overload does, knowing the internals of how ErrorReport works is important.
-	/// If so, refer to libpalaso's SIL.Core\Reporting\ErrorReport.cs
+	/// This class is based on LibPalaso's <see cref="ErrorReport"/> class,
+	/// but adds methods to call NotifyUserOfProblem with more button customization
 	/// </summary>
 	public class ErrorReportUtils
 	{
 		/// <summary>
-		/// Wrapper around 2-argument overload of ErrorReport.NotifyUserOfProblem
-		/// This wrapper is identical to calling ErrorReport directly.
-		/// 
-		/// Other than OK, no other buttons will be shown.
+		/// Customized version of ErrorReport.NotifyUserOfProblem that allows customization of the button labels and what they do.
+		/// (This will eventually call <see cref="ErrorReport.NotifyUserOfProblem(IRepeatNoticePolicy, Exception, string, object[])"/>)
 		/// </summary>
-		public static void NotifyUserOfProblem(string message, params object[] args)
+		/// <param name="message">The message to report to the user.</param>
+		/// <param name="exception">Optional - Any exception accompanying the message.</param>
+		/// <param name="reportButtonLabel">Optional - The localized text of the report button. Pass null to use the default behavior.</param>
+		/// <param name="onReportButtonPressed">Optional - The action to execute after the report button is pressed. Pass null to use the default behavior.</param>
+		/// <param name="extraButtonLabel">Optional - The localized text of the secondary action button. Pass null to use the default behavior.</param>
+		/// <param name="onExtraButtonPressed">Optional - The action to execute after the secondary action button is pressed. Pass null to use the default behavior.</param>
+		/// <param name="policy">Optional - The policy for how often to show the message. If null or not set, then ShowAlwaysPolicy will be used.</param>
+		public static void NotifyUserOfProblem(string message, Exception exception = null,
+			string reportButtonLabel = null, Action<Exception, string> onReportButtonPressed = null,
+			string extraButtonLabel = null, Action<Exception, string> onExtraButtonPressed = null,
+			IRepeatNoticePolicy policy = null)
 		{
-			ErrorReport.NotifyUserOfProblem(message, args);
-		}
-
-		/// <summary>
-		/// Wrapper around 3-argument overload (with policy) of ErrorReport.NotifyUserOfProblem
-		/// This wrapper is identical to calling ErrorReport directly.
-		/// 
-		/// Other than OK, no other buttons will be shown.
-		/// </summary>
-		public static ErrorResult NotifyUserOfProblem(IRepeatNoticePolicy policy, string messageFmt, params object[] args)
-		{
-			return ErrorReport.NotifyUserOfProblem(policy, messageFmt, args);
-		}
-
-		/// <summary>
-		/// Adapter around 3-argument overload (with input exception) of ErrorReport.NotifyUserOfProblem (Auto-invoke version)
-		/// This adapter exposes two additional parameters to control the secondary action button
-		/// 
-		/// Uses the default Report button (previously known as Details button or alternateButton1)
-		/// The corresponding action will be automatically invoked by ErrorReport.cs after each button is clicked.
-		/// </summary>
-		/// /// <param name="secondaryActionLabel">Optional - The localized text of the secondary action button. Pass null or "" to disable this button.</param>
-		/// <param name="onSecondaryPressed">Optional - The action to execute after the secondary action button is pressed. You may pass null if no action is desired.</param>
-		/// <param name="error">Optional - The error to report. Or you may rely on {messageFmt}</param>
-		/// <param name="messageFmt">Optional - The message to report to the user. May be a format string. Or, you may rely on {error} instead.</param>
-		/// <param name="args">The format string arguments</param>
-		public static void NotifyUserOfProblem(string secondaryActionLabel, Action<Exception, string> onSecondaryPressed,
-			Exception error, string messageFmt, params object[] args)
-		{
-			HtmlErrorReporter.Instance.CustomNotifyUserAuto(null, secondaryActionLabel, onSecondaryPressed, error, messageFmt, args);
-		}
-
-		/// <summary>
-		/// Adapter around 4-argument overload of ErrorReport.NotifyUserOfProblem (Auto-invoke version)
-		/// This adapter exposes two additional parameters to control the secondary action button
-		/// 
-		/// Uses the default Report button (aka Details button or alternateButton1)
-		/// The corresponding action will be automatically invoked by ErrorReport.cs after each button is clicked.
-		/// </summary>
-		/// <param name="secondaryActionLabel">Optional - The localized text of the secondary action button. Pass null or "" to disable this button.</param>
-		/// <param name="onSecondaryPressed">Optional - The action to execute after the secondary action button is pressed. If the secondary action is disabled, it is safe to pass null here. But if it is enabled and you actually want nothing to happen, you should pass in an Action that does nothing, not pass null</param>
-		/// <param name="error">Optional - The error to report. Or you may rely on {messageFmt}</param>
-		/// <param name="messageFmt">Optional - The message to report to the user. May be a format string. Or, you may rely on {error} instead.</param>
-		/// <param name="args">The format string arguments</param>
-		public static void NotifyUserOfProblem(string secondaryActionLabel, Action<Exception, string> onSecondaryPressed,
-			IRepeatNoticePolicy policy, Exception error, string messageFmt, params object[] args)
-		{
-			HtmlErrorReporter.Instance.CustomNotifyUserAuto(null, secondaryActionLabel, onSecondaryPressed, policy, error, messageFmt, args);
-		}
-
-		/// <summary>
-		/// An adapter around the 5-argument overload of LibPalaso's ErrorReport's NotifyUserOfProblem (Manual Invoke version)
-		/// This adapter exposes two additional parameters to control the secondary action button
-		///
-		/// This version allows you to add a Report and Secondary Action button, if desired
-		/// 
-		/// This version does not automatically invoke any actions upon button presses,
-		/// but relies on returning an ErrorResult to indicate which button was pressed
-		/// The caller should check the return value for control flow and take whatever action it desires accordingly.
-		/// </summary>
-		/// <param name="policy">The policy that indicates how often the message should be shown</param>
-		/// <param name="reportButtonLabel">The localized text of the button that will lead to the Problem Report Dialog (report an issue to the issue-tracking system)</param>
-		/// <param name="resultIfReportButtonPressed">The return value that this function should return to indicate to the caller that the Report button was pressed</param>
-		/// <param name="secondaryActionButtonLabel">The localized text of the button that initiates the secondary action.</param>
-		/// <param name="resultIfSecondaryPressed">The return value that this function should return to indicate to the caller that the secondary action button was pressed</param>
-		/// <param name="messageFmt">The message to display to the user. May be a format string</param>
-		/// <param name="args">Optional. The args to pass to the messageFmt format string.</param>
-		/// <returns>ErrorResult.OK if OK button pressed, or {resultIfReportButtonPressed} if the user clicks the Report button, or {resultIfSecondaryActionButtonPressed} if the user clicks the secondary action button. Or ErrorResult.Abort if error.</returns>
-		public static ErrorResult NotifyUserOfProblem(
-			IRepeatNoticePolicy policy,
-			string reportButtonLabel, /* The Report button is equivalent to the Details button in libpalaso's WinFormsErrorReporter of {alternateButton1} in libpalaso's ErrorReport */
-			ErrorResult resultIfReportButtonPressed,
-			string secondaryActionButtonLabel, /* An additional action such as Retry / etc */
-			ErrorResult resultIfSecondaryPressed,
-			string messageFmt,
-			params object[] args)
-		{
-			return HtmlErrorReporter.Instance.CustomNotifyUserManual(policy, reportButtonLabel, resultIfReportButtonPressed, secondaryActionButtonLabel, resultIfSecondaryPressed, messageFmt, args);
+			Program.ErrorReporter.SetNotifyUserOfProblemCustomParams(reportButtonLabel, onReportButtonPressed, extraButtonLabel, onExtraButtonPressed);
+			ErrorReport.NotifyUserOfProblem(policy ?? new ShowAlwaysPolicy(), exception, message);
 		}
 
 		#region Premade Alternate Actions
@@ -119,6 +59,10 @@ namespace Bloom.ErrorReporter
 		#endregion
 
 		#region Fake Test Errors
+		/// <summary>
+		/// Generates Error Reports for books with specific titles, but only in Debug or Sandbox mode
+		/// Facilitates manual testing of error reporting using specific books.
+		/// </summary>
 		internal static void CheckForFakeTestErrorsIfNotRealUser(string title)
 		{
 			// A real user is defined as one using a Release build (i.e. not a Debug build) and not using Sandbox mode.
@@ -132,22 +76,53 @@ namespace Bloom.ErrorReporter
 
 
 			if (checkAllowed)
+			{
+				// Run on the current thread (Should be the main thread)
 				CheckForFakeTestErrors(title);
+
+				//// Use this version to test running off the main thread
+				//// (This is just a toy example, don't assume that just because this thread works, your code will never deadlock or anything like that
+				//// Note: A slightly more realistic example is to generate these errors on a server worker thread. e.g. in Book.cs::GetPreviewHtmlFileForWholeBook() 
+				//new Thread(() =>
+				//{
+				//	CheckForFakeTestErrors(title);
+				//}).Start();
+			}
 		}
 
 		/// <summary>
 		/// Generates Error Reports for books with specific titles
-		/// Facilitates testing of error reporting.
+		/// Facilitates manual testing of error reporting using specific books.
 		/// </summary>
 		private static void CheckForFakeTestErrors(string title)
 		{
 			const string fakeProblemMessage = "Fake problem for development/testing purposes";
-			var fakeException = new ApplicationException("Fake exception for development/testing purposes");
+			Exception fakeException;
+
+			// Throwing/catching the exception populates the stack trace
+			try
+			{
+				throw new ApplicationException("Fake exception for development/testing purposes");
+			}
+			catch (ApplicationException e)
+			{
+				fakeException = e;
+			}
 			
 			if (title == "Error NotifyUser NoReport")
 			{
-				// Tests a path through libPalaso directly (goes thru overloads 1, 2, 5)
+				// Exercises a path through libPalaso directly (goes thru overloads 1, 2, 4)
 				ErrorReport.NotifyUserOfProblem(fakeProblemMessage);
+			}
+			else if (title == "Error NotifyUser NoReport 2")
+			{
+				// Exercises a path through libPalaso directly (goes thru overloads 3, 4)
+				ErrorReport.NotifyUserOfProblem((Exception)null, fakeProblemMessage);
+			}
+			else if (title == "Error NotifyUser NoReport 3")
+			{
+				// Exercises a path where you go through the ErrorReportUtils adapters
+				ErrorReportUtils.NotifyUserOfProblem(fakeProblemMessage);
 			}
 			else if (title == "Error NotifyUser LongMessage")
 			{
@@ -159,45 +134,33 @@ namespace Bloom.ErrorReporter
 			}
 			else if (title == "Error NotifyUser Report NoRetry")
 			{
-				// Tests another path through libPalaso directly (goes thru overloads 3, 4, 5)
-				ErrorReport.NotifyUserOfProblem((Exception)null, fakeProblemMessage);
-			}
-			else if (title == "Error NotifyUser ReportException NoRetry")
-			{
-				// Tests another path through libPalaso directly (goes thru overloads 3, 4, 5)
+				// Exercises another path through libPalaso directly (goes thru overloads 3, 4)
 				ErrorReport.NotifyUserOfProblem(fakeException, fakeProblemMessage);
 			}
 			else if (title == "Error NotifyUser Report NoRetry 2")
 			{
-				// Tests a path where you need to go through the ErrorReportUtils adapters
-				// (follow-up actions automatically invoked)
-				ErrorReportUtils.NotifyUserOfProblem("", null, null, fakeProblemMessage);
+				// Exercises a path where you go through the ErrorReportUtils adapters
+				ErrorReportUtils.NotifyUserOfProblem(fakeProblemMessage, fakeException);
 			}
 			else if (title == "Error NotifyUser Report Retry")
 			{
-				// Tests a path where you need to go through the ErrorReportUtils adapters
-				// (follow-up actions automatically invoked)
+				// Exercises a path where you need to go through the ErrorReportUtils adapters
 				var secondaryButtonLabel = LocalizationManager.GetString("ErrorReportDialog.Retry", "Retry");
-				ErrorReportUtils.NotifyUserOfProblem(secondaryButtonLabel, ErrorReportUtils.TestAction, fakeException, fakeProblemMessage);
+				ErrorReportUtils.NotifyUserOfProblem(fakeProblemMessage, fakeException, null, null, secondaryButtonLabel, ErrorReportUtils.TestAction);
 			}
 			else if (title == "Error NotifyUser Custom")
 			{
-				// Tests another path where you need to go through the ErrorReportUtils adapters
-				// (follow-up actions are NOT auto-invoked)
-				var result = ErrorReportUtils.NotifyUserOfProblem(new ShowAlwaysPolicy(), "CustomReport", ErrorResult.Yes, "CustomRetry", ErrorResult.Retry, fakeProblemMessage);
+				// Exercises a path where you need to go through the ErrorReportUtils adapters
+				var secondaryButtonLabel = LocalizationManager.GetString("ErrorReportDialog.Retry", "Retry");
+				ErrorReportUtils.NotifyUserOfProblem(fakeProblemMessage, fakeException, "CustomReport", (ex, msg) => { MessageBox.Show("CustomReport button pressed."); }, secondaryButtonLabel, ErrorReportUtils.TestAction);
+			}
+			else if (title == "Error NotifyUser LegacyInterface")
+			{
+				// Exercises the legacy 5-argument implementation in libpalaso
+				// (follow-up actions are manually invoked by the caller)
+				var result = ErrorReport.NotifyUserOfProblem(new ShowAlwaysPolicy(), "CustomReport", ErrorResult.Yes, fakeProblemMessage);
 
-				string message = null;
-				switch (result)
-				{
-					case ErrorResult.Yes:
-						message = "Report button clicked.";
-						break;
-					case ErrorResult.Retry:
-						message = "Retry button clicked.";
-						break;
-					default:
-						break;
-				}
+				string message = result == ErrorResult.Yes ? "Report button clicked. [Legacy]" : null;
 				if (message != null)
 					MessageBox.Show(message);
 			}

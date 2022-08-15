@@ -1,31 +1,18 @@
 /** @jsx jsx **/
 import { jsx, css } from "@emotion/core";
 
-import Grid from "@material-ui/core/Grid";
 import * as React from "react";
 import { BloomApi } from "../utils/bloomApi";
 import { Button, Menu } from "@material-ui/core";
 import TruncateMarkup from "react-truncate-markup";
-import {
-    IBookTeamCollectionStatus,
-    useTColBookStatus
-} from "../teamCollection/teamCollectionApi";
+import { useTColBookStatus } from "../teamCollection/teamCollectionApi";
 import { BloomAvatar } from "../react_components/bloomAvatar";
-import {
-    kBloomBlue,
-    kBloomGold,
-    kBloomLightBlue,
-    kBloomPurple
-} from "../bloomMaterialUITheme.ts";
+import { kBloomBlue, kBloomGold, kBloomPurple } from "../bloomMaterialUITheme";
 import { useRef, useState, useEffect } from "react";
 import { useSubscribeToWebSocketForEvent } from "../utils/WebSocketManager";
 import { BookSelectionManager, useIsSelected } from "./bookSelectionManager";
-import {
-    IBookInfo,
-    ICollection,
-    makeMenuItems,
-    MenuItemSpec
-} from "./BooksOfCollection";
+import { IBookInfo, ICollection } from "./BooksOfCollection";
+import { makeMenuItems, MenuItemSpec } from "./CollectionsTabPane";
 import DeleteIcon from "@material-ui/icons/Delete";
 
 export const bookButtonHeight = 120;
@@ -36,6 +23,7 @@ export const BookButton: React.FunctionComponent<{
     collection: ICollection;
     //selected: boolean;
     manager: BookSelectionManager;
+    isSpreadsheetFeatureActive: boolean;
 }> = props => {
     // TODO: the c# had Font = bookInfo.IsEditable ? _editableBookFont : _collectionBookFont,
 
@@ -57,6 +45,9 @@ export const BookButton: React.FunctionComponent<{
     const collectionQuery = `collection-id=${encodeURIComponent(
         props.collection.id
     )}`;
+    const folderName = props.book.folderPath.substring(
+        props.book.folderPath.lastIndexOf("/") + 1
+    );
     useEffect(() => {
         // By requesting this here like this rather than, say, as a side effect of
         // loading the collection, we achieve several things:
@@ -74,7 +65,7 @@ export const BookButton: React.FunctionComponent<{
             );
         }
         // logically it should also be done if props.collection.id or props.book.id changes, but they don't.
-    }, [props.book.folderName, props.book.title]);
+    }, [folderName, props.book.title]);
 
     // This is a bit of a hack. For almost all purposes, 'renaming' is a private state of the button,
     // causing the button to render differently when it is true, and controlled by events inside the
@@ -118,7 +109,7 @@ export const BookButton: React.FunctionComponent<{
     const renameDiv = useRef<HTMLElement | null>();
 
     const teamCollectionStatus = useTColBookStatus(
-        props.book.folderName,
+        folderName,
         props.collection.isEditableCollection
     );
 
@@ -139,93 +130,106 @@ export const BookButton: React.FunctionComponent<{
         setRenaming(true);
     };
 
+    const bookSubMenuItemsSpecs: MenuItemSpec[] = [
+        {
+            label: "Leveled Reader",
+            l10nId: "TemplateBooks.BookName.Leveled Reader", // not the most appropriate ID, but we have it already
+            command: "bookCommand/leveled",
+            requiresSavePermission: true,
+            checkbox: true
+        },
+        {
+            label: "Decodable Reader",
+            l10nId: "TemplateBooks.BookName.Decodable Reader", // not the most appropriate ID, but we have it already
+            command: "bookCommand/decodable",
+            requiresSavePermission: true,
+            checkbox: true
+        },
+        { label: "-" },
+        {
+            label: "Export to Word or LibreOffice...",
+            l10nId: "CollectionTab.BookMenu.ExportToWordOrLibreOffice",
+            command: "bookCommand/exportToWord"
+        },
+        {
+            label: "Export to Spreadsheet...",
+            l10nId: "CollectionTab.BookMenu.ExportToSpreadsheet",
+            command: "bookCommand/exportToSpreadsheet",
+            requiresEnterprise: true
+        },
+        {
+            label: "Import Content from Spreadsheet...",
+            l10nId: "CollectionTab.BookMenu.ImportContentFromSpreadsheet",
+            command: "bookCommand/importSpreadsheetContent",
+            requiresSavePermission: true,
+            requiresEnterprise: true
+        },
+        { label: "-" },
+        {
+            label: "Save as Single File (*.bloomSource)...",
+            l10nId: "CollectionTab.BookMenu.SaveAsBloomToolStripMenuItem",
+            command: "bookCommand/saveAsDotBloomSource"
+        },
+        {
+            label: "Save as Bloom Pack (*.BloomPack)",
+            l10nId: "CollectionTab.BookMenu.SaveAsBloomPackContextMenuItem",
+            command: "bookCommand/makeBloompack",
+            addEllipsis: true
+        },
+        { label: "-" },
+        {
+            label: "Update Thumbnail",
+            l10nId: "CollectionTab.BookMenu.UpdateThumbnail",
+            command: "bookCommand/updateThumbnail",
+            requiresSavePermission: true // marginal, but it does change the content of the book folder
+        },
+        {
+            label: "Update Book",
+            l10nId: "CollectionTab.BookMenu.UpdateFrontMatterToolStrip",
+            command: "bookCommand/updateBook",
+            requiresSavePermission: true // marginal, but it does change the content of the book folder
+        }
+    ];
+
     const getBookMenuItemsSpecs: () => MenuItemSpec[] = () => {
         return [
+            {
+                label: "Rename Book",
+                l10nId: "CollectionTab.BookMenu.RenameBook",
+                onClick: () => handleRename(),
+                requiresSavePermission: true,
+                addEllipsis: true
+            },
             {
                 label: "Duplicate Book",
                 l10nId: "CollectionTab.BookMenu.DuplicateBook",
                 command: "collections/duplicateBook"
             },
             {
-                label: "Make Bloom Pack",
-                l10nId: "CollectionTab.MakeBloomPackButton",
-                command: "bookCommand/makeBloompack"
-            },
-            {
-                label: "Open Folder on Disk",
-                l10nId: "CollectionTab.ContextMenu.OpenFolderOnDisk",
+                label: "Show in File Explorer",
+                l10nId: "CollectionTab.BookMenu.ShowInFileExplorer",
                 command: "bookCommand/openFolderOnDisk",
                 shouldShow: () => true // show for all collections (except factory)
             },
-            { label: "-" },
-            {
-                label: "Export to Word or LibreOffice...",
-                l10nId: "CollectionTab.BookMenu.ExportToWordOrLibreOffice",
-                command: "bookCommand/exportToWord"
-            },
-            {
-                label: "Export to Spreadsheet...",
-                l10nId: "CollectionTab.BookMenu.ExportToSpreadsheet",
-                command: "bookCommand/exportToSpreadsheet"
-            },
-            {
-                label: "Import content from Spreadsheet...",
-                l10nId: "CollectionTab.BookMenu.ImportContentFromSpreadsheet",
-                command: "bookCommand/importSpreadsheetContent",
-                requiresSavePermission: true
-            },
-            {
-                label: "Save as single file (.bloomSource)...",
-                l10nId: "CollectionTab.BookMenu.SaveAsBloomToolStripMenuItem",
-                command: "bookCommand/saveAsDotBloomSource"
-            },
-            {
-                label: "Leveled Reader",
-                l10nId: "TemplateBooks.BookName.Leveled Reader", // not the most appropriate ID, but we have it already
-                command: "bookCommand/leveled",
-                requiresSavePermission: true,
-                checkbox: true
-            },
-            { label: "-" },
-            {
-                label: "Decodable Reader",
-                l10nId: "TemplateBooks.BookName.Decodable Reader", // not the most appropriate ID, but we have it already
-                command: "bookCommand/decodable",
-                requiresSavePermission: true,
-                checkbox: true
-            },
-            { label: "-" },
-            {
-                label: "Update Thumbnail",
-                l10nId: "CollectionTab.BookMenu.UpdateThumbnail",
-                command: "bookCommand/updateThumbnail",
-                requiresSavePermission: true // marginal, but it does change the content of the book folder
-            },
-            {
-                label: "Update Book",
-                l10nId: "CollectionTab.BookMenu.UpdateFrontMatterToolStrip",
-                command: "bookCommand/updateBook",
-                requiresSavePermission: true // marginal, but it does change the content of the book folder
-            },
-            {
-                label: "Rename",
-                l10nId: "CollectionTab.BookMenu.Rename",
-                onClick: () => handleRename(),
-                requiresSavePermission: true
-            },
-            { label: "-" },
             {
                 label: "Delete Book",
                 l10nId: "CollectionTab.BookMenu.DeleteBook",
                 command: "collections/deleteBook",
                 icon: <DeleteIcon></DeleteIcon>,
                 requiresSavePermission: true, // for consistency, but not used since shouldShow is defined
+                addEllipsis: true,
                 // Allowed for the downloaded books collection and the editable collection (provided the book is checked out, if applicable)
                 shouldShow: () =>
                     props.collection.containsDownloadedBooks ||
                     (props.collection.isEditableCollection &&
                         (props.manager.getSelectedBookInfo()?.saveable ??
                             false))
+            },
+            { label: "-" },
+            {
+                label: "More",
+                l10nId: "CollectionTab.ContextMenu.More",
+                submenu: bookSubMenuItemsSpecs
             }
         ];
     };
@@ -258,8 +262,11 @@ export const BookButton: React.FunctionComponent<{
         }
     }, [renaming, renameDiv.current]);
 
+    // If the label is less than 14 characters, assume it will fit on two lines; this saves some
+    // rendering cycles in TruncateMarkup. If it's longer, TruncateMarkup will carefully
+    // measure what will fit on two lines and truncate nicely if necessary.
     const label =
-        bookLabel.length > 20 ? (
+        bookLabel.length > 14 ? (
             <TruncateMarkup lines={2}>
                 <span>{bookLabel}</span>
             </TruncateMarkup>
@@ -294,8 +301,15 @@ export const BookButton: React.FunctionComponent<{
         event.stopPropagation();
     };
 
+    const handleDoubleClick = (event: React.MouseEvent<HTMLElement>) => {
+        BloomApi.postString(
+            `collections/selectAndEditBook?${collectionQuery}`,
+            props.book.id
+        );
+    };
+
     const handleContextClick = (event: React.MouseEvent<HTMLElement>) => {
-        setAdjustedContextMenuPoint(event.clientX - 2, event.clientY - 4);
+        setAdjustedContextMenuPoint(event.clientX, event.clientY);
 
         handleClick(event);
     };
@@ -317,8 +331,16 @@ export const BookButton: React.FunctionComponent<{
 
             className="book-button"
             // relative so the absolutely positioned rename div will be relative to this.
+            // We tweak the padding (Material UI speifies 7px 21px) to be consistent
+            // with rules that make the main content of the button 70px and the whole
+            // thing 90. With more than 10px here, the numbers don't add up, and the browser
+            // sometimes shrinks things too far, making labels not fit well.
             css={css`
                 position: relative;
+                .MuiButton-outlinedSizeLarge {
+                    padding: 7px 10px;
+                    border: 0px;
+                }
             `}
             // This is the div that looks like the button, so it is the one that counts as
             // this book if clicked.
@@ -355,6 +377,8 @@ export const BookButton: React.FunctionComponent<{
                 `}
                 variant="outlined"
                 size="large"
+                title={props.book.folderPath}
+                onDoubleClick={handleDoubleClick}
                 onClick={e => handleClick(e)}
                 onContextMenu={e => handleContextClick(e)}
                 startIcon={
@@ -391,7 +415,8 @@ export const BookButton: React.FunctionComponent<{
                         props.manager.getSelectedBookInfo()!.saveable,
                         handleClose,
                         props.book.id,
-                        props.collection.id
+                        props.collection.id,
+                        props.isSpreadsheetFeatureActive
                     )}
                 </Menu>
             )}
@@ -444,7 +469,7 @@ export const BookButton: React.FunctionComponent<{
                         width: calc(100% - 4px);
                         height: ${renameHeight}px;
                         margin-left: 1px;
-                        border: 1px solid ${kBloomLightBlue};
+                        border: 1px solid ${kBloomBlue};
                         top: ${bookButtonHeight - renameHeight - 6}px;
                         padding-top: 4px;
                         position: absolute;

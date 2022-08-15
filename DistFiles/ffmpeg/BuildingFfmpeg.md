@@ -57,7 +57,7 @@ absent) setting.
 
 work directory
 --------------
-Launch the MinGW shell and create a directory for holding all this work (unless you
+Launch the MinGW shell ("C:\MinGW\msys\1.0\msys.bat") and create a directory for holding all this work (unless you
 already have such a location).
 <pre>
     mkdir ~/src
@@ -129,7 +129,8 @@ make install
 cd ../..
 </pre>
 Note, when I (Andrew) was trying to follow these instructions, I was getting errors during this build because it wanted to use nasm rather than yasm.
-I ended up installing nasm. Unfortunately, I didn't take notes on what I did.
+I ended up installing nasm. Unfortunately, I didn't take notes on what I did.<br>
+[JS] Yeah, x264 defaults to (and prefers) nasm over yasm now. You can download it for Windows. https://www.nasm.us/ -> Download -> Pick the latest release -> win32 (probably) -> download the installer. Some reported x264 doesn't find it unless it's installed system-wide, so I recommend installing it system-wide (Run as administrator). I used the default options. Add the NASM location (e.g. "C:\Program Files (x86)\NASM") to your PATH environment variable. Restart MinGW if it's open.
 
 lame
 ------
@@ -151,10 +152,21 @@ I had to edit one file to get the program to compile with MinGW on Windows.
 <pre>
 git clone https://github.com/BloomBooks/ffmpeg
 cd ffmpeg
-git checkout Bloom
+git config core.autocrlf false; [delete all non-git files]; git reset --hard [fixes an error where .mak files ended in CRLF and "make install" errors when doing "eval" on CRLF lines]
+git checkout bloom-ffmpeg5.0
 mkdir build
 cd build
-../configure --disable-all --disable-alsa --disable-appkit --disable-avfoundation --disable-bzlib --disable-coreimage --disable-iconv --disable-libxcb --disable-libxcb-shm --disable-libxcb-xfixes --disable-libxcb-shape --disable-lzma --disable-sndio --disable-sdl2 --disable-xlib --disable-zlib --disable-amf --disable-audiotoolbox --disable-cuvid --disable-d3d11va --disable-dxva2 --disable-ffnvcodec --disable-nvdec --disable-nvenc --disable-v4l2-m2m --disable-vaapi --disable-vdpau --disable-videotoolbox --enable-ffmpeg --enable-avcodec --enable-avformat --enable-avfilter --enable-swresample --enable-swscale --enable-decoder='h264,libvpx_vp8' --enable-encoder='rawvideo,libx264,libvpx_vp8' --enable-parser=h264,vp8 --enable-protocol=file --enable-protocol=concat --enable-demuxer=mov,webm,matroska --enable-muxer='rawvideo,mp4' --enable-filter=scale --enable-filter=aresample --enable-gpl --enable-libx264 --enable-libvorbis --enable-libvpx --enable-libmp3lame --enable-parser=mpegaudio --enable-demuxer=mp3 --enable-muxer=mp3 --enable-decoder=mp3* --enable-encoder=libmp3lame --prefix=/mingw --extra-ldflags=-static --pkg-config-flags=--static
+../configure \
+ --disable-postproc --enable-avcodec --enable-avdevice --enable-avformat --enable-avfilter --enable-swresample --enable-swscale --disable-encoders --enable-encoder='rawvideo,libx264,libvpx_vp8,aac,libmp3lame,h263' --disable-hwaccels --disable-parsers --enable-parser=h264,vp8,mpegaudio --disable-protocols --enable-protocol='file,concat' --disable-muxers --enable-muxer='rawvideo,mp4,mp3,tgp' --disable-bsfs --disable-filters --enable-filter='scale,adelay,afade,amix,aresample,volume' --disable-indevs --enable-indev=gdigrab --disable-outdevs \
+  \
+ --disable-autodetect --enable-libx264 --enable-libvorbis --enable-libvpx --enable-libmp3lame \
+  \
+ --disable-programs --enable-ffmpeg \
+ --disable-doc \
+ --enable-gpl \
+ --prefix=/mingw --pkg-config-flags=--static \
+  --extra-ldflags=-static
+
 make install
 cd ../..
 </pre>

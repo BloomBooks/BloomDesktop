@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Net;
@@ -43,20 +45,32 @@ namespace Bloom.web
 
 		private static readonly ConcurrentDictionary<UrlType, string> s_liveUrlCache = new ConcurrentDictionary<UrlType, string>();
 
-		private static bool _internetAvailable = true;	// assume it's available to start out
+		private static bool _internetAvailable = true;  // assume it's available to start out
 
-		public static string LookupUrl(UrlType urlType, bool sandbox = false, bool excludeProtocolPrefix = false)
+		/// <summary>
+		/// Look up the URL that corresponds to the specified type and params. A fallback URL may be
+		/// returned if we're not online (which means it can't be used anyway).
+		/// </summary>
+		/// <param name="acceptFinalUrl">If this is null, and we haven't already retrieved the current URLs
+		/// from the appropriate server, we'll do it now, which means this call  may take a while.
+		/// If it is provided, we'll return the retrieved URL if we already have it. If not, we'll retrieve
+		/// a fallback one, which in practice is going to be right unless this is an old version of Bloom
+		/// and one of our main server URLs has changed for some reason. A retrieval will be started in the
+		/// background, and when we get the data the correct value will be passed to acceptFinalUrl.
+		/// </param>
+		/// <returns></returns>
+		public static string LookupUrl(UrlType urlType, Action<string> acceptFinalUrl, bool sandbox = false, bool excludeProtocolPrefix = false)
 		{
 			if (Program.RunningUnitTests && (urlType == UrlType.Parse))
 				return "https://bloom-parse-server-unittest.azurewebsites.net/parse"; //it's fine for the unit test url to be hard-coded, putting in the json buys us nothing.
 
-			string fullUrl = LookupFullUrl(urlType, sandbox);
+			string fullUrl = LookupFullUrl(urlType, sandbox, acceptFinalUrl);
 			if (excludeProtocolPrefix)
 				return StripProtocol(fullUrl);
 			return fullUrl;
 		}
 
-		private static string LookupFullUrl(UrlType urlType, bool sandbox = false)
+		private static string LookupFullUrl(UrlType urlType, bool sandbox = false, Action<string> acceptFinalUrl = null)
 		{
 			if (sandbox)
 				urlType = GetSandboxUrlType(urlType);
@@ -64,10 +78,43 @@ namespace Bloom.web
 			string url;
 			if (s_liveUrlCache.TryGetValue(urlType, out url))
 				return url;
-			if (TryLookupUrl(urlType, out url))
+			if (!Program.RunningUnitTests)
 			{
-				s_liveUrlCache.AddOrUpdate(urlType, url, (type, s) => s);
-				return url;
+				// (If we're running unit tests, we can go with the default URLs.
+				// Otherwise, try to get the real ones, now or later.)
+				if (acceptFinalUrl == null)
+				{
+					// If it really is necessary, you can remove this message. It's just designed to make someone think
+					// if adding a call that might slow things down and send the query twice. If that happens, consider
+					// adding some locking to make sure the actual server query only gets sent once.
+					Debug.Fail(
+						"If at all possible, you should provide an appropriate acceptFinalUrl param when looking up a url during startup.");
+					// We need the true value now. Get it.
+					if (TryGetUrlDataFromServer() && s_liveUrlCache.TryGetValue(urlType, out url))
+					{
+						return url;
+					}
+
+					Logger.WriteEvent("Unable to look up URL type " + urlType);
+				}
+				else
+				{
+					// We can live with a fallback value for now, but get the real one in the background,
+					// and then deliver it.
+					var backgroundWorker = new BackgroundWorker();
+					backgroundWorker.DoWork += (sender, args) =>
+					{
+						if (TryGetUrlDataFromServer() && s_liveUrlCache.TryGetValue(urlType, out url))
+						{
+							acceptFinalUrl(url);
+						}
+						else
+						{
+							Logger.WriteEvent("Unable to look up URL type " + urlType);
+						}
+					};
+					backgroundWorker.RunWorkerAsync();
+				}
 			}
 
 			var fallbackUrl = LookupFallbackUrl(urlType);
@@ -91,12 +138,20 @@ namespace Bloom.web
 			}
 		}
 
-		private static bool TryLookupUrl(UrlType urlType, out string url)
+		private static bool _gotJsonFromServer;
+
+		private static bool TryGetUrlDataFromServer()
 		{
-			url = null;
 			// Once the internet has been found missing, don't bother trying it again for the duration of the program.
-			if (!_internetAvailable)
+			// And if we got the data once, it's very unlikely we'll get something new by trying again.
+			if (!_internetAvailable || _gotJsonFromServer)
 				return false;
+			// It's pathologically possible that two threads at about the same time come here and both send
+			// the query. If so, no great harm done...they'll both put the same values into the dictionary.
+			// And in practice, it won't happen...one call to this, and only one, happens very early in
+			// Bloom's startup code, and after that _gotJsonFromServer will be true.
+			// I don't think it's worth the effort to set up locks and guarantee that only on thread
+			// sends the request.
 			try
 			{
 				using (var s3Client = new BloomS3Client(null))
@@ -106,16 +161,26 @@ namespace Bloom.web
 					s3Client.MaxErrorRetry = 1;
 					var jsonContent = s3Client.DownloadFile(BloomS3Client.BloomDesktopFiles, kUrlLookupFileName);
 					Urls urls = JsonConvert.DeserializeObject<Urls>(jsonContent);
-					url = urls.GetUrlById(urlType.ToJsonPropertyString());
-					if (!string.IsNullOrWhiteSpace(url))
-						return true;
-					Logger.WriteEvent("Unable to look up URL type " + urlType);
+					// cache them all, so we don't have to repeat the server request.
+					foreach (UrlType urlType in Enum.GetValues(typeof(UrlType)))
+					{
+						var url = urls.GetUrlById(urlType.ToJsonPropertyString());
+						if (!string.IsNullOrWhiteSpace(url))
+						{
+							s_liveUrlCache.AddOrUpdate(urlType, url, (type, s) => s);
+						}
+					}
+					// Do this only after we populated the dictionary; we definitely don't want
+					// another thread to return false because it thinks things are already loaded
+					// when the value it wanted isn't in the dictionary.
+					_gotJsonFromServer = true;
+					return true; // we did the retrieval, it's worth checking the dictionary again.
 				}
 			}
 			catch (Exception e)
 			{
 				_internetAvailable = false;
-				var msg = $"Exception while attempting look up of URL type {urlType}";
+				var msg = $"Exception while attempting get URL data from server";
 				Logger.WriteEvent($"{msg}: {e.Message}");
 				NonFatalProblem.ReportSentryOnly(e, msg);
 			}
@@ -212,7 +277,7 @@ namespace Bloom.web
 
 		public string GetUrlById(string id)
 		{
-			return urls.Single(u => u.id == id).url;
+			return urls.FirstOrDefault(u => u.id == id)?.url;
 		}
 	}
 

@@ -107,49 +107,9 @@ namespace Bloom.Publish.Epub
 
 		public void RegisterWithApiHandler(BloomApiHandler apiHandler)
 		{
-			apiHandler.RegisterEndpointHandler(kApiUrlPart + "save", request =>
-			{
-				{
-					string suggestedName = string.Format("{0}-{1}.epub", Path.GetFileName(_bookSelection.CurrentSelection.FolderPath),
-						_bookSelection.CurrentSelection.BookData.Language1.GetNameInLanguage("en"));
-					using (var dlg = new DialogAdapters.SaveFileDialogAdapter())
-					{
-						if (!string.IsNullOrEmpty(_lastDirectory) && Directory.Exists(_lastDirectory))
-							dlg.InitialDirectory = _lastDirectory;
-						dlg.FileName = suggestedName;
-						dlg.Filter = "EPUB|*.epub";
-						dlg.OverwritePrompt = true;
-						if (DialogResult.OK == dlg.ShowDialog())
-						{
-							_lastDirectory = Path.GetDirectoryName(dlg.FileName);
-							lock (_epubMakerLock)
-							{
-								_pendingSaveAsPath = dlg.FileName;
-								if (!_stagingEpub)
-								{
-									// we can do it right now. No need to check version etc., because anything
-									// that will change the epub we want to save will immediately trigger a new
-									// preview, and we will be staging it until we have it.
-									SaveAsEpub();
-								}
-								// If we ARE in the middle of staging the epub...quite possible since this
-								// handler is registered with permission to execute in parallel with other
-								// API handlers, the user just has to click Save before the preview is finished...
-								// then we need not do any more here. A call to SaveAsEpub at the end of the
-								// preview generation process will pick up the pending request in _pendingSaveAsPath
-								// and complete the Save.
-							}
+			apiHandler.RegisterEndpointHandler(kApiUrlPart + "save", HandleEpubSave, true, false);
 
-							ReportProgress(LocalizationManager.GetString("PublishTab.Epub.Done", "Done"));
-							ReportAnalytics("Save ePUB");
-						}
-					}
-
-					request.PostSucceeded();
-				}
-			}, true, false);
-
-			apiHandler.RegisterEndpointHandler(kApiUrlPart + "epubSettings", request =>
+			apiHandler.RegisterEndpointLegacy(kApiUrlPart + "epubSettings", request =>
 			{
 				if (request.HttpMethod == HttpMethods.Get)
 				{
@@ -165,24 +125,24 @@ namespace Bloom.Publish.Epub
 			// The backend here was written with an enum that had two choices for how to publish descriptions, but we only ever
 			// have used one of them so far in the UI. So this is a boolean api that converts to an enum underlying value.
 			apiHandler.RegisterBooleanEndpointHandler(kApiUrlPart + "imageDescriptionSetting",
-				request => request.CurrentBook.BookInfo.MetaData.Epub_HowToPublishImageDescriptions == BookInfo.HowToPublishImageDescriptions.OnPage,
+				request => request.CurrentBook.BookInfo.PublishSettings.Epub.HowToPublishImageDescriptions == BookInfo.HowToPublishImageDescriptions.OnPage,
 				(request, onPage) =>
 				{
-					request.CurrentBook.BookInfo.MetaData.Epub_HowToPublishImageDescriptions = onPage
+					request.CurrentBook.BookInfo.PublishSettings.Epub.HowToPublishImageDescriptions = onPage
 						? BookInfo.HowToPublishImageDescriptions.OnPage
 						: BookInfo.HowToPublishImageDescriptions.None;
 					request.CurrentBook.BookInfo.Save();
 					var newSettings = _desiredEpubSettings.Clone();
-					newSettings.howToPublishImageDescriptions = request.CurrentBook.BookInfo.MetaData.Epub_HowToPublishImageDescriptions;
+					newSettings.howToPublishImageDescriptions = request.CurrentBook.BookInfo.PublishSettings.Epub.HowToPublishImageDescriptions;
 					RefreshPreview(newSettings);
 				},
 				false);
 
 			// Saving a checkbox setting that the user ticks to say "Use my E-reader's font sizes"
 			apiHandler.RegisterBooleanEndpointHandler(kApiUrlPart + "removeFontSizesSetting",
-				request => request.CurrentBook.BookInfo.MetaData.Epub_RemoveFontSizes,
+				request => request.CurrentBook.BookInfo.PublishSettings.Epub.RemoveFontSizes,
 				(request, booleanSetting) => {
-					request.CurrentBook.BookInfo.MetaData.Epub_RemoveFontSizes = booleanSetting;
+					request.CurrentBook.BookInfo.PublishSettings.Epub.RemoveFontSizes = booleanSetting;
 					request.CurrentBook.BookInfo.Save();
 					var newSettings = _desiredEpubSettings.Clone();
 					newSettings.removeFontSizes = booleanSetting;
@@ -190,7 +150,7 @@ namespace Bloom.Publish.Epub
 				},
 				false);
 
-			apiHandler.RegisterEndpointHandler(kApiUrlPart + "updatePreview", request =>
+			apiHandler.RegisterEndpointLegacy(kApiUrlPart + "updatePreview", request =>
 			{
 				RefreshPreview(_desiredEpubSettings);
 				request.PostSucceeded();
@@ -201,12 +161,48 @@ namespace Bloom.Publish.Epub
 				}
 			}, false); // in fact, must NOT be on UI thread
 
-			apiHandler.RegisterEndpointHandler(kApiUrlPart + "abortPreview", request =>
+			apiHandler.RegisterEndpointLegacy(kApiUrlPart + "abortPreview", request =>
 			{
 				AbortMakingEpub();
 
 				request.PostSucceeded();
 			}, false, false);
+		}
+
+		private void HandleEpubSave(ApiRequest request)
+		{
+			string suggestedName = string.Format("{0}-{1}.epub", Path.GetFileName(_bookSelection.CurrentSelection.FolderPath),
+				_bookSelection.CurrentSelection.BookData.Language1.GetNameInLanguage("en"));
+			var folder = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+			if (!string.IsNullOrEmpty(_lastDirectory) && Directory.Exists(_lastDirectory))
+				folder = _lastDirectory;
+			var initialPath = Path.Combine(folder, suggestedName);
+			var destFileName = Utils.MiscUtils.GetOutputFilePathOutsideCollectionFolder(initialPath, "ePUB files|*.epub");
+			if (!string.IsNullOrEmpty(destFileName))
+			{
+				_lastDirectory = Path.GetDirectoryName(destFileName);
+				lock (_epubMakerLock)
+				{
+					_pendingSaveAsPath = destFileName;
+					if (!_stagingEpub)
+					{
+						// we can do it right now. No need to check version etc., because anything
+						// that will change the epub we want to save will immediately trigger a new
+						// preview, and we will be staging it until we have it.
+						SaveAsEpub();
+					}
+					// If we ARE in the middle of staging the epub...quite possible since this
+					// handler is registered with permission to execute in parallel with other
+					// API handlers, the user just has to click Save before the preview is finished...
+					// then we need not do any more here. A call to SaveAsEpub at the end of the
+					// preview generation process will pick up the pending request in _pendingSaveAsPath
+					// and complete the Save.
+				}
+
+				ReportProgress(LocalizationManager.GetString("PublishTab.Epub.Done", "Done"));
+				ReportAnalytics("Save ePUB");
+			}
+			request.PostSucceeded();
 		}
 
 		public void AbortMakingEpub()
@@ -352,8 +348,8 @@ namespace Bloom.Publish.Epub
 		public void GetEpubSettingsForCurrentBook(EpubPublishUiSettings epubPublishUiSettings)
 		{
 			var info = _bookSelection.CurrentSelection.BookInfo;
-			epubPublishUiSettings.howToPublishImageDescriptions = info.MetaData.Epub_HowToPublishImageDescriptions;
-			epubPublishUiSettings.removeFontSizes = info.MetaData.Epub_RemoveFontSizes;
+			epubPublishUiSettings.howToPublishImageDescriptions = info.PublishSettings.Epub.HowToPublishImageDescriptions;
+			epubPublishUiSettings.removeFontSizes = info.PublishSettings.Epub.RemoveFontSizes;
 		}
 
 		public void UpdateAndSave(EpubPublishUiSettings newSettings, string path, bool force, WebSocketProgress progress = null)

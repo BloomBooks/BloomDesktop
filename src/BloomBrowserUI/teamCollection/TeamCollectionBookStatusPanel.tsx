@@ -16,12 +16,9 @@ import { BookProblem } from "../react_components/bookProblem";
 import { SimpleMenu, SimpleMenuItem } from "../react_components/simpleMenu";
 import { AvatarDialog } from "./AvatarDialog";
 import { ForgetChangesDialog } from "./ForgetChangesDialog";
-import { createMuiTheme } from "@material-ui/core";
+import { createTheme } from "@material-ui/core/styles";
 import WarningIcon from "@material-ui/icons/Warning";
-import {
-    IBookTeamCollectionStatus,
-    initialBookStatus
-} from "./teamCollectionApi";
+import { IBookTeamCollectionStatus } from "./teamCollectionApi";
 import { ForceUnlockDialog } from "./ForceUnlockDialog";
 import { kBloomRed } from "../utils/colorUtils";
 
@@ -358,7 +355,7 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<IBookTeamCol
     // show the button. Next version of Material should be able to do more theme colors.
     const dangerTheme = useMemo(
         () =>
-            createMuiTheme({
+            createTheme({
                 palette: {
                     primary: {
                         main: kBloomYellow
@@ -392,7 +389,7 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<IBookTeamCol
                         "teamCollection/attemptLockOfCurrentBook",
                         response => {
                             // Not much to do. Change of state is handled by websocket notifications.
-                            // We want to keep it that way, so we don't have to worry about here about
+                            // We want to keep it that way, so we don't have to worry here about
                             // whether the checkout attempt succeeded or not.
                             setBusy(false);
                         },
@@ -449,7 +446,6 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<IBookTeamCol
                         css={css`
                             ${busy &&
                                 "cursor: progress; .checkin-button{cursor:progress;}"};
-                            margin-bottom: 12px;
                             .panel-children {
                                 margin-top: 10px; // leaves some extra space for the "What changes did you make" overlay
                             }
@@ -487,8 +483,6 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<IBookTeamCol
                         {checkinProgress === 0 ? (
                             <div
                                 css={css`
-                                    position: absolute;
-                                    bottom: 25px; // aligns bottom with Checkin button
                                     width: 320px;
                                 `}
                             >
@@ -507,8 +501,7 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<IBookTeamCol
                                         width: 100%;
                                         border: 1px solid #ffffffcc;
                                         border-radius: 4px;
-                                        height: 37px;
-                                        padding: 5px;
+                                        height: 36px;
                                     `}
                                     type="text"
                                     value={message}
@@ -530,7 +523,6 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<IBookTeamCol
                                     background-color: transparent;
                                     width: 100%;
                                     border: 1px solid ${kBloomYellow};
-                                    margin-bottom: 8px;
                                 `}
                             >
                                 <div

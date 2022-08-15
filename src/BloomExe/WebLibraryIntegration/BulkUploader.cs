@@ -340,18 +340,18 @@ namespace Bloom.WebLibraryIntegration
 
 			var publishModel = new PublishModel(bookSelection, new PdfMaker(), currentEditableCollectionSelection, context.Settings, server, _thumbnailer);
 			publishModel.PageLayout = book.GetLayout();
-			var view = new PublishView(publishModel, new SelectedTabChangedEvent(), new LocalizationChangedEvent(), _singleBookUploader, null, null, null, null);
+			var view = new PublishView(publishModel, new SelectedTabChangedEvent(), new LocalizationChangedEvent(), _singleBookUploader, null, null, null, null, null);
 			var blPublishModel = new BloomLibraryPublishModel(_singleBookUploader, book, publishModel);
 
-			if (book.BookInfo.MetaData?.TextLangsToPublish?.ForBloomLibrary == null)
+			if (book.BookInfo.PublishSettings.BloomLibrary.TextLangs == null)
 			{
 				BloomLibraryPublishModel.InitializeLanguages(book);
 			}
 
-			var hasAtLeastOneLanguageToUpload = book.BookInfo.MetaData.TextLangsToPublish.ForBloomLibrary.IncludedLanguages().Any();
+			var hasAtLeastOneLanguageToUpload = book.BookInfo.PublishSettings.BloomLibrary.TextLangs.IncludedLanguages().Any();
 			if (!hasAtLeastOneLanguageToUpload && BookUpload.GetVideoFilesToInclude(book).Any())
 			{
-				hasAtLeastOneLanguageToUpload = book.BookInfo.MetaData.SignLangsToPublish.ForBloomLibrary.IncludedLanguages().Any();
+				hasAtLeastOneLanguageToUpload = book.BookInfo.PublishSettings.BloomLibrary.SignLangs.IncludedLanguages().Any();
 			}
 
 			if (blPublishModel.MetadataIsReadyToPublish && (hasAtLeastOneLanguageToUpload || blPublishModel.OkToUploadWithNoLanguages))

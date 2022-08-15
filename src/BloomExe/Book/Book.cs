@@ -152,6 +152,7 @@ namespace Bloom.Book
 				InitCoverColor(); // should use the same color as what they saw in the preview of the template/shell
 			}
 			FixBookIdAndLineageIfNeeded();
+			FixUrlEncodedCoverImageIfNeeded();
 			Storage.Dom.RemoveExtraBookTitles();
 			Storage.Dom.RemoveExtraContentTypesMetas();
 			Guard.Against(OurHtmlDom.RawDom.InnerXml=="","Bloom could not parse the xhtml of this document");
@@ -555,20 +556,13 @@ namespace Bloom.Book
 			}
 			var pageDom = GetHtmlDomWithJustOnePage(page);
 			pageDom.RemoveModeStyleSheets();
-			// note: order is significant here, but I added branding.css at the end (the most powerful position) arbitrarily, until
-			// such time as it's clear if it matters.
-			foreach (var cssFileName in new[] { @"basePage.css","previewMode.css", "origami.css", "langVisibility.css"})
+			foreach (var cssFileName in BookStorage.CssFilesToLink)
 			{
 				pageDom.AddStyleSheet(cssFileName);
 			}
-			// Only add brandingCSS is there is one for the current branding
 			// Note: it would be a fine enhancement here to first check for "branding-{flavor}.css",
 			// but we'll leave that until we need it.
-			var brandingCssPath = BloomFileLocator.GetBrowserFile(true, "branding", CollectionSettings.GetBrandingFolderName(), "branding.css");
-			if (!string.IsNullOrEmpty(brandingCssPath))
-			{
-				pageDom.AddStyleSheet("branding.css");
-			}
+
 			pageDom.SortStyleSheetLinks();
 
 			AddPreviewJavascript(pageDom);//review: this is just for thumbnails... should we be having the javascript run?
@@ -754,7 +748,8 @@ namespace Bloom.Book
 		/// True if changes to the book may currently be saved. This includes the book being checked out
 		/// if it is in a team collection, and by intent should include any future requirements.
 		/// </summary>
-		public bool IsSaveable => IsEditable && BookInfo.IsSaveable;
+		/// <remarks>Making this virtual allows tests to mock it.</remarks>
+		public virtual bool IsSaveable => IsEditable && BookInfo.IsSaveable;
 
 
 		/// <summary>
@@ -1131,11 +1126,13 @@ namespace Bloom.Book
 			var filename = Path.GetFileName(coverImagePath);
 			if (filename != coverImageFileName)
 			{
+				// Note that setting InnerText or calling SetAttribute automatically XML-encodes any necessary
+				// characters.  Getting InnerText or calling GetAttribute reverses the changes, if any.
 				coverImgElt.InnerText = filename;
-				var urlPathString = UrlPathString.CreateFromUnencodedString(filename);
-				var encoded = urlPathString.UrlEncoded;
-				coverImgElt.SetAttribute("src", encoded);
-				coverImgElt.SetAttribute("alt", $"This picture, {encoded}, is missing or was loading too slowly.");
+				coverImgElt.SetAttribute("src", filename);
+				var localizedFormatString = LocalizationManager.GetString("EditTab.Image.AltMsg", "This picture, {0}, is missing or was loading too slowly.");
+				var altValue = String.Format(localizedFormatString, filename);
+				coverImgElt.SetAttribute("alt", altValue);
 			}
 		}
 
@@ -1259,7 +1256,8 @@ namespace Bloom.Book
 					if (bookDOM == _domBeingUpdated || (bookDOM != OurHtmlDom && _domBeingUpdated != OurHtmlDom))
 					{
 #if DEBUG
-						MessageBox.Show("Caught Bloom doing two updates at once! Possible BL-3166 is being prevented");
+						if (SIL.PlatformUtilities.Platform.IsWindows)	// hangs on Linux
+							MessageBox.Show("Caught Bloom doing two updates at once! Possible BL-3166 is being prevented");
 #endif
 						Console.WriteLine("WARNING: Bloom appears to be updating the same DOM twice at the same time! (BL-3166??)");
 						Console.WriteLine("Current StackTrace: {0}", Environment.StackTrace);
@@ -1361,6 +1359,8 @@ namespace Bloom.Book
 			// With one exception, handled below, nothing in the update process should change the license info, so save what is current before we mess with
 			// anything (may fix BL-3166).
 			var licenseMetadata = GetLicenseMetadata();
+
+			Storage.CompleteFullyUpdatingFilesIfNeeded();
 
 			progress.WriteStatus("Updating collection settings...");
 			try
@@ -1891,6 +1891,35 @@ namespace Bloom.Book
 		}
 
 		/// <summary>
+		/// Repair any cover image filenames that were left URL-encoded by earlier versions of
+		/// Bloom.  Although rare, this has surfaced recently.
+		/// </summary>
+		/// <remarks>
+		/// See https://issues.bloomlibrary.org/youtrack/issue/BL-11145
+		/// and https://issues.bloomlibrary.org/youtrack/issue/BH-6143.
+		/// </remarks>
+		private void FixUrlEncodedCoverImageIfNeeded()
+		{
+			var node = Storage.Dom.SelectSingleNode("//body/div[@id='bloomDataDiv']/div[@data-book='coverImage']");
+			if (node == null)
+				return;     // shouldn't happen, but nothing to fix if it does.
+			var text = node.InnerText;
+			if (!String.IsNullOrWhiteSpace(text) && RobustFile.Exists(Path.Combine(FolderPath, text)))
+				return;     // file exists, no need to tweak reference
+			// GetFullyDecodedPath decodes until either the file exists or no further URL decoding is possible.
+			// If the file isn't found, then text is the original value.
+			var filepath = UrlPathString.GetFullyDecodedPath(FolderPath, ref text);
+			if (text != node.InnerText)
+			{
+				node.InnerText = text;
+				node.SetAttribute("src", text);
+				var localizedFormatString = LocalizationManager.GetString("EditTab.Image.AltMsg", "This picture, {0}, is missing or was loading too slowly.");
+				var altValue = String.Format(localizedFormatString, text);
+				node.SetAttribute("alt", altValue);
+			}
+		}
+
+		/// <summary>
 		/// The bloomBookId meta value
 		/// </summary>
 		public string ID => Storage.BookInfo.Id;
@@ -2190,7 +2219,7 @@ namespace Bloom.Book
 			}
 		}
 
-		public BookInfo BookInfo { get; protected set; }
+		public virtual BookInfo BookInfo { get; protected set; }
 
 		public UserPrefs UserPrefs { get; private set; }
 
@@ -2239,9 +2268,9 @@ namespace Bloom.Book
 		/// mainly because it's so common for elements there to be in just a national language (BL-8527).
 		/// For some purposes, a language that occurs ONLY in xmatter doesn't count at all... it won't even be
 		/// a key in the dictionary unless includeLangsOccurringOnlyInXmatter is true.
-		///  
+		///
 		/// For determining which Text Languages to display in Publish -> Android and which pages to delete
-		/// from a .bloomd file, we pass the parameter as true. I (gjm) am unclear as to why historically
+		/// from a .bloompub file, we pass the parameter as true. I (gjm) am unclear as to why historically
 		/// we did it this way, but BL-7967 might be part of the problem
 		/// (where xmatter pages only in L2 were erroneously deleted).
 		/// </summary>
@@ -2646,7 +2675,7 @@ namespace Bloom.Book
 			if (SetCoverColorInternal(color))
 			{
 				Save();
-				ContentsChanged?.Invoke(this, new EventArgs());	
+				ContentsChanged?.Invoke(this, new EventArgs());
 			}
 		}
 
@@ -2675,13 +2704,14 @@ namespace Bloom.Book
 		}
 
 		/// <summary>
-		/// Make stuff readonly, which isn't doable via css, surprisingly
+		/// Make stuff readonly, which isn't doable via css, surprisingly. And even more
+		/// surprisingly still necessary after the switch to a React Collection tab preview!
 		/// </summary>
 		/// <param name="dom"></param>
 		internal void AddPreviewJavascript(HtmlDom dom)
 		{
 			dom.AddJavascriptFile("commonBundle.js".ToLocalhost());
-			dom.AddJavascriptFile("legacyBookPreviewBundle.js".ToLocalhost());
+			dom.AddJavascriptFile("bookPreviewBundle.js".ToLocalhost());
 		}
 
 		/// <summary>
@@ -4087,7 +4117,7 @@ namespace Bloom.Book
 		}
 
 		/// <summary>
-		/// The primary focus of this method is removing pages we don't want in bloomd files,
+		/// The primary focus of this method is removing pages we don't want in bloompub files,
 		/// particularly xmatter pages that often don't have content but just might.
 		/// It will detect pages with img elements or bloom-imageContainer elements with
 		/// background images, and as long as the image isn't our placeholder, such pages
@@ -4110,7 +4140,7 @@ namespace Bloom.Book
 		{
 			foreach (var page in RawDom.SafeSelectNodes("//div[contains(@class, 'bloom-page')]").Cast<XmlElement>().ToArray())
 			{
-				if (PublishHelper.IsActivityPage(page))
+				if (HtmlDom.IsActivityPage(page))
 					continue;
 				if (PageHasImages(page))
 					continue;
@@ -4127,9 +4157,14 @@ namespace Bloom.Book
 			OrderOrNumberOfPagesChanged();
 		}
 
+		public void UpdateSupportFiles()
+		{
+			Storage.UpdateSupportFiles();
+		}
+
 		private bool IsPageProtectedFromRemoval(XmlElement pageElement)
 		{
-			// One final check to see if we have explicitly disallowed this page from being removed.
+			// One final check to see if we have explicitly disallowed this page (or one of its children) from being removed.
 			// As of May 2020, this is used to protect the Afghan xmatters from having these pages removed:
 			// 1) The national anthem page
 			//      The only thing on this page is an image which is added by css, so PageHasImages() doesn't see it.
@@ -4137,7 +4172,10 @@ namespace Bloom.Book
 			//      The only thing on this page is language-neutral text.
 			//      It has to be language-neutral to make sure we don't strip it out if the language isn't part of the book.
 			//      However, then PageHasTextInLanguage() won't return true.
-			return HtmlDom.HasClass(pageElement, "bloom-force-publish");
+			// It is also used on divs that have data-book="outside-back-cover-branding-bottom-html"
+			// since if the current Branding is incomplete, the message we show is added by css (like #1 above)
+			return HtmlDom.HasClass(pageElement, "bloom-force-publish") ||
+			       pageElement.SafeSelectNodes(".//div[contains(@class, 'bloom-force-publish')]").Count > 0;
 		}
 
 		private bool PageHasVisibleText(XmlElement page)
@@ -4158,7 +4196,11 @@ namespace Bloom.Book
 		{
 			foreach (XmlElement div in page.SafeSelectNodes(".//div[@lang]"))
 			{
-				if (languagesToLookFor.Contains(div.GetStringAttribute("lang")) && !string.IsNullOrWhiteSpace(div.InnerText))
+				if (languagesToLookFor.Contains(div.GetStringAttribute("lang"))
+				    && !string.IsNullOrWhiteSpace(div.InnerText)
+					// page labels are deleted in most scenarios; even when kept, they are not a reason
+					// to keep otherwise blank pages.
+				    && div.Attributes["class"]?.Value != "pageLabel")
 					return true;
 			}
 			return false;
@@ -4220,6 +4262,8 @@ namespace Bloom.Book
 		public bool HasMotionPages => OurHtmlDom.HasMotionPages();
 
 		public bool HasQuizPages => OurHtmlDom.HasQuizPages();
+
+		public bool HasActivities => OurHtmlDom.HasActivityPages();
 
 		public bool HasOverlayPages => OurHtmlDom.HasOverlayPages();
 
@@ -4377,7 +4421,11 @@ namespace Bloom.Book
 		/// </summary>
 		private void UpdateMotionFeature()
 		{
-			BookInfo.MetaData.Feature_Motion = MotionMode;
+			// Conceptually, this *might* want to be a separate options from what you do in the BloomPUB publish.
+			// For example, motion is not currently one of your choices in the upload "features" setting, which
+			// is confusing. But in any case, at the moment, the BloomPUB screen is the way we give instructions
+			// to the Harvester for this setting, so this code is correct at the moment.
+			BookInfo.MetaData.Feature_Motion = BookInfo.PublishSettings.BloomPub.Motion;
 		}
 
 		/// <summary>
@@ -4394,52 +4442,48 @@ namespace Bloom.Book
 			book.Storage.Update("widget-placeholder.svg");
 		}
 
-		// This is a shorthand for a whole set of features.
-		// Note: we are currently planning to eventually store this primarily in the data-div, with the
-		// body feature attributes present only so that CSS can base things on it. This method would then
-		// be responsible to set that too...and probably that is what it should read.
-		public bool MotionMode
+		/// <summary>
+		/// Motion mode is currently implemented in the player in response to a set of six features
+		/// which we place on the body. The original idea was that we might want to control these
+		/// behaviors independently, and even possibly that any of them might depend on whether the
+		/// device is in landscape mode and what media is being used; we don't currently use any
+		/// of those capabilities.
+		/// </summary>
+		/// <param name="motion"></param>
+		public void SetMotionAttributesOnBody(bool motion)
 		{
-			// Review: the issue suggested that it's only true if it has all of them. Currently they all get
-			// set or cleared together, so it makes no difference.
-			// I don't think it's helpful to have yet another place in our code
-			// that knows which six features make up MotionBookMode, so I decided to just check the most
-			// characteristic one.
-			get { return OurHtmlDom.BookHasFeature("fullscreenpicture", "landscape", "bloomReader"); }
-			set
-			{
-				Action<string, string, string> addOrRemove;
-					if (value) addOrRemove = (string featureName, string orientationConstraint, string mediaConstraint) =>
-						OurHtmlDom.SetBookFeature(featureName, orientationConstraint, mediaConstraint);
-					else addOrRemove = (string featureName, string orientationConstraint, string mediaConstraint) =>
-						OurHtmlDom.ClearBookFeature(featureName, orientationConstraint, mediaConstraint);
-				// Enhance: we can probably put all this in HtmlDom and have it not know about the particular features, just copy them
-				// from the datadiv. That means it will need to be possible to identify them by some attribute, e.g. data-isBookFeature="true"
-				// these are read by Bloom Reader (and eventually Reading App Builder?)
-				addOrRemove("autoadvance", "landscape", "bloomReader");
-				addOrRemove("canrotate", "allOrientations", "bloomReader");
-				addOrRemove("playanimations", "landscape", "bloomReader");// could be ignoreAnimations
-				addOrRemove("playmusic", "landscape", "bloomReader");
-				addOrRemove("playnarration", "landscape", "bloomReader");
+			Action<string, string, string> addOrRemove;
+			if (motion)
+				addOrRemove = (string featureName, string orientationConstraint, string mediaConstraint) =>
+					OurHtmlDom.SetBookFeature(featureName, orientationConstraint, mediaConstraint);
+			else
+				addOrRemove = (string featureName, string orientationConstraint, string mediaConstraint) =>
+					OurHtmlDom.ClearBookFeature(featureName, orientationConstraint, mediaConstraint);
+			// Enhance: we can probably put all this in HtmlDom and have it not know about the particular features, just copy them
+			// from the datadiv. That means it will need to be possible to identify them by some attribute, e.g. data-isBookFeature="true"
+			// these are read by Bloom Reader (and eventually Reading App Builder?)
+			addOrRemove("autoadvance", "landscape", "bloomReader");
+			addOrRemove("canrotate", "allOrientations", "bloomReader");
+			addOrRemove("playanimations", "landscape", "bloomReader"); // could be ignoreAnimations
+			addOrRemove("playmusic", "landscape", "bloomReader");
+			addOrRemove("playnarration", "landscape", "bloomReader");
 
-				// these are read by css
-				//modifiedBook.OurHtmlDom.SetBookFeature("hideMargin", "landscape", "bloomReader");
-				//modifiedBook.OurHtmlDom.SetBookFeature("hidePageNumbers", "landscape", "bloomReader");
-				addOrRemove("fullscreenpicture", "landscape", "bloomReader");
+			// these are read by css
+			//modifiedBook.OurHtmlDom.SetBookFeature("hideMargin", "landscape", "bloomReader");
+			//modifiedBook.OurHtmlDom.SetBookFeature("hidePageNumbers", "landscape", "bloomReader");
+			addOrRemove("fullscreenpicture", "landscape", "bloomReader");
 
-				// Though the feature was/is getting set correctly at publish time, somehow it was getting out of
-				// sync (see BL-8049). So, now we also set it here immediately when the value changes.
-				BookInfo.MetaData.Feature_Motion = value;
+			// Make sure we publish this feature consistent with the publication setting.
+			BookInfo.MetaData.Feature_Motion = motion;
 
-				Save();
-			}
+			Save();
 		}
 
 		/// <summary>
 		/// BL-5886 Translation Instructions page should not end up in BR (or Epub or Pdf, but other classes ensure that).
 		/// N.B. This is only intended for use on temporary files.
 		/// </summary>
-		public void RemoveNonPublishablePages(HashSet<string> removedLabels = null)
+		public void RemoveNonPublishablePages(Dictionary<string,int> removedLabels = null)
 		{
 			const string xpath = "//div[contains(@class,'bloom-noreader')]";
 
@@ -4529,7 +4573,7 @@ namespace Bloom.Book
 				var id = node.GetOptionalStringAttribute("id", null);
 				if (String.IsNullOrEmpty(id))
 					continue;
-						
+
 				var fileNames = BookStorage.GetNarrationAudioFileNames(id, true);
 
 				bool doesAnyAudioFileExist = false;

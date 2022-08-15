@@ -81,32 +81,32 @@ namespace Bloom.web.controllers
 
 		public void RegisterWithApiHandler(BloomApiHandler apiHandler)
 		{
-			apiHandler.RegisterEndpointHandler(kApiUrlPart + "bookName", request =>
+			apiHandler.RegisterEndpointLegacy(kApiUrlPart + "bookName", request =>
 			{
 				request.ReplyWithText(request.CurrentBook.NameBestForUserDisplay);
 			}, false);
 
-			apiHandler.RegisterEndpointHandler(kApiUrlPart + "showAccessibilityChecker", request =>
+			apiHandler.RegisterEndpointLegacy(kApiUrlPart + "showAccessibilityChecker", request =>
 			{
 				AccessibilityCheckWindow.StaticShow(()=>_webSocketServer.SendEvent(kWebSocketContext, kWindowActivated));
 				request.PostSucceeded();
 			}, true);
 
-			apiHandler.RegisterEndpointHandler(kApiUrlPart + "descriptionsForAllImages", request =>
+			apiHandler.RegisterEndpointLegacy(kApiUrlPart + "descriptionsForAllImages", request =>
 			{
 				var problems = AccessibilityCheckers.CheckDescriptionsForAllImages(request.CurrentBook);
 				var resultClass = problems.Any() ? "failed" : "passed";
 				request.ReplyWithJson(new {resultClass = resultClass, problems = problems});
 			}, false);
 
-			apiHandler.RegisterEndpointHandler(kApiUrlPart + "audioForAllImageDescriptions", request =>
+			apiHandler.RegisterEndpointLegacy(kApiUrlPart + "audioForAllImageDescriptions", request =>
 			{
 				var problems = AccessibilityCheckers.CheckAudioForAllImageDescriptions(request.CurrentBook);
 				var resultClass = problems.Any() ? "failed" : "passed";
 				request.ReplyWithJson(new { resultClass = resultClass, problems = problems });
 			}, false);
 
-			apiHandler.RegisterEndpointHandler(kApiUrlPart + "audioForAllText", request =>
+			apiHandler.RegisterEndpointLegacy(kApiUrlPart + "audioForAllText", request =>
 			{
 				var problems = AccessibilityCheckers.CheckAudioForAllText(request.CurrentBook);
 				var resultClass = problems.Any() ? "failed" : "passed";
@@ -134,7 +134,7 @@ namespace Bloom.web.controllers
 				false);
 
 			//enhance: this might have to become async to work on large books on slow computers
-			apiHandler.RegisterEndpointHandler(kApiUrlPart + "aceByDaisyReportUrl", request => { MakeAceByDaisyReport(request); },
+			apiHandler.RegisterEndpointLegacy(kApiUrlPart + "aceByDaisyReportUrl", request => { MakeAceByDaisyReport(request); },
 				false, false
 				);
 

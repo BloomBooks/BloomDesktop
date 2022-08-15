@@ -1,5 +1,14 @@
+/** @jsxFrag React.Fragment */
+/** @jsx jsx **/
+import { jsx, css } from "@emotion/core";
+
 import * as React from "react";
 import { storiesOf } from "@storybook/react";
+import {
+    Radio,
+    RadioGroup as MuiRadioGroup,
+    Typography
+} from "@material-ui/core";
 import { Expandable } from "./expandable";
 import { Checkbox } from "./checkbox";
 import { MuiCheckbox } from "./muiCheckBox";
@@ -25,7 +34,24 @@ import {
     RequiresBloomEnterpriseNoticeDialog,
     RequiresBloomEnterpriseOverlayWrapper
 } from "./requiresBloomEnterprise";
-import { normalDialogEnvironmentForStorybook } from "./BloomDialog/BloomDialog";
+import { normalDialogEnvironmentForStorybook } from "./BloomDialog/BloomDialogPlumbing";
+import {
+    LocalizableMenuItem,
+    LocalizableCheckboxMenuItem,
+    LocalizableNestedMenuItem
+} from "./localizableMenuItem";
+import {
+    Button,
+    Divider,
+    Menu,
+    MenuItem,
+    FormControlLabel,
+    Checkbox as OriginalMuiCheckbox
+} from "@material-ui/core";
+import { RadioGroup } from "./RadioGroup";
+import { MuiRadio } from "./muiRadio";
+import WinFormsStyleSelect from "./winFormsStyleSelect";
+import BookMakingSettingsControl from "../collection/bookMakingSettingsControl";
 
 storiesOf("Localizable Widgets", module)
     .add("Expandable", () => (
@@ -159,6 +185,92 @@ storiesOf("Localizable Widgets/MuiCheckbox", module)
                 />
             );
         })
+    )
+    .add("short and long label", () =>
+        React.createElement(() => (
+            <>
+                original mui checkbox:
+                <div>
+                    <FormControlLabel
+                        control={<OriginalMuiCheckbox />}
+                        label={"short"}
+                    />
+                    <FormControlLabel
+                        control={<OriginalMuiCheckbox />}
+                        label={
+                            "Bacon ipsum dolor amet ribeye spare ribs bresaola t-bone. Strip steak turkey shankle pig ground round, biltong t-bone kevin alcatra flank ribeye beef ribs meatloaf filet mignon. Buffalo ham t-bone short ribs. Sausage alcatra tail, sirloin andouille pork belly corned beef shoulder meatloaf venison rump frankfurter bresaola chicken. Ball tip strip steak burgdoggen spare ribs picanha, turducken filet mignon ham hock short loin porchetta rump andouille t-bone boudin."
+                        }
+                    />
+                </div>
+                <hr />
+                our mui checkbox NOT tweaked for proper alignment when the label
+                wraps:
+                <div>
+                    <MuiCheckbox
+                        label="short"
+                        checked={true}
+                        onCheckChanged={() => {}}
+                        l10nKey="bogus"
+                        deprecatedVersionWhichDoesntEnsureMultilineLabelsWork={
+                            true
+                        }
+                    />
+                    <MuiCheckbox
+                        label="Bacon ipsum dolor amet ribeye spare ribs bresaola t-bone. Strip steak turkey shankle pig ground round, biltong t-bone kevin alcatra flank ribeye beef ribs meatloaf filet mignon. Buffalo ham t-bone short ribs. Sausage alcatra tail, sirloin andouille pork belly corned beef shoulder meatloaf venison rump frankfurter bresaola chicken. Ball tip strip steak burgdoggen spare ribs picanha, turducken filet mignon ham hock short loin porchetta rump andouille t-bone boudin."
+                        checked={true}
+                        onCheckChanged={() => {}}
+                        l10nKey="bogus"
+                        deprecatedVersionWhichDoesntEnsureMultilineLabelsWork={
+                            true
+                        }
+                    />
+                </div>
+                <hr />
+                our mui checkbox tweaked for proper alignment when the label
+                wraps:
+                <div>
+                    <MuiCheckbox
+                        label="short"
+                        checked={true}
+                        onCheckChanged={() => {}}
+                        l10nKey="bogus"
+                    />
+                    <MuiCheckbox
+                        label="Bacon ipsum dolor amet ribeye spare ribs bresaola t-bone. Strip steak turkey shankle pig ground round, biltong t-bone kevin alcatra flank ribeye beef ribs meatloaf filet mignon. Buffalo ham t-bone short ribs. Sausage alcatra tail, sirloin andouille pork belly corned beef shoulder meatloaf venison rump frankfurter bresaola chicken. Ball tip strip steak burgdoggen spare ribs picanha, turducken filet mignon ham hock short loin porchetta rump andouille t-bone boudin."
+                        checked={true}
+                        onCheckChanged={() => {}}
+                        l10nKey="bogus"
+                    />
+                </div>
+                <hr />
+                tweaked / NOT tweaked / original:
+                <div
+                    css={css`
+                        display: flex;
+                    `}
+                >
+                    <MuiCheckbox
+                        label="short"
+                        checked={true}
+                        onCheckChanged={() => {}}
+                        l10nKey="bogus"
+                    />
+                    <MuiCheckbox
+                        label="short"
+                        checked={true}
+                        onCheckChanged={() => {}}
+                        l10nKey="bogus"
+                        deprecatedVersionWhichDoesntEnsureMultilineLabelsWork={
+                            true
+                        }
+                    />
+                    <FormControlLabel
+                        control={<OriginalMuiCheckbox />}
+                        label={"short"}
+                    />
+                </div>
+            </>
+        ))
     );
 storiesOf("Localizable Widgets/ApiCheckbox", module).add("ApiCheckbox", () =>
     React.createElement(() => (
@@ -168,6 +280,140 @@ storiesOf("Localizable Widgets/ApiCheckbox", module).add("ApiCheckbox", () =>
             apiEndpoint="publish/android/motionBookMode"
         />
     ))
+);
+storiesOf("Localizable Widgets/MuiRadio", module).add("MuiRadio", () =>
+    React.createElement(() => (
+        <MuiRadioGroup>
+            our mui radio tweaked for proper alignment when the label wraps:
+            <MuiRadio label={"short"} l10nKey={""} onChanged={() => {}} />
+            <MuiRadio
+                label={
+                    "Bacon ipsum dolor amet ribeye spare ribs bresaola t-bone. Strip steak turkey shankle pig ground round, biltong t-bone kevin alcatra flank ribeye beef ribs meatloaf filet mignon. Buffalo ham t-bone short ribs. Sausage alcatra tail, sirloin andouille pork belly corned beef shoulder meatloaf venison rump frankfurter bresaola chicken. Ball tip strip steak burgdoggen spare ribs picanha, turducken filet mignon ham hock short loin porchetta rump andouille t-bone boudin."
+                }
+                l10nKey={""}
+                onChanged={() => {}}
+            />
+            <hr />
+            original mui radio:
+            <FormControlLabel control={<Radio />} label={"short"} />
+            <FormControlLabel
+                control={<Radio />}
+                label={
+                    "Bacon ipsum dolor amet ribeye spare ribs bresaola t-bone. Strip steak turkey shankle pig ground round, biltong t-bone kevin alcatra flank ribeye beef ribs meatloaf filet mignon. Buffalo ham t-bone short ribs. Sausage alcatra tail, sirloin andouille pork belly corned beef shoulder meatloaf venison rump frankfurter bresaola chicken. Ball tip strip steak burgdoggen spare ribs picanha, turducken filet mignon ham hock short loin porchetta rump andouille t-bone boudin."
+                }
+            />
+            <hr />
+            ours followed by original:
+            <div
+                css={css`
+                    display: flex;
+                `}
+            >
+                <MuiRadio label={"short"} l10nKey={""} onChanged={() => {}} />
+                <FormControlLabel control={<Radio />} label={"short"} />
+            </div>
+        </MuiRadioGroup>
+    ))
+);
+
+const menuBox = (menuItems: JSX.Element[]) => {
+    const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | undefined>(
+        undefined
+    );
+    return (
+        <div
+            css={css`
+                width: 200px;
+                height: 100px;
+                background-color: tan;
+                display: flex;
+                flex-direction: row;
+                justify-content: center;
+                align-items: center;
+            `}
+        >
+            <Button
+                color="primary"
+                onClick={event =>
+                    setAnchorEl(event.target as HTMLButtonElement)
+                }
+                css={css`
+                    background-color: lightblue !important;
+                    width: 120px;
+                    height: 40px;
+                `}
+            >
+                Click Me!
+            </Button>
+            <Menu
+                anchorEl={anchorEl}
+                keepMounted
+                open={Boolean(anchorEl)}
+                anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+                transformOrigin={{ vertical: "top", horizontal: "left" }}
+                onClose={() => {
+                    setAnchorEl(undefined);
+                }}
+            >
+                {menuItems}
+            </Menu>
+        </div>
+    );
+};
+
+const normalMenuItem = React.createElement(() => (
+    <LocalizableMenuItem
+        english="Motion Book"
+        l10nId="PublishTab.Android.MotionBookMode"
+        icon={<DeleteIcon />}
+        onClick={() => {}}
+    />
+));
+
+const checkboxMenuItem = React.createElement(() => (
+    <LocalizableCheckboxMenuItem
+        english="Decodable Reader"
+        l10nId="TemplateBooks.BookName.Decodable Reader"
+        apiEndpoint="some/api/endpoint"
+        onClick={() => {}}
+    />
+));
+
+const normalMenuItemWithEllipsisAndEnterprise = React.createElement(() => (
+    <LocalizableMenuItem
+        english="Open or Create Another Collection"
+        l10nId="CollectionTab.OpenCreateCollectionMenuItem"
+        addEllipsis={true}
+        requiresEnterprise={true}
+        onClick={() => {}}
+    />
+));
+
+const nestedMenu = React.createElement(() => (
+    <LocalizableNestedMenuItem
+        english="Troubleshooting"
+        l10nId="CollectionTab.ContextMenu.Troubleshooting"
+    >
+        {[
+            normalMenuItem,
+            checkboxMenuItem,
+            normalMenuItemWithEllipsisAndEnterprise
+        ]}
+    </LocalizableNestedMenuItem>
+));
+
+const divider = React.createElement(() => <Divider />);
+
+const testMenu = [
+    normalMenuItem,
+    normalMenuItemWithEllipsisAndEnterprise,
+    checkboxMenuItem,
+    divider,
+    nestedMenu
+];
+
+storiesOf("Localizable Widgets/Localizable Menu", module).add("test menu", () =>
+    menuBox(testMenu)
 );
 
 const confirmDialogProps: IConfirmDialogProps = {
@@ -303,6 +549,95 @@ storiesOf("Misc", module)
                 </>
             );
         })
+    )
+    .add("RadioGroup", () =>
+        React.createElement(() => {
+            return (
+                <RadioGroup
+                    choices={{
+                        short: "Short label",
+                        long:
+                            "Bacon ipsum dolor amet ribeye spare ribs bresaola t-bone. Strip steak turkey shankle pig ground round, biltong t-bone kevin alcatra flank ribeye beef ribs meatloaf filet mignon. Buffalo ham t-bone short ribs. Sausage alcatra tail, sirloin andouille pork belly corned beef shoulder meatloaf venison rump frankfurter bresaola chicken. Ball tip strip steak burgdoggen spare ribs picanha, turducken filet mignon ham hock short loin porchetta rump andouille t-bone boudin."
+                    }}
+                    value={""}
+                    onChange={() => {}}
+                />
+            );
+        })
+    );
+
+const selectItem1 = {
+    name: "1st menu item",
+    value: "One"
+};
+
+const selectItem2 = {
+    name: "2nd menu item",
+    value: "Two"
+};
+
+const selectItem3 = {
+    name: "3rd menu item",
+    value: "Three"
+};
+
+const selectItem4 = {
+    name: "4th menu item",
+    value: "Four"
+};
+
+const selectTestData = [selectItem1, selectItem2, selectItem3, selectItem4];
+
+const selectTestChildren: JSX.Element[] = selectTestData.map((item, index) => {
+    return (
+        <MenuItem
+            key={index}
+            value={item.value}
+            dense
+            css={css`
+                padding-top: 0 !important;
+                padding-bottom: 0 !important;
+            `}
+        >
+            {item.name}
+        </MenuItem>
+    );
+});
+
+const frameDivStyle: React.CSSProperties = {
+    // This is the size of the collection settings dialog tabpanes
+    width: "642px",
+    height: "452px",
+    border: "1px solid green",
+    backgroundColor: "#F0F0F0" // winforms control background
+};
+
+storiesOf("Misc/Collection Settings", module)
+    .add("WinForms imitating Select", () =>
+        React.createElement(() => (
+            <div style={frameDivStyle}>
+                <WinFormsStyleSelect
+                    idKey="test1"
+                    currentValue="Two"
+                    onChangeHandler={() => {}}
+                >
+                    {selectTestChildren}
+                </WinFormsStyleSelect>
+            </div>
+        ))
+    )
+    .add("Book Making tab pane", () =>
+        React.createElement(() => (
+            <div>
+                <div style={frameDivStyle}>
+                    <BookMakingSettingsControl />
+                </div>
+                <Typography>
+                    Have Bloom running while testing this and the api calls will
+                    work.
+                </Typography>
+            </div>
+        ))
     );
 
 const playbackControlsDivStyles: React.CSSProperties = {
@@ -526,7 +861,8 @@ storiesOf("Custom Color Chooser", module)
                 localizedTitle: "Custom Color Picker",
                 initialColor: chooserCurrentBackgroundColor,
                 defaultSwatchColors: defaultSwatches,
-                onChange: color => handleColorChange(color)
+                onChange: color => handleColorChange(color),
+                onInputFocus: () => {}
             };
 
             return (

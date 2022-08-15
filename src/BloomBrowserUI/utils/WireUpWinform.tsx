@@ -1,6 +1,6 @@
 import React = require("react");
 import * as ReactDOM from "react-dom";
-import { IBloomDialogEnvironmentParams } from "../react_components/BloomDialog/BloomDialog";
+import { IBloomDialogEnvironmentParams } from "../react_components/BloomDialog/BloomDialogPlumbing";
 import { lightTheme } from "../bloomMaterialUITheme";
 import { ThemeProvider } from "@material-ui/styles";
 

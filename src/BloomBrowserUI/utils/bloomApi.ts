@@ -21,7 +21,8 @@ import { useSubscribeToWebSocketForEvent } from "./WebSocketManager";
 
 function isRunningStorybook(): boolean {
     try {
-        if (window.location.href.startsWith("http://localhost:61180"))
+        if (window.location.href.startsWith("http://localhost:58886"))
+            // storybook port is specified in package.json
             return true;
     } catch (e) {
         //ignore
@@ -212,6 +213,14 @@ export class BloomApi {
         return [value, fn];
     }
 
+    public static useCanModifyCurrentBook(): boolean {
+        const [canModifyCurrentBook] = BloomApi.useApiBoolean(
+            "common/canModifyCurrentBook",
+            false
+        );
+        return canModifyCurrentBook;
+    }
+
     public static useApiData<T>(urlSuffix: string, defaultValue: T): T {
         return this.useApiDataInternal(urlSuffix, defaultValue);
     }
@@ -230,7 +239,7 @@ export class BloomApi {
             BloomApi.get(urlSuffix, c => {
                 setValue(c.data);
             });
-        }, [generation]);
+        }, [generation, urlSuffix]);
         return value;
     }
 
@@ -252,6 +261,18 @@ export class BloomApi {
             setGeneration(old => old + 1);
         });
         return this.useApiDataInternal(urlSuffix, defaultValue, generation);
+    }
+
+    public static useWatchBooleanEvent(
+        defaultValue: boolean,
+        clientContext: string,
+        eventId: string
+    ) {
+        const [val, setVal] = useState(defaultValue);
+        useSubscribeToWebSocketForEvent(clientContext, eventId, data => {
+            setVal(data.message === "true");
+        });
+        return val;
     }
 
     // Manages a state that is initially defaultValue, but subscribes to the specified web

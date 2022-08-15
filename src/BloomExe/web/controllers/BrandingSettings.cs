@@ -138,6 +138,16 @@ namespace Bloom.Api
 				if (string.IsNullOrEmpty(settingsPath))
 				{
 					settingsPath = BloomFileLocator.GetOptionalBrandingFile(brandingFolderName, "branding.json");
+					if (string.IsNullOrEmpty(settingsPath))
+					{
+						// Is the branding missing? If not, it is guaranteed to have a branding.css.
+						var cssPath = BloomFileLocator.GetOptionalBrandingFile(brandingFolderName, "branding.css");
+						if (string.IsNullOrEmpty(cssPath))
+						{
+							// Branding has not yet shipped. We want the branding.json from the "Missing" branding
+							settingsPath = BloomFileLocator.GetOptionalBrandingFile("Missing", "branding.json");
+						}
+					}
 				}
 
 				if (!string.IsNullOrEmpty(settingsPath))

@@ -743,6 +743,16 @@ namespace Bloom.Book
 			return false;
 		}
 
+		public static (int textCount, int imageCount, int videoCount, int widgetCount) GetEditableDataCounts(XmlElement page)
+		{
+			return (
+				// See comment on GetEltsWithClassNotInImageContainerInternal() below.
+				GetTranslationGroupNotInImageContainerCount(page),
+				GetEltsWithClassNotInImageContainer(page, "bloom-imageContainer").Count,
+				GetEltsWithClassNotInImageContainer(page, "bloom-videoContainer").Count,
+				GetEltsWithClassNotInImageContainer(page, "bloom-widgetContainer").Count);
+		}
+
 		/// <summary>
 		/// Replace page in its parent with an element which is a clone of template, but with the contents
 		/// of page transferred as far as possible. Retain the id of the page. Set its lineage to the supplied value
@@ -756,14 +766,10 @@ namespace Bloom.Book
 		{
 			if (!allowDataLoss)
 			{
-				// See comment on GetTranslationGroupsInternal() below.
-				var oldTextCount = GetTranslationGroupCount(page);
-				var newTextCount = GetTranslationGroupCount(template);
-				var oldImageCount = GetAllDivsWithClass(page, "bloom-imageContainer").Count;
-				var newImageCount = GetAllDivsWithClass(template, "bloom-imageContainer").Count;
-				var oldVideoCount = GetAllDivsWithClass(page, "bloom-videoContainer").Count;
-				var newVideoCount = GetAllDivsWithClass(template, "bloom-videoContainer").Count;
-				if (newTextCount < oldTextCount || newImageCount < oldImageCount || newVideoCount < oldVideoCount)
+				
+				var (oldTextCount,  oldImageCount,  oldVideoCount, oldWidgetCount) = GetEditableDataCounts(page);
+				var (newTextCount, newImageCount, newVideoCount, newWidgetCount) = GetEditableDataCounts(template);
+				if (newTextCount < oldTextCount || newImageCount < oldImageCount || newVideoCount < oldVideoCount || newWidgetCount < oldWidgetCount)
 				{
 					didChange = false;
 					return null;
@@ -803,27 +809,35 @@ namespace Bloom.Book
 			// migrate text (between visible translation groups!)
 			// enhance: I wish there was a better way to detect invisible translation groups than just knowing about one class
 			// that currently hides them.
-			MigrateChildren(GetTranslationGroups(page), GetTranslationGroups(newPage));
+			MigrateChildren(GetTranslationGroupsNotInImageContainer(page), GetTranslationGroupsNotInImageContainer(newPage));
 			// migrate images
 			MigrateChildrenWithCommonClass(page, "bloom-imageContainer", newPage);
 			// migrate videos
 			MigrateChildrenWithCommonClass(page, "bloom-videoContainer", newPage);
+			// migrate HTML widgets
+			MigrateChildrenWithCommonClass(page, "bloom-widgetContainer", newPage);
 			RemovePlaceholderVideoClass(newPage);
+			RemovePlaceholderWidgetClass(newPage);
 			didChange = true;
 			return oldLineage;
 		}
 
-		private int GetTranslationGroupCount(XmlElement pageElement)
+		private static int GetTranslationGroupNotInImageContainerCount(XmlElement pageElement)
 		{
-			var result = GetTranslationGroups(pageElement);
+			var result = GetTranslationGroupsNotInImageContainer(pageElement);
 
 			return result.Count;
 		}
 
-		private List<XmlElement> GetTranslationGroups(XmlElement pageElement)
+		private static List<XmlElement> GetTranslationGroupsNotInImageContainer(XmlElement pageElement)
+		{
+			return GetEltsWithClassNotInImageContainer(pageElement, "bloom-translationGroup");
+		}
+
+		private static List<XmlElement> GetEltsWithClassNotInImageContainer(XmlElement pageElement, string targetClass)
 		{
 			var result = new List<XmlElement>();
-			GetTranslationGroupsInternal(pageElement, ref result);
+			GetEltsWithClassNotInImageContainerInternal(pageElement, ref result, targetClass);
 
 			return result;
 		}
@@ -836,14 +850,12 @@ namespace Bloom.Book
 		// We could just do this with an xpath if bloom-textOverPicture divs and bloom-imageDescription divs had
 		// the same structure internally, but text over picture CONTAINS a translationGroup,
 		// whereas image description IS a translationGroup.
-		private void GetTranslationGroupsInternal(XmlElement currentElement, ref List<XmlElement> result)
+		private static void GetEltsWithClassNotInImageContainerInternal(XmlElement currentElement, ref List<XmlElement> result, string targetClass)
 		{
 			if (currentElement.HasAttribute("class"))
 			{
 				var classes = currentElement.Attributes["class"].Value;
-				if (classes.Contains("bloom-imageContainer"))
-					return; // don't drill down inside of this one
-				if (classes.Contains("bloom-translationGroup"))
+				if (classes.Contains(targetClass))
 				{
 					// box-header-off/on appears to be vestigial at this point,
 					// but suffice it to say "box-header-off" translationGroups are not visible.
@@ -853,6 +865,9 @@ namespace Bloom.Book
 					}
 					return; // don't drill down further
 				}
+				// Test this AFTER looking for targetClass; we do want to find the TOP bloom-imageContainers.
+				if (classes.Contains("bloom-imageContainer"))
+					return; // don't drill down inside of this one
 			}
 
 			if (!currentElement.HasChildNodes)
@@ -863,7 +878,7 @@ namespace Bloom.Book
 				if (childElement == null) // if the node is not castable to XmlElement
 					continue;
 
-				GetTranslationGroupsInternal(childElement, ref result);
+				GetEltsWithClassNotInImageContainerInternal(childElement, ref result, targetClass);
 			}
 		}
 
@@ -1053,6 +1068,20 @@ namespace Bloom.Book
 				}
 			}
 		}
+		private static void RemovePlaceholderWidgetClass(XmlElement newPage)
+		{
+			const string widgetPlaceholderClass = "bloom-noWidgetSelected";
+			var nodesWithPlaceholder = newPage.SelectNodes("//div[contains(@class,'" + widgetPlaceholderClass + "')]");
+			foreach (XmlNode placeholderDiv in nodesWithPlaceholder)
+			{
+				if (placeholderDiv.HasChildNodes && placeholderDiv.FirstChild.Name == "iframe")
+				{
+					// We migrated a widget node into here, delete the placeholder class.
+					XmlUtils.SetAttribute(placeholderDiv, "class", XmlUtils.GetStringAttribute(placeholderDiv, "class").
+						Replace(widgetPlaceholderClass, String.Empty));
+				}
+			}
+		}
 
 		internal static string TransferOrientation(string classes, string newClasses)
 		{
@@ -1083,8 +1112,8 @@ namespace Bloom.Book
 		/// <param name="newPage"></param>
 		private static void MigrateChildrenWithCommonClass(XmlElement page, string className, XmlElement newPage)
 		{
-			var oldParents = new List<XmlElement>(GetAllDivsWithClass(page, className).Cast<XmlElement>());
-			var newParents = new List<XmlElement>(GetAllDivsWithClass(newPage, className).Cast<XmlElement>());
+			var oldParents = new List<XmlElement>(GetEltsWithClassNotInImageContainer(page, className).Cast<XmlElement>());
+			var newParents = new List<XmlElement>(GetEltsWithClassNotInImageContainer(newPage, className).Cast<XmlElement>());
 			MigrateChildren(oldParents, newParents);
 		}
 
@@ -1094,7 +1123,7 @@ namespace Bloom.Book
 		private static void MigrateChildren(IReadOnlyList<XmlElement> oldParentElements,
 			IReadOnlyList<XmlElement> templateParentElements)
 		{
-			// 'xParentElements' are either 'bloom-translationGroup', 'bloom-imageContainer', or 'bloom-videoContainer'
+			// 'xParentElements' are either 'bloom-translationGroup', 'bloom-imageContainer', 'bloom-widgetContainer', or 'bloom-videoContainer'
 			// The Math.Min is not needed yet; in fact, we don't yet have any cases where there is more than one
 			// thing to copy or where the numbers are not equal. It's just a precaution.
 			for (var i = 0; i < Math.Min(templateParentElements.Count, oldParentElements.Count); i++)
@@ -1909,6 +1938,32 @@ namespace Bloom.Book
 		}
 
 		/// <summary>
+		/// Remove unwanted language rules from the css text.
+		/// </summary>
+		/// <remarks>
+		/// If our CSS parsing needs get much greater, we may have to start using a CSS parser.
+		/// I think we can still get by with regular expressions for the CSS generated by Bloom.
+		/// It's only the CSS in customCollectionStyles.css that may baffle our efforts.
+		/// </remarks>
+		/// <returns>possibly modified css text</returns>
+		public static string RemoveUnwantedLanguageRulesFromCss(string cssText, IEnumerable<string> languagesToInclude)
+		{
+			var wantedLanguages = new HashSet<string>(languagesToInclude);
+			var unwantedLanguages = new HashSet<string>();
+			var matches = Regex.Matches(cssText, @"[\r\n][-.\s\w]*\[lang=(['""])([-a-zA-Z]+)\1\]\s*{[^}]*}");
+			foreach (Match match in matches)
+			{
+				var lang = match.Groups[2].Value;
+				if (!wantedLanguages.Contains(lang))
+					unwantedLanguages.Add(lang);
+			}
+			foreach (var lang in unwantedLanguages)
+				cssText = Regex.Replace(cssText, @"([\r\n]+)[-.\s\w]*\[lang=(['""])" + lang + @"\2\]\s*{[^}]*}", "$1");
+
+			return cssText;
+		}
+
+		/// <summary>
 		/// Gets the url for the image, either from an img element or any other element that has
 		/// an inline style with background-image set.
 		/// </summary>
@@ -2241,25 +2296,44 @@ namespace Bloom.Book
 
 		public bool HasQuizPages()
 		{
+			return HasQuizPageContent(_dom.DocumentElement);
+		}
+		public static bool HasQuizPageContent(XmlElement element)
+		{
 			// Current style comprehension quiz pages
-			var nodes1 = _dom.SafeSelectNodes("//*[contains(@class, 'simple-comprehension-quiz')]");
+			if (element.SafeSelectNodes(".//*[contains(@class, 'simple-comprehension-quiz')]")?.Count >= 1)
+				return true;
 			// Legacy style comprehension quiz pages
-			var nodes2 = _dom.SafeSelectNodes("//*[contains(@class, 'questions')]");
-			return nodes1?.Count >= 1 || nodes2?.Count >= 1;
+			return element.SafeSelectNodes(".//*[contains(@class, 'questions')]")?.Count >= 1;
 		}
 
 		// "Widgets" are HTML Activities that the user creates outside of Bloom, as distinct from our built-in activities.
 		public bool HasWidgetPages()
 		{
-			var nodes = _dom.SafeSelectNodes("//*[@data-activity = 'iframe')]");
+			var nodes = _dom.SafeSelectNodes("//*[@data-activity]");
 			return nodes?.Count >= 1;
 		}
 
 		// An Activity can be either a user-supplied html widget or a built-in interactive page like quizzes or multiple-choice pages
 		public bool HasActivityPages()
 		{
-			return _dom.SafeSelectNodes("//*[@data-activity]")?.Count >= 1 || HasQuizPages();
-	
+			// I think the test for bloom-interactivePage is sufficient for all current activity pages,
+			// but for compatibility with legacy books (and in case I'm wrong) I'm keeping the other checks.
+			// This test should be consistent with the isActivity method in bloom player's bloom-player-core code.
+			return _dom.SelectSingleNode("//div[contains(@class, 'bloom-interactive-page')]")!= null
+			       || HasQuizPages() || HasWidgetPages();
+		}
+
+		public static bool IsActivityPage(XmlElement pageElement)
+		{
+			var classes = pageElement.GetAttribute("class");
+			// I'd say it's impossible for this to be empty or null, but...
+			Debug.Assert(!string.IsNullOrEmpty(classes), "How did we get a page with no classes!?");
+			// The class is for 4.6, the attribute is for later versions.
+			if (classes.Contains("bloom-interactive-page") || pageElement.HasAttribute("data-activity"))
+				return true;
+
+			return HasQuizPageContent(pageElement);
 		}
 
 		public  bool HasOverlayPages()
@@ -2911,7 +2985,7 @@ namespace Bloom.Book
 		// It seems safest to just list the ones that can occur empty in Bloom...if we can't find a more reliable way to convert to HTML5.
 		private static string CleanupHtml5(string xhtml)
 		{
-			var re = new Regex("<(title|div|i|table|td|span|style) ([^<]*)/>");
+			var re = new Regex("<(title|div|i|table|td|span|style|script) ([^<]*)/>");
 			xhtml = re.Replace(xhtml, "<$1 $2></$1>");
 			//now insert the non-xml-ish <!doctype html>
 			return string.Format("<!DOCTYPE html>{0}{1}", Environment.NewLine, xhtml);

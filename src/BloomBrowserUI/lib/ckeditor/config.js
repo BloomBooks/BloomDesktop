@@ -6,6 +6,12 @@
 // Warning: this file is NOT processed by yarn watchCode or webpack -w. Takes a full build or manual copy
 // (or possibly something like yarn gulp copyFiles) to get changes to take effect during debugging.
 
+// Note: I determined (by searching for 'revision' in ckeditor.js, as some doc suggests) that we are using
+// a version built from CkEditor 4.5.1 (c. 2015). The plugins (other than autolink, which I'm not sure
+// about but is probably 4.5.1) are taken from the CkEditor repo, using the code in the 4.5.x branch, which
+// I believe would be 4.5.11. We seem to be using the 'icy orange' skin. I have not been able to determine
+// what other settings we used to build our version.
+
 CKEDITOR.editorConfig = function(config) {
     // Define changes to default configuration here.
     // For complete reference see:
@@ -32,9 +38,10 @@ CKEDITOR.editorConfig = function(config) {
     ];
 
     // The default plugins included in the basic setup define some buttons that
-    // are not needed in a basic editor. They are removed here.
+    // are not needed in a basic editor. They are removed here. Also we don't (yet) want
+    // the background color button that the colorButton plugin brings by default.
     config.removeButtons =
-        "Cut,Copy,Paste,Undo,Redo,Anchor,Strike,Subscript,About";
+        "Cut,Copy,Paste,Undo,Redo,Anchor,Strike,Subscript,About,BGColor";
 
     // Dialog windows are also simplified.
     config.removeDialogTabs = "link:advanced";
@@ -84,5 +91,10 @@ CKEDITOR.editorConfig = function(config) {
 
     // Add the autolink plugin to make it easy for users to make live internet/email links in ebooks.
     // See https://issues.bloomlibrary.org/youtrack/issue/BL-6845.
-    CKEDITOR.config.extraPlugins = "autolink";
+    // Add the colorbutton for choosing color of text and background.
+    // The others are required dependencies of colorbutton.
+    // Note that the BGColor button that comes by default with the colorbutton plugin
+    // is removed in the config.removeButtons list above.
+    CKEDITOR.config.extraPlugins =
+        "autolink,panel,panelbutton,button,floatpanel,colorbutton";
 };

@@ -49,7 +49,7 @@ namespace Bloom
 
 		public static void RegisterWithApiHandler(BloomApiHandler apiHandler)
 		{
-			apiHandler.RegisterEndpointHandler("help/.*", (request) =>
+			apiHandler.RegisterEndpointLegacy("help/.*", (request) =>
 			{
 				var topic = request.LocalPath().Replace("api/help","");
 				Show(Application.OpenForms.Cast<Form>().Last(), topic);

@@ -98,8 +98,15 @@ namespace Bloom
 		[HandleProcessCorruptedStateExceptions]
 		static int Main(string[] args1)
 		{
+			// AttachConsole(-1);	// Enable this to allow Console.Out.WriteLine to be viewable (must run Bloom from terminal, AFAIK)
+			bool gotUniqueToken = false;
 			_uiThreadId = Thread.CurrentThread.ManagedThreadId;
 			Logger.Init();
+			// Configure TempFile to create temp files with a "bloom" prefix so we can
+			// catch stuff we make that doesn't get cleaned up properly, including in our
+			// final call to CleanupTempFolder. Also prevents our temp files competing with
+			// other programs for 64K available default temp file names.
+			TempFile.NamePrefix = "bloom";
 			CheckForCorruptUserConfig();
 			// We want to do this as early as possible, definitely before we create
 			// the TeamCollectionManager, which needs the registered user information.
@@ -223,9 +230,6 @@ namespace Bloom
 					Settings.Default.Save();
 				}
 
-#if !USING_CHORUS
-				Settings.Default.ShowSendReceive = false; // in case someone turned it on before we disabled
-#endif
 #if DEBUG
 				if (args.Length > 0)
 				{
@@ -310,6 +314,7 @@ namespace Bloom
 										ErrorReport.NotifyUserOfProblem(msg);
 										return 1;
 									}
+									gotUniqueToken = true;
 
 									if (projectContext.TeamCollectionManager.CurrentCollection == null)
 									{
@@ -358,6 +363,7 @@ namespace Bloom
 						// and now we need to get the lock as usual before going on to load the new collection.
 						if (!UniqueToken.AcquireToken(_mutexId, "Bloom"))
 							return 1;
+						gotUniqueToken = true;
 					}
 					else
 					if (IsBloomBookOrder(args))
@@ -367,6 +373,7 @@ namespace Bloom
 						// carry on with starting up normally.  See https://silbloom.myjetbrains.com/youtrack/issue/BL-3822.
 						if (!UniqueToken.AcquireTokenQuietly(_mutexId))
 							return 0;
+						gotUniqueToken = true;
 					}
 					else
 					{
@@ -376,6 +383,7 @@ namespace Bloom
 						// (A message will pop up to tell the user about this situation if it happens.)
 						if (!UniqueToken.AcquireToken(_mutexId, "Bloom"))
 							return 1;
+						gotUniqueToken = true;
 					}
 					OldVersionCheck();
 
@@ -389,11 +397,25 @@ namespace Bloom
 						SetUpLocalization();
 
 
-						if (args.Length == 1 && !IsInstallerLaunch(args) && !IsLocalizationHarvestingLaunch(args) && args[0].ToLowerInvariant().EndsWith(@".bloomcollection"))
-						{
-							if (CollectionChoosing.OpenCreateCloneControl.ReportIfInvalidCollectionToEdit(args[0]))
-								return 1;
-							Settings.Default.MruProjects.AddNewPath(args[0]);
+						if (args.Length == 1 && !IsInstallerLaunch(args) && !IsLocalizationHarvestingLaunch(args)) {
+							
+							// See BL-10012. Windows File explorer will give us an 8.3 path with ".BLO" at the end, so might as well convert it now.
+							var path = Utils.LongPathAware.GetLongPath(args[0]);
+
+							// See BL-10012. We'll die eventually, might as well nip this in the bud.
+							if (Utils.LongPathAware.GetExceedsMaxPath(path))
+							{
+								var pathForWantOfAClosure = path;
+								StartupScreenManager.AddStartupAction(() => Utils.LongPathAware.ReportLongPath(pathForWantOfAClosure));
+								path = ""; // go forwards as if we weren't given an explicit collection to open (except we're showing a report about what happened)
+							}
+
+							if (path.ToLowerInvariant().EndsWith(@".bloomcollection"))
+							{
+								if (Utils.MiscUtils.ReportIfInvalidCollectionToEdit(path))
+									return 1;
+								Settings.Default.MruProjects.AddNewPath(path);
+							}
 						}
 
 						if (args.Length > 0 && args[0] == "--rename")
@@ -466,9 +488,19 @@ namespace Bloom
 			{
 				// Check memory one final time for the benefit of developers.  The user won't see anything.
 				Bloom.Utils.MemoryManagement.CheckMemory(true, "Bloom finished and exiting", false);
-				UniqueToken.ReleaseToken();
+				if (gotUniqueToken)
+					UniqueToken.ReleaseToken();
 
 				_sentry?.Dispose();
+				// In a debug build we want to be able to see if we're leaving garbage around. (Note: this doesn't seem to be working.)
+#if !Debug
+				// We should not clean up garbage if we didn't get the token.
+				// - we might delete something in use by the instance that has the token
+				// - we would delete the token itself (since _mutexid and NamePrefix happen to be the same),
+				// allowing a later duplicate process to start normally.
+				if (gotUniqueToken)
+					TempFile.CleanupTempFolder();
+#endif
 			}
 			Settings.Default.FirstTimeRun = false;
 			Settings.Default.Save();
@@ -874,12 +906,22 @@ namespace Bloom
 
 			if (!string.IsNullOrEmpty(path))
 			{
-				//CollectionChoosing.OpenCreateCloneControl.CheckForBeingInDropboxFolder(path);
-				while (CollectionChoosing.OpenCreateCloneControl.IsInvalidCollectionToEdit(path))
+				// Catch case where the last collection was so long that windows gave us a 8.3 version which will eventually
+				// fail. Just fail right now, don't bother to have a conversation with the user about it.
+				// This might be impossible in real life, I'm not sure. Part of BL-10012.
+				if (path.EndsWith(".BLO"))
 				{
-					// Somehow...from a previous version?...we have an invalid file in our MRU list.
 					Settings.Default.MruProjects.RemovePath(path);
-					path = Settings.Default.MruProjects.Latest;
+					path = null;
+				}
+				else
+				{
+					while (Utils.MiscUtils.IsInvalidCollectionToEdit(path))
+					{
+						// Somehow...from a previous version?...we have an invalid file in our MRU list.
+						Settings.Default.MruProjects.RemovePath(path);
+						path = Settings.Default.MruProjects.Latest;
+					}
 				}
 			}
 
@@ -893,22 +935,31 @@ namespace Bloom
 		}
 
 		/// ------------------------------------------------------------------------------------
-		private static bool OpenProjectWindow(string projectPath)
+		private static bool OpenProjectWindow(string collectionPath)
 		{
 			Debug.Assert(_projectContext == null);
 
 			try
 			{
+				//// See BL-10012.
+				var path = Bloom.Utils.LongPathAware.GetLongPath(collectionPath);
+				if (Utils.LongPathAware.GetExceedsMaxPath(path))
+				{
+					Utils.LongPathAware.ReportLongPath(path);
+					return false;
+					
+				}
+
 				//NB: initially, you could have multiple blooms, if they were different projects.
 				//however, then we switched to the embedded http image server, which can't share
 				//a port. So we could fix that (get different ports), but for now, I'm just going
 				//to lock it down to a single bloom
-/*					if (!GrabTokenForThisProject(projectPath))
-					{
-						return false;
-					}
-				*/
-				_projectContext = _applicationContainer.CreateProjectContext(projectPath);
+				/*					if (!GrabTokenForThisProject(projectPath))
+									{
+										return false;
+									}
+								*/
+				_projectContext = _applicationContainer.CreateProjectContext(path);
 				_projectContext.ProjectWindow.Closed += HandleProjectWindowClosed;
 				_projectContext.ProjectWindow.Activated += HandleProjectWindowActivated;
 #if DEBUG
@@ -926,7 +977,7 @@ namespace Bloom
 			}
 			catch (Exception e)
 			{
-				HandleErrorOpeningProjectWindow(e, projectPath);
+				HandleErrorOpeningProjectWindow(e, collectionPath);
 			}
 
 			return false;
@@ -1040,17 +1091,6 @@ namespace Bloom
 		static void HandleProjectWindowClosed(object sender, EventArgs e)
 		{
 			BloomThreadCancelService.Cancel();
-
-			#if Chorus
-			try
-			{
-				_projectContext.SendReceiver.CheckPointWithDialog("Storing History Of Your Work");
-			}
-			catch (Exception error)
-			{
-				SIL.Reporting.ErrorReport.NotifyUserOfProblem(error,"There was a problem backing up your work to the SendReceive repository on this computer.");
-			}
-			#endif
 
 			_projectContext.Dispose();
 			_projectContext = null;
@@ -1317,6 +1357,17 @@ namespace Bloom
 		private static bool _errorHandlingHasBeenSetUp;
 		private static IDisposable _sentry;
 
+		private static IBloomErrorReporter _errorReporter;
+		internal static IBloomErrorReporter ErrorReporter
+		{
+			get => _errorReporter;
+			set
+			{
+				_errorReporter = value;
+				ErrorReport.SetErrorReporter(value);
+			}
+		}
+
 		/// ------------------------------------------------------------------------------------
 		internal static void SetUpErrorHandling()
 		{
@@ -1348,20 +1399,26 @@ namespace Bloom
 				}
 			}
 
-			var orderedReporters = new IErrorReporter[] { SentryErrorReporter.Instance, HtmlErrorReporter.Instance };
+			var orderedReporters = new IBloomErrorReporter[] { SentryErrorReporter.Instance, HtmlErrorReporter.Instance };
 			var htmlAndSentryReporter = new CompositeErrorReporter(orderedReporters, primaryReporter: HtmlErrorReporter.Instance);
-			ErrorReport.SetErrorReporter(htmlAndSentryReporter);
+			ErrorReporter = htmlAndSentryReporter;
 
-
-			string issueTrackingUrl = UrlLookup.LookupUrl(UrlType.IssueTrackingSystem);
-			ExceptionReportingDialog.PrivacyNotice = string.Format(@"If you don't care who reads your bug report, you can skip this notice.
+			var msgTemplate = @"If you don't care who reads your bug report, you can skip this notice.
 
 When you submit a crash report or other issue, the contents of your email go in our issue tracking system, ""YouTrack"", which is available via the web at {0}. This is the normal way to handle issues in an open-source project.
 
 Our issue-tracking system is searchable by anyone. Search engines (like Google) should not search it, so someone searching with Google should not see your report, but we can't promise this for all search engines.
 
 Anyone looking specifically at our issue tracking system can read what you sent us. So if you have something private to say, please send it to one of the developers privately with a note that you don't want the issue in our issue tracking system. If need be, we'll make some kind of sanitized place-holder for your issue so that we don't lose it.
-", issueTrackingUrl);
+";
+			// To save startup time, we'll initially set the privacy notice based on our fallback version of this URL,
+			// then get the real one in the background (which will also make other URLs available faster when needed).
+			string issueTrackingUrl = UrlLookup.LookupUrl(UrlType.IssueTrackingSystem, acceptFinalUrl: (realUrl) =>
+			{
+				ExceptionReportingDialog.PrivacyNotice = string.Format(msgTemplate, realUrl);
+			});
+			
+			ExceptionReportingDialog.PrivacyNotice = string.Format(msgTemplate, issueTrackingUrl);
 			SIL.Reporting.ErrorReport.EmailAddress = "issues@bloomlibrary.org";
 			SIL.Reporting.ErrorReport.AddStandardProperties();
 			// with squirrel, the file's dates only reflect when they were installed, so we override this version thing which

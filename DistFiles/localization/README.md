@@ -158,8 +158,8 @@ a normal merge with all that history would probably be okay.)
    commits labeled "New translations" in the branch.)  Every line in the commit message file
    except the first should be marked as *fixup*.  The first line should be marked *reword*.  The
    "git log" command is just to reassure yourself that everything looks okay after squashing
-   down all the history.  [NB: the count is too high by 3.  Three individual commits have snuck
-   through somehow.  So you need to subtract 3 from the number returned by the git log command.]
+   down all the history.  [NB: the count is too high by 4.  Some individual commits have snuck
+   through somehow.  So you need to subtract 4 from the number returned by the git log command.]
 
     <pre>
         git rebase -i HEAD~432

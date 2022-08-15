@@ -205,29 +205,5 @@ namespace Bloom.Book
 				completed++;
 			}
 		}
-
-		public static void CompressImages(string folderPath, IProgress progress)
-		{
-			var imageFiles = Directory.GetFiles(folderPath, "*.png");
-			int completed = 0;
-			foreach (string path in imageFiles)
-			{
-				if (Path.GetFileName(path).ToLowerInvariant() == "placeholder.png")
-					return;
-
-				progress.ProgressIndicator.PercentCompleted = (int)(100.0 * (float)completed / (float)imageFiles.Length);
-				CompressImage(path, progress);
-				completed++;
-			}
-		}
-
-		public static void CompressImage(string path, IProgress progress)
-		{
-			progress.WriteStatus("Compressing image: " + Path.GetFileName(path));
-			var pngoutPath = FileLocationUtilities.LocateExecutable("optipng.exe");
-			var result = CommandLineRunner.Run(pngoutPath, "\"" + path + "\"", Encoding.UTF8,
-				Path.GetDirectoryName(path), 300, progress,
-				(s) => progress.WriteMessage(s));
-		}
 	}
 }

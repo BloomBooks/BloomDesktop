@@ -42,7 +42,9 @@ export const ForceUnlockDialog: React.FunctionComponent<{
             open={props.open}
             onClose={props.close}
             // This somewhat arbitrary limit makes the dialog more compact and looking more like the mock-up.
-            innerCss="max-width:400px;"
+            css={css`
+                max-width: 400px;
+            `}
         >
             <DialogTitle title={title} />
             <DialogMiddle>

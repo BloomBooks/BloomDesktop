@@ -3,6 +3,7 @@
 
 import AudioRecording from "../toolbox/talkingBook/audioRecording";
 import { BloomApi } from "../../utils/bloomApi";
+import BloomMessageBoxSupport from "../../utils/bloomMessageBoxSupport";
 
 // This class is actually just a group of static functions with a single public method. It does whatever we need to to make Firefox's contenteditable
 // element have the behavior we need.
@@ -116,6 +117,9 @@ export default class BloomField {
         //     alert(event.data.dataValue);
         // });
         ckeditor.on("paste", event => {
+            event.data.dataValue = this.reconstituteParagraphsOnPlainTextPaste(
+                event.data
+            );
             event.data.dataValue = this.convertStandardFormatVerseMarkersToSuperscript(
                 event.data.dataValue
             );
@@ -150,18 +154,12 @@ export default class BloomField {
                 );
             }
 
-            const paras = event.data.dataValue.match(/<p>/g);
-            if (!paras) {
-                // Enhance: should we remove the probable <span> and just leave the text?
-                // But it might be carrying some important style info.
-                return;
-            }
             // OK, we are going to unwrap the first <p> and just leave its content.
             // This prevents a typically unwanted extra line break being inserted before the
             // start of the material copied. Without the <p> wrapper, that material just
             // gets inserted into the current paragraph.
             let endMkr = "";
-            if (paras.length === 1) {
+            if (event.data.dataValue.match(/<p>/g)?.length === 1) {
                 // Unwrapping the one and only <p> will leave no break between what used to be that
                 // paragraph and the following text, which should now start a new paragraph.
                 // We insert an empty paragraph to force a break, but that will leave an unwanted
@@ -175,6 +173,7 @@ export default class BloomField {
                 .replace("<p>", "")
                 .replace("</p>", endMkr);
         });
+
         ckeditor.on("afterPaste", event => {
             // clean up possible unwanted paragraph inserted by paste event.
             $(".removeMe").remove();
@@ -188,10 +187,22 @@ export default class BloomField {
                     }
                     const anchor = document.createElement("a");
                     anchor.href = result.data;
-                    const selText = document
-                        .getSelection()
-                        ?.getRangeAt(0)
-                        ?.surroundContents(anchor);
+                    try {
+                        document
+                            .getSelection()
+                            ?.getRangeAt(0)
+                            ?.surroundContents(anchor);
+                    } catch (ex) {
+                        const englishErrorMessage =
+                            "Bloom was not able to make a link. Try selecting only simple text.";
+                        console.log(`${englishErrorMessage} ${ex}`);
+                        BloomMessageBoxSupport.CreateAndShowSimpleMessageBox(
+                            "EditTab.HyperlinkPasteFailure",
+                            englishErrorMessage,
+                            "Shows when a hyperlink cannot be pasted due to invalid selection.",
+                            "CantPasteHyperlink"
+                        );
+                    }
                 });
                 return true; // probaby means success, but I'm not sure. Typescript says this function has to return a boolean.
             }
@@ -208,6 +219,40 @@ export default class BloomField {
         // This makes it easy to find the right editor instance. There may be some ckeditor built-in way, but
         // I wasn't able to find one.
         (<any>bloomEditableDiv).bloomCkEditor = ckeditor;
+    }
+
+    // If the original clipboard had no paragraph markup, but only (plain text) newlines (\n)
+    // (e.g. pasting from Notepad), this method will remove the newlines and substitue HTML paragraph
+    // markup.
+    // The problem is that when pasting from Notepad, 'dataValue' has removed the newlines and squished
+    // all the lines together into one line. Pasting the same thing from MSWord, 'dataValue' contains
+    // HTML paragraph markup. So if there are no paragraph marks and there were (in the original
+    // clipboard data) newlines, we reconstitute the needed paragraph marks from the original newlines
+    // that we have to go fishing inside of the dataTransfer object to find. (BL-9961)
+    static reconstituteParagraphsOnPlainTextPaste(eventData: any): any {
+        if (!eventData.dataValue.match(/<p>/g)) {
+            // If we're inserting plain text from Notepad, we will arrive here because 'dataValue'
+            // doesn't have paragraphs, but we actually do want paragraph markup, if there
+            // are multiple lines in the original clipboard data.
+            // Finding where the original string with its newlines was passed inside the
+            // dataTransfer object was a bit tricky.
+            const textWithReturns: string = eventData.dataTransfer._.data.Text;
+            if (!textWithReturns.includes("\n")) {
+                // Enhance: should we remove the probable <span> and just leave the text?
+                // But it might be carrying some important style info.
+                return eventData.dataValue; // no change
+            }
+            // Split the text on carriage returns and put it back together with each bit in a paragraph.
+            const reconstitutedTextWithParas = textWithReturns
+                .split("\n")
+                .reduce(
+                    (resultSoFar, part) => resultSoFar + "<p>" + part + "</p>",
+                    ""
+                );
+            // Reset dataValue
+            return reconstitutedTextWithParas;
+        }
+        return eventData.dataValue; // no change
     }
 
     // Not private so we can unit test it. It is too difficult to get the actual paste

@@ -94,7 +94,7 @@ namespace BloomTests.WebLibraryIntegration
 		private static void SetupMetaData(TemporaryFolder folder, string guid, DateTime timestamp)
 		{
 			var jsonPath = Path.Combine(folder.FolderPath, BookInfo.MetaDataFileName);
-			var metaData = @"{'experimental':'false','bookInstanceId':'" + guid + @"','suitableForMakingShells':'true'}";
+			var metaData = @"{""experimental"":""false"",""bookInstanceId"":""" + guid + @""",""suitableForMakingShells"":""true""}";
 			File.WriteAllText(jsonPath, metaData);
 			File.SetLastWriteTimeUtc(jsonPath, timestamp);
 		}
