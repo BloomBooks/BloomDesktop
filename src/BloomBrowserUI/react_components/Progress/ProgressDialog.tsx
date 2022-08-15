@@ -266,7 +266,19 @@ export const ProgressDialog: React.FunctionComponent<IProgressDialogProps> = pro
                                 Quit
                             </BloomButton>
                         ) : (
-                            <DialogCloseButton onClick={closeDialog} />
+                            <DialogCloseButton
+                                onClick={() => {
+                                    closeDialog();
+                                    // The above will close this instance; however, as long as Bloom has multiple
+                                    // root windows that contain EmbeddedBrowserDialogs, it's possible that
+                                    // more than one of them, though not visible, responded when the open progress
+                                    // socket event happened. This post makes sure that a close event goes out
+                                    // on the same channel, in case there's another one needing to be closed.
+                                    // (I'm not sure whether we actually need the line above as well; I think it
+                                    // is necessary when using a non-embedded dialog.)
+                                    BloomApi.post("progress/close");
+                                }}
+                            />
                         )}
                     </React.Fragment>
                 ) : // if we're not done, show the cancel button if that was called for...

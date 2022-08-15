@@ -881,6 +881,11 @@ namespace Bloom.Workspace
 				CurrentTabView.TopBarControl.Dock = DockStyle.Fill;
 			}
 
+			// As long as we have EmbeddedProgressDialogs in multiple HTML root documents, it's possible
+			// that one is opened that is meant for the current tab, but the one in another tab also responds,
+			// even though it's not visible. When switching tabs,  make sure none is showing.
+			BrowserProgressDialog.HandleCloseProgressDialog();
+
 			_selectedTabAboutToChangeEvent.Raise(new TabChangedDetails()
 			{
 				From = _previouslySelectedControl,

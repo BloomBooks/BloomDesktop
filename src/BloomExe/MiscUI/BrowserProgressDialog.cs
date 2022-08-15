@@ -163,6 +163,7 @@ namespace Bloom.MiscUI
 			Func<IWebSocketProgress, BackgroundWorker, bool> doWhat, Action doWhenMainActionFalse = null,
 			Action doWhenDialogCloses = null)
 		{
+			_socketServer = socketServer;
 			// For now making this fixed for progress dialog. Making it configurable really complicates things,
 			// since a lot of init is done BEFORE we open the dialog, using a websocket message which we have
 			// to listen for, which PASSES the context!
@@ -220,6 +221,16 @@ namespace Bloom.MiscUI
 			// of the reason I decided it should NOT be configurable.)
 			socketServer.SendBundle(socketContext, "open-progress", props);
 			worker.RunWorkerAsync();
+		}
+
+		private static IBloomWebSocketServer _socketServer;
+
+		public static void HandleCloseProgressDialog(ApiRequest request = null)
+		{
+			// I think the socketServer will only be null if we opened in a Windows.Forms progress dialog,
+			// in which case we don't need this event.
+			_socketServer?.SendEvent("progress", "close-progress");
+			request?.PostSucceeded();
 		}
 
 		public static void HandleProgressDialogClosed(ApiRequest request)

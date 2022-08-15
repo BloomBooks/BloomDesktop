@@ -24,6 +24,7 @@ namespace Bloom.web.controllers
 			apiHandler.RegisterEndpointLegacy("progress/cancel", Cancel, false, false);
 			apiHandler.RegisterEndpointHandler("progress/closed", BrowserProgressDialog.HandleProgressDialogClosed, false);
 			apiHandler.RegisterEndpointHandler("progress/ready", BrowserProgressDialog.HandleProgressReady, false);
+			apiHandler.RegisterEndpointHandler("progress/close", BrowserProgressDialog.HandleCloseProgressDialog, true);
 		}
 
 		private void Cancel(ApiRequest request)
