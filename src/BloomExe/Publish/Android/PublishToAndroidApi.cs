@@ -167,8 +167,7 @@ namespace Bloom.Publish.Android
 			apiHandler.RegisterEndpointHandler(kApiUrlPart + "updatePreview", request =>
 			{
 				MakeBloompubPreview(request, false);
-			}, false);
-
+			}, true);
 
 			apiHandler.RegisterEndpointLegacy(kApiUrlPart + "thumbnail", request =>
 			{
