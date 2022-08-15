@@ -7,13 +7,17 @@ html
 		meta(charset='UTF-8')
 		meta(name='BloomFormatVersion', content='2.0')
 		title ILV Mexico Literacy Front & Back Matter
-		//- Make stylesheets adjustable for Device version
+		//- Make the stylesheets section adjustable for Device version.
 		block stylesheets
 			+stylesheets('MXBLiteracy-XMatter.css')
 	body
 		+factoryStandard-outsideFrontCover
-		+factory-insideFrontCover
-		+mxb-titlePage
-		+mxb-nationalSummaryCreditsPage-back-title-page
+
+		//- Allow Device version to override page order
+		block afterFrontCoverPages
+			+factory-insideFrontCover
+			+mxb-titlePage.bloom-frontMatter
+			+mxb-creditsPage.bloom-frontMatter
+
 		+mxb-printerStatement-insideBackCover
 		+factoryStandard-outsideBackCover
