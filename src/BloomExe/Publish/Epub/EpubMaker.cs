@@ -1042,6 +1042,15 @@ namespace Bloom.Publish.Epub
 		/// </summary>
 		private string MergeAudioElements(IEnumerable<XmlElement> elementsWithAudio)
 		{
+			var countOrdered = elementsWithAudio
+				.Select(x => !String.IsNullOrEmpty(x.GetStringAttribute("data-order")))
+				.Sum(x => x?1:0);
+			var count = elementsWithAudio.Count();
+			if (countOrdered == count)
+			{
+				elementsWithAudio = elementsWithAudio
+					.OrderBy(e => e.Attributes["data-order"].Value);
+			}
 			var mergeFiles =
 				elementsWithAudio
 					.Select(s => AudioProcessor.GetOrCreateCompressedAudio(Storage.FolderPath, s.Attributes["id"]?.Value))
@@ -2589,8 +2598,18 @@ namespace Bloom.Publish.Epub
 
 		private void RemoveUnwantedAttributes(HtmlDom pageDom)
 		{
+			// We need to preserve the tabIndex on the bloom-translationGroup as the audio ordering
+			// for the inner div with audio.
 			foreach (var elt in pageDom.RawDom.SafeSelectNodes("//*[@tabindex]").Cast<XmlElement>().ToArray())
 			{
+				var tabIndex = elt.GetAttribute("tabindex");
+				var classes = elt.GetAttribute("class");
+				if (tabIndex != "0" && classes.Contains("bloom-translationGroup"))
+				{
+					var audioElt = elt.SelectSingleNode(".//*[@data-duration]") as XmlElement;
+					if (audioElt != null)
+						audioElt.SetAttribute("data-order", tabIndex);
+				}
 				elt.RemoveAttribute("tabindex");
 			}
 		}
