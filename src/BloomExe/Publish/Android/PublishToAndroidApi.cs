@@ -191,7 +191,7 @@ namespace Bloom.Publish.Android
 						NonFatalProblem.Report(ModalIf.Alpha, PassiveIf.All, "Error while updating preview.", null, e, true);
 					}
 				}
-			}, false);
+			}, true);
 
 
 			apiHandler.RegisterEndpointHandler(kApiUrlPart + "thumbnail", request =>
