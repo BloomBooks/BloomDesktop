@@ -153,14 +153,18 @@ namespace Bloom.Publish
 				// This may or may not be preferable to flattening all of the files to monaural at the
 				// standard recording rate before concatenating them.  The current approach at least
 				// has deterministic output for all files.
-				var monoFiles = TryEnsureConsistentInputFiles(ffmpeg, mergeFiles);
+				var monoFiles = TryEnsureConsistentInputFiles(ffmpeg, mergeFiles, out IEnumerable<string> mergeFileSpecs);
+				Debug.Assert(mergeFiles.Count() == mergeFileSpecs.Count());
 				try
 				{
-					var argsBuilder = new StringBuilder("-i \"concat:");
+					var argsBuilder = new StringBuilder("-hide_banner -i \"concat:");
 					argsBuilder.Append(string.Join("|", monoFiles));
 					argsBuilder.Append($"\" -c copy \"{combinedAudioPath}\"");
 					var result = CommandLineRunner.Run(ffmpeg, argsBuilder.ToString(), "", 60 * 10, new NullProgress());
-					var output = result.ExitCode != 0 ? result.StandardError : null;
+					// Having a WAV file masquerading as a .mp3 file in the file list doesn't work, but ffmpeg still
+					// returns an exit code of zero when that happens.  We can detect the problem by checking the stderr
+					// output.  See https://issues.bloomlibrary.org/youtrack/issue/BL-11435.
+					var output = CheckFfmpegErrors(result, mergeFiles, mergeFileSpecs);
 					if (output != null)
 					{
 						RobustFile.Delete(combinedAudioPath);
@@ -180,6 +184,39 @@ namespace Bloom.Publish
 			return "Could not find ffmpeg";
 		}
 
+		private static string CheckFfmpegErrors(ExecutionResult result, IEnumerable<string> mergeFiles, IEnumerable<string> mergeFileSpecs)
+		{
+			var stderr = result.StandardError;
+			if (result.ExitCode != 0)
+				return stderr;
+			// This error message can occur no more than once in a valid mp3 file according to what I've read
+			// in google searches.
+			var matches = Regex.Matches(stderr, "Audio packet of size [0-9]+ \\(starting with [0-9A-F]+\\.\\.\\.\\) is invalid, writing it anyway\\.", RegexOptions.CultureInvariant);
+			if (matches.Count > 0)
+			{
+				var countMp3 = mergeFileSpecs.Where(s => Regex.IsMatch(s,"Audio: mp3, [0-9]+ Hz, [^,]+, [^,]*, [0-9]+ kb/s")).Count();
+				if (countMp3 != mergeFiles.Count() || matches.Count > mergeFiles.Count())
+				{
+					// If one or more input files don't match as an MP3, or too many invalid packets occur,
+					// then we collect up the filenames and specifications as part of a warning message
+					// shown to users to alert them that something is wrong with one of their audio files
+					// that prevents merging them into proper order for a page.
+					var files = mergeFiles.ToArray();
+					var specs = mergeFileSpecs.ToArray();
+					var warningMessageLines = new StringBuilder();
+					for (int i = 0; i < files.Length; ++i)
+					{
+						warningMessageLines.AppendLine();
+						warningMessageLines.AppendLine(Path.Combine("audio", Path.GetFileName(files[i])));
+						warningMessageLines.AppendLine(specs[i]);
+					}
+					return warningMessageLines.ToString();
+				}
+			}
+			// It looks like we're okay after all.
+			return null;
+		}
+
 		/// <summary>
 		/// Epub preview cannot play an audio file that contains a mixture of stereo and monaural
 		/// sections.  It also cannot play an audio file that contains segments recorded at
@@ -194,14 +231,30 @@ namespace Bloom.Publish
 		/// If any file fails to convert for any reason, it is returned in the output list.  So the
 		/// files in the output list may not really be consistent in reality...
 		/// </summary>
+		/// <param name="ffmpeg">
+		/// path to the ffmpeg program
+		/// </param>
+		/// <param name="mergeFiles">
+		/// ordered input list of files that are going to be concatenated and thus need to be consistent
+		/// </param>
+		/// <param name="mergeFileSpecs">
+		/// output list matching the input file list 1:1 with either each file's audio specification,
+		/// "unknown format..." if the input file doesn't appear to be an audio file, or "not checked"
+		/// if there is only one input file
+		/// </param>
 		/// <remarks>
 		/// See https://issues.bloomlibrary.org/youtrack/issue/BL-9051
 		/// and https://issues.bloomlibrary.org/youtrack/issue/BL-9100.
 		/// </remarks>
-		private static IEnumerable<string> TryEnsureConsistentInputFiles(string ffmpeg, IEnumerable<string> mergeFiles)
+		private static IEnumerable<string> TryEnsureConsistentInputFiles(string ffmpeg, IEnumerable<string> mergeFiles, out IEnumerable<string> mergeFileSpecs)
 		{
+			var internalFileSpecs = new List<string>();
+			mergeFileSpecs = internalFileSpecs;
 			if (mergeFiles.Count() < 2)
+			{
+				internalFileSpecs.Add("not checked");
 				return mergeFiles;
+			}
 			var monoFiles = new List<string>();
 			var argsBuilder = new StringBuilder();
 			foreach (var file in mergeFiles)
@@ -209,13 +262,14 @@ namespace Bloom.Publish
 				var args = $"-hide_banner -i \"{file}\" -f null -";
 				var result = CommandLineRunner.Run(ffmpeg, args, "", 60, new NullProgress());
 				var output = result.StandardError;
-				var match = Regex.Match(output, "Audio: [^,]*, ([0-9]+) Hz, ([a-z]+), [^,]*, ([0-9]+) kb/s");
+				var match = Regex.Match(output, "Audio: ([^,]*), ([0-9]+) Hz, ([a-z]+), [^,]*, ([0-9]+) kb/s");
 				if (match.Success)
 				{
 					// Get a mono version at 44100 Hz of the sound file, trying to preserve its quality.
-					var recordRate = match.Groups[1].ToString();
-					var recordType = match.Groups[2].ToString();
-					var bitRate = match.Groups[3].ToString();
+					var fileType = match.Groups[1].ToString();
+					var recordRate = match.Groups[2].ToString();
+					var recordType = match.Groups[3].ToString();
+					var bitRate = match.Groups[4].ToString();
 					if (recordType == "stereo" || recordRate != "44100")
 					{
 						var tempFile = TempFile.CreateAndGetPathButDontMakeTheFile();
@@ -235,6 +289,11 @@ namespace Bloom.Publish
 							Debug.WriteLine(result.StandardError);
 						}
 					}
+					internalFileSpecs.Add(match.Value);
+				}
+				else
+				{
+					internalFileSpecs.Add("unknown format: does not appear to be an audio file");
 				}
 				monoFiles.Add(file);
 			}
