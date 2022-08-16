@@ -8,12 +8,51 @@
 @halfLetterPageHeight: 8.5in;
 @outerBackCoverSpacing: 10px;
 
+.abcLevel {
+    //We do not actually show this level value, we just use it to trigger the right css rule to show the right grade.
+    // Instead, we show a :after content pseudo
+    // element. The font-size here makes that work.
+
+    font-size: 0;
+
+    &:before,
+    &:after {
+        // This doesn't work, and I found no way to say "just ignore the font-size:0 of the element and give
+        // us what the font would have been.
+        // font-size: initial;
+        // Since the font-size differs in all 3 locations that we show the grade, we have to set it individually in each place.
+    }
+
+    &:after {
+        content: "1"; // will get overridden for grades 2 and 3
+    }
+}
+
 /* -----------------------------------------------------------------------------
    Rules for the cover, minus the grade circle which gets its own section
    ----------------------------------------------------------------------------*/
 body,
 div.bloomPlayer-page {
     .cover {
+        .abcLevel:after {
+            font-size: 22px; // the actual grade number
+        }
+
+        .levelOrStageAndNumberRow {
+            display: flex;
+            flex-direction: row;
+            justify-content: start;
+            margin-top: @outerBackCoverSpacing;
+
+            .abcLevel {
+                width: @circleDiameter;
+                font-weight: bold;
+                min-height: 1em;
+                line-height: 8px;
+                margin-top: 4px;
+            }
+        }
+
         .titleAndNumberCircle {
             display: flex;
             flex-direction: row;
@@ -93,15 +132,6 @@ div.bloomPlayer-page {
     .numberCircle {
         background-color: @grade1Color; // will get overridden for grades 2 and 3
 
-        &::before {
-            content: "Grade";
-        }
-
-        [data-book="levelOrStageNumber"]:after {
-            content: "1"; // will get overridden for grades 2 and 3
-            font-size: 22px;
-        }
-
         margin-top: 0.08in; // align with top of Title text
         width: @circleDiameter;
         height: @circleDiameter;
@@ -123,10 +153,6 @@ div.bloomPlayer-page {
             width: @circleDiameter;
             font-weight: bold;
             min-height: 1em;
-            // we use this data-book value to determine the grade, but
-            // we don't display it. Instead, we show a :after content pseudo
-            // element. The font-size here makes that work.
-            font-size: 0;
             line-height: 8px;
             margin-top: 4px;
         }
@@ -136,28 +162,6 @@ div.bloomPlayer-page {
         }
     }
 }
-
-// Then for higher levels, we have this macro that changes the color and grade
-.ReaderLevel(@level, @grade, @color) {
-    body,
-    div.bloomPlayer-page {
-        &[data-leveledreaderlevel="@{level}"] {
-            .numberCircle {
-                background-color: @color;
-
-                [data-book="levelOrStageNumber"]:after {
-                    content: "@{grade}";
-                }
-            }
-        }
-    }
-}
-
-// override the default "Grade 1" as the levels get higher
-.ReaderLevel(7, 2, @grade2Color);
-.ReaderLevel(8, 2, @grade2Color);
-.ReaderLevel(9, 3, @grade3Color);
-.ReaderLevel(10, 3, @grade3Color);
 
 /* -----------------------------------------------------------------------------
    Rules for the Title Page
@@ -169,6 +173,15 @@ div.bloomPlayer-page {
 
     .levelOrStageAndNumberRow {
         justify-content: center;
+    }
+
+    .abcLevel:before,
+    .abcLevel:after {
+        font-size: 14px; // the actual grade number
+    }
+
+    .abcLevel:before {
+        content: "Grade " !important;
     }
 
     .descriptionAndTopicRow {
@@ -249,10 +262,12 @@ div.bloomPlayer-page {
             max-width: 100% !important;
         }
 
-        .abcTopic2,
-        .curricularTheme,
-        .decodableStageLettersRow,
-        .levelOrStageAndNumberRow {
+        .abcLevel:before,
+        .abcLevel:after {
+            font-size: 14px; // the actual grade number
+        }
+
+        .backCoverRow {
             margin-top: @outerBackCoverSpacing;
             flex-direction: row;
             display: flex;
@@ -260,9 +275,9 @@ div.bloomPlayer-page {
             .label {
                 flex: 1;
 
-                &.numberLabel::before {
-                    content: "Level:"; // back cover needs a colon
-                }
+                // &.numberLabel::before {
+                //     content: "Level:"; // back cover needs a colon
+                // }
             }
 
             .bloom-translationGroup {
@@ -303,13 +318,6 @@ div.bloomPlayer-page {
     }
 }
 
-.levelOrStageAndNumberRow {
-    display: flex;
-    flex-direction: row;
-    justify-content: start;
-    margin-top: @outerBackCoverSpacing;
-}
-
 /* -----------------------------------------------------------------------------
    Rules for HalfLetterPortrait?
    ----------------------------------------------------------------------------*/
@@ -335,3 +343,27 @@ body {
         }
     }
 }
+
+/* -----------------------------------------------------------------------------
+   Override the various "Grade 1" labels as needed
+   ----------------------------------------------------------------------------*/
+.ReaderLevel(@level, @grade, @color) {
+    body,
+    div.bloomPlayer-page {
+        &[data-leveledreaderlevel="@{level}"] {
+            .numberCircle {
+                background-color: @color;
+            }
+
+            .abcLevel:after {
+                content: "@{grade}";
+            }
+        }
+    }
+}
+
+// override the default "Grade 1" as the levels get higher
+.ReaderLevel(7, 2, @grade2Color);
+.ReaderLevel(8, 2, @grade2Color);
+.ReaderLevel(9, 3, @grade3Color);
+.ReaderLevel(10, 3, @grade3Color);
