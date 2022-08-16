@@ -8,7 +8,7 @@
         "test": "test"
     },
     "engines": {
-        "node": "~16"
+        "node": ">=16.13.0"
     },
     "scripts": {
         "// COMMENTS: make the action a space rather than empty string so `yarn run` can list the scripts": " ",
