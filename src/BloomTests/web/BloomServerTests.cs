@@ -1,7 +1,6 @@
 ﻿// Copyright (c) 2014-2018 SIL International
 // This software is licensed under the MIT License (http://opensource.org/licenses/MIT)
 
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Imaging;
@@ -235,35 +234,50 @@ namespace BloomTests.web
 		[Test]
 		public void Topics_ReturnsFrenchFor_NoTopic_()
 		{
-			Assert.AreEqual("Aucun thème", QueryServerForJson("api/editView/topics").First(t => t.englishKey =="No Topic").translated.ToString());
+			var topics = QueryServerForJson("api/editView/topics").Topics;
+			var topicToTest = topics.First(t => t.Contains("No Topic"));
+			var topicObject = JsonConvert.DeserializeObject<Topic>(topicToTest);
+			Assert.AreEqual("Aucun thème", topicObject.translated);
 		}
 
 		[Test]
 		public void Topics_ReturnsFrenchFor_Dictionary_()
 		{
-			Assert.AreEqual("Dictionnaire", QueryServerForJson("api/editView/topics").First(t => t.englishKey =="Dictionary").translated.ToString());
+			var topics = QueryServerForJson("api/editView/topics").Topics;
+			var topicToTest = topics.First(t => t.Contains("Dictionary"));
+			var topicObject = JsonConvert.DeserializeObject<Topic>(topicToTest);
+			Assert.AreEqual("Dictionnaire", topicObject.translated);
 		}
 
-		private Topic[] QueryServerForJson(string query)
+		private TopicInfo QueryServerForJson(string query)
 		{
 			using (var server = CreateBloomServer())
 			{
-				var commonApi = new EditingViewApi();
-				commonApi.RegisterWithApiHandler(server.ApiHandler);
+				var editingViewApi = new EditingViewApi();
+				editingViewApi.RegisterWithApiHandler(server.ApiHandler);
 				var transaction = new PretendRequestInfo(BloomServer.ServerUrlWithBloomPrefixEndingInSlash + query);
 				server.MakeReply(transaction);
 				Debug.WriteLine(transaction.ReplyContents);
-				return JsonConvert.DeserializeObject<Topic[]>(transaction.ReplyContents);
+				return JsonConvert.DeserializeObject<TopicInfo>(transaction.ReplyContents);
 			}
+		}
+
+		private class TopicInfo
+		{
+			[JsonProperty]
+			internal string Current { get; set; }
+
+			[JsonProperty]
+			internal string[] Topics { get; set; }
 		}
 
 		private class Topic
 		{
 			[JsonProperty]
-			public string englishKey { get; private set; }
+			internal string englishKey { get; set; }
 
 			[JsonProperty]
-			public string translated { get; private set; }
+			internal string translated { get; set; }
 		}
 
 		private BloomServer CreateBloomServer(BookInfo info = null)

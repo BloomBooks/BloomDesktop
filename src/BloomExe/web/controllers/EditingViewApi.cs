@@ -218,11 +218,19 @@ namespace Bloom.web.controllers
 			data.AddRange(arrayOfKeyValuePairs);
 			dynamic answer = new ExpandoObject();
 			answer.Topics = data.ToArray();
-			var currentBook = View.Model.CurrentBook;
-			var currentTopicKey = currentBook.BookData.GetVariableOrNull("topic", "en").Unencoded;
-			if (string.IsNullOrEmpty(currentTopicKey))
-				currentTopicKey = "No Topic";
-			answer.Current = currentTopicKey;
+			if (View == null || View.Model == null || View.Model.CurrentBook == null)
+			{
+				// Happens in unit tests.
+				answer.Current = "";
+			}
+			else
+			{
+				var currentBook = View.Model.CurrentBook;
+				var currentTopicKey = currentBook.BookData.GetVariableOrNull("topic", "en").Unencoded;
+				if (string.IsNullOrEmpty(currentTopicKey))
+					currentTopicKey = "No Topic";
+				answer.Current = currentTopicKey;
+			}
 
 			request.ReplyWithJson(answer);
 		}
