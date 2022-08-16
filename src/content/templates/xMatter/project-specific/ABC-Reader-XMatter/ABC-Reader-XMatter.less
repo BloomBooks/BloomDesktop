@@ -35,7 +35,7 @@ body,
 div.bloomPlayer-page {
     .cover {
         .abcLevel:after {
-            font-size: 22px; // the actual grade number
+            font-size: 27px; // the actual grade number
         }
 
         .levelOrStageAndNumberRow {
@@ -48,7 +48,7 @@ div.bloomPlayer-page {
                 width: @circleDiameter;
                 font-weight: bold;
                 min-height: 1em;
-                line-height: 8px;
+                line-height: 11px;
                 margin-top: 4px;
             }
         }
@@ -149,12 +149,16 @@ div.bloomPlayer-page {
             font-weight: bold;
         }
 
+        .numberLabel {
+            font-size: 11px;
+            margin-bottom: 6px;
+        }
+
         [data-book="levelOrStageNumber"] {
             width: @circleDiameter;
             font-weight: bold;
             min-height: 1em;
-            line-height: 8px;
-            margin-top: 4px;
+            line-height: 11px; // this pushes the "Grade" label and the number apart
         }
 
         p {
@@ -169,6 +173,10 @@ div.bloomPlayer-page {
 .titlePage {
     [data-book="bookTitle"] {
         font-size: 26pt;
+    }
+
+    .readerDescription {
+        text-align: center;
     }
 
     .levelOrStageAndNumberRow {
@@ -253,8 +261,10 @@ div.bloomPlayer-page {
 
 body,
 div.bloomPlayer-page {
-    .marginBox .spacer {
-        flex: 3; // Create space at the right place
+    &:not(.decodable-reader) {
+        .decodableStageLettersRow {
+            display: none !important; // for decodable only
+        }
     }
 
     .outsideBackCover .marginBox {
@@ -274,10 +284,6 @@ div.bloomPlayer-page {
 
             .label {
                 flex: 1;
-
-                // &.numberLabel::before {
-                //     content: "Level:"; // back cover needs a colon
-                // }
             }
 
             .bloom-translationGroup {
@@ -301,15 +307,8 @@ div.bloomPlayer-page {
 }
 
 /* -----------------------------------------------------------------------------
-   rules used in multiple places
-   ----------------------------------------------------------------------------*/
-//used on cover and title page
-.readerDescription {
-    text-align: center; // if alone on line (e.g. Title Page)
-}
-
-/* -----------------------------------------------------------------------------
-   UNKNOWN
+    The "Spacer" is used in title page, credits, and back cover
+    Best I can tell, it is supposed to be greedy about consuming space?
    ----------------------------------------------------------------------------*/
 body,
 div.bloomPlayer-page {
@@ -319,28 +318,26 @@ div.bloomPlayer-page {
 }
 
 /* -----------------------------------------------------------------------------
-   Rules for HalfLetterPortrait?
+   Rules for HalfLetterPortrait
    ----------------------------------------------------------------------------*/
-body {
-    // this template is meant for half-letter portrait pages
-    .HalfLetterPortrait {
-        .marginBox {
-            top: 0.5in !important;
-            left: 0.5in !important;
-            width: (@halfLetterPageWidth - 1in) !important;
-            height: (@halfLetterPageHeight - 0.9in) !important;
+// this template is meant for half-letter portrait pages
+.HalfLetterPortrait {
+    .marginBox {
+        top: 0.5in !important;
+        left: 0.5in !important;
+        width: (@halfLetterPageWidth - 1in) !important;
+        height: (@halfLetterPageHeight - 0.9in) !important;
 
-            img {
-                // Override a rather persistent base rule that wanted to take into account gutter
-                // margins that we aren't using. This would have made the image skinnier and left-justified,
-                // instead of full width and centered, like we want.
-                max-width: unset;
-            }
+        img {
+            // Override a rather persistent base rule that wanted to take into account gutter
+            // margins that we aren't using. This would have made the image skinnier and left-justified,
+            // instead of full width and centered, like we want.
+            max-width: unset;
         }
+    }
 
-        &.frontCover .marginBox {
-            top: 0.4in !important; // leave room for inevitable font space above title
-        }
+    &.frontCover .marginBox {
+        top: 0.4in !important; // leave room for inevitable font space above title
     }
 }
 
