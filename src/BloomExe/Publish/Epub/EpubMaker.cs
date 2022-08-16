@@ -844,7 +844,7 @@ namespace Bloom.Publish.Epub
 		/// </summary>
 		/// <param name="pageDom"></param>
 		/// <param name="pageDocName"></param>
-		private void AddAudioOverlay(HtmlDom pageDom, string pageDocName)
+		private void AddAudioOverlay(HtmlDom pageDom, string pageDocName, ISet<string> warningMessages)
 		{
 			// These elements are marked as audio-sentence but we're not sure yet if the user actually recorded them yet
 			var audioSentenceElements = HtmlDom.SelectAudioSentenceElements(pageDom.RawDom.DocumentElement).Cast<XmlElement>();
@@ -875,7 +875,7 @@ namespace Bloom.Publish.Epub
 			TimeSpan pageDuration = new TimeSpan();
 			string mergedAudioPath = null;
 			if (OneAudioPerPage && audioSentenceElementsWithRecordedAudio.Count() > 1)
-				mergedAudioPath = MergeAudioElements(audioSentenceElementsWithRecordedAudio);
+				mergedAudioPath = MergeAudioElements(audioSentenceElementsWithRecordedAudio, warningMessages);
 			foreach(var audioSentenceElement in audioSentenceElementsWithRecordedAudio)
 			{
 				// These are going to be the same regardless of whether this audio sentence has sub-elements to highlight.
@@ -1044,7 +1044,7 @@ namespace Bloom.Publish.Epub
 		/// Merge the audio files corresponding to the specified elements. Returns the path to the merged MP3 if all is well, null if
 		/// we somehow failed to merge.
 		/// </summary>
-		private string MergeAudioElements(IEnumerable<XmlElement> elementsWithAudio)
+		private string MergeAudioElements(IEnumerable<XmlElement> elementsWithAudio, ISet<string> warningMessages)
 		{
 			// The elementsWithAudio need to be ordered the same way as in bloom-player
 			// (narrationUtils.ts): by data-audio-order if it exists, or by document order
@@ -1069,8 +1069,9 @@ namespace Bloom.Publish.Epub
 				_manifestItems.Add(kAudioFolder + "/" + Path.GetFileName(combinedAudioPath));
 				return combinedAudioPath;
 			}
-			Logger.WriteEvent("Failed to merge audio files for page " + _pageIndex + " " + errorMessage);
-			// and we will do it the old way. Works for some readers.
+			Logger.WriteEvent("There was a problem processing one of the audio files on page " + _pageIndex + ": " + errorMessage);
+			warningMessages.Add("There was a problem processing one of the audio files on page " + _pageIndex + ":<br/>" + errorMessage.Replace(Environment.NewLine, "<br/>"));
+			// and we will do it the old way. Works for some readers.  But it won't follow any ordering set by user.
 			return null;
 		}
 
@@ -1307,7 +1308,7 @@ namespace Bloom.Publish.Epub
 			_manifestItems.Add(pageDocName);
 			_spineItems.Add(pageDocName);
 			if(!PublishWithoutAudio)
-				AddAudioOverlay(pageDom, pageDocName);
+				AddAudioOverlay(pageDom, pageDocName, warningMessages);
 
 			StoreTableOfContentInfo(pageElement, pageDocName);
 
