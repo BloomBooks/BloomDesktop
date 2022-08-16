@@ -8,13 +8,73 @@
 @halfLetterPageHeight: 8.5in;
 @outerBackCoverSpacing: 10px;
 
-.ReaderLevel(@level, @grade) {
+/* -----------------------------------------------------------------------------
+   Rules for the circle on the front cover that says what grade the book is
+   ----------------------------------------------------------------------------*/
+@grade1Color: rgb(0, 47, 108);
+@grade2Color: #ba0c2f;
+@grade3Color: #ba0c2f;
+
+body,
+div.bloomPlayer-page {
+    // The default is "Grade 1", Blue. This is used for decodables and levels 1-6. We don't have to verify that
+    // it is "decodable" or in those levels. Instead, we just have this as the default.
+    .numberCircle {
+        background-color: @grade1Color; // will get overridden for grades 2 and 3
+
+        &::before {
+            content: "Grade";
+        }
+
+        [data-book="levelOrStageNumber"]:after {
+            content: "1"; // will get overridden for grades 2 and 3
+            font-size: 22px;
+        }
+
+        margin-top: 0.08in; // align with top of Title text
+        width: @circleDiameter;
+        height: @circleDiameter;
+
+        border-radius: 50%;
+        color: white;
+        text-align: center;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-transform: uppercase;
+
+        span {
+            font-weight: bold;
+        }
+
+        [data-book="levelOrStageNumber"] {
+            width: @circleDiameter;
+            font-weight: bold;
+            min-height: 1em;
+            // we use this data-book value to determine the grade, but
+            // we don't display it. Instead, we show a :after content pseudo
+            // element. The font-size here makes that work.
+            font-size: 0;
+            line-height: 8px;
+            margin-top: 4px;
+        }
+
+        p {
+            margin-bottom: 0;
+        }
+    }
+}
+
+// Then for higher levels, we have this macro that changes the color and grade
+.ReaderLevel(@level, @grade, @color) {
     body,
     div.bloomPlayer-page {
         &[data-leveledreaderlevel="@{level}"] {
-            &.leveled-reader {
+            .numberCircle {
+                background-color: @color;
+
                 [data-book="levelOrStageNumber"]:after {
-                    font-size: 20pt;
                     content: "@{grade}";
                 }
             }
@@ -22,41 +82,26 @@
     }
 }
 
+// override the default "Grade 1" as the levels get higher
+.ReaderLevel(7, 2, @grade2Color);
+.ReaderLevel(8, 2, @grade2Color);
+.ReaderLevel(9, 3, @grade3Color);
+.ReaderLevel(10, 3, @grade3Color);
+
+/* -----------------------------------------------------------------------------
+   Rules for the Title Page
+   ----------------------------------------------------------------------------*/
+
+/* -----------------------------------------------------------------------------
+   Rules for the Credits Page
+   ----------------------------------------------------------------------------*/
+
+/* -----------------------------------------------------------------------------
+   Rules for the Back Cover
+   ----------------------------------------------------------------------------*/
+
 body,
 div.bloomPlayer-page {
-    // the bloomPlayer line above allows the same rules to work in the Device xmatter.
-    &.leveled-reader {
-        .numberLabel::before {
-            content: "Grade";
-        }
-
-        .numberCircle {
-            background-color: #ba0c2f;
-        }
-    }
-
-    &.decodable-reader {
-        .numberLabel::before {
-            content: "Grade 1";
-        }
-
-        .numberCircle {
-            background-color: rgb(0, 47, 108);
-        }
-    }
-
-    &:not(.decodable-reader) {
-        .decodableStageLettersRow {
-            display: none !important; // for decodable only
-        }
-
-        &:not(.leveled-reader) {
-            .numberCircle {
-                display: none !important;
-            }
-        }
-    }
-
     .marginBox .spacer {
         flex: 3; // Create space at the right place
     }
@@ -97,18 +142,6 @@ div.bloomPlayer-page {
         }
     }
 }
-
-// override the "Grade 2" as the levels get higher
-.ReaderLevel(1, 1);
-.ReaderLevel(2, 1);
-.ReaderLevel(3, 1);
-.ReaderLevel(4, 1);
-.ReaderLevel(5, 1);
-.ReaderLevel(6, 2);
-.ReaderLevel(7, 2);
-.ReaderLevel(8, 2);
-.ReaderLevel(9, 3);
-.ReaderLevel(10, 3);
 
 body {
     // this template is meant for half-letter portrait pages
@@ -159,39 +192,6 @@ body {
             .Title-On-Cover-style[data-book="bookTitle"] {
                 font-size: 26pt;
             }
-        }
-    }
-
-    // level or stage
-    .numberCircle {
-        margin-top: 0.08in; // align with top of Title text
-        width: @circleDiameter;
-        height: @circleDiameter;
-
-        border-radius: 50%;
-        color: white;
-        text-align: center;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        text-transform: uppercase;
-
-        span {
-            font-weight: bold;
-        }
-
-        [data-book="levelOrStageNumber"] {
-            width: @circleDiameter;
-            font-weight: bold;
-            min-height: 1em;
-            font-size: 0;
-            line-height: 8px;
-            margin-top: 4px;
-        }
-
-        p {
-            margin-bottom: 0;
         }
     }
 
