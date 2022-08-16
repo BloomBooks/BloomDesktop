@@ -1,7 +1,5 @@
 extends ../../Traditional-XMatter/Traditional-XMatter.pug
 
-include ./ABC-Reader-common.pug
-
 mixin pageWithJustPageSize
 	.HalfLetterPortrait&attributes(attributes)
 		block
@@ -22,6 +20,68 @@ mixin readerDescriptionAndNonStandardTopic
 	.descriptionAndTopicRow
 		+readerDescription
 	+nonStandardTopic
+
+//- We would like to put most of the blocks and mixins from ABC-Reader-XMatter.pug in here,
+//- but we are limited by the fact that we can't 'include' definitions for other mixins from another file.
+//- If we try to (e.g.) include bloom-foundation-mixins.pug so we can use +editable, etc., we get a message
+//- about "Only named blocks and mixins can appear at the top level of an extending template".
+//- Therefore this file only contains all common mixins and blocks that don't reference mixins defined elsewhere.
+//- The rest are in ABC-Reader-XMatter.pug.
+
+
+mixin gradeLabel
+	.abcLevel(data-book="levelOrStageNumber" lang="*")&attributes(attributes)
+
+mixin numberCircle
+	.numberCircle
+		span.numberLabel
+			| GRADE
+		+gradeLabel
+
+block cover-bottom-row-before-branding
+	//- nothing; overrides default which has language(s) and topic
+
+block cover-bottom-row-after-branding
+	.bottomRow
+		div(data-book='cover-branding-bottom2-html' lang="en")
+
+mixin decodableStageLettersRow
+	//- Although this lists letters from a decodable stage, the customer wants it to say Level to be
+	//- consistent with other books that have Level numbers.
+	//- e.g. "Level 2 letters: a, g, l, k, m, n, o, s" <-- They would like this to be automated
+	//- the lang on the whole div makes us have the same font throughout the line
+	.decodableStageLettersRow(lang="V").backCoverRow
+		.label
+			| Level&nbsp;Letters:&nbsp;
+		div(data-book="decodableStageLetters" lang="V")
+
+mixin creditsBrandingAndLicenseImage
+	div.brandingCredits(data-book='credits-branding-approval-and-copyright-html' lang="*")
+	img.licenseImage(src="license.png" data-derived="licenseImage")
+	.licenseDetails
+		p This work is licensed under the Creative Commons Attribution-NonCommercial 4.0 International License (CC BY-NC 4.0). To view a copy of this license, visit https://creativecommons.org/licenses/by-nc/4.0/. Under the Creative Commons Attribution-NonCommercial license, you are free to copy, distribute, transmit, and adapt this work but not for commercial purposes and under the following conditions:
+		p <b>Attribution</b>—If you copy and distribute this work in its entirety, without making changes to content or illustrations, please label the work as follows: "Reproduced on the basis of an original work developed under the USAID ABC+: Advancing Basic Education in the Philippines project and licensed under the Creative Commons Attribution-NonCommercial 4.0 International License."
+		p <b>Translations</b>—If you create a translation of this work, please use the following label on your work: "Translated from an original work developed under the USAID ABC+: Advancing Basic Education in the Philippines project and licensed under the Creative Commons Attribution-NonCommercial 4.0 International License."
+		p <b>Adaptations</b>—If you create an adaptation of this work, please use the following label on your work: "This is an adaptation of an original work developed under the USAID ABC+: Advancing Basic Education in the Philippines project and licensed under the Creative Commons Attribution-NonCommercial 4.0 International License."
+
+mixin curricularTheme
+	//- e.g. "Commerce/Trade", will be in English only
+	.curricularTheme.backCoverRow
+		.label
+			| Curricular&nbsp;Theme:&nbsp;
+		+field-prototypeDeclaredExplicity("N1")
+			label.bubble Curricular theme in {lang}
+			+editable(kLanguageForPrototypeOnly)(data-book='curricularTheme')
+
+mixin englishTopic
+	//- e.g. "My Family", will be in English only, it may be a translation of the Vernacular topic... or not.
+	.abcTopic2.backCoverRow
+		.label
+			| Theme:&nbsp;
+		+field-prototypeDeclaredExplicity("N1")
+			label.bubble Topic in {lang}
+			+editable(kLanguageForPrototypeOnly)(data-book='abcTopic2')
+
 
 block append stylesheets
 	+stylesheets('ABC-Reader-XMatter.css')
@@ -64,7 +124,7 @@ block titlePageContents
 
 	//- e.g. "Foobar Leveled Reader", will be in English only
 	+readerDescription
-	+levelOrStageAndNumber
+	+gradeLabel
 	+title-page-branding-bottom
 
 //-------------- CREDITS PAGE ---------------
@@ -81,7 +141,10 @@ block creditsContent
 //-------------- BACK COVER PAGE ---------------
 
 block outsideBackCoverContentsTop
-	+levelOrStageAndNumber
+	.backCoverRow
+		.label
+			| Grade:
+		.abcLevel(data-book="levelOrStageNumber" lang="*")
 	+decodableStageLettersRow
 	+curricularTheme
 	+englishTopic
