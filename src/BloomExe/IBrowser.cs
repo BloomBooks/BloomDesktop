@@ -1,17 +1,17 @@
-﻿using Bloom.Api;
+using Bloom.Api;
 using Bloom.Book;
 using System;
 using System.Windows.Forms;
 
 namespace Bloom
 {
-	// this is just a throw-away thing to centralize switching during
-	// my coding. 
+	// This is just a temporary thing to centralize switching during progressive coding and testing. 
 	public class BrowserMaker
 	{
 		public static Browser MakeBrowser()
 		{
-			//return new WebView2Browser();
+			if (ExperimentalFeatures.IsFeatureEnabled(ExperimentalFeatures.kWebView2))
+				return new WebView2Browser();
 			return new GeckoFxBrowser();
 		}
 	}

@@ -65,6 +65,7 @@ namespace Bloom.Collection
 			this._teamCollectionTab = new System.Windows.Forms.TabPage();
 			this.teamCollectionSettingsReactControl = new Bloom.web.ReactControl();
 			this.tabPage4 = new System.Windows.Forms.TabPage();
+            this._allowWebView2 = new System.Windows.Forms.CheckBox();
 			this._automaticallyUpdate = new System.Windows.Forms.CheckBox();
 			this.label2 = new System.Windows.Forms.Label();
 			this._showExperimentalBookSources = new System.Windows.Forms.CheckBox();
@@ -78,8 +79,8 @@ namespace Bloom.Collection
 			this._cancelButton = new System.Windows.Forms.Button();
 			this.settingsProtectionLauncherButton1 = new SIL.Windows.Forms.SettingProtection.SettingsProtectionLauncherButton();
 			this._helpButton = new System.Windows.Forms.Button();
-			this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
-			this._tab.SuspendLayout();
+            this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
+            this._tab.SuspendLayout();
 			this.tabPage1.SuspendLayout();
 			this._bookMakingTab.SuspendLayout();
 			this.tabPage3.SuspendLayout();
@@ -541,12 +542,13 @@ namespace Bloom.Collection
 			this.teamCollectionSettingsReactControl.Name = "teamCollectionSettingsReactControl";
 			this.teamCollectionSettingsReactControl.Size = new System.Drawing.Size(636, 446);
 			this.teamCollectionSettingsReactControl.TabIndex = 0;
-			// 
-			// tabPage4
-			// 
-			this.tabPage4.Controls.Add(this._automaticallyUpdate);
-			this.tabPage4.Controls.Add(this.label2);
-			this.tabPage4.Controls.Add(this._showExperimentalBookSources);
+            // 
+            // tabPage4
+            // 
+            this.tabPage4.Controls.Add(this._allowWebView2);
+            this.tabPage4.Controls.Add(this._automaticallyUpdate);
+            this.tabPage4.Controls.Add(this.label2);
+            this.tabPage4.Controls.Add(this._showExperimentalBookSources);
 			this.tabPage4.Controls.Add(this._enterpriseRequiredForTeamCollection);
 			this.tabPage4.Controls.Add(this._allowTeamCollection);
 			this.tabPage4.Controls.Add(this._enterpriseRequiredForSpreadsheetImportExport);
@@ -557,13 +559,27 @@ namespace Bloom.Collection
 			this.tabPage4.Location = new System.Drawing.Point(4, 26);
 			this.tabPage4.Name = "tabPage4";
 			this.tabPage4.Padding = new System.Windows.Forms.Padding(3);
-			this.tabPage4.Size = new System.Drawing.Size(642, 452);
-			this.tabPage4.TabIndex = 5;
-			this.tabPage4.Text = "Advanced Program Settings";
-			this.tabPage4.UseVisualStyleBackColor = false;
-			// 
-			// _automaticallyUpdate
-			// 
+            this.tabPage4.Size = new System.Drawing.Size(642, 452);
+            this.tabPage4.TabIndex = 5;
+            this.tabPage4.Text = "Advanced Program Settings";
+            // 
+            // _allowWebView2
+            // 
+            this._allowWebView2.AutoSize = true;
+            this._L10NSharpExtender.SetLocalizableToolTip(this._allowWebView2, null);
+            this._L10NSharpExtender.SetLocalizationComment(this._allowWebView2, null);
+            this._L10NSharpExtender.SetLocalizationPriority(this._allowWebView2, L10NSharp.LocalizationPriority.Low);
+            this._L10NSharpExtender.SetLocalizingId(this._allowWebView2, "CollectionSettingsDialog.AdvancedTab.Experimental.UseExperimentalUI");
+            this._allowWebView2.Location = new System.Drawing.Point(27, 187);
+            this._allowWebView2.Name = "_allowWebView2";
+            this._allowWebView2.Size = new System.Drawing.Size(369, 23);
+            this._allowWebView2.TabIndex = 12;
+            this._allowWebView2.Text = "Use the experimental next version of the UI (WebView2)";
+            this._allowWebView2.UseVisualStyleBackColor = false;
+            this._allowWebView2.CheckedChanged += new System.EventHandler(this._allowWebView2_CheckedChanged);
+            // 
+            // _automaticallyUpdate
+            // 
 			this._automaticallyUpdate.AutoSize = true;
 			this._L10NSharpExtender.SetLocalizableToolTip(this._automaticallyUpdate, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._automaticallyUpdate, null);
@@ -732,12 +748,12 @@ namespace Bloom.Collection
 			this._helpButton.Size = new System.Drawing.Size(75, 23);
 			this._helpButton.TabIndex = 22;
 			this._helpButton.Text = "&Help";
-			this._helpButton.UseVisualStyleBackColor = false;
-			this._helpButton.Click += new System.EventHandler(this._helpButton_Click);
-			// 
-			// CollectionSettingsDialog
-			// 
-			this.AcceptButton = this._okButton;
+            this._helpButton.UseVisualStyleBackColor = false;
+            this._helpButton.Click += new System.EventHandler(this._helpButton_Click);
+            // 
+            // CollectionSettingsDialog
+            // 
+            this.AcceptButton = this._okButton;
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.CancelButton = this._cancelButton;
@@ -821,5 +837,6 @@ namespace Bloom.Collection
 		protected Label _signLanguageName;
 		protected Label _signLanguageLabel;
 		private Label _noRenameTeamCollectionLabel;
+		private CheckBox _allowWebView2;
 	}
 }
