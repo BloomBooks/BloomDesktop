@@ -67,6 +67,10 @@ export interface IProgressDialogProps {
     dialogEnvironment?: IBloomDialogEnvironmentParams;
 }
 
+interface IEmbeddedProgressProps extends IProgressDialogProps {
+    which: string; // must match props.which to open
+}
+
 export const ProgressDialog: React.FunctionComponent<IProgressDialogProps> = props => {
     const {
         showDialog,
@@ -297,8 +301,11 @@ export const ProgressDialog: React.FunctionComponent<IProgressDialogProps> = pro
 // dialog and sending stuff to it is all managed by websocket events, and events initiated
 // by buttons in the dialog result in posts. It occupies no space and is invisible until
 // an event tells it to show up. See C# BrowserProgressDialog.
-export const EmbeddedProgressDialog: React.FunctionComponent = () => {
-    const [progressProps, setProgressProps] = useState<IProgressDialogProps>({
+export const EmbeddedProgressDialog: React.FunctionComponent<{
+    id: string;
+}> = props => {
+    const [progressProps, setProgressProps] = useState<IEmbeddedProgressProps>({
+        which: "",
         // just lets us know something is wrong if it shows up; a real title should
         // be supplied by the code that causes it to become visible.
         title: "This should not be seen",
@@ -311,7 +318,10 @@ export const EmbeddedProgressDialog: React.FunctionComponent = () => {
     // for showing and closing the progress dialog.
     const showProgress = useRef<() => void | undefined>();
     const closeProgress = useRef<() => void | undefined>();
-    const openProgress = (args: IProgressDialogProps) => {
+    const openProgress = (args: IEmbeddedProgressProps) => {
+        if (args.which !== props.id) {
+            return; // message for another progress dialog, typically in another browser instance
+        }
         // Note, we can't get the dialog shown here by setting props to
         // something with dialogEnvironment having initiallyOpen true;
         // that initial value gets captured on the first render. We have to capture
@@ -326,7 +336,7 @@ export const EmbeddedProgressDialog: React.FunctionComponent = () => {
     useSubscribeToWebSocketForObject(
         "progress",
         "open-progress",
-        (args: IProgressDialogProps) => openProgress(args)
+        (args: IEmbeddedProgressProps) => openProgress(args)
     );
     useSubscribeToWebSocketForEvent("progress", "close-progress", () =>
         closeProgress.current?.()

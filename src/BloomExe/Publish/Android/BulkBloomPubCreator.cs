@@ -97,7 +97,7 @@ namespace Bloom.Publish.Android
 					Process.SafeStart(dest.FolderPath);
 					// true means wait for the user, don't close automatically
 					return true;
-				}, "Bulk Save BloomPubs");
+				}, "readerPublish", "Bulk Save BloomPubs");
 		}
 
 

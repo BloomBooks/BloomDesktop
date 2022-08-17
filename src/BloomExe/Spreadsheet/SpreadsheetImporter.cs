@@ -114,7 +114,7 @@ namespace Bloom.Spreadsheet
 				progress.MessageWithoutLocalizing($"Backup completed (at {backupPath})");
 				Import(sheet, progress);
 				return true; // always leave the dialog up until the user chooses 'close'
-			}, "Importing Spreadsheet", doWhenDialogCloses: doWhenProgressCloses);
+			}, "collectionTab", "Importing Spreadsheet", doWhenDialogCloses: doWhenProgressCloses);
 		}
 
 		public bool Validate(InternalSpreadsheet sheet, IWebSocketProgress progress)

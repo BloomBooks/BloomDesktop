@@ -119,6 +119,7 @@ namespace Bloom.MiscUI
 
 		public static void DoWorkWithProgressDialog(IBloomWebSocketServer socketServer,
 			Func<IWebSocketProgress, BackgroundWorker, bool> doWhat,
+			string id,
 			string title,
 			bool showCancelButton = true,
 			Action doWhenMainActionFalse = null,
@@ -128,7 +129,11 @@ namespace Bloom.MiscUI
 			var props = new DynamicJson();
 			// same object, but the function call wants it to be DynamicJson,
 			// while it's easier to set the props when it is typed as dynamic.
-			dynamic props1 = props; 
+			dynamic props1 = props;
+			// Which identifies a particular instance of EmbeddedProgressDialog.
+			// I'd like to use "id" but that's already reserved in the props object
+			// for the message ID.
+			props1.which = id;
 			props1.title = title;
 			props1.titleColor = "white";
 			props1.titleIcon = titleIcon;
@@ -163,6 +168,7 @@ namespace Bloom.MiscUI
 			Func<IWebSocketProgress, BackgroundWorker, bool> doWhat, Action doWhenMainActionFalse = null,
 			Action doWhenDialogCloses = null)
 		{
+			
 			// For now making this fixed for progress dialog. Making it configurable really complicates things,
 			// since a lot of init is done BEFORE we open the dialog, using a websocket message which we have
 			// to listen for, which PASSES the context!
