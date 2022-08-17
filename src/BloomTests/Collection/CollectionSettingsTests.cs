@@ -291,5 +291,70 @@ namespace BloomTests.Collection
 			Assert.That(bulkPublishSettings.distributionTag, Is.EqualTo("distTag"));
 			Assert.That(bulkPublishSettings.bookshelfLabel, Is.EqualTo("bookshelfLabel"));
 		}
+
+		[Test]
+		public void AddColorToPalette_GetColorPaletteAsJson_WorkTogether()
+		{
+			var collectionName = "PaletteTesting";
+			var collectionSettingsPath = Path.Combine(_folder.Path, collectionName, $"{collectionName}.bloomCollection");
+			if (RobustFile.Exists(collectionSettingsPath))
+				RobustFile.Delete(collectionSettingsPath);
+			var settings = CreateCollectionSettings(_folder.Path, collectionName);
+
+			const string jsonColor1 = "{\"colors\":[\"#012345\"],\"opacity\":1}";
+			const string jsonColor2 = "{\"colors\":[\"#012345\",\"#987654\"],\"opacity\":1}";
+			const string jsonColor3 = "{\"colors\":[\"#012345\"],\"opacity\":0.75}";
+			const string jsonColor4 = "{\"colors\":[\"#987643\"],\"opacity\":0.5}";
+
+			var jsonResult = settings.GetColorPaletteAsJson("test-text");
+			// initial palette is empty
+			Assert.That(jsonResult, Is.EqualTo("[]"));
+			// Adding a color adds it properly.
+			settings.AddColorToPalette("test-text", jsonColor1);
+			jsonResult = settings.GetColorPaletteAsJson("test-text");
+			Assert.That(jsonResult, Is.EqualTo("["+jsonColor1+"]"));
+			// Adding same color doesn't change anything.
+			settings.AddColorToPalette("test-text", jsonColor1);
+			jsonResult = settings.GetColorPaletteAsJson("test-text");
+			Assert.That(jsonResult, Is.EqualTo("["+jsonColor1+"]"));
+			// Adding a different color adds it at the end.
+			settings.AddColorToPalette("test-text", jsonColor2);
+			jsonResult = settings.GetColorPaletteAsJson("test-text");
+			Assert.That(jsonResult, Is.EqualTo("["+jsonColor1+","+jsonColor2+"]"));
+			// Add a third color works
+			settings.AddColorToPalette("test-text", jsonColor3);
+			jsonResult = settings.GetColorPaletteAsJson("test-text");
+			Assert.That(jsonResult, Is.EqualTo("["+jsonColor1+","+jsonColor2+","+jsonColor3+"]"));
+			// Adding to a different palette works.  and doesn't change the wrong palette.
+			settings.AddColorToPalette("test-background", jsonColor4);
+			jsonResult = settings.GetColorPaletteAsJson("test-background");
+			Assert.That(jsonResult, Is.EqualTo("["+jsonColor4+"]"));
+			jsonResult = settings.GetColorPaletteAsJson("test-text");
+			Assert.That(jsonResult, Is.EqualTo("["+jsonColor1+","+jsonColor2+","+jsonColor3+"]"));
+
+			// The file is supposed to be saved on every addition.  Check its contents.
+			var settingsContent = RobustFile.ReadAllText(collectionSettingsPath, System.Text.Encoding.UTF8);
+			var xml = XElement.Parse(settingsContent);
+			var elements = xml.Descendants("Palette");
+			Assert.That(elements, Is.Not.Null);
+			int count = 0;
+			foreach (XElement element in elements)
+			{
+				++count;	// why elements doesn't have Count or Count() is beyond me!
+				if (element.Attribute("id").Value == "test-text")
+				{
+					Assert.That(element.Value, Is.EqualTo("#012345 #012345-#987654 #012345/0.75"));
+				}
+				else if (element.Attribute("id").Value == "test-background")
+				{
+					Assert.That(element.Value, Is.EqualTo("#987643/0.5"));
+				}
+				else
+				{
+					Assert.That(false, "unexpected element id value");
+				}
+			}
+			Assert.That(count, Is.EqualTo(2));
+		}
 	}
 }

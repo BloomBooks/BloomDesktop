@@ -28,11 +28,13 @@ import { ColorBar } from "./colorBar";
 import { ISwatchDefn } from "../../../react_components/colorSwatch";
 import {
     defaultBackgroundColors,
-    defaultTextColors,
+    defaultTextColors
+} from "./overlayToolColorHelper";
+import {
+    IColorPickerDialogProps,
     getSwatchFromBubbleSpecColor,
     getSpecialColorName
-} from "./overlayToolColorHelper";
-import { IColorPickerDialogProps } from "../../../react_components/colorPickerDialog";
+} from "../../../react_components/colorPickerDialog";
 import * as tinycolor from "tinycolor2";
 import { showSignLanguageTool } from "../../js/bloomVideo";
 import { kBloomBlue } from "../../../bloomMaterialUITheme";
