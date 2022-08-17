@@ -3,6 +3,7 @@ using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
 using Bloom.Collection;
+using Bloom.FontProcessing;
 using L10NSharp;
 
 namespace Bloom.MiscUI
@@ -20,7 +21,7 @@ namespace Bloom.MiscUI
 		{
 			// Display the fonts in sorted order.
 			var fontNames = new List<string>();
-			fontNames.AddRange(GeckoFxBrowser.NamesOfFontsThatBrowserCanRender());
+			fontNames.AddRange(FontsApi.NamesOfFontsThatBrowserCanRender());
 			fontNames.Sort();
 			var defaultFont = WritingSystem.GetDefaultFontName();
 			foreach (var font in fontNames)

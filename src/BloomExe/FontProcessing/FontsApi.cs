@@ -1,8 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing.Text;
 using Bloom.Api;
 using Newtonsoft.Json;
 using System.Collections.Concurrent;
+using SIL.Reporting;
+using System.Linq;
 
 namespace Bloom.FontProcessing
 {
@@ -34,9 +37,42 @@ namespace Bloom.FontProcessing
 
 		public static IEnumerable<string> SortedListOfFontNames()
 		{
-			var list = new List<string>(GeckoFxBrowser.NamesOfFontsThatBrowserCanRender());
+			var list = new List<string>(NamesOfFontsThatBrowserCanRender());
 			list.Sort();
 			return list;
+		}
+
+		/// <summary>
+		/// See https://jira.sil.org/browse/BL-802  and https://bugzilla.mozilla.org/show_bug.cgi?id=1108866
+		/// Until that gets fixed, we're better off not listing those fonts that are just going to cause confusion
+		/// </summary>
+		/// <returns></returns>
+		public static IEnumerable<string> NamesOfFontsThatBrowserCanRender()
+		{
+			var foundAndika = false;
+			using (var installedFontCollection = new InstalledFontCollection())
+			{
+				var modifierTerms = new string[] { "condensed", "semilight", "black", "bold", "medium", "semibold", "light", "narrow" };
+
+				foreach (var family in installedFontCollection.Families)
+				{
+					var name = family.Name.ToLowerInvariant();
+					if (modifierTerms.Any(modifierTerm => name.Contains(" " + modifierTerm)))
+					{
+						continue;
+						// sorry, we just can't display that font, it will come out as some browser default font (at least on Windows, and at least up to Firefox 36)
+					}
+					foundAndika |= family.Name == "Andika New Basic";
+
+					yield return family.Name;
+				}
+			}
+			if (!foundAndika) // see BL-3674. We want to offer Andika even if the Andika installer isn't finished yet.
+			{   // it's possible that the user actually uninstalled Andika, but that's ok. Until they change to another font,
+				// they'll get a message that this font is not actually installed when they try to edit a book.
+				Logger.WriteMinorEvent("Andika not installed (BL-3674)");
+				yield return "Andika New Basic";
+			}
 		}
 
 		/// <summary>
