@@ -64,11 +64,6 @@ namespace Bloom
 			throw new NotImplementedException();
 		}
 
-		//public override void HandleLinkClick(GeckoAnchorElement anchor, DomEventArgs eventArgs, string workingDirectoryForFileLinks)
-		//{
-		//	throw new NotImplementedException();
-		//}
-
 		public override void Navigate(HtmlDom htmlDom, HtmlDom htmlEditDom, bool setAsCurrentPageForDebugging, BloomServer.SimulatedPageFileSource source)
 		{
 			var html = XmlHtmlConverter.ConvertDomToHtml5(htmlDom.RawDom);
