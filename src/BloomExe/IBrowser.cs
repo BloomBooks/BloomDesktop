@@ -23,7 +23,13 @@ namespace Bloom
 	public abstract class Browser : UserControl
 	{
 		//Func<GeckoContextMenuEventArgs, bool> ContextMenuProvider { get; set; }
-		ControlKeyEvent ControlKeyEvent { get; set; }
+
+		/// <summary>
+		/// Allow creator to hook up this event handler if the browser needs to handle Ctrl-N.
+		/// Not every browser instance needs this.
+		/// Todo: maybe not yet implemented in WebView2?
+		/// </summary>
+		public ControlKeyEvent ControlKeyEvent { get; set; }
 		int VerticalScrollDistance { get; set; }
 		//GeckoWebBrowser WebBrowser { get; }
 
@@ -46,6 +52,7 @@ namespace Bloom
 		public abstract void CopySelection();
 		public abstract void SelectAll();
 
+		public abstract void SelectBrowser();
 
 		protected void RaiseBrowserReady()
 		{
@@ -53,10 +60,11 @@ namespace Bloom
 			if (handler != null) handler(this, null);
 		}
 
-		protected void RaiseDocumentCompleted(object sender, EventArgs e)
+		protected virtual void RaiseDocumentCompleted(object sender, EventArgs e)
 		{
 			DocumentCompleted?.Invoke(sender, e);
 		}
+
 		protected void RaiseBrowserClick(object sender, EventArgs e)
 		{
 			OnBrowserClick?.Invoke(sender, e);

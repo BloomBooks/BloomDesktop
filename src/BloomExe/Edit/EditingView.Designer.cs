@@ -61,7 +61,6 @@ namespace Bloom.Edit
 			this._menusToolStrip = new System.Windows.Forms.ToolStrip();
 			this._contentLanguagesDropdown = new System.Windows.Forms.ToolStripDropDownButton();
 			this._layoutChoices = new System.Windows.Forms.ToolStripDropDownButton();
-			this._browser1 = new Bloom.GeckoFxBrowser();
 			this._splitTemplateAndSource = new Bloom.ToPalaso.BetterSplitContainer(this.components);
 			this._betterToolTip1 = new Bloom.ToPalaso.BetterToolTip(this.components);
 			((System.ComponentModel.ISupportInitialize)(this._L10NSharpExtender)).BeginInit();
@@ -101,7 +100,6 @@ namespace Bloom.Edit
 			// _splitContainer2.Panel1
 			// 
 			this._splitContainer2.Panel1.Controls.Add(this._topBarPanel);
-			this._splitContainer2.Panel1.Controls.Add(this._browser1);
 			// 
 			// _splitContainer2.Panel2
 			// 
@@ -334,23 +332,6 @@ namespace Bloom.Edit
 			this._layoutChoices.Text = "Paper";
 			this._layoutChoices.ToolTipText = "(set dynamically, see code)";
 			// 
-			// _browser1
-			// 
-			this._browser1.BackColor = System.Drawing.Color.DarkGray;
-			this._browser1.ContextMenuProvider = null;
-			this._browser1.ControlKeyEvent = null;
-			this._browser1.Dock = System.Windows.Forms.DockStyle.Fill;
-			this._L10NSharpExtender.SetLocalizableToolTip(this._browser1, null);
-			this._L10NSharpExtender.SetLocalizationComment(this._browser1, null);
-			this._L10NSharpExtender.SetLocalizingId(this._browser1, "EditTab.Browser");
-			this._browser1.Location = new System.Drawing.Point(0, 0);
-			this._browser1.Margin = new System.Windows.Forms.Padding(5);
-			this._browser1.Name = "_browser1";
-			this._browser1.Size = new System.Drawing.Size(826, 561);
-			this._browser1.TabIndex = 1;
-			this._browser1.VerticalScrollDistance = 0;
-			this._browser1.OnBrowserClick += new System.EventHandler(this._browser1_OnBrowserClick);
-			// 
 			// _splitTemplateAndSource
 			// 
 			this._splitTemplateAndSource.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(150)))), ((int)(((byte)(102)))), ((int)(((byte)(143)))));
@@ -409,7 +390,7 @@ namespace Bloom.Edit
         #endregion
 
         private Bloom.ToPalaso.BetterSplitContainer _splitContainer2;
-        private GeckoFxBrowser _browser1;
+        private Browser _browser1;
 		private Bloom.ToPalaso.BetterSplitContainer _splitTemplateAndSource;
         private System.Windows.Forms.Timer _editButtonsUpdateTimer;
 		private System.Windows.Forms.Timer _handleMessageTimer;

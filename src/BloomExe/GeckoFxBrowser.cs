@@ -202,12 +202,6 @@ namespace Bloom
 		}
 
 		/// <summary>
-		/// Allow creator to hook up this event handler if the browser needs to handle Ctrl-N.
-		/// Not every browser instance needs this.
-		/// </summary>
-		public ControlKeyEvent ControlKeyEvent { get; set; }
-
-		/// <summary>
 		/// Singleton set by the constructor after designer setup, but before attempting navigation.
 		/// </summary>
 		private NavigationIsolator _isolator;
@@ -428,7 +422,8 @@ namespace Bloom
 
 			UpdateDisplay();
 			_browser.Navigated += CleanupAfterNavigation; //there's also a "document completed"
-			_browser.DocumentCompleted += new EventHandler<GeckoDocumentCompletedEventArgs>(_browser_DocumentCompleted);
+			_browser.DocumentCompleted += _browser_DocumentCompleted;
+			_browser.ReadyStateChange += BrowserOnReadyStateChange;
 
 			_browser.ConsoleMessage += OnConsoleMessage;
 
@@ -447,9 +442,26 @@ namespace Bloom
 			RaiseBrowserReady();
 		}
 
+		private void BrowserOnReadyStateChange(object sender, DomEventArgs e)
+		{
+			// In GeckoFx, ready state change seems to be a more reliable way of detecting document complete.
+			// If it's reached that state, raise the event.
+			if (_browser.Document.ReadyState != "complete")
+				return;
+			RaiseDocumentCompleted(sender, e);
+		}
+
 		private void _browser_DocumentCompleted(object sender, GeckoDocumentCompletedEventArgs e)
 		{
 			RaiseDocumentCompleted(sender, e);
+		}
+
+		protected override void RaiseDocumentCompleted(object sender, EventArgs e)
+		{
+			// If it isn't really complete, don't tell the client it is!
+			if (_browser.Document.ReadyState != "complete")
+				return;
+			base.RaiseDocumentCompleted(sender, e);
 		}
 
 		// We'd like to suppress them just in one browser. But it seems to be unpredictable which
@@ -541,6 +553,11 @@ namespace Bloom
 		public override void SelectAll()
 		{
 			_browser.SelectAll();
+		}
+
+		public override void SelectBrowser()
+		{
+			_browser.Select();
 		}
 
 		void OnShowContextMenu(object sender, GeckoContextMenuEventArgs e)

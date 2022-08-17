@@ -21,8 +21,7 @@ namespace Bloom
 					};
 			};
 		}
-	
-		public ControlKeyEvent ControlKeyEvent { get; set; }
+
 		public int VerticalScrollDistance { get; set; }
 
 		// needed by geckofx but not webview2
@@ -43,6 +42,14 @@ namespace Bloom
 			// is only used for user actions and not by code that would immediately try to
 			// do something.
 			_webview.ExecuteScriptAsync("document.execCommand(\"SelectAll\")");
+		}
+
+		public override void SelectBrowser()
+		{
+			// Enhance: investigate reasons why we do this. Possibly it is not necessary after we
+			// settle on WebView2; at least one client was just using it to work around a
+			// peculiar behavior of GeckoFx.
+			_webview.Select();
 		}
 		public override void AddScriptContent(string content)
 		{
