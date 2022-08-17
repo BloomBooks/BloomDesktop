@@ -66,7 +66,6 @@ namespace Bloom
 		public abstract void AddScriptContent(string content);
 		public abstract void AddScriptSource(string filename);
 		public abstract void Copy();
-		//public abstract void HandleLinkClick(GeckoAnchorElement anchor, DomEventArgs eventArgs, string workingDirectoryForFileLinks);
 		public abstract void Navigate(HtmlDom htmlDom, HtmlDom htmlEditDom = null, bool setAsCurrentPageForDebugging = false, BloomServer.SimulatedPageFileSource source = BloomServer.SimulatedPageFileSource.Nav);
 		public abstract void Navigate(string url, bool cleanupFileAfterNavigating);
 		public abstract bool NavigateAndWaitTillDone(HtmlDom htmlDom, int timeLimit, string source = "nav", Func<bool> cancelCheck = null, bool throwOnTimeout = true);
