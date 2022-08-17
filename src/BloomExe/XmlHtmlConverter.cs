@@ -14,6 +14,9 @@ namespace Bloom
 {
 	public static class XmlHtmlConverter
 	{
+		public const string CdataPrefix = "/*<![CDATA[*/";
+		public const string CdataSuffix = "/*]]>*/";
+
 		private const string SvgPlaceholder = "****RestoreSvgHere****";
 
 		private static readonly Regex _selfClosingRegex = new Regex(@"<([ubi]|em|strong|span)(\s+[^><]+\s*)/>");
@@ -52,13 +55,13 @@ namespace Bloom
 			// fix for > and similar in <style> element protected by CDATA.
 			// At present we only need to account for this occurring once.
 			// See Browser.SaveCustomizedCssRules.
-			var startOfCdata = content.IndexOf(GeckoFxBrowser.CdataPrefix, StringComparison.InvariantCulture);
+			var startOfCdata = content.IndexOf(CdataPrefix, StringComparison.InvariantCulture);
 			const string restoreCdataHere = "/****RestoreCDATAHere*****/";
-			var endOfCdata = content.IndexOf(GeckoFxBrowser.CdataSuffix, StringComparison.InvariantCulture);
+			var endOfCdata = content.IndexOf(CdataSuffix, StringComparison.InvariantCulture);
 			var savedCdata = "";
 			if (startOfCdata >= 0 && endOfCdata >= startOfCdata)
 			{
-				endOfCdata += GeckoFxBrowser.CdataSuffix.Length;
+				endOfCdata += CdataSuffix.Length;
 				savedCdata = content.Substring(startOfCdata, endOfCdata - startOfCdata);
 				content = content.Substring(0, startOfCdata) + restoreCdataHere + content.Substring(endOfCdata, content.Length - endOfCdata);
 			}

@@ -1,9 +1,7 @@
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Drawing;
-using System.Drawing.Text;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -1106,26 +1104,13 @@ namespace Bloom
 
 		}
 
-		public const string  CdataPrefix = "/*<![CDATA[*/";
-		public const string CdataSuffix = "/*]]>*/";
-
 		private void SaveCustomizedCssRules(string userCssContent)
 		{
 			try
 			{
-				/* why are we bothering to walk through the rules instead of just copying the html of the style tag? Because that doesn't
-				 * actually get updated when the javascript edits the stylesheets of the page. Well, the <style> tag gets created, but
-				 * rules don't show up inside of it. So
-				 * this won't work: _editDom.GetElementsByTagName("head")[0].InnerText = userModifiedStyleSheet.OwnerNode.OuterHtml;
-				 */
-				var outerStyleElementString = new StringBuilder();
-				outerStyleElementString.AppendLine("<style title='userModifiedStyles' type='text/css'>");
-				outerStyleElementString.Append(WrapUserStyleInCdata(userCssContent));
-				outerStyleElementString.AppendLine("</style>");
-				//Debug.WriteLine("*User Modified Stylesheet in browser:" + styles);
 				// Yes, this wipes out everything else in the head. At this point, the only things
 				// we need in _pageEditDom are the user defined style sheet and the bloom-page element in the body.
-				_pageEditDom.GetElementsByTagName("head")[0].InnerXml = outerStyleElementString.ToString();
+				_pageEditDom.GetElementsByTagName("head")[0].InnerXml = HtmlDom.CreateUserModifiedStyles(userCssContent);
 			}
 			catch (GeckoJavaScriptException jsex)
 			{
@@ -1135,31 +1120,6 @@ namespace Bloom
 				Logger.WriteEvent("GeckoJavaScriptException (" + jsex.Message + "). We're swallowing it but listing it here in the log.");
 				Debug.Fail("GeckoJavaScriptException(" + jsex.Message + "). In Release version, this would not show.");
 			}
-		}
-
-		/// <summary>
-		/// Wraps the inner css styles for userModifiedStyles in commented CDATA so we can handle invalid
-		/// xhtml characters like >.
-		/// </summary>
-		public static string WrapUserStyleInCdata(string innerCssStyles)
-		{
-			if (innerCssStyles.StartsWith(CdataPrefix))
-			{
-				// For some reason, we are already wrapped in CDATA.
-				// Could happen in HtmlDom.MergeUserStylesOnInsertion().
-				return innerCssStyles;
-			}
-			// Now, our styles string may contain invalid xhtml characters like >
-			// We shouldn't have &gt; in XHTML because the content of <style> is supposed to be CSS, and &gt; is an HTML escape.
-			// And in XElement we can't just have > like we can in HTML (<style> is PCDATA, not CDATA).
-			// So, we want to mark the main body of the rules as <![CDATA[ ...]]>, within which we CAN have >.
-			// But, once again, that's HTML markup that's not valid CSS. To fix it we wrap each of the markers
-			// in CSS comments, so the wrappers end up as /*<![CDATA[*/.../*]]>*/.
-			var cdataString = new StringBuilder();
-			cdataString.AppendLine(CdataPrefix);
-			cdataString.Append(innerCssStyles); // Not using AppendLine, since innerCssStyles is likely several lines
-			cdataString.AppendLine(CdataSuffix);
-			return cdataString.ToString();
 		}
 
 		private void OnUpdateDisplayTick(object sender, EventArgs e)
@@ -1311,69 +1271,6 @@ namespace Bloom
 		{
 		}
 
-		/// <summary>
-		/// When you receive a OnBrowserClick and have determined that nothing was clicked on that the c# needs to pay attention to,
-		/// pass it on to this method. It will either let the browser handle it normally, or redirect it to the operating system
-		/// so that it can open the file or external website itself.
-		/// </summary>
-		public void HandleLinkClick(GeckoAnchorElement anchor, DomEventArgs eventArgs, string workingDirectoryForFileLinks)
-		{
-			Debug.Assert(!InvokeRequired);
-			var hrefLower = anchor.Href.ToLowerInvariant();
-			if (hrefLower.StartsWith("http")) //will cover https also
-			{
-				// Now that template readme urls are all localhost, we detect if a link we clicked on is within
-				// the same document we started in. If so, we'll just let gecko handle it.
-				if (IsLocalLink(anchor.Href))
-				{
-					eventArgs.Handled = false;
-					return;
-				}
-				SIL.Program.Process.SafeStart(anchor.Href);
-				eventArgs.Handled = true;
-				return;
-			}
-			if (hrefLower.StartsWith("file"))
-			//links to files are handled externally if we can tell they aren't html/javascript related
-			{
-				// TODO: at this point spaces in the file name will cause the link to fail.
-				// That seems to be a problem in the DomEventArgs.Target.CastToGeckoElement() method.
-				var href = anchor.Href;
-
-				var path = href.Replace("file:///", "");
-
-				if (new List<string>(new[] { ".pdf", ".odt", ".doc", ".docx", ".txt" }).Contains(Path.GetExtension(path).ToLowerInvariant()))
-				{
-					eventArgs.Handled = true;
-					Process.Start(new ProcessStartInfo()
-					{
-						FileName = path,
-						WorkingDirectory = workingDirectoryForFileLinks
-					});
-					return;
-				}
-				eventArgs.Handled = false; //let gecko handle it
-				return;
-			}
-			else if (hrefLower.StartsWith("mailto"))
-			{
-				eventArgs.Handled = true;
-				Process.Start(anchor.Href); //let the system open the email program
-				Debug.WriteLine("Opening email program " + anchor.Href);
-			}
-			else
-			{
-				ErrorReport.NotifyUserOfProblem("Bloom did not understand this link: " + anchor.Href);
-				eventArgs.Handled = true;
-			}
-		}
-
-		private bool IsLocalLink(string anchorHref)
-		{
-			var originalUrlUpToOptionalHash = _browser.Url.OriginalString.Split(new []{'#'}, StringSplitOptions.None)[0];
-			return anchorHref.StartsWith(originalUrlUpToOptionalHash + "#");
-		}
-
 		/*
 		 * Sets or retrieves the distance between the top of the object and the topmost portion of the content currently visible in the window (scrollTop)
 		 */
@@ -1404,40 +1301,6 @@ namespace Bloom
 			}
 		}
 
-
-		/// <summary>
-		/// See https://jira.sil.org/browse/BL-802  and https://bugzilla.mozilla.org/show_bug.cgi?id=1108866
-		/// Until that gets fixed, we're better off not listing those fonts that are just going to cause confusion
-		/// </summary>
-		/// <returns></returns>
-		public static IEnumerable<string> NamesOfFontsThatBrowserCanRender()
-		{
-			var foundAndika = false;
-			using (var installedFontCollection = new InstalledFontCollection())
-			{
-				var modifierTerms = new string[] { "condensed", "semilight", "black", "bold", "medium", "semibold", "light", "narrow" };
-
-				foreach(var family in installedFontCollection.Families)
-				{
-					var name = family.Name.ToLowerInvariant();
-					if(modifierTerms.Any(modifierTerm => name.Contains(" " + modifierTerm)))
-					{
-						continue;
-						// sorry, we just can't display that font, it will come out as some browser default font (at least on Windows, and at least up to Firefox 36)
-					}
-					foundAndika |= family.Name == "Andika New Basic";
-
-					yield return family.Name;
-				}
-			}
-			if(!foundAndika) // see BL-3674. We want to offer Andika even if the Andika installer isn't finished yet.
-			{	// it's possible that the user actually uninstalled Andika, but that's ok. Until they change to another font,
-				// they'll get a message that this font is not actually installed when they try to edit a book.
-				Logger.WriteMinorEvent("Andika not installed (BL-3674)");
-				yield return "Andika New Basic";
-			}
-		}
-
 		/// <summary>
 		/// Detect clicks on anchor elements and handle them by passing the href to the default system browser.
 		/// </summary>
@@ -1445,7 +1308,7 @@ namespace Bloom
 		/// Enhance: There is much work to do in bringing together all the various places we try to handle external links.
 		/// However, I can't tackle that with this change because I'm trying to make the safest change possible for 4.8 on
 		/// the eve of its release. So for now, I just moved this method from HtmlPublishPanel and reused it in AccessibilityCheckWindow (BL-9026).
-		/// See similar logic in Browser.HandleLinkClick and EditingView._browser1_OnBrowserClick among other places.
+		/// See similar logic in EditingView._browser1_OnBrowserClick among other places.
 		/// One potential way forward is to use (and perhaps enhance) this method on all browser objects instead of
 		/// having each client subscribe to OnBrowserClick.
 		/// 

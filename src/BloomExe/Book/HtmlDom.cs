@@ -15,7 +15,6 @@ using Bloom.Publish.Epub;
 using Bloom.web.controllers;
 using DesktopAnalytics;
 using Gecko;
-using Gecko.WebIDL;
 using L10NSharp;
 using Microsoft.CSharp.RuntimeBinder;
 using SIL.Code;
@@ -1343,7 +1342,7 @@ namespace Bloom.Book
 			Guard.AgainstNull(existingUserStyleNode, "existingUserStyleNode");
 
 			if (insertedPageUserStyleNode == null || insertedPageUserStyleNode.InnerXml == String.Empty)
-				return GeckoFxBrowser.WrapUserStyleInCdata(existingUserStyleNode.InnerText);
+				return WrapUserStyleInCdata(existingUserStyleNode.InnerText);
 
 			var existingStyleKeyDict = GetUserStyleKeyDict(existingUserStyleNode);
 			var existingStyleNames = new HashSet<string>();
@@ -1358,7 +1357,41 @@ namespace Bloom.Book
 					continue;
 				existingStyleKeyDict.Add(keyPair);
 			}
-			return GeckoFxBrowser.WrapUserStyleInCdata(GetCompleteFilteredUserStylesInnerText(existingStyleKeyDict));
+			return WrapUserStyleInCdata(GetCompleteFilteredUserStylesInnerText(existingStyleKeyDict));
+		}
+
+		/// <summary>
+		/// Wraps the inner css styles for userModifiedStyles in commented CDATA so we can handle invalid
+		/// xhtml characters like >.
+		/// </summary>
+		private static string WrapUserStyleInCdata(string innerCssStyles)
+		{
+			if (innerCssStyles.StartsWith(XmlHtmlConverter.CdataPrefix))
+			{
+				// For some reason, we are already wrapped in CDATA.
+				// Could happen in HtmlDom.MergeUserStylesOnInsertion().
+				return innerCssStyles;
+			}
+			// Now, our styles string may contain invalid xhtml characters like >
+			// We shouldn't have &gt; in XHTML because the content of <style> is supposed to be CSS, and &gt; is an HTML escape.
+			// And in XElement we can't just have > like we can in HTML (<style> is PCDATA, not CDATA).
+			// So, we want to mark the main body of the rules as <![CDATA[ ...]]>, within which we CAN have >.
+			// But, once again, that's HTML markup that's not valid CSS. To fix it we wrap each of the markers
+			// in CSS comments, so the wrappers end up as /*<![CDATA[*/.../*]]>*/.
+			var cdataString = new StringBuilder();
+			cdataString.AppendLine(XmlHtmlConverter.CdataPrefix);
+			cdataString.Append(innerCssStyles); // Not using AppendLine, since innerCssStyles is likely several lines
+			cdataString.AppendLine(XmlHtmlConverter.CdataSuffix);
+			return cdataString.ToString();
+		}
+
+		public static string CreateUserModifiedStyles(string userCssContent)
+		{
+			var outerStyleElementString = new StringBuilder();
+			outerStyleElementString.AppendLine("<style title='userModifiedStyles' type='text/css'>");
+			outerStyleElementString.Append(WrapUserStyleInCdata(userCssContent));
+			outerStyleElementString.AppendLine("</style>");
+			return outerStyleElementString.ToString();
 		}
 
 		private static string GetCompleteFilteredUserStylesInnerText(IDictionary<string, string> desiredKeys )

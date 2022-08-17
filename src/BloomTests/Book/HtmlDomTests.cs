@@ -585,9 +585,9 @@ namespace BloomTests.Book
 			var stylesNodes = dom.SelectNodes("/html/head/style[@title=\"userModifiedStyles\"]");
 			Assert.AreEqual(1, stylesNodes.Count, "Should only be one userModifiedStyles element.");
 			var contents = stylesNodes[0].InnerText.Trim();
-			Assert.That(contents.LastIndexOf(GeckoFxBrowser.CdataPrefix).Equals(0),
+			Assert.That(contents.LastIndexOf(XmlHtmlConverter.CdataPrefix).Equals(0),
 				"userModifiedStyles begins with a unique copy of the CDATA prefix.");
-			Assert.That(contents.IndexOf(GeckoFxBrowser.CdataSuffix).Equals(contents.Length - GeckoFxBrowser.CdataSuffix.Length),
+			Assert.That(contents.IndexOf(XmlHtmlConverter.CdataSuffix).Equals(contents.Length - XmlHtmlConverter.CdataSuffix.Length),
 				"userModifiedStyles ends with a unique copy of the CDATA suffix");
 		}
 
