@@ -10,8 +10,12 @@ namespace Bloom
 	{
 		public static Browser MakeBrowser()
 		{
+		// Using this #if is the simplest way to allow the WebView2Browser work to proceed without
+		// breaking the Linux build.  Other build restrictions are in the .csproj file.
+#if !__MonoCS__
 			if (ExperimentalFeatures.IsFeatureEnabled(ExperimentalFeatures.kWebView2))
 				return new WebView2Browser();
+#endif
 			return new GeckoFxBrowser();
 		}
 	}
