@@ -83,7 +83,16 @@ namespace Bloom.Collection
 			_showExperimentalBookSources.Checked = ExperimentalFeatures.IsFeatureEnabled(ExperimentalFeatures.kExperimentalSourceBooks);
 			_allowTeamCollection.Checked = ExperimentalFeatures.IsFeatureEnabled(ExperimentalFeatures.kTeamCollections);
 			_allowSpreadsheetImportExport.Checked = ExperimentalFeatures.IsFeatureEnabled(ExperimentalFeatures.kSpreadsheetImportExport);
-			_allowWebView2.Checked = ExperimentalFeatures.IsFeatureEnabled(ExperimentalFeatures.kWebView2);
+			if (SIL.PlatformUtilities.Platform.IsLinux)
+			{
+				_allowWebView2.Enabled = false;
+				_allowWebView2.Visible = false;
+				ExperimentalFeatures.SetValue(ExperimentalFeatures.kWebView2, false);
+			}
+			else
+			{
+				_allowWebView2.Checked = ExperimentalFeatures.IsFeatureEnabled(ExperimentalFeatures.kWebView2);
+			}
 
 			if (!ExperimentalFeatures.IsFeatureEnabled(ExperimentalFeatures.kTeamCollections) && tcManager.CurrentCollectionEvenIfDisconnected == null)
 			{
