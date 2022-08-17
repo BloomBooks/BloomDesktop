@@ -24,13 +24,23 @@ import {
 } from "../bookEdit/toolbox/overlay/overlayToolColorHelper";
 import Draggable from "react-draggable";
 import "./colorPickerDialog.less";
+import { kBloomGray } from "../utils/colorUtils";
+
+export enum BloomPalette {
+    Text = "text",
+    CoverBackground = "cover-background",
+    BloomReaderBookshelf = "BloomReader-bookshelf",
+    OverlayText = "overlay-text",
+    OverlayBackground = "overlay-background"
+}
 
 export interface IColorPickerDialogProps {
     localizedTitle: string;
     noAlphaSlider?: boolean;
     noGradientSwatches?: boolean;
     initialColor: ISwatchDefn;
-    defaultSwatchColors: ISwatchDefn[];
+    palette?: BloomPalette;
+    defaultSwatchColors?: ISwatchDefn[]; // deprecated, soon to be removed
     onChange: (color: ISwatchDefn) => void;
     onInputFocus: (input: HTMLElement) => void;
 }
@@ -50,26 +60,58 @@ function PaperComponent(props) {
 let externalSetOpen: React.Dispatch<React.SetStateAction<boolean>>;
 
 const ColorPickerDialog: React.FC<IColorPickerDialogProps> = props => {
-    const MAX_SWATCHES = 14;
+    const MAX_SWATCHES = 21;
     const [open, setOpen] = useState(true);
     const [currentColor, setCurrentColor] = useState(props.initialColor);
-    const [swatchArray, setSwatchArray] = useState(props.defaultSwatchColors);
+    let defaultSwatchColors: ISwatchDefn[];
+    if (props.defaultSwatchColors)
+        defaultSwatchColors = props.defaultSwatchColors;
+    else if (props.palette)
+        defaultSwatchColors = getSwatchColorsFromPalette(props.palette);
+    else defaultSwatchColors = [];
+    const [swatchArray, setSwatchArray] = useState(defaultSwatchColors);
     externalSetOpen = setOpen;
     const dlgRef = useRef<HTMLElement>(null);
 
     React.useEffect(() => {
         if (open) {
-            BloomApi.get("editView/getBookColors", result => {
+            let getColorsApiCall: string;
+            switch (props.palette) {
+                case BloomPalette.Text:
+                    getColorsApiCall =
+                        "settings/getCustomPaletteColors?palette=text";
+                    break;
+                case BloomPalette.CoverBackground:
+                    getColorsApiCall =
+                        "settings/getCustomPaletteColors?palette=cover-background";
+                    break;
+                case BloomPalette.BloomReaderBookshelf:
+                    getColorsApiCall =
+                        "settings/getCustomPaletteColors?palette=BloomReader-bookshelf";
+                    break;
+                case BloomPalette.OverlayText:
+                    getColorsApiCall =
+                        "settings/getCustomPaletteColors?palette=overlay-text";
+                    break;
+                case BloomPalette.OverlayBackground:
+                    getColorsApiCall =
+                        "settings/getCustomPaletteColors?palette=overlay-background";
+                    break;
+                default:
+                    getColorsApiCall = "editView/getBookColors";
+                    break;
+            }
+            BloomApi.get(getColorsApiCall, result => {
                 const jsonArray = result.data;
                 if (!jsonArray.map) {
                     return; // this means the conversion string -> JSON didn't work. Bad JSON?
                 }
                 // Maybe we first used this for text colors and now we're using it for background colors or vice versa.
                 // Add this usage's default colors, in case they weren't already there.
-                const swatchArray = convertJsonColorsToSwatches(jsonArray);
-                addNewSwatchesToArrayIfNecessary(
-                    props.defaultSwatchColors.concat(swatchArray)
+                const customSwatchColors = convertJsonColorsToSwatches(
+                    jsonArray
                 );
+                addNewSwatchesToArrayIfNecessary(customSwatchColors);
             });
             setCurrentColor(props.initialColor);
         }
@@ -137,14 +179,45 @@ const ColorPickerDialog: React.FC<IColorPickerDialogProps> = props => {
             props.onChange(props.initialColor);
             setCurrentColor(props.initialColor);
         } else {
-            addNewSwatchesToArrayIfNecessary([currentColor]);
+            if (!isSwatchInCurrentSwatchArray(currentColor)) {
+                let setColorsApiCall: string;
+                switch (props.palette) {
+                    case BloomPalette.Text:
+                        setColorsApiCall =
+                            "settings/addCustomPaletteColor?palette=text";
+                        break;
+                    case BloomPalette.CoverBackground:
+                        setColorsApiCall =
+                            "settings/addCustomPaletteColor?palette=cover-background";
+                        break;
+                    case BloomPalette.BloomReaderBookshelf:
+                        setColorsApiCall =
+                            "settings/addCustomPaletteColor?palette=BloomReader-bookshelf";
+                        break;
+                    case BloomPalette.OverlayText:
+                        setColorsApiCall =
+                            "settings/addCustomPaletteColor?palette=overlay-text";
+                        break;
+                    case BloomPalette.OverlayBackground:
+                        setColorsApiCall =
+                            "settings/addCustomPaletteColor?palette=overlay-background";
+                        break;
+                    default:
+                        setColorsApiCall = "";
+                        break;
+                }
+                if (setColorsApiCall.length > 0) {
+                    BloomApi.postJson(setColorsApiCall, currentColor);
+                }
+                addNewSwatchesToArrayIfNecessary([currentColor]);
+            }
         }
     };
 
     // We come to here on opening to add swatches already in the book and we come here on closing to see
     // if our new current color needs to be added to our array.
     // Enhance: What if the number of distinct swatches already used in the book that we get back, plus the number
-    // of other default swatches is more than will fit in our array (current 14)? When we get swatches from the book,
+    // of other default swatches is more than will fit in our array (current 21)? When we get swatches from the book,
     // we should maybe start with the current page, to give them a better chance of being included in the picker.
     const addNewSwatchesToArrayIfNecessary = (newSwatches: ISwatchDefn[]) => {
         const newSwatchesAdded: ISwatchDefn[] = [];
@@ -177,7 +250,7 @@ const ColorPickerDialog: React.FC<IColorPickerDialogProps> = props => {
         const newSwatchArray = swatchArray.slice(); // Get a new array copy of the old (a different reference)
         if (numberToDelete > 0) {
             // Remove 'numberToDelete' swatches from oldest custom swatches
-            const defaultNumber = props.defaultSwatchColors.length;
+            const defaultNumber = defaultSwatchColors.length;
             const indexToRemove =
                 swatchArray.length - defaultNumber - numberToDelete;
             if (indexToRemove >= 0) {
@@ -325,7 +398,7 @@ const doRender = (
 // This array provides a useful default palette for the color picker dialog.
 // See the code below for mapping an array of strings like this into an array of
 // ISwatchDefn objects.
-export const defaultColorPalette: string[] = [
+export const TextColorPalette: string[] = [
     // black to white
     "black",
     //"gray",
@@ -351,12 +424,79 @@ export const defaultColorPalette: string[] = [
     "#ff914d"
 ];
 
+// copied from colorChooser.tsx
+export const CoverBackgroundPalette: string[] = [
+    "#E48C84",
+    "#B0DEE4",
+    "#98D0B9",
+    "#C2A6BF",
+    "#FFFFA4",
+    "#FEBF00",
+    "#7BDCB5",
+    "#B2CC7D",
+    "#F8B576",
+    "#D29FEF",
+    "#ABB8C3",
+    "#C1EF93",
+    "#FFD4D4",
+    "#FFAAD4"
+];
+
+// effectively copied from overlayToolColorHelper.ts
+export const OverlayTextColorPalette: string[] = [
+    "black",
+    "gray",
+    "lightgray",
+    "white"
+];
+
+// effectively copied from overlayToolColorHelper.ts
+export const overlayBackgroundColorSwatches: ISwatchDefn[] = [
+    { name: "black", colors: ["black"], opacity: 1 },
+    { name: "white", colors: ["white"], opacity: 1 },
+    { name: "partialTransparent", colors: [kBloomGray], opacity: 0.5 },
+    // #DFB28B is the color Comical has been using as the default for captions.
+    // It's fairly close to the "Calico" color defined at https://www.htmlcsscolor.com/hex/D5B185 (#D5B185)
+    // so I decided it was the best choice for keeping that option.
+    { name: "whiteToCalico", colors: ["white", "#DFB28B"], opacity: 1 },
+    // https://www.htmlcsscolor.com/hex/ACCCDD
+    { name: "whiteToFrenchPass", colors: ["white", "#ACCCDD"], opacity: 1 },
+    // https://encycolorpedia.com/7b8eb8
+    { name: "whiteToPortafino", colors: ["white", "#7b8eb8"], opacity: 1 }
+];
+
+function getSwatchColorsFromPalette(
+    palette: BloomPalette | undefined
+): ISwatchDefn[] {
+    switch (palette) {
+        case BloomPalette.BloomReaderBookshelf:
+            return CoverBackgroundPalette.map(color =>
+                getSwatchFromBubbleSpecColor(color)
+            );
+        case BloomPalette.CoverBackground:
+            return CoverBackgroundPalette.map(color =>
+                getSwatchFromBubbleSpecColor(color)
+            );
+        case BloomPalette.OverlayText:
+            return OverlayTextColorPalette.map(color =>
+                getSwatchFromBubbleSpecColor(color)
+            );
+        case BloomPalette.OverlayBackground:
+            return overlayBackgroundColorSwatches;
+        default:
+            return TextColorPalette.map(color =>
+                getSwatchFromBubbleSpecColor(color)
+            );
+    }
+}
+
 // The following interface and function provide a simpler interface to the color
 // choose dialog which doesn't depend on ISwatchDefn.
 export interface ISimpleColorPickerDialogProps {
     localizedTitle: string;
     noAlphaSlider?: boolean;
     initialColor: string;
+    palette?: BloomPalette;
     onChange: (color: string) => void;
     onInputFocus: (input: HTMLElement) => void;
 }
@@ -369,9 +509,7 @@ export const showSimpleColorPickerDialog = (
         noAlphaSlider: props.noAlphaSlider,
         noGradientSwatches: true,
         initialColor: getSwatchFromBubbleSpecColor(props.initialColor),
-        defaultSwatchColors: defaultColorPalette.map(color =>
-            getSwatchFromBubbleSpecColor(color)
-        ),
+        palette: props.palette,
         onChange: (color: ISwatchDefn) => props.onChange(color.colors[0]),
         onInputFocus: props.onInputFocus
     };
