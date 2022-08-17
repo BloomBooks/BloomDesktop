@@ -24,6 +24,7 @@ import * as ReactDOM from "react-dom";
 import FontSelectComponent, { IFontMetaData } from "./fontSelectComponent";
 import React = require("react");
 import {
+    BloomPalette,
     ISimpleColorPickerDialogProps,
     showSimpleColorPickerDialog
 } from "../../react_components/colorPickerDialog";
@@ -2108,6 +2109,7 @@ export default class StyleEditor {
             noAlphaSlider: true,
             localizedTitle: this.textColorTitle,
             initialColor: buttonColor,
+            palette: BloomPalette.Text,
             onChange: color => this.changeColor(color),
             onInputFocus: input => {}
         };
