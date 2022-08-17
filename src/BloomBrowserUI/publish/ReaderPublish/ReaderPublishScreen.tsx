@@ -260,7 +260,7 @@ const ReaderPublishScreenInternal: React.FunctionComponent<{
                     }}
                 />
             )}
-            <EmbeddedProgressDialog />
+            <EmbeddedProgressDialog id="readerPublish" />
         </React.Fragment>
     );
 };

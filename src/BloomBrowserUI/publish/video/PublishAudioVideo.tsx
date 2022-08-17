@@ -650,7 +650,7 @@ const PublishAudioVideoInternalInternal: React.FunctionComponent<{
                     }}
                 />
             )}
-            <EmbeddedProgressDialog />
+            <EmbeddedProgressDialog id="avPublish" />
         </Typography>
     );
 };

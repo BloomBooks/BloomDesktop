@@ -419,7 +419,7 @@ export const CollectionsTabPane: React.FunctionComponent<{}> = () => {
             )}
             <TeamCollectionDialogLauncher />
             <SpreadsheetExportDialogLauncher />
-            <EmbeddedProgressDialog />
+            <EmbeddedProgressDialog id="collectionTab" />
         </div>
     );
 };

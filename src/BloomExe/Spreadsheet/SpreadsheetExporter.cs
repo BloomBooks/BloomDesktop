@@ -74,7 +74,7 @@ namespace Bloom.Spreadsheet
 				progress);
 			resultCallback(outputFilePath);
 			return progress.HaveProblemsBeenReported;
-		}, "Exporting Spreadsheet");
+		},"collectionTab", "Exporting Spreadsheet");
 		}
 
 		public SpreadsheetExportParams Params = new SpreadsheetExportParams();

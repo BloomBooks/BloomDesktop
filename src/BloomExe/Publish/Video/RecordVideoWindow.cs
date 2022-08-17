@@ -359,6 +359,7 @@ namespace Bloom.Publish.Video
 					// if we want to close it automatically if there are no errors:
 					//return progress.HaveProblemsBeenReported;
 				},
+				"avPublish",
 				"Processing Video",
 				showCancelButton: false);
 		}
