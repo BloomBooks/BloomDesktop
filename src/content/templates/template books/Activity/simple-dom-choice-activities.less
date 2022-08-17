@@ -15,7 +15,7 @@
         // When an image is the prompt, it looks bad if a closely-cropped image is right up against the colored background of the page.
         // When an image is the answer, there is a white border but it still looks better with some padding. These don't necessarily
         // need to be the same padding, but at the moment they are.
-        img {
+        .bloom-imageContainer img {
             padding: 5px;
             box-sizing: border-box;
         }
@@ -80,7 +80,6 @@
             }
 
             .choices {
-                width: 50%;
                 height: 258px; // the actual value is a hack. The importance is vertical centering the stack
             }
 
@@ -131,6 +130,10 @@
     .wordThenChoices {
         display: flex;
         flex-grow: 1;
+
+        // word on top; images underneath (arrangement of images depends on orientation)
+        flex-direction: column;
+
         // NB: without this overflow:hidden, the .choices div grows larger than necessary whe either we give it a margin-block-start:auto or tell
         // imageThenChoices to justify-content:space-between.
         overflow: hidden;
@@ -144,10 +147,7 @@
         }
 
         .choices {
-            // stack the buttons over each other
             display: flex;
-            flex-direction: column;
-            min-width: 40%;
             overflow: hidden; // TODO Boost up?
 
             .player-button {
@@ -170,34 +170,37 @@
 
     &[class*="Landscape"] {
         .marginBox .wordThenChoices {
-            flex-direction: column;
             align-items: center; // nb: messes up the img size unless the image container has a explicit height
 
             .choices {
                 height: 100%;
+                width: 100%;
                 justify-content: space-between;
                 flex-direction: row;
+
+                .player-button {
+                    flex-grow: 1;
+                    height: 80%;
+                }
             }
         }
     }
 
     &[class*="Portrait"] {
         .marginBox .wordThenChoices {
-            flex-direction: column;
-
             .word-to-match {
                 margin-bottom: 10px;
             }
 
             .choices {
-                flex-grow: 1;
+                flex-grow: 6; // somehow this makes a lot more difference in the bloom-player view
                 flex-direction: column;
                 align-items: center;
                 margin-top: -1rem;
 
                 .player-button {
                     height: 25%;
-                    max-width: 50%;
+                    width: 50%;
                 }
             }
         }
@@ -209,7 +212,6 @@
             flex-direction: column;
 
             .word-to-match {
-                //   height: 70% !important;
                 margin-bottom: 30px;
             }
 
