@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Windows.Forms;
 using Bloom.Book;
 using Bloom.Api;
@@ -22,7 +23,35 @@ namespace Bloom
 					{
 						RaiseDocumentCompleted(sender2, args2);
 					};
+				_webview.CoreWebView2.ContextMenuRequested += ContextMenuRequested;
 			};
+		}
+
+		private void ContextMenuRequested(object sender, CoreWebView2ContextMenuRequestedEventArgs e)
+		{
+			// 		Name	"inspectElement"	string
+			//"reload"
+			if (WantNativeMenu)
+				return;
+			var wantDebug = WantDebugMenuItems;
+			// Remove built-in items (except a couple of useful ones, if we're in a debugging context)
+			var menuList = e.MenuItems;
+
+			for (int index = 0; index < menuList.Count; )
+			{
+				if (wantDebug && (menuList[index].Name == "inspectElement"))
+				{
+					index++;
+					continue;
+				}
+				menuList.RemoveAt(index);
+			}
+			AdjustContextMenu(null, new WebViewItemAdder(_webview, menuList));
+		}
+
+		public override void OnRefresh(object sender, EventArgs e)
+		{
+			// Todo
 		}
 
 		private async void InitWevView()
@@ -103,6 +132,8 @@ namespace Bloom
 			return true;
 		}
 
+		public override string Url => _webview.Source.ToString();
+
 		public override void NavigateRawHtml(string html)
 		{
 			_webview.NavigateToString(html);
@@ -125,10 +156,12 @@ namespace Bloom
 			throw new NotImplementedException();
 		}
 
-		public override void OnOpenPageInSystemBrowser(object sender, EventArgs e)
-		{
-			throw new NotImplementedException();
-		}
+		// Review: base class currently explicitly opens FireFox. Should we instead open Chrome,
+		// or whatever the default browser is, or...?
+		//public override void OnOpenPageInSystemBrowser(object sender, EventArgs e)
+		//{
+		//	throw new NotImplementedException();
+		//}
 
 		public override void ReadEditableAreasNow(string bodyHtml, string userCssContent)
 		{
@@ -163,6 +196,27 @@ namespace Bloom
 		public override void UpdateEditButtons()
 		{
 			
+		}
+
+	}
+
+	class WebViewItemAdder : IMenuItemAdder
+	{
+		private readonly IList<CoreWebView2ContextMenuItem> _menuList;
+		private Microsoft.Web.WebView2.WinForms.WebView2 _webview;
+		public WebViewItemAdder(Microsoft.Web.WebView2.WinForms.WebView2 webview, IList<CoreWebView2ContextMenuItem> menuList)
+		{
+			_webview = webview;
+			_menuList = menuList;
+		}
+		public void Add(string caption, EventHandler handler, bool enabled = true)
+		{
+			CoreWebView2ContextMenuItem newItem =
+				_webview.CoreWebView2.Environment.CreateContextMenuItem(
+					caption, null, CoreWebView2ContextMenuItemKind.Command);
+			newItem.CustomItemSelected += (sender,args) => handler(sender, new EventArgs());
+			newItem.IsEnabled = enabled;
+			_menuList.Insert(_menuList.Count, newItem);
 		}
 	}
 }

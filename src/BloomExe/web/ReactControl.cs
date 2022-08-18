@@ -87,12 +87,12 @@ namespace Bloom.web
 
 			// currently this is used only in ReactDialog. E.g., "Report a problem".
 			if (UseEditContextMenu)
-				_browser.ContextMenuProvider = args =>
+				_browser.ContextMenuProvider = (target, adder) =>
 				{
-					args.ContextMenu.MenuItems.Add(new MenuItem(L10NSharp.LocalizationManager.GetString("Common.Copy", "Copy"),
-							(s1, e1) => { _browser.CopySelection(); }));
-					args.ContextMenu.MenuItems.Add(new MenuItem(L10NSharp.LocalizationManager.GetString("Common.SelectAll", "Select all"),
-							(s1, e1) => { _browser.SelectAll(); }));
+					adder.Add(L10NSharp.LocalizationManager.GetString("Common.Copy", "Copy"),
+							(s1, e1) => { _browser.CopySelection(); });
+					adder.Add(L10NSharp.LocalizationManager.GetString("Common.SelectAll", "Select all"),
+							(s1, e1) => { _browser.SelectAll(); });
 					return true;
 				};
 

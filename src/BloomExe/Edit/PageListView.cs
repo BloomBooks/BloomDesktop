@@ -7,6 +7,7 @@ using Bloom.Api;
 using Bloom.Book;
 using Bloom.web;
 using Fleck;
+using Gecko;
 using L10NSharp;
 using SIL.Reporting;
 using SIL.Windows.Forms.Reporting;
@@ -103,9 +104,9 @@ namespace Bloom.Edit
 					EnableFunction = (page) => page != null && !page.Required && !_model.CurrentBook.LockedDown,
 					ExecuteCommand = (page) => _model.ChangePageLayout(page)});
 			// This adds the desired menu items to the Gecko context menu that happens when we right-click
-			_thumbNailList.ContextMenuProvider = args =>
+			_thumbNailList.ContextMenuProvider = (target, adder) =>
 			{
-				var page = _thumbNailList.GetPageContaining(args.TargetNode);
+				var page = _thumbNailList.GetPageContaining(target as GeckoNode);
 				if (page == null)
 					return true; // no page-related commands if we didn't click on one.
 				if(page != _pageSelection.CurrentSelection)
@@ -114,9 +115,7 @@ namespace Bloom.Edit
 				}
 				foreach (var item in menuItems)
 				{
-					var menuItem = new MenuItem(item.Label, (sender, eventArgs) => item.ExecuteCommand(page));
-					args.ContextMenu.MenuItems.Add(menuItem);
-					menuItem.Enabled = item.EnableFunction(page);
+					adder.Add(item.Label, (sender, eventArgs) => item.ExecuteCommand(page), item.EnableFunction(page));
 				}
 				return true;
 			};
