@@ -13,6 +13,9 @@ namespace Bloom
 		{
 			InitializeComponent();
 
+			// I don't think anything we're doing here will take long enough for us to need to await it.
+			InitWevView();
+
 			_webview.CoreWebView2InitializationCompleted += (object sender, CoreWebView2InitializationCompletedEventArgs args) =>
 			{
 				_webview.CoreWebView2.NavigationCompleted += (object sender2, CoreWebView2NavigationCompletedEventArgs args2) =>
@@ -22,7 +25,14 @@ namespace Bloom
 			};
 		}
 
-		public int VerticalScrollDistance { get; set; }
+		private async void InitWevView()
+		{
+			// based on https://stackoverflow.com/questions/63404822/how-to-disable-cors-in-wpf-webview2
+			// this should disable CORS, but it doesn't seem to work. Keeping in case I need to try further.
+			var op = new CoreWebView2EnvironmentOptions("--allow-insecure-localhost --disable-web-security");
+			var env = await CoreWebView2Environment.CreateAsync(null, null, op);
+			await _webview.EnsureCoreWebView2Async(env);
+		}
 
 		// needed by geckofx but not webview2
 		public override void EnsureHandleCreated()
