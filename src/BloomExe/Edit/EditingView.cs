@@ -76,8 +76,9 @@ namespace Bloom.Edit
 			InitializeComponent();
 
 			// This used to be part of InitializeComponent, but we want to make which browser to use
-			// configurable. It can possibly move back to the Designeer code once we settle on WebView2.
-			this._browser1 = BrowserMaker.MakeBrowser();
+			// configurable. It can possibly move back to the Designer code once we settle on WebView2.
+			// Turning off for this PR because it's not working well enough yet.
+			this._browser1 = new GeckoFxBrowser(); // BrowserMaker.MakeBrowser();
 			// 
 			// _browser1
 			// 
