@@ -83,8 +83,11 @@ namespace Bloom
 
 		public override void Navigate(HtmlDom htmlDom, HtmlDom htmlEditDom, bool setAsCurrentPageForDebugging, BloomServer.SimulatedPageFileSource source)
 		{
-			var html = XmlHtmlConverter.ConvertDomToHtml5(htmlDom.RawDom);
-			_webview.NavigateToString(html);
+			XmlHtmlConverter.MakeXmlishTagsSafeForInterpretationAsHtml(htmlDom.RawDom);
+			var fakeTempFile = BloomServer.MakeSimulatedPageFileInBookFolder(htmlDom, setAsCurrentPageForDebugging: setAsCurrentPageForDebugging, source: source);
+			_webview.CoreWebView2.Navigate(fakeTempFile.Key);
+			// Do not be tempted to just Navigate to a string that is the HTML of the htmlDom. That will have a different origin
+			// than the embedded iframes, which will cause CORS errors when they try to talk to each other.
 		}
 
 		public async override void Navigate(string url, bool cleanupFileAfterNavigating)
