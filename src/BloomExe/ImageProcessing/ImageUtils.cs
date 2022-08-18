@@ -146,14 +146,18 @@ namespace Bloom.ImageProcessing
 			{
 				var size = GetDesiredImageSize(imageInfo.Image.Width, imageInfo.Image.Height);
 
-				if (size.Width != imageInfo.Image.Width || size.Height != imageInfo.Image.Height ||
+				if (size.Width < imageInfo.Image.Width || size.Height < imageInfo.Image.Height ||
 					!(AppearsToBeJpeg(imageInfo) || AppearsToBePng(imageInfo)))
 				{
 					// Either need to shrink the image since it's larger than our maximum allowed size,
 					// or need to convert from a BMP or TIFF file to a PNG file (or both).
 					// NB: the original imageInfo.Image is disposed of in the setter below.
 					// As of now (9/2016) this is safe because there are no other references to it higher in the stack.
-					imageInfo.Image = ResizeImageWithGraphicsMagick(imageInfo, size);
+					var img = TryResizeImageWithGraphicsMagick(imageInfo, size);
+					if (img !=null)
+					{
+						imageInfo.Image = img;
+					}
 				}
 
 				isEncodedAsJpeg = AppearsToBeJpeg(imageInfo);
@@ -701,15 +705,6 @@ namespace Bloom.ImageProcessing
 		}
 
 		/// <summary>
-		/// Create an image with a solid white background.  Note that the new image will be 32-bit RGBA
-		/// even if the original is 1-bit black and white.
-		/// </summary>
-		private static Image CreateImageWithoutTransparentBackground(PalasoImage imageInfo, Size size)
-		{
-			return ResizeImageWithGraphicsMagick(imageInfo, size, true);
-		}
-
-		/// <summary>
 		/// If GraphicsMagick exists, use it to resize the image, optionally making it opaque in the process.
 		/// If GraphicsMagick cannot be found, use the C# .Net code for the desired operation.
 		/// </summary>
@@ -717,7 +712,9 @@ namespace Bloom.ImageProcessing
 		/// The reason for using GraphicsMagick is that some images are just too big to handle without getting
 		/// an "out of memory" error.
 		/// </remarks>
-		private static Image ResizeImageWithGraphicsMagick(PalasoImage imageInfo, Size size, bool makeOpaque=false)
+		/// <returns>Returns null if the resize wouldn't make the file smaller,
+		/// else the new image.</returns>
+		private static Image TryResizeImageWithGraphicsMagick(PalasoImage imageInfo, Size size, bool makeOpaque=false)
 		{
 			var graphicsMagickPath = GetGraphicsMagickPath();
 			if (RobustFile.Exists(graphicsMagickPath))
@@ -746,6 +743,10 @@ namespace Bloom.ImageProcessing
 					var proc = RunGraphicsMagick(graphicsMagickPath, sourcePath, destPath, size, makeOpaque);
 					if (proc.ExitCode == 0)
 					{
+						if(new FileInfo(destPath).Length > new FileInfo(sourcePath).Length){
+							// The new file is actually larger (BL-11441) so bail out
+							return null;
+						}
 						imageInfo.SetCurrentFilePath(destPath);
 						return GetImageFromFile(destPath);
 					}
@@ -827,7 +828,7 @@ namespace Bloom.ImageProcessing
 				if (makeOpaque)
 					argsBldr.Append(" -background white -extent 0x0 +matte");
 				if (destPath.EndsWith(".png", StringComparison.InvariantCultureIgnoreCase))
-					argsBldr.Append(" -quality 0"); // uses Huffman encoding which isn't bad for images, and fastest time
+					argsBldr.Append(" -quality 100"); // quality numbers: http://www.graphicsmagick.org/GraphicsMagick.html#details-quality
 				else if (destPath.EndsWith(".jpg", StringComparison.InvariantCultureIgnoreCase))
 					argsBldr.Append(" -quality 99");	// still lossy, but not near as bad as the default (bigger file, however)
 				argsBldr.AppendFormat(" -scale {0}x{1} \"{2}\"", size.Width, size.Height, safeDestPath);
