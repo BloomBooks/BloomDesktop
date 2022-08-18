@@ -42,6 +42,16 @@
             "content": "<div lang='ky' class='USAID'>Бул басылма АКШнын эл аралык өнүктүрүү боюнча агенттиги (USAID) аркылуу көрсөтүлгөн Америка элинин колдоосу менен түзүлдү. Басылманын мазмуну USAIDдин же АКШ Өкмөтүнүн пикирин милдеттүү түрдө чагылдырбайт.</div><img style='margin-top:1em' class='branding' src='Created with Bloom.svg'/>",
             "condition": "always"
         },
+        // Note: the request was for Russian Sign Language books to use Russian text in places like this.
+        // However the Kyrgyzstan XMatter pug in question says to show the text in N1 (==L2). So we can't
+        // really say `lang: "rsl"`... that's not going to work. We're going to have to require the collection
+        // to set L1 and L2 to Russian. Or we could change the xmatter to use L1 maybe?
+        // {
+        //     "data-book": "credits-page-branding-bottom-html",
+        //     "lang": "rsl",
+        //     "content": "<div lang='ru' class='USAID'>Данная публикация разработана благодаря помощи Американского народа, оказанной через Агентство США по международному развитию (USAID). Содержание публикации не обязательно отражает позицию USAID или Правительства США.</div><img style='margin-top:1em' class='branding' src='Created with Bloom.svg'/>",
+        //     "condition": "always"
+        // },
         {
             "data-book": "credits-page-branding-bottom-html",
             "lang": "ru",
