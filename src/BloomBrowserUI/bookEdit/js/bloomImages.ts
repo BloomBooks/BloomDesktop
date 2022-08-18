@@ -428,7 +428,7 @@ function IsImageReal(img) {
 }
 
 // Gets the src attribute out of images, and the background-image:url() of everything else
-function GetRawImageUrl(imgOrDivWithBackgroundImage) {
+function GetRawImageUrl(imgOrDivWithBackgroundImage): string {
     if ($(imgOrDivWithBackgroundImage).hasAttr("src")) {
         return $(imgOrDivWithBackgroundImage).attr("src");
     }
@@ -437,7 +437,8 @@ function GetRawImageUrl(imgOrDivWithBackgroundImage) {
         const style = $(imgOrDivWithBackgroundImage).attr("style");
         // see http://stackoverflow.com/questions/9723889/regex-to-match-urls-in-inline-styles-div-style-url
         //var result = (/url\(\s*(['"]?)(.*?)\1\s*\)/.exec(style) || [])[2];
-        return (/url\s*\(\s*(['"]?)(.*?)\1\s*\)/.exec(style) || [])[2];
+        // Various things don't expect this to return null or undefined, which the regex just might do.
+        return (/url\s*\(\s*(['"]?)(.*?)\1\s*\)/.exec(style) || [])[2] ?? "";
     }
     return "";
 }
