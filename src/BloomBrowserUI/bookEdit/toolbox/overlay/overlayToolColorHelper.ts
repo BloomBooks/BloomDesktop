@@ -1,15 +1,15 @@
 import tinycolor = require("tinycolor2");
-import { ISwatchDefn } from "../../../react_components/colorSwatch";
+import { IColorInfo } from "../../../react_components/colorSwatch";
 import {
     OverlayTextColorPalette,
-    OverlayBackgroundColorSwatches,
-    getSwatchFromBubbleSpecColor
+    OverlayBackgroundColors,
+    getColorInfoFromSpecialNameOrColorString
 } from "../../../react_components/colorPickerDialog";
 
-export const defaultTextColors: ISwatchDefn[] = OverlayTextColorPalette.map(
-    color => getSwatchFromBubbleSpecColor(color)
+export const defaultTextColors: IColorInfo[] = OverlayTextColorPalette.map(
+    color => getColorInfoFromSpecialNameOrColorString(color)
 );
-export const defaultBackgroundColors = OverlayBackgroundColorSwatches;
+export const defaultBackgroundColors = OverlayBackgroundColors;
 
 export const getRgbaColorStringFromColorAndOpacity = (
     color: string,
