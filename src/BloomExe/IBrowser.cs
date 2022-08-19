@@ -64,6 +64,9 @@ namespace Bloom
 		/// </summary>
 		public Func<object, IMenuItemAdder, bool> ContextMenuProvider { get; set; }
 
+		// To allow Typescript code to implement right-click, we'll do our special developer menu
+		// only if the control key is down. Though, if ContextMenuProvider is non-null, we'll assume
+		// C# is supposed to handle the context menu here.
 		protected bool WantNativeMenu
 		{
 			get
