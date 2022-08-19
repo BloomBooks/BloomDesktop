@@ -81,11 +81,15 @@
 
             .choices {
                 height: 258px; // the actual value is a hack. The importance is vertical centering the stack
+                width: 50%;
             }
 
-            .player-button .bloom-translationGroup .bloom-editable {
-                line-height: 75px !important;
-                font-size: 31pt !important;
+            .player-button {
+                width: 90%;
+                .bloom-translationGroup .bloom-editable {
+                    line-height: 75px !important;
+                    font-size: 31pt !important;
+                }
             }
         }
     }
@@ -98,6 +102,9 @@
             div.bloom-imageContainer {
                 height: 40% !important;
                 margin-bottom: 10px;
+            }
+            .choices .player-button {
+                width: 85%;
             }
         }
     }
