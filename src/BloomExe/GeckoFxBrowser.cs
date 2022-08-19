@@ -573,10 +573,6 @@ namespace Bloom
 			_browser.Reload();
 		}
 
-		// To allow Typescript code to implement right-click, we'll do our special developer menu
-		// only if the control key is down. Though, if ContextMenuProvider is non-null, we'll assume
-		// C# is supposed to handle the context menu here.
-
 		void OnBrowser_DomClick(object sender, DomEventArgs e)
 		{
 			Debug.Assert(!InvokeRequired);

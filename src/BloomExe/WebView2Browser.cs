@@ -15,7 +15,7 @@ namespace Bloom
 			InitializeComponent();
 
 			// I don't think anything we're doing here will take long enough for us to need to await it.
-			InitWevView();
+			InitWebView();
 
 			_webview.CoreWebView2InitializationCompleted += (object sender, CoreWebView2InitializationCompletedEventArgs args) =>
 			{
@@ -54,13 +54,16 @@ namespace Bloom
 			// Todo
 		}
 
-		private async void InitWevView()
+		private async void InitWebView()
 		{
 			// based on https://stackoverflow.com/questions/63404822/how-to-disable-cors-in-wpf-webview2
-			// this should disable CORS, but it doesn't seem to work. Keeping in case I need to try further.
-			var op = new CoreWebView2EnvironmentOptions("--allow-insecure-localhost --disable-web-security");
-			var env = await CoreWebView2Environment.CreateAsync(null, null, op);
-			await _webview.EnsureCoreWebView2Async(env);
+			// this should disable CORS, but it doesn't seem to work, at least for fixing communication from
+			// an iframe in one domain to a parent in another. Keeping in case I need to try further.
+			// However, the reason I thought I needed to disable it was a problem that sourced the root
+			// HTML document in edit mode from the wrong domain; we may not need this at all.
+			//var op = new CoreWebView2EnvironmentOptions("--allow-insecure-localhost --disable-web-security");
+			//var env = await CoreWebView2Environment.CreateAsync(null, null, op);
+			//await _webview.EnsureCoreWebView2Async(env);
 		}
 
 		// needed by geckofx but not webview2
