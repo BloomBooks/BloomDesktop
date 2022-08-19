@@ -8,7 +8,7 @@ import {
     ColorResult,
     RGBColor
 } from "react-color";
-import ColorSwatch, { ISwatchDefn } from "./colorSwatch";
+import ColorSwatch, { IColorInfo } from "./colorSwatch";
 import * as tinycolor from "tinycolor2";
 import "./customColorPicker.less";
 
@@ -18,9 +18,9 @@ interface ICustomPicker {
     // set to 'true' to eliminate alpha slider (e.g. text color)
     noAlphaSlider?: boolean;
     noGradientSwatches?: boolean;
-    onChange: (color: ISwatchDefn) => void;
-    currentColor: ISwatchDefn;
-    swatchColors: ISwatchDefn[];
+    onChange: (color: IColorInfo) => void;
+    currentColor: IColorInfo;
+    swatchColors: IColorInfo[];
 }
 
 export const CustomColorPicker: React.FunctionComponent<ICustomPicker> = props => {
@@ -29,25 +29,25 @@ export const CustomColorPicker: React.FunctionComponent<ICustomPicker> = props =
     // Handler for when the user picks a color by manipulating the ChromePicker.
     // This handler may be 'hit' many times as sliders are manipulated, etc.
     const handleColorChange: ColorChangeHandler = (color, event) => {
-        const newColor = getSwatchDefnFromColorResult(color, "");
+        const newColor = getColorInfoFromColorResult(color, "");
         changeColor(newColor);
     };
 
     // Handler for when the user clicks on a swatch at the bottom of the picker.
-    const handleSwatchClick = (swatch: ISwatchDefn) => (e: any) => {
-        changeColor(swatch);
+    const handleSwatchClick = (swatchColor: IColorInfo) => (e: any) => {
+        changeColor(swatchColor);
     };
 
-    const changeColor = (swatch: ISwatchDefn) => {
-        setColorChoice(swatch);
-        props.onChange(swatch);
+    const changeColor = (swatchColor: IColorInfo) => {
+        setColorChoice(swatchColor);
+        props.onChange(swatchColor);
     };
 
-    const getSwatchDefnFromColorResult = (
+    const getColorInfoFromColorResult = (
         color: ColorResult,
         customName: string
-    ): ISwatchDefn => {
-        // A Swatch that comes from the ChromePicker (not from clicking on a swatch), cannot be a gradient.
+    ): IColorInfo => {
+        // A color that comes from the ChromePicker (not from clicking on a swatch), cannot be a gradient.
         let opacity = color.rgb.a;
         // ColorResult (from react-color) CAN have undefined alpha in its RGBColor, so we just
         // check here and assume the color is opaque if the alpha channel is undefined.
@@ -65,35 +65,35 @@ export const CustomColorPicker: React.FunctionComponent<ICustomPicker> = props =
         };
     };
 
-    const getSwatchColors = () => (
+    const getColorSwatches = () => (
         <React.Fragment>
             {props.swatchColors
-                .filter(swatch => {
+                .filter(colorInfo => {
                     if (props.noGradientSwatches) {
-                        return swatch.colors.length === 1;
+                        return colorInfo.colors.length === 1;
                     } else {
                         return true;
                     }
                 })
-                .filter(swatch => {
-                    return props.noAlphaSlider ? swatch.opacity === 1 : true;
+                .filter(colorInfo => {
+                    return props.noAlphaSlider ? colorInfo.opacity === 1 : true;
                 })
-                .map((swatchDefn: ISwatchDefn, i: number) => (
+                .map((colorInfo: IColorInfo, i: number) => (
                     <ColorSwatch
-                        colors={swatchDefn.colors}
-                        name={swatchDefn.name}
+                        colors={colorInfo.colors}
+                        name={colorInfo.name}
                         key={i}
-                        onClick={handleSwatchClick(swatchDefn)}
-                        opacity={swatchDefn.opacity}
+                        onClick={handleSwatchClick(colorInfo)}
+                        opacity={colorInfo.opacity}
                     />
                 ))}
         </React.Fragment>
     );
 
-    const getRgbOfCurrentSwatch = (): RGBColor => {
-        const currentSwatch = colorChoice;
-        const rgbColor = tinycolor(currentSwatch.colors[0]).toRgb();
-        rgbColor.a = currentSwatch.opacity;
+    const getRgbOfCurrentColor = (): RGBColor => {
+        const currentColor = colorChoice;
+        const rgbColor = tinycolor(currentColor.colors[0]).toRgb();
+        rgbColor.a = currentColor.opacity;
         return rgbColor;
     };
 
@@ -102,7 +102,7 @@ export const CustomColorPicker: React.FunctionComponent<ICustomPicker> = props =
             <SketchPicker
                 disableAlpha={props.noAlphaSlider}
                 // if the current color choice happens to be a gradient, this will be 'white'.
-                color={getRgbOfCurrentSwatch()}
+                color={getRgbOfCurrentColor()}
                 onChange={handleColorChange}
                 // We do want to show a set of color presets, but as far as I could discover
                 // the SketchPicker can't display gradients, so we'll leave out its own ones
@@ -115,7 +115,7 @@ export const CustomColorPicker: React.FunctionComponent<ICustomPicker> = props =
                 `}
                 className="swatch-row"
             >
-                {getSwatchColors()}
+                {getColorSwatches()}
             </div>
         </div>
     );

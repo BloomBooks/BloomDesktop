@@ -21,7 +21,7 @@ import ImportIcon from "./icons/ImportIcon";
 import DeleteIcon from "@material-ui/icons/Delete";
 import PlaybackOrderControls from "./playbackOrderControls";
 import CustomColorPicker from "./customColorPicker";
-import { ISwatchDefn, getBackgroundFromSwatch } from "./colorSwatch";
+import { IColorInfo, getBackgroundColorCssFromColorInfo } from "./colorSwatch";
 import {
     showColorPickerDialog,
     IColorPickerDialogProps
@@ -729,7 +729,7 @@ const initialOverDivStyles: React.CSSProperties = {
     background: "#fff"
 };
 
-const defaultSwatches: ISwatchDefn[] = [
+const defaultSwatches: IColorInfo[] = [
     { name: "white", colors: ["#ffffff"], opacity: 1 },
     { name: "grey", colors: ["#777777"], opacity: 1 },
     { name: "black", colors: ["#000000"], opacity: 1 },
@@ -754,14 +754,14 @@ storiesOf("Custom Color Chooser", module)
                 setChooserCurrentTextColor
             ] = useState(defaultSwatches[2]);
             const handleColorChange = (
-                color: ISwatchDefn,
+                color: IColorInfo,
                 colorIsBackground: boolean
             ) => {
                 if (colorIsBackground) {
                     // set background color
                     setOverDivStyles({
                         ...overDivStyles,
-                        background: getBackgroundFromSwatch(color)
+                        background: getBackgroundColorCssFromColorInfo(color)
                     });
                     setChooserCurrentBackgroundColor(color);
                 } else {
@@ -844,7 +844,7 @@ storiesOf("Custom Color Chooser", module)
                 chooserCurrentBackgroundColor,
                 setChooserCurrentBackgroundColor
             ] = useState(defaultSwatches[0]);
-            const handleColorChange = (color: ISwatchDefn) => {
+            const handleColorChange = (color: IColorInfo) => {
                 console.log("Color change:");
                 console.log(
                     `  ${color.name}: ${color.colors[0]}, ${color.colors[1]}, ${color.opacity}`
@@ -852,7 +852,7 @@ storiesOf("Custom Color Chooser", module)
                 // set background color
                 setOverDivStyles({
                     ...overDivStyles,
-                    background: getBackgroundFromSwatch(color)
+                    background: getBackgroundColorCssFromColorInfo(color)
                 });
                 setChooserCurrentBackgroundColor(color);
             };

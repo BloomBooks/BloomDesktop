@@ -17,7 +17,7 @@ import { lightTheme } from "../bloomMaterialUITheme";
 import { BloomApi } from "../utils/bloomApi";
 import CustomColorPicker from "./customColorPicker";
 import * as tinycolor from "tinycolor2";
-import { ISwatchDefn, getSwatchFromColorSpec } from "./colorSwatch";
+import { IColorInfo, getColorInfoFromString } from "./colorSwatch";
 import Draggable from "react-draggable";
 import "./colorPickerDialog.less";
 import { kBloomGray } from "../utils/colorUtils";
@@ -34,10 +34,10 @@ export interface IColorPickerDialogProps {
     localizedTitle: string;
     noAlphaSlider?: boolean;
     noGradientSwatches?: boolean;
-    initialColor: ISwatchDefn;
+    initialColor: IColorInfo;
     palette?: BloomPalette;
-    defaultSwatchColors?: ISwatchDefn[]; // deprecated, soon to be removed
-    onChange: (color: ISwatchDefn) => void;
+    defaultSwatchColors?: IColorInfo[]; // deprecated, soon to be removed
+    onChange: (color: IColorInfo) => void;
     onInputFocus: (input: HTMLElement) => void;
 }
 
@@ -59,13 +59,18 @@ const ColorPickerDialog: React.FC<IColorPickerDialogProps> = props => {
     const MAX_SWATCHES = 21;
     const [open, setOpen] = useState(true);
     const [currentColor, setCurrentColor] = useState(props.initialColor);
-    let defaultSwatchColors: ISwatchDefn[];
+
+    let defaultSwatchColors: IColorInfo[];
     if (props.defaultSwatchColors)
         defaultSwatchColors = props.defaultSwatchColors;
     else if (props.palette)
-        defaultSwatchColors = getSwatchColorsFromPalette(props.palette);
+        defaultSwatchColors = getDefaultSwatchDefinitionsFromPalette(
+            props.palette
+        );
     else defaultSwatchColors = [];
+
     const [swatchArray, setSwatchArray] = useState(defaultSwatchColors);
+
     externalSetOpen = setOpen;
     const dlgRef = useRef<HTMLElement>(null);
 
@@ -136,7 +141,7 @@ const ColorPickerDialog: React.FC<IColorPickerDialogProps> = props => {
         };
     }, [dlgRef.current]);
 
-    const convertJsonColorsToSwatches = (jsonArray: any): ISwatchDefn[] => {
+    const convertJsonColorsToSwatches = (jsonArray: any): IColorInfo[] => {
         return jsonArray.map((bubbleSpecColor: { colors: string[] }) => {
             const colorArray = bubbleSpecColor.colors;
             // check for a special color or gradient
@@ -145,7 +150,7 @@ const ColorPickerDialog: React.FC<IColorPickerDialogProps> = props => {
                 // Not a gradient or other "known" color, so there'll only be one color.
                 colorKey = colorArray[0];
             }
-            return getSwatchFromBubbleSpecColor(colorKey);
+            return getColorInfoFromSpecialNameOrColorString(colorKey);
         });
     };
 
@@ -170,8 +175,8 @@ const ColorPickerDialog: React.FC<IColorPickerDialogProps> = props => {
     // Enhance: What if the number of distinct swatches already used in the book that we get back, plus the number
     // of other default swatches is more than will fit in our array (current 21)? When we get swatches from the book,
     // we should maybe start with the current page, to give them a better chance of being included in the picker.
-    const addNewSwatchesToArrayIfNecessary = (newSwatches: ISwatchDefn[]) => {
-        const newSwatchesAdded: ISwatchDefn[] = [];
+    const addNewSwatchesToArrayIfNecessary = (newSwatches: IColorInfo[]) => {
+        const newSwatchesAdded: IColorInfo[] = [];
         const lengthBefore = swatchArray.length;
         let numberToDelete = 0;
         // CustomColorPicker is going to filter these swatches out anyway.
@@ -218,10 +223,10 @@ const ColorPickerDialog: React.FC<IColorPickerDialogProps> = props => {
         setSwatchArray(newSwatchesAdded.concat(newSwatchArray));
     };
 
-    const isSwatchInCurrentSwatchArray = (swatch: ISwatchDefn): boolean =>
+    const isSwatchInCurrentSwatchArray = (swatch: IColorInfo): boolean =>
         isSwatchInThisArray(swatch, swatchArray);
 
-    const willSwatchBeFilteredOut = (swatch: ISwatchDefn): boolean => {
+    const willSwatchBeFilteredOut = (swatch: IColorInfo): boolean => {
         if (props.noAlphaSlider && swatch.opacity !== 1) {
             return true;
         }
@@ -233,14 +238,14 @@ const ColorPickerDialog: React.FC<IColorPickerDialogProps> = props => {
 
     // Use a compare function to see if the swatch in question matches on already in this list or not.
     const isSwatchInThisArray = (
-        swatch: ISwatchDefn,
-        arrayOfSwatches: ISwatchDefn[]
+        swatch: IColorInfo,
+        arrayOfSwatches: IColorInfo[]
     ): boolean => !!arrayOfSwatches.find(swatchCompareFunc(swatch));
 
     // Function for comparing a swatch with an array of swatches to see if the swatch is already
     // in the array. We pass this function to .find().
-    const swatchCompareFunc = (swatch: ISwatchDefn) => (
-        item: ISwatchDefn
+    const swatchCompareFunc = (swatch: IColorInfo) => (
+        item: IColorInfo
     ): boolean => {
         if (item.colors.length !== swatch.colors.length) {
             return false; // One is a gradient and the other is not.
@@ -261,7 +266,7 @@ const ColorPickerDialog: React.FC<IColorPickerDialogProps> = props => {
         );
     };
 
-    const handleOnChange = (color: ISwatchDefn) => {
+    const handleOnChange = (color: IColorInfo) => {
         setCurrentColor(color);
         props.onChange(color);
     };
@@ -348,7 +353,7 @@ const doRender = (
 
 // This array provides a useful default palette for the color picker dialog.
 // See the code below for mapping an array of strings like this into an array of
-// ISwatchDefn objects.
+// IColorInfo objects.
 export const TextColorPalette: string[] = [
     // black to white
     "black",
@@ -401,7 +406,7 @@ export const OverlayTextColorPalette: string[] = [
     "white"
 ];
 
-const specialColors: ISwatchDefn[] = [
+const specialColors: IColorInfo[] = [
     // #DFB28B is the color Comical has been using as the default for captions.
     // It's fairly close to the "Calico" color defined at https://www.htmlcsscolor.com/hex/D5B185 (#D5B185)
     // so I decided it was the best choice for keeping that option.
@@ -423,55 +428,54 @@ const specialColors: ISwatchDefn[] = [
         opacity: 1
     }
 ];
-const plainColors: ISwatchDefn[] = [
+const plainColors: IColorInfo[] = [
     { name: "black", colors: ["black"], opacity: 1 },
     { name: "white", colors: ["white"], opacity: 1 },
     { name: "partialTransparent", colors: [kBloomGray], opacity: 0.5 }
 ];
 
 // These colors are what the overlay tool has been using for the background color chooser.
-export const OverlayBackgroundColorSwatches: ISwatchDefn[] = plainColors.concat(
+export const OverlayBackgroundColorSwatches: IColorInfo[] = plainColors.concat(
     specialColors
 );
 
-function getSwatchColorsFromPalette(
-    palette: BloomPalette | undefined
-): ISwatchDefn[] {
-    switch (palette) {
+function getDefaultSwatchDefinitionsFromPalette(
+    paletteType: BloomPalette
+): IColorInfo[] {
+    if (paletteType === BloomPalette.OverlayBackground)
+        return JSON.parse(JSON.stringify(OverlayBackgroundColorSwatches));
+
+    let palette;
+    switch (paletteType) {
         case BloomPalette.BloomReaderBookshelf:
-            return CoverBackgroundPalette.map(color =>
-                getSwatchFromBubbleSpecColor(color)
-            );
         case BloomPalette.CoverBackground:
-            return CoverBackgroundPalette.map(color =>
-                getSwatchFromBubbleSpecColor(color)
-            );
+            palette = CoverBackgroundPalette;
+            break;
         case BloomPalette.OverlayText:
-            return OverlayTextColorPalette.map(color =>
-                getSwatchFromBubbleSpecColor(color)
-            );
-        case BloomPalette.OverlayBackground:
-            return JSON.parse(JSON.stringify(OverlayBackgroundColorSwatches));
-        default:
-            return TextColorPalette.map(color =>
-                getSwatchFromBubbleSpecColor(color)
-            );
+            palette = OverlayTextColorPalette;
+            break;
+        case BloomPalette.Text:
+            palette = TextColorPalette;
+            break;
     }
+    return palette.map((color: string) =>
+        getColorInfoFromSpecialNameOrColorString(color)
+    );
 }
 
 // Handles all types of color strings: special-named, hex, rgb(), or rgba().
-// If BubbleSpec entails opacity, this string should be of the form "rgba(r, g, b, a)".
-export const getSwatchFromBubbleSpecColor = (
-    bubbleSpecColor: string
-): ISwatchDefn => {
-    if (isSpecialColorName(bubbleSpecColor)) {
+// If color entails opacity, this string should be of the form "rgba(r, g, b, a)".
+export const getColorInfoFromSpecialNameOrColorString = (
+    specialNameOrColorString: string
+): IColorInfo => {
+    if (isSpecialColorName(specialNameOrColorString)) {
         // A "special" color gradient, get our swatch from the definitions.
         // It "has" to be there, because we just checked to see if the name was a special color!
         return specialColors.find(
-            color => color.name === bubbleSpecColor
-        ) as ISwatchDefn;
+            color => color.name === specialNameOrColorString
+        ) as IColorInfo;
     }
-    return getSwatchFromColorSpec(bubbleSpecColor);
+    return getColorInfoFromString(specialNameOrColorString);
 };
 
 const isSpecialColorName = (colorName: string): boolean =>
@@ -487,7 +491,7 @@ export const getSpecialColorName = (
 };
 
 // The following interface and function provide a simpler interface to the color
-// choose dialog which doesn't depend on ISwatchDefn.
+// choose dialog which doesn't depend on IColorInfo.
 export interface ISimpleColorPickerDialogProps {
     localizedTitle: string;
     noAlphaSlider?: boolean;
@@ -504,9 +508,11 @@ export const showSimpleColorPickerDialog = (
         localizedTitle: props.localizedTitle,
         noAlphaSlider: props.noAlphaSlider,
         noGradientSwatches: true,
-        initialColor: getSwatchFromBubbleSpecColor(props.initialColor),
+        initialColor: getColorInfoFromSpecialNameOrColorString(
+            props.initialColor
+        ),
         palette: props.palette,
-        onChange: (color: ISwatchDefn) => props.onChange(color.colors[0]),
+        onChange: (color: IColorInfo) => props.onChange(color.colors[0]),
         onInputFocus: props.onInputFocus
     };
     showColorPickerDialog(fullProps);
