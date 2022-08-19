@@ -90,7 +90,7 @@ namespace Bloom
 				var addDebuggingMenuItems = true;
 #else
 			var debugBloom = Environment.GetEnvironmentVariable("DEBUGBLOOM")?.ToLowerInvariant();
-			var _addDebuggingMenuItems =
+			var addDebuggingMenuItems =
  !String.IsNullOrEmpty(debugBloom) && debugBloom != "false" && debugBloom != "no" && debugBloom != "off";
 #endif
 				return addDebuggingMenuItems || ApplicationUpdateSupport.IsDevOrAlpha;
