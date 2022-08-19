@@ -1,9 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using Bloom.Book;
 using Bloom.Api;
+using Bloom.Utils;
 using Microsoft.Web.WebView2.Core;
+using Newtonsoft.Json;
 
 namespace Bloom
 {
@@ -23,6 +26,10 @@ namespace Bloom
 					{
 						RaiseDocumentCompleted(sender2, args2);
 					};
+				_webview.CoreWebView2.FrameNavigationCompleted += (o, eventArgs) =>
+				{
+					RaiseDocumentCompleted(o, eventArgs);
+				};
 				_webview.CoreWebView2.ContextMenuRequested += ContextMenuRequested;
 			};
 		}
@@ -113,19 +120,15 @@ namespace Bloom
 			throw new NotImplementedException();
 		}
 
-		public override void Navigate(HtmlDom htmlDom, HtmlDom htmlEditDom, bool setAsCurrentPageForDebugging, BloomServer.SimulatedPageFileSource source)
-		{
-			XmlHtmlConverter.MakeXmlishTagsSafeForInterpretationAsHtml(htmlDom.RawDom);
-			var fakeTempFile = BloomServer.MakeSimulatedPageFileInBookFolder(htmlDom, setAsCurrentPageForDebugging: setAsCurrentPageForDebugging, source: source);
-			_webview.CoreWebView2.Navigate(fakeTempFile.Key);
-			// Do not be tempted to just Navigate to a string that is the HTML of the htmlDom. That will have a different origin
-			// than the embedded iframes, which will cause CORS errors when they try to talk to each other.
-		}
-
-		public async override void Navigate(string url, bool cleanupFileAfterNavigating)
+		protected override async void UpdateDisplay(string newUrl)
 		{
 			await _webview.EnsureCoreWebView2Async();
-			_webview.CoreWebView2.Navigate(url);
+			_webview.CoreWebView2.Navigate(newUrl);
+		}
+
+		protected override void EnsureBrowserReadyToNavigate()
+		{
+			// So far, don't know of anything we have to do to achieve this in WebView2
 		}
 
 		public override bool NavigateAndWaitTillDone(HtmlDom htmlDom, int timeLimit, string source, Func<bool> cancelCheck, bool throwOnTimeout)
@@ -136,23 +139,6 @@ namespace Bloom
 		}
 
 		public override string Url => _webview.Source.ToString();
-
-		public override void NavigateRawHtml(string html)
-		{
-			_webview.NavigateToString(html);
-		}
-
-		public override void NavigateToTempFileThenRemoveIt(string path, string urlQueryParams)
-		{
-			// Convert from path to URL
-			if (!String.IsNullOrEmpty(urlQueryParams))
-			{
-				if (!urlQueryParams.StartsWith("?"))
-					urlQueryParams = '?' + urlQueryParams;
-			}
-			var url = path.ToLocalhost() + urlQueryParams;
-			this.Navigate(url, false);
-		}
 
 		public override void OnGetTroubleShootingInformation(object sender, EventArgs e)
 		{
@@ -166,22 +152,34 @@ namespace Bloom
 		//	throw new NotImplementedException();
 		//}
 
-		public override void ReadEditableAreasNow(string bodyHtml, string userCssContent)
-		{
-			
-		}
-
 		public override string RunJavaScript(string script)
 		{
-			return null;
+			Task<string> task = runJavaScriptAsync(script);
+			// I don't fully understand why this works and many other things I tried don't (typically deadlock,
+			// or complain that ExecuteScriptAsync must be done on the main thread).
+			// Came from an answer in https://stackoverflow.com/questions/65327263/how-to-get-sync-return-from-executescriptasync-in-webview2'
+			// The more elegant thing would be a drastic rewrite of many levels of callers to all be async.
+			while (!task.IsCompleted)
+			{
+				Application.DoEvents();
+				System.Threading.Thread.Sleep(10);
+			}
+			var result = task.Result;
+			return result;
+		}
+		// Enhance: possibly this should be virtual in the baseclass, and public, and used by anything that
+		// doesn't need to wait for the task to complete, or that can conveniently be made async?
+		private async Task<string> runJavaScriptAsync(string script)
+		{
+			var result = await _webview.ExecuteScriptAsync(script);
+			// Whatever the javascript produces gets JSON encoded automatically by ExecuteScriptAsync.
+			// All the methods Bloom calls this way return strings (or null), so we just need to do this to recover them.
+			var result2 = JsonConvert.DeserializeObject(result);
+			var result3 = result2?.ToString();
+			return result3;
 		}
 
 		public override void SaveHTML(string path)
-		{
-			throw new NotImplementedException();
-		}
-
-		public override void SetEditDom(HtmlDom editDom)
 		{
 			throw new NotImplementedException();
 		}

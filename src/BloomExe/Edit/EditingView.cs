@@ -78,7 +78,7 @@ namespace Bloom.Edit
 			// This used to be part of InitializeComponent, but we want to make which browser to use
 			// configurable. It can possibly move back to the Designer code once we settle on WebView2.
 			// Turning off for this PR because it's not working well enough yet.
-			this._browser1 = new GeckoFxBrowser(); // BrowserMaker.MakeBrowser();
+			this._browser1 = BrowserMaker.MakeBrowser();
 			// 
 			// _browser1
 			// 
@@ -467,6 +467,19 @@ namespace Bloom.Edit
 				// to set it up again each time we load a page. It's important to set it up before we start
 				// navigation; otherwise, we might miss the event and never enable saving for this page.
 				_model.NavigatingSoSuspendSaving = true;
+				// The following comment applies to GeckoFx. The logic described has moved into GeckoFxBrowser.
+				// Hopefully the WebView2 DocumentCompleted is more reliable and it won't be needed there.
+				// Unfortunately this comment isn't easily modifiable for the new context, so I'm leaving it here for now.
+				// So far, the most reliable way I've found to detect that the page is fully loaded and we can call
+				// initialize() is the ReadyStateChanged event (combined with checking that ReadyState is "complete").
+				// This works for most pages but not all...some (e.g., the credits page in a basic book) seem to just go on
+				// being "interactive". As a desperate step I tried looking for DocumentCompleted (which fires too soon and often),
+				// but still, we never get one where the ready state is completed. This page just stays 'interactive'.
+				// A desperate expedient would be to try running some Javascript to test whether the 'initialize' function
+				// has actually loaded. If you try that, be careful...this function seems to be used in cases where that
+				// never happens.
+				// Do this before we change the src of the iframe to make sure we're ready when the document-completed arrives.
+				_browser1.DocumentCompleted += WebBrowser_ReadyStateChanged;
 				if (_model.AreToolboxAndOuterFrameCurrent() && !ShouldDoFullReload())
 				{
 					// Keep the top document and toolbox iframe, just navigate the page iframe to the new page.
@@ -493,18 +506,6 @@ namespace Bloom.Edit
 				_model.CheckForBL2634("navigated to page");
 				SetModalState(false);	// ensure _pageListView is enabled (BL-9712).
 				_pageListView.Focus();
-				// The following comment applies to GeckoFx. The logic described has moved into GeckoFxBrowser.
-				// Hopefully the WebView2 DocumentCompleted is more reliable and it won't be needed there.
-				// Unfortunately this comment isn't easily modifiable for the new context, so I'm leaving it here for now.
-				// So far, the most reliable way I've found to detect that the page is fully loaded and we can call
-				// initialize() is the ReadyStateChanged event (combined with checking that ReadyState is "complete").
-				// This works for most pages but not all...some (e.g., the credits page in a basic book) seem to just go on
-				// being "interactive". As a desperate step I tried looking for DocumentCompleted (which fires too soon and often),
-				// but still, we never get one where the ready state is completed. This page just stays 'interactive'.
-				// A desperate expedient would be to try running some Javascript to test whether the 'initialize' function
-				// has actually loaded. If you try that, be careful...this function seems to be used in cases where that
-				// never happens.
-				_browser1.DocumentCompleted += WebBrowser_ReadyStateChanged;
 #if __MonoCS__
 				// On Linux/Mono, the user can click between pages too fast in Edit mode, resulting
 				// in a warning dialog popping up.  I've never seen this happen on Windows, but it's
@@ -1385,9 +1386,9 @@ namespace Bloom.Edit
 			// BL-9912 where the Leveled Reader Tool was prompted by some of this to call us back with a save to the
 			// tool state, but by then the editingModel had cleared out its knowledge of what book it had previously
 			// been editing, so there was an null.
-			RunJavaScript("if (typeof(editTabBundle) !=='undefined' && typeof(editTabBundle.getToolboxBundleExports()) !=='undefined') {editTabBundle.getToolboxBundleExports().removeToolboxMarkup();}");
-			var bodyHtml = RunJavaScript("if (typeof(editTabBundle !=='undefined') && typeof(editTabBundle.getEditablePageBundleExports()) !=='undefined') {return editTabBundle.getEditablePageBundleExports().getBodyContentForSavePage();}");
-			var userCssContent = RunJavaScript("if (typeof(editTabBundle) !=='undefined' && typeof(editTabBundle.getEditablePageBundleExports()) !=='undefined') {return editTabBundle.getEditablePageBundleExports().userStylesheetContent();}");
+			RunJavaScript("typeof(editTabBundle) !=='undefined' && typeof(editTabBundle.getToolboxBundleExports()) !=='undefined' && editTabBundle.getToolboxBundleExports().removeToolboxMarkup()");
+			var bodyHtml = RunJavaScript("typeof(editTabBundle) !=='undefined' && typeof(editTabBundle.getEditablePageBundleExports()) !=='undefined' && editTabBundle.getEditablePageBundleExports().getBodyContentForSavePage()");
+			var userCssContent = RunJavaScript("typeof(editTabBundle) !=='undefined' && typeof(editTabBundle.getEditablePageBundleExports()) !=='undefined' && editTabBundle.getEditablePageBundleExports().userStylesheetContent()");
 			_browser1.ReadEditableAreasNow(bodyHtml, userCssContent);
 		}
 
