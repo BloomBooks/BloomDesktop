@@ -14,7 +14,7 @@ namespace Bloom
 		public AboutMemory()
 		{
 			InitializeComponent();
-			_browser1.ContextMenuProvider = x => { return true; }; // replace standard menu commands with none
+			_browser1.ContextMenuProvider = (target, menu) => { return true; }; // replace standard menu commands with none
 			FirstLinkUrl = "https://developer.mozilla.org/en-US/docs/Mozilla/Performance/about:memory";
 			SecondLinkUrl = "https://developer.mozilla.org/en-US/docs/Mozilla/Performance/GC_and_CC_logs";
 		}

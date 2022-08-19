@@ -116,7 +116,7 @@ namespace Bloom.Edit
 			_baseHtml = RobustFile.ReadAllText(frame, Encoding.UTF8).Replace("DarkGray", backColor);
 		}
 
-		public Func<GeckoContextMenuEventArgs, bool> ContextMenuProvider
+		public Func<object, IMenuItemAdder, bool> ContextMenuProvider
 		{
 			get { return _browser.ContextMenuProvider; }
 			set { _browser.ContextMenuProvider = value; }

@@ -8,6 +8,7 @@ using System.Net;
 using System.Reflection;
 using System.Text;
 using System.Windows.Forms;
+using System.Windows.Navigation;
 using System.Xml;
 using Bloom.Book;
 using Bloom.Api;
@@ -44,7 +45,6 @@ namespace Bloom
 		// We need some way to pass the cursor location in the Browser context to the EditingView command handlers
 		// for Add/Delete TextOverPicture textboxes. These will store the cursor location when the context menu is
 		// generated.
-		internal Point ContextMenuLocation;
 
 		public static string DefaultBrowserLangs;
 
@@ -200,12 +200,6 @@ namespace Bloom
 		{
 			var x = this.Handle; // gets the WebBrowser created
 		}
-
-		/// <summary>
-		/// Allow creator to hook up this event handler if the browser needs to handle Ctrl-N.
-		/// Not every browser instance needs this.
-		/// </summary>
-		public ControlKeyEvent ControlKeyEvent { get; set; }
 
 		/// <summary>
 		/// Singleton set by the constructor after designer setup, but before attempting navigation.
@@ -428,7 +422,8 @@ namespace Bloom
 
 			UpdateDisplay();
 			_browser.Navigated += CleanupAfterNavigation; //there's also a "document completed"
-			_browser.DocumentCompleted += new EventHandler<GeckoDocumentCompletedEventArgs>(_browser_DocumentCompleted);
+			_browser.DocumentCompleted += _browser_DocumentCompleted;
+			_browser.ReadyStateChange += BrowserOnReadyStateChange;
 
 			_browser.ConsoleMessage += OnConsoleMessage;
 
@@ -447,9 +442,26 @@ namespace Bloom
 			RaiseBrowserReady();
 		}
 
+		private void BrowserOnReadyStateChange(object sender, DomEventArgs e)
+		{
+			// In GeckoFx, ready state change seems to be a more reliable way of detecting document complete.
+			// If it's reached that state, raise the event.
+			if (_browser.Document.ReadyState != "complete")
+				return;
+			RaiseDocumentCompleted(sender, e);
+		}
+
 		private void _browser_DocumentCompleted(object sender, GeckoDocumentCompletedEventArgs e)
 		{
 			RaiseDocumentCompleted(sender, e);
+		}
+
+		protected override void RaiseDocumentCompleted(object sender, EventArgs e)
+		{
+			// If it isn't really complete, don't tell the client it is!
+			if (_browser.Document.ReadyState != "complete")
+				return;
+			base.RaiseDocumentCompleted(sender, e);
 		}
 
 		// We'd like to suppress them just in one browser. But it seems to be unpredictable which
@@ -534,6 +546,9 @@ namespace Bloom
 				_browser.Paste();
 			//}
 		}
+
+		public override string Url => _url;
+
 		public override void CopySelection()
 		{
 			_browser.CopySelection();
@@ -543,178 +558,19 @@ namespace Bloom
 			_browser.SelectAll();
 		}
 
+		public override void SelectBrowser()
+		{
+			_browser.Select();
+		}
+
 		void OnShowContextMenu(object sender, GeckoContextMenuEventArgs e)
 		{
-			// To allow Typescript code to implement right-click, we'll do our special developer menu
-			// only if the control key is down. Though, if ContextMenuProvider is non-null, we'll assume
-			// C# is supposed to handle the context menu here.
-#if __MonoCS__
-			if (!_controlPressed && ContextMenuProvider == null)
-				return;
-#else
-			if ((Control.ModifierKeys & Keys.Control) != Keys.Control && ContextMenuProvider == null)
-				return;
-#endif
-			MenuItem FFMenuItem = null;
-			Debug.Assert(!InvokeRequired);
-#if DEBUG
-			var _addDebuggingMenuItems = true;
-#else
-			var debugBloom = Environment.GetEnvironmentVariable("DEBUGBLOOM")?.ToLowerInvariant();
-			var _addDebuggingMenuItems = !String.IsNullOrEmpty(debugBloom) && debugBloom != "false" && debugBloom != "no" && debugBloom != "off";
-#endif
-			ContextMenuLocation = PointToClient(Cursor.Position);
-			if (ContextMenuProvider != null)
-			{
-				var replacesStdMenu = ContextMenuProvider(e);
-				if (_addDebuggingMenuItems || ((ModifierKeys & Keys.Control) == Keys.Control))
-					FFMenuItem = AddOpenPageInFFItem(e);
-				if (replacesStdMenu)
-					return; // only the provider's items
-			}
-
-			if(FFMenuItem == null)
-				AddOpenPageInFFItem(e);
-			// Allow debugging entries on any alpha builds as well as any debug builds.
-			if (_addDebuggingMenuItems || ApplicationUpdateSupport.IsDevOrAlpha)
-				AddOtherMenuItemsForDebugging(e);
-
-			e.ContextMenu.MenuItems.Add(LocalizationManager.GetString("Browser.CopyTroubleshootingInfo", "Copy Troubleshooting Information"), OnGetTroubleShootingInformation);
+			AdjustContextMenu(e.TargetNode, new GeckoMenuItemAdder(e.ContextMenu));
 		}
 
-		private MenuItem AddOpenPageInFFItem(GeckoContextMenuEventArgs e)
-		{
-			return e.ContextMenu.MenuItems.Add(
-				LocalizationManager.GetString("Browser.OpenPageInFirefox", "Open Page in Firefox (which must be in the PATH environment variable)"),
-				OnOpenPageInSystemBrowser);
-		}
-
-		private void AddOtherMenuItemsForDebugging(GeckoContextMenuEventArgs e)
-		{
-			e.ContextMenu.MenuItems.Add("Open about:memory window", OnOpenAboutMemory);
-			e.ContextMenu.MenuItems.Add("Open about:config window", OnOpenAboutConfig);
-			e.ContextMenu.MenuItems.Add("Open about:cache window", OnOpenAboutCache);
-			e.ContextMenu.MenuItems.Add("Refresh", OnRefresh);
-		}
-
-		private void OnRefresh(object sender, EventArgs e)
+		public override void OnRefresh(object sender, EventArgs e)
 		{
 			_browser.Reload();
-		}
-
-		private void OnOpenAboutMemory(object sender, EventArgs e)
-		{
-			var form = new AboutMemory();
-			form.Text = "Bloom Browser Memory Diagnostics (\"about:memory\")";
-			form.FirstLinkMessage = "See https://developer.mozilla.org/en-US/docs/Mozilla/Performance/about:memory for a basic explanation.";
-			form.FirstLinkUrl = "https://developer.mozilla.org/en-US/docs/Mozilla/Performance/about:memory";
-			form.SecondLinkMessage = "See https://developer.mozilla.org/en-US/docs/Mozilla/Performance/GC_and_CC_logs for more details.";
-			form.SecondLinkUrl = "https://developer.mozilla.org/en-US/docs/Mozilla/Performance/GC_and_CC_logs";
-			form.Navigate("about:memory");
-			form.Show();	// NOT Modal!
-		}
-
-		private void OnOpenAboutConfig(object sender, EventArgs e)
-		{
-			var form = new AboutMemory();
-			form.Text = "Bloom Browser Internal Configuration Settings (\"about:config\")";
-			form.FirstLinkMessage = "See http://kb.mozillazine.org/About:config_entries for a basic explanation.";
-			form.FirstLinkUrl = "http://kb.mozillazine.org/About:config_entries";
-			form.SecondLinkMessage = null;
-			form.SecondLinkUrl = null;
-			form.Navigate("about:config");
-			form.Show();    // NOT Modal!
-		}
-
-		private void OnOpenAboutCache(object sender, EventArgs e)
-		{
-			var form = new AboutMemory();
-			form.Text = "Bloom Browser Internal Cache Status (\"about:cache?storage=&context=\")";
-			form.FirstLinkMessage = "See http://kb.mozillazine.org/Browser.cache.memory.capacity for a basic explanation.";
-			form.FirstLinkUrl = "http://kb.mozillazine.org/Browser.cache.memory.capacity";
-			form.SecondLinkMessage = null;
-			form.SecondLinkUrl = null;
-			form.Navigate("about:cache?storage=&context=");
-			form.Show();    // NOT Modal!
-		}
-
-		public override void OnGetTroubleShootingInformation(object sender, EventArgs e)
-		{
-			Debug.Assert(!InvokeRequired);
-
-			try
-			{
-				//we can imagine doing a lot more than this... the main thing I wanted was access to the <link> paths for stylesheets,
-				//as those can be the cause of errors if Bloom is using the wrong version of some stylesheet, and it might not do that
-				//on a developer/ support-person computer.
-				var builder = new StringBuilder();
-
-				foreach (string label in ErrorReport.Properties.Keys)
-				{
-					builder.AppendLine(label + ": " + ErrorReport.Properties[label] + Environment.NewLine);
-				}
-
-				builder.AppendLine();
-
-				using (var client = new WebClient())
-				{
-					builder.AppendLine(client.DownloadString(_url));
-				}
-				PortableClipboard.SetText(builder.ToString());
-
-				// NOTE: it seems strange to call BeginInvoke to display the MessageBox. However, this
-				// is necessary on Linux: this method gets called from the context menu which on Linux
-				// is displayed by GTK (which has its own message loop). Calling MessageBox.Show
-				// directly kind of works but has all kinds of side-effects like the message box not
-				// properly updating and geckofx not properly working anymore. Displaying the message
-				// box asynchronously lets us get out of the GTK message loop and displays it
-				// properly on the SWF message loop. Technically this is only necessary on Linux, but
-				// it doesn't hurt on Windows.
-				BeginInvoke((Action) delegate()
-				{
-					MessageBox.Show("Debugging information has been placed on your clipboard. You can paste it into an email.");
-				});
-			}
-			catch (Exception ex)
-			{
-				NonFatalProblem.ReportSentryOnly(ex);
-			}
-		}
-
-		public override void OnOpenPageInSystemBrowser(object sender, EventArgs e)
-		{
-			Debug.Assert(!InvokeRequired);
-			bool isWindows = SIL.PlatformUtilities.Platform.IsWindows;
-			string genericError = "Something went wrong trying to open this page in ";
-			try
-			{
-				// An earlier version of this method made a new temp file in hopes that it would go on working
-				// in the browser even after Bloom closed. This has gotten steadily less feasible as we depend
-				// more on the http server. With the <base> element now removed, an independent page file will
-				// have even more missing links. I don't think it's worth making a separate temp file any more.
-				if (isWindows)
-					Process.Start("Firefox.exe", '"' + _url + '"');
-				else
-					SIL.Program.Process.SafeStart("xdg-open", Uri.EscapeUriString(_url));
-			}
-			catch (Win32Exception)
-			{
-				if (isWindows)
-				{
-					MessageBox.Show(genericError + "Firefox. Do you have Firefox in your PATH variable?");
-				}
-				else
-				{
-					// See comment in OnGetTroubleShootingInformation() about why BeginInvoke is needed.
-					// Also, in Linux, xdg-open calls the System Browser, which isn't necessarily Firefox.
-					// It isn't necessarily in Windows, either, but there we're specifying Firefox.
-					BeginInvoke((Action)delegate()
-					{
-						MessageBox.Show(genericError + "the System Browser.");
-					});
-
-				}
-			}
 		}
 
 		void OnBrowser_DomClick(object sender, DomEventArgs e)
@@ -1345,6 +1201,21 @@ namespace Bloom
 				ge.Handled = true;
 			}
 			// All other clicks get normal processing...
+		}
+	}
+
+	class GeckoMenuItemAdder : IMenuItemAdder
+	{
+		private readonly ContextMenu _menu;
+		public GeckoMenuItemAdder(ContextMenu menu)
+		{
+			_menu = menu;
+		}
+		public void Add(string caption, EventHandler handler, bool enabled = true)
+		{
+			var newItem = new MenuItem(caption, handler);
+			newItem.Enabled = enabled;
+			_menu.MenuItems.Add(newItem);
 		}
 	}
 }
