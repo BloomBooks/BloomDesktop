@@ -1,10 +1,16 @@
 ﻿using System;
+using System.Diagnostics;
 using System.IO;
+using System.Threading;
+using System.Xml;
+using Bloom.Api;
 using Bloom.Book;
 using Bloom.ImageProcessing;
+using Bloom.web.controllers;
 using SIL.IO;
 using SIL.Progress;
 using SIL.Windows.Forms.ImageToolbox;
+using Application = System.Windows.Forms.Application;
 
 namespace Bloom.Edit
 {
@@ -29,6 +35,26 @@ namespace Bloom.Edit
 			// but the imageInfo has the source file's path locked into it, and the API
 			// gives us no way to change it, so such a save would go to the wrong file.
 			imageInfo.Metadata.Write(Path.Combine(bookFolderPath,imageFileName));
+		}
+
+		// Should eventually replace the above, so don't worry about duplication.
+		public void ChangePicture(BloomWebSocketServer webSocketServer, string bookFolderPath, int imgIndex, XmlElement imgOrDivWithBackgroundImage, PalasoImage imageInfo,
+			IProgress progress)
+		{
+			var isSameFile = IsSameFilePath(bookFolderPath, HtmlDom.GetImageElementUrl(imgOrDivWithBackgroundImage), imageInfo);
+			var imageFileName = ImageUtils.ProcessAndSaveImageIntoFolder(imageInfo, bookFolderPath, isSameFile);
+			// Ask Javascript code to update the live version of the page.
+			dynamic messageBundle = new DynamicJson();
+			messageBundle.imgIndex = imgIndex;
+			messageBundle.src = UrlPathString.CreateFromUnencodedString(imageFileName).UrlEncoded;
+			messageBundle.copyright = imageInfo.Metadata.CopyrightNotice ?? "";
+			messageBundle.creator = imageInfo.Metadata.Creator ?? "";
+			messageBundle.license = imageInfo.Metadata.License?.ToString() ?? "";
+			EditingViewApi.SendEventAndWaitForComplete(webSocketServer,"edit", "changeImage", messageBundle);
+			// It would seem more natural to use a metadata-saving method on imageInfo,
+			// but the imageInfo has the source file's path locked into it, and the API
+			// gives us no way to change it, so such a save would go to the wrong file.
+			imageInfo.Metadata.Write(Path.Combine(bookFolderPath, imageFileName));
 		}
 
 		/// <summary>

@@ -29,8 +29,10 @@ using SIL.Windows.Forms.Widgets;
 using System.Globalization;
 using Bloom.web;
 using System.Reflection;
+using System.Xml;
 using Bloom.Utils;
 using Bloom.MiscUI;
+using SIL.Xml;
 
 namespace Bloom.Edit
 {
@@ -626,8 +628,8 @@ namespace Bloom.Edit
 				RememberSourceTabChoice(target);
 				return;
 			}
-			if(target.ClassName.Contains("changeImageButton"))
-				OnChangeImage(ge);
+			//if(target.ClassName.Contains("changeImageButton"))
+			//	OnChangeImage(ge);
 			if(target.ClassName.Contains("pasteImageButton"))
 				OnPasteImage(ge);
 			if(target.ClassName.Contains("cutImageButton"))
@@ -994,6 +996,17 @@ namespace Bloom.Edit
 			return false;
 		}
 
+		private XmlElement GetImageNode(int imgIndex)
+		{
+			var containers = _model.GetXmlDocumentForCurrentPage()
+				.SafeSelectNodes("//div[contains(@class, 'bloom-imageContainer')]").Cast<XmlElement>();
+			var container = containers.Skip(imgIndex).First();
+			var img = container.ChildNodes.Cast<XmlNode>().FirstOrDefault(x => x.Name.ToLowerInvariant() == "img") as XmlElement;
+			if (img == null)
+				return container;
+			return img;
+		}
+
 		private static GeckoHtmlElement GetImageNode(DomEventArgs ge)
 		{
 			var target = (GeckoHtmlElement) ge.Target.CastToGeckoElement();
@@ -1044,7 +1057,7 @@ namespace Bloom.Edit
 			return true;
 		}
 
-		private void OnChangeImage(DomEventArgs ge)
+		public void OnChangeImage(int imgIndex)
 		{
 			if(!_model.CanChangeImages())
 			{
@@ -1054,16 +1067,19 @@ namespace Bloom.Edit
 				return;
 			}
 
-			var imageElement = GetImageNode(ge);
+			var imageElement = GetImageNode(imgIndex);
 			if(imageElement == null)
 				return;
 			string currentPath = HtmlDom.GetImageElementUrl(imageElement).PathOnly.NotEncoded;
 
 			if(!CheckIfLockedAndWarn(currentPath))
 				return;
-			var target = (GeckoHtmlElement) ge.Target.CastToGeckoElement();
-			if(target.ClassName.Contains("licenseImage"))
-				return;
+			// Back when we were working with click action that identified a target element,
+			// to bring us here it had to be the change image button. As far as I can tell that
+			// never had the class licenseImage so I think this code was redundant.
+			//var target = (GeckoHtmlElement) ge.Target.CastToGeckoElement();
+			//if(target.ClassName.Contains("licenseImage"))
+			//	return;
 
 			Cursor = Cursors.WaitCursor;
 
@@ -1223,7 +1239,7 @@ namespace Bloom.Edit
 								dlg.ImageInfo.Save(newImagePath);
 							}
 							dlg.ImageInfo.SetCurrentFilePath(newImagePath);
-							SaveChangedImage(imageElement, dlg.ImageInfo, exceptionMsg);
+							SaveChangedImage(imgIndex, imageElement, dlg.ImageInfo, exceptionMsg);
 						}
 						catch (Exception error)
 						{
@@ -1325,13 +1341,13 @@ namespace Bloom.Edit
 			System.Diagnostics.Process.Start("http://community.bloomlibrary.org/t/running-out-of-memory-loading-images/3956");
 		}
 
-		public void SaveChangedImage(GeckoHtmlElement imageElement, PalasoImage imageInfo, string exceptionMsg)
+		public void SaveChangedImage(int imgIndex, XmlElement imageElement, PalasoImage imageInfo, string exceptionMsg)
 		{
 			try
 			{
 				if(ShouldBailOutBecauseUserAgreedNotToUseJpeg(imageInfo))
 					return;
-				_model.ChangePicture(imageElement, imageInfo, new NullProgress());
+				_model.ChangePicture(imgIndex, imageElement, imageInfo, new NullProgress());
 			}
 			catch(System.IO.IOException error)
 			{

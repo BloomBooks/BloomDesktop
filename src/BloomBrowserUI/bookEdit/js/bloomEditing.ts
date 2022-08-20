@@ -35,6 +35,9 @@ import axios from "axios";
 import { BloomApi } from "../../utils/bloomApi";
 import { showRequestStringDialog } from "../../react_components/RequestStringDialog";
 import { fixUpDownArrowEventHandler } from "./arrowKeyWorkaroundManager";
+import WebSocketManager, {
+    IBloomWebSocketEvent
+} from "../../utils/WebSocketManager";
 
 // Allows toolbox code to make an element properly in the context of this iframe.
 export function makeElement(
@@ -355,6 +358,14 @@ window.onload = () => {
     cancelHandle = window.requestAnimationFrame(windowLoadedHandler);
 };
 
+interface IChangeImageEvent extends IBloomWebSocketEvent {
+    imgIndex: number;
+    src: string;
+    copyright: string;
+    creator: string;
+    license: string;
+}
+
 // Originally, all this code was in document.load and the selectors were acting
 // on all elements (not bound by the container).  I added the container bound so we
 // can add new elements (such as during layout mode) and call this on only newly added elements.
@@ -362,6 +373,30 @@ window.onload = () => {
 // REVIEW: Some of these would be better off in OneTimeSetup, but too much risk to try to decide right now.
 export function SetupElements(container: HTMLElement) {
     SetupImagesInContainer(container);
+    WebSocketManager.addListener("edit", (event: IChangeImageEvent) => {
+        if (event.id !== "changeImage") {
+            return;
+        }
+        const container = Array.from(
+            document.getElementsByClassName("bloom-imageContainer")
+        )[event.imgIndex];
+        const img = container.getElementsByTagName("img")[0];
+        const target = img || container;
+        // This logic mirrors HtmlDom.SetImageElementUrl, except we assume event.src is
+        // already appropriately URL-encoded.
+        if (img) {
+            img.setAttribute("src", event.src);
+        } else {
+            container.setAttribute(
+                "style",
+                "background-image:url('" + event.src + "')"
+            );
+        }
+        target.setAttribute("data-copyright", event.copyright);
+        target.setAttribute("data-creator", event.creator);
+        target.setAttribute("data-license", event.license);
+        BloomApi.post("edit/taskComplete");
+    });
     SetupVideoEditing(container);
     SetupWidgetEditing(container);
     initializeBubbleManager();

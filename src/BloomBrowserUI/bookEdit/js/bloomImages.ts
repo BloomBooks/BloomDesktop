@@ -147,6 +147,13 @@ export function addImageEditingButtons(containerDiv: HTMLElement): void {
             theOneLocalizationManager.getText("EditTab.Image.ChangeImage") +
             '"></button>'
     );
+    const changeImageButton = $containerDiv.get(0)?.firstElementChild;
+    changeImageButton?.addEventListener("click", () => {
+        const imgIndex = Array.from(
+            document.getElementsByClassName("bloom-imageContainer")
+        ).indexOf($containerDiv.get(0));
+        BloomApi.postJson("editView/changeImage", { imgIndex });
+    });
 
     // As part of BL-9976 JH decided to remove this button as users were getting confused.
     // if (

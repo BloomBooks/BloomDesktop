@@ -2132,7 +2132,9 @@ namespace Bloom.Book
 		}
 		/// <summary>
 		/// Sets the url attribute either of an img (the src attribute)
-		/// or a div with an inline style with an background-image rule
+		/// or a div with an inline style with an background-image rule.
+		/// This logic is duplicated in TypeScript, currently in a listener inside
+		/// the SetupElements method in bloomEditing.ts.
 		/// </summary>
 		public static void SetImageElementUrl(ElementProxy imgOrDivWithBackgroundImage, UrlPathString url, bool urlEncode = true)
 		{
