@@ -126,6 +126,13 @@ export function addImageEditingButtons(containerDiv: HTMLElement): void {
             theOneLocalizationManager.getText("EditTab.Image.CutImage") +
             '"></button>'
     );
+    const cutImageButton = $containerDiv.get(0)?.firstElementChild;
+    cutImageButton?.addEventListener("click", () => {
+        const imgIndex = Array.from(
+            document.getElementsByClassName("bloom-imageContainer")
+        ).indexOf($containerDiv.get(0));
+        BloomApi.postJson("editView/cutImage", { imgIndex });
+    });
     $containerDiv.prepend(
         '<button class="miniButton copyImageButton imageOverlayButton disabled ' +
             buttonModifier +
@@ -133,6 +140,13 @@ export function addImageEditingButtons(containerDiv: HTMLElement): void {
             theOneLocalizationManager.getText("EditTab.Image.CopyImage") +
             '"></button>'
     );
+    const copyImageButton = $containerDiv.get(0)?.firstElementChild;
+    copyImageButton?.addEventListener("click", () => {
+        const imgIndex = Array.from(
+            document.getElementsByClassName("bloom-imageContainer")
+        ).indexOf($containerDiv.get(0));
+        BloomApi.postJson("editView/copyImage", { imgIndex });
+    });
     $containerDiv.prepend(
         '<button class="pasteImageButton imageButton imageOverlayButton ' +
             buttonModifier +
@@ -140,6 +154,13 @@ export function addImageEditingButtons(containerDiv: HTMLElement): void {
             theOneLocalizationManager.getText("EditTab.Image.PasteImage") +
             '"></button>'
     );
+    const pasteImageButton = $containerDiv.get(0)?.firstElementChild;
+    pasteImageButton?.addEventListener("click", () => {
+        const imgIndex = Array.from(
+            document.getElementsByClassName("bloom-imageContainer")
+        ).indexOf($containerDiv.get(0));
+        BloomApi.postJson("editView/pasteImage", { imgIndex });
+    });
     $containerDiv.prepend(
         '<button class="changeImageButton imageButton imageOverlayButton ' +
             buttonModifier +

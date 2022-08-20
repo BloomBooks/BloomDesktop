@@ -37,7 +37,34 @@ namespace Bloom.web.controllers
 			apiHandler.RegisterEndpointLegacy("editView/duplicatePageMany", HandleDuplicatePageMany, true);
 			apiHandler.RegisterEndpointHandler("editView/topics", HandleTopics, false);
 			apiHandler.RegisterEndpointHandler("editView/changeImage", HandleChangeImage, true);
+			apiHandler.RegisterEndpointHandler("editView/cutImage", HandleCutImage, true);
+			apiHandler.RegisterEndpointHandler("editView/copyImage", HandleCopyImage, true);
+			apiHandler.RegisterEndpointHandler("editView/pasteImage", HandlePasteImage, true);
 			apiHandler.RegisterEndpointHandler("edit/taskComplete", HandleTaskComplete, false, false);
+		}
+
+		private void HandlePasteImage(ApiRequest request)
+		{
+			dynamic data = DynamicJson.Parse(request.RequiredPostJson());
+			int imgIndex = (int)data.imgIndex;
+			View.OnPasteImage(imgIndex);
+			request.PostSucceeded();
+		}
+
+		private void HandleCopyImage(ApiRequest request)
+		{
+			dynamic data = DynamicJson.Parse(request.RequiredPostJson());
+			int imgIndex = (int)data.imgIndex;
+			View.OnCopyImage(imgIndex);
+			request.PostSucceeded();
+		}
+
+		private void HandleCutImage(ApiRequest request)
+		{
+			dynamic data = DynamicJson.Parse(request.RequiredPostJson());
+			int imgIndex = (int)data.imgIndex;
+			View.OnCutImage(imgIndex); 
+			request.PostSucceeded();
 		}
 
 		// Allow whatever code is waiting in SendEventAndWaitForComplete to continue;

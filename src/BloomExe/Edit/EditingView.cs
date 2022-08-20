@@ -630,12 +630,12 @@ namespace Bloom.Edit
 			}
 			//if(target.ClassName.Contains("changeImageButton"))
 			//	OnChangeImage(ge);
-			if(target.ClassName.Contains("pasteImageButton"))
-				OnPasteImage(ge);
-			if(target.ClassName.Contains("cutImageButton"))
-				OnCutImage(ge);
-			if(target.ClassName.Contains("copyImageButton"))
-				OnCopyImage(ge);
+			//if(target.ClassName.Contains("pasteImageButton"))
+			//	OnPasteImage(ge);
+			//if(target.ClassName.Contains("cutImageButton"))
+			//	OnCutImage(ge);
+			//if(target.ClassName.Contains("copyImageButton"))
+			//	OnCopyImage(ge);
 			// (similar changeWidgetButton handled in modern way in javascript)
 
 			var anchor = target as GeckoAnchorElement;
@@ -800,7 +800,7 @@ namespace Bloom.Edit
 		}
 
 
-		private void OnCutImage(DomEventArgs ge)
+		public void OnCutImage(int imgIndex)
 		{
 			// NB: bloomImages.js contains code that prevents us arriving here
 			// if our image is simply the placeholder flower
@@ -814,7 +814,7 @@ namespace Bloom.Edit
 
 			var bookFolderPath = _model.CurrentBook.FolderPath;
 
-			if(CopyImageToClipboard(ge, bookFolderPath)) // returns 'true' if successful
+			if(CopyImageToClipboard(imgIndex, bookFolderPath)) // returns 'true' if successful
 			{
 				// Replace current image with placeHolder.png
 				// N.B. It is unnecessary to check for the existence of this file, since selecting a book in
@@ -823,20 +823,21 @@ namespace Bloom.Edit
 				var path = Path.Combine(bookFolderPath, "placeHolder.png");
 				using(var palasoImage = PalasoImage.FromFileRobustly(path))
 				{
-					_model.ChangePicture(GetImageNode(ge), palasoImage, new NullProgress());
+					var imageElement = GetImageNode(imgIndex);
+					_model.ChangePicture(imgIndex, imageElement, palasoImage, new NullProgress());
 				}
 			}
 		}
 
-		private void OnCopyImage(DomEventArgs ge)
+		public void OnCopyImage(int imgIndex)
 		{
 			// NB: bloomImages.js contains code that prevents us arriving here
 			// if our image is simply the placeholder flower
 
-			CopyImageToClipboard(ge, _model.CurrentBook.FolderPath);
+			CopyImageToClipboard(imgIndex, _model.CurrentBook.FolderPath);
 		}
 
-		private void OnPasteImage(DomEventArgs ge)
+		public void OnPasteImage(int imgIndex)
 		{
 			if (!_model.CanChangeImages())
 			{
@@ -872,11 +873,7 @@ namespace Bloom.Edit
 						return;
 					}
 
-					var target = (GeckoHtmlElement) ge.Target.CastToGeckoElement();
-					if (target.ClassName.Contains("licenseImage"))
-						return;
-
-					var imageElement = GetImageNode(ge);
+					var imageElement = GetImageNode(imgIndex);
 					if (imageElement == null)
 						return;
 					Cursor = Cursors.WaitCursor;
@@ -888,7 +885,7 @@ namespace Bloom.Edit
 						if (ShouldBailOutBecauseUserAgreedNotToUseJpeg(clipboardImage))
 							return;
 						Logger.WriteMinorEvent("[Paste Image] Pasting jpeg image {0}", clipboardImage.OriginalFilePath);
-						_model.ChangePicture(imageElement, clipboardImage, new NullProgress());
+						_model.ChangePicture(imgIndex, imageElement, clipboardImage, new NullProgress());
 					}
 					else
 					{
@@ -897,14 +894,14 @@ namespace Bloom.Edit
 						{
 							Logger.WriteMinorEvent(
 								"[Paste Image] Pasting image directly from clipboard (e.g. screenshot)");
-							_model.ChangePicture(imageElement, clipboardImage, new NullProgress());
+							_model.ChangePicture(imgIndex, imageElement, clipboardImage, new NullProgress());
 						}
 						//they pasted a path to a png
 						else if (Path.GetExtension(clipboardImage.OriginalFilePath).ToLowerInvariant() == ".png")
 						{
 							Logger.WriteMinorEvent("[Paste Image] Pasting png file {0}",
 								clipboardImage.OriginalFilePath);
-							_model.ChangePicture(imageElement, clipboardImage, new NullProgress());
+							_model.ChangePicture(imgIndex, imageElement, clipboardImage, new NullProgress());
 						}
 						else // they pasted a path to some other bitmap format
 						{
@@ -924,7 +921,7 @@ namespace Bloom.Edit
 
 								using (var palasoImage = PalasoImage.FromFileRobustly(temp.Path))
 								{
-									_model.ChangePicture(imageElement, palasoImage, new NullProgress());
+									_model.ChangePicture(imgIndex, imageElement, palasoImage, new NullProgress());
 								}
 							}
 						}
@@ -950,9 +947,9 @@ namespace Bloom.Edit
 			return PortableClipboard.GetImageFromClipboard();
 		}
 
-		private static bool CopyImageToClipboard(DomEventArgs ge, string bookFolderPath)
+		private bool CopyImageToClipboard(int imgIndex, string bookFolderPath)
 		{
-			var imageElement = GetImageNode(ge);
+			var imageElement = GetImageNode(imgIndex);
 			if(imageElement != null)
 			{
 				var url = HtmlDom.GetImageElementUrl(imageElement);
