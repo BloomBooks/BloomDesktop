@@ -410,20 +410,9 @@ namespace Bloom
 
 		private void SaveCustomizedCssRules(string userCssContent)
 		{
-			try
-			{
-				// Yes, this wipes out everything else in the head. At this point, the only things
-				// we need in _pageEditDom are the user defined style sheet and the bloom-page element in the body.
-				_pageEditDom.GetElementsByTagName("head")[0].InnerXml = HtmlDom.CreateUserModifiedStyles(userCssContent);
-			}
-			catch (GeckoJavaScriptException jsex)
-			{
-				/* We are attempting to catch and ignore all JavaScript errors encountered here,
-				 * specifically addEventListener errors and JSError (BL-279, BL-355, et al.).
-				 */
-				Logger.WriteEvent("GeckoJavaScriptException (" + jsex.Message + "). We're swallowing it but listing it here in the log.");
-				Debug.Fail("GeckoJavaScriptException(" + jsex.Message + "). In Release version, this would not show.");
-			}
+			// Yes, this wipes out everything else in the head. At this point, the only things
+			// we need in _pageEditDom are the user defined style sheet and the bloom-page element in the body.
+			_pageEditDom.GetElementsByTagName("head")[0].InnerXml = HtmlDom.CreateUserModifiedStyles(userCssContent);
 		}
 
 		public abstract string RunJavaScript(string script);
