@@ -164,6 +164,8 @@ namespace Bloom
 			DefaultBrowserLangs = GeckoPreferences.User["intl.accept_languages"].ToString();
 		}
 
+		public override bool IsReadyToNavigate => WebBrowser != null;
+
 		public static void SetBrowserLanguage(string langId)
 		{
 			var defaultLangs = DefaultBrowserLangs.Split(',');

@@ -197,6 +197,8 @@ namespace Bloom
 
 		protected abstract void EnsureBrowserReadyToNavigate();
 
+		public virtual bool IsReadyToNavigate => true;
+
 		public void Navigate(string url, bool cleanupFileAfterNavigating)
 		{
 			// BL-513: Navigating to "about:blank" is causing the Pages panel to not be updated for a new book on Linux.

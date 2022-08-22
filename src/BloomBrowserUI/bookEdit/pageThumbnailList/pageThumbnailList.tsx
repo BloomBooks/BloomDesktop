@@ -219,6 +219,19 @@ const PageList: React.FunctionComponent<{ pageSize: string }> = props => {
         }
     };
 
+    const handleContextMenu = (e: React.MouseEvent<HTMLDivElement>) => {
+        e.stopPropagation();
+        e.preventDefault();
+        if (e.currentTarget) {
+            const pageElt = e.currentTarget.closest("[id]")!;
+            const pageId = pageElt.getAttribute("id");
+            if (pageId === selectedPageId)
+                BloomApi.postJson("pageList/menuClicked", {
+                    pageId
+                });
+        }
+    };
+
     // We insert a dummy invisible page to make the outside cover a 'right' page
     // and all the others correctly paired. (Probably should remove if we ever fully
     // support single-column.)
@@ -265,6 +278,7 @@ const PageList: React.FunctionComponent<{ pageSize: string }> = props => {
                                 pageIdToRefreshMap.set(id, callback)
                             }
                             onClick={handleGridItemClick}
+                            onContextMenu={handleContextMenu}
                         />
                         {selectedPageId === pageContent.key && (
                             <div id="menuIconHolder" className="menuHolder">

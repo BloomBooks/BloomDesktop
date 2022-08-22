@@ -103,24 +103,10 @@ namespace Bloom.Edit
 					Label = LocalizationManager.GetString("EditTab.ChooseLayoutButton", "Choose Different Layout"),
 					EnableFunction = (page) => page != null && !page.Required && !_model.CurrentBook.LockedDown,
 					ExecuteCommand = (page) => _model.ChangePageLayout(page)});
-			// This adds the desired menu items to the Gecko context menu that happens when we right-click
-			_thumbNailList.ContextMenuProvider = (target, adder) =>
-			{
-				var page = _thumbNailList.GetPageContaining(target as GeckoNode);
-				if (page == null)
-					return true; // no page-related commands if we didn't click on one.
-				if(page != _pageSelection.CurrentSelection)
-				{
-					return true; //it's too dangerous to let users do thing to a page they aren't seeing
-				}
-				foreach (var item in menuItems)
-				{
-					adder.Add(item.Label, (sender, eventArgs) => item.ExecuteCommand(page), item.EnableFunction(page));
-				}
-				return true;
-			};
 			// This sets up the context menu items that will be shown when the user clicks the
-			// arrow in the thumbnail list.
+			// arrow in the thumbnail list or right-clicks in the page list.
+			// Note that we can't use ContextMenuProvider here, because there is no reasonable
+			// way to know which page was right-clicked, if any. So we handle right-click in JS.
 			_thumbNailList.ContextMenuItems = menuItems;
 		}
 

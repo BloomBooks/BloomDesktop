@@ -33,7 +33,7 @@ namespace Bloom.Edit
 	{
 		public HtmlThumbNailer Thumbnailer;
 		public event EventHandler PageSelectedChanged;
-		private Bloom.GeckoFxBrowser _browser;
+		private Browser _browser;
 		internal EditingModel Model;
 		private static string _thumbnailInterval;
 		private string _baseForRelativePaths;
@@ -78,7 +78,7 @@ namespace Bloom.Edit
 
 			if (!ReallyDesignMode)
 			{
-				_browser = new GeckoFxBrowser();
+				_browser = BrowserMaker.MakeBrowser();
 				_browser.BackColor = Color.DarkGray;
 				_browser.Dock = DockStyle.Fill;
 				_browser.Location = new Point(0, 0);
@@ -240,11 +240,12 @@ namespace Bloom.Edit
 			}
 			OnPaneContentsChanging(result.Any());
 
-			if (result.FirstOrDefault(p => p.Book != null) == null || _browser.WebBrowser == null)
+			if (result.FirstOrDefault(p => p.Book != null) == null || !_browser.IsReadyToNavigate)
 			{
-				// If we don't already have a GeckoWebBrowser, we'll crash below (BL-9167).  But if we
-				// haven't already been initialized, then we don't have a thumbnail display to update
-				// anyway.
+				// If we're not ready to navigate (old code: don't hae a GeckWebBrowser yet),
+				// Navigate won't do anything. But some of the code below would have problems (BL-9167).
+				//  But if we haven't already been initialized enough to have a browser, then we don't
+				// have a thumbnail display to update anyway.
 				_browser.Navigate(@"about:blank", false); // no pages, we just want a blank screen, if anything.
 				return new List<IPage>();
 			}
