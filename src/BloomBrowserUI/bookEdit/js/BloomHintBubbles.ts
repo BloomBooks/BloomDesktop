@@ -147,6 +147,14 @@ export default class BloomHintBubbles {
         headers.prepend(
             "<li id='hint'><a class='sourceTextTab' href='#hint'><img src='/bloom/images/information-i.png'/></a></li>"
         );
+        // Posting 'hint' to editView/sourceTextTab doesn't currently work. See comment on handler.
+        // But it may be wanted, so I decided to keep the code that does it for now.
+        (headers.get(
+            0
+        ) as HTMLElement).firstElementChild?.firstElementChild?.addEventListener(
+            "click",
+            () => BloomApi.postString("editView/sourceTextTab", "hint")
+        );
         const nav = $(headers.parent());
         whatToSay =
             whatToSay +

@@ -10,6 +10,7 @@ import { BloomApi } from "../../utils/bloomApi";
 import { LocalizedString } from "../../react_components/l10nComponents";
 import { lightTheme } from "../../bloomMaterialUITheme";
 import { ThemeProvider } from "@material-ui/styles";
+import { hookupLinkHandler } from "../../utils/linkHandler";
 // This is a screen of controls that gives the user instructions and controls
 // for creating epubs
 interface IState {
@@ -21,6 +22,7 @@ export class AccessibilityCheckScreen extends React.Component<{}, IState> {
     };
 
     public componentDidMount() {
+        hookupLinkHandler();
         // Listen for changes to state from C#-land
         WebSocketManager.addListener("a11yChecklist", event => {
             if (

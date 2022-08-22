@@ -8,6 +8,7 @@ using System.Windows.Forms;
 using Bloom.Api;
 using Bloom.Book;
 using Bloom.Edit;
+using Bloom.Properties;
 using Bloom.Utils;
 using L10NSharp;
 using SIL.IO;
@@ -40,7 +41,32 @@ namespace Bloom.web.controllers
 			apiHandler.RegisterEndpointHandler("editView/cutImage", HandleCutImage, true);
 			apiHandler.RegisterEndpointHandler("editView/copyImage", HandleCopyImage, true);
 			apiHandler.RegisterEndpointHandler("editView/pasteImage", HandlePasteImage, true);
+			apiHandler.RegisterEndpointHandler("editView/sourceTextTab", HandleSourceTextTab, false, false);
 			apiHandler.RegisterEndpointHandler("edit/taskComplete", HandleTaskComplete, false, false);
+		}
+
+		private void HandleSourceTextTab(ApiRequest request)
+		{
+			var iso = request.RequiredPostString();
+			// There's a puzzle here that I encountered when converting from GeckoFx.
+			// The code in BloomHintBubbles that adds the special item for 'hint' sets the
+			// sourceTextTab that old code in _browser1_OnBrowserClick was looking for,
+			// as if expecting that 'hint' would make that tab the default for other bubbles
+			// just as it works for a language. One reason it didn't work before was that
+			// the 'target' in that tab was typically the img, not the li element that has
+			// the sourceTextTab attribute. So I made the JS call this method when that tab
+			// is clicked, and that works. But setting Settings.Default.LastSourceLanguageViewed
+			// to "hint" still does not work. I'm not sure why, nor whether that behavior is
+			// wanted. However, saving it to LastSourceLanguageViewed when it doesn't work
+			// causes the previously remembered language to be forgotten, so for now,
+			// I'm coding it here to ignore 'hint'.
+			if (iso != "hint")
+			{
+				Settings.Default.LastSourceLanguageViewed = iso;
+				Settings.Default.Save();
+			}
+
+			request.PostSucceeded();
 		}
 
 		private void HandlePasteImage(ApiRequest request)

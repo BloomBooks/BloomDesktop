@@ -38,6 +38,7 @@ import { fixUpDownArrowEventHandler } from "./arrowKeyWorkaroundManager";
 import WebSocketManager, {
     IBloomWebSocketEvent
 } from "../../utils/WebSocketManager";
+import { hookupLinkHandler } from "../../utils/linkHandler";
 
 // Allows toolbox code to make an element properly in the context of this iframe.
 export function makeElement(
@@ -1064,6 +1065,7 @@ function AddXMatterLabelAfterPageLabel(container) {
 // e.g. Don't put setup for elements such as image containers or editable boxes which may get added after page load.
 function OneTimeSetup() {
     setupOrigami(IsInTranslationMode()); // 'true' means book is locked.
+    hookupLinkHandler();
 }
 
 interface String {

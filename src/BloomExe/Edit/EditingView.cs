@@ -93,7 +93,6 @@ namespace Bloom.Edit
 			this._browser1.Name = "_browser1";
 			this._browser1.Size = new System.Drawing.Size(826, 561);
 			this._browser1.TabIndex = 1;
-			this._browser1.OnBrowserClick += new System.EventHandler(this._browser1_OnBrowserClick);
 			this._splitContainer2.Panel1.Controls.Add(this._browser1);
 
 			this._splitContainer2.BackColor = Palette.GeneralBackground;
@@ -604,84 +603,6 @@ namespace Bloom.Edit
 		internal string RunJavaScript(string script)
 		{
 			return _browser1.RunJavaScript(script);
-		}
-
-		private void _browser1_OnBrowserClick(object sender, EventArgs e)
-		{
-			var ge = e as DomEventArgs;
-			if(ge == null || ge.Target == null)
-				return; //I've seen this happen
-			GeckoHtmlElement target;
-			try
-			{
-				target = (GeckoHtmlElement) ge.Target.CastToGeckoElement();
-			}
-			catch (InvalidCastException)
-			{
-				// Some things...e.g., SVG elements...can't be cast like this. I can't find any way to
-				// predict it. But if we click on one of those, just take the default behavior.
-				return;
-			}
-
-			if(target.ClassName.Contains("sourceTextTab"))
-			{
-				RememberSourceTabChoice(target);
-				return;
-			}
-			//if(target.ClassName.Contains("changeImageButton"))
-			//	OnChangeImage(ge);
-			//if(target.ClassName.Contains("pasteImageButton"))
-			//	OnPasteImage(ge);
-			//if(target.ClassName.Contains("cutImageButton"))
-			//	OnCutImage(ge);
-			//if(target.ClassName.Contains("copyImageButton"))
-			//	OnCopyImage(ge);
-			// (similar changeWidgetButton handled in modern way in javascript)
-
-			var anchor = target as GeckoAnchorElement;
-			if (anchor == null)
-			{
-				// Might be a span inside an anchor
-				anchor = target.Parent as GeckoAnchorElement;
-			}
-			if(anchor != null && anchor.Href != "" && anchor.Href != "#")
-			{
-				// Let Gecko handle hrefs that are explicitly tagged "javascript"
-				if(anchor.Href.StartsWith("javascript"))
-				{
-					ge.Handled = false; // let gecko handle it
-					return;
-				}
-
-				if(anchor.Href.ToLowerInvariant().StartsWith("http") || anchor.Href.ToLowerInvariant().StartsWith("mailto")) //will cover https also
-				{
-					// do not open in external browser if localhost...except for some links in the toolbox
-					if(anchor.Href.ToLowerInvariant().StartsWith(BloomServer.ServerUrlWithBloomPrefixEndingInSlash))
-					{
-						ge.Handled = false; // let gecko handle it
-						return;
-					}
-
-					SIL.Program.Process.SafeStart(anchor.Href);
-					ge.Handled = true;
-					return;
-				}
-				if(anchor.Href.ToLowerInvariant().StartsWith("file")) //source bubble tabs
-				{
-					ge.Handled = false; //let gecko handle it
-					return;
-				}
-				ErrorReport.NotifyUserOfProblem("Bloom did not understand this link: " + anchor.Href);
-				ge.Handled = true;
-			}
-		}
-
-		private void RememberSourceTabChoice(GeckoHtmlElement target)
-		{
-			//"<a class="sourceTextTab" href="#tpi">Tok Pisin</a>"
-			var start = 1 + target.OuterHtml.IndexOf("#");
-			var end = target.OuterHtml.IndexOf("\">");
-			Settings.Default.LastSourceLanguageViewed = target.OuterHtml.Substring(start, end - start);
 		}
 
 		private Metadata _originalImageMetadataFromImageToolbox;
