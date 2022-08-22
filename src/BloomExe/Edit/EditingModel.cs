@@ -1235,6 +1235,40 @@ namespace Bloom.Edit
 			}
 		}
 
+		public void ChangePicture(int imgIndex, XmlElement imageElement, PalasoImage imageInfo, IProgress progress)
+		{
+			try
+			{
+				Logger.WriteMinorEvent("Starting ChangePicture {0}...", imageInfo.FileName);
+				var editor = new PageEditingModel();
+				editor.ChangePicture(_webSocketServer, CurrentBook.FolderPath, imgIndex, imageElement, imageInfo, progress);
+
+				// We need to save so that when asked by the thumbnailer, the book will give the proper image
+				SaveNow();
+
+				// BL-3717: if we cleanup unused image files whenever we change a picture then Cut can lose
+				// all of an image's metadata (because the actual file is missing from the book folder when we go to
+				// paste in the image that was copied onto the clipboard, which doesn't have metadata.)
+				// Let's only do this on ExpensiveIntialization() when loading a book.
+				//CurrentBook.Storage.CleanupUnusedImageFiles();
+
+				// But after saving, we need the non-cleaned version back there
+				RefreshDisplayOfCurrentPage();
+
+				_view.UpdateThumbnailAsync(_pageSelection.CurrentSelection);
+				Logger.WriteMinorEvent("Finished ChangePicture {0} (except for async thumbnail) ...", imageInfo.FileName);
+				Analytics.Track("Change Picture");
+				Logger.WriteEvent("ChangePicture {0}...", imageInfo.FileName);
+
+			}
+			catch (Exception e)
+			{
+				var msg = LocalizationManager.GetString("Errors.ProblemImportingPicture", "Bloom had a problem importing this picture.");
+				e.Data["ProblemImagePath"] = imageInfo.OriginalFilePath;
+				ErrorReport.NotifyUserOfProblem(e, msg + Environment.NewLine + e.Message);
+			}
+		}
+
 		//        private void InvokeUpdatePageList()
 		//        {
 		//            if (UpdatePageList != null)

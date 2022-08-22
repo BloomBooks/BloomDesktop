@@ -18,6 +18,20 @@ namespace Bloom.web
 		{
 			// Opening a page, better be in UI thread.
 			apiHandler.RegisterEndpointLegacy(kPrefix+"/.*", HandleRequest, true);
+			// It's odd not to use kPrefix. However, the above handler wants to handle ANY link that starts
+			// with externalLink/, and it feels confusing to have both that and one that handles
+			// externalLink by itself. Yet this class feels like the right place to handle links
+			// that simply open a link in the external browser. So I decided to use a simpler pattern.
+			apiHandler.RegisterEndpointHandler("link", HandleLink, true);
+		}
+
+		// Javascript currently activates this for links that start with http or mailto.
+		// It opens the link in the system default browser.
+		private static void HandleLink(ApiRequest request)
+		{
+			var href = request.RequiredPostString();
+			SIL.Program.Process.SafeStart(href);
+			request.PostSucceeded();
 		}
 
 		/// <summary>

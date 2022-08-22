@@ -28,14 +28,9 @@ namespace Bloom
 	{
 		protected GeckoWebBrowser _browser;
 		bool _browserIsReadyToNavigate;
-		private string _url;
-		private string _replacedUrl;
-		private XmlDocument _rootDom; // root DOM we navigate the browser to; typically a shell with other doms in iframes
-		private XmlDocument _pageEditDom; // DOM, dypically in an iframe of _rootDom, which we are editing.
-		// A temporary object needed just as long as it is the content of this browser.
-		// Currently may be a TempFile (a real filesystem file) or a SimulatedPageFile (just a dictionary entry).
-		// It gets disposed when the Browser goes away.
-		private IDisposable _dependentContent;
+		protected string _url;
+
+
 		private PasteCommand _pasteCommand;
 		private CopyCommand _copyCommand;
 		private UndoCommand _undoCommand;
@@ -75,7 +70,8 @@ namespace Bloom
 			// See: https://developer.mozilla.org/en-US/docs/Mozilla/Preferences/Mozilla_networking_preferences
 			GeckoPreferences.User["network.proxy.http"] = string.Empty;
 			GeckoPreferences.User["network.proxy.http_port"] = 80;
-			GeckoPreferences.User["network.proxy.type"] = 1; // 0 = direct (uses system settings on Windows), 1 = manual configuration
+			GeckoPreferences.User["network.proxy.type"] =
+				1; // 0 = direct (uses system settings on Windows), 1 = manual configuration
 			// Try some settings to reduce memory consumption by the mozilla browser engine.
 			// Testing on Linux showed eventual substantial savings after several cycles of viewing
 			// all the pages and then going to the publish tab and producing PDF files for several
@@ -97,11 +93,11 @@ namespace Bloom
 			// See http://www.instantfundas.com/2013/03/how-to-keep-firefox-from-using-too-much.html
 			// and http://kb.mozillazine.org/Memory_Leak.
 			// maximum amount of memory used to cache decoded images
-			GeckoPreferences.User["image.mem.max_decoded_image_kb"] = 40960;        // 40MB (default = 256000 == 250MB)
+			GeckoPreferences.User["image.mem.max_decoded_image_kb"] = 40960; // 40MB (default = 256000 == 250MB)
 			// maximum amount of memory used by javascript
-			GeckoPreferences.User["javascript.options.mem.max"] = 40960;            // 40MB (default = -1 == automatic)
+			GeckoPreferences.User["javascript.options.mem.max"] = 40960; // 40MB (default = -1 == automatic)
 			// memory usage at which javascript starts garbage collecting
-			GeckoPreferences.User["javascript.options.mem.high_water_mark"] = 20;   // 20MB (default = 128 == 128MB)
+			GeckoPreferences.User["javascript.options.mem.high_water_mark"] = 20; // 20MB (default = 128 == 128MB)
 			// SurfaceCache is an imagelib-global service that allows caching of temporary
 			// surfaces. Surfaces normally expire from the cache automatically if they go
 			// too long without being accessed.
@@ -116,13 +112,13 @@ namespace Bloom
 			// system.  Since Windows Bloom uses Adobe Acrobat code to display PDF files, it doesn't need the larger
 			// size for surfacecache, and that memory may be needed elsewhere.
 			if (SIL.PlatformUtilities.Platform.IsLinux)
-				GeckoPreferences.User["image.mem.surfacecache.max_size_kb"] = 102400;	// 100MB
+				GeckoPreferences.User["image.mem.surfacecache.max_size_kb"] = 102400; // 100MB
 			else
-				GeckoPreferences.User["image.mem.surfacecache.max_size_kb"] = 40960;	// 40MB
-			GeckoPreferences.User["image.mem.surfacecache.min_expiration_ms"] = 500;    // 500ms (default = 60000 == 60sec)
+				GeckoPreferences.User["image.mem.surfacecache.max_size_kb"] = 40960; // 40MB
+			GeckoPreferences.User["image.mem.surfacecache.min_expiration_ms"] = 500; // 500ms (default = 60000 == 60sec)
 
 			// maximum amount of memory for the browser cache (probably redundant with browser.cache.memory.enable above, but doesn't hurt)
-			GeckoPreferences.User["browser.cache.memory.capacity"] = 0;             // 0 disables feature
+			GeckoPreferences.User["browser.cache.memory.capacity"] = 0; // 0 disables feature
 
 			// do these do anything?
 			//GeckoPreferences.User["javascript.options.mem.gc_frequency"] = 5;	// seconds?
@@ -178,8 +174,9 @@ namespace Bloom
 				foreach (var lang in defaultLangs)
 				{
 					if (lang != langId)
-						newLangs = newLangs.AppendFormat(",{0}",lang);
+						newLangs = newLangs.AppendFormat(",{0}", lang);
 				}
+
 				GeckoPreferences.User["intl.accept_languages"] = newLangs.ToString();
 			}
 			else
@@ -206,7 +203,8 @@ namespace Bloom
 		/// </summary>
 		private NavigationIsolator _isolator;
 
-		public override void SetEditingCommands(CutCommand cutCommand, CopyCommand copyCommand, PasteCommand pasteCommand, UndoCommand undoCommand)
+		public override void SetEditingCommands(CutCommand cutCommand, CopyCommand copyCommand,
+			PasteCommand pasteCommand, UndoCommand undoCommand)
 		{
 			_cutCommand = cutCommand;
 			_copyCommand = copyCommand;
@@ -257,6 +255,7 @@ namespace Bloom
 				Invoke(new Action<string>(SaveHTML), path);
 				return;
 			}
+
 			_browser.SaveDocument(path, "text/html");
 		}
 
@@ -282,6 +281,7 @@ namespace Bloom
 					//prevent pasting images (BL-93)
 					_pasteCommand.Enabled = PortableClipboard.ContainsText();
 				}
+
 				_undoCommand.Enabled = CanUndo;
 
 			}
@@ -326,7 +326,9 @@ namespace Bloom
 			{
 				if (_browser == null)
 					return JavaScriptUndoState.Disabled;
-				var result = RunJavaScript("(typeof editTabBundle === 'undefined' || typeof editTabBundle.canUndo === 'undefined') ? 'f' : 'y'");
+				var result =
+					RunJavaScript(
+						"(typeof editTabBundle === 'undefined' || typeof editTabBundle.canUndo === 'undefined') ? 'f' : 'y'");
 				if (result == "y")
 				{
 					result = RunJavaScript("editTabBundle.canUndo()");
@@ -334,6 +336,7 @@ namespace Bloom
 						return JavaScriptUndoState.DependsOnBrowser; // not using special Undo.
 					return result == "yes" ? JavaScriptUndoState.Enabled : JavaScriptUndoState.Disabled;
 				}
+
 				return JavaScriptUndoState.DependsOnBrowser;
 			}
 		}
@@ -372,24 +375,25 @@ namespace Bloom
 					_browser.Dispose();
 					_browser = null;
 				}
-				// Dispose of this AFTER the _browser. We've seen cases where, if we dispose _dependentContent first, some threading issue causes
-				// the browser to request the simulated page (which is often the _dependentContent) AFTER it's disposed, leading to an error.
-				if (_dependentContent != null)
-				{
-					_dependentContent.Dispose();
-					_dependentContent = null;
-				}
+
 				if (components != null)
 				{
 					components.Dispose();
 				}
-				Application.Idle -= Application_Idle;   // just in case...  Multiple disconnects hurt nothing.
+
+				Application.Idle -= Application_Idle; // just in case...  Multiple disconnects hurt nothing.
 			}
+
+			// Do this AFTER the _browser. We've seen cases where, if we dispose _dependentContent first (in base class), some threading issue causes
+			// the browser to request the simulated page (which is often the _dependentContent) AFTER it's disposed, leading to an error.
 			base.Dispose(disposing);
 			_disposed = true;
 		}
 
-		public GeckoWebBrowser WebBrowser { get { return _browser; } }
+		public GeckoWebBrowser WebBrowser
+		{
+			get { return _browser; }
+		}
 
 		protected override void OnLoad(EventArgs e)
 		{
@@ -437,7 +441,8 @@ namespace Bloom
 			// until we get past that, it's just annoying
 			GeckoPreferences.User["layout.spellcheckDefault"] = 0;
 
-			_browser.FrameEventsPropagateToMainWindow = true; // we want clicks in iframes to propagate all the way up to C#
+			_browser.FrameEventsPropagateToMainWindow =
+				true; // we want clicks in iframes to propagate all the way up to C#
 
 			RaiseBrowserReady();
 		}
@@ -480,11 +485,13 @@ namespace Bloom
 			if (e.Message.StartsWith("[JavaScript Error"))
 			{
 				// BL-4737 Don't report websocket errors, but do send them to the Debug console.
-				if (!SuppressJavaScriptErrors && !e.Message.Contains("has terminated unexpectedly. Some data may have been transferred."))
+				if (!SuppressJavaScriptErrors &&
+				    !e.Message.Contains("has terminated unexpectedly. Some data may have been transferred."))
 				{
 					ReportJavaScriptError(new GeckoJavaScriptException(e.Message));
 				}
 			}
+
 			Debug.WriteLine(e.Message);
 		}
 
@@ -499,7 +506,8 @@ namespace Bloom
 
 			//enhance: it's possible that, with the introduction of ckeditor, we don't need to pay any attention
 			//to ctrl+v. I'm doing a hotfix to a beta here so I don't want to change more than necessary.
-			if ((e.CtrlKey && e.KeyChar == 'v') || (e.ShiftKey && e.KeyCode == DOM_VK_INSERT)) //someone was using shift-insert to do the paste
+			if ((e.CtrlKey && e.KeyChar == 'v') ||
+			    (e.ShiftKey && e.KeyCode == DOM_VK_INSERT)) //someone was using shift-insert to do the paste
 			{
 				// pasteCommand may well be null in minor instances of browser, such as configuring Wall Calendar.
 				// allow the default Paste to do its best there (BL-5322)
@@ -513,6 +521,7 @@ namespace Bloom
 				}
 				//otherwise, ckeditor will handle the paste
 			}
+
 			// On Windows, Form.ProcessCmdKey (intercepted in Shell) seems to get ctrl messages even when the browser
 			// has focus.  But on Mono, it doesn't.  So we just do the same thing as that Shell.ProcessCmdKey function
 			// does, which is to raise this event.
@@ -542,8 +551,8 @@ namespace Bloom
 			//}
 			//else
 			//{
-				//just let ckeditor do the MSWord filtering
-				_browser.Paste();
+			//just let ckeditor do the MSWord filtering
+			_browser.Paste();
 			//}
 		}
 
@@ -553,6 +562,7 @@ namespace Bloom
 		{
 			_browser.CopySelection();
 		}
+
 		public override void SelectAll()
 		{
 			_browser.SelectAll();
@@ -576,11 +586,13 @@ namespace Bloom
 		void OnBrowser_DomClick(object sender, DomEventArgs e)
 		{
 			Debug.Assert(!InvokeRequired);
-		  //this helps with a weird condition: make a new page, click in the text box, go over to another program, click in the box again.
+			//this helps with a weird condition: make a new page, click in the text box, go over to another program, click in the box again.
 			//it loses its focus.
-			_browser.WebBrowserFocus.Activate();//trying to help the disappearing cursor problem
+			_browser.WebBrowserFocus.Activate(); //trying to help the disappearing cursor problem
 
-			RaiseBrowserClick(sender,e);
+			// We deliberately don't pass on the DomEventArgs, since a current goal is
+			// to make sure no click handler depends on this Gecko-specific information.
+			RaiseBrowserClick(sender, new EventArgs());
 		}
 
 		void _browser_Navigating(object sender, GeckoNavigatingEventArgs e)
@@ -594,6 +606,7 @@ namespace Bloom
 				SIL.Program.Process.SafeStart(e.Uri.OriginalString); //open in the system browser instead
 				Debug.WriteLine("Navigating " + e.Uri);
 			}
+
 			// Check for a simulated file that has been replaced before being displayed.
 			// See http://issues.bloomlibrary.org/youtrack/issue/BL-4268.
 			if (_replacedUrl != null && _replacedUrl.ToLowerInvariant() == url)
@@ -628,111 +641,47 @@ namespace Bloom
 				Invoke(new Action<object, EventArgs>(Application_Idle), sender, e);
 				return;
 			}
+
 			Application.Idle -= Application_Idle;
-		}
-
-		/// <summary>
-		/// The normal Navigate() has a similar capability, but I'm not clear where it works
-		/// or how it can work, since it expects an actual url, and once you have an actual
-		/// url, how do you get back to the file path That you need to delete the temp file?
-		/// So in any case, this version takes a path and handles making a url out of it as
-		/// well as deleting it when this browser component is disposed of.
-		/// </summary>
-		/// <param name="path">The path to the temp file. Should be a valid Filesystem path.</param>
-		/// <param name="urlQueryParams">The query component of a URL (that is, the part after the "?" char in a URL).
-		/// This string should be a valid, appropriately encoded string ready to insert into a URL
-		/// You may include or omit the "?" at the beginning, either way is fine.
-		/// </param>
-		public override void NavigateToTempFileThenRemoveIt(string path, string urlQueryParams = "")
-		{
-			if (InvokeRequired)
-			{
-				Invoke(new Action<string, string>(NavigateToTempFileThenRemoveIt), path, urlQueryParams);
-				return;
-			}
-
-			// Convert from path to URL
-			if (!String.IsNullOrEmpty(urlQueryParams))
-			{
-				if (!urlQueryParams.StartsWith("?"))
-					urlQueryParams = '?' + urlQueryParams;
-			}
-			_url = path.ToLocalhost() + urlQueryParams;
-
-			SetNewDependent(TempFile.TrackExisting(path));
-			UpdateDisplay();
-		}
-
-		public override void Navigate(string url, bool cleanupFileAfterNavigating)
-		{
-			// BL-513: Navigating to "about:blank" is causing the Pages panel to not be updated for a new book on Linux.
-			if (url == "about:blank")
-			{
-				// Creating a temp file every time we need this seems excessive, and it turns out to
-				// be fragile as well.  See https://issues.bloomlibrary.org/youtrack/issue/BL-5598.
-				url = FileLocationUtilities.GetFileDistributedWithApplication("BloomBlankPage.htm");
-				cleanupFileAfterNavigating = false;
-			}
-
-			if (InvokeRequired)
-			{
-				Invoke(new Action<string, bool>(Navigate), url, cleanupFileAfterNavigating);
-				return;
-			}
-
-			_url = url; //TODO: fix up this hack. We found that deleting the pdf while we're still showing it is a bad idea.
-			if(cleanupFileAfterNavigating && !_url.EndsWith(".pdf"))
-			{
-				SetNewDependent(TempFile.TrackExisting(url));
-			}
-			UpdateDisplay();
 		}
 
 		public static void ClearCache()
 		{
-            try
-            {
+			try
+			{
 				// Review: is this supposed to say "netwerk" or "network"?
 				// Haven't found a clear answer; https://hg.mozilla.org/releases/mozilla-release/rev/496aaf774697f817a689ee0d59f2f866fdb16801
 				// seems to indicate that both may be supported.
-				var instance = Xpcom.CreateInstance<nsICacheStorageService>("@mozilla.org/netwerk/cache-storage-service;1");
-                instance.Clear();
-            }
-            catch (InvalidCastException e)
-            {
-                // For some reason, Release builds (only) sometimes run into this when uploading.
-                // Don't let it stop us just to clear a cache.
+				var instance =
+					Xpcom.CreateInstance<nsICacheStorageService>("@mozilla.org/netwerk/cache-storage-service;1");
+				instance.Clear();
+			}
+			catch (InvalidCastException e)
+			{
+				// For some reason, Release builds (only) sometimes run into this when uploading.
+				// Don't let it stop us just to clear a cache.
 				// Todo Gecko60: see if we can get rid of these catch clauses.
-                Logger.WriteError(e);
-            }
-            catch (NullReferenceException e)
-            {
+				Logger.WriteError(e);
+			}
+			catch (NullReferenceException e)
+			{
 				// Similarly, the Harvester has run into this one, and ignoring it doesn't seem to have been a problem.
 				Logger.WriteError(e);
 			}
 
-        }
-
-		public override void SetEditDom(HtmlDom editDom)
-		{
-			_pageEditDom = editDom.RawDom;
 		}
+
 
 		private bool _hasNavigated;
 
-		// NB: make sure you assigned HtmlDom.BaseForRelativePaths if the temporary document might
-		// contain references to files in the directory of the original HTML file it is derived from,
-		// 'cause that provides the information needed
-		// to fake out the browser about where the 'file' is so internal references work.
-		public override void Navigate(HtmlDom htmlDom, HtmlDom htmlEditDom = null, bool setAsCurrentPageForDebugging = false,
-			SimulatedPageFileSource source = SimulatedPageFileSource.Nav)
+		protected override void UpdateDisplay(string newUrl)
 		{
-			if (InvokeRequired)
-			{
-				Invoke(new Action<HtmlDom, HtmlDom, bool, SimulatedPageFileSource>(Navigate), htmlDom, htmlEditDom, setAsCurrentPageForDebugging, source);
-				return;
-			}
+			_url = newUrl;
+			UpdateDisplay();
+		}
 
+		protected override void EnsureBrowserReadyToNavigate()
+		{
 			// Make sure the browser is ready for business. Sometimes a newly created one is briefly busy.
 			if (!_hasNavigated)
 			{
@@ -750,8 +699,10 @@ namespace Bloom
 				while (_browser.IsBusy && startupTimer.ElapsedMilliseconds < 1000)
 				{
 					Application.DoEvents(); // NOTE: this has bad consequences all down the line. See BL-6122.
-					Application.RaiseIdle(new EventArgs()); // needed on Linux to avoid deadlock starving browser navigation
+					Application.RaiseIdle(
+						new EventArgs()); // needed on Linux to avoid deadlock starving browser navigation
 				}
+
 				startupTimer.Stop();
 				if (_browser.IsBusy)
 				{
@@ -759,26 +710,16 @@ namespace Bloom
 					Debug.WriteLine("New browser still busy after a second");
 				}
 			}
-
-			XmlDocument dom = htmlDom.RawDom;
-			XmlDocument editDom = htmlEditDom == null ? null : htmlEditDom.RawDom;
-
-			_rootDom = dom;//.CloneNode(true); //clone because we want to modify it a bit
-			_pageEditDom = editDom ?? dom;
-
-			XmlHtmlConverter.MakeXmlishTagsSafeForInterpretationAsHtml(dom);
-			var fakeTempFile = BloomServer.MakeSimulatedPageFileInBookFolder(htmlDom, setAsCurrentPageForDebugging: setAsCurrentPageForDebugging, source:source);
-			SetNewDependent(fakeTempFile);
-			_url = fakeTempFile.Key;
-			UpdateDisplay();
 		}
 
-		public override bool NavigateAndWaitTillDone(HtmlDom htmlDom, int timeLimit, string source = "nav", Func<bool> cancelCheck = null, bool throwOnTimeout = true)
+		public override bool NavigateAndWaitTillDone(HtmlDom htmlDom, int timeLimit, string source = "nav",
+			Func<bool> cancelCheck = null, bool throwOnTimeout = true)
 		{
 			// Should be called on UI thread. Since it is quite typical for this method to create the
 			// window handle and browser, it can't do its own Invoke, which depends on already having a handle.
 			// OTOH, Unit tests are often not run on the UI thread (and would therefore just pop up annoying asserts).
-			Debug.Assert(Program.RunningOnUiThread || Program.RunningUnitTests || Program.RunningInConsoleMode, "Should be running on UI Thread or Unit Tests or Console mode");
+			Debug.Assert(Program.RunningOnUiThread || Program.RunningUnitTests || Program.RunningInConsoleMode,
+				"Should be running on UI Thread or Unit Tests or Console mode");
 			var dummy = Handle; // gets WebBrowser created, if not already done.
 			var done = false;
 			var navTimer = new Stopwatch();
@@ -809,6 +750,7 @@ namespace Bloom
 				//	throw new ApplicationException("Browser isn't even trying to navigate");
 				//}
 			}
+
 			navTimer.Stop();
 
 			if (!done)
@@ -821,179 +763,22 @@ namespace Bloom
 			return true;
 		}
 
-		public override void NavigateRawHtml(string html)
-		{
-			if (InvokeRequired)
-			{
-				Invoke(new Action<string>(NavigateRawHtml), html);
-				return;
-			}
-
-			var tf = TempFile.WithExtension("htm"); // For some reason Gecko won't recognize a utf-8 file as html unless it has the right extension
-			RobustFile.WriteAllText(tf.Path,html, Encoding.UTF8);
-			SetNewDependent(tf);
-			_url = tf.Path;
-			UpdateDisplay();
-		}
-
-		private void SetNewDependent(IDisposable dependent)
-		{
-			// Save information needed to prevent http://issues.bloomlibrary.org/youtrack/issue/BL-4268.
-			var simulated = _dependentContent as SimulatedPageFile;
-			_replacedUrl = (simulated != null) ? simulated.Key : null;
-
-			if(_dependentContent!=null)
-			{
-				try
-				{
-					_dependentContent.Dispose();
-				}
-				catch(Exception)
-				{
-						//not worth talking to the user about it. Just abandon it in the Temp directory.
-#if DEBUG
-					throw;
-#endif
-				}
-
-			}
-			_dependentContent = dependent;
-		}
-
-
-
 		private void UpdateDisplay()
 		{
 			Debug.Assert(!InvokeRequired);
 			if (!_browserIsReadyToNavigate)
 				return;
 
-			if (_url!=null)
+			if (_url != null)
 			{
 				_browser.Visible = true;
 				_isolator.Navigate(_browser, _url);
 			}
 		}
 
-		/// <summary>
-		/// What's going on here: the browser is just editing/displaying a copy of one page of the document.
-		/// So we need to copy any changes back to the real DOM.
-		/// We're now obtaining the new content another way, so this code doesn't have any reason
-		/// to be in this class...but we're aiming for a minimal change, maximal safety fix for 4.9
-		/// </summary>
-		private void LoadPageDomFromBrowser(string bodyHtml, string userCssContent)
-		{
-			Debug.Assert(!InvokeRequired);
-			if (_pageEditDom == null)
-				return;
-
-			try
-			{
-				// unlikely, but if we somehow couldn't get the new content, better keep the old.
-				// This MIGHT be able to happen in some cases of very fast page clicking, where
-				// the page isn't fully enough loaded to expose the functions we use to get the
-				// content. In that case, the user can't have made changes, so not saving is fine.
-				if (string.IsNullOrEmpty(bodyHtml))
-					return;
-
-				var content = bodyHtml;
-				XmlDocument dom;
-
-				//todo: deal with exception that can come out of this
-				dom = XmlHtmlConverter.GetXmlDomFromHtml(content, false);
-				var bodyDom = dom.SelectSingleNode("//body");
-
-				if (_pageEditDom == null)
-					return;
-
-				var destinationDomPage = _pageEditDom.SelectSingleNode("//body//div[contains(@class,'bloom-page')]");
-				if (destinationDomPage == null)
-					return;
-				var expectedPageId = destinationDomPage.Attributes["id"].Value;
-
-				var browserDomPage = bodyDom.SelectSingleNode("//body//div[contains(@class,'bloom-page')]");
-				if (browserDomPage == null)
-					return;//why? but I've seen it happen
-
-				var thisPageId = browserDomPage.Attributes["id"].Value;
-				if(expectedPageId != thisPageId)
-				{
-					SIL.Reporting.ErrorReport.NotifyUserOfProblem(LocalizationManager.GetString("Browser.ProblemSaving",
-						"There was a problem while saving. Please return to the previous page and make sure it looks correct."));
-					return;
-				}
-				_pageEditDom.GetElementsByTagName("body")[0].InnerXml = bodyDom.InnerXml;
-
-				SaveCustomizedCssRules(userCssContent);
-
-				//enhance: we have jscript for this: cleanup()... but running jscript in this method was leading the browser to show blank screen
-				//				foreach (XmlElement j in _editDom.SafeSelectNodes("//div[contains(@class, 'ui-tooltip')]"))
-				//				{
-				//					j.ParentNode.RemoveChild(j);
-				//				}
-				//				foreach (XmlAttribute j in _editDom.SafeSelectNodes("//@ariasecondary-describedby | //@aria-describedby"))
-				//				{
-				//					j.OwnerElement.RemoveAttributeNode(j);
-				//				}
-
-			}
-			catch (Exception e)
-			{
-				Bloom.Utils.MiscUtils.SuppressUnusedExceptionVarWarning(e);
-				Debug.Fail("Debug Mode Only: Error while trying to read changes to CSSRules. In Release, this just gets swallowed. Will now re-throw the exception.");
-#if DEBUG
-				throw;
-#endif
-			}
-
-			try
-			{
-				XmlHtmlConverter.ThrowIfHtmlHasErrors(_pageEditDom.OuterXml);
-			}
-			catch (Exception e)
-			{
-				//var exceptionWithHtmlContents = new Exception(content);
-				ErrorReport.NotifyUserOfProblem(e,
-					"Sorry, Bloom choked on something on this page (validating page).{1}{1}+{0}",
-					e.Message, Environment.NewLine);
-			}
-
-		}
-
-		private void SaveCustomizedCssRules(string userCssContent)
-		{
-			try
-			{
-				// Yes, this wipes out everything else in the head. At this point, the only things
-				// we need in _pageEditDom are the user defined style sheet and the bloom-page element in the body.
-				_pageEditDom.GetElementsByTagName("head")[0].InnerXml = HtmlDom.CreateUserModifiedStyles(userCssContent);
-			}
-			catch (GeckoJavaScriptException jsex)
-			{
-				/* We are attempting to catch and ignore all JavaScript errors encountered here,
-				 * specifically addEventListener errors and JSError (BL-279, BL-355, et al.).
-				 */
-				Logger.WriteEvent("GeckoJavaScriptException (" + jsex.Message + "). We're swallowing it but listing it here in the log.");
-				Debug.Fail("GeckoJavaScriptException(" + jsex.Message + "). In Release version, this would not show.");
-			}
-		}
-
 		private void OnUpdateDisplayTick(object sender, EventArgs e)
 		{
 			UpdateEditButtons();
-		}
-
-		/// <summary>
-		/// This is needed if we want to save before getting a natural Validating event.
-		/// </summary>
-		public override void ReadEditableAreasNow(string bodyHtml, string userCssContent)
-		{
-			if (_url != "about:blank")
-			{
-		//		RunJavaScript("Cleanup()");
-					//nb: it's important not to move this into LoadPageDomFromBrowser(), which is also called during validation, becuase it isn't allowed then
-				LoadPageDomFromBrowser(bodyHtml, userCssContent);
-			}
 		}
 
 		public override void Copy()
@@ -1042,7 +827,8 @@ namespace Bloom
 		public static string RunJavaScriptOn(GeckoWebBrowser geckoWebBrowser, string script)
 		{
 			// Review JohnT: does this require integration with the NavigationIsolator?
-			if (geckoWebBrowser != null && geckoWebBrowser.Window != null) // BL-2313 two Alt-F4s in a row while changing a folder name can do this
+			if (geckoWebBrowser != null &&
+			    geckoWebBrowser.Window != null) // BL-2313 two Alt-F4s in a row while changing a folder name can do this
 			{
 				try
 				{
@@ -1063,6 +849,7 @@ namespace Bloom
 					ReportJavaScriptError(ex, script);
 				}
 			}
+
 			return null;
 		}
 
@@ -1090,9 +877,11 @@ namespace Bloom
 				Logger.WriteError(ex);
 				return;
 			}
+
 			// This one occurs somewhere in the depths of Google's login code, possibly a consequence of
 			// running unexpectedly in an embedded browser. Doesn't seem to be anything we can do about it.
-			if (ex.Message.Contains("Component returned failure code: 0x80004002") && ex.Message.Contains("@https://accounts.google.com/ServiceLogin"))
+			if (ex.Message.Contains("Component returned failure code: 0x80004002") &&
+			    ex.Message.Contains("@https://accounts.google.com/ServiceLogin"))
 			{
 				Logger.WriteError(ex);
 				return;
@@ -1100,8 +889,10 @@ namespace Bloom
 
 			var longMsg = ex.Message;
 			if (script != null)
-				longMsg = string.Format("Script=\"{0}\"{1}Exception message = {2}", script, Environment.NewLine, ex.Message);
-			NonFatalProblem.Report(ModalIf.None, PassiveIf.Alpha, "A JavaScript error occurred and was missed by our onerror handler", longMsg, ex);
+				longMsg = string.Format("Script=\"{0}\"{1}Exception message = {2}", script, Environment.NewLine,
+					ex.Message);
+			NonFatalProblem.Report(ModalIf.None, PassiveIf.Alpha,
+				"A JavaScript error occurred and was missed by our onerror handler", longMsg, ex);
 		}
 
 		/* snippets
@@ -1142,6 +933,7 @@ namespace Bloom
 				catch
 				{
 				}
+
 				return 0;
 			}
 			set
@@ -1155,52 +947,6 @@ namespace Bloom
 				{
 				}
 			}
-		}
-
-		/// <summary>
-		/// Detect clicks on anchor elements and handle them by passing the href to the default system browser.
-		/// </summary>
-		/// <remarks>
-		/// Enhance: There is much work to do in bringing together all the various places we try to handle external links.
-		/// However, I can't tackle that with this change because I'm trying to make the safest change possible for 4.8 on
-		/// the eve of its release. So for now, I just moved this method from HtmlPublishPanel and reused it in AccessibilityCheckWindow (BL-9026).
-		/// See similar logic in EditingView._browser1_OnBrowserClick among other places.
-		/// One potential way forward is to use (and perhaps enhance) this method on all browser objects instead of
-		/// having each client subscribe to OnBrowserClick.
-		/// 
-		/// Original remarks when this was only in HtmlPublishPanel:
-		/// See https://issues.bloomlibrary.org/youtrack/issue/BL-7569.
-		/// Note that Readium handles these clicks internally and we never get to see them.  The relevant Readium
-		/// code is apparently in readium-js-viewer/readium-js/readium-shared-js/js/views/internal_links_support.js
-		/// in the function this.processLinkElements.
-		/// </remarks>
-		public static void HandleExternalLinkClick(object sender, EventArgs e)
-		{
-			var ge = e as DomEventArgs;
-			if (ge == null || ge.Target == null)
-				return;
-			GeckoHtmlElement target;
-			try
-			{
-				target = (GeckoHtmlElement)ge.Target.CastToGeckoElement();
-			}
-			catch (InvalidCastException)
-			{
-				return;
-			}
-			var anchor = target as GeckoAnchorElement;
-			if (anchor == null)
-				anchor = target.Parent as GeckoAnchorElement;   // Might be a span inside an anchor
-			if (anchor != null && !String.IsNullOrEmpty(anchor.Href) &&
-			    // Handle only http(s) and mailto protocols.
-			    (anchor.Href.ToLowerInvariant().StartsWith("http") || anchor.Href.ToLowerInvariant().StartsWith("mailto")) &&
-			    // Don't try to handle localhost Bloom requests.
-			    !anchor.Href.ToLowerInvariant().StartsWith(Api.BloomServer.ServerUrlWithBloomPrefixEndingInSlash))
-			{
-				SIL.Program.Process.SafeStart(anchor.Href);
-				ge.Handled = true;
-			}
-			// All other clicks get normal processing...
 		}
 	}
 

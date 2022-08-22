@@ -3,6 +3,7 @@ import * as ReactDOM from "react-dom";
 import { IBloomDialogEnvironmentParams } from "../react_components/BloomDialog/BloomDialogPlumbing";
 import { lightTheme } from "../bloomMaterialUITheme";
 import { ThemeProvider } from "@material-ui/styles";
+import { hookupLinkHandler } from "./linkHandler";
 
 /**
  * Each react component that is referenced from winforms (using ReactControl or ReactDialog) must
@@ -21,6 +22,7 @@ export function WireUpForWinforms(
         props = AddDialogPropsWhenWrappedByWinforms(props);
         const c = React.createElement(component, props, null);
         ReactDOM.render(<ThemedRoot>{c}</ThemedRoot>, root);
+        hookupLinkHandler();
     };
 }
 

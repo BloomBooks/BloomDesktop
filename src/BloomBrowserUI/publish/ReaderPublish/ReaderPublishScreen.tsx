@@ -39,6 +39,7 @@ import {
     showBulkBloomPubDialog
 } from "./BulkBloomPub/BulkBloomPubDialog";
 import { EmbeddedProgressDialog } from "../../react_components/Progress/ProgressDialog";
+import { hookupLinkHandler } from "../../utils/linkHandler";
 
 export const ReaderPublishScreen = () => {
     // When the user changes some features, included languages, etc., we
@@ -66,6 +67,7 @@ const ReaderPublishScreenInternal: React.FunctionComponent<{
     const [closePending, setClosePending] = useState(false);
     const [highlightRefresh, setHighlightRefresh] = useState(false);
     const [progressState, setProgressState] = useState(ProgressState.Working);
+    React.useEffect(() => hookupLinkHandler(), []);
 
     // bookUrl is expected to be a normal, well-formed URL.
     // (that is, one that you can directly copy/paste into your browser and it would work fine)

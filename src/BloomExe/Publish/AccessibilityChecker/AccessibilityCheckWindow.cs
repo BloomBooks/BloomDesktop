@@ -44,7 +44,6 @@ namespace Bloom.Publish.AccessibilityChecker
 
 			var path = BloomFileLocator.GetBrowserFile(false, "publish", "accessibilityCheck", "accessibilityCheckScreen.html");
 			_browser.Navigate(path.ToLocalhost(),false);
-			_browser.OnBrowserClick += GeckoFxBrowser.HandleExternalLinkClick; // See BL-9026
 		}
 
 		private void AccessibilityCheckWindow_FormClosed(object sender, FormClosedEventArgs e)

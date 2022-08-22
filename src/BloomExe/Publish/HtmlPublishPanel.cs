@@ -23,7 +23,6 @@ namespace Bloom.Publish
 			// Has to be in front of the panel docked top for Fill to work.
 			browserControl.BringToFront();
 			_browser.Navigate(pathToHtmlFile.ToLocalhost() + GetUrlParams(), false);
-			_browser.OnBrowserClick += GeckoFxBrowser.HandleExternalLinkClick;
 
 			VisibleChanged += OnVisibleChanged;
 		}

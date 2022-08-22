@@ -2132,7 +2132,16 @@ namespace Bloom.Book
 		}
 		/// <summary>
 		/// Sets the url attribute either of an img (the src attribute)
-		/// or a div with an inline style with an background-image rule
+		/// or a div with an inline style with an background-image rule.
+		/// This logic is duplicated in TypeScript, currently in a listener inside
+		/// the SetupElements method in bloomEditing.ts. We need it there so that
+		/// we can immediately update the current edit DOM, live in Javascript,
+		/// when we change an image in edit mode. And there are many callers where we need
+		/// to set the source of an image from C#. I don't see any likelihood
+		/// that we can get rid of this duplication, though if we end up needing it
+		/// in more than one place on the JS side, we should extract a common method there.
+		/// Note: in both places, the code assumes that background-image is the ONLY
+		/// thing that needs to be set in the element's explicit style attribute.
 		/// </summary>
 		public static void SetImageElementUrl(ElementProxy imgOrDivWithBackgroundImage, UrlPathString url, bool urlEncode = true)
 		{

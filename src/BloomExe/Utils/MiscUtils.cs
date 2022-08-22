@@ -442,5 +442,16 @@ namespace Bloom.Utils
 				};
 			MiscUI.BloomMessageBox.Show(Form.ActiveForm, $"<p>{msg}</p><p>{chosenDestination}</p>", buttons, MessageBoxIcon.Warning);
 		}
+
+		public static void DoOnceOnIdle(Action actionToDoOnIdle)
+		{
+			void HandleAction(object sender, EventArgs eventArgs)
+			{
+				Application.Idle -= HandleAction;
+				actionToDoOnIdle();
+			}
+
+			Application.Idle += HandleAction;
+		}
 	}
 }

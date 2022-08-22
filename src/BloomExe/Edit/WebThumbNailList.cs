@@ -325,6 +325,9 @@ namespace Bloom.Edit
 				// mouse click handlers to explicitly close the menu.  Perhaps fixing the Mono bug would
 				// be better, but I'd rather not go there if I don't have to.
 				// See https://issues.bloomlibrary.org/youtrack/issue/BL-6753.
+				// (This is currently the last place OnBrowserClick is used. Could therefore be removed
+				// when we complete the switch to WebView2 and drop Linux. However, we might want it if
+				// we ever manage to reinstate Linux.)
 				_browser.OnBrowserClick += Browser_Click;
 				Model.GetEditingBrowser().OnBrowserClick += Browser_Click;
 				_popupPageMenu = menu;

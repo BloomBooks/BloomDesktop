@@ -28,6 +28,7 @@ import BookMetadataDialog from "../metadata/BookMetadataDialog";
 import { useL10n } from "../../react_components/l10nHooks";
 import { ProgressState } from "../commonPublish/PublishProgressDialogInner";
 import { BloomApi } from "../../utils/bloomApi";
+import { hookupLinkHandler } from "../../utils/linkHandler";
 
 export const EPUBPublishScreen = () => {
     // When the user changes some features, included languages, etc., we
@@ -51,6 +52,7 @@ const EPUBPublishScreenInternal: React.FunctionComponent<{
     const inStorybookMode = useContext(StorybookContext);
     const [closePending, setClosePending] = useState(false);
     const [progressState, setProgressState] = useState(ProgressState.Working);
+    React.useEffect(() => hookupLinkHandler(), []);
     const [bookUrl, setBookUrl] = useState(
         inStorybookMode
             ? window.location.protocol +

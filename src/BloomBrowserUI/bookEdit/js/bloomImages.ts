@@ -119,6 +119,16 @@ export function addImageEditingButtons(containerDiv: HTMLElement): void {
     }
     const buttonModifier = GetButtonModifier($containerDiv);
 
+    const addButtonHandler = (command: string) => {
+        const button = $containerDiv.get(0)?.firstElementChild;
+        button?.addEventListener("click", () => {
+            const imgIndex = Array.from(
+                document.getElementsByClassName("bloom-imageContainer")
+            ).indexOf($containerDiv.get(0));
+            BloomApi.postJson("editView/" + command + "Image", { imgIndex });
+        });
+    };
+
     $containerDiv.prepend(
         '<button class="miniButton cutImageButton imageOverlayButton disabled ' +
             buttonModifier +
@@ -126,6 +136,8 @@ export function addImageEditingButtons(containerDiv: HTMLElement): void {
             theOneLocalizationManager.getText("EditTab.Image.CutImage") +
             '"></button>'
     );
+    addButtonHandler("cut");
+
     $containerDiv.prepend(
         '<button class="miniButton copyImageButton imageOverlayButton disabled ' +
             buttonModifier +
@@ -133,6 +145,7 @@ export function addImageEditingButtons(containerDiv: HTMLElement): void {
             theOneLocalizationManager.getText("EditTab.Image.CopyImage") +
             '"></button>'
     );
+    addButtonHandler("copy");
     $containerDiv.prepend(
         '<button class="pasteImageButton imageButton imageOverlayButton ' +
             buttonModifier +
@@ -140,6 +153,7 @@ export function addImageEditingButtons(containerDiv: HTMLElement): void {
             theOneLocalizationManager.getText("EditTab.Image.PasteImage") +
             '"></button>'
     );
+    addButtonHandler("paste");
     $containerDiv.prepend(
         '<button class="changeImageButton imageButton imageOverlayButton ' +
             buttonModifier +
@@ -147,6 +161,7 @@ export function addImageEditingButtons(containerDiv: HTMLElement): void {
             theOneLocalizationManager.getText("EditTab.Image.ChangeImage") +
             '"></button>'
     );
+    addButtonHandler("paste");
 
     // As part of BL-9976 JH decided to remove this button as users were getting confused.
     // if (

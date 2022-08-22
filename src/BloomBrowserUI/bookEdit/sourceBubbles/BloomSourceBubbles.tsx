@@ -171,6 +171,12 @@ export default class BloomSourceBubbles {
                         localizedLanguageName +
                         "</a></li>"
                 );
+                (list.get(
+                    0
+                ) as HTMLElement).lastElementChild?.firstElementChild?.addEventListener(
+                    "click",
+                    () => BloomApi.postString("editView/sourceTextTab", iso)
+                );
                 // BL-8174: Add a tooltip with the iso code to the item
                 sourceElement.setAttribute("title", iso);
             }

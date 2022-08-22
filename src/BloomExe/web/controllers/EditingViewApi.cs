@@ -3,10 +3,13 @@ using System.Collections.Generic;
 using System.Dynamic;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Windows.Forms;
 using Bloom.Api;
 using Bloom.Book;
 using Bloom.Edit;
+using Bloom.Properties;
+using Bloom.Utils;
 using L10NSharp;
 using SIL.IO;
 using SIL.Windows.Forms.Miscellaneous;
@@ -34,6 +37,101 @@ namespace Bloom.web.controllers
 			apiHandler.RegisterEndpointLegacy("editView/requestTranslationGroupContent", RequestDefaultTranslationGroupContent, true);
 			apiHandler.RegisterEndpointLegacy("editView/duplicatePageMany", HandleDuplicatePageMany, true);
 			apiHandler.RegisterEndpointHandler("editView/topics", HandleTopics, false);
+			apiHandler.RegisterEndpointHandler("editView/changeImage", HandleChangeImage, true);
+			apiHandler.RegisterEndpointHandler("editView/cutImage", HandleCutImage, true);
+			apiHandler.RegisterEndpointHandler("editView/copyImage", HandleCopyImage, true);
+			apiHandler.RegisterEndpointHandler("editView/pasteImage", HandlePasteImage, true);
+			apiHandler.RegisterEndpointHandler("editView/sourceTextTab", HandleSourceTextTab, false, false);
+			apiHandler.RegisterEndpointHandler("edit/taskComplete", HandleTaskComplete, false, false);
+		}
+
+		private void HandleSourceTextTab(ApiRequest request)
+		{
+			var iso = request.RequiredPostString();
+			// There's a puzzle here that I encountered when converting from GeckoFx.
+			// The code in BloomHintBubbles that adds the special item for 'hint' sets the
+			// sourceTextTab that old code in _browser1_OnBrowserClick was looking for,
+			// as if expecting that 'hint' would make that tab the default for other bubbles
+			// just as it works for a language. One reason it didn't work before was that
+			// the 'target' in that tab was typically the img, not the li element that has
+			// the sourceTextTab attribute. So I made the JS call this method when that tab
+			// is clicked, and that works. But setting Settings.Default.LastSourceLanguageViewed
+			// to "hint" still does not work. I'm not sure why, nor whether that behavior is
+			// wanted. However, saving it to LastSourceLanguageViewed when it doesn't work
+			// causes the previously remembered language to be forgotten, so for now,
+			// I'm coding it here to ignore 'hint'.
+			if (iso != "hint")
+			{
+				Settings.Default.LastSourceLanguageViewed = iso;
+				Settings.Default.Save();
+			}
+
+			request.PostSucceeded();
+		}
+
+		private void HandlePasteImage(ApiRequest request)
+		{
+			dynamic data = DynamicJson.Parse(request.RequiredPostJson());
+			int imgIndex = (int)data.imgIndex;
+			View.OnPasteImage(imgIndex);
+			request.PostSucceeded();
+		}
+
+		private void HandleCopyImage(ApiRequest request)
+		{
+			dynamic data = DynamicJson.Parse(request.RequiredPostJson());
+			int imgIndex = (int)data.imgIndex;
+			View.OnCopyImage(imgIndex);
+			request.PostSucceeded();
+		}
+
+		private void HandleCutImage(ApiRequest request)
+		{
+			dynamic data = DynamicJson.Parse(request.RequiredPostJson());
+			int imgIndex = (int)data.imgIndex;
+			View.OnCutImage(imgIndex); 
+			request.PostSucceeded();
+		}
+
+		// Allow whatever code is waiting in SendEventAndWaitForComplete to continue;
+		// whatever action the event prompted has finished.
+		private void HandleTaskComplete(ApiRequest request)
+		{
+			waitingForTaskComplete = false;
+			request.PostSucceeded();
+		}
+
+		private static bool waitingForTaskComplete;
+
+		// Send an event to Javascript and wait until it is done.
+		// The event MUST post edit/taskComplete when it is finished.
+		// Review: as implemented here, we can't cope with more than one thing at a time
+		// sending an event and waiting for it; that's currently OK since it's only used on the
+		// UI thread. Results will also be dubious if more than one client is listening to
+		// the websocket, but that's also something we don't expect (except
+		// when debugging in a separate browser).
+		// This feels messy, but how else are we to ask Javascript to do something...
+		// we're trying to retire runJavascript, not add more, and it's taking a kluge
+		// to make that syncrhronous, anyway...when we need to know it has finished?
+		public static void SendEventAndWaitForComplete(BloomWebSocketServer socketServer, string clientContext, string eventId, dynamic messageBundle)
+		{
+			waitingForTaskComplete = true; // BEFORE we send the bundle, in case handleTaskComplete occurs before SendBundle returns
+			socketServer.SendBundle(clientContext, eventId, messageBundle);
+
+			while (waitingForTaskComplete)
+			{
+				Application.DoEvents();
+				Thread.Sleep(10);
+			}
+		}
+
+		private void HandleChangeImage(ApiRequest request)
+		{
+			dynamic data = DynamicJson.Parse(request.RequiredPostJson());
+			int imgIndex = (int)data.imgIndex;
+			// We don't want to tie up server locks etc. while the dialog displays.
+			MiscUtils.DoOnceOnIdle(() => { View.OnChangeImage(imgIndex); });
+			request.PostSucceeded();
 		}
 
 		// Answer true if the current clipboard contents are something that makes sense to paste into the href

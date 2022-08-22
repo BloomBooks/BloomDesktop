@@ -29,8 +29,10 @@ using SIL.Windows.Forms.Widgets;
 using System.Globalization;
 using Bloom.web;
 using System.Reflection;
+using System.Xml;
 using Bloom.Utils;
 using Bloom.MiscUI;
+using SIL.Xml;
 
 namespace Bloom.Edit
 {
@@ -78,7 +80,7 @@ namespace Bloom.Edit
 			// This used to be part of InitializeComponent, but we want to make which browser to use
 			// configurable. It can possibly move back to the Designer code once we settle on WebView2.
 			// Turning off for this PR because it's not working well enough yet.
-			this._browser1 = new GeckoFxBrowser(); // BrowserMaker.MakeBrowser();
+			this._browser1 = BrowserMaker.MakeBrowser();
 			// 
 			// _browser1
 			// 
@@ -91,7 +93,6 @@ namespace Bloom.Edit
 			this._browser1.Name = "_browser1";
 			this._browser1.Size = new System.Drawing.Size(826, 561);
 			this._browser1.TabIndex = 1;
-			this._browser1.OnBrowserClick += new System.EventHandler(this._browser1_OnBrowserClick);
 			this._splitContainer2.Panel1.Controls.Add(this._browser1);
 
 			this._splitContainer2.BackColor = Palette.GeneralBackground;
@@ -467,6 +468,19 @@ namespace Bloom.Edit
 				// to set it up again each time we load a page. It's important to set it up before we start
 				// navigation; otherwise, we might miss the event and never enable saving for this page.
 				_model.NavigatingSoSuspendSaving = true;
+				// The following comment applies to GeckoFx. The logic described has moved into GeckoFxBrowser.
+				// Hopefully the WebView2 DocumentCompleted is more reliable and it won't be needed there.
+				// Unfortunately this comment isn't easily modifiable for the new context, so I'm leaving it here for now.
+				// So far, the most reliable way I've found to detect that the page is fully loaded and we can call
+				// initialize() is the ReadyStateChanged event (combined with checking that ReadyState is "complete").
+				// This works for most pages but not all...some (e.g., the credits page in a basic book) seem to just go on
+				// being "interactive". As a desperate step I tried looking for DocumentCompleted (which fires too soon and often),
+				// but still, we never get one where the ready state is completed. This page just stays 'interactive'.
+				// A desperate expedient would be to try running some Javascript to test whether the 'initialize' function
+				// has actually loaded. If you try that, be careful...this function seems to be used in cases where that
+				// never happens.
+				// Do this before we change the src of the iframe to make sure we're ready when the document-completed arrives.
+				_browser1.DocumentCompleted += WebBrowser_ReadyStateChanged;
 				if (_model.AreToolboxAndOuterFrameCurrent() && !ShouldDoFullReload())
 				{
 					// Keep the top document and toolbox iframe, just navigate the page iframe to the new page.
@@ -493,18 +507,6 @@ namespace Bloom.Edit
 				_model.CheckForBL2634("navigated to page");
 				SetModalState(false);	// ensure _pageListView is enabled (BL-9712).
 				_pageListView.Focus();
-				// The following comment applies to GeckoFx. The logic described has moved into GeckoFxBrowser.
-				// Hopefully the WebView2 DocumentCompleted is more reliable and it won't be needed there.
-				// Unfortunately this comment isn't easily modifiable for the new context, so I'm leaving it here for now.
-				// So far, the most reliable way I've found to detect that the page is fully loaded and we can call
-				// initialize() is the ReadyStateChanged event (combined with checking that ReadyState is "complete").
-				// This works for most pages but not all...some (e.g., the credits page in a basic book) seem to just go on
-				// being "interactive". As a desperate step I tried looking for DocumentCompleted (which fires too soon and often),
-				// but still, we never get one where the ready state is completed. This page just stays 'interactive'.
-				// A desperate expedient would be to try running some Javascript to test whether the 'initialize' function
-				// has actually loaded. If you try that, be careful...this function seems to be used in cases where that
-				// never happens.
-				_browser1.DocumentCompleted += WebBrowser_ReadyStateChanged;
 #if __MonoCS__
 				// On Linux/Mono, the user can click between pages too fast in Edit mode, resulting
 				// in a warning dialog popping up.  I've never seen this happen on Windows, but it's
@@ -601,84 +603,6 @@ namespace Bloom.Edit
 		internal string RunJavaScript(string script)
 		{
 			return _browser1.RunJavaScript(script);
-		}
-
-		private void _browser1_OnBrowserClick(object sender, EventArgs e)
-		{
-			var ge = e as DomEventArgs;
-			if(ge == null || ge.Target == null)
-				return; //I've seen this happen
-			GeckoHtmlElement target;
-			try
-			{
-				target = (GeckoHtmlElement) ge.Target.CastToGeckoElement();
-			}
-			catch (InvalidCastException)
-			{
-				// Some things...e.g., SVG elements...can't be cast like this. I can't find any way to
-				// predict it. But if we click on one of those, just take the default behavior.
-				return;
-			}
-
-			if(target.ClassName.Contains("sourceTextTab"))
-			{
-				RememberSourceTabChoice(target);
-				return;
-			}
-			if(target.ClassName.Contains("changeImageButton"))
-				OnChangeImage(ge);
-			if(target.ClassName.Contains("pasteImageButton"))
-				OnPasteImage(ge);
-			if(target.ClassName.Contains("cutImageButton"))
-				OnCutImage(ge);
-			if(target.ClassName.Contains("copyImageButton"))
-				OnCopyImage(ge);
-			// (similar changeWidgetButton handled in modern way in javascript)
-
-			var anchor = target as GeckoAnchorElement;
-			if (anchor == null)
-			{
-				// Might be a span inside an anchor
-				anchor = target.Parent as GeckoAnchorElement;
-			}
-			if(anchor != null && anchor.Href != "" && anchor.Href != "#")
-			{
-				// Let Gecko handle hrefs that are explicitly tagged "javascript"
-				if(anchor.Href.StartsWith("javascript"))
-				{
-					ge.Handled = false; // let gecko handle it
-					return;
-				}
-
-				if(anchor.Href.ToLowerInvariant().StartsWith("http") || anchor.Href.ToLowerInvariant().StartsWith("mailto")) //will cover https also
-				{
-					// do not open in external browser if localhost...except for some links in the toolbox
-					if(anchor.Href.ToLowerInvariant().StartsWith(BloomServer.ServerUrlWithBloomPrefixEndingInSlash))
-					{
-						ge.Handled = false; // let gecko handle it
-						return;
-					}
-
-					SIL.Program.Process.SafeStart(anchor.Href);
-					ge.Handled = true;
-					return;
-				}
-				if(anchor.Href.ToLowerInvariant().StartsWith("file")) //source bubble tabs
-				{
-					ge.Handled = false; //let gecko handle it
-					return;
-				}
-				ErrorReport.NotifyUserOfProblem("Bloom did not understand this link: " + anchor.Href);
-				ge.Handled = true;
-			}
-		}
-
-		private void RememberSourceTabChoice(GeckoHtmlElement target)
-		{
-			//"<a class="sourceTextTab" href="#tpi">Tok Pisin</a>"
-			var start = 1 + target.OuterHtml.IndexOf("#");
-			var end = target.OuterHtml.IndexOf("\">");
-			Settings.Default.LastSourceLanguageViewed = target.OuterHtml.Substring(start, end - start);
 		}
 
 		private Metadata _originalImageMetadataFromImageToolbox;
@@ -797,7 +721,7 @@ namespace Bloom.Edit
 		}
 
 
-		private void OnCutImage(DomEventArgs ge)
+		public void OnCutImage(int imgIndex)
 		{
 			// NB: bloomImages.js contains code that prevents us arriving here
 			// if our image is simply the placeholder flower
@@ -811,7 +735,7 @@ namespace Bloom.Edit
 
 			var bookFolderPath = _model.CurrentBook.FolderPath;
 
-			if(CopyImageToClipboard(ge, bookFolderPath)) // returns 'true' if successful
+			if(CopyImageToClipboard(imgIndex, bookFolderPath)) // returns 'true' if successful
 			{
 				// Replace current image with placeHolder.png
 				// N.B. It is unnecessary to check for the existence of this file, since selecting a book in
@@ -820,20 +744,21 @@ namespace Bloom.Edit
 				var path = Path.Combine(bookFolderPath, "placeHolder.png");
 				using(var palasoImage = PalasoImage.FromFileRobustly(path))
 				{
-					_model.ChangePicture(GetImageNode(ge), palasoImage, new NullProgress());
+					var imageElement = GetImageNode(imgIndex);
+					_model.ChangePicture(imgIndex, imageElement, palasoImage, new NullProgress());
 				}
 			}
 		}
 
-		private void OnCopyImage(DomEventArgs ge)
+		public void OnCopyImage(int imgIndex)
 		{
 			// NB: bloomImages.js contains code that prevents us arriving here
 			// if our image is simply the placeholder flower
 
-			CopyImageToClipboard(ge, _model.CurrentBook.FolderPath);
+			CopyImageToClipboard(imgIndex, _model.CurrentBook.FolderPath);
 		}
 
-		private void OnPasteImage(DomEventArgs ge)
+		public void OnPasteImage(int imgIndex)
 		{
 			if (!_model.CanChangeImages())
 			{
@@ -869,11 +794,7 @@ namespace Bloom.Edit
 						return;
 					}
 
-					var target = (GeckoHtmlElement) ge.Target.CastToGeckoElement();
-					if (target.ClassName.Contains("licenseImage"))
-						return;
-
-					var imageElement = GetImageNode(ge);
+					var imageElement = GetImageNode(imgIndex);
 					if (imageElement == null)
 						return;
 					Cursor = Cursors.WaitCursor;
@@ -885,7 +806,7 @@ namespace Bloom.Edit
 						if (ShouldBailOutBecauseUserAgreedNotToUseJpeg(clipboardImage))
 							return;
 						Logger.WriteMinorEvent("[Paste Image] Pasting jpeg image {0}", clipboardImage.OriginalFilePath);
-						_model.ChangePicture(imageElement, clipboardImage, new NullProgress());
+						_model.ChangePicture(imgIndex, imageElement, clipboardImage, new NullProgress());
 					}
 					else
 					{
@@ -894,14 +815,14 @@ namespace Bloom.Edit
 						{
 							Logger.WriteMinorEvent(
 								"[Paste Image] Pasting image directly from clipboard (e.g. screenshot)");
-							_model.ChangePicture(imageElement, clipboardImage, new NullProgress());
+							_model.ChangePicture(imgIndex, imageElement, clipboardImage, new NullProgress());
 						}
 						//they pasted a path to a png
 						else if (Path.GetExtension(clipboardImage.OriginalFilePath).ToLowerInvariant() == ".png")
 						{
 							Logger.WriteMinorEvent("[Paste Image] Pasting png file {0}",
 								clipboardImage.OriginalFilePath);
-							_model.ChangePicture(imageElement, clipboardImage, new NullProgress());
+							_model.ChangePicture(imgIndex, imageElement, clipboardImage, new NullProgress());
 						}
 						else // they pasted a path to some other bitmap format
 						{
@@ -921,7 +842,7 @@ namespace Bloom.Edit
 
 								using (var palasoImage = PalasoImage.FromFileRobustly(temp.Path))
 								{
-									_model.ChangePicture(imageElement, palasoImage, new NullProgress());
+									_model.ChangePicture(imgIndex, imageElement, palasoImage, new NullProgress());
 								}
 							}
 						}
@@ -947,9 +868,9 @@ namespace Bloom.Edit
 			return PortableClipboard.GetImageFromClipboard();
 		}
 
-		private static bool CopyImageToClipboard(DomEventArgs ge, string bookFolderPath)
+		private bool CopyImageToClipboard(int imgIndex, string bookFolderPath)
 		{
-			var imageElement = GetImageNode(ge);
+			var imageElement = GetImageNode(imgIndex);
 			if(imageElement != null)
 			{
 				var url = HtmlDom.GetImageElementUrl(imageElement);
@@ -991,6 +912,17 @@ namespace Bloom.Edit
 				}
 			}
 			return false;
+		}
+
+		private XmlElement GetImageNode(int imgIndex)
+		{
+			var containers = _model.GetXmlDocumentForCurrentPage()
+				.SafeSelectNodes("//div[contains(@class, 'bloom-imageContainer')]").Cast<XmlElement>();
+			var container = containers.Skip(imgIndex).First();
+			var img = container.ChildNodes.Cast<XmlNode>().FirstOrDefault(x => x.Name.ToLowerInvariant() == "img") as XmlElement;
+			if (img == null)
+				return container;
+			return img;
 		}
 
 		private static GeckoHtmlElement GetImageNode(DomEventArgs ge)
@@ -1043,7 +975,7 @@ namespace Bloom.Edit
 			return true;
 		}
 
-		private void OnChangeImage(DomEventArgs ge)
+		public void OnChangeImage(int imgIndex)
 		{
 			if(!_model.CanChangeImages())
 			{
@@ -1053,16 +985,19 @@ namespace Bloom.Edit
 				return;
 			}
 
-			var imageElement = GetImageNode(ge);
+			var imageElement = GetImageNode(imgIndex);
 			if(imageElement == null)
 				return;
 			string currentPath = HtmlDom.GetImageElementUrl(imageElement).PathOnly.NotEncoded;
 
 			if(!CheckIfLockedAndWarn(currentPath))
 				return;
-			var target = (GeckoHtmlElement) ge.Target.CastToGeckoElement();
-			if(target.ClassName.Contains("licenseImage"))
-				return;
+			// Back when we were working with click action that identified a target element,
+			// to bring us here it had to be the change image button. As far as I can tell that
+			// never had the class licenseImage so I think this code was redundant.
+			//var target = (GeckoHtmlElement) ge.Target.CastToGeckoElement();
+			//if(target.ClassName.Contains("licenseImage"))
+			//	return;
 
 			Cursor = Cursors.WaitCursor;
 
@@ -1222,7 +1157,7 @@ namespace Bloom.Edit
 								dlg.ImageInfo.Save(newImagePath);
 							}
 							dlg.ImageInfo.SetCurrentFilePath(newImagePath);
-							SaveChangedImage(imageElement, dlg.ImageInfo, exceptionMsg);
+							SaveChangedImage(imgIndex, imageElement, dlg.ImageInfo, exceptionMsg);
 						}
 						catch (Exception error)
 						{
@@ -1324,13 +1259,13 @@ namespace Bloom.Edit
 			System.Diagnostics.Process.Start("http://community.bloomlibrary.org/t/running-out-of-memory-loading-images/3956");
 		}
 
-		public void SaveChangedImage(GeckoHtmlElement imageElement, PalasoImage imageInfo, string exceptionMsg)
+		public void SaveChangedImage(int imgIndex, XmlElement imageElement, PalasoImage imageInfo, string exceptionMsg)
 		{
 			try
 			{
 				if(ShouldBailOutBecauseUserAgreedNotToUseJpeg(imageInfo))
 					return;
-				_model.ChangePicture(imageElement, imageInfo, new NullProgress());
+				_model.ChangePicture(imgIndex, imageElement, imageInfo, new NullProgress());
 			}
 			catch(System.IO.IOException error)
 			{
@@ -1385,9 +1320,9 @@ namespace Bloom.Edit
 			// BL-9912 where the Leveled Reader Tool was prompted by some of this to call us back with a save to the
 			// tool state, but by then the editingModel had cleared out its knowledge of what book it had previously
 			// been editing, so there was an null.
-			RunJavaScript("if (typeof(editTabBundle) !=='undefined' && typeof(editTabBundle.getToolboxBundleExports()) !=='undefined') {editTabBundle.getToolboxBundleExports().removeToolboxMarkup();}");
-			var bodyHtml = RunJavaScript("if (typeof(editTabBundle !=='undefined') && typeof(editTabBundle.getEditablePageBundleExports()) !=='undefined') {return editTabBundle.getEditablePageBundleExports().getBodyContentForSavePage();}");
-			var userCssContent = RunJavaScript("if (typeof(editTabBundle) !=='undefined' && typeof(editTabBundle.getEditablePageBundleExports()) !=='undefined') {return editTabBundle.getEditablePageBundleExports().userStylesheetContent();}");
+			RunJavaScript("typeof(editTabBundle) !=='undefined' && typeof(editTabBundle.getToolboxBundleExports()) !=='undefined' && editTabBundle.getToolboxBundleExports().removeToolboxMarkup()");
+			var bodyHtml = RunJavaScript("typeof(editTabBundle) !=='undefined' && typeof(editTabBundle.getEditablePageBundleExports()) !=='undefined' && editTabBundle.getEditablePageBundleExports().getBodyContentForSavePage()");
+			var userCssContent = RunJavaScript("typeof(editTabBundle) !=='undefined' && typeof(editTabBundle.getEditablePageBundleExports()) !=='undefined' && editTabBundle.getEditablePageBundleExports().userStylesheetContent()");
 			_browser1.ReadEditableAreasNow(bodyHtml, userCssContent);
 		}
 
