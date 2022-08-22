@@ -1,3 +1,5 @@
+/** @jsx jsx **/
+import { jsx, css } from "@emotion/core";
 import React = require("react");
 import * as ReactDOM from "react-dom";
 import { useRef, useState } from "react";
@@ -359,6 +361,7 @@ export interface ISimpleColorPickerDialogProps {
     initialColor: string;
     onChange: (color: string) => void;
     onInputFocus: (input: HTMLElement) => void;
+    container?: Element;
 }
 
 export const showSimpleColorPickerDialog = (
@@ -375,5 +378,51 @@ export const showSimpleColorPickerDialog = (
         onChange: (color: ISwatchDefn) => props.onChange(color.colors[0]),
         onInputFocus: props.onInputFocus
     };
-    showColorPickerDialog(fullProps);
+    showColorPickerDialog(fullProps, props.container);
+};
+
+export interface IColorBlockProps {
+    currentColor: string;
+    localizedTitle: string;
+    noAlphaSlider: boolean;
+    onChange: (color: string) => void;
+    width?: number;
+    container?: Element;
+    disabled?: boolean;
+}
+
+export const ColorBlock: React.FC<IColorBlockProps> = props => {
+    const widthString = props.width ? `width: ${props.width}px;` : "";
+    const dialogProps: ISimpleColorPickerDialogProps = {
+        localizedTitle: props.localizedTitle,
+        noAlphaSlider: props.noAlphaSlider,
+        initialColor: props.currentColor,
+        onChange: props.onChange,
+        onInputFocus: () => {},
+        container: props.container
+    };
+
+    return (
+        <div
+            css={css`
+                border: solid 1px black;
+                background-color: white;
+                padding: 2px;
+                height: 19px;
+                ${widthString}
+            `}
+        >
+            <div
+                css={css`
+                    background-color: ${props.currentColor};
+                    height: 19px;
+                    ${widthString}
+                `}
+                onClick={() => {
+                    if (props.disabled) return;
+                    showSimpleColorPickerDialog(dialogProps);
+                }}
+            />
+        </div>
+    );
 };

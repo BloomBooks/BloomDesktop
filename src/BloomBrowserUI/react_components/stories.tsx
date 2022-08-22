@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
-/** @jsxFrag React.Fragment */
 /** @jsx jsx **/
 import { jsx, css } from "@emotion/core";
 
@@ -53,6 +52,10 @@ import { RadioGroup } from "./RadioGroup";
 import { MuiRadio } from "./muiRadio";
 import WinFormsStyleSelect from "./winFormsStyleSelect";
 import BookMakingSettingsControl from "../collection/bookMakingSettingsControl";
+import {
+    ColorBlock,
+    IColorBlockProps
+} from "../react_components/colorPickerDialog";
 
 storiesOf("Localizable Widgets", module)
     .add("Expandable", () => (
@@ -189,7 +192,7 @@ storiesOf("Localizable Widgets/MuiCheckbox", module)
     )
     .add("short and long label", () =>
         React.createElement(() => (
-            <>
+            <React.Fragment>
                 original mui checkbox:
                 <div>
                     <FormControlLabel
@@ -270,7 +273,7 @@ storiesOf("Localizable Widgets/MuiCheckbox", module)
                         label={"short"}
                     />
                 </div>
-            </>
+            </React.Fragment>
         ))
     );
 storiesOf("Localizable Widgets/ApiCheckbox", module).add("ApiCheckbox", () =>
@@ -521,7 +524,7 @@ storiesOf("Misc", module)
     .add("BloomAvatars", () =>
         React.createElement(() => {
             return (
-                <>
+                <React.Fragment>
                     <BloomAvatar
                         email="test@example.com"
                         name={"A B C D E F G"}
@@ -546,7 +549,7 @@ storiesOf("Misc", module)
                         name={"A B C"}
                         borderColor="#1d94a4"
                     />
-                </>
+                </React.Fragment>
             );
         })
     )
@@ -662,7 +665,7 @@ const bumpDown = (whichPositionToBump: number): void => {
 
 storiesOf("PlaybackOrderControls", module).add("PlaybackOrder buttons", () =>
     React.createElement(() => (
-        <>
+        <React.Fragment>
             <div style={playbackControlsDivStyles}>
                 <PlaybackOrderControls
                     maxOrder={3}
@@ -687,7 +690,7 @@ storiesOf("PlaybackOrderControls", module).add("PlaybackOrder buttons", () =>
                     onDecrease={bumpDown}
                 />
             </div>
-        </>
+        </React.Fragment>
     ))
 );
 
@@ -888,6 +891,34 @@ storiesOf("Custom Color Chooser", module)
                     >
                         Open Color Picker Dialog
                     </BloomButton>
+                </div>
+            );
+        })
+    )
+    .add("Color Picker Block", () =>
+        React.createElement(() => {
+            const [currentColor, setCurrentColor] = useState("#aa0000");
+            const rootElement = document.getElementById("root") as Element;
+            const props: IColorBlockProps = {
+                currentColor: currentColor,
+                noAlphaSlider: true,
+                localizedTitle: "Test Block",
+                onChange: (color: string) => {
+                    setCurrentColor(color);
+                },
+                width: 60,
+                container: rootElement
+            };
+
+            return (
+                <div
+                    css={css`
+                        background-color: lightyellow;
+                        align-items: center;
+                    `}
+                    style={mainBlockStyles}
+                >
+                    <ColorBlock {...props} />
                 </div>
             );
         })
