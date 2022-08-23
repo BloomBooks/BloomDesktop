@@ -72,6 +72,7 @@ export default class BloomButton extends LocalizableElement<
         const {
             enabled,
             l10nKey,
+            l10nComment,
             clickApiEndpoint,
             mightNavigate,
             enabledImageFile,

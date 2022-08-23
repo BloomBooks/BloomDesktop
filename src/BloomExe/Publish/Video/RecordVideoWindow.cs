@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -31,7 +32,7 @@ namespace Bloom.Publish.Video
 	/// </summary>
 	public partial class RecordVideoWindow : Form
 	{
-		private GeckoFxBrowser _content;
+		private Browser _content;
 		private Process _ffmpegProcess;
 		private bool _ffmpegExited;
 		private StringBuilder _errorData;
@@ -74,7 +75,7 @@ namespace Bloom.Publish.Video
 		{
 			InitializeComponent();
 			_webSocketServer = webSocketServer;
-			_content = new GeckoFxBrowser();
+			_content = BrowserMaker.MakeBrowser();
 			_content.Dock = DockStyle.Fill;
 			_content.AutoScaleMode = AutoScaleMode.None;
 			Controls.Add(_content);
@@ -299,11 +300,24 @@ namespace Bloom.Publish.Video
 			// Configure ffmpeg to record the video.
 			// Todo Linux (BL-11011): gdigrab is Windows-only, we'll need to find something else.
 			// I believe ffmpeg has an option to capture the content of an XWindow.
+			var height = _content.Height;
+			if (height % 2 > 0)
+				height--;
+			var width = _content.Width;
+			if (width %2 > 0)
+				width--;
+			var screenPoint = PointToScreen(new Point(0, 0));
+			var offsetY = screenPoint.Y;
+			var offsetX = screenPoint.X;
 			var args =
 				"-f gdigrab " // basic command for using a window (in a Windows OS) as a video input stream
 				+ $"-framerate {kFrameRate} " // frames per second to capture
 				+ "-draw_mouse 0 " // don't capture any mouse movement over the window
-				+ $"-i title=\"{Text}\" " // identifies the window for gdigrab
+				// We have to capture a region of the screen rather than using -i title {Text}
+				// because GdiGrab of Window content doesn't work with WebView2, probably because
+				// it uses GPU to render.
+				+ $"-video_size {width}x{height} -offset_x {offsetX} -offset_y {offsetY} -i desktop "
+				//+ $"-i title=\"desktop\" " // identifies the window for gdigrab
 				
 				+ videoArgs
 				+ "\"" +_videoOnlyPath + "\""; // the intermediate output file for the recording.
@@ -343,6 +357,11 @@ namespace Bloom.Publish.Video
 			_capturedVideo = _initialVideo; // save so we can dispose eventually
 			_initialVideo = null; // prevent automatic dispose in OnClosed
 
+			// Stop the recording BEFORE we close the window, otherwise, we capture a bit of it fading away.
+			Debug.WriteLine("Telling ffmpeg to quit");
+			_ffmpegProcess.StandardInput.WriteLine("q");
+			_ffmpegProcess.WaitForExit();
+
 			ClearPreventSleepTimer();
 			Close();
 
@@ -371,11 +390,6 @@ namespace Bloom.Publish.Video
 			if (haveVideo)
 			{
 				progress.Message("PublishTab.RecordVideo.FinishingInitialVideoRecording", message: "Finishing initial video recording");
-
-				// Leaving this in temporarily since there have been reports that the window sometimes doesn't close.
-				Debug.WriteLine("Telling ffmpeg to quit");
-				_ffmpegProcess.StandardInput.WriteLine("q");
-				_ffmpegProcess.WaitForExit();
 
 				// Leaving this here in case we decide it is helpful to report to the user.
 				// It can also be helpful when debugging certain things.

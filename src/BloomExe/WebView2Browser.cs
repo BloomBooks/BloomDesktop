@@ -34,6 +34,11 @@ namespace Bloom
 			};
 		}
 
+		public void SetLabel(string label)
+		{
+			label1.Text = label;
+		}
+
 		private void ContextMenuRequested(object sender, CoreWebView2ContextMenuRequestedEventArgs e)
 		{
 			// 		Name	"inspectElement"	string
@@ -69,6 +74,13 @@ namespace Bloom
 			// However, the reason I thought I needed to disable it was a problem that sourced the root
 			// HTML document in edit mode from the wrong domain; we may not need this at all.
 			//var op = new CoreWebView2EnvironmentOptions("--allow-insecure-localhost --disable-web-security");
+			//var env = await CoreWebView2Environment.CreateAsync(null, null, op);
+			//await _webview.EnsureCoreWebView2Async(env);
+			// We played with this also when it seemed that the only way to record a video might be to
+			// disable the gpu. It didn't work; not sure whether because using the GPU wasn't the
+			// problem, or because I still haven't figured out how to make this API actually work,
+			// or because that specific option is not supported in WebView2.
+			//var op = new CoreWebView2EnvironmentOptions("--disable-gpu");
 			//var env = await CoreWebView2Environment.CreateAsync(null, null, op);
 			//await _webview.EnsureCoreWebView2Async(env);
 		}
