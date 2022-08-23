@@ -21,6 +21,7 @@ export const PageThumbnail: React.FunctionComponent<{
     // refresh itself by re-doing the axios call that gets the page content.
     configureReloadCallback: (id: string, callback: () => void) => void;
     onClick: React.MouseEventHandler<HTMLDivElement>;
+    onContextMenu?: React.MouseEventHandler<HTMLDivElement>;
 }> = props => {
     // The initial content here is a blank page. It will be replaced with
     // the real content when we retrieve it from the server.
@@ -92,6 +93,7 @@ export const PageThumbnail: React.FunctionComponent<{
                         <div
                             className="invisibleThumbnailCover"
                             onClick={props.onClick}
+                            onContextMenu={props.onContextMenu}
                         />
                         {overflowing && <div className="pageOverflowsIcon" />}
                     </div>
