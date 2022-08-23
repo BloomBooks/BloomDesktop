@@ -146,6 +146,7 @@ export function addImageEditingButtons(containerDiv: HTMLElement): void {
             '"></button>'
     );
     addButtonHandler("copy");
+
     $containerDiv.prepend(
         '<button class="pasteImageButton imageButton imageOverlayButton ' +
             buttonModifier +
@@ -154,6 +155,7 @@ export function addImageEditingButtons(containerDiv: HTMLElement): void {
             '"></button>'
     );
     addButtonHandler("paste");
+
     $containerDiv.prepend(
         '<button class="changeImageButton imageButton imageOverlayButton ' +
             buttonModifier +
@@ -161,7 +163,7 @@ export function addImageEditingButtons(containerDiv: HTMLElement): void {
             theOneLocalizationManager.getText("EditTab.Image.ChangeImage") +
             '"></button>'
     );
-    addButtonHandler("paste");
+    addButtonHandler("change");
 
     // As part of BL-9976 JH decided to remove this button as users were getting confused.
     // if (
