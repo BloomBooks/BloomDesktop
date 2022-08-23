@@ -18,7 +18,7 @@ import {
 import { Point, PointScaling } from "./point";
 import { isLinux } from "../../utils/isLinux";
 import { reportError } from "../../lib/errorHandler";
-import { getRgbaColorStringFromColorAndOpacity } from "../toolbox/overlay/overlayToolColorHelper";
+import { getRgbaColorStringFromColorAndOpacity } from "../../utils/colorUtils";
 import { SetupElements, attachToCkEditor } from "./bloomEditing";
 import {
     addImageEditingButtons,
@@ -698,7 +698,7 @@ export class BubbleManager {
     // Here we keep track of something (currently, typically, an input box in
     // the color chooser) to which focus needs to be restored after we modify
     // foreground or background color on the bubble, since those processes
-    // involve focusing the bubble and this is iconvenient when typing in the
+    // involve focusing the bubble and this is inconvenient when typing in the
     // input boxes.
     private thingToFocusAfterSettingColor: HTMLElement;
     private restoreFocus() {

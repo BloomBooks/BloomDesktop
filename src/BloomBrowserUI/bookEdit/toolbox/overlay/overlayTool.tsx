@@ -27,13 +27,11 @@ import { MuiCheckbox } from "../../../react_components/muiCheckBox";
 import { ColorBar } from "./colorBar";
 import { IColorInfo } from "../../../react_components/colorSwatch";
 import {
-    defaultBackgroundColors,
-    defaultTextColors
-} from "./overlayToolColorHelper";
-import {
     IColorPickerDialogProps,
     getColorInfoFromSpecialNameOrColorString,
-    getSpecialColorName
+    getSpecialColorName,
+    OverlayTextColorPalette,
+    OverlayBackgroundColors
 } from "../../../react_components/colorPickerDialog";
 import * as tinycolor from "tinycolor2";
 import { showSignLanguageTool } from "../../js/bloomVideo";
@@ -81,6 +79,10 @@ const OverlayToolControls: React.FunctionComponent = () => {
         "EditTab.Toolbox.ComicTool.Options.BackgroundColor"
     );
 
+    const defaultTextColors: IColorInfo[] = OverlayTextColorPalette.map(color =>
+        getColorInfoFromSpecialNameOrColorString(color)
+    );
+
     // Text color swatch
     // defaults to "black" text color
     const [textColorSwatch, setTextColorSwatch] = useState(
@@ -90,7 +92,7 @@ const OverlayToolControls: React.FunctionComponent = () => {
     // Background color swatch
     // defaults to "white" background color
     const [backgroundColorSwatch, setBackgroundColorSwatch] = useState(
-        defaultBackgroundColors[1]
+        OverlayBackgroundColors[1]
     );
 
     // If bubbleType is not undefined, corresponds to the active bubble's family.
@@ -458,7 +460,7 @@ const OverlayToolControls: React.FunctionComponent = () => {
             noAlphaSlider: noAlpha,
             localizedTitle: backgroundColorTitle,
             initialColor: backgroundColorSwatch,
-            defaultSwatchColors: defaultBackgroundColors,
+            defaultSwatchColors: OverlayBackgroundColors,
             onChange: color => updateBackgroundColor(color),
             onInputFocus: noteInputFocused
         };
