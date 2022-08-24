@@ -257,8 +257,8 @@ namespace Bloom.web.controllers
 
 		private void HandleGetCustomColorsRequest(ApiRequest request)
 		{
-			var paletteTag = request.Parameters["palette"];
-			var jsonString = _collectionSettings.GetColorPaletteAsJson(paletteTag);
+			var paletteKey = request.Parameters["palette"];
+			var jsonString = _collectionSettings.GetColorPaletteAsJson(paletteKey);
 			request.ReplyWithJson(jsonString);
 		}
 

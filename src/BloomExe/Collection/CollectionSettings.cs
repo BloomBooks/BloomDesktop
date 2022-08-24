@@ -804,7 +804,7 @@ namespace Bloom.Collection
 					double opacity = 1;
 					var pieces = savedColor.Split('/');
 					if (pieces.Length > 1)
-						opacity = double.Parse(pieces[1]);
+					opacity = double.Parse(pieces[1], NumberFormatInfo.InvariantInfo);
 					var colors = pieces[0].Split('-');
 					var colorElement = string.Format("{{\"colors\":[\"{0}\"],\"opacity\":{1:0.###}}}", string.Join("\",\"", colors), opacity);
 					colorElementList.Add(colorElement);

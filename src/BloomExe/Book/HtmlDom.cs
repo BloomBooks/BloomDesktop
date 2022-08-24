@@ -882,9 +882,9 @@ namespace Bloom.Book
 		}
 
 		/// <summary>
-		/// Gets a JSON string of colors used in the current book.
+		/// Gets a list of colors used in the current book.
 		/// </summary>
-		public string GetColorsUsedInBookBubbleElements()
+		public List<string> GetColorsUsedInBookBubbleElements()
 		{
 			var colorElementList = new List<string>();
 			var textOverPictureElements = GetTextOverPictureElements(Body);
@@ -927,7 +927,7 @@ namespace Bloom.Book
 				colorElementList.Add(backgroundColorString);
 			}
 
-			return "[" + String.Join(",", colorElementList) + "]";
+			return colorElementList;
 		}
 
 		private static string GetColorValueFromStyle(string styleAttrVal)

@@ -1,4 +1,6 @@
+using System.Collections.Generic;
 using System.IO;
+using System.Reflection;
 using System.Xml.Linq;
 using Bloom.Book;
 using Bloom.Collection;
@@ -266,7 +268,7 @@ namespace BloomTests.Collection
 			if (RobustFile.Exists(collectionSettingsPath))
 			{
 				RobustFile.Delete(collectionSettingsPath);
-            }
+			}
 
 			string fileContents = @"<?xml version=""1.0"" encoding=""utf-8""?>
 <Collection version=""0.2"">
@@ -355,6 +357,29 @@ namespace BloomTests.Collection
 				}
 			}
 			Assert.That(count, Is.EqualTo(2));
+		}
+
+		// Though currently Bloom does not save things in this state,
+		// I wanted to ensure that an empty <Palette> tag was not a problem
+		// since it did cause a problem when I was testing.
+		[Test]
+		public void GetColorPaletteAsJson_HasNoColors_ReturnEmptyArray()
+		{
+			var collectionName = "EmptyPaletteTesting";
+			var collectionSettingsPath = Path.Combine(_folder.Path, collectionName, $"{collectionName}.bloomCollection");
+			if (RobustFile.Exists(collectionSettingsPath))
+				RobustFile.Delete(collectionSettingsPath);
+			var settings = CreateCollectionSettings(_folder.Path, collectionName);
+
+			FieldInfo colorPalletesFi = typeof(CollectionSettings).GetField("ColorPalettes", BindingFlags.NonPublic | BindingFlags.Instance);
+
+			colorPalletesFi.SetValue(settings, new Dictionary<string, string> { { "test-empty-text", null } });
+			var jsonResult = settings.GetColorPaletteAsJson("test-empty-text");
+			Assert.That(jsonResult, Is.EqualTo("[]"));
+
+			colorPalletesFi.SetValue(settings, new Dictionary<string, string> { { "test-empty-text", "" } });
+			jsonResult = settings.GetColorPaletteAsJson("test-empty-text");
+			Assert.That(jsonResult, Is.EqualTo("[]"));
 		}
 	}
 }

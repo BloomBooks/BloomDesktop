@@ -31,7 +31,8 @@ import {
     getColorInfoFromSpecialNameOrColorString,
     getSpecialColorName,
     OverlayTextColorPalette,
-    OverlayBackgroundColors
+    OverlayBackgroundColors,
+    BloomPalette
 } from "../../../react_components/colorPickerDialog";
 import * as tinycolor from "tinycolor2";
 import { showSignLanguageTool } from "../../js/bloomVideo";
@@ -445,7 +446,8 @@ const OverlayToolControls: React.FunctionComponent = () => {
             noGradientSwatches: true,
             localizedTitle: textColorTitle,
             initialColor: textColorSwatch,
-            defaultSwatchColors: defaultTextColors,
+            palette: BloomPalette.OverlayText,
+            isForOverlay: true,
             onChange: color => updateTextColor(color),
             onInputFocus: noteInputFocused
         };
@@ -460,7 +462,8 @@ const OverlayToolControls: React.FunctionComponent = () => {
             noAlphaSlider: noAlpha,
             localizedTitle: backgroundColorTitle,
             initialColor: backgroundColorSwatch,
-            defaultSwatchColors: OverlayBackgroundColors,
+            palette: BloomPalette.OverlayBackground,
+            isForOverlay: true,
             onChange: color => updateBackgroundColor(color),
             onInputFocus: noteInputFocused
         };

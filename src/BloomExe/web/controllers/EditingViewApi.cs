@@ -24,7 +24,7 @@ namespace Bloom.web.controllers
 		{
 			apiHandler.RegisterEndpointLegacy("editView/setModalState", HandleSetModalState, true);
 			apiHandler.RegisterEndpointLegacy("editView/chooseWidget", HandleChooseWidget, true);
-			apiHandler.RegisterEndpointLegacy("editView/getBookColors", HandleGetColors, true);
+			apiHandler.RegisterEndpointHandler("editView/getColorsUsedInBookOverlays", HandleGetColorsUsedInBookOverlays, true);
 			apiHandler.RegisterEndpointLegacy("editView/editPagePainted", HandleEditPagePainted, true);
 			apiHandler.RegisterEndpointLegacy("editView/saveToolboxSetting", HandleSaveToolboxSetting, true);
 			apiHandler.RegisterEndpointLegacy("editView/setTopic", HandleSetTopic, true);
@@ -159,7 +159,7 @@ namespace Bloom.web.controllers
 			}
 		}
 
-		private void HandleGetColors(ApiRequest request)
+		private void HandleGetColorsUsedInBookOverlays(ApiRequest request)
 		{
 			var model = View.Model;
 			if (!model.HaveCurrentEditableBook)
@@ -173,7 +173,7 @@ namespace Bloom.web.controllers
 			// frequently used colors are at the front of the resultant swatch array.
 			var currentBookDom = currentBook.OurHtmlDom;
 			var colors = currentBookDom.GetColorsUsedInBookBubbleElements();
-			request.ReplyWithText(colors);
+			request.ReplyWithText("[" + String.Join(",", colors) + "]");
 		}
 
 		private void HandleEditPagePainted(ApiRequest request)

@@ -17,16 +17,26 @@ import { lightTheme } from "../bloomMaterialUITheme";
 import { BloomApi } from "../utils/bloomApi";
 import CustomColorPicker from "./customColorPicker";
 import * as tinycolor from "tinycolor2";
-import { IColorInfo, getColorInfoFromString } from "./colorSwatch";
+import {
+    IColorInfo,
+    getColorInfoFromString,
+    normalizeColorInfoColorsAsHex
+} from "./colorSwatch";
 import Draggable from "react-draggable";
 import "./colorPickerDialog.less";
-import { kBloomGray } from "../utils/colorUtils";
+import {
+    getRgbaColorStringFromColorAndOpacity,
+    kBloomGray
+} from "../utils/colorUtils";
 
 export enum BloomPalette {
     Text = "text",
     CoverBackground = "cover-background",
     BloomReaderBookshelf = "bloom-reader-bookshelf",
+    // REVIEW: my understanding is we only want one text palette, so this needs to be merged with "Text"
     OverlayText = "overlay-text",
+    // REVIEW: I suggest we make this more generic like "text-background" with assumption that some day we may want
+    // other background colors for text besides overlays.
     OverlayBackground = "overlay-background"
 }
 
@@ -35,8 +45,8 @@ export interface IColorPickerDialogProps {
     noAlphaSlider?: boolean;
     noGradientSwatches?: boolean;
     initialColor: IColorInfo;
-    palette?: BloomPalette;
-    defaultSwatchColors?: IColorInfo[]; // deprecated, soon to be removed
+    palette: BloomPalette;
+    isForOverlay?: boolean;
     onChange: (color: IColorInfo) => void;
     onInputFocus: (input: HTMLElement) => void;
 }
@@ -60,38 +70,37 @@ const ColorPickerDialog: React.FC<IColorPickerDialogProps> = props => {
     const [open, setOpen] = useState(true);
     const [currentColor, setCurrentColor] = useState(props.initialColor);
 
-    let defaultSwatchColors: IColorInfo[];
-    if (props.defaultSwatchColors)
-        defaultSwatchColors = props.defaultSwatchColors;
-    else if (props.palette)
-        defaultSwatchColors = getDefaultColorsFromPalette(props.palette);
-    else defaultSwatchColors = [];
-
     const [swatchColorArray, setSwatchColorArray] = useState(
-        defaultSwatchColors
+        getDefaultColorsFromPalette(props.palette)
     );
 
     externalSetOpen = setOpen;
     const dlgRef = useRef<HTMLElement>(null);
 
+    function useAddCustomColors(endpoint: string): void {
+        BloomApi.get(endpoint, result => {
+            const jsonArray = result.data;
+            if (!jsonArray.map) {
+                return; // this means the conversion string -> JSON didn't work. Bad JSON?
+            }
+            const customColors = convertJsonColorArrayToColorInfos(jsonArray);
+            addNewColorsToArrayIfNecessary(customColors);
+        });
+    }
+
     React.useEffect(() => {
         if (open) {
-            let getColorsApiCall: string;
-            if (props.palette) {
-                getColorsApiCall = `settings/getCustomPaletteColors?palette=${props.palette}`;
-            } else {
-                getColorsApiCall = "editView/getBookColors";
-            }
-            BloomApi.get(getColorsApiCall, result => {
-                const jsonArray = result.data;
-                if (!jsonArray.map) {
-                    return; // this means the conversion string -> JSON didn't work. Bad JSON?
-                }
-                const customColors = convertJsonColorArrayToColorInfos(
-                    jsonArray
-                );
-                addNewColorsToArrayIfNecessary(customColors);
-            });
+            setSwatchColorArray(getDefaultColorsFromPalette(props.palette));
+            useAddCustomColors(
+                `settings/getCustomPaletteColors?palette=${props.palette}`
+            );
+            // Before we introduced the concept of a custom palette (BL-11433),
+            // the overlay tool color pickers would display all colors currently in
+            // use in any overlays in the book. Rather than try some fancy migration,
+            // we just continue to display those along with the custom palette colors.
+            // Thus, users won't see colors disappear from their pickers.
+            if (props.isForOverlay)
+                useAddCustomColors("editView/getColorsUsedInBookOverlays");
             setCurrentColor(props.initialColor);
         }
     }, [open]);
@@ -140,15 +149,23 @@ const ColorPickerDialog: React.FC<IColorPickerDialogProps> = props => {
     }, [dlgRef.current]);
 
     const convertJsonColorArrayToColorInfos = (
-        jsonArray: { colors: string[] }[]
+        jsonArray: IColorInfo[]
     ): IColorInfo[] => {
-        return jsonArray.map((colorString: { colors: string[] }) => {
-            const colorArray = colorString.colors;
+        return jsonArray.map((colorInfo: IColorInfo) => {
+            const colorArray = colorInfo.colors;
             // check for a special color or gradient
             let colorKey = getSpecialColorName(colorArray);
             if (!colorKey) {
                 // Not a gradient or other "known" color, so there'll only be one color.
                 colorKey = colorArray[0];
+                if (colorInfo.opacity !== 1) {
+                    // The colorInfo may have been saved as a 6-digit hex with opacity only in the opacity field.
+                    // But later code assumes that colors with opacity are in rgba format.
+                    colorKey = getRgbaColorStringFromColorAndOpacity(
+                        colorKey,
+                        colorInfo.opacity
+                    );
+                }
             }
             return getColorInfoFromSpecialNameOrColorString(colorKey);
         });
@@ -161,10 +178,11 @@ const ColorPickerDialog: React.FC<IColorPickerDialogProps> = props => {
             setCurrentColor(props.initialColor);
         } else {
             if (!isColorInCurrentSwatchColorArray(currentColor)) {
-                if (props.palette) {
-                    const setColorsApiCall = `settings/addCustomPaletteColor?palette=${props.palette}`;
-                    BloomApi.postJson(setColorsApiCall, currentColor);
-                }
+                normalizeColorInfoColorsAsHex(currentColor);
+                BloomApi.postJson(
+                    `settings/addCustomPaletteColor?palette=${props.palette}`,
+                    currentColor
+                );
                 addNewColorsToArrayIfNecessary([currentColor]);
             }
         }
@@ -176,48 +194,59 @@ const ColorPickerDialog: React.FC<IColorPickerDialogProps> = props => {
     // of other default colors is more than will fit in our array (current 21)? When we get colors from the book,
     // we should maybe start with the current page, to give them a better chance of being included in the picker.
     const addNewColorsToArrayIfNecessary = (newColors: IColorInfo[]) => {
-        const newColorsAdded: IColorInfo[] = [];
-        const lengthBefore = swatchColorArray.length;
-        let numberToDelete = 0;
-        // CustomColorPicker is going to filter these colors out anyway.
-        let numberToSkip = swatchColorArray.filter(color =>
-            willSwatchColorBeFilteredOut(color)
-        ).length;
-        newColors.forEach(newColor => {
-            if (isColorInCurrentSwatchColorArray(newColor)) {
-                return; // This one is already in our array of swatch colors
+        // Every time we reference the current swatchColorArray inside
+        // this setter, we must use previousSwatchColorArray.
+        // Otherwise, we add to a stale array.
+        setSwatchColorArray(previousSwatchColorArray => {
+            const newColorsAdded: IColorInfo[] = [];
+            const lengthBefore = previousSwatchColorArray.length;
+            let numberToDelete = 0;
+            // CustomColorPicker is going to filter these colors out anyway.
+            let numberToSkip = previousSwatchColorArray.filter(color =>
+                willSwatchColorBeFilteredOut(color)
+            ).length;
+            newColors.forEach(newColor => {
+                if (isColorInThisArray(newColor, previousSwatchColorArray)) {
+                    return; // This one is already in our array of swatch colors
+                }
+                if (isColorInThisArray(newColor, newColorsAdded)) {
+                    return; // We don't need to add the same color more than once!
+                }
+                // At first I wanted to do this filtering outside the loop, but some of them might be pre-filtered
+                // by the above two conditions.
+                if (willSwatchColorBeFilteredOut(newColor)) {
+                    numberToSkip++;
+                }
+                if (
+                    lengthBefore + newColorsAdded.length + 1 >
+                    MAX_SWATCHES + numberToSkip
+                ) {
+                    numberToDelete++;
+                }
+                newColorsAdded.unshift(newColor); // add newColor to the beginning of the array.
+            });
+            const newSwatchColorArray = swatchColorArray.slice(); // Get a new array copy of the old (a different reference)
+            if (numberToDelete > 0) {
+                // Remove 'numberToDelete' swatches from oldest custom swatches
+                const defaultNumber = getDefaultColorsFromPalette(props.palette)
+                    .length;
+                const indexToRemove =
+                    swatchColorArray.length - defaultNumber - numberToDelete;
+                if (indexToRemove >= 0) {
+                    newSwatchColorArray.splice(indexToRemove, numberToDelete);
+                } else {
+                    const excess = indexToRemove * -1; // index went negative; excess is absolute value
+                    newSwatchColorArray.splice(0, numberToDelete - excess);
+                    newColorsAdded.splice(
+                        newColorsAdded.length - excess,
+                        excess
+                    );
+                }
             }
-            if (isColorInThisArray(newColor, newColorsAdded)) {
-                return; // We don't need to add the same color more than once!
-            }
-            // At first I wanted to do this filtering outside the loop, but some of them might be pre-filtered
-            // by the above two conditions.
-            if (willSwatchColorBeFilteredOut(newColor)) {
-                numberToSkip++;
-            }
-            if (
-                lengthBefore + newColorsAdded.length + 1 >
-                MAX_SWATCHES + numberToSkip
-            ) {
-                numberToDelete++;
-            }
-            newColorsAdded.unshift(newColor); // add newColor to the beginning of the array.
+            const result = newColorsAdded.concat(previousSwatchColorArray);
+            //console.log(result);
+            return result;
         });
-        const newSwatchColorArray = swatchColorArray.slice(); // Get a new array copy of the old (a different reference)
-        if (numberToDelete > 0) {
-            // Remove 'numberToDelete' swatches from oldest custom swatches
-            const defaultNumber = defaultSwatchColors.length;
-            const indexToRemove =
-                swatchColorArray.length - defaultNumber - numberToDelete;
-            if (indexToRemove >= 0) {
-                newSwatchColorArray.splice(indexToRemove, numberToDelete);
-            } else {
-                const excess = indexToRemove * -1; // index went negative; excess is absolute value
-                newSwatchColorArray.splice(0, numberToDelete - excess);
-                newColorsAdded.splice(newColorsAdded.length - excess, excess);
-            }
-        }
-        setSwatchColorArray(newColorsAdded.concat(newSwatchColorArray));
     };
 
     const isColorInCurrentSwatchColorArray = (color: IColorInfo): boolean =>
@@ -491,7 +520,7 @@ export interface ISimpleColorPickerDialogProps {
     localizedTitle: string;
     noAlphaSlider?: boolean;
     initialColor: string;
-    palette?: BloomPalette;
+    palette: BloomPalette;
     onChange: (color: string) => void;
     onInputFocus: (input: HTMLElement) => void;
 }

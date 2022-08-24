@@ -99,4 +99,13 @@ export const getColorInfoFromString = (colorSpec: string): IColorInfo => {
     };
 };
 
+// The purpose of this is to get the colors array ready for persistence.
+// It assumes the "a" of any rgba values is already captured in the opacity field.
+// Thus all hex values are 6 digits.
+export function normalizeColorInfoColorsAsHex(colorInfo: IColorInfo): void {
+    colorInfo.colors[0] = `#${tinycolor(colorInfo.colors[0]).toHex()}`;
+    if (colorInfo.colors[1])
+        colorInfo.colors[1] = `#${tinycolor(colorInfo.colors[1]).toHex()}`;
+}
+
 export default ColorSwatch;
