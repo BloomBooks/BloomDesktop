@@ -46,7 +46,27 @@ namespace Bloom.Publish
 		// other views.
 		public static bool InPublishTab { get; set; }
 
-		GeckoFxBrowser _browser = new GeckoFxBrowser();
+		private Browser _browser;
+		public Browser Browser1
+		{
+			get
+			{
+				if (_browser == null)
+				{
+					Debug.Assert(ControlForInvoke != null || Program.RunningUnitTests || Program.RunningOnUiThread);
+					if (ControlForInvoke != null && ControlForInvoke.InvokeRequired)
+					{
+						ControlForInvoke.Invoke((Action)(() => _browser = BrowserMaker.MakeBrowser()));
+					}
+					else
+					{
+						_browser = BrowserMaker.MakeBrowser();
+					}
+				}
+				return _browser;
+			}
+		} 
+
 		// The only reason this isn't just ../* is performance. We could change it.  It comes from the need to actually
 		// remove any elements that the style rules would hide, because epub readers ignore visibility settings.
 		private const string kSelectThingsThatCanBeHidden = ".//div | .//img";
@@ -211,7 +231,7 @@ namespace Bloom.Publish
 				epubMaker.AddEpubVisibilityStylesheetAndClass(displayDom);
 			if (this != _latestInstance)
 				return;
-			if (!_browser.NavigateAndWaitTillDone(displayDom, 10000, "publish", () => this != _latestInstance,
+			if (!Browser1.NavigateAndWaitTillDone(displayDom, 10000, "publish", () => this != _latestInstance,
 				false))
 			{
 				// We started having problems with timeouts here (BL-7892).
@@ -325,7 +345,7 @@ namespace Bloom.Publish
 		private bool IsDisplayed(XmlElement elt, bool throwOnFailure)
 		{
 			var id = elt.Attributes["id"].Value;
-			var display = _browser.RunJavaScript ("document.getElementById('" + id + "') ? getComputedStyle(document.getElementById('" + id + "'), null).display : 'not found'");
+			var display = Browser1.RunJavaScript ("document.getElementById('" + id + "') ? getComputedStyle(document.getElementById('" + id + "'), null).display : 'not found'");
 			if (display == "not found")
 			{
 				Debug.WriteLine("element not found in IsDisplayed()");
@@ -348,7 +368,7 @@ namespace Bloom.Publish
 		private void StoreFontUsed(XmlElement elt)
 		{
 			var id = elt.Attributes["id"].Value;
-			var fontFamily = _browser.RunJavaScript($"document.getElementById('{id}') ? getComputedStyle(document.getElementById('{id}'), null).getPropertyValue('font-family') : 'not found'");
+			var fontFamily = Browser1.RunJavaScript($"document.getElementById('{id}') ? getComputedStyle(document.getElementById('{id}'), null).getPropertyValue('font-family') : 'not found'");
 			// 'fontFamily' could come back null if the user closed Bloom while a save was ongoing.
 			// The save will finish successfully after the Bloom screen goes away, but it may not have all the font information.
 			// We need a progress indicator, so that users will know when their file save completed.
@@ -441,7 +461,7 @@ namespace Bloom.Publish
 			{
 				if (disposing)
 				{
-					if (_browser != null)
+					if (_browser != null) // Don't use the method here...if we don't have one we don't want to make it now!
 					{
 						if (_browser.IsHandleCreated)
 						{

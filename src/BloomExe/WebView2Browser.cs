@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using Bloom.Book;
@@ -12,7 +14,7 @@ namespace Bloom
 {
 	public partial class WebView2Browser :  Browser
 	{
-
+		private bool _readyToNavigate;
 		public WebView2Browser()
 		{
 			InitializeComponent();
@@ -31,6 +33,7 @@ namespace Bloom
 					RaiseDocumentCompleted(o, eventArgs);
 				};
 				_webview.CoreWebView2.ContextMenuRequested += ContextMenuRequested;
+				_readyToNavigate = true;
 			};
 		}
 
@@ -134,13 +137,63 @@ namespace Bloom
 
 		protected override void EnsureBrowserReadyToNavigate()
 		{
-			// So far, don't know of anything we have to do to achieve this in WebView2
+			// Don't really know if this is enough. Arguably, we should also
+			// wait until we are sure all the awaits in InitWebView complete.
+			// But that is very hard to do without making half Bloom's code async.
+			// This seems to be enough for the one case (making epubs) where I
+			// experienced a problem from navigating too soon.
+			// True confessions: I'm not sure why this works, nor even absolutely
+			// sure that it could not loop forever. But in every case I've tried,
+			// it did terminate, and in the one case where Navigation previously
+			// threw an Exception indicating it was not ready, waiting like this fixed it.
+			while (!_readyToNavigate)
+			{
+				Application.DoEvents();
+				Thread.Sleep(10);
+			}
 		}
 
 		public override bool NavigateAndWaitTillDone(HtmlDom htmlDom, int timeLimit, string source, Func<bool> cancelCheck, bool throwOnTimeout)
 		{
-			var html = XmlHtmlConverter.ConvertDomToHtml5(htmlDom.RawDom);
-			_webview.NavigateToString(html);
+			// Should be called on UI thread. Since it is quite typical for this method to create the
+			// window handle and browser, it can't do its own Invoke, which depends on already having a handle.
+			// OTOH, Unit tests are often not run on the UI thread (and would therefore just pop up annoying asserts).
+			Debug.Assert(Program.RunningOnUiThread || Program.RunningUnitTests || Program.RunningInConsoleMode,
+				"Should be running on UI Thread or Unit Tests or Console mode");
+			var done = false;
+			var navTimer = new Stopwatch();
+			EnsureBrowserReadyToNavigate();
+
+			navTimer.Start();
+			_webview.CoreWebView2.NavigationCompleted += (sender, args) => done = true;
+			// just in case something goes wrong, avoid the timeout if it fails rather than completing.
+			// Is there an equivalent??_browser.NavigationError += (sender, e) => done = true;
+			// Currently this is only used by EpubMaker.
+			Navigate(htmlDom, source: BloomServer.SimulatedPageFileSource.Epub);
+			// If done is set (by NavigationError?) prematurely, we still need to wait while IsBusy
+			// is true to give the loaded document time to become available for the checks later.
+			// See https://issues.bloomlibrary.org/youtrack/issue/BL-8741.
+			while ((!done) && navTimer.ElapsedMilliseconds < timeLimit)
+			{
+				Application.DoEvents(); // NOTE: this has bad consequences all down the line. See BL-6122.
+				// Remember this might be needed if we reimplement with a Linux-compatible control
+				//Application.RaiseIdle(new EventArgs()); // needed on Linux to avoid deadlock starving browser navigation
+				if (cancelCheck != null && cancelCheck())
+				{
+					navTimer.Stop();
+					return false;
+				}
+			}
+
+			navTimer.Stop();
+
+			if (!done)
+			{
+				if (throwOnTimeout)
+					throw new ApplicationException("Browser unexpectedly took too long to load a page");
+				else return false;
+			}
+
 			return true;
 		}
 
