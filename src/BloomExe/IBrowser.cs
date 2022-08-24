@@ -467,50 +467,10 @@ namespace Bloom
 
 		private void AddOtherMenuItemsForDebugging(IMenuItemAdder adder)
 		{
-			adder.Add((string)"Open about:memory window", (EventHandler)OnOpenAboutMemory);
-			adder.Add((string)"Open about:config window", (EventHandler)OnOpenAboutConfig);
-			adder.Add((string)"Open about:cache window", (EventHandler)OnOpenAboutCache);
 			adder.Add((string)"Refresh", (EventHandler)OnRefresh);
 		}
 
 		public abstract void OnRefresh(object sender, EventArgs e);
-
-		private void OnOpenAboutMemory(object sender, EventArgs e)
-		{
-			var form = new AboutMemory();
-			form.Text = "Bloom Browser Memory Diagnostics (\"about:memory\")";
-			form.FirstLinkMessage = "See https://developer.mozilla.org/en-US/docs/Mozilla/Performance/about:memory for a basic explanation.";
-			form.FirstLinkUrl = "https://developer.mozilla.org/en-US/docs/Mozilla/Performance/about:memory";
-			form.SecondLinkMessage = "See https://developer.mozilla.org/en-US/docs/Mozilla/Performance/GC_and_CC_logs for more details.";
-			form.SecondLinkUrl = "https://developer.mozilla.org/en-US/docs/Mozilla/Performance/GC_and_CC_logs";
-			form.Navigate("about:memory");
-			form.Show();	// NOT Modal!
-		}
-
-		// This is currently still Gecko-specific, not sure whether there will be an equivalent for WebView2.
-		private void OnOpenAboutConfig(object sender, EventArgs e)
-		{
-			var form = new AboutMemory();
-			form.Text = "Bloom Browser Internal Configuration Settings (\"about:config\")";
-			form.FirstLinkMessage = "See http://kb.mozillazine.org/About:config_entries for a basic explanation.";
-			form.FirstLinkUrl = "http://kb.mozillazine.org/About:config_entries";
-			form.SecondLinkMessage = null;
-			form.SecondLinkUrl = null;
-			form.Navigate("about:config");
-			form.Show();    // NOT Modal!
-		}
-		// This is currently still Gecko-specific, not sure whether there will be an equivalent for WebView2.
-		private void OnOpenAboutCache(object sender, EventArgs e)
-		{
-			var form = new AboutMemory();
-			form.Text = "Bloom Browser Internal Cache Status (\"about:cache?storage=&context=\")";
-			form.FirstLinkMessage = "See http://kb.mozillazine.org/Browser.cache.memory.capacity for a basic explanation.";
-			form.FirstLinkUrl = "http://kb.mozillazine.org/Browser.cache.memory.capacity";
-			form.SecondLinkMessage = null;
-			form.SecondLinkUrl = null;
-			form.Navigate("about:cache?storage=&context=");
-			form.Show();    // NOT Modal!
-		}
 
 		// This is currently still Gecko-specific, not sure whether there will be an equivalent for WebView2.
 		public virtual void OnGetTroubleShootingInformation(object sender, EventArgs e)
