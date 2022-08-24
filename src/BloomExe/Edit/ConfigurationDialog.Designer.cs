@@ -29,7 +29,7 @@
         private void InitializeComponent()
         {
 			this.components = new System.ComponentModel.Container();
-			this._browser = new Bloom.GeckoFxBrowser();
+			this._browser = BrowserMaker.MakeBrowser();
 			this._cancelButton = new System.Windows.Forms.Button();
 			this._okButton = new System.Windows.Forms.Button();
 			this._L10NSharpExtender = new L10NSharp.UI.L10NSharpExtender(this.components);
@@ -111,7 +111,7 @@
 
         #endregion
 
-        private GeckoFxBrowser _browser;
+        private Browser _browser;
         private System.Windows.Forms.Button _cancelButton;
         private System.Windows.Forms.Button _okButton;
 		private L10NSharp.UI.L10NSharpExtender _L10NSharpExtender;

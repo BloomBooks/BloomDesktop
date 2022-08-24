@@ -115,19 +115,10 @@ namespace Bloom
 			// peculiar behavior of GeckoFx.
 			_webview.Select();
 		}
-		public override void AddScriptContent(string content)
-		{
-			throw new NotImplementedException();
-		}
 
 		public override void ActivateFocussed() 
 		{
 			//TODO
-		}
-
-		public override void AddScriptSource(string filename)
-		{
-			throw new NotImplementedException();
 		}
 
 		public override void Copy()

@@ -136,8 +136,6 @@ namespace Bloom
 		}
 		public abstract void ActivateFocussed(); // review what should this be called?
 
-		public abstract void AddScriptContent(string content);
-		public abstract void AddScriptSource(string filename);
 		public abstract void Copy();
 
 		// NB: make sure you assigned HtmlDom.BaseForRelativePaths if the temporary document might

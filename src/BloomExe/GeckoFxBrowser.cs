@@ -789,37 +789,6 @@ namespace Bloom
 			_browser.CopySelection();
 		}
 
-		/// <summary>
-		/// add a jscript source file
-		/// </summary>
-		/// <param name="filename"></param>
-		public override void AddScriptSource(string filename)
-		{
-			Debug.Assert(!InvokeRequired);
-			if (!RobustFile.Exists(Path.Combine(Path.GetDirectoryName(_url), filename)))
-				throw new FileNotFoundException(filename);
-
-			GeckoDocument doc = WebBrowser.Document;
-			var head = doc.GetElementsByTagName("head").First();
-			GeckoScriptElement script = doc.CreateElement("script") as GeckoScriptElement;
-			// Geckofx60 doesn't implement the GeckoScriptElement .Type and .Src properties
-			script.SetAttribute("type", "text/javascript");
-			script.SetAttribute("src", filename);
-			head.AppendChild(script);
-		}
-
-		public override void AddScriptContent(string content)
-		{
-			Debug.Assert(!InvokeRequired);
-			GeckoDocument doc = WebBrowser.Document;
-			var head = doc.GetElementsByTagName("head").First();
-			GeckoScriptElement script = doc.CreateElement("script") as GeckoScriptElement;
-			// Geckofx60 doesn't implement the GeckoScriptElement .Type and .Text properties
-			script.SetAttribute("type", "text/javascript");
-			script.TextContent = content;
-			head.AppendChild(script);
-		}
-
 		public override string RunJavaScript(string script)
 		{
 			Debug.Assert(!InvokeRequired);
