@@ -136,8 +136,6 @@ namespace Bloom
 		}
 		public abstract void ActivateFocussed(); // review what should this be called?
 
-		public abstract void Copy();
-
 		// NB: make sure you assigned HtmlDom.BaseForRelativePaths if the temporary document might
 		// contain references to files in the directory of the original HTML file it is derived from,
 		// 'cause that provides the information needed

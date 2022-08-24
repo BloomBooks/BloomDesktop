@@ -778,17 +778,6 @@ namespace Bloom
 			}
 		}
 
-		private void OnUpdateDisplayTick(object sender, EventArgs e)
-		{
-			UpdateEditButtons();
-		}
-
-		public override void Copy()
-		{
-			Debug.Assert(!InvokeRequired);
-			_browser.CopySelection();
-		}
-
 		public override string RunJavaScript(string script)
 		{
 			Debug.Assert(!InvokeRequired);

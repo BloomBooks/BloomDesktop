@@ -226,7 +226,7 @@ namespace Bloom.Edit
 			using (var dlg = new ReactDialog("duplicateManyDlgBundle"))
 			{
 				dlg.Width = 400;
-				dlg.Height = 200;
+				dlg.Height = 235;
 				// This dialog is neater without a task bar. We don't need to be able to
 				// drag it around. There's nothing left to give it one if we don't set a title
 				// and remove the control box.

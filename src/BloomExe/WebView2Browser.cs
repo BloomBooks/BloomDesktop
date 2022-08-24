@@ -66,7 +66,7 @@ namespace Bloom
 
 		public override void OnRefresh(object sender, EventArgs e)
 		{
-			// Todo
+			_webview.Reload();
 		}
 
 		private async void InitWebView()
@@ -121,12 +121,15 @@ namespace Bloom
 
 		public override void ActivateFocussed() 
 		{
-			//TODO
-		}
-
-		public override void Copy()
-		{
-			throw new NotImplementedException();
+			// I can't find any place where this does anything useful in GeckoFx that would allow me to
+			// test a WebView2 implementation. For example, from the comment in the ReactControl_Load
+			// method which is currently the only caller, I would expect that using it would cause
+			// something useful, possibly the OK button or the number, to be selected in the Duplicate Many
+			// dialog, which is one thing that actually executes this method as it launches. But
+			// in fact nothing helpful is focused in either Gecko mode or WV2 mode, and in both modes,
+			// it takes the same number of tab presses to get focus to the desired control. I think we
+			// can leave implementing this until someone identifies a difference in Gecko vs WV2 behavior
+			// that we think is due to not implementing it.
 		}
 
 		protected override async void UpdateDisplay(string newUrl)
