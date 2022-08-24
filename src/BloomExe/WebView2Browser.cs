@@ -83,6 +83,9 @@ namespace Bloom
 			//var op = new CoreWebView2EnvironmentOptions("--disable-gpu");
 			//var env = await CoreWebView2Environment.CreateAsync(null, null, op);
 			//await _webview.EnsureCoreWebView2Async(env);
+			var op = new CoreWebView2EnvironmentOptions("--autoplay-policy=no-user-gesture-required");
+			var env = await CoreWebView2Environment.CreateAsync(null, null, op);
+			await _webview.EnsureCoreWebView2Async(env);
 		}
 
 		// needed by geckofx but not webview2
