@@ -312,6 +312,53 @@ namespace Bloom.Book
 		/// <remarks>Previouly bookInfo.SignLangsToPublish.ForBloomPUB</remarks>
 		[JsonProperty("signLangs")]
 		public Dictionary<string, InclusionSetting> SignLangs { get; set; }
+
+		/// <summary>
+		/// The image resolution settings for this BloomPUB
+		/// </summary>
+		[JsonProperty("imageSettings")]
+		public ImagePublishSettings ImageSettings { get; set; }
+	}
+
+	public class ImagePublishSettings
+	{
+		// ENHANCE: I think these should ideally be readonly, but that requires a higher C# version.
+		[JsonProperty("maxWidth")]
+		public uint MaxWidth { get; set; }
+
+		[JsonProperty("maxHeight")]
+		public uint MaxHeight { get; set; }
+
+
+		/// <summary>
+		/// Default constructor
+		/// </summary>
+		/// <remarks>As usual, needed for JSON deserialization to work properly.</remarks>
+		public ImagePublishSettings()
+		{
+		}
+
+		public ImagePublishSettings(uint maxWidth, uint maxHeight)
+		{
+			MaxWidth = maxWidth;
+			MaxHeight = maxHeight;
+		}
+
+		/// <summary>
+		/// Copy constructor
+		/// </summary>
+		/// <param name="other">The object to clone from</param>
+		public ImagePublishSettings(ImagePublishSettings other)
+		{
+			MaxWidth = other.MaxWidth;
+			MaxHeight = other.MaxHeight;
+		}
+
+		// See discussion in BL-5385
+		private const uint kDefaultMaxWidth = 600;
+		private const uint kDefaultMaxHeight = 600;
+
+		public static ImagePublishSettings Default { get; } = new ImagePublishSettings(kDefaultMaxWidth, kDefaultMaxHeight);
 	}
 
 	public class EpubSettings

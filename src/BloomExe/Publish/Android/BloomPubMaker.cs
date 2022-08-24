@@ -61,7 +61,6 @@ namespace Bloom.Publish.Android
 		/// <param name="outputPath">The path to create the zipped .bloompub output file at</param>
 		/// <param name="bookFolderPath">The path to the input book</param>
 		/// <param name="bookServer"></param>
-		/// <param name="backColor"></param>
 		/// <param name="progress"></param>
 		/// <param name="tempFolder">A temporary folder. This function will not dispose of it when done</param>
 		/// <param name="creator">value for &lt;meta name="creator" content="..."/&gt; (defaults to "bloom")</param>
@@ -78,8 +77,8 @@ namespace Bloom.Publish.Android
 
 			BookCompressor.MakeSizedThumbnail(modifiedBook, modifiedBook.FolderPath, 256);
 
-			BookCompressor.CompressBookDirectory(outputPath, modifiedBook.FolderPath, "", reduceImages: true, omitMetaJson: false, wrapWithFolder: false,
-				pathToFileForSha: BookStorage.FindBookHtmlInFolder(bookFolderPath));
+			BookCompressor.CompressBookDirectory(outputPath, modifiedBook.FolderPath, "", forDevice: true, imagePublishSettings: settings?.ImagePublishSettings ?? ImagePublishSettings.Default,
+				omitMetaJson: false, wrapWithFolder: false, pathToFileForSha: BookStorage.FindBookHtmlInFolder(bookFolderPath));
 
 			return modifiedBook.FolderPath;
 		}

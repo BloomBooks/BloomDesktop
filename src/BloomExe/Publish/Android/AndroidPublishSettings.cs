@@ -36,6 +36,8 @@ namespace Bloom.Publish.Android
 		// If you want a different value, for example, AudioVideo.Settings, be sure to set that up.
 		public bool Motion { get; set; }
 
+		public ImagePublishSettings ImagePublishSettings { get; set; }
+
 		public override bool Equals(object obj)
 		{
 			if (!(obj is AndroidPublishSettings))
@@ -137,7 +139,8 @@ namespace Bloom.Publish.Android
 				LanguagesToInclude = languagesToInclude,
 				AudioLanguagesToExclude = audioLanguagesToExclude,
 				// All the paths that use this are making settings for BloomPub, not Video.
-				Motion = bookInfo.PublishSettings.BloomPub.Motion
+				Motion = bookInfo.PublishSettings.BloomPub.Motion,
+				ImagePublishSettings = bookInfo.PublishSettings.BloomPub.ImageSettings != null ? new ImagePublishSettings(bookInfo.PublishSettings.BloomPub.ImageSettings) : ImagePublishSettings.Default
 			};
 		}
 
