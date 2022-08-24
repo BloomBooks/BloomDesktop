@@ -95,13 +95,13 @@ export const ProgressDialog: React.FunctionComponent<IProgressDialogProps> = pro
     const [listenerReady, setListenerReady] = useState(false);
     const [progressBoxReady, setProgressBoxReady] = useState(false);
     useEffect(() => {
-        if (
-            listenerReady &&
-            progressBoxReady &&
-            props.onReadyToReceive &&
-            propsForBloomDialog.open
-        ) {
-            props.onReadyToReceive();
+        if (listenerReady && progressBoxReady && propsForBloomDialog.open) {
+            if (props.onReadyToReceive) {
+                props.onReadyToReceive();
+            } else {
+                // Typically we're a top-level dialog; just assume Bloom needs to know.
+                BloomApi.post("progress/ready");
+            }
         }
     }, [listenerReady, progressBoxReady, propsForBloomDialog.open]);
 

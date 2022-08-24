@@ -52,6 +52,16 @@ export const ProgressBox: React.FunctionComponent<IProgressBoxProps> = props => 
         Array<JSX.Element>
     >([]);
 
+    const {
+        webSocketContext,
+        onReadyToReceive,
+        onGotErrorMessage,
+        preloadedProgressEvents,
+        messages: propsMessages,
+        setMessages: propsDummy,
+        ...divProps
+    } = props;
+
     let messages = localMessages;
     let setMessages = setLocalMessages;
     if (props.messages && props.setMessages) {
@@ -170,7 +180,7 @@ export const ProgressBox: React.FunctionComponent<IProgressBoxProps> = props => 
                     font-family: "consolas", "monospace";
                 }
             `} // accept styling that the parent might have put on the <ProgressBox> element. See https://emotion.sh/docs/css-prop
-            {...props}
+            {...divProps}
         >
             {messages}
             <div ref={bottomRef} />

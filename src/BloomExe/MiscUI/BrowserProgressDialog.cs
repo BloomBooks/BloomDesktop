@@ -59,12 +59,13 @@ namespace Bloom.MiscUI
 				dlg.ControlBox = false;
 				var worker = new BackgroundWorker();
 				worker.WorkerSupportsCancellation = true;
+				_readyForProgressReports = false;
 				worker.DoWork += (sender, args) =>
 				{
 					ProgressDialogApi.SetCancelHandler(() => { worker.CancelAsync(); });
 
 					// A way of waiting until the dialog is ready to receive progress messages
-					while (!socketServer.IsSocketOpen(socketContext))
+					while (!_readyForProgressReports)
 						Thread.Sleep(50);
 					bool waitForUserToCloseDialogOrReportProblems;
 					try
@@ -184,7 +185,7 @@ namespace Bloom.MiscUI
 				ProgressDialogApi.SetCancelHandler(() => { worker.CancelAsync(); });
 
 				// A way of waiting until the dialog is ready to receive progress messages
-				while (!socketServer.IsSocketOpen(socketContext) || !_readyForProgressReports)
+				while (!_readyForProgressReports)
 					Thread.Sleep(50);
 				bool waitForUserToCloseDialogOrReportProblems;
 				try

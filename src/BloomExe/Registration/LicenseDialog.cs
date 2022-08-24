@@ -11,7 +11,7 @@ namespace Bloom.Registration
 {
 	public partial class LicenseDialog : Form
 	{
-		private GeckoFxBrowser _licenseBrowser;
+		private Browser _licenseBrowser;
 
 		/// <summary>
 		/// Initialize a new instance of the <see cref="Bloom.Registration.LicenseDialog"/> class.
@@ -35,7 +35,7 @@ namespace Bloom.Registration
 			else
 				prolog = String.Format("<p>{0}</p>{1}<hr>{1}", prolog, Environment.NewLine);
 
-			_licenseBrowser = new GeckoFxBrowser();
+			_licenseBrowser = BrowserMaker.MakeBrowser();
 			_licenseBrowser.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
 			_licenseBrowser.Location = new Point(12, 12);
 			_licenseBrowser.Name = "licenseBrowser";
