@@ -80,9 +80,15 @@ namespace Bloom.Publish.Video
 			_content.AutoScaleMode = AutoScaleMode.None;
 			Controls.Add(_content);
 			AutoScaleMode = AutoScaleMode.None;
+			if (ExperimentalFeatures.IsFeatureEnabled(ExperimentalFeatures.kWebView2))
+			{
+				// We have to capture a region of the screen (see Gdigrab args below).
+				FormBorderStyle = FormBorderStyle.None; // prevent the window being moved
+				TopMost = true; // capturing a screen area we really don't want things on top of the window.
+			}
 
 			// force handles to be created
-			_ = Handle;
+				_ = Handle;
 			_ = _content.Handle;
 		}
 
@@ -300,23 +306,31 @@ namespace Bloom.Publish.Video
 			// Configure ffmpeg to record the video.
 			// Todo Linux (BL-11011): gdigrab is Windows-only, we'll need to find something else.
 			// I believe ffmpeg has an option to capture the content of an XWindow.
-			var height = _content.Height;
-			if (height % 2 > 0)
-				height--;
-			var width = _content.Width;
-			if (width %2 > 0)
-				width--;
-			var screenPoint = PointToScreen(new Point(0, 0));
-			var offsetY = screenPoint.Y;
-			var offsetX = screenPoint.X;
+			var areaCaptureArgs = "-i title {Text} "; // rendering with Gecko we can just capture the window.
+			if (ExperimentalFeatures.IsFeatureEnabled(ExperimentalFeatures.kWebView2))
+			{
+				// We have to capture a region of the screen rather than using -i title {Text}
+				// because GdiGrab of Window content doesn't work with WebView2, probably because
+				// it uses GPU to render.
+				var height = _content.Height;
+				if (height % 2 > 0)
+					height--;
+				var width = _content.Width;
+				if (width % 2 > 0)
+					width--;
+				var screenPoint = PointToScreen(new Point(0, 0));
+				var offsetY = screenPoint.Y;
+				var offsetX = screenPoint.X;
+				areaCaptureArgs = $"-video_size {width}x{height} -offset_x {offsetX} -offset_y {offsetY} -i desktop ";
+				
+				
+			}
+
 			var args =
 				"-f gdigrab " // basic command for using a window (in a Windows OS) as a video input stream
 				+ $"-framerate {kFrameRate} " // frames per second to capture
 				+ "-draw_mouse 0 " // don't capture any mouse movement over the window
-				// We have to capture a region of the screen rather than using -i title {Text}
-				// because GdiGrab of Window content doesn't work with WebView2, probably because
-				// it uses GPU to render.
-				+ $"-video_size {width}x{height} -offset_x {offsetX} -offset_y {offsetY} -i desktop "
+				+ areaCaptureArgs
 				//+ $"-i title=\"desktop\" " // identifies the window for gdigrab
 				
 				+ videoArgs
