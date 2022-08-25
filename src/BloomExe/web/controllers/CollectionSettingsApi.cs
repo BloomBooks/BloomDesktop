@@ -250,6 +250,24 @@ namespace Bloom.web.controllers
 					request.PostSucceeded();
 				}
 			}, true);
+
+			apiHandler.RegisterEndpointHandler(kApiUrlPart + "getCustomPaletteColors", HandleGetCustomColorsRequest, false);
+			apiHandler.RegisterEndpointHandler(kApiUrlPart + "addCustomPaletteColor", HandleAddCustomColor, false);
+		}
+
+		private void HandleGetCustomColorsRequest(ApiRequest request)
+		{
+			var paletteKey = request.Parameters["palette"];
+			var jsonString = _collectionSettings.GetColorPaletteAsJson(paletteKey);
+			request.ReplyWithJson(jsonString);
+		}
+
+		private void HandleAddCustomColor(ApiRequest request)
+		{
+			var paletteTag = request.Parameters["palette"];
+			var colorString = request.GetPostJson();
+			_collectionSettings.AddColorToPalette(paletteTag, colorString);
+			request.PostSucceeded();
 		}
 
 		private object SetupXMatterList()

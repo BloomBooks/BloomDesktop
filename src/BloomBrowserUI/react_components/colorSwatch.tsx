@@ -4,7 +4,7 @@ import { CSSProperties } from "@material-ui/styles";
 import * as tinycolor from "tinycolor2";
 
 // External definition of a color swatch
-export interface ISwatchDefn {
+export interface IColorInfo {
     // Usually Hex colors
     // We use an array here, so we can support gradients (top to bottom).
     colors: string[];
@@ -13,12 +13,12 @@ export interface ISwatchDefn {
 }
 
 // More complete definition we need to pass in for handling swatch display.
-export interface IColorSwatch extends ISwatchDefn {
-    onClick: React.MouseEventHandler<IColorSwatch>;
+export interface IClickableColorSwatch extends IColorInfo {
+    onClick: React.MouseEventHandler<IClickableColorSwatch>;
 }
 
-export const ColorSwatch: React.FunctionComponent<IColorSwatch> = (
-    props: IColorSwatch
+export const ColorSwatch: React.FunctionComponent<IClickableColorSwatch> = (
+    props: IClickableColorSwatch
 ) => {
     const wrapperStyle: CSSProperties = {
         width: 20,
@@ -29,7 +29,7 @@ export const ColorSwatch: React.FunctionComponent<IColorSwatch> = (
     };
 
     const swatchStyle: CSSProperties = {
-        background: getBackgroundFromSwatch(props),
+        background: getBackgroundColorCssFromColorInfo(props),
         boxShadow: "rgba(0, 0, 0, 0.15) 0px 0px 0px 1px inset",
         position: "absolute",
         width: 20,
@@ -38,7 +38,9 @@ export const ColorSwatch: React.FunctionComponent<IColorSwatch> = (
 
     const handleSwatchClick = (e: React.MouseEvent<HTMLDivElement>): void => {
         // This cast handles the change in types, but we don't use the event in any case.
-        const castEvent = (e as unknown) as React.MouseEvent<IColorSwatch>;
+        const castEvent = (e as unknown) as React.MouseEvent<
+            IClickableColorSwatch
+        >;
         props.onClick(castEvent);
     };
 
@@ -50,14 +52,16 @@ export const ColorSwatch: React.FunctionComponent<IColorSwatch> = (
     );
 };
 
-export const getBackgroundFromSwatch = (swatch: ISwatchDefn): string => {
-    const baseColor = swatch.colors; // An array of strings representing colors
+export const getBackgroundColorCssFromColorInfo = (
+    colorInfo: IColorInfo
+): string => {
+    const baseColor = colorInfo.colors; // An array of strings representing colors
 
     // 'initialColorString' will be 'gradient' if props.color represents a gradient (2 colors).
     // Otherwise, it could be a name of a color (OldLace) or a hex value starting with '#'
     const initialColorString =
         baseColor.length === 1 ? baseColor[0] : "gradient";
-    if (swatch.opacity === 0.0) {
+    if (colorInfo.opacity === 0.0) {
         return "transparent";
     }
     // 'backgroundString' will end up being a named color, a linear-gradient string,
@@ -65,7 +69,7 @@ export const getBackgroundFromSwatch = (swatch: ISwatchDefn): string => {
     let backgroundString: string = initialColorString;
     if (initialColorString.startsWith("#")) {
         const rgb = tinycolor(initialColorString).toRgb();
-        backgroundString = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${swatch.opacity})`;
+        backgroundString = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${colorInfo.opacity})`;
     }
     if (initialColorString === "gradient") {
         backgroundString =
@@ -76,7 +80,7 @@ export const getBackgroundFromSwatch = (swatch: ISwatchDefn): string => {
 
 // Handles all types of color strings: special-named, hex, rgb(), or rgba().
 // If colorSpec entails opacity, this string should be of the form "rgba(r, g, b, a)".
-export const getSwatchFromColorSpec = (colorSpec: string): ISwatchDefn => {
+export const getColorInfoFromString = (colorSpec: string): IColorInfo => {
     // If colorSpec has transparency, the color will be an rgba() string.
     // We need to pull out the "opacity" and add it to the swatch here.
     const colorStruct = tinycolor(colorSpec);
@@ -94,5 +98,14 @@ export const getSwatchFromColorSpec = (colorSpec: string): ISwatchDefn => {
         opacity: opacity
     };
 };
+
+// The purpose of this is to get the colors array ready for persistence.
+// It assumes the "a" of any rgba values is already captured in the opacity field.
+// Thus all hex values are 6 digits.
+export function normalizeColorInfoColorsAsHex(colorInfo: IColorInfo): void {
+    colorInfo.colors[0] = `#${tinycolor(colorInfo.colors[0]).toHex()}`;
+    if (colorInfo.colors[1])
+        colorInfo.colors[1] = `#${tinycolor(colorInfo.colors[1]).toHex()}`;
+}
 
 export default ColorSwatch;

@@ -20,5 +20,12 @@
         "statussBar.prominentBackground": "#D65649"
     },
 
-    "cSpell.words": ["localizable", "Winform", "Winforms", "xmatter"]
+    "cSpell.words": [
+        "localizable",
+        "portafino",
+        "tinycolor",
+        "Winform",
+        "Winforms",
+        "xmatter"
+    ]
 }

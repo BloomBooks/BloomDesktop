@@ -2,6 +2,7 @@ import * as React from "react";
 import { useState } from "react";
 import ContentEditable from "./ContentEditable";
 import "./colorChooser.less";
+import { CoverBackgroundPalette } from "./colorPickerDialog";
 
 interface IColorChooserProps {
     imagePath?: string;
@@ -17,22 +18,6 @@ export const ColorChooser: React.FunctionComponent<IColorChooserProps> = props =
     const [chooserVisible, setChooserVisible] = useState(
         !!props.initiallyVisible
     );
-    const colorPalette = [
-        "#E48C84",
-        "#B0DEE4",
-        "#98D0B9",
-        "#C2A6BF",
-        "#FFFFA4",
-        "#FEBF00",
-        "#7BDCB5",
-        "#B2CC7D",
-        "#F8B576",
-        "#D29FEF",
-        "#ABB8C3",
-        "#C1EF93",
-        "#FFD4D4",
-        "#FFAAD4"
-    ];
 
     return (
         <div
@@ -78,7 +63,7 @@ export const ColorChooser: React.FunctionComponent<IColorChooserProps> = props =
                         visibility: chooserVisible ? "visible" : "hidden"
                     }}
                 >
-                    {colorPalette.map((color, i) => (
+                    {CoverBackgroundPalette.map((color, i) => (
                         <div
                             className="cc-color-option"
                             key={i}

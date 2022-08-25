@@ -1,9 +1,8 @@
 import * as React from "react";
 import Typography from "@material-ui/core/Typography";
-import { useL10n } from "../../../react_components/l10nHooks";
 import {
-    ISwatchDefn,
-    getBackgroundFromSwatch
+    IColorInfo,
+    getBackgroundColorCssFromColorInfo
 } from "../../../react_components/colorSwatch";
 import * as tinycolor from "tinycolor2";
 import { CSSProperties } from "react";
@@ -14,15 +13,17 @@ export interface IColorBarProps {
     // depending on the color bar's "perceived brightness".
     text?: string;
     onClick: () => void;
-    swatch: ISwatchDefn;
+    colorInfo: IColorInfo;
 }
 // Displays a color bar menu item with optional localizable text.
 export const ColorBar: React.FunctionComponent<IColorBarProps> = (
     props: IColorBarProps
 ) => {
-    const baseColor = props.swatch.colors; // An array of strings representing colors
+    const baseColor = props.colorInfo.colors; // An array of strings representing colors
 
-    const backgroundColorString = getBackgroundFromSwatch(props.swatch);
+    const backgroundColorString = getBackgroundColorCssFromColorInfo(
+        props.colorInfo
+    );
 
     const isDark = (colorString: string): boolean => {
         const color = tinycolor(colorString); // handles named colors, rgba() and hex strings!!!

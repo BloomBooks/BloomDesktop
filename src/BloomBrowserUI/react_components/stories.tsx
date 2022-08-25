@@ -1,5 +1,4 @@
-/* eslint-disable @typescript-eslint/no-empty-function */
-/** @jsxFrag React.Fragment */
+// Don't add /** @jsxFrag React.Fragment */ or these stories won't show up in StoryBook! (at least in Aug 2022)
 /** @jsx jsx **/
 import { jsx, css } from "@emotion/core";
 
@@ -21,10 +20,12 @@ import ImportIcon from "./icons/ImportIcon";
 import DeleteIcon from "@material-ui/icons/Delete";
 import PlaybackOrderControls from "./playbackOrderControls";
 import CustomColorPicker from "./customColorPicker";
-import { ISwatchDefn, getBackgroundFromSwatch } from "./colorSwatch";
+import { IColorInfo, getBackgroundColorCssFromColorInfo } from "./colorSwatch";
 import {
     showColorPickerDialog,
-    IColorPickerDialogProps
+    IColorPickerDialogProps,
+    BloomPalette,
+    OverlayBackgroundColors
 } from "./colorPickerDialog";
 import SmallNumberPicker from "./smallNumberPicker";
 import { BloomAvatar } from "./bloomAvatar";
@@ -189,7 +190,7 @@ storiesOf("Localizable Widgets/MuiCheckbox", module)
     )
     .add("short and long label", () =>
         React.createElement(() => (
-            <>
+            <React.Fragment>
                 original mui checkbox:
                 <div>
                     <FormControlLabel
@@ -270,7 +271,7 @@ storiesOf("Localizable Widgets/MuiCheckbox", module)
                         label={"short"}
                     />
                 </div>
-            </>
+            </React.Fragment>
         ))
     );
 storiesOf("Localizable Widgets/ApiCheckbox", module).add("ApiCheckbox", () =>
@@ -521,7 +522,7 @@ storiesOf("Misc", module)
     .add("BloomAvatars", () =>
         React.createElement(() => {
             return (
-                <>
+                <React.Fragment>
                     <BloomAvatar
                         email="test@example.com"
                         name={"A B C D E F G"}
@@ -546,7 +547,7 @@ storiesOf("Misc", module)
                         name={"A B C"}
                         borderColor="#1d94a4"
                     />
-                </>
+                </React.Fragment>
             );
         })
     )
@@ -662,7 +663,7 @@ const bumpDown = (whichPositionToBump: number): void => {
 
 storiesOf("PlaybackOrderControls", module).add("PlaybackOrder buttons", () =>
     React.createElement(() => (
-        <>
+        <React.Fragment>
             <div style={playbackControlsDivStyles}>
                 <PlaybackOrderControls
                     maxOrder={3}
@@ -687,7 +688,7 @@ storiesOf("PlaybackOrderControls", module).add("PlaybackOrder buttons", () =>
                     onDecrease={bumpDown}
                 />
             </div>
-        </>
+        </React.Fragment>
     ))
 );
 
@@ -729,15 +730,7 @@ const initialOverDivStyles: React.CSSProperties = {
     background: "#fff"
 };
 
-const defaultSwatches: ISwatchDefn[] = [
-    { name: "white", colors: ["#ffffff"], opacity: 1 },
-    { name: "grey", colors: ["#777777"], opacity: 1 },
-    { name: "black", colors: ["#000000"], opacity: 1 },
-    { name: "whiteToCalico", colors: ["white", "#DFB28B"], opacity: 1 },
-    { name: "60%Portafino", colors: ["#7b8eb8"], opacity: 0.6 }
-];
-
-storiesOf("Custom Color Chooser", module)
+storiesOf("Misc/Custom Color Chooser", module)
     .add("Background/text color", () =>
         React.createElement(() => {
             const [chooserShowing, setChooserShowing] = useState(false);
@@ -748,20 +741,28 @@ storiesOf("Custom Color Chooser", module)
             const [
                 chooserCurrentBackgroundColor,
                 setChooserCurrentBackgroundColor
-            ] = useState(defaultSwatches[0]);
+            ] = useState<IColorInfo>({
+                name: "white",
+                colors: ["#ffffff"],
+                opacity: 1
+            });
             const [
                 chooserCurrentTextColor,
                 setChooserCurrentTextColor
-            ] = useState(defaultSwatches[2]);
+            ] = useState<IColorInfo>({
+                name: "black",
+                colors: ["#000000"],
+                opacity: 1
+            });
             const handleColorChange = (
-                color: ISwatchDefn,
+                color: IColorInfo,
                 colorIsBackground: boolean
             ) => {
                 if (colorIsBackground) {
                     // set background color
                     setOverDivStyles({
                         ...overDivStyles,
-                        background: getBackgroundFromSwatch(color)
+                        background: getBackgroundColorCssFromColorInfo(color)
                     });
                     setChooserCurrentBackgroundColor(color);
                 } else {
@@ -825,7 +826,7 @@ storiesOf("Custom Color Chooser", module)
                                         ? chooserCurrentBackgroundColor
                                         : chooserCurrentTextColor
                                 }
-                                swatchColors={defaultSwatches}
+                                swatchColors={OverlayBackgroundColors}
                                 noAlphaSlider={!backgroundChooser}
                                 noGradientSwatches={!backgroundChooser}
                             />
@@ -843,8 +844,12 @@ storiesOf("Custom Color Chooser", module)
             const [
                 chooserCurrentBackgroundColor,
                 setChooserCurrentBackgroundColor
-            ] = useState(defaultSwatches[0]);
-            const handleColorChange = (color: ISwatchDefn) => {
+            ] = useState<IColorInfo>({
+                name: "white",
+                colors: ["#ffffff"],
+                opacity: 1
+            });
+            const handleColorChange = (color: IColorInfo) => {
                 console.log("Color change:");
                 console.log(
                     `  ${color.name}: ${color.colors[0]}, ${color.colors[1]}, ${color.opacity}`
@@ -852,7 +857,7 @@ storiesOf("Custom Color Chooser", module)
                 // set background color
                 setOverDivStyles({
                     ...overDivStyles,
-                    background: getBackgroundFromSwatch(color)
+                    background: getBackgroundColorCssFromColorInfo(color)
                 });
                 setChooserCurrentBackgroundColor(color);
             };
@@ -860,7 +865,7 @@ storiesOf("Custom Color Chooser", module)
             const colorPickerDialogProps: IColorPickerDialogProps = {
                 localizedTitle: "Custom Color Picker",
                 initialColor: chooserCurrentBackgroundColor,
-                defaultSwatchColors: defaultSwatches,
+                palette: BloomPalette.OverlayBackground,
                 onChange: color => handleColorChange(color),
                 onInputFocus: () => {}
             };

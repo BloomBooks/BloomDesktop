@@ -1,3 +1,5 @@
+import tinycolor = require("tinycolor2");
+
 // Corresponds to the colors defined in bloomUI.less
 // These can be useful for CSS-in-JS, where it's hard to get at the color definitions in the .less files
 export const kBloomBlue = "#1d94a4"; // See @bloom-blue
@@ -17,3 +19,12 @@ export const kBloomWarning = "#FEBF00"; // darker looked bad on Export to Spread
 export const kBloomDarkTextOverWarning = "##000000cc"; // black with 20% transparency
 
 export const kFormBackground = "#f0f0f0"; // See @form-background;
+
+export const getRgbaColorStringFromColorAndOpacity = (
+    color: string,
+    opacity: number
+): string => {
+    const rgbColor = tinycolor(color).toRgb();
+    rgbColor.a = opacity;
+    return tinycolor(rgbColor).toRgbString(); // actually format is "rgba(r, g, b, a)"
+};

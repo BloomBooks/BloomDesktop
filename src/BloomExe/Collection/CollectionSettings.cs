@@ -327,6 +327,12 @@ namespace Bloom.Collection
 				xml.Add(new XElement("DefaultBookTags", "bookshelf:" + DefaultBookshelf));
 			}
 			xml.Add(BulkPublishBloomPubSettings.ToXElement());
+			foreach (var key in ColorPalettes.Keys)
+			{
+				var palette = new XElement("Palette", ColorPalettes[key]);
+				palette.Add(new XAttribute("id", key));
+				xml.Add(palette);
+			}
 			SIL.IO.RobustIO.SaveXElement(xml, SettingsFilePath);
 		}
 
@@ -474,6 +480,8 @@ namespace Bloom.Collection
 				{
 					BulkPublishBloomPubSettings = bulkPublishSettingsFromXml;
 				}
+
+				LoadDictionary(xml, "Palette", ColorPalettes);
 			}
 			catch (Exception)
 			{
@@ -552,6 +560,17 @@ namespace Bloom.Collection
 			else
 			{
 				return defaultValue;
+			}
+		}
+
+		internal static void LoadDictionary(XElement document, string tag, Dictionary<string,string> dict)
+		{
+			dict.Clear();
+			var elements = document.Descendants(tag);
+			if (elements != null)
+			{
+				foreach (XElement element in elements)
+					dict[element.Attribute("id").Value] = element.Value;
 			}
 		}
 
@@ -771,6 +790,70 @@ namespace Bloom.Collection
 
 		public bool HaveEnterpriseFeatures => !String.IsNullOrEmpty(BrandingProjectKey) && BrandingProjectKey != "Default";
 		public bool HaveEnterpriseSubscription => HaveEnterpriseFeatures && BrandingProjectKey != "Local-Community";
+
+		private readonly Dictionary<string, string> ColorPalettes = new Dictionary<string, string>();
+
+		public string GetColorPaletteAsJson(string paletteTag)
+		{
+			var colorElementList = new List<string>();
+			if (ColorPalettes.TryGetValue(paletteTag, out string savedPalette))
+			{
+				var paletteColors = savedPalette.Split(' ');
+				foreach (var savedColor in paletteColors)
+				{
+					double opacity = 1;
+					var pieces = savedColor.Split('/');
+					if (pieces.Length > 1)
+					opacity = double.Parse(pieces[1], NumberFormatInfo.InvariantInfo);
+					var colors = pieces[0].Split('-');
+					var colorElement = string.Format("{{\"colors\":[\"{0}\"],\"opacity\":{1:0.###}}}", string.Join("\",\"", colors), opacity);
+					colorElementList.Add(colorElement);
+				}
+			}
+			var jsonString = "[" + string.Join(",", colorElementList) + "]";
+			return jsonString;
+		}
+
+		public void AddColorToPalette(string paletteTag, string colorString)
+		{
+			dynamic colorObject;
+			try
+			{
+				colorObject = DynamicJson.Parse(colorString);
+			}
+			catch (Exception)
+			{
+				Logger.WriteEvent($"CollectionSettings.AddColorToPalette(\"{paletteTag}\", \"{colorString}\") failed to parse the colorString");
+				colorObject = null;
+			}
+			if (colorObject != null)
+			{
+				try
+				{
+					var colors = colorObject.colors;
+					var opacity = (double)colorObject.opacity;
+					var list = new List<string>(colors.Count);
+					for (int i = 0; i < colors.Count; ++i)
+						list.Add(colors[i]);
+					var colorToSave = string.Join("-", list);
+					if (opacity != 1)
+						colorToSave = string.Format("{0}/{1:0.###}", colorToSave, opacity);
+					if (!ColorPalettes.TryGetValue(paletteTag, out string savedPalette))
+						savedPalette = "";
+					var paletteColors = savedPalette.Split(' ');
+					if (paletteColors.Contains(colorToSave))
+						return;
+					savedPalette = savedPalette + " " + colorToSave;
+					ColorPalettes[paletteTag] = savedPalette.Trim();
+					Save();
+				}
+				catch (Microsoft.CSharp.RuntimeBinder.RuntimeBinderException)
+				{
+					// what happens if content isn't set as expected
+				}
+			}
+		}
+
 
 		/// <summary>
 		/// The collection settings point to object which might not exist. For example, the xmatter pack might not exist.

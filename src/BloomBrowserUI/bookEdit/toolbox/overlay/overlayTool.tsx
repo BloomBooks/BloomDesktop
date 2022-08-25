@@ -25,14 +25,15 @@ import { BloomApi } from "../../../utils/bloomApi";
 import { isLinux } from "../../../utils/isLinux";
 import { MuiCheckbox } from "../../../react_components/muiCheckBox";
 import { ColorBar } from "./colorBar";
-import { ISwatchDefn } from "../../../react_components/colorSwatch";
+import { IColorInfo } from "../../../react_components/colorSwatch";
 import {
-    defaultBackgroundColors,
-    defaultTextColors,
-    getSwatchFromBubbleSpecColor,
-    getSpecialColorName
-} from "./overlayToolColorHelper";
-import { IColorPickerDialogProps } from "../../../react_components/colorPickerDialog";
+    IColorPickerDialogProps,
+    getColorInfoFromSpecialNameOrColorString,
+    getSpecialColorName,
+    OverlayTextColorPalette,
+    OverlayBackgroundColors,
+    BloomPalette
+} from "../../../react_components/colorPickerDialog";
 import * as tinycolor from "tinycolor2";
 import { showSignLanguageTool } from "../../js/bloomVideo";
 import { kBloomBlue } from "../../../bloomMaterialUITheme";
@@ -79,6 +80,10 @@ const OverlayToolControls: React.FunctionComponent = () => {
         "EditTab.Toolbox.ComicTool.Options.BackgroundColor"
     );
 
+    const defaultTextColors: IColorInfo[] = OverlayTextColorPalette.map(color =>
+        getColorInfoFromSpecialNameOrColorString(color)
+    );
+
     // Text color swatch
     // defaults to "black" text color
     const [textColorSwatch, setTextColorSwatch] = useState(
@@ -88,7 +93,7 @@ const OverlayToolControls: React.FunctionComponent = () => {
     // Background color swatch
     // defaults to "white" background color
     const [backgroundColorSwatch, setBackgroundColorSwatch] = useState(
-        defaultBackgroundColors[1]
+        OverlayBackgroundColors[1]
     );
 
     // If bubbleType is not undefined, corresponds to the active bubble's family.
@@ -150,7 +155,9 @@ const OverlayToolControls: React.FunctionComponent = () => {
             );
             setOutlineColor(currentFamilySpec.outerBorderColor);
             const backColor = getBackgroundColorValue(currentFamilySpec);
-            const newSwatch = getSwatchFromBubbleSpecColor(backColor);
+            const newSwatch = getColorInfoFromSpecialNameOrColorString(
+                backColor
+            );
             setBackgroundColorSwatch(newSwatch);
 
             const bubbleMgr = OverlayTool.bubbleManager();
@@ -158,7 +165,9 @@ const OverlayToolControls: React.FunctionComponent = () => {
             if (bubbleMgr) {
                 // Get the current bubble's textColor and set it
                 const bubbleTextColor = bubbleMgr.getTextColor();
-                const newSwatch = getSwatchFromBubbleSpecColor(bubbleTextColor);
+                const newSwatch = getColorInfoFromSpecialNameOrColorString(
+                    bubbleTextColor
+                );
                 setTextColorSwatch(newSwatch);
             }
         } else {
@@ -271,12 +280,12 @@ const OverlayToolControls: React.FunctionComponent = () => {
     };
 
     // We come into this from chooser change
-    const updateTextColor = (newColorSwatch: ISwatchDefn) => {
-        const color = newColorSwatch.colors[0]; // text color is always monochrome
+    const updateTextColor = (newColor: IColorInfo) => {
+        const color = newColor.colors[0]; // text color is always monochrome
         const bubbleMgr = OverlayTool.bubbleManager();
         if (bubbleMgr) {
             // Update the toolbox controls
-            setTextColorSwatch(newColorSwatch);
+            setTextColorSwatch(newColor);
 
             bubbleMgr.setTextColor(color);
             // BL-9936/11104 Without this, bubble manager is up-to-date, but React doesn't know about it.
@@ -288,18 +297,15 @@ const OverlayToolControls: React.FunctionComponent = () => {
         OverlayTool.bubbleManager()?.setThingToFocusAfterSettingColor(input);
 
     // We come into this from chooser change
-    const updateBackgroundColor = (newColorSwatch: ISwatchDefn) => {
+    const updateBackgroundColor = (newColor: IColorInfo) => {
         const bubbleMgr = OverlayTool.bubbleManager();
         if (bubbleMgr) {
             // Update the toolbox controls
-            setBackgroundColorSwatch(newColorSwatch);
+            setBackgroundColorSwatch(newColor);
 
             // Update the Comical canvas on the page frame
-            const backgroundColors = newColorSwatch.colors;
-            bubbleMgr.setBackgroundColor(
-                backgroundColors,
-                newColorSwatch.opacity
-            );
+            const backgroundColors = newColor.colors;
+            bubbleMgr.setBackgroundColor(backgroundColors, newColor.opacity);
             // BL-9936/11104 Without this, bubble manager is up-to-date, but React doesn't know about it.
             updateReactFromComical(bubbleMgr);
         }
@@ -440,7 +446,8 @@ const OverlayToolControls: React.FunctionComponent = () => {
             noGradientSwatches: true,
             localizedTitle: textColorTitle,
             initialColor: textColorSwatch,
-            defaultSwatchColors: defaultTextColors,
+            palette: BloomPalette.OverlayText,
+            isForOverlay: true,
             onChange: color => updateTextColor(color),
             onInputFocus: noteInputFocused
         };
@@ -455,7 +462,8 @@ const OverlayToolControls: React.FunctionComponent = () => {
             noAlphaSlider: noAlpha,
             localizedTitle: backgroundColorTitle,
             initialColor: backgroundColorSwatch,
-            defaultSwatchColors: defaultBackgroundColors,
+            palette: BloomPalette.OverlayBackground,
+            isForOverlay: true,
             onChange: color => updateBackgroundColor(color),
             onInputFocus: noteInputFocused
         };
@@ -650,7 +658,7 @@ const OverlayToolControls: React.FunctionComponent = () => {
                             <ColorBar
                                 id="text-color-bar"
                                 onClick={launchTextColorChooser}
-                                swatch={textColorSwatch}
+                                colorInfo={textColorSwatch}
                             />
                         </FormControl>
                         <FormControl>
@@ -667,7 +675,7 @@ const OverlayToolControls: React.FunctionComponent = () => {
                                 onClick={() =>
                                     launchBackgroundColorChooser(isCaption)
                                 }
-                                swatch={backgroundColorSwatch}
+                                colorInfo={backgroundColorSwatch}
                                 text={percentTransparencyString}
                             />
                         </FormControl>
