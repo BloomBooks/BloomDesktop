@@ -12,7 +12,7 @@ import {
 } from "../commonPublish/PublishScreenBaseComponents";
 import { MethodChooser } from "./MethodChooser";
 import { PublishFeaturesGroup } from "./PublishFeaturesGroup";
-import { ThumbnailGroup } from "./ThumbnailGroup";
+import { CoverColorGroup } from "./CoverColorGroup";
 import PublishScreenTemplate from "../commonPublish/PublishScreenTemplate";
 import { DeviceAndControls } from "../commonPublish/DeviceAndControls";
 import ReactDOM = require("react-dom");
@@ -167,7 +167,7 @@ const ReaderPublishScreenInternal: React.FunctionComponent<{
                     props.onReset();
                 }}
             />
-            <ThumbnailGroup onChange={() => props.onReset()} />
+            <CoverColorGroup onChange={() => props.onReset()} />
             <PublishLanguagesGroup onChange={() => setHighlightRefresh(true)} />
             {/* push everything to the bottom */}
             <div

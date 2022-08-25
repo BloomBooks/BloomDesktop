@@ -122,7 +122,7 @@ namespace Bloom.Publish.Android
 				}
 			}, true);
 
-			apiHandler.RegisterEndpointLegacy(kApiUrlPart + "backColor", request =>
+			apiHandler.RegisterEndpointHandler(kApiUrlPart + "backColor", request =>
 			{
 				if (request.HttpMethod == HttpMethods.Get)
 				{
