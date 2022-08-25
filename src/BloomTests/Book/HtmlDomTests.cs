@@ -1701,10 +1701,10 @@ p {
 				</body></html>");
 
 			// SUT
-			var jsonString = bookDom.GetColorsUsedInBookBubbleElements();
+			var colors = bookDom.GetColorsUsedInBookBubbleElements();
 
 			// Verification
-			Assert.That(jsonString, Is.EqualTo(jsonResponses[responseIndex]));
+			Assert.That("[" + String.Join(",", colors) + "]", Is.EqualTo(jsonResponses[responseIndex]));
 		}
 
 		[Test]

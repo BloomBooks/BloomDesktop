@@ -796,7 +796,7 @@ namespace Bloom.Collection
 		public string GetColorPaletteAsJson(string paletteTag)
 		{
 			var colorElementList = new List<string>();
-			if (ColorPalettes.TryGetValue(paletteTag, out string savedPalette))
+			if (ColorPalettes.TryGetValue(paletteTag, out string savedPalette) && !String.IsNullOrWhiteSpace(savedPalette))
 			{
 				var paletteColors = savedPalette.Split(' ');
 				foreach (var savedColor in paletteColors)
