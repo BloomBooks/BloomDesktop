@@ -3601,6 +3601,13 @@
                 <note>ID: PublishTab.Android.File.Progress.SubstitutingAndika</note>
                 <note>{0} is a font name</note>
             </trans-unit>
+          <!-- Bloom 5.4
+            <trans-unit id="PublishTab.Android.CoverColor" sil:dynamic="true">
+                <source xml:lang="en">Cover Color</source>
+                <note>ID: PublishTab.Android.CoverColor</note>
+                <note>The heading at the top of the Settings section, which shows a thumbnail of the front cover and can be used to change the underlying page color.</note>
+            </trans-unit>
+          -->
             <trans-unit id="PublishTab.Android.GetBloomReader" sil:dynamic="true">
                 <source xml:lang="en">Get Bloom Reader App</source>
                 <note>ID: PublishTab.Android.GetBloomReader</note>
@@ -3663,6 +3670,7 @@
                 <source xml:lang="en">Thumbnail</source>
                 <note>ID: PublishTab.Android.Thumbnail</note>
                 <note>The heading at the top of the Settings section, which shows a thumbnail of the front cover and can be used to change the underlying page color.</note>
+                <note>Obsolete in Bloom 5.4</note>
             </trans-unit>
             <trans-unit id="PublishTab.Android.Troubleshooting" sil:dynamic="true">
                 <source xml:lang="en">Troubleshooting Tips</source>

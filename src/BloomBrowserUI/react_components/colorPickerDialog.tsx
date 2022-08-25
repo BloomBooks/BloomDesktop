@@ -1,3 +1,5 @@
+/** @jsx jsx **/
+import { jsx, css } from "@emotion/core";
 import React = require("react");
 import * as ReactDOM from "react-dom";
 import { useRef, useState } from "react";
@@ -41,6 +43,8 @@ export enum BloomPalette {
 }
 
 export interface IColorPickerDialogProps {
+    open?: boolean;
+    close?: (result: DialogResult) => void;
     localizedTitle: string;
     noAlphaSlider?: boolean;
     noGradientSwatches?: boolean;
@@ -67,7 +71,9 @@ let externalSetOpen: React.Dispatch<React.SetStateAction<boolean>>;
 
 const ColorPickerDialog: React.FC<IColorPickerDialogProps> = props => {
     const MAX_SWATCHES = 21;
-    const [open, setOpen] = useState(true);
+    const [open, setOpen] = useState(
+        props.open === undefined ? true : props.open
+    );
     const [currentColor, setCurrentColor] = useState(props.initialColor);
 
     const [swatchColorArray, setSwatchColorArray] = useState(
@@ -89,7 +95,7 @@ const ColorPickerDialog: React.FC<IColorPickerDialogProps> = props => {
     }
 
     React.useEffect(() => {
-        if (open) {
+        if (props.open || open) {
             setSwatchColorArray(getDefaultColorsFromPalette(props.palette));
             useAddCustomColors(
                 `settings/getCustomPaletteColors?palette=${props.palette}`
@@ -103,7 +109,7 @@ const ColorPickerDialog: React.FC<IColorPickerDialogProps> = props => {
                 useAddCustomColors("editView/getColorsUsedInBookOverlays");
             setCurrentColor(props.initialColor);
         }
-    }, [open]);
+    }, [open, props.open]);
 
     const focusFunc = (ev: FocusEvent) => {
         props.onInputFocus(ev.currentTarget as HTMLElement);
@@ -185,6 +191,9 @@ const ColorPickerDialog: React.FC<IColorPickerDialogProps> = props => {
                 );
                 addNewColorsToArrayIfNecessary([currentColor]);
             }
+        }
+        if (props.close) {
+            props.close(result);
         }
     };
 
@@ -305,7 +314,7 @@ const ColorPickerDialog: React.FC<IColorPickerDialogProps> = props => {
             <CloseOnEscape onEscape={() => onClose(DialogResult.Cancel)}>
                 <Dialog
                     className="bloomModalDialog color-picker-dialog"
-                    open={open}
+                    open={props.open === undefined ? open : props.open}
                     ref={dlgRef}
                     PaperComponent={PaperComponent}
                     onClick={e => e.stopPropagation()}
@@ -523,6 +532,7 @@ export interface ISimpleColorPickerDialogProps {
     palette: BloomPalette;
     onChange: (color: string) => void;
     onInputFocus: (input: HTMLElement) => void;
+    container?: Element;
 }
 
 export const showSimpleColorPickerDialog = (
@@ -539,5 +549,70 @@ export const showSimpleColorPickerDialog = (
         onChange: (color: IColorInfo) => props.onChange(color.colors[0]),
         onInputFocus: props.onInputFocus
     };
-    showColorPickerDialog(fullProps);
+    showColorPickerDialog(fullProps, props.container);
+};
+
+export interface IColorDisplayButtonProps {
+    initialColor: string;
+    localizedTitle: string;
+    noAlphaSlider: boolean;
+    width?: number;
+    disabled?: boolean;
+    onClose: (result: DialogResult, newColor: string) => void;
+}
+
+export const ColorDisplayButton: React.FC<IColorDisplayButtonProps> = props => {
+    const [dialogOpen, setDialogOpen] = useState(false);
+    const [currentButtonColor, setCurrentButtonColor] = useState(
+        props.initialColor
+    );
+    const widthString = props.width ? `width: ${props.width}px;` : "";
+
+    return (
+        <div>
+            <div
+                css={css`
+                    border: solid 1px black;
+                    background-color: white;
+                    padding: 2px;
+                    height: 19px;
+                    ${widthString}
+                `}
+            >
+                <div
+                    css={css`
+                        background-color: ${currentButtonColor};
+                        height: 19px;
+                        ${widthString}
+                    `}
+                    onClick={() => {
+                        if (props.disabled) return;
+                        setDialogOpen(true);
+                    }}
+                />
+            </div>
+            <ColorPickerDialog
+                open={dialogOpen}
+                close={(result: DialogResult) => {
+                    setDialogOpen(false);
+                    props.onClose(
+                        result,
+                        result === DialogResult.OK
+                            ? currentButtonColor
+                            : props.initialColor
+                    );
+                }}
+                localizedTitle={props.localizedTitle}
+                noAlphaSlider={props.noAlphaSlider}
+                palette={BloomPalette.CoverBackground}
+                initialColor={getColorInfoFromSpecialNameOrColorString(
+                    props.initialColor
+                )}
+                onInputFocus={() => {}}
+                onChange={(color: IColorInfo) =>
+                    setCurrentButtonColor(color.colors[0])
+                }
+            />
+        </div>
+    );
 };
