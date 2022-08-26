@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
@@ -17,6 +17,7 @@ using SIL.Code;
 using SIL.Reporting;
 using Bloom.Book;
 using Bloom.Properties;
+using Bloom.web;
 using Gecko.DOM;
 using SIL.IO;
 
@@ -44,7 +45,7 @@ namespace Bloom
 		/// us the size it was on the first page we navigated to, so that if the book size changes,
 		/// our thumbnails are all wrong.
 		/// </summary>
-		private Dictionary<string, GeckoWebBrowser> _browserCacheForDifferentPaperSizes = new Dictionary<string, GeckoWebBrowser>();
+		private Dictionary<string, Browser> _browserCacheForDifferentPaperSizes = new Dictionary<string, Browser>();
 
 		private bool _disposed;
 
@@ -247,89 +248,148 @@ namespace Bloom
 			// cancellation is only used for synchronous orders.
 		}
 
-		private bool OpenTempFileInBrowser(GeckoWebBrowser browser, string filePath)
+		private bool OpenTempFileInBrowser(Browser browser, HtmlDom dom)
 		{
 			var order = (ThumbnailOrder) browser.Tag;
 			bool navigationHappened = true;
 			if (_syncControl.InvokeRequired)
 			{
-				using (var waitHandle = new AutoResetEvent(false))
+				// Note: the new WebView2 code here had some testing before, in the course of changing other things,
+				// we stopped calling this method on background threads. There have been further changes to the code
+				// since then, particularly, we stopped passing a filePath (really a URL) argument and switched
+				// to creating the simulated page file here (or in NavigateAndWaitTillDonw).
+				// The Gecko code here has therefore never been tested
+				// in its current form. Most likely, we will never need to use it before we delete everything Gecko.
+				// For the same reason I am not very concerned about a certain amount of duplication between the Gecko
+				// and WebView branches here. If we were keeping both, I would be more inclined to try to make the
+				// Gecko one use NavigateAndWaitTillDone and so merge the branches. That would involve either dropping
+				// the ability to cancel if the isolator is not idle, or enhancing NavigateAndWaitTillDone to have that
+				// option. I don't think the way we're using this now (making thumbnails for pages in the background
+				// after the Add Page dialog launches) really needs that sort of laziness, so I consider it YAGNI.
+				// Basically, the Gecko code is changed as little as possible to make the WebView code work. Eventually,
+				// only the WebView branch will remain, and hopefully will suffice for any future browser components.
+				if (browser is GeckoFxBrowser gb)
 				{
-					order.WaitHandle = waitHandle;
-					_syncControl.BeginInvoke(new Action<string>(path =>
+					using (var temp = BloomServer.MakeSimulatedPageFileInBookFolder(order.Document,
+						       source: BloomServer.SimulatedPageFileSource.Thumb))
 					{
-						if (!_isolator.NavigateIfIdle(browser, path))
-							navigationHappened = false; // some browser is busy, try again later.
-					}), filePath);
-					waitHandle.WaitOne(10000);
-				}
-				if (_disposed || !navigationHappened || order.Canceled)
-					return false;
-				if (!order.Done)
-				{
-					Logger.WriteEvent("HtmlThumbNailer ({1}): Timed out on ({0})", order.ThumbNailFilePath,
-						Thread.CurrentThread.ManagedThreadId);
+						using (var waitHandle = new AutoResetEvent(false))
+						{
+							order.WaitHandle = waitHandle;
+							_syncControl.BeginInvoke(new Action<string>(path =>
+							{
+								if (!_isolator.NavigateIfIdle(gb.WebBrowser, temp.Key))
+									navigationHappened = false; // some browser is busy, try again later.
+							}), temp.Key);
+							waitHandle.WaitOne(10000);
+							order.WaitHandle = null; // any doc completed after this will fail if it tries to set it.
+						}
+
+						if (_disposed || !navigationHappened || order.Canceled)
+							return false;
+						if (!order.Done)
+						{
+							Logger.WriteEvent("HtmlThumbNailer ({1}): Timed out on ({0})", order.ThumbNailFilePath,
+								Thread.CurrentThread.ManagedThreadId);
 #if DEBUG
-				if (!_thumbnailTimeoutAlreadyDisplayed)
-				{
-					_thumbnailTimeoutAlreadyDisplayed = true;
-					_syncControl.Invoke((Action) (() => Debug.Fail("(debug only) Make thumbnail timed out (won't show again)")));
-				}
+							if (!_thumbnailTimeoutAlreadyDisplayed)
+							{
+								_thumbnailTimeoutAlreadyDisplayed = true;
+								_syncControl.Invoke((Action)(() =>
+									Debug.Fail("(debug only) Make thumbnail timed out (won't show again)")));
+							}
 #endif
-					return false;
+							return false;
+						}
+					}
+				}
+				else
+				{
+					// WebView2
+					bool success = false;
+
+					_syncControl.Invoke((Action)(() =>
+					{
+						success =browser.NavigateAndWaitTillDone(dom, 100000, BloomServer.SimulatedPageFileSource.Thumb, null, false);
+						if (!success)
+						{
+							Logger.WriteEvent("HtmlThumbNailer ({1}): Timed out on ({0})", order.ThumbNailFilePath,
+								Thread.CurrentThread.ManagedThreadId);
+#if DEBUG
+							if (!_thumbnailTimeoutAlreadyDisplayed)
+							{
+								_thumbnailTimeoutAlreadyDisplayed = true;
+								_syncControl.Invoke((Action)(() =>
+									Debug.Fail("(debug only) Make thumbnail timed out (won't show again)")));
+							}
+#endif
+						}
+					}));
+					return true;
 				}
 			}
 			else
 			{
-				_isolator.Navigate(browser, filePath); // main thread, not async, we really need it now.
-				while (!order.Done)
+				using (var temp = BloomServer.MakeSimulatedPageFileInBookFolder(order.Document,
+					       source: BloomServer.SimulatedPageFileSource.Thumb))
 				{
-					Application.DoEvents();
-					Application.RaiseIdle(new EventArgs());		// needed on Linux to avoid deadlock starving browser navigation
+					if (browser is GeckoFxBrowser gb)
+					{
+						_isolator.Navigate(gb.WebBrowser, temp.Key); // main thread, not async, we really need it now.
+
+					}
+					else
+					{
+						browser.Navigate(temp.Key, false);
+					}
+
+					while (!order.Done)
+					{
+						Application.DoEvents();
+						Application.RaiseIdle(
+							new EventArgs()); // needed on Linux to avoid deadlock starving browser navigation
+					}
 				}
 			}
 
 			return true;
 		}
 
-		private Size SetWidthAndHeight(GeckoWebBrowser browser)
+		private Size SetWidthAndHeight(Browser browser)
 		{
 			try
 			{
 				if (_syncControl.InvokeRequired)
 				{
-					return (Size) _syncControl.Invoke(new Func<GeckoWebBrowser, Size>(SetWidthAndHeight), browser);
+					return (Size)_syncControl.Invoke(new Func<Browser, Size>(SetWidthAndHeight), browser);
 				}
 			}
 			catch (Exception e)
 			{
-				NonFatalProblem.Report(ModalIf.None, PassiveIf.Alpha, "Could not make thumbnail","Ref bl-524", e);
-				return new Size(0,0); // this tells the caller we failed
+				NonFatalProblem.Report(ModalIf.None, PassiveIf.Alpha, "Could not make thumbnail", "Ref bl-524", e);
+				return new Size(0, 0); // this tells the caller we failed
 			}
 
-			Guard.AgainstNull(browser.Document.ActiveElement, "browser.Document.ActiveElement");
-			var div = browser.Document.ActiveElement.EvaluateXPath("//div[contains(@class, 'bloom-page')]").GetNodes().FirstOrDefault() as GeckoElement;
-						if (div == null)
-						{
-				var order = (ThumbnailOrder)browser.Tag;
-				Logger.WriteEvent("HtmlThumNailer ({1}):  found no div with a class of bloom-Page ({0})", order.ThumbNailFilePath,
-					Thread.CurrentThread.ManagedThreadId);
-							throw new ApplicationException("thumbnails found no div with a class of bloom-Page");
-						}
-						browser.Height = div.ClientHeight;
-						browser.Width = div.ClientWidth;
+			var height =
+				(int)Math.Round(double.Parse(
+					browser.RunJavaScript("document.getElementsByClassName('bloom-page')[0].clientHeight.toString()")));
+			var width = (int)Math.Round(
+				double.Parse(browser.RunJavaScript("document.getElementsByClassName('bloom-page')[0].clientWidth.toString()")));
+
+			browser.Height = height;
+			browser.Width = width;
 			// This is probably not needed...width zero came about in debugging incomplete code where a stylesheet
 			// did not take effect..but it seems like a reasonable bit of defensive programming to keep.
 			if (browser.Width == 0)
-				browser.Width = browser.Height/2; // arbitrary way of avoiding crash
+				browser.Width = browser.Height / 2; // arbitrary way of avoiding crash
 			return new Size(browser.Width, browser.Height);
 		}
 
-		private Image CreateImage(GeckoWebBrowser browser, Color coverColor, int top, int bottom)
+		private Image CreateImage(Browser browser, Color coverColor, int top, int bottom)
 		{
 			if (_syncControl.InvokeRequired)
 			{
-				return (Image) _syncControl.Invoke(new Func<GeckoWebBrowser, Color, int, int, Image>(CreateImage), browser,
+				return (Image) _syncControl.Invoke(new Func<Browser, Color, int, int, Image>(CreateImage), browser,
 					coverColor, top, bottom);
 			}
 			// It's REALLY tricky to get the thumbnail created so that it reliably shows the image.
@@ -356,6 +416,15 @@ namespace Bloom
 			// ~20ms to make image; ~200ms to determine nothing is there
 			// ~600ms to make image; ~40 to find last line
 			// ~120 to redraw; ~40 to find last line
+			// Todo WebView2: I don't know whether all this complication is needed in WebView2, or whether
+			// its document-completed event is enough so that we can get a good image, or perhaps
+			// its GetPreview is good enough to wait till everything is drawn. For now, I'm keeping things
+			// as similar as possible on both tracks.
+			// Note: This code seems designed for a cover, with only one image. I see no reason why, if we
+			// really still need this, we might not need to make sure that all images are fully drawn.
+			// So if it really is still relevant, it might need some work. However, this is of much more
+			// minor importance now that it's only used for thumbnails of new template pages rather than
+			// the main thumbnail of a book.
 			while (true) // Exit when we settle on an image and return it.
 			{
 				var watch = new Stopwatch();
@@ -363,55 +432,52 @@ namespace Bloom
 				int lastLineOfImage = -1;
 				while (true)
 				{
-					var creator = new ImageCreator(browser);
-					byte[] imageBytes = creator.CanvasGetPngImage((uint)browser.Width, (uint)browser.Height);
-					using (var stream = new MemoryStream(imageBytes))
+
+					using (var image = browser.GetPreview())
 					{
-						using (var image = new Bitmap(stream))
+						if (watch.ElapsedMilliseconds > 5000)
 						{
-							if (watch.ElapsedMilliseconds > 5000)
-							{
-								// Maybe there's no image or it's color perfectly mathches the background?
-								// When we used to do this with a simple delay 400ms was usually enough;
-								// if we can't get it in 5s give up, and use whatever we've got.
-								watch.Stop();
-								Debug.WriteLine("returned possibly incomplete thumnail after more than 5000ms");
-								return new Bitmap(image);
-							}
-
-							if (top < 0)
-							{
-								// no image to wait for, go with what we have.
-								return new Bitmap(image);
-							}
-
-							// I'm not sure how top or bottom can get to be greater than image.Height, but if they do,
-							// it causes a crash. It makes no sense to look for the last line drawn beyond the end of the
-							// image, so if something tries, just start looking at the bottom.
-							var newLastLine = GetLastLineOfImage(coverColor, Math.Min(top, image.Height), Math.Min(bottom, image.Height), image);
-
-							// If nothing has been drawn yet, we want to keep trying until something is.
-							// If something has been drawn, we want to keep trying until a cycle when
-							// nothing more gets added.
-							if (newLastLine == -1 || newLastLine > lastLineOfImage)
-							{
-								lastLineOfImage = newLastLine;
-								// This is meant to give the browser more of a chance to load it.
-								// It may well have been working on it anyway in another thread
-								// while we were checking pixels. Not too sure about the best length
-								// for this delay; longer might mean less time wasted checking pixels,
-								// but the minimum delay is two times this interval, so we don't want
-								// it too long. 50ms, at least on my desktop, usually doesn't result
-								// in any wasted iterations, nor much delay.
-								Thread.Sleep(50);
-								continue; // try again
-							}
-
-							// No more image drawn than the last iteration, and we got something, so assume we have the whole thing.
+							// Maybe there's no image or it's color perfectly mathches the background?
+							// When we used to do this with a simple delay 400ms was usually enough;
+							// if we can't get it in 5s give up, and use whatever we've got.
 							watch.Stop();
-							Debug.WriteLine("Got image after waiting " + watch.ElapsedMilliseconds);
+							Debug.WriteLine("returned possibly incomplete thumnail after more than 5000ms");
 							return new Bitmap(image);
 						}
+
+						if (top < 0)
+						{
+							// no image to wait for, go with what we have.
+							return new Bitmap(image);
+						}
+
+						// I'm not sure how top or bottom can get to be greater than image.Height, but if they do,
+						// it causes a crash. It makes no sense to look for the last line drawn beyond the end of the
+						// image, so if something tries, just start looking at the bottom.
+						var newLastLine = GetLastLineOfImage(coverColor, Math.Min(top, image.Height),
+							Math.Min(bottom, image.Height), image);
+
+						// If nothing has been drawn yet, we want to keep trying until something is.
+						// If something has been drawn, we want to keep trying until a cycle when
+						// nothing more gets added.
+						if (newLastLine == -1 || newLastLine > lastLineOfImage)
+						{
+							lastLineOfImage = newLastLine;
+							// This is meant to give the browser more of a chance to load it.
+							// It may well have been working on it anyway in another thread
+							// while we were checking pixels. Not too sure about the best length
+							// for this delay; longer might mean less time wasted checking pixels,
+							// but the minimum delay is two times this interval, so we don't want
+							// it too long. 50ms, at least on my desktop, usually doesn't result
+							// in any wasted iterations, nor much delay.
+							Thread.Sleep(50);
+							continue; // try again
+						}
+
+						// No more image drawn than the last iteration, and we got something, so assume we have the whole thing.
+						watch.Stop();
+						Debug.WriteLine("Got image after waiting " + watch.ElapsedMilliseconds);
+						return new Bitmap(image);
 					}
 				}
 			}
@@ -450,83 +516,91 @@ namespace Bloom
 		/// <param name="browser"></param>
 		/// <param name="thumbnail"></param>
 		/// <returns></returns>
-		private bool CreateThumbNail(ThumbnailOrder order, GeckoWebBrowser browser, out Image thumbnail)
+		private bool CreateThumbNail(ThumbnailOrder order, Browser browser, out Image thumbnail)
 		{
 			// runs on threadpool thread
 			_currentOrder = order;
 			thumbnail = null;
-			using (var temp = BloomServer.MakeSimulatedPageFileInBookFolder(order.Document, source:BloomServer.SimulatedPageFileSource.Thumb))
+
+			order.Done = false;
+			browser.Tag = order;
+			Color coverColor;
+			ImageUtils.TryCssColorFromString(Book.Book.GetCoverColorFromDom(order.Document.RawDom), out coverColor);
+			if (!OpenTempFileInBrowser(browser, order.Document))
+				return false;
+
+			var browserSize = SetWidthAndHeight(browser);
+			if (browserSize.Height == 0) //happens when we run into the as-yet-unreproduced-or-fixed bl-254
+				return false; // will try again later
+
+			try
 			{
-				order.Done = false;
-				browser.Tag = order;
-				Color coverColor;
-				ImageUtils.TryCssColorFromString(Book.Book.GetCoverColorFromDom(order.Document.RawDom), out coverColor);
-				if (!OpenTempFileInBrowser(browser, temp.Key))
-					return false;
-
-				var browserSize = SetWidthAndHeight(browser);
-				if (browserSize.Height == 0) //happens when we run into the as-yet-unreproduced-or-fixed bl-254
-					return false; // will try again later
-
-				try
+				Logger.WriteMinorEvent("HtmlThumNailer ({2}): browser.GetBitmap({0},{1})", browserSize.Width,
+					(uint)browserSize.Height,
+					Thread.CurrentThread.ManagedThreadId);
+				//BUG (April 2013) found that the initial call to GetBitMap always had a zero width, leading to an exception which
+				//the user doesn't see and then all is well. So at the moment, we avoid the exception, and just leave with
+				//the placeholder thumbnail.
+				if (browserSize.Width == 0 || browserSize.Height == 0)
 				{
-					Logger.WriteMinorEvent("HtmlThumNailer ({2}): browser.GetBitmap({0},{1})", browserSize.Width,
-						(uint) browserSize.Height,
-						Thread.CurrentThread.ManagedThreadId);
-					//BUG (April 2013) found that the initial call to GetBitMap always had a zero width, leading to an exception which
-					//the user doesn't see and then all is well. So at the moment, we avoid the exception, and just leave with
-					//the placeholder thumbnail.
-					if (browserSize.Width == 0 || browserSize.Height == 0)
-					{
-						var paperSizeName = GetPaperSizeName(order.Document.RawDom);
-						throw new ApplicationException("Problem getting thumbnail browser for document with Paper Size: " + paperSizeName);
-					}
-
-					int topOfCoverImage = -1;
-					int bottomOfCoverImage = -1;
-					_syncControl.Invoke((Action) (() =>
-					{
-						Guard.AgainstNull(browser.Document.ActiveElement, "browser.Document.ActiveElement");
-						var div = browser.Document.ActiveElement.EvaluateXPath("//div[contains(@class, 'bloom-imageContainer')]").GetNodes().FirstOrDefault() as GeckoHtmlElement;
-						if (div != null)
-						{
-							// Note that div.GetBoundingClientRect() returns nothing useful in Geckofx60: these values appear to work okay.
-							topOfCoverImage = div.OffsetTop;
-							bottomOfCoverImage = topOfCoverImage + div.OffsetHeight;
-						}
-					}));
-
-					using (Image fullsizeImage = CreateImage(browser, coverColor, topOfCoverImage, bottomOfCoverImage))
-					{
-						if (_disposed)
-							return false;
-						thumbnail = MakeThumbNail(fullsizeImage, order.Options);
-						return true;
-					}
+					var paperSizeName = GetPaperSizeName(order.Document.RawDom);
+					throw new ApplicationException("Problem getting thumbnail browser for document with Paper Size: " +
+					                               paperSizeName);
 				}
-				catch (Exception error)
+
+				int topOfCoverImage = -1;
+				int bottomOfCoverImage = -1;
+				_syncControl.Invoke((Action)(() =>
 				{
-					Logger.WriteEvent("HtmlThumbNailer ({0}) got {1}", Thread.CurrentThread.ManagedThreadId, error.Message);
-					Logger.WriteEvent("Disposing of all browsers in hopes of getting a fresh start on life");
-					foreach (var browserCacheForDifferentPaperSize in _browserCacheForDifferentPaperSizes)
+					// There's probably some way to get all of this in a single RunJavaScript call, but note that ?. is not supported
+					// in GeckoFx60, and I've had some trouble with scripts of more than a single expression in WebView2.
+					var imageCount =
+						int.Parse(browser.RunJavaScript(
+							"document.getElementsByClassName('bloom-imageContainer').length.toString()"));
+					if (imageCount != 0)
 					{
-						try
-						{
-							Logger.WriteEvent("Disposing of browser {0}", browserCacheForDifferentPaperSize.Key);
-							browserCacheForDifferentPaperSize.Value.Dispose();
-						}
-						catch (Exception e2)
-						{
-							Logger.WriteEvent(
-								"While trying to dispose of thumbnailer browsers as a result of an exception, go another: " + e2.Message);
-						}
+						topOfCoverImage = (int)Math.Round(double.Parse(
+							browser.RunJavaScript(
+								"document.getElementsByClassName('bloom-imageContainer')[0].offsetTop.toString()")));
+						bottomOfCoverImage = topOfCoverImage + (int)Math.Round(double.Parse(
+							browser.RunJavaScript(
+								"document.getElementsByClassName('bloom-imageContainer')[0].offsetHeight.toString()")));
 					}
-					_browserCacheForDifferentPaperSizes.Clear();
-#if DEBUG
-					_syncControl.Invoke((Action) (() => Debug.Fail(error.Message)));
-#endif
+				}));
+
+				using (Image fullsizeImage = CreateImage(browser, coverColor, topOfCoverImage, bottomOfCoverImage))
+				{
+					if (_disposed)
+						return false;
+					thumbnail = MakeThumbNail(fullsizeImage, order.Options);
+					return true;
 				}
 			}
+			catch (Exception error)
+			{
+				Logger.WriteEvent("HtmlThumbNailer ({0}) got {1}", Thread.CurrentThread.ManagedThreadId, error.Message);
+				Logger.WriteEvent("Disposing of all browsers in hopes of getting a fresh start on life");
+				foreach (var browserCacheForDifferentPaperSize in _browserCacheForDifferentPaperSizes)
+				{
+					try
+					{
+						Logger.WriteEvent("Disposing of browser {0}", browserCacheForDifferentPaperSize.Key);
+						browserCacheForDifferentPaperSize.Value.Dispose();
+					}
+					catch (Exception e2)
+					{
+						Logger.WriteEvent(
+							"While trying to dispose of thumbnailer browsers as a result of an exception, go another: " +
+							e2.Message);
+					}
+				}
+
+				_browserCacheForDifferentPaperSizes.Clear();
+#if DEBUG
+				_syncControl.Invoke((Action)(() => Debug.Fail(error.Message)));
+#endif
+			}
+
 			return false;
 		}
 
@@ -620,26 +694,26 @@ namespace Bloom
 			order.Callback(pendingThumbnail);
 		}
 
-		private void _browser_OnDocumentCompleted(object sender, GeckoDocumentCompletedEventArgs geckoDocumentCompletedEventArgs)
+		private void _browser_OnDocumentCompleted(object sender, EventArgs geckoDocumentCompletedEventArgs)
 		{
 			Debug.WriteLine("_browser_OnDocumentCompleted ({0})", Thread.CurrentThread.ManagedThreadId);
-			var order = (ThumbnailOrder)((GeckoWebBrowser)sender).Tag;
+			var order = (ThumbnailOrder)((Browser)sender).Tag;
 			order.Done = true;
 			if (order.WaitHandle != null)
 				order.WaitHandle.Set();
 		}
 
-		private GeckoWebBrowser GetBrowserForPaperSize(XmlDocument document)
+		private Browser GetBrowserForPaperSize(XmlDocument document)
 		{
 			var paperSizeName = GetPaperSizeName(document);
 
-			GeckoWebBrowser b;
+			Browser b;
 			if (_browserCacheForDifferentPaperSizes.TryGetValue(paperSizeName, out b))
 				return b;
 
 			if (_syncControl.InvokeRequired)
 			{
-				b = (GeckoWebBrowser)_syncControl.Invoke(new Func<GeckoWebBrowser>(MakeNewBrowser));
+				b = (Browser)_syncControl.Invoke(new Func<Browser>(MakeNewBrowser));
 			}
 			else
 				b = MakeNewBrowser();
@@ -656,11 +730,11 @@ namespace Bloom
 		}
 
 
-		private GeckoWebBrowser MakeNewBrowser()
+		private Browser MakeNewBrowser()
 		{
 			Debug.WriteLine("making browser ({0})", Thread.CurrentThread.ManagedThreadId);
 #if !__MonoCS__
-			var browser = new GeckoWebBrowser();
+			var browser = BrowserMaker.MakeBrowser();
 #else
 			var browser = new OffScreenGeckoWebBrowser();
 #endif

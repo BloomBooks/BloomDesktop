@@ -9,6 +9,7 @@ import SelectedTemplatePageControls from "./selectedTemplatePageControls";
 import { getEditTabBundleExports } from "../bookEdit/js/bloomFrames";
 import { ThemeProvider } from "@material-ui/styles";
 import { lightTheme } from "../bloomMaterialUITheme";
+import WebSocketManager from "../utils/WebSocketManager";
 
 document.addEventListener("DOMContentLoaded", () => {
     BloomApi.get("pageTemplates", result => {
@@ -38,6 +39,8 @@ export class PageChooser {
     private _indexOfPageToSelect: number;
     private _scrollingDiv: HTMLDivElement;
     private _forChooseLayout: boolean;
+    private redoCounter = 0;
+    private addedPageChooserListener = false;
 
     constructor(initializationJsonString: string) {
         let initializationObject: object;
@@ -55,6 +58,30 @@ export class PageChooser {
             this._forChooseLayout = initializationObject["forChooseLayout"];
         } else {
             alert("Expected url in PageChooser ctor!");
+        }
+
+        if (!this.addedPageChooserListener) {
+            WebSocketManager.addListener("page-chooser", e => {
+                if (e.id == "thumbnail-updated") {
+                    const src: string = (e as any).src;
+                    const images = document.getElementsByTagName("img");
+                    for (let i = 0; i < images.length; i++) {
+                        const img = images[i];
+                        const imgSrc = img.src.replace(/%2F/g, "/");
+                        // force the image to be reloaded.
+                        if (imgSrc.startsWith(src)) {
+                            const newSrc =
+                                imgSrc +
+                                // This is defensive. Currently I think these urls always have a param already.
+                                (imgSrc.indexOf("?") >= 0 ? "&" : "?") +
+                                "reload=" +
+                                this.redoCounter++;
+                            img.src = newSrc;
+                        }
+                    }
+                }
+            });
+            this.addedPageChooserListener = true;
         }
 
         this._selectedGridItem = undefined;

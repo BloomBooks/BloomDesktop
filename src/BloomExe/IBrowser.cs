@@ -68,6 +68,12 @@ namespace Bloom
 		public abstract string Url { get; }
 
 		/// <summary>
+		/// Get a bitmap showing the current state of the browser. Caller should dispose.
+		/// </summary>
+		/// <returns></returns>
+		public abstract Bitmap GetPreview();
+
+		/// <summary>
 		/// This function is in the process of migrating from GeckoFx to Webview2.
 		/// It originally took a GeckoContextMenuEventArgs, but most users only wanted
 		/// the ContextMenu, to which they could add items. A couple also used the TargetNode.
@@ -127,7 +133,7 @@ namespace Bloom
 
 		protected virtual void RaiseDocumentCompleted(object sender, EventArgs e)
 		{
-			DocumentCompleted?.Invoke(sender, e);
+			DocumentCompleted?.Invoke(this, e);
 		}
 
 		protected void RaiseBrowserClick(object sender, EventArgs e)
@@ -212,6 +218,8 @@ namespace Bloom
 				return;
 			}
 
+			EnsureBrowserReadyToNavigate();
+
 			//TODO: fix up this hack. We found that deleting the pdf while we're still showing it is a bad idea.
 			if (cleanupFileAfterNavigating && !url.EndsWith(".pdf"))
 			{
@@ -219,7 +227,7 @@ namespace Bloom
 			}
 			UpdateDisplay(url);
 		}
-		public abstract bool NavigateAndWaitTillDone(HtmlDom htmlDom, int timeLimit, string source = "nav", Func<bool> cancelCheck = null, bool throwOnTimeout = true);
+		public abstract bool NavigateAndWaitTillDone(HtmlDom htmlDom, int timeLimit, BloomServer.SimulatedPageFileSource source, Func<bool> cancelCheck = null, bool throwOnTimeout = true);
 
 		public void NavigateRawHtml(string html)
 		{

@@ -6,6 +6,7 @@ using System.Linq;
 using Bloom.Book;
 using System.Windows.Forms;
 using System.Xml;
+using Bloom.Api;
 using Bloom.Publish.AccessibilityChecker;
 using SIL.Reporting;
 using SIL.Xml;
@@ -231,7 +232,7 @@ namespace Bloom.Publish
 				epubMaker.AddEpubVisibilityStylesheetAndClass(displayDom);
 			if (this != _latestInstance)
 				return;
-			if (!Browser1.NavigateAndWaitTillDone(displayDom, 10000, "publish", () => this != _latestInstance,
+			if (!Browser1.NavigateAndWaitTillDone(displayDom, 10000, BloomServer.SimulatedPageFileSource.Epub, () => this != _latestInstance,
 				false))
 			{
 				// We started having problems with timeouts here (BL-7892).

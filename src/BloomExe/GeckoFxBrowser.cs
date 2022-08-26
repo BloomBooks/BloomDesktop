@@ -468,7 +468,7 @@ namespace Bloom
 			// If it isn't really complete, don't tell the client it is!
 			if (_browser.Document.ReadyState != "complete")
 				return;
-			base.RaiseDocumentCompleted(sender, e);
+			base.RaiseDocumentCompleted(this, e);
 		}
 
 		// We'd like to suppress them just in one browser. But it seems to be unpredictable which
@@ -559,6 +559,15 @@ namespace Bloom
 		}
 
 		public override string Url => _url;
+		public override Bitmap GetPreview()
+		{
+			var creator = new ImageCreator(_browser);
+			byte[] imageBytes = creator.CanvasGetPngImage((uint)_browser.Width, (uint)_browser.Height);
+			using (var stream = new MemoryStream(imageBytes))
+			{
+				return new Bitmap(stream);
+			}
+		}
 
 		public override void CopySelection()
 		{
@@ -714,7 +723,7 @@ namespace Bloom
 			}
 		}
 
-		public override bool NavigateAndWaitTillDone(HtmlDom htmlDom, int timeLimit, string source = "nav",
+		public override bool NavigateAndWaitTillDone(HtmlDom htmlDom, int timeLimit, BloomServer.SimulatedPageFileSource source,
 			Func<bool> cancelCheck = null, bool throwOnTimeout = true)
 		{
 			// Should be called on UI thread. Since it is quite typical for this method to create the
