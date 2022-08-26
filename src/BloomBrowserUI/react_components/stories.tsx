@@ -23,10 +23,9 @@ import CustomColorPicker from "./customColorPicker";
 import { IColorInfo, getBackgroundColorCssFromColorInfo } from "./colorSwatch";
 import {
     showColorPickerDialog,
-    DialogResult,
     IColorPickerDialogProps,
-    BloomPalette,
-    OverlayBackgroundColors
+    ColorDisplayButton,
+    DialogResult
 } from "./colorPickerDialog";
 import SmallNumberPicker from "./smallNumberPicker";
 import { BloomAvatar } from "./bloomAvatar";
@@ -55,10 +54,7 @@ import { RadioGroup } from "./RadioGroup";
 import { MuiRadio } from "./muiRadio";
 import WinFormsStyleSelect from "./winFormsStyleSelect";
 import BookMakingSettingsControl from "../collection/bookMakingSettingsControl";
-import {
-    ColorDisplayButton,
-    IColorDisplayButtonProps
-} from "../react_components/colorPickerDialog";
+import { BloomPalette, TextBackgroundColors } from "./bloomPalette";
 
 storiesOf("Localizable Widgets", module)
     .add("Expandable", () => (
@@ -831,7 +827,7 @@ storiesOf("Misc/ColorPicker", module)
                                         ? chooserCurrentBackgroundColor
                                         : chooserCurrentTextColor
                                 }
-                                swatchColors={OverlayBackgroundColors}
+                                swatchColors={TextBackgroundColors}
                                 noAlphaSlider={!backgroundChooser}
                                 noGradientSwatches={!backgroundChooser}
                             />
@@ -870,7 +866,7 @@ storiesOf("Misc/ColorPicker", module)
             const colorPickerDialogProps: IColorPickerDialogProps = {
                 localizedTitle: "Custom Color Picker",
                 initialColor: chooserCurrentBackgroundColor,
-                palette: BloomPalette.OverlayBackground,
+                palette: BloomPalette.TextBackground,
                 onChange: color => handleColorChange(color),
                 onInputFocus: () => {}
             };
