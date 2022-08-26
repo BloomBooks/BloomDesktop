@@ -23,6 +23,7 @@ import CustomColorPicker from "./customColorPicker";
 import { IColorInfo, getBackgroundColorCssFromColorInfo } from "./colorSwatch";
 import {
     showColorPickerDialog,
+    DialogResult,
     IColorPickerDialogProps,
     BloomPalette,
     OverlayBackgroundColors
@@ -54,6 +55,10 @@ import { RadioGroup } from "./RadioGroup";
 import { MuiRadio } from "./muiRadio";
 import WinFormsStyleSelect from "./winFormsStyleSelect";
 import BookMakingSettingsControl from "../collection/bookMakingSettingsControl";
+import {
+    ColorDisplayButton,
+    IColorDisplayButtonProps
+} from "../react_components/colorPickerDialog";
 
 storiesOf("Localizable Widgets", module)
     .add("Expandable", () => (
@@ -730,7 +735,7 @@ const initialOverDivStyles: React.CSSProperties = {
     background: "#fff"
 };
 
-storiesOf("Misc/Custom Color Chooser", module)
+storiesOf("Misc/ColorPicker", module)
     .add("Background/text color", () =>
         React.createElement(() => {
             const [chooserShowing, setChooserShowing] = useState(false);
@@ -893,6 +898,49 @@ storiesOf("Misc/Custom Color Chooser", module)
                     >
                         Open Color Picker Dialog
                     </BloomButton>
+                </div>
+            );
+        })
+    )
+    .add("ColorDisplayButton", () =>
+        React.createElement(() => {
+            const initialColor = "#aa0000";
+            const [currentColor, setCurrentColor] = useState(initialColor);
+
+            return (
+                <div
+                    css={css`
+                        background-color: lightyellow;
+                        align-items: center;
+                        border: 1px solid black;
+                    `}
+                    style={mainBlockStyles}
+                >
+                    <ColorDisplayButton
+                        onClose={(result: DialogResult, newColor: string) => {
+                            setCurrentColor(newColor);
+                            alert(
+                                `DialogResult was ${
+                                    result === DialogResult.OK ? "OK" : "Cancel"
+                                }`
+                            );
+                        }}
+                        initialColor={currentColor}
+                        noAlphaSlider={true}
+                        localizedTitle="Test Color Button"
+                        width={75}
+                    />
+                    <div
+                        css={css`
+                            background-color: ${currentColor};
+                            width: 150px;
+                            height: 32px;
+                            padding: 5px;
+                            margin-top: 20px;
+                        `}
+                    >
+                        Chosen color block
+                    </div>
                 </div>
             );
         })
