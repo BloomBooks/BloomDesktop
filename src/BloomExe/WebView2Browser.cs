@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Drawing;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -132,10 +134,22 @@ namespace Bloom
 			// that we think is due to not implementing it.
 		}
 
+		private string _targetUrl;
+		private bool _ensuredCoreWebView2;
+		private bool _finishedUpdateDisplay;
+		private bool _urlMatches;
+
 		protected override async void UpdateDisplay(string newUrl)
 		{
+			_targetUrl = newUrl;
+			_ensuredCoreWebView2 = false;
+			_finishedUpdateDisplay = false;
+
 			await _webview.EnsureCoreWebView2Async();
+			_ensuredCoreWebView2 = true;
 			_webview.CoreWebView2.Navigate(newUrl);
+			_finishedUpdateDisplay = true;
+			_urlMatches = Url == newUrl;
 		}
 
 		protected override void EnsureBrowserReadyToNavigate()
@@ -156,7 +170,7 @@ namespace Bloom
 			}
 		}
 
-		public override bool NavigateAndWaitTillDone(HtmlDom htmlDom, int timeLimit, string source, Func<bool> cancelCheck, bool throwOnTimeout)
+		public override bool NavigateAndWaitTillDone(HtmlDom htmlDom, int timeLimit, BloomServer.SimulatedPageFileSource source, Func<bool> cancelCheck, bool throwOnTimeout)
 		{
 			// Should be called on UI thread. Since it is quite typical for this method to create the
 			// window handle and browser, it can't do its own Invoke, which depends on already having a handle.
@@ -169,18 +183,22 @@ namespace Bloom
 
 			navTimer.Start();
 			_webview.CoreWebView2.NavigationCompleted += (sender, args) => done = true;
-			// just in case something goes wrong, avoid the timeout if it fails rather than completing.
-			// Is there an equivalent??_browser.NavigationError += (sender, e) => done = true;
-			// Currently this is only used by EpubMaker.
-			Navigate(htmlDom, source: BloomServer.SimulatedPageFileSource.Epub);
+			// The Gecko implementation also had _browser.NavigationError += (sender, e) => done = true;
+			// I can't find any equivalent for WebView2 and I think the doc says it will raise NavigationCompleted
+			// even if there was an error, but consider this if implementing for yet another browser.
+			Navigate(htmlDom, source: source);
 			// If done is set (by NavigationError?) prematurely, we still need to wait while IsBusy
 			// is true to give the loaded document time to become available for the checks later.
 			// See https://issues.bloomlibrary.org/youtrack/issue/BL-8741.
 			while ((!done) && navTimer.ElapsedMilliseconds < timeLimit)
 			{
 				Application.DoEvents(); // NOTE: this has bad consequences all down the line. See BL-6122.
-				// Remember this might be needed if we reimplement with a Linux-compatible control
-				//Application.RaiseIdle(new EventArgs()); // needed on Linux to avoid deadlock starving browser navigation
+				Thread.Sleep(10);
+				// Remember this might be needed if we reimplement with a Linux-compatible control.
+				// OTOH, it doesn't help on Windows, and may lead to unwanted reentrancy if multiple
+				// navigation-involving tasks as waiting on Idle.
+				// I haven't made it conditional-compilation because this whole WebView2-based class is Windows-only.
+				// Application.RaiseIdle(new EventArgs()); // needed on Linux to avoid deadlock starving browser navigation
 				if (cancelCheck != null && cancelCheck())
 				{
 					navTimer.Stop();
@@ -201,6 +219,18 @@ namespace Bloom
 		}
 
 		public override string Url => _webview.Source.ToString();
+		public override Bitmap GetPreview()
+		{
+			var stream = new MemoryStream();
+			var task = _webview.CoreWebView2.CapturePreviewAsync(CoreWebView2CapturePreviewImageFormat.Png, stream);
+			while (!task.IsCompleted)
+			{
+				Application.DoEvents();
+				Thread.Sleep(10);
+			}
+			stream.Position = 0;
+			return new Bitmap(stream);
+		}
 
 		public override void OnGetTroubleShootingInformation(object sender, EventArgs e)
 		{

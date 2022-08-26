@@ -335,7 +335,7 @@ namespace BloomTests.web
 		}
 
 		[Test]
-		[TestCase(BloomServer.SimulatedPageFileSource.Epub, false)]
+		[TestCase(BloomServer.SimulatedPageFileSource.JustCheckingPage, false)]
 		[TestCase(BloomServer.SimulatedPageFileSource.Frame, true)]
 		[TestCase(BloomServer.SimulatedPageFileSource.Nav, true)]
 		[TestCase(BloomServer.SimulatedPageFileSource.Normal, true)]

@@ -4,9 +4,11 @@ using System.Drawing;
 using System.Dynamic;
 using System.IO;
 using System.Linq;
+using System.Windows.Forms;
 using Bloom.Api;
 using Bloom.Book;
 using Bloom.Edit;
+using Bloom.Utils;
 using Newtonsoft.Json;
 using SIL.IO;
 using SIL.PlatformUtilities;
@@ -25,6 +27,7 @@ namespace Bloom.web.controllers
 		private readonly PageSelection _pageSelection;
 		private readonly TemplateInsertionCommand _templateInsertionCommand;
 		private readonly BookThumbNailer _thumbNailer;
+		private IBloomWebSocketServer _webSocketServer;
 
 		//these two factories are needed to instantiate template books if we need to generate thumbnails for them
 		private readonly Book.Book.Factory _bookFactory;
@@ -32,9 +35,9 @@ namespace Bloom.web.controllers
 
 		public static bool ForPageLayout = false; // set when most recent relevant command is ShowChangeLayoutDialog
 
-		public PageTemplatesApi(SourceCollectionsList  sourceCollectionsList,BookSelection bookSelection,
+		public PageTemplatesApi(SourceCollectionsList  sourceCollectionsList, BookSelection bookSelection,
 			PageSelection pageSelection, TemplateInsertionCommand templateInsertionCommand,
-			BookThumbNailer thumbNailer, Book.Book.Factory bookFactory, BookStorage.Factory storageFactory)
+			BookThumbNailer thumbNailer, Book.Book.Factory bookFactory, BookStorage.Factory storageFactory, BloomWebSocketServer webSocketServer)
 		{
 			_sourceCollectionsList = sourceCollectionsList;
 			_bookSelection = bookSelection;
@@ -43,6 +46,7 @@ namespace Bloom.web.controllers
 			_thumbNailer = thumbNailer;
 			_bookFactory = bookFactory;
 			_storageFactory = storageFactory;
+			_webSocketServer = webSocketServer;
 		}
 
 		public void RegisterWithApiHandler(BloomApiHandler apiHandler)
@@ -103,6 +107,9 @@ namespace Bloom.web.controllers
 			request.ReplyWithImage(pathToExistingOrGeneratedThumbnail);
 		}
 
+		List<Action> _idleUpdates = new List<Action>();
+		private Action _currentIdleUpdate;
+
 		/// <summary>
 		/// Usually we expect that a file at the same path but with extension .svg will
 		/// be found and returned. Failing this we try for one ending in .png. If this still fails we
@@ -121,6 +128,7 @@ namespace Bloom.web.controllers
 
 			var pngpath = Path.ChangeExtension(localPath, "png");
 			bool mustRegenerate = false;
+			string tempPath = null;
 
 			if (RobustFile.Exists(pngpath))
 			{
@@ -130,7 +138,7 @@ namespace Bloom.web.controllers
 
 				if (!IsPageTypeFromCurrentBook(localPath))
 					return pngpath;
-
+				tempPath = pngpath;
 				mustRegenerate = true; // prevent thumbnailer using cached (obsolete) image
 			}
 
@@ -139,63 +147,128 @@ namespace Bloom.web.controllers
 			{
 				if (!IsPageTypeFromCurrentBook(localPath))
 					return altpath;
-
+				tempPath = altpath;
 				mustRegenerate = true; // prevent thumbnailer using cached (obsolete) image
 			}
 
-			// We don't have an image, or we want to make a fresh one
-			var templatesDirectoryInTemplateBook = Path.GetDirectoryName(expectedPathOfThumbnailImage);
-			var bookPath = Path.GetDirectoryName(templatesDirectoryInTemplateBook);
-			var templateBook = _bookFactory(new BookInfo(bookPath,false), _storageFactory(bookPath));
-
-			//note: the caption is used here as a key to find the template page.
-			var caption = Path.GetFileNameWithoutExtension(expectedPathOfThumbnailImage).Trim();
-			var isLandscape = caption.EndsWith("-landscape"); // matches string in page-chooser.ts
-			if (isLandscape)
-				caption = caption.Substring(0, caption.Length - "-landscape".Length);
-			var isSquare = caption.EndsWith("-square");
-			if (isSquare)
-				caption = caption.Substring(0, caption.Length - "-square".Length);
-
-			// The Replace of & with + corresponds to a replacement made in page-chooser.ts method loadPagesFromCollection.
-			// The Trim is needed because template may now be created by users editing the pageLabel div, and those
-			// labels typically include a trailing newline.
-			IPage templatePage = templateBook.GetPages().FirstOrDefault(page => page.Caption.Replace("&", "+").Trim() == caption);
-			if (templatePage == null)
-				templatePage = templateBook.GetPages().FirstOrDefault(); // may get something useful?? or throw??
-
-			Image thumbnail = _thumbNailer.GetThumbnailForPage(templateBook, templatePage, isLandscape, isSquare, mustRegenerate);
-
-			// lock to avoid BL-3781 where we got a "Object is currently in use elsewhere" while doing the Clone() below.
-			// Note: it would appear that the clone isn't even needed, since it was added in the past to overcome this
-			// same contention problem (but, in hindsight, only partially, see?). But for some reason if we just lock the image
-			// until it is saved, we get all gray rectangles. So for now, we just quickly do the clone and unlock.
-			var resultPath = "";
-			Bitmap clone;
-			// Review: the coarse lock(SyncObj) in BloomServer.ProcessRequest() may have removed the need for this finer grained lock.
-			lock (thumbnail)
+			// We need to postpone generating the new thumbnail. Typically, this gets called during
+			// a request for a thumbnail by the Add Page dialog. Creating the new thumbnail involves
+			// navigating a private browser to a document representing the page. If we attempt that
+			// navigation while another page is in the middle of requesting an image, the navigation
+			// never starts; the request times out. Apparently we're running into some sort of deadlock.
+			// I haven't fully figured out exactly what it is that we're not allowed to do;
+			// https://docs.microsoft.com/en-us/microsoft-edge/webview2/concepts/threading-model
+			// indicates that certain operations may run into reentrancy issues, and this might be
+			// one of them.
+			// (It's possible another way to resolve it would be to make the thumbnail webview use a
+			// different "user data folder". I haven't tried this. Doc indicates it would cost a LOT
+			// more memory, maybe ~150M on top of ~100M for just having another WebView2. In any case,
+			// I think it's a GOOD thing to postpone this and get the Add Page dialog up quickly even
+			// if we take a bit longer to update the thumbnails.)
+			// I'm not sure that adding the action to the idle list needs to happen on the UI thread,
+			// but adding the handler to the idle event definitely does, and invoking this whole block
+			// ensures that everything to do with the idle event, including creating the thumbnail,
+			// happens on that thread, and saves us worrying about locking the list.
+			Application.OpenForms.Cast<Form>().First(x => x is Shell).Invoke((Action)(() =>
 			{
-				clone = new Bitmap((Image)thumbnail.Clone());
-			}
-			using (clone)
-			{
-				try
+				_idleUpdates.Add(() =>
 				{
-					//if the directory doesn't exist in the template's directory, make it (i.e. "templates/").
-					Directory.CreateDirectory(templatesDirectoryInTemplateBook);
-					//save this thumbnail so that we don't have to generate it next time
-					clone.Save(pngpath);
-					resultPath = pngpath;
-				}
-				catch (Exception)
+
+					// We don't have an image, or we want to make a fresh one
+					var templatesDirectoryInTemplateBook = Path.GetDirectoryName(expectedPathOfThumbnailImage);
+					var bookPath = Path.GetDirectoryName(templatesDirectoryInTemplateBook);
+					var templateBook = _bookFactory(new BookInfo(bookPath, false), _storageFactory(bookPath));
+
+					//note: the caption is used here as a key to find the template page.
+					var caption = Path.GetFileNameWithoutExtension(expectedPathOfThumbnailImage).Trim();
+					var isLandscape = caption.EndsWith("-landscape"); // matches string in page-chooser.ts
+					if (isLandscape)
+						caption = caption.Substring(0, caption.Length - "-landscape".Length);
+					var isSquare = caption.EndsWith("-square");
+					if (isSquare)
+						caption = caption.Substring(0, caption.Length - "-square".Length);
+
+					// The Replace of & with + corresponds to a replacement made in page-chooser.ts method loadPagesFromCollection.
+					// The Trim is needed because template may now be created by users editing the pageLabel div, and those
+					// labels typically include a trailing newline.
+					IPage templatePage = templateBook.GetPages()
+						.FirstOrDefault(page => page.Caption.Replace("&", "+").Trim() == caption);
+					if (templatePage == null)
+						templatePage =
+							templateBook.GetPages().FirstOrDefault(); // may get something useful?? or throw??
+
+					Image thumbnail = _thumbNailer.GetThumbnailForPage(templateBook, templatePage, isLandscape,
+						isSquare,
+						mustRegenerate);
+
+					// lock to avoid BL-3781 where we got a "Object is currently in use elsewhere" while doing the Clone() below.
+					// Note: it would appear that the clone isn't even needed, since it was added in the past to overcome this
+					// same contention problem (but, in hindsight, only partially, see?). But for some reason if we just lock the image
+					// until it is saved, we get all gray rectangles. So for now, we just quickly do the clone and unlock.
+					var resultPath = "";
+					Bitmap clone;
+					// Review: the coarse lock(SyncObj) in BloomServer.ProcessRequest() may have removed the need for this finer grained lock.
+					lock (thumbnail)
+					{
+						clone = new Bitmap((Image)thumbnail.Clone());
+					}
+
+					using (clone)
+					{
+						try
+						{
+							//if the directory doesn't exist in the template's directory, make it (i.e. "templates/").
+							Directory.CreateDirectory(templatesDirectoryInTemplateBook);
+							//save this thumbnail so that we don't have to generate it next time
+							clone.Save(pngpath);
+							resultPath = pngpath;
+						}
+						catch (Exception)
+						{
+							var folder = Path.GetDirectoryName(altpath);
+							Directory.CreateDirectory(folder);
+							clone.Save(altpath);
+							resultPath = altpath;
+						}
+					}
+					// Send a notification so the Add Page dialog can update the thumbnail(s) of this page.
+					var props = new DynamicJson();
+					// same object, but the function call wants it to be DynamicJson,
+					// while it's easier to set the props when it is typed as dynamic.
+					dynamic props1 = props;
+					props1.src = expectedPathOfThumbnailImage.ToLocalhost().
+						Replace(BloomServer.ServerUrlWithBloomPrefixEndingInSlash,
+							BloomServer.ServerUrlWithBloomPrefixEndingInSlash + "api/pageTemplateThumbnail/");
+					_webSocketServer.SendBundle("page-chooser", "thumbnail-updated", props);
+				});
+
+				// Each update must run to completion before another starts; otherwise, we get into a situation
+				// where we are trying to navigate two browsers at the same time and get into trouble.
+				void Handler(object sender, EventArgs args)
 				{
-					var folder = Path.GetDirectoryName(altpath);
-					Directory.CreateDirectory(folder);
-					clone.Save(altpath);
-					resultPath = altpath;
+					if (_currentIdleUpdate != null)
+						return;
+					if (_idleUpdates.Count == 0)
+					{
+						Application.Idle -= Handler;
+						return;
+					}
+
+					_currentIdleUpdate = _idleUpdates[0];
+					_idleUpdates.RemoveAt(0);
+					_currentIdleUpdate();
+					_currentIdleUpdate = null;
 				}
-			}
-			return resultPath;
+
+				Application.Idle += Handler;
+
+			}));
+			if (tempPath != null)
+				return tempPath;
+			// We need to return something here, but what is pretty arbitrary. It won't be seen for long.
+			// This SVG basically has nothing in it, so will hopefully produce the least flicker.
+			return BloomFileLocator.GetBrowserFile(false, "templates", "template books", "Basic Book", "template",
+				"Custom.svg");
 		}
 
 		/// <summary>
