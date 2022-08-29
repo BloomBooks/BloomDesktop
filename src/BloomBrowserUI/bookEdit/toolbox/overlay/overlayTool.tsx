@@ -377,7 +377,7 @@ const OverlayToolControls: React.FunctionComponent = () => {
         // attaches to bloom image containers. It doesn't make sense to
         // drag these objects anywhere else, so they don't need any of
         // the common data types.
-        ev.dataTransfer.setData("bloomBubble", style);
+        ev.dataTransfer.setData("text/x-bloombubble", style);
     };
 
     const ondragend = (ev: React.DragEvent<HTMLElement>, style: string) => {
