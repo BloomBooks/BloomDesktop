@@ -5,12 +5,6 @@ import AudioRecording from "../toolbox/talkingBook/audioRecording";
 import { BloomApi } from "../../utils/bloomApi";
 import BloomMessageBoxSupport from "../../utils/bloomMessageBoxSupport";
 
-import {
-    BloomPalette,
-    getHexColorsForPalette,
-    getDefaultColorsFromPalette
-} from "../../react_components/bloomPalette";
-
 // This class is actually just a group of static functions with a single public method. It does whatever we need to to make Firefox's contenteditable
 // element have the behavior we need.
 //
@@ -113,9 +107,7 @@ export default class BloomField {
         bloomEditableDiv: HTMLElement,
         ckeditor: CKEDITOR.editor
     ) {
-        getHexColorsForPalette(BloomPalette.Text).then(
-            r => (ckeditor.config.colorButton_colors = r.join(","))
-        );
+        ckeditor.config.colorButton_colors = CKEDITOR.config.colorButton_colors;
         ckeditor.on("key", event => {
             if (event.data.keyCode === CKEDITOR.SHIFT + 13) {
                 BloomField.InsertLineBreak();
