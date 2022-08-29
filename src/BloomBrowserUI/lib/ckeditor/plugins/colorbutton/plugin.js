@@ -8,165 +8,219 @@
  *               text and background colors to editor contents.
  *
  */
-CKEDITOR.plugins.add( 'colorbutton', {
-	requires: 'panelbutton,floatpanel',
-	// jscs:disable maximumLineLength
-	lang: 'af,ar,bg,bn,bs,ca,cs,cy,da,de,de-ch,el,en,en-au,en-ca,en-gb,eo,es,et,eu,fa,fi,fo,fr,fr-ca,gl,gu,he,hi,hr,hu,id,is,it,ja,ka,km,ko,ku,lt,lv,mk,mn,ms,nb,nl,no,pl,pt,pt-br,ro,ru,si,sk,sl,sq,sr,sr-latn,sv,th,tr,tt,ug,uk,vi,zh,zh-cn', // %REMOVE_LINE_CORE%
-	// jscs:enable maximumLineLength
-	icons: 'bgcolor,textcolor', // %REMOVE_LINE_CORE%
-	hidpi: true, // %REMOVE_LINE_CORE%
-	init: function( editor ) {
-		var config = editor.config,
-			lang = editor.lang.colorbutton;
+CKEDITOR.plugins.add("colorbutton", {
+    requires: "panelbutton,floatpanel",
+    // jscs:disable maximumLineLength
+    lang:
+        "af,ar,bg,bn,bs,ca,cs,cy,da,de,de-ch,el,en,en-au,en-ca,en-gb,eo,es,et,eu,fa,fi,fo,fr,fr-ca,gl,gu,he,hi,hr,hu,id,is,it,ja,ka,km,ko,ku,lt,lv,mk,mn,ms,nb,nl,no,pl,pt,pt-br,ro,ru,si,sk,sl,sq,sr,sr-latn,sv,th,tr,tt,ug,uk,vi,zh,zh-cn", // %REMOVE_LINE_CORE%
+    // jscs:enable maximumLineLength
+    icons: "bgcolor,textcolor", // %REMOVE_LINE_CORE%
+    hidpi: true, // %REMOVE_LINE_CORE%
+    init: function(editor) {
+        var config = editor.config,
+            lang = editor.lang.colorbutton;
 
-		if ( !CKEDITOR.env.hc ) {
-			addButton( 'TextColor', 'fore', lang.textColorTitle, 10 );
-			addButton( 'BGColor', 'back', lang.bgColorTitle, 20 );
-		}
+        if (!CKEDITOR.env.hc) {
+            addButton("TextColor", "fore", lang.textColorTitle, 10);
+            addButton("BGColor", "back", lang.bgColorTitle, 20);
+        }
 
-		function addButton( name, type, title, order ) {
-			var style = new CKEDITOR.style( config[ 'colorButton_' + type + 'Style' ] ),
-				colorBoxId = CKEDITOR.tools.getNextId() + '_colorBox';
+        function addButton(name, type, title, order) {
+            var style = new CKEDITOR.style(
+                    config["colorButton_" + type + "Style"]
+                ),
+                colorBoxId = CKEDITOR.tools.getNextId() + "_colorBox";
 
-			editor.ui.add( name, CKEDITOR.UI_PANELBUTTON, {
-				label: title,
-				title: title,
-				modes: { wysiwyg: 1 },
-				editorFocus: 0,
-				toolbar: 'colors,' + order,
-				allowedContent: style,
-				requiredContent: style,
+            editor.ui.add(name, CKEDITOR.UI_PANELBUTTON, {
+                label: title,
+                title: title,
+                modes: { wysiwyg: 1 },
+                editorFocus: 0,
+                toolbar: "colors," + order,
+                allowedContent: style,
+                requiredContent: style,
 
-				panel: {
-					css: CKEDITOR.skin.getPath( 'editor' ),
-					attributes: { role: 'listbox', 'aria-label': lang.panelTitle }
-				},
+                panel: {
+                    css: CKEDITOR.skin.getPath("editor"),
+                    attributes: {
+                        role: "listbox",
+                        "aria-label": lang.panelTitle
+                    }
+                },
 
-				onBlock: function( panel, block ) {
-					block.autoSize = true;
-					block.element.addClass( 'cke_colorblock' );
-					block.element.setHtml( renderColors( panel, type, colorBoxId ) );
-					// The block should not have scrollbars (#5933, #6056)
-					block.element.getDocument().getBody().setStyle( 'overflow', 'hidden' );
+                onBlock: function(panel, block) {
+                    block.autoSize = true;
+                    block.element.addClass("cke_colorblock");
+                    block.element.setHtml(
+                        renderColors(panel, type, colorBoxId)
+                    );
+                    // The block should not have scrollbars (#5933, #6056)
+                    block.element
+                        .getDocument()
+                        .getBody()
+                        .setStyle("overflow", "hidden");
 
-					CKEDITOR.ui.fire( 'ready', this );
+                    CKEDITOR.ui.fire("ready", this);
 
-					var keys = block.keys;
-					var rtl = editor.lang.dir == 'rtl';
-					keys[ rtl ? 37 : 39 ] = 'next'; // ARROW-RIGHT
-					keys[ 40 ] = 'next'; // ARROW-DOWN
-					keys[ 9 ] = 'next'; // TAB
-					keys[ rtl ? 39 : 37 ] = 'prev'; // ARROW-LEFT
-					keys[ 38 ] = 'prev'; // ARROW-UP
-					keys[ CKEDITOR.SHIFT + 9 ] = 'prev'; // SHIFT + TAB
-					keys[ 32 ] = 'click'; // SPACE
-				},
+                    var keys = block.keys;
+                    var rtl = editor.lang.dir == "rtl";
+                    keys[rtl ? 37 : 39] = "next"; // ARROW-RIGHT
+                    keys[40] = "next"; // ARROW-DOWN
+                    keys[9] = "next"; // TAB
+                    keys[rtl ? 39 : 37] = "prev"; // ARROW-LEFT
+                    keys[38] = "prev"; // ARROW-UP
+                    keys[CKEDITOR.SHIFT + 9] = "prev"; // SHIFT + TAB
+                    keys[32] = "click"; // SPACE
+                },
 
-				refresh: function() {
-					if ( !editor.activeFilter.check( style ) )
-						this.setState( CKEDITOR.TRISTATE_DISABLED );
-				},
+                refresh: function() {
+                    if (!editor.activeFilter.check(style))
+                        this.setState(CKEDITOR.TRISTATE_DISABLED);
+                },
 
-				// The automatic colorbox should represent the real color (#6010)
-				onOpen: function() {
+                // The automatic colorbox should represent the real color (#6010)
+                onOpen: function() {
+                    var selection = editor.getSelection(),
+                        block = selection && selection.getStartElement(),
+                        path = editor.elementPath(block),
+                        color;
 
-					var selection = editor.getSelection(),
-						block = selection && selection.getStartElement(),
-						path = editor.elementPath( block ),
-						color;
+                    if (!path) return;
 
-					if ( !path )
-						return;
+                    // Find the closest block element.
+                    block =
+                        path.block ||
+                        path.blockLimit ||
+                        editor.document.getBody();
 
-					// Find the closest block element.
-					block = path.block || path.blockLimit || editor.document.getBody();
+                    // The background color might be transparent. In that case, look up the color in the DOM tree.
+                    do {
+                        color =
+                            (block &&
+                                block.getComputedStyle(
+                                    type == "back"
+                                        ? "background-color"
+                                        : "color"
+                                )) ||
+                            "transparent";
+                    } while (
+                        type == "back" &&
+                        color == "transparent" &&
+                        block &&
+                        (block = block.getParent())
+                    );
 
-					// The background color might be transparent. In that case, look up the color in the DOM tree.
-					do {
-						color = block && block.getComputedStyle( type == 'back' ? 'background-color' : 'color' ) || 'transparent';
-					}
-					while ( type == 'back' && color == 'transparent' && block && ( block = block.getParent() ) );
+                    // The box should never be transparent.
+                    if (!color || color == "transparent") color = "#ffffff";
 
-					// The box should never be transparent.
-					if ( !color || color == 'transparent' )
-						color = '#ffffff';
+                    if (config.colorButton_enableAutomatic !== false) {
+                        this._.panel._.iframe
+                            .getFrameDocument()
+                            .getById(colorBoxId)
+                            .setStyle("background-color", color);
+                    }
 
-					if ( config.colorButton_enableAutomatic !== false ) {
-						this._.panel._.iframe.getFrameDocument().getById( colorBoxId ).setStyle( 'background-color', color );
-					}
+                    return color;
+                }
+            });
+        }
 
-					return color;
-				}
-			} );
-		}
+        function renderColors(panel, type, colorBoxId) {
+            const output = [];
+            const colors = config.colorButton_colors.split(",");
 
-		function renderColors( panel, type, colorBoxId ) {
-			var output = [],
-				colors = config.colorButton_colors.split( ',' ),
-				// Tells if we should include "More Colors..." button.
             // Enhance: once we have the standard Bloom Color dialog available for anyone to open, we should be
             // able to get at the function for opening it and then we can enable this capability.
             const moreColorsEnabled = false;
             // editor.plugins.colordialog &&
             // config.colorButton_enableMore !== false,
-				// aria-setsize and aria-posinset attributes are used to indicate size of options, because
-				// screen readers doesn't play nice with table, based layouts (#12097).
-				total = colors.length + ( moreColorsEnabled ? 2 : 1 );
+            // aria-setsize and aria-posinset attributes are used to indicate size of options, because
+            // screen readers doesn't play nice with table, based layouts (#12097).
+            const total = colors.length + (moreColorsEnabled ? 2 : 1);
 
-			var clickFn = CKEDITOR.tools.addFunction( function( color, type ) {
-				var applyColorStyle = arguments.callee;
-				function onColorDialogClose( evt ) {
-					this.removeListener( 'ok', onColorDialogClose );
-					this.removeListener( 'cancel', onColorDialogClose );
+            var clickFn = CKEDITOR.tools.addFunction(function(color, type) {
+                var applyColorStyle = arguments.callee;
+                function onColorDialogClose(evt) {
+                    this.removeListener("ok", onColorDialogClose);
+                    this.removeListener("cancel", onColorDialogClose);
 
-					evt.name == 'ok' && applyColorStyle( this.getContentElement( 'picker', 'selectedColor' ).getValue(), type );
-				}
+                    evt.name == "ok" &&
+                        applyColorStyle(
+                            this.getContentElement(
+                                "picker",
+                                "selectedColor"
+                            ).getValue(),
+                            type
+                        );
+                }
 
-				if ( color == '?' ) {
-					editor.openDialog( 'colordialog', function() {
-						this.on( 'ok', onColorDialogClose );
-						this.on( 'cancel', onColorDialogClose );
-					} );
+                if (color == "?") {
+                    editor.openDialog("colordialog", function() {
+                        this.on("ok", onColorDialogClose);
+                        this.on("cancel", onColorDialogClose);
+                    });
 
-					return;
-				}
+                    return;
+                }
 
-				editor.focus();
+                editor.focus();
 
-				panel.hide();
+                panel.hide();
 
-				editor.fire( 'saveSnapshot' );
+                editor.fire("saveSnapshot");
 
-				// Clean up any conflicting style within the range.
-				editor.removeStyle( new CKEDITOR.style( config[ 'colorButton_' + type + 'Style' ], { color: 'inherit' } ) );
+                // Clean up any conflicting style within the range.
+                editor.removeStyle(
+                    new CKEDITOR.style(
+                        config["colorButton_" + type + "Style"],
+                        { color: "inherit" }
+                    )
+                );
 
-				if ( color ) {
-					var colorStyle = config[ 'colorButton_' + type + 'Style' ];
+                if (color) {
+                    var colorStyle = config["colorButton_" + type + "Style"];
 
-					colorStyle.childRule = type == 'back' ?
-					function( element ) {
-						// It's better to apply background color as the innermost style. (#3599)
-						// Except for "unstylable elements". (#6103)
-						return isUnstylable( element );
-					} : function( element ) {
-						// Fore color style must be applied inside links instead of around it. (#4772,#6908)
-						return !( element.is( 'a' ) || element.getElementsByTag( 'a' ).count() ) || isUnstylable( element );
-					};
+                    colorStyle.childRule =
+                        type == "back"
+                            ? function(element) {
+                                  // It's better to apply background color as the innermost style. (#3599)
+                                  // Except for "unstylable elements". (#6103)
+                                  return isUnstylable(element);
+                              }
+                            : function(element) {
+                                  // Fore color style must be applied inside links instead of around it. (#4772,#6908)
+                                  return (
+                                      !(
+                                          element.is("a") ||
+                                          element.getElementsByTag("a").count()
+                                      ) || isUnstylable(element)
+                                  );
+                              };
 
-					editor.applyStyle( new CKEDITOR.style( colorStyle, { color: color } ) );
-				}
+                    editor.applyStyle(
+                        new CKEDITOR.style(colorStyle, { color: color })
+                    );
+                }
 
-				editor.fire( 'saveSnapshot' );
-			} );
+                editor.fire("saveSnapshot");
+            });
 
-			if ( config.colorButton_enableAutomatic !== false ) {
-				// Render the "Automatic" button.
-				output.push( '<a class="cke_colorauto" _cke_focus=1 hidefocus=true' +
-					' title="', lang.auto, '"' +
-					' onclick="CKEDITOR.tools.callFunction(', clickFn, ',null,\'', type, '\');return false;"' +
-					' href="javascript:void(\'', lang.auto, '\')"' +
-					' role="option" aria-posinset="1" aria-setsize="', total, '">' +
-						'<table role="presentation" cellspacing=0 cellpadding=0 width="100%">' +
+            if (config.colorButton_enableAutomatic !== false) {
+                // Render the "Automatic" button.
+                output.push(
+                    '<a class="cke_colorauto" _cke_focus=1 hidefocus=true' +
+                        ' title="',
+                    lang.auto,
+                    '"' + ' onclick="CKEDITOR.tools.callFunction(',
+                    clickFn,
+                    ",null,'",
+                    type,
+                    "');return false;\"" + " href=\"javascript:void('",
+                    lang.auto,
+                    "')\"" + ' role="option" aria-posinset="1" aria-setsize="',
+                    total,
+                    '">' +
+                        '<table role="presentation" cellspacing=0 cellpadding=0 width="100%">' +
                         "<tr>" +
                         "<td>" +
                         '<span class="cke_colorbox" id="',
@@ -175,58 +229,91 @@ CKEDITOR.plugins.add( 'colorbutton', {
                     config.labelForDefaultColor,
                     "</td>" + "</tr>" + "</table>" + "</a>"
                 );
-			}
-			output.push( '<table role="presentation" cellspacing=0 cellpadding=0 width="100%">' );
+            }
+            output.push(
+                '<table role="presentation" cellspacing=0 cellpadding=0 width="100%">'
+            );
 
-			// Render the color boxes.
-			for ( var i = 0; i < colors.length; i++ ) {
-				if ( ( i % 8 ) === 0 )
-					output.push( '</tr><tr>' );
+            // Render the color boxes.
+            for (var i = 0; i < colors.length; i++) {
+                if (i % 8 === 0) output.push("</tr><tr>");
 
-				var parts = colors[ i ].split( '/' ),
-					colorName = parts[ 0 ],
-					colorCode = parts[ 1 ] || colorName;
+                var parts = colors[i].split("/"),
+                    colorName = parts[0],
+                    colorCode = parts[1] || colorName;
 
-				// The data can be only a color code (without #) or colorName + color code
-				// If only a color code is provided, then the colorName is the color with the hash
-				// Convert the color from RGB to RRGGBB for better compatibility with IE and <font>. See #5676
-				if ( !parts[ 1 ] )
-					colorName = '#' + colorName.replace( /^(.)(.)(.)$/, '$1$1$2$2$3$3' );
+                // The data can be only a color code (without #) or colorName + color code
+                // If only a color code is provided, then the colorName is the color with the hash
+                // Convert the color from RGB to RRGGBB for better compatibility with IE and <font>. See #5676
+                if (!parts[1])
+                    colorName =
+                        "#" + colorName.replace(/^(.)(.)(.)$/, "$1$1$2$2$3$3");
 
-				var colorLabel = editor.lang.colorbutton.colors[ colorCode ] || colorCode;
-				output.push( '<td>' +
-					'<a class="cke_colorbox" _cke_focus=1 hidefocus=true' +
-						' title="', colorLabel, '"' +
-						' onclick="CKEDITOR.tools.callFunction(', clickFn, ',\'', colorName, '\',\'', type, '\'); return false;"' +
-						' href="javascript:void(\'', colorLabel, '\')"' +
-						' role="option" aria-posinset="', ( i + 2 ), '" aria-setsize="', total, '">' +
-						'<span class="cke_colorbox" style="background-color:#', colorCode, '"></span>' +
-					'</a>' +
-					'</td>' );
-			}
+                var colorLabel =
+                    editor.lang.colorbutton.colors[colorCode] || colorCode;
+                output.push(
+                    "<td>" +
+                        '<a class="cke_colorbox" _cke_focus=1 hidefocus=true' +
+                        ' title="',
+                    colorLabel,
+                    '"' + ' onclick="CKEDITOR.tools.callFunction(',
+                    clickFn,
+                    ",'",
+                    colorName,
+                    "','",
+                    type,
+                    "'); return false;\"" + " href=\"javascript:void('",
+                    colorLabel,
+                    "')\"" + ' role="option" aria-posinset="',
+                    i + 2,
+                    '" aria-setsize="',
+                    total,
+                    '">' +
+                        '<span class="cke_colorbox" style="background-color:#',
+                    colorCode,
+                    '"></span>' + "</a>" + "</td>"
+                );
+            }
 
-			// Render the "More Colors" button.
-			if ( moreColorsEnabled ) {
-				output.push( '</tr>' +
-					'<tr>' +
-						'<td colspan=8 align=center>' +
-							'<a class="cke_colormore" _cke_focus=1 hidefocus=true' +
-								' title="', lang.more, '"' +
-								' onclick="CKEDITOR.tools.callFunction(', clickFn, ',\'?\',\'', type, '\');return false;"' +
-								' href="javascript:void(\'', lang.more, '\')"', ' role="option" aria-posinset="', total, '" aria-setsize="', total, '">', lang.more, '</a>' +
-						'</td>' ); // tr is later in the code.
-			}
+            // Render the "More Colors" button.
+            if (moreColorsEnabled) {
+                output.push(
+                    "</tr>" +
+                        "<tr>" +
+                        "<td colspan=8 align=center>" +
+                        '<a class="cke_colormore" _cke_focus=1 hidefocus=true' +
+                        ' title="',
+                    lang.more,
+                    '"' + ' onclick="CKEDITOR.tools.callFunction(',
+                    clickFn,
+                    ",'?','",
+                    type,
+                    "');return false;\"" + " href=\"javascript:void('",
+                    lang.more,
+                    "')\"",
+                    ' role="option" aria-posinset="',
+                    total,
+                    '" aria-setsize="',
+                    total,
+                    '">',
+                    lang.more,
+                    "</a>" + "</td>"
+                ); // tr is later in the code.
+            }
 
-			output.push( '</tr></table>' );
+            output.push("</tr></table>");
 
-			return output.join( '' );
-		}
+            return output.join("");
+        }
 
-		function isUnstylable( ele ) {
-			return ( ele.getAttribute( 'contentEditable' ) == 'false' ) || ele.getAttribute( 'data-nostyle' );
-		}
-	}
-} );
+        function isUnstylable(ele) {
+            return (
+                ele.getAttribute("contentEditable") == "false" ||
+                ele.getAttribute("data-nostyle")
+            );
+        }
+    }
+});
 
 /**
  * Whether to enable the **More Colors** button in the color selectors.
@@ -260,7 +347,7 @@ CKEDITOR.plugins.add( 'colorbutton', {
  * @member CKEDITOR.config
  */
 
-// the available colors are set in BloomField
+// the available colors are set in bloomEditing
 
 /**
  * Stores the style definition that applies the text foreground color.
@@ -278,11 +365,14 @@ CKEDITOR.plugins.add( 'colorbutton', {
  * @member CKEDITOR.config
  */
 CKEDITOR.config.colorButton_foreStyle = {
-	element: 'span',
-	styles: { 'color': '#(color)' },
-	overrides: [ {
-		element: 'font', attributes: { 'color': null }
-	} ]
+    element: "span",
+    styles: { color: "#(color)" },
+    overrides: [
+        {
+            element: "font",
+            attributes: { color: null }
+        }
+    ]
 };
 
 /**
@@ -301,8 +391,8 @@ CKEDITOR.config.colorButton_foreStyle = {
  * @member CKEDITOR.config
  */
 CKEDITOR.config.colorButton_backStyle = {
-	element: 'span',
-	styles: { 'background-color': '#(color)' }
+    element: "span",
+    styles: { "background-color": "#(color)" }
 };
 
 /**
