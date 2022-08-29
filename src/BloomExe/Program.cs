@@ -1145,6 +1145,10 @@ namespace Bloom
 		/// </summary>
 		static void StartDebugServer()
 		{
+			// There's no point in starting up a debug server...which AFAIK doesn't work anyway...
+			// for debugging GeckoFx if we're using WebView2 instead.
+			if (ExperimentalFeatures.IsFeatureEnabled(ExperimentalFeatures.kWebView2))
+				return;
 			GeckoPreferences.User["devtools.debugger.remote-enabled"] = true;
 
 			// It seems these files MUST be in a subdirectory of the application directory. At least, I haven't figured out

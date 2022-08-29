@@ -247,5 +247,39 @@ namespace BloomTests.Edit
 		{
 			return Path.Combine(bookFolderPath, Path.GetFileName(bookFolderPath)) + ".htm";
 		}
+
+		[Test]
+		public void SetupConfigurationHtml_AddsScripts()
+		{
+			var inputHtml = @"<!DOCTYPE html>
+<!-- configuration form for Bloom Wall Calendar template-->
+<html>
+  <head>
+    <meta charset=""UTF-8"">
+    <title>Set Up Calendar</title>
+    <link rel=""stylesheet"" href=""configuration.css"" type=""text/css"">
+    <script type=""text/javascript"" src=""jquery-1.10.1.js""></script>
+    <script type=""text/javascript"" src=""configure.js""></script>
+  </head>
+  <body onload=""getYear()"">
+    <form id=""form"">
+	</form>
+  </body>
+</html>";
+			var settings =
+				@"{""calendar"":{""dayAbbreviations"":[""Sun"",""Mon"",""Tues"",""Wed"",""Thur"",""Fri"",""Sat""],""monthNames"":[""JanuaryD"",""FebruaryD"",""MarchD"",""April"",""May"",""June"",""July"",""August"",""September"",""October"",""November"",""December""]}}";
+
+			var output = Configurator.SetupConfigurationHtml(inputHtml, settings);
+			var dom = XmlHtmlConverter.GetXmlDomFromHtml(output, false);
+			var AssertXml = AssertThatXmlIn.Element(dom.DocumentElement);
+			AssertXml.HasSpecifiedNumberOfMatchesForXpath("//script[@type='text/javascript' and @src='jquery-1.10.1.js']",1);
+			AssertXml.HasSpecifiedNumberOfMatchesForXpath("//script[@type='text/javascript' and @src='form2object.js']", 1);
+			AssertXml.HasSpecifiedNumberOfMatchesForXpath("//script[@type='text/javascript' and @src='js2form.js']", 1);
+			AssertXml.HasSpecifiedNumberOfMatchesForXpath("//script[@type='text/javascript' and @src='underscore.js']", 1);
+			// It's rather arbitrary what we check here, but there's no point in copying the whole text
+			// of the code we insert. It is expected that the settings data gets inserted into it somewhere.
+			AssertXml.HasSpecifiedNumberOfMatchesForXpath("//script[@type='text/javascript' and @id='configuredScript' and contains(text(), '\"dayAbbreviations\"')]", 1);
+		}
+
 	}
 }

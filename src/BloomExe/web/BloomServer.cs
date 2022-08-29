@@ -205,7 +205,7 @@ namespace Bloom.Api
 			Pub,        // PDF preview
 			Thumb,      // Thumbnailer
 			Pagelist,   // Initial list of page thumbs
-			Epub,       // ePUB preview
+			JustCheckingPage, // Currently used in epub/BloomPub page checking. Causes Server to replace videos with placeholders.
 			Nav,        // Navigating to a new page?
 			Preview,    // Preview whole book
 			Frame       // Editing View is updating single displayed page
@@ -284,7 +284,7 @@ namespace Bloom.Api
 			// replace them with our standard video placeholder image.
 			if (source == SimulatedPageFileSource.Thumb ||
 			    source == SimulatedPageFileSource.Pagelist ||
-			    source == SimulatedPageFileSource.Epub)
+			    source == SimulatedPageFileSource.JustCheckingPage)
 			{
 				ReplaceAnyVideoElementsWithPlaceholder(dom);
 			}

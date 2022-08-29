@@ -1,7 +1,10 @@
 ﻿using System;
 using System.Linq;
+using System.Text;
 using System.Windows.Forms;
 using Gecko;
+using Gecko.WebIDL;
+using SIL.IO;
 
 namespace Bloom.Edit
 {
@@ -26,10 +29,17 @@ namespace Bloom.Edit
 		{
 			this.Activated += new EventHandler(On_Activated);
 
-			_browser.WebBrowser.DocumentCompleted += WebBrowser_DocumentCompleted;
+			// Update the configuration.html file, which typically was copied into
+			// the book folder as we created a new book, to make sure it has script
+			// elements for the libraries we need to configure the HTML,
+			// and also a chunk of code that is set up to contain the JSON data
+			// from making earlier configurable books, and to load that data into
+			// the dialog after the main HTML loads.
+			var configuration = RobustFile.ReadAllText(_filePath, Encoding.UTF8);
+			var newConfig = Configurator.SetupConfigurationHtml(configuration, _libraryJsonData);
+			RobustFile.WriteAllText(_filePath, newConfig, Encoding.UTF8);
 
 			_browser.Navigate(_filePath, false);
-
 		}
 
 		private void On_Activated(object sender, EventArgs e)
@@ -44,43 +54,9 @@ namespace Bloom.Edit
 			_browser.Select();
 		}
 
-		void WebBrowser_DocumentCompleted(object sender, Gecko.Events.GeckoDocumentCompletedEventArgs e)
-		{
-			_browser.AddScriptSource("jquery-1.10.1.js");
-			_browser.AddScriptSource("form2object.js");
-			_browser.AddScriptSource("js2form.js");
-			_browser.AddScriptSource("underscore.js");
-
-			_browser.AddScriptContent(
-				@"function gatherSettings()
-					{
-						var formData = form2object('form', '.', false, null);
-						document.getElementById('output').innerHTML = JSON.stringify(formData, null, '\t');
-					}
-				function preloadSettings()
-					{
-						 x =  "+_libraryJsonData+ @";
-						var $inputs = $('#form').find('[name]');
-						populateForm($inputs, x, 'name');
-					}");
-
-			//if we have saved data from a previous run, prepopulate the form with that
-
-			_browser.RunJavaScript("preloadSettings()"); //nb: if this starts removing the defaults, it means we've lost the patch: if(valForForm != null) on line 80 of jsform.js
-		}
-
 		private void _okButton_Click(object sender, EventArgs e)
 		{
-		   GeckoDocument doc = _browser.WebBrowser.Document;
-
-			var body = doc.GetElementsByTagName("body").First();
-			GeckoHtmlElement div = doc.CreateElement("div") as GeckoHtmlElement;
-			div.Id = "output";
-			body.AppendChild(div);
-
-			_browser.RunJavaScript("gatherSettings()");
-
-			FormData = div.InnerHtml;
+			FormData =_browser.RunJavaScript("gatherSettings()");
 			DialogResult = DialogResult.OK;
 			Close();
 

@@ -68,6 +68,12 @@ namespace Bloom
 		public abstract string Url { get; }
 
 		/// <summary>
+		/// Get a bitmap showing the current state of the browser. Caller should dispose.
+		/// </summary>
+		/// <returns></returns>
+		public abstract Bitmap GetPreview();
+
+		/// <summary>
 		/// This function is in the process of migrating from GeckoFx to Webview2.
 		/// It originally took a GeckoContextMenuEventArgs, but most users only wanted
 		/// the ContextMenu, to which they could add items. A couple also used the TargetNode.
@@ -127,7 +133,7 @@ namespace Bloom
 
 		protected virtual void RaiseDocumentCompleted(object sender, EventArgs e)
 		{
-			DocumentCompleted?.Invoke(sender, e);
+			DocumentCompleted?.Invoke(this, e);
 		}
 
 		protected void RaiseBrowserClick(object sender, EventArgs e)
@@ -135,10 +141,6 @@ namespace Bloom
 			OnBrowserClick?.Invoke(sender, e);
 		}
 		public abstract void ActivateFocussed(); // review what should this be called?
-
-		public abstract void AddScriptContent(string content);
-		public abstract void AddScriptSource(string filename);
-		public abstract void Copy();
 
 		// NB: make sure you assigned HtmlDom.BaseForRelativePaths if the temporary document might
 		// contain references to files in the directory of the original HTML file it is derived from,
@@ -216,6 +218,8 @@ namespace Bloom
 				return;
 			}
 
+			EnsureBrowserReadyToNavigate();
+
 			//TODO: fix up this hack. We found that deleting the pdf while we're still showing it is a bad idea.
 			if (cleanupFileAfterNavigating && !url.EndsWith(".pdf"))
 			{
@@ -223,7 +227,7 @@ namespace Bloom
 			}
 			UpdateDisplay(url);
 		}
-		public abstract bool NavigateAndWaitTillDone(HtmlDom htmlDom, int timeLimit, string source = "nav", Func<bool> cancelCheck = null, bool throwOnTimeout = true);
+		public abstract bool NavigateAndWaitTillDone(HtmlDom htmlDom, int timeLimit, BloomServer.SimulatedPageFileSource source, Func<bool> cancelCheck = null, bool throwOnTimeout = true);
 
 		public void NavigateRawHtml(string html)
 		{
@@ -469,50 +473,10 @@ namespace Bloom
 
 		private void AddOtherMenuItemsForDebugging(IMenuItemAdder adder)
 		{
-			adder.Add((string)"Open about:memory window", (EventHandler)OnOpenAboutMemory);
-			adder.Add((string)"Open about:config window", (EventHandler)OnOpenAboutConfig);
-			adder.Add((string)"Open about:cache window", (EventHandler)OnOpenAboutCache);
 			adder.Add((string)"Refresh", (EventHandler)OnRefresh);
 		}
 
 		public abstract void OnRefresh(object sender, EventArgs e);
-
-		private void OnOpenAboutMemory(object sender, EventArgs e)
-		{
-			var form = new AboutMemory();
-			form.Text = "Bloom Browser Memory Diagnostics (\"about:memory\")";
-			form.FirstLinkMessage = "See https://developer.mozilla.org/en-US/docs/Mozilla/Performance/about:memory for a basic explanation.";
-			form.FirstLinkUrl = "https://developer.mozilla.org/en-US/docs/Mozilla/Performance/about:memory";
-			form.SecondLinkMessage = "See https://developer.mozilla.org/en-US/docs/Mozilla/Performance/GC_and_CC_logs for more details.";
-			form.SecondLinkUrl = "https://developer.mozilla.org/en-US/docs/Mozilla/Performance/GC_and_CC_logs";
-			form.Navigate("about:memory");
-			form.Show();	// NOT Modal!
-		}
-
-		// This is currently still Gecko-specific, not sure whether there will be an equivalent for WebView2.
-		private void OnOpenAboutConfig(object sender, EventArgs e)
-		{
-			var form = new AboutMemory();
-			form.Text = "Bloom Browser Internal Configuration Settings (\"about:config\")";
-			form.FirstLinkMessage = "See http://kb.mozillazine.org/About:config_entries for a basic explanation.";
-			form.FirstLinkUrl = "http://kb.mozillazine.org/About:config_entries";
-			form.SecondLinkMessage = null;
-			form.SecondLinkUrl = null;
-			form.Navigate("about:config");
-			form.Show();    // NOT Modal!
-		}
-		// This is currently still Gecko-specific, not sure whether there will be an equivalent for WebView2.
-		private void OnOpenAboutCache(object sender, EventArgs e)
-		{
-			var form = new AboutMemory();
-			form.Text = "Bloom Browser Internal Cache Status (\"about:cache?storage=&context=\")";
-			form.FirstLinkMessage = "See http://kb.mozillazine.org/Browser.cache.memory.capacity for a basic explanation.";
-			form.FirstLinkUrl = "http://kb.mozillazine.org/Browser.cache.memory.capacity";
-			form.SecondLinkMessage = null;
-			form.SecondLinkUrl = null;
-			form.Navigate("about:cache?storage=&context=");
-			form.Show();    // NOT Modal!
-		}
 
 		// This is currently still Gecko-specific, not sure whether there will be an equivalent for WebView2.
 		public virtual void OnGetTroubleShootingInformation(object sender, EventArgs e)

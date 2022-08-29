@@ -1,5 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Drawing;
+using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using Bloom.Book;
@@ -12,7 +16,7 @@ namespace Bloom
 {
 	public partial class WebView2Browser :  Browser
 	{
-
+		private bool _readyToNavigate;
 		public WebView2Browser()
 		{
 			InitializeComponent();
@@ -31,6 +35,7 @@ namespace Bloom
 					RaiseDocumentCompleted(o, eventArgs);
 				};
 				_webview.CoreWebView2.ContextMenuRequested += ContextMenuRequested;
+				_readyToNavigate = true;
 			};
 		}
 
@@ -63,7 +68,7 @@ namespace Bloom
 
 		public override void OnRefresh(object sender, EventArgs e)
 		{
-			// Todo
+			_webview.Reload();
 		}
 
 		private async void InitWebView()
@@ -115,45 +120,117 @@ namespace Bloom
 			// peculiar behavior of GeckoFx.
 			_webview.Select();
 		}
-		public override void AddScriptContent(string content)
-		{
-			throw new NotImplementedException();
-		}
 
 		public override void ActivateFocussed() 
 		{
-			//TODO
+			// I can't find any place where this does anything useful in GeckoFx that would allow me to
+			// test a WebView2 implementation. For example, from the comment in the ReactControl_Load
+			// method which is currently the only caller, I would expect that using it would cause
+			// something useful, possibly the OK button or the number, to be selected in the Duplicate Many
+			// dialog, which is one thing that actually executes this method as it launches. But
+			// in fact nothing helpful is focused in either Gecko mode or WV2 mode, and in both modes,
+			// it takes the same number of tab presses to get focus to the desired control. I think we
+			// can leave implementing this until someone identifies a difference in Gecko vs WV2 behavior
+			// that we think is due to not implementing it.
 		}
 
-		public override void AddScriptSource(string filename)
-		{
-			throw new NotImplementedException();
-		}
-
-		public override void Copy()
-		{
-			throw new NotImplementedException();
-		}
+		private string _targetUrl;
+		private bool _ensuredCoreWebView2;
+		private bool _finishedUpdateDisplay;
+		private bool _urlMatches;
 
 		protected override async void UpdateDisplay(string newUrl)
 		{
+			_targetUrl = newUrl;
+			_ensuredCoreWebView2 = false;
+			_finishedUpdateDisplay = false;
+
 			await _webview.EnsureCoreWebView2Async();
+			_ensuredCoreWebView2 = true;
 			_webview.CoreWebView2.Navigate(newUrl);
+			_finishedUpdateDisplay = true;
+			_urlMatches = Url == newUrl;
 		}
 
 		protected override void EnsureBrowserReadyToNavigate()
 		{
-			// So far, don't know of anything we have to do to achieve this in WebView2
+			// Don't really know if this is enough. Arguably, we should also
+			// wait until we are sure all the awaits in InitWebView complete.
+			// But that is very hard to do without making half Bloom's code async.
+			// This seems to be enough for the one case (making epubs) where I
+			// experienced a problem from navigating too soon.
+			// True confessions: I'm not sure why this works, nor even absolutely
+			// sure that it could not loop forever. But in every case I've tried,
+			// it did terminate, and in the one case where Navigation previously
+			// threw an Exception indicating it was not ready, waiting like this fixed it.
+			while (!_readyToNavigate)
+			{
+				Application.DoEvents();
+				Thread.Sleep(10);
+			}
 		}
 
-		public override bool NavigateAndWaitTillDone(HtmlDom htmlDom, int timeLimit, string source, Func<bool> cancelCheck, bool throwOnTimeout)
+		public override bool NavigateAndWaitTillDone(HtmlDom htmlDom, int timeLimit, BloomServer.SimulatedPageFileSource source, Func<bool> cancelCheck, bool throwOnTimeout)
 		{
-			var html = XmlHtmlConverter.ConvertDomToHtml5(htmlDom.RawDom);
-			_webview.NavigateToString(html);
+			// Should be called on UI thread. Since it is quite typical for this method to create the
+			// window handle and browser, it can't do its own Invoke, which depends on already having a handle.
+			// OTOH, Unit tests are often not run on the UI thread (and would therefore just pop up annoying asserts).
+			Debug.Assert(Program.RunningOnUiThread || Program.RunningUnitTests || Program.RunningInConsoleMode,
+				"Should be running on UI Thread or Unit Tests or Console mode");
+			var done = false;
+			var navTimer = new Stopwatch();
+			EnsureBrowserReadyToNavigate();
+
+			navTimer.Start();
+			_webview.CoreWebView2.NavigationCompleted += (sender, args) => done = true;
+			// The Gecko implementation also had _browser.NavigationError += (sender, e) => done = true;
+			// I can't find any equivalent for WebView2 and I think the doc says it will raise NavigationCompleted
+			// even if there was an error, but consider this if implementing for yet another browser.
+			Navigate(htmlDom, source: source);
+			// If done is set (by NavigationError?) prematurely, we still need to wait while IsBusy
+			// is true to give the loaded document time to become available for the checks later.
+			// See https://issues.bloomlibrary.org/youtrack/issue/BL-8741.
+			while ((!done) && navTimer.ElapsedMilliseconds < timeLimit)
+			{
+				Application.DoEvents(); // NOTE: this has bad consequences all down the line. See BL-6122.
+				Thread.Sleep(10);
+				// Remember this might be needed if we reimplement with a Linux-compatible control.
+				// OTOH, it doesn't help on Windows, and may lead to unwanted reentrancy if multiple
+				// navigation-involving tasks as waiting on Idle.
+				// I haven't made it conditional-compilation because this whole WebView2-based class is Windows-only.
+				// Application.RaiseIdle(new EventArgs()); // needed on Linux to avoid deadlock starving browser navigation
+				if (cancelCheck != null && cancelCheck())
+				{
+					navTimer.Stop();
+					return false;
+				}
+			}
+
+			navTimer.Stop();
+
+			if (!done)
+			{
+				if (throwOnTimeout)
+					throw new ApplicationException("Browser unexpectedly took too long to load a page");
+				else return false;
+			}
+
 			return true;
 		}
 
 		public override string Url => _webview.Source.ToString();
+		public override Bitmap GetPreview()
+		{
+			var stream = new MemoryStream();
+			var task = _webview.CoreWebView2.CapturePreviewAsync(CoreWebView2CapturePreviewImageFormat.Png, stream);
+			while (!task.IsCompleted)
+			{
+				Application.DoEvents();
+				Thread.Sleep(10);
+			}
+			stream.Position = 0;
+			return new Bitmap(stream);
+		}
 
 		public override void OnGetTroubleShootingInformation(object sender, EventArgs e)
 		{

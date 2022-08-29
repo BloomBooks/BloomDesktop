@@ -3,12 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.IO;
 using System.Windows.Forms;
+using System.Xml;
 using Bloom.ToPalaso.Experimental;
 using Bloom.Api;
 using Newtonsoft.Json.Linq;
 using SIL.Code;
 using SIL.Extensions;
 using Gecko;
+using Gecko.WebIDL;
 using Newtonsoft.Json;
 using SIL.IO;
 using SIL.Reporting;
@@ -68,6 +70,63 @@ namespace Bloom.Edit
 				dlg.Text = L10NSharp.LocalizationManager.GetString("CollectionTab.ConfiguringBookMessage", "Building...");
 				dlg.ShowAndDoWork((progress) => ConfigureBookInternal(bookPath));
 			}
+		}
+
+		public static void AddScriptFile(XmlDocument doc, string src)
+		{
+			var head = doc.SelectSingleNode("//head") as XmlElement;
+			if (head.SelectSingleNode($"./script[@type='text/javascript' and @src='{src}']") != null)
+				return; // already have it
+			var script = doc.CreateElement("script");
+			script.SetAttribute("src", src);
+			script.SetAttribute("type", "text/javascript");
+			head.AppendChild(script);
+		}
+		public static void AddScriptText(XmlDocument doc, string id, string text)
+		{
+			var head = doc.SelectSingleNode("//head") as XmlElement;
+			var script = head.SelectSingleNode($"./script[@type='text/javascript' and @id='{id}']") as XmlElement;
+			if (script == null)
+			{
+				script = doc.CreateElement("script");
+				script.SetAttribute("type", "text/javascript");
+				script.SetAttribute("id", id);
+				head.AppendChild(script);
+			}
+			script.InnerText = text;
+		}
+
+		/// <summary>
+		/// Passed the contents of the configuration.html file in the book's folder
+		/// (typically copied from the template from which it was made)
+		/// and the configuration.txt file in the parent collection, this yields an
+		/// updated configuration.html content ready to use as the source of the
+		/// ConfigurationDialog.
+		/// </summary>
+		/// <param name="html"></param>
+		/// <param name="settings"></param>
+		/// <returns></returns>
+		public static string SetupConfigurationHtml(string html, string settings)
+		{
+			var doc = XmlHtmlConverter.GetXmlDomFromHtml(html);
+			AddScriptFile(doc, "jquery-1.10.1.js");
+			AddScriptFile(doc, "form2object.js");
+			AddScriptFile(doc, "js2form.js");
+			AddScriptFile(doc, "underscore.js");
+			AddScriptText(doc, "configuredScript",
+				@"function gatherSettings()
+					{
+						var formData = form2object('form', '.', false, null);
+						return JSON.stringify(formData, null, '\t');
+					}
+				function preloadSettings()
+					{
+						 x =  " + settings + @";
+						var $inputs = $('#form').find('[name]');
+						populateForm($inputs, x, 'name');
+					}
+				window.addEventListener('load', preloadSettings)");
+			return XmlHtmlConverter.ConvertElementToHtml5(doc.DocumentElement);
 		}
 
 		private void ConfigureBookInternal(string bookPath)

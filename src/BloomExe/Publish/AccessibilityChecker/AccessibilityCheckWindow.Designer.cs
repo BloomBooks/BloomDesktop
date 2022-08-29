@@ -20,7 +20,7 @@
 			this.components = new System.ComponentModel.Container();
 			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(AccessibilityCheckWindow));
 			this._L10NSharpExtender = new L10NSharp.UI.L10NSharpExtender(this.components);
-			this._browser = new Bloom.GeckoFxBrowser();
+			this._browser = BrowserMaker.MakeBrowser();
 			((System.ComponentModel.ISupportInitialize)(this._L10NSharpExtender)).BeginInit();
 			this.SuspendLayout();
 			// 
@@ -39,7 +39,6 @@
 			this._browser.Name = "_browser";
 			this._browser.Size = new System.Drawing.Size(908, 585);
 			this._browser.TabIndex = 0;
-			this._browser.VerticalScrollDistance = 0;
 			// 
 			// AccessibilityCheckWindow
 			// 
@@ -64,7 +63,7 @@
 
 		#endregion
 
-		private GeckoFxBrowser _browser;
+		private Browser _browser;
 		private L10NSharp.UI.L10NSharpExtender _L10NSharpExtender;
 	}
 }
