@@ -39,6 +39,10 @@ import WebSocketManager, {
     IBloomWebSocketEvent
 } from "../../utils/WebSocketManager";
 import { hookupLinkHandler } from "../../utils/linkHandler";
+import {
+    BloomPalette,
+    getHexColorsForPalette
+} from "../../react_components/bloomPalette";
 
 // Allows toolbox code to make an element properly in the context of this iframe.
 export function makeElement(
@@ -1406,6 +1410,39 @@ export function attachToCkEditor(element) {
         const bar = $("body").find("." + editor.id);
         bar.hide();
     });
+
+    if (CKEDITOR.config.colorButton_colors) {
+        ckedit.config.colorButton_colors = CKEDITOR.config.colorButton_colors;
+    } else {
+        try {
+            ckedit.config.colorButton_colors = "FFFFFF,FF0000"; // if something goes wrong, you get white and red
+            getHexColorsForPalette(BloomPalette.Text).then(r => {
+                // We cache the colors here so that we don't have to have the http round-trip
+                // for each field. Currently it does pick up new colors on the next page
+                // load. At the moment it doesn't seem worth the complexity of messing
+                // with the ancient javascript in the ckeditor plugin to have it be
+                // able to respond to the current palette without a page reload, but that would
+                // be doable.
+                // We're reusing this global because it exists, but this would probably work just
+                // fine with out our own static if we wanted.
+                CKEDITOR.config.colorButton_colors = r.join(",");
+                ckedit.config.colorButton_colors =
+                    CKEDITOR.config.colorButton_colors;
+            });
+            theOneLocalizationManager
+                .asyncGetTextInLang(
+                    "EditTab.DirectFormatting.labelForDefaultColor",
+                    "Default for style",
+                    "UI",
+                    "A label that is shown next to the default color swatch, which is based on the current text default color."
+                )
+                .done(translation => {
+                    CKEDITOR.config.labelForDefaultColor = translation;
+                });
+        } catch (error) {
+            // swallow... it's not worth crashing over if something went bad in there.
+        }
+    }
 
     BloomField.WireToCKEditor(element, ckedit);
 }

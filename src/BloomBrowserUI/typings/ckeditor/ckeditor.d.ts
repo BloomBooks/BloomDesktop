@@ -603,6 +603,7 @@ declare module CKEDITOR {
     // http://docs.ckeditor.com/#!/api/CKEDITOR.config-cfg-fileTools_defaultFileName
     interface config {
         allowedContent?: string | boolean;
+        labelForDefaultColor:? string;
         colorButton_enableMore?: boolean;
         colorButton_colors?: string;
         contentsCss?: string | string[];

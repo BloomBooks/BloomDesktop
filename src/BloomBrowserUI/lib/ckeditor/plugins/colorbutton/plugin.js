@@ -104,7 +104,11 @@ CKEDITOR.plugins.add( 'colorbutton', {
 			var output = [],
 				colors = config.colorButton_colors.split( ',' ),
 				// Tells if we should include "More Colors..." button.
-				moreColorsEnabled = editor.plugins.colordialog && config.colorButton_enableMore !== false,
+            // Enhance: once we have the standard Bloom Color dialog available for anyone to open, we should be
+            // able to get at the function for opening it and then we can enable this capability.
+            const moreColorsEnabled = false;
+            // editor.plugins.colordialog &&
+            // config.colorButton_enableMore !== false,
 				// aria-setsize and aria-posinset attributes are used to indicate size of options, because
 				// screen readers doesn't play nice with table, based layouts (#12097).
 				total = colors.length + ( moreColorsEnabled ? 2 : 1 );
@@ -163,14 +167,14 @@ CKEDITOR.plugins.add( 'colorbutton', {
 					' href="javascript:void(\'', lang.auto, '\')"' +
 					' role="option" aria-posinset="1" aria-setsize="', total, '">' +
 						'<table role="presentation" cellspacing=0 cellpadding=0 width="100%">' +
-							'<tr>' +
-								'<td>' +
-									'<span class="cke_colorbox" id="', colorBoxId, '"></span>' +
-								'</td>' +
-								'<td colspan=7 align=center>', lang.auto, '</td>' +
-							'</tr>' +
-						'</table>' +
-					'</a>' );
+                        "<tr>" +
+                        "<td>" +
+                        '<span class="cke_colorbox" id="',
+                    colorBoxId,
+                    '"></span>' + "</td>" + "<td colspan=7 align=left>",
+                    config.labelForDefaultColor,
+                    "</td>" + "</tr>" + "</table>" + "</a>"
+                );
 			}
 			output.push( '<table role="presentation" cellspacing=0 cellpadding=0 width="100%">' );
 
