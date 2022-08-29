@@ -372,12 +372,17 @@ const OverlayToolControls: React.FunctionComponent = () => {
     };
 
     const ondragstart = (ev: React.DragEvent<HTMLElement>, style: string) => {
-        // Here "bloomBubble" is a unique, private data type recognised
+        // Here "text/x-bloombubble" is a unique, private data type recognised
         // by ondragover and ondragdrop methods that BubbleManager
         // attaches to bloom image containers. It doesn't make sense to
         // drag these objects anywhere else, so they don't need any of
-        // the common data types.
-        ev.dataTransfer.setData("bloomBubble", style);
+        // the common data types. Using a private type means that other drop handlers
+        // will not accept them. It is often recommended to include a text/plain value,
+        // but it really doesn't make sense to drop the text associated with these
+        // bubbles anywhere outside Bloom. I believe the text/x- prefix makes these
+        // valid (unregistered) mime types, which technically this argument is supposed
+        // to be.
+        ev.dataTransfer.setData("text/x-bloombubble", style);
     };
 
     const ondragend = (ev: React.DragEvent<HTMLElement>, style: string) => {

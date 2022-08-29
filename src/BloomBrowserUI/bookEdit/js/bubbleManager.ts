@@ -733,7 +733,16 @@ export class BubbleManager {
         // This suppresses the default behavior, which is to forbid dragging things to
         // an element, but only if the source of the drag is a bloom bubble.
         container.ondragover = ev => {
-            if (ev.dataTransfer && ev.dataTransfer.getData("bloomBubble")) {
+            if (
+                ev.dataTransfer &&
+                // don't be tempted to return to ev.dataTransfer.getData("text/x-bloombubble")
+                // as we used with geckofx. In WebView2, this returns an empty string.
+                // I think it is some sort of security thing, the idea is that something
+                // you're just dragging over shouldn't have access to the content.
+                // The presence of our custom data type at all indicates this is something
+                // we want to accept dropped here.
+                ev.dataTransfer.types.indexOf("text/x-bloombubble") > 0
+            ) {
                 ev.preventDefault();
             }
         };
@@ -743,10 +752,13 @@ export class BubbleManager {
         container.ondrop = ev => {
             // test this so we don't interfere with dragging for text edit,
             // nor add bubbles when something else is dragged
-            if (ev.dataTransfer && ev.dataTransfer.getData("bloomBubble")) {
+            if (
+                ev.dataTransfer &&
+                ev.dataTransfer.getData("text/x-bloombubble")
+            ) {
                 ev.preventDefault();
                 const style = ev.dataTransfer
-                    ? ev.dataTransfer.getData("bloomBubble")
+                    ? ev.dataTransfer.getData("text/x-bloombubble")
                     : "speech";
                 this.addOverPictureElement(ev.clientX, ev.clientY, style);
             }
