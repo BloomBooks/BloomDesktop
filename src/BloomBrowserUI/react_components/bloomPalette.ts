@@ -172,14 +172,3 @@ export const getSpecialColorName = (
     );
     return special ? special.name : undefined;
 };
-
-// The following interface and function provide a simpler interface to the color
-// choose dialog which doesn't depend on IColorInfo.
-export interface ISimpleColorPickerDialogProps {
-    localizedTitle: string;
-    noAlphaSlider?: boolean;
-    initialColor: string;
-    palette: BloomPalette;
-    onChange: (color: string) => void;
-    onInputFocus: (input: HTMLElement) => void;
-}
