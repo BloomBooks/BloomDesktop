@@ -3,24 +3,14 @@ import { jsx, css } from "@emotion/core";
 import React = require("react");
 import * as ReactDOM from "react-dom";
 import { useRef, useState } from "react";
-import Dialog from "@material-ui/core/Dialog";
-import {
-    Button,
-    DialogTitle,
-    DialogActions,
-    DialogContent,
-    Paper
-} from "@material-ui/core";
 import CloseOnEscape from "react-close-on-escape";
 import { getEditTabBundleExports } from "../bookEdit/js/bloomFrames";
-import { useL10n } from "./l10nHooks";
 import { ThemeProvider } from "@material-ui/styles";
 import { lightTheme } from "../bloomMaterialUITheme";
 import { BloomApi } from "../utils/bloomApi";
 import CustomColorPicker from "./customColorPicker";
 import * as tinycolor from "tinycolor2";
 import { IColorInfo, normalizeColorInfoColorsAsHex } from "./colorSwatch";
-import Draggable from "react-draggable";
 import "./colorPickerDialog.less";
 import { getRgbaColorStringFromColorAndOpacity } from "../utils/colorUtils";
 import {
@@ -29,6 +19,16 @@ import {
     getDefaultColorsFromPalette,
     getSpecialColorName
 } from "./bloomPalette";
+import {
+    BloomDialog,
+    DialogBottomButtons,
+    DialogMiddle,
+    DialogTitle
+} from "./BloomDialog/BloomDialog";
+import {
+    DialogCancelButton,
+    DialogOkButton
+} from "./BloomDialog/commonDialogComponents";
 
 export interface IColorPickerDialogProps {
     open?: boolean;
@@ -41,18 +41,6 @@ export interface IColorPickerDialogProps {
     isForOverlay?: boolean;
     onChange: (color: IColorInfo) => void;
     onInputFocus: (input: HTMLElement) => void;
-}
-
-function PaperComponent(props) {
-    return (
-        <Draggable
-            bounds="parent"
-            handle="#draggable-color-picker-title"
-            cancel={'[class*="MuiDialogContent-root"]'}
-        >
-            <Paper {...props} />
-        </Draggable>
-    );
 }
 
 let externalSetOpen: React.Dispatch<React.SetStateAction<boolean>>;
@@ -294,55 +282,36 @@ const ColorPickerDialog: React.FC<IColorPickerDialogProps> = props => {
         props.onChange(color);
     };
 
-    const OkText = useL10n("OK", "Common.OK");
-    const CancelText = useL10n("Cancel", "Common.Cancel");
-
     return (
         <ThemeProvider theme={lightTheme}>
-            <CloseOnEscape onEscape={() => onClose(DialogResult.Cancel)}>
-                <Dialog
-                    className="bloomModalDialog color-picker-dialog"
-                    open={props.open === undefined ? open : props.open}
-                    ref={dlgRef}
-                    PaperComponent={PaperComponent}
-                    onClick={e => e.stopPropagation()}
-                    onClose={(_event, reason) => {
-                        if (reason === "backdropClick")
-                            onClose(DialogResult.OK); // BL-9930
-                    }}
-                >
-                    <DialogTitle
-                        id="draggable-color-picker-title"
-                        style={{ cursor: "move" }}
-                        onClick={e => e.stopPropagation()}
-                    >
-                        {props.localizedTitle}
-                    </DialogTitle>
-                    <DialogContent>
-                        <CustomColorPicker
-                            onChange={handleOnChange}
-                            currentColor={currentColor}
-                            swatchColors={swatchColorArray}
-                            noAlphaSlider={props.noAlphaSlider}
-                            noGradientSwatches={props.noGradientSwatches}
-                        />
-                    </DialogContent>
-                    <DialogActions>
-                        <Button
-                            onClick={() => onClose(DialogResult.OK)}
-                            color="primary"
-                        >
-                            {OkText}
-                        </Button>
-                        <Button
-                            onClick={() => onClose(DialogResult.Cancel)}
-                            color="primary"
-                        >
-                            {CancelText}
-                        </Button>
-                    </DialogActions>
-                </Dialog>
-            </CloseOnEscape>
+            <BloomDialog
+                className="bloomModalDialog color-picker-dialog"
+                open={props.open === undefined ? open : props.open}
+                ref={dlgRef}
+                onClose={() => onClose(DialogResult.OK)}
+            >
+                <DialogTitle title={props.localizedTitle} />
+                <DialogMiddle>
+                    <CustomColorPicker
+                        onChange={handleOnChange}
+                        currentColor={currentColor}
+                        swatchColors={swatchColorArray}
+                        noAlphaSlider={props.noAlphaSlider}
+                        noGradientSwatches={props.noGradientSwatches}
+                    />
+                </DialogMiddle>
+                <DialogBottomButtons>
+                    <DialogOkButton
+                        enabled={true}
+                        default={true}
+                        onClick={() => onClose(DialogResult.OK)}
+                    />
+                    <DialogCancelButton
+                        default={false}
+                        onClick={() => onClose(DialogResult.Cancel)}
+                    />
+                </DialogBottomButtons>
+            </BloomDialog>
         </ThemeProvider>
     );
 };
