@@ -25,8 +25,8 @@ import { BloomApi } from "../../../utils/bloomApi";
 import { isLinux } from "../../../utils/isLinux";
 import { MuiCheckbox } from "../../../react_components/muiCheckBox";
 import { ColorBar } from "./colorBar";
-import { IColorInfo } from "../../../react_components/colorSwatch";
-import { IColorPickerDialogProps } from "../../../react_components/colorPickerDialog";
+import { IColorInfo } from "../../../react_components/color-picking/colorSwatch";
+import { IColorPickerDialogProps } from "../../../react_components/color-picking/colorPickerDialog";
 import * as tinycolor from "tinycolor2";
 import { showSignLanguageTool } from "../../js/bloomVideo";
 import { kBloomBlue } from "../../../bloomMaterialUITheme";
@@ -38,7 +38,7 @@ import {
     getSpecialColorName,
     TextBackgroundColors,
     TextColorPalette
-} from "../../../react_components/bloomPalette";
+} from "../../../react_components/color-picking/bloomPalette";
 
 const OverlayToolControls: React.FunctionComponent = () => {
     const l10nPrefix = "ColorPicker.";

@@ -19,14 +19,17 @@ import { showConfirmDialog, IConfirmDialogProps } from "./confirmDialog";
 import ImportIcon from "./icons/ImportIcon";
 import DeleteIcon from "@material-ui/icons/Delete";
 import PlaybackOrderControls from "./playbackOrderControls";
-import CustomColorPicker from "./customColorPicker";
-import { IColorInfo, getBackgroundColorCssFromColorInfo } from "./colorSwatch";
+import CustomColorPicker from "./color-picking/customColorPicker";
+import {
+    IColorInfo,
+    getBackgroundColorCssFromColorInfo
+} from "./color-picking/colorSwatch";
 import {
     showColorPickerDialog,
     IColorPickerDialogProps,
     ColorDisplayButton,
     DialogResult
-} from "./colorPickerDialog";
+} from "./color-picking/colorPickerDialog";
 import SmallNumberPicker from "./smallNumberPicker";
 import { BloomAvatar } from "./bloomAvatar";
 import { BookInfoCard } from "./bookInfoCard";
@@ -54,7 +57,10 @@ import { RadioGroup } from "./RadioGroup";
 import { MuiRadio } from "./muiRadio";
 import WinFormsStyleSelect from "./winFormsStyleSelect";
 import BookMakingSettingsControl from "../collection/bookMakingSettingsControl";
-import { BloomPalette, TextBackgroundColors } from "./bloomPalette";
+import {
+    BloomPalette,
+    TextBackgroundColors
+} from "./color-picking/bloomPalette";
 
 storiesOf("Localizable Widgets", module)
     .add("Expandable", () => (

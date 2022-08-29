@@ -6,30 +6,34 @@
     display: flex;
     width: max-content;
     flex-direction: column;
+
     .chrome-picker {
         box-shadow: none !important;
+
         // here follows some customization of the react-color chrome-picker to remove bits we don't want
-        > div:nth-child(2) > div:nth-child(2) {
-            > div div div span {
+        >div:nth-child(2)>div:nth-child(2) {
+            >div div div span {
                 display: none !important; // Hide "HEX" label
             }
-            > div:nth-child(2) {
+
+            >div:nth-child(2) {
                 display: none; // Hide control that switches to RGBA or HSLA input
             }
         }
     }
+
     .swatch-row {
         display: flex;
         flex: 2;
         flex-direction: row;
         flex-wrap: wrap;
         padding: 0 0 0 @swatch-row-left-pad;
+
         .color-swatch {
             margin: 0 0 @swatch-margin @swatch-margin;
         }
-        max-width: calc(
-            @chrome-picker-width - @swatch-row-left-pad - @swatch-margin
-        );
+
+        max-width: calc(@chrome-picker-width - @swatch-row-left-pad - @swatch-margin );
     }
 }
 

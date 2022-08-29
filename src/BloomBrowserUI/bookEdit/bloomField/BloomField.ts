@@ -7,9 +7,8 @@ import BloomMessageBoxSupport from "../../utils/bloomMessageBoxSupport";
 
 import {
     BloomPalette,
-    getHexColorsForPalette,
-    getDefaultColorsFromPalette
-} from "../../react_components/bloomPalette";
+    getHexColorsForPalette
+} from "../../react_components/color-picking/bloomPalette";
 
 // This class is actually just a group of static functions with a single public method. It does whatever we need to to make Firefox's contenteditable
 // element have the behavior we need.

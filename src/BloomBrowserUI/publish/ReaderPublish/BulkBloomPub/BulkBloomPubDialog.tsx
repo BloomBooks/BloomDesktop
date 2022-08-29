@@ -14,7 +14,7 @@ import { useL10n } from "../../../react_components/l10nHooks";
 import { MuiCheckbox } from "../../../react_components/muiCheckBox";
 import TextField from "@material-ui/core/TextField";
 import { WhatsThisBlock } from "../../../react_components/helpLink";
-import { ColorChooser } from "../../../react_components/colorChooser";
+import { ColorChooser } from "../../../react_components/color-picking/colorChooser";
 import { ConditionallyEnabledBlock } from "../../../react_components/ConditionallyEnabledBlock";
 import { BloomApi } from "../../../utils/bloomApi";
 import { useGetLabelForCollection } from "../../../contentful/UseContentful";

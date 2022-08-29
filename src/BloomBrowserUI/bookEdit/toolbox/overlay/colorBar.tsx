@@ -3,7 +3,7 @@ import Typography from "@material-ui/core/Typography";
 import {
     IColorInfo,
     getBackgroundColorCssFromColorInfo
-} from "../../../react_components/colorSwatch";
+} from "../../../react_components/color-picking/colorSwatch";
 import * as tinycolor from "tinycolor2";
 import { CSSProperties } from "react";
 

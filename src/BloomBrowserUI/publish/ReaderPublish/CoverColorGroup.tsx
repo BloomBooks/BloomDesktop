@@ -5,7 +5,7 @@ import { SettingsGroup } from "../commonPublish/PublishScreenBaseComponents";
 import {
     ColorDisplayButton,
     DialogResult
-} from "../../react_components/colorPickerDialog";
+} from "../../react_components/color-picking/colorPickerDialog";
 import { BloomApi } from "../../utils/bloomApi";
 import { StorybookContext } from "../../.storybook/StoryBookContext";
 import { useL10n } from "../../react_components/l10nHooks";

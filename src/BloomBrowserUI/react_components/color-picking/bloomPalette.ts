@@ -1,9 +1,7 @@
-import React = require("react");
 import { IColorInfo, getColorInfoFromString } from "./colorSwatch";
 import "./colorPickerDialog.less";
-import { kBloomGray } from "../utils/colorUtils";
-import { debug } from "webpack";
-import { BloomApi } from "../utils/bloomApi";
+import { kBloomGray } from "../../utils/colorUtils";
+import { BloomApi } from "../../utils/bloomApi";
 
 export enum BloomPalette {
     Text = "text",

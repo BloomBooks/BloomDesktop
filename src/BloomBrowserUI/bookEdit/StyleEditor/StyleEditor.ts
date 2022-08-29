@@ -26,8 +26,8 @@ import React = require("react");
 import {
     ISimpleColorPickerDialogProps,
     showSimpleColorPickerDialog
-} from "../../react_components/colorPickerDialog";
-import { BloomPalette } from "../../react_components/bloomPalette";
+} from "../../react_components/color-picking/colorPickerDialog";
+import { BloomPalette } from "../../react_components/color-picking/bloomPalette";
 
 // Controls the CSS text-align value
 // Note: CSS text-align W3 standard does not specify "start" or "end", but Firefox/Chrome/Edge do support it.

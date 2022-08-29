@@ -4,15 +4,15 @@ import React = require("react");
 import * as ReactDOM from "react-dom";
 import { useRef, useState } from "react";
 import CloseOnEscape from "react-close-on-escape";
-import { getEditTabBundleExports } from "../bookEdit/js/bloomFrames";
+import { getEditTabBundleExports } from "../../bookEdit/js/bloomFrames";
 import { ThemeProvider } from "@material-ui/styles";
-import { lightTheme } from "../bloomMaterialUITheme";
-import { BloomApi } from "../utils/bloomApi";
+import { lightTheme } from "../../bloomMaterialUITheme";
+import { BloomApi } from "../../utils/bloomApi";
 import CustomColorPicker from "./customColorPicker";
 import * as tinycolor from "tinycolor2";
 import { IColorInfo, normalizeColorInfoColorsAsHex } from "./colorSwatch";
 import "./colorPickerDialog.less";
-import { getRgbaColorStringFromColorAndOpacity } from "../utils/colorUtils";
+import { getRgbaColorStringFromColorAndOpacity } from "../../utils/colorUtils";
 import {
     BloomPalette,
     getColorInfoFromSpecialNameOrColorString,
@@ -24,11 +24,11 @@ import {
     DialogBottomButtons,
     DialogMiddle,
     DialogTitle
-} from "./BloomDialog/BloomDialog";
+} from "../BloomDialog/BloomDialog";
 import {
     DialogCancelButton,
     DialogOkButton
-} from "./BloomDialog/commonDialogComponents";
+} from "../BloomDialog/commonDialogComponents";
 
 export interface IColorPickerDialogProps {
     open?: boolean;

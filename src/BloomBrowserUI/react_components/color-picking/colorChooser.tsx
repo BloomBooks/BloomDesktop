@@ -1,6 +1,6 @@
 import * as React from "react";
 import { useState } from "react";
-import ContentEditable from "./ContentEditable";
+import ContentEditable from "../ContentEditable";
 import "./colorChooser.less";
 import { CoverBackgroundPalette } from "./bloomPalette";
 

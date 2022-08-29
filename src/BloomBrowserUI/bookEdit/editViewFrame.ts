@@ -5,7 +5,7 @@ import {
 import {
     IColorPickerDialogProps,
     showColorPickerDialog as doShowColorPickerDialog
-} from "../react_components/colorPickerDialog";
+} from "../react_components/color-picking/colorPickerDialog";
 import "jquery-ui/jquery-ui-1.10.3.custom.min.js"; //for dialog()
 
 export interface IEditViewFrameExports {
