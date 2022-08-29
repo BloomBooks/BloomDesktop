@@ -112,9 +112,7 @@ export default class BloomField {
         bloomEditableDiv: HTMLElement,
         ckeditor: CKEDITOR.editor
     ) {
-        getHexColorsForPalette(BloomPalette.Text).then(
-            r => (ckeditor.config.colorButton_colors = r.join(","))
-        );
+        ckeditor.config.colorButton_colors = CKEDITOR.config.colorButton_colors;
         ckeditor.on("key", event => {
             if (event.data.keyCode === CKEDITOR.SHIFT + 13) {
                 BloomField.InsertLineBreak();
