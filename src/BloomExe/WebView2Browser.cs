@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -11,6 +12,7 @@ using Bloom.Api;
 using Bloom.Utils;
 using Microsoft.Web.WebView2.Core;
 using Newtonsoft.Json;
+using SIL.IO;
 
 namespace Bloom
 {
@@ -235,6 +237,12 @@ namespace Bloom
 		public override void OnGetTroubleShootingInformation(object sender, EventArgs e)
 		{
 			throw new NotImplementedException();
+		}
+
+		public override void SaveDocument(string path)
+		{
+			var html = RunJavaScript("document.documentElement.outerHTML");
+			RobustFile.WriteAllText(path, html, Encoding.UTF8);
 		}
 
 		// Review: base class currently explicitly opens FireFox. Should we instead open Chrome,

@@ -2,10 +2,12 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.IO;
+using System.Text;
 using System.Windows.Forms;
 using System.Xml;
 using Bloom.ToPalaso.Experimental;
 using Bloom.Api;
+using Bloom.Book;
 using Newtonsoft.Json.Linq;
 using SIL.Code;
 using SIL.Extensions;
@@ -15,6 +17,7 @@ using Newtonsoft.Json;
 using SIL.IO;
 using SIL.Reporting;
 using SIL.Xml;
+using File = System.IO.File;
 
 namespace Bloom.Edit
 {
@@ -146,18 +149,18 @@ namespace Bloom.Edit
 			 * alert($().jquery)
 			 */
 
-			var dom = XmlHtmlConverter.GetXmlDomFromHtmlFile(bookPath, false);
-			XmlHtmlConverter.MakeXmlishTagsSafeForInterpretationAsHtml(dom);
-			XmlHtmlConverter.SaveDOMAsHtml5(dom, bookPath);
+			var doc = XmlHtmlConverter.GetXmlDomFromHtmlFile(bookPath, false);
+			XmlHtmlConverter.MakeXmlishTagsSafeForInterpretationAsHtml(doc);
+			XmlHtmlConverter.SaveDOMAsHtml5(doc, bookPath);
 
-			using (var b = new GeckoWebBrowser())
+			using (var b = BrowserMaker.MakeBrowser())
 			{
-				var neededToMakeThingsWork = b.Handle;
-				NavigateAndWait(b, bookPath);
+				var dom = new HtmlDom(RobustFile.ReadAllText(bookPath, Encoding.UTF8), true);
+				b.NavigateAndWaitTillDone(dom, 30000, BloomServer.SimulatedPageFileSource.Nav);
 
 				//Now we call the method which takes that confuration data and adds/removes/updates pages.
 				//We have the data as json string, so first we turn it into object for the updateDom's convenience.
-				RunJavaScript(b, "runUpdate(" + GetAllData() + ")");
+				b.RunJavaScript("runUpdate(" + GetAllData() + ")");
 
 				//Ok, so we should have a modified DOM now, which we can save back over the top.
 
@@ -167,6 +170,7 @@ namespace Bloom.Edit
 				RobustFile.Delete(bookPath);
 				RobustFile.Move(temp.Path, bookPath);
 			}
+
 			var sanityCheckDom = XmlHtmlConverter.GetXmlDomFromHtmlFile(bookPath, false);
 
 			// Because the Mozilla code loaded the document from a filename initially, and we later save to a
@@ -238,11 +242,6 @@ namespace Bloom.Edit
 		void browser_DocumentCompleted(object sender, EventArgs e)
 		{
 			((GeckoWebBrowser)sender).Tag = sender;
-		}
-
-		public void RunJavaScript(GeckoWebBrowser b, string script)
-		{
-			NavigateAndWait(b, "javascript:void(" + script + ")");
 		}
 
 		public string LocalData { get; set; }

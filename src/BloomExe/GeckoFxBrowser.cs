@@ -594,6 +594,11 @@ namespace Bloom
 			_browser.Reload();
 		}
 
+		public override void SaveDocument(string path)
+		{
+			_browser.SaveDocument(path);
+		}
+
 		void OnBrowser_DomClick(object sender, DomEventArgs e)
 		{
 			Debug.Assert(!InvokeRequired);
