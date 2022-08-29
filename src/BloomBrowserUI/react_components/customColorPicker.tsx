@@ -108,6 +108,13 @@ export const CustomColorPicker: React.FunctionComponent<ICustomPicker> = props =
                 // the SketchPicker can't display gradients, so we'll leave out its own ones
                 // and use our own.
                 presetColors={[]}
+                styles={{
+                    default: {
+                        picker: {
+                            boxShadow: "unset"
+                        }
+                    }
+                }}
             />
             <div
                 css={css`
