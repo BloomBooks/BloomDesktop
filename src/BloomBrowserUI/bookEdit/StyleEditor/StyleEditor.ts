@@ -24,10 +24,10 @@ import * as ReactDOM from "react-dom";
 import FontSelectComponent, { IFontMetaData } from "./fontSelectComponent";
 import React = require("react");
 import {
-    BloomPalette,
     ISimpleColorPickerDialogProps,
     showSimpleColorPickerDialog
 } from "../../react_components/colorPickerDialog";
+import { BloomPalette } from "../../react_components/bloomPalette";
 
 // Controls the CSS text-align value
 // Note: CSS text-align W3 standard does not specify "start" or "end", but Firefox/Chrome/Edge do support it.

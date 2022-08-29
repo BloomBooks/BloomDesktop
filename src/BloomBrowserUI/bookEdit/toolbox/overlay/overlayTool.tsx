@@ -26,19 +26,19 @@ import { isLinux } from "../../../utils/isLinux";
 import { MuiCheckbox } from "../../../react_components/muiCheckBox";
 import { ColorBar } from "./colorBar";
 import { IColorInfo } from "../../../react_components/colorSwatch";
-import {
-    IColorPickerDialogProps,
-    getColorInfoFromSpecialNameOrColorString,
-    getSpecialColorName,
-    OverlayTextColorPalette,
-    OverlayBackgroundColors,
-    BloomPalette
-} from "../../../react_components/colorPickerDialog";
+import { IColorPickerDialogProps } from "../../../react_components/colorPickerDialog";
 import * as tinycolor from "tinycolor2";
 import { showSignLanguageTool } from "../../js/bloomVideo";
 import { kBloomBlue } from "../../../bloomMaterialUITheme";
 import { RequiresBloomEnterpriseOverlayWrapper } from "../../../react_components/requiresBloomEnterprise";
 import { kOverlayToolId } from "../toolIds";
+import {
+    BloomPalette,
+    getColorInfoFromSpecialNameOrColorString,
+    getSpecialColorName,
+    TextBackgroundColors,
+    TextColorPalette
+} from "../../../react_components/bloomPalette";
 
 const OverlayToolControls: React.FunctionComponent = () => {
     const l10nPrefix = "ColorPicker.";
@@ -80,7 +80,7 @@ const OverlayToolControls: React.FunctionComponent = () => {
         "EditTab.Toolbox.ComicTool.Options.BackgroundColor"
     );
 
-    const defaultTextColors: IColorInfo[] = OverlayTextColorPalette.map(color =>
+    const defaultTextColors: IColorInfo[] = TextColorPalette.map(color =>
         getColorInfoFromSpecialNameOrColorString(color)
     );
 
@@ -93,7 +93,7 @@ const OverlayToolControls: React.FunctionComponent = () => {
     // Background color swatch
     // defaults to "white" background color
     const [backgroundColorSwatch, setBackgroundColorSwatch] = useState(
-        OverlayBackgroundColors[1]
+        TextBackgroundColors[1]
     );
 
     // If bubbleType is not undefined, corresponds to the active bubble's family.
@@ -446,7 +446,7 @@ const OverlayToolControls: React.FunctionComponent = () => {
             noGradientSwatches: true,
             localizedTitle: textColorTitle,
             initialColor: textColorSwatch,
-            palette: BloomPalette.OverlayText,
+            palette: BloomPalette.Text,
             isForOverlay: true,
             onChange: color => updateTextColor(color),
             onInputFocus: noteInputFocused
@@ -462,7 +462,7 @@ const OverlayToolControls: React.FunctionComponent = () => {
             noAlphaSlider: noAlpha,
             localizedTitle: backgroundColorTitle,
             initialColor: backgroundColorSwatch,
-            palette: BloomPalette.OverlayBackground,
+            palette: BloomPalette.TextBackground,
             isForOverlay: true,
             onChange: color => updateBackgroundColor(color),
             onInputFocus: noteInputFocused
