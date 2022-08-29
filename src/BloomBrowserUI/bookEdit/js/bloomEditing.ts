@@ -42,7 +42,7 @@ import { hookupLinkHandler } from "../../utils/linkHandler";
 import {
     BloomPalette,
     getHexColorsForPalette
-} from "../../react_components/bloomPalette";
+} from "../../react_components/color-picking/bloomPalette";
 
 // Allows toolbox code to make an element properly in the context of this iframe.
 export function makeElement(
