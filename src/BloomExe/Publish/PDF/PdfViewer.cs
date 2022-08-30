@@ -11,6 +11,7 @@ using System.Windows.Forms;
 using Gecko;
 using Gecko.Interop;
 using L10NSharp;
+using Microsoft.Web.WebView2.Core;
 using Microsoft.Win32;
 using SIL.IO;
 using SIL.Reporting;
@@ -43,18 +44,29 @@ namespace Bloom.Publish.PDF
 		{
 			InitializeComponent();
 
+			if (ExperimentalFeatures.IsFeatureEnabled(ExperimentalFeatures.kWebView2))
+			{
+				// Review: do we still want to try Acrobat? We're trying to get rid of it,
+				// so I'm inclined not to at least while WV2 is experimental.
+				var wv2 = new WebView2Browser();
+				_pdfViewerControl = wv2;
+			}
+			else
+			{
 #if !__MonoCS__
-			// In Windows we would prefer to use Acrobat to display and print PDFs. It avoids various bugs in
-			// PDFjs, such as BL-1177 (Andika sometimes lost when printing directly from Bloom),
-			// BL-1170 Printing stops after certain point
-			// BL-1037 PDFjs sometimes fails to display if use certain jpg images
-			// If Acrobat is not installed, it will fall back to PDFjs, and we hope for the best.
-			// Todo: we need a better solution in Linux, also. Ghostscript might provide something but
-			// has a GPL license.
-			_pdfViewerControl = new AdobeReaderControl();
+				// In Windows we would prefer to use Acrobat to display and print PDFs. It avoids various bugs in
+				// PDFjs, such as BL-1177 (Andika sometimes lost when printing directly from Bloom),
+				// BL-1170 Printing stops after certain point
+				// BL-1037 PDFjs sometimes fails to display if use certain jpg images
+				// If Acrobat is not installed, it will fall back to PDFjs, and we hope for the best.
+				// Todo: we need a better solution in Linux, also. Ghostscript might provide something but
+				// has a GPL license.
+				_pdfViewerControl = new AdobeReaderControl();
 #else
 			_pdfViewerControl = new GeckoWebBrowser();
 #endif
+			}
+
 			SetupViewerControl();
 		}
 
@@ -90,9 +102,32 @@ namespace Bloom.Publish.PDF
 		}
 #endif
 
+		private async void HideButtons()
+		{
+			var cv2 = (_pdfViewerControl as WebView2Browser).InternalBrowser.CoreWebView2;
+			cv2.Settings.HiddenPdfToolbarItems = CoreWebView2PdfToolbarItems.Print // we prefer our big print button, and it may show a dialog first
+			                                     | CoreWebView2PdfToolbarItems.Rotate // shouldn't be needed, just clutter
+			                                     | CoreWebView2PdfToolbarItems.Save // would always be disabled, there's no known place to save
+			                                     | CoreWebView2PdfToolbarItems.SaveAs; //We want our Save code, which checks things like not saving in the book folder
+			// We'd also like to hide the "Enter full screen" button, since it doesn't work right and is hard to recover from,
+			// and the "Settings and more" button since none of its functions seem useful, but there's no way to disable those.
+			// Note, I tried extensively to disable them by using RunJavaScript to inject CSS into the document.
+			// The problem is, the way WebView2 displays a PDF file URL is with a top-level document that is mostly a single 'embed'.
+			// What is embedded is, as far as I can discover, completely opaque. (You can't see this dialog by right-clicking
+			// and choosing Inspect. The dev tools that brings up are showing the content of what's embedded...the thing you
+			// can't otherwise get at. (You can get at the root dev tools by calling OpenDevToolsWindow() on the CoreWebView2.)
+		}
+
 		public bool ShowPdf(string pdfFile)
 		{
 			_pdfPath = pdfFile;
+			if (ExperimentalFeatures.IsFeatureEnabled(ExperimentalFeatures.kWebView2))
+			{
+				var wv2 = _pdfViewerControl as WebView2Browser;
+				HideButtons();
+				wv2.Navigate(pdfFile, false);
+				return true;
+			}
 #if !__MonoCS__
 			var arc = _pdfViewerControl as AdobeReaderControl;
 			if (arc != null) // We haven't yet had a problem displaying with Acrobat...
@@ -177,6 +212,12 @@ namespace Bloom.Publish.PDF
 
 		public void Print()
 		{
+			if (ExperimentalFeatures.IsFeatureEnabled(ExperimentalFeatures.kWebView2))
+			{
+				var wv2 = _pdfViewerControl as WebView2Browser;
+				wv2.RunJavaScript("window.print()");
+				return;
+			}
 #if !__MonoCS__
 			var arc = _pdfViewerControl as AdobeReaderControl;
 			if (arc != null)

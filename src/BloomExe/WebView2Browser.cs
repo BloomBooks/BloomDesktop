@@ -1,8 +1,9 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -10,7 +11,9 @@ using Bloom.Book;
 using Bloom.Api;
 using Bloom.Utils;
 using Microsoft.Web.WebView2.Core;
+using Microsoft.Web.WebView2.WinForms;
 using Newtonsoft.Json;
+using SIL.IO;
 
 namespace Bloom
 {
@@ -218,6 +221,14 @@ namespace Bloom
 			return true;
 		}
 
+		// This should be used as little as possible, since it breaks the goal of being able to
+		// just drop in another implementation of the base class. However, some code outside this
+		// class (currently the PDF preview code in Publish tab) already has different behaviors
+		// depending on which browser we're using, and it seems simpler to me to just let it get
+		// at the underlying object. If we do introduce another browser, it may become clearer
+		// how we might want to encapsulate the things we use this for.
+		public WebView2 InternalBrowser => _webview;
+
 		public override string Url => _webview.Source.ToString();
 		public override Bitmap GetPreview()
 		{
@@ -235,6 +246,12 @@ namespace Bloom
 		public override void OnGetTroubleShootingInformation(object sender, EventArgs e)
 		{
 			throw new NotImplementedException();
+		}
+
+		public override void SaveDocument(string path)
+		{
+			var html = RunJavaScript("document.documentElement.outerHTML");
+			RobustFile.WriteAllText(path, html, Encoding.UTF8);
 		}
 
 		// Review: base class currently explicitly opens FireFox. Should we instead open Chrome,

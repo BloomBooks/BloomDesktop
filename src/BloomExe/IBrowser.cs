@@ -521,6 +521,8 @@ namespace Bloom
 				NonFatalProblem.ReportSentryOnly(ex);
 			}
 		}
+
+		public abstract void SaveDocument(string path);
 	}
 
 	public interface IMenuItemAdder

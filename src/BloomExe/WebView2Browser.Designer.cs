@@ -1,4 +1,4 @@
-﻿namespace Bloom
+namespace Bloom
 {
     partial class WebView2Browser
     {
