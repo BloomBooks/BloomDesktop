@@ -936,29 +936,34 @@ namespace Bloom.Publish
 				var form = FindForm();
 				form.Activated += FormActivatedAfterPrintDialog;
 #endif
-				_previewBox.Image = Image.FromFile(printSettingsSampleName);
-				_previewBox.Bounds = GetPreviewBounds();
-				_previewBox.SizeMode = PictureBoxSizeMode.Zoom;
-				_previewBox.BringToFront(); // prevents BL-6001
-				_previewBox.Show();
-				if (!Settings.Default.DontShowPrintNotification)
+				// Eventually we may want a new set of screen shots for WebView2 printing settings;
+				// but it seems to be picking good defaults, at least for A5 portrait booklets.
+				if (!ExperimentalFeatures.IsFeatureEnabled(ExperimentalFeatures.kWebView2))
 				{
-					using (var dlg = new SamplePrintNotification())
+					_previewBox.Image = Image.FromFile(printSettingsSampleName);
+					_previewBox.Bounds = GetPreviewBounds();
+					_previewBox.SizeMode = PictureBoxSizeMode.Zoom;
+					_previewBox.BringToFront(); // prevents BL-6001
+					_previewBox.Show();
+					if (!Settings.Default.DontShowPrintNotification)
 					{
-						dlg.StartPosition = FormStartPosition.CenterParent;
+						using (var dlg = new SamplePrintNotification())
+						{
+							dlg.StartPosition = FormStartPosition.CenterParent;
 #if __MonoCS__
 						_pdfViewer.PrintFinished -= FormActivatedAfterPrintDialog;
 						dlg.ShowDialog(this);
 						_pdfViewer.PrintFinished += FormActivatedAfterPrintDialog;
 #else
-						form.Activated -= FormActivatedAfterPrintDialog; // not wanted when we close the dialog.
-						dlg.ShowDialog(this);
-						form.Activated += FormActivatedAfterPrintDialog;
+							form.Activated -= FormActivatedAfterPrintDialog; // not wanted when we close the dialog.
+							dlg.ShowDialog(this);
+							form.Activated += FormActivatedAfterPrintDialog;
 #endif
-						if (dlg.StopShowing)
-						{
-							Settings.Default.DontShowPrintNotification = true;
-							Settings.Default.Save();
+							if (dlg.StopShowing)
+							{
+								Settings.Default.DontShowPrintNotification = true;
+								Settings.Default.Save();
+							}
 						}
 					}
 				}
