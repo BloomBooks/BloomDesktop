@@ -464,7 +464,14 @@ namespace Bloom.Publish
 				{
 					if (_browser != null) // Don't use BrowserForPageChecks here...if we don't have one we don't want to make it now!
 					{
-						if (_browser.IsHandleCreated)
+						if (ControlForInvoke != null)
+						{
+							// Seems safest of all to invoke using the thing we use for all other invokes.
+							// Also, seems our WebView2Browser may not actually get a handle, yet its
+							// embedded WebView2 still needs to be disposed on the right thread.
+							ControlForInvoke.Invoke((Action)(() => _browser.Dispose()));
+						}
+						else if (_browser.IsHandleCreated)
 						{
 							_browser.Invoke((Action) (() => _browser.Dispose()));
 						}
