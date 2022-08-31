@@ -381,15 +381,18 @@ describe("BloomField", () => {
             // Our code still checks which, but nowadays it's deprecated in favor of key,
             // so KeyboardEventInit doesn't officially recognize it in the type definition,
             // but we need it anyway, so just force the types to work.
-            const keyEventInit = ({
-                // 8 is ASCII code for backspace
-                which: 8,
+            const keyEventInit = {
+                key: "Backspace",
                 cancelable: true // preventDefault only works on cancellable events.
-            } as unknown) as KeyboardEventInit;
+            } as KeyboardEventInit;
 
             // FYI: This simulated backspace event doesn't actually modify the text,
             // but you can still check if the event was cancelled.
             const keyboardEvent = new KeyboardEvent("keydown", keyEventInit);
+            //DispatchEvent dispatches a synthetic event event to target and returns true if either event's
+            // cancelable attribute value is false or its preventDefault() method was not invoked, and false otherwise.
+            // Cancelable is true. Therefore, it returns true if prevenDefault was not invoked.
+            // Inverting it means wasCanceled is true if preventDefault WAS invoked.
             const wasCanceled = !editable.dispatchEvent(keyboardEvent);
 
             // Verification

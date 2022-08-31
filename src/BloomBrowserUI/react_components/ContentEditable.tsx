@@ -32,7 +32,7 @@ export default class ContentEditable extends React.Component<
                 onBlur={event => this.emitChange(event)}
                 onKeyPress={event => {
                     if (
-                        event.which === 13 &&
+                        event.key === "Enter" &&
                         this.props.onEnterKeyPressed != null
                     ) {
                         event.stopPropagation();

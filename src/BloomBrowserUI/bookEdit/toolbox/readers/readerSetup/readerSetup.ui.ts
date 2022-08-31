@@ -1229,7 +1229,8 @@ $(document).ready(() => {
     $("body")
         .find("*[data-i18n]")
         .localize(finishInitializing);
-    getToolboxBundleExports()!.addWordListChangedListener(
+    //This should always be found in real life, but in unit tests it may not exist.
+    getToolboxBundleExports()?.addWordListChangedListener(
         "wordListChanged.ReaderSetup",
         wordListChangedCallback
     );
@@ -1238,7 +1239,7 @@ $(document).ready(() => {
     const container = $("body");
     //   const pageIframe = parent.frames['page'];
     //   pageIframe.toolboxBundle.loadLongpressInstructions(container.find('textarea'));
-    getToolboxBundleExports()!.loadLongpressInstructions(
+    getToolboxBundleExports()?.loadLongpressInstructions(
         container.find("textarea")
     );
 });
