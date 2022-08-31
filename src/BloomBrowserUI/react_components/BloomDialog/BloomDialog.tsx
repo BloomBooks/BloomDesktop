@@ -3,7 +3,7 @@ import { jsx, css } from "@emotion/core";
 import * as React from "react";
 import { lightTheme } from "../../bloomMaterialUITheme";
 import { ThemeProvider } from "@material-ui/styles";
-import { Dialog, DialogProps, Paper } from "@material-ui/core";
+import { Dialog, DialogProps, Paper, PaperProps } from "@material-ui/core";
 import CloseOnEscape from "react-close-on-escape";
 import { kDialogPadding } from "../../bloomMaterialUITheme";
 import { forwardRef, useEffect } from "react";
@@ -99,24 +99,6 @@ export const BloomDialog: React.FunctionComponent<IBloomDialogProps> = forwardRe
             initialFocus?.focus();
         }, []);
 
-        const PaperComponent = paperProps => {
-            return (
-                <Draggable
-                    handle="#draggable-dialog-title"
-                    cancel={'[class*="MuiDialogContent-root"]'}
-                >
-                    <Paper
-                        css={css`
-                            // Allows setting the Dialog height here on the Paper and
-                            // the children can grow into it.
-                            display: flex;
-                        `}
-                        {...paperProps}
-                    />
-                </Draggable>
-            );
-        };
-
         const {
             dialogFrameProvidedExternally,
             disableDragging,
@@ -137,7 +119,7 @@ export const BloomDialog: React.FunctionComponent<IBloomDialogProps> = forwardRe
                             PaperComponent={
                                 props.disableDragging
                                     ? undefined
-                                    : PaperComponent
+                                    : DraggablePaper
                             }
                             css={css`
                                 flex-grow: 1; // see note on the display property on PaperComponent
@@ -234,7 +216,7 @@ export const DialogMiddle: React.FunctionComponent<{}> = props => {
                 }
 
                 // This was 100px. Not sure why we need it at all, but 100px is too much for
-                // dialogs like the number-of-duplciates dialogs or simple message boxes.
+                // dialogs like the number-of-duplicates dialogs or simple message boxes.
                 min-height: 50px;
             `}
             {...props}
@@ -295,5 +277,28 @@ export const DialogBottomButtons: React.FunctionComponent<{}> = props => {
         >
             {props.children}
         </div>
+    );
+};
+
+// For some reason, making this a FunctionComponent rather than just a function
+// which returns a component makes a significant difference.
+// When this was a function, typing 3 digits in the hex box would cause
+// a loss of focus which caused it to convert, e.g. FFF to FFFFFF.
+// See BL-11406.
+const DraggablePaper: React.FunctionComponent<PaperProps> = props => {
+    return (
+        <Draggable
+            handle="#draggable-dialog-title"
+            cancel={'[class*="MuiDialogContent-root"]'}
+        >
+            <Paper
+                css={css`
+                    // Allows setting the Dialog height here on the Paper and
+                    // the children can grow into it.
+                    display: flex;
+                `}
+                {...props}
+            />
+        </Draggable>
     );
 };

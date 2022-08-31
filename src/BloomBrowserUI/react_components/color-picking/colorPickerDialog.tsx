@@ -288,14 +288,8 @@ const ColorPickerDialog: React.FC<IColorPickerDialogProps> = props => {
                 open={props.open === undefined ? open : props.open}
                 ref={dlgRef}
                 onClose={() => onClose(DialogResult.OK)}
-                // Without this, the hex code entry focus problem appears (BL-11406 comment 31 Aug).
-                // Andrew is looking into a better solution.
-                disableDragging={true}
             >
-                <DialogTitle
-                    title={props.localizedTitle}
-                    disableDragging={true} // changes the cursor to match behavior
-                />
+                <DialogTitle title={props.localizedTitle} />
                 <DialogMiddle>
                     <CustomColorPicker
                         onChange={handleOnChange}
