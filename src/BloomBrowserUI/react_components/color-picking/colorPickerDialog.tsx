@@ -3,7 +3,6 @@ import { jsx, css } from "@emotion/core";
 import React = require("react");
 import * as ReactDOM from "react-dom";
 import { useRef, useState } from "react";
-import CloseOnEscape from "react-close-on-escape";
 import { getEditTabBundleExports } from "../../bookEdit/js/bloomFrames";
 import { ThemeProvider } from "@material-ui/styles";
 import { lightTheme } from "../../bloomMaterialUITheme";
