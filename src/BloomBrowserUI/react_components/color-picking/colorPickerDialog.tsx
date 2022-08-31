@@ -3,7 +3,6 @@ import { jsx, css } from "@emotion/core";
 import React = require("react");
 import * as ReactDOM from "react-dom";
 import { useRef, useState } from "react";
-import CloseOnEscape from "react-close-on-escape";
 import { getEditTabBundleExports } from "../../bookEdit/js/bloomFrames";
 import { ThemeProvider } from "@material-ui/styles";
 import { lightTheme } from "../../bloomMaterialUITheme";
@@ -289,8 +288,14 @@ const ColorPickerDialog: React.FC<IColorPickerDialogProps> = props => {
                 open={props.open === undefined ? open : props.open}
                 ref={dlgRef}
                 onClose={() => onClose(DialogResult.OK)}
+                // Without this, the hex code entry focus problem appears (BL-11406 comment 31 Aug).
+                // Andrew is looking into a better solution.
+                disableDragging={true}
             >
-                <DialogTitle title={props.localizedTitle} />
+                <DialogTitle
+                    title={props.localizedTitle}
+                    disableDragging={true} // changes the cursor to match behavior
+                />
                 <DialogMiddle>
                     <CustomColorPicker
                         onChange={handleOnChange}
