@@ -26,7 +26,7 @@ export interface IBloomDialogProps extends DialogProps {
     open: boolean;
     // true if the caller is wrapping in a winforms dialog already
     dialogFrameProvidedExternally?: boolean;
-    onClose: () => void;
+    onClose: (evt?: object, reason?: string) => void;
     // we know of at least one scenario (CopyrightAndLicenseDialog) which needs to do
     // this because enabling it causes a react render loop. Our theory is that there is
     // a focus war going on.
@@ -108,7 +108,7 @@ export const BloomDialog: React.FunctionComponent<IBloomDialogProps> = forwardRe
         return (
             <CloseOnEscape
                 onEscape={() => {
-                    props.onClose();
+                    props.onClose(undefined, "escapeKeyDown");
                 }}
             >
                 <ThemeProvider theme={lightTheme}>
