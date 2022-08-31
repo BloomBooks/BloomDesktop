@@ -3,7 +3,6 @@ import { jsx, css } from "@emotion/core";
 import React = require("react");
 import * as ReactDOM from "react-dom";
 import { useRef, useState } from "react";
-import CloseOnEscape from "react-close-on-escape";
 import { getEditTabBundleExports } from "../../bookEdit/js/bloomFrames";
 import { ThemeProvider } from "@material-ui/styles";
 import { lightTheme } from "../../bloomMaterialUITheme";
@@ -289,8 +288,12 @@ const ColorPickerDialog: React.FC<IColorPickerDialogProps> = props => {
                 open={props.open === undefined ? open : props.open}
                 ref={dlgRef}
                 onClose={() => onClose(DialogResult.OK)}
+                disableDragging={true}
             >
-                <DialogTitle title={props.localizedTitle} />
+                <DialogTitle
+                    title={props.localizedTitle}
+                    disableDragging={true}
+                />
                 <DialogMiddle>
                     <CustomColorPicker
                         onChange={handleOnChange}

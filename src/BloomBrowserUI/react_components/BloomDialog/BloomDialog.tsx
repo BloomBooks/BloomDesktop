@@ -6,7 +6,7 @@ import { ThemeProvider } from "@material-ui/styles";
 import { Dialog, DialogProps, Paper } from "@material-ui/core";
 import CloseOnEscape from "react-close-on-escape";
 import { kDialogPadding } from "../../bloomMaterialUITheme";
-import { useEffect } from "react";
+import { forwardRef, useEffect } from "react";
 import { kUiFontStack } from "../../bloomMaterialUITheme";
 import Draggable from "react-draggable";
 
@@ -33,124 +33,129 @@ export interface IBloomDialogProps extends DialogProps {
     disableDragging?: boolean;
 }
 
-export const BloomDialog: React.FunctionComponent<IBloomDialogProps> = props => {
-    // About custom styling:
-    // We need the parent to be able to specify things about the size of the dialog. Example:
-    //     <BloomDialog
-    //          fullWidth={true}
-    //          maxWidth="lg"
-    // >
-    // NB: If you make any changes to this, make sure that the TeamCollectionDialog still takes up most of the screen and the History tab
-    // still has lots of room for history and still scrolls as needed.
-    // The material props like `fullWidth={true}` and `maxWidth="lg"` get spread to the Dialog component like you would expect.
-    // Callers should set height on DialogMiddle which is where we want a scrollbar if it is needed.
-    const inner = (
-        <div
-            css={css`
-                background-color: white;
-                display: flex;
-                flex-direction: column;
-                padding-left: ${kDialogSidePadding};
-                padding-right: ${kDialogSidePadding};
-                padding-bottom: ${kDialogBottomPadding};
-                // dialogFrameProvidedExternally means that we're inside of a winforms dialog.
-                /// So we grow to fit it, and we supply a single black border for some reason (?)
-                ${props.dialogFrameProvidedExternally
-                    ? `height: 100%; border: solid thin black; box-sizing: border-box;`
-                    : ""}
+export const BloomDialog: React.FunctionComponent<IBloomDialogProps> = forwardRef(
+    (props, ref) => {
+        // About custom styling:
+        // We need the parent to be able to specify things about the size of the dialog. Example:
+        //     <BloomDialog
+        //          fullWidth={true}
+        //          maxWidth="lg"
+        // >
+        // NB: If you make any changes to this, make sure that the TeamCollectionDialog still takes up most of the screen and the History tab
+        // still has lots of room for history and still scrolls as needed.
+        // The material props like `fullWidth={true}` and `maxWidth="lg"` get spread to the Dialog component like you would expect.
+        // Callers should set height on DialogMiddle which is where we want a scrollbar if it is needed.
+        const inner = (
+            <div
+                css={css`
+                    background-color: white;
+                    display: flex;
+                    flex-direction: column;
+                    padding-left: ${kDialogSidePadding};
+                    padding-right: ${kDialogSidePadding};
+                    padding-bottom: ${kDialogBottomPadding};
+                    // dialogFrameProvidedExternally means that we're inside of a winforms dialog.
+                    /// So we grow to fit it, and we supply a single black border for some reason (?)
+                    ${props.dialogFrameProvidedExternally
+                        ? `height: 100%; border: solid thin black; box-sizing: border-box;`
+                        : ""}
 
-                * {
-                    // This value is the same as that given in bloomMaterialUITheme.  For some
-                    // reason, it is not being applied here.  See BL-10208 and BL-10228.
-                    font-family: ${kUiFontStack};
-                }
-                // This will correctly allow the DialogMiddle to add its scrollbar when needed.
-                // Callers should set dialog height by setting the height of DialogMiddle.
-                overflow: auto;
-            `}
-            className={props.className} // any emotion css from the parent
-        >
-            {props.children}
-        </div>
-    );
-
-    // If the dialog content contains something with class initialFocus, this will give it
-    // initial focus.
-    useEffect(() => {
-        // Focusing the default button allows operating that button by pressing Enter.
-        // I think this is better than creating a high-level handler for keypress because
-        // it allows the user to tab to some other button and activate THAT by pressing
-        // Enter.
-        // UseEffect allows this to happen just once (so the user can later move focus)
-        // but AFTER react has created the actual DOM so we can find the element we want
-        // to focus.
-        const initialFocus = document.getElementsByClassName(
-            "initialFocus"
-        )[0] as HTMLButtonElement;
-        if (!initialFocus) {
-            return; // Enter won't do anything, unless the user tabs to focus a button.
-        }
-        if (!initialFocus.tabIndex) {
-            // not sure if we need this, but in some browser versions I think focus() won't
-            // do anything to some kinds of element if they don't have a tab index.
-            initialFocus.tabIndex = -1;
-        }
-        initialFocus?.focus();
-    }, []);
-
-    const PaperComponent = paperProps => {
-        return (
-            <Draggable
-                handle="#draggable-dialog-title"
-                cancel={'[class*="MuiDialogContent-root"]'}
+                    * {
+                        // This value is the same as that given in bloomMaterialUITheme.  For some
+                        // reason, it is not being applied here.  See BL-10208 and BL-10228.
+                        font-family: ${kUiFontStack};
+                    }
+                    // This will correctly allow the DialogMiddle to add its scrollbar when needed.
+                    // Callers should set dialog height by setting the height of DialogMiddle.
+                    overflow: auto;
+                `}
+                className={props.className} // any emotion css from the parent
             >
-                <Paper
-                    css={css`
-                        // Allows setting the Dialog height here on the Paper and
-                        // the children can grow into it.
-                        display: flex;
-                    `}
-                    {...paperProps}
-                />
-            </Draggable>
+                {props.children}
+            </div>
         );
-    };
 
-    const {
-        dialogFrameProvidedExternally,
-        disableDragging,
-        ...propsToPass
-    } = props;
+        // If the dialog content contains something with class initialFocus, this will give it
+        // initial focus.
+        useEffect(() => {
+            // Focusing the default button allows operating that button by pressing Enter.
+            // I think this is better than creating a high-level handler for keypress because
+            // it allows the user to tab to some other button and activate THAT by pressing
+            // Enter.
+            // UseEffect allows this to happen just once (so the user can later move focus)
+            // but AFTER react has created the actual DOM so we can find the element we want
+            // to focus.
+            const initialFocus = document.getElementsByClassName(
+                "initialFocus"
+            )[0] as HTMLButtonElement;
+            if (!initialFocus) {
+                return; // Enter won't do anything, unless the user tabs to focus a button.
+            }
+            if (!initialFocus.tabIndex) {
+                // not sure if we need this, but in some browser versions I think focus() won't
+                // do anything to some kinds of element if they don't have a tab index.
+                initialFocus.tabIndex = -1;
+            }
+            initialFocus?.focus();
+        }, []);
 
-    return (
-        <CloseOnEscape
-            onEscape={() => {
-                props.onClose();
-            }}
-        >
-            <ThemeProvider theme={lightTheme}>
-                {props.dialogFrameProvidedExternally ? (
-                    inner
-                ) : (
-                    <Dialog
-                        PaperComponent={
-                            props.disableDragging ? undefined : PaperComponent
-                        }
+        const PaperComponent = paperProps => {
+            return (
+                <Draggable
+                    handle="#draggable-dialog-title"
+                    cancel={'[class*="MuiDialogContent-root"]'}
+                >
+                    <Paper
                         css={css`
-                            flex-grow: 1; // see note on the display property on PaperComponent
-                            [role="dialog"] {
-                                overflow: hidden; // only the middle should scroll. The DialogTitle and DialogBottomButtons should not.
-                            }
+                            // Allows setting the Dialog height here on the Paper and
+                            // the children can grow into it.
+                            display: flex;
                         `}
-                        {...propsToPass} // get  fullWidth, maxWidth, open etc. Note that css doesn't end up anywhere useful in the HTML (try the paper?)
-                    >
-                        {inner}
-                    </Dialog>
-                )}
-            </ThemeProvider>
-        </CloseOnEscape>
-    );
-};
+                        {...paperProps}
+                    />
+                </Draggable>
+            );
+        };
+
+        const {
+            dialogFrameProvidedExternally,
+            disableDragging,
+            ...propsToPass
+        } = props;
+
+        return (
+            <CloseOnEscape
+                onEscape={() => {
+                    props.onClose();
+                }}
+            >
+                <ThemeProvider theme={lightTheme}>
+                    {props.dialogFrameProvidedExternally ? (
+                        inner
+                    ) : (
+                        <Dialog
+                            PaperComponent={
+                                props.disableDragging
+                                    ? undefined
+                                    : PaperComponent
+                            }
+                            css={css`
+                                flex-grow: 1; // see note on the display property on PaperComponent
+                                [role="dialog"] {
+                                    overflow: hidden; // only the middle should scroll. The DialogTitle and DialogBottomButtons should not.
+                                }
+                            `}
+                            ref={ref}
+                            {...propsToPass} // get  fullWidth, maxWidth, open etc. Note that css doesn't end up anywhere useful in the HTML (try the paper?)
+                        >
+                            {inner}
+                        </Dialog>
+                    )}
+                </ThemeProvider>
+            </CloseOnEscape>
+        );
+    }
+);
 
 export const DialogTitle: React.FunctionComponent<{
     backgroundColor?: string;
