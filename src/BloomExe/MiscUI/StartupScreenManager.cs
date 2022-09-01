@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading;
 using System.Windows.Forms;
 using SIL.IO;
+using SIL.Reporting;
 
 namespace Bloom.MiscUI
 {
@@ -150,8 +151,18 @@ namespace Bloom.MiscUI
 
 			if (_current.WaitForMilestone != null && !_milestones.Contains(_current.WaitForMilestone))
 			{
-				_current = null; // nothing in progress we need to wait for
-				return; // we'll try again on another idle event
+				if (DateTime.Now < _earliestWeShouldCloseTheSplashScreen.Add(new TimeSpan(0, 0, 5)))
+				{
+					_current = null; // nothing in progress we need to wait for
+					return; // we'll try again on another idle event
+				}
+				else
+				{
+					Logger.WriteEvent("Failed to get to startup milestone " + _current.WaitForMilestone +
+						" after five seconds");
+					// And go ahead with the next task, so we're not stuck forever.
+					// (Currently, waiting is just to help things happen in the optimum order for performance.)
+				}
 			}
 
 			if (_current.ShouldHideSplashScreen)
