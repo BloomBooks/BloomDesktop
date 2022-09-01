@@ -14,7 +14,8 @@ import { useL10n } from "../../../react_components/l10nHooks";
 import { MuiCheckbox } from "../../../react_components/muiCheckBox";
 import TextField from "@material-ui/core/TextField";
 import { WhatsThisBlock } from "../../../react_components/helpLink";
-import { ColorChooser } from "../../../react_components/color-picking/colorChooser";
+import { BloomPalette } from "../../../react_components/color-picking/bloomPalette";
+import { ColorDisplayButton } from "../../../react_components/color-picking/colorPickerDialog";
 import { ConditionallyEnabledBlock } from "../../../react_components/ConditionallyEnabledBlock";
 import { BloomApi } from "../../../utils/bloomApi";
 import { useGetLabelForCollection } from "../../../contentful/UseContentful";
@@ -87,6 +88,11 @@ export const InnerBulkBloomPubDialog: React.FunctionComponent<{
         "PublishTab.BulkBloomPub.MakeAllBloomPubs"
     );
 
+    const colorPickerTitle = useL10n(
+        "Bookshelf Color",
+        "PublishTab.Android.BulkBookshelfColor"
+    );
+
     return (
         <React.Fragment>
             <DialogTitle title={dialogTitle}>
@@ -152,38 +158,39 @@ export const InnerBulkBloomPubDialog: React.FunctionComponent<{
                                 >
                                     <div
                                         css={css`
-                                            border: solid 1px black;
+                                            border: dotted 1px gray;
                                             width: 225px;
                                             height: 20px;
-                                            background-color: ${params.bookshelfColor};
                                             padding-left: 5px;
                                             padding-top: 3px;
                                         `}
                                     >
                                         {params.bookshelfLabel}
                                     </div>
-
-                                    <ColorChooser
-                                        menuLeft={true}
-                                        disabled={false}
-                                        color={params.bookshelfColor}
-                                        onColorChanged={colorChoice => {
-                                            setParams({
-                                                ...params,
-                                                bookshelfColor: colorChoice
-                                            });
-                                        }}
+                                    <div
                                         css={css`
-                                            .cc-menu-arrow {
-                                                margin-top: 8px;
-                                            }
-                                            .cc-pulldown-wrapper {
-                                                left: -127px;
-                                                border: solid 1px lightgray;
-                                                padding: 10px;
-                                            }
+                                            margin-left: 16px;
                                         `}
-                                    />
+                                    >
+                                        <ColorDisplayButton
+                                            initialColor={params.bookshelfColor}
+                                            localizedTitle={colorPickerTitle}
+                                            noAlphaSlider={true}
+                                            palette={
+                                                BloomPalette.BloomReaderBookshelf
+                                            }
+                                            width={75}
+                                            onClose={(
+                                                _result,
+                                                newColor: string
+                                            ) => {
+                                                setParams({
+                                                    ...params,
+                                                    bookshelfColor: newColor
+                                                });
+                                            }}
+                                        />
+                                    </div>
                                 </div>
                             </div>
                         </ConditionallyEnabledBlock>
