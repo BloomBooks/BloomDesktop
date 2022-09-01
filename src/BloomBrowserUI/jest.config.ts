@@ -157,7 +157,7 @@ export default {
     // testLocationInResults: false,
 
     // The glob patterns Jest uses to detect test files
-    testMatch: ["**/*Spec.ts", "**/*spec.ts"],
+    testMatch: ["**/*[sS]pec.[jt]s"],
 
     // An array of regexp pattern strings that are matched against all test paths, matched tests are skipped
     // testPathIgnorePatterns: [
@@ -175,10 +175,13 @@ export default {
 
     // A map from regular expressions to paths to transformers
     // This says to use ts-jest for ts and tsx files.
+    // transform: {
+    //     "^.+\\.tsx?$": "ts-jest"
+    // },
+    setupFiles: ["jest-canvas-mock"],
     transform: {
-        "^.+\\.tsx?$": "ts-jest"
+        "^.+\\.(js|jsx|ts|tsx)$": "babel-jest"
     }
-
     // An array of regexp pattern strings that are matched against all source file paths, matched files will skip transformation
     // transformIgnorePatterns: [
     //   "\\\\node_modules\\\\",
