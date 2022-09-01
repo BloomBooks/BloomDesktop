@@ -5,6 +5,23 @@
       <note>We are in the process of moving strings from Bloom.xlf to BloomMediumPriority.xlf and BloomLowPriority.xlf while trying very hard to preserve translations and approval status.</note>
     </header>
     <body>
+      <!-- Bloom 5.4
+      <trans-unit id="EditTab.Toolbox.OverlayTool.KeyHints.Drag" sil:dynamic="true">
+        <source xml:lang="en">drag</source>
+        <note>ID: EditTab.Toolbox.OverlayTool.KeyHints.Drag</note>
+        <note>Used in the Key hints at the bottom of the Overlay Tool for Alt+drag and Ctrl+drag.</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.OverlayTool.KeyHints.Resize" sil:dynamic="true">
+        <source xml:lang="en">resize</source>
+        <note>ID: EditTab.Toolbox.OverlayTool.KeyHints.Resize</note>
+        <note>Used in the Key hint at the bottom of the Overlay Tool for "Alt + drag = resize".</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.OverlayTool.KeyHints.Move" sil:dynamic="true">
+        <source xml:lang="en">move</source>
+        <note>ID: EditTab.Toolbox.OverlayTool.KeyHints.Move</note>
+        <note>Used in the Key hint at the bottom of the Overlay Tool for "Ctrl + drag = move".</note>
+      </trans-unit>
+      -->
       <trans-unit id="ReaderSetup.SentencePunctuation.Header" sil:dynamic="true">
         <source xml:lang="en">Special Sentence-Ending Punctuation</source>
         <note>ID: ReaderSetup.SentencePunctuation.Header</note>
