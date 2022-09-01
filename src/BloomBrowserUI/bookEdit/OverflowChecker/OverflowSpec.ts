@@ -98,11 +98,14 @@ describe("Overflow Tests", () => {
     // Clean up before running the test. Other test's divs can affect the font size and hence the overflow.
     beforeAll(removeTestRoot);
 
-    // these tests are only reliable when tested with Firefox
-    if (navigator.userAgent.indexOf("Firefox") === -1) {
-        console.log("Overflow tests are only run on Firefox.");
-        return;
-    }
+    // An old comment says,
+    // "these tests are only reliable when tested with Firefox"
+    // and the following code was used to disable them otherwise. But Chrome is becoming our main
+    // test environment, so for now I'm putting them back in; we'll see if they again prove flaky.
+    // if (navigator.userAgent.indexOf("Firefox") === -1) {
+    //     console.log("Overflow tests are only run on Firefox.");
+    //     return;
+    // }
 
     // Note: Ideally, nothing else should run between loadFixtures and actually running the test.
     // That means loadFixtures() needs to be inside the it().

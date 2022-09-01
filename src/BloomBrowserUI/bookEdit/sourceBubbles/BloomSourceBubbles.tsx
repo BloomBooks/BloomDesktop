@@ -552,7 +552,7 @@ export default class BloomSourceBubbles {
                                 // See https://silbloom.myjetbrains.com/youtrack/issue/BL-3899.
                                 // The selection code was adapted from one of the answers given on
                                 // http://stackoverflow.com/questions/985272/selecting-text-in-an-element-akin-to-highlighting-with-your-mouse
-                                if (kevent.ctrlKey && kevent.which == 65) {
+                                if (kevent.ctrlKey && kevent.key === "a") {
                                     kevent.preventDefault();
                                     kevent.stopImmediatePropagation();
                                     const target = kevent.target as HTMLElement;

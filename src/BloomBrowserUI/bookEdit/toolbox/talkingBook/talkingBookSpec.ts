@@ -19,11 +19,10 @@ import { setSentenceEndingPunctuationForBloom } from "../readers/libSynphony/blo
 import axios from "axios";
 
 describe("talking book tests", () => {
-    beforeAll(async (done: () => void) => {
+    beforeAll(async () => {
         SetupTalkingBookUIElements();
         await SetupIFrameAsync();
         await initializeTalkingBookToolAsync();
-        done();
     });
 
     describe("- updateMarkup()", () => {

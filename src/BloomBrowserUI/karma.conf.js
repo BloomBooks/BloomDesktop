@@ -41,7 +41,14 @@ module.exports = function(config) {
         // - Chrome IF YOU USE CHROME, NOTE THAT IF YOU MINIMIZE CHROME, IT WILL RUN TESTS SUPER SLOWLY
         // - Firefox
         // - PhantomJS
-        browsers: ["Firefox"],
+        browsers: ["Firefox", "Chrome_allow_autoplay"],
+
+        customLaunchers: {
+            Chrome_allow_autoplay: {
+                base: "Chrome",
+                flags: ["--autoplay-policy=no-user-gesture-required"]
+            }
+        },
 
         // If browser does not capture in given timeout [ms], kill it
         captureTimeout: 6000,
