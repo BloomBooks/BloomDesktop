@@ -389,9 +389,9 @@ describe("BloomField", () => {
             // FYI: This simulated backspace event doesn't actually modify the text,
             // but you can still check if the event was cancelled.
             const keyboardEvent = new KeyboardEvent("keydown", keyEventInit);
-            //DispatchEvent dispatches a synthetic event event to target and returns true if either event's
+            //DispatchEvent dispatches a synthetic event to target and returns true if either event's
             // cancelable attribute value is false or its preventDefault() method was not invoked, and false otherwise.
-            // Cancelable is true. Therefore, it returns true if prevenDefault was not invoked.
+            // Cancelable is true. Therefore, it returns true if preventDefault was not invoked.
             // Inverting it means wasCanceled is true if preventDefault WAS invoked.
             const wasCanceled = !editable.dispatchEvent(keyboardEvent);
 

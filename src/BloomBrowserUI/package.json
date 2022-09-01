@@ -12,7 +12,7 @@
     },
     "scripts": {
         "// COMMENTS: make the action a space rather than empty string so `yarn run` can list the scripts": " ",
-        "test": "karma start --browsers Chrome_allow_autoplay  --single-run",
+        "test": "karma start --browsers Chrome_allow_autoplay,Firefox  --single-run",
         "testWatch": "karma start --browsers Chrome_allow_autoplay",
         "testWatchFirefox": "karma start --browsers Firefox",
         "// 'build': 'does a nice new clean build of the output/browser folder.'": " ",
