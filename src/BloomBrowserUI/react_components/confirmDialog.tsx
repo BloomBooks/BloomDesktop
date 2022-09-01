@@ -1,4 +1,4 @@
-import React = require("react");
+import * as React from "react";
 import * as ReactDOM from "react-dom";
 import { useState } from "react";
 import Dialog from "@material-ui/core/Dialog";

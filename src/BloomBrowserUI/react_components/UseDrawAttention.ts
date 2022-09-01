@@ -1,4 +1,4 @@
-import React = require("react");
+import * as React from "react";
 
 // For examples of use, see problemDialog/EmailField.tsx and publish/commonPublish/DeviceAndControls.tsx.
 // If your component uses bloomUI.less, the necessary .less rules for the .drawAttention class are already there.

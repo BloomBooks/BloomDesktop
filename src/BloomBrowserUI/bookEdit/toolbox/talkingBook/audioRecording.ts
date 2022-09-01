@@ -34,7 +34,7 @@ import { BloomApi } from "../../../utils/bloomApi";
 import * as toastr from "toastr";
 import WebSocketManager from "../../../utils/WebSocketManager";
 import { ToolBox } from "../toolbox";
-import React = require("react");
+import * as React from "react";
 import ReactDOM = require("react-dom");
 import BloomButton from "../../../react_components/bloomButton";
 import {

@@ -2,7 +2,7 @@
 import { jsx, css } from "@emotion/core";
 
 import Grid from "@material-ui/core/Grid";
-import React = require("react");
+import * as React from "react";
 import "BooksOfCollection.less";
 import { BloomApi } from "../utils/bloomApi";
 import { BookButton, bookButtonHeight, bookButtonWidth } from "./BookButton";

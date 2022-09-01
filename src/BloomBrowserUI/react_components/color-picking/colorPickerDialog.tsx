@@ -1,6 +1,6 @@
 /** @jsx jsx **/
 import { jsx, css } from "@emotion/core";
-import React = require("react");
+import * as React from "react";
 import * as ReactDOM from "react-dom";
 import { useRef, useState } from "react";
 import CloseOnEscape from "react-close-on-escape";

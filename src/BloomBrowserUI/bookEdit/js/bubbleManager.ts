@@ -14,7 +14,7 @@ import {
     BubbleSpecPattern,
     Comical,
     TailSpec
-} from "comicaljs";
+} from "comicaljs"; // this is failing in JEST because it can't find "paper", which is a dependency of comicaljs
 import { Point, PointScaling } from "./point";
 import { isLinux } from "../../utils/isLinux";
 import { reportError } from "../../lib/errorHandler";

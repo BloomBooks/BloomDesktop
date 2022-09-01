@@ -6,7 +6,7 @@ import axios, {
 } from "axios";
 import * as StackTrace from "stacktrace-js";
 import { reportError, reportPreliminaryError } from "../lib/errorHandler";
-import React = require("react");
+import * as React from "react";
 import { useState } from "react";
 import { useSubscribeToWebSocketForEvent } from "./WebSocketManager";
 

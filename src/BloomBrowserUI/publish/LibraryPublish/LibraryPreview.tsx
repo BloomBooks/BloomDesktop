@@ -1,5 +1,5 @@
 import { Card, CardContent, Typography } from "@material-ui/core";
-import React = require("react");
+import * as React from "react";
 
 // NOTE: this is something of a placeholder for future work
 

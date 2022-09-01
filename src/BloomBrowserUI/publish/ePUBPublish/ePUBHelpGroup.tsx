@@ -1,6 +1,6 @@
 import { HelpGroup } from "../commonPublish/PublishScreenBaseComponents";
 import HelpLink from "../../react_components/helpLink";
-import React = require("react");
+import * as React from "react";
 
 export const EPUBHelpGroup = () => (
     <HelpGroup>

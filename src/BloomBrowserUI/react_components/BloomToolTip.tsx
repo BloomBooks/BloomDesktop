@@ -1,6 +1,6 @@
 /** @jsx jsx **/
 import { jsx, css } from "@emotion/core";
-import React = require("react");
+import * as React from "react";
 import { default as InfoIcon } from "@material-ui/icons/InfoOutlined";
 import { Popover, PopoverOrigin, Typography } from "@material-ui/core";
 

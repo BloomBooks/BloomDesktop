@@ -1,4 +1,4 @@
-import React = require("react");
+import * as React from "react";
 import ReactDOM = require("react-dom");
 import { BloomMessageBox, showBloomMessageBox } from "./BloomMessageBox";
 import { getEditTabBundleExports } from "../bookEdit/js/bloomFrames";

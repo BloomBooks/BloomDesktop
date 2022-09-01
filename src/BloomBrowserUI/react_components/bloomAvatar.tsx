@@ -1,7 +1,7 @@
 /** @jsx jsx **/
 import { jsx, css } from "@emotion/core";
 
-import React = require("react");
+import * as React from "react";
 import Avatar from "react-avatar";
 import { getMd5 } from "../bookEdit/toolbox/talkingBook/md5Util";
 

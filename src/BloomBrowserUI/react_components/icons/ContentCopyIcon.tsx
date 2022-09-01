@@ -1,4 +1,4 @@
-import React = require("react");
+import * as React from "react";
 import SvgIcon, { SvgIconProps } from "@material-ui/core/SvgIcon";
 
 // I pulled this icon from www.materialui.co

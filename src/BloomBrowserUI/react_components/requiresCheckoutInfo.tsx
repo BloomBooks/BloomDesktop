@@ -1,6 +1,6 @@
 /** @jsx jsx **/
 import { jsx, css } from "@emotion/core";
-import React = require("react");
+import * as React from "react";
 import { BloomApi } from "../utils/bloomApi";
 import { InfoTooltip } from "./icons/InfoTooltip";
 

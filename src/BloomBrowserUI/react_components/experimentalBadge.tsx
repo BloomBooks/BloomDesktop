@@ -1,6 +1,6 @@
 /** @jsx jsx **/
 import { jsx, css } from "@emotion/core";
-import React = require("react");
+import * as React from "react";
 import { kBloomDarkTextOverWarning, kBloomWarning } from "../utils/colorUtils";
 
 export const ExperimentalBadge: React.FunctionComponent<{}> = props => {
