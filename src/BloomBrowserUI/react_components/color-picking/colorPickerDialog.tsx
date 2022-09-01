@@ -382,6 +382,7 @@ export interface IColorDisplayButtonProps {
     width?: number;
     disabled?: boolean;
     onClose: (result: DialogResult, newColor: string) => void;
+    palette: BloomPalette;
 }
 
 export const ColorDisplayButton: React.FC<IColorDisplayButtonProps> = props => {

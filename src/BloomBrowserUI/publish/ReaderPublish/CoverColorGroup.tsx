@@ -10,6 +10,7 @@ import { BloomApi } from "../../utils/bloomApi";
 import { StorybookContext } from "../../.storybook/StoryBookContext";
 import { useL10n } from "../../react_components/l10nHooks";
 import { useContext, useEffect, useState } from "react";
+import { BloomPalette } from "../../react_components/color-picking/bloomPalette";
 
 export const CoverColorGroup: React.FunctionComponent<{
     onChange?: () => void;
@@ -85,6 +86,7 @@ const CoverColorControl: React.FunctionComponent<{
                     localizedTitle={props.localizedTitle}
                     noAlphaSlider={true}
                     disabled={!canModifyCurrentBook}
+                    palette={BloomPalette.CoverBackground}
                     onClose={(result, newColor) =>
                         handleOnClose(result, newColor)
                     }

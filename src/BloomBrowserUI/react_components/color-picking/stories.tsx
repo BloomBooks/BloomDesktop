@@ -221,7 +221,7 @@ storiesOf("Colors", module)
             );
         })
     )
-    .add("ColorDisplayButton", () =>
+    .add("Cover ColorDisplayButton", () =>
         React.createElement(() => {
             const initialColor = "#aa0000";
             const [currentColor, setCurrentColor] = useState(initialColor);
@@ -248,6 +248,7 @@ storiesOf("Colors", module)
                         noAlphaSlider={true}
                         localizedTitle="Test Color Button"
                         width={75}
+                        palette={BloomPalette.CoverBackground}
                     />
                     <div
                         css={css`

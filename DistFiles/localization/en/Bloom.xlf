@@ -3612,6 +3612,11 @@
                 <note>ID: PublishTab.Android.CoverColor</note>
                 <note>The heading at the top of the Settings section, which shows a thumbnail of the front cover and can be used to change the underlying page color.</note>
             </trans-unit>
+            <trans-unit id="PublishTab.Android.BulkBookshelfColor" sil:dynamic="true">
+                <source xml:lang="en">Bookshelf Color</source>
+                <note>ID: PublishTab.Android.BulkBookshelfColor</note>
+                <note>The title of the color picker dialog shown to choose the color of the bulk BloomPUB bookshelf.</note>
+            </trans-unit>
           -->
       <trans-unit id="PublishTab.Android.GetBloomReader" sil:dynamic="true">
         <source xml:lang="en">Get Bloom Reader App</source>
