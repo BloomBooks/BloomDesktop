@@ -39,6 +39,7 @@ import {
     TextBackgroundColors,
     TextColorPalette
 } from "../../../react_components/color-picking/bloomPalette";
+import { OverlayKeyHints } from "./overlayKeyHints";
 
 const OverlayToolControls: React.FunctionComponent = () => {
     const l10nPrefix = "ColorPicker.";
@@ -133,6 +134,7 @@ const OverlayToolControls: React.FunctionComponent = () => {
     // Enhance: if we don't want to have a static, or don't want
     // this function to know about OverlayTool, we could just pass
     // a setter for this as a property.
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     OverlayTool.theOneOverlayTool!.callOnNewPageReady = () => {
         bubbleSpecInitialization();
         setIsXmatter(ToolboxToolReactAdaptor.isXmatter());
@@ -737,129 +739,145 @@ const OverlayToolControls: React.FunctionComponent = () => {
         <div id="overlayToolControls">
             <RequiresBloomEnterpriseOverlayWrapper>
                 <div
-                    id={"overlayToolControlShapeChooserRegion"}
-                    className={!isXmatter ? "" : "disabled"}
+                    css={css`
+                        // pushes the Help region to the bottom
+                        display: flex;
+                        flex-direction: column;
+                        height: 100%;
+                    `}
                 >
-                    <Div
-                        l10nKey="EditTab.Toolbox.ComicTool.DragInstructions"
-                        className="overlayToolControlDragInstructions"
+                    <div
+                        id={"overlayToolControlShapeChooserRegion"}
+                        className={!isXmatter ? "" : "disabled"}
                     >
-                        Drag any of these overlays onto the image:
-                    </Div>
-                    <div className={"shapeChooserRow"} id={"shapeChooserRow1"}>
-                        <img
-                            id="shapeChooserSpeechBubble"
-                            className="overlayToolControlDraggableBubble"
-                            src="comic-icon.svg"
-                            draggable={!isBookLocked} // insufficient to prevent dragging!
-                            onDragStart={
-                                !isBookLocked
-                                    ? ev => ondragstart(ev, "speech")
-                                    : undefined
-                            }
-                            onDragEnd={
-                                !isBookLocked
-                                    ? ev => ondragend(ev, "speech")
-                                    : undefined
-                            }
-                        />
-                        <img
-                            id="shapeChooserImagePlaceholder"
-                            className="comicToolControlDraggableBubble"
-                            src="image-overlay.svg"
-                            draggable={!isBookLocked}
-                            onDragStart={
-                                !isBookLocked
-                                    ? ev => ondragstart(ev, "image")
-                                    : undefined
-                            }
-                            onDragEnd={
-                                !isBookLocked
-                                    ? ev => ondragend(ev, "image")
-                                    : undefined
-                            }
-                        />
-                        <img
-                            id="shapeChooserVideoPlaceholder"
-                            className="comicToolControlDraggableBubble"
-                            src="sign-language-overlay.svg"
-                            draggable={!isBookLocked}
-                            onDragStart={
-                                !isBookLocked
-                                    ? ev => ondragstart(ev, "video")
-                                    : undefined
-                            }
-                            onDragEnd={
-                                !isBookLocked
-                                    ? ev => ondragend(ev, "video")
-                                    : undefined
-                            }
-                        />
-                    </div>
-                    <div className={"shapeChooserRow"} id={"shapeChooserRow2"}>
-                        <Span
-                            id="shapeChooserTextBlock"
-                            l10nKey="EditTab.Toolbox.ComicTool.TextBlock"
-                            className="overlayToolControlDraggableBubble"
-                            draggable={!isBookLocked}
-                            onDragStart={
-                                !isBookLocked
-                                    ? ev => ondragstart(ev, "none")
-                                    : undefined
-                            }
-                            onDragEnd={
-                                !isBookLocked
-                                    ? ev => ondragend(ev, "none")
-                                    : undefined
-                            }
+                        <Div
+                            l10nKey="EditTab.Toolbox.ComicTool.DragInstructions"
+                            className="overlayToolControlDragInstructions"
                         >
-                            Text Block
-                        </Span>
-                        <Span
-                            id="shapeChooserCaption"
-                            l10nKey="EditTab.Toolbox.ComicTool.Options.Style.Caption"
-                            className="overlayToolControlDraggableBubble"
-                            draggable={!isBookLocked}
-                            onDragStart={
-                                !isBookLocked
-                                    ? ev => ondragstart(ev, "caption")
-                                    : undefined
-                            }
-                            onDragEnd={
-                                !isBookLocked
-                                    ? ev => ondragend(ev, "caption")
-                                    : undefined
-                            }
+                            Drag any of these overlays onto the image:
+                        </Div>
+                        <div
+                            className={"shapeChooserRow"}
+                            id={"shapeChooserRow1"}
                         >
-                            Caption
-                        </Span>
-                    </div>
-                </div>
-                <div
-                    id={"overlayToolControlOptionsRegion"}
-                    className={bubbleType && !isXmatter ? "" : "disabled"}
-                >
-                    {getControlOptionsRegion()}
-                    <div className="option-button-row">
-                        <div title={deleteTooltip}>
-                            <TrashIcon
-                                id="trashIcon"
-                                color="primary"
-                                onClick={() => deleteBubble()}
-                            />
-                        </div>
-                        <div title={duplicateTooltip}>
                             <img
-                                className="duplicate-bubble-icon"
-                                src="duplicate-bubble.svg"
-                                onClick={() => duplicateBubble()}
+                                id="shapeChooserSpeechBubble"
+                                className="overlayToolControlDraggableBubble"
+                                src="comic-icon.svg"
+                                draggable={!isBookLocked} // insufficient to prevent dragging!
+                                onDragStart={
+                                    !isBookLocked
+                                        ? ev => ondragstart(ev, "speech")
+                                        : undefined
+                                }
+                                onDragEnd={
+                                    !isBookLocked
+                                        ? ev => ondragend(ev, "speech")
+                                        : undefined
+                                }
+                            />
+                            <img
+                                id="shapeChooserImagePlaceholder"
+                                className="comicToolControlDraggableBubble"
+                                src="image-overlay.svg"
+                                draggable={!isBookLocked}
+                                onDragStart={
+                                    !isBookLocked
+                                        ? ev => ondragstart(ev, "image")
+                                        : undefined
+                                }
+                                onDragEnd={
+                                    !isBookLocked
+                                        ? ev => ondragend(ev, "image")
+                                        : undefined
+                                }
+                            />
+                            <img
+                                id="shapeChooserVideoPlaceholder"
+                                className="comicToolControlDraggableBubble"
+                                src="sign-language-overlay.svg"
+                                draggable={!isBookLocked}
+                                onDragStart={
+                                    !isBookLocked
+                                        ? ev => ondragstart(ev, "video")
+                                        : undefined
+                                }
+                                onDragEnd={
+                                    !isBookLocked
+                                        ? ev => ondragend(ev, "video")
+                                        : undefined
+                                }
                             />
                         </div>
+                        <div
+                            className={"shapeChooserRow"}
+                            id={"shapeChooserRow2"}
+                        >
+                            <Span
+                                id="shapeChooserTextBlock"
+                                l10nKey="EditTab.Toolbox.ComicTool.TextBlock"
+                                className="overlayToolControlDraggableBubble"
+                                draggable={!isBookLocked}
+                                onDragStart={
+                                    !isBookLocked
+                                        ? ev => ondragstart(ev, "none")
+                                        : undefined
+                                }
+                                onDragEnd={
+                                    !isBookLocked
+                                        ? ev => ondragend(ev, "none")
+                                        : undefined
+                                }
+                            >
+                                Text Block
+                            </Span>
+                            <Span
+                                id="shapeChooserCaption"
+                                l10nKey="EditTab.Toolbox.ComicTool.Options.Style.Caption"
+                                className="overlayToolControlDraggableBubble"
+                                draggable={!isBookLocked}
+                                onDragStart={
+                                    !isBookLocked
+                                        ? ev => ondragstart(ev, "caption")
+                                        : undefined
+                                }
+                                onDragEnd={
+                                    !isBookLocked
+                                        ? ev => ondragend(ev, "caption")
+                                        : undefined
+                                }
+                            >
+                                Caption
+                            </Span>
+                        </div>
                     </div>
-                </div>
-                <div id="overlayToolControlFillerRegion" />
-                <div id={"overlayToolControlFooterRegion"}>
-                    <ToolBottomHelpLink helpId="Tasks/Edit_tasks/Overlay_Tool/Overlay_Tool_overview.htm" />
+                    <div
+                        id={"overlayToolControlOptionsRegion"}
+                        className={bubbleType && !isXmatter ? "" : "disabled"}
+                    >
+                        {getControlOptionsRegion()}
+                        <div className="option-button-row">
+                            <div title={deleteTooltip}>
+                                <TrashIcon
+                                    id="trashIcon"
+                                    color="primary"
+                                    onClick={() => deleteBubble()}
+                                />
+                            </div>
+                            <div title={duplicateTooltip}>
+                                <img
+                                    className="duplicate-bubble-icon"
+                                    src="duplicate-bubble.svg"
+                                    onClick={() => duplicateBubble()}
+                                />
+                            </div>
+                        </div>
+                    </div>
+                    <div id="overlayToolControlFillerRegion" />
+                    <div id={"overlayToolControlFooterRegion"}>
+                        <OverlayKeyHints />
+                        <ToolBottomHelpLink helpId="Tasks/Edit_tasks/Overlay_Tool/Overlay_Tool_overview.htm" />
+                    </div>
                 </div>
             </RequiresBloomEnterpriseOverlayWrapper>
         </div>
