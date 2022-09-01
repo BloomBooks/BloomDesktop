@@ -965,6 +965,11 @@ namespace Bloom.ImageProcessing
 
 			//nb: there are cases (notably http://jira.palaso.org/issues/browse/WS-34711, after cropping a jpeg) where we get out of memory if we are not operating on a copy
 
+			if (!Directory.Exists(Path.GetDirectoryName(destinationPath)))
+			{
+				// Most likely the book is newly created and being renamed. We'll try again later in the right folder.
+				return;
+			}
 			// Use a temporary file pathname in the destination folder.  This is needed to ensure proper permissions are granted
 			// to the resulting file later after FileUtils.ReplaceFileWithUserInteractionIfNeeded is called.  That method may call
 			// RobustFile.Replace which replaces both the file content and the file metadata (permissions).  The result of that if we use
