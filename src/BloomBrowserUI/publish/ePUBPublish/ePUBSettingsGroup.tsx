@@ -34,7 +34,7 @@ const epubModes: IEpubMode[] = [
         label: "Flowable",
         l10nKey: "Publish.Epub.Flowable",
         description:
-            "Allow ePUB reader to lay out images and text however they want. The user is more likely to be able to increase font size. Custom page layouts will not look good. This mode is not available if your book has overlay pages (comics).",
+            "Allow ePUB readers to lay out images and text however they want. The user is more likely to be able to increase font size. Custom page layouts will not look good. This mode is not available if your book has overlay pages (comics).",
         descriptionL10nKey: "Publish.Epub.Flowable.Description"
     }
 ];
