@@ -2372,6 +2372,8 @@ export async function SetupIFrameAsync(
     parent.window.document.body.appendChild(iframe);
     iframe.id = id;
     iframe.name = id;
+    // This will be overwritten later, but Chrome won't raise onload unless there is SOME src value.
+    iframe.src = "about:blank";
 
     // It needs to be asynchronous because an iframe may not be valid to use until its onload is called.
     // Notably, it's contentDocument will be re-written during the loading process... changes made before onload() finishes (asynchronously)
@@ -2380,14 +2382,6 @@ export async function SetupIFrameAsync(
         iframe.onload = () => {
             resolve(iframe);
         };
-        // It's rather bizarre, expecting an onload event out of the iframe, given that
-        // we have not given it any src to load. Experimentally, Firefox (104 at least) raises the event;
-        // Chrome (104) never does. I (JohnT) don't know what we were really waiting for. However,
-        // it seems highly unlikely that any initialization of an iframe that has nowhere to navigate
-        // is going to take more than 100ms, so I added this fallback to get things working on Chrome.
-        setTimeout(() => {
-            resolve(iframe);
-        }, 100);
     });
 }
 
