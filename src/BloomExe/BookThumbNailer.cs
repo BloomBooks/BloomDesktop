@@ -190,6 +190,11 @@ namespace Bloom
 		/// <returns>Returns true if successful; false otherwise. </returns>
 		internal static bool CreateThumbnailOfCoverImage(Book.Book book, HtmlThumbNailer.ThumbnailOptions options, Action<Image> callback = null)
 		{
+			// If the book has been renamed we'll get a new request for the thumbnail of the new name.
+			// If it's been deleted, we don't need a thumbnail for it.
+			// If something else is wrong...well, at worst we use a generic thumbnail.
+			if (!Directory.Exists(book.FolderPath))
+				return false;
 			var imageSrc = book.GetCoverImagePath();
 			if (!IsCoverImageSrcValid(imageSrc, options))
 			{
