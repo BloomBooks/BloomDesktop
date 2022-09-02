@@ -6,6 +6,7 @@ import "../../lib/jquery.onSafe";
 import axios from "axios";
 import { BloomApi } from "../../utils/bloomApi";
 import theOneLocalizationManager from "../../lib/localizationManager/localizationManager";
+import { hookupLinkHandler } from "../../utils/linkHandler";
 
 export const isLongPressEvaluating: string = "isLongPressEvaluating";
 
@@ -217,6 +218,7 @@ export class ToolBox {
                     showToolboxChanged(!this.checked);
                 });
         });
+        hookupLinkHandler();
 
         // Using axios directly because BloomApi doesn't support merging promises with .all
         BloomApi.wrapAxios(
