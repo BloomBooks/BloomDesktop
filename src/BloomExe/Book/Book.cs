@@ -2655,11 +2655,11 @@ namespace Bloom.Book
 				string content = stylesheet.InnerText;
 				// Our XML representation of an HTML DOM doesn't seem to have any object structure we can
 				// work with. The Stylesheet content is just raw CDATA text.
-				var match = new Regex(@"DIV.bloom-page.coverColor\s*{\s*background-color:\s*(#[0-9a-fA-F]*)")
+				var match = new Regex(@"(DIV|div).bloom-page.coverColor\s*{\s*background-color:\s*(#[0-9a-fA-F]*)")
 					.Match(content);
 				if (match.Success)
 				{
-					return match.Groups[1].Value;
+					return match.Groups[2].Value;
 				}
 			}
 			return "#FFFFFF";

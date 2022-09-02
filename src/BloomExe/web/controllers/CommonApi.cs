@@ -55,7 +55,8 @@ namespace Bloom.web.controllers
 			apiHandler.RegisterEndpointLegacy("common/saveChangesAndRethinkPageEvent", RethinkPageAndReloadIt, true); // Move to EditingViewApi
 			apiHandler.RegisterEndpointLegacy("common/chooseFolder", HandleChooseFolder, true);
 			apiHandler.RegisterEndpointLegacy("common/showInFolder", HandleShowInFolderRequest, true); // Common
-			apiHandler.RegisterEndpointLegacy("common/canModifyCurrentBook", HandleCanModifyCurrentBook, true);
+			apiHandler.RegisterEndpointHandler("common/canModifyCurrentBook", HandleCanModifyCurrentBook, true);
+			apiHandler.RegisterEndpointHandler("common/hasPreserveCoverColor", HandleHasPreserveCoverColor,true);
 			apiHandler.RegisterEndpointLegacy("common/showSettingsDialog", HandleShowSettingsDialog, false); // Common
 			apiHandler.RegisterEndpointLegacy("common/problemWithBookMessage", request =>
 			{
@@ -184,6 +185,15 @@ namespace Bloom.web.controllers
 			request.ReplyWithBoolean(request.CurrentBook?.IsSaveable ?? false);
 		}
 
+		/// <summary>
+		/// The 2 Comic templates and the Video template insist on black cover color. They also have a meta tag
+		/// that tells Bloom to preserve that cover color. This method lets js-land find out about that tag so that
+		/// color pickers won't let the user change that color and so they'll know what color the cover is (black).
+		/// </summary>
+		private void HandleHasPreserveCoverColor(ApiRequest request)
+		{
+			request.ReplyWithBoolean(request.CurrentBook.OurHtmlDom.HasMetaElement("preserveCoverColor"));
+		}
 
 		public Action ReloadProjectAction { get; set; }
 

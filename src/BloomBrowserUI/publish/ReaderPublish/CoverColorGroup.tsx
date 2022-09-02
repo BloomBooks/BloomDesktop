@@ -48,9 +48,16 @@ const CoverColorControl: React.FunctionComponent<{
         false
     );
 
+    // The 2 comic templates and the Video template have black covers and a 'meta' tag that preserves
+    // the cover color, so it doesn't get changed. The color picker shouldn't function on these.
+    const [hasPreserveCoverColor] = BloomApi.useApiBoolean(
+        "common/hasPreserveCoverColor",
+        false
+    );
+
     useEffect(() => {
-        setInternalColor(bookCoverColor);
-    }, [bookCoverColor]);
+        setInternalColor(hasPreserveCoverColor ? "black" : bookCoverColor);
+    }, [bookCoverColor, hasPreserveCoverColor]);
 
     const inStorybookMode = useContext(StorybookContext);
 
@@ -85,7 +92,7 @@ const CoverColorControl: React.FunctionComponent<{
                     width={94}
                     localizedTitle={props.localizedTitle}
                     noAlphaSlider={true}
-                    disabled={!canModifyCurrentBook}
+                    disabled={!canModifyCurrentBook || hasPreserveCoverColor}
                     palette={BloomPalette.CoverBackground}
                     onClose={(result, newColor) =>
                         handleOnClose(result, newColor)
