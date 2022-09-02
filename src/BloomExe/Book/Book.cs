@@ -2650,16 +2650,38 @@ namespace Bloom.Book
 
 		public static String GetCoverColorFromDom(XmlDocument dom)
 		{
+			const string colorDef = "background-color:";
 			foreach (XmlElement stylesheet in dom.SafeSelectNodes("//style"))
 			{
 				string content = stylesheet.InnerText;
 				// Our XML representation of an HTML DOM doesn't seem to have any object structure we can
 				// work with. The Stylesheet content is just raw CDATA text.
-				var match = new Regex(@"DIV.bloom-page.coverColor\s*{\s*background-color:\s*(#[0-9a-fA-F]*)")
-					.Match(content);
-				if (match.Success)
+				// Unfortunately, some colors here include a comment referring to "preserveCoverColor",
+				// or a named color with "!important", both of which mess up the regex that was here before.
+				// So instead we use this more "brute-force" method of parsing the css rule.
+				var ruleStart = content.IndexOf(".bloom-page.coverColor");
+				if (ruleStart != -1)
 				{
-					return match.Groups[1].Value;
+					var restOfStyle = content.Substring(ruleStart);
+					var firstBrace = restOfStyle.IndexOf("{", StringComparison.InvariantCulture);
+					if (firstBrace != -1)
+					{
+						var ruleToEnd = restOfStyle.Substring(firstBrace);
+						var secondBrace = ruleToEnd.IndexOf("}", StringComparison.InvariantCulture);
+						if (secondBrace != -1)
+						{
+							var ruleInnards = ruleToEnd.Substring(0, secondBrace);
+							var locationOfColorDef = ruleInnards.IndexOf(colorDef, StringComparison.InvariantCulture) + colorDef.Length;
+							var backgroundColorDef = ruleInnards.Substring(locationOfColorDef).Trim();
+							// Regex matches either a hexcode (hashtag + hexdigits) or a lowercase word
+							// (a color like 'black'). Our caller needed to be updated to recognize the second possibility.
+							var match = new Regex(@"(#[0-9a-fA-F]*|[a-z]*)").Match(backgroundColorDef);
+							if (match.Success)
+							{
+								return match.Groups[1].Value;
+							}
+						}
+					}
 				}
 			}
 			return "#FFFFFF";
