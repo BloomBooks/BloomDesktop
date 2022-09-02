@@ -98,7 +98,7 @@ export const TopicChooserDialog: React.FunctionComponent<ITopicChooserdialogProp
         return props.availableTopics.map((choice, index) => (
             <FormControlLabel
                 css={css`
-                    width: 320px; // a little less than 1/2 the dialog width, so they wrap to 2 columns
+                    display: flex !important; // override MUI inline-flex
                 `}
                 key={index}
                 value={choice.englishKey}
@@ -157,21 +157,19 @@ export const TopicChooserDialog: React.FunctionComponent<ITopicChooserdialogProp
             <DialogTitle
                 title={dialogTitle}
                 disableDragging={disableDragging}
-                color="white"
-                backgroundColor={kBloomBlue}
             />
             <DialogMiddle
                 css={css`
-                    // Surprisingly this width controls the size of the entire dialog up to max-width above.
-                    width: 680px;
-                    height: 350px;
+                    // the width will grow automatically as needed for localizations
+                    height: 315px;
                 `}
             >
                 <FormControl>
                     <RadioGroup
                         name="topic-radio-group"
                         css={css`
-                            flex-direction: row !important; // override MUI default
+                            display: block !important; // override MUI inline-flex. With Block, we can get columns
+                            column-count: 2;
                         `}
                     >
                         {topicRadioButtonList()}
