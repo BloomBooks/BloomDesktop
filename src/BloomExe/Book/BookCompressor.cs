@@ -66,10 +66,11 @@ namespace Bloom.Book
 		/// <param name="dirNamePrefix">string to prefix to the zip entry name</param>
 		/// <param name="forReaderTools">If True, then some pre-processing will be done to the contents of decodable
 		/// and leveled readers before they are added to the ZipStream</param>
+		/// <param name="forDevice">Indicates if it is for device, which means that device-specific things will happen, like reducing images/videos will be reduced, creating version.txt, etc</param>
 		/// <param name="excludeAudio">If true, the contents of the audio directory will not be included</param>
-		public static void CompressCollectionDirectory(string outputPath, string directoryToCompress, string dirNamePrefix, bool forReaderTools, bool excludeAudio)
+		public static void CompressCollectionDirectory(string outputPath, string directoryToCompress, string dirNamePrefix, bool forReaderTools, bool forDevice, bool excludeAudio)
 		{
-			CompressDirectory(outputPath, directoryToCompress, dirNamePrefix, forReaderTools, excludeAudio, depthFromCollection: 0);
+			CompressDirectory(outputPath, directoryToCompress, dirNamePrefix, forReaderTools, forDevice, excludeAudio, depthFromCollection: 0);
 		}
 
 		/// <summary>
@@ -80,19 +81,20 @@ namespace Bloom.Book
 		/// <param name="dirNamePrefix">string to prefix to the zip entry name</param>
 		/// <param name="forReaderTools">If True, then some pre-processing will be done to the contents of decodable
 		/// and leveled readers before they are added to the ZipStream</param>
+		/// <param name="forDevice">Indicates if it is for device, which means that device-specific things will happen, like reducing images/videos will be reduced, creating version.txt, etc</param>
 		/// <param name="excludeAudio">If true, the contents of the audio directory will not be included</param>
-		/// <param name="reduceImages">If true, image files are reduced in size to no larger than the max size before saving</para>
+		/// <param name="imagePublishSettings">If non-null, image files are reduced in size before saving to no larger than the max size specified by this object</para>
 		/// <param name="omitMetaJson">If true, meta.json is excluded (typically for HTML readers).</param>
 		public static void CompressBookDirectory(string outputPath, string directoryToCompress, string dirNamePrefix,
-			bool forReaderTools = false, bool excludeAudio = false, bool reduceImages = false, bool omitMetaJson = false, bool wrapWithFolder = true,
+			bool forReaderTools = false, bool forDevice = false, bool excludeAudio = false, ImagePublishSettings imagePublishSettings = null, bool omitMetaJson = false, bool wrapWithFolder = true,
 			string pathToFileForSha = null)
 		{
-			CompressDirectory(outputPath, directoryToCompress, dirNamePrefix, forReaderTools, excludeAudio, reduceImages, omitMetaJson,
+			CompressDirectory(outputPath, directoryToCompress, dirNamePrefix, forReaderTools, forDevice, excludeAudio, imagePublishSettings, omitMetaJson,
 				wrapWithFolder, pathToFileForSha, depthFromCollection: 1);
 		}
 
 		private static void CompressDirectory(string outputPath, string directoryToCompress, string dirNamePrefix,
-			bool forReaderTools = false, bool excludeAudio = false, bool reduceImages = false, bool omitMetaJson = false, bool wrapWithFolder = true,
+			bool forReaderTools, bool forDevice, bool excludeAudio, ImagePublishSettings imagePublishSettings = null, bool omitMetaJson = false, bool wrapWithFolder = true,
 			string pathToFileForSha = null, int depthFromCollection = 1)
 		{
 			using (var fsOut = RobustFile.Create(outputPath))
@@ -116,7 +118,7 @@ namespace Bloom.Book
 						// a zip, as with .bloompub files)
 						dirNameOffset = directoryToCompress.Length + 1;
 					}
-					CompressDirectory(directoryToCompress, zipStream, dirNameOffset, dirNamePrefix, depthFromCollection, forReaderTools, excludeAudio, reduceImages, omitMetaJson, pathToFileForSha);
+					CompressDirectory(directoryToCompress, zipStream, dirNameOffset, dirNamePrefix, depthFromCollection, forReaderTools, forDevice, excludeAudio, imagePublishSettings, omitMetaJson, pathToFileForSha);
 
 					zipStream.IsStreamOwner = true; // makes the Close() also close the underlying stream
 					zipStream.Close();
@@ -136,11 +138,12 @@ namespace Bloom.Book
 		/// a book is 1, a subfolder of the book is 2, etc.</param>
 		/// <param name="forReaderTools">If True, then some pre-processing will be done to the contents of decodable
 		/// and leveled readers before they are added to the ZipStream</param>
+		/// <param name="forDevice">Indicates if it is for device, which means that device-specific things will happen, like reducing images/videos will be reduced, creating version.txt, etc</param>
 		/// <param name="excludeAudio">If true, the contents of the audio directory will not be included</param>
-		/// <param name="reduceImages">If true, image files are reduced in size to no larger than the max size before saving</para>
+		/// <param name="imagePublishSettings">If <paramref name="forDevice"/> is true, controls how much image files are reduced in size. If this parameter is null, the default settings will be used.</para>
 		/// <param name="omitMetaJson">If true, meta.json is excluded (typically for HTML readers).</param>
 		private static void CompressDirectory(string directoryToCompress, ZipOutputStream zipStream, int dirNameOffset, string dirNamePrefix,
-			int depthFromCollection, bool forReaderTools, bool excludeAudio, bool reduceImages, bool omitMetaJson = false, string pathToFileForSha = null)
+			int depthFromCollection, bool forReaderTools, bool forDevice, bool excludeAudio, ImagePublishSettings imagePublishSettings, bool omitMetaJson = false, string pathToFileForSha = null)
 		{
 			var folderName = Path.GetFileName(directoryToCompress).ToLowerInvariant();
 			if (!IsValidBookFolder(folderName, excludeAudio, depthFromCollection))
@@ -228,7 +231,7 @@ namespace Bloom.Book
 					modifiedContent = Encoding.UTF8.GetBytes(GetMetaJsonModfiedForTemplate(filePath));
 					newEntry.Size = modifiedContent.Length;
 				}
-				else if (reduceImages && ImageFileExtensions.Contains(Path.GetExtension(filePath).ToLowerInvariant()))
+				else if (forDevice && ImageFileExtensions.Contains(Path.GetExtension(filePath).ToLowerInvariant()))
 				{
 					fileName = Path.GetFileName(filePath);	// restore original capitalization
 					if (imagesToPreserveResolution.Contains(fileName))
@@ -239,7 +242,7 @@ namespace Bloom.Book
 					{
 						// Cover images should be transparent if possible.  Others don't need to be.
 						var makeBackgroundTransparent = imagesToGiveTransparentBackgrounds.Contains(fileName);
-						modifiedContent = GetImageBytesForElectronicPub(filePath, makeBackgroundTransparent);
+						modifiedContent = GetImageBytesForElectronicPub(filePath, makeBackgroundTransparent, imagePublishSettings);
 					}
 					newEntry.Size = modifiedContent.Length;
 				}
@@ -248,8 +251,7 @@ namespace Bloom.Book
 					modifiedContent = Encoding.UTF8.GetBytes(GetBloomCollectionModifiedForTemplate(filePath));
 					newEntry.Size = modifiedContent.Length;
 				}
-				// CompressBookForDevice is always called with reduceImages set.
-				else if (reduceImages && bookFile == filePath)
+				else if (forDevice && bookFile == filePath)
 				{
 					SignLanguageApi.ProcessVideos(HtmlDom.SelectChildVideoElements(dom.DocumentElement).Cast<XmlElement>(), directoryToCompress);
 					var newContent = XmlHtmlConverter.ConvertDomToHtml5(dom);
@@ -306,7 +308,7 @@ namespace Bloom.Book
 				if (depthFromCollection == 2 && !IsInActivitiesFolder(folder, depthFromCollection))
 					continue;
 
-				CompressDirectory(folder, zipStream, dirNameOffset, dirNamePrefix, depthFromCollection + 1, forReaderTools, excludeAudio, reduceImages);
+				CompressDirectory(folder, zipStream, dirNameOffset, dirNamePrefix, depthFromCollection + 1, forReaderTools, forDevice, excludeAudio, imagePublishSettings);
 			}
 		}
 
@@ -544,10 +546,6 @@ namespace Bloom.Book
 			return text;
 		}
 
-		// See discussion in BL-5385
-		private const int kMaxWidth = 600;
-		private const int kMaxHeight = 600;
-
 		/// <summary>
 		/// For electronic books, we want to limit the dimensions of images since they'll be displayed
 		/// on small screens.  More importantly, we want to limit the size of the image file since it
@@ -566,8 +564,14 @@ namespace Bloom.Book
 		/// transparent backgrounds.
 		/// </remarks>
 		/// <returns>The bytes of the (possibly) adjusted image.</returns>
-		internal static byte[] GetImageBytesForElectronicPub(string filePath, bool needsTransparentBackground)
+		internal static byte[] GetImageBytesForElectronicPub(string filePath, bool needsTransparentBackground, ImagePublishSettings imagePublishSettings = null)
 		{
+			if (imagePublishSettings == null)
+				imagePublishSettings = ImagePublishSettings.Default;
+
+			var maxWidth = imagePublishSettings.MaxWidth;
+			var maxHeight = imagePublishSettings.MaxHeight;
+
 			var originalBytes = RobustFile.ReadAllBytes(filePath);
 			using (var originalImage = PalasoImage.FromFileRobustly(filePath))
 			{
@@ -575,11 +579,11 @@ namespace Bloom.Book
 				int originalWidth = image.Width;
 				int originalHeight = image.Height;
 				var appearsToBeJpeg = ImageUtils.AppearsToBeJpeg(originalImage);
-				if (originalWidth > kMaxWidth || originalHeight > kMaxHeight || !appearsToBeJpeg)
+				if (originalWidth > maxWidth || originalHeight > maxHeight || !appearsToBeJpeg)
 				{
 					// Preserve the aspect ratio
-					float scaleX = (float)kMaxWidth / (float)originalWidth;
-					float scaleY = (float)kMaxHeight / (float)originalHeight;
+					float scaleX = (float)maxWidth / (float)originalWidth;
+					float scaleY = (float)maxHeight / (float)originalHeight;
 					// no point in ever expanding, even if we're making a new image just for transparency.
 					float scale = Math.Min(1.0f, Math.Min(scaleX, scaleY));
 

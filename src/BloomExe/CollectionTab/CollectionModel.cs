@@ -687,13 +687,14 @@ namespace Bloom.CollectionTab
 		internal void MakeBloomPackInternal(string path, string dir, string dirNamePrefix, bool forReaderTools, bool isCollection)
 		{
 			var excludeAudio = true; // don't want audio in bloompack
+			var forDevice = false;
 			if (isCollection)
 			{
-				BookCompressor.CompressCollectionDirectory(path, dir, dirNamePrefix, forReaderTools, excludeAudio);
+				BookCompressor.CompressCollectionDirectory(path, dir, dirNamePrefix, forReaderTools, forDevice, excludeAudio);
 			}
 			else
 			{
-				BookCompressor.CompressBookDirectory(path, dir, dirNamePrefix, forReaderTools, excludeAudio);
+				BookCompressor.CompressBookDirectory(path, dir, dirNamePrefix, forReaderTools, forDevice, excludeAudio);
 			}
 		}
 
