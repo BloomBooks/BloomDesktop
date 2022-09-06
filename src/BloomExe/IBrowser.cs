@@ -19,7 +19,7 @@ namespace Bloom
 	// This is just a temporary thing to centralize switching during progressive coding and testing. 
 	public class BrowserMaker
 	{
-		public static Browser MakeBrowser()
+		public static Browser MakeBrowser(bool offScreen = false)
 		{
 		// Using this #if is the simplest way to allow the WebView2Browser work to proceed without
 		// breaking the Linux build.  Other build restrictions are in the .csproj file.
@@ -27,7 +27,7 @@ namespace Bloom
 			if (ExperimentalFeatures.IsFeatureEnabled(ExperimentalFeatures.kWebView2))
 				return new WebView2Browser();
 #endif
-			return new GeckoFxBrowser();
+			return new GeckoFxBrowser(offScreen);
 		}
 	}
 
@@ -89,18 +89,11 @@ namespace Bloom
 		// To allow Typescript code to implement right-click, we'll do our special developer menu
 		// only if the control key is down. Though, if ContextMenuProvider is non-null, we'll assume
 		// C# is supposed to handle the context menu here.
-		protected bool WantNativeMenu
+		virtual protected bool WantNativeMenu
 		{
 			get
 			{
-#if __MonoCS__
-			if (!_controlPressed && ContextMenuProvider == null)
-				return true;
-#else
-				if ((Control.ModifierKeys & Keys.Control) != Keys.Control && ContextMenuProvider == null)
-					return true;
-#endif
-				return false;
+				return (Control.ModifierKeys & Keys.Control) != Keys.Control && ContextMenuProvider == null;
 			}
 		}
 

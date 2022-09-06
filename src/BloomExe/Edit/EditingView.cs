@@ -514,7 +514,7 @@ namespace Bloom.Edit
 				// here is to set a flag that page selection is still processing and block any
 				// further page selecting until the current page has finished loading.
 				_model.PageSelectionStarted();
-				_browser1.WebBrowser.DocumentCompleted += WebBrowser_DocumentCompleted;
+				(_browser1 as GeckoFxBrowser).WebBrowser.DocumentCompleted += WebBrowser_DocumentCompleted;
 #endif
 			}
 #if MEMORYCHECK
@@ -557,7 +557,7 @@ namespace Bloom.Edit
 		void WebBrowser_DocumentCompleted(object sender, EventArgs e)
 		{
 			_model.PageSelectionFinished();
-			_browser1.WebBrowser.DocumentCompleted -= WebBrowser_DocumentCompleted;
+			(_browser1 as GeckoFxBrowser).WebBrowser.DocumentCompleted -= WebBrowser_DocumentCompleted;
 		}
 #endif
 
