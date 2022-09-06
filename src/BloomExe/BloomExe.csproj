@@ -383,6 +383,7 @@
     <Compile Include="Book\PublishSettings.cs" />
     <Compile Include="Book\SaveContext.cs" />
     <Compile Include="Collection\BookCollectionHolder.cs" />
+    <Compile Include="ToPalaso\FontAnalytics.cs" />
     <Compile Include="MiscUI\BloomMessageBox.cs" />
     <Compile Include="Publish\Video\Codec.cs" />
     <Compile Include="Publish\Video\PublishAudioVideoAPI.cs" />
