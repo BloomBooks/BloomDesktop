@@ -1,26 +1,18 @@
 using System;
-using System.ComponentModel;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
-using System.Net;
 using System.Reflection;
 using System.Text;
 using System.Windows.Forms;
-using System.Windows.Navigation;
-using System.Xml;
 using Bloom.Book;
 using Bloom.Api;
 using Bloom.Edit;
 using Gecko;
-using Gecko.DOM;
 using Gecko.Events;
-using SIL.IO;
 using SIL.Reporting;
 using SIL.Windows.Forms.Miscellaneous;
-using L10NSharp;
-using SimulatedPageFileSource = Bloom.Api.BloomServer.SimulatedPageFileSource;
 
 namespace Bloom
 {
@@ -30,6 +22,7 @@ namespace Bloom
 		bool _browserIsReadyToNavigate;
 		protected string _url;
 
+		private bool _offScreen = false;
 
 		private PasteCommand _pasteCommand;
 		private CopyCommand _copyCommand;
@@ -187,8 +180,13 @@ namespace Bloom
 			}
 		}
 
-		public GeckoFxBrowser()
+		public GeckoFxBrowser(bool offScreen = false)
 		{
+#if __MonoCS__
+			_offScreen = offScreen;
+			if (_offScreen)
+				_browser = new OffScreenGeckoWebBrowser();	// can't wait for loading
+#endif
 			InitializeComponent();
 			_isolator = NavigationIsolator.GetOrCreateTheOneNavigationIsolator();
 		}
@@ -408,7 +406,8 @@ namespace Bloom
 				return;
 			}
 
-			_browser = new GeckoWebBrowser();
+			if (!_offScreen)
+				_browser = new GeckoWebBrowser();
 
 			_browser.Parent = this;
 			_browser.Dock = DockStyle.Fill;
@@ -533,12 +532,26 @@ namespace Bloom
 				ControlKeyEvent.Raise(keyData);
 			}
 #if __MonoCS__
-			_controlPressed = e.CtrlKey && e.KeyChar == 'm';	// m for menu...
+			_lastKeypressWasCtrlM = e.CtrlKey && e.KeyChar == 'm';	// m for menu...
 #endif
 		}
 
 #if __MonoCS__
-		private bool _controlPressed;
+		private bool _lastKeypressWasCtrlM;
+		/// <summary>
+		/// The overridden method uses code that only works on Windows to determine whether the CTRL-key
+		/// is down during a right click.  This is not exactly equivalent but the best we can do on Linux:
+		/// pressing Ctrl-M enables native menus until the next keypress.  The different behavior affects
+		/// only developers.  Note that OnDomKeyDown and OnDomKeyUp don't seem to work reliably when I
+		/// tested them.
+		/// </summary>
+		override protected bool WantNativeMenu
+		{
+			get
+			{
+				return !_lastKeypressWasCtrlM && ContextMenuProvider == null;
+			}
+		}
 #endif
 
 		private void Paste()
@@ -712,7 +725,7 @@ namespace Bloom
 				// But it seemed to reduce the frequency somewhat, so I'm keeping it for now.
 				var startupTimer = new Stopwatch();
 				startupTimer.Start();
-				while (_browser.IsBusy && startupTimer.ElapsedMilliseconds < 1000)
+				while ((_browser == null || _browser.IsBusy) && startupTimer.ElapsedMilliseconds < 1000)
 				{
 					Application.DoEvents(); // NOTE: this has bad consequences all down the line. See BL-6122.
 					Application.RaiseIdle(
@@ -720,7 +733,11 @@ namespace Bloom
 				}
 
 				startupTimer.Stop();
-				if (_browser.IsBusy)
+				if (_browser == null)
+				{
+					Console.WriteLine("New browser still null after a second");
+				}
+				else if (_browser.IsBusy)
 				{
 					// I don't think I've seen this actually happen.
 					Debug.WriteLine("New browser still busy after a second");
