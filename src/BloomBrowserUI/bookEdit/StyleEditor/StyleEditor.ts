@@ -1264,12 +1264,18 @@ export default class StyleEditor {
     // if either popover is active.
     // We have to look for a class that starts with 'MuiPopover-root' because MUI tends to add random
     // suffixes to the class names.
+    // The same logic applies to popping up the color chooser dialog, except that its class name
+    // starts with MuiDialog-root.
     private popoverIsUp(): boolean {
-        return $("body").find("[class*='MuiPopover-root']").length > 0;
+        return (
+            $("body").find("[class*='MuiPopover-root']").length > 0 ||
+            $("body").find("[class*='MuiDialog-root']").length > 0
+        );
     }
 
     public closeDialog(event: JQueryEventObject, toolbar: JQuery) {
-        // Prevent a click from closing the base format dialog when any popover is "up".
+        // Prevent a click from closing the base format dialog when any popover is "up"
+        // or when a child dialog is open.
         if (this.popoverIsUp()) {
             return;
         }
