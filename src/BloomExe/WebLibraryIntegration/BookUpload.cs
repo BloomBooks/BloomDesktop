@@ -18,6 +18,7 @@ using SIL.IO;
 using SIL.Progress;
 using System.Xml;
 using System.Text;
+using Bloom.ToPalaso;
 
 namespace Bloom.WebLibraryIntegration
 {
@@ -310,6 +311,7 @@ namespace Bloom.WebLibraryIntegration
 				}
 
 			}
+			
 			return s3BookId;
 		}
 
@@ -573,7 +575,7 @@ namespace Bloom.WebLibraryIntegration
 				if (progress.CancelRequested)
 					return "";
 
-				return UploadBook(bookFolder,
+				var result= UploadBook(bookFolder,
 					progress,
 					out parseId,
 					hasVideo ? null : Path.GetFileName(uploadPdfPath),
@@ -583,6 +585,13 @@ namespace Bloom.WebLibraryIntegration
 					book.CollectionSettings,
 					book.BookData.MetadataLanguage1IsoCode,
 					book.BookData.MetadataLanguage2IsoCode);
+
+				var prefix = BookUpload.UseSandboxByDefault ? "dev." : "";
+				var url = $"https://{prefix}bloomlibrary.org/book/{parseId}"; 
+				book.ReportSimplisticFontAnalytics(FontAnalytics.FontEventType.PublishWeb,url);
+
+				return result;
+				
 			}
 			finally
 			{

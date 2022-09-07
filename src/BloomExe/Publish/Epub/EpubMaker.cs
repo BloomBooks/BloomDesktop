@@ -1962,13 +1962,6 @@ namespace Bloom.Publish.Epub
 			}
 			if (!AbortRequested)
 				ZipAndSaveEpub (destinationEpubPath, progress);
-
-			foreach (var familyName in _fontsUsedInBook)
-			{
-				FontAnalytics.Report("Bloom Editor",FontAnalytics.FontEvent.PrintPdf, _book.ID,
-					"UND", // Enhance: find the actual language. See BL-11510
-					familyName);
-			}
 		}
 
 		/// <summary>

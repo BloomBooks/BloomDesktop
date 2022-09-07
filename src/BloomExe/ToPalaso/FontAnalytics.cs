@@ -3,44 +3,61 @@ using System.Net.Http;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json;
 using System.Net.Http.Headers;
+using System.Diagnostics;
+using System.Reflection;
 
 namespace Bloom.ToPalaso
 {
 	
-	internal class FontAnalytics
+	public class FontAnalytics
 	{
 		static HttpClient sClient = new HttpClient();
 
-		public class FontEvent
+		public class FontEventType
 		{
 			public string Value { get; private set; }
-			private FontEvent(string value) { Value = value; }
-			public static FontEvent ApplyFont  => new FontEvent( "apply-font");
-			public static FontEvent PublishPdf  => new FontEvent( "publish-pdf");
-			public static FontEvent PrintPdf => new FontEvent("print-pdf");
-			public static FontEvent Publish  => new FontEvent( "publish-ebook");
-			public static FontEvent PublishWeb  => new FontEvent( "publish-web");
+			private FontEventType(string value) { Value = value; }
+			public static FontEventType ApplyFont  => new FontEventType( "apply-font");
+			public static FontEventType PublishPdf  => new FontEventType( "publish-pdf");
+			public static FontEventType PublishEbook  => new FontEventType( "publish-ebook");
+			public static FontEventType PublishWeb  => new FontEventType( "publish-web");
 		}
 
-		public static void Report(string applicationName, FontEvent fontEventType, string documentId, string langTag, string font_name) {
+		public static async void Report(string documentId, FontEventType fontEventType, string langTag, bool testOnly, string fontName, string  eventDetails = null) {
+			var name = Assembly.GetEntryAssembly().GetName().Name;
+			var version = Assembly.GetEntryAssembly().GetName().Version.ToString();
+			FontAnalytics.Report(name, version, documentId, fontEventType,  langTag, testOnly, fontName, eventDetails);
+		}
 
-			//			curl - i--location--request POST 'https://sil-font-analytics.deno.dev/api/v1/report-font-use' \
-			//--header 'Content-Type: application/json' \
-			//-d '{"source":"foo","document_id":"huh","font_name":"Padauk","language_tag":"my-MY","event_type":"configure_project"}'
 
-			
-			dynamic data = new JObject();
-			data.source = applicationName;
-			data.document_id = documentId;
-			data.language_tag = langTag;
-			data.event_type = fontEventType;
-			var dataJson = JsonConvert.SerializeObject(data);
-			HttpContent content = new StringContent(dataJson);
-			content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
-
+		public static async void Report(string applicationName, string applicationVersion, string documentId, FontEventType fontEventType,
+									string langTag, bool testOnly, string fontName, string eventDetails = null)
+		{
 			try
 			{
-				sClient.PostAsync("https://font-analytics.languagetechnology.org/api/v1/report-font-use", content);
+				dynamic data = new JObject();
+				data.source = applicationName;
+				data.source_version = applicationVersion;
+				data.font_name = fontName;
+				data.document_id = documentId;
+				data.language_tag = langTag;
+				data.event_type = fontEventType.Value;
+				data.test_only = testOnly;
+				if (!string.IsNullOrWhiteSpace(eventDetails))
+				{
+					data.event_details = eventDetails;
+				}
+				data.event_time = DateTime.UtcNow.ToString("O", System.Globalization.CultureInfo.InvariantCulture);
+				var dataJson = JsonConvert.SerializeObject(data);
+				HttpContent content = new StringContent(dataJson);
+				content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
+
+				var r = await sClient.PostAsync("https://font-analytics.languagetechnology.org/api/v1/report-font-use", content);
+				if (!r.IsSuccessStatusCode)
+				{
+					Debug.WriteLine(r.ToString());
+					Debug.WriteLine(await r.Content.ReadAsStringAsync());
+				}
 			}
 			catch (Exception err)
 			{
