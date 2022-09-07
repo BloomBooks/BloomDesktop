@@ -414,20 +414,27 @@ namespace Bloom.Utils
 		/// any depth.  If so, return true and set collectionFolder for use in a warning message.
 		/// If not, return false and set collectionFolder to null.
 		/// </summary>
+		/// <remarks>
+		/// Note that C:\, C:\Users, C:\Users\Name, C:\Users\Name\Documents, and C:\Users\Name\Downloads
+		/// are generally assumed never to be collection folders.  (Substitute /home for C:\Users on Linux.)
+		/// </remarks>
 		public static bool IsFolderInsideBloomCollection(string folder, out string collectionFolder)
 		{
 			collectionFolder = null;
 			if (String.IsNullOrEmpty(folder) || !Directory.Exists(folder))
 				return false;
+			var personalFolder = Environment.GetFolderPath(Environment.SpecialFolder.Personal);
+			var userProfileFolder = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+			// The download folder could have a .bloomCollection file, but it's inconceivable that
+			// it would actually be a collection folder.  See BL-11444.
+			var downloadFolder = Path.Combine(userProfileFolder, "Downloads");	// why isn't this in the enumeration?
+			if (folder == personalFolder || folder == userProfileFolder || folder == downloadFolder)
+				return false;	// There should be no need to go further.
 			if (Directory.EnumerateFiles(folder, "*.bloomCollection").Any())
 			{
 				collectionFolder = folder;
 				return true;
 			}
-			var personalFolder = Environment.GetFolderPath(Environment.SpecialFolder.Personal);
-			var userProfileFolder = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
-			if (folder == personalFolder || folder == userProfileFolder)
-				return false;	// There should be no need to go further.
 			return IsFolderInsideBloomCollection(Path.GetDirectoryName(folder), out collectionFolder);
 		}
 
