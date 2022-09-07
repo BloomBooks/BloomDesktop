@@ -741,7 +741,8 @@ export class BubbleManager {
                 // you're just dragging over shouldn't have access to the content.
                 // The presence of our custom data type at all indicates this is something
                 // we want to accept dropped here.
-                ev.dataTransfer.types.indexOf("text/x-bloombubble") > 0
+                // (types is an array: indexOf returns -1 if the item is not found)
+                ev.dataTransfer.types.indexOf("text/x-bloombubble") >= 0
             ) {
                 ev.preventDefault();
             }
