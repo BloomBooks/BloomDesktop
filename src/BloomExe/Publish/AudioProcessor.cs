@@ -19,7 +19,8 @@ namespace Bloom.Publish
 		// We record as .wav but convert to .mp3 for publication
 		public static readonly string[] NarrationAudioExtensions = {".wav", ".mp3"};
 
-		public static readonly string[] MusicFileExtensions = {".mp3", ".ogg", ".wav"};
+		// Import only compressed forms of music (audio) files.  See BL-11481.
+		public static readonly string[] MusicFileExtensions = {".mp3", ".ogg"};
 
 		public static readonly string[] AudioFileExtensions = NarrationAudioExtensions.Union(MusicFileExtensions).ToArray();
 
