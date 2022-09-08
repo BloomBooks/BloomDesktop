@@ -21,6 +21,7 @@ using BloomTemp;
 using DesktopAnalytics;
 using SIL.IO;
 using Newtonsoft.Json;
+using Bloom.ToPalaso;
 
 namespace Bloom.Publish.Android
 {
@@ -522,6 +523,7 @@ namespace Bloom.Publish.Android
 		public static void ReportAnalytics(string mode, Book.Book book)
 		{
 			Analytics.Track("Publish Android", new Dictionary<string, string>() {{"mode", mode}, {"BookId", book.ID}, { "Country", book.CollectionSettings.Country}, {"Language", book.BookData.Language1.Iso639Code}});
+			book.ReportSimplisticFontAnalytics(FontAnalytics.FontEventType.PublishEbook, "bloomPUB, "+mode);
 		}
 
 		/// <summary>

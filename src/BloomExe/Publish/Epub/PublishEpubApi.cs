@@ -6,6 +6,7 @@ using System.Windows.Forms;
 using Bloom.Api;
 using Bloom.Book;
 using Bloom.Collection;
+using Bloom.ToPalaso;
 using Bloom.web;
 using DesktopAnalytics;
 using L10NSharp;
@@ -285,8 +286,10 @@ namespace Bloom.Publish.Epub
 					return;
 				EpubMaker.ZipAndSaveEpub(_pendingSaveAsPath, _progress);
 				_pendingSaveAsPath = null;
+				_bookSelection.CurrentSelection.ReportSimplisticFontAnalytics(FontAnalytics.FontEventType.PublishEbook,"ePUB");
 			}
 		}
+
 
 		public string UpdateEpubControlContent()
 		{
