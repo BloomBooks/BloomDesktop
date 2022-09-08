@@ -37,6 +37,18 @@ namespace Bloom.web
 		}
 	}
 
+	public static class BloomLibraryUrls
+	{
+		public static string BloomLibraryUrlPrefix
+		{
+			get { return UrlLookup.LookupUrl(UrlType.LibrarySite, null, BookUpload.UseSandbox); }
+		}
+
+		public static string BloomLibraryDetailPageUrlFromBookId(string bookId)
+		{
+			return BloomLibraryUrlPrefix + "/book/" + bookId;
+		}
+	}
 	public static class UrlLookup
 	{
 		//For source code (and fallback) purposes, current-services-urls.json lives in BloomExe/Resources.
