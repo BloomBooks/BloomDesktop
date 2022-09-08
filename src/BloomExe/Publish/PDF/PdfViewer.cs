@@ -11,12 +11,12 @@ using System.Windows.Forms;
 using Gecko;
 using Gecko.Interop;
 using L10NSharp;
+#if !__MonoCS__
 using Microsoft.Web.WebView2.Core;
 using Microsoft.Win32;
+#endif
 using SIL.IO;
 using SIL.Reporting;
-#if !__MonoCS__
-#endif
 
 namespace Bloom.Publish.PDF
 {
@@ -44,6 +44,7 @@ namespace Bloom.Publish.PDF
 		{
 			InitializeComponent();
 
+#if !__MonoCS__
 			if (ExperimentalFeatures.IsFeatureEnabled(ExperimentalFeatures.kWebView2))
 			{
 				// Review: do we still want to try Acrobat? We're trying to get rid of it,
@@ -53,7 +54,6 @@ namespace Bloom.Publish.PDF
 			}
 			else
 			{
-#if !__MonoCS__
 				// In Windows we would prefer to use Acrobat to display and print PDFs. It avoids various bugs in
 				// PDFjs, such as BL-1177 (Andika sometimes lost when printing directly from Bloom),
 				// BL-1170 Printing stops after certain point
@@ -62,10 +62,10 @@ namespace Bloom.Publish.PDF
 				// Todo: we need a better solution in Linux, also. Ghostscript might provide something but
 				// has a GPL license.
 				_pdfViewerControl = new AdobeReaderControl();
+			}
 #else
 			_pdfViewerControl = new GeckoWebBrowser();
 #endif
-			}
 
 			SetupViewerControl();
 		}
@@ -102,6 +102,7 @@ namespace Bloom.Publish.PDF
 		}
 #endif
 
+#if !__MonoCS__
 		private async void HideButtons()
 		{
 			var cv2 = (_pdfViewerControl as WebView2Browser).InternalBrowser.CoreWebView2;
@@ -117,10 +118,12 @@ namespace Bloom.Publish.PDF
 			// and choosing Inspect. The dev tools that brings up are showing the content of what's embedded...the thing you
 			// can't otherwise get at. (You can get at the root dev tools by calling OpenDevToolsWindow() on the CoreWebView2.)
 		}
+#endif
 
 		public bool ShowPdf(string pdfFile)
 		{
 			_pdfPath = pdfFile;
+#if !__MonoCS__
 			if (ExperimentalFeatures.IsFeatureEnabled(ExperimentalFeatures.kWebView2))
 			{
 				var wv2 = _pdfViewerControl as WebView2Browser;
@@ -128,7 +131,6 @@ namespace Bloom.Publish.PDF
 				wv2.Navigate(pdfFile, false);
 				return true;
 			}
-#if !__MonoCS__
 			var arc = _pdfViewerControl as AdobeReaderControl;
 			if (arc != null) // We haven't yet had a problem displaying with Acrobat...
 			{
@@ -212,13 +214,13 @@ namespace Bloom.Publish.PDF
 
 		public void Print()
 		{
+#if !__MonoCS__
 			if (ExperimentalFeatures.IsFeatureEnabled(ExperimentalFeatures.kWebView2))
 			{
 				var wv2 = _pdfViewerControl as WebView2Browser;
 				wv2.RunJavaScript("window.print()");
 				return;
 			}
-#if !__MonoCS__
 			var arc = _pdfViewerControl as AdobeReaderControl;
 			if (arc != null)
 			{

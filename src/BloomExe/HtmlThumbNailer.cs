@@ -535,12 +535,10 @@ namespace Bloom
 
 			try
 			{
-				Logger.WriteMinorEvent("HtmlThumNailer ({2}): browser.GetBitmap({0},{1})", browserSize.Width,
+				Logger.WriteMinorEvent("HtmlThumNailer.CreateThumbNail: (threadId={2}) width={0} height={1}", browserSize.Width,
 					(uint)browserSize.Height,
 					Thread.CurrentThread.ManagedThreadId);
-				//BUG (April 2013) found that the initial call to GetBitMap always had a zero width, leading to an exception which
-				//the user doesn't see and then all is well. So at the moment, we avoid the exception, and just leave with
-				//the placeholder thumbnail.
+
 				if (browserSize.Width == 0 || browserSize.Height == 0)
 				{
 					var paperSizeName = GetPaperSizeName(order.Document.RawDom);
@@ -732,12 +730,8 @@ namespace Bloom
 
 		private Browser MakeNewBrowser()
 		{
-			Debug.WriteLine("making browser ({0})", Thread.CurrentThread.ManagedThreadId);
-#if !__MonoCS__
-			var browser = BrowserMaker.MakeBrowser();
-#else
-			var browser = new OffScreenGeckoWebBrowser();
-#endif
+			Debug.WriteLine("making browser for HtmlThumbNailer ({0})", Thread.CurrentThread.ManagedThreadId);
+			var browser = BrowserMaker.MakeBrowser(offScreen: true);	// offScreen affects only Linux/Mono
 			browser.CreateControl();
 			browser.DocumentCompleted += _browser_OnDocumentCompleted;
 			return browser;
