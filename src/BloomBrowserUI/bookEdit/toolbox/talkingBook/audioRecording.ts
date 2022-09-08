@@ -2908,6 +2908,7 @@ export default class AudioRecording {
         } else {
             this.enableRecordingModeControl();
         }
+        this.renderImportRecordingButton();
 
         return firstSentence;
     }
@@ -3602,6 +3603,7 @@ export default class AudioRecording {
             // No existing audio on a normal page means definitely safe to enable. (No audio can be lost because none exists)
             this.enableRecordingModeControl();
         }
+        this.renderImportRecordingButton();
 
         // Note: Listen (Listen to whole page) button is not included here. Call it separately.
     }
@@ -3670,6 +3672,7 @@ export default class AudioRecording {
             // Disable the control and its notification, since we can't have text on this page.
             this.disableRecordingModeControl(false);
         }
+        this.renderImportRecordingButton();
     }
 
     public setEnabledOrExpecting(verb: string, expectedVerb: string) {
@@ -4228,7 +4231,9 @@ export default class AudioRecording {
                     hasText: true,
                     variant: "text",
                     size: "small",
-                    enabled: this.recordingModeInput.checked,
+                    enabled:
+                        this.recordingModeInput.checked &&
+                        !this.recordingModeInput.disabled,
                     l10nKey: "EditTab.Toolbox.TalkingBookTool.ImportRecording",
                     onClick: this.handleImportRecordingClick.bind(this)
                 },
