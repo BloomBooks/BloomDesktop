@@ -374,7 +374,7 @@ namespace Bloom.Publish.BloomLibrary
 
 		private void _termsLink_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
 		{
-			SIL.Program.Process.SafeStart(BloomLibraryUrlPrefix + "/page/termsOfUse");
+			SIL.Program.Process.SafeStart(BloomLibraryUrls.BloomLibraryUrlPrefix + "/page/termsOfUse");
 		}
 
 		private void SetStateOfNonUploadControls(bool enable)
@@ -542,7 +542,7 @@ namespace Bloom.Publish.BloomLibrary
 				existingTitle = "Unknown";
 
 			var existingId = existingBookInfo.objectId.ToString();
-			var existingBookUrl = BloomLibraryUrlPrefix + "/book/" + existingId;
+			var existingBookUrl = BloomLibraryUrls.BloomLibraryDetailPageUrlFromBookId(existingId);
 
 			var existingLanguages = ConvertLanguagePointerObjectsToNames(existingBookInfo.langPointers);
 			var createdDate = createdDateTime.ToString("d", CultureInfo.CurrentCulture);
@@ -717,7 +717,7 @@ namespace Bloom.Publish.BloomLibrary
 					}
 					else
 					{
-						var url = BloomLibraryUrlPrefix + "/my-books/book/" + _parseId;
+						var url = BloomLibraryUrls.BloomLibraryDetailPageUrlFromBookId(_parseId,true);
 						string congratsMessage = LocalizationManager.GetString("PublishTab.Upload.UploadCompleteNotice",
 							"Congratulations, \"{0}\" is now available on BloomLibrary.org ({1})",
 							"{0} is the book title; {1} is a clickable url which will display the book on the website");
@@ -751,11 +751,6 @@ namespace Bloom.Publish.BloomLibrary
 			string sorryMessage = LocalizationManager.GetString("PublishTab.Upload.FinalUploadFailureNotice",
 				"Sorry, \"{0}\" was not successfully uploaded. Sometimes this is caused by temporary problems with the servers we use. It's worth trying again in an hour or two. If you regularly get this problem please report it to us.");
 			_progressBox.WriteError(sorryMessage, _model.Title);
-		}
-
-		public static string BloomLibraryUrlPrefix
-		{
-			get { return UrlLookup.LookupUrl(UrlType.LibrarySite, null, BookUpload.UseSandbox); }
 		}
 
 		private IEnumerable<string> LanguagesCheckedToUpload
@@ -919,7 +914,7 @@ namespace Bloom.Publish.BloomLibrary
 			_progressBox.WriteMessage("Starting bulk upload in a terminal window...");
 			_progressBox.WriteMessage("This process will skip books if it can tell that nothing has changed since the last bulk upload.");
 			_progressBox.WriteMessage("When the upload is complete, there will be a file named 'BloomBulkUploadLog.txt' in your collection folder.");
-			var url = $"{BloomLibraryUrlPrefix}/{_model.Book.CollectionSettings.DefaultBookshelf}";
+			var url = $"{BloomLibraryUrls.BloomLibraryUrlPrefix}/{_model.Book.CollectionSettings.DefaultBookshelf}";
 			_progressBox.WriteMessage("Your books will show up at {0}", url);
 		
 		}

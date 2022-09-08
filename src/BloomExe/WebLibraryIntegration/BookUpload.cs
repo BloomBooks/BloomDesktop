@@ -19,6 +19,7 @@ using SIL.Progress;
 using System.Xml;
 using System.Text;
 using Bloom.ToPalaso;
+using Bloom.web;
 
 namespace Bloom.WebLibraryIntegration
 {
@@ -586,8 +587,7 @@ namespace Bloom.WebLibraryIntegration
 					book.BookData.MetadataLanguage1IsoCode,
 					book.BookData.MetadataLanguage2IsoCode);
 
-				var prefix = BookUpload.UseSandboxByDefault ? "dev." : "";
-				var url = $"https://{prefix}bloomlibrary.org/book/{parseId}"; 
+				var url = BloomLibraryUrls.BloomLibraryDetailPageUrlFromBookId(parseId); 
 				book.ReportSimplisticFontAnalytics(FontAnalytics.FontEventType.PublishWeb,url);
 
 				return result;
