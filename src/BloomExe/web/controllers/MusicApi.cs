@@ -135,7 +135,7 @@ namespace Bloom.web.controllers
 
 		private string BuildFileFilter()
 		{
-			var lowerExtensionString = string.Join(";", AudioProcessor.MusicFileExtensions.Select(ext => "*" + ext));
+			var lowerExtensionString = string.Join(";", AudioProcessor.MusicFileExtensionsToImport.Select(ext => "*" + ext));
 			var upperExtensionString = lowerExtensionString.ToUpperInvariant();
 			return $"({lowerExtensionString})|{lowerExtensionString};{upperExtensionString}";
 		}
