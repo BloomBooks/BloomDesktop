@@ -20,7 +20,10 @@ namespace Bloom.Publish
 		public static readonly string[] NarrationAudioExtensions = {".wav", ".mp3"};
 
 		// Import only compressed forms of music (audio) files.  See BL-11481.
-		public static readonly string[] MusicFileExtensions = {".mp3", ".ogg"};
+		// If we change MusicFileExtensions to remove ".wav", then existing books with .wav background audio
+		// files would break due to those files being deleted on automatic cleanup.
+		public static readonly string[] MusicFileExtensionsToImport = {".mp3", ".ogg" };
+		public static readonly string[] MusicFileExtensions = {".mp3", ".ogg", ".wav"};
 
 		public static readonly string[] AudioFileExtensions = NarrationAudioExtensions.Union(MusicFileExtensions).ToArray();
 
