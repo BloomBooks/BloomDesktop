@@ -19,6 +19,7 @@ using DesktopAnalytics;
 using SIL.IO;
 using SIL.Xml;
 using Bloom.ToPalaso.Experimental;
+using Bloom.ToPalaso;
 
 namespace Bloom.Publish
 {
@@ -422,6 +423,7 @@ namespace Bloom.Publish
 									{"BookId", BookSelection.CurrentSelection.ID },
 									{"Country", _collectionSettings.Country}
 								});
+				this._currentlyLoadedBook.ReportSimplisticFontAnalytics(FontAnalytics.FontEventType.PublishPdf,"Save PDF");
 			}
 			catch (Exception err)
 			{

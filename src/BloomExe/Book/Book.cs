@@ -4629,6 +4629,16 @@ namespace Bloom.Book
 				BookInfo.Save();
 			}
 		}
+
+		// see BL-11510
+		public void ReportSimplisticFontAnalytics(FontAnalytics.FontEventType fontEventType, string eventDetails = null)
+		{
+			var testOnly = BookUpload.UseSandboxByDefault;
+			FontAnalytics.Report(this.ID, fontEventType, 
+				this.CollectionSettings.Language1.Iso639Code,
+				testOnly,
+				this.CollectionSettings.Language1.FontName, eventDetails);
+		}
 	}
 }
 
