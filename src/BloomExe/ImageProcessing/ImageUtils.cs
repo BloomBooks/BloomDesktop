@@ -1008,10 +1008,13 @@ namespace Bloom.ImageProcessing
 			}
 		}
 
+		/// <summary>
+		/// 'input' is usually '#' + 6 hex digits, but could also rarely be a color word, like 'black'.
+		/// </summary>
 		public static bool TryCssColorFromString(string input, out Color result)
 		{
 			result = Color.White; // some default in case of error.
-			if (!input.StartsWith("#") || input.Length != 7)
+			if (input.Length < 3) // I don't think there are any 2-letter color words.
 				return false; // arbitrary failure
 			try
 			{

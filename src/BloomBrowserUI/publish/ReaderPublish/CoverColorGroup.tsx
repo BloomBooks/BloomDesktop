@@ -9,7 +9,7 @@ import {
 import { BloomApi } from "../../utils/bloomApi";
 import { StorybookContext } from "../../.storybook/StoryBookContext";
 import { useL10n } from "../../react_components/l10nHooks";
-import { useContext, useEffect, useState } from "react";
+import { useContext } from "react";
 import { BloomPalette } from "../../react_components/color-picking/bloomPalette";
 
 export const CoverColorGroup: React.FunctionComponent<{
@@ -37,8 +37,6 @@ const CoverColorControl: React.FunctionComponent<{
         setBookCoverColor
     ] = BloomApi.useApiStringStatePromise("publish/android/backColor", "");
 
-    const [internalColor, setInternalColor] = useState("");
-
     // I (gjm) was thinking this had to do with if a book is "unlocked", but apparently it's more to do
     // with whether it checked out in Team Collections or not.
     // Currently, there is no UI difference to indicate that the control is disabled. It just won't do
@@ -48,9 +46,12 @@ const CoverColorControl: React.FunctionComponent<{
         false
     );
 
-    useEffect(() => {
-        setInternalColor(bookCoverColor);
-    }, [bookCoverColor]);
+    // The 2 comic templates and the Video template have black covers and a 'meta' tag that preserves
+    // the cover color, so it doesn't get changed. The color picker shouldn't function on these.
+    const [hasPreserveCoverColor] = BloomApi.useApiBoolean(
+        "common/hasPreserveCoverColor",
+        false
+    );
 
     const inStorybookMode = useContext(StorybookContext);
 
@@ -79,13 +80,13 @@ const CoverColorControl: React.FunctionComponent<{
             `}
         >
             {/* Don't show the button until we get the background color */}
-            {internalColor !== "" && (
+            {bookCoverColor !== "" && (
                 <ColorDisplayButton
-                    initialColor={internalColor}
+                    initialColor={bookCoverColor}
                     width={94}
                     localizedTitle={props.localizedTitle}
                     noAlphaSlider={true}
-                    disabled={!canModifyCurrentBook}
+                    disabled={!canModifyCurrentBook || hasPreserveCoverColor}
                     palette={BloomPalette.CoverBackground}
                     onClose={(result, newColor) =>
                         handleOnClose(result, newColor)

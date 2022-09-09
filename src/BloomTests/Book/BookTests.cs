@@ -1444,6 +1444,68 @@ namespace BloomTests.Book
 			Assert.AreEqual(PublishModel.BookletLayoutMethod.Calendar, book.GetBookletLayoutMethod(A5Landscape));
 		}
 
+		[Test]
+		public void GetCoverColorFromDom_RegularHexCode_Works()
+		{
+			const string xml = @"<html><head>
+				<style type='text/css'>
+				    DIV.bloom-page.coverColor       {               background-color: #abcdef !important;   }
+				</style>
+			</head><body></body></html>";
+			var document = new XmlDocument();
+			document.LoadXml(xml);
+
+			// SUT
+			var result = Bloom.Book.Book.GetCoverColorFromDom(document);
+
+			Assert.AreEqual("#abcdef", result);
+		}
+
+		[Test]
+		public void GetCoverColorFromDom_ColorWordWithComment_Works()
+		{
+			// This is from the Digital Comic Book template. (lowercase 'div' and intervening comment)
+			const string xml = @"<html><head>
+				<meta name='preserveCoverColor' content='true'></meta>
+			    <style type='text/css'>
+				    div.bloom-page.coverColor {
+				        /* note that above, we have a meta ""preserveCoverColor"" tag to preserve this*/
+				        background-color: black !important;
+				    }
+			    </style>
+			</head><body></body></html>";
+			var document = new XmlDocument();
+			document.LoadXml(xml);
+
+			// SUT
+			var result = Bloom.Book.Book.GetCoverColorFromDom(document);
+
+			Assert.AreEqual("black", result);
+		}
+
+		[Test]
+		public void GetCoverColorFromDom_MoonAndCapVersion_Works()
+		{
+			// This is from the Moon and Cap example book. (lowercase 'div' and extraneous textarea rule)
+			const string xml = @"<html><head>
+			    <style type='text/css'>
+				    div.coverColor textarea {
+				    background-color: #ffd4d4 !important;
+				    }
+				    div.bloom-page.coverColor {
+				    background-color: #ffd4d4 !important;
+				    }
+			    </style>
+			</head><body></body></html>";
+			var document = new XmlDocument();
+			document.LoadXml(xml);
+
+			// SUT
+			var result = Bloom.Book.Book.GetCoverColorFromDom(document);
+
+			Assert.AreEqual("#ffd4d4", result);
+		}
+
 		private Layout A5Landscape => new Layout() {SizeAndOrientation = SizeAndOrientation.FromString("A5Landscape")};
 
 		[Test]

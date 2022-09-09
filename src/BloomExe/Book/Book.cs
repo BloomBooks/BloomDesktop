@@ -2652,14 +2652,16 @@ namespace Bloom.Book
 		{
 			foreach (XmlElement stylesheet in dom.SafeSelectNodes("//style"))
 			{
-				string content = stylesheet.InnerText;
+				var content = stylesheet.InnerText;
 				// Our XML representation of an HTML DOM doesn't seem to have any object structure we can
 				// work with. The Stylesheet content is just raw CDATA text.
-				var match = new Regex(@"DIV.bloom-page.coverColor\s*{\s*background-color:\s*(#[0-9a-fA-F]*)")
-					.Match(content);
+				// Regex updated to handle comments and lowercase 'div' in the cover color rule.
+				var match = new Regex(
+					@"(DIV|div).bloom-page.coverColor\s*{.*?background-color:\s*(#[0-9a-fA-F]*|[a-z]*)",
+					RegexOptions.Singleline).Match(content);
 				if (match.Success)
 				{
-					return match.Groups[1].Value;
+					return match.Groups[2].Value;
 				}
 			}
 			return "#FFFFFF";

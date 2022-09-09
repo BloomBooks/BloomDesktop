@@ -535,7 +535,7 @@ namespace Bloom
 
 			try
 			{
-				Logger.WriteMinorEvent("HtmlThumNailer.CreateThumbNail: (threadId={2}) width={0} height={1}", browserSize.Width,
+				Logger.WriteMinorEvent("HtmlThumbNailer.CreateThumbNail: (threadId={2}) width={0} height={1}", browserSize.Width,
 					(uint)browserSize.Height,
 					Thread.CurrentThread.ManagedThreadId);
 
