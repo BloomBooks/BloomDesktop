@@ -27,7 +27,7 @@
         {
             "data-book": "licenseNotes",
             "lang": "en",
-            "content": "You may translate the text without asking for permission however you must notify us at info@bibleforchildren.org.",
+            "content": "You may translate the text without asking for permission, however you must notify us at info@bibleforchildren.org.  You must keep the copyright and credits for authors, illustrators, etc.",
             "condition": "ifEmpty"
         },
         {
