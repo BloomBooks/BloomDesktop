@@ -27,6 +27,7 @@ using BloomTests.web.controllers;
 using SIL.Extensions;
 using SIL.IO;
 using SIL.Reporting;
+using SIL.Code;
 
 namespace Bloom
 {
@@ -43,6 +44,8 @@ namespace Bloom
 
 		public string SettingsPath { get; private set; }
 
+		private FileStream _streamToLockCollectionFile;
+
 		/// <summary>
 		/// Start things up so all the collection-specific objects we need can be created.
 		/// </summary>
@@ -55,6 +58,26 @@ namespace Bloom
 		public ProjectContext(string projectSettingsPath, IContainer parentContainer, bool justEnoughForHtmlDialog = false)
 		{
 			SettingsPath = projectSettingsPath;
+
+			// Prevent the collection folder from being moved or renamed while we're running. We can't actually lock a folder,
+			// so we do this by locking the .bloomCollectionFile. We do this in a way that allows others (and our own code)
+			// to read and write to it, just not delete/rename/move it.  BL-11484
+			try
+			{
+				RetryUtility.Retry(() =>
+				{
+					_streamToLockCollectionFile = File.Open(projectSettingsPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+				},3);
+			}
+			catch (Exception err)
+			{
+#if DEBUG
+				throw err;
+#endif
+				// Swallow because this locking is totally optional and so not worth crashing over if for
+				// some reason something else also has it open.
+			}
+
 			// BL-8019: A couple lines down, BuildSubContainerForThisProject() starts BloomServer with the new project.
 			// While we are starting (or restarting, in the case of switching collections) BloomServer we need to use
 			// the WinFormsExceptionHandler mechanism, which doesn't use a browser.
@@ -699,6 +722,20 @@ namespace Bloom
 		/// ------------------------------------------------------------------------------------
 		public void Dispose()
 		{
+			if (_streamToLockCollectionFile!=null){
+				try
+				{
+					_streamToLockCollectionFile.Close();
+				}
+				catch (Exception err)
+				{
+#if DEBUG
+					throw err;
+#endif
+					//swallow
+				}
+				_streamToLockCollectionFile = null;
+			}
 			// Disposing ProjectContext disables api functionality and disposes WorkspaceModel/View, BloomServer, et al.,
 			// so we need to resort to our fallback error handler.
 			ResetToFallbackHandler();
