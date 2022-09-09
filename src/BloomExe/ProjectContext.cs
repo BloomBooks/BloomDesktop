@@ -60,8 +60,8 @@ namespace Bloom
 			SettingsPath = projectSettingsPath;
 
 			// Prevent the collection folder from being moved or renamed while we're running. We can't actually lock a folder,
-			// so we do this by locking the .bloomColelctionFile. We do this in a way that allows others (and our own code)
-			// from reading and wrighting to it, just not deleting/renaming/moving it.  BL-11484
+			// so we do this by locking the .bloomCollectionFile. We do this in a way that allows others (and our own code)
+			// to read and write to it, just not delete/rename/move it.  BL-11484
 			try
 			{
 				RetryUtility.Retry(() =>
