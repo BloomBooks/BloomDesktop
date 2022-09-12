@@ -1,0 +1,40 @@
+{
+    "presets": [
+        {
+            "data-book": "copyright",
+            "lang": "*",
+            "content": "Bible for Children, Inc",
+            "condition": "ifEmpty"
+        },
+        {
+            "data-book": "outside-back-cover-branding-top-html",
+            "lang": "*",
+            "content": "<img class='branding' src='Bible-for-Children.png'/>",
+            "condition": "always"
+        },
+        {
+            "data-book": "outside-back-cover-branding-bottom-html",
+            "lang": "*",
+            "content": "<img class='branding bloom-badge' src='made-with-bloom-badge-dark.svg'/>",
+            "condition": "always"
+        },
+        {
+            "data-book": "licenseUrl",
+            "lang": "*",
+            "content": "http://creativecommons.org/licenses/by-nc-nd/4.0/",
+            "condition": "ifEmpty"
+        },
+        {
+            "data-book": "licenseNotes",
+            "lang": "en",
+            "content": "You may translate the text without asking for permission, however you must notify us at info@bibleforchildren.org.  You must keep the copyright and credits for authors, illustrators, etc.",
+            "condition": "ifEmpty"
+        },
+        {
+            "data-book": "originalAcknowledgments",
+            "lang": "en",
+            "content": "<p>Produced by: Bible for Children    www.M1914.org</p><p>BFC, P.O. Box 3, Winnipeg, MB R3C 2G1, Canada</p>",
+            "condition": "ifEmpty"
+        }
+    ]
+}
