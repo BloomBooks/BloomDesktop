@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Drawing;
+using System.Linq;
 
 namespace Bloom.Spreadsheet
 {
@@ -75,6 +76,12 @@ namespace Bloom.Spreadsheet
 		{
 			return GetCell(Spreadsheet.GetColumnForTag(columnName));
 		}
+
+		// currently for testing
+		internal IEnumerable<SpreadsheetCell> Cells => _cells;
+
+		// for testing
+		internal IEnumerable<string> CellContents => _cells.Select(c => c.Content);
 
 		public int Count => _cells.Count;
 	}	

@@ -64,6 +64,8 @@ namespace Bloom.Spreadsheet
 						continue;
 					if (!content.EndsWith("]"))
 						continue;
+					if (content.Contains("audio"))
+						continue; // main audio column, audio alignment column
 					// Todo: may need to skip some [] columns, if we use only that convention
 					// to indicate meaningful columns.
 					result.Add(content.Substring(1, content.Length - 2));
@@ -143,6 +145,26 @@ namespace Bloom.Spreadsheet
 			return GetColumnForTag(columnLabel);
 		}
 
+		private string AudioColumnName(string langCode)
+		{
+			return "[audio " + langCode + "]";
+		}
+
+		public int GetOptionalColumnForLangAudio(string langCode)
+		{
+			return GetColumnForTag(AudioColumnName(langCode));
+		}
+
+		private string AlignmentColumnName(string langCode)
+		{
+			return "[audio alignments " + langCode + "]";
+		}
+
+		public int GetOptionalColumnForAudioAlignment(string langCode)
+		{
+			return GetColumnForTag(AlignmentColumnName(langCode));
+		}
+
 		/// <summary>
 		/// Gets the index for the specified column.
 		/// </summary>
@@ -172,6 +194,15 @@ namespace Bloom.Spreadsheet
 			string columnLabel = "[" + langCode + "]";
 			string comment = "Note, the real identification of this language is in a hidden row above this, e.g. [en]";
 			return AddColumnForTag(columnLabel, langDisplayName, comment);
+		}
+		public int AddColumnForLangAudio(string langCode, string langDisplayName)
+		{
+			return AddColumnForTag(AudioColumnName(langCode), langDisplayName);
+		}
+
+		public int AddColumnForAudioAlignment(string langCode, string langDisplayName)
+		{
+			return AddColumnForTag(AlignmentColumnName(langCode), langDisplayName);
 		}
 
 		/// <summary>

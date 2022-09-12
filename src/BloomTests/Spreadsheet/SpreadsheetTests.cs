@@ -293,7 +293,9 @@ namespace BloomTests.Spreadsheet
 		public void HeaderHasExpectedNumCols(string source)
 		{
 			SetupFor(source);
-			Assert.That(_sheet.Header.ColumnCount, Is.EqualTo(8));
+			// was originally 8, but our test data has some audio,
+			// which we're not really testing here, but it adds some columns.
+			Assert.That(_sheet.Header.ColumnCount, Is.EqualTo(14));
 		}
 
 		[TestCase("fromExport")]

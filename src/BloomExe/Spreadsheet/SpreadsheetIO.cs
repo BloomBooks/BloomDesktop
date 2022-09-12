@@ -265,6 +265,8 @@ namespace Bloom.Spreadsheet
 		private static bool IsWysiwygFormattedColumn(SpreadsheetRow row, int index)
 		{
 			var key = row.Spreadsheet.Header.GetRow(0).GetCell(index).Content;
+			if (key.StartsWith("[audio "))
+				return false;
 			return !nonWysiwygColumns.Contains(key);
 		}
 

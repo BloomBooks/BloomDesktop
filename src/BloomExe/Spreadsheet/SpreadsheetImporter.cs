@@ -2,9 +2,11 @@ using System;
 using Bloom.Book;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Security;
+using System.Threading;
 using System.Windows.Forms;
 using System.Xml;
 using Bloom.MiscUI;
@@ -13,6 +15,7 @@ using SIL.IO;
 using SIL.Progress;
 using SIL.Xml;
 using Bloom.Collection;
+using NAudio.Wave;
 
 namespace Bloom.Spreadsheet
 {
@@ -77,6 +80,10 @@ namespace Bloom.Spreadsheet
 			_book = book;
 		}
 
+		// If the import is not done on the main UI thread, a control should be passed that can be used to
+		// invoke things (currently browser operations) that must be done on that thread.
+		public Control ControlForInvoke { get; set; }
+
 		/// <summary>
 		/// If true, bloom-editable elements in matched translation groups which do
 		/// not have a corresponding column in the input will be deleted.
@@ -91,13 +98,7 @@ namespace Bloom.Spreadsheet
 				"Somehow we made it into ImportWithProgress() without a path to the book folder");
 			BrowserProgressDialog.DoWorkWithProgressDialog(_webSocketServer,   (progress, worker) =>
 			{
-				var hasAudio = _destinationDom.GetRecordedAudioSentences(_pathToBookFolder).Any();
 				var cannotImportEnding = " For this reason, we need to abandon the import. Instead, you can import into a blank book.";
-				if (hasAudio)
-				{
-					progress.MessageWithoutLocalizing($"Warning: Spreadsheet import cannot currently preserve Talking Book audio that is already in this book."+cannotImportEnding, ProgressKind.Error);
-					return true; // leave progress window up so user can see error.
-				}
 				var hasActivities = _destinationDom.HasActivityPages();
 				if (hasActivities)
 				{
@@ -112,9 +113,65 @@ namespace Bloom.Spreadsheet
 				progress.MessageWithoutLocalizing($"Making a backup of the original book...");
 				var backupPath = BookStorage.SaveCopyBeforeImportOverwrite(_pathToBookFolder);
 				progress.MessageWithoutLocalizing($"Backup completed (at {backupPath})");
+				var audioFolder = Path.Combine(_pathToBookFolder, "audio");
+				if (Directory.Exists(audioFolder))
+					SIL.IO.RobustIO.DeleteDirectoryAndContents(audioFolder);
 				Import(sheet, progress);
 				return true; // always leave the dialog up until the user chooses 'close'
 			}, "collectionTab", "Importing Spreadsheet", doWhenDialogCloses: doWhenProgressCloses);
+		}
+
+		private Browser _browser;
+
+		/// <summary>
+		/// Get a brower with certain functions that spreadsheet import needs made available
+		/// </summary>
+		/// <remarks>
+		/// The browser is pre-loaded with the code imported by spreadsheetBundleRoot.ts,
+		/// which can be accessed using code like RunJavascript("spreadsheetBundle.split('my sentence')")
+		/// to call any function which that file exports. Add more to it as needed.
+		/// It's potentially tricky to debug any problems on the JS side, since the browser isn't
+		/// open on the screen anywhere to debug. However, it doesn't have any links that the
+		/// browser complains about as being cross-domain, so I've chosen to implement it using file urls.
+		/// This means that you can simply open the root file (output/browser/spreadsheet/spreadsheetFunctions.html)
+		/// and try your RunJavascript inputs in the console.
+		/// Remember to escape any single quotes in data strings passed to RunJavascript!
+		/// </remarks>
+		private Browser GetBrowser()
+		{
+			if (_browser == null)
+			{
+				if (ControlForInvoke != null && ControlForInvoke.InvokeRequired)
+				{
+					ControlForInvoke.Invoke((Action)(() => GetBrowser()));
+					return _browser;
+				}
+				// Todo Linux: I'm choosing not to do BrowserMaker.MakeBrowser here, because
+				// the Gecko code to try to determine that the browser has fully loaded everything
+				// is more complicated, and I'm not sure this functionality is needed on Linux,
+				// and it seems there is little need to be testing this code in the browser we are
+				// about to drop. So if we want this on Linux, we'll have to test carefully there,
+				// and possibly make a new overload of NavigateAndWaitUntilDone if the wait code here
+				// is not good enough.
+#if __MonoCS__
+				_browser = new GeckoFxBrowser();
+#else
+				_browser = new WebView2Browser();
+#endif
+				var done = false;
+				_browser.DocumentCompleted += (sender, args) => done = true;
+				var rootPage = BloomFileLocator.GetBrowserFile(false, "spreadsheet", "spreadsheetFunctions.html");
+				_browser.Navigate(rootPage, false);
+				// This extra check that spreadsheetBundle actually exists might not be necessary.
+				while (!done || _browser.RunJavaScript($"spreadsheetBundle") == null)
+				{
+					Application.DoEvents();
+					Thread.Sleep(10);
+					// Review: may need more than this if we allow GeckoFxBrowser; see impl of NavigateAndWaitTillDone.
+					// Maybe we need a URL overload of that and to factor out the wait code?
+				}
+			}
+			return _browser;
 		}
 
 		public bool Validate(InternalSpreadsheet sheet, IWebSocketProgress progress)
@@ -152,7 +209,7 @@ namespace Bloom.Spreadsheet
 			_warnings = new List<string>();
 			_inputRows = _sheet.ContentRows.ToList();
 			_pages = _destinationDom.GetPageElements().ToList();
-			_bookIsLandscape = _pages[0]?.Attributes["class"]?.Value?.Contains("Landscape") ?? false;
+			_bookIsLandscape = _pages.FirstOrDefault()?.Attributes["class"]?.Value?.Contains("Landscape") ?? false;
 			_currentRowIndex = 0;
 			_currentPageIndex = -1;
 			_groupsOnPage = new List<XmlElement>();
@@ -200,6 +257,20 @@ namespace Bloom.Spreadsheet
 			if (_collectionSettings != null && _book != null)
 			{
 				_book.BringBookUpToDate(new NullProgress());
+			}
+
+			if (_browser != null)
+			{
+				Action disposeBrowser = () =>
+				{
+					_browser.Dispose();
+					_browser = null;
+				};
+				if (ControlForInvoke != null && ControlForInvoke.InvokeRequired)
+					ControlForInvoke.Invoke(disposeBrowser);
+				else
+					disposeBrowser();
+
 			}
 
 			Progress("Done");
@@ -458,7 +529,7 @@ namespace Bloom.Spreadsheet
 
 			var templatePage = _basicBookTemplate.SelectSingleNode($"//div[@id='{guid}']") as XmlElement;
 			ImportPage(templatePage);
-			var pageLabel = templatePage.SafeSelectNodes("//div[@class='pageLabel']").Cast<XmlElement>().FirstOrDefault()?.InnerText ?? "";
+			var pageLabel = templatePage.SafeSelectNodes(".//div[@class='pageLabel']").Cast<XmlElement>().FirstOrDefault()?.InnerText ?? "";
 			Progress($"Adding page {PageNumberToReport} using a {pageLabel} layout");
 		}
 
@@ -466,7 +537,7 @@ namespace Bloom.Spreadsheet
 		// and make _currentPage point to the new page.
 		private void ImportPage(XmlElement templatePage)
 		{
-			var newPage = _pages[0].OwnerDocument.ImportNode(templatePage, true) as XmlElement;
+			var newPage = _destinationDom.RawDom.DocumentElement.OwnerDocument.ImportNode(templatePage, true) as XmlElement;
 			BookStarter.SetupIdAndLineage(templatePage, newPage);
 			_pages.Insert(_currentPageIndex, newPage);
 			SizeAndOrientation.UpdatePageSizeAndOrientationClasses(newPage, _destLayout);
@@ -730,12 +801,333 @@ namespace Bloom.Spreadsheet
 				{
 					editable.InnerXml = content;
 				}
+
+				AddAudio(editable, lang, row);
 			}
 
 			if (RemoveOtherLanguages)
 			{
 				HtmlDom.RemoveOtherLanguages(@group, sheetLanguages);
 			}
+		}
+
+		/// <summary>
+		/// Add any audio from the row to the editable.
+		/// Audio is present if the spreadsheet has a column [audio lg]
+		/// (and possibly one [audio alignments lg]), and the row has data in the cell
+		/// that corresponds to the [audio lg] column.
+		/// If it has, we next determine whether the group is recorded in text mode.
+		/// This is true if the relevant [audio alignments lg] cell is non-empty.
+		/// (Report an error if this is true and there is more than one recording file.)
+		/// (Report an error if any of any audio file does not exist or has the wrong
+		/// extension...possibly also if it isn't really an mp3? Not attempting that
+		/// currently, though our code for getting the duration might throw.)
+		/// We will set data-audiorecordingmode to TextBox or Sentence accordingly,
+		/// and in text-box mode, we will
+		///  - (report error if the alignments aren't numbers, or not ascending, or [warning] larger than
+		///    the audio file duration, or there is more than one but not as many as we have
+		///    sentences)
+		///  - copy all but the last number in alignments to data-audiorecordingendtimes.
+		///    (unless some are too large or won't parse...then we do a warning and convert back to unsplit).
+		///  - put the actual duration of the audio (measured from the one file) in a final entry
+		///    in data-audiorecordingendtimes and also a data-duration for the whole bloom-editable.
+		///  - if we have as many alignments as sentences, make appropriate
+		///    bloom-highlightSegment spans out of the sentences and add class bloom-postAudioSplit to the editable.
+		///  - add class audio-sentence to the bloom-editable
+		///  - copy the audio file into our audio folder. Use a name that is a valid
+		///    filename, a valid XML ID, does not conflict with any existing file, and
+		///    otherwise as similar to the given name as possible
+		///  - give the bloom-editable an id corresponding to the file
+		///  - make a recordingMD5 as usual.
+		/// If instead we're in sentence mode (no alignment data),
+		///  - (report an error if we don't have one audio file per sentence, or if any are
+		///    missing that don't say they are)
+		///  - make a span for each sentence with
+		///    - class audio-sentence
+		///    - recordingmd5 computed as usual (assume the recording is current)
+		///    - id derived by copying the corresponding audio file, as above
+		///    - data-duration attribute computed from the file
+		/// </summary>
+		/// <param name="editable"></param>
+		/// <param name="lang"></param>
+		/// <param name="row"></param>
+		private void AddAudio(XmlElement editable, string lang, ContentRow row)
+		{
+			var audioColIndex = _sheet.GetOptionalColumnForLangAudio(lang);
+			if (audioColIndex == -1)
+				return; // no audio data for this language at all.
+			if (_pathToSpreadsheetFolder == null)
+				return; // happens during unit tests not focused on audio
+			var audioFilesList = row.GetCell(audioColIndex).Content;
+			var audioAlignColIndex = _sheet.GetOptionalColumnForAudioAlignment(lang);
+			var alignmentData = "";
+			if (audioAlignColIndex >= 0)
+			{
+				alignmentData = row.GetCell(audioAlignColIndex).Content;
+			}
+
+			var alignments = alignmentData.Split(new[] {' '}, StringSplitOptions.RemoveEmptyEntries);
+			var browser = GetBrowser();
+			var paras = editable.SafeSelectNodes(".//p").Cast<XmlElement>();
+			// In this variable we build a list of paragraphs and their sentences, for later processing
+			// after we make some sanity checks. The immediate goal is to count sentences that could
+			// have recording or alignment information.
+			var paraSentences = new List<Tuple<XmlElement, string[]>>();
+			int sentenceCount = 0;
+			foreach (var para in paras)
+			{
+				var text = para.InnerXml.Replace("'", "\\'");
+				// Sentences is a sequence of strings, each of which is the text of a JS TextFragment,
+				// prepended with 's' if it's a sentence and ' ' if it's not.
+				string[] sentences = new string[0];
+				if (text.Length > 0) // if not, we get a spurious empty string instead of an empty array.
+				{
+					Action runJs = () =>
+						sentences = browser.RunJavaScript($"spreadsheetBundle.split('{text}')").Split('\n');
+					if (ControlForInvoke != null && ControlForInvoke.InvokeRequired)
+						ControlForInvoke.Invoke(runJs);
+					else
+						runJs();
+				}
+
+				paraSentences.Add(Tuple.Create(para, sentences));
+				sentenceCount += sentences.Count(x => x.StartsWith("s"));
+			}
+
+			// We need the 'where' because Split creates a single empty string if the input is empty.
+			var audioFiles = audioFilesList.Split(',').Select(x => x.Trim())
+				.Where(x=> x != "").ToArray();
+
+			if (alignments.Length > 0)
+			{
+				// The presence of alignment data indicates TextBox recording mode, so the editable should
+				// only have one audio file.
+				if (audioFiles.Length > 1)
+				{
+					_progress.MessageWithParams("TooManyAudioFilesForAlignment", "",
+						"Did not import audio on page {0} because there should be only one audio file when audio alignment is specified.",
+						ProgressKind.Error, PageNumberToReport.ToString());
+					return;
+				}
+				var audioFile = audioFilesList;
+				var durationStr = AddAudioFile(editable, audioFile);
+				var duration = double.Parse(durationStr);
+				editable.SetAttribute("data-audiorecordingmode", "TextBox");
+				HtmlDom.AddClass(editable, "audio-sentence");
+				var alignmentChecks = alignments.Select(x =>
+				{
+					if (double.TryParse(x, out double val))
+					{
+						if (val > duration + 0.02)
+						{
+							return "toobig";
+						}
+
+						return "good";
+					}
+
+					return "bad";
+				});
+				if (alignmentChecks.Any(x => x == "toobig"))
+				{
+					_progress.MessageWithParams("AlignmentsTooBig", "",
+						"Removed audio alignments on page {0} because some values in the list given ('{1}') are larger than the duration of the audio file ({2}).",
+						ProgressKind.Warning, PageNumberToReport.ToString(), alignmentData, durationStr);
+					return;
+				}
+
+				if (alignmentChecks.Any(x => x == "bad"))
+				{
+					_progress.MessageWithParams("AlignmentsInvalid", "",
+						"Removed audio alignments on page {0} because some values in '{1}' are not valid numbers.",
+						ProgressKind.Warning, PageNumberToReport.ToString(), alignmentData);
+					return;
+				}
+
+				if (sentenceCount == alignments.Length)
+				{
+					// treat as split textbox (although just possibly it was originally a single sentence
+					// recorded in text box mode and never split)
+
+					// Break it up into spans with ids and the bloom-highlightSegment class
+					foreach (var paraGroup in paraSentences)
+					{
+						var para = paraGroup.Item1;
+						var sentences = paraGroup.Item2;
+
+						para.InnerText = "";
+						foreach (var sentence1 in sentences)
+						{
+							var sentence = sentence1.Substring(1);
+							if (sentence1.StartsWith("s"))
+							{
+								var span = para.OwnerDocument.CreateElement("span");
+								HtmlDom.SetNewHtmlIdValue(span); // need it to have one, don't care what
+								span.SetAttribute("class", "bloom-highlightSegment");
+								span.InnerXml = sentence;
+								para.AppendChild(span);
+							}
+							else
+							{
+								// a white space fragment.
+								var node = para.OwnerDocument.CreateTextNode(sentence);
+								para.AppendChild(node);
+							}
+						}
+					}
+
+					// Set the end times, using the given data except for the last one, which should
+					// be the accurate duration.
+					var alignmentsVal = durationStr;
+					if (alignments.Length > 1)
+						alignmentsVal = String.Join(" ", alignments.Take(alignments.Length - 1)) + " " + durationStr;
+					editable.SetAttribute("data-audiorecordingendtimes", alignmentsVal);
+					HtmlDom.AddClass(editable, "bloom-postAudioSplit");
+				}
+				// If there is just one alignment, but not just one sentence, we're in textbox mode, unsplit.
+				// There's nothing more to do. But any other non-matching number is an error.
+				else if(alignments.Length != 1)
+				{
+					_progress.MessageWithParams("AlignmentMismatch", "",
+						"Did not import audio on page {0} because there are {1} audio alignments for {2} sentences; they should match up.",
+						ProgressKind.Error, PageNumberToReport.ToString(), alignments.Length.ToString(), sentenceCount.ToString());
+					return;
+				}
+			}
+			else
+			{
+				// Sentence mode
+				if (audioFiles.Length != sentenceCount)
+				{
+					_progress.MessageWithParams("AudioFileMismatch", "",
+						"Did not import audio on page {0} because there are {1} audio files for {2} sentences; they should match up. Use 'missing' if necessary.",
+						ProgressKind.Error, PageNumberToReport.ToString(), audioFiles.Length.ToString(), sentenceCount.ToString());
+					return;
+				}
+				editable.SetAttribute("data-audiorecordingmode", "Sentence");
+				// Break it up into spans with ids and the bloom-highlightSegment class
+				var audioFileIndex = 0;
+				foreach (var paraGroup in paraSentences)
+				{
+					var para = paraGroup.Item1;
+					var sentences = paraGroup.Item2;
+
+					para.InnerText = "";
+					foreach (var sentence1 in sentences)
+					{
+						var sentence = sentence1.Substring(1); // strip off the leading 's' or ' '
+						if (sentence1.StartsWith("s"))
+						{
+							var span = para.OwnerDocument.CreateElement("span");
+							var audioFile = audioFiles[audioFileIndex++];
+							span.InnerXml = sentence;
+							AddAudioFile(span, audioFile);
+							HtmlDom.AddClass(span, "audio-sentence");
+							para.AppendChild(span);
+						}
+						else
+						{
+							var node = para.OwnerDocument.CreateTextNode(sentence);
+							para.AppendChild(node);
+						}
+					}
+				}
+			}
+		}
+
+
+		/// <summary>
+		/// Add an audio file to the book, linked by adding an id matching its name to the element.
+		/// The audio file will be copied to the book's audio folder.
+		/// The name may be changed in various circumstances.
+		/// Also sets the data-duration and recordingmd5 attributes of the element, which means
+		/// it is important to finalize the text of the element before calling this.
+		/// </summary>
+		/// <param name="elt"></param>
+		/// <param name="audioFile"></param>
+		/// <returns>a string representation of the duration of the audio file, in seconds.</returns>
+		private string AddAudioFile(XmlElement elt, string audioFile)
+		{
+			if (audioFile == "missing")
+			{
+				HtmlDom.SetNewHtmlIdValue(elt);
+				return "0";
+			}
+			var destFile = SanitizeXHmlId(BookStorage.SanitizeNameForFileSystem(Path.GetFileName(audioFile)));
+			var id = Path.GetFileNameWithoutExtension(destFile);
+			// We may as well set this; elements with class audio-sentence are supposed to have
+			// ids, even if there is no corresponding file.
+			elt.SetAttribute("id", id);
+			if (_pathToSpreadsheetFolder == null)
+				return "0"; // unit tests, we can't try to copy file.
+			string src = audioFile;
+			if (audioFile.StartsWith("./"))
+				src = Path.Combine(_pathToSpreadsheetFolder, audioFile.Substring(2));
+			if (RobustFile.Exists(src))
+			{
+				var audioPath = Path.Combine(_pathToBookFolder, "audio");
+				Directory.CreateDirectory(audioPath);
+				var destPath = Path.Combine(audioPath, destFile);
+				if (RobustFile.Exists(destPath))
+				{
+					id = HtmlDom.SetNewHtmlIdValue(elt);
+					destPath = Path.Combine(audioPath, id + ".mp3");
+				}
+				
+				double duration;
+				try
+				{
+					duration = GetDuration(src);
+				}
+				catch (InvalidDataException ex)
+				{
+					_progress.MessageWithParams("InvalidMp3", "",
+						"Did not import audio on page {0} because the audio file '{1}' is not a valid mp3 file.",
+						ProgressKind.Error, PageNumberToReport.ToString(), src.Replace("\\", "/"));
+					return "0";
+				}
+				RobustFile.Copy(src, destPath);
+				var durationStr = duration.ToString(CultureInfo.InvariantCulture);
+				elt.SetAttribute("data-duration", durationStr);
+				string md5 = ""; // value is unused, but compiler gets confused
+				Action runJs = () => md5 = GetBrowser().RunJavaScript($"spreadsheetBundle.getMd5('{elt.InnerText.Replace("'", "\\'")}')");
+				if (ControlForInvoke != null && ControlForInvoke.InvokeRequired)
+					ControlForInvoke.Invoke(runJs);
+				else
+					runJs();
+				elt.SetAttribute("recordingmd5", md5);
+				return durationStr;
+			}
+
+			src = src.Replace("\\", "/"); // works on all platforms, simplifies testing
+			_progress.MessageWithParams("MissingAudioFile", "", "Did not import audio on page {0} because '{1}' was not found.",
+				 ProgressKind.Error, PageNumberToReport.ToString(), src);
+			return "";
+		}
+
+		internal static string SanitizeXHmlId(string id)
+		{
+			if (!XmlConvert.IsStartNCNameChar(id[0]))
+				id = 'i' + id;
+			for (int i = 0; i < id.Length; )
+			{
+				if (!XmlConvert.IsNCNameChar(id[i]))
+					id = id.Replace(id[i].ToString(), "");
+				else 
+					i++;
+			}
+			if (id.Length > 1)
+				return id;
+			return "empty"; // arbitrary, and likely a duplicate, but at least valid.
+		}
+
+		private double GetDuration(string path)
+		{
+			// Review: is this library windows-only? If so what do we do on Linux?
+			// Should we use ffmpeg on both? What if the file is not really mp3?
+			// Another option is to ask the browser to figure it out.
+			using (var mp3Reader = new Mp3FileReader(path))
+				return mp3Reader.TotalTime.TotalSeconds;
 		}
 	}
 }
