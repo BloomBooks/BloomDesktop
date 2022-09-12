@@ -2177,6 +2177,7 @@ export default class AudioRecording {
         toastr.clear();
         if (this.recordingModeInput.disabled) {
             this.recordingModeInput.disabled = false;
+            this.renderImportRecordingButton();
 
             // The click handler (an invisible div over the checkbox) is used to handle events on the checkbox even while the checkbox is disabled (which would suppress events on the checkbox itself)
             // Note: In the future, if the click handler is no longer used, just assign the same onClick function() to the checkbox itself.
@@ -2194,6 +2195,7 @@ export default class AudioRecording {
         // Note: Possibly could be neat to check if all the audio is re-usable before disabling.
         //       (But then what happens if they modify the text box?  Well, it's kinda awkward, but it's already awkward if they modify the text in by-sentence mode)
         this.recordingModeInput.disabled = true;
+        this.renderImportRecordingButton();
         const handlerJquery = $("#" + kRecordingModeClickHandler);
         handlerJquery.off();
         toastr.clear();
@@ -4216,9 +4218,6 @@ export default class AudioRecording {
             return;
         }
 
-        // ENHANCE: It'd be nice if the button were visible but disabled if there are no recordable divs on the page.
-        //          And that it'd automatically enable itself once a text box is added.
-        //          And that it'd disable itself again when the text box is removed.
         ReactDOM.render(
             React.createElement(
                 BloomButton,
@@ -4228,7 +4227,9 @@ export default class AudioRecording {
                     hasText: true,
                     variant: "text",
                     size: "small",
-                    enabled: this.recordingModeInput.checked,
+                    enabled:
+                        this.recordingModeInput.checked &&
+                        !this.recordingModeInput.disabled,
                     l10nKey: "EditTab.Toolbox.TalkingBookTool.ImportRecording",
                     onClick: this.handleImportRecordingClick.bind(this)
                 },
