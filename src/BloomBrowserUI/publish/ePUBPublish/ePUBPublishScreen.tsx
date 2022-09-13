@@ -12,7 +12,7 @@ import PublishScreenTemplate from "../commonPublish/PublishScreenTemplate";
 import { DeviceAndControls } from "../commonPublish/DeviceAndControls";
 import * as ReactDOM from "react-dom";
 import ThemeProvider from "@material-ui/styles/ThemeProvider";
-import { lightTheme } from "../../bloomMaterialUITheme";
+import { darkTheme, lightTheme } from "../../bloomMaterialUITheme";
 import { StorybookContext } from "../../.storybook/StoryBookContext";
 import {
     useSubscribeToWebSocketForStringMessage,
@@ -48,9 +48,10 @@ export const EPUBPublishScreen = () => {
 
 const EPUBPublishScreenInternal: React.FunctionComponent<{
     onReset: () => void;
-}> = () => {
+}> = props => {
     const inStorybookMode = useContext(StorybookContext);
     const [closePending, setClosePending] = useState(false);
+    const [highlightRefresh, setHighlightRefresh] = useState(false);
     const [progressState, setProgressState] = useState(ProgressState.Working);
     React.useEffect(() => hookupLinkHandler(), []);
     const [bookUrl, setBookUrl] = useState(
@@ -81,6 +82,7 @@ const EPUBPublishScreenInternal: React.FunctionComponent<{
             // add a random component so that react will reload the iframe
             setBookUrl(url + "&random=" + Math.random().toString());
             setClosePending(true);
+            setHighlightRefresh(false);
         }
     );
     const isLicenseOK = BloomApi.useWatchBooleanEvent(
@@ -89,14 +91,23 @@ const EPUBPublishScreenInternal: React.FunctionComponent<{
         "publish/licenseOK"
     );
 
+    useSubscribeToWebSocketForEvent("publish-epub", "needRefresh", e => {
+        setHighlightRefresh(true);
+    });
+
     const mainPanel = (
         <div className="ePUBPublishScreen">
             <PreviewPanel>
-                <DeviceAndControls
-                    defaultLandscape={landscape}
-                    canRotate={false}
-                    url={bookUrl}
-                />
+                <ThemeProvider theme={darkTheme}>
+                    <DeviceAndControls
+                        defaultLandscape={landscape}
+                        canRotate={false}
+                        url={bookUrl}
+                        showRefresh={true}
+                        highlightRefreshIcon={highlightRefresh}
+                        onRefresh={() => props.onReset()}
+                    />
+                </ThemeProvider>
                 <Typography
                     css={css`
                         color: whitesmoke;

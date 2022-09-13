@@ -65,10 +65,12 @@ namespace Bloom.Publish.Epub
 		private bool _stagingEpub;
 
 		// This goes out with our messages and, on the client side (typescript), messages are filtered
-		// down to the context (usualy a screen) that requested them.
+		// down to the context (usually a screen) that requested them.
 		private const string kWebsocketContext = "publish-epub";
 
 		private const string kWebsocketEventId_epubReady = "newEpubReady";
+
+		private const string kWebsocketEventId_NeedRefresh = "needRefresh";
 
 		// This constant must match the ID used for the useWatchString called by the React component EPUBPublishScreenInternal.
 		private const string kWebsocketState_LicenseOK = "publish/licenseOK";
@@ -123,7 +125,7 @@ namespace Bloom.Publish.Epub
 				{
 					request.CurrentBook.BookInfo.PublishSettings.Epub.Mode = request.RequiredPostString();
 					request.CurrentBook.BookInfo.Save();
-					RefreshPreview(request.CurrentBook.BookInfo.PublishSettings.Epub);
+					_webSocketServer.SendString(kWebsocketContext, kWebsocketEventId_NeedRefresh, "true");
 					request.PostSucceeded();
 				}
 			}, false);
@@ -138,7 +140,7 @@ namespace Bloom.Publish.Epub
 						? BookInfo.HowToPublishImageDescriptions.OnPage
 						: BookInfo.HowToPublishImageDescriptions.None;
 					request.CurrentBook.BookInfo.Save();
-					RefreshPreview(request.CurrentBook.BookInfo.PublishSettings.Epub);
+					_webSocketServer.SendString(kWebsocketContext, kWebsocketEventId_NeedRefresh, "true");
 				},
 				false);
 
@@ -148,13 +150,16 @@ namespace Bloom.Publish.Epub
 				(request, booleanSetting) => {
 					request.CurrentBook.BookInfo.PublishSettings.Epub.RemoveFontSizes = booleanSetting;
 					request.CurrentBook.BookInfo.Save();
-					RefreshPreview(request.CurrentBook.BookInfo.PublishSettings.Epub);
+					_webSocketServer.SendString(kWebsocketContext, kWebsocketEventId_NeedRefresh, "true");
 				},
 				false);
 
 			apiHandler.RegisterEndpointHandler(kApiUrlPart + "updatePreview", request =>
 			{
-				RefreshPreview(request.CurrentBook.BookInfo.PublishSettings.Epub);
+				if (request.Parameters[kWebsocketEventId_NeedRefresh] == "true")
+					_webSocketServer.SendString(kWebsocketContext, kWebsocketEventId_NeedRefresh, "true");
+				else
+					RefreshPreview(request.CurrentBook.BookInfo.PublishSettings.Epub);
 				request.PostSucceeded();
 				if (request.CurrentBook?.ActiveLanguages != null)
 				{
