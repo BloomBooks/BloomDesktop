@@ -32,7 +32,7 @@
         "//Note that this is really slow compared to cpx with the glob (buildBrandingFiles/watchBrandingFiles)": "//",
         "//too slow: watch:files": "onchange -a \"branding/**/!(source)/*.{png,jpg,svg,css,json,htm}\" -- cpx {{file}} ../../output/browser/{{fileDir}} -v"
     },
-    "//devDepencdencise": {
+    "//devDependencies": {
         "less": "We are using 3.x because 4.0 changed the rules for division handling and did not provide migration instructions. See the `math` option."
     },
     "devDependencies": {
