@@ -198,7 +198,7 @@ namespace Bloom.Publish
 			var matches = Regex.Matches(stderr, "Audio packet of size [0-9]+ \\(starting with [0-9A-F]+\\.\\.\\.\\) is invalid, writing it anyway\\.", RegexOptions.CultureInvariant);
 			if (matches.Count > 0)
 			{
-				var countMp3 = mergeFileSpecs.Where(s => Regex.IsMatch(s,"Audio: mp3, [0-9]+ Hz, [^,]+, [^,]*, [0-9]+ kb/s")).Count();
+				var countMp3 = mergeFileSpecs.Where(s => s == "converted" || Regex.IsMatch(s, "Audio: mp3, [0-9]+ Hz, [^,]+, [^,]*, [0-9]+ kb/s")).Count();
 				if (countMp3 != mergeFiles.Count() || matches.Count > mergeFiles.Count())
 				{
 					// If one or more input files don't match as an MP3, or too many invalid packets occur,
@@ -260,7 +260,6 @@ namespace Bloom.Publish
 				return mergeFiles;
 			}
 			var monoFiles = new List<string>();
-			var argsBuilder = new StringBuilder();
 			foreach (var file in mergeFiles)
 			{
 				var args = $"-hide_banner -i \"{file}\" -f null -";
@@ -270,7 +269,7 @@ namespace Bloom.Publish
 				if (match.Success)
 				{
 					// Get a mono version at 44100 Hz of the sound file, trying to preserve its quality.
-					var fileType = match.Groups[1].ToString();
+					//var fileType = match.Groups[1].ToString();
 					var recordRate = match.Groups[2].ToString();
 					var recordType = match.Groups[3].ToString();
 					var bitRate = match.Groups[4].ToString();
@@ -284,6 +283,7 @@ namespace Bloom.Publish
 						if (result.ExitCode == 0)
 						{
 							monoFiles.Add(tempFile.Path + ".mp3");
+							internalFileSpecs.Add("converted");
 							continue;
 						}
 						else
