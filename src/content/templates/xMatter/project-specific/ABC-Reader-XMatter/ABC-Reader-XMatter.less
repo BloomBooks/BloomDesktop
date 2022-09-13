@@ -207,7 +207,7 @@ div.bloomPlayer-page {
         flex-direction: column;
 
         [data-book="bookTitle"] {
-            font-size: 12pt;
+            font-size: 8pt;
             font-weight: bold;
         }
 
@@ -234,7 +234,7 @@ div.bloomPlayer-page {
 
             p {
                 text-align: start;
-                font-size: 12pt;
+                font-size: 8pt;
             }
         }
     }
@@ -249,6 +249,10 @@ div.bloomPlayer-page {
     margin-bottom: @creditsLineSpacing;
 }
 
+// There are originalAcknowledgments on the cover, title page, and credits page.
+// Some of these values are overridden for credits above.
+// Note, this overrides the style set by the user because the user styles are on
+//  the .bloom-editable, not the p.
 .originalAcknowledgments .bloom-editable p {
     text-align: center;
     font-weight: bold;
