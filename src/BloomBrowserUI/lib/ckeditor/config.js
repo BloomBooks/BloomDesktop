@@ -12,6 +12,28 @@
 // I believe would be 4.5.11. We seem to be using the 'icy orange' skin. I have not been able to determine
 // what other settings we used to build our version.
 
+// In the course of switching to WebView2, I discovered that our icy_orange skin folder contained editor_gecko.css,
+// but WebView2 was looking for editor.css, which we didn't have. The lack of it caused our range selection
+// toolbar not to appear. I generated a roughly similar configuration using https://ckeditor.com/cke4/builder
+// which as of September 2022 produced version 4.19.
+// (FWIW: I chose plugins Auto Link, Color Button, Basic Styles, Clipboard, Editor Toolbar, Floating Space,
+// Link, and their required dependencies. This was the closest I could get to the features I think we use.
+// But the list of subdirectories in the plugins directory of the resulting build was quite different from ours.)
+// Next, I pretty-printed the editor_gecko.css files in our build and the 4.19 build; they were very different.
+// So, I compared editor_gecko.css with editor.css in the 4.19 build. They differed only in that the gecko version
+// added two rules, immediately following a distinctive legend.cke_voice_label rule:
+// .cke_bottom{
+//     padding-bottom:3px
+// }
+// .cke_combo_text{
+//     margin-bottom:-1px;
+//     margin-top:1px
+// }
+// I found the same sequence of three rules in our editor_gecko.css.
+// So, I created an editor.css file for our build by copying the editor_gecko.css and removing those two rules.
+// Hopefully, this is identical to the editor.css that was originally part of our 4.5.1 build and got lost.
+// At least, having it restores the range selection toolbar.
+
 CKEDITOR.editorConfig = function(config) {
     // Define changes to default configuration here.
     // For complete reference see:
