@@ -39,7 +39,9 @@ const epubModes: IEpubMode[] = [
     }
 ];
 
-export const EPUBSettingsGroup: React.FunctionComponent = props => {
+export const EPUBSettingsGroup: React.FunctionComponent<{
+    onChange: () => void;
+}> = props => {
     //const [includeImageDescriptionOnPage,setIncludeImageDescriptionOnPage] = BloomApi.useApiBoolean("publish/epub/imageDescriptionSetting", true);
     const canModifyCurrentBook = BloomApi.useCanModifyCurrentBook();
     const linkCss = "margin-top: 1em !important; display: block;";
@@ -116,6 +118,7 @@ export const EPUBSettingsGroup: React.FunctionComponent = props => {
                                 onChange={e => {
                                     const newMode = e.target.value as string;
                                     setEpubmode(newMode);
+                                    props.onChange();
                                 }}
                                 style={{ width: 145 }}
                                 renderValue={f => {
@@ -162,6 +165,7 @@ export const EPUBSettingsGroup: React.FunctionComponent = props => {
                     apiEndpoint="publish/epub/imageDescriptionSetting"
                     l10nKey="PublishTab.Epub.IncludeOnPage"
                     disabled={false}
+                    onChange={props.onChange}
                 />
 
                 <ApiCheckbox
@@ -170,6 +174,7 @@ export const EPUBSettingsGroup: React.FunctionComponent = props => {
                     l10nKey="PublishTab.Epub.RemoveFontSizes"
                     disabled={epubMode === "fixed"}
                     //TODO: priorClickAction={() => this.abortPreview()}
+                    onChange={props.onChange}
                 />
                 {/* l10nKey is intentionally not under PublishTab.Epub... we may end up with this link in other places */}
                 <Link
@@ -200,7 +205,7 @@ export const EPUBSettingsGroup: React.FunctionComponent = props => {
                         `}
                         l10nKey="PublishTab.BookMetadata"
                         l10nComment="This link opens a dialog box that lets you put in information someone (often a librarian) might use to search for a book with particular characteristics."
-                        onClick={() => BookMetadataDialog.show()}
+                        onClick={() => BookMetadataDialog.show(props.onChange)}
                         disabled={!canModifyCurrentBook}
                     >
                         Book Metadata

@@ -45,12 +45,20 @@ export default class BookMetadataDialog extends React.Component<
     private handleCloseModal(doSave: boolean) {
         if (doSave) {
             BloomApi.postData("book/metadata", this.metadata);
-            BloomApi.post("publish/epub/updatePreview");
+            if (BookMetadataDialog.signalChangeOnClose) {
+                BookMetadataDialog.signalChangeOnClose();
+                BookMetadataDialog.signalChangeOnClose = undefined; // use only once.
+            } else {
+                BloomApi.post("publish/epub/updatePreview");
+            }
         }
         this.setState({ isOpen: false });
     }
 
-    public static show() {
+    private static signalChangeOnClose?: () => void;
+
+    public static show(signalChangeOnClose?: () => void) {
+        BookMetadataDialog.signalChangeOnClose = signalChangeOnClose;
         BloomApi.get("book/metadata", result => {
             BookMetadataDialog.singleton.metadata = result.data.metadata;
             BookMetadataDialog.singleton.translatedControlStrings =

@@ -65,7 +65,7 @@ namespace Bloom.Publish.Epub
 		private bool _stagingEpub;
 
 		// This goes out with our messages and, on the client side (typescript), messages are filtered
-		// down to the context (usualy a screen) that requested them.
+		// down to the context (usually a screen) that requested them.
 		private const string kWebsocketContext = "publish-epub";
 
 		private const string kWebsocketEventId_epubReady = "newEpubReady";
@@ -123,7 +123,6 @@ namespace Bloom.Publish.Epub
 				{
 					request.CurrentBook.BookInfo.PublishSettings.Epub.Mode = request.RequiredPostString();
 					request.CurrentBook.BookInfo.Save();
-					RefreshPreview(request.CurrentBook.BookInfo.PublishSettings.Epub);
 					request.PostSucceeded();
 				}
 			}, false);
@@ -138,7 +137,6 @@ namespace Bloom.Publish.Epub
 						? BookInfo.HowToPublishImageDescriptions.OnPage
 						: BookInfo.HowToPublishImageDescriptions.None;
 					request.CurrentBook.BookInfo.Save();
-					RefreshPreview(request.CurrentBook.BookInfo.PublishSettings.Epub);
 				},
 				false);
 
@@ -148,7 +146,6 @@ namespace Bloom.Publish.Epub
 				(request, booleanSetting) => {
 					request.CurrentBook.BookInfo.PublishSettings.Epub.RemoveFontSizes = booleanSetting;
 					request.CurrentBook.BookInfo.Save();
-					RefreshPreview(request.CurrentBook.BookInfo.PublishSettings.Epub);
 				},
 				false);
 
