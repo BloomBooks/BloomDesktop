@@ -102,6 +102,7 @@ export const MuiCheckbox: React.FunctionComponent<{
                 )
             }
             label={localizedLabel}
+            disabled={props.disabled}
         />
     );
 };
