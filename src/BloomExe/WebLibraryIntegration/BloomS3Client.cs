@@ -245,6 +245,8 @@ namespace Bloom.WebLibraryIntegration
 
 			BookStorage.EnsureSingleHtmFile(destDirName);
 
+			RemoveUnwantedSubdirectories(destDirName);
+
 			RemoveUnwantedVideoFiles(destDirName, videoFilesToInclude);
 			ProcessVideosInTempDirectory(destDirName);
 
@@ -267,6 +269,25 @@ namespace Bloom.WebLibraryIntegration
 			UploadDirectory(prefix, wrapperPath, progress);
 
 			DeleteFileSystemInfo(new DirectoryInfo(wrapperPath));
+		}
+
+		private readonly static string[] validSubFolders = { "audio", "video", "activities", "template" };
+		/// <summary>
+		/// Remove any subdirectories that are not in the our whitelist.
+		/// </summary>
+		/// <remarks>
+		/// See https://issues.bloomlibrary.org/youtrack/issue/BL-7616 and
+		/// https://issues.bloomlibrary.org/youtrack/issue/BL-11429.
+		/// </remarks>
+		private static void RemoveUnwantedSubdirectories(string directoryPath)
+		{
+			foreach (string subdir in Directory.GetDirectories(directoryPath))
+			{
+				var name = Path.GetFileName(subdir);
+				if (validSubFolders.Contains(name))
+					continue;
+				DeleteFileSystemInfo(new DirectoryInfo(subdir));	// This does a recursive delete.
+			}
 		}
 
 		private void ProcessVideosInTempDirectory(string destDirName)
