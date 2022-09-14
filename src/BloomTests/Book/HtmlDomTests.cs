@@ -1115,13 +1115,14 @@ p {
 <head>
 <style type=""text/css"">
     /*<![CDATA[*/
-    .Title-On-Cover-style[lang=""en""] { font-family: NikoshBAN ! important; }
+    .Title-On-Cover-style[lang=""en""] { font-family: NikoshBAN ! important, ""Andika Basic"" !important; }
     .small-style[lang=""en""] { font-family: Andika New Basic ! important; font-size: 9pt ! important; font-weight: normal ! important; font-style: normal ! important; }
     .Inside-Back-Cover-style[lang=""jmx""] { font-size: 7pt ! important; /*font-family: Times New Roman ! important;*/ }
     .big-style[lang=""jmx""] {
         font-size: 18pt ! important;
         //font-family: Saysettha OT ! important;
      }
+    .New-style[lang=""en""] { font-family: ""Comic Sans MS"" ! important; font-size: 9pt ! important; font-weight: normal ! important; font-style: normal ! important; }
     /*]]>*/
 </style>
 <!--
@@ -1141,11 +1142,13 @@ p {
 
 			var fonts = new HashSet<string>();
 			HtmlDom.FindFontsUsedInCss(htmlContent, fonts, true);
-			Assert.AreEqual(4, fonts.Count, "Four fonts are used in the test html/css data");
-			Assert.IsTrue(fonts.Contains("NikoshBAN"), "The html/css data refers to NikoshBAN as a font.");
-			Assert.IsTrue(fonts.Contains("Andika New Basic"), "The css data refers to Andika New Basic as a font.");
-			Assert.IsTrue(fonts.Contains("Charis SIL First"), "The css data refers to Charis SIL First as a font.");
-			Assert.IsTrue(fonts.Contains("Charis SIL Second"), "The css data refers to Charis SIL Second as a font.");
+			Assert.AreEqual(6, fonts.Count, "Six fonts are used in the test html/css data");
+			Assert.IsTrue(fonts.Contains("NikoshBAN"), "The text/css data refers to NikoshBAN as a font.");
+			Assert.IsTrue(fonts.Contains("Andika Basic"), "The text/css data refers to Andika Basic as a font.");
+			Assert.IsTrue(fonts.Contains("Andika New Basic"), "The text/css data refers to Andika New Basic as a font.");
+			Assert.IsTrue(fonts.Contains("Charis SIL First"), "The html style attribute refers to Charis SIL First as a font.");
+			Assert.IsTrue(fonts.Contains("Charis SIL Second"), "The html style attribute refers to Charis SIL Second as a font.");
+			Assert.IsTrue(fonts.Contains("Comic Sans MS"), "The text/css data refers to Comic Sans MS as a font.");
 		}
 
 		[Test]

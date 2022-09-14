@@ -1871,10 +1871,13 @@ namespace Bloom.Book
 				foreach(var family in match.Groups[1].Value.Split(','))
 				{
 					var name = family.Trim();
-					// Strip matched quotes
-					if(name[0] == '\'' || name[0] == '"' && name[0] == name[name.Length - 1])
-						name = name.Substring(1, name.Length - 2);
+					// Removing !important must come before stripping surrounding quotes.  For instance,
+					//   font-family: "Andika New Basic" !important, Comic Sans MS ! important;
+					// should extract Andika New Basic and Comic Sans MS (two strings without any quotes).
 					name = s_regexBangImportant.Replace(name, "");
+					// Strip matched quotes
+					if ((name[0] == '\'' || name[0] == '"') && name[0] == name[name.Length - 1])
+						name = name.Substring(1, name.Length - 2);
 					if (name.ToLowerInvariant() != "inherit" && name.ToLowerInvariant() != "segoe ui")
 						result.Add(name);
 					if(!includeFallbackFonts)
