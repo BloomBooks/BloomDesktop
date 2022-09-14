@@ -173,7 +173,12 @@ storiesOf("Publish/Video", module).add("PublishAudioVideo", () => (
 
 storiesOf("Publish/ePUB", module)
     .add("EPUBPublishScreen", () => <EPUBPublishScreen />)
-    .add("Book Metadata Dialog", () => <BookMetadataDialog startOpen={true} />)
+    .add("Book Metadata Dialog", () => (
+        <BookMetadataDialog
+            startOpen={true}
+            onClose={() => alert("BookMetadataDialog closed with OK")}
+        />
+    ))
     .add("AccessibilityCheckScreen", () => <AccessibilityCheckScreen />);
 
 const propsObject: IUploadCollisionDlgProps = {

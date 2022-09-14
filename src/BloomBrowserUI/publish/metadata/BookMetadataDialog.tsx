@@ -19,7 +19,7 @@ interface IState {
 // in its render() function, and then re-render when they change.
 @mobxReact.observer
 export default class BookMetadataDialog extends React.Component<
-    { startOpen?: boolean },
+    { startOpen?: boolean; onClose?: () => void },
     IState
 > {
     private static singleton: BookMetadataDialog;
@@ -38,19 +38,25 @@ export default class BookMetadataDialog extends React.Component<
     }
     public componentDidMount() {
         if (this.props.startOpen) {
-            BookMetadataDialog.show();
+            BookMetadataDialog.show(this.props.onClose);
         }
     }
 
     private handleCloseModal(doSave: boolean) {
         if (doSave) {
             BloomApi.postData("book/metadata", this.metadata);
-            BloomApi.post("publish/epub/updatePreview");
+            if (BookMetadataDialog.signalChangeOnClose) {
+                BookMetadataDialog.signalChangeOnClose();
+                BookMetadataDialog.signalChangeOnClose = undefined; // use only once.
+            }
         }
         this.setState({ isOpen: false });
     }
 
-    public static show() {
+    private static signalChangeOnClose?: () => void;
+
+    public static show(signalChangeOnClose?: () => void) {
+        BookMetadataDialog.signalChangeOnClose = signalChangeOnClose;
         BloomApi.get("book/metadata", result => {
             BookMetadataDialog.singleton.metadata = result.data.metadata;
             BookMetadataDialog.singleton.translatedControlStrings =
