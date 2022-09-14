@@ -194,13 +194,36 @@ namespace Bloom.Book
 		/// code for those tasks has no business knowing about that status file. OTOH,
 		/// some of those functions don't need some of the audio files; but a generic
 		/// cleanup function like this doesn't know which ones. For now, it just deals
-		/// with TC cleanup.
+		/// with TC cleanup and with any unused copies of the placeHolder.png image file.
 		/// </summary>
 		public static List<string> LocalOnlyFiles(string folderPath)
 		{
 			var accumulator = new List<string>();
 			TeamCollection.TeamCollection.AddTCSpecificFiles(folderPath, accumulator);
+			AddUnusedPlaceholderImages(folderPath, accumulator);
 			return accumulator;
+		}
+
+		/// <summary>
+		/// Add unused copies of placeHolder.png in bookFolderPath to accumulator.
+		/// </summary>
+		private static void AddUnusedPlaceholderImages(string bookFolderPath, List<string> accumulator)
+		{
+			// See https://issues.bloomlibrary.org/youtrack/issue/BL-7616 and also
+			// https://issues.bloomlibrary.org/youtrack/issue/BL-9479 for what has
+			// happened in the past that still can use cleanup in new work.
+			var htmlPath = FindBookHtmlInFolder(bookFolderPath);
+			if (RobustFile.Exists(htmlPath))
+			{
+				var htmlContent = RobustFile.ReadAllText(htmlPath);
+				foreach (var filepath in Directory.GetFiles(bookFolderPath, "placeHolder*.png"))
+				{
+					var filename = Path.GetFileName(filepath);
+					if (htmlContent.Contains($" src=\"{filename}\""))
+						continue;	// file is used
+					accumulator.Add(filepath);
+				}
+			}
 		}
 
 		public string PathToExistingHtml
@@ -893,13 +916,15 @@ namespace Bloom.Book
 			//Collect up all the image files in our book's directory
 			var imageFiles = new List<string>();
 			var imageExtentions = new HashSet<string>(new []{ ".jpg", ".png", ".svg" });
-			var ignoredFilenameStarts = new HashSet<string>(new [] { "thumbnail", "placeholder", "license", "video-placeholder", "coverImage200", "widget-placeholder" });
+			var ignoredFilenameStarts = new HashSet<string>(new [] { "thumbnail", "license", "video-placeholder", "coverImage200", "widget-placeholder" });
 			foreach (var path in Directory.EnumerateFiles(FolderPath).Where(
 				s => imageExtentions.Contains(Path.GetExtension(s).ToLowerInvariant())))
 			{
 				var filename = Path.GetFileName(path);
 				if (ignoredFilenameStarts.Any(s=>filename.StartsWith(s, StringComparison.InvariantCultureIgnoreCase)))
 					continue;
+				if (filename.ToLowerInvariant() == "placeholder.png")
+					continue;	// delete unused copies, but keep base placeholder image file even if unused at the moment
 				imageFiles.Add(Path.GetFileName(GetNormalizedPathForOS(path)));
 			}
 			//Remove from that list each image actually in use
