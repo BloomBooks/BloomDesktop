@@ -1871,10 +1871,10 @@ namespace Bloom.Book
 				foreach(var family in match.Groups[1].Value.Split(','))
 				{
 					var name = family.Trim();
+					name = s_regexBangImportant.Replace(name, "");
 					// Strip matched quotes
 					if(name[0] == '\'' || name[0] == '"' && name[0] == name[name.Length - 1])
 						name = name.Substring(1, name.Length - 2);
-					name = s_regexBangImportant.Replace(name, "");
 					if (name.ToLowerInvariant() != "inherit" && name.ToLowerInvariant() != "segoe ui")
 						result.Add(name);
 					if(!includeFallbackFonts)
