@@ -194,12 +194,16 @@ namespace Bloom.Book
 		/// code for those tasks has no business knowing about that status file. OTOH,
 		/// some of those functions don't need some of the audio files; but a generic
 		/// cleanup function like this doesn't know which ones. For now, it just deals
-		/// with TC cleanup.
+		/// with TC cleanup and with the ubiquitous placeHolder.png image file.
 		/// </summary>
 		public static List<string> LocalOnlyFiles(string folderPath)
 		{
 			var accumulator = new List<string>();
 			TeamCollection.TeamCollection.AddTCSpecificFiles(folderPath, accumulator);
+			// See https://issues.bloomlibrary.org/youtrack/issue/BL-7616 and also
+			// https://issues.bloomlibrary.org/youtrack/issue/BL-9479 for what has
+			// happened in the past that still can use cleanup in new work.
+			accumulator.AddRange(Directory.GetFiles(folderPath, "placeHolder*.png"));
 			return accumulator;
 		}
 

@@ -224,6 +224,10 @@ namespace Bloom.WebLibraryIntegration
 				// The metadata is also a book order...but we need it on the server with the desired file name,
 				// because we can't rename on download. The extension must be the one Bloom knows about,
 				// and we want the file name to indicate which book, so use the name of the book folder.
+				// We also want to clear out old book orders with previous (other language?) filenames.
+				// See https://issues.bloomlibrary.org/youtrack/issue/BL-7616.
+				foreach (var file in Directory.GetFiles(bookFolder, $"*{BookInfo.BookOrderExtension}"))
+					RobustFile.Delete(file);
 				var metadataPath = BookMetaData.MetaDataPath(bookFolder);
 				RobustFile.Copy(metadataPath, BookInfo.BookOrderPath(bookFolder), true);
 				parseId = "";
