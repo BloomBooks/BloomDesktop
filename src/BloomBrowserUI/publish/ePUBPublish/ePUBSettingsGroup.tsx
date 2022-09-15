@@ -39,6 +39,12 @@ const epubModes: IEpubMode[] = [
     }
 ];
 
+// If we don't adjust this to the current mode, there's a display glitch when refreshing.  This has to be
+// an outer/global variable instead of a useRef inside the function because the Refresh operation in the
+// outer context appears to create a new FunctionComponent and thus would create a new useRef type variable
+// (which is usually used to persist state in a FunctionComponent).
+let defaultEpubMode = "fixed";
+
 export const EPUBSettingsGroup: React.FunctionComponent<{
     onChange: () => void;
 }> = props => {
@@ -51,7 +57,7 @@ export const EPUBSettingsGroup: React.FunctionComponent<{
 
     const [epubMode, setEpubmode] = BloomApi.useApiStringState(
         "publish/epub/epubMode",
-        "fixed"
+        defaultEpubMode
     );
     const [isModeDropdownOpen, setIsModeDropdownOpen] = useState(false);
 
@@ -117,6 +123,7 @@ export const EPUBSettingsGroup: React.FunctionComponent<{
                                 onClose={() => setIsModeDropdownOpen(false)}
                                 onChange={e => {
                                     const newMode = e.target.value as string;
+                                    defaultEpubMode = newMode;
                                     setEpubmode(newMode);
                                     props.onChange();
                                 }}
