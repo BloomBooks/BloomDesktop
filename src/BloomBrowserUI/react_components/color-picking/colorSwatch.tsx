@@ -1,3 +1,5 @@
+/** @jsx jsx **/
+import { jsx, css } from "@emotion/core";
 import * as React from "react";
 import { Checkboard } from "react-color/lib/components/common";
 import { CSSProperties } from "@material-ui/styles";
@@ -15,26 +17,15 @@ export interface IColorInfo {
 // More complete definition we need to pass in for handling swatch display.
 export interface IClickableColorSwatch extends IColorInfo {
     onClick: React.MouseEventHandler<IClickableColorSwatch>;
+    width?: number;
+    height?: number;
 }
 
 export const ColorSwatch: React.FunctionComponent<IClickableColorSwatch> = (
     props: IClickableColorSwatch
 ) => {
-    const wrapperStyle: CSSProperties = {
-        width: 20,
-        height: 20,
-        borderRadius: 3,
-        margin: "0, 10px, 10px, 0",
-        position: "relative"
-    };
-
-    const swatchStyle: CSSProperties = {
-        background: getBackgroundColorCssFromColorInfo(props),
-        boxShadow: "rgba(0, 0, 0, 0.15) 0px 0px 0px 1px inset",
-        position: "absolute",
-        width: 20,
-        height: 20
-    };
+    const swatchWidth = props.width ? props.width : 20;
+    const swatchHeight = props.height ? props.height : 20;
 
     const handleSwatchClick = (e: React.MouseEvent<HTMLDivElement>): void => {
         // This cast handles the change in types, but we don't use the event in any case.
@@ -45,9 +36,27 @@ export const ColorSwatch: React.FunctionComponent<IClickableColorSwatch> = (
     };
 
     return (
-        <div style={wrapperStyle} className="color-swatch">
+        <div
+            css={css`
+                width: ${swatchWidth}px;
+                height: ${swatchHeight}px;
+                border-radius: 3px;
+                margin: 0, 10px, 10px, 0;
+                position: relative;
+            `}
+            className="color-swatch"
+        >
             <Checkboard grey="#aaa" />
-            <div style={swatchStyle} onClick={handleSwatchClick} />
+            <div
+                css={css`
+                    background: ${getBackgroundColorCssFromColorInfo(props)};
+                    box-shadow: rgba(0, 0, 0, 0.15) 0px 0px 0px 1px inset;
+                    position: absolute;
+                    width: ${swatchWidth}px;
+                    height: ${swatchHeight}px;
+                `}
+                onClick={handleSwatchClick}
+            />
         </div>
     );
 };

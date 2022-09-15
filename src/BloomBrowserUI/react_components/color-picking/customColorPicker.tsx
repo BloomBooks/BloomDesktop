@@ -2,18 +2,15 @@
 import { jsx, css } from "@emotion/core";
 import * as React from "react";
 import { useState } from "react";
-import {
-    SketchPicker,
-    ColorChangeHandler,
-    ColorResult,
-    RGBColor
-} from "react-color";
+import { ColorResult, RGBColor } from "react-color";
+import BloomSketchPicker from "./bloomSketchPicker";
 import ColorSwatch, { IColorInfo } from "./colorSwatch";
 import * as tinycolor from "tinycolor2";
 import "./customColorPicker.less";
+import { HexColorInput } from "./hexColorInput";
 
-// We are combining the 'react-color' ChromePicker with our own list of swatches. The reason for using our
-// own swatches is so we can support swatches with gradients and alpha.
+// We are combining parts of the 'react-color' component set with our own list of swatches.
+// The reason for using our own swatches is so we can support swatches with gradients and alpha.
 interface ICustomPicker {
     // set to 'true' to eliminate alpha slider (e.g. text color)
     noAlphaSlider?: boolean;
@@ -26,28 +23,37 @@ interface ICustomPicker {
 export const CustomColorPicker: React.FunctionComponent<ICustomPicker> = props => {
     const [colorChoice, setColorChoice] = useState(props.currentColor);
 
-    // Handler for when the user picks a color by manipulating the ChromePicker.
-    // This handler may be 'hit' many times as sliders are manipulated, etc.
-    const handleColorChange: ColorChangeHandler = (color, event) => {
+    const changeColor = (swatchColor: IColorInfo) => {
+        setColorChoice(swatchColor);
+        props.onChange(swatchColor);
+    };
+
+    // Handler for when the user clicks on a swatch at the bottom of the picker.
+    const handleSwatchClick = (swatchColor: IColorInfo) => () => {
+        changeColor(swatchColor);
+    };
+
+    // Handler for when the user clicks/drags in the BloomSketchPicker (Saturation, Hue and Alpha).
+    const handlePickerChange = (color: ColorResult) => {
         const newColor = getColorInfoFromColorResult(color, "");
         changeColor(newColor);
     };
 
-    // Handler for when the user clicks on a swatch at the bottom of the picker.
-    const handleSwatchClick = (swatchColor: IColorInfo) => (e: any) => {
-        changeColor(swatchColor);
-    };
-
-    const changeColor = (swatchColor: IColorInfo) => {
-        setColorChoice(swatchColor);
-        props.onChange(swatchColor);
+    // Handler for when the user changes the hex code value (including pasting).
+    const handleHexCodeChange = (hexColor: string) => {
+        const newColor = {
+            colors: [hexColor],
+            opacity: colorChoice.opacity // Don't change opacity
+        };
+        changeColor(newColor);
     };
 
     const getColorInfoFromColorResult = (
         color: ColorResult,
         customName: string
     ): IColorInfo => {
-        // A color that comes from the ChromePicker (not from clicking on a swatch), cannot be a gradient.
+        // A color that comes from a react-color component (not from clicking on a swatch),
+        // cannot be a gradient.
         let opacity = color.rgb.a;
         // ColorResult (from react-color) CAN have undefined alpha in its RGBColor, so we just
         // check here and assume the color is opaque if the alpha channel is undefined.
@@ -63,6 +69,12 @@ export const CustomColorPicker: React.FunctionComponent<ICustomPicker> = props =
             colors: [colorString],
             opacity: opacity
         };
+    };
+
+    const getRgbaOfCurrentColor = (): RGBColor => {
+        const rgbColor = tinycolor(colorChoice.colors[0]).toRgb();
+        rgbColor.a = colorChoice.opacity;
+        return rgbColor;
     };
 
     const getColorSwatches = () => (
@@ -90,32 +102,45 @@ export const CustomColorPicker: React.FunctionComponent<ICustomPicker> = props =
         </React.Fragment>
     );
 
-    const getRgbOfCurrentColor = (): RGBColor => {
-        const currentColor = colorChoice;
-        const rgbColor = tinycolor(currentColor.colors[0]).toRgb();
-        rgbColor.a = currentColor.opacity;
-        return rgbColor;
-    };
-
     return (
-        <div className="custom-color-picker">
-            <SketchPicker
-                disableAlpha={props.noAlphaSlider}
+        <div
+            className="custom-color-picker"
+            css={css`
+                display: flex;
+                align-items: center;
+                flex-direction: column;
+                overflow-x: hidden;
+            `}
+        >
+            <BloomSketchPicker
+                noAlphaSlider={props.noAlphaSlider}
                 // if the current color choice happens to be a gradient, this will be 'white'.
-                color={getRgbOfCurrentColor()}
-                onChange={handleColorChange}
-                // We do want to show a set of color presets, but as far as I could discover
-                // the SketchPicker can't display gradients, so we'll leave out its own ones
-                // and use our own.
-                presetColors={[]}
-                styles={{
-                    default: {
-                        picker: {
-                            boxShadow: "unset"
-                        }
-                    }
-                }}
+                color={getRgbaOfCurrentColor()}
+                onChange={handlePickerChange}
             />
+            <div
+                css={css`
+                    height: 32px;
+                    width: 100%;
+                    margin-top: 16px;
+                    display: flex;
+                    flex-direction: row;
+                    justify-content: space-between;
+                `}
+            >
+                <HexColorInput
+                    initial={colorChoice}
+                    onChangeComplete={handleHexCodeChange}
+                />
+                {/* eslint-disable-next-line @typescript-eslint/no-empty-function */}
+                <ColorSwatch
+                    onClick={() => {}} // This "Swatch" is for display only.
+                    colors={colorChoice.colors}
+                    opacity={colorChoice.opacity}
+                    width={64}
+                    height={30}
+                />
+            </div>
             <div
                 css={css`
                     margin-top: 10px;
