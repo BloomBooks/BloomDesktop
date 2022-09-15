@@ -7,7 +7,7 @@ import { getEditTabBundleExports } from "../../bookEdit/js/bloomFrames";
 import { ThemeProvider } from "@material-ui/styles";
 import { lightTheme } from "../../bloomMaterialUITheme";
 import { BloomApi } from "../../utils/bloomApi";
-import CustomColorPicker from "./customColorPicker";
+import ColorPicker from "./colorPicker";
 import * as tinycolor from "tinycolor2";
 import { IColorInfo, normalizeColorInfoColorsAsHex } from "./colorSwatch";
 import "./colorPickerDialog.less";
@@ -295,7 +295,7 @@ const ColorPickerDialog: React.FC<IColorPickerDialogProps> = props => {
             >
                 <DialogTitle title={props.localizedTitle} />
                 <DialogMiddle>
-                    <CustomColorPicker
+                    <ColorPicker
                         onChange={handleOnChange}
                         currentColor={currentColor}
                         swatchColors={swatchColorArray}

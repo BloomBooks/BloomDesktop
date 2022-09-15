@@ -6,7 +6,7 @@ import * as React from "react";
 import { storiesOf } from "@storybook/react";
 import { useState } from "react";
 import BloomButton from "../bloomButton";
-import CustomColorPicker from "./customColorPicker";
+import ColorPicker from "./colorPicker";
 import { IColorInfo, getBackgroundColorCssFromColorInfo } from "./colorSwatch";
 import {
     showColorPickerDialog,
@@ -15,6 +15,11 @@ import {
     DialogResult
 } from "./colorPickerDialog";
 import { BloomPalette, TextBackgroundColors } from "./bloomPalette";
+import BloomSketchPicker from "./bloomSketchPicker";
+import tinycolor = require("tinycolor2");
+import { ColorResult } from "react-color";
+import { Typography } from "@material-ui/core";
+import { HexColorInput } from "./hexColorInput";
 
 const mainBlockStyles: React.CSSProperties = {
     width: 300,
@@ -141,7 +146,7 @@ storiesOf("Colors", module)
                     </div>
                     {chooserShowing && (
                         <div style={chooserStyles}>
-                            <CustomColorPicker
+                            <ColorPicker
                                 onChange={color =>
                                     handleColorChange(color, backgroundChooser)
                                 }
@@ -257,6 +262,167 @@ storiesOf("Colors", module)
                             height: 32px;
                             padding: 5px;
                             margin-top: 20px;
+                        `}
+                    >
+                        Chosen color block
+                    </div>
+                </div>
+            );
+        })
+    )
+    .add("BloomSketchPicker no transparency", () =>
+        React.createElement(() => {
+            const initialColor = "#aa0000";
+            const [currentColor, setCurrentColor] = useState<IColorInfo>({
+                colors: [initialColor],
+                opacity: 1
+            });
+
+            const handlePickerChange = (color: ColorResult) => {
+                const newColor: IColorInfo = {
+                    colors: [color.hex],
+                    opacity: color.rgb.a ? color.rgb.a : 1
+                };
+                setCurrentColor(newColor);
+            };
+
+            const convertCurrentColorToRGBA = () => {
+                const rgb = tinycolor(currentColor.colors[0]).toRgb();
+                rgb.a = currentColor.opacity;
+                return rgb;
+            };
+
+            return (
+                <div
+                    css={css`
+                        background-color: lightyellow;
+                        border: 1px solid black;
+                        width: 300px;
+                        height: 350px;
+                        display: flex;
+                        flex-direction: column;
+                        align-items: center;
+                    `}
+                >
+                    <BloomSketchPicker
+                        noAlphaSlider={true}
+                        onChange={handlePickerChange}
+                        color={convertCurrentColorToRGBA()}
+                    />
+                    <div
+                        css={css`
+                            background-color: ${currentColor.colors[0]};
+                            width: 150px;
+                            height: 22px;
+                            padding: 5px;
+                            margin-top: 20px;
+                            text-align: center;
+                        `}
+                    >
+                        Chosen color block
+                    </div>
+                </div>
+            );
+        })
+    )
+    .add("BloomSketchPicker with transparency", () =>
+        React.createElement(() => {
+            const initialColor = "#aa0000";
+            const [currentColor, setCurrentColor] = useState<IColorInfo>({
+                colors: [initialColor],
+                opacity: 1
+            });
+
+            const convertCurrentColorToRGBA = () => {
+                const rgb = tinycolor(currentColor.colors[0]).toRgb();
+                rgb.a = currentColor.opacity;
+                return rgb;
+            };
+
+            const getCurrentCssRgbaColor = () => {
+                const rgb = convertCurrentColorToRGBA();
+                return `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${rgb.a})`;
+            };
+
+            const handlePickerChange = (color: ColorResult) => {
+                const newColor: IColorInfo = {
+                    colors: [color.hex],
+                    opacity: color.rgb.a ? color.rgb.a : 1
+                };
+                setCurrentColor(newColor);
+            };
+            const hexValueString = `Hex value = ${currentColor.colors[0]}`;
+            const transparentValue = (1 - currentColor.opacity) * 100;
+            const transparencyString = `Transparency = ${transparentValue.toFixed(
+                0
+            )}%`;
+
+            return (
+                <div
+                    css={css`
+                        background-color: lightyellow;
+                        border: 1px solid black;
+                        width: 300px;
+                        height: 375px;
+                        display: flex;
+                        flex-direction: column;
+                        align-items: center;
+                    `}
+                >
+                    <BloomSketchPicker
+                        noAlphaSlider={false}
+                        onChange={handlePickerChange}
+                        color={convertCurrentColorToRGBA()}
+                    />
+                    <div
+                        css={css`
+                            background-color: ${getCurrentCssRgbaColor()};
+                            width: 150px;
+                            height: 22px;
+                            padding: 5px;
+                            margin-top: 20px;
+                            text-align: center;
+                        `}
+                    >
+                        Chosen color block
+                    </div>
+                    <Typography>{hexValueString}</Typography>
+                    <Typography>{transparencyString}</Typography>
+                </div>
+            );
+        })
+    )
+    .add("Hex Color Input", () =>
+        React.createElement(() => {
+            const [currentColor, setCurrentColor] = useState<IColorInfo>({
+                colors: ["#FEDCBA"],
+                opacity: 1.0
+            });
+
+            const getColorInfoFromString = (color: string): IColorInfo => {
+                return { colors: [color], opacity: 1.0 };
+            };
+            return (
+                <div
+                    style={mainBlockStyles}
+                    css={css`
+                        background-color: yellow;
+                    `}
+                >
+                    <HexColorInput
+                        initial={currentColor}
+                        onChangeComplete={newValue => {
+                            setCurrentColor(getColorInfoFromString(newValue));
+                        }}
+                    />
+                    <div
+                        css={css`
+                            background-color: ${currentColor.colors[0]};
+                            width: 150px;
+                            height: 22px;
+                            padding: 5px;
+                            margin-top: 20px;
+                            text-align: center;
                         `}
                     >
                         Chosen color block
