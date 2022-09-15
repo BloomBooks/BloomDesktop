@@ -39,6 +39,9 @@ const epubModes: IEpubMode[] = [
     }
 ];
 
+// If we don't adjust this to the current mode, there's a display glitch when refreshing.
+let defaultEpubMode = "fixed";
+
 export const EPUBSettingsGroup: React.FunctionComponent<{
     onChange: () => void;
 }> = props => {
@@ -51,7 +54,7 @@ export const EPUBSettingsGroup: React.FunctionComponent<{
 
     const [epubMode, setEpubmode] = BloomApi.useApiStringState(
         "publish/epub/epubMode",
-        "fixed"
+        defaultEpubMode
     );
     const [isModeDropdownOpen, setIsModeDropdownOpen] = useState(false);
 
@@ -117,6 +120,7 @@ export const EPUBSettingsGroup: React.FunctionComponent<{
                                 onClose={() => setIsModeDropdownOpen(false)}
                                 onChange={e => {
                                     const newMode = e.target.value as string;
+                                    defaultEpubMode = newMode;
                                     setEpubmode(newMode);
                                     props.onChange();
                                 }}
