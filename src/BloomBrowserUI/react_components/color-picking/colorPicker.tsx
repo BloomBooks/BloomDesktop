@@ -116,6 +116,7 @@ export const ColorPicker: React.FunctionComponent<IColorPickerProps> = props => 
                 // if the current color choice happens to be a gradient, this will be 'white'.
                 color={getRgbaOfCurrentColor()}
                 onChange={handlePickerChange}
+                currentOpacity={colorChoice.opacity}
             />
             <div
                 css={css`
