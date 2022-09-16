@@ -6,13 +6,22 @@ import { Saturation, Hue, Alpha } from "react-color/lib/components/common";
 import CustomSliderCursor from "./customCursors";
 
 interface IBloomSketchPickerProps {
-    // set to 'true' to eliminate alpha slider (e.g. text color)
+    // Set to 'true' to eliminate alpha slider (e.g. text color)
     noAlphaSlider?: boolean;
+
     onChange: (color: ColorResult) => void;
+
+    // Needed for tooltip on Alpha slider
+    currentOpacity: number;
 }
 
 // This combines 3 'react-color' components to make our version of react-color's SketchPicker.
 const BloomSketchPicker: React.FunctionComponent<IBloomSketchPickerProps> = props => {
+    const transparencyString =
+        ((1 - props.currentOpacity) * 100).toFixed(0) + "%";
+
+    const alphaSlider = () => <CustomSliderCursor tip={transparencyString} />;
+
     const commonComponentCss = "position: relative;";
 
     return (
@@ -54,7 +63,7 @@ const BloomSketchPicker: React.FunctionComponent<IBloomSketchPickerProps> = prop
                         margin-top: 6px;
                     `}
                 >
-                    <Alpha {...props} pointer={CustomSliderCursor} />
+                    <Alpha {...props} pointer={alphaSlider} />
                 </div>
             )}
         </div>

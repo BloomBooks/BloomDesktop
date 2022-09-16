@@ -308,6 +308,7 @@ storiesOf("Colors", module)
                         noAlphaSlider={true}
                         onChange={handlePickerChange}
                         color={convertCurrentColorToRGBA()}
+                        currentOpacity={currentColor.opacity}
                     />
                     <div
                         css={css`
@@ -373,6 +374,7 @@ storiesOf("Colors", module)
                         noAlphaSlider={false}
                         onChange={handlePickerChange}
                         color={convertCurrentColorToRGBA()}
+                        currentOpacity={currentColor.opacity}
                     />
                     <div
                         css={css`
