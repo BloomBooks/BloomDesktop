@@ -325,7 +325,6 @@ namespace BloomTests.Spreadsheet
 		public void GotSentenceSplitsOnPageN(int pageIndex, string id, string elt, string[] sentences)
 		{
 			var target = _contentPages[pageIndex].SafeSelectNodes($".//{elt}[@id='{id}']").Cast<XmlElement>().First();
-			var mode = target.Attributes["data-audiorecordingmode"]?.Value;
 			foreach (var s in sentences)
 			{
 				AssertThatXmlIn.Element(target).HasSpecifiedNumberOfMatchesForXpath($".//span[@id and @class='bloom-highlightSegment' and text()='{s}']", 1);
@@ -450,10 +449,255 @@ namespace BloomTests.Spreadsheet
 		[TestCase("abc def", "abcdef")]
 		[TestCase("1233", "i1233")]
 		[TestCase("ab+*", "ab")]
-		[TestCase("$*&", "empty")]
+		[TestCase("$*&", "defaultId")]
 		public void SanitizeXHmlId(string input, string expectedOutput)
 		{
-			Assert.That(SpreadsheetImporter.SanitizeXHmlId(input), Is.EqualTo(expectedOutput));
+			Assert.That(SpreadsheetImporter.SanitizeXHtmlId(input), Is.EqualTo(expectedOutput));
+		}
+	}
+
+	// This class handles some special cases that need to be checked when the import is modifying existing pages.
+	class SpreadsheetAudioImportModifyTests
+	{
+		private HtmlDom _dom;
+
+		private TemporaryFolder _bookFolder;
+		private TemporaryFolder _otherAudioFolder;
+		private ProgressSpy _progressSpy;
+		private TemporaryFolder _spreadsheetFolder;
+		private List<string> _warnings;
+		private List<XmlElement> _contentPages;
+
+		public static string PageWithJustText(int pageNumber, string editableAttrs, string editableContent, string classData)
+		{
+			return string.Format(@"	<div class=""bloom-page numberedPage customPage bloom-combinedPage A5Portrait side-right bloom-monolingual"" data-page="""" id=""dc90dbe0-7584-4d9f-bc06-0e0326060054"" data-pagelineage=""adcd48df-e9ab-4a07-afd4-6a24d0398382"" data-page-number=""{0}"" lang="""">
+        <div class=""pageLabel"" data-i18n=""TemplateBooks.PageLabel.Basic Text &amp; Picture"" lang=""en"">
+            Basic Text &amp; Picture
+        </div>
+
+        <div class=""pageDescription"" lang=""en""></div>
+
+        <div class=""split-pane-component marginBox"" style="""">
+            <div class=""split-pane horizontal-percent"" style=""min-height: 42px;"">
+                <div class=""split-pane-component position-top"">
+                    <div class=""split-pane-component-inner"" min-width=""60px 150px 250px"" min-height=""60px 150px 250px"">
+                        <div class=""bloom-translationGroup bloom-trailingElement"" data-default-languages=""auto"">
+                           <div class=""bloom-editable normal-style {3}"" style="""" lang=""z"" contenteditable=""true"">
+                                <p></p>
+                            </div>
+							<div class=""bloom-editable normal-style"" lang=""fr"" contenteditable=""true"" {1}>
+								{2}
+							</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>", pageNumber, editableAttrs, editableContent, classData);
+		}
+
+		[OneTimeSetUp]
+		public void OneTimeSetUp()
+		{
+			// We will re-use the audio files from another test.
+			// Copy them into the expected place in the book folder.
+			var testAudioPath =
+				SIL.IO.FileLocationUtilities.GetDirectoryDistributedWithApplication(
+					"src/BloomTests/Spreadsheet/testAudio/");
+			_bookFolder = new TemporaryFolder("SpreadsheetAudioImportModifyTests");
+			_spreadsheetFolder = new TemporaryFolder("SpreadsheetAudioImportModifyDest");
+			var spreadsheetAudioPath = Path.Combine(_spreadsheetFolder.FolderPath, "audio");
+			Directory.CreateDirectory(spreadsheetAudioPath);
+			// A place to put audio that is not in the spreadsheet folder so we can test absolute path import.
+			// Also gives us more choices of non-conflicting audio files.
+			_otherAudioFolder = new TemporaryFolder("other audio folder");
+			var audioFilePaths = Directory.EnumerateFiles(testAudioPath).ToArray();
+			foreach (var audioFilePath in audioFilePaths)
+			{
+				RobustFile.Copy(audioFilePath, Path.Combine(spreadsheetAudioPath, Path.GetFileName(audioFilePath)));
+				var anotherId = Path.GetFileNameWithoutExtension(audioFilePath) + "x"; // slightly different to avoid dup here
+				var anotherPath = Path.Combine(_otherAudioFolder.FolderPath, anotherId + ".mp3");
+				RobustFile.Copy(audioFilePath, anotherPath);
+			}
+
+			// Make a source file. This name is actually allowed by Windows, but not by our code,
+			// as it is a problem in HTML. Ampersand is not allowed in files, and spaces are not allowed in IDs
+			var dest = Path.Combine(spreadsheetAudioPath, "a bad & problematic name.mp3");
+			RobustFile.Copy(audioFilePaths[0], dest);
+			File.WriteAllText(Path.Combine(spreadsheetAudioPath, "an empty file.mp3"), "");
+
+			// Create an HtmlDom for a template to import into.
+			var xml = string.Format(SpreadsheetImageAndTextImportTests.templateDom,
+				SpreadsheetImageAndTextImportTests.coverPage
+				// Original page 1 has two sentences and is in sentence mode.
+				+ PageWithJustText(1, "data-audiorecordingmode=\"Sentence\"",
+					"<p><span id=\"i991ae1ac-db9a-4ad1-984b-8e679c1ae901\" class=\"audio-sentence\" recordingmd5=\"f766dd9023afe0d86acf6330e99261b3\" data-duration=\"2.899592\">A boy sitting on a stone.</span> <span id=\"i77c18c83-0224-405f-bb97-70d32078855c\" class=\"audio-sentence\" recordingmd5=\"0f433ef9ef7693f968a8559e0210c57e\" data-duration=\"2.194286\">His foot is wet.</span></p>\r\n",
+					"")
+				// Original page 2 is in text box mode, unsplit
+				+ PageWithJustText(2, "data-audiorecordingmode=\"TextBox\" recordingmd5=\"69f7226e062f6b4accaa8110787f81fb\" data-duration=\"4.388571\"",
+					"<p>Man touching nose. He's using a finger.</p>", "audio-sentence")
+				// Original page 3 has two sentences and is in sentence mode.
+				+ PageWithJustText(3, "data-audiorecordingmode=\"Sentence\"", "<p><span id=\"i991ae1ac-db9a-4ad1-984b-8e679c1ae901\" class=\"audio-sentence\" recordingmd5=\"f766dd9023afe0d86acf6330e99261b3\" data-duration=\"2.899592\">A boy sitting on a stone.</span> <span id=\"i77c18c83-0224-405f-bb97-70d32078855c\" class=\"audio-sentence\" recordingmd5=\"0f433ef9ef7693f968a8559e0210c57e\" data-duration=\"2.194286\">His foot is wet.</span></p>\r\n",
+					"")
+				+ PageWithJustText(4, "data-audiorecordingmode=\"Sentence\"", "<p><span id=\"i991ae1ac-db9a-4ad1-984b-8e679c1ae901\" class=\"audio-sentence\" recordingmd5=\"f766dd9023afe0d86acf6330e99261b3\" data-duration=\"2.899592\">A boy sitting on a stone.</span> <span id=\"i77c18c83-0224-405f-bb97-70d32078855c\" class=\"audio-sentence\" recordingmd5=\"0f433ef9ef7693f968a8559e0210c57e\" data-duration=\"2.194286\">His foot is wet.</span></p>\r\n",
+					"")
+				+ PageWithJustText(5, "data-audiorecordingmode=\"TextBox\" id=\"a9d7b794-7a83-473a-8307-7968176ae4bc\" recordingmd5=\"69f7226e062f6b4accaa8110787f81fb\" data-duration=\"4.388571\" data-audiorecordingendtimes=\"3.900 4.360\"",
+					@"<p><span id=""i4356108a-4647-4b01-8cb9-8acc227b4eea"" class=""bloom-highlightSegment"">A hand with a sore finger.</span> <span id=""cf66ff0d-f882-48b0-b789-cba83aa3ae84"" class=""bloom-highlightSegment"">It has a bandage.​</span></p>",
+					"audio-sentence")
+				+ SpreadsheetImageAndTextImportTests.insideBackCoverPage
+				+ SpreadsheetImageAndTextImportTests.backCoverPage);
+			_dom = new HtmlDom(xml, true);
+
+			// Set up the internal spreadsheet rows directly.
+			var ss = new InternalSpreadsheet();
+			var columnForFr = ss.AddColumnForLang("fr", "French");
+			var columnForFrAudio = ss.AddColumnForLangAudio("fr", "French");
+			var columnForFrAlignment = ss.AddColumnForAudioAlignment("fr", "French");
+
+			// Will make a TG on page 1. It will be treated as a single split,
+			// as there is only one sentence and data in the alignment column.
+			// We want to check that all the sentence-mode stuff in the original page 1 is gone.
+			var contentRow1 = new ContentRow(ss);
+			contentRow1.AddCell(InternalSpreadsheet.PageContentRowLabel);
+			contentRow1.SetCell(columnForFr, "<p>This is page 1</p>");
+			contentRow1.SetCell(columnForFrAudio, "./audio/i9c7f4e02-4685-48fc-8653-71d88f218706.mp3");
+			// Actual duration of this audio is 3.996735; we should get that, not 2.5
+			contentRow1.SetCell(columnForFrAlignment, "2.5");
+
+			// Will make a TG on page 2. It will be treated as a single split,
+			// as there is only one sentence and there is data in the alignment column.
+			// Want to make sure this works when the original page 2 is an unsplit text box.
+			var contentRow2 = new ContentRow(ss);
+			contentRow2.AddCell(InternalSpreadsheet.PageContentRowLabel);
+			contentRow2.SetCell(columnForFr, "<p>This is page 2.</p>");
+			contentRow2.SetCell(columnForFrAudio, Path.Combine(_otherAudioFolder.FolderPath, "i9c7f4e02-4685-48fc-8653-71d88f218706x.mp3"));
+			// Actual duration of this audio is 3.996735; we should get that
+			contentRow2.SetCell(columnForFrAlignment, "2.9");
+
+			// Will make a TG on page 3. It will be treated as an unsplit TextBox,
+			// as there are two sentences and a single number in the alignment column.
+			// Want to make sure the sentence-mode stuff in the original gets cleaned up.
+			var contentRow3 = new ContentRow(ss);
+			contentRow3.AddCell(InternalSpreadsheet.PageContentRowLabel);
+			contentRow3.SetCell(columnForFr, "<p>This is page 3. <strong>This</strong> <em>'sentence'</em> <u>has</u> <sup>many</sup> <span style=\"color:#ff1616;\">text</span> variations.</p>");
+			contentRow3.SetCell(columnForFrAudio, "./audio/a9d7b794-7a83-473a-8307-7968176ae4bc.mp3");
+			// Actual duration of this audio is 4.388571; we should get that
+			contentRow3.SetCell(columnForFrAlignment, "2.9");
+
+			// Will make a TG on page 4. It will be treated as a split TextBox,
+			// as there are two sentences and two numbers in the alignment column
+			// Want to make sure the sentence-mode stuff gets cleaned up.
+			var contentRow4 = new ContentRow(ss);
+			contentRow4.AddCell(InternalSpreadsheet.PageContentRowLabel);
+			contentRow4.SetCell(columnForFr, "<p>This is page 4. It has two sentences.</p>");
+			contentRow4.SetCell(columnForFrAudio, Path.Combine(_otherAudioFolder.FolderPath, "a9d7b794-7a83-473a-8307-7968176ae4bcx.mp3"));
+			// Actual duration of this audio is 4.996745; we should get that in place of the 2.9
+			contentRow4.SetCell(columnForFrAlignment, "1.5 2.9");
+
+			// Will make a TG on page 5. It will be treated as sentence mode,
+			// as there are two sentences and nothing in the alignment column.
+			// We want to make sure that the split text box stuff in the original page 5 is cleaned up.
+			var contentRow5 = new ContentRow(ss);
+			contentRow5.AddCell(InternalSpreadsheet.PageContentRowLabel);
+			contentRow5.SetCell(columnForFr, "<p>This is page 5. <strong>This</strong> <em>'sentence'</em> <u>has</u> <sup>many</sup> <span style=\"color:#ff1616;\">text</span> variations, single quotes and other dangerous characters: {}[]\"@().</p>");
+			// actual durations are 2.899592 and 2.194286
+			contentRow5.SetCell(columnForFrAudio, "./audio/i991ae1ac-db9a-4ad1-984b-8e679c1ae901.mp3, ./audio/i77c18c83-0224-405f-bb97-70d32078855c.mp3");
+
+			// not sure if we need this
+			var settings = new NewCollectionSettings();
+			settings.Language1.Iso639Code = "es";
+			settings.Language1.SetName("Spanish", false);
+
+			// Do the import
+			_progressSpy = new ProgressSpy();
+			var importer = new SpreadsheetImporter(null, _dom, _spreadsheetFolder.FolderPath, _bookFolder.FolderPath, settings);
+			_warnings = importer.Import(ss, _progressSpy);
+
+			_contentPages = _dom.SafeSelectNodes("//div[contains(@class, 'bloom-page')]").Cast<XmlElement>().ToList();
+
+			// Remove the xmatter to get just the content pages.
+			//_firstPage = _contentPages[0];
+			_contentPages.RemoveAt(0);
+			//_lastPage = _contentPages.Last();
+			_contentPages.RemoveAt(_contentPages.Count - 1);
+			//_secondLastPage = _contentPages.Last();
+			_contentPages.RemoveAt(_contentPages.Count - 1);
+
+			// (individual test methods will evaluate the result)
+		}
+
+		[OneTimeTearDown]
+		public void OneTimeTearDown()
+		{
+			_bookFolder?.Dispose();
+			_otherAudioFolder.Dispose();
+		}
+
+		[TestCase(4)]
+		public void PageNDataNotTextBox(int pageNumber)
+		{
+			var assertThatXmlInPageN = AssertThatXmlIn.Element(_contentPages[pageNumber]);
+			assertThatXmlInPageN.HasNoMatchForXpath(".//div[contains(@class, 'bloom-editable') and @lang='fr' and contains(@class, 'audio-sentence')]");
+			assertThatXmlInPageN.HasNoMatchForXpath(".//div[contains(@class, 'bloom-editable') and @lang='fr' and @data-audiorecordingendtimes]");
+			assertThatXmlInPageN.HasNoMatchForXpath(".//div[contains(@class, 'bloom-editable') and @lang='fr' and @recordingmd5]");
+			assertThatXmlInPageN.HasNoMatchForXpath(".//div[contains(@class, 'bloom-editable') and @lang='fr' and @data-duration]");
+			assertThatXmlInPageN.HasNoMatchForXpath(".//span[contains(@class, 'bloom-highlightSegment')]");
+		}
+
+		[TestCase(0)]
+		[TestCase(1)]
+		[TestCase(2)]
+		[TestCase(3)]
+		public void PageNDataNotSentence(int pageNumber)
+		{
+			var assertThatXmlInPageN = AssertThatXmlIn.Element(_contentPages[pageNumber]);
+			assertThatXmlInPageN.HasNoMatchForXpath(".//span[contains(@class, 'audio-sentence')]");
+			assertThatXmlInPageN.HasNoMatchForXpath(".//span[@recordingmd5]");
+			assertThatXmlInPageN.HasNoMatchForXpath(".//span[@data-duration]");
+		}
+
+		[TestCase(0, "i9c7f4e02-4685-48fc-8653-71d88f218706", "div", 3.996735)]
+		[TestCase(1, "i9c7f4e02-4685-48fc-8653-71d88f218706x", "div", 3.996735)]
+		[TestCase(2, "a9d7b794-7a83-473a-8307-7968176ae4bc", "div", 4.388571)]
+		[TestCase(3, "a9d7b794-7a83-473a-8307-7968176ae4bcx", "div", 4.388571)]
+		[TestCase(4, "i991ae1ac-db9a-4ad1-984b-8e679c1ae901", "span", 2.899592)]
+		[TestCase(4, "i77c18c83-0224-405f-bb97-70d32078855c", "span", 2.194286)]
+		public void GotAudioDurationAndOtherEssentialsOnPageN(int pageIndex, string id, string elt, double expectedDuration)
+		{
+			var target = _contentPages[pageIndex].SafeSelectNodes($".//{elt}[@id='{id}']").Cast<XmlElement>().First();
+			var durationStr = target.Attributes["data-duration"]?.Value;
+			Assert.That(double.TryParse(durationStr, out double duration), Is.True, $"Failed to parse '{durationStr}' as double");
+			Assert.That(duration, Is.EqualTo(expectedDuration).Within(0.01));
+			Assert.That(target.Attributes["class"]?.Value, Does.Contain("audio-sentence"));
+			Assert.That(target.Attributes["recordingmd5"]?.Value, Is.Not.Empty.And.Not.Null);
+		}
+
+		[TestCase(0, "i9c7f4e02-4685-48fc-8653-71d88f218706", "div", new[] { "This is page 1" })]
+		[TestCase(1, "i9c7f4e02-4685-48fc-8653-71d88f218706x", "div", new[] { "This is page 2." })]
+		[TestCase(2, "a9d7b794-7a83-473a-8307-7968176ae4bc", "div", new string[0])]
+		[TestCase(3, "a9d7b794-7a83-473a-8307-7968176ae4bcx", "div", new[] { "This is page 4.", "It has two sentences." })]
+		public void GotSentenceSplitsOnPageN(int pageIndex, string id, string elt, string[] sentences)
+		{
+			var target = _contentPages[pageIndex].SafeSelectNodes($".//{elt}[@id='{id}']").Cast<XmlElement>().First();
+			foreach (var s in sentences)
+			{
+				AssertThatXmlIn.Element(target).HasSpecifiedNumberOfMatchesForXpath($".//span[@id and @class='bloom-highlightSegment' and text()='{s}']", 1);
+			}
+
+			if (sentences.Length == 0)
+			{
+				AssertThatXmlIn.Element(target).HasNoMatchForXpath($".//span[@id and @class='bloom-highlightSegment']");
+			}
+		}
+
+		[TestCase(0, "TextBox")]
+		[TestCase(1, "TextBox")]
+		[TestCase(2, "TextBox")]
+		[TestCase(3, "TextBox")]
+		[TestCase(4, "Sentence")]
+		public void GotRightModeOnPageN(int pageIndex, string expectedMode)
+		{
+			AssertThatXmlIn.Element(_contentPages[pageIndex]).HasSpecifiedNumberOfMatchesForXpath($".//div[contains(@class, 'bloom-editable') and @data-audiorecordingmode='{expectedMode}']", 1);
 		}
 	}
 }

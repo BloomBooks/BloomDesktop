@@ -1,7 +1,7 @@
 // This is the root file for the spreadsheet bundle
 
 // This exports the functions that should be accessible from other IFrames or from C#.
-// For example, spreadsheetBundle.theOneLibSynphony can be used.
+// For example, spreadsheetBundle.split() can be used.
 import { theOneLibSynphony } from "../bookEdit/toolbox/readers/libSynphony/synphony_lib";
 import {
     TextFragment,
@@ -14,7 +14,6 @@ export function split(text: string): string {
     const sentences = fragments.map(f => (f.isSentence ? "s" : " ") + f.text);
     return sentences.join("\n");
 }
-export { theOneLibSynphony };
 
 export function getMd5(input: string): string {
     return AudioRecording.getChecksum(input);

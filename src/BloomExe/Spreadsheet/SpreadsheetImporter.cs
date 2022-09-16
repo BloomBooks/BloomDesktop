@@ -812,18 +812,18 @@ namespace Bloom.Spreadsheet
 		}
 
 		/// <summary>
-		/// Add any audio from the row to the editable.
+		/// Add any audio for the given language from the row to the editable.
 		/// Audio is present if the spreadsheet has a column [audio lg]
 		/// (and possibly one [audio alignments lg]), and the row has data in the cell
 		/// that corresponds to the [audio lg] column.
-		/// If it has, we next determine whether the group is recorded in text mode.
+		/// If it has, we next determine whether the group is recorded in TextBox mode.
 		/// This is true if the relevant [audio alignments lg] cell is non-empty.
 		/// (Report an error if this is true and there is more than one recording file.)
-		/// (Report an error if any of any audio file does not exist or has the wrong
+		/// (Report an error if any audio file does not exist or has the wrong
 		/// extension...possibly also if it isn't really an mp3? Not attempting that
 		/// currently, though our code for getting the duration might throw.)
 		/// We will set data-audiorecordingmode to TextBox or Sentence accordingly,
-		/// and in text-box mode, we will
+		/// and in TextBox mode, we will
 		///  - (report error if the alignments aren't numbers, or not ascending, or [warning] larger than
 		///    the audio file duration, or there is more than one but not as many as we have
 		///    sentences)
@@ -853,6 +853,28 @@ namespace Bloom.Spreadsheet
 		/// <param name="row"></param>
 		private void AddAudio(XmlElement editable, string lang, ContentRow row)
 		{
+			// in case we're importing into an existing page, remove any existing audio-related stuff first.
+			// We want to do this even if there isn't any new audio stuff.
+			editable.RemoveAttribute("data-duration");
+			editable.RemoveAttribute("data-audiorecordingendtimes");
+			editable.RemoveAttribute("recordingmd5");
+			editable.RemoveAttribute("bloom-postAudioSplit");
+			editable.RemoveAttribute("data-audiorecordingmode");
+			HtmlDom.RemoveClass(editable, "audio-sentence");
+			foreach (var span in editable.SafeSelectNodes("span[@class]").Cast<XmlElement>().ToArray())
+			{
+				var className = span.Attributes["class"].Value;
+				if (className == "audio-sentence" || className == "bloom-highlightSegment")
+				{
+					// remove these spans, keeping content
+					foreach (XmlNode node in span.ChildNodes)
+					{
+						span.ParentNode.InsertBefore(node, span);
+					}
+					span.ParentNode.RemoveChild(span);
+				}
+			}
+
 			var audioColIndex = _sheet.GetOptionalColumnForLangAudio(lang);
 			if (audioColIndex == -1)
 				return; // no audio data for this language at all.
@@ -872,26 +894,26 @@ namespace Bloom.Spreadsheet
 			// In this variable we build a list of paragraphs and their sentences, for later processing
 			// after we make some sanity checks. The immediate goal is to count sentences that could
 			// have recording or alignment information.
-			var paraSentences = new List<Tuple<XmlElement, string[]>>();
+			var paraFragments = new List<Tuple<XmlElement, string[]>>();
 			int sentenceCount = 0;
 			foreach (var para in paras)
 			{
 				var text = para.InnerXml.Replace("'", "\\'");
 				// Sentences is a sequence of strings, each of which is the text of a JS TextFragment,
 				// prepended with 's' if it's a sentence and ' ' if it's not.
-				string[] sentences = new string[0];
+				string[] fragments = new string[0];
 				if (text.Length > 0) // if not, we get a spurious empty string instead of an empty array.
 				{
 					Action runJs = () =>
-						sentences = browser.RunJavaScript($"spreadsheetBundle.split('{text}')").Split('\n');
+						fragments = browser.RunJavaScript($"spreadsheetBundle.split('{text}')").Split('\n');
 					if (ControlForInvoke != null && ControlForInvoke.InvokeRequired)
 						ControlForInvoke.Invoke(runJs);
 					else
 						runJs();
 				}
 
-				paraSentences.Add(Tuple.Create(para, sentences));
-				sentenceCount += sentences.Count(x => x.StartsWith("s"));
+				paraFragments.Add(Tuple.Create(para, fragments));
+				sentenceCount += fragments.Count(x => x.StartsWith("s"));
 			}
 
 			// We need the 'where' because Split creates a single empty string if the input is empty.
@@ -911,12 +933,12 @@ namespace Bloom.Spreadsheet
 				}
 				var audioFile = audioFilesList;
 				var durationStr = AddAudioFile(editable, audioFile);
-				var duration = double.Parse(durationStr);
+				var duration = double.Parse(durationStr, CultureInfo.InvariantCulture);
 				editable.SetAttribute("data-audiorecordingmode", "TextBox");
 				HtmlDom.AddClass(editable, "audio-sentence");
 				var alignmentChecks = alignments.Select(x =>
 				{
-					if (double.TryParse(x, out double val))
+					if (double.TryParse(x, NumberStyles.Any, CultureInfo.InvariantCulture, out double val))
 					{
 						if (val > duration + 0.02)
 						{
@@ -946,31 +968,31 @@ namespace Bloom.Spreadsheet
 
 				if (sentenceCount == alignments.Length)
 				{
-					// treat as split textbox (although just possibly it was originally a single sentence
-					// recorded in text box mode and never split)
+					// treat as split TextBox (although just possibly it was originally a single sentence
+					// recorded in TextBox mode and never split)
 
 					// Break it up into spans with ids and the bloom-highlightSegment class
-					foreach (var paraGroup in paraSentences)
+					foreach (var paraGroup in paraFragments)
 					{
 						var para = paraGroup.Item1;
-						var sentences = paraGroup.Item2;
+						var fragments = paraGroup.Item2;
 
 						para.InnerText = "";
-						foreach (var sentence1 in sentences)
+						foreach (var taggedFragment in fragments)
 						{
-							var sentence = sentence1.Substring(1);
-							if (sentence1.StartsWith("s"))
+							var fragment = taggedFragment.Substring(1);
+							if (taggedFragment.StartsWith("s"))
 							{
 								var span = para.OwnerDocument.CreateElement("span");
 								HtmlDom.SetNewHtmlIdValue(span); // need it to have one, don't care what
 								span.SetAttribute("class", "bloom-highlightSegment");
-								span.InnerXml = sentence;
+								span.InnerXml = fragment;
 								para.AppendChild(span);
 							}
 							else
 							{
 								// a white space fragment.
-								var node = para.OwnerDocument.CreateTextNode(sentence);
+								var node = para.OwnerDocument.CreateTextNode(fragment);
 								para.AppendChild(node);
 							}
 						}
@@ -984,7 +1006,7 @@ namespace Bloom.Spreadsheet
 					editable.SetAttribute("data-audiorecordingendtimes", alignmentsVal);
 					HtmlDom.AddClass(editable, "bloom-postAudioSplit");
 				}
-				// If there is just one alignment, but not just one sentence, we're in textbox mode, unsplit.
+				// If there is just one alignment, but not just one sentence, we're in TextBox mode, unsplit.
 				// There's nothing more to do. But any other non-matching number is an error.
 				else if(alignments.Length != 1)
 				{
@@ -1005,29 +1027,29 @@ namespace Bloom.Spreadsheet
 					return;
 				}
 				editable.SetAttribute("data-audiorecordingmode", "Sentence");
-				// Break it up into spans with ids and the bloom-highlightSegment class
+				// Break it up into spans with ids, the audio-sentence class, etc.
 				var audioFileIndex = 0;
-				foreach (var paraGroup in paraSentences)
+				foreach (var paraGroup in paraFragments)
 				{
 					var para = paraGroup.Item1;
-					var sentences = paraGroup.Item2;
+					var fragments = paraGroup.Item2;
 
 					para.InnerText = "";
-					foreach (var sentence1 in sentences)
+					foreach (var taggedFragment in fragments)
 					{
-						var sentence = sentence1.Substring(1); // strip off the leading 's' or ' '
-						if (sentence1.StartsWith("s"))
+						var fragment = taggedFragment.Substring(1);
+						if (taggedFragment.StartsWith("s"))
 						{
 							var span = para.OwnerDocument.CreateElement("span");
 							var audioFile = audioFiles[audioFileIndex++];
-							span.InnerXml = sentence;
+							span.InnerXml = fragment;
 							AddAudioFile(span, audioFile);
 							HtmlDom.AddClass(span, "audio-sentence");
 							para.AppendChild(span);
 						}
 						else
 						{
-							var node = para.OwnerDocument.CreateTextNode(sentence);
+							var node = para.OwnerDocument.CreateTextNode(fragment);
 							para.AppendChild(node);
 						}
 					}
@@ -1053,7 +1075,7 @@ namespace Bloom.Spreadsheet
 				HtmlDom.SetNewHtmlIdValue(elt);
 				return "0";
 			}
-			var destFile = SanitizeXHmlId(BookStorage.SanitizeNameForFileSystem(Path.GetFileName(audioFile)));
+			var destFile = SanitizeXHtmlId(BookStorage.SanitizeNameForFileSystem(Path.GetFileName(audioFile)));
 			var id = Path.GetFileNameWithoutExtension(destFile);
 			// We may as well set this; elements with class audio-sentence are supposed to have
 			// ids, even if there is no corresponding file.
@@ -1105,7 +1127,7 @@ namespace Bloom.Spreadsheet
 			return "";
 		}
 
-		internal static string SanitizeXHmlId(string id)
+		internal static string SanitizeXHtmlId(string id)
 		{
 			if (!XmlConvert.IsStartNCNameChar(id[0]))
 				id = 'i' + id;
@@ -1118,7 +1140,7 @@ namespace Bloom.Spreadsheet
 			}
 			if (id.Length > 1)
 				return id;
-			return "empty"; // arbitrary, and likely a duplicate, but at least valid.
+			return "defaultId"; // arbitrary, and likely a duplicate, but at least valid.
 		}
 
 		private double GetDuration(string path)
@@ -1126,8 +1148,19 @@ namespace Bloom.Spreadsheet
 			// Review: is this library windows-only? If so what do we do on Linux?
 			// Should we use ffmpeg on both? What if the file is not really mp3?
 			// Another option is to ask the browser to figure it out.
+#if __MonoCS__
+			Debug.fail("please implement this for Linux");
+			// See the one other use of Mp3Reader in EpubMaker.
+			// That is also used to get the duration, so a single function
+			// in some suitable location like Utils would be appropriate.
+			// I decided not to attempt it myself as the chance of getting
+			// something wrong so it won't even compile is too great.
+			// The value here is quite undesirable, just to get it to compile.
+			return 10.0;
+#else
 			using (var mp3Reader = new Mp3FileReader(path))
 				return mp3Reader.TotalTime.TotalSeconds;
+#endif
 		}
 	}
 }

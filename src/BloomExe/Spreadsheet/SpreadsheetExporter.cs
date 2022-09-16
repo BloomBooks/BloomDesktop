@@ -236,7 +236,7 @@ namespace Bloom.Spreadsheet
 				if (path == "missing")
 					return; // no real recording, so don't put anything in the file.
 				var audioColIndex = GetOrAddColumnForLangAudio(lang);
-				var alignmentIndex = GetOrAddColumnForAudioAlignnemt(lang);
+				var alignmentIndex = GetOrAddColumnForAudioAlignment(lang);
 				var endTimes = editable.Attributes["data-audiorecordingendtimes"]?.Value;
 				if (string.IsNullOrEmpty(endTimes))
 				{
@@ -277,18 +277,20 @@ namespace Bloom.Spreadsheet
 		private string HandleAudioFile(XmlElement elt, string bookFolderPath)
 		{
 			var id = elt.Attributes["id"]?.Value??"";
+			// Some of our early unit tests don't set an output folder, yet the data we happened to choose
+			// has some audio annotations, so we need to just ignore audio output if there's nowhere to put it.
 			if (_outputFolder != null)
 			{
 				var audioFolder = Path.Combine(_outputFolder, "audio");
 				Directory.CreateDirectory(audioFolder);
 				var dest = Path.Combine(audioFolder, id + ".mp3");
 				var src = Path.Combine(bookFolderPath, "audio", id + ".mp3");
-				if (File.Exists(src))
+				if (RobustFile.Exists(src))
 				{
 					// We're creating a new folder, so it's somewhat pathological to find a duplicate.
 					// Somehow two blocks in the document have the same IDs. Maybe we should do a warning?
 					// Anyway, it pretty much has to be the same file, so just leave it.
-					if (!File.Exists(dest))
+					if (!RobustFile.Exists(dest))
 					{
 						RobustFile.Copy(src, dest);
 					}
@@ -357,7 +359,7 @@ namespace Bloom.Spreadsheet
 			return _spreadsheet.AddColumnForLangAudio(langCode, langFriendlyName);
 		}
 
-		private int GetOrAddColumnForAudioAlignnemt(string langCode)
+		private int GetOrAddColumnForAudioAlignment(string langCode)
 		{
 			var colIndex = _spreadsheet.GetOptionalColumnForAudioAlignment(langCode);
 			if (colIndex >= 0)

@@ -64,7 +64,7 @@ namespace Bloom.Spreadsheet
 						continue;
 					if (!content.EndsWith("]"))
 						continue;
-					if (content.Contains("audio"))
+					if (content.StartsWith("[audio"))
 						continue; // main audio column, audio alignment column
 					// Todo: may need to skip some [] columns, if we use only that convention
 					// to indicate meaningful columns.
