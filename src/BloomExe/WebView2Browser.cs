@@ -92,7 +92,7 @@ namespace Bloom
 			//var env = await CoreWebView2Environment.CreateAsync(null, null, op);
 			//await _webview.EnsureCoreWebView2Async(env);
 			var op = new CoreWebView2EnvironmentOptions("--autoplay-policy=no-user-gesture-required");
-			var env = await CoreWebView2Environment.CreateAsync(null, null, op);
+			var env = await CoreWebView2Environment.CreateAsync(null, ProjectContext.GetBloomAppDataFolder(), op);
 			await _webview.EnsureCoreWebView2Async(env);
 		}
 
