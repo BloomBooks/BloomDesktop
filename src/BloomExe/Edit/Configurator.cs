@@ -129,7 +129,7 @@ namespace Bloom.Edit
 						populateForm($inputs, x, 'name');
 					}
 				window.addEventListener('load', preloadSettings)");
-			return XmlHtmlConverter.ConvertElementToHtml5(doc.DocumentElement);
+			return XmlHtmlConverter.ConvertDomToHtml5(doc);
 		}
 
 		private void ConfigureBookInternal(string bookPath)
