@@ -242,6 +242,16 @@ namespace BloomTests.Spreadsheet
 			Assert.That(_pageContentRows[3].GetCell(pageNumberIndex).Content, Is.EqualTo("2"));
 		}
 
+		// This case doesn't really 'belong' here but it's a convenient place to check that
+		// we don't create audio columns unless the document has audio, without creating another whole
+		// DOM to test in the audio tests.
+		[TestCase("fromExport")]
+		public void HasNoAudioColumns(string source)
+		{
+			SetupFor(source);
+			Assert.That(_sheet.Header.GetRow(0).CellContents, Has.None.Match(".*audio.*"));
+		}
+
 		[TestCase("fromExport")]
 		[TestCase("fromFile")]
 		public void AddsRowLabels(string source)

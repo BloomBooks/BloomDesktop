@@ -786,7 +786,7 @@ namespace BloomTests.Spreadsheet
 		}
 
 		[TestCase("by copying the last page")]
-		[TestCase("Adding page 7 using a Basic Text")]
+		[TestCase("Adding page 7 using a Just a Picture")]
 		[TestCase("Updating page 3")]
 		[TestCase("was not found")]
 		[TestCase("Done")]

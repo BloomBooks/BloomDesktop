@@ -2468,7 +2468,7 @@ namespace Bloom.Book
 		}
 
 
-		internal static string SanitizeNameForFileSystem(string name)
+		public static string SanitizeNameForFileSystem(string name)
 		{
 			// We want NFC to prevent Dropbox complaining about encoding conflicts.
 			// May as well do that first as it may result in less truncation.

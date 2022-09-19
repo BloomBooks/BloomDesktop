@@ -288,6 +288,8 @@
     <Compile Include="Publish\ExportFixedLayoutEpubTests.cs" />
     <Compile Include="Publish\Video\RecordVideoWindowTests.cs" />
     <Compile Include="Publish\Video\ResolutionTests.cs" />
+    <Compile Include="Spreadsheet\SpreadsheetAudioImportTests.cs" />
+    <Compile Include="Spreadsheet\SpreadsheetAudioTests.cs" />
     <Compile Include="Spreadsheet\SpreadsheetImporterWithBookTests.cs" />
     <Compile Include="Utils\BloomArchiveFileTests.cs" />
     <Compile Include="Utils\BloomTarArchiveTests.cs" />

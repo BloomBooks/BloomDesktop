@@ -111,6 +111,7 @@ namespace Bloom.web.controllers
 				}
 
 				var importer = new SpreadsheetImporter(_webSocketServer, book, Path.GetDirectoryName(inputFilepath));
+				importer.ControlForInvoke = Shell.GetShellOrOtherOpenForm();
 				importer.ImportWithProgress(inputFilepath, () =>
 				{
 

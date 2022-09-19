@@ -38,3 +38,5 @@ export declare class TextFragment {
 }
 
 export declare function clearWordCache();
+
+export declare function addBloomSynphonyExtensions();

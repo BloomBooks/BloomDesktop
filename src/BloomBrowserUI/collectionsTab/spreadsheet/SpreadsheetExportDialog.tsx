@@ -78,9 +78,9 @@ const SpreadsheetExportDialog: React.FunctionComponent<{
                     <span>
                         This feature is still a work in progress. Though you can{" "}
                         <em>export</em> all books, Bloom cannot <em>import</em>{" "}
-                        books with these features: TalkingBooks, Quizzes and
-                        other Activities. There may be other export and import
-                        limitations we are not aware of.
+                        books with these features: Quizzes and other Activities.
+                        There may be other export and import limitations we are
+                        not aware of.
                     </span>
                 </WarningBox>
                 <p></p>

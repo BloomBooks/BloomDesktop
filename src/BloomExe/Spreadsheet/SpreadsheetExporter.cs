@@ -13,6 +13,7 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Security;
+using System.Text;
 using System.Windows.Forms;
 using System.Xml;
 
@@ -65,12 +66,12 @@ namespace Bloom.Spreadsheet
 		//have a src attribute nor actually contain an img element
 		public static List<string> DataDivImagesWithNoSrcAttributes = new List<string>() { "licenseImage" };
 
-		public void ExportToFolderWithProgress(HtmlDom dom, string imagesFolderPath, string outputFolder,
+		public void ExportToFolderWithProgress(HtmlDom dom, string bookFolderPath, string outputFolder,
 			Action<string> resultCallback)
 		{
 			BrowserProgressDialog.DoWorkWithProgressDialog(_webSocketServer, (progress, worker) =>
 		{
-			var spreadsheet = ExportToFolder(dom, imagesFolderPath, outputFolder, out string outputFilePath,
+			var spreadsheet = ExportToFolder(dom, bookFolderPath, outputFolder, out string outputFilePath,
 				progress);
 			resultCallback(outputFilePath);
 			return progress.HaveProblemsBeenReported;
@@ -79,7 +80,7 @@ namespace Bloom.Spreadsheet
 
 		public SpreadsheetExportParams Params = new SpreadsheetExportParams();
 
-		public InternalSpreadsheet Export(HtmlDom dom, string imagesFolderPath, IWebSocketProgress progress = null)
+		public InternalSpreadsheet Export(HtmlDom dom, string bookFolderPath, IWebSocketProgress progress = null)
 		{
 			_progress = progress ?? new NullWebSocketProgress();
 			_spreadsheet.Params = Params;
@@ -87,7 +88,7 @@ namespace Bloom.Spreadsheet
 
 			//Get xmatter
 			var dataDiv = GetDataDiv(dom);
-			AddDataDivData(dataDiv, imagesFolderPath);
+			AddDataDivData(dataDiv, bookFolderPath);
 
 			var iContentPage = 0;
 			foreach (var page in pages)
@@ -100,7 +101,7 @@ namespace Bloom.Spreadsheet
 
 				//Each page alternates colors
 				var colorForPage = iContentPage++ % 2 == 0 ? InternalSpreadsheet.AlternatingRowsColor1 : InternalSpreadsheet.AlternatingRowsColor2;
-				AddContentRows(page, pageNumber, imagesFolderPath, colorForPage);
+				AddContentRows(page, pageNumber, bookFolderPath, colorForPage);
 			}
 			_spreadsheet.SortHiddenContentRowsToTheBottom();
 			return _spreadsheet;
@@ -108,7 +109,7 @@ namespace Bloom.Spreadsheet
 
 		private bool _reportedImageDescription;
 
-		private void AddContentRows(XmlElement page, string pageNumber, string imagesFolderPath, Color colorForPage)
+		private void AddContentRows(XmlElement page, string pageNumber, string bookFolderPath, Color colorForPage)
 		{
 			var imageContainers = GetImageContainers(page);
 			var allGroups = TranslationGroupManager.SortedGroupsOnPage(page, true);
@@ -129,7 +130,7 @@ namespace Bloom.Spreadsheet
 				if (pageContent.imageContainer != null)
 				{
 					var image = (XmlElement)pageContent.imageContainer.SafeSelectNodes(".//img").Item(0);
-					var imagePath = ImagePath(imagesFolderPath, image.GetAttribute("src"));
+					var imagePath = ImagePath(bookFolderPath, image.GetAttribute("src"));
 					var fileName = Path.GetFileName(imagePath);
 					var outputPath = Path.Combine("images", fileName);
 					if (fileName == "placeHolder.png")
@@ -153,11 +154,157 @@ namespace Bloom.Spreadsheet
 							content = InternalSpreadsheet.BlankContentIndicator;
 						}
 						row.SetCell(index, content);
+						ExportAudio(editable, row, bookFolderPath);
 					}
 				}
 
 				row.BackgroundColor = colorForPage;
 			}
+		}
+
+		private void ExportAudio(XmlElement editable, ContentRow row, string bookFolderPath)
+		{
+			// There are four possible states for a bloom-Editable in regard to audio.
+			// 1. Audio recorded by block and not split.
+			//   - The bloom-editable has class audio-sentence
+			//   - The bloom-editable has data-audiorecordingmode="TextBox"
+			//   - The bloom-editable has an id. The audio for the block lives in audio/id.mp3,
+			//     which should exist.
+			//   - The bloom-editable has data-duration, corresponding to the duration
+			//     of the mp3.
+			// 2. Audio recorded by block and split.
+			//   - The bloom-editable has all of the above plus data-audiorecordingendtimes,
+			//     a space-separated list of when the audio for each sentence ends.
+			//   - the bloom-editable has the additional class bloom-postAudioSplit.
+			//   - the p children of the bloom-editable have spans, each corresponding to
+			//     a sentence.
+			//   - each span has an id (though these do not correspond to files)
+			//   - each span has class bloom-highlightSegment (but not class audio-sentence)
+			// 3. Audio recorded by sentence.
+			//   - The bloom-editable has data-audiorecordingmode="Sentence"
+			//   - the p children of the bloom-editable have spans, each corresponding to
+			//     a sentence.
+			//   - each span has an id, at least one of which corresponds to an audio/[id].mp3 file
+			//     (if none of them corresponds to a file, we don't have audio for this block;
+			//     but it's not unusual that only some sentences have been recorded.)
+			//   - each span has class audio-sentence
+			//   - each span that has a recording has a data-duration attribute
+			// In all three cases, the elements which have class audio-sentence also have
+			// recordingmd5 attributes, if a recording has actually been made.
+			// 4. No recorded audio.
+			//   - might have none of these attributes, if we've never even opened
+			//     the page using the talking book tool
+			//   - might have much of the state of either of (1) or (3) above, except that
+			//     any ids on audio-sentence elements do NOT correspond to existing audio
+			//     files. Typically, they will also not have data-duration or recordingmd5.
+			//     Typically data-audiorecordingendtimes and bloom-highlightSegment elements
+			//     would also be absent, but there might be exceptions where audio has
+			//     been recorded and deleted.
+			// Another possible, but only legacy, state is data-audiorecordingmode="TextBox",
+			// but the paragraphs have audio-sentence classes and mp3-file ids. This
+			// corresponds to an early form of TextBox recording in which the audio was
+			// split into individual sentence files. If we
+			// find this, we will export it as sentence mode, and import will lose the
+			// fact that it was once recorded as a text-block and the user
+			// possibly wants to record it that way if re-doing.
+			//
+			// What we want to output:
+			// 1. If there's any recorded audio, we need a column [audio lg] (user-friendly:
+			// Language-name audio) which contains the relative path to the mp3 file(s),
+			// comma-space separated.
+			// In sentence mode, we'll output the literal "missing" for any span that
+			// doesn't have a recording. (In TextBox mode, if the one expected audio file
+			// is missing, we don't have audio at all for the block and don't export
+			// anything for audio.)
+			// 2. If there's data-audiorecordingendtimes, we want to list them in another
+			// column [audio alignments lg] (user-friendly: Language-name alignments).
+			// 3. If we're in text box mode with no data-audiorecordingendtimes, we want
+			// that same column, but we'll just put the overall duration in it as a
+			// single number.
+			// 4. In sentence mode, we don't put anything in the alignments column
+			// (or even create it, if nothing else wants it)
+			// 5. All audio files noted should be copied to the spreadsheet folder.
+			// Note that we don't output recordingmd5. It has no obvious use unless we
+			// restore it on import, but then the user has the almost-impossible responsibility
+			// of figuring out what it should be if the text is edited. It seems better
+			// to assume that any recordings provided on import are current, and set the
+			// recordingmd5 to the appropriate value for the imported text.
+			var lang = editable.Attributes["lang"].Value;
+			if (HtmlDom.HasClass(editable, "audio-sentence"))
+			{
+				var path = HandleAudioFile(editable, bookFolderPath);
+				if (path == "missing")
+					return; // no real recording, so don't put anything in the file.
+				var audioColIndex = GetOrAddColumnForLangAudio(lang);
+				var alignmentIndex = GetOrAddColumnForAudioAlignment(lang);
+				var endTimes = editable.Attributes["data-audiorecordingendtimes"]?.Value;
+				if (string.IsNullOrEmpty(endTimes))
+				{
+					var duration = editable.Attributes["data-duration"]?.Value;
+					row.SetCell(alignmentIndex, duration);
+				}
+				else
+				{
+					row.SetCell(alignmentIndex, endTimes);
+				}
+
+				row.SetCell(audioColIndex, path);
+			}
+			else
+			{
+				// look for sentence-level
+				var audioSentences = editable.SafeSelectNodes(".//span[@class='audio-sentence']").Cast<XmlElement>();
+				var fileList = new StringBuilder();
+				var gotRealRecording = false;
+				foreach (var sentence in audioSentences)
+				{
+					var path = HandleAudioFile(sentence, bookFolderPath);
+					if (fileList.Length > 0)
+						fileList.Append(", ");
+					fileList.Append(path);
+					if (path != "missing")
+						gotRealRecording = true;
+				}
+
+				if (gotRealRecording)
+				{
+					var audioColIndex = GetOrAddColumnForLangAudio(lang);
+					row.SetCell(audioColIndex, fileList.ToString());
+				}
+			}
+		}
+
+		private string HandleAudioFile(XmlElement elt, string bookFolderPath)
+		{
+			var id = elt.Attributes["id"]?.Value??"";
+			// Some of our early unit tests don't set an output folder, yet the data we happened to choose
+			// has some audio annotations, so we need to just ignore audio output if there's nowhere to put it.
+			if (_outputFolder != null)
+			{
+				var audioFolder = Path.Combine(_outputFolder, "audio");
+				Directory.CreateDirectory(audioFolder);
+				var dest = Path.Combine(audioFolder, id + ".mp3");
+				var src = Path.Combine(bookFolderPath, "audio", id + ".mp3");
+				if (RobustFile.Exists(src))
+				{
+					// We're creating a new folder, so it's somewhat pathological to find a duplicate.
+					// Somehow two blocks in the document have the same IDs. Maybe we should do a warning?
+					// Anyway, it pretty much has to be the same file, so just leave it.
+					if (!RobustFile.Exists(dest))
+					{
+						RobustFile.Copy(src, dest);
+					}
+				}
+				else
+				{
+					// In the case of audio it's entirely normal not to find a recording.
+					// Just means the page has been analyzed and set up with ids for it,
+					// but the recording hasn't been made yet.
+					return "missing";
+				}
+			}
+
+			return $"./audio/{id}.mp3";
 		}
 
 		private XmlElement GetDataDiv(HtmlDom elementOrDom)
@@ -196,6 +343,34 @@ namespace Bloom.Spreadsheet
 			// Doesn't exist yet. Let's add a column for it.
 			var langFriendlyName = LangDisplayNameResolver.GetLanguageDisplayName(langCode);
 			return _spreadsheet.AddColumnForLang(langCode, langFriendlyName);
+		}
+
+		private int GetOrAddColumnForLangAudio(string langCode)
+		{
+			var colIndex = _spreadsheet.GetOptionalColumnForLangAudio(langCode);
+			if (colIndex >= 0)
+			{
+				return colIndex;
+			}
+
+			// Doesn't exist yet. Let's add a column for it.
+			// We're not yet trying to handle localizing labels.
+			var langFriendlyName = LangDisplayNameResolver.GetLanguageDisplayName(langCode) + " audio";
+			return _spreadsheet.AddColumnForLangAudio(langCode, langFriendlyName);
+		}
+
+		private int GetOrAddColumnForAudioAlignment(string langCode)
+		{
+			var colIndex = _spreadsheet.GetOptionalColumnForAudioAlignment(langCode);
+			if (colIndex >= 0)
+			{
+				return colIndex;
+			}
+
+			// Doesn't exist yet. Let's add a column for it.
+			// We're not yet trying to handle localizing labels.
+			var langFriendlyName = LangDisplayNameResolver.GetLanguageDisplayName(langCode) + " alignments";
+			return _spreadsheet.AddColumnForAudioAlignment(langCode, langFriendlyName);
 		}
 
 		private void AddDataDivData(XmlNode node, string imagesFolderPath)
@@ -355,13 +530,13 @@ namespace Bloom.Spreadsheet
 		/// Output the specified DOM to the specified outputFolder (after deleting any existing content, if
 		/// permitted...depends on overwrite param and possibly user input).
 		/// Returns the intermediate spreadsheet object created, and also outputs the path to the xlsx file created.
-		/// Looks for images in the specified imagesFolderPath (typically the book folder) and copies them to an
-		/// images subdirectory of the outputFolder.
+		/// Looks for images in the specified bookFolderPath (typically the book folder) and copies them to an
+		/// images subdirectory of the outputFolder. Also expects to find an audio subfolder if relevant.
 		/// Currently the xlsx file created will have the same name as the outputFolder, typically copied from
 		/// the input book folder.
 		/// <returns>the internal spreadsheet, or null if not permitted to overwrite.</returns>
 		/// </summary>
-		public InternalSpreadsheet ExportToFolder(HtmlDom dom, string imagesFolderPath, string outputFolder,
+		public InternalSpreadsheet ExportToFolder(HtmlDom dom, string bookFolderPath, string outputFolder,
 			out string outputPath,
 			IWebSocketProgress progress = null, OverwriteOptions overwrite = OverwriteOptions.Ask)
 		{
@@ -429,7 +604,7 @@ namespace Bloom.Spreadsheet
 				// In case there's a previous export, get rid of it.
 				SIL.IO.RobustIO.DeleteDirectoryAndContents(_outputFolder);
 				Directory.CreateDirectory(_outputImageFolder); // also (re-)creates its parent, outputFolder
-				var spreadsheet = Export(dom, imagesFolderPath, progress);
+				var spreadsheet = Export(dom, bookFolderPath, progress);
 				spreadsheet.WriteToFile(outputPath, progress);
 				return spreadsheet;
 			}
