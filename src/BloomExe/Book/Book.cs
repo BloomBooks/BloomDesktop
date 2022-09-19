@@ -2245,7 +2245,7 @@ namespace Bloom.Book
 		{
 			// Put the sign language (if any) first in the list.  See BL-11414.
 			// Getting the sign language will have to change if we ever assign it on a per-book basis.
-			var signLanguage = _bookData.CollectionSettings.SignLanguageName;
+			var signLanguage = HasSignLanguageVideos() ? _bookData.CollectionSettings.SignLanguageName : "";
 
 			var languagesOfBook = (string.IsNullOrEmpty(signLanguage) ? "" : signLanguage + ", ") + _bookData.Language1.Name;
 
