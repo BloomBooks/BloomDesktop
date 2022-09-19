@@ -89,6 +89,16 @@ export function getAllAudioModes(): AudioMode[] {
 
 const kWebsocketContext = "audio-recording";
 const kSegmentClass = "bloom-highlightSegment";
+// Indicates that the element should be highlighted.
+const kEnableHighlightClass = "ui-enableHighlight";
+// Indicates that the element should NOT be highlighted.
+// For example, some elements have highlighting prevented at this level
+// because its content has been broken into child elements, only some of which show the highlight
+const kDisableHighlightClass = "ui-disableHighlight";
+// Indicates that highlighting is briefly/temporarily suppressed,
+// but may become highlighted later.
+// For example, audio highlighting is suppressed until the related audio starts playing (to avoid flashes)
+const kSuppressHighlightClass = "ui-suppressHighlight";
 const kAudioSentence = "audio-sentence"; // Even though these can now encompass more than strict sentences, we continue to use this class name for backwards compatability reasons
 const kAudioSentenceClassSelector = "." + kAudioSentence;
 const kAudioCurrent = "ui-audioCurrent";
@@ -120,7 +130,7 @@ interface IPlaybackOrderInfo {
 interface ISetHighlightParams {
     newElement: Element;
     shouldScrollToElement: boolean;
-    disableHighlightIfNoAudio?: boolean;
+    suppressHighlightIfNoAudio?: boolean;
     oldElement?: Element | null | undefined; // Optional. Provides some minor optimization if set.
     forceRedisplay?: boolean; // optional. If true, reset higlight even if selected element unchanged.
 }
@@ -521,7 +531,7 @@ export default class AudioRecording {
         const page = this.getPageDocBodyJQuery();
         page.find(kAudioCurrentClassSelector)
             .removeClass(kAudioCurrent)
-            .removeClass("disableHighlight");
+            .removeClass(kSuppressHighlightClass);
         if (this.showPlaybackInput.checked) {
             // We are removing the UI because we're changing tools or pages, but we want to leave
             // the checkbox checked for the next time this tool is active, so it will turn on the
@@ -912,7 +922,7 @@ export default class AudioRecording {
         for (let i = 0; i < audioCurrentArray.length; i++) {
             audioCurrentArray[i].classList.remove(
                 kAudioCurrent,
-                "disableHighlight"
+                kSuppressHighlightClass
             );
         }
     }
@@ -936,7 +946,7 @@ export default class AudioRecording {
         // Also, don't scroll while the user is typing: 1) something else already takes care of that well and
         // 2) in Record by Sentence mode, it's easily possible for the current highlight to be the 1st span while the user is typing into the last span.
         shouldScrollToElement,
-        disableHighlightIfNoAudio,
+        suppressHighlightIfNoAudio,
         oldElement, // Optional. Provides some minor optimization if set.
         forceRedisplay
     }: ISetHighlightParams): Promise<void> {
@@ -966,17 +976,17 @@ export default class AudioRecording {
             newElement.classList.add(kAudioCurrent);
         }
 
-        if (disableHighlightIfNoAudio) {
+        if (suppressHighlightIfNoAudio) {
             // prevents highlight showing at once
-            // FYI: Because of how JS works, no rendering should happen between setting audioCurrent above and setting disableHighlight here.
-            newElement.classList.add("disableHighlight");
+            // FYI: Because of how JS works, no rendering should happen between setting audioCurrent above and setting ui-suppressHighlight here.
+            newElement.classList.add(kSuppressHighlightClass);
             try {
                 const response: AxiosResponse<any> = await axios.get(
                     "/bloom/api/audio/checkForSegment?id=" + newElement.id
                 );
 
                 if (response.data === "exists") {
-                    newElement.classList.remove("disableHighlight");
+                    newElement.classList.remove(kSuppressHighlightClass);
                 }
             } catch (error) {
                 //server couldn't find it, so just leave it unhighlighted
@@ -1388,7 +1398,7 @@ export default class AudioRecording {
                     this.elementsToPlayConsecutivelyStack.length - 1
                 ],
                 shouldScrollToElement: true,
-                disableHighlightIfNoAudio: true
+                suppressHighlightIfNoAudio: true
             });
             this.removeExpectedStatusFromAll();
             this.setStatus("play", Status.Active);
@@ -1499,7 +1509,7 @@ export default class AudioRecording {
         this.setHighlightToAsync({
             newElement: element,
             shouldScrollToElement: true,
-            disableHighlightIfNoAudio: false // Should be false when playing sub-elements, because the highlighted sub-element doesn't have audio. The audio belongs to parent.
+            suppressHighlightIfNoAudio: false // Should be false when playing sub-elements, because the highlighted sub-element doesn't have audio. The audio belongs to parent.
         });
 
         const mediaPlayer: HTMLMediaElement = this.getMediaPlayer();
@@ -1588,7 +1598,7 @@ export default class AudioRecording {
         await this.setSoundAndHighlightAsync({
             newElement: firstElementToPlay,
             shouldScrollToElement: true,
-            disableHighlightIfNoAudio: true
+            suppressHighlightIfNoAudio: true
         });
         this.setStatus("listen", Status.Active);
         return this.playCurrentInternalAsync();
@@ -1616,7 +1626,7 @@ export default class AudioRecording {
                 await this.setSoundAndHighlightAsync({
                     newElement: nextElement,
                     shouldScrollToElement: true,
-                    disableHighlightIfNoAudio: true,
+                    suppressHighlightIfNoAudio: true,
                     oldElement: currentElement
                 });
                 return this.playCurrentInternalAsync();
