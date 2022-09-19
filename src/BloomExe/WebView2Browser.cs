@@ -39,8 +39,6 @@ namespace Bloom
 				};
 				_webview.CoreWebView2.ContextMenuRequested += ContextMenuRequested;
 				_readyToNavigate = true;
-				if (_dummyForm != null)
-					_dummyForm.Hide();
 			};
 		}
 
@@ -143,7 +141,6 @@ namespace Bloom
 		private bool _ensuredCoreWebView2;
 		private bool _finishedUpdateDisplay;
 		private bool _urlMatches;
-		private Form _dummyForm;
 
 		protected override async void UpdateDisplay(string newUrl)
 		{
@@ -169,30 +166,11 @@ namespace Bloom
 			// sure that it could not loop forever. But in every case I've tried,
 			// it did terminate, and in the one case where Navigation previously
 			// threw an Exception indicating it was not ready, waiting like this fixed it.
-			var watch = new Stopwatch();
-			watch.Start();
 			while (!_readyToNavigate)
 			{
 				Application.DoEvents();
 				Thread.Sleep(10);
-				if (watch.ElapsedMilliseconds > 4000 && _dummyForm == null)
-				{
-					// This seems to happen only on TeamCity in unit testing.
-					// A few answers on StackOverflow indicate that a WebView2 may never
-					// finish initializing until it is visible in a form. But very often
-					// it works without this. I have no idea what the difference is.
-					// Trying this to see if it helps...
-					_dummyForm = new Form();
-					// Hope this is NEVER seen but if it is at least we know what the dialog is
-					_dummyForm.Text = "Waiting for WebView init";
-					_dummyForm.Controls.Add(this);
-					_dummyForm.ShowDialog(); // This will show until we finally get initialized.
-					_dummyForm.Controls.Remove(this);
-					_dummyForm.Dispose();
-					_dummyForm = null;
-				}
 			}
-			watch.Stop();
 		}
 
 		public override bool NavigateAndWaitTillDone(HtmlDom htmlDom, int timeLimit, BloomServer.SimulatedPageFileSource source, Func<bool> cancelCheck, bool throwOnTimeout)
