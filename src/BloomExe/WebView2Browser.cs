@@ -166,11 +166,28 @@ namespace Bloom
 			// sure that it could not loop forever. But in every case I've tried,
 			// it did terminate, and in the one case where Navigation previously
 			// threw an Exception indicating it was not ready, waiting like this fixed it.
+			var watch = new Stopwatch();
+			watch.Start();
 			while (!_readyToNavigate)
 			{
 				Application.DoEvents();
 				Thread.Sleep(10);
+				if (watch.ElapsedMilliseconds > 200)
+				{
+					// This seems to happen only on TeamCity in unit testing.
+					// A few answers on StackOverflow indicate that a WebView2 may never
+					// finish initializing until it is visible in a form. But very often
+					// it works without this. I have no idea what the difference is.
+					// Trying this to see if it helps...
+					var dummyForm = new Form();
+					dummyForm.Controls.Add(this);
+					dummyForm.Show();
+					dummyForm.Hide();
+					dummyForm.Controls.Remove(this);
+					dummyForm.Dispose();
+				}
 			}
+			watch.Stop();
 		}
 
 		public override bool NavigateAndWaitTillDone(HtmlDom htmlDom, int timeLimit, BloomServer.SimulatedPageFileSource source, Func<bool> cancelCheck, bool throwOnTimeout)
