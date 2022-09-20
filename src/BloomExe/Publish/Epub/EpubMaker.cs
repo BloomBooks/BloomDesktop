@@ -349,11 +349,11 @@ namespace Bloom.Publish.Epub
 			var nsManager = new XmlNamespaceManager(Book.RawDom.NameTable);
 			nsManager.AddNamespace("svg", "http://www.w3.org/2000/svg");
 
-			var pageLabelProgress = progress.WithL10NPrefix("TemplateBooks.PageLabel.");			
+			var pageLabelProgress = progress.WithL10NPrefix("TemplateBooks.PageLabel.");
 			foreach (XmlElement pageElement in Book.GetPageElements())
 			{
 				var pageLabelEnglish = HtmlDom.GetNumberOrLabelOfPageWhereElementLives(pageElement);
-				
+
 				var comicalMatches = pageElement.SafeSelectNodes(".//svg:svg[contains(@class, 'comical-generated')]", nsManager);
 				if (comicalMatches.Count > 0 && Unpaginated)
 				{
@@ -370,7 +370,7 @@ namespace Bloom.Publish.Epub
 					pageLabelProgress.Message(pageLabelEnglish, pageLabelEnglish);
 				};
 			}
-			
+
 			PublishHelper.SendBatchedWarningMessagesToProgress(warningMessages, progress);
 
 			if (_omittedPageLabels.Any())
@@ -898,42 +898,7 @@ namespace Bloom.Publish.Epub
 					}
 					else
 					{
-						try
-						{
-#if __MonoCS__
-							// ffmpeg can provide the length of the audio, but you have to strip it out of the command line output
-							// See https://stackoverflow.com/a/33115316/7442826 or https://stackoverflow.com/a/53648234/7442826
-							// The output (which is sent to stderr, not stdout) looks something like this:
-							// "size=N/A time=00:03:36.13 bitrate=N/A speed= 432x    \rsize=N/A time=00:07:13.16 bitrate=N/A speed= 433x    \rsize=N/A time=00:08:42.97 bitrate=N/A speed= 434x"
-							// When seen on the console screen interactively, it looks like a single line that is updated frequently.
-							// A short file may have only one carriage-return separated section of output, while a very long file may
-							// have more sections than this.
-							var args = String.Format("-v quiet -stats -i \"{0}\" -f null -", path);
-							var result = CommandLineRunner.Run("/usr/bin/ffmpeg", args, "", 20 * 10, new SIL.Progress.NullProgress());
-							var output = result.ExitCode == 0 ? result.StandardError : null;
-							string timeString = null;
-							if (!string.IsNullOrEmpty(output))
-							{
-								var idxTime = output.LastIndexOf("time=");
-								if (idxTime > 0)
-									timeString = output.Substring(idxTime + 5, 11);
-							}
-							clipTimeSpan = TimeSpan.Parse(timeString, CultureInfo.InvariantCulture);
-#else
-							using (var reader = new Mp3FileReader(path))
-								clipTimeSpan = reader.TotalTime;
-#endif
-						}
-						catch
-						{
-							NonFatalProblem.Report(ModalIf.All, PassiveIf.All,
-								"Bloom could not accurately determine the length of the audio file and will only make a very rough estimate.");
-							// Crude estimate. In one sample, a 61K mp3 is 7s long.
-							// So, multiply by 7 and divide by 61K to get seconds.
-							// Then, to make a TimeSpan we need ticks, which are 0.1 microseconds,
-							// hence the 10000000.
-							clipTimeSpan = new TimeSpan(new FileInfo(path).Length * 7 * 10000000 / 61000);
-						}
+						clipTimeSpan = Utils.MiscUtils.GetMp3TimeSpan(path);
 					}
 
 					// Determine start time based on whether we have oneAudioPerPage (implies that we need to merge all the aduio files into one big file) or not
@@ -1264,7 +1229,7 @@ namespace Bloom.Publish.Epub
 				pageDom.Body.SetAttribute(attr.Name, attr.Value);
 			}
 
-			
+
 
 			if (RemoveFontSizes)
 			{
