@@ -1095,7 +1095,7 @@ namespace Bloom.Spreadsheet
 					id = HtmlDom.SetNewHtmlIdValue(elt);
 					destPath = Path.Combine(audioPath, id + ".mp3");
 				}
-				
+
 				double duration;
 				try
 				{
@@ -1135,7 +1135,7 @@ namespace Bloom.Spreadsheet
 			{
 				if (!XmlConvert.IsNCNameChar(id[i]))
 					id = id.Replace(id[i].ToString(), "");
-				else 
+				else
 					i++;
 			}
 			if (id.Length > 1)
@@ -1149,14 +1149,18 @@ namespace Bloom.Spreadsheet
 			// Should we use ffmpeg on both? What if the file is not really mp3?
 			// Another option is to ask the browser to figure it out.
 #if __MonoCS__
-			Debug.fail("please implement this for Linux");
+			Debug.Fail("please implement this for Linux");
 			// See the one other use of Mp3Reader in EpubMaker.
 			// That is also used to get the duration, so a single function
 			// in some suitable location like Utils would be appropriate.
 			// I decided not to attempt it myself as the chance of getting
 			// something wrong so it won't even compile is too great.
-			// The value here is quite undesirable, just to get it to compile.
-			return 10.0;
+			// The value here is a crude estimate. In one sample, a 61K mp3 is 7s long.
+			// So, multiply by 7 and divide by 61K to get seconds.
+			// Then, to make a TimeSpan we need ticks, which are 0.1 microseconds,
+			// hence the 10000000.
+			var clipTimeSpan = new TimeSpan(new FileInfo(path).Length * 7 * 10000000 / 61000);
+			return clipTimeSpan.TotalSeconds;
 #else
 			using (var mp3Reader = new Mp3FileReader(path))
 				return mp3Reader.TotalTime.TotalSeconds;
