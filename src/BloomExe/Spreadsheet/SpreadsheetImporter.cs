@@ -1095,7 +1095,7 @@ namespace Bloom.Spreadsheet
 					id = HtmlDom.SetNewHtmlIdValue(elt);
 					destPath = Path.Combine(audioPath, id + ".mp3");
 				}
-				
+
 				double duration;
 				try
 				{
@@ -1135,7 +1135,7 @@ namespace Bloom.Spreadsheet
 			{
 				if (!XmlConvert.IsNCNameChar(id[i]))
 					id = id.Replace(id[i].ToString(), "");
-				else 
+				else
 					i++;
 			}
 			if (id.Length > 1)
@@ -1145,22 +1145,7 @@ namespace Bloom.Spreadsheet
 
 		private double GetDuration(string path)
 		{
-			// Review: is this library windows-only? If so what do we do on Linux?
-			// Should we use ffmpeg on both? What if the file is not really mp3?
-			// Another option is to ask the browser to figure it out.
-#if __MonoCS__
-			Debug.fail("please implement this for Linux");
-			// See the one other use of Mp3Reader in EpubMaker.
-			// That is also used to get the duration, so a single function
-			// in some suitable location like Utils would be appropriate.
-			// I decided not to attempt it myself as the chance of getting
-			// something wrong so it won't even compile is too great.
-			// The value here is quite undesirable, just to get it to compile.
-			return 10.0;
-#else
-			using (var mp3Reader = new Mp3FileReader(path))
-				return mp3Reader.TotalTime.TotalSeconds;
-#endif
+			return Utils.MiscUtils.GetMp3TimeSpan(path).TotalSeconds;
 		}
 	}
 }
