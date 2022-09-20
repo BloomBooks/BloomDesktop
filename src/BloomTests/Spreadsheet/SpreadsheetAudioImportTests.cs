@@ -17,8 +17,6 @@ using SIL.Xml;
 
 namespace BloomTests.Spreadsheet
 {
-	[Category("SkipOnTeamCity")]
-	// This test block fails on TC; for some reason we can't initialize the WebView2 that it uses.
 	public class SpreadsheetAudioImportTests
 	{
 		private HtmlDom _dom;
@@ -459,8 +457,6 @@ namespace BloomTests.Spreadsheet
 	}
 
 	// This class handles some special cases that need to be checked when the import is modifying existing pages.
-	[Category("SkipOnTeamCity")]
-	// This test block fails on TC; for some reason we can't initialize the WebView2 that it uses.
 	class SpreadsheetAudioImportModifyTests
 	{
 		private HtmlDom _dom;
