@@ -827,8 +827,12 @@ namespace Bloom.ImageProcessing
 				argsBldr.AppendFormat("convert \"{0}\"", safeSourcePath);
 				if (makeOpaque)
 					argsBldr.Append(" -background white -extent 0x0 +matte");
+				// GraphicsMagick quality numbers: http://www.graphicsmagick.org/GraphicsMagick.html#details-quality
+				// For PNG files, "quality" really means "compression".  75 is the default value used in GraphicsMagick
+				// for .png files, and tests out as having a good balance between speed and resulting file size.
+				// See https://issues.bloomlibrary.org/youtrack/issue/BL-11441 for an extensive discussion of this.
 				if (destPath.EndsWith(".png", StringComparison.InvariantCultureIgnoreCase))
-					argsBldr.Append(" -quality 100"); // quality numbers: http://www.graphicsmagick.org/GraphicsMagick.html#details-quality
+					argsBldr.Append(" -quality 75");	// no lossage in output, use adaptive filter in changing image dimensions
 				else if (destPath.EndsWith(".jpg", StringComparison.InvariantCultureIgnoreCase))
 					argsBldr.Append(" -quality 99");	// still lossy, but not near as bad as the default (bigger file, however)
 				argsBldr.AppendFormat(" -scale {0}x{1} \"{2}\"", size.Width, size.Height, safeDestPath);
