@@ -291,6 +291,7 @@
     <Compile Include="Spreadsheet\SpreadsheetAudioImportTests.cs" />
     <Compile Include="Spreadsheet\SpreadsheetAudioTests.cs" />
     <Compile Include="Spreadsheet\SpreadsheetImporterWithBookTests.cs" />
+    <Compile Include="Spreadsheet\TestSpreadsheetImporter.cs" />
     <Compile Include="Utils\BloomArchiveFileTests.cs" />
     <Compile Include="Utils\BloomTarArchiveTests.cs" />
     <Compile Include="Utils\BloomZipFileTests.cs" />

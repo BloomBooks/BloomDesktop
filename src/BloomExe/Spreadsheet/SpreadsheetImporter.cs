@@ -137,7 +137,7 @@ namespace Bloom.Spreadsheet
 		/// and try your RunJavascript inputs in the console.
 		/// Remember to escape any single quotes in data strings passed to RunJavascript!
 		/// </remarks>
-		private Browser GetBrowser()
+		protected virtual Browser GetBrowser()
 		{
 			if (_browser == null)
 			{
@@ -889,7 +889,6 @@ namespace Bloom.Spreadsheet
 			}
 
 			var alignments = alignmentData.Split(new[] {' '}, StringSplitOptions.RemoveEmptyEntries);
-			var browser = GetBrowser();
 			var paras = editable.SafeSelectNodes(".//p").Cast<XmlElement>();
 			// In this variable we build a list of paragraphs and their sentences, for later processing
 			// after we make some sanity checks. The immediate goal is to count sentences that could
@@ -905,7 +904,7 @@ namespace Bloom.Spreadsheet
 				if (text.Length > 0) // if not, we get a spurious empty string instead of an empty array.
 				{
 					Action runJs = () =>
-						fragments = browser.RunJavaScript($"spreadsheetBundle.split('{text}')").Split('\n');
+						fragments = GetSentenceFragments(text);
 					if (ControlForInvoke != null && ControlForInvoke.InvokeRequired)
 						ControlForInvoke.Invoke(runJs);
 					else
@@ -1057,6 +1056,11 @@ namespace Bloom.Spreadsheet
 			}
 		}
 
+		protected virtual string[] GetSentenceFragments(string text)
+		{
+			return GetBrowser().RunJavaScript($"spreadsheetBundle.split('{text}')").Split('\n');
+		}
+
 
 		/// <summary>
 		/// Add an audio file to the book, linked by adding an id matching its name to the element.
@@ -1112,7 +1116,7 @@ namespace Bloom.Spreadsheet
 				var durationStr = duration.ToString(CultureInfo.InvariantCulture);
 				elt.SetAttribute("data-duration", durationStr);
 				string md5 = ""; // value is unused, but compiler gets confused
-				Action runJs = () => md5 = GetBrowser().RunJavaScript($"spreadsheetBundle.getMd5('{elt.InnerText.Replace("'", "\\'")}')");
+				Action runJs = () => md5 = GetMd5(elt);
 				if (ControlForInvoke != null && ControlForInvoke.InvokeRequired)
 					ControlForInvoke.Invoke(runJs);
 				else
@@ -1125,6 +1129,11 @@ namespace Bloom.Spreadsheet
 			_progress.MessageWithParams("MissingAudioFile", "", "Did not import audio on page {0} because '{1}' was not found.",
 				 ProgressKind.Error, PageNumberToReport.ToString(), src);
 			return "";
+		}
+
+		protected virtual string GetMd5(XmlElement elt)
+		{
+			return GetBrowser().RunJavaScript($"spreadsheetBundle.getMd5('{elt.InnerText.Replace("'", "\\'")}')");
 		}
 
 		internal static string SanitizeXHtmlId(string id)
