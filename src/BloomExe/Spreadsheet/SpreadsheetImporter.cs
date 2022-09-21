@@ -1145,7 +1145,7 @@ namespace Bloom.Spreadsheet
 
 		private double GetDuration(string path)
 		{
-			return Utils.MiscUtils.GetMp3TimeSpan(path).TotalSeconds;
+			return Utils.MiscUtils.GetMp3TimeSpan(path, true).TotalSeconds;
 		}
 	}
 }

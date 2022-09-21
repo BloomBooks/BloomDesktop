@@ -10,6 +10,7 @@ using System.Security.Principal;
 using System.Text;
 using System.Windows.Forms;
 using Mono.Unix;
+using NAudio.Wave;
 using SIL.CommandLineProcessing;
 using SIL.IO;
 using SIL.PlatformUtilities;
@@ -463,7 +464,7 @@ namespace Bloom.Utils
 			Application.Idle += HandleAction;
 		}
 
-		public static TimeSpan GetMp3TimeSpan(string path)
+		public static TimeSpan GetMp3TimeSpan(string path, bool throwOnInvalidData = false)
 		{
 			try
 			{
@@ -491,10 +492,12 @@ namespace Bloom.Utils
 					return reader.TotalTime;
 #endif
 			}
-			catch
+			catch (Exception ex)
 			{
 				NonFatalProblem.Report(ModalIf.All, PassiveIf.All,
 					"Bloom could not accurately determine the length of the audio file and will only make a very rough estimate.");
+				if (throwOnInvalidData && ex is InvalidDataException)
+					throw;
 				// Crude estimate. In one sample, a 61K mp3 is 7s long.
 				// So, multiply by 7 and divide by 61K to get seconds.
 				// Then, to make a TimeSpan we need ticks, which are 0.1 microseconds,
