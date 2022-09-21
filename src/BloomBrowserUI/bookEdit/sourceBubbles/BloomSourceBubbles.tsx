@@ -409,6 +409,7 @@ export default class BloomSourceBubbles {
                 group[0],
                 newIso
             );
+            BloomApi.postString("editView/sourceTextTab", newIso);
             if (divForBubble.length !== 0) {
                 BloomHintBubbles.addHintBubbles(
                     group.get(0),
