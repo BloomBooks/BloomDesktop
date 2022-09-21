@@ -281,7 +281,7 @@ namespace Bloom.Edit
 			_browser.DocumentCompleted += WebBrowser_DocumentCompleted;
 
 			_baseForRelativePaths = pageListDom.BaseForRelativePaths;
-			_browser.Navigate(pageListDom, source:BloomServer.SimulatedPageFileSource.Pagelist);
+			Invoke((Action) (() => _browser.Navigate(pageListDom, source:BloomServer.SimulatedPageFileSource.Pagelist)));
 			return result.ToList();
 		}
 
