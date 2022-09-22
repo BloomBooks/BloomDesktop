@@ -52,3 +52,63 @@ export function ensureIdsDontExist(ids: string[]) {
         }
     });
 }
+
+export const customJasmineMatchers = {
+    // This upgrades toBe with an arrow that points to the first character that differs.
+    toBeString: matchersUtil => {
+        return {
+            compare: (actual, expected) => {
+                const pass = actual === expected;
+                const message = pass
+                    ? undefined
+                    : getStringDifference(actual, expected);
+
+                return {
+                    pass,
+                    message
+                };
+            }
+        };
+    }
+};
+
+export function getStringDifference(actual: string, expected: string) {
+    const index = findFirstDiffPos(actual, expected);
+    if (index < 0) {
+        return "Strings are equal.";
+    } else {
+        const contextActual = getStringContext(actual, index);
+        const contextExpected = getStringContext(expected, index);
+        return `Strings differ at index ${index}.\nActual\n${contextActual.diffMarker}\n${contextActual.context}\n\nExpected\n${contextExpected.diffMarker}\n${contextExpected.context}`;
+    }
+}
+
+function findFirstDiffPos(a: string, b: string) {
+    if (a === b) return -1;
+    let i = 0;
+    while (a[i] === b[i]) i++;
+    return i;
+}
+
+/**
+ * Provides the context of {str} around index ${index}
+ * The {diffMarker} field will contain a string with an arrow pointing to the specified index
+ * {diffMarker} should be printed above context
+ */
+export function getStringContext(str: string, index: number) {
+    const startIndex = index - 5;
+    const endIndex = str.length;
+
+    if (startIndex < 0) {
+        return {
+            context: str.slice(0, endIndex),
+            diffMarker: " ".repeat(index - 1) + String.fromCharCode(9660)
+        };
+    } else {
+        return {
+            context: "[...]" + str.slice(startIndex, endIndex),
+            diffMarker:
+                " ".repeat(index - startIndex + 5) + String.fromCharCode(9660)
+        };
+    }
+}

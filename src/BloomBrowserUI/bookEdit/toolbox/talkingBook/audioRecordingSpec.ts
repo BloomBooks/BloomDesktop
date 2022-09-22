@@ -5,6 +5,7 @@ import AudioRecording, {
     AudioMode,
     getAllAudioModes
 } from "./audioRecording";
+import { customJasmineMatchers } from "../../../utils/testHelper";
 import axios from "axios";
 import * as $ from "jquery";
 
@@ -27,6 +28,8 @@ import * as $ from "jquery";
 describe("audio recording tests", () => {
     const extendedTimeoutInMs = 15000; // 15,000 = 15 seconds
     beforeAll(async () => {
+        jasmine.addMatchers(customJasmineMatchers); // must be in a beforeAll/beforeEach or it
+
         SetupTalkingBookUIElements();
         await SetupIFrameAsync();
         await initializeTalkingBookToolAsync();
@@ -2308,6 +2311,144 @@ describe("audio recording tests", () => {
                 .html()
                 .endsWith('" class="audio-sentence">This is a test!</span>')
         ).toBe(true);
+    });
+
+    describe("- fixHighlighting()", () => {
+        const scenarios: ("Check" | "Listen to whole page")[] = [
+            "Check",
+            "Listen to whole page"
+        ];
+
+        scenarios.forEach(scenario => {
+            it(`[${scenario}] doesn't change anything for two or fewer whitespace in split text box w/single highlight segment`, () => {
+                const originalHtml =
+                    '<div id="page1"><div id="box1" class="bloom-editable audio-sentence ui-audioCurrent" data-audiorecordingmode="TextBox"><p><span class="bloom-highlightSegment">One Two&nbsp; Three</span></p></div></div>';
+                SetupIFrameFromHtml(originalHtml);
+                const box1 = getFrameElementById("page", "box1")!;
+
+                const recording = new AudioRecording();
+                recording.fixHighlighting(
+                    scenario === "Check" ? box1 : undefined
+                );
+
+                // Verification
+                expect(box1.parentElement!.outerHTML).toBe(originalHtml);
+            });
+
+            it(`[${scenario}] disables highlight on 3 or more whitespace in split text box w/single highlight segment`, () => {
+                SetupIFrameFromHtml(
+                    '<div id="page1"><div id="box1" class="bloom-editable audio-sentence ui-audioCurrent" data-audiorecordingmode="TextBox"><p><span class="bloom-highlightSegment">One Two&nbsp; Three&nbsp;&nbsp; Four&nbsp;&nbsp;&nbsp; End</span></p></div></div>'
+                );
+                const box1 = getFrameElementById("page", "box1")!;
+
+                const recording = new AudioRecording();
+                recording.fixHighlighting(
+                    scenario === "Check" ? box1 : undefined
+                );
+
+                // Verification
+                const childSpan = box1.querySelector("span")!;
+                expect(
+                    childSpan.classList.contains("ui-disableHighlight")
+                ).toBe(true, "missing ui-disableHighlight");
+
+                expect(childSpan.innerHTML).toBeString(
+                    '<span class="ui-enableHighlight">One Two&nbsp; Three</span>&nbsp;&nbsp; <span class="ui-enableHighlight">Four</span>&nbsp;&nbsp;&nbsp; <span class="ui-enableHighlight">End</span>'
+                );
+            });
+
+            it(`[${scenario}] disables highlight on 3 or more whitespace in split text box w/multiple highlight segments.`, () => {
+                const html =
+                    '<div id="page1"><div id="box1" class="bloom-editable audio-sentence ui-audioCurrent" data-audiorecordingmode="TextBox"><p><span class="bloom-highlightSegment">One Two&nbsp; End1.</span><span class="bloom-highlightSegment">Three&nbsp;&nbsp; End2.</span><span class="bloom-highlightSegment">Four&nbsp;&nbsp;&nbsp; Five&nbsp;&nbsp;&nbsp;&nbsp; End3.</span></p></div></div>';
+                SetupIFrameFromHtml(html);
+                const box1 = getFrameElementById("page", "box1")!;
+
+                const recording = new AudioRecording();
+                recording.fixHighlighting(
+                    scenario === "Check" ? box1 : undefined
+                );
+
+                // Verification
+                expect(box1.innerHTML).toBeString(
+                    "<p>" +
+                        '<span class="bloom-highlightSegment">One Two&nbsp; End1.</span>' +
+                        '<span class="bloom-highlightSegment ui-disableHighlight"><span class="ui-enableHighlight">Three</span>&nbsp;&nbsp; <span class="ui-enableHighlight">End2.</span></span>' +
+                        '<span class="bloom-highlightSegment ui-disableHighlight"><span class="ui-enableHighlight">Four</span>&nbsp;&nbsp;&nbsp; <span class="ui-enableHighlight">Five</span>&nbsp;&nbsp;&nbsp;&nbsp; <span class="ui-enableHighlight">End3.</span></span>' +
+                        "</p>"
+                );
+            });
+
+            it(`[${scenario}] doesn't do anything on unsplit text box.`, () => {
+                const originalHtml =
+                    '<div id="box1" class="bloom-editable audio-sentence ui-audioCurrent" data-audiorecordingmode="TextBox"><p>One Two&nbsp; End1. Three&nbsp;&nbsp; End2. Four&nbsp;&nbsp;&nbsp; Five&nbsp;&nbsp;&nbsp;&nbsp; End3.</p></div>';
+                SetupIFrameFromHtml(`<div id="page1">${originalHtml}</div>`);
+                const box1 = getFrameElementById("page", "box1")!;
+
+                const recording = new AudioRecording();
+                recording.fixHighlighting(
+                    scenario === "Check" ? box1 : undefined
+                );
+
+                // Verification
+                expect(box1.outerHTML).toBeString(originalHtml);
+            });
+
+            it(`[${scenario}] disables highlight on 3 or more whitespace in record-by-sentence box`, () => {
+                const originalHtml =
+                    '<div id="box1" class="bloom-editable data-audiorecordingmode="Sentence"><p><span class="audio-sentence ui-audioCurrent">One Two&nbsp; End1.</span><span class="audio-sentence">Three&nbsp;&nbsp; End2.</span><span class="audio-sentence">Four&nbsp;&nbsp;&nbsp; Five&nbsp;&nbsp;&nbsp;&nbsp; End3.</span></p></div>';
+                SetupIFrameFromHtml(`<div id="page1">${originalHtml}</div>`);
+                const box1 = getFrameElementById("page", "box1")!;
+
+                const recording = new AudioRecording();
+                recording.fixHighlighting(
+                    scenario === "Check" ? box1 : undefined
+                );
+
+                // Verification
+                expect(box1.innerHTML).toBeString(
+                    "<p>" +
+                        '<span class="audio-sentence ui-audioCurrent">One Two&nbsp; End1.</span>' +
+                        '<span class="audio-sentence ui-disableHighlight"><span class="ui-enableHighlight">Three</span>&nbsp;&nbsp; <span class="ui-enableHighlight">End2.</span></span>' +
+                        '<span class="audio-sentence ui-disableHighlight"><span class="ui-enableHighlight">Four</span>&nbsp;&nbsp;&nbsp; <span class="ui-enableHighlight">Five</span>&nbsp;&nbsp;&nbsp;&nbsp; <span class="ui-enableHighlight">End3.</span></span>' +
+                        "</p>"
+                );
+            });
+
+            it(`[${scenario}] disables highlight on emphasized text`, () => {
+                const originalHtml =
+                    '<div id="box1" class="bloom-editable data-audiorecordingmode="Sentence"><p><span class="audio-sentence ui-audioCurrent">T<em>hree&nbsp;&nbsp; End2.</em></span></p></div>';
+                SetupIFrameFromHtml(`<div id="page1">${originalHtml}</div>`);
+                const box1 = getFrameElementById("page", "box1")!;
+
+                const recording = new AudioRecording();
+                recording.fixHighlighting(
+                    scenario === "Check" ? box1 : undefined
+                );
+
+                // Verification
+                expect(box1.innerHTML).toBeString(
+                    "<p>" +
+                        '<span class="audio-sentence ui-audioCurrent ui-disableHighlight"><span class="ui-enableHighlight">T</span><em><span class="ui-enableHighlight">hree</span>&nbsp;&nbsp; <span class="ui-enableHighlight">End2.</span></em></span>' +
+                        "</p>"
+                );
+            });
+
+            it(`[${scenario}] reverts fixHighlighting() in split text box.`, () => {
+                const originalHtml =
+                    '<div id="box1" class="bloom-editable audio-sentence ui-audioCurrent" data-audiorecordingmode="TextBox"><p><span id="span1" class="bloom-highlightSegment">One Two&nbsp; End1.</span><span id="span2" class="bloom-highlightSegment">Three&nbsp;&nbsp; End2.</span><span id="span3" class="bloom-highlightSegment">Four&nbsp;&nbsp;&nbsp; Five&nbsp;&nbsp;&nbsp;&nbsp; End3.</span></p></div>';
+                SetupIFrameFromHtml(`<div id="page1">${originalHtml}</div>`);
+                const box1 = getFrameElementById("page", "box1")!;
+
+                const recording = new AudioRecording();
+                recording.fixHighlighting(
+                    scenario === "Check" ? box1 : undefined
+                );
+                recording.revertFixHighlighting();
+
+                // Verification
+                expect(box1.outerHTML).toBeString(originalHtml);
+            });
+        });
     });
 });
 

@@ -411,6 +411,8 @@ declare module jasmine {
          */
         withContext(message: string): jasmine.Matchers;
 
+        // Used in audioRecordingSpec to provide arrows pointing to the first difference
+        toBeString(expected: any, expectationFailOutput?: any): boolean;
         /////////////////////////////
         // end custom declarations //
         /////////////////////////////
