@@ -3,6 +3,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using Bloom;
+using Bloom.Collection;
 using Bloom.TeamCollection;
 using BloomTemp;
 using Moq;
@@ -32,6 +33,7 @@ namespace BloomTests.TeamCollection
 			FolderTeamCollection.CreateTeamCollectionLinkFile(_collectionFolder.FolderPath,
 				_repoFolder.FolderPath);
 			_mockTcManager = new Mock<ITeamCollectionManager>();
+			_mockTcManager.Setup(m => m.Lock).Returns(new CollectionLock());
 			_collection = new TestFolderTeamCollection(_mockTcManager.Object, _collectionFolder.FolderPath, _repoFolder.FolderPath);
 			// Some monitoring tests now require this to exist
 			Directory.CreateDirectory(Path.Combine(_repoFolder.FolderPath, "Other"));

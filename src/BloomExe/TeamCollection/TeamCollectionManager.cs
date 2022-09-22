@@ -16,7 +16,7 @@ namespace Bloom.TeamCollection
 		TeamCollection CurrentCollectionEvenIfDisconnected { get; }
 		ITeamCollectionMessageLog MessageLog { get; }
 		CollectionSettings Settings { get; }
-
+		CollectionLock Lock { get; }
 		bool CheckConnection();
 		void ConnectToTeamCollection(string repoFolderParentPath, string collectionId);
 		string PlannedRepoFolderPath(string repoFolderParentPath);
@@ -174,10 +174,14 @@ namespace Bloom.TeamCollection
 			}
 		}
 
+		public CollectionLock Lock { get; }
+
 		public TeamCollectionManager(string localCollectionPath, BloomWebSocketServer webSocketServer,
 			BookRenamedEvent bookRenamedEvent, BookStatusChangeEvent bookStatusChangeEvent,
-			BookSelection bookSelection, CollectionClosing collectionClosingEvent, BookCollectionHolder bookCollectionHolder)
+			BookSelection bookSelection, CollectionClosing collectionClosingEvent, BookCollectionHolder bookCollectionHolder,
+			CollectionLock theLock = null)
 		{
+			Lock = theLock ?? new CollectionLock(); // an empty lock is sufficient for various unit tests
 			_webSocketServer = webSocketServer;
 			_bookStatusChangeEvent = bookStatusChangeEvent;
 			_localCollectionFolder = Path.GetDirectoryName(localCollectionPath);
@@ -197,7 +201,7 @@ namespace Bloom.TeamCollection
 					CurrentCollection.SyncLocalAndRepoCollectionFiles(false);
 				}
 				else if (Settings.HaveEnterpriseFeatures && CurrentCollectionEvenIfDisconnected != null
-				    && CurrentCollectionEvenIfDisconnected is DisconnectedTeamCollection disconnectedTC && disconnectedTC.DisconnectedBecauseNoEnterprise)
+					&& CurrentCollectionEvenIfDisconnected is DisconnectedTeamCollection disconnectedTC && disconnectedTC.DisconnectedBecauseNoEnterprise)
 				{
 					// We were disconnected because of Enterprise being off, but now the user has
 					// turned Enterprise on again. We really need to save that, even though we usually don't
@@ -211,7 +215,7 @@ namespace Bloom.TeamCollection
 						try
 						{
 							var repoFolderPath = RepoFolderPathFromLinkPath(tempCollectionLinkPath);
-							var tempCollection = new FolderTeamCollection(this, _localCollectionFolder, repoFolderPath, bookCollectionHolder:_bookCollectionHolder);
+							var tempCollection = new FolderTeamCollection(this, _localCollectionFolder, repoFolderPath, bookCollectionHolder: _bookCollectionHolder);
 							var problemWithConnection = tempCollection.CheckConnection();
 							if (problemWithConnection == null)
 							{
@@ -258,9 +262,9 @@ namespace Bloom.TeamCollection
 					var repoFolderPath = RepoFolderPathFromLinkPath(localCollectionLinkPath);
 					CurrentCollection = new FolderTeamCollection(this, _localCollectionFolder, repoFolderPath,
 						bookCollectionHolder: _bookCollectionHolder); // will be replaced if CheckConnection fails
-					// BL-10704: We set this to the CurrentCollection BEFORE checking the connection,
-					// so that there will be a valid MessageLog if we need it during CheckConnection().
-					// If CheckConnection() fails, it will reset this to a DisconnectedTeamCollection.
+																	  // BL-10704: We set this to the CurrentCollection BEFORE checking the connection,
+																	  // so that there will be a valid MessageLog if we need it during CheckConnection().
+																	  // If CheckConnection() fails, it will reset this to a DisconnectedTeamCollection.
 					CurrentCollectionEvenIfDisconnected = CurrentCollection;
 					if (CheckConnection())
 					{

@@ -44,7 +44,7 @@ namespace Bloom
 
 		public string SettingsPath { get; private set; }
 
-		private FileStream _streamToLockCollectionFile;
+		private CollectionLock _collectionLock;
 
 		/// <summary>
 		/// Start things up so all the collection-specific objects we need can be created.
@@ -59,24 +59,8 @@ namespace Bloom
 		{
 			SettingsPath = projectSettingsPath;
 
-			// Prevent the collection folder from being moved or renamed while we're running. We can't actually lock a folder,
-			// so we do this by locking the .bloomCollectionFile. We do this in a way that allows others (and our own code)
-			// to read and write to it, just not delete/rename/move it.  BL-11484
-			try
-			{
-				RetryUtility.Retry(() =>
-				{
-					_streamToLockCollectionFile = File.Open(projectSettingsPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
-				},3);
-			}
-			catch (Exception err)
-			{
-#if DEBUG
-				throw err;
-#endif
-				// Swallow because this locking is totally optional and so not worth crashing over if for
-				// some reason something else also has it open.
-			}
+			_collectionLock = new CollectionLock(SettingsPath);
+			_collectionLock.Lock();
 
 			// BL-8019: A couple lines down, BuildSubContainerForThisProject() starts BloomServer with the new project.
 			// While we are starting (or restarting, in the case of switching collections) BloomServer we need to use
@@ -219,7 +203,8 @@ namespace Bloom
 							c.Resolve<BloomWebSocketServer>(), c.Resolve<BookRenamedEvent>(),
 							c.Resolve<BookStatusChangeEvent>(),
 							c.Resolve<BookSelection>(),
-							c.Resolve<CollectionClosing>(), c.Resolve<BookCollectionHolder>())).InstancePerLifetimeScope();
+							c.Resolve<CollectionClosing>(), c.Resolve<BookCollectionHolder>(),
+							_collectionLock)).InstancePerLifetimeScope();
 						builder.Register<ITeamCollectionManager>(c => c.Resolve<TeamCollectionManager>()).InstancePerLifetimeScope();
 						builder.Register<CollectionSettings>(c =>
 						{
@@ -722,20 +707,11 @@ namespace Bloom
 		/// ------------------------------------------------------------------------------------
 		public void Dispose()
 		{
-			if (_streamToLockCollectionFile!=null){
-				try
-				{
-					_streamToLockCollectionFile.Close();
-				}
-				catch (Exception err)
-				{
-#if DEBUG
-					throw err;
-#endif
-					//swallow
-				}
-				_streamToLockCollectionFile = null;
+			if (_collectionLock != null)
+			{
+				_collectionLock.Unlock();
 			}
+
 			// Disposing ProjectContext disables api functionality and disposes WorkspaceModel/View, BloomServer, et al.,
 			// so we need to resort to our fallback error handler.
 			ResetToFallbackHandler();
