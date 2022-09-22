@@ -386,6 +386,7 @@
     <Compile Include="Book\PublishSettings.cs" />
     <Compile Include="Book\SaveContext.cs" />
     <Compile Include="Collection\BookCollectionHolder.cs" />
+    <Compile Include="Collection\CollectionLock.cs" />
     <Compile Include="ToPalaso\FontAnalytics.cs" />
     <Compile Include="ErrorReporter\BloomErrorReport.cs" />
     <Compile Include="ErrorReporter\IBloomErrorReporter.cs" />
