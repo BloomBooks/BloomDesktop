@@ -622,6 +622,11 @@ const OverlayToolControls: React.FunctionComponent = () => {
                                         Circle
                                     </Div>
                                 </MenuItem>
+                                <MenuItem value="rectangle">
+                                    <Div l10nKey="EditTab.Toolbox.ComicTool.Options.Style.Rectangle">
+                                        Rectangle
+                                    </Div>
+                                </MenuItem>
                             </Select>
                             <div className="comicCheckbox">
                                 <MuiCheckbox
