@@ -89,6 +89,16 @@ export function getAllAudioModes(): AudioMode[] {
 
 const kWebsocketContext = "audio-recording";
 const kSegmentClass = "bloom-highlightSegment";
+// Indicates that the element should be highlighted.
+const kEnableHighlightClass = "ui-enableHighlight";
+// Indicates that the element should NOT be highlighted.
+// For example, some elements have highlighting prevented at this level
+// because its content has been broken into child elements, only some of which show the highlight
+const kDisableHighlightClass = "ui-disableHighlight";
+// Indicates that highlighting is briefly/temporarily suppressed,
+// but may become highlighted later.
+// For example, audio highlighting is suppressed until the related audio starts playing (to avoid flashes)
+const kSuppressHighlightClass = "ui-suppressHighlight";
 const kAudioSentence = "audio-sentence"; // Even though these can now encompass more than strict sentences, we continue to use this class name for backwards compatability reasons
 const kAudioSentenceClassSelector = "." + kAudioSentence;
 const kAudioCurrent = "ui-audioCurrent";
@@ -120,7 +130,7 @@ interface IPlaybackOrderInfo {
 interface ISetHighlightParams {
     newElement: Element;
     shouldScrollToElement: boolean;
-    disableHighlightIfNoAudio?: boolean;
+    suppressHighlightIfNoAudio?: boolean;
     oldElement?: Element | null | undefined; // Optional. Provides some minor optimization if set.
     forceRedisplay?: boolean; // optional. If true, reset higlight even if selected element unchanged.
 }
@@ -521,13 +531,16 @@ export default class AudioRecording {
         const page = this.getPageDocBodyJQuery();
         page.find(kAudioCurrentClassSelector)
             .removeClass(kAudioCurrent)
-            .removeClass("disableHighlight");
+            .removeClass(kSuppressHighlightClass);
         if (this.showPlaybackInput.checked) {
             // We are removing the UI because we're changing tools or pages, but we want to leave
             // the checkbox checked for the next time this tool is active, so it will turn on the
             // playback order UI again. The 'true' param tells the method to leave the checkbox checked.
             this.removePlaybackOrderUi(<HTMLElement>page[0], true);
         }
+
+        // In case of the Play -> Pause -> change page.
+        this.revertFixHighlighting();
     }
 
     public stopListeningForLevels() {
@@ -912,7 +925,7 @@ export default class AudioRecording {
         for (let i = 0; i < audioCurrentArray.length; i++) {
             audioCurrentArray[i].classList.remove(
                 kAudioCurrent,
-                "disableHighlight"
+                kSuppressHighlightClass
             );
         }
     }
@@ -936,7 +949,7 @@ export default class AudioRecording {
         // Also, don't scroll while the user is typing: 1) something else already takes care of that well and
         // 2) in Record by Sentence mode, it's easily possible for the current highlight to be the 1st span while the user is typing into the last span.
         shouldScrollToElement,
-        disableHighlightIfNoAudio,
+        suppressHighlightIfNoAudio,
         oldElement, // Optional. Provides some minor optimization if set.
         forceRedisplay
     }: ISetHighlightParams): Promise<void> {
@@ -966,17 +979,17 @@ export default class AudioRecording {
             newElement.classList.add(kAudioCurrent);
         }
 
-        if (disableHighlightIfNoAudio) {
+        if (suppressHighlightIfNoAudio) {
             // prevents highlight showing at once
-            // FYI: Because of how JS works, no rendering should happen between setting audioCurrent above and setting disableHighlight here.
-            newElement.classList.add("disableHighlight");
+            // FYI: Because of how JS works, no rendering should happen between setting audioCurrent above and setting ui-suppressHighlight here.
+            newElement.classList.add(kSuppressHighlightClass);
             try {
                 const response: AxiosResponse<any> = await axios.get(
                     "/bloom/api/audio/checkForSegment?id=" + newElement.id
                 );
 
                 if (response.data === "exists") {
-                    newElement.classList.remove("disableHighlight");
+                    newElement.classList.remove(kSuppressHighlightClass);
                 }
             } catch (error) {
                 //server couldn't find it, so just leave it unhighlighted
@@ -1315,6 +1328,11 @@ export default class AudioRecording {
         const oldElementsToPlay = this.elementsToPlayConsecutivelyStack;
         const oldTimings = this.subElementsWithTimings;
 
+        const audioElement = this.getCurrentAudioSentence();
+        if (audioElement) {
+            this.fixHighlighting(audioElement);
+        }
+
         this.elementsToPlayConsecutivelyStack = [];
 
         // We want to play everything (highlighted according to the unit of playback) within the unit of RECORDING.
@@ -1388,7 +1406,7 @@ export default class AudioRecording {
                     this.elementsToPlayConsecutivelyStack.length - 1
                 ],
                 shouldScrollToElement: true,
-                disableHighlightIfNoAudio: true
+                suppressHighlightIfNoAudio: true
             });
             this.removeExpectedStatusFromAll();
             this.setStatus("play", Status.Active);
@@ -1499,7 +1517,7 @@ export default class AudioRecording {
         this.setHighlightToAsync({
             newElement: element,
             shouldScrollToElement: true,
-            disableHighlightIfNoAudio: false // Should be false when playing sub-elements, because the highlighted sub-element doesn't have audio. The audio belongs to parent.
+            suppressHighlightIfNoAudio: false // Should be false when playing sub-elements, because the highlighted sub-element doesn't have audio. The audio belongs to parent.
         });
 
         const mediaPlayer: HTMLMediaElement = this.getMediaPlayer();
@@ -1573,6 +1591,9 @@ export default class AudioRecording {
     // Returns a promise that is fulfilled when the play has been STARTED (not completed).
     public async listenAsync(): Promise<void> {
         this.resetAudioIfPaused();
+
+        this.fixHighlighting();
+
         this.elementsToPlayConsecutivelyStack = jQuery
             .makeArray(this.sortByTabindex(this.getAudioElements()))
             .reverse();
@@ -1588,7 +1609,7 @@ export default class AudioRecording {
         await this.setSoundAndHighlightAsync({
             newElement: firstElementToPlay,
             shouldScrollToElement: true,
-            disableHighlightIfNoAudio: true
+            suppressHighlightIfNoAudio: true
         });
         this.setStatus("listen", Status.Active);
         return this.playCurrentInternalAsync();
@@ -1616,7 +1637,7 @@ export default class AudioRecording {
                 await this.setSoundAndHighlightAsync({
                     newElement: nextElement,
                     shouldScrollToElement: true,
-                    disableHighlightIfNoAudio: true,
+                    suppressHighlightIfNoAudio: true,
                     oldElement: currentElement
                 });
                 return this.playCurrentInternalAsync();
@@ -1641,11 +1662,16 @@ export default class AudioRecording {
                         );
                     }
                 }
+
+                this.revertFixHighlighting();
+
                 // For Play (Check) in sentence mode, no need to adjust the current highlight. Just leave it on whatever it was on before.
                 //  (Assumption: Record by Sentence, Play by Text Box mode combination is not allowed)
 
                 // Enhance: Or maybe for Listen To Whole Page, it should remember what the highlight was on before and move it back to there?
             }
+        } else {
+            this.revertFixHighlighting();
         }
 
         // Change state to "Split" if possible but fallback to Next if not.
@@ -4293,6 +4319,217 @@ export default class AudioRecording {
             },
             this.finishNewRecordingOrImportAsync.bind(this)
         );
+    }
+
+    // Returns all elements that match CSS selector {expr} as an array.
+    // Querying can optionally be restricted to {container}’s descendants
+    // If includeSelf is true, it includes both itself as well as its descendants.
+    // Otherwise, it only includes descendants.
+    // Also filters out imageDescriptions if we aren't supposed to be reading them.
+    private findAll(
+        expr: string,
+        container: HTMLElement | undefined = undefined,
+        includeSelf: boolean = false
+    ): HTMLElement[] {
+        // querySelectorAll checks all the descendants
+        const allMatches: HTMLElement[] = [].slice.call(
+            (container || document).querySelectorAll(expr)
+        );
+
+        // Now check itself
+        if (includeSelf && container && container.matches(expr)) {
+            allMatches.push(container);
+        }
+
+        return allMatches;
+    }
+
+    // Match space or &nbsp; (\u00a0). Must have three or more in a row to match.
+    // Note: Multi whitespace text probably contains a bunch of &nbsp; followed by a single normal space at the end.
+    private multiSpaceRegex = /[ \u00a0]{3,}/;
+    private multiSpaceRegexGlobal = new RegExp(this.multiSpaceRegex, "g");
+
+    /**
+     * Finds and fixes any elements on the page that should have their audio-highlighting disabled.
+     */
+    public fixHighlighting(currentAudioElement?: HTMLElement) {
+        const audioElements = currentAudioElement
+            ? [currentAudioElement]
+            : this.getAudioElements();
+        audioElements.forEach(audioElement => {
+            // FYI, don't need to process the bloom-linebreak spans. Nothing bad happens, just unnecessary.
+            const matches = this.findAll(
+                "span:not(.bloom-linebreak)",
+                audioElement,
+                true
+            );
+            matches.forEach(element => {
+                // Simple check to help ensure that elements that don't need to be modified will remain untouched.
+                // This doesn't consider whether text that shouldn't be highlighted is already in inside an
+                // element with highlight disabled, but that's ok. The code down the stack checks that.
+                const containsNonHighlightText = !!element.innerText.match(
+                    this.multiSpaceRegex
+                );
+
+                if (containsNonHighlightText) {
+                    if (!this.nodesToRestoreAfterPlayEnded.has(element.id)) {
+                        // Note: The map could already have the id if you do Play -> Pause -> Play
+                        // We want the modifications to exist during the Pause period,
+                        // and we want the original innerHTML to win, so that's why we need to check
+                        // if the ID exists already and avoid overwriting it.
+                        this.nodesToRestoreAfterPlayEnded.set(
+                            element.id,
+                            element.innerHTML
+                        );
+                    }
+
+                    this.fixHighlightingInNode(element, element);
+                }
+            });
+        });
+    }
+
+    /**
+     * Recursively fixes the audio-highlighting within a node (whether element node or text node)
+     * @param node The node to recursively fix
+     * @param startingSpan The starting span, AKA the one that will receive .ui-audioCurrent in the future.
+     */
+    private fixHighlightingInNode(node: Node, startingSpan: HTMLSpanElement) {
+        if (
+            node.nodeType === Node.ELEMENT_NODE &&
+            (node as Element).classList.contains(kDisableHighlightClass)
+        ) {
+            // No need to process bloom-highlightDisabled elements (they've already been processed)
+            return;
+        } else if (node.nodeType === Node.TEXT_NODE) {
+            // Leaf node. Fix the highlighting, then go back up the stack.
+            this.fixHighlightingInTextNode(node, startingSpan);
+            return;
+        } else {
+            // Recursive case
+            const childNodesCopy = Array.from(node.childNodes); // Make a copy because node.childNodes is being mutated
+            childNodesCopy.forEach(childNode => {
+                this.fixHighlightingInNode(childNode, startingSpan);
+            });
+        }
+    }
+
+    /**
+     * Analyzes a text node and fixes its highlighting.
+     */
+    private fixHighlightingInTextNode(
+        textNode: Node,
+        startingSpan: HTMLSpanElement
+    ) {
+        if (textNode.nodeType !== Node.TEXT_NODE) {
+            throw new Error(
+                "Invalid argument to fixMultiSpaceInTextNode: node must be a TextNode"
+            );
+        }
+
+        if (!textNode.nodeValue) {
+            return;
+        }
+
+        // string.matchAll would be cleaner, but not supported in all browsers (in particular, FF60)
+        // Use RegExp.exec for greater compatibility.
+        this.multiSpaceRegexGlobal.lastIndex = 0; // RegExp.exec is stateful! Need to reset the state.
+        const matches: {
+            text: string;
+            startIndex: number;
+            endIndex: number; // the index of the first character to exclude
+        }[] = [];
+        let regexResult: RegExpExecArray | null;
+        while (
+            (regexResult = this.multiSpaceRegexGlobal.exec(
+                textNode.nodeValue
+            )) != null
+        ) {
+            regexResult.forEach(matchingText => {
+                matches.push({
+                    text: matchingText,
+                    startIndex:
+                        this.multiSpaceRegexGlobal.lastIndex -
+                        matchingText.length,
+                    endIndex: this.multiSpaceRegexGlobal.lastIndex // the index of the first character to exclude
+                });
+            });
+        }
+
+        // First, generate the new DOM elements with the fixed highlighting.
+        const newNodes: Node[] = [];
+        if (matches.length === 0) {
+            // No matches
+            newNodes.push(this.makeHighlightedSpan(textNode.nodeValue));
+        } else {
+            let lastMatchEndIndex = 0; // the index of the first character to exclude of the last match
+            for (let i = 0; i < matches.length; ++i) {
+                const match = matches[i];
+
+                const preMatchText = textNode.nodeValue.slice(
+                    lastMatchEndIndex,
+                    match.startIndex
+                );
+                lastMatchEndIndex = match.endIndex;
+                newNodes.push(this.makeHighlightedSpan(preMatchText));
+
+                newNodes.push(document.createTextNode(match.text));
+
+                if (i === matches.length - 1) {
+                    const postMatchText = textNode.nodeValue.slice(
+                        match.endIndex
+                    );
+                    if (postMatchText) {
+                        newNodes.push(this.makeHighlightedSpan(postMatchText));
+                    }
+                }
+            }
+        }
+
+        // Next, replace the old DOM element with the new DOM elements
+        const oldNode = textNode;
+        if (oldNode.parentNode && newNodes && newNodes.length > 0) {
+            for (let i = 0; i < newNodes.length; ++i) {
+                const nodeToInsert = newNodes[i];
+                oldNode.parentNode.insertBefore(nodeToInsert, oldNode);
+            }
+
+            oldNode.parentNode.removeChild(oldNode);
+
+            // We need to set ancestor's background back to transparent (instead of highlighted),
+            // and let each of the newNodes's styles control whether to be highlighted or transparent.
+            // If ancestor was highlighted but one of its new descendant nodes was transparent,
+            // all that would happen is the descendant would allow the ancestor's highlight color to show through,
+            // which doesn't achieve what we want :(
+            startingSpan.classList.add(kDisableHighlightClass);
+        }
+    }
+
+    private makeHighlightedSpan(textContent: string) {
+        const newSpan = document.createElement("span");
+        newSpan.classList.add(kEnableHighlightClass);
+        newSpan.appendChild(document.createTextNode(textContent));
+        return newSpan;
+    }
+
+    private nodesToRestoreAfterPlayEnded = new Map<string, string>();
+
+    /**
+     * This function will undo in BloomDesktop the modifications made by fixHighlighting()
+     */
+
+    public revertFixHighlighting() {
+        this.nodesToRestoreAfterPlayEnded.forEach((htmlToRestore, id) => {
+            const pageDocBody = this.getPageDocBody();
+            const element = pageDocBody?.querySelector(`#${id}`);
+            if (element) {
+                element.innerHTML = htmlToRestore;
+                element.classList.remove(kDisableHighlightClass);
+            } else {
+                console.warn("Can't find element " + id);
+            }
+        });
+        this.nodesToRestoreAfterPlayEnded.clear();
     }
 }
 

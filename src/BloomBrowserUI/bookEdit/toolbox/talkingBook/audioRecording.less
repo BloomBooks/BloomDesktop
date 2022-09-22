@@ -1,4 +1,4 @@
-﻿@import "../../../bloomUI.less";
+@import "../../../bloomUI.less";
 
 @textColor: @bloom-buff;
 @hoverBackgroundColor: @bloom-buff;
@@ -16,11 +16,12 @@
 // a fix that can be found in bloom-player. But those don't work in Firefox yet (as of FF 68).
 // So we deal with the most common case of overlap (the book title on the cover) by just
 // treating the text as a rectangle. And it's fine that this will show this way in Chrome too:
-.Title-On-Cover-style span.ui-audioCurrent:not(.disableHighlight) {
+.Title-On-Cover-style
+    span.ui-audioCurrent:not(.ui-suppressHighlight):not(.ui-disableHighlight) {
     display: inline-block;
 }
-span.ui-audioCurrent:not(.disableHighlight),
-div.ui-audioCurrent:not(.disableHighlight) p {
+span.ui-audioCurrent:not(.ui-suppressHighlight):not(.ui-disableHighlight),
+div.ui-audioCurrent:not(.ui-suppressHighlight):not(.ui-disableHighlight) p {
     background: @highlightColor;
     /* make highlighted text easier to read if it is normally a light color (like white)*/
     color: @textOnLightBackground;
@@ -38,7 +39,12 @@ div.ui-audioCurrent:not(.disableHighlight) p {
         content: " ";
     }
 }
-.ui-audioCurrent.bloom-postAudioSplit[data-audiorecordingmode="TextBox"]:not(.disableHighlight) {
+
+.ui-audioCurrent .ui-enableHighlight {
+    background-color: @highlightColor;
+}
+
+.ui-audioCurrent.bloom-postAudioSplit[data-audiorecordingmode="TextBox"]:not(.ui-suppressHighlight):not(.ui-disableHighlight) {
     // Special highlighting after the Split button completes to show it completed.
     // Note: This highlighting is expected to persist across sessions, but to be hidden (displayed with the yellow color) while each segment is playing.
     //       This is accomplished because this rule temporarily drops out of effect when .ui-audioCurrent is moved to the span as that segment plays.
