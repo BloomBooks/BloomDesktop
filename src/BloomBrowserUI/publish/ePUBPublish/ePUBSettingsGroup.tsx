@@ -41,6 +41,10 @@ const epubModes: IEpubMode[] = [
 
 export const EPUBSettingsGroup: React.FunctionComponent<{
     onChange: () => void;
+    // If we don't adjust this to the current mode, there's an extended display glitch
+    // when refreshing.  See https://issues.bloomlibrary.org/youtrack/issue/BL-11043.
+    mode: string;
+    setMode: (mode: string) => void;
 }> = props => {
     //const [includeImageDescriptionOnPage,setIncludeImageDescriptionOnPage] = BloomApi.useApiBoolean("publish/epub/imageDescriptionSetting", true);
     const canModifyCurrentBook = BloomApi.useCanModifyCurrentBook();
@@ -49,10 +53,6 @@ export const EPUBSettingsGroup: React.FunctionComponent<{
         ? ""
         : "color: rgba(0, 0, 0, 0.38) !important;";
 
-    const [epubMode, setEpubmode] = BloomApi.useApiStringState(
-        "publish/epub/epubMode",
-        "fixed"
-    );
     const [isModeDropdownOpen, setIsModeDropdownOpen] = useState(false);
 
     // Manages visibility of the description popup for the main Mode label (that shows in the
@@ -108,7 +108,7 @@ export const EPUBSettingsGroup: React.FunctionComponent<{
                                         }
                                     }
                                 `}
-                                value={epubMode}
+                                value={props.mode}
                                 disabled={hasOverlays}
                                 open={isModeDropdownOpen}
                                 onOpen={() => {
@@ -117,7 +117,7 @@ export const EPUBSettingsGroup: React.FunctionComponent<{
                                 onClose={() => setIsModeDropdownOpen(false)}
                                 onChange={e => {
                                     const newMode = e.target.value as string;
-                                    setEpubmode(newMode);
+                                    props.setMode(newMode);
                                     props.onChange();
                                 }}
                                 style={{ width: 145 }}
@@ -172,7 +172,7 @@ export const EPUBSettingsGroup: React.FunctionComponent<{
                     english="Use ePUB reader's text size"
                     apiEndpoint="publish/epub/removeFontSizesSetting"
                     l10nKey="PublishTab.Epub.RemoveFontSizes"
-                    disabled={epubMode === "fixed"}
+                    disabled={props.mode === "fixed"}
                     //TODO: priorClickAction={() => this.abortPreview()}
                     onChange={props.onChange}
                 />

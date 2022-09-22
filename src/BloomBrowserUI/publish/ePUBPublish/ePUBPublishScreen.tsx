@@ -36,11 +36,30 @@ export const EPUBPublishScreen = () => {
     // This requires a hard-reset of the whole screen, which we do by
     // incrementing a `key` prop on the core of this screen.
     const [keyForReset, setKeyForReset] = useState(0);
+
+    // When the user changes epub mode (and other settings), the only way to see
+    // the updated epub is to click the Refresh button.  When this happens, the
+    // mode value is preserved across the refresh, but users would like to see the
+    // new value during the refresh period, which can take several seconds.
+    // Preserving this value requires saving it at this level where values are
+    // not destroyed during refresh.  See comments toward the end of
+    // https://issues.bloomlibrary.org/youtrack/issue/BL-11043.
+    const defaultEpubModeRef = React.useRef("fixed");
+    const [epubMode, setEpubmode] = BloomApi.useApiStringState(
+        "publish/epub/epubMode",
+        defaultEpubModeRef.current
+    );
+
     return (
         <EPUBPublishScreenInternal
             key={keyForReset}
             onReset={() => {
                 setKeyForReset(keyForReset + 1);
+            }}
+            epubMode={epubMode}
+            setEpubMode={(mode: string) => {
+                setEpubmode(mode);
+                defaultEpubModeRef.current = mode;
             }}
         />
     );
@@ -48,6 +67,8 @@ export const EPUBPublishScreen = () => {
 
 const EPUBPublishScreenInternal: React.FunctionComponent<{
     onReset: () => void;
+    epubMode: string;
+    setEpubMode: (mode: string) => void;
 }> = props => {
     const inStorybookMode = useContext(StorybookContext);
     const [closePending, setClosePending] = useState(false);
@@ -157,7 +178,11 @@ const EPUBPublishScreenInternal: React.FunctionComponent<{
 
     const optionsPanel = (
         <SettingsPanel>
-            <EPUBSettingsGroup onChange={() => setHighlightRefresh(true)} />
+            <EPUBSettingsGroup
+                onChange={() => setHighlightRefresh(true)}
+                mode={props.epubMode}
+                setMode={props.setEpubMode}
+            />
             {/* push everything below this to the bottom */}
             <div
                 css={css`
