@@ -367,7 +367,18 @@ namespace Bloom.TeamCollection
 		/// <param name="destFolder"></param>
 		protected override void CopyRepoCollectionFilesToLocalImpl(string destFolder)
 		{
-			CopyRepoCollectionFilesTo(destFolder, _repoFolderPath);
+			Action copyCollectionFiles = () => CopyRepoCollectionFilesTo(destFolder, _repoFolderPath);
+			if (_tcManager.TheProjectContext == null)
+				copyCollectionFiles(); // tests?
+			else
+			{
+				// This task copies a new version of the main project file over the existing one.
+				// We have this file locked to prevent certain problems, supposedly in a way that
+				// allows writing it but not moving/deleting it. But it seems the way our zip
+				// utility overwrites files involves something that is not allowed. We need to free
+				// it up while we do this.
+				_tcManager.TheProjectContext.UnlockTheProjectFileFor(copyCollectionFiles);
+			}
 			ExtractFolder(destFolder, _repoFolderPath, "Allowed Words");
 			ExtractFolder(destFolder, _repoFolderPath, "Sample Texts");
 		}

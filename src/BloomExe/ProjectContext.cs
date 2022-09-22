@@ -59,24 +59,7 @@ namespace Bloom
 		{
 			SettingsPath = projectSettingsPath;
 
-			// Prevent the collection folder from being moved or renamed while we're running. We can't actually lock a folder,
-			// so we do this by locking the .bloomCollectionFile. We do this in a way that allows others (and our own code)
-			// to read and write to it, just not delete/rename/move it.  BL-11484
-			try
-			{
-				RetryUtility.Retry(() =>
-				{
-					_streamToLockCollectionFile = File.Open(projectSettingsPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
-				},3);
-			}
-			catch (Exception err)
-			{
-#if DEBUG
-				throw err;
-#endif
-				// Swallow because this locking is totally optional and so not worth crashing over if for
-				// some reason something else also has it open.
-			}
+			PreventMovingCollection();
 
 			// BL-8019: A couple lines down, BuildSubContainerForThisProject() starts BloomServer with the new project.
 			// While we are starting (or restarting, in the case of switching collections) BloomServer we need to use
@@ -105,6 +88,30 @@ namespace Bloom
 
 			ToolboxView.SetupToolboxForCollection(Settings);
 			_scope.Resolve<TeamCollectionManager>().Settings = Settings;
+		}
+
+		private void PreventMovingCollection()
+		{
+			// Prevent the collection folder from being moved or renamed while we're running. We can't actually lock a folder,
+			// so we do this by locking the .bloomCollectionFile. We do this in a way that allows others (and our own code)
+			// to read and write to it, just not delete/rename/move it.  BL-11484
+			try
+			{
+				RetryUtility.Retry(
+					() =>
+					{
+						_streamToLockCollectionFile = File.Open(SettingsPath, FileMode.Open, FileAccess.Read,
+							FileShare.ReadWrite);
+					}, 3);
+			}
+			catch (Exception err)
+			{
+#if DEBUG
+				throw err;
+#endif
+				// Swallow because this locking is totally optional and so not worth crashing over if for
+				// some reason something else also has it open.
+			}
 		}
 
 		/// ------------------------------------------------------------------------------------
@@ -219,7 +226,7 @@ namespace Bloom
 							c.Resolve<BloomWebSocketServer>(), c.Resolve<BookRenamedEvent>(),
 							c.Resolve<BookStatusChangeEvent>(),
 							c.Resolve<BookSelection>(),
-							c.Resolve<CollectionClosing>(), c.Resolve<BookCollectionHolder>())).InstancePerLifetimeScope();
+							c.Resolve<CollectionClosing>(), c.Resolve<BookCollectionHolder>(), this)).InstancePerLifetimeScope();
 						builder.Register<ITeamCollectionManager>(c => c.Resolve<TeamCollectionManager>()).InstancePerLifetimeScope();
 						builder.Register<CollectionSettings>(c =>
 						{
@@ -385,6 +392,21 @@ namespace Bloom
 			_scope.Resolve<PerformanceMeasurement>().RegisterWithApiHandler(server.ApiHandler);
 			_scope.Resolve<FontsApi>().RegisterWithApiHandler(server.ApiHandler);
 			_scope.Resolve<WorkspaceApi>().RegisterWithApiHandler(server.ApiHandler);
+		}
+
+		public void UnlockTheProjectFileFor(Action task)
+		{
+			if (_streamToLockCollectionFile != null)
+			{
+				_streamToLockCollectionFile.Close();
+				_streamToLockCollectionFile = null;
+				task();
+				PreventMovingCollection();
+			}
+			else
+			{
+				task();
+			}
 		}
 
 		// Get the collection settings. Passed the expected path, but if not found,
