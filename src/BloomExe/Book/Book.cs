@@ -136,13 +136,13 @@ namespace Bloom.Book
 			// to get inserted properly. So we make sure there is one.
 			GetOrCreateUserModifiedStyleElementFromStorage();
 
-			//if we're showing the user a shell/template book, pick a color for it
-			//If it is editable, then we don't want to change to the next color, we
-			//want to use the color that we used for the sample shell/template we
-			//showed them previously.
-			if (!info.IsEditable)
+			// If we're showing the user one of our built-in templates (like Basic Book), pick a color for it.
+			// If it is editable or from bloomlibrary or a BloomPack, then we don't want to change to the next color,
+			// we want to use the color that we used for the sample shell/template we showed them previously.
+			// (BL-11490 Even shells or downloaded books should preserve the original cover color.)
+			if (!info.IsEditable && Path.GetDirectoryName(info.FolderPath) == BloomFileLocator.FactoryTemplateBookDirectory)
 			{
-				SelectNextCoverColor(); // we only increment when showing a template or shell
+				SelectNextCoverColor(); // we only increment when showing a built-in template
 				InitCoverColor();
 			}
 
