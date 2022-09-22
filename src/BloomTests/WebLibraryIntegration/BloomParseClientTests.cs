@@ -86,7 +86,7 @@ namespace BloomTests.WebLibraryIntegration
 			return bookInstanceId;
 		}
 
-		[Test, Ignore("This is causing a strange error when nunit is exiting; just skipping for now to get a good build")]
+		[Test]
 		public void GetBookRecord_BookIsThere_Succeeds()
 		{
 			//first make a book so that we know it is there
