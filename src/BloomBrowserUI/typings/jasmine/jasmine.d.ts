@@ -411,6 +411,12 @@ declare module jasmine {
          */
         withContext(message: string): jasmine.Matchers;
 
+        // To add this:
+        // 1) import customJasmineMatchers from testHelper.ts
+        // 2) run jasmine.addMatchers(customJasmineMatchers)
+        //    (must be in a before[...] or an it() funciton
+        // Used in audioRecordingSpec to provide arrows pointing to the first difference
+        toBeString(expected: any, expectationFailOutput?: any): boolean;
         /////////////////////////////
         // end custom declarations //
         /////////////////////////////

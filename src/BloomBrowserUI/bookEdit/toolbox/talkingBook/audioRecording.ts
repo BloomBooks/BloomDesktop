@@ -4353,7 +4353,7 @@ export default class AudioRecording {
     /**
      * Finds and fixes any elements on the page that should have their audio-highlighting disabled.
      */
-    private fixHighlighting(currentAudioElement?: HTMLElement) {
+    public fixHighlighting(currentAudioElement?: HTMLElement) {
         const audioElements = currentAudioElement
             ? [currentAudioElement]
             : this.getAudioElements();
@@ -4519,7 +4519,7 @@ export default class AudioRecording {
      * This function will undo in BloomDesktop the modifications made by fixHighlighting()
      */
 
-    private revertFixHighlighting() {
+    public revertFixHighlighting() {
         this.nodesToRestoreAfterPlayEnded.forEach((htmlToRestore, id) => {
             const pageDocBody = this.getPageDocBody();
             const element = pageDocBody?.querySelector(`#${id}`);
