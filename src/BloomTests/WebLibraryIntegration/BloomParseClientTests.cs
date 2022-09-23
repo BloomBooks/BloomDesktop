@@ -86,7 +86,7 @@ namespace BloomTests.WebLibraryIntegration
 			return bookInstanceId;
 		}
 
-		[Test, Ignore("This is causing a strange error when nunit is exiting; just skipping for now to get a good build")]
+		[Test]
 		public void GetBookRecord_BookIsThere_Succeeds()
 		{
 			//first make a book so that we know it is there
@@ -100,7 +100,7 @@ namespace BloomTests.WebLibraryIntegration
 
 			// Our lookup uses the logged in user as part of the query.
 			// Ensure the lookup fails if not logged in as the uploader.
-			_client.Logout();
+			_client.Logout(includeFirebaseLogout: false);
 			Assert.IsNull(_client.GetSingleBookRecord(id));
 		}
 
