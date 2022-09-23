@@ -196,13 +196,14 @@ namespace Bloom.WebLibraryIntegration
 			return json.results;
 		}
 
-		public void Logout()
+		public void Logout(bool includeFirebaseLogout = true)
 		{
 			Settings.Default.WebUserId = ""; // Should not be able to log in again just by restarting
 			_sessionToken = null;
 			Account = "";
 			_userId = "";
-			FirebaseLoginDialog.FirebaseLogout();
+			if (includeFirebaseLogout)
+				FirebaseLoginDialog.FirebaseLogout();
 		}
 
 		public IRestResponse CreateBookRecord(string metadataJson)

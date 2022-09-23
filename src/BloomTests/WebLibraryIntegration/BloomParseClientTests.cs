@@ -86,7 +86,7 @@ namespace BloomTests.WebLibraryIntegration
 			return bookInstanceId;
 		}
 
-		[Test, Ignore("This is causing a strange error when nunit is exiting; just skipping for now to get a good build")]
+		[Test]
 		public void GetBookRecord_BookIsThere_Succeeds()
 		{
 			//first make a book so that we know it is there
@@ -98,9 +98,18 @@ namespace BloomTests.WebLibraryIntegration
 			// Partial matches are no good
 			Assert.IsNull(_client.GetSingleBookRecord(new Guid().ToString()));
 
+			// In Sept 2022, we started getting strange errors from NUnit.
+			// The tests were passing but when NUnit was cleaning up, it
+			// would throw a SocketException in its own code.
+			// We finally tracked it down to the the code which was
+			// attempting to log out of firebase (by launching a dialog).
+			// We still don't understand why it started or what the underlying issue
+			// was, but this prevents it.
+			bool includeFirebaseLogout = false;
+
 			// Our lookup uses the logged in user as part of the query.
 			// Ensure the lookup fails if not logged in as the uploader.
-			_client.Logout();
+			_client.Logout(includeFirebaseLogout);
 			Assert.IsNull(_client.GetSingleBookRecord(id));
 		}
 
