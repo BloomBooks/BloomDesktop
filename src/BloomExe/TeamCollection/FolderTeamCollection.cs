@@ -47,6 +47,7 @@ namespace Bloom.TeamCollection
 		private bool _writeBookInProgress;
 		private DateTime _lastWriteBookTime;
 		private object _lockObject = new object(); // used to lock access to _lastPutBookPath and _putBookInProgress
+		private CollectionLock _collectionLock;
 
 		private const int kDebouncePeriodInMs = 100;
 		private Dictionary<string, FileSystemEventRecord> _lastCreateEventByFile = new Dictionary<string, FileSystemEventRecord>();
@@ -60,10 +61,11 @@ namespace Bloom.TeamCollection
 		}
 		 
 		public FolderTeamCollection(ITeamCollectionManager manager, string localCollectionFolder,
-			string repoFolderPath, TeamCollectionMessageLog tcLog=null, BookCollectionHolder bookCollectionHolder=null)
+			string repoFolderPath, TeamCollectionMessageLog tcLog = null, BookCollectionHolder bookCollectionHolder = null, CollectionLock collectionLock = null)
 			: base(manager, localCollectionFolder, tcLog, bookCollectionHolder)
 		{
 			_repoFolderPath = repoFolderPath;
+			_collectionLock = collectionLock ?? new CollectionLock();
 		}
 
 		public string RepoFolderPath => _repoFolderPath;
@@ -367,7 +369,12 @@ namespace Bloom.TeamCollection
 		/// <param name="destFolder"></param>
 		protected override void CopyRepoCollectionFilesToLocalImpl(string destFolder)
 		{
-			CopyRepoCollectionFilesTo(destFolder, _repoFolderPath);
+			// This task copies a new version of the main project file over the existing one.
+			// We have this file locked to prevent certain problems, supposedly in a way that
+			// allows writing it but not moving/deleting it. But it seems the way our zip
+			// utility overwrites files involves something that is not allowed. We need to free
+			// it up while we do this.
+			_collectionLock.UnlockFor(() => CopyRepoCollectionFilesTo(destFolder, _repoFolderPath));
 			ExtractFolder(destFolder, _repoFolderPath, "Allowed Words");
 			ExtractFolder(destFolder, _repoFolderPath, "Sample Texts");
 		}
