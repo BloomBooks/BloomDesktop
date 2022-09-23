@@ -29,7 +29,7 @@ const BloomSketchPicker: React.FunctionComponent<IBloomSketchPickerProps> = prop
                 // entire saturation block, not just where the "dot" is.
                 css={css`
                     ${commonComponentCss}
-                    height: 180px;
+                    height: 156px;
                     :hover {
                         cursor: crosshair;
                     }
@@ -41,7 +41,7 @@ const BloomSketchPicker: React.FunctionComponent<IBloomSketchPickerProps> = prop
                 css={css`
                     ${commonComponentCss}
                     height: 14px;
-                    margin-top: 14px;
+                    margin-top: 10px;
                 `}
             >
                 <Hue {...props} pointer={CustomSliderCursor} />

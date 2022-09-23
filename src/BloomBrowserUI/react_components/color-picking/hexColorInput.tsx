@@ -50,8 +50,8 @@ export const HexColorInput: React.FunctionComponent<IHexColorInputProps> = props
         }
     };
 
-    const borderThickness = 3;
-    const controlWidth = 84; // This width handles "#DDDDDD" as the maximum width input.
+    const borderThickness = 2;
+    const controlWidth = 60; // This width handles "#DDDDDD" as the maximum width input.
     const inputWidth = controlWidth - 2 * borderThickness;
 
     return (
@@ -60,7 +60,7 @@ export const HexColorInput: React.FunctionComponent<IHexColorInputProps> = props
                 border: ${borderThickness}px solid lightgray;
                 border-radius: 4px;
                 width: ${controlWidth}px;
-                height: 22px;
+                height: 18px;
                 background-color: white;
                 padding: 2px;
             `}
@@ -69,7 +69,7 @@ export const HexColorInput: React.FunctionComponent<IHexColorInputProps> = props
                 css={css`
                     border: none;
                     width: ${inputWidth}px;
-                    font-size: medium;
+                    font-size: 12px;
                     :focus {
                         outline: none; // get rid of blue outline inside of box when selected.
                     }
