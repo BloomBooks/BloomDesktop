@@ -180,7 +180,10 @@ export default class BloomSourceBubbles {
                 // BL-8174: Add a tooltip with the iso code to the item
                 sourceElement.setAttribute("title", iso);
             }
+
             if (sourceElement.innerText !== "") {
+                BloomSourceBubbles.eliminateMultipleWhitespace(sourceElement);
+
                 // BL-9198 Add a copy icon to the source bubble
                 // It's actually easier to figure out what to copy out here and feed it into the button
                 // component.
@@ -210,6 +213,18 @@ export default class BloomSourceBubbles {
 
         return divForBubble;
     } // end MakeSourceTextDivForGroup()
+
+    private static eliminateMultipleWhitespace(element: HTMLElement) {
+        const iter = document.createNodeIterator(element, NodeFilter.SHOW_TEXT);
+        let textNode;
+        while ((textNode = iter.nextNode())) {
+            if (textNode.textContent)
+                textNode.textContent = textNode.textContent.replace(
+                    /\s\s+/g,
+                    " "
+                );
+        }
+    }
 
     private static handleCopyBubbleSourceClick(textToCopy: string): void {
         if (textToCopy) {
