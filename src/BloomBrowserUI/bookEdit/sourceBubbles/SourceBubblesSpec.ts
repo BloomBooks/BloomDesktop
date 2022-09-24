@@ -24,10 +24,10 @@ describe("SourceBubbles", () => {
         const testHtml = $(
             [
                 "<div id='testTarget' class='bloom-translationGroup'>",
-                "   <div class='bloom-editable' lang='es'>Spanish text</div>",
+                "   <div class='bloom-editable' lang='es'>  Spanish   text  </div>",
                 "   <div class='bloom-editable bloom-content1 bloom-visibility-code-on' lang='en'>English text</div>",
-                "   <div class='bloom-editable' lang='fr'>French text</div>",
-                "   <div class='bloom-editable' lang='tpi'>Tok Pisin text</div>",
+                "   <div class='bloom-editable' lang='fr'>French&nbsp;&nbsp; &nbsp; text</div>",
+                "   <div class='bloom-editable' lang='tpi'><p>Tok Pisin text</p></div>",
                 "</div>"
             ].join("\n")
         );
@@ -62,6 +62,16 @@ describe("SourceBubbles", () => {
             '<a class="sourceTextTab" href="#es">español</a>'
         );
         expect(result.find("div.source-text").length).toBe(3);
+        expect(
+            result.find("div.source-text[lang=es]")[0].childNodes[0].textContent
+        ).toBe(" Spanish text ");
+        expect(
+            result.find("div.source-text[lang=fr]")[0].childNodes[0].textContent
+        ).toBe("French text");
+        expect(
+            result.find("div.source-text[lang=tpi]")[0].childNodes[0]
+                .textContent
+        ).toBe("Tok Pisin text");
     });
 
     it("Run CreateDropdownIfNecessary with pre-defined settings", () => {
