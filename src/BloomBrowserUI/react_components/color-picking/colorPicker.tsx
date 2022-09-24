@@ -119,7 +119,7 @@ export const ColorPicker: React.FunctionComponent<IColorPickerProps> = props => 
             />
             <div
                 css={css`
-                    height: 32px;
+                    height: 26px;
                     width: 100%;
                     margin-top: 16px;
                     display: flex;
@@ -134,13 +134,13 @@ export const ColorPicker: React.FunctionComponent<IColorPickerProps> = props => 
                 <ColorSwatch
                     colors={colorChoice.colors}
                     opacity={colorChoice.opacity}
-                    width={64}
-                    height={30}
+                    width={48}
+                    height={26}
                 />
             </div>
             <div
                 css={css`
-                    margin-top: 10px;
+                    margin-top: 20px;
                     display: flex;
                     flex: 2;
                     flex-direction: row;
