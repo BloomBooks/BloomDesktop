@@ -108,7 +108,7 @@ namespace BloomTests.Book
 		[Test]
 		public void PrepareElementsOnPage_HasEmptyTranslationGroup_MakesVernacularAndNational()
 		{
-			var contents = @"<html><body><div class='bloom-page bloom-translationGroup normal-style'>
+			var contents = @"<html><body><div class='bloom-page bloom-translationGroup'>
 					</div></body></html>";
 			var dom = new XmlDocument();
 			dom.LoadXml(contents);

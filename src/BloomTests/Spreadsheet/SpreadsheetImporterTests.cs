@@ -934,10 +934,82 @@ namespace BloomTests.Spreadsheet
 	}
 
 	/// <summary>
-	/// There are some special cases we can only test when the last page of a book has room
-	/// for more than one image and text.
+	/// There are some special cases we can only test with a DOM in which the last content page
+	/// has neither text nor image elements.
 	/// </summary>
-	public class SpreadsheetImageAndTextImportToBookWithComplexLastPageTests
+	public class SpreadsheetImportWithNoZLanguageTests
+	{
+		private HtmlDom _dom;
+
+		private TemporaryFolder _bookFolder;
+		private List<XmlElement> _contentPages;
+		private string _spreadsheetFolder;
+
+		[OneTimeSetUp]
+		public void OneTimeSetUp()
+		{
+			// We will re-use the images from another test.
+			// Conveniently the images are in a folder called "images" which is what the importer expects.
+			// So we give it the parent directory of that images folder.
+			_spreadsheetFolder =
+				SIL.IO.FileLocationUtilities.GetDirectoryDistributedWithApplication("src/BloomTests/ImageProcessing");
+
+			// Create an HtmlDom for a template to import into. We will give this one a landscape orientation.
+			var xml = string.Format(SpreadsheetImageAndTextImportTests.templateDom,
+					SpreadsheetImageAndTextImportTests.coverPage
+					+ SpreadsheetImageAndTextImportTests.PageWithJustText(1,1).Replace(@"lang=""z""", @"lang=""en""").Replace("normal-style", "Bubble-style")
+					+ SpreadsheetImageAndTextImportTests.insideBackCoverPage
+					+ SpreadsheetImageAndTextImportTests.backCoverPage)
+				.Replace("A5Portrait", "A4Landscape");
+			_dom = new HtmlDom(xml, true);
+
+			// Create an internal spreadsheet with the rows we want to import
+			var ss = new InternalSpreadsheet();
+			var columnForEn = ss.AddColumnForLang("en", "English");
+
+			// Will insert text into existing page 1
+			var contentRow1 = new ContentRow(ss);
+			contentRow1.AddCell(InternalSpreadsheet.PageContentRowLabel);
+			contentRow1.SetCell(columnForEn, "this is page 1");
+
+			// Will insert a duplicate of that page
+			var contentRow2 = new ContentRow(ss);
+			contentRow2.AddCell(InternalSpreadsheet.PageContentRowLabel);
+			contentRow2.SetCell(columnForEn, "this is page 2");
+
+			_bookFolder = new TemporaryFolder("SpreadsheetImportWithNoZLanguageTests");
+
+			// Do the import
+			var importer = new TestSpreadsheetImporter(null, _dom, _spreadsheetFolder, _bookFolder.FolderPath);
+			importer.Import(ss);
+
+			_contentPages = _dom.SafeSelectNodes("//div[contains(@class, 'bloom-page')]").Cast<XmlElement>().ToList();
+
+			// Remove the front matter to get just the pages of interest.
+			_contentPages.RemoveAt(0);
+
+			// (individual test methods will evaluate the result)
+		}
+
+		[OneTimeTearDown]
+		public void OneTimeTearDown()
+		{
+			_bookFolder?.Dispose();
+		}
+
+		[TestCase(0)]
+		[TestCase(1)]
+		public void BubbleStyleSurvives(int pageNum)
+		{
+			AssertThatXmlIn.Element(_contentPages[pageNum]).HasSpecifiedNumberOfMatchesForXpath(".//div[contains(@class, 'bloom-editable') and @lang='en' and contains(@class, 'Bubble-style')]", 1);
+		}
+	}
+
+	/// <summary>
+		/// There are some special cases we can only test when the last page of a book has room
+		/// for more than one image and text.
+		/// </summary>
+		public class SpreadsheetImageAndTextImportToBookWithComplexLastPageTests
 	{
 		private HtmlDom _dom;
 

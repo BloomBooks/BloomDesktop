@@ -551,7 +551,16 @@ namespace Bloom.Spreadsheet
 			var editables = newPage.SelectNodes(".//div[contains(@class, 'bloom-editable') and @lang != 'z']").Cast<XmlElement>().ToArray();
 			foreach (var e in editables)
 			{
-				e.ParentNode.RemoveChild(e);
+				var allInGroup = editables.Where(x => x.ParentNode == e.ParentNode && x != e);
+				if (allInGroup.Any())
+					e.ParentNode.RemoveChild(e);
+				else
+				{
+					// The only thing in the group is an element with a language other than 'z'.
+					// We want to keep this, but only as a template (e.g., to preserve the user style).
+					e.SetAttribute("lang", "z");
+					e.InnerText = "";
+				}
 			}
 
 			var imageContainers = GetImageContainers(newPage);

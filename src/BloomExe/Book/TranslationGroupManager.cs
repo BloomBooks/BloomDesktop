@@ -521,7 +521,7 @@ namespace Bloom.Book
 			if (prototype == null) //this was an empty translation-group (unusual, but we can cope)
 			{
 				newElementInThisLanguage = groupElement.OwnerDocument.CreateElement("div");
-				newElementInThisLanguage.SetAttribute("class", "bloom-editable");
+				newElementInThisLanguage.SetAttribute("class", "bloom-editable normal-style");
 				newElementInThisLanguage.SetAttribute("contenteditable", "true");
 				if (groupElement.HasAttribute("data-placeholder"))
 				{
