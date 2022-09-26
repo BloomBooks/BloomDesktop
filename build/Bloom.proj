@@ -3,8 +3,10 @@
 	Typically command line includes /p:BUILD_NUMBER=3.1.22.0 (all 4 digits required).
 	May include something like /p:channel=Alpha.-->
 	<PropertyGroup>
-		<RootDir Condition="'$(teamcity_version)' == '' Or '$(OS)'!='Windows_NT'">$(MSBuildProjectDirectory)\..</RootDir>
-		<RootDir Condition="'$(teamcity_version)' != '' And '$(OS)'=='Windows_NT'">$(teamcity_build_checkoutDir)</RootDir>
+		<isOnTeamCity Condition="'$(teamcity_version)' == ''">false</isOnTeamCity>
+		<isOnTeamCity Condition="'$(teamcity_version)' != ''">true</isOnTeamCity>
+		<RootDir Condition="'$(isOnTeamCity)' == 'false' Or '$(OS)'!='Windows_NT'">$(MSBuildProjectDirectory)\..</RootDir>
+		<RootDir Condition="'$(isOnTeamCity)' == 'true' And '$(OS)'=='Windows_NT'">$(teamcity_build_checkoutDir)</RootDir>
 		<Solution>Bloom.sln</Solution>
 		<!-- This controls the following things; the some of them pretty much have to match for Squirrel:
 		  - the nupkg ID (Bloom<channel>)
@@ -144,7 +146,8 @@
 	<Target Name="TestOnly" DependsOnTargets="RunNUnit"/>
 
 	<Target Name="RunNUnit">
-		<NUnit3 Condition="'$(teamcity_version)' == ''"
+		<NUnit3
+			Condition="'$(isOnTeamCity)' == 'false'"
 			Assemblies="@(TestAssemblies)"
 			ToolPath="$(RootDir)/packages/NUnit.ConsoleRunner.3.15.2/tools"
 			ExcludeCategory="$(excludedCategories)"
@@ -152,12 +155,13 @@
 			Force32Bit="$(useNUnit-x86)"
 			Process="$(TestProcessType)"
 			Agents="1"
-            Trace="Debug"
+			Trace="Debug"
 			Workers="1"
 			Verbose="true"
 			OutputXmlFile="$(RootDir)/output/$(Configuration)/TestResults.xml"
 			TeamCity="false"/>
-		<NUnit3 Condition="'$(teamcity_version)' != ''"
+		<NUnit3
+			Condition="'$(isOnTeamCity)' != 'true'"
 			Assemblies="@(TestAssemblies)"
 			ToolPath="$(RootDir)/packages/NUnit.ConsoleRunner.3.15.2/tools"
 			ExcludeCategory="SkipOnTeamCity,$(excludedCategories)"
@@ -165,7 +169,7 @@
 			Force32Bit="$(useNUnit-x86)"
 			Process="$(TestProcessType)"
 			Agents="1"
-            Trace="Debug"
+			Trace="Debug"
 			Workers="1"
 			Verbose="true"
 			TeamCity="true"/>
@@ -264,14 +268,26 @@
 	</Target>
 
 	<Target Name="SignExesIfPossible">
-		<Exec Command='sign "$(RootDir)\output\$(Configuration)\Bloom.exe"' ContinueOnError="true"></Exec>
+		<PropertyGroup>
+			<ContinueOnExeSignError Condition="'$(isOnTeamCity)' == 'true'">false</ContinueOnExeSignError>
+			<ContinueOnExeSignError Condition="'$(isOnTeamCity)' == 'false'">true</ContinueOnExeSignError>
+		</PropertyGroup>
+		<Exec Command='sign "$(RootDir)\output\$(Configuration)\Bloom.exe"' ContinueOnError="$(ContinueOnExeSignError)"></Exec>
 		<!-- These are generated in other TC projects but I think it's OK to sign them here since we control those projects too.-->
-		<Exec Command='sign "$(RootDir)\output\$(Configuration)\BloomPdfMaker.exe"' ContinueOnError="true"></Exec>
-		<Exec Command='sign "$(RootDir)\output\$(Configuration)\PdfDroplet.exe"' ContinueOnError="true"></Exec>
+		<Exec Command='sign "$(RootDir)\output\$(Configuration)\BloomPdfMaker.exe"' ContinueOnError="$(ContinueOnExeSignError)"></Exec>
+		<Exec Command='sign "$(RootDir)\output\$(Configuration)\PdfDroplet.exe"' ContinueOnError="$(ContinueOnExeSignError)"></Exec>
+
 		<!-- We don't really need to do this every time since the file is checked in. But this way any updated version
 		is automatically signed, which saves the hassle of coming up with a new signed exe every time we need to check in. -->
-		<Exec Command='sign "$(RootDir)\DistFiles\AndikaNewBasic\Install Bloom Literacy Fonts.exe"' ContinueOnError="true"></Exec>
-		<!--not bothering with BloomBookUploader which is not used (obsolete).-->
+		<!-- I can't figure out how to get the signtool to take a file name with spaces, even if the path is surrounded in quotes.
+		So I gave up. Copy to a filename without spaces and back.-->
+		<Copy SourceFiles="$(RootDir)\DistFiles\AndikaNewBasic\Install Bloom Literacy Fonts.exe"
+		DestinationFiles="$(RootDir)\DistFiles\AndikaNewBasic\FontInstaller.exe" />
+		<Exec Command='sign "$(RootDir)\DistFiles\AndikaNewBasic\FontInstaller.exe"' ContinueOnError="$(ContinueOnExeSignError)"></Exec>
+		<Copy SourceFiles="$(RootDir)\DistFiles\AndikaNewBasic\FontInstaller.exe"
+		DestinationFiles="$(RootDir)\DistFiles\AndikaNewBasic\Install Bloom Literacy Fonts.exe" />
+		<Delete Files="$(RootDir)\DistFiles\AndikaNewBasic\FontInstaller.exe" />
+
 	</Target>
 
 	<!-- This target is designed to be an target on TeamCity (but using Upload is more likely) that includes target Installer. Review: squirrel itself
