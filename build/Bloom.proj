@@ -5,8 +5,8 @@
 	<PropertyGroup>
 		<isOnTeamCity Condition="'$(teamcity_version)' == ''">false</isOnTeamCity>
 		<isOnTeamCity Condition="'$(teamcity_version)' != ''">true</isOnTeamCity>
-		<RootDir Condition="'$(isOnTeamCity)' == 'false' Or '$(OS)'!='Windows_NT'">$(MSBuildProjectDirectory)\..</RootDir>
-		<RootDir Condition="'$(isOnTeamCity)' == 'true' And '$(OS)'=='Windows_NT'">$(teamcity_build_checkoutDir)</RootDir>
+		<RootDir Condition="$(isOnTeamCity) == false Or '$(OS)'!='Windows_NT'">$(MSBuildProjectDirectory)\..</RootDir>
+		<RootDir Condition="$(isOnTeamCity) == true And '$(OS)'=='Windows_NT'">$(teamcity_build_checkoutDir)</RootDir>
 		<Solution>Bloom.sln</Solution>
 		<!-- This controls the following things; the some of them pretty much have to match for Squirrel:
 		  - the nupkg ID (Bloom<channel>)
@@ -147,7 +147,7 @@
 
 	<Target Name="RunNUnit">
 		<NUnit3
-			Condition="'$(isOnTeamCity)' == 'false'"
+			Condition="$(isOnTeamCity) == false"
 			Assemblies="@(TestAssemblies)"
 			ToolPath="$(RootDir)/packages/NUnit.ConsoleRunner.3.15.2/tools"
 			ExcludeCategory="$(excludedCategories)"
@@ -161,7 +161,7 @@
 			OutputXmlFile="$(RootDir)/output/$(Configuration)/TestResults.xml"
 			TeamCity="false"/>
 		<NUnit3
-			Condition="'$(isOnTeamCity)' != 'true'"
+			Condition="$(isOnTeamCity) == true"
 			Assemblies="@(TestAssemblies)"
 			ToolPath="$(RootDir)/packages/NUnit.ConsoleRunner.3.15.2/tools"
 			ExcludeCategory="SkipOnTeamCity,$(excludedCategories)"
@@ -269,8 +269,8 @@
 
 	<Target Name="SignExesIfPossible">
 		<PropertyGroup>
-			<ContinueOnExeSignError Condition="'$(isOnTeamCity)' == 'true'">false</ContinueOnExeSignError>
-			<ContinueOnExeSignError Condition="'$(isOnTeamCity)' == 'false'">true</ContinueOnExeSignError>
+			<ContinueOnExeSignError Condition="$(isOnTeamCity) == true">false</ContinueOnExeSignError>
+			<ContinueOnExeSignError Condition="$(isOnTeamCity) == false">true</ContinueOnExeSignError>
 		</PropertyGroup>
 		<Exec Command='sign "$(RootDir)\output\$(Configuration)\Bloom.exe"' ContinueOnError="$(ContinueOnExeSignError)"></Exec>
 		<!-- These are generated in other TC projects but I think it's OK to sign them here since we control those projects too.-->
