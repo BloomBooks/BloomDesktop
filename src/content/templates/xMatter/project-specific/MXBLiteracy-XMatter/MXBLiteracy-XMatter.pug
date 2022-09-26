@@ -1,6 +1,34 @@
 
 include ./MXBCommon-XMatter.pug
 
+mixin mxb-frontCover-Literacy
+	// FRONT COVER
+	+page-cover('Front Cover')(data-export='front-matter-cover', data-xmatter-page='frontCover')&attributes(attributes).frontCover.outsideFrontCover#74731b2d-18b3-420f-ac96-6de20f659810
+		block cover-above-title
+			+cover-branding-top
+
+		block cover-title
+			+field-prototypeDeclaredExplicity("V,N1").bookTitle
+				label.bubble Book title in {lang}
+				+editable(kLanguageForPrototypeOnly).bloom-nodefaultstylerule.Title-On-Cover-style.bloom-padForOverflow(data-book='bookTitle')
+
+		block front-cover-image
+			+standard-cover-image
+
+		// 2 columns: first for an optional logo, then text content
+		.bottomBlock
+			+cover-branding-bottom-left.bottom-left-branding
+
+			// 2 rows
+			.bottomTextContent
+				block cover-bottom-credits
+					+mxb-frontCoverCredits
+				+mxb-languageNameTopic-field
+				+cover-branding-bottom
+				block cover-bottom-row-after-branding
+		block front-cover-footer
+
+
 doctype html
 html
 	head
@@ -11,7 +39,7 @@ html
 		block stylesheets
 			+stylesheets('MXBLiteracy-XMatter.css')
 	body
-		+factoryStandard-outsideFrontCover
+		+mxb-frontCover-Literacy
 
 		//- Allow Device version to override page order
 		block afterFrontCoverPages
