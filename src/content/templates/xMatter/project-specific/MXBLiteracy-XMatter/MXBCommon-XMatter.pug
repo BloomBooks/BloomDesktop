@@ -6,36 +6,11 @@ mixin mxb-printerStatement-insideBackCover
 	+page-xmatter('Inside Back Cover').cover.coverColor.insideBackCover.bloom-backMatter(data-export='back-matter-inside-back-cover')&attributes(attributes)#839e8eee-5e1a-45a7-bb01-2c171b56f8a4
 		+field-mono-meta("N1","printerStatement").Printer-Statement-style.bloom-copyFromOtherLanguageIfNecessary
 			label.bubble Printer's Statement goes here.
-
-mixin mxb-frontCover
-	// Outside Front Cover
-	+page-cover('Front Cover')(data-export='front-matter-cover', data-xmatter-page='frontCover')&attributes(attributes).frontCover.outsideFrontCover#74731b2d-18b0-420f-ac96-6de20f659810
-		block cover-above-title
-			+cover-branding-top
-
-		block cover-title
-			+field-prototypeDeclaredExplicity("V,N1").bookTitle
-				label.bubble Book title in {lang}
-				+editable(kLanguageForPrototypeOnly).bloom-nodefaultstylerule.Title-On-Cover-style.bloom-padForOverflow(data-book='bookTitle')
-
-		block front-cover-image
-			+standard-cover-image
-
-		// 2 columns: first for an optional logo, then text content
-		.bottomBlock
-			+cover-branding-bottom-left.bottom-left-branding
-
-			// 2 rows
-			.bottomTextContent
-				block cover-bottom-credits
-					+mxb-frontCoverCredits
-				block cover-bottom-row-before-branding
-					.bottomRow
-						.coverBottomLangName.Cover-Default-style(data-derived='languagesOfBook')
-						+chooser-topic.coverBottomBookTopic
-				+cover-branding-bottom
-				block cover-bottom-row-after-branding
-		block front-cover-footer
+mixin mxb-languageNameTopic-field
+	block cover-bottom-row-before-branding
+		.bottomRow
+			.coverBottomLangName.L1-Name-style(data-derived='languagesOfBook')
+			+chooser-topic.coverBottomBookTopic
 
 mixin mxb-frontCoverCredits
 	//NB: don't convert this to an inline label; that interferes with the bloom-copyFromOtherLanguageIfNecessary,

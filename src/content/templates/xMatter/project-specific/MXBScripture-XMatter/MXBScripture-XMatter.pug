@@ -4,7 +4,7 @@ include ../MXBLiteracy-XMatter/MXBCommon-XMatter.pug
 mixin mxb-chapterVerseRef
 	.creditsRow(data-hint='Este espacio es para indicar la cita bíblica en lugar de atribuir al autor/ilustrador.')
 		+field-prototypeDeclaredExplicity("V")
-			+editable(kLanguageForPrototypeOnly).smallCoverCredits.Cover-Default-style(data-book='smallCoverCredits')
+			+editable(kLanguageForPrototypeOnly).smallCoverCredits.Reference-Default-style(data-book='smallCoverCredits')
 
 mixin mxb-contributions-scripture
 	+field-prototypeDeclaredExplicity("N1")#contributions
@@ -34,10 +34,7 @@ mixin mxb-frontCover-scripture
 
 			// 1 row
 			.bottomTextContent
-				block cover-bottom-row-before-branding
-					.bottomRow
-						.coverBottomLangName.Cover-Default-style(data-derived='languagesOfBook')
-						+chooser-topic.coverBottomBookTopic
+				+mxb-languageNameTopic-field
 				+cover-branding-bottom
 				block cover-bottom-row-after-branding
 		block front-cover-footer
