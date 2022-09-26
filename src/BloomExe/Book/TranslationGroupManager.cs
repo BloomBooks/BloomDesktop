@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Xml;
-using Bloom.ToPalaso;
 using L10NSharp;
 using SIL.Reporting;
+using SIL.WritingSystems;
 using SIL.Xml;
 
 namespace Bloom.Book
@@ -148,7 +148,7 @@ namespace Bloom.Book
 
 					var newEditableDiv = elementOrDom.OwnerDocument.CreateElement("div");
 					newEditableDiv.SetAttribute("class", "bloom-editable");
-					newEditableDiv.SetAttribute("lang", LanguageLookupModelExtensions.GetGeneralCode(uiLanguage));
+					newEditableDiv.SetAttribute("lang", IetfLanguageTag.GetGeneralCode(uiLanguage));
 					newEditableDiv.InnerText = translation;
 					editableDiv.ParentNode.AppendChild(newEditableDiv);
 				}

@@ -5,19 +5,15 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Xml;
 using System.Xml.Linq;
 using System.Xml.Serialization;
 using Bloom.Api;
 using Bloom.Book;
-using Bloom.TeamCollection;
 using Bloom.MiscUI;
 using Bloom.Publish.Android;
-using Bloom.ToPalaso;
 using Bloom.web.controllers;
 using DesktopAnalytics;
 using L10NSharp;
-using Newtonsoft.Json;
 using SIL.Reporting;
 using SIL.WritingSystems;
 using SIL.Extensions;
@@ -270,7 +266,7 @@ namespace Bloom.Collection
 		/// </summary>
 		public string GetLanguageName(string code, string inLanguage)
 		{
-			return WritingSystem.LookupIsoCode.GetLocalizedLanguageName(code, inLanguage);
+			return IetfLanguageTag.GetLocalizedLanguageName(code, inLanguage);
 		}
 
 		public string GetSignLanguageName()

@@ -3,8 +3,8 @@ using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Xml.Linq;
-using Bloom.ToPalaso;
 using SIL.Windows.Forms.WritingSystems;
+using SIL.WritingSystems;
 
 namespace Bloom.Collection
 {
@@ -12,7 +12,7 @@ namespace Bloom.Collection
 	{
 		private readonly int _languageNumberInCollection;
 		private readonly Func<string> _codeOfDefaultLanguageForNaming;
-		public static LanguageLookupModel LookupIsoCode = new LanguageLookupModel();
+		private readonly static LanguageLookupModel LookupIsoCode = new LanguageLookupModel();
 		private string _iso639Code;
 		public bool IsRightToLeft;
 
@@ -90,11 +90,11 @@ namespace Bloom.Collection
 				if (string.IsNullOrEmpty(Iso639Code))
 					return string.Empty;
 
-				var name = LookupIsoCode.GetLocalizedLanguageName(Iso639Code, inLanguage);
+				var name = IetfLanguageTag.GetLocalizedLanguageName(Iso639Code, inLanguage);
 				if (name == Iso639Code)
 				{
 					string match;
-					if (!LookupIsoCode.GetBestLanguageName(Iso639Code, out match))
+					if (!IetfLanguageTag.GetBestLanguageName(Iso639Code, out match))
 						return $"L{_languageNumberInCollection}-Unknown-" + Iso639Code;
 					return match;
 				}
