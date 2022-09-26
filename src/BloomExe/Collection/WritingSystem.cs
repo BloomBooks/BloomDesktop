@@ -3,8 +3,8 @@ using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Xml.Linq;
-using Bloom.ToPalaso;
 using SIL.Windows.Forms.WritingSystems;
+using SIL.WritingSystems;
 
 namespace Bloom.Collection
 {
@@ -90,11 +90,11 @@ namespace Bloom.Collection
 				if (string.IsNullOrEmpty(Tag))
 					return string.Empty;
 
-				var name = LookupModel.GetLocalizedLanguageName(Tag, inLanguage);
+				var name = IetfLanguageTag.GetLocalizedLanguageName(Tag, inLanguage);
 				if (name == Tag)
 				{
 					string match;
-					if (!LookupModel.GetBestLanguageName(Tag, out match))
+					if (!IetfLanguageTag.GetBestLanguageName(Tag, out match))
 						return $"L{_languageNumberInCollection}-Unknown-" + Tag;
 					return match;
 				}

@@ -1,15 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net;
 using System.Xml;
-using Bloom.Collection;
 using Bloom.Properties;
-using Bloom.ToPalaso;
 using L10NSharp;
 using Newtonsoft.Json;
 using SIL.IO;
-using SIL.Windows.Forms.WritingSystems;
+using SIL.WritingSystems;
 using SIL.Xml;
 
 namespace Bloom.Book
@@ -91,11 +88,9 @@ namespace Bloom.Book
 			if (langs.Any())
 			{
 				// We don't have a localization for these languages, but we can at least try to give them a name
-				var lookup = new LanguageLookupModel(); // < 1ms
 				foreach (var lang in langs) // may include things like empty string, z, *, but this is harmless as they are not language codes.
 				{
-					string match;
-					if (lookup.GetBestLanguageName(lang, out match)) // some better name found
+					if (IetfLanguageTag.GetBestLanguageName(lang, out string match)) // some better name found
 						mapOriginalToLocalized[lang] = match;
 				}
 			}

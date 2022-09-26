@@ -10,17 +10,14 @@ using System.Xml.Linq;
 using Bloom.Api;
 using Bloom.Collection;
 using Bloom.Edit;
-using Bloom.ToPalaso;
 using L10NSharp;
 using Microsoft.CSharp.RuntimeBinder;
-using SIL.Code;
 using SIL.Extensions;
 using SIL.Linq;
 using SIL.Reporting;
 using SIL.Text;
 using SIL.WritingSystems;
 using SIL.Xml;
-using TagLib;
 using File = System.IO.File;
 
 namespace Bloom.Book
@@ -2186,7 +2183,7 @@ namespace Bloom.Book
 				if (lang != null)
 					name = lang.Name;
 				else
-					WritingSystem.LookupModel.GetBestLanguageName(code, out name);
+					IetfLanguageTag.GetBestLanguageName(code, out name);
 				string ethCode;
 				LanguageSubtag data;
 				if (!StandardSubtags.RegisteredLanguages.TryGet(code.ToLowerInvariant(), out data))
