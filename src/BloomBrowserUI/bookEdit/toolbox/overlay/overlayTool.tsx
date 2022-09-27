@@ -691,7 +691,11 @@ const OverlayToolControls: React.FunctionComponent = () => {
                                 text={percentTransparencyString}
                             />
                         </FormControl>
-                        <FormControl>
+                        <FormControl
+                            className={
+                                isBubble(currentItemSpec) ? "" : "disabled"
+                            }
+                        >
                             <InputLabel htmlFor="bubble-outlineColor-dropdown">
                                 <Span l10nKey="EditTab.Toolbox.ComicTool.Options.OuterOutlineColor">
                                     Outer Outline Color
@@ -708,7 +712,8 @@ const OverlayToolControls: React.FunctionComponent = () => {
                                     className: "bubble-options-dropdown-menu"
                                 }}
                                 onChange={event => {
-                                    handleOutlineColorChanged(event);
+                                    if (isBubble(currentItemSpec))
+                                        handleOutlineColorChanged(event);
                                 }}
                             >
                                 <MenuItem value="none">
@@ -1013,4 +1018,8 @@ function setOpaque(color: string) {
     const firstColor = new tinycolor(color);
     firstColor.setAlpha(1.0);
     return firstColor.toHexString();
+}
+function isBubble(item: BubbleSpec | undefined): boolean {
+    // "none" is the style assigned to the plain text box.
+    return !!item && item.style != "none" && item.style != "caption";
 }
