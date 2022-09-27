@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -82,9 +82,7 @@ namespace BloomTests.Spreadsheet
             placeHolder.png
         </div>
 
-        <div data-book=""bookTitle"" lang=""fr"" class="" bloom-editable bloom-nodefaultstylerule bloom-padForOverflow audio-sentence"" contenteditable=""true"" style=""padding-bottom: 0px;"" data-audiorecordingmode=""TextBox"" id=""i779b9abc-3d1b-4e74-926f-b99175396902"">
-            <p>audio test</p>
-        </div>
+        {0}
 
         <div data-book=""originalTitle"" lang=""*"">
             audio test
@@ -116,9 +114,14 @@ namespace BloomTests.Spreadsheet
 			@"</body>
 </html>";
 
-		protected void Setup(string pagesContent)
+		protected void Setup(string pagesContent, string titleOverride = null)
 		{
-			var dom = new HtmlDom(StartOfFile + pagesContent + EndOfFile, true);
+			string title = titleOverride ??
+			               @"<div data-book=""bookTitle"" lang=""fr"" class="" bloom-editable bloom-nodefaultstylerule bloom-padForOverflow audio-sentence"" contenteditable=""true"" style=""padding-bottom: 0px;"" data-audiorecordingmode=""TextBox"" id=""i779b9abc-3d1b-4e74-926f-b99175396902"">
+            <p>audio test</p>
+        </div>";
+			// Not using string.Format here because StartOfFile has other curly braces and we just need a simple fix.
+			var dom = new HtmlDom(StartOfFile.Replace("{0}", title) + pagesContent + EndOfFile, true);
 			_spreadsheetFolder = new TemporaryFolder("SpreadsheetImagesTests");
 			_bookFolder = new TemporaryFolder("SpreadsheetImagesTests_Book");
 			var mockLangDisplayNameResolver = new Mock<ILanguageDisplayNameResolver>();
@@ -452,5 +455,47 @@ namespace BloomTests.Spreadsheet
 				Is.EqualTo("missing, ./audio/i77c18c83-0224-405f-bb97-70d32078855c.mp3"));
 		}
 
+	}
+
+	public class Spreadsheet_DataDivAudio_Tests : SpreadsheetAudioTestsBase
+	{
+
+		[OneTimeSetUp]
+		public void OneTimeSetUp()
+		{
+			// Some slightly modified data-div data from a real book
+			 Setup("", @"
+		<div data-book=""bookTitle"" lang=""fr"" class="" bloom-editable bloom-nodefaultstylerule bloom-padForOverflow audio-sentence"" contenteditable=""true"" style=""padding-bottom: 0px;"" data-audiorecordingmode=""TextBox"" id=""i9c7f4e02-4685-48fc-8653-71d88f218706"" recordingmd5=""8734124ad9e817bc544a1d8b7cd6bc3c"" data-duration=""3.996735"">
+            <p>audio test</p>
+        </div>
+		<div data-book=""bookTitle"" lang=""en"" class="" bloom-editable bloom-nodefaultstylerule bloom-padForOverflow audio-sentence bloom-postAudioSplit"" contenteditable=""true"" style=""padding-bottom: 2px;"" data-audiorecordingmode=""TextBox"" id=""a9d7b794-7a83-473a-8307-7968176ae4bc"" recordingmd5=""dd88f01a349b69e23df8b3d91ca0b6fa"" data-duration=""4.388571"" data-audiorecordingendtimes=""4.360"">
+            <p><span id=""i7da5dfe6-78a2-446e-803c-45a41472848b"" class=""bloom-highlightSegment"">English audio test</span></p>
+        </div>");
+		}
+
+		[OneTimeTearDown]
+		public void OneTimeTearDown()
+		{
+			TearDown();
+		}
+
+		/// <summary>
+		/// This is not a very exhaustive test of all the things that audio export should do.
+		/// But it's enough to confirm that otherwise-tested code is being called.
+		/// </summary>
+		/// <param name="lang"></param>
+		/// <param name="expectedId"></param>
+		/// <param name="expectedDuration"></param>
+		[TestCase("fr", "i9c7f4e02-4685-48fc-8653-71d88f218706", "3.996735")]
+		[TestCase("en", "a9d7b794-7a83-473a-8307-7968176ae4bc", "4.360")]
+		public void DataDivHasTitleAudio(string lang, string expectedId, string expectedDuration)
+		{
+			var row = AllRows.First(r => r.MetadataKey=="[bookTitle]");
+			Assert.That(AllRows.First().CellContents, Has.Member($"[audio {lang}]"));
+			var frAudioIndex = AllRows.First().CellContents.IndexOf($"[audio {lang}]");
+			Assert.That(row.CellContents.ToArray()[frAudioIndex], Is.EqualTo("./audio/" + expectedId + ".mp3"));
+			var frAudioAlignmentIndex = AllRows.First().CellContents.IndexOf($"[audio alignments {lang}]");
+			Assert.That(row.CellContents.ToArray()[frAudioAlignmentIndex], Is.EqualTo(expectedDuration));
+		}
 	}
 }

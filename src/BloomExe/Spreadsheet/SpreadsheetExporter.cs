@@ -162,7 +162,7 @@ namespace Bloom.Spreadsheet
 			}
 		}
 
-		private void ExportAudio(XmlElement editable, ContentRow row, string bookFolderPath)
+		private void ExportAudio(XmlElement editable, SpreadsheetRow row, string bookFolderPath)
 		{
 			// There are four possible states for a bloom-Editable in regard to audio.
 			// 1. Audio recorded by block and not split.
@@ -373,7 +373,7 @@ namespace Bloom.Spreadsheet
 			return _spreadsheet.AddColumnForAudioAlignment(langCode, langFriendlyName);
 		}
 
-		private void AddDataDivData(XmlNode node, string imagesFolderPath)
+		private void AddDataDivData(XmlNode node, string bookFolderPath)
 		{
 			var dataBookNodeList = node.SafeSelectNodes("./div[@data-book]").Cast<XmlElement>().ToList();
 			//Bring the ones with the same data-book value together so we can easily make a single row for each data-book value
@@ -463,7 +463,7 @@ namespace Bloom.Spreadsheet
 						}
 
 						row.SetCell(InternalSpreadsheet.ImageSourceColumnLabel, Path.Combine("images", imageSource));
-						CopyImageFileToSpreadsheetFolder(ImagePath(imagesFolderPath, imageSource));
+						CopyImageFileToSpreadsheetFolder(ImagePath(bookFolderPath, imageSource));
 						prevDataBookLabel = dataBookLabel;
 						continue;
 					}
@@ -479,6 +479,7 @@ namespace Bloom.Spreadsheet
 
 				var colIndex = GetOrAddColumnForLang(langCode);
 				row.SetCell(colIndex, dataBookElement.InnerXml.Trim());
+				ExportAudio(dataBookElement, row, bookFolderPath);
 				prevDataBookLabel = dataBookLabel;
 			}
 		}

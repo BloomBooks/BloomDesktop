@@ -76,6 +76,14 @@ namespace BloomTests.Spreadsheet
             Microwave
         </div>
 
+		<div data-book=""ISBN"" lang=""*"" class="" bloom-editable"" contenteditable=""true"">
+            <p>123456</p>
+        </div>
+
+        <div data-book=""ISBN"" lang=""en"" class="" bloom-editable"" contenteditable=""true"" style="""">
+            <p>123456</p>
+        </div>
+
         <div data-book=""outside-back-cover-branding-bottom-html"" lang=""*""><img class=""branding"" src=""BloomWithTaglineAgainstLight.svg"" alt="""" data-copyright="""" data-creator="""" data-license=""""></img></div>
         <div data-book=""outside-back-cover-bottom-html"" lang=""*""><img class=""branding"" src=""BloomWithTaglineAgainstLight.svg"" alt="""" data-copyright="""" data-creator="""" data-license=""""></img></div>
 
@@ -183,6 +191,17 @@ namespace BloomTests.Spreadsheet
 			Assert.That(contentLangRow, Is.Not.Null);
 			Assert.That(contentLangRow.GetCell(_sheet.GetRequiredColumnForLang("es")).Content, Is.EqualTo("<p>Spanish Microwave</p>"));
 			Assert.That(contentLangRow.GetCell(_sheet.GetRequiredColumnForLang("en")).Content, Is.EqualTo("<p>English Microwave</p>"));
+		}
+
+		[TestCase("fromExport")]
+		[TestCase("fromFile")]
+		public void ISBN_Correct(string source)
+		{
+			SetupFor(source);
+			var contentLangRow = _rows.Find(x => x.MetadataKey.Equals("[ISBN]"));
+			Assert.That(contentLangRow, Is.Not.Null);
+			Assert.That(contentLangRow.GetCell(_sheet.GetRequiredColumnForLang("en")).Content, Is.EqualTo("<p>123456</p>"));
+			Assert.That(contentLangRow.GetCell(_sheet.GetRequiredColumnForLang("*")).Content, Is.EqualTo("<p>123456</p>"));
 		}
 
 		[TestCase("fromExport")]
