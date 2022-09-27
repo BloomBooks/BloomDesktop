@@ -10,6 +10,11 @@
 	<description>{Bloom description and version provided by build script}</description>
     <releaseNotes>None</releaseNotes>
     <copyright>Copyright SIL International</copyright>
+	<icon>BloomIcon.png</icon>
+	<!-- Nuget suggests keeping the deprecated `iconUrl` property in place for backwards compatibility.
+		I'm not convinced there is any reason to do so in our case, but this at least provides
+		one bit of documentation for why we need this file on S3.
+		(We will always need it for existing installers.) -->
 	<iconUrl>https://s3.amazonaws.com/bloomlibrary.org/squirrel/BloomSetup.ico</iconUrl>
   </metadata>
 	<files>
@@ -27,5 +32,6 @@
 		 -->
 		<file src="..\..\output\browser\**\*.*" target="\lib\net45\browser" exclude="**\*.ts;**\*.map;**\*.pug;**\*.jade;**\*.less;**\*Spec.js;**\*.jsx"/>
 		<file src="Bloom*.ico" target="\lib\net45\"/>
+		<file src="BloomIcon.png"/>
 	</files>
 </package>
