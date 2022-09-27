@@ -1,10 +1,15 @@
 
 include ../MXBLiteracy-XMatter/MXBCommon-XMatter.pug
 
-mixin mxb-chapterVerseRef
+mixin mxb-chapterVerseRef-FrontCover
 	.creditsRow(data-hint='Este espacio es para indicar la cita bíblica en lugar de atribuir al autor/ilustrador.')
 		+field-prototypeDeclaredExplicity("V")
-			+editable(kLanguageForPrototypeOnly).smallCoverCredits.Cover-Default-style(data-book='smallCoverCredits')
+			+editable(kLanguageForPrototypeOnly).smallCoverCredits.Reference-Cover-style(data-book='smallCoverCredits')
+
+mixin mxb-chapterVerseRef-TitlePage
+	.creditsRow(data-hint='Este espacio es para indicar la cita bíblica en lugar de atribuir al autor/ilustrador.')
+		+field-prototypeDeclaredExplicity("V")
+			+editable(kLanguageForPrototypeOnly).smallCoverCredits.Reference-TitlePage-style(data-book='smallCoverCredits')
 
 mixin mxb-contributions-scripture
 	+field-prototypeDeclaredExplicity("N1")#contributions
@@ -23,7 +28,7 @@ mixin mxb-frontCover-scripture
 				label.bubble Book title in {lang}
 				+editable(kLanguageForPrototypeOnly).bloom-nodefaultstylerule.Title-On-Cover-style.bloom-padForOverflow(data-book='bookTitle')
 
-		+mxb-chapterVerseRef
+		+mxb-chapterVerseRef-FrontCover
 
 		block front-cover-image
 			+standard-cover-image
@@ -34,10 +39,7 @@ mixin mxb-frontCover-scripture
 
 			// 1 row
 			.bottomTextContent
-				block cover-bottom-row-before-branding
-					.bottomRow
-						.coverBottomLangName.Cover-Default-style(data-derived='languagesOfBook')
-						+chooser-topic.coverBottomBookTopic
+				+mxb-languageNameTopic-field
 				+cover-branding-bottom
 				block cover-bottom-row-after-branding
 		block front-cover-footer
@@ -47,7 +49,7 @@ mixin mxb-titlePage-scripture-contents
 		label.bubble Book title in {lang}
 		+editable(kLanguageForPrototypeOnly).bloom-nodefaultstylerule.Title-On-Title-Page-style(data-book='bookTitle')
 
-	+mxb-chapterVerseRef
+	+mxb-chapterVerseRef-TitlePage
 
 	#languageInformation.Credits-Page-style('lang'='N1')
 		.languagesOfBook(data-derived='languagesOfBook')
