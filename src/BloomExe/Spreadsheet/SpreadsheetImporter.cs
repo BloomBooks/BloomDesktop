@@ -467,6 +467,7 @@ namespace Bloom.Spreadsheet
 								Warn("Found more than one " + dataBookLabel +" element for language "
 												+ lang + " in the book dom. Only the first will be updated.");
 							}
+							AddAudio(matchingNode, lang, currentRow);
 						}
 						else //No node for this language and data-book. Create one from template and add.
 						{
@@ -474,6 +475,7 @@ namespace Bloom.Spreadsheet
 							newNode.SetAttribute("lang", lang);
 							newNode.InnerXml = langVal;
 							AddDataBookNode(newNode);
+							AddAudio(newNode, lang, currentRow);
 						}
 					}
 					else  //Spreadsheet cell for this row and language is empty. Remove the corresponding node if present.
@@ -490,7 +492,7 @@ namespace Bloom.Spreadsheet
 					HtmlDom.RemoveOtherLanguages(matchingNodes.Cast<XmlElement>().ToList(), _dataDivElement, _sheet.Languages);
 				}
 
-				if (asteriskContentFound && specificLanguageContentFound)
+				if (asteriskContentFound && specificLanguageContentFound && currentRow.MetadataKey != "[ISBN]")
 				{
 					Warn(dataBookLabel + " information found in both * language column and other language column(s)");
 				}
@@ -890,12 +892,18 @@ namespace Bloom.Spreadsheet
 			if (_pathToSpreadsheetFolder == null)
 				return; // happens during unit tests not focused on audio
 			var audioFilesList = row.GetCell(audioColIndex).Content;
+			// We need the 'where' because Split creates a single empty string if the input is empty.
+			var audioFiles = audioFilesList.Split(',').Select(x => x.Trim())
+				.Where(x => x != "").ToArray();
 			var audioAlignColIndex = _sheet.GetOptionalColumnForAudioAlignment(lang);
 			var alignmentData = "";
 			if (audioAlignColIndex >= 0)
 			{
 				alignmentData = row.GetCell(audioAlignColIndex).Content;
 			}
+
+			if (audioFiles.Length == 0 && string.IsNullOrEmpty(alignmentData))
+				return; // OK to have no audio at all, even if the columns are there.
 
 			var alignments = alignmentData.Split(new[] {' '}, StringSplitOptions.RemoveEmptyEntries);
 			var paras = editable.SafeSelectNodes(".//p").Cast<XmlElement>();
@@ -924,10 +932,6 @@ namespace Bloom.Spreadsheet
 				sentenceCount += fragments.Count(x => x.StartsWith("s"));
 			}
 
-			// We need the 'where' because Split creates a single empty string if the input is empty.
-			var audioFiles = audioFilesList.Split(',').Select(x => x.Trim())
-				.Where(x=> x != "").ToArray();
-
 			if (alignments.Length > 0)
 			{
 				// The presence of alignment data indicates TextBox recording mode, so the editable should
@@ -940,7 +944,7 @@ namespace Bloom.Spreadsheet
 					return;
 				}
 				var audioFile = audioFilesList;
-				var durationStr = AddAudioFile(editable, audioFile);
+				var durationStr = AddAudioFile(editable, audioFile, row);
 				var duration = double.Parse(durationStr, CultureInfo.InvariantCulture);
 				editable.SetAttribute("data-audiorecordingmode", "TextBox");
 				HtmlDom.AddClass(editable, "audio-sentence");
@@ -1051,7 +1055,7 @@ namespace Bloom.Spreadsheet
 							var span = para.OwnerDocument.CreateElement("span");
 							var audioFile = audioFiles[audioFileIndex++];
 							span.InnerXml = fragment;
-							AddAudioFile(span, audioFile);
+							AddAudioFile(span, audioFile, row);
 							HtmlDom.AddClass(span, "audio-sentence");
 							para.AppendChild(span);
 						}
@@ -1081,7 +1085,7 @@ namespace Bloom.Spreadsheet
 		/// <param name="elt"></param>
 		/// <param name="audioFile"></param>
 		/// <returns>a string representation of the duration of the audio file, in seconds.</returns>
-		private string AddAudioFile(XmlElement elt, string audioFile)
+		private string AddAudioFile(XmlElement elt, string audioFile, ContentRow row)
 		{
 			if (audioFile == "missing")
 			{
@@ -1135,8 +1139,20 @@ namespace Bloom.Spreadsheet
 			}
 
 			src = src.Replace("\\", "/"); // works on all platforms, simplifies testing
-			_progress.MessageWithParams("MissingAudioFile", "", "Did not import audio on page {0} because '{1}' was not found.",
-				 ProgressKind.Error, PageNumberToReport.ToString(), src);
+			var rowId = row.GetCell(0).Content;
+			if (rowId == InternalSpreadsheet.PageContentRowLabel)
+			{
+				_progress.MessageWithParams("MissingAudioFile", "",
+					"Did not import audio on page {0} because '{1}' was not found.",
+					ProgressKind.Error, PageNumberToReport.ToString(), src);
+			}
+			else
+			{
+				_progress.MessageWithParams("MissingAudioFile", "",
+					"Did not import audio for {0} because '{1}' was not found.",
+					ProgressKind.Error, rowId.Trim(new[] {'[',']'}), src);
+			}
+
 			return "";
 		}
 

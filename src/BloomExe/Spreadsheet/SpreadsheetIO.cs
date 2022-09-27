@@ -40,7 +40,8 @@ namespace Bloom.Spreadsheet
 			ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
 		}
 
-		public static void WriteSpreadsheet(InternalSpreadsheet spreadsheet, string outputPath, bool retainMarkup, IWebSocketProgress progress = null)
+		public static void WriteSpreadsheet(InternalSpreadsheet spreadsheet, string outputPath, bool retainMarkup,
+			IWebSocketProgress progress = null)
 		{
 			using (var package = new ExcelPackage())
 			{
@@ -56,7 +57,7 @@ namespace Bloom.Spreadsheet
 				var imageThumbnailColumn = spreadsheet.GetColumnForTag(InternalSpreadsheet.ImageThumbnailColumnLabel);
 				// Apparently the width is in some approximation of 'characters'. This empirically determined
 				// conversion factor seems to do a pretty good job.
-				worksheet.Column(imageThumbnailColumn + 1).Width = defaultImageWidth /6.88;
+				worksheet.Column(imageThumbnailColumn + 1).Width = defaultImageWidth / 6.88;
 
 				int r = 0;
 				foreach (var row in spreadsheet.AllRows())
@@ -82,9 +83,8 @@ namespace Bloom.Spreadsheet
 						}
 
 						if (!retainMarkup
-						    && IsWysiwygFormattedColumn(row, c)
-						    && IsWysiwygFormattedRow(row))
-                        {
+							&& IsWysiwygFormattedPair(row, c))
+						{
 							MarkedUpText markedUpText = MarkedUpText.ParseXml(content);
 							if (markedUpText.HasFormatting)
 							{
@@ -136,7 +136,8 @@ namespace Bloom.Spreadsheet
 								//Images show up in the cell 1 row greater and 1 column greater than assigned
 								//So this will put them in row r, column imageThumbnailColumn+1 like we want
 								var rowHeight = embedImage(imagePath, r - 1, imageThumbnailColumn);
-								worksheet.Row(r).Height = rowHeight * 72/96 + 3; //so the image is visible; height seems to be points						
+								worksheet.Row(r).Height =
+									rowHeight * 72 / 96 + 3; //so the image is visible; height seems to be points						
 							}
 						}
 					}
@@ -157,6 +158,7 @@ namespace Bloom.Spreadsheet
 						SetBackgroundColorOfRow(worksheet, r, row.BackgroundColor);
 					}
 				}
+
 				worksheet.Cells[1, 1, r, spreadsheet.ColumnCount].Style.WrapText = true;
 
 
@@ -195,9 +197,11 @@ namespace Bloom.Spreadsheet
 						{
 							errorText = "Bad image file";
 						}
+
 						progress?.MessageWithoutLocalizing(errorText + ": " + imageSrcPath);
 						worksheet.Cells[r, imageThumbnailColumn + 1].Value = errorText;
 					}
+
 					return Math.Max(finalHeight, 30);
 				}
 
@@ -216,7 +220,7 @@ namespace Bloom.Spreadsheet
 					var xlFile = new FileInfo(outputPath);
 					package.SaveAs(xlFile);
 				}
-				catch (IOException ex) when ((ex.HResult & 0x0000FFFF) == 32)//ERROR_SHARING_VIOLATION
+				catch (IOException ex) when ((ex.HResult & 0x0000FFFF) == 32) //ERROR_SHARING_VIOLATION
 				{
 					Console.WriteLine("Writing Spreadsheet failed. Do you have it open in another program?");
 					Console.WriteLine(ex.Message);
@@ -262,7 +266,28 @@ namespace Bloom.Spreadsheet
 			InternalSpreadsheet.PageNumberColumnLabel
 		});
 
-		private static bool IsWysiwygFormattedColumn(SpreadsheetRow row, int index)
+		/// <summary>
+		/// Combines the tests for IsWysiwygFormattedColumn and IsWysiwygFormattedRow
+		/// with any special case combinations.
+		/// </summary>
+		private static bool IsWysiwygFormattedPair(SpreadsheetRow row, int index)
+		{
+			// need special case here because when index is 0 and we are creating the row,
+			// its MetadataKey may not be defined. (The first column contains labels that are
+			// never wysiwyg formatted.)
+			if (index == 0)
+				return false;
+			var colKey = row.Spreadsheet.Header.GetRow(0).GetCell(index).Content;
+			var rowKey = row.MetadataKey;
+			// ISBNs are wysiwyg formatted even in the * column.
+			// enhance: can make a dictionary if we get more exceptions.
+			if (colKey == "[*]" && rowKey == "[ISBN]")
+				return true;
+			return IsWysiwygFormattedColumn(row, index) && IsWysiwygFormattedRow(row);
+		}
+	
+
+	private static bool IsWysiwygFormattedColumn(SpreadsheetRow row, int index)
 		{
 			var key = row.Spreadsheet.Header.GetRow(0).GetCell(index).Content;
 			if (key.StartsWith("[audio "))
@@ -299,9 +324,8 @@ namespace Bloom.Spreadsheet
 			for (var c = 0; c < colCount; c++)
 			{
 				ExcelRange currentCell = worksheet.Cells[rowIndex + 1, c + 1];
-				// The first row is special because it contains the headers needed by IsWysiwygFormattedColumn
-				if (rowIndex > 0 && IsWysiwygFormattedColumn(row, c)
-				    && IsWysiwygFormattedRow(row))
+				// The second row is special because it contains the headers needed by IsWysiwygFormattedPair
+				if (rowIndex > 1 && IsWysiwygFormattedPair(row, c))
 				{
 					row.AddCell(BuildXmlString(currentCell));
 				}

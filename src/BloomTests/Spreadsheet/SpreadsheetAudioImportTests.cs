@@ -27,6 +27,7 @@ namespace BloomTests.Spreadsheet
 		private TemporaryFolder _spreadsheetFolder;
 		private List<string> _warnings;
 		private List<XmlElement> _contentPages;
+		private XmlElement _firstPage;
 
 		[OneTimeSetUp]
 		public void OneTimeSetUp()
@@ -52,6 +53,10 @@ namespace BloomTests.Spreadsheet
 				RobustFile.Copy(audioFilePath, anotherPath);
 			}
 
+			// Yet another copy of this file to be the source for the title.
+			var titleAudioPath = Path.Combine(_otherAudioFolder.FolderPath, "i9c7f4e02-4685-48fc-8653-71d88f218706t.mp3");
+			RobustFile.Copy(Path.Combine(testAudioPath, "i9c7f4e02-4685-48fc-8653-71d88f218706.mp3"), titleAudioPath);
+
 			// Make a source file. This name is actually allowed by Windows, but not by our code,
 			// as it is a problem in HTML. Ampersand is not allowed in files, and spaces are not allowed in IDs
 			var dest = Path.Combine(spreadsheetAudioPath, "a bad & problematic name.mp3");
@@ -71,6 +76,19 @@ namespace BloomTests.Spreadsheet
 			var columnForFr = ss.AddColumnForLang("fr", "French");
 			var columnForFrAudio = ss.AddColumnForLangAudio("fr", "French");
 			var columnForFrAlignment = ss.AddColumnForAudioAlignment("fr", "French");
+
+			var titleRow = new ContentRow(ss);
+			titleRow.SetCell(0, "[bookTitle]");
+			titleRow.SetCell(columnForFr, "<p>My Title</p>");
+			titleRow.SetCell(columnForFrAudio, titleAudioPath);
+			// Actual duration of this audio is 3.996735; we should get that, not 2.5
+			titleRow.SetCell(columnForFrAlignment, "2.5");
+
+			// Data to let us test for missing file error message in xmatter
+			var creditsRow = new ContentRow(ss);
+			creditsRow.SetCell(0, "[smallCoverCredits]");
+			creditsRow.SetCell(columnForFr, "<p>My credits</p>");
+			creditsRow.SetCell(columnForFrAudio, "missing file.mp3");
 
 			// Will make a TG on page 1. It will be treated as a single split,
 			// as there is only one sentence and data in the alignment column
@@ -209,6 +227,11 @@ namespace BloomTests.Spreadsheet
 			contentRow16.SetCell(columnForFr, "<p>[blank]</p>");
 			contentRow16.SetCell(columnForEn, "<p>This is page 16.</p>");
 
+			// This row has no audio at all. This should not produce an error.
+			var contentRow17 = new ContentRow(ss);
+			contentRow17.AddCell(InternalSpreadsheet.PageContentRowLabel);
+			contentRow17.SetCell(columnForFr, "<p>This is page 17.</p>");
+
 			// not sure if we need this
 			var settings = new NewCollectionSettings();
 			settings.Language1.Iso639Code = "es";
@@ -222,7 +245,7 @@ namespace BloomTests.Spreadsheet
 			_contentPages = _dom.SafeSelectNodes("//div[contains(@class, 'bloom-page')]").Cast<XmlElement>().ToList();
 
 			// Remove the xmatter to get just the content pages.
-			//_firstPage = _contentPages[0];
+			_firstPage = _contentPages[0];
 			_contentPages.RemoveAt(0);
 			//_lastPage = _contentPages.Last();
 			_contentPages.RemoveAt(_contentPages.Count - 1);
@@ -260,6 +283,7 @@ namespace BloomTests.Spreadsheet
 		[TestCase("i77c18c83-0224-405f-bb97-70d32078855c")]
 		[TestCase("i991ae1ac-db9a-4ad1-984b-8e679c1ae901x")]
 		[TestCase("i77c18c83-0224-405f-bb97-70d32078855cx")]
+		[TestCase("i9c7f4e02-4685-48fc-8653-71d88f218706t")]
 		public void GotAudioFile(string id)
 		{
 			var path = Path.Combine(_bookFolder.FolderPath, "audio", id + ".mp3");
@@ -337,10 +361,25 @@ namespace BloomTests.Spreadsheet
 		}
 
 		[Test]
+		public void TitleAudioImported()
+		{
+			var titleDiv = _dom.SafeSelectNodes(".//div[@data-book='bookTitle' and @lang='fr']").Cast<XmlElement>().First();
+			Assert.That(titleDiv, Is.Not.Null);
+			Assert.That(titleDiv.Attributes["id"].Value, Is.EqualTo("i9c7f4e02-4685-48fc-8653-71d88f218706t"));
+		}
+
+		[Test]
 		public void MissingAudioFileReported()
 		{
 			var misssingAudioFilePath = Path.Combine(_spreadsheetFolder.FolderPath, "audio", "missingJunk.mp3").Replace("\\", "/");
 			Assert.That(_progressSpy.Errors, Does.Contain($"Did not import audio on page 6 because '{misssingAudioFilePath}' was not found."));
+		}
+
+		[Test]
+		public void MissingXmatterAudioFileReported()
+		{
+			var misssingAudioFilePath = Path.Combine(_spreadsheetFolder.FolderPath, "audio", "missingJunk.mp3").Replace("\\", "/");
+			Assert.That(_progressSpy.Errors, Does.Contain($"Did not import audio for smallCoverCredits because 'missing file.mp3' was not found."));
 		}
 
 		[Test]
@@ -352,6 +391,12 @@ namespace BloomTests.Spreadsheet
 			Assert.That(id, Is.EqualTo("abadproblematicname")); // name corrected to something valid
 			var path = Path.Combine(_bookFolder.FolderPath, "audio", id + ".mp3");
 			Assert.That(RobustFile.Exists(path));
+		}
+
+		[Test]
+		public void NoErrorForEmptyAudio()
+		{
+			Assert.That(_progressSpy.Errors, Has.None.Match(".*17.*"));
 		}
 
 		[Test]
