@@ -18,6 +18,29 @@ ENDLAYOUTS
 
 @XMatterPackName: "MXB Scripture";
 
+.bloom-page {
+    &.outsideFrontCover {
+        // Make the front cover's Scripture reference field bold, centered and 16pt
+        .Reference-Cover-style {
+            font-size: 16pt;
+            font-weight: bold;
+            text-align: center;
+        }
+        // Make the default Spanish title not bold on the Cover
+        .bloom-translationGroup.bookTitle
+            .bloom-contentNational1.Title-On-Cover-style.bloom-editable {
+            font-weight: normal;
+        }
+    }
+    // Make the title page's Scripture reference field bold, (already centered) and 14pt
+    &.titlePage {
+        .Reference-TitlePage-style {
+            font-weight: bold;
+            font-size: 14pt;
+        }
+    }
+}
+
 .credits .licenseAndCopyrightBlock {
     margin-top: auto;
 }
@@ -25,7 +48,6 @@ ENDLAYOUTS
 .titlePage .creditsRow .smallCoverCredits.bloom-content1 {
     // for Scripture this is tucked up under the title and used for chapter/verse references
     margin-bottom: @MarginBetweenMajorItems;
-    font-size: 12pt;
 }
 
 .titlePage #titlePageTitleBlock {
