@@ -1574,7 +1574,7 @@ namespace Bloom.Book
 
 		#region Static Helper Methods
 
-		private static string GetHtmCandidate(string folderPath)
+		public static string GetHtmCandidate(string folderPath)
 		{
 			return Path.Combine(folderPath, Path.GetFileName(folderPath) + ".htm");
 		}
