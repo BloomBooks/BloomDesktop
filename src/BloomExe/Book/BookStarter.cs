@@ -63,6 +63,16 @@ namespace Bloom.Book
 			{
 				var oldNamedFile = Path.Combine(newBookFolder,
 					Path.GetFileName(GetPathToSingleHtmlFileOrReport(sourceBookFolder)));
+				// We do now allow for the possibility that the source folder had other HTML files
+				// besides a single one whose name matches the folder name. Delete those spurious files.
+				// (We don't just use Directory.EnumerateFiles, because there are a few special cases we
+				// allow to survive.)
+				// (Do this before the rename, just in case the rename would cause a conflict.)
+				var otherHtmlFiles = GetHtmFileCandidates(newBookFolder).Where(x => x != oldNamedFile);
+				foreach (var otherFile in otherHtmlFiles)
+				{
+					RobustFile.Delete(otherFile);
+				}
 				var newNamedFile = Path.Combine(newBookFolder, initialBookName + ".htm");
 				RobustFile.Move(oldNamedFile, newNamedFile);
 
@@ -83,6 +93,11 @@ namespace Bloom.Book
 
 		private string GetPathToSingleHtmlFileOrReport(string folder)
 		{
+			// As usual, if we find an HTML file at the expected location, we'll just use it, even
+			// if there are others.
+			var primaryCandidate = BookStorage.GetHtmCandidate(folder);
+			if (RobustFile.Exists(primaryCandidate))
+				return primaryCandidate;
 			var candidates = GetHtmFileCandidates(folder);
 			if (candidates.Count() == 1)
 				return candidates.First();
