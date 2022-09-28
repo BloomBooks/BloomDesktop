@@ -23,9 +23,9 @@ namespace BloomTests.Book
 			_collectionSettings = new CollectionSettings
 			{
 				IsSourceCollection = false,
-				Language1Iso639Code = "xyz",
-				Language2Iso639Code = "fr",
-				Language3Iso639Code = "es",
+				Language1Tag = "xyz",
+				Language2Tag = "fr",
+				Language3Tag = "es",
 				XMatterPackName = "Factory"
 			};
 			ErrorReport.IsOkToInteractWithUser = false;

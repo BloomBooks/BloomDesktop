@@ -1520,10 +1520,10 @@ namespace Bloom.Book
 				// languagesWeAlreadyHave to the languages we do NOT want to copy from defaultLangStyles.css
 				// (because we have more current data about them already).
 				var languagesWeAlreadyHave = new HashSet<string>();
-				languagesWeAlreadyHave.Add(CollectionSettings.Language1Iso639Code);
-				languagesWeAlreadyHave.Add(CollectionSettings.Language2Iso639Code);
-				if (!String.IsNullOrEmpty(CollectionSettings.Language3Iso639Code))
-					languagesWeAlreadyHave.Add(CollectionSettings.Language3Iso639Code);
+				languagesWeAlreadyHave.Add(CollectionSettings.Language1Tag);
+				languagesWeAlreadyHave.Add(CollectionSettings.Language2Tag);
+				if (!String.IsNullOrEmpty(CollectionSettings.Language3Tag))
+					languagesWeAlreadyHave.Add(CollectionSettings.Language3Tag);
 
 				var cssLines = RobustFile.ReadAllLines(path);
 				const string kLangTag = "[lang='";
@@ -4383,7 +4383,7 @@ namespace Bloom.Book
 		{
 			if (isEnabled && HasSignLanguageVideos())
 				// FYI: this might be "", but that's OK. Pass it through anyway
-				BookInfo.MetaData.Feature_SignLanguage_LangCodes = new string[] { this.CollectionSettings.SignLanguageIso639Code };
+				BookInfo.MetaData.Feature_SignLanguage_LangCodes = new string[] { this.CollectionSettings.SignLanguageTag };
 			else
 				BookInfo.MetaData.Feature_SignLanguage_LangCodes = Enumerable.Empty<string>();
 		}

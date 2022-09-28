@@ -449,7 +449,7 @@ namespace Bloom.Publish.Android
 					// It may be incomplete if he just wants to preview his work so far.
 					// If he really doesn't want to publish L1, he can deselect it.
 					// See BL-9587.
-					langCode == collectionSettings?.Language1Iso639Code;
+					langCode == collectionSettings?.Language1Tag;
 
 				var newInitialValue = isChecked ? InclusionSetting.IncludeByDefault : InclusionSetting.ExcludeByDefault;
 				bookInfo.PublishSettings.BloomPub.TextLangs[langCode] = newInitialValue;

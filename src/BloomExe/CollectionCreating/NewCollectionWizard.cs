@@ -125,7 +125,7 @@ namespace Bloom.CollectionCreating
 
 				if(_collectionInfo.IsSourceCollection)
 				{
-					_collectionInfo.Language1Iso639Code = "en";
+					_collectionInfo.Language1Tag = "en";
 				}
 			}
 

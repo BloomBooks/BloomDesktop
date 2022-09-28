@@ -451,7 +451,7 @@ namespace BloomTests.Book
 			");
 
 			_collectionSettings = new CollectionSettings(new NewCollectionSettings() { PathToSettingsFile = CollectionSettings.GetPathForNewSettings(_testFolder.Path, "test"),
-				Language1Iso639Code = "th", Language2Iso639Code = "fr", Language3Iso639Code = "es" });
+				Language1Tag = "th", Language2Tag = "fr", Language3Tag = "es" });
 			var bookData = new BookData(_bookDom, _collectionSettings, null);
 			bookData.SetMultilingualContentLanguages("es", "th", "fr");
 			bookData.Language2.SetName("ไทย", false);
@@ -2398,9 +2398,9 @@ namespace BloomTests.Book
 			// Set up book to cause automatic duplication of some English data-div strings into other languages.
 			var book = CreateBook(new CollectionSettings(new NewCollectionSettings {
 				PathToSettingsFile = CollectionSettings.GetPathForNewSettings(_testFolder.Path, "test"),
-				Language1Iso639Code = "en",
-				Language2Iso639Code = "fr",
-				Language3Iso639Code = "es"
+				Language1Tag = "en",
+				Language2Tag = "fr",
+				Language3Tag = "es"
 			}));
 
 			// Create a couple of fake audio files to test whether they get copied/renamed.
@@ -2950,7 +2950,7 @@ namespace BloomTests.Book
 		public void Constructor_LanguagesOfBookIsSet()
 		{
 			var collectionSettings = CreateDefaultCollectionsSettings();
-			collectionSettings.Language1Iso639Code = "en";
+			collectionSettings.Language1Tag = "en";
 			var book = CreateBook(collectionSettings);
 			var langs = book.RawDom.SelectSingleNode("//div[@id='bloomDataDiv']/div[@data-book='languagesOfBook']") as XmlElement;
 			Assert.AreEqual("English", langs.InnerText);
@@ -3421,7 +3421,7 @@ namespace BloomTests.Book
 			const string signLangaugeCode = "ase";
 			SetupUpdateMetadataFeaturesTest();
 			var book = CreateBook();
-			book.CollectionSettings.SignLanguageIso639Code = signLangaugeCode;
+			book.CollectionSettings.SignLanguageTag = signLangaugeCode;
 
 			book.UpdateMetadataFeatures(true, true, true, allowedLangs);
 
@@ -3838,7 +3838,7 @@ namespace BloomTests.Book
 		public void HasFullAudioCoverage_ContainsMissingAudioElements_ReturnsFalse(string elementName)
 		{
 			// Test setup
-			string lang = CreateDefaultCollectionsSettings().Language1Iso639Code;
+			string lang = CreateDefaultCollectionsSettings().Language1Tag;
 			_bookDom = new HtmlDom($@"
 				<html><head></head><body>
 					<div class='bloom-page numberedPage' id='guid1'>
@@ -3866,7 +3866,7 @@ namespace BloomTests.Book
 		public void HasFullAudioCoverage_ContainsAllAudioElements_ReturnsTrue(string elementName)
 		{
 			// Test setup
-			string lang = CreateDefaultCollectionsSettings().Language1Iso639Code;
+			string lang = CreateDefaultCollectionsSettings().Language1Tag;
 			_bookDom = new HtmlDom($@"
 				<html><head></head><body>
 					<div class='bloom-page numberedPage' id='guid1'>

@@ -186,9 +186,9 @@ namespace BloomTests.Book
 			return new CollectionSettings(new NewCollectionSettings()
 			{
 				PathToSettingsFile = CollectionSettings.GetPathForNewSettings(_testFolder.Path, "test"),
-				Language1Iso639Code = "xyz",
-				Language2Iso639Code = "en",
-				Language3Iso639Code = "fr"
+				Language1Tag = "xyz",
+				Language2Tag = "en",
+				Language3Tag = "fr"
 			});
 		}
 

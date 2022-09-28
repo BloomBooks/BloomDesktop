@@ -817,27 +817,27 @@ namespace Bloom.Publish.BloomLibrary
 			{
 				_model.ClearSignLanguageToPublish();
 			}
-			else if (!string.IsNullOrEmpty(_model.Book.CollectionSettings.SignLanguageIso639Code))
+			else if (!string.IsNullOrEmpty(_model.Book.CollectionSettings.SignLanguageTag))
 			{
-				_model.SetOnlySignLanguageToPublish(_model.Book.CollectionSettings.SignLanguageIso639Code);
+				_model.SetOnlySignLanguageToPublish(_model.Book.CollectionSettings.SignLanguageTag);
 			}
 		}
 
 		private void _changeSignLanguageLinkLabel_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
 		{
 			var collectionSettings = _model.Book.CollectionSettings;
-			var l = CollectionSettingsDialog.ChangeLanguage(collectionSettings.SignLanguageIso639Code, CurrentSignLanguageName, false);
+			var l = CollectionSettingsDialog.ChangeLanguage(collectionSettings.SignLanguageTag, CurrentSignLanguageName, false);
 			if (l == null)
 			{
 				// no change; dialog cancelled
 				return;
 			}
 			_changeSignLanguageLinkLabel.Text = l.DesiredName;
-			collectionSettings.SignLanguageIso639Code = l.LanguageTag;
+			collectionSettings.SignLanguageTag = l.LanguageTag;
 			collectionSettings.SignLanguageName = l.DesiredName;
 			collectionSettings.Save();
 
-			_model.SetOnlySignLanguageToPublish(collectionSettings.SignLanguageIso639Code);
+			_model.SetOnlySignLanguageToPublish(collectionSettings.SignLanguageTag);
 		}
 
 		private string CurrentSignLanguageName

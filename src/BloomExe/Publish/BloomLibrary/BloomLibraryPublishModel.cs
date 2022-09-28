@@ -305,7 +305,7 @@ namespace Bloom.Publish.BloomLibrary
 
 			if (bookInfo.PublishSettings.BloomLibrary.SignLangs == null)
 				bookInfo.PublishSettings.BloomLibrary.SignLangs = new Dictionary<string, InclusionSetting>();
-			var collectionSignLangCode = book.CollectionSettings.SignLanguageIso639Code;
+			var collectionSignLangCode = book.CollectionSettings.SignLanguageTag;
 			// User may have unset or modified the sign language for the collection in which case we need to exclude the old one it if it was previously included.
 			foreach (var includedSignLangCode in bookInfo.PublishSettings.BloomLibrary.SignLangs.IncludedLanguages().ToList())
 			{
