@@ -242,7 +242,7 @@ namespace Bloom.WebLibraryIntegration
 						metaMsg = "(Dry run) Would upload book metadata";	// TODO: localize?
 					progress.WriteStatus(metaMsg);
 					// Do this after uploading the books, since the ThumbnailUrl is generated in the course of the upload.
-					if (!IsDryRun)
+					if (!IsDryRun && !progress.CancelRequested)
 					{
 						var response = ParseClient.SetBookRecord(metadata.WebDataJson);
 						parseId = response.ResponseUri.LocalPath;
