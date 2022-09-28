@@ -550,7 +550,7 @@ namespace Bloom.Edit
 
 			public ContentLanguage(WritingSystem ws)
 			{
-				Iso639Code = ws.Iso639Code;
+				Iso639Code = ws.Tag;
 				Name = ws.Name;
 				IsRtl = ws.IsRightToLeft;
 				_ws = ws;

@@ -12,8 +12,8 @@ namespace Bloom.Collection
 	{
 		private readonly int _languageNumberInCollection;
 		private readonly Func<string> _codeOfDefaultLanguageForNaming;
-		public static LanguageLookupModel LookupIsoCode = new LanguageLookupModel();
-		private string _iso639Code;
+		public static LanguageLookupModel LookupModel = new LanguageLookupModel();
+		private string _langTag;
 		public bool IsRightToLeft;
 
 		// Line breaks are always wanted only between words.  (ignoring hyphenation)
@@ -57,18 +57,18 @@ namespace Bloom.Collection
 			IsCustomName = isCustom;
 		}
 
-		public string Iso639Code
+		public string Tag
 		{
-			get { return _iso639Code; }
+			get { return _langTag; }
 			set {
-				_iso639Code = value;
+				_langTag = value;
 				Name = GetLanguageName_NoCache(_codeOfDefaultLanguageForNaming());
 			}
 		}
 
 		public string GetNameInLanguage(string inLanguage)
 		{
-			if (!string.IsNullOrEmpty(Iso639Code) && !String.IsNullOrEmpty(Name) && IsCustomName)
+			if (!string.IsNullOrEmpty(Tag) && !String.IsNullOrEmpty(Name) && IsCustomName)
 				return Name;
 
 			return GetLanguageName_NoCache(inLanguage);
@@ -87,28 +87,28 @@ namespace Bloom.Collection
 		private string GetLanguageName_NoCache(string inLanguage)
 		{
 			try {
-				if (string.IsNullOrEmpty(Iso639Code))
+				if (string.IsNullOrEmpty(Tag))
 					return string.Empty;
 
-				var name = LookupIsoCode.GetLocalizedLanguageName(Iso639Code, inLanguage);
-				if (name == Iso639Code)
+				var name = LookupModel.GetLocalizedLanguageName(Tag, inLanguage);
+				if (name == Tag)
 				{
 					string match;
-					if (!LookupIsoCode.GetBestLanguageName(Iso639Code, out match))
-						return $"L{_languageNumberInCollection}-Unknown-" + Iso639Code;
+					if (!LookupModel.GetBestLanguageName(Tag, out match))
+						return $"L{_languageNumberInCollection}-Unknown-" + Tag;
 					return match;
 				}
 				return name;
 			}
 			catch (Exception)
 			{
-				return "Unknown-" + Iso639Code;
+				return "Unknown-" + Tag;
 			}
 		}
 
-		public void ChangeIsoCode(string value)
+		public void ChangeTag(string value)
 		{
-			Iso639Code = value; // also sets the name
+			Tag = value; // also sets the name
 		}
 
 		public void SaveToXElement(XElement xml)
@@ -116,7 +116,7 @@ namespace Bloom.Collection
 			var pfx = "Language" + _languageNumberInCollection;
 			xml.Add(new XElement(pfx+"Name", Name));
 			xml.Add(new XElement(pfx+"IsCustomName", IsCustomName));
-			xml.Add(new XElement(pfx + "Iso639Code", Iso639Code));
+			xml.Add(new XElement(pfx + "Iso639Code", Tag));
 			xml.Add(new XElement($"DefaultLanguage{_languageNumberInCollection}FontName", FontName));
 			xml.Add(new XElement($"IsLanguage{_languageNumberInCollection}Rtl", IsRightToLeft));
 			xml.Add(new XElement(pfx + "LineHeight", LineHeight));
@@ -126,7 +126,7 @@ namespace Bloom.Collection
 
 		public void AddSelectorCssRule(StringBuilder sb, bool omitDirection)
 		{
-			AddSelectorCssRule(sb, "[lang='" + Iso639Code + "']", FontName, IsRightToLeft, LineHeight, BreaksLinesOnlyAtSpaces, omitDirection);
+			AddSelectorCssRule(sb, "[lang='" + Tag + "']", FontName, IsRightToLeft, LineHeight, BreaksLinesOnlyAtSpaces, omitDirection);
 		}
 
 		public static void AddSelectorCssRule(StringBuilder sb, string selector, string fontName, bool isRtl, decimal lineHeight, bool breakOnlyAtSpaces, bool omitDirection)
@@ -158,26 +158,26 @@ namespace Bloom.Collection
 		/// </summary>
 		/// <param name="xml"></param>
 		/// <param name="defaultToEnglishIfMissing"></param>
-		/// <param name="languageForDefaultNameLookup">a code or "self" if we should use the iso code for this spec to look it up</param>
+		/// <param name="languageForDefaultNameLookup">a language tag or "self" if we should use the language tag for this spec to look it up</param>
 		public void ReadFromXml(XElement xml, bool defaultToEnglishIfMissing,  string languageForDefaultNameLookup)
 		{
 			var pfx = "Language" + _languageNumberInCollection;
 
 			/* Enhance (from JT):
-			 When you do this for Language1, the Iso639 setter will initialize Name using _codeOfDefaultLanguageForNaming(). But that will retrieve the Language2 Iso639 code, which hasn't been set yet. I suppose it doesn't matter, since two lines down you overwrite that Name, typically with one saved in the file. If for some reason there isn't one saved in the file, you will look up an English name for it (since you pass that as languageForDefaultNameLookup for Language1).
+			 When you do this for Language1, the Tag setter will initialize Name using _codeOfDefaultLanguageForNaming(). But that will retrieve the Language2 Tag, which hasn't been set yet. I suppose it doesn't matter, since two lines down you overwrite that Name, typically with one saved in the file. If for some reason there isn't one saved in the file, you will look up an English name for it (since you pass that as languageForDefaultNameLookup for Language1).
 			Seems like it would simplify things if Name had a getter which would initialize it's variable to GetLanguageName_NoCache(_codeOfDefaultLanguageForNaming()) if not already set.
-			Then the Iso639Code setter could just clear _name.
+			Then the Tag setter could just clear _name.
 			The code just below here would initialize _name by reading the string, but could leave it null if it doesn't find it
-			By the time anything needs Name, Language2's ISO code should be set, so if you need to look up a default name you'll do it in the right language.
+			By the time anything needs Name, Language2's Tag should be set, so if you need to look up a default name you'll do it in the right language.
 			You could then get rid of the languageForDefaultNameLookup argument.*/
 
-			Iso639Code = ReadString(xml, $"Language{this._languageNumberInCollection}Iso639Code", defaultToEnglishIfMissing?"en":"");
+			Tag = ReadString(xml, $"Language{this._languageNumberInCollection}Iso639Code", defaultToEnglishIfMissing?"en":"");
 			IsRightToLeft = ReadBoolean(xml, $"IsLanguage{_languageNumberInCollection}Rtl", false);
 			
 			Name = ReadString(xml, pfx+"Name", "");
 			if (Name == "")
 			{
-				Name = GetLanguageName_NoCache(languageForDefaultNameLookup=="self"?Iso639Code:languageForDefaultNameLookup);
+				Name = GetLanguageName_NoCache(languageForDefaultNameLookup=="self"?Tag:languageForDefaultNameLookup);
 			}
 			IsCustomName = ReadOrComputeIsCustomName(xml, pfx+"IsCustomName");
 			LineHeight = ReadDecimal(xml, pfx+"LineHeight", 0);
@@ -196,20 +196,20 @@ namespace Bloom.Collection
 					return b;
 			}
 			// Compute value since it wasn't stored.
-			if (!LookupIsoCode.AreLanguagesLoaded)
+			if (!LookupModel.AreLanguagesLoaded)
 			{
 				if (!SIL.WritingSystems.Sldr.IsInitialized)
 					SIL.WritingSystems.Sldr.Initialize(true);	// needed for tests
-				LookupIsoCode.IncludeScriptMarkers = false;
+				LookupModel.IncludeScriptMarkers = false;
 				// The previous line should have loaded the LanguageLookup object: if something changes so that
 				// it doesn't, ensure that happens anyway.
-				if (!LookupIsoCode.AreLanguagesLoaded)
-					LookupIsoCode.LoadLanguages();
+				if (!LookupModel.AreLanguagesLoaded)
+					LookupModel.LoadLanguages();
 			}
-			if (String.IsNullOrWhiteSpace(Iso639Code))
+			if (String.IsNullOrWhiteSpace(Tag))
 				return false;	// undefined (probably language3)
 
-			var language = LookupIsoCode.LanguageLookup.GetLanguageFromCode(Iso639Code);
+			var language = LookupModel.LanguageLookup.GetLanguageFromCode(Tag);
 			// (If the lookup didn't find a language, treat the name as custom.)
 			return Name != language?.Names?.FirstOrDefault();
 		}
@@ -264,7 +264,7 @@ namespace Bloom.Collection
 			// I wanted to limit this with the language tag, but after 2 hours I gave up simply getting the current language tag
 			// to the decodable reader code. What a mess that code is. So now I'm taking advantage of the fact that there is only
 			// one language used in our current tools
-			 return $".lang1InATool[lang='{Iso639Code}']{{font-size: {(BaseUIFontSizeInPoints == 0 ? 10 : BaseUIFontSizeInPoints)}pt;}}";
+			 return $".lang1InATool[lang='{Tag}']{{font-size: {(BaseUIFontSizeInPoints == 0 ? 10 : BaseUIFontSizeInPoints)}pt;}}";
 		}*/
 	}
 }

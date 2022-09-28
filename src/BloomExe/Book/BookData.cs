@@ -207,7 +207,7 @@ namespace Bloom.Book
 					// If contentLanguage1 isn't in the element (typically in unit tests), just use Language1 from CollectionSettings.
 					// Likewise, if the stored WS isn't a current collection language (typically because we just modified collection settings),
 					// use the first collection language.
-					_cachedIsoLang1 = CollectionSettings.Language1.Iso639Code;
+					_cachedIsoLang1 = CollectionSettings.Language1.Tag;
 				}
 
 				_cachedIsoLang2 = GetVariableOrNull("contentLanguage2", "*").Unencoded;
@@ -371,7 +371,7 @@ namespace Bloom.Book
 			var itemsToDelete = new HashSet<Tuple<string, string>>();
 			DataSet incomingData = SynchronizeDataItemsFromContentsOfElement(elementToReadFrom, itemsToDelete);
 			UpdateToolRelatedDataFromBookInfo(info, incomingData, itemsToDelete);
-			incomingData.UpdateGenericLanguageString("contentLanguage1", XmlString.FromUnencoded(Language1.Iso639Code), false);
+			incomingData.UpdateGenericLanguageString("contentLanguage1", XmlString.FromUnencoded(Language1.Tag), false);
 			incomingData.UpdateGenericLanguageString("contentLanguage2",
 											 String.IsNullOrEmpty(Language2IsoCode)
 												 ? null
@@ -450,7 +450,7 @@ namespace Bloom.Book
 								allLetters += " " + stageData.letters;
 							}
 							var letters = string.Join(", ", allLetters.Trim().Split(' '));
-							incomingData.UpdateLanguageString("decodableStageLetters", XmlString.FromUnencoded(letters), Language1.Iso639Code, false);
+							incomingData.UpdateLanguageString("decodableStageLetters", XmlString.FromUnencoded(letters), Language1.Tag, false);
 						}
 						catch (XmlException e)
 						{
@@ -1106,7 +1106,7 @@ namespace Bloom.Book
 					if (lang == "") //the above doesn't stop a "" from getting through
 						lang = "*";
 					if (lang == "{V}")
-						lang = Language1.Iso639Code;
+						lang = Language1.Tag;
 					if (lang == "{N1}")
 						lang = MetadataLanguage1IsoCode;
 					if (lang == "{N2}")
@@ -1751,7 +1751,7 @@ namespace Bloom.Book
 				}
 			} else
 			{
-				string innerHtml = title?.TextAlternatives.GetExactAlternative(Language1.Iso639Code);
+				string innerHtml = title?.TextAlternatives.GetExactAlternative(Language1.Tag);
 				string innerText = BookData.TextOfInnerHtml(innerHtml);	// Notably, also removes the markup
 
 				// Note: Even though originalTitle.Xml and innerHtml are both encoded,
@@ -2022,11 +2022,11 @@ namespace Bloom.Book
 		/// <returns></returns>
 		private WritingSystem GetWritingSystemOrNull(string iso)
 		{
-			if (CollectionSettings.Language1.Iso639Code == iso)
+			if (CollectionSettings.Language1.Tag == iso)
 				return CollectionSettings.Language1;
-			if (CollectionSettings.Language2?.Iso639Code == iso)
+			if (CollectionSettings.Language2?.Tag == iso)
 				return CollectionSettings.Language2;
-			if (CollectionSettings.Language3?.Iso639Code == iso)
+			if (CollectionSettings.Language3?.Tag == iso)
 				return CollectionSettings.Language3;
 			return null;
 		}
@@ -2182,11 +2182,11 @@ namespace Bloom.Book
 			{
 				var code = isoCodes[i];
 				string name = null;
-				var lang = bookLangs.FirstOrDefault(ws => ws.Iso639Code == code);
+				var lang = bookLangs.FirstOrDefault(ws => ws.Tag == code);
 				if (lang != null)
 					name = lang.Name;
 				else
-					WritingSystem.LookupIsoCode.GetBestLanguageName(code, out name);
+					WritingSystem.LookupModel.GetBestLanguageName(code, out name);
 				string ethCode;
 				LanguageSubtag data;
 				if (!StandardSubtags.RegisteredLanguages.TryGet(code.ToLowerInvariant(), out data))

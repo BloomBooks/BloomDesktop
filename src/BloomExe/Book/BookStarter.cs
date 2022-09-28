@@ -456,7 +456,7 @@ namespace Bloom.Book
 				// Yes, we want the English word Template in the vernacular Title. Ugly, but that's
 				// what determines the file name, and that's what determines whether Add Page will
 				// include it.
-				storage.Dom.SetBookSetting("bookTitle", _collectionSettings.Language1.Iso639Code, "My Template");
+				storage.Dom.SetBookSetting("bookTitle", _collectionSettings.Language1.Tag, "My Template");
 			}
 		}
 
@@ -466,18 +466,18 @@ namespace Bloom.Book
 			if (!TestingSoSkipAddingXMatter)
 			{
 				var data = new Dictionary<string, string>();
-				Debug.Assert(!string.IsNullOrEmpty(_collectionSettings.Language1.Iso639Code));
-				Debug.Assert(!string.IsNullOrEmpty(_collectionSettings.Language2.Iso639Code));
+				Debug.Assert(!string.IsNullOrEmpty(_collectionSettings.Language1.Tag));
+				Debug.Assert(!string.IsNullOrEmpty(_collectionSettings.Language2.Tag));
 				// Review: this sort of duplicates the knowledge in BookData.WritingSystemAliases
 				// Is it worth creating a BookData here? Since we're just starting the new book, it can't
 				// yet have any language settings different from the collection.
-				data.Add("V", _collectionSettings.Language1.Iso639Code);
-				data.Add("N1", _collectionSettings.Language2.Iso639Code);
-				data.Add("N2", _collectionSettings.Language3.Iso639Code);
+				data.Add("V", _collectionSettings.Language1.Tag);
+				data.Add("N1", _collectionSettings.Language2.Tag);
+				data.Add("N2", _collectionSettings.Language3.Tag);
 
 				var helper = new XMatterHelper(storage.Dom, _collectionSettings.XMatterPackName, _fileLocator);
 				helper.FolderPathForCopyingXMatterFiles = storage.FolderPath;
-				helper.InjectXMatter(data, sizeAndOrientation, false, _collectionSettings.Language2.Iso639Code);
+				helper.InjectXMatter(data, sizeAndOrientation, false, _collectionSettings.Language2.Tag);
 				//TranslationGroupManager.PrepareDataBookTranslationGroups(storage.Dom,languages);
 			}
 		}

@@ -35,7 +35,7 @@ namespace BloomTests.Spreadsheet
 			// folder to match an imported title.
 			_bookFolder = new TemporaryFolder(_testFolder, "Book");
 			var settings = new NewCollectionSettings();
-			settings.Language1.Iso639Code = "en";
+			settings.Language1.Tag = "en";
 			settings.Language1.SetName("English", false);
 			settings.SettingsFilePath = Path.Combine(_bookFolder.FolderPath, "dummy");
 

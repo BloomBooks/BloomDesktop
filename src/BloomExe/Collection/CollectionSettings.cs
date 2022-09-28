@@ -113,7 +113,7 @@ namespace Bloom.Collection
 		{
 			//Note: I'm not convinced we actually ever rely on dynamic name lookups anymore?
 			//See: https://issues.bloomlibrary.org/youtrack/issue/BL-7832
-			Func<string> getCodeOfDefaultLanguageForNaming = () => Language2.Iso639Code;
+			Func<string> getCodeOfDefaultLanguageForNaming = () => Language2.Tag;
 			Language1 = new WritingSystem(1, getCodeOfDefaultLanguageForNaming);
 			Language2 = new WritingSystem(2, getCodeOfDefaultLanguageForNaming);
 			Language3 = new WritingSystem(3, getCodeOfDefaultLanguageForNaming);
@@ -218,33 +218,33 @@ namespace Bloom.Collection
 
 		private string DefaultLanguageForNamingLanguages()
 		{
-			return Language2.Iso639Code ?? "en";
+			return Language2.Tag ?? "en";
 		}
 		#region Persisted properties
 
 		//these are virtual for the sake of the unit test mock framework
 		public virtual string Language1Iso639Code
 		{
-			get { return Language1.Iso639Code; }
+			get { return Language1.Tag; }
 			set
 			{
-				Language1.ChangeIsoCode(value);
+				Language1.ChangeTag(value);
 			}
 		}
 		public virtual string Language2Iso639Code
 		{
-			get { return Language2.Iso639Code; }
+			get { return Language2.Tag; }
 			set
 			{
-				Language2.ChangeIsoCode(value);
+				Language2.ChangeTag(value);
 			}
 		}
 		public virtual string Language3Iso639Code
 		{
-			get { return Language3.Iso639Code; }
+			get { return Language3.Tag; }
 			set
 			{
-				Language3.ChangeIsoCode(value);
+				Language3.ChangeTag(value);
 			}
 		}
 		public virtual string SignLanguageIso639Code
@@ -270,7 +270,7 @@ namespace Bloom.Collection
 		/// </summary>
 		public string GetLanguageName(string code, string inLanguage)
 		{
-			return WritingSystem.LookupIsoCode.GetLocalizedLanguageName(code, inLanguage);
+			return WritingSystem.LookupModel.GetLocalizedLanguageName(code, inLanguage);
 		}
 
 		public string GetSignLanguageName()
@@ -426,7 +426,7 @@ namespace Bloom.Collection
 
 				Language1.ReadFromXml(xml, true, "en");
 				Language2.ReadFromXml(xml, true, "self");
-				Language3.ReadFromXml(xml, true, Language2.Iso639Code);
+				Language3.ReadFromXml(xml, true, Language2.Tag);
 
 				SignLanguageIso639Code = ReadString(xml, "SignLanguageIso639Code",  /* old name */
 				ReadString(xml, "SignLanguageIso639Code", ""));
@@ -636,11 +636,11 @@ namespace Bloom.Collection
 		internal IEnumerable<string> GetAllLanguageCodes()
 		{
 			var langCodes = new List<string>();
-			langCodes.Add(Language1.Iso639Code);
-			if (Language2.Iso639Code != Language1.Iso639Code)
-				langCodes.Add(Language2.Iso639Code);
-			if (!String.IsNullOrEmpty(Language3.Iso639Code) && !langCodes.Any(code => code == Language3.Iso639Code))
-				langCodes.Add(Language3.Iso639Code);
+			langCodes.Add(Language1.Tag);
+			if (Language2.Tag != Language1.Tag)
+				langCodes.Add(Language2.Tag);
+			if (!String.IsNullOrEmpty(Language3.Tag) && !langCodes.Any(code => code == Language3.Tag))
+				langCodes.Add(Language3.Tag);
 			return langCodes;
 		}
 

@@ -352,7 +352,7 @@ namespace Bloom.Api
 
 			var fileList1 = new List<string>();
 			var langFileName = String.Format(DecodableReaderToolSettings.kSynphonyLanguageDataFileNameFormat,
-				CurrentBook.BookData.Language1.Iso639Code);
+				CurrentBook.BookData.Language1.Tag);
 			var langFile = Path.Combine(path, langFileName);
 
 			// if the Sample Texts directory is empty, check for ReaderToolsWords-<iso>.json in ProjectContext.GetBloomAppDataFolder()
@@ -430,14 +430,14 @@ namespace Bloom.Api
 			if (jsonSettings.Length > 0)
 			{
 				dynamic fixedSettings = JsonConvert.DeserializeObject(jsonSettings);
-				fixedSettings.writingSystemTag = bookData.Language1.Iso639Code;
+				fixedSettings.writingSystemTag = bookData.Language1.Tag;
 				return JsonConvert.SerializeObject(fixedSettings);
 			}
 			// file does not exist, so make a new one
 			// The literal string here defines our default reader settings for a collection.
-			var settingsString = "{\"writingSystemTag\": \"" + bookData.Language1.Iso639Code+"\", "
+			var settingsString = "{\"writingSystemTag\": \"" + bookData.Language1.Tag+"\", "
 			                     +"\"letters\":\"a b c d e f g h i j k l m n o p q r s t u v w x y z\","
-				+ $"\"lang\":\"{bookData.Language1.Iso639Code}\","
+				+ $"\"lang\":\"{bookData.Language1.Tag}\","
 			                     + "\"moreWords\":\"\","
 				+ "\"stages\":[{\"letters\":\"\",\"sightWords\":\"\"}],"
 				+ "\"levels\":[{\"maxWordsPerSentence\":2,\"maxWordsPerPage\":2,\"maxWordsPerBook\":20,\"maxUniqueWordsPerBook\":0,\"thingsToRemember\":[]},"
@@ -527,9 +527,9 @@ namespace Bloom.Api
 				jsonString = jsonString.Replace("\"LangName\":\"\"", "\"LangName\":\"" + CurrentBook.BookData.Language1.Name + "\"");
 
 			if (jsonString.Contains("\"LangID\":\"\""))
-				jsonString = jsonString.Replace("\"LangID\":\"\"", "\"LangID\":\"" + CurrentBook.BookData.Language1.Iso639Code + "\"");
+				jsonString = jsonString.Replace("\"LangID\":\"\"", "\"LangID\":\"" + CurrentBook.BookData.Language1.Tag + "\"");
 
-			var fileName = String.Format(DecodableReaderToolSettings.kSynphonyLanguageDataFileNameFormat, CurrentBook.BookData.Language1.Iso639Code);
+			var fileName = String.Format(DecodableReaderToolSettings.kSynphonyLanguageDataFileNameFormat, CurrentBook.BookData.Language1.Tag);
 			fileName = Path.Combine(CurrentBook.CollectionSettings.FolderPath, fileName);
 
 			RobustFile.WriteAllText(fileName, jsonString, Encoding.UTF8);

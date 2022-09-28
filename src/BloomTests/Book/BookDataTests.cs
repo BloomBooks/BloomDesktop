@@ -39,9 +39,9 @@ namespace BloomTests.Book
 				PathToSettingsFile =
 					CollectionSettings.GetPathForNewSettings(new TemporaryFolder("BookDataTests").Path, "test"),
 			});
-			_collectionSettings.Language1.Iso639Code = "xyz";
-			_collectionSettings.Language2.Iso639Code = "en";
-			_collectionSettings.Language3.Iso639Code = "fr";
+			_collectionSettings.Language1.Tag = "xyz";
+			_collectionSettings.Language2.Tag = "en";
+			_collectionSettings.Language3.Tag = "fr";
 			ErrorReport.IsOkToInteractWithUser = false;
 
 			LocalizationManager.UseLanguageCodeFolders = true;
@@ -948,7 +948,7 @@ namespace BloomTests.Book
 				data.UpdateVariablesAndDataDivThroughDOM(info);
 
 				AssertThatXmlIn.Dom(dom.RawDom).HasSpecifiedNumberOfMatchesForXpath(
-				"//div[@id='bloomDataDiv']/div[@data-book='decodableStageLetters' and @lang='" +data.Language1.Iso639Code +  "' and text()='a, e, r, i, o, n, t, l, s']",
+				"//div[@id='bloomDataDiv']/div[@data-book='decodableStageLetters' and @lang='" +data.Language1.Tag +  "' and text()='a, e, r, i, o, n, t, l, s']",
 				1);
 		}
 
@@ -976,7 +976,7 @@ namespace BloomTests.Book
 			var data = new BookData(dom, _collectionSettings, null);
 			data.UpdateVariablesAndDataDivThroughDOM();
 			AssertThatXmlIn.Dom(dom.RawDom).HasSpecifiedNumberOfMatchesForXpath(
-				"//div[@data-book='bookTitle' and @lang='" + data.Language1.Iso639Code +
+				"//div[@data-book='bookTitle' and @lang='" + data.Language1.Tag +
 				"' and text()='the title']", 1);
 		}
 
@@ -1106,8 +1106,8 @@ namespace BloomTests.Book
 
 			//now switch the national language to Tok Pisin
 
-			collectionSettings.Language2.Iso639Code = "tpi";
-			collectionSettings.Language3.Iso639Code = "en";
+			collectionSettings.Language2.Tag = "tpi";
+			collectionSettings.Language3.Tag = "en";
 			// Hack to update cache of ML1
 			data.SetMultilingualContentLanguages("etr", "tpi", "en");
 			data.SynchronizeDataItemsThroughoutDOM();
@@ -1148,9 +1148,9 @@ namespace BloomTests.Book
 				</body></html>");
 			var collectionSettings = CreateCollection();
 			var data = new BookData(dom, collectionSettings, null);
-			Assert.AreEqual("en", data.Language1.Iso639Code);
-			Assert.AreEqual("tpi", data.Language2.Iso639Code);
-			Assert.AreEqual("fr", data.Language3.Iso639Code);
+			Assert.AreEqual("en", data.Language1.Tag);
+			Assert.AreEqual("tpi", data.Language2.Tag);
+			Assert.AreEqual("fr", data.Language3.Tag);
 		}
 
 		[Test]
@@ -1179,9 +1179,9 @@ namespace BloomTests.Book
 			var collectionSettings = CreateCollection();
 			var data = new BookData(dom, collectionSettings, null);
 			//data.SetMultilingualContentLanguages(new [] {"fr", "en", "tpi"});
-			Assert.AreEqual("fr", data.Language1.Iso639Code);
-			Assert.AreEqual("en", data.Language2.Iso639Code);
-			Assert.AreEqual("tpi", data.Language3.Iso639Code);
+			Assert.AreEqual("fr", data.Language1.Tag);
+			Assert.AreEqual("en", data.Language2.Tag);
+			Assert.AreEqual("tpi", data.Language3.Tag);
 		}
 
 		[Test]
@@ -1706,9 +1706,9 @@ namespace BloomTests.Book
 		private void TestTopicHandling(string topicKey, string expectedLanguage, string expectedTranslation,
 			string lang1, string lang2, string lang3, string description)
 		{
-			_collectionSettings.Language1.Iso639Code = lang1;
-			_collectionSettings.Language2.Iso639Code = lang2;
-			_collectionSettings.Language3.Iso639Code = lang3;
+			_collectionSettings.Language1.Tag = lang1;
+			_collectionSettings.Language2.Tag = lang2;
+			_collectionSettings.Language3.Tag = lang3;
 
 			var bookDom = new HtmlDom(@"<html><body>
 				<div id='bloomDataDiv'>
@@ -2324,7 +2324,7 @@ namespace BloomTests.Book
 			var c = new CollectionSettings();
 			if (Language1Iso639Code != null)
 			{
-				c.Language1.Iso639Code = Language1Iso639Code;
+				c.Language1.Tag = Language1Iso639Code;
 			}
 
 			if (Language1Name != null)
@@ -2334,7 +2334,7 @@ namespace BloomTests.Book
 
 			if (Language2Iso639Code != null)
 			{
-				c.Language2.Iso639Code = Language2Iso639Code;
+				c.Language2.Tag = Language2Iso639Code;
 			}
 
 			if (Language2Name != null)
@@ -2344,7 +2344,7 @@ namespace BloomTests.Book
 
 			if (Language3Iso639Code != null)
 			{
-				c.Language3.Iso639Code = Language3Iso639Code;
+				c.Language3.Tag = Language3Iso639Code;
 			}
 
 			if (Language3Name != null)

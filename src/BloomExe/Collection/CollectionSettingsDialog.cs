@@ -201,7 +201,7 @@ namespace Bloom.Collection
 
 			if (l != null)
 			{
-				_collectionSettings.Language1.Iso639Code = l.LanguageTag;
+				_collectionSettings.Language1.Tag = l.LanguageTag;
 				_collectionSettings.Language1.SetName(l.DesiredName, l.DesiredName != l.Names.FirstOrDefault());
 				ChangeThatRequiresRestart();
 			}
