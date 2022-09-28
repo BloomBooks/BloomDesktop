@@ -12,6 +12,7 @@ using Bloom.Book;
 using Bloom.Edit;
 using Bloom.Utils;
 using Newtonsoft.Json;
+using SIL.Xml;
 
 namespace Bloom.web
 {
@@ -186,7 +187,9 @@ namespace Bloom.web
 			else
 			{
 				var pageElement = page.GetDivNodeForThisPage().CloneNode(true) as XmlElement;
-				
+				var videos = pageElement.SafeSelectNodes(".//video").Cast<XmlElement>().ToArray();
+				foreach (var video in videos)
+					video.ParentNode.RemoveChild(video); // minimize memory use, thumb just shows placeholder
 				MarkImageNodesForThumbnail(pageElement);
 				answer.content = XmlHtmlConverter.ConvertElementToHtml5(pageElement);
 			}
