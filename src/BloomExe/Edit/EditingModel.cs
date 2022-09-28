@@ -782,6 +782,7 @@ namespace Bloom.Edit
 		public void SetupServerWithCurrentPageIframeContents()
 		{
 			_domForCurrentPage = CurrentBook.GetEditableHtmlDomForPage(_pageSelection.CurrentSelection);
+			AddMissingCopyrightNoticeIfNeeded();
 			_pageDataBeforeEdits = GetPageData(_domForCurrentPage.RawDom);
 			_featureRequirementsBeforeEdits = CurrentBook.OurHtmlDom.GetMetaValue("FeatureRequirement", "");
 			CheckForBL2634("setup");
@@ -795,6 +796,35 @@ namespace Bloom.Edit
 			_currentPage = BloomServer.MakeSimulatedPageFileInBookFolder(_domForCurrentPage, true);
 			CheckForBL2634("made simulated page");
 			CommonApi.AuthorMode = CanAddPages;
+		}
+
+		private void AddMissingCopyrightNoticeIfNeeded()
+		{
+			var licenseBlock = _domForCurrentPage.SafeSelectNodes(".//div[@class='licenseBlock']").Cast<XmlElement>().FirstOrDefault();
+			if (licenseBlock == null)
+				return; // not the relevant page
+			var metadata = CurrentBook.GetLicenseMetadata();
+			// BL-10360 says that we don't want this notice for CC0, even if metadata is not complete.
+			// But that situation is not currently possible through our UI, and further thought
+			// suggests we want to know who says it is CC0. So commenting that aspect out.
+			var copyrightOk = metadata.IsMinimallyComplete; // || metadata.License?.Token == "cc0";
+			var firstElementChild = licenseBlock.ChildNodes.Cast<XmlNode>().FirstOrDefault(x => x is XmlElement);
+			var haveMissingNotice = firstElementChild?.Attributes?["class"]?.Value == "ui-missingCopyrightNotice";
+			if (haveMissingNotice && copyrightOk)
+				licenseBlock.RemoveChild(firstElementChild);
+			else if (!copyrightOk && !haveMissingNotice)
+			{
+				var div = licenseBlock.OwnerDocument.CreateElement("div");
+				var anchor = licenseBlock.OwnerDocument.CreateElement("a");
+				div.AppendChild(anchor);
+				div.SetAttribute("class", "ui-missingCopyrightNotice"); // don't save this
+				div.SetAttribute("style", "margin-bottom: 12px;");
+				anchor.InnerText = LocalizationManager.GetString("", "Missing Copyright");
+				anchor.SetAttribute("style", "color: red;");
+				anchor.SetAttribute("href",
+					"javascript:(window.parent || window).editTabBundle.showCopyrightAndLicenseDialog();");
+				licenseBlock.InsertBefore(div, licenseBlock.FirstChild);
+			}
 		}
 
 		private static void InsertLabelAndLayoutTogglePane(HtmlDom dom)
