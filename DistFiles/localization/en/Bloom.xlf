@@ -1170,6 +1170,10 @@
         <source xml:lang="en">Illustrator/Photographer</source>
         <note>ID: Copyright.IllustratorOrPhotographer</note>
       </trans-unit>
+      <trans-unit id="Copyright.MissingCopyright">
+        <source xml:lang="en">Missing Copyright</source>
+        <note>ID: Copyright.MissingCopyright</note>
+      </trans-unit>
       <trans-unit id="Copyright.NotATranslation" sil:dynamic="true">
         <source xml:lang="en">Not a translation or new version</source>
         <note>ID: Copyright.NotATranslation</note>
