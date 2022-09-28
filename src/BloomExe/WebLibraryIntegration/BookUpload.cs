@@ -588,8 +588,8 @@ namespace Bloom.WebLibraryIntegration
 					videoFiles,
 					languagesToUpload,
 					book.CollectionSettings,
-					book.BookData.MetadataLanguage1IsoCode,
-					book.BookData.MetadataLanguage2IsoCode);
+					book.BookData.MetadataLanguage1Tag,
+					book.BookData.MetadataLanguage2Tag);
 
 				var url = BloomLibraryUrls.BloomLibraryDetailPageUrlFromBookId(parseId); 
 				book.ReportSimplisticFontAnalytics(FontAnalytics.FontEventType.PublishWeb,url);

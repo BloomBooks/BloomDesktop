@@ -345,7 +345,7 @@ namespace Bloom.Book
 //		private static void ClearAwayAllTranslations(XmlNode element)
 //		{
 //
-//			foreach (XmlNode node in element.ChildNodes)//.SafeSelectNodes(String.Format("//*[@lang='{0}']", _collectionSettings.Language1Iso639Code)))
+//			foreach (XmlNode node in element.ChildNodes)//.SafeSelectNodes(String.Format("//*[@lang='{0}']", _collectionSettings.Language1Tag)))
 //            {
 //                if (node.NodeType == XmlNodeType.Text)
 //                {
@@ -563,13 +563,13 @@ namespace Bloom.Book
 //				switch (metaLanguage)
 //				{
 //					case "V":
-//						lang = settings.Language1Iso639Code;
+//						lang = settings.Language1Tag;
 //						break;
 //					case "N1":
-//						lang = settings.Language2Iso639Code;
+//						lang = settings.Language2Tag;
 //						break;
 //					case "N2":
-//						lang = settings.Language3Iso639Code;
+//						lang = settings.Language3Tag;
 //						break;
 //					default:
 //						var msg = "Element called for meta language '" + metaLanguage + "', which is unrecognized.";

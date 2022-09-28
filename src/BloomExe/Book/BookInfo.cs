@@ -1537,7 +1537,7 @@ namespace Bloom.Book
 		public string Json => JsonConvert.SerializeObject(this);
 
 		[JsonProperty("isoCode")]
-		public string IsoCode { get; set; }
+		public string LangTag { get; set; }
 
 		[JsonProperty("name")]
 		public string Name { get; set; }

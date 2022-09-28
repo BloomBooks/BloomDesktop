@@ -362,11 +362,11 @@ namespace Bloom.web.controllers
 			{
 				var bubbleLangs = new List<string>();
 				bubbleLangs.Add(LocalizationManager.UILanguageId);
-				bubbleLangs.Add(_bookSelection.CurrentSelection.BookData.MetadataLanguage1IsoCode);
-				if (_bookSelection.CurrentSelection.Language2IsoCode != null)
-					bubbleLangs.Add(_bookSelection.CurrentSelection.Language2IsoCode);
-				if (_bookSelection.CurrentSelection.Language3IsoCode != null)
-					bubbleLangs.Add(_bookSelection.CurrentSelection.Language3IsoCode);
+				bubbleLangs.Add(_bookSelection.CurrentSelection.BookData.MetadataLanguage1Tag);
+				if (_bookSelection.CurrentSelection.Language2Tag != null)
+					bubbleLangs.Add(_bookSelection.CurrentSelection.Language2Tag);
+				if (_bookSelection.CurrentSelection.Language3Tag != null)
+					bubbleLangs.Add(_bookSelection.CurrentSelection.Language3Tag);
 				bubbleLangs.AddRange(new[] { "en", "fr", "sp", "ko", "zh-Hans" });
 				// If we don't have a hint in the UI language or any major language, it's still
 				// possible the page was made just for this langauge and has a hint in that language.

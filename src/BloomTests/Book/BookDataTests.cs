@@ -141,7 +141,7 @@ namespace BloomTests.Book
 
 		void VerifyLangData(LanguageDescriptor lang, string code, string name, string ethCode)
 		{
-			Assert.That(lang.IsoCode, Is.EqualTo(code));
+			Assert.That(lang.LangTag, Is.EqualTo(code));
 			Assert.That(lang.Name, Is.EqualTo(name));
 			Assert.That(lang.EthnologueCode, Is.EqualTo(ethCode));
 		}
@@ -1042,7 +1042,7 @@ namespace BloomTests.Book
 				.HasSpecifiedNumberOfMatchesForXpath("//textarea[@lang='xyz'  and @id='2' and text()='xyzTitle']", 1);
 			var textarea2 = dom.SelectSingleNodeHonoringDefaultNS("//textarea[@id='2']");
 			textarea2.InnerText = "newXyzTitle";
-			var data = new BookData(dom, CreateCollection(Language1Iso639Code: "etr"), null);
+			var data = new BookData(dom, CreateCollection(Language1LangTag: "etr"), null);
 			data.SynchronizeDataItemsThroughoutDOM();
 			var textarea3 = dom.SelectSingleNodeHonoringDefaultNS("//textarea[@id3='3']");
 			Assert.AreEqual("newXyzTitle", textarea3.InnerText);
@@ -1072,7 +1072,7 @@ namespace BloomTests.Book
 				.HasSpecifiedNumberOfMatchesForXpath("//textarea[@lang='xyz'  and @id='2' and text()='xyzTitle']", 1);
 			var textarea1 = dom.SelectSingleNodeHonoringDefaultNS("//textarea[@id='1']");
 			textarea1.InnerText = "newEnglishTitle";
-			var data = new BookData(dom, CreateCollection(Language1Iso639Code: "etr"), null);
+			var data = new BookData(dom, CreateCollection(Language1LangTag: "etr"), null);
 			data.SynchronizeDataItemsThroughoutDOM();
 			var textarea2 = dom.SelectSingleNodeHonoringDefaultNS("//textarea[@id='2']");
 			Assert.AreEqual("xyzTitle", textarea2.InnerText);
@@ -1125,7 +1125,7 @@ namespace BloomTests.Book
 						</div>
 				</div>
 				</body></html>");
-			var collectionSettings = CreateCollection(Language1Iso639Code: "etr");
+			var collectionSettings = CreateCollection(Language1LangTag: "etr");
 			var data = new BookData(dom, collectionSettings, null);
 			data.SynchronizeDataItemsThroughoutDOM();
 			XmlElement target = (XmlElement) dom.SelectSingleNodeHonoringDefaultNS("//div[@id='target']");
@@ -1381,24 +1381,24 @@ namespace BloomTests.Book
 
 		/*    data.AddLanguageString("*", "nameOfLanguage", collectionSettings.Language1.Name, true);
 				data.AddLanguageString("*", "nameOfNationalLanguage1",
-									   collectionSettings.Language2.GetNameInLanguage(collectionSettings.Language2Iso639Code), true);
+									   collectionSettings.Language2.GetNameInLanguage(collectionSettings.Language2Tag), true);
 				data.AddLanguageString("*", "nameOfNationalLanguage2",
-									   collectionSettings.Language3.GetNameInLanguage(collectionSettings.Language2Iso639Code), true);
-				data.AddGenericLanguageString("iso639Code", collectionSettings.Language1Iso639Code, true);*/
+									   collectionSettings.Language3.GetNameInLanguage(collectionSettings.Language2Tag), true);
+				data.AddGenericLanguageString("iso639Code", collectionSettings.Language1Tag, true);*/
 
 		[Test]
-		public void Constructor_CollectionSettingsHasISO639Code_iso639CodeFilledIn()
+		public void Constructor_CollectionSettingsHasLangTag_iso639CodeFilledIn()
 		{
 			var dom = new HtmlDom();
-			var data = new BookData(dom, CreateCollection(Language1Iso639Code: "xyz"), null);
+			var data = new BookData(dom, CreateCollection(Language1LangTag: "xyz"), null);
 			Assert.AreEqual("xyz", data.GetVariableOrNull("iso639Code", "*").Xml);
 		}
 
 		[Test]
-		public void Constructor_CollectionSettingsHasISO639Code_DataSetContainsProperV()
+		public void Constructor_CollectionSettingsHasLangTag_DataSetContainsProperV()
 		{
 			var dom = new HtmlDom();
-			var data = new BookData(dom, CreateCollection(Language1Iso639Code: "xyz"), null);
+			var data = new BookData(dom, CreateCollection(Language1LangTag: "xyz"), null);
 			Assert.AreEqual("xyz", data.DealiasWritingSystemId("V"));
 		}
 
@@ -1415,18 +1415,18 @@ namespace BloomTests.Book
 		//NB: yes, this is confusing, having lang1 = language, lang2 = nationalLang1, lang3 = nationalLang2
 
 		//[Test]
-		//public void Constructor_CollectionSettingsHasLanguage2Iso639Code_nameOfNationalLanguage1FilledIn()
+		//public void Constructor_CollectionSettingsHasLanguage2Tag_nameOfNationalLanguage1FilledIn()
 		//{
 		//	var dom = new HtmlDom();
-		//	var data = new BookData(dom, CreateCollection(Language2Iso639Code: "tpi", Language2Name:null), null);
+		//	var data = new BookData(dom, CreateCollection(Language2Tag: "tpi", Language2Name:null), null);
 		//	Assert.AreEqual("Tok Pisin", data.GetVariableOrNull("nameOfNationalLanguage1", "*").Xml);
 		//}
 
 		//[Test]
-		//public void Constructor_CollectionSettingsHasLanguage3Iso639Code_nameOfNationalLanguage2FilledIn()
+		//public void Constructor_CollectionSettingsHasLanguage3Tag_nameOfNationalLanguage2FilledIn()
 		//{
 		//	var dom = new HtmlDom();
-		//	var data = new BookData(dom, CreateCollection(Language1Iso639Code : "en", Language1Name:"English", "fr", "French", "tpi", Language3Name:"Tok Pisin"), null);
+		//	var data = new BookData(dom, CreateCollection(Language1Tag : "en", Language1Name:"English", "fr", "French", "tpi", Language3Name:"Tok Pisin"), null);
 		//	data.SetMultilingualContentLanguages("en", "fr", "tpi");
 		//	Assert.AreEqual("Tok Pisin", data.GetVariableOrNull("nameOfNationalLanguage2", "*").Xml);
 		//}
@@ -1573,7 +1573,7 @@ namespace BloomTests.Book
 		{
 			var htmlDom = new HtmlDom();
 			var settingsettings =
-				CreateCollection(Language1Iso639Code: "pdc", Language1Name: "German, Kludged");
+				CreateCollection(Language1LangTag: "pdc", Language1Name: "German, Kludged");
 			var data = new BookData(htmlDom, settingsettings, null);
 			Assert.That(data.GetDisplayNameForLanguage("xyz"), Is.EqualTo("xyz"));
 		}
@@ -1583,7 +1583,7 @@ namespace BloomTests.Book
 		{
 			var htmlDom = new HtmlDom();
 			var settingsettings =
-				CreateCollection(Language1Iso639Code: "pdc", Language1Name: "German, Kludged");
+				CreateCollection(Language1LangTag: "pdc", Language1Name: "German, Kludged");
 			var data = new BookData(htmlDom, settingsettings, null);
 			Assert.That(data.GetDisplayNameForLanguage("pdc"), Is.EqualTo("German, Kludged"));
 		}
@@ -1594,10 +1594,10 @@ namespace BloomTests.Book
 			var htmlDom = new HtmlDom();
 			var settings = CreateCollection(
 				Language1Name: "German, Kludged",
-				Language1Iso639Code: "pdc",
-				Language2Iso639Code: "de",
+				Language1LangTag: "pdc",
+				Language2Tag: "de",
 				Language2Name:null,
-				Language3Iso639Code: "fr",
+				Language3Tag: "fr",
 				Language3Name:null
 			);
 			var data = new BookData(htmlDom, settings, null);
@@ -1612,11 +1612,11 @@ namespace BloomTests.Book
 		{
 			var htmlDom = new HtmlDom();
 			var settings = CreateCollection(
-				Language1Iso639Code: "pdc",
+				Language1LangTag: "pdc",
 				Language1Name: "German, Kludged",
-				Language2Iso639Code: "en",
+				Language2Tag: "en",
 				Language2Name:null,
-				Language3Iso639Code: "fr",
+				Language3Tag: "fr",
 				Language3Name:null
 			);
 			var data = new BookData(htmlDom, settings, null);
@@ -1640,11 +1640,11 @@ namespace BloomTests.Book
 		{
 			var htmlDom = new HtmlDom();
 			var settings = CreateCollection(
-				Language1Iso639Code: "nsk",
+				Language1LangTag: "nsk",
 				Language1Name: "Naskapi",
-				Language2Iso639Code: "en",
+				Language2Tag: "en",
 				Language2Name: "English",
-				Language3Iso639Code: lg3Code,
+				Language3Tag: lg3Code,
 				Language3Name:null
 			);
 			var data = new BookData(htmlDom, settings, null);
@@ -1664,11 +1664,11 @@ namespace BloomTests.Book
 		{
 			var htmlDom = new HtmlDom();
 			var settings = CreateCollection(
-				Language1Iso639Code: lg1Code,
+				Language1LangTag: lg1Code,
 				Language1Name:null,
-				Language2Iso639Code: "en",
+				Language2Tag: "en",
 				Language2Name:null,
-				Language3Iso639Code: "fr",
+				Language3Tag: "fr",
 				Language3Name:null
 			);
 			settings.Language1.SetName(customName, true);
@@ -1949,8 +1949,8 @@ namespace BloomTests.Book
 				</body></html>");
 			var collectionSettings = CreateCollection(
 
-				Language1Iso639Code: "etr",
-				Language2Iso639Code: "fr"
+				Language1LangTag: "etr",
+				Language2Tag: "fr"
 			);
 			var data = new BookData(dom, collectionSettings, null);
 			data.SynchronizeDataItemsThroughoutDOM();
@@ -1980,8 +1980,8 @@ namespace BloomTests.Book
 				</div>
 				</body></html>");
 			var collectionSettings = CreateCollection(
-				Language1Iso639Code: "etr",
-				Language2Iso639Code: "fr"
+				Language1LangTag: "etr",
+				Language2Tag: "fr"
 			);
 			var data = new BookData(dom, collectionSettings, null);
 			data.SynchronizeDataItemsThroughoutDOM();
@@ -2008,8 +2008,8 @@ namespace BloomTests.Book
 				</body></html>");
 			var collectionSettings = CreateCollection(
 
-				Language1Iso639Code: "xyz",
-				Language2Iso639Code: "fr"
+				Language1LangTag: "xyz",
+				Language2Tag: "fr"
 			);
 			var data = new BookData(dom, collectionSettings, null);
 			data.SynchronizeDataItemsThroughoutDOM();
@@ -2038,8 +2038,8 @@ namespace BloomTests.Book
 				</div>
 				</body></html>");
 			var collectionSettings = CreateCollection(
-				Language1Iso639Code: "xyz",
-				Language2Iso639Code: "fr"
+				Language1LangTag: "xyz",
+				Language2Tag: "fr"
 			);
 			var data = new BookData(dom, collectionSettings, null);
 			data.SynchronizeDataItemsThroughoutDOM();
@@ -2069,8 +2069,8 @@ namespace BloomTests.Book
 				</body></html>");
 			var collectionSettings = CreateCollection(
 
-				Language1Iso639Code: "xyz",
-				Language2Iso639Code: "en"
+				Language1LangTag: "xyz",
+				Language2Tag: "en"
 			);
 			var data = new BookData(dom, collectionSettings, null);
 			data.SynchronizeDataItemsThroughoutDOM();
@@ -2312,19 +2312,19 @@ namespace BloomTests.Book
 		}
 
 
-		public static CollectionSettings CreateCollection(string Language1Iso639Code = "tpi",
+		public static CollectionSettings CreateCollection(string Language1LangTag = "tpi",
 			string Language1Name = "Tok Pisin",
-			string Language2Iso639Code = "fr",
+			string Language2Tag = "fr",
 			string Language2Name = "French",
-			string Language3Iso639Code = "en",
+			string Language3Tag = "en",
 			string Language3Name = "English",
 			string CountryName = null
 		)
 		{
 			var c = new CollectionSettings();
-			if (Language1Iso639Code != null)
+			if (Language1LangTag != null)
 			{
-				c.Language1.Tag = Language1Iso639Code;
+				c.Language1.Tag = Language1LangTag;
 			}
 
 			if (Language1Name != null)
@@ -2332,9 +2332,9 @@ namespace BloomTests.Book
 				c.Language1.SetName(Language1Name, false);
 			}
 
-			if (Language2Iso639Code != null)
+			if (Language2Tag != null)
 			{
-				c.Language2.Tag = Language2Iso639Code;
+				c.Language2.Tag = Language2Tag;
 			}
 
 			if (Language2Name != null)
@@ -2342,9 +2342,9 @@ namespace BloomTests.Book
 				c.Language2.SetName(Language2Name, false);
 			}
 
-			if (Language3Iso639Code != null)
+			if (Language3Tag != null)
 			{
-				c.Language3.Tag = Language3Iso639Code;
+				c.Language3.Tag = Language3Tag;
 			}
 
 			if (Language3Name != null)

@@ -486,8 +486,8 @@ namespace Bloom.Book
 
 		private void UpdateMultilingualSettings(HtmlDom dom)
 		{
-			TranslationGroupManager.UpdateContentLanguageClasses(dom.RawDom, _bookData, Language1IsoCode,
-				Language2IsoCode, Language3IsoCode);
+			TranslationGroupManager.UpdateContentLanguageClasses(dom.RawDom, _bookData, Language1Tag,
+				Language2Tag, Language3Tag);
 			BookInfo.IsRtl = IsPrimaryLanguageRtl;
 
 			BookStarter.SetLanguageForElementsWithMetaLanguage(dom.RawDom, _bookData);
@@ -525,7 +525,7 @@ namespace Bloom.Book
 			 var pageDom = dom.RawDom.ImportNode(divNodeForThisPage, true);
 			newBody.AppendChild(pageDom);
 
-//                BookStorage.HideAllTextAreasThatShouldNotShow(dom, iso639CodeToLeaveVisible, Page.GetPageSelectorXPath(dom));
+//                BookStorage.HideAllTextAreasThatShouldNotShow(dom, langTagToLeaveVisible, Page.GetPageSelectorXPath(dom));
 
 			return dom;
 		}
@@ -850,19 +850,19 @@ namespace Bloom.Book
 			BringBookUpToDateInternal(previewDom, new NullProgress());
 
 			// this is normally the vernacular, but when we're previewing a shell, well it won't have anything for the vernacular
-			var primaryLanguage = Language1IsoCode;
+			var primaryLanguage = Language1Tag;
 			if (IsShellOrTemplate)
 			{
 				//TODO: this won't be enough, if our national language isn't, say, English, and the shell just doesn't have our national language. But it might have some other language we understand.
 
-				// If it DOES have text in the Language1Iso639Code (e.g., a French collection, and we're looking at Moon and Cap...BL-6465),
+				// If it DOES have text in the Language1Tag (e.g., a French collection, and we're looking at Moon and Cap...BL-6465),
 				// don't mess with it.
 				if (previewDom.SelectSingleNode($"//*[@lang='{primaryLanguage}' and contains(@class, 'bloom-editable') and text()!='']") == null)
-					primaryLanguage = _bookData.MetadataLanguage1IsoCode;
+					primaryLanguage = _bookData.MetadataLanguage1Tag;
 			}
 
 			TranslationGroupManager.UpdateContentLanguageClasses(previewDom.RawDom, _bookData, primaryLanguage,
-				_bookData.Language2IsoCode, _bookData.Language3IsoCode);
+				_bookData.Language2Tag, _bookData.Language3Tag);
 
 			AddPreviewJavascript(previewDom);
 			previewDom.AddPublishClassToBody("preview");
@@ -1306,9 +1306,9 @@ namespace Bloom.Book
 			// language.
 			// (The commit label when these were added says "so that a single branding can vary things by lang."
 			// We don't appear to actually do that but it still seems like it might be useful.)
-			bookDom.Body.SetAttribute("data-L1", this._bookData.Language1IsoCode);
-			bookDom.Body.SetAttribute("data-L2", this._bookData.Language2IsoCode);
-			bookDom.Body.SetAttribute("data-L3", this._bookData.Language3IsoCode );
+			bookDom.Body.SetAttribute("data-L1", this._bookData.Language1Tag);
+			bookDom.Body.SetAttribute("data-L2", this._bookData.Language2Tag);
+			bookDom.Body.SetAttribute("data-L3", this._bookData.Language3Tag);
 		}
 
 		private void AddReaderBodyAttributes(HtmlDom bookDom){
@@ -1801,7 +1801,7 @@ namespace Bloom.Book
 			// this says, if you can't figure out the page size, use the one we got before we removed the xmatter...
 			// still requiring it to be a valid layout.
 			layout = Layout.FromDomAndChoices(bookDOM, layout, fileLocator);
-			helper.InjectXMatter(_bookData.WritingSystemAliases, layout, BookInfo.UseDeviceXMatter, _bookData.MetadataLanguage1IsoCode);
+			helper.InjectXMatter(_bookData.WritingSystemAliases, layout, BookInfo.UseDeviceXMatter, _bookData.MetadataLanguage1Tag);
 
 			var dataBookLangs = bookDOM.GatherDataBookLanguages();
 			TranslationGroupManager.PrepareDataBookTranslationGroups(bookDOM.RawDom, dataBookLangs);
@@ -2193,28 +2193,28 @@ namespace Bloom.Book
 		/// <summary>
 		/// The first language to show, typically the vernacular
 		/// </summary>
-		public string Language1IsoCode => _bookData.Language1IsoCode;
+		public string Language1Tag => _bookData.Language1Tag;
 
 		/// <summary>
 		/// For bilingual or trilingual books, this is the second language to show in Auto blocks.
 		/// </summary>
-		public string Language2IsoCode => _bookData.Language2IsoCode;
+		public string Language2Tag => _bookData.Language2Tag;
 		//ENHANCE: Make MCL2 and MCL3 return XmlString isntead of string
 
 		/// <summary>
 		/// For trilingual books, this is the third language to show in Auto blocks.
 		/// </summary>
-		public string Language3IsoCode => _bookData.Language3IsoCode;
+		public string Language3Tag => _bookData.Language3Tag;
 
 		public IEnumerable<string> ActiveLanguages
 		{
 			get
 			{
-				var result = new HashSet<string>(new [] {Language1IsoCode});
-				if (Language2IsoCode != null)
-					result.Add(Language2IsoCode);
-				if (Language3IsoCode != null)
-					result.Add(Language3IsoCode);
+				var result = new HashSet<string>(new [] {Language1Tag});
+				if (Language2Tag != null)
+					result.Add(Language2Tag);
+				if (Language3Tag != null)
+					result.Add(Language3Tag);
 				return result;
 			}
 		}
@@ -2249,11 +2249,11 @@ namespace Bloom.Book
 
 			var languagesOfBook = (string.IsNullOrEmpty(signLanguage) ? "" : signLanguage + ", ") + _bookData.Language1.Name;
 
-			if (Language2IsoCode != null)
+			if (Language2Tag != null)
 			{
 				languagesOfBook += ", " + _bookData.Language2.Name;
 			}
-			if (Language3IsoCode != null)
+			if (Language3Tag != null)
 			{
 				languagesOfBook += ", " + _bookData.Language3.Name;
 			}
@@ -2352,7 +2352,7 @@ namespace Bloom.Book
 			//if (OurHtmlDom.SelectSingleNode(BookStorage.ComicalXpath) != null)
 			//{
 			//	result.Clear();
-			//	result[_bookData.Language1.Iso639Code] = true;
+			//	result[_bookData.Language1.Tag] = true;
 			//}
 			return result;
 		}
@@ -2369,23 +2369,23 @@ namespace Bloom.Book
 				{
 				case "V":
 				case "L1":
-					if (lang == Language1IsoCode)
+					if (lang == Language1Tag)
 						return true;
 					break;
 				case "N1":
-					if (lang == _bookData.MetadataLanguage1IsoCode)
+					if (lang == _bookData.MetadataLanguage1Tag)
 						return true;
 					break;
 				case "L2":
-					if (lang == _bookData.Language2IsoCode)
+					if (lang == _bookData.Language2Tag)
 						return true;
 					break;
 				case "N2":
-					if (lang == _bookData.MetadataLanguage2IsoCode)
+					if (lang == _bookData.MetadataLanguage2Tag)
 						return true;
 					break;
 				case "L3":
-					if (lang == _bookData.Language3IsoCode)
+					if (lang == _bookData.Language3Tag)
 						return true;
 					break;
 				}
@@ -2488,7 +2488,7 @@ namespace Bloom.Book
 					if (!HtmlDom.HasClass(div, "bloom-editable"))
 						continue;
 					var lang = div.GetStringAttribute("lang");
-					if (lang != Language1IsoCode)
+					if (lang != Language1Tag)
 						continue;   // this won't go into the book -- it's a different language.
 					// TODO: Ensure handles image descriptions once those get implemented.
 					var textOfDiv = div.InnerText.Trim();
@@ -2908,9 +2908,9 @@ namespace Bloom.Book
 				// We need to add these early on for leveled reader statistics not to get messed up
 				// when adding a new (empty) page.  See https://issues.bloomlibrary.org/youtrack/issue/BL-9876.
 				TranslationGroupManager.UpdateContentLanguageClasses(newPageDiv, _bookData,
-					Language1IsoCode,
-					Language2IsoCode,
-					Language3IsoCode);
+					Language1Tag,
+					Language2Tag,
+					Language3Tag);
 			}
 
 			SizeAndOrientation.UpdatePageSizeAndOrientationClasses(newPageDiv, GetLayout());
@@ -2950,7 +2950,7 @@ namespace Bloom.Book
 			var newPage = GetPages().First(p=>p.GetDivNodeForThisPage() == firstPageAdded);
 			Guard.AgainstNull(newPage,"could not find the page we just added");
 
-			//_pageSelection.SelectPage(CreatePageDecriptor(newPageDiv, "should not show", _collectionSettings.Language1Iso639Code));
+			//_pageSelection.SelectPage(CreatePageDecriptor(newPageDiv, "should not show", _collectionSettings.Language1Tag));
 
 			// If copied page references images, copy them.
 			foreach (var pathFromBook in BookStorage.GetImagePathsRelativeToBook(newPageDiv))
@@ -3227,7 +3227,7 @@ namespace Bloom.Book
 				var pageFromStorage = GetPageFromStorage(pageId);
 
 				HtmlDom.ProcessPageAfterEditing(pageFromStorage, pageFromEditedDom);
-				HtmlDom.SetImageAltAttrsFromDescriptions(pageFromStorage, Language1IsoCode);
+				HtmlDom.SetImageAltAttrsFromDescriptions(pageFromStorage, Language1Tag);
 
 				// The main condition for being able to just write the page is that no shareable data on the
 				// page changed during editing. If that's so we can skip this step.
@@ -3625,13 +3625,13 @@ namespace Bloom.Book
 		/// <param name="elementToUpdate"></param>
 		public void UpdateEditableAreasOfElement(HtmlDom dom)
 		{
-			var language1IsoCode = Language1IsoCode;
-			var language2IsoCode = Language2IsoCode;
-			var language3IsoCode = Language3IsoCode;
+			var language1Tag = Language1Tag;
+			var language2Tag = Language2Tag;
+			var language3Tag = Language3Tag;
 			foreach (XmlElement div in dom.SafeSelectNodes("//div[contains(@class,'bloom-page')]"))
 			{
 				TranslationGroupManager.PrepareElementsInPageOrDocument(div, _bookData);
-				TranslationGroupManager.UpdateContentLanguageClasses(div, _bookData, language1IsoCode, language2IsoCode, language3IsoCode);
+				TranslationGroupManager.UpdateContentLanguageClasses(div, _bookData, language1Tag, language2Tag, language3Tag);
 			}
 		}
 

@@ -430,20 +430,20 @@ namespace BloomTests.WebLibraryIntegration
 			Login();
 			try
 			{
-				_parseClient.CreateLanguage(new LanguageDescriptor() {IsoCode = "en", Name="English", EthnologueCode = "eng"});
-				_parseClient.CreateLanguage(new LanguageDescriptor() { IsoCode = "xyk", Name = "MyLang", EthnologueCode = "xyk" });
-				Assert.That(_parseClient.LanguageExists(new LanguageDescriptor() { IsoCode = "xyk", Name = "MyLang", EthnologueCode = "xyk" }));
-				Assert.That(_parseClient.LanguageExists(new LanguageDescriptor() { IsoCode = "xyj", Name = "MyLang", EthnologueCode = "xyk" }), Is.False);
-				Assert.That(_parseClient.LanguageExists(new LanguageDescriptor() { IsoCode = "xyk", Name = "MyOtherLang", EthnologueCode = "xyk" }), Is.False);
-				Assert.That(_parseClient.LanguageExists(new LanguageDescriptor() { IsoCode = "xyk", Name = "MyLang", EthnologueCode = "xyj" }), Is.False);
+				_parseClient.CreateLanguage(new LanguageDescriptor() {LangTag = "en", Name="English", EthnologueCode = "eng"});
+				_parseClient.CreateLanguage(new LanguageDescriptor() { LangTag = "xyk", Name = "MyLang", EthnologueCode = "xyk" });
+				Assert.That(_parseClient.LanguageExists(new LanguageDescriptor() { LangTag = "xyk", Name = "MyLang", EthnologueCode = "xyk" }));
+				Assert.That(_parseClient.LanguageExists(new LanguageDescriptor() { LangTag = "xyj", Name = "MyLang", EthnologueCode = "xyk" }), Is.False);
+				Assert.That(_parseClient.LanguageExists(new LanguageDescriptor() { LangTag = "xyk", Name = "MyOtherLang", EthnologueCode = "xyk" }), Is.False);
+				Assert.That(_parseClient.LanguageExists(new LanguageDescriptor() { LangTag = "xyk", Name = "MyLang", EthnologueCode = "xyj" }), Is.False);
 
 				var pointers = _parseClient.GetLanguagePointers(new[]
 				{
-					new LanguageDescriptor() {IsoCode = "xyk", Name = "MyLang", EthnologueCode = "xyk"},
-					new LanguageDescriptor() {IsoCode = "xyk", Name = "MyOtherLang", EthnologueCode = "xyk"}
+					new LanguageDescriptor() {LangTag = "xyk", Name = "MyLang", EthnologueCode = "xyk"},
+					new LanguageDescriptor() {LangTag = "xyk", Name = "MyOtherLang", EthnologueCode = "xyk"}
 				});
-				Assert.That(_parseClient.LanguageExists(new LanguageDescriptor() { IsoCode = "xyk", Name = "MyOtherLang", EthnologueCode = "xyk" }));
-				Assert.That(_parseClient.LanguageCount(new LanguageDescriptor() { IsoCode = "xyk", Name = "MyLang", EthnologueCode = "xyk" }), Is.EqualTo(1));
+				Assert.That(_parseClient.LanguageExists(new LanguageDescriptor() { LangTag = "xyk", Name = "MyOtherLang", EthnologueCode = "xyk" }));
+				Assert.That(_parseClient.LanguageCount(new LanguageDescriptor() { LangTag = "xyk", Name = "MyLang", EthnologueCode = "xyk" }), Is.EqualTo(1));
 
 				Assert.That(pointers[0], Is.Not.Null);
 				Assert.That(pointers[0].ClassName, Is.EqualTo("language"));

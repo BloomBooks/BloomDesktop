@@ -41,9 +41,9 @@ namespace Bloom.Book
 				SafelyAddLanguage(d, lang.Tag, lang.GetNameInLanguage(lang.Tag));
 			SafelyAddLanguage(d, "vernacularLang", bookData.Language1.Tag);//use for making the vernacular the first tab
 			SafelyAddLanguage(d, "{V}", bookData.Language1.Name);
-			SafelyAddLanguage(d, "{N1}", bookData.MetadataLanguage1.GetNameInLanguage(bookData.MetadataLanguage1IsoCode));
-			if (!string.IsNullOrEmpty(bookData.Language3IsoCode))
-				SafelyAddLanguage(d, "{N2}", bookData.MetadataLanguage2.GetNameInLanguage(bookData.MetadataLanguage2IsoCode));
+			SafelyAddLanguage(d, "{N1}", bookData.MetadataLanguage1.GetNameInLanguage(bookData.MetadataLanguage1Tag));
+			if (!string.IsNullOrEmpty(bookData.Language3Tag))
+				SafelyAddLanguage(d, "{N2}", bookData.MetadataLanguage2.GetNameInLanguage(bookData.MetadataLanguage2Tag));
 
 			// TODO: Eventually we need to look through all .bloom-translationGroup elements on the current page to determine
 			// whether there is text in a language not yet added to the dictionary.
@@ -327,13 +327,13 @@ namespace Bloom.Book
 			d.Add("isSourceCollection", bookData.CollectionSettings.IsSourceCollection.ToString());
 
 			// BL-2357 To aid in smart ordering of source languages in source bubble
-			if (!String.IsNullOrEmpty(bookData.Language2IsoCode))
+			if (!String.IsNullOrEmpty(bookData.Language2Tag))
 			{
-				d.Add("currentCollectionLanguage2", bookData.Language2IsoCode);
+				d.Add("currentCollectionLanguage2", bookData.Language2Tag);
 			}
-			if (!String.IsNullOrEmpty(bookData.Language3IsoCode))
+			if (!String.IsNullOrEmpty(bookData.Language3Tag))
 			{
-				d.Add("currentCollectionLanguage3", bookData.Language3IsoCode);
+				d.Add("currentCollectionLanguage3", bookData.Language3Tag);
 			}
 
 			d.Add("browserRoot", FileLocationUtilities.GetDirectoryDistributedWithApplication(BloomFileLocator.BrowserRoot).ToLocalhost());

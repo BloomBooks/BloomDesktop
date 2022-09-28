@@ -1545,9 +1545,9 @@ namespace BloomTests.Book
 			_bookDom = new HtmlDom(@"<html><head><div id='bloomDataDiv'><div data-book='contentLanguage1'>fr</div><div data-book='contentLanguage2'>xyz</div><div data-book='contentLanguage3'>en</div></div></head><body></body></html>");
 			var book = CreateBook();
 			book.BringBookUpToDate(new NullProgress());
-			Assert.AreEqual("fr", book.Language1IsoCode);
-			Assert.AreEqual("xyz", book.Language2IsoCode);
-			Assert.AreEqual("en", book.Language3IsoCode);
+			Assert.AreEqual("fr", book.Language1Tag);
+			Assert.AreEqual("xyz", book.Language2Tag);
+			Assert.AreEqual("en", book.Language3Tag);
 		}
 
 		//regression test

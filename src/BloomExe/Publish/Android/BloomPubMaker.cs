@@ -131,8 +131,8 @@ namespace Bloom.Publish.Android
 					page.ParentNode.RemoveChild(page);
 			}
 
-			var mdLang1Code = modifiedBook.BookData.MetadataLanguage1IsoCode;
-			var mdLang2Code = modifiedBook.BookData.MetadataLanguage2IsoCode;
+			var mdLang1Code = modifiedBook.BookData.MetadataLanguage1Tag;
+			var mdLang2Code = modifiedBook.BookData.MetadataLanguage2Tag;
 			if (settings?.LanguagesToInclude != null)
 			{
 				PublishModel.RemoveUnwantedLanguageData(modifiedBook.OurHtmlDom, settings.LanguagesToInclude,

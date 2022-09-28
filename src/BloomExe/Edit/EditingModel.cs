@@ -450,16 +450,16 @@ namespace Bloom.Edit
 				// clear them first, so we end up with selections appropriate to this one.
 				_contentLanguages.ForEach(l => l.Selected = false);
 				var lang1 = _contentLanguages.FirstOrDefault(l =>
-					l.Iso639Code == _bookSelection.CurrentSelection.Language1IsoCode);
+					l.Iso639Code == _bookSelection.CurrentSelection.Language1Tag);
 				// We must have one language selected. If nothing matches, select the first.
 				if (lang1 == null)
 					lang1 = _contentLanguages[0];
 				lang1.Selected = true;
 
-				var lang2 = _contentLanguages.FirstOrDefault(l => l.Iso639Code == _bookSelection.CurrentSelection.Language2IsoCode);
+				var lang2 = _contentLanguages.FirstOrDefault(l => l.Iso639Code == _bookSelection.CurrentSelection.Language2Tag);
 				if (lang2 != null)
 					lang2.Selected = true;
-				var lang3 = _contentLanguages.FirstOrDefault(l => l.Iso639Code == _bookSelection.CurrentSelection.Language3IsoCode);
+				var lang3 = _contentLanguages.FirstOrDefault(l => l.Iso639Code == _bookSelection.CurrentSelection.Language3Tag);
 				if (lang3 != null)
 					lang3.Selected = true;
 
