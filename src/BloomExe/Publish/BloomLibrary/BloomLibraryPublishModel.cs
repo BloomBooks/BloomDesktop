@@ -333,8 +333,8 @@ namespace Bloom.Publish.BloomLibrary
 			// Languages which have been selected for display in this book need to be selected
 			return
 				langCode == book.BookData.Language1.Tag ||
-				langCode == book.Language2IsoCode ||
-				langCode == book.Language3IsoCode;
+				langCode == book.Language2Tag ||
+				langCode == book.Language3Tag;
 		}
 
 		public void ClearSignLanguageToPublish()

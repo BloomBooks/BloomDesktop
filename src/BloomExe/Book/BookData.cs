@@ -85,10 +85,10 @@ namespace Bloom.Book
 		private Object thisLock = new Object();
 		// At one point we used XmlString for these, but language tags cannot actually
 		// contain any characters that need encoding, so it seems an unnecessary complication.
-		private string _cachedIsoLang1;
-		private string _cachedIsoLang2;
-		private string _cachedIsoLang3;
-		private string _cachedIsoMetadataLang1;
+		private string _cachedLangTag1;
+		private string _cachedLangTag2;
+		private string _cachedLangTag3;
+		private string _cachedMetadataLangTag1;
 		private bool _gotLangCache;
 
 		//URLs are encoded in a certain way for the src attributes
@@ -119,7 +119,7 @@ namespace Bloom.Book
 		/// <summary>
 		/// The first (or only) language to show, usually the vernacular.
 		/// </summary>
-		public string Language1IsoCode
+		public string Language1Tag
 		{
 			get
 			{
@@ -133,7 +133,7 @@ namespace Bloom.Book
 					CacheLangData();
 				}
 
-				return _cachedIsoLang1;
+				return _cachedLangTag1;
 			}
 		}
 
@@ -141,13 +141,13 @@ namespace Bloom.Book
 		/// For bilingual or trilingual books, this is the second language to show,
 		/// after Language1.
 		/// </summary>
-		public String Language2IsoCode
+		public String Language2Tag
 		{
 			get
 			{
 				if (!_gotLangCache)
 					CacheLangData();
-				return _cachedIsoLang2;
+				return _cachedLangTag2;
 			}
 		}
 
@@ -159,13 +159,13 @@ namespace Bloom.Book
 		/// it eventually.
 		/// It should never be null, but might be the same as Language1 (or 2 or 3).
 		/// </summary>
-		public String MetadataLanguage1IsoCode
+		public String MetadataLanguage1Tag
 		{
 			get
 			{
 				if (!_gotLangCache)
 					CacheLangData();
-				return _cachedIsoMetadataLang1;
+				return _cachedMetadataLangTag1;
 			}
 		}
 
@@ -182,11 +182,11 @@ namespace Bloom.Book
 		/// This is currently only used where the user configures a text box to show N2 by
 		/// choosing the last radio button.
 		/// </summary>
-		public string MetadataLanguage2IsoCode => CollectionSettings.Language3Tag;
+		public string MetadataLanguage2Tag => CollectionSettings.Language3Tag;
 
 		private bool _cachingLangData = false;
 		/// <summary>
-		/// Cache values for LanguageNIsoCode and MetadataLang1IsoCode
+		/// Cache values for LanguageNTag and MetadataLang1Tag
 		/// It is safe to cache this because we reload everything when changing languages
 		/// in the collection. When we change them in the active language menu, we update the cache.
 		/// It is important because these properties are heavily used, especially when saving pages.
@@ -201,26 +201,26 @@ namespace Bloom.Book
 			try
 			{
 				GatherDataItemsFromXElement(_dataset, _dom.RawDom);
-				_cachedIsoLang1 = GetVariableOrNull("contentLanguage1", "*").Unencoded;
-				if (string.IsNullOrEmpty(_cachedIsoLang1) || GetWritingSystemOrNull(_cachedIsoLang1) == null)
+				_cachedLangTag1 = GetVariableOrNull("contentLanguage1", "*").Unencoded;
+				if (string.IsNullOrEmpty(_cachedLangTag1) || GetWritingSystemOrNull(_cachedLangTag1) == null)
 				{
 					// If contentLanguage1 isn't in the element (typically in unit tests), just use Language1 from CollectionSettings.
 					// Likewise, if the stored WS isn't a current collection language (typically because we just modified collection settings),
 					// use the first collection language.
-					_cachedIsoLang1 = CollectionSettings.Language1.Tag;
+					_cachedLangTag1 = CollectionSettings.Language1.Tag;
 				}
 
-				_cachedIsoLang2 = GetVariableOrNull("contentLanguage2", "*").Unencoded;
-				_cachedIsoLang3 = GetVariableOrNull("contentLanguage3", "*").Unencoded;
+				_cachedLangTag2 = GetVariableOrNull("contentLanguage2", "*").Unencoded;
+				_cachedLangTag3 = GetVariableOrNull("contentLanguage3", "*").Unencoded;
 				// If either of these is a WS no longer in the collection, drop it. Also drop duplicates
 				// (which should only happen as a result of language 1 changing because of collection settings changes).
-				if (GetWritingSystemOrNull(_cachedIsoLang3) == null || _cachedIsoLang3 == _cachedIsoLang2 || _cachedIsoLang3 == _cachedIsoLang1)
-					_cachedIsoLang3 = null;
-				if (GetWritingSystemOrNull(_cachedIsoLang2) == null || _cachedIsoLang2 == _cachedIsoLang1)
+				if (GetWritingSystemOrNull(_cachedLangTag3) == null || _cachedLangTag3 == _cachedLangTag2 || _cachedLangTag3 == _cachedLangTag1)
+					_cachedLangTag3 = null;
+				if (GetWritingSystemOrNull(_cachedLangTag2) == null || _cachedLangTag2 == _cachedLangTag1)
 				{
 					// If we still have an L3, promote it to L2.
-					_cachedIsoLang2 = _cachedIsoLang3;
-					_cachedIsoLang3 = null;
+					_cachedLangTag2 = _cachedLangTag3;
+					_cachedLangTag3 = null;
 				}
 
 				_gotLangCache = true;
@@ -232,15 +232,15 @@ namespace Bloom.Book
 
 			// To avoid triggering the recursive call warning above, these need to be done outside
 			// the protected block.
-			UpdateLang1Derivatives(_cachedIsoLang1);
-			UpdateLang2Derivatives(_cachedIsoLang2);
-			UpdateLang3Derivatives(_cachedIsoLang3);
+			UpdateLang1Derivatives(_cachedLangTag1);
+			UpdateLang2Derivatives(_cachedLangTag2);
+			UpdateLang3Derivatives(_cachedLangTag3);
 			UpdateML1Derivatives();
 		}
 
 		private void UpdateLang1Derivatives(string newLang1)
 		{
-			_cachedIsoLang1 = newLang1;
+			_cachedLangTag1 = newLang1;
 			if (newLang1 == null)
 				return; // This should only happen in the earliest stages of constructing a BookData
 			// I'm not sure why this is needed nor, since it is using *, why we don't use UpdateGenericLanguageString
@@ -255,7 +255,7 @@ namespace Bloom.Book
 
 		private void UpdateLang3Derivatives(string newLang3)
 		{
-			_cachedIsoLang3 = newLang3;
+			_cachedLangTag3 = newLang3;
 			// I'm not sure why this is needed nor, since it is using *, why we don't use UpdateGenericLanguageString
 			// so it ONLY has that alternative. I cannot find anywhere this value is used. I'm putting this in
 			// because GatherDataItemsFromSettings fills it in, and if it IS used, I want to keep it consistent
@@ -268,7 +268,7 @@ namespace Bloom.Book
 
 		private void UpdateLang2Derivatives(string newLang2)
 		{
-			_cachedIsoLang2 = newLang2;
+			_cachedLangTag2 = newLang2;
 			// There actually are no derivatives of L2. Derivatives of what used to be L2
 			// are now derived from ML1 (alias N2).
 
@@ -281,13 +281,13 @@ namespace Bloom.Book
 
 		private void UpdateML1Derivatives()
 		{
-			_cachedIsoMetadataLang1 = CollectionSettings.Language2Tag;
+			_cachedMetadataLangTag1 = CollectionSettings.Language2Tag;
 			// We thought about using this, but decided in the end that until we give the user
 			// full control over ML1 it's better to stick with the old behavior where ML1 is simply
 			// the second collection language.
-			//_cachedIsoMetadataLang1 = string.IsNullOrEmpty(_cachedIsoLang2)
-			//	? CollectionSettings.Language2Iso639Code
-			//	: _cachedIsoLang2;
+			//_cachedMetadataLangTag1 = string.IsNullOrEmpty(_cachedLangTag2)
+			//	? CollectionSettings.Language2Tag
+			//	: _cachedLangTag2;
 
 			// I'm not sure why this is needed nor, since it is using *, why we don't use UpdateGenericLanguageString
 			// so it ONLY has that alternative. I cannot find anywhere this value is used. I'm putting this in
@@ -301,13 +301,13 @@ namespace Bloom.Book
 		/// <summary>
 		/// For trilingual books, this is the third language to show
 		/// </summary>
-		public String Language3IsoCode
+		public String Language3Tag
 		{
 			get
 			{
 				if (!_gotLangCache)
 					CacheLangData();
-				return _cachedIsoLang3;
+				return _cachedLangTag3;
 			}
 		}
 
@@ -373,13 +373,13 @@ namespace Bloom.Book
 			UpdateToolRelatedDataFromBookInfo(info, incomingData, itemsToDelete);
 			incomingData.UpdateGenericLanguageString("contentLanguage1", XmlString.FromUnencoded(Language1.Tag), false);
 			incomingData.UpdateGenericLanguageString("contentLanguage2",
-											 String.IsNullOrEmpty(Language2IsoCode)
+											 String.IsNullOrEmpty(Language2Tag)
 												 ? null
-												 : XmlString.FromUnencoded(Language2IsoCode), false);
+												 : XmlString.FromUnencoded(Language2Tag), false);
 			incomingData.UpdateGenericLanguageString("contentLanguage3",
-											 String.IsNullOrEmpty(Language3IsoCode)
+											 String.IsNullOrEmpty(Language3Tag)
 												 ? null
-												 : XmlString.FromUnencoded(Language3IsoCode), false);
+												 : XmlString.FromUnencoded(Language3Tag), false);
 
 			//Debug.WriteLine("xyz: " + _dataDiv.OuterXml);
 			foreach (var v in incomingData.TextVariables)
@@ -596,7 +596,7 @@ namespace Bloom.Book
 				return;		// must be in a test...
 			foreach (var element in elements.Cast<XmlElement>().ToList())
 			{
-				element.SetAttribute("lang", MetadataLanguage1IsoCode);
+				element.SetAttribute("lang", MetadataLanguage1Tag);
 				SetNodeXml("languagesOfBook", XmlString.FromXml(languagesXml), element );
 				// Was until April 2021
 				//element.InnerText = languages;
@@ -844,9 +844,9 @@ namespace Bloom.Book
 		{
 			switch (writingSystemId)
 			{
-				case "V": return Language1IsoCode;
-				case "N1": return MetadataLanguage1IsoCode;
-				case "N2": return MetadataLanguage2IsoCode;
+				case "V": return Language1Tag;
+				case "N1": return MetadataLanguage1Tag;
+				case "N2": return MetadataLanguage2Tag;
 				default: return writingSystemId;
 			}
 		}
@@ -861,9 +861,9 @@ namespace Bloom.Book
 			get
 			{
 				var result = new Dictionary<string,string>();
-				result.Add("V", Language1IsoCode);
-				result.Add("N1", MetadataLanguage1IsoCode);
-				result.Add("N2", MetadataLanguage2IsoCode);
+				result.Add("V", Language1Tag);
+				result.Add("N1", MetadataLanguage1Tag);
+				result.Add("N2", MetadataLanguage2Tag);
 				return result;
 			}
 		}
@@ -958,9 +958,9 @@ namespace Bloom.Book
 		{
 //            if (makeGeneric)
 //            {
-//                data.WritingSystemCodes.Add("V", collectionSettings.Language2Iso639Code);
+//                data.WritingSystemCodes.Add("V", collectionSettings.Language2Tag);
 //                    //This is not an error; we don't want to use the verncular when we're just previewing a book in a non-verncaulr collection
-//                data.AddGenericLanguageString("iso639Code", collectionSettings.Language1Iso639Code, true);
+//                data.AddGenericLanguageString("iso639Code", collectionSettings.Language1Tag, true);
 //                    //review: maybe this should be, like 'xyz"
 //                data.AddGenericLanguageString("nameOfLanguage", "(Your Language Name)", true);
 //                data.AddGenericLanguageString("nameOfNationalLanguage1", "(Region Lang)", true);
@@ -985,7 +985,7 @@ namespace Bloom.Book
 
 				//data.AddLanguageString("nameOfNationalLanguage2",
 				//					   XmlString.FromUnencoded(collectionSettings.Language3?.Name??""), "*", true);
-				data.UpdateGenericLanguageString("iso639Code", XmlString.FromUnencoded(Language1IsoCode), true);
+				data.UpdateGenericLanguageString("iso639Code", XmlString.FromUnencoded(Language1Tag), true);
 				data.UpdateGenericLanguageString("country", XmlString.FromUnencoded(collectionSettings.Country), true);
 				data.UpdateGenericLanguageString("province", XmlString.FromUnencoded(collectionSettings.Province), true);
 				data.UpdateGenericLanguageString("district", XmlString.FromUnencoded(collectionSettings.District), true);
@@ -1033,7 +1033,7 @@ namespace Bloom.Book
 			// we're wanting a name of a language that is not currently in use in the book, but is known to the collection,
 			// it's desirable to find it.
 
-			return CollectionSettings.GetDisplayNameForLanguage(code, MetadataLanguage1IsoCode);
+			return CollectionSettings.GetDisplayNameForLanguage(code, MetadataLanguage1Tag);
 		}
 
 
@@ -1108,9 +1108,9 @@ namespace Bloom.Book
 					if (lang == "{V}")
 						lang = Language1.Tag;
 					if (lang == "{N1}")
-						lang = MetadataLanguage1IsoCode;
+						lang = MetadataLanguage1Tag;
 					if (lang == "{N2}")
-						lang = MetadataLanguage2IsoCode;
+						lang = MetadataLanguage2Tag;
 
 					if (StringAlternativeHasNoText(value))
 					{
@@ -1369,8 +1369,8 @@ namespace Bloom.Book
 
 							//hack: until I think of a more elegant way to avoid repeating the language name in N2 when it's the exact same as N1...
 							var n1Form = GetBestUnwrappedAlternative(data.TextVariables[key].TextAlternatives,
-								new[] { MetadataLanguage1IsoCode, "*"});
-							if (lang == MetadataLanguage2IsoCode && n1Form != null && s == n1Form.Form)
+								new[] { MetadataLanguage1Tag, "*"});
+							if (lang == MetadataLanguage2Tag && n1Form != null && s == n1Form.Form)
 							{
 								s = ""; //don't show it in N2, since it's the same as N1
 							}
@@ -1570,8 +1570,8 @@ namespace Bloom.Book
 			string s = "";
 
 
-			if (languageCodeOfTargetField == MetadataLanguage1IsoCode || //is it a national language?
-				// languageCodeOfTargetField == Language3IsoCode) || we had this before but don't think we need it.
+			if (languageCodeOfTargetField == MetadataLanguage1Tag || //is it a national language?
+				// languageCodeOfTargetField == Language3Tag) || we had this before but don't think we need it.
 				//this one is a kludge as we clearly have this case of a vernacular field that people have used
 				//to hold stuff that should be copied to every shell. So we can either remove the restriction of the
 				//first two clauses in this if statement, or add another bloom-___ class in order to make execptions.
@@ -1978,15 +1978,15 @@ namespace Bloom.Book
 			switch (slot)
 			{
 				case LanguageSlot.Language1:
-					return GetWritingSystem(Language1IsoCode);
+					return GetWritingSystem(Language1Tag);
 				case LanguageSlot.Language2:
-					return Language2IsoCode == null ? null : GetWritingSystem(Language2IsoCode);
+					return Language2Tag == null ? null : GetWritingSystem(Language2Tag);
 				case LanguageSlot.Language3:
-					return Language3IsoCode == null ? null : GetWritingSystem(Language3IsoCode);
+					return Language3Tag == null ? null : GetWritingSystem(Language3Tag);
 				case LanguageSlot.MetadataLanguage1:
-					return GetWritingSystem(MetadataLanguage1IsoCode);
+					return GetWritingSystem(MetadataLanguage1Tag);
 				case LanguageSlot.MetadataLanguage2:
-					return GetWritingSystem(MetadataLanguage2IsoCode);
+					return GetWritingSystem(MetadataLanguage2Tag);
 				default:
 					throw new ArgumentException("BookData.GetLanguage() cannot handle that slot yet");
 
@@ -2002,31 +2002,31 @@ namespace Bloom.Book
 		public WritingSystem MetadataLanguage2 => GetLanguage(LanguageSlot.MetadataLanguage2);
 
 		/// <summary>
-		/// Get one of the collection language objects that matches the iso.
+		/// Get one of the collection language objects that matches the language tag.
 		/// Crash if not found.
 		/// </summary>
-		/// <param name="iso"></param>
+		/// <param name="langTag"></param>
 		/// <returns></returns>
-		public WritingSystem GetWritingSystem(string iso)
+		public WritingSystem GetWritingSystem(string langTag)
 		{
-			var result = GetWritingSystemOrNull(iso);
+			var result = GetWritingSystemOrNull(langTag);
 			if (result == null)
 				throw new ApplicationException("trying to get language not in system");
 			return result;
 		}
 
 		/// <summary>
-		/// Get one of the collection language objects that matches the iso, or null if it doesn't match.
+		/// Get one of the collection language objects that matches the language tag, or null if it doesn't match.
 		/// </summary>
-		/// <param name="iso"></param>
+		/// <param name="langTag"></param>
 		/// <returns></returns>
-		private WritingSystem GetWritingSystemOrNull(string iso)
+		private WritingSystem GetWritingSystemOrNull(string langTag)
 		{
-			if (CollectionSettings.Language1.Tag == iso)
+			if (CollectionSettings.Language1.Tag == langTag)
 				return CollectionSettings.Language1;
-			if (CollectionSettings.Language2?.Tag == iso)
+			if (CollectionSettings.Language2?.Tag == langTag)
 				return CollectionSettings.Language2;
-			if (CollectionSettings.Language3?.Tag == iso)
+			if (CollectionSettings.Language3?.Tag == langTag)
 				return CollectionSettings.Language3;
 			return null;
 		}
@@ -2064,10 +2064,10 @@ namespace Bloom.Book
 		{
 			var langCodes = new List<string>();
 			if (includeLanguage1)
-				langCodes.Add(Language1IsoCode);
-			AddLang(langCodes, MetadataLanguage1IsoCode);
-			AddLang(langCodes, Language2IsoCode);
-			AddLang(langCodes, Language3IsoCode);
+				langCodes.Add(Language1Tag);
+			AddLang(langCodes, MetadataLanguage1Tag);
+			AddLang(langCodes, Language2Tag);
+			AddLang(langCodes, Language3Tag);
 			return langCodes;
 		}
 
@@ -2174,13 +2174,13 @@ namespace Bloom.Book
 			return langCodes;
 		}
 
-		internal LanguageDescriptor[] MakeLanguageUploadData(string[] isoCodes)
+		internal LanguageDescriptor[] MakeLanguageUploadData(string[] langTags)
 		{
-			var result = new LanguageDescriptor[isoCodes.Length];
+			var result = new LanguageDescriptor[langTags.Length];
 			var bookLangs = GetBasicBookLanguages();
-			for (int i = 0; i < isoCodes.Length; i++)
+			for (int i = 0; i < langTags.Length; i++)
 			{
-				var code = isoCodes[i];
+				var code = langTags[i];
 				string name = null;
 				var lang = bookLangs.FirstOrDefault(ws => ws.Tag == code);
 				if (lang != null)
@@ -2197,7 +2197,7 @@ namespace Bloom.Book
 					if (string.IsNullOrEmpty(ethCode))
 						ethCode = code;
 				}
-				result[i] = new LanguageDescriptor() { IsoCode = code, Name = name, EthnologueCode = ethCode };
+				result[i] = new LanguageDescriptor() { LangTag = code, Name = name, EthnologueCode = ethCode };
 			}
 			return result;
 		}

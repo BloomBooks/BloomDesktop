@@ -60,7 +60,7 @@ namespace Bloom.Book
 				var dataDefaultLangs = groupElement.Attributes["data-default-languages"]?.Value;
 				if (dataDefaultLangs != null && dataDefaultLangs.Contains("N2"))
 				{
-					MakeElementWithLanguageForOneGroup(groupElement, bookData.MetadataLanguage2IsoCode);
+					MakeElementWithLanguageForOneGroup(groupElement, bookData.MetadataLanguage2Tag);
 				}
 			}
 		}
@@ -125,8 +125,8 @@ namespace Bloom.Book
 
 			PrepareElementsInPageOrDocument(containerElement, currentBook.BookData);
 
-			TranslationGroupManager.UpdateContentLanguageClasses(wrapper, currentBook.BookData, currentBook.Language1IsoCode,
-				currentBook.Language2IsoCode, currentBook.Language3IsoCode);
+			TranslationGroupManager.UpdateContentLanguageClasses(wrapper, currentBook.BookData, currentBook.Language1Tag,
+				currentBook.Language2Tag, currentBook.Language3Tag);
 
 			return containerElement.InnerXml;
 		}
@@ -196,23 +196,23 @@ namespace Bloom.Book
 		/// We stick various classes on editable things to control order and visibility
 		/// </summary>
 		public static void UpdateContentLanguageClasses(XmlNode elementOrDom, BookData bookData,
-			string language1IsoCode, string language2IsoCode, string language3IsoCode)
+			string language1Tag, string language2Tag, string language3Tag)
 		{
 			var multilingualClass = "bloom-monolingual";
 			var contentLanguages = new Dictionary<string, string>();
-			contentLanguages.Add(language1IsoCode, "bloom-content1");
+			contentLanguages.Add(language1Tag, "bloom-content1");
 
-			if (!String.IsNullOrEmpty(language2IsoCode) && language1IsoCode != language2IsoCode)
+			if (!String.IsNullOrEmpty(language2Tag) && language1Tag != language2Tag)
 			{
 				multilingualClass = "bloom-bilingual";
-				contentLanguages.Add(language2IsoCode, "bloom-content2");
+				contentLanguages.Add(language2Tag, "bloom-content2");
 			}
-			if (!String.IsNullOrEmpty(language3IsoCode) && language1IsoCode != language3IsoCode &&
-				language2IsoCode != language3IsoCode)
+			if (!String.IsNullOrEmpty(language3Tag) && language1Tag != language3Tag &&
+				language2Tag != language3Tag)
 			{
 				multilingualClass = "bloom-trilingual";
-				contentLanguages.Add(language3IsoCode, "bloom-content3");
-				Debug.Assert(!String.IsNullOrEmpty(language2IsoCode), "shouldn't have a content3 lang with no content2 lang");
+				contentLanguages.Add(language3Tag, "bloom-content3");
+				Debug.Assert(!String.IsNullOrEmpty(language2Tag), "shouldn't have a content3 lang with no content2 lang");
 			}
 
 			//Stick a class in the page div telling the stylesheet how many languages we are displaying (only makes sense for content pages, in Jan 2012).
@@ -238,7 +238,7 @@ namespace Bloom.Book
 				//nb: we don't necessarily care that a div is editable or not
 				foreach (XmlElement e in @group.SafeSelectNodes(".//textarea | .//div"))
 				{
-					UpdateContentLanguageClassesOnElement(e, contentLanguages, bookData, language2IsoCode, language3IsoCode, dataDefaultLanguages);
+					UpdateContentLanguageClassesOnElement(e, contentLanguages, bookData, language2Tag, language3Tag, dataDefaultLanguages);
 				}
 			}
 
@@ -249,7 +249,7 @@ namespace Bloom.Book
 				//nb: we don't necessarily care that a div is editable or not
 				foreach (XmlElement e in coverImageDescription.SafeSelectNodes(".//textarea | .//div"))
 				{
-					UpdateContentLanguageClassesOnElement(e, contentLanguages, bookData, language2IsoCode, language3IsoCode, dataDefaultLanguages);
+					UpdateContentLanguageClassesOnElement(e, contentLanguages, bookData, language2Tag, language3Tag, dataDefaultLanguages);
 				}
 			}
 		}
@@ -266,7 +266,7 @@ namespace Bloom.Book
 			return groups.ToArray();
 		}
 
-		private static void UpdateContentLanguageClassesOnElement(XmlElement e, Dictionary<string, string> contentLanguages, BookData bookData, string contentLanguageIso2, string contentLanguageIso3, string[] dataDefaultLanguages)
+		private static void UpdateContentLanguageClassesOnElement(XmlElement e, Dictionary<string, string> contentLanguages, BookData bookData, string contentLanguageTag2, string contentLanguageTag3, string[] dataDefaultLanguages)
 		{
 			HtmlDom.RemoveClassesBeginingWith(e, "bloom-content");
 			var lang = e.GetAttribute("lang");
@@ -281,24 +281,24 @@ namespace Bloom.Book
 			}
 
 			//Enhance: it's even more likely that we can get rid of these by replacing them with bloom-content2, bloom-content3
-			if (lang == bookData.MetadataLanguage1IsoCode)
+			if (lang == bookData.MetadataLanguage1Tag)
 			{
 				HtmlDom.AddClass(e, "bloom-contentNational1");
 			}
 
-			// It's not clear that this class should be applied to blocks where lang == bookData.Language3IsoCode.
-			// I (JohnT) added lang == bookData.MetadataLanguage2IsoCode while dealing with BL-10893
+			// It's not clear that this class should be applied to blocks where lang == bookData.Language3Tag.
+			// I (JohnT) added lang == bookData.MetadataLanguage2Tag while dealing with BL-10893
 			// but am reluctant to remove the old code as something might depend on it. I believe it is (nearly?)
-			// always true that if we have Language3IsoCode at all, it will be equal to MetadataLanguage2IsoCode,
+			// always true that if we have Language3Tag at all, it will be equal to MetadataLanguage2Tag,
 			// so at least for now it probably makes no difference. In our next major reworking of language codes,
-			// hopefully we can make this distinction clearer and remove Language3IsoCode here.
-			if (lang == bookData.Language3IsoCode || lang == bookData.MetadataLanguage2IsoCode)
+			// hopefully we can make this distinction clearer and remove Language3Tag here.
+			if (lang == bookData.Language3Tag || lang == bookData.MetadataLanguage2Tag)
 			{
 				HtmlDom.AddClass(e, "bloom-contentNational2");
 			}
 
 			HtmlDom.RemoveClassesBeginingWith(e, "bloom-visibility-code");
-			if (ShouldNormallyShowEditable(lang, dataDefaultLanguages, contentLanguageIso2, contentLanguageIso3, bookData))
+			if (ShouldNormallyShowEditable(lang, dataDefaultLanguages, contentLanguageTag2, contentLanguageTag3, bookData))
 			{
 				HtmlDom.AddClass(e, "bloom-visibility-code-on");
 			}
@@ -309,10 +309,10 @@ namespace Bloom.Book
 		private static void UpdateRightToLeftSetting(BookData bookData, XmlElement e, string lang)
 		{
 			HtmlDom.RemoveRtlDir(e);
-			if((lang == bookData.Language1IsoCode && bookData.Language1.IsRightToLeft) ||
-			   (lang == bookData.Language2IsoCode && bookData.Language2.IsRightToLeft) ||
-			   (lang == bookData.Language3IsoCode && bookData.Language3.IsRightToLeft) ||
-			   (lang == bookData.MetadataLanguage1IsoCode && bookData.MetadataLanguage1.IsRightToLeft))
+			if((lang == bookData.Language1Tag && bookData.Language1.IsRightToLeft) ||
+			   (lang == bookData.Language2Tag && bookData.Language2.IsRightToLeft) ||
+			   (lang == bookData.Language3Tag && bookData.Language3.IsRightToLeft) ||
+			   (lang == bookData.MetadataLanguage1Tag && bookData.MetadataLanguage1.IsRightToLeft))
 			{
 				HtmlDom.AddRtlDir(e);
 			}
@@ -322,7 +322,7 @@ namespace Bloom.Book
 		/// Here, "normally" means unless the user overrides via a .bloom-visibility-user-on/off
 		/// </summary>
 		internal static bool ShouldNormallyShowEditable(string lang, string[] dataDefaultLanguages,
-			string contentLanguageIso2, string contentLanguageIso3, // these are effected by the multilingual settings for this book
+			string contentLanguageTag2, string contentLanguageTag3, // these are effected by the multilingual settings for this book
 			BookData bookData) // use to get the collection's current N1 and N2 in xmatter or other template pages that specify default languages
 		{
 			if (string.IsNullOrEmpty(lang))
@@ -334,7 +334,7 @@ namespace Bloom.Book
 			                                 || String.IsNullOrWhiteSpace(dataDefaultLanguages[0])
 			                                 || dataDefaultLanguages[0].Equals("auto",StringComparison.InvariantCultureIgnoreCase))
 			{
-				return lang == bookData.Language1.Tag || lang == contentLanguageIso2 || lang == contentLanguageIso3;
+				return lang == bookData.Language1.Tag || lang == contentLanguageTag2 || lang == contentLanguageTag3;
 			}
 			else
 			{
@@ -349,36 +349,36 @@ namespace Bloom.Book
 				return (lang == bookData.Language1.Tag && dataDefaultLanguages.Contains("V")) ||
 				   (lang == bookData.Language1.Tag && dataDefaultLanguages.Contains("L1")) ||
 
-				   (lang == bookData.MetadataLanguage1IsoCode && dataDefaultLanguages.Contains("N1")) ||
-				   (lang == bookData.Language2IsoCode && dataDefaultLanguages.Contains("L2")) ||
+				   (lang == bookData.MetadataLanguage1Tag && dataDefaultLanguages.Contains("N1")) ||
+				   (lang == bookData.Language2Tag && dataDefaultLanguages.Contains("L2")) ||
 
-				   (lang == bookData.MetadataLanguage2IsoCode && dataDefaultLanguages.Contains("N2")) ||
-				   (lang == bookData.Language3IsoCode && dataDefaultLanguages.Contains("L3")) ||
+				   (lang == bookData.MetadataLanguage2Tag && dataDefaultLanguages.Contains("N2")) ||
+				   (lang == bookData.Language3Tag && dataDefaultLanguages.Contains("L3")) ||
 
 				   dataDefaultLanguages.Contains(lang); // a literal language id, e.g. "en" (used by template starter)
 			}
 		}
 
-		private static int GetOrderOfThisLanguageInTheTextBlock(string editableIso, string vernacularIso, string contentLanguageIso2, string contentLanguageIso3)
+		private static int GetOrderOfThisLanguageInTheTextBlock(string editableTag, string vernacularTag, string contentLanguageTag2, string contentLanguageTag3)
 		{
-			if (editableIso == vernacularIso)
+			if (editableTag == vernacularTag)
 				return 1;
-			if (editableIso == contentLanguageIso2)
+			if (editableTag == contentLanguageTag2)
 				return 2;
-			if (editableIso == contentLanguageIso3)
+			if (editableTag == contentLanguageTag3)
 				return 3;
 			return -1;
 		}
 
 
 
-		private static void PrepareElementsOnPageOneLanguage(XmlNode pageDiv, string isoCode)
+		private static void PrepareElementsOnPageOneLanguage(XmlNode pageDiv, string langTag)
 		{
 			foreach (
 				XmlElement groupElement in
 					pageDiv.SafeSelectNodes("descendant-or-self::*[contains(@class,'bloom-translationGroup')]"))
 			{
-				MakeElementWithLanguageForOneGroup(groupElement, isoCode);
+				MakeElementWithLanguageForOneGroup(groupElement, langTag);
 
 				//remove any elements in the translationgroup which don't have a lang (but ignore any label elements, which we're using for annotating groups)
 				foreach (
@@ -396,7 +396,7 @@ namespace Bloom.Book
 						"descendant-or-self::textarea[not(@lang)] | descendant-or-self::*[(contains(@class, 'bloom-editable') or @contentEditable='true'  or @contenteditable='true') and not(@lang)]")
 				)
 			{
-				element.SetAttribute("lang", isoCode);
+				element.SetAttribute("lang", langTag);
 			}
 
 			foreach (XmlElement e in pageDiv.SafeSelectNodes("descendant-or-self::*[starts-with(text(),'{')]"))
@@ -421,9 +421,9 @@ namespace Bloom.Book
 		/// able to reproduce the effect or isolate the cause, but this fixes things.
 		/// See https://issues.bloomlibrary.org/youtrack/issue/BL-6923.
 		/// </remarks>
-		internal static void FixDuplicateLanguageDivs(XmlElement groupElement, string isoCode)
+		internal static void FixDuplicateLanguageDivs(XmlElement groupElement, string langTag)
 		{
-			XmlNodeList list = groupElement.SafeSelectNodes("./div[@lang='" + isoCode + "']");
+			XmlNodeList list = groupElement.SafeSelectNodes("./div[@lang='" + langTag + "']");
 			if (list.Count > 1)
 			{
 				var count = list.Count;
@@ -432,7 +432,7 @@ namespace Bloom.Book
 					var innerText = div.InnerText.Trim();
 					if (String.IsNullOrEmpty(innerText))
 					{
-						Logger.WriteEvent($"An empty duplicate div for {isoCode} has been removed from a translation group.");
+						Logger.WriteEvent($"An empty duplicate div for {langTag} has been removed from a translation group.");
 						groupElement.RemoveChild(div);
 						--count;
 						if (count == 1)
@@ -441,8 +441,8 @@ namespace Bloom.Book
 				}
 				if (count > 1)
 				{
-					Logger.WriteEvent($"Duplicate divs for {isoCode} have been merged in a translation group.");
-					list = groupElement.SafeSelectNodes("./div[@lang='" + isoCode + "']");
+					Logger.WriteEvent($"Duplicate divs for {langTag} have been merged in a translation group.");
+					list = groupElement.SafeSelectNodes("./div[@lang='" + langTag + "']");
 					XmlNode first = list[0];
 					for (int i = 1; i < list.Count; ++i)
 					{
@@ -492,7 +492,7 @@ namespace Bloom.Book
 		/// For each group (meaning they have a common parent) of editable items, we
 		/// need to make sure there are the correct set of copies, with appropriate @lang attributes
 		/// </summary>
-		public static XmlElement MakeElementWithLanguageForOneGroup(XmlElement groupElement, string isoCode)
+		public static XmlElement MakeElementWithLanguageForOneGroup(XmlElement groupElement, string langTag)
 		{
 			if (groupElement.GetAttribute("class").Contains("STOP"))
 			{
@@ -500,14 +500,14 @@ namespace Bloom.Book
 			}
 
 			// If we don't have the relevant language code in this collection, don't make a block for it!
-			if (string.IsNullOrEmpty(isoCode))
+			if (string.IsNullOrEmpty(langTag))
 				return null;
 
 			XmlNodeList editableChildrenOfTheGroup =
 				groupElement.SafeSelectNodes("*[self::textarea or contains(@class,'bloom-editable')]");
 
 			var elementsAlreadyInThisLanguage = from XmlElement x in editableChildrenOfTheGroup
-												where x.GetAttribute("lang") == isoCode
+												where x.GetAttribute("lang") == langTag
 												select x;
 			if (elementsAlreadyInThisLanguage.Any())
 				//don't mess with this set, it already has a vernacular (this will happen when we're editing a shellbook, not just using it to make a vernacular edition)
@@ -560,7 +560,7 @@ namespace Bloom.Book
 				//OK, now any text in there will belong to the prototype language, so remove it, while retaining everything else
 				StripOutText(newElementInThisLanguage);
 			}
-			newElementInThisLanguage.SetAttribute("lang", isoCode);
+			newElementInThisLanguage.SetAttribute("lang", langTag);
 			return newElementInThisLanguage;
 		}
 

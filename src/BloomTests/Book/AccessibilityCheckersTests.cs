@@ -237,7 +237,7 @@ namespace BloomTests.Book
 		{
 			var testBook = MakeBookWithOneAudioFile($@"<div class='bloom-translationGroup'>
 										<div class='bloom-editable bloom-visibility-code-off' lang='{
-					_bookData.MetadataLanguage1IsoCode
+					_bookData.MetadataLanguage1Tag
 				}'>
 											<p>hello</p>
 										</div>

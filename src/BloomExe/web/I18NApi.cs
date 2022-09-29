@@ -64,9 +64,9 @@ namespace Bloom.Api
 					string isoCodeM2;
 					if (request.CurrentBook != null)
 					{
-						isoCode1 = request.CurrentBook.BookData.Language1IsoCode;
-						isoCodeM1 = request.CurrentBook.BookData.MetadataLanguage1IsoCode;
-						isoCodeM2 = request.CurrentBook.BookData.MetadataLanguage2IsoCode;
+						isoCode1 = request.CurrentBook.BookData.Language1Tag;
+						isoCodeM1 = request.CurrentBook.BookData.MetadataLanguage1Tag;
+						isoCodeM2 = request.CurrentBook.BookData.MetadataLanguage2Tag;
 					}
 					else
 					{

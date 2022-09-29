@@ -109,7 +109,7 @@ namespace Bloom.web.controllers
 					"and not(contains(@class, 'bloom-recording-optional')) " + 
 					$"and {translationGroupConstraint}]/div[contains(@class, 'bloom-editable') " +
 					"and contains(@class, 'bloom-visibility-code-on')]")
-					//$"and @lang='{book.CollectionSettings.Language1Iso639Code}']")
+					//$"and @lang='{book.CollectionSettings.Language1Tag}']")
 				.Cast<XmlElement>();
 
 			foreach (var editable in visibleElements)
