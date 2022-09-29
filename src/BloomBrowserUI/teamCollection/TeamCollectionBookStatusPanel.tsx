@@ -244,7 +244,7 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<IBookTeamCol
 
     // Also used for problem.
     const mainTitleNeedsReload = useL10n(
-        "The Team Collection folder received a changed version of the book you were editing.",
+        "The Team Collection folder received a changed version of the book you have selected.",
         "TeamCollection.NeedsReload",
         "",
         undefined,
