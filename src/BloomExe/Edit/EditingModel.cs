@@ -819,7 +819,7 @@ namespace Bloom.Edit
 				div.AppendChild(anchor);
 				div.SetAttribute("class", "ui-missingCopyrightNotice"); // don't save this
 				div.SetAttribute("style", "margin-bottom: 12px;");
-				anchor.InnerText = LocalizationManager.GetString("", "Missing Copyright");
+				anchor.InnerText = LocalizationManager.GetString("Copyright.MissingCopyright", "Missing Copyright");
 				anchor.SetAttribute("style", "color: red;");
 				anchor.SetAttribute("href",
 					"javascript:(window.parent || window).editTabBundle.showCopyrightAndLicenseDialog();");
