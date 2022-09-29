@@ -19,7 +19,7 @@ namespace Bloom.CollectionCreating
 			{
 				components.Dispose();
 			}
-			_lookupISOControl.ReadinessChanged -= OnLookupISOControlReadinessChanged;
+			_lookupModel.ReadinessChanged -= OnLookupModelControlReadinessChanged;
 			base.Dispose(disposing);
 		}
 
@@ -32,25 +32,25 @@ namespace Bloom.CollectionCreating
 		private void InitializeComponent()
 		{
 			this.components = new System.ComponentModel.Container();
-			this._lookupISOControl = new SIL.Windows.Forms.WritingSystems.LanguageLookupControl();
+			this._lookupModel = new SIL.Windows.Forms.WritingSystems.LanguageLookupControl();
 			this._L10NSharpExtender = new L10NSharp.UI.L10NSharpExtender(this.components);
 			((System.ComponentModel.ISupportInitialize)(this._L10NSharpExtender)).BeginInit();
 			this.SuspendLayout();
 			// 
-			// _lookupISOControl
+			// _lookupModelControl
 			// 
-			this._lookupISOControl.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+			this._lookupModel.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left)));
-			this._L10NSharpExtender.SetLocalizableToolTip(this._lookupISOControl, null);
-			this._L10NSharpExtender.SetLocalizationComment(this._lookupISOControl, null);
-			this._L10NSharpExtender.SetLocalizationPriority(this._lookupISOControl, L10NSharp.LocalizationPriority.NotLocalizable);
-			this._L10NSharpExtender.SetLocalizingId(this._lookupISOControl, "NewCollectionWizard.LanguageIdControl.LookupISOControl");
-			this._lookupISOControl.Location = new System.Drawing.Point(3, 3);
-			this._lookupISOControl.Name = "_lookupISOControl";
-			this._lookupISOControl.Size = new System.Drawing.Size(560, 231);
-			this._lookupISOControl.TabIndex = 11;
-			this._lookupISOControl.Leave += new System.EventHandler(this._lookupISOControl_Leave);
-			this._lookupISOControl.Dock = DockStyle.Fill;
+			this._L10NSharpExtender.SetLocalizableToolTip(this._lookupModel, null);
+			this._L10NSharpExtender.SetLocalizationComment(this._lookupModel, null);
+			this._L10NSharpExtender.SetLocalizationPriority(this._lookupModel, L10NSharp.LocalizationPriority.NotLocalizable);
+			this._L10NSharpExtender.SetLocalizingId(this._lookupModel, "NewCollectionWizard.LanguageIdControl.LookupISOControl");
+			this._lookupModel.Location = new System.Drawing.Point(3, 3);
+			this._lookupModel.Name = "_lookupModelControl";
+			this._lookupModel.Size = new System.Drawing.Size(560, 231);
+			this._lookupModel.TabIndex = 11;
+			this._lookupModel.Leave += new System.EventHandler(this._lookupModelControl_Leave);
+			this._lookupModel.Dock = DockStyle.Fill;
 			// 
 			// _L10NSharpExtender
 			// 
@@ -61,7 +61,7 @@ namespace Bloom.CollectionCreating
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-			this.Controls.Add(this._lookupISOControl);
+			this.Controls.Add(this._lookupModel);
 			this._L10NSharpExtender.SetLocalizableToolTip(this, null);
 			this._L10NSharpExtender.SetLocalizationComment(this, null);
 			this._L10NSharpExtender.SetLocalizingId(this, "NewCollectionWizard.LanguageIdControl.LanguageIdControl");
@@ -74,7 +74,7 @@ namespace Bloom.CollectionCreating
 
 		#endregion
 
-		private SIL.Windows.Forms.WritingSystems.LanguageLookupControl _lookupISOControl;
+		private SIL.Windows.Forms.WritingSystems.LanguageLookupControl _lookupModel;
         private L10NSharp.UI.L10NSharpExtender _L10NSharpExtender;
 	}
 }

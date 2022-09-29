@@ -11,7 +11,7 @@ namespace Bloom.Collection
 	public class WritingSystem
 	{
 		private readonly int _languageNumberInCollection;
-		private readonly Func<string> _codeOfDefaultLanguageForNaming;
+		private readonly Func<string> _tagOfDefaultLanguageForNaming;
 		public static LanguageLookupModel LookupModel = new LanguageLookupModel();
 		private string _langTag;
 		public bool IsRightToLeft;
@@ -39,13 +39,13 @@ namespace Bloom.Collection
 		public decimal LineHeight;
 		public string FontName;
 
-		public WritingSystem(int languageNumberInCollection, Func<string> codeOfDefaultLanguageForNaming)
+		public WritingSystem(int languageNumberInCollection, Func<string> tagOfDefaultLanguageForNaming)
 		{
 			_languageNumberInCollection = languageNumberInCollection;
 
 			//Note: I'm not convinced we actually ever rely on dynamic name lookups anymore?
 			//See: https://issues.bloomlibrary.org/youtrack/issue/BL-7832
-			_codeOfDefaultLanguageForNaming = codeOfDefaultLanguageForNaming;
+			_tagOfDefaultLanguageForNaming = tagOfDefaultLanguageForNaming;
 		}
 
 		public string Name { get; private set; }
@@ -62,7 +62,7 @@ namespace Bloom.Collection
 			get { return _langTag; }
 			set {
 				_langTag = value;
-				Name = GetLanguageName_NoCache(_codeOfDefaultLanguageForNaming());
+				Name = GetLanguageName_NoCache(_tagOfDefaultLanguageForNaming());
 			}
 		}
 
@@ -164,8 +164,8 @@ namespace Bloom.Collection
 			var pfx = "Language" + _languageNumberInCollection;
 
 			/* Enhance (from JT):
-			 When you do this for Language1, the Tag setter will initialize Name using _codeOfDefaultLanguageForNaming(). But that will retrieve the Language2 Tag, which hasn't been set yet. I suppose it doesn't matter, since two lines down you overwrite that Name, typically with one saved in the file. If for some reason there isn't one saved in the file, you will look up an English name for it (since you pass that as languageForDefaultNameLookup for Language1).
-			Seems like it would simplify things if Name had a getter which would initialize it's variable to GetLanguageName_NoCache(_codeOfDefaultLanguageForNaming()) if not already set.
+			 When you do this for Language1, the Tag setter will initialize Name using _tagOfDefaultLanguageForNaming(). But that will retrieve the Language2 Tag, which hasn't been set yet. I suppose it doesn't matter, since two lines down you overwrite that Name, typically with one saved in the file. If for some reason there isn't one saved in the file, you will look up an English name for it (since you pass that as languageForDefaultNameLookup for Language1).
+			Seems like it would simplify things if Name had a getter which would initialize it's variable to GetLanguageName_NoCache(_tagOfDefaultLanguageForNaming()) if not already set.
 			Then the Tag setter could just clear _name.
 			The code just below here would initialize _name by reading the string, but could leave it null if it doesn't find it
 			By the time anything needs Name, Language2's Tag should be set, so if you need to look up a default name you'll do it in the right language.

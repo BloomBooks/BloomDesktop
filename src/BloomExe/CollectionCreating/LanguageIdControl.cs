@@ -13,23 +13,23 @@ namespace Bloom.CollectionCreating
 		public LanguageIdControl()
 		{
 			InitializeComponent();
-			_lookupISOControl.SelectedLanguage = null;
-			_lookupISOControl.IsShowRegionalDialectsCheckBoxVisible = true;
+			_lookupModel.SelectedLanguage = null;
+			_lookupModel.IsShowRegionalDialectsCheckBoxVisible = true;
 
 			// Following should be consistent with CollectionSettingsDialog.ChangeLanguage()
-			_lookupISOControl.UseSimplifiedChinese();
-			_lookupISOControl.IsScriptAndVariantLinkVisible = true;
-			_lookupISOControl.IncludeScriptMarkers = false;
+			_lookupModel.UseSimplifiedChinese();
+			_lookupModel.IsScriptAndVariantLinkVisible = true;
+			_lookupModel.IncludeScriptMarkers = false;
 		}
 
-		private void OnLookupISOControlReadinessChanged(object sender, EventArgs e)
+		private void OnLookupModelControlReadinessChanged(object sender, EventArgs e)
 		{
 			if (_collectionInfo == null)
 				return;
 
-			if (_lookupISOControl.SelectedLanguage != null)
+			if (_lookupModel.SelectedLanguage != null)
 			{
-				var selectedLanguageInfo = _lookupISOControl.SelectedLanguage;
+				var selectedLanguageInfo = _lookupModel.SelectedLanguage;
 				_collectionInfo.Language1.Tag = selectedLanguageInfo.LanguageTag;
 				_collectionInfo.Language1.SetName(selectedLanguageInfo.DesiredName,
 					selectedLanguageInfo.DesiredName != selectedLanguageInfo.Names.FirstOrDefault());
@@ -42,7 +42,7 @@ namespace Bloom.CollectionCreating
 				}
 			}
 
-			_setNextButtonState(this, _lookupISOControl.SelectedLanguage != null);
+			_setNextButtonState(this, _lookupModel.SelectedLanguage != null);
 
 		}
 
@@ -50,17 +50,17 @@ namespace Bloom.CollectionCreating
 		{
 			_setNextButtonState = setNextButtonState;
 			_collectionInfo = collectionInfo;
-			_lookupISOControl.ReadinessChanged += OnLookupISOControlReadinessChanged;
+			_lookupModel.ReadinessChanged += OnLookupModelControlReadinessChanged;
 		}
 
 		public void NowVisible()
 		{
-			_setNextButtonState(this, _lookupISOControl.SelectedLanguage != null);
+			_setNextButtonState(this, _lookupModel.SelectedLanguage != null);
 		}
 
-		private void _lookupISOControl_Leave(object sender, EventArgs e)
+		private void _lookupModelControl_Leave(object sender, EventArgs e)
 		{
-			_setNextButtonState(this, _lookupISOControl.SelectedLanguage != null);
+			_setNextButtonState(this, _lookupModel.SelectedLanguage != null);
 		}
 	}
 }

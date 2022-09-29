@@ -186,14 +186,14 @@ public class GetUsedFontsParameters
 	public string BookPath { get; set; }
 
 	// These or similar may be needed eventually for a more accurate list.
-	//[Option("VernacularIsoCode", HelpText = "iso code of primary language", Required = true)]
-	//public string VernacularIsoCode { get; set; }
+	//[Option("VernacularTag", HelpText = "language tag of primary language", Required = true)]
+	//public string VernacularTag { get; set; }
 
-	//[Option("NationalLanguage1IsoCode", HelpText = "iso code of secondary language", Default="", Required = false)]
-	//	public string NationalLanguage1IsoCode { get; set; }
+	//[Option("NationalLanguage1Tag", HelpText = "language tag of secondary language", Default="", Required = false)]
+	//	public string NationalLanguage1Tag { get; set; }
 
-	//[Option("NationalLanguage2IsoCode", HelpText = "iso code of tertiary language", Default = "", Required = false)]
-	//	public string NationalLanguage2IsoCode { get; set; }
+	//[Option("NationalLanguage2Tag", HelpText = "language tag of tertiary language", Default = "", Required = false)]
+	//	public string NationalLanguage2Tag { get; set; }
 
 	[Option("reportpath", HelpText = "Path to the file to receive the report", Required = true)]
 	public string ReportPath { get; set; }

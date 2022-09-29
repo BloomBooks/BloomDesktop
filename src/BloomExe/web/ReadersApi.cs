@@ -355,7 +355,7 @@ namespace Bloom.Api
 				CurrentBook.BookData.Language1.Tag);
 			var langFile = Path.Combine(path, langFileName);
 
-			// if the Sample Texts directory is empty, check for ReaderToolsWords-<iso>.json in ProjectContext.GetBloomAppDataFolder()
+			// if the Sample Texts directory is empty, check for ReaderToolsWords-<lang>.json in ProjectContext.GetBloomAppDataFolder()
 			if (DirectoryHelper.IsEmpty(path, true))
 			{
 				var bloomAppDirInfo = new DirectoryInfo(ProjectContext.GetBloomAppDataFolder());
@@ -372,7 +372,7 @@ namespace Bloom.Api
 				return String.Empty;
 			}
 
-			// first look for ReaderToolsWords-<iso>.json
+			// first look for ReaderToolsWords-<lang>.json
 			if (RobustFile.Exists(langFile))
 				fileList1.Add(langFile);
 

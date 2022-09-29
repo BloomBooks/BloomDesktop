@@ -15,7 +15,7 @@ namespace Bloom.Publish
 			return book.CollectionSettings.CollectionName.Contains("Guide") || book.CollectionSettings.CollectionName.Contains("TG");
 		}
 
-		public static void UpdateBook(HtmlDom dom, string language1Iso639Code)
+		public static void UpdateBook(HtmlDom dom, string language1Tag)
 		{
 			int page = 0;
 			foreach (XmlElement pageDiv in dom.SafeSelectNodes("/html/body//div[contains(@class,'bloom-page')]"))
@@ -35,7 +35,7 @@ namespace Bloom.Publish
 				foreach (XmlElement thumbnailContainer in pageDiv.SafeSelectNodes(".//img"))
 				{
 					++page;
-					thumbnailContainer.SetAttribute("src", language1Iso639Code + "-t" + term + "-w" + week + "-p" + page + ".png");
+					thumbnailContainer.SetAttribute("src", language1Tag + "-t" + term + "-w" + week + "-p" + page + ".png");
 				}
 			}
 		}

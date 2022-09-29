@@ -55,9 +55,9 @@ namespace Bloom.CLI
 			var collectionSettings = new CollectionSettings
 			{
 				XMatterPackName = options.XMatter,
-				Language1Tag = options.VernacularIsoCode,
-				Language2Tag = string.IsNullOrWhiteSpace(options.NationalLanguage1IsoCode) ? options.VernacularIsoCode : options.NationalLanguage1IsoCode,
-				Language3Tag = options.NationalLanguage2IsoCode
+				Language1Tag = options.VernacularTag,
+				Language2Tag = string.IsNullOrWhiteSpace(options.NationalLanguage1Tag) ? options.VernacularTag : options.NationalLanguage1Tag,
+				Language3Tag = options.NationalLanguage2Tag
 			};
 
 			XMatterPackFinder xmatterFinder = new XMatterPackFinder(new[] { BloomFileLocator.GetFactoryXMatterDirectory(),
@@ -75,11 +75,11 @@ namespace Bloom.CLI
 			// whether passing the national language options implies that a book is bi- or tri-lingual. Andrew and I (JohnT)
 			// could not think of any reason to pass the arguments at all except to achieve that, so I made it so.
 			var langs = new List<string>();
-			langs.Add(options.VernacularIsoCode);
-			if (!string.IsNullOrEmpty(options.NationalLanguage1IsoCode) && options.NationalLanguage1IsoCode != options.VernacularIsoCode)
-				langs.Add(options.NationalLanguage1IsoCode);
-			if (!string.IsNullOrEmpty(options.NationalLanguage2IsoCode))
-				langs.Add(options.NationalLanguage2IsoCode);
+			langs.Add(options.VernacularTag);
+			if (!string.IsNullOrEmpty(options.NationalLanguage1Tag) && options.NationalLanguage1Tag != options.VernacularTag)
+				langs.Add(options.NationalLanguage1Tag);
+			if (!string.IsNullOrEmpty(options.NationalLanguage2Tag))
+				langs.Add(options.NationalLanguage2Tag);
 			book.SetMultilingualContentLanguages(langs.ToArray());
 
 			//we might change this later, or make it optional, but for now, this will prevent surprises to processes
@@ -109,8 +109,8 @@ public class HydrateParameters
 	private PresetOption _preset;
 	private string _sizeAndOrientation;
 	private string _xMatter;
-	private string _nationalLanguage1IsoCode;
-	private string _nationalLanguage2IsoCode;
+	private string _nationalLanguage1Tag;
+	private string _nationalLanguage2Tag;
 
 	[Option("bookpath", HelpText = "path to the book", Required = true)]
 	public string Path { get; set; }
@@ -126,23 +126,23 @@ public class HydrateParameters
 	// might not be the one that was "l1" when the book was uploaded. Using these parameters, the program making
 	// him an app can specify that this language should be the l1.
 
-	[Option("vernacularisocode", HelpText = "iso code of primary language", Required = true)]
-	public string VernacularIsoCode { get; set; }
+	[Option("vernacularisocode", HelpText = "language tag of primary language", Required = true)]
+	public string VernacularTag { get; set; }
 
-	[Option("nationallanguage1isocode", HelpText = "iso code of secondary language", Default = "", Required = false)]
-	public string NationalLanguage1IsoCode
+	[Option("nationallanguage1isocode", HelpText = "language tag of secondary language", Default = "", Required = false)]
+	public string NationalLanguage1Tag
 	{
 		//"Default" is not working
-		get { return _nationalLanguage1IsoCode ?? string.Empty; }
-		set { _nationalLanguage1IsoCode = value; }
+		get { return _nationalLanguage1Tag ?? string.Empty; }
+		set { _nationalLanguage1Tag = value; }
 	}
 
-	[Option("nationallanguage2isocode", HelpText = "iso code of tertiary language", Default = "", Required = false)]
-	public string NationalLanguage2IsoCode
+	[Option("nationallanguage2isocode", HelpText = "language tag of tertiary language", Default = "", Required = false)]
+	public string NationalLanguage2Tag
 	{
 		//"Default" is not working
-		get { return _nationalLanguage2IsoCode ?? string.Empty; }
-		set { _nationalLanguage2IsoCode = value; }
+		get { return _nationalLanguage2Tag ?? string.Empty; }
+		set { _nationalLanguage2Tag = value; }
 	}
 
 	[Option("preset", HelpText = "alternative to specifying layout and xmatter. Only current option is 'shellbook'.", Required = false)]

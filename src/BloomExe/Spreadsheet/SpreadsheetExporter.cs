@@ -629,17 +629,17 @@ namespace Bloom.Spreadsheet
 	}
 
 	/// <summary>
-	/// An interface for SpreadsheetExporter to be able to convert language ISO codes to their display names.
+	/// An interface for SpreadsheetExporter to be able to convert language tags to their display names.
 	/// This allows unit tests to use mocks to handle this functionality instead of figuring out how to construct a concrete resolver
 	/// </summary>
 	public interface ILanguageDisplayNameResolver
 	{
 		/// <summary>
-		/// Given a language code, returns the friendly name of that language (according to the dictionary passed into the constructor)
+		/// Given a language tag, returns the friendly name of that language (according to the dictionary passed into the constructor)
 		/// </summary>
-		/// <param name="langCode"></param>
-		/// <returns>Returns the friendly name if available. If not, returns the language code unchanged.</returns>
-		string GetLanguageDisplayName(string langCode);
+		/// <param name="langTag"></param>
+		/// <returns>Returns the friendly name if available. If not, returns the language tag unchanged.</returns>
+		string GetLanguageDisplayName(string langTag);
 	}
 
 	/// <summary>

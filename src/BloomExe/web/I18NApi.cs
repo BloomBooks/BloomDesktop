@@ -59,24 +59,24 @@ namespace Bloom.Api
 					string langId = parameters["langId"];
 					string dontWarnIfMissing = parameters["dontWarnIfMissing"];
 					bool isDontWarnIfMissing = dontWarnIfMissing != null && dontWarnIfMissing.Equals("true");
-					string isoCode1;
-					string isoCodeM1;
-					string isoCodeM2;
+					string langTag1;
+					string langTagM1;
+					string langTagM2;
 					if (request.CurrentBook != null)
 					{
-						isoCode1 = request.CurrentBook.BookData.Language1Tag;
-						isoCodeM1 = request.CurrentBook.BookData.MetadataLanguage1Tag;
-						isoCodeM2 = request.CurrentBook.BookData.MetadataLanguage2Tag;
+						langTag1 = request.CurrentBook.BookData.Language1Tag;
+						langTagM1 = request.CurrentBook.BookData.MetadataLanguage1Tag;
+						langTagM2 = request.CurrentBook.BookData.MetadataLanguage2Tag;
 					}
 					else
 					{
-						isoCode1 = request.CurrentCollectionSettings.Language1.Tag;
-						isoCodeM1 = request.CurrentCollectionSettings.Language2.Tag;
-						isoCodeM2 = request.CurrentCollectionSettings.Language3?.Tag ?? "";
+						langTag1 = request.CurrentCollectionSettings.Language1.Tag;
+						langTagM1 = request.CurrentCollectionSettings.Language2.Tag;
+						langTagM2 = request.CurrentCollectionSettings.Language3?.Tag ?? "";
 					}
-					langId = langId.Replace("V", isoCode1);
-					langId = langId.Replace("N1", isoCodeM1);
-					langId = langId.Replace("N2", isoCodeM2);
+					langId = langId.Replace("V", langTag1);
+					langId = langId.Replace("N1", langTagM1);
+					langId = langId.Replace("N2", langTagM2);
 					langId = langId.Replace("UI", LocalizationManager.UILanguageId);
 					if (GetSomeTranslation(id, langId, out var localizedString))
 					{

@@ -74,7 +74,7 @@ namespace Bloom.Collection
 				// other number systems, if people request them (so long as they can be represented by just
 				// replacing digits).
 				// In many cases, as commented, the ten digits were obtained from Microsoft cultures using this expression:
-				// new CultureInfo(cultureCode).NumberFormat.NativeDigits
+				// new CultureInfo(cultureTag).NumberFormat.NativeDigits
 				// Some of the results are empty strings when it doesn't seem they should be (Hebrew, Armenian, Georgian)
 				// This reflects that these systems can't be done with simple digit substitution, so we fall
 				// back to not converting
@@ -113,10 +113,10 @@ namespace Bloom.Collection
 		{
 			//Note: I'm not convinced we actually ever rely on dynamic name lookups anymore?
 			//See: https://issues.bloomlibrary.org/youtrack/issue/BL-7832
-			Func<string> getCodeOfDefaultLanguageForNaming = () => Language2.Tag;
-			Language1 = new WritingSystem(1, getCodeOfDefaultLanguageForNaming);
-			Language2 = new WritingSystem(2, getCodeOfDefaultLanguageForNaming);
-			Language3 = new WritingSystem(3, getCodeOfDefaultLanguageForNaming);
+			Func<string> getTagOfDefaultLanguageForNaming = () => Language2.Tag;
+			Language1 = new WritingSystem(1, getTagOfDefaultLanguageForNaming);
+			Language2 = new WritingSystem(2, getTagOfDefaultLanguageForNaming);
+			Language3 = new WritingSystem(3, getTagOfDefaultLanguageForNaming);
 			LanguagesZeroBased = new WritingSystem[3];
 			this.LanguagesZeroBased[0] = Language1;
 			this.LanguagesZeroBased[1] = Language2;
@@ -265,12 +265,12 @@ namespace Bloom.Collection
 		public virtual bool IsSourceCollection { get; set; }
 
 		/// <summary>
-		/// Get the name of the language whose code is the first argument, if possible in the language specified by the second.
-		/// If the language code is unknown, return it unchanged.
+		/// Get the name of the language whose tag is the first argument, if possible in the language specified by the second.
+		/// If the language tag is unknown, return it unchanged.
 		/// </summary>
-		public string GetLanguageName(string code, string inLanguage)
+		public string GetLanguageName(string tag, string inLanguage)
 		{
-			return WritingSystem.LookupModel.GetLocalizedLanguageName(code, inLanguage);
+			return WritingSystem.LookupModel.GetLocalizedLanguageName(tag, inLanguage);
 		}
 
 		public string GetSignLanguageName()
@@ -633,15 +633,15 @@ namespace Bloom.Collection
 
 		public string PageNumberStyle { get; set; }
 
-		internal IEnumerable<string> GetAllLanguageCodes()
+		internal IEnumerable<string> GetAllLanguageTags()
 		{
-			var langCodes = new List<string>();
-			langCodes.Add(Language1.Tag);
+			var langTags = new List<string>();
+			langTags.Add(Language1.Tag);
 			if (Language2.Tag != Language1.Tag)
-				langCodes.Add(Language2.Tag);
-			if (!String.IsNullOrEmpty(Language3.Tag) && !langCodes.Any(code => code == Language3.Tag))
-				langCodes.Add(Language3.Tag);
-			return langCodes;
+				langTags.Add(Language2.Tag);
+			if (!String.IsNullOrEmpty(Language3.Tag) && !langTags.Any(tag => tag == Language3.Tag))
+				langTags.Add(Language3.Tag);
+			return langTags;
 		}
 
 		// e.g. "ABC2020" or "Kyrgyzstan2020[English]"
@@ -917,9 +917,9 @@ namespace Bloom.Collection
 		/// For the other two project languages, it explicitly uses the appropriate collection settings
 		/// name for that language, which the user also set.
 		/// If the user hasn't set a name for the given language, this will find a fairly readable name
-		/// for the languages Palaso knows about (probably the autonym) and fall back to the code itself
+		/// for the languages Palaso knows about (probably the autonym) and fall back to the tag itself
 		/// if it can't find a name.
-		/// BL-8174 But in case the code includes Script/Region/Variant codes, we should show them somewhere too.
+		/// BL-8174 But in case the tag includes Script/Region/Variant codes, we should show them somewhere too.
 		/// </summary>
 		public string GetDisplayNameForLanguage(string langTag, string metadataLanguageTag = null)
 		{

@@ -47,7 +47,7 @@ namespace Bloom.web.controllers
 
 		private void HandleSourceTextTab(ApiRequest request)
 		{
-			var iso = request.RequiredPostString();
+			var langTag = request.RequiredPostString();
 			// There's a puzzle here that I encountered when converting from GeckoFx.
 			// The code in BloomHintBubbles that adds the special item for 'hint' sets the
 			// sourceTextTab that old code in _browser1_OnBrowserClick was looking for,
@@ -60,9 +60,9 @@ namespace Bloom.web.controllers
 			// wanted. However, saving it to LastSourceLanguageViewed when it doesn't work
 			// causes the previously remembered language to be forgotten, so for now,
 			// I'm coding it here to ignore 'hint'.
-			if (iso != "hint")
+			if (langTag != "hint")
 			{
-				Settings.Default.LastSourceLanguageViewed = iso;
+				Settings.Default.LastSourceLanguageViewed = langTag;
 				Settings.Default.Save();
 			}
 

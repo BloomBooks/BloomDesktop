@@ -282,7 +282,7 @@ namespace Bloom.CollectionChoosing
 			foreach (ToolStripDropDownItem item in _uiLanguageMenu.DropDownItems)
 			{
 				var tag = (LanguageItem)item.Tag;
-				if (tag.IsoCode == Settings.Default.UserInterfaceLanguage)
+				if (tag.LangTag == Settings.Default.UserInterfaceLanguage)
 				{
 					item.Select();
 					WorkspaceView.UpdateMenuTextToShorterNameOfSelection(_uiLanguageMenu, item.Text);

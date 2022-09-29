@@ -9,17 +9,17 @@ namespace Bloom.ToPalaso
 	public static class LanguageLookupModelExtensions
 	{
 		/// <summary>
-		/// A smarter way to get a name for an iso code. Recent rework on writing systems in libpalaso has
+		/// A smarter way to get a name for a language tag. Recent rework on writing systems in libpalaso has
 		/// apparently fixed much of our problems as StandardSubtags.TryGetLanguageFromIso3Code() finds 3-letter
 		/// entries now. This adds fall-backs for 2-letter codes and strips off Script/Region/Variant codes.
-		/// If we can't find ANY name, the out param is set to the isoCode itself, and we return false.
+		/// If we can't find ANY name, the out param is set to the language tag itself, and we return false.
 		/// </summary>
 		/// <returns>true if it found a name</returns>
-		public static bool GetBestLanguageName(this LanguageLookupModel isoModel, string isoCode, out string name)
+		public static bool GetBestLanguageName(this LanguageLookupModel lookupModel, string langTag, out string name)
 		{
 			// BL-8081/8096: Perhaps we got in here with Script/Region/Variant tag(s).
-			// Try to get a match on the part of the isoCode up to the first hyphen.
-			var codeToMatch = GetGeneralCode(isoCode.ToLowerInvariant());
+			// Try to get a match on the part of the langTag up to the first hyphen.
+			var codeToMatch = GetGeneralCode(langTag.ToLowerInvariant());
 			if (!string.IsNullOrEmpty(codeToMatch))
 			{
 				LanguageSubtag match;
@@ -35,11 +35,11 @@ namespace Bloom.ToPalaso
 					return true;
 				}
 			}
-			name = isoCode; // At this point, the best name we can come up with is the isoCode itself.
+			name = langTag; // At this point, the best name we can come up with is the language tag itself.
 			return false;
 		}
 
-		private static Dictionary<Tuple<string, string>, string> _mapIsoCodesToLanguageName = new Dictionary<Tuple<string, string>, string>();
+		private static Dictionary<Tuple<string, string>, string> _mapLangTagsToLanguageName = new Dictionary<Tuple<string, string>, string>();
 #if USING_ICU
 		private static Dictionary<string, Icu.Locale> _mapCodeToIcuLocale = new Dictionary<string, Icu.Locale>();
 #endif
@@ -62,7 +62,7 @@ namespace Bloom.ToPalaso
 		/// This method is also called by the WorkspaceView class to get the English names of
 		/// languages.
 		/// </remarks>
-		public static string GetLocalizedLanguageName(this LanguageLookupModel isoModel, string code, string uiCode)
+		public static string GetLocalizedLanguageName(this LanguageLookupModel lookupModel, string langTag, string uiLangTag)
 		{
 #if USING_ICU
 			// ICU is cheaply available on Linux, but very expensive on Windows (adds ~28MB to the Bloom installer).
@@ -86,14 +86,14 @@ namespace Bloom.ToPalaso
 			}
 			return locale.GetDisplayName(displayLocale);
 #endif
-			var key = new Tuple<string, string>(code, uiCode);
+			var key = new Tuple<string, string>(langTag, uiLangTag);
 			string langName;
-			if (_mapIsoCodesToLanguageName.TryGetValue(key, out langName))
+			if (_mapLangTagsToLanguageName.TryGetValue(key, out langName))
 				return langName;
-			var generalUiCode = GetGeneralCode(uiCode);
+			var generalUiCode = GetGeneralCode(uiLangTag);
 			try
 			{
-				var generalCode = GetGeneralCode(code);
+				var generalCode = GetGeneralCode(langTag);
 				var ci = CultureInfo.GetCultureInfo(generalCode);
 				// We are depending on CultureInfo.DisplayName returning the language name in the current
 				// UI language implicitly.  (The current UI language should match uiCode.)
@@ -110,7 +110,7 @@ namespace Bloom.ToPalaso
 					langName = ci.EnglishName;
 				if (!ci.EnglishName.StartsWith("Unknown Language"))	// Windows .Net behavior
 				{
-					_mapIsoCodesToLanguageName.Add(key, langName);
+					_mapLangTagsToLanguageName.Add(key, langName);
 					return langName;
 				}
 			}
@@ -123,23 +123,23 @@ namespace Bloom.ToPalaso
 			// helpfully told us it is for an unknown language (instead of throwing).
 			// Handle a few languages that we do know the English and native names for,
 			// and that are being localized for Bloom.
-			langName = GetNativeNameIfKnown(code);
+			langName = GetNativeNameIfKnown(langTag);
 			if (generalUiCode == "en" || String.IsNullOrWhiteSpace(langName))
-				langName = GetEnglishNameIfKnown(isoModel, code);
+				langName = GetEnglishNameIfKnown(lookupModel, langTag);
 			if (String.IsNullOrWhiteSpace(langName))
-				langName = code;
-			_mapIsoCodesToLanguageName.Add(key, langName);
+				langName = langTag;
+			_mapLangTagsToLanguageName.Add(key, langName);
 			return langName;
 		}
 
-		private static Dictionary<string, string> _mapIsoCodeToSubtitledLanguageName = new Dictionary<string, string>();
+		private static Dictionary<string, string> _mapLangTagToSubtitledLanguageName = new Dictionary<string, string>();
 
 		/// <summary>
 		/// Get the language name in its own language and script if possible.  If it's not a Latin
 		///     script, add an English name suffix.
-		/// If we don't know a native name, but do know an English name, return the language code
+		/// If we don't know a native name, but do know an English name, return the language tag
 		///     with an English name suffix.
-		/// If we know nothing, return the language code.
+		/// If we know nothing, return the language tag.
 		/// </summary>
 		/// <remarks>
 		/// This might be easier to implement reliably with ICU for a larger set of languages, but we
@@ -149,24 +149,24 @@ namespace Bloom.ToPalaso
 		/// GetEnglishNameIfKnown and GetNativeNameIfKnown may need to be updated if localizations are
 		///     done into regional (or national) languages of some countries.
 		/// </remarks>
-		public static string GetNativeLanguageNameWithEnglishSubtitle(this LanguageLookupModel isoModel, string code)
+		public static string GetNativeLanguageNameWithEnglishSubtitle(this LanguageLookupModel lookupModel, string langTag)
 		{
 			string langName;
-			if (_mapIsoCodeToSubtitledLanguageName.TryGetValue(code, out langName))
+			if (_mapLangTagToSubtitledLanguageName.TryGetValue(langTag, out langName))
 				return langName;
 			string nativeName;
-			var generalCode = GetGeneralCode(code);
+			var generalCode = GetGeneralCode(langTag);
 			try
 			{
 				// englishNameSuffix is always an empty string if we don't need it.
 				string englishNameSuffix = String.Empty;
 				var ci = CultureInfo.GetCultureInfo(generalCode);	// this may throw or produce worthless empty object
 				if (NeedEnglishSuffixForLanguageName(ci))
-					englishNameSuffix = $" ({GetManuallyOverriddenEnglishNameIfNeeded(code, ()=>ci.EnglishName)})";
+					englishNameSuffix = $" ({GetManuallyOverriddenEnglishNameIfNeeded(langTag, ()=>ci.EnglishName)})";
 
 				nativeName = FixBotchedNativeName(ci.NativeName);
 				if (String.IsNullOrWhiteSpace(nativeName))
-					nativeName = code;
+					nativeName = langTag;
 				// Remove any country (or script?) names apart from Chinese (Simplified)
 				if (ci.Name != "zh-CN")
 				{
@@ -191,7 +191,7 @@ namespace Bloom.ToPalaso
 				langName = nativeName + englishNameSuffix;
 				if (!ci.EnglishName.StartsWith("Unknown Language"))	// Windows .Net behavior
 				{
-					_mapIsoCodeToSubtitledLanguageName.Add(code, langName);
+					_mapLangTagToSubtitledLanguageName.Add(langTag, langName);
 					return langName;
 				}
 			}
@@ -204,15 +204,15 @@ namespace Bloom.ToPalaso
 			// helpfully told us it is for an unknown language (instead of throwing).
 			// Handle a few languages that we do know the English and native names for,
 			// and that are being localized for Bloom.
-			var englishName = GetManuallyOverriddenEnglishNameIfNeeded(code, () => GetEnglishNameIfKnown(isoModel, generalCode));
+			var englishName = GetManuallyOverriddenEnglishNameIfNeeded(langTag, () => GetEnglishNameIfKnown(lookupModel, generalCode));
 			nativeName = GetNativeNameIfKnown(generalCode);
 			if (String.IsNullOrWhiteSpace(nativeName) && String.IsNullOrWhiteSpace(englishName))
 			{
-				langName = code;
+				langName = langTag;
 			}
 			else if (String.IsNullOrWhiteSpace(nativeName))
 			{
-				langName = code + " (" + englishName + ")";
+				langName = langTag + " (" + englishName + ")";
 			}
 			else if (String.IsNullOrWhiteSpace(englishName))
 			{
@@ -220,7 +220,7 @@ namespace Bloom.ToPalaso
 				if (IsLatinChar(nativeName[0]))
 					langName = nativeName;
 				else
-					langName = nativeName + " (" + code + ")";
+					langName = nativeName + " (" + langTag + ")";
 			}
 			else
 			{
@@ -229,7 +229,7 @@ namespace Bloom.ToPalaso
 				else
 					langName = nativeName + " (" + englishName + ")";
 			}
-			_mapIsoCodeToSubtitledLanguageName.Add(code, langName);
+			_mapLangTagToSubtitledLanguageName.Add(langTag, langName);
 			return langName;
 		}
 
@@ -256,7 +256,7 @@ namespace Bloom.ToPalaso
 		}
 
 		/// <summary>
-		/// Remove any country or script identifier from a language code, except leave zh-CN alone.
+		/// Remove any country or script identifier from a language tag, except leave zh-CN alone.
 		/// </summary>
 		public static string GetGeneralCode(string code)
 		{
@@ -278,10 +278,10 @@ namespace Bloom.ToPalaso
 		/// For what languages we know about, return the English name.  If we don't know anything, return null.
 		/// This is called only when CultureInfo doesn't supply the information we need.
 		/// </summary>
-		private static string GetEnglishNameIfKnown(this LanguageLookupModel isoModel, string code)
+		private static string GetEnglishNameIfKnown(this LanguageLookupModel lookupModel, string code)
 		{
 			string englishName;
-			if (!isoModel.GetBestLanguageName(code, out englishName))
+			if (!lookupModel.GetBestLanguageName(code, out englishName))
 			{
 				switch (code)
 				{

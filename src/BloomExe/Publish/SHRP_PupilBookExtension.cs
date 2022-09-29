@@ -36,8 +36,8 @@ namespace Bloom.Publish
 		[Import("PathToBookFolder")]
 		public string BookFolder;
 
-		[Import("Language1Iso639Code")]
-		public string Language1Iso639Code;
+		[Import("Language1Tag")]
+		public string Language1Tag;
 
 		[Import]
 		public Action<int, int, HtmlDom, Action<Image>, Action<Exception>> GetThumbnailAsync;
@@ -165,7 +165,7 @@ namespace Bloom.Publish
 					Debug.Fail("Couldn't figure out what page this is.");
 				}
 			}
-			var fileName = Language1Iso639Code + "-t" + term + "-w" + week + "-p" + page + ".png";
+			var fileName = Language1Tag + "-t" + term + "-w" + week + "-p" + page + ".png";
 			//just doing image.Save() works for .bmp and .jpg, but not .png
 			using (var b = new Bitmap(image))
 			{

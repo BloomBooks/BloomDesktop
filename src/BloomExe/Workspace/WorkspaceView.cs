@@ -61,7 +61,7 @@ namespace Bloom.Workspace
 		private readonly ILocalizationManager _localizationManager;
 		public static float DPIOfThisAccount;
 		private ZoomControl _zoomControl;
-		private static LanguageLookupModel _lookupIsoCode = new LanguageLookupModel();
+		private static LanguageLookupModel _lookupModel = new LanguageLookupModel();
 
 		public delegate WorkspaceView Factory();
 
@@ -619,7 +619,7 @@ namespace Bloom.Workspace
 					fraction = langItem.FractionTranslated;
 				item.ToolTipText = String.Format(tooltipFormat, (int)(fraction * 100.0F));
 				item.Click += (sender, args) => UiLanguageMenuItemClickHandler(uiMenuControl, sender as ToolStripItem, finishClickAction);
-				if (langItem.IsoCode == Settings.Default.UserInterfaceLanguage)
+				if (langItem.LangTag == Settings.Default.UserInterfaceLanguage)
 					UpdateMenuTextToShorterNameOfSelection(uiMenuControl, langItem.MenuText);
 			}
 			uiMenuControl.DropDownItems.Add("-");		// adds ToolStripSeparator
@@ -645,9 +645,9 @@ namespace Bloom.Workspace
 		{
 			var tag = (LanguageItem)item.Tag;
 
-			LocalizationManager.SetUILanguage(tag.IsoCode, true);
-			GeckoFxBrowser.SetBrowserLanguage(tag.IsoCode);
-			Settings.Default.UserInterfaceLanguage = tag.IsoCode;
+			LocalizationManager.SetUILanguage(tag.LangTag, true);
+			GeckoFxBrowser.SetBrowserLanguage(tag.LangTag);
+			Settings.Default.UserInterfaceLanguage = tag.LangTag;
 			Settings.Default.UserInterfaceLanguageSetExplicitly = true;
 			Settings.Default.Save();
 			item.Select();
@@ -674,9 +674,9 @@ namespace Bloom.Workspace
 		{
 			// Get the language name in its own language if at all possible.
 			// Add an English name suffix if it's not in a Latin script.
-			var menuText = _lookupIsoCode.GetNativeLanguageNameWithEnglishSubtitle(code);
-			var englishName = LanguageLookupModelExtensions.GetManuallyOverriddenEnglishNameIfNeeded(code,()=>_lookupIsoCode.GetLocalizedLanguageName(code, "en"));
-			return new LanguageItem { EnglishName = englishName, IsoCode = code, MenuText = menuText,
+			var menuText = _lookupModel.GetNativeLanguageNameWithEnglishSubtitle(code);
+			var englishName = LanguageLookupModelExtensions.GetManuallyOverriddenEnglishNameIfNeeded(code,()=>_lookupModel.GetLocalizedLanguageName(code, "en"));
+			return new LanguageItem { EnglishName = englishName, LangTag = code, MenuText = menuText,
 				FractionApproved = FractionApproved(code), FractionTranslated = FractionTranslated(code) };
 		}
 
@@ -1522,7 +1522,7 @@ namespace Bloom.Workspace
 	/// </summary>
 	public class LanguageItem
 	{
-		public string IsoCode;
+		public string LangTag;
 		public string EnglishName;
 		public string MenuText;
 		public float FractionApproved;
