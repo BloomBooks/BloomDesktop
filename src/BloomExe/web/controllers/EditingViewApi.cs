@@ -246,11 +246,10 @@ namespace Bloom.web.controllers
 				var ext = Path.GetExtension(fullWidgetPath);
 				if (ext.EndsWith("htm") || ext.EndsWith("html"))
 				{
-					fullWidgetPath = EditingModel.CreateWidgetFromHtmlFolder(fullWidgetPath);
+					fullWidgetPath = WidgetHelper.CreateWidgetFromHtmlFolder(fullWidgetPath);
 				}
-				string activityName = View.Model.MakeWidget(fullWidgetPath);
-				var url = UrlPathString.CreateFromUnencodedString(activityName);
-				request.ReplyWithText(url.UrlEncodedForHttpPath);
+				UrlPathString activityRelativePathUrl = View.Model.AddWidgetFilesToBookFolder(fullWidgetPath);
+				request.ReplyWithText(activityRelativePathUrl.UrlEncodedForHttpPath);
 				// clean up the temporary widget file we created.
 				if (fullWidgetPath != dlg.FileName)
 					RobustFile.Delete(fullWidgetPath);

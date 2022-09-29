@@ -1,42 +1,38 @@
-﻿using System;
-using System.Collections.Generic;
+using System;
 using System.IO;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
-using System.Xml;
 using Bloom;
-using Bloom.Edit;
+using Bloom.Book;
 using BloomTemp;
 using ICSharpCode.SharpZipLib.Zip;
 using NUnit.Framework;
 using SIL.IO;
 using RobustIO = SIL.IO.RobustIO;
 
-namespace BloomTests.Edit
+namespace BloomTests.Book
 {
-	public class MakeWidgetTests
+	public class WidgetHelperTests
 	{
 		private TemporaryFolder _bookFolder;
 		private TempFile _widgetFile;
 		private string _activityFolder;
 		private string _secondActivityFolder;
-		private string _firstWidgetSrcPath;
-		private string _secondWidgetSrcPath;
+		private UrlPathString _firstWidgetSrcPath;
+		private UrlPathString _secondWidgetSrcPath;
 		[OneTimeSetUp]
 		public void OneTimeSetup()
 		{
-			_bookFolder = new TemporaryFolder("MakeWidgetTests");
-			_widgetFile = TempFile.WithExtension("wdgt");
+			_bookFolder = new TemporaryFolder("AddWidgetFilesToBookFolderTests");
+			_widgetFile = TempFile.WithFilename("My Widget N&am%e.wdgt");
 			_activityFolder = Path.Combine(_bookFolder.FolderPath, "activities");
 			_secondActivityFolder =
 				Path.Combine(_activityFolder, Path.GetFileNameWithoutExtension(_widgetFile.Path) + "2");
 
 			SetupZip(zip => { });
 
-			_firstWidgetSrcPath = EditingModel.MakeWidget(_bookFolder.FolderPath, _widgetFile.Path);
+			_firstWidgetSrcPath = WidgetHelper.AddWidgetFilesToBookFolder(_bookFolder.FolderPath, _widgetFile.Path);
 			_secondWidgetSrcPath =
-				"activities/" + Path.GetFileNameWithoutExtension(_widgetFile.Path) + "2/" + "index.htm";
+				UrlPathString.CreateFromUnencodedString("activities/" + Path.GetFileNameWithoutExtension(_widgetFile.Path) + "2/" + "index.htm");
 		}
 
 		private void SetupZip(Action<ZipFile> changesToMake)
@@ -69,15 +65,15 @@ namespace BloomTests.Edit
 
 
 		[Test]
-		public void MakeWidget_CreatesExpectedFiles()
+		public void AddWidgetFilesToBookFolder_CreatesExpectedFiles()
 		{
 			ValidateOriginalActivityFiles();
 		}
 
 		[Test]
-		public void MakeWidget_ReturnsExpectedPath()
+		public void AddWidgetFilesToBookFolder_ReturnsExpectedPath()
 		{
-			Assert.That(_firstWidgetSrcPath, Is.EqualTo("activities/" + Path.GetFileNameWithoutExtension(_widgetFile.Path) + "/" + "index.htm"));
+			Assert.That(_firstWidgetSrcPath.NotEncoded, Is.EqualTo("activities/" + Path.GetFileNameWithoutExtension(_widgetFile.Path) + "/" + "index.htm"));
 		}
 
 		private void ValidateOriginalActivityFiles()
@@ -91,22 +87,22 @@ namespace BloomTests.Edit
 		}
 
 		[Test]
-		public void MakeWidget_SameInput_DoesNotDuplicateFolder()
+		public void AddWidgetFilesToBookFolder_SameInput_DoesNotDuplicateFolder()
 		{
 			SetupZip(zip => { });
-			Assert.That(EditingModel.MakeWidget(_bookFolder.FolderPath, _widgetFile.Path), Is.EqualTo(_firstWidgetSrcPath)); // the same path, to the same folder
+			Assert.That(WidgetHelper.AddWidgetFilesToBookFolder(_bookFolder.FolderPath, _widgetFile.Path), Is.EqualTo(_firstWidgetSrcPath)); // the same path, to the same folder
 
 			Assert.That(Directory.GetDirectories(_activityFolder), Has.Length.EqualTo(1));
 		}
 
 		[Test]
-		public void MakeWidget_OneFileInZipDifferent_MakesNewFolder()
+		public void AddWidgetFilesToBookFolder_OneFileInZipDifferent_MakesNewFolder()
 		{
 			SetupZip(zip => {
 				zip.Add(new DataFromString("fake css modified"), "base.css", CompressionMethod.Deflated);
 			});
 
-			Assert.That(EditingModel.MakeWidget(_bookFolder.FolderPath, _widgetFile.Path), Is.EqualTo(_secondWidgetSrcPath));
+			Assert.That(WidgetHelper.AddWidgetFilesToBookFolder(_bookFolder.FolderPath, _widgetFile.Path), Is.EqualTo(_secondWidgetSrcPath));
 
 			Assert.That(Directory.GetDirectories(_activityFolder), Has.Length.EqualTo(2));
 
@@ -122,7 +118,7 @@ namespace BloomTests.Edit
 		}
 
 		[Test]
-		public void MakeWidget_OneExtraFileInZip_MakesNewFolder()
+		public void AddWidgetFilesToBookFolder_OneExtraFileInZip_MakesNewFolder()
 		{
 			SetupZip(zip =>
 			{
@@ -130,7 +126,7 @@ namespace BloomTests.Edit
 					CompressionMethod.Deflated); // add an extra file
 			});
 
-			Assert.That(EditingModel.MakeWidget(_bookFolder.FolderPath, _widgetFile.Path), Is.EqualTo(_secondWidgetSrcPath));
+			Assert.That(WidgetHelper.AddWidgetFilesToBookFolder(_bookFolder.FolderPath, _widgetFile.Path), Is.EqualTo(_secondWidgetSrcPath));
 			Assert.That(Directory.GetDirectories(_activityFolder), Has.Length.EqualTo(2));
 
 			// and a new set
@@ -145,14 +141,14 @@ namespace BloomTests.Edit
 		}
 
 		[Test]
-		public void MakeWidget_OneLessFileInZip_MakesNewFolder()
+		public void AddWidgetFilesToBookFolder_OneLessFileInZip_MakesNewFolder()
 		{
 			SetupZip(zip =>
 			{
 				zip.Delete("base.css"); // remove original file
 			});
 
-			Assert.That(EditingModel.MakeWidget(_bookFolder.FolderPath, _widgetFile.Path), Is.EqualTo(_secondWidgetSrcPath));
+			Assert.That(WidgetHelper.AddWidgetFilesToBookFolder(_bookFolder.FolderPath, _widgetFile.Path), Is.EqualTo(_secondWidgetSrcPath));
 			Assert.That(Directory.GetDirectories(_activityFolder), Has.Length.EqualTo(2));
 
 			Assert.That(File.ReadAllText(Path.Combine(_secondActivityFolder, "index.htm")),
@@ -162,7 +158,7 @@ namespace BloomTests.Edit
 		}
 
 		[Test]
-		public void MakeWidget_OneExtraFileInExtraFolderInZip_MakesNewFolder()
+		public void AddWidgetFilesToBookFolder_OneExtraFileInExtraFolderInZip_MakesNewFolder()
 		{
 			SetupZip(zip =>
 			{
@@ -170,7 +166,7 @@ namespace BloomTests.Edit
 					CompressionMethod.Deflated); // add an extra file
 			});
 
-			Assert.That(EditingModel.MakeWidget(_bookFolder.FolderPath, _widgetFile.Path), Is.EqualTo(_secondWidgetSrcPath));
+			Assert.That(WidgetHelper.AddWidgetFilesToBookFolder(_bookFolder.FolderPath, _widgetFile.Path), Is.EqualTo(_secondWidgetSrcPath));
 			Assert.That(Directory.GetDirectories(_activityFolder), Has.Length.EqualTo(2));
 
 			Assert.That(File.ReadAllText(Path.Combine(_secondActivityFolder, "index.htm")),
@@ -181,7 +177,7 @@ namespace BloomTests.Edit
 		}
 
 		[Test]
-		public void MakeWidget_DifferentIndexFile_MakesNewFolder()
+		public void AddWidgetFilesToBookFolder_DifferentIndexFile_MakesNewFolder()
 		{
 			SetupZip(zip =>
 			{
@@ -189,8 +185,8 @@ namespace BloomTests.Edit
 			});
 
 			// Note that here, the result is in the second folder, but has a different name for the file.
-			Assert.That(EditingModel.MakeWidget(_bookFolder.FolderPath, _widgetFile.Path),
-				Is.EqualTo("activities/" + Path.GetFileNameWithoutExtension(_widgetFile.Path) + "2/" + "index.html"));
+			Assert.That(WidgetHelper.AddWidgetFilesToBookFolder(_bookFolder.FolderPath, _widgetFile.Path),
+				Is.EqualTo(UrlPathString.CreateFromUnencodedString("activities/" + Path.GetFileNameWithoutExtension(_widgetFile.Path) + "2/" + "index.html")));
 			Assert.That(Directory.GetDirectories(_activityFolder), Has.Length.EqualTo(2));
 
 			Assert.That(File.ReadAllText(Path.Combine(_secondActivityFolder, "index.html")),

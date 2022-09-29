@@ -2402,6 +2402,11 @@ namespace Bloom.Book
 			return RawDom.SafeSelectNodes("//div[contains(@class, 'bloom-videoContainer')]//source");
 		}
 
+		public static IEnumerable<XmlElement> GetWidgetIframes(XmlElement element)
+		{
+			return element.SafeSelectNodes(".//div[contains(@class, 'bloom-widgetContainer')]//iframe").Cast<XmlElement>();
+		}
+
 		/// <summary>
 		/// Determines which languages contain at least one meaningful image description
 		/// Image descriptions in XMatter don't count

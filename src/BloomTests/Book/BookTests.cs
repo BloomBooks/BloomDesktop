@@ -1280,6 +1280,78 @@ namespace BloomTests.Book
 			}
 
 		}
+				
+		[TestCase(true)]
+		[TestCase(false)]
+		public void InsertPageAfter_FromAnotherBook_CopiesWidget(bool simulateWidgetWithSameNameExists)
+		{
+			var htmlSourceBook = @"<html><head></head><body>
+					<div class='bloom-page custom-widget-page customPage bloom-interactive-page enterprise-only no-margin-page numberedPage A5Portrait side-right bloom-monolingual' id='page1' data-page='' data-analyticscategories='widget' help-link='https://docs.bloomlibrary.org/widgets' data-pagelineage='3a705ac1-c1f2-45cd-8a7d-011c009cf406' data-page-number='1' lang='' data-activity='iframe'>					
+						<div class='bloom-widgetContainer bloom-leadingElement'>
+							<iframe src='activities/my%20Wid%25et/index.htm' />
+						</div>
+					</div>
+				</body></html>";
+
+			using (var tempFolder = new SIL.TestUtilities.TemporaryFolder(_testFolder, "sourceBook"))
+			{
+				var doc = new XmlDocument();
+				doc.LoadXml(htmlSourceBook);
+				var dom = new HtmlDom(doc);
+				var storage = MakeMockStorage(tempFolder.Path, () => dom);
+				var sourceBook = new Bloom.Book.Book(storage.Object.BookInfo, storage.Object, _templateFinder.Object,
+					CreateDefaultCollectionsSettings(),
+					_pageSelection.Object, _pageListChangedEvent, new BookRefreshEvent());
+				var sourcePage = sourceBook.GetPages().Last();
+
+				var book = CreateBook(); // has pages from  BookTestsBase.GetThreePageDom()
+				var original = book.GetPages().Count();
+				var existingPage = book.GetPages().Last();
+
+				var activitiesFolderPath = Path.Combine(sourceBook.FolderPath, "activities");
+				Directory.CreateDirectory(activitiesFolderPath);
+				var widgetFolderPath = Path.Combine(activitiesFolderPath, "my Wid%et");
+				Directory.CreateDirectory(widgetFolderPath);
+				var indexFilePath = Path.Combine(widgetFolderPath, "index.htm");
+				File.WriteAllText(indexFilePath, "This is a fake widget index file");
+				var otherFilePath = Path.Combine(widgetFolderPath, "other.txt");
+				File.WriteAllText(otherFilePath, "This is another fake widget file");
+				var subfolderPath = Path.Combine(widgetFolderPath, "subfolder");
+				Directory.CreateDirectory(subfolderPath);
+				var filePathInSubfolder = Path.Combine(subfolderPath, "fileInSubfolder.js");
+				File.WriteAllText(filePathInSubfolder, "This is a fake widget file in a subfolder");
+
+				if (simulateWidgetWithSameNameExists)
+					Directory.CreateDirectory(Path.Combine(book.FolderPath, "activities", "my Wid%et"));
+
+				//SUT
+				book.InsertPageAfter(existingPage, sourcePage);
+
+				AssertPageCount(book, original + 1);
+
+				// Verify files were copied
+				var newActivitiesFolderPath = Path.Combine(book.FolderPath, "activities");
+				var expectedNewActivityName = "my Wid%et" + (simulateWidgetWithSameNameExists ? "2" : "");
+				var newWidgetPath = Path.Combine(newActivitiesFolderPath, expectedNewActivityName);
+				var newIndexFilePath = Path.Combine(newWidgetPath, "index.htm");
+				Assert.That(File.ReadAllText(newIndexFilePath), Is.EqualTo("This is a fake widget index file"));
+				var newOtherFilePath = Path.Combine(newWidgetPath, "other.txt");
+				Assert.That(File.ReadAllText(newOtherFilePath), Is.EqualTo("This is another fake widget file"));
+				var newFilePathInSubfolder = Path.Combine(newWidgetPath, "subfolder", "fileInSubfolder.js");
+				Assert.That(File.ReadAllText(newFilePathInSubfolder), Is.EqualTo("This is a fake widget file in a subfolder"));
+
+				// Verify the dom is correct
+				var newPage = book.GetPages().Last();
+				Assert.AreNotEqual(existingPage, newPage);
+				Assert.AreNotEqual(existingPage.Id, newPage.Id);
+				var newDivNode = newPage.GetDivNodeForThisPage();
+				var newWidgetContainer = newDivNode.GetElementsByTagName("div")[0] as XmlElement;
+				var newWidgetIframe = newWidgetContainer.GetElementsByTagName("iframe")[0] as XmlElement;
+				var src = newWidgetIframe.Attributes["src"]?.Value;
+				var expectedNewActivityFolderEncoded = "my%20Wid%25et" + (simulateWidgetWithSameNameExists ? "2" : "");
+				Assert.That(src, Is.EqualTo($@"activities/{expectedNewActivityFolderEncoded}/index.htm"));
+			}
+		}
 
 		[Test]
 		public void DuplicatePageAfterRelocatePage()
