@@ -177,7 +177,7 @@ export class LocalizationManager {
 
     /* Returns a promise to get the translation.
      *
-     * @param {String} langId : can be an iso 639 code or one of these constants: UI, V, N1, N2
+     * @param {String} langId : can be an BCP 47 code or one of these constants: UI, V, N1, N2
      * @param {String[]} args (optional): can be used as parameters to insert into c#-style parameterized strings
      *  @example
      * asyncGetTextInLang('topics.health','Health', "UI")
@@ -391,8 +391,8 @@ export class LocalizationManager {
         return this.getText("vernacularLang");
     }
 
-    public getLanguageName(iso): string {
-        return this.getText(iso);
+    public getLanguageName(langTag): string {
+        return this.getText(langTag);
     }
 
     /**

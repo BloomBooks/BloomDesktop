@@ -32,24 +32,24 @@ export default class BloomSourceBubbles {
     // This is the method that should be called from bloomEditing to create tabbed source bubbles
     // for translation.
     // param 'group' is a .bloom-translationGroup DIV
-    // optional param 'newIso' is defined when the user clicks on a language in the dropdown box
+    // optional param 'newLangTag' is defined when the user clicks on a language in the dropdown box
     // Returns the source bubble if it made one.
     public static ProduceSourceBubbles(
         group: HTMLElement,
-        newIso?: string
+        newLangTag?: string
     ): JQuery {
-        return BloomSourceBubbles.MakeSourceTextDivForGroup(group, newIso);
+        return BloomSourceBubbles.MakeSourceTextDivForGroup(group, newLangTag);
     }
 
     public static MakeSourceBubblesIntoQtips(
         elementThatHasBubble: HTMLElement,
         contentsOfBubble: JQuery,
-        selectIso?: string
+        selectLangTag?: string
     ) {
         // Do easytabs transformation on the cloned div 'divForBubble' with the first tab selected,
         let divForBubble = BloomSourceBubbles.CreateTabsFromDiv(
             contentsOfBubble,
-            selectIso
+            selectLangTag
         );
         if (divForBubble.length === 0) return;
 
@@ -70,11 +70,11 @@ export default class BloomSourceBubbles {
     // Cleans up a clone of the original translationGroup
     // and sets up the list items with anchors that will become the tabs to jump to linked source text
     // param 'group' is a .bloom-translationGroup DIV
-    // optional param 'newIso' is defined when the user clicks on a language in the dropdown box
+    // optional param 'newLangTag' is defined when the user clicks on a language in the dropdown box
     // This method is only public for testing
     public static MakeSourceTextDivForGroup(
         group: HTMLElement,
-        newIso?: string
+        newLangTag?: string
     ): JQuery {
         // Copy source texts out to their own div, where we can make a bubble with tabs out of them
         // We do this because if we made a bubble out of the div, that would suck up the vernacular editable area, too,
@@ -147,14 +147,15 @@ export default class BloomSourceBubbles {
         });
 
         // BL-2357
-        items = BloomSourceBubbles.SmartOrderSourceTabs(items, newIso);
+        items = BloomSourceBubbles.SmartOrderSourceTabs(items, newLangTag);
         const list = $this.find("nav ul");
         items.each(function() {
             const sourceElement = this as HTMLElement;
-            const iso = sourceElement.getAttribute("lang");
-            if (iso) {
+            const langTag = sourceElement.getAttribute("lang");
+            if (langTag) {
                 const localizedLanguageName =
-                    theOneLocalizationManager.getLanguageName(iso) || iso;
+                    theOneLocalizationManager.getLanguageName(langTag) ||
+                    langTag;
                 // This is bizarre. The href ought to be referring to the element with the specified ID,
                 // which should be the tab CONTENT that should be shown for this language. But we have modified
                 // easytabs (see above) so that the target (main page content div) for a tab is the element whose
@@ -164,9 +165,9 @@ export default class BloomSourceBubbles {
                 // helpful.
                 $(list).append(
                     '<li id="' +
-                        iso +
+                        langTag +
                         '"><a class="sourceTextTab" href="#' +
-                        iso +
+                        langTag +
                         '">' +
                         localizedLanguageName +
                         "</a></li>"
@@ -175,10 +176,10 @@ export default class BloomSourceBubbles {
                     0
                 ) as HTMLElement).lastElementChild?.firstElementChild?.addEventListener(
                     "click",
-                    () => BloomApi.postString("editView/sourceTextTab", iso)
+                    () => BloomApi.postString("editView/sourceTextTab", langTag)
                 );
-                // BL-8174: Add a tooltip with the iso code to the item
-                sourceElement.setAttribute("title", iso);
+                // BL-8174: Add a tooltip with the language tag to the item
+                sourceElement.setAttribute("title", langTag);
             }
 
             if (sourceElement.innerText !== "") {
@@ -244,13 +245,13 @@ export default class BloomSourceBubbles {
 
     // 'Smart' orders the tabs putting the latest viewed language first, followed by others in the collection
     // param 'items' is an alphabetical list of all the divs of different languages to be used as tabs
-    // optional param 'newIso' is defined when the user clicks on a language in the dropdown box
-    private static SmartOrderSourceTabs(items, newIso?: string): JQuery {
+    // optional param 'newLangTag' is defined when the user clicks on a language in the dropdown box
+    private static SmartOrderSourceTabs(items, newLangTag?: string): JQuery {
         // BL-2357 Do some smart ordering of source language tabs
         const settingsObject = GetSettings();
         let defaultSrcLang = settingsObject.defaultSourceLanguage;
         let destination = 0;
-        if (newIso) defaultSrcLang = newIso;
+        if (newLangTag) defaultSrcLang = newLangTag;
         let newItems = BloomSourceBubbles.DoSafeReplaceInList(
             items,
             defaultSrcLang,
@@ -298,8 +299,8 @@ export default class BloomSourceBubbles {
         let objToMove;
         const itemArray = items.toArray();
         items.each(function(idx, obj): boolean {
-            const iso = $(this).attr("lang");
-            if (iso == langCode && position < idx) {
+            const langTag = $(this).attr("lang");
+            if (langTag == langCode && position < idx) {
                 moveFrom = idx;
                 objToMove = obj;
                 return false; // break out of .each()
@@ -314,12 +315,12 @@ export default class BloomSourceBubbles {
         return items;
     }
 
-    // Turns the cloned div 'divForBubble' into a tabbed bundle. If selectIso is supplied
+    // Turns the cloned div 'divForBubble' into a tabbed bundle. If selectLangTag is supplied
     // (when reconstructing after a language in the pull-down is selected), we select that
     // language; otherwise, the first tab (which might be a hint).
     private static CreateTabsFromDiv(
         divForBubble: JQuery,
-        selectIso?: string
+        selectLangTag?: string
     ): JQuery {
         //now turn that new div into a set of tabs
         const opts: any = {
@@ -335,16 +336,16 @@ export default class BloomSourceBubbles {
             // Don't start by displaying the hint if a translation is available.
             // See https://issues.bloomlibrary.org/youtrack/issue/BL-5420.
             if (
-                !selectIso &&
+                !selectLangTag &&
                 tabs.length > 1 &&
                 tabs.first().attr("id") == "hint"
             ) {
-                selectIso = tabs
+                selectLangTag = tabs
                     .first()
                     .next()
                     .attr("id");
             }
-            if (selectIso) {
+            if (selectLangTag) {
                 // Somehow easytabs.select is NOT deselecting the item it selected by default.
                 // This might be a consequence of the way we mangled it to select content by
                 // lang rather than id. Or it might be something to do with multiple bubbles
@@ -353,7 +354,7 @@ export default class BloomSourceBubbles {
                 // and the third then correctly selects the one we want.
                 divForBubble.find(".active").removeClass("active");
                 divForBubble.find(">div").attr("style", "display: none");
-                (divForBubble as any).easytabs("select", "#" + selectIso);
+                (divForBubble as any).easytabs("select", "#" + selectLangTag);
             }
         } else {
             divForBubble.remove(); //no tabs, so hide the bubble
@@ -381,10 +382,10 @@ export default class BloomSourceBubbles {
             if (idx < firstSelectOption - 1) return true; // continue to next iteration of .each()
             const $this = $(this);
             const link = $this.find("a").clone(false); // don't want to keep easytab click event
-            const iso = link.attr("href").substring(1); // strip off hashmark
-            const listItem = "<li lang='" + iso + "'></li>";
+            const langTag = link.attr("href").substring(1); // strip off hashmark
+            const listItem = "<li lang='" + langTag + "'></li>";
             container.append(listItem);
-            container.find('li[lang="' + iso + '"]').append(link);
+            container.find('li[lang="' + langTag + '"]').append(link);
             $this.addClass("removeThisOne");
             return true; // continue .each(); though this is the end of the loop, it is needed for tsconfig's 'noImplicitReturns'
         });
@@ -407,7 +408,7 @@ export default class BloomSourceBubbles {
     }
 
     private static styledSelectChangeHandler(event) {
-        const newIso = event.target.href.split("#")[1];
+        const newLangTag = event.target.href.split("#")[1];
 
         // Figure out which qtip we're in and go find the associated bloom-translationGroup
         const qtip = $(event.target)
@@ -422,9 +423,9 @@ export default class BloomSourceBubbles {
             // should be
             const divForBubble = BloomSourceBubbles.ProduceSourceBubbles(
                 group[0],
-                newIso
+                newLangTag
             );
-            BloomApi.postString("editView/sourceTextTab", newIso);
+            BloomApi.postString("editView/sourceTextTab", newLangTag);
             if (divForBubble.length !== 0) {
                 BloomHintBubbles.addHintBubbles(
                     group.get(0),
@@ -434,7 +435,7 @@ export default class BloomSourceBubbles {
                 BloomSourceBubbles.MakeSourceBubblesIntoQtips(
                     group.get(0),
                     divForBubble,
-                    newIso
+                    newLangTag
                 );
             }
         }

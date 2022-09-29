@@ -48,18 +48,18 @@ function AddToolbox(container) {
                         }
                     }
                 });
-            var lang1ISO = GetSettings().languageForNewTextBoxes;
+            var lang1Tag = GetSettings().languageForNewTextBoxes;
             var heading1CenteredWidget =
                 '<div class="heading1-style centered widgetInPageDragToolbox"  data-classesafterdrop="bloom-translationGroup heading1-style centered bloom-resizable bloom-deletable bloom-draggable"><div data-classesafterdrop="bloom-editable bloom-content1" lang="' +
-                lang1ISO +
+                lang1Tag +
                 '">Heading 1 Centered</div></div>';
             var heading2LeftWidget =
                 '<div class="heading2-style widgetInPageDragToolbox"  data-classesafterdrop="bloom-translationGroup heading2-style  bloom-resizable bloom-deletable bloom-draggable"><div data-classesafterdrop="bloom-editable bloom-content1" lang="' +
-                lang1ISO +
+                lang1Tag +
                 '">Heading 2, Left</div></div>';
             var fieldWidget =
                 '<div class="widgetInPageDragToolbox" data-classesafterdrop="bloom-translationGroup bloom-resizable bloom-deletable bloom-draggable"><div data-classesafterdrop="bloom-editable bloom-content1" lang="' +
-                lang1ISO +
+                lang1Tag +
                 '"> A block of normal text.</div></div>';
             // old one: var imageWidget = '<div class="bloom-imageContainer bloom-resizable bloom-draggable  bloom-deletable widgetInPageDragToolbox"><img src="placeHolder.png"></div>';
             var imageWidget =
