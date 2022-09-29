@@ -774,7 +774,6 @@ export default class StyleEditor {
     public getStylePromises(
         styles: FormattingStyle[]
     ): JQueryPromise<string>[] {
-        const results: string[] = [];
         const promises: JQueryPromise<string>[] = [];
 
         styles.forEach(formattingStyle => {
@@ -1267,9 +1266,10 @@ export default class StyleEditor {
     // The same logic applies to popping up the color chooser dialog, except that its class name
     // starts with MuiDialog-root.
     private popoverIsUp(): boolean {
+        const $body = $("body");
         return (
-            $("body").find("[class*='MuiPopover-root']").length > 0 ||
-            $("body").find("[class*='MuiDialog-root']").length > 0
+            $body.find("[class*='MuiPopover-root']").length > 0 ||
+            $body.find("[class*='MuiDialog-root']").length > 0
         );
     }
 
@@ -1286,9 +1286,17 @@ export default class StyleEditor {
             toolbar.has(event.target).length === 0 &&
             toolbar.is(":visible")
         ) {
+            this.removeStyleDropdown(toolbar);
             toolbar.remove();
             event.stopPropagation();
             event.preventDefault();
+        }
+    }
+
+    private removeStyleDropdown(toolbar: JQuery) {
+        const dropdown = toolbar.siblings("span.select2-container--open")[0];
+        if (dropdown) {
+            dropdown.remove(); // in case it was open when we click outside of the dialog
         }
     }
 
@@ -2101,13 +2109,13 @@ export default class StyleEditor {
 
     // Remove any additions we made to the element for the purpose of UI alone
     public static CleanupElement(element) {
-        $(element)
-            .find(".bloom-ui")
-            .each(function() {
-                $(this).remove();
-            });
+        const $el = $(element);
+        $el.find(".bloom-ui").each(function() {
+            $(this).remove();
+        });
+
         //stop watching the scrolling event we used to keep the formatButton at the bottom
-        $(element).off("scroll");
+        $el.off("scroll");
     }
 
     public launchColorPicker(buttonColor: string) {
@@ -2117,7 +2125,8 @@ export default class StyleEditor {
             initialColor: buttonColor,
             palette: BloomPalette.Text,
             onChange: color => this.changeColor(color),
-            onInputFocus: input => {}
+            // eslint-disable-next-line @typescript-eslint/no-empty-function
+            onInputFocus: () => {}
         };
         showSimpleColorPickerDialog(colorPickerDialogProps);
     }
