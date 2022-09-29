@@ -48,9 +48,9 @@ namespace BloomTests.Collection
 		{
 			const string collectionName = "test";
 			var settings = CreateCollectionSettings(_folder.Path, collectionName);
-			settings.Language1Iso639Code = "fr";
+			settings.Language1Tag = "fr";
 			Assert.AreEqual("French", settings.Language1.GetNameInLanguage("en"));
-			settings.Language1Iso639Code = "en";
+			settings.Language1Tag = "en";
 			Assert.AreEqual("English", settings.Language1.GetNameInLanguage("en"));
 		}
 
@@ -93,7 +93,7 @@ namespace BloomTests.Collection
 			const string style = "Gurmukhi";
 			const string collectionName = "test";
 			var settings = CreateCollectionSettings(_folder.Path, collectionName);
-			settings.Language1Iso639Code = "en";
+			settings.Language1Tag = "en";
 			settings.PageNumberStyle = style;
 			settings.Save();
 			var newSettings = CreateCollectionSettings(_folder.Path, collectionName);
@@ -154,9 +154,9 @@ namespace BloomTests.Collection
 		public void GetLanguagePrioritiesForLocalizedTextOnPage_GetsCorrectListOfLanguages(string lang1, string lang2, string lang3, string[] results)
 		{
 			var settings = CreateCollectionSettings(_folder.Path, "test");
-			settings.Language1Iso639Code = lang1;
-			settings.Language2Iso639Code = lang2;
-			settings.Language3Iso639Code = lang3;
+			settings.Language1Tag = lang1;
+			settings.Language2Tag = lang2;
+			settings.Language3Tag = lang3;
 			var bookData = new BookData(new HtmlDom("<html><body></body></html>"), settings, null);
 			bookData.SetMultilingualContentLanguages(lang1, lang2, lang3);
 			Assert.That(bookData.GetLanguagePrioritiesForLocalizedTextOnPage(), Is.EqualTo(results));
@@ -174,9 +174,9 @@ namespace BloomTests.Collection
 		public void GetLanguagePrioritiesForLocalizedTextOnPage_L1Unchecked_GetsCorrectListOfLanguages(string lang1, string lang2, string lang3, string[] results)
 		{
 			var settings = CreateCollectionSettings(_folder.Path, "test");
-			settings.Language1Iso639Code = lang1;
-			settings.Language2Iso639Code = lang2;
-			settings.Language3Iso639Code = lang3;
+			settings.Language1Tag = lang1;
+			settings.Language2Tag = lang2;
+			settings.Language3Tag = lang3;
 			var bookData = new BookData(new HtmlDom("<html><body></body></html>"), settings, null);
 			bookData.SetMultilingualContentLanguages(lang2, lang3);
 			Assert.That(bookData.GetLanguagePrioritiesForLocalizedTextOnPage(), Is.EqualTo(results));
@@ -186,9 +186,9 @@ namespace BloomTests.Collection
 		public void GetLanguagePrioritiesForLocalizedTextOnPage_DoNotIncludeLang1_GetsCorrectListOfLanguages(string lang1, string lang2, string lang3, string[] results)
 		{
 			var settings = CreateCollectionSettings(_folder.Path, "test");
-			settings.Language1Iso639Code = lang1;
-			settings.Language2Iso639Code = lang2;
-			settings.Language3Iso639Code = lang3;
+			settings.Language1Tag = lang1;
+			settings.Language2Tag = lang2;
+			settings.Language3Tag = lang3;
 			var bookData = new BookData(new HtmlDom("<html><body></body></html>"), settings, null);
 			bookData.SetMultilingualContentLanguages(lang1, lang2, lang3);
 			Assert.That(bookData.GetLanguagePrioritiesForLocalizedTextOnPage(false), Is.EqualTo(results));
@@ -199,9 +199,9 @@ namespace BloomTests.Collection
 		public void GetLanguagePrioritiesForLocalizedTextOnPage_DoNotIncludeLang1_Lang1NotChecked_GetsCorrectListOfLanguages(string lang1, string lang2, string lang3, string[] results)
 		{
 			var settings = CreateCollectionSettings(_folder.Path, "test");
-			settings.Language1Iso639Code = lang1;
-			settings.Language2Iso639Code = lang2;
-			settings.Language3Iso639Code = lang3;
+			settings.Language1Tag = lang1;
+			settings.Language2Tag = lang2;
+			settings.Language3Tag = lang3;
 			var bookData = new BookData(new HtmlDom("<html><body></body></html>"), settings, null);
 			bookData.SetMultilingualContentLanguages(lang2, lang3);
 			Assert.That(bookData.GetLanguagePrioritiesForLocalizedTextOnPage(false), Is.EqualTo(results));
@@ -212,9 +212,9 @@ namespace BloomTests.Collection
 		public void GetLanguagePrioritiesForLocalizedTextOnPage_DoNotIncludeLang1_OnlyLang1Checked_GetsCorrectListOfLanguages(string lang1, string lang2, string lang3, string[] results)
 		{
 			var settings = CreateCollectionSettings(_folder.Path, "test");
-			settings.Language1Iso639Code = lang1;
-			settings.Language2Iso639Code = lang2;
-			settings.Language3Iso639Code = lang3;
+			settings.Language1Tag = lang1;
+			settings.Language2Tag = lang2;
+			settings.Language3Tag = lang3;
 			var bookData = new BookData(new HtmlDom("<html><body></body></html>"), settings, null);
 			bookData.SetMultilingualContentLanguages(lang1);
 			Assert.That(bookData.GetLanguagePrioritiesForLocalizedTextOnPage(false), Is.EqualTo(results));

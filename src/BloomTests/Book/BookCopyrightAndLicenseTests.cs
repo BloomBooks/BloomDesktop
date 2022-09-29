@@ -23,9 +23,9 @@ namespace BloomTests.Book
 			_collectionSettings = new CollectionSettings(new NewCollectionSettings()
 			{
 				PathToSettingsFile = CollectionSettings.GetPathForNewSettings(new TemporaryFolder("BookDataTests").Path, "test"),
-				Language1Iso639Code = "xyz",
-				Language2Iso639Code = "en",
-				Language3Iso639Code = "fr"
+				Language1Tag = "xyz",
+				Language2Tag = "en",
+				Language3Tag = "fr"
 			});
 			ErrorReport.IsOkToInteractWithUser = false;
 
@@ -129,7 +129,7 @@ namespace BloomTests.Book
 		[Test]
 		public void GetMetadata_DataProvidedByBranding_GetsCorrectValuesForLanguage1()
 		{
-			CollectionSettings collectionSettings = new CollectionSettings { Language1Iso639Code = "yyy" };
+			CollectionSettings collectionSettings = new CollectionSettings { Language1Tag = "yyy" };
 			string dataDivContent = @"
 <div lang='aaa' data-book='licenseNotes'>My aaa license notes</div>
 <div lang='en' data-book='licenseNotes'>My en license notes</div>
@@ -164,8 +164,8 @@ namespace BloomTests.Book
 		[Test, Ignore("Enable once we have French CC License Localization") /*meanwhile, I have tested on my machine*/]
 		public void SetLicenseMetadata_CCLicenseWithFrenchNationalLanguage_DataDivHasFrenchDescription()
 		{
-			_collectionSettings.Language1Iso639Code = "fr";
-			_collectionSettings.Language2Iso639Code = "en";
+			_collectionSettings.Language1Tag = "fr";
+			_collectionSettings.Language2Tag = "en";
 
 			TestSetLicenseMetdataEffectOnDataDiv(new Metadata()
 			{
@@ -215,7 +215,7 @@ namespace BloomTests.Book
 		[Test]
 		public void SetLicenseMetadata_PreviouslyHadCCLicenseInFrenchThenChangedToCustom_OnlyShowsCustomRightsStatement()
 		{
-			_collectionSettings.Language1Iso639Code = "fr";
+			_collectionSettings.Language1Tag = "fr";
 			// This will probably improve in the future, but for now, the custom rights statement does not have a language.
 			// This test makes sure that we don't leave obsolete descriptions around in a preferred language.
 			var dom = TestSetLicenseMetdataEffectOnDataDiv(new Metadata()
@@ -304,8 +304,8 @@ namespace BloomTests.Book
 		[Test]
 		public void UpdateDomFromDataDiv_CCLicense_OnPageTheLicenseHasFrench()
 		{
-			_collectionSettings.Language1Iso639Code = "fr";
-			_collectionSettings.Language2Iso639Code = "en";
+			_collectionSettings.Language1Tag = "fr";
+			_collectionSettings.Language2Tag = "en";
 
 			//NB: ideally, this test would just set the licenseUrl and then test the resulting description.
 			//That is, the description would not even be in the datadiv, since all we need is the licenseURl
@@ -434,9 +434,9 @@ namespace BloomTests.Book
 			if (description == null)
 				description = string.Format("{0} should be '{1}'", key, dataDivValue);
 
-			_collectionSettings.Language1Iso639Code = lang1;
-			_collectionSettings.Language2Iso639Code = lang2;
-			_collectionSettings.Language3Iso639Code = lang3;
+			_collectionSettings.Language1Tag = lang1;
+			_collectionSettings.Language2Tag = lang2;
+			_collectionSettings.Language3Tag = lang3;
 
 			var existingLicenseBlockOnPage = @"<div id='test'>
 						<div data-derived = 'copyright' lang='en'>Some Copyright</div>

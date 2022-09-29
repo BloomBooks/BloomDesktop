@@ -128,7 +128,7 @@ namespace Bloom.Book
 					if (_cachingLangData)
 					{
 						// recursive call from GatherDataItemsFromXElement; just use collection language
-						return CollectionSettings.Language1Iso639Code;
+						return CollectionSettings.Language1Tag;
 					}
 					CacheLangData();
 				}
@@ -182,7 +182,7 @@ namespace Bloom.Book
 		/// This is currently only used where the user configures a text box to show N2 by
 		/// choosing the last radio button.
 		/// </summary>
-		public string MetadataLanguage2IsoCode => CollectionSettings.Language3Iso639Code;
+		public string MetadataLanguage2IsoCode => CollectionSettings.Language3Tag;
 
 		private bool _cachingLangData = false;
 		/// <summary>
@@ -281,7 +281,7 @@ namespace Bloom.Book
 
 		private void UpdateML1Derivatives()
 		{
-			_cachedIsoMetadataLang1 = CollectionSettings.Language2Iso639Code;
+			_cachedIsoMetadataLang1 = CollectionSettings.Language2Tag;
 			// We thought about using this, but decided in the end that until we give the user
 			// full control over ML1 it's better to stick with the old behavior where ML1 is simply
 			// the second collection language.
@@ -2130,9 +2130,9 @@ namespace Bloom.Book
 			langCodes.AddRange(GetBasicBookLanguageCodes(includeLang1).Where(lc => !string.IsNullOrWhiteSpace(lc)));
 			// Try any collection settings we don't already have...but not the first if we're excluding vernacular
 			if (includeLang1)
-				AddLang(langCodes, CollectionSettings.Language1Iso639Code);
-			AddLang(langCodes, CollectionSettings.Language2Iso639Code);
-			AddLang(langCodes, CollectionSettings.Language3Iso639Code);
+				AddLang(langCodes, CollectionSettings.Language1Tag);
+			AddLang(langCodes, CollectionSettings.Language2Tag);
+			AddLang(langCodes, CollectionSettings.Language3Tag);
 			if (!langCodes.Contains("en"))
 				langCodes.Add("en");
 

@@ -33,8 +33,8 @@ namespace BloomTests.Edit
 			var collection = new CollectionSettings
 			{
 				IsSourceCollection = false,
-				Language2Iso639Code = "en",
-				Language1Iso639Code = "xyz",
+				Language2Tag = "en",
+				Language1Tag = "xyz",
 				XMatterPackName = "Factory"
 			};
 

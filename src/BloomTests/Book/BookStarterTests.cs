@@ -35,9 +35,9 @@ namespace BloomTests.Book
 			_defaultCollectionSettings = new CollectionSettings
 			{
 				IsSourceCollection = false,
-				Language1Iso639Code = "xyz",
-				Language2Iso639Code = "fr",
-				Language3Iso639Code = "es",
+				Language1Tag = "xyz",
+				Language2Tag = "fr",
+				Language3Tag = "es",
 				XMatterPackName = "Factory"
 			};
 			ErrorReport.IsOkToInteractWithUser = false;
@@ -58,9 +58,9 @@ namespace BloomTests.Book
 			_alternateCollectionSettings = new CollectionSettings(new NewCollectionSettings()
 			{
 				PathToSettingsFile = CollectionSettings.GetPathForNewSettings(new TemporaryFolder("BookDataTests").Path, "test"),
-				Language1Iso639Code = "xyz",
-				Language2Iso639Code = "en",
-				Language3Iso639Code = "fr"
+				Language1Tag = "xyz",
+				Language2Tag = "en",
+				Language3Tag = "fr"
 			});
 		}
 
@@ -145,7 +145,7 @@ namespace BloomTests.Book
 				new CollectionSettings(new NewCollectionSettings()
 				{
 					PathToSettingsFile = CollectionSettings.GetPathForNewSettings(_projectFolder.Path, "test"),
-					Language1Iso639Code = "xyz"
+					Language1Tag = "xyz"
 				});
 			var server = new BookServer((bookInfo, storage) =>
 			{

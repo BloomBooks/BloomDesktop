@@ -50,7 +50,7 @@ namespace Bloom.Collection
 		// Email addresses of users authorized to change collection settings if this is a TeamCollection.
 		public string[] Administrators;
 
-		private string _signLanguageIso639Code;
+		private string _signLanguageTag;
 
 		private const int kDefaultAudioRecordingTrimEndMilliseconds = 40;
 
@@ -125,7 +125,7 @@ namespace Bloom.Collection
 			BrandingProjectKey = "Default";
 			PageNumberStyle = "Decimal";
 			XMatterPackName = kDefaultXmatterName;
-			Language2Iso639Code = "en";
+			Language2Tag = "en";
 			AllowNewBooks = true;
 			CollectionName = "dummy collection";
 			AudioRecordingMode = TalkingBookApi.AudioRecordingMode.Sentence;
@@ -223,7 +223,7 @@ namespace Bloom.Collection
 		#region Persisted properties
 
 		//these are virtual for the sake of the unit test mock framework
-		public virtual string Language1Iso639Code
+		public virtual string Language1Tag
 		{
 			get { return Language1.Tag; }
 			set
@@ -231,7 +231,7 @@ namespace Bloom.Collection
 				Language1.ChangeTag(value);
 			}
 		}
-		public virtual string Language2Iso639Code
+		public virtual string Language2Tag
 		{
 			get { return Language2.Tag; }
 			set
@@ -239,7 +239,7 @@ namespace Bloom.Collection
 				Language2.ChangeTag(value);
 			}
 		}
-		public virtual string Language3Iso639Code
+		public virtual string Language3Tag
 		{
 			get { return Language3.Tag; }
 			set
@@ -247,12 +247,12 @@ namespace Bloom.Collection
 				Language3.ChangeTag(value);
 			}
 		}
-		public virtual string SignLanguageIso639Code
+		public virtual string SignLanguageTag
 		{
-			get { return _signLanguageIso639Code; }
+			get { return _signLanguageTag; }
 			set
 			{
-				_signLanguageIso639Code = value;
+				_signLanguageTag = value;
 				SignLanguageName = GetSignLanguageName_NoCache();
 			}
 		}
@@ -275,7 +275,7 @@ namespace Bloom.Collection
 
 		public string GetSignLanguageName()
 		{
-			if (!string.IsNullOrEmpty(SignLanguageIso639Code) && !string.IsNullOrEmpty(SignLanguageName))
+			if (!string.IsNullOrEmpty(SignLanguageTag) && !string.IsNullOrEmpty(SignLanguageName))
 				return SignLanguageName;
 			return GetSignLanguageName_NoCache();
 		}
@@ -283,14 +283,14 @@ namespace Bloom.Collection
 		{
 			try
 			{
-				if (string.IsNullOrEmpty(SignLanguageIso639Code))
+				if (string.IsNullOrEmpty(SignLanguageTag))
 					return string.Empty;
 
-				return GetLanguageName(SignLanguageIso639Code, "");
+				return GetLanguageName(SignLanguageTag, "");
 			}
 			catch (Exception)
 			{
-				return "SL-Unknown-" + SignLanguageIso639Code;
+				return "SL-Unknown-" + SignLanguageTag;
 			}
 		}
 		#endregion
@@ -307,7 +307,7 @@ namespace Bloom.Collection
 			Language2.SaveToXElement(xml);
 			Language3.SaveToXElement(xml);
 			xml.Add(new XElement("SignLanguageName", SignLanguageName));
-			xml.Add(new XElement("SignLanguageIso639Code", SignLanguageIso639Code));
+			xml.Add(new XElement("SignLanguageIso639Code", SignLanguageTag));
 			xml.Add(new XElement("OneTimeCheckVersionNumber", OneTimeCheckVersionNumber));
 			xml.Add(new XElement("IsSourceCollection", IsSourceCollection.ToString()));
 			xml.Add(new XElement("XMatterPack", XMatterPackName));
@@ -344,11 +344,11 @@ namespace Bloom.Collection
 			// note: css pseudo elements  cannot have a @lang attribute. So this is needed to show page numbers in scripts not covered by Andika New Basic.
 			WritingSystem.AddSelectorCssRule(sb, ".numberedPage::after", Language1.FontName, Language1.IsRightToLeft, Language1.LineHeight, Language1.BreaksLinesOnlyAtSpaces, omitDirection);
 			Language1.AddSelectorCssRule(sb, omitDirection);
-			if (Language2Iso639Code != Language1Iso639Code)
+			if (Language2Tag != Language1Tag)
 				Language2.AddSelectorCssRule(sb, omitDirection);
-			if (!string.IsNullOrEmpty(Language3Iso639Code) &&
-				Language3Iso639Code != Language1Iso639Code &&
-				Language3Iso639Code != Language2Iso639Code)
+			if (!string.IsNullOrEmpty(Language3Tag) &&
+				Language3Tag != Language1Tag &&
+				Language3Tag != Language2Tag)
 			{
 				Language3.AddSelectorCssRule(sb, omitDirection);
 
@@ -428,7 +428,7 @@ namespace Bloom.Collection
 				Language2.ReadFromXml(xml, true, "self");
 				Language3.ReadFromXml(xml, true, Language2.Tag);
 
-				SignLanguageIso639Code = ReadString(xml, "SignLanguageIso639Code",  /* old name */
+				SignLanguageTag = ReadString(xml, "SignLanguageIso639Code",  /* old name */
 				ReadString(xml, "SignLanguageIso639Code", ""));
 				XMatterPackName = ReadString(xml, "XMatterPack", "Factory");
 
@@ -886,9 +886,9 @@ namespace Bloom.Collection
 			// but then adding an unambiguous duplicate with CollectionCountry
 			Analytics.SetApplicationProperty("Country", Country);
 			Analytics.SetApplicationProperty("CollectionCountry", Country);
-			Analytics.SetApplicationProperty("Language1Iso639Code", Language1Iso639Code);
-			Analytics.SetApplicationProperty("Language2Iso639Code", Language2Iso639Code);
-			Analytics.SetApplicationProperty("Language3Iso639Code", Language3Iso639Code ?? "---");
+			Analytics.SetApplicationProperty("Language1Iso639Code", Language1Tag);
+			Analytics.SetApplicationProperty("Language2Iso639Code", Language2Tag);
+			Analytics.SetApplicationProperty("Language3Iso639Code", Language3Tag ?? "---");
 			Analytics.SetApplicationProperty("Language1Iso639Name", Language1.Name);
 			Analytics.SetApplicationProperty("BrandingProjectName", BrandingProjectKey);
 		}
@@ -899,7 +899,7 @@ namespace Bloom.Collection
 			 // I wanted to limit this with the language tag, but after 2 hours I gave up simply getting the current language tag
 			// to the decodable reader code. What a mess that code is. So now I'm taking advantage of the fact that there is only
 			// one language used in our current tools
-			// return $"[lang='{Iso639Code}']{{font-size: {(BaseUIFontSizeInPoints == 0 ? 10 : BaseUIFontSizeInPoints)}pt;}}";
+			// return $"[lang='{Tag}']{{font-size: {(BaseUIFontSizeInPoints == 0 ? 10 : BaseUIFontSizeInPoints)}pt;}}";
 			var css = "";
 			foreach (var writingSystem in LanguagesZeroBased)
 			{
@@ -921,38 +921,38 @@ namespace Bloom.Collection
 		/// if it can't find a name.
 		/// BL-8174 But in case the code includes Script/Region/Variant codes, we should show them somewhere too.
 		/// </summary>
-		public string GetDisplayNameForLanguage(string code, string metadataLanguageIsoCode = null)
+		public string GetDisplayNameForLanguage(string langTag, string metadataLanguageTag = null)
 		{
-			if (metadataLanguageIsoCode == null)
-				metadataLanguageIsoCode = this.Language2Iso639Code;
+			if (metadataLanguageTag == null)
+				metadataLanguageTag = this.Language2Tag;
 
-			if (code == this.Language1Iso639Code && !string.IsNullOrWhiteSpace(this.Language1.Name))
-				return GetLanguageNameWithScriptVariants(code, this.Language1.Name, this.Language1.IsCustomName, metadataLanguageIsoCode);
-			if (code == this.Language2Iso639Code)
-				return GetLanguageNameWithScriptVariants(code, this.Language2.Name, this.Language2.IsCustomName, metadataLanguageIsoCode);
-			if (code == this.Language3Iso639Code)
-				return GetLanguageNameWithScriptVariants(code, this.Language3.Name, this.Language3.IsCustomName, metadataLanguageIsoCode);
-			return this.GetLanguageName(code, metadataLanguageIsoCode);
+			if (langTag == this.Language1Tag && !string.IsNullOrWhiteSpace(this.Language1.Name))
+				return GetLanguageNameWithScriptVariants(langTag, this.Language1.Name, this.Language1.IsCustomName, metadataLanguageTag);
+			if (langTag == this.Language2Tag)
+				return GetLanguageNameWithScriptVariants(langTag, this.Language2.Name, this.Language2.IsCustomName, metadataLanguageTag);
+			if (langTag == this.Language3Tag)
+				return GetLanguageNameWithScriptVariants(langTag, this.Language3.Name, this.Language3.IsCustomName, metadataLanguageTag);
+			return this.GetLanguageName(langTag, metadataLanguageTag);
 		}
 
 		// We always want to use a name the user deliberately gave (hence the use of 'nameIsCustom').
 		// We also want to include Script/Region/Variant codes if those will be helpful.
 		// OTOH, the custom name, if present may well include the sense of any srv codes, so (e.g.) if we
 		// have a custom name 'Naskapi Roman', it seems like overkill to also include 'Naskapi-Latn'.
-		private string GetLanguageNameWithScriptVariants(string completeIsoCode, string collectionSettingsLanguageName, bool nameIsCustom, string metadataLanguageIsoCode)
+		private string GetLanguageNameWithScriptVariants(string completeLangTag, string collectionSettingsLanguageName, bool nameIsCustom, string metadataLanguageTag)
 		{
-			Guard.AgainstNull(metadataLanguageIsoCode, "metadataLanguageIsoCode is null.");
-			var hyphenIndex = completeIsoCode.IndexOf('-');
-			var srvCodes = hyphenIndex > -1 && completeIsoCode.Length > hyphenIndex + 1 ?
-				completeIsoCode.Substring(hyphenIndex + 1) : string.Empty;
+			Guard.AgainstNull(metadataLanguageTag, "metadataLanguageTag is null.");
+			var hyphenIndex = completeLangTag.IndexOf('-');
+			var srvCodes = hyphenIndex > -1 && completeLangTag.Length > hyphenIndex + 1 ?
+				completeLangTag.Substring(hyphenIndex + 1) : string.Empty;
 			// Special case for 'zh-CN': this one needs to be treated as if it had no srv codes
-			if (completeIsoCode == "zh-CN")
+			if (completeLangTag == "zh-CN")
 				srvCodes = string.Empty;
 			if (string.IsNullOrEmpty(srvCodes))
 				return collectionSettingsLanguageName;
-			var baseIsoCode = completeIsoCode.Substring(0, hyphenIndex);
+			var baseIsoCode = completeLangTag.Substring(0, hyphenIndex);
 			return nameIsCustom ?
-				collectionSettingsLanguageName + " (" + GetLanguageName(baseIsoCode, metadataLanguageIsoCode) + ")"
+				collectionSettingsLanguageName + " (" + GetLanguageName(baseIsoCode, metadataLanguageTag) + ")"
 				: collectionSettingsLanguageName + "-" + srvCodes + " (" + collectionSettingsLanguageName + ")";
 		}
 	}

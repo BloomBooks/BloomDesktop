@@ -434,7 +434,7 @@ namespace Bloom.Edit
 					_contentLanguages.Add(new ContentLanguage(_collectionSettings.Language1));
 
 					//NB: these won't *always* be tied to the national and regional languages, but they are for now. We would need more UI, without making for extra complexity
-					if (_collectionSettings.Language2Iso639Code != _collectionSettings.Language1Iso639Code)
+					if (_collectionSettings.Language2Tag != _collectionSettings.Language1Tag)
 					{
 						var item2 = new ContentLanguage(_collectionSettings.Language2);
 						_contentLanguages.Add(item2);

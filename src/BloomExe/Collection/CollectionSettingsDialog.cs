@@ -155,10 +155,10 @@ namespace Bloom.Collection
 		{
 			var lang1UiName = _collectionSettings.Language1.Name;
 			var lang2UiName = _collectionSettings.Language2.Name;
-			_language1Name.Text = string.Format("{0} ({1})", lang1UiName, _collectionSettings.Language1Iso639Code);
-			_language2Name.Text = string.Format("{0} ({1})", lang2UiName, _collectionSettings.Language2Iso639Code);
+			_language1Name.Text = string.Format("{0} ({1})", lang1UiName, _collectionSettings.Language1Tag);
+			_language2Name.Text = string.Format("{0} ({1})", lang2UiName, _collectionSettings.Language2Tag);
 			const string unsetLanguageName = "--";
-			if (string.IsNullOrEmpty(_collectionSettings.Language3Iso639Code))
+			if (string.IsNullOrEmpty(_collectionSettings.Language3Tag))
 			{
 				_language3Name.Text = unsetLanguageName;
 				_removeLanguage3Link.Visible = false;
@@ -167,12 +167,12 @@ namespace Bloom.Collection
 			else
 			{
 				var lang3UiName = _collectionSettings.Language3.Name;
-				_language3Name.Text = string.Format("{0} ({1})", lang3UiName, _collectionSettings.Language3Iso639Code);
+				_language3Name.Text = string.Format("{0} ({1})", lang3UiName, _collectionSettings.Language3Tag);
 				_removeLanguage3Link.Visible = true;
 				_changeLanguage3Link.Text = LocalizationManager.GetString("CollectionSettingsDialog.LanguageTab.ChangeLanguageLink", "Change...");
 			}
 
-			if (string.IsNullOrEmpty(_collectionSettings.SignLanguageIso639Code))
+			if (string.IsNullOrEmpty(_collectionSettings.SignLanguageTag))
 			{
 				_signLanguageName.Text = unsetLanguageName;
 				_removeSignLanguageLink.Visible = false;
@@ -183,7 +183,7 @@ namespace Bloom.Collection
 			else
 			{
 				var signLangUiName = _collectionSettings.GetSignLanguageName();
-				_signLanguageName.Text = string.Format("{0} ({1})", signLangUiName, _collectionSettings.SignLanguageIso639Code);
+				_signLanguageName.Text = string.Format("{0} ({1})", signLangUiName, _collectionSettings.SignLanguageTag);
 				_removeSignLanguageLink.Visible = true;
 				_changeSignLanguageLink.Text =
 					LocalizationManager.GetString("CollectionSettingsDialog.LanguageTab.ChangeLanguageLink", "Change...");
@@ -197,7 +197,7 @@ namespace Bloom.Collection
 		{
 			var potentiallyCustomName = _collectionSettings.Language1.Name;
 
-			var l = ChangeLanguage(_collectionSettings.Language1Iso639Code, potentiallyCustomName);
+			var l = ChangeLanguage(_collectionSettings.Language1Tag, potentiallyCustomName);
 
 			if (l != null)
 			{
@@ -209,10 +209,10 @@ namespace Bloom.Collection
 		private void _language2ChangeLink_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
 		{
 			var potentiallyCustomName = _collectionSettings.Language2.Name;
-			var l = ChangeLanguage(_collectionSettings.Language2Iso639Code, potentiallyCustomName);
+			var l = ChangeLanguage(_collectionSettings.Language2Tag, potentiallyCustomName);
 			if (l != null)
 			{
-				_collectionSettings.Language2Iso639Code = l.LanguageTag;
+				_collectionSettings.Language2Tag = l.LanguageTag;
 				_collectionSettings.Language2.SetName(l.DesiredName, l.DesiredName != l.Names.FirstOrDefault());
 				ChangeThatRequiresRestart();
 			}
@@ -221,34 +221,34 @@ namespace Bloom.Collection
 		private void _language3ChangeLink_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
 		{
 			var potentiallyCustomName = _collectionSettings.Language3.Name;
-			var l = ChangeLanguage(_collectionSettings.Language3Iso639Code, potentiallyCustomName);
+			var l = ChangeLanguage(_collectionSettings.Language3Tag, potentiallyCustomName);
 			if (l != null)
 			{
-				_collectionSettings.Language3Iso639Code = l.LanguageTag;
+				_collectionSettings.Language3Tag = l.LanguageTag;
 				_collectionSettings.Language3.SetName(l.DesiredName, l.DesiredName != l.Names.FirstOrDefault());
 				ChangeThatRequiresRestart();
 			}
 		}
 		private void _removeSecondNationalLanguageButton_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
 		{
-			_collectionSettings.Language3Iso639Code = string.Empty;	// null causes a crash in trying to set it again (BL-5795)
+			_collectionSettings.Language3Tag = string.Empty;	// null causes a crash in trying to set it again (BL-5795)
 			ChangeThatRequiresRestart();
 		}
 
 		private void _signLanguageChangeLink_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
 		{
 			var potentiallyCustomName = _collectionSettings.SignLanguageName;
-			var l = ChangeLanguage(_collectionSettings.SignLanguageIso639Code, potentiallyCustomName, false);
+			var l = ChangeLanguage(_collectionSettings.SignLanguageTag, potentiallyCustomName, false);
 			if (l != null)
 			{
-				_collectionSettings.SignLanguageIso639Code = l.LanguageTag;
+				_collectionSettings.SignLanguageTag = l.LanguageTag;
 				_collectionSettings.SignLanguageName = l.DesiredName;
 				ChangeThatRequiresRestart();
 			}
 		}
 		private void _removeSignLanguageButton_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
 		{
-			_collectionSettings.SignLanguageIso639Code = string.Empty;
+			_collectionSettings.SignLanguageTag = string.Empty;
 			ChangeThatRequiresRestart();
 		}
 
@@ -316,8 +316,8 @@ namespace Bloom.Collection
 			_collectionSettings.XMatterPackName = PendingXmatter;
 
 			//no point in letting them have the Nat lang 2 be the same as 1
-			if (_collectionSettings.Language2Iso639Code == _collectionSettings.Language3Iso639Code)
-				_collectionSettings.Language3Iso639Code = null;
+			if (_collectionSettings.Language2Tag == _collectionSettings.Language3Tag)
+				_collectionSettings.Language3Tag = null;
 
 			if(_bloomCollectionName.Text.Trim()!=_collectionSettings.CollectionName)
 			{
