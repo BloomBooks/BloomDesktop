@@ -217,9 +217,6 @@ export const CollectionsTabBookPane: React.FunctionComponent<{
                     color="white"
                     selectedColor="white"
                     labelBackgroundColor={kDarkestBackground}
-                    css={css`
-                        font-family: "segoe ui";
-                    `}
                 >
                     <TabList>
                         {// actually we want the (default) preview tab pane even we're not showing history.

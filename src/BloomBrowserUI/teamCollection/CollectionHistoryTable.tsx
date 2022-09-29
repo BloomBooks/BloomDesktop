@@ -45,7 +45,6 @@ const TextCell: React.FunctionComponent<{
             css={css`
                 vertical-align: top;
                 padding-top: 6px;
-                font-family: Arial, Sans; // enhance: this should be roboto, but I can't get it to not look bold!
             `}
             {...props}
         >
