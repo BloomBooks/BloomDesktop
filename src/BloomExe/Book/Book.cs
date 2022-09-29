@@ -1360,8 +1360,6 @@ namespace Bloom.Book
 			// anything (may fix BL-3166).
 			var licenseMetadata = GetLicenseMetadata();
 
-			Storage.CompleteFullyUpdatingFilesIfNeeded();
-
 			progress.WriteStatus("Updating collection settings...");
 			try
 			{
