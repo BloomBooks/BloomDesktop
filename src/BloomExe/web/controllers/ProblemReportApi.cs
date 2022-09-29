@@ -904,7 +904,7 @@ namespace Bloom.web.controllers
 			}
 			else
 			{
-				bldr.AppendLine(label + " -> iso: '" + ws.Tag + "',  font: " +
+				bldr.AppendLine(label + " -> lang: '" + ws.Tag + "',  font: " +
 				                ws.FontName + (ws.IsRightToLeft ? " RTL" : string.Empty));
 			}
 		}

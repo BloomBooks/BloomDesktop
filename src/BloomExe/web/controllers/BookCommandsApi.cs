@@ -155,7 +155,7 @@ namespace Bloom.web.controllers
 			var bookInfo = _collectionModel.BookInfoFromCollectionAndId(item.Item1, item.Item2);
 			if (bookInfo == null || bookInfo.FileNameLocked)
 				return; // the title it already has is the folder name which is the right locked name.
-			var langCodes = _collectionModel.CollectionSettings.GetAllLanguageCodes().ToList();
+			var langCodes = _collectionModel.CollectionSettings.GetAllLanguageTags().ToList();
 			var bestTitle = bookInfo.GetBestTitleForUserDisplay(langCodes);
 			if (String.IsNullOrEmpty(bestTitle))
 			{

@@ -41,10 +41,10 @@ namespace BloomTests.Collection
 		/// <summary>
 		/// This is a regression test related to https://jira.sil.org/browse/BL-685.
 		/// Apparently calculating the name is expensive, so it is cached. This
-		/// test ensures that the cache doesn't keep the name from tracking the iso.
+		/// test ensures that the cache doesn't keep the name from tracking the language tag.
 		/// </summary>
 		[Test]
-		public void Language1IsoCodeChanged_NameChangedToo()
+		public void Language1TagChanged_NameChangedToo()
 		{
 			const string collectionName = "test";
 			var settings = CreateCollectionSettings(_folder.Path, collectionName);
@@ -134,8 +134,8 @@ namespace BloomTests.Collection
 		[TestCase("fr-CA", "es", "de", new[] { "fr-CA", "fr", "es", "de", "en" })]
 		[TestCase("es", "fr-CA", "de", new[] { "es", "fr-CA", "fr", "de", "en" })]
 		[TestCase("es", "id", "fr-LU", new[] { "es", "id", "fr-LU", "fr", "en" })]
-		[TestCase("rub", "", "en", new [] { "rub", "en" })] // don't stick in Russian as an alternative to an unrelated 3 letter code, and don't duplicate "en"
-		// given two fr-X codes, insert fr after the last of them. The main point here is that fr should be tried after fr-FR and fr-LU.
+		[TestCase("rub", "", "en", new [] { "rub", "en" })] // don't stick in Russian as an alternative to an unrelated 3 letter tag, and don't duplicate "en"
+		// given two fr-X tags, insert fr after the last of them. The main point here is that fr should be tried after fr-FR and fr-LU.
 		// But the result here is actually debatable: should es be preferred to fr in this case?
 		// Maybe the right result is fr-FR, fr-LU, fr, es, en in this case, since the original order indicates that French is better than Spanish?
 		// But it's a very obscure and unlikely case; I think we can live with what the current algorithm does.
@@ -169,7 +169,7 @@ namespace BloomTests.Collection
 		[TestCase("zh-Hans", "es", "de", new[] { "es", "de", "zh-Hans", "zh-CN", "en" })] // any other zh-X requires zh-CN to be inserted following it.
 		[TestCase("es", "zh-Hans", "zh-Hant", new[] { "zh-Hans", "zh-Hant", "zh-CN", "es", "en" })] // if we have two locale-specific ones, the insertion should be after both.
 		[TestCase("fr-CA", "es", "de", new[] { "es", "de", "fr-CA", "fr", "en" })]
-		[TestCase("rub", "", "en", new[] { "en", "rub" })] // don't stick in Russian as an alternative to an unrelated 3 letter code, and don't duplicate "en" or move to end
+		[TestCase("rub", "", "en", new[] { "en", "rub" })] // don't stick in Russian as an alternative to an unrelated 3 letter tag, and don't duplicate "en" or move to end
 
 		public void GetLanguagePrioritiesForLocalizedTextOnPage_L1Unchecked_GetsCorrectListOfLanguages(string lang1, string lang2, string lang3, string[] results)
 		{

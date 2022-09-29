@@ -87,7 +87,7 @@ namespace BloomTests.CLI
 			{
 				Path = _bookFolder.FolderPath,
 				Preset = "shellbook",
-				VernacularIsoCode = "en"
+				VernacularTag = "en"
 			});
 			Assert.AreEqual(0, code, "Should return an exit code of 0, meaning it is happy.");
 			var html = File.ReadAllText(_eventualHtmlPath);
@@ -103,7 +103,7 @@ namespace BloomTests.CLI
 			{
 				Path = _bookFolder.FolderPath,
 				Preset = "shellbook",
-				VernacularIsoCode = "en"
+				VernacularTag = "en"
 			});
 			Assert.AreEqual(0, code, "Should return an exit code of 0, meaning it is happy.");
 			Debug.Write(File.ReadAllText(_eventualHtmlPath));
@@ -138,7 +138,7 @@ namespace BloomTests.CLI
 			{
 				Path = _bookFolder.FolderPath,
 				Preset = "shellbook",
-				VernacularIsoCode = "en"
+				VernacularTag = "en"
 			});
 			Assert.AreEqual(0, code, "Should return an exit code of 0, meaning it is happy.");
 			Debug.Write(File.ReadAllText(_eventualHtmlPath));
@@ -160,7 +160,7 @@ namespace BloomTests.CLI
 			{
 				Path = _bookFolder.FolderPath,
 				Preset = "shellbook",
-				VernacularIsoCode = "en"
+				VernacularTag = "en"
 			});
 			Assert.AreEqual(0, code, "Should return an exit code of 0, meaning it is happy.");
 			Assert.That(File.Exists(Path.Combine(Path.GetDirectoryName(_eventualHtmlPath), "license.png")));
@@ -173,7 +173,7 @@ namespace BloomTests.CLI
 			{
 				Path = _bookFolder.FolderPath,
 				Preset = "shellbook",
-				VernacularIsoCode = "en"
+				VernacularTag = "en"
 			});
 			Assert.AreEqual(0, code, "Should return an exit code of 0, meaning it is happy.");
 			AssertThatXmlIn.HtmlFile(_eventualHtmlPath)
@@ -189,9 +189,9 @@ namespace BloomTests.CLI
 			{
 				Path = _bookFolder.FolderPath,
 				Preset = "shellbook",
-				VernacularIsoCode = "en",
-				NationalLanguage1IsoCode = "fr",
-				NationalLanguage2IsoCode = "sp"
+				VernacularTag = "en",
+				NationalLanguage1Tag = "fr",
+				NationalLanguage2Tag = "sp"
 			});
 			Assert.AreEqual(0, code, "Should return an exit code of 0, meaning it is happy.");
 			AssertThatXmlIn.HtmlFile(_eventualHtmlPath)
@@ -207,7 +207,7 @@ namespace BloomTests.CLI
 			var code = HydrateBookCommand.Handle(new HydrateParameters
 			{
 				Path = _bookFolder.FolderPath,
-				VernacularIsoCode = "en"
+				VernacularTag = "en"
 			});
 			Assert.AreEqual(0, code, "Should return an exit code of 0, meaning it is happy.");
 			AssertThatXmlIn.HtmlFile(_eventualHtmlPath)

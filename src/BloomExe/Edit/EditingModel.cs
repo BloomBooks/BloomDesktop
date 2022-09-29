@@ -450,16 +450,16 @@ namespace Bloom.Edit
 				// clear them first, so we end up with selections appropriate to this one.
 				_contentLanguages.ForEach(l => l.Selected = false);
 				var lang1 = _contentLanguages.FirstOrDefault(l =>
-					l.Iso639Code == _bookSelection.CurrentSelection.Language1Tag);
+					l.LangTag == _bookSelection.CurrentSelection.Language1Tag);
 				// We must have one language selected. If nothing matches, select the first.
 				if (lang1 == null)
 					lang1 = _contentLanguages[0];
 				lang1.Selected = true;
 
-				var lang2 = _contentLanguages.FirstOrDefault(l => l.Iso639Code == _bookSelection.CurrentSelection.Language2Tag);
+				var lang2 = _contentLanguages.FirstOrDefault(l => l.LangTag == _bookSelection.CurrentSelection.Language2Tag);
 				if (lang2 != null)
 					lang2.Selected = true;
-				var lang3 = _contentLanguages.FirstOrDefault(l => l.Iso639Code == _bookSelection.CurrentSelection.Language3Tag);
+				var lang3 = _contentLanguages.FirstOrDefault(l => l.LangTag == _bookSelection.CurrentSelection.Language3Tag);
 				if (lang3 != null)
 					lang3.Selected = true;
 
@@ -528,7 +528,7 @@ namespace Bloom.Edit
 		// first, as that will change the 'checked' status back to what it was.
 		private string[] GetMultilingualContentLanguages()
 		{
-			return _contentLanguages.Where(l => l.Selected).Select(l => l.Iso639Code).ToArray();
+			return _contentLanguages.Where(l => l.Selected).Select(l => l.LangTag).ToArray();
 		}
 
 		public int NumberOfDisplayedLanguages
@@ -544,13 +544,13 @@ namespace Bloom.Edit
 
 		public class ContentLanguage
 		{
-			public readonly string Iso639Code;
+			public readonly string LangTag;
 			public readonly string Name;
 			private readonly WritingSystem _ws;
 
 			public ContentLanguage(WritingSystem ws)
 			{
-				Iso639Code = ws.Tag;
+				LangTag = ws.Tag;
 				Name = ws.Name;
 				IsRtl = ws.IsRightToLeft;
 				_ws = ws;

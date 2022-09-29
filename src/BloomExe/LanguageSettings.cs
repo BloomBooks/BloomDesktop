@@ -8,13 +8,13 @@ namespace Bloom
 	public class LanguageSettings
 	{
 		private IEnumerable<string> _preferredSourceLanguages =new List<string>();
-		public string VernacularIso639Code { get; set; }
+		public string VernacularLangTag { get; set; }
 
 
-		public LanguageSettings(string vernacularIso639Code, IEnumerable<string> preferredSourceLanguagesInOrder)
+		public LanguageSettings(string langTag, IEnumerable<string> preferredSourceLanguagesInOrder)
 		{
 			_preferredSourceLanguages = preferredSourceLanguagesInOrder;
-			VernacularIso639Code = vernacularIso639Code;
+			VernacularLangTag = langTag;
 		}
 
 		public string ChooseBestSource(Dictionary<string, string> sourceTexts, string returnIfNoneFound)
