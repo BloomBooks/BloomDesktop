@@ -846,8 +846,6 @@ namespace Bloom.Book
 			{
 				return GetErrorDom();
 			}
-			//Console.WriteLine("DEBUG GetPreviewHtmlFileForWholeBook(): calling BringBookUpToDate() for new previewDOM");
-			BringBookUpToDateInternal(previewDom, new NullProgress());
 
 			// this is normally the vernacular, but when we're previewing a shell, well it won't have anything for the vernacular
 			var primaryLanguage = Language1IsoCode;
