@@ -150,7 +150,7 @@ namespace Bloom.Publish.Android
 				// set of overlay locations in a single book. See BL-7912 for some ideas on how we might
 				// eventually improve this. In the meantime, switching language would have bad effects,
 				// and if you can't switch language, there's no point in the book containing more than one.
-				var languagesToInclude = new string[1] { modifiedBook.BookData.Language1.Iso639Code };
+				var languagesToInclude = new string[1] { modifiedBook.BookData.Language1.Tag };
 				PublishModel.RemoveUnwantedLanguageData(modifiedBook.OurHtmlDom, languagesToInclude,
 					shouldPruneXmatter: true, mdLang1Code, mdLang2Code);
 			}

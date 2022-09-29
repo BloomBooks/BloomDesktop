@@ -70,9 +70,9 @@ namespace Bloom.Api
 					}
 					else
 					{
-						isoCode1 = request.CurrentCollectionSettings.Language1.Iso639Code;
-						isoCodeM1 = request.CurrentCollectionSettings.Language2.Iso639Code;
-						isoCodeM2 = request.CurrentCollectionSettings.Language3?.Iso639Code ?? "";
+						isoCode1 = request.CurrentCollectionSettings.Language1.Tag;
+						isoCodeM1 = request.CurrentCollectionSettings.Language2.Tag;
+						isoCodeM2 = request.CurrentCollectionSettings.Language3?.Tag ?? "";
 					}
 					langId = langId.Replace("V", isoCode1);
 					langId = langId.Replace("N1", isoCodeM1);

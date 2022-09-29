@@ -898,13 +898,13 @@ namespace Bloom.web.controllers
 
 		void AppendWritingSystem(WritingSystem ws, string label, StringBuilder bldr)
 		{
-			if (string.IsNullOrEmpty(ws?.Iso639Code))
+			if (string.IsNullOrEmpty(ws?.Tag))
 			{
 				bldr.AppendLine("No " + label + " defined");
 			}
 			else
 			{
-				bldr.AppendLine(label + " -> iso: '" + ws.Iso639Code + "',  font: " +
+				bldr.AppendLine(label + " -> iso: '" + ws.Tag + "',  font: " +
 				                ws.FontName + (ws.IsRightToLeft ? " RTL" : string.Empty));
 			}
 		}

@@ -175,18 +175,18 @@ namespace Bloom.Book
 				bookData.RemoveAllForms("contentLanguage2");
 
 			var language1 = bookData.CollectionSettings.Language1;
-			bookData.Set("contentLanguage1", XmlString.FromUnencoded(language1.Iso639Code), false);
+			bookData.Set("contentLanguage1", XmlString.FromUnencoded(language1.Tag), false);
 			bookData.Set("contentLanguage1Rtl", XmlString.FromUnencoded(language1.IsRightToLeft.ToString()), false);
 			if (oneTwoOrThreeContentLanguages > 1)
 			{
 				var language2 = bookData.CollectionSettings.Language2;
-				bookData.Set("contentLanguage2", XmlString.FromUnencoded(language2.Iso639Code), false);
+				bookData.Set("contentLanguage2", XmlString.FromUnencoded(language2.Tag), false);
 				bookData.Set("contentLanguage2Rtl", XmlString.FromUnencoded(language2.IsRightToLeft.ToString()), false);
 			}
 			var language3 = bookData.CollectionSettings.Language3;
-			if (oneTwoOrThreeContentLanguages > 2 && !String.IsNullOrEmpty(language3.Iso639Code))
+			if (oneTwoOrThreeContentLanguages > 2 && !String.IsNullOrEmpty(language3.Tag))
 			{
-				bookData.Set("contentLanguage3", XmlString.FromUnencoded(language3.Iso639Code), false);
+				bookData.Set("contentLanguage3", XmlString.FromUnencoded(language3.Tag), false);
 				bookData.Set("contentLanguage3Rtl", XmlString.FromUnencoded(language3.IsRightToLeft.ToString()), false);
 			}
 		}
@@ -334,7 +334,7 @@ namespace Bloom.Book
 			                                 || String.IsNullOrWhiteSpace(dataDefaultLanguages[0])
 			                                 || dataDefaultLanguages[0].Equals("auto",StringComparison.InvariantCultureIgnoreCase))
 			{
-				return lang == bookData.Language1.Iso639Code || lang == contentLanguageIso2 || lang == contentLanguageIso3;
+				return lang == bookData.Language1.Tag || lang == contentLanguageIso2 || lang == contentLanguageIso3;
 			}
 			else
 			{
@@ -346,8 +346,8 @@ namespace Bloom.Book
 				// V and L1 both mean the first checked language.
 				// Changes here should result in consistent ones in Book.IsLanguageWanted and BookData.GatherDataItemsFromXElement
 				// and RuntimeInformationInjector.AddUIDictionaryToDom and I18ApiHandleI18nRequest
-				return (lang == bookData.Language1.Iso639Code && dataDefaultLanguages.Contains("V")) ||
-				   (lang == bookData.Language1.Iso639Code && dataDefaultLanguages.Contains("L1")) ||
+				return (lang == bookData.Language1.Tag && dataDefaultLanguages.Contains("V")) ||
+				   (lang == bookData.Language1.Tag && dataDefaultLanguages.Contains("L1")) ||
 
 				   (lang == bookData.MetadataLanguage1IsoCode && dataDefaultLanguages.Contains("N1")) ||
 				   (lang == bookData.Language2IsoCode && dataDefaultLanguages.Contains("L2")) ||

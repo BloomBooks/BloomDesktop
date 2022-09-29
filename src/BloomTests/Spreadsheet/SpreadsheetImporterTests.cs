@@ -618,7 +618,7 @@ namespace BloomTests.Spreadsheet
 			// CollectionSettings object. So we create a basic set of CollectionSettings, but we don't need
 			// very much and we certainly don't need to save it anywhere.
 			var settings = new NewCollectionSettings();
-			settings.Language1.Iso639Code = "es";
+			settings.Language1.Tag = "es";
 			settings.Language1.SetName("Spanish", false);
 
 			// Do the import

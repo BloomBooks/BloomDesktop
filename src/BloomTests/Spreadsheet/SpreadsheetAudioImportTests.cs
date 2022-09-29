@@ -234,7 +234,7 @@ namespace BloomTests.Spreadsheet
 
 			// not sure if we need this
 			var settings = new NewCollectionSettings();
-			settings.Language1.Iso639Code = "es";
+			settings.Language1.Tag = "es";
 			settings.Language1.SetName("Spanish", false);
 
 			// Do the import
@@ -650,7 +650,7 @@ namespace BloomTests.Spreadsheet
 
 			// not sure if we need this
 			var settings = new NewCollectionSettings();
-			settings.Language1.Iso639Code = "es";
+			settings.Language1.Tag = "es";
 			settings.Language1.SetName("Spanish", false);
 
 			// Do the import

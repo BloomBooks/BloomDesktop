@@ -194,8 +194,8 @@ namespace Bloom.CollectionCreating
 			//this both saves a step for the country with the most languages, but also helps get the order between en and tpi to what will be most useful
 			if (_collectionInfo.Country == "Papua New Guinea")
 			{
-				_collectionInfo.Language2.Iso639Code = "en";
-				_collectionInfo.Language3.Iso639Code = "tpi";
+				_collectionInfo.Language2.Tag = "en";
+				_collectionInfo.Language3.Tag = "tpi";
 			}
 			_collectionInfo.SetAnalyticsProperties();
 

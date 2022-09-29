@@ -236,12 +236,12 @@ namespace Bloom
 					{
 						var librarySettings = c.Resolve<CollectionSettings>();
 						var preferredSourceLanguagesInOrder = new List<string>();
-						preferredSourceLanguagesInOrder.Add(librarySettings.Language2.Iso639Code);
-						if (!String.IsNullOrEmpty(librarySettings.Language3.Iso639Code)
-							&& librarySettings.Language3.Iso639Code != librarySettings.Language2.Iso639Code)
-							preferredSourceLanguagesInOrder.Add(librarySettings.Language3.Iso639Code);
+						preferredSourceLanguagesInOrder.Add(librarySettings.Language2.Tag);
+						if (!String.IsNullOrEmpty(librarySettings.Language3.Tag)
+							&& librarySettings.Language3.Tag != librarySettings.Language2.Tag)
+							preferredSourceLanguagesInOrder.Add(librarySettings.Language3.Tag);
 
-						return new LanguageSettings(librarySettings.Language1.Iso639Code, preferredSourceLanguagesInOrder);
+						return new LanguageSettings(librarySettings.Language1.Tag, preferredSourceLanguagesInOrder);
 					});
 					builder.Register<XMatterPackFinder>(c =>
 					{

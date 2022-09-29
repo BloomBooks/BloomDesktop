@@ -919,7 +919,7 @@ namespace Bloom.Book
 
 			if (SHRP_TeachersGuideExtension.ExtensionIsApplicable(this))
 			{
-				SHRP_TeachersGuideExtension.UpdateBook(OurHtmlDom, _bookData.Language1.Iso639Code);
+				SHRP_TeachersGuideExtension.UpdateBook(OurHtmlDom, _bookData.Language1.Tag);
 			}
 
 			OurHtmlDom.FixDivOrdering();
@@ -1444,7 +1444,7 @@ namespace Bloom.Book
 
 			UpdateCharacterStyleMarkup(bookDOM);
 
-			bookDOM.SetImageAltAttrsFromDescriptions(_bookData.Language1.Iso639Code);
+			bookDOM.SetImageAltAttrsFromDescriptions(_bookData.Language1.Tag);
 
 			//we've removed and possible added pages, so our page cache is invalid
 			_pagesCache = null;
@@ -1565,7 +1565,7 @@ namespace Bloom.Book
 			if (BookInfo.MetaData.DisplayNames == null)
 				BookInfo.MetaData.DisplayNames = new Dictionary<string,string>();
 			foreach (var lang in _bookData.GetAllBookLanguages())
-				BookInfo.MetaData.DisplayNames[lang.Iso639Code] = lang.Name;
+				BookInfo.MetaData.DisplayNames[lang.Tag] = lang.Name;
 			// These settings will be saved to the meta.json file the next time the book itself is saved.
 		}
 
@@ -4646,7 +4646,7 @@ namespace Bloom.Book
 		{
 			var testOnly = BookUpload.UseSandboxByDefault;
 			FontAnalytics.Report(this.ID, fontEventType, 
-				this.CollectionSettings.Language1.Iso639Code,
+				this.CollectionSettings.Language1.Tag,
 				testOnly,
 				this.CollectionSettings.Language1.FontName, eventDetails);
 		}

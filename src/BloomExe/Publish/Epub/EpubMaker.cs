@@ -534,7 +534,7 @@ namespace Bloom.Publish.Epub
 				new XAttribute(XNamespace.Xmlns + "opf", opf.NamespaceName),
 				// attribute makes the namespace have a prefix, not be a default.
 				new XElement(dc + "title", Book.Title),
-				new XElement(dc + "language", Book.BookData.Language1.Iso639Code),
+				new XElement(dc + "language", Book.BookData.Language1.Tag),
 				new XElement(dc + "identifier",
 					new XAttribute("id", "I" + Book.ID), "bloomlibrary.org." + Book.ID),
 				new XElement(dc + "source", source));
@@ -1135,7 +1135,7 @@ namespace Bloom.Publish.Epub
 			_directionSettings.Add("body", this.Book.BookData.Language1.IsRightToLeft ? "rtl" : "ltr");
 			foreach (var lang in this.Book.BookData.GetBasicBookLanguages())
 			{
-				_directionSettings.Add(lang.Iso639Code, lang.IsRightToLeft ? "rtl" : "ltr");
+				_directionSettings.Add(lang.Tag, lang.IsRightToLeft ? "rtl" : "ltr");
 			}
 		}
 
@@ -1905,8 +1905,8 @@ namespace Bloom.Publish.Epub
 			// Provide the general language of this document.
 			// (Required for intermediate (AA) conformance with WCAG 2.0.)
 			div = pageDom.RawDom.SelectSingleNode("/html") as XmlElement;
-			div.SetAttribute("lang", Book.BookData.Language1.Iso639Code);
-			div.SetAttribute("xml:lang", Book.BookData.Language1.Iso639Code);
+			div.SetAttribute("lang", Book.BookData.Language1.Tag);
+			div.SetAttribute("xml:lang", Book.BookData.Language1.Tag);
 		}
 
 		private bool SetRoleAndLabelForMatchingDiv(XmlElement div, string attributeValue, string labelId, string labelEnglish)

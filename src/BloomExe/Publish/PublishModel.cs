@@ -616,7 +616,7 @@ namespace Bloom.Publish
 				var container = new CompositionContainer(catalog);
 				//inject what we have to offer for the extension to consume
 				container.ComposeExportedValue<string>("PathToBookFolder",BookSelection.CurrentSelection.FolderPath);
-				container.ComposeExportedValue<string>("Language1Iso639Code", _currentlyLoadedBook.BookData.Language1.Iso639Code);
+				container.ComposeExportedValue<string>("Language1Iso639Code", _currentlyLoadedBook.BookData.Language1.Tag);
 				container.ComposeExportedValue<Func<IEnumerable<HtmlDom>>>(GetPageDoms);
 			  //  container.ComposeExportedValue<Func<string>>("pathToPublishedHtmlFile",GetFileForPrinting);
 				//get the original images, not compressed ones (just in case the thumbnails are, like, full-size & they want quality)

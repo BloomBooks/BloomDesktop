@@ -38,8 +38,8 @@ namespace Bloom.Book
 			var d = new Dictionary<string, string>();
 
 			foreach (var lang in bookData.GetAllBookLanguages())
-				SafelyAddLanguage(d, lang.Iso639Code, lang.GetNameInLanguage(lang.Iso639Code));
-			SafelyAddLanguage(d, "vernacularLang", bookData.Language1.Iso639Code);//use for making the vernacular the first tab
+				SafelyAddLanguage(d, lang.Tag, lang.GetNameInLanguage(lang.Tag));
+			SafelyAddLanguage(d, "vernacularLang", bookData.Language1.Tag);//use for making the vernacular the first tab
 			SafelyAddLanguage(d, "{V}", bookData.Language1.Name);
 			SafelyAddLanguage(d, "{N1}", bookData.MetadataLanguage1.GetNameInLanguage(bookData.MetadataLanguage1IsoCode));
 			if (!string.IsNullOrEmpty(bookData.Language3IsoCode))
@@ -323,7 +323,7 @@ namespace Bloom.Book
 				d.Add("defaultSourceLanguage", Settings.Default.LastSourceLanguageViewed);
 			}
 
-			d.Add("languageForNewTextBoxes", bookData.Language1.Iso639Code);
+			d.Add("languageForNewTextBoxes", bookData.Language1.Tag);
 			d.Add("isSourceCollection", bookData.CollectionSettings.IsSourceCollection.ToString());
 
 			// BL-2357 To aid in smart ordering of source languages in source bubble
