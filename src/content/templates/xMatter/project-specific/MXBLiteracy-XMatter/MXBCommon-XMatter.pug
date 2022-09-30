@@ -6,10 +6,11 @@ mixin mxb-printerStatement-insideBackCover
 	+page-xmatter('Inside Back Cover').cover.coverColor.insideBackCover.bloom-backMatter(data-export='back-matter-inside-back-cover')&attributes(attributes)#839e8eee-5e1a-45a7-bb01-2c171b56f8a4
 		+field-mono-meta("N1","printerStatement").Printer-Statement-style.bloom-copyFromOtherLanguageIfNecessary
 			label.bubble Printer's Statement goes here.
+
 mixin mxb-languageNameTopic-field
 	block cover-bottom-row-before-branding
 		.bottomRow
-			.coverBottomLangName.L1-Name-style(data-derived='languagesOfBook')
+			.coverBottomLangName.L1-Name-Cover-style(data-derived='languagesOfBook')
 			+chooser-topic.coverBottomBookTopic
 
 mixin mxb-frontCoverCredits
@@ -30,7 +31,7 @@ mixin mxb-titlePage-contents
 		label.bubble Book title in {lang}
 		+editable(kLanguageForPrototypeOnly).bloom-nodefaultstylerule.Title-On-Title-Page-style(data-book='bookTitle')
 	#languageInformation.Credits-Page-style('lang'='N1')
-		.languagesOfBook(data-derived='languagesOfBook')
+		.languagesOfBook.L1-Name-TitlePage-style(data-derived='languagesOfBook')
 		.langName('data-library'='dialect')
 		.langName(data-library='languageLocation').bloom-writeOnly
 	+mxb-contributions
