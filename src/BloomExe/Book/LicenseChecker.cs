@@ -29,6 +29,25 @@ namespace Bloom.Book
         public static string kUnlicenseLanguageMessage = "The copyright holder of this book has not licensed it for publishing in {0}. Please contact the copyright holder to learn more about licensing.";
         public static string kCannotReachLicenseServerMessage = "To publish this book, Bloom must check which languages the copyright owner has permitted, but Bloom is having trouble reaching the server that has this information.";
 
+        /// <summary>
+		/// Return that subset of inputLangs that are allowed to be published for the specified book. Usually all of them.
+		/// </summary>
+		/// <remarks>
+		/// If the book has a restricted license and we cannot contact the server and have not previously cached
+		/// information about licensing this book, the method will return an empty list. Currently this works
+		/// because we will try to build a preview with all the languages, and the check that is done during
+		/// that process will report that it can't confirm which ones are publishable.
+		/// </remarks>
+		public IEnumerable<string> AllowedLanguages(string[] inputLangs, Book book)
+        {
+	        var meta = book.OurHtmlDom.SelectSingleNode("//meta[@name='bloom-licensed-content-id' and @content]");
+	        if (meta == null)
+		        return inputLangs;
+	        var key = meta.GetStringAttribute("content");
+			// For this method we can ignore didCheck. See remarks above.
+	        var problems = GetProblemLanguages(inputLangs, key, out bool didCheck);
+	        return inputLangs.Except(problems);
+        }
         public IEnumerable<string> GetProblemLanguages(string[] inputLangs, string key, out bool didCheck)
         {
             string permissionsJson;
