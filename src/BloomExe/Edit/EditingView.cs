@@ -984,6 +984,9 @@ namespace Bloom.Edit
 						"Sorry, this book is locked down so that images cannot be changed."));
 				return;
 			}
+			// Make sure any new image overlays on the page are saved, so our imgIndex will select the
+			// right one.
+			Model.SaveNow();
 
 			var imageElement = GetImageNode(imgIndex);
 			if(imageElement == null)
