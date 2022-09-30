@@ -1634,8 +1634,8 @@ namespace Bloom.Book
 				return Directory.GetFiles(folderPath)
 
 						// Although GetFiles supports simple pattern matching, it doesn't support enforcing end-of-string matches...
-						// So let's do the filtering this way instead, to make sure we don't get any extensions that start with "htm" but aren't exact matches.
-						.Where(name => name.EndsWith(".htm") || name.EndsWith(".html"));
+					// So let's do the filtering this way instead, to make sure we don't get any extensions that start with "htm" but aren't exact matches.
+					.Where(name => name.EndsWith(".htm") || name.EndsWith(".html"));
 			}
 			catch (UnauthorizedAccessException uaex)
 			{
@@ -1767,9 +1767,22 @@ namespace Bloom.Book
 			{
 				pathToExistingHtml = PathToExistingHtml;
 			}
-            catch (UnauthorizedAccessException error)
+			catch (UnauthorizedAccessException error)
 			{
 				ShowAccessDeniedErrorHtml(error);
+				return;
+			}
+			catch (Exception ex)
+			{
+				Logger.WriteError("Exception finding HTML file in " + FolderPath , ex);
+				// So far, this has proved rare enough that I don't think it's worth localizing.
+				var message =
+					EncodeAndJoinStringsForHtml(new[] {"Bloom had a problem finding the HTML file in " + FolderPath + ". You may need technical help in sorting this out.",
+						ex.Message});
+
+				ErrorMessagesHtml = message;
+				_errorAlreadyContainsInstructions = true;
+				ErrorAllowsReporting = true;
 				return;
 			}
 			var backupPath = GetBackupFilePath();
