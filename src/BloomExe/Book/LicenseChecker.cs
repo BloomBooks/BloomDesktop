@@ -29,6 +29,16 @@ namespace Bloom.Book
         public static string kUnlicenseLanguageMessage = "The copyright holder of this book has not licensed it for publishing in {0}. Please contact the copyright holder to learn more about licensing.";
         public static string kCannotReachLicenseServerMessage = "To publish this book, Bloom must check which languages the copyright owner has permitted, but Bloom is having trouble reaching the server that has this information.";
 
+		// Return that subset of inputLangs that are allowed to be published for the specified book. Usually all of them.
+        public IEnumerable<string> AllowedLanguages(string[] inputLangs, Book book)
+        {
+	        var meta = book.OurHtmlDom.SelectSingleNode("//meta[@name='bloom-licensed-content-id' and @content]");
+	        if (meta == null)
+		        return inputLangs;
+	        var key = meta.GetStringAttribute("content");
+	        var problems = GetProblemLanguages(inputLangs, key, out bool didCheck);
+	        return inputLangs.Except(problems);
+        }
         public IEnumerable<string> GetProblemLanguages(string[] inputLangs, string key, out bool didCheck)
         {
             string permissionsJson;
