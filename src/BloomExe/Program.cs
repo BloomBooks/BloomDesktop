@@ -405,9 +405,19 @@ namespace Bloom
 
 
 						if (args.Length == 1 && !IsInstallerLaunch(args) && !IsLocalizationHarvestingLaunch(args)) {
-							
+							// Handle an old-style download request which comes as an order URL from BloomLibrary for path length check.
+							var argPath = args[0];
+							const string bloomLibraryHeader = "bloom://localhost/order?orderFile=BloomLibraryBooks/";
+							if (argPath.StartsWith(bloomLibraryHeader))
+							{
+								var argPathSub = argPath.Substring(bloomLibraryHeader.Length);
+								var argUrlPath = UrlPathString.CreateFromUrlEncodedString(argPathSub);
+								var argPathGoodSub = argUrlPath.NotEncoded;
+								if (argPathGoodSub.Length < argPathSub.Length)
+									argPath = bloomLibraryHeader + argPathGoodSub;
+							}
 							// See BL-10012. Windows File explorer will give us an 8.3 path with ".BLO" at the end, so might as well convert it now.
-							var path = Utils.LongPathAware.GetLongPath(args[0]);
+							var path = Utils.LongPathAware.GetLongPath(argPath);
 
 							// See BL-10012. We'll die eventually, might as well nip this in the bud.
 							if (Utils.LongPathAware.GetExceedsMaxPath(path))
