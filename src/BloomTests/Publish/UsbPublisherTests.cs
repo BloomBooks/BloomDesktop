@@ -1,5 +1,6 @@
 ﻿#if !__MonoCS__
 using System.Drawing;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -106,6 +107,9 @@ namespace BloomTests.Publish
 
 			// SUT
 			var size = testUsbPublisher.GetStoredBloomdFileSize();
+
+			// 'size' is a culture-specific string; convert it to the invariant culture for test
+			size = double.Parse(size).ToString(CultureInfo.InvariantCulture);
 
 			Assert.AreEqual("0.1", size);
 		}

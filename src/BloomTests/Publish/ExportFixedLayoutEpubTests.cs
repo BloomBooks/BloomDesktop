@@ -65,9 +65,12 @@ namespace BloomTests.Publish
 		[Test]
 		public void SetsViewportInHtmlFiles()
 		{
-			// Using contains here because the actual strings we're generating have a lot of decimal places and I don't want to depend on too much precision
-			AssertThatXmlIn.String(_page1Data).HasSpecifiedNumberOfMatchesForXpath("//meta[@name='viewport' and contains(@content, 'height=559.37') and contains(@content, 'width=793.70')]", 1);
-			AssertThatXmlIn.String(GetPageNData(2)).HasSpecifiedNumberOfMatchesForXpath("//meta[@name='viewport' and contains(@content, 'height=559.37') and contains(@content, 'width=793.70')]", 1);
+			// Using contains here because the actual strings we're generating have a lot of decimal places and
+			// I don't want to depend on too much precision.
+			// [Later: we limit the 'contains' in our test to whole pixels, since running the test in a different
+			// "culture" would fail.]
+			AssertThatXmlIn.String(_page1Data).HasSpecifiedNumberOfMatchesForXpath("//meta[@name='viewport' and contains(@content, 'height=559') and contains(@content, 'width=793')]", 1);
+			AssertThatXmlIn.String(GetPageNData(2)).HasSpecifiedNumberOfMatchesForXpath("//meta[@name='viewport' and contains(@content, 'height=559') and contains(@content, 'width=793')]", 1);
 		}
 
 		[Test]

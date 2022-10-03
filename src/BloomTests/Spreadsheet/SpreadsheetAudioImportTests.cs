@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -302,7 +303,8 @@ namespace BloomTests.Spreadsheet
 		{
 			var target = _contentPages[pageIndex].SafeSelectNodes($".//{elt}[@id='{id}']").Cast<XmlElement>().First();
 			var durationStr = target.Attributes["data-duration"]?.Value;
-			Assert.That(double.TryParse(durationStr, out double duration), Is.True, $"Failed to parse '{durationStr}' as double");
+			// NumberStyles and CultureInfo - make test robust enough to run if in English(Sweden) region.
+			Assert.That(double.TryParse(durationStr, NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, out double duration), Is.True, $"Failed to parse '{durationStr}' as double");
 			Assert.That(duration, Is.EqualTo(expectedDuration).Within(0.01));
 			Assert.That(target.Attributes["class"]?.Value, Does.Contain("audio-sentence"));
 			Assert.That(target.Attributes["recordingmd5"]?.Value, Is.Not.Empty.And.Not.Null);
@@ -317,7 +319,8 @@ namespace BloomTests.Spreadsheet
 			var times = target.Attributes["data-audiorecordingendtimes"]?.Value ??"";
 			var index = times.LastIndexOf(" "); // not found produces -1, which happens to work just right.
 			var durationStr = times.Substring(index + 1, times.Length - index - 1);
-			Assert.That(double.TryParse(durationStr, out double duration), Is.True, $"Failed to parse '{durationStr}' as double");
+			// NumberStyles and CultureInfo - make test robust enough to run if in English(Sweden) region.
+			Assert.That(double.TryParse(durationStr, NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, out double duration), Is.True, $"Failed to parse '{durationStr}' as double");
 			Assert.That(duration, Is.EqualTo(expectedDuration).Within(0.01));
 			Assert.That(times.Substring(0, index+1).Trim(), Is.EqualTo(otherSplits));
 			Assert.That(target.Attributes["class"].Value, Does.Contain("bloom-postAudioSplit"));
@@ -711,7 +714,8 @@ namespace BloomTests.Spreadsheet
 		{
 			var target = _contentPages[pageIndex].SafeSelectNodes($".//{elt}[@id='{id}']").Cast<XmlElement>().First();
 			var durationStr = target.Attributes["data-duration"]?.Value;
-			Assert.That(double.TryParse(durationStr, out double duration), Is.True, $"Failed to parse '{durationStr}' as double");
+			// NumberStyles and CultureInfo - make test robust enough to run if in English(Sweden) region.
+			Assert.That(double.TryParse(durationStr, NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, out double duration), Is.True, $"Failed to parse '{durationStr}' as double");
 			Assert.That(duration, Is.EqualTo(expectedDuration).Within(0.01));
 			Assert.That(target.Attributes["class"]?.Value, Does.Contain("audio-sentence"));
 			Assert.That(target.Attributes["recordingmd5"]?.Value, Is.Not.Empty.And.Not.Null);

@@ -4254,14 +4254,13 @@ namespace Bloom.Book
 				{
 					foreach (XmlElement span in HtmlDom.SelectAudioSentenceElementsWithDataDuration(editable))
 					{
-						double time;
-						double.TryParse(span.Attributes["data-duration"].Value, out time);
+						double.TryParse(span.Attributes["data-duration"].Value, NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, out var time);
 						duration += time;
 					}
 				}
 				if (duration == 0.0)
 					duration = 4.0; // per BL-5393, if we don't have voice durations use 4 seconds.
-				imgContainer.SetAttribute("data-duration", duration.ToString());
+				imgContainer.SetAttribute("data-duration", duration.ToString(CultureInfo.InvariantCulture));
 			}
 		}
 

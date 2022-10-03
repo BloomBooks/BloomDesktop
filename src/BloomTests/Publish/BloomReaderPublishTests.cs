@@ -1307,11 +1307,15 @@ namespace BloomTests.Publish
 				Assert.That(File.Exists(Path.Combine(testBook.FolderPath, timesNewRomanFileName)));
 				Assert.That(File.Exists(Path.Combine(testBook.FolderPath, calibreFileName)));
 				Assert.That(stubProgress.MessagesNotLocalized, Has.Member("Checking Times New Roman font: License OK for embedding."));
-				Assert.That(stubProgress.MessagesNotLocalized, Has.Member("Embedding font Times New Roman at a cost of 0.0 megs"));
+				// 0.0 megs is culture-specific; ignore that part.
+				Assert.That(stubProgress.MessagesNotLocalized.Any(
+					s => s.StartsWith("Embedding font Times New Roman at a cost of 0") && s.EndsWith("0 megs")));
 				Assert.That(stubProgress.MessagesNotLocalized, Has.Member("This book has text in a font named \"Wen Yei\". Bloom cannot publish this font's format (.ttc)."));
 				Assert.That(stubProgress.MessagesNotLocalized, Has.Member("Bloom will substitute \"Andika New Basic\" instead."));
 				Assert.That(stubProgress.MessagesNotLocalized, Has.Member("Checking Calibre font: License OK for embedding."));
-				Assert.That(stubProgress.MessagesNotLocalized,  Has.Member("Embedding font Calibre at a cost of 0.2 megs"));
+				// 0.2 megs is culture-specific.
+				Assert.That(stubProgress.MessagesNotLocalized.Any(
+					s => s.StartsWith("Embedding font Calibre at a cost of 0") && s.EndsWith("2 megs")));
 
 				Assert.That(stubProgress.MessagesNotLocalized, Has.Member("This book has text in a font named \"NotAllowed\". The license for \"NotAllowed\" does not permit Bloom to embed the font in the book."));
 				Assert.That(stubProgress.MessagesNotLocalized, Has.Member("Bloom will substitute \"Andika New Basic\" instead."));

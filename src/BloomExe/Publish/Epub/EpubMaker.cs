@@ -333,8 +333,11 @@ namespace Bloom.Publish.Epub
 				var viewport = Book.OurHtmlDom.RawDom.CreateElement("meta");
 				viewport.SetAttribute("name", "viewport");
 				var layout = Book.GetLayout();
-				GetPageDimensions(layout.SizeAndOrientation.PageSizeName + layout.SizeAndOrientation.OrientationName, out double width, out double height);
-				viewport.SetAttribute("content", $"width={width}, height={height}");
+				GetPageDimensions(layout.SizeAndOrientation.PageSizeName + layout.SizeAndOrientation.OrientationName,
+					out double width, out double height);
+				// Write the viewport content attribute out in a culture invariant manner.
+				viewport.SetAttribute("content",
+					$"width={width.ToString(CultureInfo.InvariantCulture)}, height={height.ToString(CultureInfo.InvariantCulture)}");
 				Book.OurHtmlDom.Head.AppendChild(viewport);
 			}
 
@@ -480,10 +483,12 @@ namespace Bloom.Publish.Epub
 			height = ConvertDimension(sizes[0].height);
 		}
 
+		// Method must parse the json input in a culture invariant manner, since the computer's culture may not match
+		// the culture of the json file.
 		private static double ConvertDimension(string input)
 		{
 			string unit = input.Substring(input.Length - 2);
-			var num = Double.Parse(input.Substring(0, input.Length - 2));
+			var num = Double.Parse(input.Substring(0, input.Length - 2), CultureInfo.InvariantCulture);
 			return num * (unit == "mm" ? 96 / 25.4 : 96);
 		}
 

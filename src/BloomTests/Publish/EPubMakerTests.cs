@@ -1,4 +1,5 @@
-﻿using Bloom.Book;
+﻿using System.Globalization;
+using Bloom.Book;
 using Bloom.Publish.Epub;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NUnit.Framework;
@@ -233,8 +234,10 @@ namespace BloomTests.Publish
 		public void GetPageDimensions(string name, double expectedWidth, double expectedHeight)
 		{
 			EpubMaker.GetPageDimensions(name, out double width, out double height);
-			Assert.AreEqual(expectedWidth, width, 2);
-			Assert.AreEqual(expectedHeight, height, 2);
+			// Use culture invariant formatted strings to compare for testing, so the tests will work
+			// in all culture environments.
+			Assert.That(expectedWidth.ToString(CultureInfo.InvariantCulture), Is.EqualTo(width.ToString("####.##", CultureInfo.InvariantCulture)));
+			Assert.That(expectedHeight.ToString(CultureInfo.InvariantCulture), Is.EqualTo(height.ToString("####.##", CultureInfo.InvariantCulture)));
 		}
 	}
 }
