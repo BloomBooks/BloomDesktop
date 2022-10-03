@@ -934,6 +934,18 @@ div[data-book*="branding"] {
     }
 }
 
+// This is for fixed-mode epubs. Agents (at least Readium) apply this class
+// to the thing being played. It seems that Readium provides a useful CSS definition
+// for it in flowable mode, too, so in flowable epubs it produces a yellow background.
+// But not in fixed mode; by default it has no effect. So we must provide a rule for it.
+// Not sure this is the best place to give it a definition, but I can't think of a
+// better one. (I believe baseEPub.less is only for flowable epubs.)
+// Bloom does not use this directly.
+// (The color is @bloom-yellow.)
+.-epub-media-overlay-active {
+    background-color: #febf00;
+}
+
 //... to be continued. We sandwich most other sheets between this one and the langVisibility.css, which comes last-ish
 
 // now apply any book features
