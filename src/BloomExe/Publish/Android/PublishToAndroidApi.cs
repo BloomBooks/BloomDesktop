@@ -484,7 +484,17 @@ namespace Bloom.Publish.Android
 			_lastThumbnailBackgroundColor = _thumbnailBackgroundColor;
 			if (forVideo)
 			{
-				_lastSettings = _lastSettings.WithAllLanguages(_allLanguages.Keys);
+				// We'll put all possible languages in the preview; the user can choose the one wanted
+				// with the preview controls if there is more than one. Don't include any that are NOT
+				// allowed to be published, or we won't get a preview at all, just an error message.
+				// Review: do we need to give some message about why some were not included?
+				var licenseChecker = new LicenseChecker();
+				var allowedLanguages = licenseChecker.AllowedLanguages(_allLanguages.Keys.ToArray(), request.CurrentBook);
+				if (!allowedLanguages.Any())
+				{
+					allowedLanguages = _allLanguages.Keys; // making preview will fail, but with a helpful message.
+				}
+				_lastSettings = _lastSettings.WithAllLanguages(allowedLanguages);
 			}
 
 			_lastSettings.Motion = forVideo ? request.CurrentBook.BookInfo.PublishSettings.AudioVideo.Motion : request.CurrentBook.BookInfo.PublishSettings.BloomPub.Motion;
