@@ -2669,7 +2669,8 @@ export default class AudioRecording {
 
         const shouldUpdateMarkup = await recordable.shouldUpdateMarkupAsync();
 
-        if (shouldUpdateMarkup) {
+        const missingMarkup = this.checkForMissingAudioMarkup(textBox);
+        if (shouldUpdateMarkup || missingMarkup) {
             const recordingMode = this.getRecordingModeOfTextBox(textBox);
             const playbackMode = this.getPlaybackMode(textBox);
             return this.getUpdateMarkupForTextBoxAction(
@@ -2684,6 +2685,20 @@ export default class AudioRecording {
                 // But if you want to add some notification UI, it can go here.
             };
         }
+    }
+
+    private checkForMissingAudioMarkup(textBox: HTMLElement) {
+        let textMissingMarkup = textBox.innerText;
+        const sentenceList = textBox.getElementsByClassName(kAudioSentence);
+        for (let i = 0; i < sentenceList.length; ++i) {
+            const element = sentenceList.item(i) as HTMLElement;
+            if (element)
+                textMissingMarkup = textMissingMarkup.replace(
+                    element.innerText,
+                    ""
+                );
+        }
+        return textMissingMarkup && textMissingMarkup.trim().length > 0;
     }
 
     // Called on initial setup and on toolbox updateMarkup(), including when a new page is created with Talking Book tab open
