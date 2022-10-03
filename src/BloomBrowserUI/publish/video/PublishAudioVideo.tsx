@@ -473,7 +473,8 @@ const PublishAudioVideoInternalInternal: React.FunctionComponent<{
                                         </Span>{" "}
                                         <Link
                                             css={css`
-                                                text-decoration: underline;
+                                                text-decoration: underline !important;
+                                                text-decoration-color: white !important;
                                             `}
                                             l10nKey="PublishTab.RecordVideo.DisplaySettings"
                                             onClick={() =>
@@ -482,7 +483,7 @@ const PublishAudioVideoInternalInternal: React.FunctionComponent<{
                                                 )
                                             }
                                         >
-                                            Display Settings
+                                            Open Display Settings
                                         </Link>
                                     </p>
                                 </div>
