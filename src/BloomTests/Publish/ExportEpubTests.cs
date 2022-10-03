@@ -1275,7 +1275,8 @@ namespace BloomTests.Publish
 			else
 			{
 				var audioDuration = GetFakeAudioDurationSecs();
-				string clipEnd = "0:00:0" + audioDuration.ToString("0.000");				
+				// use culture invariant form for test
+				string clipEnd = "0:00:0" + audioDuration.ToString("0.000", CultureInfo.InvariantCulture);				
 				assertThatSmil.HasAtLeastOneMatchForXpath("smil:smil/smil:body/smil:seq/smil:par[@id='s1']/smil:audio[@src='" + kAudioSlash + $"a123.mp3' and @clipBegin='0:00:00.000' and @clipEnd='{clipEnd}']", _ns);
 				assertThatSmil.HasAtLeastOneMatchForXpath("smil:smil/smil:body/smil:seq/smil:par[@id='s2']/smil:audio[@src='" + kAudioSlash + $"a23.mp3' and @clipBegin='0:00:00.000' and @clipEnd='{clipEnd}']", _ns);
 			}
@@ -1344,8 +1345,9 @@ namespace BloomTests.Publish
 			else
 			{
 				var audioDuration = GetFakeAudioDurationSecs();
-				string clipEnd1 = "0:00:0" + audioDuration.ToString("0.000");
-				string clipEnd2 = "0:00:0" + (audioDuration*2).ToString("0.000");
+				// Make these clip timings culture invariant for testing.
+				string clipEnd1 = "0:00:0" + audioDuration.ToString("0.000", CultureInfo.InvariantCulture);
+				string clipEnd2 = "0:00:0" + (audioDuration*2).ToString("0.000", CultureInfo.InvariantCulture);
 				assertThatSmil.HasAtLeastOneMatchForXpath("smil:smil/smil:body/smil:seq/smil:par[@id='s1']/smil:audio[@src='"+kAudioSlash+$"page2.mp3' and @clipBegin='0:00:00.000' and @clipEnd='{clipEnd1}']", _ns);
 				assertThatSmil.HasAtLeastOneMatchForXpath("smil:smil/smil:body/smil:seq/smil:par[@id='s2']/smil:audio[@src='"+kAudioSlash+$"page2.mp3' and @clipBegin='{clipEnd1}' and @clipEnd='{clipEnd2}']", _ns);
 			}
@@ -1408,7 +1410,8 @@ namespace BloomTests.Publish
 			assertManifest.HasAtLeastOneMatchForXpath("package/manifest/item[@id='f2_overlay' and @href='2_overlay.smil' and @media-type='application^slash^smil+xml']");
 
 			double totalExpectedDuration = GetFakeAudioDurationSecs() * 2;
-			string expectedDurationFormatted = "00:00:0" + totalExpectedDuration.ToString("0.0000000");
+			// Make this duration culture invariant for testing.
+			string expectedDurationFormatted = "00:00:0" + totalExpectedDuration.ToString("0.0000000", CultureInfo.InvariantCulture);
 			assertManifest.HasAtLeastOneMatchForXpath($"package/metadata/meta[@property='media:duration' and not(@refines) and text()='{expectedDurationFormatted}']");
 			assertManifest.HasAtLeastOneMatchForXpath($"package/metadata/meta[@property='media:duration' and @refines='#f2_overlay' and text()='{expectedDurationFormatted}']");
 
@@ -1497,8 +1500,9 @@ namespace BloomTests.Publish
 				string expectedFilename = mergeAudio ? "page2" : expectedId;
 				double expectedClipBegin = mergeAudio ? (expectedDurationPerClip * i) : 0;
 				double expectedClipEnd = expectedClipBegin + expectedDurationPerClip;
-				string expectedClipBeginFormatted = "0:00:0" + expectedClipBegin.ToString("0.000");
-				string expectedClipEndFormatted = "0:00:0" + expectedClipEnd.ToString("0.000");
+				// Make these clip timings culture invariant for testing.
+				string expectedClipBeginFormatted = "0:00:0" + expectedClipBegin.ToString("0.000", CultureInfo.InvariantCulture);
+				string expectedClipEndFormatted = "0:00:0" + expectedClipEnd.ToString("0.000", CultureInfo.InvariantCulture);
 
 				assertSmil.HasAtLeastOneMatchForXpath($"{smilSeqPrefix}/smil:par[@id='s{i + 1}']/smil:text[@src='2.xhtml#{expectedId}']", _ns);
 				assertSmil.HasAtLeastOneMatchForXpath($"{smilSeqPrefix}/smil:par[@id='s{i + 1}']/smil:audio[@src='{kAudioSlash}{expectedFilename}.mp3'][@clipBegin='{expectedClipBeginFormatted}'][@clipEnd='{expectedClipEndFormatted}']", _ns);

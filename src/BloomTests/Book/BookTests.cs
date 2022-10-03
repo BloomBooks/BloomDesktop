@@ -17,6 +17,7 @@ using SIL.Windows.Forms.ClearShare;
 using SIL.Xml;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Web;
 using BloomTemp;
 
@@ -3309,8 +3310,8 @@ namespace BloomTests.Book
 			var book = CreateBook();
 			book.SetAnimationDurationsFromAudioDurations();
 
-			Assert.AreEqual(3.1, double.Parse(book.RawDom.SelectSingleNode("//div[@id='guid1']/div[contains(@class,'bloom-imageContainer')]").Attributes["data-duration"].Value), 0.001, "Duration 1");
-			Assert.AreEqual(4, double.Parse(book.RawDom.SelectSingleNode("//div[@id='guid3']/div[contains(@class,'bloom-imageContainer')]").Attributes["data-duration"].Value), 0, "Duration 3");
+			Assert.AreEqual(3.1, double.Parse(book.RawDom.SelectSingleNode("//div[@id='guid1']/div[contains(@class,'bloom-imageContainer')]").Attributes["data-duration"].Value, CultureInfo.InvariantCulture), 0.001, "Duration 1");
+			Assert.AreEqual(4, double.Parse(book.RawDom.SelectSingleNode("//div[@id='guid3']/div[contains(@class,'bloom-imageContainer')]").Attributes["data-duration"].Value, CultureInfo.InvariantCulture), 0, "Duration 3");
 			AssertThatXmlIn.Dom(book.RawDom).HasNoMatchForXpath(@"//div[@id='guid4']/div[contains(@class,'bloom-imageContainer') and @data-duration]");
 		}
 
@@ -3348,9 +3349,9 @@ namespace BloomTests.Book
 			book.SetAnimationDurationsFromAudioDurations();
 			// Note: these tests are rather too picky about the formatting of the output floats. We'd be quite happy if the result
 			// was 3.10000 and 4.0. If this proves problematic we can make the test smarter.
-			Assert.AreEqual(3.1, double.Parse(book.RawDom.SelectSingleNode("//div[@id='guid1']/div[contains(@class,'bloom-imageContainer')]").Attributes["data-duration"].Value), 0.001, "Duration 1");
-			Assert.AreEqual(4, double.Parse(book.RawDom.SelectSingleNode("//div[@id='guid3']/div[contains(@class,'bloom-imageContainer')]").Attributes["data-duration"].Value), 0, "Duration 3");
-			Assert.AreEqual(3.1, double.Parse(book.RawDom.SelectSingleNode("//div[@id='guid5']/div[contains(@class,'bloom-imageContainer')]").Attributes["data-duration"].Value), 0.001, "Duration 1");
+			Assert.AreEqual(3.1, double.Parse(book.RawDom.SelectSingleNode("//div[@id='guid1']/div[contains(@class,'bloom-imageContainer')]").Attributes["data-duration"].Value, CultureInfo.InvariantCulture), 0.001, "Duration 1");
+			Assert.AreEqual(4, double.Parse(book.RawDom.SelectSingleNode("//div[@id='guid3']/div[contains(@class,'bloom-imageContainer')]").Attributes["data-duration"].Value, CultureInfo.InvariantCulture), 0, "Duration 3");
+			Assert.AreEqual(3.1, double.Parse(book.RawDom.SelectSingleNode("//div[@id='guid5']/div[contains(@class,'bloom-imageContainer')]").Attributes["data-duration"].Value, CultureInfo.InvariantCulture), 0.001, "Duration 1");
 			AssertThatXmlIn.Dom(book.RawDom).HasNoMatchForXpath(@"//div[@id='guid4']/div[contains(@class,'bloom-imageContainer') and @data-duration]");
 		}
 

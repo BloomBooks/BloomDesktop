@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -247,7 +248,8 @@ namespace BloomTests.Spreadsheet
 			// sanity check that we got the right row.
 			Assert.That(PageContentRows[0].GetCell(frIndex).Content,
 				Does.Contain("Man touching nose. He's using a finger."));
-			Assert.That(Double.Parse(PageContentRows[0].GetCell(alignmentColIndex).Content),
+			// CultureInfo - make test robust enough to run if in English(Sweden) region.
+			Assert.That(double.Parse(PageContentRows[0].GetCell(alignmentColIndex).Content, CultureInfo.InvariantCulture),
 				Is.EqualTo(3.996735).Within(0.001));
 		}
 
@@ -340,7 +342,8 @@ namespace BloomTests.Spreadsheet
 				Does.Contain("A hand with a sore finger"));
 			var alignment = PageContentRows[0].GetCell(alignmentColIndex).Content;
 			Assert.That(alignment, Does.StartWith("3.900 4"));
-			Assert.That(Double.Parse(alignment.Split(' ').Last()),
+			// CultureInfo - make test robust enough to run if in English(Sweden) region.
+			Assert.That(double.Parse(alignment.Split(' ').Last(), CultureInfo.InvariantCulture),
 				Is.EqualTo(4.360).Within(0.0001));
 		}
 

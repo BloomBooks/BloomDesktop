@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using Bloom.Publish.Video;
@@ -55,7 +56,12 @@ namespace BloomTests.Publish.Video
 			Utilities.DisableDebugListeners();
 			try
 			{
-				return new Resolution(width, height).GetAspectRatio();
+				// 'ratio' is culture-specific; for test purposes, we need to match a culture invariant version.
+				var ratio = new Resolution(width, height).GetAspectRatio();
+				var colonIdx = ratio.IndexOf(":", StringComparison.InvariantCulture);
+				var first = ratio.Substring(0, colonIdx);
+				var second = ratio.Substring(colonIdx);
+				return double.Parse(first).ToString(CultureInfo.InvariantCulture) + second ;
 			}
 			finally
 			{
