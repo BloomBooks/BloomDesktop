@@ -693,7 +693,7 @@ const OverlayToolControls: React.FunctionComponent = () => {
                         </FormControl>
                         <FormControl
                             className={
-                                isBubble(currentItemSpec) ? "" : "disabled"
+                                isBubble(currentFamilySpec) ? "" : "disabled"
                             }
                         >
                             <InputLabel htmlFor="bubble-outlineColor-dropdown">
@@ -712,7 +712,7 @@ const OverlayToolControls: React.FunctionComponent = () => {
                                     className: "bubble-options-dropdown-menu"
                                 }}
                                 onChange={event => {
-                                    if (isBubble(currentItemSpec))
+                                    if (isBubble(currentFamilySpec))
                                         handleOutlineColorChanged(event);
                                 }}
                             >
