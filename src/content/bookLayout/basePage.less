@@ -934,6 +934,15 @@ div[data-book*="branding"] {
     }
 }
 
+// This is for fixed-mode epubs. At least Readium applies this class
+// to the thing being played. It seems to give it a meaning in flowable mode,
+// too...but not in fixed mode. Not sure this is the best place to define
+// this, but I can't think of a better one. Bloom does not use this directly.
+// (The color is @bloom-yellow.)
+.-epub-media-overlay-active {
+    background-color: #febf00;
+}
+
 //... to be continued. We sandwich most other sheets between this one and the langVisibility.css, which comes last-ish
 
 // now apply any book features
