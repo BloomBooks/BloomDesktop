@@ -192,7 +192,9 @@ export default class Recordable {
     }
 
     public async shouldUpdateMarkupAsync(): Promise<boolean> {
-        if (this.areAnyRecordingsOutOfDate()) {
+        if (this.checkForMissingAudioMarkup()) {
+            return true; // that was quick...
+        } else if (this.areAnyRecordingsOutOfDate()) {
             // Should be updated
             return true;
         } else {
@@ -210,6 +212,29 @@ export default class Recordable {
                 return true;
             }
         }
+    }
+
+    // check whether our textBox has any text that is not covered by an audio sentence.
+    // Users can type text in when the talking book tool is closed, after all.  See BL-11522.
+    private checkForMissingAudioMarkup() {
+        if (this.textBox.classList.contains(kAudioSentence)) {
+            return false;
+        }
+        let textMissingMarkup = this.textBox.innerText;
+        const sentenceList = this.getAudioSentences();
+        for (let i = 0; i < sentenceList.length; ++i) {
+            const element = sentenceList[i];
+            textMissingMarkup = textMissingMarkup.replace(
+                element.innerText,
+                ""
+            );
+        }
+        // regex based on what the extension method LibSynphony.stringToSentences() uses.
+        const intersentenceSpace = /^[\s\p{PEP}\u00A0]+/;
+        return (
+            textMissingMarkup &&
+            textMissingMarkup.replace(intersentenceSpace, "").length > 0
+        );
     }
 
     // Determines whether the text box is fully, partially, or not recorded all in one go,
