@@ -4321,7 +4321,7 @@
         <note>ID: PublishTab.RecordVideo.ConfigureAndPreview</note>
       </trans-unit>
       <trans-unit id="PublishTab.RecordVideo.DisplaySettings">
-        <source xml:lang="en">Display Settings</source>
+        <source xml:lang="en">Open Display Settings</source>
         <note>ID: PublishTab.RecordVideo.DisplaySettings</note>
       </trans-unit>
       <trans-unit id="PublishTab.RecordVideo.DisableScaling">
