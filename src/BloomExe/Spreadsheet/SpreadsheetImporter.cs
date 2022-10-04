@@ -962,7 +962,10 @@ namespace Bloom.Spreadsheet
 
 					return "bad";
 				});
-				if (alignmentChecks.Any(x => x == "toobig"))
+				// Yes, we might be asking for -1 alignmentChecks, that just returns none.
+				// Decided not to check whether the last (often only) alignment is too big, since we will
+				// automatically correct it to the actual duration anyway.
+				if (alignmentChecks.Take(alignments.Length - 1).Any(x => x == "toobig"))
 				{
 					_progress.MessageWithParams("AlignmentsTooBig", "",
 						"Removed audio alignments on page {0} because some values in the list given ('{1}') are larger than the duration of the audio file ({2}).",
