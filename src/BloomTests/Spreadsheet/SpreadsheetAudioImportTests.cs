@@ -97,8 +97,9 @@ namespace BloomTests.Spreadsheet
 			contentRow1.AddCell(InternalSpreadsheet.PageContentRowLabel);
 			contentRow1.SetCell(columnForFr, "<p>This is page 1</p>");
 			contentRow1.SetCell(columnForFrAudio, "./audio/i9c7f4e02-4685-48fc-8653-71d88f218706.mp3");
-			// Actual duration of this audio is 3.996735; we should get that, not 2.5
-			contentRow1.SetCell(columnForFrAlignment, "2.5");
+			// Actual duration of this audio is 3.996735; we should get that, not 4.5
+			// Also, we should NOT get a warning, even though this is too large; we just fix it.
+			contentRow1.SetCell(columnForFrAlignment, "4.5");
 
 			// Will make a TG on page 2. It will be treated as a single split,
 			// as there is only one sentence and there is data in the alignment column
@@ -124,8 +125,8 @@ namespace BloomTests.Spreadsheet
 			contentRow4.AddCell(InternalSpreadsheet.PageContentRowLabel);
 			contentRow4.SetCell(columnForFr, "<p>This is page 4. It has two sentences.</p>");
 			contentRow4.SetCell(columnForFrAudio, Path.Combine(_otherAudioFolder.FolderPath, "a9d7b794-7a83-473a-8307-7968176ae4bcx.mp3"));
-			// Actual duration of this audio is 4.996745; we should get that in place of the 2.9
-			contentRow4.SetCell(columnForFrAlignment, "1.5 2.9");
+			// Actual duration of this audio is 4.996745; we should get that in place of the 5.9
+			contentRow4.SetCell(columnForFrAlignment, "1.5 5.9");
 
 			// Will make a TG on page 5. It will be treated as sentence mode,
 			// as there are two sentences and nothing in the alignment column.
@@ -449,6 +450,18 @@ namespace BloomTests.Spreadsheet
 		public void TooBigSplitProducesWarning()
 		{
 			Assert.That(_progressSpy.Warnings, Does.Contain($"Removed audio alignments on page 13 because some values in the list given ('6 2.9') are larger than the duration of the audio file (4.389)."));
+		}
+
+		[Test]
+		public void NoWarningFixingSingleAlignment()
+		{
+			Assert.That(_progressSpy.Warnings, Has.None.Matches("^Removed audio alignments on page 1 because.*"));
+		}
+
+		[Test]
+		public void NoWarningFixingLastAlignment()
+		{
+			Assert.That(_progressSpy.Warnings, Has.None.Matches("^Removed audio alignments on page 4 because.*"));
 		}
 
 		[Test]
