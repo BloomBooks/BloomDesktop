@@ -1556,6 +1556,9 @@ export default class StyleEditor {
         this.changeUnderline();
         this.changeParaSpacing();
         this.changePosition();
+        const colorButton = $("#colorSelectButton");
+        const style = getComputedStyle(colorButton[0]);
+        this.changeColor(style.backgroundColor);
         this.styleStateChange("initial"); // go back to initial state so user knows it worked
     }
 
