@@ -385,6 +385,7 @@
   <ItemGroup>
     <Compile Include="Book\PublishSettings.cs" />
     <Compile Include="Book\SaveContext.cs" />
+    <Compile Include="Book\WidgetHelper.cs" />
     <Compile Include="Collection\BookCollectionHolder.cs" />
     <Compile Include="Collection\CollectionLock.cs" />
     <Compile Include="ToPalaso\FontAnalytics.cs" />

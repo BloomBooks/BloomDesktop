@@ -2931,19 +2931,9 @@ namespace Bloom.Book
 
 				CopyAndRenameAudioFiles(clonedDiv, templatePage.Book.FolderPath);
 				CopyAndRenameVideoFiles(clonedDiv, templatePage.Book.FolderPath);
+				CopyWidgetFilesIfNeeded(clonedDiv, templatePage.Book.FolderPath);
+				// Copying of image files is handled below.
 			}
-			// Why audio and video but not image or widget? The logic is that within Bloom
-			// someone can record over the audio or video, and it will replace the file,
-			// and it would be unexpected for this to alter the audio or video on another page,
-			// especially since in the case of the audio the text may have been edited on one
-			// page but not the other. On the other hand, if the user selects a new image,
-			// it will come with a unique file name and not affect any other page.
-			// And there's no way to edit an activity within Bloom, so no reason I can see
-			// not to share a possibly expensive resource. Of course, if someone edits the
-			// resource outside Bloom, they might be either annoyed or pleased to have it
-			// changed in both places. I don't have any reason to think one is more likely
-			// than the other, so I'm going with the option that is less costly, both in
-			// code to write and size of the resulting book.
 
 			OrderOrNumberOfPagesChanged();
 			BuildPageCache();
@@ -3017,6 +3007,34 @@ namespace Bloom.Book
 			_pageSelection.SelectPage(newPage, true);
 
 			InvokeContentsChanged(null);
+		}
+
+		private void CopyWidgetFilesIfNeeded(XmlElement newPageDiv, string sourceBookFolder)
+		{
+			if (sourceBookFolder == FolderPath) {
+				// Copying within same book. Reuse the same widget.
+				return;
+			}
+
+			foreach (var widgetIframe in HtmlDom.GetWidgetIframes(newPageDiv))
+			{
+				var widgetSource = UrlPathString.CreateFromUrlEncodedString(widgetIframe.GetAttribute("src"));
+				var sourcePath = Path.Combine(sourceBookFolder, widgetSource.NotEncoded);
+				if (RobustFile.Exists(sourcePath))
+				{
+					// This combo (create/add) unfortunately needlessly zips and unzips
+					// the widget contents, but it does other things we need like guaranteeing
+					// a unique name and not duplicating activities.
+					var wdgtFilePath = WidgetHelper.CreateWidgetFromHtmlFolder(sourcePath, ensureIndexHtmlFileName: false);
+					var newRelativePath = WidgetHelper.AddWidgetFilesToBookFolder(FolderPath, wdgtFilePath).UrlEncodedForHttpPath;
+					if (widgetSource.UrlEncodedForHttpPath != newRelativePath)
+					{
+						// This means the existing book had an activity with the same name
+						// but different content. We got a new, unique name and need to update the dom.
+						widgetIframe.SetAttribute("src", newRelativePath);
+					}
+				}
+			}
 		}
 
 		/// <summary>
