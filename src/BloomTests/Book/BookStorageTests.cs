@@ -1109,7 +1109,6 @@ namespace BloomTests.Book
 			Assert.That(storage.BookInfo.FormatVersion, Is.EqualTo(BookStorage.kBloomFormatVersionToWrite));
 		}
 
-		[Test]
 		[TestCase("foo", "foo.html")] //normal case
 		[TestCase("foobar", "foo.html")] //changed folder name
 		[TestCase("foo", "foo.html", "bar.html")] //use folder name to decide (not sure this is good idea, but it's in existing code)
@@ -1121,15 +1120,16 @@ namespace BloomTests.Book
 		[TestCase("foobar", "avoid conflict.html")] // only this one file with conflict in the name
 		public void FindBookHtmlInFolder_MayHaveOtherFiles_ChoosesCorrectOne(string folderName, string expected, string decoy1 = null, string decoy2 = null)
 		{
-			using(var outerFolder = new TemporaryFolder()) // intentionally using different name each time to avoid conflicts when tests run in parallel
+			using (var outerFolder = new TemporaryFolder($"FindBookHtmlInFolder_MayHaveOtherFiles_ChoosesCorrectOne_{Path.GetRandomFileName()}")) // using a different name each time to avoid conflicts with other tests
 			{
-				using(var folder =  new TemporaryFolder(outerFolder, folderName))
+				using (var folder = new TemporaryFolder(outerFolder, folderName))
 				{
-					File.CreateText(folder.Combine(expected));
-					if(decoy1 != null)
-						File.CreateText(folder.Combine(decoy1));
-					if(decoy2 != null)
-						File.CreateText(folder.Combine(decoy2));
+					// Using WriteAllText rather than Create or CreateText so the file is closed and can thus be deleted
+					File.WriteAllText(folder.Combine(expected), "");
+					if (decoy1 != null)
+						File.WriteAllText(folder.Combine(decoy1), "");
+					if (decoy2 != null)
+						File.WriteAllText(folder.Combine(decoy2), "");
 
 					var path = BookStorage.FindBookHtmlInFolder(folder.Path);
 					Assert.AreEqual(expected, Path.GetFileName(path));
