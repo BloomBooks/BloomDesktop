@@ -23,7 +23,10 @@ namespace Bloom.web.controllers
 		{
 			apiHandler.RegisterEndpointLegacy("progress/cancel", Cancel, false, false);
 			apiHandler.RegisterEndpointHandler("progress/closed", BrowserProgressDialog.HandleProgressDialogClosed, false);
-			apiHandler.RegisterEndpointHandler("progress/ready", BrowserProgressDialog.HandleProgressReady, false);
+			// Doesn't need sync because all it does is set a flag, which nothing else modifies.
+			// Mustn't need sync because we may be processing another request (e.g., creating a TC) when we launch the dialog
+			// that we want to know is ready to receive messages.
+			apiHandler.RegisterEndpointHandler("progress/ready", BrowserProgressDialog.HandleProgressReady, false, false);
 		}
 
 		private void Cancel(ApiRequest request)
