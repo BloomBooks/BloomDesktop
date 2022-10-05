@@ -4424,7 +4424,7 @@
       </trans-unit>
       <trans-unit id="PublishTab.RecordVideo.WillOpenRecordingWindow">
         <source xml:lang="en">
-          This will open a window and play the selected pages. Bloom will record it to match the “Format” option in the upper right of this screen.
+          This will open a window and play the selected pages. Bloom will record it to match the “Format” option in the upper right of this screen. Don't disturb this window while the recording is in progress!
         </source>
         <note>ID: PublishTab.RecordVideo.WillOpenRecordingWindow</note>
       </trans-unit>

@@ -513,14 +513,24 @@ namespace Bloom.Publish.Video
 			// file renaming to be suspicious behavior. Decided to wait and see if this happens.
 			var workingDirectory = Path.GetDirectoryName(soundLog[0].src);
 			LocalAudioNamesMessedUp = true;
+			var renames = new Dictionary<string, string>();
 			for(int i = 0; i < soundLog.Length; i++)
 			{
 				var item = soundLog[i];
 				if (Path.GetDirectoryName(item.src) == workingDirectory)
 				{
 					var shortName = GetShortName(i) + Path.GetExtension(item.src);
-					RobustFile.Move(item.src, Path.Combine(workingDirectory, shortName));
-					item.shortName = shortName; // deliberately without the full path, we will set workingDirectory.
+					if (renames.TryGetValue(item.src, out string prevShortName))
+					{
+						// If we already saw (and renamed) this item, just use what we already renamed it to.
+						item.shortName = prevShortName;
+					}
+					else
+					{
+						RobustFile.Move(item.src, Path.Combine(workingDirectory, shortName));
+						item.shortName = shortName; // deliberately without the full path, we will set workingDirectory.
+						renames[item.src] = shortName;
+					}
 				}
 				else
 				{
@@ -687,12 +697,9 @@ namespace Bloom.Publish.Video
 				// of running ffmpeg afterwards.)
 				// If anything goes wrong so that this doesn't happen, we should automatically rebuild the
 				// preview entirely.
-				foreach (var item in soundLog)
+				foreach (var kvp in renames)
 				{
-					if (!item.shortName.StartsWith("\""))
-					{
-						RobustFile.Move(Path.Combine(workingDirectory,item.shortName), item.src);
-					}
+					RobustFile.Move(Path.Combine(workingDirectory,kvp.Value), kvp.Key);
 				}
 
 				LocalAudioNamesMessedUp = false;
