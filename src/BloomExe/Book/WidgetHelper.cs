@@ -103,6 +103,7 @@ namespace Bloom.Book
 			if (widgetName.Contains("&"))
 				widgetName = widgetName.Replace("&", "_");
 			var widgetPath = Path.Combine(Path.GetTempPath(), "Bloom", widgetName + ".wdgt");
+			Directory.CreateDirectory(Path.GetDirectoryName(widgetPath));
 			using (TemporaryFolder temp = new TemporaryFolder("CreatingWidgetForBloom"))
 			{
 				// Copy the relevant files and folders to a temporary location.
