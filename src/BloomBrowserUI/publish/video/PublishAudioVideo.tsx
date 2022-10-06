@@ -445,7 +445,8 @@ const PublishAudioVideoInternalInternal: React.FunctionComponent<{
                         >
                             This will open a window and play the selected pages.
                             Bloom will record it to match the “Format” option in
-                            the upper right of this screen.
+                            the upper right of this screen. Don't disturb this
+                            window while the recording is in progress!
                         </Div>
                         {isScalingActive && recordingVideo && (
                             <ErrorBox>
@@ -490,7 +491,9 @@ const PublishAudioVideoInternalInternal: React.FunctionComponent<{
                             </ErrorBox>
                         )}
                         <BloomButton
-                            enabled={!recording && isLicenseOK}
+                            enabled={
+                                !recording && isLicenseOK && !isScalingActive
+                            }
                             l10nKey="PublishTab.RecordVideo.Record"
                             l10nComment="'Record' as in 'Record a video recording'"
                             clickApiEndpoint="publish/av/recordVideo"

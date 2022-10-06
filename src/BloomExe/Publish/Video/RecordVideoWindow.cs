@@ -306,25 +306,33 @@ namespace Bloom.Publish.Video
 			// Configure ffmpeg to record the video.
 			// Todo Linux (BL-11011): gdigrab is Windows-only, we'll need to find something else.
 			// I believe ffmpeg has an option to capture the content of an XWindow.
-			var areaCaptureArgs = "-i title {Text} "; // rendering with Gecko we can just capture the window.
-			if (ExperimentalFeatures.IsFeatureEnabled(ExperimentalFeatures.kWebView2))
-			{
-				// We have to capture a region of the screen rather than using -i title {Text}
-				// because GdiGrab of Window content doesn't work with WebView2, probably because
-				// it uses GPU to render.
-				var height = _content.Height;
-				if (height % 2 > 0)
-					height--;
-				var width = _content.Width;
-				if (width % 2 > 0)
-					width--;
-				var screenPoint = PointToScreen(new Point(0, 0));
-				var offsetY = screenPoint.Y;
-				var offsetX = screenPoint.X;
-				areaCaptureArgs = $"-video_size {width}x{height} -offset_x {offsetX} -offset_y {offsetY} -i desktop ";
-				
-				
-			}
+
+			var height = _content.Height;
+			if (height % 2 > 0)
+				height--;
+			var width = _content.Width;
+			if (width % 2 > 0)
+				width--;
+			var screenPoint = PointToScreen(new Point(0, 0));
+			var offsetY = screenPoint.Y;
+			var offsetX = screenPoint.X;
+			var areaCaptureArgs = $"-video_size {width}x{height} -offset_x {offsetX} -offset_y {offsetY} -i desktop ";
+			// This alternative code works with Gecko provided all screens are set to 100% scale.
+			// We have to capture a region of the screen instead (using the code above) for WebView2
+			// because GdiGrab of Window content doesn't work with WV2, probably because
+			// it uses GPU to render.
+			// We would rather capture a window content if we could, since it would
+			// continue to work even if the user moves the window, and I think even
+			// if they cover it with another window. However, even with Gecko,
+			// there is a problem with window capture if the primary window scale is
+			// not 100%, even though (as we require) the window where Bloom is running
+			// and capturing IS at 100%. What seems to happen is that ffmpeg calculates
+			// the area to capture by something like multiplying the ClientRectangle
+			// of the window by the primary monitor scale. At best, this captures an
+			// area that is too large. At worst, the result is an odd number for the width,
+			// and video capture fails altogether. And we're moving away from Gecko anyway.
+			// So, I think it's best to use the area capture approach everywhere.
+			// var areaCaptureArgs = $"-i title=\"{Text}\" "; // rendering with Gecko we can just capture the window.				
 
 			var args =
 				"-f gdigrab " // basic command for using a window (in a Windows OS) as a video input stream
@@ -505,14 +513,24 @@ namespace Bloom.Publish.Video
 			// file renaming to be suspicious behavior. Decided to wait and see if this happens.
 			var workingDirectory = Path.GetDirectoryName(soundLog[0].src);
 			LocalAudioNamesMessedUp = true;
+			var renames = new Dictionary<string, string>();
 			for(int i = 0; i < soundLog.Length; i++)
 			{
 				var item = soundLog[i];
 				if (Path.GetDirectoryName(item.src) == workingDirectory)
 				{
 					var shortName = GetShortName(i) + Path.GetExtension(item.src);
-					RobustFile.Move(item.src, Path.Combine(workingDirectory, shortName));
-					item.shortName = shortName; // deliberately without the full path, we will set workingDirectory.
+					if (renames.TryGetValue(item.src, out string prevShortName))
+					{
+						// If we already saw (and renamed) this item, just use what we already renamed it to.
+						item.shortName = prevShortName;
+					}
+					else
+					{
+						RobustFile.Move(item.src, Path.Combine(workingDirectory, shortName));
+						item.shortName = shortName; // deliberately without the full path, we will set workingDirectory.
+						renames[item.src] = shortName;
+					}
 				}
 				else
 				{
@@ -679,12 +697,9 @@ namespace Bloom.Publish.Video
 				// of running ffmpeg afterwards.)
 				// If anything goes wrong so that this doesn't happen, we should automatically rebuild the
 				// preview entirely.
-				foreach (var item in soundLog)
+				foreach (var kvp in renames)
 				{
-					if (!item.shortName.StartsWith("\""))
-					{
-						RobustFile.Move(Path.Combine(workingDirectory,item.shortName), item.src);
-					}
+					RobustFile.Move(Path.Combine(workingDirectory,kvp.Value), kvp.Key);
 				}
 
 				LocalAudioNamesMessedUp = false;
