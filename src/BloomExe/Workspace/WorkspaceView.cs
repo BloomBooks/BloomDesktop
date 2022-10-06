@@ -29,9 +29,10 @@ using Bloom.Utils;
 using Bloom.web.controllers;
 using Gecko.Cache;
 using Newtonsoft.Json;
-using SIL.Windows.Forms.WritingSystems;
 using SIL.PlatformUtilities;
 using SIL.Windows.Forms.Miscellaneous;
+using SIL.Unicode;
+using SIL.WritingSystems;
 
 namespace Bloom.Workspace
 {
@@ -61,7 +62,6 @@ namespace Bloom.Workspace
 		private readonly ILocalizationManager _localizationManager;
 		public static float DPIOfThisAccount;
 		private ZoomControl _zoomControl;
-		private static LanguageLookupModel _lookupModel = new LanguageLookupModel();
 
 		public delegate WorkspaceView Factory();
 
@@ -633,10 +633,10 @@ namespace Bloom.Workspace
 		private static int compareLangItems(LanguageItem a, LanguageItem b)
 		{
 			var aText = a.MenuText;
-			if (!LanguageLookupModelExtensions.IsLatinChar(aText[0]))
+			if (!CharacterUtils.IsLatinChar(aText[0]))
 				aText = a.EnglishName;
 			var bText = b.MenuText;
-			if (!LanguageLookupModelExtensions.IsLatinChar(bText[0]))
+			if (!CharacterUtils.IsLatinChar(bText[0]))
 				bText = b.EnglishName;
 			return String.Compare(aText.ToLowerInvariant(), bText.ToLowerInvariant(), StringComparison.Ordinal);
 		}
@@ -674,8 +674,8 @@ namespace Bloom.Workspace
 		{
 			// Get the language name in its own language if at all possible.
 			// Add an English name suffix if it's not in a Latin script.
-			var menuText = _lookupModel.GetNativeLanguageNameWithEnglishSubtitle(code);
-			var englishName = LanguageLookupModelExtensions.GetManuallyOverriddenEnglishNameIfNeeded(code,()=>_lookupModel.GetLocalizedLanguageName(code, "en"));
+			var menuText = IetfLanguageTag.GetNativeLanguageNameWithEnglishSubtitle(code);
+			var englishName = IetfLanguageTag.GetManuallyOverriddenEnglishNameIfNeeded(code,()=>IetfLanguageTag.GetLocalizedLanguageName(code, "en"));
 			return new LanguageItem { EnglishName = englishName, LangTag = code, MenuText = menuText,
 				FractionApproved = FractionApproved(code), FractionTranslated = FractionTranslated(code) };
 		}

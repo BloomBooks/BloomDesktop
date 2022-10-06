@@ -6,9 +6,8 @@ using System.Linq;
 using System.Net;
 using System.Text;
 using Bloom.Api;
-using Bloom.Collection;
-using Bloom.ToPalaso;
 using L10NSharp;
+using SIL.WritingSystems;
 using SIL.Xml;
 
 
@@ -240,7 +239,7 @@ namespace Bloom.Book
             // In real life we always have a book and can get nicer names. I put the fallback in for testing.
             var langs = string.Join(CultureInfo.CurrentCulture.TextInfo.ListSeparator + " ",
                 problems.Select(x => book == null
-                        ? WritingSystem.LookupModel.GetLocalizedLanguageName(x, "")
+                        ? IetfLanguageTag.GetLocalizedLanguageName(x, "")
                         : book.PrettyPrintLanguage(x)));
             return string.Format(template, langs);
         }
