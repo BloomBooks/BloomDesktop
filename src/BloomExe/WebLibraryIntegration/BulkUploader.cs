@@ -296,6 +296,7 @@ namespace Bloom.WebLibraryIntegration
 			var bookInfo = new BookInfo(uploadParams.Folder, true, context.TeamCollectionManager.CurrentCollectionEvenIfDisconnected ?? new AlwaysEditSaveContext() as ISaveContext);
 			var book = server.GetBookFromBookInfo(bookInfo, fullyUpdateBookFiles: true);
 			book.BringBookUpToDate(new NullProgress());
+			uploadParams.Folder = book.FolderPath;	// BringBookUpToDate can change the title and folder (see BL-10330)
 			book.Storage.CleanupUnusedSupportFiles(isForPublish: false); // we are publishing, but this is the real folder not a copy, so play safe.
 
 			// Compute the book hash file and compare it to the existing one for bulk upload.
