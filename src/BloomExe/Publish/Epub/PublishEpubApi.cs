@@ -140,15 +140,6 @@ namespace Bloom.Publish.Epub
 				},
 				false);
 
-			// Saving a checkbox setting that the user ticks to say "Use my E-reader's font sizes"
-			apiHandler.RegisterBooleanEndpointHandler(kApiUrlPart + "removeFontSizesSetting",
-				request => request.CurrentBook.BookInfo.PublishSettings.Epub.RemoveFontSizes,
-				(request, booleanSetting) => {
-					request.CurrentBook.BookInfo.PublishSettings.Epub.RemoveFontSizes = booleanSetting;
-					request.CurrentBook.BookInfo.Save();
-				},
-				false);
-
 			apiHandler.RegisterEndpointHandler(kApiUrlPart + "updatePreview", request =>
 			{
 				RefreshPreview(request.CurrentBook.BookInfo.PublishSettings.Epub);
@@ -295,7 +286,11 @@ namespace Bloom.Publish.Epub
 			// Initialize the settings to affect the first epub preview.  See https://issues.bloomlibrary.org/youtrack/issue/BL-7316.
 			var settings = _bookSelection.CurrentSelection.BookInfo.PublishSettings.Epub;
 			EpubMaker.PublishImageDescriptions = settings.HowToPublishImageDescriptions;
-			EpubMaker.RemoveFontSizes = settings.RemoveFontSizes;
+			//EpubMaker.RemoveFontSizes = settings.RemoveFontSizes;
+			// In BL-11499 we decided that 'flowable' epubs should leave font size decisions
+			// up to the reader always, while 'fixed' ones must control everything.
+			// (Previous versions of Bloom had a checkbox and API to control this in flowable mode.)
+			EpubMaker.RemoveFontSizes = settings.Mode == "flowable";
 			return SetupEpubControlContent();
 		}
 
