@@ -1085,7 +1085,6 @@ function loadToolboxTool(
     }
 
     // if requested, open the tool that was just inserted
-    console.log("about to open tool");
     if (openTool && toolbox.toolboxIsShowing()) {
         toolboxElt.accordion("refresh");
         const id = header.attr("id");
