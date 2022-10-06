@@ -109,7 +109,7 @@ export const EPUBSettingsGroup: React.FunctionComponent<{
                                     }
                                 `}
                                 value={props.mode}
-                                disabled={hasOverlays}
+                                disabled={false}
                                 open={isModeDropdownOpen}
                                 onOpen={() => {
                                     setIsModeDropdownOpen(true);
@@ -142,7 +142,10 @@ export const EPUBSettingsGroup: React.FunctionComponent<{
                                         <MenuItem
                                             value={item.mode}
                                             key={item.mode}
-                                            disabled={false}
+                                            disabled={
+                                                hasOverlays &&
+                                                item.mode === "flowable"
+                                            }
                                         >
                                             <EpubModeItem {...item} />
                                         </MenuItem>
