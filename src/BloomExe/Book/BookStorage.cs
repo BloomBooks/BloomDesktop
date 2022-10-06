@@ -1606,6 +1606,14 @@ namespace Bloom.Book
 			if (candidates.Count == 0)
 				return string.Empty;
 
+			// Remove HTML files that start with a period.  These can be created by MacOS for some users
+			// (although Bloom doesn't run natively on MacOS).  See BL-11415.
+			// Note that periods are stripped from the beginning and end of titles when creating file/folder
+			// names in SanitizeNameForFileSystem()/RemoveDangerousCharacters().
+			candidates.RemoveAll((path) => Path.GetFileName(path).StartsWith("."));
+			if (candidates.Count == 0)
+				return string.Empty;
+
 			var decoyMarkers = new[] {"configuration",
 				PrefixForCorruptHtmFiles, // Used to rename corrupt htm files before restoring backup
 				"_conflict", // owncloud
