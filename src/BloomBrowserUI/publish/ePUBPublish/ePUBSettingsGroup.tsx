@@ -24,18 +24,18 @@ const epubModes: IEpubMode[] = [
     {
         mode: "fixed",
         label: "Fixed – ePUB 3",
-        l10nKey: "Publish.Epub.Fixed",
+        l10nKey: "PublishTab.Epub.Fixed",
         description:
             "Ask ePUB readers to show pages exactly like you see them in Bloom",
-        descriptionL10nKey: "Publish.Epub.Fixed.Description"
+        descriptionL10nKey: "PublishTab.Epub.Fixed.Description"
     },
     {
         mode: "flowable",
         label: "Flowable",
-        l10nKey: "Publish.Epub.Flowable",
+        l10nKey: "PublishTab.Epub.Flowable",
         description:
             "Allow ePUB readers to lay out images and text however they want. The user is more likely to be able to increase font size. Custom page layouts will not look good. This mode is not available if your book has overlay pages (comics).",
-        descriptionL10nKey: "Publish.Epub.Flowable.Description"
+        descriptionL10nKey: "PublishTab.Epub.Flowable.Description"
     }
 ];
 
@@ -85,7 +85,6 @@ export const EPUBSettingsGroup: React.FunctionComponent<{
                             <Div
                                 l10nKey="PublishTab.Epub.Mode"
                                 l10nComment="a heading for two choices, 'Fixed – ePUB 3' or Flowable"
-                                temporarilyDisableI18nWarning={true}
                             >
                                 ePUB mode
                             </Div>
@@ -272,7 +271,6 @@ const EpubModeItem: React.FunctionComponent<IProps> = props => {
                 >
                     <Div
                         l10nKey={props.descriptionL10nKey}
-                        temporarilyDisableI18nWarning={true}
                         css={css`
                             max-width: 200px;
                         `}
@@ -294,7 +292,6 @@ const EpubModeItem: React.FunctionComponent<IProps> = props => {
                         margin-left: 8px;
                     `}
                     key={props.l10nKey} // prevents stale labels (BL-11179)
-                    temporarilyDisableI18nWarning={true}
                 >
                     {props.label}
                 </Div>
