@@ -2,6 +2,7 @@ using NUnit.Framework;
 using Bloom.Book;
 using Bloom.Publish;
 using System.Collections.Generic;
+using Newtonsoft.Json;
 
 namespace BloomTests.Publish
 {
@@ -72,6 +73,20 @@ namespace BloomTests.Publish
 
 			// Check occurrences in modified HTML.  This should be exactly the same as before.
 			VerifyDataDivValues(dom);
+		}
+
+		[Test]
+		public void RemoveUnwantedLanguageDataFromAllTitles_RemovesUnwantedTitles()
+		{
+			var allTitles =
+				@"{""en"":""my title"", ""fr"":""french title"", ""de"":""german title"", ""tpi"":""tok pisin title"", ""qaa"":""mystery title""}";
+			string result =
+				PublishModel.RemoveUnwantedLanguageDataFromAllTitles(allTitles, new[] { "en", "fr", "tpi" });
+			var allTitlesDict = JsonConvert.DeserializeObject<Dictionary<string, string>>(result);
+			Assert.That(allTitlesDict.Count, Is.EqualTo(3));
+			Assert.That(allTitlesDict["en"], Is.EqualTo("my title"));
+			Assert.That(allTitlesDict["fr"], Is.EqualTo("french title"));
+			Assert.That(allTitlesDict["tpi"], Is.EqualTo("tok pisin title"));
 		}
 
 		[TestCase("en")]
