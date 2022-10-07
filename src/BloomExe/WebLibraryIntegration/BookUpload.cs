@@ -244,6 +244,9 @@ namespace Bloom.WebLibraryIntegration
 					// Do this after uploading the books, since the ThumbnailUrl is generated in the course of the upload.
 					if (!IsDryRun && !progress.CancelRequested)
 					{
+						// Do NOT save this change in the book folder!
+						metadata.AllTitles = PublishModel.RemoveUnwantedLanguageDataFromAllTitles(metadata.AllTitles,
+							languages);
 						var response = ParseClient.SetBookRecord(metadata.WebDataJson);
 						parseId = response.ResponseUri.LocalPath;
 						int index = parseId.LastIndexOf('/');
