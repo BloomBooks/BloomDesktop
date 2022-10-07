@@ -10,6 +10,9 @@ export const ApiCheckbox: React.FunctionComponent<{
     l10nComment?: string;
     apiEndpoint: string;
     disabled?: boolean;
+    // If defined, the checkbox should have this value when disabled,
+    // whatever value we get from the API.
+    forceDisabledValue?: boolean;
     onChange?: () => void;
 }> = props => {
     const [checked, setChecked] = BloomApi.useApiBoolean(
@@ -17,9 +20,14 @@ export const ApiCheckbox: React.FunctionComponent<{
         false
     );
 
+    let showChecked = checked;
+    if (props.disabled && props.forceDisabledValue !== undefined) {
+        showChecked = props.forceDisabledValue;
+    }
+
     return (
         <MuiCheckbox
-            checked={checked}
+            checked={showChecked}
             disabled={props.disabled}
             label={props.english}
             l10nKey={props.l10nKey}

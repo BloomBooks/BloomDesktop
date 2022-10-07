@@ -167,7 +167,8 @@ export const EPUBSettingsGroup: React.FunctionComponent<{
                     english="Include image descriptions on page"
                     apiEndpoint="publish/epub/imageDescriptionSetting"
                     l10nKey="PublishTab.Epub.IncludeOnPage"
-                    disabled={false}
+                    disabled={props.mode === "fixed"}
+                    forceDisabledValue={false}
                     onChange={props.onChange}
                 />
 

@@ -294,7 +294,8 @@ namespace Bloom.Publish.Epub
 			PrepareToStageEpub();
 			// Initialize the settings to affect the first epub preview.  See https://issues.bloomlibrary.org/youtrack/issue/BL-7316.
 			var settings = _bookSelection.CurrentSelection.BookInfo.PublishSettings.Epub;
-			EpubMaker.PublishImageDescriptions = settings.HowToPublishImageDescriptions;
+			// We can't visibly publish image descriptions in fixed mode.
+			EpubMaker.PublishImageDescriptions = (settings.Mode == "fixed" ? BookInfo.HowToPublishImageDescriptions.None : settings.HowToPublishImageDescriptions);
 			EpubMaker.RemoveFontSizes = settings.RemoveFontSizes;
 			return SetupEpubControlContent();
 		}
