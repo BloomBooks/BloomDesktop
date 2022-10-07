@@ -31,14 +31,12 @@
                 <source xml:lang="en">It looks like you are trying to open a Bloom Collection from inside of a ZIP file. You need to first unzip the ZIP file, and then open the collection.</source>
                 <note>ID: OpenCreateCloneControl.InZipFileMessage</note>
             </trans-unit>
-      <!-- Bloom 5.4
-            <trans-unit id="PublishTab.Android.BulkBookshelfColor" sil:dynamic="true">
+          <trans-unit id="PublishTab.Android.BulkBookshelfColor" sil:dynamic="true">
                 <source xml:lang="en">Bookshelf Color</source>
                 <note>ID: PublishTab.Android.BulkBookshelfColor</note>
                 <note>The title of the color picker dialog shown to choose the color of the bulk BloomPUB bookshelf.</note>
             </trans-unit>
-      -->
-            <trans-unit id="PublishTab.RecordVideo.NoAudioInVideo">
+          <trans-unit id="PublishTab.RecordVideo.NoAudioInVideo">
                 <source xml:lang="en">Currently, Bloom does not support including audio from Sign Language videos in video output.</source>
                 <note>ID: PublishTab.RecordVideo.NoAudioInVideo</note>
             </trans-unit>
