@@ -209,7 +209,7 @@ namespace Bloom.WebLibraryIntegration
 		/// </summary>
 		public void UploadBook(string storageKeyOfBookFolder, string pathToBloomBookDirectory, IProgress progress,
 			string pdfToInclude, ISet<string> audioFilesToInclude, IEnumerable<string> videoFilesToInclude,
-			string[] languagesToInclude, string metadataLang1Code, string metadataLang2Code)
+			string[] languagesToInclude, string metadataLang1Code, string metadataLang2Code, string lang1Code)
 		{
 			BaseUrl = null;
 			BookOrderUrlOfRecentUpload = null;
@@ -262,7 +262,7 @@ namespace Bloom.WebLibraryIntegration
 			BookStorage.RemoveLocalOnlyFiles(destDirName);
 
 			if (languagesToInclude != null && languagesToInclude.Count() > 0)
-				RemoveUnwantedLanguageData(destDirName, languagesToInclude, metadataLang1Code, metadataLang2Code);
+				RemoveUnwantedLanguageData(destDirName, languagesToInclude, metadataLang1Code, metadataLang2Code, lang1Code);
 
 			PublishHelper.ReportInvalidFonts(destDirName, progress);
 
@@ -356,7 +356,7 @@ namespace Bloom.WebLibraryIntegration
 		}
 
 		public void RemoveUnwantedLanguageData(string destDirName, IEnumerable<string> languagesToInclude,
-			string metadataLang1Code, string metadataLang2Code)
+			string metadataLang1Code, string metadataLang2Code, string lang1Code)
 		{
 			// There should be only one html file with the same name as the directory it's in, but let's
 			// not make any assumptions here.
@@ -373,7 +373,7 @@ namespace Bloom.WebLibraryIntegration
 			PublishModel.RemoveUnwantedLanguageRulesFromCssFiles(destDirName, languagesToInclude.Append(metadataLang1Code).Append(metadataLang2Code));
 			var metadata = BookMetaData.FromFolder(destDirName);
 			metadata.AllTitles =
-				PublishModel.RemoveUnwantedLanguageDataFromAllTitles(metadata.AllTitles, languagesToInclude.ToArray());
+				PublishModel.RemoveUnwantedLanguageDataFromAllTitles(metadata.AllTitles, languagesToInclude.Append(lang1Code).ToArray());
 			metadata.WriteToFolder(destDirName);
 		}
 

@@ -234,7 +234,7 @@ namespace Bloom.WebLibraryIntegration
 				try
 				{
 					_s3Client.UploadBook(s3BookId, bookFolder, progress, pdfToInclude, audioFilesToInclude, videoFilesToInclude, languages,
-						metadataLang1Code, metadataLang2Code);
+						metadataLang1Code, metadataLang2Code, collectionSettings.Language1Tag);
 					metadata.BaseUrl = _s3Client.BaseUrl;
 					metadata.BookOrder = _s3Client.BookOrderUrlOfRecentUpload;
 					var metaMsg = LocalizationManager.GetString("PublishTab.Upload.UploadingBookMetadata", "Uploading book metadata", "In this step, Bloom is uploading things like title, languages, and topic tags to the BloomLibrary.org database.");
@@ -244,6 +244,9 @@ namespace Bloom.WebLibraryIntegration
 					// Do this after uploading the books, since the ThumbnailUrl is generated in the course of the upload.
 					if (!IsDryRun && !progress.CancelRequested)
 					{
+						// Do NOT save this change in the book folder!
+						metadata.AllTitles = PublishModel.RemoveUnwantedLanguageDataFromAllTitles(metadata.AllTitles,
+							languages.Append(collectionSettings.Language1Tag).ToArray());
 						var response = ParseClient.SetBookRecord(metadata.WebDataJson);
 						parseId = response.ResponseUri.LocalPath;
 						int index = parseId.LastIndexOf('/');
