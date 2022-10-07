@@ -371,6 +371,10 @@ namespace Bloom.WebLibraryIntegration
 			// For 5.3, we wholesale keep all L2/L3 rules even though this might result in incorrect error messages about fonts. (BL-11357)
 			// In 5.4, we hope to clean up all this font determination stuff by using a real browser to determine what is used.
 			PublishModel.RemoveUnwantedLanguageRulesFromCssFiles(destDirName, languagesToInclude.Append(metadataLang1Code).Append(metadataLang2Code));
+			var metadata = BookMetaData.FromFolder(destDirName);
+			metadata.AllTitles =
+				PublishModel.RemoveUnwantedLanguageDataFromAllTitles(metadata.AllTitles, languagesToInclude.ToArray());
+			metadata.WriteToFolder(destDirName);
 		}
 
 		//Note: there is a similar list for BloomPacks, but it is not identical, so don't just copy/paste
