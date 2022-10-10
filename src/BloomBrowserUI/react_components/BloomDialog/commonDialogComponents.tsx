@@ -20,7 +20,7 @@ import {
 } from "../../utils/colorUtils";
 
 export const kErrorBoxColor = "#eb3941";
-const kLightBlueBackground = "#e5f9f0";
+const kLightBlueBackground = "#F0FDFE";
 
 // just puts a rounded rectangle around the children
 export const DialogControlGroup: React.FunctionComponent<{}> = props => (
@@ -223,11 +223,13 @@ export const NoteBox: React.FunctionComponent<{
                 border-radius: ${kBorderRadiusForSpecialBlocks};
                 padding: ${kDialogPadding};
                 color: ${kBloomBlue};
-                font-weight: 500;
                 // The original version of this used p instead of div to get this spacing below.
                 // But we want div so we have more flexibility with adding children.
                 margin-block-end: 1em;
                 ${border};
+                a {
+                    color: ${kBloomBlue};
+                }
             `}
             {...propsToPass} // allows defining more css rules from container
         >

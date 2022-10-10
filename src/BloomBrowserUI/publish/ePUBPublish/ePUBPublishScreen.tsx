@@ -22,13 +22,14 @@ import BloomButton from "../../react_components/bloomButton";
 import { EPUBHelpGroup } from "./ePUBHelpGroup";
 import { PWithLink } from "../../react_components/pWithLink";
 import { EPUBSettingsGroup } from "./ePUBSettingsGroup";
-import Typography from "@material-ui/core/Typography";
 import { PublishProgressDialog } from "../commonPublish/PublishProgressDialog";
 import BookMetadataDialog from "../metadata/BookMetadataDialog";
 import { useL10n } from "../../react_components/l10nHooks";
 import { ProgressState } from "../commonPublish/PublishProgressDialogInner";
 import { BloomApi } from "../../utils/bloomApi";
 import { hookupLinkHandler } from "../../utils/linkHandler";
+import { NoteBox } from "../../react_components/BloomDialog/commonDialogComponents";
+import { P } from "../../react_components/l10nComponents";
 
 export const EPUBPublishScreen = () => {
     // When the user changes some features, included languages, etc., we
@@ -125,44 +126,18 @@ const EPUBPublishScreenInternal: React.FunctionComponent<{
                         onRefresh={() => props.onReset()}
                     />
                 </ThemeProvider>
-                <Typography
-                    css={css`
-                        color: whitesmoke;
-                        width: 200px;
-                        margin-top: auto !important; // The two "!important"s here are to override
-                        margin-bottom: 20px !important; // MUI Typography's default margins.
-                    `}
-                >
-                    <PWithLink
-                        css={css`
-                            a {
-                                display: inline;
-                            }
-                            a:link,
-                            a:visited {
-                                color: whitesmoke;
-                                text-decoration: underline;
-                            }
-                        `}
-                        l10nKey="PublishTab.Epub.ReadiumCredit"
-                        href="https://readium.org/"
-                    >
-                        This ePUB preview is provided by [Readium]. This book
-                        may render differently in various ePUB readers.
-                    </PWithLink>
-                </Typography>
             </PreviewPanel>
             <PublishPanel>
                 <div
                     css={css`
-                        margin-top: 30px;
-                        margin-left: 176px;
+                        display: flex;
                     `}
                 >
                     <BloomButton
                         css={css`
-                            // without this, it grows to the width of the column
-                            align-self: flex-start;
+                            align-self: flex-start; // without this, it grows to the width of the column
+                            width: 100px;
+                            margin-inline-end: 50px !important; // !important needed to override material button base
                         `}
                         enabled={isLicenseOK}
                         clickApiEndpoint={"publish/epub/save"}
@@ -171,6 +146,66 @@ const EPUBPublishScreenInternal: React.FunctionComponent<{
                     >
                         Save...
                     </BloomButton>
+                    <NoteBox
+                        addBorder={true}
+                        css={css`
+                            width: 430px;
+                        `}
+                    >
+                        <div
+                            css={css`
+                                > p:first-child {
+                                    margin-top: 0;
+                                }
+                                > p:last-child {
+                                    margin-bottom: 0;
+                                }
+                                ul {
+                                    padding-inline-start: 0;
+                                }
+                                ul li {
+                                    margin-left: 1.1em;
+                                }
+                            `}
+                        >
+                            <P
+                                l10nKey="PublishTab.Epub.Notes"
+                                css={css`
+                                    font-weight: bold;
+                                `}
+                            >
+                                Notes:
+                            </P>
+                            <ul>
+                                <li>
+                                    <PWithLink
+                                        href="https://docs.bloomlibrary.org/ePUB-notes/"
+                                        l10nKey="PublishTab.Epub.ReaderRecommendations"
+                                        l10nComment="The text inside the [square brackets] will become a link to a website."
+                                    >
+                                        Most ePUB readers are very low quality
+                                        ([see our research and
+                                        recommendations]).
+                                    </PWithLink>
+                                </li>
+                                <li>
+                                    <PWithLink
+                                        href="/bloom/api/help/Concepts/EPUB.htm"
+                                        l10nKey="PublishTab.Epub.FeatureLimitations"
+                                        l10nComment="The text inside the [square brackets] will become a link to a website."
+                                    >
+                                        [Some Bloom features] are not supported
+                                        by most or all ePUB readers.
+                                    </PWithLink>
+                                </li>
+                            </ul>
+                            <P l10nKey="PublishTab.Epub.ConsiderBloomPUB">
+                                Consider whether you can distribute your book
+                                using the BloomPUB format instead of or in
+                                addition to ePUB.
+                            </P>
+                        </div>
+                    </NoteBox>
                 </div>
             </PublishPanel>
         </div>
