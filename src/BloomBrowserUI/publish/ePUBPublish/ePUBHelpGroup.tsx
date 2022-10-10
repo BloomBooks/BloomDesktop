@@ -1,6 +1,8 @@
+import React = require("react");
+import Link from "@material-ui/core/Link";
 import { HelpGroup } from "../commonPublish/PublishScreenBaseComponents";
 import HelpLink from "../../react_components/helpLink";
-import React = require("react");
+import { Div } from "../../react_components/l10nComponents";
 
 export const EPUBHelpGroup = () => (
     <HelpGroup>
@@ -10,6 +12,11 @@ export const EPUBHelpGroup = () => (
         >
             About ePUBs
         </HelpLink>
+        <Link href="https://docs.bloomlibrary.org/ePUB-notes/">
+            <Div l10nKey="PublishTab.Epub.AboutReaders">
+                About ePUB Readers & Bloom
+            </Div>
+        </Link>
         <HelpLink
             l10nKey="PublishTab.TasksOverview"
             helpId="Tasks/Publish_tasks/Publish_tasks_overview.htm"
