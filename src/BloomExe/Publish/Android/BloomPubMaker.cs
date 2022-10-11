@@ -83,6 +83,8 @@ namespace Bloom.Publish.Android
 			return modifiedBook.FolderPath;
 		}
 
+		public static Dictionary<string,HashSet<string>> BloomPubFontsAndLangsUsed = null;
+
 		public static Book.Book PrepareBookForBloomReader(string bookFolderPath, BookServer bookServer,
 			TemporaryFolder temp,
 			IWebSocketProgress progress, bool isTemplateBook,
@@ -165,6 +167,7 @@ namespace Bloom.Publish.Android
 					warningMessages, keepPageLabels:settings?.WantPageLabels??false);
 				PublishHelper.SendBatchedWarningMessagesToProgress(warningMessages, progress);
 				fontsUsed = helper.FontsUsed;
+				BloomPubFontsAndLangsUsed = helper.FontsAndLangsUsed;
 			}
 			if (!modifiedBook.IsTemplateBook)
 				modifiedBook.RemoveBlankPages(settings?.LanguagesToInclude);

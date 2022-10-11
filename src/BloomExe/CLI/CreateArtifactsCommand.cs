@@ -9,6 +9,7 @@ using Bloom.Book;
 using Bloom.Properties;
 using Bloom.Publish.Android;
 using Bloom.Publish.Epub;
+using Bloom.ToPalaso;
 using Bloom.web;
 using BloomTemp;
 using CommandLine;
@@ -121,7 +122,25 @@ namespace Bloom.CLI
 			{
 				exitCode |= CreateBloomDigitalArtifacts(parameters.BookPath, parameters.Creator, zippedBloomPubOutputPath, unzippedBloomDigitalOutputPath);
 			}
-
+			if (exitCode == CreateArtifactsExitCode.Success && BloomPubMaker.BloomPubFontsAndLangsUsed != null)
+			{
+				// Report what we can about fonts and languages for this book.
+				// (See https://issues.bloomlibrary.org/youtrack/issue/BL-11512.)
+				var testOnly = WebLibraryIntegration.BookUpload.UseSandboxByDefault;
+				foreach (var fontName in BloomPubMaker.BloomPubFontsAndLangsUsed.Keys)
+				{
+					var langsForFont = BloomPubMaker.BloomPubFontsAndLangsUsed[fontName];
+					foreach (var lang in langsForFont)
+					{
+						FontAnalytics.Report("Bloom Library", "2.0", _book.ID,
+							FontAnalytics.FontEventType.PublishEbook, lang, testOnly, fontName);
+						FontAnalytics.Report("Bloom Library", "2.0", _book.ID,
+							FontAnalytics.FontEventType.PublishWeb, lang, testOnly, fontName);
+						FontAnalytics.Report("Bloom Library", "2.0", _book.ID,
+							FontAnalytics.FontEventType.PublishPdf, lang, testOnly, fontName);
+					}
+				}
+			}
 			if (!String.IsNullOrEmpty(zippedBloomSourceOutputPath))
 			{
 				exitCode |= CreateBloomSourceArtifact(parameters.BookPath, parameters.Creator, zippedBloomSourceOutputPath);
