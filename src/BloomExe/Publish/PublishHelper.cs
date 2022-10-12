@@ -394,8 +394,7 @@ namespace Bloom.Publish
 				var lang = elt.Attributes["lang"]?.Value;
 				if (string.IsNullOrEmpty(lang) || lang == "z" || lang == "*")
 					return;		// no language information
-				HashSet<string> langsForFont = null;
-				if (!FontsAndLangsUsed.TryGetValue(font, out langsForFont))
+				if (!FontsAndLangsUsed.TryGetValue(font, out HashSet<string> langsForFont))
 				{
 					langsForFont = new HashSet<string>();
 					FontsAndLangsUsed[font] = langsForFont;
