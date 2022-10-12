@@ -128,7 +128,7 @@ namespace Bloom.Edit
 			selectedTabAboutToChangeEvent.Subscribe(OnTabAboutToChange);
 			duplicatePageCommand.Implementer = OnDuplicatePage;
 			deletePageCommand.Implementer = OnDeletePage;
-			pageListChangedEvent.Subscribe(x => _view.UpdatePageList(false));
+			pageListChangedEvent.Subscribe(needFullUpdate => _view.UpdatePageList(needFullUpdate));
 			relocatePageEvent.Subscribe(OnRelocatePage);
 			collectionClosingEvent.Subscribe(o =>
 			{
