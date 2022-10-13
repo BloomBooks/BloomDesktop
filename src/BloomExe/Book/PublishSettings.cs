@@ -376,9 +376,12 @@ namespace Bloom.Book
 		public BookInfo.HowToPublishImageDescriptions HowToPublishImageDescriptions;
 
 		/// <summary>
-		/// This corresponds to a checkbox indicating that the user wants to use the eReader's native font sizes.
+		/// This is an obsolete property. For now at least, I'm preserving it in case the book is also
+		/// accessed by older versions of Bloom.
+		/// It corresponds to a checkbox we used to have indicating that the user wants to use the
+		/// eReader's native font sizes, and to the field of the same name in EpubMaker which is used to control.
 		/// </summary>
-		/// <remarks>Replaces the old BookMetaData property Epub_RemoveFontSizes, which was (unfortunately)
+		/// <remarks>Replaced the old BookMetaData property Epub_RemoveFontSizes, which was (unfortunately)
 		/// persisted as epub_RemoveFontStyles</remarks>
 		[JsonProperty("removeFontSizes")]
 		public bool RemoveFontSizes;

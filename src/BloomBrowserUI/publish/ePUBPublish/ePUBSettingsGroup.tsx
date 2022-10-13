@@ -171,14 +171,6 @@ export const EPUBSettingsGroup: React.FunctionComponent<{
                     onChange={props.onChange}
                 />
 
-                <ApiCheckbox
-                    english="Use ePUB reader's text size"
-                    apiEndpoint="publish/epub/removeFontSizesSetting"
-                    l10nKey="PublishTab.Epub.RemoveFontSizes"
-                    disabled={props.mode === "fixed"}
-                    //TODO: priorClickAction={() => this.abortPreview()}
-                    onChange={props.onChange}
-                />
                 {/* l10nKey is intentionally not under PublishTab.Epub... we may end up with this link in other places */}
                 <Link
                     css={css`
