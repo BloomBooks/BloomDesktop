@@ -173,7 +173,10 @@ export const ReportDialog: React.FunctionComponent<{
             // Now, we include it all the time. Since we have Sentry reporting too, there's less need to
             // try to funnel people towards submitting.
             buttonLabel = props.kind === ProblemKind.Fatal ? "Quit" : "Close";
-            l10nKey = `ReportProblemDialog.${buttonLabel}`;
+            l10nKey =
+                props.kind === ProblemKind.Fatal
+                    ? "ReportProblemDialog.Quit"
+                    : "Common.Close";
         }
 
         return (

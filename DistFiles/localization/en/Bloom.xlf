@@ -3615,13 +3615,11 @@
         <note>ID: PublishTab.Android.File.Progress.SubstitutingAndika</note>
         <note>{0} is a font name</note>
       </trans-unit>
-      <!-- Bloom 5.4
       <trans-unit id="PublishTab.Android.CoverColor" sil:dynamic="true">
           <source xml:lang="en">Cover Color</source>
           <note>ID: PublishTab.Android.CoverColor</note>
           <note>The heading at the top of the Settings section, which shows a thumbnail of the front cover and can be used to change the underlying page color.</note>
       </trans-unit>
-      -->
       <trans-unit id="PublishTab.Android.GetBloomReader" sil:dynamic="true">
         <source xml:lang="en">Get Bloom Reader App</source>
         <note>ID: PublishTab.Android.GetBloomReader</note>
@@ -4011,10 +4009,9 @@
         <source xml:lang="en">Create an ePUB book</source>
         <note>ID: PublishTab.Epub.Title</note>
       </trans-unit>
-      <!-- for 5.4 (new epub mode feature)
-            <trans-unit id="PublishTab.Epub.Fixed">
-              <source xml:lang="en">Fixed – ePUB 3</source>
-              <note>ID: PublishTab.Epub.Fixed</note>
+      <trans-unit id="PublishTab.Epub.Fixed">
+        <source xml:lang="en">Fixed – ePUB 3</source>
+        <note>ID: PublishTab.Epub.Fixed</note>
             </trans-unit>
             <trans-unit id="PublishTab.Epub.Fixed.Description">
               <source xml:lang="en">Ask ePUB reader to show pages exactly like you see them in Bloom</source>
@@ -4030,10 +4027,9 @@
             </trans-unit>
             <trans-unit id="PublishTab.Epub.Mode">
               <source xml:lang="en">ePUB mode</source>
-              <note>ID: PublishTab.Epub.Mode</note>
-              <note>a heading for two choices, 'Fixed – ePUB 3' or Flowable</note>
-            </trans-unit>
-            -->
+        <note>ID: PublishTab.Epub.Mode</note>
+        <note>a heading for two choices, 'Fixed – ePUB 3' or Flowable</note>
+      </trans-unit>
       <trans-unit id="PublishTab.EpubButton">
         <source xml:lang="en">ePUB</source>
         <note>ID: PublishTab.EpubButton</note>
@@ -4232,7 +4228,7 @@
         <note>ID: PublishTab.PdfNotSavedWhy</note>
         <note>explanation that file was not saved displayed in a message box</note>
       </trans-unit>
-      <!-- for 5.4
+      <!-- for 5.5
       <trans-unit id="PublishTab.PdfPrint.Button">
         <source xml:lang="en">PDF and Print</source>
         <note>ID: PublishTab.PdfPrint.Button</note>
@@ -5963,13 +5959,11 @@ Do you want to go ahead?</note>
         <source xml:lang="en">Put a comprehension question here</source>
         <note>ID: TemplateBooks.Quiz.HintBubble.Question</note>
       </trans-unit>
-      <!-- for 5.4
-            <trans-unit id="TopicChooser.Title" sil:dynamic="true">
-                <source xml:lang="en">Choose Topic</source>
-                <note>ID: TopicChooser.Title</note>
-                <note>Title of the topics chooser dialog in the edit tab</note>
-            </trans-unit>
-            -->
+      <trans-unit id="TopicChooser.Title" sil:dynamic="true">
+          <source xml:lang="en">Choose Topic</source>
+          <note>ID: TopicChooser.Title</note>
+          <note>Title of the topics chooser dialog in the edit tab</note>
+      </trans-unit>
       <trans-unit id="Topics.Agriculture" sil:dynamic="true">
         <source xml:lang="en">Agriculture</source>
         <note>ID: Topics.Agriculture</note>

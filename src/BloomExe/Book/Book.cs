@@ -2890,14 +2890,15 @@ namespace Bloom.Book
 			_pageSelection.PrepareToSelectPage();
 
 			ClearCachedDataFromDom();
+			bool stylesChanged = false;
 
 			if(templatePage.Book !=null) // will be null in some unit tests that are unconcerned with stylesheets
-				HtmlDom.AddStylesheetFromAnotherBook(templatePage.Book.OurHtmlDom, OurHtmlDom);
+				stylesChanged = HtmlDom.AddStylesheetFromAnotherBook(templatePage.Book.OurHtmlDom, OurHtmlDom);
 
 			// And, if it comes from a different book, we may need to copy over some of the user-defined
 			// styles from that book. Do this before we set up the new page, which will get a copy of this
 			// book's (possibly updated) stylesheet.
-			AddMissingStylesFromTemplatePage(templatePage);
+			stylesChanged |= AddMissingStylesFromTemplatePage(templatePage);
 
 			XmlDocument dom = OurHtmlDom.RawDom;
 			var templatePageDiv = templatePage.GetDivNodeForThisPage();
@@ -3002,11 +3003,19 @@ namespace Bloom.Book
 			}
 
 			Save();
-			_pageListChangedEvent?.Raise(null);
 
-			_pageSelection.SelectPage(newPage, true);
+			MiscUtils.DoOnceOnIdle(() =>
+			{
+				// This UI updating code generates a lot of API calls, especially when we pass
+				// true to pageListChangedEvent. And it is typically called within an API call
+				// (implementing Add Page). We want to postpone triggering more API calls
+				// until the current one is over, to prevent deadlocks in the BloomServer.
+				_pageListChangedEvent?.Raise(stylesChanged);
 
-			InvokeContentsChanged(null);
+				_pageSelection.SelectPage(newPage, true);
+
+				InvokeContentsChanged(null);
+			});
 		}
 
 		private void CopyWidgetFilesIfNeeded(XmlElement newPageDiv, string sourceBookFolder)
@@ -3061,8 +3070,9 @@ namespace Bloom.Book
 		/// If we are inserting a page from a different book, or updating the layout of our page to one from a
 		/// different book, we may need to copy user-defined styles from that book to our own.
 		/// </summary>
+		/// <returns>true if anything added</returns>
 		/// <param name="templatePage"></param>
-		private void AddMissingStylesFromTemplatePage(IPage templatePage)
+		private bool AddMissingStylesFromTemplatePage(IPage templatePage)
 		{
 			if (templatePage.Book.FolderPath != FolderPath)
 			{
@@ -3071,10 +3081,13 @@ namespace Bloom.Book
 				{
 					var userStylesOnPage = HtmlDom.GetUserModifiableStylesUsedOnPage(domForPage); // could be empty
 					var existingUserStyles = GetOrCreateUserModifiedStyleElementFromStorage();
-					var newMergedUserStyleXml = HtmlDom.MergeUserStylesOnInsertion(existingUserStyles, userStylesOnPage);
+					var newMergedUserStyleXml = HtmlDom.MergeUserStylesOnInsertion(existingUserStyles, userStylesOnPage, out bool didAdd);
 					existingUserStyles.InnerXml = newMergedUserStyleXml;
+					return didAdd;
 				}
 			}
+
+			return false;
 		}
 
 		public void DuplicatePage(IPage page, int numberToAdd=1)
@@ -3172,7 +3185,7 @@ namespace Bloom.Book
 
 			_pageSelection.SelectPage(pageToShowNext);
 			Save();
-			_pageListChangedEvent?.Raise(null);
+			_pageListChangedEvent?.Raise(false);
 
 			InvokeContentsChanged(null);
 		}

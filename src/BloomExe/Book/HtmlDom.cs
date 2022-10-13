@@ -607,7 +607,20 @@ namespace Bloom.Book
 			}
 		}
 
-		public void AddStyleSheetIfMissing(string path)
+		private static HashSet<string> stylesheetsToIgnoreAdding = new HashSet<string>(new[]
+		{
+			"editPaneGlobal.css",
+			"previewMode.css", "editOriginalMode.css", "editTranslationMode.css", "editMode.css"
+		});
+
+		/// <summary>
+		/// Add a reference to the specified stylesheet if we don't already have it.
+		/// Return true if added, and if it's not a known stylesheet that is automatically
+		/// present in a page being edited.
+		/// </summary>
+		/// <param name="path"></param>
+		/// <returns></returns>
+		public bool AddStyleSheetIfMissing(string path)
 		{
 			// Remember, Linux filenames are case sensitive.
 			var pathToCheck = path;
@@ -619,9 +632,10 @@ namespace Bloom.Book
 				if(Environment.OSVersion.Platform == PlatformID.Win32NT)
 					fileName = fileName.ToLowerInvariant();
 				if(fileName == pathToCheck)
-					return;
+					return false;
 			}
 			_dom.AddStyleSheet(path.Replace("file://", ""));
+			return !stylesheetsToIgnoreAdding.Contains(path);
 		}
 
 		public virtual IEnumerable<string> GetTemplateStyleSheets()
@@ -1327,6 +1341,12 @@ namespace Bloom.Book
 			return selector.Substring(1, indexOfStyle + "-style".Length - 1);
 		}
 
+		public static string MergeUserStylesOnInsertion(XmlNode existingUserStyleNode,
+			XmlNode insertedPageUserStyleNode)
+		{
+			return MergeUserStylesOnInsertion(existingUserStyleNode, insertedPageUserStyleNode, out bool dummy);
+		}
+
 		/// <summary>
 		/// Merges the user modified styles from an existing book with the ones used on a page inserted from a different template.
 		/// This method will not overwrite a style already defined with the same name in the "receptor" book.
@@ -1335,8 +1355,9 @@ namespace Bloom.Book
 		/// <param name="existingUserStyleNode">From current book's storage</param>
 		/// <param name="insertedPageUserStyleNode"></param>
 		/// <returns>The InnerXml to which the user modified styles element should be set.</returns>
-		public static string MergeUserStylesOnInsertion(XmlNode existingUserStyleNode, XmlNode insertedPageUserStyleNode)
+		public static string MergeUserStylesOnInsertion(XmlNode existingUserStyleNode, XmlNode insertedPageUserStyleNode, out bool didAdd)
 		{
+			didAdd = false;
 			// this method in production is currently always called just after
 			// CurrentBook.GetOrCreateUserModifiedStyleElementFromStorage()
 			Guard.AgainstNull(existingUserStyleNode, "existingUserStyleNode");
@@ -1356,6 +1377,7 @@ namespace Bloom.Book
 				if (existingStyleNames.Contains(GetStyleNameFromRuleSelector(keyPair.Key)))
 					continue;
 				existingStyleKeyDict.Add(keyPair);
+				didAdd = true;
 			}
 			return WrapUserStyleInCdata(GetCompleteFilteredUserStylesInnerText(existingStyleKeyDict));
 		}
@@ -2470,12 +2492,19 @@ namespace Bloom.Book
 			return dataDiv;
 		}
 
-		public static void AddStylesheetFromAnotherBook(HtmlDom sourceBookDom, HtmlDom targetBookDom)
+		/// <summary>
+		/// Add to targetBookDom a reference to any stylesheet that sourceBookDom
+		/// refers to and which it does not already refer to. Return true if anything
+		/// was added.
+		/// </summary>
+		/// <returns></returns>
+		public static bool AddStylesheetFromAnotherBook(HtmlDom sourceBookDom, HtmlDom targetBookDom)
 		{
 			var addedModifiedStyleSheets = new List<string>();
 			//This was refactored from book, where there was these notes:
 			//     NB: at this point this code can't handle the "userModifiedStyles" from children, it'll ignore them (they would conflict with each other)
 			//     NB: at this point custom styles (e.g. larger/smaller font rules) from children will be lost.
+			bool anyAdded = false;
 
 			//At this point, this addedModifiedStyleSheets is just used as a place to track which stylesheets we already have
 			foreach(string sheetName in sourceBookDom.GetTemplateStyleSheets())
@@ -2484,9 +2513,10 @@ namespace Bloom.Book
 					//nb: if two books have stylesheets with the same name, we'll only be grabbing the 1st one.
 				{
 					addedModifiedStyleSheets.Add(sheetName);
-					targetBookDom.AddStyleSheetIfMissing(sheetName);
+					anyAdded |= targetBookDom.AddStyleSheetIfMissing(sheetName);
 				}
 			}
+			return anyAdded;
 		}
 
 		public static string ConvertHtmlBreaksToNewLines(string html)

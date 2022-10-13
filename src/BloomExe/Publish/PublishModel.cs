@@ -20,6 +20,8 @@ using SIL.IO;
 using SIL.Xml;
 using Bloom.ToPalaso.Experimental;
 using Bloom.ToPalaso;
+using Newtonsoft.Json;
+using SIL.Extensions;
 
 namespace Bloom.Publish
 {
@@ -802,6 +804,17 @@ namespace Bloom.Publish
 			}
 
 			Process.Start(folderForThisBook.FolderPath);
+		}
+
+		public static string RemoveUnwantedLanguageDataFromAllTitles(string allTitles, string[] langsWanted)
+		{
+			if (string.IsNullOrWhiteSpace(allTitles))
+				return allTitles;
+			var allTitlesDict = JsonConvert.DeserializeObject<Dictionary<string, string>>(allTitles);
+			var badKeys = allTitlesDict.Keys.Where(k => langsWanted.IndexOf(k) < 0).ToArray();
+			foreach (var key in badKeys)
+				allTitlesDict.Remove(key);
+			return JsonConvert.SerializeObject(allTitlesDict);
 		}
 	}
 }

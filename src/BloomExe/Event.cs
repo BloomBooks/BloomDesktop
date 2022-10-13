@@ -117,7 +117,9 @@ namespace Bloom
 //	public class BookCollectionChangedEvent : Event<BookCollection>
 //	{ }
 
-	public class PageListChangedEvent : Event<object>
+	// descriptor is true if page list needs to be fully regenerated,
+	// e.g., because style definitions changed.
+	public class PageListChangedEvent : Event<Boolean>
 	{
 		public PageListChangedEvent()
 			: base("PageListChangedEvent", LoggingLevel.Minor)
