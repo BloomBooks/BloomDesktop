@@ -869,7 +869,7 @@ namespace Bloom.Spreadsheet
 			editable.RemoveAttribute("data-duration");
 			editable.RemoveAttribute("data-audiorecordingendtimes");
 			editable.RemoveAttribute("recordingmd5");
-			editable.RemoveAttribute("bloom-postAudioSplit");
+			HtmlDom.RemoveClass(editable, "bloom-postAudioSplit");
 			editable.RemoveAttribute("data-audiorecordingmode");
 			HtmlDom.RemoveClass(editable, "audio-sentence");
 			foreach (var span in editable.SafeSelectNodes("span[@class]").Cast<XmlElement>().ToArray())
@@ -945,6 +945,8 @@ namespace Bloom.Spreadsheet
 				}
 				var audioFile = audioFilesList;
 				var durationStr = AddAudioFile(editable, audioFile, row);
+				if (String.IsNullOrEmpty(durationStr))
+					return; // already reported, just don't add any audio information.
 				var duration = double.Parse(durationStr, CultureInfo.InvariantCulture);
 				editable.SetAttribute("data-audiorecordingmode", "TextBox");
 				HtmlDom.AddClass(editable, "audio-sentence");
@@ -1026,7 +1028,7 @@ namespace Bloom.Spreadsheet
 				else if(alignments.Length != 1)
 				{
 					_progress.MessageWithParams("AlignmentMismatch", "",
-						"Did not import audio on page {0} because there are {1} audio alignments for {2} sentences; they should match up.",
+						"Did not import audio alignments on page {0} because there are {1} audio alignments for {2} sentences; they should match up.",
 						ProgressKind.Error, PageNumberToReport.ToString(), alignments.Length.ToString(), sentenceCount.ToString());
 					return;
 				}
@@ -1087,7 +1089,8 @@ namespace Bloom.Spreadsheet
 		/// </summary>
 		/// <param name="elt"></param>
 		/// <param name="audioFile"></param>
-		/// <returns>a string representation of the duration of the audio file, in seconds.</returns>
+		/// <returns>a string representation of the duration of the audio file, in seconds, or an empty string,
+		/// if we don't find a valid audio file.</returns>
 		private string AddAudioFile(XmlElement elt, string audioFile, ContentRow row)
 		{
 			if (audioFile == "missing")

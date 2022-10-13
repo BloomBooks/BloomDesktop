@@ -168,7 +168,7 @@ namespace BloomTests.Spreadsheet
 				"a9d7b794-7a83-473a-8307-7968176ae4bcx.mp3") + ", ./audio/i77c18c83-0224-405f-bb97-70d32078855c.mp3");
 			contentRow9.SetCell(columnForFrAlignment, "2.9");
 
-			// This page will fail to import audio, since there are two sentences, but three alignment values.
+			// This page will fail to import audio alignment, since there are two sentences, but three alignment values.
 			var contentRow10 = new ContentRow(ss);
 			contentRow10.AddCell(InternalSpreadsheet.PageContentRowLabel);
 			contentRow10.SetCell(columnForFr, "<p>This is page 10. It has two sentences.</p>");
@@ -423,7 +423,7 @@ namespace BloomTests.Spreadsheet
 		[Test]
 		public void MismatchedAlignmentReported()
 		{
-			Assert.That(_progressSpy.Errors, Does.Contain($"Did not import audio on page 10 because there are 3 audio alignments for 2 sentences; they should match up."));
+			Assert.That(_progressSpy.Errors, Does.Contain($"Did not import audio alignments on page 10 because there are 3 audio alignments for 2 sentences; they should match up."));
 		}
 
 		[Test]
@@ -543,10 +543,10 @@ namespace BloomTests.Spreadsheet
                 <div class=""split-pane-component position-top"">
                     <div class=""split-pane-component-inner"" min-width=""60px 150px 250px"" min-height=""60px 150px 250px"">
                         <div class=""bloom-translationGroup bloom-trailingElement"" data-default-languages=""auto"">
-                           <div class=""bloom-editable normal-style {3}"" style="""" lang=""z"" contenteditable=""true"">
+                           <div class=""bloom-editable normal-style"" style="""" lang=""z"" contenteditable=""true"">
                                 <p></p>
                             </div>
-							<div class=""bloom-editable normal-style"" lang=""fr"" contenteditable=""true"" {1}>
+							<div class=""bloom-editable normal-style {3}"" lang=""fr"" contenteditable=""true"" {1}>
 								{2}
 							</div>
                         </div>
@@ -605,6 +605,9 @@ namespace BloomTests.Spreadsheet
 				+ PageWithJustText(5, "data-audiorecordingmode=\"TextBox\" id=\"a9d7b794-7a83-473a-8307-7968176ae4bc\" recordingmd5=\"69f7226e062f6b4accaa8110787f81fb\" data-duration=\"4.388571\" data-audiorecordingendtimes=\"3.900 4.360\"",
 					@"<p><span id=""i4356108a-4647-4b01-8cb9-8acc227b4eea"" class=""bloom-highlightSegment"">A hand with a sore finger.</span> <span id=""cf66ff0d-f882-48b0-b789-cba83aa3ae84"" class=""bloom-highlightSegment"">It has a bandage.​</span></p>",
 					"audio-sentence")
+				+ PageWithJustText(6, "data-audiorecordingmode=\"TextBox\" id=\"a9d7b794-7a83-473a-8307-7968176ae4bc\" recordingmd5=\"69f7226e062f6b4accaa8110787f81fb\" data-duration=\"4.388571\" data-audiorecordingendtimes=\"3.900 4.360\"",
+					@"<p><span id=""i4356108a-4647-4b01-8cb9-8acc227b4eea"" class=""bloom-highlightSegment"">A hand with a sore finger.</span> <span id=""cf66ff0d-f882-48b0-b789-cba83aa3ae84"" class=""bloom-highlightSegment"">It has a bandage.​</span></p>",
+					"audio-sentence bloom-postAudioSplit")
 				+ SpreadsheetImageAndTextImportTests.insideBackCoverPage
 				+ SpreadsheetImageAndTextImportTests.backCoverPage);
 			_dom = new HtmlDom(xml, true);
@@ -664,6 +667,16 @@ namespace BloomTests.Spreadsheet
 			// actual durations are 2.899592 and 2.194286
 			contentRow5.SetCell(columnForFrAudio, "./audio/i991ae1ac-db9a-4ad1-984b-8e679c1ae901.mp3, ./audio/i77c18c83-0224-405f-bb97-70d32078855c.mp3");
 
+			// Will make a TG on page 6. It will be treated as an unsplit TextBox,
+			// as there are two sentences and a three numbers in the alignment column.
+			// Want to make sure the sentence-mode stuff in the original gets cleaned up.
+			var contentRow6 = new ContentRow(ss);
+			contentRow6.AddCell(InternalSpreadsheet.PageContentRowLabel);
+			contentRow6.SetCell(columnForFr, "<p>This is page 6. <strong>This</strong> <em>'sentence'</em> <u>has</u> <sup>many</sup> <span style=\"color:#ff1616;\">text</span> variations.</p>");
+			contentRow6.SetCell(columnForFrAudio, Path.Combine(_otherAudioFolder.FolderPath, "i77c18c83-0224-405f-bb97-70d32078855cx.mp3"));
+			// Actual duration of this audio is 2.194286; we should get that
+			contentRow6.SetCell(columnForFrAlignment, "1.0 1.5 2.9");
+
 			// not sure if we need this
 			var settings = new NewCollectionSettings();
 			settings.Language1.Tag = "es";
@@ -709,6 +722,7 @@ namespace BloomTests.Spreadsheet
 		[TestCase(1)]
 		[TestCase(2)]
 		[TestCase(3)]
+		[TestCase(5)]
 		public void PageNDataNotSentence(int pageNumber)
 		{
 			var assertThatXmlInPageN = AssertThatXmlIn.Element(_contentPages[pageNumber]);
@@ -717,12 +731,25 @@ namespace BloomTests.Spreadsheet
 			assertThatXmlInPageN.HasNoMatchForXpath(".//span[@data-duration]");
 		}
 
+		[Test]
+		public void PostAudioSplit_Removed_WhenAlignmentsMismatched()
+		{
+			AssertThatXmlIn.Element(_contentPages[5]).HasNoMatchForXpath(".//div[contains(@class, 'bloom-postAudioSplit')]");
+		}
+
+		[Test]
+		public void MismatchedAlignmentReported()
+		{
+			Assert.That(_progressSpy.Errors, Does.Contain($"Did not import audio alignments on page 6 because there are 3 audio alignments for 2 sentences; they should match up."));
+		}
+
 		[TestCase(0, "i9c7f4e02-4685-48fc-8653-71d88f218706", "div", 3.996735)]
 		[TestCase(1, "i9c7f4e02-4685-48fc-8653-71d88f218706x", "div", 3.996735)]
 		[TestCase(2, "a9d7b794-7a83-473a-8307-7968176ae4bc", "div", 4.388571)]
 		[TestCase(3, "a9d7b794-7a83-473a-8307-7968176ae4bcx", "div", 4.388571)]
 		[TestCase(4, "i991ae1ac-db9a-4ad1-984b-8e679c1ae901", "span", 2.899592)]
 		[TestCase(4, "i77c18c83-0224-405f-bb97-70d32078855c", "span", 2.194286)]
+		[TestCase(5, "i77c18c83-0224-405f-bb97-70d32078855cx", "div", 2.194286)]
 		public void GotAudioDurationAndOtherEssentialsOnPageN(int pageIndex, string id, string elt, double expectedDuration)
 		{
 			var target = _contentPages[pageIndex].SafeSelectNodes($".//{elt}[@id='{id}']").Cast<XmlElement>().First();
@@ -757,6 +784,7 @@ namespace BloomTests.Spreadsheet
 		[TestCase(2, "TextBox")]
 		[TestCase(3, "TextBox")]
 		[TestCase(4, "Sentence")]
+		[TestCase(5, "TextBox")]
 		public void GotRightModeOnPageN(int pageIndex, string expectedMode)
 		{
 			AssertThatXmlIn.Element(_contentPages[pageIndex]).HasSpecifiedNumberOfMatchesForXpath($".//div[contains(@class, 'bloom-editable') and @data-audiorecordingmode='{expectedMode}']", 1);
