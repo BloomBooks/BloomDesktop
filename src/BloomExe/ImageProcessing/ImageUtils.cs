@@ -180,6 +180,11 @@ namespace Bloom.ImageProcessing
 					RobustFile.Copy(sourcePath, destinationPath);
 				else
 					imageInfo.Image.Save(destinationPath, ImageFormat.Png); // destinationPath already has .png extension
+				if (_createdTempImageFile != null && RobustFile.Exists(_createdTempImageFile))
+				{
+					RobustFile.Delete(_createdTempImageFile);
+					_createdTempImageFile = null;
+				}
 				return imageFileName;
 			}
 			catch (IOException)
@@ -723,19 +728,7 @@ namespace Bloom.ImageProcessing
 				var isJpegImage = AppearsToBeJpeg(imageInfo);
 				if (String.IsNullOrEmpty(sourcePath) || !RobustFile.Exists(sourcePath))
 				{
-					// This must be from a paste instead of the ImageChooser dialog.
-					sourcePath = Path.GetTempFileName();
-					RobustFile.Delete(sourcePath);
-					if (isJpegImage)
-					{
-						sourcePath = sourcePath + ".jpg";
-						imageInfo.Image.Save(sourcePath, ImageFormat.Jpeg);
-					}
-					else
-					{
-						sourcePath = sourcePath + ".png";
-						imageInfo.Image.Save(sourcePath, ImageFormat.Png);
-					}
+					sourcePath = CreateSourceFileForImage(imageInfo, isJpegImage);
 				}
 				var destPath = TempFileUtils.GetTempFilepathWithExtension(isJpegImage ? ".jpg" : ".png");
 				try
@@ -785,6 +778,30 @@ namespace Bloom.ImageProcessing
 				g.DrawImage(imageInfo.Image, rect);
 			}
 			return bm;
+		}
+
+		static string _createdTempImageFile;
+
+		private static string CreateSourceFileForImage(PalasoImage imageInfo, bool isJpegImage)
+		{
+			// This must be from a paste instead of the ImageChooser dialog.
+			string sourcePath = Path.GetTempFileName();
+			RobustFile.Delete(sourcePath);
+			if (isJpegImage)
+			{
+				sourcePath = sourcePath + ".jpg";
+				imageInfo.Image.Save(sourcePath, ImageFormat.Jpeg);
+			}
+			else
+			{
+				sourcePath = sourcePath + ".png";
+				imageInfo.Image.Save(sourcePath, ImageFormat.Png);
+			}
+			imageInfo.SetCurrentFilePath(sourcePath);
+			if (_createdTempImageFile != null)
+				throw new Exception($"_createdTempImageFile already set in image utils ({_createdTempImageFile})");
+			_createdTempImageFile = sourcePath;
+			return sourcePath;
 		}
 
 		private static void LogGraphicsMagickFailure(Process proc)
@@ -930,6 +947,8 @@ namespace Bloom.ImageProcessing
 				if (RobustFile.Exists(graphicsMagickPath))
 				{
 					var path = image.GetCurrentFilePath();
+					if (path == null || !RobustFile.Exists(path))
+						path = CreateSourceFileForImage(image, false);	// already know it's not jpeg
 					var proc = RunGraphicsMagick(graphicsMagickPath, path, jpegFilePath, new Size(image.Image.Width, image.Image.Height), false);
 					if (proc.ExitCode == 0)
 					{
