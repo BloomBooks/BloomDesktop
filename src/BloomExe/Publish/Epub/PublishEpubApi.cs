@@ -286,14 +286,14 @@ namespace Bloom.Publish.Epub
 			// Initialize the settings to affect the first epub preview.  See https://issues.bloomlibrary.org/youtrack/issue/BL-7316.
 			var settings = _bookSelection.CurrentSelection.BookInfo.PublishSettings.Epub;
 
-      // We can't visibly publish image descriptions in fixed mode.
-			EpubMaker.PublishImageDescriptions = (settings.Mode == "fixed" ? BookInfo.HowToPublishImageDescriptions.None : settings
+			// We can't visibly publish image descriptions in fixed mode.
+			EpubMaker.PublishImageDescriptions = (settings.Mode == "fixed" ? BookInfo.HowToPublishImageDescriptions.None : settings.HowToPublishImageDescriptions);
 			// In BL-11499 we decided that 'flowable' epubs should leave font size decisions
 			// up to the reader always, while 'fixed' ones must control everything.
-      EpubMaker.RemoveFontSizes = settings.Mode == "flowable";
+			EpubMaker.RemoveFontSizes = settings.Mode == "flowable";
 			// (Previous versions of Bloom had a checkbox and API to control this in flowable mode.)
-      //EpubMaker.RemoveFontSizes = settings.RemoveFontSizes;            
-      
+			//EpubMaker.RemoveFontSizes = settings.RemoveFontSizes;
+
 			return SetupEpubControlContent();
 		}
 
