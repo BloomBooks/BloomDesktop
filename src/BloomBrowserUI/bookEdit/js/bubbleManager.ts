@@ -48,7 +48,7 @@ export class BubbleManager {
     public minTextBoxHeightPx = 30;
 
     private activeElement: HTMLElement | undefined;
-    private isComicEditingOn: boolean = false;
+    public isComicEditingOn: boolean = false;
     private notifyBubbleChange:
         | ((x: BubbleSpec | undefined) => void)
         | undefined;
@@ -355,6 +355,14 @@ export class BubbleManager {
                         const x = event.offsetX;
                         const y = event.offsetY;
                         if (!Comical.somethingHit(container, x, y)) {
+                            // Usually we hide the image editing controls in overlay mode so
+                            // they don't get in the way of manipulating the bubbles, but a click
+                            // on the underlying image is understood to mean the user wants to work
+                            // on it, so allow them to be seen again.
+                            // (Note: we're not making it focused in the same way an image overlay could be)
+                            container.classList.remove(
+                                "bloom-hideImageButtons"
+                            );
                             // So far so good. We have now determined that we want to remove
                             // focus from anything in this image.
                             // (Enhance: should we check that something within this image
@@ -461,10 +469,12 @@ export class BubbleManager {
             // Don't use an arrow function as an event handler here.
             //These can never be identified as duplicate event listeners, so we'll end up with tons
             // of duplicates.
-            element.addEventListener(
-                "focusin",
-                BubbleManager.onFocusSetActiveElement
-            );
+            element.addEventListener("focusin", ev => {
+                // Restore hiding these when we focus a bubble, so they don't get in the way of working on
+                // that bubble.
+                this.turnOnHidingImageButtons();
+                BubbleManager.onFocusSetActiveElement(ev);
+            });
             if (
                 includeCkEditor &&
                 element.classList.contains("bloom-editable")

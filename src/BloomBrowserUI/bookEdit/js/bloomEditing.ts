@@ -1242,12 +1242,19 @@ export const pageSelectionChanging = () => {
 
 // Called from C# in EditingView.CleanHtmlAndCopyToPageDom via editTabBundle.getEditablePageBundleExports()
 export const getBodyContentForSavePage = () => {
-    theOneBubbleManager.turnOffBubbleEditing();
+    const bubbleEditingOn = theOneBubbleManager.isComicEditingOn;
+    if (bubbleEditingOn) {
+        theOneBubbleManager.turnOffBubbleEditing();
+    }
     // Active element should be forced to blur
     if (document.activeElement instanceof HTMLElement) {
         document.activeElement.blur();
     }
-    return document.body.innerHTML;
+    const result = document.body.innerHTML;
+    if (bubbleEditingOn) {
+        theOneBubbleManager.turnOnBubbleEditing();
+    }
+    return result;
 };
 
 export const userStylesheetContent = () => {
