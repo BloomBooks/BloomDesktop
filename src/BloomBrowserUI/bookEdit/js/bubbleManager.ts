@@ -870,6 +870,7 @@ export class BubbleManager {
         }
 
         if (bubble) {
+            this.focusFirstVisibleFocusable(bubble.content);
             const positionInfo = bubble.content.getBoundingClientRect();
 
             if (!event.altKey) {
@@ -2415,6 +2416,7 @@ export class BubbleManager {
                 handle: ".bloom-dragHandle",
                 drag: (event, ui) => {
                     ui.helper.children(".bloom-editable").blur();
+                    this.focusFirstVisibleFocusable(thisOverPictureElement);
                     const position = new Point(
                         ui.position.left,
                         ui.position.top,
