@@ -12,6 +12,15 @@ export enum PointScaling {
 // Basically, I do this by forcing the caller to determine whether it is scaled or not at creation
 // From there, we internally represent everything as unscaled. Then we can do all our operations on the unscaled point.
 // When you want to get the x/y values back out, you can choose to get it out using getUnscaledX/Y() or getScaledX/Y() depending on your needs
+// For example: suppose the page is scaled to 120%.
+// Then, to get the top left of a box that is visually 120 pixels from the left of its container
+// and 240 from the top, you can do either
+// new Point (box.offsetLeft, box.offsetTop, PointScaling.Unscaled, "whatever")
+// (since offsetX methods are unscaled), or
+// new Point (box.getBoundingClientRect().left, box.getBoundingClientRect().top, Point.Scaled, "whatever")
+// (since getBoundingClientRect resurns values that are scaled, that is, they are affected by containing
+// transform:scale settings).
+// Both will result in a Point with x = 100, y = 200.
 export class Point {
     // These are internally represented as unscaled units
     private x: number;

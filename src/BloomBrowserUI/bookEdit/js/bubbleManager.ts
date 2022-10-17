@@ -264,6 +264,10 @@ export class BubbleManager {
 
         const imageContainers: HTMLElement[] = this.getAllPrimaryImageContainersOnPage();
 
+        imageContainers.forEach(container =>
+            this.ensureBubblesIntersectParent(container)
+        );
+
         // todo: select the right one...in particular, currently we just select the last one.
         // This is reasonable when just coming to the page, and when we add a new OverPicture element,
         // we make the new one the last in its parent, so with only one image container
@@ -842,6 +846,90 @@ export class BubbleManager {
         // (Which does not constrain the resize at all. It also lets you to come back into the container and have the resize continue.)
     }
 
+    // Move all child bubbles as necessary so they are at least partly inside their container
+    // (by as much as we require when dragging them).
+    private ensureBubblesIntersectParent(parentContainer: HTMLElement) {
+        const overlays = Array.from(
+            parentContainer.getElementsByClassName(kTextOverPictureClass)
+        );
+        overlays.forEach(overlay => {
+            const bubbleRect = overlay.getBoundingClientRect();
+            this.adjustBubbleLocation(
+                overlay as HTMLElement,
+                parentContainer,
+                new Point(
+                    bubbleRect.left,
+                    bubbleRect.top,
+                    PointScaling.Scaled,
+                    "ensureBubblesIntersectParent"
+                )
+            );
+        });
+    }
+
+    // Conceptually, move the bubble to the specified location (which may be where it is already).
+    // However, first adjust the location to make sure at least a little of the bubble is visible
+    // within the specified container. (This means the method may be used both to constrain moving
+    // the bubble, and also, by passing its current location, to ensure it becomes visible if
+    // it somehow stopped being.)
+    private adjustBubbleLocation(
+        bubble: HTMLElement,
+        container: HTMLElement,
+        location: Point
+    ) {
+        const bubbleRect = bubble.getBoundingClientRect();
+        const parentRect = container.getBoundingClientRect();
+        const left = location.getScaledX();
+        const right = left + bubbleRect.width;
+        const top = location.getScaledY();
+        const bottom = top + bubbleRect.height;
+        // This is pretty small, but it's the amount of the text box that has to be visible;
+        // typically a bit more of the actual bubble can be seen.
+        // Arguably it would be better to use a slightly larger number and make it apply to the
+        // actual bubble outline, but
+        // - this is much harder; we'd need ComicalJs enhancments to know exactly where the edge
+        //   of the bubble is.
+        // - the two dimensions would not be independent; a bubble whose top is above the bottom
+        //   of the container and whose right is to the right of the contaniner's left
+        //   might still be entirely invisible as its curve places it entirely beyond the bottom
+        //   left corner.
+        // - The constraint would actually be different depending on the type of bubble,
+        //   which means a bubble might need to move as a result of changing its bubble type.
+        const minVisible = 5;
+        let x = left;
+        let y = top;
+        if (right < parentRect.left + minVisible) {
+            x = parentRect.left + minVisible - bubbleRect.width;
+        }
+        if (left > parentRect.right - minVisible) {
+            x = parentRect.right - minVisible;
+        }
+        if (bottom < parentRect.top + minVisible) {
+            y = parentRect.top + minVisible - bubbleRect.height;
+        }
+        if (top > parentRect.bottom - minVisible) {
+            y = parentRect.bottom - minVisible;
+        }
+        // The 0.1 here is rather arbitrary. On the one hand, I don't want to do all the work
+        // of placeElementAtPosition in the rather common case that we're just checking bubble
+        // positions at startup and none need to move. On the other hand, we're dealing with scaling
+        // here, and it's possible that even a half pixel might get scaled so that the difference
+        // is noticeable. I'm compromizing on a discrepancy that is less than a pixel at our highest
+        // zoom.
+        if (
+            Math.abs(x - bubbleRect.left) > 0.1 ||
+            Math.abs(y - bubbleRect.top) > 0.1
+        ) {
+            const moveTo = new Point(
+                x,
+                y,
+                PointScaling.Scaled,
+                "AdjustBubbleLocation"
+            );
+            this.placeElementAtPosition($(bubble), container, moveTo);
+        }
+    }
+
     private onMouseDown(event: MouseEvent, container: HTMLElement) {
         // Let standard clicks on the bloom editable only be processed on the editable
         if (this.isEventForEditableOnly(event)) {
@@ -891,7 +979,7 @@ export class BubbleManager {
                 // (It does not get them in the usual way by mouseEnter, because that event is
                 // suppressed by the comicaljs canvas, which is above the image container.)
                 addImageEditingButtons(
-                    container.getElementsByClassName(
+                    bubble.content.getElementsByClassName(
                         "bloom-imageContainer"
                     )[0] as HTMLElement
                 );
@@ -1067,8 +1155,8 @@ export class BubbleManager {
             PointScaling.Scaled,
             "Created by handleMouseMoveDragBubble()"
         );
-        this.placeElementAtPosition(
-            $(this.bubbleToDrag.content),
+        this.adjustBubbleLocation(
+            this.bubbleToDrag.content,
             container,
             newPosition
         );
@@ -2477,6 +2565,62 @@ export class BubbleManager {
         });
     }
 
+    // Notes that comic editing either has not been suspended...isComicEditingOn might be true or false...
+    // or that it was suspended because of a drag in progress that might affect page layout
+    // (current example: mouse is down over an origami splitter), or because some longer running
+    // process that affects layout is happening (current example: origami layout tool is active).
+    // When in one of the latter states, it may be inferred that isComicEditingOn was true when
+    // suspendComicEditing was called, that it is now false, and that resumeComicEditing should
+    // turn it on again.
+    private comicEditingSuspendedState: "none" | "forDrag" | "forTool" = "none";
+
+    public suspendComicEditing(forWhat: "forDrag" | "forTool") {
+        if (!this.isComicEditingOn) {
+            // Note that this prevents us from getting into one of the suspended states
+            // unless it was on to begin with. Therefore a subsequent resume won't turn
+            // it back on unless it was to start with.
+            return;
+        }
+        this.turnOffBubbleEditing();
+        // We don't want to switch to state 'forDrag' while it is suspended by a tool.
+        // But we don't need to prevent it because if it's suspended by a tool (e.g., origami layout),
+        // any mouse events will find that comic editing is off and won't get this far.
+        this.comicEditingSuspendedState = forWhat;
+    }
+
+    public resumeComicEditing() {
+        if (this.comicEditingSuspendedState === "none") {
+            // This guards against both mouse up events that are nothing to do with
+            // splitters and (if this is even possible) a resume that matches a suspend
+            // call when comic editing wasn't on to begin with.
+            return;
+        }
+        if (this.comicEditingSuspendedState === "forTool") {
+            // after a forTool suspense, we might have new dividers to put handlers on.
+            this.setupSplitterEventHandling();
+        }
+        this.comicEditingSuspendedState = "none";
+        this.turnOnBubbleEditing();
+    }
+
+    // mouse down in an origami slider: if comic editing is on, remember that, and turn it off.
+    private dividerMouseDown = (ev: Event) => {
+        // We could plausibly ignore it if already suspended for a tool.
+        // But the call won't do anything anyway when we're already suspended.
+        this.suspendComicEditing("forDrag");
+    };
+
+    // on ANY mouse up, if comic editing was turned off by an origami click, turn it back on.
+    // (This is attached to the document because I don't want it missed if the mouseUp
+    // doesn't happen inside the slider.)
+    private documentMouseUp = (ev: Event) => {
+        // ignore mouseup events while suspended for a tool.
+        if (this.comicEditingSuspendedState === "forTool") {
+            return;
+        }
+        this.resumeComicEditing();
+    };
+
     public initializeOverPictureEditing(): void {
         // Cleanup old .bloom-ui elements and old drag handles etc.
         // We want to clean these up sooner rather than later so that there's less chance of accidentally blowing away
@@ -2485,7 +2629,34 @@ export class BubbleManager {
         this.cleanupOverPictureElements();
 
         this.makeOverPictureElementsDraggableClickableAndResizable();
+
+        this.setupSplitterEventHandling();
+
         this.turnOnBubbleEditing();
+    }
+
+    // When dragging origami sliders, turn comical off.
+    // With this, we get some weirdness during dragging: overlay text moves, but
+    // the bubbles do not. But everything clears up when we turn it back on afterwards.
+    // Without it, things are even weirder, and the end result may be weird, too.
+    // The comical canvas does not change size as the slider moves, and things may end
+    // up in strange states with bubbles cut off where the boundary used to be.
+    // It's possible that we could do better by forcing the canvas to stay the same
+    // size as the image container, but I'm very unsure how resizing an active canvas
+    // containing objects will affect ComicalJs and the underlying PaperJs.
+    // It should be pretty rare to resize an image after adding bubbles, so I think it's
+    // better to go with this, which at least gives a predictable result.
+    // Note: we don't ever need to remove these; they can usefully hang around until
+    // we load some other page. (We don't turn off comical when we hide the tool, since
+    // the bubbles are still visible and editable, and we need it's help to support
+    // all the relevant behaviors and keep the bubbles in sync with the text.)
+    // Because we're adding a fixed method, not a local function, adding multiple
+    // times will not cause duplication.
+    private setupSplitterEventHandling() {
+        Array.from(
+            document.getElementsByClassName("split-pane-divider")
+        ).forEach(d => d.addEventListener("mousedown", this.dividerMouseDown));
+        document.addEventListener("mouseup", this.documentMouseUp);
     }
 
     public cleanupOverPictureElements() {

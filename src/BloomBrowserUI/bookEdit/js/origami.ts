@@ -5,6 +5,7 @@ import "split-pane/split-pane.js";
 import TextBoxProperties from "../TextBoxProperties/TextBoxProperties";
 import { BloomApi } from "../../utils/bloomApi";
 import { ElementQueries } from "css-element-queries";
+import { theOneBubbleManager } from "./bubbleManager";
 
 $(() => {
     $("div.split-pane").splitPane();
@@ -58,6 +59,7 @@ function isEmpty(el) {
     return temp === "";
 }
 function setupLayoutMode() {
+    theOneBubbleManager.suspendComicEditing("forTool");
     $(".split-pane-component-inner").each(function(): boolean {
         const $this = $(this);
         if ($this.find(".split-pane").length) {
@@ -135,6 +137,10 @@ function layoutToggleClickHandler() {
             dialog.AttachToBox(this); // put the gear button in each text box identifier div
         });
     } else {
+        // This line is currently redundant since we will reload the page, but in case we
+        // stop doing that, it will be important.
+        theOneBubbleManager.resumeComicEditing();
+
         marginBox.removeClass("origami-layout-mode");
         marginBox.find(".textBox-identifier").remove();
         origamiUndoStack.length = origamiUndoIndex = 0;
