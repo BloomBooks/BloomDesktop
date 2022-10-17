@@ -220,6 +220,8 @@ namespace Bloom.Book
 		/// A possibly-temporary expedient to get multilingual title data into the json, and thus into parse.com
 		/// This stores a Json string representing lang:title pairs, e.g.,
 		/// {"en":"my nice title","de":"Mein schönen Titel","es":"мy buen título"}.
+		/// Also used to quickly get a title in the most helpful language available to identify
+		/// the book in lists, dialogs, and so forth.
 		/// </summary>
 		public virtual string AllTitles
 		{
