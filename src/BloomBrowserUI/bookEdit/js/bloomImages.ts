@@ -103,7 +103,7 @@ export function GetButtonModifier(container) {
 }
 
 export function addImageEditingButtons(containerDiv: HTMLElement): void {
-    if (containerDiv.classList.contains("hoverUp")) {
+    if (!containerDiv || containerDiv.classList.contains("hoverUp")) {
         return;
     }
     let img = getImgFromContainer(this);

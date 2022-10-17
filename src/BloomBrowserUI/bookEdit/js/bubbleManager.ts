@@ -264,6 +264,10 @@ export class BubbleManager {
 
         const imageContainers: HTMLElement[] = this.getAllPrimaryImageContainersOnPage();
 
+        imageContainers.forEach(container =>
+            this.ensureBubblesIntersectParent(container)
+        );
+
         // todo: select the right one...in particular, currently we just select the last one.
         // This is reasonable when just coming to the page, and when we add a new OverPicture element,
         // we make the new one the last in its parent, so with only one image container
@@ -842,6 +846,84 @@ export class BubbleManager {
         // (Which does not constrain the resize at all. It also lets you to come back into the container and have the resize continue.)
     }
 
+    // Move all child bubbles as necessary so they are at least partly inside their container
+    // (by as much as we require when dragging them).
+    private ensureBubblesIntersectParent(parentContainer: HTMLElement) {
+        const overlays = Array.from(
+            parentContainer.getElementsByClassName(kTextOverPictureClass)
+        );
+        overlays.forEach(overlay => {
+            const bubbleRect = overlay.getBoundingClientRect();
+            this.adjustBubbleLocation(
+                overlay as HTMLElement,
+                parentContainer,
+                new Point(
+                    bubbleRect.left,
+                    bubbleRect.top,
+                    PointScaling.Scaled,
+                    "ensureBubblesIntersectParent"
+                )
+            );
+        });
+    }
+
+    // Conceptually, move the bubble to the specified location (which may be where it is already).
+    // However, first adjust the location to make sure at least a little of the bubble is visible
+    // within the specified container. (This means the method may be used both to constrain moving
+    // the bubble, and also, by passing its current location, to ensure it becomes visible if
+    // it somehow stopped being.)
+    private adjustBubbleLocation(
+        bubble: HTMLElement,
+        container: HTMLElement,
+        location: Point
+    ) {
+        const bubbleRect = bubble.getBoundingClientRect();
+        const parentRect = container.getBoundingClientRect();
+        const left = location.getScaledX();
+        const right = left + bubbleRect.width;
+        const top = location.getScaledY();
+        const bottom = top + bubbleRect.height;
+        // This is pretty small, but it's the amount of the text box that has to be visible;
+        // typically a bit more of the actual bubble can be seen.
+        // Arguably it would be better to use a slightly larger number and make it apply to the
+        // actual bubble outline, but
+        // - this is much harder; we'd need ComicalJs enhancments to know exactly where the edge
+        //   of the bubble is.
+        // - the two dimensions would not be independent; a bubble whose top is above the bottom
+        //   of the container and whose right is to the right of the contaniner's left
+        //   might still be entirely invisible as its curve places it entirely beyond the bottom
+        //   left corner.
+        // - The constraint would actually be different depending on the type of bubble,
+        //   which means a bubble might need to move as a result of changing its bubble type.
+        const minVisible = 5;
+        let x = left;
+        let y = top;
+        if (right < parentRect.left + minVisible) {
+            x = parentRect.left + minVisible - bubbleRect.width;
+        }
+        if (left > parentRect.right - minVisible) {
+            x = parentRect.right - minVisible;
+        }
+        if (bottom < parentRect.top + minVisible) {
+            y = parentRect.top + minVisible - bubbleRect.height;
+        }
+        if (top > parentRect.bottom - minVisible) {
+            y = parentRect.bottom - minVisible;
+        }
+        if (
+            Math.abs(x - bubbleRect.left) > 0.4 ||
+            Math.abs(y - bubbleRect.top) > 0.4
+        ) {
+            const moveTo = new Point(
+                x,
+                y,
+                PointScaling.Scaled,
+                "AdjustBubbleLocation"
+            );
+            this.placeElementAtPosition($(bubble), container, moveTo);
+        }
+    }
+
     private onMouseDown(event: MouseEvent, container: HTMLElement) {
         // Let standard clicks on the bloom editable only be processed on the editable
         if (this.isEventForEditableOnly(event)) {
@@ -891,7 +973,7 @@ export class BubbleManager {
                 // (It does not get them in the usual way by mouseEnter, because that event is
                 // suppressed by the comicaljs canvas, which is above the image container.)
                 addImageEditingButtons(
-                    container.getElementsByClassName(
+                    bubble.content.getElementsByClassName(
                         "bloom-imageContainer"
                     )[0] as HTMLElement
                 );
@@ -1067,8 +1149,8 @@ export class BubbleManager {
             PointScaling.Scaled,
             "Created by handleMouseMoveDragBubble()"
         );
-        this.placeElementAtPosition(
-            $(this.bubbleToDrag.content),
+        this.adjustBubbleLocation(
+            this.bubbleToDrag.content,
             container,
             newPosition
         );
@@ -2477,6 +2559,27 @@ export class BubbleManager {
         });
     }
 
+    private isComicEditingSuspended = false;
+    // mouse down in an origami slider: if comic editing is on, remember that, and turn it off.
+    private dividerMouseDown = (ev: Event) => {
+        if (!this.isComicEditingOn) {
+            return;
+        }
+        this.isComicEditingSuspended = true;
+        this.turnOffBubbleEditing();
+    };
+
+    // on ANY mouse up, if comic editing was turned off by an origami click, turn it back on.
+    // (This is attached to the document because I don't want it missed if the mouseUp
+    // doesn't happen inside the slider.)
+    private documentMouseUp = (ev: Event) => {
+        if (!this.isComicEditingSuspended) {
+            return;
+        }
+        this.isComicEditingSuspended = false;
+        this.turnOnBubbleEditing();
+    };
+
     public initializeOverPictureEditing(): void {
         // Cleanup old .bloom-ui elements and old drag handles etc.
         // We want to clean these up sooner rather than later so that there's less chance of accidentally blowing away
@@ -2485,6 +2588,23 @@ export class BubbleManager {
         this.cleanupOverPictureElements();
 
         this.makeOverPictureElementsDraggableClickableAndResizable();
+
+        // When dragging origami sliders, turn comical off.
+        // With this, we get some weirdness during dragging: overlay text moves, but
+        // the bubbles do not. But everything clears up when we turn it back on afterwards.
+        // Without it, things are even weirder, and the end result may be weird, too.
+        // The comical canvas does not change size as the slider moves, and things may end
+        // up in strange states with bubbles cut off where the boundary used to be.
+        // It's possible that we could do better by forcing the canvas to stay the same
+        // size as the image container, but I'm very unsure how resizing an active canvas
+        // containing objects will affect ComicalJs and the underlying PaperJs.
+        // It should be pretty rare to resize an image after adding bubbles, so I think it's
+        // better to go with this, which at least gives a predictable result.
+        Array.from(
+            document.getElementsByClassName("split-pane-divider")
+        ).forEach(d => d.addEventListener("mousedown", this.dividerMouseDown));
+        document.addEventListener("mouseup", this.documentMouseUp);
+
         this.turnOnBubbleEditing();
     }
 
