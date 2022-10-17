@@ -743,3 +743,15 @@ body.simulateColorBlindness {
         }
     }
 }
+
+// Hide the gear button unless the text box is focused for editing.
+// ck-editor takes care of inserting/removing the cke_focus class in
+// the parent text box div.  (See BL-11603.)
+#formatButton {
+    display: none;
+}
+.cke_focus {
+    #formatButton {
+        display: inherit;
+    }
+}
