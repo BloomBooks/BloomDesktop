@@ -104,6 +104,7 @@
         line-height: 1.2;
         display: block;
         text-align: center;
+        margin-bottom: 0; // snug up to bottom of marginBox
     }
     // scrunch things down as much as possible
     .bloom-contentNational1,
@@ -112,10 +113,20 @@
     }
 }
 
-.HalfLetterPortrait.outsideFrontCover .marginBox,
-.HalfLetterPortrait.titlePage .marginBox {
-    height: 7.1in;
-    top: 1in;
+.HalfLetterPortrait {
+    &.outsideFrontCover .marginBox,
+    &.insideFrontCover .marginBox,
+    &.titlePage .marginBox,
+    &.credits .marginBox,
+    &.insideBackCover .marginBox,
+    &.outsideBackCover .marginBox {
+        height: unset;
+        bottom: 0.75in; // make bottom margin on all xmatter pages 3/4"
+    }
+    &.outsideFrontCover .marginBox,
+    &.titlePage .marginBox {
+        top: 1in;
+    }
 }
 
 .HalfLetterPortrait.outsideFrontCover {
@@ -146,7 +157,6 @@
             display: flex; // has been reset to block by .bloom-editable.bloom-visibility-code-on
             flex-direction: column; // stack paragraphs in a column
             justify-content: flex-end; // push text to the bottom of the available space
-            padding-bottom: 20px;
             text-align: center;
             font-size: @fontSize;
             line-height: 1.2;
