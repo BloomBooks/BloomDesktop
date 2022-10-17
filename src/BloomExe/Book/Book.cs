@@ -846,8 +846,6 @@ namespace Bloom.Book
 			{
 				return GetErrorDom();
 			}
-			//Console.WriteLine("DEBUG GetPreviewHtmlFileForWholeBook(): calling BringBookUpToDate() for new previewDOM");
-			BringBookUpToDateInternal(previewDom, new NullProgress());
 
 			// this is normally the vernacular, but when we're previewing a shell, well it won't have anything for the vernacular
 			var primaryLanguage = Language1Tag;
@@ -1359,8 +1357,6 @@ namespace Bloom.Book
 			// With one exception, handled below, nothing in the update process should change the license info, so save what is current before we mess with
 			// anything (may fix BL-3166).
 			var licenseMetadata = GetLicenseMetadata();
-
-			Storage.CompleteFullyUpdatingFilesIfNeeded();
 
 			progress.WriteStatus("Updating collection settings...");
 			try

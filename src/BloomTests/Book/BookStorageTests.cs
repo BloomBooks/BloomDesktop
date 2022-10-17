@@ -1061,7 +1061,7 @@ namespace BloomTests.Book
 			BookStorage storage;
 			using (new ErrorReport.NonFatalErrorReportExpected())
 			{
-				storage = new BookStorage(_folder.Path, true, _fileLocator, new BookRenamedEvent(), collectionSettings);
+				storage = new BookStorage(_folder.Path, _fileLocator, new BookRenamedEvent(), collectionSettings);
 			}
 			Assert.That(File.ReadAllText(_bookPath), Is.EqualTo(goodContent));
 			Assert.That(File.ReadAllText(Path.Combine(_folder.Path, BookStorage.PrefixForCorruptHtmFiles + ".htm")), Is.EqualTo(badContent));

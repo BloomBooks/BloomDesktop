@@ -1810,7 +1810,7 @@ namespace BloomTests.Book
 			var imagePath = book.FolderPath.CombineForPath("theCover.png");
 			MakeSamplePngImageWithMetadata(imagePath);
 
-			//book.BringBookUpToDate(new NullProgress());
+			book.BringBookUpToDate(new NullProgress());
 			var dom = book.GetPreviewHtmlFileForWholeBook();
 
 			AssertThatXmlIn.Dom(dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class,'bloom-imageContainer')]/img[@data-book='coverImage' and @src='theCover.png']", 1);
