@@ -1138,28 +1138,52 @@ export class BubbleManager {
         }
     }
 
+    private animationFrame: number;
+    private lastMoveEvent: MouseEvent;
+    private lastMoveContainer: HTMLElement;
+
     // A bubble is currently in drag mode, and the mouse is being moved.
     // Move the bubble accordingly.
     private handleMouseMoveDragBubble(
         event: MouseEvent,
         container: HTMLElement
     ) {
-        if (!this.bubbleToDrag) {
-            console.assert(false, "bubbleToDrag is undefined");
+        // Capture the most recent data to use when our animation frame request is satisfied.
+        this.lastMoveEvent = event;
+        this.lastMoveContainer = container;
+        // We don't want any other effects of mouse move, like selecting text in the box,
+        // to happen while we're dragging it around.
+        event.preventDefault();
+        event.stopPropagation();
+        if (this.animationFrame) {
+            // already working on an update, starting another before
+            // we complete it only slows rendering.
+            // The site where I got this idea suggested instead using cancelAnimationFrame at this
+            // point. One possible advantage is that the very last mousemove before mouse up is
+            // then certain to get processed. But it seemed to be significantly less effective
+            // at getting frames fully rendered often, and the difference in where the box ends up
+            // is unlikely to be significant...the user will keep dragging until satisfied.
             return;
         }
+        this.animationFrame = requestAnimationFrame(() => {
+            if (!this.bubbleToDrag) {
+                console.assert(false, "bubbleToDrag is undefined");
+                return;
+            }
 
-        const newPosition = new Point(
-            event.pageX - this.bubbleDragGrabOffset.x,
-            event.pageY - this.bubbleDragGrabOffset.y,
-            PointScaling.Scaled,
-            "Created by handleMouseMoveDragBubble()"
-        );
-        this.adjustBubbleLocation(
-            this.bubbleToDrag.content,
-            container,
-            newPosition
-        );
+            const newPosition = new Point(
+                this.lastMoveEvent.pageX - this.bubbleDragGrabOffset.x,
+                this.lastMoveEvent.pageY - this.bubbleDragGrabOffset.y,
+                PointScaling.Scaled,
+                "Created by handleMouseMoveDragBubble()"
+            );
+            this.adjustBubbleLocation(
+                this.bubbleToDrag.content,
+                this.lastMoveContainer,
+                newPosition
+            );
+            this.animationFrame = 0;
+        });
 
         // ENHANCE: If you first select the text in a text-over-picture, then Ctrl+drag it, you will both drag the bubble and drag the text.
         //   Ideally I'd like to only handle the drag-the-bubble event, not the drag-the-text event.
