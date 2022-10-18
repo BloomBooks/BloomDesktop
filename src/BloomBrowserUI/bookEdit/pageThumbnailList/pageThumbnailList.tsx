@@ -207,6 +207,14 @@ const PageList: React.FunctionComponent<{ pageSize: string }> = props => {
             ContinueAutomatedPageClicking(realPageList);
         } else {
             if (e.currentTarget) {
+                // Here we are handling a click on a div.invisibleThumbnailCover element.
+                // We actually have the same ID on 2 different divs here (assuming the lazy load
+                // process has actually finished filling in this page)! The call to ".closest()" below
+                // looks at ancestors, so here we find the outer div.gridItem.
+                // However, the prior sibling of the clicked div.invisibleThumbnailCover is the actual
+                // div.bloom-page (with the same ID).
+                // If at some point we want to do something regarding the 'data-tool-id' attribute for
+                // a page when switching to that page in Edit mode, this is the place.
                 const pageElt = e.currentTarget.closest("[id]")!;
                 const pageId = pageElt.getAttribute("id");
                 const caption = pageElt.getAttribute("data-caption");
