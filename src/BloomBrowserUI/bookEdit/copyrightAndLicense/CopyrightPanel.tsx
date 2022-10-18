@@ -176,7 +176,12 @@ export const CopyrightPanel: React.FunctionComponent<{
             {isSil && (
                 <NoteBox addBorder={true}>
                     <div>
-                        <Div l10nKey={"Copyright.PublishingAsSIL"}>
+                        <Div
+                            l10nKey={"Copyright.PublishingAsSIL"}
+                            css={css`
+                                font-weight: 500;
+                            `}
+                        >
                             Using "SIL" in a Copyright
                         </Div>
                         <div
@@ -185,10 +190,6 @@ export const CopyrightPanel: React.FunctionComponent<{
                                 margin-top: 5px;
                                 p {
                                     margin-block-end: 0 !important; // override DialogMiddle setting and browser default
-                                }
-                                // Somehow just putting a color rule on "PWithLink" doesn't work, so we put it here.
-                                a {
-                                    color: ${kBloomBlue};
                                 }
                             `}
                         >

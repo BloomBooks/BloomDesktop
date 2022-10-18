@@ -24,6 +24,28 @@
         <source xml:lang="en">Special Sentence-Ending Punctuation</source>
         <note>ID: ReaderSetup.SentencePunctuation.Header</note>
       </trans-unit>
+      <trans-unit id="PublishTab.Epub.ConsiderBloomPUB" sil:dynamic="true">
+        <source xml:lang="en">Consider whether you can distribute your book using the BloomPUB format instead of or in addition to ePUB.</source>
+        <note>ID: PublishTab.Epub.ConsiderBloomPUB</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Epub.FeatureLimitations" sil:dynamic="true">
+        <source xml:lang="en">[Some Bloom features] are not supported by most or all ePUB readers.</source>
+        <note>ID: PublishTab.Epub.FeatureLimitations</note>
+        <note>The text inside the [square brackets] will become a link to a website.</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Epub.Notes" sil:dynamic="true">
+        <source xml:lang="en">Notes:</source>
+        <note>ID: PublishTab.Epub.Notes</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Epub.AboutReaders" sil:dynamic="true">
+        <source xml:lang="en">About ePUB Readers &amp; Bloom</source>
+        <note>ID: PublishTab.Epub.AboutReaders</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Epub.ReaderRecommendations" sil:dynamic="true">
+        <source xml:lang="en">Most ePUB readers are very low quality ([see our research and recommendations]).</source>
+        <note>ID: PublishTab.Epub.ReaderRecommendations</note>
+        <note>The text inside the [square brackets] will become a link to a website.</note>
+      </trans-unit>
       <trans-unit id="PublishTab.RecordVideo.NotOnLinux" sil:dynamic="true">
         <source xml:lang="en">Not available on Linux</source>
         <note>ID: PublishTab.RecordVideo.NotOnLinux</note>
