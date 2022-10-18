@@ -79,6 +79,7 @@ namespace Bloom.Publish
 		public void RemoveUnwantedContent(HtmlDom dom, Book.Book book, bool removeInactiveLanguages, ISet<string> warningMessages, EpubMaker epubMaker = null, bool keepPageLabels = false)
 		{
 			FontsUsed.Clear();
+			FontsAndLangsUsed.Clear();
 			// Removing unwanted content involves a real browser really navigating. I'm not sure exactly why,
 			// but things freeze up if we don't do it on the UI thread.
 			if (ControlForInvoke != null)
@@ -358,7 +359,11 @@ namespace Bloom.Publish
 			return display != "none";
 		}
 
+		// store a set of font names encountered in displaying the book
 		public HashSet<string> FontsUsed = new HashSet<string>();
+		// map font names onto a set of language tags
+		public Dictionary<string,HashSet<string>> FontsAndLangsUsed = new Dictionary<string,HashSet<string>>();
+
 		/// <summary>
 		/// Stores the font used.  Note that unwanted elements should have been removed already.
 		/// </summary>
@@ -381,6 +386,21 @@ namespace Bloom.Publish
 			var font = fonts[0].Replace("\"", "");
 			//Console.WriteLine("DEBUG PublishHelper.StoreFontUsed(): font=\"{0}\", fontFamily=\"{1}\"", font, fontFamily);
 			FontsUsed.Add(font);
+			// We need more information for font analytics.  This still suffers from the limitation on multiple languages being
+			// uploaded or embedded in a BloomPub that are not actively displayed.  Nothing will be recorded for such languages.
+			// But this is the best we can do without a lot of additional work.  (See BL-11512.)
+			if (Program.RunningHarvesterMode)
+			{
+				var lang = elt.Attributes["lang"]?.Value;
+				if (string.IsNullOrEmpty(lang) || lang == "z" || lang == "*")
+					return;		// no language information
+				if (!FontsAndLangsUsed.TryGetValue(font, out HashSet<string> langsForFont))
+				{
+					langsForFont = new HashSet<string>();
+					FontsAndLangsUsed[font] = langsForFont;
+				}
+				langsForFont.Add(lang);
+			}
 		}
 
 		private bool IsNonEmptyImageDescription(XmlElement elt)

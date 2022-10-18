@@ -9,6 +9,7 @@ using Bloom.Book;
 using Bloom.Properties;
 using Bloom.Publish.Android;
 using Bloom.Publish.Epub;
+using Bloom.ToPalaso;
 using Bloom.web;
 using BloomTemp;
 using CommandLine;
@@ -121,7 +122,12 @@ namespace Bloom.CLI
 			{
 				exitCode |= CreateBloomDigitalArtifacts(parameters.BookPath, parameters.Creator, zippedBloomPubOutputPath, unzippedBloomDigitalOutputPath);
 			}
-
+			if (exitCode == CreateArtifactsExitCode.Success && BloomPubMaker.BloomPubFontsAndLangsUsed != null && !parameters.NoAnalytics)
+			{
+				// Report what we can about fonts and languages for this book.
+				// (See https://issues.bloomlibrary.org/youtrack/issue/BL-11512.)
+				SendFontAnalyticsCommand.ReportFontAnalytics(_book.ID, "harvester createArtifacts", parameters.Testing);
+			}
 			if (!String.IsNullOrEmpty(zippedBloomSourceOutputPath))
 			{
 				exitCode |= CreateBloomSourceArtifact(parameters.BookPath, parameters.Creator, zippedBloomSourceOutputPath);
@@ -369,5 +375,11 @@ namespace Bloom.CLI
 
 		[Option("creator", Required = false, Default = BloomPubMaker.kCreatorHarvester, HelpText = "The value of the \"creator\" meta tag passed along when creating the bloomdigital.")]
 		public string Creator{ get; set; }
+
+		[Option("testing", Required = false, Default = false, HelpText = "Analytics are being sent for testing, not production")]
+		public bool Testing { get; set; }
+
+		[Option("noAnalytics", Required = false, Default = false, HelpText = "Do not send any analytics")]
+		public bool NoAnalytics { get; set; }
 	}
 }
