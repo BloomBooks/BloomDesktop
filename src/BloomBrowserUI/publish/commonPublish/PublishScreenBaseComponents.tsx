@@ -32,15 +32,20 @@ export const PreviewPanel: React.FunctionComponent = props => {
     );
 };
 
-export const PublishPanel: React.FunctionComponent = props => {
+export const PublishPanel: React.FunctionComponent<{
+    doNotPad?: boolean;
+}> = props => {
+    // At least one component that uses PublishPanel (PublishAudioVideo) doesn't want the padding.
+    const leftPad = props.doNotPad ? 0 : 20;
+    const topBottomPad = props.doNotPad ? 0 : 10;
     return (
         <section
             css={css`
                 display: flex;
                 flex-direction: column;
-                padding-left: 20px;
-                padding-top: 10px;
-                padding-bottom: 10px;
+                padding-left: ${leftPad}px;
+                padding-top: ${topBottomPad}px;
+                padding-bottom: ${topBottomPad}px;
                 // We want to keep at least the MainPanel border even if nothing is here.
                 // Calculation is MainPanel padding less the above padding-top.
                 min-height: calc(1.5rem - 10px);
