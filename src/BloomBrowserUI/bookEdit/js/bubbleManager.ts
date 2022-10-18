@@ -782,19 +782,31 @@ export class BubbleManager {
 
     // Setup event handlers that allow the bubble to be moved around or resized.
     private setMouseDragHandlers(container: HTMLElement): void {
+        // An earlier version of this code set onmousedown to this.onMouseDown, etc.
+        // We need to use addEventListener so we can capture.
+        // It's unlikely, but I can't rule it out, that a deliberate side effect
+        // was to remove some other onmousedown handler. Just in case, clear the fields.
+        // I don't think setting these has any effect on handlers done with addEventListener,
+        // but just in case, I'm doing this first.
+        container.onmousedown = null;
+        container.onmousemove = null;
+        container.onmouseup = null;
+
         // We use mousemove effects instead of drag due to concerns that drag effects would make the entire image container appear to drag.
         // Instead, with mousemove, we can make only the specific bubble move around
-        container.onmousedown = (event: MouseEvent) => {
-            this.onMouseDown(event, container);
-        };
+        // Grabbing these (particularly the move event) in the capture phase allows us to suppress
+        // effects of ctrl and alt clicks on the text.
+        container.addEventListener("mousedown", this.onMouseDown, {
+            capture: true
+        });
 
-        container.onmousemove = (event: MouseEvent) => {
-            this.onMouseMove(event, container);
-        };
+        container.addEventListener("mousemove", this.onMouseMove, {
+            capture: true
+        });
 
-        container.onmouseup = (event: MouseEvent) => {
-            this.onMouseUp(event, container);
-        };
+        container.addEventListener("mouseup", this.onMouseUp, {
+            capture: true
+        });
 
         container.onkeypress = (event: Event) => {
             // If the user is typing in a bubble, make sure automatic shrinking is off.
@@ -930,11 +942,20 @@ export class BubbleManager {
         }
     }
 
-    private onMouseDown(event: MouseEvent, container: HTMLElement) {
+    // MUST be defined this way, rather than as a member function, so that it can
+    // be passed directly to addEventListener and still get the correct 'this'.
+    private onMouseDown = (event: MouseEvent) => {
+        const container = event.currentTarget as HTMLElement;
         // Let standard clicks on the bloom editable only be processed on the editable
         if (this.isEventForEditableOnly(event)) {
             return;
         }
+        // since that returned false, either ctrl or alt is down, or we clicked outside the
+        // editable. If we're outside the editable, we don't need any default event processing,
+        // and if we're inside and ctrl or alt is down, we want to prevent the events being
+        // processed by the text.
+        event.preventDefault();
+        event.stopPropagation();
 
         // These coordinates need to be relative to the canvas (which is the same as relative to the image container).
         const coordinates = this.getPointRelativeToCanvas(event, container);
@@ -975,6 +996,8 @@ export class BubbleManager {
                 // Move action started
                 this.bubbleToDrag = bubble;
                 this.activeContainer = container;
+                // in case this is somehow left from earlier, we want a fresh start for the new move.
+                this.animationFrame = 0;
                 // mouse is presumably moving inside this image, it should have the buttons.
                 // (It does not get them in the usual way by mouseEnter, because that event is
                 // suppressed by the comicaljs canvas, which is above the image container.)
@@ -1026,9 +1049,12 @@ export class BubbleManager {
                 };
             }
         }
-    }
+    };
 
-    private onMouseMove(event: MouseEvent, container: HTMLElement) {
+    // MUST be defined this way, rather than as a member function, so that it can
+    // be passed directly to addEventListener and still get the correct 'this'.
+    private onMouseMove = (event: MouseEvent) => {
+        const container = event.currentTarget as HTMLElement;
         // Prevent two event handlers from triggering if the text box is currently being resized
         if (this.isResizing(container)) {
             this.bubbleToDrag = undefined;
@@ -1043,7 +1069,7 @@ export class BubbleManager {
         } else {
             this.handleMouseMoveResizeBubble(event, container);
         }
-    }
+    };
 
     // Mouse hover - No move or resize is currently active, but check if there is a bubble under the mouse that COULD be
     // and add or remove the classes we use to indicate this
@@ -1138,35 +1164,61 @@ export class BubbleManager {
         }
     }
 
+    private animationFrame: number;
+    private lastMoveEvent: MouseEvent;
+    private lastMoveContainer: HTMLElement;
+
     // A bubble is currently in drag mode, and the mouse is being moved.
     // Move the bubble accordingly.
     private handleMouseMoveDragBubble(
         event: MouseEvent,
         container: HTMLElement
     ) {
-        if (!this.bubbleToDrag) {
-            console.assert(false, "bubbleToDrag is undefined");
+        // Capture the most recent data to use when our animation frame request is satisfied.
+        this.lastMoveEvent = event;
+        this.lastMoveContainer = container;
+        // We don't want any other effects of mouse move, like selecting text in the box,
+        // to happen while we're dragging it around.
+        event.preventDefault();
+        event.stopPropagation();
+        if (this.animationFrame) {
+            // already working on an update, starting another before
+            // we complete it only slows rendering.
+            // The site where I got this idea suggested instead using cancelAnimationFrame at this
+            // point. One possible advantage is that the very last mousemove before mouse up is
+            // then certain to get processed. But it seemed to be significantly less effective
+            // at getting frames fully rendered often, and the difference in where the box ends up
+            // is unlikely to be significant...the user will keep dragging until satisfied.
+            // Note that we're capturing the mouse position from the most recent move event.
+            // The most we can lose is the movement between when we start the requestAnimationFrame
+            // callback and a subsequent mouseUp before the callback returns and clears
+            // this.animationFrame (which will allow the next mouse move to start a new request).
+            // That may not even be possible (the system would likely do another mouse move after
+            // the callback and before the mouseup, if the mouse had moved again?). But at worst,
+            // we can only lose the movement in the time it takes us to move the box once...about 1/30
+            // second on my system when throttled 6x.
             return;
         }
+        this.animationFrame = requestAnimationFrame(() => {
+            if (!this.bubbleToDrag) {
+                this.animationFrame = 0; // must clear, or move will forever be blocked.
+                console.assert(false, "bubbleToDrag is undefined");
+                return;
+            }
 
-        const newPosition = new Point(
-            event.pageX - this.bubbleDragGrabOffset.x,
-            event.pageY - this.bubbleDragGrabOffset.y,
-            PointScaling.Scaled,
-            "Created by handleMouseMoveDragBubble()"
-        );
-        this.adjustBubbleLocation(
-            this.bubbleToDrag.content,
-            container,
-            newPosition
-        );
-
-        // ENHANCE: If you first select the text in a text-over-picture, then Ctrl+drag it, you will both drag the bubble and drag the text.
-        //   Ideally I'd like to only handle the drag-the-bubble event, not the drag-the-text event.
-        //   I tried to move the event handler to the preliminary Capture phase, then use stopPropagation, cancelBubble, and/or PreventDefault
-        //   to stop the event from reaching the target element (the paragraph or the .bloom-editable div or whatever).
-        //   Unfortunately, while it prevented the event handlers in the subsequent Bubble phase from being fired,
-        //   this funny dual-drag behavior would still happen.  I don't have a solution for that yet.
+            const newPosition = new Point(
+                this.lastMoveEvent.pageX - this.bubbleDragGrabOffset.x,
+                this.lastMoveEvent.pageY - this.bubbleDragGrabOffset.y,
+                PointScaling.Scaled,
+                "Created by handleMouseMoveDragBubble()"
+            );
+            this.adjustBubbleLocation(
+                this.bubbleToDrag.content,
+                this.lastMoveContainer,
+                newPosition
+            );
+            this.animationFrame = 0;
+        });
     }
 
     // Resizes the current bubble
@@ -1178,6 +1230,9 @@ export class BubbleManager {
             console.assert(false, "bubbleToResize is undefined");
             return;
         }
+        // If we're resizing, we don't want to get effects of dragging within the text.
+        event.preventDefault();
+        event.stopPropagation();
 
         const content = $(this.bubbleToResize.content);
 
@@ -1287,13 +1342,22 @@ export class BubbleManager {
         this.placeElementAtPosition(content, container, newPoint);
     }
 
-    private onMouseUp(event: MouseEvent, container: HTMLElement) {
+    // MUST be defined this way, rather than as a member function, so that it can
+    // be passed directly to addEventListener and still get the correct 'this'.
+    private onMouseUp = (event: MouseEvent) => {
+        const container = event.currentTarget as HTMLElement;
+        if (this.bubbleToDrag || this.bubbleToResize) {
+            // if we're doing a resize or drag, we don't want ordinary mouseup activity
+            // on the text inside the bubble.
+            event.preventDefault();
+            event.stopPropagation();
+        }
         this.bubbleToDrag = undefined;
         this.activeContainer = undefined;
         this.bubbleToResize = undefined;
         this.bubbleResizeMode = "";
         container.classList.remove("grabbing");
-    }
+    };
 
     // Returns true if any of the container's children are currently being resized
     private isResizing(container: HTMLElement) {
