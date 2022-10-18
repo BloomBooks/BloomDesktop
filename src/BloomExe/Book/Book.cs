@@ -847,6 +847,16 @@ namespace Bloom.Book
 				return GetErrorDom();
 			}
 
+			// Only BringBookUpToDate if necessary, since it's an expensive operation.
+			// Note that editable books have already done this, so it's not necessary.
+			// Only non-editable books need to do this. Due to the previewDom, it's much
+			// easier to hold off on this until now instead of bringing the book up to date at selection time.
+			if (!this.IsEditable)
+			{
+				//Console.WriteLine("DEBUG GetPreviewHtmlFileForWholeBook(): calling BringBookUpToDate() for new previewDOM");
+				BringBookUpToDateInternal(previewDom, new NullProgress());
+			}
+
 			// this is normally the vernacular, but when we're previewing a shell, well it won't have anything for the vernacular
 			var primaryLanguage = Language1Tag;
 			if (IsShellOrTemplate)
