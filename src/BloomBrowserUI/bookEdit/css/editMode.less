@@ -4,6 +4,8 @@
 
 @bleed: 3mm; // Duplicated from basePage.less to remove circular dependency between BloomBrowserUI and content
 
+@focusBorderColor: rgba(82, 168, 236, 0.6);
+
 // This mixin simply encapsulates the logic of how we add a border on top
 // of the edge of an image container instead of adding a regular border
 // which modifies the size of the container. See BL-10268.
@@ -104,6 +106,14 @@ body {
 /*+}*/
 div.bloom-imageContainer {
     .borderOnTopOfElement(@MediumGray);
+    // This shows the focus border on the root (hasOverlay) image container
+    // when it has been clicked on to show its editing buttons (:not(.bloom-hideImageButtons)).
+    // Currently, something else typically actually has focus and may also show
+    // this border. But at least it gives some extra feedback that something happened
+    // by clicking the background image.
+    &.hasOverlay:not(.bloom-hideImageButtons) {
+        .borderOnTopOfElement(@focusBorderColor);
+    }
 }
 
 // The editing buttons are hidden when this class is added (currently by motion and comic tools)
@@ -423,7 +433,7 @@ img.hoverUp {
 textarea:focus,
 div.bloom-editable:focus,
 div.pageLabel[contenteditable="true"]:focus {
-    border: 1px solid rgba(82, 168, 236, 0.6);
+    border: 1px solid @focusBorderColor;
     box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1),
         0 0 8px rgba(82, 168, 236, 0.6);
     outline: 0;
