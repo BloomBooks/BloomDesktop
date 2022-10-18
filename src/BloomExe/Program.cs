@@ -1663,5 +1663,10 @@ Anyone looking specifically at our issue tracking system can read what you sent 
 
 		// Should be set to true if this is being called by Harvester, false otherwise.
 		public static bool RunningHarvesterMode { get; set; }
-		}
+
+		// Show UI for development and testing which isn't shown to the user.
+		// e.g. the gfx/wv2 labels and the experimental feature checkbox for wv2.
+		// We may end up switching this on based on an environment variable.
+		public static bool ShowDevelopmentOnlyUI { get { return ApplicationUpdateSupport.IsDevOrAlpha; } }
+	}
 }

@@ -72,7 +72,20 @@ namespace Bloom
 		/// </summary>
 		public ControlKeyEvent ControlKeyEvent { get; set; }
 		int VerticalScrollDistance { get; set; }
-		//GeckoWebBrowser WebBrowser { get; }
+
+		public void FinishInitializing()
+		{
+			if (!Program.ShowDevelopmentOnlyUI)
+			{
+				// It would be more natural to default to hide and then show in this case,
+				// but that ends up positioning the labels in a different location.
+				// As this is temporary, it didn't seem worth bothering figuring it out.
+				// And I've never seen it flicker.
+				HideTemporaryLabelForDevelopment();
+			}
+		}
+
+		public abstract void HideTemporaryLabelForDevelopment();
 
 		public abstract void EnsureHandleCreated();
 
