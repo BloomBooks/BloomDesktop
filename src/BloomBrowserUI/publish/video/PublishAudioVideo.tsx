@@ -312,7 +312,9 @@ const PublishAudioVideoInternalInternal: React.FunctionComponent<{
             <Stepper
                 activeStep={activeStep}
                 orientation="vertical"
-                // defeat Material-UI's attempt to make the step numbers and text look disabled.
+                // We need to defeat Material-UI's attempt to make the step numbers and text look disabled.
+                // Also, we need to defeat the MUI Stepper's padding, which is already standardized
+                // by MainPanel.
                 css={css`
                     .MuiStepLabel-label {
                         color: black !important;
@@ -321,6 +323,7 @@ const PublishAudioVideoInternalInternal: React.FunctionComponent<{
                     .MuiStepIcon-root {
                         color: ${kBloomBlue} !important;
                     }
+                    padding: 0 !important;
                 `}
             >
                 <Step expanded={true}>
