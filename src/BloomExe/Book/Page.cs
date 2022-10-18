@@ -22,6 +22,7 @@ namespace Bloom.Book
 		string GetCaptionOrPageNumber(ref int pageNumber, out string captionI18nId);
 		int GetIndex();
 		string IdOfFirstAncestor { get;}
+		string GetRequiredToolOrNull();
 	}
 
 	public class Page : IPage
@@ -196,6 +197,14 @@ namespace Bloom.Book
 			return _getDivNodeForThisPageMethod(this);
 		}
 
+		public string GetRequiredToolOrNull()
+		{
+			var xmlElement = _getDivNodeForThisPageMethod(this);
+
+			if (!xmlElement.HasAttribute("data-tool-id"))
+				return null;
+			return xmlElement.Attributes["data-tool-id"].Value;
+		}
 
 		public static string GetPageSelectorXPath(XmlDocument pageDom)
 		{

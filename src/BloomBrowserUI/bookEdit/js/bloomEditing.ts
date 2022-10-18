@@ -1199,7 +1199,8 @@ export const pageSelectionChanging = () => {
     marginBox.find(".bloom-translationGroup .textBox-identifier").remove();
 };
 
-// Called from C# in EditingView.CleanHtmlAndCopyToPageDom via editTabBundle.getEditablePageBundleExports()
+// Called from C# by a RunJavaScript() in EditingView.CleanHtmlAndCopyToPageDom via
+// editTabBundle.getEditablePageBundleExports().
 export const getBodyContentForSavePage = () => {
     theOneBubbleManager.turnOffBubbleEditing();
     // Active element should be forced to blur
@@ -1209,6 +1210,8 @@ export const getBodyContentForSavePage = () => {
     return document.body.innerHTML;
 };
 
+// Called from C# by a RunJavaScript() in EditingView.CleanHtmlAndCopyToPageDom via
+// editTabBundle.getEditablePageBundleExports().
 export const userStylesheetContent = () => {
     const ss = Array.from(document.styleSheets).find(
         s => s.title === "userModifiedStyles"

@@ -1,5 +1,4 @@
-using System;
-using System.Collections.Generic;
+using System.Linq;
 using System.Web;
 using Bloom.Api;
 using Bloom.Book;
@@ -43,10 +42,35 @@ namespace Bloom.web.controllers
 			if (templatePage == null || numberOfPagesToAdd < 1) // just in case
 				return;
 			CopyVideoPlaceHolderIfNeeded(templatePage);
+			var tool = templatePage.GetRequiredToolOrNull();
+			if (!string.IsNullOrEmpty(tool))
+			{
+				// Need the BookInfo object from the book being edited.
+				var bookInfo = _pageSelection.CurrentSelection.Book.BookInfo;
+				UpdateToolStateToRequireTool(bookInfo, tool);
+			}
 			_templateInsertionCommand.Insert(templatePage as Page, numberOfPagesToAdd);
 
 			_pageRefreshEvent.Raise(PageRefreshEvent.SaveBehavior.JustRedisplay); // needed to get the styles updated
 			request.PostSucceeded();
+		}
+
+		private static void UpdateToolStateToRequireTool(BookInfo bookInfo, string tool)
+		{
+			bookInfo.CurrentTool = tool;
+			bookInfo.ToolboxIsOpen = true;
+			var matchingTool = bookInfo.Tools.FirstOrDefault(t => t.ToolId == tool);
+			if (matchingTool != null)
+			{
+				matchingTool.Enabled = true;
+			}
+			else
+			{
+				var newTool = ToolboxToolState.CreateFromToolId(tool);
+				newTool.Enabled = true;
+				bookInfo.Tools.Add(newTool);
+			}
+			bookInfo.Save();
 		}
 
 		/// <summary>
@@ -82,6 +106,14 @@ namespace Bloom.web.controllers
 				ChangeSimilarPagesInEntireBook(pageToChange, templatePage, allowDataLoss);
 			else
 				pageToChange.Book.UpdatePageToTemplateAndUpdateLineage(pageToChange, templatePage);
+
+			var tool = templatePage.GetRequiredToolOrNull();
+			if (!string.IsNullOrEmpty(tool))
+			{
+				// Need the BookInfo object from the book being edited.
+				var bookInfo = _pageSelection.CurrentSelection.Book.BookInfo;
+				UpdateToolStateToRequireTool(bookInfo, tool);
+			}
 
 			_pageRefreshEvent.Raise(PageRefreshEvent.SaveBehavior.JustRedisplay);
 			request.PostSucceeded();
