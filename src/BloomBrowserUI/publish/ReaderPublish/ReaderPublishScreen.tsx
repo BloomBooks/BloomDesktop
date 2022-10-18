@@ -5,10 +5,10 @@ import { useState, useContext } from "react";
 
 import {
     PreviewPanel,
-    PublishPanel,
     HelpGroup,
     SettingsPanel,
-    CommandsGroup
+    CommandsGroup,
+    UnderPreviewPanel
 } from "../commonPublish/PublishScreenBaseComponents";
 import { MethodChooser } from "./MethodChooser";
 import { PublishFeaturesGroup } from "./PublishFeaturesGroup";
@@ -149,14 +149,14 @@ const ReaderPublishScreenInternal: React.FunctionComponent<{
                     />
                 </ThemeProvider>
             </PreviewPanel>
-            <PublishPanel
+            <UnderPreviewPanel
                 css={css`
                     display: block;
                     flex-grow: 1;
                 `}
             >
                 <MethodChooser />
-            </PublishPanel>
+            </UnderPreviewPanel>
         </React.Fragment>
     );
 

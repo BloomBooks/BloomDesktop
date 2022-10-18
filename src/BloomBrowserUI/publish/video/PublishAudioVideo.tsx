@@ -307,12 +307,16 @@ const PublishAudioVideoInternalInternal: React.FunctionComponent<{
     max-width: ${landscapeWidth}px;
     margin-bottom:5px;
     color: grey;`;
+    // Usually PublishPanel is the bottom section of a mainPanel component. Here it IS the mainPanel,
+    // so we don't need its built-in padding.
     const mainPanel = (
         <PublishPanel>
             <Stepper
                 activeStep={activeStep}
                 orientation="vertical"
-                // defeat Material-UI's attempt to make the step numbers and text look disabled.
+                // We need to defeat Material-UI's attempt to make the step numbers and text look disabled.
+                // Also, we need to defeat the MUI Stepper's background color and padding, which is
+                // already standardized by MainPanel.
                 css={css`
                     .MuiStepLabel-label {
                         color: black !important;
@@ -321,6 +325,7 @@ const PublishAudioVideoInternalInternal: React.FunctionComponent<{
                     .MuiStepIcon-root {
                         color: ${kBloomBlue} !important;
                     }
+                    padding: 0 !important;
                 `}
             >
                 <Step expanded={true}>

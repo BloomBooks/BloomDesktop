@@ -7,7 +7,7 @@ import {
     PreviewPanel,
     HelpGroup,
     SettingsPanel,
-    PublishPanel
+    UnderPreviewPanel
 } from "../commonPublish/PublishScreenBaseComponents";
 import { PDFPrintFeaturesGroup } from "./PDFPrintFeaturesGroup";
 import PublishScreenTemplate from "../commonPublish/PublishScreenTemplate";
@@ -76,12 +76,12 @@ const PDFPrintPublishScreenInternal: React.FunctionComponent<{
                     </Typography>
                 </ThemeProvider>
             </PreviewPanel>
-            <PublishPanel
+            <UnderPreviewPanel
                 css={css`
                     display: block;
                     flex-grow: 1;
                 `}
-            ></PublishPanel>
+            ></UnderPreviewPanel>
         </React.Fragment>
     );
 

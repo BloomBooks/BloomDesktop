@@ -32,24 +32,33 @@ export const PreviewPanel: React.FunctionComponent = props => {
     );
 };
 
-export const PublishPanel: React.FunctionComponent = props => {
-    return (
-        <section
-            css={css`
-                display: flex;
-                flex-direction: column;
-                padding-left: 20px;
-                padding-top: 10px;
-                padding-bottom: 10px;
-                // We want to keep at least the MainPanel border even if nothing is here.
-                // Calculation is MainPanel padding less the above padding-top.
-                min-height: calc(1.5rem - 10px);
-            `}
-        >
-            {props.children}
-        </section>
-    );
-};
+// This component contains the padding needed when this panel is below a PreviewPanel.
+export const UnderPreviewPanel: React.FunctionComponent = props => (
+    <div
+        css={css`
+            padding-left: 20px;
+            padding-top: 10px;
+            padding-bottom: 10px;
+            // We want to keep at least the MainPanel border even if nothing is here.
+            // Calculation is MainPanel padding less the above padding-top.
+            min-height: calc(1.5rem - 10px);
+        `}
+    >
+        <PublishPanel>{props.children}</PublishPanel>
+    </div>
+);
+
+// This component provides no padding. If you need a standard padding, use the above UnderPreviewPanel.
+export const PublishPanel: React.FunctionComponent = props => (
+    <section
+        css={css`
+            display: flex;
+            flex-direction: column;
+        `}
+    >
+        {props.children}
+    </section>
+);
 
 export const SettingsPanel: React.FunctionComponent = props => {
     return <React.Fragment>{props.children}</React.Fragment>;
