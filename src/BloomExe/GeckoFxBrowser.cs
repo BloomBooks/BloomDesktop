@@ -189,6 +189,7 @@ namespace Bloom
 #endif
 			InitializeComponent();
 			_isolator = NavigationIsolator.GetOrCreateTheOneNavigationIsolator();
+			FinishInitializing();
 		}
 
 		// previously clients had to access the Handle to make the control ready to talk to,
@@ -794,6 +795,11 @@ namespace Bloom
 			}
 
 			return true;
+		}
+
+		public override void HideTemporaryLabelForDevelopment()
+		{
+			label1.Visible = false;
 		}
 
 		private void UpdateDisplay()

@@ -40,11 +40,13 @@ namespace Bloom
 				_webview.CoreWebView2.ContextMenuRequested += ContextMenuRequested;
 				_readyToNavigate = true;
 			};
+
+			FinishInitializing();
 		}
 
-		public void SetLabel(string label)
+		public override void HideTemporaryLabelForDevelopment()
 		{
-			label1.Text = label;
+			label1.Visible = false;
 		}
 
 		private void ContextMenuRequested(object sender, CoreWebView2ContextMenuRequestedEventArgs e)
