@@ -584,7 +584,8 @@ function restoreToolboxSettingsWhenPageReady(settings: string) {
     });
 }
 
-// Remove any markup the toolbox is inserting (called by EditingView before saving page)
+// Remove any markup the toolbox is inserting. Called by a RunJavaScript() in EditingView
+// before saving the page.
 export function removeToolboxMarkup() {
     if (currentTool != null) {
         currentTool.detachFromPage();

@@ -1071,7 +1071,6 @@ namespace Bloom.Edit
 					_inProcessOfSaving = true;
 					_tasksToDoAfterSaving.Clear();
 					_view.CleanHtmlAndCopyToPageDom();
-					SavePageFrameState();
 
 					//BL-1064 (and several other reports) were about not being able to save a page. The problem appears to be that
 					//this old code:
@@ -1142,14 +1141,6 @@ namespace Bloom.Edit
 			var newFeatureRequirements = BookStorage.GetRequiredVersionsString(CurrentBook.OurHtmlDom);
 			return _pageHasUnsavedDataDerivedChange || !newPageData.SameAs(_pageDataBeforeEdits)
 				|| _featureRequirementsBeforeEdits != newFeatureRequirements;
-		}
-
-		/// <summary>
-		/// Save anything we want to persist from page to page but which is not part of the book from the page's current state.
-		/// Currently there is nothing (once used to persist zoom level set with control wheel).
-		/// </summary>
-		void SavePageFrameState()
-		{
 		}
 
 		// One more attempt to catch whatever is causing us to get errors indicating that the page we're trying
