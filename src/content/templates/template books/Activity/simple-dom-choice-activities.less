@@ -41,8 +41,8 @@
                     min-height: unset;
                     // this allows the text-align:center, defined elsewhere, to actually work
                     // this number, 95px, was chosen to use the space available in 16x9 portrait, with these text samples: སྔགས་ཀྱི་ཀློག་བས་ཤེས་རབ་མི
-
-                    line-height: 95px !important;
+                    // But, fixing this interferes with the user's ability to set line-height in the format dialog.
+                    // line-height: 95px !important;
                 }
             }
         }
@@ -86,10 +86,9 @@
 
             .player-button {
                 width: 90%;
-                .bloom-translationGroup .bloom-editable {
-                    line-height: 75px !important;
-                    font-size: 31pt !important;
-                }
+                // Don't be tempted to put styles here to change the appearance of buttons
+                // in landscape mode if those styles should be controlled by the Format
+                // dialog; they will override it and confuse users (BL-11606)
             }
         }
     }
