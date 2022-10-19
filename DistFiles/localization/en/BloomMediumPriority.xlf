@@ -25,7 +25,7 @@
         <note>ID: ReaderSetup.SentencePunctuation.Header</note>
       </trans-unit>
       <trans-unit id="PublishTab.Epub.ConsiderBloomPUB" sil:dynamic="true">
-        <source xml:lang="en">Consider whether you can distribute your book using the BloomPUB format instead of or in addition to ePUB.</source>
+        <source xml:lang="en">Consider whether you can distribute your book using the BloomPUB format instead of, or in addition to, the ePUB format.</source>
         <note>ID: PublishTab.Epub.ConsiderBloomPUB</note>
       </trans-unit>
       <trans-unit id="PublishTab.Epub.FeatureLimitations" sil:dynamic="true">

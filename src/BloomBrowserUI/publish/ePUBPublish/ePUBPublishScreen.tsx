@@ -201,8 +201,8 @@ const EPUBPublishScreenInternal: React.FunctionComponent<{
                             </ul>
                             <P l10nKey="PublishTab.Epub.ConsiderBloomPUB">
                                 Consider whether you can distribute your book
-                                using the BloomPUB format instead of or in
-                                addition to ePUB.
+                                using the BloomPUB format instead of, or in
+                                addition to, the ePUB format.
                             </P>
                         </div>
                     </NoteBox>
