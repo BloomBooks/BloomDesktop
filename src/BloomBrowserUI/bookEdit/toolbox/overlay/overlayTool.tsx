@@ -788,7 +788,7 @@ const OverlayToolControls: React.FunctionComponent = () => {
                             />
                             <img
                                 id="shapeChooserImagePlaceholder"
-                                className="comicToolControlDraggableBubble"
+                                className="overlayToolControlDraggableBubble"
                                 src="image-overlay.svg"
                                 draggable={!isBookLocked}
                                 onDragStart={
@@ -804,7 +804,7 @@ const OverlayToolControls: React.FunctionComponent = () => {
                             />
                             <img
                                 id="shapeChooserVideoPlaceholder"
-                                className="comicToolControlDraggableBubble"
+                                className="overlayToolControlDraggableBubble"
                                 src="sign-language-overlay.svg"
                                 draggable={!isBookLocked}
                                 onDragStart={
