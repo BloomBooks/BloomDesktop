@@ -1,4 +1,3 @@
-import * as React from "react";
 import * as ReactDOM from "react-dom";
 import { ITool, IReactTool } from "./toolbox";
 import { ReactElement } from "react";

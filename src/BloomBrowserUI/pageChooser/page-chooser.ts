@@ -6,7 +6,10 @@ import axios from "axios";
 import { BloomApi } from "../utils/bloomApi";
 import "errorHandler";
 import SelectedTemplatePageControls from "./selectedTemplatePageControls";
-import { getEditTabBundleExports } from "../bookEdit/js/bloomFrames";
+import {
+    getEditTabBundleExports,
+    getToolboxBundleExports
+} from "../bookEdit/js/bloomFrames";
 import { ThemeProvider } from "@material-ui/styles";
 import { lightTheme } from "../bloomMaterialUITheme";
 
@@ -161,12 +164,19 @@ export class PageChooser {
                     willLoseData: this._forChooseLayout
                         ? this.willLoseData()
                         : false,
-                    learnMoreLink: learnMoreLink
+                    learnMoreLink: learnMoreLink,
+                    requiredTool: this.requiredTool(this._selectedGridItem)
                 })
             ),
             previewElement
         );
     } // thumbnailClickHandler
+
+    private requiredTool(element: Element | null): string | undefined {
+        if (!element || !element.hasAttribute("required-tool"))
+            return undefined;
+        return element.getAttribute("required-tool")!;
+    }
 
     // "Safely" from a type-checking point of view. The calling code is responsible to make sure
     // that empty string is handled.
@@ -298,7 +308,8 @@ export class PageChooser {
         convertAnywayChecked: boolean,
         willLoseData: boolean,
         convertWholeBookChecked: boolean,
-        numberToAdd: number
+        numberToAdd: number,
+        requiredTool?: string
     ): void {
         if (forChangeLayout) {
             if (willLoseData && !convertAnywayChecked) {
@@ -327,6 +338,14 @@ export class PageChooser {
                 },
                 PageChooser.closeup
             );
+        }
+        if (requiredTool) {
+            // If we added/changed a page that requires a certain Toolbox tool, we will need to
+            // make sure the Toolbox is open.
+            const toolbox = getToolboxBundleExports()?.getTheOneToolbox();
+            if (!toolbox) return; // Shouldn't happen; paranoia.
+            // We make sure 'requiredTool' is checked and open.
+            toolbox.activateToolFromId(requiredTool);
         }
     }
 
@@ -594,6 +613,10 @@ export class PageChooser {
                     "bloom-widgetContainer"
                 ).toString()
             );
+            if (currentPageDiv.hasAttribute("data-tool-id")) {
+                const tool = currentPageDiv.getAttribute("data-tool-id")!;
+                currentGridItemHtml.setAttribute("required-tool", tool);
+            }
             const helpLink = currentPageDiv.getAttribute("help-link");
             if (helpLink) {
                 currentGridItemHtml.setAttribute("help-link", helpLink);
@@ -694,7 +717,8 @@ export class PageChooser {
                     convertWholeBookCheckbox
                         ? convertWholeBookCheckbox.checked
                         : false,
-                    this._forChooseLayout ? -1 : 1
+                    this._forChooseLayout ? -1 : 1,
+                    this.requiredTool(this._selectedGridItem)
                 );
             }); // invisibleThumbCover double click handler
 
@@ -786,7 +810,8 @@ export function handleAddPageOrChooseLayoutButtonClick(
     convertAnywayChecked: boolean,
     willLoseData: boolean,
     convertWholeBookChecked: boolean,
-    numberToAdd: number
+    numberToAdd: number,
+    requiredTool?: string
 ) {
     PageChooser.handleAddPageOrChooseLayoutButtonClick(
         forChangeLayout,
@@ -795,6 +820,7 @@ export function handleAddPageOrChooseLayoutButtonClick(
         convertAnywayChecked,
         willLoseData,
         convertWholeBookChecked,
-        numberToAdd
+        numberToAdd,
+        requiredTool
     );
 }

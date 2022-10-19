@@ -196,7 +196,6 @@ namespace Bloom.Book
 			return _getDivNodeForThisPageMethod(this);
 		}
 
-
 		public static string GetPageSelectorXPath(XmlDocument pageDom)
 		{
 //    		var id = pageDom.SelectSingleNodeHonoringDefaultNS("/html/body/div").Attributes["id"].Value;
