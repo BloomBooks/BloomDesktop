@@ -966,15 +966,36 @@ function focusLastEditableTopBox(): boolean {
         // equivalent to the :visible check we were previously doing in jquery
         s => window.getComputedStyle(s).getPropertyValue("display") != "none"
     );
-    if (visibleEditBoxesInLastTop.length === 0) return false; // unexpected
-    // This doesn't work reliably if we just use the Element.focus(), so we use the JQuery version that
-    // we set the eventhandler with in BloomSourceBubbles.SetupTooltips(). We've tried adding a "focusin"
-    // eventhandler to the div, instead of the JQuery one, but it still didn't work when we used
-    // the raw HTML focus() here, even if we changed the eventhandler to use currentTarget instead of target.
-    // It may have something to do with the fact that JQuery calls trigger() on the event, rather than
-    // calling the focus method. (BL-8726)
-    $(visibleEditBoxesInLastTop[0] as HTMLElement).focus();
-    return true;
+    if (visibleEditBoxesInLastTop.length !== 0) {
+        // This doesn't work reliably if we just use the Element.focus(), so we use the JQuery version that
+        // we set the eventhandler with in BloomSourceBubbles.SetupTooltips(). We've tried adding a "focusin"
+        // eventhandler to the div, instead of the JQuery one, but it still didn't work when we used
+        // the raw HTML focus() here, even if we changed the eventhandler to use currentTarget instead of target.
+        // It may have something to do with the fact that JQuery calls trigger() on the event, rather than
+        // calling the focus method. (BL-8726)
+        $(visibleEditBoxesInLastTop[0] as HTMLElement).focus();
+        return true;
+    }
+    // image and video boxes are also possibilities (BL-11620)
+    const visibleImageBoxesInLastTop = Array.from(
+        lastTop.getElementsByClassName("bloom-imageContainer")
+    ).filter(
+        s => window.getComputedStyle(s).getPropertyValue("display") != "none"
+    );
+    if (visibleImageBoxesInLastTop.length !== 0) {
+        $(visibleImageBoxesInLastTop[0] as HTMLElement).focus();
+        return true;
+    }
+    const visibleVideoBoxesInLastTop = Array.from(
+        lastTop.getElementsByClassName("bloom-videoContainer")
+    ).filter(
+        s => window.getComputedStyle(s).getPropertyValue("display") != "none"
+    );
+    if (visibleVideoBoxesInLastTop.length !== 0) {
+        $(visibleVideoBoxesInLastTop[0] as HTMLElement).focus();
+        return true;
+    }
+    return false; // unexpected
 }
 
 // This function sets up a rule to display a prompt following the placeholder we insert for a missing

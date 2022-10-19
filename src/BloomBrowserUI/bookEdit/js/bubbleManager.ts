@@ -2114,6 +2114,12 @@ export class BubbleManager {
             location
         );
 
+        // We need to set this content active and notify overlay tool (BL-11620).
+        // But we don't want/need all the actions of setActiveElement().
+        this.activeElement = contentElement;
+        if (this.notifyBubbleChange) {
+            this.notifyBubbleChange(this.getSelectedFamilySpec());
+        }
         const bubble = new Bubble(contentElement);
         const bubbleSpec: BubbleSpec = Bubble.getDefaultBubbleSpec(
             contentElement,
