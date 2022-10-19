@@ -5,8 +5,8 @@ import * as React from "react";
 import { useState, useContext } from "react";
 import {
     PreviewPanel,
-    PublishPanel,
-    SettingsPanel
+    SettingsPanel,
+    UnderPreviewPanel
 } from "../commonPublish/PublishScreenBaseComponents";
 import PublishScreenTemplate from "../commonPublish/PublishScreenTemplate";
 import { DeviceAndControls } from "../commonPublish/DeviceAndControls";
@@ -127,7 +127,7 @@ const EPUBPublishScreenInternal: React.FunctionComponent<{
                     />
                 </ThemeProvider>
             </PreviewPanel>
-            <PublishPanel>
+            <UnderPreviewPanel>
                 <div
                     css={css`
                         display: flex;
@@ -207,7 +207,7 @@ const EPUBPublishScreenInternal: React.FunctionComponent<{
                         </div>
                     </NoteBox>
                 </div>
-            </PublishPanel>
+            </UnderPreviewPanel>
         </div>
     );
 
