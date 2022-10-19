@@ -19,7 +19,12 @@ html
 			| .QuizAnswer-style { font-size: 12pt !important;}
 			| .QuizQuestion-style {font-size: 12pt !important; font-weight: bold !important;}
 			//- color of button is left to the stylesheet
-			| .ButtonText-style { font-size: 40pt !important; text-align: center !important; line-height: 1.1 !important; }
+			//- We'd prefer a 40pt default in portrait mode and 31pt in landscape, but there's no current
+			//- way to have a different font size in landscape for a user-defined style.
+			//- An earlier version used a line height of 95px to center 40pt text, but we want to use one of the
+			//- choices in the Format dialog. 1.3 seems to give the best vertical centering, when combined
+			//- with other settings.
+			| .ButtonText-style { font-size: 31pt !important; text-align: center !important; line-height: 1.3 !important; }
 			| .TextToMatch-style { font-size: 40pt !important; text-align: center !important; line-height: 1.1 !important; font-weight: bold !important;}
 			| .Prompt-style { font-size: 18pt !important; line-height: 1.5 !important; word-spacing: normal !important; font-weight: font-style: normal !important; text-decoration: none !important; text-align: center !important; color: white; }
 	body
