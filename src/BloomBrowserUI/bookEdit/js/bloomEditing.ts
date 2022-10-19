@@ -1240,7 +1240,8 @@ export const pageSelectionChanging = () => {
     marginBox.find(".bloom-translationGroup .textBox-identifier").remove();
 };
 
-// Called from C# in EditingView.CleanHtmlAndCopyToPageDom via editTabBundle.getEditablePageBundleExports()
+// Called from C# by a RunJavaScript() in EditingView.CleanHtmlAndCopyToPageDom via
+// editTabBundle.getEditablePageBundleExports().
 export const getBodyContentForSavePage = () => {
     const bubbleEditingOn = theOneBubbleManager.isComicEditingOn;
     if (bubbleEditingOn) {
@@ -1257,6 +1258,8 @@ export const getBodyContentForSavePage = () => {
     return result;
 };
 
+// Called from C# by a RunJavaScript() in EditingView.CleanHtmlAndCopyToPageDom via
+// editTabBundle.getEditablePageBundleExports().
 export const userStylesheetContent = () => {
     const ss = Array.from(document.styleSheets).find(
         s => s.title === "userModifiedStyles"

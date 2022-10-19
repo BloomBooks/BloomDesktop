@@ -23,6 +23,7 @@ interface ISelectedTemplatePageProps {
     forChangeLayout?: boolean;
     willLoseData?: boolean;
     learnMoreLink?: string;
+    requiredTool?: string;
 }
 
 // Displays a large preview of a template page in the Add Page or Change Layout dialog.
@@ -155,7 +156,8 @@ export const SelectedTemplatePageControls: React.FunctionComponent<ISelectedTemp
                                     continueChecked,
                                     !!props.willLoseData,
                                     convertWholeBookChecked,
-                                    props.forChangeLayout ? -1 : numberToAdd
+                                    props.forChangeLayout ? -1 : numberToAdd,
+                                    props.requiredTool
                                 )
                             }
                         >
