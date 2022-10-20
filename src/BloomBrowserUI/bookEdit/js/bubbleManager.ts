@@ -158,7 +158,9 @@ export class BubbleManager {
 
     // Now that we have the possibility of "nested" imageContainer elements,
     // we need to limit the img tags we look at to those that are immediate children.
-    public static hideImageButtonsIfNotPlaceHolder(container: HTMLElement) {
+    public static hideImageButtonsIfNotPlaceHolderOrHasOverlays(
+        container: HTMLElement
+    ) {
         const placeHolderImages = Array.from(container.childNodes).filter(
             child => {
                 return (
@@ -168,7 +170,10 @@ export class BubbleManager {
                 );
             }
         );
-        if (placeHolderImages.length === 0) {
+        const hasOverlay = container.classList.contains("hasOverlay");
+        // Would this be more reliable?
+        // container.getElementsByClassName("bloom-textOverPicture").length > 0;
+        if (placeHolderImages.length === 0 || hasOverlay) {
             container.classList.add("bloom-hideImageButtons");
         }
     }
@@ -178,7 +183,9 @@ export class BubbleManager {
             this.getAllPrimaryImageContainersOnPage() as any
         );
         imageContainers.forEach(container => {
-            BubbleManager.hideImageButtonsIfNotPlaceHolder(container);
+            BubbleManager.hideImageButtonsIfNotPlaceHolderOrHasOverlays(
+                container
+            );
         });
     }
 
@@ -878,6 +885,19 @@ export class BubbleManager {
             );
         });
     }
+    // This is pretty small, but it's the amount of the text box that has to be visible;
+    // typically a bit more of the actual bubble can be seen.
+    // Arguably it would be better to use a slightly larger number and make it apply to the
+    // actual bubble outline, but
+    // - this is much harder; we'd need ComicalJs enhancments to know exactly where the edge
+    //   of the bubble is.
+    // - the two dimensions would not be independent; a bubble whose top is above the bottom
+    //   of the container and whose right is to the right of the contaniner's left
+    //   might still be entirely invisible as its curve places it entirely beyond the bottom
+    //   left corner.
+    // - The constraint would actually be different depending on the type of bubble,
+    //   which means a bubble might need to move as a result of changing its bubble type.
+    private minBubbleVisible = 10;
 
     // Conceptually, move the bubble to the specified location (which may be where it is already).
     // However, first adjust the location to make sure at least a little of the bubble is visible
@@ -895,32 +915,19 @@ export class BubbleManager {
         const right = left + bubbleRect.width;
         const top = location.getScaledY();
         const bottom = top + bubbleRect.height;
-        // This is pretty small, but it's the amount of the text box that has to be visible;
-        // typically a bit more of the actual bubble can be seen.
-        // Arguably it would be better to use a slightly larger number and make it apply to the
-        // actual bubble outline, but
-        // - this is much harder; we'd need ComicalJs enhancments to know exactly where the edge
-        //   of the bubble is.
-        // - the two dimensions would not be independent; a bubble whose top is above the bottom
-        //   of the container and whose right is to the right of the contaniner's left
-        //   might still be entirely invisible as its curve places it entirely beyond the bottom
-        //   left corner.
-        // - The constraint would actually be different depending on the type of bubble,
-        //   which means a bubble might need to move as a result of changing its bubble type.
-        const minVisible = 5;
         let x = left;
         let y = top;
-        if (right < parentRect.left + minVisible) {
-            x = parentRect.left + minVisible - bubbleRect.width;
+        if (right < parentRect.left + this.minBubbleVisible) {
+            x = parentRect.left + this.minBubbleVisible - bubbleRect.width;
         }
-        if (left > parentRect.right - minVisible) {
-            x = parentRect.right - minVisible;
+        if (left > parentRect.right - this.minBubbleVisible) {
+            x = parentRect.right - this.minBubbleVisible;
         }
-        if (bottom < parentRect.top + minVisible) {
-            y = parentRect.top + minVisible - bubbleRect.height;
+        if (bottom < parentRect.top + this.minBubbleVisible) {
+            y = parentRect.top + this.minBubbleVisible - bubbleRect.height;
         }
-        if (top > parentRect.bottom - minVisible) {
-            y = parentRect.bottom - minVisible;
+        if (top > parentRect.bottom - this.minBubbleVisible) {
+            y = parentRect.bottom - this.minBubbleVisible;
         }
         // The 0.1 here is rather arbitrary. On the one hand, I don't want to do all the work
         // of placeElementAtPosition in the rather common case that we're just checking bubble
@@ -947,15 +954,9 @@ export class BubbleManager {
     private onMouseDown = (event: MouseEvent) => {
         const container = event.currentTarget as HTMLElement;
         // Let standard clicks on the bloom editable only be processed on the editable
-        if (this.isEventForEditableOnly(event)) {
+        if (this.isEventForEditableOrMoveHandle(event)) {
             return;
         }
-        // since that returned false, either ctrl or alt is down, or we clicked outside the
-        // editable. If we're outside the editable, we don't need any default event processing,
-        // and if we're inside and ctrl or alt is down, we want to prevent the events being
-        // processed by the text.
-        event.preventDefault();
-        event.stopPropagation();
 
         // These coordinates need to be relative to the canvas (which is the same as relative to the image container).
         const coordinates = this.getPointRelativeToCanvas(event, container);
@@ -989,6 +990,12 @@ export class BubbleManager {
         }
 
         if (bubble) {
+            // We clicked on a bubble, and either ctrl or alt is down, or we clicked outside the
+            // editable part. If we're outside the editable but inside the bubble, we don't need any default event processing,
+            // and if we're inside and ctrl or alt is down, we want to prevent the events being
+            // processed by the text.
+            event.preventDefault();
+            event.stopPropagation();
             this.focusFirstVisibleFocusable(bubble.content);
             const positionInfo = bubble.content.getBoundingClientRect();
 
@@ -1080,7 +1087,7 @@ export class BubbleManager {
             return;
         }
 
-        if (this.isEventForEditableOnly(event)) {
+        if (this.isEventForEditableOrMoveHandle(event)) {
             this.cleanupMouseMoveHover(container);
             return;
         }
@@ -1372,12 +1379,17 @@ export class BubbleManager {
         );
     }
 
-    private isEventForEditableOnly(ev): boolean {
+    private isEventForEditableOrMoveHandle(ev): boolean {
+        const targetElement = ev.target as HTMLElement;
+        if (targetElement.classList.contains("bloom-dragHandle")) {
+            // The drag handle is outside the bubble, so dragging it with the mouse
+            // events we handle doesn't work. Returning true lets its own event handler
+            // deal with things, and is a good thing even when ctrl or alt is down.
+            return true;
+        }
         if (ev.ctrlKey || ev.altKey) {
             return false;
         }
-
-        const targetElement = ev.target as HTMLElement;
         // I'm not sure what else targetElement can be, but have seen JS errors
         // when closest is not defined.
         const isInsideEditable = !!(
@@ -2571,14 +2583,16 @@ export class BubbleManager {
             $(thisOverPictureElement).draggable({
                 // Adjust containment by scaling
                 containment: [
+                    // arguably we could add this.minBubbleVisible ti the first two, but in practice,
+                    // since the handle is in the top left, it can't be used to drag it even that close.
                     containerPos.left,
                     containerPos.top,
                     containerPos.left +
                         containerPos.width -
-                        wrapperBoxRectangle.width,
+                        this.minBubbleVisible,
                     containerPos.top +
                         containerPos.height -
-                        wrapperBoxRectangle.height
+                        this.minBubbleVisible
                 ],
                 revertDuration: 0,
                 handle: ".bloom-dragHandle",
