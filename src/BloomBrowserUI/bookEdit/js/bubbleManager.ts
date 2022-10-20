@@ -2044,7 +2044,8 @@ export class BubbleManager {
             imageContainerJQuery,
             transGroupHtml,
             location,
-            style
+            style,
+            false
         );
     }
 
@@ -2061,7 +2062,8 @@ export class BubbleManager {
             imageContainerJQuery,
             videoContainerHtml,
             location,
-            "none"
+            "none",
+            true
         );
     }
 
@@ -2083,7 +2085,8 @@ export class BubbleManager {
             imageContainerJQuery,
             imageContainerHtml,
             location,
-            "none"
+            "none",
+            true
         );
     }
 
@@ -2091,7 +2094,8 @@ export class BubbleManager {
         imageContainerJQuery: JQuery,
         internalHtml: string,
         location: Point,
-        style?: string
+        style?: string,
+        setElementActive?: boolean
     ): HTMLElement {
         // add OverPicture element as last child of .bloom-imageContainer (BL-7883)
         const lastContainerChild = imageContainerJQuery.children().last();
@@ -2114,11 +2118,15 @@ export class BubbleManager {
             location
         );
 
-        // We need to set this content active and notify overlay tool (BL-11620).
-        // But we don't want/need all the actions of setActiveElement().
-        this.activeElement = contentElement;
-        if (this.notifyBubbleChange) {
-            this.notifyBubbleChange(this.getSelectedFamilySpec());
+        // For Picture and Video bubbles, we need to set the content active and notify the
+        // overlay tool. But we don't need/want the actions of setActiveElement() which overlap
+        // with refreshBubbleEditing(). Text bubbles are handled properly elsewhere.
+        // See https://issues.bloomlibrary.org/youtrack/issue/BL-11620.
+        if (setElementActive) {
+            this.activeElement = contentElement;
+            if (this.notifyBubbleChange) {
+                this.notifyBubbleChange(this.getSelectedFamilySpec());
+            }
         }
         const bubble = new Bubble(contentElement);
         const bubbleSpec: BubbleSpec = Bubble.getDefaultBubbleSpec(
