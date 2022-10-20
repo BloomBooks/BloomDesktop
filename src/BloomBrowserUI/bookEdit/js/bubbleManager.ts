@@ -158,7 +158,9 @@ export class BubbleManager {
 
     // Now that we have the possibility of "nested" imageContainer elements,
     // we need to limit the img tags we look at to those that are immediate children.
-    public static hideImageButtonsIfNotPlaceHolder(container: HTMLElement) {
+    public static hideImageButtonsIfNotPlaceHolderOrHasOverlays(
+        container: HTMLElement
+    ) {
         const placeHolderImages = Array.from(container.childNodes).filter(
             child => {
                 return (
@@ -168,7 +170,10 @@ export class BubbleManager {
                 );
             }
         );
-        if (placeHolderImages.length === 0) {
+        const hasOverlay = container.classList.contains("hasOverlay");
+        // Would this be more reliable?
+        // container.getElementsByClassName("bloom-textOverPicture").length > 0;
+        if (placeHolderImages.length === 0 || hasOverlay) {
             container.classList.add("bloom-hideImageButtons");
         }
     }
@@ -178,7 +183,9 @@ export class BubbleManager {
             this.getAllPrimaryImageContainersOnPage() as any
         );
         imageContainers.forEach(container => {
-            BubbleManager.hideImageButtonsIfNotPlaceHolder(container);
+            BubbleManager.hideImageButtonsIfNotPlaceHolderOrHasOverlays(
+                container
+            );
         });
     }
 
@@ -950,12 +957,6 @@ export class BubbleManager {
         if (this.isEventForEditableOrMoveHandle(event)) {
             return;
         }
-        // since that returned false, either ctrl or alt is down, or we clicked outside the
-        // editable. If we're outside the editable, we don't need any default event processing,
-        // and if we're inside and ctrl or alt is down, we want to prevent the events being
-        // processed by the text.
-        event.preventDefault();
-        event.stopPropagation();
 
         // These coordinates need to be relative to the canvas (which is the same as relative to the image container).
         const coordinates = this.getPointRelativeToCanvas(event, container);
@@ -989,6 +990,12 @@ export class BubbleManager {
         }
 
         if (bubble) {
+            // We clicked on a bubble, and either ctrl or alt is down, or we clicked outside the
+            // editable part. If we're outside the editable but inside the bubble, we don't need any default event processing,
+            // and if we're inside and ctrl or alt is down, we want to prevent the events being
+            // processed by the text.
+            event.preventDefault();
+            event.stopPropagation();
             this.focusFirstVisibleFocusable(bubble.content);
             const positionInfo = bubble.content.getBoundingClientRect();
 
