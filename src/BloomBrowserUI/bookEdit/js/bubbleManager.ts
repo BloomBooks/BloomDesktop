@@ -271,9 +271,29 @@ export class BubbleManager {
 
         const imageContainers: HTMLElement[] = this.getAllPrimaryImageContainersOnPage();
 
-        imageContainers.forEach(container =>
-            this.ensureBubblesIntersectParent(container)
-        );
+        imageContainers.forEach(container => {
+            this.ensureBubblesIntersectParent(container);
+            // image containers are already set by CSS to overflow:hidden, so they
+            // SHOULD never scroll. But there's also a rule that when something is
+            // focused, it has to be scrolled to. If we set focus to a bubble that's
+            // sufficiently (almost entirely?) off-screen, the browser decides that
+            // it MUST scroll to show it. For a reason I haven't determined, the
+            // element it picks to scroll seems to be the image container. This puts
+            // the display in a confusing state where the text that should be hidden
+            // is visible, though the canvas has moved over and most of the bubble
+            // is still hidden (BL-11646).
+            // Another solution would be to find the code that is focusing the
+            // bubble after page load, and give it the option {preventScroll: true}.
+            // But (a) this is not supported in Gecko (added in FF68), and (b) you
+            // can get a similar bad effect by moving the cursor through text that
+            // is supposed to be hidden. This drastic approach prevents both.
+            // We're basically saying, if this element scrolls its content for
+            // any reason, undo it.
+            container.addEventListener("scroll", () => {
+                container.scrollLeft = 0;
+                container.scrollTop = 0;
+            });
+        });
 
         // todo: select the right one...in particular, currently we just select the last one.
         // This is reasonable when just coming to the page, and when we add a new OverPicture element,
