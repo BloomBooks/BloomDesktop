@@ -262,7 +262,7 @@ namespace Bloom
 				callToAction = "Details";
 			}
 			toast.Image.Image = ToastNotifier.WarningBitmap;
-			toast.Show(shortUserLevelMessage, callToAction, 5);
+			toast.Show(shortUserLevelMessage, callToAction, 15);
 		}
 
 		private static IEnumerable<string> Matches(ModalIf threshold)

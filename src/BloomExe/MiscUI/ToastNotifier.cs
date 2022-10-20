@@ -89,9 +89,11 @@ namespace Bloom.MiscUI
 		/// <param name="e"></param>
 		protected override void OnLoad(EventArgs e)
 		{
-			// Move window out of screen
-			startPosX = Screen.PrimaryScreen.WorkingArea.Width - Width;
-			startPosY = Screen.PrimaryScreen.WorkingArea.Height;
+			// Move window just of the screen that holds our main window
+			var shell = Shell.GetShellOrOtherOpenForm();
+			var screen = shell == null ? Screen.PrimaryScreen : Screen.FromControl(shell);
+			startPosX = screen.WorkingArea.Right - Width;
+			startPosY = screen.WorkingArea.Bottom;
 			endPosY = startPosY - Height;
 			SetDesktopLocation(startPosX, startPosY);
 			//Debug.WriteLine(String.Format("DEBUG Toast.OnLoad(): after adjustments, Bounds = {0}", this.DesktopBounds));
