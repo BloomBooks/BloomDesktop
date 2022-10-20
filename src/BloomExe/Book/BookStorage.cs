@@ -2078,6 +2078,8 @@ namespace Bloom.Book
 		/// </summary>
 		public void UpdateSupportFiles()
 		{
+			if (IsStaticContent(FolderPath))
+				return; // don't try to update our own templates, it's a waste and they might be locked.
 			if (IsPathReadonly(FolderPath))
 			{
 				Logger.WriteEvent("Not updating files in folder {0} because the directory is read-only.", FolderPath);
