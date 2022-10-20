@@ -173,16 +173,16 @@ namespace Bloom.ImageProcessing
 					imageFileName = imageInfo.FileName;
 				else
 					imageFileName = GetFileNameToUseForSavingImage(bookFolderPath, imageInfo, isEncodedAsJpeg);
-				string sourcePath;
-				sourcePath = imageInfo.GetCurrentFilePath();
+				var sourcePath = imageInfo.GetCurrentFilePath();
 				var destinationPath = Path.Combine(bookFolderPath, imageFileName);
 				if (isEncodedAsJpeg || isEncodedAsPng)
 					RobustFile.Copy(sourcePath, destinationPath);
 				else
 					imageInfo.Image.Save(destinationPath, ImageFormat.Png); // destinationPath already has .png extension
-				if (_createdTempImageFile != null && RobustFile.Exists(_createdTempImageFile))
+				if (_createdTempImageFile != null)
 				{
-					RobustFile.Delete(_createdTempImageFile);
+					if (RobustFile.Exists(_createdTempImageFile))
+						RobustFile.Delete(_createdTempImageFile);
 					_createdTempImageFile = null;
 				}
 				return imageFileName;
@@ -785,21 +785,24 @@ namespace Bloom.ImageProcessing
 		private static string CreateSourceFileForImage(PalasoImage imageInfo, bool isJpegImage)
 		{
 			// This must be from a paste instead of the ImageChooser dialog.
-			string sourcePath = Path.GetTempFileName();
+			var sourcePath = Path.GetTempFileName();
 			RobustFile.Delete(sourcePath);
 			if (isJpegImage)
 			{
-				sourcePath = sourcePath + ".jpg";
+				sourcePath += ".jpg";
 				imageInfo.Image.Save(sourcePath, ImageFormat.Jpeg);
 			}
 			else
 			{
-				sourcePath = sourcePath + ".png";
+				sourcePath += ".png";
 				imageInfo.Image.Save(sourcePath, ImageFormat.Png);
 			}
 			imageInfo.SetCurrentFilePath(sourcePath);
 			if (_createdTempImageFile != null)
-				throw new Exception($"_createdTempImageFile already set in image utils ({_createdTempImageFile})");
+			{
+				if (RobustFile.Exists(_createdTempImageFile))
+					RobustFile.Delete(_createdTempImageFile);
+			}
 			_createdTempImageFile = sourcePath;
 			return sourcePath;
 		}
