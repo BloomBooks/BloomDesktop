@@ -2140,7 +2140,8 @@ export class BubbleManager {
             imageContainerJQuery,
             transGroupHtml,
             location,
-            style
+            style,
+            false
         );
     }
 
@@ -2157,7 +2158,8 @@ export class BubbleManager {
             imageContainerJQuery,
             videoContainerHtml,
             location,
-            "none"
+            "none",
+            true
         );
     }
 
@@ -2179,7 +2181,8 @@ export class BubbleManager {
             imageContainerJQuery,
             imageContainerHtml,
             location,
-            "none"
+            "none",
+            true
         );
     }
 
@@ -2187,7 +2190,8 @@ export class BubbleManager {
         imageContainerJQuery: JQuery,
         internalHtml: string,
         location: Point,
-        style?: string
+        style?: string,
+        setElementActive?: boolean
     ): HTMLElement {
         // add OverPicture element as last child of .bloom-imageContainer (BL-7883)
         const lastContainerChild = imageContainerJQuery.children().last();
@@ -2210,11 +2214,20 @@ export class BubbleManager {
             location
         );
 
-        // We need to set this content active and notify overlay tool (BL-11620).
-        // But we don't want/need all the actions of setActiveElement().
-        this.activeElement = contentElement;
-        if (this.notifyBubbleChange) {
-            this.notifyBubbleChange(this.getSelectedFamilySpec());
+        // The following code would not be needed for Picture and Video bubbles if the focusin
+        // handler were reliably called after being attached by refreshBubbleEditing() below.
+        // However, calling the jquery.focus() method in bloomEditing.focusOnChildIfFound()
+        // causes the handler to fire ONLY for Text bubbles.  This is a complete mystery to me.
+        // Therefore, for Picture and Video bubbles, we set the content active and notify the
+        // overlay tool. But we don't need/want the actions of setActiveElement() which overlap
+        // with refreshBubbleEditing(). This code actually prevents bloomEditing.focusOnChildIfFound()
+        // from being called, but that doesn't really matter since calling it does no good.
+        // See https://issues.bloomlibrary.org/youtrack/issue/BL-11620.
+        if (setElementActive) {
+            this.activeElement = contentElement;
+            if (this.notifyBubbleChange) {
+                this.notifyBubbleChange(this.getSelectedFamilySpec());
+            }
         }
         const bubble = new Bubble(contentElement);
         const bubbleSpec: BubbleSpec = Bubble.getDefaultBubbleSpec(
