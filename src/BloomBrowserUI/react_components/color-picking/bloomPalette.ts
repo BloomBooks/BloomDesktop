@@ -111,15 +111,19 @@ export async function getHexColorsForPalette(
     return BloomApi.getWithPromise(
         `settings/getCustomPaletteColors?palette=${palette}`
     ).then(result => {
-        if (result) {
+        let customColors: Array<string> = [];
+        if (result && result.data) {
             // {"data":[{"colors":["#0071ff"],"opacity":1},{"colors":["#0000ff"],"opacity":1}]
-            const customColors: string[] = (result.data as Array<{
+            // Note: it's highly unexpected for result to be falsy or lack data.
+            // It would signify that our API call failed somehow. But getWithPromise should
+            // already have reported it, so we don't need to, and doing so again can have some bad
+            // results, e.g., BL-11657. The worst consequence here is that we revert to factory
+            // colors. Hopefully, any new customizations will be saved in the current way and work.
+            customColors = (result.data as Array<{
                 colors: string[];
             }>).map(c => c.colors[0]);
-            return [...factoryColors, ...customColors].map(c =>
-                c.replace("#", "")
-            );
-        } else throw new Error("Problem getting custom colors");
+        }
+        return [...factoryColors, ...customColors].map(c => c.replace("#", ""));
     });
 }
 
