@@ -151,6 +151,7 @@ namespace BloomTests.Spreadsheet
 			assertDom.HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']/div[@data-book='bookTitle' and @lang='tpi']", 0);
 			assertDom.HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']/div[@data-book='bookTitle' and @lang='en']/p[text()='This is Not the End of the English World']", 1);
 
+			assertDom.HasNoMatchForXpath("//div[@id='bloomDataDiv']/div[@data-book='coverImage' and @style]");
 			//We changed contentLanguage1 to newDataBookLabel. The importer should keep its old contentLanguage1 element, since there is no input for it,
 			//as well as adding a new element for newDataBookLabel
 			assertDom.HasSpecifiedNumberOfMatchesForXpath("//div[@id='bloomDataDiv']/div[@data-book='contentLanguage1' and @lang='*']", 1);
