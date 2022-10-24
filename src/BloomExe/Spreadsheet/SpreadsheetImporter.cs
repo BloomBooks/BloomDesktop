@@ -418,6 +418,10 @@ namespace Bloom.Spreadsheet
 			{
 				templateNode.SetAttribute("lang", "*");
 				templateNode.InnerText = imageFileName;
+				// Some old books do the cover image with a background-image setting in the style.
+				// If present, this somehow takes precedence over the content of the node, so make sure
+				// it isn't.
+				templateNode.RemoveAttribute("style");
 
 				if (!SpreadsheetExporter.DataDivImagesWithNoSrcAttributes.Contains(dataBookLabel))
 				{

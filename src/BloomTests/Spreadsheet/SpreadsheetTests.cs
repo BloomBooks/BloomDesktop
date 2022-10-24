@@ -47,7 +47,7 @@ namespace BloomTests.Spreadsheet
 				<p>Is it the End of the German World?</p>
 			</div>
 
-			<div data-book=""coverImage"" lang=""*"" src=""Cover.jpg"" alt=""This picture,Cover.jpg, is missing or was loading too slowly."" data-copyright="""" data-creator="""" data-license="""">
+			<div data-book=""coverImage"" style=""background-image:url('New%20Template%203.jpg')"" lang=""*"" src=""Cover.jpg"" alt=""This picture,Cover.jpg, is missing or was loading too slowly."" data-copyright="""" data-creator="""" data-license="""">
 				Cover.jpg
 			</div>
 
