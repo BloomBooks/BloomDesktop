@@ -629,10 +629,22 @@ export class BubbleManager {
     }
 
     private setTextColorInternal(hexOrRgbColor: string, element: HTMLElement) {
+        // For 5.3, we are preparing the way for adding a style-level text color control to the
+        // Style Editor (text gear icon). For reasons of precedence, we need to move eventually (5.4)
+        // to putting this color on the internal .bloom-editable divs.
+        // For this version we need to be able to make changes to bubbles edited in 5.4, so we clear
+        // out any color rules directly on .bloom-editable divs inside of the textOverPicture div.
+        // (see BL-11621).
         const topBox = element.closest(
             kTextOverPictureSelector
         ) as HTMLDivElement;
         topBox.style.color = hexOrRgbColor;
+        // reset bloom-editable color styles
+        const editables = topBox.getElementsByClassName("bloom-editable");
+        for (let i = 0; i < editables.length; i++) {
+            const element = editables[i] as HTMLElement;
+            element.style.color = "";
+        }
     }
 
     public getTextColor(): string {
