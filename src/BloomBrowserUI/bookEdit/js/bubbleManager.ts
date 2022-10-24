@@ -161,6 +161,17 @@ export class BubbleManager {
     public static hideImageButtonsIfNotPlaceHolderOrHasOverlays(
         container: HTMLElement
     ) {
+        if (
+            document.getElementsByClassName(kTextOverPictureClass).length === 0
+        ) {
+            // If the page has no overlays at all, we really don't want to do this.
+            // Even though the comical toolbox is open, comic editing doesn't get properly
+            // initialized until we add at least one overlay, and without that init,
+            // clicking on the picture doesn't force the controls to show; it can be
+            // really confusing if the tool was left open from another page but isn't
+            // relevant to this one.
+            return;
+        }
         const placeHolderImages = Array.from(container.childNodes).filter(
             child => {
                 return (
