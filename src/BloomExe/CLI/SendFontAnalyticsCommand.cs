@@ -7,6 +7,7 @@ using Bloom.Book;
 using BloomTemp;
 using Bloom.Publish.Android;
 using Bloom.ToPalaso;
+using System.Linq;
 
 namespace Bloom.CLI
 {
@@ -23,7 +24,7 @@ namespace Bloom.CLI
 	public class SendFontAnalyticsCommand
 	{
 		static ProjectContext _projectContext;
-		static string _bookID;
+		static Book.Book _book;
 
 		public static int Handle(SendFontAnalyticsParameters options)
 		{
@@ -44,7 +45,7 @@ namespace Bloom.CLI
 						{
 							// Report what we can about fonts and languages for this book.
 							// (See https://issues.bloomlibrary.org/youtrack/issue/BL-11512.)
-							ReportFontAnalytics(_bookID, "harvester sendFontAnalytics", options.Testing);
+							ReportFontAnalytics(_book, "harvester sendFontAnalytics", options.Testing, options.SkipEpubAnalytics);
 							return (int)SendFontAnalyticsExitCode.Success;
 						}
 					}
@@ -68,19 +69,23 @@ namespace Bloom.CLI
 		/// <remarks>
 		/// See https://issues.bloomlibrary.org/youtrack/issue/BL-11512 for original specification.
 		/// </remarks>
-		public static void ReportFontAnalytics(string bookId, string details, bool forTesting)
+		public static void ReportFontAnalytics(Book.Book book, string details, bool forTesting, bool skipEpub)
 		{
+			var bookId = book.ID;
 			var testOnly = forTesting || WebLibraryIntegration.BookUpload.UseSandboxByDefault;
+			var hasPdf = WasPdfCreated(book);
 			foreach (var fontName in BloomPubMaker.BloomPubFontsAndLangsUsed.Keys)
 			{
 				foreach (var lang in BloomPubMaker.BloomPubFontsAndLangsUsed[fontName])
 				{
-					FontAnalytics.Report("Bloom Library", "2.0", bookId,
-						FontAnalytics.FontEventType.PublishEbook, lang, testOnly, fontName, details);
+					if (!skipEpub)
+						FontAnalytics.Report("Bloom Library", "2.0", bookId,
+							FontAnalytics.FontEventType.PublishEbook, lang, testOnly, fontName, details);
 					FontAnalytics.Report("Bloom Library", "2.0", bookId,
 						FontAnalytics.FontEventType.PublishWeb, lang, testOnly, fontName, details);
-					FontAnalytics.Report("Bloom Library", "2.0", bookId,
-						FontAnalytics.FontEventType.PublishPdf, lang, testOnly, fontName, details);
+					if (hasPdf)
+						FontAnalytics.Report("Bloom Library", "2.0", bookId,
+							FontAnalytics.FontEventType.PublishPdf, lang, testOnly, fontName, details);
 				}
 			}
 			// If this method quits before all the reports have actually been sent, then the
@@ -96,18 +101,27 @@ namespace Bloom.CLI
 			}
 		}
 
+		private static bool WasPdfCreated(Book.Book book)
+		{
+			// Starting with Bloom 5.1, PDFs are no longer created and uploaded if the book
+			// contains any video.
+			var version = book.OurHtmlDom.GetGeneratorVersion();
+			if (version < new Version(5,1))
+				return true;
+			return !BookStorage.GetVideoPathsRelativeToBook(book.RawDom.DocumentElement).Any();
+		}
+
 		private static void CollectFontAnalytics(SendFontAnalyticsParameters options)
 		{
 			using (var stagingFolder = new TemporaryFolder("FontAnalytics"))
 			{
-				var bookServer = _projectContext.BookServer;
-				var metadata = BookMetaData.FromFolder(options.BookPath);
-				bool isTemplateBook = metadata.IsSuitableForMakingShells;
-				_bookID = metadata.Id;
-				var bookInfo = new BookInfo(options.BookPath, false);
-				var settings = AndroidPublishSettings.GetPublishSettingsForBook(bookServer, bookInfo);
+				_book = _projectContext.BookServer.GetBookFromBookInfo(new BookInfo(options.BookPath, true,
+					_projectContext.TeamCollectionManager.CurrentCollectionEvenIfDisconnected ?? new AlwaysEditSaveContext() as ISaveContext));
+
+				bool isTemplateBook = _book.BookInfo.IsSuitableForMakingShells;
+				var settings = AndroidPublishSettings.GetPublishSettingsForBook(_projectContext.BookServer, _book.BookInfo);
 				// This method will gather up the desired font analytics as a side-effect.
-				BloomPubMaker.PrepareBookForBloomReader(options.BookPath, bookServer, stagingFolder,
+				BloomPubMaker.PrepareBookForBloomReader(options.BookPath, _projectContext.BookServer, stagingFolder,
 					new Bloom.web.NullWebSocketProgress(), isTemplateBook, settings: settings);
 			}
 		}
@@ -124,5 +138,8 @@ namespace Bloom.CLI
 
 		[Option("testing", Required = false, Default = false, HelpText = "Analytics are being sent for testing, not production")]
 		public bool Testing { get; set; }
+
+		[Option("skipEpubAnalytics", Required = false, Default = false, HelpText = "Flag that no font analytics are wanted for an Epub")]
+		public bool SkipEpubAnalytics { get; set; }
 	}
 }
