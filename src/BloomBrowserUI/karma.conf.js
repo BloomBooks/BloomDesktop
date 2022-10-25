@@ -61,6 +61,15 @@ module.exports = function(config) {
             suppressSkipped: true // do not print information about skipped tests
         },
 
-        client: { jasmine: { timeoutInterval: 15000 } }
+        client: { jasmine: { timeoutInterval: 15000 } },
+
+        // These lines are an attempt to fix test run failures on TeamCity.
+        // Sometimes all tests run but the overall test run command fails.
+        // Sometimes not all the tests run.
+        // What seems to be common when it doesn't work is that we get
+        // WARN [Chrome 106.0.0 (Windows 10.0.0)]: Disconnected (0 times), because no message in 30000 ms.
+        // (30000 was the default value for browserNoActivityTimeout.)
+        concurrency: 1,
+        browserNoActivityTimeout: 120000
     });
 };
