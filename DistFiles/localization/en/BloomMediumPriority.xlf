@@ -5,6 +5,13 @@
       <note>We are in the process of moving strings from Bloom.xlf to BloomMediumPriority.xlf and BloomLowPriority.xlf while trying very hard to preserve translations and approval status.</note>
     </header>
     <body>
+      <!-- for 5.4
+      <trans-unit id="ColorPicker.DefaultForStyle" sil:dynamic="true">
+        <source xml:lang="en">Default for style</source>
+        <note>ID: ColorPicker.DefaultForStyle</note>
+        <note>Label for the default color square in the color picker.</note>
+      </trans-unit>
+      -->
       <trans-unit id="EditTab.Toolbox.OverlayTool.KeyHints.Drag" sil:dynamic="true">
         <source xml:lang="en">drag</source>
         <note>ID: EditTab.Toolbox.OverlayTool.KeyHints.Drag</note>

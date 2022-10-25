@@ -10,7 +10,7 @@ import {
     getEditablePageBundleExports,
     getEditTabBundleExports
 } from "../../js/bloomFrames";
-import { BubbleManager } from "../../js/bubbleManager";
+import { BubbleManager, ITextColorInfo } from "../../js/bubbleManager";
 import { BubbleSpec, TailSpec } from "comicaljs";
 import { ToolBottomHelpLink } from "../../../react_components/helpLink";
 import FormControl from "@material-ui/core/FormControl";
@@ -90,6 +90,7 @@ const OverlayToolControls: React.FunctionComponent = () => {
     const [textColorSwatch, setTextColorSwatch] = useState(
         defaultTextColors[0]
     );
+    const [textColorIsDefault, setTextColorIsDefault] = useState(true);
 
     // Background color swatch
     // defaults to "white" background color
@@ -166,9 +167,10 @@ const OverlayToolControls: React.FunctionComponent = () => {
             setBubbleType(getBubbleType(bubbleMgr));
             if (bubbleMgr) {
                 // Get the current bubble's textColor and set it
-                const bubbleTextColor = bubbleMgr.getTextColor();
+                const bubbleTextColorInformation: ITextColorInfo = bubbleMgr.getTextColorInformation();
+                setTextColorIsDefault(bubbleTextColorInformation.isDefault);
                 const newSwatch = getColorInfoFromSpecialNameOrColorString(
-                    bubbleTextColor
+                    bubbleTextColorInformation.color
                 );
                 setTextColorSwatch(newSwatch);
             }
@@ -671,6 +673,7 @@ const OverlayToolControls: React.FunctionComponent = () => {
                                 id="text-color-bar"
                                 onClick={launchTextColorChooser}
                                 colorInfo={textColorSwatch}
+                                isDefault={textColorIsDefault}
                             />
                         </FormControl>
                         <FormControl>

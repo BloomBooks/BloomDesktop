@@ -2,7 +2,6 @@
 import { jsx, css } from "@emotion/core";
 import * as React from "react";
 import { Checkboard } from "react-color/lib/components/common";
-import { CSSProperties } from "@material-ui/styles";
 import * as tinycolor from "tinycolor2";
 
 // External definition of a color swatch
