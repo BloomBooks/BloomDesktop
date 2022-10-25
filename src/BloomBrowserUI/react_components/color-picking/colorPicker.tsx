@@ -7,6 +7,8 @@ import BloomSketchPicker from "./bloomSketchPicker";
 import ColorSwatch, { IColorInfo } from "./colorSwatch";
 import * as tinycolor from "tinycolor2";
 import { HexColorInput } from "./hexColorInput";
+import { useL10n } from "../l10nHooks";
+import { Typography } from "@material-ui/core";
 
 // We are combining parts of the 'react-color' component set with our own list of swatches.
 // The reason for using our own swatches is so we can support swatches with gradients and alpha.
@@ -17,10 +19,16 @@ interface IColorPickerProps {
     onChange: (color: IColorInfo) => void;
     currentColor: IColorInfo;
     swatchColors: IColorInfo[];
+    defaultColor?: IColorInfo;
 }
 
 export const ColorPicker: React.FunctionComponent<IColorPickerProps> = props => {
     const [colorChoice, setColorChoice] = useState(props.currentColor);
+
+    const defaultStyleLabel = useL10n(
+        "Default for style",
+        "EditTab.DirectFormatting.labelForDefaultColor"
+    );
 
     const changeColor = (swatchColor: IColorInfo) => {
         setColorChoice(swatchColor);
@@ -144,14 +152,43 @@ export const ColorPicker: React.FunctionComponent<IColorPickerProps> = props => 
                     margin-top: 20px;
                     display: flex;
                     flex: 2;
-                    flex-direction: row;
+                    flex-direction: column;
                     flex-wrap: wrap;
                     padding: 0 0 0 8px;
                     max-width: 209px; // 225px less margin and padding of 8px each
                 `}
-                className="swatch-row"
+                className="swatch-section"
             >
-                {getColorSwatches()}
+                {props.defaultColor && (
+                    <div
+                        css={css`
+                            display: flex;
+                            flex-direction: row;
+                        `}
+                    >
+                        <ColorSwatch
+                            colors={props.defaultColor.colors}
+                            opacity={props.defaultColor.opacity}
+                            onClick={() => {}}
+                        />
+                        <Typography
+                            css={css`
+                                margin-left: 6px !important;
+                            `}
+                        >
+                            {defaultStyleLabel}
+                        </Typography>
+                    </div>
+                )}
+                <div
+                    css={css`
+                        display: flex;
+                        flex-direction: row;
+                    `}
+                    className="swatch-row"
+                >
+                    {getColorSwatches()}
+                </div>
             </div>
         </div>
     );
