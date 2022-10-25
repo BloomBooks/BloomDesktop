@@ -7,6 +7,14 @@ using Bloom.Book;
 using BloomTemp;
 using Bloom.Publish.Android;
 using Bloom.ToPalaso;
+using System.IO;
+using SIL.IO;
+using Bloom.Api;
+using System.Text;
+using System.Linq;
+using System.Xml;
+using SIL.Xml;
+using System.Text.RegularExpressions;
 
 namespace Bloom.CLI
 {
@@ -23,7 +31,7 @@ namespace Bloom.CLI
 	public class SendFontAnalyticsCommand
 	{
 		static ProjectContext _projectContext;
-		static string _bookID;
+		static Book.Book _book;
 
 		public static int Handle(SendFontAnalyticsParameters options)
 		{
@@ -44,7 +52,7 @@ namespace Bloom.CLI
 						{
 							// Report what we can about fonts and languages for this book.
 							// (See https://issues.bloomlibrary.org/youtrack/issue/BL-11512.)
-							ReportFontAnalytics(_bookID, "harvester sendFontAnalytics", options.Testing);
+							ReportFontAnalytics(_book, "harvester sendFontAnalytics", options.Testing, !options.NoEpubExists);
 							return (int)SendFontAnalyticsExitCode.Success;
 						}
 					}
@@ -68,19 +76,25 @@ namespace Bloom.CLI
 		/// <remarks>
 		/// See https://issues.bloomlibrary.org/youtrack/issue/BL-11512 for original specification.
 		/// </remarks>
-		public static void ReportFontAnalytics(string bookId, string details, bool forTesting)
+		public static void ReportFontAnalytics(Book.Book book, string details, bool forTesting, bool epubExists=true)
 		{
+			var bookId = book.ID;
 			var testOnly = forTesting || WebLibraryIntegration.BookUpload.UseSandboxByDefault;
+			var version = GetBloomVersionFromBook(book);
+			var hasValidEpub = epubExists && WouldEpubBeValidForPublishing(book, version);
+			var hasPdf = WasPdfCreated(book, version);
 			foreach (var fontName in BloomPubMaker.BloomPubFontsAndLangsUsed.Keys)
 			{
 				foreach (var lang in BloomPubMaker.BloomPubFontsAndLangsUsed[fontName])
 				{
-					FontAnalytics.Report("Bloom Library", "2.0", bookId,
-						FontAnalytics.FontEventType.PublishEbook, lang, testOnly, fontName, details);
+					if (hasValidEpub)
+						FontAnalytics.Report("Bloom Library", "2.0", bookId,
+							FontAnalytics.FontEventType.PublishEbook, lang, testOnly, fontName, details);
 					FontAnalytics.Report("Bloom Library", "2.0", bookId,
 						FontAnalytics.FontEventType.PublishWeb, lang, testOnly, fontName, details);
-					FontAnalytics.Report("Bloom Library", "2.0", bookId,
-						FontAnalytics.FontEventType.PublishPdf, lang, testOnly, fontName, details);
+					if (hasPdf)
+						FontAnalytics.Report("Bloom Library", "2.0", bookId,
+							FontAnalytics.FontEventType.PublishPdf, lang, testOnly, fontName, details);
 				}
 			}
 			// If this method quits before all the reports have actually been sent, then the
@@ -96,18 +110,89 @@ namespace Bloom.CLI
 			}
 		}
 
+		private static float GetBloomVersionFromBook(Book.Book book)
+		{
+			// Extract the Bloom version from the node that looks like
+			// <meta name="Generator" content="Bloom Version 5.0.0 (apparent build date: 01-Feb-2021)" />
+			// This is the most recent version to edit the book, and the version that uploaded it.
+			float bloomVersion = -1.0F;
+			var generatorNode = book.Storage.Dom.RawDom.SelectSingleNode("//head/meta[@name='Generator']") as XmlElement;
+			if (generatorNode != null)
+			{
+				var generatorContent = generatorNode.GetAttribute("content");
+				if (!String.IsNullOrEmpty(generatorContent))
+				{
+					var version = Regex.Match(generatorContent, "^Bloom Version ([0-9]+\\.[0-9]+)");
+					if (version.Success && version.Groups.Count == 2)
+						float.TryParse(version.Groups[1].Value, out bloomVersion);
+				}
+			}
+			return bloomVersion;
+		}
+
+		private static bool WouldEpubBeValidForPublishing(Book.Book book, float bloomVersion)
+		{
+			// This logic is copied from BloomHarvester.
+			dynamic publishSettings = null;
+			string mode = null;
+			var settingsPath = Path.Combine(book.FolderPath,"publish-settings.json");
+			if (RobustFile.Exists(settingsPath))
+			{
+				// A valid publish-settings.json file should have been created by BloomHarvester
+				// if it didn't already exist.
+				try
+				{
+					var settingsRawText = RobustFile.ReadAllText(settingsPath);
+					publishSettings = DynamicJson.Parse(settingsRawText, Encoding.UTF8) as DynamicJson;
+				}
+				catch
+				{
+					publishSettings = null;
+				}
+			}
+			mode = publishSettings?.epub?.mode;
+			if (String.IsNullOrEmpty(mode))
+				mode = bloomVersion < 5.4F ? "flowable" : "fixed";
+			if (mode == "fixed")
+				return true;
+			int goodPages = 0;
+			foreach (var div in book.Storage.Dom.SafeSelectNodes("//div[contains(concat(' ', @class, ' '),' numberedPage ')]").Cast<XmlElement>().ToList())
+			{
+				var imageContainers = div.SafeSelectNodes("div[contains(@class,'marginBox')]//div[contains(@class,'bloom-imageContainer')]");
+				if (imageContainers.Count > 1)
+					return false;
+				// Count any translation group which is not an image description
+				var translationGroups = div.SafeSelectNodes("div[contains(@class,'marginBox')]//div[contains(@class,'bloom-translationGroup') and not(contains(@class, 'box-header-off')) and not(contains(@class,'bloom-imageDescription'))]");
+				if (translationGroups.Count > 1)
+					return false;
+				var videos = div.SafeSelectNodes("following-sibling::div[contains(@class,'marginBox')]//video");
+				if (videos.Count > 1)
+					return false;
+				++goodPages;
+			}
+			return goodPages > 0;
+		}
+
+		private static bool WasPdfCreated(Book.Book book, float bloomVersion)
+		{
+			// Starting with Bloom 5.1, PDFs are no longer created and uploaded if the book
+			// contains any video.
+			if (bloomVersion < 5.1)
+				return true;
+			return !BookStorage.GetVideoPathsRelativeToBook(book.RawDom.DocumentElement).Any();
+		}
+
 		private static void CollectFontAnalytics(SendFontAnalyticsParameters options)
 		{
 			using (var stagingFolder = new TemporaryFolder("FontAnalytics"))
 			{
-				var bookServer = _projectContext.BookServer;
-				var metadata = BookMetaData.FromFolder(options.BookPath);
-				bool isTemplateBook = metadata.IsSuitableForMakingShells;
-				_bookID = metadata.Id;
-				var bookInfo = new BookInfo(options.BookPath, false);
-				var settings = AndroidPublishSettings.GetPublishSettingsForBook(bookServer, bookInfo);
+				_book = _projectContext.BookServer.GetBookFromBookInfo(new BookInfo(options.BookPath, true,
+					_projectContext.TeamCollectionManager.CurrentCollectionEvenIfDisconnected ?? new AlwaysEditSaveContext() as ISaveContext));
+
+				bool isTemplateBook = _book.BookInfo.IsSuitableForMakingShells;
+				var settings = AndroidPublishSettings.GetPublishSettingsForBook(_projectContext.BookServer, _book.BookInfo);
 				// This method will gather up the desired font analytics as a side-effect.
-				BloomPubMaker.PrepareBookForBloomReader(options.BookPath, bookServer, stagingFolder,
+				BloomPubMaker.PrepareBookForBloomReader(options.BookPath, _projectContext.BookServer, stagingFolder,
 					new Bloom.web.NullWebSocketProgress(), isTemplateBook, settings: settings);
 			}
 		}
@@ -124,5 +209,8 @@ namespace Bloom.CLI
 
 		[Option("testing", Required = false, Default = false, HelpText = "Analytics are being sent for testing, not production")]
 		public bool Testing { get; set; }
+
+		[Option("noEpubExists", Required = false, Default = false, HelpText = "Flag that no Epub was created")]
+		public bool NoEpubExists { get; set; }
 	}
 }
