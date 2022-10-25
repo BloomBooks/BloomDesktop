@@ -22,7 +22,7 @@ import { getRgbaColorStringFromColorAndOpacity } from "../../utils/colorUtils";
 import { SetupElements, attachToCkEditor } from "./bloomEditing";
 import {
     addImageEditingButtons,
-    removeImageEditingButtons
+    tryRemoveImageEditingButtons
 } from "./bloomImages";
 
 const kComicalGeneratedClass: string = "comical-generated";
@@ -662,10 +662,10 @@ export class BubbleManager {
             return;
         }
         if (this.activeElement) {
-            removeImageEditingButtons(
+            tryRemoveImageEditingButtons(
                 this.activeElement.getElementsByClassName(
                     "bloom-imageContainer"
-                )[0] as HTMLElement
+                )[0] as HTMLElement | undefined
             );
         }
         this.activeElement = element;
@@ -1146,10 +1146,10 @@ export class BubbleManager {
             // Cleanup the previous iteration's state
             this.cleanupMouseMoveHover(container);
             if (this.activeElement) {
-                removeImageEditingButtons(
+                tryRemoveImageEditingButtons(
                     this.activeElement.getElementsByClassName(
                         "bloom-imageContainer"
-                    )[0] as HTMLElement
+                    )[0] as HTMLElement | undefined
                 );
             }
             return;
