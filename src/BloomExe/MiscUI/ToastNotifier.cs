@@ -24,9 +24,9 @@ namespace Bloom.MiscUI
 		private Timer _goUpTimer;
 		private Timer _goDownTimer;
 		private Timer _pauseTimer;
-		private int startPosX;
-		private int startPosY;
-		private int endPosY;	// minimum (highest on screen) desired value
+		private int _startPosX;
+		private int _startPosY;
+		private int _endPosY;	// minimum (highest on screen) desired value
 		private bool _stayUp;
 		private static string _currentMessage;
 
@@ -83,19 +83,18 @@ namespace Bloom.MiscUI
 			_goDownTimer.Start();
 		}
 
-		/// <summary>
-		///
-		/// </summary>
-		/// <param name="e"></param>
 		protected override void OnLoad(EventArgs e)
 		{
-			// Move window just of the screen that holds our main window
+			// Move window just below the screen that holds our main window
 			var shell = Shell.GetShellOrOtherOpenForm();
 			var screen = shell == null ? Screen.PrimaryScreen : Screen.FromControl(shell);
-			startPosX = screen.WorkingArea.Right - Width;
-			startPosY = screen.WorkingArea.Bottom;
-			endPosY = startPosY - Height;
-			SetDesktopLocation(startPosX, startPosY);
+
+			_startPosX = screen.WorkingArea.X + screen.WorkingArea.Width - Width;
+			_startPosY = screen.WorkingArea.Y + screen.WorkingArea.Height;
+			_endPosY = _startPosY - Height;
+
+			StartPosition = FormStartPosition.Manual;
+			Location = new Point(_startPosX, _startPosY);
 			//Debug.WriteLine(String.Format("DEBUG Toast.OnLoad(): after adjustments, Bounds = {0}", this.DesktopBounds));
 			base.OnLoad(e);
 			// Begin animation
@@ -106,19 +105,19 @@ namespace Bloom.MiscUI
 		{
 			//Debug.WriteLine(String.Format("DEBUG Begin Toast.GoUpTimerTick(): Bounds = {0}", this.DesktopBounds));
 			//Lift window by 5 pixels
-			startPosY -= 5;
+			_startPosY -= 5;
 			//If window is fully visible stop the timer
-			if (startPosY < endPosY)
+			if (_startPosY < _endPosY)
 			{
 				_goUpTimer.Stop();
-				startPosY = endPosY;
-				SetDesktopLocation(startPosX, startPosY);
+				_startPosY = _endPosY;
+				Location = new Point(_startPosX, _startPosY);
 				if(!_stayUp)
 					_pauseTimer.Start();
 			}
 			else
 			{
-				SetDesktopLocation(startPosX, startPosY);
+				Location = new Point(_startPosX, _startPosY);
 			}
 			this.Refresh();
 			//Debug.WriteLine(String.Format("DEBUG End Toast.GoUpTimerTick(): Bounds = {0}", this.DesktopBounds));
@@ -133,9 +132,9 @@ namespace Bloom.MiscUI
 
 			//Debug.WriteLine(String.Format("DEBUG Begin Toast.GoDownTimerTick(): Bounds = {0}", this.DesktopBounds));
 			//Lower window by 5 pixels
-			startPosY += 5;
+			_startPosY += 5;
 			//If window is fully visible stop the timer
-			if (startPosY > Screen.PrimaryScreen.Bounds.Height)
+			if (_startPosY > Screen.PrimaryScreen.Bounds.Height)
 			{
 #if __MonoCS__
 				// The window doesn't move onto and off the screen on Wasta 14 Linux for some reason.  I suspect some sort of system setting,
@@ -156,7 +155,7 @@ namespace Bloom.MiscUI
 			}
 			else
 			{
-				SetDesktopLocation(startPosX, startPosY);
+				Location = new Point(_startPosX, _startPosY);
 				this.Refresh();
 			}
 			//Debug.WriteLine(String.Format("DEBUG End Toast.GoDownTimerTick(): Bounds = {0}", this.DesktopBounds));
