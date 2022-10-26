@@ -122,12 +122,6 @@ namespace Bloom.CLI
 			{
 				exitCode |= CreateBloomDigitalArtifacts(parameters.BookPath, parameters.Creator, zippedBloomPubOutputPath, unzippedBloomDigitalOutputPath);
 			}
-			if (exitCode == CreateArtifactsExitCode.Success && BloomPubMaker.BloomPubFontsAndLangsUsed != null && !parameters.NoAnalytics)
-			{
-				// Report what we can about fonts and languages for this book.
-				// (See https://issues.bloomlibrary.org/youtrack/issue/BL-11512.)
-				SendFontAnalyticsCommand.ReportFontAnalytics(_book.ID, "harvester createArtifacts", parameters.Testing);
-			}
 			if (!String.IsNullOrEmpty(zippedBloomSourceOutputPath))
 			{
 				exitCode |= CreateBloomSourceArtifact(parameters.BookPath, parameters.Creator, zippedBloomSourceOutputPath);
@@ -165,6 +159,13 @@ namespace Bloom.CLI
 
 			CreateThumbnailArtifact(parameters);
 
+			if (exitCode == CreateArtifactsExitCode.Success && BloomPubMaker.BloomPubFontsAndLangsUsed != null && !parameters.NoAnalytics)
+			{
+				// Report what we can about fonts and languages for this book.
+				// (See https://issues.bloomlibrary.org/youtrack/issue/BL-11512.)
+				SendFontAnalyticsCommand.ReportFontAnalytics(_book.ID, "harvester createArtifacts", parameters.Testing,
+					!RobustFile.Exists(parameters.EpubOutputPath) || parameters.SkipEpubAnalytics, parameters.SkipPdfAnalytics);
+			}
 			return exitCode;
 		}
 
@@ -381,5 +382,11 @@ namespace Bloom.CLI
 
 		[Option("noAnalytics", Required = false, Default = false, HelpText = "Do not send any analytics")]
 		public bool NoAnalytics { get; set; }
+
+		[Option("skipEpubAnalytics", Required = false, Default = false, HelpText ="Do not send analytics for the Epub")]
+		public bool SkipEpubAnalytics { get; set; }
+
+		[Option("skipPdfAnalytics", Required = false, Default = false, HelpText ="Do not send analytics for the PDF")]
+		public bool SkipPdfAnalytics { get; set; }
 	}
 }
