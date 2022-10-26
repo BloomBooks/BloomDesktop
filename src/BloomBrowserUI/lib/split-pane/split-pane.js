@@ -330,6 +330,7 @@ https://raw.github.com/shagstrom/split-pane/master/LICENSE
                     minHeight(firstComponent) -
                     divider.offsetHeight,
                 bottomOffset = lastComponent.offsetHeight + scaledY;
+            makeSnaps(splitPane);
             return function(event) {
                 event.preventDefault();
                 const bottom = Math.min(
@@ -339,8 +340,14 @@ https://raw.github.com/shagstrom/split-pane/master/LICENSE
                     ),
                     maxLastComponentHeight
                 );
-                const amount = (bottom / splitPaneHeight) * 100;
-                setDividerTitle(divider, amount);
+                const amount1 = (bottom / splitPaneHeight) * 100;
+                const defaultLabel = amountForDisplay(amount1) + "%";
+                const [amount, label] = snapTo(
+                    amount1,
+                    defaultLabel,
+                    splitPaneHeight
+                );
+                divider.title = label;
                 setBottom(firstComponent, divider, lastComponent, amount + "%");
                 $splitPane.resize();
             };
@@ -407,6 +414,88 @@ https://raw.github.com/shagstrom/split-pane/master/LICENSE
         }
     }
 
+    function makeSnaps(splitPane) {
+        snaps = [];
+        const firstChild = splitPane.firstElementChild;
+        const firstChildSplit = getImagePercent(splitPane, firstChild, true);
+        if (firstChildSplit > 0) {
+            snaps.push({
+                snap: firstChildSplit,
+                label: "Matches image proportion"
+            });
+        }
+    }
+
+    // If child is a split-pane-component containing a split-pane-container-inner
+    // containing exactly one bloom-imageContainer
+    // containing a picture, return the fraction of the height of splitPane which would result
+    // in the image fitting perfectly. Otherwise, return -1.
+    function getImagePercent(splitPane, component, topPane) {
+        if (
+            !component ||
+            !component.classList.contains("split-pane-component")
+        ) {
+            return -1;
+        }
+        const child = component.firstElementChild;
+        if (!child || !child.classList.contains("split-pane-component-inner")) {
+            return -1;
+        }
+        const imageContainer = child.firstElementChild;
+        if (
+            !imageContainer ||
+            !imageContainer.classList.contains("bloom-imageContainer")
+        ) {
+            return -1;
+        }
+        const img = Array.from(imageContainer.children).filter(
+            c => c.nodeName === "IMG"
+        )[0];
+        if (!img) {
+            return -1;
+        }
+        const width = splitPane.offsetWidth;
+        let height = (width * img.naturalHeight) / img.naturalWidth;
+        if (topPane) {
+            // 3px of margin on top pane in split that we need to leave room for
+            height += 3;
+        }
+        return (height * 100) / splitPane.offsetHeight;
+    }
+
+    // Snaps are defined in terms of the percent the user sees, the percent of the upper
+    // partition. Note that the 'amount' values taken and returned by snapTo are
+    // instead the bottom partition.
+    let snaps = [
+        { snap: 25, label: "quarter" },
+        { snap: 50, label: "half" },
+        { snap: 75, label: "three-quarter" }
+    ];
+
+    function snapTo(amount, defaultLabel, parentHeight) {
+        // We want to be within 4px.
+        // amount and snaps are percentages of parentHeight
+        const amountPx = (amount * parentHeight) / 100;
+        for (let i = 0; i < snaps.length; i++) {
+            const snapPx = ((100 - snaps[i].snap) * parentHeight) / 100;
+            const delta = amountPx - snapPx;
+            // If the mouse is below the splitter, the drag cursor goes away
+            // and if there is an image below it the hover effects for the image
+            // show up. But it can be quite some distance above before this happens.
+            // We don't want that effect while dragging; we want to only snap
+            // to a position that won't trigger the cursor being treated as outside
+            // the splitter. So we snap in the range from just below to well above.
+            if (delta < 10 && delta > -1) {
+                const adjusted = 100 - snaps[i].snap;
+                return [
+                    adjusted,
+                    snaps[i].label + " " + amountForDisplay(adjusted) + "%"
+                ];
+            }
+        }
+        return [amount, defaultLabel];
+    }
+
     function pageXof(event) {
         return event.pageX || event.originalEvent.pageX;
     }
@@ -446,9 +535,12 @@ https://raw.github.com/shagstrom/split-pane/master/LICENSE
         divider.style.right = right;
         lastComponent.style.width = right;
     }
+    function amountForDisplay(amount) {
+        return Math.round(10 * (100 - amount)) / 10;
+    }
 
     function setDividerTitle(divider, amount) {
         // for displaying to the user, invert percentage (so higher  up the page is a lower number) leave only one decimal place
-        divider.title = Math.round(10 * (100 - amount)) / 10 + "%";
+        divider.title = amountForDisplay(amount) + "%";
     }
 })(jQuery);
