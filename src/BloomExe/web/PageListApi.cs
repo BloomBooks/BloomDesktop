@@ -5,6 +5,7 @@ using System.Dynamic;
 using System.Linq;
 using System.Windows.Forms;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Xml;
 using Bloom.Api;
@@ -50,6 +51,50 @@ namespace Bloom.web
 				var props=string.Join(",", attrs.Select(a => ("\"" + a.Name + "\": \"" + a.Value.Replace("\"","\\\"") + "\"")));
 				request.ReplyWithJson("{"+props+"}");
 			}, true);
+			apiHandler.RegisterEndpointHandler("pageList/prevPageSplit", HandlePrevPageSplit, false);
+		}
+
+		/// <summary>
+		/// This one is for the snapping function on dragging origami splitters.
+		/// Not sure this file is the best place for it.
+		/// </summary>
+		/// <param name="request"></param>
+		private void HandlePrevPageSplit(ApiRequest request)
+		{
+			var id = request.RequiredParam("id");
+			IPage prevPage = null;
+			foreach (var page in CurrentBook.GetPages())
+			{
+				if (page.Id == id)
+				{
+					if (prevPage != null)
+					{
+						// prevPage is the one we want.
+						var topSplitPanes = prevPage.GetDivNodeForThisPage()
+							.SafeSelectNodes(
+								".//div[contains(@class, 'split-pane-component') and contains(@class, 'position-top')]")
+							.Cast<XmlElement>()
+							.ToArray();
+						// Enhance: this could reasonably work 
+						if (topSplitPanes.Length == 1)
+						{
+							var style = topSplitPanes[0].Attributes["style"]?.Value;
+							var matches = new Regex("bottom: (.*)%").Match(style);
+							if (matches.Success)
+							{
+								var split = matches.Groups[1].Value;
+								request.ReplyWithText(split);
+								return;
+							}
+						}
+					}
+					request.ReplyWithText("none");
+					return;
+				}
+
+				prevPage = page; 
+			}
+			request.ReplyWithText("none");
 		}
 
 		private void HandlePageClickedRequest(ApiRequest request)

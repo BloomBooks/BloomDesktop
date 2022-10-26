@@ -9,6 +9,8 @@ https://raw.github.com/shagstrom/split-pane/master/LICENSE
 
 */
 
+import { BloomApi } from "../../utils/bloomApi";
+
 (function($) {
     $.fn.splitPane = function() {
         var $splitPanes = this;
@@ -424,6 +426,27 @@ https://raw.github.com/shagstrom/split-pane/master/LICENSE
                 label: "Matches image proportion"
             });
         }
+
+        const lastChild = splitPane.lastElementChild;
+        const lastChildSplit = getImagePercent(splitPane, lastChild, true);
+        if (lastChildSplit > 0) {
+            snaps.push({
+                snap: 100 - lastChildSplit,
+                label: "Matches image proportion"
+            });
+        }
+
+        const page = splitPane.closest(".bloom-page");
+        const id = page.getAttribute("id");
+        BloomApi.get("pageList/prevPageSplit?id=" + id, result => {
+            if (!result.data || result.data === "none") {
+                return;
+            }
+            snaps.push({
+                snap: 100 - parseFloat(result.data),
+                label: "Matches previous page"
+            });
+        });
     }
 
     // If child is a split-pane-component containing a split-pane-container-inner
