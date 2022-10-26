@@ -22,7 +22,7 @@ import { getRgbaColorStringFromColorAndOpacity } from "../../utils/colorUtils";
 import { SetupElements, attachToCkEditor } from "./bloomEditing";
 import {
     addImageEditingButtons,
-    removeImageEditingButtons
+    tryRemoveImageEditingButtons
 } from "./bloomImages";
 
 const kComicalGeneratedClass: string = "comical-generated";
@@ -634,6 +634,11 @@ export class BubbleManager {
 
     private static onDocClickClearActiveElement(event: Event) {
         const clickedElement = event.target as Element; // most local thing clicked on
+        if (!clickedElement.closest) {
+            // About the only other possibility is that it's the top-level document.
+            // If that's the target, we didn't click in an image container or button.
+            return;
+        }
         if (
             BubbleManager.getTopLevelImageContainerElement(clickedElement) ||
             clickedElement.closest(".source-copy-button")
@@ -662,10 +667,10 @@ export class BubbleManager {
             return;
         }
         if (this.activeElement) {
-            removeImageEditingButtons(
+            tryRemoveImageEditingButtons(
                 this.activeElement.getElementsByClassName(
                     "bloom-imageContainer"
-                )[0] as HTMLElement
+                )[0] as HTMLElement | undefined
             );
         }
         this.activeElement = element;
@@ -1146,10 +1151,10 @@ export class BubbleManager {
             // Cleanup the previous iteration's state
             this.cleanupMouseMoveHover(container);
             if (this.activeElement) {
-                removeImageEditingButtons(
+                tryRemoveImageEditingButtons(
                     this.activeElement.getElementsByClassName(
                         "bloom-imageContainer"
-                    )[0] as HTMLElement
+                    )[0] as HTMLElement | undefined
                 );
             }
             return;
@@ -1412,6 +1417,22 @@ export class BubbleManager {
 
     private isEventForEditableOrMoveHandle(ev): boolean {
         const targetElement = ev.target as HTMLElement;
+        if (!targetElement?.classList) {
+            // As far as I can research, the target of a mouse event is always
+            // "the most deeply nested element." Apparently some very old browsers
+            // might answer a text node, but I think that stopped well before FF60.
+            // Therefore ev.target should be an element, not null or undefined or
+            // some other object, and it should have a classList, and calling contains
+            // on that classList should not throw.
+            // But: BL-11668 shows that it IS possible for classList to be undefined.
+            // Some testing revealed that somehow, most likely when dragging rapidly
+            // towards the edge of the document, we can get an event where target is
+            // the root document, which doesn't have a classList.
+            // Since we're looking for the click to be on some particular element,
+            // if somehow it's not connected to an element at all, I think we can safely
+            // return false.
+            return false;
+        }
         if (targetElement.classList.contains("bloom-dragHandle")) {
             // The drag handle is outside the bubble, so dragging it with the mouse
             // events we handle doesn't work. Returning true lets its own event handler
@@ -3050,8 +3071,11 @@ export class BubbleManager {
     private static getTopLevelImageContainerElement(
         element: Element
     ): HTMLElement | null {
-        if (!element) {
-            return null; // paranoid, but I have seen this method say 'closest()' didn't exist!?
+        if (!element?.closest) {
+            // It's possible for the target to be the root document object. If so, it doesn't
+            // have a 'closest' function, so we'd better not try to call it.
+            // It's also certainly not inside an image container, so null is a safe result.
+            return null;
         }
         const firstTry = element.closest(kImageContainerSelector);
         if (!firstTry) {

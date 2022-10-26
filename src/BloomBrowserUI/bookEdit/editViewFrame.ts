@@ -63,7 +63,7 @@ export function switchContentPage(newSource: string) {
     try {
         if (
             this.getEditablePageBundleExports &&
-            this.getEditablePageBundleExports().pageUnloading
+            this.getEditablePageBundleExports()?.pageUnloading
         ) {
             this.getEditablePageBundleExports().pageUnloading();
         }

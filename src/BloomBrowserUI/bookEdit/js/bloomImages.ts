@@ -225,6 +225,14 @@ export function removeImageEditingButtons(containerDiv: HTMLElement): void {
     });
 }
 
+export function tryRemoveImageEditingButtons(
+    containerDiv: HTMLElement | undefined
+): void {
+    if (containerDiv) {
+        removeImageEditingButtons(containerDiv);
+    }
+}
+
 // Bloom "imageContainer"s are <div>'s which wrap an <img>, and automatically proportionally resize
 // the img to fit the available space.
 // Precondition: containerDiv must be just a single HTMLElement
