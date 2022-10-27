@@ -4,15 +4,11 @@ using System.Diagnostics;
 using System.Dynamic;
 using System.Linq;
 using System.Windows.Forms;
-using System.Text;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using System.Xml;
 using Bloom.Api;
 using Bloom.Book;
 using Bloom.Edit;
 using Bloom.Utils;
-using Newtonsoft.Json;
 using SIL.Xml;
 
 namespace Bloom.web

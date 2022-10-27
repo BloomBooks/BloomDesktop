@@ -70,7 +70,8 @@ namespace Bloom.web.controllers
 								".//div[contains(@class, 'split-pane-component') and contains(@class, 'position-top')]")
 							.Cast<XmlElement>()
 							.ToArray();
-						// Enhance: this could reasonably work 
+						// Enhance: this could reasonably do something fancier like finding the top-level split
+						// and using it if horizontal, even if there are other horizontal splits.
 						if (topSplitPanes.Length == 1)
 						{
 							var style = topSplitPanes[0].Attributes["style"]?.Value;

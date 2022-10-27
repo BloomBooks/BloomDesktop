@@ -119,6 +119,8 @@ import theOneLocalizationManager from "../localizationManager/localizationManage
             document.body.classList.remove("origami-drag");
         });
     }
+    // True if ctrl was held down when clicking the splitter. Disables snapping
+    // and displays measurements more precisely.
     let preciseMode = false;
 
     function createParentresizeHandler($splitPane) {
