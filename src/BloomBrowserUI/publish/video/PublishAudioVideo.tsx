@@ -470,10 +470,7 @@ const PublishAudioVideoInternalInternal: React.FunctionComponent<{
                                     >
                                         <Span l10nKey="PublishTab.RecordVideo.ChangeScale100">
                                             Please change your display scaling
-                                            to 100% while making videos. Without
-                                            this, videos will come out at the
-                                            wrong resolution, or not record at
-                                            all.
+                                            to 100% while making videos.
                                         </Span>{" "}
                                         <Link
                                             css={css`
