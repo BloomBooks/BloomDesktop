@@ -10,6 +10,7 @@ https://raw.github.com/shagstrom/split-pane/master/LICENSE
 */
 
 import { BloomApi } from "../../utils/bloomApi";
+import theOneLocalizationManager from "../localizationManager/localizationManager";
 
 (function($) {
     $.fn.splitPane = function() {
@@ -433,14 +434,16 @@ import { BloomApi } from "../../utils/bloomApi";
             false
         );
         if (firstChildSplit > 0) {
-            snaps.push({
-                snap: firstChildSplit,
-                label: "Matches image proportion"
-            });
-            snaps.push({
-                snap: getImagePercent(splitPane, firstChild, true, true),
-                label: "Square"
-            });
+            makeSnap(
+                firstChildSplit,
+                "MatchAspect",
+                "Matches image proportion"
+            );
+            makeSnap(
+                getImagePercent(splitPane, firstChild, true, true),
+                "Square",
+                "Square"
+            );
         }
 
         const lastChild = splitPane.lastElementChild;
@@ -451,14 +454,17 @@ import { BloomApi } from "../../utils/bloomApi";
             false
         );
         if (lastChildSplit > 0) {
-            snaps.push({
-                snap: 100 - lastChildSplit,
-                label: "Matches image proportion"
-            });
-            snaps.push({
-                snap: 100 - getImagePercent(splitPane, firstChild, false, true),
-                label: "Square"
-            });
+            makeSnap(
+                100 - lastChildSplit,
+                "MatchAspect",
+                "Matches image proportion"
+            );
+            // Make the bottom panel square
+            makeSnap(
+                100 - getImagePercent(splitPane, firstChild, false, true),
+                "Square",
+                "Square"
+            );
         }
 
         const page = splitPane.closest(".bloom-page");
@@ -468,18 +474,29 @@ import { BloomApi } from "../../utils/bloomApi";
             if (!result.data || result.data === "none") {
                 return;
             }
-            snaps.push({
-                snap: 100 - parseFloat(result.data),
-                label: "Matches previous page"
-            });
+            makeSnap(
+                100 - parseFloat(result.data),
+                "MatchPrev",
+                "Matches previous page"
+            );
         });
 
         // These general purpose ones come last, so the others win if there is overlap
-        snaps.push({ snap: 25, label: "one quarter" });
-        snaps.push({ snap: 33.333333, label: "one third" });
-        snaps.push({ snap: 50, label: "one half" });
-        snaps.push({ snap: 66.666667, label: "two thirds" });
-        snaps.push({ snap: 75, label: "three-quarters" });
+        makeSnap(25, "Quarter", "One quarter");
+        makeSnap(33.333333, "Third", "One third");
+        makeSnap(50, "Half", "One half");
+        makeSnap(66.666667, "TwoThirds", "Two thirds");
+        makeSnap(75, "ThreeQuarters", "Three quarters");
+    }
+
+    function makeSnap(snap, id, label) {
+        const item = { snap, label };
+        snaps.push(item);
+        theOneLocalizationManager
+            .asyncGetText("EditTab.Snap." + id, label)
+            .done(result => {
+                item.label = result;
+            });
     }
 
     // If child is a split-pane-component containing a split-pane-container-inner
