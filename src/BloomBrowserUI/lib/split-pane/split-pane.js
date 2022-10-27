@@ -419,20 +419,38 @@ import { BloomApi } from "../../utils/bloomApi";
     function makeSnaps(splitPane) {
         snaps = [];
         const firstChild = splitPane.firstElementChild;
-        const firstChildSplit = getImagePercent(splitPane, firstChild, true);
+        const firstChildSplit = getImagePercent(
+            splitPane,
+            firstChild,
+            true,
+            false
+        );
         if (firstChildSplit > 0) {
             snaps.push({
                 snap: firstChildSplit,
                 label: "Matches image proportion"
             });
+            snaps.push({
+                snap: getImagePercent(splitPane, firstChild, true, true),
+                label: "Square"
+            });
         }
 
         const lastChild = splitPane.lastElementChild;
-        const lastChildSplit = getImagePercent(splitPane, lastChild, true);
+        const lastChildSplit = getImagePercent(
+            splitPane,
+            lastChild,
+            false,
+            false
+        );
         if (lastChildSplit > 0) {
             snaps.push({
                 snap: 100 - lastChildSplit,
                 label: "Matches image proportion"
+            });
+            snaps.push({
+                snap: 100 - getImagePercent(splitPane, firstChild, false, true),
+                label: "Square"
             });
         }
 
@@ -453,7 +471,7 @@ import { BloomApi } from "../../utils/bloomApi";
     // containing exactly one bloom-imageContainer
     // containing a picture, return the fraction of the height of splitPane which would result
     // in the image fitting perfectly. Otherwise, return -1.
-    function getImagePercent(splitPane, component, topPane) {
+    function getImagePercent(splitPane, component, topPane, square) {
         if (
             !component ||
             !component.classList.contains("split-pane-component")
@@ -478,7 +496,9 @@ import { BloomApi } from "../../utils/bloomApi";
             return -1;
         }
         const width = splitPane.offsetWidth;
-        let height = (width * img.naturalHeight) / img.naturalWidth;
+        let height = square
+            ? width
+            : (width * img.naturalHeight) / img.naturalWidth;
         if (topPane) {
             // 3px of margin on top pane in split that we need to leave room for
             height += 3;
