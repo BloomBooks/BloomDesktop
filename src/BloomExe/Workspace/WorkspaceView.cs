@@ -267,19 +267,35 @@ namespace Bloom.Workspace
 		/// </remarks>
 		private void SelectBookAtStartup()
 		{
-			var selBookPath = Program.PathToBookDownloadedAtStartup ?? Settings.Default.CurrentBookPath;
-			if (string.IsNullOrEmpty(selBookPath) || !Directory.Exists(selBookPath))
-				return;
-			var selBookCollectionFolder = Path.GetDirectoryName(selBookPath);
-			var inCurrentCollection = selBookCollectionFolder == _collectionSettings.FolderPath;
-			var inSourceFolder = !inCurrentCollection && _model.GetSourceCollectionFolders().ToList().Exists(folder => selBookCollectionFolder == folder);
-			if (inCurrentCollection || inSourceFolder)
+			try
 			{
-				var info = new BookInfo(selBookPath, inCurrentCollection, _tcManager.CurrentCollectionEvenIfDisconnected ?? new AlwaysEditSaveContext() as ISaveContext);
-				// Fully updating book files ensures that the proper branding files are found for
-				// previewing when the collection settings change but the book selection does not.
-				var book = _bookServer.GetBookFromBookInfo(info, fullyUpdateBookFiles: true);
-				_bookSelection.SelectBook(book);
+				var selBookPath = Program.PathToBookDownloadedAtStartup ?? Settings.Default.CurrentBookPath;
+				if (string.IsNullOrEmpty(selBookPath) || !Directory.Exists(selBookPath))
+					return;
+				var selBookCollectionFolder = Path.GetDirectoryName(selBookPath);
+				var inCurrentCollection = selBookCollectionFolder == _collectionSettings.FolderPath;
+				var inSourceFolder = !inCurrentCollection && _model.GetSourceCollectionFolders().ToList().Exists(folder => selBookCollectionFolder == folder);
+				if (inCurrentCollection || inSourceFolder)
+				{
+					var info = new BookInfo(selBookPath, inCurrentCollection, _tcManager.CurrentCollectionEvenIfDisconnected ?? new AlwaysEditSaveContext() as ISaveContext);
+					// Fully updating book files ensures that the proper branding files are found for
+					// previewing when the collection settings change but the book selection does not.
+					var book = _bookServer.GetBookFromBookInfo(info, fullyUpdateBookFiles: true);
+					_bookSelection.SelectBook(book);
+				}
+			}
+			// I think we would ideally catch ApplicationException here, but, at least for BL-11678,
+			// what we actually get is an Autofac.Core.DependencyResolutionException.
+			catch (Exception e)
+			{
+				// All we are trying to do here is select a book.
+				// We certainly don't want to crash because we had a problem doing so.
+				// One scenario we know of which causes this is if the book at
+				// Settings.Default.CurrentBookPath gets corrupted, such as having no .htm file.
+				// See BL-11678.
+				Settings.Default.CurrentBookPath = null;
+
+				MiscUtils.SuppressUnusedExceptionVarWarning(e);
 			}
 		}
 
