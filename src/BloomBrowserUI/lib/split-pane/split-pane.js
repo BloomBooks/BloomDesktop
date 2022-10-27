@@ -101,10 +101,12 @@ import { BloomApi } from "../../utils/bloomApi";
             $splitPane = $divider.parent(),
             $resizeShim = $divider.siblings(".split-pane-resize-shim");
         $resizeShim.show();
+        preciseMode = event.ctrlKey;
         $divider.addClass("dragged");
         if (isTouchEvent) {
             $divider.addClass("touch");
         }
+        document.body.classList.add("origami-drag");
         $(document).on(
             moveEvent,
             createMousemove($splitPane, pageXof(event), pageYof(event))
@@ -113,8 +115,10 @@ import { BloomApi } from "../../utils/bloomApi";
             $(document).unbind(moveEvent);
             $divider.removeClass("dragged touch");
             $resizeShim.hide();
+            document.body.classList.remove("origami-drag");
         });
     }
+    let preciseMode = false;
 
     function createParentresizeHandler($splitPane) {
         var splitPane = $splitPane[0],
@@ -418,6 +422,9 @@ import { BloomApi } from "../../utils/bloomApi";
 
     function makeSnaps(splitPane) {
         snaps = [];
+        if (preciseMode) {
+            return;
+        }
         const firstChild = splitPane.firstElementChild;
         const firstChildSplit = getImagePercent(
             splitPane,
@@ -456,7 +463,8 @@ import { BloomApi } from "../../utils/bloomApi";
 
         const page = splitPane.closest(".bloom-page");
         const id = page.getAttribute("id");
-        BloomApi.get("pageList/prevPageSplit?id=" + id, result => {
+        BloomApi.get("editView/prevPageSplit?id=" + id, result => {
+            // We should get the result before significant mouse movement happens.
             if (!result.data || result.data === "none") {
                 return;
             }
@@ -465,6 +473,13 @@ import { BloomApi } from "../../utils/bloomApi";
                 label: "Matches previous page"
             });
         });
+
+        // These general purpose ones come last, so the others win if there is overlap
+        snaps.push({ snap: 25, label: "one quarter" });
+        snaps.push({ snap: 33.333333, label: "one third" });
+        snaps.push({ snap: 50, label: "one half" });
+        snaps.push({ snap: 66.666667, label: "two thirds" });
+        snaps.push({ snap: 75, label: "three-quarters" });
     }
 
     // If child is a split-pane-component containing a split-pane-container-inner
@@ -508,12 +523,8 @@ import { BloomApi } from "../../utils/bloomApi";
 
     // Snaps are defined in terms of the percent the user sees, the percent of the upper
     // partition. Note that the 'amount' values taken and returned by snapTo are
-    // instead the bottom partition.
-    let snaps = [
-        { snap: 25, label: "quarter" },
-        { snap: 50, label: "half" },
-        { snap: 75, label: "three-quarter" }
-    ];
+    // instead the bottom partition. (We don't use the intial value, but it sets a type.)
+    let snaps = [{ snap: 50, label: "half" }];
 
     function snapTo(amount, defaultLabel, parentHeight) {
         // We want to be within 4px.
@@ -528,11 +539,13 @@ import { BloomApi } from "../../utils/bloomApi";
             // We don't want that effect while dragging; we want to only snap
             // to a position that won't trigger the cursor being treated as outside
             // the splitter. So we snap in the range from just below to well above.
-            if (delta < 10 && delta > -1) {
+            // Not sure this is right yet. I've seen cases where delta < 14 worked,
+            // and cases where delta < 10 did not, to prevent the hover effects.
+            if (delta < 14 && delta > -8) {
                 const adjusted = 100 - snaps[i].snap;
                 return [
                     adjusted,
-                    snaps[i].label + " " + amountForDisplay(adjusted) + "%"
+                    snaps[i].label + "\x0a" + amountForDisplay(adjusted) + "%"
                 ];
             }
         }
@@ -579,11 +592,13 @@ import { BloomApi } from "../../utils/bloomApi";
         lastComponent.style.width = right;
     }
     function amountForDisplay(amount) {
-        return Math.round(10 * (100 - amount)) / 10;
+        // for displaying to the user, invert percentage (so higher  up the page is a lower number).
+        // Leave one decimal place in precise mode, none otherwise
+        if (preciseMode) return Math.round(10 * (100 - amount)) / 10;
+        return Math.round(100 - amount);
     }
 
     function setDividerTitle(divider, amount) {
-        // for displaying to the user, invert percentage (so higher  up the page is a lower number) leave only one decimal place
         divider.title = amountForDisplay(amount) + "%";
     }
 })(jQuery);

@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using System.Dynamic;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Windows.Forms;
+using System.Xml;
 using Bloom.Api;
 using Bloom.Book;
 using Bloom.Edit;
@@ -13,6 +15,7 @@ using Bloom.Utils;
 using L10NSharp;
 using SIL.IO;
 using SIL.Windows.Forms.Miscellaneous;
+using SIL.Xml;
 
 namespace Bloom.web.controllers
 {
@@ -43,6 +46,50 @@ namespace Bloom.web.controllers
 			apiHandler.RegisterEndpointHandler("editView/pasteImage", HandlePasteImage, true);
 			apiHandler.RegisterEndpointHandler("editView/sourceTextTab", HandleSourceTextTab, false, false);
 			apiHandler.RegisterEndpointHandler("edit/taskComplete", HandleTaskComplete, false, false);
+			apiHandler.RegisterEndpointHandler("editView/prevPageSplit", HandlePrevPageSplit, false);
+		}
+
+
+		/// <summary>
+		/// This one is for the snapping function on dragging origami splitters.
+		/// </summary>
+		/// <param name="request"></param>
+		private void HandlePrevPageSplit(ApiRequest request)
+		{
+			var id = request.RequiredParam("id");
+			IPage prevPage = null;
+			foreach (var page in request.CurrentBook.GetPages())
+			{
+				if (page.Id == id)
+				{
+					if (prevPage != null)
+					{
+						// prevPage is the one we want.
+						var topSplitPanes = prevPage.GetDivNodeForThisPage()
+							.SafeSelectNodes(
+								".//div[contains(@class, 'split-pane-component') and contains(@class, 'position-top')]")
+							.Cast<XmlElement>()
+							.ToArray();
+						// Enhance: this could reasonably work 
+						if (topSplitPanes.Length == 1)
+						{
+							var style = topSplitPanes[0].Attributes["style"]?.Value;
+							var matches = new Regex("bottom: (.*)%").Match(style);
+							if (matches.Success)
+							{
+								var split = matches.Groups[1].Value;
+								request.ReplyWithText(split);
+								return;
+							}
+						}
+					}
+					request.ReplyWithText("none");
+					return;
+				}
+
+				prevPage = page;
+			}
+			request.ReplyWithText("none");
 		}
 
 		private void HandleSourceTextTab(ApiRequest request)

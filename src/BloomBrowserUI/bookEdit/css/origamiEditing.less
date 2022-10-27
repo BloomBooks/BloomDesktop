@@ -54,6 +54,18 @@
     cursor: row-resize;
 }
 
+.origami-drag {
+    // will need to improve if we do vertical snaps; split-pane.js mousedown
+    // will need to add another class to tell us to do vertical.
+    // (Note: this is not fully effective as it only works where there is not a
+    // more specific rule at a lower level.)
+    cursor: row-resize;
+    .imageOverlayButton,
+    .editMetadataButton {
+        display: none;
+    }
+}
+
 .split-pane.horizontal-percent > .horizontal-divider {
     &:hover:after,
     &.dragged:after {
@@ -62,7 +74,11 @@
         bottom: 0;
         right: 0;
         z-index: 1000000;
-        color: @OrigamiActiveColor;
+        color: black;
+        padding: 5px 10px;
+        white-space: pre;
+        text-align: right;
+        background-color: #ffffff60;
     }
 }
 
