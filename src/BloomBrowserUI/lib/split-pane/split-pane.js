@@ -351,11 +351,15 @@ import theOneLocalizationManager from "../localizationManager/localizationManage
                 );
                 const amount1 = (bottom / splitPaneHeight) * 100;
                 const defaultLabel = amountForDisplay(amount1) + "%";
-                const [amount, label] = snapTo(
+                const [amount, label, snapped] = snapTo(
                     amount1,
                     defaultLabel,
                     splitPaneHeight
                 );
+                if (snapped) {
+                    divider.classList.add("snapped");
+                } else divider.classList.remove("snapped");
+
                 divider.title = label;
                 setBottom(firstComponent, divider, lastComponent, amount + "%");
                 $splitPane.resize();
@@ -424,7 +428,7 @@ import theOneLocalizationManager from "../localizationManager/localizationManage
     }
 
     function makeSnaps(splitPane) {
-        snaps = [];
+        snapPoints = [];
         if (preciseMode) {
             return;
         }
@@ -436,12 +440,8 @@ import theOneLocalizationManager from "../localizationManager/localizationManage
             false
         );
         if (firstChildSplit > 0) {
-            makeSnap(
-                firstChildSplit,
-                "MatchAspect",
-                "Matches image proportion"
-            );
-            makeSnap(
+            makeSnapPoint(firstChildSplit, "MatchImageAspect", "Fit image");
+            makeSnapPoint(
                 getImagePercent(splitPane, firstChild, true, true),
                 "Square",
                 "Square"
@@ -456,13 +456,13 @@ import theOneLocalizationManager from "../localizationManager/localizationManage
             false
         );
         if (lastChildSplit > 0) {
-            makeSnap(
+            makeSnapPoint(
                 100 - lastChildSplit,
-                "MatchAspect",
-                "Matches image proportion"
+                "MatchImageAspect",
+                "Fit image"
             );
             // Make the bottom panel square
-            makeSnap(
+            makeSnapPoint(
                 100 - getImagePercent(splitPane, firstChild, false, true),
                 "Square",
                 "Square"
@@ -476,29 +476,38 @@ import theOneLocalizationManager from "../localizationManager/localizationManage
             if (!result.data || result.data === "none") {
                 return;
             }
-            makeSnap(
+            makeSnapPoint(
                 100 - parseFloat(result.data),
-                "MatchPrev",
-                "Matches previous page"
+                "MatchPreviousPage",
+                "Matches previous page",
+                "🠈"
             );
         });
 
         // These general purpose ones come last, so the others win if there is overlap
-        makeSnap(25, "Quarter", "One quarter");
-        makeSnap(33.333333, "Third", "One third");
-        makeSnap(50, "Half", "One half");
-        makeSnap(66.666667, "TwoThirds", "Two thirds");
-        makeSnap(75, "ThreeQuarters", "Three quarters");
+        makeSnapPoint(25, undefined, "¼");
+        makeSnapPoint(33.333333, undefined, "⅓");
+        makeSnapPoint(50, undefined, "½");
+        makeSnapPoint(66.666667, undefined, "⅓");
+        makeSnapPoint(75, undefined, "⅔");
     }
 
-    function makeSnap(snap, id, label) {
-        const item = { snap, label };
-        snaps.push(item);
-        theOneLocalizationManager
-            .asyncGetText("EditTab.Snap." + id, label)
-            .done(result => {
-                item.label = result;
-            });
+    function makeSnapPoint(
+        snapPoint,
+        localizationId = null,
+        label = "",
+        prefixSymbol = "" // this is used to hold a unicode left-arrow that we don't want translators touching
+    ) {
+        const item = { snap: snapPoint, label };
+        snapPoints.push(item);
+
+        if (localizationId)
+            theOneLocalizationManager
+                .asyncGetText("EditTab.Snap." + localizationId, label)
+                .done(result => {
+                    item.label = prefixSymbol + " " + result;
+                });
+        else item.label = [prefixSymbol, label].join(" ");
     }
 
     // If child is a split-pane-component containing a split-pane-container-inner
@@ -543,14 +552,14 @@ import theOneLocalizationManager from "../localizationManager/localizationManage
     // Snaps are defined in terms of the percent the user sees, the percent of the upper
     // partition. Note that the 'amount' values taken and returned by snapTo are
     // instead the bottom partition. (We don't use the intial value, but it sets a type.)
-    let snaps = [{ snap: 50, label: "half" }];
+    let snapPoints = [{ snap: 50, label: "half" }];
 
     function snapTo(amount, defaultLabel, parentHeight) {
         // We want to be within 4px.
         // amount and snaps are percentages of parentHeight
         const amountPx = (amount * parentHeight) / 100;
-        for (let i = 0; i < snaps.length; i++) {
-            const snapPx = ((100 - snaps[i].snap) * parentHeight) / 100;
+        for (let i = 0; i < snapPoints.length; i++) {
+            const snapPx = ((100 - snapPoints[i].snap) * parentHeight) / 100;
             const delta = amountPx - snapPx;
             // If the mouse is below the splitter, the drag cursor goes away
             // and if there is an image below it the hover effects for the image
@@ -560,15 +569,25 @@ import theOneLocalizationManager from "../localizationManager/localizationManage
             // the splitter. So we snap in the range from just below to well above.
             // Not sure this is right yet. I've seen cases where delta < 14 worked,
             // and cases where delta < 10 did not, to prevent the hover effects.
-            if (delta < 14 && delta > -8) {
-                const adjusted = 100 - snaps[i].snap;
+            const splitCushion = 15;
+            const extraSplitCushionBelow = 6; // I didn't follow what JT said this was for
+            if (
+                delta < splitCushion + extraSplitCushionBelow &&
+                delta > -splitCushion
+            ) {
+                const adjusted = 100 - snapPoints[i].snap;
+
+                // for simple snap points like "33%", "%50%" etc we don't have a label
+                const labelAndNewline = snapPoints[i].label + "\x0a";
+
                 return [
                     adjusted,
-                    snaps[i].label + "\x0a" + amountForDisplay(adjusted) + "%"
+                    labelAndNewline + amountForDisplay(adjusted) + "%",
+                    true
                 ];
             }
         }
-        return [amount, defaultLabel];
+        return [amount, defaultLabel, false];
     }
 
     function pageXof(event) {

@@ -80,7 +80,11 @@
         // have newlines. Apparently it is necessary for them to work as we want.
         white-space: pre;
         text-align: right;
-        background-color: #ffffff60;
+        background-color: #B0B0B0BF;
+    }
+
+    &.snapped.dragged:after {
+        font-weight: bold;
     }
 }
 
@@ -88,6 +92,10 @@
 .origami-layout-mode .split-pane.horizontal-percent > .horizontal-divider,
 .horizontal-divider.dragged {
     border-bottom-color: @OrigamiActiveColor !important;
+
+    &.snapped {
+        border-bottom-style: solid;
+    }
 }
 
 .selector-links,

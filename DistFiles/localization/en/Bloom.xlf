@@ -1975,43 +1975,19 @@
         <source xml:lang="en">Saving...</source>
         <note>ID: EditTab.SavingNotification</note>
       </trans-unit>
-      <trans-unit id="EditTab.Snap.Half" sil:dynamic="true">
-        <source xml:lang="en">One half</source>
-        <note>ID: EditTab.Snap.Half</note>
+      <trans-unit id="EditTab.Snap.MatchImageAspect" sil:dynamic="true">
+        <source xml:lang="en">Fit image</source>
+        <note>ID: EditTab.Snap.MatchImageAspect</note>
+        <note>Explains why a splitter has snapped to a particular position. This position matches the proportion of the image so that it fits snuggly in the box.</note>
       </trans-unit>
-      <trans-unit id="EditTab.Snap.MatchAspect" sil:dynamic="true">
-        <source xml:lang="en">Matches image proportion</source>
-        <note>ID: EditTab.Snap.MatchAspect</note>
-        <note>Explains why a splitter has snapped to a particular position</note>
-      </trans-unit>
-      <trans-unit id="EditTab.Snap.MatchPrev" sil:dynamic="true">
+      <trans-unit id="EditTab.Snap.MatchPreviousPage" sil:dynamic="true">
         <source xml:lang="en">Matches previous page</source>
-        <note>ID: EditTab.Snap.MatchPrev</note>
-        <note>Explains why a splitter has snapped to a particular position</note>
-      </trans-unit>
-      <trans-unit id="EditTab.Snap.Quarter" sil:dynamic="true">
-        <source xml:lang="en">One quarter</source>
-        <note>ID: EditTab.Snap.Quarter</note>
-        <note>Describes the position that a splitter has snapped to</note>
-      </trans-unit>
-      <trans-unit id="EditTab.Snap.Third" sil:dynamic="true">
-        <source xml:lang="en">One third</source>
-        <note>ID: EditTab.Snap.Third</note>
-        <note>Describes the position that a splitter has snapped to</note>
+        <note>ID: EditTab.Snap.MatchPreviousPage</note>
+        <note>Explains why a splitter has snapped to a particular position. People often want all the pages to have the same layout, and this one helps to do that.</note>
       </trans-unit>
       <trans-unit id="EditTab.Snap.Square" sil:dynamic="true">
-        <source xml:lang="en">One half</source>
+        <source xml:lang="en">Square</source>
         <note>ID: EditTab.Snap.Square</note>
-        <note>Describes the position that a splitter has snapped to</note>
-      </trans-unit>
-      <trans-unit id="EditTab.Snap.ThreeQuarters" sil:dynamic="true">
-        <source xml:lang="en">Three quarters</source>
-        <note>ID: EditTab.Snap.ThreeQuarters</note>
-        <note>Describes the position that a splitter has snapped to</note>
-      </trans-unit>
-      <trans-unit id="EditTab.Snap.TwoThirds" sil:dynamic="true">
-        <source xml:lang="en">Two thirds</source>
-        <note>ID: EditTab.Snap.TwoThirds</note>
         <note>Describes the position that a splitter has snapped to</note>
       </trans-unit>
       <trans-unit id="EditTab.SourceBubbleCopied" sil:dynamic="true">
