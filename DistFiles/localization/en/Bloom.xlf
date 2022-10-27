@@ -3616,9 +3616,9 @@
         <note>{0} is a font name</note>
       </trans-unit>
       <trans-unit id="PublishTab.Android.CoverColor" sil:dynamic="true">
-          <source xml:lang="en">Cover Color</source>
-          <note>ID: PublishTab.Android.CoverColor</note>
-          <note>The heading at the top of the Settings section, which shows a thumbnail of the front cover and can be used to change the underlying page color.</note>
+        <source xml:lang="en">Cover Color</source>
+        <note>ID: PublishTab.Android.CoverColor</note>
+        <note>The heading at the top of the Settings section, which shows a thumbnail of the front cover and can be used to change the underlying page color.</note>
       </trans-unit>
       <trans-unit id="PublishTab.Android.GetBloomReader" sil:dynamic="true">
         <source xml:lang="en">Get Bloom Reader App</source>
@@ -4013,21 +4013,21 @@
       <trans-unit id="PublishTab.Epub.Fixed">
         <source xml:lang="en">Fixed – ePUB 3</source>
         <note>ID: PublishTab.Epub.Fixed</note>
-            </trans-unit>
-            <trans-unit id="PublishTab.Epub.Fixed.Description">
-              <source xml:lang="en">Ask ePUB reader to show pages exactly like you see them in Bloom</source>
-              <note>ID: PublishTab.Epub.Fixed.Description</note>
-            </trans-unit>
-            <trans-unit id="PublishTab.Epub.Flowable">
-              <source xml:lang="en">Flowable</source>
-              <note>ID: PublishTab.Epub.Flowable</note>
-            </trans-unit>
-            <trans-unit id="PublishTab.Epub.Flowable.Description">
-              <source xml:lang="en">Allow ePUB readers to lay out images and text however they want. The user is more likely to be able to increase font size. Custom page layouts will not look good. This mode is not available if your book has overlay pages (comics).</source>
-              <note>ID: PublishTab.Epub.Flowable.Description</note>
-            </trans-unit>
-            <trans-unit id="PublishTab.Epub.Mode">
-              <source xml:lang="en">ePUB mode</source>
+      </trans-unit>
+      <trans-unit id="PublishTab.Epub.Fixed.Description">
+        <source xml:lang="en">Ask ePUB reader to show pages exactly like you see them in Bloom</source>
+        <note>ID: PublishTab.Epub.Fixed.Description</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Epub.Flowable">
+        <source xml:lang="en">Flowable</source>
+        <note>ID: PublishTab.Epub.Flowable</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Epub.Flowable.Description">
+        <source xml:lang="en">Allow ePUB readers to lay out images and text however they want. The user is more likely to be able to increase font size. Custom page layouts will not look good. This mode is not available if your book has overlay pages (comics).</source>
+        <note>ID: PublishTab.Epub.Flowable.Description</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Epub.Mode">
+        <source xml:lang="en">ePUB mode</source>
         <note>ID: PublishTab.Epub.Mode</note>
         <note>a heading for two choices, 'Fixed – ePUB 3' or Flowable</note>
       </trans-unit>
@@ -4307,7 +4307,7 @@
         <note>Header on Audio or Video Publishing page</note>
       </trans-unit>
       <trans-unit id="PublishTab.RecordVideo.ChangeScale100">
-        <source xml:lang="en">Please change your display scaling to 100% while making videos. Without this, videos will come out at the wrong resolution, or not record at all.</source>
+        <source xml:lang="en">Please change your display scaling to 100% while making videos.</source>
         <note>ID: PublishTab.RecordVideo.ChangeScale100</note>
       </trans-unit>
       <trans-unit id="PublishTab.RecordVideo.CheckRecording">
@@ -5961,9 +5961,9 @@ Do you want to go ahead?</note>
         <note>ID: TemplateBooks.Quiz.HintBubble.Question</note>
       </trans-unit>
       <trans-unit id="TopicChooser.Title" sil:dynamic="true">
-          <source xml:lang="en">Choose Topic</source>
-          <note>ID: TopicChooser.Title</note>
-          <note>Title of the topics chooser dialog in the edit tab</note>
+        <source xml:lang="en">Choose Topic</source>
+        <note>ID: TopicChooser.Title</note>
+        <note>Title of the topics chooser dialog in the edit tab</note>
       </trans-unit>
       <trans-unit id="Topics.Agriculture" sil:dynamic="true">
         <source xml:lang="en">Agriculture</source>
