@@ -1975,6 +1975,10 @@
         <source xml:lang="en">Saving...</source>
         <note>ID: EditTab.SavingNotification</note>
       </trans-unit>
+      <trans-unit id="EditTab.Snap.Hint" sil:dynamic="true">
+        <source xml:lang="en">CTRL for precision. Double click to match previous page.</source>
+        <note>ID: EditTab.Snap.Hint</note>
+      </trans-unit>
       <trans-unit id="EditTab.Snap.MatchImageAspect" sil:dynamic="true">
         <source xml:lang="en">Fit image</source>
         <note>ID: EditTab.Snap.MatchImageAspect</note>

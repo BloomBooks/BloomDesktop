@@ -135,6 +135,14 @@ import theOneLocalizationManager from "../localizationManager/localizationManage
             return; // typically drag in progress
         }
         const divider = event.currentTarget;
+        theOneLocalizationManager
+            .asyncGetText(
+                "EditTab.Snap.Hint",
+                "CTRL for precision. Double click to match previous page."
+            )
+            .done(result => {
+                divider.title = result;
+            });
         if (isSnappableSplitter(divider)) {
             makeSnaps(divider.parentElement, () => {
                 const dividerStyle = divider.getAttribute("style");
@@ -158,7 +166,7 @@ import theOneLocalizationManager from "../localizationManager/localizationManage
                         // For hover effect it's better not to show as snapped.
                         finalLabel = defaultLabel;
                     }
-                    divider.title = finalLabel;
+                    divider.setAttribute("data-splitter-label", finalLabel);
                 }
             });
         }
@@ -192,7 +200,10 @@ import theOneLocalizationManager from "../localizationManager/localizationManage
                     )[0];
                     divider.classList.add("snapped");
 
-                    divider.title = prevPageSplit.label;
+                    divider.setAttribute(
+                        "data-splitter-label",
+                        prevPageSplit.label
+                    );
                     if (isHorizontal(divider)) {
                         setBottom(
                             firstComponent,
@@ -455,7 +466,7 @@ import theOneLocalizationManager from "../localizationManager/localizationManage
                     divider.classList.add("snapped");
                 } else divider.classList.remove("snapped");
 
-                divider.title = label;
+                divider.setAttribute("data-splitter-label", label);
                 setBottom(firstComponent, divider, lastComponent, amount + "%");
                 $splitPane.resize();
             };
@@ -527,7 +538,7 @@ import theOneLocalizationManager from "../localizationManager/localizationManage
                     divider.classList.add("snapped");
                 } else divider.classList.remove("snapped");
 
-                divider.title = label;
+                divider.setAttribute("data-splitter-label", label);
                 setRight(firstComponent, divider, lastComponent, amount + "%");
                 $splitPane.resize();
             };
@@ -802,6 +813,9 @@ import theOneLocalizationManager from "../localizationManager/localizationManage
     }
 
     function setDividerTitle(divider, amount) {
-        divider.title = amountForDisplay(amount) + "%";
+        divider.setAttribute(
+            "data-splitter-label",
+            amountForDisplay(amount) + "%"
+        );
     }
 })(jQuery);

@@ -32,7 +32,7 @@
 .split-pane.vertical-percent > .vertical-divider {
     &:hover:after,
     &.dragged:after {
-        content: attr(title);
+        content: attr(data-splitter-label);
         position: absolute;
         left: 5px;
         z-index: 1000000;
@@ -79,7 +79,7 @@
 .split-pane.horizontal-percent > .horizontal-divider {
     &:hover:after,
     &.dragged:after {
-        content: attr(title);
+        content: attr(data-splitter-label);
         position: absolute;
         bottom: 0;
         right: 0;
