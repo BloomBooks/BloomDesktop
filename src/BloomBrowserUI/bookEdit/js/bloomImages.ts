@@ -58,6 +58,25 @@ export function SetupImagesInContainer(container) {
                 });
         });
 
+    // Add the event listener to handle control/alt being pressed.
+    // We have a pretty interesting way of listening for these keydown/keyup events.
+    // I initially tried putting the event listeners on the bloom-imageContainer,
+    // but that didn't work reliably.
+    // Keyboard events don't fire for every element, but only certain valid ones.
+    // For the short answer, divs with contenteditable=true meet the criteria.
+    // (Although... I tested what happens with slapping contenteditable=true onto the bloom-imageContainer,
+    // and I don't think it helped)
+    // To get around this, I found the following strategy:
+    // 1) place the keydown listener as broadly as we can... that's {document}.
+    // 2) When a key is pressed, the listener will fire and some child element of the document will be the event target.
+    // 3) Oddly enough however, the same trick doesn't work for "keyup" (if you put the listener on {document}, it doesn't fire).
+    // 4) Instead, we put the "keyup" event listener on whatever element fired the "keydown" event,
+    //    since whatever element that is should presumably be getting the keyup event too.
+    //    This could be the main text box actually, and that's fine.
+    //    It could also be the translation qtip way off screen (maybe only for pages without a text box?),
+    //    but even that is sufficient for our purposes.
+    document.addEventListener("keydown", ctrlAltKeyDownListener);
+
     $(container)
         .find("img")
         .each(function() {
@@ -82,6 +101,50 @@ export function SetupImage(image: JQuery) {
         }
         image.removeAttribute("width");
         image.removeAttribute("height");
+    }
+}
+
+/**
+ * When the Ctrl or Alt key is pressed, hide the image editing buttons until the key is released.
+ */
+function ctrlAltKeyDownListener(event: KeyboardEvent) {
+    if ((event.ctrlKey || event.altKey) && event.target) {
+        event.target.addEventListener("keyup", ctrlAltKeyUpListener);
+
+        // Note (paranoia): Add this class conservatively (ensure event.target is good first),
+        // remove it liberally (regardless of event.target),
+        // Since if it gets stuck on, the image editing buttons won't come back (unless SetupImageContainer is re-run)
+        document
+            .querySelectorAll(
+                ".bloom-imageContainer:not(.ui-suppressImageButtons)"
+            )
+            .forEach(imageContainer => {
+                imageContainer.classList.add("ui-suppressImageButtons");
+            });
+    }
+}
+
+/**
+ * When the last Ctrl or Alt key is released, show the image editing buttons again (if they still exist)
+ */
+function ctrlAltKeyUpListener(event: KeyboardEvent) {
+    // event.ctrlKey/event.altKey are normally false when a single Control or Alt button is released
+    // (unless the user pressed two ctrl/alt keys, and then released one of them).
+    // We don't want to fire the event until all of the ctrl/alt keys are released.
+    const isCtrlOrAltReleased = event.key === "Control" || event.key === "Alt";
+    const areAnyOtherCtrlOrAltKeysDown = event.ctrlKey || event.altKey;
+
+    if (isCtrlOrAltReleased && !areAnyOtherCtrlOrAltKeysDown) {
+        document
+            .querySelectorAll(".bloom-imageContainer.ui-suppressImageButtons")
+            .forEach(imageContainer => {
+                imageContainer.classList.remove("ui-suppressImageButtons");
+            });
+
+        // De-register ourself as an event handler.
+        // We're no longer needed until the next time ctrl/alt is pressed,
+        // and the user could type a bunch of things in a text box, which we don't need to bother listening to.
+        event.target?.removeEventListener("keyup", ctrlAltKeyUpListener);
     }
 }
 
@@ -214,19 +277,38 @@ export function addImageEditingButtons(containerDiv: HTMLElement): void {
     $containerDiv.addClass("hoverUp");
 }
 
-export function removeImageEditingButtons(containerDiv: HTMLElement): void {
-    const $containerDiv = $(containerDiv);
-    $containerDiv.removeClass("hoverUp");
-    $containerDiv.find(".imageOverlayButton").each(function() {
-        // leave the problem indicator visible
-        if (!$(this).hasClass("imgMetadataProblem")) {
-            $(this).remove();
-        }
+/**
+ * Gets a NodeListOf of the image editing button elements, which can be iterated through.
+ * @param containerDiv: The .bloom-imageContainer which contains the image editing buttons.
+ * @param options: An object with the following fields:
+ *    skipProblemIndicator: true to omit the imgMetadataProblem element(s) from the list
+ */
+function getImageEditingButtons(
+    containerDiv: Element,
+    options: {
+        skipProblemIndicator: boolean;
+    }
+): NodeListOf<Element> {
+    // NOTE: imgMetadataProblem isn't actually an imageOverlayButton,
+    // so strictly speaking, we don't need to do any special checks,
+    // but let's check anyway just in case it ever receives the imageOverlayButton class in the future
+    const selector =
+        ".imageOverlayButton" +
+        (options.skipProblemIndicator ? ":not(.imgMetadataProblem)" : "");
+    return containerDiv.querySelectorAll(selector);
+}
+
+export function removeImageEditingButtons(containerDiv: Element): void {
+    containerDiv.classList.remove("hoverUp");
+    getImageEditingButtons(containerDiv, {
+        skipProblemIndicator: true // leave the problem indicator visible
+    }).forEach(button => {
+        button.remove();
     });
 }
 
 export function tryRemoveImageEditingButtons(
-    containerDiv: HTMLElement | undefined
+    containerDiv: Element | undefined
 ): void {
     if (containerDiv) {
         removeImageEditingButtons(containerDiv);
@@ -248,6 +330,9 @@ function SetupImageContainer(containerDiv: HTMLElement) {
     } else {
         containerDiv.classList.remove("hoverUp");
     }
+
+    // Just in case, ensure prior state is cleaned up
+    containerDiv.classList.remove("ui-suppressImageButtons");
 
     // Now that we can overlay things on top of images, we don't want to show the flower placeholder
     // if the image container contains an overlay.
