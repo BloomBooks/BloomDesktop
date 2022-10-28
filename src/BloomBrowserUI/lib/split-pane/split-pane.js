@@ -488,8 +488,8 @@ import theOneLocalizationManager from "../localizationManager/localizationManage
         makeSnapPoint(25, undefined, "¼");
         makeSnapPoint(33.333333, undefined, "⅓");
         makeSnapPoint(50, undefined, "½");
-        makeSnapPoint(66.666667, undefined, "⅓");
-        makeSnapPoint(75, undefined, "⅔");
+        makeSnapPoint(66.666667, undefined, "⅔");
+        makeSnapPoint(75, undefined, "¾");
     }
 
     function makeSnapPoint(
@@ -561,18 +561,15 @@ import theOneLocalizationManager from "../localizationManager/localizationManage
         for (let i = 0; i < snapPoints.length; i++) {
             const snapPx = ((100 - snapPoints[i].snap) * parentHeight) / 100;
             const delta = amountPx - snapPx;
-            // If the mouse is below the splitter, the drag cursor goes away
-            // and if there is an image below it the hover effects for the image
-            // show up. But it can be quite some distance above before this happens.
-            // We don't want that effect while dragging; we want to only snap
-            // to a position that won't trigger the cursor being treated as outside
-            // the splitter. So we snap in the range from just below to well above.
-            // Not sure this is right yet. I've seen cases where delta < 14 worked,
-            // and cases where delta < 10 did not, to prevent the hover effects.
+            // The actual dividiing line...the point that is, for example, 1/3 of the
+            // distance from the top of the parent to the bottom, which we are actually
+            // comparing to the mouse pointer position...is the bottom of
+            // the visible splitter. So it looks more uniform if snapping takes effect
+            // a little further above the line than below it.
             const splitCushion = 15;
-            const extraSplitCushionBelow = 6; // I didn't follow what JT said this was for
+            const extraSplitCushionAbove = 6;
             if (
-                delta < splitCushion + extraSplitCushionBelow &&
+                delta < splitCushion + extraSplitCushionAbove &&
                 delta > -splitCushion
             ) {
                 const adjusted = 100 - snapPoints[i].snap;
