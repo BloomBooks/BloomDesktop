@@ -39,7 +39,10 @@ export interface IColorPickerDialogProps {
     palette: BloomPalette;
     isForOverlay?: boolean;
     onChange: (color: IColorInfo) => void;
+    onDefaultClick?: () => void;
     onInputFocus: (input: HTMLElement) => void;
+    includeDefault?: boolean;
+    //defaultColor?: IColorInfo; eventually we'll need this
 }
 
 let externalSetOpen: React.Dispatch<React.SetStateAction<boolean>>;
@@ -301,6 +304,9 @@ const ColorPickerDialog: React.FC<IColorPickerDialogProps> = props => {
                         swatchColors={swatchColorArray}
                         noAlphaSlider={props.noAlphaSlider}
                         noGradientSwatches={props.noGradientSwatches}
+                        includeDefault={props.includeDefault}
+                        onDefaultClick={props.onDefaultClick}
+                        //defaultColor={props.defaultColor}
                     />
                 </DialogMiddle>
                 <DialogBottomButtons>

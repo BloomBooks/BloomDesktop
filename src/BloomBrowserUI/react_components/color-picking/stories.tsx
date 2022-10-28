@@ -18,8 +18,9 @@ import { BloomPalette, TextBackgroundColors } from "./bloomPalette";
 import BloomSketchPicker from "./bloomSketchPicker";
 import tinycolor = require("tinycolor2");
 import { ColorResult } from "react-color";
-import { Typography } from "@material-ui/core";
+import { FormControl, InputLabel, Typography } from "@material-ui/core";
 import { HexColorInput } from "./hexColorInput";
+import { ColorBar } from "../../bookEdit/toolbox/overlay/colorBar";
 
 const mainBlockStyles: React.CSSProperties = {
     width: 300,
@@ -52,11 +53,12 @@ const initialOverDivStyles: React.CSSProperties = {
     position: "absolute",
     top: 10,
     left: 15,
-    width: 120,
+    width: 140,
     height: 70,
     border: "1px solid red",
     zIndex: 2,
-    background: "#fff"
+    background: "#fff",
+    color: "black"
 };
 
 storiesOf("Colors", module)
@@ -206,7 +208,7 @@ storiesOf("Colors", module)
                         test transparency.
                     </div>
                     <div id="set-my-background" style={overDivStyles}>
-                        Set my text and background colors with the button
+                        Set my background colors with the button
                     </div>
                     <div id="modal-container" />
                     <BloomButton
@@ -222,6 +224,201 @@ storiesOf("Colors", module)
                     >
                         Open Color Picker Dialog
                     </BloomButton>
+                </div>
+            );
+        })
+    )
+    .add("Color Picker w/Default", () =>
+        React.createElement(() => {
+            const [overDivStyles, setOverDivStyles] = useState(
+                initialOverDivStyles
+            );
+            const defaultColorInfo: IColorInfo = {
+                colors: ["#ffbf00"],
+                opacity: 1
+            };
+            const [
+                chooserCurrentTextColor,
+                setChooserCurrentTextColor
+            ] = useState<IColorInfo>({
+                name: "black",
+                colors: ["#000000"],
+                opacity: 1
+            });
+            const handleColorChange = (color: IColorInfo) => {
+                console.log("Color change:");
+                console.log(
+                    `  ${color.name}: ${color.colors[0]}, ${color.colors[1]}, ${color.opacity}`
+                );
+                // set text color
+                setOverDivStyles({
+                    ...overDivStyles,
+                    color: getBackgroundColorCssFromColorInfo(color)
+                });
+                setChooserCurrentTextColor(color);
+            };
+
+            const colorPickerDialogProps: IColorPickerDialogProps = {
+                localizedTitle: "Color Picker w/ Default",
+                initialColor: chooserCurrentTextColor,
+                palette: BloomPalette.Text,
+                onChange: color => handleColorChange(color),
+                onInputFocus: () => {},
+                includeDefault: true,
+                onDefaultClick: () => {
+                    alert("clicked Default");
+                }
+                //defaultColor: defaultColorInfo
+            };
+
+            return (
+                <div style={mainBlockStyles}>
+                    <div id="background-image" style={backDivStyles}>
+                        I am a background "image" with lots of text so we can
+                        test transparency.
+                    </div>
+                    <div id="set-my-background" style={overDivStyles}>
+                        Set my text color with the button
+                    </div>
+                    <div id="modal-container" />
+                    <BloomButton
+                        onClick={() =>
+                            showColorPickerDialog(
+                                colorPickerDialogProps,
+                                document.getElementById("modal-container")
+                            )
+                        }
+                        enabled={true}
+                        hasText={true}
+                        l10nKey={"dummyKey"}
+                    >
+                        Open Color Picker Dialog
+                    </BloomButton>
+                </div>
+            );
+        })
+    )
+    .add("Color Bars", () =>
+        React.createElement(() => {
+            const transparentColorInfo = {
+                colors: ["#000"],
+                opacity: 0
+            };
+            const partialTransparentColorInfo = {
+                colors: ["#d00a00"],
+                opacity: 0.6
+            };
+            const defaultTextColorInfo: IColorInfo = {
+                colors: ["#ffbf00"],
+                opacity: 1
+            };
+
+            return (
+                <div
+                    css={css`
+                        display: flex;
+                        flex-direction: column;
+                        width: 300px;
+                        height: 400px;
+                    `}
+                >
+                    <div
+                        id="toolbox-background"
+                        css={css`
+                            position: relative;
+                            background: rgb(46, 46, 46);
+                            width: 200px;
+                            height: 100%;
+                            border: 1px solid black;
+                        `}
+                    />
+                    <form
+                        css={css`
+                            position: absolute;
+                            top: 20px;
+                            width: 188px;
+                            margin-left: 6px;
+                            display: flex;
+                            flex-direction: column;
+                            div {
+                                display: inline-flex;
+                            }
+                            & > div {
+                                margin-top: 10px;
+                                label {
+                                    position: unset;
+                                }
+                            }
+                        `}
+                    >
+                        <FormControl>
+                            <InputLabel
+                                css={css`
+                                    color: white !important;
+                                `}
+                                shrink={true}
+                                htmlFor="background-color-bar"
+                            >
+                                Background Color
+                            </InputLabel>
+                            <ColorBar
+                                id="background-color-bar"
+                                onClick={() => {}}
+                                colorInfo={transparentColorInfo}
+                                text="100% Transparent"
+                            />
+                        </FormControl>
+                        <FormControl>
+                            <InputLabel
+                                css={css`
+                                    color: white !important;
+                                `}
+                                shrink={true}
+                                htmlFor="partial-background-color-bar"
+                            >
+                                Background Color
+                            </InputLabel>
+                            <ColorBar
+                                id="partial-background-color-bar"
+                                onClick={() => {}}
+                                colorInfo={partialTransparentColorInfo}
+                                text="40% Transparent"
+                            />
+                        </FormControl>
+                        <FormControl>
+                            <InputLabel
+                                css={css`
+                                    color: white !important;
+                                `}
+                                shrink={true}
+                                htmlFor="text-color-bar"
+                            >
+                                Text Color
+                            </InputLabel>
+                            <ColorBar
+                                id="text-color-bar"
+                                onClick={() => {}}
+                                colorInfo={defaultTextColorInfo}
+                            />
+                        </FormControl>
+                        <FormControl>
+                            <InputLabel
+                                css={css`
+                                    color: white !important;
+                                `}
+                                shrink={true}
+                                htmlFor="default-color-bar"
+                            >
+                                Text Color
+                            </InputLabel>
+                            <ColorBar
+                                id="default-color-bar"
+                                onClick={() => {}}
+                                colorInfo={defaultTextColorInfo}
+                                isDefault={true}
+                            />
+                        </FormControl>
+                    </form>
                 </div>
             );
         })

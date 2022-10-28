@@ -25,6 +25,11 @@ import {
     tryRemoveImageEditingButtons
 } from "./bloomImages";
 
+export interface ITextColorInfo {
+    color: string;
+    isDefault: boolean;
+}
+
 const kComicalGeneratedClass: string = "comical-generated";
 // We could rename this class to "bloom-overPictureElement", but that would involve a migration.
 // For now we're keeping this name for backwards-compatibility, even though now the element could be
@@ -681,6 +686,7 @@ export class BubbleManager {
     }
 
     // Set the color of the text in all of the active bubble family's TextOverPicture boxes.
+    // If hexOrRgbColor is empty string, we are setting the bubble to use the style default.
     public setTextColor(hexOrRgbColor: string) {
         const activeEl = theOneBubbleManager.getActiveElement();
         if (activeEl) {
@@ -697,23 +703,57 @@ export class BubbleManager {
     }
 
     private setTextColorInternal(hexOrRgbColor: string, element: HTMLElement) {
+        // BL-11621: We are in the process of moving to putting the Overlay text color on the inner
+        // bloom-editables. So we clear any color on the textOverPicture div and set it on all of the
+        // inner bloom-editables.
         const topBox = element.closest(
             kTextOverPictureSelector
         ) as HTMLDivElement;
-        topBox.style.color = hexOrRgbColor;
+        topBox.style.color = "";
+        const editables = topBox.getElementsByClassName("bloom-editable");
+        for (let i = 0; i < editables.length; i++) {
+            const editableElement = editables[i] as HTMLElement;
+            editableElement.style.color = hexOrRgbColor;
+        }
     }
 
-    public getTextColor(): string {
+    public getTextColorInformation(): ITextColorInfo {
         const activeEl = theOneBubbleManager.getActiveElement();
         let textColor = "";
+        let isDefaultStyleColor = false;
         if (activeEl) {
             const topBox = activeEl.closest(
                 kTextOverPictureSelector
             ) as HTMLDivElement;
+            // const allUserStyles = StyleEditor.GetFormattingStyleRules(
+            //     topBox.ownerDocument
+            // );
             const style = topBox.style;
             textColor = style && style.color ? style.color : "";
+            // We are in the process of moving to putting the Overlay text color on the inner
+            // bloom-editables. So if the textOverPicture div didn't have a color, check the inner
+            // bloom-editables.
+            if (textColor === "") {
+                const firstEditable = topBox.getElementsByClassName(
+                    "bloom-editable"
+                )[0] as HTMLElement;
+                const colorStyle = firstEditable.style.color;
+                if (colorStyle) {
+                    textColor = colorStyle;
+                } else {
+                    textColor = this.getDefaultStyleTextColor(firstEditable);
+                    isDefaultStyleColor = true;
+                }
+            }
         }
-        return textColor;
+        return { color: textColor, isDefault: isDefaultStyleColor };
+    }
+
+    // Returns the computed color of the text, which in the absence of a color style from the
+    // Overlay Tool will be from the Bubble-style (set in the StyleEditor).
+    // An unfortunate, but greatly simplifying, use of JQuery.
+    public getDefaultStyleTextColor(firstEditable: HTMLElement): string {
+        return $(firstEditable).css("color");
     }
 
     // This gives us the patriarch (farthest ancestor) bubble of a family of bubbles.
@@ -1908,9 +1948,9 @@ export class BubbleManager {
         // Make sure that the child inherits any non-default text color from the parent bubble
         // (which must be the active element).
         this.setActiveElement(parentElement);
-        const parentTextColor = this.getTextColor();
-        if (parentTextColor !== "") {
-            this.setTextColorInternal(parentTextColor, childElement);
+        const parentTextColor = this.getTextColorInformation();
+        if (!parentTextColor.isDefault) {
+            this.setTextColorInternal(parentTextColor.color, childElement);
         }
 
         Comical.initializeChild(childElement, parentElement);
