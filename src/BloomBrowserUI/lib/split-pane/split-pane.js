@@ -20,6 +20,12 @@ import theOneLocalizationManager from "../localizationManager/localizationManage
         $splitPanes
             .children(".split-pane-divider")
             .bind("mousedown touchstart", mousedownHandler);
+        $splitPanes
+            .children(".split-pane-divider")
+            .bind("mouseenter", mouseenterHandler);
+        $splitPanes
+            .children(".split-pane-divider")
+            .bind("dblclick", mousedblclickHandler);
         setTimeout(function() {
             // Doing this later because of an issue with Chrome (v23.0.1271.64) returning split-pane width = 0
             // and triggering multiple resize events when page is being opened from an <a target="_blank"> .
@@ -102,7 +108,6 @@ import theOneLocalizationManager from "../localizationManager/localizationManage
             $splitPane = $divider.parent(),
             $resizeShim = $divider.siblings(".split-pane-resize-shim");
         $resizeShim.show();
-        preciseMode = event.ctrlKey;
         $divider.addClass("dragged");
         if (isTouchEvent) {
             $divider.addClass("touch");
@@ -118,6 +123,69 @@ import theOneLocalizationManager from "../localizationManager/localizationManage
             $resizeShim.hide();
             document.body.classList.remove("origami-drag");
         });
+    }
+
+    function mouseenterHandler(event) {
+        if (event.buttons != 0) {
+            return; // typically drag in progress
+        }
+        const divider = event.currentTarget;
+        if (divider.parentElement.classList.contains("horizontal-percent")) {
+            makeSnaps(divider.parentElement, () => {
+                const dividerStyle = divider.getAttribute("style");
+                const match = dividerStyle.match(/bottom: ([0-9.]*)%/);
+                if (match) {
+                    const amount1 = parseFloat(match[1]);
+                    const defaultLabel = amountForDisplay(amount1) + "%";
+                    // In mouse enter, we'll always show a snap if we are exactly at it.
+                    preciseMode = false;
+                    const [amount, label, snapped] = snapTo(
+                        amount1,
+                        defaultLabel,
+                        divider.parentElement.offsetHeight
+                    );
+                    let finalLabel = label;
+                    if (snapped && Math.abs(amount - amount1) > 0.1) {
+                        // This position would snap, but not to where the divider now is.
+                        // For hover effect it's better not to show as snapped.
+                        finalLabel = defaultLabel;
+                    }
+                    divider.title = finalLabel;
+                }
+            });
+        }
+    }
+
+    function mousedblclickHandler(event) {
+        const divider = event.currentTarget;
+        if (divider.parentElement.classList.contains("horizontal-percent")) {
+            makeSnaps(divider.parentElement, () => {
+                const prevPageSplit = snapPoints.find(
+                    x => x.id === "MatchPreviousPage"
+                );
+                if (prevPageSplit) {
+                    // This code is similar enough to parts of createMouseMove to be annoying,
+                    // but just different enough to make it difficult to pull out the bits we need.
+                    const $splitPane = $(divider.parentElement);
+                    const firstComponent = $splitPane.children(
+                        ".split-pane-component:first"
+                    )[0];
+                    const lastComponent = $splitPane.children(
+                        ".split-pane-component:last"
+                    )[0];
+                    divider.classList.add("snapped");
+
+                    divider.title = prevPageSplit.label;
+                    setBottom(
+                        firstComponent,
+                        divider,
+                        lastComponent,
+                        100 - prevPageSplit.snap + "%"
+                    );
+                    $splitPane.resize();
+                }
+            });
+        }
     }
     // True if ctrl was held down when clicking the splitter. Disables snapping
     // and displays measurements more precisely.
@@ -342,6 +410,7 @@ import theOneLocalizationManager from "../localizationManager/localizationManage
             makeSnaps(splitPane);
             return function(event) {
                 event.preventDefault();
+                preciseMode = event.ctrlKey;
                 const bottom = Math.min(
                     Math.max(
                         lastComponentMinHeight,
@@ -427,11 +496,13 @@ import theOneLocalizationManager from "../localizationManager/localizationManage
         }
     }
 
-    function makeSnaps(splitPane) {
+    // Make the snap points that should be used for the specified pane.
+    // Invokes the callback (if any) when all snap points have been added.
+    // (Some require async calls before they can be computed.)
+    // (In an ideal world, we'd do this with promise or async, but BloomApi.get
+    // doesn't use that so it's easier just to pass a callback.)
+    function makeSnaps(splitPane, callback) {
         snapPoints = [];
-        if (preciseMode) {
-            return;
-        }
         const firstChild = splitPane.firstElementChild;
         const firstChildSplit = getImagePercent(
             splitPane,
@@ -471,16 +542,25 @@ import theOneLocalizationManager from "../localizationManager/localizationManage
 
         const page = splitPane.closest(".bloom-page");
         const id = page.getAttribute("id");
+        // capture the length now (i.e., we want to insert the previous page one, if any,
+        // before the general-purpose ones)
+        const prevPageIndex = snapPoints.length;
         BloomApi.get("editView/prevPageSplit?id=" + id, result => {
             // We should get the result before significant mouse movement happens.
             if (!result.data || result.data === "none") {
+                if (callback) callback();
                 return;
             }
+            // Wants to be inserted at the current length, even though this will happen later
+            // when the promise is fulfilled. (We want this to have less priority than
+            // matching the aspect ratio, but more than matching one of the arbitrary splits.)
             makeSnapPoint(
                 100 - parseFloat(result.data),
-                "MatchPreviousPage",
+                "MatchPreviousPage", // note: ID also used to find in list of snap points
                 "Matches previous page",
-                "🠈"
+                "🠈",
+                prevPageIndex,
+                callback
             );
         });
 
@@ -496,16 +576,23 @@ import theOneLocalizationManager from "../localizationManager/localizationManage
         snapPoint,
         localizationId = null,
         label = "",
-        prefixSymbol = "" // this is used to hold a unicode left-arrow that we don't want translators touching
+        prefixSymbol = "", // this is used to hold a unicode left-arrow that we don't want translators touching
+        index = -1, // where to insert, or -1 for end
+        callback
     ) {
-        const item = { snap: snapPoint, label };
-        snapPoints.push(item);
+        const item = { snap: snapPoint, label, id: localizationId };
+        if (index >= 0) {
+            snapPoints.splice(index, 0, item);
+        } else {
+            snapPoints.push(item);
+        }
 
         if (localizationId)
             theOneLocalizationManager
                 .asyncGetText("EditTab.Snap." + localizationId, label)
                 .done(result => {
                     item.label = prefixSymbol + " " + result;
+                    if (callback) callback();
                 });
         else item.label = [prefixSymbol, label].join(" ");
     }
@@ -552,9 +639,12 @@ import theOneLocalizationManager from "../localizationManager/localizationManage
     // Snaps are defined in terms of the percent the user sees, the percent of the upper
     // partition. Note that the 'amount' values taken and returned by snapTo are
     // instead the bottom partition. (We don't use the intial value, but it sets a type.)
-    let snapPoints = [{ snap: 50, label: "half" }];
+    let snapPoints = [{ snap: 50, label: "half", id: "Half" }];
 
     function snapTo(amount, defaultLabel, parentHeight) {
+        if (preciseMode) {
+            return [amount, defaultLabel, false];
+        }
         // We want to be within 4px.
         // amount and snaps are percentages of parentHeight
         const amountPx = (amount * parentHeight) / 100;
@@ -579,7 +669,10 @@ import theOneLocalizationManager from "../localizationManager/localizationManage
 
                 return [
                     adjusted,
-                    labelAndNewline + amountForDisplay(adjusted) + "%",
+                    // true argument makes it show high precision. When snapped, we think
+                    // this is useful, e.g., to see "66.7" rather than just 67, or to see
+                    // more precisily what the previous page or aspect ratio snaps did.
+                    labelAndNewline + amountForDisplay(adjusted, true) + "%",
                     true
                 ];
             }
@@ -626,10 +719,10 @@ import theOneLocalizationManager from "../localizationManager/localizationManage
         divider.style.right = right;
         lastComponent.style.width = right;
     }
-    function amountForDisplay(amount) {
+    function amountForDisplay(amount, snapped) {
         // for displaying to the user, invert percentage (so higher  up the page is a lower number).
-        // Leave one decimal place in precise mode, none otherwise
-        if (preciseMode) return Math.round(10 * (100 - amount)) / 10;
+        // Leave one decimal place in precise mode or for a snap result, none otherwise
+        if (preciseMode || snapped) return Math.round(10 * (100 - amount)) / 10;
         return Math.round(100 - amount);
     }
 
