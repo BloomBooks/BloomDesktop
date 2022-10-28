@@ -297,6 +297,15 @@ const OverlayToolControls: React.FunctionComponent = () => {
         }
     };
 
+    const defaultTextColorClicked = () => {
+        const bubbleMgr = OverlayTool.bubbleManager();
+        if (bubbleMgr) {
+            setTextColorIsDefault(true);
+            bubbleMgr.setTextColor(""); // sets bubble to use style default
+            updateReactFromComical(bubbleMgr);
+        }
+    };
+
     const noteInputFocused = (input: HTMLElement) =>
         OverlayTool.bubbleManager()?.setThingToFocusAfterSettingColor(input);
 
@@ -458,7 +467,10 @@ const OverlayToolControls: React.FunctionComponent = () => {
             palette: BloomPalette.Text,
             isForOverlay: true,
             onChange: color => updateTextColor(color),
-            onInputFocus: noteInputFocused
+            onInputFocus: noteInputFocused,
+            includeDefault: true,
+            onDefaultClick: defaultTextColorClicked
+            //defaultColor???
         };
         getEditTabBundleExports().showColorPickerDialog(colorPickerDialogProps);
     };

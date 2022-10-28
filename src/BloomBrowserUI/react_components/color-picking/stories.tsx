@@ -264,7 +264,11 @@ storiesOf("Colors", module)
                 palette: BloomPalette.Text,
                 onChange: color => handleColorChange(color),
                 onInputFocus: () => {},
-                defaultColor: defaultColorInfo
+                includeDefault: true,
+                onDefaultClick: () => {
+                    alert("clicked Default");
+                }
+                //defaultColor: defaultColorInfo
             };
 
             return (

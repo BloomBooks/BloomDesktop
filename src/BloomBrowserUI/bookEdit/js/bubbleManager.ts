@@ -686,6 +686,7 @@ export class BubbleManager {
     }
 
     // Set the color of the text in all of the active bubble family's TextOverPicture boxes.
+    // If hexOrRgbColor is empty string, we are setting the bubble to use the style default.
     public setTextColor(hexOrRgbColor: string) {
         const activeEl = theOneBubbleManager.getActiveElement();
         if (activeEl) {
@@ -702,10 +703,18 @@ export class BubbleManager {
     }
 
     private setTextColorInternal(hexOrRgbColor: string, element: HTMLElement) {
+        // BL-11621: We are in the process of moving to putting the Overlay text color on the inner
+        // bloom-editables. So we clear any color on the textOverPicture div and set it on all of the
+        // inner bloom-editables.
         const topBox = element.closest(
             kTextOverPictureSelector
         ) as HTMLDivElement;
-        topBox.style.color = hexOrRgbColor;
+        topBox.style.color = "";
+        const editables = topBox.getElementsByClassName("bloom-editable");
+        for (let i = 0; i < editables.length; i++) {
+            const editableElement = editables[i] as HTMLElement;
+            editableElement.style.color = hexOrRgbColor;
+        }
     }
 
     public getTextColorInformation(): ITextColorInfo {
@@ -716,6 +725,9 @@ export class BubbleManager {
             const topBox = activeEl.closest(
                 kTextOverPictureSelector
             ) as HTMLDivElement;
+            // const allUserStyles = StyleEditor.GetFormattingStyleRules(
+            //     topBox.ownerDocument
+            // );
             const style = topBox.style;
             textColor = style && style.color ? style.color : "";
             // We are in the process of moving to putting the Overlay text color on the inner

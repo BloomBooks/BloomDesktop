@@ -86,22 +86,34 @@ export const ColorBar: React.FunctionComponent<IColorBarProps> = (
             <div
                 css={css`
                     border: 1px solid ${bloomToolboxWhite};
+                    box-sizing: border-box;
                     margin-right: 4px;
-                    .color-swatch {
+                    /* .color-swatch {
                         margin: 0;
-                    }
+                    } background below is temporary */
+                    background: linear-gradient(
+                        to top left,
+                        ${toolboxPanelBackground} 0%,
+                        ${toolboxPanelBackground} calc(50% - 0.8px),
+                        ${bloomToolboxWhite} 50%,
+                        ${toolboxPanelBackground} calc(50% + 0.8px),
+                        ${toolboxPanelBackground} 100%
+                    );
+                    width: 14px;
+                    height: 14px;
                 `}
             >
-                <ColorSwatch
+                {/* <ColorSwatch
                     colors={defaultColor}
                     opacity={1}
                     width={25}
                     height={15}
-                />
+                /> */}
             </div>
             <Typography
                 css={css`
                     color: ${bloomToolboxWhite};
+                    font-size: 0.9rem !important;
                 `}
             >
                 {defaultStyleLabel}

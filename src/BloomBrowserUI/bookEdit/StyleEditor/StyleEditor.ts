@@ -1782,7 +1782,7 @@ export default class StyleEditor {
         }
         const rule = this.getStyleRule(false);
         if (rule != null) {
-            rule.style.setProperty("color", color, "important");
+            rule.style.setProperty("color", color);
             this.cleanupAfterStyleChange();
         }
         this.setColorButtonColor(color);
