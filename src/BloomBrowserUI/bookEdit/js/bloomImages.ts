@@ -214,19 +214,38 @@ export function addImageEditingButtons(containerDiv: HTMLElement): void {
     $containerDiv.addClass("hoverUp");
 }
 
-export function removeImageEditingButtons(containerDiv: HTMLElement): void {
-    const $containerDiv = $(containerDiv);
-    $containerDiv.removeClass("hoverUp");
-    $containerDiv.find(".imageOverlayButton").each(function() {
-        // leave the problem indicator visible
-        if (!$(this).hasClass("imgMetadataProblem")) {
-            $(this).remove();
-        }
+/**
+ * Gets a NodeListOf of the image editing button elements, which can be iterated through.
+ * @param containerDiv: The .bloom-imageContainer which contains the image editing buttons.
+ * @param options: An object with the following fields:
+ *    skipProblemIndicator: true to omit the imgMetadataProblem element(s) from the list
+ */
+function getImageEditingButtons(
+    containerDiv: Element,
+    options: {
+        skipProblemIndicator: boolean;
+    }
+): NodeListOf<Element> {
+    // NOTE: imgMetadataProblem isn't actually an imageOverlayButton,
+    // so strictly speaking, we don't need to do any special checks,
+    // but let's check anyway just in case it ever receives the imageOverlayButton class in the future
+    const selector =
+        ".imageOverlayButton" +
+        (options.skipProblemIndicator ? ":not(.imgMetadataProblem)" : "");
+    return containerDiv.querySelectorAll(selector);
+}
+
+export function removeImageEditingButtons(containerDiv: Element): void {
+    containerDiv.classList.remove("hoverUp");
+    getImageEditingButtons(containerDiv, {
+        skipProblemIndicator: true // leave the problem indicator visible
+    }).forEach(button => {
+        button.remove();
     });
 }
 
 export function tryRemoveImageEditingButtons(
-    containerDiv: HTMLElement | undefined
+    containerDiv: Element | undefined
 ): void {
     if (containerDiv) {
         removeImageEditingButtons(containerDiv);

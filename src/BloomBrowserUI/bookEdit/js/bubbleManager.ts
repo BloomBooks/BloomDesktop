@@ -670,7 +670,7 @@ export class BubbleManager {
             tryRemoveImageEditingButtons(
                 this.activeElement.getElementsByClassName(
                     "bloom-imageContainer"
-                )[0] as HTMLElement | undefined
+                )[0] as Element | undefined
             );
         }
         this.activeElement = element;
@@ -1154,7 +1154,7 @@ export class BubbleManager {
                 tryRemoveImageEditingButtons(
                     this.activeElement.getElementsByClassName(
                         "bloom-imageContainer"
-                    )[0] as HTMLElement | undefined
+                    )[0] as Element | undefined
                 );
             }
             return;
