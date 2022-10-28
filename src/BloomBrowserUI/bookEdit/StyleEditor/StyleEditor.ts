@@ -286,40 +286,55 @@ export default class StyleEditor {
         this.AddQtipToElement($("#formatButton"), toolTip);
     }
 
-    // Get the names that should be offered in the styles combo box.
     // Basically any defined rules for classes that end in -style.
     // Only the last class in a sequence is used; this lets us predefine
     // styles like DIV.bloom-editing.Heading1 and make their selectors specific enough to work,
     // but not impossible to override with a custom definition.
-    public getFormattingStyles(): FormattingStyle[] {
-        const styles: FormattingStyle[] = [];
+    // This could theoretically return an empty array.
+    public static GetFormattingStyleRules(document: Document): string[] {
+        const rules: string[] = [];
         for (let i = 0; i < document.styleSheets.length; i++) {
             const sheet = <StyleSheet>(<any>document.styleSheets[i]);
-            const rules: CSSRuleList = (<any>sheet).cssRules;
-            if (rules) {
-                for (let j = 0; j < rules.length; j++) {
-                    const index = rules[j].cssText.indexOf("{");
+            const sheetRules: CSSRuleList = (<any>sheet).cssRules;
+            if (sheetRules) {
+                for (let j = 0; j < sheetRules.length; j++) {
+                    const ruleText = sheetRules[j].cssText;
+                    const index = ruleText.indexOf("{");
                     if (index === -1) {
                         continue;
                     }
-                    const label = rules[j].cssText.substring(0, index).trim();
+                    const label = ruleText.substring(0, index).trim();
                     const index2 = label.lastIndexOf("-style");
                     if (
                         index2 !== -1 &&
                         index2 === label.length - "-style".length
                     ) {
                         // ends in -style
-                        const index3 = label.lastIndexOf(".");
-                        const styleId = label.substring(index3 + 1, index2);
-                        // Get the English display name if one is defined for this style
-                        const displayName = this.getDisplayName(styleId);
-                        if (styles.every(style => !style.hasStyleId(styleId))) {
-                            styles.push(
-                                new FormattingStyle(styleId, displayName)
-                            );
-                        }
+                        rules.push(ruleText);
                     }
                 }
+            }
+        }
+        return rules;
+    }
+
+    // Get the names that should be offered in the styles combo box.
+    public getFormattingStyleNames(): FormattingStyle[] {
+        const styles: FormattingStyle[] = [];
+        // Gets all rules whose ID ends in -style; from the "userModifiedStyles" style element.
+        const rules = StyleEditor.GetFormattingStyleRules(document);
+        for (let j = 0; j < rules.length; j++) {
+            // Any rule where the following 'indexOf' would fail is already filtered out.
+            const index = rules[j].indexOf("{");
+            // Now parse out the IDs.
+            const label = rules[j].substring(0, index).trim();
+            const index2 = label.lastIndexOf("-style");
+            const index3 = label.lastIndexOf(".");
+            const styleId = label.substring(index3 + 1, index2);
+            // Get the English display name if one is defined for this style
+            const displayName = this.getDisplayName(styleId);
+            if (styles.every(style => !style.hasStyleId(styleId))) {
+                styles.push(new FormattingStyle(styleId, displayName));
             }
         }
         // 'normal' is the standard initial style for at least origami pages.
@@ -1053,7 +1068,7 @@ export default class StyleEditor {
                             targetBox
                         );
                         const current = this.getFormatValues();
-                        this.styles = this.getFormattingStyles();
+                        this.styles = this.getFormattingStyleNames();
                         if (
                             styleName != null &&
                             this.styles.every(
@@ -1782,7 +1797,7 @@ export default class StyleEditor {
         }
         const rule = this.getStyleRule(false);
         if (rule != null) {
-            rule.style.setProperty("color", color, "important");
+            rule.style.setProperty("color", color);
             this.cleanupAfterStyleChange();
         }
         this.setColorButtonColor(color);
