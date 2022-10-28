@@ -36,7 +36,12 @@
         position: absolute;
         left: 5px;
         z-index: 1000000;
-        color: @OrigamiActiveColor;
+        color: black;
+        padding: 5px 5px 5px 2px;
+        background-color: #b0b0b0bf;
+        // I'm surprised we don't need something to make it display in as narrow a column
+        // as possible, or "white-space: pre" to make newlines work. But it's coming
+        // out the way we want without anything I know of to make that happen.
     }
 }
 
@@ -44,6 +49,10 @@
 .origami-layout-mode .split-pane.vertical-percent > .vertical-divider,
 .vertical-divider.dragged {
     border-right-color: @OrigamiActiveColor !important;
+
+    &.snapped {
+        border-right-style: solid;
+    }
 }
 
 .split-pane.vertical-percent > .vertical-divider {
@@ -55,14 +64,15 @@
 }
 
 .origami-drag {
-    // will need to improve if we do vertical snaps; split-pane.js mousedown
-    // will need to add another class to tell us to do vertical.
-    // (Note: this is not fully effective as it only works where there is not a
-    // more specific rule at a lower level.)
-    cursor: row-resize;
     .imageOverlayButton,
     .editMetadataButton {
         display: none;
+    }
+    &.origami-drag-horizontal {
+        cursor: row-resize;
+    }
+    &.origami-drag-vertical {
+        cursor: col-resize;
     }
 }
 
@@ -80,7 +90,7 @@
         // have newlines. Apparently it is necessary for them to work as we want.
         white-space: pre;
         text-align: right;
-        background-color: #B0B0B0BF;
+        background-color: #b0b0b0bf;
     }
 
     &.snapped.dragged:after {

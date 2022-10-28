@@ -57,6 +57,7 @@ namespace Bloom.web.controllers
 		private void HandlePrevPageSplit(ApiRequest request)
 		{
 			var id = request.RequiredParam("id");
+			var orientation = request.RequiredParam("orientation");
 			IPage prevPage = null;
 			foreach (var page in request.CurrentBook.GetPages())
 			{
@@ -65,9 +66,10 @@ namespace Bloom.web.controllers
 					if (prevPage != null)
 					{
 						// prevPage is the one we want.
+						var classPosition = orientation == "horizontal" ? "position-top" : "position-left";
 						var topSplitPanes = prevPage.GetDivNodeForThisPage()
 							.SafeSelectNodes(
-								".//div[contains(@class, 'split-pane-component') and contains(@class, 'position-top')]")
+								$".//div[contains(@class, 'split-pane-component') and contains(@class, '{classPosition}')]")
 							.Cast<XmlElement>()
 							.ToArray();
 						// Enhance: this could reasonably do something fancier like finding the top-level split
@@ -75,7 +77,8 @@ namespace Bloom.web.controllers
 						if (topSplitPanes.Length == 1)
 						{
 							var style = topSplitPanes[0].Attributes["style"]?.Value;
-							var matches = new Regex("bottom: (.*)%").Match(style);
+							var styleKeyword = orientation == "horizontal" ? "bottom" : "right";
+							var matches = new Regex($"{styleKeyword}: (.*)%").Match(style);
 							if (matches.Success)
 							{
 								var split = matches.Groups[1].Value;
