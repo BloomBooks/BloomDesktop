@@ -10,7 +10,6 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Windows.Forms;
-using SIL.PlatformUtilities;
 
 namespace Bloom.Publish.PDF
 {
@@ -71,14 +70,13 @@ namespace Bloom.Publish.PDF
 			try
 			{
 				// Shrink the PDF file, especially if it has large color images.  (BL-3721)
-				// Also if the book is full bleed we need to remove some spurious pages. [but only on Windows!]
+				// Also if the book is full bleed we need to remove some spurious pages.
 				// Removing spurious pages must be done BEFORE we switch pages around to make a booklet!
 				// Note: previously compression was the last step, after making a booklet. We moved it before for
 				// the reason above. Seems like it would also have performance benefits, if anything, to shrink
 				// the file before manipulating it further. Just noting it in case there are unexpected issues.
 				var fixPdf = new ProcessPdfWithGhostscript(ProcessPdfWithGhostscript.OutputType.DesktopPrinting, worker);
-				fixPdf.ProcessPdfFile(specs.OutputPdfPath, specs.OutputPdfPath,
-					Platform.IsWindows && specs.BookIsFullBleed);
+				fixPdf.ProcessPdfFile(specs.OutputPdfPath, specs.OutputPdfPath, specs.BookIsFullBleed);
 				if (specs.BookletPortion != PublishModel.BookletPortions.AllPagesNoBooklet || specs.PrintWithFullBleed)
 				{
 					//remake the pdf by reording the pages (and sometimes rotating, shrinking, etc)
