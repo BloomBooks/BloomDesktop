@@ -1034,6 +1034,14 @@ export class BubbleManager {
             return;
         }
 
+        const eventTargetElem =
+            event.target instanceof Element ? event.target : null;
+
+        // Ignore clicks on the JQuery resize handles.
+        if (eventTargetElem?.classList.contains("ui-resizable-handle")) {
+            return;
+        }
+
         // These coordinates need to be relative to the canvas (which is the same as relative to the image container).
         const coordinates = this.getPointRelativeToCanvas(event, container);
 
@@ -1043,7 +1051,7 @@ export class BubbleManager {
 
         // If the click is on one of our drag handles (typically for another bubble), we don't
         // want to drag this one as well using the events here.
-        if ((event.target as Element).closest(".bloom-dragHandle")) {
+        if (eventTargetElem?.closest(".bloom-dragHandle")) {
             return;
         }
 
@@ -2928,6 +2936,11 @@ export class BubbleManager {
 
                 // Add a class that indicates these elements are only needed for the UI and aren't needed to be saved in the book's HTML
                 handle.classList.add("bloom-ui");
+
+                if (handle instanceof HTMLElement) {
+                    // Overwrite the default zIndex of 90 provided in the inline styles of modified_libraries\jquery-ui\jquery-ui-1.10.3.custom.min.js
+                    handle.style.zIndex = "1003"; // Should equal @resizeHandleEventZIndex
+                }
 
                 handle.addEventListener(
                     "mousedown",
