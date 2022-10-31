@@ -734,15 +734,24 @@ export class BubbleManager {
             // bloom-editables. So if the textOverPicture div didn't have a color, check the inner
             // bloom-editables.
             if (textColor === "") {
-                const firstEditable = topBox.getElementsByClassName(
+                const editables = topBox.getElementsByClassName(
                     "bloom-editable"
-                )[0] as HTMLElement;
-                const colorStyle = firstEditable.style.color;
-                if (colorStyle) {
-                    textColor = colorStyle;
-                } else {
-                    textColor = this.getDefaultStyleTextColor(firstEditable);
+                );
+                if (editables.length === 0) {
+                    // Image on Image case comes here.
                     isDefaultStyleColor = true;
+                    textColor = "black";
+                } else {
+                    const firstEditable = editables[0] as HTMLElement;
+                    const colorStyle = firstEditable.style.color;
+                    if (colorStyle) {
+                        textColor = colorStyle;
+                    } else {
+                        textColor = this.getDefaultStyleTextColor(
+                            firstEditable
+                        );
+                        isDefaultStyleColor = true;
+                    }
                 }
             }
         }
