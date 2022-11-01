@@ -36,11 +36,13 @@ export class DaisyChecks extends React.Component<
                 this.setState({ reportUrl: result.data });
             })
             .catch(error => {
-                this.setState({
-                    errorMessage:
-                        "The API call to Ace By Daisy failed. " +
-                        JSON.stringify(error)
-                });
+                if (error.message !== "Request failed with status code 417")
+                    // 417 === ExpectationFailed signals error messages are already displayed.
+                    this.setState({
+                        errorMessage:
+                            "The API call to Ace By Daisy failed. " +
+                            JSON.stringify(error)
+                    });
             });
     }
     public render() {
