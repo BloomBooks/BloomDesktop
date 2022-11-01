@@ -1029,16 +1029,8 @@ export class BubbleManager {
     // be passed directly to addEventListener and still get the correct 'this'.
     private onMouseDown = (event: MouseEvent) => {
         const container = event.currentTarget as HTMLElement;
-        // Let standard clicks on the bloom editable only be processed on the editable
-        if (this.isEventForEditableOrMoveHandle(event)) {
-            return;
-        }
-
-        const eventTargetElem =
-            event.target instanceof Element ? event.target : null;
-
-        // Ignore clicks on the JQuery resize handles.
-        if (eventTargetElem?.classList.contains("ui-resizable-handle")) {
+        // Let standard clicks on the bloom editable or other UI elements only be processed by that element
+        if (this.isMouseEventAlreadyHandled(event)) {
             return;
         }
 
@@ -1051,7 +1043,10 @@ export class BubbleManager {
 
         // If the click is on one of our drag handles (typically for another bubble), we don't
         // want to drag this one as well using the events here.
-        if (eventTargetElem?.closest(".bloom-dragHandle")) {
+        if (
+            event.target instanceof Element &&
+            event.target.closest(".bloom-dragHandle")
+        ) {
             return;
         }
 
@@ -1171,7 +1166,7 @@ export class BubbleManager {
             return;
         }
 
-        if (this.isEventForEditableOrMoveHandle(event)) {
+        if (this.isMouseEventAlreadyHandled(event)) {
             this.cleanupMouseMoveHover(container);
             return;
         }
@@ -1463,9 +1458,13 @@ export class BubbleManager {
         );
     }
 
-    private isEventForEditableOrMoveHandle(ev): boolean {
-        const targetElement = ev.target as HTMLElement;
-        if (!targetElement?.classList) {
+    /**
+     * Returns true if a handler already exists to sufficiently process this mouse event
+     * without needing our custom onMouseDown/onMouseHover/etc event handlers to process it
+     */
+    private isMouseEventAlreadyHandled(ev: MouseEvent): boolean {
+        const targetElement = ev.target instanceof Element ? ev.target : null;
+        if (!targetElement) {
             // As far as I can research, the target of a mouse event is always
             // "the most deeply nested element." Apparently some very old browsers
             // might answer a text node, but I think that stopped well before FF60.
@@ -1487,14 +1486,14 @@ export class BubbleManager {
             // deal with things, and is a good thing even when ctrl or alt is down.
             return true;
         }
+        if (targetElement.classList.contains("ui-resizable-handle")) {
+            // Ignore clicks on the JQuery resize handles.
+            return true;
+        }
         if (ev.ctrlKey || ev.altKey) {
             return false;
         }
-        // I'm not sure what else targetElement can be, but have seen JS errors
-        // when closest is not defined.
-        const isInsideEditable = !!(
-            targetElement.closest && targetElement.closest(".bloom-editable")
-        );
+        const isInsideEditable = !!targetElement.closest(".bloom-editable");
         return isInsideEditable;
     }
 
