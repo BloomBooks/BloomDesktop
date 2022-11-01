@@ -392,7 +392,7 @@ namespace Bloom.web.controllers
 			_webSocketProgress.MessageWithoutLocalizing(error, ProgressKind.Error);
 			if (Platform.IsWindows)
 			{
-				_webSocketProgress.MessageWithoutLocalizing("Please follow <a href= 'https://inclusivepublishing.org/toolbox/accessibility-checker/getting-started/' >these instructions</a> to install the Ace by DAISY system on this computer.");
+				_webSocketProgress.MessageWithoutLocalizing("Please follow <a href='https://inclusivepublishing.org/toolbox/accessibility-checker/getting-started/'>these instructions</a> to install the Ace by DAISY system on this computer.");
 			}
 			else
 			{
