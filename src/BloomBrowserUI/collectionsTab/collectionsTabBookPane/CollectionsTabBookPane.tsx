@@ -292,6 +292,7 @@ export const CollectionsTabBookPane: React.FunctionComponent<{
                                         margin-top: 5px;
                                         flex-grow: 1;
                                         border: none;
+                                        background: #fcfafa;
                                     `}
                                 />
                             )}
