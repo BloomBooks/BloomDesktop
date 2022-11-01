@@ -151,17 +151,21 @@ import theOneLocalizationManager from "../localizationManager/localizationManage
                     : /right: ([0-9.]*)%/;
                 const match = dividerStyle.match(regex);
                 if (match) {
-                    const amount1 = parseFloat(match[1]);
-                    const defaultLabel = amountForDisplay(amount1) + "%";
+                    const currentOffset = parseFloat(match[1]);
+                    const defaultLabel =
+                        dividerPositionForDisplay(currentOffset) + "%";
                     // In mouse enter, we'll always show a snap if we are exactly at it.
                     preciseMode = false;
-                    const [amount, label, snapped] = snapTo(
-                        amount1,
+                    const [snappedOffset, label, isSnapped] = snapTo(
+                        currentOffset,
                         defaultLabel,
                         divider.parentElement.offsetHeight
                     );
                     let finalLabel = label;
-                    if (snapped && Math.abs(amount - amount1) > 0.1) {
+                    if (
+                        isSnapped &&
+                        Math.abs(snappedOffset - currentOffset) > 0.1
+                    ) {
                         // This position would snap, but not to where the divider now is.
                         // For hover effect it's better not to show as snapped.
                         finalLabel = defaultLabel;
@@ -455,19 +459,25 @@ import theOneLocalizationManager from "../localizationManager/localizationManage
                     ),
                     maxLastComponentHeight
                 );
-                const amount1 = (bottom / splitPaneHeight) * 100;
-                const defaultLabel = amountForDisplay(amount1) + "%";
-                const [amount, label, snapped] = snapTo(
-                    amount1,
+                const unsnappedOffset = (bottom / splitPaneHeight) * 100;
+                const defaultLabel =
+                    dividerPositionForDisplay(unsnappedOffset) + "%";
+                const [adjustedOffset, label, isSnapped] = snapTo(
+                    unsnappedOffset,
                     defaultLabel,
                     splitPaneHeight
                 );
-                if (snapped) {
+                if (isSnapped) {
                     divider.classList.add("snapped");
                 } else divider.classList.remove("snapped");
 
                 divider.setAttribute("data-splitter-label", label);
-                setBottom(firstComponent, divider, lastComponent, amount + "%");
+                setBottom(
+                    firstComponent,
+                    divider,
+                    lastComponent,
+                    adjustedOffset + "%"
+                );
                 $splitPane.resize();
             };
         } else if ($splitPane.is(".fixed-left")) {
@@ -527,19 +537,25 @@ import theOneLocalizationManager from "../localizationManager/localizationManage
                     ),
                     maxLastComponentWidth
                 );
-                const amount1 = (right / splitPaneWidth) * 100;
-                const defaultLabel = amountForDisplay(amount1) + "%";
-                const [amount, label, snapped] = snapTo(
-                    amount1,
+                const unsnappedOffset = (right / splitPaneWidth) * 100;
+                const defaultLabel =
+                    dividerPositionForDisplay(unsnappedOffset) + "%";
+                const [adjustedOffset, label, isSnapped] = snapTo(
+                    unsnappedOffset,
                     defaultLabel,
                     splitPaneWidth
                 );
-                if (snapped) {
+                if (isSnapped) {
                     divider.classList.add("snapped");
                 } else divider.classList.remove("snapped");
 
                 divider.setAttribute("data-splitter-label", label);
-                setRight(firstComponent, divider, lastComponent, amount + "%");
+                setRight(
+                    firstComponent,
+                    divider,
+                    lastComponent,
+                    adjustedOffset + "%"
+                );
                 $splitPane.resize();
             };
         }
@@ -553,6 +569,7 @@ import theOneLocalizationManager from "../localizationManager/localizationManage
     // If you add more, think about order. The first one that we are close enough
     // to for a snap wins over any others that may also be in range.
     // Current order is aspect ratio, previous page, square, fixed fractions.
+    // Callback is called (asynchronously) when we have finished making the snaps.
     function makeSnaps(splitPane, callback) {
         snapPoints = [];
         const firstChild = splitPane.firstElementChild;
@@ -562,12 +579,31 @@ import theOneLocalizationManager from "../localizationManager/localizationManage
             true,
             false
         );
+        let snapsAwaited = 0; // increment each time we call makeSnapPoint and pass localCallback
+        // Invoke callback when we have all the snap positions and labels.
+        const localCallback = () => {
+            snapsAwaited--;
+            if (snapsAwaited == 0) {
+                callback();
+            }
+        };
         if (firstChildSplit > 0) {
-            makeSnapPoint(firstChildSplit, "MatchImageAspect", "Fit image");
+            snapsAwaited += 2;
+            makeSnapPoint(
+                firstChildSplit,
+                "MatchImageAspect",
+                "Fit image",
+                "",
+                -1,
+                localCallback
+            );
             makeSnapPoint(
                 getImagePercent(splitPane, firstChild, true, true),
                 "Square",
-                "Square"
+                "Square",
+                "",
+                -1,
+                localCallback
             );
         }
 
@@ -579,18 +615,23 @@ import theOneLocalizationManager from "../localizationManager/localizationManage
             false
         );
         if (lastChildSplit > 0) {
+            snapsAwaited += 2;
             makeSnapPoint(
                 100 - lastChildSplit,
                 "MatchImageAspect",
                 "Fit image",
                 "",
-                0 // makes it before the previous 'square' if any; arbitrary whether before previous match aspect
+                0, // makes it before the previous 'square' if any; arbitrary whether before previous match aspect
+                localCallback
             );
             // Make the bottom panel square
             makeSnapPoint(
                 100 - getImagePercent(splitPane, firstChild, false, true),
                 "Square",
-                "Square"
+                "Square",
+                "",
+                -1,
+                localCallback
             );
         }
 
@@ -598,7 +639,7 @@ import theOneLocalizationManager from "../localizationManager/localizationManage
         const id = page.getAttribute("id");
         // capture the place to insert this now, before we add the general ones.
         // We want it after any aspect-ratio matches but before the square matches.
-        // This divide by 2 gives us zero if there are no adjacent images, 1 is there is
+        // This divide by 2 gives us zero if there are no adjacent images, 1 if there is
         // just one, and 2 if there are two, which in each case is a position just after
         // the aspect ratio options, if any.
         const indexToInsertPrevPageSnap = snapPoints.length / 2;
@@ -616,18 +657,20 @@ import theOneLocalizationManager from "../localizationManager/localizationManage
                 // Wants to be inserted at the current length, even though this will happen later
                 // when the promise is fulfilled. (We want this to have less priority than
                 // matching the aspect ratio, but more than matching one of the arbitrary splits.)
+                snapsAwaited++;
                 makeSnapPoint(
                     100 - parseFloat(result.data),
                     "MatchPreviousPage", // note: ID also used to find in list of snap points
                     "Matches previous page",
                     "🠈",
                     indexToInsertPrevPageSnap,
-                    callback
+                    localCallback
                 );
             }
         );
 
-        // These general purpose ones come last, so the others win if there is overlap
+        // These general purpose ones come last, so the others win if there is overlap.
+        // We're not localizing these, so don't need to pass a callback.
         makeSnapPoint(25, undefined, "¼");
         makeSnapPoint(33.333333, undefined, "⅓");
         makeSnapPoint(50, undefined, "½");
@@ -641,7 +684,7 @@ import theOneLocalizationManager from "../localizationManager/localizationManage
         label = "",
         prefixSymbol = "", // this is used to hold a unicode left-arrow that we don't want translators touching
         index = -1, // where to insert, or -1 for end
-        callback
+        callback // called when we have the final (possibly localized) label.
     ) {
         const item = { snap: snapPoint, label, id: localizationId };
         if (index >= 0) {
@@ -657,7 +700,10 @@ import theOneLocalizationManager from "../localizationManager/localizationManage
                     item.label = prefixSymbol + " " + result;
                     if (callback) callback();
                 });
-        else item.label = [prefixSymbol, label].join(" ");
+        else {
+            item.label = [prefixSymbol, label].join(" ");
+            if (callback) callback();
+        }
     }
 
     function isHorizontal(divider) {
@@ -674,7 +720,12 @@ import theOneLocalizationManager from "../localizationManager/localizationManage
     // containing exactly one bloom-imageContainer
     // containing a picture, return the fraction of the height of splitPane which would result
     // in the image fitting perfectly. Otherwise, return -1.
-    function getImagePercent(splitPane, component, firstChildPane, square) {
+    function getImagePercent(
+        splitPane,
+        component,
+        isForFirstChildPane,
+        isForSquareSplit
+    ) {
         if (
             !component ||
             !component.classList.contains("split-pane-component")
@@ -701,20 +752,20 @@ import theOneLocalizationManager from "../localizationManager/localizationManage
         const horizontal = isPaneHorizontal(splitPane);
         if (horizontal) {
             const width = splitPane.offsetWidth;
-            let height = square
+            let height = isForSquareSplit
                 ? width
                 : (width * img.naturalHeight) / img.naturalWidth;
-            if (firstChildPane) {
+            if (isForFirstChildPane) {
                 // 3px of margin on top pane in split that we need to leave room for
                 height += 3;
             }
             return (height * 100) / splitPane.offsetHeight;
         } else {
             const height = splitPane.offsetHeight;
-            let width = square
+            let width = isForSquareSplit
                 ? height
                 : (height * img.naturalWidth) / img.naturalHeight;
-            if (firstChildPane) {
+            if (isForFirstChildPane) {
                 // 3px of margin on top pane in split that we need to leave room for
                 width += 3;
             }
@@ -723,20 +774,19 @@ import theOneLocalizationManager from "../localizationManager/localizationManage
     }
 
     // Snaps are defined in terms of the percent the user sees, the percent of the upper
-    // partition. Note that the 'amount' values taken and returned by snapTo are
+    // partition. Note that the 'offset' values taken and returned by snapTo are
     // instead the bottom partition. (We don't use the intial value, but it sets a type.)
     let snapPoints = [{ snap: 50, label: "half", id: "Half" }];
 
-    function snapTo(amount, defaultLabel, parentSize) {
+    function snapTo(unsnappedOffset, defaultLabel, parentSize) {
         if (preciseMode) {
-            return [amount, defaultLabel, false];
+            return [unsnappedOffset, defaultLabel, false];
         }
-        // We want to be within 4px.
         // amount and snaps are percentages of parentHeight
-        const amountPx = (amount * parentSize) / 100;
+        const offsetPx = (unsnappedOffset * parentSize) / 100;
         for (let i = 0; i < snapPoints.length; i++) {
             const snapPx = ((100 - snapPoints[i].snap) * parentSize) / 100;
-            const delta = amountPx - snapPx;
+            const delta = offsetPx - snapPx;
             // The actual dividiing line...the point that is, for example, 1/3 of the
             // distance from the top of the parent to the bottom, which we are actually
             // comparing to the mouse pointer position...is the bottom of
@@ -758,12 +808,14 @@ import theOneLocalizationManager from "../localizationManager/localizationManage
                     // true argument makes it show high precision. When snapped, we think
                     // this is useful, e.g., to see "66.7" rather than just 67, or to see
                     // more precisily what the previous page or aspect ratio snaps did.
-                    labelAndNewline + amountForDisplay(adjusted, true) + "%",
+                    labelAndNewline +
+                        dividerPositionForDisplay(adjusted, true) +
+                        "%",
                     true
                 ];
             }
         }
-        return [amount, defaultLabel, false];
+        return [unsnappedOffset, defaultLabel, false];
     }
 
     function pageXof(event) {
@@ -805,7 +857,7 @@ import theOneLocalizationManager from "../localizationManager/localizationManage
         divider.style.right = right;
         lastComponent.style.width = right;
     }
-    function amountForDisplay(amount, snapped) {
+    function dividerPositionForDisplay(amount, snapped) {
         // for displaying to the user, invert percentage (so higher  up the page is a lower number).
         // Leave one decimal place in precise mode or for a snap result, none otherwise
         if (preciseMode || snapped) return Math.round(10 * (100 - amount)) / 10;
@@ -815,7 +867,7 @@ import theOneLocalizationManager from "../localizationManager/localizationManage
     function setDividerTitle(divider, amount) {
         divider.setAttribute(
             "data-splitter-label",
-            amountForDisplay(amount) + "%"
+            dividerPositionForDisplay(amount) + "%"
         );
     }
 })(jQuery);
