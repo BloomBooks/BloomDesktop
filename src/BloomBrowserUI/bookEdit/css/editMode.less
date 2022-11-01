@@ -189,8 +189,8 @@ div.readOnlyInTranslationMode {
 
 // Since 'basePage.less' has a rule that puts the video placeholder in as a background image,
 // '.customPage' is needed to add enough specificity here to override that rule.
-.customPage .bloom-videoContainer.hoverUp,
-.bloom-imageContainer.hoverUp {
+body:not(.origami-drag) .customPage .bloom-videoContainer.hoverUp,
+body:not(.origami-drag) .bloom-imageContainer.hoverUp {
     background-color: @ImageAndVideoHoverOverlay;
 }
 
