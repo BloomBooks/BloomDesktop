@@ -32,11 +32,19 @@
 .split-pane.vertical-percent > .vertical-divider {
     &:hover:after,
     &.dragged:after {
-        content: attr(title);
+        content: attr(data-splitter-label);
         position: absolute;
         left: 5px;
         z-index: 1000000;
-        color: @OrigamiActiveColor;
+        color: black;
+        padding: 5px 5px 5px 2px;
+        background-color: #b0b0b0bf;
+        // I'm surprised we don't need something to make it display in as narrow a column
+        // as possible, or "white-space: pre" to make newlines work. But it's coming
+        // out the way we want without anything I know of to make that happen.
+    }
+    &.snapped.dragged:after {
+        font-weight: bold;
     }
 }
 
@@ -44,6 +52,10 @@
 .origami-layout-mode .split-pane.vertical-percent > .vertical-divider,
 .vertical-divider.dragged {
     border-right-color: @OrigamiActiveColor !important;
+
+    &.snapped {
+        border-right-style: solid;
+    }
 }
 
 .split-pane.vertical-percent > .vertical-divider {
@@ -54,15 +66,38 @@
     cursor: row-resize;
 }
 
+.origami-drag {
+    .imageOverlayButton,
+    .editMetadataButton {
+        display: none;
+    }
+    &.origami-drag-horizontal {
+        cursor: row-resize;
+    }
+    &.origami-drag-vertical {
+        cursor: col-resize;
+    }
+}
+
 .split-pane.horizontal-percent > .horizontal-divider {
     &:hover:after,
     &.dragged:after {
-        content: attr(title);
+        content: attr(data-splitter-label);
         position: absolute;
         bottom: 0;
         right: 0;
         z-index: 1000000;
-        color: @OrigamiActiveColor;
+        color: black;
+        padding: 5px 10px;
+        // This came from the StackOverflow article where I discovered that content can
+        // have newlines. Apparently it is necessary for them to work as we want.
+        white-space: pre;
+        text-align: right;
+        background-color: #b0b0b0bf;
+    }
+
+    &.snapped.dragged:after {
+        font-weight: bold;
     }
 }
 
@@ -70,6 +105,10 @@
 .origami-layout-mode .split-pane.horizontal-percent > .horizontal-divider,
 .horizontal-divider.dragged {
     border-bottom-color: @OrigamiActiveColor !important;
+
+    &.snapped {
+        border-bottom-style: solid;
+    }
 }
 
 .selector-links,
