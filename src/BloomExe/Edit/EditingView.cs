@@ -767,6 +767,9 @@ namespace Bloom.Edit
 						"Sorry, this book is locked down so that images cannot be changed."));
 				return;
 			}
+			// BL-11709: It's just possible that the element we are pasting into has not yet been saved,
+			// which will cause problems. So do a save before pasting.
+			_model.SaveNow();
 
 			using (var measure = PerformanceMeasurement.Global.Measure("Paste Image"))
 			{
