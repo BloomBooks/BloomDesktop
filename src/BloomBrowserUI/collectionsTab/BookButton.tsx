@@ -209,7 +209,7 @@ export const BookButton: React.FunctionComponent<{
                 label: "Show in File Explorer",
                 l10nId: "CollectionTab.BookMenu.ShowInFileExplorer",
                 command: "bookCommand/openFolderOnDisk",
-                shouldShow: () => true // show for all collections (except factory)
+                shouldShow: () => !props.collection.isFactoryInstalled // show for all collections (except factory)
             },
             {
                 label: "Delete Book",
@@ -324,6 +324,30 @@ export const BookButton: React.FunctionComponent<{
         }
     };
 
+    // If relevant, compute the menu items for a right-click on this button.
+    // contextMenuPoint has a value if this button has been right-clicked.
+    // if it wasn't the selected button at the time, however, the menu will not show
+    // until we re-render after making it selected.
+    // Note that we avoid doing all the work to render the menu except when it is
+    // visible and clicked. Since there may be a large number of buttons this could
+    // be a significant saving.
+    // Note that makeMenuItems may produce no items (currently this is true for
+    // factory-installed books). In this case, as well as when we don't call the
+    // method at all, the menu does not show. (Showing a menu with no items results
+    // in a small white square that is confusing.)
+    let items: MenuItemSpec[] = [];
+    if (contextMousePoint && selected) {
+        items = makeMenuItems(
+            getBookMenuItemsSpecs(),
+            props.collection.isEditableCollection,
+            props.manager.getSelectedBookInfo()!.saveable,
+            handleClose,
+            props.book.id,
+            props.collection.id,
+            props.isSpreadsheetFeatureActive
+        );
+    }
+
     return (
         <div
             // This class and data-book-id attribute help the BooksOfCollection class figure out
@@ -392,13 +416,7 @@ export const BookButton: React.FunctionComponent<{
                 {renaming || label}
             </Button>
 
-            {// contextMenuPoint has a value if this button has been right-clicked.
-            // if it wasn't the selected button at the time, however, the menu will not show
-            // until we re-render after making it selected.
-            // Note that we avoid doing all the work to render the menu except when it is
-            // visible. Since there may be a large number of buttons this could be a significant
-            // saving.
-            contextMousePoint && selected && (
+            {items.length > 0 && (
                 <Menu
                     keepMounted={true}
                     open={!!contextMousePoint}
@@ -409,15 +427,7 @@ export const BookButton: React.FunctionComponent<{
                         left: contextMousePoint!.mouseX
                     }}
                 >
-                    {makeMenuItems(
-                        getBookMenuItemsSpecs(),
-                        props.collection.isEditableCollection,
-                        props.manager.getSelectedBookInfo()!.saveable,
-                        handleClose,
-                        props.book.id,
-                        props.collection.id,
-                        props.isSpreadsheetFeatureActive
-                    )}
+                    {items}
                 </Menu>
             )}
             {// The down-arrow button, which is equivalent to right-clicking on the button.
