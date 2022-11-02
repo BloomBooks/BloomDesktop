@@ -2554,12 +2554,15 @@ namespace Bloom.Book
 		/// </summary>
 		internal static string GetUniqueFolderName(string parentPath, string name)
 		{
-			int i = 1; // First non-blank suffix should be " (2)"
+			// Don't be tempted to give this parentheses. That isn't compatible with
+			// SanitizeNameForFileSystem which removes parentheses. See BL-11663.
+
+			int i = 1; // First non-blank suffix should be " 2"
 			string suffix = "";
 			while (Directory.Exists(Path.Combine(parentPath, name + suffix)))
 			{
 				++i;
-				suffix = " (" + i.ToString(CultureInfo.InvariantCulture) + ")";
+				suffix = " " + i.ToString(CultureInfo.InvariantCulture);
 			}
 			return name + suffix;
 		}
