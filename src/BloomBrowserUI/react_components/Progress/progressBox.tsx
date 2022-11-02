@@ -38,7 +38,7 @@ export const ProgressBox: React.FunctionComponent<IProgressBoxProps> = props => 
 
     React.useEffect(() => {
         if (props.preloadedProgressEvents) {
-            setMessages([]);
+            // Don't overwrite existing messages.  See https://issues.bloomlibrary.org/youtrack/issue/BL-11696.
             props.preloadedProgressEvents.forEach(e => processEvent(e));
         }
     }, [props.preloadedProgressEvents]);

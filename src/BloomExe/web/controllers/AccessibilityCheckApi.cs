@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -171,7 +172,7 @@ namespace Bloom.web.controllers
 			{
 				_webSocketProgress.MessageWithoutLocalizing(
 					"Sorry, you must have an internet connection in order to view the Ace by DAISY report.", ProgressKind.Error);
-				request.Failed();
+				request.Failed(HttpStatusCode.ExpectationFailed);
 				return;
 			}
 
@@ -392,7 +393,7 @@ namespace Bloom.web.controllers
 			_webSocketProgress.MessageWithoutLocalizing(error, ProgressKind.Error);
 			if (Platform.IsWindows)
 			{
-				_webSocketProgress.MessageWithoutLocalizing("Please follow <a href= 'https://inclusivepublishing.org/toolbox/accessibility-checker/getting-started/' >these instructions</a> to install the Ace by DAISY system on this computer.");
+				_webSocketProgress.MessageWithoutLocalizing("Please follow <a href='https://inclusivepublishing.org/toolbox/accessibility-checker/getting-started/'>these instructions</a> to install the Ace by DAISY system on this computer.");
 			}
 			else
 			{
@@ -403,7 +404,7 @@ namespace Bloom.web.controllers
 				var scriptPath = Path.Combine(folder, "DistFiles", "InstallAce.sh");
 				_webSocketProgress.MessageWithoutLocalizing("Please run the "+ scriptPath + " script to install the Ace by DAISY system on this Linux computer.  Do not use sudo to run this script: it already contains any needed sudo commands internally.");
 			}
-			request.Failed();
+			request.Failed(HttpStatusCode.ExpectationFailed);
 		}
 
 		private void RefreshClient()
