@@ -336,7 +336,7 @@ export const BookButton: React.FunctionComponent<{
     // method at all, the menu does not show. (Showing a menu with no items results
     // in a small white square that is confusing.)
     let items: MenuItemSpec[] = [];
-    if (contextMousePoint && selected) {
+    if (selected) {
         items = makeMenuItems(
             getBookMenuItemsSpecs(),
             props.collection.isEditableCollection,
@@ -416,7 +416,7 @@ export const BookButton: React.FunctionComponent<{
                 {renaming || label}
             </Button>
 
-            {items.length > 0 && (
+            {contextMousePoint && items.length > 0 && (
                 <Menu
                     keepMounted={true}
                     open={!!contextMousePoint}
@@ -433,7 +433,7 @@ export const BookButton: React.FunctionComponent<{
             {// The down-arrow button, which is equivalent to right-clicking on the button.
             // I tried putting this div inside the button but then...in FF 60 but not 68 or later...
             // the button gets the click even if its inside this div.
-            selected && (
+            items.length > 0 && (
                 <div
                     css={css`
                         position: absolute;
