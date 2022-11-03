@@ -203,7 +203,7 @@ namespace Bloom.Book
 			get { return MetaData.Title; }
 			set
 			{
-				var titleStr = Book.RemoveHtmlMarkup(value, Book.LineBreakSpanConversionMode.ToNewline);
+				var titleStr = Book.RemoveXmlMarkup(value, Book.LineBreakSpanConversionMode.ToNewline);
 				MetaData.Title = titleStr;
 			}
 		}

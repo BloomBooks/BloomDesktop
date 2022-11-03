@@ -13,7 +13,6 @@ using System.Threading.Tasks;
 using System.Web;
 using System.Windows.Forms;
 using System.Xml;
-using System.Xml.Linq;
 using Bloom.Api;
 using Bloom.Collection;
 using Bloom.Edit;
@@ -320,73 +319,59 @@ namespace Bloom.Book
 			// Handle both Windows and Linux line endings in case a file copied between the two
 			// ends up with the wrong one.
 			display = display.Replace("<br />", " ").Replace("\r\n", " ").Replace("\n", " ").Replace("  ", " ");
-			display = RemoveHtmlMarkup(display, LineBreakSpanConversionMode.ToSpace).Trim();
+			display = RemoveXmlMarkup(display, LineBreakSpanConversionMode.ToSpace).Trim();
 			return display;
 		}
 
 		public enum LineBreakSpanConversionMode
 		{
-			ToNewline,		// Environment.Newline
-			ToSpace,		// " "
-			ToSimpleNewline	// "\n", used for export to meta.json
+			ToNewline,
+			ToSpace
 		}
 
-		// what can be in here is *XHTML*, e.g. bold, italics, etc.
-		public static string RemoveHtmlMarkup(string input, LineBreakSpanConversionMode lineBreakSpanConversionOption)
+		// might be better named RemoveMarkup; what can be in here is *HTML*, e.g. bold, italics, etc.
+		public static string RemoveXmlMarkup(string input, LineBreakSpanConversionMode lineBreakSpanConversionOptions)
 		{
-			if (input == null)
-				return null;
 			try
 			{
-				// Parsing it as XML and then extracting the value removes any markup.  Internal
-				// spaces might disappear if we don't preserve whitespace during the parse.
-				var doc = XElement.Parse("<doc>" + input + "</doc>", LoadOptions.PreserveWhitespace);
+				var doc = new XmlDocument();
+				doc.PreserveWhitespace = true;
+				doc.LoadXml("<div>" + input + "</div>");
 
-				const char kBOM = '\uFEFF';	// Unicode Byte Order Mark character.
-
-				// Handle Shift+Enter, which gets translated to <span class="bloom-linebreak" />
-				// This is being handled using at the XElement level instead of string level, so that it'll work regardless of
-				// whether it uses the <span /> form or <span></span> form. (I do see places in the debugger where the data is in <span></span> form.)
-				var lineBreaks = doc.Descendants("span").Where(e => e.Attribute("class")?.Value == "bloom-linebreak").ToList();
-				foreach (var lineBreakSpan in lineBreaks)
+				// NOTE: There is a similar section of code dealing with bloom-linebreak
+				//       in BookData.cs::TextOfInnerHtml().
+				//       (That operates on XElements though, this deals with XmlElements)
+				if (lineBreakSpanConversionOptions == LineBreakSpanConversionMode.ToSpace || lineBreakSpanConversionOptions == LineBreakSpanConversionMode.ToNewline)
 				{
-					// But before we mess with lineBreakSpan, first check if it's immediately followed by a BOM
-					// character (which is also inserted by Shift-Enter), and if so delete that out.
-					if (lineBreakSpan.NextNode?.NodeType == XmlNodeType.Text)
-					{
-						var nextText = lineBreakSpan.NextNode as XText;
-						// String.StartsWith() seems to always ignore the BOM character, so use a character
-						// comparison.  See https://issues.bloomlibrary.org/youtrack/issue/BL-11717.
-						if (!String.IsNullOrEmpty(nextText?.Value) && nextText.Value[0] == kBOM)
-						{
-							nextText.Value = nextText.Value.Substring(1);
-						}
-					}
+					string zeroWidthNbsp = ((char)65279).ToString();
 
-					// Now delete lineBreakSpan and replace it
-					var replacementForLinebreakSpan = "";
-					switch (lineBreakSpanConversionOption)
+					// Handle Shift+Enter, which gets translated to <span class="bloom-linebreak" />
+					// This is being handled using at the XML level instead of string level, so that it'll work regardless of
+					// whether it uses the <span /> form or <span></span> form. (I do see places in the debugger where the data is in <span></span> form.)
+					var lineBreaks = doc.SafeSelectNodes("//span[contains(concat(' ', normalize-space(@class), ' '), ' bloom-linebreak ')]");
+					var lineBreakElements = lineBreaks.Cast<XmlElement>().ToArray();
+					foreach (var lineBreakSpan in lineBreakElements)
 					{
-						case LineBreakSpanConversionMode.ToNewline:
-							replacementForLinebreakSpan = Environment.NewLine;
-							break;
-						case LineBreakSpanConversionMode.ToSpace:
-							replacementForLinebreakSpan = " ";
-							break;
-						case LineBreakSpanConversionMode.ToSimpleNewline:
-							replacementForLinebreakSpan = "\n";
-							break;
+						// But before we mess with lineBreakSpan, first check if it's immediately followed by a zero-width no-break space
+						// (which is also inserted upon Shift-Enter), and if so delete that out.
+						var nextSibling = lineBreakSpan.NextSibling;
+						if (nextSibling?.NodeType == XmlNodeType.Text && nextSibling.Value != null && nextSibling.Value.StartsWith(zeroWidthNbsp))
+						{
+							nextSibling.Value = nextSibling.Value.Substring(1);
+						}
+
+						// Now delete lineBreakSpan and replace it
+						var replacementText = lineBreakSpanConversionOptions == LineBreakSpanConversionMode.ToSpace ? " " : Environment.NewLine;
+						var newlineNode = doc.CreateTextNode(replacementText);
+						lineBreakSpan.ParentNode.ReplaceChild(newlineNode, lineBreakSpan);
 					}
-					lineBreakSpan.ReplaceWith(replacementForLinebreakSpan);
 				}
-			
-				// Leading and trailing whitespace are undesirable for the title even if the user has
-				// put them in for some strange reason.  (BL-7558)
-				return doc.Value.Trim();
+
+				return doc.DocumentElement.InnerText;
 			}
 			catch (XmlException)
 			{
-				return input;
+				return input; // If we can't parse for some reason, return the original string
 			}
 		}
 
