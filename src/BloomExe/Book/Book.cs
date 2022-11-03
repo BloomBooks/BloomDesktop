@@ -334,39 +334,14 @@ namespace Bloom.Book
 		{
 			try
 			{
+				if (lineBreakSpanConversionOptions == LineBreakSpanConversionMode.ToSpace || lineBreakSpanConversionOptions == LineBreakSpanConversionMode.ToNewline)
+				{
+					return BookData.RemoveHtmlMarkup(input,
+						lineBreakSpanConversionOptions == LineBreakSpanConversionMode.ToSpace ? " " : Environment.NewLine);
+				}
 				var doc = new XmlDocument();
 				doc.PreserveWhitespace = true;
 				doc.LoadXml("<div>" + input + "</div>");
-
-				// NOTE: There is a similar section of code dealing with bloom-linebreak
-				//       in BookData.cs::TextOfInnerHtml().
-				//       (That operates on XElements though, this deals with XmlElements)
-				if (lineBreakSpanConversionOptions == LineBreakSpanConversionMode.ToSpace || lineBreakSpanConversionOptions == LineBreakSpanConversionMode.ToNewline)
-				{
-					string zeroWidthNbsp = ((char)65279).ToString();
-
-					// Handle Shift+Enter, which gets translated to <span class="bloom-linebreak" />
-					// This is being handled using at the XML level instead of string level, so that it'll work regardless of
-					// whether it uses the <span /> form or <span></span> form. (I do see places in the debugger where the data is in <span></span> form.)
-					var lineBreaks = doc.SafeSelectNodes("//span[contains(concat(' ', normalize-space(@class), ' '), ' bloom-linebreak ')]");
-					var lineBreakElements = lineBreaks.Cast<XmlElement>().ToArray();
-					foreach (var lineBreakSpan in lineBreakElements)
-					{
-						// But before we mess with lineBreakSpan, first check if it's immediately followed by a zero-width no-break space
-						// (which is also inserted upon Shift-Enter), and if so delete that out.
-						var nextSibling = lineBreakSpan.NextSibling;
-						if (nextSibling?.NodeType == XmlNodeType.Text && nextSibling.Value != null && nextSibling.Value.StartsWith(zeroWidthNbsp))
-						{
-							nextSibling.Value = nextSibling.Value.Substring(1);
-						}
-
-						// Now delete lineBreakSpan and replace it
-						var replacementText = lineBreakSpanConversionOptions == LineBreakSpanConversionMode.ToSpace ? " " : Environment.NewLine;
-						var newlineNode = doc.CreateTextNode(replacementText);
-						lineBreakSpan.ParentNode.ReplaceChild(newlineNode, lineBreakSpan);
-					}
-				}
-
 				return doc.DocumentElement.InnerText;
 			}
 			catch (XmlException)

@@ -1776,12 +1776,13 @@ namespace Bloom.Book
 		/// <returns></returns>
 		internal static string TextOfInnerHtml(string input)
 		{
+			return RemoveHtmlMarkup(input, "\n");
+		}
+
+		public static string RemoveHtmlMarkup(string input, string replacementForLinebreakSpan)
+		{
 			if (input == null)
 				return null;
-
-			// NOTE: There is a similar section of code dealing with bloom-linebreak
-			//       in Book.cs::RemoveXmlMarkup().
-			//       (That operates on XmlElements though, this deals with XElements)
 
 			// Parsing it as XML and then extracting the value removes any markup.  Internal
 			// spaces might disappear if we don't preserve whitespace during the parse.
@@ -1809,7 +1810,7 @@ namespace Bloom.Book
 				}
 
 				// Now delete lineBreakSpan and replace it
-				lineBreakSpan.ReplaceWith("\n");
+				lineBreakSpan.ReplaceWith(replacementForLinebreakSpan);
 			}
 			
 			// Leading and trailing whitespace are undesirable for the title even if the user has
