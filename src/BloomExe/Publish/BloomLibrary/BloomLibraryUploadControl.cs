@@ -877,9 +877,9 @@ namespace Bloom.Publish.BloomLibrary
 			var target = BookUpload.UseSandbox ? UploadDestination.Development : UploadDestination.Production;
 
 			var bloom = Application.ExecutablePath;
-			if (SIL.PlatformUtilities.Platform.IsLinux)
-				bloom = $"/opt/mono5-sil/bin/mono {bloom}";
 			var command = $"\"{bloom}\" upload \"{rootFolderPath}\" -u {_userId.Text} -d {target}";
+			if (SIL.PlatformUtilities.Platform.IsLinux)
+				command = $"/opt/mono5-sil/bin/mono {command}";
 
 			ProcessStartInfo startInfo;
 			if (SIL.PlatformUtilities.Platform.IsWindows)
