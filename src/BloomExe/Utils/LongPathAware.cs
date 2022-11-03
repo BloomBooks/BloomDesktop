@@ -42,6 +42,10 @@ namespace Bloom.Utils
 			{
 				return path;
 			}
+			if (SIL.PlatformUtilities.Platform.IsLinux)
+			{
+				return path;
+			}
 			if (!GetIsPossiblyShortenedPath(path))
 			{
 				return path;
@@ -69,6 +73,7 @@ namespace Bloom.Utils
 		internal static bool GetIsPossiblyShortenedPath(string path)
 		{
 			if (path == null) return false;
+			if (SIL.PlatformUtilities.Platform.IsLinux) return false;
 			return path.Contains("~");
 		}
 
