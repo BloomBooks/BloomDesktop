@@ -88,15 +88,21 @@ To handling the mis-match.*/
         display: none;
     }
     .bloom-translationGroup {
-         // Height in ems so it is sentitive to font size. The '1 transparent/3 grey' here is not necessarily
+        // Height in ems so it is sentitive to font size. The '1 transparent/3 grey' here is not necessarily
         // ideal, and was just arrived at through experimentation, balancing accuracy
         // (how many lines of text really fit in this box) with visual appeal.
         // There's often an incomplete 'line'. "To bottom" puts it at the bottom.
         // Read as: start transparent, stay transparent to 1em, switch abruptly to grey at 1em,
         // stay grey out to 4em, then repeat (which will mean an abrupt transition back to transparent).
-        background: repeating-linear-gradient(to bottom, transparent, transparent 1em, grey 1em, grey 4em);
+        background: repeating-linear-gradient(
+            to bottom,
+            transparent,
+            transparent 1em,
+            grey 1em,
+            grey 4em
+        );
         padding: 1em 0em; // text usually doesn't go to the outermost edges.
-        box-sizing:border-box;
+        box-sizing: border-box;
         // Makes background respect padding. However, the pattern still BEGINS at the outermost edge;
         // hence, we put the transparent at the start, so the first 1em transparent is clipped.
         // Something more complicated may be needed to make the first line full-width if the amount of padding
@@ -720,8 +726,8 @@ books may contain divs with box-header-off, so we need a rule to hide them.*/
             background-size: contain;
         }
 
-        // above so buttons show
-        z-index: @baseZIndexForContainers;
+        // above canvas so we can click playback controls
+        z-index: @bubbleCanvasZIndex + 1;
 
         video {
             // I don't know exactly why this works, but it makes the video shrink to fit,
