@@ -145,33 +145,38 @@ import theOneLocalizationManager from "../localizationManager/localizationManage
             });
         if (isSnappableSplitter(divider)) {
             makeSnaps(divider.parentElement, () => {
+                // If the splitter has never been moved, it is at 50%, but the style hasn't been set.
+                let currentOffset = 50;
+
                 const dividerStyle = divider.getAttribute("style");
-                const regex = isHorizontal(divider)
-                    ? /bottom: ([0-9.]*)%/
-                    : /right: ([0-9.]*)%/;
-                const match = dividerStyle.match(regex);
-                if (match) {
-                    const currentOffset = parseFloat(match[1]);
-                    const defaultLabel =
-                        dividerPositionForDisplay(currentOffset) + "%";
-                    // In mouse enter, we'll always show a snap if we are exactly at it.
-                    preciseMode = false;
-                    const [snappedOffset, label, isSnapped] = snapTo(
-                        currentOffset,
-                        defaultLabel,
-                        divider.parentElement.offsetHeight
-                    );
-                    let finalLabel = label;
-                    if (
-                        isSnapped &&
-                        Math.abs(snappedOffset - currentOffset) > 0.1
-                    ) {
-                        // This position would snap, but not to where the divider now is.
-                        // For hover effect it's better not to show as snapped.
-                        finalLabel = defaultLabel;
+                if (dividerStyle) {
+                    const regex = isHorizontal(divider)
+                        ? /bottom: ([0-9.]*)%/
+                        : /right: ([0-9.]*)%/;
+                    const match = dividerStyle.match(regex);
+                    if (match) {
+                        currentOffset = parseFloat(match[1]);
                     }
-                    divider.setAttribute("data-splitter-label", finalLabel);
                 }
+                const defaultLabel =
+                    dividerPositionForDisplay(currentOffset) + "%";
+                // In mouse enter, we'll always show a snap if we are exactly at it.
+                preciseMode = false;
+                const [snappedOffset, label, isSnapped] = snapTo(
+                    currentOffset,
+                    defaultLabel,
+                    divider.parentElement.offsetHeight
+                );
+                let finalLabel = label;
+                if (
+                    isSnapped &&
+                    Math.abs(snappedOffset - currentOffset) > 0.1
+                ) {
+                    // This position would snap, but not to where the divider now is.
+                    // For hover effect it's better not to show as snapped.
+                    finalLabel = defaultLabel;
+                }
+                divider.setAttribute("data-splitter-label", finalLabel);
             });
         }
     }

@@ -76,15 +76,19 @@ namespace Bloom.web.controllers
 						// and using it if horizontal, even if there are other horizontal splits.
 						if (topSplitPanes.Length == 1)
 						{
+							// If the splitter has never been moved, it is at 50%, but the style hasn't been set.
+							var split = "50";
+
 							var style = topSplitPanes[0].Attributes["style"]?.Value;
-							var styleKeyword = orientation == "horizontal" ? "bottom" : "right";
-							var matches = new Regex($"{styleKeyword}: (.*)%").Match(style);
-							if (matches.Success)
+							if (style != null)
 							{
-								var split = matches.Groups[1].Value;
-								request.ReplyWithText(split);
-								return;
+								var styleKeyword = orientation == "horizontal" ? "bottom" : "right";
+								var matches = new Regex($"{styleKeyword}: (.*)%").Match(style);
+								if (matches.Success)
+									split = matches.Groups[1].Value;
 							}
+							request.ReplyWithText(split);
+							return;
 						}
 					}
 					request.ReplyWithText("none");
