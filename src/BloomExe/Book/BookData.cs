@@ -1776,7 +1776,11 @@ namespace Bloom.Book
 		/// <returns></returns>
 		internal static string TextOfInnerHtml(string input)
 		{
-			return Book.RemoveHtmlMarkup(input, Book.LineBreakSpanConversionMode.ToSimpleNewline);
+			var text = Book.RemoveHtmlMarkup(input, Book.LineBreakSpanConversionMode.ToSimpleNewline);
+
+			// Leading and trailing whitespace are undesirable for the title even if the user has
+			// put them in for some strange reason.  (BL-7558)
+			return text?.Trim();
 		}
 
 		private string[] WritingSystemIdsToTry

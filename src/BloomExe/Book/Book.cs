@@ -13,7 +13,6 @@ using System.Threading.Tasks;
 using System.Web;
 using System.Windows.Forms;
 using System.Xml;
-using System.Xml.Linq;
 using Bloom.Api;
 using Bloom.Collection;
 using Bloom.Edit;
@@ -338,29 +337,28 @@ namespace Bloom.Book
 				return null;
 			try
 			{
-				// Parsing it as XML and then extracting the value removes any markup.  Internal
-				// spaces might disappear if we don't preserve whitespace during the parse.
-				var doc = XElement.Parse("<doc>" + input + "</doc>", LoadOptions.PreserveWhitespace);
+				var doc = new XmlDocument();
+				doc.PreserveWhitespace = true;
+				doc.LoadXml("<div>" + input + "</div>");
 
 				const char kBOM = '\uFEFF';	// Unicode Byte Order Mark character.
 
 				// Handle Shift+Enter, which gets translated to <span class="bloom-linebreak" />
-				// This is being handled using at the XElement level instead of string level, so that it'll work regardless of
+				// This is being handled using at the XML level instead of string level, so that it'll work regardless of
 				// whether it uses the <span /> form or <span></span> form. (I do see places in the debugger where the data is in <span></span> form.)
-				var lineBreaks = doc.Descendants("span").Where(e => e.Attribute("class")?.Value == "bloom-linebreak").ToList();
-				foreach (var lineBreakSpan in lineBreaks)
+				var lineBreaks = doc.SafeSelectNodes("//span[contains(concat(' ', normalize-space(@class), ' '), ' bloom-linebreak ')]");
+				var lineBreakElements = lineBreaks.Cast<XmlElement>().ToArray();
+				foreach (var lineBreakSpan in lineBreakElements)
 				{
 					// But before we mess with lineBreakSpan, first check if it's immediately followed by a BOM
 					// character (which is also inserted by Shift-Enter), and if so delete that out.
-					if (lineBreakSpan.NextNode?.NodeType == XmlNodeType.Text)
+					var nextSibling = lineBreakSpan.NextSibling;
+
+					// String.StartsWith() seems to always ignore the BOM character, so use a character
+					// comparison.  See https://issues.bloomlibrary.org/youtrack/issue/BL-11717.
+					if (nextSibling?.NodeType == XmlNodeType.Text && !String.IsNullOrEmpty(nextSibling.Value) && nextSibling.Value[0] == kBOM)
 					{
-						var nextText = lineBreakSpan.NextNode as XText;
-						// String.StartsWith() seems to always ignore the BOM character, so use a character
-						// comparison.  See https://issues.bloomlibrary.org/youtrack/issue/BL-11717.
-						if (!String.IsNullOrEmpty(nextText?.Value) && nextText.Value[0] == kBOM)
-						{
-							nextText.Value = nextText.Value.Substring(1);
-						}
+						nextSibling.Value = nextSibling.Value.Substring(1);
 					}
 
 					// Now delete lineBreakSpan and replace it
@@ -377,16 +375,15 @@ namespace Bloom.Book
 							replacementForLinebreakSpan = "\n";
 							break;
 					}
-					lineBreakSpan.ReplaceWith(replacementForLinebreakSpan);
+					var newlineNode = doc.CreateTextNode(replacementForLinebreakSpan);
+					lineBreakSpan.ParentNode.ReplaceChild(newlineNode, lineBreakSpan);
 				}
-			
-				// Leading and trailing whitespace are undesirable for the title even if the user has
-				// put them in for some strange reason.  (BL-7558)
-				return doc.Value.Trim();
+
+				return doc.DocumentElement.InnerText;
 			}
 			catch (XmlException)
 			{
-				return input;
+				return input; // If we can't parse for some reason, return the original string
 			}
 		}
 
