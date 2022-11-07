@@ -1787,7 +1787,7 @@ namespace Bloom.Book
 			// spaces might disappear if we don't preserve whitespace during the parse.
 			var doc = XElement.Parse("<doc>" + input + "</doc>", LoadOptions.PreserveWhitespace);
 
-			string zeroWidthNbsp = ((char)65279).ToString();
+			const char kBOM = '\uFEFF';	// Unicode Byte Order Mark character.
 
 			// Handle Shift+Enter, which gets translated to <span class="bloom-linebreak" />
 			// This is being handled using at the XElement level instead of string level, so that it'll work regardless of
@@ -1795,12 +1795,14 @@ namespace Bloom.Book
 			var lineBreaks = doc.Descendants("span").Where(e => e.Attribute("class")?.Value == "bloom-linebreak").ToList();
 			foreach (var lineBreakSpan in lineBreaks)
 			{
-				// But before we mess with lineBreakSpan, first check if it's immediately followed by a zero-width no-break space
-				// (which is also inserted upon Shift-Enter), and if so delete that out.
+				// But before we mess with lineBreakSpan, first check if it's immediately followed by a BOM
+				// character (which is also inserted by Shift-Enter), and if so delete that out.
 				if (lineBreakSpan.NextNode?.NodeType == XmlNodeType.Text)
 				{
 					var nextText = lineBreakSpan.NextNode as XText;
-					if (nextText?.Value?.StartsWith(zeroWidthNbsp) == true)
+					// String.StartsWith() seems to always ignore the BOM character, so use a character
+					// comparison.  See https://issues.bloomlibrary.org/youtrack/issue/BL-11717.
+					if (!String.IsNullOrEmpty(nextText?.Value) && nextText.Value[0] == kBOM)
 					{
 						nextText.Value = nextText.Value.Substring(1);
 					}
