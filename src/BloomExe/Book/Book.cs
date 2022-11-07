@@ -343,7 +343,7 @@ namespace Bloom.Book
 				//       (That operates on XElements though, this deals with XmlElements)
 				if (lineBreakSpanConversionOptions == LineBreakSpanConversionMode.ToSpace || lineBreakSpanConversionOptions == LineBreakSpanConversionMode.ToNewline)
 				{
-					string zeroWidthNbsp = ((char)65279).ToString();
+					const char kBOM = '\uFEFF';	// Unicode Byte Order Mark character.
 
 					// Handle Shift+Enter, which gets translated to <span class="bloom-linebreak" />
 					// This is being handled using at the XML level instead of string level, so that it'll work regardless of
@@ -352,10 +352,13 @@ namespace Bloom.Book
 					var lineBreakElements = lineBreaks.Cast<XmlElement>().ToArray();
 					foreach (var lineBreakSpan in lineBreakElements)
 					{
-						// But before we mess with lineBreakSpan, first check if it's immediately followed by a zero-width no-break space
-						// (which is also inserted upon Shift-Enter), and if so delete that out.
+						// But before we mess with lineBreakSpan, first check if it's immediately followed by a BOM
+						// character (which is also inserted by Shift-Enter), and if so delete that out.
 						var nextSibling = lineBreakSpan.NextSibling;
-						if (nextSibling?.NodeType == XmlNodeType.Text && nextSibling.Value != null && nextSibling.Value.StartsWith(zeroWidthNbsp))
+
+						// String.StartsWith() seems to always ignore the BOM character, so use a character
+						// comparison.  See https://issues.bloomlibrary.org/youtrack/issue/BL-11717.
+						if (nextSibling?.NodeType == XmlNodeType.Text && !String.IsNullOrEmpty(nextSibling.Value) && nextSibling.Value[0] == kBOM)
 						{
 							nextSibling.Value = nextSibling.Value.Substring(1);
 						}

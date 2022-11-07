@@ -79,6 +79,24 @@ namespace BloomTests.Book
 		}
 
 		[Test]
+		public void TextOfInnerHtml_HandlesLinebreakSpanWithNoByteOrderMarkProperly()
+		{
+			// Markup should be removed, linebreak replaced with \n, whitespace should be trimmed.
+			var input = "<p>Enter</p> <p>Shift-Enter<span class=\"bloom-linebreak\"></span>Last Line </p>";
+			var output = BookData.TextOfInnerHtml(input);
+			Assert.That(output, Is.EqualTo("Enter Shift-Enter\nLast Line"));
+		}
+
+		[Test]
+		public void TextOfInnerHtml_HandlesLinebreakSpanWithByteOrderMarkProperly()
+		{
+			// Markup should be removed, linebreak replaced with \n, byte order mark should be removed, whitespace should be trimmed.
+			var input = "<p>Enter</p> <p>Shift-Enter<span class=\"bloom-linebreak\"></span>﻿Last Line </p>";
+			var output = BookData.TextOfInnerHtml(input);
+			Assert.That(output, Is.EqualTo("Enter Shift-Enter\nLast Line"));
+		}
+
+		[Test]
 		public void TextOfInnerHtml_HandlesXmlEscapesCorrectly()
 		{
 			var input =
