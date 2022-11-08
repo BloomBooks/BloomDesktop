@@ -185,6 +185,46 @@ export default class BloomField {
             $(".removeMe").remove();
         });
 
+        // The focus and blur event handlers ensure that the qtip tooltip for the
+        // currently focused editor element is on top of any other qtip tooltips
+        // such as Source Bubbles.
+        // These tooltips are not to be confused with Source Bubbles.  The editor
+        // element here is a single div.bloom-editable where the focus applies, possibly
+        // enclosed by a div.bloom-translationGroup.  A Source Bubble qtip is attached
+        // to the parent div.bloom-translationGroup if it exists.
+        // See https://issues.bloomlibrary.org/youtrack/issue/BL-11745.
+        // NOTE:
+        // * qtipOverrides.less handles the z-index for active-tooltip and styling for
+        //   passive-bubble tooltips
+        // * sourceBubbles.less handles the z-index for passive-bubble for Source Bubbles
+        //   (for other tooltips, this defaults to what qtip places on the element itself)
+        // * BloomSourceBubbles.SetupTooltips() has focus and blur handlers for Source Bubbles
+        //   which remove or add the passive-bubble class.
+        ckeditor.on("focus", event => {
+            const qtipId = event.editor?.element?.getAttribute(
+                "aria-describedby"
+            );
+            if (qtipId) {
+                const tipElement = $(`#${qtipId}`);
+                if (tipElement) {
+                    tipElement.removeClass("passive-bubble");
+                    tipElement.addClass("active-tooltip");
+                }
+            }
+        });
+        ckeditor.on("blur", event => {
+            const qtipId = event.editor?.element?.getAttribute(
+                "aria-describedby"
+            );
+            if (qtipId) {
+                const tipElement = $(`#${qtipId}`);
+                if (tipElement) {
+                    tipElement.removeClass("active-tooltip");
+                    tipElement.addClass("passive-bubble");
+                }
+            }
+        });
+
         ckeditor.addCommand("pasteHyperlink", {
             exec: function(edt) {
                 BloomApi.get("common/clipboardText", result => {
