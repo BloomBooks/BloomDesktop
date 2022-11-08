@@ -822,7 +822,11 @@ import theOneLocalizationManager from "../localizationManager/localizationManage
                 ];
             }
         }
-        return [unsnappedOffset, defaultLabel, false];
+        // In the default, low-res mode, we always set the percentage to a whole number.
+        const snapped = Math.round(unsnappedOffset);
+        // We have done a little snapping, but for purposes like showing the brighter
+        // line, I think it's better to consider this unsnapped.
+        return [snapped, dividerPositionForDisplay(snapped, true) + "%", false];
     }
 
     function pageXof(event) {
