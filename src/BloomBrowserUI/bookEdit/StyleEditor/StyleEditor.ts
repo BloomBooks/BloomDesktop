@@ -2065,6 +2065,7 @@ export default class StyleEditor {
             $("#" + buttonIds[i]).removeClass("selectedIcon");
         }
         this.selectButtons(current);
+        this.setColorButtonColor(current.color);
         this.ignoreControlChanges = false;
         this.cleanupAfterStyleChange();
     }
