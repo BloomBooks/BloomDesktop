@@ -2890,7 +2890,7 @@ export class BubbleManager {
 
         textOverPictureElems.resizable({
             handles: "all",
-            // ENHANCE: Maybe we should add a containtment option here?
+            // ENHANCE: Maybe we should add a containment option here?
             //   If we don't let you drag one of these outside the image container, maybe we shouldn't let you resize one outside either
             // resize: (event, ui) => {
             //     ENHANCE: Workaround for the following bug
