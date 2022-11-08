@@ -20,8 +20,7 @@ mixin chooseWordFromPicture
 		.imageThenChoices
 			+image
 			.choices.player-shuffle-buttons
-				//- we put .chosen-correct on one button to turn on the styling during edit.
-				+textButtonChoice(data-activityRole="correct-answer").chosen-correct
+				+textButtonChoice(data-activityRole="correct-answer")
 					+correctAnswerBubble
 				each count in new Array(2)
 					+textButtonChoice(data-activityRole="wrong-answer")
@@ -33,8 +32,7 @@ mixin choosePictureFromWord
 		.wordThenChoices
 			+field("L1").bloom-ignoreOverflow.word-to-match.TextToMatch-style
 			.choices.player-shuffle-buttons
-				//- we put .chosen-correct on one button to turn on the styling during edit.
-				+imageButtonChoice(data-activityRole="correct-answer").chosen-correct
+				+imageButtonChoice(data-activityRole="correct-answer")
 					+correctAnswerBubble
 				each count in new Array(2)
 					+imageButtonChoice(data-activityRole="wrong-answer")

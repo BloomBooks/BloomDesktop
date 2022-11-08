@@ -259,6 +259,14 @@
             color: white;
             background-color: #ffb453;
         }
+        // highlight correct answer while editing
+        &[data-activityRole="correct-answer"] {
+            .cke_editable {
+                color: white;
+                background-color: #ffb453;
+                border-radius: 10px;
+            }
+        }
 
         &.chosen-wrong {
             color: white;

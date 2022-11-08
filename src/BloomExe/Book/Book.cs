@@ -1285,6 +1285,7 @@ namespace Bloom.Book
 			}
 			RemoveObsoleteSoundAttributes(bookDOM);
 			RemoveObsoleteImageAttributes(bookDOM);
+			RemoveUnwantedClasses(bookDOM);
 			BringBookInfoUpToDate(oldMetaData);
 			FixErrorsEncounteredByUsers(bookDOM);
 			AddReaderBodyAttributes(bookDOM);
@@ -3859,6 +3860,15 @@ namespace Bloom.Book
 					img.SetAttribute("style", fixedStyle);
 				img.RemoveAttribute("width");
 				img.RemoveAttribute("height");
+			}
+		}
+
+		private void RemoveUnwantedClasses(HtmlDom htmlDom)
+		{
+			// chosen-correct reveals the answer in PDF output (BL-11726)
+			foreach (var div in htmlDom.RawDom.SafeSelectNodes("//div[contains(@class,'chosen-correct')]").Cast<XmlElement>())
+			{
+				HtmlDom.RemoveClass(div, "chosen-correct");
 			}
 		}
 
