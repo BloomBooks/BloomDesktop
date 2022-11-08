@@ -185,6 +185,40 @@ export default class BloomField {
             $(".removeMe").remove();
         });
 
+        // The focus and blur event handlers ensure that the qtip tooltip for the
+        // currently focused editor element is on top of any other qtip tooltips.
+        // See https://issues.bloomlibrary.org/youtrack/issue/BL-11745.
+        ckeditor.on("focus", event => {
+            const qtipId = event.editor?.element?.getAttribute(
+                "aria-describedby"
+            );
+            if (qtipId) {
+                const tipElement = $(`#${qtipId}`);
+                if (tipElement) {
+                    // .zIndex() is documented as returning Integer
+                    // .zIndex(Integer) is documented as returning jquery
+                    // The typescript typing apparently handles only the latter.
+                    // Hence, the typecasting in the following statement.
+                    tipElement.zIndex(
+                        ((tipElement.zIndex() as unknown) as number) + 10000
+                    );
+                }
+            }
+        });
+        ckeditor.on("blur", event => {
+            const qtipId = event.editor?.element?.getAttribute(
+                "aria-describedby"
+            );
+            if (qtipId) {
+                const tipElement = $(`#${qtipId}`);
+                if (tipElement) {
+                    tipElement.zIndex(
+                        ((tipElement.zIndex() as unknown) as number) - 10000
+                    );
+                }
+            }
+        });
+
         ckeditor.addCommand("pasteHyperlink", {
             exec: function(edt) {
                 BloomApi.get("common/clipboardText", result => {
