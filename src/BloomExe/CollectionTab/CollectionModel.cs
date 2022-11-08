@@ -686,7 +686,7 @@ namespace Bloom.CollectionTab
 		/// <param name="path">The path to write to. Precondition: Must not exist.</param>
 		internal void MakeBloomPackInternal(string path, string dir, string dirNamePrefix, bool forReaderTools, bool isCollection)
 		{
-			var excludeAudio = true; // don't want audio in bloompack
+			var excludeAudio = false; // want audio in bloompack: see https://issues.bloomlibrary.org/youtrack/issue/BL-11741.
 			var forDevice = false;
 			if (isCollection)
 			{
