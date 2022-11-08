@@ -5,6 +5,7 @@
 @bleed: 3mm; // Duplicated from basePage.less to remove circular dependency between BloomBrowserUI and content
 
 @focusBorderColor: rgba(82, 168, 236, 0.6);
+@tipLinkColor: #8e3581; // intentionally a bit darker to be legible
 
 // This mixin simply encapsulates the logic of how we add a border on top
 // of the edge of an image container instead of adding a regular border
@@ -146,6 +147,24 @@ div.bloom-imageContainer {
         }
     }
 }
+
+.ui-missingCopyrightNotice {
+    margin-bottom: 1em;
+
+    a {
+        background-color: white;
+        border: solid 1px;
+        border-radius: 5px;
+        border-color: @tipLinkColor;
+        padding: 4px;
+        font-size: 10px;
+        font-weight: bold;
+        text-decoration: none;
+        color: @tipLinkColor;
+    }
+
+}
+
 .bloom-page .pageLabel {
     text-align: left;
     color: @ControlColor;
@@ -153,11 +172,13 @@ div.bloom-imageContainer {
     left: 5mm;
     top: @PageLabelVerticalDisplacement;
     float: left;
+
     &[contenteditable="true"] {
         color: @ControlColor;
         padding: 0 2px;
         display: initial; // must see it to edit it (template pages)
     }
+
     display: none; // BL-7925
 }
 
@@ -499,6 +520,10 @@ div.bloom-templateMode {
     left: 0;
     font-size: 9pt;
     line-height: 9pt;
+}
+
+.ui-tooltip-plain a {
+    color: @tipLinkColor;
 }
 
 .fieldInfo-qtip .ui-tooltip-content {

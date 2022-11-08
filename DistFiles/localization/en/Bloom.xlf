@@ -1171,8 +1171,8 @@
         <note>ID: Copyright.IllustratorOrPhotographer</note>
       </trans-unit>
       <trans-unit id="Copyright.MissingCopyright">
-        <source xml:lang="en">Missing Copyright</source>
-        <note>ID: Copyright.MissingCopyright</note>
+        <source xml:lang="en">Needs Copyright</source>
+        <note>People will see this button on the Credits Page when they make a new book. So when translating, don't make them feel bad. Don't make them feel that they made a mistake. We just want to point out that they need to give us a copyright eventually.</note>
       </trans-unit>
       <trans-unit id="Copyright.NotATranslation" sil:dynamic="true">
         <source xml:lang="en">Not a translation or new version</source>

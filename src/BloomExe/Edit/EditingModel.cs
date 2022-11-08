@@ -816,9 +816,7 @@ namespace Bloom.Edit
 				var anchor = licenseBlock.OwnerDocument.CreateElement("a");
 				div.AppendChild(anchor);
 				div.SetAttribute("class", "ui-missingCopyrightNotice"); // don't save this
-				div.SetAttribute("style", "margin-bottom: 12px;");
-				anchor.InnerText = LocalizationManager.GetString("Copyright.MissingCopyright", "Missing Copyright");
-				anchor.SetAttribute("style", "color: red;");
+				anchor.InnerText = LocalizationManager.GetString("Copyright.MissingCopyright", "Needs Copyright");
 				anchor.SetAttribute("href",
 					"javascript:(window.parent || window).editTabBundle.showCopyrightAndLicenseDialog();");
 				licenseBlock.InsertBefore(div, licenseBlock.FirstChild);
