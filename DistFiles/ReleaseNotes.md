@@ -44,11 +44,11 @@ We made several changes to speed up Bloom’s launch time.
 
 ## Menus
 
-In the Collection dropdown menu, we 
+In the Collection dropdown menu, we
 
-- Renamed the “Advanced” submenu to “Troubleshooting”.
+-   Renamed the “Advanced” submenu to “Troubleshooting”.
 
-- In “Shell” collections (which we think should be _very_ rare in 2022), we moved “Make Bloom Pack” from the toolbar to this menu.
+-   In "Source" collections (which we think should be _very_ rare in 2022), we moved “Make Bloom Pack” from the toolbar to this menu.
 
 ![](https://docs.bloomlibrary.org/notion_imgs/546095792.png)
 
@@ -116,23 +116,23 @@ Note that there are currently several things that Bloom does not export: Talking
 
 ### Import
 
-You can now import an Excel spreadsheet *onto* an existing Bloom book. The target book can be a new empty book you just created or an existing book that you want to update. When importing onto an existing book, Bloom can currently not safely protect some things in the existing book, so if your book has any of these things, it will refuse to do the import. These items in a book prevent it from getting an update through a spreadsheet import: Talking Book audio, Activities.
+You can now import an Excel spreadsheet _onto_ an existing Bloom book. The target book can be a new empty book you just created or an existing book that you want to update. When importing onto an existing book, Bloom can currently not safely protect some things in the existing book, so if your book has any of these things, it will refuse to do the import. These items in a book prevent it from getting an update through a spreadsheet import: Talking Book audio, Activities.
 
 Bloom's import/export feature is still a work in progress. Already, for simple books, it will enable you to do many previously difficult things, including:
 
-* Get translations done by people without Bloom, using Excel, Libre Office, or Google Sheets.
+-   Get translations done by people without Bloom, using Excel, Libre Office, or Google Sheets.
 
-* Apply bulk changes to the text in an external editor.
+-   Apply bulk changes to the text in an external editor.
 
-* Fix mistakes where someone typed text into a box with the wrong language.
+-   Fix mistakes where someone typed text into a box with the wrong language.
 
-* Merge text in different languages into a single book
+-   Merge text in different languages into a single book
 
 While not fully supported yet, we also expect that this feature will eventually be useful for:
 
-* Making new editions of books designed for paper vs. devices. This is possible because the importer can actually spread content out over a different number of pages.
+-   Making new editions of books designed for paper vs. devices. This is possible because the importer can actually spread content out over a different number of pages.
 
-* Use online translation services like Crowdin to engage translators, including paid ones.
+-   Use online translation services like Crowdin to engage translators, including paid ones.
 
 To enable Spreadsheet Import/Export, tick the box under `Collection Settings / Advanced Program Settings / Spreadsheet Import/Export`.
 
@@ -140,7 +140,7 @@ To enable Spreadsheet Import/Export, tick the box under `Collection Settings / A
 
 ## New Collection UI (Experimental)
 
-As the next phase of our multi-year effort to modernize the Bloom code base, we have completely rewritten the left-hand side of the Collection Tab using Web technologies. This has been a *very large* undertaking, so we're making it available as an experimental feature for Bloom 5.2 to give us all more time to test it. With this new interface, Team Collections get nice avatar images of their teammates over books they have checked out:
+As the next phase of our multi-year effort to modernize the Bloom code base, we have completely rewritten the left-hand side of the Collection Tab using Web technologies. This has been a _very large_ undertaking, so we're making it available as an experimental feature for Bloom 5.2 to give us all more time to test it. With this new interface, Team Collections get nice avatar images of their teammates over books they have checked out:
 
 ![Books with badges showing who has them checked out](https://i.imgur.com/LSfuxiS.png)
 
@@ -150,8 +150,7 @@ Other users will notice only minor improvements to book thumbnail buttons. To en
 
 Many Bloom Enterprise projects use their own custom front/back matter packs. Previously in Bloom, everyone could see these in the list of choices. Now, these custom choices are not listed but instead are automatically selected based on the Bloom Enterprise code.
 
-
-# 5.1 
+# 5.1
 
 ## Collection Tab
 

@@ -120,6 +120,10 @@ function ctrlAltKeyDownListener(event: KeyboardEvent) {
             )
             .forEach(imageContainer => {
                 imageContainer.classList.add("ui-suppressImageButtons");
+
+                if (event.ctrlKey) {
+                    imageContainer.classList.add("ui-ctrlDown");
+                }
             });
     }
 }
@@ -139,6 +143,11 @@ function ctrlAltKeyUpListener(event: KeyboardEvent) {
             .querySelectorAll(".bloom-imageContainer.ui-suppressImageButtons")
             .forEach(imageContainer => {
                 imageContainer.classList.remove("ui-suppressImageButtons");
+
+                // Remember, for keyup events, you want to check event.key === "Control" instead of event.ctrlKey
+                if (event.key === "Control") {
+                    imageContainer.classList.remove("ui-ctrlDown");
+                }
             });
 
         // De-register ourself as an event handler.

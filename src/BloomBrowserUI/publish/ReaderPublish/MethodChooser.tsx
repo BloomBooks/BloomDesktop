@@ -213,7 +213,7 @@ function getHint(method: string) {
                                 Bloom Reader
                             </a>{" "}
                             (Android) or{" "}
-                            <a href="https://github.com/BloomBooks/bloompub-viewer/releases">
+                            <a href="https://bloomlibrary.org/page/create/downloads#related-software">
                                 BloomPUB Viewer
                             </a>{" "}
                             (Windows). You can also create a stand-alone app

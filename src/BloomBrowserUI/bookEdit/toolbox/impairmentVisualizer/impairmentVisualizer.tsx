@@ -134,7 +134,7 @@ export class ImpairmentVisualizerControls extends React.Component<{}, IState> {
         } else {
             body.classList.remove("simulateCataracts");
         }
-        ImpairmentVisualizerControls.removeColorBlindnessMarkup();
+        ImpairmentVisualizerControls.removeColorBlindnessMarkup(page);
         if (this.simulatingColorBlindness) {
             body.classList.add("simulateColorBlindness");
             // For now limit it to these images because the positioning depends
@@ -144,9 +144,17 @@ export class ImpairmentVisualizerControls extends React.Component<{}, IState> {
                 "bloom-imageContainer"
             );
             for (let i = 0; i < containers.length; i++) {
-                const images = containers[i].getElementsByTagName("img");
-                for (let imgIndex = 0; imgIndex < images.length; imgIndex++) {
-                    this.makeColorBlindnessOverlay(images[imgIndex]);
+                const immediateChildren = containers[i].children;
+                for (
+                    let childIndex = 0;
+                    childIndex < immediateChildren.length;
+                    childIndex++
+                ) {
+                    const child = immediateChildren[childIndex] as HTMLElement;
+                    if (!child || child.nodeName !== "IMG") continue;
+                    // Don't make an overlay for a draghandle or other UI element.
+                    if (child.classList.contains("bloom-ui")) continue;
+                    this.makeColorBlindnessOverlay(child as HTMLImageElement);
                 }
             }
         } else {
@@ -155,17 +163,16 @@ export class ImpairmentVisualizerControls extends React.Component<{}, IState> {
     }
 
     public static removeImpairmentVisualizerMarkup() {
-        ImpairmentVisualizerControls.removeColorBlindnessMarkup();
         const page = ToolboxToolReactAdaptor.getPage();
         if (!page || !page.ownerDocument) return;
+        ImpairmentVisualizerControls.removeColorBlindnessMarkup(page);
         const body = page.ownerDocument.body;
         body.classList.remove("simulateColorBlindness");
         body.classList.remove("simulateCataracts");
     }
 
-    private static removeColorBlindnessMarkup() {
-        const page = ToolboxToolReactAdaptor.getPage();
-        if (!page) return;
+    // Caller is responsible for guarding against a null page parameter.
+    private static removeColorBlindnessMarkup(page: HTMLElement) {
         [].slice
             .call(page.getElementsByClassName("ui-cbOverlay"))
             .map(x => x.parentElement.removeChild(x));
@@ -224,6 +231,14 @@ export class ImpairmentVisualizerControls extends React.Component<{}, IState> {
         canvas.style.width = "100%";
         // But then, make it shrink enough to keep its aspect ratio
         canvas.style.objectFit = "contain";
+        // If this canvas is for a picture overlay, its z-index needs to be boosted slightly.
+        // The reason is that the canvas for the "main" picture will appear later in the DOM order and
+        // in the same stacking context. Therefore, all things being equal, this one would be covered
+        // by that later one.
+        const parentContainer = img.parentElement;
+        if (!parentContainer.classList.contains("hasOverlay")) {
+            canvas.style.zIndex = "1";
+        }
         // And position it within the container the same as the img.
         if (img && img.ownerDocument && img.ownerDocument.defaultView) {
             img.style.objectPosition = img.ownerDocument.defaultView // the window that the img is in (not ours!)
