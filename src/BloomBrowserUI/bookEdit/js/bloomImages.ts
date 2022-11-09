@@ -123,6 +123,11 @@ function ctrlAltKeyDownListener(event: KeyboardEvent) {
 
                 if (event.ctrlKey) {
                     imageContainer.classList.add("ui-ctrlDown");
+                } else if (
+                    event.altKey &&
+                    imageContainer instanceof HTMLElement
+                ) {
+                    theOneBubbleManager.addResizeModeClass(imageContainer, {});
                 }
             });
     }

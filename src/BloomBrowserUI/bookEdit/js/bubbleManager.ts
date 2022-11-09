@@ -1149,6 +1149,10 @@ export class BubbleManager {
     // MUST be defined this way, rather than as a member function, so that it can
     // be passed directly to addEventListener and still get the correct 'this'.
     private onMouseMove = (event: MouseEvent) => {
+        // Capture the most recent data to use when our animation frame request is satisfied.
+        // or so keyboard events can reference the current mouse position.
+        this.lastMoveEvent = event;
+
         const container = event.currentTarget as HTMLElement;
         // Prevent two event handlers from triggering if the text box is currently being resized
         if (this.isJQueryResizing(container)) {
@@ -1248,15 +1252,68 @@ export class BubbleManager {
                 container.classList.add("grabbable");
             }
         } else {
-            // Resizing case
-            if (isVideo) {
-                targetElement.removeAttribute("controls");
-            }
-            const resizeMode = this.getResizeMode(hoveredBubble.content, event);
-
-            this.cleanupMouseMoveHover(container); // Need to clear both grabbable and *-resizables
-            container.classList.add(`${resizeMode}-resizable`);
+            this.addResizeModeClass(container, {
+                event,
+                hoveredBubble,
+                isVideo
+            });
         }
+    }
+
+    // Adds the appropriate resize handle to the containers
+    // You can provide just the imageContainer, and let the function handle everything else.
+    // If you already know some of these values in {optionalParams}, you can pass them in so the function won't re-compute them.
+    public addResizeModeClass(
+        container: HTMLElement,
+        optionalParams: {
+            event?: MouseEvent | undefined; // Leave undefined if unknown, this function will determine it
+            hoveredBubble?: Bubble | undefined; // Leave undefined if unknown, this function will determine it
+            isVideo?: boolean | undefined; // Leave undefined if unknown, this function will determine it
+        }
+    ) {
+        let { event, hoveredBubble, isVideo } = optionalParams;
+
+        //////////////////////////////////////////////////////////
+        // First, calculate the values for any undefined values //
+        //////////////////////////////////////////////////////////
+        event = event || this.lastMoveEvent;
+        if (!event) {
+            // Give up
+            return;
+        }
+
+        if (!hoveredBubble) {
+            const coordinates = this.getPointRelativeToCanvas(event, container);
+            if (!coordinates) {
+                // Give up
+                return;
+            }
+
+            hoveredBubble = Comical.getBubbleHit(
+                container,
+                coordinates.getUnscaledX(),
+                coordinates.getUnscaledY()
+            );
+            if (!hoveredBubble) {
+                // Give up
+                return;
+            }
+        }
+
+        if (isVideo === undefined) {
+            isVideo = this.isVideoOverPictureElement(hoveredBubble.content);
+        }
+
+        /////////////////////////////////////////////////////////////////////////////////
+        // Now that we've got all our parameters to be non-undefined, do the real logic//
+        /////////////////////////////////////////////////////////////////////////////////
+        if (isVideo && event.target instanceof Element) {
+            event.target.removeAttribute("controls");
+        }
+        const resizeMode = this.getResizeMode(hoveredBubble.content, event);
+
+        this.cleanupMouseMoveHover(container); // Need to clear both grabbable and *-resizables
+        container.classList.add(`${resizeMode}-resizable`);
     }
 
     private animationFrame: number;
@@ -1270,7 +1327,6 @@ export class BubbleManager {
         container: HTMLElement
     ) {
         // Capture the most recent data to use when our animation frame request is satisfied.
-        this.lastMoveEvent = event;
         this.lastMoveContainer = container;
         // We don't want any other effects of mouse move, like selecting text in the box,
         // to happen while we're dragging it around.
