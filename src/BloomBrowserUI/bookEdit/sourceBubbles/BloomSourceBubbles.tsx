@@ -673,6 +673,9 @@ export default class BloomSourceBubbles {
             //     "DEBUG BloomSourceBubbles.SetupTooltips/setting focus and blur handlers on " +
             //         elt.outerHTML
             // );
+            // BloomField.WireToCKEditor() has focus and blur handlers to add/remove the
+            // passive-bubble class on qtip tooltips that are *not* Source Bubbles.
+            // See https://issues.bloomlibrary.org/youtrack/issue/BL-11745.
             $(elt).focus(event => {
                 // BloomApi.postDebugMessage(
                 //     "DEBUG BloomSourceBubbles.SetupTooltips/on focus - element=" +
