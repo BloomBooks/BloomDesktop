@@ -4141,15 +4141,17 @@ namespace Bloom.Book
 		}
 
 		/// <summary>
-		/// Check whether the given image file should have a transparent background.
+		/// Check whether the given image file is for the book's cover.  If so, we may want to make
+		/// it transparent in further processing.
 		/// </summary>
 		/// <remarks>
 		/// See https://issues.bloomlibrary.org/youtrack/issue/BL-4816 for why we want to limit
 		/// which image files are given a transparent background.
 		/// </remarks>
-		public bool ImageFileShouldBeRenderedWithTransparency(string imagePath)
+		public bool ImageFileIsForBookCover(string imagePath)
 		{
-			// At the moment, only the cover image needs a transparent background.
+			// At the moment, only the cover image needs a transparent background, and then only if it's
+			// a black and white drawing.
 			// Note that if an image file is used more than once in a book, it gets a different
 			// name each time.
 			// For publishing, the imagePath will be in a temporary folder location instead of

@@ -64,6 +64,115 @@ namespace Bloom.ImageProcessing
 			return false;
 		}
 
+		/// <summary>
+		/// Check whether we should try to make the background of this image transparent.
+		/// Return true only if this is a two-color image with one of the colors being white.
+		/// Return false also if any pixel encountered in scanning the picture is transparent
+		/// at all.
+		/// </summary>
+		public static bool ShouldMakeBackgroundTransparent(PalasoImage imageInfo)
+		{
+			// We want to make the white background of Black and White pictures transparent.
+			// JPEG pictures generally never meet that criteria and cannot be made transparent anyway.
+			if (!AppearsToBePng(imageInfo))
+				return false;
+			if ((imageInfo.Image.PixelFormat & PixelFormat.Indexed) == PixelFormat.Indexed)
+			{
+				var palette = imageInfo.Image.Palette;
+				if (palette != null && palette.Entries != null)
+				{
+					// If only two colors are used, assume black and white line art that needs to have
+					// white made transparent.
+					if (palette.Entries.Length == 2)
+					{
+						var whiteFound = IsNearWhite(palette.Entries[0]) || IsNearWhite(palette.Entries[1]);
+						//Debug.WriteLine("DEBUG ShouldMakeBackgroundTransparent(\"{0}\"): indexed image with {1} colors, white {2}found",
+						//	imageInfo.FileName, palette.Entries.Length, whiteFound ? "" : "not ");
+						return whiteFound;
+					}
+					else
+					{
+						//Debug.WriteLine("DEBUG ShouldMakeBackgroundTransparent(\"{0}\"): indexed image with {1} colors",
+						//	imageInfo.FileName, palette.Entries.Length);
+						return false;
+					}
+				}
+			}
+			// Harder to check if not indexed...
+			if (imageInfo.Image is Bitmap bitmapImage)
+			{
+				var color1 = new Color();
+				var color2 = new Color();
+				// Yes, this is as expensive as it looks.  But we only sample 100 pixels
+				// spread through the picture, stopping as soon as we hit either a
+				// transparent pixel or a 3rd distinct color.
+				int yDelta = Math.Max(bitmapImage.Height / 10, 6);
+				int xDelta = Math.Max(bitmapImage.Width / 10, 6);
+				var pixelsExamined = 0;
+				for (int y = yDelta / 2; y < bitmapImage.Height; y += yDelta)
+				{
+					for (int x = xDelta / 2; x < bitmapImage.Width; x += xDelta)
+					{
+						++pixelsExamined;
+						var color = bitmapImage.GetPixel(x,y);
+						if (color.A < 255)
+						{
+							//Debug.WriteLine("DEBUG ShouldMakeBackgroundTransparent(\"{0}\"): {1} pixels examined before a transparent pixel found",
+							//	imageInfo.FileName, pixelsExamined);
+							return false;	// we already have transparent pixels
+
+						}
+						else if (color1 == Color.Empty)
+						{
+							color1 = color;
+						}
+						else if (color != color1 && color2 == Color.Empty)
+						{
+							color2 = color;
+						}
+						else if (color != color1 && color != color2)
+						{
+							//Debug.WriteLine("DEBUG ShouldMakeBackgroundTransparent(\"{0}\"): {1} pixels examined before 3 colors found",
+							//	imageInfo.FileName, pixelsExamined);
+							return false;	// we have at least 3 colors
+						}
+					}
+				}
+				var colorCount = 0;
+				var whiteFound = false;
+				if (color1 != Color.Empty)
+				{
+					++colorCount;
+					if (IsNearWhite(color1))
+						whiteFound = true;
+				}
+				if (color2 != Color.Empty)
+				{
+					++colorCount;
+					if (IsNearWhite(color2))
+						whiteFound = true;
+				}
+				//Debug.WriteLine("DEBUG ShouldMakeBackgroundTransparent(\"{0}\"): {1} pixels examined, {2} colors found, white {3}found",
+				//	imageInfo.FileName, pixelsExamined, colorCount, whiteFound ? "" : "not ");
+				// Only two colors encountered, likely black and white in intent.
+				// But if neither of the two colors is white (or near white), return false.
+				// (Our code wouldn't make anything transparent anyway.)
+				return colorCount == 2 && whiteFound;
+			}
+			// we can't tell, so err on the side of caution.
+			return false;
+		}
+
+		/// <summary>
+		/// Detect the color range that we would consider "white" and make transparent.
+		/// </summary>
+		internal static bool IsNearWhite(Color color)
+		{
+			return color.R >= 253 && color.R <= 255 &&
+					color.G >= 253 && color.G <= 255 &&
+					color.B >= 253 && color.B <= 255;
+		}
+
 		public static bool IsJpegFile(string path)
 		{
 			if (string.IsNullOrEmpty(path) || !RobustFile.Exists(path))

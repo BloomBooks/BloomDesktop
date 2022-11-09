@@ -243,5 +243,36 @@ namespace BloomTests.ImageProcessing
 		{
 			return (color.R | color.G | color.B) == 0 && color.A == 255;
 		}
+
+		[Test]
+		[TestCase("aor_Nab037.png", true)]				// indexed image with 2 colors, white found
+		[TestCase("bluebird-indexed.png", false)]		// indexed image with 2 colors, white not found
+		[TestCase("MemoryReport-indexed.png", false)]	// indexed image with 16 colors
+		[TestCase("Boxes.png", true)]					// 100 pixels examined, 2 colors found, white found
+		[TestCase("bluebird.png", false)]				// 100 pixels examined, 2 colors found, white not found
+		[TestCase("bird.png", false)]					// 1 pixels examined before a transparent pixel found
+		[TestCase("levels.png", false)]					// 1 pixels examined before a transparent pixel found
+		[TestCase("Mars 2.png", false)]					// 1 pixels examined before a transparent pixel found
+		[TestCase("Jesus Children.png", false)]			// 3 pixels examined before 3 colors found
+		[TestCase("aor_oce003m.png", false)]			// 16 pixels examined before 3 colors found (grayscale)
+		[TestCase("lady24b.png", false)]				// 26 pixels examined before 3 colors found
+		// The rest of these are more like torture tests rather than realistic drawings likely to be used in Bloom.
+		[TestCase("AceByDaisyError.png", false)]		// 14 pixels examined before 3 colors found
+		[TestCase("LineDrawing-2017.png", false)]		// 34 pixels examined before 3 colors found
+		[TestCase("Bloom-No-Microphone.png", false)]	// 42 pixels examined before 3 colors found
+		[TestCase("UpdateNotice-2017.png", false)]		// 44 pixels examined before 3 colors found
+		[TestCase("Rectangles1.png", false)]			// 45 pixels examined before 3 colors found
+		[TestCase("MemoryReport.png", false)]			// 52 pixels examined before 3 colors found
+		[TestCase("CreateTC.png", false)]				// 97 pixels examined before 3 colors found
+		public void TestForNeedingTransparentBackground(string filename, bool expectedResult)
+		{
+			var imagePath = FileLocationUtilities.GetFileDistributedWithApplication(_pathToTestImages, filename);
+			using (var image = PalasoImage.FromFileRobustly(imagePath))
+			{
+				var isBW = ImageUtils.ShouldMakeBackgroundTransparent(image);
+				Assert.That(isBW, Is.EqualTo(expectedResult));
+			}
+
+		}
 	}
 }
