@@ -1187,7 +1187,7 @@ export class BubbleManager {
         );
 
         // Now there are several options depending on various conditions. There's some
-        // overlap in the conditions and it is tempting to try to comine into a single compound
+        // overlap in the conditions and it is tempting to try to combine into a single compound
         // "if" statement. But note, this first one may change hoveredBubble to undefined,
         // which then changes which of the following options is chosen. Be careful!
         if (hoveredBubble && hoveredBubble.content !== this.activeElement) {
@@ -1446,6 +1446,10 @@ export class BubbleManager {
             // on the text inside the bubble.
             event.preventDefault();
             event.stopPropagation();
+        }
+
+        if (this.bubbleToResize) {
+            this.clearResizeModeClasses(container);
         }
         this.bubbleToDrag = undefined;
         this.activeContainer = undefined;
