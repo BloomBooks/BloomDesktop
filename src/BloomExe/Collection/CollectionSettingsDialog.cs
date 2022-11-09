@@ -228,7 +228,7 @@ namespace Bloom.Collection
 		private void _signLanguageChangeLink_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
 		{
 			var potentiallyCustomName = _collectionSettings.SignLanguageName;
-			var l = ChangeLanguage(_collectionSettings.SignLanguageIso639Code, potentiallyCustomName, false);
+			var l = ChangeLanguage(_collectionSettings.SignLanguageIso639Code, potentiallyCustomName, true);
 			if (l != null)
 			{
 				_collectionSettings.SignLanguageIso639Code = l.LanguageTag;
