@@ -64,6 +64,52 @@ namespace Bloom.ImageProcessing
 			return false;
 		}
 
+		public static bool AppearsToBeBlackAndWhite(PalasoImage imageInfo)
+		{
+			// We want to know about Black and White pictures for transparency reasons, and
+			// JPEG pictures generally never meet that criteria and cannot be made transparent.
+			if (!AppearsToBePng(imageInfo))
+				return false;
+			if ((imageInfo.Image.PixelFormat & PixelFormat.Indexed) == PixelFormat.Indexed)
+			{
+				var palette = imageInfo.Image.Palette;
+				if (palette != null && palette.Entries != null)
+				{
+					// If only two colors are used, assume black and white line art.
+					return palette.Entries.Length == 2;
+				}
+			}
+			// Harder to check if not indexed...
+			if (imageInfo.Image is Bitmap bitmapImage)
+			{
+				var color1 = new Color();
+				var color2 = new Color();
+				// Yes, this is as expensive as it looks.  But we only sample 100 pixels
+				// spread through the picture, stopping as soon as we hit 3 colors.
+				int yDelta = Math.Max(bitmapImage.Height / 10, 6);
+				int xDelta = Math.Max(bitmapImage.Width / 10, 6);
+				for (int y = yDelta / 2; y < bitmapImage.Height; y += yDelta)
+				{
+					for (int x = xDelta / 2; x < bitmapImage.Width; x += xDelta)
+					{
+						var color = bitmapImage.GetPixel(x,y);
+						if (color1 == Color.Empty)
+							color1 = color;
+						else if (color != color1 && color2 == Color.Empty)
+							color2 = color;
+						else if (color != color1 && color != color2)
+							return false;	// we have at least 3 colors
+					}
+				}
+				// Only two colors encountered: assume essentially black and white in intent.
+				// If one of the two colors is not white (or near white), no transparency will be
+				// imposed on the picture in any case.
+				return true;
+			}
+			// we can't tell, so err on the side of caution.
+			return false;
+		}
+
 		public static bool IsJpegFile(string path)
 		{
 			if (string.IsNullOrEmpty(path) || !RobustFile.Exists(path))

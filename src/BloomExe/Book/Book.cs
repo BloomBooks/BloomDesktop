@@ -16,6 +16,7 @@ using System.Xml;
 using Bloom.Api;
 using Bloom.Collection;
 using Bloom.Edit;
+using Bloom.ImageProcessing;
 using Bloom.Publish;
 using Bloom.TeamCollection;
 using Bloom.ToPalaso;
@@ -30,6 +31,7 @@ using SIL.Progress;
 using SIL.Reporting;
 using SIL.Text;
 using SIL.Windows.Forms.ClearShare;
+using SIL.Windows.Forms.ImageToolbox;
 using SIL.Xml;
 
 namespace Bloom.Book
@@ -4149,7 +4151,8 @@ namespace Bloom.Book
 		/// </remarks>
 		public bool ImageFileShouldBeRenderedWithTransparency(string imagePath)
 		{
-			// At the moment, only the cover image needs a transparent background.
+			// At the moment, only the cover image needs a transparent background, and then only if it's
+			// a black and white drawing.  (See https://issues.bloomlibrary.org/youtrack/issue/BL-11708.)
 			// Note that if an image file is used more than once in a book, it gets a different
 			// name each time.
 			// For publishing, the imagePath will be in a temporary folder location instead of
@@ -4158,8 +4161,15 @@ namespace Bloom.Book
 			// match files we use, so we double-check by also comparing file sizes.
 			var coverImagePath = GetCoverImagePath();
 			if (Path.GetFileName(imagePath) == Path.GetFileName(coverImagePath))
-				return (new FileInfo(imagePath).Length == new FileInfo(coverImagePath).Length);
-			return false;;
+			{
+				if (new FileInfo(imagePath).Length != new FileInfo(coverImagePath).Length)
+					return false;
+				using (var image = PalasoImage.FromFileRobustly(imagePath))
+				{
+					return ImageUtils.AppearsToBeBlackAndWhite(image);
+				}
+			}
+			return false;
 		}
 
 		/// <summary>
