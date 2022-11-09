@@ -209,7 +209,7 @@ namespace Bloom
 			Directory.CreateDirectory(Path.GetDirectoryName(transparentImageFile));
 			try
 			{
-				if (RuntimeImageProcessor.MakePngBackgroundTransparent(imageSrc, transparentImageFile))
+				if (RuntimeImageProcessor.MakePngBackgroundTransparentIfDesirable(imageSrc, transparentImageFile))
 					imageSrc = transparentImageFile;
 				using (var coverImage = PalasoImage.FromFile(imageSrc))
 				{

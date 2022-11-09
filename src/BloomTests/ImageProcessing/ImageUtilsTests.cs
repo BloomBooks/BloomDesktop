@@ -243,5 +243,40 @@ namespace BloomTests.ImageProcessing
 		{
 			return (color.R | color.G | color.B) == 0 && color.A == 255;
 		}
+
+		// The pixel counts are for the randomization introduced by a seed of 271828182.  Not randomizing,
+		// or using different seeds, changed the pixel counts as shown in parentheses.  For one image
+		// (Retangles1.png), a seed of 123456 caused an incorrect return value (a false positive).
+		// That particular image is really designed to make a partial check of pixels be problematic.
+		[Test]
+		[TestCase("aor_Nab037.png", true)]				// indexed image with 2 colors, white found
+		[TestCase("bluebird-indexed.png", false)]		// indexed image with 2 colors, white not found
+		[TestCase("MemoryReport-indexed.png", false)]	// indexed image with 16 colors
+		[TestCase("aor_oce003m.png", true)]				// 100 pixels examined, 6 shades of gray/white/black found
+		[TestCase("Boxes.png", true)]					// 100 pixels examined, 2 colors found, white found
+		[TestCase("bluebird.png", false)]				// 77 pixels examined before 3 colors found (100,24,6,100,77)
+		[TestCase("bird.png", false)]					// 1 pixels examined before a transparent pixel found
+		[TestCase("levels.png", false)]					// 1 pixels examined before a transparent pixel found
+		[TestCase("Mars 2.png", false)]					// 1 pixels examined before a transparent pixel found
+		[TestCase("Jesus Children.png", false)]			// 3 pixels examined before 3 colors found (3,3,3,3,3)
+		[TestCase("lady24b.png", false)]				// 46 pixels examined before 3 colors found (46,46,26,46,46)
+		// The rest of these are more like torture tests rather than realistic drawings likely to be used in Bloom.
+		[TestCase("AceByDaisyError.png", false)]		// 11 pixels examined before 3 colors found (100,12,6,6,11)
+		[TestCase("LineDrawing-2017.png", false)]		// 38 pixels examined before 3 colors found (34,34,34,34,38)
+		[TestCase("Bloom-No-Microphone.png", false)]	// 42 pixels examined before 3 colors found (42,12,12,13,42)
+		[TestCase("UpdateNotice-2017.png", false)]		// 22 pixels examined before 3 colors found (44,58,61,64,22)
+		[TestCase("Rectangles1.png", false)]			// 34 pixels examined before 3 colors found (45,100*,80,46,34)
+		[TestCase("MemoryReport.png", false)]			// 21 pixels examined before 3 colors found (52,45,13,17,21)
+		[TestCase("CreateTC.png", false)]				// 14 pixels examined before 3 colors found (97,24,14,14,14)
+		public void TestForNeedingTransparentBackground(string filename, bool expectedResult)
+		{
+			var imagePath = FileLocationUtilities.GetFileDistributedWithApplication(_pathToTestImages, filename);
+			using (var image = PalasoImage.FromFileRobustly(imagePath))
+			{
+				var isBW = ImageUtils.ShouldMakeBackgroundTransparent(image);
+				Assert.That(isBW, Is.EqualTo(expectedResult));
+			}
+
+		}
 	}
 }
