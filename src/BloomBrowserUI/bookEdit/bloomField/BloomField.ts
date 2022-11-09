@@ -133,8 +133,31 @@ export default class BloomField {
             // Deal with sources that still use <b> and <i> instead of <strong> and <em>.
             // Check if any of these markers are present, and if so, fix all of them.
             // See https://issues.bloomlibrary.org/youtrack/issue/BL-8711.
+            console.log("correcting data" + event.data.dataValue);
             if (/<\/?[bi]>/i.test(event.data.dataValue)) {
-                const fixBold = event.data.dataValue.replace(
+                // Bizarrely, normal text copied from a google doc arrives as
+                // a <b> element with a style attribute setting font-weight normal.
+                // To allow us to prevent this showing up as bold in Bloom, or
+                // duplicating the bizarre markup, we configure CkEditor's pasteFilter
+                // (see config.js) to allow the font-weight style. (It won't allow
+                // any other styles or attributes through, which simplifies the regex.)
+                // If a bold element specifies font-weight:normal, we just remove it
+                // altogether (keeping only its content).
+                // For somewhat more completeness, we also treat font weights starting with
+                // a number less than 5 as normal.
+                // This code is intended to handle cases where there might be multiple
+                // such runs in the dataValue, but I haven't been able to produce such
+                // a case by copying from a google doc. Copying a bold word produces
+                // a <b> element...with font-weight:normal!! Copying a run of text in
+                // which some bold text is embedded produces...a single <b> element
+                // with font-weight:normal. So it seems there is no way to successfully
+                // copy text from a google doc and preserve boldness, but at least we
+                // can avoid spuriously introducing it.
+                const fixGoogleDocNormal = event.data.dataValue.replace(
+                    /<b style="font-weight: *(normal|[1234]).*?>(.*?)<\/b *>/g,
+                    "$2"
+                );
+                const fixBold = fixGoogleDocNormal.replace(
                     /<(\/?)b>/gi,
                     "<$1strong>"
                 );
