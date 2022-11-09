@@ -577,16 +577,16 @@ namespace Bloom.Api
 			{
 				// thumbnail requests have the thumbnail parameter set in the query string
 				var thumb = info.GetQueryParameters()["thumbnail"] != null;
-				var transparent = CurrentBook?.ImageFileShouldBeRenderedWithTransparency(imageFile);
-				imageFile = _cache.GetPathToResizedImage(imageFile, thumb, transparent ?? false);
+				var isForCover = CurrentBook?.ImageFileIsForBookCover(imageFile);
+				imageFile = _cache.GetPathToResizedImage(imageFile, thumb, isForCover ?? false);
 
 				if (String.IsNullOrEmpty(imageFile)) return false;
 			}
 			else if (info.RawUrl.StartsWith("/book-preview/", StringComparison.Ordinal))
 			{
 				// BL-10625: Cover images still need to be processed to be transparent for book previewing.
-				if (true == CurrentBook?.ImageFileShouldBeRenderedWithTransparency(imageFile))
-					imageFile = _cache.GetPathToResizedImage(imageFile, getThumbnail: false, makeTransparent: true);
+				if (true == CurrentBook?.ImageFileIsForBookCover(imageFile))
+					imageFile = _cache.GetPathToResizedImage(imageFile, getThumbnail: false, isForCover: true);
 			}
 
 			info.ReplyWithImage(imageFile, originalImageFile);
