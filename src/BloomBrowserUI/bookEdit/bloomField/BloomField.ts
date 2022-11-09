@@ -133,8 +133,31 @@ export default class BloomField {
             // Deal with sources that still use <b> and <i> instead of <strong> and <em>.
             // Check if any of these markers are present, and if so, fix all of them.
             // See https://issues.bloomlibrary.org/youtrack/issue/BL-8711.
+            console.log("correcting data" + event.data.dataValue);
             if (/<\/?[bi]>/i.test(event.data.dataValue)) {
-                const fixBold = event.data.dataValue.replace(
+                // Bizarrely, normal text copied from a google doc arrives as
+                // a <b> element with a style attribute setting font-weight normal.
+                // To allow us to prevent this showing up as bold in Bloom, or
+                // duplicating the bizarre markup, we configure CkEditor's pasteFilter
+                // (see config.js) to allow the font-weight style. (It won't allow
+                // any other styles or attributes through, which simplifies the regex.)
+                // If a bold element specifies font-weight:normal, we just remove it
+                // altogether (keeping only its content).
+                // For somewhat more completeness, we also treat font weights starting with
+                // a number less than 5 as normal.
+                // This code is intended to handle cases where there might be multiple
+                // such runs in the dataValue, but I haven't been able to produce such
+                // a case by copying from a google doc. Copying a bold word produces
+                // a <b> element...with font-weight:normal!! Copying a run of text in
+                // which some bold text is embedded produces...a single <b> element
+                // with font-weight:normal. So it seems there is no way to successfully
+                // copy text from a google doc and preserve boldness, but at least we
+                // can avoid spuriously introducing it.
+                const fixGoogleDocNormal = event.data.dataValue.replace(
+                    /<b style="font-weight: *(normal|[1234]).*?>(.*?)<\/b *>/g,
+                    "$2"
+                );
+                const fixBold = fixGoogleDocNormal.replace(
                     /<(\/?)b>/gi,
                     "<$1strong>"
                 );
@@ -183,6 +206,46 @@ export default class BloomField {
         ckeditor.on("afterPaste", event => {
             // clean up possible unwanted paragraph inserted by paste event.
             $(".removeMe").remove();
+        });
+
+        // The focus and blur event handlers ensure that the qtip tooltip for the
+        // currently focused editor element is on top of any other qtip tooltips
+        // such as Source Bubbles.
+        // These tooltips are not to be confused with Source Bubbles.  The editor
+        // element here is a single div.bloom-editable where the focus applies, possibly
+        // enclosed by a div.bloom-translationGroup.  A Source Bubble qtip is attached
+        // to the parent div.bloom-translationGroup if it exists.
+        // See https://issues.bloomlibrary.org/youtrack/issue/BL-11745.
+        // NOTE:
+        // * qtipOverrides.less handles the z-index for active-tooltip and styling for
+        //   passive-bubble tooltips
+        // * sourceBubbles.less handles the z-index for passive-bubble for Source Bubbles
+        //   (for other tooltips, this defaults to what qtip places on the element itself)
+        // * BloomSourceBubbles.SetupTooltips() has focus and blur handlers for Source Bubbles
+        //   which remove or add the passive-bubble class.
+        ckeditor.on("focus", event => {
+            const qtipId = event.editor?.element?.getAttribute(
+                "aria-describedby"
+            );
+            if (qtipId) {
+                const tipElement = $(`#${qtipId}`);
+                if (tipElement) {
+                    tipElement.removeClass("passive-bubble");
+                    tipElement.addClass("active-tooltip");
+                }
+            }
+        });
+        ckeditor.on("blur", event => {
+            const qtipId = event.editor?.element?.getAttribute(
+                "aria-describedby"
+            );
+            if (qtipId) {
+                const tipElement = $(`#${qtipId}`);
+                if (tipElement) {
+                    tipElement.removeClass("active-tooltip");
+                    tipElement.addClass("passive-bubble");
+                }
+            }
         });
 
         ckeditor.addCommand("pasteHyperlink", {

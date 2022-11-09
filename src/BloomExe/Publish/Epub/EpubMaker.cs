@@ -1025,7 +1025,13 @@ namespace Bloom.Publish.Epub
 			var keys = new List<(int index, int order)>(count);
 			for (int i = 0; i < count; ++i)
 				keys.Add((i, int.Parse(elementArray[i].GetOptionalStringAttribute("data-audio-order","999"), CultureInfo.InvariantCulture)));
-			Array.Sort(keys.ToArray(), elementArray, new CompareAudioOrder());
+			// See BL-11722. We must NOT sort the recordings in the file unless we put the corresponding
+			// IDs in the smil file in the same adjusted order. See the branch correctSmil in JohnT's repo.
+			// But, we don't want to do that for 5.4 since our old Readium preview does not properly
+			// handle a smil file where the first audio is not for the first element in document order
+			// on the page. We hope to update the preview code in 5.5.
+			// Note: don't just merge the correctSmil branch, it should have unit tests and probably more comments.
+			//Array.Sort(keys.ToArray(), elementArray, new CompareAudioOrder());
 
 			var mergeFiles =
 				elementArray

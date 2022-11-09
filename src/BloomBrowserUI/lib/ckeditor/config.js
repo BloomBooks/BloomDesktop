@@ -97,8 +97,10 @@ CKEDITOR.editorConfig = function(config) {
     // JohnT Oct 8 2021: added 'a[!href]' to allow pasting hyperlinks. Counter-intuitively, the [!href] annotation
     // indicates that an href is required, not that it is forbidden. (Without annotations, listing a tag
     // means it may be pasted, but any attributes in the original will be removed.)
-    // Therefore for now we're limiting pasting to things that a translator could also do:
-    config.pasteFilter = "p b br em i strong sup u; a[!href];";
+    // Therefore for now we're limiting pasting to things that a translator could also do.
+    // The {font-weight} annotation says that a <b> element's font-weight style may be pasted.
+    // Code in our paste handler deals with this so it doesn't end up in our documents.
+    config.pasteFilter = "p br em i strong sup u; b{font-weight}; a[!href];";
 
     //BL-3009: don't remove empty spans, since we use <span class="bloom-linebreak"></span> when you press shift-enter.
     //http://stackoverflow.com/a/23983357/723299
