@@ -402,7 +402,8 @@ namespace Bloom.Collection
 				var settingsContent = RobustFile.ReadAllText(SettingsFilePath, Encoding.UTF8);
 				var nameMigrations = new[]
 				{
-					new[] {"LanguageName", "Language1Name"},
+					new[] {"LanguageName", "Language1Name"}, // but NOT SignLanguageName -> SignLanguage1Name !!
+					new[] {"SignLanguage1Name", "SignLanguageName"}, // un-migrate SignLanguageName
 					new[] {"IsShellLibrary", "IsSourceCollection"},
 					new[] {"National1Iso639Code", "Language2Iso639Code"},
 					new[] {"National2Iso639Code", "Language3Iso639Code"},
