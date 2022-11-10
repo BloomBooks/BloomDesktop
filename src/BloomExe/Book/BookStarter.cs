@@ -659,6 +659,8 @@ namespace Bloom.Book
 				SetOriginalCopyrightAndLicense(dom, bookData, collectionSettings);
 			// a new book should never have the copyright holder set, whether it's a template, shell, or translation
 			bookData.RemoveAllForms("copyright");  // RemoveAllForms does modify the dom
+			// never assume this, even if true for the original, since we're going to clear the copyright info.
+			storage.BookInfo.MetaData.UseOriginalCopyright = false;
 			storage.BookInfo.Copyright = null; // this might be redundant but let's play safe
 			// This is a place to put who it was translated by, usually in a national language.
 			// Doesn't apply to templates or (usually) to shells; but a translation can serve again as a shell.
