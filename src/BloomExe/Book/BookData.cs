@@ -1772,49 +1772,15 @@ namespace Bloom.Book
 		/// This might have markup, e.g., making a word italic. It will also have the amp, lt, and gt escaped.
 		/// We want to reduce it to plain text to store in bookInfo.
 		/// </summary>
-		/// <param name="input">Must be HTML-encoded.</param>
+		/// <param name="input">Must be XHTML-encoded.</param>
 		/// <returns></returns>
 		internal static string TextOfInnerHtml(string input)
 		{
-			if (input == null)
-				return null;
+			var text = Book.RemoveHtmlMarkup(input, Book.LineBreakSpanConversionMode.ToSimpleNewline);
 
-			// NOTE: There is a similar section of code dealing with bloom-linebreak
-			//       in Book.cs::RemoveXmlMarkup().
-			//       (That operates on XmlElements though, this deals with XElements)
-
-			// Parsing it as XML and then extracting the value removes any markup.  Internal
-			// spaces might disappear if we don't preserve whitespace during the parse.
-			var doc = XElement.Parse("<doc>" + input + "</doc>", LoadOptions.PreserveWhitespace);
-
-			const char kBOM = '\uFEFF';	// Unicode Byte Order Mark character.
-
-			// Handle Shift+Enter, which gets translated to <span class="bloom-linebreak" />
-			// This is being handled using at the XElement level instead of string level, so that it'll work regardless of
-			// whether it uses the <span /> form or <span></span> form. (I do see places in the debugger where the data is in <span></span> form.)
-			var lineBreaks = doc.Descendants("span").Where(e => e.Attribute("class")?.Value == "bloom-linebreak").ToList();
-			foreach (var lineBreakSpan in lineBreaks)
-			{
-				// But before we mess with lineBreakSpan, first check if it's immediately followed by a BOM
-				// character (which is also inserted by Shift-Enter), and if so delete that out.
-				if (lineBreakSpan.NextNode?.NodeType == XmlNodeType.Text)
-				{
-					var nextText = lineBreakSpan.NextNode as XText;
-					// String.StartsWith() seems to always ignore the BOM character, so use a character
-					// comparison.  See https://issues.bloomlibrary.org/youtrack/issue/BL-11717.
-					if (!String.IsNullOrEmpty(nextText?.Value) && nextText.Value[0] == kBOM)
-					{
-						nextText.Value = nextText.Value.Substring(1);
-					}
-				}
-
-				// Now delete lineBreakSpan and replace it
-				lineBreakSpan.ReplaceWith("\n");
-			}
-			
 			// Leading and trailing whitespace are undesirable for the title even if the user has
 			// put them in for some strange reason.  (BL-7558)
-			return doc.Value.Trim();
+			return text?.Trim();
 		}
 
 		private string[] WritingSystemIdsToTry

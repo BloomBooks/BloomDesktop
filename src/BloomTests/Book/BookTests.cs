@@ -4608,7 +4608,7 @@ namespace BloomTests.Book
 		public void RemoveXmlMarkup_PlainText_NoChange()
 		{
 			string input = "Enter\nShift-Enter\nLast Line";
-			var result = Bloom.Book.Book.RemoveXmlMarkup(input, Bloom.Book.Book.LineBreakSpanConversionMode.ToSpace);
+			var result = Bloom.Book.Book.RemoveHtmlMarkup(input, Bloom.Book.Book.LineBreakSpanConversionMode.ToSpace);
 			
 			Assert.That(result, Is.EqualTo("Enter\nShift-Enter\nLast Line"));
 		}
@@ -4618,7 +4618,7 @@ namespace BloomTests.Book
 		public void RemoveXmlMarkup_LinebreakButNoByteOrderMark_MarkupRemoved()
 		{
 			string input = "<p>Enter</p> <p>Shift-Enter<span class=\"bloom-linebreak\"></span>Last Line </p>";
-			var result = Bloom.Book.Book.RemoveXmlMarkup(input, Bloom.Book.Book.LineBreakSpanConversionMode.ToSpace);
+			var result = Bloom.Book.Book.RemoveHtmlMarkup(input, Bloom.Book.Book.LineBreakSpanConversionMode.ToSpace);
 			
 			Assert.That(result, Is.EqualTo("Enter Shift-Enter Last Line "));
 		}
@@ -4627,7 +4627,7 @@ namespace BloomTests.Book
 		public void RemoveXmlMarkup_LinebreakAndByteOrderMark_MarkupAndByteOrderMarkRemoved()
 		{
 			string input = "<p>Enter</p> <p>Shift-Enter<span class=\"bloom-linebreak\"></span>\uFEFFLast Line </p>";
-			var result = Bloom.Book.Book.RemoveXmlMarkup(input, Bloom.Book.Book.LineBreakSpanConversionMode.ToSpace);
+			var result = Bloom.Book.Book.RemoveHtmlMarkup(input, Bloom.Book.Book.LineBreakSpanConversionMode.ToSpace);
 			
 			Assert.That(result, Is.EqualTo("Enter Shift-Enter Last Line "));
 		}
