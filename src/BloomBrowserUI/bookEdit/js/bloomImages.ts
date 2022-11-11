@@ -5,7 +5,7 @@ import { BloomApi } from "../../utils/bloomApi";
 
 import theOneLocalizationManager from "../../lib/localizationManager/localizationManager";
 
-import { updateOverlayClass } from "./bubbleManager";
+import { theOneBubbleManager, updateOverlayClass } from "./bubbleManager";
 
 const kPlaybackOrderContainerSelector: string =
     ".bloom-playbackOrderControlsContainer";
@@ -147,6 +147,14 @@ function ctrlAltKeyUpListener(event: KeyboardEvent) {
                 // Remember, for keyup events, you want to check event.key === "Control" instead of event.ctrlKey
                 if (event.key === "Control") {
                     imageContainer.classList.remove("ui-ctrlDown");
+                } else if (
+                    event.key === "Alt" &&
+                    !theOneBubbleManager.isResizing(imageContainer)
+                ) {
+                    // FYI: Check !isResizing() so if you release Alt but still keep the mouse down, resizing will continue.
+                    // Unsure if this needs to be set in stone, but it's for consistency with
+                    // 1) our historical practice, and 2) how Ctrl+drag currently works
+                    theOneBubbleManager.turnOffResizing(imageContainer);
                 }
             });
 

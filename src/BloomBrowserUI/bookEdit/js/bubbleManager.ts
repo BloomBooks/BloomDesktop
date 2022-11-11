@@ -1110,7 +1110,7 @@ export class BubbleManager {
 
                 // Even though Alt+Drag resize is not in effect, we still check using isResizing() to
                 // make sure JQuery Resizing is not in effect before proceeding.
-                if (!this.isResizing(container)) {
+                if (!this.isJQueryResizing(container)) {
                     container.classList.add("grabbing");
                 }
             } else {
@@ -1151,7 +1151,7 @@ export class BubbleManager {
     private onMouseMove = (event: MouseEvent) => {
         const container = event.currentTarget as HTMLElement;
         // Prevent two event handlers from triggering if the text box is currently being resized
-        if (this.isResizing(container)) {
+        if (this.isJQueryResizing(container)) {
             this.bubbleToDrag = undefined;
             this.activeContainer = undefined;
             return;
@@ -1296,8 +1296,8 @@ export class BubbleManager {
         }
         this.animationFrame = requestAnimationFrame(() => {
             if (!this.bubbleToDrag) {
+                // This case could be reached when using the JQuery drag handle.
                 this.animationFrame = 0; // must clear, or move will forever be blocked.
-                console.assert(false, "bubbleToDrag is undefined");
                 return;
             }
 
@@ -1448,18 +1448,25 @@ export class BubbleManager {
             event.stopPropagation();
         }
 
-        if (this.bubbleToResize) {
-            this.clearResizeModeClasses(container);
-        }
         this.bubbleToDrag = undefined;
+        container.classList.remove("grabbing");
+        this.turnOffResizing(container);
+    };
+
+    public turnOffResizing(container: Element) {
+        this.clearResizeModeClasses(container);
         this.activeContainer = undefined;
         this.bubbleToResize = undefined;
         this.bubbleResizeMode = "";
-        container.classList.remove("grabbing");
-    };
+    }
+
+    public isResizing(container: Element) {
+        return this.bubbleToResize || this.isJQueryResizing(container);
+    }
 
     // Returns true if any of the container's children are currently being resized
-    private isResizing(container: HTMLElement) {
+    // Remarks: I believe this only tells you whether a JQ
+    private isJQueryResizing(container: Element) {
         // First check if we have our custom class indicator applied
         if (container.classList.contains("bloom-resizing")) {
             return true;
@@ -1793,12 +1800,12 @@ export class BubbleManager {
         return { x: centerX, y: centerY };
     }
 
-    private cleanupMouseMoveHover(element: HTMLElement): void {
+    private cleanupMouseMoveHover(element: Element): void {
         element.classList.remove("grabbable");
         this.clearResizeModeClasses(element);
     }
 
-    private clearResizeModeClasses(element: HTMLElement): void {
+    public clearResizeModeClasses(element: Element): void {
         element.classList.remove("ne-resizable");
         element.classList.remove("nw-resizable");
         element.classList.remove("sw-resizable");
