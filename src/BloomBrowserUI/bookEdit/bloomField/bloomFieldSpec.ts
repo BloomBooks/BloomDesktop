@@ -411,3 +411,25 @@ describe("BloomField", () => {
         selection.collapse(document.getElementById(elementId)!, offset);
     }
 });
+
+describe("fixPasteData", () => {
+    it("fixes google doc fake bold", () => {
+        expect(
+            BloomField.fixPasteData(
+                'Something <b style="font-weight:normal">normal</b> and <b STYLE="font-weight:400">plain</b>'
+            )
+        ).toBe("Something normal and plain");
+    });
+    it("removes any other style from bold and converts to strong", () => {
+        expect(
+            BloomField.fixPasteData(
+                '<b style="font-weight:bold">bold</b> and <b STYLE="FONT-WEIGHT:extrabold">bolder</b>'
+            )
+        ).toBe("<strong>bold</strong> and <strong>bolder</strong>");
+    });
+    it("changes i to em", () => {
+        expect(BloomField.fixPasteData("<i>italic</i>")).toBe(
+            "<em>italic</em>"
+        );
+    });
+});
