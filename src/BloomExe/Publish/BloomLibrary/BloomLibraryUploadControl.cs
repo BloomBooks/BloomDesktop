@@ -833,8 +833,13 @@ namespace Bloom.Publish.BloomLibrary
 				return;
 			}
 			_changeSignLanguageLinkLabel.Text = l.DesiredName;
+			// How to know if the new sign language name is custom or not!?
+			// 1- set the Tag (which also sets the Name to the non-custom default
+			// 2- read the Name
+			// 3- if it's not the same as DesiredName, the new name is custom
 			collectionSettings.SignLanguageTag = l.LanguageTag;
-			collectionSettings.SignLanguageName = l.DesiredName;
+			var slIsCustom = collectionSettings.SignLanguage.Name != l.DesiredName;
+			collectionSettings.SignLanguage.SetName(l.DesiredName, slIsCustom);
 			collectionSettings.Save();
 
 			_model.SetOnlySignLanguageToPublish(collectionSettings.SignLanguageTag);
@@ -844,7 +849,7 @@ namespace Bloom.Publish.BloomLibrary
 		{
 			get
 			{
-				return _model.Book.CollectionSettings.SignLanguageName;
+				return _model.Book.CollectionSettings.SignLanguage.Name;
 			}
 		}
 

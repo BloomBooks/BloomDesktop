@@ -1573,7 +1573,7 @@ namespace Bloom.Book
 			BookInfo.MetaData.PageNumberStyle = CollectionSettings.PageNumberStyle;
 			if (BookInfo.MetaData.DisplayNames == null)
 				BookInfo.MetaData.DisplayNames = new Dictionary<string,string>();
-			foreach (var lang in _bookData.GetAllBookLanguages())
+			foreach (var lang in _bookData.GetAllBookLanguages(true, true))
 				BookInfo.MetaData.DisplayNames[lang.Tag] = lang.Name;
 			// These settings will be saved to the meta.json file the next time the book itself is saved.
 		}
@@ -2245,6 +2245,8 @@ namespace Bloom.Book
 		/// Bloom books can have up to 3 languages active at any time. This method pushes in a string
 		/// listing then, separated by commas. It is then usable on the front page, title page, etc.
 		/// </summary>
+		/// If we have a sign language defined, we start the list with the name of the sign language that
+		/// is stored in the CollectionSettings.
 		/// <remarks>
 		/// We use the name of the language assigned by the user when the language was chosen rather
 		/// than attempting to use the name in the national language (most likely getting the autonyms
@@ -2254,14 +2256,15 @@ namespace Bloom.Book
 		{
 			// Put the sign language (if any) first in the list.  See BL-11414.
 			// Getting the sign language will have to change if we ever assign it on a per-book basis.
-			var signLanguage = HasSignLanguageVideos() ? _bookData.CollectionSettings.SignLanguageName : "";
-
-			var languagesOfBook = (string.IsNullOrEmpty(signLanguage) ? "" : signLanguage + ", ") + _bookData.Language1.Name;
+			var languagesOfBook = (string.IsNullOrEmpty(_bookData.SignLanguageTag) ?
+				"" : _bookData.SignLanguage.Name + ", ") +
+					_bookData.Language1.Name;
 
 			if (Language2Tag != null)
 			{
 				languagesOfBook += ", " + _bookData.Language2.Name;
 			}
+
 			if (Language3Tag != null)
 			{
 				languagesOfBook += ", " + _bookData.Language3.Name;
@@ -4331,7 +4334,7 @@ namespace Bloom.Book
 		/// <summary>
 		/// Re-compute and update all of the metadata features for the book
 		/// </summary>
-		/// <param name="allowedLanguages">If non-null, limits the calculation to only considering the languages specified. Applies only to language-specific features (e.g. blind and talkingBook. Does not apply to Sign Language or language-independent faetures</param>
+		/// <param name="allowedLanguages">If non-null, limits the calculation to only considering the languages specified. Applies only to language-specific features (e.g. blind and talkingBook. Does not apply to Sign Language or language-independent features</param>
 		internal void UpdateMetadataFeatures(
 			bool isBlindEnabled, bool isTalkingBookEnabled, bool isSignLanguageEnabled,
 			IEnumerable<string> allowedLanguages)
@@ -4578,12 +4581,6 @@ namespace Bloom.Book
 				// we will need to find and return the 'data-xmatter-page' attribute.
 			}
 			return ""; // Also unexpected!
-		}
-
-
-		public WritingSystem GetLanguage(LanguageSlot slot)
-		{
-			return _bookData.GetLanguage(slot);
 		}
 
 		/// <summary>
