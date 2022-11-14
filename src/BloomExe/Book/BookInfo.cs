@@ -5,14 +5,12 @@ using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using Bloom.ImageProcessing;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using Bloom.Api;
 using Bloom.Edit;
-using Bloom.Publish;
 using L10NSharp;
 using Newtonsoft.Json;
 using SIL.Extensions;
@@ -1568,5 +1566,5 @@ namespace Bloom.Book
 	// In the future, we may add other slots including {TitleLanguage1, TitleLanguage2, CreditsLanguage}
 	// We would then rename these to be more specific, e.g. Language1-->InteriorLanguage1
 	// See https://docs.google.com/document/d/1uIiog56oYMAa4tTyNag1SgyXPEKgk0EKMxMP1LzPeCc
-	public enum LanguageSlot { Language1, Language2, Language3, MetadataLanguage1, MetadataLanguage2 }
+	public enum LanguageSlot { Language1, Language2, Language3, MetadataLanguage1, MetadataLanguage2, SignLanguage }
 }

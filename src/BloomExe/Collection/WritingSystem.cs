@@ -68,7 +68,7 @@ namespace Bloom.Collection
 
 		public string GetNameInLanguage(string inLanguage)
 		{
-			if (!string.IsNullOrEmpty(Tag) && !String.IsNullOrEmpty(Name) && IsCustomName)
+			if (!string.IsNullOrEmpty(Tag) && !string.IsNullOrEmpty(Name) && IsCustomName)
 				return Name;
 
 			return GetLanguageName_NoCache(inLanguage);
@@ -95,7 +95,11 @@ namespace Bloom.Collection
 				{
 					string match;
 					if (!IetfLanguageTag.GetBestLanguageName(Tag, out match))
+					{
+						if (_languageNumberInCollection < 0)
+							return $"SignLanguage-Unknown-" + Tag;
 						return $"L{_languageNumberInCollection}-Unknown-" + Tag;
+					}
 					return match;
 				}
 				return name;
@@ -113,10 +117,12 @@ namespace Bloom.Collection
 
 		public void SaveToXElement(XElement xml)
 		{
-			var pfx = "Language" + _languageNumberInCollection;
+			var pfx = _languageNumberInCollection < 0 ? "SignLanguage" : "Language" + _languageNumberInCollection;
 			xml.Add(new XElement(pfx+"Name", Name));
 			xml.Add(new XElement(pfx+"IsCustomName", IsCustomName));
 			xml.Add(new XElement(pfx + "Iso639Code", Tag));
+			if (_languageNumberInCollection < 0)
+				return;
 			xml.Add(new XElement($"DefaultLanguage{_languageNumberInCollection}FontName", FontName));
 			xml.Add(new XElement($"IsLanguage{_languageNumberInCollection}Rtl", IsRightToLeft));
 			xml.Add(new XElement(pfx + "LineHeight", LineHeight));
@@ -161,25 +167,44 @@ namespace Bloom.Collection
 		/// <param name="languageForDefaultNameLookup">a language tag or "self" if we should use the language tag for this spec to look it up</param>
 		public void ReadFromXml(XElement xml, bool defaultToEnglishIfMissing,  string languageForDefaultNameLookup)
 		{
-			var pfx = "Language" + _languageNumberInCollection;
+			var pfx = _languageNumberInCollection < 0 ? "SignLanguage" : "Language" + _languageNumberInCollection;
 
 			/* Enhance (from JT):
-			 When you do this for Language1, the Tag setter will initialize Name using _tagOfDefaultLanguageForNaming(). But that will retrieve the Language2 Tag, which hasn't been set yet. I suppose it doesn't matter, since two lines down you overwrite that Name, typically with one saved in the file. If for some reason there isn't one saved in the file, you will look up an English name for it (since you pass that as languageForDefaultNameLookup for Language1).
-			Seems like it would simplify things if Name had a getter which would initialize it's variable to GetLanguageName_NoCache(_tagOfDefaultLanguageForNaming()) if not already set.
-			Then the Tag setter could just clear _name.
-			The code just below here would initialize _name by reading the string, but could leave it null if it doesn't find it
-			By the time anything needs Name, Language2's Tag should be set, so if you need to look up a default name you'll do it in the right language.
-			You could then get rid of the languageForDefaultNameLookup argument.*/
+			  When you do this for Language1, the Tag setter will initialize Name using
+			  _tagOfDefaultLanguageForNaming(). But that will retrieve the Language2 Tag, which hasn't been set yet.
+			  I suppose it doesn't matter, since two lines down you overwrite that Name, typically with one saved in
+			  the file. If for some reason there isn't one saved in the file, you will look up an English name for
+			  it (since you pass that as languageForDefaultNameLookup for Language1).
 
-			Tag = ReadString(xml, $"Language{this._languageNumberInCollection}Iso639Code", defaultToEnglishIfMissing?"en":"");
-			IsRightToLeft = ReadBoolean(xml, $"IsLanguage{_languageNumberInCollection}Rtl", false);
+			  Seems like it would simplify things if Name had a getter which would initialize it's variable to
+			  GetLanguageName_NoCache(_tagOfDefaultLanguageForNaming()) if not already set.
+			  Then the Tag setter could just clear _name.
+			  The code just below here would initialize _name by reading the string, but could leave it null if it
+			  doesn't find it.
+			  By the time anything needs Name, Language2's Tag should be set, so if you need to look up a default
+			  name you'll do it in the right language.
+			  You could then get rid of the languageForDefaultNameLookup argument.
+			*/
+
+			Tag = ReadString(xml, pfx + "Iso639Code", defaultToEnglishIfMissing?"en":"");
 			
 			Name = ReadString(xml, pfx+"Name", "");
 			if (Name == "")
 			{
-				Name = GetLanguageName_NoCache(languageForDefaultNameLookup=="self"?Tag:languageForDefaultNameLookup);
+				Name = GetLanguageName_NoCache(languageForDefaultNameLookup=="self" ? Tag : languageForDefaultNameLookup);
 			}
 			IsCustomName = ReadOrComputeIsCustomName(xml, pfx+"IsCustomName");
+			if (_languageNumberInCollection < 0)
+			{
+				// Set the rest (which isn't used for Sign Languages) to default values and return.
+				IsRightToLeft = false;
+				LineHeight = 0;
+				FontName = GetDefaultFontName(); // probably could just be empty string...
+				BreaksLinesOnlyAtSpaces = false;
+				BaseUIFontSizeInPoints = 0;
+				return;
+			}
+			IsRightToLeft = ReadBoolean(xml, $"IsLanguage{_languageNumberInCollection}Rtl", false);
 			LineHeight = ReadDecimal(xml, pfx+"LineHeight", 0);
 			FontName = ReadString(xml, $"DefaultLanguage{_languageNumberInCollection}FontName", GetDefaultFontName());
 			BreaksLinesOnlyAtSpaces = ReadBoolean(xml, pfx+"BreaksLinesOnlyAtSpaces", false);
@@ -206,8 +231,8 @@ namespace Bloom.Collection
 				if (!LookupModel.AreLanguagesLoaded)
 					LookupModel.LoadLanguages();
 			}
-			if (String.IsNullOrWhiteSpace(Tag))
-				return false;	// undefined (probably language3)
+			if (string.IsNullOrWhiteSpace(Tag))
+				return false;	// undefined (probably language3 or sign language)
 
 			var language = LookupModel.LanguageLookup.GetLanguageFromCode(Tag);
 			// (If the lookup didn't find a language, treat the name as custom.)
