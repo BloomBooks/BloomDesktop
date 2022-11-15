@@ -85,6 +85,7 @@ namespace Bloom.Book
 		private string _cachedLangTag1;
 		private string _cachedLangTag2;
 		private string _cachedLangTag3;
+		private string _cachedSignLangTag;
 		private string _cachedMetadataLangTag1;
 		private bool _gotLangCache;
 
@@ -149,6 +150,19 @@ namespace Bloom.Book
 		}
 
 		/// <summary>
+		/// For sign language books, this is the tag of the sign language.
+		/// </summary>
+		public string SignLanguageTag
+		{
+			get
+			{
+				if (!_gotLangCache)
+					CacheLangData();
+				return _cachedSignLangTag;
+			}
+		}
+
+		/// <summary>
 		/// This is the language we use to show metadata, which currently includes most
 		/// of the fields in XMatter, including the second title. In phase 2 of our language
 		/// cleanup, we may separate out more categories.
@@ -206,6 +220,8 @@ namespace Bloom.Book
 					// use the first collection language.
 					_cachedLangTag1 = CollectionSettings.Language1.Tag;
 				}
+
+				_cachedSignLangTag = CollectionSettings.SignLanguageTag;
 
 				_cachedLangTag2 = GetVariableOrNull("contentLanguage2", "*").Unencoded;
 				_cachedLangTag3 = GetVariableOrNull("contentLanguage3", "*").Unencoded;
@@ -377,6 +393,7 @@ namespace Bloom.Book
 											 String.IsNullOrEmpty(Language3Tag)
 												 ? null
 												 : XmlString.FromUnencoded(Language3Tag), false);
+			incomingData.UpdateGenericLanguageString("signLanguage", string.IsNullOrEmpty(SignLanguageTag) ? null : XmlString.FromUnencoded(SignLanguageTag), false);
 
 			//Debug.WriteLine("xyz: " + _dataDiv.OuterXml);
 			foreach (var v in incomingData.TextVariables)
@@ -1986,6 +2003,8 @@ namespace Bloom.Book
 					return GetWritingSystem(MetadataLanguage1Tag);
 				case LanguageSlot.MetadataLanguage2:
 					return GetWritingSystem(MetadataLanguage2Tag);
+				case LanguageSlot.SignLanguage:
+					return GetWritingSystem(SignLanguageTag);
 				default:
 					throw new ArgumentException("BookData.GetLanguage() cannot handle that slot yet");
 
@@ -1999,6 +2018,7 @@ namespace Bloom.Book
 
 		public WritingSystem MetadataLanguage1 => GetLanguage(LanguageSlot.MetadataLanguage1);
 		public WritingSystem MetadataLanguage2 => GetLanguage(LanguageSlot.MetadataLanguage2);
+		public WritingSystem SignLanguage => GetLanguage(LanguageSlot.SignLanguage);
 
 		/// <summary>
 		/// Get one of the collection language objects that matches the language tag.
@@ -2027,6 +2047,8 @@ namespace Bloom.Book
 				return CollectionSettings.Language2;
 			if (CollectionSettings.Language3?.Tag == langTag)
 				return CollectionSettings.Language3;
+			if (CollectionSettings.SignLanguage?.Tag == langTag)
+				return CollectionSettings.SignLanguage;
 			return null;
 		}
 
@@ -2042,9 +2064,9 @@ namespace Bloom.Book
 		/// should be used instead.  It's conceivable in the long run that this method may or may not
 		/// be needed.
 		/// </remarks>
-		public List<WritingSystem> GetBasicBookLanguages(bool includeLanguage1 = true)
+		public List<WritingSystem> GetBasicBookLanguages(bool includeLanguage1 = true, bool includeSignLanguage = false)
 		{
-			return GetBasicBookLanguageCodes(includeLanguage1).Select(c => GetWritingSystem(c)).ToList();
+			return GetBasicBookLanguageCodes(includeLanguage1, includeSignLanguage).Select(c => GetWritingSystem(c)).ToList();
 		}
 
 		/// <summary>
@@ -2059,11 +2081,13 @@ namespace Bloom.Book
 		/// GetAllBookLanguageCodes should be used instead.  It's conceivable in the long run
 		/// that this method may or may not be needed.
 		/// </remarks>
-		public List<string> GetBasicBookLanguageCodes(bool includeLanguage1 = true)
+		public List<string> GetBasicBookLanguageCodes(bool includeLanguage1 = true, bool includeSignLanguage = false)
 		{
 			var langCodes = new List<string>();
 			if (includeLanguage1)
 				langCodes.Add(Language1Tag);
+			if (includeSignLanguage)
+				AddLang(langCodes, SignLanguageTag);
 			AddLang(langCodes, MetadataLanguage1Tag);
 			AddLang(langCodes, Language2Tag);
 			AddLang(langCodes, Language3Tag);
@@ -2089,9 +2113,9 @@ namespace Bloom.Book
 		/// <remarks>
 		/// This method obviously will need to be worked on...
 		/// </remarks>
-		public List<WritingSystem> GetAllBookLanguages(bool includeLanguage1 = true)
+		public List<WritingSystem> GetAllBookLanguages(bool includeLanguage1 = true, bool includeSignLanguage = false)
 		{
-			return GetBasicBookLanguages(includeLanguage1);	// until we get a better list to work with...
+			return GetBasicBookLanguages(includeLanguage1, includeSignLanguage);	// until we get a better list to work with...
 		}
 		/// <summary>
 		/// Return an ordered list of codes of distinct languages used in this book.
