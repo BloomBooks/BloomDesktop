@@ -30,6 +30,7 @@ namespace Bloom.Collection
 	}
 
 
+
 	/// <summary>
 	/// A Collection corresponds to a single folder (with subfolders) on the disk.
 	/// In that folder is a file which persists the properties of this class, then a folder for each book
@@ -45,7 +46,7 @@ namespace Bloom.Collection
 		// Email addresses of users authorized to change collection settings if this is a TeamCollection.
 		public string[] Administrators;
 
-		public WritingSystem SignLanguage;
+		private string _signLanguageTag;
 
 		private const int kDefaultAudioRecordingTrimEndMilliseconds = 40;
 
@@ -117,8 +118,6 @@ namespace Bloom.Collection
 			this.LanguagesZeroBased[1] = Language2;
 			this.LanguagesZeroBased[2] = Language3;
 
-			SignLanguage = new WritingSystem(-1, getTagOfDefaultLanguageForNaming);
-
 			BrandingProjectKey = "Default";
 			PageNumberStyle = "Decimal";
 			XMatterPackName = kDefaultXmatterName;
@@ -145,7 +144,6 @@ namespace Bloom.Collection
 			Language3 = collectionInfo.Language3;
 
 			Language2.FontName = Language3.FontName = WritingSystem.GetDefaultFontName();
-			SignLanguage = collectionInfo.SignLanguage;
 
 
 			Country = collectionInfo.Country;
@@ -247,12 +245,15 @@ namespace Bloom.Collection
 		}
 		public virtual string SignLanguageTag
 		{
-			get { return SignLanguage.Tag; }
+			get { return _signLanguageTag; }
 			set
 			{
-				SignLanguage.ChangeTag(value);
+				_signLanguageTag = value;
+				SignLanguageName = GetSignLanguageName_NoCache();
 			}
 		}
+
+		public virtual string SignLanguageName { get; set; }
 
 		/// <summary>
 		/// Intended for making shell books and templates, not vernacular
@@ -267,6 +268,27 @@ namespace Bloom.Collection
 		{
 			return IetfLanguageTag.GetLocalizedLanguageName(tag, inLanguage);
 		}
+
+		public string GetSignLanguageName()
+		{
+			if (!string.IsNullOrEmpty(SignLanguageTag) && !string.IsNullOrEmpty(SignLanguageName))
+				return SignLanguageName;
+			return GetSignLanguageName_NoCache();
+		}
+		private string GetSignLanguageName_NoCache()
+		{
+			try
+			{
+				if (string.IsNullOrEmpty(SignLanguageTag))
+					return string.Empty;
+
+				return GetLanguageName(SignLanguageTag, "");
+			}
+			catch (Exception)
+			{
+				return "SL-Unknown-" + SignLanguageTag;
+			}
+		}
 		#endregion
 
 		/// ------------------------------------------------------------------------------------
@@ -280,7 +302,8 @@ namespace Bloom.Collection
 			Language1.SaveToXElement(xml);
 			Language2.SaveToXElement(xml);
 			Language3.SaveToXElement(xml);
-			SignLanguage.SaveToXElement(xml);
+			xml.Add(new XElement("SignLanguageName", SignLanguageName));
+			xml.Add(new XElement("SignLanguageIso639Code", SignLanguageTag));
 			xml.Add(new XElement("OneTimeCheckVersionNumber", OneTimeCheckVersionNumber));
 			xml.Add(new XElement("IsSourceCollection", IsSourceCollection.ToString()));
 			xml.Add(new XElement("XMatterPack", XMatterPackName));
@@ -401,8 +424,9 @@ namespace Bloom.Collection
 				Language1.ReadFromXml(xml, true, "en");
 				Language2.ReadFromXml(xml, true, "self");
 				Language3.ReadFromXml(xml, true, Language2.Tag);
-				SignLanguage.ReadFromXml(xml, true, Language2.Tag);
 
+				SignLanguageTag = ReadString(xml, "SignLanguageIso639Code",  /* old name */
+				ReadString(xml, "SignLanguageIso639Code", ""));
 				XMatterPackName = ReadString(xml, "XMatterPack", "Factory");
 
 				var style = ReadString(xml, "PageNumberStyle", "Decimal");
@@ -424,6 +448,7 @@ namespace Bloom.Collection
 						BrandingProjectKey = "Default"; // keep the code, but don't use it as active branding.
 					}
 				}
+				SignLanguageName = ReadString(xml, "SignLanguageName", GetSignLanguageName_NoCache());
 				Country = ReadString(xml, "Country", "");
 				Province = ReadString(xml, "Province", "");
 				District = ReadString(xml, "District", "");
@@ -864,7 +889,6 @@ namespace Bloom.Collection
 			Analytics.SetApplicationProperty("Language1Iso639Code", Language1Tag);
 			Analytics.SetApplicationProperty("Language2Iso639Code", Language2Tag);
 			Analytics.SetApplicationProperty("Language3Iso639Code", Language3Tag ?? "---");
-			Analytics.SetApplicationProperty("SignLanguageIso639Code", SignLanguageTag ?? "---");
 			Analytics.SetApplicationProperty("Language1Iso639Name", Language1.Name);
 			Analytics.SetApplicationProperty("BrandingProjectName", BrandingProjectKey);
 		}
@@ -908,8 +932,6 @@ namespace Bloom.Collection
 				return GetLanguageNameWithScriptVariants(langTag, this.Language2.Name, this.Language2.IsCustomName, metadataLanguageTag);
 			if (langTag == this.Language3Tag)
 				return GetLanguageNameWithScriptVariants(langTag, this.Language3.Name, this.Language3.IsCustomName, metadataLanguageTag);
-			if (langTag == this.SignLanguageTag)
-				return GetLanguageNameWithScriptVariants(langTag, this.SignLanguage.Name, this.SignLanguage.IsCustomName, metadataLanguageTag);
 			return this.GetLanguageName(langTag, metadataLanguageTag);
 		}
 

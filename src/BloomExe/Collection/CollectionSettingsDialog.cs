@@ -182,7 +182,7 @@ namespace Bloom.Collection
 			}
 			else
 			{
-				var signLangUiName = _collectionSettings.SignLanguage.Name;
+				var signLangUiName = _collectionSettings.GetSignLanguageName();
 				_signLanguageName.Text = string.Format("{0} ({1})", signLangUiName, _collectionSettings.SignLanguageTag);
 				_removeSignLanguageLink.Visible = true;
 				_changeSignLanguageLink.Text =
@@ -237,17 +237,12 @@ namespace Bloom.Collection
 
 		private void _signLanguageChangeLink_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
 		{
-			var potentiallyCustomName = _collectionSettings.SignLanguage.Name;
+			var potentiallyCustomName = _collectionSettings.SignLanguageName;
 			var l = ChangeLanguage(_collectionSettings.SignLanguageTag, potentiallyCustomName, true);
 			if (l != null)
 			{
-				// How to know if the new sign language name is custom or not!?
-				// 1- set the Tag (which also sets the Name to the non-custom default
-				// 2- read the Name
-				// 3- if it's not the same as DesiredName, the new name is custom
 				_collectionSettings.SignLanguageTag = l.LanguageTag;
-				var slIsCustom = _collectionSettings.SignLanguage.Name != l.DesiredName;
-				_collectionSettings.SignLanguage.SetName(l.DesiredName, slIsCustom);
+				_collectionSettings.SignLanguageName = l.DesiredName;
 				ChangeThatRequiresRestart();
 			}
 		}
