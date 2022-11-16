@@ -57,8 +57,12 @@ namespace BloomTests.Spreadsheet
 
 			<div data-book=""outside-back-cover-branding-bottom-html"" lang=""*""><img class=""branding"" src=""BloomWithTaglineAgainstLight.svg"" alt="""" data-copyright="""" data-creator="""" data-license=""""></img></div>
 
+			<div data-book=""copyright"" lang=""*"">Copyright C 2022 Somone</div>
 			<div data-book=""licenseUrl"" lang=""*"">
 				http://creativecommons.org/licenses/by/4.0/
+			</div>
+			<div data-book=""licenseNotes"" lang=""*"">
+				Be nice to the author
 			</div>
 
 			<div data-book=""licenseDescription"" lang=""fr"">
