@@ -912,6 +912,11 @@ namespace Bloom.Publish.BloomLibrary
 					Arguments = command,
 					WorkingDirectory = Path.GetDirectoryName(Application.ExecutablePath)
 				};
+				// The process that starts will inherit our environment variables, and we need LD_PRELOAD to be set on Linux.
+				var xulRunner = Environment.GetEnvironmentVariable("XULRUNNER");
+				var existingLdPreload = Environment.GetEnvironmentVariable("LD_PRELOAD");
+				if (String.IsNullOrEmpty(existingLdPreload) && !String.IsNullOrEmpty("xulRunner"))
+					Environment.SetEnvironmentVariable("LD_PRELOAD", $"{xulRunner}/libgeckofix.so");
 			}
 
 			Process.Start(startInfo);
@@ -921,7 +926,8 @@ namespace Bloom.Publish.BloomLibrary
 			_progressBox.WriteMessage("When the upload is complete, there will be a file named 'BloomBulkUploadLog.txt' in your collection folder.");
 			var url = $"{BloomLibraryUrls.BloomLibraryUrlPrefix}/{_model.Book.CollectionSettings.DefaultBookshelf}";
 			_progressBox.WriteMessage("Your books will show up at {0}", url);
-		
+			if (SIL.PlatformUtilities.Platform.IsLinux)
+				Environment.SetEnvironmentVariable("LD_PRELOAD", null);	// LD_PRELOAD interferes with CommandLineRunner with GeckoFx60
 		}
 
 		private void _uploadSource_SelectedIndexChanged(object sender, EventArgs e)
