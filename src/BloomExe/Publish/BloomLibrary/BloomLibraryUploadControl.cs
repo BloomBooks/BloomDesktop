@@ -912,6 +912,16 @@ namespace Bloom.Publish.BloomLibrary
 					Arguments = command,
 					WorkingDirectory = Path.GetDirectoryName(Application.ExecutablePath)
 				};
+				// LD_PRELOAD is a Linux environment variable for a shared library that should be loaded before any other library is
+				// loaded by a program that is starting up.  It is rarely needed, but the mozilla code used by Geckofx is one place
+				// where this feature is used.
+				// Starting with Geckofx60, LD_PRELOAD interferes with CommandLineRunner on Linux when we use CommandLineRunner
+				// to start BloomPdfMaker.exe.  Since that's a common operation, Program.Main removes LD_PRELOAD from the environment.
+				// The process that starts here will inherit our environment variables, and we need LD_PRELOAD to be set on Linux
+				// for Bloom.exe to successfully start and initialize XulRunner.  Fortunately, it's easy to reconstruct.
+				var xulRunner = Environment.GetEnvironmentVariable("XULRUNNER");
+				if (!String.IsNullOrEmpty("xulRunner"))
+					Environment.SetEnvironmentVariable("LD_PRELOAD", $"{xulRunner}/libgeckofix.so");
 			}
 
 			Process.Start(startInfo);
@@ -921,7 +931,8 @@ namespace Bloom.Publish.BloomLibrary
 			_progressBox.WriteMessage("When the upload is complete, there will be a file named 'BloomBulkUploadLog.txt' in your collection folder.");
 			var url = $"{BloomLibraryUrls.BloomLibraryUrlPrefix}/{_model.Book.CollectionSettings.DefaultBookshelf}";
 			_progressBox.WriteMessage("Your books will show up at {0}", url);
-		
+			if (SIL.PlatformUtilities.Platform.IsLinux)	// LD_PRELOAD interferes with CommandLineRunner for BloomPdfMaker with GeckoFx60 on Linux
+				Environment.SetEnvironmentVariable("LD_PRELOAD", null);
 		}
 
 		private void _uploadSource_SelectedIndexChanged(object sender, EventArgs e)
