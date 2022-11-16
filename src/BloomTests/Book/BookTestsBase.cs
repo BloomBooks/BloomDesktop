@@ -204,6 +204,10 @@ namespace BloomTests.Book
 		protected void MakeSamplePngImageWithMetadata(string path, int width = 10, int height = 10)
 		{
 			var x = new Bitmap(width, height);
+			// Fill the bitmap with a solid color.  The default is transparent black if we don't do anything.
+			using (var gfx = Graphics.FromImage(x))
+				using (var brush = new SolidBrush(Color.FromArgb(200, 100, 0)))
+					gfx.FillRectangle(brush, 0, 0, width, height);
 			RobustImageIO.SaveImage(x, path, ImageFormat.Png);
 			x.Dispose();
 			using (var img = PalasoImage.FromFileRobustly(path))

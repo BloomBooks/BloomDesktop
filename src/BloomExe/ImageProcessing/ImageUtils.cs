@@ -64,6 +64,129 @@ namespace Bloom.ImageProcessing
 			return false;
 		}
 
+		/// <summary>
+		/// Check whether we should try to make the background of this image transparent.
+		/// Return true only if this is a two-color image with one of the colors being white.
+		/// (or a grayscale picture with one of the colors being white)
+		/// Return false also if any pixel encountered in scanning the picture is transparent
+		/// at all.
+		/// </summary>
+		public static bool ShouldMakeBackgroundTransparent(PalasoImage imageInfo)
+		{
+			// We want to make the white background of Black and White pictures transparent.
+			// JPEG pictures generally never meet that criteria and cannot be made transparent anyway.
+			if (!AppearsToBePng(imageInfo))
+				return false;
+			if ((imageInfo.Image.PixelFormat & PixelFormat.Indexed) == PixelFormat.Indexed)
+			{
+				var palette = imageInfo.Image.Palette;
+				if (palette != null && palette.Entries != null)
+				{
+					// If only two colors are used, assume black and white line art that needs to have
+					// white made transparent.
+					if (palette.Entries.Length == 2)
+					{
+						var whiteFound = IsNearWhite(palette.Entries[0]) || IsNearWhite(palette.Entries[1]);
+						return whiteFound;
+					}
+					else
+					{
+						return false;
+					}
+				}
+			}
+			// Harder to check if not indexed...
+			if (imageInfo.Image is Bitmap bitmapImage)
+			{
+				var color1 = new Color();
+				var color2 = new Color();
+				// Yes, this is as expensive as it looks.  But we only sample 100 pixels
+				// spread through the picture, stopping as soon as we hit either a
+				// transparent pixel or a 3rd distinct non-gray color.
+				int yDelta = Math.Max(bitmapImage.Height / 10, 2);
+				int xDelta = Math.Max(bitmapImage.Width / 10, 2);
+				var randomXFix = GenerateRandomAdjustments(271828182, xDelta);
+				var randomYFix = GenerateRandomAdjustments(271828182, yDelta);
+				for (int j = 0, y = yDelta / 2; y < bitmapImage.Height; y += yDelta, ++j)
+				{
+					j = Math.Min(j, 9);
+					for (int i = 0, x = xDelta / 2; x < bitmapImage.Width; x += xDelta, ++i)
+					{
+						i = Math.Min(i,9);
+						var y1 = y + randomYFix[j, i];
+						var x1 = x + randomXFix[j, i];
+						y1 = Math.Min(Math.Max(y1, 0), bitmapImage.Height - 1);
+						x1 = Math.Min(Math.Max(x1, 0), bitmapImage.Width - 1);
+						var color = bitmapImage.GetPixel(x1, y1);
+						if (color.A < 255)
+						{
+							return false;	// we already have transparent pixels
+
+						}
+						else if (color1 == Color.Empty)
+						{
+							color1 = color;
+						}
+						else if (color != color1 && color2 == Color.Empty)
+						{
+							color2 = color;
+						}
+						else if (color != color1 && color != color2)
+						{
+							if (IsGrayish(color1) && IsGrayish(color2) && IsGrayish(color))
+								continue;	// It may be a grayscale picture, which can be made transparent safely.
+							return false;	// we have at least 3 colors
+						}
+					}
+				}
+				var colorCount = 0;
+				var whiteFound = false;
+				if (color1 != Color.Empty)
+				{
+					++colorCount;
+					if (IsNearWhite(color1))
+						whiteFound = true;
+				}
+				if (color2 != Color.Empty)
+				{
+					++colorCount;
+					if (IsNearWhite(color2))
+						whiteFound = true;
+				}
+				// Only two colors encountered, likely black and white in intent.
+				// But if neither of the two colors is white (or near white), return false.
+				// (Our code wouldn't make anything transparent anyway.)
+				return colorCount == 2 && whiteFound;
+			}
+			// we can't tell, so err on the side of caution.
+			return false;
+		}
+
+		private static int[,] GenerateRandomAdjustments(int seed, int range)
+		{
+			var rand = new Random(seed);
+			var adjustments = new int[10,10];
+			for (var i = 0; i < 10; ++i)
+				for (var j = 0; j < 10; ++j)
+					adjustments[i,j] = rand.Next(range) - (range / 2);
+			return adjustments;
+		}
+
+		/// <summary>
+		/// Detect the color range that we would consider "white" and make transparent.
+		/// </summary>
+		internal static bool IsNearWhite(Color color)
+		{
+			return color.R >= 253 && color.R <= 255 &&
+					color.G >= 253 && color.G <= 255 &&
+					color.B >= 253 && color.B <= 255;
+		}
+
+		internal static bool IsGrayish(Color color)
+		{
+			return color.R == color.G && color.G == color.B;
+		}
+
 		public static bool IsJpegFile(string path)
 		{
 			if (string.IsNullOrEmpty(path) || !RobustFile.Exists(path))
