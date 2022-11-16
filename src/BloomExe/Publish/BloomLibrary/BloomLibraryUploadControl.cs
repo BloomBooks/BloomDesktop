@@ -912,6 +912,19 @@ namespace Bloom.Publish.BloomLibrary
 					Arguments = command,
 					WorkingDirectory = Path.GetDirectoryName(Application.ExecutablePath)
 				};
+				// LD_PRELOAD is a Linux environment variable for a shared library that should be loaded before any other library is
+				// loaded by a program that is starting up.  It is rarely needed, but the mozilla code used by Geckofx is one place
+				// where this feature is used, specifically to load a xulrunner patch (libgeckofix.so) that must be in place before
+				// xulrunner can be initialized for GeckoFx60 on Linux.  This must be in place in the environment before launching
+				// any process (such as Bloom, here) that will initialize xulrunner, but may cause problems for other programs so
+				// it is best not to have it in the environment unless we know it is needed.  In particular having LD_PRELOAD set to
+				// load libgeckofix.so is known to cause problems when running some programs (possibly only BloomPdfMaker.exe) using
+				// CommandLineRunner.  To guard against this Program.Main() removes it from the environment, but here we need to
+				// temporarily restore it so it can be inherited by the instance of Bloom we are about to launch. Fortunately, it's
+				// easy to reconstruct.
+				var xulRunner = Environment.GetEnvironmentVariable("XULRUNNER");
+				if (!String.IsNullOrEmpty("xulRunner"))
+					Environment.SetEnvironmentVariable("LD_PRELOAD", $"{xulRunner}/libgeckofix.so");
 			}
 
 			Process.Start(startInfo);
@@ -921,7 +934,8 @@ namespace Bloom.Publish.BloomLibrary
 			_progressBox.WriteMessage("When the upload is complete, there will be a file named 'BloomBulkUploadLog.txt' in your collection folder.");
 			var url = $"{BloomLibraryUrls.BloomLibraryUrlPrefix}/{_model.Book.CollectionSettings.DefaultBookshelf}";
 			_progressBox.WriteMessage("Your books will show up at {0}", url);
-		
+			if (SIL.PlatformUtilities.Platform.IsLinux)	// LD_PRELOAD interferes with CommandLineRunner and GeckoFx60 on Linux
+				Environment.SetEnvironmentVariable("LD_PRELOAD", null);
 		}
 
 		private void _uploadSource_SelectedIndexChanged(object sender, EventArgs e)
