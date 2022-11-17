@@ -2200,7 +2200,7 @@ namespace Bloom.Book
 		internal LanguageDescriptor[] MakeLanguageUploadData(string[] langTags)
 		{
 			var result = new LanguageDescriptor[langTags.Length];
-			var bookLangs = GetBasicBookLanguages();
+			var bookLangs = GetBasicBookLanguages(true, true);
 			for (int i = 0; i < langTags.Length; i++)
 			{
 				var code = langTags[i];
