@@ -162,7 +162,6 @@ div.bloom-imageContainer {
         text-decoration: none;
         color: @tipLinkColor;
     }
-
 }
 
 .bloom-page .pageLabel {
@@ -470,6 +469,15 @@ div.pageLabel[contenteditable="true"]:focus {
         position: absolute;
         right: 0;
         bottom: 0; // For the p::after case, this helps prevent the edit-time <br> elements from pushing the "¶ down onto the next (wrong) line
+        // When this mark is added to a paragraph that has reduced line spacing, the browser considers it to overflow.
+        // Thus, the potential descent of the paragraph mark (even though it has no descender) contributes to the para's scrollHeight,
+        // since the bottom of the box (constrained by lineHeight) gets aligned with the bottom of the paragraph, so the
+        // nonexistent descenders which are cut off by the lineheight are actually below the bottom of the paragraph.
+        // This can actually add to the scrollHeight of the containing bloom-editable, resulting in Bloom concluding that it
+        // is overflowing. But if we hide any overflow of the :after, this doesn't happen.
+        // What is more surprising is that it actually seems to improve the alignment of the paragraph mark with the text.
+        // I haven't figured out why this is. See some of the later comments in BL-11606.
+        overflow: hidden;
         z-index: -1; // go under any text that reach the end of the line (I don't know why, but 0 doesn't work)
     }
     p::after {
