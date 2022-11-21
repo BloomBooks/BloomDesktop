@@ -319,55 +319,64 @@ namespace Bloom.Book
 			// Handle both Windows and Linux line endings in case a file copied between the two
 			// ends up with the wrong one.
 			display = display.Replace("<br />", " ").Replace("\r\n", " ").Replace("\n", " ").Replace("  ", " ");
-			display = RemoveXmlMarkup(display, LineBreakSpanConversionMode.ToSpace).Trim();
+			display = RemoveHtmlMarkup(display, LineBreakSpanConversionMode.ToSpace).Trim();
 			return display;
 		}
 
 		public enum LineBreakSpanConversionMode
 		{
-			ToNewline,
-			ToSpace
+			ToNewline,		// Environment.Newline
+			ToSpace,		// " "
+			ToSimpleNewline	// "\n", used for export to meta.json
 		}
 
-		// might be better named RemoveMarkup; what can be in here is *HTML*, e.g. bold, italics, etc.
-		public static string RemoveXmlMarkup(string input, LineBreakSpanConversionMode lineBreakSpanConversionOptions)
+		// what can be in here is *XHTML*, e.g. bold, italics, etc.
+		public static string RemoveHtmlMarkup(string input, LineBreakSpanConversionMode lineBreakSpanConversionOption)
 		{
+			if (input == null)
+				return null;
 			try
 			{
 				var doc = new XmlDocument();
 				doc.PreserveWhitespace = true;
 				doc.LoadXml("<div>" + input + "</div>");
 
-				// NOTE: There is a similar section of code dealing with bloom-linebreak
-				//       in BookData.cs::TextOfInnerHtml().
-				//       (That operates on XElements though, this deals with XmlElements)
-				if (lineBreakSpanConversionOptions == LineBreakSpanConversionMode.ToSpace || lineBreakSpanConversionOptions == LineBreakSpanConversionMode.ToNewline)
+				const char kBOM = '\uFEFF';	// Unicode Byte Order Mark character.
+
+				// Handle Shift+Enter, which gets translated to <span class="bloom-linebreak" />
+				// This is being handled using at the XML level instead of string level, so that it'll work regardless of
+				// whether it uses the <span /> form or <span></span> form. (I do see places in the debugger where the data is in <span></span> form.)
+				var lineBreaks = doc.SafeSelectNodes("//span[contains(concat(' ', normalize-space(@class), ' '), ' bloom-linebreak ')]");
+				var lineBreakElements = lineBreaks.Cast<XmlElement>().ToArray();
+				foreach (var lineBreakSpan in lineBreakElements)
 				{
-					const char kBOM = '\uFEFF';	// Unicode Byte Order Mark character.
+					// But before we mess with lineBreakSpan, first check if it's immediately followed by a BOM
+					// character (which is also inserted by Shift-Enter), and if so delete that out.
+					var nextSibling = lineBreakSpan.NextSibling;
 
-					// Handle Shift+Enter, which gets translated to <span class="bloom-linebreak" />
-					// This is being handled using at the XML level instead of string level, so that it'll work regardless of
-					// whether it uses the <span /> form or <span></span> form. (I do see places in the debugger where the data is in <span></span> form.)
-					var lineBreaks = doc.SafeSelectNodes("//span[contains(concat(' ', normalize-space(@class), ' '), ' bloom-linebreak ')]");
-					var lineBreakElements = lineBreaks.Cast<XmlElement>().ToArray();
-					foreach (var lineBreakSpan in lineBreakElements)
+					// String.StartsWith() seems to always ignore the BOM character, so use a character
+					// comparison.  See https://issues.bloomlibrary.org/youtrack/issue/BL-11717.
+					if (nextSibling?.NodeType == XmlNodeType.Text && !String.IsNullOrEmpty(nextSibling.Value) && nextSibling.Value[0] == kBOM)
 					{
-						// But before we mess with lineBreakSpan, first check if it's immediately followed by a BOM
-						// character (which is also inserted by Shift-Enter), and if so delete that out.
-						var nextSibling = lineBreakSpan.NextSibling;
-
-						// String.StartsWith() seems to always ignore the BOM character, so use a character
-						// comparison.  See https://issues.bloomlibrary.org/youtrack/issue/BL-11717.
-						if (nextSibling?.NodeType == XmlNodeType.Text && !String.IsNullOrEmpty(nextSibling.Value) && nextSibling.Value[0] == kBOM)
-						{
-							nextSibling.Value = nextSibling.Value.Substring(1);
-						}
-
-						// Now delete lineBreakSpan and replace it
-						var replacementText = lineBreakSpanConversionOptions == LineBreakSpanConversionMode.ToSpace ? " " : Environment.NewLine;
-						var newlineNode = doc.CreateTextNode(replacementText);
-						lineBreakSpan.ParentNode.ReplaceChild(newlineNode, lineBreakSpan);
+						nextSibling.Value = nextSibling.Value.Substring(1);
 					}
+
+					// Now delete lineBreakSpan and replace it
+					var replacementForLinebreakSpan = "";
+					switch (lineBreakSpanConversionOption)
+					{
+						case LineBreakSpanConversionMode.ToNewline:
+							replacementForLinebreakSpan = Environment.NewLine;
+							break;
+						case LineBreakSpanConversionMode.ToSpace:
+							replacementForLinebreakSpan = " ";
+							break;
+						case LineBreakSpanConversionMode.ToSimpleNewline:
+							replacementForLinebreakSpan = "\n";
+							break;
+					}
+					var newlineNode = doc.CreateTextNode(replacementForLinebreakSpan);
+					lineBreakSpan.ParentNode.ReplaceChild(newlineNode, lineBreakSpan);
 				}
 
 				return doc.DocumentElement.InnerText;
