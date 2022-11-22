@@ -102,7 +102,7 @@ namespace Bloom.ImageProcessing
 			}
 		}
 
-		public string GetPathToResizedImage(string originalPath, bool getThumbnail = false, bool makeTransparent = false)
+		public string GetPathToResizedImage(string originalPath, bool getThumbnail = false, bool isForCover = false)
 		{
 			//don't mess with Bloom UI images
 			if (new[] {"/img/", "placeHolder", "Button"}.Any(s => originalPath.Contains(s)))
@@ -144,15 +144,15 @@ namespace Bloom.ImageProcessing
 
 				// BL-1112: images not loading in page thumbnails
 				var success = true;
-				var wantOriginal = !getThumbnail && !makeTransparent;
+				var wantOriginal = !getThumbnail && !isForCover;
 				if (getThumbnail)
 				{
 					// The HTML div that contains the thumbnails is 80 pixels wide, so make the thumbnails 80 pixels wide
 					success = GenerateThumbnail(originalPath, pathToProcessedImage, 80);
 				}
-				else if (makeTransparent)
+				else if (isForCover)
 				{
-					success = MakePngBackgroundTransparent(originalPath, pathToProcessedImage);
+					success = MakePngBackgroundTransparentIfDesirable(originalPath, pathToProcessedImage);
 				}
 
 				if (wantOriginal || !success)
@@ -345,9 +345,7 @@ namespace Bloom.ImageProcessing
 			for (var i = 0; i < palette.Entries.Length; i++)
 			{
 				var color = palette.Entries[i];
-				if (color.R >= 253 && color.R <= 255 &&
-					color.G >= 253 && color.G <= 255 &&
-					color.B >= 253 && color.B <= 255)
+				if (ImageUtils.IsNearWhite(color))
 				{
 					palette.Entries[i] = Color.FromArgb(0, color.R, color.G, color.B);
 				}
@@ -355,7 +353,12 @@ namespace Bloom.ImageProcessing
 			return palette;		// assigning this back to the bitmap will actually update it.
 		}
 
-		public static bool MakePngBackgroundTransparent(string originalPath, string pathToProcessedImage)
+		/// <summary>
+		/// Make the image background transparent if the image is PNG and appears to be a black
+		/// and white drawing.
+		/// </summary>
+		/// <returns>true if an image with transparent background is created</returns>
+		public static bool MakePngBackgroundTransparentIfDesirable(string originalPath, string pathToProcessedImage)
 		{
 			try
 			{
@@ -369,6 +372,10 @@ namespace Bloom.ImageProcessing
 				{
 					// double check whether the file extension was misleading us...
 					if (ImageUtils.AppearsToBeJpeg(originalImage))
+						return false;
+
+					// Check whether a transparent background is actually needed.
+					if (!ImageUtils.ShouldMakeBackgroundTransparent(originalImage))
 						return false;
 
 					using (var processedBitmap = MakePngBackgroundTransparent(originalImage))
