@@ -433,7 +433,7 @@ namespace Bloom.Publish
 			}
 			catch (Exception err)
 			{
-				SIL.Reporting.ErrorReport.NotifyUserOfProblem("Bloom was not able to save the PDF.  {0}", err.Message);
+				SIL.Reporting.ErrorReport.NotifyUserOfProblem(err, "Bloom was not able to save the PDF.  {0}", err.Message);
 			}
 		}
 
