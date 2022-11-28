@@ -201,8 +201,8 @@ namespace Bloom.ImageProcessing
 					}
 				}
 				Image imageToDraw = originalImage.Image;
-				bool useOriginalImage = ImageUtils.AppearsToBeJpeg(originalImage);
-				if (!useOriginalImage)
+				bool makeTransparentImage = ImageUtils.ShouldMakeBackgroundTransparent(originalImage);
+				if (makeTransparentImage)
 				{
 					imageToDraw = MakePngBackgroundTransparent(originalImage);
 				}
@@ -210,7 +210,7 @@ namespace Bloom.ImageProcessing
 				// Note the image size may change when the background is made transparent.
 				// See https://silbloom.myjetbrains.com/youtrack/issue/BL-5632.
 				g.DrawImage(imageToDraw, destRect , new Rectangle(0,0,imageToDraw.Width, imageToDraw.Height),GraphicsUnit.Pixel);
-				if (!useOriginalImage)
+				if (makeTransparentImage)
 					imageToDraw.Dispose();
 				RobustImageIO.SaveImage(thumbnail, pathToProcessedImage);
 			}
