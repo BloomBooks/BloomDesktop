@@ -812,14 +812,18 @@ StoryCheckResults.prototype.getNumbers = function() {
  */
 LibSynphony.prototype.langDataFromString = function(langDataString) {
     // Typically langDataString is from a ReaderToolsWords-xxx.json stored in sample texts.
-    // This file comes from a bloom pack and is not updated as other sample word data is edited.
-    // We arrange to load it before other sample words files so that data from them will not
-    // be overwritten here. However, sample words entered by the user directly in the settings
-    // dialog are stored in ReaderToolsSettings-xxx.json which is loaded before any sample texts.
-    // To avoid losing any new words the user has put there, we must make sure any pre-existing
-    // words are transferred to the new object.
-    // Enhance: this is ugly and messy and assumes this method is called in just one particular
-    // way. If the user deletes words in sample words that were in the original bloompack
+    // An earlier version of this code let the results of parsing this file BECOME
+    // theOneLanguageDataInstance. It's not clear to me why that was done. At this point we only
+    // want it as a word list...unless we're reading the live word data file, which happens
+    // before loading sample words. But if we're loading it as a sample words, we don't want
+    // to replace other things in theOneLanguageDataInstance, like the grapheme list, with
+    // whatever was current when the word list was created. Nor do we want to lose any sample
+    // words already loaded from other sources, which we previously had to go to some trouble
+    // to prevent. So I think it's best to keep the original theOneLanguageDataInstance and
+    // just use this to add to the word list.
+    // When we have a ReaderToolsWords-xxx.json used as sample words, it is not updated as other
+    // sample word data is edited. This unfortunately means that any sample words stored in it
+    // cannot easily be deleted. If the user deletes words in sample words that were in the original bloompack
     // ReaderToolsWords file, they won't disappear. Even if the user deletes the sample texts
     // version of ReaderToolsWords, Bloom will copy it again from the common data folder where
     // it was put while unpacking the bloompack. To really kill them, the user would have to know
@@ -828,20 +832,24 @@ LibSynphony.prototype.langDataFromString = function(langDataString) {
     // But I don't see a better way to fix it while keeping compatibility with older bloompacks
     // (and without a heck of a lot of work for a fairly minor bug that hasn't yet even been
     // noticed by real users.)
-    var previousLangData = theOneLanguageDataInstance;
-    theOneLanguageDataInstance = this.parseLangDataString(langDataString);
-    if (previousLangData && previousLangData.group1) {
-        for (var i = 0; i < previousLangData.group1.length; i++) {
-            if (
-                !theOneLanguageDataInstance.findWord(
-                    previousLangData.group1[i].Name
-                )
-            ) {
-                theOneLanguageDataInstance.group1.push(
-                    previousLangData.group1[i]
-                );
+    const newLangData = this.parseLangDataString(langDataString);
+    if (theOneLanguageDataInstance) {
+        if (newLangData && newLangData.group1) {
+            for (let i = 0; i < newLangData.group1.length; i++) {
+                if (
+                    !theOneLanguageDataInstance.findWord(
+                        newLangData.group1[i].Name
+                    )
+                ) {
+                    theOneLanguageDataInstance.group1.push(
+                        newLangData.group1[i]
+                    );
+                }
             }
         }
+    } else {
+        // I don't think this will ever happen, but for robustness I'm preserving an earlier behavior
+        theOneLanguageDataInstance = newLangData;
     }
 
     theOneLibSynphony.processVocabularyGroups();
