@@ -213,7 +213,7 @@ namespace Bloom
 					imageSrc = transparentImageFile;
 				using (var coverImage = PalasoImage.FromFile(imageSrc))
 				{
-					if (imageSrc == transparentImageFile)
+					if (imageSrc == transparentImageFile || ImageUtils.HasTransparency(coverImage.Image))
 						coverImage.Image = MakeImageOpaque(coverImage.Image, book.GetCoverColor());
 					var shouldAddDashedBorder = options.BorderStyle == HtmlThumbNailer.ThumbnailOptions.BorderStyles.Dashed;
 					coverImage.Image = options.CenterImageUsingTransparentPadding ?
