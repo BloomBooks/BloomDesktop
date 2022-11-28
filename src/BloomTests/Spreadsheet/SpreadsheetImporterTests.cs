@@ -163,6 +163,18 @@ namespace BloomTests.Spreadsheet
 			//make sure z language node is not removed
 			assertDom.HasSpecifiedNumberOfMatchesForXpath("//div[@data-book='ztest' and @lang='z']", 1);
 		}
+
+		[Test]
+		public void LicenseAndCopyrightUnchanged()
+		{
+			var assertDom = AssertThatXmlIn.Dom(_dom.RawDom);
+			assertDom.HasSpecifiedNumberOfMatchesForXpath(
+				"//div[@id='bloomDataDiv']/div[@data-book='copyright' and @lang='*' and text()='Copyright C 2022 Somone']", 1);
+			assertDom.HasSpecifiedNumberOfMatchesForXpath(
+				"//div[@id='bloomDataDiv']/div[@data-book='licenseUrl' and @lang='*' and text()='http://creativecommons.org/licenses/by/4.0/']", 1);
+			assertDom.HasSpecifiedNumberOfMatchesForXpath(
+				"//div[@id='bloomDataDiv']/div[@data-book='licenseNotes' and @lang='*' and text()='Be nice to the author']", 1);
+		}
 	}
 
 	/// <summary>
@@ -1184,6 +1196,191 @@ namespace BloomTests.Spreadsheet
 					.EqualTo(
 						"This spreadsheet has no data that Bloom knows how to import. Did you follow the standard format for Bloom spreadsheets?"));
 
+		}
+	}
+
+	
+
+	public class SpreadsheetImportRemovingLicenseUrlandNotes
+	{
+		public static string licenseTestsDom = @"
+<!DOCTYPE html>
+
+<html>
+<head>
+</head>
+
+<body data-l1=""es"" data-l2="""" data-l3="""">
+	<div id=""bloomDataDiv"">
+		<div data-book=""licenseImage"" lang= ""*"" >
+			license.png
+		</div>
+		<div data-book=""copyright"" lang=""*"">Copyright C 2022 Somone</div>
+		<div data-book=""licenseUrl"" lang=""*"">http://creativecommons.org/licenses/by/4.0/</div>
+		<div data-book=""licenseNotes"" lang=""*"">Be nice to the author</div>
+	</div>
+</body>
+</html>
+";
+		private HtmlDom _dom;
+		private TemporaryFolder _bookFolder;
+
+		[OneTimeSetUp]
+		public void OneTimeSetUp()
+		{
+			// Create an HtmlDom for a template to import into.
+			var xml = string.Format(licenseTestsDom);
+			_dom = new HtmlDom(xml, true);
+
+			// Create an internal spreadsheet with the rows we want to import
+			var ss = new InternalSpreadsheet();
+			var columnForEn = ss.AddColumnForLang("en", "English");
+			var columnForStart = ss.AddColumnForLang("*", "Unknown");
+
+			// The important thing here is that we have a copyright row but not licenseUrl or licenseNotes rows
+
+			var contentRow1 = new ContentRow(ss);
+			contentRow1.AddCell("[copyright]");
+			contentRow1.SetCell(columnForStart, "Copyright C 2021, Someone else");
+			contentRow1.SetCell(columnForEn, "This should not be read");
+
+			_bookFolder = new TemporaryFolder("SpreadsheetImportRemovingLicenseTests");
+
+			// Do the import
+			var importer = new TestSpreadsheetImporter(null, _dom, null, _bookFolder.FolderPath);
+			importer.Import(ss);
+
+			// (individual test methods will evaluate the result)
+		}
+
+		[OneTimeTearDown]
+		public void OneTimeTearDown()
+		{
+			_bookFolder?.Dispose();
+		}
+
+		[Test]
+		public void CopyrightChanged()
+		{
+			AssertThatXmlIn.Dom(_dom.RawDom).HasSpecifiedNumberOfMatchesForXpath(
+				"//div[@id='bloomDataDiv']/div[@data-book='copyright' and @lang='*' and text()='Copyright C 2021, Someone else']",
+				1);
+		}
+
+		[Test]
+		public void EnglishCopyrightNotRead()
+		{
+			AssertThatXmlIn.Dom(_dom.RawDom).HasNoMatchForXpath(
+				"//div[@id='bloomDataDiv']/div[@data-book='copyright' and @lang='en']");
+		}
+
+		[TestCase("licenseUrl")]
+		[TestCase("licenseNotes")]
+		public void LicenseUrlRemoved(string dataBook)
+		{
+			AssertThatXmlIn.Dom(_dom.RawDom).HasNoMatchForXpath(
+				$"//div[@id='bloomDataDiv']/div[@data-book='{dataBook}']");
+		}
+	}
+
+	public class SpreadsheetImportKeepLicenseUrlandNotesIfNoCopyright
+	{
+		private HtmlDom _dom;
+		private TemporaryFolder _bookFolder;
+
+		[OneTimeSetUp]
+		public void OneTimeSetUp()
+		{
+			// Create an HtmlDom for a template to import into.
+			var xml = string.Format(SpreadsheetImportRemovingLicenseUrlandNotes.licenseTestsDom);
+			_dom = new HtmlDom(xml, true);
+
+			// Create an internal spreadsheet with the rows we want to import
+			var ss = new InternalSpreadsheet();
+			var columnForStar = ss.AddColumnForLang("*", "Unknown");
+
+			// The important thing here is that we have a no copyright, licenseUrl, or licenseNotes rows
+
+			var contentRow1 = new ContentRow(ss);
+			contentRow1.AddCell("[title]");
+			contentRow1.SetCell(columnForStar, "Some arbitrary title, just so the SS isn't empty");
+
+			_bookFolder = new TemporaryFolder("SpreadsheetImportRemovingLicenseTests");
+
+			// Do the import
+			var importer = new TestSpreadsheetImporter(null, _dom, null, _bookFolder.FolderPath);
+			importer.Import(ss);
+
+			// (individual test methods will evaluate the result)
+		}
+
+		[OneTimeTearDown]
+		public void OneTimeTearDown()
+		{
+			_bookFolder?.Dispose();
+		}
+
+		[TestCase("copyright", "Copyright C 2022 Somone")]
+		[TestCase("licenseUrl", "http://creativecommons.org/licenses/by/4.0/")]
+		[TestCase("licenseNotes", "Be nice to the author")]
+		public void DataUnchanged(string dataBook, string dataVal)
+		{
+			AssertThatXmlIn.Dom(_dom.RawDom).HasSpecifiedNumberOfMatchesForXpath(
+				$"//div[@id='bloomDataDiv']/div[@data-book='{dataBook}' and @lang='*' and text()='{dataVal}']",
+				1);
+		}
+	}
+
+	public class SpreadsheetImportModifyLicenseDataEvenIfNoCopyright
+	{
+		private HtmlDom _dom;
+		private TemporaryFolder _bookFolder;
+
+		[OneTimeSetUp]
+		public void OneTimeSetUp()
+		{
+			// Create an HtmlDom for a template to import into.
+			var xml = string.Format(SpreadsheetImportRemovingLicenseUrlandNotes.licenseTestsDom);
+			_dom = new HtmlDom(xml, true);
+
+			// Create an internal spreadsheet with the rows we want to import
+			var ss = new InternalSpreadsheet();
+			var columnForEn = ss.AddColumnForLang("en", "English");
+			var columnForStar = ss.AddColumnForLang("*", "Unknown");
+
+			// The important thing here is that we have a no copyright but do have licenseUrl and licenseNotes rows
+
+			var contentRow1 = new ContentRow(ss);
+			contentRow1.AddCell("[licenseUrl]");
+			contentRow1.SetCell(columnForStar, "http://creativecommons.org/licenses/by-nc/4.0/");
+
+			var contentRow2 = new ContentRow(ss);
+			contentRow2.AddCell("[licenseNotes]");
+			contentRow2.SetCell(columnForStar, "Be very generous to the author");
+
+			_bookFolder = new TemporaryFolder("SpreadsheetImportRemovingLicenseTests");
+
+			// Do the import
+			var importer = new TestSpreadsheetImporter(null, _dom, null, _bookFolder.FolderPath);
+			importer.Import(ss);
+
+			// (individual test methods will evaluate the result)
+		}
+
+		[OneTimeTearDown]
+		public void OneTimeTearDown()
+		{
+			_bookFolder?.Dispose();
+		}
+
+		[TestCase("copyright", "Copyright C 2022 Somone")]
+		[TestCase("licenseUrl", "http://creativecommons.org/licenses/by-nc/4.0/")]
+		[TestCase("licenseNotes", "Be very generous to the author")]
+		public void DataExpected(string dataBook, string dataVal)
+		{
+			AssertThatXmlIn.Dom(_dom.RawDom).HasSpecifiedNumberOfMatchesForXpath(
+				$"//div[@id='bloomDataDiv']/div[@data-book='{dataBook}' and @lang='*' and text()='{dataVal}']",
+				1);
 		}
 	}
 }

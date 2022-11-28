@@ -249,6 +249,8 @@ namespace Bloom.Spreadsheet
 				}
 				_currentRowIndex++;
 			}
+
+			CleanupDataDiv();
 			// This section is necessary to make sure changes to the dom are recorded.
 			// If we run SS Importer from the CLI (without CollectionSettings), BringBookUpToDate()
 			// will happen when we eventually open the book, but the user gets an updated thumbail and preview
@@ -368,12 +370,17 @@ namespace Bloom.Spreadsheet
 				.FirstOrDefault(x => x.Name == "img") as XmlElement;
 		}
 
+		private bool _foundCopyright;
+		private bool _foundLicenseUrl;
+		private bool _foundLicenseNotes;
+
 		private void UpdateDataDivFromRow(ContentRow currentRow, string dataBookLabel)
 		{
 			if (dataBookLabel.Contains("branding"))
 				return; // branding data-div elements are complex and difficult and determined by current collection state
 			// Only a few of these are worth reporting
 			string whatsUpdated = null;
+			bool rowAllowsAsteriskOnly = false;
 			switch (dataBookLabel)
 			{
 				case "coverImage":
@@ -384,6 +391,14 @@ namespace Bloom.Spreadsheet
 					break;
 				case "copyright":
 					whatsUpdated = "copyright information";
+					_foundCopyright = true;
+					rowAllowsAsteriskOnly = true;
+					break;
+				case "licenseUrl":
+					_foundLicenseUrl = true;
+					break;
+				case "licenseNotes":
+					_foundLicenseNotes = true;
 					break;
 			}
 			if (whatsUpdated != null)
@@ -459,6 +474,11 @@ namespace Bloom.Spreadsheet
 						}
 						else
 						{
+							if (rowAllowsAsteriskOnly)
+							{
+								Warn(String.Format("Ignored data for {0} in {1}. This field should only have data in the '*' column.", dataBookLabel,lang));
+								continue;
+							}
 							specificLanguageContentFound = true;
 						}
 
@@ -500,6 +520,32 @@ namespace Bloom.Spreadsheet
 				{
 					Warn(dataBookLabel + " information found in both * language column and other language column(s)");
 				}
+			}
+		}
+
+		private void CleanupDataDiv()
+		{
+			if (_foundCopyright)
+			{
+				// If we didn't find a copyright, then probably the spreadsheet has no useful
+				// copyright and license information, so we won't mess with what's in the target doc.
+				// But if it has copyright, we expect it to have license information as well.
+				// If it doesn't, that typically means the source book didn't either,
+				// which has a specific significance (NullLicense or CustomLicense).
+				// So make the destination book match, if we didn't find those.
+				if (!_foundLicenseUrl)
+					RemoveDataDivField("licenseUrl");
+				if (!_foundLicenseNotes)
+					RemoveDataDivField("licenseNotes");
+			}
+		}
+
+		void RemoveDataDivField(string fieldName)
+		{
+			var nodes = _dataDivElement.SelectNodes($"div[@data-book=\"{fieldName}\"]").Cast<XmlElement>().ToArray();
+			foreach (var node in nodes)
+			{
+				node.ParentNode.RemoveChild(node);
 			}
 		}
 
