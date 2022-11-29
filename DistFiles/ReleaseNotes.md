@@ -1,6 +1,12 @@
-[Bloom 5.4 Beta Release Notes](https://docs.bloomlibrary.org/release-notes-5-4)
+# 5.4 (Beta)
 
-[Bloom 5.3 Release Notes](https://docs.bloomlibrary.org/release-notes-5-3)
+[Release Notes](https://docs.bloomlibrary.org/release-notes-5-4)
+
+# 5.3
+
+[Release Notes](https://docs.bloomlibrary.org/release-notes-5-3)
+
+[Release Notes](https://docs.bloomlibrary.org/release-notes-5-3)
 
 # 5.2
 
