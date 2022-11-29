@@ -365,10 +365,20 @@ namespace Bloom.Publish
 
 				if (string.IsNullOrEmpty(_lastDirectory) || !Directory.Exists(_lastDirectory))
 				{
-					var drives = SIL.UsbDrive.UsbDriveInfo.GetDrives();
-					if (drives != null && drives.Count > 0)
+					try
 					{
-						_lastDirectory = drives[0].RootDirectory.FullName;
+						var drives = SIL.UsbDrive.UsbDriveInfo.GetDrives();
+						if (drives != null && drives.Count > 0)
+						{
+							_lastDirectory = drives[0].RootDirectory.FullName;
+						}
+					}
+					catch (Exception err)
+					{
+						// If an error occurs while trying to get the USB drive info,
+						// it's not a big deal and doesn't need to terminate the save operation.
+						// Let's just log it and fall through to the rest of the Save() function
+						SIL.Reporting.Logger.WriteError("Bloom encountered an error while getting list of USB drives.", err);
 					}
 				}
 
