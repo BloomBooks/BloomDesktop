@@ -27,7 +27,7 @@ export const TeamCollectionSettingsPanel: React.FunctionComponent = props => {
             <ExperimentalWarningBox />
             <P
                 l10nKey="TeamCollection.Intro"
-                l10nParam0="https://docs.bloomlibrary.org/team-collections"
+                l10nParam0="https://docs.bloomlibrary.org/team-collections-intro"
                 // Todo: once we have an actual video this should link to it! For now just another link to the document.
                 //l10nParam1="https://docs.bloomlibrary.org/team-collections"
                 temporarilyDisableI18nWarning={true}
