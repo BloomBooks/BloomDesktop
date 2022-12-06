@@ -149,6 +149,7 @@
         "eslint-config-prettier": "^8.5.0",
         "eslint-plugin-prettier": "^4.0.0",
         "eslint-plugin-react": "^7.30.0",
+        "eslint-plugin-react-hooks": "^4.6.0",
         "file-loader": "^3.0.1",
         "globule": "^1.2.1",
         "gulp": "^4.0.1",
