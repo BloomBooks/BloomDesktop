@@ -1040,7 +1040,7 @@ export class MotionTool extends ToolboxToolReactAdaptor {
 
         let motionChecked = true;
         let motionPossible = !doNotHaveAPicture;
-        if (!firstImage || ToolboxToolReactAdaptor.isXmatter()) {
+        if (!firstImage || ToolboxToolReactAdaptor.overlayToolAllowedOnPage()) {
             // if there's no place to put an image, we can't be enabled.
             // And we don't support Motion in xmatter (BL-5427),
             // in part because we use background-image there and haven't fully supported

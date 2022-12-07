@@ -55,7 +55,7 @@ const OverlayToolControls: React.FunctionComponent = () => {
     const [isRoundedCornersChecked, setIsRoundedCornersChecked] = useState(
         false
     );
-    const [isXmatter, setIsXmatter] = useState(true);
+    const [overlayAllowed, setOverlayAllowed] = useState(true);
     // If the book is locked, we don't want users dragging things onto the page.
     const [isBookLocked, setIsBookLocked] = useState(false);
     // This 'counter' increments on new page ready so we can re-check if the book is locked.
@@ -138,7 +138,7 @@ const OverlayToolControls: React.FunctionComponent = () => {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     OverlayTool.theOneOverlayTool!.callOnNewPageReady = () => {
         bubbleSpecInitialization();
-        setIsXmatter(ToolboxToolReactAdaptor.isXmatter());
+        setOverlayAllowed(ToolboxToolReactAdaptor.overlayToolAllowedOnPage());
         const count = pageRefreshIndicator;
         setPageRefreshIndicator(count + 1);
     };
@@ -773,7 +773,7 @@ const OverlayToolControls: React.FunctionComponent = () => {
                 >
                     <div
                         id={"overlayToolControlShapeChooserRegion"}
-                        className={!isXmatter ? "" : "disabled"}
+                        className={overlayAllowed ? "" : "disabled"}
                     >
                         <Div
                             l10nKey="EditTab.Toolbox.ComicTool.DragInstructions"
@@ -878,7 +878,9 @@ const OverlayToolControls: React.FunctionComponent = () => {
                     </div>
                     <div
                         id={"overlayToolControlOptionsRegion"}
-                        className={bubbleType && !isXmatter ? "" : "disabled"}
+                        className={
+                            bubbleType && overlayAllowed ? "" : "disabled"
+                        }
                     >
                         {getControlOptionsRegion()}
                         <div className="option-button-row">

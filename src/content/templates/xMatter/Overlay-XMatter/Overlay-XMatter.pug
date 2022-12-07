@@ -1,0 +1,47 @@
+
+include ../bloom-xmatter-mixins.pug
+
+mixin overlay-outsideFrontCover
+	+page-cover('Front Cover')(data-export='front-matter-cover', data-xmatter-page='frontCover')&attributes(attributes).frontCover.outsideFrontCover.bloom-allowOverlayTool#88731b2d-18b0-420f-ac96-6de20f659810
+
+		block cover-title
+			//- We would eventually remove this and rely on a title in the overlay
+			+field-prototypeDeclaredExplicity("V,N1").bookTitle
+				label.bubble Book title in {lang}
+				+editable(kLanguageForPrototypeOnly).bloom-nodefaultstylerule.Title-On-Cover-style.bloom-padForOverflow(data-book='bookTitle')
+
+		//- Once we include this data-book="coverImageContainer", it wrecks everything.
+		//- E.g., when we leave and go back into the book, we lose the title,
+		//- even if we don't include the title in the imageContainer block
+		.bloom-imageContainer(data-book="coverImageContainer")
+			img(data-book="coverImage", src="placeHolder.png")
+			+field-cover-image("auto").bloom-imageDescription.bloom-trailingElement
+			// eventually need this too:
+			// +overlay-title-l1
+
+mixin overlay-title-l1
+	+overlay-text-block("V")
+
+mixin overlay-text-block(lang)
+	.bloom-textOverPicture.ui-resizable.ui-draggable
+		+field-prototypeDeclaredExplicity(lang).bookTitle
+			label.bubble Book title in {lang}
+			+editable(kLanguageForPrototypeOnly).bloom-nodefaultstylerule.Title-On-Cover-style.bloom-padForOverflow(data-book='bookTitle')
+
+
+doctype html
+html
+	head
+		meta(charset='UTF-8')
+		meta(name='BloomFormatVersion', content='2.0')
+		title Overlay Front Cover
+		+stylesheets('Factory-XMatter.css')
+	body
+		+overlay-outsideFrontCover
+		+factoryStandard-creditsInsideFrontCover
+		// The important thing here, with countPageButDoNotShowNumber,
+		// is to get the left pages being even, else the professional publishing folks freak.
+		// Beyond that, it's not yet clear what is best, needs some research
+		+factoryStandard-titlePage.countPageButDoNotShowNumber
+		+factoryStandard-insideBackCover
+		+factoryStandard-outsideBackCover

@@ -1064,7 +1064,10 @@ namespace Bloom.Book
 				string query = $".//{elementName}[(@data-book or @data-library or @data-collection or @{kDataXmatterPage}) and not(contains(@class,'bloom-writeOnly'))]";
 
 				XmlNodeList nodesOfInterest = sourceElement.SafeSelectNodes(query);
-
+				//foreach (XmlElement node in nodesOfInterest)
+				//{
+				//	Debug.WriteLine($"data-book:{node.GetAttribute("data-book")??"--"} ({node.GetAttribute("lang")}):{node.InnerText.Trim()}");
+				//}
 				foreach (XmlElement node in nodesOfInterest)
 				{
 					bool isCollectionValue = false;

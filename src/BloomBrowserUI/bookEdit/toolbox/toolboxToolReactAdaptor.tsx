@@ -81,11 +81,13 @@ export default abstract class ToolboxToolReactAdaptor
         page.setAttribute(name, val);
     }
 
-    public static isXmatter(): boolean {
-        const pageClass = this.getBloomPageAttr("class");
-        return !pageClass
-            ? false // paranoia
-            : pageClass.indexOf("bloom-frontMatter") >= 0 ||
-                  pageClass.indexOf("bloom-backMatter") >= 0;
+    public static overlayToolAllowedOnPage(): boolean {
+        const page = this.getBloomPage();
+        if (!page) return false; // who knows what cause this...
+        const isXmatter = !!page.attributes.getNamedItem("data-xmatter-page");
+        const explicitlyAllowed = page.classList.contains(
+            "bloom-allowOverlayTool"
+        );
+        return explicitlyAllowed || !isXmatter;
     }
 }
