@@ -149,11 +149,12 @@ namespace Bloom.WebLibraryIntegration
 		/// </summary>
 		internal string UploadBook(string bookFolder, IProgress progress)
 		{
-			return UploadBook(bookFolder, progress, out _, null, null, null, null, null, null, null);
+			return UploadBook(bookFolder, progress, out _, null, null, null, null, null, null, null, null);
 		}
 
 		private string UploadBook(string bookFolder, IProgress progress, out string parseId,
 			string pdfToInclude, ISet<string> audioFilesToInclude, IEnumerable<string> videoFilesToInclude, string[] languages,
+			LanguageDescriptor[] parseLanguageData,
 			CollectionSettings collectionSettings, string metadataLang1Code, string metadataLang2Code)
 		{
 			// Books in the library should generally show as locked-down, so new users are automatically in localization mode.
@@ -244,9 +245,15 @@ namespace Bloom.WebLibraryIntegration
 					// Do this after uploading the books, since the ThumbnailUrl is generated in the course of the upload.
 					if (!IsDryRun && !progress.CancelRequested)
 					{
-						// Do NOT save this change in the book folder!
+						// Do NOT save this change to AllTitles in the book folder!
 						metadata.AllTitles = PublishModel.RemoveUnwantedLanguageDataFromAllTitles(metadata.AllTitles,
 							languages);
+
+						// We want to do this immmediately before creating the parse book record.
+						// There is a server cleanup job which runs to remove unused language records.
+						// We want the shortest interval possible between creating the language row and the book which uses it.
+						metadata.LanguageTableReferences = ParseClient.GetLanguagePointers(parseLanguageData);
+
 						var response = ParseClient.SetBookRecord(metadata.WebDataJson);
 						parseId = response.ResponseUri.LocalPath;
 						int index = parseId.LastIndexOf('/');
@@ -517,11 +524,6 @@ namespace Bloom.WebLibraryIntegration
 				if (book.HasSignLanguageVideos())
 					languagesToUpload = languagesToUpload.Union(book.BookInfo.PublishSettings.BloomLibrary.SignLangs.IncludedLanguages()).ToArray();
 
-				// Set this in the metadata so it gets uploaded. Do this in the background task as it can take some time.
-				// These bits of data can't easily be set while saving the book because we save one page at a time
-				// and they apply to the book as a whole.
-				book.BookInfo.LanguageTableReferences =
-					ParseClient.GetLanguagePointers(book.BookData.MakeLanguageUploadData(languagesToUpload));
 				book.BookInfo.PageCount = book.GetPages().Count();
 				book.BookInfo.Save();
 				// If the caller wants to preserve existing thumbnails, recreate them only if one or more of them do not exist.
@@ -590,6 +592,7 @@ namespace Bloom.WebLibraryIntegration
 					GetAudioFilesToInclude(book, bookParams.ExcludeMusic),
 					videoFiles,
 					languagesToUpload,
+					book.BookData.MakeLanguageUploadData(languagesToUpload),
 					book.CollectionSettings,
 					book.BookData.MetadataLanguage1Tag,
 					book.BookData.MetadataLanguage2Tag);
