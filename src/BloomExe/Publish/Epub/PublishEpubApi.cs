@@ -6,12 +6,11 @@ using System.Windows.Forms;
 using Bloom.Api;
 using Bloom.Book;
 using Bloom.Collection;
-using Bloom.ToPalaso;
 using Bloom.web;
 using DesktopAnalytics;
 using L10NSharp;
-using Newtonsoft.Json;
 using SIL.IO;
+using SIL.Reporting;
 
 namespace Bloom.Publish.Epub
 {
