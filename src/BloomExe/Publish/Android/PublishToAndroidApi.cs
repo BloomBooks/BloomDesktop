@@ -21,7 +21,7 @@ using BloomTemp;
 using DesktopAnalytics;
 using SIL.IO;
 using Newtonsoft.Json;
-using Bloom.ToPalaso;
+using SIL.Reporting;
 
 namespace Bloom.Publish.Android
 {

@@ -6,8 +6,7 @@ using Bloom.Properties;
 using Bloom.Book;
 using BloomTemp;
 using Bloom.Publish.Android;
-using Bloom.ToPalaso;
-using System.Linq;
+using SIL.Reporting;
 
 namespace Bloom.CLI
 {

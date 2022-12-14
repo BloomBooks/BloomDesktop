@@ -19,9 +19,9 @@ using DesktopAnalytics;
 using SIL.IO;
 using SIL.Xml;
 using Bloom.ToPalaso.Experimental;
-using Bloom.ToPalaso;
 using Newtonsoft.Json;
 using SIL.Extensions;
+using SIL.Reporting;
 
 namespace Bloom.Publish
 {
