@@ -1317,7 +1317,9 @@ namespace Bloom.Book
 				var query = $"//{elementName}[(@data-book or @data-collection or @data-library or @{kDataXmatterPage})]";
 				var nodesOfInterest = targetDom.SafeSelectNodes(query);
 
-				foreach (XmlElement node in nodesOfInterest)
+				// We're going to be modifying the DOM here, so funny things can happen (rarely) if
+				// we don't capture the iteration results in a separate array before we start the loop.
+				foreach (XmlElement node in nodesOfInterest.Cast<XmlElement>().ToArray())
 				{
 					var key = node.GetAttribute("data-book").Trim();
 
