@@ -835,12 +835,17 @@ namespace Bloom.Book
 		}
 		public static BookMetaData FromString(string input)
 		{
-			var result = JsonConvert.DeserializeObject<BookMetaData>(input);
-			if(result == null)
+			var result = FromStringUnchecked(input);
+			if (result == null)
 			{
 				throw new ApplicationException("meta.json of this book may be corrupt");
 			}
 			return result;
+		}
+
+		public static BookMetaData FromStringUnchecked(string input)
+		{
+			return JsonConvert.DeserializeObject<BookMetaData>(input);
 		}
 
 		/// <summary>
