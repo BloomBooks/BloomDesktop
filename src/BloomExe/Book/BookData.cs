@@ -536,7 +536,7 @@ namespace Bloom.Book
 					.ForEach(lf => topicStrings.RemoveLanguageForm(lf));
 
 				_dom.SafeSelectNodes("//div[@id='bloomDataDiv']/div[@data-book='topic' and not(@lang='en')]")
-					.Cast<XmlElement>()
+					.Cast<XmlElement>().ToArray()
 					.ForEach(e => e.ParentNode.RemoveChild(e));
 			}
 		}
@@ -902,7 +902,7 @@ namespace Bloom.Book
 		public void RemoveAllForms(string key)
 		{
 			XmlElement dataDiv = GetOrCreateDataDiv();
-			foreach (XmlNode e in dataDiv.SafeSelectNodes(String.Format("div[@data-book='{0}']", key)))
+			foreach (XmlNode e in dataDiv.SafeSelectNodes(String.Format("div[@data-book='{0}']", key)).Cast<XmlNode>().ToArray())
 			{
 				dataDiv.RemoveChild(e);
 			}
@@ -1649,7 +1649,8 @@ namespace Bloom.Book
 			if (XmlString.IsNullOrEmpty(value))
 			{
 				foreach (
-					XmlElement node in _dom.SafeSelectNodes("//div[@id='bloomDataDiv']//div[@data-book='" + key + "']"))
+					XmlElement node in _dom.SafeSelectNodes("//div[@id='bloomDataDiv']//div[@data-book='" + key + "']")
+						.Cast<XmlElement>().ToArray())
 				{
 					node.ParentNode.RemoveChild(node);
 				}
