@@ -16,9 +16,9 @@ using L10NSharp;
 using SIL.Extensions;
 using SIL.IO;
 using SIL.Progress;
+using SIL.Reporting;
 using System.Xml;
 using System.Text;
-using Bloom.ToPalaso;
 using Bloom.web;
 
 namespace Bloom.WebLibraryIntegration
