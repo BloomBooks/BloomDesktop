@@ -533,5 +533,17 @@ namespace BloomTests.TeamCollection
 			Assert.That(_tcLog.Messages[prevMessages].MessageType, Is.EqualTo(MessageAndMilestoneType.Error));
 			Assert.That(Directory.Exists(bookFolderPath), Is.True, "The local book should not have been deleted");
 		}
+
+		[TestCase("", null)]
+		[TestCase(@"{""a11y_NoEssentialInfoByColor"":false,""a11y_NoTextIncludedInAnyImages"":false,""bookInstanceId"":""d62ce553-5ad3-4857-a33a-6d4092840018"",""suitableForMakingShells"":false,""suitableForMakingTemplates"":false,""suitableForVernacularLibrary"":true,""bloomdVersion"":1,""experimental"":false,""brandingProjectName"":""Local-Community"",""nameLocked"":false,""folio"":false,""isRtl"":false,""title"":""Comic drag test"",""allTitles"":""{\""en\"":\""Comic drag test\""}"",""originalTitle"":""Comic drag test"",""baseUrl"":null,""bookOrder"":null,""isbn"":"""",""bookLineage"":""056B6F11-4A6C-4942-B2BC-8861E62B03B3"",""downloadSource"":null,""license"":null,""formatVersion"":""2.1"",""licenseNotes"":null,""copyright"":null,""credits"":"""",""tags"":[],""pageCount"":0,""languages"":[],""langPointers"":null,""summary"":null,""allowUploadingToBloomLibrary"":true,""bookletMakingIsAppropriate"":true,""country"":""United States"",""province"":"""",""district"":"""",""uploader"":null,""tools"":[{""name"":""overlay"",""enabled"":true,""state"":null}],""currentTool"":""overlayTool"",""toolboxIsOpen"":true,""author"":null,""publisher"":null,""originalPublisher"":null,""subjects"":null,""hazards"":null,""a11yFeatures"":null,""a11yLevel"":null,""a11yCertifier"":null,""readingLevelDescription"":null,""typicalAgeRange"":null,""features"":[""comic""],""page-number-style"":""Decimal"",""language-display-names"":{""en"":""English"",""de"":""German, Standard""},""internetLimits"":null,""use-original-copyright"":false,""imported-book-source-url"":null,""phashOfFirstContentImage"":null}",
+			"d62ce553-5ad3-4857-a33a-6d4092840018")] // a real metadata
+		[TestCase("This is absolute junk, with nothing that looks like a bookInstanceId", null)]
+		// Here, as in one real case, bloomVersion is unexpectedly a float. We will fall back to looking for the ID by Regex
+		[TestCase(@"{""bookInstanceId"":""d62ce553-5ad3-4857-a33a-6d4092840019"",""suitableForMakingShells"":false,""bloomdVersion"":1.0}", "d62ce553-5ad3-4857-a33a-6d4092840019")]
+		[TestCase(@"This is a corrupted mess, but""bookInstanceId"":""d62ce553-5ad3-4857-a33a-6d4092840019"" it does have something that looks like an ID}", "d62ce553-5ad3-4857-a33a-6d4092840019")]
+		public void GetIdFrom_YieldsResult(string metadata, string id)
+		{
+			Assert.That(Bloom.TeamCollection.TeamCollection.GetIdFrom(metadata, "fake"), Is.EqualTo(id));
+		}
 	}
 }

@@ -11,8 +11,10 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using Bloom.Book;
 using Bloom.Collection;
@@ -21,6 +23,7 @@ using Bloom.ToPalaso;
 using Bloom.Utils;
 using SIL.Reporting;
 using DesktopAnalytics;
+using Newtonsoft.Json;
 using SIL.Code;
 
 namespace Bloom.TeamCollection
@@ -1263,6 +1266,42 @@ namespace Bloom.TeamCollection
 			}
 		}
 
+		internal static string GetIdFrom(string metadataString, string file)
+		{
+			BookMetaData metaData = null;
+			Exception ex = null;
+			try
+			{
+				metaData = BookMetaData.FromStringUnchecked(metadataString);
+			}
+			catch (Exception e)
+			{
+				Logger.WriteError("Got error reading meta.json from " + file + " with contents '" + metadataString + "'", e);
+				ex = e;
+			}
+
+			if (metaData == null)
+			{
+				if (ex == null)
+					Logger.WriteEvent("Failed to read metadata from " + file + " with contents '" + metadataString + "'");
+				// It's corrupted, but maybe it's in good enough shape to get an ID from?
+				// For example, in BL-11821 we encountered meta.json files where various integers
+				// were represented with decimals (0.0 instead of 0) which produced a JsonReaderException.
+				// Note: it would very likely be more efficient to just do this without trying to parse
+				// the string as JSON. But (a) I want to capture any problems in the log, and (b)
+				// I'd rather not use any unusual way to process meta.json when things are not in
+				// an unusual state.
+				var re = new Regex(@"""bookInstanceId"":""(.*?)""");
+				var match = re.Match(metadataString);
+				if (match.Success)
+				{
+					return match.Groups[1].Value;
+				}
+				return null;
+			}
+			return metaData?.Id;
+		}
+
 		/// <summary>
 		/// Given that newBookName is the name of a book in the repo
 		/// that does not occur locally, can we determine that it is a rename
@@ -1276,8 +1315,7 @@ namespace Bloom.TeamCollection
 			var meta = GetRepoBookFile(newBookName, "meta.json");
 			if (string.IsNullOrEmpty(meta) || meta == "error")
 				return null;
-			var metaData = BookMetaData.FromString(meta);
-			var id = metaData.Id;
+			var id = GetIdFrom(meta, newBookName);
 			foreach (var path in Directory.EnumerateDirectories(_localCollectionFolder))
 			{
 				try
@@ -1962,6 +2000,8 @@ namespace Bloom.TeamCollection
 			return BookMetaData.FromFolder(Path.Combine(_localCollectionFolder, bookFolderName))?.Id;
 		}
 
+
+
 		/// <summary>
 		/// Return a dictionary of all books in the repo which do not correspond to a local book folder.
 		/// key: book GUID; value: (book name in repo (without extension), haveCorrespondingLocalBook).
@@ -1978,10 +2018,12 @@ namespace Bloom.TeamCollection
 						var meta = GetRepoBookFile(bookName, "meta.json");
 						if (!string.IsNullOrEmpty(meta) && meta != "error")
 						{
-							var metaData = BookMetaData.FromString(meta);
-							newBooks[metaData.Id] = Tuple.Create(bookName, Directory.Exists(localFolderPath));
-						}
+							var id = GetIdFrom(meta, bookName);
+							if (id != null)
+								newBooks[id] = Tuple.Create(bookName, Directory.Exists(localFolderPath));
+							// we just won't treat it as a possible rename or conflict if we can't extract an ID from the meta.json.
 					}
+				}
 					catch (Exception e) when (e is ICSharpCode.SharpZipLib.Zip.ZipException || e is IOException)
 					{
 						// we just won't treat it as a possible rename or conflict if we can't get the meta.json.
