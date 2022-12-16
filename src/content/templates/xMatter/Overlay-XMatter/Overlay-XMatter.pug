@@ -16,17 +16,22 @@ mixin overlay-outsideFrontCover
 		.bloom-imageContainer(data-book="coverImageContainer")
 			img(data-book="coverImage", src="placeHolder.png")
 			+field-cover-image("auto").bloom-imageDescription.bloom-trailingElement
-			// eventually need this too:
-			// +overlay-title-l1
+			+overlay-title-l1
 
 mixin overlay-title-l1
-	+overlay-text-block("V")
-
-mixin overlay-text-block(lang)
 	.bloom-textOverPicture.ui-resizable.ui-draggable
 		+field-prototypeDeclaredExplicity(lang).bookTitle
 			label.bubble Book title in {lang}
 			+editable(kLanguageForPrototypeOnly).bloom-nodefaultstylerule.Title-On-Cover-style.bloom-padForOverflow(data-book='bookTitle')
+//- Want to do the above with something like this, but compiler won't allow the .bookTitle className to be a variable.
+// - We don't want a fixed class on every overlay-text-block so I'm not sure how to generalize it.
+//- 	+overlay-text-block("bookTitle", "V", "bookTitle")
+
+//- mixin overlay-text-block(field, lang, className)
+//- 	.bloom-textOverPicture.ui-resizable.ui-draggable
+//- 		+field-prototypeDeclaredExplicity(lang).{className}
+//- 			label.bubble Book title in {lang}
+//- 			+editable(kLanguageForPrototypeOnly).bloom-nodefaultstylerule.Title-On-Cover-style.bloom-padForOverflow(data-book='field')
 
 
 doctype html
