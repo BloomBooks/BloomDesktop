@@ -76,6 +76,8 @@ namespace Bloom
 			_webview.Reload();
 		}
 
+		private static bool _clearedCache;
+
 		private async void InitWebView()
 		{
 			// based on https://stackoverflow.com/questions/63404822/how-to-disable-cors-in-wpf-webview2
@@ -96,6 +98,17 @@ namespace Bloom
 			var op = new CoreWebView2EnvironmentOptions("--autoplay-policy=no-user-gesture-required");
 			var env = await CoreWebView2Environment.CreateAsync(null, ProjectContext.GetBloomAppDataFolder(), op);
 			await _webview.EnsureCoreWebView2Async(env);
+			if (!_clearedCache)
+			{
+				_clearedCache = true;
+				// The intent here is that none of Bloom's assets should be cached from one run of the program to another
+				// (in case a new version of Bloom has been installed).
+				// OTOH, I don't want to clear things so drastically as to preclude using local storage or cookies.
+				// The doc is unclear as to the distinction between CacheStorage and DiskCache, but I _think_
+				// this should clear what we need and nothing else.
+				await _webview.CoreWebView2.Profile.ClearBrowsingDataAsync(CoreWebView2BrowsingDataKinds.CacheStorage | CoreWebView2BrowsingDataKinds.DiskCache);
+			}
+			
 		}
 
 		// needed by geckofx but not webview2
