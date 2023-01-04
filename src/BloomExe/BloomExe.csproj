@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="..\..\packages\SIL.Windows.Forms.Keyboarding.11.0.0-beta0050\build\SIL.Windows.Forms.Keyboarding.props" Condition="Exists('..\..\packages\SIL.Windows.Forms.Keyboarding.11.0.0-beta0050\build\SIL.Windows.Forms.Keyboarding.props')" />
   <Import Project="..\..\packages\icu.net.2.8.1\build\icu.net.props" Condition="Exists('..\..\packages\icu.net.2.8.1\build\icu.net.props')" />
@@ -936,12 +936,6 @@
     <Compile Include="SplashScreen.Designer.cs">
       <DependentUpon>SplashScreen.cs</DependentUpon>
     </Compile>
-    <Compile Include="CollectionCreating\KindOfCollectionControl.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="CollectionCreating\KindOfCollectionControl.Designer.cs">
-      <DependentUpon>KindOfCollectionControl.cs</DependentUpon>
-    </Compile>
     <Compile Include="CollectionChoosing\MostRecentPathsList.cs" />
     <Compile Include="CollectionChoosing\OpenCreateCloneControl.cs">
       <SubType>UserControl</SubType>
@@ -1154,10 +1148,6 @@
     </EmbeddedResource>
     <EmbeddedResource Include="SplashScreen.resx">
       <DependentUpon>SplashScreen.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="CollectionCreating\KindOfCollectionControl.resx">
-      <DependentUpon>KindOfCollectionControl.cs</DependentUpon>
-      <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="CollectionChoosing\OpenCreateCloneControl.resx">
       <DependentUpon>OpenCreateCloneControl.cs</DependentUpon>
