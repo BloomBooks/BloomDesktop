@@ -1,7 +1,9 @@
-//putting (less) here makes it actually start this file off with the contents of the select2.css,
-//which we're doing for convenience so that we don't have to get it in the installer and then import it explictly
+// Putting (less) here makes it actually start this file off with the contents of the select2.css,
+// which we're doing for convenience so that we don't have to get it in the installer and then import
+// it explictly. This also allows us to modify the colors for our palette. Importing it here covers both
+// the TextBoxProperties dialog AND the StyleEditor dialog.
 @import (less) "../../node_modules/select2/dist/css/select2.css";
-@import (reference) "../css/bloomDialog.less"; // needed for @dialogZindexPlusOne
+@import (reference) "../css/bloomDialog.less"; // needed for @dialogZindexPlusOne and @bloom-lightblue
 
 @hint-tab-indent: 20px;
 @main-label-width: 420px; // currently controls width of hint bubbles tab
@@ -35,7 +37,11 @@
 }
 
 .select2-container--open .select2-selection__rendered {
-    background-color: lightblue;
+    background-color: @bloom-lightblue;
+}
+.select2-container--default
+    .select2-results__option--highlighted[aria-selected] {
+    background-color: @bloom-blue;
 }
 
 #text-properties-dialog {
