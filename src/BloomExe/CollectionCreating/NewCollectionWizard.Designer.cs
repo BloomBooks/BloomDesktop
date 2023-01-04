@@ -37,7 +37,6 @@ namespace Bloom.CollectionCreating
 			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(NewCollectionWizard));
 			this._wizardControl = new Bloom.Wizard.WizardAdapterControl();
             this._welcomePage = new Bloom.Wizard.WizardAdapterPage();
-            this._kindOfCollectionPage = new Bloom.Wizard.WizardAdapterPage();
             this._vernacularLanguagePage = new Bloom.Wizard.WizardAdapterPage();
             this._languageLocationPage = new Bloom.Wizard.WizardAdapterPage();
 			this._languageFontPage = new Bloom.Wizard.WizardAdapterPage();
@@ -46,14 +45,12 @@ namespace Bloom.CollectionCreating
             this._collectionNamePage = new Bloom.Wizard.WizardAdapterPage();
             this._collectionNameProblemPage = new Bloom.Wizard.WizardAdapterPage();
 			this._welcomeHtml = new SIL.Windows.Forms.Widgets.HtmlLabel();
-			this.kindOfCollectionControl1 = new Bloom.CollectionCreating.KindOfCollectionControl();
 			this._vernacularLanguageIdControl = new Bloom.CollectionCreating.LanguageIdControl();
 			this._fontDetails = new Bloom.MiscUI.LanguageFontDetails();
 			this._languageLocationControl = new Bloom.CollectionCreating.LanguageLocationControl();
 			this._collectionNameControl = new Bloom.CollectionCreating.CollectionNameControl();
 			((System.ComponentModel.ISupportInitialize)(this._wizardControl)).BeginInit();
 			this._welcomePage.SuspendLayout();
-			this._kindOfCollectionPage.SuspendLayout();
 			this._vernacularLanguagePage.SuspendLayout();
 			this._languageLocationPage.SuspendLayout();
 			this._languageFontPage.SuspendLayout();
@@ -66,7 +63,6 @@ namespace Bloom.CollectionCreating
 			this._wizardControl.Location = new System.Drawing.Point(0, 0);
 			this._wizardControl.Name = "_wizardControl";
 			this._wizardControl.Pages.Add(this._welcomePage);
-			this._wizardControl.Pages.Add(this._kindOfCollectionPage);
 			this._wizardControl.Pages.Add(this._vernacularLanguagePage);
 			this._wizardControl.Pages.Add(this._languageLocationPage);
 			this._wizardControl.Pages.Add(this._languageFontPage);
@@ -88,15 +84,6 @@ namespace Bloom.CollectionCreating
 			this._welcomePage.Size = new System.Drawing.Size(846, 309);
 			this._welcomePage.TabIndex = 6;
 			this._welcomePage.Text = "Welcome To Bloom!";
-			//
-			// _kindOfCollectionPage
-			//
-			this._kindOfCollectionPage.Controls.Add(this.kindOfCollectionControl1);
-			this._kindOfCollectionPage.Name = "_kindOfCollectionPage";
-			this._kindOfCollectionPage.NextPage = this._vernacularLanguagePage;
-			this._kindOfCollectionPage.Size = new System.Drawing.Size(702, 310);
-			this._kindOfCollectionPage.TabIndex = 0;
-			this._kindOfCollectionPage.Text = "Choose the collection type.";
 			//
 			// _vernacularLanguagePage
 			//
@@ -177,13 +164,6 @@ namespace Bloom.CollectionCreating
 			this._welcomeHtml.Size = new System.Drawing.Size(637, 310);
 			this._welcomeHtml.TabIndex = 1;
 			//
-			// kindOfCollectionControl1
-			//
-			this.kindOfCollectionControl1.Location = new System.Drawing.Point(0, 3);
-			this.kindOfCollectionControl1.Name = "kindOfCollectionControl1";
-			this.kindOfCollectionControl1.Size = new System.Drawing.Size(608, 278);
-			this.kindOfCollectionControl1.TabIndex = 0;
-			//
 			// _vernacularLanguageIdControl
 			//
 			this._vernacularLanguageIdControl.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
@@ -229,7 +209,6 @@ namespace Bloom.CollectionCreating
 			this.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Hide;
 			((System.ComponentModel.ISupportInitialize)(this._wizardControl)).EndInit();
 			this._welcomePage.ResumeLayout(false);
-			this._kindOfCollectionPage.ResumeLayout(false);
 			this._vernacularLanguagePage.ResumeLayout(false);
 			this._languageLocationPage.ResumeLayout(false);
 			this._finishPage.ResumeLayout(false);
@@ -242,8 +221,6 @@ namespace Bloom.CollectionCreating
 		#endregion
 
         private Bloom.Wizard.WizardAdapterControl _wizardControl;
-        private Bloom.Wizard.WizardAdapterPage _kindOfCollectionPage;
-		private KindOfCollectionControl kindOfCollectionControl1;
         private Bloom.Wizard.WizardAdapterPage _vernacularLanguagePage;
 		private LanguageIdControl _vernacularLanguageIdControl;
         private Bloom.Wizard.WizardAdapterPage _collectionNamePage;
