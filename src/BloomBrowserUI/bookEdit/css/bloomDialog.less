@@ -1,12 +1,13 @@
 @import "../../bloomWebFonts.less";
+@import (reference) "../../bloomUI.less"; // for various bloom colors
 // Common styles to be applied to htm-js-css dialogs in Bloom
 @backgroundColorWhite: rgb(255, 255, 255);
 @backgroundColorLight: rgb(240, 240, 240);
 @backgroundColorDark: rgb(230, 230, 230);
-@backgroundColorTitleBar: rgb(140, 183, 220);
+@backgroundColorTitleBar: @bloom-blue;
 @backgroundColorHoverLight: rgb(236, 244, 252);
-@backgroundColorHoverDark: rgb(220, 236, 252);
-@buttonBorder: rgb(138, 187, 244);
+@backgroundColorHoverDark: @bloom-bluetransparent;
+@buttonBorder: @bloom-lightblue;
 @buttonShadow: rgb(136, 136, 136);
 @disabledText: rgb(211, 211, 211);
 @preferredBackgroundGray: hsl(0, 0%, 86%);
@@ -32,7 +33,17 @@
 // dialog's z-index.  (See http://issues.bloomlibrary.org/youtrack/issue/BL-4386.)
 @dialogZindexPlusOne: 60001;
 
+.bdRounded {
+    border-radius: 4px;
+}
+
 .bloomDialogContainer {
+    background-color: @backgroundColorWhite;
+    opacity: 1;
+    z-index: @dialogZindex;
+    position: absolute;
+    line-height: 1.8;
+    font-family: @UIFontStack;
     h2.tab {
         font-size: 10pt;
     }
@@ -51,31 +62,34 @@
             margin-top: 1px;
         }
     }
+    .selectedIcon {
+        background-color: @bloom-blue;
+        border: 1px solid @bloom-bluetransparent;
+        .bdRounded;
+    }
+    .iconLetter {
+        width: 19px;
+        height: 19px;
+        display: inline-block;
+        padding: 2px 2px 2px 2px;
+        text-align: center;
+    }
+    .icon16x16 {
+        width: 19px;
+        height: 19px;
+        display: inline-block;
+        padding: 2px;
+        img {
+            margin-top: 1px;
+            margin-left: 1px;
+            vertical-align: 5px;
+        }
+    }
+    a {
+        color: @bloom-blue;
+    }
 }
 
-.bloomDialogContainer .selectedIcon {
-    background-color: rgb(201, 224, 247);
-    border: 1px solid rgb(98, 162, 228);
-    .bdRounded;
-}
-.bloomDialogContainer .iconLetter {
-    width: 19px;
-    height: 19px;
-    display: inline-block;
-    padding: 2px 2px 2px 2px;
-    text-align: center;
-}
-.bloomDialogContainer .icon16x16 {
-    width: 19px;
-    height: 19px;
-    display: inline-block;
-    padding: 2px;
-}
-.bloomDialogContainer .icon16x16 img {
-    margin-top: 1px;
-    margin-left: 1px;
-    vertical-align: 5px;
-}
 .bloomDialogContainer .iconHtml {
     width: 22px;
     height: 22px;
@@ -125,9 +139,6 @@
     transform: translate(-50%, -50%);
     display: block;
 }
-.bdRounded {
-    border-radius: 4px;
-}
 .bloomDialogContainer .control-section {
     margin: 0 0 12px 0;
 }
@@ -166,14 +177,6 @@
         @backgroundColorHoverLight,
         @backgroundColorHoverDark
     );
-}
-.bloomDialogContainer {
-    background-color: @backgroundColorWhite;
-    opacity: 1;
-    z-index: @dialogZindex;
-    position: absolute;
-    line-height: 1.8;
-    font-family: @UIFontStack;
 }
 .bloomDialogContainer .bloomDialogTitleBar {
     background-color: @backgroundColorTitleBar;
