@@ -1727,6 +1727,9 @@ namespace Bloom.Edit
 		/// Timeout timer for HandleDelayedZoom (handler for _browser1.WebBrowser.DocumentFinished)
 		/// _zoomTimer.Enabled flags that a previous SetZoom request is still being processed, and
 		/// that the current request needs to be delayed.
+		/// For WebView2, this timer is also used to ensure that changing the IFrame src doesn't
+		/// happen while handling the FrameDocumentCompleted event.  Doing so seems to have very unhappy
+		/// results: either freezing or crashing the program with a very low level error in the browser.
 		/// </summary>
 		private Timer _zoomTimer = new Timer();
 
@@ -1735,6 +1738,7 @@ namespace Bloom.Edit
 			// We need to synchronize between user clicks and browser DocumentCompleted events.
 			lock (_zoomTimer)
 			{
+				//Debug.WriteLine($"DEBUG SetZoom({zoom}): _desiredZoomLevel={_desiredZoomLevel}; _zoomTimer.Enabled={_zoomTimer.Enabled}");
 				if (_zoomTimer.Enabled)
 				{
 					// Store the desired zoom level for use later when the previous request has
@@ -1752,6 +1756,8 @@ namespace Bloom.Edit
 				// longest time I measured was 2.961 seconds for ZoomDocumentCompleted to fire.  The
 				// shortest time interval measured was 0.431 seconds.  The average was somewhere around
 				// 0.500-0.600 seconds.
+				// The timer is also used (with the Interval reset to 1 msec) to call SetZoom indirectly
+				// from inside the ZoomDocumentCompleted handler, which is needed for WebView2.
 				_zoomTimer.Interval = 6000;
 				_zoomTimer.Tick += HandleDelayedZoom;
 				_zoomTimer.Start();
@@ -1785,8 +1791,16 @@ namespace Bloom.Edit
 			_browser1.DocumentCompleted -= ZoomDocumentCompleted;
 			Debug.WriteLine("EditingView.ZoomDocumentCompleted() after SetZoom({0}): desired Zoom = {1}, time interval = {2} ms",
 				_previousZoomLevel, _desiredZoomLevel, (DateTime.Now - _previousZoomTime).TotalMilliseconds);
-			// short-circuit the timer.  The only purpose of the timer is a time-out for this event to occur.
-			HandleDelayedZoom(sender, e);
+			// short-circuit the timer.
+			// A minimal delay will do: we can call HandleDelayedZoom directly for Geckofx, but WebView2 just needs the
+			// call to HandleDelayed Zoom to not come from inside this event handler as far as I can tell.
+			// (Note that Geckofx doesn't actually use the native DocumentCompleted event handler while WebView2 does.)
+			lock (_zoomTimer)
+			{
+				_zoomTimer.Stop();
+				_zoomTimer.Interval = 1;
+				_zoomTimer.Start();
+			}
 		}
 
 		public void AdjustPageZoom(int delta)
