@@ -52,8 +52,8 @@ namespace Bloom.CollectionCreating
 				return;
 
 			_collectionInfo = new NewCollectionSettings();
-			_kindOfCollectionPage.Tag = kindOfCollectionControl1;
-			kindOfCollectionControl1.Init(SetNextButtonState, _collectionInfo);
+			// WizardPage.AllowNext defaults to true, but we want to force a language choice.
+			_vernacularLanguagePage.AllowNext = false;
 
 			_languageLocationPage.Tag = _languageLocationControl;
 			_languageLocationControl.Init(_collectionInfo);
@@ -86,7 +86,6 @@ namespace Bloom.CollectionCreating
 		{
 			Text = LocalizationManager.GetString("NewCollectionWizard.NewCollectionWindowTitle", "Create New Bloom Collection");
 			_welcomePage.Text = LocalizationManager.GetString("NewCollectionWizard.WelcomePage", "Welcome To Bloom!");
-			_kindOfCollectionPage.Text = LocalizationManager.GetString("NewCollectionWizard.KindOfCollectionPage", "Choose the collection type.");
 			_collectionNamePage.Text = LocalizationManager.GetString("NewCollectionWizard.CollectionName", "Collection Name");
 			_collectionNameProblemPage.Text = LocalizationManager.GetString("NewCollectionWizard.CollectionNameProblem", "Collection Name Problem");
 			_languageLocationPage.Text = LocalizationManager.GetString("NewCollectionWizard.LocationPage", "Give Language Location");
@@ -116,18 +115,6 @@ namespace Bloom.CollectionCreating
 		public void SetNextButtonState(UserControl caller, bool enabled)
 		{
 			_wizardControl.SelectedPage.AllowNext = enabled;
-
-			if (caller is KindOfCollectionControl)
-			{
-				_kindOfCollectionPage.NextPage = _collectionInfo.IsSourceCollection
-													? _collectionNamePage
-													: _vernacularLanguagePage;
-
-				if(_collectionInfo.IsSourceCollection)
-				{
-					_collectionInfo.Language1Tag = "en";
-				}
-			}
 
 			if (caller is LanguageIdControl)
 			{
