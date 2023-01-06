@@ -524,11 +524,11 @@ namespace Bloom.Api
 			return ProcessContent(info, localPath);
 		}
 
+		// Handle requests for image files, that is, URLs that end in one of our image extensions.
+		// Returns true if this is, in fact, a request for an image, in which case it will have
+		// been handled; any reporting of problems will have been done, and a response generated.
 		private bool ProcessImageFileRequest(IRequestInfo info)
 		{
-			if (!_useCache)
-				return false;
-
 			var imageFile = GetLocalPathWithoutQuery(info);
 
 			// only process images
@@ -536,7 +536,13 @@ namespace Bloom.Api
 			if (!IsImageTypeThatCanBeDegraded(imageFile) && !isSvg)
 				return false;
 
-			imageFile = imageFile.Replace("thumbnail", "");
+			// This can't be right. At some point it may have had something to do with
+			// images in page thumbnails, but that is now handled by a param.
+			// But we definitely don't want Bloom to fail to find any picture of a thumbnail!
+			// I'm leaving it in commented out for now in case there really was still a
+			// purpose for it and having it here provides a clue when we're trying to debug
+			// that problem.
+			//imageFile = imageFile.Replace("thumbnail", "");
 
 			var processImage = !isSvg;
 
@@ -556,24 +562,71 @@ namespace Bloom.Api
 			// This happens with the new way we are serving css files
 			else if (!RobustFile.Exists(imageFile))
 			{
-				var fileName = Path.GetFileName(imageFile);
-				var sourceDir = FileLocationUtilities.GetDirectoryDistributedWithApplication(BloomFileLocator.BrowserRoot);
+				var bloomRoot = FileLocationUtilities.GetDirectoryDistributedWithApplication(BloomFileLocator.BrowserRoot);
+				var sourceDir = bloomRoot;
 				if (Path.GetDirectoryName(imageFile) == "book-preview")
+				{
 					sourceDir = CurrentBook.FolderPath;
-				imageFile = Directory.EnumerateFiles(sourceDir, fileName, SearchOption.AllDirectories).FirstOrDefault();
+					imageFile = Path.GetFileName(imageFile);
+				}
 
-				// image file not found
-				if (String.IsNullOrEmpty(imageFile)) return false;
+				imageFile = Path.Combine(sourceDir, imageFile);
+
+				if (!RobustFile.Exists(imageFile))
+				{
+					// Some special cases I can't find the source of
+					if (imageFile.EndsWith("ckeditor/skins/flat/icons.png"))
+					{
+						imageFile = imageFile.Replace("flat", "icy_orange");
+					}
+					// These two get copied to the book folder, but while we're doing origami layout
+					// I don't want to, in case the user doesn't use them after all.
+					else if (imageFile.EndsWith("video-placeholder.svg"))
+					{
+						imageFile = Path.Combine(bloomRoot, "templates/template books/Sign Language/video-placeholder.svg");
+					}
+					else if (imageFile.EndsWith("widget-placeholder.svg"))
+					{
+						imageFile = Path.Combine(bloomRoot, "images/widget-placeholder.svg");
+					}
+
+					if (!RobustFile.Exists(imageFile))
+					{
+						if (sourceDir != CurrentBook.FolderPath)
+						{
+							// This could well represent a missing image in Bloom's implementation;
+							// possibly we should do something more conspicuous than this, which just logs it.
+							// But I'm nervous about changing that behavior; there was probably some reason
+							// we didn't want to make more fuss about missing files.
+							if (ShouldReportFailedRequest(info))
+							{
+								ReportMissingFile(info);
+							}
+						}
+
+						// If we have a missing image in the book folder, or for some other reason we don't want
+						// to bother the user with the problem, or after we HAVE reported it, just report failure
+						// to the browser.
+						info.WriteError(404);
+						return true; // it was an image URL, and we have made a response.
+					}
+				}
 
 				// BL-2368: Do not process files from the BloomBrowserUI directory. These files are already in the state we
 				//          want them. Running them through _cache.GetPathToResizedImage() is not necessary, and in PNG files
 				//          it converts all white areas to transparent. This is resulting in icons which only contain white
 				//          (because they are rendered on a dark background) becoming completely invisible.
-				processImage = false;
+				processImage = sourceDir == CurrentBook.FolderPath;
 			}
 
 			var originalImageFile = imageFile;
-			if (processImage)
+			// Currently _useCache is always true. It appears likely that the intent
+			// is not so much about caching, but whether we want image processing.
+			// If we go back to allowing this to be turned off, we may need to make
+			// use of a check like CurrentBook?.ImageFileIsForBookCover() to make sure
+			// it is not disabled there, where it is important for transparency as
+			// well as performance.
+			if (processImage && _useCache)
 			{
 				// thumbnail requests have the thumbnail parameter set in the query string
 				var thumb = info.GetQueryParameters()["thumbnail"] != null;
@@ -581,12 +634,6 @@ namespace Bloom.Api
 				imageFile = _cache.GetPathToResizedImage(imageFile, thumb, isForCover ?? false);
 
 				if (String.IsNullOrEmpty(imageFile)) return false;
-			}
-			else if (info.RawUrl.StartsWith("/book-preview/", StringComparison.Ordinal))
-			{
-				// BL-10625: Cover images still need to be processed to be transparent for book previewing.
-				if (true == CurrentBook?.ImageFileIsForBookCover(imageFile))
-					imageFile = _cache.GetPathToResizedImage(imageFile, getThumbnail: false, isForCover: true);
 			}
 
 			info.ReplyWithImage(imageFile, originalImageFile);

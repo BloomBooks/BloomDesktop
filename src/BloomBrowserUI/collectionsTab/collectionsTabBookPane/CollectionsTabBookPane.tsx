@@ -136,8 +136,16 @@ export const CollectionsTabBookPane: React.FunctionComponent<{
                     : "app/editSelectedBook"
             }
             mightNavigate={true}
-            enabledImageFile={canMakeBook ? "New Book.svg" : "EditTab.svg"}
-            disabledImageFile={canMakeBook ? undefined : "EditTab.svg"}
+            enabledImageFile={
+                canMakeBook
+                    ? "/bloom/images/New Book.svg"
+                    : "/bloom/images/EditTab.svg"
+            }
+            disabledImageFile={
+                canMakeBook
+                    ? undefined
+                    : "/bloom/images/EditTab.svg/EditTab.svg"
+            }
             hasText={true}
             color="secondary"
             css={css`
