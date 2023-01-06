@@ -289,7 +289,7 @@ export default class BloomField {
             label: "Paste Hyperlink",
             command: "pasteHyperlink",
             toolbar: "insert",
-            icon: "images/link.png"
+            icon: "/bloom/images/link.png"
         });
 
         // This makes it easy to find the right editor instance. There may be some ckeditor built-in way, but

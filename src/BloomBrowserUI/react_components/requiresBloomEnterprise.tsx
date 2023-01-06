@@ -83,7 +83,7 @@ export const RequiresBloomEnterpriseAdjacentIconWrapper = (props: {
                 ${"height: 16px; margin-left: 6px; cursor: pointer; " +
                     (props.iconStyles ?? "")}
             `}
-            src="../images/bloom-enterprise-badge.svg"
+            src="/bloom/images/bloom-enterprise-badge.svg"
             title={tooltip}
             onClick={() => {
                 if (!enterpriseAvailable) {
@@ -125,7 +125,7 @@ export const BloomEnterpriseIcon = props => {
                 margin-left: 1em;
             `}
             {...props} // let caller override the size and whatever
-            src="../images/bloom-enterprise-badge.svg"
+            src="/bloom/images/bloom-enterprise-badge.svg"
             title={tooltip}
         />
     );
@@ -314,7 +314,7 @@ export const RequiresBloomEnterpriseNotice: React.VoidFunctionComponent<IRequire
                                       `
                             }
                         >
-                            <img src="../images/bloom-enterprise-badge.svg" />
+                            <img src="/bloom/images/bloom-enterprise-badge.svg" />
                             <Div l10nKey="EditTab.EnterpriseSettingsButton">
                                 Bloom Enterprise Settings
                             </Div>

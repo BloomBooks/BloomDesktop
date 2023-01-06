@@ -236,7 +236,7 @@ body:not(.origami-drag) .bloom-imageContainer.hoverUp {
         right: 0;
         top: 0;
         background-color: @ChangeImageButtonColor;
-        background-image: url("../img/changeButton.svg");
+        background-image: url("/bloom/bookEdit/img/changeButton.svg");
     }
     // BL-9976 JH - "We've gotten complaints that users click it and then are too confused and
     // start typing text in the wrong place."
@@ -244,7 +244,7 @@ body:not(.origami-drag) .bloom-imageContainer.hoverUp {
     //     left: 0;
     //     bottom: 0;
     //     background-color: @bloom-blue;
-    //     background-image: url("../img/ImageDescriptionImageOverlayButton.svg");
+    //     background-image: url("/bloom/bookEdit/img/ImageDescriptionImageOverlayButton.svg");
     //     // sorry, this background-size is kinda arbitrary, and "49px 40px" works at full size, but if we ever make these
     //     //buttons shrink as the image container shrinks, this will still work.
     //     background-size: 63%;
@@ -253,14 +253,14 @@ body:not(.origami-drag) .bloom-imageContainer.hoverUp {
         right: 0;
         top: 0;
         background-color: @ChangeImageButtonColor;
-        background-image: url("../img/browse.svg");
+        background-image: url("/bloom/bookEdit/img/browse.svg");
     }
 
     &.pasteImageButton {
         right: 0;
         bottom: 0;
         background-color: @PasteImageButtonColor;
-        background-image: url("../img/pasteButton.svg");
+        background-image: url("/bloom/bookEdit/img/pasteButton.svg");
         background-position: right center;
         &.smallButtonWidth {
             width: 87px;
@@ -273,11 +273,11 @@ body:not(.origami-drag) .bloom-imageContainer.hoverUp {
     &.editMetadataButton {
         left: 0;
         top: 0;
-        background-image: url("../img/imageMetaDataButton.svg") !important;
+        background-image: url("/bloom/bookEdit/img/imageMetaDataButton.svg") !important;
         background-color: @MetadataButtonColor;
         &.imgMetadataProblem {
             background-color: transparent;
-            background-image: url("../img/imageMissingMetaData.svg") !important;
+            background-image: url("/bloom/bookEdit/img/imageMissingMetaData.svg") !important;
             border: none;
         }
     }
@@ -341,7 +341,7 @@ body:not(.origami-drag) .bloom-imageContainer.hoverUp {
         background-color: @accordion-active-element;
         background-repeat: no-repeat;
         background-position: center;
-        background-image: url("/bloom/images/ImageDescriptionToolIcon.svg");
+        background-image: url("/bloom/bookEdit/toolbox/imageDescription/ImageDescriptionToolIcon.svg");
     }
 }
 .bloom-videoContainer,
@@ -385,10 +385,10 @@ button.miniButton {
         width: 30%;
     }
     &.cutImageButton {
-        background-image: url("../img/cut.svg");
+        background-image: url("/bloom/bookEdit/img/cut.svg");
         bottom: 27px;
         &.disabled {
-            background-image: url("../img/cutGrey.svg");
+            background-image: url("/bloom/bookEdit/img/cutGrey.svg");
             pointer-events: none;
         }
         &.smallButtonHeight {
@@ -396,10 +396,10 @@ button.miniButton {
         }
     }
     &.copyImageButton {
-        background-image: url("../img/copy.svg");
+        background-image: url("/bloom/bookEdit/img/copy.svg");
         bottom: 6px;
         &.disabled {
-            background-image: url("../img/copyGrey.svg");
+            background-image: url("/bloom/bookEdit/img/copyGrey.svg");
             pointer-events: none;
         }
         &.smallButtonHeight {
@@ -411,14 +411,14 @@ button.deleteButton {
     position: absolute;
     left: 0;
     bottom: 0;
-    background-image: url("../img/deleteButtonSmall.png") !important;
+    background-image: url("/bloom/bookEdit/img/deleteButtonSmall.png") !important;
     width: 40px;
     height: 40px;
     z-index: 100;
 }
 /*Originally, the move button was within the movable thing. Problem is, I couldn't get jquery draggable to actually use this button, using the 'handle' option, probably because it doesn't exist early enough (it pops up on mouseEnter) . But I had to have something in that option, else jquery actually prevents clicking on elements inside the drraggable thing. So I ended up setting the handle to "img", which won't be sufficient once we wan to drag things with no image.So it woud be good to get this working.*/
 .moveButtonIcon {
-    background-image: url("../img/moveDivButton.png") !important;
+    background-image: url("/bloom/bookEdit/img/moveDivButton.png") !important;
     width: 37px !important;
     height: 37px !important;
 }
@@ -427,7 +427,7 @@ button.moveButton {
     position: absolute;
     left: -19px;
     top: -17px;
-    background-image: url("../img/moveDivButton.png") !important;
+    background-image: url("/bloom/bookEdit/img/moveDivButton.png") !important;
     background-repeat: no-repeat;
     background-color: transparent;
     width: 16px;
