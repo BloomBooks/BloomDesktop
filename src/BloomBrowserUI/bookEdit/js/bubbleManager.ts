@@ -42,6 +42,8 @@ const kVideoContainerClass = "bloom-videoContainer";
 
 const kOverlayClass = "hasOverlay";
 
+type ResizeDirection = "ne" | "nw" | "sw" | "se";
+
 // References to "TOP" in the code refer to the actual TextOverPicture box (what "Bubble"s were
 // originally called) installed in the Bloom page. We are gradually removing these, since now there
 // are multiple types of elements that can be placed over pictures, not just Text.
@@ -1173,22 +1175,12 @@ export class BubbleManager {
     // Mouse hover - No move or resize is currently active, but check if there is a bubble under the mouse that COULD be
     // and add or remove the classes we use to indicate this
     private handleMouseMoveHover(event: MouseEvent, container: HTMLElement) {
-        const coordinates = this.getPointRelativeToCanvas(event, container);
-        if (!coordinates) {
-            this.cleanupMouseMoveHover(container);
-            return;
-        }
-
         if (this.isMouseEventAlreadyHandled(event)) {
             this.cleanupMouseMoveHover(container);
             return;
         }
 
-        let hoveredBubble = Comical.getBubbleHit(
-            container,
-            coordinates.getUnscaledX(),
-            coordinates.getUnscaledY()
-        );
+        let hoveredBubble = this.getBubbleUnderMouse(event, container);
 
         // Now there are several options depending on various conditions. There's some
         // overlap in the conditions and it is tempting to try to combine into a single compound
@@ -1199,7 +1191,7 @@ export class BubbleManager {
             // want to drag a tail tip there, which is hard to do with a grab cursor,
             // so don't switch.
             if (this.isPictureOverPictureElement(hoveredBubble.content)) {
-                hoveredBubble = undefined;
+                hoveredBubble = null;
             }
         }
 
@@ -1210,7 +1202,7 @@ export class BubbleManager {
                 tryRemoveImageEditingButtons(
                     this.activeElement.getElementsByClassName(
                         "bloom-imageContainer"
-                    )[0] as Element | undefined
+                    )[0]
                 );
             }
             return;
@@ -1252,68 +1244,73 @@ export class BubbleManager {
                 container.classList.add("grabbable");
             }
         } else {
-            this.addResizeModeClass(container, {
-                event,
-                hoveredBubble,
-                isVideo
-            });
+            this.applyResizingUI(hoveredBubble, container, event, isVideo);
         }
     }
 
-    // Adds the appropriate resize handle to the containers
-    // You can provide just the imageContainer, and let the function handle everything else.
-    // If you already know some of these values in {optionalParams}, you can pass them in so the function won't re-compute them.
-    public addResizeModeClass(
-        container: HTMLElement,
-        optionalParams: {
-            event?: MouseEvent | undefined; // Leave undefined if unknown, this function will determine it
-            hoveredBubble?: Bubble | undefined; // Leave undefined if unknown, this function will determine it
-            isVideo?: boolean | undefined; // Leave undefined if unknown, this function will determine it
-        }
-    ) {
-        let { event, hoveredBubble, isVideo } = optionalParams;
-
-        //////////////////////////////////////////////////////////
-        // First, calculate the values for any undefined values //
-        //////////////////////////////////////////////////////////
-        event = event || this.lastMoveEvent;
-        if (!event) {
+    /**
+     * Gets the bubble under the mouse location, or null if no bubble is
+     */
+    public getBubbleUnderMouse(
+        event: MouseEvent,
+        container: HTMLElement
+    ): Bubble | null {
+        const coordinates = this.getPointRelativeToCanvas(event, container);
+        if (!coordinates) {
             // Give up
-            return;
+            return null;
         }
 
-        if (!hoveredBubble) {
-            const coordinates = this.getPointRelativeToCanvas(event, container);
-            if (!coordinates) {
-                // Give up
-                return;
-            }
-
-            hoveredBubble = Comical.getBubbleHit(
+        return (
+            Comical.getBubbleHit(
                 container,
                 coordinates.getUnscaledX(),
                 coordinates.getUnscaledY()
-            );
-            if (!hoveredBubble) {
-                // Give up
-                return;
-            }
-        }
+            ) ?? null
+        );
+    }
 
-        if (isVideo === undefined) {
-            isVideo = this.isVideoOverPictureElement(hoveredBubble.content);
-        }
+    /**
+     * Applies resizing UI, including:
+     * - Make the mouse cursor reflect the direction in which the currently hovered bubble can be resized.
+     * - Remove video controls
+     *
+     * @param hoveredBubble The bubble currently being hovered
+     * @param container The current main bloom-imageContainer which contains the currently hovered bubble (if applicable)
+     * @param event The most recent mouse event.
+     * @param isVideo Whether ${hoveredBubble} is a video overlay.
+     */
+    public applyResizingUI(
+        hoveredBubble: Bubble,
+        container: HTMLElement,
+        event: MouseEvent,
+        isVideo: boolean
+    ) {
+        this.cleanupMouseMoveHover(container); // Need to clear both grabbable and *-resizables
 
-        /////////////////////////////////////////////////////////////////////////////////
-        // Now that we've got all our parameters to be non-undefined, do the real logic//
-        /////////////////////////////////////////////////////////////////////////////////
+        const resizeMode = this.getResizeMode(hoveredBubble.content, event);
+        container.classList.add(`${resizeMode}-resizable`);
+
         if (isVideo && event.target instanceof Element) {
             event.target.removeAttribute("controls");
         }
-        const resizeMode = this.getResizeMode(hoveredBubble.content, event);
+    }
 
-        this.cleanupMouseMoveHover(container); // Need to clear both grabbable and *-resizables
-        container.classList.add(`${resizeMode}-resizable`);
+    /**
+     * Attempts to apply resizing UI, given only the current image container.
+     * Will find the currently hovered bubble (if any)
+     * Does nothing if no bubble is currently being hovered
+     * @param container The current main bloom-imageContainer which contains the currently hovered bubble (if any)
+     */
+    public tryApplyResizingUI(container: HTMLElement) {
+        const mouseEvent = this.lastMoveEvent;
+        const hoveredBubble = this.getBubbleUnderMouse(mouseEvent, container);
+        if (!hoveredBubble) {
+            return;
+        }
+
+        const isVideo = this.isVideoOverPictureElement(hoveredBubble.content);
+        this.applyResizingUI(hoveredBubble, container, mouseEvent, isVideo);
     }
 
     private animationFrame: number;
@@ -1520,11 +1517,11 @@ export class BubbleManager {
         return this.bubbleToResize || this.isJQueryResizing(container);
     }
 
-    // Returns true if any of the container's children are currently being resized
-    // Remarks: I believe this only tells you whether a JQ
+    // Returns true if any of the container's children are currently being resized using JQuery
     private isJQueryResizing(container: Element) {
-        // First check if we have our custom class indicator applied
-        if (container.classList.contains("bloom-resizing")) {
+        // First check the class that we try to always apply when starting a JQuery resize
+        // (the class is applied so that we know one is in progress even before the mouse moves.)
+        if (container.classList.contains("ui-jquery-resizing-in-progress")) {
             return true;
         }
 
@@ -1820,7 +1817,10 @@ export class BubbleManager {
     // The returned string is the directional prefix to the *-resize cursor values
     // e.g., if "ne-resize" would be appropriate, this function will return the "ne" prefix
     // e.g. "ne" = Northeast, "nw" = Northwest", "sw" = Southwest, "se" = Southeast"
-    private getResizeMode(element: HTMLElement, event: MouseEvent): string {
+    private getResizeMode(
+        element: HTMLElement,
+        event: MouseEvent
+    ): ResizeDirection {
         // Convert into a coordinate system where the origin is the center of the element (rather than the top-left of the page)
         const center = this.getCenterPosition(element);
         const clickCoordinates = { x: event.pageX, y: event.pageY };
@@ -1829,7 +1829,7 @@ export class BubbleManager {
             y: clickCoordinates.y - center.y
         };
 
-        let resizeMode: string;
+        let resizeMode: ResizeDirection;
         if (relativeCoordinates.y! < 0) {
             if (relativeCoordinates.x! >= 0) {
                 resizeMode = "ne"; // NorthEast = top-right
@@ -3063,7 +3063,7 @@ export class BubbleManager {
         }
     }
 
-    // An event handler that adds the "bloom-resizing" class to the image container.
+    // An event handler that adds the "ui-jquery-resizing-in-progress" class to the image container.
     private static addResizingClassHandler(event: MouseEvent) {
         const handle = event.currentTarget as Element;
 
@@ -3071,11 +3071,11 @@ export class BubbleManager {
             handle
         );
         if (container) {
-            container.classList.add("bloom-resizing");
+            container.classList.add("ui-jquery-resizing-in-progress");
         }
     }
 
-    // An event handler that removes the "bloom-resizing" class from the image container.
+    // An event handler that removes the "ui-jquery-resizing-in-progress" class from the image container.
     private static clearResizingClassHandler(event: MouseEvent) {
         BubbleManager.clearResizingClass(event.currentTarget as Element);
     }
@@ -3085,7 +3085,7 @@ export class BubbleManager {
             element
         );
         if (container) {
-            container.classList.remove("bloom-resizing");
+            container.classList.remove("ui-jquery-resizing-in-progress");
         }
     }
 

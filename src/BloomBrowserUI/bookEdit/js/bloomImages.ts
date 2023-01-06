@@ -111,23 +111,18 @@ function ctrlAltKeyDownListener(event: KeyboardEvent) {
     if ((event.ctrlKey || event.altKey) && event.target) {
         event.target.addEventListener("keyup", ctrlAltKeyUpListener);
 
-        // Note (paranoia): Add this class conservatively (ensure event.target is good first),
+        // Note (paranoia): Add the ui-suppressImageButtons class conservatively (ensure event.target is good (non-null) first),
         // remove it liberally (regardless of event.target),
         // Since if it gets stuck on, the image editing buttons won't come back (unless SetupImageContainer is re-run)
         document
-            .querySelectorAll(
-                ".bloom-imageContainer:not(.ui-suppressImageButtons)"
-            )
+            .querySelectorAll<HTMLElement>(".bloom-imageContainer")
             .forEach(imageContainer => {
                 imageContainer.classList.add("ui-suppressImageButtons");
 
                 if (event.ctrlKey) {
                     imageContainer.classList.add("ui-ctrlDown");
-                } else if (
-                    event.altKey &&
-                    imageContainer instanceof HTMLElement
-                ) {
-                    theOneBubbleManager.addResizeModeClass(imageContainer, {});
+                } else if (event.altKey) {
+                    theOneBubbleManager.tryApplyResizingUI(imageContainer);
                 }
             });
     }
