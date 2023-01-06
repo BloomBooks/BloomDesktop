@@ -804,9 +804,14 @@ namespace Bloom.Book
 				// See https://silbloom.myjetbrains.com/youtrack/issue/BL-3782.
 				if (templateKey == _cachedTemplateKey && _cachedTemplateBook != null)
 					return _cachedTemplateBook;
-				// a template book is its own primary template...and might not be found by templateFinder,
-				// since we might be in a vernacular collection that it won't look in.
-				book = IsSuitableForMakingShells ? this : _templateFinder.FindAndCreateTemplateBookByFileName(templateKey);
+				// Finding a template book:
+				// - a template book is its own primary template ('this')
+				// - '_templateFinder' will find a template in all the usual 'source' places
+				// - as of 5.5 it is possible to create a template and then create a book from it, so we need to look
+				//   elsewhere in our own editable collection, if '_templateFinder' didn't find it.
+				book = (IsSuitableForMakingShells ? this : _templateFinder.FindAndCreateTemplateBookByFileName(templateKey)) ??
+				       _templateFinder.FindAndCreateTemplateBookByFullPath(
+							Path.Combine(Path.GetDirectoryName(FolderPath), templateKey, templateKey + ".htm"));
 				_cachedTemplateBook = book;
 				_cachedTemplateKey = templateKey;
 			}

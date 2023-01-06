@@ -357,7 +357,8 @@ namespace Bloom.Workspace
 				id = book?.ID,
 				saveable = _bookSelection.CurrentSelection?.IsSaveable ?? false,
 				collectionKind,
-				aboutBookInfoUrl
+				aboutBookInfoUrl,
+				isTemplate = book?.IsTemplateBook
 			});
 			return result;
 		}

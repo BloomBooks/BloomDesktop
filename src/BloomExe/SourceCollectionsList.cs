@@ -1,16 +1,15 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using Bloom.Book;
-using Bloom.Collection;
 
 namespace Bloom
 {
 	public interface ITemplateFinder
 	{
 		Book.Book FindAndCreateTemplateBookByFileName(string key);
+		Book.Book FindAndCreateTemplateBookByFullPath(string path);
 	}
 
 	public class SourceCollectionsList : ITemplateFinder
