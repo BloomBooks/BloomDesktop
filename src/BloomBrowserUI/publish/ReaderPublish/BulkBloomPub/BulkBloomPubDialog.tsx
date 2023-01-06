@@ -101,7 +101,7 @@ export const InnerBulkBloomPubDialog: React.FunctionComponent<{
                         height: 16px;
                         margin-left: 20px;
                     `}
-                    src="../../../images/bloom-enterprise-badge.svg"
+                    src="/bloom/images/bloom-enterprise-badge.svg"
                 />
             </DialogTitle>
             {!!params && (

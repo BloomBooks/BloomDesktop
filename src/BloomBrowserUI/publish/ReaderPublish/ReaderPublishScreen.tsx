@@ -213,7 +213,7 @@ const ReaderPublishScreenInternal: React.FunctionComponent<{
                                 height: 1.5em;
                                 margin-right: 10px;
                             `}
-                            src="Google_Play_symbol_2016.svg"
+                            src="/bloom/images/Google_Play_symbol_2016.svg"
                         />
                     </a>
                     <Link

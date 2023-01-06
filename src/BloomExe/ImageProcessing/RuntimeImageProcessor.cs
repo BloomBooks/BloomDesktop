@@ -102,7 +102,7 @@ namespace Bloom.ImageProcessing
 			}
 		}
 
-		public string GetPathToResizedImage(string originalPath, bool getThumbnail = false, bool isForCover = false)
+		public string GetPathToAdjustedImage(string originalPath, bool getThumbnail = false, bool isForCover = false)
 		{
 			//don't mess with Bloom UI images
 			if (new[] {"/img/", "placeHolder", "Button"}.Any(s => originalPath.Contains(s)))
