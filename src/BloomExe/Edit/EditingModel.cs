@@ -37,7 +37,7 @@ namespace Bloom.Edit
 		private readonly DuplicatePageCommand _duplicatePageCommand;
 		private readonly DeletePageCommand _deletePageCommand;
 		private readonly CollectionSettings _collectionSettings;
-		private readonly SourceCollectionsList _sourceCollectionsList;
+		private readonly ITemplateFinder _sourceCollectionsList;
 		private HtmlDom _domForCurrentPage;
 		// We dispose of this when we create a new one. It may hang around a little longer than needed, but memory
 		// is the only resource being used, and there is only one instance of this object.
@@ -87,7 +87,7 @@ namespace Bloom.Edit
 			CollectionSettings collectionSettings,
 			BloomServer server,
 			BloomWebSocketServer webSocketServer,
-			SourceCollectionsList sourceCollectionsList)
+			ITemplateFinder sourceCollectionsList)
 		{
 			_bookSelection = bookSelection;
 			_pageSelection = pageSelection;

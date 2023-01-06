@@ -7,6 +7,7 @@ export interface ISelectedBookInfo {
     saveable: boolean; // changes can safely be saved, including considering whether checked out if necessary
     collectionKind: "main" | "factory" | "error" | "other"; //error indicates the book is not usable for anything.
     aboutBookInfoUrl: string | undefined;
+    isTemplate: boolean;
 }
 
 // Anything that uses this will always have the current book info. The first render will see the default
@@ -19,7 +20,8 @@ export function useMonitorBookSelection(): ISelectedBookInfo {
             id: undefined,
             saveable: false,
             collectionKind: "error", // better to see no button at all until we know which it is
-            aboutBookInfoUrl: undefined
+            aboutBookInfoUrl: undefined,
+            isTemplate: false
         }
     );
 

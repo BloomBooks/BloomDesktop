@@ -27,6 +27,9 @@ interface IGroupData {
     templateBookPath: string;
 }
 
+// To test the AddPage/ChangeLayout dialog in devtools, type 'editTabBundle.showAddPageDialog(false)' in
+// the Console. Substitute 'true' for the ChangeLayout dialog.
+
 // latest version of the expected JSON initialization string (from PageTemplatesApi.HandleTemplatesRequest)
 // "{\"defaultPageToSelect\":\"(guid of template page)\",
 //   \"orientation\":\"landscape\",

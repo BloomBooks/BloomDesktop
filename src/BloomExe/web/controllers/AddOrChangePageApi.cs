@@ -14,12 +14,12 @@ namespace Bloom.web.controllers
 		private readonly TemplateInsertionCommand _templateInsertionCommand;
 		private readonly PageRefreshEvent _pageRefreshEvent;
 		private readonly PageSelection _pageSelection;
-		private readonly SourceCollectionsList _sourceCollectionsList;
+		private readonly ITemplateFinder _sourceCollectionsList;
 
 		public AddOrChangePageApi(TemplateInsertionCommand templateInsertionCommand,
 			PageRefreshEvent pageRefreshEvent,
 			PageSelection pageSelection,
-			SourceCollectionsList sourceCollectionsList)
+			ITemplateFinder sourceCollectionsList)
 		{
 			_templateInsertionCommand = templateInsertionCommand;
 			_pageRefreshEvent = pageRefreshEvent;
