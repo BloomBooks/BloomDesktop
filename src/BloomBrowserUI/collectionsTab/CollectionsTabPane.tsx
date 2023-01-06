@@ -155,8 +155,9 @@ export const CollectionsTabPane: React.FunctionComponent<{}> = () => {
             label: "Make Bloom Pack of Shell Books",
             l10nId: "CollectionTab.MakeBloomPackOfShellBooks",
             command: "collections/makeShellBooksBloompack",
-            addEllipsis: true,
-            shouldShow: () => collections[0].isSourceCollection
+            addEllipsis: true
+            // BL-11761: Always show this command
+            // shouldShow: () => collections[0].isSourceCollection
         },
         {
             label: "Make Reader Template Bloom Pack...",
@@ -578,8 +579,9 @@ const BooksOfCollectionWithHeading: React.FunctionComponent<{
     manager: BookSelectionManager;
     isSpreadsheetFeatureActive: boolean;
 }> = props => {
+    const localizedName = useL10n(props.name, "CollectionTab." + props.name);
     const localName = props.shouldLocalizeName
-        ? useL10n(props.name, "CollectionTab." + props.name)
+        ? localizedName // putting the useL10n() hook here violates rules of hooks
         : props.name;
     return (
         <div key={"frag:" + props.id}>
