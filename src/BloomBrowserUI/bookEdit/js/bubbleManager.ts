@@ -1260,7 +1260,7 @@ export class BubbleManager {
         }
     }
 
-    // Adds the appropriate resize handle to the containers
+    // Adds the appropriate resize handle to the container
     // You can provide just the imageContainer, and let the function handle everything else.
     // If you already know some of these values in {optionalParams}, you can pass them in so the function won't re-compute them.
     public addResizeModeClass(
@@ -1520,11 +1520,11 @@ export class BubbleManager {
         return this.bubbleToResize || this.isJQueryResizing(container);
     }
 
-    // Returns true if any of the container's children are currently being resized
-    // Remarks: I believe this only tells you whether a JQ
+    // Returns true if any of the container's children are currently being resized using JQuery
     private isJQueryResizing(container: Element) {
-        // First check if we have our custom class indicator applied
-        if (container.classList.contains("bloom-resizing")) {
+        // First check the class that we try to always apply when starting a JQuery resize
+        // (the class is applied so that we know one is in progress even before the mouse moves.)
+        if (container.classList.contains("ui-jquery-resizing-in-progress")) {
             return true;
         }
 
@@ -3063,7 +3063,7 @@ export class BubbleManager {
         }
     }
 
-    // An event handler that adds the "bloom-resizing" class to the image container.
+    // An event handler that adds the "ui-jquery-resizing-in-progress" class to the image container.
     private static addResizingClassHandler(event: MouseEvent) {
         const handle = event.currentTarget as Element;
 
@@ -3071,11 +3071,11 @@ export class BubbleManager {
             handle
         );
         if (container) {
-            container.classList.add("bloom-resizing");
+            container.classList.add("ui-jquery-resizing-in-progress");
         }
     }
 
-    // An event handler that removes the "bloom-resizing" class from the image container.
+    // An event handler that removes the "ui-jquery-resizing-in-progress" class from the image container.
     private static clearResizingClassHandler(event: MouseEvent) {
         BubbleManager.clearResizingClass(event.currentTarget as Element);
     }
@@ -3085,7 +3085,7 @@ export class BubbleManager {
             element
         );
         if (container) {
-            container.classList.remove("bloom-resizing");
+            container.classList.remove("ui-jquery-resizing-in-progress");
         }
     }
 
