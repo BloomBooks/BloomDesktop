@@ -1,16 +1,15 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using Bloom.Book;
-using Bloom.Collection;
 
 namespace Bloom
 {
 	public interface ITemplateFinder
 	{
-		Book.Book FindAndCreateTemplateBookByFileName(string key);
+		Book.Book FindAndCreateTemplateBookFromDerivative(Book.Book derivativeBook);
+		Book.Book FindAndCreateTemplateBookByFullPath(string path);
 	}
 
 	public class SourceCollectionsList : ITemplateFinder
@@ -33,10 +32,31 @@ namespace Bloom
 			_sourceRootFolders = sourceRootFolders;
 		}
 
-		public Book.Book FindAndCreateTemplateBookByFileName(string fileName)
+		/// <summary>
+		/// The purpose of this method is to create a template book (for AddPage/ChangeLayout dialogs) from a book
+		/// that has been derived from that template.
+		/// </summary>
+		public Book.Book FindAndCreateTemplateBookFromDerivative(Book.Book derivativeBook)
+		{
+			// Finding a template book:
+			// - First of all, a template book is its own primary template
+			// - Next, we look for the template in all the usual 'source' places
+			// - as of 5.5 it is possible to create a template and then create a book from it in the same collection,
+			//   so we need to look elsewhere in our own editable collection, if 'Find by FileName' didn't find it.
+			if (derivativeBook.IsSuitableForMakingShells)
+				return derivativeBook;
+			var templateKey = derivativeBook.PageTemplateSource;
+			var collectionFolder = Path.GetDirectoryName(derivativeBook.FolderPath);
+			return FindAndCreateTemplateBookByFileName(templateKey) ??
+		       (collectionFolder == null ? null :
+			       FindAndCreateTemplateBookByFullPath(Path.Combine(collectionFolder, templateKey, templateKey + ".htm")));
+		}
+
+		private Book.Book FindAndCreateTemplateBookByFileName(string fileName)
 		{
 			return FindAndCreateTemplateBook(templateDirectory => Path.GetFileName(templateDirectory) == fileName);
 		}
+
 		public Book.Book FindAndCreateTemplateBookByFullPath(string path)
 		{
 			// Given a full path to the HTML file, there's no reason so search.

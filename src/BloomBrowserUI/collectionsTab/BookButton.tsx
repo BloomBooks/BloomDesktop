@@ -225,6 +225,15 @@ export const BookButton: React.FunctionComponent<{
                         (props.manager.getSelectedBookInfo()?.saveable ??
                             false))
             },
+            {
+                label: "Make a book using this source",
+                l10nId: "CollectionTab.MakeBookUsingThisTemplate",
+                command: "app/makeFromSelectedBook",
+                // Allowed for the downloaded books collection and the editable collection (provided the book is checked out, if applicable)
+                shouldShow: () =>
+                    props.collection.isEditableCollection &&
+                    (props.manager.getSelectedBookInfo()?.isTemplate ?? false)
+            },
             { label: "-" },
             {
                 label: "More",
