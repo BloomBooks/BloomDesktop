@@ -2,176 +2,174 @@
 <xliff xmlns:sil="http://sil.org/software/XLiff" xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
   <file original="BloomLowPriority.exe" source-language="en" datatype="plaintext" product-version="3.1.000.0" sil:hard-linebreak-replacement="\n" target-language="es-ES">
     <body>
-      <trans-unit id="Installer.InstallationInProgress">
+      <trans-unit id="Installer.InstallationInProgress" approved="yes">
         <source xml:lang="en">Installing...</source>
+        <target xml:lang="es-ES" state="final">Instalando...</target>
         <note>This isn't used by code, but rather we harvest some of these for use in making the GIF that shows when the software is installing.</note>
-        <note> In English, given the context, just "Installing..." is enough. But your translation can be verbose, like "Software Installation in Progress...".</note>
-        <target xml:lang="es-ES" state="translated">Instalando...</target>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.ESpeakPreview.ConversionFileUsed" approved="yes">
         <source xml:lang="en">Conversion file used:</source>
-        <note>ID: EditTab.Toolbox.TalkingBookTool.ESpeakPreview.ConversionFileUsed</note>
-        <note>After this text, the program will display the path to the conversion file (the location of the file on this computer). The conversion file specificies a mapping which is used to convert the script for one language into the script for another.</note>
         <target xml:lang="es-ES" state="final">Archivo de conversión usado:</target>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.ESpeakPreview.ConversionFileUsed</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.ESpeakPreview.Error" approved="yes">
         <source xml:lang="en">eSpeak failed.</source>
-        <note>ID: EditTab.Toolbox.TalkingBookTool.ESpeakPreview.Error</note>
-        <note>This text is shown if an error occurred while running eSpeak. eSpeak is a piece of software that this program uses to do text-to-speech (have the computer read text out loud).</note>
         <target xml:lang="es-ES" state="final">Falló eSpeak.</target>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.ESpeakPreview.Error</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.ESpeakPreview.LanguageUsed" approved="yes">
         <source xml:lang="en">eSpeak language:</source>
-        <note>ID: EditTab.Toolbox.TalkingBookTool.ESpeakPreview.LanguageUsed</note>
-        <note>After this text, the program will display the language code of the language settings that eSpeak used. eSpeak is a piece of software that this program uses to do text-to-speech (have the computer read text out loud).</note>
         <target xml:lang="es-ES" state="final">Idioma eSpeak:</target>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.ESpeakPreview.LanguageUsed</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.ESpeakPreview.ResultOfOrthographyConversion" approved="yes">
         <source xml:lang="en">Result of orthography conversion:</source>
-        <note>ID: EditTab.Toolbox.TalkingBookTool.ESpeakPreview.ResultOfOrthographyConversion</note>
-        <note>After this text, the program will display the text of the current text box after being converted into the script of another language using the settings in the conversion file.</note>
         <target xml:lang="es-ES" state="final">Resultado de la conversión ortográfica:</target>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.ESpeakPreview.ResultOfOrthographyConversion</note>
       </trans-unit>
       <trans-unit id="OpenCreateCloneControl.InZipFileMessage" approved="yes">
         <source xml:lang="en">It looks like you are trying to open a Bloom Collection from inside of a ZIP file. You need to first unzip the ZIP file, and then open the collection.</source>
-        <note>ID: OpenCreateCloneControl.InZipFileMessage</note>
         <target xml:lang="es-ES" state="final">Parece que está intentando abrir una colección Bloom desde dentro de un archivo ZIP. Primero debe descomprimir el archivo ZIP y luego abrir la colección.</target>
+        <note>ID: OpenCreateCloneControl.InZipFileMessage</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Android.BulkBookshelfColor" sil:dynamic="true" approved="yes">
+        <source xml:lang="en">Bookshelf Color</source>
+        <target xml:lang="es-ES" state="final">Color de estantería</target>
+        <note>ID: PublishTab.Android.BulkBookshelfColor</note>
       </trans-unit>
       <trans-unit id="PublishTab.RecordVideo.NoAudioInVideo">
         <source xml:lang="en">Currently, Bloom does not support including audio from Sign Language videos in video output.</source>
+        <target xml:lang="es-ES" state="translated">Actualmente, Bloom no permite que el video de salida incluya el audio de los vídeos de lengua de signos.</target>
         <note>ID: PublishTab.RecordVideo.NoAudioInVideo</note>
-        <target xml:lang="es-ES" state="translated">Actualmente, Bloom no permite la inclusión del audio incluído en vídeos de lengua de signos en el vídeo rendido.</target>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.CheckEmailFailed" approved="yes">
         <source xml:lang="en">Bloom needs to verify your email, but our attempt to resend the request failed, possibly because you made too many requests too close together. Please check your email, and if you can't find the message, try again later.</source>
-        <note>ID: PublishTab.Upload.CheckEmailFailed</note>
         <target xml:lang="es-ES" state="final">Bloom necesita verificar su correo electrónico, pero nuestro intento de reenviar la solicitud falló, posiblemente porque hizo demasiadas solicitudes demasiadamente rápido. Por favor, compruebe su correo electrónico, y si no puede encontrar el mensaje, inténtelo de nuevo más tarde.</target>
+        <note>ID: PublishTab.Upload.CheckEmailFailed</note>
       </trans-unit>
       <trans-unit id="Settings.Enterprise.Community" approved="yes">
         <source xml:lang="en">Funded by the local community only</source>
-        <note>ID: Settings.Enterprise.Community</note>
         <target xml:lang="es-ES" state="final">Patrocinado únicamente por la comunidad local</target>
+        <note>ID: Settings.Enterprise.Community</note>
       </trans-unit>
       <trans-unit id="Settings.Enterprise.CheckUpdates" approved="yes">
         <source xml:lang="en">Check for updates</source>
-        <note>ID: Settings.Enterprise.CheckUpdates</note>
         <target xml:lang="es-ES" state="final">Buscar actualizaciones</target>
+        <note>ID: Settings.Enterprise.CheckUpdates</note>
       </trans-unit>
       <trans-unit id="Settings.Enterprise.Expiration" approved="yes">
         <source xml:lang="en">Expires:</source>
-        <note>ID: Settings.Enterprise.Expiration</note>
         <target xml:lang="es-ES" state="final">Expira:</target>
+        <note>ID: Settings.Enterprise.Expiration</note>
       </trans-unit>
       <trans-unit id="Settings.Enterprise.Expired" approved="yes">
         <source xml:lang="en">That code has expired.</source>
-        <note>ID: Settings.Enterprise.Expired</note>
         <target xml:lang="es-ES" state="final">Ese código ya expiró.</target>
+        <note>ID: Settings.Enterprise.Expired</note>
       </trans-unit>
       <trans-unit id="Settings.Enterprise.Incomplete" approved="yes">
         <source xml:lang="en"> The code should look like SOMENAME-123456-7890</source>
-        <note>ID: Settings.Enterprise.Incomplete</note>
         <target xml:lang="es-ES" state="final"> El código debe tener el formato NOMBRE-123456-7890</target>
+        <note>ID: Settings.Enterprise.Incomplete</note>
       </trans-unit>
       <trans-unit id="Settings.Enterprise.LearnMore" approved="yes">
         <source xml:lang="en">Learn More</source>
-        <note>ID: Settings.Enterprise.LearnMore</note>
         <target xml:lang="es-ES" state="final">Aprender más</target>
+        <note>ID: Settings.Enterprise.LearnMore</note>
       </trans-unit>
       <trans-unit id="Settings.Enterprise.Overview" approved="yes">
         <source xml:lang="en">
             Bloom Enterprise adds features and services that are important for publishers, governments, and international organizations. This paid subscription meets their unique needs while supporting the development and user support of Bloom for the community at large.
         </source>
-        <note>ID: Settings.Enterprise.Overview</note>
         <target xml:lang="es-ES" state="final">
             Bloom Empresarial agrega funciones y servicios que son importantes para editoriales, gobierno, organizaciones internacionales y otros. La suscripción pagada les permite satisfacer sus necesidades únicas mientras que apoya al desarrollo de Bloom para toda la comunidad de usuarios.
         </target>
+        <note>ID: Settings.Enterprise.Overview</note>
       </trans-unit>
       <trans-unit id="Settings.Enterprise.None" approved="yes">
         <source xml:lang="en">None. Enterprise features will be unavailable.</source>
-        <note>ID: Settings.Enterprise.None</note>
         <target xml:lang="es-ES" state="final">Ninguno. No se mostrarán las funciones Empresariales.</target>
+        <note>ID: Settings.Enterprise.None</note>
       </trans-unit>
       <trans-unit id="Settings.Enterprise.NeedsCode" approved="yes">
         <source xml:lang="en">In an older version of Bloom, this project used **%0**. To continue to use this you will need to enter a current subscription code. Codes for SIL brandings can be found [here](%1). For other subscriptions, contact your project administrator.</source>
-        <note>ID: Settings.Enterprise.NeedsCode</note>
-        <note>%0 will be replaced with the name of the branding. Keep surrounding **...**. [here](%1) will become a hot link; %1 will not be seen, but will be the URL for the destination page. Translate "here" and keep the [](%1) around it.</note>
         <target xml:lang="es-ES" state="final">En una versión anterior de Bloom, este proyecto usó **%0**. Para continuar usándolo tendrá que ingresar su código de suscripción actual. Los códigos para las marcas de SIL pueden ser encontrados en [here](%1). Para otras suscripciones, debe contactar su administrador de proyecto.</target>
+        <note>ID: Settings.Enterprise.NeedsCode</note>
       </trans-unit>
       <trans-unit id="Settings.Enterprise.NotValid" approved="yes">
         <source xml:lang="en">That code appears to be incorrect.</source>
-        <note>ID: Settings.Enterprise.NotValid</note>
         <target xml:lang="es-ES" state="final">Ese código parece estar incorrecto.</target>
+        <note>ID: Settings.Enterprise.NotValid</note>
       </trans-unit>
       <trans-unit id="Settings.Enterprise.Status" approved="yes">
         <source xml:lang="en">Bloom Enterprise Status</source>
-        <note>ID: Settings.Enterprise.Status</note>
         <target xml:lang="es-ES" state="final">Estado de Bloom Empresarial</target>
+        <note>ID: Settings.Enterprise.Status</note>
       </trans-unit>
       <trans-unit id="Settings.Enterprise.Subscription" approved="yes">
         <source xml:lang="en">Enterprise Subscription</source>
-        <note>ID: Settings.Enterprise.Subscription</note>
         <target xml:lang="es-ES" state="final">Suscripción Empresarial</target>
+        <note>ID: Settings.Enterprise.Subscription</note>
       </trans-unit>
       <trans-unit id="Settings.Enterprise.SubscriptionCode" approved="yes">
         <source xml:lang="en">Subscription Code:</source>
-        <note>ID: Settings.Enterprise.SubscriptionCode</note>
         <target xml:lang="es-ES" state="final">Código de suscripción:</target>
+        <note>ID: Settings.Enterprise.SubscriptionCode</note>
       </trans-unit>
       <trans-unit id="Settings.Enterprise.UnknownCode" approved="yes">
         <source xml:lang="en">This version of Bloom does not have the artwork that goes with that subscription.</source>
-        <note>ID: Settings.Enterprise.UnknownCode</note>
         <target xml:lang="es-ES" state="final">Esta versión de Bloom no contiene las ilustraciones que van con su suscripción.</target>
+        <note>ID: Settings.Enterprise.UnknownCode</note>
       </trans-unit>
       <trans-unit id="Settings.Enterprise.WhatsThis" approved="yes">
         <source xml:lang="en">What's This?</source>
-        <note>ID: Settings.Enterprise.WhatsThis</note>
-        <note>A link offering more information about the Funded Local Community Only option</note>
         <target xml:lang="es-ES" state="final">¿Qué es esto?</target>
+        <note>ID: Settings.Enterprise.WhatsThis</note>
       </trans-unit>
       <trans-unit id="Spreadsheet.DataDivConflictWarning" approved="yes">
         <source xml:lang="en">Export warning: Found differing 'src' attribute and element text for data-div element {0}. The 'src' attribute will be ignored.</source>
-        <note>ID: Spreadsheet.DataDivConflictWarning</note>
         <target xml:lang="es-ES" state="final">Advertencia de exportación: Se ha encontrado una diferencia entre el atributo 'src' y el texto del elemento data-div {0}. El atributo 'src' será ignorado.</target>
+        <note>ID: Spreadsheet.DataDivConflictWarning</note>
       </trans-unit>
       <trans-unit id="Spreadsheet.DataDivImageMultiple" approved="yes">
         <source xml:lang="en">Export warning: Found multiple elements for image element {0}. Only the first will be exported.</source>
-        <note>ID: Spreadsheet.DataDivImageMultiple</note>
         <target xml:lang="es-ES" state="final">Advertencia de exportación: Se han encontrado varios elementos para el elemento de imagen {0}. Sólo se exportará el primero.</target>
+        <note>ID: Spreadsheet.DataDivImageMultiple</note>
       </trans-unit>
       <trans-unit id="Spreadsheet.ExportFailed" approved="yes">
         <source xml:lang="en">Export failed: </source>
-        <note>ID: Spreadsheet.ExportFailed</note>
         <target xml:lang="es-ES" state="final">Falló la exportación: </target>
+        <note>ID: Spreadsheet.ExportFailed</note>
       </trans-unit>
       <trans-unit id="Spreadsheet.SpreadsheetLocked" approved="yes">
         <source xml:lang="en">Bloom could not write to the spreadsheet because another program has it locked. Do you have it open in another program?</source>
-        <note>ID: Spreadsheet.SpreadsheetLocked</note>
         <target xml:lang="es-ES" state="final">Bloom no pudo escribir en la hoja de cálculo porque otro programa la tiene bloqueada. ¿La tiene abierta en otro programa?</target>
+        <note>ID: Spreadsheet.SpreadsheetLocked</note>
       </trans-unit>
       <trans-unit id="Spreadsheet.MissingImage" approved="yes">
         <source xml:lang="en">Export warning: did not find the image {0}. It will be missing from the export folder.</source>
-        <note>ID: Spreadsheet.MissingImage</note>
         <target xml:lang="es-ES" state="final">Advertencia de exportación: no se encontró la imagen {0}. No aparecerá en la carpeta de exportación.</target>
+        <note>ID: Spreadsheet.MissingImage</note>
       </trans-unit>
       <trans-unit id="Spreadsheet.MultipleImageChildren" approved="yes">
         <source xml:lang="en">Export warning: Found multiple images in data-book element {0}. Only the first will be exported.</source>
-        <note>ID: Spreadsheet.MultipleImageChildren</note>
         <target xml:lang="es-ES" state="final">Advertencia de exportación: Se encontraron varias imágenes en el elemento {0} del libro de datos. Sólo se exportará la primera.</target>
+        <note>ID: Spreadsheet.MultipleImageChildren</note>
       </trans-unit>
       <trans-unit id="Spreadsheet.Overwrite" approved="yes">
         <source xml:lang="en">You are about to replace the existing folder named {0}</source>
-        <note>ID: Spreadsheet.Overwrite</note>
         <target xml:lang="es-ES" state="final">Está a punto de reemplazar la carpeta nombrada {0} que ya existe</target>
+        <note>ID: Spreadsheet.Overwrite</note>
       </trans-unit>
       <trans-unit id="Spreadsheet.OverwriteBook" approved="yes">
         <source xml:lang="en">The folder named {0} already exists and looks like it might be a Bloom book folder!</source>
-        <note>ID: Spreadsheet.OverwriteBook</note>
         <target xml:lang="es-ES" state="final">¡La carpeta llamada {0} ya existe y parece que podría ser una carpeta de libros de Bloom!</target>
+        <note>ID: Spreadsheet.OverwriteBook</note>
       </trans-unit>
       <trans-unit id="Spreadsheet.WriteFailed" approved="yes">
         <source xml:lang="en">Bloom had problems writing files to that location ({0}). Check that you have permission to write there.</source>
-        <note>ID: Spreadsheet.WriteFailed</note>
         <target xml:lang="es-ES" state="final">Bloom tuvo dificultades al escribir archivos a esa ubicación ({0}). Compruebe que tiene permiso para escribir allí.</target>
+        <note>ID: Spreadsheet.WriteFailed</note>
       </trans-unit>
       <trans-unit id="Activity.Editing.MultipleChoice.CorrectAnswer" approved="yes">
         <source xml:lang="en">Put the correct answer in this button. Bloom will randomize the order later.</source>
