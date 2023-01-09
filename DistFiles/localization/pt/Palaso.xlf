@@ -314,7 +314,7 @@
       </trans-unit>
       <trans-unit id="LanguageLookup.CannotFindMyLanguage.LinkToSILInformationAboutLanguageCodes" approved="yes">
         <source xml:lang="en">About Language 639-3 Codes &amp; How To Apply For New Ones</source>
-        <target xml:lang="pt-PT" state="final">Sobre códigos 639-3 de idiomas e Como aplicar para códigos novos</target>
+        <target xml:lang="pt-PT" state="final">Sobre códigos 639-3 de idiomas e como aplicar para códigos novos</target>
         <note>ID: LanguageLookup.CannotFindMyLanguage.LinkToSILInformationAboutLanguageCodes</note>
       </trans-unit>
       <trans-unit id="LanguageLookup.CannotFindMyLanguageWindowTitle" approved="yes">
@@ -339,7 +339,7 @@
       </trans-unit>
       <trans-unit id="LanguageLookup.DesiredLanguageDisplayNameLabel" approved="yes">
         <source xml:lang="en">You can change how the language name will be displayed here:</source>
-        <target xml:lang="pt-PT" state="final">Pode alterar como o nome do idioma será exibido aqui:</target>
+        <target xml:lang="pt-PT" state="final">Pode alterar o nome do idioma que será exibido aqui:</target>
         <note>ID: LanguageLookup.DesiredLanguageDisplayNameLabel</note>
       </trans-unit>
       <trans-unit id="LanguageLookup.LanguageLookupDialogWindowTitle" approved="yes">
@@ -441,111 +441,6 @@
         <source xml:lang="en">No license specified</source>
         <target xml:lang="pt-PT" state="final">Nenhum licença especificada</target>
         <note>ID: MetadataDisplay.NoLicense</note>
-      </trans-unit>
-      <trans-unit id="MetadataEditor.AllowCommercialUse" approved="yes">
-        <source xml:lang="en">Allow commercial uses of your work?</source>
-        <target xml:lang="pt-PT" state="final">Permitir uso comercial de seu obra?</target>
-        <note>ID: MetadataEditor.AllowCommercialUse</note>
-      </trans-unit>
-      <trans-unit id="MetadataEditor.AllowDerivatives" approved="yes">
-        <source xml:lang="en">Allow modifications of your work?</source>
-        <target xml:lang="pt-PT" state="final">Permite modificações de seu obra?</target>
-        <note>ID: MetadataEditor.AllowDerivatives</note>
-      </trans-unit>
-      <trans-unit id="MetadataEditor.CopyrightHolder" approved="yes">
-        <source xml:lang="en">Copyright Holder</source>
-        <target xml:lang="pt-PT" state="final">Detentor de direitos autorais</target>
-        <note>ID: MetadataEditor.CopyrightHolder</note>
-      </trans-unit>
-      <trans-unit id="MetadataEditor.CopyrightYear" approved="yes">
-        <source xml:lang="en">Copyright Year</source>
-        <target xml:lang="pt-PT" state="final">Ano do copyright (direitos autorais)</target>
-        <note>ID: MetadataEditor.CopyrightYear</note>
-      </trans-unit>
-      <trans-unit id="MetadataEditor.CreativeCommons" approved="yes">
-        <source xml:lang="en">Creative Commons</source>
-        <target xml:lang="pt-PT" state="final">Creative Commons</target>
-        <note>ID: MetadataEditor.CreativeCommons</note>
-      </trans-unit>
-      <trans-unit id="MetadataEditor.CreativeCommons.Intergovernmental" approved="yes">
-        <source xml:lang="en">Intergovernmental Version</source>
-        <target xml:lang="pt-PT" state="final">Versão Intergovernamental</target>
-        <note>ID: MetadataEditor.CreativeCommons.Intergovernmental</note>
-      </trans-unit>
-      <trans-unit id="MetadataEditor.CreatorLabel" approved="yes">
-        <source xml:lang="en">Creator</source>
-        <target xml:lang="pt-PT" state="final">Criador</target>
-        <note>ID: MetadataEditor.CreatorLabel</note>
-      </trans-unit>
-      <trans-unit id="MetadataEditor.CustomLicense" approved="yes">
-        <source xml:lang="en">Custom</source>
-        <target xml:lang="pt-PT" state="final">Personalizado</target>
-        <note>ID: MetadataEditor.CustomLicense</note>
-      </trans-unit>
-      <trans-unit id="MetadataEditor.License" approved="yes">
-        <source xml:lang="en">License</source>
-        <target xml:lang="pt-PT" state="final">Licença</target>
-        <note>ID: MetadataEditor.License</note>
-      </trans-unit>
-      <trans-unit id="MetadataEditor.PublicDomain" approved="yes">
-        <source xml:lang="en">The copyright holder waives all rights</source>
-        <target xml:lang="pt-PT" state="final">O detentor dos direitos autorais renuncia a todos os direitos</target>
-        <note>ID: MetadataEditor.PublicDomain</note>
-      </trans-unit>
-      <trans-unit id="MetadataEditor.PublicDomain_ToolTip_" approved="yes">
-        <source xml:lang="en">The copyright holder waives all rights</source>
-        <target xml:lang="pt-PT" state="final">O titular dos direitos de autor renuncia a todos os direitos</target>
-        <note>ID: MetadataEditor.PublicDomain_ToolTip_</note>
-      </trans-unit>
-      <trans-unit id="MetadataEditor.TitleNoCredit" approved="yes">
-        <source xml:lang="en">Copyright and License</source>
-        <target xml:lang="pt-PT" state="final">Direitos autorais e licença</target>
-        <note>ID: MetadataEditor.TitleNoCredit</note>
-      </trans-unit>
-      <trans-unit id="MetadataEditor.TitleWithCredit" approved="yes">
-        <source xml:lang="en">Credit, Copyright, and License</source>
-        <target xml:lang="pt-PT" state="final">Créditos, direitos autorais, e licença</target>
-        <note>ID: MetadataEditor.TitleWithCredit</note>
-      </trans-unit>
-      <trans-unit id="MetadataEditor.UnknownLicense" approved="yes">
-        <source xml:lang="en">Contact the copyright holder for any permissions</source>
-        <target xml:lang="pt-PT" state="final">Entrar em contato com o detentor dos direitos autorais para quaisquer permissões</target>
-        <note>ID: MetadataEditor.UnknownLicense</note>
-      </trans-unit>
-      <trans-unit id="MetadataEditor.UnknownLicense_ToolTip_" approved="yes">
-        <source xml:lang="en">Contact the copyright holder for any permissions</source>
-        <target xml:lang="pt-PT" state="final">Contacte o titular dos direitos autorais para quaisquer permissões</target>
-        <note>ID: MetadataEditor.UnknownLicense_ToolTip_</note>
-      </trans-unit>
-      <trans-unit id="MetadataEditor.YesShareAlike" approved="yes">
-        <source xml:lang="en">Yes, as long as others share alike</source>
-        <target xml:lang="pt-PT" state="final">Sim, enquanto outros compartilham também</target>
-        <note>ID: MetadataEditor.YesShareAlike</note>
-      </trans-unit>
-      <trans-unit id="MetadataEditor.YesShareAlike_ToolTip_" approved="yes">
-        <source xml:lang="en">Yes, as long as others share alike</source>
-        <target xml:lang="pt-PT" state="final">Sim, enquanto outros compartilham também</target>
-        <note>ID: MetadataEditor.YesShareAlike_ToolTip_</note>
-      </trans-unit>
-      <trans-unit id="MetadataEditor.additionalRequestsLabel" approved="yes">
-        <source xml:lang="en">Additional Requests</source>
-        <target xml:lang="pt-PT" state="final">Solicitações adicionais</target>
-        <note>ID: MetadataEditor.additionalRequestsLabel</note>
-      </trans-unit>
-      <trans-unit id="MetadataEditor.betterLinkLabel1" approved="yes">
-        <source xml:lang="en">more info</source>
-        <target xml:lang="pt-PT" state="final">mais informação</target>
-        <note>ID: MetadataEditor.betterLinkLabel1</note>
-      </trans-unit>
-      <trans-unit id="MetadataEditor.linkToPublicDomainCC0" approved="yes">
-        <source xml:lang="en">about {0} Public Domain</source>
-        <target xml:lang="pt-PT" state="final">sobre {0} Domínio Público</target>
-        <note>ID: MetadataEditor.linkToPublicDomainCC0</note>
-      </trans-unit>
-      <trans-unit id="MetadataEditor.linkToWarningAboutRefiningCreativeCommons" approved="yes">
-        <source xml:lang="en">Not Enforceable</source>
-        <target xml:lang="pt-PT" state="final">Não pode ser imposto</target>
-        <note>ID: MetadataEditor.linkToWarningAboutRefiningCreativeCommons</note>
       </trans-unit>
       <trans-unit id="ScriptsAndVariants.ScriptsAndVariantsDialog._cancelButton" approved="yes">
         <source xml:lang="en">Cancel</source>

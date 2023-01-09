@@ -25,6 +25,134 @@
         <target xml:lang="vi" state="translated">Câu đặc biệt - Dấu câu</target>
         <note>ID: ReaderSetup.SentencePunctuation.Header</note>
       </trans-unit>
+      <trans-unit id="PublishTab.Language.Enabled" sil:dynamic="true">
+        <!-- added in 5.5 -->
+        <source xml:lang="en">Select this if you want readers to be able to choose to read the book in this language.</source>
+        <note>ID: PublishTab.Language.Enabled</note>
+        <note>This is a tooltip on a checkbox. The checkbox contains the name of a language. The checkbox controls whether this language will be included in the published book.</note>
+        <target xml:lang="vi" state="needs-translation">Select this if you want readers to be able to choose to read the book in this language.</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Language.Required" sil:dynamic="true">
+        <!-- added in 5.5 -->
+        <source xml:lang="en">This is disabled because this language is currently shown in the book, so it is required.</source>
+        <note>ID: PublishTab.Language.Required</note>
+        <note>This is a tooltip on a checkbox. The checkbox contains the name of a language. The checkbox controls whether this language will be included in the published book. In this case, the user is not allowed to change the value.</note>
+        <target xml:lang="vi" state="needs-translation">This is disabled because this language is currently shown in the book, so it is required.</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.AudioLanguage.Enabled" sil:dynamic="true">
+        <!-- added in 5.5 -->
+        <source xml:lang="en">Select this if you want to include this audio.</source>
+        <note>ID: PublishTab.AudioLanguage.Enabled</note>
+        <note>This is a tooltip on a checkbox. The checkbox contains the name of a language. The checkbox controls whether the Talking Book audio for this language will be included in the published book.</note>
+        <target xml:lang="vi" state="needs-translation">Select this if you want to include this audio.</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.AudioLanguage.Disabled" sil:dynamic="true">
+        <!-- added in 5.5 -->
+        <source xml:lang="en">This is disabled because this book does not have any audio in this language.</source>
+        <note>ID: PublishTab.AudioLanguage.Disabled</note>
+        <note>This is a tooltip on a checkbox. The checkbox contains the name of a language. The checkbox controls whether the Talking Book audio for this language will be included in the published book. In this case, the user is not allowed to change the value.</note>
+        <target xml:lang="vi" state="needs-translation">This is disabled because this book does not have any audio in this language.</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Feature.Activities.None" translate="no">
+        <!-- added in 5.5 -->
+        <source xml:lang="en">This book does not have any interactive activities.</source>
+        <note>ID: PublishTab.Feature.Activities.None</note>
+        <note>This is a tooltip.</note>
+        <target xml:lang="vi" state="needs-translation">This book does not have any interactive activities.</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Feature.Activities.Present" translate="no">
+        <!-- added in 5.5 -->
+        <source xml:lang="en">This book has interactive activities.</source>
+        <note>ID: PublishTab.Feature.Activities.None</note>
+        <note>This is a tooltip.</note>
+        <target xml:lang="vi" state="needs-translation">This book has interactive activities.</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Feature.Activities.RequiresEnterprise" translate="no">
+        <!-- added in 5.5 -->
+        <source xml:lang="en">This is disabled because publishing interactive activities is a Bloom Enterprise feature.</source>
+        <note>ID: PublishTab.Feature.Activities.RequiresEnterprise</note>
+        <note>This is a tooltip.</note>
+        <target xml:lang="vi" state="needs-translation">This is disabled because publishing interactive activities is a Bloom Enterprise feature.</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Feature.Comic.None" translate="no">
+        <!-- added in 5.5 -->
+        <source xml:lang="en">This is disabled because this book does not have any overlay elements that qualify as “comic-like”, such as speech bubbles.</source>
+        <note>ID: PublishTab.Feature.Comic.None</note>
+        <note>This is a tooltip.</note>
+        <target xml:lang="vi" state="needs-translation">This is disabled because this book does not have any overlay elements that qualify as “comic-like”, such as speech bubbles.</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Feature.Comic.Possible" translate="no">
+        <!-- added in 5.5 -->
+        <source xml:lang="en">Select this if you want to list this book as a Comic Book. This only affects how the book is categorized, it does not affect the content of the book.</source>
+        <note>ID: PublishTab.Feature.Comic.Possible</note>
+        <note>This is a tooltip.</note>
+        <target xml:lang="vi" state="needs-translation">Select this if you want to list this book as a Comic Book. This only affects how the book is categorized, it does not affect the content of the book.</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Feature.Motion.None" translate="no">
+        <!-- added in 5.5 -->
+        <source xml:lang="en">This is disabled because this book does not have any pages with motion enabled.</source>
+        <note>ID: PublishTab.Feature.Motion.None</note>
+        <note>This is a tooltip.</note>
+        <target xml:lang="vi" state="needs-translation">This is disabled because this book does not have any pages with motion enabled.</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Feature.Motion.Possible" translate="no">
+        <!-- added in 5.5 -->
+        <source xml:lang="en">Select this if you want to show motion when the book is read in landscape mode.</source>
+        <note>ID: PublishTab.Feature.Motion.None</note>
+        <note>This is a tooltip.</note>
+        <target xml:lang="vi" state="needs-translation">Select this if you want to show motion when the book is read in landscape mode.</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Feature.SignLanguage.NoVideos" translate="no">
+        <!-- added in 5.5 -->
+        <source xml:lang="en">This is disabled because this book does not have any videos.</source>
+        <note>ID: PublishTab.Feature.SignLanguage.NoVideos</note>
+        <note>This is a tooltip.</note>
+        <target xml:lang="vi" state="needs-translation">This is disabled because this book does not have any videos.</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Feature.SignLanguage.Present" translate="no">
+        <!-- added in 5.5 -->
+        <source xml:lang="en">The videos in this book contain {N}</source>
+        <note>ID: PublishTab.Feature.SignLanguage.Present</note>
+        <note>{N} will be replaced with a link whose text is the name of the (sign) language and which opens a chooser</note>
+        <note>This is a tooltip.</note>
+        <target xml:lang="vi" state="needs-translation">The videos in this book contain {N}</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Feature.SignLanguage.Unknown" translate="no">
+        <!-- added in 5.5 -->
+        <source xml:lang="en">This is disabled because this collection has {no sign language selected}.</source>
+        <note>ID: PublishTab.Feature.SignLanguage.Unknown</note>
+        <note>The result should have a section in braces. This will become a hot link which will open a user interface that lets the user select a sign language.</note>
+        <note>This is a tooltip.</note>
+        <target xml:lang="vi" state="needs-translation">This is disabled because this collection has {no sign language selected}.</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Feature.TalkingBook.NoRecordings" translate="no">
+        <!-- added in 5.5 -->
+        <source xml:lang="en">This is disabled because this book does not have any Talking Book recordings.</source>
+        <note>ID: PublishTab.Feature.TalkingBook.NoRecordings</note>
+        <note>This is a tooltip.</note>
+        <target xml:lang="vi" state="needs-translation">This is disabled because this book does not have any Talking Book recordings.</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Feature.TalkingBook.NoLanguagesSelected" translate="no">
+        <!-- added in 5.5 -->
+        <source xml:lang="en">This is disabled because no “Talking Book Languages” are selected.</source>
+        <note>ID: PublishTab.Feature.TalkingBook.NoLanguagesSelected</note>
+        <note>This is a tooltip.</note>
+        <target xml:lang="vi" state="needs-translation">This is disabled because no “Talking Book Languages” are selected.</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Feature.Vision.None" translate="no">
+        <!-- added in 5.5 -->
+        <source xml:lang="en">This is disabled because this book does not have any image descriptions in the primary language.</source>
+        <note>ID: PublishTab.Feature.Vision.None</note>
+        <note>This is a tooltip.</note>
+        <target xml:lang="vi" state="needs-translation">This is disabled because this book does not have any image descriptions in the primary language.</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Feature.Vision.Possible" translate="no">
+        <!-- added in 5.5 -->
+        <source xml:lang="en">Select this if you want to list this book as accessible to the visually impaired in the primary language.  This only affects how the book is categorized, it does not affect the content of the book.</source>
+        <note>ID: PublishTab.Feature.Vision.Possible</note>
+        <note>This is a tooltip.</note>
+        <target xml:lang="vi" state="needs-translation">Select this if you want to list this book as accessible to the visually impaired in the primary language.  This only affects how the book is categorized, it does not affect the content of the book.</target>
+      </trans-unit>
       <trans-unit id="PublishTab.Epub.ConsiderBloomPUB" sil:dynamic="true">
         <source xml:lang="en">Consider whether you can distribute your book using the BloomPUB format instead of, or in addition to, the ePUB format.</source>
         <target xml:lang="vi" state="needs-translation">Consider whether you can distribute your book using the BloomPUB format instead of, or in addition to, the ePUB format.</target>
