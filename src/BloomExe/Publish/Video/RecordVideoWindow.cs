@@ -18,6 +18,7 @@ using Newtonsoft.Json;
 using Sentry;
 using SIL.IO;
 using SIL.Reporting;
+using DontShowThisAgainButton = Bloom.MiscUI.DontShowThisAgainButton;
 
 namespace Bloom.Publish.Video
 {
@@ -80,16 +81,35 @@ namespace Bloom.Publish.Video
 			_content.AutoScaleMode = AutoScaleMode.None;
 			Controls.Add(_content);
 			AutoScaleMode = AutoScaleMode.None;
-			if (ExperimentalFeatures.IsFeatureEnabled(ExperimentalFeatures.kWebView2))
-			{
-				// We have to capture a region of the screen (see Gdigrab args below).
-				FormBorderStyle = FormBorderStyle.None; // prevent the window being moved
-				TopMost = true; // capturing a screen area we really don't want things on top of the window.
-			}
+
+			// We have to capture a region of the screen (see Gdigrab args below).
+			// The following prevents the window being moved, which is good since doing so
+			// will mess up the recording; but then you lose the title and close box, so
+			// there's no way to cancel.
+			//FormBorderStyle = FormBorderStyle.None;
+			TopMost = true; // capturing a screen area we really don't want things on top of the window.
 
 			// force handles to be created
-				_ = Handle;
+			_ = Handle;
 			_ = _content.Handle;
+		}
+
+		// This override prevents the window from being moved.
+		protected override void WndProc(ref Message message)
+		{
+			const int WM_SYSCOMMAND = 0x0112;
+			const int SC_MOVE = 0xF010;
+
+			switch (message.Msg)
+			{
+				case WM_SYSCOMMAND:
+					int command = message.WParam.ToInt32() & 0xfff0;
+					if (command == SC_MOVE)
+						return;
+					break;
+			}
+
+			base.WndProc(ref message);
 		}
 
 		// Used for various kinds of cleanup, previously hooked to the Close event.
