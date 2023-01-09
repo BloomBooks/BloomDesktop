@@ -148,13 +148,18 @@ namespace Bloom.Api
 				_actualContext.Response.ContentLength64 = fs.Length;
 				_actualContext.Response.AppendHeader("PathOnDisk", HttpUtility.UrlEncode(path));
 				_actualContext.Response.AppendHeader("Access-Control-Allow-Origin", "*");
-				if (ShouldCache(path, originalPath))
-				{
-					_actualContext.Response.AppendHeader("Cache-Control",
-						"max-age=600000"); // about a week...if someone spends longer editing one book, well, files will get loaded one more time...
-				}
+				// 60000s is about a week...if someone spends longer editing one book, well, files will get loaded one more time...
+				// When we want the browser NOT to cache, we still need to specify some value, otherwise, the browser may
+				// impose a default that is LONGER than we want (since this is mainly to avoid stale assets during development,
+				// though we also avoid caching book folder stuff in case the user is doing something like directly editing
+				// images).
+				// I think 10s is short enough for stale builds and images not to be a problem, but it may be long enough to prevent
+				// some wasteful reloading of assets which are rapidly reused like avatars.
+				var maxAge = ShouldCache(path, originalPath) ? 600000 : 10;
+				_actualContext.Response.AppendHeader("Cache-Control",
+					$"max-age={maxAge}");
 
-				// A HEAD request (rather than a GET or POST request) is a request for just headers, and nothing can be written
+					// A HEAD request (rather than a GET or POST request) is a request for just headers, and nothing can be written
 				// to the OutputStream. It is normally used to check if the contents of the file have changed without taking the
 				// time and bandwidth needed to download the full contents of the file. The 2 pieces of information being returned
 				// are the Content-Length and Last-Modified headers. The requestor can use this information to determine if the
