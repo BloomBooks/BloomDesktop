@@ -302,11 +302,6 @@
         <target xml:lang="mam" state="final">Tkolil u'jb'il</target>
         <note>ID: BookMetadata.level</note>
       </trans-unit>
-      <trans-unit id="BookMetadata.License" approved="yes">
-        <source xml:lang="en">License</source>
-        <target xml:lang="mam" state="final">Tu'jil amb'il</target>
-        <note>ID: BookMetadata.License</note>
-      </trans-unit>
       <trans-unit id="BookMetadata.metapicture" approved="yes">
         <source xml:lang="en">Picture</source>
         <target xml:lang="mam" state="final">Tilb'ilal</target>
@@ -356,16 +351,6 @@
         <source xml:lang="en">It appears that some part of the folder path to this book has been moved or renamed. As a result, Bloom cannot save your changes to this page, and will need to exit now. If you haven't been renaming or moving things, please report the problem to us.</source>
         <target xml:lang="mam" state="translated">O tz'ik'xa tuj juntl aq'unb'il mo o ch'ixpet tb'i aq'unb'il lu'. Tu'ntzanjo nti' nb'aj tk'u'n qe ch'xpub'il aq'untl tu'n Bloom, il ti'j tu'n tlamet aq'umb'il ja'lo. Qa nti' o ch'ixpet b'ib'aj ex nti' ma tik'xa tuj juntl aq'unb'il, q'onxa clic tib'aj Detalles ex samanxa yol kye qa aq'unal tzqi'n tib'aj aq'unb'il xk'utz'ib'.</target>
         <note>ID: BookStorage.FolderMoved</note>
-      </trans-unit>
-      <trans-unit id="Browser.CopyTroubleshootingInfo" approved="yes">
-        <source xml:lang="en">Copy Troubleshooting Information</source>
-        <target xml:lang="mam" state="final">In ela juntl ttxolil b'ib'itz tib'aj b'inchb'il qe nya' b'a'n</target>
-        <note>ID: Browser.CopyTroubleshootingInfo</note>
-      </trans-unit>
-      <trans-unit id="Browser.OpenPageInFirefox" approved="yes">
-        <source xml:lang="en">Open Page in Firefox (which must be in the PATH environment variable)</source>
-        <target xml:lang="mam" state="final">Jakonxa Firefox (b'a'n tkanet tuj aq'unb'il PATH)</target>
-        <note>ID: Browser.OpenPageInFirefox</note>
       </trans-unit>
       <trans-unit id="Browser.ProblemSaving" approved="yes">
         <source xml:lang="en">There was a problem while saving. Please return to the previous page and make sure it looks correct.</source>
@@ -470,10 +455,6 @@
         <target xml:lang="mam" state="final">Ka'yb'il</target>
         <note>ID: CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Video</note>
       </trans-unit>
-      <!-- <trans-unit id="CollectionSettingsDialog.BookMakingTab.NoBookshelvesFromServer" sil:dynamic="true"> -->
-      <!-- <source xml:lang="en">Bloom could not reach server to get the list of bookshelves.</source> -->
-      <!-- <note>ID: CollectionSettingsDialog.BookMakingTab.NoBookshelvesFromServer</note> -->
-      <!-- </trans-unit> -->
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Arabic-Indic" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Arabic-Indic</source>
         <target xml:lang="mam" state="final">Indo-Arábigo</target>
@@ -719,15 +700,17 @@
         <target xml:lang="mam" state="final">B'inchal jun K'loj aq'unb'il Bloom te b'inchil u'jb'il...</target>
         <note>ID: CollectionTab.AddMakeReaderTemplateBloomPackToolStripMenuItem</note>
       </trans-unit>
+      <trans-unit id="CollectionTab.AddSourceCollection" translate="no">
+        <!-- added in 5.5 -->
+        <source xml:lang="en">Show another collection...</source>
+        <note>Shown at the very bottom of the list of books and collections.  The user can click on this text and then choose an existing collection to use as an additional source of books to translate or otherwise adapt.</note>
+        <note>ID: CollectionTab.AddSourceCollection</note>
+        <target xml:lang="mam" state="needs-translation">Show another collection...</target>
+      </trans-unit>
       <trans-unit id="CollectionTab.AdminManagesUpdates" approved="yes">
         <source xml:lang="en">Your system administrator manages Bloom updates for this computer.</source>
         <target xml:lang="mam" state="final">Aj q'il twitz ttxolil aq'unb'il xk'utz'ib' nb'aj taq'unan ak'aj aq'unb'il te Bloom tuj xk'utz'ib' lu'.</target>
         <note>ID: CollectionTab.AdminManagesUpdates</note>
-      </trans-unit>
-      <trans-unit id="CollectionTab.AdvancedToolStripMenuItem" approved="yes">
-        <source xml:lang="en">Advanced</source>
-        <target xml:lang="mam" state="final">Kye b'a'nxix kyu'n</target>
-        <note>ID: CollectionTab.AdvancedToolStripMenuItem</note>
       </trans-unit>
       <trans-unit id="CollectionTab.Applying" approved="yes">
         <source xml:lang="en">Applying updates</source>
@@ -738,21 +721,6 @@
         <source xml:lang="en">Get more source books at BloomLibrary.org</source>
         <target xml:lang="mam" state="final">B'a'n tkanet txqantl Tlok'b'il u'j tuj BloomLibrary.org</target>
         <note>ID: CollectionTab.BloomLibraryLinkLabel</note>
-      </trans-unit>
-      <trans-unit id="CollectionTab.BloomLibraryLinkVerification.Part1" approved="yes">
-        <source xml:lang="en">Note: The Bloom Library contains shell books, whereas your current collection is a "source collection", meaning it is for making shell books, not for translating them into the local language.</source>
-        <target xml:lang="mam" state="final">Poqb'al: Tuj u'jb'il lu te Bloom at u'j b'ananmaj, noqx atzun k'loj te ila' wiq u'j lu' jun "K'lojb'il te ila' wiq Tlok'b'il U'j" noqx n-ajb'en tu'n kyb'ant u'j b'ananmaj, nya' tu'n tmeltz'aj tuj jun yolb'il.</target>
-        <note>ID: CollectionTab.BloomLibraryLinkVerification.Part1</note>
-      </trans-unit>
-      <trans-unit id="CollectionTab.BloomLibraryLinkVerification.Part2" approved="yes">
-        <source xml:lang="en">When you've made a shell, you can then upload it to the Bloom Library from the Publish tab.</source>
-        <target xml:lang="mam" state="final">Maxa ok tb'aj b'ant jun u'j b'ananmaj, b'a'n tu'n tik'x tuj U'jb'il te Bloom tu'n tumel "K'elex Poqb'al".</target>
-        <note>ID: CollectionTab.BloomLibraryLinkVerification.Part2</note>
-      </trans-unit>
-      <trans-unit id="CollectionTab.BloomLibraryLinkVerificationCaption" approved="yes">
-        <source xml:lang="en">Source Collection</source>
-        <target xml:lang="mam" state="final">K'lojb'il te ila' Wiq Tlok'b'il U'j</target>
-        <note>ID: CollectionTab.BloomLibraryLinkVerificationCaption</note>
       </trans-unit>
       <trans-unit id="CollectionTab.BookMenu.DeleteBook" approved="yes">
         <source xml:lang="en">Delete Book</source>
@@ -789,15 +757,10 @@
         <target xml:lang="mam" state="needs-translation">Import Content from Spreadsheet...</target>
         <note>ID: CollectionTab.BookMenu.ImportContentFromSpreadsheet</note>
       </trans-unit>
-      <trans-unit id="CollectionTab.BookMenu.MakeBloomPack" approved="yes">
-        <source xml:lang="en">Make Bloom Pack...</source>
-        <target xml:lang="mam" state="final">B'inchab'il aq'unb'il xk'utz'ib' te Bloom...</target>
-        <note>ID: CollectionTab.BookMenu.MakeBloomPack</note>
-      </trans-unit>
-      <trans-unit id="CollectionTab.BookMenu.Rename">
-        <source xml:lang="en">Rename</source>
-        <target xml:lang="mam" state="needs-translation">Rename</target>
-        <note>ID: CollectionTab.BookMenu.Rename</note>
+      <trans-unit id="CollectionTab.BookMenu.MustCheckOutTooltip">
+        <source xml:lang="en">This feature requires the book to be checked out to you.</source>
+        <target xml:lang="mam" state="needs-translation">This feature requires the book to be checked out to you.</target>
+        <note>ID: CollectionTab.BookMenu.MustCheckOutTooltip</note>
       </trans-unit>
       <trans-unit id="CollectionTab.BookMenu.RenameBook">
         <source xml:lang="en">Rename Book</source>
@@ -843,6 +806,13 @@
         <source xml:lang="en">Books From BloomLibrary.org</source>
         <target xml:lang="mam" state="final">U'j te BloomLibrary.org</target>
         <note>ID: CollectionTab.Books From BloomLibrary.org</note>
+      </trans-unit>
+      <trans-unit id="CollectionTab.ChooseCollection" translate="no">
+        <!-- added in 5.5 -->
+        <source xml:lang="en">Choose Collection</source>
+        <note>This is the title of the file-open dialog that you use to choose a Bloom collection</note>
+        <note>ID: CollectionTab.ChooseCollection</note>
+        <target xml:lang="mam" state="needs-translation">Choose Collection</target>
       </trans-unit>
       <trans-unit id="CollectionTab.CollectionMenu.doChecksAndUpdatesOfAllBooks" approved="yes">
         <source xml:lang="en">Do Updates of All Books</source>
@@ -894,15 +864,17 @@
         <target xml:lang="mam" state="needs-translation">More</target>
         <note>ID: CollectionTab.ContextMenu.More</note>
       </trans-unit>
-      <trans-unit id="CollectionTab.ContextMenu.OpenFolderOnDisk" approved="yes">
-        <source xml:lang="en">Open Folder on Disk</source>
-        <target xml:lang="mam" state="final">Kjaqetil k'ub'il tuj disco</target>
-        <note>ID: CollectionTab.ContextMenu.OpenFolderOnDisk</note>
-      </trans-unit>
       <trans-unit id="CollectionTab.ContextMenu.Troubleshooting">
         <source xml:lang="en">Troubleshooting</source>
         <target xml:lang="mam" state="needs-translation">Troubleshooting</target>
         <note>ID: CollectionTab.ContextMenu.Troubleshooting</note>
+      </trans-unit>
+      <trans-unit id="CollectionTab.DoNotShowCollection" translate="no">
+        <!-- added in 5.5 -->
+        <source xml:lang="en">Do not show this collection here.</source>
+        <note>This is a tooltip for the X icon that allows the user to remove a collection from displaying as a source of books.</note>
+        <note>ID: CollectionTab.DoNotShowCollection</note>
+        <target xml:lang="mam" state="needs-translation">Do not show this collection here.</target>
       </trans-unit>
       <trans-unit id="CollectionTab.EditBookButton" approved="yes">
         <source xml:lang="en">Edit this book</source>
@@ -923,11 +895,6 @@
         <source xml:lang="en">Show translations which have not been approved yet</source>
         <target xml:lang="mam" state="final">Yek'il yol miltz'u'nqe' na'mx kytziyit</target>
         <note>ID: CollectionTab.LanguageMenu.ShowUnapprovedTranslations</note>
-      </trans-unit>
-      <trans-unit id="CollectionTab.MakeBloomPackButton" approved="yes">
-        <source xml:lang="en">Make Bloom Pack</source>
-        <target xml:lang="mam" state="final">B'inchab'il jun Bloom Pack</target>
-        <note>ID: CollectionTab.MakeBloomPackButton</note>
       </trans-unit>
       <trans-unit id="CollectionTab.MakeBloomPackOfShellBooks">
         <source xml:lang="en">Make Bloom Pack of Shell Books</source>
@@ -963,6 +930,13 @@
         <source xml:lang="en">({0}% complete)</source>
         <target xml:lang="mam" state="final">({0}% Tz'aqsa'n)</target>
         <note>ID: CollectionTab.Progress</note>
+      </trans-unit>
+      <trans-unit id="CollectionTab.RemoveThisGroup" translate="no">
+        <!-- added in 5.5 -->
+        <source xml:lang="en">To remove this group, you will need to delete the folder. Click here to view the folder on your drive.</source>
+        <note>This is a tooltip for the folder icon that allows the user to remove a folder that is serving as a source of books.</note>
+        <note>ID: CollectionTab.RemoveThisGroup</note>
+        <target xml:lang="mam" state="needs-translation">To remove this group, you will need to delete the folder. Click here to view the folder on your drive.</target>
       </trans-unit>
       <trans-unit id="CollectionTab.RestartToUpdate" approved="yes">
         <source xml:lang="en">Restart Bloom to Update</source>
@@ -1063,6 +1037,11 @@
         <source xml:lang="en">New...</source>
         <target xml:lang="mam" state="needs-translation">New...</target>
         <note>ID: ColorPicker.New</note>
+      </trans-unit>
+      <trans-unit id="Common.BookSettings" translate="no">
+        <source xml:lang="en">Book Settings</source>
+        <target xml:lang="mam" state="needs-translation">Book Settings</target>
+        <note>ID: Common.BookSettings</note>
       </trans-unit>
       <trans-unit id="Common.Advanced" approved="yes">
         <source xml:lang="en">Advanced</source>
@@ -1203,6 +1182,13 @@
         <target xml:lang="mam" state="final">Tzma n-ok tu'n...</target>
         <note>ID: Common.Loading</note>
       </trans-unit>
+      <trans-unit id="Common.LongRunningOperation" sil:dynamic="true" translate="no">
+        <!-- added in 5.5 -->
+        <source xml:lang="en">This may take a while...</source>
+        <note>ID: Common.LongRunningOperation</note>
+        <note>Used to indicate that an operation may take a long amount of time to complete.</note>
+        <target xml:lang="mam" state="needs-translation">This may take a while...</target>
+      </trans-unit>
       <trans-unit id="Common.Next" approved="yes">
         <source xml:lang="en">&amp;Next</source>
         <target xml:lang="mam" state="final">&amp;Tik'xa tuj juntl</target>
@@ -1212,6 +1198,12 @@
         <source xml:lang="en">Next</source>
         <target xml:lang="mam" state="final">Tik'xa tuj juntl</target>
         <note>ID: Common.NextButton</note>
+      </trans-unit>
+      <trans-unit id="Common.No" translate="no">
+        <!-- added in 5.5 -->
+        <source xml:lang="en">No</source>
+        <note>ID: Common.No</note>
+        <target xml:lang="mam" state="needs-translation">No</target>
       </trans-unit>
       <trans-unit id="Common.Note" approved="yes">
         <source xml:lang="en">Note</source>
@@ -1298,6 +1290,12 @@
         <target xml:lang="mam" state="final">Ttxolil aq'unb'il xk'utz'ib'</target>
         <note>ID: Common.Settings</note>
       </trans-unit>
+      <trans-unit id="Common.Starting" translate="no">
+        <!-- added in 5.5 -->
+        <source xml:lang="en">Starting...</source>
+        <note>ID: Common.Starting</note>
+        <target xml:lang="mam" state="needs-translation">Starting...</target>
+      </trans-unit>
       <trans-unit id="Common.Stop">
         <source xml:lang="en">Stop</source>
         <target xml:lang="mam" state="needs-translation">Stop</target>
@@ -1327,6 +1325,12 @@
         <source xml:lang="en">What caused this problem?</source>
         <target xml:lang="mam" state="needs-translation">What caused this problem?</target>
         <note>ID: Common.WhatCausedThisProblem</note>
+      </trans-unit>
+      <trans-unit id="Common.Yes" translate="no">
+        <!-- added in 5.5 -->
+        <source xml:lang="en">Yes</source>
+        <note>ID: Common.Yes</note>
+        <target xml:lang="mam" state="needs-translation">Yes</target>
       </trans-unit>
       <trans-unit id="Copyright.CopyrightHolder" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Copyright Holder</source>
@@ -1693,6 +1697,11 @@
         <target xml:lang="mam" state="final">Matij txolyol tuj kol lu'.</target>
         <note>ID: EditTab.EditTab.Toolbox.LeveledReaderTool.SentenceTooLong</note>
       </trans-unit>
+      <trans-unit id="EditTab.EnterpriseEnabled" sil:dynamic="true">
+        <source xml:lang="en">This Bloom Enterprise feature is enabled for you.</source>
+        <target xml:lang="mam" state="needs-translation">This Bloom Enterprise feature is enabled for you.</target>
+        <note>ID: EditTab.EnterpriseEnabled</note>
+      </trans-unit>
       <trans-unit id="EditTab.EnterpriseSettingsButton" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Bloom Enterprise Settings</source>
         <target xml:lang="mam" state="final">Ttxolil aq'unb'il te Bloom Empresarial</target>
@@ -1722,6 +1731,12 @@
         <source xml:lang="en">That style already exists. Please choose another name.</source>
         <target xml:lang="mam" state="final">At b'ib'aj tech ke'yin lu'. Najsama, sak'onktza juntl b'ib'aj.</target>
         <note>ID: EditTab.FormatDialog.AlreadyExists</note>
+      </trans-unit>
+      <trans-unit id="EditTab.FormatDialog.BackgroundColor" sil:dynamic="true" translate="no">
+        <!-- added in 5.5 -->
+        <source xml:lang="en">Background color</source>
+        <note>ID: EditTab.FormatDialog.BackgroundColor</note>
+        <target xml:lang="mam" state="needs-translation">Background color</target>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.BorderToolTip" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Change the border and background</source>
@@ -1853,6 +1868,19 @@
         <target xml:lang="mam" state="final">Tu'mel yek'b'il</target>
         <note>ID: EditTab.FormatDialog.Format</note>
       </trans-unit>
+      <trans-unit id="EditTab.FormatDialog.Highlighting" sil:dynamic="true" translate="no">
+        <!-- added in 5.5 -->
+        <source xml:lang="en">Highlighting</source>
+        <note>ID: EditTab.FormatDialog.Highlighting</note>
+        <target xml:lang="mam" state="needs-translation">Highlighting</target>
+      </trans-unit>
+      <trans-unit id="EditTab.FormatDialog.HowToHighlightAudio" sil:dynamic="true" translate="no">
+        <!-- added in 5.5 -->
+        <source xml:lang="en">Choose how to highlight text of style "%0" while its audio is playing:</source>
+        <note>ID: EditTab.FormatDialog.HowToHighlightAudio</note>
+        <note>%0 should remain and will be replaced with the name of a style</note>
+        <target xml:lang="mam" state="needs-translation">Choose how to highlight text of style "%0" while its audio is playing:</target>
+      </trans-unit>
       <trans-unit id="EditTab.FormatDialog.Indent" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Indent</source>
         <target xml:lang="mam" state="final">Amb'il ttxa'n u'j</target>
@@ -1897,6 +1925,12 @@
         <source xml:lang="en">Style Name</source>
         <target xml:lang="mam" state="final">Tb'i tech ka'yin</target>
         <note>ID: EditTab.FormatDialog.StyleNameTab</note>
+      </trans-unit>
+      <trans-unit id="EditTab.FormatDialog.TextColor" sil:dynamic="true" translate="no">
+        <!-- added in 5.5 -->
+        <source xml:lang="en">Text Color</source>
+        <note>ID: EditTab.FormatDialog.TextColor</note>
+        <target xml:lang="mam" state="needs-translation">Text Color</target>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.WordSpacingExtraWide" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Extra Wide</source>
@@ -3248,6 +3282,21 @@
         <target xml:lang="mam" state="final">Min in qo okx toj {0}</target>
         <note>ID: Errors.CannotAccessFile</note>
       </trans-unit>
+      <trans-unit id="Errors.CannotUpdateFile">
+        <source xml:lang="en">There was a problem updating a support file</source>
+        <target xml:lang="mam" state="needs-translation">There was a problem updating a support file</target>
+        <note>ID: Errors.CannotUpdateFile</note>
+      </trans-unit>
+      <trans-unit id="Errors.CannotUpdateFileLonger">
+        <source xml:lang="en">Bloom was not able to update a support file named "{0}". This is usually not a problem. If you continue to see these messages, see "{1}."</source>
+        <target xml:lang="mam" state="needs-translation">Bloom was not able to update a support file named "{0}". This is usually not a problem. If you continue to see these messages, see "{1}."</target>
+        <note>ID: Errors.CannotUpdateFileLonger</note>
+      </trans-unit>
+      <trans-unit id="Errors.CannotUpdateTroubleshoot">
+        <source xml:lang="en">How to troubleshoot file updating errors</source>
+        <target xml:lang="mam" state="needs-translation">How to troubleshoot file updating errors</target>
+        <note>ID: Errors.CannotUpdateTroubleshoot</note>
+      </trans-unit>
       <trans-unit id="Errors.CannotConnectToBloomServer" approved="yes">
         <source xml:lang="en">Bloom was unable to start its own HTTP listener that it uses to talk to its embedded Firefox browser. If this happens even if you just restarted your computer, then ask someone to investigate if you have an aggressive firewall product installed, which may need to be uninstalled before you can use Bloom.</source>
         <target xml:lang="mam" state="final">Nti' ma b'ant t-xi qe HTTP Listener te Bloom, najb'en tu'n tyolin ex tyikchet tanmi tuk'il Firefox. Qa ma b'aj lu' extzun axtaq ma jaw ttxaqo'na xk'utz'ib'. inti'j tu'n t-xi' tka'yina qa nti' juntl maqb'il aq'untl  jaqu'n toj. Qa ikyju' ilti'j tu'n tkub' yupit aju maqb'il aq'untl txaq'on toj lu' tu'ntzun tb'ent taq'unan Bloom.</target>
@@ -3332,11 +3381,6 @@
         <source xml:lang="en">Bloom had a problem importing this video.</source>
         <target xml:lang="mam" state="final">Ma tzaj il ti'j Bloom aju siky'x toq tq'o'n ka'yb'itz lu'.</target>
         <note>ID: Errors.ProblemImportingVideo</note>
-      </trans-unit>
-      <trans-unit id="Errors.ReadOnlyBookFolder">
-        <source xml:lang="en">This book cannot be edited because its folder is read-only.</source>
-        <target xml:lang="mam" state="needs-translation">This book cannot be edited because its folder is read-only.</target>
-        <note>ID: Errors.ReadOnlyBookFolder</note>
       </trans-unit>
       <trans-unit id="Errors.RemoveExcessHtml" approved="yes">
         <source xml:lang="en">Please remove all but one of the files ending in .htm.  Bloom will now open this folder for you.</source>
@@ -3498,14 +3542,14 @@
         <target xml:lang="mam" state="final"> Nch'ixpet tu'n tok te mp3</target>
         <note>ID: LameEncoder.Progress</note>
       </trans-unit>
-      <trans-unit id="LanguageFontDetails.RightToLeftCheck" approved="yes">
-        <source xml:lang="en">This script is right to left</source>
-        <target xml:lang="mam" state="final">Aju tz'ib'il lu' ntziyet tuj tmanq'ab'aj tu'n tpon tuj tna'yajal</target>
+      <trans-unit id="LanguageFontDetails.RightToLeftCheck">
+        <source xml:lang="en">This script is written right to left like Arabic, Hebrew, and Urdu</source>
+        <target xml:lang="mam" state="translated">Aju tz'ib'il lu' ntziyet tuj tmanq'ab'aj tu'n tpon tuj tna'yajal</target>
         <note>ID: LanguageFontDetails.RightToLeftCheck</note>
       </trans-unit>
-      <trans-unit id="LanguageFontDetails.TallerLinesCheck" approved="yes">
-        <source xml:lang="en">This script requires taller lines</source>
-        <target xml:lang="mam" state="final">Aju tz'ib'il lu' taj matij sqitb'il</target>
+      <trans-unit id="LanguageFontDetails.TallerLinesCheck">
+        <source xml:lang="en">Use special line spacing</source>
+        <target xml:lang="mam" state="translated">Aju tz'ib'il lu' taj matij sqitb'il</target>
         <note>ID: LanguageFontDetails.TallerLinesCheck</note>
       </trans-unit>
       <trans-unit id="LayoutChoices.A3Landscape" sil:dynamic="true">
@@ -3768,6 +3812,11 @@
         <target xml:lang="mam" state="final">At juntl k'loj ikyx tb'i, tuj &lt;a href='file://{0}'&gt;{0}&lt;/a&gt;\nB'inchama xtalb'il sak'onktza junx b'ib'aj.</target>
         <note>ID: NewCollectionWizard.AlreadyCollectionWithThatName</note>
       </trans-unit>
+      <trans-unit id="NewCollectionWizard.AlreadyCollectionWithThatName.V2" approved="yes">
+        <source xml:lang="en">There is already a collection with that name, at {0}.\nPlease pick a unique name.</source>
+        <target xml:lang="mam" state="final">At juntl k'loj ikyx tb'i, tuj {0}\nB'inchama xtalb'il sak'onktza junx b'ib'aj.</target>
+        <note>ID: NewCollectionWizard.AlreadyCollectionWithThatName.V2</note>
+      </trans-unit>
       <trans-unit id="NewCollectionWizard.ChooseLanguagePage" approved="yes">
         <source xml:lang="en">Choose the main language for this collection.</source>
         <target xml:lang="mam" state="final">Sak'onktza yolb'il k'loj te ila' wiq n-ajb'enxix.</target>
@@ -3898,6 +3947,11 @@
         <target xml:lang="mam" state="final">Tu'n tten tkyaqil nik'u'nmaj ex tuj tumel, Bloom nxi' tk'un tkyaqil qe' u'jb'il tuj jun mo txqantl &lt;i&gt;K'loj te ila' wiq&lt;/i&gt; Te tnejel kb'el b'inchet jun k'loj te ila' wiq te teya.</target>
         <note>ID: NewCollectionWizard.WelcomePage.WelcomeLine2</note>
       </trans-unit>
+      <trans-unit id="NewCollectionWizard.WelcomePage.WelcomeLine2.V2" approved="yes">
+        <source xml:lang="en">In order to keep things simple and organized, Bloom keeps all the books you make in one or more 'Collections'. The first thing we need to do is make one for you.</source>
+        <target xml:lang="mam" state="final">Tu'n tten tkyaqil nik'u'nmaj ex tuj tumel, Bloom nxi' tk'un tkyaqil qe' u'jb'il tuj jun mo txqantl K'loj te ila' wiq. Te tnejel kb'el b'inchet jun k'loj te ila' wiq te teya.</target>
+        <note>ID: NewCollectionWizard.WelcomePage.WelcomeLine2.V2</note>
+      </trans-unit>
       <trans-unit id="NewCollectionWizard.WelcomePage.WelcomeLine3" approved="yes">
         <source xml:lang="en">Click 'Next' to get started.</source>
         <target xml:lang="mam" state="final">Q'onxa clic tib'aj 'Tik'xa tuj juntl' tu'n t-xi' qe'.</target>
@@ -3973,6 +4027,18 @@
         <target xml:lang="mam" state="final">Tu'jil amb'il ti'j Perfil de Color Adobe</target>
         <note>ID: PublishTab.AdobeEulaTitle</note>
       </trans-unit>
+      <trans-unit id="PublishTab.Activity" translate="no">
+        <!-- added in 5.5 -->
+        <source xml:lang="en">Activity</source>
+        <note>ID: PublishTab.Activity</note>
+        <target xml:lang="mam" state="needs-translation">Activity</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Comic" translate="no">
+        <!-- added in 5.5 -->
+        <source xml:lang="en">Comic</source>
+        <note>ID: PublishTab.Comic</note>
+        <target xml:lang="mam" state="needs-translation">Comic</target>
+      </trans-unit>
       <trans-unit id="PublishTab.Common.Publishing" approved="yes">
         <source xml:lang="en">Publishing</source>
         <target xml:lang="mam" state="final">Chik'b'al tpakb'al</target>
@@ -3982,6 +4048,12 @@
         <source xml:lang="en">Stop Publishing</source>
         <target xml:lang="mam" state="final">mlay kub' chik'b'ettil tpakb'al</target>
         <note>This is shown while Bloom is sharing a book over wifi or over a usb cable. </note>
+      </trans-unit>
+      <trans-unit id="PublishTab.AccessibleVisually" translate="no">
+        <!-- added in 5.5 -->
+        <source xml:lang="en">Accessible to the Visually Impaired in %0</source>
+        <note>ID: PublishTab.AccessibleVisually</note>
+        <target xml:lang="mam" state="needs-translation">Accessible to the Visually Impaired in %0</target>
       </trans-unit>
       <trans-unit id="PublishTab.AdobeReaderControl.NotInstalled" approved="yes">
         <source xml:lang="en">Please install Adobe Reader so that Bloom can show your completed book. Until then, you can still save the PDF Book and open it in some other program.</source>
@@ -3998,16 +4070,6 @@
         <target xml:lang="mam" state="final">Najsam, nti' xb'ant tjaqon Bloom ti'j Adobe Reader, tu'ntzan tlaj nlay tzaj tyek'an tu'j Bloom.\nB'inchama xtalb'il, q'i'n ela tu'mel tok ti'j te 'Adobe Reader' ex q'o'n oka juntl maj 'Adobe Reader'.\nOkxe tb'ant ti'j, b'a'n tu'n txi' tk'u'na u'jb'il PDF ex tu'n tjaqet tuj juntl ttxolil aq'unb'il xk'utz'ib'.</target>
         <note>ID: PublishTab.AdobeReaderControl.UnknownError</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Android.BloomD.Hint.Heading" sil:dynamic="true" approved="yes">
-        <source xml:lang="en">Sharing .bloomd Files</source>
-        <target xml:lang="mam" state="final">Nb'aj sipit qe aq'unb'il .bloomd</target>
-        <note>ID: PublishTab.Android.BloomD.Hint.Heading</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.Android.BloomD.Hint" sil:dynamic="true" approved="yes">
-        <source xml:lang="en">You can use sharing apps like email, Dropbox, and WhatsApp to get your .bloomd file onto a device.</source>
-        <target xml:lang="mam" state="final">B'a'n kyajb'en qe aq'unb'il xk'utz'ib' ikytzan chemajxin, Dropbox ex WhatsApp tu'n t-xi' sipit tnak'ub'ila .bloomd tuk' juntl makb'il aq'unb'il xk'utz'ib'.</target>
-        <note>ID: PublishTab.Android.BloomD.Hint</note>
-      </trans-unit>
       <trans-unit id="PublishTab.Android.BloomPUB.Hint.Heading" sil:dynamic="true">
         <source xml:lang="en">Sharing BloomPUB Files</source>
         <target xml:lang="mam" state="needs-translation">Sharing BloomPUB Files</target>
@@ -4022,6 +4084,24 @@
         <source xml:lang="en">Note that when you upload your book to &lt;a href="https://bloomlibrary.org/"&gt;BloomLibrary.org&lt;/a&gt;, we will create a BloomPUB file for you that people can download.</source>
         <target xml:lang="mam" state="needs-translation">Note that when you upload your book to &lt;a href="https://bloomlibrary.org/"&gt;BloomLibrary.org&lt;/a&gt;, we will create a BloomPUB file for you that people can download.</target>
         <note>ID: PublishTab.Android.BloomPUB.Hint2</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Android.BloomPUB.MakeRABAppHelpLink" translate="no">
+        <!-- added in 5.5 -->
+        <source xml:lang="en">Making BloomPUB Apps with Reading App Builder</source>
+        <note>ID: PublishTab.Android.BloomPUB.MakeRABAppHelpLink</note>
+        <target xml:lang="mam" state="needs-translation">Making BloomPUB Apps with Reading App Builder</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Android.BloomPUB.ViewingWithBRHelpLink" translate="no">
+        <!-- added in 5.5 -->
+        <source xml:lang="en">Viewing BloomPUBs on Bloom Reader (Android)</source>
+        <note>ID: PublishTab.Android.BloomPUB.ViewingWithBRHelpLink</note>
+        <target xml:lang="mam" state="needs-translation">Viewing BloomPUBs on Bloom Reader (Android)</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Android.BloomPUB.ViewingOnWindowsHelpLink" translate="no">
+        <!-- added in 5.5 -->
+        <source xml:lang="en">Viewing BloomPUBs on Windows</source>
+        <note>ID: PublishTab.Android.BloomPUB.ViewingOnWindowsHelpLink</note>
+        <target xml:lang="mam" state="needs-translation">Viewing BloomPUBs on Windows</target>
       </trans-unit>
       <trans-unit id="PublishTab.Android.USB.Hint.Heading" sil:dynamic="true" approved="yes">
         <source xml:lang="en"> USB is Difficult</source>
@@ -4064,11 +4144,6 @@
         <source xml:lang="en">To publish this book, Bloom must check which languages the copyright owner has permitted, but Bloom is having trouble reaching the server that has this information.</source>
         <target xml:lang="mam" state="needs-translation">To publish this book, Bloom must check which languages the copyright owner has permitted, but Bloom is having trouble reaching the server that has this information.</target>
         <note>ID: PublishTab.Android.CantGetLicenseInfo</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.Android.ChooseFile" sil:dynamic="true" approved="yes">
-        <source xml:lang="en">Save Bloom Reader File</source>
-        <target xml:lang="mam" state="final">K'u'l tk'ub'il aq'unb'il te Bloom Reader</target>
-        <note>ID: PublishTab.Android.ChooseFile</note>
       </trans-unit>
       <trans-unit id="PublishTab.Android.ChooseBloomPUBFile" sil:dynamic="true">
         <source xml:lang="en">Save BloomPUB File</source>
@@ -4195,11 +4270,6 @@
         <target xml:lang="mam" state="final">Tpokb'al tib'aj Bloom Reader</target>
         <note>ID: PublishTab.Android.AboutBloomReader</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Android.AboutBookFeatures" sil:dynamic="true" approved="yes">
-        <source xml:lang="en">About Book Features</source>
-        <target xml:lang="mam" state="final">Nab'il tib'aj aq'unab'il u'jb'il</target>
-        <note>ID: PublishTab.Android.AboutBookFeatures</note>
-      </trans-unit>
       <trans-unit id="PublishTab.Android.AboutBloomPUB" sil:dynamic="true">
         <source xml:lang="en">About BloomPUB</source>
         <target xml:lang="mam" state="needs-translation">About BloomPUB</target>
@@ -4224,11 +4294,6 @@
         <source xml:lang="en">Thumbnail</source>
         <target xml:lang="mam" state="final">Tal ch'in</target>
         <note>ID: PublishTab.Android.Thumbnail</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.Android.Troubleshooting" sil:dynamic="true" approved="yes">
-        <source xml:lang="en">Troubleshooting Tips</source>
-        <target xml:lang="mam" state="final">Nab'l tu'n kyb'ant qe' nya b'a'n</target>
-        <note>ID: PublishTab.Android.Troubleshooting</note>
       </trans-unit>
       <trans-unit id="PublishTab.Android.Usb.Progress.BookSent" sil:dynamic="true" approved="yes">
         <source xml:lang="en">You can now read "{0}" in Bloom Reader!</source>
@@ -4360,16 +4425,6 @@
         <target xml:lang="mam" state="final">U'jb'il Bloom kye makb'il xk'utz'ib'</target>
         <note>ID: PublishTab.Android.bloomdFileFormatLabel</note>
       </trans-unit>
-      <trans-unit id="PublishTab.AndroidButton" approved="yes">
-        <source xml:lang="en">Bloom Reader</source>
-        <target xml:lang="mam" state="final">Bloom Reader</target>
-        <note>ID: PublishTab.AndroidButton</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.AndroidButton-tooltip" sil:dynamic="true" approved="yes">
-        <source xml:lang="en">Publish to an Android device.</source>
-        <target xml:lang="mam" state="final">Qelex poq'chet toj makb'il xk'utz'ib' Android.</target>
-        <note>ID: PublishTab.AndroidButton-tooltip</note>
-      </trans-unit>
       <trans-unit id="PublishTab.Audio.ElementsMissingId" approved="yes">
         <source xml:lang="en">Some audio elements are missing ids</source>
         <target xml:lang="mam" state="final">At ju'njun b'ijtz atx kyaj tu'n tok kyb'i.</target>
@@ -4379,6 +4434,12 @@
         <source xml:lang="en">Booklet Insides</source>
         <target xml:lang="mam" state="final">Toj talu'jb'il</target>
         <note>ID: PublishTab.BodyOnlyRadio</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.BodyOnly-description" translate="no">
+        <!-- added in 5.5 -->
+        <source xml:lang="en">The inside pages, re-arranged so that when folded, you get a booklet ready to staple.</source>
+        <note>ID: PublishTab.BodyOnly-description</note>
+        <target xml:lang="mam" state="needs-translation">The inside pages, re-arranged so that when folded, you get a booklet ready to staple.</target>
       </trans-unit>
       <trans-unit id="PublishTab.bloomPUBButton">
         <source xml:lang="en">BloomPUB</source>
@@ -4390,9 +4451,9 @@
         <target xml:lang="mam" state="needs-translation">Make a BloomPUB for Bloom Reader or Reading App Builder.</target>
         <note>ID: PublishTab.bloomPUBButton-tooltip</note>
       </trans-unit>
-      <trans-unit id="PublishTab.BloomPUB.BannerDescription">
-        <source xml:lang="en">BloomPUBs are a kind of eBook that can be read on phone apps ([Bloom Reader](https://bloomlibrary.org/page/create/bloom-reader) and [Reading App Builder](https://software.sil.org/readingappbuilder/)) and on Windows using [BloomPUB Viewer](https://bloomlibrary.org/page/create/downloads#related-software). They offer many advantages over ePUBs, including WYSIWYG fidelity and the full range of Bloom digital book features.</source>
-        <target xml:lang="mam" state="needs-translation">BloomPUBs are a kind of eBook that can be read on phone apps ([Bloom Reader](https://bloomlibrary.org/page/create/bloom-reader) and [Reading App Builder](https://software.sil.org/readingappbuilder/)) and on Windows using [BloomPUB Viewer](https://bloomlibrary.org/page/create/downloads#related-software). They offer many advantages over ePUBs, including WYSIWYG fidelity and the full range of Bloom digital book features.</target>
+      <trans-unit id="PublishTab.BloomPUB.BannerDescription.v2">
+        <source xml:lang="en">BloomPUBs are a kind of eBook. Your book will look exactly like it does here in Bloom. It will have all the same features. This makes BloomPUBs better than ePUBs.</source>
+        <target xml:lang="mam" state="needs-translation">BloomPUBs are a kind of eBook. Your book will look exactly like it does here in Bloom. It will have all the same features. This makes BloomPUBs better than ePUBs.</target>
         <note>ID: PublishTab.BloomPUB.BannerDescription</note>
       </trans-unit>
       <trans-unit id="PublishTab.BloomPUB.BannerTitle">
@@ -4450,10 +4511,22 @@
         <target xml:lang="mam" state="final">Ttxo'w  tal u'jb'il</target>
         <note>ID: PublishTab.CoverOnlyRadio</note>
       </trans-unit>
+      <trans-unit id="PublishTab.CoverOnly-description" sil:dynamic="true" translate="no">
+        <!-- added in 5.5 -->
+        <source xml:lang="en">The cover, ready to print on colored paper.</source>
+        <note>ID: PublishTab.CoverOnly-description</note>
+        <target xml:lang="mam" state="needs-translation">The cover, ready to print on colored paper.</target>
+      </trans-unit>
       <trans-unit id="PublishTab.CoverOnlyRadio-tooltip" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Make a PDF of just the front and back (both sides), so you can  print on colored paper.</source>
         <target xml:lang="mam" state="final">B'inchet jun PDF o'kx ti'j ttxo'w (te kab'e plaj) tu'n tetz uk'set tuk'il tk'a'.</target>
         <note>ID: PublishTab.CoverOnlyRadio-tooltip</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Epub.IncludeOnPage.Disabled">
+        <!-- added in 5.5 -->
+        <source xml:lang="en">This is disabled because Bloom can only do this if the ePUB mode is "Flowable".</source>
+        <note>ID: PublishTab.Epub.IncludeOnPage.Disabled</note>
+        <target xml:lang="mam" state="needs-translation">This is disabled because Bloom can only do this if the ePUB mode is "Flowable".</target>
       </trans-unit>
       <trans-unit id="PublishTab.Epub.BackLinkLabel" approved="yes">
         <source xml:lang="en">Back</source>
@@ -4499,16 +4572,6 @@
         <source xml:lang="en">About ePUBs</source>
         <target xml:lang="mam" state="final">Tqanil tib'aj qe' ePUBs</target>
         <note>ID: PublishTab.Epub.Help.AboutEpubs</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.Epub.Help.EReaders" approved="yes">
-        <source xml:lang="en">Compatible ePUB Readers</source>
-        <target xml:lang="mam" state="final">Qe' u'jb'ill b'a'n kyaq'unanjtz te ePUB</target>
-        <note>ID: PublishTab.Epub.Help.EReaders</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.Epub.Help.Publishing" approved="yes">
-        <source xml:lang="en">Getting ePUBs onto a device</source>
-        <target xml:lang="mam" state="final">Ma nchi txaqet ePUBs ti'j jun makb'il xk'utz'ib'</target>
-        <note>ID: PublishTab.Epub.Help.Publishing</note>
       </trans-unit>
       <trans-unit id="PublishTab.Epub.ImageDescriptionLinkLabel" approved="yes">
         <source xml:lang="en">Image Description</source>
@@ -4610,24 +4673,14 @@
         <target xml:lang="mam" state="final">Miltzunkuya u'jb'il lu' tu'n tok te ePUB (u'jb'il k'uxtqanil). Tu'ntzun tb'ent tu'jit kyoj txqan malkb'il te u'jbil k'uxtqanil.</target>
         <note>ID: PublishTab.EpubRadio-tooltip</note>
       </trans-unit>
-      <trans-unit id="PublishTab.InDesignDialog.DontShowThisAgainButton" approved="yes">
-        <source xml:lang="en">Don't Show This Again</source>
-        <target xml:lang="mam" state="final">Min tzaj tyek'un juntl maj</target>
-        <note>ID: PublishTab.InDesignDialog.DontShowThisAgainButton</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.InDesignDialog.WindowTitle" approved="yes">
-        <source xml:lang="en">InDesign XML Information</source>
-        <target xml:lang="mam" state="final">Tqanil ti'j XML toj InDesign</target>
-        <note>ID: PublishTab.InDesignDialog.WindowTitle</note>
-      </trans-unit>
       <trans-unit id="PublishTab.LessMemoryPdfMode" approved="yes">
         <source xml:lang="en">Use less memory (slower)</source>
         <target xml:lang="mam" state="final">Ok ajb'el ch'in toj tnab'il xk'utz'ib' (cheb'a kyb'etil)</target>
         <note>ID: PublishTab.LessMemoryPdfMode</note>
       </trans-unit>
-      <trans-unit id="PublishTab.NoBookletsMessage" approved="yes">
-        <source xml:lang="en">Bloom cannot make booklets using the current page size.</source>
-        <target xml:lang="mam" state="final">Mlayx b'inchanjtz tal u'jb'il tu'n Bloom qa ax twa'l plaj t-xaq u'j se'n ttxuyb'il.</target>
+      <trans-unit id="PublishTab.NoBookletsMessage">
+        <source xml:lang="en">This is disabled because Bloom cannot make booklets using the current size and orientation.</source>
+        <target xml:lang="mam" state="translated">Mlayx b'inchanjtz tal u'jb'il tu'n Bloom qa ax twa'l plaj t-xaq u'j se'n ttxuyb'il.</target>
         <note>ID: PublishTab.NoBookletsMessage</note>
       </trans-unit>
       <trans-unit id="PublishTab.Notifications.AdobeForPrint">
@@ -4644,6 +4697,12 @@
         <source xml:lang="en">Simple</source>
         <target xml:lang="mam" state="final">Nya' naqx at.</target>
         <note>ID: PublishTab.OnePagePerPaperRadio</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.OnePagePerPaper-description" sil:dynamic="true" translate="no">
+        <!-- added in 5.5 -->
+        <source xml:lang="en">A simple PDF instead of a booklet.</source>
+        <note>ID: PublishTab.OnePagePerPaper-description</note>
+        <target xml:lang="mam" state="needs-translation">A simple PDF instead of a booklet.</target>
       </trans-unit>
       <trans-unit id="PublishTab.OnePagePerPaperRadio-tooltip" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Make a PDF of every page of the book, one page per piece of paper.</source>
@@ -4670,15 +4729,80 @@
         <target xml:lang="mam" state="final">Sak'onkytza twe' ex qa q'e'l mo wa'l t-xaq</target>
         <note>ID: PublishTab.Options_ToolTip_</note>
       </trans-unit>
-      <trans-unit id="PublishTab.OverwriteWarning.ReplaceExistingButton" approved="yes">
-        <source xml:lang="en">Replace Existing</source>
-        <target xml:lang="mam" state="final">Tx'ixpul at ja'lo</target>
-        <note>ID: PublishTab.OverwriteWarning.ReplaceExistingButton</note>
+      <trans-unit id="PublishTab.PDF.Booklet.HelpHeader" translate="no">
+        <!-- added in 5.5 -->
+        <source xml:lang="en">Here are the settings you need for printing this booklet:</source>
+        <note>ID: PublishTab.PDF.Booklet.HelpHeader</note>
+        <note>heading for list of setting recommendations</note>
+        <target xml:lang="mam" state="needs-translation">Here are the settings you need for printing this booklet:</target>
       </trans-unit>
-      <trans-unit id="PublishTab.OverwriteWarning.WindowTitle" approved="yes">
-        <source xml:lang="en">Notice</source>
-        <target xml:lang="mam" state="final">Tqanil</target>
-        <note>ID: PublishTab.OverwriteWarning.WindowTitle</note>
+      <trans-unit id="PublishTab.PDF.Booklet.PageLayout.Portrait" translate="no">
+        <!-- added in 5.5 -->
+        <source xml:lang="en">1. Layout: Portrait</source>
+        <note>ID: PublishTab.PDF.Booklet.PageLayout.Portrait</note>
+        <note>first recommendation is page layout / orientation (taller than it is wide)</note>
+        <note>This should follow how Microsoft translated these terms in the print dialog.</note>
+        <target xml:lang="mam" state="needs-translation">1. Layout: Portrait</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.PDF.Booklet.PageLayout.Landscape" translate="no">
+        <!-- added in 5.5 -->
+        <source xml:lang="en">1. Layout: Landscape</source>
+        <note>ID: PublishTab.PDF.Booklet.PageLayout.Landscape</note>
+        <note>first recommendation is page layout / orientation (wider than it is tall)</note>
+        <note>This should follow how Microsoft translated these terms in the print dialog.</note>
+        <target xml:lang="mam" state="needs-translation">1. Layout: Landscape</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.PDF.Booklet.Flip.ShortEdge" translate="no">
+        <!-- added in 5.5 -->
+        <source xml:lang="en">2. Print on both sides: "Flip on short edge"</source>
+        <note>ID: PublishTab.PDF.Booklet.Flip.ShortEdge</note>
+        <note>second recommendation is two-sided printing, flipping the paper on the short edge</note>
+        <note>This should follow how Microsoft translated these terms in the print dialog.</note>
+        <target xml:lang="mam" state="needs-translation">2. Print on both sides: "Flip on short edge"</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.PDF.Booklet.Flip.LongEdge" translate="no">
+        <!-- added in 5.5 -->
+        <source xml:lang="en">2. Print on both sides: "Flip on long edge"</source>
+        <note>ID: PublishTab.PDF.Booklet.Flip.LongEdge</note>
+        <note>second recommendation is two-sided printing, flipping the paper on the long edge</note>
+        <note>This should follow how Microsoft translated these terms in the print dialog.</note>
+        <target xml:lang="mam" state="needs-translation">2. Print on both sides: "Flip on long edge"</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.PDF.Booklet.PaperSize.A4" translate="no">
+        <!-- added in 5.5 -->
+        <source xml:lang="en">3. More settings &gt; Paper size: "A4"</source>
+        <note>ID: PublishTab.PDF.Booklet.PaperSize.A4</note>
+        <note>third recommendation is paper size (A4, the standard metric paper size)</note>
+        <note>This should follow how Microsoft translated these terms in the print dialog.</note>
+        <target xml:lang="mam" state="needs-translation">3. More settings &gt; Paper size: "A4"</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.PDF.Booklet.PaperSize.Letter" translate="no">
+        <!-- added in 5.5 -->
+        <source xml:lang="en">3. More settings &gt; Paper size: "Letter"</source>
+        <note>ID: PublishTab.PDF.Booklet.PaperSize.Letter</note>
+        <note>third recommendation is paper size (Letter, the standard paper size in the U.S.)</note>
+        <note>This should follow how Microsoft translated these terms in the print dialog.</note>
+        <target xml:lang="mam" state="needs-translation">3. More settings &gt; Paper size: "Letter"</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.PDF.Booklet.Scale.ActualSize" translate="no">
+        <!-- added in 5.5 -->
+        <source xml:lang="en">4. More settings &gt; Scale: "Actual size"</source>
+        <note>ID: PublishTab.PDF.Booklet.Scale.ActualSize</note>
+        <note>fourth recommendation is image scaling (use actual size, don't scale)</note>
+        <note>This should follow how Microsoft translated these terms in the print dialog.</note>
+        <target xml:lang="mam" state="needs-translation">4. More settings &gt; Scale: "Actual size"</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.PDF.Booklet.TwoPages.CutAndStack" translate="no">
+        <!-- added in 5.5 -->
+        <source xml:lang="en">This will put two pages on each sheet of paper. Cut horizontally and stack to make one booklet.</source>
+        <note>ID: PublishTab.PDF.Booklet.TwoPages.CutAndStack</note>
+        <target xml:lang="mam" state="needs-translation">This will put two pages on each sheet of paper. Cut horizontally and stack to make one booklet.</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.PDF.Booklet.FourPages.CutAndFold" translate="no">
+        <!-- added in 5.5 -->
+        <source xml:lang="en">This will put four pages on each sheet of paper. Cut the stack, then fold to get two booklets.</source>
+        <note>ID: PublishTab.PDF.Booklet.FourPages.CutAndFold</note>
+        <target xml:lang="mam" state="needs-translation">This will put four pages on each sheet of paper. Cut the stack, then fold to get two booklets.</target>
       </trans-unit>
       <trans-unit id="PublishTab.PDF.Error.Failed">
         <source xml:lang="en">Bloom was not able to create the PDF file ({0}).{1}{1}Details: BloomPdfMaker (command line) did not produce the expected document.</source>
@@ -4710,6 +4834,18 @@
         <target xml:lang="mam" state="final">Mlay b'ant jun PDF tu'n Bloom tij u'jb'il lu'.</target>
         <note>ID: PublishTab.PdfMaker.BadPdfShort</note>
       </trans-unit>
+      <trans-unit id="PublishTab.PdfMaker.ClickToStart" translate="no">
+        <!-- added in 5.5 -->
+        <source xml:lang="en">Bloom can format your PDF in several ways.</source>
+        <note>ID: PublishTab.PdfMaker.ClickToStart</note>
+        <target xml:lang="mam" state="needs-translation">Bloom can format your PDF in several ways.</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.PdfMaker.ClickToStart2" translate="no">
+        <!-- added in 5.5 -->
+        <source xml:lang="en">Choose one here:</source>
+        <note>ID: PublishTab.PdfMaker.ClickToStart2</note>
+        <target xml:lang="mam" state="needs-translation">Choose one here:</target>
+      </trans-unit>
       <trans-unit id="PublishTab.PdfMaker.Compress" approved="yes">
         <source xml:lang="en">Compressing PDF</source>
         <target xml:lang="mam" state="final">Nb'aj jatz'o'n PDF</target>
@@ -4733,12 +4869,22 @@
       <trans-unit id="PublishTab.PdfMaker.ErrorSaving" approved="yes">
         <source xml:lang="en">Error compressing or recoloring the PDF file</source>
         <target xml:lang="mam" state="final">Nya' tuj tu'mel xb'aj jatz'o'n ma qa aj t-xi' q'et tk'a' tk'ub'il PDF</target>
-        <note>ID: PublishTab.PdfMaker.ErrorProcessing</note>
+        <note>ID: PublishTab.PdfMaker.ErrorSaving</note>
       </trans-unit>
       <trans-unit id="PublishTab.PdfMaker.Finished" approved="yes">
         <source xml:lang="en">Finished making PDF from HTML</source>
         <target xml:lang="mam" state="final">Ma japun b'aj tx'ixpub'il HTML tu'n tik'x te PDF</target>
         <note>ID: PublishTab.PdfMaker.Finished</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.PdfMaker.FullBleed">
+        <source xml:lang="en">Full Bleed</source>
+        <target xml:lang="mam" state="needs-translation">Full Bleed</target>
+        <note>ID: PublishTab.PdfMaker.FullBleed</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.PdfMaker.FullBleed.DisableBecauseBookIsNotFullBleed">
+        <source xml:lang="en">This is disabled because this book is not set up to be full bleed.</source>
+        <target xml:lang="mam" state="needs-translation">This is disabled because this book is not set up to be full bleed.</target>
+        <note>ID: PublishTab.PdfMaker.FullBleed.DisableBecauseBookIsNotFullBleed</note>
       </trans-unit>
       <trans-unit id="PublishTab.PdfMaker.FullBleed">
         <source xml:lang="en">Full Bleed</source>
@@ -4760,6 +4906,13 @@
         <target xml:lang="mam" state="needs-translation">Full Bleed has not been set up for this book</target>
         <note>ID: PublishTab.PdfMaker.NoFullBleed</note>
       </trans-unit>
+      <trans-unit id="PublishTab.PdfMaker.None" translate="no">
+        <!-- added in 5.5 -->
+        <source xml:lang="en">None</source>
+        <note>ID: PublishTab.PdfMaker.None</note>
+        <note>This is an option in a menu of CMYK settings, indicating the PDF should be made without using CMYK at all.</note>
+        <target xml:lang="mam" state="needs-translation">None</target>
+      </trans-unit>
       <trans-unit id="PublishTab.PdfMaker.NoFullBleedBooklet">
         <source xml:lang="en">Full Bleed is not applicable to booklet printing</source>
         <target xml:lang="mam" state="needs-translation">Full Bleed is not applicable to booklet printing</target>
@@ -4776,9 +4929,16 @@
         <note>ID: PublishTab.PdfMaker.PdfFile</note>
       </trans-unit>
       <trans-unit id="PublishTab.PdfMaker.PdfWithCmykSwopV2">
-        <source xml:lang="en">CMYK color (U.S. Web Coated (SWOP) v2)</source>
+        <source xml:lang="en">U.S. Web Coated (SWOP) v2</source>
         <target xml:lang="mam" state="translated">PDF tuk' tk'a' CMYK (U.S. Web Coated (SWORP) V2)</target>
         <note>ID: PublishTab.PdfMaker.PdfWithCmykSwopV2</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.PdfMaker.Cmyk" translate="no">
+        <!-- added in 5.5 -->
+        <source xml:lang="en">CMYK</source>
+        <note>ID: PublishTab.PdfMaker.Cmyk</note>
+        <note>Displayed as a label in the PDF &amp; Print tab. 'CMYK' may not be translatable, it is a print shop standard.</note>
+        <target xml:lang="mam" state="needs-translation">CMYK</target>
       </trans-unit>
       <trans-unit id="PublishTab.PdfMaker.Saving" approved="yes">
         <source xml:lang="en">Saving PDF...</source>
@@ -4810,28 +4970,40 @@
         <target xml:lang="mam" state="translated">Min xb'ant k'uyit PDF tu'n tlaj nti' xtaja tu'n tjaqet jun aq'unb'il "PDF te jab'inchil u'jb'il".</target>
         <note>ID: PublishTab.PdfNotSavedWhy</note>
       </trans-unit>
-      <!-- for 5.5
-      <trans-unit id="PublishTab.PdfPrint.Button">
-        <source xml:lang="en">PDF and Print</source>
+      <trans-unit id="PublishTab.PdfPrint.Button" translate="no">
+        <!-- added in 5.5 -->
+        <source xml:lang="en">PDF &amp; Print</source>
         <note>ID: PublishTab.PdfPrint.Button</note>
         <note>Text under button to select Print and PDF preview</note>
+        <target xml:lang="mam" state="needs-translation">PDF &amp; Print</target>
       </trans-unit>
-      <trans-unit id="PublishTab.PdfPrint.BannerTitle">
+      <trans-unit id="PublishTab.PdfPrint.BannerTitle" translate="no">
+        <!-- added in 5.5 -->
         <source xml:lang="en">Publish to PDF &amp; Print</source>
         <note>ID: PublishTab.PdfPrint.BannerTitle</note>
         <note>Header on PDF/Print Publishing page</note>
+        <target xml:lang="mam" state="needs-translation">Publish to PDF &amp; Print</target>
       </trans-unit>
-      <trans-unit id="PublishTab.PdfPrint.BookletModes">
+      <trans-unit id="PublishTab.PdfPrint.BookletModes" translate="no">
+        <!-- added in 5.5 -->
         <source xml:lang="en">Booklet Mode</source>
         <note>ID: PublishTab.PdfPrint.BookletModes</note>
         <note>Heading above Option panel to right of PDF preview</note>
+        <target xml:lang="mam" state="needs-translation">Booklet Mode</target>
       </trans-unit>
-      <trans-unit id="PublishTab.PdfPrint.PrintshopOptions">
+      <trans-unit id="PublishTab.PdfPrint.AboutPdfPrint" translate="no">
+        <!-- added in 5.5 -->
+        <source xml:lang="en">About PDF &amp; Print</source>
+        <note>ID: PublishTab.PdfPrint.AboutPdfPrint</note>
+        <target xml:lang="mam" state="needs-translation">About PDF &amp; Print</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.PdfPrint.PrintshopOptions" translate="no">
+        <!-- added in 5.5 -->
         <source xml:lang="en">Prepare for Printshop</source>
         <note>ID: PublishTab.PdfPrint.PrintshopOptions</note>
         <note>Heading over lower part of Option panel to right of PDF preview</note>
+        <target xml:lang="mam" state="needs-translation">Prepare for Printshop</target>
       </trans-unit>
-      -->
       <trans-unit id="PublishTab.PrintButton" approved="yes">
         <source xml:lang="en">&amp;Print...</source>
         <target xml:lang="mam" state="final">&amp;uk'tzab'il...</target>
@@ -4967,6 +5139,11 @@
         <target xml:lang="mam" state="needs-translation">Mp3 Audio</target>
         <note>ID: PublishTab.RecordVideo.Mp3</note>
       </trans-unit>
+      <trans-unit id="PublishTab.RecordVideo.Mp3.Disabled">
+        <source xml:lang="en">This is disabled because the book does not have audio.</source>
+        <target xml:lang="mam" state="needs-translation">This is disabled because the book does not have audio.</target>
+        <note>ID: PublishTab.RecordVideo.Mp3.Disabled</note>
+      </trans-unit>
       <trans-unit id="PublishTab.RecordVideo.OverviewHelpLink">
         <source xml:lang="en">Publishing Audio or Video Books</source>
         <target xml:lang="mam" state="needs-translation">Publishing Audio or Video Books</target>
@@ -5070,6 +5247,12 @@
         <target xml:lang="mam" state="needs-translation">Publish tab tasks overview</target>
         <note>ID: PublishTab.TasksOverview</note>
       </trans-unit>
+      <trans-unit id="PublishTab.TalkingBook" sil:dynamic="true" translate="no">
+        <!-- added in 5.5 -->
+        <source xml:lang="en">Talking Book</source>
+        <note>ID: PublishTab.TalkingBook</note>
+        <target xml:lang="mam" state="needs-translation">Talking Book</target>
+      </trans-unit>
       <trans-unit id="PublishTab.Upload.AccessibleToBlind" approved="yes">
         <source xml:lang="en">Accessible to the Blind</source>
         <target xml:lang="mam" state="final">Nkanet kyu'n min in chi ka'yin</target>
@@ -5090,10 +5273,46 @@
         <target xml:lang="mam" state="final">Kolo'n kyaqil toklen  (yolina tuky'il nejinel tib'aj toklen tajawil tu'n t-xi' qanet amb'il.)</target>
         <note>ID: PublishTab.Upload.AllReserved</note>
       </trans-unit>
+      <trans-unit id="PublishTab.Upload.Agreement.PermissionToPublish" translate="no">
+        <!-- added in 5.5 -->
+        <source xml:lang="en">I have permission to publish all the text and images in this book.</source>
+        <note>ID: PublishTab.Upload.Agreement.PermissionToPublish</note>
+        <target xml:lang="mam" state="needs-translation">I have permission to publish all the text and images in this book.</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.Agreement.GivesCredit" translate="no">
+        <!-- added in 5.5 -->
+        <source xml:lang="en">The book gives credit to the the author, translator, and illustrator(s).</source>
+        <note>ID: PublishTab.Upload.Agreement.GivesCredit</note>
+        <target xml:lang="mam" state="needs-translation">The book gives credit to the the author, translator, and illustrator(s).</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.Agreement.AgreeToTerms" translate="no">
+        <!-- added in 5.5 -->
+        <source xml:lang="en">I agree to the [Bloom Library Terms of Use].</source>
+        <note>ID: PublishTab.Upload.Agreement.AgreeToTerms</note>
+        <target xml:lang="mam" state="needs-translation">I agree to the [Bloom Library Terms of Use].</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.Agreements" translate="no">
+        <!-- added in 5.5 -->
+        <source xml:lang="en">Agreements</source>
+        <note>ID: PublishTab.Upload.Agreements</note>
+        <target xml:lang="mam" state="needs-translation">Agreements</target>
+      </trans-unit>
       <trans-unit id="PublishTab.Upload.BackgroundMusic" approved="yes">
         <source xml:lang="en">Background Music</source>
         <target xml:lang="mam" state="final">Tq'ojq'oj twi' chnab'</target>
         <note>ID: PublishTab.Upload.BackgroundMusic</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.BannerDescription" translate="no">
+        <!-- added in 5.5 -->
+        <source xml:lang="en">Let speakers find your books in [Bloom Reader](https://bloomlibrary.org/page/create/bloom-reader) and on [BloomLibrary.org](https://bloomlibrary.org/).</source>
+        <note>ID: PublishTab.Upload.BannerDescription</note>
+        <target xml:lang="mam" state="needs-translation">Let speakers find your books in [Bloom Reader](https://bloomlibrary.org/page/create/bloom-reader) and on [BloomLibrary.org](https://bloomlibrary.org/).</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.BannerTitle" translate="no">
+        <!-- added in 5.5 -->
+        <source xml:lang="en">Publish to Web</source>
+        <note>ID: PublishTab.Upload.BannerTitle</note>
+        <target xml:lang="mam" state="needs-translation">Publish to Web</target>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.Cancelled" approved="yes">
         <source xml:lang="en">Upload was cancelled</source>
@@ -5110,25 +5329,50 @@
         <target xml:lang="mam" state="final">CC-BY-NC</target>
         <note>ID: PublishTab.Upload.CcLink</note>
       </trans-unit>
+      <trans-unit id="PublishTab.Upload.CheckingVersionEligibility" translate="no">
+        <!-- added in 5.5 -->
+        <source xml:lang="en">Checking Bloom version eligibility...</source>
+        <note>ID: PublishTab.Upload.CheckingVersionEligibility</note>
+        <target xml:lang="mam" state="needs-translation">Checking Bloom version eligibility...</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.CheckingExistingCopy" translate="no">
+        <!-- added in 5.5 -->
+        <source xml:lang="en">Checking for existing copy on server...</source>
+        <note>ID: PublishTab.Upload.CheckingExistingCopy</note>
+        <target xml:lang="mam" state="needs-translation">Checking for existing copy on server...</target>
+      </trans-unit>
       <trans-unit id="PublishTab.Upload.ChooseSignLanguageWarning" approved="yes">
         <source xml:lang="en">Please choose the sign language for this book</source>
         <target xml:lang="mam" state="final">B'inchama xtalb'il, sak'onktza tumlal yol tu'n techil te u'jb'il lu'</target>
         <note>ID: PublishTab.Upload.ChooseSignLanguageWarning</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.ClickToFix" translate="no">
+        <!-- added in 5.5 -->
+        <source xml:lang="en">Click to fix</source>
+        <note>ID: PublishTab.Upload.ClickToFix</note>
+        <target xml:lang="mam" state="needs-translation">Click to fix</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.ConfirmMetadata" translate="no">
+        <!-- added in 5.5 -->
+        <source xml:lang="en">Confirm Metadata</source>
+        <note>ID: PublishTab.Upload.ConfirmMetadata</note>
+        <target xml:lang="mam" state="needs-translation">Confirm Metadata</target>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.ConfirmReplaceExisting" approved="yes">
         <source xml:lang="en">BloomLibrary.org already has a previous version of this book from you.  If you upload it again, it will be replaced with your current version.</source>
         <target xml:lang="mam" state="final">At jun ttxuylal BloomLibrary.org. o'jtxi' b'ant tib'aj u'jb'il lu'. Qa ma jaw ttxaqona juntl maj, ok b'el tx'ixpet toj tumlal te ja'lo.</target>
         <note>ID: PublishTab.Upload.ConfirmReplaceExisting</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Upload.Copyright" approved="yes">
-        <source xml:lang="en">Copyright</source>
-        <target xml:lang="mam" state="final">Toklen b'inchal.</target>
-        <note>ID: PublishTab.Upload.Copyright</note>
-      </trans-unit>
       <trans-unit id="PublishTab.Upload.Credits" approved="yes">
         <source xml:lang="en">credits</source>
         <target xml:lang="mam" state="final">Kyoklen onil.</target>
         <note>ID: PublishTab.Upload.Credits</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.EnterpriseShelfRequiredTooltip" translate="no">
+        <!-- added in 5.5 -->
+        <source xml:lang="en">This feature requires an Enterprise subscription and a destination shelf selected in Collection Settings.</source>
+        <note>ID: PublishTab.Upload.EnterpriseShelfRequiredTooltip</note>
+        <target xml:lang="mam" state="needs-translation">This feature requires an Enterprise subscription and a destination shelf selected in Collection Settings.</target>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.ErrorUploading" approved="yes">
         <source xml:lang="en">Sorry, there was a problem uploading {0}. Some details follow. You may need technical help.</source>
@@ -5315,6 +5559,18 @@
         <target xml:lang="mam" state="final">Nb'inchet jun b'o'tz tilb'ilal...</target>
         <note>ID: PublishTab.Upload.MakingThumbnail</note>
       </trans-unit>
+      <trans-unit id="PublishTab.Upload.Missing.Copyright" translate="no">
+        <!-- added in 5.5 -->
+        <source xml:lang="en">Missing Copyright</source>
+        <note>ID: PublishTab.Upload.Missing.Copyright</note>
+        <target xml:lang="mam" state="needs-translation">Missing Copyright</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.Missing.Title" translate="no">
+        <!-- added in 5.5 -->
+        <source xml:lang="en">Missing Title</source>
+        <note>ID: PublishTab.Upload.Missing.Title</note>
+        <target xml:lang="mam" state="needs-translation">Missing Title</target>
+      </trans-unit>
       <trans-unit id="PublishTab.Upload.Narration" approved="yes">
         <source xml:lang="en">Narration</source>
         <target xml:lang="mam" state="final">Q'umal</target>
@@ -5350,10 +5606,23 @@
         <target xml:lang="mam" state="final">Yol tu'n techil</target>
         <note>ID: PublishTab.Upload.SignLanguage</note>
       </trans-unit>
+      <trans-unit id="PublishTab.Upload.SignIn" translate="no">
+        <!-- added in 5.5 -->
+        <source xml:lang="en">Sign in or sign up to BloomLibrary.org</source>
+        <note>ID: PublishTab.Upload.SignIn</note>
+        <target xml:lang="mam" state="needs-translation">Sign in or sign up to BloomLibrary.org</target>
+      </trans-unit>
       <trans-unit id="PublishTab.Upload.SignInSignUp">
         <source xml:lang="en">Sign In / Sign Up to BloomLibrary.org</source>
         <target xml:lang="mam" state="needs-translation">Sign In / Sign Up to BloomLibrary.org</target>
-        <note>ID: PublishTab.Upload.SignUpLogin</note>
+        <note>ID: PublishTab.Upload.SignInSignUp</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.SignOut" translate="no">
+        <!-- added in 5.5 -->
+        <source xml:lang="en">Sign out (%0)</source>
+        <note>ID: PublishTab.Upload.SignOut</note>
+        <note>The %0 will be replaced with the email address of the user.</note>
+        <target xml:lang="mam" state="needs-translation">Sign out (%0)</target>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.SkipMakingPdf">
         <source xml:lang="en">Skipping PDF because this book has video</source>
@@ -5400,6 +5669,24 @@
         <target xml:lang="mam" state="final">Yek'b'il tqanil tza'n tu'n tajb'en</target>
         <note>ID: PublishTab.Upload.TermsLink</note>
       </trans-unit>
+      <trans-unit id="PublishTab.Upload.ViewOnBloomLibrary" translate="no">
+        <!-- added in 5.5 -->
+        <source xml:lang="en">View on Bloom Library</source>
+        <note>ID: PublishTab.Upload.ViewOnBloomLibrary</note>
+        <target xml:lang="mam" state="needs-translation">View on Bloom Library</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.YourBookOnBloomLibrary" translate="no">
+        <!-- added in 5.5 -->
+        <source xml:lang="en">Your Book on BloomLibrary.org</source>
+        <note>ID: PublishTab.Upload.YourBookOnBloomLibrary</note>
+        <target xml:lang="mam" state="needs-translation">Your Book on BloomLibrary.org</target>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.YourBookOnBloomLibrary.ServerWillProcess" translate="no">
+        <!-- added in 5.5 -->
+        <source xml:lang="en">Our server will soon process your book into various formats and add them to [your book's page] on BloomLibrary.org. Check back in about 10 minutes. If we encounter any problems, your book's page will tell you about them.</source>
+        <note>ID: PublishTab.Upload.YourBookOnBloomLibrary.ServerWillProcess</note>
+        <target xml:lang="mam" state="needs-translation">Our server will soon process your book into various formats and add them to [your book's page] on BloomLibrary.org. Check back in about 10 minutes. If we encounter any problems, your book's page will tell you about them.</target>
+      </trans-unit>
       <trans-unit id="PublishTab.Upload.TimeProblem" approved="yes">
         <source xml:lang="en">There was a problem uploading your book. This is probably because your computer is set to use the wrong timezone or your system time is badly wrong. See http://www.di-mgt.com.au/wclock/help/wclo_setsysclock.html for how to fix this.</source>
         <target xml:lang="mam" state="final">Nti' ma b'ant tiqet tu'jb'ila. B'a'la  mya' b'a'n tten anb'il toj txkutz'ib'a. Ku tokxa toj http://www.di-mgt.com.au/wclock/help/wclo_setsysclock.html tu'n t-xi' ka'yit se'n jaku' b'ant aju nya' b'a'n lu'.</target>
@@ -5420,10 +5707,22 @@
         <target xml:lang="mam" state="final">Iqil u'jb'il</target>
         <note>ID: PublishTab.Upload.UploadButton</note>
       </trans-unit>
+      <trans-unit id="PublishTab.Upload.UploadCollection" translate="no">
+        <!-- added in 5.5 -->
+        <source xml:lang="en">Upload this Collection</source>
+        <note>ID: PublishTab.Upload.UploadCollection</note>
+        <target xml:lang="mam" state="needs-translation">Upload this Collection</target>
+      </trans-unit>
       <trans-unit id="PublishTab.Upload.UploadCompleteNotice" approved="yes">
         <source xml:lang="en">Congratulations, "{0}" is now available on BloomLibrary.org ({1})</source>
         <target xml:lang="mam" state="final">Tzalajsb'il, "{0}" b'a'n tu'n tku'tz ti'na tuj BloomLibrary.org ({1})</target>
         <note>ID: PublishTab.Upload.UploadCompleteNotice</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.UploadFolder" translate="no">
+        <!-- added in 5.5 -->
+        <source xml:lang="en">Upload Folder of Collections</source>
+        <note>ID: PublishTab.Upload.UploadFolder</note>
+        <target xml:lang="mam" state="needs-translation">Upload Folder of Collections</target>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.UploadNotAllowed" approved="yes">
         <source xml:lang="en">Upload Not Allowed</source>
@@ -6105,9 +6404,9 @@
         <target xml:lang="mam" state="final">Min tajb'en pab'il tu'na te tz'ib'il yol asiática</target>
         <note>ID: ScriptSettingsDialog.LineBreakCheckBox</note>
       </trans-unit>
-      <trans-unit id="ScriptSettingsDialog.RightToLeftScriptCheckBox" approved="yes">
-        <source xml:lang="en">This script is right to left</source>
-        <target xml:lang="mam" state="final">Aju tz'ib'anjtz lu' nxi' qe tuj b'a'n q'ab'aj ex npon b'aj tuj ẍna'yaj</target>
+      <trans-unit id="ScriptSettingsDialog.RightToLeftScriptCheckBox">
+        <source xml:lang="en">This script is written right to left like Arabic, Hebrew, and Urdu</source>
+        <target xml:lang="mam" state="translated">Aju tz'ib'anjtz lu' nxi' qe tuj b'a'n q'ab'aj ex npon b'aj tuj ẍna'yaj</target>
         <note>ID: ScriptSettingsDialog.RightToLeftScriptCheckBox</note>
       </trans-unit>
       <trans-unit id="ScriptSettingsDialog.ScriptSettingsWindowTitle" approved="yes">
@@ -6115,9 +6414,9 @@
         <target xml:lang="mam" state="final">Q'ol tib'lal aq'unb'il ti'j qe' tok ti'j jun ti'chaqxix...</target>
         <note>ID: ScriptSettingsDialog.ScriptSettingsWindowTitle</note>
       </trans-unit>
-      <trans-unit id="ScriptSettingsDialog.TallerLinesCheckBox" approved="yes">
-        <source xml:lang="en">This script requires taller lines</source>
-        <target xml:lang="mam" state="final">Aju tz'ib'il lu' tajb'il sqitb'il matij twe'</target>
+      <trans-unit id="ScriptSettingsDialog.TallerLinesCheckBox">
+        <source xml:lang="en">Use special line spacing</source>
+        <target xml:lang="mam" state="translated">Aju tz'ib'il lu' tajb'il sqitb'il matij twe'</target>
         <note>ID: ScriptSettingsDialog.TallerLinesCheckBox</note>
       </trans-unit>
       <trans-unit id="Settings.Enterprise.Community" sil:dynamic="true" approved="yes">
@@ -6950,6 +7249,21 @@
         <source xml:lang="en">Put the correct answer in this button. Bloom will shuffle the order later.</source>
         <target xml:lang="mam" state="needs-translation">Put the correct answer in this button. Bloom will shuffle the order later.</target>
         <note>On the page where you create a "Simple Choice Activity", you have to put the correct answer in a certain button. This message points out where to put that correct answer. The word "shuffle" here is like what you do to a deck of cards.</note>
+      </trans-unit>
+      <trans-unit id="Webview.MissingOrTooOld">
+        <source xml:lang="en">Bloom depends on Microsoft WebView2 Evergreen, at least version {0}. We will now send you to a webpage that will help you add this to your computer.</source>
+        <target xml:lang="mam" state="needs-translation">Bloom depends on Microsoft WebView2 Evergreen, at least version {0}. We will now send you to a webpage that will help you add this to your computer.</target>
+        <note>ID: Webview.MissingOrTooOld</note>
+      </trans-unit>
+      <trans-unit id="Webview.CurrentVersion">
+        <source xml:lang="en">(Currently {0})</source>
+        <target xml:lang="mam" state="needs-translation">(Currently {0})</target>
+        <note>ID: Webview.CurrentVersion</note>
+      </trans-unit>
+      <trans-unit id="Webview.NotInstalled">
+        <source xml:lang="en">(Currently not installed)</source>
+        <target xml:lang="mam" state="needs-translation">(Currently not installed)</target>
+        <note>ID: Webview.NotInstalled</note>
       </trans-unit>
     </body>
   </file>
