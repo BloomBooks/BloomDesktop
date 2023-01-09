@@ -5,22 +5,60 @@
       <note>We are in the process of moving strings from Bloom.xlf to BloomMediumPriority.xlf and BloomLowPriority.xlf while trying very hard to preserve translations and approval status.</note>
     </header>
     <body>
+      <trans-unit id="EditTab.Toolbox.OverlayTool.KeyHints.Drag" sil:dynamic="true">
+        <source xml:lang="en">drag</source>
+        <target xml:lang="ru" state="needs-translation">drag</target>
+        <note>ID: EditTab.Toolbox.OverlayTool.KeyHints.Drag</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.OverlayTool.KeyHints.Resize" sil:dynamic="true">
+        <source xml:lang="en">resize</source>
+        <target xml:lang="ru" state="needs-translation">resize</target>
+        <note>ID: EditTab.Toolbox.OverlayTool.KeyHints.Resize</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.OverlayTool.KeyHints.Move" sil:dynamic="true">
+        <source xml:lang="en">move</source>
+        <target xml:lang="ru" state="needs-translation">move</target>
+        <note>ID: EditTab.Toolbox.OverlayTool.KeyHints.Move</note>
+      </trans-unit>
       <trans-unit id="ReaderSetup.SentencePunctuation.Header" sil:dynamic="true">
         <source xml:lang="en">Special Sentence-Ending Punctuation</source>
-        <note>ID: ReaderSetup.SentencePunctuation.Header</note>
         <target xml:lang="ru" state="translated">Специальные знаки пунктуации в конце предложений.</target>
+        <note>ID: ReaderSetup.SentencePunctuation.Header</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Epub.ConsiderBloomPUB" sil:dynamic="true">
+        <source xml:lang="en">Consider whether you can distribute your book using the BloomPUB format instead of, or in addition to, the ePUB format.</source>
+        <target xml:lang="ru" state="needs-translation">Consider whether you can distribute your book using the BloomPUB format instead of, or in addition to, the ePUB format.</target>
+        <note>ID: PublishTab.Epub.ConsiderBloomPUB</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Epub.FeatureLimitations" sil:dynamic="true">
+        <source xml:lang="en">[Some Bloom features] are not supported by most or all ePUB readers.</source>
+        <target xml:lang="ru" state="needs-translation">[Some Bloom features] are not supported by most or all ePUB readers.</target>
+        <note>ID: PublishTab.Epub.FeatureLimitations</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Epub.Notes" sil:dynamic="true">
+        <source xml:lang="en">Notes:</source>
+        <target xml:lang="ru" state="needs-translation">Notes:</target>
+        <note>ID: PublishTab.Epub.Notes</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Epub.AboutReaders" sil:dynamic="true">
+        <source xml:lang="en">About ePUB Readers &amp; Bloom</source>
+        <target xml:lang="ru" state="needs-translation">About ePUB Readers &amp; Bloom</target>
+        <note>ID: PublishTab.Epub.AboutReaders</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Epub.ReaderRecommendations" sil:dynamic="true">
+        <source xml:lang="en">Most ePUB readers are very low quality ([see our research and recommendations]).</source>
+        <target xml:lang="ru" state="needs-translation">Most ePUB readers are very low quality ([see our research and recommendations]).</target>
+        <note>ID: PublishTab.Epub.ReaderRecommendations</note>
       </trans-unit>
       <trans-unit id="PublishTab.RecordVideo.NotOnLinux" sil:dynamic="true">
         <source xml:lang="en">Not available on Linux</source>
-        <note>ID: PublishTab.RecordVideo.NotOnLinux</note>
-        <note>"Linux" is an operating system name which may not translate.</note>
         <target xml:lang="ru" state="needs-translation">Not available on Linux</target>
+        <note>ID: PublishTab.RecordVideo.NotOnLinux</note>
       </trans-unit>
       <trans-unit id="PublishTab.RecordVideo.ApologiesForNoLinux" sil:dynamic="true">
         <source xml:lang="en">This feature is available only on the Windows version of Bloom. We apologize for the inconvenience.</source>
-        <note>ID: PublishTab.RecordVideo.ApologiesForNoLinux</note>
-        <note>"Windows" and "Linux" are operating system names which may not translate.</note>
         <target xml:lang="ru" state="needs-translation">This feature is available only on the Windows version of Bloom. We apologize for the inconvenience.</target>
+        <note>ID: PublishTab.RecordVideo.ApologiesForNoLinux</note>
       </trans-unit>
     </body>
   </file>
