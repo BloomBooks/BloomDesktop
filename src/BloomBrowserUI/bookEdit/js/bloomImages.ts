@@ -5,7 +5,7 @@ import { BloomApi } from "../../utils/bloomApi";
 
 import theOneLocalizationManager from "../../lib/localizationManager/localizationManager";
 
-import { updateOverlayClass } from "./bubbleManager";
+import { theOneBubbleManager, updateOverlayClass } from "./bubbleManager";
 
 const kPlaybackOrderContainerSelector: string =
     ".bloom-playbackOrderControlsContainer";
@@ -111,18 +111,18 @@ function ctrlAltKeyDownListener(event: KeyboardEvent) {
     if ((event.ctrlKey || event.altKey) && event.target) {
         event.target.addEventListener("keyup", ctrlAltKeyUpListener);
 
-        // Note (paranoia): Add this class conservatively (ensure event.target is good first),
+        // Note (paranoia): Add the ui-suppressImageButtons class conservatively (ensure event.target is good (non-null) first),
         // remove it liberally (regardless of event.target),
         // Since if it gets stuck on, the image editing buttons won't come back (unless SetupImageContainer is re-run)
         document
-            .querySelectorAll(
-                ".bloom-imageContainer:not(.ui-suppressImageButtons)"
-            )
+            .querySelectorAll<HTMLElement>(".bloom-imageContainer")
             .forEach(imageContainer => {
                 imageContainer.classList.add("ui-suppressImageButtons");
 
                 if (event.ctrlKey) {
                     imageContainer.classList.add("ui-ctrlDown");
+                } else if (event.altKey) {
+                    theOneBubbleManager.tryApplyResizingUI(imageContainer);
                 }
             });
     }
@@ -147,6 +147,14 @@ function ctrlAltKeyUpListener(event: KeyboardEvent) {
                 // Remember, for keyup events, you want to check event.key === "Control" instead of event.ctrlKey
                 if (event.key === "Control") {
                     imageContainer.classList.remove("ui-ctrlDown");
+                } else if (
+                    event.key === "Alt" &&
+                    !theOneBubbleManager.isResizing(imageContainer)
+                ) {
+                    // FYI: Check !isResizing() so if you release Alt but still keep the mouse down, resizing will continue.
+                    // Unsure if this needs to be set in stone, but it's for consistency with
+                    // 1) our historical practice, and 2) how Ctrl+drag currently works
+                    theOneBubbleManager.turnOffResizing(imageContainer);
                 }
             });
 

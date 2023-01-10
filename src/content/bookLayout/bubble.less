@@ -53,7 +53,7 @@
 }
 
 .bloom-imageContainer {
-    &.grabbable:not(.bloom-resizing) {
+    &.grabbable:not(.ui-jquery-resizing-in-progress) {
         &,
         .bloom-textOverPicture
             .bloom-translationGroup
@@ -62,7 +62,7 @@
         }
     }
 
-    &.grabbing:not(.bloom-resizing) {
+    &.grabbing:not(.ui-jquery-resizing-in-progress) {
         &,
         .bloom-textOverPicture
             .bloom-translationGroup
