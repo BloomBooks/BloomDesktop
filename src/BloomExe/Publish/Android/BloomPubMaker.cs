@@ -363,7 +363,18 @@ namespace Bloom.Publish.Android
 					if (attr.Name.StartsWith("data-"))
 						imgContainer.SetAttribute(attr.Name, attr.Value);
 				}
-				imgContainer.SetAttribute("class", imgContainer.Attributes["class"].Value + " bloom-backgroundImage");
+
+				var classesToAdd = " bloom-backgroundImage";
+				// This is a nasty special case; see BL-11712. This class causes images to grow to
+				// cover the container, so when we convert to a background image, somehow we need to
+				// do the same thing. If we have other similar classes we will have to do it again,
+				// and again have two equivalent rules. Maybe we can eventually get rid of converting
+				// to background image? Why did we want to, anyway?? Maybe we can copy all classes from
+				// the img? But we'd still need duplicate rules.
+				if ((img.Attributes["class"]?.Value ?? "").Contains("bloom-imageObjectFit-cover"))
+					classesToAdd += " bloom-imageObjectFit-cover";
+
+				imgContainer.SetAttribute("class", imgContainer.Attributes["class"].Value + classesToAdd);
 				imgContainer.RemoveChild(img);
 			}
 		}

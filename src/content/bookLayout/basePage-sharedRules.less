@@ -37,6 +37,9 @@ textarea,
         object-fit: cover; // if we don't have the proportions exactly right, object-fit:"contain" will make black borders
     }
 }
+.bloom-imageContainer.bloom-imageObjectFit-cover {
+    background-size: cover;
+}
 
 // Now that we have overlay elements, we don't want to show the placeholder flower underneath them.
 .bloom-imageContainer.hasOverlay > img[src="placeHolder.png"] {
