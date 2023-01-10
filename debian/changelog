@@ -1,3 +1,10 @@
+bloom-desktop (5.3.0) stable; urgency=medium
+
+  * Change Bloom 5.3 to release.
+  * More bug fixes and enhancements: see the source repository log for details.
+
+ -- Stephen McConnel <stephen_mcconnel@sil.org>  Tue, 10 Jan 2023 09:27:07 -0700
+
 bloom-desktop-beta (5.3.0) stable; urgency=medium
 
   * Change Bloom 5.3 to Beta.
