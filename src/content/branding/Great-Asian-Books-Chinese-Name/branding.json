@@ -1,0 +1,11 @@
+{
+    "presets": [
+        {
+            "data-book": "outside-back-cover-branding-bottom-html",
+            "lang": "*",
+            "content": "<img class='branding' src='Great-Asian-Books-CN-back-cover.png'/>",
+            "comment": "Bloom badge intentionally omitted",
+            "condition": "always"
+        }
+    ]
+}
