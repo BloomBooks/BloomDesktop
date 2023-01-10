@@ -1,0 +1,10 @@
+{
+    "presets": [
+        {
+            "data-book": "outside-back-cover-branding-bottom-html",
+            "lang": "*",
+            "content": "<img class='branding bloom-badge' src='Vanuatu-Literacy-Nasara-bloom-badge.png'/><img class='branding' src='Vanuatu-Literacy-Nasara-back-cover.png'/>",
+            "condition": "always"
+        }
+    ]
+}
