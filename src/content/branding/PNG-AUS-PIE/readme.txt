@@ -1,0 +1,1 @@
+I went with a 2x export because at that resolution, the text had roughly the same resolution as the text of the logo which was given to me as a PNG.

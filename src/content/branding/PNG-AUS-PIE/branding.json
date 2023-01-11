@@ -1,0 +1,10 @@
+{
+    "presets": [
+        {
+            "data-book": "outside-back-cover-branding-bottom-html",
+            "lang": "*",
+            "content": "<img class='branding' src='PNG-AUS-PIE-back-cover.png'/><img class='branding bloom-badge' src='png-aus-pie-bloom-badge.png'/>",
+            "condition": "always"
+        }
+    ]
+}

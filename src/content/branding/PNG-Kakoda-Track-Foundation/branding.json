@@ -1,0 +1,10 @@
+{
+    "presets": [
+        {
+            "data-book": "outside-back-cover-branding-bottom-html",
+            "lang": "*",
+            "content": "<img class='branding bloom-badge' src='PNG-Kakoda-bloom-badge.png'/><img class='branding' src='PNG-Kakoda-back-cover.png'/>",
+            "condition": "always"
+        }
+    ]
+}

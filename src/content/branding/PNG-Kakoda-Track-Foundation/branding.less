@@ -1,0 +1,31 @@
+@import "../branding-base.less";
+
+.outsideBackCover .marginBox .bloom-translationGroup {
+    display: none;
+}
+
+[data-book="outside-back-cover-branding-bottom-html"] {
+    flex-direction: column;
+    height: 100%;
+    margin-top: 0 !important;
+
+    img.branding {
+
+        // the badge is in the top right corner
+        &.bloom-badge {
+            height: 1cm;
+            margin-left: auto;
+            margin-right: 0;
+        }
+
+        // the rest of the branding is centered at the bottom
+        &:not(.bloom-badge) {
+            margin-top: auto;
+            margin-left: auto;
+            margin-right: auto;
+            // NB: this is needed for modern firefox / chrome, but not GFX (bloom 5.4)
+            max-height: calc(100% - 1.5cm);
+        }
+
+    }
+}
