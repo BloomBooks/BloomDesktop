@@ -43,6 +43,8 @@ import LazyLoad, { forceCheck } from "react-lazyload";
 // horizontal scroll bar.
 
 const kWebsocketContext = "pageThumbnailList";
+let desiredScrollTop = -1;
+let scrollEventsToCheck = 0;
 
 // A function configured once to listen for events coming from C# over the websocket.
 let webSocketListenerFunction;
@@ -181,22 +183,50 @@ const PageList: React.FunctionComponent<{ pageSize: string }> = props => {
 
     // Ensure that the thumbnail of the selected page is scrolled into view when a book
     // is opened for editing.  See https://issues.bloomlibrary.org/youtrack/issue/BL-8701.
+    // The original intent was not to re-run this when the selected page changes, but it
+    // would be bad if it to run with a stale selectedPageId and scrolled to completely
+    // the wrong place (I suspected it as a possible cause of BL-11528).
+    // In any case, it's possible to click a page that is only partly visible in the list,
+    // and in that case it's rather nice to scroll enough to show the whole thing.
+    // "nearest" only moves things if they are actually hidden.
     useEffect(() => {
         if (selectedPageId) {
             const pageElement = window.document.getElementById(selectedPageId);
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+            const wrapper = document.getElementById("pageGridWrapper")!;
             // nearest causes the minimum possible scroll to make it visible,
             // importantly including not scrolling at all if it's already visible.
-            if (pageElement)
+            if (pageElement) {
+                const currentScrollTop = wrapper.scrollTop;
                 pageElement.scrollIntoView({
                     block: "nearest"
                 });
+
+                // Capture the position we ended up after the scrollIntoView, so that we
+                // can restore it if some unwanted event scrolls us back to the top (BL-11528)
+                desiredScrollTop = wrapper.scrollTop;
+                // if scrollIntoView moved things, we will get one scroll event immediately
+                // as we scroll to the new position. Then the one AFTER that might be the
+                // spurious scroll-to-top. So we need to look at two events before we stop.
+                scrollEventsToCheck =
+                    currentScrollTop === desiredScrollTop ? 1 : 2;
+                setTimeout(() => {
+                    // We're only wanting to prevent an immediate unwanted scroll,
+                    // not ANY scroll, ever, to position zero.
+                    // On my fast dev machine, 100ms was usually enough, but 0 was not.
+                    // It's possible that on some slow machine 1000ms is not enough,
+                    // but I don't want to run too much risk of interfering if the user really
+                    // does want to scroll to the top. (There is another precaution against this, though.)
+                    scrollEventsToCheck = 0;
+                }, 1000);
+            }
         }
         // Make LazyLoad component re-check for elements in viewport
         // to make visible. (See this article that says forceCheck() should be in a 'useEffect':
         // https://stackoverflow.com/questions/61191496/why-is-my-react-lazyload-component-not-working)
         // This actually runs each time a page is deleted.
         forceCheck();
-    }, [realPageList]);
+    }, [selectedPageId, realPageList]);
 
     // this is embedded so that we have access to realPageList
     const handleGridItemClick = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -396,10 +426,34 @@ const PageList: React.FunctionComponent<{ pageSize: string }> = props => {
 $(window).ready(() => {
     const pageSize =
         document.body.getAttribute("data-pageSize") || "A5Portrait";
-    ReactDOM.render(
-        <PageList pageSize={pageSize} />,
-        document.getElementById("pageGridWrapper")
-    );
+    const root = document.getElementById("pageGridWrapper");
+    root!.onscroll = () => {
+        // This block is a desperate kludge to deal with BL-11528, a problem where,
+        // just after the user selects a page, the thumbnail list gets scrolled to
+        // the top. I cannot find the cause of this, so am adding this patch to undo
+        // the scroll-to-top. The basic idea is that after the page is selected and
+        // we possibly scroll to make its thumbnail visible, we record the current
+        // scroll position in desiredScrollTop. Then, if we get scrolled to position
+        // zero, this code scrolls us back to where we want to be.
+        // The danger, though, is that this might happen when the user is later
+        // trying to scroll back to position zero. I've taken two precautions to
+        // prevent this. First, we only check the very next scroll event after we
+        // select a card (or two of them, if selecting the card properly produces a
+        // scroll). Second, we only check scroll events that happen within a second.
+        // Dragging the scroll bar to the top typically generates scroll events at many
+        // intermediate positions, so a legitimate scroll to top is unlikely to be
+        // the very next scroll event.
+        // On my computer, I can't detect any flicker when fix happens. Hopefully,
+        // this is because the unwanted scroll and the fix are happening in the same
+        // render cycle, not just because my desktop is fast...
+        if (scrollEventsToCheck > 0) {
+            scrollEventsToCheck--;
+            if (root?.scrollTop === 0) {
+                root.scrollTo({ top: desiredScrollTop });
+            }
+        }
+    };
+    ReactDOM.render(<PageList pageSize={pageSize} />, root);
 });
 
 // Function invoked when dragging a page ends. Note that it is often
