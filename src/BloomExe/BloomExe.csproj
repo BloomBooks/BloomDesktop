@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="..\..\packages\SIL.Windows.Forms.Keyboarding.11.0.0-beta0050\build\SIL.Windows.Forms.Keyboarding.props" Condition="Exists('..\..\packages\SIL.Windows.Forms.Keyboarding.11.0.0-beta0050\build\SIL.Windows.Forms.Keyboarding.props')" />
   <Import Project="..\..\packages\icu.net.2.8.1\build\icu.net.props" Condition="Exists('..\..\packages\icu.net.2.8.1\build\icu.net.props')" />
@@ -1475,13 +1475,6 @@ xcopy "$(SolutionDir)lib\gm" "$(OutDir)gm\" /S /R /Y
 copy /Y "$(SolutionDir)\lib\dotnet\libtidy.dll" $(OutDir)
 copy /Y "$(SolutionDir)\lib\dotnet\Interop.AcroPDFLib.dll" $(OutDir)
 copy /Y "$(SolutionDir)\lib\dotnet\Interop.Acrobat.dll" $(OutDir)
-copy /Y "$(SolutionDir)lib\dotnet\GeckofxHtmlToPdf.exe" "$(OutDir)BloomPdfMaker.exe"
-copy /Y "$(SolutionDir)lib\dotnet\GeckofxHtmlToPdf.exe.config" "$(OutDir)BloomPdfMaker.exe.config"
-    </PostBuildEvent>
-    <PostBuildEvent Condition="'$(OS)'!='Windows_NT'">
-cp -p "$(SolutionDir)lib/BloomPdfMaker.sh" "$(OutDir)BloomPdfMaker.sh"
-cp -p "$(SolutionDir)lib/dotnet/GeckofxHtmlToPdf.exe" "$(OutDir)BloomPdfMaker.exe"
-cp -p "$(SolutionDir)lib/dotnet/GeckofxHtmlToPdf.exe.config" "$(OutDir)BloomPdfMaker.exe.config"
     </PostBuildEvent>
   </PropertyGroup>
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
@@ -1517,9 +1510,6 @@ cp -p "$(SolutionDir)lib/dotnet/GeckofxHtmlToPdf.exe.config" "$(OutDir)BloomPdfM
   </ItemGroup>
   <ItemGroup>
     <RemoteDebugFiles Include="..\..\remoteDebugging\**" />
-  </ItemGroup>
-  <ItemGroup>
-    <BloomPdfMakerArgs Include="..\..\lib\dotnet\Args.dll" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\settingsbw16x16.png" />
@@ -1627,7 +1617,6 @@ cp -p "$(SolutionDir)lib/dotnet/GeckofxHtmlToPdf.exe.config" "$(OutDir)BloomPdfM
     <Copy SourceFiles="@(BasicBookCssFiles)" DestinationFolder="../../DistFiles/factoryCollections/Templates/Leveled Reader" />
     <Copy SourceFiles="@(BasicBookCssFiles)" DestinationFolder="../../DistFiles/factoryCollections/Templates/Decodable Reader" />
     <Copy SourceFiles="@(RemoteDebugFiles)" DestinationFolder="$(OutDir)/remoteDebugging" Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'" />
-    <Copy SourceFiles="@(BloomPdfMakerArgs)" DestinationFolder="$(OutDir)" />
     <Copy SourceFiles="@(IccFiles)" DestinationFolder="$(OutDir)/ColorProfiles" />
     <Message Text="AfterBuild target completed." Importance="high" />
   </Target>

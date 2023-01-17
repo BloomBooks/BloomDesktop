@@ -105,13 +105,6 @@ cd -
 #     revision: latest.lastSuccessful
 #     paths: {"pdfjs-viewer.zip!**"=>"DistFiles/pdf"}
 #     VCS: https://github.com/mozilla/pdf.js.git [gh-pages]
-# [5] build: GeckofxHtmlToPdf-Win32-continuous (bt463)
-#     project: GeckofxHtmlToPdf
-#     URL: https://build.palaso.org/viewType.html?buildTypeId=bt463
-#     clean: false
-#     revision: latest.lastSuccessful
-#     paths: {"Args.dll"=>"lib/dotnet", "GeckofxHtmlToPdf.exe"=>"lib/dotnet", "GeckofxHtmlToPdf.exe.config"=>"lib/dotnet"}
-#     VCS: https://github.com/BloomBooks/geckofxHtmlToPdf [refs/heads/master]
 # [6] build: PdfDroplet-Win-master-Continuous (bt54)
 #     project: PdfDroplet
 #     URL: https://build.palaso.org/viewType.html?buildTypeId=bt54
@@ -199,9 +192,6 @@ copy_auto https://build.palaso.org/guestAuth/repository/download/Bloom_Squirrel/
 copy_auto https://build.palaso.org/guestAuth/repository/download/Bloom_Squirrel/latest.lastSuccessful/update.com ../lib/dotnet/update.com
 copy_auto https://build.palaso.org/guestAuth/repository/download/Bloom_Help_BloomHelp55/latest.lastSuccessful/Bloom.chm ../DistFiles/Bloom.chm
 copy_auto https://build.palaso.org/guestAuth/repository/download/bt401/latest.lastSuccessful/pdfjs-viewer.zip ../Downloads/pdfjs-viewer.zip
-copy_auto https://build.palaso.org/guestAuth/repository/download/bt463/latest.lastSuccessful/Args.dll ../lib/dotnet/Args.dll
-copy_auto https://build.palaso.org/guestAuth/repository/download/bt463/latest.lastSuccessful/GeckofxHtmlToPdf.exe ../lib/dotnet/GeckofxHtmlToPdf.exe
-copy_auto https://build.palaso.org/guestAuth/repository/download/bt463/latest.lastSuccessful/GeckofxHtmlToPdf.exe.config ../lib/dotnet/GeckofxHtmlToPdf.exe.config
 copy_auto https://build.palaso.org/guestAuth/repository/download/bt54/latest.lastSuccessful/PdfDroplet.exe ../lib/dotnet/PdfDroplet.exe
 copy_auto https://build.palaso.org/guestAuth/repository/download/bt54/latest.lastSuccessful/PdfSharp.dll ../lib/dotnet/PdfSharp.dll
 copy_auto https://build.palaso.org/guestAuth/repository/download/bt349/latest.lastSuccessful/TidyManaged.dll ../lib/dotnet/TidyManaged.dll
