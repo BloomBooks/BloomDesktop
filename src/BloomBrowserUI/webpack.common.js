@@ -191,7 +191,7 @@ module.exports = merge(core, {
                     loader: "url-loader",
                     options: {
                         limit: 10000,
-                        mimetype: "application/font-woff"
+                        mimetype: "font/woff2"
                     }
                 }
             }
