@@ -50,7 +50,6 @@ export const MethodChooser: React.FunctionComponent = () => {
                     // amount of the padding-top.  (8px of that is swallowed up by the default 8px margin on body.)
                     // We don't really need to set the height here anyway: it displays just fine without being
                     // explicitly set.  See https://issues.bloomlibrary.org/youtrack/issue/BL-7506.
-                    padding-top: 10px;
 
                     // The center of a selected radio button is drawn with an <svg> element by materialui.
                     // For some reason, in Firefox 45, in Publish:Reader, the "left" says 20.4667px, whereas
@@ -99,8 +98,8 @@ export const MethodChooser: React.FunctionComponent = () => {
                         display: flex;
                         flex-direction: column;
                         flex-grow: 1;
-                        padding-left: 40px;
-                        padding-right: 40px;
+                        padding-left: 20px;
+                        padding-right: 20px;
                     `}
                 >
                     <img

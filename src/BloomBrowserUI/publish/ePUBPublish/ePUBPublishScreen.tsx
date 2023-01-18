@@ -29,7 +29,7 @@ import { ProgressState } from "../commonPublish/PublishProgressDialogInner";
 import { BloomApi } from "../../utils/bloomApi";
 import { hookupLinkHandler } from "../../utils/linkHandler";
 import { NoteBox } from "../../react_components/BloomDialog/commonDialogComponents";
-import { P } from "../../react_components/l10nComponents";
+import { Div, P } from "../../react_components/l10nComponents";
 
 export const EPUBPublishScreen = () => {
     // When the user changes some features, included languages, etc., we
@@ -114,19 +114,14 @@ const EPUBPublishScreenInternal: React.FunctionComponent<{
     );
 
     const mainPanel = (
-        <div className="ePUBPublishScreen">
-            <PreviewPanel>
-                <ThemeProvider theme={darkTheme}>
-                    <DeviceAndControls
-                        defaultLandscape={landscape}
-                        canRotate={false}
-                        url={bookUrl}
-                        showRefresh={true}
-                        highlightRefreshIcon={highlightRefresh}
-                        onRefresh={() => props.onReset()}
-                    />
-                </ThemeProvider>
-            </PreviewPanel>
+        <div
+            className="ePUBPublishScreen"
+            css={css`
+                display: flex;
+                flex-direction: column;
+                flex: 5;
+            `}
+        >
             <UnderPreviewPanel>
                 <div
                     css={css`
@@ -208,6 +203,28 @@ const EPUBPublishScreenInternal: React.FunctionComponent<{
                     </NoteBox>
                 </div>
             </UnderPreviewPanel>
+            <PreviewPanel>
+                <ThemeProvider theme={darkTheme}>
+                    <Div
+                        css={css`
+                            color: white;
+                            font-weight: bold;
+                            flex-shrink: 1;
+                        `}
+                        l10nKey="Common.Preview"
+                    >
+                        Preview
+                    </Div>
+                    <DeviceAndControls
+                        defaultLandscape={landscape}
+                        canRotate={false}
+                        url={bookUrl}
+                        showRefresh={true}
+                        highlightRefreshIcon={highlightRefresh}
+                        onRefresh={() => props.onReset()}
+                    />
+                </ThemeProvider>
+            </PreviewPanel>
         </div>
     );
 
