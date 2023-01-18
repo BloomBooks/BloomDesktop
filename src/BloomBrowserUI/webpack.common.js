@@ -119,7 +119,7 @@ module.exports = merge(core, {
     },
     optimization: {
         minimize: false,
-        namedModules: true,
+        moduleIds: "named",
         splitChunks: {
             cacheGroups: {
                 default: false,
