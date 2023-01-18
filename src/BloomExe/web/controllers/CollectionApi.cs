@@ -102,7 +102,7 @@ namespace Bloom.web.controllers
 				{
 					_collectionModel.SelectBook(book);
 				}
-				if (GetCollectionOfRequest(request).Type == BookCollection.CollectionType.TheOneEditableCollection)
+				if (book.IsSaveable && GetCollectionOfRequest(request).Type == BookCollection.CollectionType.TheOneEditableCollection)
 				{
 					_editBookCommand.Raise(_bookSelection.CurrentSelection);
 				}
