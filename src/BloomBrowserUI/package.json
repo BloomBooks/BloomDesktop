@@ -197,7 +197,7 @@
         "url-loader": "^1.1.2",
         "webpack": "^4.46.0",
         "webpack-build-notifier": "^2.1.1",
-        "webpack-cli": "^4.3.1",
+        "webpack-cli": "^4.10.0",
         "webpack-merge": "^5.7.3",
         "webpack-stream": "^6.1.1",
         "yarn": "^1.22.19"
