@@ -11963,7 +11963,7 @@ less-css-stream@^1.0.0:
     less "2.x"
     through "~2.3.7"
 
-less-loader@^7.2.1:
+less-loader@^7.3.0:
   version "7.3.0"
   resolved "https://registry.yarnpkg.com/less-loader/-/less-loader-7.3.0.tgz#f9d6d36d18739d642067a05fb5bd70c8c61317e5"
   integrity sha512-Mi8915g7NMaLlgi77mgTTQvK022xKRQBIVDSyfl3ErTuBhmZBQab0mjeJjNNqGbdR+qrfTleKXqbGI4uEFavxg==
