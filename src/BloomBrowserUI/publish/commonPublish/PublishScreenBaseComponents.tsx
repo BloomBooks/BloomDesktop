@@ -20,11 +20,13 @@ export const PreviewPanel: React.FunctionComponent = props => {
                         #0c0c0c 100%
                     ),
                     #2d2d2d;
-                padding-left: 30px;
-                padding-top: 20px;
+                padding-left: 20px;
+                padding-top: 10px;
                 box-sizing: border-box;
                 display: flex;
                 flex-shrink: 0;
+                flex-grow: 1;
+                flex-direction: column;
             `}
         >
             {props.children}
@@ -32,16 +34,13 @@ export const PreviewPanel: React.FunctionComponent = props => {
     );
 };
 
-// This component contains the padding needed when this panel is below a PreviewPanel.
+// This component contains the padding needed when this panel is above a PreviewPanel.
 export const UnderPreviewPanel: React.FunctionComponent = props => (
     <div
         css={css`
             padding-left: 20px;
             padding-top: 10px;
             padding-bottom: 10px;
-            // We want to keep at least the MainPanel border even if nothing is here.
-            // Calculation is MainPanel padding less the above padding-top.
-            min-height: calc(1.5rem - 10px);
         `}
     >
         <PublishPanel>{props.children}</PublishPanel>
