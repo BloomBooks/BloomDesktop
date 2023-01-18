@@ -21,7 +21,7 @@ namespace Bloom.Publish.PDF
 	/// separate process appears to let us produce the desired PDF files without
 	/// any memory concerns.
 	/// </summary>
-	class MakePdfUsingGeckofxHtmlToPdfProgram
+	class MakePdfUsingExternalPdfMakerProgram
 	{
 		private BackgroundWorker _worker;
 

@@ -47,7 +47,7 @@ namespace Bloom.Publish.PDF
 			// but as it was an intermittent problem and we're not sure that was the cause, this might help.
 			for (int i = 0; i < 4; i++)
 			{
-				new MakePdfUsingGeckofxHtmlToPdfProgram().MakePdf(specs,
+				new MakePdfUsingExternalPdfMakerProgram().MakePdf(specs,
 					owner, worker, doWorkEventArgs);
 
 				if (doWorkEventArgs.Cancel || (doWorkEventArgs.Result != null && doWorkEventArgs.Result is Exception))

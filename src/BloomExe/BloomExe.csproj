@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="..\..\packages\SIL.Windows.Forms.Keyboarding.11.0.0-beta0050\build\SIL.Windows.Forms.Keyboarding.props" Condition="Exists('..\..\packages\SIL.Windows.Forms.Keyboarding.11.0.0-beta0050\build\SIL.Windows.Forms.Keyboarding.props')" />
   <Import Project="..\..\packages\icu.net.2.8.1\build\icu.net.props" Condition="Exists('..\..\packages\icu.net.2.8.1\build\icu.net.props')" />
@@ -734,7 +734,7 @@
     <Compile Include="Publish\BulkUploadProgressDlg.Designer.cs">
       <DependentUpon>BulkUploadProgressDlg.cs</DependentUpon>
     </Compile>
-    <Compile Include="Publish\PDF\MakePdfUsingGeckofxHtmlToPdfProgram.cs" />
+    <Compile Include="Publish\PDF\MakePdfUsingExternalPdfMakerProgram.cs" />
     <Compile Include="Publish\PDF\PdfViewer.cs">
       <SubType>UserControl</SubType>
     </Compile>
