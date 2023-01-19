@@ -31,9 +31,11 @@ module.exports = {
                     {
                         loader: "css-loader", // translates CSS into CommonJS,
                         options: {
-                            url: (url, resourcePath) => {
-                                // Don't let webpack resolve /bloom/ urls. Just leave them as is.
-                                return !url.startsWith("/bloom/");
+                            url: {
+                                filter: (url, resourcePath) => {
+                                    // Don't let webpack resolve /bloom/ urls. Just leave them as is.
+                                    return !url.startsWith("/bloom/");
+                                }
                             }
                         }
                     },
