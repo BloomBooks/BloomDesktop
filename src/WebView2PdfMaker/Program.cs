@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 using CommandLine;
 using Microsoft.Web.WebView2.Core;
@@ -38,7 +36,7 @@ namespace WebView2PdfMaker
 					.WithParsed<Options>(options =>
 					{
 						options.ValidateOptions();
-						Application.Run(new ConversionProgress(options));
+						Application.Run(new ConversionHost(options));
 					})
 					.WithNotParsed(errors =>
 					{
@@ -57,7 +55,7 @@ namespace WebView2PdfMaker
 
 		private static void Application_ThreadException(object sender, ThreadExceptionEventArgs e)
 		{
-			Console.WriteLine("GeckofxHtmlToPdf Thread Exception: " + e.Exception.Message);
+			Console.WriteLine("WebView2PdfMaker Thread Exception: " + e.Exception.Message);
 			Console.WriteLine(e.Exception.StackTrace);
 			_returnCode = 1;
 			Application.Exit();
@@ -73,7 +71,7 @@ namespace WebView2PdfMaker
 			}
 			else
 			{
-				Console.WriteLine("GeckofxHtmlToPdf got unknown exception");
+				Console.WriteLine("WebView2PdfMaker got unknown exception");
 			}
 			_returnCode = 1;
 			Application.Exit();

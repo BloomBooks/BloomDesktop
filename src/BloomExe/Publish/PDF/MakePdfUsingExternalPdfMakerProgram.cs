@@ -120,8 +120,10 @@ namespace Bloom.Publish.PDF
 			SetArguments(bldr, specs);
 			var arguments = bldr.ToString();
 			var progress = new NullProgress();
+			// NB: WebView2 does not appear to support progress reporting while making PDFs.
 			var res = runner.Start(exePath, arguments, Encoding.UTF8, fromDirectory, 3600, progress,
-				ProcessGeckofxReporting);
+				(msg) => { /* nothing we can do with WebView2 */ });
+
 			if (res.DidTimeOut || !RobustFile.Exists(specs.OutputPdfPath))
 			{
 				Logger.WriteEvent(@"***ERROR PDF generation failed: res.StandardOutput = " + res.StandardOutput);
@@ -266,66 +268,6 @@ namespace Bloom.Publish.PDF
 			}
 
 			bldr.Append($" -h {height} -w {width}");
-		}
-
-		// NB: WebView2 does not appear to support progress reporting while making PDFs.
-		// Progress report lines from GeckofxHtmlToPdf/BloomPdfMaker look like the following:
-		// "Status: Making PDF..|Percent: 100"
-		// "Status: Making Page 1 of PDF...|Percent: 100"
-		// "Status: Making Page 2 of PDF...|Percent: 0"
-		// "Status: Finished|Percent: 100"
-		private const string kStatus = "Status: ";
-		private const string kPercent = "|Percent: ";
-		private const string kMakingPDF = "Making PDF";
-		private const string kMakingPage = "Making Page ";
-		private const string kOfPDF = " of PDF";
-		private const string kFinished = "Finished";
-
-		private void ProcessGeckofxReporting(string line)
-		{
-			//Debug.WriteLine(String.Format("DEBUG GeckofxHtmlToPdf report line = \"{0}\"", line));
-			if (_worker == null || !line.StartsWith(kStatus) || !line.Contains(kPercent))
-				return;
-			int statusLength = line.IndexOf(kPercent) - kStatus.Length;
-			var status = line.Substring(kStatus.Length, statusLength);
-			if (String.IsNullOrWhiteSpace(status))
-			{
-				status = null;
-			}
-			else
-			{
-				if (status.StartsWith(kMakingPDF))
-				{
-					status = L10NSharp.LocalizationManager.GetString(@"PublishTab.PdfMaker.MakingFromHtml",
-						"Making PDF from HTML ...",
-						@"Message displayed in a progress report dialog box");
-									}
-				else if (status.StartsWith(kMakingPage) && status.Contains(kOfPDF))
-				{
-					int page;
-					if (Int32.TryParse(status.Substring(kMakingPage.Length, status.IndexOf(kOfPDF) - kMakingPage.Length), out page))
-					{
-						status = String.Format(L10NSharp.LocalizationManager.GetString(@"PublishTab.PdfMaker.MakingPageOfPdf",
-							"Making Page {0} of the PDF",
-							@"Message displayed in a progress report dialog box, {0} is replaced by the page number"), page);
-					}
-					else
-					{
-						status = null;
-					}
-				}
-				else if (status == kFinished)
-				{
-					status = L10NSharp.LocalizationManager.GetString(@"PublishTab.PdfMaker.Finished",
-						"Finished making PDF from HTML",
-						@"Message displayed in a progress report dialog box");
-				}
-			}
-			int percent;
-			if (Int32.TryParse(line.Substring(line.IndexOf(kPercent) + kPercent.Length), out percent))
-			{
-				_worker.ReportProgress(percent, status);
-			}
 		}
 	}
 
