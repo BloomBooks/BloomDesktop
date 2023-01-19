@@ -899,8 +899,26 @@ namespace Bloom.Book
 			htmlDom.AddCreationType(LockedDown ? "translation" : "original");
 		}
 
+		// Generally BringBookUpToDate only needs doing once, so keep track of whether we have.
+		private bool _hasBeenBroughtUpToDate;
+
+		public void EnsureUpToDate()
+		{
+			if (!_hasBeenBroughtUpToDate)
+				BringBookUpToDate(new NullProgress());
+		}
+
+		/// <summary>
+		/// Make any needed changes to make a book which might have come from an old version of Bloom
+		/// consistent with the current data model. Also makes sure it has the current XMatter
+		/// and a folder name consistent with its title (unless folder name has been overridden).
+		/// Consider using EnsureUpToDate() unless you know for sure that the book object is new
+		/// or that something has changed which requires BBUD to happen again. Usually it only
+		/// needs doing at most once, and it is slow.
+		/// </summary>
 		public void BringBookUpToDate(IProgress progress, bool forCopyOfUpToDateBook = false)
 		{
+			_hasBeenBroughtUpToDate = true;
 			_pagesCache = null;
 			string oldMetaData = string.Empty;
 			if (RobustFile.Exists(BookInfo.MetaDataPath))

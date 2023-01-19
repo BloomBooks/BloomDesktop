@@ -482,6 +482,7 @@ namespace Bloom.Edit
 			if (changedOrientation)
 			{
 				// We need to update the xmatter, since this process selects images to display based on orientation.
+				// (Here we need to do it even if we already brought this book up to date when it was selected.)
 				CurrentBook.BringBookUpToDate(new NullProgress());
 				// That wrecks everything. In particular guids stored in Page objects are obsolete.
 				// Simulate switching to collection mode, force discarding everything problematic, and reinitialize.

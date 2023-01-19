@@ -411,6 +411,8 @@ namespace Bloom.CollectionTab
 
 			using (var dlg = new ProgressDialogForeground()) //REVIEW: this foreground dialog has known problems in other contexts... it was used here because of its ability to handle exceptions well. TODO: make the background one handle exceptions well
 			{
+				// Since the user explicitly told us to do this again, we will, even if we think
+				// it's already been done.
 				dlg.ShowAndDoWork(progress=>b.BringBookUpToDate(progress));
 			}
 
@@ -720,6 +722,9 @@ namespace Bloom.CollectionTab
 				var book = _bookServer.GetBookFromBookInfo(bookInfo);
 				//gets overwritten: progress.WriteStatus(book.NameBestForUserDisplay);
 				progress.WriteMessage("Processing " + book.NameBestForUserDisplay+ " " + i + "/" + TheOneEditableCollection.GetBookInfos().Count());
+				// Since the user told us to do it, we'll do it even to books that we think are already
+				// up to date. (EnsureUpToDate would do so anyway, since these are newly created Book objects, even if they are
+				// for books we already have in memory.)
 				book.BringBookUpToDate(progress);
 			}
 		}
@@ -802,6 +807,17 @@ namespace Bloom.CollectionTab
 				var newBook = _bookServer.CreateFromSourceBook(sourceBook, TheOneEditableCollection.PathToDirectory);
 				if (newBook == null)
 					return; //This can happen if there is a configuration dialog and the user clicks Cancel
+
+				// We want it to have the name it's eventually going to BEFORE we add it to the collection.
+				// Otherwise, there are race conditions between the code that is selecting it (and as a side
+				// effect, bringing it up to date, which may rename it and its folder, if it already has a
+				// title in the relevant language) and the code that wants to display a thumbnail of the new
+				// item in the list.
+				// (We can't fix this by reordering things, because there will also be problems if we attempt
+				// to select an item before it is present in the collection to select.)
+				// We know this is a new book object, so there's no point in using EnsureUpToDate.
+				// When we later select it, that code uses EnsureUpToDate and will not do it again.
+				newBook.BringBookUpToDate(new NullProgress(), false);
 
 				TheOneEditableCollection.AddBookInfo(newBook.BookInfo);
 

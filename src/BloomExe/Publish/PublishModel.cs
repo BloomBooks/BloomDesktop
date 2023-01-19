@@ -537,18 +537,17 @@ namespace Bloom.Publish
 				return;
 			_currentlyLoadedBook = BookSelection.CurrentSelection;
 			PageLayout = _currentlyLoadedBook.GetLayout();
-			// BL-8648: In case we have an older version of a book (downloaded, e.g.) and the user went
-			// straight to the Publish tab avoiding the Edit tab, we could arrive here needing to update
-			// things. We choose to do the original book update here (when the user clicks on the Publish tab),
-			// instead of the various places that we publish the book.
-			// Note that the BringBookUpToDate() called by PublishHelper.MakeDeviceXmatterTempBook() and
-			// called by BloomReaderFileMaker.PrepareBookForBloomReader() applies to a copy of the book
-			// and is done in a way that explicitly avoids updating images. This call updates the images,
-			// if needed, as a permanent fix.
-			using (var dlg = new ProgressDialogForeground())
-			{
-				dlg.ShowAndDoWork(progress => _currentlyLoadedBook.BringBookUpToDate(progress));
-			}
+
+			// Previous code here always called BBUD, claiming (from BL-8648) that it might be
+			// possible it had not been done if the user publishes a newly created book without
+			// ever editing it. I don't think so, because the only way to Publish tab is when
+			// a book in the editable collection is selected, and selecting a book there always
+			// brings it up to date. But in case that somehow changes, I'm going to preserve
+			// the guarantee that a book being published is up-to-date. However, since I think
+			// this call will always return immediately, I'm not going to create a progress
+			// dialog. We might want to resurrect that if we get to a situation where it is
+			// possible for there to be a significant delay here.
+			_currentlyLoadedBook.EnsureUpToDate();
 
 			CanPublish = DeterminePublishability(); // in case the user edited the book without changing the selected book
 		}
