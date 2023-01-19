@@ -42,7 +42,7 @@ namespace Bloom.Book
 			// BringUpToDate, typically only in unit tests.
 			if (book != null && book.BookData != null && book.IsEditable)
 			{
-				book.BringBookUpToDate(new NullProgress());
+				book.EnsureUpToDate();
 			}
 
 			_currentSelection = book;
