@@ -4,7 +4,6 @@
 // As we run into things that compile fine for the whole build but not in a situation like storybook,
 // then we can move those webpack rules here.
 
-const path = require("path");
 var webpack = require("webpack");
 var WebpackBuildNotifierPlugin = require("webpack-build-notifier");
 
@@ -13,10 +12,6 @@ function NothingPlugin() {
 }
 
 module.exports = {
-    node: {
-        Buffer: false,
-        process: false
-    },
     module: {
         rules: [
             {
