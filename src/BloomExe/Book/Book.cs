@@ -899,8 +899,17 @@ namespace Bloom.Book
 			htmlDom.AddCreationType(LockedDown ? "translation" : "original");
 		}
 
+		// This is useful when we need to BBUD immediately, but we are about to do another
+		// operation that would usually repeat it unnecessarily.
+		public bool SkipNextBringUpToDate { get; set; }
+
 		public void BringBookUpToDate(IProgress progress, bool forCopyOfUpToDateBook = false)
 		{
+			if (SkipNextBringUpToDate)
+			{
+				SkipNextBringUpToDate = false;
+				return;
+			}
 			_pagesCache = null;
 			string oldMetaData = string.Empty;
 			if (RobustFile.Exists(BookInfo.MetaDataPath))

@@ -803,6 +803,17 @@ namespace Bloom.CollectionTab
 				if (newBook == null)
 					return; //This can happen if there is a configuration dialog and the user clicks Cancel
 
+				// We want it to have the name it's eventually going to BEFORE we add it to the collection.
+				// Otherwise, there are race conditions between the code that is selecting it (and as a side
+				// effect, bringing it up to date, which may rename it and its folder, if it already has a
+				// title in the relevant language) and the code that wants to display a thumbnail of the new
+				// item in the list.
+				// (We can't fix this by reordering things, because there will also be problems if we attempt
+				// to select an item before it is present in the collection to select.)
+				newBook.BringBookUpToDate(new NullProgress(), false);
+				// We will shortly select the new book, which without this would wastefully BBUD again.
+				newBook.SkipNextBringUpToDate = true;
+
 				TheOneEditableCollection.AddBookInfo(newBook.BookInfo);
 
 				if (_bookSelection != null)
