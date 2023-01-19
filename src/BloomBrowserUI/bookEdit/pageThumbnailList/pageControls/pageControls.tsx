@@ -20,10 +20,8 @@ import "errorHandler";
 const kPageControlsContext = "pageThumbnailList-pageControls";
 
 interface IPageControlsState {
-    canAddState: boolean;
     canDuplicateState: boolean;
     canDeleteState: boolean;
-    lockState: string; // BookLocked, BookUnlocked, or OriginalBookMode
 }
 
 // This is a small area of controls at the bottom of the webThumbnailList that gives the user controls
@@ -31,10 +29,8 @@ interface IPageControlsState {
 class PageControls extends React.Component<{}, IPageControlsState> {
     // set a initial state
     public readonly state: IPageControlsState = {
-        canAddState: true,
         canDeleteState: false,
-        canDuplicateState: false,
-        lockState: "OriginalBookMode"
+        canDuplicateState: false
     };
 
     constructor(props) {
@@ -85,10 +81,8 @@ class PageControls extends React.Component<{}, IPageControlsState> {
 
     public setPageControlState(data: any): void {
         this.setState({
-            canAddState: data.CanAddPages,
             canDeleteState: data.CanDeletePage,
-            canDuplicateState: data.CanDuplicatePage,
-            lockState: data.BookLockedState
+            canDuplicateState: data.CanDuplicatePage
         });
         //console.log("this.state is " + JSON.stringify(this.state));
     }
@@ -101,7 +95,7 @@ class PageControls extends React.Component<{}, IPageControlsState> {
                         transparent={true}
                         l10nKey="EditTab.AddPageDialog.AddPageButton"
                         l10nComment="This is for the button that LAUNCHES the dialog, not the \'Add this page\' button that is IN the dialog."
-                        enabled={this.state.canAddState}
+                        enabled={true}
                         clickApiEndpoint="edit/pageControls/addPage"
                         mightNavigate={true}
                         enabledImageFile="/bloom/bookEdit/pageThumbnailList/pageControls/addPage.png"
@@ -138,46 +132,6 @@ class PageControls extends React.Component<{}, IPageControlsState> {
                         l10nTipEnglishEnabled="Remove this page from the book"
                         l10nTipEnglishDisabled="This page cannot be removed"
                     />
-                    {this.state.lockState !== "OriginalBookMode" && (
-                        <span>
-                            {this.state.lockState === "BookLocked" && (
-                                <BloomButton
-                                    transparent={true}
-                                    l10nKey="EditTab.UnlockBook"
-                                    l10nComment="Button that tells Bloom to temporarily unlock a shell book for editing other than translation."
-                                    enabled={true}
-                                    clickApiEndpoint="edit/pageControls/unlockBook"
-                                    enabledImageFile="/bloom/bookEdit/pageThumbnailList/pageControls/lockedPage.svg"
-                                    hasText={false}
-                                    l10nTipEnglishEnabled="This book is in translate-only mode. If you want to make other changes, click this to temporarily unlock the book."
-                                />
-                            )}
-                            {this.state.lockState === "BookUnlocked" && (
-                                <BloomButton
-                                    transparent={true}
-                                    l10nKey="EditTab.LockBook"
-                                    l10nComment="Button that tells Bloom to re-lock a shell book so it can't be modified (other than translation)."
-                                    enabled={true}
-                                    clickApiEndpoint="edit/pageControls/lockBook"
-                                    enabledImageFile="/bloom/bookEdit/pageThumbnailList/pageControls/unlockedPage.svg"
-                                    hasText={false}
-                                    l10nTipEnglishEnabled="This book is temporarily unlocked."
-                                />
-                            )}
-                            {this.state.lockState === "NoLocking" && (
-                                <BloomButton
-                                    transparent={true}
-                                    l10nKey="EditTab.NeverLocked"
-                                    l10nComment="Button in a state that indicates books in this collection are always unlocked."
-                                    enabled={false}
-                                    clickApiEndpoint="edit/pageControls/lockBook"
-                                    disabledImageFile="/bloom/bookEdit/pageThumbnailList/pageControls/unlockedPage.svg"
-                                    hasText={false}
-                                    l10nTipEnglishEnabled="Books are never locked in a Source Collection."
-                                />
-                            )}
-                        </span>
-                    )}
                 </div>
             </div>
         );

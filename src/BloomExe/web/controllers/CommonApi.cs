@@ -29,7 +29,6 @@ namespace Bloom.web.controllers
 		private readonly BookSelection _bookSelection;
 		private BloomParseClient _parseClient;
 		private readonly BloomWebSocketServer _webSocketServer;
-		public static bool AuthorMode { get; set; }
 		public EditingModel Model { get; set; }
 
 		// Needed so we can implement CheckForUpdates. Set by the WorkspaceView in its constructor, since
@@ -49,7 +48,6 @@ namespace Bloom.web.controllers
 			apiHandler.RegisterEndpointLegacy("uiLanguages", HandleUiLanguages, false); // App
 			apiHandler.RegisterEndpointLegacy("currentUiLanguage", HandleCurrentUiLanguage, false); // App
 			apiHandler.RegisterEndpointLegacy("bubbleLanguages", HandleBubbleLanguages, false); // Move to EditingViewApi
-			apiHandler.RegisterEndpointLegacy("authorMode", HandleAuthorMode, false); // Move to EditingViewApi
 			apiHandler.RegisterEndpointLegacy("common/error", HandleJavascriptError, false); // Common
 			apiHandler.RegisterEndpointLegacy("common/preliminaryError", HandlePreliminaryJavascriptError, false); // Common
 			apiHandler.RegisterEndpointLegacy("common/saveChangesAndRethinkPageEvent", RethinkPageAndReloadIt, true); // Move to EditingViewApi
@@ -377,14 +375,6 @@ namespace Bloom.web.controllers
 				bubbleLangs.Add(_bookSelection.CurrentSelection.BookData.Language1.Tag);
 				// if it isn't available in any of those we'll arbitrarily take the first one.
 				request.ReplyWithJson(JsonConvert.SerializeObject(new {langs = bubbleLangs}));
-			}
-		}
-
-		public void HandleAuthorMode(ApiRequest request)
-		{
-			lock (request)
-			{
-				request.ReplyWithText(AuthorMode ? "true" : "false");
 			}
 		}
 

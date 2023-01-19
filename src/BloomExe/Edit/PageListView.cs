@@ -86,7 +86,7 @@ namespace Bloom.Edit
 				new WebThumbNailList.MenuItemSpec()
 				{
 					Label = LocalizationManager.GetString("EditTab.PastePage", "Paste Page"),
-					EnableFunction = (page) => page != null && _model.CanAddPages && _model.GetClipboardHasPage(),
+					EnableFunction = (page) => page != null && _model.GetClipboardHasPage(),
 					ExecuteCommand = (page) => _model.PastePage(page)
 				});
 			menuItems.Add(
@@ -101,7 +101,7 @@ namespace Bloom.Edit
 			menuItems.Add(
 				new WebThumbNailList.MenuItemSpec() {
 					Label = LocalizationManager.GetString("EditTab.ChooseLayoutButton", "Choose Different Layout"),
-					EnableFunction = (page) => page != null && !page.Required && !_model.CurrentBook.LockedDown,
+					EnableFunction = (page) => page != null && !page.Required,
 					ExecuteCommand = (page) => _model.ChangePageLayout(page)});
 			// This sets up the context menu items that will be shown when the user clicks the
 			// arrow in the thumbnail list or right-clicks in the page list.

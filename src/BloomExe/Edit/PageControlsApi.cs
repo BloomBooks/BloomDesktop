@@ -65,24 +65,6 @@ namespace Bloom.Edit
 				request.PostSucceeded();
 			}, true).Measureable();
 
-			apiHandler.RegisterEndpointLegacy(kApiUrlPart + "lockBook", request =>
-			{
-				_editingModel.SaveNow(); // BL-5421 lock and unlock lose typing
-				_editingModel.CurrentBook.TemporarilyUnlocked = false;
-				request.PostSucceeded();
-				UpdateState(); // because we aren't selecting a new page
-				_editingModel.RefreshDisplayOfCurrentPage();
-			}, true);
-
-			apiHandler.RegisterEndpointLegacy(kApiUrlPart + "unlockBook", request =>
-			{
-				_editingModel.SaveNow(); // BL-5421 lock and unlock lose typing
-				_editingModel.CurrentBook.TemporarilyUnlocked = true;
-				request.PostSucceeded();
-				UpdateState(); // because we aren't selecting a new page
-				_editingModel.RefreshDisplayOfCurrentPage();
-			}, true);
-
 			apiHandler.RegisterEndpointLegacy(kApiUrlPart + "cleanup", request =>
 			{
 				SendCleanupState();
@@ -131,26 +113,9 @@ namespace Bloom.Edit
 				return JsonConvert.SerializeObject(
 					new
 					{
-						_editingModel.CanAddPages,
 						_editingModel.CanDeletePage,
-						_editingModel.CanDuplicatePage,
-						BookLockedState
+						_editingModel.CanDuplicatePage
 					});
-			}
-		}
-
-		private string BookLockedState
-		{
-			get
-			{
-
-				if (_editingModel.CurrentBook.CollectionSettings.IsSourceCollection)
-					return "NoLocking";
-				return !_editingModel.CurrentBook.RecordedAsLockedDown
-					? "OriginalBookMode"
-					: _editingModel.CurrentBook.LockedDown
-						? "BookLocked"
-						: "BookUnlocked";
 			}
 		}
 
@@ -161,15 +126,8 @@ namespace Bloom.Edit
 				return;
 			_lastButtonClickedTime = DateTime.Now;
 
-			if (_editingModel.CanAddPages)
-			{
-				_editingModel.ShowAddPageDialog();
-			}
-			else
-			{
-				// TODO: localize buttons
-				MessageBox.Show(EditingView.GetInstructionsForUnlockingBook(), "Bloom", MessageBoxButtons.OK, MessageBoxIcon.Information);
-			}
+			_editingModel.ShowAddPageDialog();
+			
 		}
 	}
 }
