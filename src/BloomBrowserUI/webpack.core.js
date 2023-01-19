@@ -4,6 +4,7 @@
 // As we run into things that compile fine for the whole build but not in a situation like storybook,
 // then we can move those webpack rules here.
 
+const path = require("path");
 var webpack = require("webpack");
 var WebpackBuildNotifierPlugin = require("webpack-build-notifier");
 
@@ -29,7 +30,13 @@ module.exports = {
                         loader: "style-loader" // creates style nodes from JS strings
                     },
                     {
-                        loader: "css-loader" // translates CSS into CommonJS
+                        loader: "css-loader", // translates CSS into CommonJS,
+                        options: {
+                            url: (url, resourcePath) => {
+                                // Don't let webpack resolve /bloom/ urls. Just leave them as is.
+                                return !url.startsWith("/bloom/");
+                            }
+                        }
                     },
                     {
                         loader: "less-loader" // compiles Less to CSS
