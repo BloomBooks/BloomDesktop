@@ -13,6 +13,10 @@ function NothingPlugin() {
 }
 
 module.exports = {
+    node: {
+        Buffer: false,
+        process: false
+    },
     module: {
         rules: [
             {
