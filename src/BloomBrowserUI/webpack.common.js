@@ -164,7 +164,7 @@ module.exports = merge(core, {
                 use: [
                     {
                         loader: "babel-loader",
-                        query: {
+                        options: {
                             presets: [
                                 // Ensure that we target our version of geckofx (mozilla/firefox)
                                 [
