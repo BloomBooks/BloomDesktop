@@ -135,6 +135,8 @@ namespace Bloom.Publish.PDF
 			using (var pdfDoc = PdfReader.Open(inputPdfPath, PdfDocumentOpenMode.Modify))
 			{
 				var last = pdfDoc.PageCount - 1;
+				if (last == 0)
+					return;		// don't delete only page (can happen in unit tests)
 				var pdfPage = pdfDoc.Pages[last];
 				if (!PdfPageHasContent(pdfPage))
 				{
@@ -148,6 +150,7 @@ namespace Bloom.Publish.PDF
 		private bool PdfPageHasContent(PdfPage page)
 		{
 			var count = page.Contents.Elements.Count;
+			Debug.WriteLine($"DEBUG PdfPageHasContent: final Pdf page has {count} elements");
 			if (count > 1)
 				return true;
 			if (count == 0)
