@@ -14,26 +14,10 @@ import HtmlHelpLink from "../../react_components/htmlHelpLink";
 import { kMutedTextGray } from "../../bloomMaterialUITheme";
 import { kBloomWarning } from "../../utils/colorUtils";
 
-// Needs require. import ... from ... syntax compiles, but doesn't load the image.
-// The following almost works; it generates a guid.svg file for each svg in the root
-// browser folder, and sets the constants to the guids. This results in the src attribute
-// containing guid.svg, but the root HTML file for ReaderPublish is at
-// browser/publish/ReaderPublish, so that's where the browser looks for guid.svg.
-// import wifiImage = require("./publish-via-wifi.svg");
-// import usbImage = require("./publish-via-usb.svg");
-// import fileImage = require("./publish-to-file.svg");
-
-// But, the files actually get copied to publish/ReaderPublish, so just using those names works.
-// I don't see any advantage for Bloom in the require() approach; we don't need guids to get stuff updated,
-// and it's easier to see what's going on with real file names.
-const wifiImage = "publish-via-wifi.svg";
-const usbImage = "publish-via-usb.svg";
-const fileImage = "publish-to-file.svg";
-
-const methodNameToImageUrl = {
-    wifi: wifiImage,
-    usb: usbImage,
-    file: fileImage
+const methodNameToImageFileName = {
+    wifi: "publish-via-wifi.svg",
+    usb: "publish-via-usb.svg",
+    file: "publish-to-file.svg"
 };
 
 // Lets the user choose how they want to "publish" the bloompub, along with a button to start that process.
@@ -49,7 +33,7 @@ export const MethodChooser: React.FunctionComponent = () => {
         "publish/licenseOK"
     );
 
-    const methodImage = (methodNameToImageUrl as any)[method];
+    const methodImageFileName: string = methodNameToImageFileName[method];
 
     return (
         <React.Fragment>
@@ -120,7 +104,7 @@ export const MethodChooser: React.FunctionComponent = () => {
                             object-fit: contain;
                             margin-bottom: 20px;
                         `}
-                        src={methodImage}
+                        src={`/bloom/publish/ReaderPublish/${methodImageFileName}`}
                         alt="An image that just illustrates the currently selected publishing method."
                     />
                     {getHint(method)}
