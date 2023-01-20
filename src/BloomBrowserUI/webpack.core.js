@@ -29,7 +29,15 @@ module.exports = {
                         loader: "style-loader" // creates style nodes from JS strings
                     },
                     {
-                        loader: "css-loader" // translates CSS into CommonJS
+                        loader: "css-loader", // translates CSS into CommonJS,
+                        options: {
+                            url: {
+                                filter: (url, resourcePath) => {
+                                    // Don't let webpack resolve /bloom/ urls. Just leave them as is.
+                                    return !url.startsWith("/bloom/");
+                                }
+                            }
+                        }
                     },
                     {
                         loader: "less-loader" // compiles Less to CSS
@@ -38,7 +46,7 @@ module.exports = {
             },
             {
                 test: /\.css$/,
-                loader: "style-loader!css-loader"
+                use: ["style-loader", "css-loader"]
             },
             {
                 // this allows things like background-image: url("myComponentsButton.svg") and have the resulting path look for the svg in the stylesheet's folder

@@ -119,7 +119,7 @@ module.exports = merge(core, {
     },
     optimization: {
         minimize: false,
-        namedModules: true,
+        moduleIds: "named",
         splitChunks: {
             cacheGroups: {
                 default: false,
@@ -164,7 +164,7 @@ module.exports = merge(core, {
                 use: [
                     {
                         loader: "babel-loader",
-                        query: {
+                        options: {
                             presets: [
                                 // Ensure that we target our version of geckofx (mozilla/firefox)
                                 [
@@ -191,7 +191,7 @@ module.exports = merge(core, {
                     loader: "url-loader",
                     options: {
                         limit: 10000,
-                        mimetype: "application/font-woff"
+                        mimetype: "font/woff"
                     }
                 }
             }
