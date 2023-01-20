@@ -155,7 +155,7 @@ export const AudioVideoOptionsGroup: React.FunctionComponent<{
             idealDimension: prettyPrintResolution(1280, 720, "16:9"),
             fileFormat: "MP4",
             codec: "H.264",
-            icon: <img src="facebook.png" height="16px" />
+            icon: <img src="/bloom/images/facebook.png" height="16px" />
         },
         {
             format: "feature",
@@ -164,7 +164,7 @@ export const AudioVideoOptionsGroup: React.FunctionComponent<{
             idealDimension: prettyPrintResolution(352, 288, "5:4"),
             fileFormat: "3GP",
             codec: "H.263",
-            icon: <img src="featurephone.svg" height="16px" />
+            icon: <img src="/bloom/images/featurephone.svg" height="16px" />
         },
         {
             format: "youtube",
@@ -173,7 +173,7 @@ export const AudioVideoOptionsGroup: React.FunctionComponent<{
             idealDimension: prettyPrintResolution(1920, 1080, "16:9"),
             fileFormat: "MP4",
             codec: "H.264",
-            icon: <img src="youtube.png" height="16px" />
+            icon: <img src="/bloom/images/youtube.png" height="16px" />
         },
         {
             format: "mp3",

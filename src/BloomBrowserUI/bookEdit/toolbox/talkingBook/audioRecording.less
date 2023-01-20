@@ -126,28 +126,30 @@ div.ui-audioCurrent:not(.ui-suppressHighlight):not(.ui-disableHighlight) p {
         }
     }
     #audio-play {
-        background-image: url(audio/play_enabled.svg);
+        // We need a path here because this image is in a shared folder, not at the same
+        // location as the generated audioRecording.css itself like the others.
+        background-image: url(/bloom/images/play_enabled.svg);
         height: 45px;
         width: 45px; // visually same width as record button
 
         &.expected {
-            background-image: url(audio/play_expected.svg);
+            background-image: url(play_expected.svg);
         }
         &.active {
             // we want to switch to a yellow square. This is a cheap way to get it.
             // If we want some other special shape when play is active, we have a currently-unused
-            // svg we can use/edit at url("audio/play-active.svg")
-            background-image: url(audio/pause_yellow.svg);
+            // svg we can use/edit at url("play-active.svg")
+            background-image: url(pause_yellow.svg);
             //background-color: @bloom-yellow;
         }
     }
     #audio-split {
-        background-image: url(audio/split_enabled.svg);
+        background-image: url(split_enabled.svg);
         height: 45px;
         width: 45px; // visually same width as record button
 
         &.expected {
-            background-image: url(audio/split_expected.svg);
+            background-image: url(split_expected.svg);
         }
     }
 
@@ -217,23 +219,23 @@ div.ui-audioCurrent:not(.ui-suppressHighlight):not(.ui-disableHighlight) p {
         }
     }
     #audio-next {
-        background-image: url(audio/next_enabled.svg);
+        background-image: url(next_enabled.svg);
         &.expected {
-            background-image: url(audio/next_expected.svg);
+            background-image: url(next_expected.svg);
         }
     }
     #audio-prev {
-        background-image: url(audio/prev_enabled.svg);
+        background-image: url(prev_enabled.svg);
     }
     #audio-listen {
         margin-left: 2px; // visually centered
-        background-image: url(audio/listen_enabled.svg);
+        background-image: url(listen_enabled.svg);
         &.active {
-            background-image: url(audio/listen_active.svg);
+            background-image: url(listen_active.svg);
         }
     }
     #audio-clear {
-        background-image: url(audio/clear_enabled.svg);
+        background-image: url(clear_enabled.svg);
     }
     .button-label-wrapper {
         margin-top: 10px;

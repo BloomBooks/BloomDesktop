@@ -76,7 +76,7 @@ export const LocalizableMenuItem: React.FunctionComponent<LocalizableMenuItemPro
                 width: ${kEnterpriseStickerAffordance}px !important;
                 margin-left: 12px;
             `}
-            src="../images/bloom-enterprise-badge.svg"
+            src="/bloom/images/bloom-enterprise-badge.svg"
             title={enterpriseAvailable ? undefined : requiresEnterpriseTooltip}
         />
     ) : (
