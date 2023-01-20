@@ -289,17 +289,6 @@ namespace Bloom.Book
 			Body.AppendChild(MakeJavascriptElement(pathToJavascript));
 		}
 
-		/// <summary>
-		/// The Creation Type is either "translation" or "original". This is used to protect fields that should
-		/// normally not be editable in one or the other.
-		/// This is a bad name, and we know it!
-		/// </summary>
-		public void AddCreationType(string mode)
-		{
-			// RemoveModeStyleSheets() should have already removed any editMode attribute on the body element
-			Body.SetAttribute("bookcreationtype", mode);
-		}
-
 		public void RemoveModeStyleSheets()
 		{
 			foreach(XmlElement linkNode in RawDom.SafeSelectNodes("/html/head/link"))
@@ -2583,20 +2572,6 @@ namespace Bloom.Book
 			if (match.Success)
 				return new Version(match.Captures[0].Value);
 			return new Version(0, 0);
-		}
-
-		public bool RecordedAsLockedDown => SafeSelectNodes(String.Format("//meta[@name='lockedDownAsShell' and @content='true']")).Count > 0;
-
-		public void RecordAsLockedDown(bool locked)
-		{
-			if (locked)
-			{
-				UpdateMetaElement("lockedDownAsShell", "true");
-			}
-			else
-			{
-				RemoveMetaElement("lockedDownAsShell");
-			}
 		}
 
 		/// <summary>

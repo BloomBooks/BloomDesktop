@@ -113,53 +113,25 @@
 }
 
 // override .bloom-content1 min-height 3em from bloom-xmatter-common.less
-body[bookcreationtype="original"] {
-    .titlePage {
-        #languageInformation {
-            .bloom-content1 {
-                min-height: @contentMinimumHeight;
-            }
-        }
-        #contributions {
-            .bloom-content1 {
-                min-height: @contentMinimumHeight;
-            }
-        }
-        #localizedAcknowledgments {
-            .bloom-content1 {
-                min-height: @contentMinimumHeight;
-            }
-        }
-        #funding {
-            .bloom-content1 {
-                min-height: @contentMinimumHeight;
-            }
+.titlePage {
+    #languageInformation {
+        .bloom-content1 {
+            min-height: @contentMinimumHeight;
         }
     }
-}
-
-// override .bloom-contentNational1 min-height 3em from bloom-xmatter-common.less
-body[bookcreationtype="translation"] {
-    .titlePage {
-        #languageInformation {
-            .bloom-content1 {
-                min-height: @contentMinimumHeight;
-            }
+    #contributions {
+        .bloom-content1 {
+            min-height: @contentMinimumHeight;
         }
-        #contributions {
-            .bloom-content1 {
-                min-height: @contentMinimumHeight;
-            }
+    }
+    #localizedAcknowledgments {
+        .bloom-content1 {
+            min-height: @contentMinimumHeight;
         }
-        #localizedAcknowledgments {
-            .bloom-content1 {
-                min-height: @contentMinimumHeight;
-            }
-        }
-        #funding {
-            .bloom-content1 {
-                min-height: @contentMinimumHeight;
-            }
+    }
+    #funding {
+        .bloom-content1 {
+            min-height: @contentMinimumHeight;
         }
     }
 }

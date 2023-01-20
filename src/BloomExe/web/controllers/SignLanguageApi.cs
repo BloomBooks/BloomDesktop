@@ -370,14 +370,6 @@ namespace Bloom.web.controllers
 
 		internal bool WarnIfVideoCantChange(string videoFilePath)
 		{
-			if (!Model.CanChangeImages())
-			{
-				MessageBox.Show(
-					LocalizationManager.GetString("EditTab.CantPasteImageLocked",
-						"Sorry, this book is locked down so that images cannot be changed.")); // Is it worth another LM string so we can say "videos can't be changed?
-				return true;
-			}
-
 			if (!View.CheckIfLockedAndWarn(videoFilePath))
 				return true;
 			return false;

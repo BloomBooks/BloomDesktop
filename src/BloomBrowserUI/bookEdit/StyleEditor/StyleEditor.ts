@@ -78,7 +78,6 @@ export default class StyleEditor {
     private boxBeingEdited: HTMLElement;
     private ignoreControlChanges: boolean;
     private styles: FormattingStyle[];
-    private authorMode: boolean; // true if authoring (rather than translating)
     private xmatterMode: boolean; // true if we are in xmatter (and shouldn't change fixed style names)
     private textColorTitle: string = "Text Color";
 
@@ -228,7 +227,7 @@ export default class StyleEditor {
         const rule: CSSStyleRule | null = this.GetOrCreateRuleForStyle(
             styleName,
             langAttrValue,
-            this.authorMode
+            true
         );
         const units = "pt";
         const sizeString = (fontSize + change).toString();
@@ -271,7 +270,7 @@ export default class StyleEditor {
         const rule: CSSStyleRule | null = this.GetOrCreateRuleForStyle(
             styleName,
             langAttrValue,
-            this.authorMode
+            true
         );
         const units = "pt";
         const sizeString: string = newSize.toString();
@@ -963,14 +962,7 @@ export default class StyleEditor {
         if (!styleName) {
             return;
         }
-        // I'm assuming here that since we're dealing with a local server, we'll get a result long before
-        // the user could actually modify a style and thus need the information.
-        // More dangerous is using it in getCharTabDescription. But as that is launched by a later
-        // async request, I think it should be OK.
 
-        BloomApi.get("authorMode", result => {
-            this.authorMode = result.data === true;
-        });
         this.xmatterMode = IsPageXMatter($(targetBox));
 
         this._previousBox = targetBox;
@@ -1077,7 +1069,7 @@ export default class StyleEditor {
                             // The tab library doesn't allow us to put other class names on the tab-page,
                             // so we are doing it this way rather than the approach of using css to hide
                             // tabs based on class names.
-                            if (!this.authorMode || this.xmatterMode) {
+                            if (this.xmatterMode) {
                                 $("#style-page").remove();
                             }
 
@@ -1183,7 +1175,7 @@ export default class StyleEditor {
                                 1500
                             );
                             this.getParagraphTabDescription();
-                            if (this.authorMode && !this.xmatterMode) {
+                            if (!this.xmatterMode) {
                                 $("#styleSelect").change(() => {
                                     this.selectStyle();
                                 });

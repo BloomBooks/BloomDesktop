@@ -79,39 +79,6 @@ div.ui-tooltip-title {
     border-radius: 3pt;
 }
 
-/* 	Book.GetEditableHtmlDomForPage() now adds an 'bookcreationtype' attribute to the BODY element to distinguish the rules. */
-body[bookcreationtype="original"] div.ui-sourceTextsForBubble textarea,
-body[bookcreationtype="original"] div.ui-sourceTextsForBubble div {
-    background-color: transparent;
-    border: none;
-    overflow: hidden auto; // we never want a horizontal scroll bar in source bubbles
-}
-
-body[bookcreationtype="translation"]
-    div.uibloomSourceTextsBubble
-    div.ui-tooltip-content {
-    width: 210px;
-}
-body[bookcreationtype="translation"] div div.ui-sourceTextsForBubble textarea {
-    height: 304px;
-    background: transparent;
-    border: none;
-    margin-top: 13px;
-    width: 320px;
-    margin: 11px 0 0;
-}
-body[bookcreationtype="translation"]
-    .ui-tooltip
-    .qtip
-    .uibloomSourceTextsBubble {
-    width: 293px !important;
-    height: 138px;
-    max-width: 1009px !important;
-}
-body[bookcreationtype="translation"] div.ui-sourceTextsForBubble ul {
-    background: none;
-}
-
 .ui-front {
     z-index: 19000;
 }

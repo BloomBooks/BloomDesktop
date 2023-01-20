@@ -1259,10 +1259,12 @@
       <trans-unit id="EditTab.CannotChangeCopyright">
         <source xml:lang="en">Sorry, the copyright and license for this book cannot be changed.</source>
         <note>ID: EditTab.CannotChangeCopyright</note>
+        <note>Obsolete as of Bloom 5.5 (no more book locking)</note>
       </trans-unit>
       <trans-unit id="EditTab.CantPasteImageLocked">
         <source xml:lang="en">Sorry, this book is locked down so that images cannot be changed.</source>
         <note>ID: EditTab.CantPasteImageLocked</note>
+        <note>Obsolete as of Bloom 5.5 (no more book locking)</note>
       </trans-unit>
       <trans-unit id="EditTab.ChooseLayoutButton">
         <source xml:lang="en">Choose Different Layout</source>
@@ -1431,6 +1433,7 @@
       <trans-unit id="EditTab.EditNotAllowed" sil:dynamic="true">
         <source xml:lang="en">You cannot change these because this is not the original copy.</source>
         <note>ID: EditTab.EditNotAllowed</note>
+        <note>Obsolete as of Bloom 5.5 (no more book locking)</note>
       </trans-unit>
       <trans-unit id="EditTab.EditTab.Toolbox.DecodableReaderTool.SightWord" sil:dynamic="true">
         <source xml:lang="en">Sight Word</source>
@@ -1781,6 +1784,7 @@
       <trans-unit id="EditTab.HowToUnlockBook">
         <source xml:lang="en">To unlock this shellbook, click the lock icon in the lower left corner.</source>
         <note>ID: EditTab.HowToUnlockBook</note>
+        <note>Obsolete as of Bloom 5.5 (no more book locking)</note>
       </trans-unit>
       <trans-unit id="EditTab.HowToUseHyperlink">
         <source xml:lang="en">To use this hyperlink, go to the page where you are making a Table of Contents. Next, select some text and then click on the image of chain link. This will turn the selected text into a hyperlink to this page.</source>
@@ -1866,6 +1870,7 @@
         <source xml:lang="en">This book is temporarily unlocked.</source>
         <note>ID: EditTab.LockBook.ToolTip</note>
         <note>Button that tells Bloom to re-lock a shell book so it can't be modified (other than translation).</note>
+        <note>Obsolete as of Bloom 5.5 (no more book locking)</note>
       </trans-unit>
       <trans-unit id="EditTab.Monolingual">
         <source xml:lang="en">One Language</source>
@@ -1876,6 +1881,7 @@
         <source xml:lang="en">Books are never locked in a Source Collection.</source>
         <note>ID: EditTab.NeverLocked.ToolTip</note>
         <note>Button in a state that indicates books in this collection are always unlocked.</note>
+        <note>Obsolete as of Bloom 5.5 (no more book locking)</note>
       </trans-unit>
       <trans-unit id="EditTab.NewBookName">
         <source xml:lang="en">Book</source>
@@ -1935,6 +1941,7 @@
       <trans-unit id="EditTab.ReadOnlyInAuthorMode" sil:dynamic="true">
         <source xml:lang="en">You cannot put anything in there while making an original book.</source>
         <note>ID: EditTab.ReadOnlyInAuthorMode</note>
+        <note>Obsolete as of Bloom 5.5 (no more distinction between editing translation and original)</note>
       </trans-unit>
       <trans-unit id="EditTab.RequiresEnterprise" sil:dynamic="true">
         <source xml:lang="en">To use this feature, you'll need to enable Bloom Enterprise.</source>
@@ -2543,6 +2550,7 @@
       <trans-unit id="EditTab.Toolbox.Settings.UnlockShellBookIntroductionText" sil:dynamic="true">
         <source xml:lang="en">Bloom normally prevents most changes to shellbooks. If you need to add pages, change images, etc., tick the box below.</source>
         <note>ID: EditTab.Toolbox.Settings.UnlockShellBookIntroductionText</note>
+        <note>Obsolete as of Bloom 5.5 (no more book locking)</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.SignLanguage.CameraUnavailable" sil:dynamic="true">
         <source xml:lang="en">Camera not available (perhaps in use by another program)</source>
@@ -2778,6 +2786,7 @@
         <source xml:lang="en">This book is in translate-only mode. If you want to make other changes, click this to temporarily unlock the book.</source>
         <note>ID: EditTab.UnlockBook.ToolTip</note>
         <note>Button that tells Bloom to temporarily unlock a shell book for editing other than translation.</note>
+        <note>Obsolete as of Bloom 5.5 (no more book locking)</note>
       </trans-unit>
       <trans-unit id="EditTab.UsingHyperlink">
         <source xml:lang="en">Using a hyperlink</source>
@@ -3425,6 +3434,7 @@
       <trans-unit id="PageList.CantMoveWhenTranslating">
         <source xml:lang="en">Pages can not be re-ordered when you are translating a book.</source>
         <note>ID: PageList.CantMoveWhenTranslating</note>
+        <note>Obsolete as of Bloom 5.5 (no more book locking)</note>
       </trans-unit>
       <trans-unit id="PublishTab.AdobeEulaTitle">
         <source xml:lang="en">Adobe Color Profile License Agreement</source>
