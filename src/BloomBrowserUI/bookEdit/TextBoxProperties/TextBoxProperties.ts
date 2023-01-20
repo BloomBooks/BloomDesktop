@@ -16,7 +16,6 @@ export default class TextBoxProperties {
     private boxBeingEdited: HTMLElement;
     private _supportFilesRoot: string;
     private ignoreControlChanges: boolean;
-    private authorMode: boolean; // true if authoring (rather than translating)
 
     constructor(supportFilesRoot: string) {
         this._supportFilesRoot = supportFilesRoot;

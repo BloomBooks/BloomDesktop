@@ -130,7 +130,7 @@ namespace Bloom.Publish
 			var overlayElementNodes = BookSelection?.CurrentSelection?.RawDom.SelectNodes("//div[contains(@class, 'bloom-textOverPicture')]");
 			var bookContainsOverlayElements = (overlayElementNodes?.Count ?? 0) > 0;
 
-			var bookIsTranslatedFromShell = BookSelection?.CurrentSelection?.RecordedAsLockedDown??false;
+			var bookIsTranslatedFromShell = BookSelection?.CurrentSelection?.BookData?.BookIsDerivative()?? false;
 			return _collectionSettings.HaveEnterpriseFeatures || !bookContainsOverlayElements || bookIsTranslatedFromShell;
 		}
 

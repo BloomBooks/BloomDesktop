@@ -798,3 +798,28 @@ body.simulateColorBlindness {
         display: inherit;
     }
 }
+
+// Moved from editOriginalMode.css when it became obsolete
+//(no longer have original/translation=unlocked/locked modes)
+
+ol#topics {
+    list-style: none;
+}
+// There was a rule for bloom-readOnlyInAuthorMode, but this is obsolete
+// There was also a file editTranslationMode, with a rule for bloom-readOnlyInTranslationMode,
+// but the mode is obsolete so the rule has to be, even though we do still have one field so marked.
+
+div.bloom-metaData {
+    cursor: pointer;
+    /*this signals to jscript that when the user clicks on this div, it should raise the message in data-message (which bloom will catch)*/
+}
+div.bloom-metaData textarea {
+    /*border: transparent; /* jscript will translate to read only*/
+    cursor: pointer;
+    /*this signals to jscript that when the user clicks on this div, it should raise the message in data-message (which bloom will catch)*/
+}
+
+.enablePageCustomization div.marginBox {
+    border: thin dotted rgba(133, 133, 193, 0.9) !important;
+}
+// end of block moved from editOriginalMode
