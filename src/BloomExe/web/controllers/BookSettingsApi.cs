@@ -27,6 +27,7 @@ namespace Bloom.Api
 
 		/// <summary>
 		/// Get a json of the book's settings.
+		/// Not used at present. May be obsolete if book settings are done using config-r
 		/// </summary>
 		private void HandleBookSettings(ApiRequest request)
 		{
@@ -34,8 +35,6 @@ namespace Bloom.Api
 			{
 				case HttpMethods.Get:
 					dynamic settings = new ExpandoObject();
-					settings.isRecordedAsLockedDown = _bookSelection.CurrentSelection.RecordedAsLockedDown;
-					settings.unlockShellBook = _bookSelection.CurrentSelection.TemporarilyUnlocked;
 					settings.currentToolBoxTool = _bookSelection.CurrentSelection.BookInfo.CurrentTool;
 #if UserControlledTemplate
 					settings.isTemplateBook = GetIsBookATemplate();
@@ -45,10 +44,9 @@ namespace Bloom.Api
 				case HttpMethods.Post:
 					//note: since we only have this one value, it's not clear yet whether the panel involved here will be more of a
 					//an "edit settings", or a "book settings", or a combination of them.
-					settings = DynamicJson.Parse(request.RequiredPostJson());
-					_bookSelection.CurrentSelection.TemporarilyUnlocked = settings["unlockShellBook"];
+					//settings = DynamicJson.Parse(request.RequiredPostJson());
 					// This first refresh saves any changes.
-					_pageRefreshEvent.Raise(PageRefreshEvent.SaveBehavior.SaveBeforeRefresh);
+					//_pageRefreshEvent.Raise(PageRefreshEvent.SaveBehavior.SaveBeforeRefresh);
 #if UserControlledTemplate
 					UpdateBookTemplateMode(settings.isTemplateBook);
 					// Now we need to update the active version of the page with possible new template settings

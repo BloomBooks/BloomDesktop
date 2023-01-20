@@ -11,7 +11,7 @@ $(() => {
     $("div.split-pane").splitPane();
 });
 
-export function setupOrigami(isBookLocked: boolean) {
+export function setupOrigami() {
     BloomApi.get("settings/enterpriseEnabled", result2 => {
         const isEnterpriseEnabled: boolean = result2.data;
         const customPages = document.getElementsByClassName("customPage");
@@ -31,12 +31,7 @@ export function setupOrigami(isBookLocked: boolean) {
         // I'm not clear why the rest of this needs to wait until we have
         // the two results, but none of the controls shows up if we leave it all
         // outside the BloomApi functions.
-        if (isBookLocked) {
-            //$(".origami-toggle").attr("title", "localized tooltip");
-            $("#myonoffswitch").attr("disabled", "true");
-        } else {
-            $(".origami-toggle .onoffswitch").change(layoutToggleClickHandler);
-        }
+        $(".origami-toggle .onoffswitch").change(layoutToggleClickHandler);
 
         if ($(".customPage .marginBox.origami-layout-mode").length) {
             setupLayoutMode();

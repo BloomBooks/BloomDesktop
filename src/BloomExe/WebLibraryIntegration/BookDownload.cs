@@ -291,11 +291,6 @@ namespace Bloom.WebLibraryIntegration
 				dom.RemoveMetaElement("lockFormatting");
 				needToSave = true;
 			}
-			if (!BookMetaData.FromString(MetaDataText(destinationPath)).IsSuitableForMakingShells)
-			{
-				dom.RecordAsLockedDown(true);
-				needToSave = true;
-			}
 			if (needToSave)
 				XmlHtmlConverter.SaveDOMAsHtml5(dom.RawDom, htmlFile);
 
