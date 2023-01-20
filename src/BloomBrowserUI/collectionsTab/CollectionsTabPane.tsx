@@ -3,6 +3,7 @@ import { jsx, css } from "@emotion/core";
 
 import React = require("react");
 import { BloomApi } from "../utils/bloomApi";
+import { useApiJson } from "../utils/bloomApiHooks";
 import { BooksOfCollection } from "./BooksOfCollection";
 import { Transition } from "react-transition-group";
 import { SplitPane } from "react-collapse-pane";
@@ -31,7 +32,7 @@ import { EmbeddedProgressDialog } from "../react_components/Progress/ProgressDia
 const kResizerSize = 10;
 
 export const CollectionsTabPane: React.FunctionComponent<{}> = () => {
-    const collections = BloomApi.useApiJson("collections/list");
+    const collections = useApiJson("collections/list");
 
     const [draggingSplitter, setDraggingSplitter] = useState(false);
     const [

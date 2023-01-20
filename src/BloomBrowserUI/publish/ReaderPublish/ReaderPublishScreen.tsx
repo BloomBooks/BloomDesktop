@@ -24,6 +24,7 @@ import {
     useSubscribeToWebSocketForEvent
 } from "../../utils/WebSocketManager";
 import { BloomApi } from "../../utils/bloomApi";
+import { useApiBoolean } from "../../utils/bloomApiHooks";
 import HelpLink from "../../react_components/helpLink";
 import { Link, LinkWithDisabledStyles } from "../../react_components/link";
 import {
@@ -82,14 +83,11 @@ const ReaderPublishScreenInternal: React.FunctionComponent<{
               "working"
     );
 
-    const [defaultLandscape] = BloomApi.useApiBoolean(
+    const [defaultLandscape] = useApiBoolean(
         "publish/android/defaultLandscape",
         false
     );
-    const [canRotate] = BloomApi.useApiBoolean(
-        "publish/android/canRotate",
-        false
-    );
+    const [canRotate] = useApiBoolean("publish/android/canRotate", false);
     useSubscribeToWebSocketForStringMessage(
         "publish-android",
         "androidPreview",

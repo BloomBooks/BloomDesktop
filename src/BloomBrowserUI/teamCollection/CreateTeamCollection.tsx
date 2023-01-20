@@ -5,6 +5,7 @@ import * as React from "react";
 import { useState } from "react";
 
 import { BloomApi } from "../utils/bloomApi";
+import { useApiStringState } from "../utils/bloomApiHooks";
 import { useSubscribeToWebSocketForEvent } from "../utils/WebSocketManager";
 import BloomButton from "../react_components/bloomButton";
 import { Div, P } from "../react_components/l10nComponents";
@@ -66,7 +67,7 @@ export const CreateTeamCollectionDialog: React.FunctionComponent<{
         true
     );
 
-    const [collectionName] = BloomApi.useApiStringState(
+    const [collectionName] = useApiStringState(
         "teamCollection/getCollectionName",
         ""
     );

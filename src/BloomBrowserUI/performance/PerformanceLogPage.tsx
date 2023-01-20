@@ -1,6 +1,7 @@
 import * as React from "react";
 import { useState } from "react";
 import { BloomApi } from "../utils/bloomApi";
+import { useApiData, useApiStringState } from "../utils/bloomApiHooks";
 import { useSubscribeToWebSocketForObjectInMessageParam } from "../utils/WebSocketManager";
 import "./PerformanceLogPage.less";
 import { ScatterPlot } from "@nivo/scatterplot";
@@ -23,12 +24,12 @@ export const PerformanceLogPage: React.FunctionComponent<{
         props.initialPoints || []
     );
 
-    const [applicationInfo] = BloomApi.useApiStringState(
+    const [applicationInfo] = useApiStringState(
         "performance/applicationInfo",
         ""
     );
 
-    const earlierMeasurements = BloomApi.useApiData<IMeasurement[]>(
+    const earlierMeasurements = useApiData<IMeasurement[]>(
         "performance/allMeasurements",
         []
     );

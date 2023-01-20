@@ -5,6 +5,7 @@ import FormGroup from "@material-ui/core/FormGroup";
 import { SettingsGroup } from "../commonPublish/PublishScreenBaseComponents";
 import { useL10n } from "../../react_components/l10nHooks";
 import { BloomApi } from "../../utils/bloomApi";
+import { useApiBoolean, useApiData } from "../../utils/bloomApiHooks";
 import { Div } from "../../react_components/l10nComponents";
 import { FormControl, MenuItem, Select, Typography } from "@material-ui/core";
 import Slider from "@material-ui/core/Slider";
@@ -59,7 +60,7 @@ export const AudioVideoOptionsGroup: React.FunctionComponent<{
 }> = props => {
     // Stores which formats should be non-selectable.
     const [disabledFormats, setDisabledFormats] = useState<string[]>([]);
-    const [motionEnabled] = BloomApi.useApiBoolean(
+    const [motionEnabled] = useApiBoolean(
         "publish/android/canHaveMotionMode",
         false
     );
@@ -193,7 +194,7 @@ export const AudioVideoOptionsGroup: React.FunctionComponent<{
         }
     ]);
 
-    const updatedFormatDimensionsList = BloomApi.useApiData<
+    const updatedFormatDimensionsList = useApiData<
         IFormatDimensionsResponseEntry[] | undefined
     >(`publish/av/getUpdatedFormatDimensions`, undefined);
 

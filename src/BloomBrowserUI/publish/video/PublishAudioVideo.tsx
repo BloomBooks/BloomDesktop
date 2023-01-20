@@ -24,6 +24,12 @@ import {
 import { StorybookContext } from "../../.storybook/StoryBookContext";
 import { useSubscribeToWebSocketForStringMessage } from "../../utils/WebSocketManager";
 import { BloomApi } from "../../utils/bloomApi";
+import {
+    useApiBoolean,
+    useApiState,
+    useApiString,
+    useWatchBooleanEvent
+} from "../../utils/bloomApiHooks";
 import HelpLink from "../../react_components/helpLink";
 import { Link } from "../../react_components/link";
 import { RequiresBloomEnterpriseDialog } from "../../react_components/requiresBloomEnterprise";
@@ -54,6 +60,12 @@ import PublishScreenTemplate from "../commonPublish/PublishScreenTemplate";
 import { EmbeddedProgressDialog } from "../../react_components/Progress/ProgressDialog";
 
 export const PublishAudioVideo = () => {
+    // When the user changes some features, included languages, etc., we
+    // need to rebuild the book and re-run all of our Bloom API queries.
+    // This requires a hard-reset of the whole screen, which we do by
+    // incrementing a `key` prop on the core of this screen.
+    const [keyForReset, setKeyForReset] = useState(0);
+
     if (isLinux()) {
         return (
             <div
@@ -82,11 +94,6 @@ export const PublishAudioVideo = () => {
             </div>
         );
     }
-    // When the user changes some features, included languages, etc., we
-    // need to rebuild the book and re-run all of our Bloom API queries.
-    // This requires a hard-reset of the whole screen, which we do by
-    // incrementing a `key` prop on the core of this screen.
-    const [keyForReset, setKeyForReset] = useState(0);
     return (
         <PublishAudioVideoInternalInternal
             key={keyForReset}
@@ -136,22 +143,19 @@ const PublishAudioVideoInternalInternal: React.FunctionComponent<{
     );
     const save = useL10n("Save", "Common.Save");
     const [closePending, setClosePending] = useState(false);
-    const [avSettings, setAvSettings] = BloomApi.useApiState<
-        IAudioVideoSettings
-    >("publish/av/settings", {
-        format: "facebook",
-        pageTurnDelay: 3,
-        motion: false,
-        pageRange: []
-    });
-
-    const recording = BloomApi.useWatchBooleanEvent(
-        false,
-        "recordVideo",
-        "recording"
+    const [avSettings, setAvSettings] = useApiState<IAudioVideoSettings>(
+        "publish/av/settings",
+        {
+            format: "facebook",
+            pageTurnDelay: 3,
+            motion: false,
+            pageRange: []
+        }
     );
 
-    const isLicenseOK = BloomApi.useWatchBooleanEvent(
+    const recording = useWatchBooleanEvent(false, "recordVideo", "recording");
+
+    const isLicenseOK = useWatchBooleanEvent(
         true,
         "recordVideo",
         "publish/licenseOK"
@@ -164,20 +168,13 @@ const PublishAudioVideoInternalInternal: React.FunctionComponent<{
 
     const [progressState, setProgressState] = useState(ProgressState.Working);
     const [activeStep, setActiveStep] = useState(0);
-    const [isScalingActive] = BloomApi.useApiBoolean(
+    const [isScalingActive] = useApiBoolean(
         "publish/av/isScalingActive",
         false
     );
-    const gotRecording = BloomApi.useWatchBooleanEvent(
-        false,
-        "recordVideo",
-        "ready"
-    );
+    const gotRecording = useWatchBooleanEvent(false, "recordVideo", "ready");
 
-    const [hasActivities] = BloomApi.useApiBoolean(
-        "publish/av/hasActivities",
-        false
-    );
+    const [hasActivities] = useApiBoolean("publish/av/hasActivities", false);
     React.useEffect(() => {
         if (activeStep < 2 && gotRecording) {
             setActiveStep(2);
@@ -200,15 +197,15 @@ const PublishAudioVideoInternalInternal: React.FunctionComponent<{
               "working"
     );
 
-    const [defaultLandscape] = BloomApi.useApiBoolean(
+    const [defaultLandscape] = useApiBoolean(
         "publish/android/defaultLandscape",
         false
     );
 
-    const [
-        useOriginalPageSize,
-        setUseOriginalPageSize
-    ] = BloomApi.useApiBoolean("publish/av/shouldUseOriginalPageSize", false);
+    const [useOriginalPageSize, setUseOriginalPageSize] = useApiBoolean(
+        "publish/av/shouldUseOriginalPageSize",
+        false
+    );
 
     const [playing, setPlaying] = useState(false);
     useSubscribeToWebSocketForStringMessage(
@@ -272,7 +269,7 @@ const PublishAudioVideoInternalInternal: React.FunctionComponent<{
     // would be reset to the value we previously retrieved. With a param that includes
     // any variable element that contributes to the preview URL, we will re-run the query
     // any time it changes. (The actual content of the param is ignored in the backend.)
-    const videoSettings = BloomApi.useApiString(
+    const videoSettings = useApiString(
         "publish/av/videoSettings?regen=" + avSettings.pageTurnDelay,
         ""
     );

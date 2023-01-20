@@ -9,6 +9,7 @@ import {
     Typography
 } from "@material-ui/core";
 import { BloomApi } from "../utils/bloomApi";
+import { useApiStringState } from "../utils/bloomApiHooks";
 import { ThemeProvider } from "@material-ui/styles";
 import "./ProblemDialog.less";
 import BloomButton from "../react_components/bloomButton";
@@ -40,21 +41,18 @@ export const ReportDialog: React.FunctionComponent<{
 
     // Precondition: The returned string from BloomServer must already encode any special characters
     // which are not meant to be treated as HTML code.
-    const [reportHeadingHtml] = BloomApi.useApiStringState(
+    const [reportHeadingHtml] = useApiStringState(
         "problemReport/reportHeadingHtml",
         ""
     );
-    const [email, setEmail] = BloomApi.useApiStringState(
+    const [email, setEmail] = useApiStringState(
         "problemReport/emailAddress",
         ""
     );
     const [submitAttempts, setSubmitAttempts] = useState(0);
     const theme = makeTheme(props.kind);
     const [whatDoing, setWhatDoing] = useState("");
-    const [bookName] = BloomApi.useApiStringState(
-        "problemReport/bookName",
-        "??"
-    );
+    const [bookName] = useApiStringState("problemReport/bookName", "??");
 
     // When submitted, this will contain the url of the YouTrack issue.
     const [issueLink, setIssueLink] = useState("");

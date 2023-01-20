@@ -3,6 +3,7 @@ import { jsx, css } from "@emotion/core";
 
 import * as React from "react";
 import { BloomApi } from "../utils/bloomApi";
+import { useWatchString } from "../utils/bloomApiHooks";
 import { Button, Menu } from "@material-ui/core";
 import TruncateMarkup from "react-truncate-markup";
 import { useTColBookStatus } from "../teamCollection/teamCollectionApi";
@@ -36,7 +37,7 @@ export const BookButton: React.FunctionComponent<{
         | undefined
     >();
     const selected = useIsSelected(props.manager, props.book.id);
-    const bookLabel = BloomApi.useWatchString(
+    const bookLabel = useWatchString(
         props.book.title,
         // These must correspond to what BookCommandsApi.UpdateButtonTitle sends
         "book",

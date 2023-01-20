@@ -4,6 +4,7 @@ import { jsx, css } from "@emotion/core";
 import * as React from "react";
 import BloomButton from "../react_components/bloomButton";
 import { BloomApi } from "../utils/bloomApi";
+import { useApiData } from "../utils/bloomApiHooks";
 import "./TeamCollectionDialog.less";
 import { useL10n } from "../react_components/l10nHooks";
 import { ProgressBox } from "../react_components/Progress/progressBox";
@@ -19,7 +20,7 @@ import {
 } from "../react_components/BloomDialog/BloomDialog";
 import { DialogCloseButton } from "../react_components/BloomDialog/commonDialogComponents";
 import { CollectionHistoryTable } from "./CollectionHistoryTable";
-import { Tab, TabList, TabPanel, Tabs } from "react-tabs";
+import { Tab, TabList, TabPanel } from "react-tabs";
 import { LocalizedString } from "../react_components/l10nComponents";
 import { ThemeProvider } from "@material-ui/styles";
 import { lightTheme } from "../bloomMaterialUITheme";
@@ -54,7 +55,7 @@ const TeamCollectionDialog: React.FunctionComponent<{
         "TeamCollection.TeamCollection"
     );
 
-    const events = BloomApi.useApiData<IBloomWebSocketProgressEvent[]>(
+    const events = useApiData<IBloomWebSocketProgressEvent[]>(
         "teamCollection/getLog",
         []
     );

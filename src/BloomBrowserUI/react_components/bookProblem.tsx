@@ -2,7 +2,7 @@
 import { jsx, css } from "@emotion/core";
 
 import * as React from "react";
-import { BloomApi } from "../utils/bloomApi";
+import { useApiString } from "../utils/bloomApiHooks";
 import { IconHeadingBodyMenuPanel } from "./iconHeadingBodyMenuPanel";
 
 // A block (currently sized to fit in the TeamCollectionBookStatusPanel, we could generalize)
@@ -18,12 +18,12 @@ export const BookProblem: React.FunctionComponent<{
     clickHereArg: string;
     className?: string; // also supports Emotion
 }> = props => {
-    const bookProblemMessage = BloomApi.useApiString(
+    const bookProblemMessage = useApiString(
         "common/problemWithBookMessage",
         "There was a problem with the current book in the Team Collection System"
     );
 
-    const clickHereForHelpMessage = BloomApi.useApiString(
+    const clickHereForHelpMessage = useApiString(
         "common/clickHereForHelp?problem=" + props.clickHereArg,
         "Please click here to get help from the Bloom support team."
     );

@@ -3,12 +3,12 @@ import FormGroup from "@material-ui/core/FormGroup";
 import { ApiCheckbox } from "../../react_components/ApiCheckbox";
 import { SettingsGroup } from "../commonPublish/PublishScreenBaseComponents";
 import { useL10n } from "../../react_components/l10nHooks";
-import { BloomApi } from "../../utils/bloomApi";
+import { useApiBoolean } from "../../utils/bloomApiHooks";
 
 export const PublishFeaturesGroup: React.FunctionComponent<{
     onChange?: () => void;
 }> = props => {
-    const [motionEnabled] = BloomApi.useApiBoolean(
+    const [motionEnabled] = useApiBoolean(
         "publish/android/canHaveMotionMode",
         false
     );

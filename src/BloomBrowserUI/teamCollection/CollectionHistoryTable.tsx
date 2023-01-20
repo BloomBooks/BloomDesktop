@@ -2,7 +2,7 @@
 import { jsx, css } from "@emotion/core";
 
 import * as React from "react";
-import { BloomApi } from "../utils/bloomApi";
+import { useApiData } from "../utils/bloomApiHooks";
 import { BloomAvatar } from "../react_components/bloomAvatar";
 import { useEffect, useState } from "react";
 import { useSubscribeToWebSocketForEvent } from "../utils/WebSocketManager";
@@ -73,7 +73,7 @@ export const CollectionHistoryTable: React.FunctionComponent<{
     useSubscribeToWebSocketForEvent("bookHistory", "eventAdded", () =>
         setGeneration(gen => gen + 1)
     );
-    const events = BloomApi.useApiData<IBookHistoryEvent[]>(
+    const events = useApiData<IBookHistoryEvent[]>(
         "teamCollection/getHistory" +
             (currentBookOnly
                 ? "?currentBookOnly=true&generation=" + generation

@@ -2,9 +2,12 @@
 import { jsx, css } from "@emotion/core";
 
 import * as React from "react";
+import {
+    useApiStringState,
+    useWatchBooleanEvent
+} from "../../utils/bloomApiHooks";
 import { RadioGroup } from "../../react_components/RadioGroup";
 import BloomButton from "../../react_components/bloomButton";
-import { BloomApi } from "../../utils/bloomApi";
 import { isLinux } from "../../utils/isLinux";
 import { useL10n } from "../../react_components/l10nHooks";
 import Typography from "@material-ui/core/Typography";
@@ -23,11 +26,11 @@ const methodNameToImageFileName = {
 // Lets the user choose how they want to "publish" the bloompub, along with a button to start that process.
 // This is a set of radio buttons and image that goes with each choice, plus a button to start off the sharing/saving
 export const MethodChooser: React.FunctionComponent = () => {
-    const [method, setMethod] = BloomApi.useApiStringState(
+    const [method, setMethod] = useApiStringState(
         "publish/android/method",
         "wifi"
     );
-    const isLicenseOK = BloomApi.useWatchBooleanEvent(
+    const isLicenseOK = useWatchBooleanEvent(
         true,
         "publish-android",
         "publish/licenseOK"

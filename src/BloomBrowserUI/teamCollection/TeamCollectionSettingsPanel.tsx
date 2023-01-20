@@ -3,6 +3,7 @@ import { jsx, css } from "@emotion/core";
 
 import * as React from "react";
 import { BloomApi } from "../utils/bloomApi";
+import { useApiStringState } from "../utils/bloomApiHooks";
 import { P } from "../react_components/l10nComponents";
 import { RequiresBloomEnterpriseOverlayWrapper } from "../react_components/requiresBloomEnterprise";
 import "./TeamCollectionSettingsPanel.less";
@@ -17,7 +18,7 @@ import { WireUpForWinforms } from "../utils/WireUpWinform";
 // The contents of the Team Collection panel of the Settings dialog.
 
 export const TeamCollectionSettingsPanel: React.FunctionComponent = props => {
-    const [repoFolderPath] = BloomApi.useApiStringState(
+    const [repoFolderPath] = useApiStringState(
         "teamCollection/repoFolderPath",
         ""
     );

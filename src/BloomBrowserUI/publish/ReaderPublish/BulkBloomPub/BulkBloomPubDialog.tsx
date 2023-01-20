@@ -18,6 +18,7 @@ import { BloomPalette } from "../../../react_components/color-picking/bloomPalet
 import { ColorDisplayButton } from "../../../react_components/color-picking/colorPickerDialog";
 import { ConditionallyEnabledBlock } from "../../../react_components/ConditionallyEnabledBlock";
 import { BloomApi } from "../../../utils/bloomApi";
+import { useApiData, useApiOneWayState } from "../../../utils/bloomApiHooks";
 import { useGetLabelForCollection } from "../../../contentful/UseContentful";
 import { Div } from "../../../react_components/l10nComponents";
 import { kMutedTextGray } from "../../../bloomMaterialUITheme";
@@ -64,14 +65,12 @@ export const InnerBulkBloomPubDialog: React.FunctionComponent<{
 }> = props => {
     // We get the state from the server, but we don't inform it every time the user touches a control.
     // We'll send the new state of the parameters if and when they click the "make" button.
-    const [params, setParams] = BloomApi.useApiOneWayState<
+    const [params, setParams] = useApiOneWayState<
         IBulkBloomPUBPublishParams | undefined
     >("publish/android/file/bulkSaveBloomPubsParams", undefined);
 
-    const bookshelfUrlKey = BloomApi.useApiData<any>(
-        "settings/bookShelfData",
-        ""
-    )?.defaultBookshelfUrlKey;
+    const bookshelfUrlKey = useApiData<any>("settings/bookShelfData", "")
+        ?.defaultBookshelfUrlKey;
 
     // the server doesn't actually know the label for the bookshelf, just its urlKey. So we have to look that up ourselves.
     const bookshelfLabel = useGetLabelForCollection(bookshelfUrlKey, "");

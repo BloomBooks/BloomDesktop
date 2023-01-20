@@ -3,6 +3,10 @@ import { jsx, css } from "@emotion/core";
 import React = require("react");
 import BookMetadataDialog from "../metadata/BookMetadataDialog";
 import { BloomApi } from "../../utils/bloomApi";
+import {
+    useApiBoolean,
+    useCanModifyCurrentBook
+} from "../../utils/bloomApiHooks";
 import { ApiCheckbox } from "../../react_components/ApiCheckbox";
 import { Link } from "../../react_components/link";
 import { SettingsGroup } from "../commonPublish/PublishScreenBaseComponents";
@@ -47,7 +51,7 @@ export const EPUBSettingsGroup: React.FunctionComponent<{
     setMode: (mode: string) => void;
 }> = props => {
     //const [includeImageDescriptionOnPage,setIncludeImageDescriptionOnPage] = BloomApi.useApiBoolean("publish/epub/imageDescriptionSetting", true);
-    const canModifyCurrentBook = BloomApi.useCanModifyCurrentBook();
+    const canModifyCurrentBook = useCanModifyCurrentBook();
     const linkCss = "margin-top: 1em !important; display: block;";
     const disabledLinkCss = canModifyCurrentBook
         ? ""
@@ -61,7 +65,7 @@ export const EPUBSettingsGroup: React.FunctionComponent<{
         null
     );
 
-    const [hasOverlays] = BloomApi.useApiBoolean("publish/epub/overlays", true);
+    const [hasOverlays] = useApiBoolean("publish/epub/overlays", true);
 
     return (
         <div>

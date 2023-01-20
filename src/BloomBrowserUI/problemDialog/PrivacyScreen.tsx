@@ -2,9 +2,9 @@ import * as React from "react";
 import { Typography } from "@material-ui/core";
 import "./ProblemDialog.less";
 import ArrowBack from "@material-ui/icons/ArrowBack";
-import { BloomApi } from "../utils/bloomApi";
 import { useL10n } from "../react_components/l10nHooks";
 import BloomButton from "../react_components/bloomButton";
+import { useApiStringState } from "../utils/bloomApiHooks";
 
 export const PrivacyScreen: React.FunctionComponent<{
     includeBook: boolean;
@@ -17,7 +17,7 @@ export const PrivacyScreen: React.FunctionComponent<{
         "Common.Loading",
         "This is shown when Bloom is slowly loading something, so the user doesn't worry about why they don't see the result immediately."
     );
-    const log = BloomApi.useApiStringState(
+    const log = useApiStringState(
         `problemReport/diagnosticInfo?includeBook=${
             props.includeBook ? "true" : "false"
         }&email=${props.email}&userInput=${props.userInput}`,

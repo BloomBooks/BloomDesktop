@@ -19,6 +19,7 @@ import "errorHandler";
 import WebSocketManager from "../../utils/WebSocketManager";
 import { Responsive } from "react-grid-layout";
 import { BloomApi } from "../../utils/bloomApi";
+import { useApiData } from "../../utils/bloomApiHooks";
 import { PageThumbnail } from "./PageThumbnail";
 import LazyLoad, { forceCheck } from "react-lazyload";
 
@@ -77,7 +78,7 @@ const PageList: React.FunctionComponent<{ pageSize: string }> = props => {
     const [twoColumns, setTwoColumns] = useState(true);
 
     const [selectedPageId, setSelectedPageId] = useState("");
-    const bookAttributesThatMayAffectDisplay = BloomApi.useApiData<any>(
+    const bookAttributesThatMayAffectDisplay = useApiData<any>(
         "pageList/bookAttributesThatMayAffectDisplay",
         {}
     );

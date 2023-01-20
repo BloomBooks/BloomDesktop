@@ -6,7 +6,10 @@ import {
     ColorDisplayButton,
     DialogResult
 } from "../../react_components/color-picking/colorPickerDialog";
-import { BloomApi } from "../../utils/bloomApi";
+import {
+    useApiBoolean,
+    useApiStringStatePromise
+} from "../../utils/bloomApiHooks";
 import { StorybookContext } from "../../.storybook/StoryBookContext";
 import { useL10n } from "../../react_components/l10nHooks";
 import { useContext } from "react";
@@ -32,23 +35,23 @@ const CoverColorControl: React.FunctionComponent<{
 }> = props => {
     // The old default cover color was "white". This made it impossible to tell if the color had been
     // updated or not. This works well. This api always returns SOME cover color.
-    const [
-        bookCoverColor,
-        setBookCoverColor
-    ] = BloomApi.useApiStringStatePromise("publish/android/backColor", "");
+    const [bookCoverColor, setBookCoverColor] = useApiStringStatePromise(
+        "publish/android/backColor",
+        ""
+    );
 
     // I (gjm) was thinking this had to do with if a book is "unlocked", but apparently it's more to do
     // with whether it checked out in Team Collections or not.
     // Currently, there is no UI difference to indicate that the control is disabled. It just won't do
     // anything if the user clicks on it.
-    const [canModifyCurrentBook] = BloomApi.useApiBoolean(
+    const [canModifyCurrentBook] = useApiBoolean(
         "common/canModifyCurrentBook",
         false
     );
 
     // The 2 comic templates and the Video template have black covers and a 'meta' tag that preserves
     // the cover color, so it doesn't get changed. The color picker shouldn't function on these.
-    const [hasPreserveCoverColor] = BloomApi.useApiBoolean(
+    const [hasPreserveCoverColor] = useApiBoolean(
         "common/hasPreserveCoverColor",
         false
     );
