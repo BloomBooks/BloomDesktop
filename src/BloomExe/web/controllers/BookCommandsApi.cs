@@ -337,7 +337,7 @@ namespace Bloom.web.controllers
 
 		internal void HandleSaveAsDotBloomSource(Book.Book book)
 		{
-			HandleBringBookUpToDate(book);
+			book.EnsureUpToDate();
 
 			const string bloomFilter = "Bloom Source files (*.bloomSource)|*.bloomSource|All files (*.*)|*.*";
 			var destFileName = GetOutputFileOutsideBookFolder(".bloomSource", bloomFilter, book.Storage);

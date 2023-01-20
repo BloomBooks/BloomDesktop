@@ -87,7 +87,7 @@ namespace Bloom.CLI
 			book.LockDownTheFileAndFolderName = true;
 
 			book.SetLayout(layout);
-			book.BringBookUpToDate(new NullProgress());
+			book.EnsureUpToDate();
 			Console.WriteLine("Finished Hydrating.");
 			Debug.WriteLine("Finished Hydrating.");
 			return 0;
