@@ -259,21 +259,6 @@ function AddLanguageTags(container) {
                 return;
             }
 
-            // Make sure language tags appear or disappear depending on what edit mode we are in
-            const isTranslationMode = IsInTranslationMode();
-            if (
-                isTranslationMode &&
-                $this.hasClass("bloom-readOnlyInTranslationMode")
-            ) {
-                return;
-            }
-            if (
-                !isTranslationMode &&
-                $this.hasClass("bloom-readOnlyInAuthorMode")
-            ) {
-                return;
-            }
-
             const key = $this.attr("lang");
             if (key !== undefined && (key === "*" || key.length < 1)) {
                 return; //seeing a "*" was confusing even to me
@@ -321,17 +306,6 @@ function GetEditor() {
 
 function GetOverflowChecker() {
     return new OverflowChecker();
-}
-
-function IsInTranslationMode() {
-    const body = $("body");
-    // This used to check for "editMode", but that has been replaced by "bookcreationtype"
-    // by the time we get here.
-    if (!body.hasAttr("bookcreationtype")) {
-        return false;
-    } else {
-        return body.attr("bookcreationtype") === "translation";
-    }
 }
 
 let onLoadHappenedNormally = false;
@@ -604,9 +578,6 @@ export function SetupElements(container: HTMLElement) {
         });
 
     AddLanguageTags(container);
-
-    // If the user moves over something they can't edit, show a tooltip explaining why not
-    BloomNotices.addEditingNotAllowedMessages(container);
 
     //Same thing for divs which are potentially editable, but via the contentEditable attribute instead of TextArea's ReadOnly attribute
     // editTranslationMode.css/editOriginalMode.css can't get at the contentEditable (css can't do that), so
@@ -1078,7 +1049,7 @@ function AddXMatterLabelAfterPageLabel(container) {
 // Only put setup code here which is guaranteed to only be run once per page load.
 // e.g. Don't put setup for elements such as image containers or editable boxes which may get added after page load.
 function OneTimeSetup() {
-    setupOrigami(IsInTranslationMode()); // 'true' means book is locked.
+    setupOrigami();
     hookupLinkHandler();
 }
 

@@ -275,22 +275,12 @@ namespace Bloom.web.controllers
 
 		private void HandleChooseWidget(ApiRequest request)
 		{
-			if (!View.Model.CanChangeImages())
-			{
-				// Enhance: more widget-specific message?
-				MessageBox.Show(
-					LocalizationManager.GetString("EditTab.CantPasteImageLocked",
-						"Sorry, this book is locked down so that images cannot be changed."));
-				request.ReplyWithText("");
-				return;
-			}
-
 			using (var dlg = new DialogAdapters.OpenFileDialogAdapter
-			{
-				Multiselect = false,
-				CheckFileExists = true,
-				Filter = "Widget files|*.wdgt;*.html;*.htm"
-			})
+			       {
+				       Multiselect = false,
+				       CheckFileExists = true,
+				       Filter = "Widget files|*.wdgt;*.html;*.htm"
+			       })
 			{
 				var result = dlg.ShowDialog();
 				if (result != DialogResult.OK)

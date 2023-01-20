@@ -167,159 +167,135 @@ namespace Bloom.WebLibraryIntegration
 			HtmlDom domForLocking = null;
 			var metaDataText = MetaDataText(bookFolder);
 			var metadata = BookMetaData.FromString(metaDataText);
-			if (!String.IsNullOrEmpty(htmlFile))
-			{
-				var xmlDomFromHtmlFile = XmlHtmlConverter.GetXmlDomFromHtmlFile(htmlFile, false);
-				domForLocking = new HtmlDom(xmlDomFromHtmlFile);
-				wasLocked = domForLocking.RecordedAsLockedDown;
-				allowLocking = !metadata.IsSuitableForMakingShells;
-				if (allowLocking && !wasLocked)
-				{
-					domForLocking.RecordAsLockedDown(true);
-					XmlHtmlConverter.SaveDOMAsHtml5(domForLocking.RawDom, htmlFile);
-				}
-			}
 			string s3BookId;
+			// In case we somehow have a book with no ID, we must have one to upload it.
+			if (String.IsNullOrEmpty(metadata.Id))
+			{
+				metadata.Id = Guid.NewGuid().ToString();
+			}
+			// And similarly it should have SOME title.
+			if (String.IsNullOrEmpty(metadata.Title))
+			{
+				metadata.Title = Path.GetFileNameWithoutExtension(bookFolder);
+			}
+			metadata.SetUploader(UserId);
+			s3BookId = S3BookId(metadata);
+#if DEBUG
+			// S3 URL can be reasonably deduced, as long as we have the S3 ID, so print that out in Debug mode.
+			// Format: $"https://s3.amazonaws.com/BloomLibraryBooks{isSandbox}/{s3BookId}/{title}"
+			// Example: https://s3.amazonaws.com/BloomLibraryBooks-Sandbox/jeffrey_su@sil.org/8d0d9043-a1bb-422d-aa5b-29726cdcd96a/AutoSplit+Timings
+			var msgBookId = "s3BookId: " + s3BookId;
+			progress.WriteMessage(msgBookId);
+#endif
+			metadata.DownloadSource = s3BookId;
+			// If the collection has a default bookshelf, make sure the book has that tag.
+			// Also make sure it doesn't have any other bookshelf tags (which would typically be
+			// from a previous default bookshelf upload), including a duplicate of the one
+			// we may be about to add.
+			var tags = (metadata.Tags?? new string[0]).Where(t => !t.StartsWith("bookshelf:"));
+
+			if (!String.IsNullOrEmpty(collectionSettings?.DefaultBookshelf))
+			{
+				tags = tags.Concat(new [] {"bookshelf:" + collectionSettings.DefaultBookshelf});
+			}
+			metadata.Tags = tags.ToArray();
+
+			// Any updated ID at least needs to become a permanent part of the book.
+			// The file uploaded must also contain the correct DownloadSource data, so that it can be used
+			// as an 'order' to download the book.
+			// It simplifies unit testing if the metadata file is also updated with the uploadedBy value.
+			// Not sure if there is any other reason to do it (or not do it).
+			// For example, do we want to send/receive who is the latest person to upload?
+			metadata.WriteToFolder(bookFolder);
+			// The metadata is also a book order...but we need it on the server with the desired file name,
+			// because we can't rename on download. The extension must be the one Bloom knows about,
+			// and we want the file name to indicate which book, so use the name of the book folder.
+			// We also want to clear out old book orders with previous (other language?) filenames.
+			// See https://issues.bloomlibrary.org/youtrack/issue/BL-7616.
+			foreach (var file in Directory.GetFiles(bookFolder, $"*{BookInfo.BookOrderExtension}"))
+				RobustFile.Delete(file);
+			var metadataPath = BookMetaData.MetaDataPath(bookFolder);
+			RobustFile.Copy(metadataPath, BookInfo.BookOrderPath(bookFolder), true);
+			parseId = "";
 			try
 			{
-				// In case we somehow have a book with no ID, we must have one to upload it.
-				if (String.IsNullOrEmpty(metadata.Id))
+				_s3Client.UploadBook(s3BookId, bookFolder, progress, pdfToInclude, audioFilesToInclude, videoFilesToInclude, languages,
+					metadataLang1Code, metadataLang2Code);
+				metadata.BaseUrl = _s3Client.BaseUrl;
+				metadata.BookOrder = _s3Client.BookOrderUrlOfRecentUpload;
+				var metaMsg = LocalizationManager.GetString("PublishTab.Upload.UploadingBookMetadata", "Uploading book metadata", "In this step, Bloom is uploading things like title, languages, and topic tags to the BloomLibrary.org database.");
+				if (IsDryRun)
+					metaMsg = "(Dry run) Would upload book metadata";	// TODO: localize?
+				progress.WriteStatus(metaMsg);
+				// Do this after uploading the books, since the ThumbnailUrl is generated in the course of the upload.
+				if (!IsDryRun && !progress.CancelRequested)
 				{
-					metadata.Id = Guid.NewGuid().ToString();
-				}
-				// And similarly it should have SOME title.
-				if (String.IsNullOrEmpty(metadata.Title))
-				{
-					metadata.Title = Path.GetFileNameWithoutExtension(bookFolder);
-				}
-				metadata.SetUploader(UserId);
-				s3BookId = S3BookId(metadata);
-#if DEBUG
-				// S3 URL can be reasonably deduced, as long as we have the S3 ID, so print that out in Debug mode.
-				// Format: $"https://s3.amazonaws.com/BloomLibraryBooks{isSandbox}/{s3BookId}/{title}"
-				// Example: https://s3.amazonaws.com/BloomLibraryBooks-Sandbox/jeffrey_su@sil.org/8d0d9043-a1bb-422d-aa5b-29726cdcd96a/AutoSplit+Timings
-				var msgBookId = "s3BookId: " + s3BookId;
-				progress.WriteMessage(msgBookId);
-#endif
-				metadata.DownloadSource = s3BookId;
-				// If the collection has a default bookshelf, make sure the book has that tag.
-				// Also make sure it doesn't have any other bookshelf tags (which would typically be
-				// from a previous default bookshelf upload), including a duplicate of the one
-				// we may be about to add.
-				var tags = (metadata.Tags?? new string[0]).Where(t => !t.StartsWith("bookshelf:"));
-
-				if (!String.IsNullOrEmpty(collectionSettings?.DefaultBookshelf))
-				{
-					tags = tags.Concat(new [] {"bookshelf:" + collectionSettings.DefaultBookshelf});
-				}
-				metadata.Tags = tags.ToArray();
-
-				// Any updated ID at least needs to become a permanent part of the book.
-				// The file uploaded must also contain the correct DownloadSource data, so that it can be used
-				// as an 'order' to download the book.
-				// It simplifies unit testing if the metadata file is also updated with the uploadedBy value.
-				// Not sure if there is any other reason to do it (or not do it).
-				// For example, do we want to send/receive who is the latest person to upload?
-				metadata.WriteToFolder(bookFolder);
-				// The metadata is also a book order...but we need it on the server with the desired file name,
-				// because we can't rename on download. The extension must be the one Bloom knows about,
-				// and we want the file name to indicate which book, so use the name of the book folder.
-				// We also want to clear out old book orders with previous (other language?) filenames.
-				// See https://issues.bloomlibrary.org/youtrack/issue/BL-7616.
-				foreach (var file in Directory.GetFiles(bookFolder, $"*{BookInfo.BookOrderExtension}"))
-					RobustFile.Delete(file);
-				var metadataPath = BookMetaData.MetaDataPath(bookFolder);
-				RobustFile.Copy(metadataPath, BookInfo.BookOrderPath(bookFolder), true);
-				parseId = "";
-				try
-				{
-					_s3Client.UploadBook(s3BookId, bookFolder, progress, pdfToInclude, audioFilesToInclude, videoFilesToInclude, languages,
-						metadataLang1Code, metadataLang2Code);
-					metadata.BaseUrl = _s3Client.BaseUrl;
-					metadata.BookOrder = _s3Client.BookOrderUrlOfRecentUpload;
-					var metaMsg = LocalizationManager.GetString("PublishTab.Upload.UploadingBookMetadata", "Uploading book metadata", "In this step, Bloom is uploading things like title, languages, and topic tags to the BloomLibrary.org database.");
-					if (IsDryRun)
-						metaMsg = "(Dry run) Would upload book metadata";	// TODO: localize?
-					progress.WriteStatus(metaMsg);
-					// Do this after uploading the books, since the ThumbnailUrl is generated in the course of the upload.
-					if (!IsDryRun && !progress.CancelRequested)
+					// Do NOT save this change in the book folder!
+					metadata.AllTitles = PublishModel.RemoveUnwantedLanguageDataFromAllTitles(metadata.AllTitles,
+						languages);
+					var response = ParseClient.SetBookRecord(metadata.WebDataJson);
+					parseId = response.ResponseUri.LocalPath;
+					int index = parseId.LastIndexOf('/');
+					parseId = parseId.Substring(index + 1);
+					if (parseId == "books")
 					{
-						// Do NOT save this change in the book folder!
-						metadata.AllTitles = PublishModel.RemoveUnwantedLanguageDataFromAllTitles(metadata.AllTitles,
-							languages);
-						var response = ParseClient.SetBookRecord(metadata.WebDataJson);
-						parseId = response.ResponseUri.LocalPath;
-						int index = parseId.LastIndexOf('/');
-						parseId = parseId.Substring(index + 1);
-						if (parseId == "books")
-						{
-							// For NEW books the response URL is useless...need to do a new query to get the ID.
-							var json = ParseClient.GetSingleBookRecord(metadata.Id);
-							parseId = json.objectId.Value;
-						}
-						//   if (!UseSandbox) // don't make it seem like there are more uploads than their really are if this a tester pushing to the sandbox
-						{
-							Analytics.Track("UploadBook-Success", new Dictionary<string, string>() { { "url", metadata.BookOrder }, { "title", metadata.Title } });
-						}
+						// For NEW books the response URL is useless...need to do a new query to get the ID.
+						var json = ParseClient.GetSingleBookRecord(metadata.Id);
+						parseId = json.objectId.Value;
 					}
-				}
-				catch (WebException e)
-				{
-					DisplayNetworkUploadProblem(e, progress);
-					if (IsProductionRun) // don't make it seem like there are more upload failures than their really are if this a tester pushing to the sandbox
-						Analytics.Track("UploadBook-Failure", new Dictionary<string, string>() { { "url", metadata.BookOrder }, { "title", metadata.Title }, { "error", e.Message } });
-					return "";
-				}
-				catch (AmazonS3Exception e)
-				{
-					if (e.Message.Contains("The difference between the request time and the current time is too large"))
+					//   if (!UseSandbox) // don't make it seem like there are more uploads than their really are if this a tester pushing to the sandbox
 					{
-						progress.WriteError(LocalizationManager.GetString("PublishTab.Upload.TimeProblem",
-							"There was a problem uploading your book. This is probably because your computer is set to use the wrong timezone or your system time is badly wrong. See http://www.di-mgt.com.au/wclock/help/wclo_setsysclock.html for how to fix this."));
-						if (IsProductionRun)
-							Analytics.Track("UploadBook-Failure-SystemTime");
+						Analytics.Track("UploadBook-Success", new Dictionary<string, string>() { { "url", metadata.BookOrder }, { "title", metadata.Title } });
 					}
-					else
-					{
-						DisplayNetworkUploadProblem(e, progress);
-						if (IsProductionRun)
-							// don't make it seem like there are more upload failures than there really are if this a tester pushing to the sandbox
-							Analytics.Track("UploadBook-Failure",
-								new Dictionary<string, string>() { { "url", metadata.BookOrder }, { "title", metadata.Title }, { "error", e.Message } });
-					}
-					return "";
-				}
-				catch (AmazonServiceException e)
-				{
-					DisplayNetworkUploadProblem(e, progress);
-					if (IsProductionRun) // don't make it seem like there are more upload failures than there really are if this a tester pushing to the sandbox
-						Analytics.Track("UploadBook-Failure", new Dictionary<string, string>() { { "url", metadata.BookOrder }, { "title", metadata.Title }, { "error", e.Message } });
-					return "";
-				}
-				catch (Exception e)
-				{
-					var msg1 = LocalizationManager.GetString("PublishTab.Upload.UploadProblemNotice",
-						"There was a problem uploading your book. You may need to restart Bloom or get technical help.");
-					var msg2 = e.Message.Replace("{", "{{").Replace("}", "}}");
-					progress.WriteError(msg1);
-					progress.WriteError(msg2);
-					progress.WriteVerbose(e.StackTrace);
-
-					if (IsProductionRun) // don't make it seem like there are more upload failures than there really are if this a tester pushing to the sandbox
-						Analytics.Track("UploadBook-Failure", new Dictionary<string, string>() { { "url", metadata.BookOrder }, { "title", metadata.Title }, { "error", e.Message } });
-					return "";
 				}
 			}
-			finally
+			catch (WebException e)
 			{
-				if (domForLocking != null && allowLocking && !wasLocked)
-				{
-					domForLocking.RecordAsLockedDown(false);
-					XmlHtmlConverter.SaveDOMAsHtml5(domForLocking.RawDom, htmlFile);
-				}
-
+				DisplayNetworkUploadProblem(e, progress);
+				if (IsProductionRun) // don't make it seem like there are more upload failures than their really are if this a tester pushing to the sandbox
+					Analytics.Track("UploadBook-Failure", new Dictionary<string, string>() { { "url", metadata.BookOrder }, { "title", metadata.Title }, { "error", e.Message } });
+				return "";
 			}
-			
+			catch (AmazonS3Exception e)
+			{
+				if (e.Message.Contains("The difference between the request time and the current time is too large"))
+				{
+					progress.WriteError(LocalizationManager.GetString("PublishTab.Upload.TimeProblem",
+						"There was a problem uploading your book. This is probably because your computer is set to use the wrong timezone or your system time is badly wrong. See http://www.di-mgt.com.au/wclock/help/wclo_setsysclock.html for how to fix this."));
+					if (IsProductionRun)
+						Analytics.Track("UploadBook-Failure-SystemTime");
+				}
+				else
+				{
+					DisplayNetworkUploadProblem(e, progress);
+					if (IsProductionRun)
+						// don't make it seem like there are more upload failures than there really are if this a tester pushing to the sandbox
+						Analytics.Track("UploadBook-Failure",
+							new Dictionary<string, string>() { { "url", metadata.BookOrder }, { "title", metadata.Title }, { "error", e.Message } });
+				}
+				return "";
+			}
+			catch (AmazonServiceException e)
+			{
+				DisplayNetworkUploadProblem(e, progress);
+				if (IsProductionRun) // don't make it seem like there are more upload failures than there really are if this a tester pushing to the sandbox
+					Analytics.Track("UploadBook-Failure", new Dictionary<string, string>() { { "url", metadata.BookOrder }, { "title", metadata.Title }, { "error", e.Message } });
+				return "";
+			}
+			catch (Exception e)
+			{
+				var msg1 = LocalizationManager.GetString("PublishTab.Upload.UploadProblemNotice",
+					"There was a problem uploading your book. You may need to restart Bloom or get technical help.");
+				var msg2 = e.Message.Replace("{", "{{").Replace("}", "}}");
+				progress.WriteError(msg1);
+				progress.WriteError(msg2);
+				progress.WriteVerbose(e.StackTrace);
+
+				if (IsProductionRun) // don't make it seem like there are more upload failures than there really are if this a tester pushing to the sandbox
+					Analytics.Track("UploadBook-Failure", new Dictionary<string, string>() { { "url", metadata.BookOrder }, { "title", metadata.Title }, { "error", e.Message } });
+				return "";
+			}
+
 			return s3BookId;
 		}
 

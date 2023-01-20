@@ -375,18 +375,14 @@ namespace Bloom.Edit
 			get { return _bookSelection.CurrentSelection; }
 		}
 
-		public bool CanAddPages
-		{
-			get { return !(CurrentBook.LockedDown || CurrentBook.IsCalendar); }
-		}
+		public bool CanAddPages => !CurrentBook.IsCalendar;
 
 		public bool CanDuplicatePage
 		{
 			get
 			{
 				return _pageSelection != null && _pageSelection.CurrentSelection != null &&
-					   !_pageSelection.CurrentSelection.Required && _currentlyDisplayedBook != null
-					   && !_currentlyDisplayedBook.LockedDown;//this clause won't work when we start allowing custom front/backmatter pages
+				       !_pageSelection.CurrentSelection.Required && _currentlyDisplayedBook != null;
 			}
 		}
 
@@ -411,8 +407,7 @@ namespace Bloom.Edit
 			get
 			{
 				return _pageSelection != null && _pageSelection.CurrentSelection != null &&
-					   !_pageSelection.CurrentSelection.Required && _currentlyDisplayedBook!=null
-					   && !_currentlyDisplayedBook.LockedDown;//this clause won't work when we start allowing custom front/backmatter pages
+				       !_pageSelection.CurrentSelection.Required && _currentlyDisplayedBook != null;
 			}
 
 		}
@@ -533,12 +528,6 @@ namespace Bloom.Edit
 		public int NumberOfDisplayedLanguages
 		{
 			get { return ContentLanguages.Where(l => l.Selected).Count(); }
-		}
-
-		public bool CanEditCopyrightAndLicense
-		{
-			get { return CurrentBook.CanChangeLicense; }
-
 		}
 
 		public class ContentLanguage
@@ -794,7 +783,6 @@ namespace Bloom.Edit
 			InsertLabelAndLayoutTogglePane(_domForCurrentPage);
 			_currentPage = BloomServer.MakeSimulatedPageFileInBookFolder(_domForCurrentPage, true);
 			CheckForBL2634("made simulated page");
-			CommonApi.AuthorMode = CanAddPages;
 		}
 
 		private void AddMissingCopyrightNoticeIfNeeded()
@@ -1349,12 +1337,6 @@ namespace Bloom.Edit
 			}
 			return null;
 		}
-
-		public bool CanChangeImages()
-		{
-			return _currentlyDisplayedBook.CanChangeImages;
-		}
-
 
 		public Layout GetCurrentLayout()
 		{

@@ -238,17 +238,3 @@
         background-color: @DarkSwitch; // switched-on switch turns dark gray
     }
 }
-
-// Turn whole toggle gray if in translation mode
-// Review: I haven't figured out how to get the disabled switch 'hollow'. It seems inordinately complicated.
-body[bookcreationtype="translation"] .origami-toggle {
-    div {
-        color: @DisabledColor;
-    }
-    label {
-        border-color: @DisabledColor;
-    }
-    span {
-        background-color: @DisabledColor;
-    }
-}

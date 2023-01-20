@@ -428,17 +428,6 @@ namespace Bloom.Book
 			pageDom.RemoveModeStyleSheets();
 			pageDom.AddStyleSheet("basePage.css");
 			pageDom.AddStyleSheet("editMode.css");
-			if (LockedDown)
-			{
-				pageDom.AddStyleSheet("editTranslationMode.css");
-			}
-			else
-			{
-				pageDom.AddStyleSheet("editOriginalMode.css");
-			}
-
-			AddCreationTypeAttribute(pageDom);
-
 			pageDom.AddStyleSheet("editPaneGlobal.css");
 			pageDom.AddStyleSheet("");
 			pageDom.SortStyleSheetLinks();
@@ -850,7 +839,6 @@ namespace Bloom.Book
 				return _previewDom;
 			}
 			var previewDom= GetBookDomWithStyleSheets("previewMode.css", "origami.css");
-			AddCreationTypeAttribute(previewDom);
 
 			//We may have just run into an error for the first time
 			if (HasFatalError)
@@ -892,11 +880,6 @@ namespace Bloom.Book
 
 			_previewDom = previewDom;
 			return previewDom;
-		}
-
-		private void AddCreationTypeAttribute(HtmlDom htmlDom)
-		{
-			htmlDom.AddCreationType(LockedDown ? "translation" : "original");
 		}
 
 		// Generally BringBookUpToDate only needs doing once, so keep track of whether we have.
@@ -2029,137 +2012,27 @@ namespace Bloom.Book
 			}
 		}
 
-		/*
-		 *					Basic Book		Shellbook		Calendar		Picture Dictionary		Picture Dictionary Premade
-		 *	Change Images		y				n				y					y					y
-		 *	UseSrcForTmpPgs		y				n				n					y					y
-		 *	remove pages		y				n				n					y					y
-		 *	change orig creds	y				n				n					y					no?
-		 *	change license		y				n				y					y					no?
-		 */
-
-		/*
-		 *  The current design: for all these settings, put them in meta, except, override them all with the "LockDownForShell" setting, which can be specified in a meta tag.
-		 *  The default for all permissions is 'true', so don't specify them in a document unless you want to withhold the permission.
-		 *  See UseSourceForTemplatePages for one the exception.
-		 */
-
-		/// <summary>
-		/// This one is a bit different becuase we just imply that it's false unless at least one pageTemplateSource is specified.
-		/// </summary>
-		public bool UseSourceForTemplatePages
-		{
-			get
-			{
-				if (LockedDown)
-					return false;
-
-				var node = OurHtmlDom.SafeSelectNodes(String.Format("//meta[@name='pageTemplateSource']"));
-				return node.Count > 0;
-			}
-		}
-
-		/// <summary>
-		/// Don't allow (or at least don't encourage) changing the images
-		/// </summary>
-		/// <remarks>In April 2012, we don't yet have an example of a book which would explicitly
-		/// restrict changing images. Shells do, of course, but do so by virtue of their lockedDownAsShell being set to 'true'.</remarks>
-		public bool CanChangeImages
-		{
-			get
-			{
-				if (LockedDown)
-					return false;
-
-				var node = OurHtmlDom.SafeSelectNodes(String.Format("//meta[@name='canChangeImages' and @content='false']"));
-				return node.Count == 0;
-			}
-		}
-
-		/// <summary>
-		/// This is useful if you are allowing people to make major changes, but want to insist that derivatives carry the same license
-		/// </summary>
-		public bool CanChangeLicense
-		{
-			get
-			{
-				if (LockedDown)
-					return false;
-
-				var node = OurHtmlDom.SafeSelectNodes(String.Format("//meta[@name='canChangeLicense' and @content='false']"));
-				return node.Count == 0;
-			}
-		}
-
-
-		/// <summary>
-		/// This is useful if you are allowing people to make major changes, but want to preserve acknowledments, for example, for the jscript programmers on Wall Calendar, or
-		/// the person who put together a starter picture-dictionary.
-		/// </summary>
-		public bool CanChangeOriginalAcknowledgments
-		{
-			get
-			{
-				if (LockedDown)
-					return false;
-
-				var node = OurHtmlDom.SafeSelectNodes(String.Format("//meta[@name='canChangeOriginalAcknowledgments' and @content='false']"));
-				return node.Count == 0;
-			}
-		}
-
-		/// <summary>
-		/// A book is lockedDown if it says it is AND we're not in a shell-making library
-		/// </summary>
-		public bool LockedDown
-		{
-			get
-			{
-				if(CollectionSettings.IsSourceCollection) //nothing is locked if we're in a shell-making library
-					return false;
-				if (TemporarilyUnlocked)
-					return false;
-				return RecordedAsLockedDown;
-			}
-		}
-
-		/// <summary>
-		/// used during editing where the user consciously unlocks a shellbook in order to make changes
-		/// </summary>
-		public bool TemporarilyUnlocked { get; set; }
-
-		/// <summary>
-		/// This is how the book's LockedDown state will be reported in a vernacular collection.
-		/// </summary>
-		public bool RecordedAsLockedDown => OurHtmlDom.RecordedAsLockedDown;
-
-//		/// <summary>
-//        /// Is this a shell we're translating? And if so, is this a shell-making project?
-//        /// </summary>
-//        public bool LockedExceptForTranslation
-//        {
-//            get
-//            {
-//            	return !_librarySettings.IsSourceCollection &&
-//            		   RawDom.SafeSelectNodes("//meta[@name='editability' and @content='translationOnly']").Count > 0;
-//            }
-//        }
-
 		public string CategoryForUsageReporting
 		{
 			get
 			{
 				if (CollectionSettings.IsSourceCollection)
 				{
+					// This won't happen any more except for legacy source collections
+					// since we are no longer creating them.
 					return "ShellEditing";
 				}
-				else if (LockedDown)
+				else if (IsSuitableForMakingShells)
 				{
-					return "ShellTranslating";
+					// We might also be making something intended to be a new shell, but we can't tell the difference
+					// between that and a custom vernacular book any more.
+					return "CustomVernacularBook";
 				}
 				else
 				{
-					return "CustomVernacularBook";
+					// We started from a shell, so presumably we're translating it...though we could
+					// be adapting it to a new shell (e.g., abridging it or otherwise enhancing it).
+					return "ShellTranslating";
 				}
 			}
 		}
@@ -3509,7 +3382,6 @@ namespace Bloom.Book
 			BookServer bookServer, bool orientationChanging, Layout pageLayout)
 		{
 			var printingDom = GetBookDomWithStyleSheets("previewMode.css", "origami.css");
-			AddCreationTypeAttribute(printingDom);
 
 			if (IsFolio)
 			{
@@ -3943,30 +3815,6 @@ namespace Bloom.Book
 		public void SetTopic(string englishTopicAsKey)
 		{
 			_bookData.Set("topic",XmlString.FromUnencoded(englishTopicAsKey),"en");
-		}
-
-		public void SwitchSuitableForMakingShells(bool isSuitable)
-		{
-			if (isSuitable)
-			{
-				IsSuitableForMakingShells = true;
-				OurHtmlDom.RecordAsLockedDown(false);
-				// Note that in Book.Save(), we set the PageTemplateSource(). We do that
-				// there instead of here so that it stays up to date if the user changes
-				// the template name.
-
-				OurHtmlDom.MarkPagesWithTemplateStatus(true);
-			}
-			else
-			{
-				IsSuitableForMakingShells = false;
-				OurHtmlDom.MarkPagesWithTemplateStatus(false);
-				// The logic in BookStarter.UpdateEditabilityMetadata is that if we're in a source collection
-				// a book that is not a template should be recorded as locked down (though because we're in
-				// a source collection it won't actually BE locked down).
-				if (CollectionSettings.IsSourceCollection)
-					OurHtmlDom.RecordAsLockedDown(true);
-			}
 		}
 
 		/// <summary>

@@ -399,12 +399,6 @@ namespace Bloom.Edit
 				var msg = LocalizationManager.GetString("EditTab.PageList.CantMoveXMatter",
 					"That change is not allowed. Front matter and back matter pages must remain where they are.");
 				//previously had a caption that didn't add value, just more translation work
-				if (movedPage.Book.LockedDown)
-				{
-					msg = LocalizationManager.GetString("PageList.CantMoveWhenTranslating",
-						"Pages can not be re-ordered when you are translating a book.");
-					msg = msg + System.Environment.NewLine + EditingView.GetInstructionsForUnlockingBook();
-				}
 				MessageBox.Show(msg);
 				WebSocketServer.SendString("pageThumbnailList", "pageListNeedsReset", "");
 				return;

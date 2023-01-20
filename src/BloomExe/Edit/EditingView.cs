@@ -632,22 +632,11 @@ namespace Bloom.Edit
 
 				if (ImageUpdater.ImageHasMetadata(imageBeingModified))
 				{
-					// If we have metadata with an official collectionUri or we are translating a shell
+					// If we have metadata with an official collectionUri
 					// just give a summary of the metadata
-					if (ImageUpdater.ImageIsFromOfficialCollection(imageBeingModified.Metadata) || !_model.CanEditCopyrightAndLicense)
+					if (ImageUpdater.ImageIsFromOfficialCollection(imageBeingModified.Metadata))
 					{
 						MessageBox.Show(imageBeingModified.Metadata.GetSummaryParagraph(new string[] { "en" }, out string _));
-						return null;
-					}
-				}
-				else
-				{
-					// If we don't have metadata, but we are translating a shell
-					// don't allow the metadata to be edited
-					if (!_model.CanEditCopyrightAndLicense)
-					{
-						MessageBox.Show(LocalizationManager.GetString("EditTab.CannotChangeCopyright",
-							"Sorry, the copyright and license for this book cannot be changed."));
 						return null;
 					}
 				}
@@ -723,16 +712,6 @@ namespace Bloom.Edit
 
 		public void OnCutImage(int imgIndex)
 		{
-			// NB: bloomImages.js contains code that prevents us arriving here
-			// if our image is simply the placeholder flower
-			if(!_model.CanChangeImages())
-			{
-				MessageBox.Show(
-					LocalizationManager.GetString("EditTab.CantPasteImageLocked",
-						"Sorry, this book is locked down so that images cannot be changed."));
-				return;
-			}
-
 			var bookFolderPath = _model.CurrentBook.FolderPath;
 
 			if(CopyImageToClipboard(imgIndex, bookFolderPath)) // returns 'true' if successful
@@ -760,13 +739,6 @@ namespace Bloom.Edit
 
 		public void OnPasteImage(int imgIndex)
 		{
-			if (!_model.CanChangeImages())
-			{
-				MessageBox.Show(
-					LocalizationManager.GetString("EditTab.CantPasteImageLocked",
-						"Sorry, this book is locked down so that images cannot be changed."));
-				return;
-			}
 			// BL-11709: It's just possible that the element we are pasting into has not yet been saved,
 			// which will cause problems. So do a save before pasting.
 			_model.SaveNow();
@@ -980,13 +952,6 @@ namespace Bloom.Edit
 
 		public void OnChangeImage(int imgIndex)
 		{
-			if(!_model.CanChangeImages())
-			{
-				MessageBox.Show(
-					LocalizationManager.GetString("EditTab.CantPasteImageLocked",
-						"Sorry, this book is locked down so that images cannot be changed."));
-				return;
-			}
 			// Make sure any new image overlays on the page are saved, so our imgIndex will select the
 			// right one.
 			Model.SaveNow();
@@ -1642,13 +1607,6 @@ namespace Bloom.Edit
 			PageTemplatesApi.ForPageLayout = true;
 			//if the dialog is already showing, it is up to this method we're calling to detect that and ignore our request
 			RunJavaScript("editTabBundle.showAddPageDialog(true);");
-		}
-
-
-		public static string GetInstructionsForUnlockingBook()
-		{
-			return LocalizationManager.GetString("EditTab.HowToUnlockBook",
-							"To unlock this shellbook, click the lock icon in the lower left corner.");
 		}
 
 		// The zoom factor that is shown in the top right of the toolbar (a percent).
