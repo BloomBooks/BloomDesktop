@@ -51,7 +51,7 @@
     "author": "SIL International",
     "license": "MIT",
     "dependencies": {
-        "@emotion/core": "^10.3.1",
+        "@emotion/react": "^11.10.5",
         "@fortawesome/fontawesome-svg-core": "^1.2.17",
         "@fortawesome/free-solid-svg-icons": "^5.8.1",
         "@fortawesome/react-fontawesome": "^0.1.4",
