@@ -574,7 +574,7 @@ namespace Bloom.Api
 				var sourceDir = bloomRoot;
 				if (Path.GetDirectoryName(imageFile) == "book-preview")
 				{
-					sourceDir = CurrentBook.FolderPath;
+					sourceDir = CurrentBook.FolderPath; // no way we should be making a book-preview without a current book
 					imageFile = Path.GetFileName(imageFile);
 				}
 
@@ -606,7 +606,7 @@ namespace Bloom.Api
 
 					if (!RobustFile.Exists(imageFile))
 					{
-						if (sourceDir != CurrentBook.FolderPath)
+						if (sourceDir != CurrentBook?.FolderPath)
 						{
 							// This could well represent a missing image in Bloom's implementation;
 							// possibly we should do something more conspicuous than this, which just logs it.
