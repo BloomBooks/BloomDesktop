@@ -1,5 +1,5 @@
 import * as React from "react";
-import Select from "react-select";
+// import Select from "react-select";
 import theOneLocalizationManager from "../lib/localizationManager/localizationManager";
 import * as mobxReact from "mobx-react";
 
@@ -53,12 +53,13 @@ export class BloomSelect extends React.Component<IProps> {
               )[0];
 
         return (
-            <Select
-                value={selectedOption}
-                onChange={selectedOption => this.handleChange(selectedOption)}
-                options={this.props.options}
-                className={this.props.className}
-            />
+            // <Select
+            //     value={selectedOption}
+            //     onChange={selectedOption => this.handleChange(selectedOption)}
+            //     options={this.props.options}
+            //     className={this.props.className}
+            // />
+            <></>
         );
     }
 
