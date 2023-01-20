@@ -256,11 +256,6 @@
         <source xml:lang="en">Reading level</source>
         <note>ID: BookMetadata.level</note>
       </trans-unit>
-      <trans-unit id="BookMetadata.License">
-        <source xml:lang="en">License</source>
-        <note>ID: BookMetadata.License</note>
-        <note>Obsolete as of Bloom 5.3 (replaced by Common.License)</note>
-      </trans-unit>
       <trans-unit id="BookMetadata.metapicture">
         <source xml:lang="en">Picture</source>
         <note>ID: BookMetadata.metapicture</note>
@@ -620,11 +615,6 @@
         <source xml:lang="en">Your system administrator manages Bloom updates for this computer.</source>
         <note>ID: CollectionTab.AdminManagesUpdates</note>
       </trans-unit>
-      <trans-unit id="CollectionTab.AdvancedToolStripMenuItem">
-        <source xml:lang="en">Advanced</source>
-        <note>ID: CollectionTab.AdvancedToolStripMenuItem</note>
-        <note>Obsolete for 5.3 and later</note>
-      </trans-unit>
       <trans-unit id="CollectionTab.Applying">
         <source xml:lang="en">Applying updates</source>
         <note>ID: CollectionTab.Applying</note>
@@ -676,16 +666,6 @@
       <trans-unit id="CollectionTab.BookMenu.ImportContentFromSpreadsheet">
         <source xml:lang="en">Import Content from Spreadsheet...</source>
         <note>ID: CollectionTab.BookMenu.ImportContentFromSpreadsheet</note>
-      </trans-unit>
-      <trans-unit id="CollectionTab.BookMenu.MakeBloomPack">
-        <source xml:lang="en">Make Bloom Pack...</source>
-        <note>ID: CollectionTab.BookMenu.MakeBloomPack</note>
-        <note>Obsolete for 5.3 and later</note>
-      </trans-unit>
-      <trans-unit id="CollectionTab.BookMenu.Rename">
-        <source xml:lang="en">Rename</source>
-        <note>ID: CollectionTab.BookMenu.Rename</note>
-        <note>Obsolete for Bloom 5.3 and later</note>
       </trans-unit>
       <trans-unit id="CollectionTab.BookMenu.RenameBook">
         <source xml:lang="en">Rename Book</source>
@@ -763,11 +743,6 @@
         <source xml:lang="en">More</source>
         <note>ID: CollectionTab.ContextMenu.More</note>
       </trans-unit>
-      <trans-unit id="CollectionTab.ContextMenu.OpenFolderOnDisk">
-        <source xml:lang="en">Open Folder on Disk</source>
-        <note>ID: CollectionTab.ContextMenu.OpenFolderOnDisk</note>
-        <note>Obsolete for Bloom 5.3 and later</note>
-      </trans-unit>
       <trans-unit id="CollectionTab.ContextMenu.Troubleshooting">
         <source xml:lang="en">Troubleshooting</source>
         <note>ID: CollectionTab.ContextMenu.Troubleshooting</note>
@@ -788,11 +763,6 @@
       <trans-unit id="CollectionTab.LanguageMenu.ShowUnapprovedTranslations">
         <source xml:lang="en">Show translations which have not been approved yet</source>
         <note>ID: CollectionTab.LanguageMenu.ShowUnapprovedTranslations</note>
-      </trans-unit>
-      <trans-unit id="CollectionTab.MakeBloomPackButton">
-        <source xml:lang="en">Make Bloom Pack</source>
-        <note>ID: CollectionTab.MakeBloomPackButton</note>
-        <note>This string is obsolete as of Bloom version 5.3.</note>
       </trans-unit>
       <trans-unit id="CollectionTab.MakeBloomPackOfShellBooks">
         <source xml:lang="en">Make Bloom Pack of Shell Books</source>
@@ -2925,11 +2895,6 @@
         <source xml:lang="en">Bloom had a problem importing this video.</source>
         <note>ID: Errors.ProblemImportingVideo</note>
       </trans-unit>
-      <trans-unit id="Errors.ReadOnlyBookFolder">
-        <source xml:lang="en">This book cannot be edited because its folder is read-only.</source>
-        <note>ID: Errors.ReadOnlyBookFolder</note>
-        <note>Obsolete as of Bloom 5.3 (no code currently reports this problem, though it's possible we might want to again one day)</note>
-      </trans-unit>
       <trans-unit id="Errors.RemoveExcessHtml">
         <source xml:lang="en">Please remove all but one of the files ending in .htm.  Bloom will now open this folder for you.</source>
         <note>ID: Errors.RemoveExcessHtml</note>
@@ -3488,16 +3453,6 @@
         <source xml:lang="en">Sad News. Bloom wasn't able to get Adobe Reader to show here, so Bloom can't show your completed book.\nPlease uninstall your existing version of 'Adobe Reader' and (re)install 'Adobe Reader'.\nUntil you get that fixed, you can still save the PDF Book and open it in some other program.</source>
         <note>ID: PublishTab.AdobeReaderControl.UnknownError</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Android.BloomD.Hint.Heading" sil:dynamic="true">
-        <source xml:lang="en">Sharing .bloomd Files</source>
-        <note>ID: PublishTab.Android.BloomD.Hint.Heading</note>
-        <note>Obsolete in 5.3+</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.Android.BloomD.Hint" sil:dynamic="true">
-        <source xml:lang="en">You can use sharing apps like email, Dropbox, and WhatsApp to get your .bloomd file onto a device.</source>
-        <note>ID: PublishTab.Android.BloomD.Hint</note>
-        <note>Obsolete in 5.3+</note>
-      </trans-unit>
       <trans-unit id="PublishTab.Android.BloomPUB.Hint.Heading" sil:dynamic="true">
         <source xml:lang="en">Sharing BloomPUB Files</source>
         <note>ID: PublishTab.Android.BloomPUB.Hint.Heading</note>
@@ -3552,11 +3507,6 @@
       <trans-unit id="PublishTab.Android.CantGetLicenseInfo" sil:dynamic="true">
         <source xml:lang="en">To publish this book, Bloom must check which languages the copyright owner has permitted, but Bloom is having trouble reaching the server that has this information.</source>
         <note>ID: PublishTab.Android.CantGetLicenseInfo</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.Android.ChooseFile" sil:dynamic="true">
-        <source xml:lang="en">Save Bloom Reader File</source>
-        <note>ID: PublishTab.Android.ChooseFile</note>
-        <note>Obsolete in 5.3+</note>
       </trans-unit>
       <trans-unit id="PublishTab.Android.ChooseBloomPUBFile" sil:dynamic="true">
         <source xml:lang="en">Save BloomPUB File</source>
@@ -3675,11 +3625,6 @@
         <source xml:lang="en">About Bloom Reader</source>
         <note>ID: PublishTab.Android.AboutBloomReader</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Android.AboutBookFeatures" sil:dynamic="true">
-        <source xml:lang="en">About Book Features</source>
-        <note>ID: PublishTab.Android.AboutBookFeatures</note>
-        <note>obsolete as of Bloom 5.3</note>
-      </trans-unit>
       <trans-unit id="PublishTab.Android.AboutBloomPUB" sil:dynamic="true">
         <source xml:lang="en">About BloomPUB</source>
         <note>ID: PublishTab.Android.AboutBloomPUB</note>
@@ -3702,11 +3647,6 @@
         <note>ID: PublishTab.Android.Thumbnail</note>
         <note>The heading at the top of the Settings section, which shows a thumbnail of the front cover and can be used to change the underlying page color.</note>
         <note>Obsolete in Bloom 5.4</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.Android.Troubleshooting" sil:dynamic="true">
-        <source xml:lang="en">Troubleshooting Tips</source>
-        <note>ID: PublishTab.Android.Troubleshooting</note>
-        <note>obsolete as of Bloom 5.3</note>
       </trans-unit>
       <trans-unit id="PublishTab.Android.Usb.Progress.BookSent" sil:dynamic="true">
         <source xml:lang="en">You can now read "{0}" in Bloom Reader!</source>
@@ -3830,16 +3770,6 @@
         <note>ID: PublishTab.Android.bloomdFileFormatLabel</note>
         <note>This is shown in the 'Save' dialog when you save a bloom book in the format that works with the Bloom Reader Android App</note>
       </trans-unit>
-      <trans-unit id="PublishTab.AndroidButton">
-        <source xml:lang="en">Bloom Reader</source>
-        <note>ID: PublishTab.AndroidButton</note>
-        <note>Obsolete in 5.3+</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.AndroidButton-tooltip" sil:dynamic="true">
-        <source xml:lang="en">Publish to an Android device.</source>
-        <note>ID: PublishTab.AndroidButton-tooltip</note>
-        <note>Obsolete in 5.3+</note>
-      </trans-unit>
       <trans-unit id="PublishTab.Audio.ElementsMissingId">
         <source xml:lang="en">Some audio elements are missing ids</source>
         <note>ID: PublishTab.Audio.ElementsMissingId</note>
@@ -3959,16 +3889,6 @@
       <trans-unit id="PublishTab.Epub.Help.AboutEpubs">
         <source xml:lang="en">About ePUBs</source>
         <note>ID: PublishTab.Epub.Help.AboutEpubs</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.Epub.Help.EReaders">
-        <source xml:lang="en">Compatible ePUB Readers</source>
-        <note>ID: PublishTab.Epub.Help.EReaders</note>
-        <note>obsolete as of Bloom 5.3</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.Epub.Help.Publishing">
-        <source xml:lang="en">Getting ePUBs onto a device</source>
-        <note>ID: PublishTab.Epub.Help.Publishing</note>
-        <note>obsolete as of Bloom 5.3</note>
       </trans-unit>
       <trans-unit id="PublishTab.Epub.ImageDescriptionLinkLabel">
         <source xml:lang="en">Image Description</source>
@@ -4113,16 +4033,6 @@
         <source xml:lang="en">Choose print shop setup</source>
         <note>ID: PublishTab.Options_ToolTip_</note>
         <note>tooltip for the menu header in the Publish tab</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.OverwriteWarning.ReplaceExistingButton">
-        <source xml:lang="en">Replace Existing</source>
-        <note>ID: PublishTab.OverwriteWarning.ReplaceExistingButton</note>
-        <note>Obsolete for Bloom 5.2 and later</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.OverwriteWarning.WindowTitle">
-        <source xml:lang="en">Notice</source>
-        <note>ID: PublishTab.OverwriteWarning.WindowTitle</note>
-        <note>Obsolete for Bloom 5.2 and later</note>
       </trans-unit>
       <trans-unit id="PublishTab.PDF.Error.Failed">
         <source xml:lang="en">Bloom was not able to create the PDF file ({0}).{1}{1}Details: BloomPdfMaker (command line) did not produce the expected document.</source>
@@ -4514,11 +4424,6 @@
         <source xml:lang="en">BloomLibrary.org already has a previous version of this book from you.  If you upload it again, it will be replaced with your current version.</source>
         <note>ID: PublishTab.Upload.ConfirmReplaceExisting</note>
         <note xml:lang="en">OLD TEXT (before 3.9, added space): BloomLibrary.org already has a previous version of this book from you. If you upload it again, it will be replaced with your current version.</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.Upload.Copyright">
-        <source xml:lang="en">Copyright</source>
-        <note>ID: PublishTab.Upload.Copyright</note>
-        <note>Obsolete as of Bloom 5.3 (replaced by Common.Copyright)</note>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.Credits">
         <source xml:lang="en">credits</source>
