@@ -1,5 +1,5 @@
 /** @jsx jsx **/
-import { jsx, css } from "@emotion/core";
+import { jsx, css } from "@emotion/react";
 import * as React from "react";
 
 // when disabled, this prevents interacting with children and partially hides them

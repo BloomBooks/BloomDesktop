@@ -1,5 +1,5 @@
 /** @jsx jsx **/
-import { jsx, css } from "@emotion/core";
+import { jsx, css } from "@emotion/react";
 import * as React from "react";
 import FormGroup from "@material-ui/core/FormGroup";
 import { SettingsGroup } from "../commonPublish/PublishScreenBaseComponents";

@@ -1,5 +1,5 @@
 /** @jsx jsx **/
-import { jsx, css } from "@emotion/core";
+import { jsx, css } from "@emotion/react";
 
 import Grid from "@material-ui/core/Grid";
 import React = require("react");
@@ -81,7 +81,7 @@ export const BooksOfCollection: React.FunctionComponent<{
                     container={true}
                     spacing={0}
                     direction="row"
-                    justify="flex-start"
+                    justifyContent="flex-start"
                     alignItems="flex-start"
                 >
                     {books?.map(book => {

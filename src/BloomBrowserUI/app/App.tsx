@@ -1,3 +1,10 @@
+// We started needing the following triple-slash directive (<reference types=...)
+// with Emotion 11; I don't understand why.
+// Without it, the system doesn't resolve the type for the css prop.
+// This migration guide describes it, but I don't understand why we aren't the "normal" case:
+// https://emotion.sh/docs/emotion-11#css-prop-types
+/// <reference types="@emotion/react/types/css-prop" />
+
 import Button from "@material-ui/core/Button";
 import * as React from "react";
 import "App.less";
