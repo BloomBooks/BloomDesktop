@@ -75,10 +75,9 @@ export default class StyleEditor {
     private _previousBox: Element;
     private _supportFilesRoot: string;
     private MIN_FONT_SIZE: number = 7;
-    private boxBeingEdited: HTMLElement;
+    public boxBeingEdited: HTMLElement; // public for testing
     private ignoreControlChanges: boolean;
     private styles: FormattingStyle[];
-    private authorMode: boolean; // true if authoring (rather than translating)
     private xmatterMode: boolean; // true if we are in xmatter (and shouldn't change fixed style names)
     private textColorTitle: string = "Text Color";
 
@@ -131,17 +130,6 @@ export default class StyleEditor {
         }
 
         return null;
-    }
-
-    // obsolete?
-    public MakeBigger(target: HTMLElement) {
-        this.ChangeSize(target, 2);
-        $("div.bloom-editable, textarea").qtipSecondary("reposition");
-    }
-    // obsolete?
-    public MakeSmaller(target: HTMLElement) {
-        this.ChangeSize(target, -2);
-        $("div.bloom-editable, textarea").qtipSecondary("reposition");
     }
 
     private static MigratePreStyleBook(target: HTMLElement): string | null {
@@ -217,73 +205,9 @@ export default class StyleEditor {
         return langAttr.valueOf().toString();
     }
 
-    // obsolete?
-    private ChangeSize(target: HTMLElement, change: number) {
-        const styleName = StyleEditor.GetStyleNameForElement(target);
-        if (!styleName) {
-            return;
-        }
-        const fontSize = this.GetCalculatedFontSizeInPoints(target);
-        const langAttrValue = StyleEditor.GetLangValueOrNull(target);
-        const rule: CSSStyleRule | null = this.GetOrCreateRuleForStyle(
-            styleName,
-            langAttrValue,
-            this.authorMode
-        );
-        const units = "pt";
-        const sizeString = (fontSize + change).toString();
-        if (parseInt(sizeString, 10) < this.MIN_FONT_SIZE) {
-            return; // too small, quietly don't do it!
-        }
-        if (rule != null)
-            rule.style.setProperty(
-                "font-size",
-                sizeString + units,
-                "important"
-            );
-        OverflowChecker.MarkOverflowInternal(target);
-
-        // alert("New size rule: " + rule.cssText);
-        // Now update tooltip
-        const toolTip = this.GetToolTip(target, styleName);
-        this.AddQtipToElement($("#formatButton"), toolTip);
-    }
-
     public GetCalculatedFontSizeInPoints(target: HTMLElement): number {
         const sizeInPx = $(target).css("font-size");
         return this.ConvertPxToPt(parseInt(sizeInPx, 10));
-    }
-
-    public ChangeSizeAbsolute(target: HTMLElement, newSize: number) {
-        const styleName = StyleEditor.GetStyleNameForElement(target); // finds 'x-style' class or null
-        if (!styleName) {
-            alert(
-                "ChangeSizeAbsolute called on an element with invalid style class."
-            );
-            return;
-        }
-        if (newSize < this.MIN_FONT_SIZE) {
-            // newSize is expected to come from a combobox entry by the user someday
-            alert("ChangeSizeAbsolute called with too small a point size.");
-            return;
-        }
-        const langAttrValue = StyleEditor.GetLangValueOrNull(target);
-        const rule: CSSStyleRule | null = this.GetOrCreateRuleForStyle(
-            styleName,
-            langAttrValue,
-            this.authorMode
-        );
-        const units = "pt";
-        const sizeString: string = newSize.toString();
-        if (rule != null)
-            rule.style.setProperty(
-                "font-size",
-                sizeString + units,
-                "important"
-            );
-        // Now update tooltip
-        const toolTip = this.GetToolTip(target, styleName);
-        this.AddQtipToElement($("#formatButton"), toolTip);
     }
 
     // Get the names that should be offered in the styles combo box.
@@ -963,14 +887,7 @@ export default class StyleEditor {
         if (!styleName) {
             return;
         }
-        // I'm assuming here that since we're dealing with a local server, we'll get a result long before
-        // the user could actually modify a style and thus need the information.
-        // More dangerous is using it in getCharTabDescription. But as that is launched by a later
-        // async request, I think it should be OK.
 
-        BloomApi.get("authorMode", result => {
-            this.authorMode = result.data === true;
-        });
         this.xmatterMode = IsPageXMatter($(targetBox));
 
         this._previousBox = targetBox;
@@ -1077,7 +994,7 @@ export default class StyleEditor {
                             // The tab library doesn't allow us to put other class names on the tab-page,
                             // so we are doing it this way rather than the approach of using css to hide
                             // tabs based on class names.
-                            if (!this.authorMode || this.xmatterMode) {
+                            if (this.xmatterMode) {
                                 $("#style-page").remove();
                             }
 
@@ -1183,7 +1100,7 @@ export default class StyleEditor {
                                 1500
                             );
                             this.getParagraphTabDescription();
-                            if (this.authorMode && !this.xmatterMode) {
+                            if (!this.xmatterMode) {
                                 $("#styleSelect").change(() => {
                                     this.selectStyle();
                                 });
@@ -1822,24 +1739,26 @@ export default class StyleEditor {
         if (parseInt(sizeString, 10) < this.MIN_FONT_SIZE) {
             return; // should not be possible?
         }
+        this.changeSizeInternal(
+            sizeString + units,
+            this.shouldSetDefaultRule()
+        );
+        this.cleanupAfterStyleChange();
+    }
+
+    public changeSizeInternal(
+        newSize: string,
+        shouldSetDefaultRule: boolean
+    ): void {
         // Always set the value in the language-specific rule
         let rule = this.getStyleRule(false);
         if (rule != null)
-            rule.style.setProperty(
-                "font-size",
-                sizeString + units,
-                "important"
-            );
-        if (this.shouldSetDefaultRule()) {
+            rule.style.setProperty("font-size", newSize, "important");
+        if (shouldSetDefaultRule) {
             rule = this.getStyleRule(true);
             if (rule != null)
-                rule.style.setProperty(
-                    "font-size",
-                    sizeString + units,
-                    "important"
-                );
+                rule.style.setProperty("font-size", newSize, "important");
         }
-        this.cleanupAfterStyleChange();
     }
 
     public changeLineheight() {
