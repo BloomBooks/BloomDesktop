@@ -1,5 +1,5 @@
 /** @jsx jsx **/
-import { jsx, css } from "@emotion/core";
+import { jsx, css } from "@emotion/react";
 import React = require("react");
 import {
     ILocalizationProps,
@@ -9,8 +9,8 @@ import { default as InfoIcon } from "@material-ui/icons/InfoOutlined";
 import { Popover } from "@material-ui/core";
 
 interface IProps extends ILocalizationProps {
-color?: string; // of the info icon
-size?: string; // of the info icon
+    color?: string; // of the info icon
+    size?: string; // of the info icon
 }
 
 // Displays an info icon. When hovered over (or clicked) it displays the message indicated by its props

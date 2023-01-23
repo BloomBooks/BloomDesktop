@@ -3,7 +3,7 @@
 // Note: There is more in webpack.common.js which *might* be needed here eventually, it's unclear.
 // As we run into things that compile fine for the whole build but not in a situation like storybook,
 // then we can move those webpack rules here.
-
+var path = require("path");
 var webpack = require("webpack");
 var WebpackBuildNotifierPlugin = require("webpack-build-notifier");
 
@@ -78,6 +78,16 @@ module.exports = {
             : new NothingPlugin()
     ],
     resolve: {
-        extensions: [".ts", ".tsx"]
+        extensions: [".ts", ".tsx"],
+
+        // Starting with emotion 11, we started needing these -- we don't understand why.
+        // Without them, when the emotion files try to resolve the packages,
+        // the `@emotion/` versions of the packages will be found instead.
+        // I.e. in the emotion file, `import x from 'react'` will look for x
+        // in node_modules/@emotion/react instead of node_modules/react.
+        alias: {
+            react: path.resolve(__dirname, "node_modules/react"),
+            stylis: path.resolve(__dirname, "node_modules/stylis")
+        }
     }
 };

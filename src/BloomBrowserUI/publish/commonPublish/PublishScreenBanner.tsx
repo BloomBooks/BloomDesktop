@@ -1,5 +1,5 @@
 /** @jsx jsx **/
-import { jsx, css } from "@emotion/core";
+import { jsx, css } from "@emotion/react";
 import * as React from "react";
 import { useL10n } from "../../react_components/l10nHooks";
 import Typography from "@material-ui/core/Typography";

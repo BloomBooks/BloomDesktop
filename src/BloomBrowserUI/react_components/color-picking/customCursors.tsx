@@ -1,6 +1,6 @@
 // For use by BloomSketchPicker
 /** @jsx jsx **/
-import { jsx, css } from "@emotion/core";
+import { jsx, css } from "@emotion/react";
 import * as React from "react";
 
 const CustomSliderCursor: React.FunctionComponent = () => (

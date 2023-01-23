@@ -1,5 +1,5 @@
 /** @jsx jsx **/
-import { jsx, css } from "@emotion/core";
+import { jsx, css } from "@emotion/react";
 
 import * as React from "react";
 import BloomButton from "../react_components/bloomButton";
