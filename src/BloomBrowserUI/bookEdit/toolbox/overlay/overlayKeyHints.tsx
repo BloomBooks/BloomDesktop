@@ -37,7 +37,7 @@ export const OverlayKeyHints: React.FC = () => {
                     css={css`
                         ${imgRule}
                     `}
-                    src="AltKey.svg"
+                    src="/bloom/bookEdit/toolbox/overlay/AltKey.svg"
                 />
                 <Typography>{`+ ${dragHint} = ${resizeHint}`}</Typography>
             </div>
@@ -50,7 +50,7 @@ export const OverlayKeyHints: React.FC = () => {
                     css={css`
                         ${imgRule}
                     `}
-                    src="CtrlKey.svg"
+                    src="/bloom/bookEdit/toolbox/overlay/CtrlKey.svg"
                 />
                 <Typography>{`+ ${dragHint} = ${moveHint}`}</Typography>
             </div>

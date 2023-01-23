@@ -788,7 +788,7 @@ const OverlayToolControls: React.FunctionComponent = () => {
                             <img
                                 id="shapeChooserSpeechBubble"
                                 className="overlayToolControlDraggableBubble"
-                                src="comic-icon.svg"
+                                src="/bloom/bookEdit/toolbox/overlay/comic-icon.svg"
                                 draggable={!isBookLocked} // insufficient to prevent dragging!
                                 onDragStart={
                                     !isBookLocked
@@ -804,7 +804,7 @@ const OverlayToolControls: React.FunctionComponent = () => {
                             <img
                                 id="shapeChooserImagePlaceholder"
                                 className="overlayToolControlDraggableBubble"
-                                src="image-overlay.svg"
+                                src="/bloom/bookEdit/toolbox/overlay/image-overlay.svg"
                                 draggable={!isBookLocked}
                                 onDragStart={
                                     !isBookLocked
@@ -820,7 +820,7 @@ const OverlayToolControls: React.FunctionComponent = () => {
                             <img
                                 id="shapeChooserVideoPlaceholder"
                                 className="overlayToolControlDraggableBubble"
-                                src="sign-language-overlay.svg"
+                                src="/bloom/bookEdit/toolbox/overlay/sign-language-overlay.svg"
                                 draggable={!isBookLocked}
                                 onDragStart={
                                     !isBookLocked
@@ -892,7 +892,7 @@ const OverlayToolControls: React.FunctionComponent = () => {
                             <div title={duplicateTooltip}>
                                 <img
                                     className="duplicate-bubble-icon"
-                                    src="duplicate-bubble.svg"
+                                    src="/bloom/bookEdit/toolbox/overlay/duplicate-bubble.svg"
                                     onClick={() => duplicateBubble()}
                                 />
                             </div>
