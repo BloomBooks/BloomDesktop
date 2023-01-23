@@ -46,9 +46,7 @@ export const MethodChooser: React.FunctionComponent = () => {
                 css={css`
                     display: flex;
                     flex-direction: row;
-                    // Setting the height to 100% here makes the box layout extend below where it should go by the
-                    // amount of the padding-top.  (8px of that is swallowed up by the default 8px margin on body.)
-                    // We don't really need to set the height here anyway: it displays just fine without being
+                    // We don't need to set the height here: it displays just fine without being
                     // explicitly set.  See https://issues.bloomlibrary.org/youtrack/issue/BL-7506.
 
                     // The center of a selected radio button is drawn with an <svg> element by materialui.
