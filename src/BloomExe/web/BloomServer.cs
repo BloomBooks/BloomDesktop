@@ -633,7 +633,7 @@ namespace Bloom.Api
 				// But things in the book folder should possibly be processed. The code below will still investigate
 				// whether it is really necessary; currently we're not resizing images except for thumbnails,
 				// and otherwise, only the cover image needs adjusting (to possibly provide a transparent background).
-				processImage = sourceDir == CurrentBook.FolderPath;
+				processImage = sourceDir == CurrentBook?.FolderPath;
 			}
 
 			var originalImageFile = imageFile;
