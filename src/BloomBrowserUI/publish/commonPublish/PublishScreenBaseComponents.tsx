@@ -47,7 +47,7 @@ export const PreviewPublishPanel: React.FunctionComponent = props => (
     </div>
 );
 
-// This component provides no padding. If you need a standard padding, use the above PreviewPreviewPanel.
+// This component provides no padding. If you need a standard padding, use the above PreviewPublishPanel.
 export const PublishPanel: React.FunctionComponent = props => (
     <section
         css={css`

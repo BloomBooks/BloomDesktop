@@ -92,12 +92,12 @@ export const MethodChooser: React.FunctionComponent = () => {
                 </div>
                 <div
                     css={css`
-                        max-width: 400px; // this is just to limit the hint text length on a big monitor.
+                        max-width: 500px; // this is just to limit the hint text length on a big monitor.
                         display: flex;
                         flex-direction: column;
                         flex-grow: 1;
-                        padding-left: 20px;
-                        padding-right: 20px;
+                        padding-left: 15px;
+                        padding-right: 15px;
                     `}
                 >
                     <img
