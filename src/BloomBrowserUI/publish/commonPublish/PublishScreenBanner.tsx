@@ -44,7 +44,7 @@ export const PublishScreenBanner: React.FunctionComponent<{
                     <Div
                         css={css`
                             font-size: 9pt;
-                            max-width: 66%;
+                            max-width: 800px; // limit line-length on large monitors
                             a {
                                 color: ${kBloomBlue};
                             }
