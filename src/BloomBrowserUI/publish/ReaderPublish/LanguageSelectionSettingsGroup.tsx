@@ -1,5 +1,5 @@
 /** @jsx jsx **/
-import { jsx, css } from "@emotion/core";
+import { jsx, css } from "@emotion/react";
 import { FormGroup, Checkbox, FormControlLabel } from "@material-ui/core";
 import * as React from "react";
 import { useL10n } from "../../react_components/l10nHooks";
