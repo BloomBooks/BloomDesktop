@@ -8,9 +8,9 @@ import {
     DialogContent,
     DialogTitle,
     Typography
-} from "@material-ui/core";
+} from "@mui/material";
 import { postDataWithConfig } from "../../utils/bloomApi";
-import { useTheme } from "@material-ui/styles";
+import { useTheme } from "@mui/styles";
 import "./ProgressDialog.less";
 import BloomButton from "../../react_components/bloomButton";
 

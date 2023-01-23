@@ -1,9 +1,9 @@
 /** @jsx jsx **/
 import { jsx, css } from "@emotion/react";
 
-import Typography from "@material-ui/core/Typography";
+import Typography from "@mui/material/Typography";
 import * as React from "react";
-import { ThemeProvider, useTheme, createTheme } from "@material-ui/core/styles";
+import { ThemeProvider, useTheme, createTheme } from "@mui/material/styles";
 import "./statusPanelCommon.less"; // Now we have .less and emotion going here. Someday we should unify.
 import { StatusPanelState } from "./TeamCollectionBookStatusPanel";
 import { IconHeadingBodyMenuPanel } from "../react_components/iconHeadingBodyMenuPanel";

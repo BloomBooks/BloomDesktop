@@ -8,7 +8,7 @@ import ColorSwatch, { IColorInfo } from "./colorSwatch";
 import * as tinycolor from "tinycolor2";
 import { HexColorInput } from "./hexColorInput";
 import { useL10n } from "../l10nHooks";
-import { Typography } from "@material-ui/core";
+import { Typography } from "@mui/material";
 
 // We are combining parts of the 'react-color' component set with our own list of swatches.
 // The reason for using our own swatches is so we can support swatches with gradients and alpha.

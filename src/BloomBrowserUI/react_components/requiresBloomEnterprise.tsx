@@ -4,13 +4,13 @@ import { jsx, css } from "@emotion/react";
 import * as React from "react";
 import { useState, useEffect } from "react";
 import { get, post } from "../utils/bloomApi";
-import Button from "@material-ui/core/Button";
+import Button from "@mui/material/Button";
 import { kBloomBlue50Transparent, lightTheme } from "../bloomMaterialUITheme";
-import { ThemeProvider } from "@material-ui/styles";
+import { ThemeProvider } from "@mui/styles";
 import { Div } from "./l10nComponents";
 import { useL10n } from "./l10nHooks";
 import { WireUpForWinforms } from "../utils/WireUpWinform";
-import { Dialog, DialogActions, DialogContent } from "@material-ui/core";
+import { Dialog, DialogActions, DialogContent } from "@mui/material";
 import BloomButton from "./bloomButton";
 import { kFormBackground, kBloomGray, kBloomBlue } from "../utils/colorUtils";
 import {

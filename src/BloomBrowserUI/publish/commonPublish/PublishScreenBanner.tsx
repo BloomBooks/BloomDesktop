@@ -2,7 +2,7 @@
 import { jsx, css } from "@emotion/react";
 import * as React from "react";
 import { useL10n } from "../../react_components/l10nHooks";
-import Typography from "@material-ui/core/Typography";
+import Typography from "@mui/material/Typography";
 import { Div } from "../../react_components/l10nComponents";
 import { kBloomBlue, kBannerGray } from "../../bloomMaterialUITheme";
 

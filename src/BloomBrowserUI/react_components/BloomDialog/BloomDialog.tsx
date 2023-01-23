@@ -2,8 +2,8 @@
 import { jsx, css } from "@emotion/react";
 import * as React from "react";
 import { lightTheme } from "../../bloomMaterialUITheme";
-import { ThemeProvider } from "@material-ui/styles";
-import { Dialog, DialogProps, Paper, PaperProps } from "@material-ui/core";
+import { ThemeProvider } from "@mui/styles";
+import { Dialog, DialogProps, Paper, PaperProps } from "@mui/material";
 import CloseOnEscape from "react-close-on-escape";
 import { kDialogPadding } from "../../bloomMaterialUITheme";
 import { forwardRef, useEffect } from "react";

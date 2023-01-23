@@ -1,5 +1,5 @@
 import React = require("react");
-import Link from "@material-ui/core/Link";
+import Link from "@mui/material/Link";
 import { HelpGroup } from "../commonPublish/PublishScreenBaseComponents";
 import HelpLink from "../../react_components/helpLink";
 import { Div } from "../../react_components/l10nComponents";

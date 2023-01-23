@@ -1,9 +1,9 @@
 /** @jsx jsx **/
 import { jsx, css } from "@emotion/react";
 import * as React from "react";
-import { makeStyles, ThemeProvider } from "@material-ui/styles";
+import { makeStyles, ThemeProvider } from "@mui/styles";
 import { lightTheme } from "../bloomMaterialUITheme";
-import { FormControl, MenuProps, Select } from "@material-ui/core";
+import { FormControl, MenuProps, Select } from "@mui/material";
 
 // This seems to be the only way to affect the css of the popped up list, since it's a completely
 // separate html element from this component.
@@ -28,11 +28,9 @@ interface FormsSelectProps {
 // This component initially attempted to imitate a winforms combobox in React.
 // Since we're moving away from winforms, that restriction has relaxed somewhat.
 const WinFormsStyleSelect: React.FunctionComponent<FormsSelectProps> = props => {
-    const classes = useStyles();
-
     const selectMenuProps: Partial<MenuProps> = {
         classes: {
-            paper: classes.menuPaper
+            paper: useStyles().menuPaper
         },
         // This works around a bug in MUI v4 (https://github.com/mui/material-ui/issues/19245)
         // which caused the list to jump if it was scrolled and we re-rendered. See BL-11258.

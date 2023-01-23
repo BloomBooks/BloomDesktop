@@ -7,7 +7,7 @@ import { P } from "../react_components/l10nComponents";
 import { RequiresBloomEnterpriseOverlayWrapper } from "../react_components/requiresBloomEnterprise";
 import "./TeamCollectionSettingsPanel.less";
 import { lightTheme } from "../bloomMaterialUITheme";
-import { ThemeProvider } from "@material-ui/styles";
+import { ThemeProvider } from "@mui/styles";
 import { tabMargins } from "../collection/commonTabSettings";
 import BloomButton from "../react_components/bloomButton";
 

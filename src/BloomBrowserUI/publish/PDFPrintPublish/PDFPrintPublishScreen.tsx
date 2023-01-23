@@ -12,12 +12,12 @@ import {
 import { PDFPrintFeaturesGroup } from "./PDFPrintFeaturesGroup";
 import PublishScreenTemplate from "../commonPublish/PublishScreenTemplate";
 import ReactDOM = require("react-dom");
-import { ThemeProvider } from "@material-ui/styles";
+import { ThemeProvider } from "@mui/styles";
 import { darkTheme, lightTheme } from "../../bloomMaterialUITheme";
 import { StorybookContext } from "../../.storybook/StoryBookContext";
 import HelpLink from "../../react_components/helpLink";
 import { useL10n } from "../../react_components/l10nHooks";
-import { Button, Typography } from "@material-ui/core";
+import { Button, Typography } from "@mui/material";
 
 export const PDFPrintPublishScreen = () => {
     // When the user changes booklet mode, printshop features, etc., we

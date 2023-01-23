@@ -6,9 +6,9 @@ import {
     DialogContentText,
     DialogTitle,
     Typography
-} from "@material-ui/core";
+} from "@mui/material";
 import { post, postString } from "../utils/bloomApi";
-import { ThemeProvider } from "@material-ui/styles";
+import { ThemeProvider } from "@mui/styles";
 import "./ProblemDialog.less";
 import BloomButton from "../react_components/bloomButton";
 import { makeTheme, kindParams } from "./theme";

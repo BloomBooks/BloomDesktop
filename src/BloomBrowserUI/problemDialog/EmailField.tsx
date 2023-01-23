@@ -1,6 +1,6 @@
 import * as React from "react";
 import "./ProblemDialog.less";
-import TextField from "@material-ui/core/TextField";
+import TextField from "@mui/material/TextField";
 import { useState } from "react";
 import { useDebouncedCallback } from "use-debounce";
 import { useDrawAttention } from "../react_components/UseDrawAttention";

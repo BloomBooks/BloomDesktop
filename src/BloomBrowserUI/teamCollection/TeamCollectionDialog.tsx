@@ -19,16 +19,16 @@ import {
 } from "../react_components/BloomDialog/BloomDialog";
 import { DialogCloseButton } from "../react_components/BloomDialog/commonDialogComponents";
 import { CollectionHistoryTable } from "./CollectionHistoryTable";
-import { Tab, TabList, TabPanel, Tabs } from "react-tabs";
+import { Tab, TabList, TabPanel } from "react-tabs";
 import { LocalizedString } from "../react_components/l10nComponents";
-import { ThemeProvider } from "@material-ui/styles";
+import { ThemeProvider } from "@mui/styles";
 import { lightTheme } from "../bloomMaterialUITheme";
 import "react-tabs/style/react-tabs.less";
 import { useEffect, useState } from "react";
 import { BloomTabs } from "../react_components/BloomTabs";
 import { useEventLaunchedBloomDialog } from "../react_components/BloomDialog/BloomDialogPlumbing";
 
-export const TeamCollectionDialogLauncher: React.FunctionComponent<{}> = props => {
+export const TeamCollectionDialogLauncher: React.FunctionComponent<{}> = () => {
     const {
         openingEvent,
         closeDialog,

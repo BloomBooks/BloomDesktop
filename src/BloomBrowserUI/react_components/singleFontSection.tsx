@@ -8,7 +8,7 @@ import FontSelectComponent, {
 } from "../bookEdit/StyleEditor/fontSelectComponent";
 import { Link } from "./link";
 import { useL10n } from "./l10nHooks";
-import { Typography } from "@material-ui/core";
+import { Typography } from "@mui/material";
 
 const SingleFontSection: React.FunctionComponent<{
     languageNumber: number;

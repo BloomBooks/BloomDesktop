@@ -19,7 +19,7 @@ import {
     MenuItem,
     Select,
     Typography
-} from "@material-ui/core";
+} from "@mui/material";
 import { kBloomBlue } from "../../bloomMaterialUITheme";
 import { useState } from "react";
 import { BloomTooltip } from "../../react_components/BloomToolTip";

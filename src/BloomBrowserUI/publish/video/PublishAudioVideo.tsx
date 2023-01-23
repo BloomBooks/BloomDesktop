@@ -2,11 +2,11 @@
 import { jsx, css } from "@emotion/react";
 import * as React from "react";
 import { useState, useContext } from "react";
-import PlayIcon from "@material-ui/icons/PlayCircleFilledWhite";
-import PauseIcon from "@material-ui/icons/PauseCircleFilled";
-import SkipPreviousIcon from "@material-ui/icons/SkipPrevious";
-import SaveIcon from "@material-ui/icons/Save";
-import RecordIcon from "@material-ui/icons/RadioButtonChecked";
+import PlayIcon from "@mui/icons-material/PlayCircleFilledWhite";
+import PauseIcon from "@mui/icons-material/PauseCircleFilled";
+import SkipPreviousIcon from "@mui/icons-material/SkipPrevious";
+import SaveIcon from "@mui/icons-material/Save";
+import RecordIcon from "@mui/icons-material/RadioButtonChecked";
 import { useDebounce } from "use-debounce";
 import {
     PublishPanel,
@@ -14,7 +14,7 @@ import {
     SettingsPanel
 } from "../commonPublish/PublishScreenBaseComponents";
 import ReactDOM = require("react-dom");
-import { ThemeProvider } from "@material-ui/styles";
+import { ThemeProvider } from "@mui/styles";
 import {
     darkTheme,
     kBloomBlue,
@@ -46,7 +46,7 @@ import {
     StepLabel,
     Stepper,
     Typography
-} from "@material-ui/core";
+} from "@mui/material";
 import { kBloomRed } from "../../utils/colorUtils";
 import { SimplePreview } from "./simplePreview";
 import { AudioVideoOptionsGroup } from "./AudioVideoOptionsGroup";

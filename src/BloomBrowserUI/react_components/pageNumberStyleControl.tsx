@@ -5,7 +5,7 @@ import * as React from "react";
 import { useEffect, useState } from "react";
 import { get, postString } from "../utils/bloomApi";
 import { useL10n } from "./l10nHooks";
-import { MenuItem, Select, Typography } from "@material-ui/core";
+import { MenuItem, Select, Typography } from "@mui/material";
 
 interface PageNumberStyle {
     localizedStyle: string;

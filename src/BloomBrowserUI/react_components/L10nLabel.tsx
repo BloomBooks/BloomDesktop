@@ -1,5 +1,5 @@
 import * as React from "react";
-import Typography, { TypographyProps } from "@material-ui/core/Typography";
+import Typography, { TypographyProps } from "@mui/material/Typography";
 import { useL10n } from "./l10nHooks";
 
 interface IProps extends TypographyProps {

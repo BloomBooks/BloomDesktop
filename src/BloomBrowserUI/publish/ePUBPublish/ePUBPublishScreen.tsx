@@ -11,7 +11,7 @@ import {
 import PublishScreenTemplate from "../commonPublish/PublishScreenTemplate";
 import { DeviceAndControls } from "../commonPublish/DeviceAndControls";
 import * as ReactDOM from "react-dom";
-import ThemeProvider from "@material-ui/styles/ThemeProvider";
+import ThemeProvider from "@mui/styles/ThemeProvider";
 import { darkTheme, lightTheme } from "../../bloomMaterialUITheme";
 import { StorybookContext } from "../../.storybook/StoryBookContext";
 import {

@@ -1,6 +1,6 @@
 import { lightTheme } from "../bloomMaterialUITheme";
 import * as React from "react";
-import { ThemeProvider } from "@material-ui/styles";
+import { ThemeProvider } from "@mui/styles";
 import { storiesOf } from "@storybook/react";
 import { addDecorator } from "@storybook/react";
 import { StorybookContext } from "../.storybook/StoryBookContext";

@@ -5,7 +5,7 @@ import * as React from "react";
 import { WireUpForWinforms } from "../utils/WireUpWinform";
 import BloomButton from "../react_components/bloomButton";
 import { postString } from "./bloomApi";
-import WarningOutlinedIcon from "@material-ui/icons/WarningOutlined";
+import WarningOutlinedIcon from "@mui/icons-material/WarningOutlined";
 import {
     BloomDialog,
     DialogBottomButtons,

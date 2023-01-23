@@ -1,4 +1,4 @@
-import { createMuiTheme, Theme } from "@material-ui/core/styles";
+import { createMuiTheme, Theme } from "@mui/material/styles";
 import { kBloomBlue } from "../utils/colorUtils";
 import { ProblemKind } from "./ProblemDialog";
 import { kUiFontStack } from "../bloomMaterialUITheme";

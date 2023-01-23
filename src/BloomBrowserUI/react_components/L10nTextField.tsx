@@ -1,5 +1,5 @@
 import * as React from "react";
-import TextField, { StandardTextFieldProps } from "@material-ui/core/TextField";
+import TextField, { StandardTextFieldProps } from "@mui/material/TextField";
 import { useState } from "react";
 import theOneLocalizationManager from "../lib/localizationManager/localizationManager";
 import "./RequestStringDialog.less";

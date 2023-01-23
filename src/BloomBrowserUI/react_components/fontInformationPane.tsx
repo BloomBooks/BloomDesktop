@@ -1,13 +1,13 @@
 /** @jsx jsx **/
 import { jsx, css } from "@emotion/react";
 import * as React from "react";
-import { Button, Link, Typography } from "@material-ui/core";
+import { Button, Link, Typography } from "@mui/material";
 
 import { IFontMetaData } from "../bookEdit/StyleEditor/fontSelectComponent";
-import InfoOutlinedIcon from "@material-ui/icons/InfoOutlined";
+import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import { useL10n } from "./l10nHooks";
 import { kBloomBlue, kDisabledControlGray } from "../bloomMaterialUITheme";
-import CloseIcon from "@material-ui/icons/Close";
+import CloseIcon from "@mui/icons-material/Close";
 
 const FontInformationPane: React.FunctionComponent<{
     metadata: IFontMetaData | undefined;

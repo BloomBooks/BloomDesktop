@@ -3,14 +3,14 @@ import { jsx, css } from "@emotion/react";
 
 // Storybook stories for Team Collection components
 import { lightTheme, kBloomYellow } from "../bloomMaterialUITheme";
-import { ThemeProvider } from "@material-ui/styles";
+import { ThemeProvider } from "@mui/styles";
 import * as React from "react";
 import { storiesOf, addDecorator } from "@storybook/react";
 import { StorybookContext } from "../.storybook/StoryBookContext";
 import { StatusPanelCommon, getLockedInfoChild } from "./statusPanelCommon";
 import { getBloomButton } from "./TeamCollectionBookStatusPanel";
 import "./TeamCollectionBookStatusPanel.less";
-import { Typography } from "@material-ui/core";
+import { Typography } from "@mui/material";
 import { BloomAvatar } from "../react_components/bloomAvatar";
 import { JoinTeamCollectionDialog } from "./JoinTeamCollectionDialog";
 import { TeamCollectionDialogLauncher } from "./TeamCollectionDialog";

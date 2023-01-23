@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
 import { lightTheme } from "../bloomMaterialUITheme";
 import * as React from "react";
-import { ThemeProvider } from "@material-ui/styles";
+import { ThemeProvider } from "@mui/styles";
 import { storiesOf } from "@storybook/react";
 import { addDecorator } from "@storybook/react";
 import { ReaderPublishScreen } from "./ReaderPublish/ReaderPublishScreen";
@@ -25,7 +25,7 @@ import {
 import { PublishAudioVideo } from "./video/PublishAudioVideo";
 import PublishScreenTemplate from "./commonPublish/PublishScreenTemplate";
 import PublishScreenBanner from "./commonPublish/PublishScreenBanner";
-import { Button, Typography } from "@material-ui/core";
+import { Button, Typography } from "@mui/material";
 
 addDecorator(withA11y as any);
 

@@ -1,6 +1,6 @@
 /** @jsx jsx **/
 import { jsx, css } from "@emotion/react";
-import { Radio, Typography } from "@material-ui/core";
+import { Radio, Typography } from "@mui/material";
 import * as React from "react";
 import { useState } from "react";
 import BloomButton from "../../react_components/bloomButton";
@@ -22,7 +22,7 @@ import { TextWithEmbeddedLink } from "../../react_components/link";
 import { post, postJson } from "../../utils/bloomApi";
 import { WireUpForWinforms } from "../../utils/WireUpWinform";
 import { lightTheme } from "../../bloomMaterialUITheme";
-import { CSSProperties, ThemeProvider } from "@material-ui/styles";
+import { CSSProperties, ThemeProvider } from "@mui/styles";
 import HelpLink from "../../react_components/helpLink";
 import {
     IBloomDialogEnvironmentParams,

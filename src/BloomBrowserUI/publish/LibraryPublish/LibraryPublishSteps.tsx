@@ -1,12 +1,12 @@
 import * as React from "react";
 import { useState } from "react";
-import Button from "@material-ui/core/Button";
+import Button from "@mui/material/Button";
 import "./LibraryPublish.less";
-import Stepper from "@material-ui/core/Stepper";
-import Step from "@material-ui/core/Step";
-import StepLabel from "@material-ui/core/StepLabel";
-import StepContent from "@material-ui/core/StepContent";
-import { FormControlLabel, Checkbox, TextField } from "@material-ui/core";
+import Stepper from "@mui/material/Stepper";
+import Step from "@mui/material/Step";
+import StepLabel from "@mui/material/StepLabel";
+import StepContent from "@mui/material/StepContent";
+import { FormControlLabel, Checkbox, TextField } from "@mui/material";
 
 // This is a set of radio buttons and image that goes with each choice, plus a button to start off the sharing/saving
 export const LibraryPublishSteps: React.FunctionComponent = () => {

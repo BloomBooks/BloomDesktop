@@ -1,6 +1,6 @@
 import * as React from "react";
 import { useState } from "react";
-import TextField from "@material-ui/core/TextField";
+import TextField from "@mui/material/TextField";
 import ReactToolTip from "react-tooltip";
 import "./smallNumberPicker.less";
 

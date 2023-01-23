@@ -1,4 +1,4 @@
-import { createTheme } from "@material-ui/core/styles";
+import { createTheme } from "@mui/material/styles";
 
 export const kBloomBlue = "#1d94a4";
 export const kBloomBlue50Transparent = "#8ecad280";

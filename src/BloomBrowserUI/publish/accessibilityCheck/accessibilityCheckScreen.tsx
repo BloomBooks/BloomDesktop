@@ -9,7 +9,7 @@ import WebSocketManager from "../../utils/WebSocketManager";
 import { get } from "../../utils/bloomApi";
 import { LocalizedString } from "../../react_components/l10nComponents";
 import { lightTheme } from "../../bloomMaterialUITheme";
-import { ThemeProvider } from "@material-ui/styles";
+import { ThemeProvider } from "@mui/styles";
 import { hookupLinkHandler } from "../../utils/linkHandler";
 // This is a screen of controls that gives the user instructions and controls
 // for creating epubs

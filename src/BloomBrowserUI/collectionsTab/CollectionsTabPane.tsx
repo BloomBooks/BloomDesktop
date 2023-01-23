@@ -14,7 +14,7 @@ import useEventListener from "@use-it/event-listener";
 import { BookSelectionManager } from "./bookSelectionManager";
 import ShowAfterDelay from "../react_components/showAfterDelay";
 import { forceCheck as convertAnyVisibleLazyLoads } from "react-lazyload";
-import { IconButton, Divider, Menu } from "@material-ui/core";
+import { IconButton, Divider, Menu } from "@mui/material";
 import GreyTriangleMenuIcon from "../react_components/icons/GreyTriangleMenuIcon";
 import {
     LocalizableCheckboxMenuItem,

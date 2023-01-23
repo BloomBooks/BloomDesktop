@@ -2,8 +2,8 @@
 import { jsx, css } from "@emotion/react";
 
 import * as React from "react";
-import * as MUI from "@material-ui/core";
-import { LinkBaseProps } from "@material-ui/core/Link";
+import * as MUI from "@mui/material";
+import { LinkBaseProps } from "@mui/material/Link";
 
 import { ILocalizationProps, LocalizableElement } from "./l10nComponents";
 

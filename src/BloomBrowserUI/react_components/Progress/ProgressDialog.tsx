@@ -1,7 +1,7 @@
 /** @jsx jsx **/
 import { jsx, css } from "@emotion/react";
 
-import { Button, CircularProgress } from "@material-ui/core";
+import { Button, CircularProgress } from "@mui/material";
 import * as React from "react";
 import { useEffect, useRef, useState } from "react";
 import { post, postJson } from "../../utils/bloomApi";

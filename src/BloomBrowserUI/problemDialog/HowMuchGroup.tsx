@@ -1,8 +1,8 @@
 import * as React from "react";
-import Typography from "@material-ui/core/Typography";
-import { withStyles } from "@material-ui/styles";
+import Typography from "@mui/material/Typography";
+import { withStyles } from "@mui/styles";
 import "./ProblemDialog.less";
-import Slider from "@material-ui/core/Slider";
+import Slider from "@mui/material/Slider";
 import { useL10n } from "../react_components/l10nHooks";
 
 export const HowMuchGroup: React.FunctionComponent<{

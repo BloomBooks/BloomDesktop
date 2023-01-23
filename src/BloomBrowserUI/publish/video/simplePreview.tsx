@@ -4,9 +4,9 @@ import * as React from "react";
 import { useState, useEffect } from "react";
 import { useL10n } from "../../react_components/l10nHooks";
 import { useDrawAttention } from "../../react_components/UseDrawAttention";
-import { useTheme, Theme, Typography } from "@material-ui/core";
-import IconButton from "@material-ui/core/IconButton";
-import RefreshIcon from "@material-ui/icons/Refresh";
+import { useTheme, Theme, Typography } from "@mui/material";
+import IconButton from "@mui/material/IconButton";
+import RefreshIcon from "@mui/icons-material/Refresh";
 
 export const SimplePreview: React.FunctionComponent<{
     landscape: boolean;

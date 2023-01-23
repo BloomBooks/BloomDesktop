@@ -1,6 +1,6 @@
 /*import * as React from "react";
 import ReactDOM = require("react-dom");
-import { Link } from "@material-ui/core";
+import { Link } from "@mui/material";
 
 import {
     BasePublishScreen,
@@ -15,7 +15,7 @@ import { PublishFeaturesGroup } from "../ReaderPublish/PublishFeaturesGroup";
 import { LanguageGroup } from "../commonPublish/LanguageGroup";
 import { AudioGroup } from "../commonPublish/AudioGroup";
 import { LibraryPreview } from "./LibraryPreview";
-import { ThemeProvider } from "@material-ui/styles";
+import { ThemeProvider } from "@mui/styles";
 import theme from "../../bloomMaterialUITheme";
 
 export const LibraryPublishScreen = () => {

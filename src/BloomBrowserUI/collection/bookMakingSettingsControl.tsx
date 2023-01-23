@@ -1,6 +1,6 @@
 /** @jsx jsx **/
 import { jsx, css } from "@emotion/react";
-import { ThemeProvider } from "@material-ui/core";
+import { ThemeProvider } from "@mui/material";
 import * as React from "react";
 import { lightTheme } from "../bloomMaterialUITheme";
 import DefaultBookshelfControl from "../react_components/DefaultBookshelfControl";

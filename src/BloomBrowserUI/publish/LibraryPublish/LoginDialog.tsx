@@ -1,6 +1,6 @@
 import * as React from "react";
 import ReactDOM = require("react-dom");
-import { ThemeProvider } from "@material-ui/styles";
+import { ThemeProvider } from "@mui/styles";
 import { makeTheme } from "../../problemDialog/theme";
 
 import StyledFirebaseAuth from "react-firebaseui/StyledFirebaseAuth";
@@ -12,7 +12,7 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import theOneLocalizationManager from "../../lib/localizationManager/localizationManager";
 import WebSocketManager from "../../utils/WebSocketManager";
-import { DialogTitle, Typography, Dialog } from "@material-ui/core";
+import { DialogTitle, Typography, Dialog } from "@mui/material";
 import "./LoginDialog.less";
 import { useL10n } from "../../react_components/l10nHooks";
 import { ProblemKind } from "../../problemDialog/ProblemDialog";

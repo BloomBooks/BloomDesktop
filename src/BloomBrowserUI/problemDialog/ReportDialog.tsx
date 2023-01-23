@@ -7,9 +7,9 @@ import {
     Link,
     TextField,
     Typography
-} from "@material-ui/core";
+} from "@mui/material";
 import { post, postJson, useApiStringState } from "../utils/bloomApi";
-import { ThemeProvider } from "@material-ui/styles";
+import { ThemeProvider } from "@mui/styles";
 import "./ProblemDialog.less";
 import BloomButton from "../react_components/bloomButton";
 import { MuiCheckbox } from "../react_components/muiCheckBox";

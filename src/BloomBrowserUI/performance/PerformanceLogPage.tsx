@@ -5,7 +5,7 @@ import { useSubscribeToWebSocketForObjectInMessageParam } from "../utils/WebSock
 import "./PerformanceLogPage.less";
 import { ScatterPlot } from "@nivo/scatterplot";
 import ReactDOM = require("react-dom");
-import { Button } from "@material-ui/core";
+import { Button } from "@mui/material";
 import * as filesize from "filesize";
 
 interface IMeasurement {

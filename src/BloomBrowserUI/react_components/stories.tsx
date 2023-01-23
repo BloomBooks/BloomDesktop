@@ -4,11 +4,7 @@ import { jsx, css } from "@emotion/react";
 
 import * as React from "react";
 import { storiesOf } from "@storybook/react";
-import {
-    Radio,
-    RadioGroup as MuiRadioGroup,
-    Typography
-} from "@material-ui/core";
+import { Radio, RadioGroup as MuiRadioGroup, Typography } from "@mui/material";
 import { Expandable } from "./expandable";
 import { Checkbox } from "./checkbox";
 import { MuiCheckbox } from "./muiCheckBox";
@@ -17,7 +13,7 @@ import { ApiCheckbox } from "./ApiCheckbox";
 import BloomButton from "./bloomButton";
 import { showConfirmDialog, IConfirmDialogProps } from "./confirmDialog";
 import ImportIcon from "./icons/ImportIcon";
-import DeleteIcon from "@material-ui/icons/Delete";
+import DeleteIcon from "@mui/icons-material/Delete";
 import PlaybackOrderControls from "./playbackOrderControls";
 import SmallNumberPicker from "./smallNumberPicker";
 import { BloomAvatar } from "./bloomAvatar";
@@ -41,7 +37,7 @@ import {
     MenuItem,
     FormControlLabel,
     Checkbox as OriginalMuiCheckbox
-} from "@material-ui/core";
+} from "@mui/material";
 import { RadioGroup } from "./RadioGroup";
 import { MuiRadio } from "./muiRadio";
 import WinFormsStyleSelect from "./winFormsStyleSelect";

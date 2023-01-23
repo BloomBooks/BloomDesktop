@@ -1,13 +1,13 @@
 import React = require("react");
 import * as ReactDOM from "react-dom";
 import { useState } from "react";
-import Dialog from "@material-ui/core/Dialog";
+import Dialog from "@mui/material/Dialog";
 import {
     DialogTitle,
     DialogActions,
     DialogContent,
     ThemeProvider
-} from "@material-ui/core";
+} from "@mui/material";
 import CloseOnEscape from "react-close-on-escape";
 import { useL10n } from "./l10nHooks";
 import BloomButton from "./bloomButton";
