@@ -409,13 +409,18 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<IBookTeamCol
                         title={mainTitleUnlocked}
                         subTitle={subTitleUnlocked}
                         icon={
-                            <img src={"Team Collection.svg"} alt="available" />
+                            <img
+                                src={
+                                    "/bloom/teamCollection/Team Collection.svg"
+                                }
+                                alt="available"
+                            />
                         }
                         button={getBloomButton(
                             "Check out book",
                             "TeamCollection.Checkout",
                             "checkout-button",
-                            "Check Out.svg",
+                            "/bloom/teamCollection/Check Out.svg",
                             checkoutHandler
                         )}
                         menu={menu}
@@ -472,7 +477,7 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<IBookTeamCol
                                     "Check in book",
                                     "TeamCollection.CheckIn",
                                     "checkin-button",
-                                    "Check In.svg",
+                                    "/bloom/teamCollection/Check In.svg",
                                     checkinHandler,
                                     checkinProgress > 0,
                                     "primary"

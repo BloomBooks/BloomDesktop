@@ -2068,7 +2068,7 @@ namespace Bloom.TeamCollection
 					new
 					{
 						title,
-						titleIcon = "Team Collection.svg",
+						titleIcon = "/bloom/TeamCollection/Team Collection.svg",
 						titleColor = "white",
 						titleBackgroundColor = Palette.kBloomBlueHex,
 						showReportButton = "if-error"

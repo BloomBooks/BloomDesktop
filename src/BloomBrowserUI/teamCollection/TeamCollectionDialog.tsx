@@ -90,7 +90,7 @@ const TeamCollectionDialog: React.FunctionComponent<{
             <ThemeProvider theme={lightTheme}>
                 <DialogTitle
                     title={`${dialogTitle} (experimental)`}
-                    icon={"Team Collection.svg"}
+                    icon={"/bloom/teamCollection/Team Collection.svg"}
                     backgroundColor={kBloomBlue}
                     color={"white"}
                 />

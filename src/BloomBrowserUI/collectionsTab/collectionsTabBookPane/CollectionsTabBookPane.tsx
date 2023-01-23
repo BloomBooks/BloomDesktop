@@ -141,9 +141,7 @@ export const CollectionsTabBookPane: React.FunctionComponent<{
                     : "/bloom/images/EditTab.svg"
             }
             disabledImageFile={
-                canMakeBook
-                    ? undefined
-                    : "/bloom/images/EditTab.svg/EditTab.svg"
+                canMakeBook ? undefined : "/bloom/images/EditTab.svg"
             }
             hasText={true}
             color="secondary"
