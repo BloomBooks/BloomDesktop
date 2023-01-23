@@ -35,7 +35,7 @@ export const PreviewPanel: React.FunctionComponent = props => {
 };
 
 // This component contains the padding needed when this panel is above a PreviewPanel.
-export const UnderPreviewPanel: React.FunctionComponent = props => (
+export const PreviewPublishPanel: React.FunctionComponent = props => (
     <div
         css={css`
             padding-left: 20px;
@@ -47,7 +47,7 @@ export const UnderPreviewPanel: React.FunctionComponent = props => (
     </div>
 );
 
-// This component provides no padding. If you need a standard padding, use the above UnderPreviewPanel.
+// This component provides no padding. If you need a standard padding, use the above PreviewPreviewPanel.
 export const PublishPanel: React.FunctionComponent = props => (
     <section
         css={css`
