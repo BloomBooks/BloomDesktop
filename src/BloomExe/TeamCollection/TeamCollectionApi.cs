@@ -218,7 +218,7 @@ namespace Bloom.TeamCollection
 		{
 			try
 			{
-				FolderTeamCollection.JoinCollectionTeam();
+				var joinType = FolderTeamCollection.JoinCollectionTeam();
 				ReactDialog.CloseCurrentModal();
 
 				Analytics.Track("TeamCollectionJoin",
@@ -226,7 +226,8 @@ namespace Bloom.TeamCollection
 						{"CollectionId", _settings?.CollectionId},
 						{"CollectionName", _settings?.CollectionName},
 						{"Backend", _tcManager?.CurrentCollection?.GetBackendType()},
-						{"User", CurrentUser}
+						{"User", CurrentUser},
+						{"JoinType", joinType} // create, open, or merge
 					});
 
 				request.PostSucceeded();

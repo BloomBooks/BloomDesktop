@@ -301,7 +301,7 @@ namespace BloomTests.TeamCollection
 			var fixedLocalPath = Path.Combine(_collectionFolder.FolderPath, kRepoNameForIdConflict);
 			Assert.That(Directory.Exists(fixedLocalPath));
 			AssertLostAndFound(kLocalNameForIdConflict);
-			AssertProgress("The book \"{0}\" was moved to Lost & Found, since it has the same ID as the book \"{1}\" in the repo.",
+			AssertProgress("The book \"{0}\" was moved to Lost and Found, since it has the same ID as the book \"{1}\" in the repo.",
 				kLocalNameForIdConflict, kRepoNameForIdConflict,MessageAndMilestoneType.ErrorNoReload);
 			AssertProgress("Fetching a new book '{0}' from the Team Collection", kRepoNameForIdConflict);
 		}

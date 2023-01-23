@@ -1553,6 +1553,17 @@ namespace Bloom.TeamCollection
 				fullL10nId, message, param0, param1);
 		}
 
+		void ReportProgressLogAndAnalytics(IWebSocketProgress progress, ProgressKind kind, string l10nIdSuffix, string message,
+			string param0 = null, string param1 = null)
+		{
+			ReportProgressAndLog(progress, kind, l10nIdSuffix, message, param0, param1);
+			var msg = string.Format(message, param0, param1);
+			Analytics.Track("TeamCollectionError", new Dictionary<string, string>
+			{
+				{"message",msg}
+			});
+		}
+
 		/// <summary>
 		/// A list of strings known to occur in filenames Dropbox generates when it resolves conflicting changes.
 		/// Not a completely reliable way to identify them, especially with an incomplete list of localizations,
@@ -1684,8 +1695,8 @@ namespace Bloom.TeamCollection
 								PutBook(path,inLostAndFound:true);
 								SIL.IO.RobustIO.DeleteDirectory(path, true);
 								hasProblems = true;
-								ReportProgressAndLog(progress, ProgressKind.Error, "TeamCollection.ConflictingIdMove",
-									"The book \"{0}\" was moved to Lost & Found, since it has the same ID as the book \"{1}\" in the repo.",
+								ReportProgressLogAndAnalytics(progress, ProgressKind.Error, "TeamCollection.ConflictingIdMove",
+									"The book \"{0}\" was moved to Lost and Found, since it has the same ID as the book \"{1}\" in the repo.",
 									bookFolderName, repoState.Item1);
 								// We will copy the conflicting book to local in the second loop.
 								continue;
@@ -1849,7 +1860,7 @@ namespace Bloom.TeamCollection
 								hasProblems = true;
 								// Make the local folder match the repo (this is where 'they win')
 								CopyBookFromRepoToLocalAndReport(progress, bookName, () =>
-									ReportProgressAndLog(progress, ProgressKind.Error, "ConflictingCheckout",
+									ReportProgressLogAndAnalytics(progress, ProgressKind.Error, "ConflictingCheckout",
 										"Found different versions of '{0}' in both collections. The team version has been copied to your local collection, and the old local version to Lost and Found"
 										, bookName));
 								continue;
@@ -1934,7 +1945,7 @@ namespace Bloom.TeamCollection
 								hasProblems = true;
 								// Make the local folder match the repo (this is where 'they win')
 								CopyBookFromRepoToLocalAndReport(progress, bookName, () =>
-									ReportProgressAndLog(progress, ProgressKind.Error, "ConflictingCheckout",
+									ReportProgressLogAndAnalytics(progress, ProgressKind.Error, "ConflictingCheckout",
 										"The book '{0}', which you have checked out and edited, is checked out to someone else in the Team Collection. Your changes have been overwritten, but are saved to Lost-and-found.",
 										bookName));
 								continue;
@@ -1967,7 +1978,7 @@ namespace Bloom.TeamCollection
 						// warn the user
 						hasProblems = true;
 						CopyBookFromRepoToLocalAndReport(progress, bookName, () =>
-							ReportProgressAndLog(progress, ProgressKind.Error, "ConflictingEdit",
+							ReportProgressLogAndAnalytics(progress, ProgressKind.Error, "ConflictingEdit",
 								"The book '{0}', which you have checked out and edited, was modified in the Team Collection by someone else. Your changes have been overwritten, but are saved to Lost-and-found.",
 								bookName));
 
