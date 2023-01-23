@@ -46,6 +46,7 @@ import { RadioGroup } from "./RadioGroup";
 import { MuiRadio } from "./muiRadio";
 import WinFormsStyleSelect from "./winFormsStyleSelect";
 import BookMakingSettingsControl from "../collection/bookMakingSettingsControl";
+import BloomSelect, { IOption } from "./bloomSelect";
 
 storiesOf("Localizable Widgets", module)
     .add("Expandable", () => (
@@ -735,4 +736,57 @@ storiesOf("RequiresBloomEnterprise", module)
     )
     .add("RequiresBloomEnterpriseOverlayWrapper", () =>
         React.createElement(() => <RequiresBloomEnterpriseOverlayWrapper />)
+    );
+
+const selectedOption = { label: "One", value: "1" };
+const options: IOption[] = [
+    selectedOption,
+    { label: "Two", value: "2" },
+    { label: "Three", value: "3" }
+];
+const selectedLevelOption = {
+    value: "wcag-a",
+    label: "Level A conformance",
+    l10nKey: "BookMetadata.a11yLevelA"
+};
+const levelOptions: IOption[] = [
+    {
+        value: "none",
+        label: "None",
+        l10nKey: "BookMetadata.a11yLevelNone",
+        comment:
+            "indicates that no level of accessibility conformance is claimed"
+    },
+    selectedLevelOption,
+    {
+        value: "wcag-aa",
+        label: "Level AA conformance",
+        l10nKey: "BookMetadata.a11yLevelAA"
+    },
+    {
+        value: "wcag-aaa",
+        label: "Level AAA conformance",
+        l10nKey: "BookMetadata.a11yLevelAAA"
+    }
+];
+storiesOf("BloomSelect", module)
+    .add("BloomSelect", () =>
+        React.createElement(() => (
+            <BloomSelect
+                options={options}
+                currentOption={selectedOption}
+                nullOptionValue=""
+                className=""
+            ></BloomSelect>
+        ))
+    )
+    .add("BloomSelect ally levels (uses nullOption)", () =>
+        React.createElement(() => (
+            <BloomSelect
+                options={levelOptions}
+                currentOption={selectedLevelOption}
+                nullOptionValue="none"
+                className=""
+            ></BloomSelect>
+        ))
     );

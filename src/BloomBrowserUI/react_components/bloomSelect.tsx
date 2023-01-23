@@ -1,9 +1,10 @@
 import * as React from "react";
 // import Select from "react-select";
+import { MenuItem, Select } from "@material-ui/core";
 import theOneLocalizationManager from "../lib/localizationManager/localizationManager";
 import * as mobxReact from "mobx-react";
+import { useEffect } from "react";
 
-// Only the first two properties of IOption are used by BloomSelect.
 export interface IOption {
     value: string;
     label: string;
@@ -13,7 +14,7 @@ export interface IOption {
 export interface IProps {
     currentOption: IOption; // Only currentOption.value is used in BloomSelect.
     options: IOption[];
-    nullOption: string; // The IOption .value associated with not having chosen one of the real options
+    nullOptionValue: string; // The IOption .value associated with not having chosen one of the real options
     className: string;
 }
 
@@ -22,54 +23,60 @@ export interface IProps {
 // would be currentOption as set somewhere in a parent control.  That is why currentOption is
 // defined as "any" instead of "string", so that the object reference can tie back to the parent
 // control's data.  If nothing is set as an observable, then there won't be automatic re-rendering.
-@mobxReact.observer
-export class BloomSelect extends React.Component<IProps> {
-    constructor(props: IProps) {
-        super(props);
+// @mobxReact.observer
+export const BloomSelect: React.FunctionComponent<IProps> = props => {
+    // useEffect(() => {
+    //     props.options.map(item => {
+    //         if (item.l10nKey) {
+    //             theOneLocalizationManager
+    //                 .asyncGetTextAndSuccessInfo(
+    //                     item.l10nKey,
+    //                     item.label,
+    //                     item.comment ? item.comment : "",
+    //                     false
+    //                 )
+    //                 .done(result => {
+    //                     item.label = result.text;
+    //                 });
+    //         }
+    //     });
+    // }, [props.options]);
 
-        this.props.options.map(item => {
-            if (item.l10nKey) {
-                theOneLocalizationManager
-                    .asyncGetTextAndSuccessInfo(
-                        item.l10nKey,
-                        item.label,
-                        item.comment ? item.comment : "",
-                        false
-                    )
-                    .done(result => {
-                        item.label = result.text;
-                    });
-            }
-        });
-    }
+    const [selectedValue, setSelectedValue] = React.useState<string>(
+        props.currentOption.value
+            ? props.options.filter(
+                  x => x.value === props.currentOption.value
+              )[0].value
+            : props.options.filter(x => x.value === props.nullOptionValue)[0]
+                  .value
+    );
 
-    public render() {
-        const selectedOption = this.props.currentOption.value
-            ? this.props.options.filter(
-                  x => x.value === this.props.currentOption.value
-              )[0]
-            : this.props.options.filter(
-                  x => x.value === this.props.nullOption
-              )[0];
-
-        return (
-            // <Select
-            //     value={selectedOption}
-            //     onChange={selectedOption => this.handleChange(selectedOption)}
-            //     options={this.props.options}
-            //     className={this.props.className}
-            // />
-            <></>
-        );
-    }
-
-    public handleChange(selectedOption) {
-        if (selectedOption.value == this.props.nullOption) {
-            this.props.currentOption.value = "";
+    function handleChange(event) {
+        const newSelectedValue = event.target.value;
+        if (newSelectedValue == props.nullOptionValue) {
+            setSelectedValue("");
         } else {
-            this.props.currentOption.value = selectedOption.value;
+            setSelectedValue(newSelectedValue);
         }
     }
-}
+
+    const menuItems = props.options.map(item => {
+        return (
+            <MenuItem value={item.value} key={item.value}>
+                {item.label}
+            </MenuItem>
+        );
+    });
+
+    return (
+        <Select
+            value={selectedValue}
+            onChange={handleChange}
+            className={props.className}
+        >
+            {menuItems}
+        </Select>
+    );
+};
 
 export default BloomSelect;
