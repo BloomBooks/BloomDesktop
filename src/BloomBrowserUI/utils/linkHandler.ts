@@ -1,4 +1,4 @@
-import { BloomApi } from "./bloomApi";
+import { postString } from "./bloomApi";
 
 const handler = (e: Event) => {
     if (!(e.target instanceof Element)) {
@@ -16,12 +16,12 @@ const handler = (e: Event) => {
     if (href.startsWith("http") || href.startsWith("mailto")) {
         e.preventDefault();
         e.stopPropagation();
-        BloomApi.postString("link", href);
+        postString("link", href);
     }
 };
 
 // Set up a document-level handler which will intercept any click on an anchor
-// with href http:, https:, or mailto:, and delegate it to a BloomApi (which in
+// with href http:, https:, or mailto:, and delegate it to a bloomApi (which in
 // turn delegates it to the default system browser).
 export function hookupLinkHandler() {
     // Removing it first ensures that we only have one, even if we call this more than once.

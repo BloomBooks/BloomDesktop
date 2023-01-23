@@ -2,7 +2,7 @@
 import { jsx, css } from "@emotion/core";
 import * as React from "react";
 import { useEffect, useState } from "react";
-import { BloomApi } from "../utils/bloomApi";
+import { get, postString } from "../utils/bloomApi";
 import { useL10n } from "./l10nHooks";
 import { List, ListItem, ListItemText, Typography } from "@material-ui/core";
 import { makeStyles } from "@material-ui/styles";
@@ -35,7 +35,7 @@ const XmatterChooserControl: React.FunctionComponent = () => {
         const newXmatterDisplay = typographyElement.innerText as string;
         const newXmatter = findByDisplayName(newXmatterDisplay);
         setSelectedXmatter(newXmatter?.internalName);
-        BloomApi.postString(
+        postString(
             "settings/xmatter",
             newXmatter ? newXmatter.internalName : ""
         );
@@ -49,7 +49,7 @@ const XmatterChooserControl: React.FunctionComponent = () => {
     };
 
     useEffect(() => {
-        BloomApi.get("settings/xmatter", result => {
+        get("settings/xmatter", result => {
             setSelectedXmatter(result.data.currentXmatter as string);
             setXmatterData(result.data.xmatterOfferings as IXmatterInfo[]);
         });

@@ -3,8 +3,7 @@ import { jsx, css } from "@emotion/core";
 
 import * as React from "react";
 import { useState } from "react";
-import { BloomApi } from "../utils/bloomApi";
-import { Div } from "./l10nComponents";
+import { get, postString } from "../utils/bloomApi";
 import { lightTheme, kBloomYellow } from "../bloomMaterialUITheme";
 import { ThemeProvider } from "@material-ui/styles";
 import { makeStyles, MenuItem, Select, Typography } from "@material-ui/core";
@@ -40,7 +39,7 @@ export const DefaultBookshelfControl: React.FunctionComponent = () => {
     const [project, setProject] = useState("");
     // First query: get the values of the two states above.
     React.useEffect(() => {
-        BloomApi.get("settings/bookShelfData", data => {
+        get("settings/bookShelfData", data => {
             const pn = data.data.brandingProjectName;
             setProject(pn === "Default" ? "" : pn);
             setDefaultBookshelfUrlKey(
@@ -246,7 +245,7 @@ export const DefaultBookshelfControl: React.FunctionComponent = () => {
                     onChange={event => {
                         const newShelf = event.target.value as string;
                         setDefaultBookshelfUrlKey(newShelf);
-                        BloomApi.postString("settings/bookShelfData", newShelf);
+                        postString("settings/bookShelfData", newShelf);
                     }}
                 >
                     {items}

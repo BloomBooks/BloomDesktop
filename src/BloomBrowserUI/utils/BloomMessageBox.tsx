@@ -4,7 +4,7 @@ import { jsx, css } from "@emotion/core";
 import * as React from "react";
 import { WireUpForWinforms } from "../utils/WireUpWinform";
 import BloomButton from "../react_components/bloomButton";
-import { BloomApi } from "./bloomApi";
+import { postString } from "./bloomApi";
 import WarningOutlinedIcon from "@material-ui/icons/WarningOutlined";
 import {
     BloomDialog,
@@ -56,7 +56,7 @@ export const BloomMessageBox: React.FunctionComponent<{
 
     const closeDialogForButton = buttonId => {
         if (props.closeWithAPICall) {
-            BloomApi.postString("common/closeReactDialog", buttonId);
+            postString("common/closeReactDialog", buttonId);
         } else {
             closeDialog();
             // if (props.buttonClicked) {

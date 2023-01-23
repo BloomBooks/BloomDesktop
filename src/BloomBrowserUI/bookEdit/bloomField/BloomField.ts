@@ -2,13 +2,8 @@
 /// <reference path="../../typings/ckeditor/ckeditor.d.ts" />
 
 import AudioRecording from "../toolbox/talkingBook/audioRecording";
-import { BloomApi } from "../../utils/bloomApi";
+import { get, post } from "../../utils/bloomApi";
 import BloomMessageBoxSupport from "../../utils/bloomMessageBoxSupport";
-
-import {
-    BloomPalette,
-    getHexColorsForPalette
-} from "../../react_components/color-picking/bloomPalette";
 
 // This class is actually just a group of static functions with a single public method. It does whatever we need to to make Firefox's contenteditable
 // element have the behavior we need.
@@ -257,7 +252,7 @@ export default class BloomField {
 
         ckeditor.addCommand("pasteHyperlink", {
             exec: function(edt) {
-                BloomApi.get("common/clipboardText", result => {
+                get("common/clipboardText", result => {
                     if (!result.data) {
                         return; // More sanity checks are in bloomEditing.updateCkEditorButtonStatus
                     }
@@ -364,9 +359,7 @@ export default class BloomField {
                     const oldId = span.getAttribute("id");
                     const newId = AudioRecording.createValidXhtmlUniqueId();
                     span.setAttribute("id", newId);
-                    BloomApi.post(
-                        `audio/copyAudioFile?oldId=${oldId}&newId=${newId}`
-                    );
+                    post(`audio/copyAudioFile?oldId=${oldId}&newId=${newId}`);
                 }
             );
             return temp.innerHTML;

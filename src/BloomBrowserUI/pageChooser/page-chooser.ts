@@ -3,7 +3,7 @@ import * as React from "react";
 import * as ReactDOM from "react-dom";
 import theOneLocalizationManager from "../lib/localizationManager/localizationManager";
 import axios from "axios";
-import { BloomApi } from "../utils/bloomApi";
+import { get, postBoolean, postData } from "../utils/bloomApi";
 import "errorHandler";
 import SelectedTemplatePageControls from "./selectedTemplatePageControls";
 import {
@@ -15,7 +15,7 @@ import { lightTheme } from "../bloomMaterialUITheme";
 import WebSocketManager from "../utils/WebSocketManager";
 
 document.addEventListener("DOMContentLoaded", () => {
-    BloomApi.get("pageTemplates", result => {
+    get("pageTemplates", result => {
         const templatesJSON = result.data;
         const pageChooser = new PageChooser(JSON.stringify(templatesJSON));
         pageChooser.loadPageGroups();
@@ -93,7 +93,7 @@ export class PageChooser {
         this._selectedGridItem = undefined;
         this._indexOfPageToSelect = 0;
         // I was hoping to confine this to 'selectedTemplatePageControls.tsx', but we need it for the double-click handler.
-        BloomApi.get("settings/enterpriseEnabled", enterpriseResult => {
+        get("settings/enterpriseEnabled", enterpriseResult => {
             this._enterpriseAvailable = enterpriseResult.data;
         });
     }
@@ -345,7 +345,7 @@ export class PageChooser {
             if (willLoseData && !convertAnywayChecked) {
                 return;
             }
-            BloomApi.postData(
+            postData(
                 "changeLayout",
                 {
                     pageId: pageId,
@@ -357,7 +357,7 @@ export class PageChooser {
                 PageChooser.closeup
             );
         } else {
-            BloomApi.postData(
+            postData(
                 "addPage",
                 {
                     templateBookPath: templateBookPath,
@@ -380,7 +380,7 @@ export class PageChooser {
     }
 
     private static closeup(): void {
-        BloomApi.postBoolean("editView/setModalState", false);
+        postBoolean("editView/setModalState", false);
         // this fails with a message saying the dialog isn't initialized. Apparently a dialog must be closed
         // by code loaded into the window that opened it.
         //$(parent.document.getElementById('addPageConfig')).dialog('close');

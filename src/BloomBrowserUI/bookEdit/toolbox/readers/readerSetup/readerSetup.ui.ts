@@ -13,7 +13,7 @@ import {
 } from "./readerSetup.io";
 import { DataWord } from "../libSynphony/bloomSynphonyExtensions";
 import axios from "axios";
-import { BloomApi } from "../../../../utils/bloomApi";
+import { get, post } from "../../../../utils/bloomApi";
 import * as _ from "underscore";
 
 let desiredGPCs: string[];
@@ -145,7 +145,7 @@ function process_UI_Message(event: MessageEvent): void {
                     break;
                 default:
             }
-            if (helpFile) BloomApi.post("help/" + helpFile);
+            if (helpFile) post("help/" + helpFile);
             return;
         }
 
@@ -936,7 +936,7 @@ function firstSetupLetters(): boolean {
 function attachEventHandlers(): void {
     if (typeof $ === "function") {
         $("#open-text-folder").onSafe("click", () => {
-            BloomApi.post("readers/ui/openTextsFolder");
+            post("readers/ui/openTextsFolder");
             return false;
         });
 
@@ -996,7 +996,7 @@ function attachEventHandlers(): void {
         });
 
         $("#setup-choose-allowed-words-file").onSafe("click", () => {
-            BloomApi.get("readers/ui/chooseAllowedWordsListFile", result => {
+            get("readers/ui/chooseAllowedWordsListFile", result => {
                 const fileName = result.data;
                 if (fileName) setAllowedWordsFile(fileName);
 
@@ -1113,7 +1113,7 @@ function checkAndDeleteAllowedWordsFile(fileName: string): void {
     }
 
     // if you are here, the file name is not in use
-    // Using axios directly because delete doesn't return a promise and doesn't need the BloomApi
+    // Using axios directly because delete doesn't return a promise and doesn't need the bloomApi
     // treatment.
     axios.delete("/bloom/api/readers/io/allowedWordsList", {
         params: { fileName: fileName }

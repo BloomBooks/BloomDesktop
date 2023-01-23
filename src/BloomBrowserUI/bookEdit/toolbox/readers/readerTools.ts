@@ -13,14 +13,11 @@ import {
 } from "./libSynphony/synphony_lib";
 import "./libSynphony/synphony_lib.js";
 import ReadersSynphonyWrapper from "./ReadersSynphonyWrapper";
-import { ReaderStage, ReaderLevel, ReaderSettings } from "./ReaderSettings";
-import {
-    DataWord,
-    clearWordCache
-} from "./libSynphony/bloomSynphonyExtensions";
+import { ReaderSettings } from "./ReaderSettings";
+import { clearWordCache } from "./libSynphony/bloomSynphonyExtensions";
 import "../../../lib/jquery.onSafe";
 import axios from "axios";
-import { BloomApi } from "../../../utils/bloomApi";
+import { get } from "../../../utils/bloomApi";
 import * as _ from "underscore";
 
 interface textMarkup extends JQueryStatic {
@@ -231,10 +228,8 @@ function beginLoadSynphonySettings(): JQueryPromise<void> {
     }
     readerToolsInitialized = true;
 
-    BloomApi.get("collection/defaultFont", result =>
-        setDefaultFont(result.data)
-    );
-    BloomApi.get("readers/io/readerToolSettings", settingsFileContent => {
+    get("collection/defaultFont", result => setDefaultFont(result.data));
+    get("readers/io/readerToolSettings", settingsFileContent => {
         initializeSynphony(settingsFileContent.data);
         //console.log("done synphony init");
         result.resolve();
@@ -273,7 +268,7 @@ function initializeSynphony(settingsFileContent: string): void {
         getTheOneReaderToolsModel().getAllowedWordsLists();
     } else {
         // get the list of sample texts
-        BloomApi.get("readers/ui/sampleTextsList", result =>
+        get("readers/ui/sampleTextsList", result =>
             beginSetTextsList(result.data)
         );
     }

@@ -1,8 +1,5 @@
-/** @jsx jsx **/
-import { jsx, css } from "@emotion/core";
-
 import * as React from "react";
-import { BloomApi } from "../utils/bloomApi";
+import { post } from "../utils/bloomApi";
 import { Div, P, Span } from "../react_components/l10nComponents";
 import BloomButton from "../react_components/bloomButton";
 
@@ -332,7 +329,7 @@ export const JoinTeamCollectionDialog: React.FunctionComponent<{
                     hasText={true}
                     enabled={!wantReportButton}
                     onClick={() => {
-                        BloomApi.post("teamCollection/joinTeamCollection");
+                        post("teamCollection/joinTeamCollection");
                     }}
                 >
                     {joinButtonEnglish}

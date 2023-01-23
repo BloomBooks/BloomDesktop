@@ -1,6 +1,6 @@
 import * as React from "react";
 import BloomButton from "./bloomButton";
-import { BloomApi } from "../utils/bloomApi";
+import { get, post, postData } from "../utils/bloomApi";
 import "./AutoUpdateSoftwareDialog.less";
 import { lightTheme } from "../bloomMaterialUITheme";
 import { ThemeProvider } from "@material-ui/styles";
@@ -14,7 +14,7 @@ export const AutoUpdateSoftwareDialog: React.FunctionComponent = () => {
         "automatic"
     );
     useEffect(() => {
-        BloomApi.get("app/autoUpdateSoftwareChoice", result => {
+        get("app/autoUpdateSoftwareChoice", result => {
             const autoUpdateValue: boolean = result.data.autoUpdate;
             setChosenRadio(autoUpdateValue ? "automatic" : "inform");
         });
@@ -79,11 +79,11 @@ export const AutoUpdateSoftwareDialog: React.FunctionComponent = () => {
                         enabled={true}
                         hasText={true}
                         onClick={() => {
-                            BloomApi.postData("app/autoUpdateSoftwareChoice", {
+                            postData("app/autoUpdateSoftwareChoice", {
                                 dialogShown: 1,
                                 autoUpdate: isAutoUpdate
                             });
-                            BloomApi.post("common/closeReactDialog");
+                            post("common/closeReactDialog");
                         }}
                     >
                         OK

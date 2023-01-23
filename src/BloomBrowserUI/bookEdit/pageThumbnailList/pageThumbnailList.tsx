@@ -18,7 +18,7 @@ import * as toastr from "toastr";
 import "errorHandler";
 import WebSocketManager from "../../utils/WebSocketManager";
 import { Responsive } from "react-grid-layout";
-import { BloomApi } from "../../utils/bloomApi";
+import { get, postJson, useApiData } from "../../utils/bloomApi";
 import { PageThumbnail } from "./PageThumbnail";
 import LazyLoad, { forceCheck } from "react-lazyload";
 
@@ -77,7 +77,7 @@ const PageList: React.FunctionComponent<{ pageSize: string }> = props => {
     const [twoColumns, setTwoColumns] = useState(true);
 
     const [selectedPageId, setSelectedPageId] = useState("");
-    const bookAttributesThatMayAffectDisplay = BloomApi.useApiData<any>(
+    const bookAttributesThatMayAffectDisplay = useApiData<any>(
         "pageList/bookAttributesThatMayAffectDisplay",
         {}
     );
@@ -156,7 +156,7 @@ const PageList: React.FunctionComponent<{ pageSize: string }> = props => {
     // calls to fill in the page content. Then this runs again when the sequence
     // of pages changes (e.g., adding a page or re-ordering them).
     useEffect(() => {
-        BloomApi.get("pageList/pages", response => {
+        get("pageList/pages", response => {
             // We're using a double approach here. The WebThumbnailList actually gets
             // notified a few times of the initial selected page. Each time, it sends
             // a message to the listener above. But, there's async stuff involved
@@ -219,7 +219,7 @@ const PageList: React.FunctionComponent<{ pageSize: string }> = props => {
                 const pageElt = e.currentTarget.closest("[id]")!;
                 const pageId = pageElt.getAttribute("id");
                 const caption = pageElt.getAttribute("data-caption");
-                BloomApi.postJson("pageList/pageClicked", {
+                postJson("pageList/pageClicked", {
                     pageId,
                     detail: caption
                 });
@@ -234,7 +234,7 @@ const PageList: React.FunctionComponent<{ pageSize: string }> = props => {
             const pageElt = e.currentTarget.closest("[id]")!;
             const pageId = pageElt.getAttribute("id");
             if (pageId === selectedPageId)
-                BloomApi.postJson("pageList/menuClicked", {
+                postJson("pageList/menuClicked", {
                     pageId
                 });
         }
@@ -296,12 +296,9 @@ const PageList: React.FunctionComponent<{ pageSize: string }> = props => {
                                     height="18"
                                     viewBox="0 0 18 18"
                                     onClick={() => {
-                                        BloomApi.postJson(
-                                            "pageList/menuClicked",
-                                            {
-                                                pageId: pageContent.key
-                                            }
-                                        );
+                                        postJson("pageList/menuClicked", {
+                                            pageId: pageContent.key
+                                        });
                                     }}
                                 >
                                     <path d="M5 8l4 4 4-4z" fill="white" />
@@ -425,7 +422,7 @@ function onDragStop(
         // the page clicked. (Note however that this seems to get fired on any click,
         // even just closing a popup menu, so it's possible that we might get more
         // click events than we really want.)
-        BloomApi.postJson("pageList/pageClicked", {
+        postJson("pageList/pageClicked", {
             pageId: movedPageId,
             detail: "unknown"
         });
@@ -434,7 +431,7 @@ function onDragStop(
     // Needs more smarts if we ever do other than two columns.
     const newIndex = newItem.y * 2 + newItem.x;
 
-    BloomApi.postJson("pageList/pageMoved", { movedPageId, newIndex });
+    postJson("pageList/pageMoved", { movedPageId, newIndex });
 }
 
 function ContinueAutomatedPageClicking(
@@ -443,7 +440,7 @@ function ContinueAutomatedPageClicking(
 ) {
     const kHowManyPages = 1000; // no way other than code to change this at the moment
     if (count > kHowManyPages) return;
-    BloomApi.postJson(
+    postJson(
         "pageList/pageClicked",
         { pageId: pagesRemaining[0].key, detail: pagesRemaining[0].caption },
         () => {

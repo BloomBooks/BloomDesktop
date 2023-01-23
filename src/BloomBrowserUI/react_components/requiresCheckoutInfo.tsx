@@ -1,7 +1,5 @@
-/** @jsx jsx **/
-import { jsx, css } from "@emotion/core";
 import React = require("react");
-import { BloomApi } from "../utils/bloomApi";
+import { useCanModifyCurrentBook } from "../utils/bloomApi";
 import { InfoTooltip } from "./icons/InfoTooltip";
 
 // Displays an info icon if the current book needs to be checked out before it
@@ -10,7 +8,7 @@ import { InfoTooltip } from "./icons/InfoTooltip";
 export const RequiresCheckoutInfo: React.FunctionComponent<{
     className?: string;
 }> = props => {
-    const canModifyCurrentBook = BloomApi.useCanModifyCurrentBook();
+    const canModifyCurrentBook = useCanModifyCurrentBook();
     return (
         <React.Fragment>
             {canModifyCurrentBook || (

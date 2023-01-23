@@ -18,7 +18,7 @@ import OverflowChecker from "../OverflowChecker/OverflowChecker";
 import { IsPageXMatter } from "../js/bloomEditing";
 import "../../lib/jquery.alphanum";
 import axios from "axios";
-import { BloomApi } from "../../utils/bloomApi";
+import { get, wrapAxios } from "../../utils/bloomApi";
 import { EditableDivUtils } from "../js/editableDivUtils";
 import * as ReactDOM from "react-dom";
 import FontSelectComponent, { IFontMetaData } from "./fontSelectComponent";
@@ -947,8 +947,8 @@ export default class StyleEditor {
         // The namespace (".formatButton") in the event name prevents off from interfering with other click handlers.
         $(targetBox).off("click.formatButton");
         $(targetBox).on("click.formatButton", "#formatButton", () => {
-            // Using axios directly because BloomApi does not support combining multiple promises with .all
-            BloomApi.wrapAxios(
+            // Using axios directly because bloomApi does not support combining multiple promises with .all
+            wrapAxios(
                 axios
                     .all([
                         axios.get("/bloom/api/fonts/metadata"),

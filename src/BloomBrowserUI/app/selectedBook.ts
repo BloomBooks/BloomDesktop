@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { BloomApi } from "../utils/bloomApi";
+import { get } from "../utils/bloomApi";
 import { useSubscribeToWebSocketForObjectInMessageParam } from "../utils/WebSocketManager";
 
 export interface ISelectedBookInfo {
@@ -35,7 +35,7 @@ export function useMonitorBookSelection(): ISelectedBookInfo {
         e => setSelectedBookInfo(e)
     );
     useEffect(() => {
-        BloomApi.get("app/selectedBookInfo", response =>
+        get("app/selectedBookInfo", response =>
             setSelectedBookInfo(response.data)
         );
     }, []);

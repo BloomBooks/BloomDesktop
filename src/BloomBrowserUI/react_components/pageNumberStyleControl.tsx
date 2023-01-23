@@ -3,7 +3,7 @@ import { jsx, css } from "@emotion/core";
 
 import * as React from "react";
 import { useEffect, useState } from "react";
-import { BloomApi } from "../utils/bloomApi";
+import { get, postString } from "../utils/bloomApi";
 import { useL10n } from "./l10nHooks";
 import { MenuItem, Select, Typography } from "@material-ui/core";
 
@@ -29,7 +29,7 @@ const PageNumberStyleControl: React.FunctionComponent = () => {
     const handleSelectChange = event => {
         const newSelectedStyle = event.target.value as string;
         setSelectedStyle(newSelectedStyle);
-        BloomApi.postString("settings/numberingStyle", newSelectedStyle);
+        postString("settings/numberingStyle", newSelectedStyle);
     };
 
     const [numberingStyles, setNumberingStyles] = useState<
@@ -38,7 +38,7 @@ const PageNumberStyleControl: React.FunctionComponent = () => {
 
     useEffect(() => {
         // Gets all available numbering styles and the current style
-        BloomApi.get("settings/numberingStyle", result => {
+        get("settings/numberingStyle", result => {
             setSelectedStyle(result.data.currentPageNumberStyle as string);
             setNumberingStyles(
                 result.data.numberingStyleData as PageNumberStyle[]

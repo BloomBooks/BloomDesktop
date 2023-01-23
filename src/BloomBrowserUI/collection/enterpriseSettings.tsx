@@ -7,7 +7,7 @@ import { Markdown } from "../react_components/markdown";
 import { Link } from "../react_components/link";
 import { HelpLink } from "../react_components/helpLink";
 import { RadioGroup, Radio } from "../react_components/radio";
-import { BloomApi } from "../utils/bloomApi";
+import { get, post, postJson } from "../utils/bloomApi";
 import "./enterpriseSettings.less";
 import { FontAwesomeIcon } from "../bloomIcons";
 import { tabMargins } from "./commonTabSettings";
@@ -59,11 +59,11 @@ export class EnterpriseSettings extends React.Component<{}, IState> {
     };
 
     public componentDidMount() {
-        BloomApi.get("settings/enterpriseStatus", result => {
+        get("settings/enterpriseStatus", result => {
             const status = result.data;
-            BloomApi.get("settings/subscriptionCode", result => {
+            get("settings/subscriptionCode", result => {
                 const code = result.data;
-                BloomApi.get("settings/legacyBrandingName", result => {
+                get("settings/legacyBrandingName", result => {
                     this.setState({ legacyBrandingName: result.data });
                     this.setControlState(status, code, result.data);
                 });
@@ -351,30 +351,30 @@ export class EnterpriseSettings extends React.Component<{}, IState> {
     }
 
     private setStatus(status: string) {
-        BloomApi.postJson("settings/enterpriseStatus", status);
+        postJson("settings/enterpriseStatus", status);
         this.setControlState(status, this.state.subscriptionCode, "");
 
         if (status !== "None") {
-            BloomApi.get("settings/enterpriseSummary", result => {
+            get("settings/enterpriseSummary", result => {
                 this.setSummary(result.data);
             });
         }
     }
 
     private onPaste() {
-        BloomApi.get("common/clipboardText", result =>
+        get("common/clipboardText", result =>
             this.updateSubscriptionCode(result.data)
         );
     }
 
     private onCopy() {
-        BloomApi.postJson("common/clipboardText", {
+        postJson("common/clipboardText", {
             text: this.state.subscriptionCode
         });
     }
 
     private checkForUpdates() {
-        BloomApi.post("common/checkForUpdates");
+        post("common/checkForUpdates");
     }
 
     // Used both with a code from entering something in the text box, and
@@ -394,7 +394,7 @@ export class EnterpriseSettings extends React.Component<{}, IState> {
                 controlState: "SubscriptionLegacy",
                 subscriptionSummary: ""
             });
-            BloomApi.get("settings/enterpriseSummary", result => {
+            get("settings/enterpriseSummary", result => {
                 this.setSummary(result.data);
             });
             return;
@@ -414,12 +414,12 @@ export class EnterpriseSettings extends React.Component<{}, IState> {
                 subscriptionCode: code,
                 subscriptionExpiry: null
             });
-            BloomApi.get("settings/enterpriseSummary", result => {
+            get("settings/enterpriseSummary", result => {
                 this.setSummary(result.data);
             });
             return;
         }
-        BloomApi.get("settings/enterpriseExpiry", result => {
+        get("settings/enterpriseExpiry", result => {
             if (result.data === "unknown") {
                 // Valid-looking code, but not one this version knows about.
                 this.setState({
@@ -453,10 +453,10 @@ export class EnterpriseSettings extends React.Component<{}, IState> {
                 this.setState({ controlState: "SubscriptionGood" });
             }
             if (expiry) {
-                BloomApi.get("settings/enterpriseSummary", result => {
+                get("settings/enterpriseSummary", result => {
                     this.setSummary(result.data);
                 });
-                BloomApi.get("settings/hasSubscriptionFiles", result => {
+                get("settings/hasSubscriptionFiles", result => {
                     this.setState({
                         hasSubscriptionFiles: result.data === "true"
                     });
@@ -488,7 +488,7 @@ export class EnterpriseSettings extends React.Component<{}, IState> {
     }
 
     private updateSubscriptionCode(code: string) {
-        BloomApi.postJson("settings/subscriptionCode", {
+        postJson("settings/subscriptionCode", {
             subscriptionCode: code.trim()
         });
         this.setState({ legacyBrandingName: "" });

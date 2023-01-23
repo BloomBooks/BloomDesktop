@@ -1,5 +1,5 @@
 import * as React from "react";
-import { BloomApi } from "../utils/bloomApi";
+import { post } from "../utils/bloomApi";
 
 // Display a string which may have embedded a link, in the usual HTML format,
 // for example, "There is a problem. Please click <a href='...'>here</a> to report it".
@@ -25,7 +25,7 @@ export const StringWithOptionalLink: React.FunctionComponent<{
                     href={match[2]}
                     onClick={e => {
                         e.preventDefault(); // so it doesn't try to follow the link
-                        BloomApi.post(href);
+                        post(href);
                     }}
                 >
                     {match[3]}

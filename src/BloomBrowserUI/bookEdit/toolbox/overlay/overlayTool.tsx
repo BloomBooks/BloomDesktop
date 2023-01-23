@@ -21,7 +21,7 @@ import { Div, Span } from "../../../react_components/l10nComponents";
 import InputLabel from "@material-ui/core/InputLabel";
 import * as toastr from "toastr";
 import { default as TrashIcon } from "@material-ui/icons/Delete";
-import { BloomApi } from "../../../utils/bloomApi";
+import { get } from "../../../utils/bloomApi";
 import { isLinux } from "../../../utils/isLinux";
 import { MuiCheckbox } from "../../../react_components/muiCheckBox";
 import { ColorBar } from "./colorBar";
@@ -192,7 +192,7 @@ const OverlayToolControls: React.FunctionComponent = () => {
     useEffect(() => {
         // Get the lock/unlock state from C#-land. We have to do this every time the page is refreshed
         // (see 'callOnNewPageReady') in case the user temporarily unlocks the book.
-        BloomApi.get("edit/pageControls/requestState", result => {
+        get("edit/pageControls/requestState", result => {
             const jsonObj = result.data;
             setIsBookLocked(jsonObj.BookLockedState === "BookLocked");
         });

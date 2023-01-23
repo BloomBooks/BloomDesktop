@@ -4,7 +4,7 @@ import * as React from "react";
 import FormGroup from "@material-ui/core/FormGroup";
 import { SettingsGroup } from "../commonPublish/PublishScreenBaseComponents";
 import { useL10n } from "../../react_components/l10nHooks";
-import { BloomApi } from "../../utils/bloomApi";
+import { get, useApiBoolean, useApiData } from "../../utils/bloomApi";
 import { Div } from "../../react_components/l10nComponents";
 import { FormControl, MenuItem, Select, Typography } from "@material-ui/core";
 import Slider from "@material-ui/core/Slider";
@@ -20,7 +20,7 @@ import { IFormatDimensionsResponseEntry } from "./IFormatDimensionsResponseEntry
 
 // The things that define each item in the Format menu
 interface IFormatItem {
-    format: string; // to pass to BloomApi
+    format: string; // to pass to bloomApi
     label: string;
     l10nKey: string; // for label
     idealDimension: string; // like 1920x1080; assuming does not need localization
@@ -59,7 +59,7 @@ export const AudioVideoOptionsGroup: React.FunctionComponent<{
 }> = props => {
     // Stores which formats should be non-selectable.
     const [disabledFormats, setDisabledFormats] = useState<string[]>([]);
-    const [motionEnabled] = BloomApi.useApiBoolean(
+    const [motionEnabled] = useApiBoolean(
         "publish/android/canHaveMotionMode",
         false
     );
@@ -79,7 +79,7 @@ export const AudioVideoOptionsGroup: React.FunctionComponent<{
     // When component is mounted, find out which formats should be disabled, then update the state.
     useEffect(() => {
         // Currently, only mp3 format can be disabled. Everything else is always enabled right now.
-        BloomApi.get("publish/av/isMP3FormatSupported", c => {
+        get("publish/av/isMP3FormatSupported", c => {
             const isSupported = c.data as boolean;
             if (!isSupported) {
                 setDisabledFormats(prevValue => prevValue.concat(["mp3"]));
@@ -88,7 +88,7 @@ export const AudioVideoOptionsGroup: React.FunctionComponent<{
     }, []);
 
     useEffect(() => {
-        BloomApi.get("publish/av/tooBigForScreenMsg", c => {
+        get("publish/av/tooBigForScreenMsg", c => {
             setTooBigMsg(c.data);
         });
     }, [props.format]);
@@ -193,7 +193,7 @@ export const AudioVideoOptionsGroup: React.FunctionComponent<{
         }
     ]);
 
-    const updatedFormatDimensionsList = BloomApi.useApiData<
+    const updatedFormatDimensionsList = useApiData<
         IFormatDimensionsResponseEntry[] | undefined
     >(`publish/av/getUpdatedFormatDimensions`, undefined);
 

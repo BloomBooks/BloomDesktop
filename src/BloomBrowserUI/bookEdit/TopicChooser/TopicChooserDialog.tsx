@@ -5,7 +5,7 @@ import * as React from "react";
 import { useState } from "react";
 import * as ReactDOM from "react-dom";
 
-import { BloomApi } from "../../utils/bloomApi";
+import { get, postBoolean, postString } from "../../utils/bloomApi";
 import { kBloomBlue } from "../../bloomMaterialUITheme";
 import {
     BloomDialog,
@@ -62,10 +62,7 @@ export const TopicChooserDialog: React.FunctionComponent<ITopicChooserdialogProp
     React.useEffect(() => {
         if (propsForBloomDialog.open === undefined) return;
 
-        BloomApi.postBoolean(
-            "editView/setModalState",
-            propsForBloomDialog.open
-        );
+        postBoolean("editView/setModalState", propsForBloomDialog.open);
     }, [propsForBloomDialog.open]);
 
     const onRadioSelectionChanged = (newTopicKey: string) => {
@@ -73,10 +70,7 @@ export const TopicChooserDialog: React.FunctionComponent<ITopicChooserdialogProp
     };
 
     const handleOk = () => {
-        BloomApi.postString(
-            "editView/setTopic",
-            currentTopic ? currentTopic : "<NONE>"
-        );
+        postString("editView/setTopic", currentTopic ? currentTopic : "<NONE>");
         closeDialog();
     };
 
@@ -195,7 +189,7 @@ let show: () => void = () => {
 
 export function showTopicChooserDialog() {
     try {
-        BloomApi.get("editView/topics", result => {
+        get("editView/topics", result => {
             const topicsAndCurrent = result.data;
             const topics = (topicsAndCurrent.Topics as string[]).map(t =>
                 JSON.parse(t)

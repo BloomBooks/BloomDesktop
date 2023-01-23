@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { ISelectedBookInfo } from "../app/selectedBook";
-import { BloomApi } from "../utils/bloomApi";
+import { get } from "../utils/bloomApi";
 import WebSocketManager from "../utils/WebSocketManager";
 
 // This class supports the useIsSelected function (below), which is useful when many components
@@ -17,7 +17,7 @@ export class BookSelectionManager {
     private selectedBookInfo: ISelectedBookInfo;
 
     public initialize = () => {
-        BloomApi.get("app/selectedBookInfo", response => {
+        get("app/selectedBookInfo", response => {
             this.setSelectedBookInfo(response.data);
         });
         WebSocketManager.addListener("book-selection", e => {

@@ -4,7 +4,7 @@ import { jsx, css } from "@emotion/core";
 import Grid from "@material-ui/core/Grid";
 import React = require("react");
 import "BooksOfCollection.less";
-import { BloomApi } from "../utils/bloomApi";
+import { useApiData, useWatchApiData } from "../utils/bloomApi";
 import { BookButton, bookButtonHeight, bookButtonWidth } from "./BookButton";
 import { BookSelectionManager } from "./bookSelectionManager";
 import LazyLoad from "react-lazyload";
@@ -42,7 +42,7 @@ export const BooksOfCollection: React.FunctionComponent<{
         props.collectionId
     )}`;
 
-    const books = BloomApi.useWatchApiData<Array<IBookInfo>>(
+    const books = useWatchApiData<Array<IBookInfo>>(
         `collections/books?${collectionQuery}`,
         [],
         "editableCollectionList",
@@ -50,7 +50,7 @@ export const BooksOfCollection: React.FunctionComponent<{
     );
 
     //const selectedBookInfo = useMonitorBookSelection();
-    const collection: ICollection = BloomApi.useApiData(
+    const collection: ICollection = useApiData(
         `collections/collectionProps?${collectionQuery}`,
         {
             isEditableCollection: props.isEditableCollection,

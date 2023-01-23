@@ -15,10 +15,8 @@ import StyleEditor from "../StyleEditor/StyleEditor";
 import bloomQtipUtils from "../js/bloomQtipUtils";
 import "../../lib/jquery.easytabs.js"; //load into global space
 import BloomHintBubbles from "../js/BloomHintBubbles";
-import { BloomApi } from "../../utils/bloomApi";
-import CopyContentButton, {
-    ICopyContentButtonProps
-} from "../../react_components/CopyContentButton";
+import { postJson, postString } from "../../utils/bloomApi";
+import CopyContentButton from "../../react_components/CopyContentButton";
 
 export default class BloomSourceBubbles {
     //:empty is not quite enough... we don't want to show bubbles if all there is is an empty paragraph
@@ -176,7 +174,7 @@ export default class BloomSourceBubbles {
                     0
                 ) as HTMLElement).lastElementChild?.firstElementChild?.addEventListener(
                     "click",
-                    () => BloomApi.postString("editView/sourceTextTab", langTag)
+                    () => postString("editView/sourceTextTab", langTag)
                 );
                 // BL-8174: Add a tooltip with the language tag to the item
                 sourceElement.setAttribute("title", langTag);
@@ -229,7 +227,7 @@ export default class BloomSourceBubbles {
 
     private static handleCopyBubbleSourceClick(textToCopy: string): void {
         if (textToCopy) {
-            BloomApi.postJson("common/clipboardText", {
+            postJson("common/clipboardText", {
                 text: textToCopy
             });
             //navigator.clipboard.writeText(textToCopy); simpler, but not available until FF66+
@@ -425,7 +423,7 @@ export default class BloomSourceBubbles {
                 group[0],
                 newLangTag
             );
-            BloomApi.postString("editView/sourceTextTab", newLangTag);
+            postString("editView/sourceTextTab", newLangTag);
             if (divForBubble.length !== 0) {
                 BloomHintBubbles.addHintBubbles(
                     group.get(0),
@@ -669,7 +667,7 @@ export default class BloomSourceBubbles {
     private static SetupTooltips(editableDiv: JQuery): void {
         // BL-878: show the full-size tool tip when the text area has focus
         editableDiv.find(".bloom-editable:visible").each((i, elt) => {
-            // BloomApi.postDebugMessage(
+            // bloomApi postDebugMessage(
             //     "DEBUG BloomSourceBubbles.SetupTooltips/setting focus and blur handlers on " +
             //         elt.outerHTML
             // );
@@ -677,7 +675,7 @@ export default class BloomSourceBubbles {
             // passive-bubble class on qtip tooltips that are *not* Source Bubbles.
             // See https://issues.bloomlibrary.org/youtrack/issue/BL-11745.
             $(elt).focus(event => {
-                // BloomApi.postDebugMessage(
+                // bloomApi postDebugMessage(
                 //     "DEBUG BloomSourceBubbles.SetupTooltips/on focus - element=" +
                 //         (event.target as Element).outerHTML
                 // );
@@ -689,7 +687,7 @@ export default class BloomSourceBubbles {
             // not enough because the field receiving focus may not be one that has
             // been configured with this event.
             $(elt).blur(ev => {
-                // BloomApi.postDebugMessage(
+                // bloomApi postDebugMessage(
                 //     "DEBUG BloomSourceBubbles.SetupTooltips/on blur - element=" +
                 //         (ev.target as Element).outerHTML
                 // );

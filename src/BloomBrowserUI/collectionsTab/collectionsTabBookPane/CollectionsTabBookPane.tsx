@@ -2,7 +2,7 @@
 import { jsx, css } from "@emotion/core";
 import * as React from "react";
 import { useRef, useState } from "react";
-import { BloomApi } from "../../utils/bloomApi";
+import { get, getBoolean } from "../../utils/bloomApi";
 import { TeamCollectionBookStatusPanel } from "../../teamCollection/TeamCollectionBookStatusPanel";
 import {
     IBookTeamCollectionStatus,
@@ -49,7 +49,7 @@ export const CollectionsTabBookPane: React.FunctionComponent<{
     } = useMonitorBookSelection();
 
     React.useEffect(() => {
-        BloomApi.get(
+        get(
             "teamCollection/selectedBookStatus",
             data => {
                 setBookStatus(data.data as IBookTeamCollectionStatus);
@@ -82,9 +82,8 @@ export const CollectionsTabBookPane: React.FunctionComponent<{
     const iframeRef = useRef<HTMLIFrameElement>(null);
 
     React.useEffect(() => {
-        BloomApi.getBoolean(
-            "teamCollection/isTeamCollectionEnabled",
-            teamCollection => setIsTeamCollection(teamCollection)
+        getBoolean("teamCollection/isTeamCollectionEnabled", teamCollection =>
+            setIsTeamCollection(teamCollection)
         );
         // This code SHOULD suppress mousedown events in the iframe, except in the scroll bar,
         // thus preventing the user from doing anything much and allowing us to retire the

@@ -9,7 +9,7 @@ import {
     DialogTitle,
     Typography
 } from "@material-ui/core";
-import { BloomApi } from "../../utils/bloomApi";
+import { postDataWithConfig } from "../../utils/bloomApi";
 import { useTheme } from "@material-ui/styles";
 import "./ProgressDialog.less";
 import BloomButton from "../../react_components/bloomButton";
@@ -36,7 +36,7 @@ export const ProgressDialogInner: React.FunctionComponent<{
     const theme = useTheme();
     const onCopy = () => {
         // document.execCommand("copy") does not work in Bloom's geckofx.
-        BloomApi.postDataWithConfig(
+        postDataWithConfig(
             "publish/android/textToClipboard",
             messagesDivRef.current!.innerText,
             { headers: { "Content-Type": "text/plain" } }

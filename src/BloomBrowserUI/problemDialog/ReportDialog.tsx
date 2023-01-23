@@ -8,7 +8,7 @@ import {
     TextField,
     Typography
 } from "@material-ui/core";
-import { BloomApi } from "../utils/bloomApi";
+import { post, postJson, useApiStringState } from "../utils/bloomApi";
 import { ThemeProvider } from "@material-ui/styles";
 import "./ProblemDialog.less";
 import BloomButton from "../react_components/bloomButton";
@@ -40,21 +40,18 @@ export const ReportDialog: React.FunctionComponent<{
 
     // Precondition: The returned string from BloomServer must already encode any special characters
     // which are not meant to be treated as HTML code.
-    const [reportHeadingHtml] = BloomApi.useApiStringState(
+    const [reportHeadingHtml] = useApiStringState(
         "problemReport/reportHeadingHtml",
         ""
     );
-    const [email, setEmail] = BloomApi.useApiStringState(
+    const [email, setEmail] = useApiStringState(
         "problemReport/emailAddress",
         ""
     );
     const [submitAttempts, setSubmitAttempts] = useState(0);
     const theme = makeTheme(props.kind);
     const [whatDoing, setWhatDoing] = useState("");
-    const [bookName] = BloomApi.useApiStringState(
-        "problemReport/bookName",
-        "??"
-    );
+    const [bookName] = useApiStringState("problemReport/bookName", "??");
 
     // When submitted, this will contain the url of the YouTrack issue.
     const [issueLink, setIssueLink] = useState("");
@@ -98,7 +95,7 @@ export const ReportDialog: React.FunctionComponent<{
             setSubmitAttempts(submitAttempts + 1);
         } else {
             setMode(Mode.submitting);
-            BloomApi.postJson(
+            postJson(
                 "problemReport/submit",
                 {
                     kind: props.kind,
@@ -186,7 +183,7 @@ export const ReportDialog: React.FunctionComponent<{
                 hasText={true}
                 variant="outlined"
                 onClick={() => {
-                    BloomApi.post("common/closeReactDialog");
+                    post("common/closeReactDialog");
                 }}
             >
                 {buttonLabel}
@@ -228,7 +225,7 @@ export const ReportDialog: React.FunctionComponent<{
                 //fullWidth={true}
                 maxWidth={"md"}
                 fullScreen={true}
-                onClose={() => BloomApi.post("common/closeReactDialog")}
+                onClose={() => post("common/closeReactDialog")}
             >
                 {/* The whole disableTypography and Typography thing gets around Material-ui putting the
                     Close icon inside of the title's Typography element, where we don't have control over its CSS. */}
@@ -237,7 +234,7 @@ export const ReportDialog: React.FunctionComponent<{
                     {/* We moved the X up to the winforms dialog so that it is draggable
                          <Close
                         className="close-in-title"
-                        onClick={() => BloomApi.post("common/closeReactDialog")}
+                        onClick={() => post("common/closeReactDialog")}
                     /> */}
                 </DialogTitle>
                 <DialogContent className="content">

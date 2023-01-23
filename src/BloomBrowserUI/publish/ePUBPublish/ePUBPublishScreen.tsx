@@ -26,7 +26,11 @@ import { PublishProgressDialog } from "../commonPublish/PublishProgressDialog";
 import BookMetadataDialog from "../metadata/BookMetadataDialog";
 import { useL10n } from "../../react_components/l10nHooks";
 import { ProgressState } from "../commonPublish/PublishProgressDialogInner";
-import { BloomApi } from "../../utils/bloomApi";
+import {
+    useApiBoolean,
+    useApiStringState,
+    useWatchBooleanEvent
+} from "../../utils/bloomApi";
 import { hookupLinkHandler } from "../../utils/linkHandler";
 import { NoteBox } from "../../react_components/BloomDialog/commonDialogComponents";
 import { P } from "../../react_components/l10nComponents";
@@ -46,7 +50,7 @@ export const EPUBPublishScreen = () => {
     // not destroyed during refresh.  See comments toward the end of
     // https://issues.bloomlibrary.org/youtrack/issue/BL-11043.
     const defaultEpubModeRef = React.useRef("fixed");
-    const [epubMode, setEpubmode] = BloomApi.useApiStringState(
+    const [epubMode, setEpubmode] = useApiStringState(
         "publish/epub/epubMode",
         defaultEpubModeRef.current
     );
@@ -85,7 +89,7 @@ const EPUBPublishScreenInternal: React.FunctionComponent<{
             : "" // otherwise, wait for the websocket to deliver a url when the c# has finished creating the epub
     );
 
-    const [landscape] = BloomApi.useApiBoolean("publish/epub/landscape", false);
+    const [landscape] = useApiBoolean("publish/epub/landscape", false);
 
     useSubscribeToWebSocketForEvent(
         "publish-epub",
@@ -107,7 +111,7 @@ const EPUBPublishScreenInternal: React.FunctionComponent<{
             setHighlightRefresh(false);
         }
     );
-    const isLicenseOK = BloomApi.useWatchBooleanEvent(
+    const isLicenseOK = useWatchBooleanEvent(
         true,
         "publish-epub",
         "publish/licenseOK"

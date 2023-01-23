@@ -5,7 +5,7 @@ import * as React from "react";
 import { lightTheme, kBloomYellow } from "../bloomMaterialUITheme";
 import { ThemeProvider } from "@material-ui/styles";
 import { useMemo, useRef, useState } from "react";
-import { BloomApi } from "../utils/bloomApi";
+import { post, postString } from "../utils/bloomApi";
 import { useL10n } from "../react_components/l10nHooks";
 import "./TeamCollectionBookStatusPanel.less";
 import { StatusPanelCommon, getLockedInfoChild } from "./statusPanelCommon";
@@ -385,7 +385,7 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<IBookTeamCol
             case "unlocked": {
                 const checkoutHandler = () => {
                     setBusy(true);
-                    BloomApi.post(
+                    post(
                         "teamCollection/attemptLockOfCurrentBook",
                         response => {
                             // Not much to do. Change of state is handled by websocket notifications.
@@ -426,7 +426,7 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<IBookTeamCol
                 const checkinHandler = () => {
                     setBusy(true);
                     setCheckinProgress(0.0001); // just enough to show the bar at once
-                    BloomApi.post(
+                    post(
                         "teamCollection/checkInCurrentBook",
                         () => {
                             // not much to do. Most change of state is handled by websocket notifications.
@@ -510,7 +510,7 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<IBookTeamCol
                                     key="message"
                                     onChange={e => {
                                         setMessage(e.target.value);
-                                        BloomApi.postString(
+                                        postString(
                                             "teamCollection/checkinMessage",
                                             e.target.value
                                         );
@@ -574,7 +574,7 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<IBookTeamCol
                             "TeamCollection.Reload",
                             "reload-button",
                             undefined,
-                            () => BloomApi.post("common/reloadCollection")
+                            () => post("common/reloadCollection")
                         )}
                         menu={menu}
                     >
@@ -603,7 +603,7 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<IBookTeamCol
                             "TeamCollection.Reload",
                             "reload-button",
                             undefined,
-                            () => BloomApi.post("common/reloadCollection")
+                            () => post("common/reloadCollection")
                         )}
                         menu={menu}
                     >

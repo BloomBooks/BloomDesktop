@@ -1,6 +1,6 @@
 import * as React from "react";
 import { MuiCheckbox } from "./muiCheckBox";
-import { BloomApi } from "../utils/bloomApi";
+import { useApiBoolean } from "../utils/bloomApi";
 
 // A localized checkbox that is backed by a boolean API get/set
 // This is a "uncontrolled component".
@@ -15,10 +15,7 @@ export const ApiCheckbox: React.FunctionComponent<{
     forceDisabledValue?: boolean;
     onChange?: () => void;
 }> = props => {
-    const [checked, setChecked] = BloomApi.useApiBoolean(
-        props.apiEndpoint,
-        false
-    );
+    const [checked, setChecked] = useApiBoolean(props.apiEndpoint, false);
 
     let showChecked = checked;
     if (props.disabled && props.forceDisabledValue !== undefined) {

@@ -32,7 +32,12 @@ import { getEditTabBundleExports } from "./bloomFrames";
 //import promise = require('es6-promise');
 //promise.Promise.polyfill();
 import axios from "axios";
-import { BloomApi } from "../../utils/bloomApi";
+import {
+    get,
+    post,
+    postBoolean,
+    postThatMightNavigate
+} from "../../utils/bloomApi";
 import { showRequestStringDialog } from "../../react_components/RequestStringDialog";
 import { fixUpDownArrowEventHandler } from "./arrowKeyWorkaroundManager";
 import WebSocketManager, {
@@ -314,7 +319,7 @@ let cancelHandle = 0;
 const windowLoadedHandler = () => {
     onLoadHappenedNormally = true;
     window.cancelAnimationFrame(cancelHandle);
-    BloomApi.post("editView/editPagePainted");
+    post("editView/editPagePainted");
 };
 
 // When we don't already have a video (either a new page, or it has been deleted),
@@ -374,7 +379,7 @@ export function SetupElements(container: HTMLElement) {
         target.setAttribute("data-copyright", event.copyright);
         target.setAttribute("data-creator", event.creator);
         target.setAttribute("data-license", event.license);
-        BloomApi.post("edit/taskComplete");
+        post("edit/taskComplete");
     });
     SetupVideoEditing(container);
     SetupWidgetEditing(container);
@@ -785,12 +790,12 @@ export function SetupElements(container: HTMLElement) {
             BloomSourceBubbles.ShowSourceBubbleForElement(
                 document.activeElement
             );
-            // BloomApi.postDebugMessage(
+            // bloomApi postDebugMessage(
             //     "DEBUG bloomEditing/SetupElements()/after delayed loop to make source bubbles - trying to show source bubble on " +
             //         document.activeElement.outerHTML
             // );
         } else {
-            // BloomApi.postDebugMessage(
+            // bloomApi postDebugMessage(
             //     "DEBUG bloomEditing/SetupElements()/after delayed loop to make source bubbles - no active element: try to set focus"
             // );
             // nothing is focused. If there are TOP boxes on the page, it's possible we've just reloaded
@@ -810,13 +815,13 @@ export function SetupElements(container: HTMLElement) {
                     .find("textarea:visible, div.bloom-editable:visible")
                     .first();
                 if (firstEditable.length) {
-                    // BloomApi.postDebugMessage(
+                    // bloomApi postDebugMessage(
                     //     "DEBUG bloomEditing/SetupElements()/after delayed loop to make source bubbles - setting focus on " +
                     //         firstEditable.get(0).outerHTML
                     // );
                     firstEditable.focus();
                 } else {
-                    // BloomApi.postDebugMessage(
+                    // bloomApi postDebugMessage(
                     //     "DEBUG bloomEditing/SetupElements()/after delayed loop to make source bubbles - nothing to focus??"
                     // );
                 }
@@ -904,19 +909,19 @@ export function SetupElements(container: HTMLElement) {
             .find("textarea:visible, div.bloom-editable:visible")
             .first();
         if (editableElement.length) {
-            // BloomApi.postDebugMessage(
+            // bloomApi postDebugMessage(
             //     "DEBUG bloomEditing/SetupElements() - setting focus on " +
             //         editableElement.get(0).outerHTML
             // );
             editableElement.focus();
-            // BloomApi.postDebugMessage(
+            // bloomApi postDebugMessage(
             //     "DEBUG bloomEditing/SetupElements() - activeElement=" +
             //         (document.activeElement
             //             ? document.activeElement.outerHTML
             //             : "<NULL>")
             // );
         } else {
-            // BloomApi.postDebugMessage(
+            // bloomApi postDebugMessage(
             //     "DEBUG bloomEditing/SetupElements() - found nothing to focus"
             // );
         }
@@ -1077,14 +1082,14 @@ export function bootstrap() {
     document.addEventListener("selectionchange", () => {
         const textSelected = isTextSelected();
         if (textSelected != reportedTextSelected) {
-            BloomApi.postBoolean("editView/isTextSelected", textSelected);
+            postBoolean("editView/isTextSelected", textSelected);
             reportedTextSelected = textSelected;
         }
     });
     // We could force this in C#, but it's easier to just send a message to convey the state
     // that the page is in to begin with. I think this is always false at bootstrap.
     reportedTextSelected = isTextSelected();
-    BloomApi.postBoolean("editView/isTextSelected", reportedTextSelected);
+    postBoolean("editView/isTextSelected", reportedTextSelected);
 
     /* reviewSlog typescript just couldn't cope with this. Our browser has this built in , so it's ok
             //if this browser doesn't have endsWith built in, add it
@@ -1170,7 +1175,7 @@ function setupWheelZooming() {
         }
         if (command != "") {
             // Zooming re-loads the page (because of a text-over-picture issue)
-            BloomApi.postThatMightNavigate(command);
+            postThatMightNavigate(command);
         }
         // Setting the zoom is all we want to do in this context.
         e.preventDefault();
@@ -1315,7 +1320,7 @@ export function IsPageXMatter($target: JQuery): boolean {
 }
 
 function updateCkEditorButtonStatus(editor: CKEDITOR.editor) {
-    BloomApi.get("editView/isClipboardBookHyperlink", result => {
+    get("editView/isClipboardBookHyperlink", result => {
         const pasteHyperlinkCommand = editor.getCommand("pasteHyperlink");
         if (result.data) {
             pasteHyperlinkCommand.enable();

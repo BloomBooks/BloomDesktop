@@ -4,7 +4,7 @@ import { jsx, css } from "@emotion/core";
 import * as React from "react";
 import ToolboxToolReactAdaptor from "../toolboxToolReactAdaptor";
 import { Div } from "../../../react_components/l10nComponents";
-import { BloomApi } from "../../../utils/bloomApi";
+import { get, postDataWithConfig } from "../../../utils/bloomApi";
 import { ApiBackedCheckbox } from "../../../react_components/apiBackedCheckbox";
 import "./impairmentVisualizer.less";
 import { RadioGroup, Radio } from "../../../react_components/radio";
@@ -106,17 +106,15 @@ export class ImpairmentVisualizerControls extends React.Component<{}, IState> {
     }
 
     private updateColorBlindnessRadio(mode: string) {
-        BloomApi.postDataWithConfig(
-            "accessibilityCheck/kindOfColorBlindness",
-            mode,
-            { headers: { "Content-Type": "application/json" } }
-        );
+        postDataWithConfig("accessibilityCheck/kindOfColorBlindness", mode, {
+            headers: { "Content-Type": "application/json" }
+        });
         this.setState({ kindOfColorBlindness: mode });
         // componentDidUpdate will call updateSimulations when state is stable
     }
 
     public componentDidMount() {
-        BloomApi.get("accessibilityCheck/kindOfColorBlindness", result => {
+        get("accessibilityCheck/kindOfColorBlindness", result => {
             this.setState({ kindOfColorBlindness: result.data });
         });
     }

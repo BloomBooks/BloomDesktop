@@ -1,4 +1,4 @@
-import { BloomApi } from "../utils/bloomApi";
+import { post, postThatMightNavigate } from "../utils/bloomApi";
 import * as React from "react";
 import {
     ILocalizationProps,
@@ -107,9 +107,9 @@ export default class BloomButton extends LocalizableElement<
             this.props.onClick();
         } else if (this.props.clickApiEndpoint) {
             if (this.props.mightNavigate) {
-                BloomApi.postThatMightNavigate(this.props.clickApiEndpoint);
+                postThatMightNavigate(this.props.clickApiEndpoint);
             } else {
-                BloomApi.post(this.props.clickApiEndpoint);
+                post(this.props.clickApiEndpoint);
             }
         }
     }

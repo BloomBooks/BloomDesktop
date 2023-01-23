@@ -4,7 +4,7 @@ import { jsx, css } from "@emotion/core";
 import { Button, CircularProgress } from "@material-ui/core";
 import * as React from "react";
 import { useEffect, useRef, useState } from "react";
-import { BloomApi } from "../../utils/bloomApi";
+import { post, postJson } from "../../utils/bloomApi";
 import WebSocketManager, {
     IBloomWebSocketProgressEvent,
     useSubscribeToWebSocketForEvent,
@@ -100,7 +100,7 @@ export const ProgressDialog: React.FunctionComponent<IProgressDialogProps> = pro
                 props.onReadyToReceive();
             } else {
                 // Typically we're a top-level dialog; just assume Bloom needs to know.
-                BloomApi.post("progress/ready");
+                post("progress/ready");
             }
         }
     }, [listenerReady, progressBoxReady, propsForBloomDialog.open]);
@@ -163,7 +163,7 @@ export const ProgressDialog: React.FunctionComponent<IProgressDialogProps> = pro
                 setSawAWarning(false);
                 setSawFatalError(false);
                 setShowButtons(false);
-                BloomApi.post("progress/closed");
+                post("progress/closed");
             }
         }
     }, [propsForBloomDialog.open]);
@@ -245,13 +245,10 @@ export const ProgressDialog: React.FunctionComponent<IProgressDialogProps> = pro
                                     l10nKey="Common.Report"
                                     variant="text"
                                     onClick={() => {
-                                        BloomApi.postJson(
-                                            "problemReport/showDialog",
-                                            {
-                                                message: messagesForErrorReporting,
-                                                shortMessage: `The user reported a problem from "${props.title}".`
-                                            }
-                                        );
+                                        postJson("problemReport/showDialog", {
+                                            message: messagesForErrorReporting,
+                                            shortMessage: `The user reported a problem from "${props.title}".`
+                                        });
                                     }}
                                 >
                                     Report
@@ -277,7 +274,7 @@ export const ProgressDialog: React.FunctionComponent<IProgressDialogProps> = pro
                 props.showCancelButton ? (
                     <DialogCancelButton
                         onClick={() => {
-                            BloomApi.post("progress/cancel");
+                            post("progress/cancel");
                         }}
                     />
                 ) : (
@@ -346,7 +343,7 @@ export const EmbeddedProgressDialog: React.FunctionComponent<{
             {...progressProps}
             setShowDialog={showFunc => (showProgress.current = showFunc)}
             setCloseDialog={closeFunc => (closeProgress.current = closeFunc)}
-            onReadyToReceive={() => BloomApi.post("progress/ready")}
+            onReadyToReceive={() => post("progress/ready")}
         />
     );
 };

@@ -2,16 +2,12 @@
 import { jsx, css } from "@emotion/core";
 
 import * as React from "react";
-import Button from "@material-ui/core/Button";
-import Menu from "@material-ui/core/Menu";
-import MenuItem from "@material-ui/core/MenuItem";
 import { useL10n } from "../react_components/l10nHooks";
 import { Div } from "../react_components/l10nComponents";
 import { BloomAvatar } from "../react_components/bloomAvatar";
-import { string } from "prop-types";
 import { TextWithEmbeddedLink } from "../react_components/link";
 import BloomButton from "../react_components/bloomButton";
-import { BloomApi } from "../utils/bloomApi";
+import { post } from "../utils/bloomApi";
 import {
     BloomDialog,
     DialogMiddle,
@@ -92,9 +88,7 @@ export const AvatarDialog: React.FunctionComponent<{
                         temporarilyDisableI18nWarning={true}
                         onClick={() => {
                             props.close();
-                            BloomApi.post(
-                                "teamCollection/showRegistrationDialog"
-                            );
+                            post("teamCollection/showRegistrationDialog");
                         }}
                         hasText={true}
                     >

@@ -2,7 +2,7 @@
 import { jsx, css } from "@emotion/core";
 
 import * as React from "react";
-import { BloomApi } from "../utils/bloomApi";
+import { post, postString, useWatchString } from "../utils/bloomApi";
 import { Button, Menu } from "@material-ui/core";
 import TruncateMarkup from "react-truncate-markup";
 import { useTColBookStatus } from "../teamCollection/teamCollectionApi";
@@ -36,7 +36,7 @@ export const BookButton: React.FunctionComponent<{
         | undefined
     >();
     const selected = useIsSelected(props.manager, props.book.id);
-    const bookLabel = BloomApi.useWatchString(
+    const bookLabel = useWatchString(
         props.book.title,
         // These must correspond to what BookCommandsApi.UpdateButtonTitle sends
         "book",
@@ -58,7 +58,7 @@ export const BookButton: React.FunctionComponent<{
         // We don't want to try to enhance labels of factory books because their original names
         // are good (already localized) and enhancing them somehow comes up with 'Title Missing'.
         if (!props.book.isFactory) {
-            BloomApi.post(
+            post(
                 `bookCommand/enhanceLabel?${collectionQuery}&id=${encodeURIComponent(
                     props.book.id
                 )}`
@@ -101,10 +101,7 @@ export const BookButton: React.FunctionComponent<{
     // Don't use useApiStringState to get this function because it does an unnecessary server query
     // to get the value, which we are not using, and this hurts performance.
     const setSelectedBookIdWithApi = value =>
-        BloomApi.postString(
-            `collections/selected-book-id?${collectionQuery}`,
-            value
-        );
+        postString(`collections/selected-book-id?${collectionQuery}`, value);
 
     const renameDiv = useRef<HTMLElement | null>();
 
@@ -311,7 +308,7 @@ export const BookButton: React.FunctionComponent<{
     };
 
     const handleDoubleClick = (event: React.MouseEvent<HTMLElement>) => {
-        BloomApi.postString(
+        postString(
             `collections/selectAndEditBook?${collectionQuery}`,
             props.book.id
         );
@@ -326,7 +323,7 @@ export const BookButton: React.FunctionComponent<{
     const finishRename = (name: string | undefined) => {
         setRenaming(false);
         if (name !== undefined) {
-            BloomApi.postString(
+            postString(
                 `bookCommand/rename?${collectionQuery}&name=${name}`,
                 props.manager.getSelectedBookInfo()!.id!
             );

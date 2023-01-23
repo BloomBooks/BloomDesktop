@@ -1,10 +1,8 @@
-/** @jsx jsx **/
-import { jsx, css } from "@emotion/core";
 import * as React from "react";
 import { IBloomDialogEnvironmentParams } from "../react_components/BloomDialog/BloomDialogPlumbing";
 import { useL10n } from "../react_components/l10nHooks";
 import { NumberChooserDialog } from "../react_components/numberChooserDialog";
-import { BloomApi } from "../utils/bloomApi";
+import { postData } from "../utils/bloomApi";
 import { WireUpForWinforms } from "../utils/WireUpWinform";
 
 export const DuplicateManyDialog: React.FunctionComponent<{
@@ -26,7 +24,7 @@ export const DuplicateManyDialog: React.FunctionComponent<{
     const max = 999;
 
     const clickHandler = (value: number) => {
-        BloomApi.postData("editView/duplicatePageMany", {
+        postData("editView/duplicatePageMany", {
             numberOfTimes: value
         });
     };

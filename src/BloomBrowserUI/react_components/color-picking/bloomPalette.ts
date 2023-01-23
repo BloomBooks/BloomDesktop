@@ -1,7 +1,7 @@
 import { IColorInfo, getColorInfoFromString } from "./colorSwatch";
 import "./colorPickerDialog.less";
 import { kBloomGray } from "../../utils/colorUtils";
-import { BloomApi } from "../../utils/bloomApi";
+import { getWithPromise } from "../../utils/bloomApi";
 
 export enum BloomPalette {
     Text = "text",
@@ -108,7 +108,7 @@ export async function getHexColorsForPalette(
                 "getColorHexNumbersFromPalette cannot currently handle TextBackground because it contains gradients"
             );
     }
-    return BloomApi.getWithPromise(
+    return getWithPromise(
         `settings/getCustomPaletteColors?palette=${palette}`
     ).then(result => {
         let customColors: Array<string> = [];

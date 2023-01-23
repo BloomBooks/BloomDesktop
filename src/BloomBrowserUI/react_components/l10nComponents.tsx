@@ -1,14 +1,14 @@
 import { CancelTokenStatic } from "axios";
 import * as React from "react";
 import theOneLocalizationManager from "../lib/localizationManager/localizationManager";
-import { BloomApi } from "../utils/bloomApi";
+import { get } from "../utils/bloomApi";
 import { getLocalization } from "./l10n";
 
 // set the following boolean to highlight all translated strings to see if any are missing
 const highlightTranslatedStrings: boolean = false;
 
 export let channelName: string = ""; // ensure it's defined non-null
-BloomApi.get("/common/channel", r => {
+get("/common/channel", r => {
     channelName = r.data;
     // Setting the class on the body element here to include the channel appears
     // to work for the places that this code affects.  Should we want to expand

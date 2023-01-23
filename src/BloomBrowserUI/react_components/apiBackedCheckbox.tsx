@@ -1,6 +1,6 @@
 import * as React from "react";
 import { ILocalizationProps } from "./l10nComponents";
-import { BloomApi } from "../utils/bloomApi";
+import { get, postDataWithConfig } from "../utils/bloomApi";
 import { Checkbox } from "./checkbox";
 
 // Use this component when you have a one-to-one correspondence between a checkbox and an api endpoint
@@ -33,7 +33,7 @@ export class ApiBackedCheckbox extends React.Component<IProps, IState> {
         }
     }
     private queryData() {
-        BloomApi.get(this.props.apiEndpoint, result => {
+        get(this.props.apiEndpoint, result => {
             const c = result.data as boolean;
             this.setState({ checked: c });
             if (this.props.onCheckChanged) {
@@ -53,7 +53,7 @@ export class ApiBackedCheckbox extends React.Component<IProps, IState> {
                     if (this.props.priorClickAction) {
                         this.props.priorClickAction();
                     }
-                    BloomApi.postDataWithConfig(this.props.apiEndpoint, c, {
+                    postDataWithConfig(this.props.apiEndpoint, c, {
                         headers: { "Content-Type": "application/json" }
                     });
                     if (this.props.onCheckChanged) {

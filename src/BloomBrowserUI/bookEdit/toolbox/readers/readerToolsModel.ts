@@ -6,12 +6,10 @@
 /// <reference path="./directoryWatcher.ts" />
 /// <reference path="../../../lib/localizationManager/localizationManager.ts" />
 /// <reference path="readerTools.ts" />
-/// <reference path="../toolbox.ts" />
 /// <reference path="./libSynphony/synphony_lib.d.ts" />
 import { DirectoryWatcher } from "./directoryWatcher";
 import { resizeWordList } from "./readerTools";
 import theOneLocalizationManager from "../../../lib/localizationManager/localizationManager";
-import { ToolBox } from "../toolbox";
 import "./libSynphony/jquery.text-markup.ts";
 import { removeAllHtmlMarkupFromString } from "./libSynphony/jquery.text-markup";
 import "./jquery.div-columns.ts";
@@ -24,7 +22,13 @@ import {
 import ReadersSynphonyWrapper from "./ReadersSynphonyWrapper";
 import { DataWord, TextFragment } from "./libSynphony/bloomSynphonyExtensions";
 import axios from "axios";
-import { BloomApi } from "../../../utils/bloomApi";
+import {
+    get,
+    getWithConfig,
+    post,
+    postData,
+    postString
+} from "../../../utils/bloomApi";
 import { EditableDivUtils } from "../../js/editableDivUtils";
 import {
     allPromiseSettled,
@@ -211,7 +215,7 @@ export class ReaderToolsModel {
                                 this.saveState();
                                 // When we're actually changing the stage number is the only time we want
                                 // to update the default.
-                                BloomApi.post(
+                                post(
                                     "readers/io/defaultStage?stage=" +
                                         this.stageNumber,
                                     () => {
@@ -298,7 +302,7 @@ export class ReaderToolsModel {
             this.saveState();
             // When we're actually changing the level is the only time we want
             // to update the default.
-            BloomApi.post("readers/io/defaultLevel?level=" + this.levelNumber);
+            post("readers/io/defaultLevel?level=" + this.levelNumber);
         }
         this.doMarkup();
     }
@@ -1220,7 +1224,7 @@ export class ReaderToolsModel {
     //   }
 
     public getTextOfWholeBook(): void {
-        BloomApi.get("readers/io/textOfContentPages", result => {
+        get("readers/io/textOfContentPages", result => {
             this.gettingTextOfWholeBook = false;
             //result.data looks like {'0bbf0bc5-4533-4c26-92d9-bea8fd064525:' : 'Jane saw spot', 'AAbf0bc5-4533-4c26-92d9-bea8fd064525:' : 'words of this page', etc.}
             this.pageIDToText = result.data as any[];
@@ -1346,10 +1350,7 @@ export class ReaderToolsModel {
     }
 
     public copyLeveledReaderStatsToClipboard(): void {
-        BloomApi.postData(
-            "readers/ui/copyBookStatsToClipboard",
-            this.bookStatistics
-        );
+        postData("readers/ui/copyBookStatsToClipboard", this.bookStatistics);
     }
 
     private getSentences(pageStrings: any[]): TextFragment[][] {
@@ -1689,7 +1690,7 @@ export class ReaderToolsModel {
 
                 //note, this endpoint is confusing because it appears that ultimately we only use the word list out of this file (see "sampleTextsList").
                 //This ends up being written to a ReaderToolsWords-xyz.json (matching its use, if not it contents).
-                BloomApi.postData(
+                postData(
                     "readers/io/synphonyLanguageData",
                     theOneLanguageDataInstance
                 );
@@ -1883,7 +1884,7 @@ export class ReaderToolsModel {
         const active = toolbox.accordion("option", "active");
         if (isNaN(active)) return;
 
-        BloomApi.postString(
+        postString(
             "editView/saveToolboxSetting",
             "state\tdecodableReader\t" +
                 "stage:" +
@@ -1891,7 +1892,7 @@ export class ReaderToolsModel {
                 ";sort:" +
                 this.sort
         );
-        BloomApi.postString(
+        postString(
             "editView/saveToolboxSetting",
             "state\tleveledReader\t" + this.levelNumber
         );
@@ -1926,7 +1927,7 @@ export class ReaderToolsModel {
                 // we need to ensure that execution still passes through the "if all loaded" section of
                 // the setAllowedWordsListList() method.
                 if (stage.allowedWordsFile) {
-                    BloomApi.getWithConfig(
+                    getWithConfig(
                         "readers/io/allowedWordsList",
                         { params: { fileName: stage.allowedWordsFile } },
                         result =>

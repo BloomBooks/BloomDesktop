@@ -1,5 +1,5 @@
 /// <reference path="../../typings/jquery/jquery.d.ts" />
-import { BloomApi } from "../../utils/bloomApi";
+import { get } from "../../utils/bloomApi";
 
 interface qtipInterface extends JQuery {
     qtip(options: string): JQuery;
@@ -233,7 +233,7 @@ export class EditableDivUtils {
 
     public static pasteImageCredits() {
         const activeElement = document.activeElement;
-        BloomApi.get("image/imageCreditsForWholeBook", result => {
+        get("image/imageCreditsForWholeBook", result => {
             const data = result.data;
             if (!data) return; // nothing to insert: no images apparently...
 

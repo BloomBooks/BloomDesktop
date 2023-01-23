@@ -4,13 +4,12 @@
 import {
     DRTState,
     getTheOneReaderToolsModel,
-    MarkupType,
-    ReaderToolsModel
+    MarkupType
 } from "../readerToolsModel";
 import { beginInitializeDecodableReaderTool } from "../readerTools";
 import { ITool } from "../../toolbox";
 import theOneLocalizationManager from "../../../../lib/localizationManager/localizationManager";
-import { BloomApi } from "../../../../utils/bloomApi";
+import { get } from "../../../../utils/bloomApi";
 
 export class DecodableReaderToolboxTool implements ITool {
     public makeRootElement(): HTMLDivElement {
@@ -39,7 +38,7 @@ export class DecodableReaderToolboxTool implements ITool {
                     );
                 }
             } else {
-                BloomApi.get("readers/io/defaultStage", result => {
+                get("readers/io/defaultStage", result => {
                     // Presumably a brand new book. We'd better save the settings we come up with in it.
                     getTheOneReaderToolsModel().setStageNumber(
                         parseInt(result.data, 10)

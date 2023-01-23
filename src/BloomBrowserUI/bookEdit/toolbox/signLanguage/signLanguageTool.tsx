@@ -4,7 +4,14 @@ import { Label } from "../../../react_components/l10nComponents";
 import { ToolBox } from "../toolbox";
 import ToolboxToolReactAdaptor from "../toolboxToolReactAdaptor";
 import "./signLanguage.less";
-import { BloomApi } from "../../../utils/bloomApi";
+import {
+    get,
+    getWithConfig,
+    post,
+    postDataWithConfig,
+    postJson,
+    postThatMightNavigate
+} from "../../../utils/bloomApi";
 import { ToolBottomHelpLink } from "../../../react_components/helpLink";
 import { UrlUtils } from "../../../utils/urlUtils";
 import { Expandable } from "../../../react_components/expandable";
@@ -466,7 +473,7 @@ export class SignLanguageToolControls extends React.Component<
             this.setNoVideo(true);
             return;
         }
-        BloomApi.getWithConfig(
+        getWithConfig(
             "signLanguage/getStats",
             { params: paramsObj },
             result => {
@@ -522,14 +529,12 @@ export class SignLanguageToolControls extends React.Component<
     }
 
     private importRecording() {
-        BloomApi.post("signLanguage/importVideo", result => {
+        post("signLanguage/importVideo", result => {
             this.updateVideo(result.data);
             // Makes sure the page gets saved with a reference to the new video,
             // and incidentally that everything gets updated to be consistent with the
             // new state of things.
-            BloomApi.postThatMightNavigate(
-                "common/saveChangesAndRethinkPageEvent"
-            );
+            postThatMightNavigate("common/saveChangesAndRethinkPageEvent");
         });
     }
 
@@ -538,7 +543,7 @@ export class SignLanguageToolControls extends React.Component<
         if (!paramsObj) {
             return;
         }
-        BloomApi.postDataWithConfig(
+        postDataWithConfig(
             "signLanguage/deleteVideo",
             "",
             { params: paramsObj },
@@ -554,7 +559,7 @@ export class SignLanguageToolControls extends React.Component<
                     // Makes sure the page gets saved without a reference to the deleted video,
                     // and incidentally that everything gets updated to be consistent with the
                     // new state of things.
-                    BloomApi.postThatMightNavigate(
+                    postThatMightNavigate(
                         "common/saveChangesAndRethinkPageEvent"
                     );
                 }
@@ -564,10 +569,7 @@ export class SignLanguageToolControls extends React.Component<
 
     private showInFolder() {
         const path = SignLanguageTool.getSelectedVideoPath();
-        BloomApi.postJson(
-            "common/showInFolder",
-            JSON.stringify({ folderPath: path })
-        );
+        postJson("common/showInFolder", JSON.stringify({ folderPath: path }));
     }
 
     public turnOnVideo() {
@@ -712,7 +714,7 @@ export class SignLanguageToolControls extends React.Component<
         // if (this.videoStream) {
         //     const track = this.videoStream.getVideoTracks()[0];
         //     const settings = track.getSettings();
-        //     BloomApi.postDebugMessage(
+        //     postDebugMessage(
         //         "Video Stream/Track settings = " + JSON.stringify(settings)
         //     );
         // }
@@ -725,7 +727,7 @@ export class SignLanguageToolControls extends React.Component<
             // raised when the user clicks stop and we call this.mediaRecorder.stop() above.
             const blob = new Blob(this.chunks, { type: "video/webm" });
             this.chunks = []; // enable garbage collection?
-            BloomApi.postDataWithConfig(
+            postDataWithConfig(
                 "signLanguage/recordedVideo",
                 blob,
                 {
@@ -738,7 +740,7 @@ export class SignLanguageToolControls extends React.Component<
                     // Makes sure the page gets saved with a reference to the new video,
                     // and incidentally that everything gets updated to be consistent with the
                     // new state of things.
-                    BloomApi.postThatMightNavigate(
+                    postThatMightNavigate(
                         "common/saveChangesAndRethinkPageEvent"
                     );
                 }
@@ -998,7 +1000,7 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
         stats.startSeconds = start;
         stats.endSeconds = end;
         this.reactControls.setState({ videoStatistics: stats });
-        BloomApi.get(
+        get(
             // extractPathComponent doesn't unencode the path, so if needed this
             // URL should already be %encoded. But video filenames in Bloom are currently
             // all GUIDs, even for imported videos, so this isn't really an issue.

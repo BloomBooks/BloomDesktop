@@ -1,7 +1,4 @@
-/// <reference path="../typings/jquery/jquery.d.ts" />
-import * as $ from "jquery";
 import * as StackTrace from "stacktrace-js";
-import { BloomApi } from "../utils/bloomApi";
 import Axios from "axios";
 
 // This file implements custom Bloom global error handling.
@@ -46,7 +43,7 @@ export function reportPreliminaryError(
     }
     // we don't want to use the error handling bloomapi wrapper here...
     // else we will recursively report errors about attempts to report errors
-    //    BloomApi.postData("common/preliminaryError", {
+    //    postData("common/preliminaryError", {
     Axios.post("/bloom/api/common/preliminaryError", {
         message: message,
         stack: stack || ""
