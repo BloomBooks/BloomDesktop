@@ -59,7 +59,7 @@ const ColorPickerDialog: React.FC<IColorPickerDialogProps> = props => {
     );
 
     externalSetOpen = setOpen;
-    const dlgRef = useRef<HTMLElement>(null);
+    const dlgRef = useRef<HTMLDivElement>(null);
 
     function addCustomColors(endpoint: string): void {
         get(endpoint, result => {

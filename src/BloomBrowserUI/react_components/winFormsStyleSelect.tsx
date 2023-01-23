@@ -31,10 +31,7 @@ const WinFormsStyleSelect: React.FunctionComponent<FormsSelectProps> = props => 
     const selectMenuProps: Partial<MenuProps> = {
         classes: {
             paper: useStyles().menuPaper
-        },
-        // This works around a bug in MUI v4 (https://github.com/mui/material-ui/issues/19245)
-        // which caused the list to jump if it was scrolled and we re-rendered. See BL-11258.
-        getContentAnchorEl: null
+        }
     };
 
     if (props.popoverZindex) {
@@ -42,7 +39,7 @@ const WinFormsStyleSelect: React.FunctionComponent<FormsSelectProps> = props => 
             ...lightTheme.overrides,
             MuiPopover: {
                 root: {
-                    zIndex: (props.popoverZindex + " !important") as any
+                    zIndex: props.popoverZindex + " !important"
                 }
             }
         };

@@ -27,6 +27,66 @@ export const kUiFontStack = "NotoSans, Roboto, sans-serif";
 // So the "aside"/features right-panel color effects this.
 //const AACompliantBloomBlue = "#177c8a";
 
+// This module is just about making Typescript happy.
+declare module "@mui/material/styles" {
+    interface Theme {
+        props: {
+            MuiLink: { variant: string };
+            MuiTypography: { variantMapping: { h6: string } };
+        };
+        overrides: {
+            MuiDialogTitle: {
+                root: {
+                    backgroundColor: string;
+                    "& h6": { fontWeight: string };
+                };
+            };
+            MuiDialogActions: { root: { backgroundColor: string } };
+            MuiTypography: { h6: { fontSize: string } };
+            MuiCheckbox: {
+                root: {
+                    color: string;
+                    colorPrimary: string;
+                    colorSecondary: string;
+                };
+            };
+            MuiPopover: {
+                root: {
+                    zIndex: string;
+                };
+            };
+        };
+    }
+    interface ThemeOptions {
+        props?: {
+            MuiLink?: { variant?: string };
+            MuiTypography?: { variantMapping?: { h6?: string } };
+        };
+        overrides?: {
+            MuiDialogTitle?: {
+                root: {
+                    backgroundColor: string;
+                    "& h6": { fontWeight: string };
+                };
+            };
+            MuiDialogActions?: { root: { backgroundColor: string } };
+            MuiTypography?: { h6: { fontSize: string } };
+            MuiCheckbox?: {
+                root: {
+                    color: string;
+                    colorPrimary: string;
+                    colorSecondary: string;
+                };
+            };
+            MuiPopover?: {
+                root: {
+                    zIndex: string;
+                };
+            };
+        };
+    }
+}
+
 // lots of examples: https://github.com/search?q=createMuiTheme&type=Code
 export const lightTheme = createTheme({
     //this spacing doesn't seem to do anything. The example at https://material-ui.com/customization/default-theme/
@@ -52,11 +112,6 @@ export const lightTheme = createTheme({
         }
     },
     overrides: {
-        MuiOutlinedInput: {
-            // input: {
-            //     padding: "7px";
-            // }
-        },
         MuiDialogTitle: {
             root: {
                 backgroundColor: kDialogTopBottomGray,

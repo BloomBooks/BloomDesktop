@@ -6,7 +6,8 @@ import Button from "@mui/material/Button";
 import Menu from "@mui/material/Menu";
 import MenuItem from "@mui/material/MenuItem";
 import { useL10n } from "./l10nHooks";
-import { Divider, ListItemIcon, ListItemText, makeStyles } from "@mui/material";
+import { Divider, ListItemIcon, ListItemText } from "@mui/material";
+import { makeStyles } from "@mui/styles";
 
 export class SimpleMenuItem {
     text: string;
@@ -113,7 +114,7 @@ export const SimpleMenu: React.FunctionComponent<{
         // `}
         >
             <Button
-                classes={{ label: buttonClasses.label }}
+                classes={{ root: buttonClasses.label }}
                 aria-controls="simple-menu"
                 aria-haspopup="true"
                 onClick={handleClick}

@@ -37,12 +37,7 @@ export const NotifyDialog: React.FunctionComponent<{
                 fullScreen={true}
                 onClose={() => post("common/closeReactDialog")}
             >
-                {/* The whole disableTypography and Typography thing gets around Material-ui putting the
-                    Close icon inside of the title's Typography element, where we don't have control over its CSS. */}
-                <DialogTitle
-                    className={"dialog-title allowSelect"}
-                    disableTypography={true}
-                >
+                <DialogTitle className={"dialog-title allowSelect"}>
                     <Typography variant="h6">{localizedDlgTitle}</Typography>
                     {/* We moved the X up to the winforms dialog so that it is draggable
                          <Close

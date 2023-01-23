@@ -6,8 +6,8 @@ import { useState } from "react";
 import { get, postString } from "../utils/bloomApi";
 import { lightTheme, kBloomYellow } from "../bloomMaterialUITheme";
 import { ThemeProvider } from "@mui/styles";
-import { makeStyles, MenuItem, Select, Typography } from "@mui/material";
-import XRegExp = require("xregexp/types");
+import { MenuItem, Select, Typography } from "@mui/material";
+import { makeStyles } from "@mui/styles";
 import { useContentful } from "../contentful/UseContentful";
 import { BloomEnterpriseIcon } from "./requiresBloomEnterprise";
 import { useL10n } from "./l10nHooks";
@@ -237,8 +237,7 @@ export const DefaultBookshelfControl: React.FunctionComponent = () => {
                         transformOrigin: {
                             vertical: "top",
                             horizontal: "left"
-                        },
-                        getContentAnchorEl: null
+                        }
                     }}
                     // If we can't get the options from contentful, or there are none, disable.
                     disabled={!result || result.length == 0}

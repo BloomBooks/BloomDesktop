@@ -22,7 +22,7 @@ import { TextWithEmbeddedLink } from "../../react_components/link";
 import { post, postJson } from "../../utils/bloomApi";
 import { WireUpForWinforms } from "../../utils/WireUpWinform";
 import { lightTheme } from "../../bloomMaterialUITheme";
-import { CSSProperties, ThemeProvider } from "@mui/styles";
+import { ThemeProvider } from "@mui/styles";
 import HelpLink from "../../react_components/helpLink";
 import {
     IBloomDialogEnvironmentParams,
@@ -44,11 +44,9 @@ export interface IUploadCollisionDlgProps {
 }
 
 export const UploadCollisionDlg: React.FunctionComponent<IUploadCollisionDlgProps> = props => {
-    const {
-        showDialog,
-        closeDialog,
-        propsForBloomDialog
-    } = useSetupBloomDialog(props.dialogEnvironment);
+    const { closeDialog, propsForBloomDialog } = useSetupBloomDialog(
+        props.dialogEnvironment
+    );
 
     enum RadioState {
         Indeterminate,
@@ -203,7 +201,7 @@ export const UploadCollisionDlg: React.FunctionComponent<IUploadCollisionDlgProp
         </div>
     );
 
-    const whatCausedThisStyles: CSSProperties = {
+    const whatCausedThisStyles: React.CSSProperties = {
         fontSize: "smaller",
         color: kDarkerSecondaryTextColor,
         textDecoration: "underline"

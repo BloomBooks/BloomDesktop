@@ -54,7 +54,6 @@ const PageNumberStyleControl: React.FunctionComponent = () => {
                     key={index}
                     value={style.styleKey}
                     dense
-                    button
                     selected={selectedStyle === style.styleKey}
                     css={css`
                         padding-top: 4px !important;
@@ -102,8 +101,7 @@ const PageNumberStyleControl: React.FunctionComponent = () => {
                     transformOrigin: {
                         vertical: "top",
                         horizontal: "left"
-                    },
-                    getContentAnchorEl: null
+                    }
                 }}
                 onChange={event => {
                     handleSelectChange(event);
