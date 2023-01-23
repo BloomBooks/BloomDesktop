@@ -14,28 +14,19 @@ import StyleEditor from "./StyleEditor";
 //    return (<HTMLElement>GetUserModifiedStyleSheet().ownerNode).outerHTML;
 //}
 
-function MakeBigger() {
-    const target = $(document).find("#testTarget");
-    const editor = new StyleEditor(
-        "file://" + "C:/dev/Bloom/src/BloomBrowserUI/bookEdit"
-    );
-    editor.MakeBigger(<HTMLElement>target[0]);
+// This test file has a somewhat messy history. Once, we had up and down arrows for font size,
+// and the editor itself had MakeBigger and MakeSmaller functions which manipulated style rules.
+// We had lots of tests for MakeBigger, which also tested other aspects of the style editor
+// functions. Then we changed to a combo box, and later made some changes to the author/translate
+// behavior distinction. To preserve as many of the tests as still made sense, I made a version
+// of MakeBigger that uses surviving code paths.
+function MakeBigger(shouldSetDefaultRule = true) {
+    MakeBigger2("#testTarget", shouldSetDefaultRule);
 }
 
-function MakeBigger2(target: string) {
-    const jQueryTarget = $(document).find(target);
-    const editor = new StyleEditor(
-        "file://" + "C:/dev/Bloom/src/BloomBrowserUI/bookEdit"
-    );
-    editor.MakeBigger(<HTMLElement>jQueryTarget[0]);
-}
-
-function MakeSmaller(target: string) {
-    const jQueryTarget = $(document).find(target);
-    const editor = new StyleEditor(
-        "file://" + "C:/dev/Bloom/src/BloomBrowserUI/bookEdit"
-    );
-    editor.MakeSmaller(<HTMLElement>jQueryTarget[0]);
+function MakeBigger2(target: string, shouldSetDefaultRule = true) {
+    const oldSize = GetFontSize(target);
+    ChangeSizeAbsolute(target, oldSize + 2, shouldSetDefaultRule);
 }
 
 function GetFontSize(target: string): number {
@@ -46,12 +37,17 @@ function GetFontSize(target: string): number {
     return editor.GetCalculatedFontSizeInPoints(<HTMLElement>jQueryTarget[0]);
 }
 
-function ChangeSizeAbsolute(target: string, newSize: number) {
+function ChangeSizeAbsolute(
+    target: string,
+    newSize: number,
+    shouldSetDefaultRule = true
+) {
     const jQueryTarget = $(document).find(target);
     const editor = new StyleEditor(
         "file://" + "C:/dev/Bloom/src/BloomBrowserUI/bookEdit"
     );
-    editor.ChangeSizeAbsolute(<HTMLElement>jQueryTarget[0], newSize);
+    editor.boxBeingEdited = jQueryTarget.get(0);
+    editor.changeSizeInternal(newSize + "pt", shouldSetDefaultRule);
 }
 
 function GetUserModifiedStyleSheet(): any {
@@ -152,6 +148,19 @@ function HasRuleMatchingThisSelector(selector: string): boolean {
     return count > 0;
 }
 
+function countFooStyleRules(): number {
+    const x: CSSRuleList = (<CSSStyleSheet>GetUserModifiedStyleSheet())
+        .cssRules;
+
+    let count = 0;
+    for (let i = 0; i < x.length; i++) {
+        if (x[i].cssText.indexOf("foo-style") > -1) {
+            ++count;
+        }
+    }
+    return count;
+}
+
 describe("StyleEditor", () => {
     // most perplexingly, jasmine doesn't reset the dom between tests
     beforeEach(() => {
@@ -224,30 +233,34 @@ describe("StyleEditor", () => {
         expect(GetRuleForNormalStyle()).not.toBeNull();
     });
 
-    it("MakeBigger doesn't make a duplicate style if there is already one there", () => {
+    it("MakeBigger doesn't make duplicate styles if there are already two there (default and lang-specific)", () => {
         $("body").append(
             "<div id='testTarget' class='ignore foo-style ignoreMeToo '></div>"
         );
         MakeBigger();
+        expect(countFooStyleRules()).toBe(2); // default rule, language-specific rule
         MakeBigger();
         MakeBigger();
-        const x: CSSRuleList = (<CSSStyleSheet>GetUserModifiedStyleSheet())
-            .cssRules;
 
-        let count = 0;
-        for (let i = 0; i < x.length; i++) {
-            if (x[i].cssText.indexOf("foo-style") > -1) {
-                ++count;
-            }
-        }
-        expect(count).toBe(1);
+        expect(countFooStyleRules()).toBe(2); // no more
     });
 
-    it("When the element has an @lang, MakeBigger adds rules that only affect the given language", () => {
+    it("MakeBigger doesn't make a duplicate style for a language if there is already one there", () => {
+        $("body").append(
+            "<div id='testTarget' class='ignore foo-style ignoreMeToo '></div>"
+        );
+        MakeBigger(false);
+        MakeBigger(false);
+        MakeBigger(false);
+
+        expect(countFooStyleRules()).toBe(1);
+    });
+
+    it("When not editing an L1 block, MakeBigger adds rules that only affect the given language", () => {
         $("body").append(
             "<div id='testTarget' class='foo-style' lang='xyz'></div><div id='testTarget2' class='normal-style'></div>"
         );
-        MakeBigger2("#testTarget");
+        MakeBigger2("#testTarget", false);
         const x = (<CSSStyleSheet>GetUserModifiedStyleSheet()).cssRules;
 
         let count = 0;
@@ -355,58 +368,5 @@ describe("StyleEditor", () => {
         MakeBigger2("#testTarget2");
 
         expect(GetRuleForCoverTitleStyle()).not.toBeNull();
-    });
-
-    it("MakeSmaller has no effect if it will be smaller than 7pt", () => {
-        $("body").append(
-            "<div id='testTarget' class='blah-style'></div><div id='testTarget2' class='foo-style' lang='xyz'></div>"
-        );
-        ChangeSizeAbsolute("#testTarget2", 8);
-        MakeSmaller("#testTarget2");
-        expect(GetRuleForFooStyle()).not.toBeNull();
-        expect(GetFontSizeRuleByLang("xyz")).toBe(8);
-    });
-
-    it("When the element has a size rule in 'em's, MakeSmaller is still limited to bigger than 6pt font", () => {
-        $("head").append(
-            "<style title='userModifiedStyles'>.foo-style[lang='xyz']{ font-size: 0.6em ! important; }</style>"
-        );
-        $("body").append(
-            "<div id='testTarget' class='foo-style' lang='xyz'></div><div id='testTarget2' class='normal-style'></div>"
-        );
-        MakeSmaller("#testTarget");
-        const x = (<CSSStyleSheet>GetUserModifiedStyleSheet()).cssRules;
-
-        let count = 0;
-        for (let i = 0; i < x.length; i++) {
-            if (x[i].cssText.indexOf('foo-style[lang="xyz"]') > -1) {
-                ++count;
-            }
-        }
-        expect(count).toBe(1);
-        expect(GetFontSizeRuleByLang("xyz")).toBe(0.6); // 0.6em -> 8pt -> smaller is 6pt (not allowed; remains 0.6em)
-    });
-
-    it("When the element has a size rule in enough 'em's, MakeSmaller will still work", () => {
-        $("head").append(
-            "<style title='userModifiedStyles'>.foo-style[lang='xyz']{ font-size: 0.8em ! important; }</style>"
-        );
-        $("body").append(
-            "<div id='testTarget' class='foo-style' lang='xyz'></div><div id='testTarget2' class='normal-style'></div>"
-        );
-
-        const before = GetFontSize("#testTarget");
-        MakeSmaller("#testTarget");
-
-        const x = (<CSSStyleSheet>GetUserModifiedStyleSheet()).cssRules;
-
-        let count = 0;
-        for (let i = 0; i < x.length; i++) {
-            if (x[i].cssText.indexOf('foo-style[lang="xyz"]') > -1) {
-                ++count;
-            }
-        }
-        expect(count).toBe(1);
-        expect(GetFontSizeRuleByLang("xyz")).toBe(before - 2); // 0.8em -> 10pt -> smaller is 8pt
     });
 });
