@@ -15,24 +15,13 @@ using SIL.Reporting;
 namespace Bloom.Publish.PDF
 {
 	/// <summary>
-	/// This wrapper uses the GeckoFxHtmlToPdf program, which we rename to
+	/// This wrapper uses the WebView2PdfMaker.exe program, which we rename to
 	/// BloomPdfMaker.exe because AVG likes to quarantine it and we want to
-	/// make it look less scary.  Trying to use the component
-	/// directly leads to obscure bugs, at least on Windows.  Isolating the embedded
-	/// Gecko browser in a separate process appears to at least let us produce the
-	/// desired PDF files.
+	/// make it look less scary.  Isolating the embedded WebView2 browser in a
+	/// separate process appears to let us produce the desired PDF files without
+	/// any memory concerns.
 	/// </summary>
-	/// <remarks>
-	/// The program always seems to fail after it finishes while xulrunner is trying
-	/// to clean up its COM objects.  Running the program standalone reveals this on
-	/// Linux by printing a scary SIGSEGV message and stack trace.  On Windows, it
-	/// brings up the "The Program Has Stopped Working" dialog which is even scarier.
-	/// (I have seen the corresponding Linux dialog once after running this program.)
-	/// However, the problem occurs after the desired output file has been safely
-	/// written to the disk, and is nicely hidden away from the user by running it
-	/// via CommandLineRunner.
-	/// </remarks>
-	class MakePdfUsingGeckofxHtmlToPdfProgram
+	class MakePdfUsingExternalPdfMakerProgram
 	{
 		private BackgroundWorker _worker;
 
@@ -131,8 +120,10 @@ namespace Bloom.Publish.PDF
 			SetArguments(bldr, specs);
 			var arguments = bldr.ToString();
 			var progress = new NullProgress();
+			// NB: WebView2 does not appear to support progress reporting while making PDFs.
 			var res = runner.Start(exePath, arguments, Encoding.UTF8, fromDirectory, 3600, progress,
-				ProcessGeckofxReporting);
+				(msg) => { /* nothing we can do with WebView2 */ });
+
 			if (res.DidTimeOut || !RobustFile.Exists(specs.OutputPdfPath))
 			{
 				Logger.WriteEvent(@"***ERROR PDF generation failed: res.StandardOutput = " + res.StandardOutput);
@@ -188,7 +179,6 @@ namespace Bloom.Publish.PDF
 		//TopMarginInMillimeters = 0,
 		//LeftMarginInMillimeters = 0,
 		//RightMarginInMillimeters = 0,
-		//EnableGraphite = true,
 		//Landscape = landscape,
 		//InputHtmlPath = inputHtmlPath,
 		//OutputPdfPath = tempOutput.Path,
@@ -211,7 +201,7 @@ namespace Bloom.Publish.PDF
 				bldr.Append($" -h {Size6x9PortraitHeight} -w {Size6x9PortraitWidth}");
 
 				if (specs.Landscape)
-					bldr.Append(" -Landscape");
+					bldr.Append(" -O landscape");
 			}
 			else
 			{
@@ -222,7 +212,7 @@ namespace Bloom.Publish.PDF
 					// Irregular (square) paper size
 					var size = int.Parse(match.Groups[2].Value);
 					if (match.Groups[1].Value == "in")
-						size = (int) (size * 25.4); // convert from inches to millimeters
+						size = (int) (size * inchesToMM); // convert from inches to millimeters
 					else
 						size = size * 10; // convert from cm to mm
 					bldr.AppendFormat(" -h {0} -w {0}", size);
@@ -231,13 +221,9 @@ namespace Bloom.Publish.PDF
 				{
 					bldr.AppendFormat(" -s {0}", specs.PaperSizeName);
 					if (specs.Landscape)
-						bldr.Append(" -Landscape");
+						bldr.Append(" -O landscape");
 				}
 			}
-
-			bldr.Append(" --graphite");
-			if (specs.SaveMemoryMode)
-				bldr.Append(" --reduce-memory-use");
 		}
 
 		private static void ConfigureFullBleedPageSize(StringBuilder bldr, PdfMakingSpecs specs)
@@ -282,65 +268,6 @@ namespace Bloom.Publish.PDF
 			}
 
 			bldr.Append($" -h {height} -w {width}");
-		}
-
-		// Progress report lines from GeckofxHtmlToPdf/BloomPdfMaker look like the following:
-		// "Status: Making PDF..|Percent: 100"
-		// "Status: Making Page 1 of PDF...|Percent: 100"
-		// "Status: Making Page 2 of PDF...|Percent: 0"
-		// "Status: Finished|Percent: 100"
-		private const string kStatus = "Status: ";
-		private const string kPercent = "|Percent: ";
-		private const string kMakingPDF = "Making PDF";
-		private const string kMakingPage = "Making Page ";
-		private const string kOfPDF = " of PDF";
-		private const string kFinished = "Finished";
-
-		private void ProcessGeckofxReporting(string line)
-		{
-			//Debug.WriteLine(String.Format("DEBUG GeckofxHtmlToPdf report line = \"{0}\"", line));
-			if (_worker == null || !line.StartsWith(kStatus) || !line.Contains(kPercent))
-				return;
-			int statusLength = line.IndexOf(kPercent) - kStatus.Length;
-			var status = line.Substring(kStatus.Length, statusLength);
-			if (String.IsNullOrWhiteSpace(status))
-			{
-				status = null;
-			}
-			else
-			{
-				if (status.StartsWith(kMakingPDF))
-				{
-					status = L10NSharp.LocalizationManager.GetString(@"PublishTab.PdfMaker.MakingFromHtml",
-						"Making PDF from HTML ...",
-						@"Message displayed in a progress report dialog box");
-									}
-				else if (status.StartsWith(kMakingPage) && status.Contains(kOfPDF))
-				{
-					int page;
-					if (Int32.TryParse(status.Substring(kMakingPage.Length, status.IndexOf(kOfPDF) - kMakingPage.Length), out page))
-					{
-						status = String.Format(L10NSharp.LocalizationManager.GetString(@"PublishTab.PdfMaker.MakingPageOfPdf",
-							"Making Page {0} of the PDF",
-							@"Message displayed in a progress report dialog box, {0} is replaced by the page number"), page);
-					}
-					else
-					{
-						status = null;
-					}
-				}
-				else if (status == kFinished)
-				{
-					status = L10NSharp.LocalizationManager.GetString(@"PublishTab.PdfMaker.Finished",
-						"Finished making PDF from HTML",
-						@"Message displayed in a progress report dialog box");
-				}
-			}
-			int percent;
-			if (Int32.TryParse(line.Substring(line.IndexOf(kPercent) + kPercent.Length), out percent))
-			{
-				_worker.ReportProgress(percent, status);
-			}
 		}
 	}
 

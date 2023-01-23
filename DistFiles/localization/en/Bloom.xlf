@@ -4102,6 +4102,7 @@
         <source xml:lang="en">Finished making PDF from HTML</source>
         <note>ID: PublishTab.PdfMaker.Finished</note>
         <note>Message displayed in a progress report dialog box</note>
+        <note>Obsolete for Bloom 5.5 and later</note>
       </trans-unit>
       <trans-unit id="PublishTab.PdfMaker.FullBleed">
         <source xml:lang="en">Full Bleed</source>
@@ -4117,6 +4118,7 @@
         <source xml:lang="en">Making Page {0} of the PDF</source>
         <note>ID: PublishTab.PdfMaker.MakingPageOfPdf</note>
         <note>Message displayed in a progress report dialog box, {0} is replaced by the page number</note>
+        <note>Obsolete for Bloom 5.5 and later</note>
       </trans-unit>
       <trans-unit id="PublishTab.PdfMaker.NoFullBleed">
         <source xml:lang="en">Full Bleed has not been set up for this book</source>
