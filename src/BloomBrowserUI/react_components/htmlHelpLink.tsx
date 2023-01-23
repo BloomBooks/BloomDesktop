@@ -1,7 +1,7 @@
 import * as React from "react";
 import { ILocalizationProps, LocalizableElement } from "./l10nComponents";
 import Link from "@material-ui/core/Link";
-import { BloomApi } from "../utils/bloomApi";
+import { getString } from "../utils/bloomApi";
 
 interface IHtmlHelpLinkProps extends ILocalizationProps {
     // the root of the name, without the language suffix or extension
@@ -26,7 +26,7 @@ export default class HtmlHelpLink extends LocalizableElement<
             <Link
                 target="_blank"
                 onClick={() =>
-                    BloomApi.getString(this.target, dummy => {
+                    getString(this.target, dummy => {
                         // Do nothing
                     })
                 }

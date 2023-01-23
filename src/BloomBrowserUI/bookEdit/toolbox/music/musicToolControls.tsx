@@ -2,7 +2,7 @@ import * as React from "react";
 import ToolboxToolReactAdaptor from "../toolboxToolReactAdaptor";
 import { Div, Label } from "../../../react_components/l10nComponents";
 import { RadioGroup, Radio } from "../../../react_components/radio";
-import { BloomApi } from "../../../utils/bloomApi";
+import { get } from "../../../utils/bloomApi";
 import Slider from "rc-slider";
 import AudioRecording from "../talkingBook/audioRecording";
 import "./music.less";
@@ -375,7 +375,7 @@ export class MusicToolControls extends React.Component<{}, IMusicState> {
     }
 
     private chooseMusicFile() {
-        BloomApi.get("music/ui/chooseFile", result => {
+        get("music/ui/chooseFile", result => {
             const fileName = result.data;
             if (!fileName) {
                 return;

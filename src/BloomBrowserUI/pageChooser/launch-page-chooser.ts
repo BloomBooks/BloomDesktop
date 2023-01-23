@@ -1,5 +1,5 @@
 import theOneLocalizationManager from "../lib/localizationManager/localizationManager";
-import { BloomApi } from "../utils/bloomApi";
+import { postBoolean } from "../utils/bloomApi";
 // Confusingly, this function is not used by the HTML that primarily loads the JS built from this
 // file (the pageChooserBundle, loaded by page-chooser-main.pug). Instead, it is imported into
 // the editViewFrame and exported from there so it can be invoked directly from C#, in the context of
@@ -47,7 +47,7 @@ export function showAddPageDialog(forChooseLayout: boolean) {
             title: title,
             close: function() {
                 $(this).remove();
-                BloomApi.postBoolean("editView/setModalState", false);
+                postBoolean("editView/setModalState", false);
             }
         });
 
@@ -58,7 +58,7 @@ export function showAddPageDialog(forChooseLayout: boolean) {
             $(".ui-dialog-titlebar-close").trigger("click");
             return false;
         });
-        BloomApi.postBoolean("editView/setModalState", true);
+        postBoolean("editView/setModalState", true);
         theDialog.dialog("open");
 
         //parentElement.$.notify("testing notify",{});

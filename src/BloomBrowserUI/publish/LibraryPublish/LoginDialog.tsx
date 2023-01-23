@@ -7,11 +7,10 @@ import StyledFirebaseAuth from "react-firebaseui/StyledFirebaseAuth";
 // these two firebase imports are strange, but not an error. See https://github.com/firebase/firebase-js-sdk/issues/1832
 import firebase from "firebase/app";
 import "firebase/auth";
-import { BloomApi } from "../../utils/bloomApi";
+import { get, post, postData } from "../../utils/bloomApi";
 import { useState, useEffect } from "react";
 import axios from "axios";
 import theOneLocalizationManager from "../../lib/localizationManager/localizationManager";
-import { H2 } from "../../react_components/l10nComponents";
 import WebSocketManager from "../../utils/WebSocketManager";
 import { DialogTitle, Typography, Dialog } from "@material-ui/core";
 import "./LoginDialog.less";
@@ -159,7 +158,7 @@ export const LoginDialog: React.FunctionComponent<{}> = props => {
                 setDone(true);
             }
         });
-        BloomApi.get("i18n/uilang", result => {
+        get("i18n/uilang", result => {
             // disapointingly, this doesn't seem to have any effect.
             // It should tell firebase to localize to the appropriate UI language.
             firebase.auth().languageCode = result.data;
@@ -283,7 +282,7 @@ async function connectParseServer(
         if (usersResult.data.sessionToken) {
             // Don't rely on parse server to give us back the email, apparently it does
             // not do so when creating a new user.
-            BloomApi.postData("common/loginData", {
+            postData("common/loginData", {
                 sessionToken: usersResult.data.sessionToken,
                 email: userId,
                 userId: usersResult.data.objectId
@@ -366,7 +365,7 @@ export function getConnection(bucketName: string): IConnection {
 
 function closeDialog() {
     //console.log("closing dialog");
-    BloomApi.post("dialog/close");
+    post("dialog/close");
 }
 
 // The code below is automatically executed as a result of loading the package

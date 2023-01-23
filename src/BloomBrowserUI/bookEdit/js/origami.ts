@@ -3,7 +3,7 @@
 import { SetupImage } from "./bloomImages";
 import "split-pane/split-pane.js";
 import TextBoxProperties from "../TextBoxProperties/TextBoxProperties";
-import { BloomApi } from "../../utils/bloomApi";
+import { get, post, postThatMightNavigate } from "../../utils/bloomApi";
 import { ElementQueries } from "css-element-queries";
 import { theOneBubbleManager } from "./bubbleManager";
 
@@ -12,7 +12,7 @@ $(() => {
 });
 
 export function setupOrigami() {
-    BloomApi.get("settings/enterpriseEnabled", result2 => {
+    get("settings/enterpriseEnabled", result2 => {
         const isEnterpriseEnabled: boolean = result2.data;
         const customPages = document.getElementsByClassName("customPage");
         if (customPages.length > 0) {
@@ -30,7 +30,7 @@ export function setupOrigami() {
         }
         // I'm not clear why the rest of this needs to wait until we have
         // the two results, but none of the controls shows up if we leave it all
-        // outside the BloomApi functions.
+        // outside the bloomApi functions.
         $(".origami-toggle .onoffswitch").change(layoutToggleClickHandler);
 
         if ($(".customPage .marginBox.origami-layout-mode").length) {
@@ -144,9 +144,7 @@ function layoutToggleClickHandler() {
         const toggleTransitionLength = 450;
         setTimeout(() => {
             $("html").off("keydown.origami");
-            BloomApi.postThatMightNavigate(
-                "common/saveChangesAndRethinkPageEvent"
-            );
+            postThatMightNavigate("common/saveChangesAndRethinkPageEvent");
         }, toggleTransitionLength);
     }
 }
@@ -491,7 +489,7 @@ function makeVideoFieldClickHandler(e) {
     // the image needs to be in the book folder. Unlike the regular placeholder, which we copy
     // everywhere, this one is only meant to be around when needed. This call asks the server to make
     // sure it is present in the book folder.
-    BloomApi.post("edit/pageControls/requestVideoPlaceHolder");
+    post("edit/pageControls/requestVideoPlaceHolder");
     $(this)
         .closest(".selector-links")
         .remove();
@@ -509,7 +507,7 @@ function makeHtmlWidgetFieldClickHandler(e) {
     // the image needs to be in the book folder. Unlike the regular placeholder, which we copy
     // everywhere, this one is only meant to be around when needed. This call asks the server to make
     // sure it is present in the book folder.
-    BloomApi.post("edit/pageControls/requestWidgetPlaceHolder");
+    post("edit/pageControls/requestWidgetPlaceHolder");
     $(this)
         .closest(".selector-links")
         .remove();

@@ -6,7 +6,7 @@ import { LearnAboutAccessibility } from "./learnAboutAccessibility";
 import { AccessibilityChecklist } from "./accessibilityChecklist";
 import { DaisyChecks } from "./daisyChecks";
 import WebSocketManager from "../../utils/WebSocketManager";
-import { BloomApi } from "../../utils/bloomApi";
+import { get } from "../../utils/bloomApi";
 import { LocalizedString } from "../../react_components/l10nComponents";
 import { lightTheme } from "../../bloomMaterialUITheme";
 import { ThemeProvider } from "@material-ui/styles";
@@ -38,7 +38,7 @@ export class AccessibilityCheckScreen extends React.Component<{}, IState> {
     }
 
     private refresh() {
-        BloomApi.get("accessibilityCheck/bookName", result => {
+        get("accessibilityCheck/bookName", result => {
             this.setState({
                 bookName: result.data
             });

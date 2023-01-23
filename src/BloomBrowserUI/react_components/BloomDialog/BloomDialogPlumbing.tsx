@@ -1,5 +1,5 @@
 import * as React from "react";
-import { BloomApi } from "../../utils/bloomApi";
+import { post } from "../../utils/bloomApi";
 import { useEffect, useState } from "react";
 import { useWebSocketListener } from "../../utils/WebSocketManager";
 
@@ -79,7 +79,7 @@ export function useSetupBloomDialog(
     }
     function closeDialog() {
         if (dialogEnvironment?.dialogFrameProvidedExternally)
-            BloomApi.post("common/closeReactDialog");
+            post("common/closeReactDialog");
         setOpen(false);
     }
     return {

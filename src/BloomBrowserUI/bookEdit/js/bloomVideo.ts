@@ -1,5 +1,5 @@
 import "../../lib/jquery.resize"; // makes jquery resize work on all elements
-import { BloomApi } from "../../utils/bloomApi";
+import { get } from "../../utils/bloomApi";
 
 // The code in this file supports operations on video panels in custom pages (and potentially elsewhere).
 // It sets things up for the button (plural eventually) to appear when hovering over the video.
@@ -41,7 +41,7 @@ const mouseOutFunction = e => {
 };
 
 export function SetupVideoEditing(container) {
-    BloomApi.get("settings/enterpriseEnabled", result => {
+    get("settings/enterpriseEnabled", result => {
         const isEnterpriseEnabled: boolean = result.data;
         $(container)
             .find(".bloom-videoContainer")

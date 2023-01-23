@@ -12,7 +12,7 @@
 import { getTheOneReaderToolsModel } from "../readerToolsModel";
 import theOneLocalizationManager from "../../../../lib/localizationManager/localizationManager";
 import { getEditTabBundleExports } from "../../../js/bloomFrames";
-import { BloomApi } from "../../../../utils/bloomApi";
+import { get, postBoolean } from "../../../../utils/bloomApi";
 
 function getDialogHtml(title) {
     const dialogContents = $(
@@ -67,7 +67,7 @@ export function showSetupDialog(showWhat) {
 
             getTheOneReaderToolsModel().setupType = showWhat;
 
-            BloomApi.get("readers/io/readerSettingsEditForbidden", result => {
+            get("readers/io/readerSettingsEditForbidden", result => {
                 const buttons: any = {
                     Cancel: {
                         text: theOneLocalizationManager.getText(
@@ -120,10 +120,7 @@ export function showSetupDialog(showWhat) {
                             // $(this).remove(); uses the wrong document (see https://silbloom.myjetbrains.com/youtrack/issue/BL-3962)
                             // the following derives from http://stackoverflow.com/questions/2864740/jquery-how-to-completely-remove-a-dialog-on-close
                             setupDialogElement.dialog("destroy").remove();
-                            BloomApi.postBoolean(
-                                "editView/setModalState",
-                                false
-                            );
+                            postBoolean("editView/setModalState", false);
                         },
                         open: () => {
                             $("#synphonyConfig").css("overflow", "hidden");
@@ -136,7 +133,7 @@ export function showSetupDialog(showWhat) {
                     }
                 );
             });
-            BloomApi.postBoolean("editView/setModalState", true);
+            postBoolean("editView/setModalState", true);
         }
     );
 }

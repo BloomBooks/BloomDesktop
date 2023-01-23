@@ -1,5 +1,5 @@
 ﻿/// <reference path="typings/jquery/jquery.d.ts" />
-import { BloomApi } from "./utils/bloomApi";
+import { postData } from "./utils/bloomApi";
 /**
  * Class to with methods related to invoking bloom help
  * @constructor
@@ -11,7 +11,7 @@ export default class BloomHelp {
      * @returns {boolean} Returns false to prevent navigation if link clicked.
      */
     public static show(topic: string): boolean {
-        BloomApi.postData("help", topic);
+        postData("help", topic);
         return false;
     }
 }

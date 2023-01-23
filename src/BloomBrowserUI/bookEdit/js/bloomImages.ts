@@ -1,5 +1,5 @@
 import "../../lib/jquery.resize"; // makes jquery resize work on all elements
-import { BloomApi } from "../../utils/bloomApi";
+import { getWithConfig, postJson } from "../../utils/bloomApi";
 
 // Enhance: this could be turned into a Typescript Module with only two public methods
 
@@ -205,7 +205,7 @@ export function addImageEditingButtons(containerDiv: HTMLElement): void {
             const imgIndex = Array.from(
                 document.getElementsByClassName("bloom-imageContainer")
             ).indexOf($containerDiv.get(0));
-            BloomApi.postJson("editView/" + command + "Image", { imgIndex });
+            postJson("editView/" + command + "Image", { imgIndex });
         });
     };
 
@@ -409,7 +409,7 @@ function SetImageTooltip(container: HTMLElement) {
     );
     const isPlaceHolder = url.indexOf("placeHolder.png") > -1;
 
-    BloomApi.getWithConfig("image/info", { params: { image: url } }, result => {
+    getWithConfig("image/info", { params: { image: url } }, result => {
         const imageFileInfo: any = result.data;
         let linesAboutThisFile: string;
         const fileFound = imageFileInfo.bytes >= 0;
@@ -485,7 +485,7 @@ function SetImageDisplaySizeIfCalledFor(container: JQuery, img: JQuery) {
         if (url.startsWith("/bloom/")) {
             return;
         }
-        BloomApi.getWithConfig(
+        getWithConfig(
             "image/info",
             { params: { image: GetRawImageUrl(img) } },
             result => {

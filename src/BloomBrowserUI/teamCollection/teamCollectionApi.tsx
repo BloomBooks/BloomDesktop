@@ -1,6 +1,6 @@
 import * as React from "react";
 import { useState } from "react";
-import { BloomApi } from "../utils/bloomApi";
+import { get } from "../utils/bloomApi";
 import { useSubscribeToWebSocketForEvent } from "../utils/WebSocketManager";
 
 // The TS end of various interactions with the TeamCollectionApi class in C#
@@ -60,7 +60,7 @@ export function useTColBookStatus(
     React.useEffect(() => {
         // if it's not in the editable collection, economize and don't call; the initialBookStatus will do.
         if (inEditableCollection) {
-            BloomApi.get(
+            get(
                 `teamCollection/bookStatus?folderName=${folderName}`,
                 data => {
                     setBookStatus(data.data as IBookTeamCollectionStatus);

@@ -3,7 +3,7 @@ import { jsx, css } from "@emotion/core";
 
 import * as React from "react";
 import * as ReactDOM from "react-dom";
-import { BloomApi } from "../../../utils/bloomApi";
+import { post } from "../../../utils/bloomApi";
 import { ToolBox } from "../toolbox";
 import { getEditablePageBundleExports } from "../../js/bloomFrames";
 import "./imageDescription.less";
@@ -286,35 +286,29 @@ export class ImageDescriptionAdapter extends ToolboxToolReactAdaptor {
                     // Gets the information we need to fill out the interior bloom-editables of the newly added bloom-translation group.
                     // Preferable to only send a request for the info we need and not save and refresh the whole page.
                     //   (Allows us to avoid the synchronous reload of the page, makes the UI experience much snappier)
-                    BloomApi.post(
-                        "editView/requestTranslationGroupContent",
-                        result => {
-                            // newPageReady() can be called twice, and both calls might occur before this async
-                            // callback happens for either of them, so both may take this "no translation groups"
-                            // branch and start to create them.  So check again before actually adding the new
-                            // description elements.
-                            // See https://issues.bloomlibrary.org/youtrack/issue/BL-6798 for some
-                            // confusing behavior that can result without this check.
+                    post("editView/requestTranslationGroupContent", result => {
+                        // newPageReady() can be called twice, and both calls might occur before this async
+                        // callback happens for either of them, so both may take this "no translation groups"
+                        // branch and start to create them.  So check again before actually adding the new
+                        // description elements.
+                        // See https://issues.bloomlibrary.org/youtrack/issue/BL-6798 for some
+                        // confusing behavior that can result without this check.
+                        imageDescriptions = container.getElementsByClassName(
+                            "bloom-imageDescription"
+                        );
+                        if (result && imageDescriptions.length == 0) {
+                            this.appendTranslationGroup(result.data, container);
+                            // BL-6775 if we just added image description
+                            // translationGroups to a page that didn't have them before,
+                            // we need to reset our state.
+                            imageDescControls.setStateForNewPage();
+                            // BL-6798: we need to add focus listeners to these new description elements.
                             imageDescriptions = container.getElementsByClassName(
                                 "bloom-imageDescription"
                             );
-                            if (result && imageDescriptions.length == 0) {
-                                this.appendTranslationGroup(
-                                    result.data,
-                                    container
-                                );
-                                // BL-6775 if we just added image description
-                                // translationGroups to a page that didn't have them before,
-                                // we need to reset our state.
-                                imageDescControls.setStateForNewPage();
-                                // BL-6798: we need to add focus listeners to these new description elements.
-                                imageDescriptions = container.getElementsByClassName(
-                                    "bloom-imageDescription"
-                                );
-                                this.addFocusListeners(imageDescriptions);
-                            }
+                            this.addFocusListeners(imageDescriptions);
                         }
-                    );
+                    });
                 } else {
                     this.addFocusListeners(imageDescriptions);
                 }

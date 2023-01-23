@@ -1,6 +1,6 @@
 import * as React from "react";
 import { useL10n } from "../../react_components/l10nHooks";
-import { BloomApi } from "../../utils/bloomApi";
+import { get, post } from "../../utils/bloomApi";
 import {
     LangCheckboxValue,
     LanguageSelectionSettingsGroup
@@ -49,7 +49,7 @@ export const PublishLanguagesGroup: React.FunctionComponent<{
     const initialValue: ILanguagePublishInfo[] = [];
     const [langs, setLangs] = React.useState(initialValue);
     React.useEffect(() => {
-        BloomApi.get(
+        get(
             "publish/android/languagesInBook",
 
             // onSuccess
@@ -106,7 +106,7 @@ export const PublishLanguagesGroup: React.FunctionComponent<{
                     const newLangObj = new LanguagePublishInfo(lang);
                     newLangObj[fieldToUpdate] = newState;
 
-                    BloomApi.post(
+                    post(
                         `publish/android/includeLanguage?langCode=${newLangObj.code}&${fieldToUpdate}=${newState}`
                     );
 

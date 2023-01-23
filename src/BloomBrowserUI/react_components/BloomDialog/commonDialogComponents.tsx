@@ -7,7 +7,7 @@ import {
     kBorderRadiusForSpecialBlocks,
     kBloomBlue50Transparent
 } from "../../bloomMaterialUITheme";
-import { BloomApi } from "../../utils/bloomApi";
+import { post, postJson } from "../../utils/bloomApi";
 import BloomButton from "../bloomButton";
 
 import InfoIcon from "@material-ui/icons/Info";
@@ -77,7 +77,7 @@ export const DialogFolderChooserWithApi: React.FunctionComponent<{
                 hasText={true}
                 variant="text"
                 onClick={() =>
-                    BloomApi.post(
+                    post(
                         props.apiCommandToChooseAndSetFolder
                         // nothing to do either on success or failure, including possible timeout,
                         // or the user canceling. This is because the "result" comes back to browser-land
@@ -190,7 +190,7 @@ export const DialogReportButton: React.FunctionComponent<{
         variant="text"
         temporarilyDisableI18nWarning={props.temporarilyDisableI18nWarning}
         onClick={() =>
-            BloomApi.postJson("problemReport/showDialog", {
+            postJson("problemReport/showDialog", {
                 shortMessage: props.shortMessage,
                 message: props.messageGenerator()
             })

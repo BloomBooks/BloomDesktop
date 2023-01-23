@@ -12,7 +12,7 @@ import CloseOnEscape from "react-close-on-escape";
 import { useL10n } from "./l10nHooks";
 import BloomButton from "./bloomButton";
 import { getEditTabBundleExports } from "../bookEdit/js/bloomFrames";
-import { BloomApi } from "../utils/bloomApi";
+import { postBoolean } from "../utils/bloomApi";
 import { lightTheme } from "../bloomMaterialUITheme";
 
 // All strings are assumed localized by the caller
@@ -33,7 +33,7 @@ const ConfirmDialog: React.FC<IConfirmDialogProps> = props => {
     externalSetOpen = setOpen;
 
     React.useEffect(() => {
-        BloomApi.postBoolean("editView/setModalState", open);
+        postBoolean("editView/setModalState", open);
     }, [open]);
 
     const onClose = (result: DialogResult) => {

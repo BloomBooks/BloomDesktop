@@ -1,6 +1,6 @@
 import * as React from "react";
 import { useState } from "react";
-import { BloomApi } from "../utils/bloomApi";
+import { post, useApiData, useApiStringState } from "../utils/bloomApi";
 import { useSubscribeToWebSocketForObjectInMessageParam } from "../utils/WebSocketManager";
 import "./PerformanceLogPage.less";
 import { ScatterPlot } from "@nivo/scatterplot";
@@ -23,12 +23,12 @@ export const PerformanceLogPage: React.FunctionComponent<{
         props.initialPoints || []
     );
 
-    const [applicationInfo] = BloomApi.useApiStringState(
+    const [applicationInfo] = useApiStringState(
         "performance/applicationInfo",
         ""
     );
 
-    const earlierMeasurements = BloomApi.useApiData<IMeasurement[]>(
+    const earlierMeasurements = useApiData<IMeasurement[]>(
         "performance/allMeasurements",
         []
     );
@@ -66,7 +66,7 @@ export const PerformanceLogPage: React.FunctionComponent<{
             <Button
                 variant="contained"
                 onClick={() => {
-                    BloomApi.post("performance/showCsvFile");
+                    post("performance/showCsvFile");
                 }}
             >
                 Show CSV File

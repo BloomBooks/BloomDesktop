@@ -19,7 +19,7 @@ import {
 import { BookInfoCard } from "../../react_components/bookInfoCard";
 import { useL10n } from "../../react_components/l10nHooks";
 import { TextWithEmbeddedLink } from "../../react_components/link";
-import { BloomApi } from "../../utils/bloomApi";
+import { post, postJson } from "../../utils/bloomApi";
 import { WireUpForWinforms } from "../../utils/WireUpWinform";
 import { lightTheme } from "../../bloomMaterialUITheme";
 import { CSSProperties, ThemeProvider } from "@material-ui/styles";
@@ -343,7 +343,7 @@ export const UploadCollisionDlg: React.FunctionComponent<IUploadCollisionDlgProp
                         enabled={buttonState !== RadioState.Indeterminate}
                         size="large"
                         onClick={() => {
-                            BloomApi.postJson("libraryPublish/upload", {
+                            postJson("libraryPublish/upload", {
                                 sameOrDifferent:
                                     buttonState === RadioState.Same
                                         ? "same"
@@ -356,7 +356,7 @@ export const UploadCollisionDlg: React.FunctionComponent<IUploadCollisionDlgProp
                     </BloomButton>
                     <DialogCancelButton
                         onClick={() => {
-                            BloomApi.post("libraryPublish/cancel");
+                            post("libraryPublish/cancel");
                             closeDialog();
                         }}
                     ></DialogCancelButton>

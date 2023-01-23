@@ -1,6 +1,6 @@
 import { GetButtonModifier } from "./bloomImages";
 import theOneLocalizationManager from "../../lib/localizationManager/localizationManager";
-import { BloomApi } from "../../utils/bloomApi";
+import { get, getString } from "../../utils/bloomApi";
 
 // Code related to the fourth option for types of origami panel content, HTML Widget
 // An HTML widget must be a zip file (with extension wdgt) containing a self-contained web page rooted at
@@ -13,7 +13,7 @@ import { BloomApi } from "../../utils/bloomApi";
 
 // Initialization function, sets up all the editing functions we support for these elements.
 export function SetupWidgetEditing(container: HTMLElement): void {
-    BloomApi.get("settings/enterpriseEnabled", result => {
+    get("settings/enterpriseEnabled", result => {
         const isEnterpriseEnabled: boolean = result.data;
         if (isEnterpriseEnabled) {
             const widgets = Array.from(
@@ -53,7 +53,7 @@ function SetupWidget(w: Element): void {
             // The C# code displays the choose file dialog, unzips the widget into
             // an appropriate place, and returns us a relative path to it suitable
             // for the iframe src. Or an empty string, if the user canceled.
-            BloomApi.getString("editView/chooseWidget", widgetSrc => {
+            getString("editView/chooseWidget", widgetSrc => {
                 if (!widgetSrc) {
                     return; // user canceled.
                 }

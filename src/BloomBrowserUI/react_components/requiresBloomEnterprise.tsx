@@ -3,7 +3,7 @@ import { jsx, css } from "@emotion/core";
 
 import * as React from "react";
 import { useState, useEffect } from "react";
-import { BloomApi } from "../utils/bloomApi";
+import { get, post } from "../utils/bloomApi";
 import Button from "@material-ui/core/Button";
 import { kBloomBlue50Transparent, lightTheme } from "../bloomMaterialUITheme";
 import { ThemeProvider } from "@material-ui/styles";
@@ -33,7 +33,7 @@ export function useEnterpriseAvailable() {
     const [enterpriseAvailable, setEnterpriseAvailable] = useState(true);
 
     useEffect(() => {
-        BloomApi.get("settings/enterpriseEnabled", response => {
+        get("settings/enterpriseEnabled", response => {
             setEnterpriseAvailable(response.data);
         });
     }, []);
@@ -108,15 +108,20 @@ export const RequiresBloomEnterpriseAdjacentIconWrapper = (props: {
 };
 
 export const BloomEnterpriseIcon = props => {
+    const needEnterpriseTooltip = useL10n(
+        "To use this feature, you'll need to enable Bloom Enterprise.",
+        "EditTab.RequiresEnterprise"
+    );
+    const enterpriseFeatureTooltip = useL10n(
+        "Bloom Enterprise Feature",
+        "Common.BloomEnterpriseFeature"
+    );
     const enterpriseAvailable = useEnterpriseAvailable();
 
     // Note: currently the tooltip only appears over the icon itself. But it might be nice if it could go over the children too?
     const tooltip = enterpriseAvailable
-        ? useL10n("Bloom Enterprise Feature", "Common.BloomEnterpriseFeature")
-        : useL10n(
-              "To use this feature, you'll need to enable Bloom Enterprise.",
-              "EditTab.RequiresEnterprise"
-          );
+        ? enterpriseFeatureTooltip
+        : needEnterpriseTooltip;
 
     return (
         <img
@@ -198,7 +203,7 @@ export const RequiresBloomEnterpriseNotice: React.VoidFunctionComponent<IRequire
     const [visible, setVisible] = useState(false);
 
     useEffect(() => {
-        BloomApi.get("settings/enterpriseEnabled", response => {
+        get("settings/enterpriseEnabled", response => {
             setVisible(!response.data);
         });
     }, []);
@@ -370,7 +375,7 @@ export const RequiresBloomEnterpriseNoticeDialog: React.VoidFunctionComponent = 
                         enabled={true}
                         l10nKey="Common.Close"
                         variant="text"
-                        onClick={() => BloomApi.post("common/closeReactDialog")} // from pressing Close button
+                        onClick={() => post("common/closeReactDialog")} // from pressing Close button
                     />
                 </DialogActions>
             </Dialog>
@@ -435,7 +440,7 @@ export const RequiresBloomEnterpriseDialog: React.FunctionComponent<{
 };
 
 function openBloomEnterpriseSettings() {
-    BloomApi.post("common/showSettingsDialog?tab=enterprise");
+    post("common/showSettingsDialog?tab=enterprise");
 }
 
 // Still used in imageDescription.tsx and talkingBook.ts
@@ -447,7 +452,7 @@ export function checkIfEnterpriseAvailable(): EnterpriseEnabledPromise {
 // The function will be called with argument true if enterprise features are enabled, false otherwise.
 class EnterpriseEnabledPromise {
     public then(resolve: (enterpriseAvailable: boolean) => void) {
-        BloomApi.get("settings/enterpriseEnabled", response => {
+        get("settings/enterpriseEnabled", response => {
             resolve(response.data);
         });
     }

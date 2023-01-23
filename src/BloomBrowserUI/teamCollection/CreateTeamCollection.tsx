@@ -4,7 +4,7 @@ import { jsx, css } from "@emotion/core";
 import * as React from "react";
 import { useState } from "react";
 
-import { BloomApi } from "../utils/bloomApi";
+import { post, postString, useApiStringState } from "../utils/bloomApi";
 import { useSubscribeToWebSocketForEvent } from "../utils/WebSocketManager";
 import BloomButton from "../react_components/bloomButton";
 import { Div, P } from "../react_components/l10nComponents";
@@ -66,7 +66,7 @@ export const CreateTeamCollectionDialog: React.FunctionComponent<{
         true
     );
 
-    const [collectionName] = BloomApi.useApiStringState(
+    const [collectionName] = useApiStringState(
         "teamCollection/getCollectionName",
         ""
     );
@@ -174,7 +174,7 @@ export const CreateTeamCollectionDialog: React.FunctionComponent<{
                     }
                     temporarilyDisableI18nWarning={true}
                     onClick={() => {
-                        BloomApi.postString(
+                        postString(
                             "teamCollection/createTeamCollection",
                             repoFolderPath
                         );
@@ -183,7 +183,7 @@ export const CreateTeamCollectionDialog: React.FunctionComponent<{
                     Create &amp; Restart
                 </BloomButton>
                 <DialogCancelButton
-                    onClick={() => BloomApi.post("common/closeReactDialog")}
+                    onClick={() => post("common/closeReactDialog")}
                 />
             </DialogBottomButtons>
         </BloomDialog>

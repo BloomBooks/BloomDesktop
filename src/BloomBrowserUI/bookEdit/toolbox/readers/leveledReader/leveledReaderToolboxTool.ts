@@ -1,12 +1,8 @@
 ﻿/// <reference path="../../toolbox.ts" />
-import {
-    getTheOneReaderToolsModel,
-    DRTState,
-    ReaderToolsModel
-} from "../readerToolsModel";
+import { getTheOneReaderToolsModel } from "../readerToolsModel";
 import { beginInitializeLeveledReaderTool } from "../readerTools";
 import { ITool } from "../../toolbox";
-import { BloomApi } from "../../../../utils/bloomApi";
+import { get } from "../../../../utils/bloomApi";
 
 export class LeveledReaderToolboxTool implements ITool {
     public makeRootElement(): HTMLDivElement {
@@ -24,7 +20,7 @@ export class LeveledReaderToolboxTool implements ITool {
                     true
                 );
             } else {
-                BloomApi.get("readers/io/defaultLevel", result => {
+                get("readers/io/defaultLevel", result => {
                     // Presumably a brand new book. We'd better save the settings we come up with in it.
                     getTheOneReaderToolsModel().setLevelNumber(
                         parseInt(result.data, 10)

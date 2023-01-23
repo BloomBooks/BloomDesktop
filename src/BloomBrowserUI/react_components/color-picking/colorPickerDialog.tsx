@@ -2,11 +2,11 @@
 import { jsx, css } from "@emotion/core";
 import React = require("react");
 import * as ReactDOM from "react-dom";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { getEditTabBundleExports } from "../../bookEdit/js/bloomFrames";
 import { ThemeProvider } from "@material-ui/styles";
 import { lightTheme } from "../../bloomMaterialUITheme";
-import { BloomApi } from "../../utils/bloomApi";
+import { get, postJson } from "../../utils/bloomApi";
 import ColorPicker from "./colorPicker";
 import * as tinycolor from "tinycolor2";
 import { IColorInfo, normalizeColorInfoColorsAsHex } from "./colorSwatch";
@@ -61,8 +61,8 @@ const ColorPickerDialog: React.FC<IColorPickerDialogProps> = props => {
     externalSetOpen = setOpen;
     const dlgRef = useRef<HTMLElement>(null);
 
-    function useAddCustomColors(endpoint: string): void {
-        BloomApi.get(endpoint, result => {
+    function addCustomColors(endpoint: string): void {
+        get(endpoint, result => {
             const jsonArray = result.data;
             if (!jsonArray.map) {
                 return; // this means the conversion string -> JSON didn't work. Bad JSON?
@@ -72,10 +72,10 @@ const ColorPickerDialog: React.FC<IColorPickerDialogProps> = props => {
         });
     }
 
-    React.useEffect(() => {
+    useEffect(() => {
         if (props.open || open) {
             setSwatchColorArray(getDefaultColorsFromPalette(props.palette));
-            useAddCustomColors(
+            addCustomColors(
                 `settings/getCustomPaletteColors?palette=${props.palette}`
             );
             // Before we introduced the concept of a custom palette (BL-11433),
@@ -84,7 +84,7 @@ const ColorPickerDialog: React.FC<IColorPickerDialogProps> = props => {
             // we just continue to display those along with the custom palette colors.
             // Thus, users won't see colors disappear from their pickers.
             if (props.isForOverlay)
-                useAddCustomColors("editView/getColorsUsedInBookOverlays");
+                addCustomColors("editView/getColorsUsedInBookOverlays");
             setCurrentColor(props.initialColor);
         }
     }, [open, props.open]);
@@ -163,7 +163,7 @@ const ColorPickerDialog: React.FC<IColorPickerDialogProps> = props => {
         } else {
             if (!isColorInCurrentSwatchColorArray(currentColor)) {
                 normalizeColorInfoColorsAsHex(currentColor);
-                BloomApi.postJson(
+                postJson(
                     `settings/addCustomPaletteColor?palette=${props.palette}`,
                     currentColor
                 );

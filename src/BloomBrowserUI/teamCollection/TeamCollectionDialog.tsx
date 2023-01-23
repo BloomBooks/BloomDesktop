@@ -3,7 +3,7 @@ import { jsx, css } from "@emotion/core";
 
 import * as React from "react";
 import BloomButton from "../react_components/bloomButton";
-import { BloomApi } from "../utils/bloomApi";
+import { getBoolean, post, useApiData } from "../utils/bloomApi";
 import "./TeamCollectionDialog.less";
 import { useL10n } from "../react_components/l10nHooks";
 import { ProgressBox } from "../react_components/Progress/progressBox";
@@ -54,14 +54,14 @@ const TeamCollectionDialog: React.FunctionComponent<{
         "TeamCollection.TeamCollection"
     );
 
-    const events = BloomApi.useApiData<IBloomWebSocketProgressEvent[]>(
+    const events = useApiData<IBloomWebSocketProgressEvent[]>(
         "teamCollection/getLog",
         []
     );
     // This ultimately controls which tab (currently Status or History) appears when the
     // dialog opens. The idea is that it shows the History tab unless there are important
     // messages in the Status tab.
-    // The obvious solution is to use BloomApi.useApiBoolean to get the logImportant
+    // The obvious solution is to use bloomApi's useApiBoolean to get the logImportant
     // value from the backend, and simply compute defaultTabIndex from that as either 1 or 0.
     // That doesn't work, because the defaultTabIndex only takes effect the FIRST time the
     // Tabs element is rendered. That will be with the default value passed to useApiBoolean.
@@ -74,7 +74,7 @@ const TeamCollectionDialog: React.FunctionComponent<{
     const [defaultTabIndex, setDefaultTabIndex] = useState(1);
 
     useEffect(() => {
-        BloomApi.getBoolean("teamCollection/logImportant", logImportant => {
+        getBoolean("teamCollection/logImportant", logImportant => {
             setDefaultTabIndex(logImportant ? 0 : 1);
         });
     }, []);
@@ -153,9 +153,7 @@ const TeamCollectionDialog: React.FunctionComponent<{
                                 //variant="text"
                                 enabled={true}
                                 hasText={true}
-                                onClick={() =>
-                                    BloomApi.post("common/reloadCollection")
-                                }
+                                onClick={() => post("common/reloadCollection")}
                             >
                                 Reload Collection
                             </BloomButton>

@@ -4,7 +4,7 @@ import "jquery-ui/jquery-ui-1.10.3.custom.min.js";
 import "../../lib/jquery.i18n.custom";
 import "../../lib/jquery.onSafe";
 import axios from "axios";
-import { BloomApi } from "../../utils/bloomApi";
+import { get, postString, wrapAxios } from "../../utils/bloomApi";
 import theOneLocalizationManager from "../../lib/localizationManager/localizationManager";
 import { hookupLinkHandler } from "../../utils/linkHandler";
 
@@ -220,8 +220,8 @@ export class ToolBox {
         });
         hookupLinkHandler();
 
-        // Using axios directly because BloomApi doesn't support merging promises with .all
-        BloomApi.wrapAxios(
+        // Using axios directly because bloomApi doesn't support merging promises with .all
+        wrapAxios(
             axios
                 .all([
                     this.getEnabledExperimentalFeatures(),
@@ -265,7 +265,7 @@ export class ToolBox {
                                     .find("*[data-i18n]")
                                     .localize(); // run localization
 
-                                BloomApi.get("currentUiLanguage", result => {
+                                get("currentUiLanguage", result => {
                                     const langName = result.data;
 
                                     const nodeList = document.querySelectorAll(
@@ -348,7 +348,7 @@ export class ToolBox {
     // Adds "lang" attributes into the DOM for toolbox elements which have internationalization. (AKA, have data-i18n)
     // TODO: This only works with non-React toolbox components. For now, we only need it for talking book tool though.
     public static insertLangAttributesIntoToolboxElements() {
-        BloomApi.get("currentUiLanguage", result => {
+        get("currentUiLanguage", result => {
             const langName = result.data;
 
             const nodeList = document.querySelectorAll(':not([data-i18n=""])');
@@ -445,7 +445,7 @@ export function showOrHideTool_click(chkbox) {
 
     if (chkbox.innerHTML === "") {
         chkbox.innerHTML = checkMarkString;
-        BloomApi.postString(
+        postString(
             "editView/saveToolboxSetting",
             "active\t" + chkbox.id + "\t1"
         );
@@ -454,7 +454,7 @@ export function showOrHideTool_click(chkbox) {
         }
     } else {
         chkbox.innerHTML = "";
-        BloomApi.postString(
+        postString(
             "editView/saveToolboxSetting",
             "active\t" + chkbox.id + "\t0"
         );
@@ -469,7 +469,7 @@ export function showOrHideTool_click(chkbox) {
 }
 
 export function restoreToolboxSettings() {
-    BloomApi.get("toolbox/settings", result => {
+    get("toolbox/settings", result => {
         savedSettings = result.data;
         const pageFrame = ToolBox.getPageFrame();
         const contentWin = pageFrame.contentWindow;
@@ -596,10 +596,7 @@ export function removeToolboxMarkup() {
 
 function switchTool(newToolName: string): void {
     // Have Bloom remember which tool is active. (Might be none)
-    BloomApi.postString(
-        "editView/saveToolboxSetting",
-        "current\t" + newToolName
-    );
+    postString("editView/saveToolboxSetting", "current\t" + newToolName);
     let newTool: ITool | null = null;
     if (newToolName) {
         for (let i = 0; i < masterToolList.length; i++) {
@@ -799,7 +796,7 @@ function beginAddTool(
         // old-style tool implemented in pug and typescript
         // Using axios because this is retrieving a file, not invoking an api,
         // so the required path does not start with /bloom/api/
-        BloomApi.wrapAxios(
+        wrapAxios(
             axios
                 .get("/bloom/bookEdit/toolbox/" + subPathToPremadeHtml)
                 .then(result => {
@@ -1095,7 +1092,7 @@ function loadToolboxTool(
 }
 
 function showToolboxChanged(wasShowing: boolean): void {
-    BloomApi.postString(
+    postString(
         "editView/saveToolboxSetting",
         "visibility\t" + (wasShowing ? "" : "visible")
     );

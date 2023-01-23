@@ -14,7 +14,7 @@ import {
 import NestedMenuItem from "material-ui-nested-menu-item";
 import CheckBoxOutlineBlankIcon from "@material-ui/icons/CheckBoxOutlineBlank";
 import CheckBoxIcon from "@material-ui/icons/CheckBox";
-import { BloomApi } from "../utils/bloomApi";
+import { getBoolean, post, postBoolean } from "../utils/bloomApi";
 import { useEnterpriseAvailable } from "./requiresBloomEnterprise";
 
 interface BaseLocalizableMenuItemProps {
@@ -88,7 +88,7 @@ export const LocalizableMenuItem: React.FunctionComponent<LocalizableMenuItemPro
     );
 
     const openCollectionSettings = () =>
-        BloomApi.post("common/showSettingsDialog?tab=enterprise");
+        post("common/showSettingsDialog?tab=enterprise");
 
     const menuClickHandler = props.requiresEnterprise
         ? enterpriseAvailable
@@ -131,7 +131,7 @@ export const LocalizableCheckboxMenuItem: React.FunctionComponent<LocalizableChe
     const label = useL10n(props.english, props.l10nId);
     const [checked, setChecked] = useState(false);
     useEffect(() => {
-        BloomApi.getBoolean(props.apiEndpoint, value => {
+        getBoolean(props.apiEndpoint, value => {
             setChecked(value);
         });
     }, []);
@@ -151,7 +151,7 @@ export const LocalizableCheckboxMenuItem: React.FunctionComponent<LocalizableChe
                 checkedIcon={<CheckBoxIcon htmlColor={menuItemColor} />}
                 checked={checked}
                 onChange={e => {
-                    BloomApi.postBoolean(props.apiEndpoint, e.target.checked);
+                    postBoolean(props.apiEndpoint, e.target.checked);
                     setChecked(e.target.checked);
                 }}
                 css={css`

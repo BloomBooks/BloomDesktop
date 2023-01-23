@@ -2,7 +2,7 @@
 import { jsx, css } from "@emotion/core";
 
 import * as React from "react";
-import { BloomApi } from "../utils/bloomApi";
+import { get } from "../utils/bloomApi";
 import { lightTheme } from "../bloomMaterialUITheme";
 import { ThemeProvider } from "@material-ui/styles";
 import { IFontMetaData } from "../bookEdit/StyleEditor/fontSelectComponent";
@@ -36,7 +36,7 @@ export const FontScriptSettingsControl: React.FunctionComponent = () => {
     );
 
     useEffect(() => {
-        BloomApi.get("settings/currentFontData", result => {
+        get("settings/currentFontData", result => {
             // fontData should be 2 or 3 sets of (language display name and current font name)
             const fontData = result.data;
             // Language 1 data
@@ -52,7 +52,7 @@ export const FontScriptSettingsControl: React.FunctionComponent = () => {
     }, []);
 
     useEffect(() => {
-        BloomApi.get("fonts/metadata", result => {
+        get("fonts/metadata", result => {
             const fontMetadata: IFontMetaData[] = result.data;
             setFontMetadata(fontMetadata);
         });

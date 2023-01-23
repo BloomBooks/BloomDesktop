@@ -4,7 +4,7 @@ import { jsx, css } from "@emotion/core";
 import * as React from "react";
 import { useL10n } from "../../react_components/l10nHooks";
 import BloomButton from "../../react_components/bloomButton";
-import { BloomApi } from "../../utils/bloomApi";
+import { postData } from "../../utils/bloomApi";
 import {
     BloomDialog,
     DialogMiddle,
@@ -114,7 +114,7 @@ const SpreadsheetExportDialog: React.FunctionComponent<{
                     hasText={true}
                     size="medium"
                     onClick={() => {
-                        BloomApi.postData("spreadsheet/export", {
+                        postData("spreadsheet/export", {
                             parentFolderPath: folderPath
                         });
                         props.closeDialog();

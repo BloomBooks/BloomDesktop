@@ -1,7 +1,6 @@
 /// <reference path="../../typings/select2/select2.d.ts" />
 import "../../node_modules/select2/dist/js/select2.js";
-import theOneLocalizationManager from "../../lib/localizationManager/localizationManager";
-import { BloomApi } from "../../utils/bloomApi";
+import { get } from "../../utils/bloomApi";
 import { EditableDivUtils } from "../js/editableDivUtils";
 import BloomHintBubbles from "../js/BloomHintBubbles";
 
@@ -41,109 +40,104 @@ export default class TextBoxProperties {
         // Why do we use .off and .on? See comment in a nearly identical location in StyleEditor.ts
         $(targetBox).off("click.formatButton");
         $(targetBox).on("click.formatButton", ".formatButton", () => {
-            BloomApi.get(
-                "bookEdit/TextBoxProperties/TextBoxProperties.html",
-                result => {
-                    const html = result.data;
-                    propDlg.boxBeingEdited = targetBox;
+            get("bookEdit/TextBoxProperties/TextBoxProperties.html", result => {
+                const html = result.data;
+                propDlg.boxBeingEdited = targetBox;
 
-                    // If this text box has had properties set already, get them so we can setup the dialog contents
-                    // if not already set, this will return 'Auto'
-                    const languageGroup = propDlg.getTextBoxLanguage(targetBox);
+                // If this text box has had properties set already, get them so we can setup the dialog contents
+                // if not already set, this will return 'Auto'
+                const languageGroup = propDlg.getTextBoxLanguage(targetBox);
 
-                    $("#text-properties-dialog").remove(); // in case there's still one somewhere else
-                    $("body").append(html);
+                $("#text-properties-dialog").remove(); // in case there's still one somewhere else
+                $("body").append(html);
 
-                    // Use select2 in place of regular selects. One reason to do this is that, for
-                    // reasons I can't fathom, clicking in a regular select doesn't work within this
-                    // dialog...a problem that seems to occur only in Bloom, not when we open the page
-                    // in Firefox. This makes it very hard to debug.
-                    // Another advantage is that the lists can scroll...we are starting to have a lot
-                    // of UI languages.
-                    // The commented out block is needed if we add ones that allow custom items.
-                    // $('.allowCustom').select2({
-                    //     tags: true //this is weird, we're not really doing tags, but this is how you get to enable typing
-                    // });
-                    $("select:not(.allowCustom)").select2({
-                        tags: false,
-                        minimumResultsForSearch: -1 // result is that no search box is shown
-                    });
+                // Use select2 in place of regular selects. One reason to do this is that, for
+                // reasons I can't fathom, clicking in a regular select doesn't work within this
+                // dialog...a problem that seems to occur only in Bloom, not when we open the page
+                // in Firefox. This makes it very hard to debug.
+                // Another advantage is that the lists can scroll...we are starting to have a lot
+                // of UI languages.
+                // The commented out block is needed if we add ones that allow custom items.
+                // $('.allowCustom').select2({
+                //     tags: true //this is weird, we're not really doing tags, but this is how you get to enable typing
+                // });
+                $("select:not(.allowCustom)").select2({
+                    tags: false,
+                    minimumResultsForSearch: -1 // result is that no search box is shown
+                });
 
-                    if (noFormatChange) {
-                        $("#text-properties-dialog").addClass(
-                            "formattingDisabled"
-                        );
-                    } else {
-                        $(
-                            ":radio[name=languageRadioGroup][value=" +
-                                languageGroup +
-                                "]"
-                        ).prop("checked", true);
-                    }
-
-                    const dialogElement = $("#text-properties-dialog");
-                    dialogElement.find("*[data-i18n]").localize();
-                    dialogElement.draggable({
-                        distance: 10,
-                        scroll: false,
-                        containment: $("html")
-                    });
-                    dialogElement.draggable("disable"); // until after we make sure it's in the Viewport
-                    dialogElement.css("opacity", 1.0);
-                    if (!noFormatChange) {
-                        // Hook up change event handlers
-                        $("#language-group").change(() => {
-                            propDlg.changeLanguageGroup();
-                        });
-                        new WebFXTabPane($("#tabRoot").get(0), false);
-                    }
-                    // Give the browser time to get the dialog into the DOM first, before doing this stuff
-                    // It just needs to delay one 'cycle'.
-                    // http://stackoverflow.com/questions/779379/why-is-settimeoutfn-0-sometimes-useful
-                    setTimeout(() => {
-                        // Make sure we get the right button!
-                        const orientOnButton = $(propDlg.boxBeingEdited).find(
-                            ".formatButton"
-                        );
-                        EditableDivUtils.positionDialogAndSetDraggable(
-                            dialogElement,
-                            orientOnButton
-                        );
-                        dialogElement.draggable("enable");
-
-                        $("html").off("click.dialogElement");
-                        $("html").on("click.dialogElement", event => {
-                            if (
-                                event.target !== dialogElement.get(0) &&
-                                dialogElement.has(event.target).length === 0 &&
-                                $(event.target).parent() !== dialogElement &&
-                                dialogElement.has(event.target).length === 0 &&
-                                dialogElement.is(":visible")
-                            ) {
-                                dialogElement.remove();
-                                event.stopPropagation();
-                                event.preventDefault();
-                            }
-                        });
-                        dialogElement.on("click.dialogElement", event => {
-                            // this stops an event inside the dialog from propagating to the html element, which would close the dialog
-                            event.stopPropagation();
-                        });
-                        this.removeButtonSelection();
-                        this.initializeAlignment();
-                        this.initializeBorderStyle();
-                        this.initializeBackground();
-                        this.setButtonClickActions();
-                        this.makeLanguageSelect();
-                        this.initializeHintTab();
-                        this.fillInLanguageNames();
-                    }, 0); // just push this to the end of the event queue
+                if (noFormatChange) {
+                    $("#text-properties-dialog").addClass("formattingDisabled");
+                } else {
+                    $(
+                        ":radio[name=languageRadioGroup][value=" +
+                            languageGroup +
+                            "]"
+                    ).prop("checked", true);
                 }
-            );
+
+                const dialogElement = $("#text-properties-dialog");
+                dialogElement.find("*[data-i18n]").localize();
+                dialogElement.draggable({
+                    distance: 10,
+                    scroll: false,
+                    containment: $("html")
+                });
+                dialogElement.draggable("disable"); // until after we make sure it's in the Viewport
+                dialogElement.css("opacity", 1.0);
+                if (!noFormatChange) {
+                    // Hook up change event handlers
+                    $("#language-group").change(() => {
+                        propDlg.changeLanguageGroup();
+                    });
+                    new WebFXTabPane($("#tabRoot").get(0), false);
+                }
+                // Give the browser time to get the dialog into the DOM first, before doing this stuff
+                // It just needs to delay one 'cycle'.
+                // http://stackoverflow.com/questions/779379/why-is-settimeoutfn-0-sometimes-useful
+                setTimeout(() => {
+                    // Make sure we get the right button!
+                    const orientOnButton = $(propDlg.boxBeingEdited).find(
+                        ".formatButton"
+                    );
+                    EditableDivUtils.positionDialogAndSetDraggable(
+                        dialogElement,
+                        orientOnButton
+                    );
+                    dialogElement.draggable("enable");
+
+                    $("html").off("click.dialogElement");
+                    $("html").on("click.dialogElement", event => {
+                        if (
+                            event.target !== dialogElement.get(0) &&
+                            dialogElement.has(event.target).length === 0 &&
+                            $(event.target).parent() !== dialogElement &&
+                            dialogElement.has(event.target).length === 0 &&
+                            dialogElement.is(":visible")
+                        ) {
+                            dialogElement.remove();
+                            event.stopPropagation();
+                            event.preventDefault();
+                        }
+                    });
+                    dialogElement.on("click.dialogElement", event => {
+                        // this stops an event inside the dialog from propagating to the html element, which would close the dialog
+                        event.stopPropagation();
+                    });
+                    this.removeButtonSelection();
+                    this.initializeAlignment();
+                    this.initializeBorderStyle();
+                    this.initializeBackground();
+                    this.setButtonClickActions();
+                    this.makeLanguageSelect();
+                    this.initializeHintTab();
+                    this.fillInLanguageNames();
+                }, 0); // just push this to the end of the event queue
+            });
         });
     }
     fillInLanguageNames() {
-        BloomApi.get("editView/getBookLangs", result => {
+        get("editView/getBookLangs", result => {
             document.getElementById("tbprop-lang1")!.innerText =
                 "(" + result.data.V + ")";
             document.getElementById("tbprop-lang2")!.innerText =
@@ -457,7 +451,7 @@ export default class TextBoxProperties {
 
     private makeLanguageSelect() {
         // items comes back as something like languages: [{label: 'English', tag: 'en'},{label: 'French', tag: 'fr'} ]
-        BloomApi.get("uiLanguages", result => {
+        get("uiLanguages", result => {
             const items: Array<any> = (<any>result.data).languages;
             this.makeSelectItems(items, "en", "lang-select");
         });

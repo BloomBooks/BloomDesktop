@@ -7,7 +7,7 @@
 /// <reference path="../../typings/jquery.qtipSecondary.d.ts" />
 /// <reference path="../../typings/jquery.qtip.d.ts" />
 
-import { BloomApi } from "../../utils/bloomApi";
+import { get, postString } from "../../utils/bloomApi";
 
 import theOneLocalizationManager from "../../lib/localizationManager/localizationManager";
 import { IsPageXMatter } from "../js/bloomEditing";
@@ -153,7 +153,7 @@ export default class BloomHintBubbles {
             0
         ) as HTMLElement).firstElementChild?.firstElementChild?.addEventListener(
             "click",
-            () => BloomApi.postString("editView/sourceTextTab", "hint")
+            () => postString("editView/sourceTextTab", "hint")
         );
         const nav = $(headers.parent());
         whatToSay =
@@ -176,7 +176,7 @@ export default class BloomHintBubbles {
         // We can't wait until we have the language list to insert the main hint element into the source bubble,
         // because doing that causes the manipulations that easytabs does to the results of this method
         // to skip the hint tab. (At least, when you're not stepping through the code.)
-        BloomApi.get("bubbleLanguages", result => {
+        get("bubbleLanguages", result => {
             const preferredLangs: Array<string> = (<any>result.data).langs;
             whatToSay = this.getHintContent(
                 elementThatHasSourceBubble,
@@ -319,7 +319,7 @@ export default class BloomHintBubbles {
         }
         // And if targetElement is not related in any of these ways to any of the divs that have source bubbles,
         // go ahead and give it its own help/hint bubble.
-        BloomApi.get("bubbleLanguages", result => {
+        get("bubbleLanguages", result => {
             const orderedLangsForBubble: Array<string> = (<any>result.data)
                 .langs;
             this.MakeHelpBubble(

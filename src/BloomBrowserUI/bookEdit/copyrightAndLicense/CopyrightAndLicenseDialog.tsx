@@ -8,7 +8,7 @@ import { Tab, TabList, TabPanel } from "react-tabs";
 import "react-tabs/style/react-tabs.less";
 
 import { WireUpForWinforms } from "../../utils/WireUpWinform";
-import { BloomApi } from "../../utils/bloomApi";
+import { get, postBoolean, postData } from "../../utils/bloomApi";
 import { kBloomBlue } from "../../bloomMaterialUITheme";
 import {
     BloomDialog,
@@ -72,10 +72,7 @@ export const CopyrightAndLicenseDialog: React.FunctionComponent<{
     React.useEffect(() => {
         if (propsForBloomDialog.open === undefined) return;
 
-        BloomApi.postBoolean(
-            "editView/setModalState",
-            propsForBloomDialog.open
-        );
+        postBoolean("editView/setModalState", propsForBloomDialog.open);
     }, [propsForBloomDialog.open]);
 
     const [
@@ -120,7 +117,7 @@ export const CopyrightAndLicenseDialog: React.FunctionComponent<{
             licenseInfo,
             derivativeInfo
         };
-        BloomApi.postData(getApiUrlSuffix(props.isForBook), data);
+        postData(getApiUrlSuffix(props.isForBook), data);
         closeDialog();
     }
 
@@ -266,7 +263,7 @@ function showCopyrightAndLicenseDialog(
 // or we will display the dialog.
 export function showCopyrightAndLicenseInfoOrDialog(imageUrl?: string) {
     const isForBook: boolean = !imageUrl;
-    BloomApi.get(
+    get(
         // We don't uri-encode the imageUrl because we are getting it from the html tag (and therefore its already encoded).
         getApiUrlSuffix(isForBook) + (imageUrl ? `?imageUrl=${imageUrl}` : ""),
         result => {

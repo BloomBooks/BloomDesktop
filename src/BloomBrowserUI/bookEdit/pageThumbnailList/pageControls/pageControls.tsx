@@ -1,4 +1,4 @@
-import { BloomApi } from "../../../utils/bloomApi";
+import { get, post } from "../../../utils/bloomApi";
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 import BloomButton from "../../../react_components/bloomButton";
@@ -55,7 +55,7 @@ class PageControls extends React.Component<{}, IPageControlsState> {
     public componentDidMount() {
         window.addEventListener("beforeunload", this.componentCleanup);
         // Get the initial state from C#-land, now that we're ready for it.
-        BloomApi.get("edit/pageControls/requestState", result => {
+        get("edit/pageControls/requestState", result => {
             const jsonObj = result.data; // Axios apparently recognizes the JSON and parses it automatically.
             // something like: {"CanAddPages":true,"CanDeletePage":true,"CanDuplicatePage":true,"BookLockedState":"OriginalBookMode"}
             this.setPageControlState(jsonObj);
@@ -70,7 +70,7 @@ class PageControls extends React.Component<{}, IPageControlsState> {
     }
 
     public componentCleanup() {
-        BloomApi.post("edit/pageControls/cleanup", result => {
+        post("edit/pageControls/cleanup", result => {
             WebSocketManager.closeSocket(kPageControlsContext);
         });
     }

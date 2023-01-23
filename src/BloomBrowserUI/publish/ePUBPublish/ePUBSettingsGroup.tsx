@@ -2,7 +2,11 @@
 import { jsx, css } from "@emotion/core";
 import React = require("react");
 import BookMetadataDialog from "../metadata/BookMetadataDialog";
-import { BloomApi } from "../../utils/bloomApi";
+import {
+    post,
+    useApiBoolean,
+    useCanModifyCurrentBook
+} from "../../utils/bloomApi";
 import { ApiCheckbox } from "../../react_components/ApiCheckbox";
 import { Link } from "../../react_components/link";
 import { SettingsGroup } from "../commonPublish/PublishScreenBaseComponents";
@@ -46,8 +50,8 @@ export const EPUBSettingsGroup: React.FunctionComponent<{
     mode: string;
     setMode: (mode: string) => void;
 }> = props => {
-    //const [includeImageDescriptionOnPage,setIncludeImageDescriptionOnPage] = BloomApi.useApiBoolean("publish/epub/imageDescriptionSetting", true);
-    const canModifyCurrentBook = BloomApi.useCanModifyCurrentBook();
+    //const [includeImageDescriptionOnPage,setIncludeImageDescriptionOnPage] = useApiBoolean("publish/epub/imageDescriptionSetting", true);
+    const canModifyCurrentBook = useCanModifyCurrentBook();
     const linkCss = "margin-top: 1em !important; display: block;";
     const disabledLinkCss = canModifyCurrentBook
         ? ""
@@ -61,7 +65,7 @@ export const EPUBSettingsGroup: React.FunctionComponent<{
         null
     );
 
-    const [hasOverlays] = BloomApi.useApiBoolean("publish/epub/overlays", true);
+    const [hasOverlays] = useApiBoolean("publish/epub/overlays", true);
 
     return (
         <div>
@@ -179,9 +183,7 @@ export const EPUBSettingsGroup: React.FunctionComponent<{
                     id="a11yCheckerLink"
                     l10nKey="AccessibilityCheck.AccessibilityChecker"
                     onClick={() =>
-                        BloomApi.post(
-                            "accessibilityCheck/showAccessibilityChecker"
-                        )
+                        post("accessibilityCheck/showAccessibilityChecker")
                     }
                 >
                     Accessibility Checker
@@ -218,7 +220,7 @@ export const EPUBSettingsGroup: React.FunctionComponent<{
 };
 
 interface IEpubMode {
-    mode: string; // to pass to BloomApi
+    mode: string; // to pass to bloomApi
     label: string;
     l10nKey: string; // for label
     description: string; // more details

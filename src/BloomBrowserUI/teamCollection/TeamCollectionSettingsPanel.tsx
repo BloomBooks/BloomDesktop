@@ -2,7 +2,7 @@
 import { jsx, css } from "@emotion/core";
 
 import * as React from "react";
-import { BloomApi } from "../utils/bloomApi";
+import { post, postJson, useApiStringState } from "../utils/bloomApi";
 import { P } from "../react_components/l10nComponents";
 import { RequiresBloomEnterpriseOverlayWrapper } from "../react_components/requiresBloomEnterprise";
 import "./TeamCollectionSettingsPanel.less";
@@ -17,7 +17,7 @@ import { WireUpForWinforms } from "../utils/WireUpWinform";
 // The contents of the Team Collection panel of the Settings dialog.
 
 export const TeamCollectionSettingsPanel: React.FunctionComponent = props => {
-    const [repoFolderPath] = BloomApi.useApiStringState(
+    const [repoFolderPath] = useApiStringState(
         "teamCollection/repoFolderPath",
         ""
     );
@@ -60,7 +60,7 @@ export const TeamCollectionSettingsPanel: React.FunctionComponent = props => {
                 href=""
                 onClick={e => {
                     e.preventDefault();
-                    BloomApi.postJson("common/showInFolder", {
+                    postJson("common/showInFolder", {
                         folderPath: repoFolderPath
                     });
                 }}
@@ -81,7 +81,7 @@ export const TeamCollectionSettingsPanel: React.FunctionComponent = props => {
                     enabled={true}
                     hasText={true}
                     onClick={() =>
-                        BloomApi.post(
+                        post(
                             "help/Tasks/Basic_tasks/Team_Collections/Add_someone_to_a_Team_Collection.htm"
                         )
                     }
@@ -102,9 +102,7 @@ export const TeamCollectionSettingsPanel: React.FunctionComponent = props => {
                     hasText={true}
                     variant="outlined"
                     onClick={() =>
-                        BloomApi.post(
-                            "teamCollection/showCreateTeamCollectionDialog"
-                        )
+                        post("teamCollection/showCreateTeamCollectionDialog")
                     }
                     temporarilyDisableI18nWarning={true}
                 >
@@ -127,7 +125,7 @@ export const TeamCollectionSettingsPanel: React.FunctionComponent = props => {
                     variant="text"
                     temporarilyDisableI18nWarning={true}
                     onClick={() =>
-                        BloomApi.post(
+                        post(
                             "help/Tasks/Basic_tasks/Team_Collections/Join_a_Team_Collection.htm"
                         )
                     }

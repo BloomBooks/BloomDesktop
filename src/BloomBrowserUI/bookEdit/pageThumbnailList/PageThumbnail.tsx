@@ -2,7 +2,7 @@ import * as React from "react";
 import { useState, useEffect } from "react";
 
 import "errorHandler";
-import { BloomApi } from "../../utils/bloomApi";
+import { get } from "../../utils/bloomApi";
 import { IPage } from "./pageThumbnailList";
 
 // Global information across all PageThumbnails...see comments in requestPage()
@@ -61,7 +61,7 @@ export const PageThumbnail: React.FunctionComponent<{
         }
         pendingPageRequestCount--;
         activePageRequestCount++;
-        BloomApi.get(`pageList/pageContent?id=${props.page.key}`, response => {
+        get(`pageList/pageContent?id=${props.page.key}`, response => {
             activePageRequestCount--;
             setContent(response.data.content); // automatically unJsonified?
         });

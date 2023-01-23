@@ -2,7 +2,7 @@
 import { jsx, css } from "@emotion/core";
 
 import React = require("react");
-import { BloomApi } from "../utils/bloomApi";
+import { get, postString, useApiJson } from "../utils/bloomApi";
 import { BooksOfCollection } from "./BooksOfCollection";
 import { Transition } from "react-transition-group";
 import { SplitPane } from "react-collapse-pane";
@@ -31,7 +31,7 @@ import { EmbeddedProgressDialog } from "../react_components/Progress/ProgressDia
 const kResizerSize = 10;
 
 export const CollectionsTabPane: React.FunctionComponent<{}> = () => {
-    const collections = BloomApi.useApiJson("collections/list");
+    const collections = useApiJson("collections/list");
 
     const [draggingSplitter, setDraggingSplitter] = useState(false);
     const [
@@ -63,7 +63,7 @@ export const CollectionsTabPane: React.FunctionComponent<{}> = () => {
     }, []);
 
     useEffect(() => {
-        BloomApi.get("app/enabledExperimentalFeatures", result => {
+        get("app/enabledExperimentalFeatures", result => {
             const features: string = result.data; // This is a string containing the experimental feature names
             const featureIsActive = Boolean(
                 features.includes("spreadsheet-import-export")
@@ -527,7 +527,7 @@ export const makeMenuItems = (
             // but I can't make Typescript accept it.
             let clickAction: React.MouseEventHandler = () => {
                 close();
-                BloomApi.postString(
+                postString(
                     `${spec.command!}?collection-id=${encodeURIComponent(
                         collectionId
                     )}`,

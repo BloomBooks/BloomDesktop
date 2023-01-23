@@ -2,7 +2,7 @@
 import { jsx, css } from "@emotion/core";
 
 import * as React from "react";
-import { BloomApi } from "../utils/bloomApi";
+import { postData } from "../utils/bloomApi";
 import FontSelectComponent, {
     IFontMetaData
 } from "../bookEdit/StyleEditor/fontSelectComponent";
@@ -22,7 +22,7 @@ const SingleFontSection: React.FunctionComponent<{
     };
 
     const fontChangeHandler = (fontName: string) => {
-        BloomApi.postData("settings/setFontForLanguage", {
+        postData("settings/setFontForLanguage", {
             languageNumber: props.languageNumber,
             fontName: fontName
         });
@@ -63,10 +63,7 @@ const SingleFontSection: React.FunctionComponent<{
                 `}
                 l10nKey="CollectionSettingsDialog.BookMakingTab.SpecialScriptSettingsLink"
                 onClick={() => {
-                    BloomApi.postData(
-                        "settings/specialScriptSettings",
-                        linkData
-                    );
+                    postData("settings/specialScriptSettings", linkData);
                 }}
             >
                 Special Script Settings

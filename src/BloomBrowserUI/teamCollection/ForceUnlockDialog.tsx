@@ -2,14 +2,10 @@
 import { jsx, css } from "@emotion/core";
 
 import * as React from "react";
-import Button from "@material-ui/core/Button";
-import Menu from "@material-ui/core/Menu";
-import MenuItem from "@material-ui/core/MenuItem";
 import { useL10n } from "../react_components/l10nHooks";
 import { Div } from "../react_components/l10nComponents";
-import { TextWithEmbeddedLink } from "../react_components/link";
 import BloomButton from "../react_components/bloomButton";
-import { BloomApi } from "../utils/bloomApi";
+import { post } from "../utils/bloomApi";
 import {
     DialogCancelButton,
     WarningBox
@@ -106,7 +102,7 @@ export const ForceUnlockDialog: React.FunctionComponent<{
                         onClick={() => {
                             props.close();
                             // Do nothing here on either success or failure. (C# code will have already reported failure).
-                            BloomApi.post("teamCollection/forceUnlock");
+                            post("teamCollection/forceUnlock");
                         }}
                         hasText={true}
                     >

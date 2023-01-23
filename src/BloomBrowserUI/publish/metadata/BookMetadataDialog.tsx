@@ -3,14 +3,13 @@ import Dialog from "@material-ui/core/Dialog";
 import "./BookMetadataDialog.less";
 import CloseOnEscape from "react-close-on-escape";
 import BookMetadataTable from "./BookMetadataTable";
-import { BloomApi } from "../../utils/bloomApi";
+import { get, postData } from "../../utils/bloomApi";
 import * as mobx from "mobx";
 import * as mobxReact from "mobx-react";
 import BloomButton from "../../react_components/bloomButton";
-import { Div } from "../../react_components/l10nComponents";
 import { DialogTitle, DialogActions, DialogContent } from "@material-ui/core";
 import { LocalizedString } from "../../react_components/l10nComponents";
-// tslint:disable-next-line:no-empty-interface
+
 interface IState {
     isOpen: boolean;
 }
@@ -44,7 +43,7 @@ export default class BookMetadataDialog extends React.Component<
 
     private handleCloseModal(doSave: boolean) {
         if (doSave) {
-            BloomApi.postData("book/metadata", this.metadata);
+            postData("book/metadata", this.metadata);
             if (BookMetadataDialog.signalChangeOnClose) {
                 BookMetadataDialog.signalChangeOnClose();
                 BookMetadataDialog.signalChangeOnClose = undefined; // use only once.
@@ -57,7 +56,7 @@ export default class BookMetadataDialog extends React.Component<
 
     public static show(signalChangeOnClose?: () => void) {
         BookMetadataDialog.signalChangeOnClose = signalChangeOnClose;
-        BloomApi.get("book/metadata", result => {
+        get("book/metadata", result => {
             BookMetadataDialog.singleton.metadata = result.data.metadata;
             BookMetadataDialog.singleton.translatedControlStrings =
                 result.data.translatedStringPairs;
