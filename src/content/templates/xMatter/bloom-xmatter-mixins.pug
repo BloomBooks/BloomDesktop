@@ -23,7 +23,7 @@ mixin page-cover(label)
 		block
 
 mixin chooser-topic
-	.coverBottomBookTopic.bloom-userCannotModifyStyles.bloom-alwaysShowBubble.Cover-Default-style(data-derived="topic", data-functionOnHintClick="javascript:(window.parent || window).editTabBundle.showEditViewTopicChooserDialog();", data-hint = "Click to choose topic")
+	.coverBottomBookTopic.bloom-userCannotModifyStyles.bloom-alwaysShowBubble.Cover-Default-style(data-derived="topic", data-functiononhintclick="showTopicChooser", data-hint = "Click to choose topic")
 
 mixin field-ISBN
 	.ISBNContainer(data-hint="International Standard Book Number. Leave blank if you don't have one of these.")&attributes(attributes)
@@ -182,7 +182,7 @@ mixin factoryStandard-credits-interiorPage
 		+credits-contents
 
 mixin block-licenseAndCopyright
-	.bloom-metaData.licenseAndCopyrightBlock(data-functiononhintclick="javascript:(window.parent || window).editTabBundle.showCopyrightAndLicenseDialog();",data-hint="Click to Edit Copyright & License",lang="V")
+	.bloom-metaData.licenseAndCopyrightBlock(data-functiononhintclick="showCopyrightAndLicenseDialog",data-hint="Click to Edit Copyright & License",lang="V")
 		.copyright(data-derived="copyright", lang="*").Credits-Page-style
 			| {copyright}
 		block copyrightHolderAddress
