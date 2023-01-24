@@ -39,7 +39,6 @@ namespace WebView2PdfMaker
 			InitializeComponent();
 			CreateTimers();
 			CreateWebView2();
-			var initTask = InitWebView();
 			_webview.CoreWebView2InitializationCompleted += (object sender, CoreWebView2InitializationCompletedEventArgs args) =>
 			{
 				_webview.CoreWebView2.NavigationCompleted += (object sender2, CoreWebView2NavigationCompletedEventArgs args2) =>
@@ -48,6 +47,7 @@ namespace WebView2PdfMaker
 				};
 				_readyToNavigate = true;
 			};
+			var initTask = InitWebView();
 			while (!initTask.IsCompleted)
 			{
 				Application.DoEvents();
