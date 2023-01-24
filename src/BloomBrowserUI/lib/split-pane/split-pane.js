@@ -1,3 +1,7 @@
+/* eslint-disable no-redeclare */
+/* eslint-disable @typescript-eslint/no-this-alias */
+/* eslint-disable no-var */
+/* eslint-disable no-undef */
 /*!
 
 Split Pane v0.4.0
@@ -9,7 +13,7 @@ https://raw.github.com/shagstrom/split-pane/master/LICENSE
 
 */
 
-import { BloomApi } from "../../utils/bloomApi";
+import { get } from "../../utils/bloomApi";
 import theOneLocalizationManager from "../localizationManager/localizationManager";
 
 (function($) {
@@ -653,7 +657,7 @@ import theOneLocalizationManager from "../localizationManager/localizationManage
         const orientation = isPaneHorizontal(splitPane)
             ? "horizontal"
             : "vertical";
-        BloomApi.get(
+        get(
             "editView/prevPageSplit?id=" + id + "&orientation=" + orientation,
             result => {
                 // We should get the result before significant mouse movement happens.
