@@ -138,7 +138,9 @@ const ReaderPublishScreenInternal: React.FunctionComponent<{
                             "bloom-player/dist/bloomplayer.htm?centerVertically=true&url=" +
                             encodeURIComponent(bookUrl) + // Need to apply encoding to the bookUrl again as data to use it as a parameter of another URL
                             "&independent=false" + // you can temporarily comment this out to send BloomPlayer analytics from Bloom Editor
-                            "&host=bloomdesktop"
+                            "&host=bloomdesktop" +
+                            "&roundPageWidthToNearestK=2" + // Fractional pixels can cause a small sliver of the next page or background color to show (See BL-11497)
+                            "&roundMarginToNearestK=2" // Fractional pixels can cause a small sliver of the next page or background color to show (See BL-11497)
                         }
                         showRefresh={true}
                         highlightRefreshIcon={highlightRefresh}
