@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using Bloom.Book;
 using Bloom.TeamCollection;
 using BloomTemp;
 using BloomTests.DataBuilders;
@@ -301,7 +302,7 @@ namespace BloomTests.TeamCollection
 			var fixedLocalPath = Path.Combine(_collectionFolder.FolderPath, kRepoNameForIdConflict);
 			Assert.That(Directory.Exists(fixedLocalPath));
 			AssertLostAndFound(kLocalNameForIdConflict);
-			AssertProgress("The book \"{0}\" was moved to Lost and Found, since it has the same ID as the book \"{1}\" in the repo.",
+			AssertProgress("The book \"{0}\" was moved to Lost and Found, since it has the same ID as the book \"{1}\" in the team collection.",
 				kLocalNameForIdConflict, kRepoNameForIdConflict,MessageAndMilestoneType.ErrorNoReload);
 			AssertProgress("Fetching a new book '{0}' from the Team Collection", kRepoNameForIdConflict);
 		}
@@ -437,9 +438,17 @@ namespace BloomTests.TeamCollection
 		{
 			AssertLocalContent("Update content and status and warn", "This simulates new content on server");
 			Assert.That(_collection.GetLocalStatus("Update content and status and warn").lockedBy, Is.EqualTo("fred@somewhere.org"));
-			AssertProgress("The book '{0}', which you have checked out and edited, was modified in the Team Collection by someone else. Your changes have been overwritten, but are saved to Lost-and-found.",
+			AssertProgressAndHistory("Update content and status and warn", "The book '{0}', which was checked out and edited on this computer, was modified in the Team Collection by someone else. Local changes have been overwritten, but are saved to Lost-and-found.",
 				"Update content and status and warn", null, MessageAndMilestoneType.ErrorNoReload);
 			AssertLostAndFound("Update content and status and warn");
+		}
+
+		protected void AssertProgressAndHistory(string bookFolderName, string message, string param0, string param1, MessageAndMilestoneType msgType)
+		{
+			AssertProgress(message, param0, param1, msgType);
+			var history = BookHistory.GetHistory(new BookInfo(Path.Combine(_collectionFolder.FolderPath, bookFolderName), true));
+			var msg = string.Format(message, param0, param1);
+			Assert.That(history, Has.Some.Matches<BookHistoryEvent>(item => item.Message == msg));
 		}
 
 		[Test]
@@ -447,7 +456,8 @@ namespace BloomTests.TeamCollection
 		{
 			AssertLocalContent("Update content and status and warn2", "This simulates new content on server");
 			Assert.That(_collection.GetLocalStatus("Update content and status and warn2").lockedBy, Is.EqualTo("fred@somewhere.org"));
-			AssertProgress("The book '{0}', which you have checked out and edited, is checked out to someone else in the Team Collection. Your changes have been overwritten, but are saved to Lost-and-found."
+			AssertProgressAndHistory("Update content and status and warn2",
+				"The book '{0}', which was checked out and edited, was checked out to someone else in the Team Collection. Local changes have been overwritten, but are saved to Lost-and-found."
 				, "Update content and status and warn2",null, MessageAndMilestoneType.ErrorNoReload);
 			AssertLostAndFound("Update content and status and warn2");
 		}
@@ -609,7 +619,8 @@ namespace BloomTests.TeamCollection
 		{
 			AssertLocalContent("Rename local", "This content is on the server");
 			Assert.That(_collection.GetLocalStatus("Rename local").lockedBy, Is.EqualTo("fred@somewhere.org"));
-			AssertProgress("Found different versions of '{0}' in both collections. The team version has been copied to your local collection, and the old local version to Lost and Found",
+			AssertProgressAndHistory("Rename local",
+				"Found different versions of '{0}' in the local and team collections. The team version has been copied to the local collection, and the old local version to Lost and Found",
 				"Rename local", null, MessageAndMilestoneType.ErrorNoReload);
 			AssertLostAndFound("Rename local");
 		}

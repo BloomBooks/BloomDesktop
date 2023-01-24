@@ -1553,7 +1553,11 @@ namespace Bloom.TeamCollection
 				fullL10nId, message, param0, param1);
 		}
 
-		void ReportProgressLogAndAnalytics(IWebSocketProgress progress, ProgressKind kind, string l10nIdSuffix, string message,
+		/// <summary>
+		/// This overload reports the problem to the progress box, log, and Analytics. If possible, use the overload which
+		/// also adds the report to the book's history.
+		/// </summary>
+		void ReportProblemSyncingBook(IWebSocketProgress progress, ProgressKind kind, string l10nIdSuffix, string message,
 			string param0 = null, string param1 = null)
 		{
 			ReportProgressAndLog(progress, kind, l10nIdSuffix, message, param0, param1);
@@ -1562,6 +1566,21 @@ namespace Bloom.TeamCollection
 			{
 				{"message",msg}
 			});
+		}
+
+		/// <summary>
+		/// This overload reports the problem to the progress box, log, and Analytics, and also makes an entry in
+		/// the book's history.
+		/// </summary>
+		void ReportProblemSyncingBook(string folderPath, string bookId, IWebSocketProgress progress, ProgressKind kind, string l10nIdSuffix, string message,
+			string param0 = null, string param1 = null)
+		{
+			ReportProblemSyncingBook(progress, kind, l10nIdSuffix, message, param0, param1);
+			var msg = string.Format(message, param0, param1);
+			// The second argument is not the ideal name for the book, but unless it has no previous history,
+			// the bookName will not be used. I don't think this is the place to be trying to instantiate
+			// a Book object to get the ideal name for it. So I decided to live with using the file name.
+			BookHistory.AddEvent(folderPath, Path.GetFileNameWithoutExtension(folderPath), bookId, BookHistoryEventType.SyncProblem, msg);
 		}
 
 		/// <summary>
@@ -1695,8 +1714,10 @@ namespace Bloom.TeamCollection
 								PutBook(path,inLostAndFound:true);
 								SIL.IO.RobustIO.DeleteDirectory(path, true);
 								hasProblems = true;
-								ReportProgressLogAndAnalytics(progress, ProgressKind.Error, "TeamCollection.ConflictingIdMove",
-									"The book \"{0}\" was moved to Lost and Found, since it has the same ID as the book \"{1}\" in the repo.",
+								// Here we can't add the information to history, because we deleted the folder that contains the
+								// history. So just do the other kinds of report.
+								ReportProblemSyncingBook(progress, ProgressKind.Error, "TeamCollection.ConflictingIdMove",
+									"The book \"{0}\" was moved to Lost and Found, since it has the same ID as the book \"{1}\" in the team collection.",
 									bookFolderName, repoState.Item1);
 								// We will copy the conflicting book to local in the second loop.
 								continue;
@@ -1856,12 +1877,13 @@ namespace Bloom.TeamCollection
 								// We don't know the previous history of the collection. Quite likely it was duplicated some
 								// other way and these books have been edited independently. Treat it as a conflict.
 								PutBook(localFolderPath, inLostAndFound: true);
+								var bookId = GetBookId(bookName);
 								// warn the user
 								hasProblems = true;
 								// Make the local folder match the repo (this is where 'they win')
 								CopyBookFromRepoToLocalAndReport(progress, bookName, () =>
-									ReportProgressLogAndAnalytics(progress, ProgressKind.Error, "ConflictingCheckout",
-										"Found different versions of '{0}' in both collections. The team version has been copied to your local collection, and the old local version to Lost and Found"
+									ReportProblemSyncingBook(localFolderPath, bookId, progress, ProgressKind.Error, "ConflictingCheckout",
+										"Found different versions of '{0}' in the local and team collections. The team version has been copied to the local collection, and the old local version to Lost and Found"
 										, bookName));
 								continue;
 							}
@@ -1941,12 +1963,13 @@ namespace Bloom.TeamCollection
 							{
 								// Edited locally while someone else has it checked out. Copy current local to lost and found
 								PutBook(localFolderPath, inLostAndFound: true);
+								var bookId = GetBookId(bookName);
 								// warn the user
 								hasProblems = true;
 								// Make the local folder match the repo (this is where 'they win')
 								CopyBookFromRepoToLocalAndReport(progress, bookName, () =>
-									ReportProgressLogAndAnalytics(progress, ProgressKind.Error, "ConflictingCheckout",
-										"The book '{0}', which you have checked out and edited, is checked out to someone else in the Team Collection. Your changes have been overwritten, but are saved to Lost-and-found.",
+									ReportProblemSyncingBook(localFolderPath, bookId, progress, ProgressKind.Error, "ConflictingCheckout",
+										"The book '{0}', which was checked out and edited, was checked out to someone else in the Team Collection. Local changes have been overwritten, but are saved to Lost-and-found.",
 										bookName));
 								continue;
 							}
@@ -1973,13 +1996,15 @@ namespace Bloom.TeamCollection
 						}
 
 						// Copy current local to lost and found
-						PutBook(Path.Combine(_localCollectionFolder, bookName), inLostAndFound: true);
+						var bookFolder = Path.Combine(_localCollectionFolder, bookName);
+						PutBook(bookFolder, inLostAndFound: true);
+						var bookId = GetBookId(bookName);
 						// copy repo book and status to local
 						// warn the user
 						hasProblems = true;
 						CopyBookFromRepoToLocalAndReport(progress, bookName, () =>
-							ReportProgressLogAndAnalytics(progress, ProgressKind.Error, "ConflictingEdit",
-								"The book '{0}', which you have checked out and edited, was modified in the Team Collection by someone else. Your changes have been overwritten, but are saved to Lost-and-found.",
+							ReportProblemSyncingBook(bookFolder, bookId, progress, ProgressKind.Error, "ConflictingEdit",
+								"The book '{0}', which was checked out and edited on this computer, was modified in the Team Collection by someone else. Local changes have been overwritten, but are saved to Lost-and-found.",
 								bookName));
 
 						continue;

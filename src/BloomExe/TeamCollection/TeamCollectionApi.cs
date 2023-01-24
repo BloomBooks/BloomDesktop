@@ -646,9 +646,10 @@ namespace Bloom.TeamCollection
 					_tcManager.CurrentCollection.CopyBookFromRepoToLocal(bookName, dialogOnError:true);
 					// Force a full reload of the book from disk and update the UI to match.
 					_bookSelection.SelectBook(_bookServer.GetBookFromBookInfo(_bookSelection.CurrentSelection.BookInfo, true));
-					var msg = LocalizationManager.GetString("TeamCollection.ConflictingEditOrCheckout",
-						"Someone else has edited this book or checked it out even though you were editing it! Your changes have been saved to Lost and Found");
-					ErrorReport.NotifyUserOfProblem(msg);
+					var msgFmt = LocalizationManager.GetString("TeamCollection.ConflictingEditOrCheckout",
+						"Someone else has edited the book {0} or checked it out even though it was being editing here! Local changes have been saved to Lost and Found");
+					var msg = string.Format(msgFmt,
+						Path.GetFileNameWithoutExtension(_bookSelection.CurrentSelection.FolderPath));
 					Analytics.Track("TeamCollectionConflictingEditOrCheckout",
 						new Dictionary<string, string>() {
 							{"CollectionId", _settings?.CollectionId},
@@ -658,6 +659,8 @@ namespace Bloom.TeamCollection
 							{"BookId", _bookSelection?.CurrentSelection?.ID},
 							{"BookName", _bookSelection?.CurrentSelection?.Title}
 						});
+					BookHistory.AddEvent(_bookSelection.CurrentSelection, BookHistoryEventType.SyncProblem, msg);
+					ErrorReport.NotifyUserOfProblem(msg);
 				}
 				UpdateUiForBook();
 				request.PostSucceeded();

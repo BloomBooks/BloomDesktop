@@ -37,6 +37,7 @@ namespace Bloom.TeamCollection
 		Uploaded,
 		ForcedUnlock,
 		ImportSpreadsheet,
+		SyncProblem
 		// NB: add them here, too: teamCollection\CollectionHistoryTable.tsx
 	}
 
@@ -172,19 +173,24 @@ public class BookHistory
 		return "";
 	}
 
-	public static void AddEvent(Book book,  BookHistoryEventType eventType, string message="")
+	public static void AddEvent(Book book, BookHistoryEventType eventType, string message = "")
+	{
+		AddEvent(book.FolderPath, book.NameBestForUserDisplay, book.ID, eventType, message);
+	}
+
+	public static void AddEvent(string folderPath, string bookName, string bookId,  BookHistoryEventType eventType, string message="")
 	{
 		if (SIL.PlatformUtilities.Platform.IsLinux)
 			return;     // SQLiteConnection never works on Linux.
 		try
 		{
-			using (var db = GetConnection(book.FolderPath))
+			using (var db = GetConnection(folderPath))
 			{
-				GetOrMakeBookRecord(book, db);
+				GetOrMakeBookRecord(bookName, bookId, db);
 
 				var evt = new BookHistoryEvent()
 				{
-					BookId = book.ID,
+					BookId = bookId,
 					Message = message,
 					UserId = TeamCollectionManager.CurrentUser,
 					UserName = TeamCollectionManager.CurrentUserFirstName,
@@ -200,23 +206,29 @@ public class BookHistory
 		catch (Exception e)
 		{
 
-			NonFatalProblem.Report(ModalIf.None, PassiveIf.All, "Problem writing book history", $"folder={book.FolderPath}",
+			NonFatalProblem.Report(ModalIf.None, PassiveIf.All, "Problem writing book history", $"folder={folderPath}",
 				 e);
 			// swallow... we don't want to prevent whatever was about to happen.
 		}
-		BloomWebSocketServer.Instance.SendEvent("bookHistory","eventAdded");
+		// Instance should only be null in unit tests
+		BloomWebSocketServer.Instance?.SendEvent("bookHistory","eventAdded");
 	}
 
 	private static BookHistoryBook GetOrMakeBookRecord(Book book, SQLiteConnection db)
 	{
-		var bookRecord = GetBookRecord(book, db);
+		return GetOrMakeBookRecord(book.NameBestForUserDisplay, book.ID, db);
+	}
+
+	private static BookHistoryBook GetOrMakeBookRecord(string bookName, string bookId, SQLiteConnection db)
+	{
+		var bookRecord = GetBookRecord(bookId, db);
 		if (bookRecord == null)
 		{
 			bookRecord = new BookHistoryBook
 			{
-				Id = book.ID,
+				Id = bookId,
 				// TODO: update Name every time because it can change? Add an event if we notice that it changed?
-				Name = book.NameBestForUserDisplay
+				Name = bookName
 			};
 			db.Insert(bookRecord);
 		}
@@ -226,7 +238,12 @@ public class BookHistory
 
 	private static BookHistoryBook GetBookRecord(Book book, SQLiteConnection db)
 	{
-		return db.Table<BookHistoryBook>().FirstOrDefault(b => b.Id == book.ID);
+		return GetBookRecord(book.ID, db);
+	}
+
+	private static BookHistoryBook GetBookRecord(string bookId, SQLiteConnection db)
+	{
+		return db.Table<BookHistoryBook>().FirstOrDefault(b => b.Id == bookId);
 	}
 
 	private static SQLiteConnection GetConnection(string folderPath)
