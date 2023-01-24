@@ -165,8 +165,8 @@ const PDFPrintPublishScreenInternal: React.FunctionComponent<{
                     closePending={closePending}
                     setClosePending={setClosePending}
                     onUserStopped={() => {
-                        BloomApi.postData("publish/android/usb/stop", {});
-                        BloomApi.postData("publish/android/wifi/stop", {});
+                        postData("publish/android/usb/stop", {});
+                        postData("publish/android/wifi/stop", {});
                         setClosePending(true);
                     }}
                 />
