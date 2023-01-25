@@ -1,0 +1,16 @@
+{
+    "presets": [
+        {
+            "data-book": "outside-back-cover-branding-top-html",
+            "lang": "*",
+            "content": "<img class='branding bloom-badge' src='Unesco-bloom-badge.png'/>",
+            "condition": "always"
+        },
+        {
+            "data-book": "outside-back-cover-branding-bottom-html",
+            "lang": "*",
+            "content": "<p>This publication is financially supported by UNESCO Bangkok and the Asia Pacific Multilingual Education Working Group under the accelerated funding to strengthen the Global Partnership for Education’s response to the COVID-19 pandemic.</p>",
+            "condition": "always"
+        }
+    ]
+}
