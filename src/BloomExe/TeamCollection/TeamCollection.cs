@@ -1584,6 +1584,19 @@ namespace Bloom.TeamCollection
 		}
 
 		/// <summary>
+		/// This overload reports the problem to the progress box, log, and Analytics, and also makes an entry in
+		/// the collection's book history. Use it when the problem will result in the book going away, so
+		/// it can't be recorded in the book's own history.
+		/// </summary>
+		void ReportProblemSyncingBook(string collectionPath, string bookName, string bookId, IWebSocketProgress progress, ProgressKind kind, string l10nIdSuffix, string message,
+			string param0 = null, string param1 = null)
+		{
+			ReportProblemSyncingBook(progress, kind, l10nIdSuffix, message, param0, param1);
+			var msg = string.Format(message, param0, param1);
+			CollectionHistory.AddBookEvent(collectionPath, bookName, bookId, BookHistoryEventType.SyncProblem, msg);
+		}
+
+		/// <summary>
 		/// A list of strings known to occur in filenames Dropbox generates when it resolves conflicting changes.
 		/// Not a completely reliable way to identify them, especially with an incomplete list of localizations,
 		/// but it's the best we can do.
@@ -1714,9 +1727,7 @@ namespace Bloom.TeamCollection
 								PutBook(path,inLostAndFound:true);
 								SIL.IO.RobustIO.DeleteDirectory(path, true);
 								hasProblems = true;
-								// Here we can't add the information to history, because we deleted the folder that contains the
-								// history. So just do the other kinds of report.
-								ReportProblemSyncingBook(progress, ProgressKind.Error, "TeamCollection.ConflictingIdMove",
+								ReportProblemSyncingBook(_localCollectionFolder, bookFolderName, id, progress, ProgressKind.Error, "TeamCollection.ConflictingIdMove",
 									"The book \"{0}\" was moved to Lost and Found, since it has the same ID as the book \"{1}\" in the team collection.",
 									bookFolderName, repoState.Item1);
 								// We will copy the conflicting book to local in the second loop.
