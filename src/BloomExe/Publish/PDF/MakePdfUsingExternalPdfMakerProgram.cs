@@ -119,10 +119,15 @@ namespace Bloom.Publish.PDF
 
 			SetArguments(bldr, specs);
 			var arguments = bldr.ToString();
+
+			Logger.WriteMinorEvent($"Running ${exePath} with arguments: ${arguments}");
+
 			var progress = new NullProgress();
 			// NB: WebView2 does not appear to support progress reporting while making PDFs.
 			var res = runner.Start(exePath, arguments, Encoding.UTF8, fromDirectory, 3600, progress,
 				(msg) => { /* nothing we can do with WebView2 */ });
+
+			Logger.WriteMinorEvent($"Call to ${exePath} completed");
 
 			if (res.DidTimeOut || !RobustFile.Exists(specs.OutputPdfPath))
 			{

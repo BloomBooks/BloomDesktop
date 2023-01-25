@@ -41,8 +41,10 @@ namespace WebView2PdfMaker
 			CreateWebView2();
 			_webview.CoreWebView2InitializationCompleted += (object sender, CoreWebView2InitializationCompletedEventArgs args) =>
 			{
+				Console.WriteLine("WebView2PdfComponent - CoreWebView2InitializationCompleted");
 				_webview.CoreWebView2.NavigationCompleted += (object sender2, CoreWebView2NavigationCompletedEventArgs args2) =>
 				{
+					Console.WriteLine("WebView2PdfComponent - NavigationCompleted");
 					_navigationCompleted = true;
 				};
 				_readyToNavigate = true;
@@ -53,6 +55,7 @@ namespace WebView2PdfMaker
 				Application.DoEvents();
 				Thread.Sleep(10);
 			}
+			Console.WriteLine("WebView2PdfComponent - initTask.IsCompleted");
 			EnsureBrowserReadyToNavigate();
 		}
 

@@ -14,14 +14,14 @@ using SIL.IO;
 // ReSharper disable once CheckNamespace
 namespace BloomTestsThatAvoidTheSetupFixture
 {
-	[TestFixture, Ignore("Temporarily ignoring to get a good TC build...")]
+	[TestFixture]
 #if __MonoCS__
 	[Apartment(System.Threading.ApartmentState.STA)]
 #endif
 	[NUnit.Framework.Category("RequiresUI")]
 	public class PdfMakerTests
 	{
-		[Test]
+		[Test, Order(1)]
 		public void MakePdf_BookStyleIsNone_OutputsPdf()
 		{
 			var maker = new PdfMaker();
@@ -41,7 +41,7 @@ namespace BloomTestsThatAvoidTheSetupFixture
 			}
 		}
 
-		[Test]
+		[Test, Order(2)]
 		public void MakePdf_BookStyleIsBooklet_OutputsPdf()
 		{
 			var maker = new PdfMaker();
@@ -64,7 +64,7 @@ namespace BloomTestsThatAvoidTheSetupFixture
 		/// <summary>
 		/// This tests for a regretion on BL-81, BL-96, BL-76; wkhtmltopdf itself couldn't handle file names anything up out of ascii-land
 		/// </summary>
-		[Test]
+		[Test, Order(3)]
 		public void MakePdf_BookNameIsChinese_OutputsPdf()
 		{
 			var maker = new PdfMaker();
@@ -84,7 +84,7 @@ namespace BloomTestsThatAvoidTheSetupFixture
 			}
 		}
 
-		[Test]
+		[Test, Order(4)]
 		public void MakePdf_BookNameIsNonAscii_OutputsPdf()
 		{
 			var maker = new PdfMaker();
