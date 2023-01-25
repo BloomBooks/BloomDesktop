@@ -22,6 +22,8 @@ import { getRgbaColorStringFromColorAndOpacity } from "../../utils/colorUtils";
 import { SetupElements, attachToCkEditor } from "./bloomEditing";
 import {
     addImageEditingButtons,
+    DisableImageTooltip,
+    EnableImageTooltip,
     tryRemoveImageEditingButtons
 } from "./bloomImages";
 
@@ -260,11 +262,18 @@ export class BubbleManager {
         return focusableDivs;
     }
 
-    private focusFirstVisibleFocusable(activeElement: HTMLElement) {
+    /**
+     * Attempts to finds the first visible div which can be focused. If so, focuses it.
+     *
+     * @returns True if an element was focused. False otherwise.
+     */
+    private focusFirstVisibleFocusable(activeElement: HTMLElement): boolean {
         const focusElements = this.getAllVisibleFocusableDivs(activeElement);
         if (focusElements.length > 0) {
             (focusElements[0] as HTMLElement).focus();
+            return true;
         }
+        return false;
     }
 
     private focusLastVisibleFocusable(activeElement: HTMLElement) {
@@ -283,7 +292,17 @@ export class BubbleManager {
 
         Comical.setActiveBubbleListener(activeElement => {
             if (activeElement) {
-                this.focusFirstVisibleFocusable(activeElement);
+                const isAnyFocused = this.focusFirstVisibleFocusable(
+                    activeElement
+                );
+                if (isAnyFocused) {
+                    const activeContainer = activeElement.closest<HTMLElement>(
+                        ".bloom-imageContainer"
+                    );
+                    if (activeContainer) {
+                        DisableImageTooltip(activeContainer);
+                    }
+                }
             }
         });
 
@@ -377,6 +396,8 @@ export class BubbleManager {
         Array.from(this.getAllPrimaryImageContainersOnPage()).forEach(
             (container: HTMLElement) => {
                 container.addEventListener("click", event => {
+                    let isBackgroundImageSelected = false;
+
                     // The goal here is that if the user clicks outside any comical bubble,
                     // we want none of the comical bubbles selected, so that
                     // (after moving the mouse away to get rid of hover effects)
@@ -404,6 +425,7 @@ export class BubbleManager {
                         const x = event.offsetX;
                         const y = event.offsetY;
                         if (!Comical.somethingHit(container, x, y)) {
+                            isBackgroundImageSelected = true;
                             // Usually we hide the image editing controls in overlay mode so
                             // they don't get in the way of manipulating the bubbles, but a click
                             // on the underlying image is understood to mean the user wants to work
@@ -485,6 +507,12 @@ export class BubbleManager {
                             );
                             somethingElseToFocus.focus();
                         }
+                    }
+
+                    if (isBackgroundImageSelected) {
+                        EnableImageTooltip(container);
+                    } else {
+                        DisableImageTooltip(container);
                     }
                 });
 

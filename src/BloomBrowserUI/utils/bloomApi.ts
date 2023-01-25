@@ -451,6 +451,17 @@ export function getWithConfig(
     );
 }
 
+/**
+ * Same as getWithConfig, but using an Promise-based syntax
+ * The generic type <T> should be the type that the AxiosResponse returns.
+ */
+export function getWithConfigAsync<T>(
+    urlSuffix: string,
+    config: AxiosRequestConfig
+) {
+    return wrapAxios(axios.get<T>(getBloomApiPrefix() + urlSuffix, config));
+}
+
 export function postString(urlSuffix: string, value: string) {
     return wrapAxios(
         axios.post(getBloomApiPrefix() + urlSuffix, value, {

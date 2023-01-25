@@ -1,5 +1,9 @@
 import "../../lib/jquery.resize"; // makes jquery resize work on all elements
-import { getWithConfig, postJson } from "../../utils/bloomApi";
+import {
+    getWithConfig,
+    getWithConfigAsync,
+    postJson
+} from "../../utils/bloomApi";
 
 // Enhance: this could be turned into a Typescript Module with only two public methods
 
@@ -387,20 +391,51 @@ function getImgFromContainer(imageContainer: HTMLElement) {
         .not(".bloom-ui img"); // e.g. cog.svg
 }
 
-function SetImageTooltip(container: HTMLElement) {
+export function DisableImageTooltip(container: HTMLElement) {
+    if (container) {
+        container.title = "";
+    }
+}
+
+export function EnableImageTooltip(container: HTMLElement) {
+    const dataTitle = container.getAttribute("data-title");
+
+    // If dataTitle is null for some unexpected reason, let's just leave it as is.
+    if (dataTitle !== null) {
+        container.title = dataTitle;
+    }
+}
+
+async function SetImageTooltip(container: HTMLElement) {
+    const title = await DetermineImageTooltipAsync(container);
+
+    // We use data-title to store what the tooltip should be, regardless of whether the tooltip should actually be currently visible
+    // Use the real title attribute to show the tooltip only when desired
+    // (e.g. show when no bubble selected but hide when a bubble is selected)
+    container.setAttribute("data-title", title);
+
+    // Only show the tooltip if no bubble is currently selected.
+    if (theOneBubbleManager.getActiveElement()) {
+        DisableImageTooltip(container);
+    } else {
+        EnableImageTooltip(container);
+    }
+}
+
+async function DetermineImageTooltipAsync(
+    container: HTMLElement
+): Promise<string> {
     const containerJQ = $(container);
     const imgElement = $(container).find("img");
 
     if (!imgElement) {
-        container.title = "";
-        return;
+        return "";
     }
     const url = GetRawImageUrl(imgElement);
     // Don't try to go getting image info for a built in Bloom image (like cogGrey.svg).
     // It'll just throw an exception.
     if (url.startsWith("/bloom/")) {
-        container.title = "";
-        return;
+        return "";
     }
 
     const targetDpiWidth = Math.ceil((300 * containerJQ.width()) / kBrowserDpi);
@@ -409,42 +444,48 @@ function SetImageTooltip(container: HTMLElement) {
     );
     const isPlaceHolder = url.indexOf("placeHolder.png") > -1;
 
-    getWithConfig("image/info", { params: { image: url } }, result => {
-        const imageFileInfo: any = result.data;
-        let linesAboutThisFile: string;
-        const fileFound = imageFileInfo.bytes >= 0;
-        let dpiLine = "";
-        if (isPlaceHolder) {
-            linesAboutThisFile = "";
-        } else if (!fileFound) {
-            linesAboutThisFile = `${imageFileInfo.name} not found\n`;
-        } else {
-            const dpi = getDpi(
-                container,
-                imageFileInfo.width,
-                imageFileInfo.height
-            );
-            const bulletForDpi = dpi < 300 ? "⚠" : "✓";
-            // removed because only devs care! Bit Depth: ${imageFileInfo.bitDepth.toString()}
-            linesAboutThisFile = `Name: ${
-                imageFileInfo.name
-            } Size: ${getFileLengthString(imageFileInfo.bytes)} Dots: ${
-                imageFileInfo.width
-            } x ${imageFileInfo.height}\n\n`;
-            if (!isPlaceHolder) {
-                dpiLine = `${bulletForDpi} This image would print at ${dpi} DPI.\n`;
-            }
-        }
-
-        const linesAboutThisContext =
-            `For the current paper size:\n` +
-            `  • The image container is ${containerJQ.width()} x ${containerJQ.height()} dots.\n` +
-            `  • For print publications, you want between 300-600 DPI (Dots Per Inch).\n` +
-            dpiLine +
-            `  • An image with ${targetDpiWidth} x ${targetDpiHeight} dots would fill this container at 300 DPI.`;
-
-        container.title = linesAboutThisFile + linesAboutThisContext;
+    const result = await getWithConfigAsync("image/info", {
+        params: { image: url }
     });
+
+    if (!result) {
+        return "";
+    }
+
+    const imageFileInfo: any = result.data;
+    let linesAboutThisFile: string;
+    const fileFound = imageFileInfo.bytes >= 0;
+    let dpiLine = "";
+    if (isPlaceHolder) {
+        linesAboutThisFile = "";
+    } else if (!fileFound) {
+        linesAboutThisFile = `${imageFileInfo.name} not found\n`;
+    } else {
+        const dpi = getDpi(
+            container,
+            imageFileInfo.width,
+            imageFileInfo.height
+        );
+        const bulletForDpi = dpi < 300 ? "⚠" : "✓";
+        // removed because only devs care! Bit Depth: ${imageFileInfo.bitDepth.toString()}
+        linesAboutThisFile = `Name: ${
+            imageFileInfo.name
+        } Size: ${getFileLengthString(imageFileInfo.bytes)} Dots: ${
+            imageFileInfo.width
+        } x ${imageFileInfo.height}\n\n`;
+        if (!isPlaceHolder) {
+            dpiLine = `${bulletForDpi} This image would print at ${dpi} DPI.\n`;
+        }
+    }
+
+    const linesAboutThisContext =
+        `For the current paper size:\n` +
+        `  • The image container is ${containerJQ.width()} x ${containerJQ.height()} dots.\n` +
+        `  • For print publications, you want between 300-600 DPI (Dots Per Inch).\n` +
+        dpiLine +
+        `  • An image with ${targetDpiWidth} x ${targetDpiHeight} dots would fill this container at 300 DPI.`;
+
+    return linesAboutThisFile + linesAboutThisContext;
 }
 function getDpi(
     container: HTMLElement,
