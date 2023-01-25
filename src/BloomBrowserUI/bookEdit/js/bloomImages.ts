@@ -422,6 +422,15 @@ async function SetImageTooltip(container: HTMLElement) {
     }
 }
 
+// Corresponds with ImageApi.cs::HandleImageInfo
+interface IImageInfoResponse {
+    name: string;
+    bytes: number;
+    width: number;
+    height: number;
+    bitDepth: string;
+}
+
 async function DetermineImageTooltipAsync(
     container: HTMLElement
 ): Promise<string> {
@@ -444,7 +453,7 @@ async function DetermineImageTooltipAsync(
     );
     const isPlaceHolder = url.indexOf("placeHolder.png") > -1;
 
-    const result = await getWithConfigAsync("image/info", {
+    const result = await getWithConfigAsync<IImageInfoResponse>("image/info", {
         params: { image: url }
     });
 
@@ -452,7 +461,7 @@ async function DetermineImageTooltipAsync(
         return "";
     }
 
-    const imageFileInfo: any = result.data;
+    const imageFileInfo = result.data;
     let linesAboutThisFile: string;
     const fileFound = imageFileInfo.bytes >= 0;
     let dpiLine = "";

@@ -452,10 +452,11 @@ export function getWithConfig(
 }
 
 /**
- * Same as getWithConfig, but using an Promise-based syntax
- * The generic type <T> should be the type that the AxiosResponse returns.
+ * Same as getWithConfig, but using Promise-based syntax instead of callbacks
+ * The generic type <T> should be the type of the "data" field in a successful AxiosResponse.
+ * Note: This function assumes the caller accurately provides <T>. No runtime validation is done to validate that data actually conforms to <T>
  */
-export function getWithConfigAsync<T>(
+export async function getWithConfigAsync<T>(
     urlSuffix: string,
     config: AxiosRequestConfig
 ) {
