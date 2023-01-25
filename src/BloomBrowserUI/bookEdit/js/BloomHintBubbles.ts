@@ -434,13 +434,17 @@ export default class BloomHintBubbles {
             if (whatToSay != null && whatToSay.startsWith("*"))
                 whatToSay = whatToSay.substring(1);
             if (!whatToSay) return; // no empty bubbles
-            const functionCall: string = source.data("functiononhintclick");
+            let functionCall: string = source.data("functiononhintclick");
             if (functionCall) {
-                if (functionCall.includes("showCopyrightAndLicenseDialog")) {
+                if (functionCall === "showCopyrightAndLicenseDialog") {
                     if (!BloomHintBubbles.canChangeBookLicense()) return;
+                    functionCall =
+                        "javascript:(window.parent || window).editTabBundle.showCopyrightAndLicenseDialog();";
+                } else if (functionCall === "showTopicChooser") {
+                    functionCall =
+                        "javascript:(window.parent || window).editTabBundle.showEditViewTopicChooserDialog();";
                 }
                 shouldShowAlways = true;
-
                 whatToSay = `<a href='${functionCall}'>${whatToSay}</a>`;
             }
             whatToSay = whatToSay + this.getPossibleHyperlink(source, target);
