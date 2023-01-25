@@ -121,6 +121,7 @@ namespace Bloom.Publish.PDF
 			var arguments = bldr.ToString();
 
 			Logger.WriteMinorEvent($"Running ${exePath} with arguments: ${arguments}");
+			Console.WriteLine($"Running ${exePath} with arguments: ${arguments}");
 
 			var progress = new NullProgress();
 			// NB: WebView2 does not appear to support progress reporting while making PDFs.
@@ -128,10 +129,12 @@ namespace Bloom.Publish.PDF
 				(msg) => { /* nothing we can do with WebView2 */ });
 
 			Logger.WriteMinorEvent($"Call to ${exePath} completed");
+			Console.WriteLine($"Call to ${exePath} completed");
 
 			if (res.DidTimeOut || !RobustFile.Exists(specs.OutputPdfPath))
 			{
 				Logger.WriteEvent(@"***ERROR PDF generation failed: res.StandardOutput = " + res.StandardOutput);
+				Console.Error.WriteLine(@"***ERROR PDF generation failed: res.StandardOutput = " + res.StandardOutput);
 
 				var msg = L10NSharp.LocalizationManager.GetString(@"PublishTab.PDF.Error.Failed",
 					"Bloom was not able to create the PDF file ({0}).{1}{1}Details: BloomPdfMaker (command line) did not produce the expected document.",

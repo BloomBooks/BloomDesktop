@@ -33,6 +33,8 @@ namespace WebView2PdfMaker
 
 		public WebView2PdfComponent(IContainer container)
 		{
+			Console.WriteLine("Constructing WebView2PdfComponent");
+
 			if (container != null)
 				container.Add(this);
 

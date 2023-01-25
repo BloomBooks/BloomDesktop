@@ -18,6 +18,8 @@ namespace WebView2PdfMaker
 		[STAThread]
 		private static int Main(string[] args)
 		{
+			Console.WriteLine("Starting WebView2PdfMaker");
+
 			Application.EnableVisualStyles();
 			Application.SetCompatibleTextRenderingDefault(false);
 			Application.ThreadException += new System.Threading.ThreadExceptionEventHandler(Application_ThreadException);
