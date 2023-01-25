@@ -11,7 +11,7 @@ import {
     MenuItem,
     TypographyProps
 } from "@mui/material";
-import NestedMenuItem from "material-ui-nested-menu-item";
+import NestedMenuItem from "mui-nested-menu-item";
 import CheckBoxOutlineBlankIcon from "@mui/icons-material/CheckBoxOutlineBlank";
 import CheckBoxIcon from "@mui/icons-material/CheckBox";
 import { getBoolean, post, postBoolean } from "../utils/bloomApi";

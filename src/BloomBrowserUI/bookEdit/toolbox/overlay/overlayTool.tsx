@@ -582,13 +582,14 @@ const OverlayToolControls: React.FunctionComponent = () => {
             case "text":
                 return (
                     <form autoComplete="off">
-                        <FormControl>
+                        <FormControl variant="standard">
                             <InputLabel htmlFor="bubble-style-dropdown">
                                 <Span l10nKey="EditTab.Toolbox.ComicTool.Options.Style">
                                     Style
                                 </Span>
                             </InputLabel>
                             <Select
+                                variant="standard"
                                 value={style}
                                 onChange={event => {
                                     handleStyleChanged(event);
@@ -676,7 +677,7 @@ const OverlayToolControls: React.FunctionComponent = () => {
                                 />
                             </div>
                         </FormControl>
-                        <FormControl>
+                        <FormControl variant="standard">
                             <InputLabel htmlFor="text-color-bar" shrink={true}>
                                 <Span l10nKey="EditTab.Toolbox.ComicTool.Options.TextColor">
                                     Text Color
@@ -689,7 +690,7 @@ const OverlayToolControls: React.FunctionComponent = () => {
                                 isDefault={textColorIsDefault}
                             />
                         </FormControl>
-                        <FormControl>
+                        <FormControl variant="standard">
                             <InputLabel
                                 shrink={true}
                                 htmlFor="background-color-bar"
@@ -708,6 +709,7 @@ const OverlayToolControls: React.FunctionComponent = () => {
                             />
                         </FormControl>
                         <FormControl
+                            variant="standard"
                             className={
                                 isBubble(currentFamilySpec) ? "" : "disabled"
                             }
@@ -718,6 +720,7 @@ const OverlayToolControls: React.FunctionComponent = () => {
                                 </Span>
                             </InputLabel>
                             <Select
+                                variant="standard"
                                 value={outlineColor ? outlineColor : "none"}
                                 className="bubbleOptionDropdown"
                                 inputProps={{

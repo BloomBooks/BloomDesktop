@@ -306,6 +306,7 @@ export const AudioVideoOptionsGroup: React.FunctionComponent<{
                                             }
                                         }
                                     `}
+                                    variant="standard"
                                     value={props.format}
                                     open={formatDropdownIsOpen}
                                     onOpen={() => {

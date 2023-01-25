@@ -111,6 +111,7 @@ export const EPUBSettingsGroup: React.FunctionComponent<{
                                         }
                                     }
                                 `}
+                                variant="standard"
                                 value={props.mode}
                                 disabled={false}
                                 open={isModeDropdownOpen}

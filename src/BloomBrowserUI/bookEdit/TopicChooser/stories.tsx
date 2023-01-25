@@ -1,5 +1,9 @@
 import * as React from "react";
-import { ThemeProvider } from "@mui/styles";
+import {
+    ThemeProvider,
+    Theme,
+    StyledEngineProvider
+} from "@mui/material/styles";
 import { addDecorator, ComponentStory } from "@storybook/react";
 import { StorybookContext } from "../../.storybook/StoryBookContext";
 import { lightTheme } from "../../bloomMaterialUITheme";
@@ -7,11 +11,13 @@ import { TopicChooserDialog } from "./TopicChooserDialog";
 import { normalDialogEnvironmentForStorybook } from "../../react_components/BloomDialog/BloomDialogPlumbing";
 
 addDecorator(storyFn => (
-    <ThemeProvider theme={lightTheme}>
-        <StorybookContext.Provider value={true}>
-            {storyFn()}
-        </StorybookContext.Provider>
-    </ThemeProvider>
+    <StyledEngineProvider injectFirst>
+        <ThemeProvider theme={lightTheme}>
+            <StorybookContext.Provider value={true}>
+                {storyFn()}
+            </StorybookContext.Provider>
+        </ThemeProvider>
+    </StyledEngineProvider>
 ));
 
 export default {

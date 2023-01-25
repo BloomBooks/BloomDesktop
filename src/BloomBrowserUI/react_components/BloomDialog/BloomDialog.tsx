@@ -2,7 +2,11 @@
 import { jsx, css } from "@emotion/react";
 import * as React from "react";
 import { lightTheme } from "../../bloomMaterialUITheme";
-import { ThemeProvider } from "@mui/styles";
+import {
+    ThemeProvider,
+    Theme,
+    StyledEngineProvider
+} from "@mui/material/styles";
 import { Dialog, DialogProps, Paper, PaperProps } from "@mui/material";
 import CloseOnEscape from "react-close-on-escape";
 import { kDialogPadding } from "../../bloomMaterialUITheme";
@@ -111,29 +115,31 @@ export const BloomDialog: React.FunctionComponent<IBloomDialogProps> = forwardRe
                     props.onClose(undefined, "escapeKeyDown");
                 }}
             >
-                <ThemeProvider theme={lightTheme}>
-                    {props.dialogFrameProvidedExternally ? (
-                        inner
-                    ) : (
-                        <Dialog
-                            PaperComponent={
-                                props.disableDragging
-                                    ? undefined
-                                    : DraggablePaper
-                            }
-                            css={css`
-                                flex-grow: 1; // see note on the display property on PaperComponent
-                                [role="dialog"] {
-                                    overflow: hidden; // only the middle should scroll. The DialogTitle and DialogBottomButtons should not.
+                <StyledEngineProvider injectFirst>
+                    <ThemeProvider theme={lightTheme}>
+                        {props.dialogFrameProvidedExternally ? (
+                            inner
+                        ) : (
+                            <Dialog
+                                PaperComponent={
+                                    props.disableDragging
+                                        ? undefined
+                                        : DraggablePaper
                                 }
-                            `}
-                            ref={ref}
-                            {...propsToPass} // get  fullWidth, maxWidth, open etc. Note that css doesn't end up anywhere useful in the HTML (try the paper?)
-                        >
-                            {inner}
-                        </Dialog>
-                    )}
-                </ThemeProvider>
+                                css={css`
+                                    flex-grow: 1; // see note on the display property on PaperComponent
+                                    [role="dialog"] {
+                                        overflow: hidden; // only the middle should scroll. The DialogTitle and DialogBottomButtons should not.
+                                    }
+                                `}
+                                ref={ref}
+                                {...propsToPass} // get  fullWidth, maxWidth, open etc. Note that css doesn't end up anywhere useful in the HTML (try the paper?)
+                            >
+                                {inner}
+                            </Dialog>
+                        )}
+                    </ThemeProvider>
+                </StyledEngineProvider>
             </CloseOnEscape>
         );
     }

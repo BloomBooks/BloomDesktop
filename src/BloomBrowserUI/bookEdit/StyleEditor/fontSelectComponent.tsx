@@ -2,7 +2,11 @@
 import { jsx, css } from "@emotion/react";
 import * as React from "react";
 import { useEffect, useState } from "react";
-import { ThemeProvider } from "@mui/styles";
+import {
+    ThemeProvider,
+    Theme,
+    StyledEngineProvider
+} from "@mui/material/styles";
 import { lightTheme } from "../../bloomMaterialUITheme";
 import { MenuItem, Popover, PopoverOrigin } from "@mui/material";
 import FontDisplayBar from "../../react_components/fontDisplayBar";
@@ -119,31 +123,33 @@ const FontSelectComponent: React.FunctionComponent<FontSelectProps> = props => {
     const textValue = fontChoice ? fontChoice.name : props.currentFontName;
 
     return (
-        <ThemeProvider theme={lightTheme}>
-            <WinFormsStyleSelect
-                idKey={finalKey}
-                currentValue={textValue}
-                onChangeHandler={handleFontChange}
-                popoverZindex={props.popoverZindex}
-            >
-                {getMenuItemsFromFontMetaData()}
-            </WinFormsStyleSelect>
-            {/* This is the font information popup that gives information about the hovered font. */}
-            <Popover
-                open={isPopoverOpen}
-                anchorEl={popoverAnchorElement}
-                // Popver puts its top-left corner in the center of the round suitability icon.
-                anchorOrigin={{
-                    vertical: "center",
-                    horizontal: "center"
-                }}
-                transformOrigin={transformOrigin}
-                disableRestoreFocus
-                onClick={handlePopoverClose}
-            >
-                <FontInformationPane metadata={popoverFont} />
-            </Popover>
-        </ThemeProvider>
+        <StyledEngineProvider injectFirst>
+            <ThemeProvider theme={lightTheme}>
+                <WinFormsStyleSelect
+                    idKey={finalKey}
+                    currentValue={textValue}
+                    onChangeHandler={handleFontChange}
+                    popoverZindex={props.popoverZindex}
+                >
+                    {getMenuItemsFromFontMetaData()}
+                </WinFormsStyleSelect>
+                {/* This is the font information popup that gives information about the hovered font. */}
+                <Popover
+                    open={isPopoverOpen}
+                    anchorEl={popoverAnchorElement}
+                    // Popver puts its top-left corner in the center of the round suitability icon.
+                    anchorOrigin={{
+                        vertical: "center",
+                        horizontal: "center"
+                    }}
+                    transformOrigin={transformOrigin}
+                    disableRestoreFocus
+                    onClick={handlePopoverClose}
+                >
+                    <FontInformationPane metadata={popoverFont} />
+                </Popover>
+            </ThemeProvider>
+        </StyledEngineProvider>
     );
 };
 

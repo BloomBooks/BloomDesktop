@@ -4,7 +4,11 @@ import { jsx, css } from "@emotion/react";
 import * as React from "react";
 import { get } from "../utils/bloomApi";
 import { lightTheme } from "../bloomMaterialUITheme";
-import { ThemeProvider } from "@mui/styles";
+import {
+    ThemeProvider,
+    Theme,
+    StyledEngineProvider
+} from "@mui/material/styles";
 import { IFontMetaData } from "../bookEdit/StyleEditor/fontSelectComponent";
 import { useEffect, useState } from "react";
 import SingleFontSection from "../react_components/singleFontSection";
@@ -59,45 +63,47 @@ export const FontScriptSettingsControl: React.FunctionComponent = () => {
     }, []);
 
     return (
-        <ThemeProvider theme={lightTheme}>
-            <div
-                css={css`
-                    font-size: 10pt;
-                    display: flex;
-                    flex: 1;
-                    flex-direction: column;
-                    min-height: 275px; // Don't change height of control as 3rd Lang. comes and goes.
-                `}
-            >
-                {/* Language 1 section */}
-                {language1Name && language1Font && (
-                    <SingleFontSection
-                        languageNumber={1}
-                        languageName={language1Name}
-                        currentFontName={language1Font}
-                        fontMetadata={fontMetadata}
-                    />
-                )}
-                {/* Language 2 section */}
-                {language2Name && language2Font && (
-                    <SingleFontSection
-                        languageNumber={2}
-                        languageName={language2Name}
-                        currentFontName={language2Font}
-                        fontMetadata={fontMetadata}
-                    />
-                )}
-                {/* Language 3 section */}
-                {language3Name && language3Font && (
-                    <SingleFontSection
-                        languageNumber={3}
-                        languageName={language3Name}
-                        currentFontName={language3Font}
-                        fontMetadata={fontMetadata}
-                    />
-                )}
-            </div>
-        </ThemeProvider>
+        <StyledEngineProvider injectFirst>
+            <ThemeProvider theme={lightTheme}>
+                <div
+                    css={css`
+                        font-size: 10pt;
+                        display: flex;
+                        flex: 1;
+                        flex-direction: column;
+                        min-height: 275px; // Don't change height of control as 3rd Lang. comes and goes.
+                    `}
+                >
+                    {/* Language 1 section */}
+                    {language1Name && language1Font && (
+                        <SingleFontSection
+                            languageNumber={1}
+                            languageName={language1Name}
+                            currentFontName={language1Font}
+                            fontMetadata={fontMetadata}
+                        />
+                    )}
+                    {/* Language 2 section */}
+                    {language2Name && language2Font && (
+                        <SingleFontSection
+                            languageNumber={2}
+                            languageName={language2Name}
+                            currentFontName={language2Font}
+                            fontMetadata={fontMetadata}
+                        />
+                    )}
+                    {/* Language 3 section */}
+                    {language3Name && language3Font && (
+                        <SingleFontSection
+                            languageNumber={3}
+                            languageName={language3Name}
+                            currentFontName={language3Font}
+                            fontMetadata={fontMetadata}
+                        />
+                    )}
+                </div>
+            </ThemeProvider>
+        </StyledEngineProvider>
     );
 };
 

@@ -10,7 +10,7 @@ import {
     Typography
 } from "@mui/material";
 import { postDataWithConfig } from "../../utils/bloomApi";
-import { useTheme } from "@mui/styles";
+import { useTheme } from "@mui/material/styles";
 import "./ProgressDialog.less";
 import BloomButton from "../../react_components/bloomButton";
 

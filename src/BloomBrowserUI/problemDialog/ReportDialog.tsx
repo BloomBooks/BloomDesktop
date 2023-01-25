@@ -9,7 +9,7 @@ import {
     Typography
 } from "@mui/material";
 import { post, postJson, useApiStringState } from "../utils/bloomApi";
-import { ThemeProvider } from "@mui/styles";
+import { ThemeProvider, StyledEngineProvider } from "@mui/material/styles";
 import "./ProblemDialog.less";
 import BloomButton from "../react_components/bloomButton";
 import { MuiCheckbox } from "../react_components/muiCheckBox";
@@ -217,179 +217,193 @@ export const ReportDialog: React.FunctionComponent<{
     };
 
     return (
-        <ThemeProvider theme={theme}>
-            <Dialog
-                className="problem-dialog"
-                open={true}
-                // the behavior of fullWidth/maxWidth is very strange
-                //fullWidth={true}
-                maxWidth={"md"}
-                fullScreen={true}
-                onClose={() => post("common/closeReactDialog")}
-            >
-                <DialogTitle className="dialog-title">
-                    <Typography variant="h6">{localizedDlgTitle}</Typography>
-                    {/* We moved the X up to the winforms dialog so that it is draggable
-                         <Close
-                        className="close-in-title"
-                        onClick={() => post("common/closeReactDialog")}
-                    /> */}
-                </DialogTitle>
-                <DialogContent className="content">
-                    {(() => {
-                        switch (mode) {
-                            case Mode.submitting:
-                                return (
-                                    <Typography>
-                                        {localizedSubmittingMsg}
-                                    </Typography>
-                                );
-                            case Mode.submitted:
-                                return (
-                                    <>
-                                        {issueLink !== "" && (
-                                            <Typography>
-                                                {localizedDone}
-                                                <br />
-                                                {localizedIssueLinkLabel}{" "}
-                                                <Link
-                                                    underline="hover"
-                                                    href={issueLink}
-                                                >
-                                                    {issueLink}
-                                                </Link>
-                                            </Typography>
-                                        )}
-                                    </>
-                                );
-                            case Mode.submissionFailed:
-                                return (
-                                    <>
-                                        {issueLink !== "" && (
-                                            <Typography className="allowSelect">
-                                                {localizedFailureMsg}
-                                            </Typography>
-                                        )}
-                                    </>
-                                );
-                            case Mode.showPrivacyDetails:
-                                return (
-                                    <PrivacyScreen
-                                        includeBook={includeBook}
-                                        email={email}
-                                        userInput={whatDoing}
-                                        onBack={() => setMode(Mode.gather)}
-                                    />
-                                );
-                            case Mode.gather:
-                                return (
-                                    <>
-                                        <Typography
-                                            className="report-heading allowSelect"
-                                            dangerouslySetInnerHTML={{
-                                                __html: reportHeadingHtml
-                                            }}
-                                        ></Typography>
-                                        <Typography id="please_help_us">
-                                            {localizedPleaseHelpUs}
+        <StyledEngineProvider injectFirst>
+            <ThemeProvider theme={theme}>
+                <Dialog
+                    className="problem-dialog"
+                    open={true}
+                    // the behavior of fullWidth/maxWidth is very strange
+                    //fullWidth={true}
+                    maxWidth={"md"}
+                    fullScreen={true}
+                    onClose={() => post("common/closeReactDialog")}
+                >
+                    <DialogTitle className="dialog-title">
+                        <Typography variant="h6">
+                            {localizedDlgTitle}
+                        </Typography>
+                        {/* We moved the X up to the winforms dialog so that it is draggable
+                             <Close
+                            className="close-in-title"
+                            onClick={() => post("common/closeReactDialog")}
+                        /> */}
+                    </DialogTitle>
+                    <DialogContent className="content">
+                        {(() => {
+                            switch (mode) {
+                                case Mode.submitting:
+                                    return (
+                                        <Typography>
+                                            {localizedSubmittingMsg}
                                         </Typography>
-                                        <div id="row2">
-                                            <div className="column1">
-                                                <TextField
-                                                    // can't use id for css because that goes down to a child element
-                                                    className={
-                                                        "what_were_you_doing " +
-                                                        whatWereYouDoingAttentionClass
-                                                    }
-                                                    autoFocus={true}
-                                                    variant="outlined"
-                                                    label={
-                                                        localizedWhatDoingLabel
-                                                    }
-                                                    rows="3"
-                                                    InputLabelProps={{
-                                                        shrink: true
-                                                    }}
-                                                    multiline={true}
-                                                    aria-label="What were you doing?"
-                                                    onChange={event => {
-                                                        setWhatDoing(
-                                                            event.target.value
-                                                        );
-                                                    }}
-                                                    error={
-                                                        submitAttempts > 0 &&
-                                                        whatDoing.trim()
-                                                            .length == 0
-                                                    }
-                                                    value={whatDoing}
-                                                />
-                                                <HowMuchGroup
-                                                    onHowMuchChange={value =>
-                                                        setHowMuch(value)
-                                                    }
-                                                />
+                                    );
+                                case Mode.submitted:
+                                    return (
+                                        <>
+                                            {issueLink !== "" && (
+                                                <Typography>
+                                                    {localizedDone}
+                                                    <br />
+                                                    {
+                                                        localizedIssueLinkLabel
+                                                    }{" "}
+                                                    <Link
+                                                        underline="hover"
+                                                        href={issueLink}
+                                                    >
+                                                        {issueLink}
+                                                    </Link>
+                                                </Typography>
+                                            )}
+                                        </>
+                                    );
+                                case Mode.submissionFailed:
+                                    return (
+                                        <>
+                                            {issueLink !== "" && (
+                                                <Typography className="allowSelect">
+                                                    {localizedFailureMsg}
+                                                </Typography>
+                                            )}
+                                        </>
+                                    );
+                                case Mode.showPrivacyDetails:
+                                    return (
+                                        <PrivacyScreen
+                                            includeBook={includeBook}
+                                            email={email}
+                                            userInput={whatDoing}
+                                            onBack={() => setMode(Mode.gather)}
+                                        />
+                                    );
+                                case Mode.gather:
+                                    return (
+                                        <>
+                                            <Typography
+                                                className="report-heading allowSelect"
+                                                dangerouslySetInnerHTML={{
+                                                    __html: reportHeadingHtml
+                                                }}
+                                            ></Typography>
+                                            <Typography id="please_help_us">
+                                                {localizedPleaseHelpUs}
+                                            </Typography>
+                                            <div id="row2">
+                                                <div className="column1">
+                                                    <TextField
+                                                        // can't use id for css because that goes down to a child element
+                                                        className={
+                                                            "what_were_you_doing " +
+                                                            whatWereYouDoingAttentionClass
+                                                        }
+                                                        autoFocus={true}
+                                                        variant="outlined"
+                                                        label={
+                                                            localizedWhatDoingLabel
+                                                        }
+                                                        rows="3"
+                                                        InputLabelProps={{
+                                                            shrink: true
+                                                        }}
+                                                        multiline={true}
+                                                        aria-label="What were you doing?"
+                                                        onChange={event => {
+                                                            setWhatDoing(
+                                                                event.target
+                                                                    .value
+                                                            );
+                                                        }}
+                                                        error={
+                                                            submitAttempts >
+                                                                0 &&
+                                                            whatDoing.trim()
+                                                                .length == 0
+                                                        }
+                                                        value={whatDoing}
+                                                    />
+                                                    <HowMuchGroup
+                                                        onHowMuchChange={value =>
+                                                            setHowMuch(value)
+                                                        }
+                                                    />
 
-                                                <EmailField
-                                                    email={email}
-                                                    onChange={v => setEmail(v)}
-                                                    submitAttempts={
-                                                        submitAttempts
-                                                    }
-                                                />
+                                                    <EmailField
+                                                        email={email}
+                                                        onChange={v =>
+                                                            setEmail(v)
+                                                        }
+                                                        submitAttempts={
+                                                            submitAttempts
+                                                        }
+                                                    />
+                                                </div>
+                                                <div className="column2">
+                                                    <MuiCheckbox
+                                                        className="includeBook"
+                                                        label="Include Book '{0}'"
+                                                        l10nKey="ReportProblemDialog.IncludeBookButton"
+                                                        l10nParam0={bookName}
+                                                        checked={includeBook}
+                                                        disabled={
+                                                            bookName === "??"
+                                                        }
+                                                        onCheckChanged={v =>
+                                                            setIncludeBook(
+                                                                v as boolean
+                                                            )
+                                                        }
+                                                        deprecatedVersionWhichDoesntEnsureMultilineLabelsWork={
+                                                            true
+                                                        }
+                                                    />
+                                                    <MuiCheckbox
+                                                        label="Include this screenshot"
+                                                        l10nKey="ReportProblemDialog.IncludeScreenshotButton"
+                                                        checked={
+                                                            includeScreenshot
+                                                        }
+                                                        onCheckChanged={v =>
+                                                            setIncludeScreenshot(
+                                                                v as boolean
+                                                            )
+                                                        }
+                                                        deprecatedVersionWhichDoesntEnsureMultilineLabelsWork={
+                                                            true
+                                                        }
+                                                    />
+                                                    <img
+                                                        src={
+                                                            "/bloom/api/problemReport/screenshot"
+                                                        }
+                                                    />
+                                                    <PrivacyNotice
+                                                        onLearnMore={() =>
+                                                            setMode(
+                                                                Mode.showPrivacyDetails
+                                                            )
+                                                        }
+                                                    />
+                                                </div>
                                             </div>
-                                            <div className="column2">
-                                                <MuiCheckbox
-                                                    className="includeBook"
-                                                    label="Include Book '{0}'"
-                                                    l10nKey="ReportProblemDialog.IncludeBookButton"
-                                                    l10nParam0={bookName}
-                                                    checked={includeBook}
-                                                    disabled={bookName === "??"}
-                                                    onCheckChanged={v =>
-                                                        setIncludeBook(
-                                                            v as boolean
-                                                        )
-                                                    }
-                                                    deprecatedVersionWhichDoesntEnsureMultilineLabelsWork={
-                                                        true
-                                                    }
-                                                />
-                                                <MuiCheckbox
-                                                    label="Include this screenshot"
-                                                    l10nKey="ReportProblemDialog.IncludeScreenshotButton"
-                                                    checked={includeScreenshot}
-                                                    onCheckChanged={v =>
-                                                        setIncludeScreenshot(
-                                                            v as boolean
-                                                        )
-                                                    }
-                                                    deprecatedVersionWhichDoesntEnsureMultilineLabelsWork={
-                                                        true
-                                                    }
-                                                />
-                                                <img
-                                                    src={
-                                                        "/bloom/api/problemReport/screenshot"
-                                                    }
-                                                />
-                                                <PrivacyNotice
-                                                    onLearnMore={() =>
-                                                        setMode(
-                                                            Mode.showPrivacyDetails
-                                                        )
-                                                    }
-                                                />
-                                            </div>
-                                        </div>
-                                    </>
-                                );
-                        }
-                    })()}
-                </DialogContent>
-                <DialogActions>{getDialogActionButtons()}</DialogActions>
-            </Dialog>
-        </ThemeProvider>
+                                        </>
+                                    );
+                            }
+                        })()}
+                    </DialogContent>
+                    <DialogActions>{getDialogActionButtons()}</DialogActions>
+                </Dialog>
+            </ThemeProvider>
+        </StyledEngineProvider>
     );
 };
 

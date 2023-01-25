@@ -15,7 +15,7 @@ import { PublishFeaturesGroup } from "../ReaderPublish/PublishFeaturesGroup";
 import { LanguageGroup } from "../commonPublish/LanguageGroup";
 import { AudioGroup } from "../commonPublish/AudioGroup";
 import { LibraryPreview } from "./LibraryPreview";
-import { ThemeProvider } from "@mui/styles";
+import { ThemeProvider } from "@mui/material/styles";
 import theme from "../../bloomMaterialUITheme";
 
 export const LibraryPublishScreen = () => {

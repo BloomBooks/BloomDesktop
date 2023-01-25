@@ -21,7 +21,11 @@ import { DialogCloseButton } from "../react_components/BloomDialog/commonDialogC
 import { CollectionHistoryTable } from "./CollectionHistoryTable";
 import { Tab, TabList, TabPanel } from "react-tabs";
 import { LocalizedString } from "../react_components/l10nComponents";
-import { ThemeProvider } from "@mui/styles";
+import {
+    ThemeProvider,
+    Theme,
+    StyledEngineProvider
+} from "@mui/material/styles";
 import { lightTheme } from "../bloomMaterialUITheme";
 import "react-tabs/style/react-tabs.less";
 import { useEffect, useState } from "react";
@@ -87,85 +91,89 @@ const TeamCollectionDialog: React.FunctionComponent<{
             fullWidth={true}
             maxWidth="lg"
         >
-            <ThemeProvider theme={lightTheme}>
-                <DialogTitle
-                    title={`${dialogTitle} (experimental)`}
-                    icon={"/bloom/teamCollection/Team Collection.svg"}
-                    backgroundColor={kBloomBlue}
-                    color={"white"}
-                />
-                <DialogMiddle>
-                    <BloomTabs
-                        defaultIndex={defaultTabIndex}
-                        color="black"
-                        selectedColor={kBloomBlue}
-                        labelBackgroundColor="white"
-                        css={css`
-                            // see note above in the props of the <BloomDialog></BloomDialog>
-                            height: 65vh;
-                        `}
-                    >
-                        <TabList>
-                            <Tab>
-                                <LocalizedString
-                                    l10nKey="TeamCollection.Status"
-                                    l10nComment="Used as the name on a tab of the Team Collection dialog."
-                                    temporarilyDisableI18nWarning={true}
-                                >
-                                    Status
-                                </LocalizedString>
-                            </Tab>
-                            <Tab>
-                                <LocalizedString
-                                    l10nKey="TeamCollection.History"
-                                    l10nComment="Used as the name on a tab of the Team Collection dialog."
-                                    temporarilyDisableI18nWarning={true}
-                                >
-                                    History
-                                </LocalizedString>
-                            </Tab>
-                        </TabList>
-                        <TabPanel>
-                            <ProgressBox
-                                preloadedProgressEvents={events}
-                                css={css`
-                                    // If we have omitOuterFrame that means the dialog height is controlled by c#, so let the progress grow to fit it.
-                                    // Maybe we could have that approach *all* the time?
-                                    height: 350px;
-                                    // enhance: there is a bug I haven't found where, if this is > 530px, then it overflows. Instead, the BloomDialog should keep growing.
-                                    min-width: 530px;
-                                `}
-                            />
-                        </TabPanel>
-                        <TabPanel>
-                            <CollectionHistoryTable />
-                        </TabPanel>
-                    </BloomTabs>
-                </DialogMiddle>
-
-                <DialogBottomButtons>
-                    {props.showReloadButton && (
-                        <DialogBottomLeftButtons>
-                            <BloomButton
-                                id="reload"
-                                l10nKey="TeamCollection.Reload"
-                                temporarilyDisableI18nWarning={true}
-                                //variant="text"
-                                enabled={true}
-                                hasText={true}
-                                onClick={() => post("common/reloadCollection")}
-                            >
-                                Reload Collection
-                            </BloomButton>
-                        </DialogBottomLeftButtons>
-                    )}
-                    <DialogCloseButton
-                        onClick={props.closeDialog}
-                        // default action is to close *unless* we're showing reload
-                        default={!props.showReloadButton}
+            <StyledEngineProvider injectFirst>
+                <ThemeProvider theme={lightTheme}>
+                    <DialogTitle
+                        title={`${dialogTitle} (experimental)`}
+                        icon={"/bloom/teamCollection/Team Collection.svg"}
+                        backgroundColor={kBloomBlue}
+                        color={"white"}
                     />
-                </DialogBottomButtons>
-            </ThemeProvider>
+                    <DialogMiddle>
+                        <BloomTabs
+                            defaultIndex={defaultTabIndex}
+                            color="black"
+                            selectedColor={kBloomBlue}
+                            labelBackgroundColor="white"
+                            css={css`
+                                // see note above in the props of the <BloomDialog></BloomDialog>
+                                height: 65vh;
+                            `}
+                        >
+                            <TabList>
+                                <Tab>
+                                    <LocalizedString
+                                        l10nKey="TeamCollection.Status"
+                                        l10nComment="Used as the name on a tab of the Team Collection dialog."
+                                        temporarilyDisableI18nWarning={true}
+                                    >
+                                        Status
+                                    </LocalizedString>
+                                </Tab>
+                                <Tab>
+                                    <LocalizedString
+                                        l10nKey="TeamCollection.History"
+                                        l10nComment="Used as the name on a tab of the Team Collection dialog."
+                                        temporarilyDisableI18nWarning={true}
+                                    >
+                                        History
+                                    </LocalizedString>
+                                </Tab>
+                            </TabList>
+                            <TabPanel>
+                                <ProgressBox
+                                    preloadedProgressEvents={events}
+                                    css={css`
+                                        // If we have omitOuterFrame that means the dialog height is controlled by c#, so let the progress grow to fit it.
+                                        // Maybe we could have that approach *all* the time?
+                                        height: 350px;
+                                        // enhance: there is a bug I haven't found where, if this is > 530px, then it overflows. Instead, the BloomDialog should keep growing.
+                                        min-width: 530px;
+                                    `}
+                                />
+                            </TabPanel>
+                            <TabPanel>
+                                <CollectionHistoryTable />
+                            </TabPanel>
+                        </BloomTabs>
+                    </DialogMiddle>
+
+                    <DialogBottomButtons>
+                        {props.showReloadButton && (
+                            <DialogBottomLeftButtons>
+                                <BloomButton
+                                    id="reload"
+                                    l10nKey="TeamCollection.Reload"
+                                    temporarilyDisableI18nWarning={true}
+                                    //variant="text"
+                                    enabled={true}
+                                    hasText={true}
+                                    onClick={() =>
+                                        post("common/reloadCollection")
+                                    }
+                                >
+                                    Reload Collection
+                                </BloomButton>
+                            </DialogBottomLeftButtons>
+                        )}
+                        <DialogCloseButton
+                            onClick={props.closeDialog}
+                            // default action is to close *unless* we're showing reload
+                            default={!props.showReloadButton}
+                        />
+                    </DialogBottomButtons>
+                </ThemeProvider>
+            </StyledEngineProvider>
         </BloomDialog>
     );
 };

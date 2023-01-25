@@ -84,6 +84,7 @@ export const DeviceAndControls: React.FunctionComponent<{
                     <IconButton
                         aria-label="refresh preview"
                         className={"refresh-icon " + attentionClass}
+                        size="large"
                     >
                         <RefreshIcon
                             fontSize="large"

@@ -6,7 +6,11 @@ import { useState, useEffect } from "react";
 import { get, post } from "../utils/bloomApi";
 import Button from "@mui/material/Button";
 import { kBloomBlue50Transparent, lightTheme } from "../bloomMaterialUITheme";
-import { ThemeProvider } from "@mui/styles";
+import {
+    ThemeProvider,
+    Theme,
+    StyledEngineProvider
+} from "@mui/material/styles";
 import { Div } from "./l10nComponents";
 import { useL10n } from "./l10nHooks";
 import { WireUpForWinforms } from "../utils/WireUpWinform";
@@ -232,102 +236,104 @@ export const RequiresBloomEnterpriseNotice: React.VoidFunctionComponent<IRequire
     `;
 
     return (
-        <ThemeProvider theme={lightTheme}>
-            <div
-                css={
-                    !visible
-                        ? css`
-                              display: none;
-                          `
-                        : inSeparateDialog
-                        ? css`
-                              padding: 10px 0px 0px 0px;
-                          `
-                        : css`
-                              padding: 5px;
-                          `
-                }
-            >
-                <div className="messageSettingsDialogWrapper">
-                    <div
-                        css={
-                            inSeparateDialog
-                                ? css`
-                                      text-align: left;
-                                      padding: 0;
-                                      max-width: 500px;
-                                      ${noticeCommonCss}
-                                      ${darkTheme
-                                          ? noticeDarkCss
-                                          : css`
-                                                color: black;
-                                                background-color: white;
-                                            `}
-                                  `
-                                : css`
-                                      text-align: center;
-                                      padding: ${kBloomEnterpriseNoticePadding};
-                                      padding-bottom: 20px;
-                                      max-width: ${kBloomEnterpriseNoticeWidth};
-                                      ${noticeCommonCss}
-                                      ${darkTheme
-                                          ? noticeDarkCss
-                                          : css`
-                                                color: black;
-                                                background-color: ${kFormBackground};
-                                            `}
-                                      // this is needed to overcome having MuiButton override the settings
-                                      .requiresEnterpriseButton {
-                                          ${buttonCommonCss}
-                                      }
-                                  `
-                        }
-                    >
-                        <Div
-                            l10nKey="EditTab.RequiresEnterprise"
+        <StyledEngineProvider injectFirst>
+            <ThemeProvider theme={lightTheme}>
+                <div
+                    css={
+                        !visible
+                            ? css`
+                                  display: none;
+                              `
+                            : inSeparateDialog
+                            ? css`
+                                  padding: 10px 0px 0px 0px;
+                              `
+                            : css`
+                                  padding: 5px;
+                              `
+                    }
+                >
+                    <div className="messageSettingsDialogWrapper">
+                        <div
                             css={
                                 inSeparateDialog
                                     ? css`
-                                          margin: 0;
-                                          font-size: medium;
+                                          text-align: left;
+                                          padding: 0;
+                                          max-width: 500px;
+                                          ${noticeCommonCss}
+                                          ${darkTheme
+                                              ? noticeDarkCss
+                                              : css`
+                                                    color: black;
+                                                    background-color: white;
+                                                `}
                                       `
                                     : css`
-                                          margin: 0 5px;
-                                          font-size: small;
-                                      `
-                            }
-                        />
-                        <Button
-                            className="requiresEnterpriseButton"
-                            variant={"contained"}
-                            onClick={openBloomEnterpriseSettings}
-                            css={
-                                inSeparateDialog
-                                    ? css`
-                                          max-width: ${kBloomEnterpriseButtonWidth};
-                                          align-self: normal;
-                                          ${buttonCommonCss}
-                                          border-radius: ${kButtonRadius};
-                                          border-width: thin;
-                                          border-color: ${kBloomBlue};
-                                          border-style: solid;
-                                      `
-                                    : css`
-                                          max-width: ${kBloomEnterpriseButtonWidth};
-                                          align-self: center;
-                                          ${buttonCommonCss}
+                                          text-align: center;
+                                          padding: ${kBloomEnterpriseNoticePadding};
+                                          padding-bottom: 20px;
+                                          max-width: ${kBloomEnterpriseNoticeWidth};
+                                          ${noticeCommonCss}
+                                          ${darkTheme
+                                              ? noticeDarkCss
+                                              : css`
+                                                    color: black;
+                                                    background-color: ${kFormBackground};
+                                                `}
+                                          // this is needed to overcome having MuiButton override the settings
+                                          .requiresEnterpriseButton {
+                                              ${buttonCommonCss}
+                                          }
                                       `
                             }
                         >
-                            <img src="/bloom/images/bloom-enterprise-badge.svg" />
-                            <Div l10nKey="EditTab.EnterpriseSettingsButton">
-                                Bloom Enterprise Settings
-                            </Div>
-                        </Button>
+                            <Div
+                                l10nKey="EditTab.RequiresEnterprise"
+                                css={
+                                    inSeparateDialog
+                                        ? css`
+                                              margin: 0;
+                                              font-size: medium;
+                                          `
+                                        : css`
+                                              margin: 0 5px;
+                                              font-size: small;
+                                          `
+                                }
+                            />
+                            <Button
+                                className="requiresEnterpriseButton"
+                                variant={"contained"}
+                                onClick={openBloomEnterpriseSettings}
+                                css={
+                                    inSeparateDialog
+                                        ? css`
+                                              max-width: ${kBloomEnterpriseButtonWidth};
+                                              align-self: normal;
+                                              ${buttonCommonCss}
+                                              border-radius: ${kButtonRadius};
+                                              border-width: thin;
+                                              border-color: ${kBloomBlue};
+                                              border-style: solid;
+                                          `
+                                        : css`
+                                              max-width: ${kBloomEnterpriseButtonWidth};
+                                              align-self: center;
+                                              ${buttonCommonCss}
+                                          `
+                                }
+                            >
+                                <img src="/bloom/images/bloom-enterprise-badge.svg" />
+                                <Div l10nKey="EditTab.EnterpriseSettingsButton">
+                                    Bloom Enterprise Settings
+                                </Div>
+                            </Button>
+                        </div>
                     </div>
                 </div>
-            </div>
-        </ThemeProvider>
+            </ThemeProvider>
+        </StyledEngineProvider>
     );
 };
 

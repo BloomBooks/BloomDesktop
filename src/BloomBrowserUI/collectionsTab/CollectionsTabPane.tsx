@@ -338,6 +338,7 @@ export const CollectionsTabPane: React.FunctionComponent<{}> = () => {
                                     }
                                 `}
                                 onClick={handleCollectionMenuClick}
+                                size="large"
                             >
                                 <GreyTriangleMenuIcon
                                     css={css`

@@ -274,10 +274,10 @@ export const BookButton: React.FunctionComponent<{
     const label =
         bookLabel.length > 14 ? (
             <TruncateMarkup lines={2}>
-                <span>{bookLabel}</span>
+                <span className="bookButton-label">{bookLabel}</span>
             </TruncateMarkup>
         ) : (
-            bookLabel
+            <span className="bookButton-label">bookLabel</span>
         );
 
     const renameHeight = 40;

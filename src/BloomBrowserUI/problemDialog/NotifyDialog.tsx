@@ -8,7 +8,7 @@ import {
     Typography
 } from "@mui/material";
 import { post, postString } from "../utils/bloomApi";
-import { ThemeProvider } from "@mui/styles";
+import { ThemeProvider, StyledEngineProvider } from "@mui/material/styles";
 import "./ProblemDialog.less";
 import BloomButton from "../react_components/bloomButton";
 import { makeTheme, kindParams } from "./theme";
@@ -125,5 +125,9 @@ export const NotifyDialog: React.FunctionComponent<{
         );
     };
 
-    return <ThemeProvider theme={theme}>{getDialog()}</ThemeProvider>;
+    return (
+        <StyledEngineProvider injectFirst>
+            <ThemeProvider theme={theme}>{getDialog()}</ThemeProvider>
+        </StyledEngineProvider>
+    );
 };

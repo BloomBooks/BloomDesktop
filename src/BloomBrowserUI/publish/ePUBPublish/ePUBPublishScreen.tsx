@@ -11,7 +11,6 @@ import {
 import PublishScreenTemplate from "../commonPublish/PublishScreenTemplate";
 import { DeviceAndControls } from "../commonPublish/DeviceAndControls";
 import * as ReactDOM from "react-dom";
-import ThemeProvider from "@mui/styles/ThemeProvider";
 import { darkTheme, lightTheme } from "../../bloomMaterialUITheme";
 import { StorybookContext } from "../../.storybook/StoryBookContext";
 import {
@@ -34,6 +33,7 @@ import {
 import { hookupLinkHandler } from "../../utils/linkHandler";
 import { NoteBox } from "../../react_components/BloomDialog/commonDialogComponents";
 import { P } from "../../react_components/l10nComponents";
+import { StyledEngineProvider, ThemeProvider } from "@mui/material/styles";
 
 export const EPUBPublishScreen = () => {
     // When the user changes some features, included languages, etc., we
@@ -120,16 +120,18 @@ const EPUBPublishScreenInternal: React.FunctionComponent<{
     const mainPanel = (
         <div className="ePUBPublishScreen">
             <PreviewPanel>
-                <ThemeProvider theme={darkTheme}>
-                    <DeviceAndControls
-                        defaultLandscape={landscape}
-                        canRotate={false}
-                        url={bookUrl}
-                        showRefresh={true}
-                        highlightRefreshIcon={highlightRefresh}
-                        onRefresh={() => props.onReset()}
-                    />
-                </ThemeProvider>
+                <StyledEngineProvider injectFirst>
+                    <ThemeProvider theme={darkTheme}>
+                        <DeviceAndControls
+                            defaultLandscape={landscape}
+                            canRotate={false}
+                            url={bookUrl}
+                            showRefresh={true}
+                            highlightRefreshIcon={highlightRefresh}
+                            onRefresh={() => props.onReset()}
+                        />
+                    </ThemeProvider>
+                </StyledEngineProvider>
             </PreviewPanel>
             <UnderPreviewPanel>
                 <div
@@ -262,9 +264,11 @@ const EPUBPublishScreenInternal: React.FunctionComponent<{
 // if that html has the root page we need.
 if (document.getElementById("ePUBPublishScreen")) {
     ReactDOM.render(
-        <ThemeProvider theme={lightTheme}>
-            <EPUBPublishScreen />
-        </ThemeProvider>,
+        <StyledEngineProvider injectFirst>
+            <ThemeProvider theme={lightTheme}>
+                <EPUBPublishScreen />
+            </ThemeProvider>
+        </StyledEngineProvider>,
         document.getElementById("ePUBPublishScreen")
     );
 }

@@ -3,10 +3,22 @@ import { jsx, css } from "@emotion/react";
 
 import Typography from "@mui/material/Typography";
 import * as React from "react";
-import { ThemeProvider, useTheme, createTheme } from "@mui/material/styles";
+import {
+    ThemeProvider,
+    Theme,
+    StyledEngineProvider,
+    useTheme,
+    createTheme,
+    adaptV4Theme
+} from "@mui/material/styles";
 import "./statusPanelCommon.less"; // Now we have .less and emotion going here. Someday we should unify.
 import { StatusPanelState } from "./TeamCollectionBookStatusPanel";
 import { IconHeadingBodyMenuPanel } from "../react_components/iconHeadingBodyMenuPanel";
+
+declare module "@mui/styles/defaultTheme" {
+    // eslint-disable-next-line @typescript-eslint/no-empty-interface
+    interface DefaultTheme extends Theme {}
+}
 
 export interface IStatusPanelProps {
     lockState: StatusPanelState;
@@ -27,18 +39,20 @@ export const StatusPanelCommon: React.FunctionComponent<IStatusPanelProps> = (
         props.lockState === "lockedByMe" || props.lockState === "needsReload"
             ? outerTheme.palette.warning.main
             : outerTheme.palette.primary.main;
-    const buttonTheme = createTheme({
-        palette: {
-            primary: {
-                main: buttonColor
-            },
-            action: {
-                // Yagni: currently the only time we disable a button is when using the warning color
-                // If we ever disable the other version, we probably want primary.dark here.
-                disabledBackground: outerTheme.palette.warning.dark
+    const buttonTheme = createTheme(
+        adaptV4Theme({
+            palette: {
+                primary: {
+                    main: buttonColor
+                },
+                action: {
+                    // Yagni: currently the only time we disable a button is when using the warning color
+                    // If we ever disable the other version, we probably want primary.dark here.
+                    disabledBackground: outerTheme.palette.warning.dark
+                }
             }
-        }
-    });
+        })
+    );
     // Get button to inherit outerTheme typography.
     // Review: I couldn't find a way to clone a theme. I also tried creating a button theme and changing
     // the primary palette with a useEffect when lockState changed, but it didn't work for some reason.
@@ -77,9 +91,11 @@ export const StatusPanelCommon: React.FunctionComponent<IStatusPanelProps> = (
                         {props.children}
                     </div>
                 )}
-                <ThemeProvider theme={buttonTheme}>
-                    <div className="panel-button">{props.button}</div>
-                </ThemeProvider>
+                <StyledEngineProvider injectFirst>
+                    <ThemeProvider theme={buttonTheme}>
+                        <div className="panel-button">{props.button}</div>
+                    </ThemeProvider>
+                </StyledEngineProvider>
             </div>
         </div>
     );

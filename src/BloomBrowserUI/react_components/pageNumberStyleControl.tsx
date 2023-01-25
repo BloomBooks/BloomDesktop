@@ -92,6 +92,7 @@ const PageNumberStyleControl: React.FunctionComponent = () => {
                         content: none !important;
                     }
                 `}
+                variant="standard"
                 value={selectedStyle} // Must equal the 'styleKey' of a PageNumberStyle
                 MenuProps={{
                     anchorOrigin: {

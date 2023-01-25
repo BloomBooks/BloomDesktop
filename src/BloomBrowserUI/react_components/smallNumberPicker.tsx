@@ -40,7 +40,11 @@ export const SmallNumberPicker: React.FunctionComponent<INumberChooserProps> = (
     return (
         <div className="smallNumberPicker">
             <div data-tip={props.tooltip}>
-                <TextField onChange={handleNumberChange} value={chosenNumber} />
+                <TextField
+                    onChange={handleNumberChange}
+                    value={chosenNumber}
+                    variant="standard"
+                />
             </div>
             <ReactToolTip place="left" effect="solid" />
         </div>

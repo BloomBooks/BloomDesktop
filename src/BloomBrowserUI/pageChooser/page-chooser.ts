@@ -10,7 +10,7 @@ import {
     getEditTabBundleExports,
     getToolboxBundleExports
 } from "../bookEdit/js/bloomFrames";
-import { ThemeProvider } from "@mui/styles";
+import { ThemeProvider } from "@mui/material/styles";
 import { lightTheme } from "../bloomMaterialUITheme";
 import WebSocketManager from "../utils/WebSocketManager";
 

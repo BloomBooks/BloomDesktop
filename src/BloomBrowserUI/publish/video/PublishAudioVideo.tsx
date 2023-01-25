@@ -14,7 +14,11 @@ import {
     SettingsPanel
 } from "../commonPublish/PublishScreenBaseComponents";
 import ReactDOM = require("react-dom");
-import { ThemeProvider } from "@mui/styles";
+import {
+    ThemeProvider,
+    Theme,
+    StyledEngineProvider
+} from "@mui/material/styles";
 import {
     darkTheme,
     kBloomBlue,
@@ -326,104 +330,110 @@ const PublishAudioVideoInternalInternal: React.FunctionComponent<{
                 <Step expanded={true}>
                     <StepLabel>{configAndPreview}</StepLabel>
                     <StepContent>
-                        <ThemeProvider theme={darkTheme}>
-                            <Div
-                                css={css`
-                                    ${blurbClasses}
-                                `}
-                                l10nKey="PublishTab.RecordVideo.Instructions"
-                            >
-                                If your book has multiple languages or other
-                                options, you will see a row of red buttons. Use
-                                these to set up the book for recording.
-                            </Div>
-                            <SimplePreview
-                                // using this key ensures that the preview is regenerated when motion changes,
-                                // which would not otherwise happen because it's not part of the props
-                                key={avSettings.motion.toString()}
-                                landscape={
-                                    defaultLandscape || avSettings.motion
-                                }
-                                landscapeWidth={landscapeWidth}
-                                url={
-                                    pathToOutputBrowser +
-                                    "bloom-player/dist/bloomplayer.htm?centerVertically=true&videoPreviewMode=true&autoplay=yes&paused=true&defaultDuration=" +
-                                    debouncedPageTurnDelay +
-                                    "&url=" +
-                                    encodeURIComponent(bookUrl) + // Need to apply encoding to the bookUrl again as data to use it as a parameter of another URL
-                                    `&independent=false&host=bloomdesktop&useOriginalPageSize=${useOriginalPageSize}&skipActivities=true&hideNavButtons=true` +
-                                    videoSettingsParam +
-                                    pageRangeSetting
-                                }
-                            />
-                            <div
-                                css={css`
-                                    display: flex;
-                                    width: ${landscapeWidth}px;
-                                    justify-content: center;
-                                `}
-                            >
-                                <Button onClick={reset} disabled={!isLicenseOK}>
-                                    <SkipPreviousIcon
-                                        // unfortunately this icon doesn't come in a variant with a built-in circle.
-                                        // To make it match the other two we have to shrink it, make it white,
-                                        // and carefully position an independent circle behind it.
-                                        css={css`
-                                            color: white;
-                                            font-size: 1.5rem;
-                                            z-index: 1;
-                                        `}
-                                    />
-                                    <div
-                                        css={css`
-                                            border: ${circleHeight} solid
-                                                ${kBloomBlue};
-                                            border-radius: ${circleHeight};
-                                            position: absolute;
-                                            top: 0.5rem;
-                                            left: 1.1rem;
-                                        `}
-                                    ></div>
-                                </Button>
-                                {playing ? (
-                                    <CircularProgress
-                                        css={css`
-                                            margin-top: 8px;
-                                            margin-left: 19px;
-                                            margin-right: 19px;
-                                        `}
-                                        size="1.6rem"
-                                    ></CircularProgress>
-                                ) : (
+                        <StyledEngineProvider injectFirst>
+                            <ThemeProvider theme={darkTheme}>
+                                <Div
+                                    css={css`
+                                        ${blurbClasses}
+                                    `}
+                                    l10nKey="PublishTab.RecordVideo.Instructions"
+                                >
+                                    If your book has multiple languages or other
+                                    options, you will see a row of red buttons.
+                                    Use these to set up the book for recording.
+                                </Div>
+                                <SimplePreview
+                                    // using this key ensures that the preview is regenerated when motion changes,
+                                    // which would not otherwise happen because it's not part of the props
+                                    key={avSettings.motion.toString()}
+                                    landscape={
+                                        defaultLandscape || avSettings.motion
+                                    }
+                                    landscapeWidth={landscapeWidth}
+                                    url={
+                                        pathToOutputBrowser +
+                                        "bloom-player/dist/bloomplayer.htm?centerVertically=true&videoPreviewMode=true&autoplay=yes&paused=true&defaultDuration=" +
+                                        debouncedPageTurnDelay +
+                                        "&url=" +
+                                        encodeURIComponent(bookUrl) + // Need to apply encoding to the bookUrl again as data to use it as a parameter of another URL
+                                        `&independent=false&host=bloomdesktop&useOriginalPageSize=${useOriginalPageSize}&skipActivities=true&hideNavButtons=true` +
+                                        videoSettingsParam +
+                                        pageRangeSetting
+                                    }
+                                />
+                                <div
+                                    css={css`
+                                        display: flex;
+                                        width: ${landscapeWidth}px;
+                                        justify-content: center;
+                                    `}
+                                >
                                     <Button
-                                        onClick={play}
+                                        onClick={reset}
                                         disabled={!isLicenseOK}
                                     >
-                                        <PlayIcon
+                                        <SkipPreviousIcon
+                                            // unfortunately this icon doesn't come in a variant with a built-in circle.
+                                            // To make it match the other two we have to shrink it, make it white,
+                                            // and carefully position an independent circle behind it.
                                             css={css`
-                                                color: ${kBloomBlue};
+                                                color: white;
+                                                font-size: 1.5rem;
+                                                z-index: 1;
+                                            `}
+                                        />
+                                        <div
+                                            css={css`
+                                                border: ${circleHeight} solid
+                                                    ${kBloomBlue};
+                                                border-radius: ${circleHeight};
+                                                position: absolute;
+                                                top: 0.5rem;
+                                                left: 1.1rem;
+                                            `}
+                                        ></div>
+                                    </Button>
+                                    {playing ? (
+                                        <CircularProgress
+                                            css={css`
+                                                margin-top: 8px;
+                                                margin-left: 19px;
+                                                margin-right: 19px;
+                                            `}
+                                            size="1.6rem"
+                                        ></CircularProgress>
+                                    ) : (
+                                        <Button
+                                            onClick={play}
+                                            disabled={!isLicenseOK}
+                                        >
+                                            <PlayIcon
+                                                css={css`
+                                                    color: ${kBloomBlue};
+                                                    font-size: 2rem !important;
+                                                `}
+                                            />
+                                        </Button>
+                                    )}
+                                    <Button
+                                        onClick={pause}
+                                        disabled={
+                                            isPauseButtonDisabled ||
+                                            !isLicenseOK
+                                        }
+                                    >
+                                        <PauseIcon
+                                            css={css`
+                                                color: ${isPauseButtonDisabled
+                                                    ? kBloomBlue50Transparent
+                                                    : kBloomBlue};
                                                 font-size: 2rem !important;
                                             `}
                                         />
                                     </Button>
-                                )}
-                                <Button
-                                    onClick={pause}
-                                    disabled={
-                                        isPauseButtonDisabled || !isLicenseOK
-                                    }
-                                >
-                                    <PauseIcon
-                                        css={css`
-                                            color: ${isPauseButtonDisabled
-                                                ? kBloomBlue50Transparent
-                                                : kBloomBlue};
-                                            font-size: 2rem !important;
-                                        `}
-                                    />
-                                </Button>
-                            </div>
-                        </ThemeProvider>
+                                </div>
+                            </ThemeProvider>
+                        </StyledEngineProvider>
                     </StepContent>
                 </Step>
                 <Step expanded={true} disabled={false}>
@@ -663,9 +673,11 @@ const PublishAudioVideoInternalInternal: React.FunctionComponent<{
 // panels work the same way.
 if (document.getElementById("PublishAudioVideo")) {
     ReactDOM.render(
-        <ThemeProvider theme={lightTheme}>
-            <PublishAudioVideo />
-        </ThemeProvider>,
+        <StyledEngineProvider injectFirst>
+            <ThemeProvider theme={lightTheme}>
+                <PublishAudioVideo />
+            </ThemeProvider>
+        </StyledEngineProvider>,
         document.getElementById("PublishAudioVideo")
     );
 }

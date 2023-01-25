@@ -12,7 +12,11 @@ import {
 import { PDFPrintFeaturesGroup } from "./PDFPrintFeaturesGroup";
 import PublishScreenTemplate from "../commonPublish/PublishScreenTemplate";
 import ReactDOM = require("react-dom");
-import { ThemeProvider } from "@mui/styles";
+import {
+    ThemeProvider,
+    Theme,
+    StyledEngineProvider
+} from "@mui/material/styles";
 import { darkTheme, lightTheme } from "../../bloomMaterialUITheme";
 import { StorybookContext } from "../../.storybook/StoryBookContext";
 import HelpLink from "../../react_components/helpLink";
@@ -65,16 +69,18 @@ const PDFPrintPublishScreenInternal: React.FunctionComponent<{
     const mainPanel = (
         <React.Fragment>
             <PreviewPanel>
-                <ThemeProvider theme={darkTheme}>
-                    <Typography
-                        css={css`
-                            color: white;
-                            align-self: center;
-                        `}
-                    >
-                        Temporary placeholder for eventual Preview
-                    </Typography>
-                </ThemeProvider>
+                <StyledEngineProvider injectFirst>
+                    <ThemeProvider theme={darkTheme}>
+                        <Typography
+                            css={css`
+                                color: white;
+                                align-self: center;
+                            `}
+                        >
+                            Temporary placeholder for eventual Preview
+                        </Typography>
+                    </ThemeProvider>
+                </StyledEngineProvider>
             </PreviewPanel>
             <UnderPreviewPanel
                 css={css`
@@ -180,9 +186,11 @@ const PDFPrintPublishScreenInternal: React.FunctionComponent<{
 // if that html has the root page we need.
 if (document.getElementById("PdfPrintPublishScreen")) {
     ReactDOM.render(
-        <ThemeProvider theme={lightTheme}>
-            <PDFPrintPublishScreen />
-        </ThemeProvider>,
+        <StyledEngineProvider injectFirst>
+            <ThemeProvider theme={lightTheme}>
+                <PDFPrintPublishScreen />
+            </ThemeProvider>
+        </StyledEngineProvider>,
         document.getElementById("PdfPrintPublishScreen")
     );
 }

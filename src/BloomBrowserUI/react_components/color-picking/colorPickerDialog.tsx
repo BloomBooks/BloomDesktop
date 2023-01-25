@@ -4,7 +4,11 @@ import React = require("react");
 import * as ReactDOM from "react-dom";
 import { useEffect, useRef, useState } from "react";
 import { getEditTabBundleExports } from "../../bookEdit/js/bloomFrames";
-import { ThemeProvider } from "@mui/styles";
+import {
+    ThemeProvider,
+    Theme,
+    StyledEngineProvider
+} from "@mui/material/styles";
 import { lightTheme } from "../../bloomMaterialUITheme";
 import { get, postJson } from "../../utils/bloomApi";
 import ColorPicker from "./colorPicker";
@@ -285,43 +289,46 @@ const ColorPickerDialog: React.FC<IColorPickerDialogProps> = props => {
     };
 
     return (
-        <ThemeProvider theme={lightTheme}>
-            <BloomDialog
-                className="bloomModalDialog color-picker-dialog"
-                open={props.open === undefined ? open : props.open}
-                ref={dlgRef}
-                onClose={(_event, reason: string) => {
-                    if (reason === "backdropClick") onClose(DialogResult.OK);
-                    if (reason === "escapeKeyDown")
-                        onClose(DialogResult.Cancel);
-                }}
-            >
-                <DialogTitle title={props.localizedTitle} />
-                <DialogMiddle>
-                    <ColorPicker
-                        onChange={handleOnChange}
-                        currentColor={currentColor}
-                        swatchColors={swatchColorArray}
-                        noAlphaSlider={props.noAlphaSlider}
-                        noGradientSwatches={props.noGradientSwatches}
-                        includeDefault={props.includeDefault}
-                        onDefaultClick={props.onDefaultClick}
-                        //defaultColor={props.defaultColor}
-                    />
-                </DialogMiddle>
-                <DialogBottomButtons>
-                    <DialogOkButton
-                        enabled={true}
-                        default={true}
-                        onClick={() => onClose(DialogResult.OK)}
-                    />
-                    <DialogCancelButton
-                        default={false}
-                        onClick={() => onClose(DialogResult.Cancel)}
-                    />
-                </DialogBottomButtons>
-            </BloomDialog>
-        </ThemeProvider>
+        <StyledEngineProvider injectFirst>
+            <ThemeProvider theme={lightTheme}>
+                <BloomDialog
+                    className="bloomModalDialog color-picker-dialog"
+                    open={props.open === undefined ? open : props.open}
+                    ref={dlgRef}
+                    onClose={(_event, reason: string) => {
+                        if (reason === "backdropClick")
+                            onClose(DialogResult.OK);
+                        if (reason === "escapeKeyDown")
+                            onClose(DialogResult.Cancel);
+                    }}
+                >
+                    <DialogTitle title={props.localizedTitle} />
+                    <DialogMiddle>
+                        <ColorPicker
+                            onChange={handleOnChange}
+                            currentColor={currentColor}
+                            swatchColors={swatchColorArray}
+                            noAlphaSlider={props.noAlphaSlider}
+                            noGradientSwatches={props.noGradientSwatches}
+                            includeDefault={props.includeDefault}
+                            onDefaultClick={props.onDefaultClick}
+                            //defaultColor={props.defaultColor}
+                        />
+                    </DialogMiddle>
+                    <DialogBottomButtons>
+                        <DialogOkButton
+                            enabled={true}
+                            default={true}
+                            onClick={() => onClose(DialogResult.OK)}
+                        />
+                        <DialogCancelButton
+                            default={false}
+                            onClick={() => onClose(DialogResult.Cancel)}
+                        />
+                    </DialogBottomButtons>
+                </BloomDialog>
+            </ThemeProvider>
+        </StyledEngineProvider>
     );
 };
 

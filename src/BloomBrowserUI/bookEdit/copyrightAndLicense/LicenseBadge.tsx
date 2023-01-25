@@ -82,6 +82,7 @@ export const LicenseBadge: React.FunctionComponent<{
                         `}
                     >
                         <Select
+                            variant="standard"
                             css={css`
                                 color: ${kMutedTextGray} !important;
                                 // I was trying to prevent the gray background when focused, but this isn't working:

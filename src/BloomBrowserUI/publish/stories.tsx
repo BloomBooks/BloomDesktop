@@ -1,7 +1,11 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
 import { lightTheme } from "../bloomMaterialUITheme";
 import * as React from "react";
-import { ThemeProvider } from "@mui/styles";
+import {
+    ThemeProvider,
+    Theme,
+    StyledEngineProvider
+} from "@mui/material/styles";
 import { storiesOf } from "@storybook/react";
 import { addDecorator } from "@storybook/react";
 import { ReaderPublishScreen } from "./ReaderPublish/ReaderPublishScreen";
@@ -30,11 +34,13 @@ import { Button, Typography } from "@mui/material";
 addDecorator(withA11y as any);
 
 addDecorator(storyFn => (
-    <ThemeProvider theme={lightTheme}>
-        <StorybookContext.Provider value={true}>
-            {storyFn()}
-        </StorybookContext.Provider>
-    </ThemeProvider>
+    <StyledEngineProvider injectFirst>
+        <ThemeProvider theme={lightTheme}>
+            <StorybookContext.Provider value={true}>
+                {storyFn()}
+            </StorybookContext.Provider>
+        </ThemeProvider>
+    </StyledEngineProvider>
 ));
 
 const testText =

@@ -3,7 +3,11 @@ import { jsx, css } from "@emotion/react";
 
 // Storybook stories for Team Collection components
 import { lightTheme, kBloomYellow } from "../bloomMaterialUITheme";
-import { ThemeProvider } from "@mui/styles";
+import {
+    ThemeProvider,
+    Theme,
+    StyledEngineProvider
+} from "@mui/material/styles";
 import * as React from "react";
 import { storiesOf, addDecorator } from "@storybook/react";
 import { StorybookContext } from "../.storybook/StoryBookContext";
@@ -30,11 +34,13 @@ import {
 } from "../react_components/BloomDialog/BloomDialogPlumbing";
 
 addDecorator(storyFn => (
-    <ThemeProvider theme={lightTheme}>
-        <StorybookContext.Provider value={true}>
-            <div id="reactRoot">{storyFn()}</div>
-        </StorybookContext.Provider>
-    </ThemeProvider>
+    <StyledEngineProvider injectFirst>
+        <ThemeProvider theme={lightTheme}>
+            <StorybookContext.Provider value={true}>
+                <div id="reactRoot">{storyFn()}</div>
+            </StorybookContext.Provider>
+        </ThemeProvider>
+    </StyledEngineProvider>
 ));
 
 // Try to simulate the environment of the page preview
