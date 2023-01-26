@@ -42,7 +42,7 @@ namespace WebView2PdfMaker
 					})
 					.WithNotParsed(errors =>
 					{
-						Console.Out.WriteLine("Error parsing command line arguments.");
+						Console.Error.WriteLine("Error parsing command line arguments.");
 						Environment.Exit(1);
 					});
 			}
@@ -57,8 +57,8 @@ namespace WebView2PdfMaker
 
 		private static void Application_ThreadException(object sender, ThreadExceptionEventArgs e)
 		{
-			Console.WriteLine("WebView2PdfMaker Thread Exception: " + e.Exception.Message);
-			Console.WriteLine(e.Exception.StackTrace);
+			Console.Error.WriteLine("WebView2PdfMaker Thread Exception: " + e.Exception.Message);
+			Console.Error.WriteLine(e.Exception.StackTrace);
 			_returnCode = 1;
 			Application.Exit();
 		}
@@ -68,18 +68,16 @@ namespace WebView2PdfMaker
 			var except = e.ExceptionObject as Exception;
 			if (except != null)
 			{
-				Console.WriteLine("Unhandled Exception: " + except.Message);
-				Console.WriteLine(except.StackTrace);
+				Console.Error.WriteLine("Unhandled Exception: " + except.Message);
+				Console.Error.WriteLine(except.StackTrace);
 			}
 			else
 			{
-				Console.WriteLine("WebView2PdfMaker got unknown exception");
+				Console.Error.WriteLine("WebView2PdfMaker got unknown exception");
 			}
 			_returnCode = 1;
 			Application.Exit();
-
 		}
-
 	}
 
 	[Verb("create", isDefault: true, HelpText = "Create a PDF from the provided HTML", Hidden = true)]
@@ -194,7 +192,7 @@ namespace WebView2PdfMaker
 					new PaperSize("quarterletter", 107.95, 139.7),
 					new PaperSize("legal", 215.9, 355.6),
 					new PaperSize("halflegal", 177.8, 215.9),
-					new PaperSize("device16x9", 100, 1600/9d)
+					new PaperSize("device16x9", 100, 1600d/9d)
 				};
 
 			var match = sizes.Find(s => s.Name == name);
@@ -212,9 +210,13 @@ namespace WebView2PdfMaker
 			if (!String.IsNullOrEmpty(PageWidth))
 			{
 				double.TryParse(PageWidth, out double mmPageWidth);
+				if (Debug)
+					Console.Out.WriteLine("DEBUG: raw page width = {0}mm", mmPageWidth);
 				return mmPageWidth / kMillimetersPerInch;
 			}
 			var size = GetPaperSize(PageSizeName);
+			if (Debug)
+				Console.Out.WriteLine("DEBUG: raw page width = {0}mm", size.WidthInMillimeters);
 			return size.WidthInMillimeters / kMillimetersPerInch;
 		}
 
@@ -223,9 +225,13 @@ namespace WebView2PdfMaker
 			if (!String.IsNullOrEmpty(PageHeight))
 			{
 				double.TryParse(PageHeight, out double mmPageHeight);
+				if (Debug)
+					Console.Out.WriteLine("DEBUG: raw page height = {0}mm", mmPageHeight);
 				return mmPageHeight / kMillimetersPerInch;
 			}
 			var size = GetPaperSize(PageSizeName);
+			if (Debug)
+				Console.Out.WriteLine("DEBUG: raw page height = {0}mm", size.HeightInMillimeters);
 			return size.HeightInMillimeters / kMillimetersPerInch;
 		}
 
