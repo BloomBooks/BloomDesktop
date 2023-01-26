@@ -35,20 +35,8 @@ export const HowMuchGroup: React.FunctionComponent<{
                 onChange={(event, value: number) =>
                     props.onHowMuchChange(value)
                 }
-                marks={[
-                    {
-                        value: 0,
-                        label: "" //"First Time"
-                    },
-                    {
-                        value: 1,
-                        label: ""
-                    },
-                    {
-                        value: 2,
-                        label: "" //"It keeps happening"
-                    }
-                ]}
+                size="small"
+                marks={true}
             />
             <div id="scale_labels">
                 <Typography variant="body2">{localizedStartLabel}</Typography>
@@ -61,20 +49,13 @@ export const HowMuchGroup: React.FunctionComponent<{
 // The classnames used have runtime numbers, so it's not possible to
 // do the styling just with css, have to use MUI's style system:
 const HowMuchSlider = withStyles({
-    track: {
-        height: 2
-    },
     rail: {
-        height: 2,
-        //opacity: 0.5,
         backgroundColor: "#bfbfbf"
     },
     mark: {
         width: 6,
         height: 6,
-        // //border-radius: 4px;
         backgroundColor: "lightgray",
-        marginTop: -2,
         borderRadius: 3
     },
     markActive: {
