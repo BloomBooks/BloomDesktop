@@ -24,7 +24,6 @@ namespace WebView2PdfMaker
 		private Uri _uriOfDocument;
 		private Options _options;
 		CoreWebView2PrintSettings _printSettings;
-		DateTime _startMakingPdf;
 		public event EventHandler Finished;
 
 		public WebView2PdfComponent(IContainer container, Options options)
@@ -51,7 +50,7 @@ namespace WebView2PdfMaker
 				};
 				_readyToNavigate = true;
 			};
-			var initTask = InitWebView();
+			var initTask = InitWebViewAsync();
 			if (_options.Debug)
 				Console.Out.WriteLine("WebView2PdfComponent.ctor initTask ready to wait");
 			while (!initTask.IsCompleted)
@@ -88,7 +87,7 @@ namespace WebView2PdfMaker
 
 			_checkForBrowserNavigatedTimer = new System.Windows.Forms.Timer(this.components);
 			_checkForBrowserNavigatedTimer.Interval = 50;
-			_checkForBrowserNavigatedTimer.Tick += new System.EventHandler(OnCheckForBrowserNavigatedTimerTick);
+			_checkForBrowserNavigatedTimer.Tick += new System.EventHandler(OnCheckForBrowserNavigatedTimer_Tick);
 		}
 
 		private void CreateWebView2()
@@ -109,7 +108,7 @@ namespace WebView2PdfMaker
 		}
 
 		private static bool _clearedCache;
-		private async Task InitWebView()
+		private async Task InitWebViewAsync()
 		{
 			var op = new CoreWebView2EnvironmentOptions("--autoplay-policy=no-user-gesture-required");
 			var env = await CoreWebView2Environment.CreateAsync(null, Path.Combine(Path.GetTempPath(),"WebView2PdfMaker"), op);
@@ -127,7 +126,7 @@ namespace WebView2PdfMaker
 		}
 
 
-		private void OnCheckForBrowserNavigatedTimerTick(object sender, EventArgs e)
+		private void OnCheckForBrowserNavigatedTimer_Tick(object sender, EventArgs e)
 		{
 			if (_uriOfDocument != null && _navigationCompleted)
 			{
@@ -173,9 +172,6 @@ namespace WebView2PdfMaker
 
 		private string _pathToTempPdf;
 
-		/// <summary>
-		/// On the application event thread, work on creating the pdf. Will raise the Finished events
-		/// </summary>
 		public void Start(Options options)
 		{
 			if (_options.Debug)
@@ -187,9 +183,13 @@ namespace WebView2PdfMaker
 			File.Delete(tempFileName);
 			File.Delete(_pathToTempPdf);
 			File.Delete(_options.OutputPdfPath);
-			_webview.Size = new Size(1920, 1320);
+			//_webview.Size = new Size(1920, 1320);
 			_uriOfDocument = new Uri(_options.InputHtmlUri);
 			_navigationCompleted = false;
+
+			if (_options.Debug)
+				Console.Out.WriteLine($"WebView2PdfComponent.Start navigating to {_uriOfDocument.AbsoluteUri}");
+
 			_webview.CoreWebView2.Navigate(_uriOfDocument.AbsoluteUri);
 			_checkForBrowserNavigatedTimer.Enabled = true;
 		}
@@ -235,9 +235,7 @@ namespace WebView2PdfMaker
 
 			_pdfTask = _webview.CoreWebView2.PrintToPdfAsync(_pathToTempPdf, _printSettings);
 
-			_startMakingPdf = DateTime.Now;
 			_checkForPdfFinishedTimer.Enabled = true;
-
 		}
 	}
 }

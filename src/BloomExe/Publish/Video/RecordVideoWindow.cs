@@ -1056,7 +1056,7 @@ namespace Bloom.Publish.Video
 				{
 					// If there's an error parsing the videoSettings, just report it if debug
 					// and fallback to the legacy behavior.
-					Debug.Fail($"Error while parsing _videoSettingsFromPreview JSON (\"{_videoSettingsFromPreview}\"): ${ex.ToString()}\n(Will be ignored in production)");
+					Debug.Fail($"Error while parsing _videoSettingsFromPreview JSON (\"{_videoSettingsFromPreview}\"): {ex}\n(Will be ignored in production)");
 				}
 				
 				if (!String.IsNullOrEmpty(langCode) && !String.IsNullOrEmpty(_book.BookInfo.AllTitles))

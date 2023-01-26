@@ -123,8 +123,8 @@ namespace Bloom.Publish.PDF
 			SetArguments(bldr, specs);
 			var arguments = bldr.ToString();
 
-			Logger.WriteEvent($"Running ${exePath} with arguments: ${arguments}");
-			Console.WriteLine($"Running ${exePath} with arguments: ${arguments}");
+			Logger.WriteEvent($"Running {exePath} with arguments: {arguments}");
+			Console.WriteLine($"Running {exePath} with arguments: {arguments}");
 
 			var timeoutInSeconds = 3600;
 			if (Program.RunningUnitTests)
@@ -137,8 +137,8 @@ namespace Bloom.Publish.PDF
 			var res = runner.Start(exePath, arguments, Encoding.UTF8, fromDirectory, timeoutInSeconds, progress,
 				(msg) => { /* nothing we can do with WebView2 */ });
 
-			Logger.WriteEvent($"Call to ${exePath} completed");
-			Console.WriteLine($"Call to ${exePath} completed");
+			Logger.WriteEvent($"Call to {exePath} completed");
+			Console.WriteLine($"Call to {exePath} completed");
 
 			if (res.DidTimeOut || !RobustFile.Exists(specs.OutputPdfPath))
 			{

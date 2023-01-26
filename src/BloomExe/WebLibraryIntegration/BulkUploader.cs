@@ -226,7 +226,7 @@ namespace Bloom.WebLibraryIntegration
 				{
 					if (htmlFileCount > 1)
 					{
-						progress.WriteError($"{sub} has ${htmlFileCount} html files. One of them should be removed.");
+						progress.WriteError($"{sub} has {htmlFileCount} html files. One of them should be removed.");
 						++_booksWithErrors;
 					}
 					else
