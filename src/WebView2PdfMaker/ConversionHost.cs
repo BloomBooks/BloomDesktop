@@ -12,7 +12,7 @@ namespace WebView2PdfMaker
 		{
 			_options = options;
 			InitializeComponent();
-			_pdfMaker = new WebView2PdfComponent(this.components);
+			_pdfMaker = new WebView2PdfComponent(this.components, options);
 			_pdfMaker.Finished += new System.EventHandler(OnPdfMaker_Finished);
 			if (_options.NoUIMode)
 			{

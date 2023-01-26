@@ -132,6 +132,8 @@ namespace Bloom.Publish.PDF
 
 			var progress = new NullProgress();
 			// NB: WebView2 does not appear to support progress reporting while making PDFs.
+			Console.WriteLine("DEBUG PDF: \"{0}\" {1}", exePath, arguments);
+
 			var res = runner.Start(exePath, arguments, Encoding.UTF8, fromDirectory, timeoutInSeconds, progress,
 				(msg) => { /* nothing we can do with WebView2 */ });
 
@@ -166,6 +168,11 @@ namespace Bloom.Publish.PDF
 					throw except;
 				else
 					doWorkEventArgs.Result = except;
+			}
+			else
+			{
+				Console.WriteLine("DEBUG PDF success: res.StandardOutput=\r\n{0}\r\nres.StandardError=\r\n{1}\r\n",
+					res.StandardOutput, res.StandardError);
 			}
 		}
 
@@ -241,6 +248,7 @@ namespace Bloom.Publish.PDF
 						bldr.Append(" -O landscape");
 				}
 			}
+			bldr.Append(" --debug");	// we love debug output  :-)
 		}
 
 		private static void ConfigureFullBleedPageSize(StringBuilder bldr, PdfMakingSpecs specs)

@@ -27,47 +27,58 @@ namespace WebView2PdfMaker
 		DateTime _startMakingPdf;
 		public event EventHandler Finished;
 
-		public WebView2PdfComponent() : this(null)
+		public WebView2PdfComponent(IContainer container, Options options)
 		{
-		}
-
-		public WebView2PdfComponent(IContainer container)
-		{
-			Console.WriteLine("Constructing WebView2PdfComponent");
+			if (options.Debug)
+				Console.Out.WriteLine("Constructing WebView2PdfComponent");
 
 			if (container != null)
 				container.Add(this);
+			_options = options;
 
 			InitializeComponent();
 			CreateTimers();
 			CreateWebView2();
 			_webview.CoreWebView2InitializationCompleted += (object sender, CoreWebView2InitializationCompletedEventArgs args) =>
 			{
-				Console.WriteLine("WebView2PdfComponent - CoreWebView2InitializationCompleted");
+				if (_options.Debug)
+					Console.Out.WriteLine("WebView2PdfComponent - CoreWebView2InitializationCompleted");
 				_webview.CoreWebView2.NavigationCompleted += (object sender2, CoreWebView2NavigationCompletedEventArgs args2) =>
 				{
-					Console.WriteLine("WebView2PdfComponent - NavigationCompleted");
+					if (_options.Debug)
+						Console.Out.WriteLine("WebView2PdfComponent - NavigationCompleted");
 					_navigationCompleted = true;
 				};
 				_readyToNavigate = true;
 			};
 			var initTask = InitWebView();
+			if (_options.Debug)
+				Console.Out.WriteLine("WebView2PdfComponent.ctor initTask ready to wait");
 			while (!initTask.IsCompleted)
 			{
 				Application.DoEvents();
-				Thread.Sleep(10);
+				Thread.Sleep(100);
+				if (_options.Debug)
+					Console.Out.WriteLine("WebView2PdfComponent.ctor slept 100ms waiting for initTask.IsCompleted");
 			}
-			Console.WriteLine("WebView2PdfComponent - initTask.IsCompleted");
+			if (_options.Debug)
+				Console.Out.WriteLine("WebView2PdfComponent - initTask.IsCompleted!");
 			EnsureBrowserReadyToNavigate();
 		}
 
 		protected void EnsureBrowserReadyToNavigate()
 		{
+			if (_options.Debug)
+				Console.Out.WriteLine("WebView2PdfComponent.EnsureBrowserReadyToNavigate Start");
 			while (!_readyToNavigate)
 			{
 				Application.DoEvents();
-				Thread.Sleep(10);
+				Thread.Sleep(100);
+				if (_options.Debug)
+					Console.Out.WriteLine("WebView2PdfComponent.EnsureBrowserReadyToNavigate slept 100ms");
 			}
+			if (_options.Debug)
+				Console.Out.WriteLine("WebView2PdfComponent.EnsureBrowserReadyToNavigate _readyToNavigate finally set!");
 		}
 
 		private void CreateTimers()
@@ -163,11 +174,12 @@ namespace WebView2PdfMaker
 		private string _pathToTempPdf;
 
 		/// <summary>
-		/// On the application event thread, work on creating the pdf. Will raise the StatusChanged and Finished events
+		/// On the application event thread, work on creating the pdf. Will raise the Finished events
 		/// </summary>
-		/// <param name="options"></param>
 		public void Start(Options options)
 		{
+			if (_options.Debug)
+				Console.Out.WriteLine("Begin WebView2PdfComponent.Start()");
 			_options = options;
 
 			var tempFileName = Path.GetTempFileName();
@@ -215,6 +227,11 @@ namespace WebView2PdfMaker
 			// The URI in the footer if Microsoft.Web.WebView2.Core.CoreWebView2PrintSettings.ShouldPrintHeaderAndFooter is true.
 			// (The default value is the current URI.)
 			_printSettings.FooterUri = "";
+			if (_options.Debug)
+				Console.Out.WriteLine("DEBUG StartMakingPdf(): Width={0}, Height={1}; Margins Top={2}, Bottom={3}, Left={4}, Right={5}; Orientation={6}",
+					_printSettings.PageWidth, _printSettings.PageHeight,
+					_printSettings.MarginTop, _printSettings.MarginBottom, _printSettings.MarginLeft, _printSettings.MarginRight,
+					_printSettings.Orientation);
 
 			_pdfTask = _webview.CoreWebView2.PrintToPdfAsync(_pathToTempPdf, _printSettings);
 
