@@ -21,6 +21,7 @@ using Bloom.Collection;
 using Bloom.Registration;
 using Bloom.ToPalaso;
 using Bloom.Utils;
+using Bloom.web.controllers;
 using SIL.Reporting;
 using DesktopAnalytics;
 using Newtonsoft.Json;
@@ -1573,7 +1574,7 @@ namespace Bloom.TeamCollection
 		/// the book's history.
 		/// </summary>
 		void ReportProblemSyncingBook(string folderPath, string bookId, IWebSocketProgress progress, ProgressKind kind, string l10nIdSuffix, string message,
-			string param0 = null, string param1 = null)
+			string param0 = null, string param1 = null, bool alsoMakeYouTrackIssue = false)
 		{
 			ReportProblemSyncingBook(progress, kind, l10nIdSuffix, message, param0, param1);
 			var msg = string.Format(message, param0, param1);
@@ -1581,6 +1582,7 @@ namespace Bloom.TeamCollection
 			// the bookName will not be used. I don't think this is the place to be trying to instantiate
 			// a Book object to get the ideal name for it. So I decided to live with using the file name.
 			BookHistory.AddEvent(folderPath, Path.GetFileNameWithoutExtension(folderPath), bookId, BookHistoryEventType.SyncProblem, msg);
+			MakeYouTrackIssueIfWanted(progress, alsoMakeYouTrackIssue, msg);
 		}
 
 		/// <summary>
@@ -1589,11 +1591,42 @@ namespace Bloom.TeamCollection
 		/// it can't be recorded in the book's own history.
 		/// </summary>
 		void ReportProblemSyncingBook(string collectionPath, string bookName, string bookId, IWebSocketProgress progress, ProgressKind kind, string l10nIdSuffix, string message,
-			string param0 = null, string param1 = null)
+			string param0 = null, string param1 = null, bool alsoMakeYouTrackIssue = false)
 		{
 			ReportProblemSyncingBook(progress, kind, l10nIdSuffix, message, param0, param1);
 			var msg = string.Format(message, param0, param1);
 			CollectionHistory.AddBookEvent(collectionPath, bookName, bookId, BookHistoryEventType.SyncProblem, msg);
+			MakeYouTrackIssueIfWanted(progress, alsoMakeYouTrackIssue, msg);
+		}
+
+		private void MakeYouTrackIssueIfWanted(IWebSocketProgress progress, bool alsoMakeYouTrackIssue, string msg)
+		{
+			if (alsoMakeYouTrackIssue && !Program.RunningUnitTests &&
+			    !string.IsNullOrWhiteSpace(SIL.Windows.Forms.Registration.Registration.Default.Email))
+			{
+				var issue = new YouTrackIssueSubmitter(ProblemReportApi.YouTrackProjectKey);
+				try
+				{
+					var email = SIL.Windows.Forms.Registration.Registration.Default.Email;
+					var standardUserInfo = ProblemReportApi.GetStandardUserInfo(email,
+						SIL.Windows.Forms.Registration.Registration.Default.FirstName,
+						SIL.Windows.Forms.Registration.Registration.Default.Surname);
+					var lostAndFoundUrl =
+						"https://docs.bloomlibrary.org/team-collections-advanced-topics/#2488e17a8a6140bebcef068046cc57b7";
+					// Note: there is deliberately no period after {msg} since msg usually ends with one already.
+					var fullMsg =
+						$"{standardUserInfo}: There was a book synchronization problem that required putting a version in Lost and Found: {msg} See {lostAndFoundUrl}.";
+					var issueId = issue.SubmitToYouTrack("Book synchronization failed", fullMsg);
+					var issueLink = "https://issues.bloomlibrary.org/youtrack/issue/" + issueId;
+					ReportProgressAndLog(progress, ProgressKind.Note, "ProblemReported",
+						"Bloom reported this problem to the developers. You can see the report at {0}. Also see {1}", issueLink, lostAndFoundUrl);
+					// Todo: figure out URL, report to progress.
+				}
+				catch (Exception e)
+				{
+					Debug.Fail("Submitting problem report to YouTrack failed with '" + e.Message + "'.");
+				}
+			}
 		}
 
 		/// <summary>
@@ -1981,7 +2014,7 @@ namespace Bloom.TeamCollection
 								CopyBookFromRepoToLocalAndReport(progress, bookName, () =>
 									ReportProblemSyncingBook(localFolderPath, bookId, progress, ProgressKind.Error, "ConflictingCheckout",
 										"The book '{0}', which was checked out and edited, was checked out to someone else in the Team Collection. Local changes have been overwritten, but are saved to Lost-and-found.",
-										bookName));
+										bookName, alsoMakeYouTrackIssue: true));
 								continue;
 							}
 							else
@@ -2016,7 +2049,7 @@ namespace Bloom.TeamCollection
 						CopyBookFromRepoToLocalAndReport(progress, bookName, () =>
 							ReportProblemSyncingBook(bookFolder, bookId, progress, ProgressKind.Error, "ConflictingEdit",
 								"The book '{0}', which was checked out and edited on this computer, was modified in the Team Collection by someone else. Local changes have been overwritten, but are saved to Lost-and-found.",
-								bookName));
+								bookName, alsoMakeYouTrackIssue:true));
 
 						continue;
 					}
