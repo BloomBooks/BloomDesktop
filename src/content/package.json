@@ -12,7 +12,7 @@
         "The -a option says to run them all before watching": "",
         "watch:pug": "onchange -j 9 -a \"**/*.pug\" -- pug {{file}} --pretty --out ../../output/browser/{{fileDir}}",
         "//": "______________________________________________________________________________________________________",
-        "build:pageSizes": "ts-node pageSizes.ts",
+        "build:pageSizes": "yarn ts-node pageSizes.ts",
         "build:less": "npm-run-all build:pageSizes build:less-inner",
         "build:less-inner": "npm-run-all --parallel build:branding:less build:templates:less build:layout:less",
         "// there is no current way to exclude node_modules, so we can't just do the whole directory.": "https://github.com/jonycheung/deadsimple-less-watch-compiler/issues/72",
