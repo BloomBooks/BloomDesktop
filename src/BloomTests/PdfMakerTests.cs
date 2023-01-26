@@ -1,9 +1,11 @@
-﻿using System.ComponentModel;
+﻿using System;
+using System.ComponentModel;
 using System.IO;
 using Bloom.Publish;
 using Bloom.Publish.PDF;
 using NUnit.Framework;
 using SIL.IO;
+using SIL.Reporting;
 
 //we have this "SetupFixture" which calls Browser.SetUpXulRunner(). I think Eberhard added it, but there is no comment saying what
 //its purpose is. //In any case on our new TeamCity Build agent, that causes these unit tests to fail (and only these).
@@ -24,6 +26,9 @@ namespace BloomTestsThatAvoidTheSetupFixture
 		[Test, Order(1)]
 		public void MakePdf_BookStyleIsNone_OutputsPdf()
 		{
+			Logger.WriteEvent($"Starting MakePdf_BookStyleIsNone_OutputsPdf");
+			Console.WriteLine($"Starting MakePdf_BookStyleIsNone_OutputsPdf");
+
 			var maker = new PdfMaker();
 			using (var input = TempFile.WithExtension("html"))
 			using (var output = new TempFile())

@@ -7,6 +7,7 @@ using PdfSharp.Pdf;
 using PdfSharp.Pdf.IO;
 using SIL.IO;
 using SIL.Progress;
+using SIL.Reporting;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -42,6 +43,9 @@ namespace Bloom.Publish.PDF
 		/// <param name="owner">A control which can be used to invoke parts of the work which must be done on the ui thread.</param>
 		public void MakePdf(PdfMakingSpecs specs, BackgroundWorker worker, DoWorkEventArgs doWorkEventArgs, Control owner)
 		{
+			Logger.WriteEvent($"Starting PdfMaker::MakePdf");
+			Console.WriteLine($"Starting PdfMaker::MakePdf");
+
 			// Try up to 4 times. This is a last-resort attempt to handle BL-361.
 			// Most likely that was caused by a race condition in MakePdfUsingGeckofxHtmlToPdfComponent.MakePdf,
 			// but as it was an intermittent problem and we're not sure that was the cause, this might help.

@@ -28,6 +28,9 @@ namespace Bloom.Publish.PDF
 		public void MakePdf(PdfMakingSpecs specs, Control owner, BackgroundWorker worker,
 			DoWorkEventArgs doWorkEventArgs)
 		{
+			Logger.WriteEvent($"Starting MakePdfUsingExternalPdfMakerProgram::MakePdf");
+			Console.WriteLine($"Starting MakePdfUsingExternalPdfMakerProgram::MakePdf");
+
 			_worker = worker;
 #if !__MonoCS__
 			// Mono doesn't current provide System.Printing.  Leave the 'if' here to emphasize the
@@ -120,21 +123,27 @@ namespace Bloom.Publish.PDF
 			SetArguments(bldr, specs);
 			var arguments = bldr.ToString();
 
-			Logger.WriteMinorEvent($"Running ${exePath} with arguments: ${arguments}");
+			Logger.WriteEvent($"Running ${exePath} with arguments: ${arguments}");
 			Console.WriteLine($"Running ${exePath} with arguments: ${arguments}");
+
+			var timeoutInSeconds = 3600;
+			if (Program.RunningUnitTests)
+				timeoutInSeconds = 20;
 
 			var progress = new NullProgress();
 			// NB: WebView2 does not appear to support progress reporting while making PDFs.
-			var res = runner.Start(exePath, arguments, Encoding.UTF8, fromDirectory, 3600, progress,
+			var res = runner.Start(exePath, arguments, Encoding.UTF8, fromDirectory, timeoutInSeconds, progress,
 				(msg) => { /* nothing we can do with WebView2 */ });
 
-			Logger.WriteMinorEvent($"Call to ${exePath} completed");
+			Logger.WriteEvent($"Call to ${exePath} completed");
 			Console.WriteLine($"Call to ${exePath} completed");
 
 			if (res.DidTimeOut || !RobustFile.Exists(specs.OutputPdfPath))
 			{
 				Logger.WriteEvent(@"***ERROR PDF generation failed: res.StandardOutput = " + res.StandardOutput);
 				Console.Error.WriteLine(@"***ERROR PDF generation failed: res.StandardOutput = " + res.StandardOutput);
+				Logger.WriteEvent(@"***ERROR PDF generation failed: res.StandardError = " + res.StandardError);
+				Console.Error.WriteLine(@"***ERROR PDF generation failed: res.StandardError = " + res.StandardError);
 
 				var msg = L10NSharp.LocalizationManager.GetString(@"PublishTab.PDF.Error.Failed",
 					"Bloom was not able to create the PDF file ({0}).{1}{1}Details: BloomPdfMaker (command line) did not produce the expected document.",
