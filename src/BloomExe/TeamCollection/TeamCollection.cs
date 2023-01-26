@@ -1613,14 +1613,16 @@ namespace Bloom.TeamCollection
 						SIL.Windows.Forms.Registration.Registration.Default.Surname);
 					var lostAndFoundUrl =
 						"https://docs.bloomlibrary.org/team-collections-advanced-topics/#2488e17a8a6140bebcef068046cc57b7";
+					var admins = string.Join(", ", (_tcManager?.Settings?.Administrators ?? new string[0])
+						.Select(e => ProblemReportApi.GetObfuscatedEmail(e)));
 					// Note: there is deliberately no period after {msg} since msg usually ends with one already.
 					var fullMsg =
-						$"{standardUserInfo}: There was a book synchronization problem that required putting a version in Lost and Found: {msg} See {lostAndFoundUrl}.";
+						$"{standardUserInfo} \n(Admins: {admins}):\n\nThere was a book synchronization problem that required putting a version in Lost and Found:\n{msg}\n\nSee {lostAndFoundUrl}.";
 					var issueId = issue.SubmitToYouTrack("Book synchronization failed", fullMsg);
 					var issueLink = "https://issues.bloomlibrary.org/youtrack/issue/" + issueId;
 					ReportProgressAndLog(progress, ProgressKind.Note, "ProblemReported",
-						"Bloom reported this problem to the developers. You can see the report at {0}. Also see {1}", issueLink, lostAndFoundUrl);
-					// Todo: figure out URL, report to progress.
+						"Bloom reported this problem to the developers.");
+					// Originally added " You can see the report at {0}. Also see {1}", issueLink, lostAndFoundUrl); but JohnH says not to (BL-11867)
 				}
 				catch (Exception e)
 				{
