@@ -61,7 +61,7 @@
 			this._rightToLeftCheck.Name = "_rightToLeftCheck";
 			this._rightToLeftCheck.Size = new System.Drawing.Size(175, 23);
 			this._rightToLeftCheck.TabIndex = 1;
-			this._rightToLeftCheck.Text = "This script is right to left";
+			this._rightToLeftCheck.Text = "This script is written right to left like Arabic, Hebrew, and Urdu.";
 			this._rightToLeftCheck.UseVisualStyleBackColor = true;
 			// 
 			// _tallerLinesCheck
