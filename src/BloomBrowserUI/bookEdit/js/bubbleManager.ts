@@ -22,8 +22,9 @@ import { getRgbaColorStringFromColorAndOpacity } from "../../utils/colorUtils";
 import { SetupElements, attachToCkEditor } from "./bloomEditing";
 import {
     addImageEditingButtons,
-    DisableImageTooltip,
-    EnableImageTooltip,
+    DisableImageEditing,
+    EnableImageEditing,
+    EnableAllImageEditing,
     tryRemoveImageEditingButtons
 } from "./bloomImages";
 
@@ -194,7 +195,7 @@ export class BubbleManager {
         // Would this be more reliable?
         // container.getElementsByClassName("bloom-textOverPicture").length > 0;
         if (placeHolderImages.length === 0 || hasOverlay) {
-            container.classList.add("bloom-hideImageButtons");
+            DisableImageEditing(container);
         }
     }
 
@@ -292,17 +293,7 @@ export class BubbleManager {
 
         Comical.setActiveBubbleListener(activeElement => {
             if (activeElement) {
-                const isAnyFocused = this.focusFirstVisibleFocusable(
-                    activeElement
-                );
-                if (isAnyFocused) {
-                    const activeContainer = activeElement.closest<HTMLElement>(
-                        ".bloom-imageContainer"
-                    );
-                    if (activeContainer) {
-                        DisableImageTooltip(activeContainer);
-                    }
-                }
+                this.focusFirstVisibleFocusable(activeElement);
             }
         });
 
@@ -396,8 +387,6 @@ export class BubbleManager {
         Array.from(this.getAllPrimaryImageContainersOnPage()).forEach(
             (container: HTMLElement) => {
                 container.addEventListener("click", event => {
-                    let isBackgroundImageSelected = false;
-
                     // The goal here is that if the user clicks outside any comical bubble,
                     // we want none of the comical bubbles selected, so that
                     // (after moving the mouse away to get rid of hover effects)
@@ -425,15 +414,12 @@ export class BubbleManager {
                         const x = event.offsetX;
                         const y = event.offsetY;
                         if (!Comical.somethingHit(container, x, y)) {
-                            isBackgroundImageSelected = true;
                             // Usually we hide the image editing controls in overlay mode so
                             // they don't get in the way of manipulating the bubbles, but a click
                             // on the underlying image is understood to mean the user wants to work
                             // on it, so allow them to be seen again.
                             // (Note: we're not making it focused in the same way an image overlay could be)
-                            container.classList.remove(
-                                "bloom-hideImageButtons"
-                            );
+                            EnableImageEditing(container);
                             // So far so good. We have now determined that we want to remove
                             // focus from anything in this image.
                             // (Enhance: should we check that something within this image
@@ -507,12 +493,6 @@ export class BubbleManager {
                             );
                             somethingElseToFocus.focus();
                         }
-                    }
-
-                    if (isBackgroundImageSelected) {
-                        EnableImageTooltip(container);
-                    } else {
-                        DisableImageTooltip(container);
                     }
                 });
 
@@ -1900,12 +1880,6 @@ export class BubbleManager {
         element.classList.remove("se-resizable");
     }
 
-    public turnOffHidingImageButtons() {
-        Array.from(
-            document.getElementsByClassName("bloom-hideImageButtons")
-        ).forEach(e => e.classList.remove("bloom-hideImageButtons"));
-    }
-
     public turnOffBubbleEditing(): void {
         if (this.isComicEditingOn === false) {
             return; // Already off. No work needs to be done.
@@ -1915,7 +1889,7 @@ export class BubbleManager {
         Comical.setActiveBubbleListener(undefined);
         Comical.stopEditing();
 
-        this.turnOffHidingImageButtons();
+        EnableAllImageEditing();
 
         // Clean up event listeners that we no longer need
         Array.from(

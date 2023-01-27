@@ -121,7 +121,7 @@ function ctrlAltKeyDownListener(event: KeyboardEvent) {
         document
             .querySelectorAll<HTMLElement>(".bloom-imageContainer")
             .forEach(imageContainer => {
-                imageContainer.classList.add("ui-suppressImageButtons");
+                SuppressImageEditing(imageContainer);
 
                 if (event.ctrlKey) {
                     imageContainer.classList.add("ui-ctrlDown");
@@ -144,9 +144,11 @@ function ctrlAltKeyUpListener(event: KeyboardEvent) {
 
     if (isCtrlOrAltReleased && !areAnyOtherCtrlOrAltKeysDown) {
         document
-            .querySelectorAll(".bloom-imageContainer.ui-suppressImageButtons")
+            .querySelectorAll<HTMLElement>(
+                ".bloom-imageContainer.ui-suppressImageButtons"
+            )
             .forEach(imageContainer => {
-                imageContainer.classList.remove("ui-suppressImageButtons");
+                DisableSuppressImageEditingButtons(imageContainer);
 
                 // Remember, for keyup events, you want to check event.key === "Control" instead of event.ctrlKey
                 if (event.key === "Control") {
@@ -326,6 +328,7 @@ export function removeImageEditingButtons(containerDiv: Element): void {
     }).forEach(button => {
         button.remove();
     });
+    DisableImageTooltip(containerDiv as HTMLElement);
 }
 
 export function tryRemoveImageEditingButtons(
@@ -334,6 +337,44 @@ export function tryRemoveImageEditingButtons(
     if (containerDiv) {
         removeImageEditingButtons(containerDiv);
     }
+}
+
+export function DisableImageEditing(imageContainer: HTMLElement) {
+    imageContainer.classList.add("bloom-hideImageButtons");
+    UpdateImageTooltipVisibility(imageContainer);
+}
+
+/**
+ * Undo the effect of calling DisableImageEditing()
+ */
+export function EnableImageEditing(imageContainer: HTMLElement) {
+    imageContainer.classList.remove("bloom-hideImageButtons");
+    UpdateImageTooltipVisibility(imageContainer);
+}
+
+/**
+ * Like EnableImageEditing, but for the entire document instead of a single container.
+ */
+export function EnableAllImageEditing() {
+    Array.from(
+        document.getElementsByClassName("bloom-hideImageButtons")
+    ).forEach(EnableImageEditing);
+}
+
+/**
+ * Temporarily suppresses image editing
+ */
+function SuppressImageEditing(imageContainer: HTMLElement) {
+    imageContainer.classList.add("ui-suppressImageButtons");
+    UpdateImageTooltipVisibility(imageContainer);
+}
+
+/**
+ * Undo the effect of calling SuppressImageEditing()
+ */
+function DisableSuppressImageEditingButtons(imageContainer: HTMLElement) {
+    imageContainer.classList.remove("ui-suppressImageButtons");
+    UpdateImageTooltipVisibility(imageContainer);
 }
 
 // Bloom "imageContainer"s are <div>'s which wrap an <img>, and automatically proportionally resize
@@ -353,7 +394,7 @@ function SetupImageContainer(containerDiv: HTMLElement) {
     }
 
     // Just in case, ensure prior state is cleaned up
-    containerDiv.classList.remove("ui-suppressImageButtons");
+    DisableSuppressImageEditingButtons(containerDiv);
 
     // Now that we can overlay things on top of images, we don't want to show the flower placeholder
     // if the image container contains an overlay.
@@ -391,18 +432,25 @@ function getImgFromContainer(imageContainer: HTMLElement) {
         .not(".bloom-ui img"); // e.g. cog.svg
 }
 
-export function DisableImageTooltip(container: HTMLElement) {
-    if (container) {
-        container.title = "";
-    }
+function DisableImageTooltip(container: HTMLElement) {
+    container.title = "";
 }
 
-export function EnableImageTooltip(container: HTMLElement) {
-    const dataTitle = container.getAttribute("data-title");
+function UpdateImageTooltipVisibility(container: HTMLElement) {
+    if (
+        container.classList.contains("bloom-hideImageButtons") ||
+        container.classList.contains("ui-suppressImageButtons")
+    ) {
+        // Since the image buttons aren't visible, hide the image tooltip too
+        DisableImageTooltip(container);
+    } else {
+        // Image editing buttons are allowed to be shown, so allow the image tooltip to be shown too
+        const dataTitle = container.getAttribute("data-title");
 
-    // If dataTitle is null for some unexpected reason, let's just leave it as is.
-    if (dataTitle !== null) {
-        container.title = dataTitle;
+        // If dataTitle is null for some unexpected reason, let's just leave the title unchanged.
+        if (dataTitle !== null) {
+            container.title = dataTitle;
+        }
     }
 }
 
@@ -414,12 +462,7 @@ async function SetImageTooltip(container: HTMLElement) {
     // (e.g. show when no bubble selected but hide when a bubble is selected)
     container.setAttribute("data-title", title);
 
-    // Only show the tooltip if no bubble is currently selected.
-    if (theOneBubbleManager.getActiveElement()) {
-        DisableImageTooltip(container);
-    } else {
-        EnableImageTooltip(container);
-    }
+    UpdateImageTooltipVisibility(container);
 }
 
 // Corresponds with ImageApi.cs::HandleImageInfo

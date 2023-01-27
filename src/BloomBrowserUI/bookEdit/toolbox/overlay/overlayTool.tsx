@@ -40,6 +40,7 @@ import {
     TextColorPalette
 } from "../../../react_components/color-picking/bloomPalette";
 import { OverlayKeyHints } from "./overlayKeyHints";
+import { EnableAllImageEditing } from "../../js/bloomImages";
 
 const OverlayToolControls: React.FunctionComponent = () => {
     const l10nPrefix = "ColorPicker.";
@@ -975,7 +976,7 @@ export class OverlayTool extends ToolboxToolReactAdaptor {
             // We turn it off only when about to save the page.
             //bubbleManager.turnOffBubbleEditing();
 
-            bubbleManager.turnOffHidingImageButtons();
+            EnableAllImageEditing();
             bubbleManager.detachBubbleChangeNotification();
         }
     }

@@ -10,6 +10,7 @@ import { Checkbox } from "../../../react_components/checkbox";
 import ToolboxToolReactAdaptor from "../toolboxToolReactAdaptor";
 import { MusicToolControls } from "../music/musicToolControls";
 import "./motion.less";
+import { DisableImageEditing, EnableImageEditing } from "../../js/bloomImages";
 
 // The toolbox is included in the list of tools because of this line of code
 // in tooboxBootstrap.ts:
@@ -78,7 +79,7 @@ export class MotionTool extends ToolboxToolReactAdaptor {
         // enhance: if more than one image...do what??
         const firstImage = this.getFirstImage();
         if (!firstImage) return; // paranoid
-        firstImage.classList.add("bloom-hideImageButtons");
+        DisableImageEditing(firstImage);
         this.removeElt(page.getElementById("animationStart"));
         this.removeElt(page.getElementById("animationEnd"));
         const scale = EditableDivUtils.getPageScale();
@@ -256,7 +257,7 @@ export class MotionTool extends ToolboxToolReactAdaptor {
         if (!firstImage) {
             return;
         }
-        firstImage.classList.remove("bloom-hideImageButtons");
+        EnableImageEditing(firstImage);
         this.removeCurrentAudioMarkup();
         if (this.observer) {
             this.observer.disconnect();
