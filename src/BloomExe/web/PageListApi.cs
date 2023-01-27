@@ -188,6 +188,13 @@ namespace Bloom.web
 				foreach (var video in videos)
 					video.ParentNode.RemoveChild(video); // minimize memory use, thumb just shows placeholder
 				MarkImageNodesForThumbnail(pageElement);
+				// For WebView2, this prevents any interaction with elements in the page thumbnail.
+				// We put an overlay over it to try to prevent such interaction, but this is more
+				// reliable. Nothing in the page will ever get focus, be tabbed to, be read by
+				// screen readers, etc. In particular, we finally concluded that BL-11528 was caused
+				// by the browser temporarily focusing, and then scrolling into view, something
+				// on the first page; this prevents that.
+				pageElement.SetAttribute("inert", "true");
 				answer.content = XmlHtmlConverter.ConvertElementToHtml5(pageElement);
 			}
 
