@@ -77,7 +77,7 @@
 			this._rtlLanguageCheckBox.Name = "_rtlLanguageCheckBox";
 			this._rtlLanguageCheckBox.Size = new System.Drawing.Size(175, 23);
 			this._rtlLanguageCheckBox.TabIndex = 25;
-			this._rtlLanguageCheckBox.Text = "This script is right to left";
+			this._rtlLanguageCheckBox.Text = "This script is written right to left like Arabic, Hebrew, and Urdu.";
 			this._rtlLanguageCheckBox.UseVisualStyleBackColor = true;
 			// 
 			// _tallerLinesCheckBox
@@ -90,7 +90,7 @@
 			this._tallerLinesCheckBox.Name = "_tallerLinesCheckBox";
 			this._tallerLinesCheckBox.Size = new System.Drawing.Size(207, 23);
 			this._tallerLinesCheckBox.TabIndex = 26;
-			this._tallerLinesCheckBox.Text = "This script requires taller lines";
+			this._tallerLinesCheckBox.Text = "Use special line spacing.";
 			this._tallerLinesCheckBox.UseVisualStyleBackColor = true;
 			this._tallerLinesCheckBox.CheckedChanged += new System.EventHandler(this._tallerLinesCheckBox_CheckedChanged);
 			// 
