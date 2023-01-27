@@ -451,6 +451,18 @@ export function getWithConfig(
     );
 }
 
+/**
+ * Same as getWithConfig, but using Promise-based syntax instead of callbacks
+ * The generic type <T> should be the type of the "data" field in a successful AxiosResponse.
+ * Note: This function assumes the caller accurately provides <T>. No runtime validation is done to validate that data actually conforms to <T>
+ */
+export async function getWithConfigAsync<T>(
+    urlSuffix: string,
+    config: AxiosRequestConfig
+) {
+    return wrapAxios(axios.get<T>(getBloomApiPrefix() + urlSuffix, config));
+}
+
 export function postString(urlSuffix: string, value: string) {
     return wrapAxios(
         axios.post(getBloomApiPrefix() + urlSuffix, value, {

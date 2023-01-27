@@ -22,6 +22,9 @@ import { getRgbaColorStringFromColorAndOpacity } from "../../utils/colorUtils";
 import { SetupElements, attachToCkEditor } from "./bloomEditing";
 import {
     addImageEditingButtons,
+    DisableImageEditing,
+    EnableImageEditing,
+    EnableAllImageEditing,
     tryRemoveImageEditingButtons
 } from "./bloomImages";
 
@@ -192,7 +195,7 @@ export class BubbleManager {
         // Would this be more reliable?
         // container.getElementsByClassName("bloom-textOverPicture").length > 0;
         if (placeHolderImages.length === 0 || hasOverlay) {
-            container.classList.add("bloom-hideImageButtons");
+            DisableImageEditing(container);
         }
     }
 
@@ -260,11 +263,18 @@ export class BubbleManager {
         return focusableDivs;
     }
 
-    private focusFirstVisibleFocusable(activeElement: HTMLElement) {
+    /**
+     * Attempts to finds the first visible div which can be focused. If so, focuses it.
+     *
+     * @returns True if an element was focused. False otherwise.
+     */
+    private focusFirstVisibleFocusable(activeElement: HTMLElement): boolean {
         const focusElements = this.getAllVisibleFocusableDivs(activeElement);
         if (focusElements.length > 0) {
             (focusElements[0] as HTMLElement).focus();
+            return true;
         }
+        return false;
     }
 
     private focusLastVisibleFocusable(activeElement: HTMLElement) {
@@ -409,9 +419,7 @@ export class BubbleManager {
                             // on the underlying image is understood to mean the user wants to work
                             // on it, so allow them to be seen again.
                             // (Note: we're not making it focused in the same way an image overlay could be)
-                            container.classList.remove(
-                                "bloom-hideImageButtons"
-                            );
+                            EnableImageEditing(container);
                             // So far so good. We have now determined that we want to remove
                             // focus from anything in this image.
                             // (Enhance: should we check that something within this image
@@ -1872,12 +1880,6 @@ export class BubbleManager {
         element.classList.remove("se-resizable");
     }
 
-    public turnOffHidingImageButtons() {
-        Array.from(
-            document.getElementsByClassName("bloom-hideImageButtons")
-        ).forEach(e => e.classList.remove("bloom-hideImageButtons"));
-    }
-
     public turnOffBubbleEditing(): void {
         if (this.isComicEditingOn === false) {
             return; // Already off. No work needs to be done.
@@ -1887,7 +1889,7 @@ export class BubbleManager {
         Comical.setActiveBubbleListener(undefined);
         Comical.stopEditing();
 
-        this.turnOffHidingImageButtons();
+        EnableAllImageEditing();
 
         // Clean up event listeners that we no longer need
         Array.from(

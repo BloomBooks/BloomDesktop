@@ -1,5 +1,9 @@
 import "../../lib/jquery.resize"; // makes jquery resize work on all elements
-import { getWithConfig, postJson } from "../../utils/bloomApi";
+import {
+    getWithConfig,
+    getWithConfigAsync,
+    postJson
+} from "../../utils/bloomApi";
 
 // Enhance: this could be turned into a Typescript Module with only two public methods
 
@@ -117,7 +121,7 @@ function ctrlAltKeyDownListener(event: KeyboardEvent) {
         document
             .querySelectorAll<HTMLElement>(".bloom-imageContainer")
             .forEach(imageContainer => {
-                imageContainer.classList.add("ui-suppressImageButtons");
+                SuppressImageEditing(imageContainer);
 
                 if (event.ctrlKey) {
                     imageContainer.classList.add("ui-ctrlDown");
@@ -140,9 +144,11 @@ function ctrlAltKeyUpListener(event: KeyboardEvent) {
 
     if (isCtrlOrAltReleased && !areAnyOtherCtrlOrAltKeysDown) {
         document
-            .querySelectorAll(".bloom-imageContainer.ui-suppressImageButtons")
+            .querySelectorAll<HTMLElement>(
+                ".bloom-imageContainer.ui-suppressImageButtons"
+            )
             .forEach(imageContainer => {
-                imageContainer.classList.remove("ui-suppressImageButtons");
+                DisableSuppressImageEditingButtons(imageContainer);
 
                 // Remember, for keyup events, you want to check event.key === "Control" instead of event.ctrlKey
                 if (event.key === "Control") {
@@ -322,6 +328,7 @@ export function removeImageEditingButtons(containerDiv: Element): void {
     }).forEach(button => {
         button.remove();
     });
+    DisableImageTooltip(containerDiv as HTMLElement);
 }
 
 export function tryRemoveImageEditingButtons(
@@ -330,6 +337,44 @@ export function tryRemoveImageEditingButtons(
     if (containerDiv) {
         removeImageEditingButtons(containerDiv);
     }
+}
+
+export function DisableImageEditing(imageContainer: HTMLElement) {
+    imageContainer.classList.add("bloom-hideImageButtons");
+    UpdateImageTooltipVisibility(imageContainer);
+}
+
+/**
+ * Undo the effect of calling DisableImageEditing()
+ */
+export function EnableImageEditing(imageContainer: HTMLElement) {
+    imageContainer.classList.remove("bloom-hideImageButtons");
+    UpdateImageTooltipVisibility(imageContainer);
+}
+
+/**
+ * Like EnableImageEditing, but for the entire document instead of a single container.
+ */
+export function EnableAllImageEditing() {
+    Array.from(
+        document.getElementsByClassName("bloom-hideImageButtons")
+    ).forEach(EnableImageEditing);
+}
+
+/**
+ * Temporarily suppresses image editing
+ */
+function SuppressImageEditing(imageContainer: HTMLElement) {
+    imageContainer.classList.add("ui-suppressImageButtons");
+    UpdateImageTooltipVisibility(imageContainer);
+}
+
+/**
+ * Undo the effect of calling SuppressImageEditing()
+ */
+function DisableSuppressImageEditingButtons(imageContainer: HTMLElement) {
+    imageContainer.classList.remove("ui-suppressImageButtons");
+    UpdateImageTooltipVisibility(imageContainer);
 }
 
 // Bloom "imageContainer"s are <div>'s which wrap an <img>, and automatically proportionally resize
@@ -349,7 +394,7 @@ function SetupImageContainer(containerDiv: HTMLElement) {
     }
 
     // Just in case, ensure prior state is cleaned up
-    containerDiv.classList.remove("ui-suppressImageButtons");
+    DisableSuppressImageEditingButtons(containerDiv);
 
     // Now that we can overlay things on top of images, we don't want to show the flower placeholder
     // if the image container contains an overlay.
@@ -387,20 +432,62 @@ function getImgFromContainer(imageContainer: HTMLElement) {
         .not(".bloom-ui img"); // e.g. cog.svg
 }
 
-function SetImageTooltip(container: HTMLElement) {
+function DisableImageTooltip(container: HTMLElement) {
+    container.title = "";
+}
+
+function UpdateImageTooltipVisibility(container: HTMLElement) {
+    if (
+        container.classList.contains("bloom-hideImageButtons") ||
+        container.classList.contains("ui-suppressImageButtons")
+    ) {
+        // Since the image buttons aren't visible, hide the image tooltip too
+        DisableImageTooltip(container);
+    } else {
+        // Image editing buttons are allowed to be shown, so allow the image tooltip to be shown too
+        const dataTitle = container.getAttribute("data-title");
+
+        // If dataTitle is null for some unexpected reason, let's just leave the title unchanged.
+        if (dataTitle !== null) {
+            container.title = dataTitle;
+        }
+    }
+}
+
+async function SetImageTooltip(container: HTMLElement) {
+    const title = await DetermineImageTooltipAsync(container);
+
+    // We use data-title to store what the tooltip should be, regardless of whether the tooltip should actually be currently visible
+    // Use the real title attribute to show the tooltip only when desired
+    // (e.g. show when no bubble selected but hide when a bubble is selected)
+    container.setAttribute("data-title", title);
+
+    UpdateImageTooltipVisibility(container);
+}
+
+// Corresponds with ImageApi.cs::HandleImageInfo
+interface IImageInfoResponse {
+    name: string;
+    bytes: number;
+    width: number;
+    height: number;
+    bitDepth: string;
+}
+
+async function DetermineImageTooltipAsync(
+    container: HTMLElement
+): Promise<string> {
     const containerJQ = $(container);
     const imgElement = $(container).find("img");
 
     if (!imgElement) {
-        container.title = "";
-        return;
+        return "";
     }
     const url = GetRawImageUrl(imgElement);
     // Don't try to go getting image info for a built in Bloom image (like cogGrey.svg).
     // It'll just throw an exception.
     if (url.startsWith("/bloom/")) {
-        container.title = "";
-        return;
+        return "";
     }
 
     const targetDpiWidth = Math.ceil((300 * containerJQ.width()) / kBrowserDpi);
@@ -409,42 +496,48 @@ function SetImageTooltip(container: HTMLElement) {
     );
     const isPlaceHolder = url.indexOf("placeHolder.png") > -1;
 
-    getWithConfig("image/info", { params: { image: url } }, result => {
-        const imageFileInfo: any = result.data;
-        let linesAboutThisFile: string;
-        const fileFound = imageFileInfo.bytes >= 0;
-        let dpiLine = "";
-        if (isPlaceHolder) {
-            linesAboutThisFile = "";
-        } else if (!fileFound) {
-            linesAboutThisFile = `${imageFileInfo.name} not found\n`;
-        } else {
-            const dpi = getDpi(
-                container,
-                imageFileInfo.width,
-                imageFileInfo.height
-            );
-            const bulletForDpi = dpi < 300 ? "⚠" : "✓";
-            // removed because only devs care! Bit Depth: ${imageFileInfo.bitDepth.toString()}
-            linesAboutThisFile = `Name: ${
-                imageFileInfo.name
-            } Size: ${getFileLengthString(imageFileInfo.bytes)} Dots: ${
-                imageFileInfo.width
-            } x ${imageFileInfo.height}\n\n`;
-            if (!isPlaceHolder) {
-                dpiLine = `${bulletForDpi} This image would print at ${dpi} DPI.\n`;
-            }
-        }
-
-        const linesAboutThisContext =
-            `For the current paper size:\n` +
-            `  • The image container is ${containerJQ.width()} x ${containerJQ.height()} dots.\n` +
-            `  • For print publications, you want between 300-600 DPI (Dots Per Inch).\n` +
-            dpiLine +
-            `  • An image with ${targetDpiWidth} x ${targetDpiHeight} dots would fill this container at 300 DPI.`;
-
-        container.title = linesAboutThisFile + linesAboutThisContext;
+    const result = await getWithConfigAsync<IImageInfoResponse>("image/info", {
+        params: { image: url }
     });
+
+    if (!result) {
+        return "";
+    }
+
+    const imageFileInfo = result.data;
+    let linesAboutThisFile: string;
+    const fileFound = imageFileInfo.bytes >= 0;
+    let dpiLine = "";
+    if (isPlaceHolder) {
+        linesAboutThisFile = "";
+    } else if (!fileFound) {
+        linesAboutThisFile = `${imageFileInfo.name} not found\n`;
+    } else {
+        const dpi = getDpi(
+            container,
+            imageFileInfo.width,
+            imageFileInfo.height
+        );
+        const bulletForDpi = dpi < 300 ? "⚠" : "✓";
+        // removed because only devs care! Bit Depth: ${imageFileInfo.bitDepth.toString()}
+        linesAboutThisFile = `Name: ${
+            imageFileInfo.name
+        } Size: ${getFileLengthString(imageFileInfo.bytes)} Dots: ${
+            imageFileInfo.width
+        } x ${imageFileInfo.height}\n\n`;
+        if (!isPlaceHolder) {
+            dpiLine = `${bulletForDpi} This image would print at ${dpi} DPI.\n`;
+        }
+    }
+
+    const linesAboutThisContext =
+        `For the current paper size:\n` +
+        `  • The image container is ${containerJQ.width()} x ${containerJQ.height()} dots.\n` +
+        `  • For print publications, you want between 300-600 DPI (Dots Per Inch).\n` +
+        dpiLine +
+        `  • An image with ${targetDpiWidth} x ${targetDpiHeight} dots would fill this container at 300 DPI.`;
+
+    return linesAboutThisFile + linesAboutThisContext;
 }
 function getDpi(
     container: HTMLElement,
