@@ -138,8 +138,11 @@ namespace Bloom.Publish.PDF
 				if (last == 0)
 					return;		// don't delete only page (can happen in unit tests)
 				var pdfPage = pdfDoc.Pages[last];
+				Console.WriteLine("DEBUG: pdfPage.Height = {0}", pdfPage.Height);
+				Console.WriteLine("DEBUG: pdfPage.Width = {0}", pdfPage.Width);
 				if (!PdfPageHasContent(pdfPage))
 				{
+					Console.WriteLine("DEBUG: need to remove empty last page");
 					pdfDoc.Pages.RemoveAt(last);
 					pdfDoc.Save(outputPdfPath);
 				}
