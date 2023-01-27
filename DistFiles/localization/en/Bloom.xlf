@@ -3053,11 +3053,11 @@
         <note xml:lang="en">OLD TEXT (before 3.9, added space): Converting to mp3</note>
       </trans-unit>
       <trans-unit id="LanguageFontDetails.RightToLeftCheck">
-        <source xml:lang="en">This script is right to left</source>
+        <source xml:lang="en">This script is written right to left like Arabic, Hebrew, and Urdu</source>
         <note>ID: LanguageFontDetails.RightToLeftCheck</note>
       </trans-unit>
       <trans-unit id="LanguageFontDetails.TallerLinesCheck">
-        <source xml:lang="en">This script requires taller lines</source>
+        <source xml:lang="en">Use special line spacing</source>
         <note>ID: LanguageFontDetails.TallerLinesCheck</note>
       </trans-unit>
       <trans-unit id="LayoutChoices.A3Landscape" sil:dynamic="true">
@@ -5283,7 +5283,7 @@ Do you want to go ahead?</note>
         <note>ID: ScriptSettingsDialog.LineBreakCheckBox</note>
       </trans-unit>
       <trans-unit id="ScriptSettingsDialog.RightToLeftScriptCheckBox">
-        <source xml:lang="en">This script is right to left</source>
+        <source xml:lang="en">This script is written right to left like Arabic, Hebrew, and Urdu</source>
         <note>ID: ScriptSettingsDialog.RightToLeftScriptCheckBox</note>
       </trans-unit>
       <trans-unit id="ScriptSettingsDialog.ScriptSettingsWindowTitle">
@@ -5291,7 +5291,7 @@ Do you want to go ahead?</note>
         <note>ID: ScriptSettingsDialog.ScriptSettingsWindowTitle</note>
       </trans-unit>
       <trans-unit id="ScriptSettingsDialog.TallerLinesCheckBox">
-        <source xml:lang="en">This script requires taller lines</source>
+        <source xml:lang="en">Use special line spacing</source>
         <note>ID: ScriptSettingsDialog.TallerLinesCheckBox</note>
       </trans-unit>
       <trans-unit id="Settings.Enterprise.Community" sil:dynamic="true">
