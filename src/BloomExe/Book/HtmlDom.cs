@@ -2264,6 +2264,27 @@ namespace Bloom.Book
 			return element.SelectNodes(".//img | .//*[contains(@style,'background-image')]");
 		}
 
+		/// <summary>
+		/// Returns all file names for background music which are referenced in the DOM.
+		/// This should include items from the data div.
+		/// </summary>
+		public IEnumerable<string> GetBackgroundMusicFileNamesReferencedInBook()
+		{
+			return GetAudioSourceIdentifiers(HtmlDom.SelectChildBackgroundMusicElements(RawDom.DocumentElement))
+				.Where(AudioProcessor.HasBackgroundMusicFileExtension)
+				.Select(BookStorage.GetNormalizedPathForOS);
+		}
+
+		/// <summary>
+		/// Could be simply an ID without an extension (as for narration)
+		/// or an actual file name (as for background music)
+		/// </summary>
+		private static List<string> GetAudioSourceIdentifiers(XmlNodeList nodeList)
+		{
+			return (from XmlElement audio in nodeList
+				select HtmlDom.GetAudioElementUrl(audio).PathOnly.NotEncoded).Distinct().ToList();
+		}
+
 		public static XmlNodeList SelectChildNarrationAudioElements(XmlElement element, bool includeSplitTextBoxAudio, IEnumerable<string> langsToExclude = null)
 		{
 			string xPathToEditable = "";

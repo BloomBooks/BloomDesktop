@@ -311,9 +311,9 @@ namespace BloomTests.Publish
 					// The page above expects these two audio files to exist. Their content doesn't matter.
 					var audioFolder = Path.Combine(bookFolderPath, "audio");
 					Directory.CreateDirectory(audioFolder);
-					File.WriteAllText(Path.Combine(audioFolder, "aace3497-02e1-46e7-9af3-52bb74010fcc.wav"),
+					File.WriteAllText(Path.Combine(audioFolder, "aace3497-02e1-46e7-9af3-52bb74010fcc.mp3"),
 						@"this is a fake for testing");
-					File.WriteAllText(Path.Combine(audioFolder, "i2335f5ae-2cff-4029-a85c-951cc33256a4.wav"),
+					File.WriteAllText(Path.Combine(audioFolder, "i2335f5ae-2cff-4029-a85c-951cc33256a4.mp3"),
 						@"this is a fake for testing");
 					testBook.BookInfo.PublishSettings.BloomPub.Motion = true;
 					testBook.BookInfo.Save();
@@ -337,7 +337,8 @@ namespace BloomTests.Publish
 					Assert.That(meta.Feature_TalkingBook, Is.True);
 					Assert.That(meta.Feature_Blind, Is.True);
 					Assert.That(meta.Feature_Motion, Is.True);
-				});
+				},
+				languagesToInclude: new HashSet<string>(new[] {"xyz", "de", "es"}));
 		}
 
 		[Test]

@@ -452,10 +452,11 @@ namespace Bloom.Publish
 		/// so that needs to be a folder we can write in.
 		/// </summary>
 		public static Book.Book MakeDeviceXmatterTempBook(string bookFolderPath, BookServer bookServer, string tempFolderPath, bool isTemplateBook,
-			Dictionary<string,int> omittedPageLabels = null)
+			Dictionary<string,int> omittedPageLabels = null, bool fullCapabilities = true, string[] narrationLanguages = null)
 		{
-			BookStorage.CopyDirectory(bookFolderPath, tempFolderPath);
-			BookStorage.EnsureSingleHtmFile(tempFolderPath);
+			var filter = new BookFileFilter(bookFolderPath) {ForInteractive = fullCapabilities,
+				WantVideo = fullCapabilities, NarrationLanguages = narrationLanguages};
+			filter.CopyBookFolderFiltered(tempFolderPath);
 			// We can always save in a temp book
 			var bookInfo = new BookInfo(tempFolderPath, true, new AlwaysEditSaveContext()) {UseDeviceXMatter = !isTemplateBook};
 			var modifiedBook = bookServer.GetBookFromBookInfo(bookInfo);

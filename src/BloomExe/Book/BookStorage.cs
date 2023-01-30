@@ -1132,19 +1132,7 @@ namespace Bloom.Book
 		/// </summary>
 		public IEnumerable<string> GetBackgroundMusicFileNamesReferencedInBook()
 		{
-			return GetAudioSourceIdentifiers(HtmlDom.SelectChildBackgroundMusicElements(Dom.RawDom.DocumentElement))
-				.Where(AudioProcessor.HasBackgroundMusicFileExtension)
-				.Select(GetNormalizedPathForOS);
-		}
-
-		/// <summary>
-		/// Could be simply an ID without an extension (as for narration)
-		/// or an actual file name (as for background music)
-		/// </summary>
-		private List<string> GetAudioSourceIdentifiers(XmlNodeList nodeList)
-		{
-			return (from XmlElement audio in nodeList
-				select HtmlDom.GetAudioElementUrl(audio).PathOnly.NotEncoded).Distinct().ToList();
+			return Dom.GetBackgroundMusicFileNamesReferencedInBook();
 		}
 
 		#endregion Audio Files

@@ -688,15 +688,14 @@ namespace Bloom.CollectionTab
 		/// <param name="path">The path to write to. Precondition: Must not exist.</param>
 		internal void MakeBloomPackInternal(string path, string dir, string dirNamePrefix, bool forReaderTools, bool isCollection)
 		{
-			var excludeAudio = false; // want audio in bloompack: see https://issues.bloomlibrary.org/youtrack/issue/BL-11741.
 			var forDevice = false;
 			if (isCollection)
 			{
-				BookCompressor.CompressCollectionDirectory(path, dir, dirNamePrefix, forReaderTools, forDevice, excludeAudio);
+				BookCompressor.CompressCollectionDirectory(path, dir, dirNamePrefix, forReaderTools, forDevice);
 			}
 			else
 			{
-				BookCompressor.CompressBookDirectory(path, dir, dirNamePrefix, forReaderTools, forDevice, excludeAudio);
+				BookCompressor.CompressBookDirectory(path, dir, dirNamePrefix, forReaderTools, forDevice);
 			}
 		}
 

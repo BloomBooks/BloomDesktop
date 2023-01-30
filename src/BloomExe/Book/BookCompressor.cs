@@ -67,10 +67,9 @@ namespace Bloom.Book
 		/// <param name="forReaderTools">If True, then some pre-processing will be done to the contents of decodable
 		/// and leveled readers before they are added to the ZipStream</param>
 		/// <param name="forDevice">Indicates if it is for device, which means that device-specific things will happen, like reducing images/videos will be reduced, creating version.txt, etc</param>
-		/// <param name="excludeAudio">If true, the contents of the audio directory will not be included</param>
-		public static void CompressCollectionDirectory(string outputPath, string directoryToCompress, string dirNamePrefix, bool forReaderTools, bool forDevice, bool excludeAudio)
+		public static void CompressCollectionDirectory(string outputPath, string directoryToCompress, string dirNamePrefix, bool forReaderTools, bool forDevice)
 		{
-			CompressDirectory(outputPath, directoryToCompress, dirNamePrefix, forReaderTools, forDevice, excludeAudio, depthFromCollection: 0);
+			CompressDirectory(outputPath, directoryToCompress, dirNamePrefix, forReaderTools, forDevice, depthFromCollection: 0);
 		}
 
 		/// <summary>
@@ -82,19 +81,17 @@ namespace Bloom.Book
 		/// <param name="forReaderTools">If True, then some pre-processing will be done to the contents of decodable
 		/// and leveled readers before they are added to the ZipStream</param>
 		/// <param name="forDevice">Indicates if it is for device, which means that device-specific things will happen, like reducing images/videos will be reduced, creating version.txt, etc</param>
-		/// <param name="excludeAudio">If true, the contents of the audio directory will not be included</param>
 		/// <param name="imagePublishSettings">If non-null, image files are reduced in size before saving to no larger than the max size specified by this object</para>
-		/// <param name="omitMetaJson">If true, meta.json is excluded (typically for HTML readers).</param>
 		public static void CompressBookDirectory(string outputPath, string directoryToCompress, string dirNamePrefix,
-			bool forReaderTools = false, bool forDevice = false, bool excludeAudio = false, ImagePublishSettings imagePublishSettings = null, bool omitMetaJson = false, bool wrapWithFolder = true,
+			bool forReaderTools = false, bool forDevice = false, ImagePublishSettings imagePublishSettings = null, bool wrapWithFolder = true,
 			string pathToFileForSha = null)
 		{
-			CompressDirectory(outputPath, directoryToCompress, dirNamePrefix, forReaderTools, forDevice, excludeAudio, imagePublishSettings, omitMetaJson,
+			CompressDirectory(outputPath, directoryToCompress, dirNamePrefix, forReaderTools, forDevice, imagePublishSettings,
 				wrapWithFolder, pathToFileForSha, depthFromCollection: 1);
 		}
 
 		private static void CompressDirectory(string outputPath, string directoryToCompress, string dirNamePrefix,
-			bool forReaderTools, bool forDevice, bool excludeAudio, ImagePublishSettings imagePublishSettings = null, bool omitMetaJson = false, bool wrapWithFolder = true,
+			bool forReaderTools, bool forDevice, ImagePublishSettings imagePublishSettings = null, bool wrapWithFolder = true,
 			string pathToFileForSha = null, int depthFromCollection = 1)
 		{
 			using (var fsOut = RobustFile.Create(outputPath))
@@ -118,7 +115,7 @@ namespace Bloom.Book
 						// a zip, as with .bloompub files)
 						dirNameOffset = directoryToCompress.Length + 1;
 					}
-					CompressDirectory(directoryToCompress, zipStream, dirNameOffset, dirNamePrefix, depthFromCollection, forReaderTools, forDevice, excludeAudio, imagePublishSettings, omitMetaJson, pathToFileForSha);
+					CompressDirectory(directoryToCompress, zipStream, dirNameOffset, dirNamePrefix, depthFromCollection, forReaderTools, forDevice, imagePublishSettings, pathToFileForSha);
 
 					zipStream.IsStreamOwner = true; // makes the Close() also close the underlying stream
 					zipStream.Close();
@@ -139,14 +136,12 @@ namespace Bloom.Book
 		/// <param name="forReaderTools">If True, then some pre-processing will be done to the contents of decodable
 		/// and leveled readers before they are added to the ZipStream</param>
 		/// <param name="forDevice">Indicates if it is for device, which means that device-specific things will happen, like reducing images/videos will be reduced, creating version.txt, etc</param>
-		/// <param name="excludeAudio">If true, the contents of the audio directory will not be included</param>
 		/// <param name="imagePublishSettings">If <paramref name="forDevice"/> is true, controls how much image files are reduced in size. If this parameter is null, the default settings will be used.</para>
-		/// <param name="omitMetaJson">If true, meta.json is excluded (typically for HTML readers).</param>
 		private static void CompressDirectory(string directoryToCompress, ZipOutputStream zipStream, int dirNameOffset, string dirNamePrefix,
-			int depthFromCollection, bool forReaderTools, bool forDevice, bool excludeAudio, ImagePublishSettings imagePublishSettings, bool omitMetaJson = false, string pathToFileForSha = null)
+			int depthFromCollection, bool forReaderTools, bool forDevice, ImagePublishSettings imagePublishSettings, string pathToFileForSha = null)
 		{
 			var folderName = Path.GetFileName(directoryToCompress).ToLowerInvariant();
-			if (!IsValidBookFolder(folderName, excludeAudio, depthFromCollection))
+			if (!IsValidBookFolder(folderName, depthFromCollection))
 				return;
 			var files = Directory.GetFiles(directoryToCompress);
 
@@ -205,9 +200,7 @@ namespace Bloom.Book
 				// basic thumbnail.png, as we want eventually to extract that to use in the Reader UI.
 				if (fileName == "thumbnail-70.png" || fileName == "thumbnail-256.png")
 					continue;
-				if (fileName == "meta.json" && omitMetaJson)
-					continue;
-
+				
 				FileInfo fi = new FileInfo(filePath);
 
 				var entryName = dirNamePrefix + filePath.Substring(dirNameOffset);  // Makes the name in zip based on the folder
@@ -308,7 +301,7 @@ namespace Bloom.Book
 				if (depthFromCollection == 2 && !IsInActivitiesFolder(folder, depthFromCollection))
 					continue;
 
-				CompressDirectory(folder, zipStream, dirNameOffset, dirNamePrefix, depthFromCollection + 1, forReaderTools, forDevice, excludeAudio, imagePublishSettings);
+				CompressDirectory(folder, zipStream, dirNameOffset, dirNamePrefix, depthFromCollection + 1, forReaderTools, forDevice, imagePublishSettings);
 			}
 		}
 
@@ -344,7 +337,7 @@ namespace Bloom.Book
 
 		private readonly static string[] validSubFolders = { "audio", "video", "activities" };
 
-		private static bool IsValidBookFolder(string folderName, bool excludeAudio, int depthFromCollection)
+		private static bool IsValidBookFolder(string folderName, int depthFromCollection)
 		{
 			// 'depthFromCollection' of 2 corresponds to the level where we want to see only the valid subfolders.
 			// We only check depth 2. We don't check depth 1, because it is not a subfolder. We don't check
@@ -353,8 +346,6 @@ namespace Bloom.Book
 			if (depthFromCollection != 2)
 				return true;
 
-			if (excludeAudio && folderName == "audio")
-				return false;
 			// BL-8956 If we have users who store other folders of (to us) junk in their book folder or
 			// if the user somehow (as we've seen) gets a book folder embedded in another book folder,
 			// we don't want to include those folders in our output.

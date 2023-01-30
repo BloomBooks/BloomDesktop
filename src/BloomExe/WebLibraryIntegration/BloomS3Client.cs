@@ -208,7 +208,7 @@ namespace Bloom.WebLibraryIntegration
 		/// except the one we want.
 		/// </summary>
 		public void UploadBook(string storageKeyOfBookFolder, string pathToBloomBookDirectory, IProgress progress,
-			string pdfToInclude, ISet<string> audioFilesToInclude, IEnumerable<string> videoFilesToInclude,
+			string pdfToInclude, bool includeNarrationAudio, bool includeMusic,
 			string[] languagesToInclude, string metadataLang1Code, string metadataLang2Code)
 		{
 			BaseUrl = null;
@@ -241,16 +241,17 @@ namespace Bloom.WebLibraryIntegration
 			Directory.CreateDirectory(wrapperPath);
 
 			var destDirName = Path.Combine(wrapperPath, Path.GetFileName(pathToBloomBookDirectory));
-			CopyDirectory(pathToBloomBookDirectory, destDirName);
+			var filter = new BookFileFilter(pathToBloomBookDirectory) { ForEdit = true,
+				NarrationLanguages = (includeNarrationAudio? languagesToInclude : Array.Empty<string>()),
+				WantVideo = true,
+				WantMusic = includeMusic
+			};
+			if (pdfToInclude != null)
+				filter.AddException(pdfToInclude, true);
+			filter.AddException(Path.GetFileNameWithoutExtension(pathToBloomBookDirectory) + BookInfo.BookOrderExtension, true);
+			filter.CopyBookFolderFiltered(destDirName);
 
-			BookStorage.EnsureSingleHtmFile(destDirName);
-
-			RemoveUnwantedSubdirectories(destDirName);
-
-			RemoveUnwantedVideoFiles(destDirName, videoFilesToInclude);
 			ProcessVideosInTempDirectory(destDirName);
-
-			RemoveUnwantedAudioFiles(destDirName, audioFilesToInclude);
 
 			var unwantedPdfs = Directory.EnumerateFiles(destDirName, "*.pdf").Where(x => Path.GetFileName(x) != pdfToInclude);
 			foreach (var file in unwantedPdfs)

@@ -78,7 +78,7 @@ namespace Bloom.Publish.Android
 			BookCompressor.MakeSizedThumbnail(modifiedBook, modifiedBook.FolderPath, 256);
 
 			BookCompressor.CompressBookDirectory(outputPath, modifiedBook.FolderPath, "", forDevice: true, imagePublishSettings: settings?.ImagePublishSettings ?? ImagePublishSettings.Default,
-				omitMetaJson: false, wrapWithFolder: false, pathToFileForSha: BookStorage.FindBookHtmlInFolder(bookFolderPath));
+				wrapWithFolder: false, pathToFileForSha: BookStorage.FindBookHtmlInFolder(bookFolderPath));
 
 			return modifiedBook.FolderPath;
 		}
@@ -99,7 +99,8 @@ namespace Bloom.Publish.Android
 				BookStorage.SanitizeNameForFileSystem(Path.GetFileNameWithoutExtension(htmPath)));
 			Directory.CreateDirectory(tentativeBookFolderPath);
 			var modifiedBook = PublishHelper.MakeDeviceXmatterTempBook(bookFolderPath, bookServer,
-				tentativeBookFolderPath, isTemplateBook);
+				tentativeBookFolderPath, isTemplateBook,
+				narrationLanguages: settings?.AudioLangugesToInclude);
 
 			modifiedBook.SetMotionAttributesOnBody(settings?.Motion ?? false);
 
