@@ -382,21 +382,79 @@ body.publishingWithoutFullBleed {
     }
 }
 
-/*Notes on wkhtmltopdf and page sizes: Set the border color of Div.Page in preview.css so you can see what the pdf is doing
-these should be 14.8, but wkhtmltopdf shinks it
-The folowing are the values which work with a 1px border.  With 0px border, I could not get the pages to come out
-properly at all with wkhtmltopdf 0.10.0. It's as if the borders actually help by making the used part of each
-page be the full page, regardless of the contents.
-
-To compensate, the code asks wkthmlpdf to zoom the page by 9.1%, which an invisble 1px border added by
-preview.css.
-
-Changes here generally require similar changes in EpubMaker.FixPictureSizes() and pageThumbnailList.less.
-*/
+// Notes on WebView2 and page sizes: PrintToPdfAsync uses measurements in inches, and apparently quantizes
+// page sizes to a 1/96 inch grid.  (Traditional screen DPI, anyone?)  The quantization process usually
+// takes the floor for the page size calculation for fitting to 1/96 inches, but occastionally uses the ceiling
+// instead.  I haven't figured out any rhyme or reason for why it uses the ceiling the few times it does.
+// This is not the first time this kind of problem has been encountered with PDF printing via Chrome:
+// see https://github.com/puppeteer/puppeteer/issues/2278.
+.pdfPublishMode {
+    .bloom-page {
+        &.A3Portrait {
+            min-width: (floor((@A3Portrait-Width / 25.4) * 96) / 96) * 25.4;
+            max-width: (floor((@A3Portrait-Width / 25.4) * 96) / 96) * 25.4;
+            min-height: (floor((@A3Portrait-Height / 25.4) * 96) / 96) * 25.4;
+            max-height: (floor((@A3Portrait-Height / 25.4) * 96) / 96) * 25.4;
+        }
+        &.A3Landscape {
+            min-width: (floor((@A3Landscape-Width / 25.4) * 96) / 96) * 25.4;
+            max-width: (floor((@A3Landscape-Width / 25.4) * 96) / 96) * 25.4;
+            min-height: (floor((@A3Landscape-Height / 25.4) * 96) / 96) * 25.4;
+            max-height: (floor((@A3Landscape-Height / 25.4) * 96) / 96) * 25.4;
+        }
+        &.A4Portrait {
+            min-width: (floor((@A4Portrait-Width / 25.4) * 96) / 96) * 25.4;
+            max-width: (floor((@A4Portrait-Width / 25.4) * 96) / 96) * 25.4;
+            min-height: (floor((@A4Portrait-Height / 25.4) * 96) / 96) * 25.4;
+            max-height: (floor((@A4Portrait-Height / 25.4) * 96) / 96) * 25.4;
+        }
+        &.A4Landscape {
+            min-width: (ceil((@A4Landscape-Width / 25.4) * 96) / 96) * 25.4;
+            max-width: (ceil((@A4Landscape-Width / 25.4) * 96) / 96) * 25.4;
+            min-height: (floor((@A4Landscape-Height / 25.4) * 96) / 96) * 25.4;
+            max-height: (floor((@A4Landscape-Height / 25.4) * 96) / 96) * 25.4;
+        }
+        &.A5Portrait {
+            min-width: (floor((@A5Portrait-Width / 25.4) * 96) / 96) * 25.4;
+            max-width: (floor((@A5Portrait-Width / 25.4) * 96) / 96) * 25.4;
+            min-height: (floor((@A5Portrait-Height / 25.4) * 96) / 96) * 25.4;
+            max-height: (floor((@A5Portrait-Height / 25.4) * 96) / 96) * 25.4;
+        }
+        &.A5Landscape {
+            min-width: (floor((@A5Landscape-Width / 25.4) * 96) / 96) * 25.4;
+            max-width: (floor((@A5Landscape-Width / 25.4) * 96) / 96) * 25.4;
+            min-height: (floor((@A5Landscape-Height / 25.4) * 96) / 96) * 25.4;
+            max-height: (floor((@A5Landscape-Height / 25.4) * 96) / 96) * 25.4;
+        }
+        &.A6Portrait {
+            min-width: (ceil((@A6Portrait-Width / 25.4) * 96) / 96) * 25.4;
+            max-width: (ceil((@A6Portrait-Width / 25.4) * 96) / 96) * 25.4;
+            min-height: (floor((@A6Portrait-Height / 25.4) * 96) / 96) * 25.4;
+            max-height: (floor((@A6Portrait-Height / 25.4) * 96) / 96) * 25.4;
+        }
+        &.A6Landscape {
+            min-width: (floor((@A6Landscape-Width / 25.4) * 96) / 96) * 25.4;
+            max-width: (floor((@A6Landscape-Width / 25.4) * 96) / 96) * 25.4;
+            min-height: (ceil((@A6Landscape-Height / 25.4) * 96) / 96) * 25.4;
+            max-height: (ceil((@A6Landscape-Height / 25.4) * 96) / 96) * 25.4;
+        }
+        &.B5Portrait {
+            min-width: (floor((@B5Portrait-Width / 25.4) * 96) / 96) * 25.4;
+            max-width: (floor((@B5Portrait-Width / 25.4) * 96) / 96) * 25.4;
+            min-height: (floor((@B5Portrait-Height / 25.4) * 96) / 96) * 25.4;
+            max-height: (floor((@B5Portrait-Height / 25.4) * 96) / 96) * 25.4;
+        }
+        &.Cm13Landscape {
+            min-width: (floor((@Cm13Square-Side / 25.4) * 96) / 96) * 25.4;
+            max-width: (floor((@Cm13Square-Side / 25.4) * 96) / 96) * 25.4;
+            min-height: (ceil((@Cm13Square-Side / 25.4) * 96) / 96) * 25.4;
+            max-height: (ceil((@Cm13Square-Side / 25.4) * 96) / 96) * 25.4;
+        }
+    }
+}
+// See device.less for all css involving the following layouts:
+// Device16x9Portrait, Device16x9Landscape and PictureStoryLandscape
 .bloom-page {
-    // See device.less for all css involving the following layouts:
-    //   Device16x9Portrait, Device16x9Landscape and PictureStoryLandscape
-
     &.A5Portrait {
         min-width: @A5Portrait-Width;
         max-width: @A5Portrait-Width;

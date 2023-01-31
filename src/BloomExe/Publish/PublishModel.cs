@@ -214,6 +214,7 @@ namespace Bloom.Publish
 				_bookServer, orientationChanging, PageLayout);
 
 			AddStylesheetClasses(dom.RawDom);
+			HtmlDom.AddClassToBody(dom.RawDom, "pdfPublishMode");
 
 			PageLayout.UpdatePageSplitMode(dom.RawDom);
 			if (_currentlyLoadedBook.FullBleed && !GetPrintingWithFullBleed())
