@@ -14,6 +14,7 @@ using Bloom.ImageProcessing;
 using SIL.Windows.Forms.ImageToolbox;
 using SIL.Xml;
 using System.Collections.Generic;
+using Bloom.Publish.Android;
 using Bloom.web.controllers;
 
 namespace Bloom.Book
@@ -21,7 +22,7 @@ namespace Bloom.Book
 	public class BookCompressor
 	{
 		public const string BloomPubExtensionWithDot = ".bloompub";
-		public static string LastVersionCode { get; private set; }
+		
 
 		// these image files may need to be reduced before being stored in the compressed output file
 		internal static readonly string[] ImageFileExtensions = { ".tif", ".tiff", ".png", ".bmp", ".jpg", ".jpeg" };
@@ -83,16 +84,15 @@ namespace Bloom.Book
 		/// <param name="forDevice">Indicates if it is for device, which means that device-specific things will happen, like reducing images/videos will be reduced, creating version.txt, etc</param>
 		/// <param name="imagePublishSettings">If non-null, image files are reduced in size before saving to no larger than the max size specified by this object</para>
 		public static void CompressBookDirectory(string outputPath, string directoryToCompress, string dirNamePrefix,
-			bool forReaderTools = false, bool forDevice = false, ImagePublishSettings imagePublishSettings = null, bool wrapWithFolder = true,
-			string pathToFileForSha = null)
+			bool forReaderTools = false, bool forDevice = false, ImagePublishSettings imagePublishSettings = null, bool wrapWithFolder = true)
 		{
 			CompressDirectory(outputPath, directoryToCompress, dirNamePrefix, forReaderTools, forDevice, imagePublishSettings,
-				wrapWithFolder, pathToFileForSha, depthFromCollection: 1);
+				wrapWithFolder, depthFromCollection: 1);
 		}
 
 		private static void CompressDirectory(string outputPath, string directoryToCompress, string dirNamePrefix,
 			bool forReaderTools, bool forDevice, ImagePublishSettings imagePublishSettings = null, bool wrapWithFolder = true,
-			string pathToFileForSha = null, int depthFromCollection = 1)
+			int depthFromCollection = 1)
 		{
 			using (var fsOut = RobustFile.Create(outputPath))
 			{
@@ -115,7 +115,7 @@ namespace Bloom.Book
 						// a zip, as with .bloompub files)
 						dirNameOffset = directoryToCompress.Length + 1;
 					}
-					CompressDirectory(directoryToCompress, zipStream, dirNameOffset, dirNamePrefix, depthFromCollection, forReaderTools, forDevice, imagePublishSettings, pathToFileForSha);
+					CompressDirectory(directoryToCompress, zipStream, dirNameOffset, dirNamePrefix, depthFromCollection, forReaderTools, forDevice, imagePublishSettings);
 
 					zipStream.IsStreamOwner = true; // makes the Close() also close the underlying stream
 					zipStream.Close();
@@ -138,7 +138,7 @@ namespace Bloom.Book
 		/// <param name="forDevice">Indicates if it is for device, which means that device-specific things will happen, like reducing images/videos will be reduced, creating version.txt, etc</param>
 		/// <param name="imagePublishSettings">If <paramref name="forDevice"/> is true, controls how much image files are reduced in size. If this parameter is null, the default settings will be used.</para>
 		private static void CompressDirectory(string directoryToCompress, ZipOutputStream zipStream, int dirNameOffset, string dirNamePrefix,
-			int depthFromCollection, bool forReaderTools, bool forDevice, ImagePublishSettings imagePublishSettings, string pathToFileForSha = null)
+			int depthFromCollection, bool forReaderTools, bool forDevice, ImagePublishSettings imagePublishSettings)
 		{
 			var folderName = Path.GetFileName(directoryToCompress).ToLowerInvariant();
 			if (!IsValidBookFolder(folderName, depthFromCollection))
@@ -250,15 +250,6 @@ namespace Bloom.Book
 					var newContent = XmlHtmlConverter.ConvertDomToHtml5(dom);
 					modifiedContent = Encoding.UTF8.GetBytes(newContent);
 					newEntry.Size = modifiedContent.Length;
-
-					if (pathToFileForSha != null)
-					{
-						// Make an extra entry containing the sha
-						var sha = Book.ComputeHashForAllBookRelatedFiles(pathToFileForSha);
-						var name = "version.txt"; // must match what BloomReader is looking for in NewBookListenerService.IsBookUpToDate()
-						MakeExtraEntry(zipStream, name, sha);
-						LastVersionCode = sha;
-					}
 				}
 				else
 				{
@@ -444,19 +435,6 @@ namespace Bloom.Book
 			var filename = style.Substring(style.IndexOf(kBackgroundImage) + kBackgroundImage.Length);
 			filename = filename.Substring(0, filename.IndexOf("'"));
 			return System.Web.HttpUtility.UrlDecode(filename);
-		}
-
-		private static void MakeExtraEntry(ZipOutputStream zipStream, string name, string content)
-		{
-			ZipEntry entry = new ZipEntry(name);
-			var shaBytes = Encoding.UTF8.GetBytes(content);
-			entry.Size = shaBytes.Length;
-			zipStream.PutNextEntry(entry);
-			using (var memStream = new MemoryStream(shaBytes))
-			{
-				StreamUtils.Copy(memStream, zipStream, new byte[1024]);
-			}
-			zipStream.CloseEntry();
 		}
 
 		private static string GetMetaJsonModfiedForTemplate(string path)

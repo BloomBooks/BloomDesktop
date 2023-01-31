@@ -209,7 +209,7 @@ namespace Bloom.Publish.Android.wifi
 			// For example, it might change missing or out-of-date mp3 files. In case the sha we just computed
 			// is different from the one we're advertising, update the advertisement, so at least subsequent
 			// advertisements will conform to the version the device just got.
-			_wifiAdvertiser.BookVersion = BookCompressor.LastVersionCode;
+			_wifiAdvertiser.BookVersion = BloomPubMaker.LastVersionCode;
 			lock (this)
 			{
 				// The UploadDataCompleted event handler quit working at Bloom 4.6.1238 Alpha (Windows test build).

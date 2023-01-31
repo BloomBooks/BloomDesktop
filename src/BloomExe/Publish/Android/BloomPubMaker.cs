@@ -30,7 +30,7 @@ namespace Bloom.Publish.Android
 		internal const string kDistributionBloomWeb = "bloom-web";
 		internal const string kCreatorBloom = "bloom";
 		internal const string kCreatorHarvester = "harvester";
-
+		public static string LastVersionCode { get; private set; }
 		public static Control ControlForInvoke { get; set; }
 
 		public static void CreateBloomPub(BookInfo bookInfo, AndroidPublishSettings settings, string outputFolder, BookServer bookServer, IWebSocketProgress progress )
@@ -77,13 +77,23 @@ namespace Bloom.Publish.Android
 
 			BookCompressor.MakeSizedThumbnail(modifiedBook, modifiedBook.FolderPath, 256);
 
+			MakeSha(BookStorage.FindBookHtmlInFolder(bookFolderPath), modifiedBook.FolderPath);
+
 			BookCompressor.CompressBookDirectory(outputPath, modifiedBook.FolderPath, "", forDevice: true, imagePublishSettings: settings?.ImagePublishSettings ?? ImagePublishSettings.Default,
-				wrapWithFolder: false, pathToFileForSha: BookStorage.FindBookHtmlInFolder(bookFolderPath));
+				wrapWithFolder: false);
 
 			return modifiedBook.FolderPath;
 		}
 
-		public static Dictionary<string,HashSet<string>> BloomPubFontsAndLangsUsed = null;
+		private static void MakeSha(string pathToFileForSha, string folderForSha)
+		{
+			var sha = Book.Book.ComputeHashForAllBookRelatedFiles(pathToFileForSha);
+			var name = "version.txt"; // must match what BloomReader is looking for in NewBookListenerService.IsBookUpToDate()
+			RobustFile.WriteAllText(Path.Combine(folderForSha, name), sha, Encoding.UTF8);
+			LastVersionCode = sha;
+		}
+
+		public static Dictionary<string, HashSet<string>> BloomPubFontsAndLangsUsed = null;
 
 		public static Book.Book PrepareBookForBloomReader(string bookFolderPath, BookServer bookServer,
 			TemporaryFolder temp,
@@ -303,9 +313,9 @@ namespace Bloom.Publish.Android
 					correct = ((a.ParentNode?.ParentNode as XmlElement)?.Attributes["class"]?.Value ??"").Contains("correct-answer")
 				}).ToArray()
 			};
-			group.questions = new [] {question};
+			@group.questions = new [] { question };
 
-			questions.Add(group);
+			questions.Add(@group);
 		}
 
 
@@ -397,7 +407,7 @@ namespace Bloom.Publish.Android
 		/// electronic publishing code to combine ePUB and BloomReader preparation as much
 		/// as possible.
 		/// </remarks>
-		private static void RemoveInvisibleImageElements(Bloom.Book.Book book)
+		private static void RemoveInvisibleImageElements(Book.Book book)
 		{
 			var isLandscape = book.GetLayout().SizeAndOrientation.IsLandScape;
 			foreach (var img in book.RawDom.SafeSelectNodes("//img").Cast<XmlElement>().ToArray())
@@ -445,9 +455,9 @@ namespace Bloom.Publish.Android
 				if (badFonts.Contains(font))
 					continue;
 				var group = fontFileFinder.GetGroupForFont(font);
-				if (group != null)
+				if (@group != null)
 				{
-					EpubMaker.AddFontFace(sb, font, "normal", "normal", group.Normal);
+					EpubMaker.AddFontFace(sb, font, "normal", "normal", @group.Normal);
 				}
 				// We don't need (or want) a rule to use Andika instead.
 				// The reader typically WILL use Andika, because we have a rule making it the default font
@@ -554,8 +564,8 @@ namespace Bloom.Publish.Android
 				{
 					// There may well be editable divs, especially automatically generated for active langauges,
 					// which don't have any questions. Skip them. But if we got at least one, save it.
-					group.questions = questions.ToArray();
-					questionGroups.Add(group);
+					@group.questions = questions.ToArray();
+					questionGroups.Add(@group);
 				}
 			}
 		}
