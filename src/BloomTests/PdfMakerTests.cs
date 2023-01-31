@@ -1,15 +1,13 @@
-﻿using System;
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using System.IO;
 using Bloom.Publish;
 using Bloom.Publish.PDF;
 using NUnit.Framework;
 using SIL.IO;
-using SIL.Reporting;
 
 namespace BloomTests
 {
-	[TestFixture, Ignore("Temporarily ignoring to get a good TC build...")]
+	[TestFixture]
 #if __MonoCS__
 	[Apartment(System.Threading.ApartmentState.STA)]
 #endif
@@ -19,9 +17,6 @@ namespace BloomTests
 		[Test]
 		public void MakePdf_BookStyleIsNone_OutputsPdf()
 		{
-			Logger.WriteEvent($"Starting MakePdf_BookStyleIsNone_OutputsPdf");
-			Console.WriteLine($"Starting MakePdf_BookStyleIsNone_OutputsPdf");
-
 			var maker = new PdfMaker();
 			using (var input = TempFile.WithExtension("html"))
 			using (var output = new TempFile())

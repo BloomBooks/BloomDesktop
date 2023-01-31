@@ -28,9 +28,6 @@ namespace Bloom.Publish.PDF
 		public void MakePdf(PdfMakingSpecs specs, Control owner, BackgroundWorker worker,
 			DoWorkEventArgs doWorkEventArgs)
 		{
-			Logger.WriteEvent($"Starting MakePdfUsingExternalPdfMakerProgram::MakePdf");
-			Console.WriteLine($"Starting MakePdfUsingExternalPdfMakerProgram::MakePdf");
-
 			_worker = worker;
 #if !__MonoCS__
 			// Mono doesn't current provide System.Printing.  Leave the 'if' here to emphasize the
@@ -132,8 +129,6 @@ namespace Bloom.Publish.PDF
 
 			var progress = new NullProgress();
 			// NB: WebView2 does not appear to support progress reporting while making PDFs.
-			Console.WriteLine("DEBUG PDF: \"{0}\" {1}", exePath, arguments);
-
 			var res = runner.Start(exePath, arguments, Encoding.UTF8, fromDirectory, timeoutInSeconds, progress,
 				(msg) => { /* nothing we can do with WebView2 */ });
 
@@ -248,7 +243,7 @@ namespace Bloom.Publish.PDF
 						bldr.Append(" -O landscape");
 				}
 			}
-			bldr.Append(" --debug");	// we love debug output  :-)
+			//bldr.Append(" --debug");
 		}
 
 		private static void ConfigureFullBleedPageSize(StringBuilder bldr, PdfMakingSpecs specs)

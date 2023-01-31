@@ -1,10 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using Microsoft.Web.WebView2.Core;
@@ -57,8 +53,8 @@ namespace WebView2PdfMaker
 			{
 				Application.DoEvents();
 				Thread.Sleep(100);
-				if (_options.Debug)
-					Console.Out.WriteLine("WebView2PdfComponent.ctor slept 100ms waiting for initTask.IsCompleted");
+				//if (_options.Debug)
+				//	Console.Out.WriteLine("WebView2PdfComponent.ctor slept 100ms waiting for initTask.IsCompleted");
 			}
 			if (_options.Debug)
 				Console.Out.WriteLine("WebView2PdfComponent - initTask.IsCompleted!");
@@ -73,8 +69,8 @@ namespace WebView2PdfMaker
 			{
 				Application.DoEvents();
 				Thread.Sleep(100);
-				if (_options.Debug)
-					Console.Out.WriteLine("WebView2PdfComponent.EnsureBrowserReadyToNavigate slept 100ms");
+				//if (_options.Debug)
+				//	Console.Out.WriteLine("WebView2PdfComponent.EnsureBrowserReadyToNavigate slept 100ms");
 			}
 			if (_options.Debug)
 				Console.Out.WriteLine("WebView2PdfComponent.EnsureBrowserReadyToNavigate _readyToNavigate finally set!");
@@ -183,7 +179,7 @@ namespace WebView2PdfMaker
 			File.Delete(tempFileName);
 			File.Delete(_pathToTempPdf);
 			File.Delete(_options.OutputPdfPath);
-			//_webview.Size = new Size(1920, 1320);
+			_webview.Size = new Size(1920, 1320);
 			_uriOfDocument = new Uri(_options.InputHtmlUri);
 			_navigationCompleted = false;
 
