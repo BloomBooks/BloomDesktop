@@ -382,21 +382,82 @@ body.publishingWithoutFullBleed {
     }
 }
 
-/*Notes on wkhtmltopdf and page sizes: Set the border color of Div.Page in preview.css so you can see what the pdf is doing
-these should be 14.8, but wkhtmltopdf shinks it
-The folowing are the values which work with a 1px border.  With 0px border, I could not get the pages to come out
-properly at all with wkhtmltopdf 0.10.0. It's as if the borders actually help by making the used part of each
-page be the full page, regardless of the contents.
-
-To compensate, the code asks wkthmlpdf to zoom the page by 9.1%, which an invisble 1px border added by
-preview.css.
-
-Changes here generally require similar changes in EpubMaker.FixPictureSizes() and pageThumbnailList.less.
-*/
+// Notes on WebView2 and page sizes: PrintToPdfAsync uses measurements in inches.  Values that are
+// divisible by 0.25in appear to work okay without any problem.  However, the metric page measurements
+// cause problems because the internal conversions cause the actual PDF page size to deviate slightly
+// from the exact values wanted.  Thus, pages either slowly creep up or creep down as printing proceeds.
+// The height adjustments are all less than 0.3mm per page and were empirically determined on a 100-page
+// book.  With these adjustments, the page creep over 100 pages is less than 1px on the screen.  (ie,
+// cannot be detected displaying the pages at full size on the screen using a screen ruler)
+// This is not the first time this kind of problem has been encountered with PDF printing via Chrome:
+// see https://github.com/puppeteer/puppeteer/issues/2278.
+.pdfPublishMode {
+    .bloom-page {
+        &.A3Portrait {
+            min-width: @A3Portrait-Width;
+            max-width: @A3Portrait-Width;
+            min-height: calc(@A3Portrait-Height + 0.16mm);
+            max-height: calc(@A3Portrait-Height + 0.16mm);
+        }
+        &.A3Landscape {
+            min-width: @A3Landscape-Width;
+            max-width: @A3Landscape-Width;
+            min-height: calc(@A3Landscape-Height - 0.136mm);
+            max-height: calc(@A3Landscape-Height - 0.136mm);
+        }
+        &.A4Portrait {
+            min-width: @A4Portrait-Width;
+            max-width: @A4Portrait-Width;
+            min-height: calc(@A4Portrait-Height + 0.128mm);
+            max-height: calc(@A4Portrait-Height + 0.128mm);
+        }
+        &.A4Landscape {
+            min-width: @A4Landscape-Width;
+            max-width: @A4Landscape-Width;
+            min-height: calc(@A4Landscape-Height - 0.182mm);
+            max-height: calc(@A4Landscape-Height - 0.182mm);
+        }
+        &.A5Portrait {
+            min-width: @A5Portrait-Width;
+            max-width: @A5Portrait-Width;
+            min-height: calc(@A5Portrait-Height - 0.182mm);
+            max-height: calc(@A5Portrait-Height - 0.182mm);
+        }
+        &.A5Landscape {
+            min-width: @A5Landscape-Width;
+            max-width: @A5Landscape-Width;
+            min-height: calc(@A5Landscape-Height + 0.17mm);
+            max-height: calc(@A5Landscape-Height + 0.17mm);
+        }
+        &.A6Portrait {
+            min-width: @A6Portrait-Width;
+            max-width: @A6Portrait-Width;
+            min-height: calc(@A6Portrait-Height - 0.095mm);
+            max-height: calc(@A6Portrait-Height - 0.095mm);
+        }
+        &.A6Landscape {
+            min-width: @A6Landscape-Width;
+            max-width: @A6Landscape-Width;
+            min-height: calc(@A6Landscape-Height + 0.04mm);
+            max-height: calc(@A6Landscape-Height + 0.04mm);
+        }
+        &.B5Portrait {
+            min-width: @B5Portrait-Width;
+            max-width: @B5Portrait-Width;
+            min-height: calc(@B5Portrait-Height - 0.232mm);
+            max-height: calc(@B5Portrait-Height - 0.232mm);
+        }
+        &.Cm13Landscape {
+            min-width: @Cm13Square-Side;
+            max-width: @Cm13Square-Side;
+            min-height: calc(@Cm13Square-Side + 0.176mm);
+            max-height: calc(@Cm13Square-Side + 0.176mm);
+        }
+    }
+}
+// See device.less for all css involving the following layouts:
+// Device16x9Portrait, Device16x9Landscape and PictureStoryLandscape
 .bloom-page {
-    // See device.less for all css involving the following layouts:
-    //   Device16x9Portrait, Device16x9Landscape and PictureStoryLandscape
-
     &.A5Portrait {
         min-width: @A5Portrait-Width;
         max-width: @A5Portrait-Width;
