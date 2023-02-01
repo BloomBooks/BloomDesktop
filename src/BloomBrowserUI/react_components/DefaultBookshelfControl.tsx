@@ -5,11 +5,7 @@ import * as React from "react";
 import { useState } from "react";
 import { get, postString } from "../utils/bloomApi";
 import { lightTheme, kBloomYellow } from "../bloomMaterialUITheme";
-import {
-    ThemeProvider,
-    Theme,
-    StyledEngineProvider
-} from "@mui/material/styles";
+import { ThemeProvider, StyledEngineProvider } from "@mui/material/styles";
 import { MenuItem, Select, Typography } from "@mui/material";
 import { makeStyles } from "@mui/styles";
 import { useContentful } from "../contentful/UseContentful";

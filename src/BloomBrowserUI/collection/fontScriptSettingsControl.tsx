@@ -4,11 +4,7 @@ import { jsx, css } from "@emotion/react";
 import * as React from "react";
 import { get } from "../utils/bloomApi";
 import { lightTheme } from "../bloomMaterialUITheme";
-import {
-    ThemeProvider,
-    Theme,
-    StyledEngineProvider
-} from "@mui/material/styles";
+import { ThemeProvider, StyledEngineProvider } from "@mui/material/styles";
 import { IFontMetaData } from "../bookEdit/StyleEditor/fontSelectComponent";
 import { useEffect, useState } from "react";
 import SingleFontSection from "../react_components/singleFontSection";

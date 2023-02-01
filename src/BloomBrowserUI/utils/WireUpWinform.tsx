@@ -2,11 +2,7 @@ import React = require("react");
 import * as ReactDOM from "react-dom";
 import { IBloomDialogEnvironmentParams } from "../react_components/BloomDialog/BloomDialogPlumbing";
 import { lightTheme } from "../bloomMaterialUITheme";
-import {
-    ThemeProvider,
-    Theme,
-    StyledEngineProvider
-} from "@mui/material/styles";
+import { ThemeProvider, StyledEngineProvider } from "@mui/material/styles";
 import { hookupLinkHandler } from "./linkHandler";
 
 /**

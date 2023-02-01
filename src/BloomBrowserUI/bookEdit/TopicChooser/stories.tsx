@@ -1,9 +1,5 @@
 import * as React from "react";
-import {
-    ThemeProvider,
-    Theme,
-    StyledEngineProvider
-} from "@mui/material/styles";
+import { ThemeProvider, StyledEngineProvider } from "@mui/material/styles";
 import { addDecorator, ComponentStory } from "@storybook/react";
 import { StorybookContext } from "../../.storybook/StoryBookContext";
 import { lightTheme } from "../../bloomMaterialUITheme";

@@ -21,11 +21,7 @@ import { DialogCloseButton } from "../react_components/BloomDialog/commonDialogC
 import { CollectionHistoryTable } from "./CollectionHistoryTable";
 import { Tab, TabList, TabPanel } from "react-tabs";
 import { LocalizedString } from "../react_components/l10nComponents";
-import {
-    ThemeProvider,
-    Theme,
-    StyledEngineProvider
-} from "@mui/material/styles";
+import { ThemeProvider, StyledEngineProvider } from "@mui/material/styles";
 import { lightTheme } from "../bloomMaterialUITheme";
 import "react-tabs/style/react-tabs.less";
 import { useEffect, useState } from "react";

@@ -14,11 +14,7 @@ import {
     SettingsPanel
 } from "../commonPublish/PublishScreenBaseComponents";
 import ReactDOM = require("react-dom");
-import {
-    ThemeProvider,
-    Theme,
-    StyledEngineProvider
-} from "@mui/material/styles";
+import { ThemeProvider, StyledEngineProvider } from "@mui/material/styles";
 import {
     darkTheme,
     kBloomBlue,

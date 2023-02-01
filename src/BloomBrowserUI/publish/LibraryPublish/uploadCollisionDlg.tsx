@@ -22,11 +22,7 @@ import { TextWithEmbeddedLink } from "../../react_components/link";
 import { post, postJson } from "../../utils/bloomApi";
 import { WireUpForWinforms } from "../../utils/WireUpWinform";
 import { lightTheme } from "../../bloomMaterialUITheme";
-import {
-    ThemeProvider,
-    Theme,
-    StyledEngineProvider
-} from "@mui/material/styles";
+import { ThemeProvider, StyledEngineProvider } from "@mui/material/styles";
 import HelpLink from "../../react_components/helpLink";
 import {
     IBloomDialogEnvironmentParams,

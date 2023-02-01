@@ -3,11 +3,7 @@ import { jsx, css } from "@emotion/react";
 
 import * as React from "react";
 import { lightTheme, kBloomYellow } from "../bloomMaterialUITheme";
-import {
-    ThemeProvider,
-    Theme,
-    StyledEngineProvider
-} from "@mui/material/styles";
+import { ThemeProvider, StyledEngineProvider } from "@mui/material/styles";
 import { useMemo, useRef, useState } from "react";
 import { post, postString } from "../utils/bloomApi";
 import { useL10n } from "../react_components/l10nHooks";

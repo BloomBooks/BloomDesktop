@@ -8,13 +8,8 @@ import DialogTitle from "@mui/material/DialogTitle";
 import { useState } from "react";
 import { LocalizedString } from "./l10nComponents";
 import BloomButton from "./bloomButton";
-import theOneLocalizationManager from "../lib/localizationManager/localizationManager";
 import "./RequestStringDialog.less";
-import {
-    ThemeProvider,
-    Theme,
-    StyledEngineProvider
-} from "@mui/material/styles";
+import { ThemeProvider, StyledEngineProvider } from "@mui/material/styles";
 import { lightTheme } from "../bloomMaterialUITheme";
 
 let root: HTMLElement | undefined;

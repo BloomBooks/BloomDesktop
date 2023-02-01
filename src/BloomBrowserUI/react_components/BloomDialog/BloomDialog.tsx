@@ -2,11 +2,7 @@
 import { jsx, css } from "@emotion/react";
 import * as React from "react";
 import { lightTheme } from "../../bloomMaterialUITheme";
-import {
-    ThemeProvider,
-    Theme,
-    StyledEngineProvider
-} from "@mui/material/styles";
+import { ThemeProvider, StyledEngineProvider } from "@mui/material/styles";
 import { Dialog, DialogProps, Paper, PaperProps } from "@mui/material";
 import CloseOnEscape from "react-close-on-escape";
 import { kDialogPadding } from "../../bloomMaterialUITheme";

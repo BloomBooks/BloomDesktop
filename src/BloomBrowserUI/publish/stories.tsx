@@ -1,11 +1,7 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
 import { lightTheme } from "../bloomMaterialUITheme";
 import * as React from "react";
-import {
-    ThemeProvider,
-    Theme,
-    StyledEngineProvider
-} from "@mui/material/styles";
+import { ThemeProvider, StyledEngineProvider } from "@mui/material/styles";
 import { storiesOf } from "@storybook/react";
 import { addDecorator } from "@storybook/react";
 import { ReaderPublishScreen } from "./ReaderPublish/ReaderPublishScreen";

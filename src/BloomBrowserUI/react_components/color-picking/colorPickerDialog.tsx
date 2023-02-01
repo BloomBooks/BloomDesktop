@@ -4,11 +4,7 @@ import React = require("react");
 import * as ReactDOM from "react-dom";
 import { useEffect, useRef, useState } from "react";
 import { getEditTabBundleExports } from "../../bookEdit/js/bloomFrames";
-import {
-    ThemeProvider,
-    Theme,
-    StyledEngineProvider
-} from "@mui/material/styles";
+import { ThemeProvider, StyledEngineProvider } from "@mui/material/styles";
 import { lightTheme } from "../../bloomMaterialUITheme";
 import { get, postJson } from "../../utils/bloomApi";
 import ColorPicker from "./colorPicker";

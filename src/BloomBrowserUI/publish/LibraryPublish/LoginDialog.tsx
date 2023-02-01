@@ -1,10 +1,6 @@
 import * as React from "react";
 import ReactDOM = require("react-dom");
-import {
-    ThemeProvider,
-    Theme,
-    StyledEngineProvider
-} from "@mui/material/styles";
+import { ThemeProvider, StyledEngineProvider } from "@mui/material/styles";
 import { makeTheme } from "../../problemDialog/theme";
 
 import StyledFirebaseAuth from "react-firebaseui/StyledFirebaseAuth";

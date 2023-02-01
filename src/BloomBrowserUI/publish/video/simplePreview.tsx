@@ -1,27 +1,19 @@
 /** @jsx jsx **/
 import { jsx, css } from "@emotion/react";
 import * as React from "react";
-import { useState, useEffect } from "react";
-import { useL10n } from "../../react_components/l10nHooks";
-import { useDrawAttention } from "../../react_components/UseDrawAttention";
-import { useTheme, Theme, Typography } from "@mui/material";
-import IconButton from "@mui/material/IconButton";
-import RefreshIcon from "@mui/icons-material/Refresh";
 
 export const SimplePreview: React.FunctionComponent<{
     landscape: boolean;
     url: string;
     landscapeWidth: number;
 }> = props => {
-    const theme: Theme = useTheme();
-
     // Desktop pixels are much larger, so things come out bloated.
     // For now what we do is make the player & readium think we have twice the pixels,
     // then shrink it all. This gives the controls a more reasonable share of the preview.
     const pixelDensityMultiplier = 2;
-    const scale = 25;
-    const screenWidth = 9 * scale;
-    const screenHeight = 16 * scale;
+    // const scale = 25;
+    // const screenWidth = 9 * scale;
+    // const screenHeight = 16 * scale;
 
     let width = (props.landscapeWidth * 9) / 16;
     let height = props.landscapeWidth;

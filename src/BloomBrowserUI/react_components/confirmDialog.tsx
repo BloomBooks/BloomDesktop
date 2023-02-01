@@ -7,7 +7,6 @@ import {
     DialogActions,
     DialogContent,
     ThemeProvider,
-    Theme,
     StyledEngineProvider
 } from "@mui/material";
 import CloseOnEscape from "react-close-on-escape";

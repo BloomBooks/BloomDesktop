@@ -2,11 +2,7 @@
 import { jsx, css } from "@emotion/react";
 import * as React from "react";
 import { useEffect, useState } from "react";
-import {
-    ThemeProvider,
-    Theme,
-    StyledEngineProvider
-} from "@mui/material/styles";
+import { ThemeProvider, StyledEngineProvider } from "@mui/material/styles";
 import { lightTheme } from "../../bloomMaterialUITheme";
 import { MenuItem, Popover, PopoverOrigin } from "@mui/material";
 import FontDisplayBar from "../../react_components/fontDisplayBar";

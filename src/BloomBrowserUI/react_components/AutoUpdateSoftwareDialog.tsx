@@ -3,11 +3,7 @@ import BloomButton from "./bloomButton";
 import { get, post, postData } from "../utils/bloomApi";
 import "./AutoUpdateSoftwareDialog.less";
 import { lightTheme } from "../bloomMaterialUITheme";
-import {
-    ThemeProvider,
-    Theme,
-    StyledEngineProvider
-} from "@mui/material/styles";
+import { ThemeProvider, StyledEngineProvider } from "@mui/material/styles";
 import { FormControlLabel, Radio, RadioGroup } from "@mui/material";
 import { L10nLabel } from "./L10nLabel";
 import { useEffect, useState } from "react";
