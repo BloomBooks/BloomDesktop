@@ -18,6 +18,7 @@ export class HelpLink extends LocalizableElement<IHelpLinkProps, {}> {
             <Link
                 style={this.props.style}
                 href={"/bloom/api/help/" + this.props.helpId}
+                underline="hover"
             >
                 {this.getLocalizedContent()}
             </Link>

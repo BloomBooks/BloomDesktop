@@ -30,6 +30,7 @@ export default class HtmlHelpLink extends LocalizableElement<
                         // Do nothing
                     })
                 }
+                underline="hover"
             >
                 {this.getLocalizedContent()}
             </Link>

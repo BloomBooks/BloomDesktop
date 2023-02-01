@@ -42,6 +42,7 @@ import { RadioGroup } from "./RadioGroup";
 import { MuiRadio } from "./muiRadio";
 import WinFormsStyleSelect from "./winFormsStyleSelect";
 import BookMakingSettingsControl from "../collection/bookMakingSettingsControl";
+import { Link } from "./link";
 
 storiesOf("Localizable Widgets", module)
     .add("Expandable", () => (
@@ -404,6 +405,18 @@ const testMenu = [
 storiesOf("Localizable Widgets/Localizable Menu", module).add("test menu", () =>
     menuBox(testMenu)
 );
+
+storiesOf("Localizable Widgets/Link", module).add("enabled", () => (
+    <Link l10nKey="bogus">link text</Link>
+));
+
+// Setting the disabled prop actually only adds a disabled class which has no effect on its own.
+// So I'm not including the story for now. Else it is just confusing.
+// .add("disabled", () => (
+//     <Link l10nKey="bogus" disabled={true}>
+//         disabled link text
+//     </Link>
+// ))
 
 const confirmDialogProps: IConfirmDialogProps = {
     title: "Title",

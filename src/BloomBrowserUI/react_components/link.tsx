@@ -2,7 +2,7 @@
 import { jsx, css } from "@emotion/react";
 
 import * as React from "react";
-import * as MUI from "@mui/material";
+import { Link as MuiLink } from "@mui/material";
 import { LinkBaseProps } from "@mui/material/Link";
 
 import { ILocalizationProps, LocalizableElement } from "./l10nComponents";
@@ -28,15 +28,23 @@ interface ILinkProps extends ILocalizationProps {
 // upper case, you may be really wanting a BloomButton with variant={text}
 export class Link extends LocalizableElement<ILinkProps, {}> {
     public render() {
-        // prettier-ignore
-        return (<MUI.Link
-                className={this.props.className + (this.props.disabled ? " disabled" : "")}
+        return (
+            //prettier-ignore
+            <MuiLink
+                underline="hover"
+                className={
+                    this.props.className +
+                    (this.props.disabled ? " disabled" : "")
+                }
                 id={"" + this.props.id}
                 color={this.props.color}
                 // href must be defined in order to maintain normal link UI
                 // I tried to do like the 'id' attribute above, but it caused an error.
-                href={(this.props.href && !this.props.disabled) ? this.props.href : ""}
-
+                href={
+                    (this.props.href && !this.props.disabled)
+                        ? this.props.href
+                        : ""
+                }
                 onClick={e => {
                     if (this.props.onClick) {
                         // If we have an onClick we don't expect to also have an href.
@@ -49,7 +57,10 @@ export class Link extends LocalizableElement<ILinkProps, {}> {
                         }
                     }
                 }}
-            >{this.getLocalizedContent()}</MUI.Link>);
+            >
+                {this.getLocalizedContent()}
+            </MuiLink>
+        );
     }
 }
 
@@ -68,9 +79,9 @@ export class TextWithEmbeddedLink extends LocalizableElement<
             return (
                 <span className={parts.l10nClass}>
                     {parts.text.substring(0, idxOpen)}
-                    <MUI.Link {...this.props}>
+                    <MuiLink underline="hover" {...this.props}>
                         {parts.text.substring(idxOpen + 1, idxClose)}
-                    </MUI.Link>
+                    </MuiLink>
                     {parts.text.substring(idxClose + 1)}
                 </span>
             );
@@ -78,7 +89,9 @@ export class TextWithEmbeddedLink extends LocalizableElement<
         // We couldn't find the link text, return everything as a link.
         return (
             <span>
-                <MUI.Link {...this.props}>{parts.text}</MUI.Link>
+                <MuiLink underline="hover" {...this.props}>
+                    {parts.text}
+                </MuiLink>
             </span>
         );
     }

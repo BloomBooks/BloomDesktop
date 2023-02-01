@@ -12,7 +12,10 @@ export const EPUBHelpGroup = () => (
         >
             About ePUBs
         </HelpLink>
-        <Link href="https://docs.bloomlibrary.org/ePUB-notes/">
+        <Link
+            href="https://docs.bloomlibrary.org/ePUB-notes/"
+            underline="hover"
+        >
             <Div l10nKey="PublishTab.Epub.AboutReaders">
                 About ePUB Readers & Bloom
             </Div>
