@@ -29,7 +29,7 @@ namespace BloomTests.Book
 		[OneTimeSetUp]
 		public void OneTimeSetUp()
 		{
-			var _normalBookFolder = new TemporaryFolder("Book File Filter");
+			_normalBookFolder = new TemporaryFolder("Book File Filter");
 			_normalBookFolderPath = _normalBookFolder.FolderPath;
 			_normalBookPrefixLength = _normalBookFolderPath.Length + 1; // include following slash
 			Directory.CreateDirectory(_normalBookFolderPath);
@@ -74,6 +74,12 @@ namespace BloomTests.Book
 			_filterForInteractive = new BookFileFilter(_normalBookFolderPath) { ForInteractive = true };
 		}
 
+		[OneTimeTearDown]
+		public void OneTimeTearDown()
+		{
+			_normalBookFolder.Dispose();
+		}
+
 		[Test]
 		public void FilterPaths_PassesThingsThatPassFilter()
 		{
@@ -104,60 +110,60 @@ namespace BloomTests.Book
 		[Test]
 		public void Filter_PassesOnlyRootHtmlFile()
 		{
-			Assert.That(_normalFilter.Filter(_normalBookPath.Substring(_normalBookPrefixLength)), Is.True);
-			Assert.That(_normalFilter.Filter(_configHtmlPath.Substring(_normalBookPrefixLength)), Is.False);
-			Assert.That(_normalFilter.Filter(_otherHtmlPath.Substring(_normalBookPrefixLength)), Is.False);
+			Assert.That(_normalFilter.FilterRelative(_normalBookPath.Substring(_normalBookPrefixLength)), Is.True);
+			Assert.That(_normalFilter.FilterRelative(_configHtmlPath.Substring(_normalBookPrefixLength)), Is.False);
+			Assert.That(_normalFilter.FilterRelative(_otherHtmlPath.Substring(_normalBookPrefixLength)), Is.False);
 		}
 
 		[Test]
 		public void Filter_ForEdit_PassesRootHtmlFileAndConfig()
 		{
-			Assert.That(_filterForEdit.Filter(_normalBookPath.Substring(_normalBookPrefixLength)), Is.True);
-			Assert.That(_filterForEdit.Filter(_configHtmlPath.Substring(_normalBookPrefixLength)), Is.True);
-			Assert.That(_filterForEdit.Filter(_otherHtmlPath.Substring(_normalBookPrefixLength)), Is.False);
+			Assert.That(_filterForEdit.FilterRelative(_normalBookPath.Substring(_normalBookPrefixLength)), Is.True);
+			Assert.That(_filterForEdit.FilterRelative(_configHtmlPath.Substring(_normalBookPrefixLength)), Is.True);
+			Assert.That(_filterForEdit.FilterRelative(_otherHtmlPath.Substring(_normalBookPrefixLength)), Is.False);
 		}
 
 		[Test]
 		public void Filter_DoesNotPassStuffInUnwantedFolders()
 		{
-			Assert.That(_normalFilter.Filter(Path.Combine("rubbish","something.png")), Is.False);
+			Assert.That(_normalFilter.FilterRelative(Path.Combine("rubbish","something.png")), Is.False);
 		}
 
 		[Test]
 		public void Filter_ForInteractive_PassesEverythingInActivities()
 		{
-			Assert.That(_normalFilter.Filter(Path.Combine("activities", "something.png")), Is.False);
-			Assert.That(_normalFilter.Filter(Path.Combine("activities", "audio", "mynoise.mp3")), Is.False);
+			Assert.That(_normalFilter.FilterRelative(Path.Combine("activities", "something.png")), Is.False);
+			Assert.That(_normalFilter.FilterRelative(Path.Combine("activities", "audio", "mynoise.mp3")), Is.False);
 			// Including subfolders; make sure to test mp3, wav, a subfolder called audio, video, files with extensions we normally exclude
-			Assert.That(_filterForInteractive.Filter(Path.Combine("activities", "something.png")), Is.True);
-			Assert.That(_filterForInteractive.Filter(Path.Combine("activities", "audio", "mynoise.mp3")), Is.True);
-			Assert.That(_filterForInteractive.Filter(Path.Combine("activities", "video", "myvideo.mp4")), Is.True);
-			Assert.That(_filterForInteractive.Filter(Path.Combine("activities", "something.unknown")), Is.True);
+			Assert.That(_filterForInteractive.FilterRelative(Path.Combine("activities", "something.png")), Is.True);
+			Assert.That(_filterForInteractive.FilterRelative(Path.Combine("activities", "audio", "mynoise.mp3")), Is.True);
+			Assert.That(_filterForInteractive.FilterRelative(Path.Combine("activities", "video", "myvideo.mp4")), Is.True);
+			Assert.That(_filterForInteractive.FilterRelative(Path.Combine("activities", "something.unknown")), Is.True);
 		}
 
 		[Test]
 		public void Filter_ForEdit_PassesExtraExtensions()
 		{
-			Assert.That(_normalFilter.Filter("something.md"), Is.False);
-			Assert.That(_filterForEdit.Filter("something.md"), Is.True);
+			Assert.That(_normalFilter.FilterRelative("something.md"), Is.False);
+			Assert.That(_filterForEdit.FilterRelative("something.md"), Is.True);
 		}
 
 		// For this we need a BookStorage. Possibly make a new constructor that just initializes the DOM, which is all many methods need.
 		[Test]
 		public void Filter_PassesAudio_ForRequestedLanguages()
 		{
-			Assert.That(_normalFilter.Filter(Path.Combine("audio", "i1083a390-c1ef-41d2-a55d-815eacb5c08c.mp3")), Is.False);
-			Assert.That(_normalFilter.Filter(Path.Combine("audio", "i1083a390-c1ef-41d2-a55d-815eacb5c08e.mp3")), Is.False);
+			Assert.That(_normalFilter.FilterRelative(Path.Combine("audio", "i1083a390-c1ef-41d2-a55d-815eacb5c08c.mp3")), Is.False);
+			Assert.That(_normalFilter.FilterRelative(Path.Combine("audio", "i1083a390-c1ef-41d2-a55d-815eacb5c08e.mp3")), Is.False);
 			_normalFilter.NarrationLanguages = new[] { "akl", "es" };
-			Assert.That(_normalFilter.Filter(Path.Combine("audio", "i1083a390-c1ef-41d2-a55d-815eacb5c08c.mp3")), Is.True);
-			Assert.That(_normalFilter.Filter(Path.Combine("audio", "i1083a390-c1ef-41d2-a55d-815eacb5c08d.mp3")), Is.True);
-			Assert.That(_normalFilter.Filter(Path.Combine("audio", "i1083a390-c1ef-41d2-a55d-815eacb5c08e.mp3")), Is.False); // wrong language
-			Assert.That(_normalFilter.Filter(Path.Combine("audio", "does not exist.mp3")), Is.False);
+			Assert.That(_normalFilter.FilterRelative(Path.Combine("audio", "i1083a390-c1ef-41d2-a55d-815eacb5c08c.mp3")), Is.True);
+			Assert.That(_normalFilter.FilterRelative(Path.Combine("audio", "i1083a390-c1ef-41d2-a55d-815eacb5c08d.mp3")), Is.True);
+			Assert.That(_normalFilter.FilterRelative(Path.Combine("audio", "i1083a390-c1ef-41d2-a55d-815eacb5c08e.mp3")), Is.False); // wrong language
+			Assert.That(_normalFilter.FilterRelative(Path.Combine("audio", "does not exist.mp3")), Is.False);
 			_normalFilter.NarrationLanguages = null; // means everything
-			Assert.That(_normalFilter.Filter(Path.Combine("audio", "i1083a390-c1ef-41d2-a55d-815eacb5c08c.mp3")), Is.True);
-			Assert.That(_normalFilter.Filter(Path.Combine("audio", "i1083a390-c1ef-41d2-a55d-815eacb5c08d.mp3")), Is.True);
-			Assert.That(_normalFilter.Filter(Path.Combine("audio", "i1083a390-c1ef-41d2-a55d-815eacb5c08e.mp3")), Is.True);
-			Assert.That(_normalFilter.Filter(Path.Combine("audio", "does not exist.mp3")), Is.False);
+			Assert.That(_normalFilter.FilterRelative(Path.Combine("audio", "i1083a390-c1ef-41d2-a55d-815eacb5c08c.mp3")), Is.True);
+			Assert.That(_normalFilter.FilterRelative(Path.Combine("audio", "i1083a390-c1ef-41d2-a55d-815eacb5c08d.mp3")), Is.True);
+			Assert.That(_normalFilter.FilterRelative(Path.Combine("audio", "i1083a390-c1ef-41d2-a55d-815eacb5c08e.mp3")), Is.True);
+			Assert.That(_normalFilter.FilterRelative(Path.Combine("audio", "does not exist.mp3")), Is.False);
 
 		}
 
@@ -165,36 +171,36 @@ namespace BloomTests.Book
 		public void Filter_PassesMusicAudio()
 		{
 			_normalFilter.WantMusic = false;
-			Assert.That(_normalFilter.Filter(Path.Combine("audio", "Abcdefg.mp3")), Is.False);
+			Assert.That(_normalFilter.FilterRelative(Path.Combine("audio", "Abcdefg.mp3")), Is.False);
 			_normalFilter.WantMusic = true;
-			Assert.That(_normalFilter.Filter(Path.Combine("audio", "Abcdefg.mp3")), Is.True);
-			Assert.That(_normalFilter.Filter(Path.Combine("audio", "12345.mp3")), Is.False);
+			Assert.That(_normalFilter.FilterRelative(Path.Combine("audio", "Abcdefg.mp3")), Is.True);
+			Assert.That(_normalFilter.FilterRelative(Path.Combine("audio", "12345.mp3")), Is.False);
 		}
 
 		[Test]
 		public void Filter_PassesVideoIfRequested()
 		{
 			_normalFilter.WantVideo = false;
-			Assert.That(_normalFilter.Filter(Path.Combine("video", "847700f2-cfa3-41a4-8f5b-29198b8eca28.mp4")), Is.False);
+			Assert.That(_normalFilter.FilterRelative(Path.Combine("video", "847700f2-cfa3-41a4-8f5b-29198b8eca28.mp4")), Is.False);
 			_normalFilter.WantVideo = true;
-			Assert.That(_normalFilter.Filter(Path.Combine("video", "847700f2-cfa3-41a4-8f5b-29198b8eca28.mp4")), Is.True);
-			Assert.That(_normalFilter.Filter(Path.Combine("video", "Unused.mp4")), Is.False);
+			Assert.That(_normalFilter.FilterRelative(Path.Combine("video", "847700f2-cfa3-41a4-8f5b-29198b8eca28.mp4")), Is.True);
+			Assert.That(_normalFilter.FilterRelative(Path.Combine("video", "Unused.mp4")), Is.False);
 		}
 
 		[Test]
 		public void Filter_PassesTemplatesIfForEditing()
 		{
-			Assert.That(_normalFilter.Filter(Path.Combine("templates", "somefile.svg")), Is.False);
-			Assert.That(_filterForEdit.Filter(Path.Combine("templates", "somefile.svg")), Is.True);
+			Assert.That(_normalFilter.FilterRelative(Path.Combine("templates", "somefile.svg")), Is.False);
+			Assert.That(_filterForEdit.FilterRelative(Path.Combine("templates", "somefile.svg")), Is.True);
 
 		}
 
 		[Test]
 		public void Filter_PassesBookOrderForUpload()
 		{
-			Assert.That(_normalFilter.Filter("myfile.BloomBookOrder"), Is.False);
+			Assert.That(_normalFilter.FilterRelative("myfile.BloomBookOrder"), Is.False);
 			_normalFilter.AddException("myfile.BloomBookOrder", true);
-			Assert.That(_normalFilter.Filter("myfile.BloomBookOrder"), Is.True);
+			Assert.That(_normalFilter.FilterRelative("myfile.BloomBookOrder"), Is.True);
 		}
 	}
 }

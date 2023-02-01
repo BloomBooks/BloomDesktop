@@ -85,10 +85,31 @@ namespace Bloom.Publish.Android
 			var newContent = XmlHtmlConverter.ConvertDomToHtml5(modifiedBook.RawDom);
 			RobustFile.WriteAllText(BookStorage.FindBookHtmlInFolder(modifiedBook.FolderPath), newContent, Encoding.UTF8);
 
-			BookCompressor.CompressBookDirectory(outputPath, modifiedBook.FolderPath, "",
+			BookCompressor.CompressBookDirectory(outputPath, modifiedBook.FolderPath,
+				MakeFilter(modifiedBook.FolderPath),
+				"",
 				wrapWithFolder: false);
 
 			return modifiedBook.FolderPath;
+		}
+
+		/// <summary>
+		/// Make a filter suitable for passing the files a BloomPub needs.
+		/// </summary>
+		/// <param name="folderPath"></param>
+		public static IFilter MakeFilter(string folderPath)
+		{
+			var filter = new BookFileFilter(folderPath)
+			{
+				ForInteractive = true,
+				WantMusic = true,
+				WantVideo = true,
+				NarrationLanguages = null
+			};
+			// these are artifacts of uploading book to BloomLibrary.org and not useful in BloomPubs
+			filter.AddException("thumbnail-256.png", false);
+			filter.AddException("thumbnail-70.png", false);
+			return filter;
 		}
 
 		private static void CompressImages(string modifiedBookFolderPath, ImagePublishSettings imagePublishSettings, XmlDocument dom)

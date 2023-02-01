@@ -694,7 +694,14 @@ namespace Bloom.CollectionTab
 			}
 			else
 			{
-				BookCompressor.CompressBookDirectory(path, dir, dirNamePrefix, forReaderTools);
+				BookCompressor.CompressBookDirectory(path, dir,
+					new BookFileFilter(dir)
+					{
+						ForEdit = true,
+						WantMusic = true,
+						WantVideo = true,
+						NarrationLanguages = null}, // all audio
+					dirNamePrefix, forReaderTools);
 			}
 		}
 

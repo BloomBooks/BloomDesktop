@@ -404,6 +404,7 @@
     <Compile Include="Book\WidgetHelper.cs" />
     <Compile Include="CLI\SendFontAnalyticsCommand.cs" />
     <Compile Include="Collection\BookCollectionHolder.cs" />
+    <Compile Include="Collection\CollectionFilter.cs" />
     <Compile Include="Collection\CollectionLock.cs" />
     <Compile Include="ErrorReporter\BloomErrorReport.cs" />
     <Compile Include="ErrorReporter\IBloomErrorReporter.cs" />

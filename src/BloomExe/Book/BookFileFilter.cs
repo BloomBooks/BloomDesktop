@@ -14,7 +14,11 @@ using SIL.Xml;
 
 namespace Bloom.Book
 {
-	public class BookFileFilter
+	public interface IFilter
+	{
+		bool Filter(string fullPath);
+	}
+	public class BookFileFilter: IFilter
 	{
 		// Path to the root folder of the book.
 		public string BookFolderPath;
@@ -32,7 +36,6 @@ namespace Bloom.Book
 				Debug.Assert(value == true, "We don't support reverting to not-for-edit");
 				_forEdit = value;
 				ForInteractive = true;
-				WantMusic = true;
 				// I'm not sure what this is for, possibly storing month names etc. in Wall Calendar,
 				// but BookStarter wants it if present.
 				_specialCases["configuration.html"] = true;
@@ -139,7 +142,7 @@ namespace Bloom.Book
 		public string[] FilterPaths(string[] input, string bookFolderPath)
 		{
 			var length = bookFolderPath.Length +1;
-			return input.Where(x => Filter(x.Substring(length))).ToArray();
+			return input.Where(x => FilterRelative(x.Substring(length))).ToArray();
 		}
 
 		/// <summary>
@@ -162,7 +165,12 @@ namespace Bloom.Book
 		internal readonly HashSet<string> BookLevelFileExtensionsLowerCase =
 			new HashSet<string>(new[] { ".svg", ".png", ".jpg", ".jpeg", ".tif", ".tiff", ".bmp", ".otf", ".ttf", ".woff", ".css", ".json", ".txt", ".js", ".distribution" });
 
-		public bool Filter(string pathFromRootFolder)
+		public bool Filter(string fullPath)
+		{
+			var pathFromRootFolder = fullPath.Substring(BookFolderPath.Length + 1);
+			return FilterRelative(pathFromRootFolder);
+		}
+		public bool FilterRelative(string pathFromRootFolder)
 		{
 			if (!SIL.PlatformUtilities.Platform.IsLinux)
 			{
@@ -265,7 +273,7 @@ namespace Bloom.Book
 			}
 		}
 
-		public string[] GetAllFilePaths(string folderPath)
+		public static string[] GetAllFilePaths(string folderPath)
 		{
 			return Directory.EnumerateFiles(folderPath).Concat(
 				Directory.EnumerateDirectories(folderPath).SelectMany(GetAllFilePaths)).ToArray();

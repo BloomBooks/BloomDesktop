@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using Bloom.Book;
+using Bloom.Publish.Android;
 using NUnit.Framework;
 using SIL.IO;
 using SIL.TestUtilities;
@@ -69,7 +70,7 @@ namespace BloomTests.Book
 			// System Under Test //
 			using (var bloomPubTempFile = TempFile.WithFilenameInTempFolder("BookCompressorBloomPub" + BookCompressor.BloomPubExtensionWithDot))
 			{
-				BookCompressor.CompressBookDirectory(bloomPubTempFile.Path, _bookFolder.Path, "");
+				BookCompressor.CompressBookDirectory(bloomPubTempFile.Path, _bookFolder.Path, BloomPubMaker.MakeFilter(_bookFolder.Path), "");
 			}
 
 			// Verification //
@@ -103,7 +104,7 @@ namespace BloomTests.Book
 			// System Under Test //
 			using (var bloomPubTempFile = TempFile.WithFilenameInTempFolder("BookCompressorWithAudio" + BookCompressor.BloomPubExtensionWithDot))
 			{
-				BookCompressor.CompressBookDirectory(bloomPubTempFile.Path, _bookFolder.Path, "");
+				BookCompressor.CompressBookDirectory(bloomPubTempFile.Path, _bookFolder.Path, BloomPubMaker.MakeFilter(_bookFolder.Path), "");
 				// Test by looking at the temp file content.
 				using (var zippedFile = new ZipFile(bloomPubTempFile.Path))
 				{
@@ -185,7 +186,7 @@ namespace BloomTests.Book
 			// System Under Test //
 			using (var bloomPubTempFile = TempFile.WithFilenameInTempFolder("BookCompressorWithExtraFiles" + BookCompressor.BloomPubExtensionWithDot))
 			{
-				BookCompressor.CompressBookDirectory(bloomPubTempFile.Path, _bookFolder.Path, "");
+				BookCompressor.CompressBookDirectory(bloomPubTempFile.Path, _bookFolder.Path, BloomPubMaker.MakeFilter(_bookFolder.Path), "");
 				// Test by looking at the temp file content.
 				using (var zippedFile = new ZipFile(bloomPubTempFile.Path))
 				{
