@@ -6,11 +6,7 @@ import { useState, useEffect } from "react";
 import { get, post } from "../utils/bloomApi";
 import Button from "@mui/material/Button";
 import { kBloomBlue50Transparent, lightTheme } from "../bloomMaterialUITheme";
-import {
-    ThemeProvider,
-    Theme,
-    StyledEngineProvider
-} from "@mui/material/styles";
+import { ThemeProvider, StyledEngineProvider } from "@mui/material/styles";
 import { Div } from "./l10nComponents";
 import { useL10n } from "./l10nHooks";
 import { WireUpForWinforms } from "../utils/WireUpWinform";
@@ -233,6 +229,13 @@ export const RequiresBloomEnterpriseNotice: React.VoidFunctionComponent<IRequire
         background-color: white;
         line-height: 1.1;
         font-size: small;
+
+        // These were the original values for the MuiButton when color was "default".
+        // That setting is no longer part of material, starting with v5.
+        color: rgba(0, 0, 0, 0.87);
+        &:hover {
+            background-color: #d5d5d5;
+        }
     `;
 
     return (
