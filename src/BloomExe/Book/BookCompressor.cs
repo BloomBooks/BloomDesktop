@@ -67,9 +67,25 @@ namespace Bloom.Book
 		/// <param name="dirNamePrefix">string to prefix to the zip entry name</param>
 		/// <param name="forReaderTools">If True, then some pre-processing will be done to the contents of decodable
 		/// and leveled readers before they are added to the ZipStream</param>
-		public static void CompressCollectionDirectory(string outputPath, string directoryToCompress, string dirNamePrefix, bool forReaderTools)
+		public static void CompressCollectionDirectory(string outputPath, string directoryToCompress,
+			string dirNamePrefix, bool forReaderTools)
 		{
-			CompressDirectory(outputPath, directoryToCompress, dirNamePrefix, forReaderTools, depthFromCollection: 0);
+			var overrides = new Dictionary<string, byte[]>();
+			if (forReaderTools)
+			{
+				foreach (var bookFolder in Directory.GetDirectories(directoryToCompress))
+				{
+					GetBookOverrides(bookFolder, overrides);
+				}
+
+				foreach (var collectionFile in Directory.GetFiles(directoryToCompress, "*.bloomcollection"))
+				{
+					overrides[collectionFile] =
+						Encoding.UTF8.GetBytes(GetBloomCollectionModifiedForTemplate(collectionFile));
+				}
+			}
+
+			CompressDirectory(outputPath, directoryToCompress, dirNamePrefix, overrides, depthFromCollection: 0);
 		}
 
 		/// <summary>
@@ -83,12 +99,26 @@ namespace Bloom.Book
 		public static void CompressBookDirectory(string outputPath, string directoryToCompress, string dirNamePrefix,
 			bool forReaderTools = false, bool wrapWithFolder = true)
 		{
-			CompressDirectory(outputPath, directoryToCompress, dirNamePrefix, forReaderTools,
+			var overrides = new Dictionary<string, byte[]>();
+			if (forReaderTools)
+			{
+				GetBookOverrides(directoryToCompress, overrides);
+			}
+
+			CompressDirectory(outputPath, directoryToCompress, dirNamePrefix, overrides,
 				wrapWithFolder, depthFromCollection: 1);
 		}
 
+		private static void GetBookOverrides(string bookFolderPath, Dictionary<string, byte[]> overrides)
+		{
+			var htmlPath = BookStorage.FindBookHtmlInFolder(bookFolderPath);
+			overrides[htmlPath] = Encoding.UTF8.GetBytes(GetBookReplacedWithTemplate(htmlPath));
+			var metaPath = Path.Combine(bookFolderPath, "meta.json");
+			overrides[metaPath] = Encoding.UTF8.GetBytes(GetMetaJsonModfiedForTemplate(metaPath));
+		}
+
 		private static void CompressDirectory(string outputPath, string directoryToCompress, string dirNamePrefix,
-			bool forReaderTools, bool wrapWithFolder = true,
+			Dictionary<string, byte[]> overrides = null, bool wrapWithFolder = true,
 			int depthFromCollection = 1)
 		{
 			using (var fsOut = RobustFile.Create(outputPath))
@@ -112,7 +142,7 @@ namespace Bloom.Book
 						// a zip, as with .bloompub files)
 						dirNameOffset = directoryToCompress.Length + 1;
 					}
-					CompressDirectory(directoryToCompress, zipStream, dirNameOffset, dirNamePrefix, depthFromCollection, forReaderTools);
+					CompressDirectory(directoryToCompress, zipStream, dirNameOffset, dirNamePrefix, depthFromCollection, overrides);
 
 					zipStream.IsStreamOwner = true; // makes the Close() also close the underlying stream
 					zipStream.Close();
@@ -125,15 +155,15 @@ namespace Bloom.Book
 		/// </summary>
 		/// <param name="directoryToCompress">The directory to add recursively</param>
 		/// <param name="zipStream">The ZipStream to which the files and directories will be added</param>
-		/// <param name="dirNameOffset">This number of characters will be removed from the full directory or file name
+		/// <param name="dirNameOffset">This number of characters will be removed from the full directory or file path
 		/// before creating the zip entry name</param>
 		/// <param name="dirNamePrefix">string to prefix to the zip entry name</param>
 		/// <param name="depthFromCollection">int with the number of folders away it is from the collection folder. The collection folder itself is 0,
 		/// a book is 1, a subfolder of the book is 2, etc.</param>
-		/// <param name="forReaderTools">If True, then some pre-processing will be done to the contents of decodable
-		/// and leveled readers before they are added to the ZipStream</param>
+		/// <param name="overrides">Any file whose path is found in overrides will be entered in the zip with the corresponding
+		/// value instead of its actual content</param>
 		private static void CompressDirectory(string directoryToCompress, ZipOutputStream zipStream, int dirNameOffset, string dirNamePrefix,
-			int depthFromCollection, bool forReaderTools)
+			int depthFromCollection, Dictionary<string, byte[]> overrides = null)
 		{
 			var folderName = Path.GetFileName(directoryToCompress).ToLowerInvariant();
 			if (!IsValidBookFolder(folderName, depthFromCollection))
@@ -185,33 +215,17 @@ namespace Bloom.Book
 					DateTime = fi.LastWriteTime,
 					IsUnicodeText = true
 				};
-				// encode filename and comment in UTF8
-				byte[] modifiedContent = {};
 
-				// if this is a ReaderTools book, call GetBookReplacedWithTemplate() to get the contents
-				if (forReaderTools && (bookFile == filePath))
-				{
-					modifiedContent = Encoding.UTF8.GetBytes(GetBookReplacedWithTemplate(filePath));
+				byte[] modifiedContent = null;
+
+				if (overrides !=null && overrides.TryGetValue(filePath, out modifiedContent))
 					newEntry.Size = modifiedContent.Length;
-				}
-				else if (forReaderTools && (Path.GetFileName(filePath) == "meta.json"))
-				{
-					modifiedContent = Encoding.UTF8.GetBytes(GetMetaJsonModfiedForTemplate(filePath));
-					newEntry.Size = modifiedContent.Length;
-				}
-				else if (Path.GetExtension(filePath).ToLowerInvariant() == ".bloomcollection")
-				{
-					modifiedContent = Encoding.UTF8.GetBytes(GetBloomCollectionModifiedForTemplate(filePath));
-					newEntry.Size = modifiedContent.Length;
-				}
 				else
-				{
 					newEntry.Size = fi.Length;
-				}
 
 				zipStream.PutNextEntry(newEntry);
 
-				if (modifiedContent.Length > 0)
+				if (modifiedContent != null)
 				{
 					using (var memStream = new MemoryStream(modifiedContent))
 					{
@@ -245,7 +259,7 @@ namespace Bloom.Book
 				if (depthFromCollection == 2 && !IsInActivitiesFolder(folder, depthFromCollection))
 					continue;
 
-				CompressDirectory(folder, zipStream, dirNameOffset, dirNamePrefix, depthFromCollection + 1, forReaderTools);
+				CompressDirectory(folder, zipStream, dirNameOffset, dirNamePrefix, depthFromCollection + 1);
 			}
 		}
 

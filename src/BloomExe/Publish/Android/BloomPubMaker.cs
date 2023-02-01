@@ -85,7 +85,7 @@ namespace Bloom.Publish.Android
 			var newContent = XmlHtmlConverter.ConvertDomToHtml5(modifiedBook.RawDom);
 			RobustFile.WriteAllText(BookStorage.FindBookHtmlInFolder(modifiedBook.FolderPath), newContent, Encoding.UTF8);
 
-			BookCompressor.CompressBookDirectory(outputPath, modifiedBook.FolderPath, "", forDevice: true,
+			BookCompressor.CompressBookDirectory(outputPath, modifiedBook.FolderPath, "",
 				wrapWithFolder: false);
 
 			return modifiedBook.FolderPath;

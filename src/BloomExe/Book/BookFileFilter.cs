@@ -282,7 +282,5 @@ namespace Bloom.Book
 				RobustFile.Copy(path, dest);
 			}
 		}
-
-		// Todo: Similar function that makes a zip file.
 	}
 }
