@@ -93,5 +93,24 @@ namespace BloomTests.Collection
 		{
 			Assert.That(_filter.Filter(Path.Combine(_someBookFolderPath, "rubbish.bad")), Is.False);
 		}
+
+		[Test]
+		public void Filter_AcceptsRootCssFiles()
+		{
+			Assert.That(_filter.Filter(Path.Combine(_collectionFolder.FolderPath, "CustomCollectionStyles.css")), Is.True);
+			Assert.That(_filter.Filter(Path.Combine(_collectionFolder.FolderPath, "settingsCollectionStyles.css")), Is.True);
+			// Not sure we want this
+			Assert.That(_filter.Filter(Path.Combine(_collectionFolder.FolderPath, "SomeRandomStyles.css")), Is.True);
+		}
+
+		[Test]
+		public void Filter_RejectsOtherRootFiles()
+		{
+			Assert.That(_filter.Filter(Path.Combine(_collectionFolder.FolderPath, "Rubbish.png")), Is.False);
+			Assert.That(_filter.Filter(Path.Combine(_collectionFolder.FolderPath, "Nonsence.htm")), Is.False);
+			// Not absolutely sure we don't want this
+			Assert.That(_filter.Filter(Path.Combine(_collectionFolder.FolderPath, "Blah.bloomCollection")), Is.False);
+		}
 	}
+	
 }

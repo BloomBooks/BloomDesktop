@@ -96,7 +96,6 @@ namespace Bloom.Publish.Android
 		/// <summary>
 		/// Make a filter suitable for passing the files a BloomPub needs.
 		/// </summary>
-		/// <param name="folderPath"></param>
 		public static IFilter MakeFilter(string folderPath)
 		{
 			var filter = new BookFileFilter(folderPath)
@@ -147,8 +146,8 @@ namespace Bloom.Publish.Android
 					// In a previous version, we did this during the compression, and therefore didn't have to
 					// write out a modified version. There's a small savings in this, but the price is
 					// a nasty leak of knowledge about making BloomPubs into a class responsible for
-					// compressing to zip files. If we really need this savings, a better approach would
-					// be to pass the compressor a dictionary of files whose content should be replaced.
+					// compressing to zip files. If we really need this savings, we could refactor to
+					// use the overrides parameter of CompressDirectory.
 					RobustFile.WriteAllBytes(filePath, modifiedContent);
 				}
 			}
@@ -432,9 +431,9 @@ namespace Bloom.Publish.Android
 					correct = ((a.ParentNode?.ParentNode as XmlElement)?.Attributes["class"]?.Value ??"").Contains("correct-answer")
 				}).ToArray()
 			};
-			@group.questions = new [] { question };
+			group.questions = new [] { question };
 
-			questions.Add(@group);
+			questions.Add(group);
 		}
 
 
@@ -574,9 +573,9 @@ namespace Bloom.Publish.Android
 				if (badFonts.Contains(font))
 					continue;
 				var group = fontFileFinder.GetGroupForFont(font);
-				if (@group != null)
+				if (group != null)
 				{
-					EpubMaker.AddFontFace(sb, font, "normal", "normal", @group.Normal);
+					EpubMaker.AddFontFace(sb, font, "normal", "normal", group.Normal);
 				}
 				// We don't need (or want) a rule to use Andika instead.
 				// The reader typically WILL use Andika, because we have a rule making it the default font
@@ -683,8 +682,8 @@ namespace Bloom.Publish.Android
 				{
 					// There may well be editable divs, especially automatically generated for active langauges,
 					// which don't have any questions. Skip them. But if we got at least one, save it.
-					@group.questions = questions.ToArray();
-					questionGroups.Add(@group);
+					group.questions = questions.ToArray();
+					questionGroups.Add(group);
 				}
 			}
 		}

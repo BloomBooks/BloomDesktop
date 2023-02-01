@@ -85,7 +85,16 @@ namespace BloomTests.Book
 			var bookHtml = @"<html><head><link rel='stylesheet' href='Basic Book.css' type='text/css'></link></head><body>
 					<div class='bloom-page' id='guid1' data-backgroundaudio='musicfile1.mp3'></div>
 					<div class='bloom-page' id='guid2' data-backgroundaudio='musicfile2.ogg'></div>
-					<div class='bloom-page' id='guid3' data-backgroundaudio='musicfile3.wav'></div>
+					<div class='bloom-page' id='guid3' data-backgroundaudio='musicfile3.wav'>
+						<div class=""bloom-translationGroup bloom-trailingElement"" data-default-languages=""auto"">
+                            <div class=""bloom-editable normal-style bloom-content1 bloom-visibility-code-on"" style=""min-height: 44px;"" tabindex=""0"" spellcheck=""true"" role=""textbox"" aria-label=""false"" lang=""akl"" contenteditable=""true"" data-languagetipcontent=""Aklanon"" data-audiorecordingmode=""Sentence"">
+                                <p><span id=""narration"" class=""audio-sentence"" recordingmd5=""5b5efdab7f705554614a6383ae6d9469"" data-duration=""3.004082"">This is some akl data</span></p>
+                            </div>
+							<div class=""bloom-editable normal-style bloom-content1 bloom-visibility-code-on"" style=""min-height: 44px;"" tabindex=""0"" spellcheck=""true"" role=""textbox"" aria-label=""false"" lang=""es"" contenteditable=""true"" data-languagetipcontent=""Spanish"" data-audiorecordingmode=""Sentence"">
+                                <p><span id=""i1083a390-c1ef-41d2-a55d-815eacb5c08d"" class=""audio-sentence"" recordingmd5=""5b5efdab7f705554614a6383ae6d9469"" data-duration=""3.004082"">This is Spanish</span></p>
+                            </div>
+						</div>
+					</div>
 			</body></html>";
 			SetupDirectoryWithHtml(bookHtml,
 				actionsOnFolderBeforeCompressing: folderPath =>
@@ -96,8 +105,8 @@ namespace BloomTests.Book
 					File.WriteAllText(Path.Combine(audioDir, "musicfile1.mp3"), "dummy mp3 content");
 					File.WriteAllText(Path.Combine(audioDir, "musicfile2.ogg"), "dummy ogg content");
 					File.WriteAllText(Path.Combine(audioDir, "musicfile3.wav"), "dummy wav content");
-					File.WriteAllText(Path.Combine(audioDir, "narration.mp3"), "more dummy mp3 content");	// file should be included (even though not referenced)
-					File.WriteAllText(Path.Combine(audioDir, "narration.wav"), "more dummy wav content");	// file should not be included
+					File.WriteAllText(Path.Combine(audioDir, "narration.mp3"), "more dummy mp3 content");	// file should be included (since it is referenced)
+					File.WriteAllText(Path.Combine(audioDir, "narration.wav"), "more dummy wav content");	// file should not be included (only mp3 narration)
 					File.WriteAllText(Path.Combine(folderPath, "temp.tmp"), "dummy temporary file data");	// file should not be included
 				});
 
@@ -128,7 +137,12 @@ namespace BloomTests.Book
 			var bookHtml = @"<html><head><link rel='stylesheet' href='Basic Book.css' type='text/css'></link></head><body>
 					<div class='bloom-page' id='guid1'></div>
 					<div class='bloom-page' id='guid2' data-backgroundaudio='musicfile.ogg'></div>
-					<div class='bloom-page' id='guid3'></div>
+					<div class='bloom-page' id='guid3'>
+						<div class=""bloom-videoContainer bloom-noVideoSelected bloom-leadingElement bloom-selected"">
+	                            <video>
+	                            <source src=""video/signlanguageVid.mp4""></source></video>
+	                        </div>
+					</div>
 			</body></html>";
 			SetupDirectoryWithHtml(bookHtml,
 				actionsOnFolderBeforeCompressing: folderPath =>

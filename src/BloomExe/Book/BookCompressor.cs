@@ -15,6 +15,7 @@ using SIL.Windows.Forms.ImageToolbox;
 using SIL.Xml;
 using System.Collections.Generic;
 using Bloom.Collection;
+using Bloom.CollectionTab;
 using Bloom.Publish.Android;
 using Bloom.web.controllers;
 
@@ -89,7 +90,7 @@ namespace Bloom.Book
 
 			foreach (var bookFolder in Directory.GetDirectories(directoryToCompress))
 			{
-				filter.AddBookFilter(new BookFileFilter(bookFolder) {ForEdit = true, WantMusic = true, WantVideo = true, NarrationLanguages = null});
+				filter.AddBookFilter(CollectionModel.MakeBloomPackFilter(bookFolder));
 			}
 
 			CompressDirectory(outputPath, directoryToCompress, filter, dirNamePrefix, overrides);
@@ -222,7 +223,7 @@ namespace Bloom.Book
 
 			foreach (var folder in folders)
 			{
-				CompressDirectory(folder, zipStream, filter, dirNameOffset, dirNamePrefix);
+				CompressDirectory(folder, zipStream, filter, dirNameOffset, dirNamePrefix, overrides);
 			}
 		}
 

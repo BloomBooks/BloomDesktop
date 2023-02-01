@@ -695,14 +695,27 @@ namespace Bloom.CollectionTab
 			else
 			{
 				BookCompressor.CompressBookDirectory(path, dir,
-					new BookFileFilter(dir)
-					{
-						ForEdit = true,
-						WantMusic = true,
-						WantVideo = true,
-						NarrationLanguages = null}, // all audio
+					MakeBloomPackFilter(dir),
 					dirNamePrefix, forReaderTools);
 			}
+		}
+
+		public static BookFileFilter MakeBloomPackFilter(string dir)
+		{
+			var filter = new BookFileFilter(dir)
+			{
+				ForEdit = true,
+				// want audio in bloompack: see https://issues.bloomlibrary.org/youtrack/issue/BL-11741.
+				NarrationLanguages = null, // all audio
+
+				WantMusic = true,
+				WantVideo = true};
+			// these are artifacts of uploading book to BloomLibrary.org and not useful in BloomPubs
+			filter.AddException("thumbnail-256.png", false);
+			filter.AddException("thumbnail-70.png", false);
+			// The Bloom receiving the pack already has this, so we can save a little space.
+			filter.AddException("placeHolder.png", false);
+			return filter;
 		}
 
 		public string GetSuggestedBloomPackPath()

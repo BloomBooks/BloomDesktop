@@ -5,10 +5,8 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using System.Xml;
 using Bloom.ToPalaso;
-using Microsoft.DotNet.PlatformAbstractions;
 using SIL.IO;
 using SIL.Xml;
 
@@ -18,6 +16,20 @@ namespace Bloom.Book
 	{
 		bool Filter(string fullPath);
 	}
+
+	/// <summary>
+    /// BookFileFilter is a configurable filter for determining which books should be copied either into a temporary folder or
+    /// a zip folder, starting from a Bloom book folder. It primarily uses a white list approach: files in the root directory
+    /// are copied if they have certain extensions, audio files are copied if they are used in the book (and, optionally, if
+    /// they are narration files for the languages we need, or music files that are wanted). Several properties allow it to
+    /// be configured for common copy scenarios like when the copy will be used for further editing (upload, bloompack) or
+    /// situations where users can interact (bloomPub). Exceptions can also be added for partiular files that are or are not
+    /// wanted in a particular situation.
+    /// Putting this functionality in a filter class makes it easy to use both for copying folders and for restricting what
+    /// is put in a zip file; it also facilitates testing with a minimum of actual file creation.
+    /// The Filter class does have specific knowledge of Bloom books, such as how to find the corresponding narration files
+    /// for elements in the document.
+    /// </summary>
 	public class BookFileFilter: IFilter
 	{
 		// Path to the root folder of the book.
@@ -33,6 +45,8 @@ namespace Bloom.Book
 			get => _forEdit;
 			set
 			{
+				if (value == _forEdit)
+					return; // no need to do anything (or the debug check!) if not changing.
 				Debug.Assert(value == true, "We don't support reverting to not-for-edit");
 				_forEdit = value;
 				ForInteractive = true;
@@ -57,6 +71,8 @@ namespace Bloom.Book
 			get => _forInteractive;
 			set
 			{
+				if (value == _forInteractive)
+					return; // no need to do anything (or the debug check!) if not changing.
 				Debug.Assert(value == true, "We don't support reverting to not-for-interactive");
 				_forInteractive = value;
 				_specialGroups.Add(new Regex(@"^activities(/|\\)"));
@@ -96,6 +112,11 @@ namespace Bloom.Book
 			_specialCases[path] = accept;
 		}
 		Dictionary<string, bool> _specialCases = new Dictionary<string, bool>();
+		// File paths that match one of these are wanted.
+		// It could plausibly be a Dictionary like _specialCases where false indicates
+		// that a matching file is NOT wanted; but (a) unless there is no overlap in
+		// which patterns match, we'd have to worry about order; and (b) our goal is
+		// to whitelist what we DO want rather than blacklisting what we don't.
 		List<Regex> _specialGroups = new List<Regex>();
 		private bool _forEdit;
 		private bool _forInteractive;
@@ -165,11 +186,18 @@ namespace Bloom.Book
 		internal readonly HashSet<string> BookLevelFileExtensionsLowerCase =
 			new HashSet<string>(new[] { ".svg", ".png", ".jpg", ".jpeg", ".tif", ".tiff", ".bmp", ".otf", ".ttf", ".woff", ".css", ".json", ".txt", ".js", ".distribution" });
 
+		/// <summary>
+		/// Return true if the file at fullPath should be included in the output.
+		/// </summary>
 		public bool Filter(string fullPath)
 		{
 			var pathFromRootFolder = fullPath.Substring(BookFolderPath.Length + 1);
 			return FilterRelative(pathFromRootFolder);
 		}
+		/// <summary>
+		/// This overload is more convenient for testing, and is also the core of the implementation.
+		/// </summary>
+
 		public bool FilterRelative(string pathFromRootFolder)
 		{
 			if (!SIL.PlatformUtilities.Platform.IsLinux)
@@ -194,6 +222,7 @@ namespace Bloom.Book
 				}
 				if (path[0] == "video" && path.Length == 2 && WantVideo)
 					return VideoFiles.Contains(path[1]);
+				// templates and activities are handled, when wanted, by a pattern in _specialGroups.
 				return false;
 			}
 			var extension = Path.GetExtension(pathFromRootFolder);
@@ -244,6 +273,7 @@ namespace Bloom.Book
 		private bool _wantVideo;
 		private HashSet<string> _videoFiles;
 
+		// Items in this set are simple file names (all from the audio folder)
 		HashSet<string> MusicFiles
 		{
 			get
@@ -257,6 +287,7 @@ namespace Bloom.Book
 			}
 		}
 
+		// Items in this set are paths from the root, typically video/filename.mp4
 		HashSet<string> VideoFiles
 		{
 			get
@@ -273,6 +304,12 @@ namespace Bloom.Book
 			}
 		}
 
+		/// <summary>
+		/// Get all the files, recursively, in the specified folder. This supports a recursive copy
+		/// with a filter applied.
+		/// </summary>
+		/// <note>It could be more efficient to exclude entire directories we don't want. But it is relatively
+		/// rare to have such directories at all, and much cleaner to separate enumerating from filtering.</note>
 		public static string[] GetAllFilePaths(string folderPath)
 		{
 			return Directory.EnumerateFiles(folderPath).Concat(
