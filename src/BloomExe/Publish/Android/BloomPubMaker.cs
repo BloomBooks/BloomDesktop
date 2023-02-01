@@ -10,6 +10,7 @@ using Bloom.Book;
 using Bloom.FontProcessing;
 using Bloom.Publish.Epub;
 using Bloom.web;
+using Bloom.web.controllers;
 using BloomTemp;
 using SIL.IO;
 using SIL.Xml;
@@ -79,6 +80,10 @@ namespace Bloom.Publish.Android
 
 			MakeSha(BookStorage.FindBookHtmlInFolder(bookFolderPath), modifiedBook.FolderPath);
 			CompressImages(modifiedBook.FolderPath, settings?.ImagePublishSettings ?? ImagePublishSettings.Default, modifiedBook.RawDom);
+			SignLanguageApi.ProcessVideos(HtmlDom.SelectChildVideoElements(modifiedBook.RawDom.DocumentElement).Cast<XmlElement>(),
+				modifiedBook.FolderPath);
+			var newContent = XmlHtmlConverter.ConvertDomToHtml5(modifiedBook.RawDom);
+			RobustFile.WriteAllText(BookStorage.FindBookHtmlInFolder(modifiedBook.FolderPath), newContent, Encoding.UTF8);
 
 			BookCompressor.CompressBookDirectory(outputPath, modifiedBook.FolderPath, "", forDevice: true,
 				wrapWithFolder: false);

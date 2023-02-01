@@ -688,14 +688,13 @@ namespace Bloom.CollectionTab
 		/// <param name="path">The path to write to. Precondition: Must not exist.</param>
 		internal void MakeBloomPackInternal(string path, string dir, string dirNamePrefix, bool forReaderTools, bool isCollection)
 		{
-			var forDevice = false;
 			if (isCollection)
 			{
-				BookCompressor.CompressCollectionDirectory(path, dir, dirNamePrefix, forReaderTools, forDevice);
+				BookCompressor.CompressCollectionDirectory(path, dir, dirNamePrefix, forReaderTools);
 			}
 			else
 			{
-				BookCompressor.CompressBookDirectory(path, dir, dirNamePrefix, forReaderTools, forDevice);
+				BookCompressor.CompressBookDirectory(path, dir, dirNamePrefix, forReaderTools);
 			}
 		}
 

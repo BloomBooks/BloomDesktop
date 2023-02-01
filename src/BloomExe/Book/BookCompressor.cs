@@ -67,10 +67,9 @@ namespace Bloom.Book
 		/// <param name="dirNamePrefix">string to prefix to the zip entry name</param>
 		/// <param name="forReaderTools">If True, then some pre-processing will be done to the contents of decodable
 		/// and leveled readers before they are added to the ZipStream</param>
-		/// <param name="forDevice">Indicates if it is for device, which means that device-specific things will happen, like reducing images/videos will be reduced, creating version.txt, etc</param>
-		public static void CompressCollectionDirectory(string outputPath, string directoryToCompress, string dirNamePrefix, bool forReaderTools, bool forDevice)
+		public static void CompressCollectionDirectory(string outputPath, string directoryToCompress, string dirNamePrefix, bool forReaderTools)
 		{
-			CompressDirectory(outputPath, directoryToCompress, dirNamePrefix, forReaderTools, forDevice, depthFromCollection: 0);
+			CompressDirectory(outputPath, directoryToCompress, dirNamePrefix, forReaderTools, depthFromCollection: 0);
 		}
 
 		/// <summary>
@@ -81,16 +80,15 @@ namespace Bloom.Book
 		/// <param name="dirNamePrefix">string to prefix to the zip entry name</param>
 		/// <param name="forReaderTools">If True, then some pre-processing will be done to the contents of decodable
 		/// and leveled readers before they are added to the ZipStream</param>
-		/// <param name="forDevice">Indicates if it is for device, which means that device-specific things will happen, like reducing images/videos will be reduced, creating version.txt, etc</param>
 		public static void CompressBookDirectory(string outputPath, string directoryToCompress, string dirNamePrefix,
-			bool forReaderTools = false, bool forDevice = false, bool wrapWithFolder = true)
+			bool forReaderTools = false, bool wrapWithFolder = true)
 		{
-			CompressDirectory(outputPath, directoryToCompress, dirNamePrefix, forReaderTools, forDevice,
+			CompressDirectory(outputPath, directoryToCompress, dirNamePrefix, forReaderTools,
 				wrapWithFolder, depthFromCollection: 1);
 		}
 
 		private static void CompressDirectory(string outputPath, string directoryToCompress, string dirNamePrefix,
-			bool forReaderTools, bool forDevice, bool wrapWithFolder = true,
+			bool forReaderTools, bool wrapWithFolder = true,
 			int depthFromCollection = 1)
 		{
 			using (var fsOut = RobustFile.Create(outputPath))
@@ -114,7 +112,7 @@ namespace Bloom.Book
 						// a zip, as with .bloompub files)
 						dirNameOffset = directoryToCompress.Length + 1;
 					}
-					CompressDirectory(directoryToCompress, zipStream, dirNameOffset, dirNamePrefix, depthFromCollection, forReaderTools, forDevice);
+					CompressDirectory(directoryToCompress, zipStream, dirNameOffset, dirNamePrefix, depthFromCollection, forReaderTools);
 
 					zipStream.IsStreamOwner = true; // makes the Close() also close the underlying stream
 					zipStream.Close();
@@ -134,9 +132,8 @@ namespace Bloom.Book
 		/// a book is 1, a subfolder of the book is 2, etc.</param>
 		/// <param name="forReaderTools">If True, then some pre-processing will be done to the contents of decodable
 		/// and leveled readers before they are added to the ZipStream</param>
-		/// <param name="forDevice">Indicates if it is for device, which means that device-specific things will happen, like reducing images/videos will be reduced, creating version.txt, etc</param>
 		private static void CompressDirectory(string directoryToCompress, ZipOutputStream zipStream, int dirNameOffset, string dirNamePrefix,
-			int depthFromCollection, bool forReaderTools, bool forDevice)
+			int depthFromCollection, bool forReaderTools)
 		{
 			var folderName = Path.GetFileName(directoryToCompress).ToLowerInvariant();
 			if (!IsValidBookFolder(folderName, depthFromCollection))
@@ -207,13 +204,6 @@ namespace Bloom.Book
 					modifiedContent = Encoding.UTF8.GetBytes(GetBloomCollectionModifiedForTemplate(filePath));
 					newEntry.Size = modifiedContent.Length;
 				}
-				else if (forDevice && bookFile == filePath)
-				{
-					SignLanguageApi.ProcessVideos(HtmlDom.SelectChildVideoElements(dom.DocumentElement).Cast<XmlElement>(), directoryToCompress);
-					var newContent = XmlHtmlConverter.ConvertDomToHtml5(dom);
-					modifiedContent = Encoding.UTF8.GetBytes(newContent);
-					newEntry.Size = modifiedContent.Length;
-				}
 				else
 				{
 					newEntry.Size = fi.Length;
@@ -255,7 +245,7 @@ namespace Bloom.Book
 				if (depthFromCollection == 2 && !IsInActivitiesFolder(folder, depthFromCollection))
 					continue;
 
-				CompressDirectory(folder, zipStream, dirNameOffset, dirNamePrefix, depthFromCollection + 1, forReaderTools, forDevice);
+				CompressDirectory(folder, zipStream, dirNameOffset, dirNamePrefix, depthFromCollection + 1, forReaderTools);
 			}
 		}
 
