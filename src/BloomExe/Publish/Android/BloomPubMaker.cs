@@ -78,11 +78,104 @@ namespace Bloom.Publish.Android
 			BookCompressor.MakeSizedThumbnail(modifiedBook, modifiedBook.FolderPath, 256);
 
 			MakeSha(BookStorage.FindBookHtmlInFolder(bookFolderPath), modifiedBook.FolderPath);
+			CompressImages(modifiedBook.FolderPath, settings?.ImagePublishSettings ?? ImagePublishSettings.Default, modifiedBook.RawDom);
 
-			BookCompressor.CompressBookDirectory(outputPath, modifiedBook.FolderPath, "", forDevice: true, imagePublishSettings: settings?.ImagePublishSettings ?? ImagePublishSettings.Default,
+			BookCompressor.CompressBookDirectory(outputPath, modifiedBook.FolderPath, "", forDevice: true,
 				wrapWithFolder: false);
 
 			return modifiedBook.FolderPath;
+		}
+
+		private static void CompressImages(string modifiedBookFolderPath, ImagePublishSettings imagePublishSettings, XmlDocument dom)
+		{
+			List<string> imagesToPreserveResolution;
+			List<string> imagesToGiveTransparentBackgrounds;
+
+			var fullScreenAttr = dom.GetElementsByTagName("body").Cast<XmlElement>().First().Attributes["data-bffullscreenpicture"]?.Value;
+			if (fullScreenAttr != null && fullScreenAttr.IndexOf("bloomReader", StringComparison.InvariantCulture) >= 0)
+			{
+				// This feature (currently used for motion books in landscape mode) triggers an all-black background,
+				// due to a rule in bookFeatures.less.
+				// Making white pixels transparent on an all-black background makes line-art disappear,
+				// which is bad (BL-6564), so just make an empty list in this case.
+				imagesToGiveTransparentBackgrounds = new List<string>();
+			}
+			else
+			{
+				imagesToGiveTransparentBackgrounds = FindCoverImages(dom);
+			}
+			imagesToPreserveResolution = FindImagesToPreserveResolution(dom);
+
+			foreach (var filePath in Directory.GetFiles(modifiedBookFolderPath))
+			{
+				if (BookCompressor.ImageFileExtensions.Contains(Path.GetExtension(filePath).ToLowerInvariant()))
+				{
+					var fileName = Path.GetFileName(filePath);
+					if (imagesToPreserveResolution.Contains(fileName))
+						continue; // don't compress these
+					// Cover images should be transparent if possible.  Others don't need to be.
+					var makeBackgroundTransparent = imagesToGiveTransparentBackgrounds.Contains(fileName);
+					var modifiedContent = BookCompressor.GetImageBytesForElectronicPub(filePath,
+						makeBackgroundTransparent,
+						imagePublishSettings);
+					// In a previous version, we did this during the compression, and therefore didn't have to
+					// write out a modified version. There's a small savings in this, but the price is
+					// a nasty leak of knowledge about making BloomPubs into a class responsible for
+					// compressing to zip files. If we really need this savings, a better approach would
+					// be to pass the compressor a dictionary of files whose content should be replaced.
+					RobustFile.WriteAllBytes(filePath, modifiedContent);
+				}
+			}
+		}
+
+		private const string kBackgroundImage = "background-image:url('";   // must match format string in HtmlDom.SetImageElementUrl()
+		private static List<string> FindCoverImages(XmlDocument xmlDom)
+		{
+			var transparentImageFiles = new List<string>();
+			foreach (var div in xmlDom.SafeSelectNodes("//div[contains(concat(' ',@class,' '),' coverColor ')]//div[contains(@class,'bloom-imageContainer')]").Cast<XmlElement>())
+			{
+				var style = div.GetAttribute("style");
+				if (!String.IsNullOrEmpty(style) && style.Contains(kBackgroundImage))
+				{
+					System.Diagnostics.Debug.Assert(div.GetStringAttribute("class").Contains("bloom-backgroundImage"));
+					// extract filename from the background-image style
+					transparentImageFiles.Add(ExtractFilenameFromBackgroundImageStyleUrl(style));
+				}
+				else
+				{
+					// extract filename from child img element
+					var img = div.SelectSingleNode("//img[@src]");
+					if (img != null)
+						transparentImageFiles.Add(System.Web.HttpUtility.UrlDecode(img.GetStringAttribute("src")));
+				}
+			}
+			return transparentImageFiles;
+		}
+
+		private static List<string> FindImagesToPreserveResolution(XmlDocument dom)
+		{
+			var preservedImages = new List<string>();
+			foreach (var div in dom.SafeSelectNodes("//div[contains(@class,'marginBox')]//div[contains(@class,'bloom-preserveResolution')]").Cast<XmlElement>())
+			{
+				var style = div.GetAttribute("style");
+				if (!string.IsNullOrEmpty(style) && style.Contains(kBackgroundImage))
+				{
+					System.Diagnostics.Debug.Assert(div.GetStringAttribute("class").Contains("bloom-backgroundImage"));
+					preservedImages.Add(ExtractFilenameFromBackgroundImageStyleUrl(style));
+				}
+			}
+			foreach (var img in dom.SafeSelectNodes("//div[contains(@class,'marginBox')]//img[contains(@class,'bloom-preserveResolution')]").Cast<XmlElement>())
+			{
+				preservedImages.Add(System.Web.HttpUtility.UrlDecode(img.GetStringAttribute("src")));
+			}
+			return preservedImages;
+		}
+
+		private static string ExtractFilenameFromBackgroundImageStyleUrl(string style)
+		{
+			var filename = style.Substring(style.IndexOf(kBackgroundImage) + kBackgroundImage.Length);
+			filename = filename.Substring(0, filename.IndexOf("'"));
+			return System.Web.HttpUtility.UrlDecode(filename);
 		}
 
 		private static void MakeSha(string pathToFileForSha, string folderForSha)

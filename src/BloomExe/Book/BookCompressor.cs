@@ -25,7 +25,7 @@ namespace Bloom.Book
 		
 
 		// these image files may need to be reduced before being stored in the compressed output file
-		internal static readonly string[] ImageFileExtensions = { ".tif", ".tiff", ".png", ".bmp", ".jpg", ".jpeg" };
+		public static readonly string[] ImageFileExtensions = { ".tif", ".tiff", ".png", ".bmp", ".jpg", ".jpeg" };
 
 		// Since BL-8956, we whitelist files so that only those we expect will make it through the
 		// compression process.
@@ -82,16 +82,15 @@ namespace Bloom.Book
 		/// <param name="forReaderTools">If True, then some pre-processing will be done to the contents of decodable
 		/// and leveled readers before they are added to the ZipStream</param>
 		/// <param name="forDevice">Indicates if it is for device, which means that device-specific things will happen, like reducing images/videos will be reduced, creating version.txt, etc</param>
-		/// <param name="imagePublishSettings">If non-null, image files are reduced in size before saving to no larger than the max size specified by this object</para>
 		public static void CompressBookDirectory(string outputPath, string directoryToCompress, string dirNamePrefix,
-			bool forReaderTools = false, bool forDevice = false, ImagePublishSettings imagePublishSettings = null, bool wrapWithFolder = true)
+			bool forReaderTools = false, bool forDevice = false, bool wrapWithFolder = true)
 		{
-			CompressDirectory(outputPath, directoryToCompress, dirNamePrefix, forReaderTools, forDevice, imagePublishSettings,
+			CompressDirectory(outputPath, directoryToCompress, dirNamePrefix, forReaderTools, forDevice,
 				wrapWithFolder, depthFromCollection: 1);
 		}
 
 		private static void CompressDirectory(string outputPath, string directoryToCompress, string dirNamePrefix,
-			bool forReaderTools, bool forDevice, ImagePublishSettings imagePublishSettings = null, bool wrapWithFolder = true,
+			bool forReaderTools, bool forDevice, bool wrapWithFolder = true,
 			int depthFromCollection = 1)
 		{
 			using (var fsOut = RobustFile.Create(outputPath))
@@ -115,7 +114,7 @@ namespace Bloom.Book
 						// a zip, as with .bloompub files)
 						dirNameOffset = directoryToCompress.Length + 1;
 					}
-					CompressDirectory(directoryToCompress, zipStream, dirNameOffset, dirNamePrefix, depthFromCollection, forReaderTools, forDevice, imagePublishSettings);
+					CompressDirectory(directoryToCompress, zipStream, dirNameOffset, dirNamePrefix, depthFromCollection, forReaderTools, forDevice);
 
 					zipStream.IsStreamOwner = true; // makes the Close() also close the underlying stream
 					zipStream.Close();
@@ -136,9 +135,8 @@ namespace Bloom.Book
 		/// <param name="forReaderTools">If True, then some pre-processing will be done to the contents of decodable
 		/// and leveled readers before they are added to the ZipStream</param>
 		/// <param name="forDevice">Indicates if it is for device, which means that device-specific things will happen, like reducing images/videos will be reduced, creating version.txt, etc</param>
-		/// <param name="imagePublishSettings">If <paramref name="forDevice"/> is true, controls how much image files are reduced in size. If this parameter is null, the default settings will be used.</para>
 		private static void CompressDirectory(string directoryToCompress, ZipOutputStream zipStream, int dirNameOffset, string dirNamePrefix,
-			int depthFromCollection, bool forReaderTools, bool forDevice, ImagePublishSettings imagePublishSettings)
+			int depthFromCollection, bool forReaderTools, bool forDevice)
 		{
 			var folderName = Path.GetFileName(directoryToCompress).ToLowerInvariant();
 			if (!IsValidBookFolder(folderName, depthFromCollection))
@@ -151,33 +149,13 @@ namespace Bloom.Book
 			bool shouldScanHtml = depthFromCollection == 1;	// 1 means 1 level below the collection level, i.e. this is the book level
 			var bookFile = shouldScanHtml ? BookStorage.FindBookHtmlInFolder(directoryToCompress) : null;
 			XmlDocument dom = null;
-			List<string> imagesToGiveTransparentBackgrounds = null;
-			List<string> imagesToPreserveResolution = null;
 			// Tests can also result in bookFile being null.
 			if (!String.IsNullOrEmpty(bookFile))
 			{
 				var originalContent = File.ReadAllText(bookFile, Encoding.UTF8);
 				dom = XmlHtmlConverter.GetXmlDomFromHtml(originalContent);
 				var fullScreenAttr = dom.GetElementsByTagName("body").Cast<XmlElement>().First().Attributes["data-bffullscreenpicture"]?.Value;
-				if (fullScreenAttr != null && fullScreenAttr.IndexOf("bloomReader", StringComparison.InvariantCulture) >= 0)
-				{
-					// This feature (currently used for motion books in landscape mode) triggers an all-black background,
-					// due to a rule in bookFeatures.less.
-					// Making white pixels transparent on an all-black background makes line-art disappear,
-					// which is bad (BL-6564), so just make an empty list in this case.
-					imagesToGiveTransparentBackgrounds = new List<string>();
-				}
-				else
-				{
-					imagesToGiveTransparentBackgrounds = FindCoverImages(dom);
-				}
-				imagesToPreserveResolution = FindImagesToPreserveResolution(dom);
 				FindBackgroundAudioFiles(dom);
-			}
-			else
-			{
-				imagesToGiveTransparentBackgrounds = new List<string>();
-				imagesToPreserveResolution = new List<string>();
 			}
 
 			// Some of the knowledge about IncludedFileExtensions might one day move into this method.
@@ -222,21 +200,6 @@ namespace Bloom.Book
 				else if (forReaderTools && (Path.GetFileName(filePath) == "meta.json"))
 				{
 					modifiedContent = Encoding.UTF8.GetBytes(GetMetaJsonModfiedForTemplate(filePath));
-					newEntry.Size = modifiedContent.Length;
-				}
-				else if (forDevice && ImageFileExtensions.Contains(Path.GetExtension(filePath).ToLowerInvariant()))
-				{
-					fileName = Path.GetFileName(filePath);	// restore original capitalization
-					if (imagesToPreserveResolution.Contains(fileName))
-					{
-						modifiedContent = RobustFile.ReadAllBytes(filePath);
-					}
-					else
-					{
-						// Cover images should be transparent if possible.  Others don't need to be.
-						var makeBackgroundTransparent = imagesToGiveTransparentBackgrounds.Contains(fileName);
-						modifiedContent = GetImageBytesForElectronicPub(filePath, makeBackgroundTransparent, imagePublishSettings);
-					}
 					newEntry.Size = modifiedContent.Length;
 				}
 				else if (Path.GetExtension(filePath).ToLowerInvariant() == ".bloomcollection")
@@ -292,7 +255,7 @@ namespace Bloom.Book
 				if (depthFromCollection == 2 && !IsInActivitiesFolder(folder, depthFromCollection))
 					continue;
 
-				CompressDirectory(folder, zipStream, dirNameOffset, dirNamePrefix, depthFromCollection + 1, forReaderTools, forDevice, imagePublishSettings);
+				CompressDirectory(folder, zipStream, dirNameOffset, dirNamePrefix, depthFromCollection + 1, forReaderTools, forDevice);
 			}
 		}
 
@@ -384,57 +347,6 @@ namespace Bloom.Book
 				return false;   // not a wave file
 			var filename = Path.GetFileName(filePath);
 			return !_backgroundAudioFiles.Contains(filename);
-		}
-
-		private const string kBackgroundImage = "background-image:url('";	// must match format string in HtmlDom.SetImageElementUrl()
-
-		private static List<string> FindCoverImages (XmlDocument xmlDom)
-		{
-			var transparentImageFiles = new List<string>();
-			foreach (var div in xmlDom.SafeSelectNodes("//div[contains(concat(' ',@class,' '),' coverColor ')]//div[contains(@class,'bloom-imageContainer')]").Cast<XmlElement>())
-			{
-				var style = div.GetAttribute("style");
-				if (!String.IsNullOrEmpty(style) && style.Contains(kBackgroundImage))
-				{
-					System.Diagnostics.Debug.Assert(div.GetStringAttribute("class").Contains("bloom-backgroundImage"));
-					// extract filename from the background-image style
-					transparentImageFiles.Add(ExtractFilenameFromBackgroundImageStyleUrl(style));
-				}
-				else
-				{
-					// extract filename from child img element
-					var img = div.SelectSingleNode("//img[@src]");
-					if (img != null)
-						transparentImageFiles.Add(System.Web.HttpUtility.UrlDecode(img.GetStringAttribute("src")));
-				}
-			}
-			return transparentImageFiles;
-		}
-
-		private static List<string> FindImagesToPreserveResolution(XmlDocument dom)
-		{
-			var preservedImages = new List<string>();
-			foreach (var div in dom.SafeSelectNodes("//div[contains(@class,'marginBox')]//div[contains(@class,'bloom-preserveResolution')]").Cast<XmlElement>())
-			{
-				var style = div.GetAttribute("style");
-				if (!string.IsNullOrEmpty(style) && style.Contains(kBackgroundImage))
-				{
-					System.Diagnostics.Debug.Assert(div.GetStringAttribute("class").Contains("bloom-backgroundImage"));
-					preservedImages.Add(ExtractFilenameFromBackgroundImageStyleUrl(style));
-				}
-			}
-			foreach (var img in dom.SafeSelectNodes("//div[contains(@class,'marginBox')]//img[contains(@class,'bloom-preserveResolution')]").Cast<XmlElement>())
-			{
-				preservedImages.Add(System.Web.HttpUtility.UrlDecode(img.GetStringAttribute("src")));
-			}
-			return preservedImages;
-		}
-
-		private static string ExtractFilenameFromBackgroundImageStyleUrl(string style)
-		{
-			var filename = style.Substring(style.IndexOf(kBackgroundImage) + kBackgroundImage.Length);
-			filename = filename.Substring(0, filename.IndexOf("'"));
-			return System.Web.HttpUtility.UrlDecode(filename);
 		}
 
 		private static string GetMetaJsonModfiedForTemplate(string path)
