@@ -24,6 +24,9 @@ import {
     IBloomDialogEnvironmentParams,
     useSetupBloomDialog
 } from "./BloomDialog/BloomDialogPlumbing";
+import { getBloomApiPrefix } from "../utils/bloomApi";
+
+const badgeUrl = `${getBloomApiPrefix(false)}images/bloom-enterprise-badge.svg`;
 
 /**
  * This function sets up the hooks to get the status of whether Bloom Enterprise is available or not
@@ -83,7 +86,7 @@ export const RequiresBloomEnterpriseAdjacentIconWrapper = (props: {
                 ${"height: 16px; margin-left: 6px; cursor: pointer; " +
                     (props.iconStyles ?? "")}
             `}
-            src="/bloom/images/bloom-enterprise-badge.svg"
+            src={badgeUrl}
             title={tooltip}
             onClick={() => {
                 if (!enterpriseAvailable) {
@@ -130,7 +133,7 @@ export const BloomEnterpriseIcon = props => {
                 margin-left: 1em;
             `}
             {...props} // let caller override the size and whatever
-            src="/bloom/images/bloom-enterprise-badge.svg"
+            src={badgeUrl}
             title={tooltip}
         />
     );
@@ -327,7 +330,7 @@ export const RequiresBloomEnterpriseNotice: React.VoidFunctionComponent<IRequire
                                           `
                                 }
                             >
-                                <img src="/bloom/images/bloom-enterprise-badge.svg" />
+                                <img src={badgeUrl} />
                                 <Div l10nKey="EditTab.EnterpriseSettingsButton">
                                     Bloom Enterprise Settings
                                 </Div>
