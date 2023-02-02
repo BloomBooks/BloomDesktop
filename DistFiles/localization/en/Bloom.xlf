@@ -2822,6 +2822,10 @@
         <note>ID: Errors.CannotAccessFile</note>
         <note>displays as a "toast", {0} is the URL/filename</note>
       </trans-unit>
+      <trans-unit id="Errors.CannotUpdateFile">
+        <source xml:lang="en">Bloom cannot update a file.</source>
+        <note>ID: Errors.CannotUpdateFile</note>
+      </trans-unit>
       <trans-unit id="Errors.CannotConnectToBloomServer">
         <source xml:lang="en">Bloom was unable to start its own HTTP listener that it uses to talk to its embedded Firefox browser. If this happens even if you just restarted your computer, then ask someone to investigate if you have an aggressive firewall product installed, which may need to be uninstalled before you can use Bloom.</source>
         <note>ID: Errors.CannotConnectToBloomServer</note>
@@ -2916,6 +2920,11 @@
       <trans-unit id="Errors.SomethingWentWrong">
         <source xml:lang="en">Sorry, something went wrong.</source>
         <note>ID: Errors.SomethingWentWrong</note>
+      </trans-unit>
+      <trans-unit id="Errors.TryPausingAV">
+        <source xml:lang="en">Try pausing \"{0}\" or telling \"{0}\" that you trust Bloom.</source>
+        <note>ID: Errors.TryPausingAV</note>
+        <note>{0} is the name of an anti-virus program (or possibly a list of them).</note>
       </trans-unit>
       <trans-unit id="Errors.XMatterNotFound">
         <source xml:lang="en">This Collection called for Front/Back Matter pack named '{0}', but this version of Bloom does not have it, and Bloom could not find it on this computer. The collection has been changed to use the default Front/Back Matter pages.</source>
