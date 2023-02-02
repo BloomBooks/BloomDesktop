@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="..\..\packages\SIL.Windows.Forms.Keyboarding.11.0.0-beta0050\build\SIL.Windows.Forms.Keyboarding.props" Condition="Exists('..\..\packages\SIL.Windows.Forms.Keyboarding.11.0.0-beta0050\build\SIL.Windows.Forms.Keyboarding.props')" />
   <Import Project="..\..\packages\icu.net.2.8.1\build\icu.net.props" Condition="Exists('..\..\packages\icu.net.2.8.1\build\icu.net.props')" />
@@ -118,14 +118,6 @@
     </Reference>
     <Reference Include="GdkSharp, Version=3.22.24.37, Culture=neutral, PublicKeyToken=313398f2149d753f, processorArchitecture=MSIL">
       <HintPath>..\..\packages\GdkSharp-signed.3.22.24.37\lib\netstandard2.0\GdkSharp.dll</HintPath>
-    </Reference>
-    <Reference Include="Geckofx-Core">
-      <HintPath>..\..\output\$(Configuration)\Geckofx-Core.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Geckofx-Winforms">
-      <HintPath>..\..\output\$(Configuration)\Geckofx-Winforms.dll</HintPath>
-      <Private>True</Private>
     </Reference>
     <Reference Include="GioSharp, Version=3.22.24.37, Culture=neutral, PublicKeyToken=313398f2149d753f, processorArchitecture=MSIL">
       <HintPath>..\..\packages\GioSharp-signed.3.22.24.37\lib\netstandard2.0\GioSharp.dll</HintPath>
@@ -379,7 +371,6 @@
     <Compile Include="FluentAssertXml.cs" />
     <Compile Include="ImageProcessing\ImageUtilsTests.cs" />
     <Compile Include="ImageProcessing\RuntimeImageProcessingTests.cs" />
-    <Compile Include="NavigationIsolatorTests.cs" />
     <Compile Include="NewCollectionWizardTests.cs" />
     <Compile Include="PageEditingModelTests.cs" />
     <Compile Include="PageSelectionTests.cs" />
@@ -432,7 +423,6 @@
     <Compile Include="PretendRequestInfo.cs" />
     <Compile Include="Collection\ShortcutMakerTests.cs" />
     <Compile Include="WebLibraryIntegration\ProxyManagerTests.cs" />
-    <Compile Include="SetupFixture.cs" />
     <Compile Include="XmlStringTests.cs" />
   </ItemGroup>
   <ItemGroup>
