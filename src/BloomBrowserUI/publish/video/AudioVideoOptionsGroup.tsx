@@ -402,6 +402,7 @@ export const AudioVideoOptionsGroup: React.FunctionComponent<{
                                                 value as number
                                             )
                                         }
+                                        size="small"
                                     />
                                 </div>
                             </div>
@@ -461,6 +462,7 @@ export const AudioVideoOptionsGroup: React.FunctionComponent<{
                                             }
                                         }}
                                         marks={marks}
+                                        size="small"
                                     />
                                 </div>
                             </React.Fragment>
