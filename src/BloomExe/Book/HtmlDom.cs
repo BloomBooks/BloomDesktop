@@ -2014,15 +2014,6 @@ namespace Bloom.Book
 		/// Gets the url for the image, either from an img element or any other element that has
 		/// an inline style with background-image set.
 		/// </summary>
-		public static UrlPathString GetImageElementUrl(GeckoHtmlElement imageElement)
-		{
-			return GetImageElementUrl(new ElementProxy(imageElement));
-		}
-
-		/// <summary>
-		/// Gets the url for the image, either from an img element or any other element that has
-		/// an inline style with background-image set.
-		/// </summary>
 		public static UrlPathString GetImageElementUrl(XmlElement imageElement)
 		{
 			return GetImageElementUrl(new ElementProxy(imageElement));
@@ -2067,14 +2058,6 @@ namespace Bloom.Book
 		/// <summary>
 		/// Gets the url for a video, starting from a parent div which may or may not contain a video element.
 		/// </summary>
-		public static UrlPathString GetVideoElementUrl(GeckoHtmlElement videoContainer)
-		{
-			return GetVideoElementUrl(new ElementProxy(videoContainer));
-		}
-
-		/// <summary>
-		/// Gets the url for a video, starting from a parent div which may or may not contain a video element.
-		/// </summary>
 		public static UrlPathString GetVideoElementUrl(ElementProxy videoContainer)
 		{
 			var videoElt = videoContainer.GetChildWithName("video");
@@ -2090,15 +2073,6 @@ namespace Bloom.Book
 			string dummy;
 			var fileName = SignLanguageApi.StripTimingFromVideoUrl(src, out dummy);
 			return UrlPathString.CreateFromUrlEncodedString(fileName);
-		}
-
-		/// <summary>
-		/// Gets the url for the audio, either from an audio-sentence class or any other element that has
-		/// an inline style with data-backgroundaudio set.
-		/// </summary>
-		public static UrlPathString GetAudioElementUrl(GeckoHtmlElement audioElement)
-		{
-			return GetAudioElementUrl(new ElementProxy(audioElement));
 		}
 
 		/// <summary>

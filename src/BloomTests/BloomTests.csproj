@@ -119,14 +119,6 @@
     <Reference Include="GdkSharp, Version=3.22.24.37, Culture=neutral, PublicKeyToken=313398f2149d753f, processorArchitecture=MSIL">
       <HintPath>..\..\packages\GdkSharp-signed.3.22.24.37\lib\netstandard2.0\GdkSharp.dll</HintPath>
     </Reference>
-    <Reference Include="Geckofx-Core">
-      <HintPath>..\..\output\$(Configuration)\Geckofx-Core.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Geckofx-Winforms">
-      <HintPath>..\..\output\$(Configuration)\Geckofx-Winforms.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
     <Reference Include="GioSharp, Version=3.22.24.37, Culture=neutral, PublicKeyToken=313398f2149d753f, processorArchitecture=MSIL">
       <HintPath>..\..\packages\GioSharp-signed.3.22.24.37\lib\netstandard2.0\GioSharp.dll</HintPath>
     </Reference>
