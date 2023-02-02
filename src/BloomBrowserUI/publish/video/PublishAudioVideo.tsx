@@ -66,6 +66,7 @@ export const PublishAudioVideo = () => {
     // This requires a hard-reset of the whole screen, which we do by
     // incrementing a `key` prop on the core of this screen.
     const [keyForReset, setKeyForReset] = useState(0);
+
     if (isLinux()) {
         return (
             <div
