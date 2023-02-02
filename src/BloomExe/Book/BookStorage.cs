@@ -2343,10 +2343,22 @@ namespace Bloom.Book
 				if(_alreadyNotifiedAboutOneFailedCopy)
 					return;//don't keep bugging them
 				_alreadyNotifiedAboutOneFailedCopy = true;
-				// We probably can't help the user if they create an issue, but we can display a bit more information to help local tech support.
+				// We probably can't help the user if they create an issue, but we can log a bit more information to help local tech support.
+				// (Only the shortMessage, which is what typical users actually see, is currently localized.)
 				var msg = MiscUtils.GetExtendedFileCopyErrorInformation(documentPath,
 					$"Could not update one of the support files in this document ({documentPath} from {factoryPath}).");
-				NonFatalProblem.Report(ModalIf.None, PassiveIf.All, "Can't Update Support File", msg, e, showSendReport:false, showRequestDetails:true);
+				var avProgs = MiscUtils.InstalledAntivirusProgramNames();
+				var shortMsg = LocalizationManager.GetString("Errors.CannotUpdateFile", "Bloom cannot update a file.");
+				if (!string.IsNullOrEmpty(avProgs))
+				{
+					var avTemplate = LocalizationManager.GetString("Errors.TryPausingAV",
+						"Try pausing \"{0}\" or telling \"{0}\" that you trust Bloom.");
+					shortMsg += Environment.NewLine +string.Format(avTemplate, avProgs);
+				}
+
+				// We probably want this eventually to be showSendReport:false, but don't currently have an
+				// acceptable UI for when that is false and we are showing a dialog rather than a toast.
+				NonFatalProblem.Report(ModalIf.All, PassiveIf.All, shortMsg, msg, e, showSendReport:true, showRequestDetails:true);
 			}
 		}
 
