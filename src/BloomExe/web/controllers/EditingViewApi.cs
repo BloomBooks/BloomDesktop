@@ -28,7 +28,7 @@ namespace Bloom.web.controllers
 
 		public void RegisterWithApiHandler(BloomApiHandler apiHandler)
 		{
-			apiHandler.RegisterEndpointLegacy("editView/setModalState", HandleSetModalState, true);
+			apiHandler.RegisterEndpointHandler("editView/setModalState", HandleSetModalState, true);
 			apiHandler.RegisterEndpointLegacy("editView/chooseWidget", HandleChooseWidget, true);
 			apiHandler.RegisterEndpointHandler("editView/getColorsUsedInBookOverlays", HandleGetColorsUsedInBookOverlays, true);
 			apiHandler.RegisterEndpointLegacy("editView/editPagePainted", HandleEditPagePainted, true);

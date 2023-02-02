@@ -12,6 +12,7 @@ interface ILinkProps extends ILocalizationProps {
     href?: string;
     onClick?: any; // overrides following any href.
     disabled?: boolean;
+    openInExternalBrowser?: boolean;
     color?:
         | "initial"
         | "inherit"
@@ -33,6 +34,7 @@ export class Link extends LocalizableElement<ILinkProps, {}> {
                 className={this.props.className + (this.props.disabled ? " disabled" : "")}
                 id={"" + this.props.id}
                 color={this.props.color}
+                target={this.props.openInExternalBrowser ? "_blank" : undefined}
                 // href must be defined in order to maintain normal link UI
                 // I tried to do like the 'id' attribute above, but it caused an error.
                 href={(this.props.href && !this.props.disabled) ? this.props.href : ""}

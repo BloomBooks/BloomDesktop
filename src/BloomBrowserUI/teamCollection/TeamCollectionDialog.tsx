@@ -19,7 +19,7 @@ import {
 } from "../react_components/BloomDialog/BloomDialog";
 import { DialogCloseButton } from "../react_components/BloomDialog/commonDialogComponents";
 import { CollectionHistoryTable } from "./CollectionHistoryTable";
-import { Tab, TabList, TabPanel, Tabs } from "react-tabs";
+import { Tab, TabList, TabPanel } from "react-tabs";
 import { LocalizedString } from "../react_components/l10nComponents";
 import { ThemeProvider } from "@material-ui/styles";
 import { lightTheme } from "../bloomMaterialUITheme";
