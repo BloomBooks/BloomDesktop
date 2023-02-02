@@ -5,7 +5,7 @@
 // https://emotion.sh/docs/emotion-11#css-prop-types
 /// <reference types="@emotion/react/types/css-prop" />
 
-import Button from "@material-ui/core/Button";
+import Button from "@mui/material/Button";
 import * as React from "react";
 import "App.less";
 import { CollectionsTabPane } from "../collectionsTab/CollectionsTabPane";

@@ -1,7 +1,7 @@
 import React = require("react");
-import IncreaseIcon from "@material-ui/icons/Add";
-import DecreaseIcon from "@material-ui/icons/Remove";
-import Typography from "@material-ui/core/Typography";
+import IncreaseIcon from "@mui/icons-material/Add";
+import DecreaseIcon from "@mui/icons-material/Remove";
+import Typography from "@mui/material/Typography";
 import "./playbackOrderControls.less";
 
 interface IPlaybackOrderControlsProps {

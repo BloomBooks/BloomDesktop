@@ -4,8 +4,8 @@ import * as React from "react";
 import { useEffect, useState } from "react";
 import { get, postString } from "../utils/bloomApi";
 import { useL10n } from "./l10nHooks";
-import { List, ListItem, ListItemText, Typography } from "@material-ui/core";
-import { makeStyles } from "@material-ui/styles";
+import { List, ListItem, ListItemText, Typography } from "@mui/material";
+import { makeStyles } from "@mui/styles";
 
 interface IXmatterInfo {
     displayName: string;
@@ -13,7 +13,7 @@ interface IXmatterInfo {
     internalName: string;
 }
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles(() => ({
     root: {
         width: "100%",
         height: 140,
@@ -22,7 +22,6 @@ const useStyles = makeStyles(theme => ({
 }));
 
 const XmatterChooserControl: React.FunctionComponent = () => {
-    const classes = useStyles();
     const [selectedXmatter, setSelectedXmatter] = useState<string | undefined>(
         undefined
     );
@@ -100,7 +99,7 @@ const XmatterChooserControl: React.FunctionComponent = () => {
                 height: 220px; // Don't change height of control as descriptions change.
             `}
         >
-            <div className={classes.root}>
+            <div className={useStyles().root}>
                 <Typography
                     css={css`
                         font-family: Segoe UI !important;

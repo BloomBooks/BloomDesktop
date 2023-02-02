@@ -3,7 +3,7 @@ import { jsx, css } from "@emotion/react";
 
 import * as React from "react";
 import { useState } from "react";
-import { FormControlLabel, Checkbox } from "@material-ui/core";
+import { FormControlLabel, Checkbox } from "@mui/material";
 import { useL10n } from "./l10nHooks";
 
 // wrap up the complex material-ui checkbox in something simple and make it handle tristate

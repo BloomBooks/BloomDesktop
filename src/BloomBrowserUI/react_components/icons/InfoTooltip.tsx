@@ -5,8 +5,8 @@ import {
     ILocalizationProps,
     Span
 } from "../../react_components/l10nComponents";
-import { default as InfoIcon } from "@material-ui/icons/InfoOutlined";
-import { Popover } from "@material-ui/core";
+import { default as InfoIcon } from "@mui/icons-material/InfoOutlined";
+import { Popover } from "@mui/material";
 
 interface IProps extends ILocalizationProps {
     color?: string; // of the info icon

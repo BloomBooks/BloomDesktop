@@ -2,16 +2,12 @@
 import { jsx, css } from "@emotion/react";
 
 import * as React from "react";
-import Button from "@material-ui/core/Button";
-import Menu from "@material-ui/core/Menu";
-import MenuItem from "@material-ui/core/MenuItem";
+import Button from "@mui/material/Button";
+import Menu from "@mui/material/Menu";
+import MenuItem from "@mui/material/MenuItem";
 import { useL10n } from "./l10nHooks";
-import {
-    Divider,
-    ListItemIcon,
-    ListItemText,
-    makeStyles
-} from "@material-ui/core";
+import { Divider, ListItemIcon, ListItemText } from "@mui/material";
+import { makeStyles } from "@mui/styles";
 
 export class SimpleMenuItem {
     text: string;
@@ -118,7 +114,7 @@ export const SimpleMenu: React.FunctionComponent<{
         // `}
         >
             <Button
-                classes={{ label: buttonClasses.label }}
+                classes={{ root: buttonClasses.label }}
                 aria-controls="simple-menu"
                 aria-haspopup="true"
                 onClick={handleClick}

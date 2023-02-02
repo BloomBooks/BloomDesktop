@@ -5,7 +5,7 @@ import { storiesOf } from "@storybook/react";
 import FontSelectComponent from "./fontSelectComponent";
 import FontInformationPane from "../../react_components/fontInformationPane";
 import { IFontMetaData } from "./fontSelectComponent";
-import { Typography } from "@material-ui/core";
+import { Typography } from "@mui/material";
 
 const Frame: React.FunctionComponent = ({ children }) => (
     <div

@@ -5,9 +5,9 @@ import * as React from "react";
 import { useState } from "react";
 import { get, postString } from "../utils/bloomApi";
 import { lightTheme, kBloomYellow } from "../bloomMaterialUITheme";
-import { ThemeProvider } from "@material-ui/styles";
-import { makeStyles, MenuItem, Select, Typography } from "@material-ui/core";
-import XRegExp = require("xregexp/types");
+import { ThemeProvider, StyledEngineProvider } from "@mui/material/styles";
+import { MenuItem, Select, Typography } from "@mui/material";
+import { makeStyles } from "@mui/styles";
 import { useContentful } from "../contentful/UseContentful";
 import { BloomEnterpriseIcon } from "./requiresBloomEnterprise";
 import { useL10n } from "./l10nHooks";
@@ -179,100 +179,102 @@ export const DefaultBookshelfControl: React.FunctionComponent = () => {
     });
     const classes = useStyles(); // part of the magic of MaterialUI styles. Possibly could be inlined.
     return (
-        <ThemeProvider theme={lightTheme}>
-            <div
-                // 10pt seems to be the size this dialog uses, so we push it fairly strongly,
-                // in more than one place, for consistency. The larger fonts that Material-UI
-                // normally uses are probably aimed at making touch-sized targets.
-                css={css`
-                    font-size: 10pt;
-                `}
-            >
+        <StyledEngineProvider injectFirst>
+            <ThemeProvider theme={lightTheme}>
                 <div
+                    // 10pt seems to be the size this dialog uses, so we push it fairly strongly,
+                    // in more than one place, for consistency. The larger fonts that Material-UI
+                    // normally uses are probably aimed at making touch-sized targets.
                     css={css`
-                        display: flex;
-                    `}
-                >
-                    <Typography
-                        css={css`
-                            font-family: Segoe UI !important;
-                            font-weight: 700 !important;
-                        `}
-                    >
-                        {BLBookshelfLabel}
-                    </Typography>
-                    <BloomEnterpriseIcon />
-                </div>
-                <Select
-                    // Using a MaterialUI Select here, though we have to fight it fairly hard
-                    // to get an appearance that matches the rest of the dialog. Possibly there
-                    // would have been a better choice for now, but it wasn't obvious, and we already
-                    // have this package. And we will probably want some normal Material-UI
-                    // UI when this whole dialog moves to HTML, so it's a step in the right
-                    // direction. The various incantations here are the result of google searches
-                    // and experiment to get as close as possible to the Windows appearance.
-                    // I think most stuff is quite close, but have not been able to get the
-                    // Windows-style arrows; these don't seem to be configurable (except perhaps by
-                    // some complex overlay) in an HTML input element.)
-                    css={css`
-                        min-width: 320px;
-                        background-color: white;
-                        border: 1px solid #bbb;
                         font-size: 10pt;
-                        padding-left: 7px; // match what winforms is doing
-                        &:before {
-                            content: none !important; // 'important' gets rid of dotted line under Select
-                        }
-                        &:after {
-                            content: none;
-                        }
                     `}
-                    value={defaultBookshelfUrlKey}
-                    MenuProps={{
-                        classes: { paper: classes.select },
-                        anchorOrigin: {
-                            vertical: "bottom",
-                            horizontal: "left"
-                        },
-                        transformOrigin: {
-                            vertical: "top",
-                            horizontal: "left"
-                        },
-                        getContentAnchorEl: null
-                    }}
-                    // If we can't get the options from contentful, or there are none, disable.
-                    disabled={!result || result.length == 0}
-                    onChange={event => {
-                        const newShelf = event.target.value as string;
-                        setDefaultBookshelfUrlKey(newShelf);
-                        postString("settings/bookShelfData", newShelf);
-                    }}
                 >
-                    {items}
-                </Select>
-                {error ? (
-                    // We display this message if either of the contentful queries fail.
-                    <Typography
+                    <div
                         css={css`
-                            color: ${kBloomYellow};
-                            ${commonDescriptionCss}
+                            display: flex;
                         `}
                     >
-                        {errorCaseDescription}
-                    </Typography>
-                ) : (
-                    // The normal case.
-                    <Typography
+                        <Typography
+                            css={css`
+                                font-family: Segoe UI !important;
+                                font-weight: 700 !important;
+                            `}
+                        >
+                            {BLBookshelfLabel}
+                        </Typography>
+                        <BloomEnterpriseIcon />
+                    </div>
+                    <Select
+                        // Using a MaterialUI Select here, though we have to fight it fairly hard
+                        // to get an appearance that matches the rest of the dialog. Possibly there
+                        // would have been a better choice for now, but it wasn't obvious, and we already
+                        // have this package. And we will probably want some normal Material-UI
+                        // UI when this whole dialog moves to HTML, so it's a step in the right
+                        // direction. The various incantations here are the result of google searches
+                        // and experiment to get as close as possible to the Windows appearance.
+                        // I think most stuff is quite close, but have not been able to get the
+                        // Windows-style arrows; these don't seem to be configurable (except perhaps by
+                        // some complex overlay) in an HTML input element.)
                         css={css`
-                            color: black;
-                            ${commonDescriptionCss}
+                            min-width: 320px;
+                            background-color: white;
+                            border: 1px solid #bbb;
+                            font-size: 10pt;
+                            padding-left: 7px; // match what winforms is doing
+                            &:before {
+                                content: none !important; // 'important' gets rid of dotted line under Select
+                            }
+                            &:after {
+                                content: none;
+                            }
                         `}
+                        variant="standard"
+                        value={defaultBookshelfUrlKey}
+                        MenuProps={{
+                            classes: { paper: classes.select },
+                            anchorOrigin: {
+                                vertical: "bottom",
+                                horizontal: "left"
+                            },
+                            transformOrigin: {
+                                vertical: "top",
+                                horizontal: "left"
+                            }
+                        }}
+                        // If we can't get the options from contentful, or there are none, disable.
+                        disabled={!result || result.length == 0}
+                        onChange={event => {
+                            const newShelf = event.target.value as string;
+                            setDefaultBookshelfUrlKey(newShelf);
+                            postString("settings/bookShelfData", newShelf);
+                        }}
                     >
-                        {defaultCaseDescription}
-                    </Typography>
-                )}
-            </div>
-        </ThemeProvider>
+                        {items}
+                    </Select>
+                    {error ? (
+                        // We display this message if either of the contentful queries fail.
+                        <Typography
+                            css={css`
+                                color: ${kBloomYellow};
+                                ${commonDescriptionCss}
+                            `}
+                        >
+                            {errorCaseDescription}
+                        </Typography>
+                    ) : (
+                        // The normal case.
+                        <Typography
+                            css={css`
+                                color: black;
+                                ${commonDescriptionCss}
+                            `}
+                        >
+                            {defaultCaseDescription}
+                        </Typography>
+                    )}
+                </div>
+            </ThemeProvider>
+        </StyledEngineProvider>
     );
 };
 

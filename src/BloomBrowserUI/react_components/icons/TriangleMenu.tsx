@@ -1,5 +1,5 @@
 import React = require("react");
-import SvgIcon, { SvgIconProps } from "@material-ui/core/SvgIcon";
+import SvgIcon, { SvgIconProps } from "@mui/material/SvgIcon";
 
 interface TriangleMenuIconProps {
     fillColor: string;

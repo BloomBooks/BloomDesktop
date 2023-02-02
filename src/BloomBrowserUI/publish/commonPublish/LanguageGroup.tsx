@@ -1,5 +1,5 @@
 import * as React from "react";
-import FormGroup from "@material-ui/core/FormGroup";
+import FormGroup from "@mui/material/FormGroup";
 import { SettingsGroup } from "./PublishScreenBaseComponents";
 
 export const LanguageGroup: React.FunctionComponent = () => (

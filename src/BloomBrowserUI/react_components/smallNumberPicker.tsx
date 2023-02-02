@@ -1,6 +1,6 @@
 import * as React from "react";
 import { useState } from "react";
-import TextField from "@material-ui/core/TextField";
+import TextField from "@mui/material/TextField";
 import ReactToolTip from "react-tooltip";
 import "./smallNumberPicker.less";
 
@@ -40,7 +40,11 @@ export const SmallNumberPicker: React.FunctionComponent<INumberChooserProps> = (
     return (
         <div className="smallNumberPicker">
             <div data-tip={props.tooltip}>
-                <TextField onChange={handleNumberChange} value={chosenNumber} />
+                <TextField
+                    onChange={handleNumberChange}
+                    value={chosenNumber}
+                    variant="standard"
+                />
             </div>
             <ReactToolTip place="left" effect="solid" />
         </div>

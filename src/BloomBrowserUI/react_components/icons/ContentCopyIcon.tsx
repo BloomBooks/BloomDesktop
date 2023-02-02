@@ -1,5 +1,5 @@
 import React = require("react");
-import SvgIcon, { SvgIconProps } from "@material-ui/core/SvgIcon";
+import SvgIcon, { SvgIconProps } from "@mui/material/SvgIcon";
 
 // I pulled this icon from www.materialui.co
 // (not the official material-ui site, which doesn't have what we want).

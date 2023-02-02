@@ -1,8 +1,8 @@
 /** @jsx jsx **/
 import { jsx, css } from "@emotion/react";
 import React = require("react");
-import { default as InfoIcon } from "@material-ui/icons/InfoOutlined";
-import { Popover, PopoverOrigin, Typography } from "@material-ui/core";
+import { default as InfoIcon } from "@mui/icons-material/InfoOutlined";
+import { Popover, PopoverOrigin, Typography } from "@mui/material";
 
 // This class supports adding a tooltip to its children.
 // We use this for a more controllable tooltip than we get with title and similar properties.

@@ -3,14 +3,13 @@ import { jsx, css } from "@emotion/react";
 
 // Storybook stories for Team Collection components
 import { lightTheme, kBloomYellow } from "../bloomMaterialUITheme";
-import { ThemeProvider } from "@material-ui/styles";
+import { ThemeProvider, StyledEngineProvider } from "@mui/material/styles";
 import * as React from "react";
 import { storiesOf, addDecorator } from "@storybook/react";
 import { StorybookContext } from "../.storybook/StoryBookContext";
 import { StatusPanelCommon, getLockedInfoChild } from "./statusPanelCommon";
 import { getBloomButton } from "./TeamCollectionBookStatusPanel";
 import "./TeamCollectionBookStatusPanel.less";
-import { Typography } from "@material-ui/core";
 import { BloomAvatar } from "../react_components/bloomAvatar";
 import { JoinTeamCollectionDialog } from "./JoinTeamCollectionDialog";
 import { TeamCollectionDialogLauncher } from "./TeamCollectionDialog";
@@ -30,11 +29,13 @@ import {
 } from "../react_components/BloomDialog/BloomDialogPlumbing";
 
 addDecorator(storyFn => (
-    <ThemeProvider theme={lightTheme}>
-        <StorybookContext.Provider value={true}>
-            <div id="reactRoot">{storyFn()}</div>
-        </StorybookContext.Provider>
-    </ThemeProvider>
+    <StyledEngineProvider injectFirst>
+        <ThemeProvider theme={lightTheme}>
+            <StorybookContext.Provider value={true}>
+                <div id="reactRoot">{storyFn()}</div>
+            </StorybookContext.Provider>
+        </ThemeProvider>
+    </StyledEngineProvider>
 ));
 
 // Try to simulate the environment of the page preview

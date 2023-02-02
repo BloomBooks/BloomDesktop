@@ -9,7 +9,7 @@ import WebSocketManager from "../../utils/WebSocketManager";
 import { get } from "../../utils/bloomApi";
 import { LocalizedString } from "../../react_components/l10nComponents";
 import { lightTheme } from "../../bloomMaterialUITheme";
-import { ThemeProvider } from "@material-ui/styles";
+import { ThemeProvider, StyledEngineProvider } from "@mui/material/styles";
 import { hookupLinkHandler } from "../../utils/linkHandler";
 // This is a screen of controls that gives the user instructions and controls
 // for creating epubs
@@ -97,9 +97,11 @@ export class AccessibilityCheckScreen extends React.Component<{}, IState> {
 // allow plain 'ol javascript in the html to connect up react
 (window as any).connectAccessibilityCheckScreen = element => {
     ReactDOM.render(
-        <ThemeProvider theme={lightTheme}>
-            <AccessibilityCheckScreen />
-        </ThemeProvider>,
+        <StyledEngineProvider injectFirst>
+            <ThemeProvider theme={lightTheme}>
+                <AccessibilityCheckScreen />
+            </ThemeProvider>
+        </StyledEngineProvider>,
         element
     );
 };

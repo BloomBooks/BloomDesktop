@@ -2,7 +2,7 @@
 import { jsx } from "@emotion/react";
 
 import * as React from "react";
-import { TextField, TextFieldProps } from "@material-ui/core";
+import { TextField, TextFieldProps } from "@mui/material";
 
 import { useL10n } from "./l10nHooks";
 import { ILocalizationProps } from "./l10nComponents";

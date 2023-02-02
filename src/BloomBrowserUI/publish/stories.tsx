@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
 import { lightTheme } from "../bloomMaterialUITheme";
 import * as React from "react";
-import { ThemeProvider } from "@material-ui/styles";
+import { ThemeProvider, StyledEngineProvider } from "@mui/material/styles";
 import { storiesOf } from "@storybook/react";
 import { addDecorator } from "@storybook/react";
 import { ReaderPublishScreen } from "./ReaderPublish/ReaderPublishScreen";
@@ -25,16 +25,18 @@ import {
 import { PublishAudioVideo } from "./video/PublishAudioVideo";
 import PublishScreenTemplate from "./commonPublish/PublishScreenTemplate";
 import PublishScreenBanner from "./commonPublish/PublishScreenBanner";
-import { Button, Typography } from "@material-ui/core";
+import { Button, Typography } from "@mui/material";
 
 addDecorator(withA11y as any);
 
 addDecorator(storyFn => (
-    <ThemeProvider theme={lightTheme}>
-        <StorybookContext.Provider value={true}>
-            {storyFn()}
-        </StorybookContext.Provider>
-    </ThemeProvider>
+    <StyledEngineProvider injectFirst>
+        <ThemeProvider theme={lightTheme}>
+            <StorybookContext.Provider value={true}>
+                {storyFn()}
+            </StorybookContext.Provider>
+        </ThemeProvider>
+    </StyledEngineProvider>
 ));
 
 const testText =

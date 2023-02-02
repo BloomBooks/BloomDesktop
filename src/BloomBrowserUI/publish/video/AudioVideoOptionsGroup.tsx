@@ -1,16 +1,16 @@
 /** @jsx jsx **/
 import { jsx, css } from "@emotion/react";
 import * as React from "react";
-import FormGroup from "@material-ui/core/FormGroup";
+import FormGroup from "@mui/material/FormGroup";
 import { SettingsGroup } from "../commonPublish/PublishScreenBaseComponents";
 import { useL10n } from "../../react_components/l10nHooks";
 import { get, useApiBoolean, useApiData } from "../../utils/bloomApi";
 import { Div } from "../../react_components/l10nComponents";
-import { FormControl, MenuItem, Select, Typography } from "@material-ui/core";
-import Slider from "@material-ui/core/Slider";
+import { FormControl, MenuItem, Select, Typography } from "@mui/material";
+import Slider from "@mui/material/Slider";
 import "../../bookEdit/css/rc-slider-bloom.less";
 import { kBloomBlue } from "../../bloomMaterialUITheme";
-import AudioIcon from "@material-ui/icons/VolumeUp";
+import AudioIcon from "@mui/icons-material/VolumeUp";
 import { useEffect, useState } from "react";
 import { NoteBox } from "../../react_components/BloomDialog/commonDialogComponents";
 import { BloomTooltip } from "../../react_components/BloomToolTip";
@@ -306,6 +306,7 @@ export const AudioVideoOptionsGroup: React.FunctionComponent<{
                                             }
                                         }
                                     `}
+                                    variant="standard"
                                     value={props.format}
                                     open={formatDropdownIsOpen}
                                     onOpen={() => {
@@ -401,6 +402,7 @@ export const AudioVideoOptionsGroup: React.FunctionComponent<{
                                                 value as number
                                             )
                                         }
+                                        size="small"
                                     />
                                 </div>
                             </div>
@@ -460,6 +462,7 @@ export const AudioVideoOptionsGroup: React.FunctionComponent<{
                                             }
                                         }}
                                         marks={marks}
+                                        size="small"
                                     />
                                 </div>
                             </React.Fragment>

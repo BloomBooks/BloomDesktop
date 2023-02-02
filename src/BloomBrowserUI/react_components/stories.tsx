@@ -4,11 +4,7 @@ import { jsx, css } from "@emotion/react";
 
 import * as React from "react";
 import { storiesOf } from "@storybook/react";
-import {
-    Radio,
-    RadioGroup as MuiRadioGroup,
-    Typography
-} from "@material-ui/core";
+import { Radio, RadioGroup as MuiRadioGroup, Typography } from "@mui/material";
 import { Expandable } from "./expandable";
 import { Checkbox } from "./checkbox";
 import { MuiCheckbox } from "./muiCheckBox";
@@ -17,7 +13,7 @@ import { ApiCheckbox } from "./ApiCheckbox";
 import BloomButton from "./bloomButton";
 import { showConfirmDialog, IConfirmDialogProps } from "./confirmDialog";
 import ImportIcon from "./icons/ImportIcon";
-import DeleteIcon from "@material-ui/icons/Delete";
+import DeleteIcon from "@mui/icons-material/Delete";
 import PlaybackOrderControls from "./playbackOrderControls";
 import SmallNumberPicker from "./smallNumberPicker";
 import { BloomAvatar } from "./bloomAvatar";
@@ -41,11 +37,12 @@ import {
     MenuItem,
     FormControlLabel,
     Checkbox as OriginalMuiCheckbox
-} from "@material-ui/core";
+} from "@mui/material";
 import { RadioGroup } from "./RadioGroup";
 import { MuiRadio } from "./muiRadio";
 import WinFormsStyleSelect from "./winFormsStyleSelect";
 import BookMakingSettingsControl from "../collection/bookMakingSettingsControl";
+import { Link } from "./link";
 
 storiesOf("Localizable Widgets", module)
     .add("Expandable", () => (
@@ -309,7 +306,7 @@ storiesOf("Localizable Widgets/MuiRadio", module).add("MuiRadio", () =>
     ))
 );
 
-const menuBox = (menuItems: JSX.Element[]) => {
+const useMenuBox = (menuItems: JSX.Element[]) => {
     const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | undefined>(
         undefined
     );
@@ -406,8 +403,20 @@ const testMenu = [
 ];
 
 storiesOf("Localizable Widgets/Localizable Menu", module).add("test menu", () =>
-    menuBox(testMenu)
+    useMenuBox(testMenu)
 );
+
+storiesOf("Localizable Widgets/Link", module).add("enabled", () => (
+    <Link l10nKey="bogus">link text</Link>
+));
+
+// Setting the disabled prop actually only adds a disabled class which has no effect on its own.
+// So I'm not including the story for now. Else it is just confusing.
+// .add("disabled", () => (
+//     <Link l10nKey="bogus" disabled={true}>
+//         disabled link text
+//     </Link>
+// ))
 
 const confirmDialogProps: IConfirmDialogProps = {
     title: "Title",

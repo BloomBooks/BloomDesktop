@@ -5,7 +5,7 @@ import * as React from "react";
 import { useEffect, useState } from "react";
 import { get, postString } from "../utils/bloomApi";
 import { useL10n } from "./l10nHooks";
-import { MenuItem, Select, Typography } from "@material-ui/core";
+import { MenuItem, Select, Typography } from "@mui/material";
 
 interface PageNumberStyle {
     localizedStyle: string;
@@ -54,7 +54,6 @@ const PageNumberStyleControl: React.FunctionComponent = () => {
                     key={index}
                     value={style.styleKey}
                     dense
-                    button
                     selected={selectedStyle === style.styleKey}
                     css={css`
                         padding-top: 4px !important;
@@ -93,6 +92,7 @@ const PageNumberStyleControl: React.FunctionComponent = () => {
                         content: none !important;
                     }
                 `}
+                variant="standard"
                 value={selectedStyle} // Must equal the 'styleKey' of a PageNumberStyle
                 MenuProps={{
                     anchorOrigin: {
@@ -102,8 +102,7 @@ const PageNumberStyleControl: React.FunctionComponent = () => {
                     transformOrigin: {
                         vertical: "top",
                         horizontal: "left"
-                    },
-                    getContentAnchorEl: null
+                    }
                 }}
                 onChange={event => {
                     handleSelectChange(event);

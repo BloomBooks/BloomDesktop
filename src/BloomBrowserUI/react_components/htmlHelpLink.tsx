@@ -1,6 +1,6 @@
 import * as React from "react";
 import { ILocalizationProps, LocalizableElement } from "./l10nComponents";
-import Link from "@material-ui/core/Link";
+import Link from "@mui/material/Link";
 import { getString } from "../utils/bloomApi";
 
 interface IHtmlHelpLinkProps extends ILocalizationProps {
@@ -30,6 +30,7 @@ export default class HtmlHelpLink extends LocalizableElement<
                         // Do nothing
                     })
                 }
+                underline="hover"
             >
                 {this.getLocalizedContent()}
             </Link>

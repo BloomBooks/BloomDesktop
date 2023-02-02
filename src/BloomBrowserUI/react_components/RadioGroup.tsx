@@ -4,7 +4,7 @@ import {
     FormControl,
     RadioGroup as MuiRadioGroup,
     Radio
-} from "@material-ui/core";
+} from "@mui/material";
 
 // This is a "controlled component".
 

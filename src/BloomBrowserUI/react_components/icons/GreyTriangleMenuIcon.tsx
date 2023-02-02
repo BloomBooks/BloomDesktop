@@ -1,6 +1,6 @@
 import React = require("react");
 import TriangleMenuIcon from "./TriangleMenu";
-import { SvgIconProps } from "@material-ui/core/SvgIcon";
+import { SvgIconProps } from "@mui/material/SvgIcon";
 
 /**
  * A grey upside-down triangle menu icon.

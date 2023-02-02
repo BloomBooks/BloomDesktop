@@ -10,7 +10,7 @@ import {
     DialogMiddle,
     DialogTitle
 } from "./BloomDialog";
-import { Button, CircularProgress } from "@material-ui/core";
+import { Button, CircularProgress } from "@mui/material";
 import {
     WarningBox,
     DialogCancelButton,

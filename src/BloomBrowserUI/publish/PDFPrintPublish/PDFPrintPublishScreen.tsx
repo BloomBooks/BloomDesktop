@@ -12,12 +12,11 @@ import {
 import { PDFPrintFeaturesGroup } from "./PDFPrintFeaturesGroup";
 import PublishScreenTemplate from "../commonPublish/PublishScreenTemplate";
 import ReactDOM = require("react-dom");
-import { ThemeProvider } from "@material-ui/styles";
+import { ThemeProvider, StyledEngineProvider } from "@mui/material/styles";
 import { darkTheme, lightTheme } from "../../bloomMaterialUITheme";
 import { StorybookContext } from "../../.storybook/StoryBookContext";
-import HelpLink from "../../react_components/helpLink";
 import { useL10n } from "../../react_components/l10nHooks";
-import { Button, Typography } from "@material-ui/core";
+import { Button, Typography } from "@mui/material";
 
 export const PDFPrintPublishScreen = () => {
     // When the user changes booklet mode, printshop features, etc., we
@@ -65,16 +64,18 @@ const PDFPrintPublishScreenInternal: React.FunctionComponent<{
     const mainPanel = (
         <React.Fragment>
             <PreviewPanel>
-                <ThemeProvider theme={darkTheme}>
-                    <Typography
-                        css={css`
-                            color: white;
-                            align-self: center;
-                        `}
-                    >
-                        Temporary placeholder for eventual Preview
-                    </Typography>
-                </ThemeProvider>
+                <StyledEngineProvider injectFirst>
+                    <ThemeProvider theme={darkTheme}>
+                        <Typography
+                            css={css`
+                                color: white;
+                                align-self: center;
+                            `}
+                        >
+                            Temporary placeholder for eventual Preview
+                        </Typography>
+                    </ThemeProvider>
+                </StyledEngineProvider>
             </PreviewPanel>
             <UnderPreviewPanel
                 css={css`
@@ -180,9 +181,11 @@ const PDFPrintPublishScreenInternal: React.FunctionComponent<{
 // if that html has the root page we need.
 if (document.getElementById("PdfPrintPublishScreen")) {
     ReactDOM.render(
-        <ThemeProvider theme={lightTheme}>
-            <PDFPrintPublishScreen />
-        </ThemeProvider>,
+        <StyledEngineProvider injectFirst>
+            <ThemeProvider theme={lightTheme}>
+                <PDFPrintPublishScreen />
+            </ThemeProvider>
+        </StyledEngineProvider>,
         document.getElementById("PdfPrintPublishScreen")
     );
 }
