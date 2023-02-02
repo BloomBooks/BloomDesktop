@@ -1,8 +1,5 @@
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Runtime.InteropServices;
-using System.Text;
 using Bloom;
 using Bloom.Book;
 using Bloom.Collection;
@@ -12,7 +9,6 @@ using NUnit.Framework;
 using SIL.IO;
 using SIL.Reporting;
 using SIL.TestUtilities;
-using Gecko;
 
 namespace BloomTests.Edit
 {

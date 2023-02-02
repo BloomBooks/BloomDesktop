@@ -39,7 +39,7 @@ namespace Bloom
 		// Using this #if is the simplest way in this file to allow the WebView2Browser work
 		// to proceed without breaking the Linux build.
 #if !__MonoCS__
-			if (ExperimentalFeatures.IsFeatureEnabled(ExperimentalFeatures.kWebView2))
+			if (Program.RunningUnitTests || ExperimentalFeatures.IsFeatureEnabled(ExperimentalFeatures.kWebView2))
 				return new WebView2Browser();
 #endif
 			return new GeckoFxBrowser(offScreen);

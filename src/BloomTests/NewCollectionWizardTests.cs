@@ -1,7 +1,6 @@
 ﻿using System;
 using System.IO;
 using System.Windows.Forms;
-using Bloom;
 using Bloom.CollectionCreating;
 using NUnit.Framework;
 
@@ -15,7 +14,6 @@ namespace BloomTests
 		{
 			Application.EnableVisualStyles();
 
-			GeckoFxBrowser.SetUpXulRunner();
 			using (var dlg = new NewCollectionWizard(false))
 			{
 				dlg.ShowDialog();
@@ -27,7 +25,6 @@ namespace BloomTests
 		{
 			Application.EnableVisualStyles();
 
-			GeckoFxBrowser.SetUpXulRunner();
 			using (var dlg = new NewCollectionWizard(true))
 			{
 				dlg.ShowDialog();
