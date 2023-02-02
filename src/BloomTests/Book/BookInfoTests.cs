@@ -409,6 +409,17 @@ namespace BloomTests.Book
 			Assert.That(meta2.BookletMakingIsAppropriate, Is.True); // default value
 		}
 
+		[Test]
+		public void GetRepairedMetaDataWithIdOnly_FindsId()
+		{
+			using (var tempFile =
+			       new TempFile("junk rubbish nonsense \"bookInstanceId\":\"abcdefg-1234\" lots more junk"))
+			{
+				Assert.That(BookMetaData.GetRepairedMetaDataWithIdOnly(tempFile.Path).Id,
+					Is.EqualTo("abcdefg-1234"));
+			}
+		}
+
 		private void AssertNonBookMetaDataFieldsAreValid(string webDataJsonString)
 		{
 			// These two fields (updateSource & lastUploaded) are only sent to parse server.

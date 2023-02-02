@@ -470,7 +470,7 @@ namespace Bloom.Book
 
 		private static string GetMetaJsonModfiedForTemplate(string path)
 		{
-			var meta = BookMetaData.FromString(RobustFile.ReadAllText(path));
+			var meta = BookMetaData.FromFile(path);
 			meta.IsSuitableForMakingShells = true;
 			return meta.Json;
 		}

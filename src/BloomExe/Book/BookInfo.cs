@@ -843,6 +843,22 @@ namespace Bloom.Book
 			return result;
 		}
 
+		public static BookMetaData FromFile(string path)
+		{
+			// If it's a normal meta.json file, use FromFolder, which can recover from problems
+			// if necessary by restoring a backup.
+			BookMetaData result;
+			if (Path.GetFileName(path) == "meta.json")
+				result = FromFolder(Path.GetDirectoryName(path));
+			else if (TryReadMetaData(path, out result))
+				return result;
+			if (result == null)
+				result = GetRepairedMetaDataWithIdOnly(path);
+			if (result == null)
+				throw new ApplicationException("Failed to get any usable metadata from " + path);
+			return result;
+		}
+
 		public static BookMetaData FromStringUnchecked(string input)
 		{
 			return JsonConvert.DeserializeObject<BookMetaData>(input);
@@ -852,10 +868,10 @@ namespace Bloom.Book
 		/// Make a metadata, usually by just reading the meta.json file in the book folder.
 		/// If some exception is thrown while trying to do that, or if it doesn't exist,
 		/// Try reading a backup (and restore it if successful).
+		/// If that also fails, try to at least extract an ID from the meta.json, using a regex,
+		/// and if successful return a metadata in its default state except for that ID.
 		/// If that also fails, return null.
 		/// </summary>
-		/// <param name="bookFolderPath"></param>
-		/// <returns></returns>
 		public static BookMetaData FromFolder(string bookFolderPath)
 		{
 			var metaDataPath = MetaDataPath(bookFolderPath);
@@ -870,6 +886,33 @@ namespace Bloom.Book
 				RobustFile.Move(backupPath, metaDataPath);
 				return result;
 			}
+			// Things are messed up, but maybe we can still get an ID from the file?
+			// That's the single most important thing in it; the rest can be restored from
+			// the book or just holds stuff like tool state.
+			// For example, in BL-11821 we encountered meta.json files where various integers
+			// were represented with decimals (0.0 instead of 0) which produced a JsonReaderException.
+			return GetRepairedMetaDataWithIdOnly(metaDataPath);
+		}
+
+		/// <summary>
+		/// This is generally used when we fail to parse a metadata file properly.
+		/// It attempts to get one that at least has the right ID.
+		/// </summary>
+		/// <param name="MetaDataPath"></param>
+		/// <returns></returns>
+		public static BookMetaData GetRepairedMetaDataWithIdOnly(string metaDataPath)
+		{
+			if (RobustFile.Exists(metaDataPath))
+			{
+				var re = new Regex(@"""bookInstanceId"":""(.*?)""");
+				var match = re.Match(RobustFile.ReadAllText(metaDataPath));
+				if (match.Success)
+				{
+					var id = match.Groups[1].Value;
+					return new BookMetaData() { Id = id };
+				}
+			}
+
 			return null;
 		}
 
@@ -878,14 +921,23 @@ namespace Bloom.Book
 			result = null;
 			if (!RobustFile.Exists(path))
 				return false;
+			string metadataString = "read failed"; // for error reporting
 			try
 			{
-				result = FromString(RobustFile.ReadAllText(path));
+				metadataString = RobustFile.ReadAllText(path);
+				result = FromStringUnchecked(metadataString);
+				if (result == null)
+				{
+					Logger.WriteEvent(
+						"Failed to read metadata from " + path + " with contents '" + metadataString + "'");
+					return false;
+				}
 				return true;
 			}
 			catch (Exception e)
 			{
-				Bloom.Utils.MiscUtils.SuppressUnusedExceptionVarWarning(e);
+				Logger.WriteError(
+					"Got error reading meta.json from " + path + " with contents '" + metadataString + "'", e);
 				return false;
 			}
 		}

@@ -165,8 +165,10 @@ namespace Bloom.WebLibraryIntegration
 			bool wasLocked = false;
 			bool allowLocking = false;
 			HtmlDom domForLocking = null;
-			var metaDataText = MetaDataText(bookFolder);
-			var metadata = BookMetaData.FromString(metaDataText);
+			// Using this rather than FromFolder because it will throw if we can't get some metadata, which I think is
+			// appropriate here...don't want to upload a badly messed-up book.
+			var metadata = BookMetaData.FromFile(Path.Combine(bookFolder, BookInfo.MetaDataFileName));
+			
 			string s3BookId;
 			// In case we somehow have a book with no ID, we must have one to upload it.
 			if (String.IsNullOrEmpty(metadata.Id))
@@ -353,11 +355,6 @@ namespace Bloom.WebLibraryIntegration
 			}
 		}
 
-		private static string MetaDataText(string bookFolder)
-		{
-			return RobustFile.ReadAllText(bookFolder.CombineForPath(BookInfo.MetaDataFileName));
-		}
-
 		private string S3BookId(BookMetaData metadata)
 		{
 			var s3BookId = ParseClient.Account + BloomS3Client.kDirectoryDelimeterForS3 + metadata.Id;
@@ -366,7 +363,7 @@ namespace Bloom.WebLibraryIntegration
 
 		public bool IsBookOnServer(string bookPath)
 		{
-			var metadata = BookMetaData.FromString(RobustFile.ReadAllText(bookPath.CombineForPath(BookInfo.MetaDataFileName)));
+			var metadata = BookMetaData.FromFile(bookPath.CombineForPath(BookInfo.MetaDataFileName));
 			return ParseClient.GetSingleBookRecord(metadata.Id) != null;
 		}
 
@@ -375,7 +372,7 @@ namespace Bloom.WebLibraryIntegration
 		/// </summary>
 		public dynamic GetBookOnServer(string bookPath)
 		{
-			var metadata = BookMetaData.FromString(RobustFile.ReadAllText(bookPath.CombineForPath(BookInfo.MetaDataFileName)));
+			var metadata = BookMetaData.FromFile(bookPath.CombineForPath(BookInfo.MetaDataFileName));
 			// 'true' parameter tells the query to include language information so we can get the names.
 			return ParseClient.GetSingleBookRecord(metadata.Id, true);
 		}
