@@ -2,7 +2,7 @@
 import { jsx, css } from "@emotion/react";
 
 import * as React from "react";
-import { FormControlLabel, Radio } from "@material-ui/core";
+import { FormControlLabel, Radio } from "@mui/material";
 import { useL10n } from "./l10nHooks";
 import { ILocalizationProps } from "./l10nComponents";
 

@@ -5,7 +5,7 @@ import {
     ILocalizationState,
     LocalizableElement
 } from "./l10nComponents";
-import Button, { ButtonProps } from "@material-ui/core/Button";
+import Button, { ButtonProps } from "@mui/material/Button";
 
 export interface IBloomButtonProps extends ILocalizationProps, ButtonProps {
     enabled: boolean;

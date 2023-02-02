@@ -1,7 +1,7 @@
 import * as React from "react";
-import { Typography } from "@material-ui/core";
+import { Typography } from "@mui/material";
 import "./ProblemDialog.less";
-import WarningIcon from "@material-ui/icons/Warning";
+import WarningIcon from "@mui/icons-material/Warning";
 import { useL10n } from "../react_components/l10nHooks";
 import BloomButton from "../react_components/bloomButton";
 

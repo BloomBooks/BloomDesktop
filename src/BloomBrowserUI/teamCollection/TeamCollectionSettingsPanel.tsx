@@ -7,7 +7,7 @@ import { P } from "../react_components/l10nComponents";
 import { RequiresBloomEnterpriseOverlayWrapper } from "../react_components/requiresBloomEnterprise";
 import "./TeamCollectionSettingsPanel.less";
 import { lightTheme } from "../bloomMaterialUITheme";
-import { ThemeProvider } from "@material-ui/styles";
+import { ThemeProvider, StyledEngineProvider } from "@mui/material/styles";
 import { tabMargins } from "../collection/commonTabSettings";
 import BloomButton from "../react_components/bloomButton";
 
@@ -137,24 +137,26 @@ export const TeamCollectionSettingsPanel: React.FunctionComponent = props => {
     );
 
     return (
-        <ThemeProvider theme={lightTheme}>
-            <div
-                id="teamCollection-settings"
-                css={css`
-                    margin: ${tabMargins.top} ${tabMargins.side}
-                        ${tabMargins.bottom};
-                `}
-            >
-                <RequiresBloomEnterpriseOverlayWrapper>
-                    <React.Fragment>
-                        {intro}
-                        {repoFolderPath
-                            ? isTeamCollection
-                            : isNotTeamCollection}
-                    </React.Fragment>
-                </RequiresBloomEnterpriseOverlayWrapper>
-            </div>
-        </ThemeProvider>
+        <StyledEngineProvider injectFirst>
+            <ThemeProvider theme={lightTheme}>
+                <div
+                    id="teamCollection-settings"
+                    css={css`
+                        margin: ${tabMargins.top} ${tabMargins.side}
+                            ${tabMargins.bottom};
+                    `}
+                >
+                    <RequiresBloomEnterpriseOverlayWrapper>
+                        <React.Fragment>
+                            {intro}
+                            {repoFolderPath
+                                ? isTeamCollection
+                                : isNotTeamCollection}
+                        </React.Fragment>
+                    </RequiresBloomEnterpriseOverlayWrapper>
+                </div>
+            </ThemeProvider>
+        </StyledEngineProvider>
     );
 };
 

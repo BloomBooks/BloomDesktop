@@ -1,5 +1,5 @@
 import * as React from "react";
-import Dialog from "@material-ui/core/Dialog";
+import Dialog from "@mui/material/Dialog";
 import "./BookMetadataDialog.less";
 import CloseOnEscape from "react-close-on-escape";
 import BookMetadataTable from "./BookMetadataTable";
@@ -7,7 +7,7 @@ import { get, postData } from "../../utils/bloomApi";
 import * as mobx from "mobx";
 import * as mobxReact from "mobx-react";
 import BloomButton from "../../react_components/bloomButton";
-import { DialogTitle, DialogActions, DialogContent } from "@material-ui/core";
+import { DialogTitle, DialogActions, DialogContent } from "@mui/material";
 import { LocalizedString } from "../../react_components/l10nComponents";
 
 interface IState {

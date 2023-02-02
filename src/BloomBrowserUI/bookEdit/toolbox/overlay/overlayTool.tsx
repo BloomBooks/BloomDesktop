@@ -13,14 +13,14 @@ import {
 import { BubbleManager, ITextColorInfo } from "../../js/bubbleManager";
 import { BubbleSpec, TailSpec } from "comicaljs";
 import { ToolBottomHelpLink } from "../../../react_components/helpLink";
-import FormControl from "@material-ui/core/FormControl";
-import Select from "@material-ui/core/Select";
-import { Button, MenuItem, Typography } from "@material-ui/core";
+import FormControl from "@mui/material/FormControl";
+import Select from "@mui/material/Select";
+import { Button, MenuItem, Typography } from "@mui/material";
 import { useL10n } from "../../../react_components/l10nHooks";
 import { Div, Span } from "../../../react_components/l10nComponents";
-import InputLabel from "@material-ui/core/InputLabel";
+import InputLabel from "@mui/material/InputLabel";
 import * as toastr from "toastr";
-import { default as TrashIcon } from "@material-ui/icons/Delete";
+import { default as TrashIcon } from "@mui/icons-material/Delete";
 import { get } from "../../../utils/bloomApi";
 import { isLinux } from "../../../utils/isLinux";
 import { MuiCheckbox } from "../../../react_components/muiCheckBox";
@@ -582,13 +582,14 @@ const OverlayToolControls: React.FunctionComponent = () => {
             case "text":
                 return (
                     <form autoComplete="off">
-                        <FormControl>
+                        <FormControl variant="standard">
                             <InputLabel htmlFor="bubble-style-dropdown">
                                 <Span l10nKey="EditTab.Toolbox.ComicTool.Options.Style">
                                     Style
                                 </Span>
                             </InputLabel>
                             <Select
+                                variant="standard"
                                 value={style}
                                 onChange={event => {
                                     handleStyleChanged(event);
@@ -676,7 +677,7 @@ const OverlayToolControls: React.FunctionComponent = () => {
                                 />
                             </div>
                         </FormControl>
-                        <FormControl>
+                        <FormControl variant="standard">
                             <InputLabel htmlFor="text-color-bar" shrink={true}>
                                 <Span l10nKey="EditTab.Toolbox.ComicTool.Options.TextColor">
                                     Text Color
@@ -689,7 +690,7 @@ const OverlayToolControls: React.FunctionComponent = () => {
                                 isDefault={textColorIsDefault}
                             />
                         </FormControl>
-                        <FormControl>
+                        <FormControl variant="standard">
                             <InputLabel
                                 shrink={true}
                                 htmlFor="background-color-bar"
@@ -708,6 +709,7 @@ const OverlayToolControls: React.FunctionComponent = () => {
                             />
                         </FormControl>
                         <FormControl
+                            variant="standard"
                             className={
                                 isBubble(currentFamilySpec) ? "" : "disabled"
                             }
@@ -718,6 +720,7 @@ const OverlayToolControls: React.FunctionComponent = () => {
                                 </Span>
                             </InputLabel>
                             <Select
+                                variant="standard"
                                 value={outlineColor ? outlineColor : "none"}
                                 className="bubbleOptionDropdown"
                                 inputProps={{

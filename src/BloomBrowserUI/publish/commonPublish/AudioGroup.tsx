@@ -1,5 +1,5 @@
 import * as React from "react";
-import { FormGroup } from "@material-ui/core";
+import { FormGroup } from "@mui/material";
 import { SettingsGroup } from "./PublishScreenBaseComponents";
 
 export const AudioGroup: React.FunctionComponent = () => (

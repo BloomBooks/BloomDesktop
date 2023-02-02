@@ -8,10 +8,10 @@ import {
     kErrorColor,
     kDisabledControlGray
 } from "../bloomMaterialUITheme";
-import { Typography } from "@material-ui/core";
-import OkIcon from "@material-ui/icons/CheckCircle";
-import UnsuitableIcon from "@material-ui/icons/Error";
-import UnknownIcon from "@material-ui/icons/Help";
+import { Typography } from "@mui/material";
+import OkIcon from "@mui/icons-material/CheckCircle";
+import UnsuitableIcon from "@mui/icons-material/Error";
+import UnknownIcon from "@mui/icons-material/Help";
 import { useDebouncedCallback } from "use-debounce";
 
 interface FontDisplayBarProps {

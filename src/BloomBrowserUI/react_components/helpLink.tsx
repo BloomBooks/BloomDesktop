@@ -3,7 +3,7 @@ import { jsx, css } from "@emotion/react";
 
 import * as React from "react";
 import { ILocalizationProps, LocalizableElement } from "./l10nComponents";
-import Link from "@material-ui/core/Link";
+import Link from "@mui/material/Link";
 import BloomButton from "./bloomButton";
 
 interface IHelpLinkProps extends ILocalizationProps {
@@ -18,6 +18,7 @@ export class HelpLink extends LocalizableElement<IHelpLinkProps, {}> {
             <Link
                 style={this.props.style}
                 href={"/bloom/api/help/" + this.props.helpId}
+                underline="hover"
             >
                 {this.getLocalizedContent()}
             </Link>

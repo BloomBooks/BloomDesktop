@@ -1,9 +1,19 @@
 /** @jsx jsx **/
 import { jsx, css } from "@emotion/react";
 import * as React from "react";
-import { makeStyles, ThemeProvider } from "@material-ui/styles";
+import {
+    ThemeProvider,
+    Theme,
+    StyledEngineProvider
+} from "@mui/material/styles";
+import { makeStyles } from "@mui/styles";
 import { lightTheme } from "../bloomMaterialUITheme";
-import { FormControl, MenuProps, Select } from "@material-ui/core";
+import { createTheme, FormControl, MenuProps, Select } from "@mui/material";
+
+declare module "@mui/styles/defaultTheme" {
+    // eslint-disable-next-line @typescript-eslint/no-empty-interface
+    interface DefaultTheme extends Theme {}
+}
 
 // This seems to be the only way to affect the css of the popped up list, since it's a completely
 // separate html element from this component.
@@ -28,26 +38,25 @@ interface FormsSelectProps {
 // This component initially attempted to imitate a winforms combobox in React.
 // Since we're moving away from winforms, that restriction has relaxed somewhat.
 const WinFormsStyleSelect: React.FunctionComponent<FormsSelectProps> = props => {
-    const classes = useStyles();
-
     const selectMenuProps: Partial<MenuProps> = {
         classes: {
-            paper: classes.menuPaper
-        },
-        // This works around a bug in MUI v4 (https://github.com/mui/material-ui/issues/19245)
-        // which caused the list to jump if it was scrolled and we re-rendered. See BL-11258.
-        getContentAnchorEl: null
+            paper: useStyles().menuPaper
+        }
     };
 
+    let lightThemeOverride: Theme = createTheme();
     if (props.popoverZindex) {
-        lightTheme.overrides = {
-            ...lightTheme.overrides,
-            MuiPopover: {
-                root: {
-                    zIndex: (props.popoverZindex + " !important") as any
+        lightThemeOverride = createTheme({
+            components: {
+                MuiPopover: {
+                    styleOverrides: {
+                        root: {
+                            zIndex: props.popoverZindex + " !important"
+                        }
+                    }
                 }
             }
-        };
+        });
     }
 
     // Match the border color of the other selects in the Edit tab cog Format dialog.
@@ -57,53 +66,57 @@ const WinFormsStyleSelect: React.FunctionComponent<FormsSelectProps> = props => 
     const finalKey = props.idKey ? props.idKey.toString() : "";
 
     return (
-        <ThemeProvider theme={lightTheme}>
-            <FormControl
-                variant="outlined"
-                margin="dense"
-                css={css`
-                    // Some of the following "!important"s are needed when the Style tab is present,
-                    // oddly enough!
-                    min-width: 180px !important;
-                    max-width: 220px !important;
-                    margin-right: 12px !important;
-                    margin-top: 3px !important;
-                    & > div {
-                        border-radius: 0;
-                    }
-                    fieldset {
-                        ${matchingBorderColor}
-                    }
-                    // I can't get this to work putting it anywhere else. This is only for the case
-                    // where the menu item is a FontDisplayBar.
-                    .font-display-bar svg {
-                        padding-right: 15px !important; // make room for dropdown arrow
-                    }
-                `}
-            >
-                <Select
-                    id={`select-${finalKey}`}
-                    MenuProps={selectMenuProps}
-                    onChange={props.onChangeHandler}
-                    value={props.currentValue}
-                    variant="outlined"
-                    css={css`
-                        #select-${finalKey} {
-                            display: flex;
-                            flex: 1;
-                            flex-direction: row;
-                            justify-content: space-between;
-                            background-color: #fdfdfd;
-                            // try to match the font size input
-                            padding: 0 12px 0 8px !important;
-                            margin: 1px 0 !important;
-                        }
-                    `}
-                >
-                    {props.children}
-                </Select>
-            </FormControl>
-        </ThemeProvider>
+        <StyledEngineProvider injectFirst>
+            <ThemeProvider theme={lightTheme}>
+                <ThemeProvider theme={lightThemeOverride}>
+                    <FormControl
+                        variant="outlined"
+                        margin="dense"
+                        css={css`
+                            // Some of the following "!important"s are needed when the Style tab is present,
+                            // oddly enough!
+                            min-width: 180px !important;
+                            max-width: 220px !important;
+                            margin-right: 12px !important;
+                            margin-top: 3px !important;
+                            & > div {
+                                border-radius: 0;
+                            }
+                            fieldset {
+                                ${matchingBorderColor}
+                            }
+                            // I can't get this to work putting it anywhere else. This is only for the case
+                            // where the menu item is a FontDisplayBar.
+                            .font-display-bar svg {
+                                padding-right: 15px !important; // make room for dropdown arrow
+                            }
+                        `}
+                    >
+                        <Select
+                            id={`select-${finalKey}`}
+                            MenuProps={selectMenuProps}
+                            onChange={props.onChangeHandler}
+                            value={props.currentValue}
+                            variant="outlined"
+                            css={css`
+                                #select-${finalKey} {
+                                    display: flex;
+                                    flex: 1;
+                                    flex-direction: row;
+                                    justify-content: space-between;
+                                    background-color: #fdfdfd;
+                                    // try to match the font size input
+                                    padding: 0 12px 0 8px !important;
+                                    margin: 1px 0 !important;
+                                }
+                            `}
+                        >
+                            {props.children}
+                        </Select>
+                    </FormControl>
+                </ThemeProvider>
+            </ThemeProvider>
+        </StyledEngineProvider>
     );
 };
 

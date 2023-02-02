@@ -2,8 +2,8 @@
 import { jsx, css } from "@emotion/react";
 
 import * as React from "react";
-import { MenuItem, Select } from "@material-ui/core";
-import WarningIcon from "@material-ui/icons/Warning";
+import { MenuItem, Select } from "@mui/material";
+import WarningIcon from "@mui/icons-material/Warning";
 
 import {
     kBorderRadiusForSpecialBlocks,
@@ -82,6 +82,7 @@ export const LicenseBadge: React.FunctionComponent<{
                         `}
                     >
                         <Select
+                            variant="standard"
                             css={css`
                                 color: ${kMutedTextGray} !important;
                                 // I was trying to prevent the gray background when focused, but this isn't working:

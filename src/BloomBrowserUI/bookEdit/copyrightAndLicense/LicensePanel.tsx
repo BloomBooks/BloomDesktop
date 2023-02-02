@@ -3,7 +3,7 @@ import { jsx, css } from "@emotion/react";
 
 import * as React from "react";
 import { useEffect, useState } from "react";
-import { RadioGroup, TextField } from "@material-ui/core";
+import { RadioGroup, TextField } from "@mui/material";
 
 import { kMutedTextGray } from "../../bloomMaterialUITheme";
 import { Div, LocalizedString } from "../../react_components/l10nComponents";

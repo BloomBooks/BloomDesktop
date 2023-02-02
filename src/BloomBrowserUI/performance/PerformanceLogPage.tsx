@@ -3,9 +3,13 @@ import { useState } from "react";
 import { post, useApiData, useApiStringState } from "../utils/bloomApi";
 import { useSubscribeToWebSocketForObjectInMessageParam } from "../utils/WebSocketManager";
 import "./PerformanceLogPage.less";
-import { ScatterPlot } from "@nivo/scatterplot";
+import {
+    ScatterPlot,
+    ScatterPlotDatum,
+    ScatterPlotNodeProps
+} from "@nivo/scatterplot";
 import ReactDOM = require("react-dom");
-import { Button } from "@material-ui/core";
+import { Button } from "@mui/material";
 import * as filesize from "filesize";
 
 interface IMeasurement {
@@ -86,7 +90,7 @@ const MemoryGraph: React.FunctionComponent<{
     return (
         <div className="graph">
             <h2>Memory</h2>
-            <ScatterPlot
+            <ScatterPlot<ScatterPlotDatum>
                 height={300}
                 width={1000}
                 margin={{ top: 10, right: 10, bottom: 30, left: 90 }}
@@ -102,13 +106,11 @@ const MemoryGraph: React.FunctionComponent<{
                 axisTop={null}
                 axisRight={null}
                 axisBottom={{
-                    orient: "bottom",
                     tickSize: 5,
                     tickPadding: 5,
                     tickValues: memoryLevels.length
                 }}
                 axisLeft={{
-                    orient: "left",
                     tickSize: 5,
                     tickPadding: 5,
                     tickRotation: 0,
@@ -146,7 +148,7 @@ const MemoryGraph: React.FunctionComponent<{
                         data: memoryLevels
                     }
                 ]}
-                renderNode={CustomNodeWithColorDependingOnAction}
+                nodeComponent={CustomNodeWithColorDependingOnAction}
             />
         </div>
     );
@@ -170,7 +172,7 @@ const DurationGraph: React.FunctionComponent<{
     return (
         <div className="graph">
             <h2>Time</h2>
-            <ScatterPlot
+            <ScatterPlot<ScatterPlotDatum>
                 height={300}
                 width={1000}
                 margin={{ top: 10, right: 10, bottom: 30, left: 90 }}
@@ -180,13 +182,11 @@ const DurationGraph: React.FunctionComponent<{
                 axisTop={null}
                 axisRight={null}
                 axisBottom={{
-                    orient: "bottom",
                     tickSize: 5,
                     tickPadding: 5,
                     tickValues: durations.length
                 }}
                 axisLeft={{
-                    orient: "left",
                     tickSize: 5,
                     tickPadding: 5,
                     legend: "seconds",
@@ -223,7 +223,7 @@ const DurationGraph: React.FunctionComponent<{
                         data: durations
                     }
                 ]}
-                renderNode={CustomNodeWithColorDependingOnAction}
+                nodeComponent={CustomNodeWithColorDependingOnAction}
             />
         </div>
     );
@@ -235,17 +235,13 @@ interface IHash {
 const ActionToColor: IHash = {};
 
 const CustomNodeWithColorDependingOnAction = ({
-    node,
-    x,
-    y,
-    size,
-    color,
-    blendMode,
-    onMouseEnter,
-    onMouseMove,
-    onMouseLeave,
-    onClick
-}) => {
+    node
+}: ScatterPlotNodeProps<{
+    x: number;
+    y: number;
+    action: string;
+    clipped: boolean;
+}>) => {
     const colors = [
         "#a6cee3",
         "#6a3d9a",
@@ -283,26 +279,22 @@ const CustomNodeWithColorDependingOnAction = ({
     }
     const customColor = ActionToColor[action];
     const commonProps = {
-        fill: customColor,
+        fill: customColor
         //style:{{ mixBlendMode: blendMode }},
-        onMouseEnter,
-        onMouseMove,
-        onMouseLeave,
-        onClick
     };
     return (
         // show values that were clipped as diamonds
-        <g transform={`translate(${x},${y})  rotate(45)`}>
+        <g transform={`translate(${node.x},${node.y})  rotate(45)`}>
             {node.data.clipped ? (
                 <rect
-                    x={size * -0.5}
-                    y={size * -0.5}
-                    width={size}
-                    height={size}
+                    x={node.size * -0.5}
+                    y={node.size * -0.5}
+                    width={node.size}
+                    height={node.size}
                     {...commonProps}
                 />
             ) : (
-                <circle r={size / 2} {...commonProps} />
+                <circle r={node.size / 2} {...commonProps} />
             )}
         </g>
     );

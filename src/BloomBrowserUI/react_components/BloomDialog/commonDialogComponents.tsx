@@ -10,9 +10,9 @@ import {
 import { post, postJson } from "../../utils/bloomApi";
 import BloomButton from "../bloomButton";
 
-import InfoIcon from "@material-ui/icons/Info";
-import WarningIcon from "@material-ui/icons/Warning";
-import ErrorIcon from "@material-ui/icons/Error";
+import InfoIcon from "@mui/icons-material/Info";
+import WarningIcon from "@mui/icons-material/Warning";
+import ErrorIcon from "@mui/icons-material/Error";
 import { useSubscribeToWebSocketForObject } from "../../utils/WebSocketManager";
 import {
     kBloomDarkTextOverWarning,

@@ -1,5 +1,5 @@
 import * as React from "react";
-import FormGroup from "@material-ui/core/FormGroup";
+import FormGroup from "@mui/material/FormGroup";
 import { SettingsGroup } from "../commonPublish/PublishScreenBaseComponents";
 import { useL10n } from "../../react_components/l10nHooks";
 

@@ -1,4 +1,4 @@
-import { createMuiTheme, Theme } from "@material-ui/core/styles";
+import { createTheme, Theme, adaptV4Theme } from "@mui/material/styles";
 import { kBloomBlue } from "../utils/colorUtils";
 import { ProblemKind } from "./ProblemDialog";
 import { kUiFontStack } from "../bloomMaterialUITheme";
@@ -33,49 +33,49 @@ export const kindParams = {
 };
 
 export function makeTheme(kind: ProblemKind): Theme {
-    // (21 Nov. '19) "<any>"" is required because we define fontFamily as type string[], but as of now
-    // the Material UI typescript defn. doesn't allow that. It works, though.
-    return createMuiTheme(<any>{
-        palette: {
-            primary: { main: kindParams[kind.toString()].primaryColor },
-            error: { main: kindParams["nonfatal"].primaryColor }
-        },
-        typography: {
-            fontSize: 12,
-            fontFamily: kUiFontStack
-        },
-        props: {
-            MuiLink: {
-                variant: "body1" // without this, they come out in times new roman :-)
+    return createTheme(
+        adaptV4Theme({
+            palette: {
+                primary: { main: kindParams[kind.toString()].primaryColor },
+                error: { main: kindParams["nonfatal"].primaryColor }
+            },
+            typography: {
+                fontSize: 12,
+                fontFamily: kUiFontStack
+            },
+            props: {
+                MuiLink: {
+                    variant: "body1" // without this, they come out in times new roman :-)
+                }
+            },
+            overrides: {
+                MuiOutlinedInput: {
+                    input: {
+                        padding: "7px"
+                    }
+                },
+                MuiDialogTitle: {
+                    root: {
+                        color: "#FFFFFF",
+                        backgroundColor:
+                            kindParams[kind.toString()].dialogHeaderColor,
+                        "& h6": { fontWeight: "bold" }
+                    }
+                },
+                MuiDialogActions: {
+                    root: {
+                        backgroundColor: "#FFFFFF",
+                        paddingRight: 20,
+                        paddingBottom: 20
+                    }
+                },
+                MuiButton: {
+                    // Set the text colors of NotifyDialog's DialogAction buttons
+                    containedPrimary: {
+                        color: "#FFFFFF"
+                    }
+                }
             }
-        },
-        overrides: {
-            MuiOutlinedInput: {
-                input: {
-                    padding: "7px"
-                }
-            },
-            MuiDialogTitle: {
-                root: {
-                    color: "#FFFFFF",
-                    backgroundColor:
-                        kindParams[kind.toString()].dialogHeaderColor,
-                    "& h6": { fontWeight: "bold" }
-                }
-            },
-            MuiDialogActions: {
-                root: {
-                    backgroundColor: "#FFFFFF",
-                    paddingRight: 20,
-                    paddingBottom: 20
-                }
-            },
-            MuiButton: {
-                // Set the text colors of NotifyDialog's DialogAction buttons
-                containedPrimary: {
-                    color: "#FFFFFF"
-                }
-            }
-        }
-    });
+        })
+    );
 }

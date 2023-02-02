@@ -1,7 +1,7 @@
 /** @jsx jsx **/
 import { jsx, css } from "@emotion/react";
 import * as React from "react";
-import Typography from "@material-ui/core/Typography";
+import Typography from "@mui/material/Typography";
 import "./PublishScreenBaseComponents.less";
 import { LocalizedString } from "../../react_components/l10nComponents";
 

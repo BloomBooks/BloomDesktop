@@ -3,7 +3,7 @@ import { jsx, css } from "@emotion/react";
 
 import * as React from "react";
 import { post, postString, useWatchString } from "../utils/bloomApi";
-import { Button, Menu } from "@material-ui/core";
+import { Button, Menu } from "@mui/material";
 import TruncateMarkup from "react-truncate-markup";
 import { useTColBookStatus } from "../teamCollection/teamCollectionApi";
 import { BloomAvatar } from "../react_components/bloomAvatar";
@@ -13,7 +13,7 @@ import { useSubscribeToWebSocketForEvent } from "../utils/WebSocketManager";
 import { BookSelectionManager, useIsSelected } from "./bookSelectionManager";
 import { IBookInfo, ICollection } from "./BooksOfCollection";
 import { makeMenuItems, MenuItemSpec } from "./CollectionsTabPane";
-import DeleteIcon from "@material-ui/icons/Delete";
+import DeleteIcon from "@mui/icons-material/Delete";
 
 export const bookButtonHeight = 120;
 export const bookButtonWidth = 90;
@@ -274,10 +274,10 @@ export const BookButton: React.FunctionComponent<{
     const label =
         bookLabel.length > 14 ? (
             <TruncateMarkup lines={2}>
-                <span>{bookLabel}</span>
+                <span className="bookButton-label">{bookLabel}</span>
             </TruncateMarkup>
         ) : (
-            bookLabel
+            <span className="bookButton-label">bookLabel</span>
         );
 
     const renameHeight = 40;

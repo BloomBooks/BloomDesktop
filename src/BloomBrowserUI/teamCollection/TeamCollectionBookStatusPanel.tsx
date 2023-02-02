@@ -3,7 +3,7 @@ import { jsx, css } from "@emotion/react";
 
 import * as React from "react";
 import { lightTheme, kBloomYellow } from "../bloomMaterialUITheme";
-import { ThemeProvider } from "@material-ui/styles";
+import { ThemeProvider, StyledEngineProvider } from "@mui/material/styles";
 import { useMemo, useRef, useState } from "react";
 import { post, postString } from "../utils/bloomApi";
 import { useL10n } from "../react_components/l10nHooks";
@@ -16,8 +16,8 @@ import { BookProblem } from "../react_components/bookProblem";
 import { SimpleMenu, SimpleMenuItem } from "../react_components/simpleMenu";
 import { AvatarDialog } from "./AvatarDialog";
 import { ForgetChangesDialog } from "./ForgetChangesDialog";
-import { createTheme } from "@material-ui/core/styles";
-import WarningIcon from "@material-ui/icons/Warning";
+import { createTheme, adaptV4Theme } from "@mui/material/styles";
+import WarningIcon from "@mui/icons-material/Warning";
 import { IBookTeamCollectionStatus } from "./teamCollectionApi";
 import { ForceUnlockDialog } from "./ForceUnlockDialog";
 import { kBloomRed } from "../utils/colorUtils";
@@ -355,13 +355,15 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<IBookTeamCol
     // show the button. Next version of Material should be able to do more theme colors.
     const dangerTheme = useMemo(
         () =>
-            createTheme({
-                palette: {
-                    primary: {
-                        main: kBloomYellow
+            createTheme(
+                adaptV4Theme({
+                    palette: {
+                        primary: {
+                            main: kBloomYellow
+                        }
                     }
-                }
-            }),
+                })
+            ),
         []
     );
 
@@ -472,17 +474,19 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<IBookTeamCol
                         icon={avatar}
                         //menu={} // eventually the "About my Avatar..." and "Forget Changes" menu gets passed in here.
                         button={
-                            <ThemeProvider theme={dangerTheme}>
-                                {getBloomButton(
-                                    "Check in book",
-                                    "TeamCollection.CheckIn",
-                                    "checkin-button",
-                                    "/bloom/teamCollection/Check In.svg",
-                                    checkinHandler,
-                                    checkinProgress > 0,
-                                    "primary"
-                                )}
-                            </ThemeProvider>
+                            <StyledEngineProvider injectFirst>
+                                <ThemeProvider theme={dangerTheme}>
+                                    {getBloomButton(
+                                        "Check in book",
+                                        "TeamCollection.CheckIn",
+                                        "checkin-button",
+                                        "/bloom/teamCollection/Check In.svg",
+                                        checkinHandler,
+                                        checkinProgress > 0,
+                                        "primary"
+                                    )}
+                                </ThemeProvider>
+                            </StyledEngineProvider>
                         }
                         menu={menu}
                     >
@@ -640,23 +644,25 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<IBookTeamCol
     };
 
     return (
-        <ThemeProvider theme={lightTheme}>
-            {panelContents(tcPanelState)}
-            <AvatarDialog
-                open={avatarDialogOpen}
-                close={() => setAvatarDialogOpen(false)}
-                currentUser={props.currentUser}
-                currentUserName={props.currentUserName}
-            ></AvatarDialog>
-            <ForgetChangesDialog
-                open={forgetDialogOpen}
-                close={() => setForgetDialogOpen(false)}
-            ></ForgetChangesDialog>
-            <ForceUnlockDialog
-                open={forceUnlockDialogOpen}
-                close={() => setForceUnlockDialogOpen(false)}
-            ></ForceUnlockDialog>
-        </ThemeProvider>
+        <StyledEngineProvider injectFirst>
+            <ThemeProvider theme={lightTheme}>
+                {panelContents(tcPanelState)}
+                <AvatarDialog
+                    open={avatarDialogOpen}
+                    close={() => setAvatarDialogOpen(false)}
+                    currentUser={props.currentUser}
+                    currentUserName={props.currentUserName}
+                ></AvatarDialog>
+                <ForgetChangesDialog
+                    open={forgetDialogOpen}
+                    close={() => setForgetDialogOpen(false)}
+                ></ForgetChangesDialog>
+                <ForceUnlockDialog
+                    open={forceUnlockDialogOpen}
+                    close={() => setForceUnlockDialogOpen(false)}
+                ></ForceUnlockDialog>
+            </ThemeProvider>
+        </StyledEngineProvider>
     );
 };
 

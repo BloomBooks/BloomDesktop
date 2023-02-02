@@ -1,7 +1,7 @@
 import * as React from "react";
-import { Typography } from "@material-ui/core";
+import { Typography } from "@mui/material";
 import "./ProblemDialog.less";
-import ArrowBack from "@material-ui/icons/ArrowBack";
+import ArrowBack from "@mui/icons-material/ArrowBack";
 import { useApiStringState } from "../utils/bloomApi";
 import { useL10n } from "../react_components/l10nHooks";
 import BloomButton from "../react_components/bloomButton";

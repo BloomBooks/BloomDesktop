@@ -10,10 +10,10 @@ import {
     ListItemText,
     MenuItem,
     TypographyProps
-} from "@material-ui/core";
-import NestedMenuItem from "material-ui-nested-menu-item";
-import CheckBoxOutlineBlankIcon from "@material-ui/icons/CheckBoxOutlineBlank";
-import CheckBoxIcon from "@material-ui/icons/CheckBox";
+} from "@mui/material";
+import NestedMenuItem from "mui-nested-menu-item";
+import CheckBoxOutlineBlankIcon from "@mui/icons-material/CheckBoxOutlineBlank";
+import CheckBoxIcon from "@mui/icons-material/CheckBox";
 import { getBoolean, post, postBoolean } from "../utils/bloomApi";
 import { useEnterpriseAvailable } from "./requiresBloomEnterprise";
 

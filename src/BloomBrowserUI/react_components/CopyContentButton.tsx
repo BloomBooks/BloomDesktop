@@ -1,8 +1,8 @@
 import * as React from "react";
 import { useState } from "react";
-import IconButton from "@material-ui/core/IconButton";
-import Fade from "@material-ui/core/Fade";
-import Typography from "@material-ui/core/Typography";
+import IconButton from "@mui/material/IconButton";
+import Fade from "@mui/material/Fade";
+import Typography from "@mui/material/Typography";
 import ContentCopyIcon from "./icons/ContentCopyIcon";
 import { useL10n } from "./l10nHooks";
 
