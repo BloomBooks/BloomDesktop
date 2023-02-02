@@ -71,7 +71,9 @@ namespace Bloom.web.controllers
 
 			addPageSettings.groups = GetBookTemplatePaths(GetPathToCurrentTemplateHtml(), GetCurrentAndSourceBookPaths())
 				.Select(bookTemplatePath => GetPageGroup(bookTemplatePath));
-			addPageSettings.currentLayout = _pageSelection.CurrentSelection.IdOfFirstAncestor;
+			// Never used on the javascript side.
+			// addPageSettings.currentLayout = _pageSelection.CurrentSelection.IdOfFirstAncestor
+
 			// This works because this is only used for the add/change page dialog and we never show them
 			// both at once. Pushing this information into the settings that the dialog loads removes the
 			// need for cross-domain communication between the dialog and the page that launches it.

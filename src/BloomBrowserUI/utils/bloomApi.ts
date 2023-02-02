@@ -26,10 +26,11 @@ function isRunningStorybook(): boolean {
     return false;
 }
 
-export function getBloomApiPrefix(): string {
-    if (isRunningStorybook()) return "http://localhost:8089/bloom/api/";
+export function getBloomApiPrefix(includeApi: boolean = true): string {
+    const apiPart = includeApi ? "api/" : "";
+    if (isRunningStorybook()) return `http://localhost:8089/bloom/${apiPart}`;
 
-    return "/bloom/api/";
+    return `/bloom/${apiPart}`;
 }
 
 export const mockReplies = {};

@@ -19,6 +19,8 @@ export const kDisabledControlGray = "#bbb";
 export const kMutedTextGray = "gray";
 export const kVerticalSpacingBetweenDialogSections = "20px";
 export const kBorderRadiusForSpecialBlocks = "3px";
+export const kBloomBuff = "#d2d2d2";
+export const kWarningColor = "#d65649";
 
 // Should match @UIFontStack in bloomWebFonts.less
 export const kUiFontStack = "NotoSans, Roboto, sans-serif";
