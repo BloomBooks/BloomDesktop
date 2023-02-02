@@ -1268,6 +1268,17 @@ namespace Bloom.TeamCollection
 
 		internal static string GetIdFrom(string metadataString, string file)
 		{
+			// This logic is irritatingly similar to methods in BookMetaData like
+			// FromFolder, FromString, and FromFile. But none of them is quite right.
+			// FromString and FromFile crash if an ID can't be obtained; this method
+			// wants to just return null. FromFolder and FromFile both attempt to use
+			// (and restore) a backup meta.json if the main one is corrupt, but I'm
+			// nervous about using anything that might be out of date  in a TC situation
+			// where the ID is so important, and also about modifying it in a situation
+			// where we may not have the book checked out (though, currently, if there
+			// is a backup and the main meta.json is corrupt, we will restore it while
+			// loading the collection. But we may decide to change that. In any case, it
+			// doesn't feel like a good thing to do while syncing a collection.)
 			BookMetaData metaData = null;
 			Exception ex = null;
 			try
@@ -1287,17 +1298,13 @@ namespace Bloom.TeamCollection
 				// It's corrupted, but maybe it's in good enough shape to get an ID from?
 				// For example, in BL-11821 we encountered meta.json files where various integers
 				// were represented with decimals (0.0 instead of 0) which produced a JsonReaderException.
-				// Note: it would very likely be more efficient to just do this without trying to parse
+				// Note: it would very likely be more efficient to just do what this method does without trying to parse
 				// the string as JSON. But (a) I want to capture any problems in the log, and (b)
 				// I'd rather not use any unusual way to process meta.json when things are not in
 				// an unusual state.
-				var re = new Regex(@"""bookInstanceId"":""(.*?)""");
-				var match = re.Match(metadataString);
-				if (match.Success)
-				{
-					return match.Groups[1].Value;
-				}
-				return null;
+				// Enhance: if we can't get an id from metaDataString, we could try
+				// meta.bak, if it exists.
+				return BookMetaData.GetIdFromDamagedMetaDataString(metadataString);
 			}
 			return metaData?.Id;
 		}
