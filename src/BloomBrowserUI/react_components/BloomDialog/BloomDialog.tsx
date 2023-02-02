@@ -1,6 +1,7 @@
 /** @jsx jsx **/
 import { jsx, css } from "@emotion/react";
 import * as React from "react";
+import { FunctionComponent } from "react";
 import { lightTheme } from "../../bloomMaterialUITheme";
 import { ThemeProvider } from "@material-ui/styles";
 import { Dialog, DialogProps, Paper, PaperProps } from "@material-ui/core";
@@ -31,9 +32,11 @@ export interface IBloomDialogProps extends DialogProps {
     // this because enabling it causes a react render loop. Our theory is that there is
     // a focus war going on.
     disableDragging?: boolean;
+    // a selector to apply to the Draggable bounds to limit where the dialog can be dragged.
+    dragLimits?: string;
 }
 
-export const BloomDialog: React.FunctionComponent<IBloomDialogProps> = forwardRef(
+export const BloomDialog: FunctionComponent<IBloomDialogProps> = forwardRef(
     (props, ref) => {
         // About custom styling:
         // We need the parent to be able to specify things about the size of the dialog. Example:
@@ -102,6 +105,7 @@ export const BloomDialog: React.FunctionComponent<IBloomDialogProps> = forwardRe
         const {
             dialogFrameProvidedExternally,
             disableDragging,
+            dragLimits,
             ...propsToPass
         } = props;
 
@@ -119,6 +123,8 @@ export const BloomDialog: React.FunctionComponent<IBloomDialogProps> = forwardRe
                             PaperComponent={
                                 props.disableDragging
                                     ? undefined
+                                    : props.dragLimits
+                                    ? DraggablePaperLimited
                                     : DraggablePaper
                             }
                             css={css`
@@ -139,7 +145,7 @@ export const BloomDialog: React.FunctionComponent<IBloomDialogProps> = forwardRe
     }
 );
 
-export const DialogTitle: React.FunctionComponent<{
+export const DialogTitle: FunctionComponent<{
     backgroundColor?: string;
     color?: string;
     icon?: string;
@@ -200,7 +206,7 @@ export const DialogTitle: React.FunctionComponent<{
 
 // The height of this is determined by what is inside of it. If the content might grow (e.g. a progress box), then it's up to the
 // client to set maxes or fixed dimensions. See <ProgressDialog> for an example.
-export const DialogMiddle: React.FunctionComponent<{}> = props => {
+export const DialogMiddle: FunctionComponent<{}> = props => {
     return (
         <div
             css={css`
@@ -227,7 +233,7 @@ export const DialogMiddle: React.FunctionComponent<{}> = props => {
 };
 
 // should be a child of DialogBottomButtons
-export const DialogBottomLeftButtons: React.FunctionComponent<{}> = props => (
+export const DialogBottomLeftButtons: FunctionComponent<{}> = props => (
     <div
         css={css`
             margin-right: auto;
@@ -251,7 +257,7 @@ export const DialogBottomLeftButtons: React.FunctionComponent<{}> = props => (
 );
 
 // normally one or more buttons. 1st child can also be <DialogBottomLeftButtons> if you have left-aligned buttons to show
-export const DialogBottomButtons: React.FunctionComponent<{}> = props => {
+export const DialogBottomButtons: FunctionComponent<{}> = props => {
     return (
         <div
             css={css`
@@ -285,11 +291,32 @@ export const DialogBottomButtons: React.FunctionComponent<{}> = props => {
 // When this was a function, typing 3 digits in the hex box would cause
 // a loss of focus which caused it to convert, e.g. FFF to FFFFFF.
 // See BL-11406.
-const DraggablePaper: React.FunctionComponent<PaperProps> = props => {
+const DraggablePaper: FunctionComponent<PaperProps> = props => {
     return (
         <Draggable
             handle="#draggable-dialog-title"
             cancel={'[class*="MuiDialogContent-root"]'}
+        >
+            <Paper
+                css={css`
+                    // Allows setting the Dialog height here on the Paper and
+                    // the children can grow into it.
+                    display: flex;
+                `}
+                {...props}
+            />
+        </Draggable>
+    );
+};
+
+// I would really have preferred to pass in the bounds as a prop, but I couldn't figure out how to
+// get Dialog's PaperComponent prop to accept the DraggablePaper (above) with the prop defined.
+const DraggablePaperLimited: FunctionComponent<PaperProps> = props => {
+    return (
+        <Draggable
+            handle="#draggable-dialog-title"
+            cancel={'[class*="MuiDialogContent-root"]'}
+            bounds="#left"
         >
             <Paper
                 css={css`
