@@ -2346,7 +2346,13 @@ namespace Bloom.Book
 				// We probably can't help the user if they create an issue, but we can display a bit more information to help local tech support.
 				var msg = MiscUtils.GetExtendedFileCopyErrorInformation(documentPath,
 					$"Could not update one of the support files in this document ({documentPath} from {factoryPath}).");
-				NonFatalProblem.Report(ModalIf.None, PassiveIf.All, "Can't Update Support File", msg, e, showSendReport:false, showRequestDetails:true);
+				var avProgs = MiscUtils.InstalledAntivirusProgramNames();
+				var shortMsg = "Can't Update Support File. ";
+				if (!string.IsNullOrEmpty(avProgs))
+				{
+					shortMsg += ($"Try pausing \"{avProgs}\" or telling \"{avProgs}\" that you trust Bloom");
+				}
+				NonFatalProblem.Report(ModalIf.All, PassiveIf.All, shortMsg, msg, e, showSendReport:true, showRequestDetails:true);
 			}
 		}
 

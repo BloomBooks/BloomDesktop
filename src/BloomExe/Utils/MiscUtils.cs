@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.Globalization;
@@ -8,6 +9,7 @@ using System.Management;
 using System.Security.AccessControl;
 using System.Security.Principal;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using Mono.Unix;
 using NAudio.Wave;
@@ -140,6 +142,36 @@ namespace Bloom.Utils
 				}
 			}
 			return result;
+		}
+
+		public static string InstalledAntivirusProgramNames()
+		{
+			var result = new List<string>();
+			if (Platform.IsWindows)
+			{
+				string wmipathstr = @"\\" + Environment.MachineName + @"\root\SecurityCenter2";
+				try
+				{
+					var searcher =
+						new ManagementObjectSearcher(wmipathstr, "SELECT * FROM AntivirusProduct");
+					var instances = searcher.Get();
+					foreach (var instance in instances)
+					{
+						var mof = instance.GetText(TextFormat.Mof) + Environment.NewLine;
+						// displayName = "Windows Defender"
+						var match = new Regex("displayName = \"(.*?)\"").Match(mof);
+						if (match.Success)
+						{
+							result.Add(match.Groups[1].Value);
+						}
+					}
+				}
+				catch (Exception error)
+				{
+					return error.Message;
+				}
+			}
+			return string.Join(", ", result);
 		}
 
 		/// <summary>
