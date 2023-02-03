@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import PageThumbnail from "./PageThumbnail";
 import { getBloomApiPrefix } from "../utils/bloomApi";
-import { Typography } from "@material-ui/core";
+import { Typography } from "@mui/material";
 import {
     countEltsOfClassNotInImageContainer,
     countTranslationGroupsForChangeLayout,
