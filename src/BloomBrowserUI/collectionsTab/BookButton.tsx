@@ -277,7 +277,7 @@ export const BookButton: React.FunctionComponent<{
                 <span className="bookButton-label">{bookLabel}</span>
             </TruncateMarkup>
         ) : (
-            <span className="bookButton-label">bookLabel</span>
+            <span className="bookButton-label">{bookLabel}</span>
         );
 
     const renameHeight = 40;
