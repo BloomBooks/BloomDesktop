@@ -359,6 +359,10 @@ export const PageChooserDialog: React.FunctionComponent<IPageChooserdialogProps>
             onClose={() => {
                 closeDialog();
             }}
+            // Limits dragging of the dialog to the main edit tab window, excluding the page list (left)
+            // and toolbox (right). Otherwise, the dialog can be dragged under the page list or
+            // completely off the screen.
+            dragLimits="#left"
             css={css`
                 padding-left: 18px;
                 padding-bottom: 20px;
