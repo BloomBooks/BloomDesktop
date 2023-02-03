@@ -38,6 +38,11 @@ namespace WebView2PdfMaker
 			{
 				if (_options.Debug)
 					Console.Out.WriteLine("WebView2PdfComponent - CoreWebView2InitializationCompleted");
+				if (!args.IsSuccess)
+				{
+					Console.Error.WriteLine("WebView2 initialization failed: exception={0}", args.InitializationException);
+					Application.Exit();
+				}
 				_webview.CoreWebView2.NavigationCompleted += (object sender2, CoreWebView2NavigationCompletedEventArgs args2) =>
 				{
 					if (_options.Debug)
@@ -49,8 +54,15 @@ namespace WebView2PdfMaker
 			var initTask = InitWebViewAsync();
 			if (_options.Debug)
 				Console.Out.WriteLine("WebView2PdfComponent.ctor initTask ready to wait");
+			var count = 0;
 			while (!initTask.IsCompleted)
 			{
+				if (++count > 100)
+				{
+					// This should take no more than 2-3 seconds at the most.  If 10 seconds isn't enough, quit.
+					Console.Error.WriteLine("WebView2PdfComponent initTask is taking too long!");
+					Application.Exit();
+				}
 				Application.DoEvents();
 				Thread.Sleep(100);
 				//if (_options.Debug)

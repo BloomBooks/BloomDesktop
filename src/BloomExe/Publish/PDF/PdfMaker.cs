@@ -79,10 +79,9 @@ namespace Bloom.Publish.PDF
 				// the file before manipulating it further. Just noting it in case there are unexpected issues.
 				var fixPdf = new ProcessPdfWithGhostscript(ProcessPdfWithGhostscript.OutputType.DesktopPrinting, worker);
 				fixPdf.ProcessPdfFile(specs.OutputPdfPath, specs.OutputPdfPath, specs.BookIsFullBleed);
-				RemoveBlankTrailingPageIfAny(specs.OutputPdfPath, specs.OutputPdfPath);
 				if (specs.BookletPortion != PublishModel.BookletPortions.AllPagesNoBooklet || specs.PrintWithFullBleed)
 				{
-					//remake the pdf by reording the pages (and sometimes rotating, shrinking, etc)
+					//remake the pdf by reordering the pages (and sometimes rotating, shrinking, etc)
 					MakeBooklet(specs);
 				}
 
@@ -120,44 +119,6 @@ namespace Bloom.Publish.PDF
 				doWorkEventArgs.Result = MakingPdfFailedException.CreatePdfException();
 			}
 
-		}
-
-		/// <summary>
-		/// WebView2PdfMaker adds a blank page at the end for some paper sizes.  This checks for the
-		/// existence of a blank page at the end of the PDF file, and removes the last page if it appears
-		/// to be blank.  (The list I found in testing: A5, A6, B5 portrait; A3, A4, Device16x9 landscape)
-		/// </summary>
-		/// <remarks>
-		/// This would be easy to move to a simple command line program if memory use proves to be a problem.
-		/// </remarks>
-		private void RemoveBlankTrailingPageIfAny(string inputPdfPath, string outputPdfPath)
-		{
-			using (var pdfDoc = PdfReader.Open(inputPdfPath, PdfDocumentOpenMode.Modify))
-			{
-				var last = pdfDoc.PageCount - 1;
-				if (last == 0)
-					return;		// don't delete only page (can happen in unit tests)
-				var pdfPage = pdfDoc.Pages[last];
-				if (!PdfPageHasContent(pdfPage))
-				{
-					pdfDoc.Pages.RemoveAt(last);
-					pdfDoc.Save(outputPdfPath);
-				}
-			}
-		}
-
-		// heuristic inspired by https://stackoverflow.com/questions/5032876/how-to-remove-blank-pages-from-pdf-using-pdfsharp
-		private bool PdfPageHasContent(PdfPage page)
-		{
-			var count = page.Contents.Elements.Count;
-			Debug.WriteLine($"DEBUG PdfPageHasContent: final Pdf page has {count} elements");
-			if (count > 1)
-				return true;
-			if (count == 0)
-				return false;
-			var length = page.Contents.Elements.GetDictionary(0).Stream.Length;
-			Debug.WriteLine($"DEBUG PdfPageHasContent: final Pdf page has one element with length {length}");
-			return length > 255;
 		}
 
 		public class MakingPdfFailedException : Exception
