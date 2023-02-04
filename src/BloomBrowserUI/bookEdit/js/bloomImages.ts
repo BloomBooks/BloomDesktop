@@ -11,6 +11,8 @@ import theOneLocalizationManager from "../../lib/localizationManager/localizatio
 
 import { theOneBubbleManager, updateOverlayClass } from "./bubbleManager";
 
+import "../../utils/elementExtensions";
+
 const kPlaybackOrderContainerSelector: string =
     ".bloom-playbackOrderControlsContainer";
 
@@ -433,7 +435,10 @@ function getImgFromContainer(imageContainer: HTMLElement) {
 }
 
 function DisableImageTooltip(container: HTMLElement) {
-    container.title = "";
+    const patriarch = container.farthest<HTMLElement>(".bloom-imageContainer");
+    if (patriarch) {
+        patriarch.title = "";
+    }
 }
 
 function UpdateImageTooltipVisibility(container: HTMLElement) {
@@ -449,7 +454,34 @@ function UpdateImageTooltipVisibility(container: HTMLElement) {
 
         // If dataTitle is null for some unexpected reason, let's just leave the title unchanged.
         if (dataTitle !== null) {
-            container.title = dataTitle;
+            //
+            // Set title on the main image container
+            // The intuitive thing to do would be to set each container's title individually.
+            // However, that relies on each container being able to receive mouse events.
+            // Overlay images have problems receiving mouse events on the majority of their surface area
+            // because the canvas is above them.
+            // One could mess around with an invisible layer for each overlay image above the canvas, and it seems to work
+            // but that's a lot more complicated z-index wise and introduces other undesired side effects which need to be coded against.
+            // It's less complicated to just set the title of the main container (its events trigger because the canvas is its descendant,
+            // and the canvas is receiving events)
+            // One unfortunate minor problem is that if you had an overlay image selected,
+            // view its tooltip, then select the main image (without leaving the main image container),
+            // the tooltip will not appear (until you leave the main image and come back).
+            // The tooltip was actually updated, the browser just doesn't want to re-display it.
+            // I don't think it's worth complicating the code to try to address that minor corner case?
+            //
+            const patriarch = container.farthest<HTMLElement>(
+                ".bloom-imageContainer"
+            );
+
+            if (patriarch) {
+                patriarch.title = dataTitle;
+            } else {
+                console.assert(
+                    false,
+                    ".bloom-imageContainer expected but not found."
+                );
+            }
         }
     }
 }

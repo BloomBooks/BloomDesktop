@@ -1192,7 +1192,7 @@ export class BubbleManager {
 
         // Now there are several options depending on various conditions. There's some
         // overlap in the conditions and it is tempting to try to combine into a single compound
-        // "if" statement. But note, this first one may change hoveredBubble to undefined,
+        // "if" statement. But note, this first one may change hoveredBubble to null,
         // which then changes which of the following options is chosen. Be careful!
         if (hoveredBubble && hoveredBubble.content !== this.activeElement) {
             // The hovered bubble is not selected. If it's an image, the user might
@@ -1224,11 +1224,13 @@ export class BubbleManager {
             // Make sure the image editing buttons are present as expected.
             // (It does not get them in the usual way by mouseEnter, because that event is
             // suppressed by the comicaljs canvas, which is above the image container.)
-            addImageEditingButtons(
-                hoveredBubble.content.getElementsByClassName(
-                    "bloom-imageContainer"
-                )[0] as HTMLElement
+            const imageContainers = hoveredBubble.content.getElementsByClassName(
+                "bloom-imageContainer"
             );
+            if (imageContainers.length) {
+                const imageContainer = imageContainers[0] as HTMLElement;
+                addImageEditingButtons(imageContainer);
+            }
         }
 
         const isVideo = this.isVideoOverPictureElement(hoveredBubble.content);
