@@ -2348,38 +2348,28 @@ namespace Bloom.Book
 				// (Only the shortMessage, which is what typical users actually see, is currently localized.)
 				var msg = MiscUtils.GetExtendedFileCopyErrorInformation(documentPath,
 					$"Could not update one of the support files in this document ({documentPath} from {factoryPath}).");
-				var avProgs = MiscUtils.InstalledAntivirusProgramNames();
+				Logger.WriteEvent(msg);
 				var shortMsg = LocalizationManager.GetString("Errors.CannotUpdateFile", "There was a problem updating a support file");
+				var howToTroubleshoot = LocalizationManager.GetString("Errors.CannotUpdateTroubleshoot",
+					"How to troubleshoot file updating errors");
 
-				var toast = new ToastNotifier();
-				toast.ToastClicked += (sender, args) =>
-				{
-					// Something like this was called for in the comment on BL-11863 that led to this,
-					// but we finally decided not to.
-					//if (!string.IsNullOrEmpty(avProgs))
-					//{
-					//	var avTemplate = LocalizationManager.GetString("Errors.TryPausingAV",
-					//		"Try pausing \"{0}\" or telling \"{0}\" that you trust Bloom.");
-					//	shortMsg += Environment.NewLine + string.Format(avTemplate, avProgs);
-					//}
+				var longerMsgTemplate = LocalizationManager.GetString("Errors.CannotUpdateFileLonger",
+					"Bloom was not able to update a support file named \"{0}\". This is usually not a problem. If you continue to see these messages, see \"{1}\"");
+				var longerMsg = string.Format(longerMsgTemplate, Path.GetFileName(documentPath), $"<a href='https://community.software.sil.org/t/when-bloom-is-prevented-from-changing-png-image-files/4445' target='_blank'>{howToTroubleshoot}</a>");
 
-					var howToTroubleshoot = LocalizationManager.GetString("Errors.CannotUpdateTroubleshoot",
-						"How to troubleshoot file updating errors");
 
-					var longerMsgTemplate = LocalizationManager.GetString("Errors.CannotUpdateFileLonger",
-						"Bloom was not able to update a support file named \"{0}\". This is usually not a problem. If you continue to see these messages, see \"{1}\"");
-					var longerMsg = string.Format(longerMsgTemplate, Path.GetFileName(documentPath), $"<a href='https://community.software.sil.org/t/when-bloom-is-prevented-from-changing-png-image-files/4445' target='_blank'>{howToTroubleshoot}</a>");
-					var details = new ApplicationException(msg, e);
+				// Something like this was called for in the comment on BL-11863 that led to this,
+				// but we finally decided not to.
+				// var avProgs = MiscUtils.InstalledAntivirusProgramNames();
+				//if (!string.IsNullOrEmpty(avProgs))
+				//{
+				//	var avTemplate = LocalizationManager.GetString("Errors.TryPausingAV",
+				//		"Try pausing \"{0}\" or telling \"{0}\" that you trust Bloom.");
+				//	shortMsg += Environment.NewLine + string.Format(avTemplate, avProgs);
+				//}
 
-					BloomErrorReport.NotifyUserOfProblem(longerMsg, details, new NotifyUserOfProblemSettings(AllowSendReport.Disallow));
+				BloomErrorReport.NotifyUserUnobtrusively(shortMsg, longerMsg);
 
-					// Previously used this, but don't currently have an
-					// acceptable UI for when that is false and we are showing a dialog rather than a toast.
-					// NonFatalProblem.Report(ModalIf.All, PassiveIf.All, shortMsg, msg, e, showSendReport:false, showRequestDetails:true);
-				};
-				toast.Show(shortMsg, null, 10);
-
-				
 			}
 		}
 
