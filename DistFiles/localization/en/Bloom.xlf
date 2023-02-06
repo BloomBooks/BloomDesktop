@@ -2823,7 +2823,7 @@
         <note>displays as a "toast", {0} is the URL/filename</note>
       </trans-unit>
       <trans-unit id="Errors.CannotUpdateFile">
-        <source xml:lang="en">Bloom cannot update a file.</source>
+        <source xml:lang="en">There was a problem updating a support file</source>
         <note>ID: Errors.CannotUpdateFile</note>
       </trans-unit>
       <trans-unit id="Errors.CannotConnectToBloomServer">
