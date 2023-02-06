@@ -12,6 +12,7 @@ using System.Web.UI.WebControls;
 using System.Xml;
 using Bloom.Api;
 using Bloom.Collection;
+using Bloom.ErrorReporter;
 using Bloom.ImageProcessing;
 using Bloom.Publish;
 using Bloom.MiscUI;
@@ -2356,9 +2357,13 @@ namespace Bloom.Book
 					shortMsg += Environment.NewLine +string.Format(avTemplate, avProgs);
 				}
 
-				// We probably want this eventually to be showSendReport:false, but don't currently have an
+				var details = new ApplicationException(msg, e);
+
+				BloomErrorReport.NotifyUserOfProblem(shortMsg, details, new NotifyUserOfProblemSettings(AllowSendReport.Disallow));
+
+				// Previously used this, but don't currently have an
 				// acceptable UI for when that is false and we are showing a dialog rather than a toast.
-				NonFatalProblem.Report(ModalIf.All, PassiveIf.All, shortMsg, msg, e, showSendReport:true, showRequestDetails:true);
+				// NonFatalProblem.Report(ModalIf.All, PassiveIf.All, shortMsg, msg, e, showSendReport:false, showRequestDetails:true);
 			}
 		}
 
