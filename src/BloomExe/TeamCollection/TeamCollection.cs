@@ -1555,10 +1555,11 @@ namespace Bloom.TeamCollection
 		}
 
 		/// <summary>
-		/// This overload reports the problem to the progress box, log, and Analytics. If possible, use the overload which
-		/// also adds the report to the book's history.
+		/// This overload reports the problem to the progress box, log, and Analytics. It should not be
+		/// called directly; it is the common part of the two versions of ReportProblemSyncingBook which also
+		/// save the report either in the book or collection history.
 		/// </summary>
-		void ReportProblemSyncingBook(IWebSocketProgress progress, ProgressKind kind, string l10nIdSuffix, string message,
+		void CoreReportProblemSyncingBook(IWebSocketProgress progress, ProgressKind kind, string l10nIdSuffix, string message,
 			string param0 = null, string param1 = null)
 		{
 			ReportProgressAndLog(progress, kind, l10nIdSuffix, message, param0, param1);
@@ -1576,13 +1577,14 @@ namespace Bloom.TeamCollection
 		void ReportProblemSyncingBook(string folderPath, string bookId, IWebSocketProgress progress, ProgressKind kind, string l10nIdSuffix, string message,
 			string param0 = null, string param1 = null, bool alsoMakeYouTrackIssue = false)
 		{
-			ReportProblemSyncingBook(progress, kind, l10nIdSuffix, message, param0, param1);
+			CoreReportProblemSyncingBook(progress, kind, l10nIdSuffix, message, param0, param1);
 			var msg = string.Format(message, param0, param1);
 			// The second argument is not the ideal name for the book, but unless it has no previous history,
 			// the bookName will not be used. I don't think this is the place to be trying to instantiate
 			// a Book object to get the ideal name for it. So I decided to live with using the file name.
 			BookHistory.AddEvent(folderPath, Path.GetFileNameWithoutExtension(folderPath), bookId, BookHistoryEventType.SyncProblem, msg);
-			MakeYouTrackIssueIfWanted(progress, alsoMakeYouTrackIssue, msg);
+			if (alsoMakeYouTrackIssue)
+				MakeYouTrackIssue(progress, msg);
 		}
 
 		/// <summary>
@@ -1593,15 +1595,21 @@ namespace Bloom.TeamCollection
 		void ReportProblemSyncingBook(string collectionPath, string bookName, string bookId, IWebSocketProgress progress, ProgressKind kind, string l10nIdSuffix, string message,
 			string param0 = null, string param1 = null, bool alsoMakeYouTrackIssue = false)
 		{
-			ReportProblemSyncingBook(progress, kind, l10nIdSuffix, message, param0, param1);
+			CoreReportProblemSyncingBook(progress, kind, l10nIdSuffix, message, param0, param1);
 			var msg = string.Format(message, param0, param1);
 			CollectionHistory.AddBookEvent(collectionPath, bookName, bookId, BookHistoryEventType.SyncProblem, msg);
-			MakeYouTrackIssueIfWanted(progress, alsoMakeYouTrackIssue, msg);
+			if (alsoMakeYouTrackIssue)
+				MakeYouTrackIssue(progress, msg);
 		}
 
-		private void MakeYouTrackIssueIfWanted(IWebSocketProgress progress, bool alsoMakeYouTrackIssue, string msg)
+		/// <summary>
+		/// Make a YouTrack issue (unless we're running unit tests, or the user is unregistered,
+		/// in which case don't bother, since the main point of creating the issue is so we
+		/// can get in touch and offer help).
+		/// </summary>
+		private void MakeYouTrackIssue(IWebSocketProgress progress, string msg)
 		{
-			if (alsoMakeYouTrackIssue && !Program.RunningUnitTests &&
+			if (!Program.RunningUnitTests &&
 			    !string.IsNullOrWhiteSpace(SIL.Windows.Forms.Registration.Registration.Default.Email))
 			{
 				var issue = new YouTrackIssueSubmitter(ProblemReportApi.YouTrackProjectKey);
