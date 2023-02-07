@@ -209,7 +209,8 @@ namespace WebView2PdfMaker
 			// The orientation can be portrait or landscape.  (The default orientation is portrait.)
 			_printSettings.Orientation = _options.GetWebView2Orientation();
 			// The scale factor is a value between 0.1 and 2.0.  (The default is 1.0.)
-			_printSettings.ScaleFactor = 1.0D;	/* implement --zoom? */
+			_printSettings.ScaleFactor = 1.0D;  /* implement --zoom? */
+			_printSettings.MediaSize = CoreWebView2PrintMediaSize.Custom;
 			// The page width in inches.  (The default width is 8.5 inches.)
 			_printSettings.PageWidth = _options.GetWebView2PageWidth();
 			// The page height in inches.  (The default height is 11 inches.)
@@ -223,7 +224,7 @@ namespace WebView2PdfMaker
 			// The right margin in inches.  (The default is 1 cm, or ~0.4 inches.)
 			_printSettings.MarginRight = _options.GetWebView2RightMargin();
 			// true if background colors and images should be printed.  (The default value is false.)
-			_printSettings.ShouldPrintBackgrounds = false;
+			_printSettings.ShouldPrintBackgrounds = true;
 			// true if only the current end user's selection of HTML in the document should be printed.  (The default value is false.)
 			_printSettings.ShouldPrintSelectionOnly = false;
 			// true if header and footer should be printed.  (The default value is false.)

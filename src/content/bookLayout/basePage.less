@@ -231,19 +231,31 @@ div#bloomDataDiv {
 @A3Portrait-HeightFB: @A3Portrait-Height * @RA3-Scale;
 @A3Portrait-Height-Excess: @A3Portrait-HeightFB - @RA3Portrait-Height;
 
+// USComicPortrait and Size6x9Portrait need to be quantized to work the same
+// as the other full-bleed pages, putting out alternating blank pages in the
+// original PDF file.  Their measurements are in inches, and adding millimeters
+// preserves the inch unit so we don't need to adjust to inches before quantizing
+// to pixels at 96 DPI.
+// Size6x9Landscape doesn't work with the quantized sizes, but works with the original
+// sizes for some reason.  I've given up trying to figure out why quantization doesn't
+// work straightforwardly for full-bleed pages.
 @RUSComicPortrait-Width: @USComicPortrait-Width + @bleed + @bleed;
 @RUSComicPortrait-Height: @USComicPortrait-Height + @bleed + @bleed;
-@RUSComic-Scale: unit(@RUSComicPortrait-Width / @USComicPortrait-Width);
+@QRUSComicPortrait-Width: (floor(@RUSComicPortrait-Width * 96) / 96);
+@QRUSComicPortrait-Height: (floor(@RUSComicPortrait-Height * 96) / 96);
+@RUSComic-Scale: unit(@QRUSComicPortrait-Width / @USComicPortrait-Width);
 @USComicPortrait-HeightFB: @USComicPortrait-Height * @RUSComic-Scale;
 @USComicPortrait-Height-Excess: @USComicPortrait-HeightFB -
-    @RUSComicPortrait-Height;
+    @QRUSComicPortrait-Height;
 
 @RSize6x9Portrait-Width: @Size6x9Portrait-Width + @bleed + @bleed;
 @RSize6x9Portrait-Height: @Size6x9Portrait-Height + @bleed + @bleed;
-@RSize6x9-Scale: unit(@RSize6x9Portrait-Width / @Size6x9Portrait-Width);
+@QRSize6x9Portrait-Width: (floor(@RSize6x9Portrait-Width * 96) / 96);
+@QRSize6x9Portrait-Height: (floor(@RSize6x9Portrait-Height * 96) / 96);
+@RSize6x9-Scale: unit(@QRSize6x9Portrait-Width / @Size6x9Portrait-Width);
 @Size6x9Portrait-HeightFB: @Size6x9Portrait-Height * @RSize6x9-Scale;
 @Size6x9Portrait-Height-Excess: @Size6x9Portrait-HeightFB -
-    @RSize6x9Portrait-Height;
+    @QRSize6x9Portrait-Height;
 
 .bloom-fullBleed {
     //background-color: green;
@@ -300,6 +312,12 @@ div#bloomDataDiv {
 
 // overridden when publishingWithoutFullBleed
 .bloom-mediaBox {
+    // For full-bleed publishing, breaking the page after .bloom-mediaBox is an easy
+    // way to avoid page creep downwards by merely deleting the even pages that are
+    // essentially blank (1-2 pixels from the previous page).  Quantizing the page
+    // sizes to 1/96 inch works to avoid page creep for standard printing using WebView2
+    // to produce PDF files, but the translate operations used in full-bleed printing
+    // make it (practically?) impossible to adjust page sizes as exactly.
     page-break-after: always;
     overflow: hidden; // when the page is scaled, stuff in the longer dimension will actually exceed the bleed area. We want to clip that.
     &.A5Portrait {
@@ -336,12 +354,12 @@ div#bloomDataDiv {
         height: @Device16x9Portrait-Width;
     }
     &.USComicPortrait {
-        width: @RUSComicPortrait-Width;
-        height: @RUSComicPortrait-Height;
+        width: @QRUSComicPortrait-Width;
+        height: @QRUSComicPortrait-Height;
     }
     &.Size6x9Portrait {
-        width: @RSize6x9Portrait-Width;
-        height: @RSize6x9Portrait-Height;
+        width: @QRSize6x9Portrait-Width;
+        height: @QRSize6x9Portrait-Height;
     }
     &.Size6x9Landscape {
         width: @RSize6x9Portrait-Height;

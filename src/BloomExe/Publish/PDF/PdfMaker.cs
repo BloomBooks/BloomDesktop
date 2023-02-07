@@ -71,6 +71,8 @@ namespace Bloom.Publish.PDF
 
 			try
 			{
+				//var pgid = (string.IsNullOrEmpty(specs.PaperSizeName) ? "Custom" : specs.PaperSizeName) + (specs.Landscape ? "-L" : "-P");
+				//RobustFile.Copy(specs.OutputPdfPath, Path.ChangeExtension(specs.OutputPdfPath, pgid + "-0.pdf"), true);
 				// Shrink the PDF file, especially if it has large color images.  (BL-3721)
 				// Also if the book is full bleed we need to remove some spurious pages.
 				// Removing spurious pages must be done BEFORE we switch pages around to make a booklet!
@@ -78,11 +80,13 @@ namespace Bloom.Publish.PDF
 				// the reason above. Seems like it would also have performance benefits, if anything, to shrink
 				// the file before manipulating it further. Just noting it in case there are unexpected issues.
 				var fixPdf = new ProcessPdfWithGhostscript(ProcessPdfWithGhostscript.OutputType.DesktopPrinting, worker);
-				fixPdf.ProcessPdfFile(specs.OutputPdfPath, specs.OutputPdfPath, specs.BookIsFullBleed);
+				fixPdf.ProcessPdfFile(specs.OutputPdfPath, specs.OutputPdfPath, specs.BookIsFullBleed && specs.PrintWithFullBleed);
+				//RobustFile.Copy(specs.OutputPdfPath, Path.ChangeExtension(specs.OutputPdfPath, pgid + "-1.pdf"), true);
 				if (specs.BookletPortion != PublishModel.BookletPortions.AllPagesNoBooklet || specs.PrintWithFullBleed)
 				{
 					//remake the pdf by reordering the pages (and sometimes rotating, shrinking, etc)
 					MakeBooklet(specs);
+					//RobustFile.Copy(specs.OutputPdfPath, Path.ChangeExtension(specs.OutputPdfPath, pgid + "-2.pdf"), true);
 				}
 
 				// Check that we got a valid, readable PDF.
@@ -150,37 +154,6 @@ namespace Bloom.Publish.PDF
 				// reader to process the PDF file enough to crash if it is corrupt.
 				gfx.DrawImage(pdf, sourceRect);
 			}
-		}
-
-		//About the --zoom parameter. It's a hack to get the pages chopped properly.
-		//Notes: Remember, a page border *will make the page that much larger!*
-		//		One way to see what's happening without a page border is to make the marginBox visible,
-		//		then scroll through and you can see it moving up (if the page (zoom factor) is too small) or down (if page (zoom factor) is too large)
-		//		Until Aug 2012, I had 1.091. But with large a4 landscape docs (e.g. calendar), I saw
-		//		that the page was too big, leading to an extra page at the end.
-		//		Experimentation showed that 1.041 kept the marge box steady.
-		//
-		//	In July 2013, I needed to get a 200-300 page b5 book out. With the prior 96DPI setting of 1.041, it was drifting upwards (too small). Upping it to 1.042 solved it.
-
-		// In Auguest 2013, we discovere dthat 1.042 was giving us an extra page even when just doing the cover.
-		// I quickly tested 1.0415, and it solved it. I'm putting off doing a "real" solution because the geckofxhtmltopdf
-		// solution is already working in another branch.
-
-		private double GetZoomBasedOnScreenDPISettings()
-		{
-			if (WorkspaceView.DPIOfThisAccount == 96)
-			{
-				return 1.0415;
-			}
-			if (WorkspaceView.DPIOfThisAccount == 120)
-			{
-				return 1.249;
-			}
-			if (WorkspaceView.DPIOfThisAccount == 144)
-			{
-				return 1.562;
-			}
-			return 1.04;
 		}
 
 		private void MakeBooklet(PdfMakingSpecs specs)
