@@ -354,6 +354,7 @@ namespace Bloom.CollectionTab
 					}
 				}
 				var bookName = _bookSelection.CurrentSelection.NameBestForUserDisplay;
+				var bookId = _bookSelection.CurrentSelection.ID;
 				var confirmRecycleDescription = L10NSharp.LocalizationManager.GetString("CollectionTab.ConfirmRecycleDescription", "The book '{0}'");
 				if (ConfirmRecycleDialog.JustConfirm(string.Format(confirmRecycleDescription, bookName), false, "Palaso"))
 				{
@@ -369,6 +370,7 @@ namespace Bloom.CollectionTab
 					if (collection == TheOneEditableCollection)
 						_tcManager.CurrentCollection?.DeleteBookFromRepo(book.FolderPath);
 					collection.DeleteBook(book.BookInfo);
+					CollectionHistory.AddBookEvent(collection.PathToDirectory,bookName, bookId, BookHistoryEventType.Deleted);
 					return true;
 				}
 			}

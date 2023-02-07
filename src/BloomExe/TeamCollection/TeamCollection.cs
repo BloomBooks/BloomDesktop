@@ -21,6 +21,7 @@ using Bloom.Collection;
 using Bloom.Registration;
 using Bloom.ToPalaso;
 using Bloom.Utils;
+using Bloom.web.controllers;
 using SIL.Reporting;
 using DesktopAnalytics;
 using Newtonsoft.Json;
@@ -1561,6 +1562,91 @@ namespace Bloom.TeamCollection
 		}
 
 		/// <summary>
+		/// This overload reports the problem to the progress box, log, and Analytics. It should not be
+		/// called directly; it is the common part of the two versions of ReportProblemSyncingBook which also
+		/// save the report either in the book or collection history.
+		/// </summary>
+		void CoreReportProblemSyncingBook(IWebSocketProgress progress, ProgressKind kind, string l10nIdSuffix, string message,
+			string param0 = null, string param1 = null)
+		{
+			ReportProgressAndLog(progress, kind, l10nIdSuffix, message, param0, param1);
+			var msg = string.Format(message, param0, param1);
+			Analytics.Track("TeamCollectionError", new Dictionary<string, string>
+			{
+				{"message",msg}
+			});
+		}
+
+		/// <summary>
+		/// This overload reports the problem to the progress box, log, and Analytics, and also makes an entry in
+		/// the book's history.
+		/// </summary>
+		void ReportProblemSyncingBook(string folderPath, string bookId, IWebSocketProgress progress, ProgressKind kind, string l10nIdSuffix, string message,
+			string param0 = null, string param1 = null, bool alsoMakeYouTrackIssue = false)
+		{
+			CoreReportProblemSyncingBook(progress, kind, l10nIdSuffix, message, param0, param1);
+			var msg = string.Format(message, param0, param1);
+			// The second argument is not the ideal name for the book, but unless it has no previous history,
+			// the bookName will not be used. I don't think this is the place to be trying to instantiate
+			// a Book object to get the ideal name for it. So I decided to live with using the file name.
+			BookHistory.AddEvent(folderPath, Path.GetFileNameWithoutExtension(folderPath), bookId, BookHistoryEventType.SyncProblem, msg);
+			if (alsoMakeYouTrackIssue)
+				MakeYouTrackIssue(progress, msg);
+		}
+
+		/// <summary>
+		/// This overload reports the problem to the progress box, log, and Analytics, and also makes an entry in
+		/// the collection's book history. Use it when the problem will result in the book going away, so
+		/// it can't be recorded in the book's own history.
+		/// </summary>
+		void ReportProblemSyncingBook(string collectionPath, string bookName, string bookId, IWebSocketProgress progress, ProgressKind kind, string l10nIdSuffix, string message,
+			string param0 = null, string param1 = null, bool alsoMakeYouTrackIssue = false)
+		{
+			CoreReportProblemSyncingBook(progress, kind, l10nIdSuffix, message, param0, param1);
+			var msg = string.Format(message, param0, param1);
+			CollectionHistory.AddBookEvent(collectionPath, bookName, bookId, BookHistoryEventType.SyncProblem, msg);
+			if (alsoMakeYouTrackIssue)
+				MakeYouTrackIssue(progress, msg);
+		}
+
+		/// <summary>
+		/// Make a YouTrack issue (unless we're running unit tests, or the user is unregistered,
+		/// in which case don't bother, since the main point of creating the issue is so we
+		/// can get in touch and offer help).
+		/// </summary>
+		private void MakeYouTrackIssue(IWebSocketProgress progress, string msg)
+		{
+			if (!Program.RunningUnitTests &&
+			    !string.IsNullOrWhiteSpace(SIL.Windows.Forms.Registration.Registration.Default.Email))
+			{
+				var issue = new YouTrackIssueSubmitter(ProblemReportApi.YouTrackProjectKey);
+				try
+				{
+					var email = SIL.Windows.Forms.Registration.Registration.Default.Email;
+					var standardUserInfo = ProblemReportApi.GetStandardUserInfo(email,
+						SIL.Windows.Forms.Registration.Registration.Default.FirstName,
+						SIL.Windows.Forms.Registration.Registration.Default.Surname);
+					var lostAndFoundUrl =
+						"https://docs.bloomlibrary.org/team-collections-advanced-topics/#2488e17a8a6140bebcef068046cc57b7";
+					var admins = string.Join(", ", (_tcManager?.Settings?.Administrators ?? new string[0])
+						.Select(e => ProblemReportApi.GetObfuscatedEmail(e)));
+					// Note: there is deliberately no period after {msg} since msg usually ends with one already.
+					var fullMsg =
+						$"{standardUserInfo} \n(Admins: {admins}):\n\nThere was a book synchronization problem that required putting a version in Lost and Found:\n{msg}\n\nSee {lostAndFoundUrl}.";
+					var issueId = issue.SubmitToYouTrack("Book synchronization failed", fullMsg);
+					var issueLink = "https://issues.bloomlibrary.org/youtrack/issue/" + issueId;
+					ReportProgressAndLog(progress, ProgressKind.Note, "ProblemReported",
+						"Bloom reported this problem to the developers.");
+					// Originally added " You can see the report at {0}. Also see {1}", issueLink, lostAndFoundUrl); but JohnH says not to (BL-11867)
+				}
+				catch (Exception e)
+				{
+					Debug.Fail("Submitting problem report to YouTrack failed with '" + e.Message + "'.");
+				}
+			}
+		}
+
+		/// <summary>
 		/// A list of strings known to occur in filenames Dropbox generates when it resolves conflicting changes.
 		/// Not a completely reliable way to identify them, especially with an incomplete list of localizations,
 		/// but it's the best we can do.
@@ -1691,8 +1777,8 @@ namespace Bloom.TeamCollection
 								PutBook(path,inLostAndFound:true);
 								SIL.IO.RobustIO.DeleteDirectory(path, true);
 								hasProblems = true;
-								ReportProgressAndLog(progress, ProgressKind.Error, "TeamCollection.ConflictingIdMove",
-									"The book \"{0}\" was moved to Lost & Found, since it has the same ID as the book \"{1}\" in the repo.",
+								ReportProblemSyncingBook(_localCollectionFolder, bookFolderName, id, progress, ProgressKind.Error, "TeamCollection.ConflictingIdMove",
+									"The book \"{0}\" was moved to Lost and Found, since it has the same ID as the book \"{1}\" in the team collection.",
 									bookFolderName, repoState.Item1);
 								// We will copy the conflicting book to local in the second loop.
 								continue;
@@ -1852,12 +1938,13 @@ namespace Bloom.TeamCollection
 								// We don't know the previous history of the collection. Quite likely it was duplicated some
 								// other way and these books have been edited independently. Treat it as a conflict.
 								PutBook(localFolderPath, inLostAndFound: true);
+								var bookId = GetBookId(bookName);
 								// warn the user
 								hasProblems = true;
 								// Make the local folder match the repo (this is where 'they win')
 								CopyBookFromRepoToLocalAndReport(progress, bookName, () =>
-									ReportProgressAndLog(progress, ProgressKind.Error, "ConflictingCheckout",
-										"Found different versions of '{0}' in both collections. The team version has been copied to your local collection, and the old local version to Lost and Found"
+									ReportProblemSyncingBook(localFolderPath, bookId, progress, ProgressKind.Error, "ConflictingCheckout",
+										"Found different versions of '{0}' in the local and team collections. The team version has been copied to the local collection, and the old local version to Lost and Found"
 										, bookName));
 								continue;
 							}
@@ -1937,13 +2024,14 @@ namespace Bloom.TeamCollection
 							{
 								// Edited locally while someone else has it checked out. Copy current local to lost and found
 								PutBook(localFolderPath, inLostAndFound: true);
+								var bookId = GetBookId(bookName);
 								// warn the user
 								hasProblems = true;
 								// Make the local folder match the repo (this is where 'they win')
 								CopyBookFromRepoToLocalAndReport(progress, bookName, () =>
-									ReportProgressAndLog(progress, ProgressKind.Error, "ConflictingCheckout",
-										"The book '{0}', which you have checked out and edited, is checked out to someone else in the Team Collection. Your changes have been overwritten, but are saved to Lost-and-found.",
-										bookName));
+									ReportProblemSyncingBook(localFolderPath, bookId, progress, ProgressKind.Error, "ConflictingCheckout",
+										"The book '{0}', which was checked out and edited, was checked out to someone else in the Team Collection. Local changes have been overwritten, but are saved to Lost-and-found.",
+										bookName, alsoMakeYouTrackIssue: true));
 								continue;
 							}
 							else
@@ -1969,14 +2057,16 @@ namespace Bloom.TeamCollection
 						}
 
 						// Copy current local to lost and found
-						PutBook(Path.Combine(_localCollectionFolder, bookName), inLostAndFound: true);
+						var bookFolder = Path.Combine(_localCollectionFolder, bookName);
+						PutBook(bookFolder, inLostAndFound: true);
+						var bookId = GetBookId(bookName);
 						// copy repo book and status to local
 						// warn the user
 						hasProblems = true;
 						CopyBookFromRepoToLocalAndReport(progress, bookName, () =>
-							ReportProgressAndLog(progress, ProgressKind.Error, "ConflictingEdit",
-								"The book '{0}', which you have checked out and edited, was modified in the Team Collection by someone else. Your changes have been overwritten, but are saved to Lost-and-found.",
-								bookName));
+							ReportProblemSyncingBook(bookFolder, bookId, progress, ProgressKind.Error, "ConflictingEdit",
+								"The book '{0}', which was checked out and edited on this computer, was modified in the Team Collection by someone else. Local changes have been overwritten, but are saved to Lost-and-found.",
+								bookName, alsoMakeYouTrackIssue:true));
 
 						continue;
 					}

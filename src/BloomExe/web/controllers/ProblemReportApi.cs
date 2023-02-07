@@ -87,7 +87,7 @@ namespace Bloom.web.controllers
 
 		private BloomZipFile _reportZipFile;
 		private TempFile _reportZipFileTemp;
-		protected string YouTrackProjectKey = "BL";
+		public static string YouTrackProjectKey = "BL";
 		const string kFailureResult = "failed";
 
 		/// <summary>
@@ -790,7 +790,7 @@ namespace Bloom.web.controllers
 			}
 		}
 
-		private static string GetObfuscatedEmail(string userEmail = "")
+		public static string GetObfuscatedEmail(string userEmail = "")
 		{
 			var email = string.IsNullOrWhiteSpace(userEmail) ?  _reportInfo?.UserEmail : userEmail;
 			string obfuscatedEmail;
@@ -811,10 +811,24 @@ namespace Bloom.web.controllers
 		{
 			var firstName = _reportInfo.UserFirstName;
 			var lastName = _reportInfo.UserSurname;
-			var nameString = GetNameString(firstName, lastName);			
+			var errorReportFrom = GetStandardUserInfo(userEmail, firstName, lastName);
+			bldr.AppendLine(errorReportFrom);
+		}
+
+		/// <summary>
+		/// Generates a standard representation of the user information we want to have in an error
+		/// report submitted to YouTrack. It's important that the fields be arranged (and obfusticated)
+		/// exactly like this, because we have code running on the YouTrack system that will recognize
+		/// data in this format and extract the unobfusticated email and the reporter name.
+		/// (I'm not sure exactly what details must not be changed, so don't change anything without
+		/// checking and testing.)
+		/// </summary>
+		public static string GetStandardUserInfo(string userEmail, string firstName, string lastName)
+		{
+			var nameString = GetNameString(firstName, lastName);
 			var obfuscatedEmail = GetObfuscatedEmail(userEmail);
 			var emailString = string.IsNullOrWhiteSpace(obfuscatedEmail) ? string.Empty : " (" + obfuscatedEmail + ")";
-			bldr.AppendLine("Error Report from " + nameString + emailString + " on " + DateTime.UtcNow.ToUniversalTime() + " UTC");
+			return "Error Report from " + nameString + emailString + " on " + DateTime.UtcNow.ToUniversalTime() + " UTC";
 		}
 
 		private static object GetNameString(string firstName, string lastName)

@@ -941,14 +941,17 @@ namespace Bloom.TeamCollection
 		/// <summary>
 		/// Called when the user clicks the Join{ and Merge} button in the dialog.
 		/// </summary>
-		public static void JoinCollectionTeam()
+		/// <returns>an indication of the type of join for analytics</returns>
+		public static string JoinCollectionTeam()
 		{
 			var repoFolder = Path.GetDirectoryName(_joinCollectionPath);
 			var localCollectionFolder =
 				Path.Combine(NewCollectionWizard.DefaultParentDirectoryForCollections, _joinCollectionName);
 			var firstTimeJoin = true; // default assumption
+			var result = "create";
 			if (Directory.Exists(localCollectionFolder)) // if not, no merging, so value of firstTimeJoin doesn't matter.
 			{
+				result = "merge";
 				var tcLinkPath = TeamCollectionManager.GetTcLinkPathFromLcPath(localCollectionFolder);
 				if (RobustFile.Exists(tcLinkPath))
 				{
@@ -961,6 +964,7 @@ namespace Bloom.TeamCollection
 						// by mistake, or to fix things up after it moved. So we want to sync normally,
 						// not as if we're merging collections.
 						firstTimeJoin = false;
+						result = "open";
 					}
 
 				}
@@ -976,6 +980,7 @@ namespace Bloom.TeamCollection
 			// special behavior, but only if joining for the first time.
 			if (firstTimeJoin)
 				TeamCollectionManager.NextMergeIsFirstTimeJoinCollection = true;
+			return result;
 		}
 
 		/// <summary>
