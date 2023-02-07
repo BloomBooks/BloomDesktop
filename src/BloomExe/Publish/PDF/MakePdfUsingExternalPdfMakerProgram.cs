@@ -304,5 +304,6 @@ namespace Bloom.Publish.PDF
 		public bool BookIsFullBleed; // True if the book is laid out for full-bleed printing (and Enterprise is enabled)
 		public bool PrintWithFullBleed; // True if (BookIsFullBleed and) full bleed is requested in the PdfOptions menu and we're not making a booklet
 		public bool Cmyk; // true if the Cmyk option is checked in the PdfOptions menu
+		public int HtmlPageCount;
 	}
 }
