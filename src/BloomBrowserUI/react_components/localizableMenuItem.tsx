@@ -110,7 +110,7 @@ export const LocalizableMenuItem: React.FunctionComponent<LocalizableMenuItemPro
                 {iconElement}
                 <ListItemText
                     css={css`
-                        span {
+                        .MuiTypography-h6 {
                             font-weight: 400 !important; // H6 defaults to 500; too thick
                             font-family: Segoe UI, NotoSans, Roboto, sans-serif;
                             color: ${menuItemColor} !important;
@@ -164,7 +164,7 @@ export const LocalizableCheckboxMenuItem: React.FunctionComponent<LocalizableChe
             />
             <ListItemText
                 css={css`
-                    span {
+                    .MuiTypography-h6 {
                         font-weight: 400 !important; // H6 defaults to 500; too thick
                         font-family: Segoe UI, NotoSans, Roboto, sans-serif;
                         color: ${menuItemColor} !important;
