@@ -37,6 +37,8 @@ namespace Bloom.Publish
 
 		public string PdfFilePath { get; private set; }
 
+		public int HtmlPageCount { get; private set; }
+
 		public enum DisplayModes
 		{
 			WaitForUserToChooseSomething,
@@ -164,7 +166,8 @@ namespace Bloom.Publish
 							BookletPortion=BookletPortion,
 							BookIsFullBleed = _currentlyLoadedBook.FullBleed,
 							PrintWithFullBleed = GetPrintingWithFullBleed(),
-							Cmyk = _currentlyLoadedBook.UserPrefs.CmykPdf},
+							Cmyk = _currentlyLoadedBook.UserPrefs.CmykPdf,
+							HtmlPageCount = this.HtmlPageCount},
 						worker, doWorkEventArgs, View );
 					// Warn the user if we're starting to use too much memory.
 					Bloom.Utils.MemoryManagement.CheckMemory(false, "finished creating PDF file", true);
@@ -224,6 +227,8 @@ namespace Bloom.Publish
 
 			XmlHtmlConverter.MakeXmlishTagsSafeForInterpretationAsHtml(dom.RawDom);
 			dom.UseOriginalImages = true; // don't want low-res images or transparency in PDF.
+			HtmlPageCount = dom.SafeSelectNodes("//div[contains(@class,'bloom-page')]").Count;
+
 			return BloomServer.MakeSimulatedPageFileInBookFolder(dom, source:BloomServer.SimulatedPageFileSource.Pub);
 		}
 

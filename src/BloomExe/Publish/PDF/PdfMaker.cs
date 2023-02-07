@@ -71,18 +71,30 @@ namespace Bloom.Publish.PDF
 
 			try
 			{
+				// Copying the PDF file at each stage of the process, tagged for page layout, can be useful
+				// when debugging the PDF creation process.  I'm reluctant to just delete these lines until
+				// the time comes we're fully happy with how the process works.
+				/*var pgid = (string.IsNullOrEmpty(specs.PaperSizeName) ? "Custom" : specs.PaperSizeName) + (specs.Landscape ? "-L" : "-P");*/
+				/*RobustFile.Copy(specs.OutputPdfPath, System.IO.Path.ChangeExtension(specs.OutputPdfPath, pgid + "-0.pdf"), true);*/
 				// Shrink the PDF file, especially if it has large color images.  (BL-3721)
-				// Also if the book is full bleed we need to remove some spurious pages.
+				// Also if the book is full bleed we may need to remove some spurious pages.
 				// Removing spurious pages must be done BEFORE we switch pages around to make a booklet!
 				// Note: previously compression was the last step, after making a booklet. We moved it before for
 				// the reason above. Seems like it would also have performance benefits, if anything, to shrink
 				// the file before manipulating it further. Just noting it in case there are unexpected issues.
 				var fixPdf = new ProcessPdfWithGhostscript(ProcessPdfWithGhostscript.OutputType.DesktopPrinting, worker);
-				fixPdf.ProcessPdfFile(specs.OutputPdfPath, specs.OutputPdfPath, specs.BookIsFullBleed);
+				fixPdf.ProcessPdfFile(specs.OutputPdfPath, specs.OutputPdfPath);
+				/*RobustFile.Copy(specs.OutputPdfPath, System.IO.Path.ChangeExtension(specs.OutputPdfPath, pgid + "-1.pdf"), true);*/
+				if (specs.BookIsFullBleed && specs.PrintWithFullBleed)
+				{
+					RemoveBlankPagesIfNecessary(specs.OutputPdfPath, specs.HtmlPageCount);
+					/*RobustFile.Copy(specs.OutputPdfPath, System.IO.Path.ChangeExtension(specs.OutputPdfPath, pgid + "-2.pdf"), true);*/
+				}
 				if (specs.BookletPortion != PublishModel.BookletPortions.AllPagesNoBooklet || specs.PrintWithFullBleed)
 				{
 					//remake the pdf by reordering the pages (and sometimes rotating, shrinking, etc)
 					MakeBooklet(specs);
+					/*RobustFile.Copy(specs.OutputPdfPath, System.IO.Path.ChangeExtension(specs.OutputPdfPath, pgid + "-3.pdf"), true);*/
 				}
 
 				// Check that we got a valid, readable PDF.
@@ -121,6 +133,39 @@ namespace Bloom.Publish.PDF
 
 		}
 
+		/// <summary>
+		/// WebView2PdfMaker adds a blank page after each page in full bleed output for some paper sizes.
+		/// This checks for the existence of twice as many pages as expected, and if that condition is true,
+		/// deletes the even numbered pages.
+		/// </summary>
+		/// <remarks>
+		/// This would be easy to move to a simple command line program if memory use proves to be a problem.
+		/// </remarks>
+		private void RemoveBlankPagesIfNecessary(string pdfPath, int htmlPageCount)
+		{
+			//Bloom.Utils.MemoryManagement.CheckMemory(true, "about to check for blank pages in full bleed PDF file", false);
+			using (var pdfDoc = PdfReader.Open(pdfPath, PdfDocumentOpenMode.Modify))
+			{
+				if (pdfDoc.PageCount == htmlPageCount)
+					return;
+				var lastEven = 0;
+				if (pdfDoc.PageCount == 2 * htmlPageCount)
+					lastEven = pdfDoc.PageCount - 1;
+				else if (pdfDoc.PageCount == 2 * htmlPageCount - 1)
+					lastEven = pdfDoc.PageCount - 2;
+				if (lastEven == 0)
+				{
+					Debug.Assert(pdfDoc.PageCount == htmlPageCount,
+						$"Unexpected PDF page count = {pdfDoc.PageCount}, html page count = {htmlPageCount}");
+					return; /* something is screwy */
+				}
+				for (int i = lastEven; i > 0; i -= 2)
+					pdfDoc.Pages.RemoveAt(i);
+				pdfDoc.Save(pdfPath);
+			}
+			//Bloom.Utils.MemoryManagement.CheckMemory(true, "done checking for blank pages in full bleed PDF file", false);
+		}
+
 		public class MakingPdfFailedException : Exception
 		{
 			private MakingPdfFailedException(string message) : base(message)
@@ -150,37 +195,6 @@ namespace Bloom.Publish.PDF
 				// reader to process the PDF file enough to crash if it is corrupt.
 				gfx.DrawImage(pdf, sourceRect);
 			}
-		}
-
-		//About the --zoom parameter. It's a hack to get the pages chopped properly.
-		//Notes: Remember, a page border *will make the page that much larger!*
-		//		One way to see what's happening without a page border is to make the marginBox visible,
-		//		then scroll through and you can see it moving up (if the page (zoom factor) is too small) or down (if page (zoom factor) is too large)
-		//		Until Aug 2012, I had 1.091. But with large a4 landscape docs (e.g. calendar), I saw
-		//		that the page was too big, leading to an extra page at the end.
-		//		Experimentation showed that 1.041 kept the marge box steady.
-		//
-		//	In July 2013, I needed to get a 200-300 page b5 book out. With the prior 96DPI setting of 1.041, it was drifting upwards (too small). Upping it to 1.042 solved it.
-
-		// In Auguest 2013, we discovere dthat 1.042 was giving us an extra page even when just doing the cover.
-		// I quickly tested 1.0415, and it solved it. I'm putting off doing a "real" solution because the geckofxhtmltopdf
-		// solution is already working in another branch.
-
-		private double GetZoomBasedOnScreenDPISettings()
-		{
-			if (WorkspaceView.DPIOfThisAccount == 96)
-			{
-				return 1.0415;
-			}
-			if (WorkspaceView.DPIOfThisAccount == 120)
-			{
-				return 1.249;
-			}
-			if (WorkspaceView.DPIOfThisAccount == 144)
-			{
-				return 1.562;
-			}
-			return 1.04;
 		}
 
 		private void MakeBooklet(PdfMakingSpecs specs)
