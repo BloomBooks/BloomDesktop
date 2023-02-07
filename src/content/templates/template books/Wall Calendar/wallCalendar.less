@@ -57,6 +57,7 @@ ENDLAYOUTS
     width: 101px; //103 is good during editing
 
     vertical-align: top;
+    height: 69px;
 }
 
 .calendarMonthBottom td textarea {
@@ -65,7 +66,7 @@ ENDLAYOUTS
     line-height: 1.3em;
     text-indent: 2.3em;
     margin-top: 4px;
-    height: 62px; // leave room for 6 rows, not 5!!!
+    height: calc(100% - 8px); // leave room for 6 rows, not 5!!!
 }
 
 .calendarMonthBottom td p {
