@@ -59,6 +59,8 @@ namespace Bloom.Publish
 			SIL.Windows.Forms.SuperToolTip.SuperToolTipInfo superToolTipInfo7 = new SIL.Windows.Forms.SuperToolTip.SuperToolTipInfo();
 			SIL.Windows.Forms.SuperToolTip.SuperToolTipInfoWrapper superToolTipInfoWrapper8 = new SIL.Windows.Forms.SuperToolTip.SuperToolTipInfoWrapper();
 			SIL.Windows.Forms.SuperToolTip.SuperToolTipInfo superToolTipInfo8 = new SIL.Windows.Forms.SuperToolTip.SuperToolTipInfo();
+			SIL.Windows.Forms.SuperToolTip.SuperToolTipInfoWrapper superToolTipInfoWrapper9 = new SIL.Windows.Forms.SuperToolTip.SuperToolTipInfoWrapper();
+			SIL.Windows.Forms.SuperToolTip.SuperToolTipInfo superToolTipInfo9 = new SIL.Windows.Forms.SuperToolTip.SuperToolTipInfo();
 			this._loadTimer = new System.Windows.Forms.Timer(this.components);
 			this._makePdfBackgroundWorker = new System.ComponentModel.BackgroundWorker();
 			this._workingIndicator = new System.Windows.Forms.Panel();
@@ -73,6 +75,7 @@ namespace Bloom.Publish
 			this._bloomPUBRadio = new System.Windows.Forms.RadioButton();
 			this._recordVideoRadio = new System.Windows.Forms.RadioButton();
 			this._uploadRadio = new System.Windows.Forms.RadioButton();
+			this._uploadRadioObsolete = new System.Windows.Forms.RadioButton();
 			this._pdfPrintRadio = new System.Windows.Forms.RadioButton();
 			this._menusToolStrip = new System.Windows.Forms.ToolStrip();
 			this._pdfOptions = new System.Windows.Forms.ToolStripDropDownButton();
@@ -177,9 +180,10 @@ namespace Bloom.Publish
 			this.tableLayoutPanel1.ColumnCount = 1;
 			this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
 			this.tableLayoutPanel1.ContextMenuStrip = this._contextMenuStrip;
-			this.tableLayoutPanel1.Controls.Add(this._bloomPUBRadio, 0, 9);
-			this.tableLayoutPanel1.Controls.Add(this._recordVideoRadio, 0, 10);
+			this.tableLayoutPanel1.Controls.Add(this._bloomPUBRadio, 0, 10);
+			this.tableLayoutPanel1.Controls.Add(this._recordVideoRadio, 0, 12);
 			this.tableLayoutPanel1.Controls.Add(this._uploadRadio, 0, 8);
+			this.tableLayoutPanel1.Controls.Add(this._uploadRadioObsolete, 0, 9);
 			// re-enable for Bloom 5.5
 			//this.tableLayoutPanel1.Controls.Add(this._pdfPrintRadio, 0, 7);
 			this.tableLayoutPanel1.Controls.Add(this._menusToolStrip, 0, 0);
@@ -187,7 +191,7 @@ namespace Bloom.Publish
 			this.tableLayoutPanel1.Controls.Add(this.label1, 0, 5);
 			this.tableLayoutPanel1.Controls.Add(this._bookletBodyRadio, 0, 4);
 			this.tableLayoutPanel1.Controls.Add(this._simpleAllPagesRadio, 0, 1);
-			this.tableLayoutPanel1.Controls.Add(this._epubRadio, 0, 10);
+			this.tableLayoutPanel1.Controls.Add(this._epubRadio, 0, 11);
 			this.tableLayoutPanel1.Controls.Add(this._noBookletsMessage, 0, 2);
 			this.tableLayoutPanel1.Dock = System.Windows.Forms.DockStyle.Left;
 			this.tableLayoutPanel1.ForeColor = System.Drawing.Color.White;
@@ -336,6 +340,34 @@ namespace Bloom.Publish
 			this._uploadRadio.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
 			this._uploadRadio.UseVisualStyleBackColor = true;
 			this._uploadRadio.CheckedChanged += new System.EventHandler(this.OnPublishRadioChanged);
+			// 
+			// _uploadRadioObsolete
+			// 
+			this._uploadRadioObsolete.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this._uploadRadioObsolete.Image = global::Bloom.Properties.Resources.upload;
+			this._L10NSharpExtender.SetLocalizableToolTip(this._uploadRadioObsolete, null);
+			this._L10NSharpExtender.SetLocalizationComment(this._uploadRadioObsolete, null);
+			this._L10NSharpExtender.SetLocalizingId(this._uploadRadioObsolete, "PublishTab.ButtonThatShowsUploadForm");
+			this._uploadRadioObsolete.Location = new System.Drawing.Point(3, 525);
+			this._uploadRadioObsolete.Name = "_uploadRadioObsolete";
+			this._uploadRadioObsolete.Size = new System.Drawing.Size(105, 89);
+			superToolTipInfo9.BackgroundGradientBegin = System.Drawing.Color.FromArgb(((int)(((byte)(252)))), ((int)(((byte)(253)))), ((int)(((byte)(254)))));
+			superToolTipInfo9.BackgroundGradientEnd = System.Drawing.Color.FromArgb(((int)(((byte)(166)))), ((int)(((byte)(227)))), ((int)(((byte)(235)))));
+			superToolTipInfo9.BackgroundGradientMiddle = System.Drawing.Color.FromArgb(((int)(((byte)(208)))), ((int)(((byte)(240)))), ((int)(((byte)(245)))));
+			superToolTipInfo9.BodyText = "Upload your book to BloomLibrary.org so that other people can read it, download i" +
+	"t to their devices, and share it with other people.";
+			superToolTipInfo9.OffsetForWhereToDisplay = new System.Drawing.Point(120, 0);
+			superToolTipInfo9.ShowHeader = false;
+			superToolTipInfoWrapper9.SuperToolTipInfo = superToolTipInfo9;
+			superToolTipInfoWrapper9.UseSuperToolTip = true;
+			this._superToolTip.SetSuperStuff(this._uploadRadioObsolete, superToolTipInfoWrapper9);
+			this._uploadRadioObsolete.TabIndex = 22;
+			this._uploadRadioObsolete.TabStop = true;
+			this._uploadRadioObsolete.Text = "Web (original)";
+			this._uploadRadioObsolete.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+			this._uploadRadioObsolete.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
+			this._uploadRadioObsolete.UseVisualStyleBackColor = true;
+			this._uploadRadioObsolete.CheckedChanged += new System.EventHandler(this.OnPublishRadioChanged);
 			// 
 			// _pdfPrintRadio
 			// 
@@ -678,6 +710,7 @@ namespace Bloom.Publish
 		private System.Windows.Forms.RadioButton _recordVideoRadio;
 		private System.Windows.Forms.RadioButton _pdfPrintRadio;
 		private System.Windows.Forms.RadioButton _uploadRadio;
+		private System.Windows.Forms.RadioButton _uploadRadioObsolete;
 		private System.Windows.Forms.RadioButton _epubRadio;
 		private System.Windows.Forms.Label _noBookletsMessage;
 		private System.Windows.Forms.ToolStripMenuItem exportAudioFiles1PerPageToolStripMenuItem;
