@@ -11,7 +11,7 @@ import theOneLocalizationManager from "../../lib/localizationManager/localizatio
 
 import { theOneBubbleManager, updateOverlayClass } from "./bubbleManager";
 
-import "../../utils/elementExtensions";
+import { farthest } from "../../utils/elementUtils";
 
 const kPlaybackOrderContainerSelector: string =
     ".bloom-playbackOrderControlsContainer";
@@ -358,9 +358,15 @@ export function EnableImageEditing(imageContainer: HTMLElement) {
  * Like EnableImageEditing, but for the entire document instead of a single container.
  */
 export function EnableAllImageEditing() {
-    Array.from(
-        document.getElementsByClassName("bloom-hideImageButtons")
-    ).forEach(EnableImageEditing);
+    // getElementsByClassName returns these in document order.
+    // EnableImageEditing has side effects. Whose should win?
+    // We'd rather have the first primary image container win, rather than the last child container,
+    // so apply these in reverse document order.
+    // (This may not be strictly needed because currently, all calls to this function
+    // occur when the side effects don't matter. But just in case.)
+    Array.from(document.getElementsByClassName("bloom-hideImageButtons"))
+        .reverse()
+        .forEach(EnableImageEditing);
 }
 
 /**
@@ -434,13 +440,28 @@ function getImgFromContainer(imageContainer: HTMLElement) {
         .not(".bloom-ui img"); // e.g. cog.svg
 }
 
+/**
+ * Disables the current image tooltip
+ */
 function DisableImageTooltip(container: HTMLElement) {
-    const patriarch = container.farthest<HTMLElement>(".bloom-imageContainer");
-    if (patriarch) {
+    // The patriarch represents the main .bloom-imageContainer, which would be the earliest in the DOM hierarchy.
+    // We use the patriarch's title to represent the title for itself or whichever of its child overlayImages is active
+    // (to avoid complicated conflicting z-index issues)
+    const patriarch = farthest<HTMLElement>(container, ".bloom-imageContainer");
+
+    // Before clearing the patriarch's title, first check if the patriarch
+    // still represents this particular container.
+    // When switching between containers, it might not, because we need to both set the title for the new one
+    // and disable the old title.
+    // So, check first before clearing the title.
+    if (patriarch?.title === container.getAttribute("data-title")) {
         patriarch.title = "";
     }
 }
 
+// Note: since this function (obviously) updates state / has side effects,
+// callers should consider the order operations are done if multiple operations happen at or near the same time
+// to ensure that the final state is the one they desire.
 function UpdateImageTooltipVisibility(container: HTMLElement) {
     if (
         container.classList.contains("bloom-hideImageButtons") ||
@@ -464,13 +485,9 @@ function UpdateImageTooltipVisibility(container: HTMLElement) {
             // but that's a lot more complicated z-index wise and introduces other undesired side effects which need to be coded against.
             // It's less complicated to just set the title of the main container (its events trigger because the canvas is its descendant,
             // and the canvas is receiving events)
-            // One unfortunate minor problem is that if you had an overlay image selected,
-            // view its tooltip, then select the main image (without leaving the main image container),
-            // the tooltip will not appear (until you leave the main image and come back).
-            // The tooltip was actually updated, the browser just doesn't want to re-display it.
-            // I don't think it's worth complicating the code to try to address that minor corner case?
             //
-            const patriarch = container.farthest<HTMLElement>(
+            const patriarch = farthest<HTMLElement>(
+                container,
                 ".bloom-imageContainer"
             );
 
