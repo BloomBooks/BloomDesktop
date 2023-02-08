@@ -43,7 +43,7 @@ export const BookProblem: React.FunctionComponent<{
             className={props.className}
             heading={bookProblemMessage}
             body={props.errorMessage + " " + clickHereForHelpMessage}
-            icon={<img src={"Attention.svg"} alt="" />}
+            icon={<img src={"/bloom/images/Attention.svg"} alt="" />}
             menu={undefined}
         />
     );

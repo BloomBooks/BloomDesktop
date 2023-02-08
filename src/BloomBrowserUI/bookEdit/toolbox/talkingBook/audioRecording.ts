@@ -1763,42 +1763,44 @@ export default class AudioRecording {
             // See selectInputDevice for what is retrieved.
             const genericName = data.genericName || "";
             const productName = data.productName || "";
-            const nameToImage = [
-                ["internal", "computer.svg"],
+
+            const defaultSrcPath = "/bloom/bookEdit/toolbox/talkingBook/";
+            const nameToImageSrc = [
+                ["internal", defaultSrcPath + "computer.svg"],
                 // checking for "Array" is motivated by JohnT's dell laptop, where the internal microphone
                 // comes up as "Microphone Array (2 RealTek Hi".
-                ["array", "computer.svg"],
-                ["webcam", "webcam.svg"],
+                ["array", defaultSrcPath + "computer.svg"],
+                ["webcam", defaultSrcPath + "webcam.svg"],
                 // checking for "Headse" is motivated by JohnT's Logitech Headset, which comes up as "Microphone (Logitech USB Headse".
-                ["headse", "headset.svg"],
-                ["usb audio", "headset.svg"], // we don't really know... should we just show a USB icon?
-                ["plantronics", "headset.svg"],
-                ["andrea", "headset.svg"], //usb-to-line
-                ["vxi", "headset.svg"], // headsets and usb-to-line
-                ["line", "lineaudio.svg"],
-                ["high def", "lineaudio.svg"],
-                ["zoom", "recorder.svg"]
+                ["headse", defaultSrcPath + "headset.svg"],
+                ["usb audio", defaultSrcPath + "headset.svg"], // we don't really know... should we just show a USB icon?
+                ["plantronics", defaultSrcPath + "headset.svg"],
+                ["andrea", defaultSrcPath + "headset.svg"], //usb-to-line
+                ["vxi", defaultSrcPath + "headset.svg"], // headsets and usb-to-line
+                ["line", defaultSrcPath + "lineaudio.svg"],
+                ["high def", defaultSrcPath + "lineaudio.svg"],
+                ["zoom", defaultSrcPath + "recorder.svg"]
             ];
-            let imageName = "microphone.svg"; // Default if we don't recognize anything significant in the name of the current device.
-            for (let i = 0; i < nameToImage.length; i++) {
-                const match = nameToImage[i][0];
+            // Default if we don't recognize anything significant in the name of the current device.
+            let imageSrc = defaultSrcPath + "microphone.svg";
+            for (let i = 0; i < nameToImageSrc.length; i++) {
+                const [pattern, imageSrcValue] = nameToImageSrc[i];
                 if (
-                    genericName.toLowerCase().indexOf(match) > -1 ||
-                    productName.toLowerCase().indexOf(match) > -1
+                    genericName.toLowerCase().indexOf(pattern) > -1 ||
+                    productName.toLowerCase().indexOf(pattern) > -1
                 ) {
-                    imageName = nameToImage[i][1];
+                    imageSrc = imageSrcValue;
                     break;
                 }
             }
+
             // Don't mislead user if we couldn't find any devices due to an error or lack of device.
             // (See https://issues.bloomlibrary.org/youtrack/issue/BL-7272.)
             if (!data.genericName && !data.productName)
-                imageName = "Attention.svg";
+                imageSrc = "/bloom/images/Attention.svg";
+
             const devButton = $("#audio-input-dev");
-            const src = devButton.attr("src");
-            const lastSlash = src.lastIndexOf("/");
-            const newSrc = src.substring(0, lastSlash + 1) + imageName;
-            devButton.attr("src", newSrc);
+            devButton.attr("src", imageSrc);
             devButton.attr("title", productName);
         });
     }
