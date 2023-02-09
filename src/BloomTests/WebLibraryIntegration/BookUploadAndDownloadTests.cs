@@ -41,6 +41,7 @@ namespace BloomTests.WebLibraryIntegration
 			_parseClient = new BloomParseClientTestDouble(_thisTestId);
 			_htmlThumbNailer = new HtmlThumbNailer(NavigationIsolator.GetOrCreateTheOneNavigationIsolator());
 			_uploader = new BookUpload(_parseClient, new BloomS3Client(BloomS3Client.UnitTestBucketName), new BookThumbNailer(_htmlThumbNailer));
+			BookUpload.IsDryRun = false;
 			_downloader = new BookDownload(_parseClient, new BloomS3Client(BloomS3Client.UnitTestBucketName), new BookDownloadStartingEvent());
 			_downloader.BookDownLoaded += (sender, args) => _downloadedBooks.Add(args.BookDetails);
 		}
