@@ -43,6 +43,7 @@ namespace Bloom.Publish
 			Working,
 			ShowPdf,
 			Upload,
+			Upload_Obsolete,
 			Printing,
 			ResumeAfterPrint,
 			Android,
@@ -101,6 +102,7 @@ namespace Bloom.Publish
 
 		// True when we are showing the controls for uploading. (Review: does this belong in the model or view?)
 		public bool UploadMode { get; set; }
+		public bool UploadModeObsolete { get; set; }
 
 		// True when showing an ePUB preview.
 		public bool EpubMode;

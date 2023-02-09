@@ -185,6 +185,7 @@ namespace Bloom.Publish
 			_bookletBodyRadio.AutoCheck = autoCheck;
 			_pdfPrintRadio.AutoCheck = autoCheck;
 			_uploadRadio.AutoCheck = autoCheck;
+			_uploadRadioObsolete.AutoCheck = autoCheck;
 			_epubRadio.AutoCheck = autoCheck;
 			_bloomPUBRadio.AutoCheck = autoCheck;
 			_recordVideoRadio.AutoCheck = autoCheck;
@@ -197,6 +198,7 @@ namespace Bloom.Publish
 			LocalizeSuperToolTip(_bookletBodyRadio, "PublishTab.BodyOnlyRadio");
 			LocalizeSuperToolTip(_pdfPrintRadio, "PublishTab.PdfPrint.Button");
 			LocalizeSuperToolTip(_uploadRadio, "PublishTab.ButtonThatShowsUploadForm");
+			LocalizeSuperToolTip(_uploadRadioObsolete, "PublishTab.ButtonThatShowsUploadForm");
 			LocalizeSuperToolTip(_bloomPUBRadio, "PublishTab.bloomPUBButton");
 			LocalizeSuperToolTip(_recordVideoRadio, "PublishTab.RecordVideoButton");
 		}
@@ -263,7 +265,7 @@ namespace Bloom.Publish
 		private void ClearRadioButtons()
 		{
 			_bookletCoverRadio.Checked = _bookletBodyRadio.Checked =
-				_simpleAllPagesRadio.Checked = _pdfPrintRadio.Checked = _uploadRadio.Checked = _epubRadio.Checked = _bloomPUBRadio.Checked = _recordVideoRadio.Checked = false;
+				_simpleAllPagesRadio.Checked = _pdfPrintRadio.Checked = _uploadRadio.Checked = _uploadRadioObsolete.Checked = _epubRadio.Checked = _bloomPUBRadio.Checked = _recordVideoRadio.Checked = false;
 		}
 
 		internal bool IsMakingPdf
@@ -347,10 +349,10 @@ namespace Bloom.Publish
 		{
 			if (IsHandleCreated) // May not be when bulk uploading
 			{
-				// Upload and ePUB display modes simply depend on the appropriate button being checked.
-				// If any of the other buttons is checked, we display the preview IF we have it.
 				if (_uploadRadio.Checked)
 					_model.DisplayMode = PublishModel.DisplayModes.Upload;
+				else if (_uploadRadioObsolete.Checked)
+					_model.DisplayMode = PublishModel.DisplayModes.Upload_Obsolete;
 				else if (_epubRadio.Checked)
 					_model.DisplayMode = PublishModel.DisplayModes.EPUB;
 				else if (_bloomPUBRadio.Checked)
@@ -376,20 +378,22 @@ namespace Bloom.Publish
 			if (_model == null || _model.BookSelection.CurrentSelection==null)
 				return;
 
-			_bookletCoverRadio.Checked = _model.BookletPortion == PublishModel.BookletPortions.BookletCover && !_model.UploadMode;
-			_bookletBodyRadio.Checked = _model.BookletPortion == PublishModel.BookletPortions.BookletPages && !_model.UploadMode;
-			_simpleAllPagesRadio.Checked = _model.BookletPortion == PublishModel.BookletPortions.AllPagesNoBooklet && !_model.UploadMode;
+			_bookletCoverRadio.Checked = _model.BookletPortion == PublishModel.BookletPortions.BookletCover && !_model.UploadModeObsolete;
+			_bookletBodyRadio.Checked = _model.BookletPortion == PublishModel.BookletPortions.BookletPages && !_model.UploadModeObsolete;
+			_simpleAllPagesRadio.Checked = _model.BookletPortion == PublishModel.BookletPortions.AllPagesNoBooklet && !_model.UploadModeObsolete;
 			_pdfPrintRadio.Checked = _model.PdfPrintMode;
 			_uploadRadio.Checked = _model.UploadMode;
+			_uploadRadioObsolete.Checked = _model.UploadModeObsolete;
 			_epubRadio.Checked = _model.EpubMode;
 
 			if (!_model.AllowUpload)
 			{
-			   //this doesn't actually show when disabled		        _superToolTip.GetSuperStuff(_uploadRadio).SuperToolTipInfo.BodyText = "This creator of this book, or its template, has marked it as not being appropriate for upload to BloomLibrary.org";
+			   //this doesn't actually show when disabled		        _superToolTip.GetSuperStuff(_uploadRadioObsolete).SuperToolTipInfo.BodyText = "This creator of this book, or its template, has marked it as not being appropriate for upload to BloomLibrary.org";
 			}
 
 			_pdfPrintRadio.Enabled = _model.AllowPdf;
 			_uploadRadio.Enabled = _model.AllowUpload;
+			_uploadRadioObsolete.Enabled = _model.AllowUpload;
 			_simpleAllPagesRadio.Enabled = _model.AllowPdf;
 			_bookletBodyRadio.Enabled = _model.AllowPdfBooklet;
 			_bookletCoverRadio.Enabled = _model.AllowPdfCover;
@@ -517,7 +521,7 @@ namespace Bloom.Publish
 
 			// Suspending/resuming layout makes the transition between modes a bit smoother.
 			SuspendLayout();
-			if (displayMode != PublishModel.DisplayModes.Upload && _uploadControl != null)
+			if (displayMode != PublishModel.DisplayModes.Upload_Obsolete && _uploadControl != null)
 			{
 				Controls.Remove(_uploadControl);
 				_uploadControl = null;
@@ -579,7 +583,7 @@ namespace Bloom.Publish
 					Cursor = Cursors.Default;
 					_pdfViewer.Visible = true;
 					break;
-				case PublishModel.DisplayModes.Upload:
+				case PublishModel.DisplayModes.Upload_Obsolete:
 				{
 					Logger.WriteEvent("Entering Publish Upload Screen");
 					_workingIndicator.Visible = false; // If we haven't finished creating the PDF, we will indicate that in the progress window.
@@ -591,7 +595,11 @@ namespace Bloom.Publish
 						SetupPublishControl();
 					}
 					break;
-				}
+					}
+				case PublishModel.DisplayModes.Upload:
+					//BloomPubMaker.ControlForInvoke = ParentForm; // something created on UI thread that won't go away
+					ShowHtmlPanel(BloomFileLocator.GetBrowserFile(false, "publish", "LibraryPublish", "loader.html"));
+					break;
 				case PublishModel.DisplayModes.PdfPrint:
 					BloomPubMaker.ControlForInvoke = ParentForm; // something created on UI thread that won't go away
 					ShowHtmlPanel(BloomFileLocator.GetBrowserFile(false, "publish", "PDFPrintPublish", "PublishPdfPrint.html"));
@@ -751,7 +759,7 @@ namespace Bloom.Publish
 		/// </summary>
 		private void SetModelFromButtons()
 		{
-			_model.UploadMode = _uploadRadio.Checked;
+			_model.UploadModeObsolete = _uploadRadioObsolete.Checked;
 			_model.EpubMode = _epubRadio.Checked;
 			var pdfPreviewMode = false;
 			_model.PdfPrintMode = false;
@@ -784,10 +792,14 @@ namespace Bloom.Publish
 			}
 			else if (_uploadRadio.Checked)
 			{
+				_model.DisplayMode = PublishModel.DisplayModes.Upload;
+			}
+			else if (_uploadRadioObsolete.Checked)
+			{
 				// We want to upload the simple PDF with the book, but we don't make it
 				// until we actually start the upload.
 				_model.BookletPortion = PublishModel.BookletPortions.AllPagesNoBooklet;
-				_model.DisplayMode = PublishModel.DisplayModes.Upload;
+				_model.DisplayMode = PublishModel.DisplayModes.Upload_Obsolete;
 			}
 			else if (_bloomPUBRadio.Checked)
 			{
@@ -830,7 +842,8 @@ namespace Bloom.Publish
 			}
 			else // not PDF preview mode
 			{
-				if (_model.DisplayMode != PublishModel.DisplayModes.Upload)
+				//TODO: this is incorrect logic
+				if (_model.DisplayMode != PublishModel.DisplayModes.Upload_Obsolete)
 					_model.BookletPortion = PublishModel.BookletPortions.None;
 			}
 			_model.ShowCropMarks = false;
@@ -855,14 +868,14 @@ namespace Bloom.Publish
 				return;
 			}
 			_model.PdfGenerationSucceeded = false; // and so it stays unless we generate it successfully.
-			if (_uploadRadio.Checked)
+			if (_uploadRadioObsolete.Checked)
 			{
 				// We aren't going to display it, so don't bother generating it unless the user actually uploads.
 				// Unfortunately, the completion of the generation process is normally responsible for putting us into
 				// the right display mode for what we generated (or failed to), after this routine puts us into the
 				// mode that shows generation is pending. For the upload button case, we want to go straight to the Upload
 				// mode, so the upload control appears. This is a bizarre place to do it, but I can't find a better one.
-				SetDisplayMode(PublishModel.DisplayModes.Upload);
+				SetDisplayMode(PublishModel.DisplayModes.Upload_Obsolete);
 				return;
 			}
 
