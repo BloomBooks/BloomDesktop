@@ -54,7 +54,7 @@ namespace Bloom.WebLibraryIntegration
 				progress.WriteError("The email from the last login from the Bloom UI does not match the -u argument.");
 				return false;
 			}
-			if (destination != "dry-run" && Settings.Default.LastLoginDest != "dry-run" && Settings.Default.LastLoginDest != destination)
+			if (Settings.Default.LastLoginDest != destination)
 			{
 				// this is important because the user settings we're going to read are from the version of Bloom, and so the
 				// token will be whatever we logged into last here, and it won't work if it is from one Parse server and
