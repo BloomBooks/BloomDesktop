@@ -36,15 +36,15 @@ namespace Bloom.CLI
 			options.Dest = options.Dest.ToLowerInvariant();
 			switch (options.Dest)
 			{
-				case UploadDestination.DryRun:
 				case UploadDestination.Development:
 				case UploadDestination.Production:
 					break;
 				default:
-					Console.WriteLine($"Error: if present, upload destination (-d) must be one of {UploadDestination.DryRun}, {UploadDestination.Development}, or {UploadDestination.Production}");
+					Console.WriteLine($"Error: Upload destination (-d) must be one of {UploadDestination.Development} or {UploadDestination.Production}");
 					return 1;
 			}
 			BookUpload.Destination = options.Dest;    // must be set before calling SetupErrorHandling() (or BloomParseClient constructor)
+			BookUpload.IsDryRun = options.DryRun;	  // must be set before calling SetupErrorHandling() (or BloomParseClient constructor)
 
 			// This task will be all the program does. We need to do enough setup so that
 			// the upload code can work, then tear it down.
@@ -61,13 +61,15 @@ namespace Bloom.CLI
 					var uploader = new BulkUploader(singleBookUploader);
 
 
+					if (options.DryRun)
+					{
+						Console.WriteLine($"\nThe following actions would happen if --dry-run were disabled:");
+					}
+
 					// Since Bloom is not a normal console app, when run from a command line, the new command prompt
 					// appears at once. The extra newlines here are attempting to separate this from our output.
 					switch (options.Dest)
 					{
-						case UploadDestination.DryRun:
-							Console.WriteLine($"\nThe following actions would happen if you set destination to '{(BookUpload.UseSandboxByDefault ? UploadDestination.Development : UploadDestination.Production)}'.");
-							break;
 						case UploadDestination.Development:
 							Console.WriteLine("\nThe upload will go to dev.bloomlibrary.org.");
 							break;
@@ -113,8 +115,11 @@ public class UploadParameters
 	[Option('T', "preserveThumbnails", HelpText = "Preserve any existing thumbnail images: don't try to recreate them.", Required = false)]
 	public bool PreserveThumbnails { get; set; }
 
-	[Option('d', "destination", Default ="dry-run", HelpText = "If present, this must be one of dry-run, dev, or production. 'dry-run' will just print out what would happen. 'dev' will upload to dev.bloomlibrary.org (you will need to use an account from there). 'production' will upload to bloomlibrary.org", Required = false)]
+	[Option('d', "destination", HelpText = "'dev' will upload to dev.bloomlibrary.org (you will need to use an account from there). 'production' will upload to bloomlibrary.org", Required = true)]
 	public string Dest { get; set; }
+
+	[Option("dry-run", Default=false, HelpText = "If present, performs a dry-run (will just print out what would happen).", Required = false)]
+	public bool DryRun { get; set; }
 
 	[Option('F', "force", HelpText = "Force the upload even if existing .lastUploadInfo content indicates that the book has already been uploaded.", Required = false)]
 	public bool ForceUpload { get; set; }
@@ -128,7 +133,6 @@ public class UploadParameters
 /// </remarks>
 public static class UploadDestination
 {
-	public const string DryRun = "dry-run";
 	public const string Development = "dev";
 	public const string Production = "production";
 }
