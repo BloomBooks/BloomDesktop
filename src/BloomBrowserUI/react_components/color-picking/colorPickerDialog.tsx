@@ -291,7 +291,10 @@ const ColorPickerDialog: React.FC<IColorPickerDialogProps> = props => {
                     className="bloomModalDialog color-picker-dialog"
                     open={props.open === undefined ? open : props.open}
                     ref={dlgRef}
-                    onClose={(_event, reason: string) => {
+                    onClose={(
+                        _event,
+                        reason: "backdropClick" | "escapeKeyDown"
+                    ) => {
                         if (reason === "backdropClick")
                             onClose(DialogResult.OK);
                         if (reason === "escapeKeyDown")
