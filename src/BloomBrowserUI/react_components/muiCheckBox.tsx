@@ -9,8 +9,8 @@ import { useL10n } from "./l10nHooks";
 // wrap up the complex material-ui checkbox in something simple and make it handle tristate
 export const MuiCheckbox: React.FunctionComponent<{
     className?: string;
-    label: string;
-    l10nKey: string;
+    label: string | React.ReactNode;
+    l10nKey?: string;
     l10nComment?: string;
     checked: boolean | undefined;
     tristate?: boolean;
@@ -31,11 +31,22 @@ export const MuiCheckbox: React.FunctionComponent<{
         boolean | undefined
     >(props.checked);
 
+    let labelStr: string;
+    let labelL10nKey: string;
+    if (typeof props.label === "string") {
+        labelStr = props.label;
+        if (props.l10nKey === undefined)
+            throw new Error("l10nKey must be provided if label is a string");
+        labelL10nKey = props.l10nKey;
+    } else {
+        labelStr = "";
+        labelL10nKey = "";
+    }
     const localizedLabel = useL10n(
-        props.label,
+        labelStr,
         props.alreadyLocalized || props.temporarilyDisableI18nWarning
             ? null
-            : props.l10nKey,
+            : labelL10nKey,
         props.l10nComment,
         props.l10nParam0,
         props.l10nParam1
@@ -101,7 +112,9 @@ export const MuiCheckbox: React.FunctionComponent<{
                     checkboxControl
                 )
             }
-            label={localizedLabel}
+            label={
+                typeof props.label === "string" ? localizedLabel : props.label
+            }
             disabled={props.disabled}
         />
     );

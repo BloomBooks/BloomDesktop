@@ -30,7 +30,6 @@ import {
     useApiStringState,
     useWatchBooleanEvent
 } from "../../utils/bloomApi";
-import { hookupLinkHandler } from "../../utils/linkHandler";
 import { NoteBox } from "../../react_components/BloomDialog/commonDialogComponents";
 import { Div, P } from "../../react_components/l10nComponents";
 import { StyledEngineProvider, ThemeProvider } from "@mui/material/styles";
@@ -79,7 +78,6 @@ const EPUBPublishScreenInternal: React.FunctionComponent<{
     const [closePending, setClosePending] = useState(false);
     const [highlightRefresh, setHighlightRefresh] = useState(false);
     const [progressState, setProgressState] = useState(ProgressState.Working);
-    React.useEffect(() => hookupLinkHandler(), []);
     const [bookUrl, setBookUrl] = useState(
         inStorybookMode
             ? window.location.protocol +
