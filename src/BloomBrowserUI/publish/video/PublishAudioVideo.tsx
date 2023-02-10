@@ -44,7 +44,6 @@ import {
     Step,
     StepContent,
     StepLabel,
-    Stepper,
     Typography
 } from "@mui/material";
 import { kBloomRed } from "../../utils/colorUtils";
@@ -59,6 +58,7 @@ import { useEffect } from "react";
 import { isLinux } from "../../utils/isLinux";
 import PublishScreenTemplate from "../commonPublish/PublishScreenTemplate";
 import { EmbeddedProgressDialog } from "../../react_components/Progress/ProgressDialog";
+import { BloomStepper } from "../../react_components/BloomStepper";
 
 export const PublishAudioVideo = () => {
     // When the user changes some features, included languages, etc., we
@@ -306,23 +306,7 @@ const PublishAudioVideoInternalInternal: React.FunctionComponent<{
     color: grey;`;
     const mainPanel = (
         <PublishPanel>
-            <Stepper
-                activeStep={activeStep}
-                orientation="vertical"
-                // We need to defeat Material-UI's attempt to make the step numbers and text look disabled.
-                // Also, we need to defeat the MUI Stepper's padding, which is already standardized
-                // by MainPanel.
-                css={css`
-                    .MuiStepLabel-label {
-                        color: black !important;
-                        font-size: larger;
-                    }
-                    .MuiStepIcon-root {
-                        color: ${kBloomBlue} !important;
-                    }
-                    padding: 0 !important;
-                `}
-            >
+            <BloomStepper activeStep={activeStep} orientation="vertical">
                 <Step expanded={true}>
                     <StepLabel>{configAndPreview}</StepLabel>
                     <StepContent>
@@ -563,7 +547,7 @@ const PublishAudioVideoInternalInternal: React.FunctionComponent<{
                         </BloomButton>
                     </StepContent>
                 </Step>
-            </Stepper>
+            </BloomStepper>
         </PublishPanel>
     );
 
