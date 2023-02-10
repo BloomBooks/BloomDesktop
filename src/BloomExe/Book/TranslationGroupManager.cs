@@ -83,9 +83,11 @@ namespace Bloom.Book
 			//and not open another can of worms, I've reduce the scope of this
 			//fix to just the bookTitle, so I'm going with findOnlyBookTitleFields for now
 			//var findAllDataBookFields = "descendant-or-self::*[contains(@class,'bloom-translationGroup') and descendant::div[@data-book and contains(@class,'bloom-editable')]]";
-			var findOnlyBookTitleFields = "descendant-or-self::*[contains(@class,'bloom-translationGroup') and descendant::div[@data-book='bookTitle' and contains(@class,'bloom-editable')]]";
+			// 7 years later, we have a bug due to limiting this operation to only bookTitle. For the moment, I'm only expanding
+			// the search to the one value ("smallCoverCredits") causing a problem.  See BL-11869.
+			var findRestrictedFields = "descendant-or-self::*[contains(@class,'bloom-translationGroup') and descendant::div[(@data-book='bookTitle' or @data-book='smallCoverCredits') and contains(@class,'bloom-editable')]]";
 			foreach (XmlElement groupElement in
-					pageOrDocumentNode.SafeSelectNodes(findOnlyBookTitleFields))
+					pageOrDocumentNode.SafeSelectNodes(findRestrictedFields))
 			{
 				foreach (var lang in languageCodes)
 				{
