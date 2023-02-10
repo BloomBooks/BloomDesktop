@@ -14,6 +14,8 @@ export class PWithLink extends LocalizableElement<
     ILocalizationState
 > {
     public render() {
+        const isLinkExternal = this.props.href.startsWith("https://");
+
         // Text within [] is for the link.
         const parts = this.getLocalizedContentAndClass();
         const idxOpen = parts.text.indexOf("[");
@@ -24,7 +26,11 @@ export class PWithLink extends LocalizableElement<
                 <p className={this.getClassName()}>
                     <span className={parts.l10nClass}>
                         {parts.text.substring(0, idxOpen)}
-                        <a href={this.props.href}>
+                        <a
+                            href={this.props.href}
+                            target={isLinkExternal ? "_blank" : undefined}
+                            rel="noreferrer"
+                        >
                             {parts.text.substring(idxOpen + 1, idxClose)}
                         </a>
                         {parts.text.substring(idxClose + 1)}
@@ -36,7 +42,13 @@ export class PWithLink extends LocalizableElement<
         return (
             <p className={this.getClassName()}>
                 <span className={parts.l10nClass}>
-                    <a href={this.props.href}>{parts.text}</a>
+                    <a
+                        href={this.props.href}
+                        target={isLinkExternal ? "_blank" : undefined}
+                        rel="noreferrer"
+                    >
+                        {parts.text}
+                    </a>
                 </span>
             </p>
         );

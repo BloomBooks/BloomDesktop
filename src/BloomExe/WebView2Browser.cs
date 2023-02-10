@@ -37,6 +37,14 @@ namespace Bloom
 				{
 					RaiseDocumentCompleted(o, eventArgs);
 				};
+				_webview.CoreWebView2.NewWindowRequested += (object sender3, CoreWebView2NewWindowRequestedEventArgs eventArgs) =>
+				{
+					if (eventArgs.Uri.StartsWith("https://"))
+					{
+						eventArgs.Handled = true;
+						Process.Start(eventArgs.Uri);
+					}
+				};
 				_webview.CoreWebView2.ContextMenuRequested += ContextMenuRequested;
 				_readyToNavigate = true;
 			};

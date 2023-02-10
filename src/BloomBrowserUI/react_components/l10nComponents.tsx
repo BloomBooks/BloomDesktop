@@ -267,6 +267,8 @@ export class LocalizableElement<
             text = theOneLocalizationManager.processSimpleMarkdown(
                 this.state.translation
             );
+        } else if (this.props.temporarilyDisableI18nWarning) {
+            l10nClass = "assumedTranslated";
         }
         return { text: text, l10nClass: l10nClass };
     }

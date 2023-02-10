@@ -3,6 +3,7 @@ import { jsx, css } from "@emotion/react";
 import * as React from "react";
 import PublishScreenBanner from "./PublishScreenBanner";
 import {
+    kBloomBlue,
     kMainPanelBackgroundColor,
     kOptionPanelBackgroundColor
 } from "../../bloomMaterialUITheme";
@@ -24,6 +25,9 @@ export const PublishScreenTemplate: React.FunctionComponent<{
             width: 100%;
             flex-direction: column;
             overflow: hidden;
+            a {
+                color: ${kBloomBlue};
+            }
         `}
     >
         <PublishScreenBanner
