@@ -22,12 +22,24 @@ import {
     INumberChooserDialogProps,
     NumberChooserDialog
 } from "../numberChooserDialog";
-import { closeDialog } from "../../bookEdit/editViewFrame";
 import {
     normalDialogEnvironmentForStorybook,
     useSetupBloomDialog
 } from "./BloomDialogPlumbing";
 
+const circularProgress = (
+    <CircularProgress
+        css={css`
+            margin-left: auto;
+            margin-top: auto;
+            margin-bottom: auto;
+            color: black !important;
+        `}
+        size={20}
+        className={"circle-progress"}
+        color={undefined}
+    />
+);
 storiesOf("Bloom Dialog", module)
     .add("Simple Dialog", () => {
         return React.createElement(() => {
@@ -73,6 +85,90 @@ storiesOf("Bloom Dialog", module)
             );
         });
     })
+    .add("Dialog with Close icon", () => {
+        return React.createElement(() => {
+            const {
+                showDialog,
+                closeDialog,
+                propsForBloomDialog
+            } = useSetupBloomDialog(normalDialogEnvironmentForStorybook);
+            return (
+                <div>
+                    <BloomDialog {...propsForBloomDialog}>
+                        <DialogTitle
+                            title="Dialog with Close icon"
+                            onClose={closeDialog}
+                        />
+                        <DialogMiddle
+                            css={css`
+                                height: 200px;
+                                width: 500px;
+                                p {
+                                    margin-top: 0;
+                                }
+                            `}
+                        >
+                            <p>
+                                We should have a consistent amount of space
+                                between every element and the borders of the
+                                dialog box.
+                            </p>
+                        </DialogMiddle>
+                    </BloomDialog>
+                    <Button
+                        onClick={() => showDialog()}
+                        variant={"contained"}
+                        color="secondary"
+                    >
+                        {"Show Dialog"}
+                    </Button>
+                </div>
+            );
+        });
+    })
+    .add("Dialog with Progress and Close", () => {
+        return React.createElement(() => {
+            const {
+                showDialog,
+                closeDialog,
+                propsForBloomDialog
+            } = useSetupBloomDialog(normalDialogEnvironmentForStorybook);
+            return (
+                <div>
+                    <BloomDialog {...propsForBloomDialog}>
+                        <DialogTitle
+                            title="Dialog with Progress and Close icon"
+                            onClose={closeDialog}
+                        >
+                            {circularProgress}
+                        </DialogTitle>
+                        <DialogMiddle
+                            css={css`
+                                height: 200px;
+                                width: 500px;
+                                p {
+                                    margin-top: 0;
+                                }
+                            `}
+                        >
+                            <p>
+                                With both the circular progress and the Close
+                                icon, the progress icon gets pushed to the
+                                middle.
+                            </p>
+                        </DialogMiddle>
+                    </BloomDialog>
+                    <Button
+                        onClick={() => showDialog()}
+                        variant={"contained"}
+                        color="secondary"
+                    >
+                        {"Show Dialog"}
+                    </Button>
+                </div>
+            );
+        });
+    })
     .add("Dialog with the kitchen sink", () => {
         return React.createElement(() => {
             const {
@@ -88,17 +184,7 @@ storiesOf("Bloom Dialog", module)
                         color="black"
                         title="A Nice Progress Dialog"
                     >
-                        <CircularProgress
-                            css={css`
-                                margin-left: auto;
-                                margin-top: auto;
-                                margin-bottom: auto;
-                                color: black !important;
-                            `}
-                            size={20}
-                            className={"circle-progress"}
-                            color={undefined}
-                        />
+                        {circularProgress}
                     </DialogTitle>
                     <DialogMiddle
                         css={css`
@@ -123,6 +209,7 @@ storiesOf("Bloom Dialog", module)
                         </p>
                         <NoteBox>
                             The Broncos will have a winning season some year.
+                            (wishful thinking...)
                         </NoteBox>
                         <p>
                             Est anim nisi aute cupidatat elit voluptate ut aute
