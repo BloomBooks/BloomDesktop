@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
+using Bloom.Api;
 using L10NSharp;
 using SIL.CommandLineProcessing;
 using SIL.IO;
@@ -130,7 +131,18 @@ namespace Bloom.Publish.PDF
 			var progress = new NullProgress();
 			// NB: WebView2 does not appear to support progress reporting while making PDFs.
 			var res = runner.Start(exePath, arguments, Encoding.UTF8, fromDirectory, timeoutInSeconds, progress,
-				(msg) => { /* nothing we can do with WebView2 */ });
+				(msg) =>
+				{
+					var parts = msg.Split('|');
+					if (parts.Length == 2 && parts[1].StartsWith("Percent: "))
+					{
+						var percent = int.Parse(parts[1].Substring("Percent: ".Length));
+						var creating = LocalizationManager.GetString("PublishTab.PdfMaker.Creating", "Creating PDF...");
+						dynamic messageBundle = new DynamicJson();
+						messageBundle.message = creating + "|Percent: " + percent * (100 - ProcessPdfWithGhostscript.kPdfCompressionShare) / 100;
+						BloomWebSocketServer.Instance.SendBundle("publish", "progress", messageBundle);
+					}
+				});
 
 			Logger.WriteEvent($"Call to {exePath} completed");
 			Console.WriteLine($"Call to {exePath} completed");

@@ -12,11 +12,11 @@ namespace Bloom.Publish
 	{
 		private Browser _browser;
 
-		public HtmlPublishPanel(string pathToHtmlFile)
+		public HtmlPublishPanel(string pathToHtmlFile, bool forceWv2 = false)
 		{
 			InitializeComponent();
 
-			_browser = BrowserMaker.MakeBrowser();
+			_browser = BrowserMaker.MakeBrowser(forceWv2:forceWv2);
 			var browserControl = (UserControl)_browser;
 			browserControl.Dock = DockStyle.Fill;
 			Controls.Add(browserControl);
