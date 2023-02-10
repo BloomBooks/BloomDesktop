@@ -1,13 +1,18 @@
 /** @jsx jsx **/
 import { jsx, css } from "@emotion/react";
 import * as React from "react";
-import { lightTheme } from "../../bloomMaterialUITheme";
+import { forwardRef, useEffect } from "react";
 import { ThemeProvider, StyledEngineProvider } from "@mui/material/styles";
 import { Dialog, DialogProps, Paper, PaperProps } from "@mui/material";
+import CloseIcon from "@mui/icons-material/Close";
 import CloseOnEscape from "react-close-on-escape";
-import { kDialogPadding } from "../../bloomMaterialUITheme";
-import { forwardRef, useEffect } from "react";
-import { kUiFontStack } from "../../bloomMaterialUITheme";
+import {
+    kBloomBlue50Transparent,
+    kDialogPadding,
+    kUiFontStack,
+    lightTheme
+} from "../../bloomMaterialUITheme";
+import { useL10n } from "../l10nHooks";
 import Draggable from "react-draggable";
 
 // The <BloomDialog> component and its children provides consistent layout across Bloom Dialogs.
@@ -26,6 +31,8 @@ export interface IBloomDialogProps extends DialogProps {
     open: boolean;
     // true if the caller is wrapping in a winforms dialog already
     dialogFrameProvidedExternally?: boolean;
+    // If it is desired to have a close button in the top right corner of the dialog,
+    // simply pass this onClose function to the embedded DialogTitle element.
     onClose: (evt?: object, reason?: string) => void;
     // we know of at least one scenario (CopyrightAndLicenseDialog) which needs to do
     // this because enabling it causes a react render loop. Our theory is that there is
@@ -113,14 +120,12 @@ export const BloomDialog: React.FunctionComponent<IBloomDialogProps> = forwardRe
             >
                 <StyledEngineProvider injectFirst>
                     <ThemeProvider theme={lightTheme}>
-                        {props.dialogFrameProvidedExternally ? (
+                        {dialogFrameProvidedExternally ? (
                             inner
                         ) : (
                             <Dialog
                                 PaperComponent={
-                                    props.disableDragging
-                                        ? undefined
-                                        : DraggablePaper
+                                    disableDragging ? undefined : DraggablePaper
                                 }
                                 css={css`
                                     flex-grow: 1; // see note on the display property on PaperComponent
@@ -129,7 +134,7 @@ export const BloomDialog: React.FunctionComponent<IBloomDialogProps> = forwardRe
                                     }
                                 `}
                                 ref={ref}
-                                {...propsToPass} // get  fullWidth, maxWidth, open etc. Note that css doesn't end up anywhere useful in the HTML (try the paper?)
+                                {...propsToPass} // get fullWidth, maxWidth, open etc. Note that css doesn't end up anywhere useful in the HTML (try the paper?)
                             >
                                 {inner}
                             </Dialog>
@@ -147,10 +152,13 @@ export const DialogTitle: React.FunctionComponent<{
     icon?: string;
     title: string; // note, this is prop instead of just a child so that we can ensure vertical alignment and bar height, which are easy to mess up.
     disableDragging?: boolean;
+    // If onClose is passed, the title will have a close button at the far right side.
+    onClose?: (evt?: object, reason?: string) => void;
 }> = props => {
     const color = props.color || "black";
     const background = props.backgroundColor || "transparent";
     const cursor = props.disableDragging ? "unset" : "move";
+    const closeText = useL10n("Close", "Common.Close");
 
     // This is lame, but it's really what looks right to me. When there is a color bar, it looks better to have less padding at the top.
     const titleTopPadding =
@@ -194,8 +202,29 @@ export const DialogTitle: React.FunctionComponent<{
             >
                 {props.title}
             </h1>
-            {/* Example child would be a Spinner in a progress dialog*/}
+            {/* Example child would be a Spinner in a progress dialog. */}
             {props.children}
+            {props.onClose && (
+                <CloseIcon
+                    color="primary"
+                    css={css`
+                        margin-left: auto;
+                        margin-top: auto;
+                        margin-bottom: auto;
+                        display: inline-block;
+                        cursor: default;
+                        border: 1px solid ${kBloomBlue50Transparent};
+                        border-radius: 6px;
+                        :hover {
+                            background-color: ${kBloomBlue50Transparent};
+                        }
+                    `}
+                    titleAccess={closeText}
+                    onClick={e => {
+                        props.onClose?.(e, "escapeKeyDown");
+                    }}
+                />
+            )}
         </div>
     );
 };
