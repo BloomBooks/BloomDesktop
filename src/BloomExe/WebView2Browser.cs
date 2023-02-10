@@ -38,6 +38,16 @@ namespace Bloom
 					RaiseDocumentCompleted(o, eventArgs);
 				};
 				_webview.CoreWebView2.ContextMenuRequested += ContextMenuRequested;
+				// This is only really needed for the print tab. But it is harmless elsewhere.
+				// It removes some unwanted controls from the toolbar that WebView2 inserts when
+				// previewing a PDF file.
+				_webview.CoreWebView2.Settings.HiddenPdfToolbarItems = CoreWebView2PdfToolbarItems.Print // we prefer our big print button, and it may show a dialog first
+				                                                       | CoreWebView2PdfToolbarItems.Rotate // shouldn't be needed, just clutter
+				                                                       | CoreWebView2PdfToolbarItems.Save // would always be disabled, there's no known place to save
+				                                                       | CoreWebView2PdfToolbarItems.SaveAs // We want our Save code, which checks things like not saving in the book folder
+				                                                       | CoreWebView2PdfToolbarItems.FullScreen // doesn't work right and is hard to recover from
+				                                                       | CoreWebView2PdfToolbarItems.MoreSettings; // none of its functions seem useful
+
 				_readyToNavigate = true;
 			};
 

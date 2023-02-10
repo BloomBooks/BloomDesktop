@@ -9,6 +9,7 @@ export const kBloomYellow = "#FEBF00"; // See @bloom-yellow
 export const kBloomLightGray = "lightgray"; // See @bloom-lightgray
 export const kBloomRed = "#d65649"; // See @bloom-red
 export const kBloomGray = "#575757"; // See @bloom-gray
+export const kDisabledButtonText = "rgba(0, 0, 0, 0.38)";
 export const kBloomUnselectedTabBackground = "#404040"; // @See bloom-unselectedTabBackground
 export const kBloomPanelBackground = "#2e2e2e"; // See @bloom-panelBackground
 export const kBloomDarkestBackground = "#1a1a1a"; // See @bloom-darkestBackground

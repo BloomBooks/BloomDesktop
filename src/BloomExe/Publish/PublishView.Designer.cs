@@ -184,8 +184,7 @@ namespace Bloom.Publish
 			this.tableLayoutPanel1.Controls.Add(this._recordVideoRadio, 0, 12);
 			this.tableLayoutPanel1.Controls.Add(this._uploadRadio, 0, 8);
 			this.tableLayoutPanel1.Controls.Add(this._uploadRadioObsolete, 0, 9);
-			// re-enable for Bloom 5.5
-			//this.tableLayoutPanel1.Controls.Add(this._pdfPrintRadio, 0, 7);
+			this.tableLayoutPanel1.Controls.Add(this._pdfPrintRadio, 0, 7);
 			this.tableLayoutPanel1.Controls.Add(this._menusToolStrip, 0, 0);
 			this.tableLayoutPanel1.Controls.Add(this._bookletCoverRadio, 0, 3);
 			this.tableLayoutPanel1.Controls.Add(this.label1, 0, 5);

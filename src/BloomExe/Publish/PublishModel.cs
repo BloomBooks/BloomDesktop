@@ -433,7 +433,7 @@ namespace Bloom.Publish
 				if (_currentlyLoadedBook.UserPrefs.CmykPdf)
 				{
 					// PDF for Printshop (CMYK US Web Coated V2)
-					ProcessPdfFurtherAndSave(ProcessPdfWithGhostscript.OutputType.Printshop, destFileName);
+					ProcessPdfFurtherAndSave(PdfFilePath, ProcessPdfWithGhostscript.OutputType.Printshop, destFileName);
 				}
 				else
 				{
@@ -455,7 +455,7 @@ namespace Bloom.Publish
 			}
 		}
 
-		private void ProcessPdfFurtherAndSave(ProcessPdfWithGhostscript.OutputType type, string outputPath)
+		internal static void ProcessPdfFurtherAndSave(string pdfFilePath, ProcessPdfWithGhostscript.OutputType type, string outputPath)
 		{
 			if (type == ProcessPdfWithGhostscript.OutputType.Printshop &&
 				!Bloom.Properties.Settings.Default.AdobeColorProfileEula2003Accepted)
@@ -491,7 +491,7 @@ namespace Bloom.Publish
 				progress.BackgroundWorker = new BackgroundWorker();
 				progress.BackgroundWorker.DoWork += (object sender, DoWorkEventArgs e) => {
 					var pdfProcess = new ProcessPdfWithGhostscript(type, sender as BackgroundWorker);
-					pdfProcess.ProcessPdfFile(PdfFilePath, outputPath);
+					pdfProcess.ProcessPdfFile(pdfFilePath, outputPath);
 				};
 				progress.BackgroundWorker.ProgressChanged += (object sender, ProgressChangedEventArgs e) => {
 					progress.Progress = e.ProgressPercentage;

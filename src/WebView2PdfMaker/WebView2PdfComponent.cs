@@ -141,14 +141,42 @@ namespace WebView2PdfMaker
 				_checkForBrowserNavigatedTimer.Enabled = false;
 				StartMakingPdf();
 			}
+			else
+			{
+				ReportFakeProgress("Loading");
+			}
 		}
 
+		private void ReportFakeProgress(string doingWhat)
+		{
+			// This is a kludge, it's not giving any real idea of how much progress we made,
+			// but it will keep moving, gradually more slowly, until we are done, thus proving
+			// that the process is still alive at least.
+			// Attempts to get progress: online research gives no indication of a way.
+			// Tried to monitor creation of output file, but it does not exist until just before
+			// the task is finished.
+			// The value to divide by is determined experimentally to avoid too much slow-down
+			// with larger books. Smaller books may jump from some lower percentage to 100.
+			// We could possibly enhance with some attempt at adjusting based on the length of
+			// the file or the time it actually takes to load it, though the former would be
+			// dependent on the performance of the particular computer.
+			_percentPdfMade += (100 - _percentPdfMade) / 40;
+			Console.WriteLine($"Status: {doingWhat}|Percent: " + (int)Math.Round(_percentPdfMade));
+			Console.Out.Flush();
+		}
+
+		double _percentPdfMade = 0;
 		private void OnCheckForPdfFinishedTimer_Tick(object sender, EventArgs e)
 		{
 			if (_pdfTask.IsCompleted)
 			{
 				_checkForPdfFinishedTimer.Enabled = false;
+				//Console.WriteLine("finished PrintToPdfAsync, starting Finish " + DateTime.Now);
 				FinishMakingPdf();
+			}
+			else
+			{
+				ReportFakeProgress("Making PDF");
 			}
 		}
 
@@ -241,9 +269,7 @@ namespace WebView2PdfMaker
 					_printSettings.PageWidth, _printSettings.PageHeight,
 					_printSettings.MarginTop, _printSettings.MarginBottom, _printSettings.MarginLeft, _printSettings.MarginRight,
 					_printSettings.Orientation);
-
 			_pdfTask = _webview.CoreWebView2.PrintToPdfAsync(_pathToTempPdf, _printSettings);
-
 			_checkForPdfFinishedTimer.Enabled = true;
 		}
 	}

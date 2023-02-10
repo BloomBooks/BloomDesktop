@@ -3789,6 +3789,10 @@
         <source xml:lang="en">Booklet Insides</source>
         <note>ID: PublishTab.BodyOnlyRadio</note>
       </trans-unit>
+      <!--trans-unit id="PublishTab.BodyOnly-description">
+        <source xml:lang="en">The inside pages, re-arranged so that when folded, you get a booklet ready to staple.</source>
+        <note>ID: PublishTab.BodyOnly-description</note>
+      </trans-unit-->
       <trans-unit id="PublishTab.bloomPUBButton">
         <source xml:lang="en">BloomPUB</source>
         <note>ID: PublishTab.bloomPUBButton</note>
@@ -3812,6 +3816,7 @@
         <source xml:lang="en">Make a booklet from the inside pages of the book.\nPages will be laid out and reordered so that when you fold it, you'll have a booklet.\n</source>
         <note>ID: PublishTab.BodyOnlyRadio-tooltip</note>
         <note xml:lang="en">OLD TEXT (before 3.9, add newline): Make a booklet from the inside pages of the book. Pages will be laid out and reordered so that when you fold it, you'll have a booklet.\n</note>
+        <note>Obsolete as of Bloom 5.5 (replaced by PublishTab.BodyOnly-description)</note>
       </trans-unit>
       <trans-unit id="PublishTab.BookMetadata">
         <source xml:lang="en">Book Metadata</source>
@@ -3855,9 +3860,14 @@
         <source xml:lang="en">Booklet Cover</source>
         <note>ID: PublishTab.CoverOnlyRadio</note>
       </trans-unit>
+      <!--trans-unit id="PublishTab.CoverOnly-description" sil:dynamic="true">
+        <source xml:lang="en">The cover, ready to print on colored paper.</source>
+        <note>ID: PublishTab.CoverOnly-description</note>
+      </trans-unit-->
       <trans-unit id="PublishTab.CoverOnlyRadio-tooltip" sil:dynamic="true">
         <source xml:lang="en">Make a PDF of just the front and back (both sides), so you can  print on colored paper.</source>
         <note>ID: PublishTab.CoverOnlyRadio-tooltip</note>
+        <note>Obsolete as of Bloom 5.5 (replaced by PublishTab.CoverOnly-description)</note>
       </trans-unit>
       <trans-unit id="PublishTab.Epub.BackLinkLabel">
         <source xml:lang="en">Back</source>
@@ -4018,11 +4028,16 @@
       <trans-unit id="PublishTab.OnePagePerPaperRadio">
         <source xml:lang="en">Simple</source>
         <note>ID: PublishTab.OnePagePerPaperRadio</note>
-        <note>Instead of making a booklet, just make normal pages</note>
+        <note>Instead of making a booklet, just make normal pages. (This is no longer a radio button, but keeping the name for backwards compatiblity with translations.)</note>
       </trans-unit>
+      <!--trans-unit id="PublishTab.OnePagePerPaper-description" sil:dynamic="true">
+        <source xml:lang="en">A simple PDF instead of a booklet.</source>
+        <note>ID: PublishTab.OnePagePerPaper-description</note>
+      </trans-unit-->
       <trans-unit id="PublishTab.OnePagePerPaperRadio-tooltip" sil:dynamic="true">
         <source xml:lang="en">Make a PDF of every page of the book, one page per piece of paper.</source>
         <note>ID: PublishTab.OnePagePerPaperRadio-tooltip</note>
+        <note>Obsolete as of Bloom 5.5. Replaced by typically shorter PublishTab.OnePagePerPaper-description</note>
       </trans-unit>
       <trans-unit id="PublishTab.OpenThePDFInTheSystemPDFViewer">
         <source xml:lang="en">Open the PDF in the default system PDF viewer</source>
@@ -4072,6 +4087,12 @@
         <source xml:lang="en">Bloom had a problem making a PDF of this book.</source>
         <note>ID: PublishTab.PdfMaker.BadPdfShort</note>
       </trans-unit>
+      <!--trans-unit id="PublishTab.PdfMaker.ClickToStart">
+        <source xml:lang="en">
+          Click a button on the right to start
+          creating PDF.</source>
+        <note>ID: PublishTab.PdfMaker.ClickToStart</note>
+      </trans-unit-->
       <trans-unit id="PublishTab.PdfMaker.Compress">
         <source xml:lang="en">Compressing PDF</source>
         <note>ID: PublishTab.PdfMaker.Compress</note>
@@ -4124,6 +4145,11 @@
         <source xml:lang="en">Full Bleed has not been set up for this book</source>
         <note>ID: PublishTab.PdfMaker.NoFullBleed</note>
       </trans-unit>
+      <!--trans-unit id="PublishTab.PdfMaker.None">
+        <source xml:lang="en">None</source>
+        <note>ID: PublishTab.PdfMaker.None</note>
+        <note>This is an option in a menu of CMYK settings, indicating the PDF should be made without using CMYK at all.</note>
+      </trans-unit-->
       <trans-unit id="PublishTab.PdfMaker.NoFullBleedBooklet">
         <source xml:lang="en">Full Bleed is not applicable to booklet printing</source>
         <note>ID: PublishTab.PdfMaker.NoFullBleedBooklet</note>
@@ -4143,6 +4169,11 @@
         <note>displayed as a checkable menu option for the Publish tab, PDF options menu. The content in parentheses may not be translatable. 'CMYK' may not be translatable, it is a print shop standard.</note>
         <note>Previously this item was "PDF with CMYK ..." and it occurred as an option within the Save dialog for PDF files</note>
       </trans-unit>
+      <!--trans-unit id="PublishTab.PdfMaker.Cmyk">
+        <source xml:lang="en">CMYK</source>
+        <note>ID: PublishTab.PdfMaker.Cmyk</note>
+        <note>Displayed as a label in the PDF and Print tab. 'CMYK' may not be translatable, it is a print shop standard.</note>
+      </trans-unit-->
       <trans-unit id="PublishTab.PdfMaker.Saving">
         <source xml:lang="en">Saving PDF...</source>
         <note>ID: PublishTab.PdfMaker.Saving</note>

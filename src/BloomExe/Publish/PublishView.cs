@@ -602,7 +602,8 @@ namespace Bloom.Publish
 					break;
 				case PublishModel.DisplayModes.PdfPrint:
 					BloomPubMaker.ControlForInvoke = ParentForm; // something created on UI thread that won't go away
-					ShowHtmlPanel(BloomFileLocator.GetBrowserFile(false, "publish", "PDFPrintPublish", "PublishPdfPrint.html"));
+					// This view uses react-pdf which depends on stuff that won't work in Gecko.
+					ShowHtmlPanel(BloomFileLocator.GetBrowserFile(false, "publish", "PDFPrintPublish", "PublishPdfPrint.html"), forceWv2:true);
 					break;
 				case PublishModel.DisplayModes.Android:
 					BloomPubMaker.ControlForInvoke = ParentForm; // something created on UI thread that won't go away
@@ -681,7 +682,7 @@ namespace Bloom.Publish
 			tableLayoutPanel1.Visible = true;
 		}
 
-		private void ShowHtmlPanel(string pathToHtml)
+		private void ShowHtmlPanel(string pathToHtml, bool forceWv2 = false)
 		{
 			_model.BookSelection.CurrentSelection.ReportIfBrokenAudioSentenceElements();
 			Logger.WriteEvent("Entering Publish Screen: "+ pathToHtml);
@@ -694,7 +695,7 @@ namespace Bloom.Publish
 				Controls.Remove(_htmlControl);
 				_htmlControl.Dispose();
 			}
-			_htmlControl = new HtmlPublishPanel(pathToHtml);
+			_htmlControl = new HtmlPublishPanel(pathToHtml, forceWv2= forceWv2);
 			// Setting the location explicitly makes the transition a bit smoother.
 			_htmlControl.Location = new Point(tableLayoutPanel1.Width, 0);
 			_htmlControl.Dock = DockStyle.Fill;

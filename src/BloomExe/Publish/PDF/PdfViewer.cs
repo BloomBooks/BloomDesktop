@@ -109,14 +109,9 @@ namespace Bloom.Publish.PDF
 			cv2.Settings.HiddenPdfToolbarItems = CoreWebView2PdfToolbarItems.Print // we prefer our big print button, and it may show a dialog first
 			                                     | CoreWebView2PdfToolbarItems.Rotate // shouldn't be needed, just clutter
 			                                     | CoreWebView2PdfToolbarItems.Save // would always be disabled, there's no known place to save
-			                                     | CoreWebView2PdfToolbarItems.SaveAs; //We want our Save code, which checks things like not saving in the book folder
-			// We'd also like to hide the "Enter full screen" button, since it doesn't work right and is hard to recover from,
-			// and the "Settings and more" button since none of its functions seem useful, but there's no way to disable those.
-			// Note, I tried extensively to disable them by using RunJavaScript to inject CSS into the document.
-			// The problem is, the way WebView2 displays a PDF file URL is with a top-level document that is mostly a single 'embed'.
-			// What is embedded is, as far as I can discover, completely opaque. (You can't see this dialog by right-clicking
-			// and choosing Inspect. The dev tools that brings up are showing the content of what's embedded...the thing you
-			// can't otherwise get at. (You can get at the root dev tools by calling OpenDevToolsWindow() on the CoreWebView2.)
+			                                     | CoreWebView2PdfToolbarItems.SaveAs // We want our Save code, which checks things like not saving in the book folder
+												 | CoreWebView2PdfToolbarItems.FullScreen // doesn't work right and is hard to recover from
+												 | CoreWebView2PdfToolbarItems.MoreSettings; // none of its functions seem useful
 		}
 #endif
 
