@@ -8,10 +8,10 @@ import { storiesOf } from "@storybook/react";
 import { addDecorator } from "@storybook/react";
 import { StorybookContext } from "../.storybook/StoryBookContext";
 import { SelectedTemplatePageControls } from "./selectedTemplatePageControls";
-import { ChooserPageGroup, getThumbImageSource } from "./ChooserPageGroup";
+import { ChooserPageGroup } from "./ChooserPageGroup";
 import PageThumbnail from "./PageThumbnail";
-import { IGroupData } from "./PageChooserDialog";
-import { ErrorGroup } from "./ErrorGroup";
+import { getTemplatePageImageSource, IGroupData } from "./PageChooserDialog";
+import { TemplateGroupErrorReplacement } from "./TemplateGroupErrorReplacement";
 
 // ENHANCE: Could we make this have the exact same dimensions the browser dialog would have?
 addDecorator(storyFn => (
@@ -66,7 +66,7 @@ storiesOf("Page Chooser", module)
                 <SelectedTemplatePageControls
                     caption={pageLabel}
                     pageDescription="A text box on top of an image"
-                    imageSource={getThumbImageSource(
+                    imageSource={getTemplatePageImageSource(
                         templateFolderUrl,
                         pageLabel,
                         orientation
@@ -90,7 +90,7 @@ storiesOf("Page Chooser", module)
                 <SelectedTemplatePageControls
                     caption={pageLabel}
                     pageDescription="Some page description for a page that needs Enterprise"
-                    imageSource={getThumbImageSource(
+                    imageSource={getTemplatePageImageSource(
                         templateFolderUrl,
                         pageLabel,
                         orientation
@@ -115,7 +115,7 @@ storiesOf("Page Chooser", module)
         return (
             <PreviewFrame>
                 <SelectedTemplatePageControls
-                    imageSource={getThumbImageSource(
+                    imageSource={getTemplatePageImageSource(
                         templateFolderUrl,
                         pageLabel,
                         orientation
@@ -143,9 +143,12 @@ storiesOf("Page Chooser", module)
         return (
             <PreviewFrame>
                 <ChooserPageGroup
+                    firstGroup={false}
                     groupUrls={urls}
                     orientation="portrait"
                     forChooseLayout={false}
+                    onTemplatePageSelect={() => {}}
+                    onTemplatePageDoubleClick={() => {}}
                 />
             </PreviewFrame>
         );
@@ -160,9 +163,12 @@ storiesOf("Page Chooser", module)
         return (
             <PreviewFrame>
                 <ChooserPageGroup
+                    firstGroup={false}
                     groupUrls={urls}
                     orientation="portrait"
                     forChooseLayout={false}
+                    onTemplatePageSelect={() => {}}
+                    onTemplatePageDoubleClick={() => {}}
                 />
             </PreviewFrame>
         );
@@ -177,9 +183,12 @@ storiesOf("Page Chooser", module)
         return (
             <PreviewFrame>
                 <ChooserPageGroup
+                    firstGroup={false}
                     groupUrls={urls}
                     orientation="landscape"
                     forChooseLayout={true}
+                    onTemplatePageSelect={() => {}}
+                    onTemplatePageDoubleClick={() => {}}
                 />
             </PreviewFrame>
         );
@@ -194,22 +203,25 @@ storiesOf("Page Chooser", module)
         return (
             <PreviewFrame>
                 <ChooserPageGroup
+                    firstGroup={false}
                     groupUrls={urls}
                     orientation="portrait"
                     forChooseLayout={false}
+                    onTemplatePageSelect={() => {}}
+                    onTemplatePageDoubleClick={() => {}}
                 />
             </PreviewFrame>
         );
     })
     .add("ErrorGroup", () => (
         <PreviewFrame>
-            <ErrorGroup templateBookPath="Some bizarre location/My messed up Template/My messed up Template.htm" />
+            <TemplateGroupErrorReplacement templateBookPath="Some bizarre location/My messed up Template/My messed up Template.htm" />
         </PreviewFrame>
     ))
     .add("PageThumbnail", () => (
         <PreviewFrame>
             <PageThumbnail
-                imageSource={getThumbImageSource(
+                imageSource={getTemplatePageImageSource(
                     "c:/bloomdesktop/output/browser/templates/template books/basic book",
                     "Basic Text & Picture",
                     "landscape"

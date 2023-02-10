@@ -8,7 +8,6 @@ using System.Windows.Forms;
 using Bloom.Api;
 using Bloom.Book;
 using Bloom.Edit;
-using Bloom.Utils;
 using Newtonsoft.Json;
 using SIL.IO;
 using SIL.PlatformUtilities;
@@ -24,7 +23,6 @@ namespace Bloom.web.controllers
 		public const string TemplateFolderName = "template";
 		private readonly SourceCollectionsList _sourceCollectionsList;
 		private readonly BookSelection _bookSelection;
-		private readonly PageSelection _pageSelection;
 		private readonly TemplateInsertionCommand _templateInsertionCommand;
 		private readonly BookThumbNailer _thumbNailer;
 		private IBloomWebSocketServer _webSocketServer;
@@ -36,12 +34,11 @@ namespace Bloom.web.controllers
 		public static bool ForPageLayout = false; // set when most recent relevant command is ShowChangeLayoutDialog
 
 		public PageTemplatesApi(SourceCollectionsList  sourceCollectionsList, BookSelection bookSelection,
-			PageSelection pageSelection, TemplateInsertionCommand templateInsertionCommand,
+			TemplateInsertionCommand templateInsertionCommand,
 			BookThumbNailer thumbNailer, Book.Book.Factory bookFactory, BookStorage.Factory storageFactory, BloomWebSocketServer webSocketServer)
 		{
 			_sourceCollectionsList = sourceCollectionsList;
 			_bookSelection = bookSelection;
-			_pageSelection = pageSelection;
 			_templateInsertionCommand = templateInsertionCommand;
 			_thumbNailer = thumbNailer;
 			_bookFactory = bookFactory;

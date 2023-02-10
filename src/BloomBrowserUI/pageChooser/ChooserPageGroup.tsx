@@ -8,59 +8,52 @@ import PageThumbnail from "./PageThumbnail";
 import { getBloomApiPrefix } from "../utils/bloomApi";
 import { Typography } from "@mui/material";
 import {
-    countEltsOfClassNotInImageContainer,
-    countTranslationGroupsForChangeLayout,
-    getAttributeStringSafely,
+    getPageLabel,
+    getTemplatePageImageSource,
     IGroupData
 } from "./PageChooserDialog";
 import { kBloomBlue50Transparent, kBloomPurple } from "../bloomMaterialUITheme";
-import { ErrorGroup } from "./ErrorGroup";
+import { TemplateGroupErrorReplacement } from "./TemplateGroupErrorReplacement";
 
 interface IChooserPageGroupProps {
+    // If defined, either the default selection, or a user selection has been made. Highlight this page
+    // when you come across it.
+    selectedPageId?: string;
+    // If defined, this means 'if this id shows up in my group, fire onTemplatePageSelect with it'.
+    defaultPageIdToSelect?: string;
+    // If neither of the 2 above props are defined and this is the first group, fire onTemplatePageSelect
+    // on my first page.
+    firstGroup: boolean;
     groupUrls: IGroupData;
     orientation: string;
     forChooseLayout: boolean;
-    onThumbSelect?: React.MouseEventHandler<HTMLDivElement>;
-    onThumbDoubleClick?: React.MouseEventHandler<HTMLDivElement>;
+    onTemplatePageSelect: (
+        selectedPageDiv: HTMLDivElement,
+        selectedTemplateBookUrl: string
+    ) => void;
+    onTemplatePageDoubleClick: (selectedPageDiv: HTMLDivElement) => void;
 }
 
 const transparentHighlightColor = kBloomBlue50Transparent;
 
-// Only exported for use by Storybook.
-export const getThumbImageSource = (
-    templateBookFolderUrl: string,
-    pageLabel: string,
-    orientation: string
-): string => {
-    const label = pageLabel.replace("&", "+"); //ampersands confuse the url system (if you don't handle them), so the template files were originally named with "+" instead of "&"
-    // The result may actually be a png file or an svg, and there may be some delay while the png is generated.
-
-    const urlPrefix = getBloomApiPrefix();
-
-    //NB:  without the generateThumbnaiIfNecessary=true, we can run out of worker threads and get deadlocked.
-    //See EnhancedImageServer.IsRecursiveRequestContext
-    return (
-        `${urlPrefix}pageTemplateThumbnail/` +
-        encodeURIComponent(templateBookFolderUrl) +
-        "/template/" +
-        encodeURIComponent(label) +
-        (orientation === "landscape"
-            ? "-landscape"
-            : orientation === "square"
-            ? "-square"
-            : "") +
-        ".svg?generateThumbnaiIfNecessary=true"
-    );
-};
+// Unicode character used to mark pages that are only available to enterprise users.
+const bulletCharacter = "\u25cf";
 
 export const ChooserPageGroup: React.FunctionComponent<IChooserPageGroupProps> = props => {
-    const [pageData, setPageData] = useState<HTMLElement[] | undefined>(
+    const [pageData, setPageData] = useState<HTMLDivElement[] | undefined>(
         undefined
     );
     const [groupTitle, setGroupTitle] = useState("");
     const [errorState, setErrorState] = useState(false);
+
     const isLandscape = props.orientation === "landscape";
 
+    // Here we grab the actual html file contents so we can process what's
+    // available to us in terms of template pages and the content of those pages (especially for the
+    // "change layout" functionality).
+    // Theoretically a lot more of the processing of template books and their pages could be done on
+    // the C# side of things. Then we could just pass a JSON array (perhaps) of template page data.
+    // I think that's beyond the scope of what I'm trying to do right now, but it could be tackled later.
     useEffect(() => {
         axios
             .get(
@@ -68,25 +61,32 @@ export const ChooserPageGroup: React.FunctionComponent<IChooserPageGroupProps> =
                     encodeURIComponent(props.groupUrls.templateBookPath)
             )
             .then(result => {
-                const pageData = new DOMParser().parseFromString(
+                const pageData: HTMLElement = new DOMParser().parseFromString(
                     result.data,
                     "text/html"
                 ).body;
-                let originalPages: HTMLElement[] = Array.from(
+                let bloomPages: HTMLDivElement[] = Array.from(
                     pageData.querySelectorAll(".bloom-page")
                 );
                 if (props.forChooseLayout) {
                     // This filters out the (empty) custom page, which is currently never a useful layout change,
                     // since all data would be lost.
-                    originalPages = originalPages.filter(
-                        (elem: HTMLElement) =>
+                    bloomPages = bloomPages.filter(
+                        elem =>
                             elem.id != "5dcd48df-e9ab-4a07-afd4-6a24d0398386"
                     );
                 }
+                // By previous usage, 'extra' pages are ones we can add (multiples of) to a book.
+                // I'm not entirely clear why we call them 'extra', I think the term pre-dates me.
+                // This filter by it's very nature eliminates pages with 'data-page' = 'singleton'.
+                const filteredBloomPages = bloomPages.filter(
+                    elem =>
+                        elem.id && elem.getAttribute("data-page") === "extra"
+                );
 
                 // Don't add a group for books that don't have template pages; just move on.
                 // (This will always be true for a newly created template.)
-                if (originalPages.length === 0) {
+                if (filteredBloomPages.length === 0) {
                     console.log(
                         "Could not find any template pages in " +
                             props.groupUrls.templateBookPath
@@ -104,13 +104,7 @@ export const ChooserPageGroup: React.FunctionComponent<IChooserPageGroupProps> =
                             : ""
                     );
                 }
-                setPageData(
-                    originalPages.filter(
-                        (elem: HTMLElement) =>
-                            elem.id &&
-                            elem.getAttribute("data-page") === "extra"
-                    )
-                );
+                setPageData(filteredBloomPages);
             })
             .catch(reason => {
                 console.log(reason);
@@ -120,79 +114,20 @@ export const ChooserPageGroup: React.FunctionComponent<IChooserPageGroupProps> =
             });
     }, [props.forChooseLayout, props.groupUrls]);
 
-    const getPageLabel = (page: HTMLElement): string => {
-        const labelList = page.getElementsByClassName("pageLabel");
-        return labelList.length > 0
-            ? (labelList[0] as HTMLElement).innerText.trim()
-            : "";
-    };
-
-    // "Safely" from a type-checking point of view. The calling code is responsible
-    // to make sure that empty string is handled.
-    const getTextOfFirstElementByClassNameSafely = (
-        element: Element,
-        className: string
-    ): string => {
-        if (!element) {
-            return "";
-        }
-        const queryResult = element.querySelector("." + className);
-        if (!queryResult) {
-            return "";
-        }
-        const text = (queryResult as Element).textContent;
-        return text ? text : "";
-    };
-
-    const isDigitalOnly = (pageDiv: HTMLElement): boolean => {
-        const classList = pageDiv.classList;
-        return (
-            classList.contains("bloom-nonprinting") &&
-            !classList.contains("bloom-noreader")
-        );
-    };
-
     const pages = pageData
-        ? pageData.map((currentPageDiv: HTMLElement, index) => {
-              // Process each page and create a gridItem div containing a thumb and data and an overlay.
-              if (currentPageDiv.getAttribute("data-page") === "singleton")
-                  return; // skip this one
-
-              const pageLabel = getPageLabel(currentPageDiv);
-              const isEnterprise = currentPageDiv.classList.contains(
-                  "enterprise-only"
-              );
-              const translationGroupCount = countTranslationGroupsForChangeLayout(
-                  currentPageDiv
-              );
-              const pageDescription = getTextOfFirstElementByClassNameSafely(
-                  currentPageDiv,
-                  "pageDescription"
-              );
-              const pictureCount = countEltsOfClassNotInImageContainer(
-                  currentPageDiv,
-                  "bloom-imageContainer"
-              );
-              const videoCount = countEltsOfClassNotInImageContainer(
-                  currentPageDiv,
-                  "bloom-videoContainer"
-              );
-              const widgetCount = countEltsOfClassNotInImageContainer(
-                  currentPageDiv,
-                  "bloom-widgetContainer"
-              );
-              const tool = getAttributeStringSafely(
-                  currentPageDiv,
-                  "data-tool-id"
-              );
-              const helpLink = getAttributeStringSafely(
-                  currentPageDiv,
-                  "help-link"
+        ? pageData.map((currentPageDiv: HTMLDivElement, index) => {
+              // Process each page and create a pageThumbnail div containing a page thumbnail image and data
+              // and a clickable overlay.
+              const pageIsEnterpriseOnly = currentPageDiv.classList.contains(
+                  "enterprise-only-flag"
               );
 
-              const enterpriseOnlyRules = isEnterprise
+              const thisPageIsSelected =
+                  currentPageDiv.id === props.selectedPageId;
+
+              const enterpriseOnlyRules = pageIsEnterpriseOnly
                   ? `:after {
-                        content: "\u25cf";
+                        content: "${bulletCharacter}";
                         cursor: default;
                         color: ${kBloomPurple};
                         position: absolute;
@@ -201,55 +136,52 @@ export const ChooserPageGroup: React.FunctionComponent<IChooserPageGroupProps> =
                         font-size: 24px
                     }`
                   : "";
+              const backgroundCss = thisPageIsSelected
+                  ? `background: ${transparentHighlightColor};`
+                  : "";
 
               return (
                   <div
-                      className="gridItem"
                       key={index}
-                      // We keep a bunch of data about the page here, so it's available if or when
-                      // this page gets selected. React gives a warning if the attribute name contains
-                      // a capital letter, so we only use lowercase on the 'data-x' attributes.
-                      data-page-id={currentPageDiv.id}
-                      data-is-enterprise={isEnterprise}
-                      data-text-div-count={translationGroupCount}
-                      data-picture-count={pictureCount}
-                      data-video-count={videoCount}
-                      data-widget-count={widgetCount}
-                      data-page-description={pageDescription}
-                      data-page-label={pageLabel}
-                      data-digital-only={isDigitalOnly(currentPageDiv)}
-                      data-tool-id={tool}
-                      data-help-link={helpLink}
+                      // The main dialog may scroll the page groups to this page initially, if
+                      // defaultPageIdToSelect is set.
+                      className={
+                          thisPageIsSelected ? "selectedTemplatePage" : ""
+                      }
                       css={css`
                           margin: 0 10px 10px 11px;
                           width: 104px;
                           display: inline-block;
-                          position: sticky; //this makes the blue overlay, which is a child, be correctly positioned even when scrolled
-                          .ui-selected {
-                              background: ${transparentHighlightColor};
-                          }
+                          // This makes the blue overlay, which is a child, be correctly positioned
+                          // even when scrolled.
+                          position: relative;
                           ${enterpriseOnlyRules}
                       `}
                   >
-                      {/* A selection overlay that covers the actual thumbnail. */}
+                      {/* A selection overlay that covers the actual thumbnail image. */}
                       <div
                           css={css`
                               z-index: 3;
                               position: absolute;
                               height: ${isLandscape ? "70px" : "100px"};
                               margin-left: 10px;
+                              ${backgroundCss}
                               width: 100px;
                               :hover {
                                   background: ${transparentHighlightColor};
                               }
                           `}
-                          onClick={props.onThumbSelect}
-                          onDoubleClick={props.onThumbDoubleClick}
+                          onClick={() =>
+                              templatePageClickHandler(currentPageDiv)
+                          }
+                          onDoubleClick={() =>
+                              templatePageDoubleClickHandler(currentPageDiv)
+                          }
                       />
                       <PageThumbnail
-                          imageSource={getThumbImageSource(
+                          imageSource={getTemplatePageImageSource(
                               props.groupUrls.templateBookFolderUrl,
-                              pageLabel,
+                              getPageLabel(currentPageDiv),
                               props.orientation
                           )}
                           isLandscape={isLandscape}
@@ -258,6 +190,38 @@ export const ChooserPageGroup: React.FunctionComponent<IChooserPageGroupProps> =
               );
           })
         : undefined;
+
+    const templatePageClickHandler = (currentPageDiv: HTMLDivElement) => {
+        props.onTemplatePageSelect(
+            currentPageDiv,
+            props.groupUrls.templateBookPath
+        );
+    };
+
+    const templatePageDoubleClickHandler = (currentPageDiv: HTMLDivElement) => {
+        templatePageClickHandler(currentPageDiv); // Do the default click action too.
+        props.onTemplatePageDoubleClick(currentPageDiv);
+    };
+
+    // Fire off the selection mechanism if we don't already have a selection,
+    // and the page that needs selecting is in this group.
+    useEffect(() => {
+        if (pageData && !props.selectedPageId) {
+            if (props.defaultPageIdToSelect) {
+                const matchingPageDivs = pageData.filter(
+                    p => p.id === props.defaultPageIdToSelect
+                );
+                if (matchingPageDivs.length > 0) {
+                    templatePageClickHandler(matchingPageDivs[0]);
+                }
+            } else {
+                if (props.firstGroup) {
+                    templatePageClickHandler(pageData[0]);
+                }
+            }
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [pageData]);
 
     return (
         <React.Fragment>
@@ -280,18 +244,17 @@ export const ChooserPageGroup: React.FunctionComponent<IChooserPageGroupProps> =
                         {groupTitle}
                     </Typography>
                     <div
-                        className="gridGroup"
+                        className="templateBookGroup"
                         css={css`
                             margin: 0;
                         `}
-                        data-template-book={props.groupUrls.templateBookPath}
                     >
                         {pages}
                     </div>
                 </div>
             )}
             {errorState && (
-                <ErrorGroup
+                <TemplateGroupErrorReplacement
                     templateBookPath={props.groupUrls.templateBookPath}
                 />
             )}

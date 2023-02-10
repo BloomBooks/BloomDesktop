@@ -5,11 +5,13 @@ import Typography from "@mui/material/Typography";
 import * as React from "react";
 import { useL10n } from "../react_components/l10nHooks";
 
-interface IErrorGroupProps {
+interface ITemplateGroupErrorReplacementProps {
     templateBookPath: string;
 }
 
-export const ErrorGroup: React.FunctionComponent<IErrorGroupProps> = props => {
+// This component replaces the usual Title/template page thumbnails group, when we can't find the template
+// book that our JSON input refers to.
+export const TemplateGroupErrorReplacement: React.FunctionComponent<ITemplateGroupErrorReplacementProps> = props => {
     const path = props.templateBookPath;
     const index = path.lastIndexOf("/");
     const templateName = path.substring(index + 1, path.length);
