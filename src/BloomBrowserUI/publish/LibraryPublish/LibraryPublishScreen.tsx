@@ -44,7 +44,7 @@ export const LibraryPublishScreen = () => {
         <PublishScreenTemplate
             bannerTitleEnglish="Publish to Web"
             bannerTitleL10nId="TODO"
-            bannerDescriptionMarkdown="Let speakers find your books in Bloom Reader and on BloomLibrary.org"
+            bannerDescriptionMarkdown="Let speakers find your books in [Bloom Reader](https://bloomlibrary.org/page/create/bloom-reader) and on [BloomLibrary.org](https://bloomlibrary.org/)"
             bannerDescriptionL10nId="TODO"
             optionsPanelContents={settingsPanel}
         >
