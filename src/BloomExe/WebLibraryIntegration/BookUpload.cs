@@ -332,12 +332,12 @@ namespace Bloom.WebLibraryIntegration
 		/// <summary>
 		/// Is this dry run (regardless of whether we're supposedly targetting the sandbox or production)?
 		/// </summary>
-		public static bool IsDryRun { get; set; } = true;
+		public static bool IsDryRun { get; set; } = false;
 
 		/// <summary>
 		/// Are we actually uploading to production (not a dry run)?
 		/// </summary>
-		public static bool IsProductionRun => Destination == UploadDestination.Production;
+		public static bool IsProductionRun => Destination == UploadDestination.Production && !IsDryRun;
 
 		/// <summary>
 		/// Are we supposed to upload to the sandbox, either explicitly or by default?  (could be a dry run)
