@@ -22,7 +22,6 @@ import {
     INumberChooserDialogProps,
     NumberChooserDialog
 } from "../numberChooserDialog";
-import { closeDialog } from "../../bookEdit/editViewFrame";
 import {
     normalDialogEnvironmentForStorybook,
     useSetupBloomDialog

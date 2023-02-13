@@ -2,19 +2,22 @@
 import { jsx, css } from "@emotion/react";
 
 import * as React from "react";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import * as ReactDOM from "react-dom";
 
 import { get, postBoolean, postData } from "../utils/bloomApi";
+import WebSocketManager from "../utils/WebSocketManager";
 import {
     BloomDialog,
     DialogTitle,
     DialogMiddle
 } from "../react_components/BloomDialog/BloomDialog";
 import { useL10n } from "../react_components/l10nHooks";
+import { getBloomApiPrefix } from "../utils/bloomApi";
 import { getToolboxBundleExports } from "../bookEdit/js/bloomFrames";
-import { SelectedTemplatePageControls } from "./selectedTemplatePageControls";
-import { ChooserPageGroup } from "./ChooserPageGroup";
+import SelectedTemplatePageControls from "./selectedTemplatePageControls";
+import TemplateBookPages from "./TemplateBookPages";
+import { useEnterpriseAvailable } from "../react_components/requiresBloomEnterprise";
 
 interface IPageChooserdialogProps {
     forChooseLayout: boolean;
@@ -24,6 +27,39 @@ export interface IGroupData {
     templateBookFolderUrl: string;
     templateBookPath: string;
 }
+
+export const getPageLabel = (templatePageDiv: HTMLDivElement): string => {
+    const labelList = templatePageDiv.getElementsByClassName("pageLabel");
+    return labelList.length > 0
+        ? (labelList[0] as HTMLDivElement).innerText.trim()
+        : "";
+};
+
+export const getTemplatePageImageSource = (
+    templateBookFolderUrl: string,
+    pageLabel: string,
+    orientation: string
+): string => {
+    const label = pageLabel.replace("&", "+"); //ampersands confuse the url system (if you don't handle them), so the template files were originally named with "+" instead of "&"
+    // The result may actually be a png file or an svg, and there may be some delay while the png is generated.
+
+    const urlPrefix = getBloomApiPrefix();
+
+    //NB:  without the generateThumbnaiIfNecessary=true, we can run out of worker threads and get deadlocked.
+    //See EnhancedImageServer.IsRecursiveRequestContext
+    return (
+        `${urlPrefix}pageTemplateThumbnail/` +
+        encodeURIComponent(templateBookFolderUrl) +
+        "/template/" +
+        encodeURIComponent(label) +
+        (orientation === "landscape"
+            ? "-landscape"
+            : orientation === "square"
+            ? "-square"
+            : "") +
+        ".svg?generateThumbnaiIfNecessary=true"
+    );
+};
 
 // To test the AddPage/ChangeLayout dialog in devtools, type 'editTabBundle.showPageChooserDialog(false)' in
 // the Console. Substitute 'true' for the ChangeLayout dialog.
@@ -36,6 +72,7 @@ export interface IGroupData {
 
 export const PageChooserDialog: React.FunctionComponent<IPageChooserdialogProps> = props => {
     const [open, setOpen] = useState(true);
+    const [redoCounter, setRedoCounter] = useState(0);
 
     const closeDialog = () => {
         setOpen(false);
@@ -55,24 +92,19 @@ export const PageChooserDialog: React.FunctionComponent<IPageChooserdialogProps>
         : "Add Page...";
 
     const dialogTitle = useL10n(english, key);
-    const [selectedTemplateUrl, setSelectedTemplateUrl] = useState<
+    const [selectedTemplateBookPath, setSelectedTemplateBookPath] = useState<
         string | undefined
     >(undefined);
-    const [enterpriseAvailable, setEnterpriseAvailable] = useState(false);
+    const [defaultPageId, setDefaultPageId] = useState<string | undefined>(
+        undefined
+    );
     const [orientation, setOrientation] = useState("Portrait");
-    const [defaultPageToSelect, setDefaultPageToSelect] = useState<
-        string | undefined
-    >(undefined);
     const [templateBookUrls, setTemplateBookUrls] = useState<IGroupData[]>([]);
-    const [selectedGridItem, setSelectedGridItem] = useState<
+    const [selectedTemplatePageDiv, setSelectedTemplatePageDiv] = useState<
         HTMLDivElement | undefined
     >(undefined);
 
-    useEffect(() => {
-        get("settings/enterpriseEnabled", enterpriseResult => {
-            setEnterpriseAvailable(enterpriseResult.data);
-        });
-    }, []);
+    const isEnterpriseAvailable = useEnterpriseAvailable();
 
     // Tell edit tab to disable everything when the dialog is up.
     // (Without this, the page list is not disabled since the modal
@@ -84,7 +116,41 @@ export const PageChooserDialog: React.FunctionComponent<IPageChooserdialogProps>
         postBoolean("editView/setModalState", open);
     }, [open]);
 
+    // The purpose of this callback:
+    //   1) If TemplateBookPages goes to find a template page .svg file, and there isn't one for a
+    //      particular page, the thumbnailer will attempt to generate one.
+    //   2) When the thumbnailer returns from its task, this allows us to display the newly created
+    //      thumbnail.
+    const thumbnailUpdatedListener = useCallback(
+        e => {
+            if (e.id !== "thumbnail-updated") {
+                return;
+            }
+            const updatedThumbUrl = (e as any).src as string;
+            const images = document.getElementsByTagName("img");
+            let internalCounter = redoCounter;
+            for (let i = 0; i < images.length; i++) {
+                const img = images[i];
+                const imgSrc = img.src.replace(/%2F/g, "/");
+                // The 'if' condition here is to make sure we're dealing with the correct image element.
+                // We use 'startsWith' because the original 'imgSrc' has the parameter
+                // "?generateThumbnaiIfNecessary=true" tacked onto the end
+                // [See getTemplatePageImageSource()], whereas 'updatedThumbUrl' is just the url
+                // to the updated thumbnail image.
+                if (imgSrc.startsWith(updatedThumbUrl)) {
+                    const newSrc = imgSrc + "?reload=" + internalCounter++;
+                    // Force the image to be reloaded by replacing its 'updatedThumbUrl'
+                    // with something different.
+                    img.src = newSrc;
+                }
+            }
+            setRedoCounter(internalCounter);
+        },
+        [redoCounter]
+    );
+
     useEffect(() => {
+        WebSocketManager.addListener("page-chooser", thumbnailUpdatedListener);
         get("pageTemplates", result => {
             const templatesJSON = result.data;
             const initializationObject = templatesJSON;
@@ -99,110 +165,81 @@ export const PageChooserDialog: React.FunctionComponent<IPageChooserdialogProps>
                     };
                 }
             );
-            setDefaultPageToSelect(defaultPageId);
-            setTemplateBookUrls(arrayOfBookUrls);
+            // In reading:
+            // https://stackoverflow.com/questions/56885037/react-batch-updates-for-multiple-setstate-calls-inside-useeffect-hook
+            // I believe these 3 setState functions will be batched and performed at once.
+            // DefaultPageId will usually still be undefined, unless we've already opened the dialog this run.
+            setDefaultPageId(defaultPageId);
             setOrientation(initializationObject["orientation"]);
+            setTemplateBookUrls(arrayOfBookUrls);
         });
+        return () => {
+            WebSocketManager.removeListener(
+                "page-chooser",
+                thumbnailUpdatedListener
+            );
+        };
     }, []);
 
-    const selectNewGridItem = (newlySelectedDiv: HTMLDivElement) => {
-        // Mark any previously selected thumbnail as no longer selected.
-        if (
-            selectedGridItem !== undefined &&
-            selectedGridItem.firstChild !== null
-        ) {
-            (selectedGridItem.firstChild as HTMLDivElement).classList.remove(
-                "ui-selected"
-            );
-        }
-        // Mark the new thumbnail as selected.
-        if (newlySelectedDiv.firstChild !== null) {
-            (newlySelectedDiv.firstChild as HTMLDivElement).classList.add(
-                "ui-selected"
-            );
-        }
-
-        // Scroll to show it (useful for original selection). So far this only scrolls DOWN
-        // to make sure we can see the BOTTOM of the clicked item; that's good enough for when
-        // we open the dialog and a far-down item is selected, and marginally helpful when we click
-        // an item partly scrolled off the bottom. There's no way currently to select an item
-        // that's entirely scrolled off the top, and it doesn't seem worth the complication
-        // to force a partly-visible one at the top to become wholly visible.
-        const container = newlySelectedDiv.closest(".groupDisplay");
-        if (container) {
-            container.scrollIntoView({ behavior: "smooth", block: "nearest" });
-        }
-
-        // Updating 'selectedGridItem' will cause the large preview to display.
-        // Localization will happen there, so we just send english strings from the page templates.
-        setSelectedGridItem(newlySelectedDiv);
-        const parentGroup = newlySelectedDiv.parentElement;
-        if (!parentGroup) return; // won't ever happen
-        setSelectedTemplateUrl(
-            getAttributeStringSafely(parentGroup, "data-template-book")
-        );
-    };
-
-    useEffect(() => {
-        // Check if we're not ready to process things.
-        if (templateBookUrls.length === 0) return;
-
-        // Give React some time to process/create thumbs
-        setTimeout(() => {
-            const loadedThumbs = document.getElementsByClassName("gridItem");
-            if (loadedThumbs.length === 0) {
-                return; // not really loaded yet
-            }
-            if (defaultPageToSelect) {
-                const defaultThumb = Array.from(loadedThumbs).filter(
-                    th =>
-                        th.getAttribute("data-page-id") === defaultPageToSelect
-                );
-                if (defaultThumb.length > 0) {
-                    selectNewGridItem(defaultThumb[0] as HTMLDivElement);
-                    return;
-                }
-            }
-            // No default thumb to select. Select the first thumb instead.
-            selectNewGridItem(loadedThumbs[0] as HTMLDivElement);
-        }, 250);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [templateBookUrls.length, defaultPageToSelect]);
-
-    const learnMoreLink = selectedGridItem
-        ? getAttributeStringSafely(selectedGridItem, "data-help-link")
-        : "";
-    const getToolId = (gridItem: HTMLDivElement | undefined): string => {
-        return gridItem
-            ? getAttributeStringSafely(gridItem, "data-tool-id")
+    const getToolId = (templatePageDiv: HTMLDivElement | undefined): string => {
+        return templatePageDiv
+            ? getAttributeStringSafely(templatePageDiv, "data-tool-id")
             : "";
     };
 
-    const thumbnailClickHandler: React.MouseEventHandler<HTMLDivElement> = (
-        event
-    ): void => {
-        const clickedDiv = event.target as HTMLDivElement;
-        // 'clickedDiv' is the selection overlay that sits on top of the thumbnail
-        // Select new thumbnail
-        const newSelection = clickedDiv.parentElement as HTMLDivElement; // What used to be known as .gridItem
-        if (newSelection === null) return; // paranoia
-        selectNewGridItem(newSelection);
+    // "Safely" from a type-checking point of view. The calling code is responsible
+    // to make sure that empty string is handled.
+    const getTextOfFirstElementByClassNameSafely = (
+        element: Element,
+        className: string
+    ): string => {
+        if (!element) {
+            return "";
+        }
+        const queryResult = element.querySelector("." + className);
+        if (!queryResult) {
+            return "";
+        }
+        const text = (queryResult as Element).textContent;
+        return text ? text : "";
     };
 
-    // Double-click handler should select a thumb and then do the default action, if possible.
-    const thumbnailDoubleClickHandler: React.MouseEventHandler<HTMLDivElement> = (
-        event
+    const isDigitalOnly = (templatePageDiv: HTMLElement): boolean => {
+        const classList = templatePageDiv.classList;
+        return (
+            classList.contains("bloom-nonprinting") &&
+            !classList.contains("bloom-noreader")
+        );
+    };
+
+    const learnMoreLink = selectedTemplatePageDiv
+        ? getAttributeStringSafely(selectedTemplatePageDiv, "help-link")
+        : "";
+
+    const getPageDescription = (templatePageDiv: HTMLElement): string => {
+        return getTextOfFirstElementByClassNameSafely(
+            templatePageDiv,
+            "pageDescription"
+        );
+    };
+
+    const templatePageClickHandler = (
+        selectedPageDiv: HTMLDivElement,
+        selectedTemplateBookUrl: string
     ): void => {
-        const clickedDiv = event.target as HTMLDivElement;
-        // 'clickedDiv' is the selection overlay that sits on top of the thumbnail
-        // Select new thumbnail
-        const newSelection = clickedDiv.parentElement as HTMLDivElement; // What used to be known as .gridItem
-        if (newSelection === null) return; // paranoia
-        selectNewGridItem(newSelection);
-        const pageIsEnterpriseOnly = newSelection.classList.contains(
+        setSelectedTemplatePageDiv(selectedPageDiv);
+        setSelectedTemplateBookPath(selectedTemplateBookUrl);
+    };
+
+    // Double-click handler should select a template page and then do the default action, if possible.
+    const templatePageDoubleClickHandler = (
+        selectedPageDiv: HTMLDivElement
+    ): void => {
+        // N.B. The double click handler in the inner component does the single-click actions first.
+        const pageIsEnterpriseOnly = selectedPageDiv.classList.contains(
             "enterprise-only-flag"
         );
-        if (pageIsEnterpriseOnly && !enterpriseAvailable) {
+        if (pageIsEnterpriseOnly && !isEnterpriseAvailable) {
             return;
         }
         const convertAnywayCheckbox = document.getElementById(
@@ -211,62 +248,85 @@ export const PageChooserDialog: React.FunctionComponent<IPageChooserdialogProps>
         const convertWholeBookCheckbox = document.getElementById(
             "convertWholeBookCheckbox"
         ) as HTMLInputElement;
-        const closestGroupAncestor = newSelection.closest(".gridGroup");
-        const bookPath = getAttributeStringSafely(
-            closestGroupAncestor,
-            "data-template-book"
-        );
-        const pageId = getAttributeStringSafely(newSelection, "data-page-id");
+        const bookPath = selectedTemplateBookPath
+            ? selectedTemplateBookPath
+            : "";
         handleAddPageOrChooseLayoutButtonClick(
             props.forChooseLayout,
-            pageId,
+            selectedPageDiv.id,
             bookPath,
             convertAnywayCheckbox ? convertAnywayCheckbox.checked : false,
-            willLoseData(newSelection),
+            willLoseData(selectedPageDiv),
             convertWholeBookCheckbox ? convertWholeBookCheckbox.checked : false,
             props.forChooseLayout ? -1 : 1,
-            getToolId(newSelection)
+            getToolId(selectedPageDiv)
         );
     };
 
-    const getGroupData = (): JSX.Element[] | undefined => {
+    // It doesn't work to put this scrolling-on-selection mechanism in TemplateBookPages, because we need
+    // the entire dialog (left half anyway) to render before we scroll, otherwise we may end up rendering
+    // another group above the selected one and scrolling it off the screen again.
+    useEffect(() => {
+        const selectedNode = document.getElementsByClassName(
+            "selectedTemplatePage"
+        )[0];
+        // Scroll to show it (only useful if 'defaultPageToSelect' is defined).
+        if (selectedNode) {
+            selectedNode.scrollIntoView({
+                behavior: "smooth",
+                block: "nearest"
+            });
+        }
+    }, [selectedTemplatePageDiv]);
+
+    const getTemplateBooks = (): JSX.Element[] | undefined => {
         if (templateBookUrls.length === 0) {
             return undefined;
         }
         return templateBookUrls.map((groupData, index) => {
             return (
-                <ChooserPageGroup
+                <TemplateBookPages
+                    selectedPageId={
+                        selectedTemplatePageDiv
+                            ? selectedTemplatePageDiv.id
+                            : undefined
+                    }
+                    defaultPageIdToSelect={
+                        selectedTemplatePageDiv ? undefined : defaultPageId
+                    }
+                    firstGroup={index === 0}
                     groupUrls={groupData}
                     orientation={orientation}
                     forChooseLayout={props.forChooseLayout}
                     key={index}
-                    onThumbSelect={thumbnailClickHandler}
-                    onThumbDoubleClick={thumbnailDoubleClickHandler}
+                    onTemplatePageSelect={templatePageClickHandler}
+                    onTemplatePageDoubleClick={templatePageDoubleClickHandler}
                 />
             );
         });
     };
 
     // Return true if choosing the current layout will cause loss of data
-    const willLoseData = (gridItem: HTMLDivElement | undefined): boolean => {
-        if (gridItem === undefined) {
+    const willLoseData = (
+        templatePageDiv: HTMLDivElement | undefined
+    ): boolean => {
+        if (templatePageDiv === undefined) {
             return true;
         }
-        const selectedTemplateTranslationGroupCount = parseInt(
-            getAttributeStringSafely(gridItem, "data-text-div-count"),
-            10
+        const selectedTemplateTranslationGroupCount = countTranslationGroupsForChangeLayout(
+            templatePageDiv
         );
-        const selectedTemplatePictureCount = parseInt(
-            getAttributeStringSafely(gridItem, "data-picture-count"),
-            10
+        const selectedTemplatePictureCount = countEltsOfClassNotInImageContainer(
+            templatePageDiv,
+            "bloom-imageContainer"
         );
-        const selectedTemplateVideoCount = parseInt(
-            getAttributeStringSafely(gridItem, "data-video-count"),
-            10
+        const selectedTemplateVideoCount = countEltsOfClassNotInImageContainer(
+            templatePageDiv,
+            "bloom-videoContainer"
         );
-        const selectedTemplateWidgetCount = parseInt(
-            getAttributeStringSafely(gridItem, "data-widget-count"),
-            10
+        const selectedTemplateWidgetCount = countEltsOfClassNotInImageContainer(
+            templatePageDiv,
+            "bloom-widgetContainer"
         );
 
         const page = window.parent.document.getElementById(
@@ -353,6 +413,27 @@ export const PageChooserDialog: React.FunctionComponent<IPageChooserdialogProps>
         closeDialog();
     };
 
+    const getFolderForSelectedBook = (): string => {
+        if (templateBookUrls.length === 0 || !selectedTemplateBookPath) {
+            return ""; // paranoia; won't happen
+        }
+        return templateBookUrls.filter(
+            group => group.templateBookPath === selectedTemplateBookPath
+        )[0].templateBookFolderUrl;
+    };
+
+    const getPreviewImageSource = (): string => {
+        if (!selectedTemplateBookPath || !selectedTemplatePageDiv) {
+            return "";
+        }
+        const templateBookFolder = getFolderForSelectedBook();
+        return getTemplatePageImageSource(
+            templateBookFolder,
+            getPageLabel(selectedTemplatePageDiv),
+            orientation
+        );
+    };
+
     return (
         <BloomDialog
             open={open}
@@ -366,8 +447,8 @@ export const PageChooserDialog: React.FunctionComponent<IPageChooserdialogProps>
             css={css`
                 padding-left: 18px;
                 padding-bottom: 20px;
-                width: 875px;
-                height: 690px;
+                max-height: 675px;
+                display: flex;
                 background-color: unset; // BloomDialog default is somehow not what we want...
                 .MuiDialog-paperWidthSm {
                     max-width: 925px;
@@ -387,7 +468,7 @@ export const PageChooserDialog: React.FunctionComponent<IPageChooserdialogProps>
                 css={css`
                     border: none;
                     margin: 0;
-                    height: 600px;
+                    min-height: 450px;
                     display: flex;
                     flex-direction: row;
                     box-sizing: border-box;
@@ -398,6 +479,7 @@ export const PageChooserDialog: React.FunctionComponent<IPageChooserdialogProps>
                     className="groupDisplay"
                     css={css`
                         overflow-y: auto;
+                        overflow-x: hidden;
                         height: auto;
                         flex: 2;
                         display: flex;
@@ -405,63 +487,51 @@ export const PageChooserDialog: React.FunctionComponent<IPageChooserdialogProps>
                         max-width: 425px;
                     `}
                 >
-                    {templateBookUrls.length > 0 && getGroupData()}
+                    {templateBookUrls.length > 0 && getTemplateBooks()}
                 </div>
                 <div
                     css={css`
-                        flex: 2;
-                        order: 2;
+                        flex: 1;
                         height: auto;
+                        // Setting min/max width here, allows the other pane to default to being wide
+                        // enough for 3 columns with scroll bar.
                         min-width: 370px;
-                        max-width: 420px; // in the standard dialog width, allows the other pane to be wide enough for 3 columns with scroll bar
+                        max-width: 420px;
                         display: flex;
                         flex-direction: row;
                         align-items: center;
                     `}
                 >
-                    {selectedGridItem && (
+                    {/* We will always select something. This only delays the preview display until we set a selection. */}
+                    {selectedTemplatePageDiv && selectedTemplateBookPath && (
                         <SelectedTemplatePageControls
-                            caption={getAttributeStringSafely(
-                                selectedGridItem,
-                                "data-page-label"
+                            caption={getPageLabel(selectedTemplatePageDiv)}
+                            pageDescription={getPageDescription(
+                                selectedTemplatePageDiv
                             )}
-                            pageDescription={getAttributeStringSafely(
-                                selectedGridItem,
-                                "data-page-description"
+                            pageId={selectedTemplatePageDiv.id}
+                            imageSource={getPreviewImageSource()}
+                            enterpriseAvailable={isEnterpriseAvailable}
+                            pageIsEnterpriseOnly={selectedTemplatePageDiv.classList.contains(
+                                "enterprise-only"
                             )}
-                            pageId={getAttributeStringSafely(
-                                selectedGridItem,
-                                "data-page-id"
+                            pageIsDigitalOnly={isDigitalOnly(
+                                selectedTemplatePageDiv
                             )}
-                            imageSource={getAttributeStringSafely(
-                                selectedGridItem.getElementsByTagName("img")[0],
-                                "src"
-                            )}
-                            enterpriseAvailable={enterpriseAvailable}
-                            pageIsEnterpriseOnly={
-                                getAttributeStringSafely(
-                                    selectedGridItem,
-                                    "data-is-enterprise"
-                                ) === "true"
-                            }
-                            pageIsDigitalOnly={
-                                getAttributeStringSafely(
-                                    selectedGridItem,
-                                    "data-digital-only"
-                                ) === "true"
-                            }
                             templateBookPath={
-                                selectedTemplateUrl ? selectedTemplateUrl : ""
+                                selectedTemplateBookPath
+                                    ? selectedTemplateBookPath
+                                    : ""
                             }
                             isLandscape={orientation === "landscape"}
                             forChangeLayout={props.forChooseLayout}
                             willLoseData={
                                 props.forChooseLayout
-                                    ? willLoseData(selectedGridItem)
+                                    ? willLoseData(selectedTemplatePageDiv)
                                     : false
                             }
                             learnMoreLink={learnMoreLink}
-                            requiredTool={getToolId(selectedGridItem)}
+                            requiredTool={getToolId(selectedTemplatePageDiv)}
                             onSubmit={handleAddPageOrChooseLayoutButtonClick}
                         />
                     )}
@@ -497,7 +567,7 @@ function getModalContainer(): HTMLElement {
     return modalDialogContainer;
 }
 
-// Utility functions used by both PageChooserDialog and ChooserPageGroup
+// Utility functions used by both PageChooserDialog and TemplateBookPages
 
 // "Safely" from a type-checking point of view. The calling code is responsible to make sure
 // that empty string is handled.
