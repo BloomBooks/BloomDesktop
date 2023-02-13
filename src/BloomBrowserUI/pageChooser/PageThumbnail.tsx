@@ -39,7 +39,6 @@ export const PageThumbnail: React.FunctionComponent<IPageThumbnailProps> = props
 
     return (
         <div
-            className="pageThumbnail"
             css={css`
                 ${thumbFrameStyles}
             `}

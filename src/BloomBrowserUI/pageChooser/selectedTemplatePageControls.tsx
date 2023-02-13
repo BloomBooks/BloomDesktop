@@ -85,7 +85,7 @@ export const SelectedTemplatePageControls: React.FunctionComponent<ISelectedTemp
                 display: flex;
                 flex-direction: column;
                 height: 100%;
-                width: 100%;
+                width: 420px; // if we put 100%, the preview changes width depending on description, etc.
                 align-items: center;
             `}
         >

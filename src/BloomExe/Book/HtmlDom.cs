@@ -848,7 +848,7 @@ namespace Bloom.Book
 		// The reason for this is that images can have textOverPicture divs and imageDescription divs inside of them
 		// and these are completely independent of the template page. We need to count regular translationGroups and
 		// also ensure that translationGroups inside of images get migrated correctly. If this algorithm changes, be
-		// sure to also change 'countTranslationGroupsForChangeLayout()' in page-chooser.ts.
+		// sure to also change 'countTranslationGroupsForChangeLayout()' in PageChooserDialog.tsx.
 		// We could just do this with an xpath if bloom-textOverPicture divs and bloom-imageDescription divs had
 		// the same structure internally, but text over picture CONTAINS a translationGroup,
 		// whereas image description IS a translationGroup.
