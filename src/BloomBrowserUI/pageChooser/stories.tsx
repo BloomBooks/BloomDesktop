@@ -8,10 +8,10 @@ import { storiesOf } from "@storybook/react";
 import { addDecorator } from "@storybook/react";
 import { StorybookContext } from "../.storybook/StoryBookContext";
 import { SelectedTemplatePageControls } from "./selectedTemplatePageControls";
-import { ChooserPageGroup, getThumbImageSource } from "./ChooserPageGroup";
+import TemplateBookPages from "./TemplateBookPages";
 import PageThumbnail from "./PageThumbnail";
-import { IGroupData } from "./PageChooserDialog";
-import { ErrorGroup } from "./ErrorGroup";
+import { getTemplatePageImageSource, IGroupData } from "./PageChooserDialog";
+import { TemplateBookErrorReplacement } from "./TemplateBookErrorReplacement";
 
 // ENHANCE: Could we make this have the exact same dimensions the browser dialog would have?
 addDecorator(storyFn => (
@@ -66,7 +66,7 @@ storiesOf("Page Chooser", module)
                 <SelectedTemplatePageControls
                     caption={pageLabel}
                     pageDescription="A text box on top of an image"
-                    imageSource={getThumbImageSource(
+                    imageSource={getTemplatePageImageSource(
                         templateFolderUrl,
                         pageLabel,
                         orientation
@@ -90,7 +90,7 @@ storiesOf("Page Chooser", module)
                 <SelectedTemplatePageControls
                     caption={pageLabel}
                     pageDescription="Some page description for a page that needs Enterprise"
-                    imageSource={getThumbImageSource(
+                    imageSource={getTemplatePageImageSource(
                         templateFolderUrl,
                         pageLabel,
                         orientation
@@ -115,7 +115,7 @@ storiesOf("Page Chooser", module)
         return (
             <PreviewFrame>
                 <SelectedTemplatePageControls
-                    imageSource={getThumbImageSource(
+                    imageSource={getTemplatePageImageSource(
                         templateFolderUrl,
                         pageLabel,
                         orientation
@@ -133,7 +133,7 @@ storiesOf("Page Chooser", module)
             </PreviewFrame>
         );
     })
-    .add("ChooserPageGroup", () => {
+    .add("TemplateBookPages", () => {
         const urls: IGroupData = {
             templateBookFolderUrl:
                 "c:/bloomdesktop/output/browser/templates/template books/basic book",
@@ -142,15 +142,18 @@ storiesOf("Page Chooser", module)
         };
         return (
             <PreviewFrame>
-                <ChooserPageGroup
+                <TemplateBookPages
+                    firstGroup={false}
                     groupUrls={urls}
                     orientation="portrait"
                     forChooseLayout={false}
+                    onTemplatePageSelect={() => {}}
+                    onTemplatePageDoubleClick={() => {}}
                 />
             </PreviewFrame>
         );
     })
-    .add("ChooserPageGroup-activity-portrait", () => {
+    .add("TemplateBookPages-activity-portrait", () => {
         const urls: IGroupData = {
             templateBookFolderUrl:
                 "c:/bloomdesktop/output/browser/templates/template books/activity",
@@ -159,15 +162,18 @@ storiesOf("Page Chooser", module)
         };
         return (
             <PreviewFrame>
-                <ChooserPageGroup
+                <TemplateBookPages
+                    firstGroup={false}
                     groupUrls={urls}
                     orientation="portrait"
                     forChooseLayout={false}
+                    onTemplatePageSelect={() => {}}
+                    onTemplatePageDoubleClick={() => {}}
                 />
             </PreviewFrame>
         );
     })
-    .add("ChooserPageGroup-activity-landscape", () => {
+    .add("TemplateBookPages-activity-landscape", () => {
         const urls: IGroupData = {
             templateBookFolderUrl:
                 "c:/bloomdesktop/output/browser/templates/template books/activity",
@@ -176,15 +182,18 @@ storiesOf("Page Chooser", module)
         };
         return (
             <PreviewFrame>
-                <ChooserPageGroup
+                <TemplateBookPages
+                    firstGroup={false}
                     groupUrls={urls}
                     orientation="landscape"
                     forChooseLayout={true}
+                    onTemplatePageSelect={() => {}}
+                    onTemplatePageDoubleClick={() => {}}
                 />
             </PreviewFrame>
         );
     })
-    .add("ChooserPageGroup-custom", () => {
+    .add("TemplateBookPages-custom", () => {
         const urls: IGroupData = {
             templateBookFolderUrl:
                 "c:/users/gordon/documents/bloom/sokoro books test/gaadi template",
@@ -193,23 +202,26 @@ storiesOf("Page Chooser", module)
         };
         return (
             <PreviewFrame>
-                <ChooserPageGroup
+                <TemplateBookPages
+                    firstGroup={false}
                     groupUrls={urls}
                     orientation="portrait"
                     forChooseLayout={false}
+                    onTemplatePageSelect={() => {}}
+                    onTemplatePageDoubleClick={() => {}}
                 />
             </PreviewFrame>
         );
     })
-    .add("ErrorGroup", () => (
+    .add("TemplateBookErrorReplacement", () => (
         <PreviewFrame>
-            <ErrorGroup templateBookPath="Some bizarre location/My messed up Template/My messed up Template.htm" />
+            <TemplateBookErrorReplacement templateBookPath="Some bizarre location/My messed up Template/My messed up Template.htm" />
         </PreviewFrame>
     ))
     .add("PageThumbnail", () => (
         <PreviewFrame>
             <PageThumbnail
-                imageSource={getThumbImageSource(
+                imageSource={getTemplatePageImageSource(
                     "c:/bloomdesktop/output/browser/templates/template books/basic book",
                     "Basic Text & Picture",
                     "landscape"
