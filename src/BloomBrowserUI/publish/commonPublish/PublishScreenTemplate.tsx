@@ -58,7 +58,6 @@ export const MainPanel: React.FunctionComponent = props => (
             flex: 5; // The MainPanel fills out the rest of the width not taken by the OptionPanel.
             display: flex;
             background-color: ${kMainPanelBackgroundColor};
-            padding: 1.5rem 0 0 1.5rem; // top and left
             overflow-y: auto;
             flex-direction: column;
         `}

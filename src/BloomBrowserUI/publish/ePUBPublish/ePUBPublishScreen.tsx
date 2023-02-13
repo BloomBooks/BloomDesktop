@@ -6,7 +6,7 @@ import { useState, useContext } from "react";
 import {
     PreviewPanel,
     SettingsPanel,
-    UnderPreviewPanel
+    PreviewPublishPanel
 } from "../commonPublish/PublishScreenBaseComponents";
 import PublishScreenTemplate from "../commonPublish/PublishScreenTemplate";
 import { DeviceAndControls } from "../commonPublish/DeviceAndControls";
@@ -32,7 +32,7 @@ import {
 } from "../../utils/bloomApi";
 import { hookupLinkHandler } from "../../utils/linkHandler";
 import { NoteBox } from "../../react_components/BloomDialog/commonDialogComponents";
-import { P } from "../../react_components/l10nComponents";
+import { Div, P } from "../../react_components/l10nComponents";
 import { StyledEngineProvider, ThemeProvider } from "@mui/material/styles";
 
 export const EPUBPublishScreen = () => {
@@ -118,22 +118,15 @@ const EPUBPublishScreenInternal: React.FunctionComponent<{
     );
 
     const mainPanel = (
-        <div className="ePUBPublishScreen">
-            <PreviewPanel>
-                <StyledEngineProvider injectFirst>
-                    <ThemeProvider theme={darkTheme}>
-                        <DeviceAndControls
-                            defaultLandscape={landscape}
-                            canRotate={false}
-                            url={bookUrl}
-                            showRefresh={true}
-                            highlightRefreshIcon={highlightRefresh}
-                            onRefresh={() => props.onReset()}
-                        />
-                    </ThemeProvider>
-                </StyledEngineProvider>
-            </PreviewPanel>
-            <UnderPreviewPanel>
+        <div
+            className="ePUBPublishScreen"
+            css={css`
+                display: flex;
+                flex-direction: column;
+                flex: 5;
+            `}
+        >
+            <PreviewPublishPanel>
                 <div
                     css={css`
                         display: flex;
@@ -213,7 +206,31 @@ const EPUBPublishScreenInternal: React.FunctionComponent<{
                         </div>
                     </NoteBox>
                 </div>
-            </UnderPreviewPanel>
+            </PreviewPublishPanel>
+            <PreviewPanel>
+                <StyledEngineProvider injectFirst>
+                    <ThemeProvider theme={darkTheme}>
+                        <Div
+                            css={css`
+                                color: white;
+                                font-weight: bold;
+                                flex-shrink: 1;
+                            `}
+                            l10nKey="Common.Preview"
+                        >
+                            Preview
+                        </Div>
+                        <DeviceAndControls
+                            defaultLandscape={landscape}
+                            canRotate={false}
+                            url={bookUrl}
+                            showRefresh={true}
+                            highlightRefreshIcon={highlightRefresh}
+                            onRefresh={() => props.onReset()}
+                        />
+                    </ThemeProvider>
+                </StyledEngineProvider>
+            </PreviewPanel>
         </div>
     );
 

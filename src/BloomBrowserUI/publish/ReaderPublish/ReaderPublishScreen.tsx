@@ -8,7 +8,7 @@ import {
     HelpGroup,
     SettingsPanel,
     CommandsGroup,
-    UnderPreviewPanel
+    PreviewPublishPanel
 } from "../commonPublish/PublishScreenBaseComponents";
 import { MethodChooser } from "./MethodChooser";
 import { PublishFeaturesGroup } from "./PublishFeaturesGroup";
@@ -40,6 +40,7 @@ import {
 } from "./BulkBloomPub/BulkBloomPubDialog";
 import { EmbeddedProgressDialog } from "../../react_components/Progress/ProgressDialog";
 import { hookupLinkHandler } from "../../utils/linkHandler";
+import { Div } from "../../react_components/l10nComponents";
 
 export const ReaderPublishScreen = () => {
     // When the user changes some features, included languages, etc., we
@@ -128,9 +129,27 @@ const ReaderPublishScreenInternal: React.FunctionComponent<{
 
     const mainPanel = (
         <React.Fragment>
+            <PreviewPublishPanel
+                css={css`
+                    display: block;
+                    flex-grow: 1;
+                `}
+            >
+                <MethodChooser />
+            </PreviewPublishPanel>
             <PreviewPanel>
                 <StyledEngineProvider injectFirst>
                     <ThemeProvider theme={darkTheme}>
+                        <Div
+                            css={css`
+                                color: white;
+                                font-weight: bold;
+                                flex-shrink: 1;
+                            `}
+                            l10nKey="Common.Preview"
+                        >
+                            Preview
+                        </Div>
                         <DeviceAndControls
                             defaultLandscape={defaultLandscape}
                             canRotate={canRotate}
@@ -150,14 +169,6 @@ const ReaderPublishScreenInternal: React.FunctionComponent<{
                     </ThemeProvider>
                 </StyledEngineProvider>
             </PreviewPanel>
-            <UnderPreviewPanel
-                css={css`
-                    display: block;
-                    flex-grow: 1;
-                `}
-            >
-                <MethodChooser />
-            </UnderPreviewPanel>
         </React.Fragment>
     );
 
