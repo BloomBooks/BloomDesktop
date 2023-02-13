@@ -46,11 +46,8 @@ export const MethodChooser: React.FunctionComponent = () => {
                 css={css`
                     display: flex;
                     flex-direction: row;
-                    // Setting the height to 100% here makes the box layout extend below where it should go by the
-                    // amount of the padding-top.  (8px of that is swallowed up by the default 8px margin on body.)
-                    // We don't really need to set the height here anyway: it displays just fine without being
+                    // We don't need to set the height here: it displays just fine without being
                     // explicitly set.  See https://issues.bloomlibrary.org/youtrack/issue/BL-7506.
-                    padding-top: 10px;
 
                     // The center of a selected radio button is drawn with an <svg> element by materialui.
                     // For some reason, in Firefox 45, in Publish:Reader, the "left" says 20.4667px, whereas
@@ -95,12 +92,12 @@ export const MethodChooser: React.FunctionComponent = () => {
                 </div>
                 <div
                     css={css`
-                        max-width: 400px; // this is just to limit the hint text length on a big monitor.
+                        max-width: 500px; // this is just to limit the hint text length on a big monitor.
                         display: flex;
                         flex-direction: column;
                         flex-grow: 1;
-                        padding-left: 40px;
-                        padding-right: 40px;
+                        padding-left: 15px;
+                        padding-right: 15px;
                     `}
                 >
                     <img

@@ -22,7 +22,7 @@ export const PublishScreenBanner: React.FunctionComponent<{
                 flex-direction: row;
                 justify-content: space-between;
                 background-color: ${kBannerGray};
-                padding: 1.5rem;
+                padding: 1rem;
             `}
         >
             <div
@@ -44,7 +44,7 @@ export const PublishScreenBanner: React.FunctionComponent<{
                     <Div
                         css={css`
                             font-size: 9pt;
-                            max-width: 60%;
+                            max-width: 800px; // limit line-length on large monitors
                             a {
                                 color: ${kBloomBlue};
                             }
