@@ -10,6 +10,7 @@ import { kDialogPadding } from "../../bloomMaterialUITheme";
 import { forwardRef, useEffect } from "react";
 import { kUiFontStack } from "../../bloomMaterialUITheme";
 import Draggable from "react-draggable";
+import { hookupLinkHandler } from "../../utils/linkHandler";
 
 // The <BloomDialog> component and its children provides consistent layout across Bloom Dialogs.
 // It can be used either inside of a winforms dialog, or as a MaterialUI Dialog.
@@ -77,6 +78,8 @@ export const BloomDialog: FunctionComponent<IBloomDialogProps> = forwardRef(
                 {props.children}
             </div>
         );
+
+        useEffect(() => hookupLinkHandler(), []);
 
         // If the dialog content contains something with class initialFocus, this will give it
         // initial focus.
@@ -288,11 +291,8 @@ export const DialogBottomButtons: FunctionComponent<{}> = props => {
     );
 };
 
-// For some reason, making this a FunctionComponent rather than just a function
-// which returns a component makes a significant difference.
-// When this was a function, typing 3 digits in the hex box would cause
-// a loss of focus which caused it to convert, e.g. FFF to FFFFFF.
-// See BL-11406.
+// Don't be tempted to make this an anonymous function that returns a JSX.Element
+// (instead of a FunctionComponent), it causes focus problems. (BL-11406)
 const DraggablePaper: FunctionComponent<PaperProps> = props => {
     return (
         <Draggable
