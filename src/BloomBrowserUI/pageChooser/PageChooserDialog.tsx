@@ -462,6 +462,11 @@ export const PageChooserDialog: React.FunctionComponent<IPageChooserdialogProps>
                 title={dialogTitle}
                 disableDragging={disableDragging}
                 backgroundColor={"white"}
+                closeButtonOptions={{
+                    onClose() {
+                        closeDialog();
+                    }
+                }}
             />
             <DialogMiddle
                 css={css`

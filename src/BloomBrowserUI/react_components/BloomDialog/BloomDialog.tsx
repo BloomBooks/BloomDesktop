@@ -1,6 +1,5 @@
 /** @jsx jsx **/
 import { jsx, css } from "@emotion/react";
-import * as React from "react";
 import { forwardRef, useEffect } from "react";
 import { FunctionComponent } from "react";
 import { ThemeProvider, StyledEngineProvider } from "@mui/material/styles";
@@ -134,7 +133,7 @@ export const BloomDialog: FunctionComponent<IBloomDialogProps> = forwardRef(
                                 PaperComponent={
                                     disableDragging
                                         ? undefined
-                                        : props.dragLimits
+                                        : dragLimits
                                         ? DraggablePaperLimited
                                         : DraggablePaper
                                 }
@@ -219,17 +218,16 @@ export const DialogTitle: FunctionComponent<{
             {props.children}
             {props.closeButtonOptions && (
                 <CloseIcon
-                    color="primary"
+                    fontSize="large"
                     css={css`
                         margin-left: auto;
                         margin-top: auto;
                         margin-bottom: auto;
                         display: inline-block;
                         cursor: default;
-                        border: 1px solid ${kBloomBlue50Transparent};
-                        border-radius: 6px;
                         :hover {
                             background-color: ${kBloomBlue50Transparent};
+                            border-radius: 8px;
                         }
                     `}
                     titleAccess={closeText}
