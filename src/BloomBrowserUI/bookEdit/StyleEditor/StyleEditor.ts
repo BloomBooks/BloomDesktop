@@ -1042,7 +1042,7 @@ export default class StyleEditor {
                                     // FontSelectComponent or WinFormsStyleSelect. It would be preferable to
                                     // bring our z-index scheme in line with material-UIs and have the dialog
                                     // lower than the 1300 which is material UI's default for the popover.
-                                    // But, see the long explanation in bloomDilog.less of why @dialogZindex
+                                    // But, see the long explanation in bloomDialog.less of why @dialogZindex
                                     // is 60,000. Looks like fixing that would be a project.
                                     // (Earlier, this high z-index was built into WinFormsStyleSelect, but
                                     // in other contexts, such as the Book Making tab, we need to NOT mess with
