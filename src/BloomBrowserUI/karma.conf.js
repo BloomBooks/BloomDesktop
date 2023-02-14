@@ -4,7 +4,7 @@ Karma's "proxies" argument should be able to do that, but I haven't been success
 */
 
 //note: if you change this, change it in gulpfile.js & webpack.config.js
-var outputDir = "../../output/browser";
+const outputDir = "../../output/browser";
 
 module.exports = function(config) {
     config.set({
