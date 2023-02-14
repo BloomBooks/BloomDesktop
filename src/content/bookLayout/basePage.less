@@ -300,6 +300,12 @@ div#bloomDataDiv {
 
 // overridden when publishingWithoutFullBleed
 .bloom-mediaBox {
+    // For full-bleed publishing, breaking the page after .bloom-mediaBox is an easy
+    // way to avoid page creep by merely deleting even pages that are essentially
+    // blank (1-2 pixels from the previous page).  Quantizing the page sizes to 1/96
+    // inch works to avoid page creep for standard printing using WebView2 to produce
+    // PDF files, but the translate operations used in full-bleed printing make it
+    // (practically?) impossible to adjust page sizes as exactly.
     page-break-after: always;
     overflow: hidden; // when the page is scaled, stuff in the longer dimension will actually exceed the bleed area. We want to clip that.
     &.A5Portrait {
