@@ -3,7 +3,13 @@ import { jsx, css } from "@emotion/react";
 import { forwardRef, useEffect } from "react";
 import { FunctionComponent } from "react";
 import { ThemeProvider, StyledEngineProvider } from "@mui/material/styles";
-import { Dialog, DialogProps, Paper, PaperProps } from "@mui/material";
+import {
+    Dialog,
+    DialogProps,
+    IconButton,
+    Paper,
+    PaperProps
+} from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import CloseOnEscape from "react-close-on-escape";
 import {
@@ -171,6 +177,7 @@ export const DialogTitle: FunctionComponent<{
     const background = props.backgroundColor || "transparent";
     const cursor = props.disableDragging ? "unset" : "move";
     const closeText = useL10n("Close", "Common.Close");
+    const closeIconColor = "#9e9e9e"; // grey[500]
 
     // This is lame, but it's really what looks right to me. When there is a color bar, it looks better to have less padding at the top.
     const titleTopPadding =
@@ -217,27 +224,27 @@ export const DialogTitle: FunctionComponent<{
             {/* Example child would be a Spinner in a progress dialog. */}
             {props.children}
             {props.closeButtonOptions && (
-                <CloseIcon
-                    fontSize="large"
+                <IconButton
+                    aria-label={closeText}
+                    title={closeText}
                     css={css`
-                        margin-left: auto;
+                        color=${closeIconColor}
+                        position: relative;
+                        margin-left: auto !important;
                         margin-top: auto;
                         margin-bottom: auto;
-                        display: inline-block;
-                        cursor: default;
-                        :hover {
-                            background-color: ${kBloomBlue50Transparent};
-                            border-radius: 8px;
-                        }
+                        padding: unset;
+                        display: flex;
                     `}
-                    titleAccess={closeText}
                     onClick={e => {
                         props.closeButtonOptions?.onClose(
                             e,
                             "closeButtonClick"
                         );
                     }}
-                />
+                >
+                    <CloseIcon />
+                </IconButton>
             )}
         </div>
     );
