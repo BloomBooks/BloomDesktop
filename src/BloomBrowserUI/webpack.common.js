@@ -41,7 +41,6 @@ module.exports = merge(core, {
             "./collectionsTab/collectionsTabBookPane/bookPreview.ts",
         toolboxBundle: "./bookEdit/toolbox/toolboxBootstrap.ts",
         spreadsheetBundle: "./spreadsheet/spreadsheetBundleRoot.ts",
-        pageChooserBundle: "./pageChooser/page-chooser.ts",
         pageThumbnailListBundle:
             "./bookEdit/pageThumbnailList/pageThumbnailList.tsx",
         pageControlsBundle:

@@ -1257,7 +1257,11 @@ export const userStylesheetContent = () => {
 };
 
 export const pageUnloading = () => {
-    theOneBubbleManager.cleanUp();
+    // It's just possible that 'theOneBubbleManager' hasn't been initialized.
+    // If not, just ignore this, since it's a no-op at this point anyway.
+    if (theOneBubbleManager) {
+        theOneBubbleManager.cleanUp();
+    }
 };
 
 // This is invoked from C# when we are about to leave a page (often right after the previous
