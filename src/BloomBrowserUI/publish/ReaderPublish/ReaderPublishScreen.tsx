@@ -8,7 +8,7 @@ import {
     HelpGroup,
     SettingsPanel,
     CommandsGroup,
-    PreviewPublishPanel
+    PublishPanel
 } from "../commonPublish/PublishScreenBaseComponents";
 import { MethodChooser } from "./MethodChooser";
 import { PublishFeaturesGroup } from "./PublishFeaturesGroup";
@@ -129,14 +129,14 @@ const ReaderPublishScreenInternal: React.FunctionComponent<{
 
     const mainPanel = (
         <React.Fragment>
-            <PreviewPublishPanel
+            <PublishPanel
                 css={css`
                     display: block;
                     flex-grow: 1;
                 `}
             >
                 <MethodChooser />
-            </PreviewPublishPanel>
+            </PublishPanel>
             <PreviewPanel>
                 <StyledEngineProvider injectFirst>
                     <ThemeProvider theme={darkTheme}>
