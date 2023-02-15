@@ -456,6 +456,9 @@ export const PageChooserDialog: React.FunctionComponent<IPageChooserdialogProps>
                     margin: 0;
                     background-color: #f0f0f0;
                 }
+                #draggable-dialog-title {
+                    padding-right: 12px;
+                }
             `}
         >
             <DialogTitle

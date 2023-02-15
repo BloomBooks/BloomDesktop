@@ -10,7 +10,6 @@ import { get, postJson } from "../../utils/bloomApi";
 import ColorPicker from "./colorPicker";
 import * as tinycolor from "tinycolor2";
 import { IColorInfo, normalizeColorInfoColorsAsHex } from "./colorSwatch";
-import "./colorPickerDialog.less";
 import { getRgbaColorStringFromColorAndOpacity } from "../../utils/colorUtils";
 import {
     BloomPalette,
@@ -288,7 +287,21 @@ const ColorPickerDialog: React.FC<IColorPickerDialogProps> = props => {
         <StyledEngineProvider injectFirst>
             <ThemeProvider theme={lightTheme}>
                 <BloomDialog
-                    className="bloomModalDialog color-picker-dialog"
+                    className="bloomModalDialog"
+                    css={css`
+                        z-index: 60001; // dialogZIndexPlusOne (yuck!)
+                        .MuiBackdrop-root {
+                            // We want the overlay barely visible so it doesn't interfere with picking colors.
+                            background-color: rgba(0, 0, 0, 0.05) !important;
+                        }
+                        .MuiDialog-paperScrollPaper {
+                            max-height: unset;
+                        }
+                        overflow-y: unset !important; // something from bloomModalDialog that we don't want
+                        .MuiDialogActions-spacing {
+                            padding: 10px 14px 10px 10px; // maintain same spacing all around dialog content and between header/footer
+                        }
+                    `}
                     open={props.open === undefined ? open : props.open}
                     ref={dlgRef}
                     onClose={(
@@ -301,7 +314,13 @@ const ColorPickerDialog: React.FC<IColorPickerDialogProps> = props => {
                             onClose(DialogResult.Cancel);
                     }}
                 >
-                    <DialogTitle title={props.localizedTitle} />
+                    <DialogTitle
+                        title={props.localizedTitle}
+                        css={css`
+                            text-align: center;
+                            padding: 14px 24px; // maintain same spacing all around dialog content
+                        `}
+                    />
                     <DialogMiddle>
                         <ColorPicker
                             onChange={handleOnChange}

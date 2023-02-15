@@ -1,5 +1,4 @@
 import { IColorInfo, getColorInfoFromString } from "./colorSwatch";
-import "./colorPickerDialog.less";
 import { kBloomGray } from "../../utils/colorUtils";
 import { getWithPromise } from "../../utils/bloomApi";
 
