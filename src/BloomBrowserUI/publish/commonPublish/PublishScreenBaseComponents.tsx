@@ -34,25 +34,14 @@ export const PreviewPanel: React.FunctionComponent = props => {
     );
 };
 
-// This component contains the padding needed when this panel is above a PreviewPanel.
-export const PreviewPublishPanel: React.FunctionComponent = props => (
-    <div
-        css={css`
-            padding-left: 20px;
-            padding-top: 10px;
-            padding-bottom: 10px;
-        `}
-    >
-        <PublishPanel>{props.children}</PublishPanel>
-    </div>
-);
-
-// This component provides no padding. If you need a standard padding, use the above PreviewPublishPanel.
 export const PublishPanel: React.FunctionComponent = props => (
     <section
         css={css`
             display: flex;
             flex-direction: column;
+            padding-left: 20px;
+            padding-top: 10px;
+            padding-bottom: 10px;
         `}
     >
         {props.children}
