@@ -4,7 +4,7 @@ import * as React from "react";
 import { ThemeProvider, Theme } from "@mui/material/styles";
 import { makeStyles } from "@mui/styles";
 import { lightTheme } from "../bloomMaterialUITheme";
-import { createTheme, FormControl, MenuProps, Select } from "@mui/material";
+import { FormControl, MenuProps, Select } from "@mui/material";
 
 declare module "@mui/styles/defaultTheme" {
     // eslint-disable-next-line @typescript-eslint/no-empty-interface
@@ -40,19 +40,16 @@ const WinFormsStyleSelect: React.FunctionComponent<FormsSelectProps> = props => 
         }
     };
 
-    let lightThemeOverride: Theme = createTheme();
     if (props.popoverZindex) {
-        lightThemeOverride = createTheme({
-            components: {
-                MuiPopover: {
-                    styleOverrides: {
-                        root: {
-                            zIndex: props.popoverZindex + " !important"
-                        }
+        if (lightTheme?.components)
+            lightTheme.components.MuiPopover = {
+                ...lightTheme.components.MuiPopover,
+                styleOverrides: {
+                    root: {
+                        zIndex: props.popoverZindex + " !important"
                     }
                 }
-            }
-        });
+            };
     }
 
     // Match the border color of the other selects in the Edit tab cog Format dialog.
@@ -63,53 +60,51 @@ const WinFormsStyleSelect: React.FunctionComponent<FormsSelectProps> = props => 
 
     return (
         <ThemeProvider theme={lightTheme}>
-            <ThemeProvider theme={lightThemeOverride}>
-                <FormControl
+            <FormControl
+                variant="outlined"
+                margin="dense"
+                css={css`
+                    // Some of the following "!important"s are needed when the Style tab is present,
+                    // oddly enough!
+                    min-width: 180px !important;
+                    max-width: 220px !important;
+                    margin-right: 12px !important;
+                    margin-top: 3px !important;
+                    & > div {
+                        border-radius: 0;
+                    }
+                    fieldset {
+                        ${matchingBorderColor}
+                    }
+                    // I can't get this to work putting it anywhere else. This is only for the case
+                    // where the menu item is a FontDisplayBar.
+                    .font-display-bar svg {
+                        padding-right: 15px !important; // make room for dropdown arrow
+                    }
+                `}
+            >
+                <Select
+                    id={`select-${finalKey}`}
+                    MenuProps={selectMenuProps}
+                    onChange={props.onChangeHandler}
+                    value={props.currentValue}
                     variant="outlined"
-                    margin="dense"
                     css={css`
-                        // Some of the following "!important"s are needed when the Style tab is present,
-                        // oddly enough!
-                        min-width: 180px !important;
-                        max-width: 220px !important;
-                        margin-right: 12px !important;
-                        margin-top: 3px !important;
-                        & > div {
-                            border-radius: 0;
-                        }
-                        fieldset {
-                            ${matchingBorderColor}
-                        }
-                        // I can't get this to work putting it anywhere else. This is only for the case
-                        // where the menu item is a FontDisplayBar.
-                        .font-display-bar svg {
-                            padding-right: 15px !important; // make room for dropdown arrow
+                        #select-${finalKey} {
+                            display: flex;
+                            flex: 1;
+                            flex-direction: row;
+                            justify-content: space-between;
+                            background-color: #fdfdfd;
+                            // try to match the font size input
+                            padding: 0 12px 0 8px !important;
+                            margin: 1px 0 !important;
                         }
                     `}
                 >
-                    <Select
-                        id={`select-${finalKey}`}
-                        MenuProps={selectMenuProps}
-                        onChange={props.onChangeHandler}
-                        value={props.currentValue}
-                        variant="outlined"
-                        css={css`
-                            #select-${finalKey} {
-                                display: flex;
-                                flex: 1;
-                                flex-direction: row;
-                                justify-content: space-between;
-                                background-color: #fdfdfd;
-                                // try to match the font size input
-                                padding: 0 12px 0 8px !important;
-                                margin: 1px 0 !important;
-                            }
-                        `}
-                    >
-                        {props.children}
-                    </Select>
-                </FormControl>
-            </ThemeProvider>
+                    {props.children}
+                </Select>
+            </FormControl>
         </ThemeProvider>
     );
 };
