@@ -32,35 +32,45 @@ import WebSocketManager, {
 import { Div, Span } from "../../react_components/l10nComponents";
 import { ApiCheckbox } from "../../react_components/ApiCheckbox";
 import { DialogOkButton } from "../../react_components/BloomDialog/commonDialogComponents";
-import { DialogBottomButtons } from "../../react_components/BloomDialog/BloomDialog";
+import {
+    BloomDialog,
+    DialogBottomButtons
+} from "../../react_components/BloomDialog/BloomDialog";
 import Draggable from "react-draggable";
 
+// The common behavior of the Print and Save buttons.
+// There is probably some way to get this look out of BloomButton,
+// but it seems more trouble than it's worth.
+const PrintSaveButton: React.FunctionComponent<{
+    onClick: () => void;
+    label: string;
+    l10nId: string;
+    imgSrc: string;
+    enabled: boolean;
+}> = props => {
+    const label = useL10n(props.label, props.l10nId);
+    return (
+        <Button onClick={props.onClick} disabled={!props.enabled}>
+            <img src={props.imgSrc} />
+            <div
+                css={css`
+                    width: 0.5em;
+                `}
+            />
+            <span
+                css={css`
+                    color: black;
+                    opacity: ${props.enabled ? "100%" : "38%"};
+                    text-transform: none !important;
+                `}
+            >
+                {label}
+            </span>
+        </Button>
+    );
+};
+
 export const PDFPrintPublishScreen = () => {
-    const readable = new ReadableStream();
-    const inStorybookMode = useContext(StorybookContext);
-    // I left some commented code in here that may be useful in previewing; from Publish -> Android
-    // const [heading, setHeading] = useState(
-    //     useL10n("Creating Digital Book", "PublishTab.Android.Creating")
-    // );
-    // const [closePending, setClosePending] = useState(false);
-    // const [highlightRefresh, setHighlightRefresh] = useState(false);
-    // const [progressState, setProgressState] = useState(ProgressState.Working);
-
-    // bookUrl is expected to be a normal, well-formed URL.
-    // (that is, one that you can directly copy/paste into your browser and it would work fine)
-    // const [bookUrl, setBookUrl] = useState(
-    //     inStorybookMode
-    //         ? window.location.protocol +
-    //               "//" +
-    //               window.location.host +
-    //               "/templates/Sample Shells/The Moon and the Cap" // Enhance: provide an actual bloompub in the source tree
-    //         : // otherwise, wait for the websocket to deliver a url when the c# has finished creating the bloompub.
-    //           //BloomPlayer recognizes "working" as a special value; it will show some spinner or some such.
-    //           "working"
-    // );
-
-    //const pathToOutputBrowser = inStorybookMode ? "./" : "../../";
-
     const [path, setPath] = useState("");
     const [progressOpen, setProgressOpen] = useState(false);
     const progress = useWatchString("Making PDF", "publish", "progress");
@@ -212,50 +222,22 @@ export const PDFPrintPublishScreen = () => {
 
     const rightSideControls = (
         <React.Fragment>
-            <Button onClick={handlePrint} disabled={!path}>
-                <img src="./Print.png" />
-                <div
-                    css={css`
-                        width: 0.5em;
-                    `}
-                />
-                <span
-                    css={css`
-                        color: black;
-                        opacity: ${path ? "100%" : "38%"};
-                        text-transform: none !important;
-                    `}
-                >
-                    {printButtonText}
-                </span>
-            </Button>
-            <div
-                css={css`
-                    width: 1em;
-                `}
+            <PrintSaveButton
+                onClick={handlePrint}
+                enabled={!!path}
+                l10nId="PublishTab.PrintButton"
+                imgSrc="./Print.png"
+                label="Print..."
             />
-            <Button
+            <PrintSaveButton
                 onClick={() => {
                     post("publish/pdf/save");
                 }}
-                disabled={!path}
-            >
-                <img src="./Usb.png" />
-                <div
-                    css={css`
-                        width: 0.5em;
-                    `}
-                />
-                <span
-                    css={css`
-                        color: black;
-                        opacity: ${path ? "100%" : "38%"};
-                        text-transform: none !important;
-                    `}
-                >
-                    {saveButtonText}
-                </span>
-            </Button>
+                enabled={!!path}
+                l10nId="PublishTab.SaveButton"
+                imgSrc="./Usb.png"
+                label="Save PDF..."
+            />
         </React.Fragment>
     );
 
@@ -269,6 +251,9 @@ export const PDFPrintPublishScreen = () => {
             >
                 {mainPanel}
             </PublishScreenTemplate>
+            {/* Unlike our ProgressDialog class, this one has a spinner that actually
+            shows how much progress we've made. And so far we haven't needed all the fancy
+            stuff for different colored messages. */}
             <Dialog open={progressOpen}>
                 <div
                     css={css`
@@ -314,8 +299,10 @@ export const PDFPrintPublishScreen = () => {
                     </div>
                 </div>
             </Dialog>
-            <Dialog
+            <BloomDialog
                 open={!!printSettings}
+                // eslint-disable-next-line @typescript-eslint/no-empty-function
+                onClose={() => {}}
                 // These two lines, plus the definition of PaperComponentForDraggableDialog above,
                 // combined with putting the draggable-handle id on the DialogContent, are the magic
                 // that makes the dialog draggable.
@@ -333,16 +320,8 @@ export const PDFPrintPublishScreen = () => {
                         apiEndpoint="publish/pdf/dontShowSamplePrint"
                     ></ApiCheckbox>
                 </DialogContent>
-                <DialogBottomButtons
-                    css={css`
-                        box-sizing: border-box;
-                        padding: 0 15px 10px 0;
-                    `}
-                >
+                <DialogBottomButtons>
                     <DialogOkButton
-                        css={css`
-                            margin: 20px;
-                        `}
                         onClick={() => {
                             printNow();
                             // This is unfortunate. It will hide not only this dialog but the image that
@@ -359,7 +338,7 @@ export const PDFPrintPublishScreen = () => {
                         }}
                     ></DialogOkButton>
                 </DialogBottomButtons>
-            </Dialog>
+            </BloomDialog>
             <div
                 css={css`
                     position: absolute;
@@ -391,7 +370,7 @@ export const PDFPrintPublishScreen = () => {
     );
 };
 
-// a bit goofy... currently the html loads everything in pdf. So all the publish screens
+// a bit goofy... currently the html loads everything in publishUIBundlejs. So all the publish screens
 // get any not-in-a-class code called, including ours. But it only makes sense to get wired up
 // if that html has the root page we need.
 if (document.getElementById("PdfPrintPublishScreen")) {

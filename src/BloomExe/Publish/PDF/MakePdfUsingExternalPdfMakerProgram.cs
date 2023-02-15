@@ -136,7 +136,9 @@ namespace Bloom.Publish.PDF
 					var parts = msg.Split('|');
 					if (parts.Length == 2 && parts[1].StartsWith("Percent: "))
 					{
-						var percent = int.Parse(parts[1].Substring("Percent: ".Length));
+						// Don't localize 'Percent'. This isn't shown to the user, but is used to identify the
+						// part of the message that is processed and used to control the progress bar.
+						var percent = int.Parse(parts[1].Substring(@"Percent: ".Length));
 						var creating = LocalizationManager.GetString("PublishTab.PdfMaker.Creating", "Creating PDF...");
 						dynamic messageBundle = new DynamicJson();
 						messageBundle.message = creating + "|Percent: " + percent * (100 - ProcessPdfWithGhostscript.kPdfCompressionShare) / 100;

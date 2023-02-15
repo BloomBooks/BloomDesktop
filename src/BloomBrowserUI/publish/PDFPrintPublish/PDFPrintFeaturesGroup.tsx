@@ -111,7 +111,6 @@ export const PDFPrintFeaturesGroup: React.FunctionComponent<{
                         l10nKey="PublishTab.PdfMaker.FullBleed"
                         apiEndpoint="publish/pdf/fullBleed"
                         disabled={!allowFullBleed}
-                        // Todo: disabled if book does not have full bleed.
                         onChange={() => {
                             // Currently Full Bleed has no effect on Booklet modes.
                             // There's also no need to immediately generate a PDF if we

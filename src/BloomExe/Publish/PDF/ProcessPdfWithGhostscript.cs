@@ -279,6 +279,12 @@ namespace Bloom.Publish.PDF
 		const string kThroughWithSpaces = " through ";
 		const string kPage = "Page ";
 
+		// What share of the total progress time should be allocated to compression
+		// as we move the progress bar?
+		// Experimentally, treating it as 75% of the total time to make the PDF
+		// (with the other 25% being spent creating the initial PDF from the HTML)
+		// seems to give a roughly uniform rate of progress, but we may want to
+		// tweak it after experimenting on more typical user computers.
 		public const int kPdfCompressionShare = 75;
 		/// <summary>
 		/// Use the stdout progress reporting to move the GUI progress report along.  This does assume that
@@ -315,7 +321,9 @@ namespace Bloom.Publish.PDF
 					try
 					{
 						var percentage = (int)(100.0F * (float)(pageNumber - _firstPage) / (float)_numPages);
+						// For old views...goes to C# progress window (remove when they go away)
 						_worker.ReportProgress(percentage);
+						// For new view...goes to Javascript code
 						var compressing = LocalizationManager.GetString("PublishTab.PdfMaker.Compress", "Compressing PDF");
 						dynamic messageBundle = new DynamicJson();
 						messageBundle.message = $"{compressing}|Percent: {percentage * kPdfCompressionShare / 100 + (100 - kPdfCompressionShare)}";

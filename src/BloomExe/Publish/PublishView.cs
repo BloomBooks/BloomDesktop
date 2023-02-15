@@ -494,17 +494,6 @@ namespace Bloom.Publish
 
 		}
 
-		private void OnLayoutChosen(object sender, EventArgs e)
-		{
-			var item = (ToolStripMenuItem)sender;
-			_model.PageLayout = ((Layout)item.Tag);
-			ClearRadioButtons();
-			UpdateDisplay();
-			// A side effect of UpdateDisplay will select the appropriate radio button,
-			// since we haven't changed the display mode. If the selected button is a PDF
-			// one, that will trigger regenerating the PDF.
-		}
-
 		private void OnSinglePageModeChanged(object sender, EventArgs e)
 		{
 			var item = (ToolStripMenuItem)sender;
@@ -1050,7 +1039,7 @@ namespace Bloom.Publish
 
 		private void OnSave_Click(object sender, EventArgs e)
 		{
-			_model.Save();
+			_model.SavePdf();
 		}
 		public string HelpTopicUrl
 		{
