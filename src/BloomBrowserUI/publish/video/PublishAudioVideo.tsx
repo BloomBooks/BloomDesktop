@@ -319,6 +319,7 @@ const PublishAudioVideoInternalInternal: React.FunctionComponent<{
                     .MuiStepIcon-root {
                         color: ${kBloomBlue} !important;
                     }
+                    padding: 24px; // MUI 5 removed this padding, so we put it back.
                 `}
             >
                 <Step expanded={true}>
