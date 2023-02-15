@@ -462,10 +462,18 @@ export function SetupElements(container: HTMLElement) {
             });
         });
 
-    //in bilingual/trilingual situation, re-order the boxes to match the content languages, so that stylesheets don't have to
     $(container)
         .find(".bloom-translationGroup")
         .each(function() {
+            // If we get focus on a translation group, move it to the first editable. See BL-11922.
+            $(this).focus(e => {
+                $(e.target)
+                    ?.find("div.bloom-editable")
+                    ?.first()
+                    ?.focus();
+            });
+
+            //in bilingual/trilingual situation, re-order the boxes to match the content languages, so that stylesheets don't have to
             const contentElements = $(this).find(
                 "textarea, div.bloom-editable"
             );
