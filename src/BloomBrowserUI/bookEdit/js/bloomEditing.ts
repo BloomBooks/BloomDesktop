@@ -468,7 +468,7 @@ export function SetupElements(container: HTMLElement) {
             // If we get focus on a translation group, move it to the first editable. See BL-11922.
             $(this).focus(e => {
                 $(e.target)
-                    ?.find("div.bloom-editable")
+                    ?.find("div.bloom-editable:visible")
                     ?.first()
                     ?.focus();
             });
