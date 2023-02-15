@@ -27,6 +27,10 @@ export const PDFPrintFeaturesGroup: React.FunctionComponent<{
         "pdfReady",
         (message: PdfReadyMessage) => {
             props.onGotPdf(message.path);
+            if (message.path === "") {
+                // indicates canceled
+                setActiveButton(""); // no pdf, no button selected
+            }
         }
     );
     const [activeButton, setActiveButton] = useState("");

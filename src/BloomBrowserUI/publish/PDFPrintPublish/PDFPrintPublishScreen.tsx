@@ -31,10 +31,14 @@ import WebSocketManager, {
 } from "../../utils/WebSocketManager";
 import { Div, Span } from "../../react_components/l10nComponents";
 import { ApiCheckbox } from "../../react_components/ApiCheckbox";
-import { DialogOkButton } from "../../react_components/BloomDialog/commonDialogComponents";
+import {
+    DialogCancelButton,
+    DialogOkButton
+} from "../../react_components/BloomDialog/commonDialogComponents";
 import {
     BloomDialog,
-    DialogBottomButtons
+    DialogBottomButtons,
+    DialogMiddle
 } from "../../react_components/BloomDialog/BloomDialog";
 import Draggable from "react-draggable";
 
@@ -254,7 +258,12 @@ export const PDFPrintPublishScreen = () => {
             {/* Unlike our ProgressDialog class, this one has a spinner that actually
             shows how much progress we've made. And so far we haven't needed all the fancy
             stuff for different colored messages. */}
-            <Dialog open={progressOpen}>
+
+            <BloomDialog
+                open={progressOpen}
+                // eslint-disable-next-line @typescript-eslint/no-empty-function
+                onClose={() => {}}
+            >
                 <div
                     css={css`
                         height: 200px;
@@ -263,42 +272,60 @@ export const PDFPrintPublishScreen = () => {
                         padding: 10px;
                     `}
                 >
-                    <div
-                        css={css`
-                            position: absolute;
-                            top: 10px;
-                            right: 10px;
-                        `}
-                    >
-                        <CircularProgress
-                            variant="determinate"
-                            value={percent}
-                            size={40}
-                            thickness={5}
-                        />
-                    </div>
-                    <div>
+                    <DialogMiddle>
                         <div
                             css={css`
-                                font-weight: bold;
-                                margin-bottom: 15px;
+                                position: absolute;
+                                top: 10px;
+                                right: 10px;
                             `}
                         >
-                            {progressHeader}
+                            <CircularProgress
+                                variant="determinate"
+                                value={percent}
+                                size={40}
+                                thickness={5}
+                            />
                         </div>
-                        {progressContent.map(s => (
-                            <p
-                                key={s}
+                        <div
+                            css={css`
+                                // Plenty for the number of lines we expect; if we get more, should scroll.
+                                // The important thing is to have a fixed height so the Cancel button doesn't move.
+                                // This is about right to push it somewhere near the bottom.
+                                height: 150px;
+                            `}
+                        >
+                            <div
                                 css={css`
-                                    margin: 0;
+                                    font-weight: bold;
+                                    margin-bottom: 15px;
                                 `}
                             >
-                                {s}
-                            </p>
-                        ))}
-                    </div>
+                                {progressHeader}
+                            </div>
+                            {progressContent.map(s => (
+                                <p
+                                    key={s}
+                                    css={css`
+                                        margin: 0;
+                                    `}
+                                >
+                                    {s}
+                                </p>
+                            ))}
+                        </div>
+                    </DialogMiddle>
+                    <DialogBottomButtons>
+                        <DialogCancelButton
+                            onClick={() => {
+                                post("publish/pdf/cancel");
+                                setProgressOpen(false);
+                                setPath("");
+                            }}
+                        ></DialogCancelButton>
+                    </DialogBottomButtons>
                 </div>
-            </Dialog>
+            </BloomDialog>
             <BloomDialog
                 open={!!printSettings}
                 // eslint-disable-next-line @typescript-eslint/no-empty-function

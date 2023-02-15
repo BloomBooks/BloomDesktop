@@ -36,11 +36,13 @@ namespace Bloom.Publish.PDF
 			Printshop		// shrink images to 300dpi, convert color to CMYK (-dPDFSETTINGS=/prepress + other options)
 		};
 		private readonly OutputType _type;
+		private DoWorkEventArgs _doWorkEventArgs;
 
-		public ProcessPdfWithGhostscript(OutputType type, BackgroundWorker worker)
+		public ProcessPdfWithGhostscript(OutputType type, BackgroundWorker worker, DoWorkEventArgs doWorkEventArgs)
 		{
 			_type = type;
 			_worker = worker;
+			_doWorkEventArgs = doWorkEventArgs;
 		}
 
 		/// <summary>
@@ -60,11 +62,11 @@ namespace Bloom.Publish.PDF
 					_worker.ReportProgress(0, GetSpecificStatus());
 				using (var tempPdfFile = TempFile.WithExtension(".pdf"))
 				{
-					var runner = new CommandLineRunner();
+					_runner = new CommandLineRunner();
 					var arguments = GetArguments(tempPdfFile.Path, null);
 					var fromDirectory = String.Empty;
 					var progress = new NullProgress();	// I can't figure out how to use any IProgress based code, but we show progress okay as is.
-					var res = runner.Start(exePath, arguments, Encoding.UTF8, fromDirectory, 3600, progress, ProcessGhostcriptReporting);
+					var res = _runner.Start(exePath, arguments, Encoding.UTF8, fromDirectory, 3600, progress, ProcessGhostcriptReporting);
 					if (res.ExitCode != 0)
 					{
 						// On Linux, ghostscript doesn't deal well with some Unicode filenames.  Try renaming the input
@@ -75,7 +77,7 @@ namespace Bloom.Publish.PDF
 							RobustFile.Delete(tempInputFile.Path);		// Move won't replace even empty files.
 							RobustFile.Move(_inputPdfPath, tempInputFile.Path);
 							arguments = GetArguments(tempPdfFile.Path, tempInputFile.Path);
-							res = runner.Start(exePath, arguments, Encoding.UTF8, fromDirectory, 3600, progress, ProcessGhostcriptReporting);
+							res = _runner.Start(exePath, arguments, Encoding.UTF8, fromDirectory, 3600, progress, ProcessGhostcriptReporting);
 							RobustFile.Move(tempInputFile.Path, _inputPdfPath);
 						}
 					}
@@ -272,6 +274,7 @@ namespace Bloom.Publish.PDF
 
 		int _firstPage;
 		int _numPages;
+		private CommandLineRunner _runner;
 
 		// Magic strings to match for progress reporting.  ghostscript itself doesn't seem to be localized
 		// (maybe because it's a command line program?)
@@ -294,6 +297,23 @@ namespace Bloom.Publish.PDF
 		{
 			if (_worker == null)
 				return;		// nothing here will have any effect anyway
+			if (_worker.CancellationPending)
+			{
+				if (_doWorkEventArgs != null)
+					_doWorkEventArgs.Cancel = true;
+				try
+				{
+					_runner.Abort(1);
+				}
+				catch (InvalidOperationException)
+				{
+					// Typically means the process already stopped.
+					// Possibly a race condition between aborting the process and getting another
+					// line of output from it.
+				}
+
+				return;
+			}
 			//Debug.WriteLine(String.Format("DEBUG gs report line = \"{0}\"", line));
 			if (line.StartsWith(kProcessingPages) && line.Contains(kThroughWithSpaces))
 			{

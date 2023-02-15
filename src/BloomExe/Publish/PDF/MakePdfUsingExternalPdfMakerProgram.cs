@@ -143,6 +143,21 @@ namespace Bloom.Publish.PDF
 						dynamic messageBundle = new DynamicJson();
 						messageBundle.message = creating + "|Percent: " + percent * (100 - ProcessPdfWithGhostscript.kPdfCompressionShare) / 100;
 						BloomWebSocketServer.Instance.SendBundle("publish", "progress", messageBundle);
+						if (worker.CancellationPending)
+						{
+							doWorkEventArgs.Cancel = true;
+							try
+							{
+								runner.Abort(1);
+							}
+							catch (InvalidOperationException)
+							{
+								// Typically means the process already stopped.
+								// Possibly a race condition between aborting the process and getting another
+								// line of output from it.
+							}
+
+						}
 					}
 				});
 

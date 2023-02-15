@@ -522,7 +522,7 @@ namespace Bloom.Publish
 					@"Message displayed in a progress report dialog box");
 				progress.BackgroundWorker = new BackgroundWorker();
 				progress.BackgroundWorker.DoWork += (object sender, DoWorkEventArgs e) => {
-					var pdfProcess = new ProcessPdfWithGhostscript(type, sender as BackgroundWorker);
+					var pdfProcess = new ProcessPdfWithGhostscript(type, sender as BackgroundWorker, e);
 					pdfProcess.ProcessPdfFile(pdfFilePath, outputPath);
 				};
 				progress.BackgroundWorker.ProgressChanged += (object sender, ProgressChangedEventArgs e) => {
