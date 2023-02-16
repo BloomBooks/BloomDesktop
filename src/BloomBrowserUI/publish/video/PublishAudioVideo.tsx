@@ -516,7 +516,11 @@ const PublishAudioVideoInternalInternal: React.FunctionComponent<{
                                     </ErrorBox>
                                 )}
                                 <BloomButton
-                                    enabled={!recording && isLicenseOK}
+                                    enabled={
+                                        !recording &&
+                                        isLicenseOK &&
+                                        !isScalingActive
+                                    }
                                     l10nKey="PublishTab.RecordVideo.Record"
                                     l10nComment="'Record' as in 'Record a video recording'"
                                     clickApiEndpoint="publish/av/recordVideo"
