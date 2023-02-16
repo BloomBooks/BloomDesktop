@@ -37,6 +37,17 @@ namespace Bloom
 				{
 					RaiseDocumentCompleted(o, eventArgs);
 				};
+				// We thought we might need something like this to tell WebView2 to open pages in the system browser
+				// rather than a new WebView2 window. But ExternalLinkController.HandleLink() does what we want if we
+				// hook things up correctly on the typescript side (see hookupLinkHandler in linkHandler.ts).
+				//_webview.CoreWebView2.NewWindowRequested += (object sender3, CoreWebView2NewWindowRequestedEventArgs eventArgs) =>
+				//{
+				//	if (eventArgs.Uri.StartsWith("https://"))
+				//	{
+				//		eventArgs.Handled = true;
+				//		Process.Start(eventArgs.Uri);
+				//	}
+				//};
 				_webview.CoreWebView2.ContextMenuRequested += ContextMenuRequested;
 				_readyToNavigate = true;
 			};
