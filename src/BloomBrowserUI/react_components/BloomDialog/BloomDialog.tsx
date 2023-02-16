@@ -13,7 +13,6 @@ import {
 import CloseIcon from "@mui/icons-material/Close";
 import CloseOnEscape from "react-close-on-escape";
 import {
-    kBloomBlue50Transparent,
     kDialogPadding,
     kUiFontStack,
     lightTheme
@@ -177,7 +176,6 @@ export const DialogTitle: FunctionComponent<{
     const background = props.backgroundColor || "transparent";
     const cursor = props.disableDragging ? "unset" : "move";
     const closeText = useL10n("Close", "Common.Close");
-    const closeIconColor = "#9e9e9e"; // grey[500]
 
     // This is lame, but it's really what looks right to me. When there is a color bar, it looks better to have less padding at the top.
     const titleTopPadding =
@@ -228,7 +226,6 @@ export const DialogTitle: FunctionComponent<{
                     aria-label={closeText}
                     title={closeText}
                     css={css`
-                        color=${closeIconColor}
                         position: relative;
                         margin-left: auto !important;
                         margin-top: auto;
