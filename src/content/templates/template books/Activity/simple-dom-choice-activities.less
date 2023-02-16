@@ -43,6 +43,15 @@
                     // this number, 95px, was chosen to use the space available in 16x9 portrait, with these text samples: སྔགས་ཀྱི་ཀློག་བས་ཤེས་རབ་མི
                     // But, fixing this interferes with the user's ability to set line-height in the format dialog.
                     // line-height: 95px !important;
+                    &.bloom-visibility-code-on {
+                        min-height: 1.5em;
+                        display: flex;
+                        justify-content: center;
+                        p {
+                            display: inline-table;
+                            align-self: center;
+                        }
+                    }
                 }
             }
         }
@@ -149,6 +158,15 @@
             flex-grow: 1;
             .bloom-editable {
                 min-height: unset;
+                &.bloom-visibility-code-on {
+                    min-height: 1.5em;
+                    display: flex;
+                    justify-content: center;
+                    p {
+                        display: inline-table;
+                        align-self: center;
+                    }
+                }
             }
         }
 
