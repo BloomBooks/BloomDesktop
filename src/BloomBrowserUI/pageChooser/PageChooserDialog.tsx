@@ -3,7 +3,6 @@ import { jsx, css } from "@emotion/react";
 
 import * as React from "react";
 import { useCallback, useEffect, useState } from "react";
-import * as ReactDOM from "react-dom";
 
 import { get, postBoolean, postData } from "../utils/bloomApi";
 import WebSocketManager from "../utils/WebSocketManager";
@@ -18,6 +17,7 @@ import { getToolboxBundleExports } from "../bookEdit/js/bloomFrames";
 import SelectedTemplatePageControls from "./selectedTemplatePageControls";
 import TemplateBookPages from "./TemplateBookPages";
 import { useEnterpriseAvailable } from "../react_components/requiresBloomEnterprise";
+import { ShowEditViewDialog } from "../bookEdit/editViewFrame";
 
 interface IPageChooserdialogProps {
     forChooseLayout: boolean;
@@ -565,29 +565,7 @@ export const PageChooserDialog: React.FunctionComponent<IPageChooserdialogProps>
 };
 
 export function showPageChooserDialog(forChooseLayout: boolean) {
-    try {
-        ReactDOM.render(
-            <PageChooserDialog forChooseLayout={forChooseLayout} />,
-            getModalContainer()
-        );
-    } catch (error) {
-        console.error(error);
-    }
-}
-
-function getModalContainer(): HTMLElement {
-    // If our container already exists, remove it and create a new one. Otherwise it maintains the
-    // state of the last time, which may not be what we want (e.g. dialog title).
-    let modalDialogContainer = document.getElementById(
-        "PageChooserDialogContainer"
-    );
-    if (modalDialogContainer) {
-        modalDialogContainer.remove();
-    }
-    modalDialogContainer = document.createElement("div");
-    modalDialogContainer.id = "PageChooserDialogContainer";
-    document.body.appendChild(modalDialogContainer);
-    return modalDialogContainer;
+    ShowEditViewDialog(<PageChooserDialog forChooseLayout={forChooseLayout} />);
 }
 
 // Utility functions used by both PageChooserDialog and TemplateBookPages
