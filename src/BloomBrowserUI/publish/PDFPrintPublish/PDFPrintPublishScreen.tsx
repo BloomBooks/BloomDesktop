@@ -31,6 +31,7 @@ import {
     DialogBottomButtons,
     DialogMiddle
 } from "../../react_components/BloomDialog/BloomDialog";
+import { ProgressDialog } from "../../react_components/Progress/ProgressDialog";
 
 // The common behavior of the Print and Save buttons.
 // There is probably some way to get this look out of BloomButton,
@@ -66,36 +67,14 @@ const PrintSaveButton: React.FunctionComponent<{
 
 export const PDFPrintPublishScreen = () => {
     const [path, setPath] = useState("");
-    const [progressOpen, setProgressOpen] = useState(false);
-    const progress = useWatchString("Making PDF", "publish", "progress");
-    const [progressTask, setProgressTask] = useState("");
-    const [progressContent, setProgressContent] = useState<string[]>([]);
-    const [percent, setPercent] = useState(0);
     const [printSettings, setPrintSettings] = useState("");
     // We need a ref to the real DOM object of the iframe that holds the print preview
     // so we can actually tell it to print.
     const iframeRef = useRef<HTMLIFrameElement>(null);
-    useEffect(() => {
-        // We receive as progress messages each line of output that the PdfMaker program
-        // outputs to standard output. The ones that we are interested in look like
-        // Making PDF|Percent: 10
-        // When we get one of those, update our progress display.
-        const parts = progress.split("|");
-        if (parts.length > 1) {
-            // We typically get a succession of messages with the same thing before
-            // the vertical bar. When we get a new one, add a line to progress content.
-            if (progressTask !== parts[0]) {
-                setProgressTask(parts[0]);
-                setProgressContent(oldContent => [...oldContent, parts[0]]);
-            }
-            if (parts[1].startsWith("Percent: ")) {
-                setPercent(
-                    parseInt(parts[1].substring("Percent: ".length), 10)
-                );
-            }
-        }
-    }, [progress, progressTask]);
+
     const progressHeader = useL10n("Progress", "Common.Progress");
+    const showProgress = useRef<() => void | undefined>();
+    const closeProgress = useRef<() => void | undefined>();
 
     const mainPanel = (
         <React.Fragment>
@@ -147,13 +126,11 @@ export const PDFPrintPublishScreen = () => {
         <SettingsPanel>
             <PDFPrintFeaturesGroup
                 onChange={() => {
-                    setProgressContent([]); // clean up anything from previous run
-                    setPercent(0);
-                    setProgressOpen(true);
+                    showProgress.current?.();
                 }}
                 onGotPdf={path => {
                     setPath(path);
-                    setProgressOpen(false);
+                    closeProgress.current?.();
                 }}
             />
             {/* push everything to the bottom */}
@@ -229,77 +206,23 @@ export const PDFPrintPublishScreen = () => {
             >
                 {mainPanel}
             </PublishScreenTemplate>
-            {/* Unlike our ProgressDialog class, this one has a spinner that actually
-            shows how much progress we've made. And so far we haven't needed all the fancy
-            stuff for different colored messages. */}
 
-            <BloomDialog
-                open={progressOpen}
-                // eslint-disable-next-line @typescript-eslint/no-empty-function
-                onClose={() => {}}
-            >
-                <div
-                    css={css`
-                        height: 200px;
-                        width: 300px;
-                        position: relative;
-                        padding: 10px;
-                    `}
-                >
-                    <DialogMiddle>
-                        <div
-                            css={css`
-                                position: absolute;
-                                top: 10px;
-                                right: 10px;
-                            `}
-                        >
-                            <CircularProgress
-                                variant="determinate"
-                                value={percent}
-                                size={40}
-                                thickness={5}
-                            />
-                        </div>
-                        <div
-                            css={css`
-                                // Plenty for the number of lines we expect; if we get more, should scroll.
-                                // The important thing is to have a fixed height so the Cancel button doesn't move.
-                                // This is about right to push it somewhere near the bottom.
-                                height: 150px;
-                            `}
-                        >
-                            <div
-                                css={css`
-                                    font-weight: bold;
-                                    margin-bottom: 15px;
-                                `}
-                            >
-                                {progressHeader}
-                            </div>
-                            {progressContent.map(s => (
-                                <p
-                                    key={s}
-                                    css={css`
-                                        margin: 0;
-                                    `}
-                                >
-                                    {s}
-                                </p>
-                            ))}
-                        </div>
-                    </DialogMiddle>
-                    <DialogBottomButtons>
-                        <DialogCancelButton
-                            onClick={() => {
-                                post("publish/pdf/cancel");
-                                setProgressOpen(false);
-                                setPath("");
-                            }}
-                        ></DialogCancelButton>
-                    </DialogBottomButtons>
-                </div>
-            </BloomDialog>
+            <ProgressDialog
+                title={progressHeader}
+                determinate={true}
+                size="small"
+                showCancelButton={true}
+                onCancel={() => {
+                    post("publish/pdf/cancel");
+                    closeProgress.current?.();
+                    setPath("");
+                }}
+                setShowDialog={showFunc => (showProgress.current = showFunc)}
+                setCloseDialog={closeFunc =>
+                    (closeProgress.current = closeFunc)
+                }
+            />
+
             <BloomDialog
                 open={!!printSettings}
                 // eslint-disable-next-line @typescript-eslint/no-empty-function

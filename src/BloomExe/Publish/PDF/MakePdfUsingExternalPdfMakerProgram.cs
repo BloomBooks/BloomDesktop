@@ -6,6 +6,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using Bloom.Api;
+using Bloom.web;
 using L10NSharp;
 using SIL.CommandLineProcessing;
 using SIL.IO;
@@ -128,6 +129,10 @@ namespace Bloom.Publish.PDF
 			if (Program.RunningUnitTests)
 				timeoutInSeconds = 20;
 
+			var creating = LocalizationManager.GetString("PublishTab.PdfMaker.Creating", "Creating PDF...");
+			var socketProgress = new WebSocketProgress(BloomWebSocketServer.Instance, "progress");
+			socketProgress.MessageWithoutLocalizing(creating);
+
 			var progress = new NullProgress();
 			// NB: WebView2 does not appear to support progress reporting while making PDFs.
 			var res = runner.Start(exePath, arguments, Encoding.UTF8, fromDirectory, timeoutInSeconds, progress,
@@ -136,13 +141,8 @@ namespace Bloom.Publish.PDF
 					var parts = msg.Split('|');
 					if (parts.Length == 2 && parts[1].StartsWith("Percent: "))
 					{
-						// Don't localize 'Percent'. This isn't shown to the user, but is used to identify the
-						// part of the message that is processed and used to control the progress bar.
 						var percent = int.Parse(parts[1].Substring(@"Percent: ".Length));
-						var creating = LocalizationManager.GetString("PublishTab.PdfMaker.Creating", "Creating PDF...");
-						dynamic messageBundle = new DynamicJson();
-						messageBundle.message = creating + "|Percent: " + percent * (100 - ProcessPdfWithGhostscript.kPdfCompressionShare) / 100;
-						BloomWebSocketServer.Instance.SendBundle("publish", "progress", messageBundle);
+						socketProgress.SendPercent(percent * (100 - ProcessPdfWithGhostscript.kPdfCompressionShare) / 100);
 						if (worker.CancellationPending)
 						{
 							doWorkEventArgs.Cancel = true;

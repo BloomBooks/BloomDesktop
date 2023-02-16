@@ -38,6 +38,7 @@ export interface IProgressDialogProps {
     // defaults to "never"
     showReportButton?: "always" | "if-error" | "never";
     showCancelButton?: boolean;
+    onCancel?: () => void;
     onReadyToReceive?: () => void;
     // Be very careful how you use these. A typical pattern is that you want to pass a function
     // which will save the show() or close() function to use later, possibly in a listener. The temptation
@@ -65,6 +66,8 @@ export interface IProgressDialogProps {
     setShowDialog?: (show: () => void) => void;
     setCloseDialog?: (close: () => void) => void;
     dialogEnvironment?: IBloomDialogEnvironmentParams;
+    determinate?: boolean;
+    size?: "small"; // For a much smaller dialog, when we only expect a few lines.
 }
 
 interface IEmbeddedProgressProps extends IProgressDialogProps {
@@ -83,10 +86,11 @@ export const ProgressDialog: React.FunctionComponent<IProgressDialogProps> = pro
     if (props.setCloseDialog) {
         props.setCloseDialog(closeDialog);
     }
-    const [showButtons, setShowButtons] = useState(false);
+    const [done, setDone] = useState(false);
     const [sawAnError, setSawAnError] = useState(false);
     const [sawAWarning, setSawAWarning] = useState(false);
     const [sawFatalError, setSawFatalError] = useState(false);
+    const [percent, setPercent] = useState(0); // for determinate progress
     const [messagesForErrorReporting, setMessagesForErrorReporting] = useState(
         ""
     );
@@ -106,7 +110,8 @@ export const ProgressDialog: React.FunctionComponent<IProgressDialogProps> = pro
     }, [listenerReady, progressBoxReady, propsForBloomDialog.open]);
 
     // Start off showing the spinner, then stop when we get a "finished" message.
-    const [showSpinner, setShowSpinner] = useState(true);
+    // (Unless we expect actual percent-done messages, when we show a different thing.)
+    const [showSpinner, setShowSpinner] = useState(props.determinate !== true);
 
     // Note that the embedded ProgressBox is also listening to the same stream of events.
     // Here we are just concerned with events that change the state of our buttons, title bar, etc.
@@ -118,7 +123,10 @@ export const ProgressDialog: React.FunctionComponent<IProgressDialogProps> = pro
                 );
             }
             if (e.id === "show-buttons") {
-                setShowButtons(true);
+                setDone(true);
+            }
+            if (e.id === "percent" && e.percent !== undefined) {
+                setPercent(e.percent);
             }
             if (e.id === "message" && e.progressKind === "Error") {
                 setSawAnError(true);
@@ -147,6 +155,7 @@ export const ProgressDialog: React.FunctionComponent<IProgressDialogProps> = pro
     useEffect(() => {
         if (propsForBloomDialog.open) {
             everOpened.current = true;
+            setPercent(0); // always want to start here
         } else {
             // Once the dialog has been open, the only way this effect runs again is if it
             // it's open state changes. But we don't want this to happen on the initial
@@ -162,7 +171,10 @@ export const ProgressDialog: React.FunctionComponent<IProgressDialogProps> = pro
                 setSawAnError(false);
                 setSawAWarning(false);
                 setSawFatalError(false);
-                setShowButtons(false);
+                setDone(false);
+                // not sure why, but if we set percent to zero here, the progress circle
+                // moves noticeably backwards before the dialog actually closes.
+                setPercent(100);
                 post("progress/closed");
             }
         }
@@ -185,6 +197,22 @@ export const ProgressDialog: React.FunctionComponent<IProgressDialogProps> = pro
 
     return (
         <BloomDialog {...propsForBloomDialog}>
+            {props.determinate && (
+                <div
+                    css={css`
+                        position: absolute;
+                        top: 10px;
+                        right: 10px;
+                    `}
+                >
+                    <CircularProgress
+                        variant="determinate"
+                        value={percent}
+                        size={40}
+                        thickness={5}
+                    />
+                </div>
+            )}
             <DialogTitle
                 title={props.title}
                 icon={props.titleIcon}
@@ -221,8 +249,12 @@ export const ProgressDialog: React.FunctionComponent<IProgressDialogProps> = pro
                         height: ${props.dialogEnvironment
                             ?.dialogFrameProvidedExternally
                             ? "100%"
+                            : props.size === "small"
+                            ? "80px"
                             : "400px"};
-                        min-width: 540px;
+                        min-width: ${props.size === "small"
+                            ? "250px"
+                            : "540px"};
                     `}
                     // This is utterly bizarre. When not wrapped in a material UI Dialog, ProgressBox happily
                     // keeps track of its own messages. But Dialog repeatedly mounts and unmounts its children,
@@ -233,7 +265,7 @@ export const ProgressDialog: React.FunctionComponent<IProgressDialogProps> = pro
                 />
             </DialogMiddle>
             <DialogBottomButtons>
-                {showButtons ? (
+                {done ? (
                     <React.Fragment>
                         {buttonForSendingErrorReportIsRelevant && (
                             <DialogBottomLeftButtons>
@@ -274,7 +306,11 @@ export const ProgressDialog: React.FunctionComponent<IProgressDialogProps> = pro
                 props.showCancelButton ? (
                     <DialogCancelButton
                         onClick={() => {
-                            post("progress/cancel");
+                            if (props.onCancel) {
+                                props.onCancel();
+                            } else {
+                                post("progress/cancel");
+                            }
                         }}
                     />
                 ) : (

@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Text;
 using Bloom.Api;
+using Bloom.web;
 using Cairo;
 using L10NSharp;
 using SIL.CommandLineProcessing;
@@ -56,6 +57,11 @@ namespace Bloom.Publish.PDF
 			var exePath = "/usr/bin/gs";
 			if (SIL.PlatformUtilities.Platform.IsWindows)
 				exePath = FindGhostcriptOnWindows();
+
+			var compressing = LocalizationManager.GetString("PublishTab.PdfMaker.Compress", "Compressing PDF");
+			_socketProgress = new WebSocketProgress(BloomWebSocketServer.Instance, "progress");
+			_socketProgress.MessageWithoutLocalizing(compressing);
+
 			if (!String.IsNullOrWhiteSpace(exePath) && File.Exists(exePath))
 			{
 				if (_worker != null)
@@ -275,6 +281,7 @@ namespace Bloom.Publish.PDF
 		int _firstPage;
 		int _numPages;
 		private CommandLineRunner _runner;
+		private WebSocketProgress _socketProgress;
 
 		// Magic strings to match for progress reporting.  ghostscript itself doesn't seem to be localized
 		// (maybe because it's a command line program?)
@@ -344,10 +351,7 @@ namespace Bloom.Publish.PDF
 						// For old views...goes to C# progress window (remove when they go away)
 						_worker.ReportProgress(percentage);
 						// For new view...goes to Javascript code
-						var compressing = LocalizationManager.GetString("PublishTab.PdfMaker.Compress", "Compressing PDF");
-						dynamic messageBundle = new DynamicJson();
-						messageBundle.message = $"{compressing}|Percent: {percentage * kPdfCompressionShare / 100 + (100 - kPdfCompressionShare)}";
-						BloomWebSocketServer.Instance.SendBundle("publish", "progress", messageBundle);
+						_socketProgress.SendPercent(percentage * kPdfCompressionShare / 100 + (100 - kPdfCompressionShare));
 					}
 					catch (ObjectDisposedException e)
 					{

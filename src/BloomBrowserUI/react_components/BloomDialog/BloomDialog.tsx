@@ -276,9 +276,10 @@ export const DialogMiddle: FunctionComponent<{}> = props => {
                 flex-direction: column;
                 flex-grow: 1;
                 font-size: 14px;
-                // Usually overlaps the margin-bottom of DialogTitle.
-                // But when the dialog doesn't have a title we want some padding above the content.
-                margin-top: ${kDialogPadding};
+                // When the dialog doesn't have a title we want some padding above the content.
+                &:first-child {
+                    margin-top: ${kDialogTopPadding};
+                }
 
                 p {
                     margin-block-start: 0;
@@ -351,7 +352,7 @@ export const DialogBottomButtons: FunctionComponent<{}> = props => {
 };
 
 interface EnhancedPaperProps extends PaperProps {
-    id: string;
+    handleId: string;
     bounds?: string;
 }
 
@@ -359,10 +360,10 @@ interface EnhancedPaperProps extends PaperProps {
 // (instead of a FunctionComponent), it causes focus problems. (BL-11406).
 // (Probably the same for the things below that use it.)
 const DraggablePaperCore: FunctionComponent<EnhancedPaperProps> = props => {
-    const { id, bounds, ...paperProps } = props;
+    const { handleId, bounds, ...paperProps } = props;
     return (
         <Draggable
-            handle={"#" + id}
+            handle={"#" + handleId}
             cancel={'[class*="MuiDialogContent-root"]'}
             bounds={bounds}
         >
@@ -381,13 +382,13 @@ const DraggablePaperCore: FunctionComponent<EnhancedPaperProps> = props => {
 // We need things that just take PaperProps to pass to the PaperComponent
 // property of Dialog. So the above component gets instantiated several ways.
 const DraggablePaper: FunctionComponent<PaperProps> = props => {
-    return <DraggablePaperCore id="draggable-dialog-title" {...props} />;
+    return <DraggablePaperCore handleId="draggable-dialog-title" {...props} />;
 };
 
 const DraggablePaperLimited: FunctionComponent<PaperProps> = props => {
     return (
         <DraggablePaperCore
-            id="draggable-dialog-title"
+            handleId="draggable-dialog-title"
             bounds="#left"
             {...props}
         />
@@ -395,13 +396,13 @@ const DraggablePaperLimited: FunctionComponent<PaperProps> = props => {
 };
 
 const DraggablePaperMiddle: FunctionComponent<PaperProps> = props => {
-    return <DraggablePaperCore id="draggable-dialog-middle" {...props} />;
+    return <DraggablePaperCore handleId="draggable-dialog-middle" {...props} />;
 };
 
 const DraggablePaperLimitedMiddle: FunctionComponent<PaperProps> = props => {
     return (
         <DraggablePaperCore
-            id="draggable-dialog-middle"
+            handleId="draggable-dialog-middle"
             bounds="#left"
             {...props}
         />
