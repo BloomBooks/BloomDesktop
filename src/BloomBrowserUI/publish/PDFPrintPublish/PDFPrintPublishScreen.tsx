@@ -14,21 +14,12 @@ import PublishScreenTemplate from "../commonPublish/PublishScreenTemplate";
 import ReactDOM = require("react-dom");
 import { ThemeProvider, StyledEngineProvider } from "@mui/material/styles";
 import { darkTheme, lightTheme } from "../../bloomMaterialUITheme";
-import { StorybookContext } from "../../.storybook/StoryBookContext";
 import { useL10n } from "../../react_components/l10nHooks";
 import Typography from "@mui/material/Typography";
 import Button from "@mui/material/Button";
-import {
-    CircularProgress,
-    Dialog,
-    DialogContent,
-    Paper,
-    PaperProps
-} from "@mui/material";
+import { CircularProgress } from "@mui/material";
 import { getString, post, useWatchString } from "../../utils/bloomApi";
-import WebSocketManager, {
-    IBloomWebSocketEvent
-} from "../../utils/WebSocketManager";
+
 import { Div, Span } from "../../react_components/l10nComponents";
 import { ApiCheckbox } from "../../react_components/ApiCheckbox";
 import {
@@ -40,7 +31,6 @@ import {
     DialogBottomButtons,
     DialogMiddle
 } from "../../react_components/BloomDialog/BloomDialog";
-import Draggable from "react-draggable";
 
 // The common behavior of the Print and Save buttons.
 // There is probably some way to get this look out of BloomButton,
@@ -106,18 +96,6 @@ export const PDFPrintPublishScreen = () => {
         }
     }, [progress, progressTask]);
     const progressHeader = useL10n("Progress", "Common.Progress");
-
-    // Using this as the 'PaperContent' property of a MaterialUI Dialog
-    // (with a couple of other tricks) makes the whole dialog draggable.
-    // The handle specifies the elements within the dialog by which it
-    // can be dragged (in this case the whole content).
-    function PaperComponentForDraggableDialog(props: PaperProps) {
-        return (
-            <Draggable handle="#draggable-handle">
-                <Paper {...props} />
-            </Draggable>
-        );
-    }
 
     const mainPanel = (
         <React.Fragment>
@@ -197,10 +175,6 @@ export const PDFPrintPublishScreen = () => {
             </HelpGroup>
         </SettingsPanel>
     );
-
-    const printButtonText = useL10n("Print...", "PublishTab.PrintButton");
-
-    const saveButtonText = useL10n("Save PDF...", "PublishTab.SaveButton");
 
     const printNow = () => {
         if (iframeRef.current) {
@@ -330,13 +304,8 @@ export const PDFPrintPublishScreen = () => {
                 open={!!printSettings}
                 // eslint-disable-next-line @typescript-eslint/no-empty-function
                 onClose={() => {}}
-                // These two lines, plus the definition of PaperComponentForDraggableDialog above,
-                // combined with putting the draggable-handle id on the DialogContent, are the magic
-                // that makes the dialog draggable.
-                PaperComponent={PaperComponentForDraggableDialog}
-                aria-labelledby="draggable-handle"
             >
-                <DialogContent id="draggable-handle" style={{ cursor: "move" }}>
+                <DialogMiddle>
                     <Div l10nKey="SamplePrintNotification.PleaseNotice">
                         Please notice the sample printer settings below. Use
                         them as a guide while you set up the printer.
@@ -346,7 +315,7 @@ export const PDFPrintPublishScreen = () => {
                         l10nKey="SamplePrintNotification.IGetIt"
                         apiEndpoint="publish/pdf/dontShowSamplePrint"
                     ></ApiCheckbox>
-                </DialogContent>
+                </DialogMiddle>
                 <DialogBottomButtons>
                     <DialogOkButton
                         onClick={() => {

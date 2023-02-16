@@ -27,7 +27,7 @@ namespace Bloom.Publish.PDF
 
 		// This is to support orientation/page size changing during publishing, but we're not doing
 		// that yet, so just defer to the current book.
-		public Layout PageLayout => CurrentBook?.GetLayout() ?? Layout.A5Portrait;
+		public Layout PageLayout => _publishModel.PageLayout;
 
 		public PublishModel.BookletPortions BookletPortion {
 			get { return _publishModel.BookletPortion; }
@@ -54,7 +54,7 @@ namespace Bloom.Publish.PDF
 			apiHandler.RegisterEndpointHandler(kApiUrlPart + "pages", HandleCreatePagesPdf, true);
 			apiHandler.RegisterEndpointHandler(kApiUrlPart + "printSettingsPath", HandlePrintSettingsPath, true);
 			apiHandler.RegisterEndpointHandler(kApiUrlPart + "save", HandleSavePdf, true);
-			apiHandler.RegisterBooleanEndpointHandler(kApiUrlPart + "allowBooklet", request => AllowPdfBooklet, null, false);
+			apiHandler.RegisterBooleanEndpointHandler(kApiUrlPart + "allowBooklet", request => _publishModel.AllowPdfBooklet, null, false);
 			apiHandler.RegisterBooleanEndpointHandler(kApiUrlPart + "allowFullBleed",
 				request => CurrentBook?.FullBleed ?? false, null, false);
 			apiHandler.RegisterEndpointHandler(kApiUrlPart + "printAnalytics", HandlePrintAnalytics, true);
@@ -159,24 +159,6 @@ namespace Bloom.Publish.PDF
 		}
 
 		private Book.Book CurrentBook => _publishModel.CurrentBook;
-
-		/// <summary>
-		/// Is it reasonable to make a booklet out of the current book with the current settings?
-		/// Roughly duplicates a method of PublishModel, though that includes a concept of
-		/// AllowPdf which returns CanPublish which is derived from DeterminePublishability.
-		/// (But that has to do with whether the book can be published at all, not whether
-		/// it can be published as a booklet.)
-		/// </summary>
-		public bool AllowPdfBooklet
-		{
-			get
-			{
-				// Large page sizes can't make booklets.  See http://issues.bloomlibrary.org/youtrack/issue/BL-4155.
-				var size = PageLayout.SizeAndOrientation.PageSizeName;
-				return CurrentBook.BookInfo.BookletMakingIsAppropriate &&
-				       (size != "A4" && size != "A3" && size != "B5" && size != "Letter" && size != "Device16x9");
-			}
-		}
 
 		// Make the actual PDF file with current settings. Slightly adapted from the PublishView code
 		// that calls PublishModel.LoadBook.
