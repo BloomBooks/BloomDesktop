@@ -501,14 +501,36 @@ namespace Bloom.Publish.Video
 				return;
 			}
 
-			progress.Message("PublishTab.RecordVideo.ProcessingAudio", message: "Processing audio");
+			// configure ffmpeg to merge everything.
+			MergeAudioFiles(progress, soundLog, haveVideo, finalOutputPath, videoDuration);
 
-			// Narration is never truncated, so always has a default endTime.
-			// If the last music ends up not being truncated (unlikely), I think we can let
-			// it play to its natural end. In this case pathologically we might fade some earlier music.
-			// But I think BP will currently put an end time on any music that didn't play to the end and
-			// then start repeating.
-			var lastMusic = soundLog.LastOrDefault(item => item.endTime != default(DateTime));
+			var mergeErrors = _errorData.ToString();
+			if (!File.Exists(_finalVideo.Path) || new FileInfo(_finalVideo.Path).Length < 100)
+			{
+				Logger.WriteError(new ApplicationException(mergeErrors));
+				progress.MessageWithoutLocalizing("Merging audio and video failed", ProgressKind.Error);
+				_recording = false;
+				return;
+			}
+			_recording = false;
+			GotFullRecording = true;
+			// Allows the Check and Save buttons to be enabled, now we have something we can play or save.
+			_webSocketServer.SendString("recordVideo", "ready", "true");
+			// Don't think this ever happens now...if we allowed the user to click Save before the recording
+			// was complete, this would be the time to proceed with saving.
+			if (_saveReceived)
+			{
+				// Reusing id from epub. (not creating a new one or extracting to common at this point as we don't think this is ever called)
+				progress.Message("PublishTab.Epub.Saving", message: "Saving");
+				SaveVideo(); // now we really can.
+			}
+			progress.MessageWithParams("Common.FinishedAt", "{0:hh:mm tt} is a time", "Finished at {0:hh:mm tt}", ProgressKind.Progress, DateTime.Now);
+		}
+
+		private void MergeAudioFiles(IWebSocketProgress progress, SoundLogItem[] soundLog, bool haveVideo, string finalOutputPath, TimeSpan videoDuration)
+		{
+			progress.Message("PublishTab.RecordVideo.ProcessingAudio", message: "Processing audio");
+			
 
 			// In some very complex books, we are running into the 32K limit for the length of the args
 			// string that can be passed to Process.Start. We can put the complex_filter into a text file,
@@ -558,9 +580,15 @@ namespace Bloom.Publish.Video
 				}
 			}
 
-			// configure ffmpeg to merge everything.
 			// each sound file becomes an input by prefixing the path with -i.
 			var inputs = string.Join(" ", soundLog.Select(item => $"-i {item.shortName} "));
+
+			// Narration is never truncated, so always has a default endTime.
+			// If the last music ends up not being truncated (unlikely), I think we can let
+			// it play to its natural end. In this case pathologically we might fade some earlier music.
+			// But I think BP will currently put an end time on any music that didn't play to the end and
+			// then start repeating.
+			var lastMusic = soundLog.LastOrDefault(item => item.endTime != default(DateTime));
 
 			// arguments to configure 'filters' ahead of audio mixer which will combine the sounds into a single stream.
 			var audioFilters = string.Join(" ", soundLog.Select((item, index) =>
@@ -724,28 +752,6 @@ namespace Bloom.Publish.Video
 
 				LocalAudioNamesMessedUp = false;
 			}
-
-			var mergeErrors = _errorData.ToString();
-			if (!File.Exists(_finalVideo.Path) || new FileInfo(_finalVideo.Path).Length < 100)
-			{
-				Logger.WriteError(new ApplicationException(mergeErrors));
-				progress.MessageWithoutLocalizing("Merging audio and video failed", ProgressKind.Error);
-				_recording = false;
-				return;
-			}
-			_recording = false;
-			GotFullRecording = true;
-			// Allows the Check and Save buttons to be enabled, now we have something we can play or save.
-			_webSocketServer.SendString("recordVideo", "ready", "true");
-			// Don't think this ever happens now...if we allowed the user to click Save before the recording
-			// was complete, this would be the time to proceed with saving.
-			if (_saveReceived)
-			{
-				// Reusing id from epub. (not creating a new one or extracting to common at this point as we don't think this is ever called)
-				progress.Message("PublishTab.Epub.Saving", message: "Saving");
-				SaveVideo(); // now we really can.
-			}
-			progress.MessageWithParams("Common.FinishedAt", "{0:hh:mm tt} is a time", "Finished at {0:hh:mm tt}", ProgressKind.Progress, DateTime.Now);
 		}
 
 		private static char[] shortNameChars = "abcdefghijklmnopqrstuvwxyz0123456789".ToCharArray();
@@ -877,6 +883,11 @@ namespace Bloom.Publish.Video
 					_errorData = new StringBuilder();
 				if (_ffmpegPath == null)
 					_ffmpegPath = MiscUtils.FindFfmpegProgram();
+
+				if (args.Contains("filter_complex_script"))
+				{
+					Console.Out.WriteLine("Hello world.");
+				}
 
 				_ffmpegProcess = new Process
 				{
