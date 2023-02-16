@@ -169,7 +169,11 @@ namespace Bloom.Publish
 							BookIsFullBleed = _currentlyLoadedBook.FullBleed,
 							PrintWithFullBleed = GetPrintingWithFullBleed(),
 							Cmyk = _currentlyLoadedBook.UserPrefs.CmykPdf,
-							HtmlPageCount = this.HtmlPageCount},
+							HtmlPageCount = this.HtmlPageCount,
+							Author = _currentlyLoadedBook.BookInfo.MetaData.Author,
+							Title = _currentlyLoadedBook.BookInfo.MetaData.Title,
+							Summary = _currentlyLoadedBook.BookInfo.MetaData.Summary,
+							Keywords = GetKeywords(_currentlyLoadedBook.BookInfo.MetaData) },
 						worker, doWorkEventArgs, View );
 					// Warn the user if we're starting to use too much memory.
 					Bloom.Utils.MemoryManagement.CheckMemory(false, "finished creating PDF file", true);
@@ -183,6 +187,17 @@ namespace Bloom.Publish
 				//                SetDisplayMode(DisplayModes.WaitForUserToChooseSomething);
 				//                return;
 			}
+		}
+
+		private string GetKeywords(BookMetaData metaData)
+		{
+			var keywords = String.Join("\r\n", metaData.Tags);
+			if (metaData.Summary != null)
+			{
+				foreach (var subject in metaData.Subjects)
+					keywords = keywords + $"\r\n{subject.label}:{subject.value}";
+			}
+			return keywords.Trim();
 		}
 
 		private BookletLayoutMethod GetBookletLayoutMethod()
