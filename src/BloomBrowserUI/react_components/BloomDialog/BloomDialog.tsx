@@ -276,9 +276,10 @@ export const DialogMiddle: FunctionComponent<{}> = props => {
                 flex-direction: column;
                 flex-grow: 1;
                 font-size: 14px;
-                // Usually overlaps the margin-bottom of DialogTitle.
-                // But when the dialog doesn't have a title we want some padding above the content.
-                margin-top: ${kDialogPadding};
+                // When the dialog doesn't have a title we want some padding above the content.
+                &:first-child {
+                    margin-top: ${kDialogTopPadding};
+                }
 
                 p {
                     margin-block-start: 0;
