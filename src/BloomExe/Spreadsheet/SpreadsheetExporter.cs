@@ -93,12 +93,15 @@ namespace Bloom.Spreadsheet
 			var iContentPage = 0;
 			foreach (var page in pages)
 			{
-				var pageNumber = page.Attributes["data-page-number"]?.Value ?? "";
-				// For now we will ignore all un-numbered pages, particularly xmatter,
-				// which was handled above by exporting data div data.
-				if (pageNumber == "")
+				// We ignore all xmatter pages, which were handled above by exporting data div data.
+				var classes = (page.Attributes["class"]?.Value ?? "").Split(' ');
+				if (classes.Contains("bloom-frontMatter") || classes.Contains("bloom-backMatter"))
 					continue;
-
+				var pageNumber = page.Attributes["data-page-number"]?.Value ?? "";
+				if (pageNumber == "")
+				{
+					// Do we need to do something for unnumbered pages?  Import doesn't really handle them very well.
+				}
 				//Each page alternates colors
 				var colorForPage = iContentPage++ % 2 == 0 ? InternalSpreadsheet.AlternatingRowsColor1 : InternalSpreadsheet.AlternatingRowsColor2;
 				AddContentRows(page, pageNumber, bookFolderPath, colorForPage);
