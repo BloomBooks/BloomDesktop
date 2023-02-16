@@ -44,7 +44,7 @@ namespace Bloom.Spreadsheet
 		private readonly string _pathToBookFolder;
 		private readonly IBloomWebSocketServer _webSocketServer;
 		private IWebSocketProgress _progress;
-		private int _unNumberedPagesSeen;
+		private int _frontMatterPagesSeen;
 		private bool _bookIsLandscape;
 		private Layout _destLayout;
 		private readonly CollectionSettings _collectionSettings;
@@ -567,7 +567,7 @@ namespace Bloom.Spreadsheet
 			_currentGroup = _groupsOnPage[_groupOnPageIndex];
 		}
 
-		private int PageNumberToReport => _currentPageIndex + 1 - _unNumberedPagesSeen;
+		private int PageNumberToReport => _currentPageIndex + 1 - _frontMatterPagesSeen;
 
 		private XmlDocument _basicBookTemplate;
 
@@ -669,21 +669,20 @@ namespace Bloom.Spreadsheet
 
 				_currentPage = _pages[_currentPageIndex];
 				// Is this where we want to stop, or should we skip this page and move on?
-				// If it's a numbered page, we consider that a template content page we can
+				// If it's a content page, we consider that a template content page we can
 				// insert row content into...or if it doesn't hold the right sort of content,
 				// we'll insert a page that does before it.
 				// If it's a back matter page, we've come to the end...we'll have to insert
 				// extra pages before it for whatever remaining content we have.
-				if (HtmlDom.NumberOfPage(_currentPage) != "" ||
-				    _currentPage.Attributes["class"].Value.Contains("bloom-backMatter"))
+				if (!XMatterHelper.IsFrontMatterPage(_currentPage))
 				{
 					break;
 				}
 
-				_unNumberedPagesSeen++;
+				_frontMatterPagesSeen++;
 			}
 
-			var isBackMatter = _currentPage.Attributes["class"].Value.Contains("bloom-backMatter");
+			var isBackMatter = XMatterHelper.IsBackMatterPage(_currentPage);
 			if (isBackMatter)
 			{
 				InsertCloneOfLastPageOrDefault(needImageContainer, needTextGroup);
