@@ -68,7 +68,7 @@ namespace BloomTests.Book
 			}
 
 			// System Under Test //
-			using (var bloomPubTempFile = TempFile.WithFilenameInTempFolder("BookCompressorBloomPub" + BookCompressor.BloomPubExtensionWithDot))
+			using (var bloomPubTempFile = TempFile.WithFilenameInTempFolder("BookCompressorBloomPub" + BloomPubMaker.BloomPubExtensionWithDot))
 			{
 				BookCompressor.CompressBookDirectory(bloomPubTempFile.Path, _bookFolder.Path, BloomPubMaker.MakeFilter(_bookFolder.Path), "");
 			}
@@ -111,7 +111,7 @@ namespace BloomTests.Book
 				});
 
 			// System Under Test //
-			using (var bloomPubTempFile = TempFile.WithFilenameInTempFolder("BookCompressorWithAudio" + BookCompressor.BloomPubExtensionWithDot))
+			using (var bloomPubTempFile = TempFile.WithFilenameInTempFolder("BookCompressorWithAudio" + BloomPubMaker.BloomPubExtensionWithDot))
 			{
 				BookCompressor.CompressBookDirectory(bloomPubTempFile.Path, _bookFolder.Path, BloomPubMaker.MakeFilter(_bookFolder.Path), "");
 				// Test by looking at the temp file content.
@@ -198,7 +198,7 @@ namespace BloomTests.Book
 				});
 
 			// System Under Test //
-			using (var bloomPubTempFile = TempFile.WithFilenameInTempFolder("BookCompressorWithExtraFiles" + BookCompressor.BloomPubExtensionWithDot))
+			using (var bloomPubTempFile = TempFile.WithFilenameInTempFolder("BookCompressorWithExtraFiles" + BloomPubMaker.BloomPubExtensionWithDot))
 			{
 				BookCompressor.CompressBookDirectory(bloomPubTempFile.Path, _bookFolder.Path, BloomPubMaker.MakeFilter(_bookFolder.Path), "");
 				// Test by looking at the temp file content.

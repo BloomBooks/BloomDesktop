@@ -550,7 +550,7 @@ namespace Bloom.CollectionTab
 			{
 				var filename = Path.GetFileName(sourceFilePath);
 				var extension = Path.GetExtension(filename).ToLowerInvariant();
-				if (BookCompressor.ImageFileExtensions.Contains(extension) || extension == ".svg" || extension == ".css")
+				if (BookCompressor.CompressableImageFileExtensions.Contains(extension) || extension == ".svg" || extension == ".css")
 				{
 					var destFilePath = Path.Combine(outputFolder, filename);
 					RobustFile.Copy(sourceFilePath, destFilePath, true);

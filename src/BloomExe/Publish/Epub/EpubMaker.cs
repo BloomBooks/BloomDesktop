@@ -2510,7 +2510,7 @@ namespace Bloom.Publish.Epub
 		/// </summary>
 		internal virtual void CopyFile(string srcPath, string dstPath, bool limitImageDimensions=false, bool needTransparentBackground=false)
 		{
-			if (limitImageDimensions && BookCompressor.ImageFileExtensions.Contains(Path.GetExtension(srcPath).ToLowerInvariant()))
+			if (limitImageDimensions && BookCompressor.CompressableImageFileExtensions.Contains(Path.GetExtension(srcPath).ToLowerInvariant()))
 			{
 				var imageBytes = BookCompressor.GetImageBytesForElectronicPub(srcPath, needTransparentBackground);
 				RobustFile.WriteAllBytes(dstPath, imageBytes);

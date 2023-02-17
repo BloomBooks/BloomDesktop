@@ -24,6 +24,7 @@ namespace Bloom.Publish.Android
 	/// </summary>
 	public static class BloomPubMaker
 	{
+		public const string BloomPubExtensionWithDot = ".bloompub";
 		public const string kQuestionFileName = "questions.json";
 		public const string BRExportFolder = "BloomReaderExport";
 		internal const string kDistributionFileName = ".distribution";
@@ -36,7 +37,7 @@ namespace Bloom.Publish.Android
 
 		public static void CreateBloomPub(BookInfo bookInfo, AndroidPublishSettings settings, string outputFolder, BookServer bookServer, IWebSocketProgress progress )
 		{
-			var outputPath = Path.Combine(outputFolder, Path.GetFileName(bookInfo.FolderPath) + BookCompressor.BloomPubExtensionWithDot);
+			var outputPath = Path.Combine(outputFolder, Path.GetFileName(bookInfo.FolderPath) + BloomPubExtensionWithDot);
 			BloomPubMaker.CreateBloomPub(outputPath, bookInfo.FolderPath, bookServer, progress, bookInfo.IsSuitableForMakingShells, settings: settings);
 		}
 		public static void CreateBloomPub(string outputPath, Book.Book book, BookServer bookServer, IWebSocketProgress progress, AndroidPublishSettings settings = null)
@@ -133,7 +134,7 @@ namespace Bloom.Publish.Android
 
 			foreach (var filePath in Directory.GetFiles(modifiedBookFolderPath))
 			{
-				if (BookCompressor.ImageFileExtensions.Contains(Path.GetExtension(filePath).ToLowerInvariant()))
+				if (BookCompressor.CompressableImageFileExtensions.Contains(Path.GetExtension(filePath).ToLowerInvariant()))
 				{
 					var fileName = Path.GetFileName(filePath);
 					if (imagesToPreserveResolution.Contains(fileName))

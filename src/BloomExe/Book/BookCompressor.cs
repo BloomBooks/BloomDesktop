@@ -16,18 +16,13 @@ using SIL.Xml;
 using System.Collections.Generic;
 using Bloom.Collection;
 using Bloom.CollectionTab;
-using Bloom.Publish.Android;
-using Bloom.web.controllers;
 
 namespace Bloom.Book
 {
 	public class BookCompressor
 	{
-		public const string BloomPubExtensionWithDot = ".bloompub";
-		
-
 		// these image files may need to be reduced before being stored in the compressed output file
-		public static readonly string[] ImageFileExtensions = { ".tif", ".tiff", ".png", ".bmp", ".jpg", ".jpeg" };
+		public static readonly string[] CompressableImageFileExtensions = { ".tif", ".tiff", ".png", ".bmp", ".jpg", ".jpeg" };
 
 		// Since BL-8956, we whitelist files so that only those we expect will make it through the
 		// compression process.
