@@ -245,17 +245,7 @@ namespace Bloom.CollectionTab
 
 		public string HelpTopicUrl
 		{
-			get
-			{
-				if (_model.IsSourceCollection)
-				{
-					return "/Tasks/Source_Collection_tasks/Source_Collection_tasks_overview.htm";
-				}
-				else
-				{
-					return "/Tasks/Vernacular_Collection_tasks/Vernacular_Collection_tasks_overview.htm";
-				}
-			}
+			get { return "/Tasks/Collections_tab_tasks/Collections_tab_tasks_overview.htm"; }
 		}
 
 		public Control TopBarControl
