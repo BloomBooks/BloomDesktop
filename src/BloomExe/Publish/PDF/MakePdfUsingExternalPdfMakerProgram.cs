@@ -5,6 +5,8 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
+using Bloom.Api;
+using Bloom.web;
 using L10NSharp;
 using SIL.CommandLineProcessing;
 using SIL.IO;
@@ -127,10 +129,37 @@ namespace Bloom.Publish.PDF
 			if (Program.RunningUnitTests)
 				timeoutInSeconds = 20;
 
+			var creating = LocalizationManager.GetString("PublishTab.PdfMaker.Creating", "Creating PDF...");
+			var socketProgress = new WebSocketProgress(BloomWebSocketServer.Instance, "progress");
+			socketProgress.MessageWithoutLocalizing(creating);
+
 			var progress = new NullProgress();
 			// NB: WebView2 does not appear to support progress reporting while making PDFs.
 			var res = runner.Start(exePath, arguments, Encoding.UTF8, fromDirectory, timeoutInSeconds, progress,
-				(msg) => { /* nothing we can do with WebView2 */ });
+				(msg) =>
+				{
+					var parts = msg.Split('|');
+					if (parts.Length == 2 && parts[1].StartsWith("Percent: "))
+					{
+						var percent = int.Parse(parts[1].Substring(@"Percent: ".Length));
+						socketProgress.SendPercent(percent * (100 - ProcessPdfWithGhostscript.kPdfCompressionShare) / 100);
+						if (worker.CancellationPending)
+						{
+							doWorkEventArgs.Cancel = true;
+							try
+							{
+								runner.Abort(1);
+							}
+							catch (InvalidOperationException)
+							{
+								// Typically means the process already stopped.
+								// Possibly a race condition between aborting the process and getting another
+								// line of output from it.
+							}
+
+						}
+					}
+				});
 
 			Logger.WriteEvent($"Call to {exePath} completed");
 			Console.WriteLine($"Call to {exePath} completed");

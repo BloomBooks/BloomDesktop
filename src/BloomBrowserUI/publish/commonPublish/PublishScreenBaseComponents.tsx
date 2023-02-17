@@ -8,7 +8,9 @@ import { LocalizedString } from "../../react_components/l10nComponents";
 // This file contains a collection of components which works together with the PublishScreenTemplate
 // to create the basic layout of a publishing screen in Bloom.
 
-export const PreviewPanel: React.FunctionComponent = props => {
+export const PreviewPanel: React.FunctionComponent<{
+    className?: string;
+}> = props => {
     return (
         <section
             css={css`
@@ -28,6 +30,7 @@ export const PreviewPanel: React.FunctionComponent = props => {
                 flex-grow: 1;
                 flex-direction: column;
             `}
+            className={props.className} // mainly to allow CSS
         >
             {props.children}
         </section>

@@ -20,6 +20,7 @@ import {
 import { useL10n } from "../l10nHooks";
 import Draggable from "react-draggable";
 import { hookupLinkHandler } from "../../utils/linkHandler";
+import * as React from "react";
 
 // The <BloomDialog> component and its children provides consistent layout across Bloom Dialogs.
 // It can be used either inside of a winforms dialog, or as a MaterialUI Dialog.
@@ -29,7 +30,7 @@ import { hookupLinkHandler } from "../../utils/linkHandler";
 
 // Enhance: Would be interested to see if this would improve if we used https://github.com/eBay/nice-modal-react
 
-const kDialogTopPadding = "24px";
+export const kDialogTopPadding = "24px";
 const kDialogSidePadding = "24px";
 const kDialogBottomPadding = "10px"; // per material, the bottom buttons are supposed to be closer to the edges
 
@@ -123,6 +124,26 @@ export const BloomDialog: FunctionComponent<IBloomDialogProps> = forwardRef(
             ...propsToPass
         } = props;
 
+        let hasTitle = false;
+        React.Children.forEach(props.children, c => {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            if ((c as any).type?.name === "DialogTitle") {
+                hasTitle = true;
+            }
+        });
+
+        function getPaperComponent() {
+            if (disableDragging) {
+                return undefined;
+            }
+            if (dragLimits) {
+                return hasTitle
+                    ? DraggablePaperLimited
+                    : DraggablePaperLimitedMiddle;
+            } else {
+                return hasTitle ? DraggablePaper : DraggablePaperMiddle;
+            }
+        }
         return (
             <CloseOnEscape
                 onEscape={() => {
@@ -135,12 +156,11 @@ export const BloomDialog: FunctionComponent<IBloomDialogProps> = forwardRef(
                             inner
                         ) : (
                             <Dialog
-                                PaperComponent={
-                                    disableDragging
-                                        ? undefined
-                                        : dragLimits
-                                        ? DraggablePaperLimited
-                                        : DraggablePaper
+                                PaperComponent={getPaperComponent()}
+                                aria-labelledby={
+                                    "draggable-dialog-" + hasTitle
+                                        ? "title"
+                                        : "middle"
                                 }
                                 css={css`
                                     flex-grow: 1; // see note on the display property on PaperComponent
@@ -246,18 +266,24 @@ export const DialogTitle: FunctionComponent<{
         </div>
     );
 };
+DialogTitle.displayName = "DialogTitle";
 
 // The height of this is determined by what is inside of it. If the content might grow (e.g. a progress box), then it's up to the
 // client to set maxes or fixed dimensions. See <ProgressDialog> for an example.
 export const DialogMiddle: FunctionComponent<{}> = props => {
     return (
         <div
+            id="draggable-dialog-middle"
             css={css`
                 overflow-y: auto;
                 display: flex;
                 flex-direction: column;
                 flex-grow: 1;
                 font-size: 14px;
+                // When the dialog doesn't have a title we want some padding above the content.
+                &:first-child {
+                    margin-top: ${kDialogTopPadding};
+                }
 
                 p {
                     margin-block-start: 0;
@@ -329,13 +355,21 @@ export const DialogBottomButtons: FunctionComponent<{}> = props => {
     );
 };
 
+interface EnhancedPaperProps extends PaperProps {
+    handleId: string;
+    bounds?: string;
+}
+
 // Don't be tempted to make this an anonymous function that returns a JSX.Element
-// (instead of a FunctionComponent), it causes focus problems. (BL-11406)
-const DraggablePaper: FunctionComponent<PaperProps> = props => {
+// (instead of a FunctionComponent), it causes focus problems. (BL-11406).
+// (Probably the same for the things below that use it.)
+const DraggablePaperCore: FunctionComponent<EnhancedPaperProps> = props => {
+    const { handleId, bounds, ...paperProps } = props;
     return (
         <Draggable
-            handle="#draggable-dialog-title"
+            handle={"#" + handleId}
             cancel={'[class*="MuiDialogContent-root"]'}
+            bounds={bounds}
         >
             <Paper
                 css={css`
@@ -343,29 +377,38 @@ const DraggablePaper: FunctionComponent<PaperProps> = props => {
                     // the children can grow into it.
                     display: flex;
                 `}
-                {...props}
+                {...paperProps}
             />
         </Draggable>
     );
 };
 
-// I would really have preferred to pass in the bounds as a prop, but I couldn't figure out how to
-// get Dialog's PaperComponent prop to accept the DraggablePaper (above) with the prop defined.
+// We need things that just take PaperProps to pass to the PaperComponent
+// property of Dialog. So the above component gets instantiated several ways.
+const DraggablePaper: FunctionComponent<PaperProps> = props => {
+    return <DraggablePaperCore handleId="draggable-dialog-title" {...props} />;
+};
+
 const DraggablePaperLimited: FunctionComponent<PaperProps> = props => {
     return (
-        <Draggable
-            handle="#draggable-dialog-title"
-            cancel={'[class*="MuiDialogContent-root"]'}
+        <DraggablePaperCore
+            handleId="draggable-dialog-title"
             bounds="#left"
-        >
-            <Paper
-                css={css`
-                    // Allows setting the Dialog height here on the Paper and
-                    // the children can grow into it.
-                    display: flex;
-                `}
-                {...props}
-            />
-        </Draggable>
+            {...props}
+        />
+    );
+};
+
+const DraggablePaperMiddle: FunctionComponent<PaperProps> = props => {
+    return <DraggablePaperCore handleId="draggable-dialog-middle" {...props} />;
+};
+
+const DraggablePaperLimitedMiddle: FunctionComponent<PaperProps> = props => {
+    return (
+        <DraggablePaperCore
+            handleId="draggable-dialog-middle"
+            bounds="#left"
+            {...props}
+        />
     );
 };

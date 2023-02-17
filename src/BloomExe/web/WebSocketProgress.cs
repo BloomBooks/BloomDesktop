@@ -130,6 +130,13 @@ namespace Bloom.web
 					break;
 			}
 		}
+
+		public void SendPercent(int percent)
+		{
+			dynamic messageBundle = new DynamicJson();
+			messageBundle.percent = percent;
+			_bloomWebSocketServer.SendBundle(_clientContext, "percent", messageBundle);
+		}
 		public virtual void ShowButtons()
 		{
 			_bloomWebSocketServer.SendBundle(_clientContext, "show-buttons", new DynamicJson());

@@ -119,7 +119,6 @@ namespace Bloom.Publish
 			//some of this checking is about bl-272, which was replicated by having one book, going to publish, then deleting that last book.
 			if (BookSelection != null && View != null && BookSelection.CurrentSelection!=null && _currentlyLoadedBook != BookSelection.CurrentSelection && View.Visible)
 			{
-				PageLayout = BookSelection.CurrentSelection.GetLayout();
 				CanPublish = DeterminePublishability();
 			}
 		}
@@ -145,8 +144,11 @@ namespace Bloom.Publish
 			return idx >= 0 ? msgFmt.Substring(0,idx) : msgFmt; // translated string is missing the filename placeholder?
 		}
 
-		public void LoadBook(BackgroundWorker worker, DoWorkEventArgs doWorkEventArgs)
+		public void LoadBook(BackgroundWorker worker, DoWorkEventArgs doWorkEventArgs, Control owner = null)
 		{
+			if (owner == null)
+				owner = View;
+			Debug.Assert(owner != null); // must pass if we don't have a view.
 			try
 			{
 				using (var tempHtml = MakeFinalHtmlForPdfMaker())
@@ -170,7 +172,7 @@ namespace Bloom.Publish
 							PrintWithFullBleed = GetPrintingWithFullBleed(),
 							Cmyk = _currentlyLoadedBook.UserPrefs.CmykPdf,
 							HtmlPageCount = this.HtmlPageCount},
-						worker, doWorkEventArgs, View );
+						worker, doWorkEventArgs, owner );
 					// Warn the user if we're starting to use too much memory.
 					Bloom.Utils.MemoryManagement.CheckMemory(false, "finished creating PDF file", true);
 				}
@@ -207,7 +209,7 @@ namespace Bloom.Publish
 			get { return _currentlyLoadedBook.BookData.Language1.IsRightToLeft;  }
 		}
 
-		private SimulatedPageFile MakeFinalHtmlForPdfMaker()
+		public SimulatedPageFile MakeFinalHtmlForPdfMaker()
 		{
 			if (_currentlyLoadedBook == null)
 				_currentlyLoadedBook = BookSelection.CurrentSelection;
@@ -272,6 +274,8 @@ namespace Bloom.Publish
 			}
 		}
 
+		private string _lastPath;
+
 		private string GetPdfPath(string fname)
 		{
 			string path = null;
@@ -282,6 +286,26 @@ namespace Bloom.Publish
 			for (int i = 0; i < 100; i++)
 			{
 				path = Path.Combine(Path.GetTempPath(), string.Format("{0}-{1}.pdf", fileName, i));
+				if (path == _lastPath)
+				{
+					// don't use the same path twice in a row; react-pdf won't realize it's a new file
+					// (in the new PDF and Print tab)
+					// and won't update, and other render effects don't happen because it hasn't changed.
+					// But it's pretty surely one of ours, so try to clean it up.
+					// (It doesn't matter if we use the same name in two different runs of Bloom. This is mainly
+					// about switching between cover and inside pages or simple.)
+					if (File.Exists(path))
+					{
+						try
+						{
+							RobustFile.Delete(path);
+						}
+						catch (Exception)
+						{ }
+					}
+					continue;
+				}
+
 				if (!RobustFile.Exists(path))
 					break;
 
@@ -295,6 +319,7 @@ namespace Bloom.Publish
 					//couldn't delete it? then increment the suffix and try again
 				}
 			}
+			_lastPath = path;
 			return path;
 		}
 
@@ -332,10 +357,17 @@ namespace Bloom.Publish
 
 		public BookletPortions BookletPortion { get; set; }
 
+		public Book.Book CurrentBook => BookSelection.CurrentSelection;
+
 		/// <summary>
-		/// The book itself has a layout, but we can override it here during publishing
+		/// The book itself has a layout. At one point we allowed it to be overridden
+		/// during publishing; that could be reinstated if desired, but is not currently used.
+		/// If we turn it back into a variable, it needs to track with the current book.
+		/// The earlier code updated it when the book changed, but that was somewhat fragile.
+		/// I think it would be better to write code such that it tracks the current book
+		/// UNLESS it has been set since that book was selected.
 		/// </summary>
-		public Layout PageLayout { get; set; }
+		public Layout PageLayout => CurrentBook?.GetLayout() ?? Layout.A5Portrait;
 
 		public bool ShowCropMarks
 		{
@@ -365,7 +397,7 @@ namespace Bloom.Publish
 		// currently the only cover option we have is a booklet one
 		public bool AllowPdfCover => AllowPdfBooklet;
 
-		public void Save()
+		public void SavePdf()
 		{
 			try
 			{
@@ -433,7 +465,7 @@ namespace Bloom.Publish
 				if (_currentlyLoadedBook.UserPrefs.CmykPdf)
 				{
 					// PDF for Printshop (CMYK US Web Coated V2)
-					ProcessPdfFurtherAndSave(ProcessPdfWithGhostscript.OutputType.Printshop, destFileName);
+					ProcessPdfFurtherAndSave(PdfFilePath, ProcessPdfWithGhostscript.OutputType.Printshop, destFileName);
 				}
 				else
 				{
@@ -455,7 +487,7 @@ namespace Bloom.Publish
 			}
 		}
 
-		private void ProcessPdfFurtherAndSave(ProcessPdfWithGhostscript.OutputType type, string outputPath)
+		internal static void ProcessPdfFurtherAndSave(string pdfFilePath, ProcessPdfWithGhostscript.OutputType type, string outputPath)
 		{
 			if (type == ProcessPdfWithGhostscript.OutputType.Printshop &&
 				!Bloom.Properties.Settings.Default.AdobeColorProfileEula2003Accepted)
@@ -490,8 +522,8 @@ namespace Bloom.Publish
 					@"Message displayed in a progress report dialog box");
 				progress.BackgroundWorker = new BackgroundWorker();
 				progress.BackgroundWorker.DoWork += (object sender, DoWorkEventArgs e) => {
-					var pdfProcess = new ProcessPdfWithGhostscript(type, sender as BackgroundWorker);
-					pdfProcess.ProcessPdfFile(PdfFilePath, outputPath);
+					var pdfProcess = new ProcessPdfWithGhostscript(type, sender as BackgroundWorker, e);
+					pdfProcess.ProcessPdfFile(pdfFilePath, outputPath);
 				};
 				progress.BackgroundWorker.ProgressChanged += (object sender, ProgressChangedEventArgs e) => {
 					progress.Progress = e.ProgressPercentage;
@@ -544,7 +576,6 @@ namespace Bloom.Publish
 			if (BookSelection.CurrentSelection == null)
 				return;
 			_currentlyLoadedBook = BookSelection.CurrentSelection;
-			PageLayout = _currentlyLoadedBook.GetLayout();
 
 			// Previous code here always called BBUD, claiming (from BL-8648) that it might be
 			// possible it had not been done if the user publishes a newly created book without

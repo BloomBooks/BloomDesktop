@@ -3,9 +3,14 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Text;
+using Bloom.Api;
+using Bloom.web;
+using Cairo;
+using L10NSharp;
 using SIL.CommandLineProcessing;
 using SIL.IO;
 using SIL.Progress;
+using Path = System.IO.Path;
 using TempFile = SIL.IO.TempFile;
 
 namespace Bloom.Publish.PDF
@@ -32,11 +37,13 @@ namespace Bloom.Publish.PDF
 			Printshop		// shrink images to 300dpi, convert color to CMYK (-dPDFSETTINGS=/prepress + other options)
 		};
 		private readonly OutputType _type;
+		private DoWorkEventArgs _doWorkEventArgs;
 
-		public ProcessPdfWithGhostscript(OutputType type, BackgroundWorker worker)
+		public ProcessPdfWithGhostscript(OutputType type, BackgroundWorker worker, DoWorkEventArgs doWorkEventArgs)
 		{
 			_type = type;
 			_worker = worker;
+			_doWorkEventArgs = doWorkEventArgs;
 		}
 
 		/// <summary>
@@ -50,17 +57,22 @@ namespace Bloom.Publish.PDF
 			var exePath = "/usr/bin/gs";
 			if (SIL.PlatformUtilities.Platform.IsWindows)
 				exePath = FindGhostcriptOnWindows();
+
+			var compressing = LocalizationManager.GetString("PublishTab.PdfMaker.Compress", "Compressing PDF");
+			_socketProgress = new WebSocketProgress(BloomWebSocketServer.Instance, "progress");
+			_socketProgress.MessageWithoutLocalizing(compressing);
+
 			if (!String.IsNullOrWhiteSpace(exePath) && File.Exists(exePath))
 			{
 				if (_worker != null)
 					_worker.ReportProgress(0, GetSpecificStatus());
 				using (var tempPdfFile = TempFile.WithExtension(".pdf"))
 				{
-					var runner = new CommandLineRunner();
+					_runner = new CommandLineRunner();
 					var arguments = GetArguments(tempPdfFile.Path, null);
 					var fromDirectory = String.Empty;
 					var progress = new NullProgress();	// I can't figure out how to use any IProgress based code, but we show progress okay as is.
-					var res = runner.Start(exePath, arguments, Encoding.UTF8, fromDirectory, 3600, progress, ProcessGhostcriptReporting);
+					var res = _runner.Start(exePath, arguments, Encoding.UTF8, fromDirectory, 3600, progress, ProcessGhostcriptReporting);
 					if (res.ExitCode != 0)
 					{
 						// On Linux, ghostscript doesn't deal well with some Unicode filenames.  Try renaming the input
@@ -71,7 +83,7 @@ namespace Bloom.Publish.PDF
 							RobustFile.Delete(tempInputFile.Path);		// Move won't replace even empty files.
 							RobustFile.Move(_inputPdfPath, tempInputFile.Path);
 							arguments = GetArguments(tempPdfFile.Path, tempInputFile.Path);
-							res = runner.Start(exePath, arguments, Encoding.UTF8, fromDirectory, 3600, progress, ProcessGhostcriptReporting);
+							res = _runner.Start(exePath, arguments, Encoding.UTF8, fromDirectory, 3600, progress, ProcessGhostcriptReporting);
 							RobustFile.Move(tempInputFile.Path, _inputPdfPath);
 						}
 					}
@@ -268,6 +280,8 @@ namespace Bloom.Publish.PDF
 
 		int _firstPage;
 		int _numPages;
+		private CommandLineRunner _runner;
+		private WebSocketProgress _socketProgress;
 
 		// Magic strings to match for progress reporting.  ghostscript itself doesn't seem to be localized
 		// (maybe because it's a command line program?)
@@ -275,6 +289,13 @@ namespace Bloom.Publish.PDF
 		const string kThroughWithSpaces = " through ";
 		const string kPage = "Page ";
 
+		// What share of the total progress time should be allocated to compression
+		// as we move the progress bar?
+		// Experimentally, treating it as 75% of the total time to make the PDF
+		// (with the other 25% being spent creating the initial PDF from the HTML)
+		// seems to give a roughly uniform rate of progress, but we may want to
+		// tweak it after experimenting on more typical user computers.
+		public const int kPdfCompressionShare = 75;
 		/// <summary>
 		/// Use the stdout progress reporting to move the GUI progress report along.  This does assume that
 		/// ghostscript doesn't have any localization since it's parsing English strings to extract information.
@@ -283,6 +304,23 @@ namespace Bloom.Publish.PDF
 		{
 			if (_worker == null)
 				return;		// nothing here will have any effect anyway
+			if (_worker.CancellationPending)
+			{
+				if (_doWorkEventArgs != null)
+					_doWorkEventArgs.Cancel = true;
+				try
+				{
+					_runner.Abort(1);
+				}
+				catch (InvalidOperationException)
+				{
+					// Typically means the process already stopped.
+					// Possibly a race condition between aborting the process and getting another
+					// line of output from it.
+				}
+
+				return;
+			}
 			//Debug.WriteLine(String.Format("DEBUG gs report line = \"{0}\"", line));
 			if (line.StartsWith(kProcessingPages) && line.Contains(kThroughWithSpaces))
 			{
@@ -310,7 +348,10 @@ namespace Bloom.Publish.PDF
 					try
 					{
 						var percentage = (int)(100.0F * (float)(pageNumber - _firstPage) / (float)_numPages);
+						// For old views...goes to C# progress window (remove when they go away)
 						_worker.ReportProgress(percentage);
+						// For new view...goes to Javascript code
+						_socketProgress.SendPercent(percentage * kPdfCompressionShare / 100 + (100 - kPdfCompressionShare));
 					}
 					catch (ObjectDisposedException e)
 					{

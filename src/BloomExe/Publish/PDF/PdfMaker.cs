@@ -52,6 +52,11 @@ namespace Bloom.Publish.PDF
 
 				if (doWorkEventArgs.Cancel || (doWorkEventArgs.Result != null && doWorkEventArgs.Result is Exception))
 					return;
+				if (worker.CancellationPending)
+				{
+					doWorkEventArgs.Cancel = true;
+					return;
+				}
 				if (RobustFile.Exists(specs.OutputPdfPath))
 					break; // normally the first time
 			}
@@ -82,7 +87,7 @@ namespace Bloom.Publish.PDF
 				// Note: previously compression was the last step, after making a booklet. We moved it before for
 				// the reason above. Seems like it would also have performance benefits, if anything, to shrink
 				// the file before manipulating it further. Just noting it in case there are unexpected issues.
-				var fixPdf = new ProcessPdfWithGhostscript(ProcessPdfWithGhostscript.OutputType.DesktopPrinting, worker);
+				var fixPdf = new ProcessPdfWithGhostscript(ProcessPdfWithGhostscript.OutputType.DesktopPrinting, worker, doWorkEventArgs);
 				fixPdf.ProcessPdfFile(specs.OutputPdfPath, specs.OutputPdfPath);
 				/*RobustFile.Copy(specs.OutputPdfPath, System.IO.Path.ChangeExtension(specs.OutputPdfPath, pgid + "-1.pdf"), true);*/
 				if (specs.BookIsFullBleed && specs.PrintWithFullBleed)
