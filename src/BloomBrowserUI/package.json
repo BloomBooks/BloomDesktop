@@ -25,7 +25,7 @@
         "// 'build:l10n': should be run after build.  (build-prod includes this functionality.)": " ",
         "build:l10n": "gulp build-l10n",
         "build:content": "cd ../content && npm run build",
-        "watchCode": "set NODE_ENV=debug&& webpack --watch",
+        "watchCode": "set NODE_ENV=debug&& webpack --watch --mode development --progress",
         "// You can use yarn link to symlink bloom-player. But also, bloom needs a copy in output/!": " ",
         "// note that ls -l node_modules | grep ^l will tell you what packages you are currently linking to": " ",
         "// note that this wants to be 'watch', but on windows cpx doesn't actually notice changes from a BP build, symlinked by yarn link": " ",
