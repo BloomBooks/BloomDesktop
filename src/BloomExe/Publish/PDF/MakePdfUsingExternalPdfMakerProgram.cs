@@ -143,7 +143,7 @@ namespace Bloom.Publish.PDF
 					{
 						var percent = int.Parse(parts[1].Substring(@"Percent: ".Length));
 						socketProgress.SendPercent(percent * (100 - ProcessPdfWithGhostscript.kPdfCompressionShare) / 100);
-						if (worker.CancellationPending)
+						if (worker?.CancellationPending ?? false)
 						{
 							doWorkEventArgs.Cancel = true;
 							try

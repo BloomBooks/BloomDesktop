@@ -52,7 +52,7 @@ namespace Bloom.Publish.PDF
 
 				if (doWorkEventArgs.Cancel || (doWorkEventArgs.Result != null && doWorkEventArgs.Result is Exception))
 					return;
-				if (worker.CancellationPending)
+				if (worker?.CancellationPending ?? false)
 				{
 					doWorkEventArgs.Cancel = true;
 					return;
