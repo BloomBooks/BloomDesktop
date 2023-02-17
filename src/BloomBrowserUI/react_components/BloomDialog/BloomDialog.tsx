@@ -127,7 +127,7 @@ export const BloomDialog: FunctionComponent<IBloomDialogProps> = forwardRef(
         let hasTitle = false;
         React.Children.forEach(props.children, c => {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            if ((c as any).type?.name === "DialogTitle") {
+            if ((c as any)?.type?.name === "DialogTitle") {
                 hasTitle = true;
             }
         });
