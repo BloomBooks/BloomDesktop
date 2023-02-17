@@ -24,7 +24,7 @@ namespace Bloom.Publish.Android
 		// NOTE: It's more natural for consumers to think about what languages they want to EXCLUDE, rather than what languages they want to INCLUDE.
 		public HashSet<string> AudioLanguagesToExclude;
 
-		public string[] AudioLangugesToInclude
+		public string[] AudioLanguagesToInclude
 		{
 			get
 			{

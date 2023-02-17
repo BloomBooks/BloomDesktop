@@ -199,7 +199,7 @@ namespace BloomTests.Book
 		public void Filter_PassesBookOrderForUpload()
 		{
 			Assert.That(_normalFilter.FilterRelative("myfile.BloomBookOrder"), Is.False);
-			_normalFilter.AddException("myfile.BloomBookOrder", true);
+			_normalFilter.AlwaysAccept("myfile.BloomBookOrder");
 			Assert.That(_normalFilter.FilterRelative("myfile.BloomBookOrder"), Is.True);
 		}
 	}

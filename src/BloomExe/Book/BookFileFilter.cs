@@ -18,7 +18,7 @@ namespace Bloom.Book
 	}
 
 	/// <summary>
-    /// BookFileFilter is a configurable filter for determining which books should be copied either into a temporary folder or
+    /// BookFileFilter is a configurable filter for determining which files should be copied either into a temporary folder or
     /// a zip folder, starting from a Bloom book folder. It primarily uses a white list approach: files in the root directory
     /// are copied if they have certain extensions, audio files are copied if they are used in the book (and, optionally, if
     /// they are narration files for the languages we need, or music files that are wanted). Several properties allow it to
@@ -39,7 +39,14 @@ namespace Bloom.Book
 		private string _theOneHtmlRelativePath; // relative to BookFolderPath
 
 		// Copying for a destination where the copy might be used as the source for
-		// editing or translating a book, such as upload or making a bloompack
+		// editing or translating a book, such as upload or making a bloompack.
+		// One might initially think that if we're going to be doing more editing
+		// of the book in Bloom, we'd simply want everything, but we're trying to
+		// apply the whitelist approach even here, especially since at least one
+		// case (uploading to Bloom Library) specifically allows the user to filter
+		// out certain languages and their audio. But we also don't need to upload
+		// and download backups, files related to TeamCollection, or any junk the
+		// user might have happened to put in the folder.
 		public bool ForEdit
 		{
 			get => _forEdit;
@@ -49,9 +56,11 @@ namespace Bloom.Book
 					return; // no need to do anything (or the debug check!) if not changing.
 				Debug.Assert(value == true, "We don't support reverting to not-for-edit");
 				_forEdit = value;
+				// Since we're trying to include everything we need to go on working on the book,
+				// we naturally need everything we need for the most demanding mode of publishing it.
 				ForInteractive = true;
-				// I'm not sure what this is for, possibly storing month names etc. in Wall Calendar,
-				// but BookStarter wants it if present.
+				// So far this is only used for storing month names etc. in Wall Calendar,
+				// but that's enough reason to include it. BookStarter uses it if present.
 				_specialCases["configuration.html"] = true;
 				// markdown files are sometimes used to describe templates.
 				BookLevelFileExtensionsLowerCase.Add(".md");
@@ -63,8 +72,10 @@ namespace Bloom.Book
 		}
 
 		/// <summary>
-		/// Copying for a destination where the user can interact with the book.
-		/// For example, BloomPubs can have activities.
+		/// Copying for a destination where a reader can interact with the book.
+		/// For example, BloomPubs can have activities. This is basically everything
+		/// needed in any kind of publication of the book, but this is a little less
+		/// than the set needed to go on working on it (see ForEdit above).
 		/// </summary>
 		public bool ForInteractive
 		{
@@ -99,17 +110,32 @@ namespace Bloom.Book
 			}
 		}
 
+		private string normalizePath(string path)
+		{
+			if (SIL.PlatformUtilities.Platform.IsLinux)
+				return path;
+			return path.ToLowerInvariant();
+		}
+
+		public void AlwaysAccept(string path)
+		{
+			AddException(path, true);
+		}
+
+		public void AlwaysReject(string path)
+		{
+			AddException(path, false);
+		}
+
 		/// <summary>
 		/// The specified path (starting from the book folder) should always be
 		/// accepted (or always be rejected, if the second argument is false).
 		/// This is useful for special cases that don't seem to fit any particular
 		/// pattern, like passing a BloomBookOrder for upload.
 		/// </summary>
-		public void AddException(string path, bool accept = true)
+		private void AddException(string path, bool accept = true)
 		{
-			if (!SIL.PlatformUtilities.Platform.IsLinux)
-				path = path.ToLowerInvariant();
-			_specialCases[path] = accept;
+			_specialCases[normalizePath(path)] = accept;
 		}
 		Dictionary<string, bool> _specialCases = new Dictionary<string, bool>();
 		// File paths that match one of these are wanted.
@@ -131,8 +157,7 @@ namespace Bloom.Book
 			if (!string.IsNullOrEmpty(_theOneHtmlPath))
 			{
 				_theOneHtmlRelativePath = _theOneHtmlPath.Substring(_bookFolderPrefixLength);
-				if (!SIL.PlatformUtilities.Platform.IsLinux)
-					_theOneHtmlRelativePath = _theOneHtmlRelativePath.ToLowerInvariant();
+				_theOneHtmlRelativePath = normalizePath(_theOneHtmlRelativePath);
 			}
 		}
 
@@ -200,10 +225,7 @@ namespace Bloom.Book
 
 		public bool FilterRelative(string pathFromRootFolder)
 		{
-			if (!SIL.PlatformUtilities.Platform.IsLinux)
-			{
-				pathFromRootFolder = pathFromRootFolder.ToLowerInvariant();
-			}
+			pathFromRootFolder = normalizePath(pathFromRootFolder);
 			if (_specialCases.TryGetValue(pathFromRootFolder, out bool isWanted))
 				return isWanted;
 			foreach (var regex in _specialGroups)
@@ -281,7 +303,7 @@ namespace Bloom.Book
 				if (_musicFiles == null)
 				{
 					_musicFiles = new HashSet<string>(Dom.GetBackgroundMusicFileNamesReferencedInBook()
-						.Select(s => SIL.PlatformUtilities.Platform.IsLinux ? s : s.ToLowerInvariant()));
+						.Select(s => normalizePath(s)));
 				}
 				return _musicFiles;
 			}
@@ -298,7 +320,7 @@ namespace Bloom.Book
 					var usedVideoPaths = BookStorage.GetVideoPathsRelativeToBook(element);
 					_videoFiles = new HashSet<string>(usedVideoPaths
 						.Select(s =>Path.GetFileName(s))
-						.Select(s => SIL.PlatformUtilities.Platform.IsLinux ? s : s.ToLowerInvariant()));
+						.Select(s => normalizePath(s)));
 				}
 				return _videoFiles;
 			}

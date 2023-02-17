@@ -247,20 +247,11 @@ namespace Bloom.WebLibraryIntegration
 				WantMusic = includeMusic
 			};
 			if (pdfToInclude != null)
-				filter.AddException(pdfToInclude, true);
-			filter.AddException(Path.GetFileNameWithoutExtension(pathToBloomBookDirectory) + BookInfo.BookOrderExtension, true);
+				filter.AlwaysAccept(pdfToInclude);
+			filter.AlwaysAccept(Path.GetFileNameWithoutExtension(pathToBloomBookDirectory) + BookInfo.BookOrderExtension);
 			filter.CopyBookFolderFiltered(destDirName);
 
 			ProcessVideosInTempDirectory(destDirName);
-
-			var unwantedPdfs = Directory.EnumerateFiles(destDirName, "*.pdf").Where(x => Path.GetFileName(x) != pdfToInclude);
-			foreach (var file in unwantedPdfs)
-				RobustFile.Delete(file);
-			// Don't upload corrupt htms that have been repaired
-			foreach (var path in Directory.EnumerateFiles(destDirName, BookStorage.PrefixForCorruptHtmFiles + "*.htm"))
-				RobustFile.Delete(path);
-			// Some more of the logic above might be useful to move into this method.
-			BookStorage.RemoveLocalOnlyFiles(destDirName);
 
 			if (languagesToInclude != null && languagesToInclude.Count() > 0)
 				RemoveUnwantedLanguageData(destDirName, languagesToInclude, metadataLang1Code, metadataLang2Code);

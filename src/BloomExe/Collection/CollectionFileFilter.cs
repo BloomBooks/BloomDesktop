@@ -10,10 +10,10 @@ using Bloom.Book;
 namespace Bloom.Collection
 {
 	/// <summary>
-	/// The CollectionFilter class allows passing an IFilter to a folder compression routine for an
+	/// The CollectionFileFilter class allows passing an IFilter to a folder compression routine for an
 	/// entire collection by combining the book filters of all the books in it.
 	/// </summary>
-	internal class CollectionFilter: IFilter
+	internal class CollectionFileFilter: IFilter
 	{
 		private string _rootFolder;
 		// Each filter must be in the same collection.
@@ -43,7 +43,8 @@ namespace Bloom.Collection
 			{
 				_rootFolder = root;
 			}
-			Debug.Assert(_rootFolder == root, "CollectionFilter requires all books to be in the same parent collection");
+			if(_rootFolder != root)
+				throw new ArgumentException("CollectionFileFilter requires all books to be in the same parent collection");
 			var folder = Path.GetFileName(bookFilter.BookFolderPath);
 			_bookFilters[folder] = bookFilter;
 		}

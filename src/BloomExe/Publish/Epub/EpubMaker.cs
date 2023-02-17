@@ -284,7 +284,7 @@ namespace Bloom.Publish.Epub
 				// It should only be null while running unit tests which don't create a physical file.
 				_book = PublishHelper.MakeDeviceXmatterTempBook(_book.FolderPath, _bookServer, tempBookPath,
 					_book.IsTemplateBook, _omittedPageLabels,
-					fullCapabilities: false, // no activities in Epubs.
+					includeVideoAndActivities: false, // no activities in Epubs.
 					// We could enhance this if we can figure out exactly what languages we will publish audio of.
 					// For now, I'm including them all in this initial copy. Later stages will filter to just
 					// what's visible.

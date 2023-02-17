@@ -68,12 +68,12 @@ namespace Bloom.Book
 			string dirNamePrefix, bool forReaderTools)
 		{
 			var overrides = new Dictionary<string, byte[]>();
-			var filter = new CollectionFilter();
+			var filter = new CollectionFileFilter();
 			if (forReaderTools)
 			{
 				foreach (var bookFolder in Directory.GetDirectories(directoryToCompress))
 				{
-					GetBookOverrides(bookFolder, overrides);
+					CollectReaderTemplateBookOverrides(bookFolder, overrides);
 				}
 
 				foreach (var collectionFile in Directory.GetFiles(directoryToCompress, "*.bloomcollection"))
@@ -106,14 +106,18 @@ namespace Bloom.Book
 			var overrides = new Dictionary<string, byte[]>();
 			if (forReaderTools)
 			{
-				GetBookOverrides(directoryToCompress, overrides);
+				CollectReaderTemplateBookOverrides(directoryToCompress, overrides);
 			}
 
 			CompressDirectory(outputPath, directoryToCompress, filter,
 				dirNamePrefix, overrides, wrapWithFolder);
 		}
 
-		private static void GetBookOverrides(string bookFolderPath, Dictionary<string, byte[]> overrides)
+		/// <summary>
+		/// "Collect" (collector pattern) replacements for any files in the book folder that
+		/// should be modified for a reader template.
+		/// </summary>
+		private static void CollectReaderTemplateBookOverrides(string bookFolderPath, Dictionary<string, byte[]> overrides)
 		{
 			var htmlPath = BookStorage.FindBookHtmlInFolder(bookFolderPath);
 			overrides[htmlPath] = Encoding.UTF8.GetBytes(GetBookReplacedWithTemplate(htmlPath));

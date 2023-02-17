@@ -32,7 +32,7 @@ namespace Bloom.Publish.Android
 		internal const string kDistributionBloomWeb = "bloom-web";
 		internal const string kCreatorBloom = "bloom";
 		internal const string kCreatorHarvester = "harvester";
-		public static string LastVersionCode { get; private set; }
+		public static string HashOfMostRecentlyCreatedBook { get; private set; }
 		public static Control ControlForInvoke { get; set; }
 
 		public static void CreateBloomPub(BookInfo bookInfo, AndroidPublishSettings settings, string outputFolder, BookServer bookServer, IWebSocketProgress progress )
@@ -107,8 +107,8 @@ namespace Bloom.Publish.Android
 				NarrationLanguages = null
 			};
 			// these are artifacts of uploading book to BloomLibrary.org and not useful in BloomPubs
-			filter.AddException("thumbnail-256.png", false);
-			filter.AddException("thumbnail-70.png", false);
+			filter.AlwaysReject("thumbnail-256.png");
+			filter.AlwaysReject("thumbnail-70.png");
 			return filter;
 		}
 
@@ -209,7 +209,7 @@ namespace Bloom.Publish.Android
 			var sha = Book.Book.ComputeHashForAllBookRelatedFiles(pathToFileForSha);
 			var name = "version.txt"; // must match what BloomReader is looking for in NewBookListenerService.IsBookUpToDate()
 			RobustFile.WriteAllText(Path.Combine(folderForSha, name), sha, Encoding.UTF8);
-			LastVersionCode = sha;
+			HashOfMostRecentlyCreatedBook = sha;
 		}
 
 		public static Dictionary<string, HashSet<string>> BloomPubFontsAndLangsUsed = null;
@@ -229,7 +229,7 @@ namespace Bloom.Publish.Android
 			Directory.CreateDirectory(tentativeBookFolderPath);
 			var modifiedBook = PublishHelper.MakeDeviceXmatterTempBook(bookFolderPath, bookServer,
 				tentativeBookFolderPath, isTemplateBook,
-				narrationLanguages: settings?.AudioLangugesToInclude);
+				narrationLanguages: settings?.AudioLanguagesToInclude);
 
 			modifiedBook.SetMotionAttributesOnBody(settings?.Motion ?? false);
 

@@ -23,7 +23,7 @@ namespace BloomTests.Collection
 		private string _otherBookFolderPath;
 		private string _otherBookPath;
 		private BookFileFilter _otherBookFilter;
-		private CollectionFilter _filter;
+		private CollectionFileFilter _filter;
 
 		[OneTimeSetUp]
 		public void OneTimeSetUp()
@@ -70,7 +70,7 @@ namespace BloomTests.Collection
 			RobustFile.WriteAllText(_otherBookPath, normalHtmlContent);
 			_otherBookFilter = new BookFileFilter(_otherBookFolderPath);
 
-			_filter = new CollectionFilter();
+			_filter = new CollectionFileFilter();
 			_filter.AddBookFilter(_someBookFilter);
 			_filter.AddBookFilter(_otherBookFilter);
 		}
