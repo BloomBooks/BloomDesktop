@@ -35,6 +35,8 @@ export { getEditablePageBundleExports };
 import { showPageChooserDialog } from "../pageChooser/PageChooserDialog";
 export { showPageChooserDialog };
 import "../lib/errorHandler";
+import { showBookSettingsDialog } from "./bookSettings/bookSettingsDialog";
+export { showBookSettingsDialog };
 import { reportError } from "../lib/errorHandler";
 import { IToolboxFrameExports } from "./toolbox/toolboxBootstrap";
 import { showCopyrightAndLicenseInfoOrDialog } from "./copyrightAndLicense/CopyrightAndLicenseDialog";
