@@ -93,12 +93,10 @@ namespace Bloom.Spreadsheet
 			var iContentPage = 0;
 			foreach (var page in pages)
 			{
-				var pageNumber = page.Attributes["data-page-number"]?.Value ?? "";
-				// For now we will ignore all un-numbered pages, particularly xmatter,
-				// which was handled above by exporting data div data.
-				if (pageNumber == "")
+				// We ignore all xmatter pages, which were handled above by exporting data div data.
+				if (XMatterHelper.IsXMatterPage(page))
 					continue;
-
+				var pageNumber = page.Attributes["data-page-number"]?.Value ?? "";
 				//Each page alternates colors
 				var colorForPage = iContentPage++ % 2 == 0 ? InternalSpreadsheet.AlternatingRowsColor1 : InternalSpreadsheet.AlternatingRowsColor2;
 				AddContentRows(page, pageNumber, bookFolderPath, colorForPage);

@@ -21,6 +21,7 @@ using System.IO;
 using System.Text;
 using System.Text.RegularExpressions;
 using Bloom.web;
+using System.Linq;
 
 namespace Bloom.Spreadsheet
 {
@@ -170,6 +171,9 @@ namespace Bloom.Spreadsheet
 						using (Image image = Image.FromFile(imageSrcPath))
 						{
 							string imageName = Path.GetFileNameWithoutExtension(imageSrcPath);
+							// Allow for image reuse even though it shouldn't happen.
+							if (worksheet.Drawings.Any(xx => xx.Name == imageName))
+								imageName = $"{imageName}-{rowNum}";
 							var origImageHeight = image.Size.Height;
 							var origImageWidth = image.Size.Width;
 							int finalWidth = defaultImageWidth;
