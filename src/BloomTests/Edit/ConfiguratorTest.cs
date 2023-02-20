@@ -178,6 +178,46 @@ namespace BloomTests.Edit
 		{
 			Assert.AreEqual(DynamicJson.Parse(a), DynamicJson.Parse(b));
 		}
+		[Test]
+		public void CollectJsonData_Quotes_DataMerged()
+		{
+			var firstData = DynamicJson.Serialize(new
+			{
+				library = new
+				{
+					food = new
+					{
+						vegetables = new string[] { @"beans", @"""fruit""", @"nu""ts" },
+						meats = new string[] { @"'fish'", @"be'ef", @"chicken" }
+					}
+				}
+			});
+			var secondData = DynamicJson.Serialize(new
+			{
+				library = new
+				{
+					food = new
+					{
+						vegetables = new string[] { @"green beans", @"""fruit""", @"nu""ts" },
+						meats = new string[] { @"'fresh fish'", @"be'ef", @"chicken", @"turkey" }
+					}
+				}
+			});
+
+			var first = new Configurator(_collectionFolder.Path, NavigationIsolator.GetOrCreateTheOneNavigationIsolator());
+			first.CollectJsonData(firstData.ToString());
+			first.CollectJsonData(secondData.ToString());
+
+			var second = new Configurator(_collectionFolder.Path, NavigationIsolator.GetOrCreateTheOneNavigationIsolator());
+			dynamic j = (DynamicJson)DynamicJson.Parse(second.GetCollectionData());
+			Assert.AreEqual("green beans", j.library.food.vegetables[0]);
+			Assert.AreEqual("\"fruit\"", j.library.food.vegetables[1]);
+			Assert.AreEqual("nu\"ts", j.library.food.vegetables[2]);
+			Assert.AreEqual("'fresh fish'", j.library.food.meats[0]);
+			Assert.AreEqual("be'ef", j.library.food.meats[1]);
+			Assert.AreEqual("chicken", j.library.food.meats[2]);
+			Assert.AreEqual("turkey", j.library.food.meats[3]);
+		}
 
 		[Test]
 		public void WhenCollectedNoLocalDataThenLocalDataIsEmpty()
