@@ -37,6 +37,9 @@ namespace Bloom.Book
 		private int _bookFolderPrefixLength; // includes following slash
 		private string _theOneHtmlPath;
 		private string _theOneHtmlRelativePath; // relative to BookFolderPath
+		// This violates our "white list" policy, but some white-listed rules
+		// have exceptions
+		private List<Regex> _thingsToExclude = new List<Regex>();
 
 		// Copying for a destination where the copy might be used as the source for
 		// editing or translating a book, such as upload or making a bloompack.
@@ -47,18 +50,18 @@ namespace Bloom.Book
 		// out certain languages and their audio. But we also don't need to upload
 		// and download backups, files related to TeamCollection, or any junk the
 		// user might have happened to put in the folder.
-		public bool ForEdit
+		public bool IncludeFilesForContinuedEditing
 		{
-			get => _forEdit;
+			get => _includeFilesForContinuedEditing;
 			set
 			{
-				if (value == _forEdit)
+				if (value == _includeFilesForContinuedEditing)
 					return; // no need to do anything (or the debug check!) if not changing.
 				Debug.Assert(value == true, "We don't support reverting to not-for-edit");
-				_forEdit = value;
+				_includeFilesForContinuedEditing = value;
 				// Since we're trying to include everything we need to go on working on the book,
 				// we naturally need everything we need for the most demanding mode of publishing it.
-				ForInteractive = true;
+				IncludeFilesNeededForBloomPlayer = true;
 				// So far this is only used for storing month names etc. in Wall Calendar,
 				// but that's enough reason to include it. BookStarter uses it if present.
 				_specialCases["configuration.html"] = true;
@@ -75,17 +78,17 @@ namespace Bloom.Book
 		/// Copying for a destination where a reader can interact with the book.
 		/// For example, BloomPubs can have activities. This is basically everything
 		/// needed in any kind of publication of the book, but this is a little less
-		/// than the set needed to go on working on it (see ForEdit above).
+		/// than the set needed to go on working on it (see IncludeFilesForContinuedEditing above).
 		/// </summary>
-		public bool ForInteractive
+		public bool IncludeFilesNeededForBloomPlayer
 		{
-			get => _forInteractive;
+			get => _includeFilesNeededForBloomPlayer;
 			set
 			{
-				if (value == _forInteractive)
+				if (value == _includeFilesNeededForBloomPlayer)
 					return; // no need to do anything (or the debug check!) if not changing.
 				Debug.Assert(value == true, "We don't support reverting to not-for-interactive");
-				_forInteractive = value;
+				_includeFilesNeededForBloomPlayer = value;
 				_specialGroups.Add(new Regex(@"^activities(/|\\)"));
 			}
 		}
@@ -144,8 +147,8 @@ namespace Bloom.Book
 		// which patterns match, we'd have to worry about order; and (b) our goal is
 		// to whitelist what we DO want rather than blacklisting what we don't.
 		List<Regex> _specialGroups = new List<Regex>();
-		private bool _forEdit;
-		private bool _forInteractive;
+		private bool _includeFilesForContinuedEditing;
+		private bool _includeFilesNeededForBloomPlayer;
 		private HtmlDom _dom;
 
 		public BookFileFilter(string bookFolderPath)
@@ -159,6 +162,8 @@ namespace Bloom.Book
 				_theOneHtmlRelativePath = _theOneHtmlPath.Substring(_bookFolderPrefixLength);
 				_theOneHtmlRelativePath = normalizePath(_theOneHtmlRelativePath);
 			}
+			_thingsToExclude.Add(new Regex("^thumbnail-"));
+			_thingsToExclude.Add(new Regex(normalizePath("^placeHolder")));
 		}
 
 		HtmlDom Dom
@@ -232,6 +237,12 @@ namespace Bloom.Book
 			{
 				if (regex.IsMatch(pathFromRootFolder))
 					return true;
+			}
+
+			foreach (var regex in _thingsToExclude)
+			{
+				if (regex.IsMatch(pathFromRootFolder))
+					return false;
 			}
 			var path = pathFromRootFolder.Split(Path.DirectorySeparatorChar);
 			if (path.Length > 1)

@@ -241,7 +241,7 @@ namespace Bloom.WebLibraryIntegration
 			Directory.CreateDirectory(wrapperPath);
 
 			var destDirName = Path.Combine(wrapperPath, Path.GetFileName(pathToBloomBookDirectory));
-			var filter = new BookFileFilter(pathToBloomBookDirectory) { ForEdit = true,
+			var filter = new BookFileFilter(pathToBloomBookDirectory) { IncludeFilesForContinuedEditing = true,
 				NarrationLanguages = (includeNarrationAudio? languagesToInclude : Array.Empty<string>()),
 				WantVideo = true,
 				WantMusic = includeMusic

@@ -704,7 +704,7 @@ namespace Bloom.CollectionTab
 		{
 			var filter = new BookFileFilter(dir)
 			{
-				ForEdit = true,
+				IncludeFilesForContinuedEditing = true,
 				// want audio in bloompack: see https://issues.bloomlibrary.org/youtrack/issue/BL-11741.
 				NarrationLanguages = null, // all audio
 

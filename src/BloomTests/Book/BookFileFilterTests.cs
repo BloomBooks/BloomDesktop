@@ -70,8 +70,8 @@ namespace BloomTests.Book
 			RobustFile.WriteAllText(_configHtmlPath, configHtmlContent);
 			RobustFile.WriteAllText(_otherHtmlPath, configHtmlContent);
 			_normalFilter = new BookFileFilter(_normalBookFolderPath);
-			_filterForEdit = new BookFileFilter(_normalBookFolderPath) {ForEdit = true};
-			_filterForInteractive = new BookFileFilter(_normalBookFolderPath) { ForInteractive = true };
+			_filterForEdit = new BookFileFilter(_normalBookFolderPath) {IncludeFilesForContinuedEditing = true};
+			_filterForInteractive = new BookFileFilter(_normalBookFolderPath) { IncludeFilesNeededForBloomPlayer = true };
 		}
 
 		[OneTimeTearDown]
@@ -139,6 +139,33 @@ namespace BloomTests.Book
 			Assert.That(_filterForInteractive.FilterRelative(Path.Combine("activities", "audio", "mynoise.mp3")), Is.True);
 			Assert.That(_filterForInteractive.FilterRelative(Path.Combine("activities", "video", "myvideo.mp4")), Is.True);
 			Assert.That(_filterForInteractive.FilterRelative(Path.Combine("activities", "something.unknown")), Is.True);
+			Assert.That(_filterForInteractive.FilterRelative(Path.Combine("activities", "placeHolder.png")), Is.True);
+			Assert.That(_filterForInteractive.FilterRelative(Path.Combine("activities", "thumbnail-256.png")), Is.True);
+		}
+
+		[Test]
+		public void Filter_PassesImagesInRootFolder()
+		{
+			Assert.That(_normalFilter.FilterRelative("green elephants.png"), Is.True);
+			Assert.That(_normalFilter.FilterRelative("pink frogs.jpg"), Is.True);
+			Assert.That(_normalFilter.FilterRelative("yellow signs.svg"), Is.True);
+			Assert.That(_normalFilter.FilterRelative("dirty thumbnails--cleaning.png"), Is.True);
+		}
+
+		[Test]
+		public void Filter_ExcludesThumbnailsInRootFolder()
+		{
+			Assert.That(_normalFilter.FilterRelative("thumbnail-256.png"), Is.False);
+			Assert.That(_normalFilter.FilterRelative("thumbnail-70.png"), Is.False);
+			Assert.That(_normalFilter.FilterRelative("thumbnail-976.png"), Is.False);
+			Assert.That(_filterForEdit.FilterRelative("thumbnail-976.png"), Is.False);
+		}
+
+		[Test]
+		public void Filter_ExcludesPlaceholdersInRootFolder()
+		{
+			Assert.That(_normalFilter.FilterRelative("placeHolder.png"), Is.False);
+			Assert.That(_normalFilter.FilterRelative("placeHolder122.png"), Is.False);
 		}
 
 		[Test]

@@ -478,7 +478,7 @@ namespace Bloom.web.controllers
 			GatherReportInfoExceptScreenshot(exception, detailedMessage, shortUserLevelMessage, isShortMessagePreEncoded);
 
 			if (controlForScreenshotting == null)
-				controlForScreenshotting = Form.ActiveForm;
+				controlForScreenshotting = Shell.GetShellOrOtherOpenForm();
 			if (controlForScreenshotting == null) // still possible if we come from a "Details" button
 				controlForScreenshotting = FatalExceptionHandler.ControlOnUIThread;
 			ResetScreenshotFile();

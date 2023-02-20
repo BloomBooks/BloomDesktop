@@ -454,7 +454,7 @@ namespace Bloom.Publish
 		public static Book.Book MakeDeviceXmatterTempBook(string bookFolderPath, BookServer bookServer, string tempFolderPath, bool isTemplateBook,
 			Dictionary<string,int> omittedPageLabels = null, bool includeVideoAndActivities = true, string[] narrationLanguages = null)
 		{
-			var filter = new BookFileFilter(bookFolderPath) {ForInteractive = includeVideoAndActivities,
+			var filter = new BookFileFilter(bookFolderPath) {IncludeFilesNeededForBloomPlayer = includeVideoAndActivities,
 				WantVideo = includeVideoAndActivities, NarrationLanguages = narrationLanguages};
 			filter.CopyBookFolderFiltered(tempFolderPath);
 			// We can always save in a temp book

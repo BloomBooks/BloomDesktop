@@ -101,7 +101,7 @@ namespace Bloom.Publish.Android
 		{
 			var filter = new BookFileFilter(folderPath)
 			{
-				ForInteractive = true,
+				IncludeFilesNeededForBloomPlayer = true,
 				WantMusic = true,
 				WantVideo = true,
 				NarrationLanguages = null

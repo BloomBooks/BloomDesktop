@@ -22,7 +22,7 @@ namespace BloomTests.ImageProcessing
 			string jpegPath = Path.Combine(Path.GetTempPath(), Path.GetTempFileName() + ".jpg");
 			try
 			{
-				Assert.IsTrue(ImageUtils.TryChangeFormatToJpegIfHelpful(PalasoImage.FromFile(path), jpegPath));
+				Assert.IsTrue(ImageUtils.TryChangeFormatToJpegIfHelpful(PalasoImage.FromFileRobustly(path), jpegPath));
 				Assert.IsTrue(File.Exists(jpegPath));
 			}
 			finally
@@ -37,7 +37,7 @@ namespace BloomTests.ImageProcessing
 		{
 			var path = FileLocationUtilities.GetFileDistributedWithApplication(_pathToTestImages, "bird.png");
 			string jpegPath = Path.Combine(Path.GetTempPath(), Path.GetTempFileName() + ".jpg");
-			Assert.IsFalse(ImageUtils.TryChangeFormatToJpegIfHelpful(PalasoImage.FromFile(path), jpegPath));
+			Assert.IsFalse(ImageUtils.TryChangeFormatToJpegIfHelpful(PalasoImage.FromFileRobustly(path), jpegPath));
 			Assert.IsFalse(File.Exists(jpegPath));
 		}
 
