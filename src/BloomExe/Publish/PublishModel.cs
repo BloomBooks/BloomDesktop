@@ -194,7 +194,7 @@ namespace Bloom.Publish
 		private string GetKeywords(BookMetaData metaData)
 		{
 			var keywords = String.Join("\r\n", metaData.Tags);
-			if (metaData.Summary != null)
+			if (metaData.Subjects != null)
 			{
 				foreach (var subject in metaData.Subjects)
 					keywords = keywords + $"\r\n{subject.label}:{subject.value}";
