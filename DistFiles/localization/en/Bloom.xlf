@@ -4223,6 +4223,10 @@
         <note>ID: PublishTab.PdfPrint.BookletModes</note>
         <note>Heading above Option panel to right of PDF preview</note>
       </trans-unit>
+      <trans-unit id="PublishTab.PdfPrint.AboutPdfPrint">
+        <source xml:lang="en">About PDF and Print</source>
+        <note>ID: PublishTab.PdfPrint.AboutPdfPrint</note>
+      </trans-unit>
       <trans-unit id="PublishTab.PdfPrint.PrintshopOptions">
         <source xml:lang="en">Prepare for Printshop</source>
         <note>ID: PublishTab.PdfPrint.PrintshopOptions</note>
