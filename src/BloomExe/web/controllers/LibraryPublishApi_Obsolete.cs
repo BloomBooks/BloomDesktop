@@ -1,4 +1,4 @@
-﻿using Bloom.Api;
+using Bloom.Api;
 using Bloom.Publish.BloomLibrary;
 
 namespace Bloom.web.controllers
@@ -6,14 +6,14 @@ namespace Bloom.web.controllers
 	/// <summary>
 	/// APIs related to the BloomLibraryUpload control.
 	/// </summary>
-	class LibraryPublishApi
+	class LibraryPublishApi_Obsolete
 	{
 		private static BloomLibraryUploadControl _uploadControl;
 
 		public void RegisterWithApiHandler(BloomApiHandler apiHandler)
 		{
-			apiHandler.RegisterEndpointLegacy("libraryPublish/upload", HandleUpload, true);
-			apiHandler.RegisterEndpointLegacy("libraryPublish/cancel", HandleCancel, true);
+			apiHandler.RegisterEndpointHandler("libraryPublish/upload_obsolete", HandleUpload, true);
+			apiHandler.RegisterEndpointHandler("libraryPublish/cancel_obsolete", HandleCancel, true);
 		}
 
 		public static BloomLibraryUploadControl SetUploadControl
