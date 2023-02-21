@@ -75,6 +75,7 @@ export const PageChooserDialog: React.FunctionComponent<IPageChooserdialogProps>
     const [redoCounter, setRedoCounter] = useState(0);
 
     const closeDialog = () => {
+        WebSocketManager.closeSocket("page-chooser");
         setOpen(false);
     };
 
@@ -103,6 +104,13 @@ export const PageChooserDialog: React.FunctionComponent<IPageChooserdialogProps>
     const [selectedTemplatePageDiv, setSelectedTemplatePageDiv] = useState<
         HTMLDivElement | undefined
     >(undefined);
+
+    // In order to scroll predictably to the last page added when we open the dialog, we must ensure that
+    // of the axios calls to get the pages of the various templates have returned BEFORE we try to scroll.
+    // To do that, we count all the template books and make sure they've all returned (successfully or not),
+    // before we set allPagesLoaded, which triggers the scrolling.
+    const [templateBooksLoadedCount, setTemplateBooksLoadedCount] = useState(0);
+    const [allPagesLoaded, setAllPagesLoaded] = useState(false);
 
     const isEnterpriseAvailable = useEnterpriseAvailable();
 
@@ -178,7 +186,7 @@ export const PageChooserDialog: React.FunctionComponent<IPageChooserdialogProps>
                 thumbnailUpdatedListener
             );
         };
-    }, []);
+    }, [thumbnailUpdatedListener]);
 
     const getToolId = (templatePageDiv: HTMLDivElement | undefined): string => {
         return templatePageDiv
@@ -262,21 +270,15 @@ export const PageChooserDialog: React.FunctionComponent<IPageChooserdialogProps>
         );
     };
 
-    // It doesn't work to put this scrolling-on-selection mechanism in TemplateBookPages, because we need
-    // the entire dialog (left half anyway) to render before we scroll, otherwise we may end up rendering
-    // another group above the selected one and scrolling it off the screen again.
-    useEffect(() => {
-        const selectedNode = document.getElementsByClassName(
-            "selectedTemplatePage"
-        )[0];
-        // Scroll to show it (only useful if 'defaultPageToSelect' is defined).
-        if (selectedNode) {
-            selectedNode.scrollIntoView({
-                behavior: "smooth",
-                block: "nearest"
-            });
+    const bookLoadedHandler = () => {
+        const newCount = templateBooksLoadedCount + 1;
+        if (newCount === templateBookUrls.length) {
+            setTemplateBooksLoadedCount(0);
+            setAllPagesLoaded(true);
+        } else {
+            setTemplateBooksLoadedCount(newCount);
         }
-    }, [selectedTemplatePageDiv]);
+    };
 
     const getTemplateBooks = (): JSX.Element[] | undefined => {
         if (templateBookUrls.length === 0) {
@@ -300,10 +302,33 @@ export const PageChooserDialog: React.FunctionComponent<IPageChooserdialogProps>
                     key={index}
                     onTemplatePageSelect={templatePageClickHandler}
                     onTemplatePageDoubleClick={templatePageDoubleClickHandler}
+                    onLoad={bookLoadedHandler}
                 />
             );
         });
     };
+
+    // It doesn't work to put this scrolling-on-selection mechanism in TemplateBookPages, because we need
+    // the entire dialog (left half anyway) to render before we scroll, otherwise we may end up rendering
+    // another group above the selected one and scrolling it off the screen again.
+    useEffect(() => {
+        if (!allPagesLoaded) return;
+        const selectedNode = document.getElementsByClassName(
+            "selectedTemplatePage"
+        )[0];
+        // Scroll to show it (only useful if 'defaultPageToSelect' is defined).
+        if (selectedNode && defaultPageId === selectedTemplatePageDiv?.id) {
+            selectedNode.scrollIntoView({
+                behavior: "smooth",
+                block: "nearest"
+            });
+        }
+        // We were having trouble with the scrolling to the last page added being triggered before some of
+        // the earlier (in the list) template books had loaded their pages. Now we wait until all of the
+        // template books have returned from their respective axios calls with their pages (or errored out).
+        // This keeps the scrolling linked to the actual size of the dialog, since the groupDisplay section
+        // of the dialog grows to accomodate all the pages as it's being rendered.
+    }, [defaultPageId, selectedTemplatePageDiv, allPagesLoaded]);
 
     // Return true if choosing the current layout will cause loss of data
     const willLoseData = (
