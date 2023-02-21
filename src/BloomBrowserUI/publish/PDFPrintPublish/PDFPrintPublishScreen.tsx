@@ -32,6 +32,7 @@ import {
     DialogMiddle
 } from "../../react_components/BloomDialog/BloomDialog";
 import { ProgressDialog } from "../../react_components/Progress/ProgressDialog";
+import HelpLink from "../../react_components/helpLink";
 
 // The common behavior of the Print and Save buttons.
 // There is probably some way to get this look out of BloomButton,
@@ -93,6 +94,11 @@ export const PDFPrintPublishScreen = () => {
                                 css={css`
                                     height: 100%;
                                     width: 100%;
+                                    box-sizing: border-box;
+                                    // By default in WV2, an iframe has a 2px inset border,
+                                    // which against our background only shows up on the top and left.
+                                    border-color: gray;
+                                    border-style: solid;
                                 `}
                                 src={path}
                             />
@@ -104,7 +110,10 @@ export const PDFPrintPublishScreen = () => {
                                     margin-left: 20px;
                                 `}
                             >
-                                <Span l10nKey="PublishTab.PdfMaker.ClickToStart">
+                                <Span
+                                    l10nKey="PublishTab.PdfMaker.ClickToStart"
+                                    temporarilyDisableI18nWarning={true}
+                                >
                                     "Click a button on the right to start
                                     creating PDF."
                                 </Span>
@@ -113,12 +122,12 @@ export const PDFPrintPublishScreen = () => {
                     </ThemeProvider>
                 </StyledEngineProvider>
             </PreviewPanel>
-            <PublishPanel
+            {/* <PublishPanel
                 css={css`
                     display: block;
                     flex-grow: 1;
                 `}
-            ></PublishPanel>
+            ></PublishPanel> */}
         </React.Fragment>
     );
 
@@ -140,15 +149,14 @@ export const PDFPrintPublishScreen = () => {
                 `}
             />
             <HelpGroup>
-                <Typography>Not a real "HelpGroup"; needs changing</Typography>
-                {/* Replace with links to PDF and Printing help
                 <HelpLink
-                    l10nKey="PublishTab.Android.AboutBloomPUB"
-                    helpId="Tasks/Publish_tasks/Make_a_BloomPUB_file_overview.htm"
+                    l10nKey="PublishTab.PdfPrint.AboutPdfPrint"
+                    // Wants to be PDF_and_Print.htm when that gets written
+                    helpId="Tasks/Publish_tasks/Generate_a_PDF_file.htm"
+                    temporarilyDisableI18nWarning={true}
                 >
-                    About BloomPUB
+                    About PDF and Print
                 </HelpLink>
-                */}
             </HelpGroup>
         </SettingsPanel>
     );

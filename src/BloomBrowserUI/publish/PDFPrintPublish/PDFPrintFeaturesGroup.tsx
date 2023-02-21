@@ -13,6 +13,7 @@ import { ApiCheckbox } from "../../react_components/ApiCheckbox";
 import Select from "@mui/material/Select";
 import MenuItem from "@mui/material/MenuItem";
 import { Div } from "../../react_components/l10nComponents";
+import { RequiresBloomEnterpriseAdjacentIconWrapper } from "../../react_components/requiresBloomEnterprise";
 
 interface PdfReadyMessage {
     path: string;
@@ -110,22 +111,24 @@ export const PDFPrintFeaturesGroup: React.FunctionComponent<{
                 )}
             >
                 <FormGroup>
-                    <ApiCheckbox
-                        english="Full Bleed"
-                        l10nKey="PublishTab.PdfMaker.FullBleed"
-                        apiEndpoint="publish/pdf/fullBleed"
-                        disabled={!allowFullBleed}
-                        onChange={() => {
-                            // Currently Full Bleed has no effect on Booklet modes.
-                            // There's also no need to immediately generate a PDF if we
-                            // haven't chosen a mode yet. We just want to fix an obsolete
-                            // Simple mode preview if one is showing.
-                            if (activeButton === "simple") {
-                                props.onChange?.();
-                                post("publish/pdf/" + activeButton);
-                            }
-                        }}
-                    />
+                    <RequiresBloomEnterpriseAdjacentIconWrapper>
+                        <ApiCheckbox
+                            english="Full Bleed"
+                            l10nKey="PublishTab.PdfMaker.FullBleed"
+                            apiEndpoint="publish/pdf/fullBleed"
+                            disabled={!allowFullBleed}
+                            onChange={() => {
+                                // Currently Full Bleed has no effect on Booklet modes.
+                                // There's also no need to immediately generate a PDF if we
+                                // haven't chosen a mode yet. We just want to fix an obsolete
+                                // Simple mode preview if one is showing.
+                                if (activeButton === "simple") {
+                                    props.onChange?.();
+                                    post("publish/pdf/" + activeButton);
+                                }
+                            }}
+                        />
+                    </RequiresBloomEnterpriseAdjacentIconWrapper>
                     <Div
                         l10nKey="PublishTab.PdfMaker.Cmyk"
                         temporarilyDisableI18nWarning={true}
@@ -145,7 +148,7 @@ export const PDFPrintFeaturesGroup: React.FunctionComponent<{
                                 }
                             }
                         `}
-                        variant="standard"
+                        variant="outlined"
                         value={cmyk ? "cmyk" : "none"}
                         onChange={e => {
                             const newVal = e.target.value as string;
