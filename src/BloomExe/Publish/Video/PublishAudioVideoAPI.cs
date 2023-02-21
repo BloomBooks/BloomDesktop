@@ -2,7 +2,9 @@ using System;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Text;
 using System.Windows.Forms;
+using System.Xml;
 using Bloom.Api;
 using Bloom.MiscUI;
 using Bloom.Publish.Android;
@@ -158,25 +160,6 @@ namespace Bloom.Publish.Video
 
 			apiHandler.RegisterEndpointHandler(kApiUrlPart + "startRecording", request =>
 			{
-				var videoList = request.GetPostStringOrNull();
-				var anyVideoHasAudio = _recordVideoWindow?.AnyVideoHasAudio(videoList, request.CurrentBook.FolderPath) ?? false;
-				if (anyVideoHasAudio)
-				{
-					var messageBoxButtons = new[]
-					{
-						new MessageBoxButton() { Text = LocalizationManager.GetString("Common.Continue","Continue"), Id = "continue" },
-						new MessageBoxButton() { Text = LocalizationManager.GetString("Common.Cancel", "Cancel"), Id = "cancel", Default = true }
-					};
-					if (BloomMessageBox.Show(null,
-						    LocalizationManager.GetString("PublishTab.RecordVideo.NoAudioInVideo",
-							"Currently, Bloom does not support including audio from Sign Language videos in video output."),
-						    messageBoxButtons) == "cancel")
-					{
-						request.Failed("canceled");
-						_recordVideoWindow.Close();
-						return;
-					}
-				}
 				_recordVideoWindow?.StartFfmpegForVideoCapture();
 				request.PostSucceeded();
 			}, true, false);
@@ -356,9 +339,49 @@ namespace Bloom.Publish.Video
 		[DllImport("user32.dll")]
 		static extern ThreadDpiAwareContext SetThreadDpiAwarenessContext(PublishAudioVideoAPI.ThreadDpiAwareContext newContext);
 
+		private string GetVideoList(Bloom.Book.Book book)
+		{
+			var result = new StringBuilder();
+			foreach (var ev in book.RawDom.GetElementsByTagName("video").Cast<XmlElement>())
+			{
+				var sources = ev.GetElementsByTagName("source");
+				if (sources.Count > 0)
+				{
+					var src = sources[0].Attributes["src"]?.Value;
+					if (!String.IsNullOrEmpty(src))
+					{
+						if (result.Length > 0)
+							result.Append("|"); // illegal in file names, so should be a safe separator.
+						result.Append(src);
+					}
+				}
+			}
+			return result.ToString();
+		}
+
 		private void RecordVideo(ApiRequest request)
 		{
 			_recordVideoWindow = RecordVideoWindow.Create(_webSocketServer);
+			var videoList = GetVideoList(request.CurrentBook);
+			var anyVideoHasAudio = _recordVideoWindow.AnyVideoHasAudio(videoList, request.CurrentBook.FolderPath);
+			if (anyVideoHasAudio)
+			{
+				var messageBoxButtons = new[]
+				{
+					new MessageBoxButton() { Text = LocalizationManager.GetString("Common.Continue","Continue"), Id = "continue" },
+					new MessageBoxButton() { Text = LocalizationManager.GetString("Common.Cancel", "Cancel"), Id = "cancel", Default = true }
+				};
+				if (BloomMessageBox.Show(null,
+						LocalizationManager.GetString("PublishTab.RecordVideo.NoAudioInVideo",
+						"Currently, Bloom does not support including audio from Sign Language videos in video output."),
+						messageBoxButtons) == "cancel")
+				{
+					_recordVideoWindow.Close();
+					_recordVideoWindow.Dispose();
+					_recordVideoWindow = null;
+					return;
+				}
+			}
 			string format = request.CurrentBook.BookInfo.PublishSettings.AudioVideo.Format;
 			_recordVideoWindow.SetFormat(format,
 				ShouldRecordAsLandscape(request.CurrentBook, format), request.CurrentBook.GetLayout());
