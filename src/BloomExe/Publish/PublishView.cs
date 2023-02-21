@@ -24,6 +24,7 @@ using Bloom.Publish.PDF;
 using Bloom.Publish.Video;
 using SIL.Progress;
 using Bloom.ToPalaso;
+using Bloom.web.controllers;
 
 namespace Bloom.Publish
 {
@@ -586,7 +587,7 @@ namespace Bloom.Publish
 					break;
 					}
 				case PublishModel.DisplayModes.Upload:
-					//BloomPubMaker.ControlForInvoke = ParentForm; // something created on UI thread that won't go away
+					LibraryPublishApi.Model = new BloomLibraryPublishModel(_bookTransferrer, _model.BookSelection.CurrentSelection, _model);
 					ShowHtmlPanel(BloomFileLocator.GetBrowserFile(false, "publish", "LibraryPublish", "loader.html"));
 					break;
 				case PublishModel.DisplayModes.PdfPrint:

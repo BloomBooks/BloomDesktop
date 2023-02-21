@@ -3,29 +3,91 @@ import { jsx, css } from "@emotion/react";
 import * as React from "react";
 import { useEffect, useState } from "react";
 import { TextField, Step, StepLabel, StepContent } from "@mui/material";
+import { get, postString } from "../../utils/bloomApi";
 import { BloomStepper } from "../../react_components/BloomStepper";
 import { Div, P } from "../../react_components/l10nComponents";
 import BloomButton from "../../react_components/bloomButton";
 import { PWithLink } from "../../react_components/pWithLink";
 import { ProgressBox } from "../../react_components/Progress/progressBox";
 import { MuiCheckbox } from "../../react_components/muiCheckBox";
+import { useL10n } from "../../react_components/l10nHooks";
+
+interface IReadonlyBookInfo {
+    title: string;
+    copyright: string;
+    license: string;
+    licenseType: string;
+    licenseToken: string;
+    licenseRights: string;
+}
 
 export const LibraryPublishSteps: React.FunctionComponent = () => {
-    const [summary, setSummary] = useState<string>(
-        // TODO use real data
-        "His favourite blue cap that was bought at the fair gets stuck in the tree. How will the boy be consoled?"
+    const localizedAllRightsReserved = useL10n(
+        "All rights reserved (Contact the Copyright holder for any permissions.)",
+        "PublishTab.Upload.AllReserved"
     );
-    const [isReadyForUpload, setIsReadyForUpload] = useState<boolean>(false);
+    const localizedSuggestChangeCC = useL10n(
+        "Suggestion: Creative Commons Licenses make it much easier for others to use your book, even if they aren't fluent in the language of your custom license.",
+        "PublishTab.Upload.SuggestChangeCC"
+    );
+    const localizedSuggestAssignCC = useL10n(
+        "Suggestion: Assigning a Creative Commons License makes it easy for you to clearly grant certain permissions to everyone.",
+        "PublishTab.Upload.SuggestAssignCC"
+    );
+
+    const [bookInfo, setBookInfo] = useState<IReadonlyBookInfo>();
+    useEffect(() => {
+        get("libraryPublish/getBookInfo", result => {
+            setBookInfo(result.data);
+            setSummary(result.data.summary);
+        });
+    }, []);
+
+    const [summary, setSummary] = useState<string>("");
+    useEffect(() => {
+        if (bookInfo) postString("libraryPublish/setSummary", summary);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [summary]); // purposefully not including bookInfo, so we don't post on initial load
+
+    const [agreementsAccepted, setAgreementsAccepted] = useState<boolean>(
+        false
+    );
+    function isReadyForUpload(): boolean {
+        return agreementsAccepted && !!bookInfo?.title && !!bookInfo?.copyright;
+    }
+
     const [isUploadComplete, setIsUploadComplete] = useState<boolean>(false);
+
+    const [licenseText, setLicenseText] = useState<string>("");
+    const [licenseSuggestion, setLicenseSuggestion] = useState<string>("");
+    useEffect(() => {
+        switch (bookInfo?.licenseType) {
+            case "CreativeCommons":
+                setLicenseText("Creative Commons " + bookInfo?.licenseToken);
+                break;
+            case "Null":
+                setLicenseText(localizedAllRightsReserved);
+                setLicenseSuggestion(localizedSuggestAssignCC);
+                break;
+            case "Custom":
+                setLicenseText(bookInfo?.licenseRights);
+                setLicenseSuggestion(localizedSuggestChangeCC);
+                break;
+        }
+    }, [
+        bookInfo,
+        localizedAllRightsReserved,
+        localizedSuggestAssignCC,
+        localizedSuggestChangeCC
+    ]);
 
     return (
         <BloomStepper orientation="vertical">
-            <Step active={true} completed={isReadyForUpload}>
+            <Step active={true} completed={isReadyForUpload()}>
                 <StepLabel>Confirm Metadata</StepLabel>
                 <StepContent>
-                    <LabelWrapper labelText="Title">
-                        {/* TODO use real data */}
-                        my book title
+                    <LabelWrapper labelText="Title" required={true}>
+                        {bookInfo?.title}
                     </LabelWrapper>
                     <TextField
                         // needed by aria for a11y
@@ -69,25 +131,24 @@ export const LibraryPublishSteps: React.FunctionComponent = () => {
                             }
                         `}
                     />
-                    <LabelWrapper labelText="Copyright">
-                        {/* TODO use real data */}
-                        Copyright 2019 Napil National Language Preservation
-                        Institute
+                    <LabelWrapper labelText="Copyright" required={true}>
+                        {bookInfo?.copyright}
                     </LabelWrapper>
                     <LabelWrapper labelText="Usage/License">
-                        {/* TODO use real data */}
-                        Creative Commons CC-BY-NC-SA
+                        {licenseText}
+                        {bookInfo?.licenseRights}
+                        <WarningMessage>{licenseSuggestion}</WarningMessage>
                     </LabelWrapper>
                 </StepContent>
             </Step>
-            <Step active={true} completed={isReadyForUpload}>
+            <Step active={true} completed={isReadyForUpload()}>
                 <StepLabel>Agreements</StepLabel>
                 <StepContent>
-                    <Agreements onReadyChange={setIsReadyForUpload} />
+                    <Agreements onReadyChange={setAgreementsAccepted} />
                 </StepContent>
             </Step>
             <Step
-                active={isReadyForUpload}
+                active={isReadyForUpload()}
                 expanded={true}
                 disabled={!isReadyForUpload}
                 completed={isUploadComplete}
@@ -116,7 +177,7 @@ export const LibraryPublishSteps: React.FunctionComponent = () => {
                         `}
                     >
                         <BloomButton
-                            enabled={isReadyForUpload}
+                            enabled={isReadyForUpload()}
                             l10nKey={"TODO"}
                             temporarilyDisableI18nWarning={true}
                             onClick={() =>
@@ -129,7 +190,7 @@ export const LibraryPublishSteps: React.FunctionComponent = () => {
                         </BloomButton>
                         <BloomButton
                             variant="text"
-                            enabled={isReadyForUpload}
+                            enabled={isReadyForUpload()}
                             l10nKey={"TODO"}
                             temporarilyDisableI18nWarning={true}
                         >
@@ -277,7 +338,13 @@ const AgreementCheckbox: React.FunctionComponent<{
 
 const LabelWrapper: React.FunctionComponent<{
     labelText: string;
+    required?: boolean;
 }> = props => {
+    const localizedPleaseSetThis = useL10n(
+        "Please set this from the edit tab",
+        "PublishTab.Upload.PleaseSetThis",
+        "This shows next to the license, if the license has not yet been set."
+    );
     return (
         <div
             css={css`
@@ -292,6 +359,21 @@ const LabelWrapper: React.FunctionComponent<{
             >
                 {props.labelText}
             </div>
+            {props.children || (
+                <WarningMessage>{localizedPleaseSetThis}</WarningMessage>
+            )}
+        </div>
+    );
+};
+
+const WarningMessage: React.FunctionComponent = props => {
+    return (
+        <div
+            css={css`
+                font-size: small;
+                color: red;
+            `}
+        >
             {props.children}
         </div>
     );
