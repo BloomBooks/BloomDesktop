@@ -907,15 +907,13 @@ namespace Bloom.Publish.Video
 			}
 		}
 
-		public bool AnyVideoHasAudio(string videoList, string basePath)
+		public bool AnyVideoHasAudio(Book.Book book)
 		{
-			// The separator here must match the one used by bloom player (see bloom-player-core getVideoList())
-			foreach (var path in videoList.Split('|'))
+			foreach (var videoPath in book.OurHtmlDom.GetAllVideoPaths())
 			{
-				if (VideoHasAudio(Path.Combine(basePath, path)))
+				if (VideoHasAudio(Path.Combine(book.FolderPath, videoPath)))
 					return true;
 			}
-
 			return false;
 		}
 
