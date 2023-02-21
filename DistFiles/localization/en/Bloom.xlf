@@ -4457,12 +4457,10 @@
         <source xml:lang="en">Background Music</source>
         <note>ID: PublishTab.Upload.BackgroundMusic</note>
       </trans-unit>
-      <!-- for 5.5
-      <trans-unit id="PublishTab.Upload.BannerDescription">
-        <source xml:lang="en">Let speakers find your books in [Bloom Reader](https://bloomlibrary.org/page/create/bloom-reader) and on [BloomLibrary.org](https://bloomlibrary.org/)</source>
+      <trans-unit id="PublishTab.Upload.BannerDescription" translate="no">
+        <source xml:lang="en">Let speakers find your books in [Bloom Reader](https://bloomlibrary.org/page/create/bloom-reader) and on [BloomLibrary.org](https://bloomlibrary.org/).</source>
         <note>ID: PublishTab.Upload.BannerDescription</note>
       </trans-unit>
-      -->
       <trans-unit id="PublishTab.Upload.BannerTitle" translate="no">
         <source xml:lang="en">Publish to Web</source>
         <note>ID: PublishTab.Upload.BannerTitle</note>

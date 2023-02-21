@@ -57,10 +57,9 @@ export const LibraryPublishScreen = () => {
             <PublishScreenTemplate
                 bannerTitleEnglish="Publish to Web"
                 bannerTitleL10nId="PublishTab.Upload.BannerTitle"
-                bannerDescriptionMarkdown="Let speakers find your books in [Bloom Reader](https://bloomlibrary.org/page/create/bloom-reader) and on [BloomLibrary.org](https://bloomlibrary.org/)"
+                bannerDescriptionMarkdown="Let speakers find your books in [Bloom Reader](https://bloomlibrary.org/page/create/bloom-reader) and on [BloomLibrary.org](https://bloomlibrary.org/)."
                 bannerDescriptionL10nId="PublishTab.Upload.BannerDescription"
                 optionsPanelContents={settingsPanel}
-                temporarilyDisableI18nWarning={true}
             >
                 {mainPanel}
             </PublishScreenTemplate>
