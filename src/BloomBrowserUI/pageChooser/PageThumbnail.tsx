@@ -21,20 +21,18 @@ export const PageThumbnail: React.FunctionComponent<IPageThumbnailProps> = props
             background: inherit;
             border: 1px solid ${kBloomBuff};
             margin-top: 4px;
-            max-height: 85px;
             object-fit: contain;
         `;
     const orientationThumbStyles = props.isLandscape
         ? `
-            width: unset;
+            width: 85px;
             height: 60px;
             margin-left: 6px;
-            max-width: 85px;
         `
         : `
             width: 60px;
             margin-left: 20px;
-            height: unset;
+            height: 85px;
         `;
 
     return (

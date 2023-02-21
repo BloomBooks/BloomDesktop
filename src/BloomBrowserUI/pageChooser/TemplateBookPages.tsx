@@ -32,6 +32,7 @@ interface ITemplateBookPagesProps {
         selectedTemplateBookUrl: string
     ) => void;
     onTemplatePageDoubleClick: (selectedPageDiv: HTMLDivElement) => void;
+    onLoad?: () => void; // signal that we have the actual pages back from the network... or not.
 }
 
 const transparentHighlightColor = kBloomBlue50Transparent;
@@ -39,14 +40,24 @@ const transparentHighlightColor = kBloomBlue50Transparent;
 // Unicode bullet character used to mark pages that are only available to enterprise users.
 const enterpriseMarkerChar = "\u25cf";
 
-export const TemplateBookPages: React.FunctionComponent<ITemplateBookPagesProps> = props => {
+export const TemplateBookPages: React.FunctionComponent<ITemplateBookPagesProps> = ({
+    forChooseLayout,
+    groupUrls,
+    onLoad,
+    orientation,
+    selectedPageId,
+    defaultPageIdToSelect,
+    firstGroup,
+    onTemplatePageSelect,
+    onTemplatePageDoubleClick
+}) => {
     const [pageData, setPageData] = useState<HTMLDivElement[] | undefined>(
         undefined
     );
     const [groupTitle, setGroupTitle] = useState("");
     const [errorState, setErrorState] = useState(false);
 
-    const isLandscape = props.orientation === "landscape";
+    const isLandscape = orientation === "landscape";
 
     // Here we grab the actual html file contents so we can process what's
     // available to us in terms of template pages and the content of those pages (especially for the
@@ -58,7 +69,7 @@ export const TemplateBookPages: React.FunctionComponent<ITemplateBookPagesProps>
         axios
             .get(
                 getBloomApiPrefix(false) +
-                    encodeURIComponent(props.groupUrls.templateBookPath)
+                    encodeURIComponent(groupUrls.templateBookPath)
             )
             .then(result => {
                 const pageData: HTMLElement = new DOMParser().parseFromString(
@@ -68,7 +79,7 @@ export const TemplateBookPages: React.FunctionComponent<ITemplateBookPagesProps>
                 let bloomPages: HTMLDivElement[] = Array.from(
                     pageData.querySelectorAll(".bloom-page")
                 );
-                if (props.forChooseLayout) {
+                if (forChooseLayout) {
                     // This filters out the (empty) custom page, which is currently never a useful layout change,
                     // since all data would be lost.
                     bloomPages = bloomPages.filter(
@@ -89,7 +100,7 @@ export const TemplateBookPages: React.FunctionComponent<ITemplateBookPagesProps>
                 if (filteredBloomPages.length === 0) {
                     console.log(
                         "Could not find any template pages in " +
-                            props.groupUrls.templateBookPath
+                            groupUrls.templateBookPath
                     );
                     return;
                 }
@@ -105,14 +116,20 @@ export const TemplateBookPages: React.FunctionComponent<ITemplateBookPagesProps>
                     );
                 }
                 setPageData(filteredBloomPages);
+                if (onLoad) {
+                    onLoad();
+                }
             })
             .catch(reason => {
                 console.log(reason);
                 // We couldn't load a template file that the JSON says should be there.
                 // Just display a message.
                 setErrorState(true);
+                if (onLoad) {
+                    onLoad(); // We didn't load a book, but we are just counting the axios response.
+                }
             });
-    }, [props.forChooseLayout, props.groupUrls]);
+    }, [forChooseLayout, groupUrls, onLoad]);
 
     const pages = pageData
         ? pageData.map((currentPageDiv: HTMLDivElement, index) => {
@@ -122,8 +139,7 @@ export const TemplateBookPages: React.FunctionComponent<ITemplateBookPagesProps>
                   "enterprise-only"
               );
 
-              const thisPageIsSelected =
-                  currentPageDiv.id === props.selectedPageId;
+              const thisPageIsSelected = currentPageDiv.id === selectedPageId;
 
               const enterpriseOnlyRules = pageIsEnterpriseOnly
                   ? `:after {
@@ -180,9 +196,9 @@ export const TemplateBookPages: React.FunctionComponent<ITemplateBookPagesProps>
                       />
                       <PageThumbnail
                           imageSource={getTemplatePageImageSource(
-                              props.groupUrls.templateBookFolderUrl,
+                              groupUrls.templateBookFolderUrl,
                               getPageLabel(currentPageDiv),
-                              props.orientation
+                              orientation
                           )}
                           isLandscape={isLandscape}
                       />
@@ -192,30 +208,27 @@ export const TemplateBookPages: React.FunctionComponent<ITemplateBookPagesProps>
         : undefined;
 
     const templatePageClickHandler = (currentPageDiv: HTMLDivElement) => {
-        props.onTemplatePageSelect(
-            currentPageDiv,
-            props.groupUrls.templateBookPath
-        );
+        onTemplatePageSelect(currentPageDiv, groupUrls.templateBookPath);
     };
 
     const templatePageDoubleClickHandler = (currentPageDiv: HTMLDivElement) => {
         templatePageClickHandler(currentPageDiv); // Do the default click action too.
-        props.onTemplatePageDoubleClick(currentPageDiv);
+        onTemplatePageDoubleClick(currentPageDiv);
     };
 
     // Fire off the selection mechanism if we don't already have a selection,
     // and the page that needs selecting is in this group.
     useEffect(() => {
-        if (pageData && !props.selectedPageId) {
-            if (props.defaultPageIdToSelect) {
+        if (pageData && !selectedPageId) {
+            if (defaultPageIdToSelect) {
                 const matchingPageDivs = pageData.filter(
-                    p => p.id === props.defaultPageIdToSelect
+                    p => p.id === defaultPageIdToSelect
                 );
                 if (matchingPageDivs.length > 0) {
                     templatePageClickHandler(matchingPageDivs[0]);
                 }
             } else {
-                if (props.firstGroup) {
+                if (firstGroup) {
                     templatePageClickHandler(pageData[0]);
                 }
             }
@@ -255,7 +268,7 @@ export const TemplateBookPages: React.FunctionComponent<ITemplateBookPagesProps>
             )}
             {errorState && (
                 <TemplateBookErrorReplacement
-                    templateBookPath={props.groupUrls.templateBookPath}
+                    templateBookPath={groupUrls.templateBookPath}
                 />
             )}
         </React.Fragment>
