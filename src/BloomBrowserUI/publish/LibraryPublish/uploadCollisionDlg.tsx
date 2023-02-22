@@ -342,7 +342,7 @@ export const UploadCollisionDlg: React.FunctionComponent<IUploadCollisionDlgProp
                             enabled={buttonState !== RadioState.Indeterminate}
                             size="large"
                             onClick={() => {
-                                postJson("libraryPublish/upload", {
+                                postJson("libraryPublish/upload_obsolete", {
                                     sameOrDifferent:
                                         buttonState === RadioState.Same
                                             ? "same"
@@ -355,7 +355,7 @@ export const UploadCollisionDlg: React.FunctionComponent<IUploadCollisionDlgProp
                         </BloomButton>
                         <DialogCancelButton
                             onClick={() => {
-                                post("libraryPublish/cancel");
+                                post("libraryPublish/cancel_obsolete");
                                 closeDialog();
                             }}
                         ></DialogCancelButton>

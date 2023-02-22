@@ -572,9 +572,10 @@
     <Compile Include="web\controllers\BookCommandsApi.cs" />
     <Compile Include="web\controllers\CollectionApi.cs" />
     <Compile Include="web\controllers\CopyrightAndLicenseApi.cs" />
+    <Compile Include="web\controllers\LibraryPublishApi_Obsolete.cs" />
     <Compile Include="web\controllers\ProgressDialogApi.cs" />
-    <Compile Include="web\controllers\LibraryPublishApi.cs" />
     <Compile Include="web\controllers\WorkspaceApi.cs" />
+    <Compile Include="web\controllers\LibraryPublishApi.cs" />
     <Compile Include="web\ReactControl.cs">
       <SubType>UserControl</SubType>
     </Compile>

@@ -186,7 +186,7 @@ namespace Bloom.Publish.BloomLibrary
 				_uploadButton.Width += neededWidth - oldTextWidth;
 			}
 
-			LibraryPublishApi.SetUploadControl = this; // Needed to get the Upload Id Collision dialog working.
+			LibraryPublishApi_Obsolete.SetUploadControl = this; // Needed to get the Upload Id Collision dialog working.
 
 			// After considering all the factors except whether any languages are selected,
 			// if we can upload at this point, whether we can from here on depends on whether one is checked.
