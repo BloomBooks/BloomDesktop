@@ -15,22 +15,28 @@ import NestedMenuItem from "mui-nested-menu-item";
 import CheckBoxOutlineBlankIcon from "@mui/icons-material/CheckBoxOutlineBlank";
 import CheckBoxIcon from "@mui/icons-material/CheckBox";
 import { getBoolean, post, postBoolean } from "../utils/bloomApi";
-import { useEnterpriseAvailable } from "./requiresBloomEnterprise";
+import {
+    useEnterpriseAvailable,
+    useGetEnterpriseStatus
+} from "./requiresBloomEnterprise";
 
-interface BaseLocalizableMenuItemProps {
+interface IBaseLocalizableMenuItemProps {
     english: string;
     l10nId: string;
 }
 
-interface LocalizableMenuItemProps extends BaseLocalizableMenuItemProps {
+export interface ILocalizableMenuItemProps
+    extends IBaseLocalizableMenuItemProps {
     onClick: React.MouseEventHandler;
     icon?: ReactNode;
     addEllipsis?: boolean;
-    requiresEnterprise?: boolean;
+    requiresAnyEnterprise?: boolean;
+    requiresEnterpriseSubscription?: boolean;
+    dontGiveAffordanceForCheckbox?: boolean;
 }
 
-interface LocalizableCheckboxMenuItemProps
-    extends BaseLocalizableMenuItemProps {
+interface ILocalizableCheckboxMenuItemProps
+    extends IBaseLocalizableMenuItemProps {
     onClick: React.MouseEventHandler;
     apiEndpoint: string;
 }
@@ -42,9 +48,10 @@ const typographyProps: TypographyProps = {
 };
 const menuItemColor = "black";
 
-export const LocalizableMenuItem: React.FunctionComponent<LocalizableMenuItemProps> = props => {
+export const LocalizableMenuItem: React.FunctionComponent<ILocalizableMenuItemProps> = props => {
     const label = useL10n(props.english, props.l10nId);
     const enterpriseAvailable = useEnterpriseAvailable();
+    const enterpriseStatus = useGetEnterpriseStatus();
 
     const iconElement = props.icon ? (
         <ListItemIcon
@@ -55,6 +62,8 @@ export const LocalizableMenuItem: React.FunctionComponent<LocalizableMenuItemPro
         >
             {props.icon}
         </ListItemIcon>
+    ) : props.dontGiveAffordanceForCheckbox ? (
+        <div />
     ) : (
         <div
             css={css`
@@ -70,31 +79,40 @@ export const LocalizableMenuItem: React.FunctionComponent<LocalizableMenuItemPro
         "CollectionSettingsDialog.RequiresEnterprise_ToolTip_"
     );
 
-    const enterpriseElement = props.requiresEnterprise ? (
-        <img
-            css={css`
-                width: ${kEnterpriseStickerAffordance}px !important;
-                margin-left: 12px;
-            `}
-            src="/bloom/images/bloom-enterprise-badge.svg"
-            title={enterpriseAvailable ? undefined : requiresEnterpriseTooltip}
-        />
-    ) : (
-        <div
-            css={css`
-                width: ${kEnterpriseStickerAffordance}px !important;
-            `}
-        />
-    );
+    const meetsEnterpriseRequirement = props.requiresEnterpriseSubscription
+        ? enterpriseStatus === "Subscription"
+        : props.requiresAnyEnterprise
+        ? enterpriseAvailable
+        : true;
+
+    const enterpriseElement =
+        props.requiresAnyEnterprise || props.requiresEnterpriseSubscription ? (
+            <img
+                css={css`
+                    width: ${kEnterpriseStickerAffordance}px !important;
+                    margin-left: 12px;
+                `}
+                src="/bloom/images/bloom-enterprise-badge.svg"
+                title={
+                    meetsEnterpriseRequirement
+                        ? undefined
+                        : requiresEnterpriseTooltip
+                }
+            />
+        ) : (
+            <div
+                css={css`
+                    width: ${kEnterpriseStickerAffordance}px !important;
+                `}
+            />
+        );
 
     const openCollectionSettings = () =>
         post("common/showSettingsDialog?tab=enterprise");
 
-    const menuClickHandler = props.requiresEnterprise
-        ? enterpriseAvailable
-            ? props.onClick
-            : openCollectionSettings
-        : props.onClick;
+    const menuClickHandler = meetsEnterpriseRequirement
+        ? props.onClick
+        : openCollectionSettings;
 
     return (
         <MenuItem
@@ -127,7 +145,7 @@ export const LocalizableMenuItem: React.FunctionComponent<LocalizableMenuItemPro
     );
 };
 
-export const LocalizableCheckboxMenuItem: React.FunctionComponent<LocalizableCheckboxMenuItemProps> = props => {
+export const LocalizableCheckboxMenuItem: React.FunctionComponent<ILocalizableCheckboxMenuItemProps> = props => {
     const label = useL10n(props.english, props.l10nId);
     const [checked, setChecked] = useState(false);
     useEffect(() => {
@@ -178,7 +196,7 @@ export const LocalizableCheckboxMenuItem: React.FunctionComponent<LocalizableChe
     );
 };
 
-export const LocalizableNestedMenuItem: React.FunctionComponent<BaseLocalizableMenuItemProps> = props => {
+export const LocalizableNestedMenuItem: React.FunctionComponent<IBaseLocalizableMenuItemProps> = props => {
     const label = useL10n(props.english, props.l10nId);
     if (!props.children) {
         return <React.Fragment />;
