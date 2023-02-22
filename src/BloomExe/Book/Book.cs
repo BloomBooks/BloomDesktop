@@ -4683,10 +4683,13 @@ namespace Bloom.Book
 		}
 
 		// see BL-11510
-		public void ReportSimplisticFontAnalytics(FontAnalytics.FontEventType fontEventType, string eventDetails = null)
+		// The references to Bloom.ToPalaso.FontAnalytics want to go away and be replaced
+		// by using the new LibPalaso FontAnalytics (which we hope is identical), but checking
+		// that it is really identical is to risky for 5.4.
+		public void ReportSimplisticFontAnalytics(Bloom.ToPalaso.FontAnalytics.FontEventType fontEventType, string eventDetails = null)
 		{
 			var testOnly = BookUpload.UseSandboxByDefault;
-			FontAnalytics.Report(this.ID, fontEventType, 
+			Bloom.ToPalaso.FontAnalytics.Report(this.ID, fontEventType, 
 				this.CollectionSettings.Language1.Tag,
 				testOnly,
 				this.CollectionSettings.Language1.FontName, eventDetails);
