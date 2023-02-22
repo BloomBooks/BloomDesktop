@@ -2273,6 +2273,18 @@ namespace Bloom.Book
 			return element.SafeSelectNodes(".//div[contains(@class,'bloom-videoContainer')]/video/source");
 		}
 
+		public IEnumerable<string> GetAllVideoPaths()
+		{
+			var paths = new List<string>();
+			foreach (var source in SelectChildVideoSourceElements(RawDom.DocumentElement).Cast<XmlElement>())
+			{
+				var src = source.GetAttribute("src");
+				if (!String.IsNullOrEmpty(src))
+					paths.Add(src);
+			}
+			return paths;
+		}
+
 		private static readonly string kAudioSentenceElementsXPath = "descendant-or-self::node()[contains(@class,'audio-sentence') and string-length(@id) > 0]";
 		
 		public static XmlNodeList SelectRecordableDivOrSpans(XmlElement element)
