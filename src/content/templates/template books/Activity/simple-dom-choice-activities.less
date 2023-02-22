@@ -43,6 +43,19 @@
                     // this number, 95px, was chosen to use the space available in 16x9 portrait, with these text samples: སྔགས་ཀྱི་ཀློག་བས་ཤེས་རབ་མི
                     // But, fixing this interferes with the user's ability to set line-height in the format dialog.
                     // line-height: 95px !important;
+                    &.bloom-visibility-code-on {
+                        min-height: 1.5em;
+                        display: flex;
+                        justify-content: center;
+                        align-items: center;
+                        p {
+                            // Table is an unusual choice here, but the only options here which keep the
+                            // text centered vertically on the button no matter the line-spacing are:
+                            // table, inline-table, and contents. Contents apparently has detrimental effects
+                            // on accessibility.
+                            display: table;
+                        }
+                    }
                 }
             }
         }
@@ -149,6 +162,19 @@
             flex-grow: 1;
             .bloom-editable {
                 min-height: unset;
+                &.bloom-visibility-code-on {
+                    min-height: 1.5em;
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    p {
+                        // Table is an unusual choice here, but the only options here which keep the
+                        // text centered vertically on the button no matter the line-spacing are:
+                        // table, inline-table, and contents. Contents apparently has detrimental effects
+                        // on accessibility.
+                        display: table;
+                    }
+                }
             }
         }
 
