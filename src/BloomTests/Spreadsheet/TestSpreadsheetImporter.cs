@@ -42,10 +42,13 @@ namespace BloomTests.Spreadsheet
 
 		IEnumerable<string> GetFrags(string text)
 		{
-			var sentences = text.Replace("\\'", "'").Split('.');
+			var sentences = text.Replace("\\'", "'").Split(new char[] { '.', '|' });
 			for (int i = 0; i < sentences.Length - 1; i++)
 			{
-				sentences[i] = sentences[i] + ".";
+				if (sentences[i].EndsWith(" ") || sentences[i].EndsWith(","))
+					sentences[i] = sentences[i] + '|';
+				else
+					sentences[i] = sentences[i] + ".";
 			}
 
 			yield return "s" + sentences[0];
@@ -54,7 +57,7 @@ namespace BloomTests.Spreadsheet
 			{
 				var s1 = sentence.TrimStart();
 				if (sentence.Length > s1.Length)
-					yield return " " + sentence.Substring(sentence.Length - s1.Length);
+					yield return " " + sentence.Substring(0, sentence.Length - s1.Length);
 				if (s1.Length > 0)
 					yield return "s" + s1;
 			}
