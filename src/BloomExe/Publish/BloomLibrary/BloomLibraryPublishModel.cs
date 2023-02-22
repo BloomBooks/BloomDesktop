@@ -5,7 +5,6 @@ using Bloom.Properties;
 using BookInstance = Bloom.Book.Book;
 using Bloom.WebLibraryIntegration;
 using SIL.Windows.Forms.ClearShare;
-using SIL.Windows.Forms.Progress;
 using BloomTemp;
 using System.IO;
 using System.Diagnostics;
@@ -156,17 +155,17 @@ namespace Bloom.Publish.BloomLibrary
 
 		internal bool IsThisVersionAllowedToUpload => _uploader.IsThisVersionAllowedToUpload();
 
-		internal string UploadOneBook(BookInstance book, LogBox progressBox, PublishView publishView, bool excludeMusic, out string parseId)
+		internal string UploadOneBook(BookInstance book, IProgress progress, PublishView publishView, bool excludeMusic, out string parseId)
 		{
 			using (var tempFolder = new TemporaryFolder(Path.Combine("BloomUpload", Path.GetFileName(book.FolderPath))))
 			{
-				BookUpload.PrepareBookForUpload(ref book, _publishModel.BookServer, tempFolder.FolderPath, progressBox);
+				BookUpload.PrepareBookForUpload(ref book, _publishModel.BookServer, tempFolder.FolderPath, progress);
 				var bookParams = new BookUploadParameters
 				{
 					ExcludeMusic = excludeMusic,
 					PreserveThumbnails = false,
 				};
-				return _uploader.FullUpload(book, progressBox, publishView, bookParams, out parseId);
+				return _uploader.FullUpload(book, progress, publishView, bookParams, out parseId);
 			}
 		}
 
@@ -398,6 +397,16 @@ namespace Bloom.Publish.BloomLibrary
 		{
 			Book.UpdateBlindFeature(true, new List<string> { langCode });
 			Book.BookInfo.Save();
+		}
+
+		public string CheckBookBeforeUpload(string[] languages)
+		{
+			return new LicenseChecker().CheckBook(Book, languages);
+		}
+
+		public void AddHistoryRecordForLibraryUpload()
+		{
+			Book.AddHistoryRecordForLibraryUpload();
 		}
 
 		public void BulkUpload(string rootFolderPath, IProgress progress)

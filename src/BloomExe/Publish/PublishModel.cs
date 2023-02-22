@@ -347,9 +347,11 @@ namespace Bloom.Publish
 			}
 			set
 			{
-				_currentDisplayMode = value;
-				if (View != null)
-					View.Invoke((Action) (() => View.SetDisplayMode(value)));
+				if (_currentDisplayMode != value)
+				{
+					_currentDisplayMode = value;
+					View?.Invoke((Action)(() => View.SetDisplayMode(value)));
+				}
 			}
 		}
 

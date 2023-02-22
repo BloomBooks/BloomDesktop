@@ -80,6 +80,7 @@ export default class BloomButton extends LocalizableElement<
             hasText,
             iconBeforeText,
             temporarilyDisableI18nWarning,
+            alreadyLocalized,
             ...propsToPass
         } = this.props;
         return this.props.transparent ? (

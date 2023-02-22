@@ -40,7 +40,7 @@ namespace Bloom.web
 		private bool _showVerbose;
 		public bool ShowVerbose { set { _showVerbose = value; } }
 
-		public bool CancelRequested { get { return false; } set { return; } }
+		public bool CancelRequested { get; set; }
 		public bool ErrorEncountered { get { return false; } set { return; } }
 
 		private IProgressIndicator _indicator = new NullProgressIndicator();

@@ -43,6 +43,7 @@ import { MuiRadio } from "./muiRadio";
 import WinFormsStyleSelect from "./winFormsStyleSelect";
 import BookMakingSettingsControl from "../collection/bookMakingSettingsControl";
 import { Link } from "./link";
+import { BloomSplitButton } from "./bloomSplitButton";
 
 storiesOf("Localizable Widgets", module)
     .add("Expandable", () => (
@@ -117,6 +118,29 @@ storiesOf("Localizable Widgets", module)
             >
                 Small
             </BloomButton>
+        </div>
+    ))
+    .add("BloomSplitButton", () => (
+        <div>
+            <BloomSplitButton
+                options={[
+                    {
+                        english: "Option 1",
+                        l10nId: "already-localized",
+                        requiresAnyEnterprise: true,
+                        onClick: () => {
+                            alert("Option 1 clicked");
+                        }
+                    },
+                    {
+                        english: "Option 2",
+                        l10nId: "already-localized",
+                        onClick: () => {
+                            alert("Option 2 clicked");
+                        }
+                    }
+                ]}
+            ></BloomSplitButton>
         </div>
     ));
 
@@ -374,7 +398,7 @@ const normalMenuItemWithEllipsisAndEnterprise = React.createElement(() => (
         english="Open or Create Another Collection"
         l10nId="CollectionTab.OpenCreateCollectionMenuItem"
         addEllipsis={true}
-        requiresEnterprise={true}
+        requiresAnyEnterprise={true}
         onClick={() => {}}
     />
 ));

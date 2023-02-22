@@ -43,11 +43,18 @@ export interface IProgressBoxProps {
     setMessages?: React.Dispatch<React.SetStateAction<JSX.Element[]>>;
 }
 
+export type ProgressBoxHandle = {
+    clear: () => void;
+};
+
 let indexForMessageKey = 0;
 
 // Note that this component does not do localization; we expect the progress messages
 // to already be localized when they are sent over the websocket.
-export const ProgressBox: React.FunctionComponent<IProgressBoxProps> = props => {
+export const ProgressBox = React.forwardRef<
+    ProgressBoxHandle,
+    IProgressBoxProps
+>((props, ref) => {
     const [localMessages, setLocalMessages] = React.useState<
         Array<JSX.Element>
     >([]);
@@ -114,6 +121,13 @@ export const ProgressBox: React.FunctionComponent<IProgressBoxProps> = props => 
                 block: "start"
             });
     }, [messages]);
+
+    // This (along with the forwardRef wrapper above) allows the parent to call clear() on this component.
+    React.useImperativeHandle(ref, () => ({
+        clear() {
+            setMessages([]);
+        }
+    }));
 
     function writeLine(message: string, color: string, style?: string) {
         const line = (
@@ -186,4 +200,4 @@ export const ProgressBox: React.FunctionComponent<IProgressBoxProps> = props => 
             <div ref={bottomRef} />
         </div>
     );
-};
+});
