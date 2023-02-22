@@ -234,6 +234,15 @@ namespace BloomTests.Spreadsheet
 			contentRow17.AddCell(InternalSpreadsheet.PageContentRowLabel);
 			contentRow17.SetCell(columnForFr, "<p>This is page 17.</p>");
 
+			// Will make a TG on page 18. It will be treated as a split TextBox,
+			// as there are five sentences/phrases and five numbers in the alignment column.
+			// data-duration="14.602449"
+			var contentRow18 = new ContentRow(ss);
+			contentRow18.AddCell(InternalSpreadsheet.PageContentRowLabel);
+			contentRow18.SetCell(columnForFr, "<p>This page has some phrase markers | which are used to indicate audio segments.  The page​ is recorded as a whole.  This is a test,| this is only a test.</p>");
+			contentRow18.SetCell(columnForFrAudio, "./audio/i4b3ef0cf-213c-4fad-82f3-6341bf415707.mp3");
+			contentRow18.SetCell(columnForFrAlignment, "3.500 7.320 10.320 12.160 14.560");
+
 			// not sure if we need this
 			var settings = new NewCollectionSettings();
 			settings.Language1.Tag = "es";
@@ -272,6 +281,7 @@ namespace BloomTests.Spreadsheet
 		[TestCase(4, "i77c18c83-0224-405f-bb97-70d32078855c", "span")]
 		[TestCase(11, "i991ae1ac-db9a-4ad1-984b-8e679c1ae901x", "span")]
 		[TestCase(11, "i77c18c83-0224-405f-bb97-70d32078855cx", "span")]
+		[TestCase(17, "i4b3ef0cf-213c-4fad-82f3-6341bf415707", "div")]
 		public void GotAudioOnPageN(int pageIndex, string id, string elt)
 		{
 			AssertThatXmlIn.Element(_contentPages[pageIndex]).HasSpecifiedNumberOfMatchesForXpath($".//{elt}[@id='{id}']", 1);
@@ -286,6 +296,7 @@ namespace BloomTests.Spreadsheet
 		[TestCase("i991ae1ac-db9a-4ad1-984b-8e679c1ae901x")]
 		[TestCase("i77c18c83-0224-405f-bb97-70d32078855cx")]
 		[TestCase("i9c7f4e02-4685-48fc-8653-71d88f218706t")]
+		[TestCase("i4b3ef0cf-213c-4fad-82f3-6341bf415707")]
 		public void GotAudioFile(string id)
 		{
 			var path = Path.Combine(_bookFolder.FolderPath, "audio", id + ".mp3");
@@ -300,6 +311,7 @@ namespace BloomTests.Spreadsheet
 		[TestCase(4, "i77c18c83-0224-405f-bb97-70d32078855c", "span", 2.194286)]
 		[TestCase(11, "i991ae1ac-db9a-4ad1-984b-8e679c1ae901x", "span", 2.899592)]
 		[TestCase(11, "i77c18c83-0224-405f-bb97-70d32078855cx", "span", 2.194286)]
+		[TestCase(17, "i4b3ef0cf-213c-4fad-82f3-6341bf415707", "div", 14.602449)]
 		public void GotAudioDurationAndOtherEssentialsOnPageN(int pageIndex, string id, string elt, double expectedDuration)
 		{
 			var target = _contentPages[pageIndex].SafeSelectNodes($".//{elt}[@id='{id}']").Cast<XmlElement>().First();
@@ -350,6 +362,12 @@ namespace BloomTests.Spreadsheet
 		[TestCase(1, "i9c7f4e02-4685-48fc-8653-71d88f218706x", "div", new[] { "This is page 2." })]
 		[TestCase(2, "a9d7b794-7a83-473a-8307-7968176ae4bc", "div", new string[0])]
 		[TestCase(3, "a9d7b794-7a83-473a-8307-7968176ae4bcx", "div", new[] { "This is page 4.", "It has two sentences." })]
+		[TestCase(17, "i4b3ef0cf-213c-4fad-82f3-6341bf415707", "div", new[] {
+			"This page has some phrase markers ",
+			"which are used to indicate audio segments.",
+			"The page​ is recorded as a whole.",
+			"This is a test,",
+			"this is only a test."})]
 		public void GotSentenceSplitsOnPageN(int pageIndex, string id, string elt, string[] sentences)
 		{
 			var target = _contentPages[pageIndex].SafeSelectNodes($".//{elt}[@id='{id}']").Cast<XmlElement>().First();
@@ -361,6 +379,25 @@ namespace BloomTests.Spreadsheet
 			if (sentences.Length == 0)
 			{
 				AssertThatXmlIn.Element(target).HasNoMatchForXpath($".//span[@id and @class='bloom-highlightSegment']");
+			}
+		}
+
+		[Test]
+		public void GotPhraseMarkingsOnSplitsOnPageN()
+		{
+			var rawSpans = new[] {
+			// Note that spans get a new id for every run of the test.
+			" class=\"bloom-highlightSegment\">This page has some phrase markers <span class=\"bloom-audio-split-marker\">\u200B</span></span>",
+			" class=\"bloom-highlightSegment\">which are used to indicate audio segments.</span>",
+			" class=\"bloom-highlightSegment\">The page​ is recorded as a whole.</span>",
+			" class=\"bloom-highlightSegment\">This is a test,<span class=\"bloom-audio-split-marker\">\u200B</span></span>",
+			" class=\"bloom-highlightSegment\">this is only a test.</span>"
+			};
+			var target = _contentPages[17].SafeSelectNodes($".//div[@id='i4b3ef0cf-213c-4fad-82f3-6341bf415707']").Cast<XmlElement>().First();
+			var innerXml = target.InnerXml;
+			foreach (var raw in rawSpans)
+			{
+				Assert.That(innerXml.Contains(raw), "Did not match "+raw);
 			}
 		}
 
