@@ -5,12 +5,13 @@ import { useEffect, useState } from "react";
 import { TextField, Step, StepLabel, StepContent } from "@mui/material";
 import { get, postString } from "../../utils/bloomApi";
 import { BloomStepper } from "../../react_components/BloomStepper";
-import { Div, P } from "../../react_components/l10nComponents";
+import { Div, P, Span } from "../../react_components/l10nComponents";
 import BloomButton from "../../react_components/bloomButton";
 import { PWithLink } from "../../react_components/pWithLink";
 import { ProgressBox } from "../../react_components/Progress/progressBox";
 import { MuiCheckbox } from "../../react_components/muiCheckBox";
 import { useL10n } from "../../react_components/l10nHooks";
+import { Link } from "../../react_components/link";
 
 interface IReadonlyBookInfo {
     title: string;
@@ -22,6 +23,7 @@ interface IReadonlyBookInfo {
 }
 
 export const LibraryPublishSteps: React.FunctionComponent = () => {
+    const localizedSummary = useL10n("Summary", "PublishTab.Upload.Summary");
     const localizedAllRightsReserved = useL10n(
         "All rights reserved (Contact the Copyright holder for any permissions.)",
         "PublishTab.Upload.AllReserved"
@@ -84,9 +86,17 @@ export const LibraryPublishSteps: React.FunctionComponent = () => {
     return (
         <BloomStepper orientation="vertical">
             <Step active={true} completed={isReadyForUpload()}>
-                <StepLabel>Confirm Metadata</StepLabel>
+                <StepLabel>
+                    <Span l10nKey="PublishTab.Upload.ConfirmMetadata">
+                        Confirm Metadata
+                    </Span>
+                </StepLabel>
                 <StepContent>
-                    <LabelWrapper labelText="Title" required={true}>
+                    <LabelWrapper
+                        labelText="Title"
+                        labelL10nKey="PublishTab.Upload.Title"
+                        required={true}
+                    >
                         {bookInfo?.title}
                     </LabelWrapper>
                     <TextField
@@ -94,7 +104,7 @@ export const LibraryPublishSteps: React.FunctionComponent = () => {
                         id="book summary"
                         value={summary}
                         onChange={e => setSummary(e.target.value)}
-                        label="Summary"
+                        label={localizedSummary}
                         margin="normal"
                         variant="outlined"
                         InputLabelProps={{
@@ -131,10 +141,17 @@ export const LibraryPublishSteps: React.FunctionComponent = () => {
                             }
                         `}
                     />
-                    <LabelWrapper labelText="Copyright" required={true}>
+                    <LabelWrapper
+                        labelText="Copyright"
+                        labelL10nKey="Common.Copyright"
+                        required={true}
+                    >
                         {bookInfo?.copyright}
                     </LabelWrapper>
-                    <LabelWrapper labelText="Usage/License">
+                    <LabelWrapper
+                        labelText="Usage/License"
+                        labelL10nKey="PublishTab.Upload.License"
+                    >
                         {licenseText}
                         {bookInfo?.licenseRights}
                         <WarningMessage>{licenseSuggestion}</WarningMessage>
@@ -142,7 +159,11 @@ export const LibraryPublishSteps: React.FunctionComponent = () => {
                 </StepContent>
             </Step>
             <Step active={true} completed={isReadyForUpload()}>
-                <StepLabel>Agreements</StepLabel>
+                <StepLabel>
+                    <Span l10nKey="PublishTab.Upload.Agreements">
+                        Agreements
+                    </Span>
+                </StepLabel>
                 <StepContent>
                     <Agreements onReadyChange={setAgreementsAccepted} />
                 </StepContent>
@@ -153,22 +174,26 @@ export const LibraryPublishSteps: React.FunctionComponent = () => {
                 disabled={!isReadyForUpload}
                 completed={isUploadComplete}
             >
-                <StepLabel>Upload</StepLabel>
+                <StepLabel>
+                    <Span l10nKey={"Common.Upload"}>Upload</Span>
+                </StepLabel>
                 <StepContent>
-                    <MuiCheckbox
+                    {/* <MuiCheckbox
                         label={
                             <React.Fragment>
                                 <img src="/bloom/publish/LibraryPublish/DRAFT-Stamp.svg" />
-                                Show this book only to reviewers with whom I
-                                share the URL of this book.
+                                <Span l10nKey="PublishTab.Upload.Draft">
+                                    Show this book only to reviewers with whom I
+                                    share the URL of this book.
+                                </Span>
                             </React.Fragment>
                         }
-                        checked={false}
+                        checked={false} //TODO
                         onCheckChanged={newValue => {
                             //TODO
                         }}
                         disabled={!isReadyForUpload}
-                    />
+                    /> */}
                     <div
                         css={css`
                             display: flex;
@@ -178,21 +203,19 @@ export const LibraryPublishSteps: React.FunctionComponent = () => {
                     >
                         <BloomButton
                             enabled={isReadyForUpload()}
-                            l10nKey={"TODO"}
-                            temporarilyDisableI18nWarning={true}
+                            l10nKey={"PublishTab.Upload.UploadButton"}
                             onClick={() =>
                                 // TODO: start upload
                                 // when upload is complete call:
                                 setIsUploadComplete(true)
                             }
                         >
-                            Upload
+                            Upload Book
                         </BloomButton>
                         <BloomButton
                             variant="text"
                             enabled={isReadyForUpload()}
-                            l10nKey={"TODO"}
-                            temporarilyDisableI18nWarning={true}
+                            l10nKey={"PublishTab.Upload.SignIn"}
                         >
                             Sign in or sign up to Bloomlibrary.org
                         </BloomButton>
@@ -202,10 +225,7 @@ export const LibraryPublishSteps: React.FunctionComponent = () => {
                             margin-top: 16px;
                         `}
                     >
-                        <Div
-                            l10nKey={"TODO"}
-                            temporarilyDisableI18nWarning={true}
-                        >
+                        <Div l10nKey={"PublishTab.Upload.UploadProgress"}>
                             Upload Progress
                         </Div>
                         <ProgressBox
@@ -221,12 +241,15 @@ export const LibraryPublishSteps: React.FunctionComponent = () => {
                 expanded={isUploadComplete}
                 disabled={!isUploadComplete}
             >
-                <StepLabel>Test out your Book</StepLabel>
+                <StepLabel>
+                    <Span l10nKey="PublishTab.Upload.TestBook">
+                        Test out your Book
+                    </Span>
+                </StepLabel>
                 <StepContent>
                     <PWithLink
-                        l10nKey={"TODO"}
+                        l10nKey={"PublishTab.Upload.TestBook.Text1"}
                         href={"TODO"}
-                        temporarilyDisableI18nWarning={true}
                     >
                         Here is [your new page] on Bloom Library. We will soon
                         process your book into various formats and add them to
@@ -234,7 +257,7 @@ export const LibraryPublishSteps: React.FunctionComponent = () => {
                         encounter any problems, that page will tell you about
                         them.
                     </PWithLink>
-                    <P l10nKey={"TODO"} temporarilyDisableI18nWarning={true}>
+                    <P l10nKey={"PublishTab.Upload.TestBook.Text1"}>
                         If you make changes to this book, you can return here to
                         upload it again. Your new version will just replace the
                         existing one.
@@ -273,23 +296,24 @@ const Agreements: React.FunctionComponent<{
         <React.Fragment>
             <AgreementCheckbox
                 label={
-                    <PWithLink
-                        href={"TODO"}
-                        l10nKey={"TODO"}
-                        temporarilyDisableI18nWarning={true}
-                    >
-                        I have permission to publish all the text and images in
-                        this book. [Learn More]
-                    </PWithLink>
+                    <React.Fragment>
+                        <Span l10nKey="PublishTab.Upload.Agreement.PermissionToPublish">
+                            I have permission to publish all the text and images
+                            in this book.
+                        </Span>{" "}
+                        <Link href={"TODO"} l10nKey="Common.LearnMore">
+                            Learn More
+                        </Link>
+                    </React.Fragment>
                 }
                 onChange={checked => handleChange(checked)}
             />
             <AgreementCheckbox
                 label={
-                    <P l10nKey={"TODO"} temporarilyDisableI18nWarning={true}>
+                    <Span l10nKey={"PublishTab.Upload.Agreement.GivesCredit"}>
                         The book gives credit to the the author, translator, and
                         illustrator(s).
-                    </P>
+                    </Span>
                 }
                 onChange={checked => handleChange(checked)}
             />
@@ -297,11 +321,13 @@ const Agreements: React.FunctionComponent<{
                 label={
                     <PWithLink
                         href={"https://bloomlibrary.org/terms"}
-                        l10nKey={"TODO"}
-                        temporarilyDisableI18nWarning={true}
+                        l10nKey={"PublishTab.Upload.Agreement.AgreeToTerms"}
+                        css={css`
+                            // We don't want normal padding the browser adds, mostly so the height matches the other checkboxes.
+                            margin: 0;
+                        `}
                     >
-                        I agree to the [Bloom Library Terms of Use] and grant
-                        the rights it describes.
+                        I agree to the [Bloom Library Terms of Use].
                     </PWithLink>
                 }
                 onChange={checked => handleChange(checked)}
@@ -338,6 +364,7 @@ const AgreementCheckbox: React.FunctionComponent<{
 
 const LabelWrapper: React.FunctionComponent<{
     labelText: string;
+    labelL10nKey: string;
     required?: boolean;
 }> = props => {
     const localizedPleaseSetThis = useL10n(
@@ -352,13 +379,14 @@ const LabelWrapper: React.FunctionComponent<{
                 margin-top: 15px;
             `}
         >
-            <div
+            <Div
+                l10nKey={props.labelL10nKey}
                 css={css`
                     font-weight: 500;
                 `}
             >
                 {props.labelText}
-            </div>
+            </Div>
             {props.children || (
                 <WarningMessage>{localizedPleaseSetThis}</WarningMessage>
             )}
