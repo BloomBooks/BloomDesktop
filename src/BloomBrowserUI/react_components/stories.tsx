@@ -11,7 +11,12 @@ import { MuiCheckbox } from "./muiCheckBox";
 import { useState } from "react";
 import { ApiCheckbox } from "./ApiCheckbox";
 import BloomButton from "./bloomButton";
-import { showConfirmDialog, IConfirmDialogProps } from "./confirmDialog";
+import {
+    showConfirmDialogFromOutsideReact,
+    IConfirmDialogProps,
+    ConfirmDialog,
+    showConfirmDialog
+} from "./confirmDialog";
 import ImportIcon from "./icons/ImportIcon";
 import DeleteIcon from "@mui/icons-material/Delete";
 import PlaybackOrderControls from "./playbackOrderControls";
@@ -43,6 +48,7 @@ import { MuiRadio } from "./muiRadio";
 import WinFormsStyleSelect from "./winFormsStyleSelect";
 import BookMakingSettingsControl from "../collection/bookMakingSettingsControl";
 import { Link } from "./link";
+import { BloomSplitButton } from "./bloomSplitButton";
 
 storiesOf("Localizable Widgets", module)
     .add("Expandable", () => (
@@ -117,6 +123,29 @@ storiesOf("Localizable Widgets", module)
             >
                 Small
             </BloomButton>
+        </div>
+    ))
+    .add("BloomSplitButton", () => (
+        <div>
+            <BloomSplitButton
+                options={[
+                    {
+                        english: "Option 1",
+                        l10nId: "already-localized",
+                        requiresAnyEnterprise: true,
+                        onClick: () => {
+                            alert("Option 1 clicked");
+                        }
+                    },
+                    {
+                        english: "Option 2",
+                        l10nId: "already-localized",
+                        onClick: () => {
+                            alert("Option 2 clicked");
+                        }
+                    }
+                ]}
+            ></BloomSplitButton>
         </div>
     ));
 
@@ -374,7 +403,7 @@ const normalMenuItemWithEllipsisAndEnterprise = React.createElement(() => (
         english="Open or Create Another Collection"
         l10nId="CollectionTab.OpenCreateCollectionMenuItem"
         addEllipsis={true}
-        requiresEnterprise={true}
+        requiresAnyEnterprise={true}
         onClick={() => {}}
     />
 ));
@@ -467,8 +496,24 @@ storiesOf("Misc", module)
             <div>
                 <div id="modal-container" />
                 <BloomButton
+                    onClick={() => showConfirmDialog()}
+                    enabled={true}
+                    hasText={true}
+                    l10nKey={"dummyKey"}
+                >
+                    Open Confirm Dialog
+                </BloomButton>
+                <ConfirmDialog {...confirmDialogProps} />
+            </div>
+        ))
+    )
+    .add("ConfirmDialog as launched from outside React", () =>
+        React.createElement(() => (
+            <div>
+                <div id="modal-container" />
+                <BloomButton
                     onClick={() =>
-                        showConfirmDialog(
+                        showConfirmDialogFromOutsideReact(
                             confirmDialogProps,
                             document.getElementById("modal-container")
                         )

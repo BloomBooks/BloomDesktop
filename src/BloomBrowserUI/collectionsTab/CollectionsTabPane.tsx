@@ -551,7 +551,7 @@ export const makeMenuItems = (
                     onClick={clickAction}
                     icon={spec.icon}
                     addEllipsis={spec.addEllipsis}
-                    requiresEnterprise={spec.requiresEnterprise}
+                    requiresAnyEnterprise={spec.requiresEnterprise}
                 ></LocalizableMenuItem>
             );
         })

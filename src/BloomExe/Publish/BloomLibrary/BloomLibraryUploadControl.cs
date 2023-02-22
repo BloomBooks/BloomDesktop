@@ -7,11 +7,6 @@ using System.Linq;
 using System.Windows.Forms;
 using Bloom.Book;
 using Bloom.Collection;
-using Bloom.ErrorReporter;
-using Bloom.History;
-using Bloom.ImageProcessing;
-using Bloom.MiscUI;
-using Bloom.TeamCollection;
 using Bloom.web;
 using Bloom.web.controllers;
 using Bloom.WebLibraryIntegration;
@@ -551,7 +546,7 @@ namespace Bloom.Publish.BloomLibrary
 							"Congratulations, \"{0}\" is now available on BloomLibrary.org ({1})",
 							"{0} is the book title; {1} is a clickable url which will display the book on the website");
 						_progressBox.WriteMessageWithColor(Color.Blue, congratsMessage, _model.Title, url);
-						BookHistory.AddEvent(_model.Book, BookHistoryEventType.Uploaded, "Book uploaded to Bloom Library");
+						_model.AddHistoryRecordForLibraryUpload(url);
 					}
 				}
 

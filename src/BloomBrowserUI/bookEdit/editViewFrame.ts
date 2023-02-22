@@ -1,6 +1,6 @@
 import {
     IConfirmDialogProps,
-    showConfirmDialog as doShowConfirmDialog
+    showConfirmDialogFromOutsideReact
 } from "../react_components/confirmDialog";
 import {
     IColorPickerDialogProps,
@@ -196,7 +196,7 @@ export function ShowEditViewDialog(dialog: FunctionComponentElement<any>) {
 }
 
 export function showConfirmDialog(props: IConfirmDialogProps): void {
-    doShowConfirmDialog(props);
+    showConfirmDialogFromOutsideReact(props);
 }
 
 export function showColorPickerDialog(props: IColorPickerDialogProps): void {

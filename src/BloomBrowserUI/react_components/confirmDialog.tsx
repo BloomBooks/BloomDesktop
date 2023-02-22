@@ -29,16 +29,18 @@ export interface IConfirmDialogProps {
     dialogEnvironment?: IBloomDialogEnvironmentParams;
 }
 
-let externalShow;
+export let showConfirmDialog: () => void = () => {
+    console.error("showConfirmDialog is not set up yet.");
+};
 
-const ConfirmDialog: React.FC<IConfirmDialogProps> = props => {
+export const ConfirmDialog: React.FC<IConfirmDialogProps> = props => {
     const {
         showDialog,
         closeDialog,
         propsForBloomDialog
     } = useSetupBloomDialog(props.dialogEnvironment);
 
-    externalShow = showDialog;
+    showConfirmDialog = showDialog;
 
     React.useEffect(() => {
         if (props.dialogEnvironment?.mode === Mode.Edit)
@@ -51,10 +53,7 @@ const ConfirmDialog: React.FC<IConfirmDialogProps> = props => {
     };
 
     return (
-        <BloomDialog
-            className="bloomModalDialog confirmDialog"
-            {...propsForBloomDialog}
-        >
+        <BloomDialog {...propsForBloomDialog}>
             <DialogTitle title={useL10n(props.title, props.titleL10nKey)} />
             <DialogMiddle>
                 {useL10n(props.message, props.messageL10nKey)}
@@ -89,12 +88,12 @@ export enum DialogResult {
     Cancel
 }
 
-export const showConfirmDialog = (
+export const showConfirmDialogFromOutsideReact = (
     props: IConfirmDialogProps,
     container?: Element | null
 ) => {
     doRender(props, container);
-    externalShow(true);
+    showConfirmDialog();
 };
 
 const doRender = (props: IConfirmDialogProps, container?: Element | null) => {

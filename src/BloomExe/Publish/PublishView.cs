@@ -383,8 +383,13 @@ namespace Bloom.Publish
 				Controls.Remove(_uploadControl);
 				_uploadControl = null;
 			}
-			if((displayMode != PublishModel.DisplayModes.Android && displayMode != PublishModel.DisplayModes.EPUB && displayMode != PublishModel.DisplayModes.AudioVideo)
-			   && _htmlControl != null && Controls.Contains(_htmlControl))
+			if (displayMode != PublishModel.DisplayModes.Android &&
+				displayMode != PublishModel.DisplayModes.EPUB &&
+				displayMode != PublishModel.DisplayModes.AudioVideo &&
+				displayMode != PublishModel.DisplayModes.PdfPrint &&
+				displayMode != PublishModel.DisplayModes.Upload &&
+				_htmlControl != null &&
+				Controls.Contains(_htmlControl))
 			{
 				Controls.Remove(_htmlControl);
 
@@ -613,6 +618,7 @@ namespace Bloom.Publish
 		/// </summary>
 		private void SetModelFromButtons()
 		{
+			_model.UploadMode = _uploadRadio.Checked;
 			_model.UploadModeObsolete = _uploadRadioObsolete.Checked;
 			_model.EpubMode = _epubRadio.Checked;
 			var pdfPreviewMode = false;
@@ -707,14 +713,20 @@ namespace Bloom.Publish
 				return;
 			}
 			_model.PdfGenerationSucceeded = false; // and so it stays unless we generate it successfully.
+
+			// We aren't going to display it, so don't bother generating it unless the user actually uploads.
+			// Unfortunately, the completion of the generation process is normally responsible for putting us into
+			// the right display mode for what we generated (or failed to), after this routine puts us into the
+			// mode that shows generation is pending. For the upload button case, we want to go straight to the Upload
+			// mode, so the upload control appears. This is a bizarre place to do it, but I can't find a better one.
 			if (_uploadRadioObsolete.Checked)
 			{
-				// We aren't going to display it, so don't bother generating it unless the user actually uploads.
-				// Unfortunately, the completion of the generation process is normally responsible for putting us into
-				// the right display mode for what we generated (or failed to), after this routine puts us into the
-				// mode that shows generation is pending. For the upload button case, we want to go straight to the Upload
-				// mode, so the upload control appears. This is a bizarre place to do it, but I can't find a better one.
 				SetDisplayMode(PublishModel.DisplayModes.Upload_Obsolete);
+				return;
+			}
+			if (_uploadRadio.Checked)
+			{
+				SetDisplayMode(PublishModel.DisplayModes.Upload);
 				return;
 			}
 

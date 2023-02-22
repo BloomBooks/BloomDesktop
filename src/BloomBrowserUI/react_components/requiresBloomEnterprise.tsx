@@ -45,6 +45,22 @@ export function useEnterpriseAvailable() {
 }
 
 /**
+ * This function sets up a hook to get the Bloom Enterprise status.
+ * @returns A string which matches one of the enum values in CollectionSettingsApi.cs.
+ */
+export function useGetEnterpriseStatus(): string {
+    const [enterpriseStatus, setEnterpriseStatus] = useState<string>("None");
+
+    useEffect(() => {
+        get("settings/enterpriseStatus", result => {
+            setEnterpriseStatus(result.data);
+        });
+    }, []);
+
+    return enterpriseStatus;
+}
+
+/**
  * A component's props that include a "disabled" property
  */
 interface IDisableable {
