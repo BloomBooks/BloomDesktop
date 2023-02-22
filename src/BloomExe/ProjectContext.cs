@@ -370,6 +370,7 @@ namespace Bloom
 			_scope.Resolve<ProgressDialogApi>().RegisterWithApiHandler(server.ApiHandler);
 			_scope.Resolve<EditingViewApi>().RegisterWithApiHandler(server.ApiHandler);
 			_scope.Resolve<LibraryPublishApi>().RegisterWithApiHandler(server.ApiHandler);
+			_scope.Resolve<LibraryPublishApi_Obsolete>().RegisterWithApiHandler(server.ApiHandler);
 			_scope.Resolve<PerformanceMeasurement>().RegisterWithApiHandler(server.ApiHandler);
 			_scope.Resolve<FontsApi>().RegisterWithApiHandler(server.ApiHandler);
 			_scope.Resolve<WorkspaceApi>().RegisterWithApiHandler(server.ApiHandler);
