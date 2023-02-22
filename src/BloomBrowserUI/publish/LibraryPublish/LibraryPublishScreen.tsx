@@ -18,6 +18,8 @@ import { LanguageGroup } from "../commonPublish/LanguageGroup";
 import { AudioGroup } from "../commonPublish/AudioGroup";
 import PublishScreenTemplate from "../commonPublish/PublishScreenTemplate";
 
+export const kWebSocketContext = "libraryPublish";
+
 export const LibraryPublishScreen = () => {
     const mainPanel = (
         <PublishPanel>
