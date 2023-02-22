@@ -39,7 +39,11 @@ export const LibraryPublishScreen = () => {
             />
             <HelpGroup>
                 {/* TODO, not designed yet */}
-                <Link href="https://bloomLibrary.org/about" l10nKey={"TODO"}>
+                <Link
+                    href="https://bloomLibrary.org/about"
+                    l10nKey={"TODO"}
+                    temporarilyDisableI18nWarning={true}
+                >
                     About BloomLibrary.org
                 </Link>
             </HelpGroup>

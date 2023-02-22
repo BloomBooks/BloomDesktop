@@ -4453,15 +4453,31 @@
         <source xml:lang="en">All rights reserved (Contact the Copyright holder for any permissions.)</source>
         <note>ID: PublishTab.Upload.AllReserved</note>
       </trans-unit>
+      <trans-unit id="PublishTab.Upload.Agreement.PermissionToPublish" translate="no"> <!-- added in 5.5 -->
+        <source xml:lang="en">I have permission to publish all the text and images in this book.</source>
+        <note>ID: PublishTab.Upload.Agreement.PermissionToPublish</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.Agreement.GivesCredit" translate="no"> <!-- added in 5.5 -->
+        <source xml:lang="en">The book gives credit to the the author, translator, and illustrator(s).</source>
+        <note>ID: PublishTab.Upload.Agreement.GivesCredit</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.Agreement.AgreeToTerms" translate="no"> <!-- added in 5.5 -->
+        <source xml:lang="en">I agree to the [Bloom Library Terms of Use].</source>
+        <note>ID: PublishTab.Upload.Agreement.AgreeToTerms</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.Agreements" translate="no"> <!-- added in 5.5 -->
+        <source xml:lang="en">Agreements</source>
+        <note>ID: PublishTab.Upload.Agreements</note>
+      </trans-unit>
       <trans-unit id="PublishTab.Upload.BackgroundMusic">
         <source xml:lang="en">Background Music</source>
         <note>ID: PublishTab.Upload.BackgroundMusic</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Upload.BannerDescription" translate="no">
+      <trans-unit id="PublishTab.Upload.BannerDescription" translate="no"> <!-- added in 5.5 -->
         <source xml:lang="en">Let speakers find your books in [Bloom Reader](https://bloomlibrary.org/page/create/bloom-reader) and on [BloomLibrary.org](https://bloomlibrary.org/).</source>
         <note>ID: PublishTab.Upload.BannerDescription</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Upload.BannerTitle" translate="no">
+      <trans-unit id="PublishTab.Upload.BannerTitle" translate="no"> <!-- added in 5.5 -->
         <source xml:lang="en">Publish to Web</source>
         <note>ID: PublishTab.Upload.BannerTitle</note>
       </trans-unit>
@@ -4480,6 +4496,10 @@
       <trans-unit id="PublishTab.Upload.ChooseSignLanguageWarning">
         <source xml:lang="en">Please choose the sign language for this book</source>
         <note>ID: PublishTab.Upload.ChooseSignLanguageWarning</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.ConfirmMetadata" translate="no"> <!-- added in 5.5 -->
+        <source xml:lang="en">Confirm Metadata</source>
+        <note>ID: PublishTab.Upload.ConfirmMetadata</note>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.ConfirmReplaceExisting">
         <source xml:lang="en">BloomLibrary.org already has a previous version of this book from you.  If you upload it again, it will be replaced with your current version.</source>
@@ -4676,6 +4696,10 @@
         <source xml:lang="en">Sign Language</source>
         <note>ID: PublishTab.Upload.SignLanguage</note>
       </trans-unit>
+      <trans-unit id="PublishTab.Upload.SignIn" translate="no"> <!-- added in 5.5 -->
+        <source xml:lang="en">Sign in or sign up to Bloomlibrary.org</source>
+        <note>ID: PublishTab.Upload.SignIn</note>
+      </trans-unit>
       <trans-unit id="PublishTab.Upload.SignInSignUp">
         <source xml:lang="en">Sign In / Sign Up to BloomLibrary.org</source>
         <note>ID: PublishTab.Upload.SignUpLogin</note>
@@ -4718,6 +4742,18 @@ Do you want to go ahead?</note>
       <trans-unit id="PublishTab.Upload.TermsLink">
         <source xml:lang="en">Show Terms of Use</source>
         <note>ID: PublishTab.Upload.TermsLink</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.TestBook" translate="no"> <!-- added in 5.5 -->
+        <source xml:lang="en">Test out your Book</source>
+        <note>ID: PublishTab.Upload.TestBook</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.TestBook.Text1" translate="no"> <!-- added in 5.5 -->
+        <source xml:lang="en">Here is [your new page] on Bloom Library. We will soon process your book into various formats and add them to this page. Check back in about 10 minutes. If we encounter any problems, that page will tell you about them.</source>
+        <note>ID: PublishTab.Upload.TestBook.Text1</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.TestBook.Text2" translate="no"> <!-- added in 5.5 -->
+        <source xml:lang="en">If you make changes to this book, you can return here to upload it again. Your new version will just replace the existing one.</source>
+        <note>ID: PublishTab.Upload.TestBook.Text2</note>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.TimeProblem">
         <source xml:lang="en">There was a problem uploading your book. This is probably because your computer is set to use the wrong timezone or your system time is badly wrong. See http://www.di-mgt.com.au/wclock/help/wclo_setsysclock.html for how to fix this.</source>
