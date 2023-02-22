@@ -25,6 +25,31 @@ describe("talking book tests", () => {
         await initializeTalkingBookToolAsync();
     });
 
+    describe("- de/enshroudPhraseMarkes", () => {
+        it("enshroud/deshroud phrase markers", () => {
+            // Setup Initial HTML
+            const textBox1 =
+                '<div class="bloom-editable" id="div1"><p><span id="1.1" class="audio-sentence ui-audioCurrent">This is a test,| this is only a test.</span></p></div>';
+            const textBox2 =
+                '<div class="bloom-editable" id="div2"><p><span id="2.1" class="audio-sentence">This test is silly | but that is okay.</span></p></div>';
+            SetupIFrameFromHtml(`<div id='page1'>${textBox1}${textBox2}</div>`);
+            const page = getFrameElementById("page", "page1");
+            expect(
+                page?.getElementsByClassName("bloom-audio-split-marker")
+                    .length ?? 0
+            ).toBe(0);
+            TalkingBookTool.enshroudPhraseDelimiters(page);
+            expect(
+                page?.getElementsByClassName("bloom-audio-split-marker").length
+            ).toBe(2);
+            TalkingBookTool.deshroudPhraseDelimiters(page);
+            expect(
+                page?.getElementsByClassName("bloom-audio-split-marker")
+                    .length ?? 0
+            ).toBe(0);
+        });
+    });
+
     describe("- updateMarkup()", () => {
         it("moves highlight after focus changes", async () => {
             // Setup Initial HTML

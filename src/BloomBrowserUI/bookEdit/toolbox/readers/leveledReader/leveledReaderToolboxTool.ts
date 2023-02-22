@@ -1,7 +1,7 @@
 ﻿/// <reference path="../../toolbox.ts" />
 import { getTheOneReaderToolsModel } from "../readerToolsModel";
 import { beginInitializeLeveledReaderTool } from "../readerTools";
-import { ITool } from "../../toolbox";
+import { ITool, ToolBox } from "../../toolbox";
 import { get } from "../../../../utils/bloomApi";
 
 export class LeveledReaderToolboxTool implements ITool {
@@ -51,6 +51,27 @@ export class LeveledReaderToolboxTool implements ITool {
 
     public detachFromPage() {
         getTheOneReaderToolsModel().setMarkupType(0);
+        LeveledReaderToolboxTool.restoreAudioSplitMarkers(ToolBox.getPage());
+    }
+
+    public static restoreAudioSplitMarkers(page: HTMLElement | null) {
+        if (!page) return;
+        const delimitingSpans = page.getElementsByClassName(
+            "bloom-audio-split-marker"
+        );
+        for (let i = delimitingSpans.length - 1; i >= 0; --i) {
+            delimitingSpans[i].textContent = "|";
+        }
+    }
+
+    public static disableAudioSplitMarkers(page: HTMLElement | null) {
+        if (!page) return;
+        const delimitingSpans = page.getElementsByClassName(
+            "bloom-audio-split-marker"
+        );
+        for (let i = delimitingSpans.length - 1; i >= 0; --i) {
+            delimitingSpans[i].textContent = "\u200B"; // zero-width space
+        }
     }
 
     public newPageReady() {
@@ -62,6 +83,8 @@ export class LeveledReaderToolboxTool implements ITool {
         getTheOneReaderToolsModel().setMarkupType(2);
         // usually updateMarkup will do this, unless we are coming from showTool
         getTheOneReaderToolsModel().doMarkup();
+        // We don't want audio split markers treated as sentence punctuation here.
+        LeveledReaderToolboxTool.disableAudioSplitMarkers(ToolBox.getPage());
     }
 
     public updateMarkup() {

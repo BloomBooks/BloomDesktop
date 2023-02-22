@@ -47,9 +47,72 @@ export default class TalkingBookTool implements ITool {
     // Called when a new page is loaded.
     public async newPageReady(): Promise<void> {
         this.showImageDescriptionsIfAny();
+        TalkingBookTool.deshroudPhraseDelimiters(ToolBox.getPage());
         return AudioRecorder.theOneAudioRecorder.newPageReady(
             this.isImageDescriptionToolActive()
         );
+    }
+
+    // Remove the span markup surrounding any phrase delimiter bars ("|").
+    // This allows internal processing to proceed without having to contend with that markup.
+    public static deshroudPhraseDelimiters(page: HTMLElement | null) {
+        if (!page) return;
+        const delimitingSpans = page.getElementsByClassName(
+            "bloom-audio-split-marker"
+        );
+        // delimitingSpans is a live collection that changes as we remove spans.
+        // Processing from the end of the list should prevent problems
+        for (let i = delimitingSpans.length - 1; i >= 0; --i) {
+            const span = delimitingSpans[i];
+            span.replaceWith(page.ownerDocument.createTextNode("|"));
+        }
+    }
+
+    // Mark each phrase delimiter bar ("|") with a span and class that will result in it
+    // being invisible outside of this tool.
+    public static enshroudPhraseDelimiters(page: HTMLElement | null) {
+        if (!page || !page.hasChildNodes()) return;
+        const children = page.childNodes;
+        // children is a live collection that changes as we add/remove nodes.
+        // Processing from the end of the list should prevent problems.
+        for (let i = children.length - 1; i >= 0; --i) {
+            const node = children[i];
+            switch (node.nodeType) {
+                case Node.ELEMENT_NODE:
+                    this.enshroudPhraseDelimiters(node as HTMLElement);
+                    break;
+                case Node.TEXT_NODE:
+                    {
+                        const originalText = node.textContent;
+                        if (originalText?.includes("|")) {
+                            const matches = originalText.match(
+                                /(([^\|]+)|(\|))/g
+                            );
+                            if (matches && matches.length > 0) {
+                                const newNodes = matches.map(val => {
+                                    if (val === "|") {
+                                        const newSpan = page.ownerDocument.createElement(
+                                            "span"
+                                        );
+                                        newSpan.classList.add(
+                                            "bloom-audio-split-marker"
+                                        );
+                                        const newText = page.ownerDocument.createTextNode(
+                                            val
+                                        );
+                                        newSpan.appendChild(newText);
+                                        return newSpan as Node;
+                                    } else {
+                                        return val;
+                                    }
+                                });
+                                node.replaceWith(...newNodes);
+                            }
+                        }
+                    }
+                    break;
+            }
+        }
     }
 
     public hideTool() {
@@ -67,6 +130,7 @@ export default class TalkingBookTool implements ITool {
         const page = ToolBox.getPage();
         if (page) {
             page.classList.remove("bloom-showImageDescriptions");
+            TalkingBookTool.enshroudPhraseDelimiters(page);
         }
     }
 

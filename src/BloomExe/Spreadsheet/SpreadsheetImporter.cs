@@ -863,6 +863,11 @@ namespace Bloom.Spreadsheet
 				}
 
 				AddAudio(editable, lang, row);
+				if (editable.InnerXml.Contains("|</span>"))
+				{
+					var innerContent = editable.InnerXml;
+					editable.InnerXml = innerContent.Replace("|</span>", "<span class='bloom-audio-split-marker'>|</span></span>");
+				}
 			}
 
 			if (RemoveOtherLanguages)
