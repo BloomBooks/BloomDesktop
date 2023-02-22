@@ -135,6 +135,7 @@ namespace Bloom.Publish
 			_bookletBodyRadio.Enabled = enable;
 			_bookletCoverRadio.Enabled = enable;
 			_simpleAllPagesRadio.Enabled = enable;
+			_pdfPrintRadio.Enabled = enable;
 			_bloomPUBRadio.Enabled = enable;
 			_recordVideoRadio.Enabled = enable;
 		}
