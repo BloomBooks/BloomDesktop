@@ -860,10 +860,18 @@ namespace Bloom.Spreadsheet
 				}
 				else
 				{
+					// These could have been part of text copied from a Bloom book into the spreadsheet.
+					content = content.Replace("<span class=\"bloom-audio-split-marker\">\u200B</span>", "");
+					content = content.Replace("<span class='bloom-audio-split-marker'>\u200B</span>", "");
 					editable.InnerXml = content;
 				}
 
 				AddAudio(editable, lang, row);
+				if (editable.InnerXml.Contains("|</span>"))
+				{
+					var innerContent = editable.InnerXml;
+					editable.InnerXml = innerContent.Replace("|</span>", "<span class='bloom-audio-split-marker'>\u200B</span></span>");
+				}
 			}
 
 			if (RemoveOtherLanguages)

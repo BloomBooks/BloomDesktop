@@ -118,12 +118,24 @@ import { ReaderToolsModel } from "../readerToolsModel";
 
                     // check sentence length
                     if (sentenceWordCount > opts.maxWordsPerSentence) {
-                        // tag sentence as having too many words
+                        // Mark this sentence as having too many words.  fragment.text
+                        // may start out with one or two </span> close tags.  We need
+                        // to insert the span marking the overly long sentence after
+                        // all of those leading close </span> tags to preserve proper
+                        // nesting of the marked sentence.
+                        let leadingClosers = "";
+                        const leadingCloseSpans = fragment.text.match(
+                            /^( *<\/span>)+ */
+                        );
+                        if (leadingCloseSpans) {
+                            leadingClosers = leadingCloseSpans[0];
+                        }
                         newHtml +=
+                            leadingClosers +
                             '<span class="' +
                             cssSentenceTooLong +
                             '" data-segment="sentence">' +
-                            fragment.text +
+                            fragment.text.substring(leadingClosers.length) +
                             "</span>";
                     } else {
                         // nothing to see here
@@ -150,7 +162,7 @@ import { ReaderToolsModel } from "../readerToolsModel";
             restoreNonTextUIElementsInEditBox(leaf);
         };
 
-        var checkRoot = root => {
+        const checkRoot = root => {
             const children = root.children();
             let processedChild = false; // Did we find a significant child?
             for (let i = 0; i < children.length; i++) {
@@ -505,6 +517,10 @@ export function removeAllHtmlMarkupFromString(textHtml: string): string {
     const ckeRegex = /<span [^>]*style="display: none;"[^>]*>[^<]*<\/span>/g;
     textHtml = textHtml.replace(ckeRegex, "");
 
+    // Remove phrase delimiters used by the talking book tool.
+    const phraseDelimeterRegex = /<span class=["']bloom-audio-split-marker["']>.<\/span>/g;
+    textHtml = textHtml.replace(phraseDelimeterRegex, "");
+
     // Both open and close tags for markup
     const markupRegex = /<\/?(strong|em|sup|u|i|b|a|span)>/g;
     textHtml = textHtml.replace(markupRegex, "");
@@ -512,6 +528,10 @@ export function removeAllHtmlMarkupFromString(textHtml: string): string {
     // Open tags for more complex markup (ie, span and a tags).
     const complexMarkupRegex = /<(span|a)[ \r\n\t][^>]*>/g;
     textHtml = textHtml.replace(complexMarkupRegex, "");
+
+    // This can sneak in on the current page.
+    const divCogRegex = /<div id="formatButton"[^>]*><img[^>]*><\/div>/g;
+    textHtml = textHtml.replace(divCogRegex, "");
 
     return $("<div>" + textHtml + "</div>").text();
 }
