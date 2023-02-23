@@ -2354,8 +2354,8 @@ namespace Bloom.Book
 					"How to troubleshoot file updating errors");
 
 				var longerMsgTemplate = LocalizationManager.GetString("Errors.CannotUpdateFileLonger",
-					"Bloom was not able to update a support file named \"{0}\". This is usually not a problem. If you continue to see these messages, see \"{1}\"");
-				var longerMsg = string.Format(longerMsgTemplate, Path.GetFileName(documentPath), $"<a href='https://community.software.sil.org/t/when-bloom-is-prevented-from-changing-png-image-files/4445' target='_blank'>{howToTroubleshoot}</a>");
+					"Bloom was not able to update a support file named \"{0}\". This is usually not a problem. If you continue to see these messages, see \"{1}\".");
+				var longerMsg = string.Format(longerMsgTemplate, Path.GetFileName(documentPath), $"<a href='https://docs.bloomlibrary.org/troubleshooting-file-access' target='_blank'>{howToTroubleshoot}</a>");
 
 
 				// Something like this was called for in the comment on BL-11863 that led to this,

@@ -2827,7 +2827,7 @@
         <note>ID: Errors.CannotUpdateFile</note>
       </trans-unit>
       <trans-unit id="Errors.CannotUpdateFileLonger">
-        <source xml:lang="en">Bloom was not able to update a support file named "{0}". This is usually not a problem. If you continue to see these messages, see "{1}"</source>
+        <source xml:lang="en">Bloom was not able to update a support file named "{0}". This is usually not a problem. If you continue to see these messages, see "{1}."</source>
         <note>ID: Errors.CannotUpdateFileLonger</note>
         <note>{1} is the translation for "Errors.CannotUpdateTroubleshoot".</note>
       </trans-unit>
