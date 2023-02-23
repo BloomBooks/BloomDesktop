@@ -236,6 +236,7 @@ const FeatureButton: React.FunctionComponent<{
                 <div
                     css={css`
                         font-size: smaller;
+                        color: #7a7a7a;
                     `}
                 >
                     {description}

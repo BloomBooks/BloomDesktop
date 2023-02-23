@@ -152,7 +152,7 @@ export const PDFPrintPublishScreen = () => {
                 <HelpLink
                     l10nKey="PublishTab.PdfPrint.AboutPdfPrint"
                     // Wants to be PDF_and_Print.htm when that gets written
-                    helpId="Tasks/Publish_tasks/Generate_a_PDF_file.htm"
+                    helpId="Tasks/Publish_tasks/PDF_and_Print.htm"
                     temporarilyDisableI18nWarning={true}
                 >
                     About PDF and Print
