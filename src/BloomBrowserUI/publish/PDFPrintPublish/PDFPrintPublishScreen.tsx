@@ -1,31 +1,27 @@
 /** @jsx jsx **/
 import { jsx, css } from "@emotion/react";
 import * as React from "react";
-import { useState, useContext, useEffect, useRef } from "react";
+import { useState, useRef } from "react";
 
 import {
     PreviewPanel,
     HelpGroup,
-    SettingsPanel,
-    PublishPanel
+    SettingsPanel
 } from "../commonPublish/PublishScreenBaseComponents";
 import { PDFPrintFeaturesGroup } from "./PDFPrintFeaturesGroup";
 import PublishScreenTemplate from "../commonPublish/PublishScreenTemplate";
 import ReactDOM = require("react-dom");
 import { ThemeProvider, StyledEngineProvider } from "@mui/material/styles";
-import { darkTheme, lightTheme } from "../../bloomMaterialUITheme";
+import { darkTheme, lightTheme, kBannerGray } from "../../bloomMaterialUITheme";
 import { useL10n } from "../../react_components/l10nHooks";
 import Typography from "@mui/material/Typography";
 import Button from "@mui/material/Button";
-import { CircularProgress } from "@mui/material";
-import { getString, post, useWatchString } from "../../utils/bloomApi";
+import ArrowForwardRounded from "@mui/icons-material/ArrowForwardRounded";
+import { getString, post } from "../../utils/bloomApi";
 
-import { Div, Span } from "../../react_components/l10nComponents";
+import { Div } from "../../react_components/l10nComponents";
 import { ApiCheckbox } from "../../react_components/ApiCheckbox";
-import {
-    DialogCancelButton,
-    DialogOkButton
-} from "../../react_components/BloomDialog/commonDialogComponents";
+import { DialogOkButton } from "../../react_components/BloomDialog/commonDialogComponents";
 import {
     BloomDialog,
     DialogBottomButtons,
@@ -46,17 +42,18 @@ const PrintSaveButton: React.FunctionComponent<{
 }> = props => {
     const label = useL10n(props.label, props.l10nId);
     return (
-        <Button onClick={props.onClick} disabled={!props.enabled}>
+        <Button
+            css={css`
+                opacity: ${props.enabled ? "100%" : "25%"};
+            `}
+            onClick={props.onClick}
+            disabled={!props.enabled}
+        >
             <img src={props.imgSrc} />
-            <div
-                css={css`
-                    width: 0.5em;
-                `}
-            />
             <span
                 css={css`
                     color: black;
-                    opacity: ${props.enabled ? "100%" : "38%"};
+                    margin-left: 0.5em;
                     text-transform: none !important;
                 `}
             >
@@ -74,6 +71,14 @@ export const PDFPrintPublishScreen = () => {
     const iframeRef = useRef<HTMLIFrameElement>(null);
 
     const progressHeader = useL10n("Progress", "Common.Progress");
+    const formatModeText = useL10n(
+        "Bloom can format your PDF in several ways.",
+        "PublishTab.PdfMaker.ClickToStart"
+    );
+    const chooseModeText = useL10n(
+        "Choose one here:",
+        "PublishTab.PdfMaker.ClickToStart2"
+    );
     const showProgress = useRef<() => void | undefined>();
     const closeProgress = useRef<() => void | undefined>();
 
@@ -103,21 +108,53 @@ export const PDFPrintPublishScreen = () => {
                                 src={path}
                             />
                         ) : (
-                            <Typography
+                            <div
                                 css={css`
-                                    color: white;
-                                    align-self: center;
-                                    margin-left: 20px;
+                                    background-color: ${kBannerGray};
+                                    display: flex;
+                                    flex: 1;
                                 `}
                             >
-                                <Span
-                                    l10nKey="PublishTab.PdfMaker.ClickToStart"
-                                    temporarilyDisableI18nWarning={true}
+                                <div
+                                    css={css`
+                                        display: flex;
+                                        flex: 1;
+                                        flex-direction: row;
+                                        align-items: flex-start;
+                                        justify-content: center;
+                                        padding: 130px 130px 0;
+                                    `}
                                 >
-                                    "Click a button on the right to start
-                                    creating PDF."
-                                </Span>
-                            </Typography>
+                                    <div
+                                        css={css`
+                                            display: flex;
+                                            flex-direction: column;
+                                        `}
+                                    >
+                                        <Typography
+                                            color="primary"
+                                            fontSize={42}
+                                            fontWeight="bold"
+                                        >
+                                            {formatModeText}
+                                        </Typography>
+                                        <Typography
+                                            color="primary"
+                                            fontSize={42}
+                                            fontWeight="bold"
+                                        >
+                                            {chooseModeText}
+                                        </Typography>{" "}
+                                    </div>
+                                    <ArrowForwardRounded
+                                        color="primary"
+                                        fontWeight="bold"
+                                        css={css`
+                                            font-size: 90pt;
+                                        `}
+                                    />
+                                </div>
+                            </div>
                         )}
                     </ThemeProvider>
                 </StyledEngineProvider>
