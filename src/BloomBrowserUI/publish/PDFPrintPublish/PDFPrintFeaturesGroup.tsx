@@ -14,6 +14,7 @@ import Select from "@mui/material/Select";
 import MenuItem from "@mui/material/MenuItem";
 import { Div } from "../../react_components/l10nComponents";
 import { RequiresBloomEnterpriseAdjacentIconWrapper } from "../../react_components/requiresBloomEnterprise";
+import { kSelectCss } from "../../bloomMaterialUITheme";
 
 interface PdfReadyMessage {
     path: string;
@@ -46,12 +47,16 @@ export const PDFPrintFeaturesGroup: React.FunctionComponent<{
     const [cmyk, setCmyk] = useApiBoolean("publish/pdf/cmyk", false);
     const none = useL10n("None", "PublishTab.PdfMaker.None");
     const cmykSwop2 = useL10n(
-        "CMYK color (U.S. Web Coated (SWOP) v2)",
+        "U.S. Web Coated (SWOP) v2",
         "PublishTab.PdfMaker.PdfWithCmykSwopV2"
     );
     const [allowFullBleed] = useApiBoolean("publish/pdf/allowFullBleed", false);
     return (
-        <div>
+        <div
+            css={css`
+                padding-right: 20px;
+            `}
+        >
             <SettingsGroup
                 label={useL10n(
                     "Booklet Mode",
@@ -137,16 +142,7 @@ export const PDFPrintFeaturesGroup: React.FunctionComponent<{
                     </Div>
                     <Select
                         css={css`
-                            background-color: white;
-                            width: 210px;
-                            &.MuiOutlinedInput-root {
-                                border-radius: 0 !important;
-
-                                .MuiOutlinedInput-notchedOutline {
-                                    border-width: 1px !important;
-                                    border-color: ${kBloomBlue} !important; // it usually is anyway, but not before MUI decides to focus it.
-                                }
-                            }
+                            ${kSelectCss}
                         `}
                         variant="outlined"
                         value={cmyk ? "cmyk" : "none"}
@@ -197,7 +193,11 @@ const FeatureButton: React.FunctionComponent<{
                     0 1px 4px hsla(0, 0%, 0%, 0.05),
                     0 2px 8px hsla(0, 0%, 0%, 0.05);
                 padding: 10px 5px;
+                // if this becomes a more public component, I'd prefer margin to be controlled
+                // by the client.
                 margin-bottom: 10px;
+                margin-left: auto;
+                margin-right: auto;
                 width: 210px;
                 ${props.selected ? "border: solid 3px " + kBloomBlue : ""}
                 ${props.disabled ? "color: " + kBloomDisabledButtonText : ""}

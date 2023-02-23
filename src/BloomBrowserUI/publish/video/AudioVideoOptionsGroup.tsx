@@ -9,7 +9,7 @@ import { Div } from "../../react_components/l10nComponents";
 import { FormControl, MenuItem, Select, Typography } from "@mui/material";
 import Slider from "@mui/material/Slider";
 import "../../bookEdit/css/rc-slider-bloom.less";
-import { kBloomBlue } from "../../bloomMaterialUITheme";
+import { kBloomBlue, kSelectCss } from "../../bloomMaterialUITheme";
 import AudioIcon from "@mui/icons-material/VolumeUp";
 import { useEffect, useState } from "react";
 import { NoteBox } from "../../react_components/BloomDialog/commonDialogComponents";
@@ -296,15 +296,7 @@ export const AudioVideoOptionsGroup: React.FunctionComponent<{
                             >
                                 <Select
                                     css={css`
-                                        background-color: white;
-                                        &.MuiOutlinedInput-root {
-                                            border-radius: 0 !important;
-
-                                            .MuiOutlinedInput-notchedOutline {
-                                                border-width: 1px !important;
-                                                border-color: ${kBloomBlue} !important; // it usually is anyway, but not before MUI decides to focus it.
-                                            }
-                                        }
+                                        ${kSelectCss}
                                     `}
                                     variant="outlined"
                                     value={props.format}
