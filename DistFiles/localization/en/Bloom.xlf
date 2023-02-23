@@ -4106,11 +4106,14 @@
       </trans-unit>
       <!-- for 5.5
       trans-unit id="PublishTab.PdfMaker.ClickToStart">
-        <source xml:lang="en">
-          Click a button on the right to start
-          creating PDF.</source>
+        <source xml:lang="en">Bloom can format your PDF in several ways.</source>
         <note>ID: PublishTab.PdfMaker.ClickToStart</note>
-      </trans-unit-->
+      </trans-unit
+      trans-unit id="PublishTab.PdfMaker.ClickToStart2">
+        <source xml:lang="en">Choose one here:</source>
+        <note>ID: PublishTab.PdfMaker.ClickToStart2</note>
+      </trans-unit
+      -->
       <trans-unit id="PublishTab.PdfMaker.Compress">
         <source xml:lang="en">Compressing PDF</source>
         <note>ID: PublishTab.PdfMaker.Compress</note>

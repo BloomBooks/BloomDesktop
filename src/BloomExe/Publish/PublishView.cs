@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.ComponentModel.Composition.Primitives;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -9,7 +8,6 @@ using System.Threading;
 using System.Windows.Forms;
 using Bloom.Book;
 using Bloom.CollectionTab;
-using Bloom.Edit;
 using Bloom.Properties;
 using Bloom.WebLibraryIntegration;
 using L10NSharp;
@@ -100,14 +98,7 @@ namespace Bloom.Publish
 //			linkLabel.Click+=new EventHandler((x,y)=>_model.DebugCurrentPDFLayout());
 //        	tableLayoutPanel1.Controls.Add(linkLabel);
 //#endif
-			_menusToolStrip.BackColor = _pdfOptions.BackColor = tableLayoutPanel1.BackColor = Palette.GeneralBackground;
-			if (SIL.PlatformUtilities.Platform.IsMono)
-			{
-				BackgroundColorsForLinux();
-			}
-
-			// Adding this renderer prevents a white line from showing up under the components.
-			_menusToolStrip.Renderer = new EditingView.FixedToolStripRenderer();
+			tableLayoutPanel1.BackColor = Palette.GeneralBackground;
 
 			// As far as I can tell, this is not needed anymore, and its presence,
 			// at least in this place in the code, causes errors when running command-line tools
@@ -117,7 +108,6 @@ namespace Bloom.Publish
 			localizationChangedEvent.Subscribe(o =>
 			{
 				SetupLocalization();
-				UpdatePdfOptions();
 				UpdateSaveButton();
 			});
 
@@ -131,9 +121,6 @@ namespace Bloom.Publish
 		public void SetStateOfNonUploadRadios(bool enable)
 		{
 			_epubRadio.Enabled = enable;
-			_bookletBodyRadio.Enabled = enable;
-			_bookletCoverRadio.Enabled = enable;
-			_simpleAllPagesRadio.Enabled = enable;
 			_pdfPrintRadio.Enabled = enable;
 			_bloomPUBRadio.Enabled = enable;
 			_recordVideoRadio.Enabled = enable;
@@ -163,27 +150,11 @@ namespace Bloom.Publish
 			PublishHelper.InPublishTab = false;
 		}
 
-		private void BackgroundColorsForLinux() {
-
-			var bmp = new Bitmap(_menusToolStrip.Width, _menusToolStrip.Height);
-			using (var g = Graphics.FromImage(bmp))
-			{
-				using (var b = new SolidBrush(_menusToolStrip.BackColor))
-				{
-					g.FillRectangle(b, 0, 0, bmp.Width, bmp.Height);
-				}
-			}
-			_menusToolStrip.BackgroundImage = bmp;
-		}
-
 		private void SetAutoCheck(bool autoCheck)
 		{
-			if (_simpleAllPagesRadio.AutoCheck == autoCheck)
+			if (_pdfPrintRadio.AutoCheck == autoCheck)
 				return;
 
-			_simpleAllPagesRadio.AutoCheck = autoCheck;
-			_bookletCoverRadio.AutoCheck = autoCheck;
-			_bookletBodyRadio.AutoCheck = autoCheck;
 			_pdfPrintRadio.AutoCheck = autoCheck;
 			_uploadRadio.AutoCheck = autoCheck;
 			_uploadRadioObsolete.AutoCheck = autoCheck;
@@ -194,9 +165,6 @@ namespace Bloom.Publish
 
 		private void SetupLocalization()
 		{
-			LocalizeSuperToolTip(_simpleAllPagesRadio, "PublishTab.OnePagePerPaperRadio");
-			LocalizeSuperToolTip(_bookletCoverRadio, "PublishTab.CoverOnlyRadio");
-			LocalizeSuperToolTip(_bookletBodyRadio, "PublishTab.BodyOnlyRadio");
 			LocalizeSuperToolTip(_pdfPrintRadio, "PublishTab.PdfPrint.Button");
 			LocalizeSuperToolTip(_uploadRadio, "PublishTab.ButtonThatShowsUploadForm");
 			LocalizeSuperToolTip(_uploadRadioObsolete, "PublishTab.ButtonThatShowsUploadForm");
@@ -265,8 +233,7 @@ namespace Bloom.Publish
 
 		private void ClearRadioButtons()
 		{
-			_bookletCoverRadio.Checked = _bookletBodyRadio.Checked =
-				_simpleAllPagesRadio.Checked = _pdfPrintRadio.Checked = _uploadRadio.Checked = _uploadRadioObsolete.Checked = _epubRadio.Checked = _bloomPUBRadio.Checked = _recordVideoRadio.Checked = false;
+			_pdfPrintRadio.Checked = _uploadRadio.Checked = _uploadRadioObsolete.Checked = _epubRadio.Checked = _bloomPUBRadio.Checked = _recordVideoRadio.Checked = false;
 		}
 
 		internal bool IsMakingPdf
@@ -379,9 +346,6 @@ namespace Bloom.Publish
 			if (_model == null || _model.BookSelection.CurrentSelection==null)
 				return;
 
-			_bookletCoverRadio.Checked = _model.BookletPortion == PublishModel.BookletPortions.BookletCover && !_model.UploadModeObsolete;
-			_bookletBodyRadio.Checked = _model.BookletPortion == PublishModel.BookletPortions.BookletPages && !_model.UploadModeObsolete;
-			_simpleAllPagesRadio.Checked = _model.BookletPortion == PublishModel.BookletPortions.AllPagesNoBooklet && !_model.UploadModeObsolete;
 			_pdfPrintRadio.Checked = _model.PdfPrintMode;
 			_uploadRadio.Checked = _model.UploadMode;
 			_uploadRadioObsolete.Checked = _model.UploadModeObsolete;
@@ -395,110 +359,13 @@ namespace Bloom.Publish
 			_pdfPrintRadio.Enabled = _model.AllowPdf;
 			_uploadRadio.Enabled = _model.AllowUpload;
 			_uploadRadioObsolete.Enabled = _model.AllowUpload;
-			_simpleAllPagesRadio.Enabled = _model.AllowPdf;
-			_bookletBodyRadio.Enabled = _model.AllowPdfBooklet;
-			_bookletCoverRadio.Enabled = _model.AllowPdfCover;
 			_openinBrowserMenuItem.Enabled = _openPDF.Enabled = _model.PdfGenerationSucceeded;
 			_bloomPUBRadio.Enabled = _model.AllowAndroid;
 			_epubRadio.Enabled = _model.AllowEPUB;
 
-
-			// When PDF is allowed but booklets are not, allow the noBookletsMessage to grow
-			// to fit its text. Otherwise the height of 0 keeps it hidden (the "visible" property didn't work).
-			_noBookletsMessage.AutoSize = _model.AllowPdf && !_model.AllowPdfBooklet;
-			_noBookletsMessage.Height = 0;
-
 			// No reason to update from model...we only change the model when the user changes the check box,
 			// or when uploading...and we do NOT want to update the check box when uploading temporarily changes the model.
 			//_showCropMarks.Checked = _model.ShowCropMarks;
-
-			UpdatePdfOptions();
-		}
-
-		private void UpdatePdfOptions()
-		{
-			if (_model == null || _model.BookSelection == null || _model.BookSelection.CurrentSelection == null)
-				return; // May get called when localization changes even though tab is not visible.
-			_pdfOptions.DropDownItems.Clear();
-			// Disabled as requested in BL-8872. We are waiting to see if anyone misses these.
-			//var layout = _model.PageLayout;
-			//var layoutChoices = _model.BookSelection.CurrentSelection.GetSizeAndOrientationChoices();
-			//_pdfOptions.DropDownItems.Add(new ToolStripSeparator());
-			//var headerText = LocalizationManager.GetString(@"PublishTab.OptionsMenu.SizeLayout", "Size/Orientation",
-			//	@"Header for a region of the menu which lists various standard page sizes and orientations");
-			//var headerItem2 = (ToolStripMenuItem) _pdfOptions.DropDownItems.Add(headerText);
-			//headerItem2.Enabled = false;
-			//foreach (var lc in layoutChoices)
-			//{
-			//	var text = LocalizationManager.GetDynamicString("Bloom", "LayoutChoices." + lc, lc.ToString());
-			//	ToolStripMenuItem item = (ToolStripMenuItem) _pdfOptions.DropDownItems.Add(text);
-			//	item.Tag = lc;
-			//	item.Text = text;
-			//	item.Checked = lc.ToString() == layout.ToString();
-			//	item.CheckOnClick = true;
-			//	item.Click += OnLayoutChosen;
-			//}
-
-			var headerText = LocalizationManager.GetString(@"PublishTab.OptionsMenu.PreparePrintshop", "Prepare for Print Shop:");
-			var headerItem2 = (ToolStripMenuItem)_pdfOptions.DropDownItems.Add(headerText);
-			headerItem2.Enabled = false;
-
-			var cmykText = LocalizationManager.GetString("PublishTab.PdfMaker.PdfWithCmykSwopV2", "CMYK color (U.S. Web Coated (SWOP) v2)");
-			var cmykItem = (ToolStripMenuItem)_pdfOptions.DropDownItems.Add(cmykText);
-			cmykItem.Checked = _model.BookSelection.CurrentSelection.UserPrefs.CmykPdf;
-			cmykItem.CheckOnClick = true;
-			cmykItem.Click += (sender, args) =>
-				{
-					_model.BookSelection.CurrentSelection.UserPrefs.CmykPdf = cmykItem.Checked;
-					SetModelFromButtons(); // this calls for updating the preview so the user won't think it's done already
-				};
-
-			var fullBleedText = LocalizationManager.GetString("PublishTab.PdfMaker.FullBleed", "Full Bleed");
-			var fullBleedItem = (ToolStripMenuItem)_pdfOptions.DropDownItems.Add(fullBleedText);
-			fullBleedItem.Checked = _model.BookSelection.CurrentSelection.UserPrefs.FullBleed;
-			fullBleedItem.CheckOnClick = true;
-			if (!_model.IsCurrentBookFullBleed)
-			{
-				fullBleedItem.Checked = false;
-				fullBleedItem.Enabled = false;
-				fullBleedItem.ToolTipText = LocalizationManager.GetString("PublishTab.PdfMaker.NoFullBleed", "Full Bleed has not been set up for this book");
-			}
-
-			if (_bookletCoverRadio.Checked || _bookletBodyRadio.Checked)
-			{
-				// Can't do full-bleed printing for booklets (the bleed areas at the junction of the pages would overlap the page on the other half of the paper).
-				// (Conceivably we could print bleed on the other three sides of the page only; but this is complicated as it differs from page to page
-				// so we will wait and see whether anyone wants it.)
-				// I'm only disabling the item if the actual booklet buttons are chosen so the user can e.g. turn it on before choosing the No Booklet button.
-				// I'm intentionally not turning the check box off so any previous setting will be remembered if they go back to No Booklet.
-				fullBleedItem.Enabled = false;
-				fullBleedItem.ToolTipText = LocalizationManager.GetString("PublishTab.PdfMaker.NoFullBleedBooklet", "Full Bleed is not applicable to booklet printing");
-			}
-			fullBleedItem.Click += (sender, args) =>
-			{
-				_model.BookSelection.CurrentSelection.UserPrefs.FullBleed = fullBleedItem.Checked;
-				SetModelFromButtons(); // this calls for updating the preview
-			};
-
-			_pdfOptions.DropDownItems.Add(new ToolStripSeparator());
-			var textItem = LocalizationManager.GetString("PublishTab.LessMemoryPdfMode", "Use less memory (slower)");
-			var menuItem = (ToolStripMenuItem) _pdfOptions.DropDownItems.Add(textItem);
-			menuItem.Checked = _model.BookSelection.CurrentSelection.UserPrefs.ReducePdfMemoryUse;
-			menuItem.CheckOnClick = true;
-			menuItem.CheckedChanged += OnSinglePageModeChanged;
-
-			// Something like this might want to be restored if we reinstate the layout options,
-			// but the menu now has other important commands.
-			// "EditTab" because it is the same text.  No sense in having it listed twice.
-			//_pdfOptions.ToolTipText = LocalizationManager.GetString("EditTab.PageSizeAndOrientation.Tooltip",
-			//	"Choose a page size and orientation");
-
-		}
-
-		private void OnSinglePageModeChanged(object sender, EventArgs e)
-		{
-			var item = (ToolStripMenuItem)sender;
-			_model.BookSelection.CurrentSelection.UserPrefs.ReducePdfMemoryUse = item.Checked;
 		}
 
 		public void SetDisplayMode(PublishModel.DisplayModes displayMode)
@@ -558,16 +425,12 @@ namespace Bloom.Publish
 					}
 					break;
 				case PublishModel.DisplayModes.Printing:
-					_simpleAllPagesRadio.Enabled = false;
-					_bookletCoverRadio.Enabled = false;
-					_bookletBodyRadio.Enabled = false;
 					_workingIndicator.Cursor = Cursors.WaitCursor;
 					Cursor = Cursors.WaitCursor;
 					_workingIndicator.Visible = true;
 					_pdfViewer.Visible = true;
 					break;
 				case PublishModel.DisplayModes.ResumeAfterPrint:
-					_simpleAllPagesRadio.Enabled = true;
 					_pdfViewer.Visible = true;
 					_workingIndicator.Visible = false;
 					Cursor = Cursors.Default;
@@ -759,21 +622,6 @@ namespace Bloom.Publish
 				_model.PdfPrintMode = _pdfPrintRadio.Checked;
 				_model.DisplayMode = PublishModel.DisplayModes.PdfPrint;
 				//pdfPreviewMode = true;
-			}
-			else if (_simpleAllPagesRadio.Checked)
-			{
-				_model.BookletPortion = PublishModel.BookletPortions.AllPagesNoBooklet;
-				pdfPreviewMode = true;
-			}
-			else if (_bookletCoverRadio.Checked)
-			{
-				_model.BookletPortion = PublishModel.BookletPortions.BookletCover;
-				pdfPreviewMode = true;
-			}
-			else if (_bookletBodyRadio.Checked)
-			{
-				_model.BookletPortion = PublishModel.BookletPortions.BookletPages;
-				pdfPreviewMode = true;
 			}
 			else if (_epubRadio.Checked)
 			{
