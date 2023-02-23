@@ -20,7 +20,7 @@ import {
     Select,
     Typography
 } from "@mui/material";
-import { kBloomBlue } from "../../bloomMaterialUITheme";
+import { kBloomBlue, kSelectCss } from "../../bloomMaterialUITheme";
 import { useState } from "react";
 import { BloomTooltip } from "../../react_components/BloomToolTip";
 
@@ -101,17 +101,9 @@ export const EPUBSettingsGroup: React.FunctionComponent<{
                         >
                             <Select
                                 css={css`
-                                    background-color: white;
-                                    &.MuiOutlinedInput-root {
-                                        border-radius: 0 !important;
-
-                                        .MuiOutlinedInput-notchedOutline {
-                                            border-width: 1px !important;
-                                            border-color: ${kBloomBlue} !important; // it usually is anyway, but not before MUI decides to focus it.
-                                        }
-                                    }
+                                    ${kSelectCss}
                                 `}
-                                variant="standard"
+                                variant="outlined"
                                 value={props.mode}
                                 disabled={false}
                                 open={isModeDropdownOpen}

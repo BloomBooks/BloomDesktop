@@ -4169,9 +4169,9 @@
         <note>ID: PublishTab.PdfMaker.PdfFile</note>
       </trans-unit>
       <trans-unit id="PublishTab.PdfMaker.PdfWithCmykSwopV2">
-        <source xml:lang="en">CMYK color (U.S. Web Coated (SWOP) v2)</source>
+        <source xml:lang="en">U.S. Web Coated (SWOP) v2</source>
         <note>ID: PublishTab.PdfMaker.PdfWithCmykSwopV2</note>
-        <note>displayed as a checkable menu option for the Publish tab, PDF options menu. The content in parentheses may not be translatable. 'CMYK' may not be translatable, it is a print shop standard.</note>
+        <note>displayed as a checkable menu option for the Publish tab, PDF options menu. 'SWOP' and 'CMYK' may not be translatable, they are print shop standards.</note>
         <note>Previously this item was "PDF with CMYK ..." and it occurred as an option within the Save dialog for PDF files</note>
       </trans-unit>
       <!-- for 5.5
