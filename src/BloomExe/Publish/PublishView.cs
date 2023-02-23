@@ -23,7 +23,6 @@ using Bloom.Publish.Epub;
 using Bloom.Publish.PDF;
 using Bloom.Publish.Video;
 using SIL.Progress;
-using Bloom.ToPalaso;
 using Bloom.web.controllers;
 
 namespace Bloom.Publish
@@ -977,7 +976,7 @@ namespace Bloom.Publish
 			_pdfViewer.Print();
 			Logger.WriteEvent("Calling Print on PDF Viewer");
 			_model.ReportAnalytics("Print PDF");
-			this._model.BookSelection.CurrentSelection.ReportSimplisticFontAnalytics(Bloom.ToPalaso.FontAnalytics.FontEventType.PublishPdf, "Print PDF");
+			this._model.BookSelection.CurrentSelection.ReportSimplisticFontAnalytics(FontAnalytics.FontEventType.PublishPdf, "Print PDF");
 		}
 
 		/// <summary>
