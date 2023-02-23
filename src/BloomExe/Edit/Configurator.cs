@@ -307,7 +307,7 @@ namespace Bloom.Edit
 				{
 					if (inExisting)
 					{
-						string merged = MergeJsonData(existing[item.Key].ToString().Replace("\r\n", "").Replace("\n", "").Replace("\\", ""), item.Value.ToString());
+						string merged = MergeJsonData(existing[item.Key].ToString().Replace("\r\n", "").Replace("\n", ""), item.Value.ToString().Replace("\r\n", "").Replace("\n", ""));
 						existing.Remove(item.Key);
 						existing.Add(item.Key, JToken.Parse(merged));
 					}
