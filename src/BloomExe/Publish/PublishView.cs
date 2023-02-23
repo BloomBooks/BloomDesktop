@@ -977,7 +977,7 @@ namespace Bloom.Publish
 			_pdfViewer.Print();
 			Logger.WriteEvent("Calling Print on PDF Viewer");
 			_model.ReportAnalytics("Print PDF");
-			this._model.BookSelection.CurrentSelection.ReportSimplisticFontAnalytics(FontAnalytics.FontEventType.PublishPdf, "Print PDF");
+			this._model.BookSelection.CurrentSelection.ReportSimplisticFontAnalytics(Bloom.ToPalaso.FontAnalytics.FontEventType.PublishPdf, "Print PDF");
 		}
 
 		/// <summary>
