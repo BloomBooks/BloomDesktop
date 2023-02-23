@@ -300,6 +300,7 @@ export class BubbleManager {
         const imageContainers: HTMLElement[] = this.getAllPrimaryImageContainersOnPage();
 
         imageContainers.forEach(container => {
+            this.adjustOverlaysForCurrentLanguage(container);
             this.ensureBubblesIntersectParent(container);
             // image containers are already set by CSS to overflow:hidden, so they
             // SHOULD never scroll. But there's also a rule that when something is
@@ -514,6 +515,104 @@ export class BubbleManager {
         );
     }
 
+    adjustOverlaysForCurrentLanguage(container: HTMLElement) {
+        const overlayLang = GetSettings().languageForNewTextBoxes;
+        Array.from(
+            container.getElementsByClassName("bloom-textOverPicture")
+        ).forEach(top => {
+            const editable = Array.from(
+                top.getElementsByClassName("bloom-editable")
+            ).find(e => e.getAttribute("lang") === overlayLang);
+            if (editable) {
+                const alternatesString = editable.getAttribute(
+                    "data-bubble-alternate"
+                );
+                if (alternatesString) {
+                    const alternate = JSON.parse(
+                        alternatesString.replace(/`/g, '"')
+                    ) as IAlternate;
+                    top.setAttribute("style", alternate.style);
+                    const bubbleData = top.getAttribute("data-bubble");
+                    if (bubbleData) {
+                        const bubbleDataObj = JSON.parse(
+                            bubbleData.replace(/`/g, '"')
+                        );
+                        bubbleDataObj.tails = alternate.tails;
+                        const newBubbleData = JSON.stringify(
+                            bubbleDataObj
+                        ).replace(/"/g, "`");
+                        top.setAttribute("data-bubble", newBubbleData);
+                    }
+                }
+            }
+
+            // If we don't find a matching bloom-editable, or there is no alternate attribute
+            // there, that's fine; just let the current state of the bubble serve as a
+            // default for the new language.
+        });
+        // If we have an existing alternate SVG for this language, remove it.
+        // (It will effectively be replaced by the new active comical-generated svg
+        // made when we save the page.)
+        const altSvg = Array.from(
+            container.getElementsByClassName("comical-alternate")
+        ).find(svg => svg.getAttribute("data-lang") === overlayLang);
+        if (altSvg) {
+            container.removeChild(altSvg);
+        }
+
+        const currentSvg = container.getElementsByClassName(
+            "comical-generated"
+        )[0];
+        if (currentSvg) {
+            const currentSvgLang = currentSvg.getAttribute("data-lang");
+            if (currentSvgLang && currentSvgLang !== overlayLang) {
+                // it was generated for some other language. Save it for possible use with
+                // that language in Bloom Player.
+                // We need to remove this class so Comical won't delete it.
+                currentSvg.classList.remove("comical-generated");
+                // and add this one to help bloom-player (and the code above) find it
+                currentSvg.classList.add("comical-alternate");
+                // Make sure nothing sees it unless it gets reactivated by bloom-player.
+                // We do this instead of having a CSS rule to hide comical-alternate so
+                // alternates will be hidden even in a book being shown by an old version
+                // of bloom-player.
+                currentSvg.setAttribute("style", "display:none");
+            }
+        }
+    }
+
+    // Save the current state of things so that we can later position everything
+    // correctly for this language, even if in the meantime we change bubble
+    // positions for other languages.
+    saveCurrentOverlayStateAsCurrentLangAlternate(container: HTMLElement) {
+        const overlayLang = GetSettings().languageForNewTextBoxes;
+        Array.from(
+            container.getElementsByClassName("bloom-textOverPicture")
+        ).forEach(top => {
+            const editable = Array.from(
+                top.getElementsByClassName("bloom-editable")
+            ).find(e => e.getAttribute("lang") === overlayLang);
+            if (editable) {
+                const bubbleData = top.getAttribute("data-bubble") ?? "";
+                const bubbleDataObj = JSON.parse(bubbleData.replace(/`/g, '"'));
+                const alternate = {
+                    lang: overlayLang,
+                    style: top.getAttribute("style") ?? "",
+                    tails: bubbleDataObj.tails as object[]
+                };
+                editable.setAttribute(
+                    "data-bubble-alternate",
+                    JSON.stringify(alternate).replace(/"/g, "`")
+                );
+            }
+        });
+        // Record that the current comical-generated SVG is for this language.
+        const currentSvg = container.getElementsByClassName(
+            "comical-generated"
+        )[0];
+        currentSvg.setAttribute("data-lang", overlayLang);
+    }
+
     // "container" refers to a .bloom-textOverPicture div, which holds one (and only one) of the
     // 3 main types of "bubble": text, video or image.
     // This method will attach the focusin event to each of these.
@@ -549,7 +648,7 @@ export class BubbleManager {
         return Array.from(unfilteredContainers).filter(
             (el: Element) =>
                 el.parentElement!.closest(kImageContainerSelector) === null
-        ) as any;
+        ) as HTMLElement[];
     }
 
     // Use this one when adding/duplicating a bubble to avoid re-navigating the page.
@@ -1002,23 +1101,27 @@ export class BubbleManager {
             const tipPoint = this.adjustRelativePointToImageContainer(
                 imageContainer,
                 new Point(
-                spec.tipX,
-                spec.tipY,
-                PointScaling.Unscaled,
-                "ensureTailsInsideParent.tip"
-            )
+                    spec.tipX,
+                    spec.tipY,
+                    PointScaling.Unscaled,
+                    "ensureTailsInsideParent.tip"
+                )
             );
             const midPoint = this.adjustRelativePointToImageContainer(
                 imageContainer,
                 new Point(
-                spec.midpointX,
-                spec.midpointY,
-                PointScaling.Unscaled,
-                "ensureTailsInsideParent.tip"
-            )
+                    spec.midpointX,
+                    spec.midpointY,
+                    PointScaling.Unscaled,
+                    "ensureTailsInsideParent.tip"
+                )
             );
-            changed ||= spec.tipX != tipPoint.getUnscaledX() || spec.tipY != tipPoint.getUnscaledY()
-            || spec.midpointX != midPoint.getUnscaledX() || spec.midpointY != midPoint.getUnscaledY();
+            changed =
+                changed || // using changed ||= works but defeats prettier
+                spec.tipX != tipPoint.getUnscaledX() ||
+                spec.tipY != tipPoint.getUnscaledY() ||
+                spec.midpointX != midPoint.getUnscaledX() ||
+                spec.midpointY != midPoint.getUnscaledY();
             return {
                 ...spec,
                 tipX: tipPoint.getUnscaledX(),
@@ -1028,7 +1131,7 @@ export class BubbleManager {
             };
         });
         const bubble = new Bubble(overlay);
-        bubble.mergeWithNewBubbleProps({tails: newTails});
+        bubble.mergeWithNewBubbleProps({ tails: newTails });
         return changed;
     }
     // This is pretty small, but it's the amount of the text box that has to be visible;
@@ -1941,6 +2044,11 @@ export class BubbleManager {
 
         Comical.setActiveBubbleListener(undefined);
         Comical.stopEditing();
+        this.getAllPrimaryImageContainersOnPage().forEach(container =>
+            this.saveCurrentOverlayStateAsCurrentLangAlternate(
+                container as HTMLElement
+            )
+        );
 
         EnableAllImageEditing();
 
@@ -2672,19 +2780,20 @@ export class BubbleManager {
             const tipPoint = this.adjustRelativePointToImageContainer(
                 imageContainer,
                 new Point(
-                spec.tipX + offSetFromSource.getUnscaledX(),
-                spec.tipY + offSetFromSource.getUnscaledY(),
-                PointScaling.Unscaled,
-                "getAdjustedTailSpec.tip"
-            ));
+                    spec.tipX + offSetFromSource.getUnscaledX(),
+                    spec.tipY + offSetFromSource.getUnscaledY(),
+                    PointScaling.Unscaled,
+                    "getAdjustedTailSpec.tip"
+                )
+            );
             const midPoint = this.adjustRelativePointToImageContainer(
                 imageContainer,
                 new Point(
-                spec.midpointX + offSetFromSource.getUnscaledX(),
-                spec.midpointY + offSetFromSource.getUnscaledY(),
-                PointScaling.Unscaled,
-                "getAdjustedTailSpec.mid"
-            )
+                    spec.midpointX + offSetFromSource.getUnscaledX(),
+                    spec.midpointY + offSetFromSource.getUnscaledY(),
+                    PointScaling.Unscaled,
+                    "getAdjustedTailSpec.mid"
+                )
             );
             return {
                 ...spec,
@@ -3304,4 +3413,12 @@ export function initializeBubbleManager() {
     if (theOneBubbleManager) return;
     theOneBubbleManager = new BubbleManager();
     theOneBubbleManager.initializeBubbleManager();
+}
+
+// This is a definition of the objects we store as JSON in data-bubble-alternates.
+// Tails has further structure but BubbleManager doesn't care about it.
+interface IAlternate {
+    lang: string; // The language this alternate should be active for
+    style: string; // What to put in the style attr of the overlay; determines size and position
+    tails: object[]; // The tails of the data-bubble; determines placing of tail.
 }
