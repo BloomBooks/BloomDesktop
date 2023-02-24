@@ -1004,14 +1004,13 @@ div[data-book*="branding"] {
     }
 }
 
-// This is for fixed-mode epubs. Agents (at least Readium) apply this class
-// to the thing being played. It seems that Readium provides a useful CSS definition
-// for it in flowable mode, too, so in flowable epubs it produces a yellow background.
-// But not in fixed mode; by default it has no effect. So we must provide a rule for it.
-// Not sure this is the best place to give it a definition, but I can't think of a
-// better one. (I believe baseEPub.less is only for flowable epubs.)
-// Bloom does not use this directly.
-// (The color is @bloom-yellow.)
+// This is a fall-back. Our main rules for highlighting the active element
+// whose audio is being played now look for ui-audioCurent, and a meta rule tells
+// epub readers to use this. However, this seems to be a common default class
+// for epubs to use, so in case any of them don't obey the meta rule, I'm keeping
+// this so we get SOME audio highlight (especially in fixed epubs, where at
+// least Readium doesn't have a default...though Readium does obey the meta rule).
+// Bloom does not use this otherwise. (The color is @bloom-yellow.)
 .-epub-media-overlay-active {
     background-color: #febf00;
 }

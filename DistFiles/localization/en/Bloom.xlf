@@ -1473,6 +1473,11 @@
         <source xml:lang="en">That style already exists. Please choose another name.</source>
         <note>ID: EditTab.FormatDialog.AlreadyExists</note>
       </trans-unit>
+      <!-- 5.5 -->
+      <trans-unit id="EditTab.FormatDialog.BackgroundColor" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Background color</source>
+        <note>ID: EditTab.FormatDialog.BackgroundColor</note>
+      </trans-unit>
       <trans-unit id="EditTab.FormatDialog.BorderToolTip" sil:dynamic="true">
         <source xml:lang="en">Change the border and background</source>
         <note>ID: EditTab.FormatDialog.BorderToolTip</note>
@@ -1589,6 +1594,17 @@
         <source xml:lang="en">Format</source>
         <note>ID: EditTab.FormatDialog.Format</note>
       </trans-unit>
+      <!-- 5.5 -->
+      <trans-unit id="EditTab.FormatDialog.Highlighting" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Highlighting</source>
+        <note>ID: EditTab.FormatDialog.Highlighting</note>
+      </trans-unit>
+      <!-- 5.5 -->
+      <trans-unit id="EditTab.FormatDialog.HowToHighlightAudio" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Choose how to highlight text of style "%0" while its audio is playing:</source>
+        <note>ID: EditTab.FormatDialog.HowToHighlightAudio</note>
+        <note>%0 should remain and will be replaced with the name of a style</note>
+      </trans-unit>
       <trans-unit id="EditTab.FormatDialog.Indent" sil:dynamic="true">
         <source xml:lang="en">Indent</source>
         <note>ID: EditTab.FormatDialog.Indent</note>
@@ -1624,6 +1640,11 @@
       <trans-unit id="EditTab.FormatDialog.StyleNameTab" sil:dynamic="true">
         <source xml:lang="en">Style Name</source>
         <note>ID: EditTab.FormatDialog.StyleNameTab</note>
+      </trans-unit>
+      <!-- 5.5 -->
+      <trans-unit id="EditTab.FormatDialog.TextColor" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Text Color</source>
+        <note>ID: EditTab.FormatDialog.TextColor</note>
       </trans-unit>
       <trans-unit id="EditTab.FormatDialog.WordSpacingExtraWide" sil:dynamic="true">
         <source xml:lang="en">Extra Wide</source>
