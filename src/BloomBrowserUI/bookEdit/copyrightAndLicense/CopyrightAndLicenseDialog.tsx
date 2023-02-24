@@ -231,7 +231,7 @@ export const CopyrightAndLicenseDialog: React.FunctionComponent<{
                     default={true}
                     enabled={isCopyrightValid && isLicenseValid}
                 />
-                <DialogCancelButton onClick={closeDialog} />
+                <DialogCancelButton onClick_DEPRECATED={closeDialog} />
             </DialogBottomButtons>
         </BloomDialog>
     );

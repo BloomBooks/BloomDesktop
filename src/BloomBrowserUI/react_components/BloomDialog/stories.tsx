@@ -94,11 +94,11 @@ storiesOf("Bloom Dialog", module)
             } = useSetupBloomDialog(normalDialogEnvironmentForStorybook);
             return (
                 <div>
-                    <BloomDialog {...propsForBloomDialog}>
-                        <DialogTitle
-                            title="Dialog with Close icon"
-                            closeButtonOptions={{ onClose: closeDialog }}
-                        />
+                    <BloomDialog
+                        onCancel={closeDialog}
+                        {...propsForBloomDialog}
+                    >
+                        <DialogTitle title="Dialog with Close icon" />
                         <DialogMiddle
                             css={css`
                                 height: 200px;
@@ -135,11 +135,13 @@ storiesOf("Bloom Dialog", module)
             } = useSetupBloomDialog(normalDialogEnvironmentForStorybook);
             return (
                 <div>
-                    <BloomDialog {...propsForBloomDialog}>
-                        <DialogTitle
-                            title="Dialog with Progress and Close icon"
-                            closeButtonOptions={{ onClose: closeDialog }}
-                        >
+                    <BloomDialog
+                        onCancel={() => {
+                            closeDialog();
+                        }}
+                        {...propsForBloomDialog}
+                    >
+                        <DialogTitle title="Dialog with Progress and Close icon">
                             {circularProgress}
                         </DialogTitle>
                         <DialogMiddle
@@ -247,7 +249,7 @@ storiesOf("Bloom Dialog", module)
                         <Button variant="contained" color="primary">
                             Just Do It
                         </Button>
-                        <DialogCancelButton onClick={closeDialog} />
+                        <DialogCancelButton onClick_DEPRECATED={closeDialog} />
                     </DialogBottomButtons>
                 </BloomDialog>
             );

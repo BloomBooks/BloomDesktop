@@ -122,7 +122,7 @@ const SpreadsheetExportDialog: React.FunctionComponent<{
                 >
                     Export
                 </BloomButton>
-                <DialogCancelButton onClick={props.closeDialog} />
+                <DialogCancelButton onClick_DEPRECATED={props.closeDialog} />
             </DialogBottomButtons>
         </BloomDialog>
     );

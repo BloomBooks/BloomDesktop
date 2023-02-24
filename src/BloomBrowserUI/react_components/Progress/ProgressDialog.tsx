@@ -316,7 +316,7 @@ export const ProgressDialog: React.FunctionComponent<IProgressDialogProps> = pro
                 ) : // if we're not done, show the cancel button if that was called for...
                 props.showCancelButton ? (
                     <DialogCancelButton
-                        onClick={() => {
+                        onClick_DEPRECATED={() => {
                             if (props.onCancel) {
                                 props.onCancel();
                             } else {
