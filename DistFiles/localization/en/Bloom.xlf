@@ -3803,11 +3803,11 @@
         <source xml:lang="en">Booklet Insides</source>
         <note>ID: PublishTab.BodyOnlyRadio</note>
       </trans-unit>
-      <!-- for 5.5
-      trans-unit id="PublishTab.BodyOnly-description">
+      <trans-unit id="PublishTab.BodyOnly-description" translate="no">
+        <!-- added in 5.5 -->
         <source xml:lang="en">The inside pages, re-arranged so that when folded, you get a booklet ready to staple.</source>
         <note>ID: PublishTab.BodyOnly-description</note>
-      </trans-unit-->
+      </trans-unit>
       <trans-unit id="PublishTab.bloomPUBButton">
         <source xml:lang="en">BloomPUB</source>
         <note>ID: PublishTab.bloomPUBButton</note>
@@ -3875,11 +3875,11 @@
         <source xml:lang="en">Booklet Cover</source>
         <note>ID: PublishTab.CoverOnlyRadio</note>
       </trans-unit>
-      <!-- for 5.5
-      trans-unit id="PublishTab.CoverOnly-description" sil:dynamic="true">
+      <trans-unit id="PublishTab.CoverOnly-description" sil:dynamic="true" translate="no">
+        <!-- added in 5.5 -->
         <source xml:lang="en">The cover, ready to print on colored paper.</source>
         <note>ID: PublishTab.CoverOnly-description</note>
-      </trans-unit-->
+      </trans-unit>
       <trans-unit id="PublishTab.CoverOnlyRadio-tooltip" sil:dynamic="true">
         <source xml:lang="en">Make a PDF of just the front and back (both sides), so you can  print on colored paper.</source>
         <note>ID: PublishTab.CoverOnlyRadio-tooltip</note>
@@ -4026,6 +4026,7 @@
       <trans-unit id="PublishTab.LessMemoryPdfMode">
         <source xml:lang="en">Use less memory (slower)</source>
         <note>ID: PublishTab.LessMemoryPdfMode</note>
+        <note>Obsolete for Bloom 5.5 and later</note>
         <note>The parenthesized word indicates the negative effect of using this option. This text is for a menu item.</note>
       </trans-unit>
       <trans-unit id="PublishTab.NoBookletsMessage">
@@ -4046,11 +4047,11 @@
         <note>ID: PublishTab.OnePagePerPaperRadio</note>
         <note>Instead of making a booklet, just make normal pages. (This is no longer a radio button, but keeping the name for backwards compatiblity with translations.)</note>
       </trans-unit>
-      <!-- for 5.5
-      trans-unit id="PublishTab.OnePagePerPaper-description" sil:dynamic="true">
+      <trans-unit id="PublishTab.OnePagePerPaper-description" sil:dynamic="true" translate="no">
+        <!-- added in 5.5 -->
         <source xml:lang="en">A simple PDF instead of a booklet.</source>
         <note>ID: PublishTab.OnePagePerPaper-description</note>
-      </trans-unit-->
+      </trans-unit>
       <trans-unit id="PublishTab.OnePagePerPaperRadio-tooltip" sil:dynamic="true">
         <source xml:lang="en">Make a PDF of every page of the book, one page per piece of paper.</source>
         <note>ID: PublishTab.OnePagePerPaperRadio-tooltip</note>
@@ -4069,6 +4070,7 @@
       <trans-unit id="PublishTab.OptionsMenu.PreparePrintshop">
         <source xml:lang="en">Prepare for Print Shop:</source>
         <note>ID: PublishTab.OptionsMenu.PreparePrintshop</note>
+        <note>Obsolete for Bloom 5.5 and later</note>
         <note>Header for a region of the menu which lists various options useful for jobs that will be printed at a commercial print shop</note>
       </trans-unit>
       <trans-unit id="PublishTab.Options_ToolTip_">
@@ -4104,13 +4106,16 @@
         <source xml:lang="en">Bloom had a problem making a PDF of this book.</source>
         <note>ID: PublishTab.PdfMaker.BadPdfShort</note>
       </trans-unit>
-      <!-- for 5.5
-      trans-unit id="PublishTab.PdfMaker.ClickToStart">
-        <source xml:lang="en">
-          Click a button on the right to start
-          creating PDF.</source>
+      <trans-unit id="PublishTab.PdfMaker.ClickToStart" translate="no">
+        <!-- added in 5.5 -->
+        <source xml:lang="en">Bloom can format your PDF in several ways.</source>
         <note>ID: PublishTab.PdfMaker.ClickToStart</note>
-      </trans-unit-->
+      </trans-unit>
+      <trans-unit id="PublishTab.PdfMaker.ClickToStart2" translate="no">
+        <!-- added in 5.5 -->
+        <source xml:lang="en">Choose one here:</source>
+        <note>ID: PublishTab.PdfMaker.ClickToStart2</note>
+      </trans-unit>
       <trans-unit id="PublishTab.PdfMaker.Compress">
         <source xml:lang="en">Compressing PDF</source>
         <note>ID: PublishTab.PdfMaker.Compress</note>
@@ -4162,16 +4167,18 @@
       <trans-unit id="PublishTab.PdfMaker.NoFullBleed">
         <source xml:lang="en">Full Bleed has not been set up for this book</source>
         <note>ID: PublishTab.PdfMaker.NoFullBleed</note>
+        <note>Obsolete for Bloom 5.5 and later</note>
       </trans-unit>
-      <!-- for 5.5
-      trans-unit id="PublishTab.PdfMaker.None">
+      <trans-unit id="PublishTab.PdfMaker.None" translate="no">
+        <!-- added in 5.5 -->
         <source xml:lang="en">None</source>
         <note>ID: PublishTab.PdfMaker.None</note>
         <note>This is an option in a menu of CMYK settings, indicating the PDF should be made without using CMYK at all.</note>
-      </trans-unit-->
+      </trans-unit>
       <trans-unit id="PublishTab.PdfMaker.NoFullBleedBooklet">
         <source xml:lang="en">Full Bleed is not applicable to booklet printing</source>
         <note>ID: PublishTab.PdfMaker.NoFullBleedBooklet</note>
+        <note>Obsolete for Bloom 5.5 and later</note>
       </trans-unit>
       <trans-unit id="PublishTab.PdfMaker.OutOfMemory">
         <source xml:lang="en">Bloom ran out of memory while making the PDF. See {0}this article{1} for some suggestions to try.</source>
@@ -4188,12 +4195,12 @@
         <note>displayed as a checkable menu option for the Publish tab, PDF options menu. 'SWOP' and 'CMYK' may not be translatable, they are print shop standards.</note>
         <note>Previously this item was "PDF with CMYK ..." and it occurred as an option within the Save dialog for PDF files</note>
       </trans-unit>
-      <!-- for 5.5
-      trans-unit id="PublishTab.PdfMaker.Cmyk">
+      <trans-unit id="PublishTab.PdfMaker.Cmyk" translate="no">
+        <!-- added in 5.5 -->
         <source xml:lang="en">CMYK</source>
         <note>ID: PublishTab.PdfMaker.Cmyk</note>
         <note>Displayed as a label in the PDF and Print tab. 'CMYK' may not be translatable, it is a print shop standard.</note>
-      </trans-unit-->
+      </trans-unit>
       <trans-unit id="PublishTab.PdfMaker.Saving">
         <source xml:lang="en">Saving PDF...</source>
         <note>ID: PublishTab.PdfMaker.Saving</note>
@@ -4221,32 +4228,35 @@
         <note>ID: PublishTab.PdfNotSavedWhy</note>
         <note>explanation that file was not saved displayed in a message box</note>
       </trans-unit>
-      <!-- for 5.5
-      <trans-unit id="PublishTab.PdfPrint.Button">
+      <trans-unit id="PublishTab.PdfPrint.Button" translate="no">
+        <!-- added in 5.5 -->
         <source xml:lang="en">PDF and Print</source>
         <note>ID: PublishTab.PdfPrint.Button</note>
         <note>Text under button to select Print and PDF preview</note>
       </trans-unit>
-      <trans-unit id="PublishTab.PdfPrint.BannerTitle">
+      <trans-unit id="PublishTab.PdfPrint.BannerTitle" translate="no">
+        <!-- added in 5.5 -->
         <source xml:lang="en">Publish to PDF &amp; Print</source>
         <note>ID: PublishTab.PdfPrint.BannerTitle</note>
         <note>Header on PDF/Print Publishing page</note>
       </trans-unit>
-      <trans-unit id="PublishTab.PdfPrint.BookletModes">
+      <trans-unit id="PublishTab.PdfPrint.BookletModes" translate="no">
+        <!-- added in 5.5 -->
         <source xml:lang="en">Booklet Mode</source>
         <note>ID: PublishTab.PdfPrint.BookletModes</note>
         <note>Heading above Option panel to right of PDF preview</note>
       </trans-unit>
-      <trans-unit id="PublishTab.PdfPrint.AboutPdfPrint">
+      <trans-unit id="PublishTab.PdfPrint.AboutPdfPrint" translate="no">
+        <!-- added in 5.5 -->
         <source xml:lang="en">About PDF and Print</source>
         <note>ID: PublishTab.PdfPrint.AboutPdfPrint</note>
       </trans-unit>
-      <trans-unit id="PublishTab.PdfPrint.PrintshopOptions">
+      <trans-unit id="PublishTab.PdfPrint.PrintshopOptions" translate="no">
+        <!-- added in 5.5 -->
         <source xml:lang="en">Prepare for Printshop</source>
         <note>ID: PublishTab.PdfPrint.PrintshopOptions</note>
         <note>Heading over lower part of Option panel to right of PDF preview</note>
       </trans-unit>
-      -->
       <trans-unit id="PublishTab.PrintButton">
         <source xml:lang="en">&amp;Print...</source>
         <note>ID: PublishTab.PrintButton</note>
@@ -4467,19 +4477,23 @@
         <source xml:lang="en">All rights reserved (Contact the Copyright holder for any permissions.)</source>
         <note>ID: PublishTab.Upload.AllReserved</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Upload.Agreement.PermissionToPublish" translate="no"> <!-- added in 5.5 -->
+      <trans-unit id="PublishTab.Upload.Agreement.PermissionToPublish" translate="no">
+        <!-- added in 5.5 -->
         <source xml:lang="en">I have permission to publish all the text and images in this book.</source>
         <note>ID: PublishTab.Upload.Agreement.PermissionToPublish</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Upload.Agreement.GivesCredit" translate="no"> <!-- added in 5.5 -->
+      <trans-unit id="PublishTab.Upload.Agreement.GivesCredit" translate="no">
+        <!-- added in 5.5 -->
         <source xml:lang="en">The book gives credit to the the author, translator, and illustrator(s).</source>
         <note>ID: PublishTab.Upload.Agreement.GivesCredit</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Upload.Agreement.AgreeToTerms" translate="no"> <!-- added in 5.5 -->
+      <trans-unit id="PublishTab.Upload.Agreement.AgreeToTerms" translate="no">
+        <!-- added in 5.5 -->
         <source xml:lang="en">I agree to the [Bloom Library Terms of Use].</source>
         <note>ID: PublishTab.Upload.Agreement.AgreeToTerms</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Upload.Agreements" translate="no"> <!-- added in 5.5 -->
+      <trans-unit id="PublishTab.Upload.Agreements" translate="no">
+        <!-- added in 5.5 -->
         <source xml:lang="en">Agreements</source>
         <note>ID: PublishTab.Upload.Agreements</note>
       </trans-unit>
@@ -4487,11 +4501,13 @@
         <source xml:lang="en">Background Music</source>
         <note>ID: PublishTab.Upload.BackgroundMusic</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Upload.BannerDescription" translate="no"> <!-- added in 5.5 -->
+      <trans-unit id="PublishTab.Upload.BannerDescription" translate="no">
+        <!-- added in 5.5 -->
         <source xml:lang="en">Let speakers find your books in [Bloom Reader](https://bloomlibrary.org/page/create/bloom-reader) and on [BloomLibrary.org](https://bloomlibrary.org/).</source>
         <note>ID: PublishTab.Upload.BannerDescription</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Upload.BannerTitle" translate="no"> <!-- added in 5.5 -->
+      <trans-unit id="PublishTab.Upload.BannerTitle" translate="no">
+        <!-- added in 5.5 -->
         <source xml:lang="en">Publish to Web</source>
         <note>ID: PublishTab.Upload.BannerTitle</note>
       </trans-unit>
@@ -4511,7 +4527,8 @@
         <source xml:lang="en">Please choose the sign language for this book</source>
         <note>ID: PublishTab.Upload.ChooseSignLanguageWarning</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Upload.ConfirmMetadata" translate="no"> <!-- added in 5.5 -->
+      <trans-unit id="PublishTab.Upload.ConfirmMetadata" translate="no">
+        <!-- added in 5.5 -->
         <source xml:lang="en">Confirm Metadata</source>
         <note>ID: PublishTab.Upload.ConfirmMetadata</note>
       </trans-unit>
@@ -4710,7 +4727,8 @@
         <source xml:lang="en">Sign Language</source>
         <note>ID: PublishTab.Upload.SignLanguage</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Upload.SignIn" translate="no"> <!-- added in 5.5 -->
+      <trans-unit id="PublishTab.Upload.SignIn" translate="no">
+        <!-- added in 5.5 -->
         <source xml:lang="en">Sign in or sign up to Bloomlibrary.org</source>
         <note>ID: PublishTab.Upload.SignIn</note>
       </trans-unit>
@@ -4757,15 +4775,18 @@ Do you want to go ahead?</note>
         <source xml:lang="en">Show Terms of Use</source>
         <note>ID: PublishTab.Upload.TermsLink</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Upload.TestBook" translate="no"> <!-- added in 5.5 -->
+      <trans-unit id="PublishTab.Upload.TestBook" translate="no">
+        <!-- added in 5.5 -->
         <source xml:lang="en">Test out your Book</source>
         <note>ID: PublishTab.Upload.TestBook</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Upload.TestBook.Text1" translate="no"> <!-- added in 5.5 -->
+      <trans-unit id="PublishTab.Upload.TestBook.Text1" translate="no">
+        <!-- added in 5.5 -->
         <source xml:lang="en">Here is [your new page] on Bloom Library. We will soon process your book into various formats and add them to this page. Check back in about 10 minutes. If we encounter any problems, that page will tell you about them.</source>
         <note>ID: PublishTab.Upload.TestBook.Text1</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Upload.TestBook.Text2" translate="no"> <!-- added in 5.5 -->
+      <trans-unit id="PublishTab.Upload.TestBook.Text2" translate="no">
+        <!-- added in 5.5 -->
         <source xml:lang="en">If you make changes to this book, you can return here to upload it again. Your new version will just replace the existing one.</source>
         <note>ID: PublishTab.Upload.TestBook.Text2</note>
       </trans-unit>
