@@ -8,14 +8,12 @@ import {
 } from "./toolbox";
 import { getTheOneReaderToolsModel } from "./readers/readerToolsModel";
 import { ToolBox } from "./toolbox";
-import { BookSettings } from "./bookSettings/bookSettings";
 import { DecodableReaderToolboxTool } from "./readers/decodableReader/decodableReaderToolboxTool";
 import { LeveledReaderToolboxTool } from "./readers/leveledReader/leveledReaderToolboxTool";
 import { MusicToolAdaptor } from "./music/musicToolControls";
 import { ImpairmentVisualizerAdaptor } from "./impairmentVisualizer/impairmentVisualizer";
 import { MotionTool } from "./motion/motionTool";
 import TalkingBookTool from "./talkingBook/talkingBook";
-import { handleBookSettingCheckboxClick } from "./bookSettings/bookSettings";
 import { SignLanguageTool } from "./signLanguage/signLanguageTool";
 import { ImageDescriptionAdapter } from "./imageDescription/imageDescription";
 import "errorHandler";
@@ -52,8 +50,6 @@ export {
 export { loadLongpressInstructions } from "../js/bloomEditing";
 export { TalkingBookTool }; // one function is called by CSharp.
 
-// called by click handler in jade; also, exporting something from it gets it included in the bundle.
-export { handleBookSettingCheckboxClick };
 export { getTheOneToolbox };
 
 export function canUndo(): boolean {
@@ -91,7 +87,6 @@ $(document).ready(() => {
 // Make the one instance of each Toolbox class and register it with the master toolbox.
 // The imports we need to make these calls possible also serve to ensure that each
 // toolbox's code is made part of the bundle.
-ToolBox.registerTool(new BookSettings());
 ToolBox.registerTool(new DecodableReaderToolboxTool());
 ToolBox.registerTool(new LeveledReaderToolboxTool());
 ToolBox.registerTool(new MusicToolAdaptor());
