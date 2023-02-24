@@ -8,6 +8,24 @@ body {
         "Gentium Book Basic", "Doulos SIL", Sans-Serif;
 }
 
+// As of 5.5, Bloom can have style-based rules in the HTML file giving properties
+// for highlighting active audio, and these use the ui-audioCurrent class that
+// Bloom applies in the talking-book tool. Accordingly, we tell the agent to
+// apply that class. However, the user may NOT have configured a custom highlighting.
+// In case they do not, this provides the default highlighting. In this location,
+// it works for edit mode, bloomPubs, both kinds of ePUBs, and very likely anywhere
+// else we'd want ui-audioCurrent to produce a highlight.
+// Setting the foreground color is usually redundant, but digital comic book covers
+// use white text, and it's now possible for the user to choose a text color, so
+// we want to ensure a contrast with the background color (unless the user overrides,
+// in which case, adequate contrast is up to them).
+// (Color is @bloom-yellow.)
+span.ui-audioCurrent,
+div.ui-audioCurrent p {
+    background-color: #febf00;
+    color: black;
+}
+
 textarea,
 .bloom-editable {
     // visible .bloom-editables are made display:flex rather than display:none

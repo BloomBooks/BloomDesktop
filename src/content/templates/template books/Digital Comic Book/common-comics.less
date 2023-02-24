@@ -22,12 +22,6 @@
 .comic {
     background-color: @dark !important;
 
-    /* make highlighted white text easier to read if it is normally a light color (like white)*/
-    span.ui-audioCurrent:not(.disableHighlight),
-    div.ui-audioCurrent:not(.disableHighlight) p {
-        color: black;
-    }
-
     div.bloom-editable,
     // To understand more about this :after selector, reference
     // the .borderOnTopOfElement(@color) mixin in editMode.less

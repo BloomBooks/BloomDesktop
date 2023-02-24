@@ -586,6 +586,10 @@ namespace Bloom.Publish.Epub
 			var coverImage = Path.GetFileNameWithoutExtension(coverPageImageFile);
 			if (!string.IsNullOrEmpty(coverImage))
 				metadataElt.Add(new XElement("meta", new XAttribute("name", "cover"), new XAttribute("content", coverImage)));
+			// Bloom's style sheets contain rules for how the audio element that is playing should be highlighted.
+			// They assume that the agent will apply the class ui-audioCurrent to the playing element.
+			// This makes it so.
+			metadataElt.Add(new XElement("meta", new XAttribute("property", "media:active-class"), "ui-audioCurrent"));
 			if (!Unpaginated)
 			{
 				metadataElt.Add(new XElement("meta", new XAttribute("property","rendition:layout"), "pre-paginated"));

@@ -371,7 +371,7 @@ const doRender = (
 ) => {
     let modalContainer;
     if (container) modalContainer = container;
-    else modalContainer = getEditTabBundleExports().getModalDialogContainer();
+    else modalContainer = document.body; // obsolete: getEditTabBundleExports().getModalDialogContainer();
     try {
         ReactDOM.render(<ColorPickerDialog {...props} />, modalContainer);
     } catch (error) {
@@ -461,7 +461,7 @@ export const ColorDisplayButton: React.FC<IColorDisplayButtonProps> = props => {
                 }}
                 localizedTitle={props.localizedTitle}
                 noAlphaSlider={props.noAlphaSlider}
-                palette={BloomPalette.CoverBackground}
+                palette={props.palette}
                 initialColor={getColorInfoFromSpecialNameOrColorString(
                     props.initialColor
                 )}
