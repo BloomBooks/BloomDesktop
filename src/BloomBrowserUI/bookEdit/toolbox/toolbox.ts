@@ -785,7 +785,6 @@ function beginAddTool(
             "readers/decodableReader/decodableReaderToolboxTool.html",
         leveledReaderTool:
             "readers/leveledReader/leveledReaderToolboxTool.html",
-        bookSettingsTool: "bookSettings/bookSettingsToolboxTool.html",
         toolboxSettingsTool:
             "toolboxSettingsTool/toolboxSettingsToolboxTool.html",
         settingsTool: "settings/Settings.html"
