@@ -386,8 +386,10 @@ require("./jquery.mousewheel.js");
     }
 
     function updateChar() {
-        var newChar = $(".long-press-letter.selected").attr("data-value");
-        replacePreviousLetterWithNewLetter(newChar);
+        const newChar = $(".long-press-letter.selected").attr("data-value");
+        if (newChar !== undefined) {
+            replacePreviousLetterWithNewLetter(newChar);
+        }
     }
 
     function isTextArea() {
@@ -433,21 +435,21 @@ require("./jquery.mousewheel.js");
     // See notes on BL-3900 in toolbox.ts for important regression information.
     function replacePreviousLetterWithNewLetter(newLetter) {
         if (isTextArea()) {
-            var pos = getTextAreaCaretPosition(activeElement);
-            var arVal = $(activeElement)
+            const pos = getTextAreaCaretPosition(activeElement);
+            const arVal = $(activeElement)
                 .val()
                 .split("");
             arVal[pos - 1] = newLetter;
             $(activeElement).val(arVal.join(""));
             setTextAreaCaretPosition(activeElement, pos);
         } else {
-            var insertPointRange = getCaretPosition();
+            const insertPointRange = getCaretPosition();
             if (
                 window.getSelection &&
                 insertPointRange &&
                 insertPointRange.startOffset != 0
             ) {
-                var sel = window.getSelection();
+                const sel = window.getSelection();
                 if (sel.getRangeAt && sel.rangeCount) {
                     //NB: From BL-3900 investigation:
                     //if the startContainer is a span, then it has an internal text node, and so deleting
@@ -461,7 +463,7 @@ require("./jquery.mousewheel.js");
                     }
 
                     //remove the character they typed to open this tool
-                    var rangeToRemoveStarterCharacter = insertPointRange.cloneRange();
+                    const rangeToRemoveStarterCharacter = insertPointRange.cloneRange();
                     rangeToRemoveStarterCharacter.setStart(
                         insertPointRange.startContainer,
                         insertPointRange.startOffset -
@@ -474,7 +476,7 @@ require("./jquery.mousewheel.js");
                     rangeToRemoveStarterCharacter.deleteContents();
 
                     //stick in the replacement character
-                    var textNode = document.createTextNode(newLetter);
+                    const textNode = document.createTextNode(newLetter);
                     insertPointRange.insertNode(textNode);
 
                     //composed characters can be more than one unicode value, e.g. a̱
