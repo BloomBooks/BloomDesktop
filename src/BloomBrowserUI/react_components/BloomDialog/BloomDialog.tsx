@@ -50,8 +50,6 @@ export interface IBloomDialogProps extends DialogProps {
     // this because enabling it causes a react render loop. Our theory is that there is
     // a focus war going on.
     disableDragging?: boolean;
-    // a selector to apply to the Draggable bounds to limit where the dialog can be dragged.
-    dragLimits?: string;
 }
 
 export const BloomDialog: FunctionComponent<IBloomDialogProps> = forwardRef(
@@ -145,13 +143,10 @@ export const BloomDialog: FunctionComponent<IBloomDialogProps> = forwardRef(
         function getPaperComponent() {
             if (disableDragging) {
                 return undefined;
-            }
-            if (dragLimits) {
+            } else {
                 return hasTitle
                     ? DraggablePaperLimited
                     : DraggablePaperLimitedMiddle;
-            } else {
-                return hasTitle ? DraggablePaper : DraggablePaperMiddle;
             }
         }
         return (
@@ -365,19 +360,18 @@ export const DialogBottomButtons: FunctionComponent<{}> = props => {
 
 interface EnhancedPaperProps extends PaperProps {
     handleId: string;
-    bounds?: string;
 }
 
 // Don't be tempted to make this an anonymous function that returns a JSX.Element
 // (instead of a FunctionComponent), it causes focus problems. (BL-11406).
 // (Probably the same for the things below that use it.)
 const DraggablePaperCore: FunctionComponent<EnhancedPaperProps> = props => {
-    const { handleId, bounds, ...paperProps } = props;
+    const { handleId, ...paperProps } = props;
     return (
         <Draggable
             handle={"#" + handleId}
             cancel={'[class*="MuiDialogContent-root"]'}
-            bounds={bounds}
+            bounds="body" // don't let the dialog be dragged outside the window
         >
             <Paper
                 css={css`
@@ -393,21 +387,15 @@ const DraggablePaperCore: FunctionComponent<EnhancedPaperProps> = props => {
 
 // We need things that just take PaperProps to pass to the PaperComponent
 // property of Dialog. So the above component gets instantiated several ways.
-const DraggablePaper: FunctionComponent<PaperProps> = props => {
+
+const DraggablePaperLimited: FunctionComponent<PaperProps> = props => {
     return <DraggablePaperCore handleId="draggable-dialog-title" {...props} />;
 };
 
-const DraggablePaperLimited: FunctionComponent<PaperProps> = props => {
-    return (
-        <DraggablePaperCore
-            handleId="draggable-dialog-title"
-            bounds="#left"
-            {...props}
-        />
-    );
-};
-
-const DraggablePaperMiddle: FunctionComponent<PaperProps> = props => {
+// For a dialog that is draggable by click-dragging anywhere in the contents of the dialog.
+// Maybe the only case where we will ever use this is for a dialog that we put up during printing that JT calls the "please notice dialog".
+// See PDFPrintPublishScreen
+const DraggablePaperLimitedMiddle: FunctionComponent<PaperProps> = props => {
     return <DraggablePaperCore handleId="draggable-dialog-middle" {...props} />;
 };
 

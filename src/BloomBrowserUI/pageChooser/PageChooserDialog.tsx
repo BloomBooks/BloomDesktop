@@ -472,7 +472,6 @@ export const PageChooserDialog: React.FunctionComponent<IPageChooserdialogProps>
             css={css`
                 padding-left: 18px;
                 padding-bottom: 20px;
-                max-height: 675px;
                 display: flex;
                 background-color: unset; // BloomDialog default is somehow not what we want...
                 .MuiDialog-paperWidthSm {
