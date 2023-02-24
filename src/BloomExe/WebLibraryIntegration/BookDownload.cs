@@ -1,32 +1,21 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
-using System.Threading;
 using System.Web;
 using System.Windows.Forms;
 using Amazon.Runtime;
-using Amazon.S3;
 using Bloom.Book;
 using Bloom.Collection;
-using Bloom.Properties;
-using Bloom.Publish;
-using Bloom.Publish.BloomLibrary;
-using Bloom.Publish.PDF;
 using DesktopAnalytics;
 using L10NSharp;
 using SIL.Extensions;
 using SIL.IO;
 using SIL.Progress;
-using SIL.Reporting;
 using SIL.Windows.Forms.Progress;
-using BloomTemp;
-using System.Xml;
 using Bloom.web.controllers;
-using System.Text;
 
 namespace Bloom.WebLibraryIntegration
 {
