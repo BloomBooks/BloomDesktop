@@ -80,6 +80,7 @@ export const ProgressDialog: React.FunctionComponent<IProgressDialogProps> = pro
         closeDialog,
         propsForBloomDialog
     } = useSetupBloomDialog(props.dialogEnvironment);
+    const { onClose, ...propsToPassToBloomDialog } = propsForBloomDialog;
     if (props.setShowDialog) {
         props.setShowDialog(showDialog);
     }
@@ -196,7 +197,17 @@ export const ProgressDialog: React.FunctionComponent<IProgressDialogProps> = pro
     }
 
     return (
-        <BloomDialog {...propsForBloomDialog}>
+        <BloomDialog
+            {...propsToPassToBloomDialog}
+            onClose={(evt, reason) => {
+                // Progress dialogs imply some operation is procediing. It may
+                // or may not be possible to cancel it, but we shouldn't just lose
+                // the dialog because the user clicked outside it or even pressed Escape.
+                if (reason !== "escapeKeyDown" && reason !== "backdropClick") {
+                    onClose();
+                }
+            }}
+        >
             {props.determinate && (
                 <div
                     css={css`
