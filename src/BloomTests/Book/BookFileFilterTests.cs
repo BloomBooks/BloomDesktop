@@ -153,15 +153,6 @@ namespace BloomTests.Book
 		}
 
 		[Test]
-		public void Filter_ExcludesThumbnailsInRootFolder()
-		{
-			Assert.That(_normalFilter.FilterRelative("thumbnail-256.png"), Is.False);
-			Assert.That(_normalFilter.FilterRelative("thumbnail-70.png"), Is.False);
-			Assert.That(_normalFilter.FilterRelative("thumbnail-976.png"), Is.False);
-			Assert.That(_filterForEdit.FilterRelative("thumbnail-976.png"), Is.False);
-		}
-
-		[Test]
 		public void Filter_ExcludesPlaceholdersInRootFolder()
 		{
 			Assert.That(_normalFilter.FilterRelative("placeHolder.png"), Is.False);

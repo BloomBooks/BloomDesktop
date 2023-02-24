@@ -130,6 +130,11 @@ namespace Bloom.Book
 			AddException(path, false);
 		}
 
+		public void AlwaysReject(Regex re)
+		{
+			_thingsToExclude.Add(re);
+		}
+
 		/// <summary>
 		/// The specified path (starting from the book folder) should always be
 		/// accepted (or always be rejected, if the second argument is false).
@@ -162,7 +167,8 @@ namespace Bloom.Book
 				_theOneHtmlRelativePath = _theOneHtmlPath.Substring(_bookFolderPrefixLength);
 				_theOneHtmlRelativePath = normalizePath(_theOneHtmlRelativePath);
 			}
-			_thingsToExclude.Add(new Regex("^thumbnail-"));
+			// We don't ever need placeHolders. In publications we don't want to display
+			// them, and BloomEditor already has this image.
 			_thingsToExclude.Add(new Regex(normalizePath("^placeHolder")));
 		}
 
