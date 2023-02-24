@@ -334,7 +334,7 @@ export const JoinTeamCollectionDialog: React.FunctionComponent<{
                 >
                     {joinButtonEnglish}
                 </BloomButton>
-                <DialogCancelButton onClick={closeDialog} />
+                <DialogCancelButton onClick_DEPRECATED={closeDialog} />
             </DialogBottomButtons>
         </BloomDialog>
     );

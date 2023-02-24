@@ -785,7 +785,6 @@ function beginAddTool(
             "readers/decodableReader/decodableReaderToolboxTool.html",
         leveledReaderTool:
             "readers/leveledReader/leveledReaderToolboxTool.html",
-        bookSettingsTool: "bookSettings/bookSettingsToolboxTool.html",
         toolboxSettingsTool:
             "toolboxSettingsTool/toolboxSettingsToolboxTool.html",
         settingsTool: "settings/Settings.html"
@@ -809,6 +808,12 @@ function beginAddTool(
     } else {
         // new-style tool implemented in React
         const tool = getITool(toolId);
+        if (!tool) {
+            console.error(
+                `Tool ${toolId} not found, assuming that was from a different version of Bloom.`
+            );
+            return;
+        }
         const content = $(tool.makeRootElement());
         const toolName = ToolBox.addStringTool(tool.id());
         // const parts = $("<h3 data-toolId='musicTool' data-i18n='EditTab.Toolbox.MusicTool'>"
@@ -1036,7 +1041,7 @@ function loadToolboxToolText(
 
     // get the toolbox tool label
     const header = parts.filter("h3").first();
-    if (header.length < 1) return; // bookSettings currently is empty and doesn't get added.
+    if (header.length < 1) return; // we used to have a tool that was empty and didn't get added.
 
     // get the tool content div
     const content = parts.filter("div").first();

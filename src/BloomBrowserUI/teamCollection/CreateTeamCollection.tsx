@@ -183,7 +183,7 @@ export const CreateTeamCollectionDialog: React.FunctionComponent<{
                     Create &amp; Restart
                 </BloomButton>
                 <DialogCancelButton
-                    onClick={() => post("common/closeReactDialog")}
+                    onClick_DEPRECATED={() => post("common/closeReactDialog")}
                 />
             </DialogBottomButtons>
         </BloomDialog>

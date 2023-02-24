@@ -162,3 +162,7 @@ src/BloomBrowserUI/bloomWebFonts.css
 src/BloomBrowserUI/templates/template books/Activity/domActivities.css
 
 src/BloomBrowserUI/templates/template books/Activity/choiceActivities.css
+
+src/BloomBrowserUI/.yarn/cache/
+
+src/BloomBrowserUI/.yarn/

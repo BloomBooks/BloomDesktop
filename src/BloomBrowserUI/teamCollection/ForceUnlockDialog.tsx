@@ -109,7 +109,10 @@ export const ForceUnlockDialog: React.FunctionComponent<{
                         Unlock
                     </BloomButton>
                 </DialogBottomLeftButtons>
-                <DialogCancelButton default={true} onClick={props.close} />
+                <DialogCancelButton
+                    default={true}
+                    onClick_DEPRECATED={props.close}
+                />
             </DialogBottomButtons>
         </BloomDialog>
     );

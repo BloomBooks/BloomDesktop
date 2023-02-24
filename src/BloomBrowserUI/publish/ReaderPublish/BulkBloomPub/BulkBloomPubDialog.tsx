@@ -258,7 +258,7 @@ export const InnerBulkBloomPubDialog: React.FunctionComponent<{
                 >
                     Make
                 </BloomButton>
-                <DialogCancelButton onClick={props.closeDialog} />
+                <DialogCancelButton onClick_DEPRECATED={props.closeDialog} />
             </DialogBottomButtons>
         </React.Fragment>
     );

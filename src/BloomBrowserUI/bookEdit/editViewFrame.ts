@@ -39,6 +39,8 @@ import { reportError } from "../lib/errorHandler";
 import { IToolboxFrameExports } from "./toolbox/toolboxBootstrap";
 import { showCopyrightAndLicenseInfoOrDialog } from "./copyrightAndLicense/CopyrightAndLicenseDialog";
 import { showTopicChooserDialog } from "./TopicChooser/TopicChooserDialog";
+import ReactDOM = require("react-dom");
+import { FunctionComponentElement } from "react";
 export { getImageUrlFromImageButton } from "./js/bloomImages";
 
 //Called by c# using editTabBundle.handleUndo()
@@ -172,9 +174,20 @@ export function canUndo(): string {
 // method called from EditingModel.cs
 // for "templatesJSON", see property EditingModel.GetJsonTemplatePageObject
 
-// Only one modal dialog can be open at a time, so we'll just make space for one.
-export function getModalDialogContainer(): HTMLElement | null {
-    return document.getElementById("modal-dialog-container");
+export function ShowEditViewDialog(dialog: FunctionComponentElement<any>) {
+    let root = document.getElementById("modal-dialog-react-root");
+    // remove any left over dialog stuff
+    if (root) {
+        document.body.removeChild(root);
+    }
+    // add a place to root the React system.
+    root = document.createElement("div");
+    root.id = "modal-dialog-react-root";
+    document.body.appendChild(root);
+    // Note that modal dialogs actually create a sibling to this, they don't actually end up being children in the DOM.
+    // Also note that if we call this twice, everything is fine: MUI doesn't seem to actually care if we remove the
+    // root we called render on; it has already made a child of Body that it is using for the root of its dialog.
+    ReactDOM.render(dialog, root);
 }
 
 export function showConfirmDialog(props: IConfirmDialogProps): void {

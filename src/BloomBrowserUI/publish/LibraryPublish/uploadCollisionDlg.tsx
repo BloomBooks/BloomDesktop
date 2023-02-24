@@ -210,7 +210,13 @@ export const UploadCollisionDlg: React.FunctionComponent<IUploadCollisionDlgProp
     return (
         <StyledEngineProvider injectFirst>
             <ThemeProvider theme={lightTheme}>
-                <BloomDialog {...propsForBloomDialog}>
+                <BloomDialog
+                    onCancel={() => {
+                        post("libraryPublish/cancel_obsolete");
+                        closeDialog();
+                    }}
+                    {...propsForBloomDialog}
+                >
                     <div
                         css={css`
                             flex-direction: column;
@@ -353,12 +359,7 @@ export const UploadCollisionDlg: React.FunctionComponent<IUploadCollisionDlgProp
                         >
                             Upload
                         </BloomButton>
-                        <DialogCancelButton
-                            onClick={() => {
-                                post("libraryPublish/cancel_obsolete");
-                                closeDialog();
-                            }}
-                        ></DialogCancelButton>
+                        <DialogCancelButton></DialogCancelButton>
                     </DialogBottomButtons>
                 </BloomDialog>
             </ThemeProvider>

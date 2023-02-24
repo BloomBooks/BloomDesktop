@@ -18,6 +18,7 @@ import {
     kBloomDarkTextOverWarning,
     kBloomWarning
 } from "../../utils/colorUtils";
+import { BloomDialogContext } from "./BloomDialog";
 
 export const kErrorBoxColor = "#eb3941";
 const kLightBlueBackground = "#F0FDFE";
@@ -160,20 +161,25 @@ export const DialogOkButton: React.FunctionComponent<{
 );
 
 export const DialogCancelButton: React.FunctionComponent<{
-    onClick: () => void;
+    // Use of onClick is deprecated. Instead, use the onCancel function on BloomDialog, so that
+    // we get consistent behavior with Escape, upper-right close button, etc.
+    onClick_DEPRECATED?: () => void;
     default?: boolean;
-}> = props => (
-    <BloomButton
-        l10nKey="Common.Cancel"
-        hasText={true}
-        enabled={true}
-        // by default, Cancel is NOT the default button
-        variant={props.default === true ? "contained" : "outlined"}
-        onClick={props.onClick}
-    >
-        Cancel
-    </BloomButton>
-);
+}> = props => {
+    const context = React.useContext(BloomDialogContext);
+    return (
+        <BloomButton
+            l10nKey="Common.Cancel"
+            hasText={true}
+            enabled={true}
+            // by default, Cancel is NOT the default button
+            variant={props.default === true ? "contained" : "outlined"}
+            onClick={context.onCancel ?? props.onClick_DEPRECATED}
+        >
+            Cancel
+        </BloomButton>
+    );
+};
 export const DialogReportButton: React.FunctionComponent<{
     className?: string; // also supports Emotion CSS
     buttonText?: string; // defaults to 'Report'

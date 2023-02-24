@@ -341,7 +341,9 @@ const ColorPickerDialog: React.FC<IColorPickerDialogProps> = props => {
                         />
                         <DialogCancelButton
                             default={false}
-                            onClick={() => onClose(DialogResult.Cancel)}
+                            onClick_DEPRECATED={() =>
+                                onClose(DialogResult.Cancel)
+                            }
                         />
                     </DialogBottomButtons>
                 </BloomDialog>
