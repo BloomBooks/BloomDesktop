@@ -4698,6 +4698,16 @@
         <source xml:lang="en">Making thumbnail image...</source>
         <note>ID: PublishTab.Upload.MakingThumbnail</note>
       </trans-unit>
+      <trans-unit id="PublishTab.Upload.Missing.Copyright" translate="no">
+        <!-- added in 5.5 -->
+        <source xml:lang="en">Missing Copyright</source>
+        <note>ID: PublishTab.Upload.Missing.Copyright</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.Missing.Title" translate="no">
+        <!-- added in 5.5 -->
+        <source xml:lang="en">Missing Title</source>
+        <note>ID: PublishTab.Upload.Missing.Title</note>
+      </trans-unit>
       <trans-unit id="PublishTab.Upload.Narration">
         <source xml:lang="en">Narration</source>
         <note>ID: PublishTab.Upload.Narration</note>

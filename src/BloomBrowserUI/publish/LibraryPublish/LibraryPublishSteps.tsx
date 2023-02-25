@@ -3,7 +3,8 @@ import { jsx, css } from "@emotion/react";
 import * as React from "react";
 import { useEffect, useState } from "react";
 import { TextField, Step, StepLabel, StepContent } from "@mui/material";
-import { get, postString } from "../../utils/bloomApi";
+import { get, getBloomApiPrefix, postString } from "../../utils/bloomApi";
+import { kBloomRed } from "../../utils/colorUtils";
 import { BloomStepper } from "../../react_components/BloomStepper";
 import { Div, P, Span } from "../../react_components/l10nComponents";
 import BloomButton from "../../react_components/bloomButton";
@@ -51,29 +52,52 @@ export const LibraryPublishSteps: React.FunctionComponent = () => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [summary]); // purposefully not including bookInfo, so we don't post on initial load
 
+    function isReadyForAgreements(): boolean {
+        return !!bookInfo?.title && !!bookInfo?.copyright;
+    }
     const [agreementsAccepted, setAgreementsAccepted] = useState<boolean>(
         false
     );
     function isReadyForUpload(): boolean {
-        return agreementsAccepted && !!bookInfo?.title && !!bookInfo?.copyright;
+        return isReadyForAgreements() && agreementsAccepted;
     }
 
     const [isUploadComplete, setIsUploadComplete] = useState<boolean>(false);
 
-    const [licenseText, setLicenseText] = useState<string>("");
-    const [licenseSuggestion, setLicenseSuggestion] = useState<string>("");
+    const [licenseBlock, setLicenseBlock] = useState<JSX.Element>(
+        <React.Fragment />
+    );
     useEffect(() => {
         switch (bookInfo?.licenseType) {
             case "CreativeCommons":
-                setLicenseText("Creative Commons " + bookInfo?.licenseToken);
+                setLicenseBlock(
+                    <img
+                        src={`${getBloomApiPrefix()}copyrightAndLicense/ccImage?token=${bookInfo?.licenseToken?.toLowerCase()}`}
+                        css={css`
+                            width: 100px;
+                        `}
+                    />
+                );
                 break;
             case "Null":
-                setLicenseText(localizedAllRightsReserved);
-                setLicenseSuggestion(localizedSuggestAssignCC);
+                setLicenseBlock(
+                    <div>
+                        <div>{localizedAllRightsReserved}</div>
+                        <WarningMessage>
+                            {localizedSuggestAssignCC}
+                        </WarningMessage>
+                    </div>
+                );
                 break;
             case "Custom":
-                setLicenseText(bookInfo?.licenseRights);
-                setLicenseSuggestion(localizedSuggestChangeCC);
+                setLicenseBlock(
+                    <div>
+                        <div>{bookInfo?.licenseRights}</div>
+                        <WarningMessage>
+                            {localizedSuggestChangeCC}
+                        </WarningMessage>
+                    </div>
+                );
                 break;
         }
     }, [
@@ -85,20 +109,42 @@ export const LibraryPublishSteps: React.FunctionComponent = () => {
 
     return (
         <BloomStepper orientation="vertical">
-            <Step active={true} completed={isReadyForUpload()}>
+            <Step active={true} completed={isReadyForAgreements()}>
                 <StepLabel>
                     <Span l10nKey="PublishTab.Upload.ConfirmMetadata">
                         Confirm Metadata
                     </Span>
                 </StepLabel>
                 <StepContent>
-                    <LabelWrapper
-                        labelText="Title"
-                        labelL10nKey="PublishTab.Upload.Title"
-                        required={true}
+                    <div
+                        css={css`
+                            font-size: larger;
+                        `}
                     >
-                        {bookInfo?.title}
-                    </LabelWrapper>
+                        <div
+                            css={css`
+                                font-weight: bold;
+                            `}
+                        >
+                            {bookInfo?.title || (
+                                <MissingInfo
+                                    text="Title Missing"
+                                    l10nKey={"PublishTab.Upload.Missing.Title"}
+                                />
+                            )}
+                        </div>
+                        <div>
+                            {bookInfo?.copyright || (
+                                <MissingInfo
+                                    text="Copyright Missing"
+                                    l10nKey={
+                                        "PublishTab.Upload.Missing.Copyright"
+                                    }
+                                />
+                            )}
+                        </div>
+                        {licenseBlock}
+                    </div>
                     <TextField
                         // needed by aria for a11y
                         id="book summary"
@@ -141,37 +187,30 @@ export const LibraryPublishSteps: React.FunctionComponent = () => {
                             }
                         `}
                     />
-                    <LabelWrapper
-                        labelText="Copyright"
-                        labelL10nKey="Common.Copyright"
-                        required={true}
-                    >
-                        {bookInfo?.copyright}
-                    </LabelWrapper>
-                    <LabelWrapper
-                        labelText="Usage/License"
-                        labelL10nKey="PublishTab.Upload.License"
-                    >
-                        {licenseText}
-                        {bookInfo?.licenseRights}
-                        <WarningMessage>{licenseSuggestion}</WarningMessage>
-                    </LabelWrapper>
                 </StepContent>
             </Step>
-            <Step active={true} completed={isReadyForUpload()}>
+            <Step
+                active={isReadyForAgreements()}
+                expanded={true}
+                disabled={!isReadyForAgreements()}
+                completed={isReadyForUpload()}
+            >
                 <StepLabel>
                     <Span l10nKey="PublishTab.Upload.Agreements">
                         Agreements
                     </Span>
                 </StepLabel>
                 <StepContent>
-                    <Agreements onReadyChange={setAgreementsAccepted} />
+                    <Agreements
+                        disabled={!isReadyForAgreements()}
+                        onReadyChange={setAgreementsAccepted}
+                    />
                 </StepContent>
             </Step>
             <Step
                 active={isReadyForUpload()}
                 expanded={true}
-                disabled={!isReadyForUpload}
+                disabled={!isReadyForUpload()}
                 completed={isUploadComplete}
             >
                 <StepLabel>
@@ -192,7 +231,7 @@ export const LibraryPublishSteps: React.FunctionComponent = () => {
                         onCheckChanged={newValue => {
                             //TODO
                         }}
-                        disabled={!isReadyForUpload}
+                        disabled={!isReadyForUpload()}
                     /> */}
                     <div
                         css={css`
@@ -280,6 +319,7 @@ export const LibraryPublishSteps: React.FunctionComponent = () => {
 // Features
 
 const Agreements: React.FunctionComponent<{
+    disabled: boolean;
     onReadyChange: (v: boolean) => void;
 }> = props => {
     const totalCheckboxes = 3;
@@ -306,6 +346,7 @@ const Agreements: React.FunctionComponent<{
                         </Link>
                     </React.Fragment>
                 }
+                disabled={props.disabled}
                 onChange={checked => handleChange(checked)}
             />
             <AgreementCheckbox
@@ -315,6 +356,7 @@ const Agreements: React.FunctionComponent<{
                         illustrator(s).
                     </Span>
                 }
+                disabled={props.disabled}
                 onChange={checked => handleChange(checked)}
             />
             <AgreementCheckbox
@@ -330,6 +372,7 @@ const Agreements: React.FunctionComponent<{
                         I agree to the [Bloom Library Terms of Use].
                     </PWithLink>
                 }
+                disabled={props.disabled}
                 onChange={checked => handleChange(checked)}
             />
         </React.Fragment>
@@ -342,6 +385,7 @@ const Agreements: React.FunctionComponent<{
 // We can do this because it is only designed to be used in this limited context.
 const AgreementCheckbox: React.FunctionComponent<{
     label: string | React.ReactNode;
+    disabled: boolean;
     onChange: (v: boolean) => void;
 }> = props => {
     const [isChecked, setIsChecked] = useState(false);
@@ -357,39 +401,8 @@ const AgreementCheckbox: React.FunctionComponent<{
                 onCheckChanged={newState => {
                     handleCheckChanged(!!newState);
                 }}
+                disabled={props.disabled}
             ></MuiCheckbox>
-        </div>
-    );
-};
-
-const LabelWrapper: React.FunctionComponent<{
-    labelText: string;
-    labelL10nKey: string;
-    required?: boolean;
-}> = props => {
-    const localizedPleaseSetThis = useL10n(
-        "Please set this from the edit tab",
-        "PublishTab.Upload.PleaseSetThis",
-        "This shows next to the license, if the license has not yet been set."
-    );
-    return (
-        <div
-            css={css`
-                font-size: larger;
-                margin-top: 15px;
-            `}
-        >
-            <Div
-                l10nKey={props.labelL10nKey}
-                css={css`
-                    font-weight: 500;
-                `}
-            >
-                {props.labelText}
-            </Div>
-            {props.children || (
-                <WarningMessage>{localizedPleaseSetThis}</WarningMessage>
-            )}
         </div>
     );
 };
@@ -399,10 +412,28 @@ const WarningMessage: React.FunctionComponent = props => {
         <div
             css={css`
                 font-size: small;
-                color: red;
+                color: ${kBloomRed};
             `}
         >
             {props.children}
         </div>
+    );
+};
+
+const MissingInfo: React.FunctionComponent<{
+    text: string;
+    l10nKey: string;
+}> = props => {
+    return (
+        <Div
+            l10nKey={props.l10nKey}
+            css={css`
+                font-size: unset;
+                font-weight: normal;
+                color: ${kBloomRed};
+            `}
+        >
+            {props.text}
+        </Div>
     );
 };
