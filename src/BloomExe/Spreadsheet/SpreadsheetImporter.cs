@@ -15,7 +15,6 @@ using SIL.IO;
 using SIL.Progress;
 using SIL.Xml;
 using Bloom.Collection;
-using NAudio.Wave;
 
 namespace Bloom.Spreadsheet
 {
@@ -117,6 +116,9 @@ namespace Bloom.Spreadsheet
 				if (Directory.Exists(audioFolder))
 					SIL.IO.RobustIO.DeleteDirectoryAndContents(audioFolder);
 				Import(sheet, progress);
+				BookHistory.AddEvent(_book, TeamCollection.BookHistoryEventType.ImportSpreadsheet,
+					"Spreadsheet imported from " + inputFilepath);
+
 				return true; // always leave the dialog up until the user chooses 'close'
 			}, "collectionTab", "Importing Spreadsheet", doWhenDialogCloses: doWhenProgressCloses);
 		}
@@ -274,7 +276,6 @@ namespace Bloom.Spreadsheet
 					disposeBrowser();
 
 			}
-
 			Progress("Done");
 			return _warnings;
 		}

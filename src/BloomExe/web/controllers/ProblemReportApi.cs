@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Imaging;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net.Mail;
@@ -758,9 +759,54 @@ namespace Bloom.web.controllers
 			GetInformationAboutUser(bldr, userEmail);
 			GetExceptionInformation(bldr);
 			GetStandardErrorReportingProperties(bldr, true);
+			GetBookHistoryEvents(bldr);
 			GetAdditionalBloomEnvironmentInfo(bldr);
 			GetAdditionalFileInfo(bldr, includeBook);
 			return bldr.ToString();
+		}
+
+		private static string GetDomainlessEmail(string rawEmail)
+		{
+			var atIndex = rawEmail.IndexOf("@");
+			return atIndex < 0 ? rawEmail : rawEmail.Substring(0, atIndex);
+		}
+
+		private static void GetBookHistoryEvents(StringBuilder bldr)
+		{
+			var book = _reportInfo.Book;
+			if (string.IsNullOrEmpty(book?.FolderPath) || book.BookInfo == null)
+				return;
+			try
+			{
+				var events = CollectionHistory.GetBookEvents(book.BookInfo);
+				if (events.Count == 0)
+					return;
+				bldr.AppendLine();
+				bldr.AppendLine("### History of Book Events");
+				for (var i = 0; i < events.Count; i++)
+				{
+					var historyEvent = events[i];
+					var type = historyEvent.Type.ToString();
+					bldr.AppendLine("#### " + (i + 1) + "  " + type);
+					var versionWhen = "  Time: " +
+						historyEvent.When.ToString("G", CultureInfo.InvariantCulture) + "UTC, with Bloom " +
+						historyEvent.BloomVersion;
+					var who = ", User: " + historyEvent.UserName + " ("+ GetDomainlessEmail(historyEvent.UserId) + ")";
+					bldr.AppendLine(versionWhen + who);
+					var bookWithTitle = "  Book with Title: " + historyEvent.Title;
+					bldr.AppendLine(bookWithTitle);
+					if (!string.IsNullOrEmpty(historyEvent.Message))
+					{
+						bldr.AppendLine("  " + historyEvent.Message);
+					}
+				}
+				bldr.AppendLine();
+			}
+			catch (Exception e)
+			{
+				Console.WriteLine("GetBookHistoryEvents says: " + e);
+				bldr.AppendLine("GetBookHistoryEvents says: " + e.Message);
+			}
 		}
 
 		private static void GetExceptionInformation(StringBuilder bldr)

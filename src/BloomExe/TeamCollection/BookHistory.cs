@@ -3,16 +3,13 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Windows.Forms;
 using Bloom;
 using Bloom.Api;
 using Bloom.Book;
 using Bloom.Collection;
 using Bloom.TeamCollection;
 using SIL.Code;
-using SIL.Linq;
-using SIL.Reporting;
 using SQLite;
 
 namespace Bloom.TeamCollection
@@ -29,6 +26,7 @@ namespace Bloom.TeamCollection
 		[Column("pendingCheckinMessage")] public string PendingCheckinMessage { get; set; }
 
 	}
+
 	public enum BookHistoryEventType
 	{
 		CheckIn,
@@ -41,6 +39,7 @@ namespace Bloom.TeamCollection
 		Deleted
 		// NB: add them here, too: teamCollection\CollectionHistoryTable.tsx
 	}
+
 	/// <summary>
 	/// This class represents the common fields of BookHistoryEvent and CollectionBookHistoryEvent.
 	/// Any fields added should also be added to BookHistoryEvent.FromCollectionBookHistoryEvent().
@@ -63,6 +62,7 @@ namespace Bloom.TeamCollection
 		// sorting by retrieved DateTimes did not reliably put the events in true chronological order
 		// if they were created in different time zones. We now store the dates as UTC.
 		[Column("date")] public DateTime When { get; set; }
+		[Column("version")] public string BloomVersion {get; set; }
 
 		[Indexed]
 		[Column("book_id")] public string BookId { get; set; }
@@ -85,7 +85,8 @@ namespace Bloom.TeamCollection
 				UserId = ch.UserId,
 				UserName = ch.UserName,
 				Type = ch.Type,
-				When = ch.When
+				When = ch.When,
+				BloomVersion = ch.BloomVersion
 			};
 		}
 	}
@@ -150,6 +151,7 @@ public class CollectionHistory
 					UserId = TeamCollectionManager.CurrentUser,
 					UserName = TeamCollectionManager.CurrentUserFirstName,
 					Type = eventType,
+					BloomVersion = Application.ProductVersion,
 					// Be sure to use UTC, otherwise, order will not be preserved properly.
 					When = DateTime.UtcNow
 				};
@@ -315,7 +317,8 @@ public class BookHistory
 					UserName = TeamCollectionManager.CurrentUserFirstName,
 					Type = eventType,
 					// Be sure to use UTC, otherwise, order will not be preserved properly.
-					When = DateTime.UtcNow
+					When = DateTime.UtcNow,
+					BloomVersion = Application.ProductVersion
 				};
 
 				db.Insert(evt);

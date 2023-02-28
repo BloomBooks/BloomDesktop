@@ -1,7 +1,5 @@
 using System;
-using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Windows.Forms;
 using Bloom.Api;
 using Bloom.Book;
@@ -120,7 +118,6 @@ namespace Bloom.web.controllers
 					// due to a newly imported title. That would cause this call to fail.
 					//XmlHtmlConverter.SaveDOMAsHtml5(book.OurHtmlDom.RawDom, bookPath);
 					book.ReloadFromDisk(null);
-					BookHistory.AddEvent(book, TeamCollection.BookHistoryEventType.ImportSpreadsheet);
 					_bookSelection.InvokeSelectionChanged(false);
 				});
 			}
