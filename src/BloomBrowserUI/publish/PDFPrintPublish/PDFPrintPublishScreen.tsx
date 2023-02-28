@@ -120,9 +120,9 @@ export const PDFPrintPublishScreen = () => {
                                         display: flex;
                                         flex: 1;
                                         flex-direction: row;
-                                        align-items: flex-start;
+                                        align-items: center;
                                         justify-content: center;
-                                        padding: 130px 130px 0;
+                                        padding: 0 20px 75px;
                                     `}
                                 >
                                     <div
@@ -159,12 +159,6 @@ export const PDFPrintPublishScreen = () => {
                     </ThemeProvider>
                 </StyledEngineProvider>
             </PreviewPanel>
-            {/* <PublishPanel
-                css={css`
-                    display: block;
-                    flex-grow: 1;
-                `}
-            ></PublishPanel> */}
         </React.Fragment>
     );
 
