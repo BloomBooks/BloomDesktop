@@ -159,11 +159,14 @@ export const BloomDialog: FunctionComponent<IBloomDialogProps> = forwardRef(
                             value={{ onCancel: props.onCancel }}
                         >
                             <Dialog
-                                onClose={(event: object, reason: string) => {
+                                onClose={(
+                                    event: object,
+                                    reason: "escapeKeyDown" | "backdropClick"
+                                ) => {
                                     // MUI.Dialog onClose() is only called if you click outside the dialog or escape, so that's
                                     // the same as canceling for dialogs that have a notion of canceling.
                                     if (props.onCancel) props.onCancel();
-                                    else props.onClose();
+                                    else props.onClose(event, reason);
                                 }}
                                 // maxWidth={false} Instead, if you want more than the default (600px?) then add maxWidth={false} in the props.
                                 PaperComponent={getPaperComponent()}
