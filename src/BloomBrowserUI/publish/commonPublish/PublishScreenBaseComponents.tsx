@@ -14,8 +14,6 @@ export const PreviewPanel: React.FunctionComponent<{
     return (
         <section
             css={css`
-                height: 470px;
-                width: 100%;
                 background: radial-gradient(
                         641.32px at 29.05% 29.83%,
                         rgba(112, 112, 112, 0) 0%,

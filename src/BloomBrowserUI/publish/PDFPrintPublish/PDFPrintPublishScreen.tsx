@@ -30,6 +30,8 @@ import {
 import { ProgressDialog } from "../../react_components/Progress/ProgressDialog";
 import HelpLink from "../../react_components/helpLink";
 
+const minimumPadding = "20px";
+
 // The common behavior of the Print and Save buttons.
 // There is probably some way to get this look out of BloomButton,
 // but it seems more trouble than it's worth.
@@ -120,9 +122,9 @@ export const PDFPrintPublishScreen = () => {
                                         display: flex;
                                         flex: 1;
                                         flex-direction: row;
-                                        align-items: flex-start;
+                                        align-items: center;
                                         justify-content: center;
-                                        padding: 130px 130px 0;
+                                        padding: 0 ${minimumPadding} 75px;
                                     `}
                                 >
                                     <div
@@ -159,12 +161,6 @@ export const PDFPrintPublishScreen = () => {
                     </ThemeProvider>
                 </StyledEngineProvider>
             </PreviewPanel>
-            {/* <PublishPanel
-                css={css`
-                    display: block;
-                    flex-grow: 1;
-                `}
-            ></PublishPanel> */}
         </React.Fragment>
     );
 
