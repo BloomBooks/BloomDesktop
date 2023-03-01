@@ -235,9 +235,8 @@ namespace Bloom.Spreadsheet
 				}
 				catch (Exception ex)
 				{
-					progress?.Message("Spreadsheet.ExportFailed", "",
-						"Export failed: " + ex.Message,
-						ProgressKind.Error);
+					progress?.MessageWithParams("Spreadsheet.ExportFailed", "{0} is a placeholder for the exception message",
+						"Export failed: {0}", ProgressKind.Error, ex.Message);
 				}
 			}
 		}
