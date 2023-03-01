@@ -2437,7 +2437,8 @@ namespace Bloom.Publish.Epub
 				dstPath = SubfolderAdjustedContentPath(subfolder, fileName);
 			}
 			Directory.CreateDirectory (Path.GetDirectoryName (dstPath));
-			CopyFile (srcPath, dstPath, limitImageDimensions, needTransparentBackground);
+			// enhance: I'm preserving the old behavior here by making an new one with defaults, but why doesn't epubmaker have access to our settings?
+			CopyFile(srcPath, dstPath, new ImagePublishSettings(), limitImageDimensions, needTransparentBackground );
 			_manifestItems.Add(SubfolderAdjustedName(subfolder, fileName));
 			_mapSrcPathToDestFileName [srcPath] = dstPath;
 			return dstPath;
@@ -2508,11 +2509,11 @@ namespace Bloom.Publish.Epub
 		/// <summary>
 		/// This supports testing without actually copying files.
 		/// </summary>
-		internal virtual void CopyFile(string srcPath, string dstPath, bool limitImageDimensions=false, bool needTransparentBackground=false)
+		internal virtual void CopyFile(string srcPath, string dstPath, ImagePublishSettings imagePublishSettings, bool limitImageDimensions=false, bool needTransparentBackground=false)
 		{
 			if (limitImageDimensions && BookCompressor.CompressableImageFileExtensions.Contains(Path.GetExtension(srcPath).ToLowerInvariant()))
 			{
-				var imageBytes = BookCompressor.GetImageBytesForElectronicPub(srcPath, needTransparentBackground);
+				var imageBytes = BookCompressor.GetImageBytesForElectronicPub(srcPath, needTransparentBackground, imagePublishSettings);
 				RobustFile.WriteAllBytes(dstPath, imageBytes);
 				return;
 			}

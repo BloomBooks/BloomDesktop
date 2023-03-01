@@ -1955,14 +1955,14 @@ $@"<div class='bloom-translationGroup'>
 			Book = book;
 		}
 
-		internal override void CopyFile(string srcPath, string dstPath, bool reduceImageIfPossible=false, bool needsTransparentBackground=false)
+		internal override void CopyFile(string srcPath, string dstPath, ImagePublishSettings imagePublishSettings, bool reduceImageIfPossible=false, bool needsTransparentBackground=false)
 		{
 			if (srcPath.Contains("notareallocation"))
 			{
 				File.WriteAllText(dstPath, "This is a test fake");
 				return;
 			}
-			base.CopyFile(srcPath, dstPath, reduceImageIfPossible, needsTransparentBackground);
+			base.CopyFile(srcPath, dstPath, imagePublishSettings, reduceImageIfPossible, needsTransparentBackground);
 		}
 	}
 }
