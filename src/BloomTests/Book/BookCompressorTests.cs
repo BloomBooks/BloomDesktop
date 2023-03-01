@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using Bloom.Book;
 using Bloom.Publish.Android;
@@ -24,7 +24,7 @@ namespace BloomTests.Book
 		[SetUp]
 		public void Setup()
 		{
-			_testFolder = new TemporaryFolder(GetTestFolderName());			
+			_testFolder = new TemporaryFolder(GetTestFolderName());
 		}
 
 		[TearDown]
@@ -105,9 +105,9 @@ namespace BloomTests.Book
 					File.WriteAllText(Path.Combine(audioDir, "musicfile1.mp3"), "dummy mp3 content");
 					File.WriteAllText(Path.Combine(audioDir, "musicfile2.ogg"), "dummy ogg content");
 					File.WriteAllText(Path.Combine(audioDir, "musicfile3.wav"), "dummy wav content");
-					File.WriteAllText(Path.Combine(audioDir, "narration.mp3"), "more dummy mp3 content");	// file should be included (since it is referenced)
-					File.WriteAllText(Path.Combine(audioDir, "narration.wav"), "more dummy wav content");	// file should not be included (only mp3 narration)
-					File.WriteAllText(Path.Combine(folderPath, "temp.tmp"), "dummy temporary file data");	// file should not be included
+					File.WriteAllText(Path.Combine(audioDir, "narration.mp3"), "more dummy mp3 content");   // file should be included (since it is referenced)
+					File.WriteAllText(Path.Combine(audioDir, "narration.wav"), "more dummy wav content");   // file should not be included (only mp3 narration)
+					File.WriteAllText(Path.Combine(folderPath, "temp.tmp"), "dummy temporary file data");   // file should not be included
 				});
 
 			// System Under Test //

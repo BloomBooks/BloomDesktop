@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -27,28 +28,36 @@ namespace Bloom.Book
 		public PublishSettings()
 		{
 			AudioVideo = new AudioVideoSettings();
-			BloomPub = new BloomPubSettings();
 			Epub = new EpubSettings();
+			BloomPub = new BloomPubSettings();
 			BloomLibrary = new BloomLibrarySettings();
 		}
 
-		[JsonProperty("audioVideo")] public AudioVideoSettings AudioVideo { get; set; }
+		[JsonProperty("audioVideo")] public AudioVideoSettings AudioVideo;
 
-		[JsonProperty("epub")] public EpubSettings Epub { get; set; }
+		[JsonProperty("epub")] public EpubSettings Epub;
 
-		[JsonProperty("bloomPUB")] public BloomPubSettings BloomPub { get; set; }
+		[JsonProperty("bloomPUB")]
+		public BloomPubSettings BloomPub;
 
-		[JsonProperty("bloomLibrary")] public BloomLibrarySettings BloomLibrary { get; set; }
+		[JsonProperty("bloomLibrary")] public BloomLibrarySettings BloomLibrary;
 
-		public static PublishSettings FromString(string input)
+		public static PublishSettings FromString(string json)
 		{
-			var result = JsonConvert.DeserializeObject<PublishSettings>(input);
-			if (result == null)
-			{
-				throw new ApplicationException("publish-settings of this book may be corrupt");
-			}
-			return result;
+			var ps = new PublishSettings();
+			ps.LoadNewJson(json);
+			return ps;
 		}
+		public void LoadNewJson(string json)
+		{
+			JsonSerializerSettings settings = new JsonSerializerSettings();
+			try
+			{
+				JsonConvert.PopulateObject(json, this, settings);
+			}
+			catch (Exception e) { throw new ApplicationException("publish-settings of this book may be corrupt", e); }
+		}
+
 
 		[JsonIgnore]
 		public string Json => JsonConvert.SerializeObject(this);
@@ -81,20 +90,25 @@ namespace Bloom.Book
 		public static PublishSettings FromFolder(string bookFolderPath)
 		{
 			var publishSettingsPath = PublishSettingsPath(bookFolderPath);
+			PublishSettings ps;
 			if (!RobustFile.Exists(publishSettingsPath))
 			{
-				return MigrateSettings(bookFolderPath);
+				// see if they have a meta.json file instead, which was the place we used to store some of this info
+				ps = MigrateFromOldMetaJson(bookFolderPath);
 			}
-			if (TryReadSettings(publishSettingsPath, out PublishSettings result))
-				return result;
-
-			// We could implement a backup strategy like for MetaData, but I don't
-			// think it's worth it. It's not that likely we will lose these, or very critical
-			// if we do.
-			return new PublishSettings();
+			else if (TryReadSettings(publishSettingsPath, out PublishSettings result))
+				ps = result;
+			else
+			{
+				// We could implement a backup strategy like for MetaData, but I don't
+				// think it's worth it. It's not that likely we will lose these, or very critical
+				// if we do.
+				return new PublishSettings();
+			}
+			return ps;
 		}
 
-		static PublishSettings MigrateSettings(string bookFolderPath)
+		static PublishSettings MigrateFromOldMetaJson(string bookFolderPath)
 		{
 			// See if we can migrate data from an old metaData.
 
@@ -184,7 +198,6 @@ namespace Bloom.Book
 			try
 			{
 				result = FromString(RobustFile.ReadAllText(path, Encoding.UTF8));
-				result.AudioVideo.FixEmptyValues();
 				return true;
 			}
 			catch (Exception e)
@@ -202,26 +215,17 @@ namespace Bloom.Book
 	{
 		public AudioVideoSettings()
 		{
-			FixEmptyValues();
-		}
-
-		public void FixEmptyValues()
-		{
-			if (Format == null)
-				Format = "facebook";
-			if (PageTurnDelay == 0)
-				PageTurnDelay = 3000;
-			if (PlayerSettings == null)
-				PlayerSettings = "";
-			if (PageRange == null)
-				PageRange = new int[0];
+			Format = "facebook";
+			PageTurnDelay = 3000;
+			PlayerSettings = "";
+			PageRange = new int[0];
 		}
 
 		/// <summary>
 		/// How long to display pages with no narration (milliseconds)
 		/// </summary>
 		[JsonProperty("pageTurnDelay")]
-		public int PageTurnDelay { get; set; }
+		public int PageTurnDelay;
 
 		/// <summary>
 		/// For Javascript and the Javascript API and BloomPlayer, it's most convenient to have
@@ -247,7 +251,7 @@ namespace Bloom.Book
 		/// Which publishing mode to use. Currently one of facebook, feature, youtube, and mp3.
 		/// </summary>
 		[JsonProperty("format")]
-		public string Format { get; set; }
+		public string Format;
 
 		/// <summary>
 		/// Whether to record the book in landscape mode with full-screen pictures and
@@ -256,7 +260,7 @@ namespace Bloom.Book
 		/// and no animations.
 		/// </summary>
 		[JsonProperty("motion")]
-		public bool Motion { get; set; }
+		public bool Motion;
 
 		/// <summary>
 		/// A string containing the video player settings that are handled entirely by
@@ -270,12 +274,12 @@ namespace Bloom.Book
 		/// file. We think it is worth this to keep the content of this string opaque to BE.
 		/// </summary>
 		[JsonProperty("playerSettings")]
-		public string PlayerSettings { get; set; }
+		public string PlayerSettings;
 
 		// An array (should always be exactly two items) of pages to include.
 		// May be null or an empty array to indicate "all pages"
 		[JsonProperty("pageRange")]
-		public int[] PageRange { get; set; }
+		public int[] PageRange;
 	}
 
 	/// <summary>
@@ -284,89 +288,73 @@ namespace Bloom.Book
 	/// </summary>
 	public class BloomPubSettings
 	{
+		public BloomPubSettings()
+		{
+			ImageSettings = new ImagePublishSettings();
+			TextLangs = new Dictionary<string, InclusionSetting>();
+			AudioLangs = new Dictionary<string, InclusionSetting>();
+			SignLangs = new Dictionary<string, InclusionSetting>();
+		}
+
 		// Whether to publish the book as a motion book, that can be rotated
 		// horizontal to trigger autoplay with animations. Currently this mirrors
 		// the Motion feature (and the Feature_Motion property of BookInfo) but here
 		// the focus is on storing the publish setting rather than on listing book
 		// features in the library.
 		[JsonProperty("motion")]
-		public bool Motion { get; set; }
+		public bool Motion;
 
 		/// <summary>
 		/// This corresponds to the checkbox values of which languages the user wants to publish the text for.
 		/// </summary>
 		/// <remarks>Previouly bookInfo.TextLangsToPublish.ForBloomPUB</remarks>
 		[JsonProperty("textLangs")]
-		public Dictionary<string, InclusionSetting> TextLangs { get; set; }
+		public Dictionary<string, InclusionSetting> TextLangs;
 
 		/// <summary>
 		/// This corresponds to the checkbox values of which languages the user wants to publish the audio for
 		/// </summary>
 		/// <remarks>Previouly bookInfo.AudioLangsToPublish.ForBloomPUB</remarks>
 		[JsonProperty("audioLangs")]
-		public Dictionary<string, InclusionSetting> AudioLangs { get; set; }
+		public Dictionary<string, InclusionSetting> AudioLangs;
 
 		/// <summary>
 		/// The sign language(s) -- currently we allow only one -- which the user wants to publish
 		/// </summary>
 		/// <remarks>Previouly bookInfo.SignLangsToPublish.ForBloomPUB</remarks>
 		[JsonProperty("signLangs")]
-		public Dictionary<string, InclusionSetting> SignLangs { get; set; }
+		public Dictionary<string, InclusionSetting> SignLangs;
 
 		/// <summary>
 		/// The image resolution settings for this BloomPUB
 		/// </summary>
 		[JsonProperty("imageSettings")]
-		public ImagePublishSettings ImageSettings { get; set; }
+		public ImagePublishSettings ImageSettings;
 	}
 
 	public class ImagePublishSettings
 	{
 		// ENHANCE: I think these should ideally be readonly, but that requires a higher C# version.
 		[JsonProperty("maxWidth")]
-		public uint MaxWidth { get; set; }
+		public uint MaxWidth;
 
 		[JsonProperty("maxHeight")]
-		public uint MaxHeight { get; set; }
+		public uint MaxHeight;
 
-
-		/// <summary>
-		/// Default constructor
-		/// </summary>
-		/// <remarks>As usual, needed for JSON deserialization to work properly.</remarks>
 		public ImagePublishSettings()
 		{
+			// See discussion in BL-5385
+			MaxWidth = 600;
+			MaxHeight = 600;
 		}
-
-		public ImagePublishSettings(uint maxWidth, uint maxHeight)
-		{
-			MaxWidth = maxWidth;
-			MaxHeight = maxHeight;
-		}
-
-		/// <summary>
-		/// Copy constructor
-		/// </summary>
-		/// <param name="other">The object to clone from</param>
-		public ImagePublishSettings(ImagePublishSettings other)
-		{
-			MaxWidth = other.MaxWidth;
-			MaxHeight = other.MaxHeight;
-		}
-
-		// See discussion in BL-5385
-		private const uint kDefaultMaxWidth = 600;
-		private const uint kDefaultMaxHeight = 600;
-
-		public static ImagePublishSettings Default { get; } = new ImagePublishSettings(kDefaultMaxWidth, kDefaultMaxHeight);
 	}
 
 	public class EpubSettings
 	{
-
 		public EpubSettings()
 		{
 			Mode = "fixed";
+			RemoveFontSizes = false;
 		}
 		/// <summary>
 		/// This item indicates how the user would like Epubs of this book to handle Image Descriptions
@@ -386,81 +374,48 @@ namespace Bloom.Book
 		[JsonProperty("removeFontSizes")]
 		public bool RemoveFontSizes;
 
-		public EpubSettings Clone()
-		{
-			return (EpubSettings)MemberwiseClone();
-		}
 
 		/// <summary>
 		/// Currently "fixed" and "flowable" are supported.
 		/// </summary>
 		[JsonProperty("mode")] public string Mode;
 
-		public override bool Equals(object obj)
+		public EpubSettings Clone()
 		{
-			var other = obj as EpubSettings;
-			if (other == null)
-				return false;
-			return Equals(other);
-		}
-
-		protected bool Equals(EpubSettings other)
-		{
-			return HowToPublishImageDescriptions == other.HowToPublishImageDescriptions && RemoveFontSizes == other.RemoveFontSizes && Mode == other.Mode;
-		}
-
-		public override int GetHashCode()
-		{
-			unchecked
-			{
-				var hashCode = (int)HowToPublishImageDescriptions;
-				hashCode = (hashCode * 397) ^ RemoveFontSizes.GetHashCode();
-				hashCode = (hashCode * 397) ^ (Mode != null ? Mode.GetHashCode() : 0);
-				return hashCode;
-			}
-		}
-
-		public static bool operator ==(EpubSettings a, EpubSettings b)
-		{
-			if (Object.ReferenceEquals(a, b)) return true; // same object, including both null
-			// If one is null, but not both, return false. The casts are needed to prevent
-			// calling this method again recursively (and infinitely).
-			if (((object)a == null) || ((object)b == null))
-			{
-				return false;
-			}
-
-			return a.Equals(b);
-		}
-
-		public static bool operator !=(EpubSettings a, EpubSettings b)
-		{
-			return !(a == b);
+			var serialized = JsonConvert.SerializeObject(this);
+			return JsonConvert.DeserializeObject<EpubSettings>(serialized);
 		}
 	}
 
 	public class BloomLibrarySettings
 	{
+		public BloomLibrarySettings()
+		{
+			TextLangs = new Dictionary<string, InclusionSetting>();
+			AudioLangs = new Dictionary<string, InclusionSetting>();
+			SignLangs = new Dictionary<string, InclusionSetting>();
+		}
+
 		/// <summary>
 		/// This corresponds to the checkbox values of which languages the user wants to publish the text for.
 		/// </summary>
 		/// <remarks>Previouly bookInfo.TextLangsToPublish.ForBloomLibrary</remarks>
 		[JsonProperty("textLangs")]
-		public Dictionary<string, InclusionSetting> TextLangs { get; set; }
+		public Dictionary<string, InclusionSetting> TextLangs;
 
 		/// <summary>
 		/// This corresponds to the checkbox values of which languages the user wants to publish the audio for
 		/// </summary>
 		/// <remarks>Previouly bookInfo.AudioLangsToPublish.ForBloomLibrary</remarks>
 		[JsonProperty("audioLangs")]
-		public Dictionary<string, InclusionSetting> AudioLangs { get; set; }
+		public Dictionary<string, InclusionSetting> AudioLangs;
 
 		/// <summary>
 		/// The sign language(s) -- currently we allow only one -- which the user wants to publish
 		/// </summary>
 		/// <remarks>Previouly bookInfo.SignLangsToPublish.ForBloomLibrary</remarks>
 		[JsonProperty("signLangs")]
-		public Dictionary<string, InclusionSetting> SignLangs { get; set; }
+		public Dictionary<string, InclusionSetting> SignLangs;
 
 		// For now, the audio language selection is all or nothing for Bloom Library publish
 		[JsonIgnore]

@@ -218,14 +218,13 @@ namespace Bloom.CLI
 					Directory.CreateDirectory(Path.GetDirectoryName(zippedBloomPubOutputPath));
 					// Make the bloompub
 					string unzippedPath = BloomPubMaker.CreateBloomPub(
-					zippedBloomPubOutputPath,
-					bookPath,
-					bookServer,
-					new Bloom.web.NullWebSocketProgress(),
-					folderForUnzipped,
-					creator,
-					isTemplateBook,
-					settings);
+						settings,
+						zippedBloomPubOutputPath,
+						bookPath,
+						bookServer,
+						new Bloom.web.NullWebSocketProgress(),
+						folderForUnzipped, creator, isTemplateBook
+						);
 
 					// Currently the zipping process does some things we actually need, like making the cover picture
 					// transparent (BL-7437). Eventually we plan to separate the preparation and zipping steps (BL-7445).

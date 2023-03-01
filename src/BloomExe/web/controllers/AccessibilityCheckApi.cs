@@ -47,6 +47,7 @@ namespace Bloom.web.controllers
 
 		private bool _simulateCataracts;
 		private bool _simulateColorBlindness;
+		private BookSelection _bookSelection;
 
 		// These options must match the ones used in accessibileImage.tsx
 		public enum KindOfColorBlindness
@@ -60,6 +61,7 @@ namespace Bloom.web.controllers
 			BookRenamedEvent bookRenamedEvent, BookSavedEvent bookSavedEvent, EpubMaker.Factory epubMakerFactory,
 			PublishEpubApi epubApi)
 		{
+			_bookSelection = bookSelection;
 			_webSocketServer = webSocketServer;
 			var progress = new WebSocketProgress(_webSocketServer, kWebSocketContext);
 			_webSocketProgress = progress.WithL10NPrefix("AccessibilityCheck.");
@@ -304,8 +306,7 @@ namespace Bloom.web.controllers
 
 		private string MakeEpub(string parentDirectory, WebSocketProgress progress)
 		{
-			var settings = new EpubSettings();
-			_epubApi.GetEpubSettingsForCurrentBook(settings);
+			var settings = _bookSelection.CurrentSelection.BookInfo.PublishSettings.Epub;
 			var path = Path.Combine(parentDirectory, Guid.NewGuid().ToString() + ".epub");
 			_epubApi.UpdateAndSave(settings, path, true, _webSocketProgress.WithL10NPrefix("PublishTab.Epub."));
 			return path;
