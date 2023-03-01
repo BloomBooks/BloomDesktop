@@ -48,6 +48,8 @@ export interface IBloomDialogProps extends DialogProps {
     // this because enabling it causes a react render loop. Our theory is that there is
     // a focus war going on.
     disableDragging?: boolean;
+
+    cssForDialogContents?: SerializedStyles;
 }
 
 export const BloomDialog: FunctionComponent<IBloomDialogProps> = forwardRef(
@@ -86,8 +88,9 @@ export const BloomDialog: FunctionComponent<IBloomDialogProps> = forwardRef(
                     // This will correctly allow the DialogMiddle to add its scrollbar when needed.
                     // Callers should set dialog height by setting the height of DialogMiddle.
                     overflow: auto;
+                    ${props.cssForDialogContents} // this is a "serializedStyle" but we think it gets toString()ed here
                 `}
-                className={props.className} // any emotion css from the parent
+                //className={props.className} // any emotion css from the parent
             >
                 {props.children}
             </div>
