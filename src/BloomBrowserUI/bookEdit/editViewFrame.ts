@@ -174,6 +174,11 @@ export function canUndo(): string {
 // method called from EditingModel.cs
 // for "templatesJSON", see property EditingModel.GetJsonTemplatePageObject
 
+// Only one modal dialog can be open at a time, so we'll just make space for one.
+export function getModalDialogContainer(): HTMLElement | null {
+    return document.getElementById("modal-dialog-container");
+}
+
 export function ShowEditViewDialog(dialog: FunctionComponentElement<any>) {
     let root = document.getElementById("modal-dialog-react-root");
     // remove any left over dialog stuff

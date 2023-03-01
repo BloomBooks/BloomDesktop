@@ -1,22 +1,21 @@
 import React = require("react");
 import * as ReactDOM from "react-dom";
-import { useState } from "react";
-import Dialog from "@mui/material/Dialog";
-import {
-    DialogTitle,
-    DialogActions,
-    DialogContent,
-    ThemeProvider,
-    StyledEngineProvider
-} from "@mui/material";
-import CloseOnEscape from "react-close-on-escape";
 import { useL10n } from "./l10nHooks";
-import BloomButton from "./bloomButton";
 import { getEditTabBundleExports } from "../bookEdit/js/bloomFrames";
 import { postBoolean } from "../utils/bloomApi";
-import { lightTheme } from "../bloomMaterialUITheme";
+import {
+    BloomDialog,
+    DialogBottomButtons,
+    DialogMiddle,
+    DialogTitle
+} from "./BloomDialog/BloomDialog";
+import {
+    IBloomDialogEnvironmentParams,
+    Mode,
+    useSetupBloomDialog
+} from "./BloomDialog/BloomDialogPlumbing";
+import BloomButton from "./bloomButton";
 
-// All strings are assumed localized by the caller
 export interface IConfirmDialogProps {
     title: string;
     titleL10nKey: string;
@@ -24,63 +23,64 @@ export interface IConfirmDialogProps {
     messageL10nKey: string;
     confirmButtonLabel: string;
     confirmButtonLabelL10nKey: string;
+    cancelButtonLabel?: string;
+    cancelButtonLabelL10nKey?: string;
     onDialogClose: (result: DialogResult) => void;
+    dialogEnvironment?: IBloomDialogEnvironmentParams;
 }
 
-let externalSetOpen;
+let externalShow;
 
 const ConfirmDialog: React.FC<IConfirmDialogProps> = props => {
-    const [open, setOpen] = useState(true);
-    externalSetOpen = setOpen;
+    const {
+        showDialog,
+        closeDialog,
+        propsForBloomDialog
+    } = useSetupBloomDialog(props.dialogEnvironment);
+
+    externalShow = showDialog;
 
     React.useEffect(() => {
-        postBoolean("editView/setModalState", open);
-    }, [open]);
+        if (props.dialogEnvironment?.mode === Mode.Edit)
+            postBoolean("editView/setModalState", propsForBloomDialog.open);
+    }, [props.dialogEnvironment?.mode, propsForBloomDialog.open]);
 
     const onClose = (result: DialogResult) => {
-        setOpen(false);
+        closeDialog();
         props.onDialogClose(result);
     };
 
     return (
-        <StyledEngineProvider injectFirst>
-            <ThemeProvider theme={lightTheme}>
-                <CloseOnEscape onEscape={() => onClose(DialogResult.Cancel)}>
-                    <Dialog
-                        className="bloomModalDialog confirmDialog"
-                        open={open}
-                    >
-                        <DialogTitle>
-                            {useL10n(props.title, props.titleL10nKey)}
-                        </DialogTitle>
-                        <DialogContent>
-                            {useL10n(props.message, props.messageL10nKey)}
-                        </DialogContent>
-                        <DialogActions>
-                            <BloomButton
-                                key="Confirm"
-                                l10nKey={props.confirmButtonLabelL10nKey}
-                                enabled={true}
-                                onClick={() => onClose(DialogResult.Confirm)}
-                                hasText={true}
-                            >
-                                {props.confirmButtonLabel}
-                            </BloomButton>
-                            <BloomButton
-                                key="Cancel"
-                                l10nKey="Common.Cancel"
-                                enabled={true}
-                                onClick={() => onClose(DialogResult.Cancel)}
-                                hasText={true}
-                                variant="outlined"
-                            >
-                                Cancel
-                            </BloomButton>
-                        </DialogActions>
-                    </Dialog>
-                </CloseOnEscape>
-            </ThemeProvider>
-        </StyledEngineProvider>
+        <BloomDialog
+            className="bloomModalDialog confirmDialog"
+            {...propsForBloomDialog}
+        >
+            <DialogTitle title={useL10n(props.title, props.titleL10nKey)} />
+            <DialogMiddle>
+                {useL10n(props.message, props.messageL10nKey)}
+            </DialogMiddle>
+            <DialogBottomButtons>
+                <BloomButton
+                    key="Confirm"
+                    l10nKey={props.confirmButtonLabelL10nKey}
+                    enabled={true}
+                    onClick={() => onClose(DialogResult.Confirm)}
+                    hasText={true}
+                >
+                    {props.confirmButtonLabel}
+                </BloomButton>
+                <BloomButton
+                    key="Cancel"
+                    l10nKey={props.cancelButtonLabelL10nKey || "Common.Cancel"}
+                    enabled={true}
+                    onClick={() => onClose(DialogResult.Cancel)}
+                    hasText={true}
+                    variant="outlined"
+                >
+                    {props.cancelButtonLabel || "Cancel"}
+                </BloomButton>
+            </DialogBottomButtons>
+        </BloomDialog>
     );
 };
 
@@ -94,13 +94,23 @@ export const showConfirmDialog = (
     container?: Element | null
 ) => {
     doRender(props, container);
-    externalSetOpen(true);
+    externalShow(true);
 };
 
 const doRender = (props: IConfirmDialogProps, container?: Element | null) => {
     let modalContainer;
     if (container) modalContainer = container;
-    else modalContainer = getEditTabBundleExports().getModalDialogContainer();
+    else {
+        modalContainer = getEditTabBundleExports().getModalDialogContainer();
+        if (!props.dialogEnvironment) {
+            props.dialogEnvironment = {
+                dialogFrameProvidedExternally: false,
+                initiallyOpen: false
+            };
+        }
+        props.dialogEnvironment.mode = Mode.Edit;
+    }
+
     try {
         ReactDOM.render(<ConfirmDialog {...props} />, modalContainer);
     } catch (error) {

@@ -3,11 +3,21 @@ import { post } from "../../utils/bloomApi";
 import { useEffect, useState } from "react";
 import { useWebSocketListener } from "../../utils/WebSocketManager";
 
+// Which tab is open in Bloom.
+export enum Mode {
+    Collection,
+    Edit,
+    Publish
+}
+
 export interface IBloomDialogEnvironmentParams {
     // true if the caller is wrapping in a winforms dialog already
     dialogFrameProvidedExternally: boolean;
     // storybook stories will usually set this to true so we don't have to do anything to see the dialog
     initiallyOpen: boolean;
+    // can be useful for determining if extra steps are needed,
+    // such as asking C# to disable part of the UI when the dialog is open
+    mode?: Mode;
 }
 
 export const normalDialogEnvironmentForStorybook: IBloomDialogEnvironmentParams = {
