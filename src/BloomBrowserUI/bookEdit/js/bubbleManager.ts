@@ -610,7 +610,7 @@ export class BubbleManager {
         const currentSvg = container.getElementsByClassName(
             "comical-generated"
         )[0];
-        currentSvg.setAttribute("data-lang", overlayLang);
+        currentSvg?.setAttribute("data-lang", overlayLang);
     }
 
     // "container" refers to a .bloom-textOverPicture div, which holds one (and only one) of the
