@@ -265,11 +265,6 @@ namespace Bloom.Publish.BloomLibrary
 			var bookInfo = book.BookInfo;
 			Debug.Assert(bookInfo?.MetaData != null, "Precondition: MetaData must not be null");
 
-			if (bookInfo.PublishSettings.BloomLibrary.TextLangs == null)
-			{
-				bookInfo.PublishSettings.BloomLibrary.TextLangs = new Dictionary<string, InclusionSetting>();
-			}
-
 			// reinitialize our list of which languages to publish, defaulting to the ones that are complete.
 			foreach (var kvp in allLanguages)
 			{
@@ -298,10 +293,6 @@ namespace Bloom.Publish.BloomLibrary
 			}
 
 			// Initialize the Talking Book Languages settings
-			if (bookInfo.PublishSettings.BloomLibrary.AudioLangs == null)
-			{
-				bookInfo.PublishSettings.BloomLibrary.AudioLangs = new Dictionary<string, InclusionSetting>();
-			}
 
 			var allLangCodes = allLanguages.Select(x => x.Key);
 
@@ -332,8 +323,6 @@ namespace Bloom.Publish.BloomLibrary
 					bookInfo.PublishSettings.BloomLibrary.AudioLangs[langCode] = settingForNewLang;
 			}
 
-			if (bookInfo.PublishSettings.BloomLibrary.SignLangs == null)
-			bookInfo.PublishSettings.BloomLibrary.SignLangs = new Dictionary<string, InclusionSetting>();
 			var collectionSignLangCode = book.CollectionSettings.SignLanguageTag;
 			// User may have unset or modified the sign language for the collection in which case we need to exclude the old one it if it was previously included.
 			foreach (var includedSignLangCode in bookInfo.PublishSettings.BloomLibrary.SignLangs.IncludedLanguages().ToList())

@@ -43,11 +43,18 @@ namespace Bloom.Publish.Android
 		// True to remove activities, quiz pages...stuff that's inappropriate for making videos.
 		public bool RemoveInteractivePages;
 
+		public AndroidPublishSettings()
+		{
+			ImagePublishSettings = new ImagePublishSettings();
+			LanguagesToInclude = new HashSet<string>();
+			AudioLanguagesToExclude = new HashSet<string>();
+		}
+
 		// Should we publish as a motion book?
 		// Note: rather than a default of false, this should normally be set to the PublishSettings.BloomPub.Motion
 		// value stored in the book's BookInfo. This happens automatically if creating one using ForBloomInfo.
 		// If you want a different value, for example, AudioVideo.Settings, be sure to set that up.
-		public bool Motion { get; set; }
+		public bool Motion;
 
 		public ImagePublishSettings ImagePublishSettings { get; set; }
 
@@ -125,9 +132,9 @@ namespace Bloom.Publish.Android
 			var languagesToInclude = GetLanguagesToInclude(bookInfo.PublishSettings);
 
 			HashSet<string> audioLanguagesToExclude;
-			if (bloomPubAudioLangs == null && libraryAudioLangs == null)
+			if (bloomPubAudioLangs.Count == 0 && libraryAudioLangs.Count == 0)
 			{
-				if (bloomPubTextLangs == null && libraryTextLangs == null)
+				if (bloomPubTextLangs.Count == 0 && libraryTextLangs.Count == 0)
 				{
 					// We really want to exclude all of them, but we don't know what all the possibilities are.
 					audioLanguagesToExclude = new HashSet<string>();
@@ -153,15 +160,15 @@ namespace Bloom.Publish.Android
 				AudioLanguagesToExclude = audioLanguagesToExclude,
 				// All the paths that use this are making settings for BloomPub, not Video.
 				Motion = bookInfo.PublishSettings.BloomPub.Motion,
-				ImagePublishSettings = bookInfo.PublishSettings.BloomPub.ImageSettings != null ? new ImagePublishSettings(bookInfo.PublishSettings.BloomPub.ImageSettings) : ImagePublishSettings.Default
+				ImagePublishSettings = bookInfo.PublishSettings.BloomPub.ImageSettings
 			};
 		}
 
 		public static AndroidPublishSettings GetPublishSettingsForBook(BookServer bookServer, BookInfo bookInfo)
 		{
 			// Normally this is setup by the Publish screen, but if you've never visited the Publish screen for this book,
-			// then this will be null. In that case, initialize it here.
-			if (bookInfo.PublishSettings.BloomPub.TextLangs == null)
+			// then this will be empty. In that case, initialize it here.
+			if (bookInfo.PublishSettings.BloomPub.TextLangs.Count == 0) // Review Feb 2022: previously it would be null, now count==0. Not exactly the same, since you could say "no text languages"?
 			{
 				var book = bookServer.GetBookFromBookInfo(bookInfo);
 				var allLanguages = book.AllPublishableLanguages(includeLangsOccurringOnlyInXmatter: true);
