@@ -64,10 +64,10 @@ namespace BloomTests.Publish
 		{
 			var testBook = CreateBookWithPhysicalFile(kMinimumValidBookHtml, bringBookUpToDate: true);
 
-			using (var bloomdTempFile = TempFile.WithFilenameInTempFolder(testBook.Title + BookCompressor.BloomPubExtensionWithDot))
+			using (var bloomdTempFile = TempFile.WithFilenameInTempFolder(testBook.Title + BloomPubMaker.BloomPubExtensionWithDot))
 			{
 				BloomPubMaker.CreateBloomPub(bloomdTempFile.Path, testBook, _bookServer,  new NullWebSocketProgress());
-				Assert.AreEqual(testBook.Title + BookCompressor.BloomPubExtensionWithDot,
+				Assert.AreEqual(testBook.Title + BloomPubMaker.BloomPubExtensionWithDot,
 					Path.GetFileName(bloomdTempFile.Path));
 			}
 		}
@@ -311,9 +311,9 @@ namespace BloomTests.Publish
 					// The page above expects these two audio files to exist. Their content doesn't matter.
 					var audioFolder = Path.Combine(bookFolderPath, "audio");
 					Directory.CreateDirectory(audioFolder);
-					File.WriteAllText(Path.Combine(audioFolder, "aace3497-02e1-46e7-9af3-52bb74010fcc.wav"),
+					File.WriteAllText(Path.Combine(audioFolder, "aace3497-02e1-46e7-9af3-52bb74010fcc.mp3"),
 						@"this is a fake for testing");
-					File.WriteAllText(Path.Combine(audioFolder, "i2335f5ae-2cff-4029-a85c-951cc33256a4.wav"),
+					File.WriteAllText(Path.Combine(audioFolder, "i2335f5ae-2cff-4029-a85c-951cc33256a4.mp3"),
 						@"this is a fake for testing");
 					testBook.BookInfo.PublishSettings.BloomPub.Motion = true;
 					testBook.BookInfo.Save();
@@ -337,7 +337,8 @@ namespace BloomTests.Publish
 					Assert.That(meta.Feature_TalkingBook, Is.True);
 					Assert.That(meta.Feature_Blind, Is.True);
 					Assert.That(meta.Feature_Motion, Is.True);
-				});
+				},
+				languagesToInclude: new HashSet<string>(new[] {"xyz", "de", "es"}));
 		}
 
 		[Test]
@@ -1378,7 +1379,7 @@ namespace BloomTests.Publish
 
 			actionsOnFolderBeforeCompressing?.Invoke(testBook.FolderPath);
 
-			using (var bloomdTempFile = TempFile.WithFilenameInTempFolder(testBook.Title + BookCompressor.BloomPubExtensionWithDot))
+			using (var bloomdTempFile = TempFile.WithFilenameInTempFolder(testBook.Title + BloomPubMaker.BloomPubExtensionWithDot))
 			{
 				BloomPubMaker.CreateBloomPub(bloomdTempFile.Path, testBook.FolderPath, _bookServer,  new NullWebSocketProgress(),
 					isTemplateBook: false, creator: creator, 
@@ -1392,7 +1393,7 @@ namespace BloomTests.Publish
 				{
 					// compress it again! Used for checking important repeatable results
 					using (var extraTempFile =
-						TempFile.WithFilenameInTempFolder(testBook.Title + "2" + BookCompressor.BloomPubExtensionWithDot))
+						TempFile.WithFilenameInTempFolder(testBook.Title + "2" + BloomPubMaker.BloomPubExtensionWithDot))
 					{
 						BloomPubMaker.CreateBloomPub(extraTempFile.Path, testBook, _bookServer,  new NullWebSocketProgress());
 						zip = new ZipFile(extraTempFile.Path);

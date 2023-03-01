@@ -282,7 +282,13 @@ namespace Bloom.Publish.Epub
 			if (_bookServer != null)
 			{
 				// It should only be null while running unit tests which don't create a physical file.
-				_book = PublishHelper.MakeDeviceXmatterTempBook(_book.FolderPath, _bookServer, tempBookPath, _book.IsTemplateBook, _omittedPageLabels);
+				_book = PublishHelper.MakeDeviceXmatterTempBook(_book.FolderPath, _bookServer, tempBookPath,
+					_book.IsTemplateBook, _omittedPageLabels,
+					includeVideoAndActivities: false, // no activities in Epubs.
+					// We could enhance this if we can figure out exactly what languages we will publish audio of.
+					// For now, I'm including them all in this initial copy. Later stages will filter to just
+					// what's visible.
+					narrationLanguages: null); 
 			}
 
 			// The readium control remembers the current page for each book.
@@ -2504,7 +2510,7 @@ namespace Bloom.Publish.Epub
 		/// </summary>
 		internal virtual void CopyFile(string srcPath, string dstPath, bool limitImageDimensions=false, bool needTransparentBackground=false)
 		{
-			if (limitImageDimensions && BookCompressor.ImageFileExtensions.Contains(Path.GetExtension(srcPath).ToLowerInvariant()))
+			if (limitImageDimensions && BookCompressor.CompressableImageFileExtensions.Contains(Path.GetExtension(srcPath).ToLowerInvariant()))
 			{
 				var imageBytes = BookCompressor.GetImageBytesForElectronicPub(srcPath, needTransparentBackground);
 				RobustFile.WriteAllBytes(dstPath, imageBytes);

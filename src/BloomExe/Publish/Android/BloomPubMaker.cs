@@ -10,6 +10,7 @@ using Bloom.Book;
 using Bloom.FontProcessing;
 using Bloom.Publish.Epub;
 using Bloom.web;
+using Bloom.web.controllers;
 using BloomTemp;
 using SIL.IO;
 using SIL.Xml;
@@ -23,6 +24,7 @@ namespace Bloom.Publish.Android
 	/// </summary>
 	public static class BloomPubMaker
 	{
+		public const string BloomPubExtensionWithDot = ".bloompub";
 		public const string kQuestionFileName = "questions.json";
 		public const string BRExportFolder = "BloomReaderExport";
 		internal const string kDistributionFileName = ".distribution";
@@ -30,12 +32,12 @@ namespace Bloom.Publish.Android
 		internal const string kDistributionBloomWeb = "bloom-web";
 		internal const string kCreatorBloom = "bloom";
 		internal const string kCreatorHarvester = "harvester";
-
+		public static string HashOfMostRecentlyCreatedBook { get; private set; }
 		public static Control ControlForInvoke { get; set; }
 
 		public static void CreateBloomPub(BookInfo bookInfo, AndroidPublishSettings settings, string outputFolder, BookServer bookServer, IWebSocketProgress progress )
 		{
-			var outputPath = Path.Combine(outputFolder, Path.GetFileName(bookInfo.FolderPath) + BookCompressor.BloomPubExtensionWithDot);
+			var outputPath = Path.Combine(outputFolder, Path.GetFileName(bookInfo.FolderPath) + BloomPubExtensionWithDot);
 			BloomPubMaker.CreateBloomPub(outputPath, bookInfo.FolderPath, bookServer, progress, bookInfo.IsSuitableForMakingShells, settings: settings);
 		}
 		public static void CreateBloomPub(string outputPath, Book.Book book, BookServer bookServer, IWebSocketProgress progress, AndroidPublishSettings settings = null)
@@ -77,13 +79,140 @@ namespace Bloom.Publish.Android
 
 			BookCompressor.MakeSizedThumbnail(modifiedBook, modifiedBook.FolderPath, 256);
 
-			BookCompressor.CompressBookDirectory(outputPath, modifiedBook.FolderPath, "", forDevice: true, imagePublishSettings: settings?.ImagePublishSettings ?? ImagePublishSettings.Default,
-				omitMetaJson: false, wrapWithFolder: false, pathToFileForSha: BookStorage.FindBookHtmlInFolder(bookFolderPath));
+			MakeSha(BookStorage.FindBookHtmlInFolder(bookFolderPath), modifiedBook.FolderPath);
+			CompressImages(modifiedBook.FolderPath, settings?.ImagePublishSettings ?? ImagePublishSettings.Default, modifiedBook.RawDom);
+			SignLanguageApi.ProcessVideos(HtmlDom.SelectChildVideoElements(modifiedBook.RawDom.DocumentElement).Cast<XmlElement>(),
+				modifiedBook.FolderPath);
+			var newContent = XmlHtmlConverter.ConvertDomToHtml5(modifiedBook.RawDom);
+			RobustFile.WriteAllText(BookStorage.FindBookHtmlInFolder(modifiedBook.FolderPath), newContent, Encoding.UTF8);
+
+			BookCompressor.CompressBookDirectory(outputPath, modifiedBook.FolderPath,
+				MakeFilter(modifiedBook.FolderPath),
+				"",
+				wrapWithFolder: false);
 
 			return modifiedBook.FolderPath;
 		}
 
-		public static Dictionary<string,HashSet<string>> BloomPubFontsAndLangsUsed = null;
+		/// <summary>
+		/// Make a filter suitable for passing the files a BloomPub needs.
+		/// </summary>
+		public static IFilter MakeFilter(string folderPath)
+		{
+			var filter = new BookFileFilter(folderPath)
+			{
+				IncludeFilesNeededForBloomPlayer = true,
+				WantMusic = true,
+				WantVideo = true,
+				NarrationLanguages = null
+			};
+			// these are artifacts of uploading book to BloomLibrary.org and not useful in BloomPubs
+			filter.AlwaysReject("thumbnail-256.png");
+			filter.AlwaysReject("thumbnail-70.png");
+			return filter;
+		}
+
+		private static void CompressImages(string modifiedBookFolderPath, ImagePublishSettings imagePublishSettings, XmlDocument dom)
+		{
+			List<string> imagesToPreserveResolution;
+			List<string> imagesToGiveTransparentBackgrounds;
+
+			var fullScreenAttr = dom.GetElementsByTagName("body").Cast<XmlElement>().First().Attributes["data-bffullscreenpicture"]?.Value;
+			if (fullScreenAttr != null && fullScreenAttr.IndexOf("bloomReader", StringComparison.InvariantCulture) >= 0)
+			{
+				// This feature (currently used for motion books in landscape mode) triggers an all-black background,
+				// due to a rule in bookFeatures.less.
+				// Making white pixels transparent on an all-black background makes line-art disappear,
+				// which is bad (BL-6564), so just make an empty list in this case.
+				imagesToGiveTransparentBackgrounds = new List<string>();
+			}
+			else
+			{
+				imagesToGiveTransparentBackgrounds = FindCoverImages(dom);
+			}
+			imagesToPreserveResolution = FindImagesToPreserveResolution(dom);
+
+			foreach (var filePath in Directory.GetFiles(modifiedBookFolderPath))
+			{
+				if (BookCompressor.CompressableImageFileExtensions.Contains(Path.GetExtension(filePath).ToLowerInvariant()))
+				{
+					var fileName = Path.GetFileName(filePath);
+					if (imagesToPreserveResolution.Contains(fileName))
+						continue; // don't compress these
+					// Cover images should be transparent if possible.  Others don't need to be.
+					var makeBackgroundTransparent = imagesToGiveTransparentBackgrounds.Contains(fileName);
+					var modifiedContent = BookCompressor.GetImageBytesForElectronicPub(filePath,
+						makeBackgroundTransparent,
+						imagePublishSettings);
+					// In a previous version, we did this during the compression, and therefore didn't have to
+					// write out a modified version. There's a small savings in this, but the price is
+					// a nasty leak of knowledge about making BloomPubs into a class responsible for
+					// compressing to zip files. If we really need this savings, we could refactor to
+					// use the overrides parameter of CompressDirectory.
+					RobustFile.WriteAllBytes(filePath, modifiedContent);
+				}
+			}
+		}
+
+		private const string kBackgroundImage = "background-image:url('";   // must match format string in HtmlDom.SetImageElementUrl()
+		private static List<string> FindCoverImages(XmlDocument xmlDom)
+		{
+			var transparentImageFiles = new List<string>();
+			foreach (var div in xmlDom.SafeSelectNodes("//div[contains(concat(' ',@class,' '),' coverColor ')]//div[contains(@class,'bloom-imageContainer')]").Cast<XmlElement>())
+			{
+				var style = div.GetAttribute("style");
+				if (!String.IsNullOrEmpty(style) && style.Contains(kBackgroundImage))
+				{
+					System.Diagnostics.Debug.Assert(div.GetStringAttribute("class").Contains("bloom-backgroundImage"));
+					// extract filename from the background-image style
+					transparentImageFiles.Add(ExtractFilenameFromBackgroundImageStyleUrl(style));
+				}
+				else
+				{
+					// extract filename from child img element
+					var img = div.SelectSingleNode("//img[@src]");
+					if (img != null)
+						transparentImageFiles.Add(System.Web.HttpUtility.UrlDecode(img.GetStringAttribute("src")));
+				}
+			}
+			return transparentImageFiles;
+		}
+
+		private static List<string> FindImagesToPreserveResolution(XmlDocument dom)
+		{
+			var preservedImages = new List<string>();
+			foreach (var div in dom.SafeSelectNodes("//div[contains(@class,'marginBox')]//div[contains(@class,'bloom-preserveResolution')]").Cast<XmlElement>())
+			{
+				var style = div.GetAttribute("style");
+				if (!string.IsNullOrEmpty(style) && style.Contains(kBackgroundImage))
+				{
+					System.Diagnostics.Debug.Assert(div.GetStringAttribute("class").Contains("bloom-backgroundImage"));
+					preservedImages.Add(ExtractFilenameFromBackgroundImageStyleUrl(style));
+				}
+			}
+			foreach (var img in dom.SafeSelectNodes("//div[contains(@class,'marginBox')]//img[contains(@class,'bloom-preserveResolution')]").Cast<XmlElement>())
+			{
+				preservedImages.Add(System.Web.HttpUtility.UrlDecode(img.GetStringAttribute("src")));
+			}
+			return preservedImages;
+		}
+
+		private static string ExtractFilenameFromBackgroundImageStyleUrl(string style)
+		{
+			var filename = style.Substring(style.IndexOf(kBackgroundImage) + kBackgroundImage.Length);
+			filename = filename.Substring(0, filename.IndexOf("'"));
+			return System.Web.HttpUtility.UrlDecode(filename);
+		}
+
+		private static void MakeSha(string pathToFileForSha, string folderForSha)
+		{
+			var sha = Book.Book.ComputeHashForAllBookRelatedFiles(pathToFileForSha);
+			var name = "version.txt"; // must match what BloomReader is looking for in NewBookListenerService.IsBookUpToDate()
+			RobustFile.WriteAllText(Path.Combine(folderForSha, name), sha, Encoding.UTF8);
+			HashOfMostRecentlyCreatedBook = sha;
+		}
+
+		public static Dictionary<string, HashSet<string>> BloomPubFontsAndLangsUsed = null;
 
 		public static Book.Book PrepareBookForBloomReader(string bookFolderPath, BookServer bookServer,
 			TemporaryFolder temp,
@@ -99,7 +228,8 @@ namespace Bloom.Publish.Android
 				BookStorage.SanitizeNameForFileSystem(Path.GetFileNameWithoutExtension(htmPath)));
 			Directory.CreateDirectory(tentativeBookFolderPath);
 			var modifiedBook = PublishHelper.MakeDeviceXmatterTempBook(bookFolderPath, bookServer,
-				tentativeBookFolderPath, isTemplateBook);
+				tentativeBookFolderPath, isTemplateBook,
+				narrationLanguages: settings?.AudioLanguagesToInclude);
 
 			modifiedBook.SetMotionAttributesOnBody(settings?.Motion ?? false);
 
@@ -302,7 +432,7 @@ namespace Bloom.Publish.Android
 					correct = ((a.ParentNode?.ParentNode as XmlElement)?.Attributes["class"]?.Value ??"").Contains("correct-answer")
 				}).ToArray()
 			};
-			group.questions = new [] {question};
+			group.questions = new [] { question };
 
 			questions.Add(group);
 		}
@@ -396,7 +526,7 @@ namespace Bloom.Publish.Android
 		/// electronic publishing code to combine ePUB and BloomReader preparation as much
 		/// as possible.
 		/// </remarks>
-		private static void RemoveInvisibleImageElements(Bloom.Book.Book book)
+		private static void RemoveInvisibleImageElements(Book.Book book)
 		{
 			var isLandscape = book.GetLayout().SizeAndOrientation.IsLandScape;
 			foreach (var img in book.RawDom.SafeSelectNodes("//img").Cast<XmlElement>().ToArray())

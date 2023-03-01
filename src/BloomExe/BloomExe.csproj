@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="..\..\packages\SIL.Windows.Forms.Keyboarding.12.0.1-beta0003\build\SIL.Windows.Forms.Keyboarding.props" Condition="Exists('..\..\packages\SIL.Windows.Forms.Keyboarding.12.0.1-beta0003\build\SIL.Windows.Forms.Keyboarding.props')" />
   <PropertyGroup>
@@ -400,11 +400,13 @@
     <Reference Include="WindowsFormsIntegration" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Book\BookFileFilter.cs" />
     <Compile Include="Book\PublishSettings.cs" />
     <Compile Include="Book\SaveContext.cs" />
     <Compile Include="Book\WidgetHelper.cs" />
     <Compile Include="CLI\SendFontAnalyticsCommand.cs" />
     <Compile Include="Collection\BookCollectionHolder.cs" />
+    <Compile Include="Collection\CollectionFileFilter.cs" />
     <Compile Include="Collection\CollectionLock.cs" />
     <Compile Include="ErrorReporter\BloomErrorReport.cs" />
     <Compile Include="ErrorReporter\IBloomErrorReporter.cs" />

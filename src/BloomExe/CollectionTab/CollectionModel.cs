@@ -5,6 +5,7 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using System.Xml;
 using Bloom.Api;
@@ -552,7 +553,7 @@ namespace Bloom.CollectionTab
 			{
 				var filename = Path.GetFileName(sourceFilePath);
 				var extension = Path.GetExtension(filename).ToLowerInvariant();
-				if (BookCompressor.ImageFileExtensions.Contains(extension) || extension == ".svg" || extension == ".css")
+				if (BookCompressor.CompressableImageFileExtensions.Contains(extension) || extension == ".svg" || extension == ".css")
 				{
 					var destFilePath = Path.Combine(outputFolder, filename);
 					RobustFile.Copy(sourceFilePath, destFilePath, true);
@@ -690,16 +691,31 @@ namespace Bloom.CollectionTab
 		/// <param name="path">The path to write to. Precondition: Must not exist.</param>
 		internal void MakeBloomPackInternal(string path, string dir, string dirNamePrefix, bool forReaderTools, bool isCollection)
 		{
-			var excludeAudio = false; // want audio in bloompack: see https://issues.bloomlibrary.org/youtrack/issue/BL-11741.
-			var forDevice = false;
 			if (isCollection)
 			{
-				BookCompressor.CompressCollectionDirectory(path, dir, dirNamePrefix, forReaderTools, forDevice, excludeAudio);
+				BookCompressor.CompressCollectionDirectory(path, dir, dirNamePrefix, forReaderTools);
 			}
 			else
 			{
-				BookCompressor.CompressBookDirectory(path, dir, dirNamePrefix, forReaderTools, forDevice, excludeAudio);
+				BookCompressor.CompressBookDirectory(path, dir,
+					MakeBloomPackFilter(dir),
+					dirNamePrefix, forReaderTools);
 			}
+		}
+
+		public static BookFileFilter MakeBloomPackFilter(string dir)
+		{
+			var filter = new BookFileFilter(dir)
+			{
+				IncludeFilesForContinuedEditing = true,
+				// want audio in bloompack: see https://issues.bloomlibrary.org/youtrack/issue/BL-11741.
+				NarrationLanguages = null, // all audio
+
+				WantMusic = true,
+				WantVideo = true};
+			// these are artifacts of uploading book to BloomLibrary.org and not useful in BloomPubs
+			filter.AlwaysReject(new Regex("^thumbnail-"));
+			return filter;
 		}
 
 		public string GetSuggestedBloomPackPath()

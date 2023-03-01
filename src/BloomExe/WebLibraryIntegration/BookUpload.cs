@@ -149,11 +149,11 @@ namespace Bloom.WebLibraryIntegration
 		/// </summary>
 		internal string UploadBook(string bookFolder, IProgress progress)
 		{
-			return UploadBook(bookFolder, progress, out _, null, null, null, null, null, null, null);
+			return UploadBook(bookFolder, progress, out _, null, true, true, null, null, null, null);
 		}
 
 		private string UploadBook(string bookFolder, IProgress progress, out string parseId,
-			string pdfToInclude, ISet<string> audioFilesToInclude, IEnumerable<string> videoFilesToInclude, string[] languages,
+			string pdfToInclude, bool includeNarrationAudio, bool includeMusic, string[] languages,
 			CollectionSettings collectionSettings, string metadataLang1Code, string metadataLang2Code)
 		{
 			// Books in the library should generally show as locked-down, so new users are automatically in localization mode.
@@ -221,8 +221,8 @@ namespace Bloom.WebLibraryIntegration
 			parseId = "";
 			try
 			{
-				_s3Client.UploadBook(s3BookId, bookFolder, progress, pdfToInclude, audioFilesToInclude, videoFilesToInclude, languages,
-					metadataLang1Code, metadataLang2Code);
+				_s3Client.UploadBook(s3BookId, bookFolder, progress, pdfToInclude, includeNarrationAudio, includeMusic,
+					languages, metadataLang1Code, metadataLang2Code);
 				metadata.BaseUrl = _s3Client.BaseUrl;
 				metadata.BookOrder = _s3Client.BookOrderUrlOfRecentUpload;
 				var metaMsg = LocalizationManager.GetString("PublishTab.Upload.UploadingBookMetadata", "Uploading book metadata", "In this step, Bloom is uploading things like title, languages, and topic tags to the BloomLibrary.org database.");
@@ -560,8 +560,7 @@ namespace Bloom.WebLibraryIntegration
 					progress,
 					out parseId,
 					hasVideo ? null : Path.GetFileName(uploadPdfPath),
-					GetAudioFilesToInclude(book, bookParams.ExcludeMusic),
-					videoFiles,
+					book.BookInfo.PublishSettings.BloomLibrary.IncludeAudio, !bookParams.ExcludeMusic,
 					languagesToUpload,
 					book.CollectionSettings,
 					book.BookData.MetadataLanguage1Tag,

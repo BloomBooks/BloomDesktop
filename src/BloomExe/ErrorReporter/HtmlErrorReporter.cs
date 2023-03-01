@@ -252,7 +252,7 @@ namespace Bloom.ErrorReporter
 
 		protected Control GetControlToUse()
 		{
-			return this.Control ?? Form.ActiveForm ?? FatalExceptionHandler.ControlOnUIThread;
+			return this.Control ?? Shell.GetShellOrOtherOpenForm() ?? FatalExceptionHandler.ControlOnUIThread;
 		}
 
 		private string FormatMessageWithStackTrace(string message, StackTrace stackTrace)

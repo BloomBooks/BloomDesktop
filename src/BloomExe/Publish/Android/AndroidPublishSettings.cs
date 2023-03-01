@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Bloom.Book;
@@ -22,6 +23,18 @@ namespace Bloom.Publish.Android
 		// Specifies the languages for which narration audio should not be included, even if their text is included.
 		// NOTE: It's more natural for consumers to think about what languages they want to EXCLUDE, rather than what languages they want to INCLUDE.
 		public HashSet<string> AudioLanguagesToExclude;
+
+		public string[] AudioLanguagesToInclude
+		{
+			get
+			{
+				if (LanguagesToInclude == null)
+					return Array.Empty<string>();
+				if (AudioLanguagesToExclude == null)
+					return LanguagesToInclude.ToArray();
+				return LanguagesToInclude.Except(AudioLanguagesToExclude).ToArray();
+			}
+		}
 
 		// Triggers both not deleting them...they are harmless when making a video...
 		// and sending a list of them over a web socket.
