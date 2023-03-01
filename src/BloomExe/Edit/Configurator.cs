@@ -155,7 +155,7 @@ namespace Bloom.Edit
 
 			using (var b = BrowserMaker.MakeBrowser())
 			{
-				var dom = new HtmlDom(RobustFile.ReadAllText(bookPath, Encoding.UTF8), true);
+				var dom = new HtmlDom(XmlHtmlConverter.GetXmlDomFromHtmlFile(bookPath, false));
 				b.NavigateAndWaitTillDone(dom, 30000, BloomServer.SimulatedPageFileSource.Nav);
 
 				//Now we call the method which takes that confuration data and adds/removes/updates pages.

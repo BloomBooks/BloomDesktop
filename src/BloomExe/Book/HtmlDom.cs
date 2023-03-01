@@ -12,6 +12,7 @@ using System.Xml.Xsl;
 using Bloom.Api;
 using Bloom.Publish; // for DynamicJson
 using Bloom.Publish.Epub;
+using Bloom.ToPalaso;
 using Bloom.web.controllers;
 using DesktopAnalytics;
 using Gecko;
@@ -2259,6 +2260,17 @@ namespace Bloom.Book
 				select HtmlDom.GetAudioElementUrl(audio).PathOnly.NotEncoded).Distinct().ToList();
 		}
 
+		public static IEnumerable<XmlElement> SelectRealChildNarrationAudioElements(XmlElement element,
+			bool includeSplitTextBoxAudio, IEnumerable<string> langsToExclude = null)
+		{
+			return SelectChildNarrationAudioElements(element, includeSplitTextBoxAudio, langsToExclude)
+				.Cast<XmlElement>()
+				.Where(e => e.ParentWithClass("bloom-editable") != null);
+		}
+
+		/// <summary>
+		/// Note that this currently includes elements with this class in the data-div
+		/// </summary>
 		public static XmlNodeList SelectChildNarrationAudioElements(XmlElement element, bool includeSplitTextBoxAudio, IEnumerable<string> langsToExclude = null)
 		{
 			string xPathToEditable = "";

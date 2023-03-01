@@ -180,7 +180,7 @@ namespace Bloom.Book
 				{
 					// This is mainly used in unit tests, but could be helpful
 					// in some other situation where we don't already have one.
-					_dom = new HtmlDom(RobustFile.ReadAllText(_theOneHtmlPath, Encoding.UTF8), true);
+					_dom = new HtmlDom(XmlHtmlConverter.GetXmlDomFromHtmlFile(_theOneHtmlPath, false));
 				}
 				return _dom;
 			}
@@ -289,7 +289,7 @@ namespace Bloom.Book
 					// I'm not sure whether we need includeSplitTextBoxAudio to be true.
 					// But it only makes a difference in an obsolete case, and it just might be wanted
 					// if it occurs, at least if we do further editing of the book, so it's simplest to just include it.
-					var narrationElements = HtmlDom.SelectChildNarrationAudioElements(Dom.Body, true).Cast<XmlElement>();
+					var narrationElements = HtmlDom.SelectRealChildNarrationAudioElements(Dom.Body, true).Cast<XmlElement>();
 					if (NarrationLanguages != null)
 					{
 						var narrationLangs = new HashSet<string>(NarrationLanguages);
