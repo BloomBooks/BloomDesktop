@@ -412,6 +412,11 @@
     <Compile Include="ErrorReporter\IBloomErrorReporter.cs" />
     <Compile Include="ErrorReporter\AllowSendReport.cs" />
     <Compile Include="ErrorReporter\NotifyUserOfProblemSettings.cs" />
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
     <Compile Include="Utils\AsyncUtil.cs" />
     <Compile Include="Publish\PDF\PublishPdfApi.cs" />
     <Compile Include="WebView2Browser.cs" Condition="'$(OS)'=='Windows_NT'">
@@ -601,11 +606,6 @@
     </Compile>
     <Compile Include="MiscUI\LanguageFontDetails.Designer.cs">
       <DependentUpon>LanguageFontDetails.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Properties\Resources.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
     <Compile Include="Publish\Epub\EpubMaker.cs" />
     <Compile Include="Book\RuntimeInformationInjector.cs" />
@@ -1571,6 +1571,10 @@ copy /Y "$(SolutionDir)\lib\dotnet\Interop.Acrobat.dll" $(OutDir)
     <Content Include="Firefox\sandboxbroker.dll" />
     <Content Include="Firefox\softokn3.dll" />
     <Content Include="Firefox\xul.dll" />
+    <None Include="Resources\gear-black-24x24.png" />
+    <None Include="Resources\BookSettings.png" />
+    <None Include="Resources\BookSettingsBlack32High.png" />
+    <None Include="Resources\GearBlack16x16.png" />
     <None Include="Resources\PdfPrint.png" />
     <None Include="Resources\BloomPUB.png" />
     <None Include="Resources\publish video.png" />

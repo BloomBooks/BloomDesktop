@@ -1,5 +1,5 @@
 /** @jsx jsx **/
-import { jsx, css } from "@emotion/react";
+import { jsx, css, SerializedStyles } from "@emotion/react";
 import { forwardRef, useEffect } from "react";
 import { FunctionComponent } from "react";
 import { ThemeProvider, StyledEngineProvider } from "@mui/material/styles";
@@ -50,6 +50,8 @@ export interface IBloomDialogProps extends DialogProps {
     // this because enabling it causes a react render loop. Our theory is that there is
     // a focus war going on.
     disableDragging?: boolean;
+
+    cssForDialogContents?: SerializedStyles;
 }
 
 export const BloomDialog: FunctionComponent<IBloomDialogProps> = forwardRef(
@@ -87,8 +89,9 @@ export const BloomDialog: FunctionComponent<IBloomDialogProps> = forwardRef(
                     // This will correctly allow the DialogMiddle to add its scrollbar when needed.
                     // Callers should set dialog height by setting the height of DialogMiddle.
                     overflow: auto;
+                    ${props.cssForDialogContents} // this is a "serializedStyle" but we think it gets toString()ed here
                 `}
-                className={props.className} // any emotion css from the parent
+                //className={props.className} // any emotion css from the parent
             >
                 {props.children}
             </div>
@@ -128,6 +131,7 @@ export const BloomDialog: FunctionComponent<IBloomDialogProps> = forwardRef(
             ...propsToPass
         } = props;
 
+        console.log("BloomDialog: propsToPass", propsToPass);
         function hasChildOfType(typeName: string) {
             return React.Children.toArray(props.children).some(c => {
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any

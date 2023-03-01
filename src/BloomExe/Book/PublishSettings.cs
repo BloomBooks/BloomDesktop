@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
@@ -8,14 +8,11 @@ using System.Threading.Tasks;
 using Bloom.Api;
 using Bloom.Publish;
 using Bloom.Utils;
-using GLib;
-using Gtk;
 using Newtonsoft.Json;
 using Sentry;
 using SIL.Extensions;
 using SIL.IO;
 using SIL.Reporting;
-using static SQLite.SQLite3;
 
 namespace Bloom.Book
 {

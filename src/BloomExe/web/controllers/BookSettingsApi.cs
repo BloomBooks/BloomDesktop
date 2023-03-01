@@ -2,6 +2,7 @@ using System;
 using System.Dynamic;
 using Bloom.Book;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace Bloom.Api
 {
@@ -40,14 +41,14 @@ namespace Bloom.Api
 						currentToolBoxTool = _bookSelection.CurrentSelection.BookInfo.CurrentTool,
 						appearance = new { cover = new { coverColor = _bookSelection.CurrentSelection.GetCoverColor(), something = true } },
 						//bloomPUB = new { imageSettings = new { maxWidth= _bookSelection.CurrentSelection.BookInfo.PublishSettings.BloomPub.ImageSettings.MaxWidth, maxHeight= _bookSelection.CurrentSelection.BookInfo.PublishSettings.BloomPub.ImageSettings.MaxHeight} }
-						publish = _bookSelection.CurrentSelection.BookInfo.PublishSettings.Json
+						publish = _bookSelection.CurrentSelection.BookInfo.PublishSettings
 					};
 					var jsonData = JsonConvert.SerializeObject(settings);
 
 #if UserControlledTemplate
 					settings.isTemplateBook = GetIsBookATemplate();
 #endif
-					request.ReplyWithJson((object)settings);
+					request.ReplyWithJson(jsonData);
 					break;
 				case HttpMethods.Post:
 					//note: since we only have this one value, it's not clear yet whether the panel involved here will be more of a
@@ -59,11 +60,10 @@ namespace Bloom.Api
 					// review: crazy bit here, that above I'm taking json, parsing it into and object, and grabbing part of it. But then
 					// here we take it back to json and pass it to this thing that is going to parse it agian. In this case, speed
 					// is irrelevant. The nice thing is, it retains the identity of PublishSettings in case someone is holing on it.
-					_bookSelection.CurrentSelection.BookInfo.PublishSettings.LoadNewJson(JsonConvert.DeserializeObject(newSettings.publish));
-					//_bookSelection.CurrentSelection.BookInfo.PublishSettings.BloomPub.ImageSettings.MaxWidth = newSettings.bloomPUB.imageSettings.maxWidth;
-					//_bookSelection.CurrentSelection.BookInfo.PublishSettings.BloomPub.ImageSettings.MaxHeight = newSettings.bloomPUB.imageSettings.maxHeight;
+					var jsonOfJustPublishSettings = JsonConvert.SerializeObject(newSettings.publish);
+					_bookSelection.CurrentSelection.BookInfo.PublishSettings.LoadNewJson(jsonOfJustPublishSettings);
 
-					_pageRefreshEvent.Raise(PageRefreshEvent.SaveBehavior.JustRedisplay);
+					_pageRefreshEvent.Raise(PageRefreshEvent.SaveBehavior.SaveBeforeRefresh);
 
 #if UserControlledTemplate
 					UpdateBookTemplateMode(settings.isTemplateBook);

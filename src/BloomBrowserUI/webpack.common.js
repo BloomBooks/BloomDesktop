@@ -84,7 +84,6 @@ module.exports = merge(core, {
             "./publish/LibraryPublish/uploadCollisionDlg.tsx",
         copyrightAndLicenseBundle:
             "./bookEdit/copyrightAndLicense/CopyrightAndLicenseDialog.tsx",
-
         collectionsTabPaneBundle: "./collectionsTab/CollectionsTabPane.tsx"
 
         // This slowed down webpack a ton, because the way it works is that it 1st finds it all,

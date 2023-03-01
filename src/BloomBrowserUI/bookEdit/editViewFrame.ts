@@ -23,7 +23,7 @@ export interface IEditViewFrameExports {
 }
 
 export function SayHello() {
-    alert("Hello from editViewFrame");
+    alert("Hello!! from editViewFrame");
 }
 
 // These functions should be available for calling by non-module code (such as C# directly)
@@ -34,14 +34,13 @@ import { getEditablePageBundleExports } from "./js/bloomFrames";
 export { getEditablePageBundleExports };
 import { showPageChooserDialog } from "../pageChooser/PageChooserDialog";
 export { showPageChooserDialog };
-import { showBookSettingsDialog } from "./bookSettings/bookSettingsDialog";
-export { showBookSettingsDialog };
 import "errorHandler";
 import { reportError } from "../lib/errorHandler";
 import { IToolboxFrameExports } from "./toolbox/toolboxBootstrap";
 import { showCopyrightAndLicenseInfoOrDialog } from "./copyrightAndLicense/CopyrightAndLicenseDialog";
 import { showTopicChooserDialog } from "./TopicChooser/TopicChooserDialog";
 import ReactDOM = require("react-dom");
+import { showBookSettingsDialog } from "./bookSettings/BookSettingsDialog";
 import { FunctionComponentElement } from "react";
 export { getImageUrlFromImageButton } from "./js/bloomImages";
 
@@ -211,4 +210,7 @@ export function showCopyrightAndLicenseDialog(imageUrl?: string) {
 
 export function showEditViewTopicChooserDialog() {
     showTopicChooserDialog();
+}
+export function showEditViewBookSettingsDialog() {
+    showBookSettingsDialog();
 }

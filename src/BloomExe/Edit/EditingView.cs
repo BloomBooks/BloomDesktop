@@ -1779,5 +1779,11 @@ namespace Bloom.Edit
 
 		// intended for use only by the EditingModel
 		internal Browser Browser => _browser1;
+
+		private void _bookSettingsButton_Click(object sender, EventArgs e)
+		{
+			_model.SaveNow();
+			RunJavaScript("editTabBundle.showEditViewBookSettingsDialog();");
+		}
 	}
 }
