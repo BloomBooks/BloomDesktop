@@ -880,6 +880,11 @@ namespace Bloom.Publish.BloomLibrary
 			_model.BulkUpload(rootFolderPath, _progressBox);
 		}
 
+		private void _uploadSource_SelectedIndexChanged(object sender, EventArgs e)
+		{
+			UpdateDisplay();
+		}
+
 		private void _targetProduction_CheckedChanged(object sender, EventArgs e)
 		{
 			BookUpload.Destination =
