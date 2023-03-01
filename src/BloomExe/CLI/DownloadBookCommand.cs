@@ -37,9 +37,7 @@ namespace Bloom.CLI
 			}
 			catch (Exception ex)
 			{
-				Debug.WriteLine(ex.Message);
-				Console.WriteLine(ex.Message);
-				Console.WriteLine(ex.StackTrace);
+				Console.WriteLine(ex);
 				return 1;
 			}
 		}

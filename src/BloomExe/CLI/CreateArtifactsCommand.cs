@@ -101,8 +101,7 @@ namespace Bloom.CLI
 			}
 			catch (Exception ex)
 			{
-				Console.WriteLine(ex.Message);
-				Console.WriteLine(ex.StackTrace);
+				Console.WriteLine(ex);
 				return (int)CreateArtifactsExitCode.UnhandledException;
 			}
 		}
