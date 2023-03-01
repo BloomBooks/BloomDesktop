@@ -9,6 +9,7 @@ using Sentry;
 using SIL.Extensions;
 using SIL.IO;
 using SIL.Reporting;
+using static SQLite.SQLite3;
 
 namespace Bloom.Book
 {
