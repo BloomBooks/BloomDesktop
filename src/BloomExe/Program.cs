@@ -650,20 +650,22 @@ namespace Bloom
 			}
 		}
 
+		public static string BloomExePath => Application.ExecutablePath;
+
 		public static void RestartBloom(bool hardExit, string args = null)
 		{
 			try
 			{
-				var program = Application.ExecutablePath;
+				var program = BloomExePath;
 				if (SIL.PlatformUtilities.Platform.IsLinux)
 				{
 					// This is needed until the day comes (if it ever does) when we can use the
 					// system mono on Linux.
 					program = "/opt/mono5-sil/bin/mono";
 					if (args == null)
-						args = "\"" + Application.ExecutablePath + "\"";
+						args = "\"" + BloomExePath + "\"";
 					else
-						args = "\"" + Application.ExecutablePath + "\" " + args;
+						args = "\"" + BloomExePath + "\" " + args;
 					if (_originalPreload != null)
 						Environment.SetEnvironmentVariable("LD_PRELOAD", _originalPreload);
 				}

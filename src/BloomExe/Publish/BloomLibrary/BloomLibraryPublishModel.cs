@@ -1,18 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Xml;
 using Bloom.Properties;
 using BookInstance = Bloom.Book.Book;
 using Bloom.WebLibraryIntegration;
 using SIL.Windows.Forms.ClearShare;
 using SIL.Windows.Forms.Progress;
-using SIL.Xml;
 using BloomTemp;
 using System.IO;
-using Bloom.Collection;
-using Bloom.Book;
 using System.Diagnostics;
+using Bloom.Utils;
+using Bloom.web;
+using SIL.IO;
+using SIL.Progress;
 
 namespace Bloom.Publish.BloomLibrary
 {
@@ -393,6 +393,106 @@ namespace Bloom.Publish.BloomLibrary
 		{
 			Book.UpdateBlindFeature(true, new List<string> { langCode });
 			Book.BookInfo.Save();
+		}
+
+		public void BulkUpload(string rootFolderPath, IProgress progress)
+		{
+			var target = BookUpload.UseSandbox ? UploadDestination.Development : UploadDestination.Production;
+
+			var bloomExePath = Program.BloomExePath;
+			var command = $"\"{bloomExePath}\" upload \"{rootFolderPath}\" -u {WebUserId} -d {target}";
+			if (SIL.PlatformUtilities.Platform.IsLinux)
+				command = $"/opt/mono5-sil/bin/mono {command}";
+
+			ProcessStartInfo startInfo;
+			if (SIL.PlatformUtilities.Platform.IsWindows)
+			{
+				startInfo = new ProcessStartInfo()
+				{
+					FileName = "cmd.exe",
+					Arguments = $"/k {MiscUtils.EscapeForCmd(command)}",
+
+					WorkingDirectory = Path.GetDirectoryName(bloomExePath)
+				};
+			}
+			else
+			{
+				string program = GetLinuxTerminalProgramAndAdjustCommand(ref command);
+				if (String.IsNullOrEmpty(program))
+				{
+					progress.WriteMessage("Cannot bulk upload because unable to find terminal window for output messages.");
+					return;
+				}
+				startInfo = new ProcessStartInfo()
+				{
+					FileName = program,
+					Arguments = command,
+					WorkingDirectory = Path.GetDirectoryName(bloomExePath)
+				};
+				// LD_PRELOAD is a Linux environment variable for a shared library that should be loaded before any other library is
+				// loaded by a program that is starting up.  It is rarely needed, but the mozilla code used by Geckofx is one place
+				// where this feature is used, specifically to load a xulrunner patch (libgeckofix.so) that must be in place before
+				// xulrunner can be initialized for GeckoFx60 on Linux.  This must be in place in the environment before launching
+				// any process (such as Bloom, here) that will initialize xulrunner, but may cause problems for other programs so
+				// it is best not to have it in the environment unless we know it is needed.  In particular having LD_PRELOAD set to
+				// load libgeckofix.so is known to cause problems when running some programs (possibly only BloomPdfMaker.exe) using
+				// CommandLineRunner.  To guard against this Program.Main() removes it from the environment, but here we need to
+				// temporarily restore it so it can be inherited by the instance of Bloom we are about to launch. Fortunately, it's
+				// easy to reconstruct.
+				var xulRunner = Environment.GetEnvironmentVariable("XULRUNNER");
+				if (!String.IsNullOrEmpty("xulRunner"))
+					Environment.SetEnvironmentVariable("LD_PRELOAD", $"{xulRunner}/libgeckofix.so");
+			}
+
+			Process.Start(startInfo);
+			progress.WriteMessage("Starting bulk upload in a terminal window...");
+			progress.WriteMessage("This process will skip books if it can tell that nothing has changed since the last bulk upload.");
+			progress.WriteMessage("When the upload is complete, there will be a file named 'BloomBulkUploadLog.txt' in your collection folder.");
+			var url = $"{BloomLibraryUrls.BloomLibraryUrlPrefix}/{Book.CollectionSettings.DefaultBookshelf}";
+			progress.WriteMessage("Your books will show up at {0}", url);
+			if (SIL.PlatformUtilities.Platform.IsLinux) // LD_PRELOAD interferes with CommandLineRunner and GeckoFx60 on Linux
+				Environment.SetEnvironmentVariable("LD_PRELOAD", null);
+		}
+
+		private string QuoteQuotes(string command)
+		{
+			return command.Replace("\\", "\\\\").Replace("\"", "\\\"");
+		}
+
+		private string GetLinuxTerminalProgramAndAdjustCommand(ref string command)
+		{
+			// See https://askubuntu.com/questions/484993/run-command-on-anothernew-terminal-window
+
+			if (RobustFile.Exists("/usr/bin/gnome-terminal"))   // standard for GNOME (Ubuntu/Wasta)
+			{
+				// /usr/bin/gnome-terminal -- /bin/bash -c "bloom upload \"folder\" -u user -d dest; read line"
+				command = $"-- /bin/bash -c \"{QuoteQuotes(command)}; read line\"";
+				return "/usr/bin/gnome-terminal";
+			}
+			if (RobustFile.Exists("/usr/bin/terminator")) // popular alternative
+			{
+				// /usr/bin/terminator -x /bin/bash -c "bloom upload \"folder\" -u user -d dest; read line"
+				command = $"-x /bin/bash -c \"{QuoteQuotes(command)}; read line\"";
+				return "/usr/bin/terminator";
+			}
+			if (RobustFile.Exists("/usr/bin/xfce4-terminal"))    // standard for XFCE4 (XUbuntu)
+			{
+				// /usr/bin/xterm -hold -x /bin/bash -c "bloom upload \"folder\" -u user -d dest"
+				command = $"-T \"Bloom upload\" --hold -x /bin/bash -c \"{QuoteQuotes(command)}\"";
+				return "/usr/bin/xfce4-terminal";
+			}
+			if (RobustFile.Exists("/usr/bin/xterm"))    // antique original (slightly better than nothing)
+			{
+				// /usr/bin/xterm -hold -x /bin/bash -c "bloom upload \"folder\" -u user -d dest"
+				command = $"-T \"Bloom upload\" -hold -e /bin/bash -c \"{QuoteQuotes(command)}\"";
+				return "/usr/bin/xterm";
+			}
+			// Neither konsole nor qterminal will launch with Bloom.  The ones above have been tested on Wasta 20.
+			// symbol lookup error: /usr/lib/x86_64-linux-gnu/qt5/plugins/styles/libqgtk2style.so: undefined symbol: gtk_combo_box_entry_new
+			// I suspect because they're still linking with GTK2 while Bloom has to use GTK3 with Geckofx60.
+
+			// Give up.
+			return null;
 		}
 	}
 
