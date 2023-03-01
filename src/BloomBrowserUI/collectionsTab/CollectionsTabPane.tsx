@@ -1,12 +1,15 @@
 /** @jsx jsx **/
 import { jsx, css } from "@emotion/react";
-
 import React = require("react");
 import { get, post, postString } from "../utils/bloomApi";
 import { BooksOfCollection } from "./BooksOfCollection";
 import { Transition } from "react-transition-group";
 import { SplitPane } from "react-collapse-pane";
-import { kPanelBackground, kDarkestBackground } from "../bloomMaterialUITheme";
+import {
+    kPanelBackground,
+    kDarkestBackground,
+    lightTheme
+} from "../bloomMaterialUITheme";
 import { WireUpForWinforms } from "../utils/WireUpWinform";
 import { CollectionsTabBookPane } from "./collectionsTabBookPane/CollectionsTabBookPane";
 import { useEffect, useMemo, useState } from "react";
@@ -14,7 +17,7 @@ import useEventListener from "@use-it/event-listener";
 import { BookSelectionManager } from "./bookSelectionManager";
 import ShowAfterDelay from "../react_components/showAfterDelay";
 import { forceCheck as convertAnyVisibleLazyLoads } from "react-lazyload";
-import { IconButton, Divider, Menu } from "@mui/material";
+import { IconButton, Divider, Menu, DialogTitle } from "@mui/material";
 import GreyTriangleMenuIcon from "../react_components/icons/GreyTriangleMenuIcon";
 import {
     LocalizableCheckboxMenuItem,
@@ -32,6 +35,7 @@ import CloseIcon from "@mui/icons-material/Close";
 import FolderOpenOutlinedIcon from "@mui/icons-material/FolderOpenOutlined";
 import { kBloomBlue } from "../bloomMaterialUITheme";
 import { BloomTooltip } from "../react_components/BloomToolTip";
+import { DialogCloseButton } from "../react_components/BloomDialog/commonDialogComponents";
 
 const kResizerSize = 10;
 
