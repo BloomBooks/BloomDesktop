@@ -22,5 +22,12 @@
             "react": ["./node_modules/@types/react"]
         }
     },
-    "exclude": ["node_modules", "typings"]
+    "exclude": [
+        "node_modules",
+        "typings"
+    ],
+    "resolutions": {
+        "@types/react": "^17",
+        "react-is": "^17"
+    }
 }
