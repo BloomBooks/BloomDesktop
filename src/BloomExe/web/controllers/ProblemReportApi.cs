@@ -14,6 +14,7 @@ using Bloom.Api;
 using Bloom.Book;
 using Bloom.Collection;
 using Bloom.ErrorReporter;
+using Bloom.History;
 using Bloom.MiscUI;
 using Bloom.ToPalaso;
 using Bloom.Utils;
