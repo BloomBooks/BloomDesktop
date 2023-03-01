@@ -180,7 +180,9 @@ namespace Bloom.Book
 				{
 					// This is mainly used in unit tests, but could be helpful
 					// in some other situation where we don't already have one.
-					_dom = new HtmlDom(RobustFile.ReadAllText(_theOneHtmlPath, Encoding.UTF8), true);
+					var xhtml = RobustFile.ReadAllText(_theOneHtmlPath, Encoding.UTF8);
+					xhtml = xhtml.Replace("&nbsp;", "&#160;");
+					_dom = new HtmlDom(xhtml, true);
 				}
 				return _dom;
 			}
@@ -295,7 +297,7 @@ namespace Bloom.Book
 						var narrationLangs = new HashSet<string>(NarrationLanguages);
 						narrationElements = narrationElements
 							.Where(node => narrationLangs.Contains(node.ParentWithClass("bloom-editable")
-								.GetOptionalStringAttribute("lang", null)));
+								?.GetOptionalStringAttribute("lang", null)));
 					}
 
 					_narrationFiles = new HashSet<string>(narrationElements
