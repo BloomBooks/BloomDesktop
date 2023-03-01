@@ -227,8 +227,7 @@ namespace Bloom.Spreadsheet
 				catch (IOException ex) when ((ex.HResult & 0x0000FFFF) == 32) //ERROR_SHARING_VIOLATION
 				{
 					Console.WriteLine("Writing Spreadsheet failed. Do you have it open in another program?");
-					Console.WriteLine(ex.Message);
-					Console.WriteLine(ex.StackTrace);
+					Console.WriteLine(ex);
 
 					progress?.Message("Spreadsheet.SpreadsheetLocked", "",
 						"Bloom could not write to the spreadsheet because another program has it locked. Do you have it open in another program?",
@@ -237,7 +236,7 @@ namespace Bloom.Spreadsheet
 				catch (Exception ex)
 				{
 					progress?.Message("Spreadsheet.ExportFailed", "",
-						"Export failed: " + ex.Message,
+						"Export failed: " + ex.ToString(),
 						ProgressKind.Error);
 				}
 			}

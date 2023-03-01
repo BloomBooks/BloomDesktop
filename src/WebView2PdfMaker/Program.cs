@@ -57,8 +57,7 @@ namespace WebView2PdfMaker
 
 		private static void Application_ThreadException(object sender, ThreadExceptionEventArgs e)
 		{
-			Console.Error.WriteLine("WebView2PdfMaker Thread Exception: " + e.Exception.Message);
-			Console.Error.WriteLine(e.Exception.StackTrace);
+			Console.Error.WriteLine("WebView2PdfMaker Thread Exception: " + e.ToString());
 			_returnCode = 1;
 			Application.Exit();
 		}
@@ -68,8 +67,7 @@ namespace WebView2PdfMaker
 			var except = e.ExceptionObject as Exception;
 			if (except != null)
 			{
-				Console.Error.WriteLine("Unhandled Exception: " + except.Message);
-				Console.Error.WriteLine(except.StackTrace);
+				Console.Error.WriteLine("Unhandled Exception: " + except.ToString());
 			}
 			else
 			{
