@@ -9,6 +9,7 @@ using Bloom.Api;
 using Bloom.Book;
 using Bloom.Collection;
 using Bloom.CollectionTab;
+using Bloom.History;
 using Bloom.MiscUI;
 using Bloom.Registration;
 using Bloom.Utils;

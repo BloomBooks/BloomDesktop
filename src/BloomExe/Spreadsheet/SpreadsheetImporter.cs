@@ -15,6 +15,7 @@ using SIL.IO;
 using SIL.Progress;
 using SIL.Xml;
 using Bloom.Collection;
+using Bloom.History;
 
 namespace Bloom.Spreadsheet
 {
@@ -116,7 +117,7 @@ namespace Bloom.Spreadsheet
 				if (Directory.Exists(audioFolder))
 					SIL.IO.RobustIO.DeleteDirectoryAndContents(audioFolder);
 				Import(sheet, progress);
-				BookHistory.AddEvent(_book, TeamCollection.BookHistoryEventType.ImportSpreadsheet,
+				BookHistory.AddEvent(_book, BookHistoryEventType.ImportSpreadsheet,
 					"Spreadsheet imported from " + inputFilepath);
 
 				return true; // always leave the dialog up until the user chooses 'close'

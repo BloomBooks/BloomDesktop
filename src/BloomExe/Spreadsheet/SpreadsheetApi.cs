@@ -6,11 +6,10 @@ using Bloom.Book;
 using Bloom.CollectionTab;
 using Bloom.MiscUI;
 using Bloom.Properties;
-using Bloom.Spreadsheet;
 using L10NSharp;
 using SIL.IO;
 
-namespace Bloom.web.controllers
+namespace Bloom.Spreadsheet
 {
 	/// <summary>
 	/// Commands that affect entire books, typically menu commands in the Collection tab right-click menu

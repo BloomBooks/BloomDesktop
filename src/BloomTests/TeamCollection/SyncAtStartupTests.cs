@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using Bloom.Book;
+using Bloom.History;
 using Bloom.TeamCollection;
 using BloomTemp;
 using BloomTests.DataBuilders;
