@@ -2179,7 +2179,15 @@ namespace Bloom.Book
 					}
 					catch (UnauthorizedAccessException err)
 					{
-						throw new BloomUnauthorizedAccessException(destPath, err);
+						if (File.Exists(destPath))
+						{
+							// It's probably a minor problem if we just can't update it but already have it.
+							ReportCantUpdateSupportFile(sourcePath, destPath);
+						}
+						else
+						{
+							throw new BloomUnauthorizedAccessException(destPath, err);
+						}
 					}
 
 					_brandingImageNames.Add(fileName);
@@ -2329,36 +2337,43 @@ namespace Bloom.Book
 					Logger.WriteEvent("Could not update file {0} because it was in the program directory.", documentPath);
 					return;
 				}
-				if(_alreadyNotifiedAboutOneFailedCopy)
-					return;//don't keep bugging them
-				_alreadyNotifiedAboutOneFailedCopy = true;
-				// We probably can't help the user if they create an issue, but we can log a bit more information to help local tech support.
-				// (Only the shortMessage, which is what typical users actually see, is currently localized.)
-				var msg = MiscUtils.GetExtendedFileCopyErrorInformation(documentPath,
-					$"Could not update one of the support files in this document ({documentPath} from {factoryPath}).");
-				Logger.WriteEvent(msg);
-				var shortMsg = LocalizationManager.GetString("Errors.CannotUpdateFile", "There was a problem updating a support file");
-				var howToTroubleshoot = LocalizationManager.GetString("Errors.CannotUpdateTroubleshoot",
-					"How to troubleshoot file updating errors");
 
-				var longerMsgTemplate = LocalizationManager.GetString("Errors.CannotUpdateFileLonger",
-					"Bloom was not able to update a support file named \"{0}\". This is usually not a problem. If you continue to see these messages, see \"{1}\".");
-				var longerMsg = string.Format(longerMsgTemplate, Path.GetFileName(documentPath), $"<a href='https://docs.bloomlibrary.org/troubleshooting-file-access' target='_blank'>{howToTroubleshoot}</a>");
-
-
-				// Something like this was called for in the comment on BL-11863 that led to this,
-				// but we finally decided not to.
-				// var avProgs = MiscUtils.InstalledAntivirusProgramNames();
-				//if (!string.IsNullOrEmpty(avProgs))
-				//{
-				//	var avTemplate = LocalizationManager.GetString("Errors.TryPausingAV",
-				//		"Try pausing \"{0}\" or telling \"{0}\" that you trust Bloom.");
-				//	shortMsg += Environment.NewLine + string.Format(avTemplate, avProgs);
-				//}
-
-				BloomErrorReport.NotifyUserUnobtrusively(shortMsg, longerMsg);
-
+				ReportCantUpdateSupportFile(factoryPath, documentPath);
 			}
+		}
+
+		private static void ReportCantUpdateSupportFile(string factoryPath, string documentPath)
+		{
+			if (_alreadyNotifiedAboutOneFailedCopy)
+				return; //don't keep bugging them
+			_alreadyNotifiedAboutOneFailedCopy = true;
+			// We probably can't help the user if they create an issue, but we can log a bit more information to help local tech support.
+			// (Only the shortMessage, which is what typical users actually see, is currently localized.)
+			var msg = MiscUtils.GetExtendedFileCopyErrorInformation(documentPath,
+				$"Could not update one of the support files in this document ({documentPath} from {factoryPath}).");
+			Logger.WriteEvent(msg);
+			var shortMsg =
+				LocalizationManager.GetString("Errors.CannotUpdateFile", "There was a problem updating a support file");
+			var howToTroubleshoot = LocalizationManager.GetString("Errors.CannotUpdateTroubleshoot",
+				"How to troubleshoot file updating errors");
+
+			var longerMsgTemplate = LocalizationManager.GetString("Errors.CannotUpdateFileLonger",
+				"Bloom was not able to update a support file named \"{0}\". This is usually not a problem. If you continue to see these messages, see \"{1}\".");
+			var longerMsg = string.Format(longerMsgTemplate, Path.GetFileName(documentPath),
+				$"<a href='https://docs.bloomlibrary.org/troubleshooting-file-access' target='_blank'>{howToTroubleshoot}</a>");
+
+
+			// Something like this was called for in the comment on BL-11863 that led to this,
+			// but we finally decided not to.
+			// var avProgs = MiscUtils.InstalledAntivirusProgramNames();
+			//if (!string.IsNullOrEmpty(avProgs))
+			//{
+			//	var avTemplate = LocalizationManager.GetString("Errors.TryPausingAV",
+			//		"Try pausing \"{0}\" or telling \"{0}\" that you trust Bloom.");
+			//	shortMsg += Environment.NewLine + string.Format(avTemplate, avProgs);
+			//}
+
+			BloomErrorReport.NotifyUserUnobtrusively(shortMsg, longerMsg);
 		}
 
 		private void RemoveExistingFilesBySuffix(string suffix)
