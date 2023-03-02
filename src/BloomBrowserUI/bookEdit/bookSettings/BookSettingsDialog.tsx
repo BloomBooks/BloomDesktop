@@ -152,6 +152,7 @@ export const BookSettingsDialog: React.FunctionComponent<{
                 </DialogMiddle>
                 <DialogBottomButtons>
                     <DialogOkButton
+                        default={true}
                         onClick={() => {
                             postJson("book/settings", settingsToReturnLater);
                             isOpenAlready = false;
