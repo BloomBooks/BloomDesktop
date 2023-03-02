@@ -1136,6 +1136,110 @@ namespace BloomTests.Spreadsheet
 		}
 	}
 
+	public class SpreadsheetImportDeleteExtraPagesTest
+	{
+		private HtmlDom _dom;
+
+		private TemporaryFolder _bookFolder;
+
+
+		private List<XmlElement> _contentPages;
+		private XmlElement _firstPage;
+		private XmlElement _lastPage;
+		private XmlElement _secondLastPage;
+		private List<string> _warnings;
+		private string _spreadsheetFolder;
+
+		[OneTimeSetUp]
+		public void OneTimeSetUp()
+		{
+			// We will re-use the images from another test.
+			// Conveniently the images are in a folder called "images" which is what the importer expects.
+			// So we give it the parent directory of that images folder.
+			_spreadsheetFolder = SIL.IO.FileLocationUtilities.GetDirectoryDistributedWithApplication("src/BloomTests/ImageProcessing");
+
+			// Create an HtmlDom for a template to import into
+			var xml = string.Format(SpreadsheetImageAndTextImportTests.templateDom,
+				SpreadsheetImageAndTextImportTests.coverPage
+				+ SpreadsheetImageAndTextImportTests.PageWithImageAndText(1, 1, 1)
+				+ SpreadsheetImageAndTextImportTests.PageWithImageAndText(2, 1, 1)
+				+ SpreadsheetImageAndTextImportTests.PageWithImageAndText(3, 1, 1)
+				+ SpreadsheetImageAndTextImportTests.insideBackCoverPage
+				+ SpreadsheetImageAndTextImportTests.backCoverPage);
+			_dom = new HtmlDom(xml, true);
+
+			// Create an internal spreadsheet with the row content we want to test
+			var ss = new InternalSpreadsheet();
+			var columnForEn = ss.AddColumnForLang("en", "English");
+			var columnForImage = ss.GetColumnForTag(InternalSpreadsheet.ImageSourceColumnLabel);
+
+			// Will fill the first page in the original
+			var contentRow1 = new ContentRow(ss);
+			contentRow1.AddCell(InternalSpreadsheet.PageContentRowLabel);
+			contentRow1.SetCell(columnForImage, "images/lady24b.png");
+			contentRow1.SetCell(columnForEn, "this is page 1");
+
+			_bookFolder = new TemporaryFolder("SpreadsheetImageAndTextImportToBookWithComplexLastPageTests");
+
+			// Do the import
+			var importer = new TestSpreadsheetImporter(null, _dom, _spreadsheetFolder, _bookFolder.FolderPath);
+			_warnings = importer.Import(ss);
+
+			_contentPages = _dom.SafeSelectNodes("//div[contains(@class, 'bloom-page')]").Cast<XmlElement>().ToList();
+
+			// Remove the xmatter to get just the content pages, but save so we can test that too.
+			_firstPage = _contentPages[0];
+			_contentPages.RemoveAt(0);
+			_lastPage = _contentPages.Last();
+			_contentPages.RemoveAt(_contentPages.Count - 1);
+			_secondLastPage = _contentPages.Last();
+			_contentPages.RemoveAt(_contentPages.Count - 1);
+
+			// (individual test methods will evaluate the result)
+		}
+
+		[OneTimeTearDown]
+		public void OneTimeTearDown()
+		{
+			_bookFolder?.Dispose();
+		}
+
+		// This is the main point of this test class. The other tests just make sure nothing got broken
+		[Test]
+		public void ExtraPagesDeleted()
+		{
+			Assert.That(_contentPages.Count, Is.EqualTo(1));
+		}
+
+		[Test]
+		public void CoverPagesSurvive()
+		{
+			Assert.That(_lastPage.Attributes["class"].Value, Does.Match("outsideBackCover"));
+			Assert.That(_secondLastPage.Attributes["class"].Value, Does.Match("insideBackCover"));
+		}
+
+		[TestCase(0, "tg1", "this is page 1")]
+		public void GotTextOnPageN(int n, string tag, string text)
+		{
+			AssertThatXmlIn.Element(_contentPages[n]).HasSpecifiedNumberOfMatchesForXpath($".//div[@data-test-id='{tag}']/div[@lang='en' and text() = '{text}']", 1);
+		}
+
+
+		[TestCase(0, "ic1", "lady24b.png")]
+		public void GotImageSourceOnPageN(int n, string tag, string text)
+		{
+			AssertThatXmlIn.Element(_contentPages[n]).HasSpecifiedNumberOfMatchesForXpath($".//div[@data-test-id='{tag}']/img[@src='{text}']", 1);
+		}
+
+		[Test]
+		public void NoUnexpectedWarnings()
+		{
+			// Currently we don't expect any.
+			// Adjust as necessary if we add some.
+			Assert.That(_warnings.Count, Is.EqualTo(0));
+		}
+	}
+
 	public class SpreadsheetImporterErrorTests
 	{
 		[Test]

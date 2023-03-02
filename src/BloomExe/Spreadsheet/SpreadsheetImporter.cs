@@ -252,6 +252,8 @@ namespace Bloom.Spreadsheet
 				_currentRowIndex++;
 			}
 
+			CleanupLeftOverPages();
+
 			CleanupDataDiv();
 			// This section is necessary to make sure changes to the dom are recorded.
 			// If we run SS Importer from the CLI (without CollectionSettings), BringBookUpToDate()
@@ -278,6 +280,24 @@ namespace Bloom.Spreadsheet
 			}
 			Progress("Done");
 			return _warnings;
+		}
+
+		private void CleanupLeftOverPages()
+		{
+			// the current page at _currentPageIndex must have some useful content,
+			// because we would only advance _currentPageIndex to it in order to add some.
+			// So we want to keep that one for sure.
+			_currentPageIndex++;
+			// If by any chance we arn't past the front matter (e.g., spreadsheet is empty) advance past it.
+			while (_currentPageIndex < _pages.Count && XMatterHelper.IsFrontMatterPage(_pages[_currentPageIndex]))
+				_currentPageIndex++;
+
+			while (_currentPageIndex < _pages.Count && !XMatterHelper.IsBackMatterPage(_pages[_currentPageIndex]))
+			{
+				_currentPage = _pages[_currentPageIndex];
+				_currentPage.ParentNode.RemoveChild(_currentPage);
+				_currentPageIndex++;
+			}
 		}
 
 		private void PutRowInImage(ContentRow currentRow)

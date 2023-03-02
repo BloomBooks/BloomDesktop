@@ -72,6 +72,10 @@ namespace BloomTests.Spreadsheet
 			coverImageRow.AddCell(InternalSpreadsheet.CoverImageRowLabel);
 			coverImageRow.SetCell(columnForImage, Path.Combine("images", "Othello 199.jpg"));
 
+			var justTextRow = new ContentRow(ss);
+			justTextRow.AddCell(InternalSpreadsheet.PageContentRowLabel);
+			justTextRow.SetCell(columnForEn, "this is page 1");
+
 			_importer.Import(ss);
 
 			_resultElement = ReadResultingBookToXml(newTitle);
