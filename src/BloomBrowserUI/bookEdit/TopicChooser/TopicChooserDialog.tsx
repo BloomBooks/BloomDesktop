@@ -133,14 +133,9 @@ export const TopicChooserDialog: React.FunctionComponent<ITopicChooserdialogProp
         ));
     };
 
-    // If this is false, we get a react render loop and error.
-    // Our theory is some kind of focus war based on enabling/disabling the buttons.
-    const disableDragging = true;
-
     return (
         <BloomDialog
             {...propsForBloomDialog}
-            disableDragging={disableDragging}
             css={css`
                 padding-left: 18px;
                 .MuiDialog-paperWidthSm {
@@ -148,10 +143,7 @@ export const TopicChooserDialog: React.FunctionComponent<ITopicChooserdialogProp
                 }
             `}
         >
-            <DialogTitle
-                title={dialogTitle}
-                disableDragging={disableDragging}
-            />
+            <DialogTitle title={dialogTitle} />
             <DialogMiddle
                 css={css`
                     // the width will grow automatically as needed for localizations
