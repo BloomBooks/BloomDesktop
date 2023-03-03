@@ -14,6 +14,7 @@ using System.IO;
 using System.Linq;
 using System.Security;
 using System.Text;
+using System.Web.UI.WebControls;
 using System.Windows.Forms;
 using System.Xml;
 
@@ -112,11 +113,6 @@ namespace Bloom.Spreadsheet
 			var imageContainers = GetImageContainers(page);
 			var allGroups = TranslationGroupManager.SortedGroupsOnPage(page, true);
 			var groups = allGroups.Where(x => !x.Attributes["class"].Value.Contains("bloom-imageDescription")).ToList();
-			if (!_reportedImageDescription && groups.Count < allGroups.Count)
-			{
-				_progress?.MessageWithoutLocalizing("Image descriptions are not currently supported by spreadsheet import/export. They will be ignored.", ProgressKind.Warning);
-				_reportedImageDescription = true;
-			}
 
 			var pageContentTuples = imageContainers.MapUnevenPairs(groups, (imageContainer, group) => (imageContainer, group));
 			foreach (var pageContent in pageContentTuples)
@@ -135,28 +131,48 @@ namespace Bloom.Spreadsheet
 						outputPath = InternalSpreadsheet.BlankContentIndicator;
 					row.SetCell(InternalSpreadsheet.ImageSourceColumnLabel, outputPath);
 					CopyImageFileToSpreadsheetFolder(imagePath);
-				}
-
-				if (pageContent.group != null)
-				{
-					foreach (var editable in pageContent.group.SafeSelectNodes("./*[contains(@class, 'bloom-editable')]").Cast<XmlElement>())
+					var descriptions = pageContent.imageContainer.GetElementsByTagName("div")
+						.Cast<XmlElement>()
+						.Where(e => e.Attributes["class"].Value.Contains("bloom-imageDescription"));
+					foreach (var description in descriptions) // typically at most one
 					{
-						var langCode = editable.Attributes["lang"]?.Value ?? "";
-						if (langCode == "z" || langCode == "")
-							continue;
-						var index = GetOrAddColumnForLang(langCode);
-						var content = editable.InnerXml;
-						// Don't just test content, it typically contains paragraph markup.
-						if (String.IsNullOrWhiteSpace(editable.InnerText))
-						{
-							content = InternalSpreadsheet.BlankContentIndicator;
-						}
-						row.SetCell(index, content);
-						ExportAudio(editable, row, bookFolderPath);
+						var descriptionRow = new ContentRow(_spreadsheet);
+						descriptionRow.SetCell(InternalSpreadsheet.RowTypeColumnLabel, InternalSpreadsheet.ImageDescriptionRowLabel);
+						descriptionRow.SetCell(InternalSpreadsheet.PageNumberColumnLabel, pageNumber);
+						// Give this row the same color. It is conceptually part of the export of the same chunk of the document.
+						descriptionRow.BackgroundColor = colorForPage;
+						WriteTranslationGroup(description, descriptionRow, bookFolderPath);
 					}
 				}
 
+				var translationGroup = pageContent.group;
+				if (translationGroup != null)
+				{
+					WriteTranslationGroup(translationGroup, row, bookFolderPath);
+				}
+
 				row.BackgroundColor = colorForPage;
+			}
+		}
+
+		private void WriteTranslationGroup(XmlElement translationGroup, ContentRow row, string bookFolderPath)
+		{
+			foreach (var editable in translationGroup.SafeSelectNodes("./*[contains(@class, 'bloom-editable')]")
+				         .Cast<XmlElement>())
+			{
+				var langCode = editable.Attributes["lang"]?.Value ?? "";
+				if (langCode == "z" || langCode == "")
+					continue;
+				var index = GetOrAddColumnForLang(langCode);
+				var content = editable.InnerXml;
+				// Don't just test content, it typically contains paragraph markup.
+				if (String.IsNullOrWhiteSpace(editable.InnerText))
+				{
+					content = InternalSpreadsheet.BlankContentIndicator;
+				}
+
+				row.SetCell(index, content);
+				ExportAudio(editable, row, bookFolderPath);
 			}
 		}
 

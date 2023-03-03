@@ -221,6 +221,7 @@ namespace Bloom.Spreadsheet
 			{
 				var currentRow = _inputRows[_currentRowIndex];
 				string rowTypeLabel = currentRow.MetadataKey;
+				bool extraRow = false;
 
 				if (rowTypeLabel == InternalSpreadsheet.PageContentRowLabel)
 				{
@@ -238,7 +239,17 @@ namespace Bloom.Spreadsheet
 					}
 					if (rowHasImage)
 					{
-						PutRowInImage(currentRow);
+						ContentRow descriptionRow = null;
+						if (_currentRowIndex < _inputRows.Count - 1)
+						{
+							var nextRow = _inputRows[_currentRowIndex + 1];
+							if (nextRow.MetadataKey == InternalSpreadsheet.ImageDescriptionRowLabel)
+							{
+								extraRow = true;
+								descriptionRow = nextRow;
+							}
+						}
+						PutRowInImage(currentRow, descriptionRow);
 					}
 					if (rowHasText) {
 						PutRowInGroup(currentRow, _currentGroup);
@@ -250,6 +261,8 @@ namespace Bloom.Spreadsheet
 					UpdateDataDivFromRow(currentRow, dataBookLabel);
 				}
 				_currentRowIndex++;
+				if (extraRow)
+					_currentRowIndex++;
 			}
 
 			CleanupLeftOverPages();
@@ -300,7 +313,7 @@ namespace Bloom.Spreadsheet
 			}
 		}
 
-		private void PutRowInImage(ContentRow currentRow)
+		private void PutRowInImage(ContentRow currentRow, ContentRow descriptionRow)
 		{
 			var spreadsheetImgPath = currentRow.GetCell(InternalSpreadsheet.ImageSourceColumnLabel).Content;
 			if (spreadsheetImgPath == InternalSpreadsheet.BlankContentIndicator)
@@ -335,6 +348,20 @@ namespace Bloom.Spreadsheet
 				}
 
 				CopyImageFileToDestination(destFileName, fullSpreadsheetPath, imgElement);
+			}
+
+			if (descriptionRow != null)
+			{
+				XmlElement group = _currentImageContainer.GetElementsByTagName("div")
+					.Cast<XmlElement>()
+					.FirstOrDefault(e => e.Attributes["class"].Value.Contains("bloom-imageDescription"));
+				if (group == null)
+				{
+					group = _currentImageContainer.OwnerDocument.CreateElement("div");
+					group.SetAttribute("class", "bloom-translationGroup bloom-imageDescription bloom-trailingElement");
+					_currentImageContainer.AppendChild(group);
+				}
+				PutRowInGroup(descriptionRow, group);
 			}
 		}
 
@@ -616,7 +643,7 @@ namespace Bloom.Spreadsheet
 			SizeAndOrientation.UpdatePageSizeAndOrientationClasses(newPage, _destLayout);
 			// Correctly inserts at end if _currentPage is null, though this will hardly ever
 			// be true because we normally have at least backmatter page to insert before.
-			_pages[0].ParentNode.InsertBefore(newPage, _currentPage);
+			(_pages[0].ParentNode ?? _destinationDom.Body).InsertBefore(newPage, _currentPage);
 
 			// clear everything: this is useful in case it has slots we won't use.
 			// They might have content either from the original last page, or from the
