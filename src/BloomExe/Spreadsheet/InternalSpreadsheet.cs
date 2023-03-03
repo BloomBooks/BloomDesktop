@@ -229,6 +229,16 @@ namespace Bloom.Spreadsheet
 				addedCells.nameCell.Comment = friendlyNameComment;
 			}
 
+			if (Header.ColumnIdRow.GetCell(Header.ColumnCount - 2).Content == "[*]")
+			{
+				foreach (var row in _rows)
+				{
+					row.SwapNext(Header.ColumnCount - 2);
+				}
+
+				return Header.ColumnCount - 2;
+			}
+
 			return Header.ColumnCount - 1;
 		}
 

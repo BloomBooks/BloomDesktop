@@ -313,6 +313,7 @@
     <Compile Include="Publish\ExportFixedLayoutEpubTests.cs" />
     <Compile Include="Publish\Video\RecordVideoWindowTests.cs" />
     <Compile Include="Publish\Video\ResolutionTests.cs" />
+    <Compile Include="Spreadsheet\InternalSpreadsheetTests.cs" />
     <Compile Include="Spreadsheet\SpreadsheetAudioImportTests.cs" />
     <Compile Include="Spreadsheet\SpreadsheetAudioTests.cs" />
     <Compile Include="Spreadsheet\SpreadSheetImageDescriptionTests.cs" />
