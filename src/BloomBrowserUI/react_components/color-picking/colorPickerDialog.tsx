@@ -371,7 +371,7 @@ const doRender = (
 ) => {
     let modalContainer;
     if (container) modalContainer = container;
-    else modalContainer = document.body; // obsolete: getEditTabBundleExports().getModalDialogContainer();
+    else modalContainer = getEditTabBundleExports().getModalDialogContainer();
     try {
         ReactDOM.render(<ColorPickerDialog {...props} />, modalContainer);
     } catch (error) {
