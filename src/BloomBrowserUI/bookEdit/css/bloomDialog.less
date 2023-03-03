@@ -44,29 +44,36 @@
     position: absolute;
     line-height: 1.8;
     font-family: @UIFontStack;
+
     h2.tab {
         font-size: 10pt;
     }
+
     .mainBlock {
         display: inline-block;
         vertical-align: top;
         line-height: normal;
     }
+
     .leftBlock {
         width: 150px;
     }
+
     .indentBlock {
         width: 100px;
+
         img {
             margin-left: 3px;
             margin-top: 1px;
         }
     }
+
     .selectedIcon {
         background-color: @bloom-blue;
         border: 1px solid @bloom-bluetransparent;
         .bdRounded;
     }
+
     .iconLetter {
         width: 19px;
         height: 19px;
@@ -74,17 +81,20 @@
         padding: 2px 2px 2px 2px;
         text-align: center;
     }
+
     .icon16x16 {
         width: 19px;
         height: 19px;
         display: inline-block;
         padding: 2px;
+
         img {
             margin-top: 1px;
             margin-left: 1px;
             vertical-align: 5px;
         }
     }
+
     a {
         color: @bloom-blue;
     }
@@ -96,13 +106,16 @@
     display: inline-block;
     padding: 1px 0 0 1px;
     position: relative;
+
     &.wide {
         width: 66px;
     }
+
     &.tall {
         height: 66px;
     }
 }
+
 .bloomDialogContainer .iconBox {
     width: 14px;
     height: 14px;
@@ -110,15 +123,18 @@
     border: 1px solid;
     display: block;
 }
+
 .bloomDialogContainer .iconBack {
     width: 16px;
     height: 16px;
     margin: 2px;
     display: block;
+
     &.grayBackground {
         background-color: @preferredBackgroundGray; //from basePage.less
     }
 }
+
 .bloomDialogContainer .iconHorizontalLine {
     width: 56px;
     margin: 0px -50% 0px 1px;
@@ -129,6 +145,7 @@
     transform: translate(-50%, -50%);
     display: block;
 }
+
 .bloomDialogContainer .iconVerticalLine {
     height: 56px;
     margin: 1px -50% 0px 0px;
@@ -139,9 +156,11 @@
     transform: translate(-50%, -50%);
     display: block;
 }
+
 .bloomDialogContainer .control-section {
     margin: 0 0 12px 0;
 }
+
 // Interferes with Material UI background-color
 // .bloomDialogContainer button,
 // .bloomDialogContainer input {
@@ -152,6 +171,7 @@
     border: 1px solid @buttonBorder;
     box-shadow: 1px 2px 7px @buttonShadow;
 }
+
 // Interferes with Material UI background-color
 // .bloomDialogContainer button:hover,
 // .bloomDialogContainer input:hover,
@@ -168,16 +188,17 @@
     background: @backgroundColorLight;
     color: @disabledText;
 }
+
 .bloomDialogContainer .propButton:not(.selectedIcon) {
     border: 1px solid @disabledText;
     .bdRounded;
 }
+
 .bloomDialogContainer .propButton:hover {
-    background: linear-gradient(
-        @backgroundColorHoverLight,
-        @backgroundColorHoverDark
-    );
+    background: linear-gradient(@backgroundColorHoverLight,
+            @backgroundColorHoverDark );
 }
+
 .bloomDialogContainer .bloomDialogTitleBar {
     background-color: @backgroundColorTitleBar;
     opacity: 1;
@@ -188,6 +209,7 @@
     height: 2em;
     text-align: center;
 }
+
 .bloomDialogContainer .bloomDialogMainPage {
     background: @backgroundColorWhite;
     margin-left: 1em;
@@ -205,8 +227,11 @@
     border-color: black !important;
 }
 
-.select2-container--default
-    .select2-selection--single
-    .select2-selection__rendered {
+.select2-container--default .select2-selection--single .select2-selection__rendered {
     color: black !important;
+}
+
+.bloomDialogTitleBar {
+    cursor: move;
+    color: white;
 }

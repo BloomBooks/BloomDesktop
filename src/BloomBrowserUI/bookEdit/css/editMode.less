@@ -31,7 +31,8 @@
 @ImageAndVideoHoverOverlay: #d5d5e4;
 @ImageButtonBorder: #716666;
 @ChangeImageButtonColor: @ControlColor;
-@PasteImageButtonColor: @bloom-blue; /*#0C8597; */
+@PasteImageButtonColor: @bloom-blue;
+/*#0C8597; */
 @MetadataButtonColor: #3a7f62; // the only place in .less files that any green is used
 @OverflowColor: @WarningColor;
 @MainPageBackgroundColor: #f8f8f8;
@@ -46,8 +47,10 @@
 
 body {
     background-color: @bloom-darkestBackground;
-    transform-origin: top left; /* This works with a transform:scale style added in Javascript to allow zooming just the main page*/
-    transition: transform 20ms; /* This works around a bug in Gecko29 and should be removed when we upgrade. It prevents redraw errors during crtl-wheel zooming*/
+    transform-origin: top left;
+    /* This works with a transform:scale style added in Javascript to allow zooming just the main page*/
+    transition: transform 20ms;
+    /* This works around a bug in Gecko29 and should be removed when we upgrade. It prevents redraw errors during crtl-wheel zooming*/
 }
 
 // See comments on .bloom-mediaBox in basePage.less for a description of the mediaBox.
@@ -55,9 +58,10 @@ body {
 .bloom-mediaBox {
     pointer-events: none; // we want all clicks to go through this to the child
 
-    & > * {
+    &>* {
         pointer-events: auto; // start up clicks again a the next level
     }
+
     :not(.Device16x9Portrait):not(.Device16x9Landscape)&::before {
         // show bleed area
         content: "";
@@ -70,6 +74,7 @@ body {
         border: 3mm solid rgba(0, 0, 0, 0.4); // medium gray
         z-index: 1;
     }
+
     :not(.Device16x9Portrait):not(.Device16x9Landscape)&:after {
         // show safety area (the area inside of the trim box that still could get cut)
         content: "";
@@ -95,18 +100,22 @@ body {
     visibility: hidden;
     font-size: 0;
 }
+
 .tool-items {
     display: inline-block;
 }
+
 .tool-items {
     /*\*/
     display: block;
     /**/
     -height: 1px;
 }
+
 /*+}*/
 div.bloom-imageContainer {
     .borderOnTopOfElement(@MediumGray);
+
     // This shows the focus border on the root (hasOverlay) image container
     // when it has been clicked on to show its editing buttons (:not(.bloom-hideImageButtons)).
     // Currently, something else typically actually has focus and may also show
@@ -120,11 +129,13 @@ div.bloom-imageContainer {
 // The editing buttons are hidden when this class is added (currently by motion and comic tools)
 .bloom-imageContainer.bloom-hideImageButtons,
 .bloom-imageContainer.ui-suppressImageButtons {
-    > .imageButton,
-    > .miniButton {
+
+    >.imageButton,
+    >.miniButton {
         display: none;
     }
 }
+
 .coverColor div.bloom-imageContainer {
     .borderOnTopOfElement(rgba(1, 1, 1, 0.2));
 }
@@ -139,6 +150,7 @@ div.bloom-imageContainer {
 
 [data-derived="originalCopyrightAndLicense"] {
     cite {
+
         &.missingOriginalTitle,
         &:hover {
             color: red;
@@ -194,10 +206,12 @@ div.page {
     background-color: @MainPageBackgroundColor;
     border: medium outset black;
 }
+
 div.page.coverColor {
     background-color: @ImageAndVideoHoverOverlay;
     border: medium outset black;
 }
+
 /* We want divs which are used for editing to look just like textareas (e.g. border).
    For now, this readOnlyInTranslationMode is an indicator that this is editable,
    but there could be divs which are always editable... unfortunately we can't access
@@ -223,22 +237,26 @@ body:not(.origami-drag) .bloom-imageContainer.hoverUp {
     background-repeat: no-repeat;
     background-size: contain;
     background-position: center center;
+
     &.smallButtonWidth {
         width: 50%;
         max-width: 87px;
         border-style: none;
     }
+
     &.smallButtonHeight {
         height: 50%;
         max-height: 52px;
         border-style: none;
     }
+
     &.changeImageButton {
         right: 0;
         top: 0;
         background-color: @ChangeImageButtonColor;
         background-image: url("/bloom/bookEdit/img/changeButton.svg");
     }
+
     // BL-9976 JH - "We've gotten complaints that users click it and then are too confused and
     // start typing text in the wrong place."
     // &.imageDescriptionButton {
@@ -263,19 +281,23 @@ body:not(.origami-drag) .bloom-imageContainer.hoverUp {
         background-color: @PasteImageButtonColor;
         background-image: url("/bloom/bookEdit/img/pasteButton.svg");
         background-position: right center;
+
         &.smallButtonWidth {
             width: 87px;
+
             &.verySmallButtons {
                 width: 98%;
                 background-size: 60%;
             }
         }
     }
+
     &.editMetadataButton {
         left: 0;
         top: 0;
         background-image: url("/bloom/bookEdit/img/imageMetaDataButton.svg") !important;
         background-color: @MetadataButtonColor;
+
         &.imgMetadataProblem {
             background-color: transparent;
             background-image: url("/bloom/bookEdit/img/imageMissingMetaData.svg") !important;
@@ -283,23 +305,29 @@ body:not(.origami-drag) .bloom-imageContainer.hoverUp {
         }
     }
 }
+
 // override button positions when the image is shrunk to make room for an image description
 .bloom-showImageDescriptions {
     canvas {
         display: none;
     }
+
     .imageButton {
+
         &.changeImageButton,
         &.pasteImageButton {
             right: 50%;
         }
+
         &.changeImageButton,
         &.editMetadataButton {
             top: @imageDescriptionTopBorderWidth; // below the ::before border
         }
     }
+
     button.miniButton {
         right: calc(50% + 60px);
+
         &.verySmallButtons {
             // normally right:60%, width: 30%.
             // We need the effect of 60% of the picture half, plus the 50%
@@ -308,11 +336,14 @@ body:not(.origami-drag) .bloom-imageContainer.hoverUp {
             width: 15%;
         }
     }
+
     .bloom-imageContainer {
+
         // Requiring a direct child helps prevent this from applying to things like the format cog
-        > img {
+        >img {
             height: calc(100% - @imageDescriptionTopBorderWidth);
         }
+
         .bloom-imageDescription {
             // Note: this rule has basically the same specificity as one in basePage.less
             // that sets top to zero. I think this one only wins because it comes later.
@@ -323,15 +354,17 @@ body:not(.origami-drag) .bloom-imageContainer.hoverUp {
         }
     }
 }
+
 @imageDescriptionBorderWidth: 3px;
+
 .bloom-showImageDescriptions .bloom-page .bloom-imageContainer {
     // This produces the thin border on the left, bottom, and right of each image when the
     // image description tool is active.
     border-style: solid;
     border-color: @accordion-active-element;
-    border-width: 0 @imageDescriptionBorderWidth @imageDescriptionBorderWidth
-        @imageDescriptionBorderWidth;
+    border-width: 0 @imageDescriptionBorderWidth @imageDescriptionBorderWidth @imageDescriptionBorderWidth;
     background-repeat: no-repeat;
+
     // This rule produces the border and icon at the top of each image when the image description tool is active
     &::before {
         content: "";
@@ -345,23 +378,28 @@ body:not(.origami-drag) .bloom-imageContainer.hoverUp {
         background-image: url("/bloom/bookEdit/toolbox/imageDescription/ImageDescriptionToolIcon.svg");
     }
 }
+
 .bloom-videoContainer,
 .bloom-widgetContainer {
     &.bloom-selected {
         border: solid 2px @bloom-yellow;
     }
 }
+
 .hoverUp .imageButton {
     border: 2px outset @ImageButtonBorder !important;
     border-radius: 3px !important;
+
     &:hover {
         border: inset @ImageButtonBorder !important;
     }
+
     &.editMetadataButton {
         background-image: none;
         background-color: @MetadataButtonColor !important;
     }
 }
+
 button.miniButton {
     width: 20px;
     height: 18px;
@@ -373,41 +411,52 @@ button.miniButton {
     background-size: contain;
     background-color: transparent;
     z-index: @miniImageEditingButtonZIndex;
+
     &:hover {
         border: 1px inset @ImageButtonBorder;
     }
+
     &.verySmallButtons {
         right: 60%;
     }
+
     &.smallButtonHeight {
         height: 15%;
     }
+
     &.verySmallButtons {
         width: 30%;
     }
+
     &.cutImageButton {
         background-image: url("/bloom/bookEdit/img/cut.svg");
         bottom: 27px;
+
         &.disabled {
             background-image: url("/bloom/bookEdit/img/cutGrey.svg");
             pointer-events: none;
         }
+
         &.smallButtonHeight {
             bottom: 26%;
         }
     }
+
     &.copyImageButton {
         background-image: url("/bloom/bookEdit/img/copy.svg");
         bottom: 6px;
+
         &.disabled {
             background-image: url("/bloom/bookEdit/img/copyGrey.svg");
             pointer-events: none;
         }
+
         &.smallButtonHeight {
             bottom: 4%;
         }
     }
 }
+
 button.deleteButton {
     position: absolute;
     left: 0;
@@ -417,12 +466,14 @@ button.deleteButton {
     height: 40px;
     z-index: 100;
 }
+
 /*Originally, the move button was within the movable thing. Problem is, I couldn't get jquery draggable to actually use this button, using the 'handle' option, probably because it doesn't exist early enough (it pops up on mouseEnter) . But I had to have something in that option, else jquery actually prevents clicking on elements inside the drraggable thing. So I ended up setting the handle to "img", which won't be sufficient once we wan to drag things with no image.So it woud be good to get this working.*/
 .moveButtonIcon {
     background-image: url("/bloom/bookEdit/img/moveDivButton.png") !important;
     width: 37px !important;
     height: 37px !important;
 }
+
 button.moveButton {
     /*+placement:anchor-top-left -19px -17px;*/
     position: absolute;
@@ -437,21 +488,25 @@ button.moveButton {
     z-index: 1000;
     background-size: contain;
 }
+
 textarea,
 div.bloom-editable,
 div.pageLabel[contenteditable="true"] {
     border: thin solid @MediumGray;
     /*[disabled]min-height:34px;*/
 }
+
 /*need a darker border when we have a background color*/
 .coverColor textarea,
 div.bloom-editable {
     border: thin solid rgba(0, 0, 0, 0.2);
 }
+
 img.hoverUp {
     background-color: @bloom-buff;
     border: 1px outset black;
 }
+
 textarea:focus,
 div.bloom-editable:focus,
 div.pageLabel[contenteditable="true"]:focus {
@@ -460,9 +515,11 @@ div.pageLabel[contenteditable="true"]:focus {
         0 0 8px rgba(82, 168, 236, 0.6);
     outline: 0;
 }
+
 .bloom-editable:focus {
     //position: relative;
     z-index: 1; // make room for the ¶ to show underneath the text
+
     // make paragraph markers visible
     p::after,
     .bloom-linebreak:after {
@@ -481,13 +538,17 @@ div.pageLabel[contenteditable="true"]:focus {
         overflow: hidden;
         z-index: -1; // go under any text that reach the end of the line (I don't know why, but 0 doesn't work)
     }
+
     p::after {
         content: "¶";
     }
+
     .bloom-linebreak:after {
         content: "↲";
     }
+
     &[dir="rtl"] {
+
         p:after,
         .bloom-linebreak:after {
             right: auto;
@@ -509,15 +570,18 @@ div.bloom-templateMode {
 .overflow {
     color: @OverflowColor !important;
     border: solid thin @OverflowColor !important; //NB: can't afford to go "thick" because it throws off the calculation
+
     p:empty:after {
         //br:after would be great but it doesn't work
         content: "¶";
     }
 }
+
 .childOverflowingThis {
     border-bottom: solid thick @OverflowColor !important;
     // no, that's really confusing when text far from the crime turns red color: red !important;
 }
+
 //we do both in case one is already used and !important
 .Layout-Problem-Detected:before,
 .Layout-Problem-Detected:after {
@@ -550,6 +614,7 @@ div.textWholePage ul {
     margin-left: 1px;
     margin-top: -37px;
 }
+
 /*suggested by http://jqueryui.com/docs/Upgrade_Guide_17*/
 .ui-mouseOver .ui-resizable-handle {
     width: 8px;
@@ -557,17 +622,21 @@ div.textWholePage ul {
     border: 1px solid rgb(128, 128, 128);
     background: rgb(242, 242, 242);
 }
+
 .ui-resizable-n,
 .ui-resizable-s {
     left: 45%;
 }
+
 .ui-resizable-e,
 .ui-resizable-w {
     top: 45%;
 }
+
 div.marginBox {
     border: 1px solid rgba(115, 189, 189, 0.3);
 }
+
 .bloom-frontMatter div.marginBox {
     /*With the colored background, the margin border is just too distracting, and it doesn't (yet) help the user in any way because he can't move things around on the frontmatter*/
     border: none;
@@ -591,15 +660,18 @@ div.marginBox {
     height: 20px;
     width: 20px;
     z-index: @formatButtonZIndex;
+
     img {
         position: absolute;
         bottom: 0;
         left: 0;
     }
+
     &:hover {
         color: black;
     }
 }
+
 /*Toolbox*/
 #pagedragtoolbox {
     background-color: @PageDragBackgroundColor;
@@ -609,19 +681,23 @@ div.marginBox {
     width: 274px;
     height: 645px;
 }
+
 .ui-resizable,
 .ui-draggable,
 .ui-deletable {
     border: 1px solid @PageDragBorderColor;
 }
+
 #pagedragtoolbox img {
     width: 116px;
 }
-#pagedragtoolbox > ul > li > div {
+
+#pagedragtoolbox>ul>li>div {
     border: 1px dotted @PageDragInnerItemBorderColor;
     margin-top: 34px;
     /*[empty]padding-top:;*/
 }
+
 ul.pagedragtoolbox {
     height: 212px;
     width: 207px;
@@ -629,19 +705,23 @@ ul.pagedragtoolbox {
     margin-top: 15px;
     background-color: transparent;
 }
+
 ul.pagedragtoolbox li {
     display: inline-block;
     width: 162px;
 }
+
 textarea.Heading1-style,
 div.bloom-editable.Heading1-style {
     font-size: 16pt;
 }
+
 textarea.Heading2-style,
 div.bloom-editable.Heading2-style {
     font-size: 13pt;
     font-weight: bold;
 }
+
 .Bubble-style {
     /*  This (currently) empty style lets the Style dropdown find Bubble to add to its list.
         If we decide later, we could give it a default style different than normal.
@@ -652,9 +732,11 @@ div.bloom-editable.Heading2-style {
 
         This type of comment allows the less compiler to keep the empty rule set. */
 }
+
 .centered {
     text-align: center;
 }
+
 /*Put in little grey language tooltips in the bottom-right of the editable divs*/
 .languageTip,
 .bloom-editable[contentEditable="true"][data-languageTipContent]:not([data-languageTipContent=""]):after {
@@ -668,16 +750,19 @@ div.bloom-editable.Heading2-style {
     font-weight: normal;
     line-height: 1; //else it will draw up in the box somewhere if the font is large
 }
+
 .languageTip {
     margin-right: 1px;
     text-align: right;
     bottom: 0;
 }
+
 .bloom-editable[contentEditable="true"][data-languageTipContent]:not([data-languageTipContent=""]):after {
     content: attr(data-languageTipContent);
     bottom: 2px; // See Bl-10017
     margin-right: 2px;
 }
+
 /*Simulate the html5 placeholder attribute which is not available on divs
 The :not(:focus) selector here is something we do NOT want. It was added as a workaround for a firefox bug
 https://bugzilla.mozilla.org/show_bug.cgi?id=997749, namely that when the user clicks in an element which
@@ -689,6 +774,7 @@ even when the div is focused (as long as it is empty).*/
     content: attr(data-placeholder);
     color: @bloom-buff;
 }
+
 /*This block handles marking elements that violate decodable book and leveled reader constraints*/
 span.sentence-too-long {
     background-color: @LeveledReaderViolationColor;
@@ -701,9 +787,11 @@ span.word-too-long {
 .page-too-many-words-or-sentences .marginBox {
     border: 5px solid @LeveledReaderViolationColor !important;
 }
+
 .book-too-many-unique-words .marginBox {
     border: 5px solid @LeveledReaderViolationColor !important;
 }
+
 .book-too-many-words .marginBox {
     border: 5px solid @LeveledReaderViolationColor !important;
 }
@@ -712,8 +800,8 @@ span.word-too-long {
     z-index: 20000;
 }
 
-span.sight-word {
-}
+span.sight-word {}
+
 span.word-not-found {
     background-color: @DecodableReaderViolationColor;
 }
@@ -743,7 +831,9 @@ div.cke_float {
 
 div.long-press-popup {
     z-index: 15005;
-} // in front of hint bubbles
+}
+
+// in front of hint bubbles
 
 .bloom-videoOverlay {
     position: absolute;
@@ -767,6 +857,7 @@ div.long-press-popup {
 body.simulateCataracts {
     .bloom-imageContainer {
         background-color: yellow;
+
         img,
         canvas {
             filter: blur(3px) brightness(50%);
@@ -776,6 +867,7 @@ body.simulateCataracts {
         }
     }
 }
+
 // Hide images when we are putting a color-blindness overlay on top.
 // This makes sure we don't get any trace if the size isn't perfect.
 // More critically, when simulating BOTH color-blindness AND cataracts,
@@ -793,6 +885,7 @@ body.simulateColorBlindness {
 #formatButton {
     display: none;
 }
+
 // using :focus-within works better than .cke-focus (See BL-11803.)
 .bloom-editable:focus-within {
     #formatButton {
@@ -806,6 +899,7 @@ body.simulateColorBlindness {
 ol#topics {
     list-style: none;
 }
+
 // There was a rule for bloom-readOnlyInAuthorMode, but this is obsolete
 // There was also a file editTranslationMode, with a rule for bloom-readOnlyInTranslationMode,
 // but the mode is obsolete so the rule has to be, even though we do still have one field so marked.
@@ -814,6 +908,7 @@ div.bloom-metaData {
     cursor: pointer;
     /*this signals to jscript that when the user clicks on this div, it should raise the message in data-message (which bloom will catch)*/
 }
+
 div.bloom-metaData textarea {
     /*border: transparent; /* jscript will translate to read only*/
     cursor: pointer;
@@ -823,4 +918,14 @@ div.bloom-metaData textarea {
 .enablePageCustomization div.marginBox {
     border: thin dotted rgba(133, 133, 193, 0.9) !important;
 }
+
 // end of block moved from editOriginalMode
+
+
+// normally, the height is just a bit more than the paper size. We changed this in Bloom 5.5 so that we
+// could make dialogs draggable but be constrained the the bounds of the body, without that meaning that
+// you could only have the dialog in the top part of the screen that also had the page.
+html,
+body {
+    height: 100%
+}

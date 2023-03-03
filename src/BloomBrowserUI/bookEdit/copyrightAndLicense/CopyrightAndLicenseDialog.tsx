@@ -121,15 +121,10 @@ export const CopyrightAndLicenseDialog: React.FunctionComponent<{
         closeDialog();
     }
 
-    // If this is false, we get a react render loop and error.
-    // Our theory is some kind of focus war based on enabling/disabling the buttons.
-    const disableDragging = true;
-
     return (
-        <BloomDialog {...propsForBloomDialog} disableDragging={disableDragging}>
+        <BloomDialog {...propsForBloomDialog}>
             <DialogTitle
                 title={dialogTitle}
-                disableDragging={disableDragging}
                 css={css`
                     padding-bottom: 0;
                     margin-bottom: 0;

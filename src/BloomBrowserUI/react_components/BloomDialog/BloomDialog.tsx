@@ -144,9 +144,7 @@ export const BloomDialog: FunctionComponent<IBloomDialogProps> = forwardRef(
             if (disableDragging) {
                 return undefined;
             } else {
-                return hasTitle
-                    ? DraggablePaperLimited
-                    : DraggablePaperLimitedMiddle;
+                return DraggablePaperLimited;
             }
         }
         return (
@@ -156,7 +154,10 @@ export const BloomDialog: FunctionComponent<IBloomDialogProps> = forwardRef(
                         inner
                     ) : (
                         <BloomDialogContext.Provider
-                            value={{ onCancel: props.onCancel }}
+                            value={{
+                                onCancel: props.onCancel,
+                                disableDragging: !!props.disableDragging
+                            }}
                         >
                             <Dialog
                                 onClose={(
@@ -180,6 +181,11 @@ export const BloomDialog: FunctionComponent<IBloomDialogProps> = forwardRef(
                                     [role="dialog"] {
                                         overflow: hidden; // only the middle should scroll. The DialogTitle and DialogBottomButtons should not.
                                     }
+                                    // without this, you can't get the dialog close to the edge
+                                    // because there is a huge invisible margin around the dialog
+                                    .MuiPaper-root {
+                                        margin: 0 !important;
+                                    }
                                 `}
                                 ref={ref}
                                 {...propsToPass} // get fullWidth, maxWidth, open etc. Note that css doesn't end up anywhere useful in the HTML (try the paper?)
@@ -199,11 +205,10 @@ export const DialogTitle: FunctionComponent<{
     color?: string;
     icon?: string;
     title: string; // note, this is prop instead of just a child so that we can ensure vertical alignment and bar height, which are easy to mess up.
-    disableDragging?: boolean;
 }> = props => {
     const color = props.color || "black";
     const background = props.backgroundColor || "transparent";
-    const cursor = props.disableDragging ? "unset" : "move";
+
     const closeText = useL10n("Close", "Common.Close");
 
     // This is lame, but it's really what looks right to me. When there is a color bar, it looks better to have less padding at the top.
@@ -211,6 +216,7 @@ export const DialogTitle: FunctionComponent<{
         background === "transparent" ? kDialogTopPadding : kDialogPadding;
 
     const context = React.useContext(BloomDialogContext);
+    const cursor = context.disableDragging ? "unset" : "move";
     return (
         <div
             id="draggable-dialog-title"
@@ -395,15 +401,12 @@ const DraggablePaperLimited: FunctionComponent<PaperProps> = props => {
     return <DraggablePaperCore handleId="draggable-dialog-title" {...props} />;
 };
 
-// For a dialog that is draggable by click-dragging anywhere in the contents of the dialog.
-// Maybe the only case where we will ever use this is for a dialog that we put up during printing that JT calls the "please notice dialog".
-// See PDFPrintPublishScreen
-const DraggablePaperLimitedMiddle: FunctionComponent<PaperProps> = props => {
-    return <DraggablePaperCore handleId="draggable-dialog-middle" {...props} />;
-};
-
 // This used to pass down things to components of the dialog
-type BloomDialogContextArgs = { onCancel?: () => void };
+type BloomDialogContextArgs = {
+    onCancel?: () => void;
+    disableDragging: boolean;
+};
 export const BloomDialogContext = React.createContext<BloomDialogContextArgs>({
-    onCancel: undefined
+    onCancel: undefined,
+    disableDragging: false
 });
