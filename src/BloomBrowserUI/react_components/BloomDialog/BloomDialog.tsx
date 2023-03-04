@@ -1,5 +1,4 @@
-/** @jsx jsx **/
-import { jsx, css, SerializedStyles } from "@emotion/react";
+import { css, SerializedStyles } from "@emotion/react";
 import { forwardRef, useEffect } from "react";
 import { FunctionComponent } from "react";
 import { ThemeProvider, StyledEngineProvider } from "@mui/material/styles";
@@ -11,7 +10,6 @@ import {
     PaperProps
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
-import CloseOnEscape from "react-close-on-escape";
 import {
     kDialogPadding,
     kUiFontStack,
