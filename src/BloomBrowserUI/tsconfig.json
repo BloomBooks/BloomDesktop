@@ -3,7 +3,11 @@
         "target": "es2018",
         "module": "commonjs",
         "sourceMap": true,
-        "jsx": "react",
+        "jsx": "react-jsx",
+        "jsxImportSource": "@emotion/react",
+        "types": [ /*"@emotion/core",*/
+            "@emotion/react/types/css-prop"
+        ],
         "lib": [
             "dom",
             "es6",
