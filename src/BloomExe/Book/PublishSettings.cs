@@ -50,10 +50,14 @@ namespace Bloom.Book
 		}
 		public void LoadNewJson(string json)
 		{
-			JsonSerializerSettings settings = new JsonSerializerSettings();
 			try
 			{
-				JsonConvert.PopulateObject(json, this, settings);
+				JsonConvert.PopulateObject(json, this,
+					// Previously, various things could be null. As part of simplifying the use of PublishSettings,
+					// we now never have nulls; everything gets defaults when it is created.
+					// For backwards capabilty, if the json we are reading has a null for a value,
+					// do not override the default value that we already have loaded.
+					new JsonSerializerSettings() { NullValueHandling=NullValueHandling.Ignore});
 			}
 			catch (Exception e) { throw new ApplicationException("publish-settings of this book may be corrupt", e); }
 		}
