@@ -1,19 +1,17 @@
 import { css } from "@emotion/react";
+import { Slider, Typography } from "@mui/material";
 import {
     ConfigrPane,
     ConfigrGroup,
     ConfigrSubgroup,
     ConfigrCustomStringInput,
+    ConfigrCustomNumberInput,
     ConfigrColorPicker,
     ConfigrInput,
-    ConfigrBoolean
+    ConfigrCustomObjectInput
 } from "@sillsdev/config-r";
 import React = require("react");
-import {
-    kBloomBlue,
-    kUiFontStack,
-    lightTheme
-} from "../../bloomMaterialUITheme";
+import { kBloomBlue } from "../../bloomMaterialUITheme";
 import {
     BloomDialog,
     DialogMiddle,
@@ -23,7 +21,6 @@ import {
 import { useSetupBloomDialog } from "../../react_components/BloomDialog/BloomDialogPlumbing";
 import {
     DialogCancelButton,
-    DialogCloseButton,
     DialogOkButton
 } from "../../react_components/BloomDialog/commonDialogComponents";
 import { postJson, useApiStringState } from "../../utils/bloomApi";
@@ -111,7 +108,10 @@ export const BookSettingsDialog: React.FunctionComponent<{
                             }}
                             showAppBar={false}
                             showJson={true}
-                            setValueOnRender={setSettingsToReturnLater}
+                            setValueOnRender={s => {
+                                setSettingsToReturnLater(s);
+                                //setSettings(s);
+                            }}
                         >
                             <ConfigrGroup label="Appearance" level={1}>
                                 <ConfigrSubgroup
@@ -133,17 +133,9 @@ export const BookSettingsDialog: React.FunctionComponent<{
                                         "When images in books are really high resolution, it makes the books more difficult to view over poor internet connections. They will also take more space on phones. For this reason, Bloom reduces images to a maximum size."
                                     }
                                 >
-                                    <ConfigrInput
-                                        path={`publish.bloomPUB.imageSettings.maxWidth`}
-                                        label="Maximum Width"
-                                        type="number"
-                                        units="pixels"
-                                    />
-                                    <ConfigrInput
-                                        path={`publish.bloomPUB.imageSettings.maxHeight`}
-                                        label="Maximum Height"
-                                        type="number"
-                                        units="pixels"
+                                    <BloomResolutionSlider
+                                        path={`publish.bloomPUB.imageSettings`}
+                                        label="Resolution"
                                     />
                                 </ConfigrSubgroup>
                             </ConfigrGroup>
@@ -166,6 +158,74 @@ export const BookSettingsDialog: React.FunctionComponent<{
                 </DialogBottomButtons>
             </BloomDialog>
         </React.Fragment>
+    );
+};
+
+type Resolution = {
+    maxWidth: number;
+    maxHeight: number;
+};
+
+const BloomResolutionSlider: React.FunctionComponent<React.PropsWithChildren<{
+    path: string;
+    label: string;
+}>> = props => {
+    return (
+        <ConfigrCustomObjectInput<Resolution>
+            control={BloomResolutionSliderInner}
+            {...props}
+        ></ConfigrCustomObjectInput>
+    );
+};
+
+const BloomResolutionSliderInner: React.FunctionComponent<{
+    value: Resolution;
+    onChange: (value: Resolution) => void;
+}> = props => {
+    const sizes = [
+        { l: "Small", w: 600, h: 600 },
+        { l: "HD", w: 1280, h: 720 },
+        { l: "Full HD", w: 1920, h: 1080 },
+        { l: "4k", w: 3840, h: 2160 }
+    ];
+    let currentIndex = sizes.findIndex(x => x.w === props.value.maxWidth);
+    if (currentIndex === -1) {
+        currentIndex = 0;
+    }
+    const current = sizes[currentIndex];
+
+    return (
+        <div
+            css={css`
+                display: flex;
+                flex-direction: column;
+                width: 200px; // todo: what should this be?
+            `}
+        >
+            <Typography
+                css={css`
+                    text-align: right;
+                `}
+                variant="h3"
+            >{`${current.l}`}</Typography>
+            <Slider
+                track={false}
+                max={sizes.length - 1}
+                min={0}
+                step={1}
+                value={currentIndex}
+                valueLabelFormat={() => {
+                    return `${current.w}x${current.h}`;
+                }}
+                onChange={(e, value) => {
+                    props.onChange({
+                        maxWidth: sizes[value as number].w,
+                        maxHeight: sizes[value as number].h
+                    });
+                }}
+                valueLabelDisplay="auto"
+            ></Slider>
+        </div>
     );
 };
 
