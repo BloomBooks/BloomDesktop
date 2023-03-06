@@ -221,6 +221,7 @@ namespace Bloom.Spreadsheet
 			{
 				var currentRow = _inputRows[_currentRowIndex];
 				string rowTypeLabel = currentRow.MetadataKey;
+				bool extraRow = false;
 
 				if (rowTypeLabel == InternalSpreadsheet.PageContentRowLabel)
 				{
@@ -238,7 +239,17 @@ namespace Bloom.Spreadsheet
 					}
 					if (rowHasImage)
 					{
-						PutRowInImage(currentRow);
+						ContentRow descriptionRow = null;
+						if (_currentRowIndex < _inputRows.Count - 1)
+						{
+							var nextRow = _inputRows[_currentRowIndex + 1];
+							if (nextRow.MetadataKey == InternalSpreadsheet.ImageDescriptionRowLabel)
+							{
+								extraRow = true;
+								descriptionRow = nextRow;
+							}
+						}
+						PutRowInImage(currentRow, descriptionRow);
 					}
 					if (rowHasText) {
 						PutRowInGroup(currentRow, _currentGroup);
@@ -250,7 +261,11 @@ namespace Bloom.Spreadsheet
 					UpdateDataDivFromRow(currentRow, dataBookLabel);
 				}
 				_currentRowIndex++;
+				if (extraRow)
+					_currentRowIndex++;
 			}
+
+			CleanupLeftOverPages();
 
 			CleanupDataDiv();
 			// This section is necessary to make sure changes to the dom are recorded.
@@ -280,7 +295,25 @@ namespace Bloom.Spreadsheet
 			return _warnings;
 		}
 
-		private void PutRowInImage(ContentRow currentRow)
+		private void CleanupLeftOverPages()
+		{
+			// the current page at _currentPageIndex must have some useful content,
+			// because we would only advance _currentPageIndex to it in order to add some.
+			// So we want to keep that one for sure.
+			_currentPageIndex++;
+			// If by any chance we arn't past the front matter (e.g., spreadsheet is empty) advance past it.
+			while (_currentPageIndex < _pages.Count && XMatterHelper.IsFrontMatterPage(_pages[_currentPageIndex]))
+				_currentPageIndex++;
+
+			while (_currentPageIndex < _pages.Count && !XMatterHelper.IsBackMatterPage(_pages[_currentPageIndex]))
+			{
+				_currentPage = _pages[_currentPageIndex];
+				_currentPage.ParentNode.RemoveChild(_currentPage);
+				_currentPageIndex++;
+			}
+		}
+
+		private void PutRowInImage(ContentRow currentRow, ContentRow descriptionRow)
 		{
 			var spreadsheetImgPath = currentRow.GetCell(InternalSpreadsheet.ImageSourceColumnLabel).Content;
 			if (spreadsheetImgPath == InternalSpreadsheet.BlankContentIndicator)
@@ -315,6 +348,20 @@ namespace Bloom.Spreadsheet
 				}
 
 				CopyImageFileToDestination(destFileName, fullSpreadsheetPath, imgElement);
+			}
+
+			if (descriptionRow != null)
+			{
+				XmlElement group = _currentImageContainer.GetElementsByTagName("div")
+					.Cast<XmlElement>()
+					.FirstOrDefault(e => e.Attributes["class"].Value.Contains("bloom-imageDescription"));
+				if (group == null)
+				{
+					group = _currentImageContainer.OwnerDocument.CreateElement("div");
+					group.SetAttribute("class", "bloom-translationGroup bloom-imageDescription bloom-trailingElement");
+					_currentImageContainer.AppendChild(group);
+				}
+				PutRowInGroup(descriptionRow, group);
 			}
 		}
 
@@ -596,7 +643,7 @@ namespace Bloom.Spreadsheet
 			SizeAndOrientation.UpdatePageSizeAndOrientationClasses(newPage, _destLayout);
 			// Correctly inserts at end if _currentPage is null, though this will hardly ever
 			// be true because we normally have at least backmatter page to insert before.
-			_pages[0].ParentNode.InsertBefore(newPage, _currentPage);
+			(_pages[0].ParentNode ?? _destinationDom.Body).InsertBefore(newPage, _currentPage);
 
 			// clear everything: this is useful in case it has slots we won't use.
 			// They might have content either from the original last page, or from the

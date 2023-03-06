@@ -79,8 +79,7 @@ const SpreadsheetExportDialog: React.FunctionComponent<{
                         This feature is still a work in progress. Though you can{" "}
                         <em>export</em> all books, Bloom cannot <em>import</em>{" "}
                         books with these features: Quizzes and other Activities.
-                        Image descriptions are neither exported nor imported. If
-                        you change the text after recording audio and before
+                        If you change the text after recording audio and before
                         exporting, the audio may not import correctly. There may
                         be other export and import limitations we are not aware
                         of.

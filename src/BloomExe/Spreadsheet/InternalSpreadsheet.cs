@@ -36,6 +36,7 @@ namespace Bloom.Spreadsheet
 		public const string BookTitleRowLabel = "[bookTitle]";
 		public const string CoverImageRowLabel = "[coverImage]";
 		public const string PageContentRowLabel = "[page content]";
+		public const string ImageDescriptionRowLabel = "[image description]";
 
 		private List<SpreadsheetRow> _rows = new List<SpreadsheetRow>();
 		public SpreadsheetExportParams Params = new SpreadsheetExportParams();
@@ -226,6 +227,16 @@ namespace Bloom.Spreadsheet
 			if (!string.IsNullOrEmpty(friendlyNameComment))
 			{
 				addedCells.nameCell.Comment = friendlyNameComment;
+			}
+
+			if (Header.ColumnIdRow.GetCell(Header.ColumnCount - 2).Content == "[*]")
+			{
+				foreach (var row in _rows)
+				{
+					row.SwapNext(Header.ColumnCount - 2);
+				}
+
+				return Header.ColumnCount - 2;
 			}
 
 			return Header.ColumnCount - 1;

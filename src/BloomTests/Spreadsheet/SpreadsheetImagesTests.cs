@@ -344,17 +344,5 @@ namespace BloomTests.Spreadsheet
 			var svgRow = _rows.First(x => x.GetCell(InternalSpreadsheet.RowTypeColumnLabel).Text.Equals("[outside-back-cover-bottom-html]"));
 			Assert.That(svgRow.GetCell(thumbnailColumn).Text, Is.EqualTo("Can't display SVG"));
 		}
-
-		[TestCase("fromFile")]
-		public void GotWarningForExportingImageDescription(string source)
-		{
-			SetupFor(source);
-			// A better test would be to have multiple image descriptions and verify that we only get one
-			// warning. However, this is throw-away code: eventually we most likely WILL handle image
-			// descriptions. I think it's enough.
-			Assert.That(_progressSpy.Warnings,
-				Does.Contain(
-						"Image descriptions are not currently supported by spreadsheet import/export. They will be ignored."));
-		}
 	}
 }
