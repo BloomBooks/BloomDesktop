@@ -221,6 +221,14 @@ body[bookcreationtype="translation"] {
     }
 }
 
+// If the L1 name is too long to fit on one line, and there is not Topic, we want the wrapped text centered.
+.frontCover
+    .bottomBlock
+    .bottomRow[data-have-topic="false"]
+    .coverBottomLangName {
+    text-align: center;
+}
+
 .L1-Name-Cover-style {
     font-size: 14pt;
 }
