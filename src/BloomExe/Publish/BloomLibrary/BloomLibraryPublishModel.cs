@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Bloom.Properties;
@@ -13,6 +13,11 @@ using Bloom.Utils;
 using Bloom.web;
 using SIL.IO;
 using SIL.Progress;
+using Bloom.Book;
+using Bloom.MiscUI;
+using System.Globalization;
+using Bloom.ImageProcessing;
+using System.Drawing;
 
 namespace Bloom.Publish.BloomLibrary
 {
@@ -493,6 +498,183 @@ namespace Bloom.Publish.BloomLibrary
 
 			// Give up.
 			return null;
+		}
+
+		public void ShowIdCollisionDialog(IEnumerable<string> languagesToUpload, bool signLanguageFeatureSelected)
+		{
+			var newThumbPath = ChooseBestUploadingThumbnailPath(Book).ToLocalhost();
+			var newTitle = Book.TitleBestForUserDisplay;
+			var newLanguages = ConvertLanguageCodesToNames(languagesToUpload, Book.BookData);
+			if (signLanguageFeatureSelected && !string.IsNullOrEmpty(CurrentSignLanguageName))
+			{
+				var newLangs = newLanguages.ToList();
+				if (!newLangs.Contains(CurrentSignLanguageName))
+					newLangs.Add(CurrentSignLanguageName);
+				newLanguages = newLangs;
+			}
+
+			var existingBookInfo = ConflictingBookInfo;
+			var updatedDateTime = (DateTime)existingBookInfo.updatedAt;
+			var createdDateTime = (DateTime)existingBookInfo.createdAt;
+			// Find the best title available (BL-11027)
+			// Users can click on this title to bring up the existing book's page.
+			var existingTitle = existingBookInfo.title?.Value;
+			if (String.IsNullOrEmpty(existingTitle))
+			{
+				// If title is undefined (which should not be the case), then use the first title from allTitles.
+				var allTitlesString = existingBookInfo.allTitles?.Value;
+				if (!String.IsNullOrEmpty(allTitlesString))
+				{
+					try
+					{
+						var allTitles = Newtonsoft.Json.Linq.JObject.Parse(allTitlesString);
+						foreach (var title in allTitles)
+						{
+							// title.Value is dynamic language code / title string pair
+							// title.Value.Value is the actual book title in the associated language
+							if (title?.Value?.Value != null)
+							{
+								existingTitle = title.Value.Value;
+								break;
+							}
+						}
+					}
+					catch
+					{
+						// ignore parse failure -- should never happen at this point.
+					}
+				}
+			}
+			// If neither title nor allTitles are defined, just give a placeholder value.
+			if (String.IsNullOrEmpty(existingTitle))
+				existingTitle = "Unknown";
+
+			var existingId = existingBookInfo.objectId.ToString();
+			var existingBookUrl = BloomLibraryUrls.BloomLibraryDetailPageUrlFromBookId(existingId);
+
+			var existingLanguages = ConvertLanguagePointerObjectsToNames(existingBookInfo.langPointers);
+			var createdDate = createdDateTime.ToString("d", CultureInfo.CurrentCulture);
+			var updatedDate = updatedDateTime.ToString("d", CultureInfo.CurrentCulture);
+			var existingThumbUrl = GetBloomLibraryThumbnailUrl(existingBookInfo);
+			using (var dlg = new ReactDialog("uploadIDCollisionDlgBundle",
+				// Props for dialog; must be the same as IUploadCollisionDlgProps in js-land.
+				new
+				{
+					userEmail = LoggedIn ? WebUserId : "",
+					newThumbUrl = newThumbPath,
+					newTitle,
+					newLanguages,
+					existingTitle,
+					existingLanguages,
+					existingCreatedDate = createdDate,
+					existingUpdatedDate = updatedDate,
+					existingBookUrl,
+					existingThumbUrl
+				}
+			))
+			{
+				dlg.Width = 770;
+				dlg.Height = 570;
+				dlg.ControlBox = false;
+				dlg.ShowDialog(Shell.GetShellOrOtherOpenForm());
+			}
+		}
+
+		// We are trying our best to end up with a thumbnail whose height/width ratio
+		// is the same as the original image. This allows the Uploading and Already in Bloom Library
+		// thumbs to top-align.
+		private string ChooseBestUploadingThumbnailPath(Book.Book book)
+		{
+			// If this exists, it will have the original image's ratio of height to width.
+			var thumb70Path = Path.Combine(book.FolderPath, "thumbnail-70.png");
+			if (RobustFile.Exists(thumb70Path))
+				return thumb70Path;
+			var coverImagePath = book.GetCoverImagePath();
+			if (coverImagePath == null)
+			{
+				return book.ThumbnailPath;
+			}
+			else
+			{
+				RuntimeImageProcessor.GenerateThumbnail(book.GetCoverImagePath(),
+					book.NonPaddedThumbnailPath, 70, ColorTranslator.FromHtml(book.GetCoverColor()));
+				return book.NonPaddedThumbnailPath;
+
+			}
+		}
+		private static string GetBloomLibraryThumbnailUrl(dynamic existingBookInfo)
+		{
+			// Code basically copied from bloomlibrary2 Book.ts
+			var baseUrl = existingBookInfo.baseUrl.ToString();
+			var harvestState = existingBookInfo.harvestState.ToString();
+			var updatedTime = existingBookInfo.updatedAt.ToString();
+			var harvesterThumbnailUrl = GetHarvesterThumbnailUrl(baseUrl, harvestState, updatedTime);
+			if (harvesterThumbnailUrl != null)
+			{
+				return harvesterThumbnailUrl;
+			}
+			// Try "legacy" version (the one uploaded with the book)
+			return CreateThumbnailUrlFromBase(baseUrl, updatedTime);
+		}
+
+		// Code modified from bloomlibrary2 Book.ts.
+		// Bloomlibrary2 code still (as of 11/11/2021) checks the harvest date to see if the thumbnail is useful,
+		// But now there are no books in circulation on bloomlibrary that haven't been harvested since that date.
+		// So now we can consider any harvester thumbnail as valid, as long as the harvestState is "Done".
+		private static string GetHarvesterThumbnailUrl(string baseUrl, string harvestState, string lastUpdate)
+		{
+			if (harvestState != "Done")
+				return null;
+
+			var harvesterBaseUrl = GetHarvesterBaseUrl(baseUrl);
+			return CreateThumbnailUrlFromBase(harvesterBaseUrl, lastUpdate);
+		}
+
+		private static string CreateThumbnailUrlFromBase(string baseUrl, string lastUpdate)
+		{
+			// The bloomlibrary2 code calls Book.getCloudFlareUrl(), but it just passes the parameter through
+			// at this point with a bunch of comments on why we don't do anything there.
+			return baseUrl + "thumbnails/thumbnail-256.png?version=" + lastUpdate;
+		}
+
+		// Code basically copied from bloomlibrary2 Book.ts
+		private static string GetHarvesterBaseUrl(string baseUrl)
+		{
+			const string slash = "%2f";
+			var folderWithoutLastSlash = baseUrl;
+			if (baseUrl.EndsWith(slash))
+			{
+				folderWithoutLastSlash = baseUrl.Substring(0, baseUrl.Length - 3);
+			}
+
+			var index = folderWithoutLastSlash.LastIndexOf(slash, StringComparison.InvariantCulture);
+			var pathWithoutBookName = folderWithoutLastSlash.Substring(0, index);
+			return pathWithoutBookName.Replace("BloomLibraryBooks-Sandbox", "bloomharvest-sandbox")
+					   .Replace("BloomLibraryBooks", "bloomharvest") + "/";
+		}
+
+		private IEnumerable<string> ConvertLanguageCodesToNames(IEnumerable<string> languageCodesToUpload, BookData bookData)
+		{
+			foreach (var langCode in languageCodesToUpload)
+			{
+				yield return bookData.GetDisplayNameForLanguage(langCode);
+			}
+		}
+
+		private IEnumerable<string> ConvertLanguagePointerObjectsToNames(IEnumerable<dynamic> langPointers)
+		{
+			foreach (var languageObject in langPointers)
+			{
+				yield return languageObject.name;
+			}
+		}
+
+		private string CurrentSignLanguageName
+		{
+			get
+			{
+				return Book.CollectionSettings.SignLanguage.Name;
+			}
 		}
 	}
 
