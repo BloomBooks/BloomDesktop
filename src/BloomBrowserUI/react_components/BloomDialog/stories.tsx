@@ -179,7 +179,7 @@ storiesOf("Bloom Dialog", module)
                 propsForBloomDialog
             } = useSetupBloomDialog(normalDialogEnvironmentForStorybook);
             return (
-                <BloomDialog {...propsForBloomDialog}>
+                <BloomDialog onCancel={closeDialog} {...propsForBloomDialog}>
                     <DialogTitle
                         icon="Check In.svg"
                         backgroundColor="#ffffad"
@@ -249,7 +249,7 @@ storiesOf("Bloom Dialog", module)
                         <Button variant="contained" color="primary">
                             Just Do It
                         </Button>
-                        <DialogCancelButton onClick_DEPRECATED={closeDialog} />
+                        <DialogCancelButton />
                     </DialogBottomButtons>
                 </BloomDialog>
             );

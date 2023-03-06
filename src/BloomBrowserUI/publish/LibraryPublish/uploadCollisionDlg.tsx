@@ -224,7 +224,7 @@ export const UploadCollisionDlg: React.FunctionComponent<IUploadCollisionDlgProp
                     >
                         <DialogTitle
                             title={sameBook}
-                            icon="BookIdCollision.svg"
+                            icon="/bloom/publish/LibraryPublish/BookIdCollision.svg"
                         ></DialogTitle>
                         <div
                             css={css`
@@ -359,7 +359,17 @@ export const UploadCollisionDlg: React.FunctionComponent<IUploadCollisionDlgProp
                         >
                             Upload
                         </BloomButton>
-                        <DialogCancelButton></DialogCancelButton>
+                        <DialogCancelButton
+                            // Something is preventing onCancel on BloomDialog from working in
+                            // this case. I'm not sure if it has to do with this dialog
+                            // being in a separate browser... that's my theory since it
+                            // works in storybook. For now, I'm just restoring the functionality
+                            // by putting the deprecated onClick back.
+                            onClick_DEPRECATED={() => {
+                                post("libraryPublish/cancel_obsolete");
+                                closeDialog();
+                            }}
+                        ></DialogCancelButton>
                     </DialogBottomButtons>
                 </BloomDialog>
             </ThemeProvider>
