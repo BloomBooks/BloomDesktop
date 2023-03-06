@@ -177,11 +177,11 @@ namespace Bloom.Publish
 			this.tableLayoutPanel1.ColumnCount = 1;
 			this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
 			this.tableLayoutPanel1.ContextMenuStrip = this._contextMenuStrip;
-			this.tableLayoutPanel1.Controls.Add(this._bloomPUBRadio, 0, 9);
-			this.tableLayoutPanel1.Controls.Add(this._recordVideoRadio, 0, 10);
-			this.tableLayoutPanel1.Controls.Add(this._uploadRadio, 0, 8);
+			this.tableLayoutPanel1.Controls.Add(this._bloomPUBRadio, 0, 8);
+			this.tableLayoutPanel1.Controls.Add(this._recordVideoRadio, 0, 9);
+			this.tableLayoutPanel1.Controls.Add(this._uploadRadio, 0, 7);
 			// re-enable for Bloom 5.5
-			//this.tableLayoutPanel1.Controls.Add(this._pdfPrintRadio, 0, 7);
+			//this.tableLayoutPanel1.Controls.Add(this._pdfPrintRadio, 0, 6);
 			this.tableLayoutPanel1.Controls.Add(this._menusToolStrip, 0, 0);
 			this.tableLayoutPanel1.Controls.Add(this._bookletCoverRadio, 0, 3);
 			this.tableLayoutPanel1.Controls.Add(this.label1, 0, 5);
@@ -264,7 +264,7 @@ namespace Bloom.Publish
 			this._L10NSharpExtender.SetLocalizingId(this._bloomPUBRadio, "PublishTab.bloomPUBButton");
 			this._bloomPUBRadio.Location = new System.Drawing.Point(3, 602);
 			this._bloomPUBRadio.Name = "_bloomPUBRadio";
-			this._bloomPUBRadio.Size = new System.Drawing.Size(105, 71);
+			this._bloomPUBRadio.Size = new System.Drawing.Size(105, 89);
 			superToolTipInfo1.BackgroundGradientBegin = System.Drawing.Color.FromArgb(((int)(((byte)(252)))), ((int)(((byte)(253)))), ((int)(((byte)(254)))));
 			superToolTipInfo1.BackgroundGradientEnd = System.Drawing.Color.FromArgb(((int)(((byte)(166)))), ((int)(((byte)(227)))), ((int)(((byte)(235)))));
 			superToolTipInfo1.BackgroundGradientMiddle = System.Drawing.Color.FromArgb(((int)(((byte)(208)))), ((int)(((byte)(240)))), ((int)(((byte)(245)))));
@@ -291,7 +291,7 @@ namespace Bloom.Publish
 			this._L10NSharpExtender.SetLocalizingId(this._recordVideoRadio, "PublishTab.RecordVideoButton");
 			this._recordVideoRadio.Location = new System.Drawing.Point(3, 679);
 			this._recordVideoRadio.Name = "_recordVideoRadio";
-			this._recordVideoRadio.Size = new System.Drawing.Size(105, 71);
+			this._recordVideoRadio.Size = new System.Drawing.Size(105, 89);
 			superToolTipInfo7.BackgroundGradientBegin = System.Drawing.Color.FromArgb(((int)(((byte)(252)))), ((int)(((byte)(253)))), ((int)(((byte)(254)))));
 			superToolTipInfo7.BackgroundGradientEnd = System.Drawing.Color.FromArgb(((int)(((byte)(166)))), ((int)(((byte)(227)))), ((int)(((byte)(235)))));
 			superToolTipInfo7.BackgroundGradientMiddle = System.Drawing.Color.FromArgb(((int)(((byte)(208)))), ((int)(((byte)(240)))), ((int)(((byte)(245)))));
@@ -503,7 +503,7 @@ namespace Bloom.Publish
 			this._L10NSharpExtender.SetLocalizingId(this._epubRadio, "PublishTab.EpubButton");
 			this._epubRadio.Location = new System.Drawing.Point(3, 756);
 			this._epubRadio.Name = "_epubRadio";
-			this._epubRadio.Size = new System.Drawing.Size(105, 76);
+			this._epubRadio.Size = new System.Drawing.Size(105, 89);
 			superToolTipInfo6.BackgroundGradientBegin = System.Drawing.Color.FromArgb(((int)(((byte)(252)))), ((int)(((byte)(253)))), ((int)(((byte)(254)))));
 			superToolTipInfo6.BackgroundGradientEnd = System.Drawing.Color.FromArgb(((int)(((byte)(166)))), ((int)(((byte)(227)))), ((int)(((byte)(235)))));
 			superToolTipInfo6.BackgroundGradientMiddle = System.Drawing.Color.FromArgb(((int)(((byte)(208)))), ((int)(((byte)(240)))), ((int)(((byte)(245)))));
