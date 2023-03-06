@@ -44,10 +44,10 @@ namespace Bloom.Edit
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
-            System.Drawing.Imaging.ImageAttributes imageAttributes5 = new System.Drawing.Imaging.ImageAttributes();
-            System.Drawing.Imaging.ImageAttributes imageAttributes6 = new System.Drawing.Imaging.ImageAttributes();
-            System.Drawing.Imaging.ImageAttributes imageAttributes7 = new System.Drawing.Imaging.ImageAttributes();
-            System.Drawing.Imaging.ImageAttributes imageAttributes8 = new System.Drawing.Imaging.ImageAttributes();
+            System.Drawing.Imaging.ImageAttributes imageAttributes1 = new System.Drawing.Imaging.ImageAttributes();
+            System.Drawing.Imaging.ImageAttributes imageAttributes2 = new System.Drawing.Imaging.ImageAttributes();
+            System.Drawing.Imaging.ImageAttributes imageAttributes3 = new System.Drawing.Imaging.ImageAttributes();
+            System.Drawing.Imaging.ImageAttributes imageAttributes4 = new System.Drawing.Imaging.ImageAttributes();
             this._editButtonsUpdateTimer = new System.Windows.Forms.Timer(this.components);
             this._handleMessageTimer = new System.Windows.Forms.Timer(this.components);
             this.settingsLauncherHelper1 = new SIL.Windows.Forms.SettingProtection.SettingsProtectionHelper(this.components);
@@ -146,6 +146,8 @@ namespace Bloom.Edit
             this._rightToolStrip.Size = new System.Drawing.Size(176, 66);
             this._rightToolStrip.TabIndex = 32;
             this._rightToolStrip.Text = "_toolStrip";
+            this._rightToolStrip.Visible = false;
+            this._rightToolStrip.ItemClicked += new System.Windows.Forms.ToolStripItemClickedEventHandler(this._rightToolStrip_ItemClicked);
             // 
             // _bookSettingsButton
             // 
@@ -160,6 +162,7 @@ namespace Bloom.Edit
             this._bookSettingsButton.Size = new System.Drawing.Size(126, 61);
             this._bookSettingsButton.Text = "Book Settings";
             this._bookSettingsButton.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
+            this._bookSettingsButton.Visible = false;
             this._bookSettingsButton.Click += new System.EventHandler(this._bookSettingsButton_Click);
             // 
             // _undoButton
@@ -174,7 +177,7 @@ namespace Bloom.Edit
             this._undoButton.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(49)))), ((int)(((byte)(32)))), ((int)(((byte)(46)))));
             this._undoButton.Image = null;
             this._undoButton.ImageAlign = System.Drawing.ContentAlignment.TopCenter;
-            this._undoButton.ImageAttributes = imageAttributes5;
+            this._undoButton.ImageAttributes = imageAttributes1;
             this._undoButton.ImageBorderColor = System.Drawing.Color.Transparent;
             this._undoButton.ImageBorderEnabled = false;
             this._undoButton.ImageDropShadow = false;
@@ -216,7 +219,7 @@ namespace Bloom.Edit
             this._cutButton.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(49)))), ((int)(((byte)(32)))), ((int)(((byte)(46)))));
             this._cutButton.Image = null;
             this._cutButton.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            this._cutButton.ImageAttributes = imageAttributes6;
+            this._cutButton.ImageAttributes = imageAttributes2;
             this._cutButton.ImageBorderColor = System.Drawing.Color.Transparent;
             this._cutButton.ImageBorderEnabled = false;
             this._cutButton.ImageDropShadow = false;
@@ -257,7 +260,7 @@ namespace Bloom.Edit
             this._pasteButton.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(49)))), ((int)(((byte)(32)))), ((int)(((byte)(46)))));
             this._pasteButton.Image = null;
             this._pasteButton.ImageAlign = System.Drawing.ContentAlignment.TopCenter;
-            this._pasteButton.ImageAttributes = imageAttributes7;
+            this._pasteButton.ImageAttributes = imageAttributes3;
             this._pasteButton.ImageBorderColor = System.Drawing.Color.Transparent;
             this._pasteButton.ImageBorderEnabled = false;
             this._pasteButton.ImageDropShadow = false;
@@ -299,7 +302,7 @@ namespace Bloom.Edit
             this._copyButton.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(49)))), ((int)(((byte)(32)))), ((int)(((byte)(46)))));
             this._copyButton.Image = null;
             this._copyButton.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            this._copyButton.ImageAttributes = imageAttributes8;
+            this._copyButton.ImageAttributes = imageAttributes4;
             this._copyButton.ImageBorderColor = System.Drawing.Color.Transparent;
             this._copyButton.ImageBorderEnabled = false;
             this._copyButton.ImageDropShadow = false;

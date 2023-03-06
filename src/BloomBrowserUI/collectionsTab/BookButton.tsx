@@ -14,6 +14,7 @@ import { BookSelectionManager, useIsSelected } from "./bookSelectionManager";
 import { IBookInfo, ICollection } from "./BooksOfCollection";
 import { makeMenuItems, MenuItemSpec } from "./CollectionsTabPane";
 import DeleteIcon from "@mui/icons-material/Delete";
+import { showBookSettingsDialog } from "../bookEdit/bookSettings/BookSettingsDialog";
 
 export const bookButtonHeight = 120;
 export const bookButtonWidth = 90;
@@ -207,6 +208,15 @@ export const BookButton: React.FunctionComponent<{
                 l10nId: "CollectionTab.BookMenu.ShowInFileExplorer",
                 command: "bookCommand/openFolderOnDisk",
                 shouldShow: () => !props.collection.isFactoryInstalled // show for all collections (except factory)
+            },
+            {
+                label: "Book Settings",
+                l10nId: "Common.BookSettings",
+                addEllipsis: true,
+                requiresSavePermission: true,
+                onClick: () => {
+                    showBookSettingsDialog();
+                }
             },
             {
                 label: "Delete Book",
