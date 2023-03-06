@@ -326,7 +326,7 @@ namespace Bloom.Publish
             this._L10NSharpExtender.SetLocalizingId(this._bloomPUBRadio, "PublishTab.bloomPUBButton");
             this._bloomPUBRadio.Location = new System.Drawing.Point(3, 288);
             this._bloomPUBRadio.Name = "_bloomPUBRadio";
-            this._bloomPUBRadio.Size = new System.Drawing.Size(105, 71);
+            this._bloomPUBRadio.Size = new System.Drawing.Size(105, 89);
             superToolTipInfo4.BackgroundGradientBegin = System.Drawing.Color.FromArgb(((int)(((byte)(252)))), ((int)(((byte)(253)))), ((int)(((byte)(254)))));
             superToolTipInfo4.BackgroundGradientEnd = System.Drawing.Color.FromArgb(((int)(((byte)(166)))), ((int)(((byte)(227)))), ((int)(((byte)(235)))));
             superToolTipInfo4.BackgroundGradientMiddle = System.Drawing.Color.FromArgb(((int)(((byte)(208)))), ((int)(((byte)(240)))), ((int)(((byte)(245)))));
@@ -353,7 +353,7 @@ namespace Bloom.Publish
             this._L10NSharpExtender.SetLocalizingId(this._epubRadio, "PublishTab.EpubButton");
             this._epubRadio.Location = new System.Drawing.Point(3, 365);
             this._epubRadio.Name = "_epubRadio";
-            this._epubRadio.Size = new System.Drawing.Size(105, 76);
+            this._epubRadio.Size = new System.Drawing.Size(105, 89);
             superToolTipInfo5.BackgroundGradientBegin = System.Drawing.Color.FromArgb(((int)(((byte)(252)))), ((int)(((byte)(253)))), ((int)(((byte)(254)))));
             superToolTipInfo5.BackgroundGradientEnd = System.Drawing.Color.FromArgb(((int)(((byte)(166)))), ((int)(((byte)(227)))), ((int)(((byte)(235)))));
             superToolTipInfo5.BackgroundGradientMiddle = System.Drawing.Color.FromArgb(((int)(((byte)(208)))), ((int)(((byte)(240)))), ((int)(((byte)(245)))));
@@ -381,7 +381,7 @@ namespace Bloom.Publish
             this._L10NSharpExtender.SetLocalizingId(this._recordVideoRadio, "PublishTab.RecordVideoButton");
             this._recordVideoRadio.Location = new System.Drawing.Point(3, 447);
             this._recordVideoRadio.Name = "_recordVideoRadio";
-            this._recordVideoRadio.Size = new System.Drawing.Size(105, 71);
+            this._recordVideoRadio.Size = new System.Drawing.Size(105, 89);
             superToolTipInfo6.BackgroundGradientBegin = System.Drawing.Color.FromArgb(((int)(((byte)(252)))), ((int)(((byte)(253)))), ((int)(((byte)(254)))));
             superToolTipInfo6.BackgroundGradientEnd = System.Drawing.Color.FromArgb(((int)(((byte)(166)))), ((int)(((byte)(227)))), ((int)(((byte)(235)))));
             superToolTipInfo6.BackgroundGradientMiddle = System.Drawing.Color.FromArgb(((int)(((byte)(208)))), ((int)(((byte)(240)))), ((int)(((byte)(245)))));
