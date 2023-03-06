@@ -222,6 +222,15 @@ export const BookButton: React.FunctionComponent<{
             //     }
             // },
             {
+                label: "Book Settings",
+                l10nId: "Common.BookSettings",
+                addEllipsis: true,
+                requiresSavePermission: true,
+                onClick: () => {
+                    showBookSettingsDialog();
+                }
+            },
+            {
                 label: "Delete Book",
                 l10nId: "CollectionTab.BookMenu.DeleteBook",
                 command: "collections/deleteBook",
