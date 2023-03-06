@@ -1707,5 +1707,10 @@ namespace Bloom.Edit
 			_model.SaveNow();
 			RunJavaScript("editTabBundle.showEditViewBookSettingsDialog();");
 		}
+
+		private void _rightToolStrip_ItemClicked(object sender, ToolStripItemClickedEventArgs e)
+		{
+
+		}
 	}
 }
