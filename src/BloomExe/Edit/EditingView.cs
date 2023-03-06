@@ -1709,5 +1709,10 @@ if (typeof(editTabBundle) !=='undefined' && typeof(editTabBundle.getEditablePage
 			_model.SaveNow();
 			RunJavascriptAsync("editTabBundle.showEditViewBookSettingsDialog();");
 		}
+
+		private void _rightToolStrip_ItemClicked(object sender, ToolStripItemClickedEventArgs e)
+		{
+
+		}
 	}
 }
