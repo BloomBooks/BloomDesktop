@@ -11,6 +11,8 @@ import {
     DialogTitle
 } from "./BloomDialog";
 import { Button, CircularProgress } from "@mui/material";
+
+import PersonIcon from "@mui/icons-material/Person";
 import {
     WarningBox,
     DialogCancelButton,
@@ -40,7 +42,7 @@ const circularProgress = (
         color={undefined}
     />
 );
-storiesOf("Bloom Dialog", module)
+storiesOf("BloomDialog", module)
     .add("Simple Dialog", () => {
         return React.createElement(() => {
             const {
@@ -212,6 +214,9 @@ storiesOf("Bloom Dialog", module)
                         <NoteBox>
                             The Broncos will have a winning season some year.
                             (wishful thinking...)
+                        </NoteBox>
+                        <NoteBox addBorder={true} iconOverride={<PersonIcon />}>
+                            This one adds a border and overrides the icon.
                         </NoteBox>
                         <p>
                             Est anim nisi aute cupidatat elit voluptate ut aute

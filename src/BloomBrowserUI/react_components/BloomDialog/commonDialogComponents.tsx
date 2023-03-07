@@ -213,38 +213,46 @@ export const DialogReportButton: React.FunctionComponent<{
 
 export const NoteBox: React.FunctionComponent<{
     addBorder?: boolean;
+    colorOverride?: string;
+    borderColorOverride?: string;
+    backgroundColorOverride?: string;
+    iconOverride?: JSX.Element;
 }> = props => {
     let border = css``;
     if (props.addBorder) {
         border = css`
-            border: solid 1px ${kBloomBlue50Transparent};
+            border: solid 1px
+                ${props.borderColorOverride || kBloomBlue50Transparent};
         `;
     }
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { addBorder, ...propsToPass } = props;
     return (
         <div
             css={css`
                 display: flex;
-                background-color: ${kLightBlueBackground};
+                background-color: ${props.backgroundColorOverride ||
+                    kLightBlueBackground};
                 border-radius: ${kBorderRadiusForSpecialBlocks};
                 padding: ${kDialogPadding};
-                color: ${kBloomBlue};
+                color: ${props.colorOverride || kBloomBlue};
                 // The original version of this used p instead of div to get this spacing below.
                 // But we want div so we have more flexibility with adding children.
                 margin-block-end: 1em;
                 ${border};
                 a {
-                    color: ${kBloomBlue};
+                    color: ${props.colorOverride || kBloomBlue};
                 }
             `}
             {...propsToPass} // allows defining more css rules from container
         >
-            <InfoIcon
-                color="primary"
+            <div
                 css={css`
                     margin-right: ${kDialogPadding};
                 `}
-            />
+            >
+                {props.iconOverride || <InfoIcon color="primary" />}
+            </div>
             {props.children}
         </div>
     );

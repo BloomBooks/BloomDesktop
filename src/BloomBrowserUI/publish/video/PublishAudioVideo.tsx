@@ -307,7 +307,11 @@ const PublishAudioVideoInternalInternal: React.FunctionComponent<{
     color: grey;`;
     const mainPanel = (
         <PublishPanel>
-            <BloomStepper activeStep={activeStep} orientation="vertical">
+            <BloomStepper
+                activeStep={activeStep}
+                defeatDisabling={true}
+                orientation="vertical"
+            >
                 <Step expanded={true}>
                     <StepLabel>{configAndPreview}</StepLabel>
                     <StepContent>
