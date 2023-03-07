@@ -29,6 +29,7 @@ import {
 } from "../../react_components/BloomDialog/BloomDialog";
 import { ProgressDialog } from "../../react_components/Progress/ProgressDialog";
 import HelpLink from "../../react_components/helpLink";
+import { RequiresBloomEnterpriseDialog } from "../../react_components/requiresBloomEnterprise";
 
 // The common behavior of the Print and Save buttons.
 // There is probably some way to get this look out of BloomButton,
@@ -261,6 +262,7 @@ export const PDFPrintPublishScreen = () => {
                     (closeProgress.current = closeFunc)
                 }
             />
+            <RequiresBloomEnterpriseDialog />
 
             <BloomDialog
                 open={!!printSettings}

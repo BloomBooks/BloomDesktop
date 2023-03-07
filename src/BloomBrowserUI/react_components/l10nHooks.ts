@@ -47,6 +47,6 @@ export function useL10n(
                 }
             });
         }
-    }, [l10nParam0, l10nParam1]); // often the params are coming in later, via an api call. So we need to re-do the localization when that happens.
+    }, [l10nKey, l10nParam0, l10nParam1, english]); // often the params are coming in later, via an api call. So we need to re-do the localization when that happens.
     return localizedText;
 }

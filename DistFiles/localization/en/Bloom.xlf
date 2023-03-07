@@ -1447,6 +1447,11 @@
         <source xml:lang="en">This sentence is too long for this level.</source>
         <note>ID: EditTab.EditTab.Toolbox.LeveledReaderTool.SentenceTooLong</note>
       </trans-unit>
+      <trans-unit id="EditTab.EnterpriseEnabled" sil:dynamic="true">
+        <source xml:lang="en">This Bloom Enterprise feature is enabled for you.</source>
+        <note>ID: EditTab.EnterpriseEnabled</note>
+        <note>Appears in a tooltip on the Enterprise button when the user DOES have enterprise (cf EditTab.RequiresEnterprise).</note>
+      </trans-unit>
       <trans-unit id="EditTab.EnterpriseSettingsButton" sil:dynamic="true">
         <source xml:lang="en">Bloom Enterprise Settings</source>
         <note>ID: EditTab.EnterpriseSettingsButton</note>
