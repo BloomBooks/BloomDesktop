@@ -826,7 +826,7 @@ namespace Bloom.Workspace
 				DialogResult result = _settingsLauncherHelper.LaunchSettingsIfAppropriate (() => {
 					if (!_tcManager.OkToEditCollectionSettings)
 					{
-						ErrorReport.NotifyUserOfProblem(MustBeAdminMessage);
+						BloomMessageBox.ShowInfo(MustBeAdminMessage);
 						return DialogResult.Cancel;
 					}
 					using (var dlg = _settingsDialogFactory())
