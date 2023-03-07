@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using Amazon.Runtime.Internal.Util;
 using Bloom.web;
 using SIL.Code;
 using SIL.IO;

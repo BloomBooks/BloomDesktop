@@ -21,6 +21,7 @@ using Bloom.Publish.Android;
 using Bloom.Publish.Epub;
 using Bloom.Publish.PDF;
 using Bloom.Publish.Video;
+using Bloom.Spreadsheet;
 using Bloom.Utils;
 using Bloom.web;
 using Bloom.web.controllers;
@@ -28,7 +29,6 @@ using BloomTests.web.controllers;
 using SIL.Extensions;
 using SIL.IO;
 using SIL.Reporting;
-using SIL.Code;
 
 namespace Bloom
 {

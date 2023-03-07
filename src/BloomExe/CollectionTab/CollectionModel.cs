@@ -11,6 +11,7 @@ using System.Xml;
 using Bloom.Api;
 using Bloom.Book;
 using Bloom.Collection;
+using Bloom.History;
 using Bloom.MiscUI;
 using Bloom.Properties;
 using Bloom.TeamCollection;

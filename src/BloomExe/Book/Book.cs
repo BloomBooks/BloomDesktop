@@ -16,6 +16,7 @@ using System.Xml;
 using Bloom.Api;
 using Bloom.Collection;
 using Bloom.Edit;
+using Bloom.History;
 using Bloom.Publish;
 using Bloom.TeamCollection;
 using Bloom.ToPalaso;

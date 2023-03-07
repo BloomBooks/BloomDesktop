@@ -412,6 +412,8 @@
     <Compile Include="ErrorReporter\IBloomErrorReporter.cs" />
     <Compile Include="ErrorReporter\AllowSendReport.cs" />
     <Compile Include="ErrorReporter\NotifyUserOfProblemSettings.cs" />
+    <Compile Include="History\CollectionHistory.cs" />
+    <Compile Include="History\HistoryEvent.cs" />
     <Compile Include="Utils\AsyncUtil.cs" />
     <Compile Include="Publish\PDF\PublishPdfApi.cs" />
     <Compile Include="WebView2Browser.cs" Condition="'$(OS)'=='Windows_NT'">
@@ -474,7 +476,7 @@
     <Compile Include="Spreadsheet\SpreadsheetImportParams.cs" />
     <Compile Include="Spreadsheet\SpreadsheetIO.cs" />
     <Compile Include="Spreadsheet\SpreadsheetRow.cs" />
-    <Compile Include="TeamCollection\BookHistory.cs" />
+    <Compile Include="History\BookHistory.cs" />
     <Compile Include="TeamCollection\BookRepoChangeEventArgs.cs" />
     <Compile Include="TeamCollection\DeleteRepoBookFileEventArgs.cs" />
     <Compile Include="TeamCollection\BookStatus.cs" />
@@ -1206,7 +1208,7 @@
     <Compile Include="FontProcessing\FontsApi.cs" />
   </ItemGroup>
   <ItemGroup>
-	  <None Include="Resources\current-service-urls.json" />
+    <None Include="Resources\current-service-urls.json" />
     <None Include="Resources\Logo27x32.png" />
   </ItemGroup>
   <ItemGroup>
