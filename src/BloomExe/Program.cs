@@ -751,7 +751,10 @@ namespace Bloom
 				}, shouldHideSplashScreen: RegistrationDialog.ShouldWeShowRegistrationDialog(),
 				lowPriority:true);
 
-			Sldr.Initialize();
+			// Crashes if initialized twice, and there's at least once case when joining a TC
+			// where we can come here twice.
+			if (!Sldr.IsInitialized)
+				Sldr.Initialize();
 			try
 			{
 				Application.Run();
