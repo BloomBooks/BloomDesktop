@@ -69,8 +69,12 @@ export const RequiresBloomEnterpriseAdjacentIconWrapper = (props: {
 
     // Note: currently the tooltip only appears over the icon itself. But it might be nice if it could go over the children too?
     const tooltip = useL10n(
-        "To use this feature, you'll need to enable Bloom Enterprise.",
-        "EditTab.RequiresEnterprise"
+        enterpriseAvailable
+            ? "This Bloom Enterprise feature is enabled for you."
+            : "To use this feature, you'll need to enable Bloom Enterprise.",
+        "EditTab." + enterpriseAvailable
+            ? "EnterpriseEnabled"
+            : "RequiresEnterprise"
     );
 
     // Set the disabled property on all the children
