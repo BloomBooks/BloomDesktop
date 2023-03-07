@@ -48,11 +48,11 @@ namespace Bloom.Book
 				if (RobustFile.Exists(blankImage))
 					coverImagePath = blankImage;
 			}
-			if(coverImagePath != null)
+			if (coverImagePath != null)
 			{
 				var thumbPath = Path.Combine(destinationFolder, "thumbnail.png");
-				
-				RuntimeImageProcessor.GenerateEBookThumbnail(coverImagePath, thumbPath, heightAndWidth, heightAndWidth,System.Drawing.ColorTranslator.FromHtml(book.GetCoverColor()));
+
+				RuntimeImageProcessor.GenerateEBookThumbnail(coverImagePath, thumbPath, heightAndWidth, heightAndWidth, System.Drawing.ColorTranslator.FromHtml(book.GetCoverColor()));
 			}
 		}
 
@@ -176,7 +176,7 @@ namespace Bloom.Book
 			{
 				if (!filter.Filter(filePath))
 					continue;
-				
+
 				FileInfo fi = new FileInfo(filePath);
 
 				var entryName = dirNamePrefix + filePath.Substring(dirNameOffset);  // Makes the name in zip based on the folder
@@ -189,7 +189,7 @@ namespace Bloom.Book
 
 				byte[] modifiedContent = null;
 
-				if (overrides !=null && overrides.TryGetValue(filePath, out modifiedContent))
+				if (overrides != null && overrides.TryGetValue(filePath, out modifiedContent))
 					newEntry.Size = modifiedContent.Length;
 				else
 					newEntry.Size = fi.Length;
@@ -248,11 +248,11 @@ namespace Bloom.Book
 			dom.Load(filePath);
 			foreach (var node in dom.SafeSelectNodes("//SubscriptionCode").Cast<XmlElement>().ToArray())
 			{
-				node.RemoveAll();	// should happen at most once
+				node.RemoveAll();   // should happen at most once
 			}
 			foreach (var node in dom.SafeSelectNodes("//BrandingProjectName").Cast<XmlElement>().ToArray())
 			{
-				node.RemoveAll();	// should happen at most once
+				node.RemoveAll();   // should happen at most once
 				node.AppendChild(dom.CreateTextNode("Default"));
 			}
 			return dom.OuterXml;
@@ -290,7 +290,7 @@ namespace Bloom.Book
 					if (matchSuppress.Groups[3].Value.ToLower() != "true")
 					{
 						text = text.Substring(0, matchSuppress.Groups[3].Index) + "true"
-								+  text.Substring(matchSuppress.Groups[3].Index + matchSuppress.Groups[3].Length);
+								+ text.Substring(matchSuppress.Groups[3].Index + matchSuppress.Groups[3].Length);
 					}
 				}
 				else
@@ -322,11 +322,8 @@ namespace Bloom.Book
 		/// transparent backgrounds.
 		/// </remarks>
 		/// <returns>The bytes of the (possibly) adjusted image.</returns>
-		internal static byte[] GetImageBytesForElectronicPub(string filePath, bool needsTransparentBackground, ImagePublishSettings imagePublishSettings = null)
+		internal static byte[] GetImageBytesForElectronicPub(string filePath, bool needsTransparentBackground, ImagePublishSettings imagePublishSettings)
 		{
-			if (imagePublishSettings == null)
-				imagePublishSettings = ImagePublishSettings.Default;
-
 			var maxWidth = imagePublishSettings.MaxWidth;
 			var maxHeight = imagePublishSettings.MaxHeight;
 
@@ -360,11 +357,11 @@ namespace Bloom.Book
 						// we should keep the original just because it's a smaller file.
 						// - possibly we don't need a 32-bit bitmap? Unfortunately the 1bpp/4bpp/8bpp only tells us
 						// that the image uses two, 16, or 256 distinct colors, not what they are or what precision they have.
-							case PixelFormat.Format1bppIndexed:
-							case PixelFormat.Format4bppIndexed:
-							case PixelFormat.Format8bppIndexed:
+						case PixelFormat.Format1bppIndexed:
+						case PixelFormat.Format4bppIndexed:
+						case PixelFormat.Format8bppIndexed:
 							imagePixelFormat = PixelFormat.Format32bppArgb;
-								break;
+							break;
 					}
 					// OTOH, always using 32-bit format for .png files keeps us from having problems in BloomReader
 					// like BL-5740 (where 24bit format files came out in BR with black backgrounds).

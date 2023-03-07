@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
@@ -108,7 +108,7 @@ namespace Bloom.CollectionTab
 
 		public string LanguageName
 		{
-			get { return _collectionSettings.Language1.Name; }	// collection tab still uses collection language settings
+			get { return _collectionSettings.Language1.Name; }  // collection tab still uses collection language settings
 		}
 
 		private object _bookCollectionLock = new object(); // Locks creation of _bookCollections
@@ -177,7 +177,7 @@ namespace Bloom.CollectionTab
 		{
 			// I hope we can get rid of this when we retire the old LibraryListView, but for now we need to keep both views up to date.
 			// optimize: we only need to reload the first (editable) collection; better yet, we only need to add the one new book to it.
-			ReloadCollections();       
+			ReloadCollections();
 		}
 
 		public void UpdateLabelOfBookInEditableCollection(Book.Book book)
@@ -208,7 +208,7 @@ namespace Bloom.CollectionTab
 			get { return GetBookCollections().First(c => c.Type == BookCollection.CollectionType.TheOneEditableCollection); }
 		}
 
-		
+
 		public string VernacularCollectionNamePhrase
 		{
 			get { return _collectionSettings.VernacularCollectionNamePhrase; }
@@ -321,9 +321,9 @@ namespace Bloom.CollectionTab
 			}
 		}
 
-		public  void SelectBook(Book.Book book)
+		public void SelectBook(Book.Book book)
 		{
-			 _bookSelection.SelectBook(book);
+			_bookSelection.SelectBook(book);
 		}
 		public Book.Book GetSelectedBookOrNull()
 		{
@@ -372,7 +372,7 @@ namespace Bloom.CollectionTab
 					if (collection == TheOneEditableCollection)
 						_tcManager.CurrentCollection?.DeleteBookFromRepo(book.FolderPath);
 					collection.DeleteBook(book.BookInfo);
-					CollectionHistory.AddBookEvent(collection.PathToDirectory,bookName, bookId, BookHistoryEventType.Deleted);
+					CollectionHistory.AddBookEvent(collection.PathToDirectory, bookName, bookId, BookHistoryEventType.Deleted);
 					return true;
 				}
 			}
@@ -417,7 +417,7 @@ namespace Bloom.CollectionTab
 			{
 				// Since the user explicitly told us to do this again, we will, even if we think
 				// it's already been done.
-				dlg.ShowAndDoWork(progress=>b.BringBookUpToDate(progress));
+				dlg.ShowAndDoWork(progress => b.BringBookUpToDate(progress));
 			}
 
 			_bookSelection.SelectBook(b);
@@ -429,7 +429,7 @@ namespace Bloom.CollectionTab
 			var pathToXnDesignXslt = FileLocationUtilities.GetFileDistributedWithApplication("xslts", "BloomXhtmlToDataForMergingIntoInDesign.xsl");
 
 #if DEBUG
-			 _bookSelection.CurrentSelection.OurHtmlDom.RawDom.Save(path.Replace(".xml",".xhtml"));
+			_bookSelection.CurrentSelection.OurHtmlDom.RawDom.Save(path.Replace(".xml", ".xhtml"));
 #endif
 
 			var dom = _bookSelection.CurrentSelection.OurHtmlDom.ApplyXSLT(pathToXnDesignXslt);
@@ -471,7 +471,8 @@ namespace Bloom.CollectionTab
 			{
 				body.SetAttribute("class", (classVal + " " + className).Trim());
 				_bookSelection.CurrentSelection.Save();
-			} else if (!shouldHaveClass && classVal.Contains(className))
+			}
+			else if (!shouldHaveClass && classVal.Contains(className))
 			{
 				body.SetAttribute("class", classVal.Replace(className, "").Trim());
 				_bookSelection.CurrentSelection.Save();
@@ -547,8 +548,8 @@ namespace Bloom.CollectionTab
 				"<meta http-equiv=\"content-type\" content=\"text/html; charset=utf-8\">");
 			var xmlDoc = RepairWordVisibility(fixedContent);
 			XmlHtmlConverter.SaveDOMAsHtml5(xmlDoc, destDocPath); // writes file and returns path
-			// We need to copy the CSS and image files from the book's folder to the destination folder.
-			// We don't need other files from there for this export. (audio, video, etc)
+																  // We need to copy the CSS and image files from the book's folder to the destination folder.
+																  // We don't need other files from there for this export. (audio, video, etc)
 			var sourceFolder = Path.GetDirectoryName(sourcePath);
 			foreach (var sourceFilePath in Directory.EnumerateFiles(sourceFolder, "*.*"))
 			{
@@ -713,7 +714,8 @@ namespace Bloom.CollectionTab
 				NarrationLanguages = null, // all audio
 
 				WantMusic = true,
-				WantVideo = true};
+				WantVideo = true
+			};
 			// these are artifacts of uploading book to BloomLibrary.org and not useful in BloomPubs
 			filter.AlwaysReject(new Regex("^thumbnail-"));
 			return filter;
@@ -721,7 +723,7 @@ namespace Bloom.CollectionTab
 
 		public string GetSuggestedBloomPackPath()
 		{
-			return TheOneEditableCollection.Name+".BloomPack";
+			return TheOneEditableCollection.Name + ".BloomPack";
 		}
 
 		public void DoUpdatesOfAllBooks()
@@ -740,7 +742,7 @@ namespace Bloom.CollectionTab
 				i++;
 				var book = _bookServer.GetBookFromBookInfo(bookInfo);
 				//gets overwritten: progress.WriteStatus(book.NameBestForUserDisplay);
-				progress.WriteMessage("Processing " + book.NameBestForUserDisplay+ " " + i + "/" + TheOneEditableCollection.GetBookInfos().Count());
+				progress.WriteMessage("Processing " + book.NameBestForUserDisplay + " " + i + "/" + TheOneEditableCollection.GetBookInfos().Count());
 				// Since the user told us to do it, we'll do it even to books that we think are already
 				// up to date. (EnsureUpToDate would do so anyway, since these are newly created Book objects, even if they are
 				// for books we already have in memory.)
@@ -752,7 +754,7 @@ namespace Bloom.CollectionTab
 		{
 			using (var dlg = new ProgressDialogBackground())
 			{
-				dlg.ShowAndDoWork((progress, args) => DoChecksOfAllBooksBackgroundWork(dlg,null));
+				dlg.ShowAndDoWork((progress, args) => DoChecksOfAllBooksBackgroundWork(dlg, null));
 				if (dlg.Progress.ErrorEncountered || dlg.Progress.WarningsEncountered)
 				{
 					MessageBox.Show("Bloom will now open a list of problems it found.");
@@ -767,7 +769,7 @@ namespace Bloom.CollectionTab
 			}
 		}
 
-		public void AttemptMissingImageReplacements(string pathToFolderOfReplacementImages=null)
+		public void AttemptMissingImageReplacements(string pathToFolderOfReplacementImages = null)
 		{
 			using (var dlg = new ProgressDialogBackground())
 			{
@@ -807,7 +809,7 @@ namespace Bloom.CollectionTab
 			foreach (var bookInfo in bookInfos)
 			{
 				//not allowed in this thread: dialog.ProgressBar.Value++;
-				dialog.Progress.ProgressIndicator.PercentCompleted += 100/count;
+				dialog.Progress.ProgressIndicator.PercentCompleted += 100 / count;
 
 				var book = _bookServer.GetBookFromBookInfo(bookInfo);
 

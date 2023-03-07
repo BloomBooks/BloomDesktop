@@ -1,6 +1,7 @@
-﻿using System;
+using System;
 using System.Dynamic;
 using Bloom.Book;
+using Newtonsoft.Json;
 
 namespace Bloom.Api
 {
@@ -34,8 +35,15 @@ namespace Bloom.Api
 			switch (request.HttpMethod)
 			{
 				case HttpMethods.Get:
-					dynamic settings = new ExpandoObject();
-					settings.currentToolBoxTool = _bookSelection.CurrentSelection.BookInfo.CurrentTool;
+					var settings = new
+					{
+						currentToolBoxTool = _bookSelection.CurrentSelection.BookInfo.CurrentTool,
+						appearance = new { cover = new { coverColor = _bookSelection.CurrentSelection.GetCoverColor(), something = true } },
+						//bloomPUB = new { imageSettings = new { maxWidth= _bookSelection.CurrentSelection.BookInfo.PublishSettings.BloomPub.ImageSettings.MaxWidth, maxHeight= _bookSelection.CurrentSelection.BookInfo.PublishSettings.BloomPub.ImageSettings.MaxHeight} }
+						publish = _bookSelection.CurrentSelection.BookInfo.PublishSettings.Json
+					};
+					var jsonData = JsonConvert.SerializeObject(settings);
+
 #if UserControlledTemplate
 					settings.isTemplateBook = GetIsBookATemplate();
 #endif
@@ -44,9 +52,17 @@ namespace Bloom.Api
 				case HttpMethods.Post:
 					//note: since we only have this one value, it's not clear yet whether the panel involved here will be more of a
 					//an "edit settings", or a "book settings", or a combination of them.
-					//settings = DynamicJson.Parse(request.RequiredPostJson());
-					// This first refresh saves any changes.
-					//_pageRefreshEvent.Raise(PageRefreshEvent.SaveBehavior.SaveBeforeRefresh);
+					var json = request.RequiredPostJson();
+					dynamic newSettings = Newtonsoft.Json.Linq.JObject.Parse(json);
+					var c = newSettings.appearance.cover.coverColor;
+					_bookSelection.CurrentSelection.SetCoverColor(c.ToString());
+					// review: crazy bit here, that above I'm taking json, parsing it into object, and grabbing part of it. But then
+					// here we take it back to json and pass it to this thing that is going to parse it agian. In this case, speed
+					// is irrelevant. The nice thing is, it retains the identity of PublishSettings in case someone is holding on it.
+					_bookSelection.CurrentSelection.BookInfo.PublishSettings.LoadNewJson(JsonConvert.DeserializeObject(newSettings.publish));
+
+					_pageRefreshEvent.Raise(PageRefreshEvent.SaveBehavior.JustRedisplay);
+
 #if UserControlledTemplate
 					UpdateBookTemplateMode(settings.isTemplateBook);
 					// Now we need to update the active version of the page with possible new template settings

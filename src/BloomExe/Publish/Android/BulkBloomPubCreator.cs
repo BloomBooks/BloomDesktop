@@ -81,7 +81,7 @@ namespace Bloom.Publish.Android
 						{
 							settings.BookshelfTag = _collectionModel.CollectionSettings.DefaultBookshelf;
 						}
-						BloomPubMaker.CreateBloomPub(bookInfo, settings, dest.FolderPath, _bookServer, progress);
+						BloomPubMaker.CreateBloomPub(settings, bookInfo, dest.FolderPath, _bookServer, progress);
 					}
 
 					if (bulkSaveSettings.makeBloomBundle)

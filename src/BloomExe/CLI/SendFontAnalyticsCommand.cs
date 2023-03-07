@@ -108,8 +108,8 @@ namespace Bloom.CLI
 				bool isTemplateBook = _book.BookInfo.IsSuitableForMakingShells;
 				var settings = AndroidPublishSettings.GetPublishSettingsForBook(_projectContext.BookServer, _book.BookInfo);
 				// This method will gather up the desired font analytics as a side-effect.
-				BloomPubMaker.PrepareBookForBloomReader(options.BookPath, _projectContext.BookServer, stagingFolder,
-					new Bloom.web.NullWebSocketProgress(), isTemplateBook, settings: settings);
+				BloomPubMaker.PrepareBookForBloomReader(settings, bookFolderPath: options.BookPath, bookServer: _projectContext.BookServer, temp: stagingFolder,
+					progress: new Bloom.web.NullWebSocketProgress(), isTemplateBook: isTemplateBook);
 			}
 		}
 	}

@@ -338,14 +338,6 @@ namespace Bloom.Publish.Epub
 			return iframeSource;
 		}
 
-		public void GetEpubSettingsForCurrentBook(EpubSettings epubPublishUiSettings)
-		{
-			var info = _bookSelection.CurrentSelection.BookInfo;
-			epubPublishUiSettings.HowToPublishImageDescriptions = info.PublishSettings.Epub.HowToPublishImageDescriptions;
-			epubPublishUiSettings.RemoveFontSizes = info.PublishSettings.Epub.RemoveFontSizes;
-			epubPublishUiSettings.Mode = info.PublishSettings.Epub.Mode;
-		}
-
 		public void UpdateAndSave(EpubSettings newSettings, string path, bool force, WebSocketProgress progress = null)
 		{
 			bool succeeded;
