@@ -35,6 +35,11 @@ import {
 } from "../../react_components/confirmDialog";
 import { BloomSplitButton } from "../../react_components/bloomSplitButton";
 import { WaitBox } from "../../react_components/BloomDialog/commonDialogComponents";
+import {
+    IUploadCollisionDlgProps,
+    showUploadCollisionDialog,
+    UploadCollisionDlg
+} from "./uploadCollisionDlg";
 
 interface IReadonlyBookInfo {
     title: string;
@@ -140,11 +145,27 @@ export const LibraryPublishSteps: React.FunctionComponent = () => {
         }
     }
 
+    const [uploadCollisionInfo, setUploadCollisionInfo] = useState<
+        IUploadCollisionDlgProps
+    >({
+        userEmail: "",
+        newTitle: "",
+        existingTitle: "",
+        existingCreatedDate: "",
+        existingUpdatedDate: "",
+        existingBookUrl: ""
+    });
+
     const [isUploading, setIsUploading] = useState<boolean>(false);
     function uploadOneBook() {
         setIsUploadComplete(false);
         setIsUploading(true);
-        post("libraryPublish/upload");
+        get("libraryPublish/getUploadCollisionInfo", result => {
+            if (result.data.shouldShow) {
+                setUploadCollisionInfo(result.data);
+                showUploadCollisionDialog();
+            } else post("libraryPublish/upload");
+        });
     }
 
     function bulkUploadCollection() {
@@ -544,6 +565,12 @@ export const LibraryPublishSteps: React.FunctionComponent = () => {
                 cancelButtonLabelL10nKey="Common.No"
                 onDialogClose={function(result: DialogResult): void {
                     if (result === DialogResult.Confirm) uploadOneBook();
+                }}
+            />
+            <UploadCollisionDlg
+                {...uploadCollisionInfo}
+                onCancel={() => {
+                    setIsUploading(false);
                 }}
             />
         </React.Fragment>

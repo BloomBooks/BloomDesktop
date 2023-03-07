@@ -480,12 +480,25 @@ namespace Bloom.Publish.BloomLibrary
 					return;
 				}
 				// OK, so we do need our uploadIDCollision dialog.
-				_model.ShowIdCollisionDialog(LanguagesCheckedToUpload, _signLanguageCheckBox.Checked);
+				ShowIdCollisionDialog(LanguagesCheckedToUpload, _signLanguageCheckBox.Checked);
 			}
 			catch (Exception)
 			{
 				ReportTryAgainDuringUpload();
 				_uploadButton.Enabled = true;
+			}
+		}
+
+		public void ShowIdCollisionDialog(IEnumerable<string> languagesToUpload, bool signLanguageFeatureSelected)
+		{
+			using (var dlg = new ReactDialog("uploadIDCollisionDlgBundle",
+				_model.GetUploadCollisionDialogProps(languagesToUpload, signLanguageFeatureSelected)
+			))
+			{
+				dlg.Width = 770;
+				dlg.Height = 570;
+				dlg.ControlBox = false;
+				dlg.ShowDialog(Shell.GetShellOrOtherOpenForm());
 			}
 		}
 
@@ -497,12 +510,8 @@ namespace Bloom.Publish.BloomLibrary
 
 		public void UploadBookAfterChangingId()
 		{
-			_progressBox.WriteMessage("Setting new instance ID...");
-			var newGuid = BookInfo.InstallFreshInstanceGuid(_model.Book.FolderPath);
-			_model.Book.BookInfo.Id = newGuid;
-			_progressBox.WriteMessage("ID is now " + _model.Book.BookInfo.Id);
+			_model.ChangeBookId(_progressBox);
 			UploadBook();
-
 		}
 
 		public void UploadBook()
