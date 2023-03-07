@@ -19,8 +19,14 @@ namespace Bloom.ToPalaso
 		/// <returns></returns>
 		public static XmlElement ParentWithClass(this XmlElement start, string targetClass)
 		{
-			var current = start.ParentNode as XmlElement;
-			while (current != null && !(" " + (current.Attributes["class"]?.Value?? "") + " ").Contains(" " + targetClass + " "))
+			return ParentOrSelfWithClass(start.ParentNode as XmlElement, targetClass);
+		}
+
+		public static XmlElement ParentOrSelfWithClass(this XmlElement start, string targetClass)
+		{
+			var current = start;
+			while (current != null &&
+			       !(" " + (current.Attributes["class"]?.Value ?? "") + " ").Contains(" " + targetClass + " "))
 				current = current.ParentNode as XmlElement;
 			return current;
 		}
