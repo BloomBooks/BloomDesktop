@@ -7,7 +7,7 @@ import { useL10n } from "../../react_components/l10nHooks";
 import { useSubscribeToWebSocketForObject } from "../../utils/WebSocketManager";
 import { post, useApiBoolean } from "../../utils/bloomApi";
 import Button from "@mui/material/Button";
-import { kBloomBlue, kBloomDisabledButtonText } from "../../utils/colorUtils";
+import { kBloomBlue, kBloomDisabledText } from "../../utils/colorUtils";
 import { useState } from "react";
 import { ApiCheckbox } from "../../react_components/ApiCheckbox";
 import Select from "@mui/material/Select";
@@ -200,7 +200,7 @@ const FeatureButton: React.FunctionComponent<{
                 margin-right: auto;
                 width: 210px;
                 ${props.selected ? "border: solid 3px " + kBloomBlue : ""}
-                ${props.disabled ? "color: " + kBloomDisabledButtonText : ""}
+                ${props.disabled ? "color: " + kBloomDisabledText : ""}
             `}
             onClick={() => {
                 if (props.onClick && !props.disabled) {

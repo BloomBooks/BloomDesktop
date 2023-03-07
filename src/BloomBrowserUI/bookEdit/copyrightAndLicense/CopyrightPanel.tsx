@@ -4,7 +4,7 @@ import { jsx, css } from "@emotion/react";
 import * as React from "react";
 import { useEffect, useState } from "react";
 
-import { kBloomBlue, kMutedTextGray } from "../../bloomMaterialUITheme";
+import { kMutedTextGray } from "../../bloomMaterialUITheme";
 import { NoteBox } from "../../react_components/BloomDialog/commonDialogComponents";
 import { Div } from "../../react_components/l10nComponents";
 import { MuiCheckbox } from "../../react_components/muiCheckBox";
@@ -174,7 +174,7 @@ export const CopyrightPanel: React.FunctionComponent<{
                 `}
             />
             {isSil && (
-                <NoteBox addBorder={true}>
+                <NoteBox>
                     <div>
                         <Div
                             l10nKey={"Copyright.PublishingAsSIL"}

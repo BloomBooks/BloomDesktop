@@ -144,7 +144,6 @@ const EPUBPublishScreenInternal: React.FunctionComponent<{
                         Save...
                     </BloomButton>
                     <NoteBox
-                        addBorder={true}
                         css={css`
                             width: 430px;
                         `}

@@ -1,4 +1,5 @@
 import { createTheme, adaptV4Theme, Theme } from "@mui/material/styles";
+import { kBloomDisabledOpacity, kBloomDisabledText } from "./utils/colorUtils";
 
 export const kBloomBlue = "#1d94a4";
 export const kBloomBlue50Transparent = "#8ecad280";
@@ -56,7 +57,12 @@ export const lightTheme = createTheme(
         palette: {
             primary: { main: kBloomBlue },
             secondary: { main: kBloomPurple },
-            warning: { main: kBloomGold }
+            warning: { main: kBloomGold },
+            text: { disabled: kBloomDisabledText },
+            action: {
+                disabled: kBloomDisabledText,
+                disabledOpacity: kBloomDisabledOpacity
+            }
         },
         typography: {
             fontSize: 12,

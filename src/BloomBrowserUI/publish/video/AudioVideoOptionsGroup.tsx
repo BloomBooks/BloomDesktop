@@ -347,9 +347,7 @@ export const AudioVideoOptionsGroup: React.FunctionComponent<{
                                 </Select>
                             </div>
                         </div>
-                        {tooBigMsg && (
-                            <NoteBox addBorder={true}>{tooBigMsg}</NoteBox>
-                        )}
+                        {tooBigMsg && <NoteBox>{tooBigMsg}</NoteBox>}
                         {/** The below div is disabled for MP3 because currently, we ignore this setting and immediately flip pages with no narration in mp3 mode.
                          * That's because, in the context of making an mp3, it doesn't make much sense to spend time on pages with no audio at all, especially x-matter pages.
                          * Pages with background music but no narration are a trickier case. We think usually it won't be valuable to linger on them, but there could be some exceptions.

@@ -3,6 +3,7 @@ import { jsx, css } from "@emotion/react";
 import * as React from "react";
 import { useEffect, useRef, useState } from "react";
 import { TextField, Step, StepLabel, StepContent } from "@mui/material";
+
 import {
     get,
     getBloomApiPrefix,
@@ -12,7 +13,7 @@ import {
 } from "../../utils/bloomApi";
 import { kBloomRed } from "../../utils/colorUtils";
 import { BloomStepper } from "../../react_components/BloomStepper";
-import { Div, P, Span } from "../../react_components/l10nComponents";
+import { Div, Span } from "../../react_components/l10nComponents";
 import BloomButton from "../../react_components/bloomButton";
 import { PWithLink } from "../../react_components/pWithLink";
 import {
@@ -33,6 +34,7 @@ import {
     showConfirmDialog
 } from "../../react_components/confirmDialog";
 import { BloomSplitButton } from "../../react_components/bloomSplitButton";
+import { WaitBox } from "../../react_components/BloomDialog/commonDialogComponents";
 
 interface IReadonlyBookInfo {
     title: string;
@@ -72,6 +74,10 @@ export const LibraryPublishSteps: React.FunctionComponent = () => {
         "Upload Folder of Collections",
         "PublishTab.Upload.UploadFolder"
     );
+    const localizedEnterpriseTooltip = useL10n(
+        "This feature requires an Enterprise subscription and a destination shelf selected in Collection Settings.",
+        "PublishTab.Upload.EnterpriseShelfRequiredTooltip"
+    );
 
     const progressBoxRef = useRef<ProgressBoxHandle>(null);
 
@@ -102,14 +108,28 @@ export const LibraryPublishSteps: React.FunctionComponent = () => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [summary]); // purposefully not including bookInfo, so we don't post on initial load
 
+    // Only set this to true for development. It's a shortcut to allow uploading without having to agree to the terms.
+    const isDevelopmentShortcutOn = false;
+
     function isReadyForAgreements(): boolean {
         return !!bookInfo?.title && !!bookInfo?.copyright;
     }
     const [agreementsAccepted, setAgreementsAccepted] = useState<boolean>(
         false
     );
+
+    const [loggedInEmail, setLoggedInEmail] = useState<string>();
+    useEffect(() => {
+        get("common/loginData", result => {
+            setLoggedInEmail(result.data.email);
+        });
+    }, []);
+
     function isReadyForUpload(): boolean {
-        return isReadyForAgreements() && agreementsAccepted;
+        return (
+            isDevelopmentShortcutOn ||
+            (isReadyForAgreements() && agreementsAccepted)
+        );
     }
 
     function confirmWithUserIfNecessaryAndUpload() {
@@ -122,6 +142,7 @@ export const LibraryPublishSteps: React.FunctionComponent = () => {
 
     const [isUploading, setIsUploading] = useState<boolean>(false);
     function uploadOneBook() {
+        setIsUploadComplete(false);
         setIsUploading(true);
         post("libraryPublish/upload");
     }
@@ -149,6 +170,7 @@ export const LibraryPublishSteps: React.FunctionComponent = () => {
         }
     );
 
+    const lastElementOnPageRef = React.useRef<HTMLDivElement>(null);
     const [bookUrl, setBookUrl] = useState<string>("");
 
     // When C# finishes the upload, it calls this.
@@ -163,6 +185,24 @@ export const LibraryPublishSteps: React.FunctionComponent = () => {
     );
 
     const [isUploadComplete, setIsUploadComplete] = useState<boolean>(false);
+    useEffect(() => {
+        // We want to scroll to the end when upload is complete so the user notices
+        // the final step which contains the link to the book.
+        // The 300ms timeout allows time for the transition which slides the step open to complete.
+        // As far as I can tell, mui's Collapse component is used, where they seem to default to 300ms and then
+        // try to calculate a more accurate time based on the height of the content.
+        // As of now, it is setting it to 261ms. But that may change based on UI changes in the future
+        // or even localization. Even if 300ms becomes not quite enough, it isn't a show-stopper.
+        // At least most of the step will be shown.
+        window.setTimeout(() => {
+            if (isUploadComplete) {
+                lastElementOnPageRef?.current?.scrollIntoView({
+                    behavior: "smooth",
+                    block: "start"
+                });
+            }
+        }, 300);
+    }, [isUploadComplete]);
 
     const [licenseBlock, setLicenseBlock] = useState<JSX.Element>(
         <React.Fragment />
@@ -210,7 +250,11 @@ export const LibraryPublishSteps: React.FunctionComponent = () => {
     return (
         <React.Fragment>
             <BloomStepper orientation="vertical">
-                <Step active={true} completed={isReadyForAgreements()}>
+                <Step
+                    active={true}
+                    completed={isReadyForAgreements()}
+                    key="ConfirmMetadata"
+                >
                     <StepLabel>
                         <Span l10nKey="PublishTab.Upload.ConfirmMetadata">
                             Confirm Metadata
@@ -294,9 +338,8 @@ export const LibraryPublishSteps: React.FunctionComponent = () => {
                 </Step>
                 <Step
                     active={isReadyForAgreements()}
-                    expanded={true}
-                    disabled={!isReadyForAgreements()}
                     completed={isReadyForUpload()}
+                    key="Agreements"
                 >
                     <StepLabel>
                         <Span l10nKey="PublishTab.Upload.Agreements">
@@ -312,9 +355,8 @@ export const LibraryPublishSteps: React.FunctionComponent = () => {
                 </Step>
                 <Step
                     active={isReadyForUpload()}
-                    expanded={true}
-                    disabled={!isReadyForUpload()}
                     completed={isUploadComplete}
+                    key="Upload"
                 >
                     <StepLabel>
                         <Span l10nKey={"Common.Upload"}>Upload</Span>
@@ -341,7 +383,6 @@ export const LibraryPublishSteps: React.FunctionComponent = () => {
                             css={css`
                                 display: flex;
                                 justify-content: space-between;
-                                margin-top: 8px;
                             `}
                         >
                             {isUploading ? (
@@ -357,7 +398,9 @@ export const LibraryPublishSteps: React.FunctionComponent = () => {
                                 </BloomButton>
                             ) : (
                                 <BloomSplitButton
-                                    disabled={!isReadyForUpload()}
+                                    disabled={
+                                        !isReadyForUpload() || !loggedInEmail
+                                    }
                                     options={[
                                         {
                                             english: uploadButtonText,
@@ -371,6 +414,7 @@ export const LibraryPublishSteps: React.FunctionComponent = () => {
                                             english: localizedUploadCollection,
                                             l10nId: "already-localized",
                                             requiresEnterpriseSubscription: true,
+                                            enterpriseTooltipOverride: localizedEnterpriseTooltip,
                                             onClick: () => {
                                                 progressBoxRef.current?.clear();
                                                 bulkUploadCollection();
@@ -380,6 +424,7 @@ export const LibraryPublishSteps: React.FunctionComponent = () => {
                                             english: localizedUploadFolder,
                                             l10nId: "already-localized",
                                             requiresEnterpriseSubscription: true,
+                                            enterpriseTooltipOverride: localizedEnterpriseTooltip,
                                             onClick: () => {
                                                 progressBoxRef.current?.clear();
                                                 bulkUploadFolderOfCollections();
@@ -388,13 +433,33 @@ export const LibraryPublishSteps: React.FunctionComponent = () => {
                                     ]}
                                 ></BloomSplitButton>
                             )}
-                            <BloomButton
-                                variant="text"
-                                enabled={isReadyForUpload()}
-                                l10nKey={"PublishTab.Upload.SignIn"}
-                            >
-                                Sign in or sign up to Bloomlibrary.org
-                            </BloomButton>
+                            {loggedInEmail ? (
+                                <BloomButton
+                                    variant="text"
+                                    enabled={isReadyForUpload()}
+                                    l10nKey="PublishTab.Upload.SignOut"
+                                    l10nComment="The %0 will be replaced with the email address of the user."
+                                    l10nParam0={loggedInEmail}
+                                    onClick={() => {
+                                        alert("not implemented");
+                                    }}
+                                >
+                                    Sign Out of %0 at BloomLibrary.org
+                                </BloomButton>
+                            ) : (
+                                <BloomButton
+                                    variant="text"
+                                    enabled={isReadyForUpload()}
+                                    l10nKey="PublishTab.Upload.SignIn"
+                                    onClick={() => {
+                                        alert(
+                                            "not implemented; sign in on original upload page for now"
+                                        );
+                                    }}
+                                >
+                                    Sign in or sign up to BloomLibrary.org
+                                </BloomButton>
+                            )}
                         </div>
                         <div
                             css={css`
@@ -414,32 +479,51 @@ export const LibraryPublishSteps: React.FunctionComponent = () => {
                         </div>
                     </StepContent>
                 </Step>
-                <Step
-                    active={isUploadComplete}
-                    expanded={isUploadComplete}
-                    disabled={!isUploadComplete}
-                >
+                <Step active={isUploadComplete} key="BloomLibrary">
                     <StepLabel>
-                        <Span l10nKey="PublishTab.Upload.TestBook">
-                            Test out your Book
+                        <Span l10nKey="PublishTab.Upload.YourBookOnBloomLibrary">
+                            Your Book on BloomLibrary.org
                         </Span>
                     </StepLabel>
                     <StepContent>
-                        <PWithLink
-                            l10nKey={"PublishTab.Upload.TestBook.Text1"}
+                        <BloomButton
                             href={bookUrl}
+                            enabled={isUploadComplete}
+                            l10nKey={"PublishTab.Upload.ViewOnBloomLibrary"}
+                            css={css`
+                                span {
+                                    // Otherwise we get Bloom blue.
+                                    // This button is different than others because using
+                                    // href rather than onClick means it uses the a tag.
+                                    color: white;
+                                }
+                            `}
                         >
-                            Here is [your new page] on Bloom Library. We will
-                            soon process your book into various formats and add
-                            them to this page. Check back in about 10 minutes.
-                            If we encounter any problems, that page will tell
-                            you about them.
-                        </PWithLink>
-                        <P l10nKey={"PublishTab.Upload.TestBook.Text2"}>
-                            If you make changes to this book, you can return
-                            here to upload it again. Your new version will just
-                            replace the existing one.
-                        </P>
+                            View on Bloom Library
+                        </BloomButton>
+                        <WaitBox
+                            css={css`
+                                max-width: 550px;
+                                margin-top: 16px;
+                            `}
+                        >
+                            <PWithLink
+                                l10nKey={
+                                    "PublishTab.Upload.YourBookOnBloomLibrary.ServerWillProcess"
+                                }
+                                href={bookUrl}
+                                css={css`
+                                    margin: 0;
+                                `}
+                            >
+                                Our server will soon process your book into
+                                various formats and add them to [your book's
+                                page] on BloomLibrary.org. Check back in about
+                                10 minutes. If we encounter any problems, your
+                                book's page will tell you about them.
+                            </PWithLink>
+                        </WaitBox>
+                        <div ref={lastElementOnPageRef} />
                     </StepContent>
                 </Step>
             </BloomStepper>
@@ -470,7 +554,6 @@ export const LibraryPublishSteps: React.FunctionComponent = () => {
 // (some of these apply to the Settings)
 // Choose languages to upload
 // Really hook up login/signup
-// Disable Upload until all done
 // Features
 
 const Agreements: React.FunctionComponent<{

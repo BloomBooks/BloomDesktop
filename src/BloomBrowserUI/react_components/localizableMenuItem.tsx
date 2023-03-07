@@ -19,6 +19,7 @@ import {
     useEnterpriseAvailable,
     useGetEnterpriseStatus
 } from "./requiresBloomEnterprise";
+import { kBloomDisabledOpacity } from "../utils/colorUtils";
 
 interface IBaseLocalizableMenuItemProps {
     english: string;
@@ -33,6 +34,7 @@ export interface ILocalizableMenuItemProps
     requiresAnyEnterprise?: boolean;
     requiresEnterpriseSubscription?: boolean;
     dontGiveAffordanceForCheckbox?: boolean;
+    enterpriseTooltipOverride?: string;
 }
 
 interface ILocalizableCheckboxMenuItemProps
@@ -53,11 +55,24 @@ export const LocalizableMenuItem: React.FunctionComponent<ILocalizableMenuItemPr
     const enterpriseAvailable = useEnterpriseAvailable();
     const enterpriseStatus = useGetEnterpriseStatus();
 
+    const meetsEnterpriseRequirement = props.requiresEnterpriseSubscription
+        ? enterpriseStatus === "Subscription"
+        : props.requiresAnyEnterprise
+        ? enterpriseAvailable
+        : true;
+
     const iconElement = props.icon ? (
         <ListItemIcon
             css={css`
                 width: ${kIconCheckboxAffordance}px !important; // overrides MUI default that leaves way too much space
                 min-width: unset !important;
+
+                // We can't use the disabled prop because it prevents the click from opening settings.
+                // So we just make it look disabled (using the same setting as Mui-disabled).
+                // And we only do it on the icon and text --not on the menu item-- so the enterprise icon doesn't look disabled.
+                opacity: ${meetsEnterpriseRequirement
+                    ? undefined
+                    : kBloomDisabledOpacity};
             `}
         >
             {props.icon}
@@ -79,12 +94,6 @@ export const LocalizableMenuItem: React.FunctionComponent<ILocalizableMenuItemPr
         "CollectionSettingsDialog.RequiresEnterprise_ToolTip_"
     );
 
-    const meetsEnterpriseRequirement = props.requiresEnterpriseSubscription
-        ? enterpriseStatus === "Subscription"
-        : props.requiresAnyEnterprise
-        ? enterpriseAvailable
-        : true;
-
     const enterpriseElement =
         props.requiresAnyEnterprise || props.requiresEnterpriseSubscription ? (
             <img
@@ -96,7 +105,8 @@ export const LocalizableMenuItem: React.FunctionComponent<ILocalizableMenuItemPr
                 title={
                     meetsEnterpriseRequirement
                         ? undefined
-                        : requiresEnterpriseTooltip
+                        : props.enterpriseTooltipOverride ||
+                          requiresEnterpriseTooltip
                 }
             />
         ) : (
@@ -132,6 +142,13 @@ export const LocalizableMenuItem: React.FunctionComponent<ILocalizableMenuItemPr
                             font-weight: 400 !important; // H6 defaults to 500; too thick
                             font-family: Segoe UI, NotoSans, Roboto, sans-serif;
                             color: ${menuItemColor} !important;
+
+                            // We can't use the disabled prop because it prevents the click from opening settings and
+                            // prevents the tooltip. So we just make it look disabled (using the same setting as Mui-disabled).
+                            // And we only do it on the icon and text so the enterprise icon doesn't look disabled.
+                            opacity: ${meetsEnterpriseRequirement
+                                ? undefined
+                                : kBloomDisabledOpacity};
                         }
                     `}
                     primaryTypographyProps={typographyProps}
