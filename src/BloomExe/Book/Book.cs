@@ -4565,6 +4565,11 @@ namespace Bloom.Book
 				testOnly,
 				this.CollectionSettings.Language1.FontName, eventDetails);
 		}
+
+		public void AddHistoryRecordForLibraryUpload(string url)
+		{
+			BookHistory.AddEvent(this, BookHistoryEventType.Uploaded, "Book uploaded to Bloom Library" + (string.IsNullOrEmpty(url) ? "" : $" ({url})"));
+		}
 	}
 }
 

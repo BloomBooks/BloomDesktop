@@ -16,6 +16,7 @@ using Bloom.WebLibraryIntegration;
 using Bloom.Workspace;
 using Bloom.Api;
 using Bloom.TeamCollection;
+using Bloom.Publish;
 using Bloom.Publish.AccessibilityChecker;
 using Bloom.Publish.Android;
 using Bloom.Publish.Epub;
@@ -181,7 +182,8 @@ namespace Bloom
 							typeof(WorkspaceApi),
 							typeof(BookCollectionHolder),
 							typeof(WorkspaceTabSelection),
-							typeof(CopyrightAndLicenseApi)
+							typeof(CopyrightAndLicenseApi),
+							typeof(PublishView)
 						}.Contains(t));
 
 					builder.RegisterAssemblyTypes(Assembly.GetExecutingAssembly())

@@ -1022,6 +1022,11 @@
         <note>ID: Common.NextButton</note>
         <note>In a wizard, this button takes you to the next step.</note>
       </trans-unit>
+      <trans-unit id="Common.No" translate="no">
+        <!-- added in 5.5 -->
+        <source xml:lang="en">No</source>
+        <note>ID: Common.No</note>
+      </trans-unit>
       <trans-unit id="Common.Note">
         <source xml:lang="en">Note</source>
         <note>ID: Common.Note</note>
@@ -1096,6 +1101,11 @@
         <source xml:lang="en">Settings</source>
         <note>ID: Common.Settings</note>
       </trans-unit>
+      <trans-unit id="Common.Starting" translate="no">
+        <!-- added in 5.5 -->
+        <source xml:lang="en">Starting...</source>
+        <note>ID: Common.Starting</note>
+      </trans-unit>
       <trans-unit id="Common.Stop">
         <source xml:lang="en">Stop</source>
         <note>ID: Common.Stop</note>
@@ -1122,6 +1132,11 @@
         <source xml:lang="en">What caused this problem?</source>
         <note>ID: Common.WhatCausedThisProblem</note>
         <note>This is usually a link to an explanatory document.</note>
+      </trans-unit>
+      <trans-unit id="Common.Yes" translate="no">
+        <!-- added in 5.5 -->
+        <source xml:lang="en">Yes</source>
+        <note>ID: Common.Yes</note>
       </trans-unit>
       <trans-unit id="Copyright.CopyrightHolder" sil:dynamic="true">
         <source xml:lang="en">Copyright Holder</source>
@@ -4544,6 +4559,16 @@
         <source xml:lang="en">CC-BY-NC</source>
         <note>ID: PublishTab.Upload.CcLink</note>
       </trans-unit>
+      <trans-unit id="PublishTab.Upload.CheckingVersionEligibility" translate="no">
+        <!-- added in 5.5 -->
+        <source xml:lang="en">Checking Bloom version eligibility...</source>
+        <note>ID: PublishTab.Upload.CheckingVersionEligibility</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.CheckingExistingCopy" translate="no">
+        <!-- added in 5.5 -->
+        <source xml:lang="en">Checking for existing copy on server...</source>
+        <note>ID: PublishTab.Upload.CheckingExistingCopy</note>
+      </trans-unit>
       <trans-unit id="PublishTab.Upload.ChooseSignLanguageWarning">
         <source xml:lang="en">Please choose the sign language for this book</source>
         <note>ID: PublishTab.Upload.ChooseSignLanguageWarning</note>
@@ -4837,10 +4862,20 @@ Do you want to go ahead?</note>
         <source xml:lang="en">Upload Book</source>
         <note>ID: PublishTab.Upload.UploadButton</note>
       </trans-unit>
+      <trans-unit id="PublishTab.Upload.UploadCollection" translate="no">
+        <!-- added in 5.5 -->
+        <source xml:lang="en">Upload this Collection</source>
+        <note>ID: PublishTab.Upload.UploadCollection</note>
+      </trans-unit>
       <trans-unit id="PublishTab.Upload.UploadCompleteNotice">
         <source xml:lang="en">Congratulations, "{0}" is now available on BloomLibrary.org ({1})</source>
         <note>ID: PublishTab.Upload.UploadCompleteNotice</note>
         <note>{0} is the book title; {1} is a clickable url which will display the book on the website</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.UploadFolder" translate="no">
+        <!-- added in 5.5 -->
+        <source xml:lang="en">Upload Folder of Collections</source>
+        <note>ID: PublishTab.Upload.UploadFolder</note>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.UploadNotAllowed">
         <source xml:lang="en">Upload Not Allowed</source>
