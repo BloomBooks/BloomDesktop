@@ -730,8 +730,9 @@ namespace Bloom.TeamCollection
 							// Not sure this is worth localizing. Eventually only one or two users per collection will be
 							// allowed to make such changes. Collection settings should rarely be changed at all
 							// in Team Collections. This message will hopefully be seen rarely if at all.
-							ErrorReport.NotifyUserOfProblem(
-								"Collection settings have been changed remotely. Your recent collection settings changes will be lost the next time Bloom is restarted.");
+							const string msg = "Collection settings have been changed remotely. Your recent " +
+							                   "collection settings changes will be lost the next time Bloom is restarted.";
+							BloomMessageBox.ShowInfo(msg);
 						}
 					}
 					else

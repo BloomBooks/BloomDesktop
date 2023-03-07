@@ -6,6 +6,7 @@ import { WireUpForWinforms } from "../utils/WireUpWinform";
 import BloomButton from "../react_components/bloomButton";
 import { postString } from "./bloomApi";
 import WarningOutlinedIcon from "@mui/icons-material/WarningOutlined";
+import InfoIcon from "@mui/icons-material/Info";
 import {
     BloomDialog,
     DialogBottomButtons,
@@ -18,6 +19,7 @@ import {
     useSetupBloomDialog
 } from "../react_components/BloomDialog/BloomDialogPlumbing";
 import HtmlHelpLink from "../react_components/htmlHelpLink";
+import { kBloomBlue, kBloomYellow } from "../bloomMaterialUITheme";
 
 export interface IMessageBoxButton {
     text: string;
@@ -39,7 +41,9 @@ export const BloomMessageBox: React.FunctionComponent<{
     // If defined, creates a single "Learn More" button on the left side.
     // This is intended to look for a file whose source is "BloomBrowserUI/help/{helpButtonFileId}-en.md".
     helpButtonFileId?: string;
-    icon?: "warning" | undefined; // Effectively an enumeration, which we will add to as needed
+    // Effectively an enumeration, which we will add to as needed
+    // Interestingly enough, (MessageBoxIcon.Information).toString() in C# comes out as "Asterisk"!
+    icon?: "warning" | "asterisk" | undefined;
     dialogEnvironment?: IBloomDialogEnvironmentParams;
 
     // If defined (and true) the request came from C# and the response is via an api call.
@@ -96,6 +100,31 @@ export const BloomMessageBox: React.FunctionComponent<{
         undefined
     );
 
+    const icon = (): JSX.Element | undefined => {
+        switch (props.icon) {
+            case "warning":
+                return (
+                    <WarningOutlinedIcon
+                        css={css`
+                            font-size: 3rem !important;
+                            color: ${kBloomYellow};
+                        `}
+                    />
+                );
+            case "asterisk":
+                return (
+                    <InfoIcon
+                        css={css`
+                            font-size: 3rem !important;
+                            color: ${kBloomBlue};
+                        `}
+                    />
+                );
+            default:
+                return undefined;
+        }
+    };
+
     return (
         <BloomDialog {...propsForBloomDialog}>
             {/* We need a element title to make things space correctly because BloomDialog expects to have one, even though at the moment we aren't including a title */}
@@ -107,15 +136,8 @@ export const BloomMessageBox: React.FunctionComponent<{
                         display: flex;
                     `}
                 >
+                    {icon()}
                     {/* InnerHTML is used so that we can insert markup like <br> into the message. */}
-                    {props.icon === "warning" && (
-                        <WarningOutlinedIcon
-                            css={css`
-                                font-size: 3rem !important;
-                                color: orange;
-                            `}
-                        />
-                    )}
                     <div
                         css={css`
                             -moz-user-select: text; // Firefox before v69

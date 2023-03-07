@@ -33,7 +33,6 @@ using Bloom.MiscUI;
 using Bloom.web;
 using CommandLine;
 using Sentry;
-using Sentry.Protocol;
 using SIL.Windows.Forms.HtmlBrowser;
 using SIL.WritingSystems;
 using SIL.Xml;
@@ -312,7 +311,15 @@ namespace Bloom
 									{
 										var msg = LocalizationManager.GetString("TeamCollection.QuitOtherBloom",
 											"Please close Bloom before joining a Team Collection");
-										ErrorReport.NotifyUserOfProblem(msg);
+										var closeText = LocalizationManager.GetString("Common.Close", "Close");
+										var messageBoxButtons = new[]
+										{
+											new MessageBoxButton() { Text = closeText, Id = "close", Default = true }
+										};
+										// BloomMessageBox.Show() expects a window as 'owner', but we don't have our own window
+										// open yet. This will pop up the dialog in the upper left corner. Not ideal, but the
+										// best we can do in this case.
+										BloomMessageBox.Show(null, msg, messageBoxButtons, MessageBoxIcon.Information);
 										return 1;
 									}
 									gotUniqueToken = true;

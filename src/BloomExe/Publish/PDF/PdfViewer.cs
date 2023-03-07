@@ -8,6 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
+using Bloom.MiscUI;
 using Gecko;
 using Gecko.Interop;
 using L10NSharp;
@@ -16,7 +17,6 @@ using Microsoft.Web.WebView2.Core;
 using Microsoft.Win32;
 #endif
 using SIL.IO;
-using SIL.Reporting;
 
 namespace Bloom.Publish.PDF
 {
@@ -211,8 +211,9 @@ namespace Bloom.Publish.PDF
 				return;
 			}
 
-			ErrorReport.NotifyUserOfProblem(LocalizationManager.GetString("PublishTab.Notifications.AdobeForPrint",
-				"If you want to print directly from Bloom, you will need to install the free Adobe Reader and then re-start Bloom. Or instead, you can save the PDF, open it in some other program, and then print from there."));
+			var msg = LocalizationManager.GetString("PublishTab.Notifications.AdobeForPrint",
+				"If you want to print directly from Bloom, you will need to install the free Adobe Reader and then re-start Bloom. Or instead, you can save the PDF, open it in some other program, and then print from there.");
+			BloomMessageBox.ShowInfo(msg);
 			return;
 			// If we decide to have another go at this, see https://issues.bloomlibrary.org/youtrack/issue/BL-11113
 			// and the associated PR, https://github.com/BloomBooks/BloomDesktop/pull/5147.

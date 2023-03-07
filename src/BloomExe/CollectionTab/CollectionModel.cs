@@ -343,7 +343,7 @@ namespace Bloom.CollectionTab
 					{
 						var msg = LocalizationManager.GetString("TeamCollection.CheckOutForDelete",
 							"Please check out the book before deleting it.");
-						ErrorReport.NotifyUserOfProblem(msg);
+						BloomMessageBox.ShowInfo(msg);
 						return false;
 					}
 
@@ -351,7 +351,7 @@ namespace Bloom.CollectionTab
 					{
 						var msg = LocalizationManager.GetString("TeamCollection.ConnectForDelete",
 							"Please connect to the Team Collection before deleting books that are part of it.");
-						ErrorReport.NotifyUserOfProblem(msg);
+						BloomMessageBox.ShowInfo(msg);
 						return false;
 					}
 				}
