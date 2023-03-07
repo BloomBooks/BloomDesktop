@@ -22,7 +22,6 @@ import { TextWithEmbeddedLink } from "../../react_components/link";
 import { post, postJson } from "../../utils/bloomApi";
 import { WireUpForWinforms } from "../../utils/WireUpWinform";
 import { lightTheme } from "../../bloomMaterialUITheme";
-import { ThemeProvider, StyledEngineProvider } from "@mui/material/styles";
 import HelpLink from "../../react_components/helpLink";
 import {
     IBloomDialogEnvironmentParams,
@@ -40,13 +39,28 @@ export interface IUploadCollisionDlgProps {
     existingUpdatedDate: string;
     existingBookUrl: string;
     existingThumbUrl?: string;
+    onCancel?: () => void;
     dialogEnvironment?: IBloomDialogEnvironmentParams;
 }
 
+let legacyMode: boolean = true;
+export function showUploadCollisionDialog() {
+    // This is a horrible hack we have in place until the old upload screen dies.
+    legacyMode = false;
+    showUploadCollectionDialogInternal();
+}
+
+let showUploadCollectionDialogInternal: () => void = () => {
+    console.error("showUploadCollectionDialogInternal is not set up yet.");
+};
+
 export const UploadCollisionDlg: React.FunctionComponent<IUploadCollisionDlgProps> = props => {
-    const { closeDialog, propsForBloomDialog } = useSetupBloomDialog(
-        props.dialogEnvironment
-    );
+    const {
+        showDialog,
+        closeDialog,
+        propsForBloomDialog
+    } = useSetupBloomDialog(props.dialogEnvironment);
+    showUploadCollectionDialogInternal = showDialog;
 
     enum RadioState {
         Indeterminate,
@@ -207,173 +221,184 @@ export const UploadCollisionDlg: React.FunctionComponent<IUploadCollisionDlgProp
         textDecoration: "underline"
     };
 
+    function cancel() {
+        if (props.onCancel) props.onCancel();
+        if (legacyMode) post("libraryPublish/cancel_obsolete");
+    }
+
     return (
-        <StyledEngineProvider injectFirst>
-            <ThemeProvider theme={lightTheme}>
-                <BloomDialog
-                    onCancel={() => {
-                        post("libraryPublish/cancel_obsolete");
-                        closeDialog();
-                    }}
-                    {...propsForBloomDialog}
+        <BloomDialog
+            onCancel={() => {
+                cancel();
+                closeDialog();
+            }}
+            {...propsForBloomDialog}
+            maxWidth={false}
+        >
+            <div
+                css={css`
+                    flex-direction: column;
+                `}
+            >
+                <DialogTitle
+                    title={sameBook}
+                    icon="/bloom/publish/LibraryPublish/BookIdCollision.svg"
+                ></DialogTitle>
+                <div
+                    css={css`
+                        margin-left: 45px;
+                        margin-top: -20px;
+                    `}
                 >
-                    <div
-                        css={css`
-                            flex-direction: column;
-                        `}
-                    >
-                        <DialogTitle
-                            title={sameBook}
-                            icon="/bloom/publish/LibraryPublish/BookIdCollision.svg"
-                        ></DialogTitle>
-                        <div
-                            css={css`
-                                margin-left: 45px;
-                                margin-top: -20px;
-                            `}
-                        >
-                            <Typography color="textSecondary">
-                                {bloomLibraryHasOne}
-                            </Typography>
-                        </div>
-                    </div>
-                    <DialogMiddle>
-                        {/* This section contains two BookInfoCards.
+                    <Typography color="textSecondary">
+                        {bloomLibraryHasOne}
+                    </Typography>
+                </div>
+            </div>
+            <DialogMiddle>
+                {/* This section contains two BookInfoCards.
                             The first is for the book on the server.
                             The second is for the book the user is uploading currently.
                         */}
-                        <div
-                            css={css`
-                                flex-direction: row;
-                                display: flex;
-                                margin-left: 45px;
-                                margin-top: 38px;
-                            `}
-                        >
-                            <div
-                                css={css`
-                                    p {
-                                        margin-block-end: 0;
-                                    }
-                                `}
-                            >
-                                <Typography>{existingCardHeader}</Typography>
-                                <BookInfoCard
-                                    title={props.existingTitle}
-                                    bookUrl={props.existingBookUrl}
-                                    thumbnailUrl={props.existingThumbUrl}
-                                    languages={
-                                        props.existingLanguages
-                                            ? props.existingLanguages
-                                            : [""]
-                                    }
-                                    originalUpload={props.existingCreatedDate}
-                                    lastUpdated={props.existingUpdatedDate}
-                                ></BookInfoCard>
-                            </div>
-                            <div
-                                css={css`
-                                    min-width: 20px;
-                                `}
-                            />
-                            <div
-                                css={css`
-                                    p {
-                                        margin-block-end: 0;
-                                    }
-                                `}
-                            >
-                                <Typography>{uploadingCardHeader}</Typography>
-                                <BookInfoCard
-                                    title={props.newTitle}
-                                    thumbnailUrl={props.newThumbUrl}
-                                    languages={
-                                        props.newLanguages
-                                            ? props.newLanguages
-                                            : [""]
-                                    }
-                                ></BookInfoCard>
-                            </div>
-                        </div>
-                        {/* This section contains two Radio buttons. Neither should be initially selected.
+                <div
+                    css={css`
+                        flex-direction: row;
+                        display: flex;
+                        margin-left: 45px;
+                        margin-top: 38px;
+                    `}
+                >
+                    <div
+                        css={css`
+                            p {
+                                margin-block-end: 0;
+                            }
+                        `}
+                    >
+                        <Typography>{existingCardHeader}</Typography>
+                        <BookInfoCard
+                            title={props.existingTitle}
+                            bookUrl={props.existingBookUrl}
+                            thumbnailUrl={props.existingThumbUrl}
+                            languages={
+                                props.existingLanguages
+                                    ? props.existingLanguages
+                                    : [""]
+                            }
+                            originalUpload={props.existingCreatedDate}
+                            lastUpdated={props.existingUpdatedDate}
+                        ></BookInfoCard>
+                    </div>
+                    <div
+                        css={css`
+                            min-width: 20px;
+                        `}
+                    />
+                    <div
+                        css={css`
+                            p {
+                                margin-block-end: 0;
+                            }
+                        `}
+                    >
+                        <Typography>{uploadingCardHeader}</Typography>
+                        <BookInfoCard
+                            title={props.newTitle}
+                            thumbnailUrl={props.newThumbUrl}
+                            languages={
+                                props.newLanguages ? props.newLanguages : [""]
+                            }
+                        ></BookInfoCard>
+                    </div>
+                </div>
+                {/* This section contains two Radio buttons. Neither should be initially selected.
                             The first choice is to replace the book on the server.
                             The second choice is to change the ID of the book the user is uploading currently.
                             This would enable both books to exist on the server.
                         */}
-                        <div
-                            css={css`
-                                flex-direction: column;
-                                display: flex;
-                                margin-left: 36px;
-                                margin-top: 15px;
-                                width: 420px;
-                            `}
-                        >
-                            <RadioWithLabelAndCommentary
-                                buttonStateToMatch={RadioState.Same}
-                                radioValue="Same"
-                                radioLabel={sameBookRadioLabel}
-                                ariaLabel="Same book radio button"
-                                commentaryChildren={sameBookRadioCommentary()}
-                            />
-                            <RadioWithLabelAndCommentary
-                                buttonStateToMatch={RadioState.Different}
-                                radioValue="Different"
-                                radioLabel={differentBooksRadioLabel}
-                                ariaLabel="Different book radio button"
-                                commentaryChildren={differentBooksRadioCommentary()}
-                            />
-                        </div>
-                    </DialogMiddle>
-                    <DialogBottomButtons>
-                        <DialogBottomLeftButtons>
-                            <DialogReportButton
-                                l10nKey="Common.AskForHelp"
-                                buttonText="Ask for help"
-                                css={css`
-                                    span {
-                                        color: ${kAskForHelpColor};
-                                    }
-                                `}
-                                shortMessage="Problem deciding if the uploading book is the same as the one on bloomlibrary.org."
-                                messageGenerator={() =>
-                                    // Not trying to be very nice about this message. The user will not usually see it.
-                                    // It will be buried in the details of the report sent to YouTrack to tell US what went wrong.
-                                    `Trying to decide if the bloomlibrary.org '${props.existingTitle}', uploaded on ${props.existingCreatedDate}, is the same book as '${props.newTitle}'.`
-                                }
-                            />
-                        </DialogBottomLeftButtons>
-                        <BloomButton
-                            l10nKey={"Common.Upload"}
-                            enabled={buttonState !== RadioState.Indeterminate}
-                            size="large"
-                            onClick={() => {
-                                postJson("libraryPublish/upload_obsolete", {
-                                    sameOrDifferent:
-                                        buttonState === RadioState.Same
-                                            ? "same"
-                                            : "different"
-                                });
-                                closeDialog();
-                            }}
-                        >
-                            Upload
-                        </BloomButton>
-                        <DialogCancelButton
-                            // Something is preventing onCancel on BloomDialog from working in
-                            // this case. I'm not sure if it has to do with this dialog
-                            // being in a separate browser... that's my theory since it
-                            // works in storybook. For now, I'm just restoring the functionality
-                            // by putting the deprecated onClick back.
-                            onClick_DEPRECATED={() => {
-                                post("libraryPublish/cancel_obsolete");
-                                closeDialog();
-                            }}
-                        ></DialogCancelButton>
-                    </DialogBottomButtons>
-                </BloomDialog>
-            </ThemeProvider>
-        </StyledEngineProvider>
+                <div
+                    css={css`
+                        flex-direction: column;
+                        display: flex;
+                        margin-left: 36px;
+                        margin-top: 15px;
+                        width: 420px;
+                    `}
+                >
+                    <RadioWithLabelAndCommentary
+                        buttonStateToMatch={RadioState.Same}
+                        radioValue="Same"
+                        radioLabel={sameBookRadioLabel}
+                        ariaLabel="Same book radio button"
+                        commentaryChildren={sameBookRadioCommentary()}
+                    />
+                    <RadioWithLabelAndCommentary
+                        buttonStateToMatch={RadioState.Different}
+                        radioValue="Different"
+                        radioLabel={differentBooksRadioLabel}
+                        ariaLabel="Different book radio button"
+                        commentaryChildren={differentBooksRadioCommentary()}
+                    />
+                </div>
+            </DialogMiddle>
+            <DialogBottomButtons>
+                <DialogBottomLeftButtons>
+                    <DialogReportButton
+                        l10nKey="Common.AskForHelp"
+                        buttonText="Ask for help"
+                        css={css`
+                            span {
+                                color: ${kAskForHelpColor};
+                            }
+                        `}
+                        shortMessage="Problem deciding if the uploading book is the same as the one on bloomlibrary.org."
+                        messageGenerator={() =>
+                            // Not trying to be very nice about this message. The user will not usually see it.
+                            // It will be buried in the details of the report sent to YouTrack to tell US what went wrong.
+                            `Trying to decide if the bloomlibrary.org '${props.existingTitle}', uploaded on ${props.existingCreatedDate}, is the same book as '${props.newTitle}'.`
+                        }
+                    />
+                </DialogBottomLeftButtons>
+                <BloomButton
+                    l10nKey={"Common.Upload"}
+                    enabled={buttonState !== RadioState.Indeterminate}
+                    size="large"
+                    onClick={() => {
+                        const isSameBook: boolean =
+                            buttonState === RadioState.Same;
+                        if (legacyMode) {
+                            postJson("libraryPublish/upload_obsolete", {
+                                sameOrDifferent: isSameBook
+                                    ? "same"
+                                    : "different"
+                            });
+                        } else {
+                            post(
+                                `libraryPublish/${
+                                    isSameBook
+                                        ? "upload"
+                                        : "uploadAfterChangingBookId"
+                                }`
+                            );
+                        }
+                        closeDialog();
+                    }}
+                >
+                    Upload
+                </BloomButton>
+                <DialogCancelButton
+                    // Something is preventing onCancel on BloomDialog from working in
+                    // this case. I'm not sure if it has to do with this dialog
+                    // being in a separate browser... that's my theory since it
+                    // works in storybook. For now, I'm just restoring the functionality
+                    // by putting the deprecated onClick back.
+                    onClick_DEPRECATED={() => {
+                        cancel();
+                        closeDialog();
+                    }}
+                ></DialogCancelButton>
+            </DialogBottomButtons>
+        </BloomDialog>
     );
 };
 
