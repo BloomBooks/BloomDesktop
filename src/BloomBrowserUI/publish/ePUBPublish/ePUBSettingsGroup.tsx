@@ -23,6 +23,7 @@ import {
 import { kBloomBlue, kSelectCss } from "../../bloomMaterialUITheme";
 import { useState } from "react";
 import { BloomTooltip } from "../../react_components/BloomToolTip";
+import { kBloomDisabledText } from "../../utils/colorUtils";
 
 const epubModes: IEpubMode[] = [
     {
@@ -55,7 +56,7 @@ export const EPUBSettingsGroup: React.FunctionComponent<{
     const linkCss = "margin-top: 1em !important; display: block;";
     const disabledLinkCss = canModifyCurrentBook
         ? ""
-        : "color: rgba(0, 0, 0, 0.38) !important;";
+        : `color: ${kBloomDisabledText} !important;`;
 
     const [isModeDropdownOpen, setIsModeDropdownOpen] = useState(false);
 

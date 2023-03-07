@@ -5,20 +5,29 @@ import { Stepper } from "@mui/material";
 import { kBloomBlue } from "../bloomMaterialUITheme";
 import { StepperProps } from "@mui/material/Stepper";
 
-export const BloomStepper: React.FunctionComponent<StepperProps> = props => {
+export const BloomStepper: React.FunctionComponent<{
+    areStepsAlwaysEnabled?: boolean;
+} & StepperProps> = props => {
+    // Defeat Material-UI's attempt to make the step numbers and text look disabled.
+    const cssForAlwaysEnabledSteps = css`
+        .MuiStepLabel-label {
+            color: black !important;
+        }
+        .MuiStepIcon-root {
+            color: ${kBloomBlue} !important;
+        }
+    `;
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { areStepsAlwaysEnabled, ...propsForStepper } = props;
     return (
         <Stepper
-            // We need to defeat Material-UI's attempt to make the step numbers and text look disabled.
             css={css`
                 .MuiStepLabel-label {
-                    color: black !important;
                     font-size: larger;
                 }
-                .MuiStepIcon-root {
-                    color: ${kBloomBlue} !important;
-                }
+                ${props.areStepsAlwaysEnabled ? cssForAlwaysEnabledSteps : ""}
             `}
-            {...props}
+            {...propsForStepper}
         ></Stepper>
     );
 };

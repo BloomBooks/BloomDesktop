@@ -11,12 +11,17 @@ import {
     DialogTitle
 } from "./BloomDialog";
 import { Button, CircularProgress } from "@mui/material";
+
+import PersonIcon from "@mui/icons-material/Person";
 import {
     WarningBox,
     DialogCancelButton,
     DialogCloseButton,
     ErrorBox,
-    NoteBox
+    NoteBoxSansBorder,
+    NoteBox,
+    BoxWithIconAndText,
+    WaitBox
 } from "./commonDialogComponents";
 import {
     INumberChooserDialogProps,
@@ -40,7 +45,7 @@ const circularProgress = (
         color={undefined}
     />
 );
-storiesOf("Bloom Dialog", module)
+storiesOf("BloomDialog", module)
     .add("Simple Dialog", () => {
         return React.createElement(() => {
             const {
@@ -204,21 +209,34 @@ storiesOf("Bloom Dialog", module)
                             borders of the dialog box. This will overflow which
                             should lead to a vertical scroll bar.
                         </p>
-                        <WarningBox>Don't step on Superman's cape.</WarningBox>
+                        <WarningBox>
+                            WarningBox | Don't step on Superman's cape.
+                        </WarningBox>
                         <p>
                             I notice at the moment that the spacing between
                             these paragraphs and special boxes is messed up.
                         </p>
-                        <NoteBox>
-                            The Broncos will have a winning season some year.
-                            (wishful thinking...)
-                        </NoteBox>
+                        <NoteBoxSansBorder>
+                            NoteBoxSansBorder | The Broncos will have a winning
+                            season some year. (wishful thinking...)
+                        </NoteBoxSansBorder>
+                        <NoteBox>NoteBox</NoteBox>
+                        <WaitBox>WaitBox | Tick tock tick tock.</WaitBox>
+                        <BoxWithIconAndText
+                            hasBorder={true}
+                            color="red"
+                            backgroundColor="lavenderblush"
+                            borderColor="blue"
+                            icon={<PersonIcon />}
+                        >
+                            BoxWithIconAndText | This one is fully custom.
+                        </BoxWithIconAndText>
                         <p>
                             Est anim nisi aute cupidatat elit voluptate ut aute
                             quis esse excepteur. Deserunt irure eiusmod occaecat
                             nisi est exercitation.
                         </p>
-                        <ErrorBox>Abandon all hope.</ErrorBox>
+                        <ErrorBox>ErrorBox | Abandon all hope.</ErrorBox>
                         <p>
                             Ea non consequat irure et elit enim laboris fugiat
                             ipsum. Lorem ipsum velit ut duis ex magna aliquip

@@ -118,7 +118,7 @@ export const LicensePanel: React.FunctionComponent<{
             // for overriding tab styling for the normal case.
             // See the css for the Tabs component in CopyrightAndLicenseDialog.
             <div>
-                <NoteBox addBorder={true}>
+                <NoteBox>
                     <div>
                         <Div l10nKey="License.CannotChangeLicense">
                             The license of the original book does not allow

@@ -307,7 +307,11 @@ const PublishAudioVideoInternalInternal: React.FunctionComponent<{
     color: grey;`;
     const mainPanel = (
         <PublishPanel>
-            <BloomStepper activeStep={activeStep} orientation="vertical">
+            <BloomStepper
+                activeStep={activeStep}
+                areStepsAlwaysEnabled={true}
+                orientation="vertical"
+            >
                 <Step expanded={true}>
                     <StepLabel>{configAndPreview}</StepLabel>
                     <StepContent>
@@ -590,9 +594,7 @@ const PublishAudioVideoInternalInternal: React.FunctionComponent<{
                     margin-top: auto;
                 `}
             />
-            {hasActivities && (
-                <NoteBox addBorder={true}>{activitiesSkipped}</NoteBox>
-            )}
+            {hasActivities && <NoteBox>{activitiesSkipped}</NoteBox>}
             <HelpGroup>
                 <HelpLink
                     l10nKey="PublishTab.RecordVideo.OverviewHelpLink"
