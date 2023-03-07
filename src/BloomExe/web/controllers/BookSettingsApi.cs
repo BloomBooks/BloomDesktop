@@ -56,12 +56,10 @@ namespace Bloom.Api
 					dynamic newSettings = Newtonsoft.Json.Linq.JObject.Parse(json);
 					var c = newSettings.appearance.cover.coverColor;
 					_bookSelection.CurrentSelection.SetCoverColor(c.ToString());
-					// review: crazy bit here, that above I'm taking json, parsing it into and object, and grabbing part of it. But then
+					// review: crazy bit here, that above I'm taking json, parsing it into object, and grabbing part of it. But then
 					// here we take it back to json and pass it to this thing that is going to parse it agian. In this case, speed
-					// is irrelevant. The nice thing is, it retains the identity of PublishSettings in case someone is holing on it.
+					// is irrelevant. The nice thing is, it retains the identity of PublishSettings in case someone is holding on it.
 					_bookSelection.CurrentSelection.BookInfo.PublishSettings.LoadNewJson(JsonConvert.DeserializeObject(newSettings.publish));
-					//_bookSelection.CurrentSelection.BookInfo.PublishSettings.BloomPub.ImageSettings.MaxWidth = newSettings.bloomPUB.imageSettings.maxWidth;
-					//_bookSelection.CurrentSelection.BookInfo.PublishSettings.BloomPub.ImageSettings.MaxHeight = newSettings.bloomPUB.imageSettings.maxHeight;
 
 					_pageRefreshEvent.Raise(PageRefreshEvent.SaveBehavior.JustRedisplay);
 

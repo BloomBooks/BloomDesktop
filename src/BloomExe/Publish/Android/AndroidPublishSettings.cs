@@ -168,7 +168,7 @@ namespace Bloom.Publish.Android
 		{
 			// Normally this is setup by the Publish screen, but if you've never visited the Publish screen for this book,
 			// then this will be empty. In that case, initialize it here.
-			if (bookInfo.PublishSettings.BloomPub.TextLangs.Count == 0) // Review Feb 2022: previously it would be null, now count==0. Not exactly the same, since you could say "no text languages"?
+			if (bookInfo.PublishSettings.BloomPub.TextLangs.Count == 0)
 			{
 				var book = bookServer.GetBookFromBookInfo(bookInfo);
 				var allLanguages = book.AllPublishableLanguages(includeLangsOccurringOnlyInXmatter: true);
