@@ -2265,7 +2265,7 @@ namespace Bloom.Book
 		{
 			return SelectChildNarrationAudioElements(element, includeSplitTextBoxAudio, langsToExclude)
 				.Cast<XmlElement>()
-				.Where(e => e.ParentWithClass("bloom-editable") != null);
+				.Where(e => e.ParentOrSelfWithClass("bloom-editable") != null);
 		}
 
 		/// <summary>

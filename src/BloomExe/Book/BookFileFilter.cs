@@ -294,7 +294,7 @@ namespace Bloom.Book
 					{
 						var narrationLangs = new HashSet<string>(NarrationLanguages);
 						narrationElements = narrationElements
-							.Where(node => narrationLangs.Contains(node.ParentWithClass("bloom-editable")
+							.Where(node => narrationLangs.Contains(node.ParentOrSelfWithClass("bloom-editable")
 								.GetOptionalStringAttribute("lang", null)));
 					}
 
