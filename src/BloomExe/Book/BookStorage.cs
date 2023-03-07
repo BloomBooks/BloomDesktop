@@ -806,6 +806,12 @@ namespace Bloom.Book
 				// in an older version of Bloom which nevertheless has comical, it will give it a normal bubble tail.
 				// This xpath finds a bubble with a "caption" style and a non-empty tail spec.
 				XPath = "//div[contains(@class,'bloom-textOverPicture') and contains(@data-bubble, '`caption`') and contains(@data-bubble, '`tails`:[{`')]"
+			},
+			new Feature() {FeatureId = "hiddenAudioSplitMarkers",
+				FeaturePhrase = "Hide audio split markers (|) outside the talking book tool",
+				BloomDesktopMinVersion = "5.5",
+				BloomReaderMinVersion = "1.0",
+				XPath = "//span[contains(@class,'bloom-audio-split-marker')]"
 			}
 		};
 

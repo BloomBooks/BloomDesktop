@@ -911,6 +911,17 @@ namespace Bloom.Spreadsheet
 				}
 
 				AddAudio(editable, lang, row);
+				// If the inner XML contains a vertical bar at the end of a span, we assume that it is used
+				// to split a phrase for audio and convert the vertical bar character to an invisible span
+				// explicitly designating a bloom audio split marker.  Any other vertical bars are left
+				// unchanged because the user might be inserting them for another purpose.  Opening the
+				// talking book tool on a page effectively converts unadorned vertical bars to audio split
+				// markers anyway, so the user can get that effect once the tool is opened to record audio.
+				if (editable.InnerXml.Contains("|</span>"))
+				{
+					var innerContent = editable.InnerXml;
+					editable.InnerXml = innerContent.Replace("|</span>", "<span class='bloom-audio-split-marker'>\u200B</span></span>");
+				}
 			}
 
 			if (RemoveOtherLanguages)

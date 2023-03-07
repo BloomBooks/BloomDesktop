@@ -165,12 +165,12 @@ namespace Bloom.Spreadsheet
 					continue;
 				var index = GetOrAddColumnForLang(langCode);
 				var content = editable.InnerXml;
+				content = content.Replace("<span class=\"bloom-audio-split-marker\">\u200B</span>", "|");
 				// Don't just test content, it typically contains paragraph markup.
 				if (String.IsNullOrWhiteSpace(editable.InnerText))
 				{
 					content = InternalSpreadsheet.BlankContentIndicator;
 				}
-
 				row.SetCell(index, content);
 				ExportAudio(editable, row, bookFolderPath);
 			}
