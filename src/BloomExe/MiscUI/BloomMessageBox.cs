@@ -21,7 +21,6 @@ namespace Bloom.MiscUI
 				rightButtonDefinitions = rightButtons,
 				icon = icon.ToString().ToLowerInvariant(),
 				closeWithAPICall = true
-
 			}))
 			{
 				dlg.Width = 500;

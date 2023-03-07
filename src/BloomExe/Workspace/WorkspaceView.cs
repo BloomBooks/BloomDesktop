@@ -826,7 +826,16 @@ namespace Bloom.Workspace
 				DialogResult result = _settingsLauncherHelper.LaunchSettingsIfAppropriate (() => {
 					if (!_tcManager.OkToEditCollectionSettings)
 					{
-						ErrorReport.NotifyUserOfProblem(MustBeAdminMessage);
+						var closeText = LocalizationManager.GetString("Common.Close", "Close");
+						var messageBoxButtons = new[]
+						{
+							new MessageBoxButton() { Text = closeText, Id = "close", Default = true }
+						};
+						var formToInvokeOn = Application.OpenForms.Cast<Form>().FirstOrDefault(f => f is Shell);
+						formToInvokeOn.Invoke((Action)(() =>
+						{
+							BloomMessageBox.Show(formToInvokeOn, MustBeAdminMessage, messageBoxButtons, MessageBoxIcon.Warning);
+						}));
 						return DialogResult.Cancel;
 					}
 					using (var dlg = _settingsDialogFactory())
