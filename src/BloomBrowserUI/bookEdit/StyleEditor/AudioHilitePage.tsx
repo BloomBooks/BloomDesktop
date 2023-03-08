@@ -74,7 +74,7 @@ export const AudioHilitePage: React.FunctionComponent<{
                     localizedTitle={chooserTitleBg}
                     width={84}
                     noAlphaSlider={true}
-                    palette={BloomPalette.TextBackground}
+                    palette={BloomPalette.HighlightBackground}
                     onClose={(result, newColor) =>
                         props.onHilitePropsChanged(
                             props.hiliteTextColor,
