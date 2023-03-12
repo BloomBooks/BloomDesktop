@@ -129,7 +129,6 @@ export const BloomDialog: FunctionComponent<IBloomDialogProps> = forwardRef(
             ...propsToPass
         } = props;
 
-        console.log("BloomDialog: propsToPass", propsToPass);
         function hasChildOfType(typeName: string) {
             return React.Children.toArray(props.children).some(c => {
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
