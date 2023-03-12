@@ -216,6 +216,7 @@ export const BookButton: React.FunctionComponent<{
                 addEllipsis: true,
                 requiresSavePermission: true,
                 onClick: () => {
+                    handleClose(); // not clear why this is needed on this one, we assume it's because we're doing an onClick
                     showBookSettingsDialog();
                 }
             },
