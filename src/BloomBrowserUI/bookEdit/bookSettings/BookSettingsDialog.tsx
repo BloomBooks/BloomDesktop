@@ -206,7 +206,7 @@ const BloomResolutionSliderInner: React.FunctionComponent<{
                 css={css`
                     text-align: right;
                 `}
-                variant="h3"
+                variant="h4"
             >{`${current.l}`}</Typography>
             <Slider
                 track={false}

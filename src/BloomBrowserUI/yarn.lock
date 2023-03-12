@@ -2593,6 +2593,24 @@
   dependencies:
     "@babel/runtime" "^7.20.6"
 
+"@mui/material@^5.11.12":
+  version "5.11.12"
+  resolved "https://registry.yarnpkg.com/@mui/material/-/material-5.11.12.tgz#b113c854fb1bb0aa473686a36a92322c6c754121"
+  integrity sha512-M6BiIeJjySeEzWeiFJQ9pIjJy6mx5mHPWeMT99wjQdAmA2GxCQhE9A0fh6jQP4jMmYzxhOIhjsGcp0vSdpseXg==
+  dependencies:
+    "@babel/runtime" "^7.21.0"
+    "@mui/base" "5.0.0-alpha.119"
+    "@mui/core-downloads-tracker" "^5.11.12"
+    "@mui/system" "^5.11.12"
+    "@mui/types" "^7.2.3"
+    "@mui/utils" "^5.11.12"
+    "@types/react-transition-group" "^4.4.5"
+    clsx "^1.2.1"
+    csstype "^3.1.1"
+    prop-types "^15.8.1"
+    react-is "^18.2.0"
+    react-transition-group "^4.4.5"
+
 "@mui/material@^5.11.8":
   version "5.11.8"
   resolved "https://registry.yarnpkg.com/@mui/material/-/material-5.11.8.tgz#6ee1b46209932dd9e86430db083bf8260d79b902"
@@ -2688,6 +2706,20 @@
     jss-plugin-props-sort "^10.9.2"
     jss-plugin-rule-value-function "^10.9.2"
     jss-plugin-vendor-prefixer "^10.9.2"
+    prop-types "^15.8.1"
+
+"@mui/system@^5.11.12":
+  version "5.11.12"
+  resolved "https://registry.yarnpkg.com/@mui/system/-/system-5.11.12.tgz#e7234c4e73e9af2b8e985fbed048d8b274338561"
+  integrity sha512-sYjsXkiwKpZDC3aS6O/6KTjji0jGINLQcrD5EJ5NTkIDiLf19I4HJhnufgKqlTWNfoDBlRohuTf3TzfM06c4ug==
+  dependencies:
+    "@babel/runtime" "^7.21.0"
+    "@mui/private-theming" "^5.11.12"
+    "@mui/styled-engine" "^5.11.11"
+    "@mui/types" "^7.2.3"
+    "@mui/utils" "^5.11.12"
+    clsx "^1.2.1"
+    csstype "^3.1.1"
     prop-types "^15.8.1"
 
 "@mui/system@^5.11.8":
