@@ -1,4 +1,5 @@
 ﻿using System.Windows.Forms;
+using L10NSharp;
 using Newtonsoft.Json;
 
 namespace Bloom.MiscUI
@@ -21,7 +22,6 @@ namespace Bloom.MiscUI
 				rightButtonDefinitions = rightButtons,
 				icon = icon.ToString().ToLowerInvariant(),
 				closeWithAPICall = true
-
 			}))
 			{
 				dlg.Width = 500;
@@ -30,9 +30,25 @@ namespace Bloom.MiscUI
 				// drag it around. There's nothing left to give it one if we don't set a title
 				// and remove the control box.
 				dlg.ControlBox = false;
+				if (owner == null)
+					dlg.StartPosition = FormStartPosition.CenterScreen;
 				dlg.ShowDialog(owner);
 				return dlg.CloseSource;
 			}
+		}
+
+		/// <summary>
+		/// This version assumes we just want a warning box with a single Close button to give some information.
+		/// </summary>
+		public static string ShowInfo(string message)
+		{
+			var closeText = LocalizationManager.GetString("Common.Close", "Close");
+			var messageBoxButtons = new[]
+			{
+				new MessageBoxButton() { Text = closeText, Id = "close", Default = true }
+			};
+			var openForm = Shell.GetShellOrOtherOpenForm();
+			return Show(openForm, message, messageBoxButtons, MessageBoxIcon.Information);
 		}
 	}
 

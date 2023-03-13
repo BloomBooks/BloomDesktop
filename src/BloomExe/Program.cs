@@ -33,7 +33,6 @@ using Bloom.MiscUI;
 using Bloom.web;
 using CommandLine;
 using Sentry;
-using Sentry.Protocol;
 using SIL.Windows.Forms.HtmlBrowser;
 using SIL.WritingSystems;
 using SIL.Xml;
@@ -312,7 +311,7 @@ namespace Bloom
 									{
 										var msg = LocalizationManager.GetString("TeamCollection.QuitOtherBloom",
 											"Please close Bloom before joining a Team Collection");
-										ErrorReport.NotifyUserOfProblem(msg);
+										BloomMessageBox.ShowInfo(msg);
 										return 1;
 									}
 									gotUniqueToken = true;

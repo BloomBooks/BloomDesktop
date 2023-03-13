@@ -7,6 +7,7 @@ using System.Linq;
 using System.Windows.Forms;
 using Bloom.Book;
 using Bloom.Collection;
+using Bloom.MiscUI;
 using Bloom.web;
 using Bloom.web.controllers;
 using Bloom.WebLibraryIntegration;
@@ -406,7 +407,10 @@ namespace Bloom.Publish.BloomLibrary
 			if ( _uploadSource.SelectedIndex > 0 && missingDefaultBookshelf)
 			{
 				// Intentionally not localized ( because it's complicated, rare, and generally advanced )
-				ErrorReport.NotifyUserOfProblem("Before sending all of your books to BloomLibrary.org, you probably want to tell Bloom which bookshelf this collection belongs in. Please go to Collection Tab : Settings: Book Making and set the \"Bloom Library Bookshelf\".");
+				const string msg = "Before sending all of your books to BloomLibrary.org, you probably want to tell " +
+				                   "Bloom which bookshelf this collection belongs in. Please go to Collection Tab : Settings: " +
+				                   "Book Making and set the \"Bloom Library Bookshelf\".";
+				BloomMessageBox.ShowInfo(msg);
 				return;
 			}
 			if (_uploadSource.SelectedIndex == 1)
