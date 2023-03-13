@@ -6,6 +6,7 @@ import { Link as MuiLink } from "@mui/material";
 import { LinkBaseProps } from "@mui/material/Link";
 
 import { ILocalizationProps, LocalizableElement } from "./l10nComponents";
+import { kBloomDisabledText } from "../utils/colorUtils";
 
 interface ILinkProps extends ILocalizationProps {
     id?: string;
@@ -111,7 +112,7 @@ export const LinkWithDisabledStyles = (props: ILinkProps) => {
             css={css`
                 &.disabled {
                     // color same as .MuiFormControlLabel-label.Mui-disabled
-                    color: rgba(0, 0, 0, 0.38);
+                    color: ${kBloomDisabledText};
                     cursor: default;
 
                     &:hover {

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-empty-function */
 // Don't add /** @jsxFrag React.Fragment */ or these stories won't show up in StoryBook! (at least in Aug 2022)
 /** @jsx jsx **/
 import { jsx, css } from "@emotion/react";
@@ -408,6 +409,16 @@ const normalMenuItemWithEllipsisAndEnterprise = React.createElement(() => (
     />
 ));
 
+const requiresEnterpriseSubscriptionWithIcon = React.createElement(() => (
+    <LocalizableMenuItem
+        english="BE subscription required, has disabled icon"
+        l10nId="already-localized"
+        requiresEnterpriseSubscription={true}
+        icon={<DeleteIcon />}
+        onClick={() => {}}
+    />
+));
+
 const nestedMenu = React.createElement(() => (
     <LocalizableNestedMenuItem
         english="Troubleshooting"
@@ -416,7 +427,8 @@ const nestedMenu = React.createElement(() => (
         {[
             normalMenuItem,
             checkboxMenuItem,
-            normalMenuItemWithEllipsisAndEnterprise
+            normalMenuItemWithEllipsisAndEnterprise,
+            requiresEnterpriseSubscriptionWithIcon
         ]}
     </LocalizableNestedMenuItem>
 ));
@@ -426,6 +438,7 @@ const divider = React.createElement(() => <Divider />);
 const testMenu = [
     normalMenuItem,
     normalMenuItemWithEllipsisAndEnterprise,
+    requiresEnterpriseSubscriptionWithIcon,
     checkboxMenuItem,
     divider,
     nestedMenu

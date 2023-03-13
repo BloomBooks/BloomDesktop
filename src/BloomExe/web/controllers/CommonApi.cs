@@ -139,17 +139,23 @@ namespace Bloom.web.controllers
 					request.PostSucceeded();
 				}, false);
 
-			apiHandler.RegisterEndpointLegacy("common/loginData",
+			apiHandler.RegisterEndpointHandler("common/loginData",
 				request =>
 				{
-					var requestData = DynamicJson.Parse(request.RequiredPostJson());
-					string token = requestData.sessionToken;
-					string email = requestData.email;
-					string userId = requestData.userId;
-					//Debug.WriteLine("Got login data " + email + " with token " + token + " and id " + userId);
-					_parseClient.SetLoginData(email, userId, token, BookUpload.Destination);
-					_doWhenLoggedIn?.Invoke();
-					request.PostSucceeded();
+					if (request.HttpMethod == HttpMethods.Get) {
+						request.ReplyWithJson(new { email = _parseClient.Account });
+					}
+					else
+					{
+						var requestData = DynamicJson.Parse(request.RequiredPostJson());
+						string token = requestData.sessionToken;
+						string email = requestData.email;
+						string userId = requestData.userId;
+						//Debug.WriteLine("Got login data " + email + " with token " + token + " and id " + userId);
+						_parseClient.SetLoginData(email, userId, token, BookUpload.Destination);
+						_doWhenLoggedIn?.Invoke();
+						request.PostSucceeded();
+					}
 				}, false);
 
 			// At this point we open dialogs from c# code; if we opened dialogs from javascript, we wouldn't need this

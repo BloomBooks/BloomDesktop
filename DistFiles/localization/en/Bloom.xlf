@@ -4790,12 +4790,17 @@
       </trans-unit>
       <trans-unit id="PublishTab.Upload.SignIn" translate="no">
         <!-- added in 5.5 -->
-        <source xml:lang="en">Sign in or sign up to Bloomlibrary.org</source>
+        <source xml:lang="en">Sign in or sign up to BloomLibrary.org</source>
         <note>ID: PublishTab.Upload.SignIn</note>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.SignInSignUp">
         <source xml:lang="en">Sign In / Sign Up to BloomLibrary.org</source>
         <note>ID: PublishTab.Upload.SignUpLogin</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.SignOut" translate="no">
+        <!-- added in 5.5 -->
+        <source xml:lang="en">Sign Out of %0 at BloomLibrary.org</source>
+        <note>ID: PublishTab.Upload.SignOut</note>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.SkipMakingPdf">
         <source xml:lang="en">Skipping PDF because this book has video</source>
@@ -4836,20 +4841,20 @@ Do you want to go ahead?</note>
         <source xml:lang="en">Show Terms of Use</source>
         <note>ID: PublishTab.Upload.TermsLink</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Upload.TestBook" translate="no">
+      <trans-unit id="PublishTab.Upload.ViewOnBloomLibrary" translate="no">
         <!-- added in 5.5 -->
-        <source xml:lang="en">Test out your Book</source>
-        <note>ID: PublishTab.Upload.TestBook</note>
+        <source xml:lang="en">View on Bloom Library</source>
+        <note>ID: PublishTab.Upload.ViewOnBloomLibrary</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Upload.TestBook.Text1" translate="no">
+      <trans-unit id="PublishTab.Upload.YourBookOnBloomLibrary" translate="no">
         <!-- added in 5.5 -->
-        <source xml:lang="en">Here is [your new page] on Bloom Library. We will soon process your book into various formats and add them to this page. Check back in about 10 minutes. If we encounter any problems, that page will tell you about them.</source>
-        <note>ID: PublishTab.Upload.TestBook.Text1</note>
+        <source xml:lang="en">Your Book on BloomLibrary.org</source>
+        <note>ID: PublishTab.Upload.YourBookOnBloomLibrary</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Upload.TestBook.Text2" translate="no">
+      <trans-unit id="PublishTab.Upload.YourBookOnBloomLibrary.ServerWillProcess" translate="no">
         <!-- added in 5.5 -->
-        <source xml:lang="en">If you make changes to this book, you can return here to upload it again. Your new version will just replace the existing one.</source>
-        <note>ID: PublishTab.Upload.TestBook.Text2</note>
+        <source xml:lang="en">Our server will soon process your book into various formats and add them to [your book's page] on BloomLibrary.org. Check back in about 10 minutes. If we encounter any problems, your book's page will tell you about them.</source>
+        <note>ID: PublishTab.Upload.YourBookOnBloomLibrary.ServerWillProcess</note>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.TimeProblem">
         <source xml:lang="en">There was a problem uploading your book. This is probably because your computer is set to use the wrong timezone or your system time is badly wrong. See http://www.di-mgt.com.au/wclock/help/wclo_setsysclock.html for how to fix this.</source>
