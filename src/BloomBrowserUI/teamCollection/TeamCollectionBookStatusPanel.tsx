@@ -380,7 +380,10 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<IBookTeamCol
                         subTitle=""
                         icon={
                             // not sure this is the best image to use, but it might help convey that things are not set up right.
-                            <img src={"Disconnected.svg"} alt="error" />
+                            <img
+                                src={"/bloom/images/Disconnected.svg"}
+                                alt="error"
+                            />
                         }
                     />
                 );
@@ -626,7 +629,10 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<IBookTeamCol
                         title={mainTitleDisconnected}
                         subTitle={subTitleDisconnected}
                         icon={
-                            <img src={"Disconnected.svg"} alt="disconnected" />
+                            <img
+                                src={"/bloom/images/Disconnected.svg"}
+                                alt="disconnected"
+                            />
                         }
                     />
                 );
