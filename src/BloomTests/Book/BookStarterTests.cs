@@ -6,7 +6,6 @@ using Bloom;
 using Bloom.Book;
 using Bloom.Collection;
 using Bloom.Edit;
-using Moq;
 using Newtonsoft.Json;
 using NUnit.Framework;
 using SIL.Extensions;
