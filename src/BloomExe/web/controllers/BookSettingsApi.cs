@@ -1,8 +1,13 @@
 using System;
+using System.Collections.Generic;
 using System.Dynamic;
+using System.IO;
+using System.Linq;
 using Bloom.Book;
+using Gecko.WebIDL;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using TagLib.Mpeg;
 
 namespace Bloom.Api
 {
@@ -25,8 +30,15 @@ namespace Bloom.Api
 			// Not sure this needs UI thread, but it can result in saving the page, which seems
 			// safest to do that way.
 			apiHandler.RegisterEndpointLegacy("book/settings", HandleBookSettings, true);
+			apiHandler.RegisterEndpointHandler("book/settings/page-styles", HandleGetPageStyles, true);
 		}
-
+		private void HandleGetPageStyles(ApiRequest request)
+		{
+			var names = from path in ProjectContext.GetPageStyleFiles() select Path.GetFileName(path);
+			var x = from name in names.ToArray<string>() select new { label = name, value = name };
+			var json = JsonConvert.SerializeObject(x);
+			request.ReplyWithJson(json);
+		}
 		/// <summary>
 		/// Get a json of the book's settings.
 		/// Not used at present. May be obsolete if book settings are done using config-r
@@ -41,7 +53,8 @@ namespace Bloom.Api
 						currentToolBoxTool = _bookSelection.CurrentSelection.BookInfo.CurrentTool,
 						appearance = new { cover = new { coverColor = _bookSelection.CurrentSelection.GetCoverColor(), something = true } },
 						//bloomPUB = new { imageSettings = new { maxWidth= _bookSelection.CurrentSelection.BookInfo.PublishSettings.BloomPub.ImageSettings.MaxWidth, maxHeight= _bookSelection.CurrentSelection.BookInfo.PublishSettings.BloomPub.ImageSettings.MaxHeight} }
-						publish = _bookSelection.CurrentSelection.BookInfo.PublishSettings
+						publish = _bookSelection.CurrentSelection.BookInfo.PublishSettings,
+						book = _bookSelection.CurrentSelection.BookInfo.BookSettings
 					};
 					var jsonData = JsonConvert.SerializeObject(settings);
 
@@ -62,8 +75,11 @@ namespace Bloom.Api
 					// is irrelevant. The nice thing is, it retains the identity of PublishSettings in case someone is holing on it.
 					var jsonOfJustPublishSettings = JsonConvert.SerializeObject(newSettings.publish);
 					_bookSelection.CurrentSelection.BookInfo.PublishSettings.LoadNewJson(jsonOfJustPublishSettings);
+					var jsonOfJustBookSettings = JsonConvert.SerializeObject(newSettings.book);
+					_bookSelection.CurrentSelection.BookInfo.BookSettings.LoadNewJson(jsonOfJustBookSettings);
+					_bookSelection.CurrentSelection.Save();
 
-					_pageRefreshEvent.Raise(PageRefreshEvent.SaveBehavior.SaveBeforeRefresh);
+					//_pageRefreshEvent.Raise(PageRefreshEvent.SaveBehavior.SaveBeforeRefresh);
 
 #if UserControlledTemplate
 					UpdateBookTemplateMode(settings.isTemplateBook);

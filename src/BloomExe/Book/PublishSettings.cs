@@ -40,7 +40,8 @@ namespace Bloom.Book
 		[JsonProperty("bloomPUB")]
 		public BloomPubSettings BloomPub;
 
-		[JsonProperty("bloomLibrary")] public BloomLibrarySettings BloomLibrary;
+		[JsonProperty("bloomLibrary")]
+		public BloomLibrarySettings BloomLibrary;
 
 		public static PublishSettings FromString(string json)
 		{

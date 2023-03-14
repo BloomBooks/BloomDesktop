@@ -8,7 +8,8 @@ import {
     ConfigrCustomNumberInput,
     ConfigrColorPicker,
     ConfigrInput,
-    ConfigrCustomObjectInput
+    ConfigrCustomObjectInput,
+    ConfigrSelect
 } from "@sillsdev/config-r";
 import React = require("react");
 import { kBloomBlue } from "../../bloomMaterialUITheme";
@@ -23,10 +24,19 @@ import {
     DialogCancelButton,
     DialogOkButton
 } from "../../react_components/BloomDialog/commonDialogComponents";
-import { postJson, useApiStringState } from "../../utils/bloomApi";
+import {
+    postJson,
+    useApiData,
+    useApiJson,
+    useApiObject,
+    useApiStringState
+} from "../../utils/bloomApi";
 import { ShowEditViewDialog } from "../editViewFrame";
 
 let isOpenAlready = false;
+
+type IPageStyle = { label: string; value: string };
+type IPageStyles = Array<IPageStyle>;
 
 export const BookSettingsDialog: React.FunctionComponent<{
     data: any;
@@ -39,6 +49,11 @@ export const BookSettingsDialog: React.FunctionComponent<{
         initiallyOpen: true,
         dialogFrameProvidedExternally: false
     });
+
+    const pageStyles: IPageStyles = useApiObject<IPageStyles>(
+        "book/settings/page-styles",
+        []
+    );
 
     // const [settings, setSettings] = useApiStringState(
     //     "book/settings",
@@ -124,6 +139,12 @@ export const BookSettingsDialog: React.FunctionComponent<{
                                         control={ConfigrColorPicker}
                                     />
                                 </ConfigrSubgroup>
+                                <ConfigrSelect
+                                    description={`Choose a "page style" to easily change margins, borders, an other page settings.`}
+                                    path={`book.pageStylesCss`}
+                                    label="Page Style"
+                                    options={pageStyles}
+                                />
                             </ConfigrGroup>
                             <ConfigrGroup label="BloomPUB" level={1}>
                                 <ConfigrSubgroup

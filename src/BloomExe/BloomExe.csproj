@@ -401,6 +401,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Book\BookFileFilter.cs" />
+    <Compile Include="Book\BookSettings.cs" />
     <Compile Include="Book\PublishSettings.cs" />
     <Compile Include="Book\SaveContext.cs" />
     <Compile Include="Book\WidgetHelper.cs" />
@@ -1206,7 +1207,7 @@
     <Compile Include="FontProcessing\FontsApi.cs" />
   </ItemGroup>
   <ItemGroup>
-	  <None Include="Resources\current-service-urls.json" />
+    <None Include="Resources\current-service-urls.json" />
     <None Include="Resources\Logo27x32.png" />
   </ItemGroup>
   <ItemGroup>
