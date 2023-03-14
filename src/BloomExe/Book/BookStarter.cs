@@ -209,13 +209,6 @@ namespace Bloom.Book
 
 			var sizeAndOrientation = Layout.FromDomAndChoices(storage.Dom, templateLayout??Layout.A5Portrait, _fileLocator);
 
-			//Note that we do this *before* injecting frontmatter, which is more likely to have a good reason for having English
-			//Useful for things like Primers. Note that Lorem Ipsum and prefixing all text with "_" also work.
-			//			if ("true"==GetMetaValue(storage.Dom.RawDom, "removeTranslationsWhenMakingNewBook", "false"))
-			//			{
-			//				ClearAwayAllTranslations(storage.Dom.RawDom);
-			//			}
-
 			ProcessXMatterMetaTags(storage);
 			// If we are making a shell (from a template, as opposed to making a translation of a shell),
 			// it should not have a pre-determined license. A default will be filled in later.
@@ -224,6 +217,11 @@ namespace Bloom.Book
 				BookCopyrightAndLicense.RemoveLicense(storage);
 
 			InjectXMatter(initialPath, storage, sizeAndOrientation);
+
+			// Here we check for translation groups with the class bloom-clearWhenMakingDerivative. The "RemoveAllForms"
+			// for ISBN above and the similar calls for "copyright" and "versionAcknowledgments" in "TransformCreditPageData()"
+			// below are for standard fields. This check is primarily for custom xmatter and brandings.
+			CheckForNonDerivativeData(storage.Dom, bookData);
 
 			SetLineageAndId(storage, sourceFolderPath);
 
@@ -234,6 +232,7 @@ namespace Bloom.Book
 
 			SetBookTitle(storage, bookData, usingTemplate);
 
+			// See note on "CheckForNonDerivativeData()" above.
 			TransformCreditPageData(storage.Dom, bookData, _collectionSettings, storage, makingTranslation);
 
 			//Few sources will have this set at all. A template picture dictionary is one place where we might expect it to call for, say, bilingual
@@ -269,6 +268,51 @@ namespace Bloom.Book
 			//REVIEW this actually undoes the setting of the initial files name:
 			//      storage.UpdateBookFileAndFolderName(_librarySettings);
 			return storage.FolderPath;
+		}
+
+		/// <summary>
+		/// 'internal' for testing only
+		/// </summary>
+		internal static void CheckForNonDerivativeData(HtmlDom dom, BookData bookData)
+		{
+			// This was first needed by Mexico Branch to clear out Printing History (their custom xmatter field)
+			// when making a derivative. Since it seemed like something that might be needed elsewhere eventually,
+			// we decided to add a class .bloom-clearWhenMakingDerivative to the .bloom-translationGroup and
+			// check for it when deriving a new book.
+			var groupsToEmpty = dom.RawDom.SafeSelectNodes("//div[contains(@class,'bloom-clearWhenMakingDerivative')]");
+			foreach (XmlElement translationGroup in groupsToEmpty)
+			{
+				// Check to see if we have a .bloom-editable div for lang z.
+				// If we do, we can remove all the other .bloom-editables.
+				// If we don't, we need to keep one, but empty.
+				// First, get all the .bloom-editable divs.
+				var editables = translationGroup.SafeSelectNodes("div[contains(@class, 'bloom-editable')]");
+				if (editables.Count == 0)
+					return;
+				bool foundZ = false;
+				for (var i = editables.Count - 1; i >= 0; i--)
+				{
+					var goner = editables[i];
+					if (goner.GetStringAttribute("lang").Equals("z"))
+					{
+						foundZ = true;
+						continue;
+					}
+					if (i == 0 && !foundZ)
+					{
+						// Since we didn't find a lang='z' .bloom-editable, leave this one and just empty it.
+						(goner as XmlElement).IsEmpty = true;
+						break;
+					}
+					translationGroup.RemoveChild(goner);
+				}
+				var dataBookEl = translationGroup.SelectSingleNode("div[@data-book and contains(@class,'bloom-editable')]");
+				var dataBookKey = dataBookEl?.GetStringAttribute("data-book");
+				if (dataBookKey != null)
+				{
+					bookData.RemoveAllForms(dataBookKey);
+				}
+			}
 		}
 
 		// At publish time, we strip out pages with the bloom-enterprise class.

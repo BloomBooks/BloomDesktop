@@ -106,6 +106,82 @@ namespace BloomTests.Book
 				Is.EqualTo("Jack & Jill like xml sequences like &amp; & &lt; & &gt; for characters like <&>"));
 		}
 
+		private bool XmlNodeHasContent(XmlNode node)
+		{
+			return !string.IsNullOrEmpty(node.InnerText.Trim());
+		}
+
+		private int CountXmlNodesWithContent(XmlNodeList nodes)
+		{
+			var count = 0;
+			foreach (XmlNode node in nodes)
+			{
+				if (XmlNodeHasContent(node))
+				{
+					count++;
+				}
+			}
+			return count;
+		}
+
+		[Test]
+		public void BookStarter_CheckForNonDerivativeData_ClearsOutDataThatDoesntBelongInDerivative()
+		{
+			var dom = new HtmlDom(@"<html ><head></head><body>
+				<div id='bloomDataDiv'>
+					<div data-book='printingInfo' lang='es'><p>First Edition 2020<br />Second Edition 2023</p></div>
+					<div data-book='randomOtherInfo' lang='es'>Something weird here</div>
+					<div data-book='newNonDerivField' lang='en'>Something that oughta be removed in a new book.</div>
+				</div>
+				<div class='bloom-page' id='guid1'>
+					<div class='bloom-translationGroup bloom-clearWhenMakingDerivative'>
+						<div class='bloom-editable' data-book='printingInfo' lang='es'><p>First Edition 2020<br />Second Edition 2023</p></div>
+						<!-- No lang 'z' here. -->
+					</div>
+				</div>
+				<div class='bloom-page' id='guid2'>
+					<div class='bloom-translationGroup bloom-clearWhenMakingDerivative'>
+						<div class='bloom-editable' data-book='printingInfo' lang='es'><p>First Edition 2020<br />Second Edition 2023</p></div>
+						<div class='bloom-editable' data-book='printingInfo' lang='z'></div>
+						<div class='bloom-editable' data-book='printingInfo' lang='en'>English here</div>
+					</div>
+					<div class='bloom-translationGroup'><!-- No 'clear out derivative stuff' class here. -->
+						<div class='bloom-editable' data-book='randomOtherInfo' lang='es'>Something weird here</div>
+						<div class='bloom-editable' data-book='randomOtherInfo' lang='z'></div>
+						<div class='bloom-editable' data-book='randomOtherInfo' lang='en'>Some other stuff.</div>
+					</div>
+					<div class='bloom-translationGroup bloom-clearWhenMakingDerivative'>
+						<div class='bloom-editable' data-book='newNonDerivField' lang='es'>Something that oughta be removed in a new book.</div>
+						<div class='bloom-editable' data-book='newNonDerivField' lang='z'></div>
+					</div>
+				</div>
+			 </body></html>");
+			var bookData = new BookData(dom, _collectionSettings, null);
+
+			// SUT
+			BookStarter.CheckForNonDerivativeData(dom, bookData);
+
+			// Test results
+			var page1 = dom.SelectSingleNode("//div[@id='guid1']");
+			var page1Editables = page1.SafeSelectNodes(".//div[contains(@class,'bloom-editable')]");
+			Assert.That(page1Editables.Count, Is.EqualTo(1));
+			Assert.That(XmlNodeHasContent(page1Editables.Item(0)), Is.False);
+			var page2 = dom.SelectSingleNode("//div[@id='guid2']");
+			// Started with 8 editables; 3 get deleted
+			var page2Editables = page2.SafeSelectNodes(".//div[contains(@class,'bloom-editable')]");
+			Assert.That(page2Editables.Count, Is.EqualTo(5));
+			// One translation group has no class to activate CheckForNonDerivativeData(), but only 2 of its
+			// editables have content. All of the other editables should get emptied.
+			Assert.That(CountXmlNodesWithContent(page2Editables), Is.EqualTo(2));
+
+			// Test the remaining BookData items
+			Assert.That(bookData.GetMultiTextVariableOrEmpty("printingInfo").ContainsAlternative("es"), Is.False);
+			Assert.That(bookData.GetMultiTextVariableOrEmpty("randomOtherInfo").ContainsAlternative("es"), Is.True);
+			Assert.That(bookData.GetMultiTextVariableOrEmpty("randomOtherInfo").ContainsAlternative("en"), Is.True);
+			Assert.That(bookData.GetMultiTextVariableOrEmpty("newNonDerivField").ContainsAlternative("es"), Is.False);
+			Assert.That(bookData.GetMultiTextVariableOrEmpty("newNonDerivField").ContainsAlternative("en"), Is.False);
+		}
+
 		[Test]
 		public void GatherDataItemsFromXElement_EmptyBeforeContent_SavesAsDeletedOnly()
 		{
