@@ -2440,6 +2440,12 @@ namespace Bloom.Book
 				EnsureHasLinkToStyleSheet(dom, "customBookStyles.css");
 			else
 				EnsureDoesntHaveLinkToStyleSheet(dom, "customBookStyles.css");
+
+			if (RobustFile.Exists(Path.Combine(FolderPath, "pageStyles.css")))
+				EnsureHasLinkToStyleSheet(dom, "pageStyles.css");
+			else
+				EnsureDoesntHaveLinkToStyleSheet(dom, "pageStyles.css");
+
 			dom.SortStyleSheetLinks();
 		}
 
@@ -2490,7 +2496,7 @@ namespace Bloom.Book
 		// note: order is significant here, but I added branding.css at the end (the most powerful position) arbitrarily, until
 		// such time as it's clear if it matters.
 		public readonly static string[] CssFilesToLink =
-			{ "basePage.css", "previewMode.css", "origami.css", "langVisibility.css", "branding.css" };
+			{ "basePage.css", "previewMode.css", "origami.css", "langVisibility.css", "pageStyles.css","branding.css" };
 
 		// While in Bloom, we could have an edit style sheet or (someday) other modes. But when stored,
 		// we want to make sure it's ready to be opened in a browser.

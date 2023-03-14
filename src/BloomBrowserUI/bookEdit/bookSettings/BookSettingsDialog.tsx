@@ -8,7 +8,8 @@ import {
     ConfigrCustomNumberInput,
     ConfigrColorPicker,
     ConfigrInput,
-    ConfigrCustomObjectInput
+    ConfigrCustomObjectInput,
+    ConfigrSelect
 } from "@sillsdev/config-r";
 import React = require("react");
 import { kBloomBlue } from "../../bloomMaterialUITheme";
@@ -38,6 +39,9 @@ import { ShowEditViewDialog } from "../editViewFrame";
 
 let isOpenAlready = false;
 
+type IPageStyle = { label: string; value: string };
+type IPageStyles = Array<IPageStyle>;
+
 export const BookSettingsDialog: React.FunctionComponent<{
     data: any;
 }> = () => {
@@ -49,6 +53,11 @@ export const BookSettingsDialog: React.FunctionComponent<{
         initiallyOpen: true,
         dialogFrameProvidedExternally: false
     });
+
+    const pageStyles: IPageStyles = useApiObject<IPageStyles>(
+        "book/settings/page-styles",
+        []
+    );
 
     // const [settings, setSettings] = useApiStringState(
     //     "book/settings",
@@ -126,12 +135,23 @@ export const BookSettingsDialog: React.FunctionComponent<{
                         >
                             {/* we'll bring this back later
                             <ConfigrGroup label="Appearance" level={1}>
-                                <ConfigrCustomStringInput
-                                    path={`appearance.coverColor`}
-                                    label="Cover Color"
-                                    control={ColorPickerForConfigr}
+                                <ConfigrSubgroup
+                                    label="Cover"
+                                    path={`appearance.cover`}
+                                >
+                                    <ConfigrCustomStringInput
+                                        path={`appearance.cover.coverColor`}
+                                        label="Cover Color"
+                                        control={ConfigrColorPicker}
+                                    />
+                                </ConfigrSubgroup>
+                                <ConfigrSelect
+                                    description={`Choose a "page style" to easily change margins, borders, an other page settings.`}
+                                    path={`book.pageStylesCss`}
+                                    label="Page Style"
+                                    options={pageStyles}
                                 />
-                            </ConfigrGroup> */}
+                            </ConfigrGroup>
                             <ConfigrGroup label="BloomPUB" level={1}>
                                 <ConfigrSubgroup
                                     label="Resolution"
