@@ -45,6 +45,7 @@ namespace Bloom.Book
 		protected BookInfo()
 		{
 			PublishSettings = new PublishSettings();
+			BookSettings = new BookSettings();
 		}
 
 		internal BookInfo(string folderPath, bool isEditable)
@@ -89,6 +90,7 @@ namespace Bloom.Book
 			}
 
 			PublishSettings = PublishSettings.FromFolder(FolderPath);
+			BookSettings = BookSettings.FromFolder(FolderPath);
 		}
 
 		public enum HowToPublishImageDescriptions
@@ -344,6 +346,14 @@ namespace Bloom.Book
 		{
 			PublishSettings.WriteToFolder(FolderPath);
 		}
+		public void BookPublishSettings()
+		{
+			BookSettings.WriteToFolder(FolderPath);
+		}
+		public void SaveBookSettings()
+		{
+			BookSettings.WriteToFolder(FolderPath);
+		}
 
 		public void Save()
 		{
@@ -356,6 +366,7 @@ namespace Bloom.Book
 				{
 					MetaData.WriteToFolder(FolderPath);
 					SavePublishSettings();
+					SaveBookSettings();
 					return;
 				}
 				catch (IOException e)
@@ -381,6 +392,7 @@ namespace Bloom.Book
 		/// Settings for the publish tab (and Harvester).
 		/// </summary>
 		public PublishSettings PublishSettings { get; private set; }
+		public BookSettings BookSettings { get; private set; }
 
 		public string CountryName
 		{

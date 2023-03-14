@@ -458,6 +458,16 @@ namespace Bloom
 			yield return FileLocationUtilities.GetDirectoryDistributedWithApplication(Path.Combine(BloomFileLocator.BrowserRoot, "publish/ePUBPublish"));
 		}
 
+		public static string GetFolderContainingPageStyleFiles()
+		{
+			return FileLocationUtilities.GetDirectoryDistributedWithApplication(Path.Combine(BloomFileLocator.BrowserRoot, "bookLayout", "page-styles"));
+		}
+		public static IEnumerable<string> GetPageStyleFiles()
+		{
+			return Directory.EnumerateFiles(GetFolderContainingPageStyleFiles(),
+					"*.css");
+		}
+
 		/// <summary>
 		/// Per BL-785, we want to search xMatter/*-XMatter folders (handled by the XMatterPackFinder) before we search
 		/// the template folders.

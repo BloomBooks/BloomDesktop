@@ -8,7 +8,8 @@ import {
     ConfigrCustomNumberInput,
     ConfigrColorPicker,
     ConfigrInput,
-    ConfigrCustomObjectInput
+    ConfigrCustomObjectInput,
+    ConfigrSelect
 } from "@sillsdev/config-r";
 import React = require("react");
 import { kBloomBlue } from "../../bloomMaterialUITheme";
@@ -38,7 +39,11 @@ import { ShowEditViewDialog } from "../editViewFrame";
 
 let isOpenAlready = false;
 
-export const BookSettingsDialog: React.FunctionComponent<{}> = () => {
+type IPageStyle = { label: string; value: string };
+type IPageStyles = Array<IPageStyle>;
+
+export const BookSettingsDialog: React.FunctionComponent<{
+}> = () => {
     const {
         showDialog,
         closeDialog,
@@ -47,6 +52,11 @@ export const BookSettingsDialog: React.FunctionComponent<{}> = () => {
         initiallyOpen: true,
         dialogFrameProvidedExternally: false
     });
+
+    const pageStyles: IPageStyles = useApiObject<IPageStyles>(
+        "book/settings/page-styles",
+        []
+    );
 
     const [settingsString, setSettingsString] = useApiStringState(
         "book/settings",
@@ -117,21 +127,26 @@ export const BookSettingsDialog: React.FunctionComponent<{}> = () => {
                     >
                         {/* we'll bring this back later
                             <ConfigrGroup label="Appearance" level={1}>
-                                <ConfigrCustomStringInput
-                                    path={`appearance.coverColor`}
-                                    label="Cover Color"
-                                    control={ColorPickerForConfigr}
+                                <ConfigrSubgroup
+                                    label="Cover"
+                                    path={`appearance.cover`}
+                                >
+                                    <ConfigrCustomStringInput
+                                        path={`appearance.cover.coverColor`}
+                                        label="Cover Color"
+                                        control={ConfigrColorPicker}
+                                    />
+                                </ConfigrSubgroup>
+                                <ConfigrSelect
+                                    description={`Choose a "page style" to easily change margins, borders, an other page settings.`}
+                                    path={`book.pageStylesCss`}
+                                    label="Page Style"
+                                    options={pageStyles}
                                 />
-                            </ConfigrGroup> */}
-                        <ConfigrGroup label="BloomPUB" level={1}>
-                            <ConfigrSubgroup
-                                label="Resolution"
-                                path={`publish.bloomPUB.imageSettings`}
-                                description={
-                                    "When images in books are really high resolution, it makes the books more difficult to view over poor internet connections. They will also take more space on phones. For this reason, Bloom reduces images to a maximum size."
-                                }
-                            >
-                                <BloomResolutionSlider
+                            </ConfigrGroup>
+                            <ConfigrGroup label="BloomPUB" level={1}>
+                                <ConfigrSubgroup
+                                    label="Resolution"
                                     path={`publish.bloomPUB.imageSettings`}
                                     label="Resolution"
                                 />
