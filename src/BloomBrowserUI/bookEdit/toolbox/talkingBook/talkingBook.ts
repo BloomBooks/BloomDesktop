@@ -22,7 +22,11 @@ export default class TalkingBookTool implements ITool {
     }
 
     public configureElements(container: HTMLElement) {
-        // Implements ITool interface, but we don't need to do anything
+        // This seems to work better here than in newPageReady for some reason.
+        // When called from newPageReady, the page content is often (usually?)
+        // overwritten with the original content from before the deshrouding.
+        // And the name of the method seems to fit with what we're doing...
+        TalkingBookTool.deshroudPhraseDelimiters(container);
     }
 
     // When are showTool, newPageReady, and updateMarkup called?
@@ -47,7 +51,6 @@ export default class TalkingBookTool implements ITool {
     // Called when a new page is loaded.
     public async newPageReady(): Promise<void> {
         this.showImageDescriptionsIfAny();
-        TalkingBookTool.deshroudPhraseDelimiters(ToolBox.getPage());
         return AudioRecorder.theOneAudioRecorder.newPageReady(
             this.isImageDescriptionToolActive()
         );
@@ -62,11 +65,11 @@ export default class TalkingBookTool implements ITool {
             "bloom-audio-split-marker"
         );
         // delimitingSpans is a live collection that changes as we remove spans.
-        // Processing from the end of the list should prevent problems
-        for (let i = delimitingSpans.length - 1; i >= 0; --i) {
-            const span = delimitingSpans[i];
+        // So we stick all the values into a real array to ensure we process all of them.
+        const spansToReplace = Array.from(delimitingSpans);
+        spansToReplace.forEach(span => {
             span.replaceWith(page.ownerDocument.createTextNode("|"));
-        }
+        });
     }
 
     // Replace each phrase delimiter bar ("|") with a span containing a zero-width space
@@ -74,10 +77,11 @@ export default class TalkingBookTool implements ITool {
     // of this tool.
     public static enshroudPhraseDelimiters(page: HTMLElement | null) {
         if (!page || !page.hasChildNodes()) return;
-        const children = page.childNodes;
-        // children is a live collection that changes as we add/remove nodes.
+        // page.childNodes is a live collection that changes as we add/remove nodes.
+        // So we stick all the values into a real array for processing.
+        const children = Array.from(page.childNodes);
         // Processing from the end of the list should prevent problems.
-        for (let i = children.length - 1; i >= 0; --i) {
+        for (let i = 0; i < children.length; ++i) {
             const node = children[i];
             switch (node.nodeType) {
                 case Node.ELEMENT_NODE:
