@@ -453,6 +453,7 @@ namespace Bloom.Book
 			RuntimeInformationInjector.AddUIDictionaryToDom(pageDom, _bookData, BookInfo);
 			RuntimeInformationInjector.AddUISettingsToDom(pageDom, _bookData, Storage.GetFileLocator());
 			UpdateMultilingualSettings(pageDom);
+			CreateOrUpdatePageStylesCss();// Review: where should this go?
 
 			if (IsSuitableForMakingShells && !page.IsXMatter)
 			{
@@ -1667,6 +1668,13 @@ namespace Bloom.Book
 				throw new BloomUnauthorizedAccessException(path, e);
 			}
 		}
+		private void CreateOrUpdatePageStylesCss()
+		{
+			if (string.IsNullOrEmpty(this.BookInfo.BookSettings.PageStylesCss))
+			{
+				// TODO: instead, we should be falling back to the default, right?
+				return;
+			}
 
 		private void RemoveFontFaceDeclarations(string path)
 		{
@@ -1675,6 +1683,33 @@ namespace Bloom.Book
 			RobustFile.WriteAllText(path, contents);
 		}
 
+			var targetPath = Path.Combine(FolderPath, "pageStyles.css");
+			var sourcePath = Path.Combine(ProjectContext.GetFolderContainingPageStyleFiles(), this.BookInfo.BookSettings.PageStylesCss);
+			if (!RobustFile.Exists(sourcePath))
+			{
+				// TODO: instead, we should be falling back to the default, right?
+				RobustFile.Delete(targetPath);
+				return;
+			}
+			
+			bool doesAlreadyExist = RobustFile.Exists(targetPath);
+			if (Program.RunningHarvesterMode && doesAlreadyExist)
+			{
+				// Would overwrite, but overwrite not allowed in Harvester mode.
+				// Review: (this logic just copied from CreateOrUpdateDefaultLangStyles() above, I don't know if it's still valid)
+				return;
+			}
+
+			try
+			{
+				RobustFile.Copy(sourcePath, targetPath, true);
+			}
+			catch (UnauthorizedAccessException e)
+			{
+				// Re-throw with additional debugging info.
+				throw new BloomUnauthorizedAccessException(targetPath, e);
+			}
+		}
 		private void UpdateCollectionSettingsInBookMetaData()
 		{
 			Debug.WriteLine($"updating page number style and language display names in {FolderPath}/meta.json");
