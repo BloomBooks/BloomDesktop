@@ -194,6 +194,8 @@ namespace Bloom.Book
 				StripBloomEnterpriseClassFromComicPages(storage);
 			}
 
+			CheckForNonDerivativeData(storage.Dom, bookData);
+
 			XMatterHelper.RemoveExistingXMatter(storage.Dom);
 
 			// BL-4586 Some old books ended up with background-image urls containing XML img tags
@@ -269,6 +271,48 @@ namespace Bloom.Book
 			//REVIEW this actually undoes the setting of the initial files name:
 			//      storage.UpdateBookFileAndFolderName(_librarySettings);
 			return storage.FolderPath;
+		}
+
+		private void CheckForNonDerivativeData(HtmlDom dom, BookData bookData)
+		{
+			// This was first needed by Mexico Branch to clear out Printing History (their custom xmatter field)
+			// when making a derivative. Since it seemed like something that might be needed elsewhere eventually,
+			// we decided to add a class .bloom-removeWhenMakingDerivative to the .bloom-translationGroup and
+			// check for it when deriving a new book.
+			var groupsToEmpty = dom.RawDom.SafeSelectNodes("//div[contains(@class,'bloom-removeWhenMakingDerivative')]");
+			foreach (XmlElement translationGroup in groupsToEmpty)
+			{
+				// Check to see if we have a .bloom-editable div for lang z.
+				// If we do, we can remove all the other .bloom-editables.
+				// If we don't, we need to keep one, but empty.
+				// First, get all the .bloom-editable divs.
+				var editables = translationGroup.SafeSelectNodes("div[contains(@class, 'bloom-editable')]");
+				if (editables.Count == 0)
+					return;
+				bool foundZ = false;
+				for (var i = editables.Count - 1; i >= 0; i--)
+				{
+					var goner = editables[i];
+					if (goner.GetStringAttribute("lang").Equals("z"))
+					{
+						foundZ = true;
+						continue;
+					}
+					if (i == 0 && !foundZ)
+					{
+						// Since we didn't find a lang='z' .bloom-editable, leave this one and just empty it.
+						(goner as XmlElement).IsEmpty = true;
+						break;
+					}
+					translationGroup.RemoveChild(goner);
+				}
+				var dataBookEl = translationGroup.SelectSingleNode("div[@data-book and contains(@class,'bloom-editable')]");
+				var dataBookKey = dataBookEl?.GetStringAttribute("data-book");
+				if (dataBookKey != null)
+				{
+					bookData.RemoveAllForms(dataBookKey);
+				}
+			}
 		}
 
 		// At publish time, we strip out pages with the bloom-enterprise class.

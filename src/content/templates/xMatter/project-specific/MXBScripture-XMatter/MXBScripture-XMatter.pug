@@ -80,7 +80,7 @@ mixin mxb-creditsPage-scripture-contents
 		+editable(kLanguageForPrototypeOnly).OriginalAcknowledgments-style.bloom-copyFromOtherLanguageIfNecessary(data-book='originalAcknowledgments')
 			| {Original Acknowledgments}
 	+field-ISBN
-	+field-prototypeDeclaredExplicity("N1")#printingHistory
+	+field-prototypeDeclaredExplicity("N1")#printingHistory.bloom-removeWhenMakingDerivative
 		label.bubble Use this for Printing History (1st Edition, etc.)
 		+editable(kLanguageForPrototypeOnly).PrintingHistory-style.bloom-copyFromOtherLanguageIfNecessary(data-book='printingInfo')
 
