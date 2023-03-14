@@ -25,7 +25,7 @@ namespace Bloom.Book
 				_values.Add("editoriginalmode.css", 30);
 				_values.Add("previewmode.css", 40);
 				_values.Add("origami.css", 50);
-				_values.Add("branding.css", 60);
+				_values.Add("branding.css", 70);
 
 
 				//Note that kDefaultValueForStyleSheetsThatShouldListInTheMiddle should fall in between here
@@ -34,8 +34,10 @@ namespace Bloom.Book
 				//NB: I (JH) don't for sure know yet what the order of this should be. I think it should be last-ish.
 				_values.Add("langVisibility.css".ToLowerInvariant(), 1000);
 				_values.Add("defaultLangStyles.css".ToLowerInvariant(), 1500);
-				_values.Add("customCollectionStyles.css".ToLowerInvariant(), 2000); // the almost last word
-				_values.Add("customBookStyles.css".ToLowerInvariant(), 3000); // the very last word
+				_values.Add("customCollectionStyles.css".ToLowerInvariant(), 2000);
+				_values.Add("pageStyles.css", 3000);
+				_values.Add("customBookStyles.css".ToLowerInvariant(), 4000); // the very last word
+				
 			}
 		}
 
