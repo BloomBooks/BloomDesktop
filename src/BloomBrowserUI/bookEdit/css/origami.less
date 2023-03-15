@@ -11,25 +11,25 @@
 @flowerPetalGrey: #7e7e7e; // shouldn't this just be @bloom-gray?
 @inactiveColor: @bloom-buff;
 
-.split-pane > .split-pane-component {
+.split-pane>.split-pane-component {
     overflow: hidden !important; // override split-pane.css rules that call for overflow: auto
 }
 
-.split-pane.vertical-percent > .split-pane-component.position-left {
+.split-pane.vertical-percent>.split-pane-component.position-left {
     right: 50%;
-    margin-right: 3px;
+    margin-bottom: var(--image-text-gap);
 }
 
-.split-pane.vertical-percent > .split-pane-component.position-right {
+.split-pane.vertical-percent>.split-pane-component.position-right {
     width: 50%;
 }
 
-.split-pane.horizontal-percent > .split-pane-component.position-top {
+.split-pane.horizontal-percent>.split-pane-component.position-top {
     bottom: 50%;
-    margin-bottom: 3px;
+    margin-bottom: var(--image-text-gap);
 }
 
-.split-pane.horizontal-percent > .split-pane-component.position-bottom {
+.split-pane.horizontal-percent>.split-pane-component.position-bottom {
     height: 50%;
 }
 
@@ -40,12 +40,12 @@
     visibility: hidden;
 }
 
-.split-pane.vertical-percent > .vertical-divider {
+.split-pane.vertical-percent>.vertical-divider {
     right: 50%;
     border-right: 3px dashed transparent;
 }
 
-.split-pane.horizontal-percent > .horizontal-divider {
+.split-pane.horizontal-percent>.horizontal-divider {
     bottom: 50%;
     border-bottom: 3px dashed transparent;
 }
@@ -53,6 +53,7 @@
 @firstButtonOffset: 10px;
 @secondButtonOffset: 10px;
 @distanceOfButtonToEdge: 10px;
+
 .origami-controls {
     position: absolute;
     top: 0;
@@ -60,9 +61,11 @@
     z-index: 20000;
     height: 99%;
     width: 99%;
+
     .close {
         font-weight: bold;
     }
+
     .button,
     .origami-controls .button:visited {
         display: inline-block;
@@ -76,6 +79,7 @@
         line-height: 1em;
         font-size: 18px;
     }
+
     .close-button-wrapper {
         float: left;
         padding: 5px;
@@ -83,21 +87,26 @@
         right: 0;
         top: 0;
     }
+
     .vertical-adders {
         left: 0;
         position: absolute;
         top: 10%;
+
         .button {
             //padding: 10px;
             position: absolute;
             left: @distanceOfButtonToEdge;
         }
+
         .button.add-top {
             top: @firstButtonOffset;
         }
+
         .button.add-bottom {
             bottom: @secondButtonOffset;
         }
+
         .separator {
             border-bottom: 3px @inactiveColor dashed;
             width: 100%;
@@ -105,20 +114,25 @@
             top: 50%;
         }
     }
+
     .horizontal-adders {
         bottom: 0;
         right: 10%;
         position: absolute;
+
         .button {
             position: absolute;
             bottom: @distanceOfButtonToEdge;
         }
+
         .button.add-left {
             left: @firstButtonOffset;
         }
+
         .button.add-right {
             right: @secondButtonOffset;
         }
+
         .separator {
             border-right: 3px @inactiveColor dashed;
             height: 100%;
@@ -126,7 +140,8 @@
             left: 50%;
         }
     }
-    .horizontal-adders > div {
+
+    .horizontal-adders>div {
         float: left;
     }
 }
@@ -167,6 +182,7 @@
 .container-selector-links {
     display: none;
 }
+
 .container-textBox-id {
     display: none;
 }
@@ -174,6 +190,7 @@
 .selector-links {
     top: 45%;
     text-align: center;
+
     // Setting the z-index on the inner a elements allows the adder buttons to
     // remain visible and active except when the cursor is over an actual link.
     a {
@@ -190,6 +207,7 @@
     .vertical-adders {
         display: none;
     }
+
     .horizontal-adders {
         display: none;
     }
@@ -211,8 +229,7 @@
     }
 }
 
-.split-pane-component-inner[min-width~="150px"][min-height~="150px"]
-    .textBox-identifier {
+.split-pane-component-inner[min-width~="150px"][min-height~="150px"] .textBox-identifier {
     transition-property: font-size;
     transition-duration: 0.5s;
     font-size: 24pt;
@@ -223,6 +240,7 @@
     .vertical-adders {
         height: @largeClusterThickness;
     }
+
     .horizontal-adders {
         height: @largeSplitterLength;
     }
@@ -233,6 +251,7 @@
     .vertical-adders {
         width: @largeSplitterLength;
     }
+
     .horizontal-adders {
         width: @largeClusterThickness;
     }
@@ -240,6 +259,7 @@
 
 .origami-layout-mode {
     .bloom-editable {
+
         // BL-9953 Added 'p' so a competing audioRecording rule won't have more precedence. The competing
         // rule also "targets" the p element and all the text whose color we are concerned about is inside
         // of p elements anyway.
@@ -276,10 +296,13 @@
         width: 100%;
         position: absolute;
         top: 45%;
+
         .formatButton {
             z-index: 60000;
             padding-left: 10px;
             display: inline-flex;
         }
     }
-} // end .origami-layout-mode
+}
+
+// end .origami-layout-mode

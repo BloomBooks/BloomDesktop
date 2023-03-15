@@ -35,7 +35,7 @@ namespace Bloom.Book
 				_values.Add("langVisibility.css".ToLowerInvariant(), 1000);
 				_values.Add("defaultLangStyles.css".ToLowerInvariant(), 1500);
 				_values.Add("customCollectionStyles.css".ToLowerInvariant(), 2000);
-				_values.Add("pageStyles.css", 3000);
+				_values.Add("appearance.css", 3000);
 				_values.Add("customBookStyles.css".ToLowerInvariant(), 4000); // the very last word
 				
 			}

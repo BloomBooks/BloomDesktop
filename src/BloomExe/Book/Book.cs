@@ -453,7 +453,6 @@ namespace Bloom.Book
 			RuntimeInformationInjector.AddUIDictionaryToDom(pageDom, _bookData, BookInfo);
 			RuntimeInformationInjector.AddUISettingsToDom(pageDom, _bookData, Storage.GetFileLocator());
 			UpdateMultilingualSettings(pageDom);
-			CreateOrUpdatePageStylesCss();// Review: where should this go?
 
 			if (IsSuitableForMakingShells && !page.IsXMatter)
 			{
@@ -955,7 +954,7 @@ namespace Bloom.Book
 				// edit book, on which it's already been done, to make an epub or similar.
 				if (!forCopyOfUpToDateBook)
 					Storage.PerformNecessaryMaintenanceOnBook();
-				Save();
+				Save(); // <---- REVIEW why is this called here? It's repeated below
 			}
 
 			if (SHRP_TeachersGuideExtension.ExtensionIsApplicable(this))
@@ -1384,7 +1383,7 @@ namespace Bloom.Book
 			AddReaderBodyAttributes(bookDOM);
 			AddLanguageAttributesToBody(bookDOM);
 			bookDOM.Body.SetAttribute("data-bookshelfurlkey", this.CollectionSettings.DefaultBookshelf);
-
+			BookInfo.AppearanceSettings.WriteAppearanceCss(Storage.FolderPath);// REVIEW: Where should this go?
 			if (IsTemplateBook)
 			{
 				// this will turn on rules in previewMode.css that show the structure of the template and names of pages
@@ -1484,6 +1483,11 @@ namespace Bloom.Book
 			progress.WriteStatus("Repair possible messed up Questions pages and migrate classes");
 			RepairQuestionsPages(bookDOM);
 			MigrateNonstandardClassNames(bookDOM);
+
+			// migrate our cover color to the new system
+			if (string.IsNullOrEmpty(BookInfo.AppearanceSettings.CoverColor)) {
+				BookInfo.AppearanceSettings.CoverColor = GetCoverColor();
+			}
 
 			progress.WriteStatus("Gathering Data...");
 			TranslationGroupManager.PrepareElementsInPageOrDocument(bookDOM.RawDom, _bookData);
@@ -4723,6 +4727,12 @@ namespace Bloom.Book
 		public IEnumerable<string> GetTextLanguagesToAdvertiseOnBloomLibrary(IEnumerable<string> languagesSuperset)
 		{
 			return languagesSuperset.Intersect(AllPublishableLanguages(includeLangsOccurringOnlyInXmatter: false).Keys);
+		}
+
+		internal void SettingsUpdated()
+		{
+			BookInfo.SettingsUpdated();
+			
 		}
 	}
 }
