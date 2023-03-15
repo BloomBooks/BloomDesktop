@@ -23,6 +23,16 @@ import {
     DialogCancelButton,
     DialogOkButton
 } from "../../react_components/BloomDialog/commonDialogComponents";
+import {
+    BloomPalette,
+    getDefaultColorsFromPalette
+} from "../../react_components/color-picking/bloomPalette";
+import ColorPicker from "../../react_components/color-picking/colorPicker";
+import {
+    ColorDisplayButton,
+    DialogResult
+} from "../../react_components/color-picking/colorPickerDialog";
+import { IColorInfo } from "../../react_components/color-picking/colorSwatch";
 import { postJson, useApiStringState } from "../../utils/bloomApi";
 import { ShowEditViewDialog } from "../editViewFrame";
 
@@ -114,16 +124,11 @@ export const BookSettingsDialog: React.FunctionComponent<{
                             }}
                         >
                             <ConfigrGroup label="Appearance" level={1}>
-                                <ConfigrSubgroup
-                                    label="Cover"
-                                    path={`appearance.cover`}
-                                >
-                                    <ConfigrCustomStringInput
-                                        path={`appearance.cover.coverColor`}
-                                        label="Cover Color"
-                                        control={ConfigrColorPicker}
-                                    />
-                                </ConfigrSubgroup>
+                                <ConfigrCustomStringInput
+                                    path={`appearance.coverColor`}
+                                    label="Cover Color"
+                                    control={ColorPickerForConfigr}
+                                />
                             </ConfigrGroup>
                             <ConfigrGroup label="BloomPUB" level={1}>
                                 <ConfigrSubgroup
@@ -238,3 +243,21 @@ export function showBookSettingsDialog() {
         ShowEditViewDialog(<BookSettingsDialog data={{}} />);
     }
 }
+
+const ColorPickerForConfigr: React.FunctionComponent<{
+    value: string;
+    onChange: (value: string) => void;
+}> = props => {
+    return (
+        <ColorDisplayButton
+            initialColor={props.value}
+            localizedTitle={"foo"}
+            transparency={false}
+            palette={BloomPalette.CoverBackground}
+            width={75}
+            onClose={(dialogResult: DialogResult, newColor: string) => {
+                if (dialogResult === DialogResult.OK) props.onChange(newColor);
+            }}
+        />
+    );
+};
