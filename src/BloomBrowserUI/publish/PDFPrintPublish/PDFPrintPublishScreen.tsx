@@ -187,7 +187,7 @@ export const PDFPrintPublishScreen = () => {
                     helpId="Tasks/Publish_tasks/PDF_and_Print.htm"
                     temporarilyDisableI18nWarning={true}
                 >
-                    About PDF and Print
+                    About PDF & Print
                 </HelpLink>
             </HelpGroup>
         </SettingsPanel>

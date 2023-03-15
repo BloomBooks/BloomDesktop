@@ -4240,7 +4240,7 @@
         <!-- added in 5.5 -->
         <source xml:lang="en">CMYK</source>
         <note>ID: PublishTab.PdfMaker.Cmyk</note>
-        <note>Displayed as a label in the PDF and Print tab. 'CMYK' may not be translatable, it is a print shop standard.</note>
+        <note>Displayed as a label in the PDF &amp; Print tab. 'CMYK' may not be translatable, it is a print shop standard.</note>
       </trans-unit>
       <trans-unit id="PublishTab.PdfMaker.Saving">
         <source xml:lang="en">Saving PDF...</source>
@@ -4271,7 +4271,7 @@
       </trans-unit>
       <trans-unit id="PublishTab.PdfPrint.Button" translate="no">
         <!-- added in 5.5 -->
-        <source xml:lang="en">PDF and Print</source>
+        <source xml:lang="en">PDF &amp; Print</source>
         <note>ID: PublishTab.PdfPrint.Button</note>
         <note>Text under button to select Print and PDF preview</note>
       </trans-unit>
@@ -4289,7 +4289,7 @@
       </trans-unit>
       <trans-unit id="PublishTab.PdfPrint.AboutPdfPrint" translate="no">
         <!-- added in 5.5 -->
-        <source xml:lang="en">About PDF and Print</source>
+        <source xml:lang="en">About PDF &amp; Print</source>
         <note>ID: PublishTab.PdfPrint.AboutPdfPrint</note>
       </trans-unit>
       <trans-unit id="PublishTab.PdfPrint.PrintshopOptions" translate="no">

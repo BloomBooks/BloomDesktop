@@ -304,7 +304,7 @@ namespace Bloom.Publish
 				if (path == _lastPath)
 				{
 					// don't use the same path twice in a row; react-pdf won't realize it's a new file
-					// (in the new PDF and Print tab)
+					// (in the new PDF & Print tab)
 					// and won't update, and other render effects don't happen because it hasn't changed.
 					// But it's pretty surely one of ours, so try to clean it up.
 					// (It doesn't matter if we use the same name in two different runs of Bloom. This is mainly

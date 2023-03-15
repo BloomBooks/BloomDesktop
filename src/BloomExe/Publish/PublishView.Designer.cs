@@ -254,7 +254,7 @@ namespace Bloom.Publish
             this._superToolTip.SetSuperStuff(this._pdfPrintRadio, superToolTipInfoWrapper1);
             this._pdfPrintRadio.TabIndex = 21;
             this._pdfPrintRadio.TabStop = true;
-            this._pdfPrintRadio.Text = "PDF and Print";
+            this._pdfPrintRadio.Text = "PDF && Print";
             this._pdfPrintRadio.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             this._pdfPrintRadio.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
             this._pdfPrintRadio.UseVisualStyleBackColor = true;
