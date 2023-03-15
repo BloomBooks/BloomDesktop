@@ -9,7 +9,6 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
-using System.Windows;
 
 namespace Bloom.web.controllers
 {
@@ -57,6 +56,8 @@ namespace Bloom.web.controllers
 			apiHandler.RegisterEndpointHandler("libraryPublish/setSummary", HandleSetSummary, true);
 			apiHandler.RegisterEndpointHandler("libraryPublish/useSandbox", HandleUseSandbox, true);
 			apiHandler.RegisterEndpointHandler("libraryPublish/cancel", HandleCancel, true);
+			apiHandler.RegisterEndpointHandler("libraryPublish/getUploadCollisionInfo", HandleGetUploadCollisionInfo, true);
+			apiHandler.RegisterEndpointHandler("libraryPublish/uploadAfterChangingBookId", HandleUploadAfterChangingBookId, true);
 		}
 
 		private void HandleGetBookInfo(ApiRequest request)
@@ -128,27 +129,6 @@ namespace Bloom.web.controllers
 					return;
 				}
 
-				_webSocketProgress.Message("CheckingExistingCopy", "Checking for existing copy on server...");
-
-				//TODO move to client?
-				// If we don't need to trigger our upload ID Collision dialog, go ahead and upload the book.
-				if (!Model.BookIsAlreadyOnServer)
-				{
-					UploadBook();
-					request.PostSucceeded();
-					return;
-				}
-				// OK, so we do need our uploadIDCollision dialog.
-				// TODO waiting to see how we do the settings before I know if this is correct.
-				// If it is, we should make it a property on the model.
-				IEnumerable<string> languagesToUpload =
-					Model.Book.BookInfo.PublishSettings.BloomLibrary.TextLangs
-					.Where(l => l.Value.IsIncluded())
-					.Select(l => l.Key );
-				// TODO
-				bool signLanguageFeatureSelected = false;
-				//Model.ShowIdCollisionDialog(languagesToUpload, signLanguageFeatureSelected);
-				MessageBox.Show("This should launch the collision dialog. It doesn't yet... For now, we just overwrite the existing book.");
 				UploadBook();
 			}
 			catch (Exception)
@@ -227,7 +207,7 @@ namespace Bloom.web.controllers
 			}
 
 			//TODO
-			Model.UpdateBookMetadataFeatures(				
+			Model.UpdateBookMetadataFeatures(
 				false, false, false
 			);
 
@@ -284,7 +264,7 @@ namespace Bloom.web.controllers
 			if (!ValidateBookshelfBeforeBulkUpload()) { request.PostSucceeded(); return; }
 
 			var folderPath = request.RequiredPostString();
-			if (!string.IsNullOrEmpty(folderPath) && Directory.Exists(folderPath))				
+			if (!string.IsNullOrEmpty(folderPath) && Directory.Exists(folderPath))
 				Model.BulkUpload(folderPath, _progress);
 
 			request.PostSucceeded();
@@ -304,6 +284,45 @@ namespace Bloom.web.controllers
 				return false;
 			}
 			return true;
+		}
+
+		private void HandleGetUploadCollisionInfo(ApiRequest request)
+		{			
+			_webSocketProgress.Message("CheckingExistingCopy", "Checking for existing copy on server...");
+
+			dynamic collisionDialogInfo;
+			if (Model.BookIsAlreadyOnServer)
+			{
+				// TODO
+				bool signLanguageFeatureSelected = false;
+
+				collisionDialogInfo = Model.GetUploadCollisionDialogProps(GetLanguagesToUpload(), signLanguageFeatureSelected);
+			}
+			else
+			{
+				collisionDialogInfo = new
+				{
+					shouldShow = false
+				};
+			}
+
+			request.ReplyWithJson(collisionDialogInfo);
+		}
+
+		private IEnumerable<string> GetLanguagesToUpload()
+		{
+			// TODO waiting to see how we do the settings before I know if this is correct.
+			// If it is, we should make it a property on the model.
+			return
+				Model.Book.BookInfo.PublishSettings.BloomLibrary.TextLangs
+				.Where(l => l.Value.IsIncluded())
+				.Select(l => l.Key);
+		}
+
+		private void HandleUploadAfterChangingBookId(ApiRequest request)
+		{
+			Model.ChangeBookId(_progress);
+			HandleUpload(request);
 		}
 	}
 }

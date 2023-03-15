@@ -13,7 +13,6 @@ using Bloom.web;
 using SIL.IO;
 using SIL.Progress;
 using Bloom.Book;
-using Bloom.MiscUI;
 using System.Globalization;
 using Bloom.ImageProcessing;
 using System.Drawing;
@@ -500,7 +499,7 @@ namespace Bloom.Publish.BloomLibrary
 			return null;
 		}
 
-		public void ShowIdCollisionDialog(IEnumerable<string> languagesToUpload, bool signLanguageFeatureSelected)
+		public dynamic GetUploadCollisionDialogProps(IEnumerable<string> languagesToUpload, bool signLanguageFeatureSelected)
 		{
 			var newThumbPath = ChooseBestUploadingThumbnailPath(Book).ToLocalhost();
 			var newTitle = Book.TitleBestForUserDisplay;
@@ -548,7 +547,6 @@ namespace Bloom.Publish.BloomLibrary
 			// If neither title nor allTitles are defined, just give a placeholder value.
 			if (String.IsNullOrEmpty(existingTitle))
 				existingTitle = "Unknown";
-
 			var existingId = existingBookInfo.objectId.ToString();
 			var existingBookUrl = BloomLibraryUrls.BloomLibraryDetailPageUrlFromBookId(existingId);
 
@@ -556,28 +554,22 @@ namespace Bloom.Publish.BloomLibrary
 			var createdDate = createdDateTime.ToString("d", CultureInfo.CurrentCulture);
 			var updatedDate = updatedDateTime.ToString("d", CultureInfo.CurrentCulture);
 			var existingThumbUrl = GetBloomLibraryThumbnailUrl(existingBookInfo);
-			using (var dlg = new ReactDialog("uploadIDCollisionDlgBundle",
-				// Props for dialog; must be the same as IUploadCollisionDlgProps in js-land.
-				new
-				{
-					userEmail = LoggedIn ? WebUserId : "",
-					newThumbUrl = newThumbPath,
-					newTitle,
-					newLanguages,
-					existingTitle,
-					existingLanguages,
-					existingCreatedDate = createdDate,
-					existingUpdatedDate = updatedDate,
-					existingBookUrl,
-					existingThumbUrl
-				}
-			))
+
+			// Must match IUploadCollisionDlgProps in uploadCollisionDlg.tsx.
+			return new
 			{
-				dlg.Width = 770;
-				dlg.Height = 570;
-				dlg.ControlBox = false;
-				dlg.ShowDialog(Shell.GetShellOrOtherOpenForm());
-			}
+				shouldShow = BookIsAlreadyOnServer,
+				userEmail = LoggedIn ? WebUserId : "",
+				newThumbUrl = newThumbPath,
+				newTitle,
+				newLanguages,
+				existingTitle,
+				existingLanguages,
+				existingCreatedDate = createdDate,
+				existingUpdatedDate = updatedDate,
+				existingBookUrl,
+				existingThumbUrl
+			};
 		}
 
 		// We are trying our best to end up with a thumbnail whose height/width ratio
@@ -667,6 +659,13 @@ namespace Bloom.Publish.BloomLibrary
 			{
 				yield return languageObject.name;
 			}
+		}
+
+		internal void ChangeBookId(IProgress progress)
+		{
+			progress.WriteMessage("Setting new instance ID...");
+			Book.BookInfo.Id = BookInfo.InstallFreshInstanceGuid(Book.FolderPath);
+			progress.WriteMessage("ID is now " + Book.BookInfo.Id);
 		}
 
 		private string CurrentSignLanguageName
