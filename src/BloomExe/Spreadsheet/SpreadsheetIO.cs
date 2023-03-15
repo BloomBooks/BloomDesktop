@@ -287,12 +287,30 @@ namespace Bloom.Spreadsheet
 				return true;
 			return IsWysiwygFormattedColumn(row, index) && IsWysiwygFormattedRow(row);
 		}
+
+		private static bool WantXmlEscaping(SpreadsheetRow row, int index)
+		{
+			if (row.Spreadsheet.AllRows().Count() <= 1)
+			{
+				// Arbitrary. Row zero should never have special characters.
+				// But, we can't do the test below if row 0 has not yet been read!
+				return false;
+			}
+
+			var key = row.Spreadsheet.Header.GetRow(0).GetCell(index).Content;
+			// PageType column holds what is basically the InnerText of an element;
+			// the InnerText property handles any XML escaping.
+			return key != InternalSpreadsheet.PageTypeColumnLabel;
+		}
 	
 
 	private static bool IsWysiwygFormattedColumn(SpreadsheetRow row, int index)
 		{
 			var key = row.Spreadsheet.Header.GetRow(0).GetCell(index).Content;
-			if (key.StartsWith("[audio "))
+			if (key.StartsWith("[audio ")|| key == InternalSpreadsheet.VideoSourceColumnLabel
+			                             || key == InternalSpreadsheet.WidgetSourceColumnLabel
+			                             || key == InternalSpreadsheet.PageTypeColumnLabel
+			                             || key == InternalSpreadsheet.AttributeColumnLabel)
 				return false;
 			return !nonWysiwygColumns.Contains(key);
 		}
@@ -334,12 +352,12 @@ namespace Bloom.Spreadsheet
 				else
 				{
 					var cellContent = worksheet.Cells[rowIndex + 1, c + 1].Value ?? "";
-					row.AddCell(ReplaceExcelEscapedCharsAndEscapeXmlOnes(cellContent.ToString()));
+					row.AddCell(ReplaceExcelEscapedCharsAndEscapeXmlOnes(cellContent.ToString(), WantXmlEscaping(row, c)));
 				}
 			}
 		}
 
-		public static string ReplaceExcelEscapedCharsAndEscapeXmlOnes(string escapedString)
+		public static string ReplaceExcelEscapedCharsAndEscapeXmlOnes(string escapedString, bool wantXmlEscaping = true)
 		{
 			string plainString = escapedString;
 			string pattern = "_x([0-9A-F]{4})_";
@@ -354,8 +372,11 @@ namespace Bloom.Spreadsheet
 
 				match = rgx.Match(plainString);
 			}
-			// Note: ampersand must be handled first! Otherwise it will modify the output of the other replaces.
-			return plainString.Replace("&", "&amp;").Replace("<", "&lt;").Replace(">", "&gt;");
+			if (wantXmlEscaping)
+				// Note: ampersand must be handled first! Otherwise it will modify the output of the other replaces.
+				return plainString.Replace("&", "&amp;").Replace("<", "&lt;").Replace(">", "&gt;");
+			else
+				return plainString;
 		}
 
 		public static string BuildXmlString(ExcelRange cell)

@@ -84,8 +84,16 @@ namespace Bloom.web.controllers
 		/// </summary>
 		public IEnumerable<string> GetCurrentAndSourceBookPaths()
 		{
-			return new [] {_bookSelection.CurrentSelection.CollectionSettings.FolderPath} // Start with the current collection
-				.Concat(_sourceCollectionsList.GetCollectionFolders()) // add all other source collections
+			return GetBooksInCollectionDirectories(new[]
+				{
+					_bookSelection.CurrentSelection.CollectionSettings.FolderPath // Start with the current collection
+				}
+				.Concat(_sourceCollectionsList.GetCollectionFolders()) // add all other source collections)
+			); 
+		}
+
+		public static IEnumerable<string> GetBooksInCollectionDirectories(IEnumerable<string> collections) {
+		return collections
 				.Distinct() //seems to be needed in case a shortcut points to a folder that's already in the list.
 				.SelectMany(ProjectContext.SafeGetDirectories) // get all the (book) folders in those collections
 					.Select(BookStorage.FindBookHtmlInFolder); // and get the book from each
@@ -327,7 +335,8 @@ namespace Bloom.web.controllers
 			var bookTemplatePaths = new List<string>();
 
 			// 1) we start the list with the template that was used to start this book (or the book itself if it IS a template)
-			bookTemplatePaths.Add(Platform.IsWindows ? pathToCurrentTemplateHtml.ToLowerInvariant() : pathToCurrentTemplateHtml);
+			if (pathToCurrentTemplateHtml != null)
+				bookTemplatePaths.Add(Platform.IsWindows ? pathToCurrentTemplateHtml.ToLowerInvariant() : pathToCurrentTemplateHtml);
 
 			// 2) Look in their current collection...this is the first one used to make sourceBookPaths
 

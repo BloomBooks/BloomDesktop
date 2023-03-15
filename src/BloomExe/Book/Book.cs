@@ -2968,16 +2968,10 @@ namespace Bloom.Book
 		/// </remarks>
 		private void CopyMissingStylesheetFiles(IPage templatePage)
 		{
-			foreach (string sheetName in templatePage.Book.OurHtmlDom.GetTemplateStyleSheets())
-			{
-				var destinationPath = Path.Combine(FolderPath, sheetName);
-				if (!RobustFile.Exists(destinationPath))
-				{
-					var sourcePath = Path.Combine(templatePage.Book.FolderPath, sheetName);
-					if (RobustFile.Exists(sourcePath))
-						RobustFile.Copy(sourcePath, destinationPath);
-				}
-			}
+			var sourceDom = templatePage.Book.OurHtmlDom;
+			var sourceFolder = templatePage.Book.FolderPath;
+			var destFolder = FolderPath;
+			HtmlDom.CopyMissingStylesheetFiles(sourceDom, sourceFolder, destFolder);
 		}
 
 		/// <summary>
@@ -3253,7 +3247,11 @@ namespace Bloom.Book
 		/// </summary>
 		internal XmlElement GetOrCreateUserModifiedStyleElementFromStorage()
 		{
-			var headElement = OurHtmlDom.Head;
+			return GetOrCreateUserModifiedStyleElementFromStorage(OurHtmlDom.Head);
+		}
+
+		public static XmlElement GetOrCreateUserModifiedStyleElementFromStorage(XmlElement headElement)
+		{
 			var userStyleElement = HtmlDom.GetUserModifiedStyleElement(headElement);
 			if (userStyleElement == null)
 				return HtmlDom.AddEmptyUserModifiedStylesNode(headElement);
