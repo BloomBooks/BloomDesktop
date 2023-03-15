@@ -177,7 +177,7 @@ export const InnerBulkBloomPubDialog: React.FunctionComponent<{
                                         <ColorDisplayButton
                                             initialColor={params.bookshelfColor}
                                             localizedTitle={colorPickerTitle}
-                                            noAlphaSlider={true}
+                                            transparency={false}
                                             palette={
                                                 BloomPalette.BloomReaderBookshelf
                                             }
