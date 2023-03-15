@@ -61,8 +61,20 @@ export const AudioHilitePage: React.FunctionComponent<{
                     label="Background Color"
                     l10nKey="EditTab.FormatDialog.BackgroundColor"
                     checked={props.hiliteBgColor !== "transparent"}
+                    // Can't turn this off if it is already the default BG hilite color and there is no
+                    // foreground hilite color.
+                    disabled={
+                        !props.hiliteTextColor &&
+                        props.hiliteBgColor === kBloomYellow
+                    }
                     onCheckChanged={checked => {
-                        const newColor = checked ? kBloomYellow : "transparent";
+                        let newColor = checked ? kBloomYellow : "transparent";
+                        if (
+                            !props.hiliteTextColor &&
+                            newColor === "transparent"
+                        ) {
+                            newColor = kBloomYellow;
+                        }
                         props.onHilitePropsChanged(
                             props.hiliteTextColor,
                             newColor
@@ -90,10 +102,13 @@ export const AudioHilitePage: React.FunctionComponent<{
                     checked={!!props.hiliteTextColor}
                     onCheckChanged={checked => {
                         const newColor = checked ? props.color : undefined;
-                        props.onHilitePropsChanged(
-                            newColor,
-                            props.hiliteBgColor
-                        );
+                        let bgColor = props.hiliteBgColor;
+                        // If we turn both off, we want to revert to our default bg
+                        // highlighting. We could go to some trouble to remove the rules
+                        // from the style, but this is easier and achieves the same.
+                        if (!checked && bgColor === "transparent")
+                            bgColor = kBloomYellow;
+                        props.onHilitePropsChanged(newColor, bgColor);
                     }}
                 ></MuiCheckbox>
                 <ColorDisplayButton

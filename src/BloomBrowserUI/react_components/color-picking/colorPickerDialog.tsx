@@ -409,6 +409,10 @@ export const showSimpleColorPickerDialog = (
 };
 
 export interface IColorDisplayButtonProps {
+    // This is slightly more than an initial color. The button will change color
+    // independently of this to follow the state of the color picker dialog;
+    // but if the client re-renders with a DIFFERENT initialColor, the button
+    // will change to match.
     initialColor: string;
     localizedTitle: string;
     noAlphaSlider: boolean;
@@ -425,6 +429,17 @@ export const ColorDisplayButton: React.FC<IColorDisplayButtonProps> = props => {
     );
     const widthString = props.width ? `width: ${props.width}px;` : "";
 
+    useEffect(() => {
+        if (currentButtonColor !== props.initialColor) {
+            setCurrentButtonColor(props.initialColor);
+        }
+        // If the client changes the initial color, it should take effect.
+        // Otherwise, it can follow what's going on in the dialog.
+        // (For this to work, in defiance of lint, we MUST NOT put currentButtonColor
+        // in the dependencies list; we want it NOT to get reset when something
+        // other than a new props value changes it. )
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [props.initialColor]);
     return (
         <div>
             <div

@@ -29,7 +29,7 @@ import {
 } from "../../react_components/color-picking/colorPickerDialog";
 import { BloomPalette } from "../../react_components/color-picking/bloomPalette";
 import { kBloomYellow } from "../../bloomMaterialUITheme";
-import { AudioHilitePage, RenderRoot } from "./AudioHilitePage";
+import { RenderRoot } from "./AudioHilitePage";
 
 // Controls the CSS text-align value
 // Note: CSS text-align W3 standard does not specify "start" or "end", but Firefox/Chrome/Edge do support it.
@@ -514,10 +514,12 @@ export default class StyleEditor {
         return <CSSStyleRule>ruleList[ruleList.length - 1]; //new guy is last
     }
 
-    // What we stick after something like "normal-style" to make a selector that targets
+    // What we stick after something like ".normal-style" to make a selector that targets
     // the current audio element (or its paragraph children).
     private sentenceHiliteRuleSelector = " span.ui-audioCurrent";
-    private paraHiliteRuleSelector = " div.ui-audioCurrent p";
+    // note, no leading space here. We want (for example) .normal-style.ui-audioCurrent since this rule
+    // targets textbox mode where both classes occur on the same element.
+    private paraHiliteRuleSelector = ".ui-audioCurrent p";
 
     // Update the DOM with the rules that will make the current audio element have
     // the specified properties if it occurs in a block with the specified style.
