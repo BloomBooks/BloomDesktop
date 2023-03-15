@@ -135,19 +135,19 @@ export const BookSettingsDialog: React.FunctionComponent<{
                         >
                             {/* we'll bring this back later
                             <ConfigrGroup label="Appearance" level={1}>
-                                <ConfigrSubgroup
-                                    label="Cover"
-                                    path={`appearance.cover`}
-                                >
-                                    <ConfigrCustomStringInput
-                                        path={`appearance.cover.coverColor`}
-                                        label="Cover Color"
-                                        control={ConfigrColorPicker}
-                                    />
-                                </ConfigrSubgroup>
+                                <ConfigrCustomStringInput
+                                    path={`appearance.coverColor`}
+                                    label="Cover Color"
+                                    control={ConfigrColorPicker}
+                                />
+                                <ConfigrInput
+                                    label="Gap"
+                                    path="appearance.imageTextGapMillimeters"
+                                />
+
                                 <ConfigrSelect
                                     description={`Choose a "page style" to easily change margins, borders, an other page settings.`}
-                                    path={`book.pageStylesCss`}
+                                    path={`appearance.customCssRules`}
                                     label="Page Style"
                                     options={pageStyles}
                                 />
