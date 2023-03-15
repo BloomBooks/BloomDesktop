@@ -229,7 +229,8 @@ BookServer bookServer,
 			Directory.CreateDirectory(tentativeBookFolderPath);
 			var modifiedBook = PublishHelper.MakeDeviceXmatterTempBook(bookFolderPath, bookServer,
 				tentativeBookFolderPath, isTemplateBook,
-				narrationLanguages: settings?.AudioLanguagesToInclude);
+				narrationLanguages: settings?.AudioLanguagesToInclude,
+				wantMusic:true);
 
 			modifiedBook.SetMotionAttributesOnBody(settings?.Motion ?? false);
 
