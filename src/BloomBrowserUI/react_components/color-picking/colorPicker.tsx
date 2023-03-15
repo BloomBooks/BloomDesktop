@@ -13,8 +13,7 @@ import { Typography } from "@mui/material";
 // We are combining parts of the 'react-color' component set with our own list of swatches.
 // The reason for using our own swatches is so we can support swatches with gradients and alpha.
 interface IColorPickerProps {
-    // set to 'true' to eliminate alpha slider (e.g. text color)
-    noAlphaSlider?: boolean;
+    transparency?: boolean;
     noGradientSwatches?: boolean;
     onChange: (color: IColorInfo) => void;
     currentColor: IColorInfo;
@@ -97,7 +96,7 @@ export const ColorPicker: React.FunctionComponent<IColorPickerProps> = props => 
                     }
                 })
                 .filter(colorInfo => {
-                    return props.noAlphaSlider ? colorInfo.opacity === 1 : true;
+                    return !props.transparency ? colorInfo.opacity === 1 : true;
                 })
                 .map((colorInfo: IColorInfo, i: number) => (
                     <ColorSwatch
@@ -122,7 +121,7 @@ export const ColorPicker: React.FunctionComponent<IColorPickerProps> = props => 
             `}
         >
             <BloomSketchPicker
-                noAlphaSlider={props.noAlphaSlider}
+                noAlphaSlider={!props.transparency}
                 // if the current color choice happens to be a gradient, this will be 'white'.
                 color={getRgbaOfCurrentColor()}
                 onChange={handlePickerChange}
