@@ -18,7 +18,7 @@ import OverflowChecker from "../OverflowChecker/OverflowChecker";
 import { IsPageXMatter } from "../js/bloomEditing";
 import "../../lib/jquery.alphanum";
 import axios from "axios";
-import { get, wrapAxios } from "../../utils/bloomApi";
+import { wrapAxios } from "../../utils/bloomApi";
 import { EditableDivUtils } from "../js/editableDivUtils";
 import * as ReactDOM from "react-dom";
 import FontSelectComponent, { IFontMetaData } from "./fontSelectComponent";
@@ -29,7 +29,7 @@ import {
 } from "../../react_components/color-picking/colorPickerDialog";
 import { BloomPalette } from "../../react_components/color-picking/bloomPalette";
 import { kBloomYellow } from "../../bloomMaterialUITheme";
-import { AudioHilitePage, RenderRoot } from "./AudioHilitePage";
+import { RenderRoot } from "./AudioHilitePage";
 
 // Controls the CSS text-align value
 // Note: CSS text-align W3 standard does not specify "start" or "end", but Firefox/Chrome/Edge do support it.
@@ -97,12 +97,7 @@ export default class StyleEditor {
     }
 
     public static GetStyleClassFromElement(target: HTMLElement): string | null {
-        let c = $(target).attr("class");
-        if (!c) {
-            c = "";
-        }
-        const classes = c.split(" ");
-
+        const classes = target.classList;
         for (let i = 0; i < classes.length; i++) {
             if (classes[i].indexOf("-style") > 0) {
                 return classes[i];
@@ -1001,7 +996,9 @@ export default class StyleEditor {
 
         let styleName = StyleEditor.GetStyleNameForElement(targetBox);
         if (!styleName) {
-            return;
+            // Even if we found a "targetBox" with no style, we don't want to dump out here, otherwise
+            // the user will have no "gear icon" to interact with. So we'll add our default normal style.
+            targetBox.className += " normal-style";
         }
 
         this.xmatterMode = IsPageXMatter($(targetBox));
