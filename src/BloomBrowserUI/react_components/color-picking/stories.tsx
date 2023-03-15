@@ -158,7 +158,7 @@ storiesOf("Colors", module)
                                         : chooserCurrentTextColor
                                 }
                                 swatchColors={TextBackgroundColors}
-                                noAlphaSlider={!backgroundChooser}
+                                transparency={backgroundChooser}
                                 noGradientSwatches={!backgroundChooser}
                             />
                         </div>
@@ -447,7 +447,7 @@ storiesOf("Colors", module)
                             );
                         }}
                         initialColor={currentColor}
-                        noAlphaSlider={true}
+                        transparency={false}
                         localizedTitle="Test Color Button"
                         width={75}
                         palette={BloomPalette.CoverBackground}

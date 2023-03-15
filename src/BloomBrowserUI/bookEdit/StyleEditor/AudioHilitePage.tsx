@@ -72,7 +72,7 @@ export const AudioHilitePage: React.FunctionComponent<{
                     initialColor={props.hiliteBgColor}
                     localizedTitle={chooserTitleBg}
                     width={84}
-                    noAlphaSlider={true}
+                    transparency={false}
                     palette={BloomPalette.HighlightBackground}
                     onClose={(result, newColor) =>
                         props.onHilitePropsChanged(
@@ -98,7 +98,7 @@ export const AudioHilitePage: React.FunctionComponent<{
                     initialColor={props.hiliteTextColor || props.color}
                     localizedTitle={chooserTitleText}
                     width={84}
-                    noAlphaSlider={true}
+                    transparency={false}
                     palette={BloomPalette.Text}
                     onClose={(result, newColor) =>
                         props.onHilitePropsChanged(

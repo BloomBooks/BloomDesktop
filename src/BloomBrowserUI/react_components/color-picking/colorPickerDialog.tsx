@@ -32,7 +32,7 @@ export interface IColorPickerDialogProps {
     open?: boolean;
     close?: (result: DialogResult) => void;
     localizedTitle: string;
-    noAlphaSlider?: boolean;
+    transparency?: boolean;
     noGradientSwatches?: boolean;
     initialColor: IColorInfo;
     palette: BloomPalette;
@@ -239,7 +239,7 @@ const ColorPickerDialog: React.FC<IColorPickerDialogProps> = props => {
         isColorInThisArray(color, swatchColorArray);
 
     const willSwatchColorBeFilteredOut = (color: IColorInfo): boolean => {
-        if (props.noAlphaSlider && color.opacity !== 1) {
+        if (!props.transparency && color.opacity !== 1) {
             return true;
         }
         if (props.noGradientSwatches && color.colors.length > 1) {
@@ -326,7 +326,7 @@ const ColorPickerDialog: React.FC<IColorPickerDialogProps> = props => {
                             onChange={handleOnChange}
                             currentColor={currentColor}
                             swatchColors={swatchColorArray}
-                            noAlphaSlider={props.noAlphaSlider}
+                            transparency={props.transparency}
                             noGradientSwatches={props.noGradientSwatches}
                             includeDefault={props.includeDefault}
                             onDefaultClick={props.onDefaultClick}
@@ -383,7 +383,7 @@ const doRender = (
 // choose dialog which doesn't depend on IColorInfo.
 export interface ISimpleColorPickerDialogProps {
     localizedTitle: string;
-    noAlphaSlider?: boolean;
+    transparency?: boolean;
     initialColor: string;
     palette: BloomPalette;
     onChange: (color: string) => void;
@@ -396,7 +396,7 @@ export const showSimpleColorPickerDialog = (
 ) => {
     const fullProps: IColorPickerDialogProps = {
         localizedTitle: props.localizedTitle,
-        noAlphaSlider: props.noAlphaSlider,
+        transparency: props.transparency,
         noGradientSwatches: true,
         initialColor: getColorInfoFromSpecialNameOrColorString(
             props.initialColor
@@ -415,7 +415,7 @@ export interface IColorDisplayButtonProps {
     // will change to match.
     initialColor: string;
     localizedTitle: string;
-    noAlphaSlider: boolean;
+    transparency: boolean;
     width?: number;
     disabled?: boolean;
     onClose: (result: DialogResult, newColor: string) => void;
@@ -475,7 +475,7 @@ export const ColorDisplayButton: React.FC<IColorDisplayButtonProps> = props => {
                     );
                 }}
                 localizedTitle={props.localizedTitle}
-                noAlphaSlider={props.noAlphaSlider}
+                transparency={props.transparency}
                 palette={props.palette}
                 initialColor={getColorInfoFromSpecialNameOrColorString(
                     props.initialColor

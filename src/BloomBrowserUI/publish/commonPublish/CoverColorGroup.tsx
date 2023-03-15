@@ -85,7 +85,7 @@ const CoverColorControl: React.FunctionComponent<{
                     initialColor={bookCoverColor}
                     width={94}
                     localizedTitle={props.localizedTitle}
-                    noAlphaSlider={true}
+                    transparency={false}
                     disabled={!canModifyCurrentBook || hasPreserveCoverColor}
                     palette={BloomPalette.CoverBackground}
                     onClose={(result, newColor) =>
