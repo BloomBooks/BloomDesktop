@@ -168,3 +168,5 @@ src/BloomBrowserUI/.yarn/cache/
 src/BloomBrowserUI/.yarn/
 
 src/BloomBrowserUI/.yarnrc
+
+src/content/.yarnrc.yml

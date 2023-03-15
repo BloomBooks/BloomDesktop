@@ -216,6 +216,12 @@ div.bloom-page {
     &:not(.bloom-templateMode) {
         overflow: hidden;
     }
+
+    &:before {
+        content: var(--preset-name); // using this during dev only
+        color: green;
+
+    }
 }
 
 div#bloomDataDiv {
@@ -674,19 +680,17 @@ body.publishingWithoutFullBleed {
     /* see https://jira.sil.org/browse/BL-390; Without this, the "Just text" page causes the marginBox to drop down to the start of the vertically centered text, and then on PDF, you get an extra page. */
 }
 
-.SetMarginBoxHeight(@PageHeight) {
-    height: @PageHeight - (@MarginTop + @MarginBottom);
-}
-
 .marginBox {
     position: absolute;
-    top: @MarginTop;
+    top: var(--page-margin-top);
 }
 
 // Mixin for setting .marginBox margins.
 .SetMarginBox(@PageWidth, @PageHeight) {
-    height: @PageHeight - (@MarginTop + @MarginBottom);
-    width: @PageWidth - (@MarginOuter + @MarginInner);
+    height: calc(~"@{PageHeight} - (var(--page-margin-top) + var(--page-margin-bottom))");
+    //height: @PageHeight - (@MarginTop + @MarginBottom);
+    //width: @PageWidth - (@MarginOuter + @MarginInner);
+    width: calc(~"@{PageWidth} - (var(--page-margin-outer) + var(--page-margin-inner))");
 }
 
 .marginBox {
@@ -786,7 +790,7 @@ body.publishingWithoutFullBleed {
 
         {
         .marginBox {
-            left: @MarginOuter;
+            left: var(--page-margin-outer);
         }
     }
 
@@ -794,7 +798,7 @@ body.publishingWithoutFullBleed {
 
         {
         .marginBox {
-            left: @MarginInner;
+            left: var(--page-margin-inner);
         }
     }
 }

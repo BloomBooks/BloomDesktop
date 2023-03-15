@@ -1,0 +1,15 @@
+:root {
+    --page-margin-top: 10mm;
+    --page-margin-bottom: 10mm;
+    --page-margin-inner: 20mm;
+    --page-margin-outer: 10mm;
+    --vertical-split-bottom-margin: 10mm;
+    --horizontal-split-right-margin: 10mm;
+}
+
+.device16x9portrait {
+    --page-margin-top: 5mm;
+    --page-margin-bottom: 5mm;
+    --page-margin-inner: 5mm;
+    --page-margin-outer: 5mm;
+}
