@@ -259,7 +259,7 @@ namespace Bloom
 					builder.Register<SourceCollectionsList>(c =>
 					{
 						var l = new SourceCollectionsList(c.Resolve<Book.Book.Factory>(), c.Resolve<BookStorage.Factory>(),
-							 editableCollectionDirectory, new string[] {BloomFileLocator.FactoryCollectionsDirectory, GetInstalledCollectionsDirectory()});
+							 editableCollectionDirectory, SourceRootFolders());
 						return l;
 					}).InstancePerLifetimeScope();
 
@@ -376,6 +376,11 @@ namespace Bloom
 			_scope.Resolve<PerformanceMeasurement>().RegisterWithApiHandler(server.ApiHandler);
 			_scope.Resolve<FontsApi>().RegisterWithApiHandler(server.ApiHandler);
 			_scope.Resolve<WorkspaceApi>().RegisterWithApiHandler(server.ApiHandler);
+		}
+
+		public static string[] SourceRootFolders()
+		{
+			return new string[] {BloomFileLocator.FactoryCollectionsDirectory, GetInstalledCollectionsDirectory()};
 		}
 
 		// Get the collection settings. Passed the expected path, but if not found,

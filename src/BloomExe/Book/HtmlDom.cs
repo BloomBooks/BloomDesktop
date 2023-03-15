@@ -20,6 +20,7 @@ using L10NSharp;
 using Microsoft.CSharp.RuntimeBinder;
 using SIL.Code;
 using SIL.Extensions;
+using SIL.IO;
 using SIL.Reporting;
 using SIL.Text;
 using SIL.Xml;
@@ -665,6 +666,19 @@ namespace Bloom.Book
 			}
 		}
 
+		public static void CopyMissingStylesheetFiles(HtmlDom sourceDom, string sourceFolder, string destFolder)
+		{
+			foreach (string sheetName in sourceDom.GetTemplateStyleSheets())
+			{
+				var destinationPath = Path.Combine(destFolder, sheetName);
+				if (!RobustFile.Exists(destinationPath))
+				{
+					var sourcePath = Path.Combine(sourceFolder, sheetName);
+					if (RobustFile.Exists(sourcePath))
+						RobustFile.Copy(sourcePath, destinationPath);
+				}
+			}
+		}
 
 		public void AddPublishClassToBody(string kindOfPublication=null)
 		{
@@ -1295,32 +1309,32 @@ namespace Bloom.Book
 		}
 
 		/// <summary>
-		/// This method should only be used on the page DOM being inserted into a book by the Add Page/Change Layout dialog.
-		/// It compares the styles in the head's user-defined styles section (inherited from the template book)
-		/// with the ones referenced in the class attributes in the domForInsertedPage's body to see which styles need to be
-		/// copied over to the new book.
+		/// Return the definitions of the user-modifiable styles used in the page.
 		/// </summary>
 		/// <param name="domForInsertedPage"></param>
 		/// <returns></returns>
-		internal static XmlNode GetUserModifiableStylesUsedOnPage(HtmlDom domForInsertedPage)
+		internal static string GetUserModifiableStylesUsedOnPage(HtmlDom domForInsertedPage)
+		{
+			return GetUserModifiableStylesUsedOnPage(domForInsertedPage.Head, domForInsertedPage.Body);
+		}
+
+		internal static string GetUserModifiableStylesUsedOnPage(XmlElement head, XmlElement contentToSearch)
 		{
 			// there should only be one userModifiedStyles node, so this will only grab the first one
-			var userStyleElementFromTemplate = GetUserModifiedStyleElement(domForInsertedPage.Head);
+			var userStyleElementFromTemplate = GetUserModifiedStyleElement(head);
 			if (userStyleElementFromTemplate == null)
-				return AddEmptyUserModifiedStylesNode(domForInsertedPage.Head);
+				return "";
 
 			var keyDict = GetUserStyleKeyDict(userStyleElementFromTemplate);
 			var keysUsedOnPage = new Dictionary<string, string>();
 			foreach (var keyPair in keyDict)
 			{
 				var style = GetStyleNameFromRuleSelector(keyPair.Key);
-				var searchResult = GetAllDivsWithClass(domForInsertedPage.Body, style);
+				var searchResult = GetAllDivsWithClass(contentToSearch, style);
 				if (searchResult.Count > 0)
 					keysUsedOnPage.Add(keyPair.Key, keyPair.Value);
 			}
-			userStyleElementFromTemplate.InnerText =
-				GetCompleteFilteredUserStylesInnerText(keysUsedOnPage);
-			return userStyleElementFromTemplate;
+			return GetCompleteFilteredUserStylesInnerText(keysUsedOnPage);
 		}
 
 		private static string GetStyleNameFromRuleSelector(string selector)
@@ -1334,7 +1348,7 @@ namespace Bloom.Book
 		public static string MergeUserStylesOnInsertion(XmlNode existingUserStyleNode,
 			XmlNode insertedPageUserStyleNode)
 		{
-			return MergeUserStylesOnInsertion(existingUserStyleNode, insertedPageUserStyleNode, out bool dummy);
+			return MergeUserStylesOnInsertion(existingUserStyleNode, insertedPageUserStyleNode.InnerXml, out bool dummy);
 		}
 
 		/// <summary>
@@ -1343,16 +1357,16 @@ namespace Bloom.Book
 		/// It might, however, add a style where a pre-existing style differed only in language attribute.
 		/// </summary>
 		/// <param name="existingUserStyleNode">From current book's storage</param>
-		/// <param name="insertedPageUserStyleNode"></param>
+		/// <param name="insertedPageUserStyles"></param>
 		/// <returns>The InnerXml to which the user modified styles element should be set.</returns>
-		public static string MergeUserStylesOnInsertion(XmlNode existingUserStyleNode, XmlNode insertedPageUserStyleNode, out bool didAdd)
+		public static string MergeUserStylesOnInsertion(XmlNode existingUserStyleNode, string insertedPageUserStyles, out bool didAdd)
 		{
 			didAdd = false;
 			// this method in production is currently always called just after
 			// CurrentBook.GetOrCreateUserModifiedStyleElementFromStorage()
 			Guard.AgainstNull(existingUserStyleNode, "existingUserStyleNode");
 
-			if (insertedPageUserStyleNode == null || insertedPageUserStyleNode.InnerXml == String.Empty)
+			if (insertedPageUserStyles == null || insertedPageUserStyles == String.Empty)
 				return WrapUserStyleInCdata(existingUserStyleNode.InnerText);
 
 			var existingStyleKeyDict = GetUserStyleKeyDict(existingUserStyleNode);
@@ -1361,7 +1375,7 @@ namespace Bloom.Book
 			{
 				existingStyleNames.Add(GetStyleNameFromRuleSelector(key));
 			}
-			var insertedPageStyleKeyDict = GetUserStyleKeyDict(insertedPageUserStyleNode); // could be empty
+			var insertedPageStyleKeyDict = GetUserStyleKeyDict(insertedPageUserStyles); // could be empty
 			foreach (var keyPair in insertedPageStyleKeyDict)
 			{
 				if (existingStyleNames.Contains(GetStyleNameFromRuleSelector(keyPair.Key)))
@@ -1420,8 +1434,13 @@ namespace Bloom.Book
 
 		private static IDictionary<string, string> GetUserStyleKeyDict(XmlNode userStyleNode)
 		{
-			var keyDict = new Dictionary<string, string>();
-			var styleStrings = GetStyles(userStyleNode.InnerText); // skips empty lines
+			return GetUserStyleKeyDict(userStyleNode.InnerText);
+		}
+
+		private static IDictionary<string, string> GetUserStyleKeyDict(string userStyles)
+		{
+		var keyDict = new Dictionary<string, string>();
+			var styleStrings = GetStyles(userStyles); // skips empty lines
 			foreach (var styleString in styleStrings)
 			{
 				if (styleString.Length < minStyleLength)

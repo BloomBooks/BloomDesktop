@@ -216,6 +216,55 @@ namespace BloomTests.Spreadsheet
                 </div>
 	        </div>
 	    </div>
+		<div class=""bloom-page numberedPage customPage bloom-combinedPage side-right Device16x9Landscape bloom-monolingual"" data-page="""" id=""958a4d5c-053a-456d-996d-5fe779397ed5"" data-tool-id=""signLanguage"" data-pagelineage=""08422e7b-9406-4d11-8c71-02005b1b8095"" data-page-number=""1"" lang="""">
+	        <div class=""pageLabel"" lang=""en"" data-i18n=""TemplateBooks.PageLabel.Big Text Diglot"">
+	            Big Text Diglot
+	        </div>
+	        <div class=""pageDescription"" lang=""en""></div>
+
+	        <div class=""marginBox"">
+	            <div class=""split-pane horizontal-percent"" style=""min-height: 42px;"">
+	                <div class=""split-pane-component position-top"" style=""bottom: 33.9339%"">
+	                    <div class=""split-pane-component-inner"">
+	                        <div class=""split-pane vertical-percent"" style=""min-width: 0px;"">
+	                            <div class=""split-pane-component position-left"">
+	                                <div class=""split-pane-component-inner"" min-height=""60px 150px 250px"" min-width=""60px 150px"" style=""position: relative;"">
+										<div class=""bloom-widgetContainer bloom-leadingElement"">
+						                    <iframe src=""activities/balldragTouch/index.html"">Must have a closing tag in HTML</iframe>
+						                </div>
+									</div>
+	                            </div>
+	                            <div class=""split-pane-divider vertical-divider""></div>
+
+	                            <div class=""split-pane-component position-right"">
+	                                <div class=""split-pane-component-inner"" min-height=""60px 150px 250px"" min-width=""60px 150px"" style=""position: relative;"">
+	                                    <div class=""bloom-videoContainer bloom-leadingElement bloom-selected"">
+	                                        <video>
+	                                        <source src=""video/ac2e237a-140f-45e4-b3e8-257dd12f4793.mp4""></source></video>
+	                                    </div>
+	                                </div>
+	                            </div>
+	                        </div>
+	                    </div>
+	                </div>
+	                <div class=""split-pane-divider horizontal-divider"" style=""bottom: 33.9339%"" title=""CTRL for precision. Double click to match previous page."" data-splitter-label=""66%""></div>
+
+	                <div class=""split-pane-component position-bottom"" style=""height: 33.9339%"">
+	                    <div class=""split-pane-component-inner"">
+	                        <div class=""bloom-translationGroup bloom-trailingElement"" data-default-languages=""auto"">
+	                            <div class=""bloom-editable normal-style"" lang=""z"" contenteditable=""true"" style="""">
+	                                <p></p>
+	                            </div>
+
+	                            <div class=""bloom-editable normal-style bloom-content1 bloom-visibility-code-on"" lang=""en"" contenteditable=""true"" style=""min-height: 24px;"" tabindex=""0"" spellcheck=""true"" role=""textbox"" aria-label=""false"" data-languagetipcontent=""Aklanon"">
+	                                <p>A castle with a very big flag</p>
+	                            </div>
+	                        </div>
+	                    </div>
+	                </div>
+	            </div>
+	        </div>
+	    </div>
 	</body>
 </html>
 ";
@@ -299,7 +348,8 @@ namespace BloomTests.Spreadsheet
 			SetupFor(source);
 			// was originally 8, but our test data has some audio,
 			// which we're not really testing here, but it adds some columns.
-			Assert.That(_sheet.Header.ColumnCount, Is.EqualTo(14));
+			// We also now add a video and widget column and page labels
+			Assert.That(_sheet.Header.ColumnCount, Is.EqualTo(17));
 		}
 
 		[TestCase("fromExport")]
@@ -378,6 +428,41 @@ namespace BloomTests.Spreadsheet
 			Assert.That(_pageContentRows[0].GetCell(0).Content, Is.EqualTo(InternalSpreadsheet.PageContentRowLabel));
 			Assert.That(_pageContentRows[1].GetCell(0).Content, Is.EqualTo(InternalSpreadsheet.PageContentRowLabel));
 			Assert.That(_pageContentRows[2].GetCell(0).Content, Is.EqualTo(InternalSpreadsheet.PageContentRowLabel));
+		}
+
+		[TestCase("fromExport")]
+		[TestCase("fromFile")]
+		public void AddsPageTypes(string source)
+		{
+			SetupFor(source);
+			var pageTypeIndex = _sheet.GetColumnForTag(InternalSpreadsheet.PageTypeColumnLabel);
+
+			Assert.That(_pageContentRows[0].GetCell(pageTypeIndex).Content, Is.EqualTo("Basic Text & Picture"));
+			Assert.That(_pageContentRows[1].GetCell(pageTypeIndex).Content, Is.EqualTo(""));
+			Assert.That(_pageContentRows[2].GetCell(pageTypeIndex).Content, Is.EqualTo("Basic Text & Picture"));
+			Assert.That(_pageContentRows[3].GetCell(pageTypeIndex).Content, Is.EqualTo("Big Text Diglot"));
+		}
+
+		[TestCase("fromExport")]
+		[TestCase("fromFile")]
+		public void MakesVideoCell(string source)
+		{
+			SetupFor(source);
+			var videoIndex = _sheet.GetColumnForTag(InternalSpreadsheet.VideoSourceColumnLabel);
+			Assert.That(videoIndex, Is.GreaterThan(0));
+
+			Assert.That(_pageContentRows[3].GetCell(videoIndex).Content, Is.EqualTo("video/ac2e237a-140f-45e4-b3e8-257dd12f4793.mp4"));
+		}
+
+		[TestCase("fromExport")]
+		[TestCase("fromFile")]
+		public void MakesWidgetCell(string source)
+		{
+			SetupFor(source);
+			var widgetIndex = _sheet.GetColumnForTag(InternalSpreadsheet.WidgetSourceColumnLabel);
+			Assert.That(widgetIndex, Is.GreaterThan(0));
+
+			Assert.That(_pageContentRows[3].GetCell(widgetIndex).Content, Is.EqualTo("activities/balldragTouch/index.html"));
 		}
 
 		[Test]

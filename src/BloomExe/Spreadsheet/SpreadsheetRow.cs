@@ -67,7 +67,7 @@ namespace Bloom.Spreadsheet
 
 		public SpreadsheetCell GetCell(int index)
 		{
-			if (index >= _cells.Count)
+			if (index >= _cells.Count || index < 0)
 				return new SpreadsheetCell() {Content = ""};
 			return _cells[index];
 		}
