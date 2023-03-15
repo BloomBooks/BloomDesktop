@@ -372,7 +372,11 @@ namespace Bloom.CollectionTab
 					if (collection == TheOneEditableCollection)
 						_tcManager.CurrentCollection?.DeleteBookFromRepo(book.FolderPath);
 					collection.DeleteBook(book.BookInfo);
-					CollectionHistory.AddBookEvent(collection.PathToDirectory, bookName, bookId, BookHistoryEventType.Deleted);
+					// We only want history in the main collection. In particular, it causes problems
+					// with our change watcher looking for new books in the downloads collection if
+					// we mess with history there.
+					if (collection.Type == BookCollection.CollectionType.TheOneEditableCollection)
+						CollectionHistory.AddBookEvent(collection.PathToDirectory, bookName, bookId, BookHistoryEventType.Deleted);
 					return true;
 				}
 			}
