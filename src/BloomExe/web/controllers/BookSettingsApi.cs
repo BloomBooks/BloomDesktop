@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Dynamic;
 using System.IO;
 using System.Linq;
+using System.Windows.Forms;
 using Bloom.Book;
 using Gecko.WebIDL;
 using Newtonsoft.Json;
@@ -51,10 +52,9 @@ namespace Bloom.Api
 					var settings = new
 					{
 						currentToolBoxTool = _bookSelection.CurrentSelection.BookInfo.CurrentTool,
-						appearance = new { cover = new { coverColor = _bookSelection.CurrentSelection.GetCoverColor(), something = true } },
 						//bloomPUB = new { imageSettings = new { maxWidth= _bookSelection.CurrentSelection.BookInfo.PublishSettings.BloomPub.ImageSettings.MaxWidth, maxHeight= _bookSelection.CurrentSelection.BookInfo.PublishSettings.BloomPub.ImageSettings.MaxHeight} }
 						publish = _bookSelection.CurrentSelection.BookInfo.PublishSettings,
-						book = _bookSelection.CurrentSelection.BookInfo.BookSettings
+						appearance = _bookSelection.CurrentSelection.BookInfo.AppearanceSettings
 					};
 					var jsonData = JsonConvert.SerializeObject(settings);
 
@@ -68,16 +68,20 @@ namespace Bloom.Api
 					//an "edit settings", or a "book settings", or a combination of them.
 					var json = request.RequiredPostJson();
 					dynamic newSettings = Newtonsoft.Json.Linq.JObject.Parse(json);
-					var c = newSettings.appearance.cover.coverColor;
-					_bookSelection.CurrentSelection.SetCoverColor(c.ToString());
+					//var c = newSettings.appearance.cover.coverColor;
+					//_bookSelection.CurrentSelection.SetCoverColor(c.ToString());
 					// review: crazy bit here, that above I'm taking json, parsing it into and object, and grabbing part of it. But then
 					// here we take it back to json and pass it to this thing that is going to parse it agian. In this case, speed
 					// is irrelevant. The nice thing is, it retains the identity of PublishSettings in case someone is holing on it.
 					var jsonOfJustPublishSettings = JsonConvert.SerializeObject(newSettings.publish);
 					_bookSelection.CurrentSelection.BookInfo.PublishSettings.LoadNewJson(jsonOfJustPublishSettings);
-					var jsonOfJustBookSettings = JsonConvert.SerializeObject(newSettings.book);
-					_bookSelection.CurrentSelection.BookInfo.BookSettings.LoadNewJson(jsonOfJustBookSettings);
-					_bookSelection.CurrentSelection.Save();
+					var jsonOfJustAppearanceSettings = JsonConvert.SerializeObject(newSettings.appearance);
+					_bookSelection.CurrentSelection.BookInfo.AppearanceSettings.LoadNewJson(jsonOfJustAppearanceSettings);
+					// temporary while we're in transition
+					_bookSelection.CurrentSelection.SetCoverColor(_bookSelection.CurrentSelection.BookInfo.AppearanceSettings.CoverColor);
+
+					
+					_bookSelection.CurrentSelection.SettingsUpdated();
 
 					//_pageRefreshEvent.Raise(PageRefreshEvent.SaveBehavior.SaveBeforeRefresh);
 

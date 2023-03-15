@@ -435,7 +435,6 @@ namespace Bloom.Book
 			RuntimeInformationInjector.AddUIDictionaryToDom(pageDom, _bookData);
 			RuntimeInformationInjector.AddUISettingsToDom(pageDom, _bookData, Storage.GetFileLocator());
 			UpdateMultilingualSettings(pageDom);
-			CreateOrUpdatePageStylesCss();// Review: where should this go?
 
 			if (IsSuitableForMakingShells && !page.IsXMatter)
 			{
@@ -937,7 +936,7 @@ namespace Bloom.Book
 				// edit book, on which it's already been done, to make an epub or similar.
 				if (!forCopyOfUpToDateBook)
 					Storage.PerformNecessaryMaintenanceOnBook();
-				Save();
+				Save(); // <---- REVIEW why is this called here? It's repeated below
 			}
 
 			if (SHRP_TeachersGuideExtension.ExtensionIsApplicable(this))
@@ -1305,7 +1304,7 @@ namespace Bloom.Book
 			AddReaderBodyAttributes(bookDOM);
 			AddLanguageAttributesToBody(bookDOM);
 			bookDOM.Body.SetAttribute("data-bookshelfurlkey", this.CollectionSettings.DefaultBookshelf);
-
+			BookInfo.AppearanceSettings.WriteAppearanceCss(Storage.FolderPath);// REVIEW: Where should this go?
 			if (IsTemplateBook)
 			{
 				// this will turn on rules in previewMode.css that show the structure of the template and names of pages
@@ -1405,6 +1404,11 @@ namespace Bloom.Book
 			progress.WriteStatus("Repair possible messed up Questions pages and migrate classes");
 			RepairQuestionsPages(bookDOM);
 			MigrateNonstandardClassNames(bookDOM);
+
+			// migrate our cover color to the new system
+			if (string.IsNullOrEmpty(BookInfo.AppearanceSettings.CoverColor)) {
+				BookInfo.AppearanceSettings.CoverColor = GetCoverColor();
+			}
 
 			progress.WriteStatus("Gathering Data...");
 			TranslationGroupManager.PrepareElementsInPageOrDocument(bookDOM.RawDom, _bookData);
@@ -1578,41 +1582,7 @@ namespace Bloom.Book
 				throw new BloomUnauthorizedAccessException(path, e);
 			}
 		}
-		private void CreateOrUpdatePageStylesCss()
-		{
-			if (string.IsNullOrEmpty(this.BookInfo.BookSettings.PageStylesCss))
-			{
-				// TODO: instead, we should be falling back to the default, right?
-				return;
-			}
-
-			var targetPath = Path.Combine(FolderPath, "pageStyles.css");
-			var sourcePath = Path.Combine(ProjectContext.GetFolderContainingPageStyleFiles(), this.BookInfo.BookSettings.PageStylesCss);
-			if (!RobustFile.Exists(sourcePath))
-			{
-				// TODO: instead, we should be falling back to the default, right?
-				RobustFile.Delete(targetPath);
-				return;
-			}
-			
-			bool doesAlreadyExist = RobustFile.Exists(targetPath);
-			if (Program.RunningHarvesterMode && doesAlreadyExist)
-			{
-				// Would overwrite, but overwrite not allowed in Harvester mode.
-				// Review: (this logic just copied from CreateOrUpdateDefaultLangStyles() above, I don't know if it's still valid)
-				return;
-			}
-
-			try
-			{
-				RobustFile.Copy(sourcePath, targetPath, true);
-			}
-			catch (UnauthorizedAccessException e)
-			{
-				// Re-throw with additional debugging info.
-				throw new BloomUnauthorizedAccessException(targetPath, e);
-			}
-		}
+		
 		private void UpdateCollectionSettingsInBookMetaData()
 		{
 			Debug.WriteLine($"updating page number style and language display names in {FolderPath}/meta.json");
@@ -4598,6 +4568,12 @@ namespace Bloom.Book
 				this.CollectionSettings.Language1.Tag,
 				testOnly,
 				this.CollectionSettings.Language1.FontName, eventDetails);
+		}
+
+		internal void SettingsUpdated()
+		{
+			BookInfo.SettingsUpdated();
+			
 		}
 	}
 }
