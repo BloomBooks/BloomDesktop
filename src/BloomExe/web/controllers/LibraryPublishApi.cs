@@ -7,8 +7,13 @@ using SIL.Progress;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using Bloom.Book;
+using Bloom.Collection;
+using Newtonsoft.Json;
+using SIL.IO;
 
 namespace Bloom.web.controllers
 {
@@ -30,6 +35,9 @@ namespace Bloom.web.controllers
 		private WebSocketProgress _webSocketProgress;
 		private IProgress _progress;
 
+		// This should probably be persisted somehow, but for now, it just applies to this session.
+		private bool _includeBackgroundMusic = true;
+
 		public LibraryPublishApi(BloomWebSocketServer webSocketServer, PublishView publishView)
 		{
 			_publishView = publishView;
@@ -39,25 +47,156 @@ namespace Bloom.web.controllers
 			_progress = new WebProgressAdapter(_webSocketProgress);
 		}
 
-		private string CurrentSignLanguageName
-		{
-			get
-			{
-				return Model.Book.CollectionSettings.SignLanguage.Name;
-			}
-		}
-
 		public void RegisterWithApiHandler(BloomApiHandler apiHandler)
 		{
 			apiHandler.RegisterEndpointHandler("libraryPublish/upload", HandleUpload, true);
 			apiHandler.RegisterEndpointHandler("libraryPublish/uploadCollection", HandleUploadCollection, true);
-			apiHandler.RegisterEndpointHandler("libraryPublish/uploadFolderOfCollections", HandleUploadFolderOfCollections, true);
+			apiHandler.RegisterEndpointHandler("libraryPublish/uploadFolderOfCollections",
+				HandleUploadFolderOfCollections, true);
 			apiHandler.RegisterEndpointHandler("libraryPublish/getBookInfo", HandleGetBookInfo, true);
 			apiHandler.RegisterEndpointHandler("libraryPublish/setSummary", HandleSetSummary, true);
 			apiHandler.RegisterEndpointHandler("libraryPublish/useSandbox", HandleUseSandbox, true);
 			apiHandler.RegisterEndpointHandler("libraryPublish/cancel", HandleCancel, true);
-			apiHandler.RegisterEndpointHandler("libraryPublish/getUploadCollisionInfo", HandleGetUploadCollisionInfo, true);
-			apiHandler.RegisterEndpointHandler("libraryPublish/uploadAfterChangingBookId", HandleUploadAfterChangingBookId, true);
+			apiHandler.RegisterEndpointHandler("libraryPublish/getUploadCollisionInfo", HandleGetUploadCollisionInfo,
+				true);
+			apiHandler.RegisterEndpointHandler("libraryPublish/uploadAfterChangingBookId",
+				HandleUploadAfterChangingBookId, true);
+			apiHandler.RegisterEndpointHandler("libraryPublish/languagesInBook", HandleGetLanguages, true);
+			apiHandler.RegisterEndpointHandler("libraryPublish/includeLanguage", HandleIncludeLanguage, true);
+			apiHandler.RegisterBooleanEndpointHandler("libraryPublish/narration",
+				request => Model.BookHasNarration && request.CurrentBook.BookInfo.PublishSettings.BloomLibrary.IncludeAudio,
+				(request, val) =>
+				{
+					Model.SaveAudioLanguageSelection(val);
+				}, true);
+			apiHandler.RegisterBooleanEndpointHandler("libraryPublish/music",
+				request => Model.BookHasMusic && _includeBackgroundMusic,
+				(request, val) =>
+				{
+					_includeBackgroundMusic = val;
+				}, true);
+			apiHandler.RegisterBooleanEndpointHandler("libraryPublish/narrationEnabled",
+				request => Model.BookHasNarration,
+				null, true);
+			apiHandler.RegisterBooleanEndpointHandler("libraryPublish/musicEnabled",
+				request => Model.BookHasMusic,
+				null, true);
+			apiHandler.RegisterBooleanEndpointHandler("libraryPublish/accessibleToBlind",
+				request => Model.Book.OurHtmlDom.GetLangCodesWithImageDescription().Any()
+				           && Model.Book.BookInfo.MetaData.Feature_Blind,
+				(request, val) =>
+				{
+					if (val)
+					{
+						// I believe this preserves the behavior of the old BloomLibraryUploadControl, but
+						// I don't know why we only want to set it for one language or why we should choose
+						// one arbitrarily like this. The LanguagesCheckedToUpload does not have any
+						// significant order.
+						Model.SetOnlyBlindAccessibleToPublish(LanguagesCheckedToUpload.FirstOrDefault());
+					}
+					else
+					{
+
+						Model.ClearBlindAccessibleToPublish();
+					}
+				}, true);
+			apiHandler.RegisterBooleanEndpointHandler("libraryPublish/blindAccessibleEnabled",
+				request => Model.Book.OurHtmlDom.GetLangCodesWithImageDescription().Any(),
+				null, true);
+			apiHandler.RegisterBooleanEndpointHandler("libraryPublish/signLanguage",
+				request => Model.Book.HasSignLanguageVideos() && Model.IsPublishSignLanguage(),
+				(request, val) =>
+				{
+					if (val)
+						Model.SetOnlySignLanguageToPublish(Model.Book.CollectionSettings.SignLanguageTag);
+					else
+						Model.ClearSignLanguageToPublish();
+				}, true);
+			apiHandler.RegisterBooleanEndpointHandler("libraryPublish/signLanguageEnabled",
+				request => Model.Book.HasSignLanguageVideos()
+				           && !string.IsNullOrEmpty(Model.Book.CollectionSettings.SignLanguageTag),
+				null, true);
+
+		}
+
+		private IEnumerable<string> LanguagesCheckedToUpload
+		{
+			get
+			{
+				var langs = Model.Book.BookInfo.PublishSettings.BloomLibrary.TextLangs;
+				return langs.Keys.Where(key => langs[key].IsIncluded());
+			}
+		}
+
+		//private IEnumerable<string> AllowedLanguages = Model.Book.BookInfo.PublishSettings.BloomLibrary.TextLangs
+		//	.IncludedLanguages()
+		//	.Union(Model.Book.BookInfo.PublishSettings.BloomLibrary.SignLangs.IncludedLanguages());
+
+		private void HandleIncludeLanguage(ApiRequest request)
+		{
+			var langCode = request.RequiredParam("langCode");
+			if (request.HttpMethod == HttpMethods.Post)
+			{
+				var includeTextValue = request.GetParamOrNull("includeText");
+				if (includeTextValue != null)
+				{
+					var inclusionSetting = includeTextValue == "true" ? InclusionSetting.Include : InclusionSetting.Exclude;
+					request.CurrentBook.BookInfo.PublishSettings.BloomLibrary.TextLangs[langCode] = inclusionSetting;
+				}
+
+				// Don't yet support control of individual audio langs
+				//var includeAudioValue = request.GetParamOrNull("includeAudio");
+				//if (includeAudioValue != null)
+				//{
+				//	var inclusionSetting = includeAudioValue == "true" ? InclusionSetting.Include : InclusionSetting.Exclude;
+				//	request.CurrentBook.BookInfo.PublishSettings.BloomLibrary.AudioLangs[langCode] = inclusionSetting;
+				//}
+
+				request.CurrentBook.BookInfo.Save();    // We updated the BookInfo, so need to persist the changes. (but only the bookInfo is necessary, not the whole book)
+				request.PostSucceeded();
+			}
+			// don't currently need get, the info is passed in the GetLanguages result.
+		}
+
+		private void HandleGetLanguages(ApiRequest request)
+		{
+			BloomLibraryPublishModel.InitializeLanguages(Model.Book);
+			Dictionary<string, InclusionSetting> textLangsToPublish = request.CurrentBook.BookInfo.PublishSettings.BloomLibrary.TextLangs;
+			//Dictionary<string, InclusionSetting> audioLangsToPublish = request.CurrentBook.BookInfo.PublishSettings.BloomLibrary.AudioLangs;
+
+
+
+			var result = "[" + string.Join(",", Model.AllLanguages.Select(kvp =>
+			{
+				string langCode = kvp.Key;
+
+				bool includeText = false;
+				if (textLangsToPublish != null && textLangsToPublish.TryGetValue(langCode, out InclusionSetting includeTextSetting))
+				{
+					includeText = includeTextSetting.IsIncluded();
+				}
+
+				//bool includeAudio = false;
+				//if (audioLangsToPublish != null && audioLangsToPublish.TryGetValue(langCode, out InclusionSetting includeAudioSetting))
+				//{
+				//	includeAudio = includeAudioSetting.IsIncluded();
+				//}
+
+				var value = new LanguagePublishInfo()
+				{
+					code = kvp.Key,
+					name = request.CurrentBook.PrettyPrintLanguage(langCode),
+					complete = kvp.Value,
+					includeText = includeText,
+					containsAnyAudio = false, // Enhance: implement if we want individual narration controls
+					isL1 = kvp.Key == request.CurrentBook.Language1Tag
+					//includeAudio = includeAudio
+				};
+				var json = JsonConvert.SerializeObject(value);
+				return json;
+			})) + "]";
+
+			request.ReplyWithText(result);
 		}
 
 		private void HandleGetBookInfo(ApiRequest request)
@@ -324,5 +463,6 @@ namespace Bloom.web.controllers
 			Model.ChangeBookId(_progress);
 			HandleUpload(request);
 		}
+		
 	}
 }

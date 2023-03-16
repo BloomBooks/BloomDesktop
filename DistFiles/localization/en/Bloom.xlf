@@ -4514,6 +4514,11 @@
         <source xml:lang="en">Additional Requests: </source>
         <note>ID: PublishTab.Upload.AdditionalRequests</note>
       </trans-unit>
+      <trans-unit id="PublishTab.Upload.Advertise" translate="no">
+        <!-- added in 5.5 -->
+        <source xml:lang="en">Advertise these special Features</source>
+        <note>ID: PublishTab.Upload.Advertise</note>
+      </trans-unit>
       <trans-unit id="PublishTab.Upload.AllReserved">
         <source xml:lang="en">All rights reserved (Contact the Copyright holder for any permissions.)</source>
         <note>ID: PublishTab.Upload.AllReserved</note>

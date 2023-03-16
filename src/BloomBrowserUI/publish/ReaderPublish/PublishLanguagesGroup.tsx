@@ -15,15 +15,17 @@ export interface ILanguagePublishInfo {
     includeText: boolean;
     containsAnyAudio: boolean;
     includeAudio: boolean;
+    isL1: boolean;
 }
 
-class LanguagePublishInfo implements ILanguagePublishInfo {
+export class LanguagePublishInfo implements ILanguagePublishInfo {
     public code: string;
     public name: string;
     public complete: boolean;
     public includeText: boolean;
     public containsAnyAudio: boolean;
     public includeAudio: boolean;
+    public isL1: boolean;
 
     public constructor(other?: ILanguagePublishInfo | undefined) {
         if (!other) {
@@ -37,6 +39,7 @@ class LanguagePublishInfo implements ILanguagePublishInfo {
             this.includeText = other.includeText;
             this.containsAnyAudio = other.containsAnyAudio;
             this.includeAudio = other.includeAudio;
+            this.isL1 = other.isL1;
         }
     }
 }

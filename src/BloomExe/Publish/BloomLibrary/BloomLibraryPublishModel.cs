@@ -237,6 +237,35 @@ namespace Bloom.Publish.BloomLibrary
 				allowedLanguages);
 		}
 
+		private bool? _bookHasNarration;
+		public bool BookHasNarration
+		{
+			get
+			{
+				if (_bookHasNarration == null)
+				{
+					_bookHasNarration = Book.Storage.GetNarrationAudioFileNamesReferencedInBook(false)
+						.Any(fileName =>
+							RobustFile.Exists(
+								Path.Combine(AudioProcessor.GetAudioFolderPath(Book.FolderPath), fileName)));
+				}
+				return _bookHasNarration.Value;
+			}
+		}
+		private bool? _bookHasMusic;
+		public bool BookHasMusic
+		{
+			get
+			{
+				if (_bookHasMusic == null)
+				{
+					_bookHasMusic = Book.Storage.GetBackgroundMusicFileNamesReferencedInBook()
+						.Any(fileName => RobustFile.Exists(Path.Combine(AudioProcessor.GetAudioFolderPath(Book.FolderPath), fileName)));
+				}
+				return _bookHasMusic.Value;
+			}
+		}
+
 		public void SaveTextLanguageSelection(string langCode, bool include)
 		{
 			Book.BookInfo.PublishSettings.BloomLibrary.TextLangs[langCode] = include ? InclusionSetting.Include : InclusionSetting.Exclude;

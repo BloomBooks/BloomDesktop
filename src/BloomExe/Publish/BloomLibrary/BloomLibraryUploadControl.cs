@@ -223,14 +223,12 @@ namespace Bloom.Publish.BloomLibrary
 
 			_narrationAudioCheckBox.Checked = book.BookInfo.PublishSettings.BloomLibrary.IncludeAudio;
 
-			if (!book.Storage.GetNarrationAudioFileNamesReferencedInBook(false)
-				.Any(fileName => RobustFile.Exists(Path.Combine(AudioProcessor.GetAudioFolderPath(book.FolderPath), fileName))))
+			if (!_model.BookHasNarration)
 			{
 				_narrationAudioCheckBox.Enabled = false;
 				_narrationAudioCheckBox.Checked = false;
 			}
-			if (!book.Storage.GetBackgroundMusicFileNamesReferencedInBook()
-				.Any(fileName => RobustFile.Exists(Path.Combine(AudioProcessor.GetAudioFolderPath(book.FolderPath), fileName))))
+			if (!_model.BookHasMusic)
 			{
 				_backgroundMusicCheckBox.Enabled = false;
 				_backgroundMusicCheckBox.Checked = false;
