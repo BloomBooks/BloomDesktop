@@ -90,7 +90,7 @@ namespace Bloom.Book
 			}
 
 			PublishSettings = PublishSettings.FromFolder(FolderPath);
-			AppearanceSettings = AppearanceSettings.FromFolder(FolderPath);
+			AppearanceSettings = AppearanceSettings.FromFolderOrNew(FolderPath);
 		}
 
 		public enum HowToPublishImageDescriptions

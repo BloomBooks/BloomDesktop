@@ -39,31 +39,30 @@ public class AppearanceSettings
 	/// </summary>
 	/// <param name="bookFolderPath"></param>
 	/// <returns></returns>
-	public static AppearanceSettings FromFolder(string bookFolderPath)
+	public static AppearanceSettings FromFolderOrNew(string bookFolderPath)
 	{
 		var appearanceSettingsPath = AppearanceSettingsPath(bookFolderPath);
-		AppearanceSettings ps = new AppearanceSettings();
+		AppearanceSettings settings = new AppearanceSettings();
 		if (RobustFile.Exists(appearanceSettingsPath))
 		{
+			
 			var css = RobustFile.ReadAllText(appearanceSettingsPath);
 			// regex to select the value of the --cover-color property in css
 			var match = System.Text.RegularExpressions.Regex.Match(css, @"--cover-color:\s*(\w+)");
 			if (match.Success)
 			{
-				ps.CoverColor = match.Groups[1].Value;
+				settings.CoverColor = match.Groups[1].Value;
 			}
 
 			match = System.Text.RegularExpressions.Regex.Match(css, @"--preset-name:\s*""(\w+)""");
 			if (match.Success)
 			{
-				ps.PresetName = match.Groups[1].Value;
+				settings.PresetName = match.Groups[1].Value;
 			}
-		} else
-		{
-			ps.WriteAppearanceCss(bookFolderPath);
-		}
 
-		return ps;
+		} 
+		
+		return settings;
 	}
 
 	public void WriteAppearanceCss(string folder)
