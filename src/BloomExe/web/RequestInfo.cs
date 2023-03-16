@@ -10,6 +10,7 @@ using System.Linq;
 using System.Net;
 using System.Text;
 using System.Web;
+using Bloom.Book;
 using Bloom.web;
 using Bloom.web.controllers;
 using SIL.IO;
@@ -153,9 +154,12 @@ namespace Bloom.Api
 				// impose a default that is LONGER than we want (since this is mainly to avoid stale assets during development,
 				// though we also avoid caching book folder stuff in case the user is doing something like directly editing
 				// images).
-				// I think 10s is short enough for stale builds and images not to be a problem, but it may be long enough to prevent
-				// some wasteful reloading of assets which are rapidly reused like avatars.
-				var maxAge = ShouldCache(path, originalPath) ? 600000 : 10;
+				// If we set everything to no-cache, then when we show for example a bunch of book buttons with avatars,
+				// the avatar will be loaded over and over.
+				// Based on that concern, the minimum time was originally set to 10s, but then for
+				// example if you click between books, the previews would be using the previous book's files!!!
+				// For now, we're trying 1s, and not sure that even that isn't a problem.
+				var maxAge = ShouldCache(path, originalPath) ? 600000 : 1;
 				_actualContext.Response.AppendHeader("Cache-Control",
 					$"max-age={maxAge}");
 
