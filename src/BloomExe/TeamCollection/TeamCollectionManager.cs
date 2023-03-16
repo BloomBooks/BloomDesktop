@@ -25,6 +25,8 @@ namespace Bloom.TeamCollection
 
 		bool UserMayChangeEmail { get; }
 
+		TeamCollectionStatus CollectionStatus { get; }
+
 		// ENHANCE: Add other properties and methods as needed
 	}
 

@@ -38,6 +38,7 @@ export const TeamCollectionDialogLauncher: React.FunctionComponent<{}> = props =
     return propsForBloomDialog.open ? (
         <TeamCollectionDialog
             closeDialog={closeDialog}
+            disconnected={openingEvent.disconnected}
             propsForBloomDialog={propsForBloomDialog}
             showReloadButton={openingEvent.showReloadButton}
         />
@@ -46,6 +47,7 @@ export const TeamCollectionDialogLauncher: React.FunctionComponent<{}> = props =
 
 const TeamCollectionDialog: React.FunctionComponent<{
     showReloadButton: boolean;
+    disconnected: boolean;
     closeDialog: () => void;
     propsForBloomDialog: IBloomDialogProps;
 }> = props => {
@@ -71,7 +73,9 @@ const TeamCollectionDialog: React.FunctionComponent<{
     // we're in this waiting state and shouldn't display the Tabs at all. When we get the
     // value from the API, we set defaultTabIndex to either 0 or 1 and the Tabs element is
     // rendered for the first time with the correct defaultIndex.
-    const [defaultTabIndex, setDefaultTabIndex] = useState(1);
+    const [defaultTabIndex, setDefaultTabIndex] = useState(
+        props.disconnected ? 0 : 1
+    );
 
     useEffect(() => {
         BloomApi.getBoolean("teamCollection/logImportant", logImportant => {

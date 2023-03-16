@@ -88,6 +88,7 @@ namespace Bloom.CollectionTab
 
 				dynamic messageBundle = new DynamicJson();
 				messageBundle.showReloadButton = tcManager.MessageLog.ShouldShowReloadButton;
+				messageBundle.disconnected = tcManager.CollectionStatus == TeamCollectionStatus.Disconnected;
 				_webSocketServer.LaunchDialog("TeamCollectionDialog", messageBundle);
 				tcManager.CurrentCollectionEvenIfDisconnected?.MessageLog.WriteMilestone(MessageAndMilestoneType.LogDisplayed);
 			};

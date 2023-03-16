@@ -77,6 +77,8 @@ namespace Bloom.TeamCollection
 		{
 			if (_tcManager?.MessageLog == null)
 				return false;
+			if (_tcManager.CollectionStatus == TeamCollectionStatus.Disconnected)
+				return false;
 			return _tcManager.MessageLog.Messages.Any(m => m.Important);
 		}
 
