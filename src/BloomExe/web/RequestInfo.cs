@@ -10,6 +10,7 @@ using System.Linq;
 using System.Net;
 using System.Text;
 using System.Web;
+using Bloom.Book;
 using Bloom.web;
 using Bloom.web.controllers;
 using SIL.IO;
