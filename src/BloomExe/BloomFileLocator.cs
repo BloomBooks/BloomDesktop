@@ -160,9 +160,9 @@ namespace Bloom
 			// groups of files (e.g., *-template.css) would be looked for in these locations. There is significant
 			// danger of finding something irrelevant, and also, of hard-to-reproduce bugs that don't happen because
 			// the developer has different installed collections than the reporter.
-			return !fileName.Contains("defaultLangStyles.css")
-			       && !fileName.Contains("customCollectionStyles.css")
-			       && fileName != "customBookStyles.css";
+			return !fileName.Contains("defaultLangStyles.css") // maybe could go in DynamicallyUpdatedLocalBookFiles?
+				   && !fileName.Contains("customCollectionStyles.css") // maybe could go in DynamicallyUpdatedLocalBookFiles?
+				   && !BookStorage.CssFilesThatAreDynamicallyUpdated.Contains(fileName);
 		}
 
 		public IFileLocator CloneAndCustomize(IEnumerable<string> addedSearchPaths)

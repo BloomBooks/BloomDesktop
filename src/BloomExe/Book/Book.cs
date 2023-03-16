@@ -27,11 +27,13 @@ using L10NSharp;
 using SIL.Code;
 using SIL.Extensions;
 using SIL.IO;
+using SIL.Linq;
 using SIL.Progress;
 using SIL.Reporting;
 using SIL.Text;
 using SIL.Windows.Forms.ClearShare;
 using SIL.Xml;
+using Enumerable = System.Linq.Enumerable;
 
 namespace Bloom.Book
 {
@@ -1500,9 +1502,7 @@ namespace Bloom.Book
 			foreach (XmlElement link in bookDom.SafeSelectNodes("//link[@rel='stylesheet']"))
 			{
 				var fileName = link.GetStringAttribute("href");
-				if (fileName == "languageDisplay.css")
-					link.SetAttribute("href", "langVisibility.css");
-				else if (fileName == kOldCollectionStyles || fileName == "../"+kOldCollectionStyles || fileName == "..\\"+kOldCollectionStyles)
+				if (fileName == kOldCollectionStyles || fileName == "../"+kOldCollectionStyles || fileName == "..\\"+kOldCollectionStyles)
 					link.SetAttribute("href", "defaultLangStyles.css");
 				else if (fileName == "../"+kCustomStyles || fileName == "..\\"+kCustomStyles)
 					link.SetAttribute("href", kCustomStyles);
@@ -1511,13 +1511,12 @@ namespace Bloom.Book
 			// Don't do this in distributed folders.  See https://issues.bloomlibrary.org/youtrack/issue/BL-7550.
 			if (!FolderPath.StartsWith(BloomFileLocator.FactoryCollectionsDirectory))
 			{
-				if (RobustFile.Exists(Path.Combine(FolderPath, "languageDisplay.css")))
+				BookStorage.CssFilesThatAreObsolete.ForEach(filename =>
 				{
-					if (RobustFile.Exists(Path.Combine(FolderPath, "langVisibility.css")))
-						RobustFile.Delete(Path.Combine(FolderPath, "languageDisplay.css"));
-					else
-						RobustFile.Move(Path.Combine(FolderPath, "languageDisplay.css"), Path.Combine(FolderPath, "langVisibility.css"));
-				}
+					var path = Path.Combine(FolderPath, filename);
+					if (RobustFile.Exists(path))
+						RobustFile.Delete(path);
+				});
 				if (RobustFile.Exists(Path.Combine(Path.GetDirectoryName(FolderPath), kOldCollectionStyles)))
 					RobustFile.Delete(Path.Combine(Path.GetDirectoryName(FolderPath), kOldCollectionStyles));
 				CreateOrUpdateDefaultLangStyles();
@@ -4295,7 +4294,7 @@ namespace Bloom.Book
 		{
 			if (!isEnabled)
 			{
-				BookInfo.MetaData.Feature_TalkingBook_LangCodes = Enumerable.Empty<string>();
+				BookInfo.MetaData.Feature_TalkingBook_LangCodes = System.Linq.Enumerable.Empty<string>();
 				return;
 			}
 
@@ -4320,7 +4319,7 @@ namespace Bloom.Book
 				// FYI: this might be "", but that's OK. Pass it through anyway
 				BookInfo.MetaData.Feature_SignLanguage_LangCodes = new string[] { this.CollectionSettings.SignLanguageTag };
 			else
-				BookInfo.MetaData.Feature_SignLanguage_LangCodes = Enumerable.Empty<string>();
+				BookInfo.MetaData.Feature_SignLanguage_LangCodes = System.Linq.Enumerable.Empty<string>();
 		}
 
 		private void UpdateVideoFeature()
