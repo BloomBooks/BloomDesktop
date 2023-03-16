@@ -188,7 +188,6 @@ namespace BloomTests.Book
 				<link rel='stylesheet' href='customCollectionStyles.css' type='text/css' />
 				<link rel='stylesheet' href='customBookStyles.css' type='text/css' />
 				<link rel='stylesheet' href='basePage.css' type='text/css' />
-				<link rel='stylesheet' href='langVisibility.css' type='text/css' />
 				<link rel='stylesheet' href='../../editMode.css' type='text/css' />
 
 				</head></html>";
@@ -206,15 +205,29 @@ namespace BloomTests.Book
 			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//head/link[6][@href='my special b.css']", 1);
 			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//head/link[7][@href='my special c.css']", 1);
 
-			//NB: I (JH) don't for sure know yet what the order of this should be. I think it should be last-ish.
-			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//head/link[8][@href='langVisibility.css']", 1);
 
-			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//head/link[9][@href='defaultLangStyles.css']", 1);
-			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//head/link[10][@href='customCollectionStyles.css']", 1);
-			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//head/link[11][@href='customBookStyles.css']", 1);
+			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//head/link[8][@href='defaultLangStyles.css']", 1);
+			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//head/link[9][@href='customCollectionStyles.css']", 1);
+			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//head/link[10][@href='customBookStyles.css']", 1);
 
 		}
+		[Test]
+		public void SortStyleSheetLinks_DropsRetiredStyleSheets()
+		{
+			var content =
+			   @"<html><head>
+				<link rel='stylesheet' href='langVisibility.css' type='text/css' />
+				<link rel='stylesheet' href='editOriginalMode.css' type='text/css' />
+				<link rel='stylesheet' href='editTranslationMode.css' type='text/css' />
+				</head></html>";
 
+			var bookdom = new HtmlDom(content);
+
+			bookdom.SortStyleSheetLinks();
+			var dom = bookdom.RawDom;
+
+			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//head/link", 0);
+		}
 
 		[Test]
 		public void MergeClassesIntoNewPage_BothEmtpy()
@@ -1578,7 +1591,7 @@ p {
 					</div>
 				</div>
 				<div class='bloom-translationGroup bloom-imageDescription'>
-					<div id='badAllWhitespace' class='bloom-editable' lang='fr'>					
+					<div id='badAllWhitespace' class='bloom-editable' lang='fr'>
 					</div>
 				</div>
 			</div>

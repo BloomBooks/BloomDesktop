@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Xml;
+using SIL.Linq;
 using SIL.Xml;
 
 namespace Bloom.Book
@@ -20,24 +20,14 @@ namespace Bloom.Book
 			if(_values==null)
 			{
 				_values = new Dictionary<string, int>();
-				_values.Add("basepage.css", 10); // the opening bid
-				_values.Add("editmode.css", 20);
-				_values.Add("editoriginalmode.css", 30);
-				_values.Add("previewmode.css", 40);
-				_values.Add("origami.css", 50);
-				_values.Add("branding.css", 70);
-
-
-				//Note that kDefaultValueForStyleSheetsThatShouldListInTheMiddle should fall in between here
-				//for the template-specific stuff, but we don't know those names
-
-				//NB: I (JH) don't for sure know yet what the order of this should be. I think it should be last-ish.
-				_values.Add("langVisibility.css".ToLowerInvariant(), 1000);
-				_values.Add("defaultLangStyles.css".ToLowerInvariant(), 1500);
-				_values.Add("customCollectionStyles.css".ToLowerInvariant(), 2000);
-				_values.Add("appearance.css", 3000);
-				_values.Add("customBookStyles.css".ToLowerInvariant(), 4000); // the very last word
-				
+				var weight = 0;
+				BookStorage.OrderingOfKnownCssFiles.ForEach(x =>
+				{
+					if (x == "UNKNOWN_STYLESHEETS_HERE")
+						weight = kDefaultValueForStyleSheetsThatShouldListInTheMiddle + 1000;
+					else
+						_values.Add(x, weight++);
+				});
 			}
 		}
 
@@ -65,9 +55,10 @@ namespace Bloom.Book
 		{
 			foreach (var pair in _values)
 			{
-				if (s.ToLowerInvariant() == pair.Key	//no path in there
-					|| (s.ToLowerInvariant().EndsWith("/" + pair.Key))
-					|| (s.ToLowerInvariant().EndsWith("\\" + pair.Key)))
+				var key = pair.Key.ToLowerInvariant();
+				if (s.ToLowerInvariant() == key	//no path in there
+					|| (s.ToLowerInvariant().EndsWith("/" + key))
+					|| (s.ToLowerInvariant().EndsWith("\\" + key)))
 					return pair.Value;
 			}
 

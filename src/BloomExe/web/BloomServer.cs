@@ -962,9 +962,12 @@ namespace Bloom.Api
 				// Typically this will be files in the book directory, since the browser
 				// is supplying the path.
 
-				// currently this only applies to defaultLangStyles.css, and customCollectionStyles.css
-				var cssFile = Path.GetFileName(localPath);
-				if ((cssFile == "defaultLangStyles.css") || (cssFile == "customCollectionStyles.css"))
+				var cssFileName = Path.GetFileName(localPath);
+
+				// enhance: you would think this was the default, but we currently
+				// have to treat these as a special case!!! Else the system is liable
+				// to go give you a file from some template book somewhere. Uggghhh.
+				if(BookStorage.CssFilesThatAreDynamicallyUpdated.Contains(cssFileName))
 				{
 					info.ResponseContentType = "text/css";
 					info.ReplyWithFileContent(localPath);
@@ -988,9 +991,9 @@ namespace Bloom.Api
 			// Also, we make sure in BookStorage.UpdateSupportFiles that the correct branding.css is present in the
 			// book folder; searching our usual path might find an undesirable one in some other collection.
 			string path = "";
-			var localWins = new string[] { "custombookstyles", "branding.css" };
+			
 			if (RobustFile.Exists(localPath) &&
-			    localWins.Any(s => fileName.ToLowerInvariant().Contains(s)))
+				BookStorage.CssFilesThatAreDynamicallyUpdated.Any(s => fileName.ToLowerInvariant().Contains(s)))
 			{
 				path = localPath;
 			}

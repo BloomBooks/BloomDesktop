@@ -149,8 +149,6 @@ namespace BloomTests.CLI
 				.HasSpecifiedNumberOfMatchesForXpath("//link[@href='basePage.css']",1);
 
 			AssertThatXmlIn.Dom(dom)
-				.HasSpecifiedNumberOfMatchesForXpath("//link[@href='langVisibility.css']", 1);
-			AssertThatXmlIn.Dom(dom)
 				.HasSpecifiedNumberOfMatchesForXpath("//link[@href='Device-XMatter.css']", 1);
 		}
 

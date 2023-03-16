@@ -313,7 +313,7 @@ namespace Bloom.Collection
 		{
 			var sb = new StringBuilder();
 			sb.AppendLine("/* *** DO NOT EDIT! ***   These styles are controlled by the Settings dialog box in Bloom. */");
-			sb.AppendLine("/* They may be over-ridden by rules in customCollectionStyles.css or customBookStyles.css */");
+			sb.AppendLine("/* They may be over-ridden by rules in customCollectionStyles.css, appearance.css or customBookStyles.css */");
 			// note: css pseudo elements  cannot have a @lang attribute. So this is needed to show page numbers in scripts not covered by Andika New Basic.
 			WritingSystem.AddSelectorCssRule(sb, ".numberedPage::after", Language1.FontName, Language1.IsRightToLeft, Language1.LineHeight, Language1.BreaksLinesOnlyAtSpaces, omitDirection);
 			Language1.AddSelectorCssRule(sb, omitDirection);
