@@ -30,6 +30,8 @@ using SIL.Reporting;
 using SIL.Xml;
 using Bloom.Utils;
 using Image = System.Drawing.Image;
+using SIL.Linq;
+using System.Collections;
 
 namespace Bloom.Book
 {
@@ -173,7 +175,7 @@ namespace Bloom.Book
 		private string _cachedFolderPath;
 		private string _cachedPathToHtml;
 
-		
+
 		public static void RemoveLocalOnlyFiles(string folderPath)
 		{
 			LocalOnlyFiles(folderPath).ForEach(f => RobustFile.Delete(f));
@@ -338,7 +340,7 @@ namespace Bloom.Book
 		/// Note that although we don't allow the user to open the book (because if this version opens and
 		/// saves the book, it will cause major problems for a later version of Bloom), there isn't actually
 		/// any corruption or malformed data or anything particularly wrong with the book storage.
-		/// 
+		///
 		/// So, we need to handle these kind of errors differently than validation errors.
 		///</remarks>
 		/// <returns>HTML error message or empty string, if no error.</returns>
@@ -1122,7 +1124,7 @@ namespace Bloom.Book
 
 				// Decode the percent-encodings.
 				var src = UrlPathString.CreateFromUrlEncodedString(encodedSrc).NotEncoded;
-				
+
 				yield return Path.GetFileName(Path.GetDirectoryName(src));
 			}
 		}
@@ -1850,7 +1852,7 @@ namespace Bloom.Book
 						return;
 					}
 				}
-				
+
 				Dom = new HtmlDom(xmlDomFromHtmlFile); //with throw if there are errors
 				// Don't let spaces between <strong>, <em>, or <u> elements be removed. (BL-2484)
 				Dom.RawDom.PreserveWhitespace = true;
@@ -2075,7 +2077,7 @@ namespace Bloom.Book
 			}
 			else
 			{
-				var supportFilesToAlwaysUpdate = new[] { "placeHolder.png", "basePage.css", "previewMode.css", "origami.css", "langVisibility.css" };
+				var supportFilesToAlwaysUpdate = new[] { "placeHolder.png", "basePage.css", "previewMode.css", "origami.css"};
 				foreach (var supportFile in supportFilesToAlwaysUpdate)
 				{
 					Update(supportFile);
@@ -2100,13 +2102,11 @@ namespace Bloom.Book
 				// Instead, normally one is fetched from the right branding in CopyBrandingFiles,
 				// or if the branding is under development we generate a placeholder, or if there is no branding
 				// we generate an empty placeholder.
-				var cssFilesToSkipInThisPhase =	new[] {
+				var cssFilesToSkipInThisPhase =	new ArrayList() {
 					// Files we just updated
-					"basepage.css", "previewmode.css", "origami.css", "langvisibility.css",
-					// Custom files
-					"custombookstyles.css", "customcollectionstyles.css",
-					// Other files we want to skip
-					"defaultlangstyles.css", "branding.css" };
+					"basepage.css", "previewmode.css", "origami.css" };
+				cssFilesToSkipInThisPhase.AddRange(BookStorage.CssFilesThatAreDynamicallyUpdated);
+
 				foreach (var path in Directory.GetFiles(FolderPath, "*.css"))
 				{
 					var file = Path.GetFileName(path);
@@ -2417,18 +2417,18 @@ namespace Bloom.Book
 		{
 			//clear out any old ones
 			Dom.RemoveXMatterStyleSheets();
-
 			EnsureHasLinkToStyleSheet(dom, Path.GetFileName(PathToXMatterStylesheet));
 
-			EnsureHasLinkToStyleSheet(dom, "defaultLangStyles.css");
+			BookStorage.MinimalCssFilesFromInstallThatDoNotChangeAtRuntime.ForEach(x => {
+				EnsureHasLinkToStyleSheet(dom, x);
+			});
+			BookStorage.CssFilesThatAreDynamicallyUpdated.ForEach(x => {
+				EnsureHasLinkToStyleSheet(dom, x);
+			});
 
-			EnsureHasLinkToStyleSheet(dom, "customCollectionStyles.css");
-
-			EnsureHasLinkToStyleSheet(dom, "appearance.css");
-
-			if (RobustFile.Exists(Path.Combine(FolderPath, "customBookStyles.css")))
-				EnsureHasLinkToStyleSheet(dom, "customBookStyles.css");
-			else
+			// the link will be added above as we go through DynamicallyUpdatedLocalBookCssInOrder,
+			// but for tidyness, let's take the link out if we don't have the file.
+			if (!RobustFile.Exists(Path.Combine(FolderPath, "customBookStyles.css")))
 				EnsureDoesntHaveLinkToStyleSheet(dom, "customBookStyles.css");
 
 			dom.SortStyleSheetLinks();
@@ -2475,25 +2475,21 @@ namespace Bloom.Book
 					return;
 				}
 			}
-			dom.AddStyleSheet(path);
+			dom.AddStyleSheetIfMissing(path);
 		}
 
 		// note: order is significant here, but I added branding.css at the end (the most powerful position) arbitrarily, until
 		// such time as it's clear if it matters.
 		public readonly static string[] CssFilesToLink =
-			{ "basePage.css", "previewMode.css", "origami.css", "langVisibility.css", "appearance.css","branding.css" };
+			{ "basePage.css", "previewMode.css", "origami.css", "appearance.css","branding.css" };
 
 		// While in Bloom, we could have an edit style sheet or (someday) other modes. But when stored,
 		// we want to make sure it's ready to be opened in a browser.
 		private void MakeCssLinksAppropriateForStoredFile(HtmlDom dom)
 		{
-			dom.RemoveModeStyleSheets();
-			foreach (var cssFileName in CssFilesToLink)
-			{
-				dom.AddStyleSheetIfMissing(cssFileName);
-			}
-
 			EnsureHasLinksToStylesheets(dom);
+			dom.RemoveModeStyleSheets();
+			dom.AddStyleSheetIfMissing("previewMode.css");
 			dom.SortStyleSheetLinks();
 			dom.RemoveFileProtocolFromStyleSheetLinks();
 		}
@@ -2555,7 +2551,7 @@ namespace Bloom.Book
 		}
 
 		/// <summary>
-		/// if necessary, insert a number according to template to make the folder path unique 
+		/// if necessary, insert a number according to template to make the folder path unique
 		/// </summary>
 		/// <param name="parentFolderPath">The parent directory which the new unique folder path will go in</param>
 		/// <param name="unnumberedName">An unnumbered name to use first if possible, e.g. "Foldername (Copy)"</param>
@@ -2945,5 +2941,34 @@ namespace Bloom.Book
 
 			return destPath;
 		}
+
+		// These are files that should never be searched for outside of the book folder, should not be cached, etc.
+		// One might think these could be the default, and we could instead specify other types, but
+		// that isn't how this code base has evolved. So I'm just trying to gather in one place this list
+		// that had become scattered around (and inconsistent).
+		public readonly static string[] CssFilesThatAreDynamicallyUpdated =
+		{
+			"branding.css", "defaultLangStyles.css", "customCollectionStyles.css", "appearance.css", "customBookStyles.css"
+		};
+
+		public readonly static string[] MinimalCssFilesFromInstallThatDoNotChangeAtRuntime =
+		{
+			"basePage.css", /*"editMode.css",	"previewMode.css" REVIEW,*/ "origami.css"
+		};
+
+		public readonly static string[] CssFilesThatAreObsolete =
+		{
+			"langVisibility.css", "editOriginalMode.css","editTranslationMode.css"
+		};
+
+		public readonly static string[] OrderingOfKnownCssFiles = 
+		{
+			// list in the order that you want their <link> to appear
+			"basePage.css", "baseEPUB.css", "editMode.css",	"previewMode.css", "origami.css",
+			"UNKNOWN_STYLESHEETS_HERE",
+			"branding.css", "defaultLangStyles.css", "customCollectionStyles.css",
+			"appearance.css", "customBookStyles.css"
+		};
 	}
+
 }

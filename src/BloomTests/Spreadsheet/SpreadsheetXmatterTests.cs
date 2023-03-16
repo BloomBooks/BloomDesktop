@@ -37,7 +37,6 @@ namespace BloomTests.Spreadsheet
     <link rel=""stylesheet"" href=""branding.css"" type=""text/css""></link>
     <link rel=""stylesheet"" href=""Basic Book.css"" type=""text/css""></link>
     <link rel=""stylesheet"" href=""Traditional-XMatter.css"" type=""text/css""></link>
-    <link rel=""stylesheet"" href=""langVisibility.css"" type=""text/css""></link>
     <link rel=""stylesheet"" href=""defaultLangStyles.css"" type=""text/css""></link>
     <link rel=""stylesheet"" href=""customCollectionStyles.css"" type=""text/css""></link>
 </head>
@@ -242,7 +241,7 @@ namespace BloomTests.Spreadsheet
 					Assert.That(row.Hidden, Is.False);
 				else
 					Assert.That(row.Hidden, Is.True);
-			}				
+			}
 		}
 	}
 }

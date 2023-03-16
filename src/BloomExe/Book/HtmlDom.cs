@@ -4,11 +4,13 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Web;
 using System.Xml;
 using System.Xml.Xsl;
+using Amazon;
 using Bloom.Api;
 using Bloom.Publish; // for DynamicJson
 using Bloom.Publish.Epub;
@@ -18,6 +20,7 @@ using DesktopAnalytics;
 using Gecko;
 using L10NSharp;
 using Microsoft.CSharp.RuntimeBinder;
+using Microsoft.VisualBasic;
 using SIL.Code;
 using SIL.Extensions;
 using SIL.Reporting;
@@ -239,7 +242,15 @@ namespace Bloom.Book
 
 		public void AddStyleSheet(string path)
 		{
-			RawDom.AddStyleSheet(path);
+			// This version is in libpalaso, and it does weird things that are file:/// oriented, like looking for the file and giving it file path
+			// RawDom.AddStyleSheet(path); 
+
+			var head = XmlUtils.GetOrCreateElement(RawDom, "//html", "head");
+			var link = RawDom.CreateElement("link");
+			link.SetAttribute("rel", "stylesheet");
+			link.SetAttribute("href", path);
+			link.SetAttribute("type", "text/css");
+			head.AppendChild(link);
 		}
 
 		public XmlNodeList SafeSelectNodes(string xpath)
@@ -403,16 +414,21 @@ namespace Bloom.Book
 			//add them back
 			foreach(var xmlElement in links)
 			{
-				headNode.AppendChild(xmlElement);
+				var href = xmlElement.GetStringAttribute("href");
+				if (!BookStorage.CssFilesThatAreObsolete.Contains(href))
+				{
+					headNode.AppendChild(xmlElement);
+				}
 			}
 		}
+
 
 		/// <summary>
 		/// gecko 11 requires the file://, but modern firefox and chrome can't handle it. Checked also that IE10 works without it.
 		/// </summary>
 		public void RemoveFileProtocolFromStyleSheetLinks()
 		{
-			foreach(XmlElement link in SafeSelectNodes("//link[@rel='stylesheet']"))
+			foreach (XmlElement link in SafeSelectNodes("//link[@rel='stylesheet']"))
 			{
 				var href = link.GetAttribute("href");
 				link.SetAttribute("href", href.Replace("file:///", "").Replace("file://", ""));
@@ -599,8 +615,7 @@ namespace Bloom.Book
 
 		private static HashSet<string> stylesheetsToIgnoreAdding = new HashSet<string>(new[]
 		{
-			"editPaneGlobal.css",
-			"previewMode.css", "editOriginalMode.css", "editTranslationMode.css", "editMode.css"
+			"previewMode.css", "editMode.css"
 		});
 
 		/// <summary>
@@ -624,7 +639,8 @@ namespace Bloom.Book
 				if(fileName == pathToCheck)
 					return false;
 			}
-			_dom.AddStyleSheet(path.Replace("file://", ""));
+			//_dom.AddStyleSheet(path.Replace("file://", "")); this used the libpalaso version which is slow and looks for the file and such
+			AddStyleSheet(path);
 			return !stylesheetsToIgnoreAdding.Contains(path);
 		}
 
@@ -633,16 +649,12 @@ namespace Bloom.Book
 			var stylesheetsToIgnore = new List<string>();
 			// Remember, Linux filenames are case sensitive!
 			stylesheetsToIgnore.Add("basePage.css");
-			stylesheetsToIgnore.Add("langVisibility.css");
 			stylesheetsToIgnore.Add("editMode.css");
-			stylesheetsToIgnore.Add("editOriginalMode.css");
 			stylesheetsToIgnore.Add("previewMode.css");
-			stylesheetsToIgnore.Add("defaultLangStyles.css");
-			stylesheetsToIgnore.Add("customCollectionStyles.css");
-			stylesheetsToIgnore.Add("customBookStyles.css");
 			stylesheetsToIgnore.Add("XMatter");
+			stylesheetsToIgnore.AddRange(BookStorage.CssFilesThatAreDynamicallyUpdated);
 
-			foreach(XmlElement link in _dom.SafeSelectNodes("//link[@rel='stylesheet']"))
+			foreach (XmlElement link in _dom.SafeSelectNodes("//link[@rel='stylesheet']"))
 			{
 				var fileName = link.GetStringAttribute("href");
 				var nameToCheck = fileName;
@@ -769,7 +781,7 @@ namespace Bloom.Book
 		{
 			if (!allowDataLoss)
 			{
-				
+
 				var (oldTextCount,  oldImageCount,  oldVideoCount, oldWidgetCount) = GetEditableDataCounts(page);
 				var (newTextCount, newImageCount, newVideoCount, newWidgetCount) = GetEditableDataCounts(template);
 				if (newTextCount < oldTextCount || newImageCount < oldImageCount || newVideoCount < oldVideoCount || newWidgetCount < oldWidgetCount)
@@ -1018,7 +1030,7 @@ namespace Bloom.Book
 				// Before we added this line, the next one (testing for bloom-ignoreChildrenForBookLanguageList) would throw with
 				// the Juarez and Associates (Guatemala) Branding Pack.
 				.Where(div => div.ParentNode?.Attributes?["class"] != null)
-				// At least up through 4.7, bloom-ignoreChildrenForBookLanguageList is used to prevent counting localized 
+				// At least up through 4.7, bloom-ignoreChildrenForBookLanguageList is used to prevent counting localized
 				// headers in comprehension quiz as languages of the book.
 				.Where(div => !div.ParentNode.Attributes["class"].Value.Contains("bloom-ignoreChildrenForBookLanguageList"))
 				.Where(div => div.Attributes["class"].Value.IndexOf("bloom-editable", StringComparison.InvariantCulture) >= 0)
@@ -2135,7 +2147,7 @@ namespace Bloom.Book
 		public static void SetImageElementUrl(ElementProxy imgOrDivWithBackgroundImage, UrlPathString url, bool urlEncode = true)
 		{
 			string urlFormToUse = urlEncode ? url.UrlEncoded : url.NotEncoded;
-			
+
 			if(imgOrDivWithBackgroundImage.Name.ToLower() == "img")
 			{
 				// This does not need to be encoded until sent over the network.
@@ -2319,7 +2331,7 @@ namespace Bloom.Book
 		}
 
 		private static readonly string kAudioSentenceElementsXPath = "descendant-or-self::node()[contains(@class,'audio-sentence') and string-length(@id) > 0]";
-		
+
 		public static XmlNodeList SelectRecordableDivOrSpans(XmlElement element)
 		{
 			string xpath1 = kAudioSentenceElementsXPath;
@@ -2946,11 +2958,11 @@ namespace Bloom.Book
 				{
 					return true;
 				}
-								
+
 				ancestor = ancestor.ParentNode;
 			}
 
-			return false;			
+			return false;
 		}
 
 		/// <summary>
