@@ -646,8 +646,8 @@ namespace Bloom.Publish.Video
 
 					           + audioArgs
 					           + "-map [out] " // send the output of the audio mix to the output
-					           + finalOutputPath //and this is where we send it (until the user saves it elsewhere).
-					           + $" -progress {tempProgressOutputFile.Path}";
+					           + $"\"{finalOutputPath}\"" //and this is where we send it (until the user saves it elsewhere).
+							   + $" -progress \"{tempProgressOutputFile.Path}\"";
 					// Debug.WriteLine("ffmpeg merge args: " + args);
 
 					if (haveVideo)
