@@ -62,10 +62,9 @@ export const AudioHilitePage: React.FunctionComponent<{
                     l10nKey="EditTab.FormatDialog.BackgroundColor"
                     checked={props.hiliteBgColor !== "transparent"}
                     onCheckChanged={checked => {
-                        const newColor = checked ? kBloomYellow : "transparent";
                         props.onHilitePropsChanged(
                             props.hiliteTextColor,
-                            newColor
+                            checked ? kBloomYellow : "transparent"
                         );
                     }}
                 ></MuiCheckbox>
@@ -89,9 +88,8 @@ export const AudioHilitePage: React.FunctionComponent<{
                     l10nKey="EditTab.FormatDialog.TextColor"
                     checked={!!props.hiliteTextColor}
                     onCheckChanged={checked => {
-                        const newColor = checked ? props.color : undefined;
                         props.onHilitePropsChanged(
-                            newColor,
+                            checked ? props.color : undefined,
                             props.hiliteBgColor
                         );
                     }}
