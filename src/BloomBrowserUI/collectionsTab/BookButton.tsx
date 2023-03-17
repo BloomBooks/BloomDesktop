@@ -513,3 +513,31 @@ export const BookButton: React.FunctionComponent<{
         </div>
     );
 };
+
+// A place holder needs to signal somehow when the corresponding book's thumbnail
+// image has been updated and the real book button can be displayed.  So we define
+// this placeholder component to receive the signal from the server and pass on
+// the signal to the collection component.
+// See https://issues.bloomlibrary.org/youtrack/issue/BL-12026.
+export const BookButtonPlaceHolder: React.FunctionComponent<{
+    book: IBookInfo;
+    reload: (id: string) => void;
+}> = props => {
+    const [reload, setReload] = useState(0);
+    // Force a reload when the placeholder's book thumbnail image changed
+    useSubscribeToWebSocketForEvent("bookImage", "reload", args => {
+        if (args.message === props.book.id) {
+            setReload(reload + 1);
+            props.reload(props.book.id);
+        }
+    });
+    return (
+        <div
+            className="placeholder"
+            style={{
+                height: bookButtonHeight.toString(10) + "px",
+                width: bookButtonWidth.toString(10) + "px"
+            }}
+        ></div>
+    );
+};

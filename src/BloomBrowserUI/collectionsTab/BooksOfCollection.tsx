@@ -3,11 +3,16 @@ import { jsx, css } from "@emotion/react";
 
 import Grid from "@mui/material/Grid";
 import React = require("react");
+import { useState, useEffect } from "react";
 import "BooksOfCollection.less";
 import { useApiData, useWatchApiData } from "../utils/bloomApi";
-import { BookButton, bookButtonHeight, bookButtonWidth } from "./BookButton";
+import {
+    BookButton,
+    bookButtonHeight,
+    BookButtonPlaceHolder
+} from "./BookButton";
 import { BookSelectionManager } from "./bookSelectionManager";
-import LazyLoad from "react-lazyload";
+import LazyLoad, { forceVisible } from "react-lazyload";
 import { Link } from "../react_components/link";
 
 export interface IBookInfo {
@@ -64,6 +69,16 @@ export const BooksOfCollection: React.FunctionComponent<{
     collection.isEditableCollection = props.isEditableCollection;
     collection.id = props.collectionId;
 
+    const [reload, setReload] = useState(0);
+    const [reloadTrigger, setReloadTrigger] = useState("");
+    const reloadBooks = (id: string) => {
+        setReload(reload + 1);
+        setReloadTrigger(id);
+    };
+    useEffect(() => {
+        forceVisible();
+    }, [reload, reloadTrigger]);
+
     // This is an approximation. 5 buttons per line is about what we get in a default
     // layout on a fairly typical screen. We'd get a better approximation if we used
     // the width of a button and knew the width of the container. But I think this is good
@@ -105,19 +120,10 @@ export const BooksOfCollection: React.FunctionComponent<{
                                     // and therefore the parent grid thinks they will all fit on one line,
                                     // and then they're all visible so we get no laziness.
                                     placeholder={
-                                        <div
-                                            className="placeholder"
-                                            style={{
-                                                height:
-                                                    bookButtonHeight.toString(
-                                                        10
-                                                    ) + "px",
-                                                width:
-                                                    bookButtonWidth.toString(
-                                                        10
-                                                    ) + "px"
-                                            }}
-                                        ></div>
+                                        <BookButtonPlaceHolder
+                                            book={book}
+                                            reload={reloadBooks}
+                                        />
                                     }
                                 >
                                     <BookButton

@@ -131,7 +131,7 @@
         "@types/react": "^17",
         "@types/react-color": "^3.0.2",
         "@types/react-dom": "^17",
-        "@types/react-lazyload": "^2.6.0",
+        "@types/react-lazyload": "^3.2.0",
         "@types/react-table": "^6.8.1",
         "@types/react-tabs": "^2.3.1",
         "@types/stacktrace-js": "^0.0.32",
