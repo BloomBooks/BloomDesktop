@@ -954,6 +954,7 @@ namespace Bloom.web.controllers
 			AppendWritingSystem(book.BookData.Language1, "Language1", bldr);
 			AppendWritingSystem(book.BookData.Language2, "Language2", bldr);
 			AppendWritingSystem(book.BookData.Language3, "Language3", bldr);
+			AppendWritingSystem(book.BookData.SignLanguage, "SignLanguage", bldr);
 			AppendWritingSystem(book.BookData.MetadataLanguage1, "MetadataLanguage1", bldr);
 		}
 
