@@ -4559,6 +4559,7 @@
       <trans-unit id="PublishTab.Upload.CheckEmail">
         <source xml:lang="en">Please check your email and click on the link there, then sign in again.</source>
         <note>ID: PublishTab.Upload.CheckEmail</note>
+        <note>Obsolete as of Bloom 5.5</note>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.CcLink">
         <source xml:lang="en">CC-BY-NC</source>
@@ -4729,6 +4730,7 @@
       <trans-unit id="PublishTab.Upload.LoginFailure">
         <source xml:lang="en">Bloom could not sign in to BloomLibrary.org using your saved credentials. Please check your network connection.</source>
         <note>ID: PublishTab.Upload.LoginFailure</note>
+        <note>Obsolete as of Bloom 5.5</note>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.LoginLink">
         <source xml:lang="en">Sign up or sign in to BloomLibrary.org</source>
@@ -4795,7 +4797,8 @@
       </trans-unit>
       <trans-unit id="PublishTab.Upload.SignInSignUp">
         <source xml:lang="en">Sign In / Sign Up to BloomLibrary.org</source>
-        <note>ID: PublishTab.Upload.SignUpLogin</note>
+        <note>ID: PublishTab.Upload.SignInSignUp</note>
+        <note>Obsolete as of Bloom 5.5</note>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.SignOut" translate="no">
         <!-- added in 5.5 -->
@@ -4809,6 +4812,7 @@
       <trans-unit id="PublishTab.Upload.SomethingWrong">
         <source xml:lang="en">Oops, something went wrong when trying to sign you into our database.</source>
         <note>ID: PublishTab.Upload.SomethingWrong</note>
+        <note>Obsolete as of Bloom 5.5</note>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.Step1">
         <source xml:lang="en">Step 1: Confirm Metadata</source>

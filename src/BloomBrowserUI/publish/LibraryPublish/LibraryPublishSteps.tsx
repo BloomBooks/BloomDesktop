@@ -52,6 +52,7 @@ interface IReadonlyBookInfo {
 }
 
 const kWebSocketEventId_uploadSuccessful: string = "uploadSuccessful";
+const kWebSocketEventId_loginSuccessful: string = "loginSuccessful";
 
 export const LibraryPublishSteps: React.FunctionComponent = () => {
     const localizedSummary = useL10n("Summary", "PublishTab.Upload.Summary");
@@ -88,6 +89,7 @@ export const LibraryPublishSteps: React.FunctionComponent = () => {
 
     const [bookInfo, setBookInfo] = useState<IReadonlyBookInfo>();
     useEffect(() => {
+        post("libraryPublish/checkForLoggedInUser");
         get("libraryPublish/getBookInfo", result => {
             setBookInfo(result.data);
             setSummary(result.data.summary);
@@ -124,11 +126,14 @@ export const LibraryPublishSteps: React.FunctionComponent = () => {
     );
 
     const [loggedInEmail, setLoggedInEmail] = useState<string>();
-    useEffect(() => {
-        get("common/loginData", result => {
-            setLoggedInEmail(result.data.email);
-        });
-    }, []);
+
+    useSubscribeToWebSocketForStringMessage(
+        kWebSocketContext,
+        kWebSocketEventId_loginSuccessful,
+        email => {
+            setLoggedInEmail(email);
+        }
+    );
 
     function isReadyForUpload(): boolean {
         return (
@@ -462,7 +467,8 @@ export const LibraryPublishSteps: React.FunctionComponent = () => {
                                     l10nComment="The %0 will be replaced with the email address of the user."
                                     l10nParam0={loggedInEmail}
                                     onClick={() => {
-                                        alert("not implemented");
+                                        post("libraryPublish/logout");
+                                        setLoggedInEmail(undefined);
                                     }}
                                 >
                                     Sign Out of %0 at BloomLibrary.org
@@ -472,11 +478,7 @@ export const LibraryPublishSteps: React.FunctionComponent = () => {
                                     variant="text"
                                     enabled={isReadyForUpload()}
                                     l10nKey="PublishTab.Upload.SignIn"
-                                    onClick={() => {
-                                        alert(
-                                            "not implemented; sign in on original upload page for now"
-                                        );
-                                    }}
+                                    onClick={() => post("libraryPublish/login")}
                                 >
                                     Sign in or sign up to BloomLibrary.org
                                 </BloomButton>
@@ -493,6 +495,9 @@ export const LibraryPublishSteps: React.FunctionComponent = () => {
                             <ProgressBox
                                 ref={progressBoxRef}
                                 webSocketContext={kWebSocketContext}
+                                onGotErrorMessage={() => {
+                                    setIsUploading(false);
+                                }}
                                 css={css`
                                     height: 200px;
                                 `}

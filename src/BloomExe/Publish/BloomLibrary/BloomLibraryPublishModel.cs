@@ -170,17 +170,12 @@ namespace Bloom.Publish.BloomLibrary
 			}
 		}
 
-		/// <summary>
-		/// Try to login using stored userid and password
-		/// Test LoggedIn property to verify.
-		/// </summary>
-		/// <returns></returns>
 		internal void LogIn()
 		{
-			FirebaseLoginDialog.FirebaseUpdateToken();
+			BloomLibraryAuthentication.LogIn();
 		}
 
-		internal void Logout()
+		internal void LogOut()
 		{
 			_uploader.Logout();
 		}

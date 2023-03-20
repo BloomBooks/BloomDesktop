@@ -1,3 +1,4 @@
+using Bloom.web.controllers;
 using System.Windows.Forms;
 
 namespace Bloom.Publish.BloomLibrary
@@ -19,6 +20,7 @@ namespace Bloom.Publish.BloomLibrary
 			{
 				components.Dispose();
 			}
+			CommonApi.LoginSuccessful -= HandleLoginSuccessful;
 			base.Dispose(disposing);
 		}
 
