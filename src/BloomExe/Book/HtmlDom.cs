@@ -3085,7 +3085,7 @@ namespace Bloom.Book
 		// It seems safest to just list the ones that can occur empty in Bloom...if we can't find a more reliable way to convert to HTML5.
 		private static string CleanupHtml5(string xhtml)
 		{
-			var re = new Regex("<(title|div|i|table|td|span|style|script) ([^<]*)/>");
+			var re = new Regex("<(title|div|i|table|td|span|style|script|textarea) ([^<]*)/>");
 			xhtml = re.Replace(xhtml, "<$1 $2></$1>");
 			//now insert the non-xml-ish <!doctype html>
 			return string.Format("<!DOCTYPE html>{0}{1}", Environment.NewLine, xhtml);
