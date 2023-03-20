@@ -105,7 +105,7 @@ namespace BloomTests.Spreadsheet
 		private List<XmlElement> _contentPages;
 
 		[OneTimeSetUp]
-		public void OneTimeSetUp()
+		public async Task OneTimeSetUp()
 		{
 			var origDom = new HtmlDom(roundtripTestBook, true);
 			// An empty book to import into.
@@ -127,7 +127,7 @@ namespace BloomTests.Spreadsheet
 				_sheetFromExport.WriteToFile(tempFile.Path);
 				var sheet = InternalSpreadsheet.ReadFromFile(tempFile.Path);
 				var importer = new TestSpreadsheetImporter(null, _destDom);
-				importer.Import(sheet);
+				await importer.Import(sheet);
 			}
 			_contentPages = _destDom.SafeSelectNodes("//div[contains(@class, 'numberedPage')]").Cast<XmlElement>().ToList();
 		}

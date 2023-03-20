@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Runtime.ExceptionServices;
+using System.Threading.Tasks;
 using System.Web.Script.Serialization;
 using System.Windows.Forms;
 using Bloom.Collection;
@@ -16,10 +17,9 @@ namespace Bloom.Api
 {
 	public delegate void EndpointHandler(ApiRequest request);
 
-	public class EndpointRegistration
+	public abstract class BaseEndpointRegistration
 	{
 		public bool HandleOnUIThread = true;
-		public EndpointHandler Handler;
 		public bool RequiresSync = true; // set false if handler does its own thread-handling.
 		public bool DoMeasure = false;
 		public string MeasurementLabel;
@@ -35,6 +35,28 @@ namespace Bloom.Api
 		{
 			DoMeasure = true;
 			FunctionToGetLabel = getLabel;
+		}
+
+		public abstract Task Handle(ApiRequest request);
+	}
+
+	public class EndpointRegistration : BaseEndpointRegistration
+	{
+		public EndpointHandler Handler;
+
+		public async override Task Handle(ApiRequest request)
+		{
+			Handler(request);
+		}
+	}
+
+	public class AsyncEndpointRegistration : BaseEndpointRegistration
+	{
+		public Func<ApiRequest, Task> Handler;
+
+		public override async Task Handle(ApiRequest request)
+		{
+			await Handler(request);
 		}
 	}
 
@@ -164,14 +186,14 @@ namespace Bloom.Api
 			}
 		}
 
-		public static bool Handle(EndpointRegistration endpointRegistration, IRequestInfo info, CollectionSettings collectionSettings, Book.Book currentBook)
+		public static async Task<bool> Handle(BaseEndpointRegistration endpointRegistration, IRequestInfo info, CollectionSettings collectionSettings, Book.Book currentBook)
 		{
 			var request = new ApiRequest(info, collectionSettings, currentBook);
 			try
 			{
 				if (Program.RunningUnitTests)
 				{
-					endpointRegistration.Handler(request);
+					await endpointRegistration.Handle(request);
 				}
 				else
 				{
@@ -194,11 +216,11 @@ namespace Bloom.Api
 						if (endpointRegistration.HandleOnUIThread && formForSynchronizing != null &&
 						    formForSynchronizing.InvokeRequired)
 						{
-							InvokeWithErrorHandling(endpointRegistration, formForSynchronizing, request);
+							await InvokeWithErrorHandling(endpointRegistration, formForSynchronizing, request);
 						}
 						else
 						{
-							endpointRegistration.Handler(request);
+							await endpointRegistration.Handle(request);
 						}
 					}
 				}
@@ -231,7 +253,7 @@ namespace Bloom.Api
 		// The stacktrace instead just ends with the invoke(), which isn't useful. So here we wrap
 		// the call to the handler in a delegate that catches the exception and saves it
 		// in our local scope, where we can then use it for error reporting.
-		private static bool InvokeWithErrorHandling(EndpointRegistration endpointRegistration,
+		private static async Task<bool> InvokeWithErrorHandling(BaseEndpointRegistration endpointRegistration,
 			Form formForSynchronizing, ApiRequest request)
 		{
 			Exception handlerException = null;
@@ -239,11 +261,11 @@ namespace Bloom.Api
 			BloomServer._theOneInstance.RegisterThreadBlocking();
 
 			// This will block until the UI thread is done invoking this.
-			formForSynchronizing.Invoke(new Action<ApiRequest>((req) =>
+			await (Task)formForSynchronizing.Invoke(new Func<ApiRequest, Task>(async (req) =>
 			{
 				try
 				{
-					endpointRegistration.Handler(req);
+					await endpointRegistration.Handle(req);
 				}
 				catch (Exception error)
 				{

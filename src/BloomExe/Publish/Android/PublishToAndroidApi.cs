@@ -238,13 +238,13 @@ namespace Bloom.Publish.Android
 				request.ReplyWithJson(JsonConvert.SerializeObject(_collectionSettings.BulkPublishBloomPubSettings));
 			}, true);
 
-			apiHandler.RegisterEndpointLegacy(kApiUrlPart + "file/bulkSaveBloomPubs", request =>
+			apiHandler.RegisterAsyncEndpointHandler(kApiUrlPart + "file/bulkSaveBloomPubs", async request =>
 			{
 				// update what's in the collection so that we remember for next time
 				_collectionSettings.BulkPublishBloomPubSettings = request.RequiredPostObject<BulkBloomPubPublishSettings>();
 				_collectionSettings.Save();
 
-				_bulkBloomPubCreator.PublishAllBooks(_collectionSettings.BulkPublishBloomPubSettings);
+				await _bulkBloomPubCreator.PublishAllBooks(_collectionSettings.BulkPublishBloomPubSettings);
 				SetState("stopped");
 				request.PostSucceeded();
 			}, true);

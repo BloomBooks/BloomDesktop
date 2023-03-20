@@ -7,6 +7,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using Bloom.Api;
 using Bloom.Book;
@@ -387,7 +388,7 @@ namespace Bloom.Publish.Video
 		/// if any).
 		/// </summary>
 		/// <param name="soundLogJson"></param>
-		public void StopRecording(string soundLogJson)
+		public async Task StopRecording(string soundLogJson)
 		{
 			// Couldn't get this to work. See comment in constructor. If we do get it working,
 			// make sure it gets turned off, however things turn out. Or maybe we can turn it
@@ -407,9 +408,9 @@ namespace Bloom.Publish.Video
 			ClearPreventSleepTimer();
 			Close();
 
-			BrowserProgressDialog.DoWorkWithProgressDialog(
+			await BrowserProgressDialog.DoWorkWithProgressDialog(
 				_webSocketServer,
-				(progress, worker) =>
+				async (progress, worker) =>
 				{
 					StopRecordingInternal(progress, soundLogJson);
 					FinishedProcessingRecording?.Invoke(this, new EventArgs());

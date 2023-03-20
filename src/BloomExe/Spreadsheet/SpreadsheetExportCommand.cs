@@ -5,6 +5,7 @@ using CommandLine;
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Threading.Tasks;
 
 namespace Bloom.CLI
 {
@@ -16,7 +17,7 @@ namespace Bloom.CLI
 	/// </summary>
 	class SpreadsheetExportCommand
 	{
-		public static int Handle(SpreadsheetExportParameters options)
+		public static async Task<int> Handle(SpreadsheetExportParameters options)
 		{
 			try
 			{

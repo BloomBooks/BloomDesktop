@@ -35,7 +35,7 @@ namespace BloomTests.Spreadsheet
 
 		// This is also a crude approximation; it won't, for example, handle any sentence-ending punctuation
 		// besides period. But it covers the text used in the relevant tests.
-		protected override string[] GetSentenceFragments(string text)
+		protected override async Task<string[]> GetSentenceFragments(string text)
 		{
 			return GetFrags(text).ToArray();
 		}

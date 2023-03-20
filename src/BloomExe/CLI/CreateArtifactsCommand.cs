@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using Bloom.Book;
 using Bloom.Properties;
@@ -69,7 +70,7 @@ namespace Bloom.CLI
 			return errors;
 		}
 
-		public static int Handle(CreateArtifactsParameters options)
+		public static async Task<int> Handle(CreateArtifactsParameters options)
 		{
 			try
 			{

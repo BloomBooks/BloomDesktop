@@ -9,6 +9,7 @@ using System.Linq;
 using System.IO;
 using System.Net;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Web;
 using System.Windows.Forms;
 using System.Xml;
@@ -368,7 +369,7 @@ namespace Bloom.Api
 		// Otherwise we can get a timeout error as the browser waits for a response.
 		//
 		// NOTE: this method gets called on different threads!
-		protected bool ProcessRequest(IRequestInfo info)
+		protected async Task<bool> ProcessRequest(IRequestInfo info)
 		{
 			if (CurrentCollectionSettings != null && CurrentCollectionSettings.SettingsFilePath != null)
 				info.DoNotCacheFolder = Path.GetDirectoryName(CurrentCollectionSettings.SettingsFilePath).Replace('\\','/');
@@ -436,7 +437,7 @@ namespace Bloom.Api
 				return true;
 			}
 
-			if (ApiHandler.ProcessRequest(info, localPath))
+			if (await ApiHandler.ProcessRequest(info, localPath))
 				return true;
 
 			// Handle image file requests.
@@ -1407,10 +1408,17 @@ namespace Bloom.Api
 		/// <summary>
 		/// This is designed to be easily unit testable by not taking actual HttpContext, but doing everything through this IRequestInfo object
 		/// </summary>
-		/// <param name="info"></param>
 		internal void MakeReply(IRequestInfo info)
 		{
-			if (!ProcessRequest(info))
+			// Since this is the top-level task for a server loop, we need to resolve async processing before returning to
+			// the server loop. This would be very prone to deadlocks if called on the UI thread, but it is only
+			// called in unit tests and on server threads.
+			MakeReplyAsync(info).GetAwaiter().GetResult();
+		}
+
+		internal async Task MakeReplyAsync(IRequestInfo info)
+		{
+			if (!await ProcessRequest(info))
 			{
 				if (ShouldReportFailedRequest(info))
 					ReportMissingFile(info);

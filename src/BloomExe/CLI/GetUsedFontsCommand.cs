@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using Bloom.Book;
 using CommandLine;
 using SIL.IO;
@@ -32,7 +33,7 @@ namespace Bloom.CLI
 	/// </summary>
 	class GetUsedFontsCommand
 	{
-		public static int Handle(GetUsedFontsParameters options)
+		public static async  Task<int> Handle(GetUsedFontsParameters options)
 		{
 			try
 			{

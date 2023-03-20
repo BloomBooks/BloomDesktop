@@ -9,6 +9,7 @@ using System.Text.RegularExpressions;
 using Bloom.Book;
 using Bloom.Collection;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace Bloom.Api
 {
@@ -23,10 +24,10 @@ namespace Bloom.Api
 	public class BloomApiHandler
 	{
 		// This dictionary ties API endpoints to functions that handle the requests.
-		private Dictionary<string, EndpointRegistration> _endpointRegistrations = new Dictionary<string, EndpointRegistration>();
+		private Dictionary<string, BaseEndpointRegistration> _endpointRegistrations = new Dictionary<string, BaseEndpointRegistration>();
 		// This one can really be used as a dictionary, because the keys match exactly, not just as a prefix.
-		private Dictionary<string, EndpointRegistration> _exactEndpointRegistrations =
-			new Dictionary<string, EndpointRegistration>();
+		private Dictionary<string, BaseEndpointRegistration> _exactEndpointRegistrations =
+			new Dictionary<string, BaseEndpointRegistration>();
 		// Special lock for making thumbnails. See discussion at the one point of usage.
 		private object ThumbnailsAndPreviewsSyncObj = new object();
 		// We use two different locks to synchronize access to API requests.
@@ -105,6 +106,19 @@ namespace Bloom.Api
 		public EndpointRegistration RegisterEndpointHandler(string pattern, EndpointHandler handler, bool handleOnUiThread, bool requiresSync = true)
 		{
 			var registration = new EndpointRegistration()
+			{
+				Handler = handler,
+				HandleOnUIThread = handleOnUiThread,
+				RequiresSync = requiresSync,
+				MeasurementLabel = pattern, // can be overridden... this is just a default
+			};
+			_exactEndpointRegistrations.Add(pattern.ToLowerInvariant().Trim(new char[] { '/' }), registration);
+			return registration; // return it so the caller can say  RegisterEndpointHandler().Measurable();
+		}
+
+		public BaseEndpointRegistration RegisterAsyncEndpointHandler(string pattern, Func<ApiRequest, Task> handler, bool handleOnUiThread, bool requiresSync = true)
+		{
+			var registration = new AsyncEndpointRegistration()
 			{
 				Handler = handler,
 				HandleOnUIThread = handleOnUiThread,
@@ -196,7 +210,7 @@ namespace Bloom.Api
 		// Otherwise we can get a timeout error as the browser waits for a response.
 		//
 		// NOTE: this method gets called on different threads!
-		public bool ProcessRequest(IRequestInfo info, string localPath)
+		public async Task<bool> ProcessRequest(IRequestInfo info, string localPath)
 		{
 			var localPathLc = localPath.ToLowerInvariant();
 			if (localPathLc.StartsWith(ApiPrefix, StringComparison.InvariantCulture))
@@ -204,7 +218,7 @@ namespace Bloom.Api
 				var endpointPath = localPath.Substring(3).ToLowerInvariant().Trim(new char[] {'/'});
 				if (_exactEndpointRegistrations.TryGetValue(endpointPath, out var epRegistration))
 				{
-					return ProcessRequest(epRegistration, info, localPathLc);
+					return await ProcessRequest(epRegistration, info, localPathLc);
 				}
 				// Enhance: this can be significantly slow when large numbers of requests are being received.
 				// A large proportion of our API calls actually have a single, complete string that identifies
@@ -230,13 +244,13 @@ namespace Bloom.Api
 							).Success))
 				{
 					var endpointRegistration = pair.Value;
-					return ProcessRequest(endpointRegistration, info, localPathLc);
+					return await ProcessRequest(endpointRegistration, info, localPathLc);
 				}
 			}
 			return false;
 		}
 
-		private bool ProcessRequest(EndpointRegistration endpointRegistration, IRequestInfo info, string localPathLc)
+		private async Task<bool> ProcessRequest(BaseEndpointRegistration endpointRegistration, IRequestInfo info, string localPathLc)
 		{
 			if (endpointRegistration.RequiresSync)
 			{
@@ -282,7 +296,7 @@ namespace Bloom.Api
 					}
 
 					// Lock has been acquired.
-					ApiRequest.Handle(endpointRegistration, info, CurrentCollectionSettings,
+					await ApiRequest.Handle(endpointRegistration, info, CurrentCollectionSettings,
 						_bookSelection.CurrentSelection);
 
 					// Even if ApiRequest.Handle() fails, return true to indicate that the request was processed and there
@@ -301,7 +315,7 @@ namespace Bloom.Api
 			else
 			{
 				// Up to api's that request no sync to do things right!
-				ApiRequest.Handle(endpointRegistration, info, CurrentCollectionSettings, _bookSelection.CurrentSelection);
+				await ApiRequest.Handle(endpointRegistration, info, CurrentCollectionSettings, _bookSelection.CurrentSelection);
 				// Even if ApiRequest.Handle() fails, return true to indicate that the request was processed and there
 				// is no further need for the caller to continue trying to process the request as a filename.
 				// See https://issues.bloomlibrary.org/youtrack/issue/BL-6763.

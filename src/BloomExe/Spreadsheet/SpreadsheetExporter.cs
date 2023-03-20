@@ -14,6 +14,7 @@ using System.IO;
 using System.Linq;
 using System.Security;
 using System.Text;
+using System.Threading.Tasks;
 using System.Web.UI.WebControls;
 using System.Windows.Forms;
 using System.Xml;
@@ -67,10 +68,10 @@ namespace Bloom.Spreadsheet
 		//have a src attribute nor actually contain an img element
 		public static List<string> DataDivImagesWithNoSrcAttributes = new List<string>() { "licenseImage" };
 
-		public void ExportToFolderWithProgress(HtmlDom dom, string bookFolderPath, string outputFolder,
+		public async Task ExportToFolderWithProgress(HtmlDom dom, string bookFolderPath, string outputFolder,
 			Action<string> resultCallback)
 		{
-			BrowserProgressDialog.DoWorkWithProgressDialog(_webSocketServer, (progress, worker) =>
+			await BrowserProgressDialog.DoWorkWithProgressDialog(_webSocketServer, async (progress, worker) =>
 		{
 			var spreadsheet = ExportToFolder(dom, bookFolderPath, outputFolder, out string outputFilePath,
 				progress);

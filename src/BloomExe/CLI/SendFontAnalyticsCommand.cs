@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading;
+using System.Threading.Tasks;
 using CommandLine;
 using L10NSharp;
 using Bloom.Properties;
@@ -25,7 +26,7 @@ namespace Bloom.CLI
 		static ProjectContext _projectContext;
 		static Book.Book _book;
 
-		public static int Handle(SendFontAnalyticsParameters options)
+		public static async Task<int> Handle(SendFontAnalyticsParameters options)
 		{
 			Program.SetUpErrorHandling();
 			try

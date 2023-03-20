@@ -6,6 +6,7 @@ using OfficeOpenXml;
 using SIL.IO;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Xml;
 
 namespace BloomTests.Spreadsheet
@@ -188,7 +189,7 @@ namespace BloomTests.Spreadsheet
 		private InternalSpreadsheet _sheetFromExport;
 
 		[OneTimeSetUp]
-		public void OneTimeSetUp()
+		public async Task OneTimeSetUp()
 		{
 			var origDom = new HtmlDom(roundtripTestBook, true);
 			_roundtrippedDom = new HtmlDom(roundtripTestBook, true); //Will get imported into
@@ -211,7 +212,7 @@ namespace BloomTests.Spreadsheet
 				_sheetFromExport.WriteToFile(tempFile.Path);
 				var sheet = InternalSpreadsheet.ReadFromFile(tempFile.Path);
 				var importer = new TestSpreadsheetImporter(null, _roundtrippedDom);
-				importer.Import(sheet);
+				await importer.Import(sheet);
 			}
 		}
 

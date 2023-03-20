@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Threading.Tasks;
 using System.Xml;
 using Bloom.Book;
 using Bloom.Collection;
@@ -22,7 +23,7 @@ namespace Bloom.CLI
 	/// </summary>
 	class HydrateBookCommand
 	{
-		public static int Handle(HydrateParameters options)
+		public static async Task<int> Handle(HydrateParameters options)
 		{
 			if (!Directory.Exists(options.Path))
 			{

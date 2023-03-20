@@ -8,6 +8,7 @@ using System.IO;
 using BloomTemp;
 using System.Xml;
 using System;
+using System.Threading.Tasks;
 
 namespace BloomTests.Spreadsheet
 {
@@ -28,7 +29,7 @@ namespace BloomTests.Spreadsheet
 		}
 
 		[OneTimeSetUp]
-		public void OneTimeSetup()
+		public async Task OneTimeSetup()
 		{
 			_testFolder = new TemporaryFolder("SpreadsheetImporterWithBookTests");
 			// We need 2 layers of temp folder because BringBookUpToDate will change the name of the book
@@ -76,7 +77,7 @@ namespace BloomTests.Spreadsheet
 			justTextRow.AddCell(InternalSpreadsheet.PageContentRowLabel);
 			justTextRow.SetCell(columnForEn, "this is page 1");
 
-			_importer.Import(ss);
+			await _importer.Import(ss);
 
 			_resultElement = ReadResultingBookToXml(newTitle);
 		}

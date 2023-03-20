@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using Bloom.Book;
 using Bloom.Collection;
@@ -23,7 +24,7 @@ namespace Bloom.CLI
 	// new layout has places for.
 	class ChangeLayoutCommand
 	{
-		public static int Handle(ChangeLayoutParameters options)
+		public static async Task<int> Handle(ChangeLayoutParameters options)
 		{
 			// This task will be all the program does. We need to do enough setup so that
 			// books can be created, then do our work, then tear things down.

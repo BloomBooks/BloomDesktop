@@ -44,10 +44,10 @@ namespace Bloom.Publish.Video
 			// This is sent directly from BloomPlayer when it gets to the end of making the recording.
 			// The player gives Bloom a list of all the sounds it played and their timings so we can
 			// merge them into the captured video.
-			apiHandler.RegisterEndpointHandler(kApiUrlPart + "soundLog", request =>
+			apiHandler.RegisterAsyncEndpointHandler(kApiUrlPart + "soundLog", async request =>
 			{
 				var soundLog = request.RequiredPostJson();
-				_recordVideoWindow.StopRecording(soundLog);
+				await _recordVideoWindow.StopRecording(soundLog);
 				request.PostSucceeded();
 			}, true, false);
 

@@ -1,6 +1,7 @@
 using System;
 using System.Diagnostics;
 using System.Text;
+using System.Threading.Tasks;
 using Bloom.Properties;
 using Bloom.WebLibraryIntegration;
 using CommandLine;
@@ -17,7 +18,7 @@ namespace Bloom.CLI
 	{
 		public static bool IsUploading;
 
-		public static int Handle(UploadParameters options)
+		public static async Task<int> Handle(UploadParameters options)
 		{
 			try
 			{

@@ -24,6 +24,7 @@ using SIL.Windows.Forms.Registration;
 using SIL.Windows.Forms.Reporting;
 using SIL.Windows.Forms.UniqueToken;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Xml;
 using Bloom.CLI;
 using Bloom.CollectionChoosing;
@@ -95,7 +96,7 @@ namespace Bloom
 
 		[STAThread]
 		[HandleProcessCorruptedStateExceptions]
-		static int Main(string[] args1)
+		static async Task<int> Main(string[] args1)
 		{
 			// AttachConsole(-1);	// Enable this to allow Console.Out.WriteLine to be viewable (must run Bloom from terminal, AFAIK)
 			bool gotUniqueToken = false;
@@ -138,7 +139,7 @@ namespace Bloom
 
 				RunningInConsoleMode = true;
 
-				var exitCode = CommandLine.Parser.Default.ParseArguments(args1,
+				var exitCode = await CommandLine.Parser.Default.ParseArguments(args1,
 						new[]
 						{
 							typeof(HydrateParameters), typeof(UploadParameters), typeof(DownloadBookOptions), typeof(GetUsedFontsParameters),
@@ -147,13 +148,7 @@ namespace Bloom
 						})
 					.MapResult(
 						(HydrateParameters opts) => HydrateBookCommand.Handle(opts),
-						(UploadParameters opts) =>
-						{
-							using (InitializeAnalytics())
-							{
-								return UploadCommand.Handle(opts);
-							}
-						},
+						(UploadParameters opts) => HandleUpload(opts),
 						(DownloadBookOptions opts) => DownloadBookCommand.HandleSilentDownload(opts),
 						(GetUsedFontsParameters opts) => GetUsedFontsCommand.Handle(opts),
 						(ChangeLayoutParameters opts) => ChangeLayoutCommand.Handle(opts),
@@ -164,7 +159,7 @@ namespace Bloom
 						// This means that if we use this CLI version, care should be taken to update the book,
 						// so the pages get the correct "side" classes (side-left, side-right). (BL-10884)
 						(SpreadsheetImportParameters opts) => SpreadsheetImportCommand.Handle(opts),
-						errors =>
+						async errors =>
 						{
 							var code = 0;
 							foreach (var error in errors)
@@ -524,12 +519,20 @@ namespace Bloom
 			return 0;
 		}
 
+		static async Task<int> HandleUpload(UploadParameters opts)
+		{
+			using (InitializeAnalytics())
+			{
+				return await UploadCommand.Handle(opts);
+			}
+		}
+
 		/// <summary>
-		/// Sets up different analytics channels depending on Debug or not.
-		/// Also determines whether or not Registration should occur.
-		/// </summary>
-		/// <returns></returns>
-		private static DesktopAnalytics.Analytics InitializeAnalytics()
+	/// Sets up different analytics channels depending on Debug or not.
+	/// Also determines whether or not Registration should occur.
+	/// </summary>
+	/// <returns></returns>
+	private static DesktopAnalytics.Analytics InitializeAnalytics()
 		{
 			// Ensures that registration settings for all channels of Bloom are stored in a common place,
 			// so the user is not asked to register each independently.

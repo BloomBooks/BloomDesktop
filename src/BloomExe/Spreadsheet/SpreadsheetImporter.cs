@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Security;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Xml;
 using Bloom.MiscUI;
@@ -92,11 +93,11 @@ namespace Bloom.Spreadsheet
 
 		public SpreadsheetImportParams Params = new SpreadsheetImportParams();
 
-		public void ImportWithProgress(string inputFilepath, Action doWhenProgressCloses)
+		public async Task ImportWithProgress(string inputFilepath, Action doWhenProgressCloses)
 		{
 			Debug.Assert(_pathToBookFolder != null,
 				"Somehow we made it into ImportWithProgress() without a path to the book folder");
-			BrowserProgressDialog.DoWorkWithProgressDialog(_webSocketServer,   (progress, worker) =>
+			await BrowserProgressDialog.DoWorkWithProgressDialog(_webSocketServer, async  (progress, worker) =>
 			{
 				var cannotImportEnding = " For this reason, we need to abandon the import. Instead, you can import into a blank book.";
 				var hasActivities = _destinationDom.HasActivityPages();
@@ -116,7 +117,7 @@ namespace Bloom.Spreadsheet
 				var audioFolder = Path.Combine(_pathToBookFolder, "audio");
 				if (Directory.Exists(audioFolder))
 					SIL.IO.RobustIO.DeleteDirectoryAndContents(audioFolder);
-				Import(sheet, progress);
+				await Import(sheet, progress);
 				BookHistory.AddEvent(_book, BookHistoryEventType.ImportSpreadsheet,
 					"Spreadsheet imported from " + inputFilepath);
 
@@ -211,7 +212,7 @@ namespace Bloom.Spreadsheet
 		/// Import the spreadsheet into the dom
 		/// </summary>
 		/// <returns>a list of warnings</returns>
-		public List<string> Import(InternalSpreadsheet sheet, IWebSocketProgress progress = null)
+		public async Task<List<string>> Import(InternalSpreadsheet sheet, IWebSocketProgress progress = null)
 		{
 			_sheet = sheet;
 			_progress = progress ?? new NullWebSocketProgress();
@@ -257,16 +258,16 @@ namespace Bloom.Spreadsheet
 								descriptionRow = nextRow;
 							}
 						}
-						PutRowInImage(currentRow, descriptionRow);
+						await PutRowInImage(currentRow, descriptionRow);
 					}
 					if (rowHasText) {
-						PutRowInGroup(currentRow, _currentGroup);
+						await PutRowInGroup(currentRow, _currentGroup);
 					}
 				}
 				else if (rowTypeLabel.StartsWith("[") && rowTypeLabel.EndsWith("]")) //This row is xmatter
 				{
 					string dataBookLabel = rowTypeLabel.Substring(1, rowTypeLabel.Length - 2); //remove brackets
-					UpdateDataDivFromRow(currentRow, dataBookLabel);
+					await UpdateDataDivFromRow(currentRow, dataBookLabel);
 				}
 				_currentRowIndex++;
 				if (extraRow)
@@ -321,7 +322,7 @@ namespace Bloom.Spreadsheet
 			}
 		}
 
-		private void PutRowInImage(ContentRow currentRow, ContentRow descriptionRow)
+		private async Task PutRowInImage(ContentRow currentRow, ContentRow descriptionRow)
 		{
 			var spreadsheetImgPath = currentRow.GetCell(InternalSpreadsheet.ImageSourceColumnLabel).Content;
 			if (spreadsheetImgPath == InternalSpreadsheet.BlankContentIndicator)
@@ -369,7 +370,7 @@ namespace Bloom.Spreadsheet
 					group.SetAttribute("class", "bloom-translationGroup bloom-imageDescription bloom-trailingElement");
 					_currentImageContainer.AppendChild(group);
 				}
-				PutRowInGroup(descriptionRow, group);
+				await PutRowInGroup(descriptionRow, group);
 			}
 		}
 
@@ -430,7 +431,7 @@ namespace Bloom.Spreadsheet
 		private bool _foundLicenseUrl;
 		private bool _foundLicenseNotes;
 
-		private void UpdateDataDivFromRow(ContentRow currentRow, string dataBookLabel)
+		private async Task UpdateDataDivFromRow(ContentRow currentRow, string dataBookLabel)
 		{
 			if (dataBookLabel.Contains("branding"))
 				return; // branding data-div elements are complex and difficult and determined by current collection state
@@ -547,7 +548,7 @@ namespace Bloom.Spreadsheet
 								Warn("Found more than one " + dataBookLabel +" element for language "
 												+ lang + " in the book dom. Only the first will be updated.");
 							}
-							AddAudio(matchingNode, lang, currentRow);
+							await AddAudio(matchingNode, lang, currentRow);
 						}
 						else //No node for this language and data-book. Create one from template and add.
 						{
@@ -555,7 +556,7 @@ namespace Bloom.Spreadsheet
 							newNode.SetAttribute("lang", lang);
 							newNode.InnerXml = langVal;
 							AddDataBookNode(newNode);
-							AddAudio(newNode, lang, currentRow);
+							await AddAudio(newNode, lang, currentRow);
 						}
 					}
 					else  //Spreadsheet cell for this row and language is empty. Remove the corresponding node if present.
@@ -893,7 +894,7 @@ namespace Bloom.Spreadsheet
 		/// </summary>
 		/// <param name="row"></param>
 		/// <param name="group"></param>
-		private void PutRowInGroup(ContentRow row, XmlElement group)
+		private async Task PutRowInGroup(ContentRow row, XmlElement group)
 		{
 			var sheetLanguages = _sheet.Languages;
 			foreach (var lang in sheetLanguages)
@@ -918,7 +919,7 @@ namespace Bloom.Spreadsheet
 					editable.InnerXml = content;
 				}
 
-				AddAudio(editable, lang, row);
+				await AddAudio(editable, lang, row);
 				// If the inner XML contains a vertical bar at the end of a span, we assume that it is used
 				// to split a phrase for audio and convert the vertical bar character to an invisible span
 				// explicitly designating a bloom audio split marker.  Any other vertical bars are left
@@ -978,7 +979,7 @@ namespace Bloom.Spreadsheet
 		/// <param name="editable"></param>
 		/// <param name="lang"></param>
 		/// <param name="row"></param>
-		private void AddAudio(XmlElement editable, string lang, ContentRow row)
+		private async Task AddAudio(XmlElement editable, string lang, ContentRow row)
 		{
 			// in case we're importing into an existing page, remove any existing audio-related stuff first.
 			// We want to do this even if there isn't any new audio stuff.
@@ -1036,12 +1037,12 @@ namespace Bloom.Spreadsheet
 				string[] fragments = new string[0];
 				if (text.Length > 0) // if not, we get a spurious empty string instead of an empty array.
 				{
-					Action runJs = () =>
-						fragments = GetSentenceFragments(text);
+					Func<Task> runJs = async () =>
+						fragments = await GetSentenceFragments(text);
 					if (ControlForInvoke != null && ControlForInvoke.InvokeRequired)
-						ControlForInvoke.Invoke(runJs);
+						await (Task)ControlForInvoke.Invoke(runJs);
 					else
-						runJs();
+						await runJs();
 				}
 
 				paraFragments.Add(Tuple.Create(para, fragments));
@@ -1190,9 +1191,9 @@ namespace Bloom.Spreadsheet
 			}
 		}
 
-		protected virtual string[] GetSentenceFragments(string text)
+		protected virtual async Task<string[]> GetSentenceFragments(string text)
 		{
-			return GetBrowser().RunJavaScript($"spreadsheetBundle.split('{text}')").Split('\n');
+			return (await GetBrowser().RunJavaScriptAsync($"spreadsheetBundle.split('{text}')")).Split('\n');
 		}
 
 
