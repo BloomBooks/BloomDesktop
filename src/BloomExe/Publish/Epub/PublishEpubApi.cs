@@ -6,6 +6,7 @@ using System.Windows.Forms;
 using Bloom.Api;
 using Bloom.Book;
 using Bloom.Collection;
+using Bloom.Utils;
 using Bloom.web;
 using DesktopAnalytics;
 using L10NSharp;
@@ -71,8 +72,6 @@ namespace Bloom.Publish.Epub
 
 		// This constant must match the ID used for the useWatchString called by the React component EPUBPublishScreenInternal.
 		private const string kWebsocketState_LicenseOK = "publish/licenseOK";
-
-		private string _lastDirectory; // where we saved the most recent previous epub, if any
 
 		// Holds the path the user has selected to save the results of the preview until it is actually saved.
 		// If the preview is complete at the time the user selects the file, it will hold it only very briefly
@@ -163,16 +162,11 @@ namespace Bloom.Publish.Epub
 
 		private void HandleEpubSave(ApiRequest request)
 		{
-			string suggestedName = string.Format("{0}-{1}.epub", Path.GetFileName(_bookSelection.CurrentSelection.FolderPath),
-				_bookSelection.CurrentSelection.BookData.Language1.GetNameInLanguage("en"));
-			var folder = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-			if (!string.IsNullOrEmpty(_lastDirectory) && Directory.Exists(_lastDirectory))
-				folder = _lastDirectory;
-			var initialPath = Path.Combine(folder, suggestedName);
+			var initialPath = OutputFilenames.GetOutputFilePath(_bookSelection.CurrentSelection, ".epub");
 			var destFileName = Utils.MiscUtils.GetOutputFilePathOutsideCollectionFolder(initialPath, "ePUB files|*.epub");
 			if (!string.IsNullOrEmpty(destFileName))
 			{
-				_lastDirectory = Path.GetDirectoryName(destFileName);
+				OutputFilenames.RememberOutputFilePath(_bookSelection.CurrentSelection, ".epub", destFileName);
 				lock (_epubMakerLock)
 				{
 					_pendingSaveAsPath = destFileName;

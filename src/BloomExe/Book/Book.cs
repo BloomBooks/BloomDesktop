@@ -3806,7 +3806,7 @@ namespace Bloom.Book
 			return _bookData.GetMultiTextVariableOrEmpty(name);
 		}
 
-		internal IBookStorage Storage { get; }
+		public virtual IBookStorage Storage { get; }
 
 		/// <summary>
 		/// This gets called as a result of a UI action. It sets the new topic in our data,
