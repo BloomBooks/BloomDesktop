@@ -71,7 +71,7 @@ const TeamCollectionDialog: React.FunctionComponent<{
     // we're in this waiting state and shouldn't display the Tabs at all. When we get the
     // value from the API, we set defaultTabIndex to either 0 or 1 and the Tabs element is
     // rendered for the first time with the correct defaultIndex.
-    const [defaultTabIndex, setDefaultTabIndex] = useState(1);
+    const [defaultTabIndex, setDefaultTabIndex] = useState(-1);
 
     useEffect(() => {
         BloomApi.getBoolean("teamCollection/logImportant", logImportant => {
@@ -95,52 +95,56 @@ const TeamCollectionDialog: React.FunctionComponent<{
                     color={"white"}
                 />
                 <DialogMiddle>
-                    <BloomTabs
-                        defaultIndex={defaultTabIndex}
-                        color="black"
-                        selectedColor={kBloomBlue}
-                        labelBackgroundColor="white"
-                        css={css`
-                            // see note above in the props of the <BloomDialog></BloomDialog>
-                            height: 65vh;
-                        `}
-                    >
-                        <TabList>
-                            <Tab>
-                                <LocalizedString
-                                    l10nKey="TeamCollection.Status"
-                                    l10nComment="Used as the name on a tab of the Team Collection dialog."
-                                    temporarilyDisableI18nWarning={true}
-                                >
-                                    Status
-                                </LocalizedString>
-                            </Tab>
-                            <Tab>
-                                <LocalizedString
-                                    l10nKey="TeamCollection.History"
-                                    l10nComment="Used as the name on a tab of the Team Collection dialog."
-                                    temporarilyDisableI18nWarning={true}
-                                >
-                                    History
-                                </LocalizedString>
-                            </Tab>
-                        </TabList>
-                        <TabPanel>
-                            <ProgressBox
-                                preloadedProgressEvents={events}
-                                css={css`
-                                    // If we have omitOuterFrame that means the dialog height is controlled by c#, so let the progress grow to fit it.
-                                    // Maybe we could have that approach *all* the time?
-                                    height: 350px;
-                                    // enhance: there is a bug I haven't found where, if this is > 530px, then it overflows. Instead, the BloomDialog should keep growing.
-                                    min-width: 530px;
-                                `}
-                            />
-                        </TabPanel>
-                        <TabPanel>
-                            <CollectionHistoryTable />
-                        </TabPanel>
-                    </BloomTabs>
+                    {defaultTabIndex === -1 ? (
+                        <div />
+                    ) : (
+                        <BloomTabs
+                            defaultIndex={defaultTabIndex}
+                            color="black"
+                            selectedColor={kBloomBlue}
+                            labelBackgroundColor="white"
+                            css={css`
+                                // see note above in the props of the <BloomDialog></BloomDialog>
+                                height: 65vh;
+                            `}
+                        >
+                            <TabList>
+                                <Tab>
+                                    <LocalizedString
+                                        l10nKey="TeamCollection.Status"
+                                        l10nComment="Used as the name on a tab of the Team Collection dialog."
+                                        temporarilyDisableI18nWarning={true}
+                                    >
+                                        Status
+                                    </LocalizedString>
+                                </Tab>
+                                <Tab>
+                                    <LocalizedString
+                                        l10nKey="TeamCollection.History"
+                                        l10nComment="Used as the name on a tab of the Team Collection dialog."
+                                        temporarilyDisableI18nWarning={true}
+                                    >
+                                        History
+                                    </LocalizedString>
+                                </Tab>
+                            </TabList>
+                            <TabPanel>
+                                <ProgressBox
+                                    preloadedProgressEvents={events}
+                                    css={css`
+                                        // If we have omitOuterFrame that means the dialog height is controlled by c#, so let the progress grow to fit it.
+                                        // Maybe we could have that approach *all* the time?
+                                        height: 350px;
+                                        // enhance: there is a bug I haven't found where, if this is > 530px, then it overflows. Instead, the BloomDialog should keep growing.
+                                        min-width: 530px;
+                                    `}
+                                />
+                            </TabPanel>
+                            <TabPanel>
+                                <CollectionHistoryTable />
+                            </TabPanel>
+                        </BloomTabs>
+                    )}
                 </DialogMiddle>
 
                 <DialogBottomButtons>
