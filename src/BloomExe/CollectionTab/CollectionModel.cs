@@ -282,20 +282,15 @@ namespace Bloom.CollectionTab
 
 		private Form MainShell => Application.OpenForms.Cast<Form>().FirstOrDefault(f => f is Shell);
 
-		private string _bloomPackFolder;
-
 		// Not entirely happy that this method which launches a dialog is in the Model.
 		// but with the Collection UI moving to JS I don't see a good alternative
 		public void MakeBloomPack(bool forReaderTools)
 		{
-			var folder = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-			if (!string.IsNullOrEmpty(_bloomPackFolder) && Directory.Exists(_bloomPackFolder))
-				folder = _bloomPackFolder;
-			var initialPath = Path.Combine(folder, GetSuggestedBloomPackPath());
+			var initialPath = OutputFilenames.GetOutputFilePath(TheOneEditableCollection, ".BloomPack");
 			var destFileName = MiscUtils.GetOutputFilePathOutsideCollectionFolder(initialPath, "BloomPack files|*.BloomPack");
 			if (!string.IsNullOrEmpty(destFileName))
 			{
-				_bloomPackFolder = Path.GetDirectoryName(destFileName);
+				OutputFilenames.RememberOutputFilePath(TheOneEditableCollection, ".BloomPack", destFileName);
 				MakeBloomPack(destFileName, forReaderTools);
 			}
 		}

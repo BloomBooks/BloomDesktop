@@ -144,7 +144,7 @@ namespace Bloom.Book
 		public string InitialLoadErrors { get; private set; }
 		public bool ErrorAllowsReporting { get; private set; }    // True if we want to display a Report to Bloom Support button
 
-		public BookInfo BookInfo
+		public virtual BookInfo BookInfo
 		{
 			get
 			{
@@ -153,6 +153,12 @@ namespace Bloom.Book
 				return _metaData;
 			}
 			set { _metaData = value; }
+		}
+
+		public BookStorage()
+		{
+			if (!Program.RunningUnitTests)
+				throw new ApplicationException("Parameterless BookStorage constructor is allowed only in unit tests!");
 		}
 
 		public BookStorage(string folderPath, IChangeableFileLocator baseFileLocator,

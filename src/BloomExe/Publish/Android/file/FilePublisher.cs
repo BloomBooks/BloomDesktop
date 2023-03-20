@@ -10,6 +10,7 @@ using Bloom.Book;
 using Bloom.Properties;
 using Bloom.web;
 using L10NSharp;
+using Bloom.Utils;
 
 namespace Bloom.Publish.Android.file
 {
@@ -22,10 +23,7 @@ namespace Bloom.Publish.Android.file
 		{
 			var progressWithL10N = progress.WithL10NPrefix("PublishTab.Android.File.Progress.");
 
-			var folder = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-			if (!string.IsNullOrWhiteSpace(Settings.Default.BloomDeviceFileExportFolder) && Directory.Exists(Settings.Default.BloomDeviceFileExportFolder))
-				folder = Settings.Default.BloomDeviceFileExportFolder;
-			var initialPath = Path.Combine(folder, book.Storage.FolderName + BloomPubMaker.BloomPubExtensionWithDot);
+			var initialPath = OutputFilenames.GetOutputFilePath(book, BloomPubMaker.BloomPubExtensionWithDot, Settings.Default.BloomDeviceFileExportFolder);
 
 			var bloomdFileDescription = LocalizationManager.GetString("PublishTab.Android.bloomdFileFormatLabel", "Bloom Book for Devices",
 				"This is shown in the 'Save' dialog when you save a bloom book in the format that works with the Bloom Reader Android App");
@@ -35,6 +33,7 @@ namespace Bloom.Publish.Android.file
 			if (String.IsNullOrEmpty(destFileName))
 				return;
 
+			OutputFilenames.RememberOutputFilePath(book, BloomPubMaker.BloomPubExtensionWithDot, destFileName);
 			Settings.Default.BloomDeviceFileExportFolder = Path.GetDirectoryName(destFileName);
 			PublishToAndroidApi.CheckBookLayout(book, progress);
 			PublishToAndroidApi.SendBook(book, bookServer, destFileName, null,

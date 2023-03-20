@@ -96,7 +96,7 @@ namespace Bloom.Book
 			None, OnPage	//Removed Links in Bloom 4.6 on June 28, 2019.
 		}
 
-		public string Id
+		public virtual string Id
 		{
 			get { return MetaData.Id; }
 			set { MetaData.Id = value; }

@@ -22,6 +22,7 @@ using Bloom.ToPalaso.Experimental;
 using Newtonsoft.Json;
 using SIL.Extensions;
 using SIL.Reporting;
+using Bloom.Utils;
 
 namespace Bloom.Publish
 {
@@ -461,7 +462,8 @@ namespace Bloom.Publish
 					_currentlyLoadedBook.UserPrefs.CmykPdf || _currentlyLoadedBook.UserPrefs.FullBleed
 						? "-printshop"
 						: "";
-				string suggestedName = string.Format($"{Path.GetFileName(_currentlyLoadedBook.FolderPath)}-{_currentlyLoadedBook.GetFilesafeLanguage1Name("en")}-{portion}{forPrintShop}.pdf");
+				var extraTag = $"{_currentlyLoadedBook.GetFilesafeLanguage1Name("en")}-{portion}{forPrintShop}";
+				var suggestedName = $"{Path.GetFileName(_currentlyLoadedBook.FolderPath)}-{extraTag}";
 				var pdfFileLabel = L10NSharp.LocalizationManager.GetString(@"PublishTab.PdfMaker.PdfFile",
 					"PDF File",
 					@"displayed as file type for Save File dialog.");
@@ -469,16 +471,15 @@ namespace Bloom.Publish
 				pdfFileLabel = pdfFileLabel.Replace("|", "");
 				var pdfFilter = String.Format("{0}|*.pdf", pdfFileLabel);
 
-				var startingFolder = (!string.IsNullOrEmpty(_lastDirectory) && Directory.Exists(_lastDirectory)) ?
-							_lastDirectory :
-							Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-				var initialPath = Path.Combine(startingFolder, suggestedName);
+				var initialPath = OutputFilenames.GetOutputFilePath(_currentlyLoadedBook, ".pdf", suggestedName, extraTag, _lastDirectory);
 
 				var destFileName = Utils.MiscUtils.GetOutputFilePathOutsideCollectionFolder(initialPath, pdfFilter);
 				if (String.IsNullOrEmpty(destFileName))
 					return;
 
+				OutputFilenames.RememberOutputFilePath(_currentlyLoadedBook, ".pdf", destFileName, extraTag);
 				_lastDirectory = Path.GetDirectoryName(destFileName);
+
 				if (_currentlyLoadedBook.UserPrefs.CmykPdf)
 				{
 					// PDF for Printshop (CMYK US Web Coated V2)
