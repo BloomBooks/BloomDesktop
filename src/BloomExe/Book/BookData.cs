@@ -1990,21 +1990,17 @@ namespace Bloom.Book
 		/// Get one of the collection language objects that matches the language tag.
 		/// Crash if not found.
 		/// </summary>
-		/// <param name="langTag"></param>
-		/// <returns></returns>
 		public WritingSystem GetWritingSystem(string langTag)
 		{
 			var result = GetWritingSystemOrNull(langTag);
 			if (result == null)
-				throw new ApplicationException("trying to get language not in system");
+				throw new ApplicationException($"Trying to get language not in collection: {langTag}");
 			return result;
 		}
 
 		/// <summary>
 		/// Get one of the collection language objects that matches the language tag, or null if it doesn't match.
 		/// </summary>
-		/// <param name="langTag"></param>
-		/// <returns></returns>
 		private WritingSystem GetWritingSystemOrNull(string langTag)
 		{
 			if (CollectionSettings.Language1.Tag == langTag)
