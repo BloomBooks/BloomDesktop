@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using SIL.Progress;
 
@@ -23,29 +24,54 @@ namespace Bloom.ToPalaso.Experimental
 
 		public MultiProgress Progress = new MultiProgress();
 		private Action<IProgress> _work;
+		private Func<IProgress, Task> _asyncWork;
 
 		public void ShowAndDoWork(Action<IProgress> work)
 		{
 			_work = work;
+			Initialize();
+		}
+
+		public void ShowAndDoWork(Func<IProgress, Task> work)
+		{
+			_asyncWork = work;
+			Initialize();
+		}
+
+		private void Initialize()
+		{
 			Progress.ProgressIndicator = ProgressBar;
 			Progress.AddStatusProgress(_status);
 			Progress.AddMessageProgress(_messageLabelProgress);
-			Progress.Add(new ApplicationDoEventsProgress());//this will keep our UI alive
+			Progress.Add(new ApplicationDoEventsProgress()); //this will keep our UI alive
 			var stringProgress = new StringBuilderProgress();
 			Progress.Add(stringProgress);
 			Application.Idle += StartWorking;
 			ShowDialog();
 			if (Progress.ErrorEncountered)
 			{
-				SIL.Reporting.ErrorReport.NotifyUserOfProblem("There was a problem performing that operation.\r\n\r\n"+stringProgress.Text);
+				SIL.Reporting.ErrorReport.NotifyUserOfProblem("There was a problem performing that operation.\r\n\r\n" +
+				                                              stringProgress.Text);
 			}
-
 		}
 
 		void StartWorking(object sender, EventArgs e)
 		{
 			Application.Idle -= new EventHandler(StartWorking);
-			_work(Progress);
+			if (_work != null)
+			{
+				_work(Progress);
+				Close();
+			}
+			else
+			{
+				StartWorkingAsync();
+			}
+		}
+
+		private async void StartWorkingAsync()
+		{
+			await _asyncWork(Progress);
 			Close();
 		}
 

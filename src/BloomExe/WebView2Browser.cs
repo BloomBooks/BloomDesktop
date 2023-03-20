@@ -290,6 +290,11 @@ namespace Bloom
 			RobustFile.WriteAllText(path, html, Encoding.UTF8);
 		}
 
+		public override async Task SaveDocumentAsync(string path)
+		{
+			var html = await RunJavaScriptAsync("document.documentElement.outerHTML");
+			RobustFile.WriteAllText(path, html, Encoding.UTF8);
+		}
 		// Review: base class currently explicitly opens FireFox. Should we instead open Chrome,
 		// or whatever the default browser is, or...?
 		//public override void OnOpenPageInSystemBrowser(object sender, EventArgs e)
@@ -312,6 +317,12 @@ namespace Bloom
 			var result = task.Result;
 			return result;
 		}
+
+		public override Task<string> RunJavaScriptAsync(string script)
+		{
+			return runJavaScriptAsync(script);
+		}
+
 		// Enhance: possibly this should be virtual in the baseclass, and public, and used by anything that
 		// doesn't need to wait for the task to complete, or that can conveniently be made async?
 		private async Task<string> runJavaScriptAsync(string script)

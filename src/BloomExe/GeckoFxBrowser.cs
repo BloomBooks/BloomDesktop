@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using Bloom.Book;
 using Bloom.Api;
@@ -819,6 +820,11 @@ namespace Bloom
 		{
 			Debug.Assert(!InvokeRequired);
 			return RunJavaScriptOn(_browser, script);
+		}
+
+		public override async Task<string> RunJavaScriptAsync(string script)
+		{
+			return RunJavaScript(script);
 		}
 
 		public static string RunJavaScriptOn(GeckoWebBrowser geckoWebBrowser, string script)

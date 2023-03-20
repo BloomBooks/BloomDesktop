@@ -199,7 +199,7 @@ namespace Bloom.Publish.PDF
 			if (ExperimentalFeatures.IsFeatureEnabled(ExperimentalFeatures.kWebView2))
 			{
 				var wv2 = _pdfViewerControl as WebView2Browser;
-				wv2.RunJavaScript("window.print()");
+				wv2.RunJavaScriptAsync("window.print()");
 				return;
 			}
 			var arc = _pdfViewerControl as AdobeReaderControl;

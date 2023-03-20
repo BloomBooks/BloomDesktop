@@ -166,8 +166,15 @@ namespace Bloom.Spreadsheet
 				var rootPage = BloomFileLocator.GetBrowserFile(false, "spreadsheet", "spreadsheetFunctions.html");
 				_browser.Navigate(rootPage, false);
 				// This extra check that spreadsheetBundle actually exists might not be necessary.
-				while (!done || _browser.RunJavaScript($"spreadsheetBundle") == null)
+				var task = _browser.RunJavaScriptAsync($"spreadsheetBundle");
+				while (!done)
 				{
+					if (task.IsCompleted)
+					{
+						if (task.Result != null)
+							break;
+						task = _browser.RunJavaScriptAsync($"spreadsheetBundle"); // try again
+					}
 					Application.DoEvents();
 					Thread.Sleep(10);
 					// Review: may need more than this if we allow GeckoFxBrowser; see impl of NavigateAndWaitTillDone.
