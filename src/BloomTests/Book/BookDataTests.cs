@@ -107,6 +107,50 @@ namespace BloomTests.Book
 		}
 
 		[Test]
+		public void BookStarter_ClearUnneededOriginalContentFromDerivative_ClearsOutNonDerivativeData()
+		{
+			var dom = new HtmlDom(@"<html ><head></head><body>
+				<div id='bloomDataDiv'>
+					<div data-book='printingInfo' lang='es'><p>First Edition 2020<br />Second Edition 2023</p></div>
+					<div data-book='randomOtherInfo' lang='es'>Something weird here</div>
+					<div data-book='newNonDerivField' lang='en'>Something that oughta be removed in a new book.</div>
+				</div>
+				<div class='bloom-page' id='guid1'>
+					<div class='bloom-translationGroup bloom-clearWhenMakingDerivative'>
+						<div class='bloom-editable' data-book='printingInfo' lang='es'><p>First Edition 2020<br />Second Edition 2023</p></div>
+					</div>
+				</div>
+				<div class='bloom-page' id='guid2'>
+					<div class='bloom-translationGroup bloom-clearWhenMakingDerivative'>
+						<div class='bloom-editable' data-book='printingInfo' lang='es'><p>First Edition 2020<br />Second Edition 2023</p></div>
+						<div class='bloom-editable' data-book='printingInfo' lang='z'></div>
+						<div class='bloom-editable' data-book='printingInfo' lang='en'>English here</div>
+					</div>
+					<div class='bloom-translationGroup'><!-- No 'clear out derivative stuff' class here. -->
+						<div class='bloom-editable' data-book='randomOtherInfo' lang='es'>Something weird here</div>
+						<div class='bloom-editable' data-book='randomOtherInfo' lang='z'></div>
+						<div class='bloom-editable' data-book='randomOtherInfo' lang='en'>Some other stuff.</div>
+					</div>
+					<div class='bloom-translationGroup bloom-clearWhenMakingDerivative'>
+						<div class='bloom-editable' data-book='newNonDerivField' lang='es'>Something that oughta be removed in a new book.</div>
+						<div class='bloom-editable' data-book='newNonDerivField' lang='z'></div>
+					</div>
+				</div>
+			 </body></html>");
+			var bookData = new BookData(dom, _collectionSettings, null);
+
+			// SUT
+			BookStarter.ClearUnneededOriginalContentFromDerivative(dom, bookData);
+
+			// Test the remaining BookData items
+			Assert.That(bookData.GetMultiTextVariableOrEmpty("printingInfo").ContainsAlternative("es"), Is.False);
+			Assert.That(bookData.GetMultiTextVariableOrEmpty("randomOtherInfo").ContainsAlternative("es"), Is.True);
+			Assert.That(bookData.GetMultiTextVariableOrEmpty("randomOtherInfo").ContainsAlternative("en"), Is.True);
+			Assert.That(bookData.GetMultiTextVariableOrEmpty("newNonDerivField").ContainsAlternative("es"), Is.False);
+			Assert.That(bookData.GetMultiTextVariableOrEmpty("newNonDerivField").ContainsAlternative("en"), Is.False);
+		}
+
+		[Test]
 		public void GatherDataItemsFromXElement_EmptyBeforeContent_SavesAsDeletedOnly()
 		{
 			var dom = new HtmlDom(@"<html ><head></head><body>
