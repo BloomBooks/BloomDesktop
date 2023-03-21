@@ -106,24 +106,6 @@ namespace BloomTests.Book
 				Is.EqualTo("Jack & Jill like xml sequences like &amp; & &lt; & &gt; for characters like <&>"));
 		}
 
-		private bool XmlNodeHasContent(XmlNode node)
-		{
-			return !string.IsNullOrEmpty(node.InnerText.Trim());
-		}
-
-		private int CountXmlNodesWithContent(XmlNodeList nodes)
-		{
-			var count = 0;
-			foreach (XmlNode node in nodes)
-			{
-				if (XmlNodeHasContent(node))
-				{
-					count++;
-				}
-			}
-			return count;
-		}
-
 		[Test]
 		public void BookStarter_ClearUnneededOriginalContentFromDerivative_ClearsOutNonDerivativeData()
 		{
