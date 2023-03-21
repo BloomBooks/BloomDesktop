@@ -611,6 +611,12 @@
         <source xml:lang="en">Make Reader Template Bloom Pack...</source>
         <note>ID: CollectionTab.AddMakeReaderTemplateBloomPackToolStripMenuItem</note>
       </trans-unit>
+      <trans-unit id="CollectionTab.AddSourceCollection" translate="no">
+        <!-- added in 5.5 -->
+        <source xml:lang="en">Show another collection...</source>
+        <note>Shown at the very bottom of the list of books and collections.  The user can click on this text and then choose an existing collection to use as an additional source of books to translate or otherwise adapt.</note>
+        <note>ID: CollectionTab.AddSourceCollection</note>
+      </trans-unit>
       <trans-unit id="CollectionTab.AdminManagesUpdates">
         <source xml:lang="en">Your system administrator manages Bloom updates for this computer.</source>
         <note>ID: CollectionTab.AdminManagesUpdates</note>

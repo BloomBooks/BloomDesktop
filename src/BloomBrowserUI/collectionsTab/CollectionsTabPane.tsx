@@ -23,15 +23,54 @@ import {
 } from "../react_components/localizableMenuItem";
 import { TeamCollectionDialogLauncher } from "../teamCollection/TeamCollectionDialog";
 import { SpreadsheetExportDialogLauncher } from "./spreadsheet/SpreadsheetExportDialog";
-import { H1 } from "../react_components/l10nComponents";
+import { H1, Div } from "../react_components/l10nComponents";
 import { useL10n } from "../react_components/l10nHooks";
 import { useSubscribeToWebSocketForEvent } from "../utils/WebSocketManager";
 import { EmbeddedProgressDialog } from "../react_components/Progress/ProgressDialog";
+import CloseIcon from "@mui/icons-material/Close";
+import { kBloomPurple } from "../bloomMaterialUITheme";
 
 const kResizerSize = 10;
 
 export const CollectionsTabPane: React.FunctionComponent<{}> = () => {
     const collections = useApiJson("collections/list");
+    const [collectionCount, setCollectionCount] = useState(
+        collections?.length ?? 0
+    );
+
+    const removeSourceCollection = (id: string) => {
+        postString("collections/removeSourceCollection", id).then(() => {
+            collections.filter((value, index, array) => {
+                if (value.id === id) {
+                    array.splice(index, 1);
+                    return true;
+                }
+                return false;
+            });
+            setCollectionCount(collections.length);
+        });
+    };
+    const addSourceCollection = () => {
+        get("collections/addSourceCollection", response => {
+            // If successful, we get a single collection to add to the collections array.
+            // Or we get an already existing collection that doesn't need to be added, but
+            // needs to be scrolled into view.
+            const newCollection = response.data;
+            const currentIndex = collections.findIndex(value => {
+                return value.id && value.id === newCollection.id;
+            });
+            if (currentIndex >= 0) {
+                // Scroll the already existing collection into view.
+                const element = document.getElementById(
+                    sanitize(newCollection.id)
+                );
+                if (element) element.scrollIntoView();
+            } else {
+                collections.push(newCollection);
+            }
+            setCollectionCount(collections.length);
+        });
+    };
 
     const [draggingSplitter, setDraggingSplitter] = useState(false);
     const [
@@ -217,6 +256,7 @@ export const CollectionsTabPane: React.FunctionComponent<{}> = () => {
                 shouldLocalizeName={c.shouldLocalizeName}
                 manager={manager}
                 isSpreadsheetFeatureActive={isSpreadsheetFeatureActive}
+                removeSourceCollection={removeSourceCollection}
             />
         );
     });
@@ -384,6 +424,16 @@ export const CollectionsTabPane: React.FunctionComponent<{}> = () => {
                                 >
                                     {collectionComponents}
                                 </ShowAfterDelay>
+                                <Div
+                                    l10nKey="CollectionTab.AddSourceCollection"
+                                    css={css`
+                                        text-transform: uppercase;
+                                        color: ${kBloomPurple};
+                                    `}
+                                    onClick={() => addSourceCollection()}
+                                >
+                                    Show another collection...
+                                </Div>
                             </div>
                         )}
                     </Transition>
@@ -579,14 +629,45 @@ const BooksOfCollectionWithHeading: React.FunctionComponent<{
     shouldLocalizeName: boolean;
     manager: BookSelectionManager;
     isSpreadsheetFeatureActive: boolean;
+    removeSourceCollection: (id: string) => void;
 }> = props => {
     const localizedName = useL10n(props.name, "CollectionTab." + props.name);
     const localName = props.shouldLocalizeName
         ? localizedName // putting the useL10n() hook here violates rules of hooks
         : props.name;
+
     return (
-        <div key={"frag:" + props.id}>
-            <h2>{localName}</h2>
+        <div key={"frag:" + props.id} id={sanitize(props.id)}>
+            {/* props.shouldLocalizeName tells us whether or not this is a built-in collection
+             * If it is, then we never want to delete it.  If it isn't, we want the UI/code to
+             *  allow for the collection to be deleted.
+             */}
+            {props.shouldLocalizeName ? (
+                <h2>{localName}</h2>
+            ) : (
+                <div
+                    css={css`
+                        display: flex;
+                        flex-flow: row;
+                        &:hover div {
+                            display: block;
+                        }
+                    `}
+                >
+                    <h2>{localName}</h2>
+                    <div
+                        css={css`
+                            margin-left: 30px;
+                            display: none;
+                            color: ${kBloomPurple};
+                            background-color: transparent;
+                        `}
+                        onClick={() => props.removeSourceCollection(props.id)}
+                    >
+                        <CloseIcon />
+                    </div>
+                </div>
+            )}
             <BooksOfCollection
                 collectionId={props.id}
                 isEditableCollection={false}
@@ -597,5 +678,9 @@ const BooksOfCollectionWithHeading: React.FunctionComponent<{
         </div>
     );
 };
+
+function sanitize(id: string): string {
+    return encodeURIComponent(id).replace(/./g, "_");
+}
 
 WireUpForWinforms(CollectionsTabPane);

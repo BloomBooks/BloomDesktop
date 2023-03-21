@@ -5,9 +5,11 @@ using System.Drawing.Imaging;
 using System.Dynamic;
 using System.IO;
 using System.Linq;
+using System.Windows.Forms;
 using Bloom.Api;
 using Bloom.Book;
 using Bloom.Collection;
+using Bloom.CollectionCreating;
 using Bloom.CollectionTab;
 using Bloom.MiscUI;
 using Bloom.Properties;
@@ -158,12 +160,71 @@ namespace Bloom.web.controllers
 				},
 				true);
 
+			apiHandler.RegisterEndpointHandler(kApiUrlPart + "removeSourceCollection", HandleRemoveSourceCollection, false);
+			apiHandler.RegisterEndpointHandler(kApiUrlPart + "addSourceCollection", HandleAddSourceCollection, true);
+		}
+
+		private void HandleRemoveSourceCollection(ApiRequest request)
+		{
+			var id = request.RequiredPostString();
+			var filename = Path.GetFileName(id);
+			var collectionsFolder = ProjectContext.GetInstalledCollectionsDirectory();
+			var linkFile = Path.Combine(collectionsFolder, filename + ".lnk");
+			if (RobustFile.Exists(linkFile))
+			{
+				RobustFile.Delete(linkFile);
+				request.PostSucceeded();
+			}
+			else
+			{
+				request.Failed();
+			}
+		}
+
+		private void HandleAddSourceCollection(ApiRequest request)
+		{
+			if (!Directory.Exists(NewCollectionWizard.DefaultParentDirectoryForCollections))
+			{
+				Directory.CreateDirectory(NewCollectionWizard.DefaultParentDirectoryForCollections);
+			}
+			var pathToCollectionFile = "";
+			using (var dlg = new DialogAdapters.OpenFileDialogAdapter())
+			{
+				dlg.Title = "Choose Collection";
+				dlg.Filter = LocalizationManager.GetString("OpenCreateNewCollectionsDialog.Bloom Collections", "Bloom Collections",
+					"This shows in the file-open dialog that you use to open a different bloom collection") + @"|*.bloomLibrary;*.bloomCollection";
+				dlg.InitialDirectory = NewCollectionWizard.DefaultParentDirectoryForCollections;
+				dlg.CheckFileExists = true;
+				dlg.CheckPathExists = true;
+				if (dlg.ShowDialog() == DialogResult.Cancel)
+				{
+					request.Failed();
+					return;
+				}
+				pathToCollectionFile = dlg.FileName;
+			}
+			var pathToCollectionDirectory = Path.GetDirectoryName(pathToCollectionFile);
+			var collectionName = Path.GetFileNameWithoutExtension(pathToCollectionFile);
+			var collectionsFolder = ProjectContext.GetInstalledCollectionsDirectory();
+			// This overwrites any existing shortcut with the same collectionName.
+			ShortcutMaker.CreateDirectoryShortcut(pathToCollectionDirectory, collectionsFolder);
+			dynamic output = new
+			{
+				id = pathToCollectionDirectory,
+				name = collectionName,
+				isSourceCollection = false, // nothing is a "source collection" any longer.  but everything can be.
+				shouldLocalizeName = false
+			};
+			_collectionModel.ReloadCollections();
+			request.ReplyWithJson(JsonConvert.SerializeObject(output));
 		}
 
 		// needs to be thread-safe
 		private void HandleCollectionProps(ApiRequest request)
 		{
 			var collection = GetCollectionOfRequest(request);
+			if (collection == null)
+				return;	// request.Failed() has already been signaled.
 			dynamic props = new ExpandoObject();
 			props.isFactoryInstalled = collection.IsFactoryInstalled;
 			props.containsDownloadedBooks = collection.ContainsDownloadedBooks;
