@@ -96,7 +96,7 @@ namespace Bloom
 
 		[STAThread]
 		[HandleProcessCorruptedStateExceptions]
-		static async Task<int> Main(string[] args1)
+		static int Main(string[] args1)
 		{
 			// AttachConsole(-1);	// Enable this to allow Console.Out.WriteLine to be viewable (must run Bloom from terminal, AFAIK)
 			bool gotUniqueToken = false;
@@ -139,7 +139,7 @@ namespace Bloom
 
 				RunningInConsoleMode = true;
 
-				var exitCode = await CommandLine.Parser.Default.ParseArguments(args1,
+				var mainTask = CommandLine.Parser.Default.ParseArguments(args1,
 						new[]
 						{
 							typeof(HydrateParameters), typeof(UploadParameters), typeof(DownloadBookOptions), typeof(GetUsedFontsParameters),
@@ -176,7 +176,28 @@ namespace Bloom
 
 							return code;
 						});
-				return exitCode; // we're done
+				// What we want to do here is await mainTask. But to do that we have to make
+				// Main async. That is allowed since C# 7.1, but if we do it, we don't get
+				// a Windows.Forms synchronization context, which means async tasks started on
+				// the UI thread don't have to complete on the UI thread. That will mess up
+				// WebView2, and it is so that we can use WebView2's ExecuteJavascriptAsync
+				// that we made all these commands async to begin with.
+				// As soon as we DO have a windows.forms sync context...even if we made it ourselves,
+				// which is tricky because await won't work on a windows.forms sync context
+				// until we enter Run() and start pumping messages...we run into the problem
+				// that we need the result of the main task to return as the result of Main().
+				// We can't just call Result, because that blocks the main thread, which stops
+				// it pumping messages, which means anything that awaits on the main thread
+				// will deadlock.
+				// So, the best I can find to do is to sit here pumping messages until the
+				// main task completes.
+				// (Many of the main tasks don't actually do any awaiting and will immediately
+				// show as completed.)
+				while (!mainTask.IsCompleted)
+				{
+					Application.DoEvents();
+				}
+				return mainTask.Result; // we're done; this is safe once there is nothing being awaited.
 			}
 
 			try
