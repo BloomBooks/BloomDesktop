@@ -2,7 +2,7 @@
 import { jsx, css } from "@emotion/react";
 
 import React = require("react");
-import { get, postString, useApiJson } from "../utils/bloomApi";
+import { get, post, postString, useApiJson } from "../utils/bloomApi";
 import { BooksOfCollection } from "./BooksOfCollection";
 import { Transition } from "react-transition-group";
 import { SplitPane } from "react-collapse-pane";
@@ -23,15 +23,68 @@ import {
 } from "../react_components/localizableMenuItem";
 import { TeamCollectionDialogLauncher } from "../teamCollection/TeamCollectionDialog";
 import { SpreadsheetExportDialogLauncher } from "./spreadsheet/SpreadsheetExportDialog";
-import { H1 } from "../react_components/l10nComponents";
+import { H1, Div } from "../react_components/l10nComponents";
 import { useL10n } from "../react_components/l10nHooks";
 import { useSubscribeToWebSocketForEvent } from "../utils/WebSocketManager";
 import { EmbeddedProgressDialog } from "../react_components/Progress/ProgressDialog";
+import { useSubscribeToWebSocketForObject } from "../utils/WebSocketManager";
+import CloseIcon from "@mui/icons-material/Close";
+import { kBloomPurple } from "../bloomMaterialUITheme";
 
 const kResizerSize = 10;
 
 export const CollectionsTabPane: React.FunctionComponent<{}> = () => {
     const collections = useApiJson("collections/list");
+    // Setting the collectionCount to a new value causes a refresh.  Even though it's
+    // not explicitly referenced anywhere except for being set, not having it results
+    // in no refreshes when collections are removed.
+    const [collectionCount, setCollectionCount] = useState<number>(
+        collections?.length ?? 0
+    );
+
+    const removeSourceCollection = (id: string) => {
+        postString("collections/removeSourceCollection", id).then(() => {
+            collections.filter((value, index, array) => {
+                if (value.id === id) {
+                    array.splice(index, 1);
+                    return true;
+                }
+                return false;
+            });
+            setCollectionCount(collections.length);
+        });
+    };
+
+    const [newCollection, setNewCollection] = useState<any | undefined>();
+
+    const finishAddingNewSourceCollection = (collection: any) => {
+        const currentIndex = collections.findIndex(value => {
+            return value.id && value.id === collection.id;
+        });
+        if (currentIndex >= 0) {
+            // Scroll the already existing collection into view.
+            const element = document.getElementById(sanitize(collection.id));
+            if (element) element.scrollIntoView();
+        } else {
+            collections.push(collection);
+        }
+    };
+
+    const addSourceCollection = () => {
+        post("collections/addSourceCollection");
+    };
+
+    // Since a user will take as much time as they want to deal with the dialog,
+    // we can't just wait for the api call to return. Instead we get called back
+    // via web socket iff they select a folder and close the dialog.
+    useSubscribeToWebSocketForObject<{
+        success: boolean;
+        collection: any;
+    }>("collections", "addSourceCollection-results", results => {
+        if (results.success) {
+            setNewCollection(results.collection);
+        }
+    });
 
     const [draggingSplitter, setDraggingSplitter] = useState(false);
     const [
@@ -205,6 +258,10 @@ export const CollectionsTabPane: React.FunctionComponent<{}> = () => {
         isSpreadsheetFeatureActive
     );
 
+    if (newCollection) {
+        finishAddingNewSourceCollection(newCollection);
+        setNewCollection(undefined);
+    }
     const sourcesCollections = collections.slice(1);
     // Enhance: may want to sort these by local name, though probably keeping Templates
     // and possibly Sample Shells at the top.
@@ -214,9 +271,10 @@ export const CollectionsTabPane: React.FunctionComponent<{}> = () => {
                 key={c.id}
                 name={c.name}
                 id={c.id}
-                shouldLocalizeName={c.shouldLocalizeName}
+                isFactoryCollection={c.shouldLocalizeName}
                 manager={manager}
                 isSpreadsheetFeatureActive={isSpreadsheetFeatureActive}
+                onRemoveSourceCollection={removeSourceCollection}
             />
         );
     });
@@ -384,6 +442,16 @@ export const CollectionsTabPane: React.FunctionComponent<{}> = () => {
                                 >
                                     {collectionComponents}
                                 </ShowAfterDelay>
+                                <Div
+                                    l10nKey="CollectionTab.AddSourceCollection"
+                                    css={css`
+                                        text-transform: uppercase;
+                                        color: ${kBloomPurple};
+                                    `}
+                                    onClick={() => addSourceCollection()}
+                                >
+                                    Show another collection...
+                                </Div>
                             </div>
                         )}
                     </Transition>
@@ -576,17 +644,44 @@ export const makeMenuItems = (
 const BooksOfCollectionWithHeading: React.FunctionComponent<{
     name: string;
     id: string;
-    shouldLocalizeName: boolean;
+    isFactoryCollection: boolean;
     manager: BookSelectionManager;
     isSpreadsheetFeatureActive: boolean;
+    onRemoveSourceCollection: (id: string) => void;
 }> = props => {
     const localizedName = useL10n(props.name, "CollectionTab." + props.name);
-    const localName = props.shouldLocalizeName
+    const localName = props.isFactoryCollection
         ? localizedName // putting the useL10n() hook here violates rules of hooks
         : props.name;
+
     return (
-        <div key={"frag:" + props.id}>
-            <h2>{localName}</h2>
+        <div key={"frag:" + props.id} id={sanitize(props.id)}>
+            {props.isFactoryCollection ? (
+                <h2>{localName}</h2>
+            ) : (
+                <div
+                    css={css`
+                        display: flex;
+                        flex-flow: row;
+                        &:hover div {
+                            display: block;
+                        }
+                    `}
+                >
+                    <h2>{localName}</h2>
+                    <div
+                        css={css`
+                            margin-left: 30px;
+                            display: none;
+                            color: ${kBloomPurple};
+                            background-color: transparent;
+                        `}
+                        onClick={() => props.onRemoveSourceCollection(props.id)}
+                    >
+                        <CloseIcon />
+                    </div>
+                </div>
+            )}
             <BooksOfCollection
                 collectionId={props.id}
                 isEditableCollection={false}
@@ -597,5 +692,9 @@ const BooksOfCollectionWithHeading: React.FunctionComponent<{
         </div>
     );
 };
+
+function sanitize(id: string): string {
+    return encodeURIComponent(id).replace(/./g, "_");
+}
 
 WireUpForWinforms(CollectionsTabPane);
