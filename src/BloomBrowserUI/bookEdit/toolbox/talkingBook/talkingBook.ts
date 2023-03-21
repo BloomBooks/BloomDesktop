@@ -22,11 +22,7 @@ export default class TalkingBookTool implements ITool {
     }
 
     public configureElements(container: HTMLElement) {
-        // This seems to work better here than in newPageReady for some reason.
-        // When called from newPageReady, the page content is often (usually?)
-        // overwritten with the original content from before the deshrouding.
-        // And the name of the method seems to fit with what we're doing...
-        TalkingBookTool.deshroudPhraseDelimiters(container);
+        // one-time setup whether or not the tool is open.
     }
 
     // When are showTool, newPageReady, and updateMarkup called?
@@ -51,9 +47,13 @@ export default class TalkingBookTool implements ITool {
     // Called when a new page is loaded.
     public async newPageReady(): Promise<void> {
         this.showImageDescriptionsIfAny();
-        return AudioRecorder.theOneAudioRecorder.newPageReady(
+        const pageReadyPromise = AudioRecorder.theOneAudioRecorder.newPageReady(
             this.isImageDescriptionToolActive()
         );
+        pageReadyPromise.then(() =>
+            TalkingBookTool.deshroudPhraseDelimiters(ToolBox.getPage())
+        );
+        return pageReadyPromise;
     }
 
     // Replace any span marked as a "bloom-audio-split-marker" with a plain "|".
