@@ -289,10 +289,8 @@ export const NoteBox: React.FunctionComponent<{}> = props => {
 export const WaitBox: React.FunctionComponent<{}> = props => {
     return (
         <BoxWithIconAndText
-            hasBorder={true}
-            color="#629E16"
-            borderColor="#629E16"
-            backgroundColor="#F2FCE4"
+            color="white"
+            backgroundColor="#96668F"
             icon={<WaitIcon />}
             {...props}
         >

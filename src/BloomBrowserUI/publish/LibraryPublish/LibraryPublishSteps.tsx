@@ -465,7 +465,7 @@ export const LibraryPublishSteps: React.FunctionComponent = () => {
                                         alert("not implemented");
                                     }}
                                 >
-                                    Sign Out of %0 at BloomLibrary.org
+                                    Sign Out as %0
                                 </BloomButton>
                             ) : (
                                 <BloomButton

@@ -4799,7 +4799,7 @@
       </trans-unit>
       <trans-unit id="PublishTab.Upload.SignOut" translate="no">
         <!-- added in 5.5 -->
-        <source xml:lang="en">Sign Out of %0 at BloomLibrary.org</source>
+        <source xml:lang="en">Sign Out as %0</source>
         <note>ID: PublishTab.Upload.SignOut</note>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.SkipMakingPdf">

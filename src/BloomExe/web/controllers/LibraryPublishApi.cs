@@ -36,6 +36,7 @@ namespace Bloom.web.controllers
 			_webSocketServer = webSocketServer;
 			var progress = new WebSocketProgress(_webSocketServer, kWebSocketContext);
 			_webSocketProgress = progress.WithL10NPrefix("PublishTab.Upload.");
+			_webSocketProgress.LogAllMessages = true;
 			_progress = new WebProgressAdapter(_webSocketProgress);
 		}
 
