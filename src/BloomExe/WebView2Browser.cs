@@ -304,7 +304,7 @@ namespace Bloom
 
 		public override string RunJavaScript(string script)
 		{
-			Task<string> task = runJavaScriptAsync(script);
+			Task<string> task = RunJavaScriptAsync(script);
 			// I don't fully understand why this works and many other things I tried don't (typically deadlock,
 			// or complain that ExecuteScriptAsync must be done on the main thread).
 			// Came from an answer in https://stackoverflow.com/questions/65327263/how-to-get-sync-return-from-executescriptasync-in-webview2'
@@ -318,14 +318,7 @@ namespace Bloom
 			return result;
 		}
 
-		public override Task<string> RunJavaScriptAsync(string script)
-		{
-			return runJavaScriptAsync(script);
-		}
-
-		// Enhance: possibly this should be virtual in the baseclass, and public, and used by anything that
-		// doesn't need to wait for the task to complete, or that can conveniently be made async?
-		private async Task<string> runJavaScriptAsync(string script)
+		public  override async Task<string> RunJavaScriptAsync(string script)
 		{
 			var result = await _webview.ExecuteScriptAsync(script);
 			// Whatever the javascript produces gets JSON encoded automatically by ExecuteScriptAsync.
