@@ -318,14 +318,7 @@ namespace Bloom
 			return result;
 		}
 
-		public override Task<string> RunJavaScriptAsync(string script)
-		{
-			return runJavaScriptAsync(script);
-		}
-
-		// Enhance: possibly this should be virtual in the baseclass, and public, and used by anything that
-		// doesn't need to wait for the task to complete, or that can conveniently be made async?
-		private async Task<string> runJavaScriptAsync(string script)
+		public  override async Task<string> RunJavaScriptAsync(string script)
 		{
 			var result = await _webview.ExecuteScriptAsync(script);
 			// Whatever the javascript produces gets JSON encoded automatically by ExecuteScriptAsync.
