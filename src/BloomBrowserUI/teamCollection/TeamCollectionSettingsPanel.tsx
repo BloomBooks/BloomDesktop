@@ -33,8 +33,8 @@ export const TeamCollectionSettingsPanel: React.FunctionComponent = props => {
                 temporarilyDisableI18nWarning={true}
             >
                 Bloom's Team Collection system helps your team collaborate as
-                you create, translate, and edit books. See how it works [here](
-                %0).
+                you create, translate, and edit books. See how it works
+                [here](%0).
             </P>
         </div>
     );
