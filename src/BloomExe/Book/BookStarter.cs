@@ -237,7 +237,7 @@ namespace Bloom.Book
 
 			SetBookTitle(storage, bookData, usingTemplate);
 
-			// See note on "CheckForNonDerivativeData()" above.
+			// See note on "ClearUnneededOriginalContentFromDerivative()" above.
 			TransformCreditPageData(storage.Dom, bookData, _collectionSettings, storage, makingTranslation);
 
 			//Few sources will have this set at all. A template picture dictionary is one place where we might expect it to call for, say, bilingual
