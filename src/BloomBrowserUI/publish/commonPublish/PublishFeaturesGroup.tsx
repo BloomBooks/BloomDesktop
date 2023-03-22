@@ -25,24 +25,18 @@ export const PublishFeaturesGroup: React.FunctionComponent<{
     onChange?: () => void;
     generation?: number; // bump this to force recalc of computed features
 }> = props => {
-    const [motionEnabled] = useApiBoolean(
-        "publish/android/canHaveMotionMode",
-        false
-    );
-    const [hasActivities] = useApiBoolean(
-        "libraryPublish/hasActivities",
-        false
-    );
-    const [comicEnabled] = useApiBoolean("libraryPublish/comicEnabled", false);
+    const [motionEnabled] = useApiBoolean("publish/canHaveMotionMode", false);
+    const [hasActivities] = useApiBoolean("publish/hasActivities", false);
+    const [comicEnabled] = useApiBoolean("publish/comicEnabled", false);
     const [visuallyImpairedEnabled] = useApiBoolean(
-        "libraryPublish/visuallyImpairedEnabled",
+        "publish/visuallyImpairedEnabled",
         false
     );
     const [signLanguageChecked, setSignLanguageChecked] = useState(false);
     const [langs, setLangs] = React.useState<ILanguagePublishInfo[]>([]);
     React.useEffect(() => {
         get(
-            "publish/android/languagesInBook",
+            "publish/languagesInBook",
 
             // onSuccess
             result => {
@@ -66,18 +60,18 @@ export const PublishFeaturesGroup: React.FunctionComponent<{
         );
     }, [props.generation]);
     const [signLanguageEnabled] = useApiBoolean(
-        "libraryPublish/signLanguageEnabled",
+        "publish/signLanguageEnabled",
         false
     );
 
     useEffect(() => {
-        getBoolean("libraryPublish/signLanguage", result =>
+        getBoolean("publish/signLanguage", result =>
             setSignLanguageChecked(result)
         );
     }, []);
 
     const signLanguageNameOriginal = useApiString(
-        "libraryPublish/signLanguageName",
+        "publish/signLanguageName",
         ""
     );
     const signLanguageName = useWatchString(
@@ -91,7 +85,7 @@ export const PublishFeaturesGroup: React.FunctionComponent<{
     );
 
     const showSignLanguageChooser = () => {
-        post("libraryPublish/chooseSignLanguage");
+        post("publish/chooseSignLanguage");
     };
 
     return (
@@ -124,7 +118,7 @@ export const PublishFeaturesGroup: React.FunctionComponent<{
                     `}
                     english="Sign Language"
                     l10nKey="PublishTab.Upload.SignLanguage"
-                    apiEndpoint="libraryPublish/signLanguage"
+                    apiEndpoint="publish/signLanguage"
                     icon={
                         <svg
                             css={css`
@@ -213,7 +207,7 @@ export const PublishFeaturesGroup: React.FunctionComponent<{
                     `}
                     english="Comic"
                     l10nKey="PublishTab.Comic"
-                    apiEndpoint="libraryPublish/comic"
+                    apiEndpoint="publish/comic"
                     icon={
                         <svg
                             css={css`
@@ -238,7 +232,7 @@ export const PublishFeaturesGroup: React.FunctionComponent<{
                     l10nKey="PublishTab.Android.MotionBookMode"
                     // tslint:disable-next-line:max-line-length
                     l10nComment="Motion Books are Talking Books in which the picture fills the screen, then pans and zooms while you hear the voice recording. This happens only if you turn the book sideways."
-                    apiEndpoint="publish/android/motionBookMode"
+                    apiEndpoint="publish/motionBookMode"
                     icon={
                         <svg
                             // Taken from Motion.svg in BloomLibrary (but embedding it like this makes it easy to
@@ -262,7 +256,7 @@ export const PublishFeaturesGroup: React.FunctionComponent<{
                 <ApiCheckbox
                     english="Accessible to the Visually Impaired"
                     l10nKey="PublishTab.AccessibleVisually"
-                    apiEndpoint="libraryPublish/visuallyImpaired"
+                    apiEndpoint="publish/visuallyImpaired"
                     icon={
                         <svg
                             css={css`

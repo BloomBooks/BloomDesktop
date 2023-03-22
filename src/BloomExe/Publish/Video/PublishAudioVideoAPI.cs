@@ -10,6 +10,7 @@ using Bloom.Api;
 using Bloom.Book;
 using Bloom.MiscUI;
 using Bloom.Publish.Android;
+using Bloom.web.controllers;
 using L10NSharp;
 using SIL.PlatformUtilities;
 
@@ -23,14 +24,14 @@ namespace Bloom.Publish.Video
 		private readonly BloomWebSocketServer _webSocketServer;
 		// It's slightly weird that we use one of these, but the video is done by means
 		// of an android-type book preview, and this class knows all about how to make one.
-		private PublishToAndroidApi _publishToAndroidApi;
+		private PublishApi _publishApi;
 		private const string kApiUrlPart = "publish/av/";
 		private RecordVideoWindow _recordVideoWindow;
 
-		public PublishAudioVideoAPI(BloomWebSocketServer bloomWebSocketServer, PublishToAndroidApi publishToAndroidApi)
+		public PublishAudioVideoAPI(BloomWebSocketServer bloomWebSocketServer, PublishApi publishApi)
 		{
 			_webSocketServer = bloomWebSocketServer;
-			_publishToAndroidApi = publishToAndroidApi;
+			_publishApi = publishApi;
 		}
 
 		public void RegisterWithApiHandler(BloomApiHandler apiHandler)
@@ -239,9 +240,9 @@ namespace Bloom.Publish.Video
 
 		private void UpdatePreview(ApiRequest request)
 		{
-			_publishToAndroidApi.MakeBloompubPreview(request, true);
+			_publishApi.MakeBloompubPreview(request, true);
 			// MakeBloompubPreview ensures that LicenseOK is set appropriately.
-			_webSocketServer.SendString("recordVideo", "publish/licenseOK", _publishToAndroidApi.LicenseOK ? "true" : "false");
+			_webSocketServer.SendString("recordVideo", "publish/licenseOK", _publishApi.LicenseOK ? "true" : "false");
 		}
 
 
@@ -379,12 +380,12 @@ namespace Bloom.Publish.Video
 						// We've left things in a funny state. Rebuild the preview.
 						// Note, by this time the 'request' is obsolete...we already returned
 						// from that API call. So it's harmless to pass it to this method.
-						_publishToAndroidApi.MakeBloompubPreview(request, true);
+						_publishApi.MakeBloompubPreview(request, true);
 					}
 					_recordVideoWindow = null;
 				}
 			};
-			_recordVideoWindow.Show(PublishToAndroidApi.PreviewUrl, request.CurrentBook.FolderPath);
+			_recordVideoWindow.Show(PublishApi.PreviewUrl, request.CurrentBook.FolderPath);
 		}
 
 		public void AbortMakingVideo()

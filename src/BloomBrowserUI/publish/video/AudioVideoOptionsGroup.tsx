@@ -59,10 +59,7 @@ export const AudioVideoOptionsGroup: React.FunctionComponent<{
 }> = props => {
     // Stores which formats should be non-selectable.
     const [disabledFormats, setDisabledFormats] = useState<string[]>([]);
-    const [motionEnabled] = useApiBoolean(
-        "publish/android/canHaveMotionMode",
-        false
-    );
+    const [motionEnabled] = useApiBoolean("publish/canHaveMotionMode", false);
 
     const [tooBigMsg, setTooBigMsg] = useState("");
     // Manages visibility of the details popup for the main Format label (that shows in the

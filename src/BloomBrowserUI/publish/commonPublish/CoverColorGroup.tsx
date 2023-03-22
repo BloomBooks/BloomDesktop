@@ -33,7 +33,7 @@ const CoverColorControl: React.FunctionComponent<{
     // The old default cover color was "white". This made it impossible to tell if the color had been
     // updated or not. This works well. This api always returns SOME cover color.
     const [bookCoverColor, setBookCoverColor] = useApiStringStatePromise(
-        "publish/android/backColor",
+        "publish/backColor",
         ""
     );
 
@@ -106,10 +106,7 @@ const CoverColorControl: React.FunctionComponent<{
                     `}
                     // the api ignores the color parameter, but it
                     // causes this to re-request the img whenever the backcolor changes
-                    src={
-                        "/bloom/api/publish/android/thumbnail?color=" +
-                        bookCoverColor
-                    }
+                    src={"/bloom/api/publish/thumbnail?color=" + bookCoverColor}
                 />
             </div>
         </div>
