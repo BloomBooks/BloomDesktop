@@ -611,6 +611,12 @@
         <source xml:lang="en">Make Reader Template Bloom Pack...</source>
         <note>ID: CollectionTab.AddMakeReaderTemplateBloomPackToolStripMenuItem</note>
       </trans-unit>
+      <trans-unit id="CollectionTab.AddSourceCollection" translate="no">
+        <!-- added in 5.5 -->
+        <source xml:lang="en">Show another collection...</source>
+        <note>Shown at the very bottom of the list of books and collections.  The user can click on this text and then choose an existing collection to use as an additional source of books to translate or otherwise adapt.</note>
+        <note>ID: CollectionTab.AddSourceCollection</note>
+      </trans-unit>
       <trans-unit id="CollectionTab.AdminManagesUpdates">
         <source xml:lang="en">Your system administrator manages Bloom updates for this computer.</source>
         <note>ID: CollectionTab.AdminManagesUpdates</note>
@@ -702,6 +708,12 @@
       <trans-unit id="CollectionTab.Books From BloomLibrary.org" sil:dynamic="true">
         <source xml:lang="en">Books From BloomLibrary.org</source>
         <note>ID: CollectionTab.Books From BloomLibrary.org</note>
+      </trans-unit>
+      <trans-unit id="CollectionTab.ChooseCollection" translate="no">
+        <!-- added in 5.5 -->
+        <source xml:lang="en">Choose Collection</source>
+        <note>This is the title of the file-open dialog that you use to choose a Bloom collection</note>
+        <note>ID: CollectionTab.ChooseCollection</note>
       </trans-unit>
       <trans-unit id="CollectionTab.CollectionMenu.doChecksAndUpdatesOfAllBooks">
         <source xml:lang="en">Do Updates of All Books</source>
