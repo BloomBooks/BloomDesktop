@@ -493,6 +493,7 @@ export const makeMenuItems = (
                     undefined
                 );
             }
+            let disabled = false;
             if (spec.shouldShow) {
                 if (!spec.shouldShow()) {
                     return undefined;
@@ -502,7 +503,7 @@ export const makeMenuItems = (
                 if (isEditableCollection) {
                     // eliminate commands that require permission to change the book, if we don't have it
                     if (spec.requiresSavePermission && !isBookSavable) {
-                        return undefined;
+                        disabled = true;
                     }
                 } else {
                     // outside that collection, commands can only be shown if they have a shouldShow function.
@@ -519,6 +520,7 @@ export const makeMenuItems = (
                             // We deliberately do NOT close the menu, so the user can see it really got checked.
                         }}
                         apiEndpoint={spec.command!}
+                        disabled={disabled}
                     ></LocalizableCheckboxMenuItem>
                 );
             }
@@ -550,6 +552,7 @@ export const makeMenuItems = (
                     icon={spec.icon}
                     addEllipsis={spec.addEllipsis}
                     requiresEnterprise={spec.requiresEnterprise}
+                    disabled={disabled}
                 ></LocalizableMenuItem>
             );
         })
