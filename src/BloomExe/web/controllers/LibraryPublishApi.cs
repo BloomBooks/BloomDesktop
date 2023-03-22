@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
+using Bloom.Collection;
 
 namespace Bloom.web.controllers
 {
@@ -52,13 +53,87 @@ namespace Bloom.web.controllers
 		{
 			apiHandler.RegisterEndpointHandler("libraryPublish/upload", HandleUpload, true);
 			apiHandler.RegisterEndpointHandler("libraryPublish/uploadCollection", HandleUploadCollection, true);
-			apiHandler.RegisterEndpointHandler("libraryPublish/uploadFolderOfCollections", HandleUploadFolderOfCollections, true);
+			apiHandler.RegisterEndpointHandler("libraryPublish/uploadFolderOfCollections",
+				HandleUploadFolderOfCollections, true);
 			apiHandler.RegisterEndpointHandler("libraryPublish/getBookInfo", HandleGetBookInfo, true);
 			apiHandler.RegisterEndpointHandler("libraryPublish/setSummary", HandleSetSummary, true);
 			apiHandler.RegisterEndpointHandler("libraryPublish/useSandbox", HandleUseSandbox, true);
 			apiHandler.RegisterEndpointHandler("libraryPublish/cancel", HandleCancel, true);
-			apiHandler.RegisterEndpointHandler("libraryPublish/getUploadCollisionInfo", HandleGetUploadCollisionInfo, true);
-			apiHandler.RegisterEndpointHandler("libraryPublish/uploadAfterChangingBookId", HandleUploadAfterChangingBookId, true);
+			apiHandler.RegisterEndpointHandler("libraryPublish/getUploadCollisionInfo", HandleGetUploadCollisionInfo,
+				true);
+			apiHandler.RegisterEndpointHandler("libraryPublish/uploadAfterChangingBookId",
+				HandleUploadAfterChangingBookId, true);
+			apiHandler.RegisterBooleanEndpointHandler("libraryPublish/signLanguage",
+				request => Model.Book.HasSignLanguageVideos() && Model.IsPublishSignLanguage(),
+				(request, val) =>
+				{
+					if (val)
+					{
+						// If we don't know a sign language to advertise, nothing will happen in
+						// the book metadata. The UI will show a link to let the user select a language.
+						// If the user does not do so, the checked state will not persist.
+						if (!string.IsNullOrEmpty(Model.Book.CollectionSettings.SignLanguageTag))
+							Model.SetOnlySignLanguageToPublish(Model.Book.CollectionSettings.SignLanguageTag);
+					}
+					else
+						Model.ClearSignLanguageToPublish();
+				}, true);
+
+			apiHandler.RegisterBooleanEndpointHandler("libraryPublish/signLanguageEnabled",
+				request => Model.Book.HasSignLanguageVideos(),
+				null, true);
+			apiHandler.RegisterBooleanEndpointHandler("libraryPublish/hasActivities",
+				request => Model.Book.HasActivities,
+				null, true);
+			apiHandler.RegisterBooleanEndpointHandler("libraryPublish/comicEnabled",
+				request => Model.Book.HasOverlayPages,
+				null, true);
+			apiHandler.RegisterBooleanEndpointHandler("libraryPublish/comic",
+				request => Model.Book.HasOverlayPages && Model.Book.BookInfo.PublishSettings.BloomLibrary.Comic,
+				(request, val) =>
+				{
+					Model.Book.BookInfo.PublishSettings.BloomLibrary.Comic = val;
+					Model.Book.BookInfo.Save();
+				}, true);
+			apiHandler.RegisterBooleanEndpointHandler("libraryPublish/visuallyImpairedEnabled",
+				request => Model.Book.OurHtmlDom.HasImageDescriptions,
+				null, true);
+			apiHandler.RegisterBooleanEndpointHandler("libraryPublish/visuallyImpaired",
+				request => Model.Book.OurHtmlDom.HasImageDescriptions &&
+				           Model.Book.BookInfo.PublishSettings.BloomLibrary.AccessibleToVisuallyImpaired,
+				(request, val) =>
+				{
+					Model.Book.BookInfo.PublishSettings.BloomLibrary.AccessibleToVisuallyImpaired = val;
+					Model.Book.BookInfo.Save();
+				}, true);
+			apiHandler.RegisterEndpointHandler("libraryPublish/signLanguageName",
+				(request) => { request.ReplyWithText(Model.Book.CollectionSettings.SignLanguage?.Name ?? ""); }, true);
+			apiHandler.RegisterEndpointHandler("libraryPublish/chooseSignLanguage", HandleChooseSignLanguage, true);
+		}
+
+		private void HandleChooseSignLanguage(ApiRequest request)
+		{
+			var collectionSettings = Model.Book.CollectionSettings;
+			var l = CollectionSettingsDialog.ChangeLanguage(collectionSettings.SignLanguageTag, CurrentSignLanguageName, false);
+			if (l == null)
+			{
+				// no change; dialog cancelled
+				request.PostSucceeded();
+				return;
+			}
+
+			// How to know if the new sign language name is custom or not!?
+			// 1- set the Tag (which also sets the Name to the non-custom default
+			// 2- read the Name
+			// 3- if it's not the same as DesiredName, the new name is custom
+			collectionSettings.SignLanguageTag = l.LanguageTag;
+			var slIsCustom = collectionSettings.SignLanguage.Name != l.DesiredName;
+			collectionSettings.SignLanguage.SetName(l.DesiredName, slIsCustom);
+			collectionSettings.Save();
+
+			Model.SetOnlySignLanguageToPublish(collectionSettings.SignLanguageTag);
+			_webSocketServer.SendString("publish", "signLang", l.DesiredName);
+			request.PostSucceeded();
 		}
 
 		private void HandleGetBookInfo(ApiRequest request)

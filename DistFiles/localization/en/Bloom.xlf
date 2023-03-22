@@ -3513,6 +3513,16 @@
         <note>ID: PublishTab.AdobeEulaTitle</note>
         <note>dialog title for license agreement</note>
       </trans-unit>
+      <!-- 5.5 -->
+      <trans-unit id="PublishTab.Activity" translate="no">
+        <source xml:lang="en">Activity</source>
+        <note>ID: PublishTab.Activity</note>
+      </trans-unit>
+      <!-- 5.5 -->
+      <trans-unit id="PublishTab.Comic" translate="no">
+        <source xml:lang="en">Comic</source>
+        <note>ID: PublishTab.Comic</note>
+      </trans-unit>
       <trans-unit id="PublishTab.Common.Publishing">
         <source xml:lang="en">Publishing</source>
         <note>This is shown while Bloom is sharing a book over wifi, over a usb cable, or uploading. </note>
@@ -3522,6 +3532,10 @@
         <source xml:lang="en">Stop Publishing</source>
         <note>This is shown while Bloom is sharing a book over wifi or over a usb cable. </note>
         <note>ID: PublishTab.Common.StopPublishing</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.AccessibleVisually">
+        <source xml:lang="en">Accessible to the Visually Impaired</source>
+        <note>ID: PublishTab.AccessibleVisually</note>
       </trans-unit>
       <trans-unit id="PublishTab.AdobeReaderControl.NotInstalled">
         <source xml:lang="en">Please install Adobe Reader so that Bloom can show your completed book. Until then, you can still save the PDF Book and open it in some other program.</source>
@@ -4518,6 +4532,10 @@
       <trans-unit id="PublishTab.TasksOverview">
         <source xml:lang="en">Publish tab tasks overview</source>
         <note>ID: PublishTab.TasksOverview</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.TalkingBook" sil:dynamic="true" translate="no">
+        <source xml:lang="en">Talking Book</source>
+        <note>ID: PublishTab.TalkingBook</note>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.AccessibleToBlind">
         <source xml:lang="en">Accessible to the Blind</source>

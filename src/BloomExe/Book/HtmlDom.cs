@@ -2427,6 +2427,12 @@ namespace Bloom.Book
 			return _dom.SelectSingleNode(BookStorage.ComicalXpath) != null;
 		}
 
+		public bool HasImageDescriptions => _dom.SafeSelectNodes("//div[contains(@class, 'bloom-imageDescription')]")
+			.Cast<XmlElement>()
+			// This is needed because it's possible to get elements with the class just by taking a look
+			// at the tool, without ever actually creating an image description.
+			.Any(x => !string.IsNullOrWhiteSpace(x.InnerText));
+
 		public XmlNodeList SelectVideoSources()
 		{
 			return RawDom.SafeSelectNodes("//div[contains(@class, 'bloom-videoContainer')]//source");

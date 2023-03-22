@@ -11,7 +11,7 @@ import { kBloomDisabledText } from "../utils/colorUtils";
 interface ILinkProps extends ILocalizationProps {
     id?: string;
     href?: string;
-    onClick?: any; // overrides following any href.
+    onClick?: () => void; // overrides following any href.
     disabled?: boolean;
     openInExternalBrowser?: boolean;
     color?:
