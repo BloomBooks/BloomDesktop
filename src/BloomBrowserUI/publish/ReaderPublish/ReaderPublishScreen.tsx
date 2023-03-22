@@ -11,8 +11,8 @@ import {
     PublishPanel
 } from "../commonPublish/PublishScreenBaseComponents";
 import { MethodChooser } from "./MethodChooser";
-import { PublishFeaturesGroup } from "./PublishFeaturesGroup";
-import { CoverColorGroup } from "./CoverColorGroup";
+import { PublishFeaturesGroup } from "../commonPublish/PublishFeaturesGroup";
+import { CoverColorGroup } from "../commonPublish/CoverColorGroup";
 import PublishScreenTemplate from "../commonPublish/PublishScreenTemplate";
 import { DeviceAndControls } from "../commonPublish/DeviceAndControls";
 import ReactDOM = require("react-dom");
@@ -33,7 +33,7 @@ import {
 import { PublishProgressDialog } from "../commonPublish/PublishProgressDialog";
 import { useL10n } from "../../react_components/l10nHooks";
 import { ProgressState } from "../commonPublish/PublishProgressDialogInner";
-import { PublishLanguagesGroup } from "./PublishLanguagesGroup";
+import { PublishLanguagesGroup } from "../commonPublish/PublishLanguagesGroup";
 import {
     BulkBloomPubDialog,
     showBulkBloomPubDialog
