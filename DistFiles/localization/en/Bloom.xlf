@@ -682,6 +682,11 @@
         <note>ID: CollectionTab.BookMenu.MakeBloomPack</note>
         <note>Obsolete for 5.3 and later</note>
       </trans-unit>
+      <trans-unit id="CollectionTab.BookMenu.MustCheckOutTooltip">
+        <source xml:lang="en">This feature requires the book to be checked out to you.</source>
+        <note>ID: CollectionTab.BookMenu.MustCheckOutTooltip</note>
+        <note>This tooltip pops up when the user hovers over a disabled menu item.</note>
+      </trans-unit>
       <trans-unit id="CollectionTab.BookMenu.Rename">
         <source xml:lang="en">Rename</source>
         <note>ID: CollectionTab.BookMenu.Rename</note>

@@ -20,6 +20,8 @@ import { useEnterpriseAvailable } from "./requiresBloomEnterprise";
 interface BaseLocalizableMenuItemProps {
     english: string;
     l10nId: string;
+    disabled?: boolean;
+    tooltipIfNotCheckedOut?: string;
 }
 
 interface LocalizableMenuItemProps extends BaseLocalizableMenuItemProps {
@@ -96,34 +98,39 @@ export const LocalizableMenuItem: React.FunctionComponent<LocalizableMenuItemPro
             : openCollectionSettings
         : props.onClick;
 
+    // The "div" wrapper is necessary to get the tooltip to work on a disabled MenuItem.
     return (
-        <MenuItem
-            key={props.l10nId}
-            onClick={menuClickHandler}
-            dense={true}
-            css={css`
-                padding: 0 6px !important; // eliminate top and bottom padding to make even denser
-                font-size: 14pt;
-            `}
-        >
-            <React.Fragment>
-                {iconElement}
-                <ListItemText
-                    css={css`
-                        span {
-                            font-weight: 400 !important; // H6 defaults to 500; too thick
-                            font-family: Segoe UI, NotoSans, Roboto, sans-serif;
-                            color: ${menuItemColor} !important;
-                        }
-                    `}
-                    primaryTypographyProps={typographyProps}
-                >
-                    {label}
-                    {ellipsis}
-                </ListItemText>
-                {enterpriseElement}
-            </React.Fragment>
-        </MenuItem>
+        <div title={props.disabled ? props.tooltipIfNotCheckedOut : undefined}>
+            <MenuItem
+                key={props.l10nId}
+                onClick={menuClickHandler}
+                dense={true}
+                css={css`
+                    padding: 0 6px !important; // eliminate top and bottom padding to make even denser
+                    font-size: 14pt;
+                `}
+                disabled={props.disabled}
+            >
+                <React.Fragment>
+                    {iconElement}
+                    <ListItemText
+                        css={css`
+                            span {
+                                font-weight: 400 !important; // H6 defaults to 500; too thick
+                                font-family: Segoe UI, NotoSans, Roboto,
+                                    sans-serif;
+                                color: ${menuItemColor} !important;
+                            }
+                        `}
+                        primaryTypographyProps={typographyProps}
+                    >
+                        {label}
+                        {ellipsis}
+                    </ListItemText>
+                    {enterpriseElement}
+                </React.Fragment>
+            </MenuItem>
+        </div>
     );
 };
 
@@ -136,45 +143,54 @@ export const LocalizableCheckboxMenuItem: React.FunctionComponent<LocalizableChe
         });
     }, []);
 
+    // The "div" wrapper is necessary to get the tooltip to work on a disabled item.
     return (
-        <MenuItem
-            key={props.l10nId}
-            onClick={props.onClick}
-            dense={true}
-            css={css`
-                padding: 0 6px !important; // eliminate top and bottom padding to make even denser
-                font-size: 14pt;
-            `}
-        >
-            <Checkbox
-                icon={<CheckBoxOutlineBlankIcon htmlColor={menuItemColor} />}
-                checkedIcon={<CheckBoxIcon htmlColor={menuItemColor} />}
-                checked={checked}
-                onChange={e => {
-                    BloomApi.postBoolean(props.apiEndpoint, e.target.checked);
-                    setChecked(e.target.checked);
-                }}
+        <div title={props.disabled ? props.tooltipIfNotCheckedOut : undefined}>
+            <MenuItem
+                key={props.l10nId}
+                onClick={props.onClick}
+                dense={true}
                 css={css`
-                    width: ${kIconCheckboxAffordance}px !important;
-                    padding: 0 !important;
-                    font-size: 1.1rem !important;
-                    margin-left: -2px !important; // adjust checkbox over a bit
-                    margin-right: 2px !important;
+                    padding: 0 6px !important; // eliminate top and bottom padding to make even denser
+                    font-size: 14pt;
                 `}
-            />
-            <ListItemText
-                css={css`
-                    span {
-                        font-weight: 400 !important; // H6 defaults to 500; too thick
-                        font-family: Segoe UI, NotoSans, Roboto, sans-serif;
-                        color: ${menuItemColor} !important;
-                    }
-                `}
-                primaryTypographyProps={typographyProps}
+                disabled={props.disabled}
             >
-                {label}
-            </ListItemText>
-        </MenuItem>
+                <Checkbox
+                    icon={
+                        <CheckBoxOutlineBlankIcon htmlColor={menuItemColor} />
+                    }
+                    checkedIcon={<CheckBoxIcon htmlColor={menuItemColor} />}
+                    checked={checked}
+                    onChange={e => {
+                        BloomApi.postBoolean(
+                            props.apiEndpoint,
+                            e.target.checked
+                        );
+                        setChecked(e.target.checked);
+                    }}
+                    css={css`
+                        width: ${kIconCheckboxAffordance}px !important;
+                        padding: 0 !important;
+                        font-size: 1.1rem !important;
+                        margin-left: -2px !important; // adjust checkbox over a bit
+                        margin-right: 2px !important;
+                    `}
+                />
+                <ListItemText
+                    css={css`
+                        span {
+                            font-weight: 400 !important; // H6 defaults to 500; too thick
+                            font-family: Segoe UI, NotoSans, Roboto, sans-serif;
+                            color: ${menuItemColor} !important;
+                        }
+                    `}
+                    primaryTypographyProps={typographyProps}
+                >
+                    {label}
+                </ListItemText>
+            </MenuItem>
+        </div>
     );
 };
 

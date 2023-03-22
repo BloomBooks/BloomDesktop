@@ -465,7 +465,8 @@ export const makeMenuItems = (
     close: () => void,
     bookId: string,
     collectionId: string,
-    includeSpreadsheetItems: boolean
+    includeSpreadsheetItems: boolean,
+    tooltipIfNotCheckedOut?: string
 ) => {
     const menuItemsT = menuItemsSpecs
         .map((spec: MenuItemSpec) => {
@@ -480,7 +481,8 @@ export const makeMenuItems = (
                     close,
                     bookId,
                     collectionId,
-                    includeSpreadsheetItems
+                    includeSpreadsheetItems,
+                    tooltipIfNotCheckedOut
                 );
                 return submenuItems.length ? (
                     <LocalizableNestedMenuItem
@@ -493,16 +495,17 @@ export const makeMenuItems = (
                     undefined
                 );
             }
+            let disabled = false;
             if (spec.shouldShow) {
                 if (!spec.shouldShow()) {
                     return undefined;
                 }
             } else {
-                // default logic for whether to show the command
+                // Default logic for whether to show or disable a command
                 if (isEditableCollection) {
-                    // eliminate commands that require permission to change the book, if we don't have it
+                    // Disable commands that require permission to change the book, if we don't have it.
                     if (spec.requiresSavePermission && !isBookSavable) {
-                        return undefined;
+                        disabled = true;
                     }
                 } else {
                     // outside that collection, commands can only be shown if they have a shouldShow function.
@@ -519,6 +522,8 @@ export const makeMenuItems = (
                             // We deliberately do NOT close the menu, so the user can see it really got checked.
                         }}
                         apiEndpoint={spec.command!}
+                        disabled={disabled}
+                        tooltipIfNotCheckedOut={tooltipIfNotCheckedOut}
                     ></LocalizableCheckboxMenuItem>
                 );
             }
@@ -550,6 +555,8 @@ export const makeMenuItems = (
                     icon={spec.icon}
                     addEllipsis={spec.addEllipsis}
                     requiresEnterprise={spec.requiresEnterprise}
+                    disabled={disabled}
+                    tooltipIfNotCheckedOut={tooltipIfNotCheckedOut}
                 ></LocalizableMenuItem>
             );
         })
