@@ -398,6 +398,8 @@ namespace Bloom.Book
 			TextLangs = new Dictionary<string, InclusionSetting>();
 			AudioLangs = new Dictionary<string, InclusionSetting>();
 			SignLangs = new Dictionary<string, InclusionSetting>();
+			// By default we will publish it as being a comic if it has such data.
+			Comic = true;
 		}
 
 		/// <summary>
@@ -424,5 +426,13 @@ namespace Bloom.Book
 		// For now, the audio language selection is all or nothing for Bloom Library publish
 		[JsonIgnore]
 		public bool IncludeAudio => AudioLangs.Any(al => al.Value.IsIncluded());
+
+		// Whether to advertise the book as a comic book (if it has any comic pages)
+		[JsonProperty("comic")]
+		public bool Comic;
+
+		// Whether to advertise the book as a accessible to the visually impaired
+		[JsonProperty("accessibleToVisuallyImpaired")]
+		public bool AccessibleToVisuallyImpaired;
 	}
 }

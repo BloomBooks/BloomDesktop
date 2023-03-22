@@ -10,6 +10,7 @@ export const ApiCheckbox: React.FunctionComponent<{
     l10nComment?: string;
     apiEndpoint: string;
     disabled?: boolean;
+    icon?: React.ReactNode;
     // If defined, the checkbox should have this value when disabled,
     // whatever value we get from the API.
     forceDisabledValue?: boolean;
@@ -29,6 +30,7 @@ export const ApiCheckbox: React.FunctionComponent<{
             label={props.english}
             l10nKey={props.l10nKey}
             l10nComment={props.l10nComment}
+            icon={props.icon}
             onCheckChanged={(newState: boolean | undefined) => {
                 setChecked(!!newState);
                 if (props.onChange) {

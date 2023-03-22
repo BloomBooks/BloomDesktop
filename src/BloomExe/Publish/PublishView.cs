@@ -464,6 +464,7 @@ namespace Bloom.Publish
 					ShowHtmlPanel(BloomFileLocator.GetBrowserFile(false, "publish", "PDFPrintPublish", "PublishPdfPrint.html"), forceWv2:true);
 					break;
 				case PublishModel.DisplayModes.Android:
+					LibraryPublishApi.Model = new BloomLibraryPublishModel(_bookTransferrer, _model.BookSelection.CurrentSelection, _model);
 					BloomPubMaker.ControlForInvoke = ParentForm; // something created on UI thread that won't go away
 					ShowHtmlPanel(BloomFileLocator.GetBrowserFile(false, "publish", "ReaderPublish", "loader.html"));
 					break;

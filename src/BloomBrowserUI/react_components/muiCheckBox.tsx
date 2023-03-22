@@ -16,6 +16,7 @@ export const MuiCheckbox: React.FunctionComponent<{
     tristate?: boolean;
     disabled?: boolean;
     alreadyLocalized?: boolean;
+    icon?: React.ReactNode;
     temporarilyDisableI18nWarning?: boolean;
     onCheckChanged: (v: boolean | undefined) => void;
     l10nParam0?: string;
@@ -52,6 +53,28 @@ export const MuiCheckbox: React.FunctionComponent<{
         props.l10nParam1
     );
 
+    const mainLabel =
+        typeof props.label === "string" ? localizedLabel : props.label;
+    let finalLabel = mainLabel;
+    if (props.icon) {
+        finalLabel = (
+            <div
+                css={css`
+                    display: flex;
+                    align-items: baseline; // keeps text well aligned with checkbox
+                `}
+            >
+                {props.icon}{" "}
+                <div
+                    css={css`
+                        margin-left: 5px;
+                    `}
+                >
+                    {mainLabel}
+                </div>
+            </div>
+        );
+    }
     // Work has been done below to ensure that a wrapped label will align with the control correctly.
     // If messing with the layout, be sure you didn't break this by checking the storybook story.
 
@@ -112,9 +135,7 @@ export const MuiCheckbox: React.FunctionComponent<{
                     checkboxControl
                 )
             }
-            label={
-                typeof props.label === "string" ? localizedLabel : props.label
-            }
+            label={finalLabel}
             disabled={props.disabled}
         />
     );
