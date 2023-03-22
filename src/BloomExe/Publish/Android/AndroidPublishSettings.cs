@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Bloom.Book;
+using Bloom.web.controllers;
 using Bloom.Publish.BloomLibrary;
 
 namespace Bloom.Publish.Android
@@ -175,7 +176,7 @@ namespace Bloom.Publish.Android
 			{
 				var book = bookServer.GetBookFromBookInfo(bookInfo);
 				var allLanguages = book.AllPublishableLanguages(includeLangsOccurringOnlyInXmatter: true);
-				PublishToAndroidApi.InitializeLanguagesInBook(bookInfo, allLanguages, book.CollectionSettings);
+				PublishApi.InitializeLanguagesInBook(bookInfo, allLanguages, book.CollectionSettings);
 			}
 
 			// If we are running harvester, we are going to use the BloomLibrary settings.

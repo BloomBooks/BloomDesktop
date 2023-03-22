@@ -50,7 +50,7 @@ export const PublishLanguagesGroup: React.FunctionComponent<{
     const [langs, setLangs] = React.useState(initialValue);
     React.useEffect(() => {
         get(
-            "publish/android/languagesInBook",
+            "publish/languagesInBook",
 
             // onSuccess
             result => {
@@ -107,7 +107,7 @@ export const PublishLanguagesGroup: React.FunctionComponent<{
                     newLangObj[fieldToUpdate] = newState;
 
                     post(
-                        `publish/android/includeLanguage?langCode=${newLangObj.code}&${fieldToUpdate}=${newState}`
+                        `publish/includeLanguage?langCode=${newLangObj.code}&${fieldToUpdate}=${newState}`
                     );
 
                     return newLangObj;

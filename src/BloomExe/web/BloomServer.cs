@@ -450,7 +450,7 @@ namespace Bloom.Api
 			if (localPath.ToLower().Contains("current-bloompub-url")) //useful when debugging. E.g. http://localhost:8089/bloom/current-bloompub-url will always show the page we're on.
 			{
 				info.ResponseContentType = "text/html";
-				info.WriteCompleteOutput($"<meta http-equiv=\"Refresh\" content=\"0; url='{PublishToAndroidApi.PreviewUrl}'\" />");
+				info.WriteCompleteOutput($"<meta http-equiv=\"Refresh\" content=\"0; url='{PublishApi.PreviewUrl}'\" />");
 				return true;
 			}
 
@@ -1457,8 +1457,8 @@ namespace Bloom.Api
 			// Likewise if it's part of the current book we're publishing. If we didn't give a message about something being
 			// missing while creating the book, it's just confusing to do so when they create a publication preview. See BL-9738
 			// for one example.
-			if (PublishToAndroidApi.CurrentPublicationFolder != null &&
-			    localPath.StartsWith(PublishToAndroidApi.CurrentPublicationFolder.Replace("\\", "/")))
+			if (PublishApi.CurrentPublicationFolder != null &&
+			    localPath.StartsWith(PublishApi.CurrentPublicationFolder.Replace("\\", "/")))
 			{
 				return false;
 			}
