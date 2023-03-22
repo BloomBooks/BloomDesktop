@@ -580,6 +580,7 @@
     <Compile Include="web\controllers\CopyrightAndLicenseApi.cs" />
     <Compile Include="web\controllers\LibraryPublishApi_Obsolete.cs" />
     <Compile Include="web\controllers\ProgressDialogApi.cs" />
+    <Compile Include="web\controllers\PublishApi.cs" />
     <Compile Include="web\controllers\WorkspaceApi.cs" />
     <Compile Include="web\controllers\LibraryPublishApi.cs" />
     <Compile Include="web\ReactControl.cs">
