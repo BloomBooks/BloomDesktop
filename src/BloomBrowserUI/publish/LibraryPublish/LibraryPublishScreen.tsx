@@ -13,7 +13,7 @@ import {
 } from "../commonPublish/PublishScreenBaseComponents";
 
 import { LibraryPublishSteps } from "./LibraryPublishSteps";
-import { PublishFeaturesGroup } from "../ReaderPublish/PublishFeaturesGroup";
+import { PublishFeaturesGroup } from "../commonPublish/PublishFeaturesGroup";
 import { LanguageGroup } from "../commonPublish/LanguageGroup";
 import { AudioGroup } from "../commonPublish/AudioGroup";
 import PublishScreenTemplate from "../commonPublish/PublishScreenTemplate";
