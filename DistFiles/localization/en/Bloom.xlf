@@ -3528,6 +3528,7 @@
         <note>This is shown while Bloom is sharing a book over wifi or over a usb cable. </note>
         <note>ID: PublishTab.Common.StopPublishing</note>
       </trans-unit>
+      <!-- 5.5 -->
       <trans-unit id="PublishTab.AccessibleVisually">
         <source xml:lang="en">Accessible to the Visually Impaired</source>
         <note>ID: PublishTab.AccessibleVisually</note>
@@ -3724,7 +3725,7 @@
         <source xml:lang="en">Settings</source>
         <note>ID: PublishTab.Android.Settings</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Android.TalkingBookLanguages" sil:dynamic="true">
+      <trans-unit id="PublishTab.Android.TalkingBookLanguages" sil:dynamic="true" translate="no">
         <source xml:lang="en">Talking Book Languages</source>
         <note>ID: PublishTab.Android.TalkingBookLanguages</note>
         <note>Which languages will have the "Talking Book" (books with both text and narrated audio) feature enabled</note>
@@ -4511,6 +4512,12 @@
         <source xml:lang="en">Make an audio or video file of the book being read.</source>
         <note>ID: PublishTab.RecordVideoButton-tooltip</note>
       </trans-unit>
+      <!-- 5.5 -->
+      <trans-unit id="PublishTab.RequiredLanguage" sil:dynamic="true" translate="no">
+        <source xml:lang="en">This language is required because it is currently shown in the book</source>
+        <note>ID: PublishTab.RequiredLanguage</note>
+        <note>Button that tells Bloom to save the book in the current format.</note>
+      </trans-unit>
       <trans-unit id="PublishTab.Save" sil:dynamic="true">
         <source xml:lang="en">Save...</source>
         <note>ID: PublishTab.Save</note>
@@ -4528,6 +4535,7 @@
         <source xml:lang="en">Publish tab tasks overview</source>
         <note>ID: PublishTab.TasksOverview</note>
       </trans-unit>
+      <!-- 5.5 -->
       <trans-unit id="PublishTab.TalkingBook" sil:dynamic="true" translate="no">
         <source xml:lang="en">Talking Book</source>
         <note>ID: PublishTab.TalkingBook</note>
@@ -4637,6 +4645,59 @@
       <trans-unit id="PublishTab.Upload.FinalUploadFailureNotice">
         <source xml:lang="en">Sorry, "{0}" was not successfully uploaded. Sometimes this is caused by temporary problems with the servers we use. It's worth trying again in an hour or two. If you regularly get this problem please report it to us.</source>
         <note>ID: PublishTab.Upload.FinalUploadFailureNotice</note>
+      </trans-unit>
+      <!-- 5.5 -->
+      <trans-unit id="PublishTab.Feature.Activities.None" translate="no">
+        <source xml:lang="en">No activities were found in this book</source>
+        <note>ID: PublishTab.Feature.Activities.None</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Feature.Activities.Present" translate="no">
+        <source xml:lang="en">The book has activities</source>
+        <note>ID: PublishTab.Feature.Activities.None</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Feature.Comic.None" translate="no">
+        <source xml:lang="en">No overlays that might make this a Comic book were found</source>
+        <note>ID: PublishTab.Feature.Comic.None</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Feature.Comic.Possible" translate="no">
+        <source xml:lang="en">This is a comic book</source>
+        <note>ID: PublishTab.Feature.Comic.None</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Feature.Motion.None" translate="no">
+        <source xml:lang="en">No motion settings were found in this book</source>
+        <note>ID: PublishTab.Feature.Motion.None</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Feature.Motion.Possible" translate="no">
+        <source xml:lang="en">Publish this book to show motion in landscape mode</source>
+        <note>ID: PublishTab.Feature.Motion.None</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Feature.SignLanguage.NoVideos" translate="no">
+        <source xml:lang="en">No videos found in this book</source>
+        <note>ID: PublishTab.Feature.SignLanguage.NoVideos</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Feature.SignLanguage.Present" translate="no">
+        <source xml:lang="en">The videos in this book contain the specified sign language</source>
+        <note>ID: PublishTab.Feature.SignLanguage.Present</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Feature.SignLanguage.Unknown" translate="no">
+        <source xml:lang="en">The videos in this book are sign language; you need to specify which one</source>
+        <note>ID: PublishTab.Feature.SignLanguage.Unknown</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Feature.TallkingBook.NoNarration" translate="no">
+        <source xml:lang="en">This book has no recorded narration</source>
+        <note>ID: PublishTab.Feature.TallkingBook.NoNarration</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Feature.TallkingBook.NoNarrationSelected" translate="no">
+        <source xml:lang="en">No talking book languages are selected</source>
+        <note>ID: PublishTab.Feature.TallkingBook.NoNarrationSelected</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Feature.Vision.None" translate="no">
+        <source xml:lang="en">No image descriptions were found in this book</source>
+        <note>ID: PublishTab.Feature.Vision.None</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Feature.Vision.Possible" translate="no">
+        <source xml:lang="en">This book is usable by people whose vision is impaired</source>
+        <note>ID: PublishTab.Feature.Vision.None</note>
       </trans-unit>
       <trans-unit id="PublishTab.FontProblem">
         <source xml:lang="en">This book has a font, “{0}”, which has the following problem:</source>
