@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Bloom.Book;
+using Bloom.Publish.BloomLibrary;
 
 namespace Bloom.Publish.Android
 {
@@ -96,15 +97,7 @@ namespace Bloom.Publish.Android
 		private static HashSet<string> GetLanguagesToInclude(PublishSettings settings)
 		{
 			var dictToUse = Program.RunningHarvesterMode ? settings.BloomLibrary.TextLangs : settings.BloomPub.TextLangs;
-			// The following problem can happen if running in Harvester and 'ForBloomLibrary' isn't set up.
-			// So just use 'ForBloomPUB', which should be set up.
-			if (dictToUse == null)
-				dictToUse = settings.BloomPub.TextLangs;
-			// If it's still null, bail.
-			if (dictToUse == null)
-				return new HashSet<string>();
 			return new HashSet<string>(dictToUse.Where(kvp => kvp.Value.IsIncluded()).Select(kvp => kvp.Key));
-
 		}
 
 		// BL-10840 When the Harvester is getting AndroidPublishSettings, we want to use the settings
@@ -113,13 +106,6 @@ namespace Bloom.Publish.Android
 		private static HashSet<string> GetLanguagesToExclude(Dictionary<string, InclusionSetting> bloomPubDict, Dictionary<string, InclusionSetting> libraryDict)
 		{
 			var dictToUse = Program.RunningHarvesterMode ? libraryDict : bloomPubDict;
-			// The following problem can happen if running in Harvester and 'ForBloomLibrary' isn't set up.
-			// So just use 'ForBloomPUB', which should be set up.
-			if (dictToUse == null)
-				dictToUse = bloomPubDict;
-			// If it's still null, bail.
-			if (dictToUse == null)
-				return new HashSet<string>();
 			return new HashSet<string>(dictToUse.Where(kvp => !kvp.Value.IsIncluded()).Select(kvp =>kvp.Key));
 		}
 
@@ -166,16 +152,27 @@ namespace Bloom.Publish.Android
 
 		public static AndroidPublishSettings GetPublishSettingsForBook(BookServer bookServer, BookInfo bookInfo)
 		{
-			// Normally this is setup by the Publish screen, but if you've never visited the Publish screen for this book,
-			// then this will be empty. In that case, initialize it here.
-			if (bookInfo.PublishSettings.BloomPub.TextLangs.Count == 0)
-			{
-				var book = bookServer.GetBookFromBookInfo(bookInfo);
-				var allLanguages = book.AllPublishableLanguages(includeLangsOccurringOnlyInXmatter: true);
-				PublishToAndroidApi.InitializeLanguagesInBook(bookInfo, allLanguages, book.CollectionSettings);
-			}
-			return FromBookInfo(bookInfo);
+			var book = bookServer.GetBookFromBookInfo(bookInfo);
+			InitializeLanguageSettingsIfNeeded(book);
+			return FromBookInfo(book.BookInfo);
 		}
 
+		private static void InitializeLanguageSettingsIfNeeded(Book.Book book)
+		{
+			// Normally this is setup by the Publish screen, but if you've never visited the Publish screen for this book,
+			// then this will be empty. In that case, initialize it here.
+			if (book.BookInfo.PublishSettings.BloomPub.TextLangs.Count == 0)
+			{
+				var allLanguages = book.AllPublishableLanguages(includeLangsOccurringOnlyInXmatter: true);
+				PublishToAndroidApi.InitializeLanguagesInBook(book.BookInfo, allLanguages, book.CollectionSettings);
+			}
+
+			// If we are running harvester, we are going to prefer the BloomLibrary settings.
+			// So we need to ensure they are initialized now.
+			if (Program.RunningHarvesterMode && book.BookInfo.PublishSettings.BloomLibrary.TextLangs.Count == 0)
+			{
+				BloomLibraryPublishModel.InitializeLanguages(book);
+			}
+		}
 	}
 }
