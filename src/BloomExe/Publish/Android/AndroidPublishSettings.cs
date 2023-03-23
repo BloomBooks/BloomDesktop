@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Bloom.Book;
+using Bloom.Publish.BloomLibrary;
 
 namespace Bloom.Publish.Android
 {
@@ -96,15 +97,10 @@ namespace Bloom.Publish.Android
 		private static HashSet<string> GetLanguagesToInclude(PublishSettings settings)
 		{
 			var dictToUse = Program.RunningHarvesterMode ? settings.BloomLibrary.TextLangs : settings.BloomPub.TextLangs;
-			// The following problem can happen if running in Harvester and 'ForBloomLibrary' isn't set up.
-			// So just use 'ForBloomPUB', which should be set up.
-			if (dictToUse == null)
-				dictToUse = settings.BloomPub.TextLangs;
-			// If it's still null, bail.
-			if (dictToUse == null)
-				return new HashSet<string>();
-			return new HashSet<string>(dictToUse.Where(kvp => kvp.Value.IsIncluded()).Select(kvp => kvp.Key));
 
+			ThrowIfLanguagesNotInitialized(dictToUse);
+
+			return new HashSet<string>(dictToUse.Where(kvp => kvp.Value.IsIncluded()).Select(kvp => kvp.Key));
 		}
 
 		// BL-10840 When the Harvester is getting AndroidPublishSettings, we want to use the settings
@@ -113,14 +109,21 @@ namespace Bloom.Publish.Android
 		private static HashSet<string> GetLanguagesToExclude(Dictionary<string, InclusionSetting> bloomPubDict, Dictionary<string, InclusionSetting> libraryDict)
 		{
 			var dictToUse = Program.RunningHarvesterMode ? libraryDict : bloomPubDict;
-			// The following problem can happen if running in Harvester and 'ForBloomLibrary' isn't set up.
-			// So just use 'ForBloomPUB', which should be set up.
-			if (dictToUse == null)
-				dictToUse = bloomPubDict;
-			// If it's still null, bail.
-			if (dictToUse == null)
-				return new HashSet<string>();
+
+			ThrowIfLanguagesNotInitialized(dictToUse);
+
 			return new HashSet<string>(dictToUse.Where(kvp => !kvp.Value.IsIncluded()).Select(kvp =>kvp.Key));
+		}
+
+		private static void ThrowIfLanguagesNotInitialized(Dictionary<string, InclusionSetting> langDictionary)
+		{
+			if (langDictionary.Count == 0)
+			{
+				// This should never happen. If we are running from the UI, we will have initialized things
+				// when going into the publish screen. If we are running from the command line, we will
+				// have called GetPublishSettingsForBook which guarantees we are properly initialized.
+				throw new ApplicationException("Trying to use PublishSettings languages which have not been initialized");
+			}
 		}
 
 		public static AndroidPublishSettings FromBookInfo(BookInfo bookInfo)
@@ -174,8 +177,15 @@ namespace Bloom.Publish.Android
 				var allLanguages = book.AllPublishableLanguages(includeLangsOccurringOnlyInXmatter: true);
 				PublishToAndroidApi.InitializeLanguagesInBook(bookInfo, allLanguages, book.CollectionSettings);
 			}
+
+			// If we are running harvester, we are going to use the BloomLibrary settings.
+			// So we need to ensure they are initialized now.
+			if (Program.RunningHarvesterMode && bookInfo.PublishSettings.BloomLibrary.TextLangs.Count == 0)
+			{
+				var book = bookServer.GetBookFromBookInfo(bookInfo);
+				BloomLibraryPublishModel.InitializeLanguages(book);
+			}
 			return FromBookInfo(bookInfo);
 		}
-
 	}
 }
