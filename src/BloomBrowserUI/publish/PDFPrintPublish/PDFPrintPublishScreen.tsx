@@ -124,6 +124,7 @@ export const PDFPrintPublishScreen = () => {
                                         align-items: center;
                                         justify-content: center;
                                         padding: 0 20px 75px;
+                                        max-height: 530px; // Keep the text and arrow up in the options
                                     `}
                                 >
                                     <div
