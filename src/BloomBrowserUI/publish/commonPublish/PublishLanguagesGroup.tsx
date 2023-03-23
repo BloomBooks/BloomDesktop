@@ -15,6 +15,7 @@ export interface ILanguagePublishInfo {
     includeText: boolean;
     containsAnyAudio: boolean;
     includeAudio: boolean;
+    required: boolean;
 }
 
 class LanguagePublishInfo implements ILanguagePublishInfo {
@@ -24,6 +25,7 @@ class LanguagePublishInfo implements ILanguagePublishInfo {
     public includeText: boolean;
     public containsAnyAudio: boolean;
     public includeAudio: boolean;
+    public required: boolean;
 
     public constructor(other?: ILanguagePublishInfo | undefined) {
         if (!other) {
@@ -37,6 +39,7 @@ class LanguagePublishInfo implements ILanguagePublishInfo {
             this.includeText = other.includeText;
             this.containsAnyAudio = other.containsAnyAudio;
             this.includeAudio = other.includeAudio;
+            this.required = other.required;
         }
     }
 }
@@ -79,8 +82,9 @@ export const PublishLanguagesGroup: React.FunctionComponent<{
             code: item.code,
             name: item.name,
             warnIncomplete: !item.complete,
-            isEnabled: true,
-            isChecked: item.includeText
+            isEnabled: !item.required,
+            isChecked: item.includeText,
+            required: item.required
         };
     });
 
