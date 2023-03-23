@@ -15,5 +15,6 @@ namespace Bloom.Publish
 		public bool includeText;
 		public bool containsAnyAudio;
 		public bool includeAudio;
+		public bool required;
 	}
 }

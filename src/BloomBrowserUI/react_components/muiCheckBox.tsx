@@ -27,6 +27,7 @@ export const MuiCheckbox: React.FunctionComponent<{
     // I ended up deep in the rabbit hole, so I punted and added this prop instead.
     // Ideally, we would fix those and get rid of this parameter.
     deprecatedVersionWhichDoesntEnsureMultilineLabelsWork?: boolean;
+    title?: string;
 }> = props => {
     const [previousTriState, setPreviousTriState] = useState<
         boolean | undefined
@@ -136,6 +137,7 @@ export const MuiCheckbox: React.FunctionComponent<{
                 )
             }
             label={finalLabel}
+            title={props.title}
             disabled={props.disabled}
         />
     );
