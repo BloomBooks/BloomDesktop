@@ -309,21 +309,27 @@ namespace Bloom.Book
 		public bool Motion;
 
 		/// <summary>
-		/// This corresponds to the checkbox values of which languages the user wants to publish the text for.
+		/// This used to correspond to the checkbox values of which languages the user wants to publish the text for.
+		/// It is now obsolete; we decided to use the BloomLibrary language settings in both screens.
+		/// Keeping it for now so saved settings don't get thrown away in case users persuade us to reinstate it.
 		/// </summary>
 		/// <remarks>Previouly bookInfo.TextLangsToPublish.ForBloomPUB</remarks>
 		[JsonProperty("textLangs")]
 		public Dictionary<string, InclusionSetting> TextLangs;
 
 		/// <summary>
-		/// This corresponds to the checkbox values of which languages the user wants to publish the audio for
+		/// This used to correspond to the checkbox values of which languages the user wants to publish the audio for
+		/// It is now obsolete; we decided to use the BloomLibrary language settings in both screens.
+		/// Keeping it for now so saved settings don't get thrown away in case users persuade us to reinstate it.
 		/// </summary>
 		/// <remarks>Previouly bookInfo.AudioLangsToPublish.ForBloomPUB</remarks>
 		[JsonProperty("audioLangs")]
 		public Dictionary<string, InclusionSetting> AudioLangs;
 
 		/// <summary>
-		/// The sign language(s) -- currently we allow only one -- which the user wants to publish
+		/// Used to be the sign language(s) -- currently we allow only one -- which the user wants to publish
+		/// It is now obsolete; we decided to use the BloomLibrary language settings in both screens.
+		/// Keeping it for now so saved settings don't get thrown away in case users persuade us to reinstate it.
 		/// </summary>
 		/// <remarks>Previouly bookInfo.SignLangsToPublish.ForBloomPUB</remarks>
 		[JsonProperty("signLangs")]

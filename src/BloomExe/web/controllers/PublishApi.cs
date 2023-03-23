@@ -123,14 +123,14 @@ namespace Bloom.web.controllers
 				null, // no write action
 				false,
 				true); // we don't really know, just safe default
-			apiHandler.RegisterEndpointLegacy("publish/languagesInBook", request =>
+			apiHandler.RegisterEndpointHandler("publish/languagesInBook", request =>
 			{
 				try
 				{
 					InitializeLanguagesInBook(request);
 
-					Dictionary<string, InclusionSetting> textLangsToPublish = request.CurrentBook.BookInfo.PublishSettings.BloomPub.TextLangs;
-					Dictionary<string, InclusionSetting> audioLangsToPublish = request.CurrentBook.BookInfo.PublishSettings.BloomPub.AudioLangs;
+					Dictionary<string, InclusionSetting> textLangsToPublish = request.CurrentBook.BookInfo.PublishSettings.BloomLibrary.TextLangs;
+					Dictionary<string, InclusionSetting> audioLangsToPublish = request.CurrentBook.BookInfo.PublishSettings.BloomLibrary.AudioLangs;
 
 					var result = "[" + string.Join(",", _allLanguages.Select(kvp =>
 					{
@@ -148,6 +148,13 @@ namespace Bloom.web.controllers
 							includeAudio = includeAudioSetting.IsIncluded();
 						}
 
+						var required = false;
+						if (BloomLibraryPublishModel.IsRequiredLanguageForBook(kvp.Key, Model.Book))
+						{
+							includeText = true;
+							required = true;
+						}
+
 						var value = new LanguagePublishInfo()
 						{
 							code = kvp.Key,
@@ -155,7 +162,8 @@ namespace Bloom.web.controllers
 							complete = kvp.Value,
 							includeText = includeText,
 							containsAnyAudio = _languagesWithAudio.Contains(langCode),
-							includeAudio = includeAudio
+							includeAudio = includeAudio,
+							required = required
 						};
 						var json = JsonConvert.SerializeObject(value);
 						return json;
@@ -238,14 +246,14 @@ namespace Bloom.web.controllers
 					if (includeTextValue != null)
 					{
 						var inclusionSetting = includeTextValue == "true" ? InclusionSetting.Include : InclusionSetting.Exclude;
-						request.CurrentBook.BookInfo.PublishSettings.BloomPub.TextLangs[langCode] = inclusionSetting;
+						request.CurrentBook.BookInfo.PublishSettings.BloomLibrary.TextLangs[langCode] = inclusionSetting;
 					}
 
 					var includeAudioValue = request.GetParamOrNull("includeAudio");
 					if (includeAudioValue != null)
 					{
 						var inclusionSetting = includeAudioValue == "true" ? InclusionSetting.Include : InclusionSetting.Exclude;
-						request.CurrentBook.BookInfo.PublishSettings.BloomPub.AudioLangs[langCode] = inclusionSetting;
+						request.CurrentBook.BookInfo.PublishSettings.BloomLibrary.AudioLangs[langCode] = inclusionSetting;
 					}
 
 					request.CurrentBook.BookInfo.Save();    // We updated the BookInfo, so need to persist the changes. (but only the bookInfo is necessary, not the whole book)
@@ -333,7 +341,7 @@ namespace Bloom.web.controllers
 				var langCode = kvp.Key;
 
 				// First, check if the user has already explicitly set the value. If so, we'll just use that value and be done.
-				if (bookInfo.PublishSettings.BloomPub.TextLangs.TryGetValue(langCode, out InclusionSetting checkboxValFromSettings))
+				if (bookInfo.PublishSettings.BloomLibrary.TextLangs.TryGetValue(langCode, out InclusionSetting checkboxValFromSettings))
 				{
 					if (checkboxValFromSettings.IsSpecified())
 					{
@@ -351,16 +359,16 @@ namespace Bloom.web.controllers
 					langCode == collectionSettings?.Language1Tag;
 
 				var newInitialValue = isChecked ? InclusionSetting.IncludeByDefault : InclusionSetting.ExcludeByDefault;
-				bookInfo.PublishSettings.BloomPub.TextLangs[langCode] = newInitialValue;
+				bookInfo.PublishSettings.BloomLibrary.TextLangs[langCode] = newInitialValue;
 			}
 
 			// Initialize the Talking Book Languages settings
-			if (bookInfo.PublishSettings.BloomPub.AudioLangs.Count == 0)
+			if (bookInfo.PublishSettings.BloomLibrary.AudioLangs.Count == 0)
 			{
 				var allLangCodes = allLanguages.Select(x => x.Key);
 				foreach (var langCode in allLangCodes)
 				{
-					bookInfo.PublishSettings.BloomPub.AudioLangs[langCode] = InclusionSetting.IncludeByDefault;
+					bookInfo.PublishSettings.BloomLibrary.AudioLangs[langCode] = InclusionSetting.IncludeByDefault;
 				}
 			}
 

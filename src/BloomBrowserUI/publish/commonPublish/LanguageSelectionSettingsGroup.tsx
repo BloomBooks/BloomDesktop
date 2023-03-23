@@ -11,6 +11,7 @@ export interface LangCheckboxValue {
     warnIncomplete;
     isEnabled;
     isChecked;
+    required?: boolean;
 }
 
 export const LanguageSelectionSettingsGroup: React.FunctionComponent<{
@@ -27,11 +28,16 @@ export const LanguageSelectionSettingsGroup: React.FunctionComponent<{
         "(incomplete translation)",
         "PublishTab.Upload.IncompleteTranslation"
     );
+    const required = useL10n(
+        "This language is required because it is currently shown in the book",
+        "PublishTab.RequiredLanguage"
+    );
 
     const languageCheckboxes = props.langCheckboxValues.map(item => (
         <FormControlLabel
             key={item.code}
             className="languageLabel"
+            title={item.required ? required : undefined}
             control={
                 <Checkbox
                     disabled={!item.isEnabled}
