@@ -7,6 +7,7 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using Bloom.MiscUI;
 using Gecko;
@@ -193,13 +194,13 @@ namespace Bloom.Publish.PDF
 			return null;
 		}
 
-		public void Print()
+		public async Task Print()
 		{
 #if !__MonoCS__
 			if (ExperimentalFeatures.IsFeatureEnabled(ExperimentalFeatures.kWebView2))
 			{
 				var wv2 = _pdfViewerControl as WebView2Browser;
-				wv2.RunJavaScriptAsync("window.print()");
+				await wv2.RunJavaScriptAsync("window.print()");
 				return;
 			}
 			var arc = _pdfViewerControl as AdobeReaderControl;

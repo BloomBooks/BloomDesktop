@@ -23,18 +23,25 @@ namespace Bloom.ToPalaso.Experimental
 		}
 
 		public MultiProgress Progress = new MultiProgress();
-		private Action<IProgress> _work;
 		private Func<IProgress, Task> _asyncWork;
 
 		public void ShowAndDoWork(Action<IProgress> work)
 		{
-			_work = work;
+			_asyncWork = p =>
+			{
+				work(p);
+				return Task.CompletedTask;
+			};
 			Initialize();
 		}
 
-		public void ShowAndDoWork(Func<IProgress, Task> work)
+		// Typically work is an async function that conceptually returns void,
+		// but to allow it to be awaited it must actually return a Task.
+		// This method returns only after the task completes (that is, the dialog
+		// is closed only after awaiting the asyncWork).
+		public void ShowAndDoWork(Func<IProgress, Task> asyncWork)
 		{
-			_asyncWork = work;
+			_asyncWork = asyncWork;
 			Initialize();
 		}
 
@@ -55,22 +62,10 @@ namespace Bloom.ToPalaso.Experimental
 			}
 		}
 
-		void StartWorking(object sender, EventArgs e)
+		async void StartWorking(object sender, EventArgs e)
 		{
 			Application.Idle -= new EventHandler(StartWorking);
-			if (_work != null)
-			{
-				_work(Progress);
-				Close();
-			}
-			else
-			{
-				StartWorkingAsync();
-			}
-		}
 
-		private async void StartWorkingAsync()
-		{
 			await _asyncWork(Progress);
 			Close();
 		}
