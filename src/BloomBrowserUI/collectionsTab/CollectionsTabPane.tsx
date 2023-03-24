@@ -651,10 +651,12 @@ const BooksOfCollectionWithHeading: React.FunctionComponent<{
     isSpreadsheetFeatureActive: boolean;
     onRemoveSourceCollection: (id: string) => void;
 }> = props => {
-    const localizedName = useL10n(props.name, "CollectionTab." + props.name);
-    const localName = props.shouldLocalizeName
-        ? localizedName // putting the useL10n() hook here violates rules of hooks
-        : props.name;
+    // Using a null l10nId lets us not make a server call when we don't want to.
+    // (We can't call useL10n conditionally.)
+    const collectionName = useL10n(
+        props.name,
+        props.shouldLocalizeName ? `CollectionTab.${props.name}` : null
+    );
 
     return (
         <div key={"frag:" + props.id} id={sanitize(props.id)}>
@@ -669,7 +671,7 @@ const BooksOfCollectionWithHeading: React.FunctionComponent<{
                         }
                     `}
                 >
-                    <h2>{localName}</h2>
+                    <h2>{collectionName}</h2>
                     <div
                         css={css`
                             margin-left: 30px;
@@ -683,7 +685,7 @@ const BooksOfCollectionWithHeading: React.FunctionComponent<{
                     </div>
                 </div>
             ) : (
-                <h2>{localName}</h2>
+                <h2>{collectionName}</h2>
             )}
             <BooksOfCollection
                 collectionId={props.id}
