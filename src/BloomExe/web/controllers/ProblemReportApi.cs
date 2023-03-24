@@ -89,7 +89,7 @@ namespace Bloom.web.controllers
 
 		private BloomZipFile _reportZipFile;
 		private TempFile _reportZipFileTemp;
-		public static string YouTrackProjectKey = "BL";
+		public static string YouTrackProjectKey = "BL"; // this can be used to send to the "Sandbox" for testing: "SB";
 		const string kFailureResult = "failed";
 
 		/// <summary>
@@ -782,25 +782,31 @@ namespace Bloom.web.controllers
 				var events = CollectionHistory.GetBookEvents(book.BookInfo);
 				if (events.Count == 0)
 					return;
+
 				bldr.AppendLine();
-				bldr.AppendLine("### History of Book Events");
+				bldr.AppendLine("#### History of Book Events");
+				bldr.AppendLine("<details>");
+
+				// Unfortunately, the collapsible <details> section doesn't allow normal markdown styling.
+				// So we need <br>s here (and html styling below).
+				void AddLine(StringBuilder sb, string text = "")
+				{
+					sb.AppendLine(text + "<br>");
+				}
 				for (var i = 0; i < events.Count; i++)
 				{
 					var historyEvent = events[i];
-					var type = historyEvent.Type.ToString();
-					bldr.AppendLine("#### " + (i + 1) + "  " + type);
-					var versionWhen = "  Time: " +
-						historyEvent.When.ToString("G", CultureInfo.InvariantCulture) + "UTC, with Bloom " +
-						historyEvent.BloomVersion;
-					var who = ", User: " + historyEvent.UserName + " ("+ GetDomainlessEmail(historyEvent.UserId) + ")";
-					bldr.AppendLine(versionWhen + who);
-					var bookWithTitle = "  Book with Title: " + historyEvent.Title;
-					bldr.AppendLine(bookWithTitle);
+					var time = historyEvent.When.ToString("G", CultureInfo.InvariantCulture);
+					var version = historyEvent.BloomVersion ?? "{unknown version}";
+					var email = GetDomainlessEmail(historyEvent.UserId);
+					AddLine(bldr, $"<b>{i + 1}  {historyEvent.Type}</b>");
+					AddLine(bldr, $"  Time: {time}UTC, with Bloom {version}, User: {historyEvent.UserName} ({email})");
+					AddLine(bldr, $"  Book with Title: {historyEvent.Title}");
 					if (!string.IsNullOrEmpty(historyEvent.Message))
-					{
-						bldr.AppendLine("  " + historyEvent.Message);
-					}
+						AddLine(bldr, $"  {historyEvent.Message}");
 				}
+
+				bldr.AppendLine("</details>");
 				bldr.AppendLine();
 			}
 			catch (Exception e)
