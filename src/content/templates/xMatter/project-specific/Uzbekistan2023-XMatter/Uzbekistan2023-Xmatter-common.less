@@ -1,6 +1,10 @@
 @import (reference) "../../bloom-xmatter-common.less";
 @import (reference) "../../../../bookLayout/basePage.less";
 
+:root {
+    --bleed-tolerance: 3mm;
+}
+
 // These rule are common to regular Uzbekistan2023-Xmatter and the epub version.
 // Some of these rules, especially for the front cover, may not work on all readers,
 // but by experiment they seem to produce reasonable results. They were originally
@@ -20,7 +24,7 @@ div.bloom-page.outsideBackCover.coverColor {
 
     div.bloom-page.outsideFrontCover.coverColor,
     div.bloom-page.outsideBackCover.coverColor {
-        background-color: #143B65 !important;
+        background-color: #143A63 !important;
     }
 }
 
@@ -57,43 +61,65 @@ div.bloom-page.outsideBackCover.coverColor {
 
 .frontCover .placeholder,
 .frontCover .bloom-imageContainer {
-    margin-left: 1cm;
+    margin: 0;
+    margin-bottom: 15px;
 
-    margin-right: 1cm;
-    display: flex;
+    img[data-book="coverImage"] {
+        margin-bottom: auto; // If the image is too short, align from the top. I don't know for certain that they want this
+    }
 }
 
-.frontCover .bottomBlock {
-    margin-left: 1cm;
-    margin-right: 1cm;
-    margin-bottom: 1.5cm; // leave room for divider
-}
+/* needs more work
+.bloom-mediaBox {
 
-.frontCover .bottomRow {
-    display: grid !important;
-    overflow: hidden;
+    &:before,
+    &:after {
+        position: absolute;
+        content: url('crop.svg') !important;
+        z-index: 10000;
+        border: unset;
+    }
+
+    &:before {
+
+        top: -3mm !important;
+        left: -3mm !important;
+    }
+
+    &:after {
+        height: fit-content;
+        right: 0 !important;
+        left: unset !important;
+        transform: rotate(90deg);
+        top: 0 !important;
+        right: 0 !important;
+    }
+
 }
+*/
 
 // don't show second language on cover
 .frontCover .bloom-translationGroup.bookTitle .bloom-editable.bloom-contentNational1:not(.bloom-content1) {
     display: none;
 }
 
-.frontCover .bloom-translationGroup.bookTitle {
-    color: black;
-    background-color: white;
-    box-sizing: border-box; // padding doesn't affect height.
-    /*flex-basis: content;*/
-    flex-direction: column;
+.frontCover .gradeBadgeRow {
+    display: flex;
     justify-content: center;
-    padding-left: 1cm;
-    padding-right: 1cm;
+    height: 100px;
+    margin-bottom: 13px;
+}
 
-    // repeat to make more specific than other rules
-    .bloom-editable.bloom-editable.bloom-content1 {
-        margin-bottom: 0; // don't want this to mess with vertical centering
-        flex-grow: 0; // center it, don't grow it
-    }
+
+.creditsRow {
+    border-top: solid rgba(255, 255, 255, 0.3);
+    height: 16mm;
+}
+
+.frontCover .bloom-translationGroup {
+    // constrain text to within the safe area
+    margin-left: calc(2 * var(--bleed-tolerance));
+    margin-right: calc(2 * var(--bleed-tolerance));
 }
 
 // This much of the translation group will be trimmed off if the printer
@@ -115,13 +141,6 @@ div.bloom-page.outsideBackCover.coverColor {
     }
 }
 
-.frontCover {
-
-    .coverBottomLangName,
-    .coverBottomBookTopic {
-        display: none;
-    }
-}
 
 /* Element | http://localhost:8089/bloom/C%3A/Users/hatto/Documents/Bloom/Kyrgyz%20Branding%20Test/Book/8444a5b9-4b6a-476a-90da-cc003fbc1fea-memsim-Preview.html */
 
@@ -139,14 +158,6 @@ div.bloom-page.outsideBackCover.coverColor {
     // box-sizing: border-box; // keep it within the image-container, not 6px beyond it because of the border
 }
 
-/* only white makes sense, e.g. for the inside cover colors */
-div.bloom-page {
-
-    &.insideFrontCover,
-    &.insideBackCover {
-        background-color: white !important;
-    }
-}
 
 .Device16x9Portrait,
 .Device16x9Landscape {
