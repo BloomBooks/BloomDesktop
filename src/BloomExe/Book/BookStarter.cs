@@ -226,7 +226,7 @@ namespace Bloom.Book
 			if (usingTemplate && !makingTemplate)
 				BookCopyrightAndLicense.RemoveLicense(storage);
 
-			InjectXMatter(initialPath, storage, sizeAndOrientation);
+			InjectXMatter(initialPath, storage, sizeAndOrientation, true);
 
 			SetLineageAndId(storage, sourceFolderPath);
 
@@ -488,7 +488,7 @@ namespace Bloom.Book
 			}
 		}
 
-		private void InjectXMatter(string initialPath, BookStorage storage, Layout sizeAndOrientation)
+		private void InjectXMatter(string initialPath, BookStorage storage, Layout sizeAndOrientation, bool includeUserStyles=false)
 		{
 			//now add in the xmatter from the currently selected xmatter pack
 			if (!TestingSoSkipAddingXMatter)
@@ -507,8 +507,14 @@ namespace Bloom.Book
 				helper.FolderPathForCopyingXMatterFiles = storage.FolderPath;
 				helper.InjectXMatter(data, sizeAndOrientation, false, _collectionSettings.Language2.Tag);
 				//TranslationGroupManager.PrepareDataBookTranslationGroups(storage.Dom,languages);
+
+				if(includeUserStyles)
+				{
+					helper.InjectDefaultUserStylesFromXMatter();
+				}
 			}
 		}
+
 
 		private void RemoveDataDivElement(XmlNode dom, string key)
 		{

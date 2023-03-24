@@ -206,6 +206,24 @@ namespace Bloom.Book
 		/// </summary>
 		public XmlDocument XMatterDom { get; set; }
 
+		public void InjectDefaultUserStylesFromXMatter()
+		{
+			var xmatterStylesNode = XMatterDom.SelectSingleNode("html/head/"+ HtmlDom.UserModifiedStyleXPath);
+			if(xmatterStylesNode != null)
+			{
+				var existing = HtmlDom.GetUserModifiedStyleElement(_bookDom.Head);
+				if (existing != null)
+				{
+					var copy = _bookDom.RawDom.ImportNode(xmatterStylesNode,true);
+					existing.ParentNode.ReplaceChild(copy, existing);
+				}
+				else
+				{
+					_bookDom.Head.AppendChild(xmatterStylesNode);
+				}
+			}
+
+		}
 		public void InjectXMatter(Dictionary<string, string> writingSystemCodes, Layout layout, bool orderXmatterForDeviceUse, string metadataLangTag)
 		{
 			//don't want to pollute shells with this content
