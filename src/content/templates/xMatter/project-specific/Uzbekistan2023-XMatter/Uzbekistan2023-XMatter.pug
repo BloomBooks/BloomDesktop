@@ -1,34 +1,34 @@
-//- extends ../../Traditional-XMatter/Traditional-XMatter.pug
 include ../../bloom-xmatter-mixins.pug
 
 doctype html
 html
 	head
-		meta(charset='UTF-8')
-		meta(name='BloomFormatVersion', content='2.0')
+		+metadata-standard
 		title Uzbekistan 2023 Front & Back Matter
 		+stylesheets('Uzbekistan2023-XMatter.css')
+
+		//- This doesn't actually work, at least in 5.4. They just get lost
+		style(type="text/css" title="userModifiedStyles")
+			= '\n'
+			| /*<![CDATA[*/
+			| .Cover-Foobar-style { font-size: 16pt !important; font-family:"Arial"; color:#FAD41E;     text-align: center;}
+			| .Title-On-Cover-style { font-size: 34pt !important; font-family:"Aileron; Arial"; color:white;     text-align: center;}
+			| .Cover-Default-style { font-size: 16pt !important; font-style:italic; font-family:"Aileron; Arial"; color:white;     text-align: center;}
+			|   /*]]>*/
 	body
 		+page-cover('Front Cover')(data-export='front-matter-cover', data-xmatter-page='frontCover')&attributes(attributes).frontCover.outsideFrontCover#7d7d1d2d-18b0-420f-ac96-6de20f659810
-			block front-cover-image
-				+standard-cover-image
+			+standard-cover-image
 
-			block cover-title
-				+field-prototypeDeclaredExplicity("V").bookTitle
-					label.bubble Book title in {lang}
-					+editable(kLanguageForPrototypeOnly).bloom-nodefaultstylerule.Title-On-Cover-style.bloom-padForOverflow(data-book='bookTitle')
-
-			.bottomBlock
-				+cover-branding-bottom-left.bottom-left-branding
-
-				// 2 rows
-				.bottomTextContent
-					block cover-bottom-credits
-						//NB: don't convert this to an inline label; that interferes with the bloom-copyFromOtherLanguageIfNecessary,
-						// because it is never empty
-						.creditsRow(data-hint='You may use this space for author/illustrator, or anything else.')
-							+field-prototypeDeclaredExplicity("V")
-								+editable(kLanguageForPrototypeOnly).smallCoverCredits.Cover-Default-style(data-book='smallCoverCredits')
+			+field-prototypeDeclaredExplicity("V").foobar
+				label.bubble Not clear what this is yet
+				+editable(kLanguageForPrototypeOnly).Cover-Foobar-style(data-book='foobar')
+			+field-prototypeDeclaredExplicity("V").bookTitle
+				label.bubble Book title in {lang}
+				+editable(kLanguageForPrototypeOnly).bloom-nodefaultstylerule.Title-On-Cover-style.bloom-padForOverflow(data-book='bookTitle')
+			div(data-book='level-image-html' lang="*").gradeBadgeRow
+			.creditsRow(data-hint='You may use this space for author/illustrator, or anything else.')
+				+field-prototypeDeclaredExplicity("V").smallCoverCredits
+					+editable(kLanguageForPrototypeOnly).smallCoverCredits.Cover-Default-style(data-book='smallCoverCredits')
 
 		+factory-insideFrontCover
 		+factoryStandard-titlePage
