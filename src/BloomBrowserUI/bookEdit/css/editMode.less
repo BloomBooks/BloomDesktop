@@ -67,9 +67,10 @@ body {
 
         top: 0;
         bottom: 0;
-        border: 3mm solid rgba(0, 0, 0, 0.4); // medium gray
+        border: 3mm solid rgba(0, 0, 0, 0.8);
         z-index: 1;
     }
+
     :not(.Device16x9Portrait):not(.Device16x9Landscape)&:after {
         // show safety area (the area inside of the trim box that still could get cut)
         content: "";
@@ -78,7 +79,7 @@ body {
         right: @bleed;
         top: @bleed;
         bottom: @bleed;
-        border: 3mm solid @EditBoxItemsColor;
+        border: 3mm solid rgba(0, 0, 0, 0.05);
         z-index: 2;
     }
 }
