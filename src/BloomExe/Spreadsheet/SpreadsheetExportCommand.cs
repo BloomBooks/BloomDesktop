@@ -17,7 +17,7 @@ namespace Bloom.CLI
 	/// </summary>
 	class SpreadsheetExportCommand
 	{
-		public static async Task<int> Handle(SpreadsheetExportParameters options)
+		public static Task<int> Handle(SpreadsheetExportParameters options)
 		{
 			try
 			{
@@ -35,12 +35,12 @@ namespace Bloom.CLI
 				string outputFolderPath = Path.Combine(options.OutputPath, Path.GetFileNameWithoutExtension(imagesFolderPath));
 				var _sheet = exporter.ExportToFolder(dom, imagesFolderPath, outputFolderPath, out string unused,
 					null, options.Overwrite ? OverwriteOptions.Overwrite: OverwriteOptions.Quit);
-				return 0; // all went well
+				return Task.FromResult(0); // all went well
 			}
 			catch (Exception ex)
 			{
 				Console.WriteLine(ex);
-				return 1;
+				return Task.FromResult(1);
 			}
 		}
 

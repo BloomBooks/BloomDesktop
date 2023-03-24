@@ -26,7 +26,7 @@ namespace Bloom.CLI
 		static ProjectContext _projectContext;
 		static Book.Book _book;
 
-		public static async Task<int> Handle(SendFontAnalyticsParameters options)
+		public static Task<int> Handle(SendFontAnalyticsParameters options)
 		{
 			Program.SetUpErrorHandling();
 			try
@@ -47,16 +47,16 @@ namespace Bloom.CLI
 							// (See https://issues.bloomlibrary.org/youtrack/issue/BL-11512.)
 							ReportFontAnalytics(_book.ID, "harvester sendFontAnalytics", options.Testing,
 								options.SkipEpubAnalytics, options.SkipPdfAnalytics);
-							return (int)SendFontAnalyticsExitCode.Success;
+							return Task.FromResult((int)SendFontAnalyticsExitCode.Success);
 						}
 					}
-					return (int)SendFontAnalyticsExitCode.NoFontsFound;
+					return Task.FromResult((int)SendFontAnalyticsExitCode.NoFontsFound);
 				}
 			}
 			catch (Exception ex)
 			{
 				Console.WriteLine(ex);
-				return (int)SendFontAnalyticsExitCode.UnhandledException;
+				return Task.FromResult((int)SendFontAnalyticsExitCode.UnhandledException);
 			}
 		}
 

@@ -827,7 +827,7 @@ namespace Bloom
 			return RunJavaScript(script);
 		}
 
-		public static string RunJavaScriptOn(GeckoWebBrowser geckoWebBrowser, string script)
+		private static string RunJavaScriptOn(GeckoWebBrowser geckoWebBrowser, string script)
 		{
 			// Review JohnT: does this require integration with the NavigationIsolator?
 			if (geckoWebBrowser != null &&

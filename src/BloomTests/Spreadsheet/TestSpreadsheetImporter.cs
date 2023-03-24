@@ -22,15 +22,15 @@ namespace BloomTests.Spreadsheet
 		{
 		}
 
-		protected override Browser GetBrowser()
+		protected override Task<Browser> GetBrowser()
 		{
 			throw new ApplicationException("Must not use real browser in unit testing");
 		}
 
 		// A dreadfully crude approximation, but good enough for these tests.
-		protected override string GetMd5(XmlElement elt)
+		protected override Task<string> GetMd5(XmlElement elt)
 		{
-			return elt.InnerText.GetHashCode().ToString();
+			return Task.FromResult(elt.InnerText.GetHashCode().ToString());
 		}
 
 		// This is also a crude approximation; it won't, for example, handle any sentence-ending punctuation

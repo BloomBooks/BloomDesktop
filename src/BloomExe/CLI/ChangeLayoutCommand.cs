@@ -24,7 +24,7 @@ namespace Bloom.CLI
 	// new layout has places for.
 	class ChangeLayoutCommand
 	{
-		public static async Task<int> Handle(ChangeLayoutParameters options)
+		public static Task<int> Handle(ChangeLayoutParameters options)
 		{
 			// This task will be all the program does. We need to do enough setup so that
 			// books can be created, then do our work, then tear things down.
@@ -38,12 +38,12 @@ namespace Bloom.CLI
 					LocalizationManager.SetUILanguage(Settings.Default.UserInterfaceLanguage, false);
 					ChangeLayoutForAllContentPagesInAllBooks(options.CollectionPath, options.BookPath, options.PageGuid);
 				}
-				return 0;
+				return Task.FromResult(0);
 			}
 			catch (Exception ex)
 			{
 				Console.WriteLine(ex);
-				return 1;
+				return Task.FromResult(1);
 			}
 		}
 

@@ -14,7 +14,7 @@ namespace Bloom.CLI
 	/// </summary>
 	class DownloadBookCommand
 	{
-		public static async Task<int> HandleSilentDownload(DownloadBookOptions options)
+		public static Task<int> HandleSilentDownload(DownloadBookOptions options)
 		{
 			// This task will be all the program does. We need to do enough setup so that
 			// the download code can work, then tear it down.
@@ -34,12 +34,12 @@ namespace Bloom.CLI
 					downloader.HandleDownloadWithoutProgress(options.Url, options.DestinationPath);
 					Console.WriteLine(("\ndownload complete\n"));
 				}
-				return 0;
+				return Task.FromResult(0);
 			}
 			catch (Exception ex)
 			{
 				Console.WriteLine(ex);
-				return 1;
+				return Task.FromResult(1);
 			}
 		}
 	}

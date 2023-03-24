@@ -771,7 +771,7 @@ namespace Bloom.Publish
 					|| _model.BookletPortion == PublishModel.BookletPortions.InnerContent; // Not sure this last is used, but play safe...
 		}
 
-		private void OnPrint_Click(object sender, EventArgs e)
+		private async void OnPrint_Click(object sender, EventArgs e)
 		{
 			var printSettingsPreviewFolder = FileLocationUtilities.GetDirectoryDistributedWithApplication("printer settings images");
 			var printSettingsSamplePrefix = Path.Combine(printSettingsPreviewFolder,
@@ -833,7 +833,7 @@ namespace Bloom.Publish
 					}
 				}
 			}
-			_pdfViewer.Print();
+			await _pdfViewer.Print();
 			Logger.WriteEvent("Calling Print on PDF Viewer");
 			_model.ReportAnalytics("Print PDF");
 			this._model.BookSelection.CurrentSelection.ReportSimplisticFontAnalytics(FontAnalytics.FontEventType.PublishPdf, "Print PDF");

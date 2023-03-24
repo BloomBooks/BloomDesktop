@@ -127,6 +127,7 @@ namespace Bloom.Spreadsheet
 
 		private Browser _browser;
 
+		delegate Task<Browser> GetBrowserDelegate();
 		/// <summary>
 		/// Get a brower with certain functions that spreadsheet import needs made available
 		/// </summary>
@@ -141,14 +142,13 @@ namespace Bloom.Spreadsheet
 		/// and try your RunJavascript inputs in the console.
 		/// Remember to escape any single quotes in data strings passed to RunJavascript!
 		/// </remarks>
-		protected virtual Browser GetBrowser()
+		protected virtual async Task<Browser> GetBrowser()
 		{
 			if (_browser == null)
 			{
 				if (ControlForInvoke != null && ControlForInvoke.InvokeRequired)
 				{
-					ControlForInvoke.Invoke((Action)(() => GetBrowser()));
-					return _browser;
+					return (Browser)ControlForInvoke.Invoke(new GetBrowserDelegate(GetBrowser));
 				}
 				// Todo Linux: I'm choosing not to do BrowserMaker.MakeBrowser here, because
 				// the Gecko code to try to determine that the browser has fully loaded everything
@@ -162,25 +162,17 @@ namespace Bloom.Spreadsheet
 #else
 				_browser = new WebView2Browser();
 #endif
-				var done = false;
-				_browser.DocumentCompleted += (sender, args) => done = true;
+				var signal = new SemaphoreSlim(0,1);
+				_browser.DocumentCompleted += (sender, args) =>
+				{
+					signal.Release();
+				};
 				var rootPage = BloomFileLocator.GetBrowserFile(false, "spreadsheet", "spreadsheetFunctions.html");
 				_browser.Navigate(rootPage, false);
+				await signal.WaitAsync(); // Following code happens after browser has navigated
 				// This extra check that spreadsheetBundle actually exists might not be necessary.
-				var task = _browser.RunJavaScriptAsync($"spreadsheetBundle");
-				while (!done)
-				{
-					if (task.IsCompleted)
-					{
-						if (task.Result != null)
-							break;
-						task = _browser.RunJavaScriptAsync($"spreadsheetBundle"); // try again
-					}
-					Application.DoEvents();
-					Thread.Sleep(10);
-					// Review: may need more than this if we allow GeckoFxBrowser; see impl of NavigateAndWaitTillDone.
-					// Maybe we need a URL overload of that and to factor out the wait code?
-				}
+				while (await _browser.RunJavaScriptAsync($"spreadsheetBundle") == null)
+					await Task.Delay(10);
 			}
 			return _browser;
 		}
@@ -1061,7 +1053,7 @@ namespace Bloom.Spreadsheet
 					return;
 				}
 				var audioFile = audioFilesList;
-				var durationStr = AddAudioFile(editable, audioFile, row);
+				var durationStr = await AddAudioFile(editable, audioFile, row);
 				if (String.IsNullOrEmpty(durationStr))
 					return; // already reported, just don't add any audio information.
 				var duration = double.Parse(durationStr, CultureInfo.InvariantCulture);
@@ -1177,7 +1169,7 @@ namespace Bloom.Spreadsheet
 							var span = para.OwnerDocument.CreateElement("span");
 							var audioFile = audioFiles[audioFileIndex++];
 							span.InnerXml = fragment;
-							AddAudioFile(span, audioFile, row);
+							await AddAudioFile(span, audioFile, row);
 							HtmlDom.AddClass(span, "audio-sentence");
 							para.AppendChild(span);
 						}
@@ -1193,7 +1185,7 @@ namespace Bloom.Spreadsheet
 
 		protected virtual async Task<string[]> GetSentenceFragments(string text)
 		{
-			return (await GetBrowser().RunJavaScriptAsync($"spreadsheetBundle.split('{text}')")).Split('\n');
+			return (await (await GetBrowser()).RunJavaScriptAsync($"spreadsheetBundle.split('{text}')")).Split('\n');
 		}
 
 
@@ -1208,7 +1200,7 @@ namespace Bloom.Spreadsheet
 		/// <param name="audioFile"></param>
 		/// <returns>a string representation of the duration of the audio file, in seconds, or an empty string,
 		/// if we don't find a valid audio file.</returns>
-		private string AddAudioFile(XmlElement elt, string audioFile, ContentRow row)
+		private async Task<string> AddAudioFile(XmlElement elt, string audioFile, ContentRow row)
 		{
 			if (audioFile == "missing")
 			{
@@ -1251,12 +1243,7 @@ namespace Bloom.Spreadsheet
 				RobustFile.Copy(src, destPath);
 				var durationStr = duration.ToString(CultureInfo.InvariantCulture);
 				elt.SetAttribute("data-duration", durationStr);
-				string md5 = ""; // value is unused, but compiler gets confused
-				Action runJs = () => md5 = GetMd5(elt);
-				if (ControlForInvoke != null && ControlForInvoke.InvokeRequired)
-					ControlForInvoke.Invoke(runJs);
-				else
-					runJs();
+				string md5 = await GetMd5(elt);
 				elt.SetAttribute("recordingmd5", md5);
 				return durationStr;
 			}
@@ -1279,9 +1266,14 @@ namespace Bloom.Spreadsheet
 			return "";
 		}
 
-		protected virtual string GetMd5(XmlElement elt)
+		delegate Task<string> ElementStringTask(XmlElement elt);
+		protected virtual async Task<string> GetMd5(XmlElement elt)
 		{
-			return GetBrowser().RunJavaScript($"spreadsheetBundle.getMd5('{elt.InnerText.Replace("'", "\\'")}')");
+			if (ControlForInvoke != null && ControlForInvoke.InvokeRequired)
+			{
+				return (string)ControlForInvoke.Invoke(new ElementStringTask(GetMd5), elt);
+			}
+			return await (await GetBrowser()).RunJavaScriptAsync($"spreadsheetBundle.getMd5('{elt.InnerText.Replace("'", "\\'")}')");
 		}
 
 		internal static string SanitizeXHtmlId(string id)
