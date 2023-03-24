@@ -673,6 +673,11 @@
         <source xml:lang="en">Import Content from Spreadsheet...</source>
         <note>ID: CollectionTab.BookMenu.ImportContentFromSpreadsheet</note>
       </trans-unit>
+      <trans-unit id="CollectionTab.BookMenu.MustCheckOutTooltip">
+        <source xml:lang="en">This feature requires the book to be checked out to you.</source>
+        <note>ID: CollectionTab.BookMenu.MustCheckOutTooltip</note>
+        <note>This tooltip pops up when the user hovers over a disabled menu item.</note>
+      </trans-unit>
       <trans-unit id="CollectionTab.BookMenu.RenameBook">
         <source xml:lang="en">Rename Book</source>
         <note>ID: CollectionTab.BookMenu.RenameBook</note>

@@ -24,6 +24,8 @@ import { kBloomDisabledOpacity } from "../utils/colorUtils";
 interface IBaseLocalizableMenuItemProps {
     english: string;
     l10nId: string;
+    disabled?: boolean;
+    tooltipIfDisabled?: string;
 }
 
 export interface ILocalizableMenuItemProps
@@ -124,41 +126,46 @@ export const LocalizableMenuItem: React.FunctionComponent<ILocalizableMenuItemPr
         ? props.onClick
         : openCollectionSettings;
 
+    // The "div" wrapper is necessary to get the tooltip to work on a disabled MenuItem.
     return (
-        <MenuItem
-            key={props.l10nId}
-            onClick={menuClickHandler}
-            dense={true}
-            css={css`
-                padding: 0 6px !important; // eliminate top and bottom padding to make even denser
-                font-size: 14pt;
-            `}
-        >
-            <React.Fragment>
-                {iconElement}
-                <ListItemText
-                    css={css`
-                        .MuiTypography-h6 {
-                            font-weight: 400 !important; // H6 defaults to 500; too thick
-                            font-family: Segoe UI, NotoSans, Roboto, sans-serif;
-                            color: ${menuItemColor} !important;
+        <div title={props.disabled ? props.tooltipIfDisabled : undefined}>
+            <MenuItem
+                key={props.l10nId}
+                onClick={menuClickHandler}
+                dense={true}
+                css={css`
+                    padding: 0 6px !important; // eliminate top and bottom padding to make even denser
+                    font-size: 14pt;
+                `}
+                disabled={props.disabled}
+            >
+                <React.Fragment>
+                    {iconElement}
+                    <ListItemText
+                        css={css`
+                            .MuiTypography-h6 {
+                                font-weight: 400 !important; // H6 defaults to 500; too thick
+                                font-family: Segoe UI, NotoSans, Roboto,
+                                    sans-serif;
+                                color: ${menuItemColor} !important;
 
-                            // We can't use the disabled prop because it prevents the click from opening settings and
-                            // prevents the tooltip. So we just make it look disabled (using the same setting as Mui-disabled).
-                            // And we only do it on the icon and text so the enterprise icon doesn't look disabled.
-                            opacity: ${meetsEnterpriseRequirement
-                                ? undefined
-                                : kBloomDisabledOpacity};
-                        }
-                    `}
-                    primaryTypographyProps={typographyProps}
-                >
-                    {label}
-                    {ellipsis}
-                </ListItemText>
-                {enterpriseElement}
-            </React.Fragment>
-        </MenuItem>
+                                // We can't use the disabled prop because it prevents the click from opening settings and
+                                // prevents the tooltip. So we just make it look disabled (using the same setting as Mui-disabled).
+                                // And we only do it on the icon and text so the enterprise icon doesn't look disabled.
+                                opacity: ${meetsEnterpriseRequirement
+                                    ? undefined
+                                    : kBloomDisabledOpacity};
+                            }
+                        `}
+                        primaryTypographyProps={typographyProps}
+                    >
+                        {label}
+                        {ellipsis}
+                    </ListItemText>
+                    {enterpriseElement}
+                </React.Fragment>
+            </MenuItem>
+        </div>
     );
 };
 
@@ -171,45 +178,51 @@ export const LocalizableCheckboxMenuItem: React.FunctionComponent<ILocalizableCh
         });
     }, []);
 
+    // The "div" wrapper is necessary to get the tooltip to work on a disabled item.
     return (
-        <MenuItem
-            key={props.l10nId}
-            onClick={props.onClick}
-            dense={true}
-            css={css`
-                padding: 0 6px !important; // eliminate top and bottom padding to make even denser
-                font-size: 14pt;
-            `}
-        >
-            <Checkbox
-                icon={<CheckBoxOutlineBlankIcon htmlColor={menuItemColor} />}
-                checkedIcon={<CheckBoxIcon htmlColor={menuItemColor} />}
-                checked={checked}
-                onChange={e => {
-                    postBoolean(props.apiEndpoint, e.target.checked);
-                    setChecked(e.target.checked);
-                }}
+        <div title={props.disabled ? props.tooltipIfDisabled : undefined}>
+            <MenuItem
+                key={props.l10nId}
+                onClick={props.onClick}
+                dense={true}
                 css={css`
-                    width: ${kIconCheckboxAffordance}px !important;
-                    padding: 0 !important;
-                    font-size: 1.1rem !important;
-                    margin-left: -2px !important; // adjust checkbox over a bit
-                    margin-right: 2px !important;
+                    padding: 0 6px !important; // eliminate top and bottom padding to make even denser
+                    font-size: 14pt;
                 `}
-            />
-            <ListItemText
-                css={css`
-                    .MuiTypography-h6 {
-                        font-weight: 400 !important; // H6 defaults to 500; too thick
-                        font-family: Segoe UI, NotoSans, Roboto, sans-serif;
-                        color: ${menuItemColor} !important;
-                    }
-                `}
-                primaryTypographyProps={typographyProps}
+                disabled={props.disabled}
             >
-                {label}
-            </ListItemText>
-        </MenuItem>
+                <Checkbox
+                    icon={
+                        <CheckBoxOutlineBlankIcon htmlColor={menuItemColor} />
+                    }
+                    checkedIcon={<CheckBoxIcon htmlColor={menuItemColor} />}
+                    checked={checked}
+                    onChange={e => {
+                        postBoolean(props.apiEndpoint, e.target.checked);
+                        setChecked(e.target.checked);
+                    }}
+                    css={css`
+                        width: ${kIconCheckboxAffordance}px !important;
+                        padding: 0 !important;
+                        font-size: 1.1rem !important;
+                        margin-left: -2px !important; // adjust checkbox over a bit
+                        margin-right: 2px !important;
+                    `}
+                />
+                <ListItemText
+                    css={css`
+                        .MuiTypography-h6 {
+                            font-weight: 400 !important; // H6 defaults to 500; too thick
+                            font-family: Segoe UI, NotoSans, Roboto, sans-serif;
+                            color: ${menuItemColor} !important;
+                        }
+                    `}
+                    primaryTypographyProps={typographyProps}
+                >
+                    {label}
+                </ListItemText>
+            </MenuItem>
+        </div>
     );
 };
 

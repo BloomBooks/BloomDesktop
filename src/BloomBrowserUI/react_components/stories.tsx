@@ -387,6 +387,8 @@ const normalMenuItem = React.createElement(() => (
         l10nId="PublishTab.Android.MotionBookMode"
         icon={<DeleteIcon />}
         onClick={() => {}}
+        disabled={true}
+        tooltipIfDisabled="This has a tooltip!"
     />
 ));
 

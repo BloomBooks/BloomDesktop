@@ -14,6 +14,7 @@ import { BookSelectionManager, useIsSelected } from "./bookSelectionManager";
 import { IBookInfo, ICollection } from "./BooksOfCollection";
 import { makeMenuItems, MenuItemSpec } from "./CollectionsTabPane";
 import DeleteIcon from "@mui/icons-material/Delete";
+import { useL10n } from "../react_components/l10nHooks";
 
 export const bookButtonHeight = 120;
 export const bookButtonWidth = 90;
@@ -330,6 +331,12 @@ export const BookButton: React.FunctionComponent<{
         }
     };
 
+    const tooltipIfCannotSaveBook = useL10n(
+        "This feature requires the book to be checked out to you.",
+        "CollectionTab.BookMenu.MustCheckOutTooltip",
+        "This tooltip pops up when the user hovers over a disabled menu item."
+    );
+
     // If relevant, compute the menu items for a right-click on this button.
     // contextMenuPoint has a value if this button has been right-clicked.
     // if it wasn't the selected button at the time, however, the menu will not show
@@ -350,7 +357,8 @@ export const BookButton: React.FunctionComponent<{
             handleClose,
             props.book.id,
             props.collection.id,
-            props.isSpreadsheetFeatureActive
+            props.isSpreadsheetFeatureActive,
+            tooltipIfCannotSaveBook
         );
     }
 
