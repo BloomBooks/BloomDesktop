@@ -4604,6 +4604,11 @@
         <source xml:lang="en">credits</source>
         <note>ID: PublishTab.Upload.Credits</note>
       </trans-unit>
+      <trans-unit id="PublishTab.Upload.EnterpriseShelfRequiredTooltip" translate="no">
+        <!-- added in 5.5 -->
+        <source xml:lang="en">This feature requires an Enterprise subscription and a destination shelf selected in Collection Settings.</source>
+        <note>ID: PublishTab.Upload.EnterpriseShelfRequiredTooltip</note>
+      </trans-unit>
       <trans-unit id="PublishTab.Upload.ErrorUploading">
         <source xml:lang="en">Sorry, there was a problem uploading {0}. Some details follow. You may need technical help.</source>
         <note>ID: PublishTab.Upload.ErrorUploading</note>

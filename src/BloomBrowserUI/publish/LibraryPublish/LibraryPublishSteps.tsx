@@ -667,6 +667,7 @@ const AgreementCheckbox: React.FunctionComponent<{
                     handleCheckChanged(!!newState);
                 }}
                 disabled={props.disabled}
+                alreadyLocalized={true}
             ></MuiCheckbox>
         </div>
     );
