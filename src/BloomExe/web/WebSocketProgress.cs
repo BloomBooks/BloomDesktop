@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Diagnostics;
 using Bloom.Api;
 using L10NSharp;
@@ -112,6 +112,8 @@ namespace Bloom.web
 			_clientContext = clientContext;
 		}
 
+		public bool LogAllMessages;
+
 		public virtual void MessageWithoutLocalizing(string message, ProgressKind kind=ProgressKind.Progress)
 		{
 			dynamic messageBundle = new DynamicJson();
@@ -129,6 +131,9 @@ namespace Bloom.web
 					HaveProblemsBeenReported = true;
 					break;
 			}
+
+			if (LogAllMessages)
+				SIL.Reporting.Logger.WriteEvent(message);
 		}
 
 		public void SendPercent(int percent)
