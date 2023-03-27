@@ -162,6 +162,7 @@ namespace Bloom.web.controllers
 
 			apiHandler.RegisterEndpointHandler(kApiUrlPart + "removeSourceCollection", HandleRemoveSourceCollection, false);
 			apiHandler.RegisterEndpointHandler(kApiUrlPart + "addSourceCollection", HandleAddSourceCollection, true);
+			apiHandler.RegisterEndpointHandler(kApiUrlPart + "removeSourceFolder", HandleRemoveSourceFolder, true);
 		}
 
 		private void HandleRemoveSourceCollection(ApiRequest request)
@@ -173,11 +174,43 @@ namespace Bloom.web.controllers
 			if (RobustFile.Exists(linkFile))
 			{
 				RobustFile.Delete(linkFile);
+				_collectionModel.ReloadCollections();
 				request.PostSucceeded();
 			}
 			else
 			{
 				request.Failed();
+			}
+		}
+
+		private void HandleRemoveSourceFolder(ApiRequest request)
+		{
+			var collectionFolderPath = request.RequiredPostString();
+			if (Directory.Exists(collectionFolderPath))
+			{
+				request.PostSucceeded();
+				var title = LocalizationManager.GetString("CollectionTab.CancelOrDelete", "Cancel if you do not want to delete this folder.",
+					"This is the title of the folder-open dialog that is used to examine a collection folder to possibly delete.");
+				var choice = BloomFolderChooser.ChooseFolder(collectionFolderPath, title);
+				if (String.IsNullOrEmpty(choice))
+					return;	// The user cancelled.
+				// The user can use the right-click menu to delete the folder. (or any files in the file system for that matter)
+				// I don't want to depend on this (or encourage it), however.
+				if (Directory.Exists(collectionFolderPath))
+					PathUtilities.DeleteToRecycleBin(collectionFolderPath);
+			}
+			else
+			{
+				request.Failed();
+				return;
+			}
+			if (!Directory.Exists(collectionFolderPath))
+			{
+				_collectionModel.ReloadCollections();
+				dynamic result = new DynamicJson();
+				result.success = true;
+				result.message = collectionFolderPath;
+				_webSocketServer.SendBundle("collections", "removeSourceFolder-results", result);
 			}
 		}
 
@@ -202,8 +235,9 @@ namespace Bloom.web.controllers
 				dlg.InitialDirectory = NewCollectionWizard.DefaultParentDirectoryForCollections;
 				dlg.CheckFileExists = true;
 				dlg.CheckPathExists = true;
-				if (dlg.ShowDialog() != DialogResult.Cancel)
-					pathToCollectionFile = dlg.FileName;
+				if (dlg.ShowDialog() == DialogResult.Cancel)
+					return;
+				pathToCollectionFile = dlg.FileName;
 			}
 			var pathToCollectionDirectory = Path.GetDirectoryName(pathToCollectionFile);
 			var collectionName = Path.GetFileNameWithoutExtension(pathToCollectionFile);
@@ -218,6 +252,7 @@ namespace Bloom.web.controllers
 			result.collection.isSourceCollection = false; // nothing is a "source collection" any longer.  but everything can be.
 			result.collection.shouldLocalizeName = false;
 			result.collection.isLink = true;
+			result.collection.isRemovableFolder = false;
 			_collectionModel.ReloadCollections();
 			_webSocketServer.SendBundle("collections", "addSourceCollection-results", result);
 		}
@@ -254,7 +289,9 @@ namespace Bloom.web.controllers
 							name = c.Name,
 							isSourceCollection = _collectionModel.IsSourceCollection,
 							shouldLocalizeName = c.PathToDirectory.StartsWith(BloomFileLocator.FactoryCollectionsDirectory) || c.ContainsDownloadedBooks,
-							isLink = c.Type != BookCollection.CollectionType.TheOneEditableCollection && IsFromLinkFile(c.PathToDirectory)
+							isLink = c.Type != BookCollection.CollectionType.TheOneEditableCollection && IsFromLinkFile(c.PathToDirectory),
+							isRemovableFolder = c.Type != BookCollection.CollectionType.TheOneEditableCollection && !IsFromLinkFile(c.PathToDirectory) &&
+								!c.ContainsDownloadedBooks && !c.PathToDirectory.StartsWith(BloomFileLocator.FactoryCollectionsDirectory)
 						}) ;
 				}
 			});

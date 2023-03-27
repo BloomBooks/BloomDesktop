@@ -29,7 +29,9 @@ import { useSubscribeToWebSocketForEvent } from "../utils/WebSocketManager";
 import { EmbeddedProgressDialog } from "../react_components/Progress/ProgressDialog";
 import { useSubscribeToWebSocketForObject } from "../utils/WebSocketManager";
 import CloseIcon from "@mui/icons-material/Close";
-import { kBloomPurple } from "../bloomMaterialUITheme";
+import FolderOpenOutlinedIcon from "@mui/icons-material/FolderOpenOutlined";
+import { kBloomBlue } from "../bloomMaterialUITheme";
+import { BloomTooltip } from "../react_components/BloomToolTip";
 
 const kResizerSize = 10;
 
@@ -44,14 +46,7 @@ export const CollectionsTabPane: React.FunctionComponent<{}> = () => {
 
     const removeSourceCollection = (id: string) => {
         postString("collections/removeSourceCollection", id).then(() => {
-            collections.filter((value, index, array) => {
-                if (value.id === id) {
-                    array.splice(index, 1);
-                    return true;
-                }
-                return false;
-            });
-            setCollectionCount(collections.length);
+            finishDeletingCollection(id);
         });
     };
 
@@ -66,13 +61,26 @@ export const CollectionsTabPane: React.FunctionComponent<{}> = () => {
             const element = document.getElementById(sanitize(collection.id));
             if (element) element.scrollIntoView();
         } else {
+            // I have no idea how to control the scrolling of this newly added collection.
             collections.push(collection);
+            setCollectionCount(collections.length);
         }
     };
 
     const addSourceCollection = () => {
         post("collections/addSourceCollection");
     };
+
+    function finishDeletingCollection(id: string) {
+        collections.filter((value, index, array) => {
+            if (value.id === id) {
+                array.splice(index, 1);
+                return true;
+            }
+            return false;
+        });
+        setCollectionCount(collections.length);
+    }
 
     // Since a user will take as much time as they want to deal with the dialog,
     // we can't just wait for the api call to return. Instead we get called back
@@ -83,6 +91,27 @@ export const CollectionsTabPane: React.FunctionComponent<{}> = () => {
     }>("collections", "addSourceCollection-results", results => {
         if (results.success) {
             setNewCollection(results.collection);
+        }
+    });
+
+    const [deletedCollection, setDeletedCollection] = useState<
+        any | undefined
+    >();
+
+    const removeSourceFolder = (id: string) => {
+        // This opens a file explorer on the given folder, giving the user
+        // the option of deleting it.  We can't depend on waiting long enough
+        // so we just ignore the return from the post and listen on a socket
+        // for any update information.
+        postString("collections/removeSourceFolder", id);
+    };
+
+    useSubscribeToWebSocketForObject<{
+        success: boolean;
+        message: string;
+    }>("collections", "removeSourceFolder-results", results => {
+        if (results.success) {
+            setDeletedCollection(results.message);
         }
     });
 
@@ -262,6 +291,10 @@ export const CollectionsTabPane: React.FunctionComponent<{}> = () => {
         finishAddingNewSourceCollection(newCollection);
         setNewCollection(undefined);
     }
+    if (deletedCollection) {
+        finishDeletingCollection(deletedCollection);
+        setDeletedCollection(undefined);
+    }
     const sourcesCollections = collections.slice(1);
     // Enhance: may want to sort these by local name, though probably keeping Templates
     // and possibly Sample Shells at the top.
@@ -273,9 +306,11 @@ export const CollectionsTabPane: React.FunctionComponent<{}> = () => {
                 id={c.id}
                 shouldLocalizeName={c.shouldLocalizeName}
                 isLink={c.isLink}
+                isRemovableFolder={c.isRemovableFolder}
                 manager={manager}
                 isSpreadsheetFeatureActive={isSpreadsheetFeatureActive}
                 onRemoveSourceCollection={removeSourceCollection}
+                onRemoveSourceFolder={removeSourceFolder}
             />
         );
     });
@@ -447,7 +482,9 @@ export const CollectionsTabPane: React.FunctionComponent<{}> = () => {
                                     l10nKey="CollectionTab.AddSourceCollection"
                                     css={css`
                                         text-transform: uppercase;
-                                        color: ${kBloomPurple};
+                                        color: ${kBloomBlue};
+                                        padding-bottom: 10px;
+                                        cursor: pointer;
                                     `}
                                     onClick={() => addSourceCollection()}
                                 >
@@ -654,9 +691,11 @@ const BooksOfCollectionWithHeading: React.FunctionComponent<{
     id: string;
     shouldLocalizeName: boolean;
     isLink: boolean;
+    isRemovableFolder: boolean;
     manager: BookSelectionManager;
     isSpreadsheetFeatureActive: boolean;
     onRemoveSourceCollection: (id: string) => void;
+    onRemoveSourceFolder: (id: string) => void;
 }> = props => {
     // Using a null l10nId lets us not make a server call when we don't want to.
     // (We can't call useL10n conditionally.)
@@ -664,7 +703,6 @@ const BooksOfCollectionWithHeading: React.FunctionComponent<{
         props.name,
         props.shouldLocalizeName ? `CollectionTab.${props.name}` : null
     );
-
     return (
         <div key={"frag:" + props.id} id={sanitize(props.id)}>
             {/* links can be deleted. other items cannot at least for now.  (BL-12011) */}
@@ -675,6 +713,7 @@ const BooksOfCollectionWithHeading: React.FunctionComponent<{
                         flex-flow: row;
                         &:hover div {
                             display: block;
+                            cursor: pointer;
                         }
                     `}
                 >
@@ -682,13 +721,79 @@ const BooksOfCollectionWithHeading: React.FunctionComponent<{
                     <div
                         css={css`
                             margin-left: 30px;
+                            margin-bottom: -10px; // prevent wiggle when appearing/disappearing
                             display: none;
-                            color: ${kBloomPurple};
+                            color: ${kBloomBlue};
                             background-color: transparent;
+                            &:hover {
+                                visibility: visible;
+                            }
                         `}
                         onClick={() => props.onRemoveSourceCollection(props.id)}
                     >
-                        <CloseIcon />
+                        <BloomTooltip
+                            id="DoNotShowCollection"
+                            tooltipBackColor={kBloomBlue}
+                            side="right"
+                            tooltipContent={
+                                <Div
+                                    l10nKey="CollectionTab.DoNotShowCollection"
+                                    css={css`
+                                        max-width: 200px;
+                                    `}
+                                >
+                                    Do not show this collection here.
+                                </Div>
+                            }
+                        >
+                            <CloseIcon />
+                        </BloomTooltip>
+                    </div>
+                </div>
+            ) : props.isRemovableFolder ? (
+                <div
+                    css={css`
+                        display: flex;
+                        flex-flow: row;
+                        &:hover div {
+                            display: block;
+                            cursor: pointer;
+                        }
+                    `}
+                >
+                    <h2>{collectionName}</h2>
+                    <div
+                        css={css`
+                            margin-left: 30px;
+                            margin-bottom: -10px; // prevent wiggle when appearing/disappearing
+                            display: none;
+                            color: ${kBloomBlue};
+                            background-color: transparent;
+                            &:hover {
+                                visibility: visible;
+                            }
+                        `}
+                        onClick={() => props.onRemoveSourceFolder(props.id)}
+                    >
+                        <BloomTooltip
+                            id="RemoveThisGroup"
+                            tooltipBackColor={kBloomBlue}
+                            side="right"
+                            tooltipContent={
+                                <Div
+                                    l10nKey="CollectionTab.RemoveThisGroup"
+                                    css={css`
+                                        max-width: 200px;
+                                    `}
+                                >
+                                    To remove this group, you will need to
+                                    delete the folder. Click here to view the
+                                    folder on your drive.
+                                </Div>
+                            }
+                        >
+                            <FolderOpenOutlinedIcon />
+                        </BloomTooltip>
                     </div>
                 </div>
             ) : (

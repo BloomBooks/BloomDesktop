@@ -714,6 +714,12 @@
         <source xml:lang="en">Books From BloomLibrary.org</source>
         <note>ID: CollectionTab.Books From BloomLibrary.org</note>
       </trans-unit>
+      <trans-unit id="CollectionTab.CancelOrDelete" translate="no">
+        <!-- added in 5.5 -->
+        <source xml:lang="en">Cancel if you do not want to delete this folder</source>
+        <note>This is the title of the folder-open dialog that is used to examine a collection folder to possibly delete..</note>
+        <note>ID: CollectionTab.CancelOrDelete</note>
+      </trans-unit>
       <trans-unit id="CollectionTab.ChooseCollection" translate="no">
         <!-- added in 5.5 -->
         <source xml:lang="en">Choose Collection</source>
@@ -764,6 +770,12 @@
         <source xml:lang="en">Troubleshooting</source>
         <note>ID: CollectionTab.ContextMenu.Troubleshooting</note>
       </trans-unit>
+      <trans-unit id="CollectionTab.DoNotShowCollection" translate="no">
+        <!-- added in 5.5 -->
+        <source xml:lang="en">Do not show this collection here.</source>
+        <note>This is a tooltip for the X icon that allows the user to remove a collection from displaying as a source of books.</note>
+        <note>ID: CollectionTab.DoNotShowCollection</note>
+      </trans-unit>
       <trans-unit id="CollectionTab.EditBookButton">
         <source xml:lang="en">Edit this book</source>
         <note>ID: CollectionTab.EditBookButton</note>
@@ -811,6 +823,12 @@
       <trans-unit id="CollectionTab.Progress">
         <source xml:lang="en">({0}% complete)</source>
         <note>ID: CollectionTab.Progress</note>
+      </trans-unit>
+      <trans-unit id="CollectionTab.RemoveThisGroup" translate="no">
+        <!-- added in 5.5 -->
+        <source xml:lang="en">To remove this group, you will need to delete the folder. Click here to view the folder on your drive.</source>
+        <note>This is a tooltip for the folder icon that allows the user to remove a folder that is serving as a source of books.</note>
+        <note>ID: CollectionTab.RemoveThisGroup</note>
       </trans-unit>
       <trans-unit id="CollectionTab.RestartToUpdate">
         <source xml:lang="en">Restart Bloom to Update</source>

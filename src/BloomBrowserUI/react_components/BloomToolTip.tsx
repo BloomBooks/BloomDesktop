@@ -36,7 +36,7 @@ export const BloomTooltip: React.FunctionComponent<{
     // of the popup to its parent, so we need a unique ID. The supplied ID will be applied to the popup.
     // Enhance: there's probably some way we could come up with a safe default for this.
     id: string;
-    side?: "bottom" | "left";
+    side?: "bottom" | "left" | "right";
 }> = props => {
     // controls visibility and placement of the 'tooltip' (if props.changePopupAnchor is null).
     const [
@@ -59,11 +59,16 @@ export const BloomTooltip: React.FunctionComponent<{
     const tooltipOpen = Boolean(anchorEl);
 
     const anchorOrigin: PopoverOrigin =
-        props.side == "left"
+        props.side === "left"
             ? {
                   vertical: "top",
                   // 10 pixels left of the anchor; leaves room for arrow and a little margin.
                   horizontal: -20
+              }
+            : props.side === "right"
+            ? {
+                  vertical: "top",
+                  horizontal: "right"
               }
             : {
                   vertical: "bottom",
@@ -71,10 +76,16 @@ export const BloomTooltip: React.FunctionComponent<{
               };
 
     const transformOrigin: PopoverOrigin =
-        props.side == "left"
+        props.side === "left"
             ? {
                   vertical: "top",
                   horizontal: "right"
+              }
+            : props.side === "right"
+            ? {
+                  vertical: "top",
+                  // 10 pixels to the right allows room for the arrow and some margin
+                  horizontal: -10
               }
             : {
                   // 15 pixels below the bottom (based on anchorOrigin) of the anchor;
@@ -98,6 +109,15 @@ export const BloomTooltip: React.FunctionComponent<{
                   right: -${arrowSize * 2}px;
                   top: 5px;
                   border-left-color: ${props.tooltipBackColor};
+              `
+            : props.side === "right"
+            ? css`
+                  border: solid ${arrowSize}px;
+                  position: absolute;
+                  border-color: transparent;
+                  left: -${arrowSize * 2}px;
+                  top: 5px;
+                  border-right-color: ${props.tooltipBackColor};
               `
             : css`
                   border: solid ${arrowSize}px;
