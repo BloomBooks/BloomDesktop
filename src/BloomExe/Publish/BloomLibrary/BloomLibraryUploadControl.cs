@@ -678,6 +678,7 @@ namespace Bloom.Publish.BloomLibrary
 			var slIsCustom = collectionSettings.SignLanguage.Name != l.DesiredName;
 			collectionSettings.SignLanguage.SetName(l.DesiredName, slIsCustom);
 			collectionSettings.Save();
+			_model.UpdateLangDataCache();
 
 			_model.SetOnlySignLanguageToPublish(collectionSettings.SignLanguageTag);
 		}
