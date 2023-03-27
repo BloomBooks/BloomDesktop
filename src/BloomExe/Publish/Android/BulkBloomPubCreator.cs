@@ -35,9 +35,9 @@ namespace Bloom.Publish.Android
 		}
 
 		// Precondition: bulkSaveSettings must be non-null
-		public async Task PublishAllBooks(BulkBloomPubPublishSettings bulkSaveSettings)
+		public async Task PublishAllBooksAsync(BulkBloomPubPublishSettings bulkSaveSettings)
 		{
-			await BrowserProgressDialog.DoWorkWithProgressDialog(_webSocketServer,
+			await BrowserProgressDialog.DoWorkWithProgressDialogAsync(_webSocketServer,
 				async (progress, worker) =>
 				{
 					var dest = new TemporaryFolder("BloomPubs");

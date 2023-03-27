@@ -14,6 +14,7 @@ using L10NSharp;
 using SIL.Reporting;
 using SIL.IO;
 using System.Drawing;
+using System.Threading.Tasks;
 using Bloom.Api;
 using Bloom.Publish.Android;
 using Bloom.Publish.BloomLibrary;
@@ -771,7 +772,8 @@ namespace Bloom.Publish
 					|| _model.BookletPortion == PublishModel.BookletPortions.InnerContent; // Not sure this last is used, but play safe...
 		}
 
-		private async void OnPrint_Click(object sender, EventArgs e)
+		// Must be void, this is an event handler.
+		private async void OnPrint_ClickAsync(object sender, EventArgs e)
 		{
 			var printSettingsPreviewFolder = FileLocationUtilities.GetDirectoryDistributedWithApplication("printer settings images");
 			var printSettingsSamplePrefix = Path.Combine(printSettingsPreviewFolder,
@@ -833,7 +835,7 @@ namespace Bloom.Publish
 					}
 				}
 			}
-			await _pdfViewer.Print();
+			await _pdfViewer.PrintAsync();
 			Logger.WriteEvent("Calling Print on PDF Viewer");
 			_model.ReportAnalytics("Print PDF");
 			this._model.BookSelection.CurrentSelection.ReportSimplisticFontAnalytics(FontAnalytics.FontEventType.PublishPdf, "Print PDF");

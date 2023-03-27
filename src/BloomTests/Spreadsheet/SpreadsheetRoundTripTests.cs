@@ -133,7 +133,7 @@ namespace BloomTests.Spreadsheet
 
                                 <p></p>
 
-                                <p>This sentence follows two empty paragraphs. It will be followed by a new line.<span class=""bloom-linebreak""></span>﻿This sentence is trailed by an empty paragraph.</p>
+                                <p>This sentence follows two empty paragraphs. It will be followed by a new line.<span class=""bloom-linebreak""></span> This sentence is trailed by an empty paragraph.</p>
 
                                 <p></p>
                             </div>
@@ -212,7 +212,7 @@ namespace BloomTests.Spreadsheet
 				_sheetFromExport.WriteToFile(tempFile.Path);
 				var sheet = InternalSpreadsheet.ReadFromFile(tempFile.Path);
 				var importer = new TestSpreadsheetImporter(null, _roundtrippedDom);
-				await importer.Import(sheet);
+				await importer.ImportAsync(sheet);
 			}
 		}
 

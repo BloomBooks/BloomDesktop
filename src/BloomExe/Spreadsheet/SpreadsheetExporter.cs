@@ -68,10 +68,10 @@ namespace Bloom.Spreadsheet
 		//have a src attribute nor actually contain an img element
 		public static List<string> DataDivImagesWithNoSrcAttributes = new List<string>() { "licenseImage" };
 
-		public async Task ExportToFolderWithProgress(HtmlDom dom, string bookFolderPath, string outputFolder,
+		public async Task ExportToFolderWithProgressAsync(HtmlDom dom, string bookFolderPath, string outputFolder,
 			Action<string> resultCallback)
 		{
-			await BrowserProgressDialog.DoWorkWithProgressDialog(_webSocketServer, async (progress, worker) =>
+			await BrowserProgressDialog.DoWorkWithProgressDialogAsync(_webSocketServer, async (progress, worker) =>
 		{
 			var spreadsheet = ExportToFolder(dom, bookFolderPath, outputFolder, out string outputFilePath,
 				progress);

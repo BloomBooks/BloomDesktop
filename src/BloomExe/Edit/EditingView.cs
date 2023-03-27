@@ -29,6 +29,7 @@ using SIL.Windows.Forms.Widgets;
 using System.Globalization;
 using Bloom.web;
 using System.Reflection;
+using System.Threading.Tasks;
 using System.Xml;
 using Bloom.Utils;
 using Bloom.MiscUI;
@@ -413,7 +414,7 @@ namespace Bloom.Edit
 		/// <summary>
 		/// this is called by our model, as a result of a "SelectedTabChangedEvent". So it's a lot more reliable than the normal winforms one.
 		/// </summary>
-		public void OnVisibleChanged(bool visible)
+		public async Task OnVisibleChanged(bool visible)
 		{
 			_visible = visible;
 			if(visible)

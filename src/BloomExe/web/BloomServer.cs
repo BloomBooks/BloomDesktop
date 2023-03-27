@@ -369,7 +369,7 @@ namespace Bloom.Api
 		// Otherwise we can get a timeout error as the browser waits for a response.
 		//
 		// NOTE: this method gets called on different threads!
-		protected async Task<bool> ProcessRequest(IRequestInfo info)
+		protected async Task<bool> ProcessRequestAsync(IRequestInfo info)
 		{
 			if (CurrentCollectionSettings != null && CurrentCollectionSettings.SettingsFilePath != null)
 				info.DoNotCacheFolder = Path.GetDirectoryName(CurrentCollectionSettings.SettingsFilePath).Replace('\\','/');
@@ -437,7 +437,7 @@ namespace Bloom.Api
 				return true;
 			}
 
-			if (await ApiHandler.ProcessRequest(info, localPath))
+			if (await ApiHandler.ProcessRequestAsync(info, localPath))
 				return true;
 
 			// Handle image file requests.
@@ -1418,7 +1418,7 @@ namespace Bloom.Api
 
 		internal async Task MakeReplyAsync(IRequestInfo info)
 		{
-			if (!await ProcessRequest(info))
+			if (!await ProcessRequestAsync(info))
 			{
 				if (ShouldReportFailedRequest(info))
 					ReportMissingFile(info);
@@ -1426,7 +1426,7 @@ namespace Bloom.Api
 			}
 #if MEMORYCHECK
 			// Check memory for the benefit of developers.  (Also see all requests as a side benefit.)
-			var debugMsg = String.Format("after BloomServer.ProcessRequest(\"{0}\")", info.RawUrl);
+			var debugMsg = String.Format("after BloomServer.ProcessRequestAsync(\"{0}\")", info.RawUrl);
 			Bloom.Utils.MemoryManagement.CheckMemory(false, debugMsg, false);
 #endif
 		}

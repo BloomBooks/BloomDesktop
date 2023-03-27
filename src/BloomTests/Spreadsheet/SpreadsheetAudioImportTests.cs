@@ -251,7 +251,7 @@ namespace BloomTests.Spreadsheet
 			// Do the import
 			_progressSpy = new ProgressSpy();
 			var importer = new TestSpreadsheetImporter(null, _dom, _spreadsheetFolder.FolderPath, _bookFolder.FolderPath, settings);
-			_warnings = await importer.Import(ss, _progressSpy);
+			_warnings = await importer.ImportAsync(ss, _progressSpy);
 
 			_contentPages = _dom.SafeSelectNodes("//div[contains(@class, 'bloom-page')]").Cast<XmlElement>().ToList();
 
@@ -722,7 +722,7 @@ namespace BloomTests.Spreadsheet
 			// Do the import
 			_progressSpy = new ProgressSpy();
 			var importer = new TestSpreadsheetImporter(null, _dom, _spreadsheetFolder.FolderPath, _bookFolder.FolderPath, settings);
-			_warnings = await importer.Import(ss, _progressSpy);
+			_warnings = await importer.ImportAsync(ss, _progressSpy);
 
 			_contentPages = _dom.SafeSelectNodes("//div[contains(@class, 'bloom-page')]").Cast<XmlElement>().ToList();
 

@@ -63,7 +63,7 @@ namespace Bloom.Spreadsheet
 				SetSpreadsheetFolder(book, outputFolder);
 				string imagesFolderPath = Path.GetDirectoryName(bookPath);
 
-				exporter.ExportToFolderWithProgress(dom, imagesFolderPath, outputFolder, outputFilePath =>
+				exporter.ExportToFolderWithProgressAsync(dom, imagesFolderPath, outputFolder, outputFilePath =>
 				{
 					if (outputFilePath != null)
 						PathUtilities.OpenFileInApplication(outputFilePath);
@@ -109,7 +109,7 @@ namespace Bloom.Spreadsheet
 
 				var importer = new SpreadsheetImporter(_webSocketServer, book, Path.GetDirectoryName(inputFilepath));
 				importer.ControlForInvoke = Shell.GetShellOrOtherOpenForm();
-				importer.ImportWithProgress(inputFilepath, () =>
+				importer.ImportWithProgressAsync(inputFilepath, () =>
 				{
 
 					// The importer now does BringBookUpToDate() which accomplishes everything this did,

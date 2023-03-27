@@ -194,7 +194,7 @@ namespace Bloom.Publish.PDF
 			return null;
 		}
 
-		public async Task Print()
+		public async Task PrintAsync()
 		{
 #if !__MonoCS__
 			if (ExperimentalFeatures.IsFeatureEnabled(ExperimentalFeatures.kWebView2))

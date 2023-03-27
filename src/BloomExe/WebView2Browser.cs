@@ -178,6 +178,15 @@ namespace Bloom
 		private bool _finishedUpdateDisplay;
 		private bool _urlMatches;
 
+		// For now I have decided not to make this return a Task and to consistently await it.
+		// The fan-out of methods that would have to be made async is daunting, and code
+		// that cares about the completion of the navigation will already have some
+		// mechanism in place for waiting not just until the call to Navigate after the
+		// await, but until we get an indication that the navigation is complete.
+		// Also, I suspect that EnsureCoreWebView2Async() will almost always be already completed
+		// and no awaiting will really be needed.
+		// Callers should nevertheless be aware that it is not absolutely guaranteed that
+		// Navigation has even started when this method returns.
 		protected override async void UpdateDisplay(string newUrl)
 		{
 			_targetUrl = newUrl;

@@ -77,7 +77,7 @@ namespace BloomTests.Spreadsheet
 			justTextRow.AddCell(InternalSpreadsheet.PageContentRowLabel);
 			justTextRow.SetCell(columnForEn, "this is page 1");
 
-			await _importer.Import(ss);
+			await _importer.ImportAsync(ss);
 
 			_resultElement = ReadResultingBookToXml(newTitle);
 		}

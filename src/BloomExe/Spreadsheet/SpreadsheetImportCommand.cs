@@ -26,7 +26,7 @@ namespace Bloom.CLI
 				var importer = new SpreadsheetImporter(null, dom,Path.GetDirectoryName(options.InputPath), folderPath);
 				if (!string.IsNullOrEmpty(options.ParamsPath))
 					importer.Params = SpreadsheetImportParams.FromFile(options.ParamsPath);
-				var messages = await importer.Import(sheet);
+				var messages = await importer.ImportAsync(sheet);
 				foreach (var message in messages)
 				{
 					Debug.WriteLine(message);

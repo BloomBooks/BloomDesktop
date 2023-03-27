@@ -127,7 +127,7 @@ namespace BloomTests.Spreadsheet
 				_sheetFromExport.WriteToFile(tempFile.Path);
 				var sheet = InternalSpreadsheet.ReadFromFile(tempFile.Path);
 				var importer = new TestSpreadsheetImporter(null, _destDom);
-				await importer.Import(sheet);
+				await importer.ImportAsync(sheet);
 			}
 			_contentPages = _destDom.SafeSelectNodes("//div[contains(@class, 'numberedPage')]").Cast<XmlElement>().ToList();
 		}

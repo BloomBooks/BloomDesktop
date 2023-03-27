@@ -47,7 +47,7 @@ namespace Bloom.Publish.Video
 			apiHandler.RegisterAsyncEndpointHandler(kApiUrlPart + "soundLog", async request =>
 			{
 				var soundLog = request.RequiredPostJson();
-				await _recordVideoWindow.StopRecording(soundLog);
+				await _recordVideoWindow.StopRecordingAsync(soundLog);
 				request.PostSucceeded();
 			}, true, false);
 

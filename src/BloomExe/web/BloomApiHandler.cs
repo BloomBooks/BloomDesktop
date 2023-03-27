@@ -17,7 +17,7 @@ namespace Bloom.Api
 	/// This class handles the API (non-file) requests to the Bloom localhost HTTP server.
 	/// Most of the API requests are handled by separate classes that register API calls
 	/// with this class.  There are a couple of older API requests that are handled directly
-	/// in this class's ProcessRequest method (i18n/ and directoryWatcher/).
+	/// in this class's ProcessRequestAsync method (i18n/ and directoryWatcher/).
 	///
 	/// This class also handles thread synchronization for those API requests that need it.
 	/// </summary>
@@ -210,7 +210,7 @@ namespace Bloom.Api
 		// Otherwise we can get a timeout error as the browser waits for a response.
 		//
 		// NOTE: this method gets called on different threads!
-		public async Task<bool> ProcessRequest(IRequestInfo info, string localPath)
+		public async Task<bool> ProcessRequestAsync(IRequestInfo info, string localPath)
 		{
 			var localPathLc = localPath.ToLowerInvariant();
 			if (localPathLc.StartsWith(ApiPrefix, StringComparison.InvariantCulture))
@@ -218,7 +218,7 @@ namespace Bloom.Api
 				var endpointPath = localPath.Substring(3).ToLowerInvariant().Trim(new char[] {'/'});
 				if (_exactEndpointRegistrations.TryGetValue(endpointPath, out var epRegistration))
 				{
-					return await ProcessRequest(epRegistration, info, localPathLc);
+					return await ProcessRequestAsync(epRegistration, info, localPathLc);
 				}
 				// Enhance: this can be significantly slow when large numbers of requests are being received.
 				// A large proportion of our API calls actually have a single, complete string that identifies
@@ -244,13 +244,13 @@ namespace Bloom.Api
 							).Success))
 				{
 					var endpointRegistration = pair.Value;
-					return await ProcessRequest(endpointRegistration, info, localPathLc);
+					return await ProcessRequestAsync(endpointRegistration, info, localPathLc);
 				}
 			}
 			return false;
 		}
 
-		private async Task<bool> ProcessRequest(BaseEndpointRegistration endpointRegistration, IRequestInfo info, string localPathLc)
+		private async Task<bool> ProcessRequestAsync(BaseEndpointRegistration endpointRegistration, IRequestInfo info, string localPathLc)
 		{
 			if (endpointRegistration.RequiresSync)
 			{

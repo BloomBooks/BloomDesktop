@@ -35,7 +35,7 @@ namespace Bloom.ToPalaso.Experimental
 			Initialize();
 		}
 
-		// Typically work is an async function that conceptually returns void,
+		// Typically asyncWork is an async function that conceptually returns void,
 		// but to allow it to be awaited it must actually return a Task.
 		// This method returns only after the task completes (that is, the dialog
 		// is closed only after awaiting the asyncWork).
@@ -53,7 +53,7 @@ namespace Bloom.ToPalaso.Experimental
 			Progress.Add(new ApplicationDoEventsProgress()); //this will keep our UI alive
 			var stringProgress = new StringBuilderProgress();
 			Progress.Add(stringProgress);
-			Application.Idle += StartWorking;
+			Application.Idle += StartWorkingAsync;
 			ShowDialog();
 			if (Progress.ErrorEncountered)
 			{
@@ -62,9 +62,10 @@ namespace Bloom.ToPalaso.Experimental
 			}
 		}
 
-		async void StartWorking(object sender, EventArgs e)
+		// Note: purposely async void because an event handler
+		async void StartWorkingAsync(object sender, EventArgs e)
 		{
-			Application.Idle -= new EventHandler(StartWorking);
+			Application.Idle -= new EventHandler(StartWorkingAsync);
 
 			await _asyncWork(Progress);
 			Close();

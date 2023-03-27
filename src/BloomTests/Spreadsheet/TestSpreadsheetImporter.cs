@@ -22,20 +22,20 @@ namespace BloomTests.Spreadsheet
 		{
 		}
 
-		protected override Task<Browser> GetBrowser()
+		protected override Task<Browser> GetBrowserAsync()
 		{
 			throw new ApplicationException("Must not use real browser in unit testing");
 		}
 
 		// A dreadfully crude approximation, but good enough for these tests.
-		protected override Task<string> GetMd5(XmlElement elt)
+		protected override Task<string> GetMd5Async(XmlElement elt)
 		{
 			return Task.FromResult(elt.InnerText.GetHashCode().ToString());
 		}
 
 		// This is also a crude approximation; it won't, for example, handle any sentence-ending punctuation
 		// besides period. But it covers the text used in the relevant tests.
-		protected override async Task<string[]> GetSentenceFragments(string text)
+		protected override async Task<string[]> GetSentenceFragmentsAsync(string text)
 		{
 			return GetFrags(text).ToArray();
 		}

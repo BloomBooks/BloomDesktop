@@ -244,7 +244,7 @@ namespace Bloom.Publish.Android
 				_collectionSettings.BulkPublishBloomPubSettings = request.RequiredPostObject<BulkBloomPubPublishSettings>();
 				_collectionSettings.Save();
 
-				await _bulkBloomPubCreator.PublishAllBooks(_collectionSettings.BulkPublishBloomPubSettings);
+				await _bulkBloomPubCreator.PublishAllBooksAsync(_collectionSettings.BulkPublishBloomPubSettings);
 				SetState("stopped");
 				request.PostSucceeded();
 			}, true);

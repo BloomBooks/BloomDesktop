@@ -87,7 +87,7 @@ namespace BloomTests.Spreadsheet
 
 			var importer = new TestSpreadsheetImporter(null, this._dom);
 			InitializeImporter(importer);
-			await importer.Import(_sheet);
+			await importer.ImportAsync(_sheet);
 		}
 
 		/// <summary>
@@ -642,7 +642,7 @@ namespace BloomTests.Spreadsheet
 			// Do the import
 			_progressSpy = new ProgressSpy();
 			var importer = new TestSpreadsheetImporter(null, _dom, _spreadsheetFolder, _bookFolder.FolderPath, settings);
-			_warnings = await importer.Import(ss, _progressSpy);
+			_warnings = await importer.ImportAsync(ss, _progressSpy);
 
 			_contentPages = _dom.SafeSelectNodes("//div[contains(@class, 'bloom-page')]").Cast<XmlElement>().ToList();
 
@@ -890,7 +890,7 @@ namespace BloomTests.Spreadsheet
 
 			// Do the import
 			var importer = new TestSpreadsheetImporter(null, _dom, _spreadsheetFolder, _bookFolder.FolderPath);
-			_warnings = await importer.Import(ss);
+			_warnings = await importer.ImportAsync(ss);
 
 			_contentPages = _dom.SafeSelectNodes("//div[contains(@class, 'bloom-page')]").Cast<XmlElement>().ToList();
 
@@ -999,7 +999,7 @@ namespace BloomTests.Spreadsheet
 
 			// Do the import
 			var importer = new TestSpreadsheetImporter(null, _dom, _spreadsheetFolder, _bookFolder.FolderPath);
-			await importer.Import(ss);
+			await importer.ImportAsync(ss);
 
 			_contentPages = _dom.SafeSelectNodes("//div[contains(@class, 'bloom-page')]").Cast<XmlElement>().ToList();
 
@@ -1085,7 +1085,7 @@ namespace BloomTests.Spreadsheet
 
 			// Do the import
 			var importer = new TestSpreadsheetImporter(null, _dom, _spreadsheetFolder, _bookFolder.FolderPath);
-			_warnings = await importer.Import(ss);
+			_warnings = await importer.ImportAsync(ss);
 
 			_contentPages = _dom.SafeSelectNodes("//div[contains(@class, 'bloom-page')]").Cast<XmlElement>().ToList();
 
@@ -1188,7 +1188,7 @@ namespace BloomTests.Spreadsheet
 
 			// Do the import
 			var importer = new TestSpreadsheetImporter(null, _dom, _spreadsheetFolder, _bookFolder.FolderPath);
-			_warnings = await importer.Import(ss);
+			_warnings = await importer.ImportAsync(ss);
 
 			_contentPages = _dom.SafeSelectNodes("//div[contains(@class, 'bloom-page')]").Cast<XmlElement>().ToList();
 
@@ -1357,7 +1357,7 @@ namespace BloomTests.Spreadsheet
 
 			// Do the import
 			var importer = new TestSpreadsheetImporter(null, _dom, null, _bookFolder.FolderPath);
-			await importer.Import(ss);
+			await importer.ImportAsync(ss);
 
 			// (individual test methods will evaluate the result)
 		}
@@ -1418,7 +1418,7 @@ namespace BloomTests.Spreadsheet
 
 			// Do the import
 			var importer = new TestSpreadsheetImporter(null, _dom, null, _bookFolder.FolderPath);
-			await importer.Import(ss);
+			await importer.ImportAsync(ss);
 
 			// (individual test methods will evaluate the result)
 		}
@@ -1471,7 +1471,7 @@ namespace BloomTests.Spreadsheet
 
 			// Do the import
 			var importer = new TestSpreadsheetImporter(null, _dom, null, _bookFolder.FolderPath);
-			await importer.Import(ss);
+			await importer.ImportAsync(ss);
 
 			// (individual test methods will evaluate the result)
 		}
