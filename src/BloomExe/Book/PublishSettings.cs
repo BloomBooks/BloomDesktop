@@ -437,9 +437,5 @@ namespace Bloom.Book
 		// Whether to advertise the book as a comic book (if it has any comic pages)
 		[JsonProperty("comic")]
 		public bool Comic;
-
-		// Whether to advertise the book as a accessible to the visually impaired
-		[JsonProperty("accessibleToVisuallyImpaired")]
-		public bool AccessibleToVisuallyImpaired;
 	}
 }

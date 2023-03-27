@@ -3534,8 +3534,8 @@
         <note>ID: PublishTab.Common.StopPublishing</note>
       </trans-unit>
       <!-- 5.5 -->
-      <trans-unit id="PublishTab.AccessibleVisually">
-        <source xml:lang="en">Accessible to the Visually Impaired</source>
+      <trans-unit id="PublishTab.AccessibleVisually" translate="no">
+        <source xml:lang="en">Accessible to the Visually Impaired in %0</source>
         <note>ID: PublishTab.AccessibleVisually</note>
       </trans-unit>
       <trans-unit id="PublishTab.AdobeReaderControl.NotInstalled">
@@ -3730,7 +3730,7 @@
         <source xml:lang="en">Settings</source>
         <note>ID: PublishTab.Android.Settings</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Android.TalkingBookLanguages" sil:dynamic="true" translate="no">
+      <trans-unit id="PublishTab.Android.TalkingBookLanguages" sil:dynamic="true">
         <source xml:lang="en">Talking Book Languages</source>
         <note>ID: PublishTab.Android.TalkingBookLanguages</note>
         <note>Which languages will have the "Talking Book" (books with both text and narrated audio) feature enabled</note>
@@ -4686,12 +4686,14 @@
         <note>ID: PublishTab.Feature.SignLanguage.NoVideos</note>
       </trans-unit>
       <trans-unit id="PublishTab.Feature.SignLanguage.Present" translate="no">
-        <source xml:lang="en">The videos in this book contain the specified sign language</source>
+        <source xml:lang="en">The videos in this book contain {N}</source>
         <note>ID: PublishTab.Feature.SignLanguage.Present</note>
+        <note>{N} will be replaced with a link whose text is the name of the (sign) language and which opens a chooser</note>
       </trans-unit>
       <trans-unit id="PublishTab.Feature.SignLanguage.Unknown" translate="no">
-        <source xml:lang="en">The videos in this book are sign language; you need to specify which one</source>
+        <source xml:lang="en">This collection has {no sign language selected}</source>
         <note>ID: PublishTab.Feature.SignLanguage.Unknown</note>
+        <note>The result should have a section in braces. This will become a hot link for selecting a sign language.</note>
       </trans-unit>
       <trans-unit id="PublishTab.Feature.TallkingBook.NoNarration" translate="no">
         <source xml:lang="en">This book has no recorded narration</source>

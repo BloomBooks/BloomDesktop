@@ -314,14 +314,12 @@ BookServer bookServer,
 			// the subset of contents that are included in the .bloompub
 			// Note that we generally want to disable features here, but not enable them, especially while
 			// running harvester!  See https://issues.bloomlibrary.org/youtrack/issue/BL-8995.
-			var enableBlind = modifiedBook.BookInfo.MetaData.Feature_Blind || !Program.RunningHarvesterMode;
 			// BloomReader and BloomPlayer are not using the SignLanguage feature, and it's misleading to
 			// assume the existence of videos implies sign language.  There is a separate "Video" feature
 			// now that gets set automatically.  (Automated setting of the Blind feature is imperfect, but
 			// more meaningful than trying to automate sign language just based on one video existing.)
 			var enableSignLanguage = modifiedBook.BookInfo.MetaData.Feature_SignLanguage;
 			modifiedBook.UpdateMetadataFeatures(
-				isBlindEnabled: enableBlind,
 				isSignLanguageEnabled: enableSignLanguage,
 				isTalkingBookEnabled: true, // talkingBook is only ever set automatically as far as I can tell.
 				allowedLanguages: null // allow all because we've already filtered out the unwanted ones from the dom above.

@@ -493,22 +493,6 @@ namespace BloomTests.Book
 			Assert.AreEqual(expectedTags, metadata.Tags);
 		}
 
-		[TestCase(null, new string[0], TestName="FeaturesGetter_BlindLangCodesNull_NoException")]
-		[TestCase(new string[0], new string[0], TestName = "FeaturesGetter_BlindLangCodesEmpty_Empty")]
-		[TestCase(new string[] { "en", "es" }, new string[] { "blind", "blind:en", "blind:es" }, TestName = "FeaturesGetter_BlindLangCodesMultiple_OverallAndLangSpecificFeatures")]
-		public void FeaturesGetter_Blind(IEnumerable<string> langCodes, string[] featuresExpected)
-		{
-			var metadata = new BookMetaData();
-			metadata.Feature_Blind_LangCodes = langCodes;
-
-			// System under test
-			string[] featuresResult = metadata.Features;
-			bool featureBlindResult = metadata.Feature_Blind;
-
-			Assert.AreEqual(featuresExpected, featuresResult, "Features");
-			Assert.AreEqual(featuresExpected.Any(), featureBlindResult, "Feature_Blind");
-		}
-
 		[TestCase(null, new string[0], TestName = "FeaturesGetter_TalkingBookLangCodesNull_NoException")]
 		[TestCase(new string[0], new string[0], TestName = "FeaturesGetter_TalkingBookLangCodesEmpty_Empty")]
 		[TestCase(new string[] { "en", "es" }, new string[] { "talkingBook", "talkingBook:en", "talkingBook:es" }, TestName = "FeaturesGetter_TalkingBookLangCodesMultiple_OverallAndLangSpecificFeatures")]
@@ -646,7 +630,6 @@ namespace BloomTests.Book
 			CollectionAssert.AreEqual(input.OrderBy(x => x), convertBackResult.OrderBy(x => x));
 
 			// Verify individual other properties too
-			Assert.AreEqual(true, metadata.Feature_Blind, "Blind");
 			Assert.AreEqual(true, metadata.Feature_TalkingBook, "TalkingBook");
 			Assert.AreEqual(true, metadata.Feature_SignLanguage, "SignLanguage");
 			Assert.AreEqual(true, metadata.Feature_Quiz, "Quiz");
