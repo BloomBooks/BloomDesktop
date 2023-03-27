@@ -362,7 +362,7 @@ namespace Bloom.Publish.BloomLibrary
 			return Book.BookInfo.PublishSettings.BloomLibrary.SignLangs.IncludedLanguages().Any();
 		}
 
-		public bool BlindAccessibleToPublish
+		public bool L1SupportsVisuallyImpaired
 		{
 			get
 			{
@@ -373,18 +373,6 @@ namespace Bloom.Publish.BloomLibrary
 				Book.UpdateBlindFeature(value);
 				Book.BookInfo.Save();
 			}
-		}
-
-		public void ClearBlindAccessibleToPublish()
-		{
-			Book.UpdateBlindFeature(false);
-			Book.BookInfo.Save();
-		}
-
-		public void SetOnlyBlindAccessibleToPublish()
-		{
-			Book.UpdateBlindFeature(true);
-			Book.BookInfo.Save();
 		}
 
 		public string CheckBookBeforeUpload()
