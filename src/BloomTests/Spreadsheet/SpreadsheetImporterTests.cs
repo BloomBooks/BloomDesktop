@@ -5,6 +5,7 @@ using NUnit.Framework;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Xml;
 using BloomTemp;
 using BloomTests.TeamCollection;
@@ -23,7 +24,7 @@ namespace BloomTests.Spreadsheet
 		protected HtmlDom _dom;
 
 		[OneTimeSetUp]
-		public void OneTimeSetUp()
+		public async Task OneTimeSetUp()
 		{
 			_dom = new HtmlDom(SpreadsheetTests.kSimpleTwoPageBook, true);
 			AssertThatXmlIn.Dom(_dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@lang='en']/p[text()='Riding on elephants can be risky.']", 1); // unchanged
@@ -86,7 +87,7 @@ namespace BloomTests.Spreadsheet
 
 			var importer = new TestSpreadsheetImporter(null, this._dom);
 			InitializeImporter(importer);
-			importer.Import(_sheet);
+			await importer.ImportAsync(_sheet);
 		}
 
 		/// <summary>
@@ -491,7 +492,7 @@ namespace BloomTests.Spreadsheet
 		private string _spreadsheetFolder;
 
 		[OneTimeSetUp]
-		public void OneTimeSetUp()
+		public async Task OneTimeSetUp()
 		{
 			// We will re-use the images from another test.
 			// Conveniently the images are in a folder called "images" which is what the importer expects.
@@ -641,7 +642,7 @@ namespace BloomTests.Spreadsheet
 			// Do the import
 			_progressSpy = new ProgressSpy();
 			var importer = new TestSpreadsheetImporter(null, _dom, _spreadsheetFolder, _bookFolder.FolderPath, settings);
-			_warnings = importer.Import(ss, _progressSpy);
+			_warnings = await importer.ImportAsync(ss, _progressSpy);
 
 			_contentPages = _dom.SafeSelectNodes("//div[contains(@class, 'bloom-page')]").Cast<XmlElement>().ToList();
 
@@ -848,7 +849,7 @@ namespace BloomTests.Spreadsheet
 		private string _spreadsheetFolder;
 
 		[OneTimeSetUp]
-		public void OneTimeSetUp()
+		public async Task OneTimeSetUp()
 		{
 			// We will re-use the images from another test.
 			// Conveniently the images are in a folder called "images" which is what the importer expects.
@@ -889,7 +890,7 @@ namespace BloomTests.Spreadsheet
 
 			// Do the import
 			var importer = new TestSpreadsheetImporter(null, _dom, _spreadsheetFolder, _bookFolder.FolderPath);
-			_warnings = importer.Import(ss);
+			_warnings = await importer.ImportAsync(ss);
 
 			_contentPages = _dom.SafeSelectNodes("//div[contains(@class, 'bloom-page')]").Cast<XmlElement>().ToList();
 
@@ -963,7 +964,7 @@ namespace BloomTests.Spreadsheet
 		private string _spreadsheetFolder;
 
 		[OneTimeSetUp]
-		public void OneTimeSetUp()
+		public async Task OneTimeSetUp()
 		{
 			// We will re-use the images from another test.
 			// Conveniently the images are in a folder called "images" which is what the importer expects.
@@ -998,7 +999,7 @@ namespace BloomTests.Spreadsheet
 
 			// Do the import
 			var importer = new TestSpreadsheetImporter(null, _dom, _spreadsheetFolder, _bookFolder.FolderPath);
-			importer.Import(ss);
+			await importer.ImportAsync(ss);
 
 			_contentPages = _dom.SafeSelectNodes("//div[contains(@class, 'bloom-page')]").Cast<XmlElement>().ToList();
 
@@ -1041,7 +1042,7 @@ namespace BloomTests.Spreadsheet
 		private string _spreadsheetFolder;
 
 		[OneTimeSetUp]
-		public void OneTimeSetUp()
+		public async Task OneTimeSetUp()
 		{
 			// We will re-use the images from another test.
 			// Conveniently the images are in a folder called "images" which is what the importer expects.
@@ -1084,7 +1085,7 @@ namespace BloomTests.Spreadsheet
 
 			// Do the import
 			var importer = new TestSpreadsheetImporter(null, _dom, _spreadsheetFolder, _bookFolder.FolderPath);
-			_warnings = importer.Import(ss);
+			_warnings = await importer.ImportAsync(ss);
 
 			_contentPages = _dom.SafeSelectNodes("//div[contains(@class, 'bloom-page')]").Cast<XmlElement>().ToList();
 
@@ -1155,7 +1156,7 @@ namespace BloomTests.Spreadsheet
 		private string _spreadsheetFolder;
 
 		[OneTimeSetUp]
-		public void OneTimeSetUp()
+		public async Task OneTimeSetUp()
 		{
 			// We will re-use the images from another test.
 			// Conveniently the images are in a folder called "images" which is what the importer expects.
@@ -1187,7 +1188,7 @@ namespace BloomTests.Spreadsheet
 
 			// Do the import
 			var importer = new TestSpreadsheetImporter(null, _dom, _spreadsheetFolder, _bookFolder.FolderPath);
-			_warnings = importer.Import(ss);
+			_warnings = await importer.ImportAsync(ss);
 
 			_contentPages = _dom.SafeSelectNodes("//div[contains(@class, 'bloom-page')]").Cast<XmlElement>().ToList();
 
@@ -1334,7 +1335,7 @@ namespace BloomTests.Spreadsheet
 		private TemporaryFolder _bookFolder;
 
 		[OneTimeSetUp]
-		public void OneTimeSetUp()
+		public async Task OneTimeSetUp()
 		{
 			// Create an HtmlDom for a template to import into.
 			var xml = string.Format(licenseTestsDom);
@@ -1356,7 +1357,7 @@ namespace BloomTests.Spreadsheet
 
 			// Do the import
 			var importer = new TestSpreadsheetImporter(null, _dom, null, _bookFolder.FolderPath);
-			importer.Import(ss);
+			await importer.ImportAsync(ss);
 
 			// (individual test methods will evaluate the result)
 		}
@@ -1397,7 +1398,7 @@ namespace BloomTests.Spreadsheet
 		private TemporaryFolder _bookFolder;
 
 		[OneTimeSetUp]
-		public void OneTimeSetUp()
+		public async Task OneTimeSetUp()
 		{
 			// Create an HtmlDom for a template to import into.
 			var xml = string.Format(SpreadsheetImportRemovingLicenseUrlandNotes.licenseTestsDom);
@@ -1417,7 +1418,7 @@ namespace BloomTests.Spreadsheet
 
 			// Do the import
 			var importer = new TestSpreadsheetImporter(null, _dom, null, _bookFolder.FolderPath);
-			importer.Import(ss);
+			await importer.ImportAsync(ss);
 
 			// (individual test methods will evaluate the result)
 		}
@@ -1445,7 +1446,7 @@ namespace BloomTests.Spreadsheet
 		private TemporaryFolder _bookFolder;
 
 		[OneTimeSetUp]
-		public void OneTimeSetUp()
+		public async Task OneTimeSetUp()
 		{
 			// Create an HtmlDom for a template to import into.
 			var xml = string.Format(SpreadsheetImportRemovingLicenseUrlandNotes.licenseTestsDom);
@@ -1470,7 +1471,7 @@ namespace BloomTests.Spreadsheet
 
 			// Do the import
 			var importer = new TestSpreadsheetImporter(null, _dom, null, _bookFolder.FolderPath);
-			importer.Import(ss);
+			await importer.ImportAsync(ss);
 
 			// (individual test methods will evaluate the result)
 		}

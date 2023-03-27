@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using Bloom.Book;
 using CommandLine;
 using SIL.IO;
@@ -32,7 +33,7 @@ namespace Bloom.CLI
 	/// </summary>
 	class GetUsedFontsCommand
 	{
-		public static int Handle(GetUsedFontsParameters options)
+		public static Task<int> Handle(GetUsedFontsParameters options)
 		{
 			try
 			{
@@ -48,7 +49,7 @@ namespace Bloom.CLI
 						Debug.WriteLine("Could not find " + options.BookPath);
 						Console.Error.WriteLine("Could not find " + options.BookPath);
 					}
-					return (int)GetUsedFontsExitCode.BookPathDirectoryNotFound;
+					return Task.FromResult((int)GetUsedFontsExitCode.BookPathDirectoryNotFound);
 				}
 				Console.WriteLine("Gathering font data.");
 
@@ -88,19 +89,19 @@ namespace Bloom.CLI
 					string message = "Exception: " + e.ToString();
 					Debug.WriteLine(message);
 					Console.Error.WriteLine(message);
-					return (int)GetUsedFontsExitCode.ReportIOError;
+					return Task.FromResult((int)GetUsedFontsExitCode.ReportIOError);
 				}
 
 				Console.WriteLine("Finished gathering font data.");
 				Debug.WriteLine("Finished gathering font data.");
-				return (int)GetUsedFontsExitCode.Success;
+				return Task.FromResult((int)GetUsedFontsExitCode.Success);
 			}
 			catch (Exception e)
 			{
 				string message = "Exception: " + e.ToString();
 				Debug.WriteLine(message);
 				Console.Error.WriteLine(message);
-				return (int)GetUsedFontsExitCode.UnhandledException;
+				return Task.FromResult((int)GetUsedFontsExitCode.UnhandledException);
 			}
 		}
 

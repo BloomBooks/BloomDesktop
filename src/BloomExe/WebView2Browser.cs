@@ -178,6 +178,15 @@ namespace Bloom
 		private bool _finishedUpdateDisplay;
 		private bool _urlMatches;
 
+		// For now I have decided not to make this return a Task and to consistently await it.
+		// The fan-out of methods that would have to be made async is daunting, and code
+		// that cares about the completion of the navigation will already have some
+		// mechanism in place for waiting not just until the call to Navigate after the
+		// await, but until we get an indication that the navigation is complete.
+		// Also, I suspect that EnsureCoreWebView2Async() will almost always be already completed
+		// and no awaiting will really be needed.
+		// Callers should nevertheless be aware that it is not absolutely guaranteed that
+		// Navigation has even started when this method returns.
 		protected override async void UpdateDisplay(string newUrl)
 		{
 			_targetUrl = newUrl;
@@ -290,6 +299,11 @@ namespace Bloom
 			RobustFile.WriteAllText(path, html, Encoding.UTF8);
 		}
 
+		public override async Task SaveDocumentAsync(string path)
+		{
+			var html = await RunJavaScriptAsync("document.documentElement.outerHTML");
+			RobustFile.WriteAllText(path, html, Encoding.UTF8);
+		}
 		// Review: base class currently explicitly opens FireFox. Should we instead open Chrome,
 		// or whatever the default browser is, or...?
 		//public override void OnOpenPageInSystemBrowser(object sender, EventArgs e)
@@ -299,7 +313,7 @@ namespace Bloom
 
 		public override string RunJavaScript(string script)
 		{
-			Task<string> task = runJavaScriptAsync(script);
+			Task<string> task = RunJavaScriptAsync(script);
 			// I don't fully understand why this works and many other things I tried don't (typically deadlock,
 			// or complain that ExecuteScriptAsync must be done on the main thread).
 			// Came from an answer in https://stackoverflow.com/questions/65327263/how-to-get-sync-return-from-executescriptasync-in-webview2'
@@ -312,9 +326,8 @@ namespace Bloom
 			var result = task.Result;
 			return result;
 		}
-		// Enhance: possibly this should be virtual in the baseclass, and public, and used by anything that
-		// doesn't need to wait for the task to complete, or that can conveniently be made async?
-		private async Task<string> runJavaScriptAsync(string script)
+
+		public  override async Task<string> RunJavaScriptAsync(string script)
 		{
 			var result = await _webview.ExecuteScriptAsync(script);
 			// Whatever the javascript produces gets JSON encoded automatically by ExecuteScriptAsync.

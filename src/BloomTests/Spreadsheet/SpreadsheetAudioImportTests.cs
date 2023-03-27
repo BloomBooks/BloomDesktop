@@ -31,7 +31,7 @@ namespace BloomTests.Spreadsheet
 		private XmlElement _firstPage;
 
 		[OneTimeSetUp]
-		public void OneTimeSetUp()
+		public async Task OneTimeSetUp()
 		{
 			// We will re-use the audio files from another test.
 			// Copy them into the expected place in the book folder.
@@ -251,7 +251,7 @@ namespace BloomTests.Spreadsheet
 			// Do the import
 			_progressSpy = new ProgressSpy();
 			var importer = new TestSpreadsheetImporter(null, _dom, _spreadsheetFolder.FolderPath, _bookFolder.FolderPath, settings);
-			_warnings = importer.Import(ss, _progressSpy);
+			_warnings = await importer.ImportAsync(ss, _progressSpy);
 
 			_contentPages = _dom.SafeSelectNodes("//div[contains(@class, 'bloom-page')]").Cast<XmlElement>().ToList();
 
@@ -595,7 +595,7 @@ namespace BloomTests.Spreadsheet
 		}
 
 		[OneTimeSetUp]
-		public void OneTimeSetUp()
+		public async Task OneTimeSetUp()
 		{
 			// We will re-use the audio files from another test.
 			// Copy them into the expected place in the book folder.
@@ -722,7 +722,7 @@ namespace BloomTests.Spreadsheet
 			// Do the import
 			_progressSpy = new ProgressSpy();
 			var importer = new TestSpreadsheetImporter(null, _dom, _spreadsheetFolder.FolderPath, _bookFolder.FolderPath, settings);
-			_warnings = importer.Import(ss, _progressSpy);
+			_warnings = await importer.ImportAsync(ss, _progressSpy);
 
 			_contentPages = _dom.SafeSelectNodes("//div[contains(@class, 'bloom-page')]").Cast<XmlElement>().ToList();
 

@@ -206,7 +206,7 @@ namespace Bloom.web.controllers
 					// until it is saved, we get all gray rectangles. So for now, we just quickly do the clone and unlock.
 					var resultPath = "";
 					Bitmap clone;
-					// Review: the coarse lock(SyncObj) in BloomServer.ProcessRequest() may have removed the need for this finer grained lock.
+					// Review: the coarse lock(SyncObj) in BloomServer.ProcessRequestAsync() may have removed the need for this finer grained lock.
 					lock (thumbnail)
 					{
 						clone = new Bitmap((Image)thumbnail.Clone());

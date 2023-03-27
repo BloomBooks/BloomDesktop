@@ -24,22 +24,22 @@ namespace Bloom.Utils
 				StringComparer.OrdinalIgnoreCase);
 			var locker = new object();
 			if (changeTypes.HasFlag(WatcherChangeTypes.Created))
-				source.Created += FileSystemWatcher_Event;
+				source.Created += FileSystemWatcher_EventAsync;
 			if (changeTypes.HasFlag(WatcherChangeTypes.Deleted))
-				source.Deleted += FileSystemWatcher_Event;
+				source.Deleted += FileSystemWatcher_EventAsync;
 			if (changeTypes.HasFlag(WatcherChangeTypes.Changed))
-				source.Changed += FileSystemWatcher_Event;
+				source.Changed += FileSystemWatcher_EventAsync;
 			if (changeTypes.HasFlag(WatcherChangeTypes.Renamed))
-				source.Renamed += FileSystemWatcher_Event;
+				source.Renamed += FileSystemWatcher_EventAsync;
 			return new Disposable(() =>
 			{
-				source.Created -= FileSystemWatcher_Event;
-				source.Deleted -= FileSystemWatcher_Event;
-				source.Changed -= FileSystemWatcher_Event;
-				source.Renamed -= FileSystemWatcher_Event;
+				source.Created -= FileSystemWatcher_EventAsync;
+				source.Deleted -= FileSystemWatcher_EventAsync;
+				source.Changed -= FileSystemWatcher_EventAsync;
+				source.Renamed -= FileSystemWatcher_EventAsync;
 			});
 
-			async void FileSystemWatcher_Event(object sender, FileSystemEventArgs e)
+			async void FileSystemWatcher_EventAsync(object sender, FileSystemEventArgs e)
 			{
 				var key = e.FullPath;
 				var cts = new CancellationTokenSource();

@@ -54,9 +54,9 @@ namespace Bloom.Edit
 			_browser.Select();
 		}
 
-		private void _okButton_Click(object sender, EventArgs e)
+		private async void  _okButton_ClickAsync(object sender, EventArgs e)
 		{
-			FormData =_browser.RunJavaScript("gatherSettings()");
+			FormData = await _browser.RunJavaScriptAsync("gatherSettings()");
 			DialogResult = DialogResult.OK;
 			Close();
 

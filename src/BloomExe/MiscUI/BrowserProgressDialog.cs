@@ -31,7 +31,7 @@ namespace Bloom.MiscUI
 	/// that initiated the doWhat() task resumes when the report is complete.
 	/// </summary>
 	/// <remarks>The action is performed in the background not so that the main program
-	/// can keep going...it can't, DoWorkWithProgressDialog does not return until doWhat()
+	/// can keep going...it can't, DoWorkWithProgressDialogAsync does not return until doWhat()
 	/// is complete...but so that the UI thread can run the progress dialog,
 	/// responding to paint events, a click on the buttons, and and so forth.</remarks>
 	public class BrowserProgressDialog
@@ -118,8 +118,8 @@ namespace Bloom.MiscUI
 
 		private static Action _doWhenProgressDialogCloses;
 
-		public static void DoWorkWithProgressDialog(IBloomWebSocketServer socketServer,
-			Func<IWebSocketProgress, BackgroundWorker, bool> doWhat,
+		public static async Task DoWorkWithProgressDialogAsync(IBloomWebSocketServer socketServer,
+			Func<IWebSocketProgress, BackgroundWorker, Task<bool>> doWhat,
 			string id,
 			string title,
 			bool showCancelButton = true,
@@ -141,7 +141,7 @@ namespace Bloom.MiscUI
 			props1.titleBackgroundColor = Palette.kBloomBlueHex;
 			props1.showReportButton = "if-error";
 			props1.showCancelButton = showCancelButton;
-			DoWorkWithProgressDialog(socketServer, props, doWhat, doWhenMainActionFalse, doWhenDialogCloses);
+			await DoWorkWithProgressDialogAsync(socketServer, props, doWhat, doWhenMainActionFalse, doWhenDialogCloses);
 		}
 
 		private static bool _readyForProgressReports;
@@ -164,9 +164,9 @@ namespace Bloom.MiscUI
 		/// When the dialog closes, it will post progress/closed. At this point,
 		///  execute doWhenDialogCloses.
 		/// </summary>
-		public static void DoWorkWithProgressDialog(IBloomWebSocketServer socketServer,
+		public static async Task DoWorkWithProgressDialogAsync(IBloomWebSocketServer socketServer,
 			DynamicJson props,
-			Func<IWebSocketProgress, BackgroundWorker, bool> doWhat, Action doWhenMainActionFalse = null,
+			Func<IWebSocketProgress, BackgroundWorker, Task<bool>> doWhat, Action doWhenMainActionFalse = null,
 			Action doWhenDialogCloses = null)
 		{
 			
@@ -180,7 +180,7 @@ namespace Bloom.MiscUI
 			var worker = new BackgroundWorker();
 			worker.WorkerSupportsCancellation = true;
 			_readyForProgressReports = false;
-			worker.DoWork += (sender, args) =>
+			worker.DoWork += async (sender, args) =>
 			{
 				ProgressDialogApi.SetCancelHandler(() => { worker.CancelAsync(); });
 
@@ -190,7 +190,7 @@ namespace Bloom.MiscUI
 				bool waitForUserToCloseDialogOrReportProblems;
 				try
 				{
-					waitForUserToCloseDialogOrReportProblems = doWhat(_progress, worker);
+					waitForUserToCloseDialogOrReportProblems = await doWhat(_progress, worker);
 				}
 				catch (Exception ex)
 				{

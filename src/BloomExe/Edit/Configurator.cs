@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.IO;
 using System.Text;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Xml;
 using Bloom.ToPalaso.Experimental;
@@ -132,7 +133,7 @@ namespace Bloom.Edit
 			return XmlHtmlConverter.ConvertDomToHtml5(doc);
 		}
 
-		private void ConfigureBookInternal(string bookPath)
+		private async Task ConfigureBookInternal(string bookPath)
 		{
 		/* setup jquery in chrome console (first open a local file):
 			 * script = document.createElement("script");
@@ -160,13 +161,13 @@ namespace Bloom.Edit
 
 				//Now we call the method which takes that confuration data and adds/removes/updates pages.
 				//We have the data as json string, so first we turn it into object for the updateDom's convenience.
-				b.RunJavaScript("runUpdate(" + GetAllData() + ")");
+				await b.RunJavaScriptAsync("runUpdate(" + GetAllData() + ")");
 
 				//Ok, so we should have a modified DOM now, which we can save back over the top.
 
 				//nice non-ascii paths kill this, so let's go to a temp file first
 				var temp = TempFile.CreateAndGetPathButDontMakeTheFile(); //we don't want to wrap this in using
-				b.SaveDocument(temp.Path);
+				await b.SaveDocumentAsync(temp.Path);
 				RobustFile.Delete(bookPath);
 				RobustFile.Move(temp.Path, bookPath);
 			}

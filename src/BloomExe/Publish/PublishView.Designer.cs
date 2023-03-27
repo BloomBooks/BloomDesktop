@@ -159,7 +159,7 @@ namespace Bloom.Publish
             this._printButton.Text = "&Print...";
             this._printButton.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageBeforeText;
             this._printButton.UseVisualStyleBackColor = false;
-            this._printButton.Click += new System.EventHandler(this.OnPrint_Click);
+            this._printButton.Click += new System.EventHandler(this.OnPrint_ClickAsync);
             // 
             // tableLayoutPanel1
             // 

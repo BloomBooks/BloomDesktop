@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using Bloom.Book;
 using Bloom.Properties;
@@ -69,7 +70,7 @@ namespace Bloom.CLI
 			return errors;
 		}
 
-		public static int Handle(CreateArtifactsParameters options)
+		public static Task<int> Handle(CreateArtifactsParameters options)
 		{
 			try
 			{
@@ -95,14 +96,14 @@ namespace Bloom.CLI
 
 						// Make the .bloompub and /bloomdigital outputs
 						var exitCode = CreateArtifacts(options);
-						return (int)exitCode;
+						return Task.FromResult((int)exitCode);
 					}
 				}
 			}
 			catch (Exception ex)
 			{
 				Console.WriteLine(ex);
-				return (int)CreateArtifactsExitCode.UnhandledException;
+				return Task.FromResult((int)CreateArtifactsExitCode.UnhandledException);
 			}
 		}
 

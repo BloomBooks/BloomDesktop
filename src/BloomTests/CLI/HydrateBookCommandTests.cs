@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using System.IO;
+using System.Threading.Tasks;
 using Bloom;
 using Bloom.Book;
 using Bloom.CLI;
@@ -71,9 +72,9 @@ namespace BloomTests.CLI
 		}
 
 		[Test]
-		public void BogusPath_Returns1()
+		public async Task BogusPath_Returns1()
 		{
-			var code = HydrateBookCommand.Handle(new HydrateParameters()
+			var code = await HydrateBookCommand.Handle(new HydrateParameters()
 			{
 				Path = "notAnywhere"
 			});
@@ -81,9 +82,9 @@ namespace BloomTests.CLI
 		}
 
 		[Test]
-		public void A5LandscapeChangedToDevice16x9Portrait()
+		public async Task A5LandscapeChangedToDevice16x9Portrait()
 		{
-			var code = HydrateBookCommand.Handle(new HydrateParameters()
+			var code = await HydrateBookCommand.Handle(new HydrateParameters()
 			{
 				Path = _bookFolder.FolderPath,
 				Preset = "shellbook",
@@ -97,9 +98,9 @@ namespace BloomTests.CLI
 		}
 
 		[Test]
-		public void XMatterIsFilledIn()
+		public async Task XMatterIsFilledIn()
 		{
-			var code = HydrateBookCommand.Handle(new HydrateParameters()
+			var code = await HydrateBookCommand.Handle(new HydrateParameters()
 			{
 				Path = _bookFolder.FolderPath,
 				Preset = "shellbook",
@@ -132,9 +133,9 @@ namespace BloomTests.CLI
 		}
 
 		[Test]
-		public void StylesheetAreRelativePaths()
+		public async Task StylesheetAreRelativePaths()
 		{
-			var code = HydrateBookCommand.Handle(new HydrateParameters()
+			var code = await HydrateBookCommand.Handle(new HydrateParameters()
 			{
 				Path = _bookFolder.FolderPath,
 				Preset = "shellbook",
@@ -154,9 +155,9 @@ namespace BloomTests.CLI
 		}
 
 		[Test]
-		public void CreativeCommonsLicenseImageAdded()
+		public async Task CreativeCommonsLicenseImageAdded()
 		{
-			var code = HydrateBookCommand.Handle(new HydrateParameters
+			var code = await HydrateBookCommand.Handle(new HydrateParameters
 			{
 				Path = _bookFolder.FolderPath,
 				Preset = "shellbook",
@@ -167,9 +168,9 @@ namespace BloomTests.CLI
 		}
 
 		[Test]
-		public void SetsCorrectClassesForVernacularLanguage()
+		public async Task SetsCorrectClassesForVernacularLanguage()
 		{
-			var code = HydrateBookCommand.Handle(new HydrateParameters
+			var code = await HydrateBookCommand.Handle(new HydrateParameters
 			{
 				Path = _bookFolder.FolderPath,
 				Preset = "shellbook",
@@ -183,9 +184,9 @@ namespace BloomTests.CLI
 		}
 
 		[Test]
-		public void SetsCorrectClassesForNationalLanguages()
+		public async Task SetsCorrectClassesForNationalLanguages()
 		{
-			var code = HydrateBookCommand.Handle(new HydrateParameters
+			var code = await HydrateBookCommand.Handle(new HydrateParameters
 			{
 				Path = _bookFolder.FolderPath,
 				Preset = "shellbook",
@@ -202,9 +203,9 @@ namespace BloomTests.CLI
 		}
 
 		[Test]
-		public void RequiredParametersOnly_DefaultsOkay()
+		public async Task RequiredParametersOnly_DefaultsOkay()
 		{
-			var code = HydrateBookCommand.Handle(new HydrateParameters
+			var code = await HydrateBookCommand.Handle(new HydrateParameters
 			{
 				Path = _bookFolder.FolderPath,
 				VernacularTag = "en"
