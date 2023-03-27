@@ -4,6 +4,8 @@ import * as React from "react";
 import { useApiBoolean } from "../utils/bloomApi";
 import { Div } from "./l10nComponents";
 import { kBloomBlue } from "../bloomMaterialUITheme";
+import { LightTooltip } from "./lightTooltip";
+import { kBloomDisabledOpacity } from "../utils/colorUtils";
 
 // A localized label that may show a tick mark next to it
 export const TickableBox: React.FunctionComponent<{
@@ -15,11 +17,11 @@ export const TickableBox: React.FunctionComponent<{
     // There is no behavior to actually disable, but this gives it an appearance
     // similar to MUI disabled controls.
     disabled?: boolean;
-    title?: string;
+    title?: React.ReactNode;
 }> = props => {
     const checkMarkString: string = "\u2713"; // elsewhere we used \u10004 but not sure how to do 5 digits in Javascript;
 
-    return (
+    const mainContent = (
         <div
             css={css`
                 display: flex;
@@ -30,9 +32,8 @@ export const TickableBox: React.FunctionComponent<{
                 // box higher than the simple label. I tried displaying a space when
                 // not displaying the check mark, but that didn't help.
                 min-height: 26px;
-                ${props.disabled ? "opacity: 0.38;" : ""}
+                ${props.disabled ? `opacity: ${kBloomDisabledOpacity};` : ""}
             `}
-            title={props.title}
         >
             <div
                 css={css`
@@ -56,5 +57,11 @@ export const TickableBox: React.FunctionComponent<{
                 {props.english}
             </Div>
         </div>
+    );
+
+    return props.title ? (
+        <LightTooltip title={props.title}>{mainContent}</LightTooltip>
+    ) : (
+        mainContent
     );
 };

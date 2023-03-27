@@ -5,6 +5,7 @@ using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 using Bloom.Api;
 using Bloom.Book;
 using Bloom.Collection;
@@ -84,11 +85,13 @@ namespace Bloom.web.controllers
 						Model.ClearSignLanguageToPublish();
 				}, true);
 
-			apiHandler.RegisterBooleanEndpointHandler("publish/signLanguageEnabled",
+			apiHandler.RegisterBooleanEndpointHandler("publish/hasVideo",
 				request => Model.Book.HasSignLanguageVideos(),
 				null, true);
 			apiHandler.RegisterEndpointHandler("publish/signLanguageName",
 				(request) => { request.ReplyWithText(Model.Book.CollectionSettings.SignLanguage?.Name ?? ""); }, true);
+			apiHandler.RegisterEndpointHandler("publish/l1Name",
+				(request) => request.ReplyWithText(Model.Book.BookData.Language1.Name), true);
 			apiHandler.RegisterEndpointHandler("publish/chooseSignLanguage", HandleChooseSignLanguage, true);
 			apiHandler.RegisterBooleanEndpointHandler("publish/hasActivities",
 				request => Model.Book.HasActivities,
@@ -108,11 +111,10 @@ namespace Bloom.web.controllers
 				null, true);
 			apiHandler.RegisterBooleanEndpointHandler("publish/visuallyImpaired",
 				request => Model.Book.OurHtmlDom.HasImageDescriptions &&
-						   Model.Book.BookInfo.PublishSettings.BloomLibrary.AccessibleToVisuallyImpaired,
+						   Model.BlindAccessibleToPublish,
 				(request, val) =>
 				{
-					Model.Book.BookInfo.PublishSettings.BloomLibrary.AccessibleToVisuallyImpaired = val;
-					Model.Book.BookInfo.Save();
+					Model.BlindAccessibleToPublish = val;
 				}, true);
 
 			apiHandler.RegisterBooleanEndpointHandler("publish/canHaveMotionMode",
@@ -270,12 +272,18 @@ namespace Bloom.web.controllers
 
 		private void HandleChooseSignLanguage(ApiRequest request)
 		{
+			Application.Idle += LaunchChooseSignLanguage;
+			request.PostSucceeded();
+		}
+
+		private void LaunchChooseSignLanguage(object sender, EventArgs e)
+		{
+			Application.Idle -= LaunchChooseSignLanguage;
 			var collectionSettings = Model.Book.CollectionSettings;
 			var l = CollectionSettingsDialog.ChangeLanguage(collectionSettings.SignLanguageTag, CurrentSignLanguageName, false);
 			if (l == null)
 			{
 				// no change; dialog cancelled
-				request.PostSucceeded();
 				return;
 			}
 
@@ -290,7 +298,6 @@ namespace Bloom.web.controllers
 
 			Model.SetOnlySignLanguageToPublish(collectionSettings.SignLanguageTag);
 			_webSocketServer.SendString("publish", "signLang", l.DesiredName);
-			request.PostSucceeded();
 		}
 
 		private string CurrentSignLanguageName

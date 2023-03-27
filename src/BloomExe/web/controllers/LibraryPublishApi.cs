@@ -32,6 +32,8 @@ namespace Bloom.web.controllers
 		private WebSocketProgress _webSocketProgress;
 		private IProgress _progress;
 
+		private bool _signLanguageChecked;
+
 		public LibraryPublishApi(BloomWebSocketServer webSocketServer, PublishView publishView)
 		{
 			_publishView = publishView;
@@ -120,30 +122,7 @@ namespace Bloom.web.controllers
 			apiHandler.RegisterEndpointHandler("libraryPublish/chooseSignLanguage", HandleChooseSignLanguage, true);
 		}
 
-		private void HandleChooseSignLanguage(ApiRequest request)
-		{
-			var collectionSettings = Model.Book.CollectionSettings;
-			var l = CollectionSettingsDialog.ChangeLanguage(collectionSettings.SignLanguageTag, CurrentSignLanguageName, false);
-			if (l == null)
-			{
-				// no change; dialog cancelled
-				request.PostSucceeded();
-				return;
-			}
-
-			// How to know if the new sign language name is custom or not!?
-			// 1- set the Tag (which also sets the Name to the non-custom default
-			// 2- read the Name
-			// 3- if it's not the same as DesiredName, the new name is custom
-			collectionSettings.SignLanguageTag = l.LanguageTag;
-			var slIsCustom = collectionSettings.SignLanguage.Name != l.DesiredName;
-			collectionSettings.SignLanguage.SetName(l.DesiredName, slIsCustom);
-			collectionSettings.Save();
-
-			Model.SetOnlySignLanguageToPublish(collectionSettings.SignLanguageTag);
-			_webSocketServer.SendString("publish", "signLang", l.DesiredName);
-			request.PostSucceeded();
-		}
+		private static bool ModelIndicatesSignLanguageChecked => Model.Book.HasSignLanguageVideos() && Model.IsPublishSignLanguage();
 
 		private void HandleGetBookInfo(ApiRequest request)
 		{
@@ -184,21 +163,15 @@ namespace Bloom.web.controllers
 
 			_progress.CancelRequested = false;
 
-			//TODO verify user doesn't select sign language feature without setting language
-			// Not sure how to do that until we implement the settings... original just looked at the
-			// sign language checkbox. Seems like here we'll be looking for it be persisted? But it appears
-			// the original never let it be persisted in this state.
-			//Model.IsPublishSignLanguage() ?
-			//Model.Book.BookInfo.MetaData.Feature_SignLanguage ?
-			//if (_signLanguageCheckBox.Checked
-			//	&& string.IsNullOrEmpty(CurrentSignLanguageName))
-			//{
-			//	// report error in progress and bail
-			//	_webSocketProgress.Message("ChooseSignLanguageWarning",
-			//		"Please choose the sign language for this book", ProgressKind.Error);
-			//	request.PostSucceeded();
-			//	return;
-			//}
+			if (_signLanguageChecked
+			    && string.IsNullOrEmpty(CurrentSignLanguageName))
+			{
+				// report error in progress and bail
+				_webSocketProgress.Message("ChooseSignLanguageWarning",
+					"Please choose the sign language for this book", ProgressKind.Error);
+				request.PostSucceeded();
+				return;
+			}
 
 			try
 			{
@@ -279,11 +252,7 @@ namespace Bloom.web.controllers
 
 		void BackgroundUpload(object _, DoWorkEventArgs e)
 		{
-			// TODO get selected languages
-			var languages = new string[0];
-
-			// REVIEW: maybe this whole check should be called from UploadOneBook?
-			var checkerResult = Model.CheckBookBeforeUpload(languages);
+			var checkerResult = Model.CheckBookBeforeUpload();
 			if (checkerResult != null)
 			{
 				_webSocketProgress.MessageWithoutLocalizing(checkerResult, ProgressKind.Error);
@@ -291,13 +260,13 @@ namespace Bloom.web.controllers
 				return;
 			}
 
-			//TODO
 			Model.UpdateBookMetadataFeatures(
-				false, false, false
+				Model.Book.BookInfo.PublishSettings.BloomLibrary.AudioLangs.Any(),
+				ModelIndicatesSignLanguageChecked
 			);
 
-			//TODO
-			var includeBackgroundMusic = false;
+			// We currently have no way to turn this off. This is by design, we don't think it is a needed complication.
+			var includeBackgroundMusic = true;
 
 			var uploadResult = Model.UploadOneBook(Model.Book, _progress, _publishView, !includeBackgroundMusic, out var parseId);
 
@@ -378,10 +347,7 @@ namespace Bloom.web.controllers
 			dynamic collisionDialogInfo;
 			if (Model.BookIsAlreadyOnServer)
 			{
-				// TODO
-				bool signLanguageFeatureSelected = false;
-
-				collisionDialogInfo = Model.GetUploadCollisionDialogProps(GetLanguagesToUpload(), signLanguageFeatureSelected);
+				collisionDialogInfo = Model.GetUploadCollisionDialogProps(Model.TextLanguagesToUpload, ModelIndicatesSignLanguageChecked);
 			}
 			else
 			{
@@ -392,16 +358,6 @@ namespace Bloom.web.controllers
 			}
 
 			request.ReplyWithJson(collisionDialogInfo);
-		}
-
-		private IEnumerable<string> GetLanguagesToUpload()
-		{
-			// TODO waiting to see how we do the settings before I know if this is correct.
-			// If it is, we should make it a property on the model.
-			return
-				Model.Book.BookInfo.PublishSettings.BloomLibrary.TextLangs
-				.Where(l => l.Value.IsIncluded())
-				.Select(l => l.Key);
 		}
 
 		private void HandleUploadAfterChangingBookId(ApiRequest request)

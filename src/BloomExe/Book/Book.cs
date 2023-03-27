@@ -4226,13 +4226,12 @@ namespace Bloom.Book
 		/// <summary>
 		/// Re-compute and update all of the metadata features for the book
 		/// </summary>
-		/// <param name="allowedLanguages">If non-null, limits the calculation to only considering the languages specified. Applies only to language-specific features (e.g. blind and talkingBook. Does not apply to Sign Language or language-independent features</param>
-		internal void UpdateMetadataFeatures(
-			bool isBlindEnabled, bool isTalkingBookEnabled, bool isSignLanguageEnabled,
+		/// <param name="allowedLanguages">If non-null, limits the calculation to only considering the languages specified. Applies only to language-specific features
+		/// (e.g. talkingBook. Does not apply to Sign Language or language-independent features</param>
+		internal void UpdateMetadataFeatures(bool isTalkingBookEnabled, bool isSignLanguageEnabled,
 			IEnumerable<string> allowedLanguages)
 		{
 			// Language-specific features
-			UpdateBlindFeature(isBlindEnabled, allowedLanguages);
 			UpdateTalkingBookFeature(isTalkingBookEnabled, allowedLanguages);
 
 			// Sign Language is a special case - the SL videos are not marked up with lang attributes
@@ -4254,34 +4253,28 @@ namespace Bloom.Book
 		/// Updates the feature in bookInfo.metadata to indicate whether the book is accessible to the blind/visually impaired
 		/// </summary>
 		/// <param name="isEnabled">True to indicate the feature is enabled, or false for disabled (will clear the feature in the metadata)</param>
-		/// <param name="allowedLanguages">If non-null, limits the calculation to only considering the languages specified</param>
-		public void UpdateBlindFeature(bool isEnabled, IEnumerable<string> allowedLanguages)
+		public void UpdateBlindFeature(bool isEnabled)
 		{
 			if (!isEnabled)
 			{
-				BookInfo.MetaData.Feature_Blind_LangCodes = Enumerable.Empty<string>();
+				// Only clear the current L1. If we've earlier somehow claimed it for some other
+				// language, presumably it's still true.
+				BookInfo.MetaData.Feature_Blind_LangCodes =
+					BookInfo.MetaData.Feature_Blind_LangCodes.Except(new[] { Language1Tag });
 				return;
 			}
 
-			// Set the metadata feature that indicates a book is accessible to the blind. Our current automated
+			// Set the metadata feature that indicates a book is accessible to the blind. Our current default
 			// definition of this is the presence of image descriptions in the non-xmatter part of the book.
 			// This is very imperfect. Minimally, to be accessible to the blind, it should also be a talking book
 			// and everything, including image descriptions, should have audio; but talkingBook is a separate feature.
 			// Also we aren't checking that EVERY image has a description. What we have is therefore too weak,
 			// but EVERY image might be too strong...some may just be decorative. Then there are considerations
 			// like contrast and no essential information conveyed by color and other stuff that the DAISY code
-			// checks. If we were going to use this feature to actually help blind people find books they could
-			// use, we might well want a control (like in upload to BL) to allow the author to specify whether
-			// to claim the book is accessible to the blind. But currently this is just used for reporting the
-			// feature in analytics, so it's not worth bothering the author with something that has no obvious
-			// effect. If it has image descriptions, there's been at least some effort to make it accessible
-			// to the blind.
-			var langCodes = OurHtmlDom.GetLangCodesWithImageDescription();
-
-			if (allowedLanguages != null)
-				langCodes = langCodes.Intersect(allowedLanguages);
-
-			BookInfo.MetaData.Feature_Blind_LangCodes = langCodes.ToList();
+			// checks. Thus, we only actually claim this if the author has checked the "accessible to the blind"
+			// feature. Currently this can only be set for L1; the user could fudge by changing L1.
+			BookInfo.MetaData.Feature_Blind_LangCodes =
+				BookInfo.MetaData.Feature_Blind_LangCodes.Union(new[] { Language1Tag });
 		}
 
 		/// <summary>

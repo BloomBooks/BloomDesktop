@@ -1487,8 +1487,6 @@ namespace Bloom.Book
 		public bool Feature_Activity => Feature_Quiz || Feature_Widget || Feature_SimpleDomChoice;
 
 		[JsonIgnore]
-		public bool Feature_Blind { get { return Feature_Blind_LangCodes?.Any() == true; } }
-		[JsonIgnore]
 		public bool Feature_TalkingBook { get { return Feature_TalkingBook_LangCodes?.Any() == true; } }
 		[JsonIgnore]
 		public bool Feature_SignLanguage { get { return Feature_SignLanguage_LangCodes?.Any() == true; } }

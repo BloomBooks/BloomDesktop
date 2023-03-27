@@ -3537,19 +3537,17 @@ namespace BloomTests.Book
 			BookStorageTests.MakeSampleVideoFiles(_tempFolder.Path, videoFilename);
 		}
 
-		[TestCase(true, true, true)]
-		[TestCase(true, false, false)]
-		[TestCase(false, true, false)]
-		[TestCase(false, false, true)]
-		[TestCase(false, false, false)]
-		public void UpdateMetadataFeatures_TestEnabledFlags_SwitchesWork(bool isBlindEnabled, bool isTalkingBookEnabled, bool isSignLanguageEnabled)
+		[TestCase(true, true)]
+		[TestCase(false, false)]
+		[TestCase(true, false)]
+		[TestCase(false, true)]
+		public void UpdateMetadataFeatures_TestEnabledFlags_SwitchesWork(bool isTalkingBookEnabled, bool isSignLanguageEnabled)
 		{
 			SetupUpdateMetadataFeaturesTest();
 			var book = CreateBook();
 
-			book.UpdateMetadataFeatures(isBlindEnabled, isTalkingBookEnabled, isSignLanguageEnabled, null);
+			book.UpdateMetadataFeatures(isTalkingBookEnabled, isSignLanguageEnabled, null);
 
-			Assert.That(book.BookInfo.MetaData.Feature_Blind, Is.EqualTo(isBlindEnabled), "Feature_Blind");
 			Assert.That(book.BookInfo.MetaData.Feature_TalkingBook, Is.EqualTo(isTalkingBookEnabled), "Feature_TalkingBook");
 			Assert.That(book.BookInfo.MetaData.Feature_SignLanguage, Is.EqualTo(isSignLanguageEnabled), "Feature_SignLanguage");
 		}
