@@ -145,7 +145,7 @@ namespace Bloom.Publish.Android
 				else
 				{
 					// We want to exclude the audio files for the languages that we are not publishing the text of.
-					// We aren't sure if we need this, or if AudioLangs is only null when there is no audio in the book at all.
+					// We aren't sure if we need this, or if AudioLangs is only empty when there is no audio in the book at all.
 					audioLanguagesToExclude = GetLanguagesToExclude(bloomPubTextLangs, libraryTextLangs);
 				}
 			}
@@ -180,7 +180,8 @@ namespace Bloom.Publish.Android
 
 			// If we are running harvester, we are going to use the BloomLibrary settings.
 			// So we need to ensure they are initialized now.
-			if (Program.RunningHarvesterMode && bookInfo.PublishSettings.BloomLibrary.TextLangs.Count == 0)
+			if (Program.RunningHarvesterMode &&
+				(bookInfo.PublishSettings.BloomLibrary.TextLangs.Count == 0 || bookInfo.PublishSettings.BloomLibrary.AudioLangs.Count == 0))
 			{
 				var book = bookServer.GetBookFromBookInfo(bookInfo);
 				BloomLibraryPublishModel.InitializeLanguages(book);
