@@ -111,10 +111,10 @@ namespace Bloom.web.controllers
 				null, true);
 			apiHandler.RegisterBooleanEndpointHandler("publish/visuallyImpaired",
 				request => Model.Book.OurHtmlDom.HasImageDescriptions &&
-						   Model.BlindAccessibleToPublish,
+						   Model.L1SupportsVisuallyImpaired,
 				(request, val) =>
 				{
-					Model.BlindAccessibleToPublish = val;
+					Model.L1SupportsVisuallyImpaired = val;
 				}, true);
 
 			apiHandler.RegisterBooleanEndpointHandler("publish/canHaveMotionMode",
