@@ -668,6 +668,11 @@ namespace Bloom.Publish.BloomLibrary
 			progress.WriteMessage("ID is now " + Book.BookInfo.Id);
 		}
 
+		internal void UpdateLangDataCache()
+		{
+			Book.BookData.UpdateCache();
+		}
+
 		private string CurrentSignLanguageName
 		{
 			get

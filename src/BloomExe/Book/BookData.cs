@@ -251,6 +251,11 @@ namespace Bloom.Book
 			UpdateML1Derivatives();
 		}
 
+		internal void UpdateCache()
+		{
+			CacheLangData();
+		}
+
 		private void UpdateLang1Derivatives(string newLang1)
 		{
 			_cachedLangTag1 = newLang1;
