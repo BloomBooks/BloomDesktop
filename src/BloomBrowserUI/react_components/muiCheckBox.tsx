@@ -5,6 +5,7 @@ import * as React from "react";
 import { useState } from "react";
 import { FormControlLabel, Checkbox } from "@mui/material";
 import { useL10n } from "./l10nHooks";
+import { LightTooltip } from "./lightTooltip";
 
 // wrap up the complex material-ui checkbox in something simple and make it handle tristate
 export const MuiCheckbox: React.FunctionComponent<{
@@ -27,7 +28,7 @@ export const MuiCheckbox: React.FunctionComponent<{
     // I ended up deep in the rabbit hole, so I punted and added this prop instead.
     // Ideally, we would fix those and get rid of this parameter.
     deprecatedVersionWhichDoesntEnsureMultilineLabelsWork?: boolean;
-    title?: string;
+    title?: React.ReactNode;
 }> = props => {
     const [previousTriState, setPreviousTriState] = useState<
         boolean | undefined
@@ -116,8 +117,7 @@ export const MuiCheckbox: React.FunctionComponent<{
             color="primary"
         />
     );
-
-    return (
+    const mainContent = (
         <FormControlLabel
             css={
                 !props.deprecatedVersionWhichDoesntEnsureMultilineLabelsWork
@@ -137,8 +137,13 @@ export const MuiCheckbox: React.FunctionComponent<{
                 )
             }
             label={finalLabel}
-            title={props.title}
             disabled={props.disabled}
         />
+    );
+
+    return props.title ? (
+        <LightTooltip title={props.title}>{mainContent}</LightTooltip>
+    ) : (
+        mainContent
     );
 };

@@ -225,13 +225,12 @@ namespace Bloom.Publish.BloomLibrary
 			return couldNotUpload + "A non-template book needs at least one language where every non-xmatter field contains text in that language.";
 		}
 
-		public void UpdateBookMetadataFeatures(bool isBlind, bool isTalkingBook, bool isSignLanguage)
+		public void UpdateBookMetadataFeatures(bool isTalkingBook, bool isSignLanguage)
 		{
 			var allowedLanguages = Book.BookInfo.PublishSettings.BloomLibrary.TextLangs.IncludedLanguages()
 				.Union(Book.BookInfo.PublishSettings.BloomLibrary.SignLangs.IncludedLanguages());
 
 			Book.UpdateMetadataFeatures(
-				isBlindEnabled: isBlind,
 				isTalkingBookEnabled: isTalkingBook,
 				isSignLanguageEnabled: isSignLanguage,
 				allowedLanguages);
@@ -377,22 +376,39 @@ namespace Bloom.Publish.BloomLibrary
 			return Book.BookInfo.PublishSettings.BloomLibrary.SignLangs.IncludedLanguages().Any();
 		}
 
+		public bool BlindAccessibleToPublish
+		{
+			get
+			{
+				return Book.BookInfo.MetaData.Feature_Blind_LangCodes.Contains(Book.Language1Tag);
+			}
+			set
+			{
+				Book.UpdateBlindFeature(value);
+				Book.BookInfo.Save();
+			}
+		}
+
 		public void ClearBlindAccessibleToPublish()
 		{
-			Book.UpdateBlindFeature(false, null);
+			Book.UpdateBlindFeature(false);
 			Book.BookInfo.Save();
 		}
 
-		public void SetOnlyBlindAccessibleToPublish(string langCode)
+		public void SetOnlyBlindAccessibleToPublish()
 		{
-			Book.UpdateBlindFeature(true, new List<string> { langCode });
+			Book.UpdateBlindFeature(true);
 			Book.BookInfo.Save();
 		}
 
-		public string CheckBookBeforeUpload(string[] languages)
+		public string CheckBookBeforeUpload()
 		{
-			return new LicenseChecker().CheckBook(Book, languages);
+			return new LicenseChecker().CheckBook(Book, TextLanguagesToUpload.ToArray());
 		}
+
+		public IEnumerable<string> TextLanguagesToUpload => Book.BookInfo.PublishSettings.BloomLibrary.TextLangs
+			.Where(l => l.Value.IsIncluded())
+			.Select(l => l.Key);
 
 		public void AddHistoryRecordForLibraryUpload(string url)
 		{

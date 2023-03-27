@@ -113,7 +113,6 @@ namespace BloomTests.Publish
 					// A convenient place to check defaults on meta.json
 					var meta = BookMetaData.FromString(GetEntryContents(zip, "meta.json"));
 					Assert.That(meta.Feature_SignLanguage, Is.False);
-					Assert.That(meta.Feature_Blind, Is.False);
 					Assert.That(meta.Feature_TalkingBook, Is.False);
 					Assert.That(meta.Feature_Motion, Is.False);
 					Assert.That(meta.BloomdVersion, Is.EqualTo(1));
@@ -335,7 +334,6 @@ namespace BloomTests.Publish
 					var zip = paramObj.ZipFile;
 					var meta = BookMetaData.FromString(GetEntryContents(zip, "meta.json"));
 					Assert.That(meta.Feature_TalkingBook, Is.True);
-					Assert.That(meta.Feature_Blind, Is.True);
 					Assert.That(meta.Feature_Motion, Is.True);
 				},
 				languagesToInclude: new HashSet<string>(new[] {"xyz", "de", "es"}));

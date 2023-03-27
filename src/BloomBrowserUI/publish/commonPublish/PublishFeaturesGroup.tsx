@@ -16,10 +16,7 @@ import {
 import { kBloomBlue } from "../../bloomMaterialUITheme";
 import { TickableBox } from "../../react_components/tickableBox";
 import { ILanguagePublishInfo } from "./PublishLanguagesGroup";
-import { LocalizableCheckboxMenuItem } from "../../react_components/localizableMenuItem";
-import { Link } from "../../react_components/link";
 import { Link as MuiLink } from "@mui/material";
-import { useEffect, useState } from "react";
 
 export const PublishFeaturesGroup: React.FunctionComponent<{
     onChange?: () => void;
@@ -32,10 +29,6 @@ export const PublishFeaturesGroup: React.FunctionComponent<{
         "publish/visuallyImpairedEnabled",
         false
     );
-    // We need local state for this because we can only persist it as checked
-    // if we have a sign language selected, but we need to track a state where
-    // it has been checked and so the "Choose a sign language" link is showing.
-    const [signLanguageChecked, setSignLanguageChecked] = useState(false);
     const [langs, setLangs] = React.useState<ILanguagePublishInfo[]>([]);
     React.useEffect(() => {
         get(
@@ -62,16 +55,11 @@ export const PublishFeaturesGroup: React.FunctionComponent<{
             // }
         );
     }, [props.generation]);
-    const [signLanguageEnabled] = useApiBoolean(
-        "publish/signLanguageEnabled",
-        false
-    );
+    const [hasVideo] = useApiBoolean("publish/hasVideo", false);
 
-    useEffect(() => {
-        getBoolean("publish/signLanguage", result =>
-            setSignLanguageChecked(result)
-        );
-    }, []);
+    const showSignLanguageChooser = () => {
+        post("publish/chooseSignLanguage");
+    };
 
     const signLanguageNameOriginal = useApiString(
         "publish/signLanguageName",
@@ -82,6 +70,10 @@ export const PublishFeaturesGroup: React.FunctionComponent<{
         "publish",
         "signLang"
     );
+
+    const l1Name = useApiString("publish/l1Name", "");
+
+    const signLanguageEnabled = hasVideo && !!signLanguageName;
 
     const isTalkingBook = langs.some(
         item => item.includeText && item.containsAnyAudio && item.includeAudio
@@ -103,31 +95,67 @@ export const PublishFeaturesGroup: React.FunctionComponent<{
         : noNarration;
 
     const slPresent = useL10n(
-        "The videos in this book contain the specified sign language",
+        "The videos in this book contain {N}",
         "PublishTab.Feature.SignLanguage.Present"
-    );
-    const slUnknown = useL10n(
-        "The videos in this book are sign language; you need to specify which one",
-        "PublishTab.Feature.SignLanguage.Unknown"
     );
     const slNoVideo = useL10n(
         "No videos found in this book",
         "PublishTab.Feature.SignLanguage.NoVideos"
     );
-    let slTitle = "";
+    const slUnknown = useL10n(
+        "This collection has {no sign language selected}",
+        "PublishTab.Feature.SignLanguage.Unknown"
+    );
+    let slTitle: React.ReactNode = "";
     if (signLanguageEnabled) {
-        if (signLanguageChecked) {
-            if (signLanguageName) {
-                slTitle = slPresent;
+        // Break it up into the bit before {N} and the bit after.
+        // Replace {N} with a link that shows the sign language name and opens the chooser.
+        const match = slPresent.match(/^([^{]*)\{N\}(.*)$/);
+        if (match) {
+            slTitle = (
+                <React.Fragment>
+                    {match[1]}
+                    <MuiLink
+                        css={css`
+                            font-size: 11px;
+                        `}
+                        onClick={showSignLanguageChooser}
+                    >
+                        {signLanguageName}
+                    </MuiLink>
+                    {match[2]}
+                </React.Fragment>
+            );
+        } else {
+            slTitle = slPresent;
+        }
+    } else {
+        if (hasVideo) {
+            // Sign language must be unspecified.
+            // Break the string up into the bit before whatever is in braces, the bit inside, and the bit after.
+            // Turn whatever is inside into a link to launch the chooser.
+            const match = slUnknown.match(/^([^{]*)\{([^}]*)\}(.*)$/);
+            if (match) {
+                slTitle = (
+                    <React.Fragment>
+                        {match[1]}
+                        <MuiLink
+                            css={css`
+                                font-size: 11px;
+                            `}
+                            onClick={showSignLanguageChooser}
+                        >
+                            {match[2]}
+                        </MuiLink>
+                        {match[3]}
+                    </React.Fragment>
+                );
             } else {
                 slTitle = slUnknown;
             }
         } else {
-            // Unchecked but enabled...this one or nothing or something else?
-            slTitle = slPresent;
+            slTitle = slNoVideo;
         }
-    } else {
-        slTitle = slNoVideo;
     }
 
     const noActivitiesTitle = useL10n(
@@ -173,10 +201,6 @@ export const PublishFeaturesGroup: React.FunctionComponent<{
     const visionTitle = visuallyImpairedEnabled
         ? hasVisionTitle
         : noVisionTitle;
-
-    const showSignLanguageChooser = () => {
-        post("publish/chooseSignLanguage");
-    };
 
     return (
         <SettingsGroup
@@ -254,31 +278,8 @@ export const PublishFeaturesGroup: React.FunctionComponent<{
                         </svg>
                     }
                     title={slTitle}
-                    onChange={() => setSignLanguageChecked(old => !old)}
                     disabled={!signLanguageEnabled}
                 />
-                {signLanguageChecked && (
-                    <div
-                        css={css`
-                            margin-left: 57px;
-                        `}
-                    >
-                        {signLanguageName ? (
-                            <MuiLink onClick={showSignLanguageChooser}>
-                                {signLanguageName}
-                            </MuiLink>
-                        ) : (
-                            <Link
-                                onClick={showSignLanguageChooser}
-                                l10nKey={
-                                    "PublishTab.Upload.SetSignLanguageLink"
-                                }
-                            >
-                                Set Sign Language...
-                            </Link>
-                        )}
-                    </div>
-                )}
                 <TickableBox
                     english="Activity"
                     l10nKey="PublishTab.Activity"
@@ -359,15 +360,16 @@ export const PublishFeaturesGroup: React.FunctionComponent<{
                     disabled={!motionEnabled}
                 />
                 <ApiCheckbox
-                    english="Accessible to the Visually Impaired"
+                    english="Accessible to the Visually Impaired in %0"
                     l10nKey="PublishTab.AccessibleVisually"
+                    l10nParam0={l1Name}
                     apiEndpoint="publish/visuallyImpaired"
                     icon={
                         <svg
                             css={css`
                                 height: 20px;
                                 width: 20px;
-                                align-self: center;
+                                align-self: start;
                                 ${visuallyImpairedEnabled
                                     ? ""
                                     : "opacity: 38%;"}

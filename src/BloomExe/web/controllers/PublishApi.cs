@@ -84,11 +84,13 @@ namespace Bloom.web.controllers
 						Model.ClearSignLanguageToPublish();
 				}, true);
 
-			apiHandler.RegisterBooleanEndpointHandler("publish/signLanguageEnabled",
+			apiHandler.RegisterBooleanEndpointHandler("publish/hasVideo",
 				request => Model.Book.HasSignLanguageVideos(),
 				null, true);
 			apiHandler.RegisterEndpointHandler("publish/signLanguageName",
 				(request) => { request.ReplyWithText(Model.Book.CollectionSettings.SignLanguage?.Name ?? ""); }, true);
+			apiHandler.RegisterEndpointHandler("publish/l1Name",
+				(request) => request.ReplyWithText(Model.Book.BookData.Language1.Name), true);
 			apiHandler.RegisterEndpointHandler("publish/chooseSignLanguage", HandleChooseSignLanguage, true);
 			apiHandler.RegisterBooleanEndpointHandler("publish/hasActivities",
 				request => Model.Book.HasActivities,
@@ -108,11 +110,10 @@ namespace Bloom.web.controllers
 				null, true);
 			apiHandler.RegisterBooleanEndpointHandler("publish/visuallyImpaired",
 				request => Model.Book.OurHtmlDom.HasImageDescriptions &&
-						   Model.Book.BookInfo.PublishSettings.BloomLibrary.AccessibleToVisuallyImpaired,
+						   Model.BlindAccessibleToPublish,
 				(request, val) =>
 				{
-					Model.Book.BookInfo.PublishSettings.BloomLibrary.AccessibleToVisuallyImpaired = val;
-					Model.Book.BookInfo.Save();
+					Model.BlindAccessibleToPublish = val;
 				}, true);
 
 			apiHandler.RegisterBooleanEndpointHandler("publish/canHaveMotionMode",
