@@ -47,6 +47,7 @@ namespace Bloom.Publish.Video
 		private TempFile _ffmpegProgressFile;
 		private bool _recording = true;
 		private int _numIterationsDone;
+		private int _lastIterationPrinted = 0;
 		private bool _saveReceived;
 		private Book.Book _book;
 		private string _pathToRealBook;
@@ -505,7 +506,13 @@ namespace Bloom.Publish.Video
 
 			// configure ffmpeg to merge everything.
 
-			const int batchSize = 1000;	// If batch size is too large (e.g. 2500), ffmpeg will have "too many open files" error
+			// There are multiple limits which mean we need to cap how many files we process at a time.
+			// One is the command line length limit, which caps us out at around 2900.
+			// Apart from that, ffmpeg will have "too many open files" error if there are too many files.
+			// This occurs somewhere inbetween 2036 and 2047 in my environment.
+			// To be conservative (since I'm not sure if this is consistent from environment to environment),
+			// let's just do 1,000 at a time.
+			const int batchSize = 1000;
 			bool isSuccess = MergeAudioFilesInBatches(progress, soundLog, haveVideo, finalOutputPath, videoDuration, batchSize);
 
 			if (!isSuccess)
@@ -599,10 +606,11 @@ namespace Bloom.Publish.Video
 				progress.Message("PublishTab.RecordVideo.FinalizingAudio", message: "Finalizing audio");
 
 			int numIterationsNeeded = (int)Math.Ceiling(((float)soundLog.Length) / batchSize);
+			_lastIterationPrinted = 0;
 			// System.Threading.Timer is the only one which will fire during _ffmpegProcess.WaitForExit()
 			using (new System.Threading.Timer((state) =>
 				{
-					OutputTimeRemainingEstimate(progress, startTime, numIterationsNeeded, videoDuration);
+					OutputProgressEstimate(progress, startTime, numIterationsNeeded, videoDuration);
 				},
 				null,
 				5000, // initially at 5 seconds
@@ -655,6 +663,7 @@ namespace Bloom.Publish.Video
 					}
 				}
 			}
+			progress.MessageWithoutLocalizing($"- Progress: 100%");
 			
 			// Restore original names, since that's what is expected if we preview the book or record again
 			// (the html is still referencing the original names...the renaming was solely for the process
@@ -768,7 +777,7 @@ namespace Bloom.Publish.Video
 			                    // been suitably adjusted, we do NOT want the default behavior of 'normalizing' volume
 			                    // by reducing it to 1/n where n is the total number of input streams.
 								//
-								// If merging the audio in passes (to avoid exceeding the CreateProcess limit),
+								// If merging the audio in passes (to avoid the limit on how many inputs we can handle),
 								// we also want to pass through the audio from the prior iteration (in the input video already).
 								// FFMPEG errors out if the input video doesn't have an audio stream, so check first.
 			                    + mixInputs + (videoHasAudio ? $"[{videoIndex}:a]" : "") + $"amix=inputs={soundLogCount + (videoHasAudio ? 1 : 0)}:normalize=0[out]";
@@ -851,29 +860,48 @@ namespace Bloom.Publish.Video
 			return result;
 		}
 
-		private void OutputTimeRemainingEstimate(IWebSocketProgress progress, DateTime startTime, int totalIterationsNeeded, TimeSpan totalDuration)
+		private void OutputProgressEstimate(IWebSocketProgress progress, DateTime startTime, int totalIterationsNeeded, TimeSpan totalDuration)
 		{
 			try
 			{
-				// Note: I feel like currentIterationProgress isn't that accurate.
-				// (It reads the -progress file, but maybe that file isn't flushed often enough, or maybe it's non-linear...)
-				// We could consider outputting the estimate only once per iteration, instead of via a timer.
-				// (It may also be helpful if the batchSize is not too big, so there's a bigger number of smaller iterations)
-				// That might give stabler estimates and simplify the code.
 				double currentIterationProgress = GetCurrentIterationProgress(progress, totalDuration);
 				double iterationsSoFar = _numIterationsDone + currentIterationProgress;
-				var timeSoFar = DateTime.Now - startTime;
 
-				double timePerIterationSoFar = timeSoFar.TotalMilliseconds / iterationsSoFar;
-				var iterationsRemaining = totalIterationsNeeded - iterationsSoFar;
-				if (iterationsRemaining < 1) return;
+				if (iterationsSoFar == 0)
+					return;	// Nothing meaningful to output yet.
 
-				var estimatedTimeRemaining = timePerIterationSoFar * iterationsRemaining;
-				//Debug.WriteLine($"totalIterations:{totalIterationsNeeded}, iterationsSoFar:{iterationsSoFar}, iterationsRemaining:{iterationsRemaining}");
-				//Debug.WriteLine($"timeSoFar:{timeSoFar}, timePerIterationSoFar:{timePerIterationSoFar}");
-				//Debug.WriteLine($"estimatedTimeRemaining:{estimatedTimeRemaining}");
+				progress.MessageWithoutLocalizing($"- Progress: {GetProgressMessage(iterationsSoFar, totalIterationsNeeded)}");
+				
+				if (_numIterationsDone > _lastIterationPrinted)
+				{
+					// Only calculate timeRemainingEstimates when a whole number iteration changes,
+					// because the fractional iteration progress produces highly inaccurate estimates
+					// (off by orders of magnitude, usually overestimating, producing very disheartening initial estimates for the user)
+					//
+					// The progress file seems to be updated pretty frequently by ffmpeg, but the estimates are still really inaccurate.
+					// Using the last modified time of the progress file (rather than DateTime.Now) also doesn't help (since the progress file is updated frequently)
+					// The bigger problem seems to be that working through the frames is extremely non-linear.
+					//    I often observe it'll slowly inch to halfway or to two-thirds of the frames,
+					//    then suddenly on the next iteration it's 99% or 100% of the way through the frames.
+					//    A linear extrapolation based on that produces awful estimates.
+					//
+					// Unfortunately, this now seems to underestimate the time required, but at least it's in a closer ballpark.
+					// Only cases that exceed the batch size see these estimates anyway.
 
-				progress.MessageWithoutLocalizing($"- {GetEstimateMessageFromMillis(estimatedTimeRemaining)}");
+					var timeSoFar = DateTime.Now - startTime;
+
+					double timePerIterationSoFar = timeSoFar.TotalMilliseconds / iterationsSoFar;
+					var iterationsRemaining = totalIterationsNeeded - iterationsSoFar;
+					if (iterationsRemaining <= 0) return;
+
+					var estimatedTimeRemaining = timePerIterationSoFar * iterationsRemaining;
+					//Debug.WriteLine($"totalIterations:{totalIterationsNeeded}, iterationsSoFar:{iterationsSoFar}, iterationsRemaining:{iterationsRemaining}");
+					//Debug.WriteLine($"timeSoFar:{timeSoFar}, timePerIterationSoFar:{timePerIterationSoFar}");
+					//Debug.WriteLine($"estimatedTimeRemaining:{estimatedTimeRemaining}");
+
+					progress.MessageWithoutLocalizing($"- {GetEstimateMessageFromMillis(estimatedTimeRemaining)}");
+				}
+				_lastIterationPrinted = _numIterationsDone;				
 			}
 			catch (Exception e)
 			{
@@ -898,7 +926,7 @@ namespace Bloom.Publish.Video
 
 				// If progress=end, the process has finished and there is no point in estimating
 				if (GetLastOccurenceOfKeyValue(progressFileContents, "progress", out string progressValue) && progressValue == "end")
-					return 0;	// numIterationsDone should be updated instead.
+					return 0;	// We intentionally return 0 for currentIterationProgress and increment numIterationsDone instead.
 
 				if (!GetLastOccurenceOfKeyValue(progressFileContents, "frame", out string framesSoFarStr))
 					return 0;
@@ -917,6 +945,23 @@ namespace Bloom.Publish.Video
 			{
 				MiscUtils.SuppressUnusedExceptionVarWarning(e);
 				return 0;
+			}
+		}
+
+		private string GetProgressMessage(double iterationsSoFar, int totalIterationsNeeded)
+		{
+			var progressPercent = (int)Math.Round(iterationsSoFar / totalIterationsNeeded * 100);
+			if (progressPercent == 0 && iterationsSoFar > 0)
+			{
+				return "<1%";
+			}
+			else if (progressPercent == 100 && iterationsSoFar < totalIterationsNeeded)
+			{
+				return ">99%";
+			}
+			else
+			{
+				return $"{progressPercent}%";
 			}
 		}
 
