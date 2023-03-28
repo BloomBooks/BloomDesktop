@@ -102,9 +102,10 @@ namespace BloomTests.Publish.Video
 			var obj = new RecordVideoWindow(null);
 			var invoker = new PrivateObject(obj);
 			invoker.SetFieldOrProperty("_pathToRealBook", @"C:\MyCollection\bookTitleL1");
-			var result = obj.GetSuggestedSaveFileNameBase();
+			var result = obj.GetSuggestedSaveFileNameBase(out string langTag);
 
 			Assert.AreEqual("bookTitleL1", result);
+			Assert.IsNull(langTag);
 		}
 
 		[Test]
@@ -132,12 +133,13 @@ namespace BloomTests.Publish.Video
 			///////////////////////
 			// System Under Test //
 			///////////////////////
-			var result = obj.GetSuggestedSaveFileNameBase();
+			var result = obj.GetSuggestedSaveFileNameBase(out string langTag);
 
 			//////////////////
 			// Verification //
 			//////////////////
 			Assert.AreEqual("bookTitleL2", result);
+			Assert.AreEqual("l2", langTag);
 		}
 
 		[Test]
