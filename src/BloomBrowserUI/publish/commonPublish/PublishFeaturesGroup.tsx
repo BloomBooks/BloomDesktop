@@ -113,56 +113,53 @@ export const PublishFeaturesGroup: React.FunctionComponent<{
         "This collection has {no sign language selected}",
         "PublishTab.Feature.SignLanguage.Unknown"
     );
-    let slTitle: React.ReactNode = "";
+    let slTitle: React.ReactNode = slNoVideo; // default
+    let linkPart = "";
+    let beforePart = "";
+    let afterPart = "";
     if (signLanguageEnabled) {
+        linkPart = slPresent; // default if translator messes up
         // Break it up into the bit before {N} and the bit after.
         // Replace {N} with a link that shows the sign language name and opens the chooser.
         const match = slPresent.match(/^([^{]*)\{N\}(.*)$/);
         if (match) {
-            slTitle = (
-                <React.Fragment>
-                    {match[1]}
-                    <MuiLink
-                        css={css`
-                            font-size: 11px;
-                        `}
-                        onClick={showSignLanguageChooser}
-                    >
-                        {signLanguageName}
-                    </MuiLink>
-                    {match[2]}
-                </React.Fragment>
-            );
-        } else {
-            slTitle = slPresent;
+            beforePart = match[1];
+            linkPart = signLanguageName;
+            afterPart = match[2];
         }
     } else {
         if (hasVideo) {
             // Sign language must be unspecified.
+            linkPart = slUnknown; // default if translator messes up
             // Break the string up into the bit before whatever is in braces, the bit inside, and the bit after.
             // Turn whatever is inside into a link to launch the chooser.
             const match = slUnknown.match(/^([^{]*)\{([^}]*)\}(.*)$/);
             if (match) {
-                slTitle = (
-                    <React.Fragment>
-                        {match[1]}
-                        <MuiLink
-                            css={css`
-                                font-size: 11px;
-                            `}
-                            onClick={showSignLanguageChooser}
-                        >
-                            {match[2]}
-                        </MuiLink>
-                        {match[3]}
-                    </React.Fragment>
-                );
-            } else {
-                slTitle = slUnknown;
+                beforePart = match[1];
+                linkPart = match[2];
+                afterPart = match[3];
             }
-        } else {
-            slTitle = slNoVideo;
         }
+    }
+    // Note: if we need to copy this to use elsewhere, try to figure how to make a component.
+    // It may be helpful to make use of the ability to name RegEx groups, and tie a particular
+    // named group to a particular click action. However, it will be difficult to generalize
+    // to more than one link because translation might change the order.
+    if (linkPart) {
+        slTitle = (
+            <React.Fragment>
+                {beforePart}
+                <MuiLink
+                    css={css`
+                        font-size: 11px;
+                    `}
+                    onClick={showSignLanguageChooser}
+                >
+                    {linkPart}
+                </MuiLink>
+                {afterPart}
+            </React.Fragment>
+        );
     }
 
     const noActivitiesTitle = useL10n(
@@ -183,7 +180,7 @@ export const PublishFeaturesGroup: React.FunctionComponent<{
     );
     const hasComicTitle = useL10n(
         "This is a comic book",
-        "PublishTab.Feature.comic.Possible"
+        "PublishTab.Feature.Comic.Possible"
     );
     const comicTitle = comicEnabled ? hasComicTitle : noComicTitle;
 

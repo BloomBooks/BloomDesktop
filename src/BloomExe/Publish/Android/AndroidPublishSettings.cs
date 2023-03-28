@@ -169,18 +169,8 @@ namespace Bloom.Publish.Android
 		public static AndroidPublishSettings GetPublishSettingsForBook(BookServer bookServer, BookInfo bookInfo)
 		{
 			// Normally this is setup by the Publish (or library) screen, but if you've never visited such a screen for this book,
-			// then this will be empty. In that case, initialize it here.
-			if (bookInfo.PublishSettings.BloomLibrary.TextLangs.Count == 0)
-			{
-				var book = bookServer.GetBookFromBookInfo(bookInfo);
-				var allLanguages = book.AllPublishableLanguages(includeLangsOccurringOnlyInXmatter: true);
-				PublishApi.InitializeLanguagesInBook(bookInfo, allLanguages, book.CollectionSettings);
-			}
-
-			// If we are running harvester, we are going to use the BloomLibrary settings.
-			// So we need to ensure they are initialized now.
-			if (Program.RunningHarvesterMode &&
-				(bookInfo.PublishSettings.BloomLibrary.TextLangs.Count == 0 || bookInfo.PublishSettings.BloomLibrary.AudioLangs.Count == 0))
+			// perhaps because you are doing a bulk or command line publish, then one of them might be empty. In that case, initialize it here.
+			if (bookInfo.PublishSettings.BloomPub.TextLangs.Count == 0 || bookInfo.PublishSettings.BloomLibrary.AudioLangs.Count == 0)
 			{
 				var book = bookServer.GetBookFromBookInfo(bookInfo);
 				BloomLibraryPublishModel.InitializeLanguages(book);
