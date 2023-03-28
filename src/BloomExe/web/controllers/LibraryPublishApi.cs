@@ -32,8 +32,6 @@ namespace Bloom.web.controllers
 		private WebSocketProgress _webSocketProgress;
 		private IProgress _progress;
 
-		private bool _signLanguageChecked;
-
 		public LibraryPublishApi(BloomWebSocketServer webSocketServer, PublishView publishView)
 		{
 			_publishView = publishView;
@@ -162,16 +160,6 @@ namespace Bloom.web.controllers
 				return;
 
 			_progress.CancelRequested = false;
-
-			if (_signLanguageChecked
-			    && string.IsNullOrEmpty(CurrentSignLanguageName))
-			{
-				// report error in progress and bail
-				_webSocketProgress.Message("ChooseSignLanguageWarning",
-					"Please choose the sign language for this book", ProgressKind.Error);
-				request.PostSucceeded();
-				return;
-			}
 
 			try
 			{

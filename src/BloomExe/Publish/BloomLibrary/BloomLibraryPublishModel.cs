@@ -280,9 +280,9 @@ namespace Bloom.Publish.BloomLibrary
 
 				// Nope, either no value exists or the value was some kind of default value.
 				// Compute (or recompute) what the value should default to.
-				bool isChecked = kvp.Value || isRequiredLang;
+				bool shouldBeChecked = kvp.Value || isRequiredLang;
 
-				var newInitialValue = isChecked ? InclusionSetting.IncludeByDefault : InclusionSetting.ExcludeByDefault;
+				var newInitialValue = shouldBeChecked ? InclusionSetting.IncludeByDefault : InclusionSetting.ExcludeByDefault;
 				bookInfo.PublishSettings.BloomLibrary.TextLangs[langCode] = newInitialValue;
 			}
 
@@ -290,26 +290,22 @@ namespace Bloom.Publish.BloomLibrary
 
 			var allLangCodes = allLanguages.Select(x => x.Key);
 
-			// This is tricky, because currently our UI does not support different settings for different languages.
+			// This is tricky, because an earlier version of our UI did not support different settings for different languages.
 			// Thus, an older version of this code only did this init the first time, when AudioLangs was null.
 			// However, at least one book (BL-11784) got into a state where AudioLangs is an empty set.
 			// Then there is NO item in the set to be switched on or off, so effectively, it remains off.
-			// (IncludeAudio is true if at least one is Include or IncludeByDefault).
+			// (The old IncludeAudio was true if at least one is Include or IncludeByDefault).
 			// It is therefore necessary, minimally, to make sure the set has at least one language
 			// if allLangCodes has any. But properly, it is intended to  have a value for every language in
-			// allLangCodes...we just temporarily expect that they will all be the same.
+			// allLangCodes...just in the old version they would all be the same.
 			// It seems more future-proof to add any languages that are missing, while not changing the
 			// setting for any we already have. But then, what setting should we use for any language
-			// that is missing? If we take the previous approach and use IncludeByDefault, which is currently
-			// equivalent to Include, we would effectively turn on narration upload (for all languages)
-			// any time we find a new language, even if it was previously off. So it seems better to copy
-			// the setting from an arbitrary current language if any; if there are none, then we go with
-			// the old default. For now, this will keep the old value of the setting. If we enhance the UI
-			// so that each language can have a different setting, we should probably switch this code to
-			// initialize newly encountered languages to IncludeByDefault.
+			// that is missing? To help preserve the old behavior, if all the old ones are exclude
+			// we'll go with that, otherwise, include.
 			var settingForNewLang = InclusionSetting.IncludeByDefault;
-			if (bookInfo.PublishSettings.BloomLibrary.AudioLangs.Any())
-				settingForNewLang = bookInfo.PublishSettings.BloomLibrary.AudioLangs.First().Value;
+			if (bookInfo.PublishSettings.BloomLibrary.AudioLangs.Any() &&
+			    bookInfo.PublishSettings.BloomLibrary.AudioLangs.All(kvp => !kvp.Value.IsIncluded()))
+				settingForNewLang = InclusionSetting.ExcludeByDefault;
 
 			foreach (var langCode in allLangCodes)
 			{
@@ -326,11 +322,11 @@ namespace Bloom.Publish.BloomLibrary
 					bookInfo.PublishSettings.BloomLibrary.SignLangs[includedSignLangCode] = InclusionSetting.ExcludeByDefault;
 				}
 			}
-			// Include the collection sign language by default unless the user excluded it.
+			// Include the collection sign language by default unless the user set it definitely.
 			if (!string.IsNullOrEmpty(collectionSignLangCode))
 			{
 				if (!bookInfo.PublishSettings.BloomLibrary.SignLangs.ContainsKey(collectionSignLangCode) ||
-					bookInfo.PublishSettings.BloomLibrary.SignLangs[collectionSignLangCode] != InclusionSetting.Exclude)
+					bookInfo.PublishSettings.BloomLibrary.SignLangs[collectionSignLangCode] == InclusionSetting.ExcludeByDefault)
 				{
 					bookInfo.PublishSettings.BloomLibrary.SignLangs[collectionSignLangCode] = InclusionSetting.IncludeByDefault;
 				}

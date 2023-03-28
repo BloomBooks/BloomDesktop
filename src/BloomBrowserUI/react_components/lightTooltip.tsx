@@ -14,7 +14,18 @@ import Tooltip, { TooltipProps, tooltipClasses } from "@mui/material/Tooltip";
 // tooltip content. I think somehow the tooltipClasses must provide access to
 // the magic class name.
 export const LightTooltip = styled(({ className, ...props }: TooltipProps) => (
-    <Tooltip {...props} classes={{ popper: className }} />
+    <Tooltip
+        // These delays seem to be helpful in allowing the pointer to move from the
+        // wrapped control into the tooltip without activating a different tooltip from another
+        // control that we might cross over on the way.
+        // They are common to the two current clients, TickableBox nd MuiCheckBox,
+        // but can be overridden by callers since props passed in will take precedence.
+        enterDelay={500}
+        enterNextDelay={300}
+        leaveDelay={200}
+        {...props}
+        classes={{ popper: className }}
+    />
 ))(({ theme }) => ({
     [`& .${tooltipClasses.tooltip}`]: {
         backgroundColor: theme.palette.common.white,

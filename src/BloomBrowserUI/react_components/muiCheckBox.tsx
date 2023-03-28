@@ -142,19 +142,7 @@ export const MuiCheckbox: React.FunctionComponent<{
     );
 
     return props.title ? (
-        // These delays seem to be helpful in allowing the pointer to move from the
-        // checkbox into the tooltip without activating a different tooltip from another
-        // checkbox that we might cross over on the way.
-        // (Note the same delays are currently used in TickableBox, which is sometimes
-        // used in the same list, so they should probably be kept in sync.)
-        <LightTooltip
-            title={props.title}
-            enterDelay={500}
-            enterNextDelay={300}
-            leaveDelay={200}
-        >
-            {mainContent}
-        </LightTooltip>
+        <LightTooltip title={props.title}>{mainContent}</LightTooltip>
     ) : (
         mainContent
     );
