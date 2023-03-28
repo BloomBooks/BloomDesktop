@@ -617,8 +617,7 @@ namespace Bloom.Publish.Video
 				300000 // then every 5 minutes thereafter
 			)) 
 			{
-				var tempOutputs = new List<TempFile>();
-				try
+				using (var tempOutputs = new Utils.DisposableList<TempFile>())
 				{
 					bool videoHasAudio = false;
 					string inputVideoPath = _videoOnlyPath;				
@@ -652,14 +651,6 @@ namespace Bloom.Publish.Video
 						}
 						else
 							break;
-					}
-				}
-				finally
-				{
-					// Cleanup temp files generated
-					foreach (var tempFile in tempOutputs)
-					{
-						tempFile.Dispose();
 					}
 				}
 			}
