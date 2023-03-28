@@ -173,8 +173,7 @@ namespace Bloom.Publish.Android
 			if (bookInfo.PublishSettings.BloomLibrary.TextLangs.Count == 0)
 			{
 				var book = bookServer.GetBookFromBookInfo(bookInfo);
-				var allLanguages = book.AllPublishableLanguages(includeLangsOccurringOnlyInXmatter: true);
-				PublishApi.InitializeLanguagesInBook(bookInfo, allLanguages, book.CollectionSettings);
+				PublishApi.InitializeLanguagesInBook(book);
 			}
 
 			// If we are running harvester, we are going to use the BloomLibrary settings.

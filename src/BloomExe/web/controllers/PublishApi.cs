@@ -331,57 +331,17 @@ namespace Bloom.web.controllers
 
 				_languagesWithAudio = request.CurrentBook.GetLanguagesWithAudio();
 
-				InitializeLanguagesInBook(_bookForLanguagesToPublish.BookInfo, _allLanguages, request.CurrentCollectionSettings);
+				// I think this is redundant with initialization of the model we do when switching to
+				// publish tab but am not sure enough to leave it out.
+				InitializeLanguagesInBook(_bookForLanguagesToPublish);
 			}
 		}
 
 
 		// Precondition: If any locking is required, the caller should handle it.
-		internal static void InitializeLanguagesInBook(BookInfo bookInfo, Dictionary<string, bool> allLanguages, CollectionSettings collectionSettings)
+		internal static void InitializeLanguagesInBook(Book.Book book)
 		{
-			Debug.Assert(bookInfo?.MetaData != null, "Precondition: MetaData must not be null");
-
-			// reinitialize our list of which languages to publish, defaulting to the ones
-			// that are complete.
-			foreach (var kvp in allLanguages)
-			{
-				var langCode = kvp.Key;
-
-				// First, check if the user has already explicitly set the value. If so, we'll just use that value and be done.
-				if (bookInfo.PublishSettings.BloomLibrary.TextLangs.TryGetValue(langCode, out InclusionSetting checkboxValFromSettings))
-				{
-					if (checkboxValFromSettings.IsSpecified())
-					{
-						continue;
-					}
-				}
-
-				// Nope, either no value exists or the value was some kind of default value.
-				// Compute (or recompute) what the value should default to.
-				bool isChecked = kvp.Value ||
-					// We always select L1 by default because we assume the user wants to publish the language he is currently working on.
-					// It may be incomplete if he just wants to preview his work so far.
-					// If he really doesn't want to publish L1, he can deselect it.
-					// See BL-9587.
-					langCode == collectionSettings?.Language1Tag;
-
-				var newInitialValue = isChecked ? InclusionSetting.IncludeByDefault : InclusionSetting.ExcludeByDefault;
-				bookInfo.PublishSettings.BloomLibrary.TextLangs[langCode] = newInitialValue;
-			}
-
-			// Initialize the Talking Book Languages settings
-			if (bookInfo.PublishSettings.BloomLibrary.AudioLangs.Count == 0)
-			{
-				var allLangCodes = allLanguages.Select(x => x.Key);
-				foreach (var langCode in allLangCodes)
-				{
-					bookInfo.PublishSettings.BloomLibrary.AudioLangs[langCode] = InclusionSetting.IncludeByDefault;
-				}
-			}
-
-			// The metadata may have been changed, so saved it.
-			// Note - If you want, you could check whether or not it was actually changed, but that might be premature optimization.
-			bookInfo.Save();
+			BloomLibraryPublishModel.InitializeLanguages(book);
 		}
 		/// <summary>
 		/// Updates the BloomReader preview. The URL of the BloomReader preview will be sent over the web socket.
