@@ -93,6 +93,8 @@ namespace Bloom.Api
 			// to access the current preview book. Also allows local browsers running bloom-player
 			// to access it.
 			response.AppendHeader("Access-Control-Allow-Origin", "*");
+			// Allows bloomlibrary.org to call the common/loginData endpoint.
+			response.AppendHeader("Access-Control-Allow-Headers", "*");
 			Stream output = response.OutputStream;
 			try
 			{

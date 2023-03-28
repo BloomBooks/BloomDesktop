@@ -131,7 +131,7 @@ namespace Bloom.web.controllers
 				}, false);
 			// This is useful for debugging TypeScript code, especially on Linux.  I wouldn't necessarily expect
 			// to see it used anywhere in code that gets submitted and merged.
-			apiHandler.RegisterEndpointLegacy ("common/debugMessage",
+			apiHandler.RegisterEndpointHandler("common/debugMessage",
 				request =>
 				{
 					var message = request.RequiredPostString();
@@ -139,10 +139,12 @@ namespace Bloom.web.controllers
 					request.PostSucceeded();
 				}, false);
 
+			// This is called from bloomlibrary.org after a successful login.
 			apiHandler.RegisterEndpointHandler("common/loginData",
 				request =>
 				{
-					if (request.HttpMethod == HttpMethods.Get) {
+					if (request.HttpMethod == HttpMethods.Get)
+					{
 						request.ReplyWithJson(new { email = _parseClient.Account });
 					}
 					else
@@ -153,7 +155,19 @@ namespace Bloom.web.controllers
 						string userId = requestData.userId;
 						//Debug.WriteLine("Got login data " + email + " with token " + token + " and id " + userId);
 						_parseClient.SetLoginData(email, userId, token, BookUpload.Destination);
-						_doWhenLoggedIn?.Invoke();
+						LoginSuccessful?.Invoke(this, null);
+
+						// Decided not to do this for now. GitKraken doesn't. That's kind of our model.
+						// Although, VS Code does seem to do it... that's our other model...
+						// It can be pretty annoying during development.
+						//if (Shell.GetShellOrOtherOpenForm() is Shell shell)
+						//{
+						//	shell.Invoke((Action)(() =>
+						//	{
+						//		shell.ReallyComeToFront();
+						//	}));
+						//}
+
 						request.PostSucceeded();
 					}
 				}, false);
@@ -220,14 +234,7 @@ namespace Bloom.web.controllers
 			ReloadProjectAction?.Invoke();
 		}
 
-
-
-		private static Action _doWhenLoggedIn;
-
-		public static void NotifyLogin(Action doWhenLoggedIn)
-		{
-			_doWhenLoggedIn = doWhenLoggedIn;
-		}
+		public static event EventHandler LoginSuccessful;
 
 		// Request from javascript to open the folder containing the specified file,
 		// and select it.

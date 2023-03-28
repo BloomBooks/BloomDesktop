@@ -24,6 +24,7 @@ namespace Bloom.web.controllers
 		private const string kWebSocketContext = "libraryPublish"; // must match what is in LibraryPublishScreen.tsx
 
 		private const string kWebSocketEventId_uploadSuccessful = "uploadSuccessful"; // must match what is in LibraryPublishSteps.tsx
+		private const string kWebSocketEventId_loginSuccessful = "loginSuccessful"; // must match what is in LibraryPublishSteps.tsx
 
 		private PublishView _publishView;
 		private IBloomWebSocketServer _webSocketServer;
@@ -38,6 +39,11 @@ namespace Bloom.web.controllers
 			_webSocketProgress = progress.WithL10NPrefix("PublishTab.Upload.");
 			_webSocketProgress.LogAllMessages = true;
 			_progress = new WebProgressAdapter(_webSocketProgress);
+
+			CommonApi.LoginSuccessful += (sender, args) =>
+			{
+				_webSocketServer.SendString(kWebSocketContext, kWebSocketEventId_loginSuccessful, Model?.WebUserId);
+			};
 		}
 
 		private string CurrentSignLanguageName
@@ -59,6 +65,9 @@ namespace Bloom.web.controllers
 			apiHandler.RegisterEndpointHandler("libraryPublish/cancel", HandleCancel, true);
 			apiHandler.RegisterEndpointHandler("libraryPublish/getUploadCollisionInfo", HandleGetUploadCollisionInfo, true);
 			apiHandler.RegisterEndpointHandler("libraryPublish/uploadAfterChangingBookId", HandleUploadAfterChangingBookId, true);
+			apiHandler.RegisterEndpointHandler("libraryPublish/checkForLoggedInUser", HandleCheckForLoggedInUser, true);
+			apiHandler.RegisterEndpointHandler("libraryPublish/login", HandleLogin, true);
+			apiHandler.RegisterEndpointHandler("libraryPublish/logout", HandleLogout, true);
 		}
 
 		private void HandleGetBookInfo(ApiRequest request)
@@ -324,6 +333,28 @@ namespace Bloom.web.controllers
 		{
 			Model.ChangeBookId(_progress);
 			HandleUpload(request);
+		}
+
+		private void HandleCheckForLoggedInUser(ApiRequest request)
+		{
+			// Why not just reply with the WebUserId instead?
+			// Because we already have this event hooked up for the user-initiated log in process.
+			// So it simplifies the client to just reuse this web socket event.
+			if (Model.LoggedIn)
+				_webSocketServer.SendString(kWebSocketContext, kWebSocketEventId_loginSuccessful, Model?.WebUserId);
+			request.PostSucceeded();
+		}
+
+		private void HandleLogin(ApiRequest request)
+		{
+			Model.LogIn();
+			request.PostSucceeded();
+		}
+
+		private void HandleLogout(ApiRequest request)
+		{
+			Model.LogOut();
+			request.PostSucceeded();
 		}
 	}
 }

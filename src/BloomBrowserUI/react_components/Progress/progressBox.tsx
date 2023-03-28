@@ -151,11 +151,6 @@ export const ProgressBox = React.forwardRef<
         const msg = "" + e.message;
 
         if (e.id === "message") {
-            if (e.message!.indexOf("error") > -1) {
-                if (props.onGotErrorMessage) {
-                    props.onGotErrorMessage();
-                }
-            }
             if (e.progressKind) {
                 switch (e.progressKind) {
                     default:
@@ -167,6 +162,7 @@ export const ProgressBox = React.forwardRef<
                     case "Error":
                     case "Fatal":
                         writeLine(msg, kErrorColor);
+                        props.onGotErrorMessage?.();
                         break;
                     case "Warning":
                         writeLine(msg, kBloomGold);

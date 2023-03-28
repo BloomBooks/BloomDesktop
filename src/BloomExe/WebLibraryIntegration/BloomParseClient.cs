@@ -41,12 +41,12 @@ namespace Bloom.WebLibraryIntegration
 		public bool AttemptSignInAgainForCommandLine(string userEmail, string destination, IProgress progress)
 		{
 			if (string.IsNullOrEmpty(Settings.Default.LastLoginSessionToken)){
-				progress.WriteError("Please first log in from Bloom:Publish:Upload, then quit and try again. (LastLoginSessionToken)");
+				progress.WriteError("Please first log in from Bloom:Publish:Web, then quit and try again. (LastLoginSessionToken)");
 				return false;
 			}
 			if (string.IsNullOrEmpty(Settings.Default.LastLoginParseObjectId))
 			{
-				progress.WriteError("Please first log in from Bloom:Publish:Upload, then quit and try again. (LastLoginParseObjectId)");
+				progress.WriteError("Please first log in from Bloom:Publish:Web, then quit and try again. (LastLoginParseObjectId)");
 				return false;
 			}
 			if (Settings.Default.WebUserId != userEmail)
@@ -203,7 +203,7 @@ namespace Bloom.WebLibraryIntegration
 			Account = "";
 			_userId = "";
 			if (includeFirebaseLogout)
-				FirebaseLoginDialog.FirebaseLogout();
+				BloomLibraryAuthentication.Logout();
 		}
 
 		public IRestResponse CreateBookRecord(string metadataJson)

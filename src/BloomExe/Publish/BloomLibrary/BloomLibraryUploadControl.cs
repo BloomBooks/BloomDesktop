@@ -56,21 +56,8 @@ namespace Bloom.Publish.BloomLibrary
 			_progressBox.LinkClicked += _progressBox_LinkClicked;
 
 			_okToUpload = _model.MetadataIsReadyToPublish;
-
-			// See if saved credentials work.
-			try
-			{
-				_model.LogIn();
-			}
-			catch (Exception e)
-			{
-				LogAndInformButDontReportFailureToConnectToServer(e);
-			}
-			CommonApi.NotifyLogin(() =>
-			{
-				this.Invoke((Action)(UpdateDisplay));
-				;
-			});
+			
+			CommonApi.LoginSuccessful += HandleLoginSuccessful;
 
 			switch (_model.LicenseType)
 			{
@@ -199,6 +186,11 @@ namespace Bloom.Publish.BloomLibrary
 			}
 		}
 
+		private void HandleLoginSuccessful(object sender, EventArgs args)
+		{
+			Invoke((Action)UpdateDisplay);
+		}
+
 		private void UpdateFeaturesCheckBoxesDisplay()
 		{
 			var bookInfoMetaData = _model.Book.BookInfo.MetaData;
@@ -239,14 +231,6 @@ namespace Bloom.Publish.BloomLibrary
 
 		private bool LanguagesOkToUpload =>
 			_model.OkToUploadWithNoLanguages || _languagesFlow.Controls.Cast<CheckBox>().Any(b => b.Checked);
-
-		private void LogAndInformButDontReportFailureToConnectToServer(Exception exc)
-		{
-			var msg = LocalizationManager.GetString("PublishTab.Upload.LoginFailure",
-				"Bloom could not sign in to BloomLibrary.org using your saved credentials. Please check your network connection.");
-			MessageBox.Show(this, msg, FirebaseLoginDialog.LoginFailureString, MessageBoxButtons.OK, MessageBoxIcon.Error);
-			Logger.WriteEvent("Failure connecting to parse server " + exc.Message);
-		}
 
 		void _progressBox_LinkClicked(object sender, LinkClickedEventArgs e)
 		{
@@ -308,7 +292,8 @@ namespace Bloom.Publish.BloomLibrary
  _targetProduction.Visible = false;
 //#endif
 	//		 _targetProduction.Checked = !BookUpload.UseSandbox;
-		
+
+			_okToUpload = _model.MetadataIsReadyToPublish;
 
 			_uploadButton.Enabled = _model.MetadataIsReadyToPublish && _model.LoggedIn && _okToUpload;
 			_progressBox.Clear();
@@ -355,13 +340,11 @@ namespace Bloom.Publish.BloomLibrary
 			if (_model.LoggedIn)
 			{
 				// This becomes a logout button
-				_model.Logout();
+				_model.LogOut();
 			}
 			else
 			{
-				// The dialog is configured by Autofac to interact with the single instance of BloomParseClient,
-				// which it will update with all the relevant information if login is successful.
-				FirebaseLoginDialog.ShowFirebaseLoginDialog(_webSocketServer);
+				_model.LogIn();
 			}
 			UpdateDisplay();
 		}
