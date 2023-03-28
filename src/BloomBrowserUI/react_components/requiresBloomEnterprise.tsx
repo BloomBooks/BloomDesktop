@@ -88,9 +88,8 @@ export const RequiresBloomEnterpriseAdjacentIconWrapper = (props: {
         enterpriseAvailable
             ? "This Bloom Enterprise feature is enabled for you."
             : "To use this feature, you'll need to enable Bloom Enterprise.",
-        "EditTab." + enterpriseAvailable
-            ? "EnterpriseEnabled"
-            : "RequiresEnterprise"
+        "EditTab." +
+            (enterpriseAvailable ? "EnterpriseEnabled" : "RequiresEnterprise")
     );
 
     // Set the disabled property on all the children
