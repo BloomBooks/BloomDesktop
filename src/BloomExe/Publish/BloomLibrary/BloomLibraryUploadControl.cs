@@ -124,7 +124,7 @@ namespace Bloom.Publish.BloomLibrary
 				}
 				// Disable clicking on languages that have been selected for display in this book.
 				// See https://issues.bloomlibrary.org/youtrack/issue/BL-7166.
-				if (BloomLibraryPublishModel.IsRequiredLanguageForBook(lang, _model.Book))
+				if (_model.Book.IsRequiredLanguage(lang))
 				{
 					checkBox.Checked = true;	// even if partial
 					checkBox.AutoCheck = false;

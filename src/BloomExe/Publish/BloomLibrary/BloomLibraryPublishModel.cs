@@ -264,7 +264,7 @@ namespace Bloom.Publish.BloomLibrary
 			foreach (var kvp in allLanguages)
 			{
 				var langCode = kvp.Key;
-				var isRequiredLang = IsRequiredLanguageForBook(langCode, book);
+				var isRequiredLang = book.IsRequiredLanguage(langCode);
 
 				// First, check if the user has already explicitly set the value. If so, we'll just use that value and be done.
 				if (bookInfo.PublishSettings.BloomLibrary.TextLangs.TryGetValue(langCode, out InclusionSetting checkboxValFromSettings))
@@ -339,15 +339,6 @@ namespace Bloom.Publish.BloomLibrary
 
 			// The metadata may have been changed, so save it.
 			bookInfo.Save();
-		}
-
-		public static bool IsRequiredLanguageForBook(string langCode, Book.Book book)
-		{
-			// Languages which have been selected for display in this book need to be selected
-			return
-				langCode == book.BookData.Language1.Tag ||
-				langCode == book.Language2Tag ||
-				langCode == book.Language3Tag;
 		}
 
 		public void ClearSignLanguageToPublish()

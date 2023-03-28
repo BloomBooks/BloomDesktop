@@ -2185,21 +2185,26 @@ namespace Bloom.Book
 		/// A language is never considered an "incomplete translation" because it is missing in an xmatter element,
 		/// mainly because it's so common for elements there to be in just a national language (BL-8527).
 		/// For some purposes, a language that occurs ONLY in xmatter doesn't count at all... it won't even be
-		/// a key in the dictionary unless includeLangsOccurringOnlyInXmatter is true.
+		/// a key in the dictionary unless includeLangsOccurringOnlyInXmatter is true
+		/// OR it is a "required" language (a content language of the book).
 		///
 		/// For determining which Text Languages to display in Publish -> Android and which pages to delete
 		/// from a .bloompub file, we pass the parameter as true. I (gjm) am unclear as to why historically
 		/// we did it this way, but BL-7967 might be part of the problem
 		/// (where xmatter pages only in L2 were erroneously deleted).
 		/// </summary>
-		/// <remarks>The logic here is used to determine which language checkboxes to show in the web upload.
+		/// <remarks>The logic here is used to determine how to present (show and/or enable) language checkboxes on the publish screens.
 		/// Nearly identical logic is used in bloom-player to determine which languages to show on the Language Menu,
 		/// so changes here may need to be reflected there and vice versa.</remarks>
-		public Dictionary<string, bool> AllLanguages(bool includeLangsOccurringOnlyInXmatter = false)
+		private Dictionary<string, bool> AllLanguages(bool includeLangsOccurringOnlyInXmatter = false)
 		{
 			var result = new Dictionary<string, bool>();
 			var parents = new HashSet<XmlElement>(); // of interesting non-empty children
 			var langDivs = OurHtmlDom.GetLanguageDivs(includeLangsOccurringOnlyInXmatter).ToArray();
+
+			// Always include required languages
+			foreach (var lang in GetRequiredLanguages())
+				result[lang] = true;
 
 			// First pass: fill in the dictionary with languages which have non-empty content in relevant divs
 			foreach (var div in langDivs)
@@ -4569,6 +4574,17 @@ namespace Bloom.Book
 		public void AddHistoryRecordForLibraryUpload(string url)
 		{
 			BookHistory.AddEvent(this, BookHistoryEventType.Uploaded, "Book uploaded to Bloom Library" + (string.IsNullOrEmpty(url) ? "" : $" ({url})"));
+		}
+
+		public bool IsRequiredLanguage(string langCode)
+		{
+			// Languages which have been selected for display in this book need to be selected
+			return GetRequiredLanguages().Contains(langCode);
+		}
+
+		private IEnumerable<string> GetRequiredLanguages()
+		{
+			return new[] { BookData.Language1.Tag, Language2Tag, Language3Tag }.Where(l => !string.IsNullOrEmpty(l));
 		}
 	}
 }
