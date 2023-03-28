@@ -60,7 +60,14 @@ export const TickableBox: React.FunctionComponent<{
     );
 
     return props.title ? (
-        <LightTooltip title={props.title}>{mainContent}</LightTooltip>
+        <LightTooltip
+            title={props.title}
+            enterDelay={500}
+            enterNextDelay={300}
+            leaveDelay={200}
+        >
+            {mainContent}
+        </LightTooltip>
     ) : (
         mainContent
     );
