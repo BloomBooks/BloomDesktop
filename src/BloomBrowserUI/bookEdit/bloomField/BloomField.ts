@@ -87,15 +87,20 @@ export default class BloomField {
     }
 
     private static InsertLineBreak() {
-        //we put in a specially marked span which stylesheets can use to give us "soft return" in the midst of paragraphs
-        //which have either indents or prefixes (like "step 1", "step 2").
-        //The difficult part is that the browser will leave our cursor inside of the new span, which isn't really
-        //what we want. So we also add a zero-width-non-joiner (&#xfeff;) there so that we can get outside of the span.
-        document.execCommand(
-            "insertHTML",
-            false,
-            "<span class='bloom-linebreak'></span>&#xfeff;"
-        );
+        // We put in a specially marked span which stylesheets can use to give us "soft return" in the
+        // midst of paragraphs which have either indents or prefixes (like "step 1", "step 2").
+        // We had to move away from deprecated code (execCommand), when it didn't work in WebView2.
+        // Browsers still support execCommand, of course, but they've never agreed on how to implement the
+        // various commands, which is why we have a different result using the same command and a new
+        // browser engine.
+        const sel = window.getSelection();
+        if (!sel) return;
+        const range = sel.getRangeAt(0);
+        const spanToInsert = document.createElement("span");
+        spanToInsert.className = "bloom-linebreak";
+        range.deleteContents(); // If the user has selected a range, we replace it with the line break.
+        range.insertNode(spanToInsert);
+        sel.collapseToEnd(); // moves the cursor to after the line break
     }
 
     public static fixPasteData(input: string): string {
