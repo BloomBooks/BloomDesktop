@@ -7,32 +7,24 @@
             "condition": "always"
         },
         {
-            "data-book": "outside-back-cover-branding-top-right-html",
-            "lang": "*",
-            "content": "<img class='branding' src='Created with Bloom.svg'/>",
-            "condition": "always"
-        },
-        {
             "data-book": "level-image-html",
             "lang": "*",
             "content": "<img class='branding' src='{bookshelfUrlKey}.svg'/>",
             "condition": "always"
         },
         {
-            "data-book": "outside-back-cover-branding-bottom-html",
+            "data-book": "outside-back-cover-USAID",
             "lang": "*",
-            "content": "<div/>",
+            "content": "<img src='Kyrgyzstan2020-English-USAID-logo.png'/><div lang='uz' class='USAID'>Ushbu kitob Amerika Qo'shma Shtatlari Xalqaro Taraqqiyot Agentligi (USAID) orqali Amerika xalqining ko'magida ishlab chiqilgan. Kitobdagi fikrlar va mulohazalar USAID yoki AQSH hukumatining qarashlarini aks ettirmaydi.</div>",
             "condition": "always"
         },
         {
-            "data-book": "credits-page-branding-bottom-html",
-            "lang": "uz",
-            "content": "<div><img src='Kyrgyzstan2020-English-USAID-logo.png'/><div lang='uz' class='USAID'>Ushbu kitob Amerika Qo'shma Shtatlari Xalqaro Taraqqiyot Agentligi (USAID) orqali Amerika xalqining ko'magida ishlab chiqilgan. Kitobdagi fikrlar va mulohazalar USAID yoki AQSH hukumatining qarashlarini aks ettirmaydi.</div></div><img src='UzbekistanMinistryOfPreschoolAndSchoolEducation.svg'/>",
+            "data-book": "outside-back-cover-ministry",
+            "lang": "*",
+            "content": "<img src='UzbekistanMinistryOfPreschoolAndSchoolEducation.svg'/>",
             "condition": "always"
         },
         {
-            // note it would make more sense for this to be part of the xmatter, but at the moment we have no way of having an xmatter
-            // define a data-book value.
             "data-book": "fullBleed",
             "lang": "*",
             "content": "true",
