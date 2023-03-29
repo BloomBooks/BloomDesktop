@@ -1,48 +1,59 @@
 @import "../branding-base.less";
 
-[data-book="outside-back-cover-branding-top-html"] img {
-    margin-top: auto;
-    margin-bottom: auto;
+@bleed: 3mm; // enhance: not clear where this should be defined until 5.5 when we can use css variables
+@inset: 2 * @bleed;
+
+img.bloomBadge {
+    position: absolute;
+    right: @inset;
+    top: @inset;
+    height: 30px;
+    opacity: 0.7;
 }
 
-[data-book="back-cover-boilerplate"] {
-    font-size: 15.4pt;
-}
 
-[data-book="outside-back-cover-branding-bottom-html"] {
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    font-size: 15.4pt;
-    font-family: Arial; // mockup was in Aileron, a proprietary font from Adobe
-}
-
-[data-book="outside-back-cover-branding-bottom-html"] {
-    flex-direction: row;
-    align-content: flex-start;
-}
-
-[data-book*="branding"] img {
-    max-width: 100%;
-}
-
-[lang="uz"] {
-    font-size: 9pt;
-    font-family: arial;
-    color: black;
-}
-
-[data-book="outside-back-cover-USAID"] img {
-    height: 100px;
-}
-
-[data-book="outside-back-cover-ministry"] {
-    height: 100px;
-}
-
-[data-book='outside-back-cover-branding-bottom-html'] {
+.back-cover-bottom {
     position: absolute;
     bottom: 0;
+    left: 0;
+    right: 0;
+    //width: 100%;
     background-color: white;
-    padding: 20px;
+    padding-top: 10px;
+    padding-bottom: calc(@inset + 10px);
+    padding-left: @inset;
+    padding-right: @inset;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-content: flex-start;
+
+    [data-book="outside-back-cover-USAID"] {
+        img {
+            height: 50px;
+        }
+
+        .USAID {
+            font-size: 9pt;
+            color: black;
+            font-family: Arial; // mockup was in Aileron, a proprietary font from Adobe
+        }
+    }
+
+    [data-book="outside-back-cover-ministry"] img {
+        height: 100px;
+        // keep the USAID text away a bit
+        margin-left: 20px;
+
+    }
+}
+
+.A4Landscape {
+    .back-cover-bottom {
+        justify-content: unset;
+    }
+
+    .USAID {
+        max-width: 600px;
+    }
 }

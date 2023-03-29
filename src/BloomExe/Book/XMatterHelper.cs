@@ -211,6 +211,16 @@ namespace Bloom.Book
 			var xmatterStylesNode = XMatterDom.SelectSingleNode("html/head/"+ HtmlDom.UserModifiedStyleXPath);
 			if(xmatterStylesNode != null)
 			{
+
+				// TODO: Currently, a book only gets any default styles from the xmatter pack when
+				// it is created. The Uzbek project already has books, so this won't be sufficient.
+				// We think
+				// 1) this should instead be calling MergeUserStylesOnInsertion() (or some form of it)
+				// 2) it should do it whenever we update the xmatter. But it does need to preserve
+				// the existing styles in case they have been customized, even at the expense of
+				// losing some new default improvement.
+
+
 				var existing = HtmlDom.GetUserModifiedStyleElement(_bookDom.Head);
 				if (existing != null)
 				{
@@ -222,8 +232,8 @@ namespace Bloom.Book
 					_bookDom.Head.AppendChild(xmatterStylesNode);
 				}
 			}
-
 		}
+
 		public void InjectXMatter(Dictionary<string, string> writingSystemCodes, Layout layout, bool orderXmatterForDeviceUse, string metadataLangTag)
 		{
 			//don't want to pollute shells with this content
