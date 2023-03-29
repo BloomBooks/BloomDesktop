@@ -547,5 +547,17 @@ namespace BloomTests.Spreadsheet
 				}
 			}
 		}
+
+		[TestCase("def.mpg", "def-1.mpg")]
+		[TestCase("def-1.mpg", "def-2.mpg")]
+		[TestCase("def-9.mpg", "def-10.mpg")]
+		[TestCase("def-10.mpg", "def-11.mpg")]
+		[TestCase("def-.mpg", "def--1.mpg")]
+		[TestCase("def-red.mpg", "def-red-1.mpg")]
+		[TestCase("def-red-1.mpg", "def-red-2.mpg")]
+		public void GetNextFileNameTests(string input, string expected)
+		{
+			Assert.That(SpreadsheetImporter.GetNextFileName(input), Is.EqualTo(expected));
+		}
 	}
 }

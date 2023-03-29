@@ -334,7 +334,7 @@ namespace Bloom.Spreadsheet
 		class PageRecord
 		{
 			public XmlElement Page;
-			public string SourceBook;
+			public string SourceBookPath;
 		}
 
 		// This dictionary is progressively built from our collection of possible template books
@@ -398,16 +398,19 @@ namespace Bloom.Spreadsheet
 				foreach (XmlElement page in pages)
 				{
 					var pageLabel = GetLabelFromPage(page).ToLowerInvariant();
+					// If we already found a page with this label, keep using the one we found first.
+					// This is so that if some random template contains a page with an unchanged
+					// label from one of our built-in templates, we will use the original on import.
 					if (pageLabel != null && !_labelToPageRecord.TryGetValue(pageLabel, out _))
 					{
-						_labelToPageRecord.Add(pageLabel, new PageRecord(){Page=page, SourceBook = bookPath});
+						_labelToPageRecord.Add(pageLabel, new PageRecord(){Page=page, SourceBookPath = bookPath});
 					}
 				}
 			}
 
 			if (result == null)
 				return null;
-			ImportStylesheetsIfNeeded(result.SourceBook);
+			ImportStylesheetsIfNeeded(result.SourceBookPath);
 			ImportUserDefinedStylesForPage(result);
 
 			return result.Page;
@@ -455,12 +458,6 @@ namespace Bloom.Spreadsheet
 				videoElt.AppendChild(srcElt);
 			}
 
-			// Note that we always want a forward slash, even in Windows,
-			// and we always copy directly to the video folder, wherever the file
-			// is found.
-			srcElt.SetAttribute("src", UrlPathString.CreateFromUnencodedString("video/" + videoFile).UrlEncoded);
-			HtmlDom.RemoveClass(videoContainer, "bloom-noVideoSelected");
-
 			if (_pathToSpreadsheetFolder != null) // only null in some unit tests
 			{
 				var sourcePath = Path.Combine(_pathToSpreadsheetFolder, source);
@@ -474,6 +471,11 @@ namespace Bloom.Spreadsheet
 				Directory.CreateDirectory(videoDirectory);
 
 				var dest = Path.Combine(videoDirectory, videoFile);
+				while (RobustFile.Exists(dest))
+				{
+					videoFile = GetNextFileName(videoFile);
+					dest = Path.Combine(videoDirectory, videoFile);
+				}
 				// Enhance: we should probably do something to prevent multiple video elements
 				// targeting the same file? But if importing to an existing book, we don't want
 				// to duplicate them all.
@@ -489,6 +491,34 @@ namespace Bloom.Spreadsheet
 						e.Message);
 				}
 			}
+
+			// Note that we always want a forward slash, even in Windows,
+			// and we always copy directly to the video folder, wherever the file
+			// is found.
+			srcElt.SetAttribute("src", UrlPathString.CreateFromUnencodedString("video/" + videoFile).UrlEncoded);
+			HtmlDom.RemoveClass(videoContainer, "bloom-noVideoSelected");
+
+		}
+
+		/// <summary>
+		/// Get another filename to try if the input one exists.
+		/// </summary>
+		/// <remarks>It's important that names not keep getting longer. For example,
+		/// if we export a video file called xyz.mpg and re-import it, xyz.mpg will be a conflict,
+		/// so we will create xyz-1.mpg. If we do it again, xyz-1.mpg will be a conflict.
+		/// If the next name is something like xyz-1-1.mpg, it's already getting ugly,
+		/// and enough cycles will cause the name to overflow. So, if the name looks like
+		/// an output (ends in hyphen-number), just increment the number.</remarks>>
+		public static string GetNextFileName(string input)
+		{
+			var ext = Path.GetExtension(input);
+			var name = Path.GetFileNameWithoutExtension(input);
+			var index = name.LastIndexOf('-');
+			if (index > 0 && Int32.TryParse(name.Substring(index + 1), out int count))
+			{
+				return Path.ChangeExtension(name.Substring(0,index + 1) + (count + 1), ext);
+			}
+			return Path.ChangeExtension(name + "-1", ext);
 		}
 
 		private void PutRowInWidget(ContentRow currentRow, XmlElement widgetContainer)
@@ -537,8 +567,8 @@ namespace Bloom.Spreadsheet
 					return;
 				}
 
-				var activitiesDirectory = Path.Combine(_pathToBookFolder, "activities");
-				Directory.CreateDirectory(activitiesDirectory);
+				var activitiesDestDirectory = Path.Combine(_pathToBookFolder, "activities");
+				Directory.CreateDirectory(activitiesDestDirectory);
 				var sourceFolderPath = Path.Combine(_pathToSpreadsheetFolder, "activities", sourceDir);
 				try
 				{
@@ -866,13 +896,21 @@ namespace Bloom.Spreadsheet
 		private int PageNumberToReport => _currentPageIndex + 1 - _frontMatterPagesSeen;
 
 		private List<XmlDocument> _sourcesForDefaultPages;
+		private HashSet<XmlDocument> _sourcesWithExtraStylesheets;
 		private string _activityTemplatePath;
 
-		private void GeneratePage(string guid)
+
+		/// <summary>
+		/// Return a copy of a page from one of our factory templates that has the specified guid.
+		/// This is used to get a default page that can contain a particular combination of block types.
+		/// </summary>
+		private void GenerateDefaultPage(string guid)
 		{
+			
 			if (_sourcesForDefaultPages == null)
 			{
 				_sourcesForDefaultPages = new List<XmlDocument>();
+				_sourcesWithExtraStylesheets = new HashSet<XmlDocument>();
 				var path = Path.Combine(BloomFileLocator.FactoryCollectionsDirectory, "template books", "Basic Book",
 					"Basic Book.html");
 				_sourcesForDefaultPages.Add(XmlHtmlConverter.GetXmlDomFromHtmlFile(path, false));
@@ -881,7 +919,9 @@ namespace Bloom.Spreadsheet
 				_sourcesForDefaultPages.Add(XmlHtmlConverter.GetXmlDomFromHtmlFile(path, false));
 				_activityTemplatePath = Path.Combine(BloomFileLocator.FactoryCollectionsDirectory, "template books",
 					"Activity", "Activity.html");
-				_sourcesForDefaultPages.Add(XmlHtmlConverter.GetXmlDomFromHtmlFile(_activityTemplatePath, false));
+				var activityDoc = XmlHtmlConverter.GetXmlDomFromHtmlFile(_activityTemplatePath, false);
+				_sourcesForDefaultPages.Add(activityDoc);
+				_sourcesWithExtraStylesheets.Add(activityDoc);
 			}
 
 			for (int i = 0; i < _sourcesForDefaultPages.Count; i++)
@@ -890,7 +930,7 @@ namespace Bloom.Spreadsheet
 				if (templatePage != null)
 				{
 					ImportPage(templatePage);
-					if (i == 2)
+					if (_sourcesWithExtraStylesheets.Contains(_sourcesForDefaultPages[i]))
 					{
 						// Activity folder is the only one that might require us to copy a stylesheet
 						ImportStylesheetsIfNeeded(_activityTemplatePath);
@@ -1026,7 +1066,7 @@ namespace Bloom.Spreadsheet
 			// OK, we've found a page in the template book which can hold imported content.
 			// If it can hold the sort of content we have, we'll use it; otherwise,
 			// we'll insert a page that can.
-			GetElementsFromCurrentPage();
+			CollectElementsFromCurrentPage();
 			// Note that these are only updated when current page is set to an original usable page,
 			// not when it is set to an inserted one. Thus, once we start adding pages at the end,
 			// it and these variables are fixed at the values for the last content page.
@@ -1037,7 +1077,7 @@ namespace Bloom.Spreadsheet
 			if (InsertDefaultPageIfNeeded(blocksNeeded, _blockTypesAvailableOnLastPage, pageType, _pageTypeOfLastPage))
 			{
 				// progress message already sent
-				GetElementsFromCurrentPage();
+				CollectElementsFromCurrentPage();
 			}
 			else
 			{
@@ -1088,12 +1128,10 @@ namespace Bloom.Spreadsheet
 				ImportPage(_lastContentPage);
 			}
 
-			GetElementsFromCurrentPage();
+			CollectElementsFromCurrentPage();
 			for (int i = 0; i < blockTypeCount; i++)
 				_blockOnPageIndexes[i] = -1;
 		}
-
-		private const string basicTextAndImageGuid = "adcd48df-e9ab-4a07-afd4-6a24d0398382";
 
 		private Dictionary<BlockTypes, string> _pagesToInsert;
 
@@ -1102,19 +1140,19 @@ namespace Bloom.Spreadsheet
 			if (_pagesToInsert == null)
 			{
 				_pagesToInsert = new Dictionary<BlockTypes, string>();
-				_pagesToInsert[BlockTypes.Image] = "adcd48df-e9ab-4a07-afd4-6a24d0398385"; // just an image
-				_pagesToInsert[BlockTypes.Image | BlockTypes.Text] = basicTextAndImageGuid;
-				_pagesToInsert[BlockTypes.Image | BlockTypes.Text | BlockTypes.Landscape] = "7b192144-527c-417c-a2cb-1fb5e78bf38a"; // Picture on left;
-				_pagesToInsert[BlockTypes.Text] = "a31c38d8-c1cb-4eb9-951b-d2840f6a8bdb"; // just text;
-				_pagesToInsert[BlockTypes.Video] = "8bedcdf8-3ad6-4967-b027-6c186436572f"; // Just Video;
-				_pagesToInsert[BlockTypes.Text | BlockTypes.Video] = "299644f5-addb-476f-a4a5-e3978139b188"; // Video Over Text;
-				_pagesToInsert[BlockTypes.Image | BlockTypes.Video] = "24c90e90-2711-465d-8f20-980d9ffae299"; // Picture & Video;
+				_pagesToInsert[BlockTypes.Image] = Book.Book.JustPictureGuid; // just an image
+				_pagesToInsert[BlockTypes.Image | BlockTypes.Text] = Book.Book.BasicTextAndImageGuid;
+				_pagesToInsert[BlockTypes.Image | BlockTypes.Text | BlockTypes.Landscape] = Book.Book.PictureOnLeftGuid;
+				_pagesToInsert[BlockTypes.Text] = Book.Book.JustTextGuid;
+				_pagesToInsert[BlockTypes.Video] = Book.Book.JustVideoGuid;
+				_pagesToInsert[BlockTypes.Text | BlockTypes.Video] = Book.Book.VideoOverTextGuid;
+				_pagesToInsert[BlockTypes.Image | BlockTypes.Video] = Book.Book.PictureAndVideoGuid;
 				// not obvious which arrangement of text, video, and image would be best. None of our templates is designed for
 				// portrait orientation. However, I think pictures and video are likely to shrink better than text, so it seems
 				// best to default to the layout that leaves the most room for text. ("Big text" does not refer to point size
 				// but to a large space for text).
-				_pagesToInsert[BlockTypes.Text | BlockTypes.Image | BlockTypes.Video] = "08422e7b-9406-4d11-8c71-02005b1b8095"; // Big Text Diglot;
-				_pagesToInsert[BlockTypes.Widget] = "3a705ac1-c1f2-45cd-8a7d-011c009cf406"; // Widget Page
+				_pagesToInsert[BlockTypes.Text | BlockTypes.Image | BlockTypes.Video] = Book.Book.BigTextDiglotGuid;
+				_pagesToInsert[BlockTypes.Widget] = Book.Book.WidgetGuid;
 			}
 			return _pagesToInsert;
 		}
@@ -1172,7 +1210,7 @@ namespace Bloom.Spreadsheet
 				if (templatePage != null)
 				{
 					var blocksOnPage = new List<XmlElement>[blockTypeCount];
-					GetElementsFromPage(templatePage, blocksOnPage);
+					CollectElementsFromPage(templatePage, blocksOnPage);
 					var typesOnTemplatePage = BlockTypesAvailable(blocksOnPage);
 					if ((typesOnTemplatePage & blocksNeeded) == BlockTypes.None)
 					{
@@ -1224,7 +1262,7 @@ namespace Bloom.Spreadsheet
 				throw new ApplicationException("Failed to find a default page type");
 			}
 
-			GeneratePage(guid);
+			GenerateDefaultPage(guid);
 			return true;
 		}
 
@@ -1250,12 +1288,12 @@ namespace Bloom.Spreadsheet
 				.ToList();
 		}
 
-		private void GetElementsFromCurrentPage()
+		private void CollectElementsFromCurrentPage()
 		{
-			GetElementsFromPage(_currentPage, _blocksOnPage);
+			CollectElementsFromPage(_currentPage, _blocksOnPage);
 		}
 
-		private void GetElementsFromPage(XmlElement _currentPage, List<XmlElement>[] blocksOnPageCollector)
+		private void CollectElementsFromPage(XmlElement _currentPage, List<XmlElement>[] blocksOnPageCollector)
 		{
 			blocksOnPageCollector[imageContainerIndex] = GetImageContainers(_currentPage);
 			// We don't want image description slots as possible destinations for text.
@@ -1308,9 +1346,12 @@ namespace Bloom.Spreadsheet
 				ForEachIndexInTypes(typesNeeded, (i, blocktype) =>
 				{
 					if (_blocksOnPage[i].Count > 0)
+						// It's new page, we will use the first block of that type.
 						_blockOnPageIndexes[i] = 0;
 					else
 					{
+						// The new page doesn't have a block of this type, so clear the
+						// flag to let our caller know not to try to add it.
 						_blockOnPageIndexes[i] = -1;
 						result &= ~blocktype;
 					}

@@ -141,10 +141,20 @@
                 <source xml:lang="en">The folder named {0} already exists and looks like it might be a Bloom book folder!</source>
                 <note>ID: Spreadsheet.OverwriteBook</note>
             </trans-unit>
-            <trans-unit id="Spreadsheet.WriteFailed">
-                <source xml:lang="en">Bloom had problems writing files to that location ({0}). Check that you have permission to write there.</source>
-                <note>ID: Spreadsheet.WriteFailed</note>
+          <!-- 5.5? But we may not want to translate any Spreadsheet stuff yet? Anyway, this is new in 5.5-->
+          <trans-unit id="Spreadsheet.TroubleCopying" translate="no">
+            <source xml:lang="en">Bloom had trouble copying the file {0} to the video folder: </source>
+            <note>ID: Spreadsheet.TroubleCopying</note>
+          </trans-unit>
+            <trans-unit id="Spreadsheet.TroubleCopyingFolder" translate="no">
+                <source xml:lang="en">Bloom had trouble copying the folder {0} to the activities folder:</source>
+                <note>ID: Spreadsheet.TroubleCopyingFolder</note>
             </trans-unit>
+
+          <trans-unit id="Spreadsheet.WriteFailed">
+            <source xml:lang="en">Bloom had problems writing files to that location ({0}). Check that you have permission to write there.</source>
+            <note>ID: Spreadsheet.WriteFailed</note>
+          </trans-unit>
             <trans-unit id="Activity.Editing.MultipleChoice.CorrectAnswer">
                 <source xml:lang="en">Put the correct answer in this button. Bloom will randomize the order later.</source>
             </trans-unit>
