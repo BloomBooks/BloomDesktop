@@ -7,13 +7,15 @@ html
 		title Uzbekistan 2023 Front & Back Matter
 		+stylesheets('Uzbekistan2023-XMatter.css')
 
-		//- This doesn't actually work, at least in 5.4. They just get lost
+		//- Note, we've intentionally used style names that are not part of the normal xmatter
+		//- because we do want pre-existing books to get these defaults, which they wouldn't
+		//- when these are merged in, if they already exist in the book.
 		style(type="text/css" title="userModifiedStyles")
 			= '\n'
 			| /*<![CDATA[*/
 			| .Cover-Foobar-style { font-size: 16pt !important; font-family:"Arial"; color:#FAD41E;     text-align: center;}
-			| .Title-On-Cover-style { font-size: 34pt !important; font-family:"Aileron; Arial"; color:white;     text-align: center;}
-			| .Cover-Default-style { font-size: 16pt !important; font-style:italic; font-family:"Aileron; Arial"; color:white;     text-align: center;}
+			| .Title-Front-Cover-style { font-size: 34pt !important; font-family:"Aileron; Arial"; color:white;     text-align: center;}
+			| .Cover-Lower-Credits-style { font-size: 16pt !important; font-style:italic; font-family:"Aileron; Arial"; color:white;     text-align: center;}
 			|   /*]]>*/
 	body
 		+page-cover('Front Cover')(data-export='front-matter-cover', data-xmatter-page='frontCover')&attributes(attributes).frontCover.outsideFrontCover#7d7d1d2d-18b0-420f-ac96-6de20f659810
@@ -21,14 +23,16 @@ html
 
 			+field-prototypeDeclaredExplicity("V").foobar
 				label.bubble Not clear what this is yet
+				//- TODO !!!!!!!!!!!!!!!!!!!!!!!! change both "foobar"s to something semantic once we figure out what this field is.
+				//- REMEMBER to change the style name too.
 				+editable(kLanguageForPrototypeOnly).Cover-Foobar-style(data-book='foobar')
 			+field-prototypeDeclaredExplicity("V").bookTitle
 				label.bubble Book title in {lang}
-				+editable(kLanguageForPrototypeOnly).bloom-nodefaultstylerule.Title-On-Cover-style.bloom-padForOverflow(data-book='bookTitle')
+				+editable(kLanguageForPrototypeOnly).bloom-nodefaultstylerule.Title-Front-Cover-style.bloom-padForOverflow(data-book='bookTitle')
 			div(data-book='level-image-html' lang="*").gradeBadgeRow
 			.creditsRow(data-hint='You may use this space for author/illustrator, or anything else.')
 				+field-prototypeDeclaredExplicity("V").smallCoverCredits
-					+editable(kLanguageForPrototypeOnly).smallCoverCredits.Cover-Default-style(data-book='smallCoverCredits')
+					+editable(kLanguageForPrototypeOnly).smallCoverCredits.Cover-Lower-Credits-style(data-book='smallCoverCredits')
 
 		+factory-insideFrontCover
 		+factoryStandard-titlePage
@@ -39,8 +43,8 @@ html
 		+factoryStandard-insideBackCover
 
 +page-xmatter('Outside Back Cover').cover.coverColor.outsideBackCover.bloom-backMatter(data-export='back-matter-back-cover', data-xmatter-page='outsideBackCover')&attributes(attributes)#4321D898-9E35-4423-99D4-132B46FAFDA4
-	img.branding.bloomBadge(src='Created with Bloom.svg')
-	.bloom-force-publish(data-book='outside-back-cover-branding-bottom-html' lang="*")
+	img.branding.bloomBadge(src='made-with-bloom-badge-white.png')
+	.bloom-force-publish.back-cover-bottom
 		div(data-book="outside-back-cover-USAID" lang="*")
 		div(data-book="outside-back-cover-ministry" lang="*")
 
