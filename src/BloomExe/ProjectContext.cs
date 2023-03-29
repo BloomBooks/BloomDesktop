@@ -184,6 +184,7 @@ namespace Bloom
 							typeof(BookCollectionHolder),
 							typeof(WorkspaceTabSelection),
 							typeof(CopyrightAndLicenseApi),
+							typeof(ExternalApi),
 							typeof(PublishView)
 						}.Contains(t));
 
@@ -378,6 +379,7 @@ namespace Bloom
 			_scope.Resolve<PerformanceMeasurement>().RegisterWithApiHandler(server.ApiHandler);
 			_scope.Resolve<FontsApi>().RegisterWithApiHandler(server.ApiHandler);
 			_scope.Resolve<WorkspaceApi>().RegisterWithApiHandler(server.ApiHandler);
+			_scope.Resolve<ExternalApi>().RegisterWithApiHandler(server.ApiHandler);
 		}
 
 		public static string[] SourceRootFolders()

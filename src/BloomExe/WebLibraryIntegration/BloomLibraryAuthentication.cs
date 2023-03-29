@@ -1,4 +1,5 @@
 using Bloom.Api;
+using Bloom.web;
 
 namespace Bloom.WebLibraryIntegration
 {
@@ -16,11 +17,12 @@ namespace Bloom.WebLibraryIntegration
 
 		private static string GetUrl()
 		{
-			var host = BookUpload.UseSandbox ? "https://dev.bloomlibrary.org" : "https://bloomlibrary.org";
+			var host = UrlLookup.LookupUrl(UrlType.LibrarySite, null, BookUpload.UseSandbox);
 
 			// Uncomment for local or alpha testing
-			//host = "http://localhost:3000";
-			host = BookUpload.UseSandbox ? "https://dev-alpha.bloomlibrary.org" : "https://alpha.bloomlibrary.org";
+			host = "http://localhost:3000";
+			//TODO comment next line when login code moves to production blorg
+			//host = BookUpload.UseSandbox ? "https://dev-alpha.bloomlibrary.org" : "https://alpha.bloomlibrary.org";
 
 			return $"{host}/login-for-editor?port={BloomServer.portForHttp}";
 		}

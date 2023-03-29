@@ -4975,8 +4975,9 @@
       </trans-unit>
       <trans-unit id="PublishTab.Upload.SignOut" translate="no">
         <!-- added in 5.5 -->
-        <source xml:lang="en">Sign Out as %0</source>
+        <source xml:lang="en">Sign out (%0)</source>
         <note>ID: PublishTab.Upload.SignOut</note>
+        <note>The %0 will be replaced with the email address of the user.</note>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.SkipMakingPdf">
         <source xml:lang="en">Skipping PDF because this book has video</source>

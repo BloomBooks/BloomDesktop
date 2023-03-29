@@ -247,6 +247,17 @@ namespace Bloom
 			Size = new Size(1024, 586);
 		}
 
+		public static void ComeToFront()
+		{
+			if (GetShellOrOtherOpenForm() is Shell shell)
+			{
+				shell.Invoke((Action)(() =>
+				{
+					shell.ReallyComeToFront();
+				}));
+			}
+		}
+
 		/// <summary>
 		/// we let the Program call this after it closes the splash screen
 		/// </summary>

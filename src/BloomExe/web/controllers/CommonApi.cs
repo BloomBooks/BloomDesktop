@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -9,7 +9,6 @@ using Bloom.Api;
 using Bloom.Book;
 using Bloom.Edit;
 using Bloom.MiscUI;
-using Bloom.WebLibraryIntegration;
 using Bloom.Workspace;
 using L10NSharp;
 using Newtonsoft.Json;
@@ -27,7 +26,6 @@ namespace Bloom.web.controllers
 	public class CommonApi
 	{
 		private readonly BookSelection _bookSelection;
-		private BloomParseClient _parseClient;
 		private readonly BloomWebSocketServer _webSocketServer;
 		public EditingModel Model { get; set; }
 
@@ -36,10 +34,9 @@ namespace Bloom.web.controllers
 		public static WorkspaceView WorkspaceView { get; set; }
 
 		// Called by autofac, which creates the one instance and registers it with the server.
-		public CommonApi(BookSelection bookSelection, BloomParseClient parseClient, BloomWebSocketServer webSocketServer)
+		public CommonApi(BookSelection bookSelection, BloomWebSocketServer webSocketServer)
 		{
 			_bookSelection = bookSelection;
-			_parseClient = parseClient;
 			_webSocketServer = webSocketServer;
 		}
 
@@ -139,39 +136,6 @@ namespace Bloom.web.controllers
 					request.PostSucceeded();
 				}, false);
 
-			// This is called from bloomlibrary.org after a successful login.
-			apiHandler.RegisterEndpointHandler("common/loginData",
-				request =>
-				{
-					if (request.HttpMethod == HttpMethods.Get)
-					{
-						request.ReplyWithJson(new { email = _parseClient.Account });
-					}
-					else
-					{
-						var requestData = DynamicJson.Parse(request.RequiredPostJson());
-						string token = requestData.sessionToken;
-						string email = requestData.email;
-						string userId = requestData.userId;
-						//Debug.WriteLine("Got login data " + email + " with token " + token + " and id " + userId);
-						_parseClient.SetLoginData(email, userId, token, BookUpload.Destination);
-						LoginSuccessful?.Invoke(this, null);
-
-						// Decided not to do this for now. GitKraken doesn't. That's kind of our model.
-						// Although, VS Code does seem to do it... that's our other model...
-						// It can be pretty annoying during development.
-						//if (Shell.GetShellOrOtherOpenForm() is Shell shell)
-						//{
-						//	shell.Invoke((Action)(() =>
-						//	{
-						//		shell.ReallyComeToFront();
-						//	}));
-						//}
-
-						request.PostSucceeded();
-					}
-				}, false);
-
 			// At this point we open dialogs from c# code; if we opened dialogs from javascript, we wouldn't need this
 			// api to do it. We just need a way to close a c#-opened dialog from javascript (e.g. the Close button of the dialog).
 			//
@@ -233,8 +197,6 @@ namespace Bloom.web.controllers
 			Application.Idle -= ReloadOnIdle;
 			ReloadProjectAction?.Invoke();
 		}
-
-		public static event EventHandler LoginSuccessful;
 
 		// Request from javascript to open the folder containing the specified file,
 		// and select it.

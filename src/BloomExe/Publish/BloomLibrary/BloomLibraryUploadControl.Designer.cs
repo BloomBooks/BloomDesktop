@@ -20,7 +20,7 @@ namespace Bloom.Publish.BloomLibrary
 			{
 				components.Dispose();
 			}
-			CommonApi.LoginSuccessful -= HandleLoginSuccessful;
+			ExternalApi.LoginSuccessful -= HandleLoginSuccessful;
 			base.Dispose(disposing);
 		}
 

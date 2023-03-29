@@ -41,7 +41,7 @@ namespace Bloom.web.controllers
 			_webSocketProgress.LogAllMessages = true;
 			_progress = new WebProgressAdapter(_webSocketProgress);
 
-			CommonApi.LoginSuccessful += (sender, args) =>
+			ExternalApi.LoginSuccessful += (sender, args) =>
 			{
 				_webSocketServer.SendString(kWebSocketContext, kWebSocketEventId_loginSuccessful, Model?.WebUserId);
 			};
@@ -72,6 +72,7 @@ namespace Bloom.web.controllers
 			apiHandler.RegisterEndpointHandler("libraryPublish/checkForLoggedInUser", HandleCheckForLoggedInUser, true);
 			apiHandler.RegisterEndpointHandler("libraryPublish/login", HandleLogin, true);
 			apiHandler.RegisterEndpointHandler("libraryPublish/logout", HandleLogout, true);
+			apiHandler.RegisterEndpointHandler("libraryPublish/agreementsAccepted", HandleAgreementsAccepted, true);
 		}
 
 		private static bool ModelIndicatesSignLanguageChecked => Model.Book.HasSignLanguageVideos() && Model.IsPublishSignLanguage();
@@ -328,6 +329,17 @@ namespace Bloom.web.controllers
 		{
 			Model.LogOut();
 			request.PostSucceeded();
+		}
+
+		private void HandleAgreementsAccepted(ApiRequest request)
+		{
+			if (request.HttpMethod == HttpMethods.Get)
+				request.ReplyWithBoolean(Model.Book.UserPrefs.UploadAgreementsAccepted);
+			else
+			{
+				Model.Book.UserPrefs.UploadAgreementsAccepted = request.RequiredPostBooleanAsJson();
+				request.PostSucceeded();
+			}
 		}
 	}
 }

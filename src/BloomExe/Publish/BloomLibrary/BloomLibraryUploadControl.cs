@@ -57,7 +57,7 @@ namespace Bloom.Publish.BloomLibrary
 
 			_okToUpload = _model.MetadataIsReadyToPublish;
 			
-			CommonApi.LoginSuccessful += HandleLoginSuccessful;
+			ExternalApi.LoginSuccessful += HandleLoginSuccessful;
 
 			switch (_model.LicenseType)
 			{

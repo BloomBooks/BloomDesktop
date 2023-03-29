@@ -17,6 +17,7 @@ namespace Bloom.Book
 		private bool _cmykPdf;
 		private bool _fullBleed;
 		private string _spreadsheetFolder;
+		private bool _uploadAgreementsAccepted;
 
 		private UserPrefs() {}
 
@@ -116,6 +117,17 @@ namespace Bloom.Book
 			set
 			{
 				_spreadsheetFolder = value;
+				Save();
+			}
+		}
+
+		[JsonProperty("uploadAgreementsAccepted")]
+		public bool UploadAgreementsAccepted
+		{
+			get { return _uploadAgreementsAccepted; }
+			set
+			{
+				_uploadAgreementsAccepted = value;
 				Save();
 			}
 		}
