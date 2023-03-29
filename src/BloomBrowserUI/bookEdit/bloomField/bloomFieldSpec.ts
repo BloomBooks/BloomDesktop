@@ -345,15 +345,24 @@ describe("BloomField", () => {
                 '<span id="s1">Sentence 1. </span><span id="s2">Sentence 2</span>';
 
             const setCursor = () => {
-                const selection = window.getSelection()!;
-                const spanElement = document.getElementById("s2")!;
-                const textNode = spanElement.firstChild!;
-                expect(textNode.nodeName).toBe(
-                    "#text",
-                    "Test setup error - wrong nodeName: " + textNode.nodeName
-                );
+                const selection = window.getSelection();
+                const spanElement = document.getElementById("s2");
+                if (selection && spanElement) {
+                    const textNode = spanElement.firstChild;
+                    if (textNode) {
+                        expect(textNode.nodeName).toBe(
+                            "#text",
+                            "Test setup error - wrong nodeName: " +
+                                textNode.nodeName
+                        );
 
-                selection.collapse(textNode, 0);
+                        selection.collapse(textNode, 0);
+                    } else {
+                        expect(false).toBeTruthy(); // fail on principle; should never happen
+                    }
+                } else {
+                    expect(false).toBeTruthy(); // fail on principle; should never happen
+                }
             };
 
             runBackspacePreventionTest(
@@ -368,7 +377,64 @@ describe("BloomField", () => {
             setSelectionCallback: () => void,
             isCancellationExpected: boolean
         ) {
-            const editable = document.getElementById("simple")!;
+            const editable = document.getElementById("simple");
+            if (editable) {
+                editable.innerHTML = `<p id="p1">${paragraphInnerHtml}</p>`;
+
+                WireUp();
+
+                // Set the cursor to a specific spot
+                setSelectionCallback();
+
+                // Now fake a backspace
+                const keyEventInit: KeyboardEventInit = {
+                    key: "Backspace",
+                    cancelable: true // preventDefault only works on cancellable events.
+                };
+
+                // FYI: This simulated backspace event doesn't actually modify the text,
+                // but you can still check if the event was cancelled.
+                const keyboardEvent = new KeyboardEvent(
+                    "keydown",
+                    keyEventInit
+                );
+                // DispatchEvent dispatches a synthetic event to target and returns true if either event's
+                // cancelable attribute value is false or its preventDefault() method was not invoked,
+                // and false otherwise.
+                // Cancelable is true. Therefore, it returns true if preventDefault was not invoked.
+                // Inverting it means wasCanceled is true if preventDefault WAS invoked.
+                const wasCanceled = !editable.dispatchEvent(keyboardEvent);
+
+                // Verification
+                const testFailureMessage = isCancellationExpected
+                    ? "preventDefault() should be called, but was not"
+                    : "preventDefault() should not be called, but it was";
+                expect(wasCanceled).toBe(
+                    isCancellationExpected,
+                    testFailureMessage
+                );
+            } else {
+                expect(false).toBeTruthy(); // fail on principle; should never happen
+            }
+        }
+    });
+
+    function setCursorTo(elementId: string, offset: number) {
+        const selection = window.getSelection();
+        if (selection) {
+            const targetElement = document.getElementById(elementId);
+            if (targetElement) {
+                selection.collapse(targetElement, offset);
+            }
+        }
+    }
+
+    function runLineBreakInsertionTest(
+        paragraphInnerHtml: string,
+        setSelectionCallback: () => void
+    ) {
+        const editable = document.getElementById("simple");
+        if (editable) {
             editable.innerHTML = `<p id="p1">${paragraphInnerHtml}</p>`;
 
             WireUp();
@@ -376,40 +442,42 @@ describe("BloomField", () => {
             // Set the cursor to a specific spot
             setSelectionCallback();
 
-            // Now fake a backspace
-            //
-            // Our code still checks which, but nowadays it's deprecated in favor of key,
-            // so KeyboardEventInit doesn't officially recognize it in the type definition,
-            // but we need it anyway, so just force the types to work.
-            const keyEventInit = {
-                key: "Backspace",
-                cancelable: true // preventDefault only works on cancellable events.
-            } as KeyboardEventInit;
-
-            // FYI: This simulated backspace event doesn't actually modify the text,
-            // but you can still check if the event was cancelled.
-            const keyboardEvent = new KeyboardEvent("keydown", keyEventInit);
-            //DispatchEvent dispatches a synthetic event to target and returns true if either event's
-            // cancelable attribute value is false or its preventDefault() method was not invoked, and false otherwise.
-            // Cancelable is true. Therefore, it returns true if preventDefault was not invoked.
-            // Inverting it means wasCanceled is true if preventDefault WAS invoked.
-            const wasCanceled = !editable.dispatchEvent(keyboardEvent);
+            // Now fake Shift+Enter
+            const keyEventInit: KeyboardEventInit = {
+                key: "Enter",
+                shiftKey: true
+            };
+            // BloomField.MakeShiftEnterInsertLineBreak() traps a "keypress" event.
+            const keyboardEvent = new KeyboardEvent("keypress", keyEventInit);
+            editable.dispatchEvent(keyboardEvent);
 
             // Verification
-            const testFailureMessage = isCancellationExpected
-                ? "preventDefault() should be called, but was not"
-                : "preventDefault() should not be called, but it was";
-            expect(wasCanceled).toBe(
-                isCancellationExpected,
-                testFailureMessage
-            );
+            //console.log(editable.outerHTML);
+            expect(editable).toContainElement("span.bloom-linebreak");
+        } else {
+            expect(false).toBeTruthy(); // fail on principle; should never happen
         }
-    });
-
-    function setCursorTo(elementId: string, offset: number) {
-        const selection = window.getSelection()!;
-        selection.collapse(document.getElementById(elementId)!, offset);
     }
+
+    describe("insertLineBreakTests", () => {
+        it("insert a line break inside a paragraph", () => {
+            const paragraphInnerHtml = "Some text here.";
+
+            const setCursor = () => {
+                setCursorTo("p1", 1);
+            };
+            runLineBreakInsertionTest(paragraphInnerHtml, setCursor);
+        });
+        it("insert a line break inside a span inside a paragraph", () => {
+            const paragraphInnerHtml =
+                "Some <span id='s1'><em>text</em></span> here.";
+
+            const setCursor = () => {
+                setCursorTo("s1", 0);
+            };
+            runLineBreakInsertionTest(paragraphInnerHtml, setCursor);
+        });
+    });
 });
 
 describe("fixPasteData", () => {
