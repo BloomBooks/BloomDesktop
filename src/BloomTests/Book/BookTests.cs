@@ -2755,7 +2755,7 @@ namespace BloomTests.Book
 		[Test]
 		[TestCase(false)]
 		[TestCase(true)]
-		public void AllLanguages_FindsBloomEditableElements(bool includeLangsOccurringOnlyInXmatter)
+		public void AllPublishableLanguages_FindsBloomEditableElements(bool includeLangsOccurringOnlyInXmatter)
 		{
 			_bookDom = new HtmlDom(
 				@"<html>
@@ -2798,7 +2798,7 @@ namespace BloomTests.Book
 							<div class='bloom-editable bloom-content1' contenteditable='true' lang='es'>
 								Something or other.
 							</div>
-							<div class='bloom-editable bloom-content1' contenteditable='true' lang='xkal'>
+							<div class='bloom-editable bloom-content1' contenteditable='true' lang='xyz'>
 								Something or other.
 							</div>
 							<div class='bloom-editable bloom-content1' contenteditable='true' lang='*'>
@@ -2824,14 +2824,14 @@ namespace BloomTests.Book
 				</body></html>");
 
 			var book = CreateBook();
-			var allLanguages = book.AllLanguages(includeLangsOccurringOnlyInXmatter);
+			var allLanguages = book.AllPublishableLanguages(includeLangsOccurringOnlyInXmatter);
 			// In the case where 'includeLangsOccurringOnlyInXmatter' is true, thai will be included in the list,
 			// since there is no thai text on any non-xmatter pages. The boolean value will be true for all languages
 			// that have text on each non-xmatter page (English/German) and false for all the others.
 			Assert.That(allLanguages["en"], Is.True);
 			Assert.That(allLanguages["de"], Is.True);
 			Assert.That(allLanguages["es"], Is.False); // in first group this is empty
-			Assert.That(allLanguages["xkal"], Is.False); // not in first group at all
+			Assert.That(allLanguages["xyz"], Is.False); // not in first group at all
 			if (includeLangsOccurringOnlyInXmatter)
 			{
 				Assert.That(allLanguages["tr"], Is.False); // only exists in xmatter (therefore 'incomplete')
@@ -2869,7 +2869,7 @@ namespace BloomTests.Book
 							<div class='bloom-editable' contenteditable='true' lang='en'>
 								Some English.
 							</div>
-							<div class='bloom-editable bloom-content1' contenteditable='true' lang='xkal'>
+							<div class='bloom-editable bloom-content1' contenteditable='true' lang='xyz'>
 								Something or other.
 							</div>
 							<div class='bloom-editable bloom-content1' contenteditable='true' lang='*'>
@@ -2889,7 +2889,7 @@ namespace BloomTests.Book
 			var allLanguages = book.AllPublishableLanguages(true);
 			Assert.That(allLanguages["en"], Is.True);
 			Assert.That(allLanguages["de"], Is.True);
-			Assert.That(allLanguages["xkal"], Is.True);
+			Assert.That(allLanguages["xyz"], Is.True);
 			Assert.That(allLanguages["tr"], Is.True);
 			Assert.That(allLanguages, Has.Count.EqualTo(4));
 
@@ -2900,13 +2900,13 @@ namespace BloomTests.Book
 			// Now we should get the same list without comical
 			Assert.That(allLanguages["en"], Is.True);
 			Assert.That(allLanguages["de"], Is.True);
-			Assert.That(allLanguages["xkal"], Is.True);
+			Assert.That(allLanguages["xyz"], Is.True);
 			Assert.That(allLanguages["tr"], Is.True);
 			Assert.That(allLanguages, Has.Count.EqualTo(4));
 		}
 
 		[Test]
-		public void AllLanguages_DoesNotFindGeneratedContent()
+		public void AllPublishableLanguages_DoesNotFindGeneratedContent()
 		{
 			_bookDom = new HtmlDom(
 				@"<html>
@@ -2930,7 +2930,7 @@ namespace BloomTests.Book
 					</div>
 					<div class='bloom-page' id='guid2'>
 					   <div class='bloom-translationGroup bloom-trailingElement'>
-							<div class='bloom-editable bloom-content1' contenteditable='true' lang='aaa'>
+							<div class='bloom-editable bloom-content1' contenteditable='true' lang='xyz'>
 								AAA text
 							</div>
 
@@ -2942,10 +2942,80 @@ namespace BloomTests.Book
 				</body></html>");
 
 			var book = CreateBook();
-			var allLanguages = book.AllLanguages();
-			Assert.That(allLanguages["aaa"], Is.True);
+			var allLanguages = book.AllPublishableLanguages();
+			Assert.That(allLanguages["xyz"], Is.True);
 			Assert.That(allLanguages["bbb"], Is.True);
 			Assert.That(allLanguages.Count, Is.EqualTo(2));
+		}
+
+		[TestCase(true, true, true)]
+		[TestCase(true, false, true)]
+		[TestCase(false, true, true)]
+		[TestCase(false, false, true)]
+		[TestCase(true, true, false)]
+		[TestCase(true, false, false)]
+		[TestCase(false, true, false)]
+		[TestCase(false, false, false)]
+		public void AllPublishableLanguages_AlwaysIncludesBookLanguages(bool includeLangsOccurringOnlyInXmatter, bool hasTextContent, bool includeL2)
+		{
+			var contentPage =
+				hasTextContent
+				?
+				@"<div class='bloom-page' id='guid2'>
+					<div class='bloom-translationGroup bloom-trailingElement'>
+						<div class='bloom-editable' contenteditable='true' lang='aaa'>
+							AAA text
+						</div>
+						<div class='bloom-editable' contenteditable='true' lang='bbb'>
+							BBB text
+						</div>
+						<div class='bloom-editable bloom-content1' contenteditable='true' lang='xyz'>
+							XYZ text
+						</div>
+						<div class='bloom-editable bloom-content1' contenteditable='true' lang='xyz'>
+							EN text
+						</div>
+					</div>
+				</div>"
+				:
+				"";
+			_bookDom = new HtmlDom(
+				$@"<html>
+				<head>
+					<meta content='text/html; charset=utf-8' http-equiv='content-type' />
+				   <title>Test Shell</title>
+					<link rel='stylesheet' href='Basic Book.css' type='text/css' />
+					<link rel='stylesheet' href='../../previewMode.css' type='text/css' />;
+				</head>
+				<body>
+					<div class='bloom-page bloom-frontMatter' id='guid1'>
+					   <div class='bloom-translationGroup bloom-trailingElement bloom-ignoreChildrenForBookLanguageList'>
+							<div class='bloom-editable bloom-content1' contenteditable='true' lang='xyz'>
+								XYZ xmatter text
+							</div>
+							<div class='bloom-editable' contenteditable='true' lang='en'>
+								EN xmatter text
+							</div>
+						</div>
+					</div>
+					{contentPage}
+				</body></html>");
+
+			var book = CreateBook();
+			if (includeL2)
+				book.BookData.Set("contentLanguage2", XmlString.FromUnencoded("en"), false);
+			var allLanguages = book.AllPublishableLanguages(includeLangsOccurringOnlyInXmatter);
+			Assert.That(allLanguages.ContainsKey("xyz"), Is.True); // always included because it is book L1
+
+			Assert.AreEqual(allLanguages.ContainsKey("en"), includeL2);
+
+			Assert.AreEqual(allLanguages.ContainsKey("aaa"), hasTextContent);
+			Assert.AreEqual(allLanguages.ContainsKey("bbb"), hasTextContent);
+
+			Assert.That(allLanguages.Count, Is.EqualTo(
+				1 + // L1
+				(includeL2 ? 1 : 0) + 
+				(hasTextContent ? 2 : 0)));
 		}
 
 		[Test]
