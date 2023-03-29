@@ -614,7 +614,7 @@ namespace Bloom.Publish.Video
 				},
 				null,
 				5000, // initially at 5 seconds
-				300000 // then every 5 minutes thereafter
+				60000 // then every 1 minute thereafter
 			)) 
 			{
 				using (var tempOutputs = new Utils.DisposableList<TempFile>())
