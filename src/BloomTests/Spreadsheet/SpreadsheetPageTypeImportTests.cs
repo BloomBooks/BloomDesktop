@@ -20,17 +20,6 @@ namespace BloomTests.Spreadsheet
 	/// Tests various cases of importing SS data that contains video and various kinds of activities.
 	/// This also covers (along with SpreadsheetImageAndTextImportTests) various cases of how to
 	/// import when page type is specified.
-	/// The following is a list I made at the start of interesting cases. I didn't quite end up implementing all of them,
-	/// but I thought it was worth keeping. The ones I did seem to capture all the important paths through the code.
-	/// - image, text, video, and widget all fit on current page (no page type): put them there
-	/// - image and text fit on current page, but video and widget do not. No page type. Next dest page will hold image and text. Generates 2 new pages.
-	/// - image, text, and video fit on current page, but widget does not. No page type. Next dest page will hold image and text. Fill current page, then add widget page.
-	/// - image and text fit on current page, but video and widget do not. No page type. Next dest page will hold video, image and text. Uses next dest page, then adds widget.
-	/// - image and text fit on current page, but video and widget do not. No page type. Next dest page will hold widget, video, image and text. Uses next dest page for all 4.
-	/// - All 4 fit on current page. Page type specified as image and text. Next dest page will hold only text. Generates image and text page, then video page, then widget page.
-	/// - Row has image and text and specifies page type image. Next dest page will hold only text. Generates image page, reuses text page.
-	/// - row has all four and specifies widget page, video page, text page, image page. Dest is image+text. Generates 4 pages in correct order.
-	/// - row has image and text, specifies text page, image+text page. Next dest page is image+text. Generates text page, reuses image+text, sets image, clears text.
 	/// </summary>
 	public class SpreadsheetPageTypeImportTests
 	{
@@ -53,7 +42,7 @@ namespace BloomTests.Spreadsheet
 		}
 
 		[OneTimeSetUp]
-		public void OneTimeSetUp()
+		public async Task OneTimeSetUp()
 		{
 			// We will re-use the images from another test.
 			// Conveniently the images are in a folder called "images" which is what the importer expects.
@@ -228,13 +217,9 @@ namespace BloomTests.Spreadsheet
 
 			_progressSpy = new ProgressSpy();
 
-			// Not sure we need this. Todo: try removing it when otherwise done.
-			var settings = new NewCollectionSettings();
-			settings.Language1.Tag = "es";
-			settings.Language1.SetName("Spanish", false);
 			var importer =
-				new TestSpreadsheetImporter(null, _dom, _ssFolder.FolderPath, _bookFolder.FolderPath, settings);
-			_warnings = importer.Import(ss, _progressSpy);
+				new TestSpreadsheetImporter(null, _dom, _ssFolder.FolderPath, _bookFolder.FolderPath);
+			_warnings = await importer.ImportAsync(ss, _progressSpy);
 
 			_contentPages = _dom.SafeSelectNodes("//div[contains(@class, 'bloom-page')]").Cast<XmlElement>().ToList();
 
@@ -357,13 +342,13 @@ namespace BloomTests.Spreadsheet
 				.HasNoMatchForXpath(".//div[contains(@class, 'bloom-translationGroup') and @data-test-id]");
 		}
 
-		[TestCase(2, "24c90e90-2711-465d-8f20-980d9ffae299")] // page 3 should be inserted video-and-image
-		[TestCase(3, "8bedcdf8-3ad6-4967-b027-6c186436572f")] // page 4 should be inserted just-video
-		[TestCase(4, "299644f5-addb-476f-a4a5-e3978139b188")] // page 5 should be inserted text and video
+		[TestCase(2, Bloom.Book.Book.PictureAndVideoGuid)] // page 3 should be inserted video-and-image
+		[TestCase(3, Bloom.Book.Book.JustVideoGuid)] // page 4 should be inserted just-video
+		[TestCase(4, Bloom.Book.Book.VideoOverTextGuid)] // page 5 should be inserted text and video
 		[TestCase(5, "3a705ac1-c1f2-45cd-8a7d-011c009cf406")] // page 6 should be inserted widget
 		[TestCase(8, "adcd48df-e9ab-4a07-afd4-6a24d0398383")] // page 9 should be inserted picture-in-middle
-		[TestCase(9, "a31c38d8-c1cb-4eb9-951b-d2840f6a8bdb")] // page 9 should be inserted just-text
-		[TestCase(12, "a31c38d8-c1cb-4eb9-951b-d2840f6a8bdb")] // page 14 should be inserted just-text
+		[TestCase(9, Bloom.Book.Book.JustTextGuid)] // page 9 should be inserted just-text
+		[TestCase(12, Bloom.Book.Book.JustTextGuid)] // page 14 should be inserted just-text
 		public void PageType(int n, string guid) {
 			Assert.That(_contentPages[n].Attributes["data-pagelineage"].Value, Does.Contain(guid));
 		}

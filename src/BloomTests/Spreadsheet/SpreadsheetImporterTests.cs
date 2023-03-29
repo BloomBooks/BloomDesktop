@@ -326,7 +326,7 @@ namespace BloomTests.Spreadsheet
 		static string VideoContainer(int vcNumber)
 		{
 			return String.Format(
-				@"<div class=""bloom-videoContainer bloom-noVideoSelected bloom-leadingElement bloom-selected"" id=""vc{0}"">
+				@"<div class=""bloom-videoContainer bloom-leadingElement bloom-selected"" id=""vc{0}"">
         <video>
         <source src=""old.mp4""></source></video>
     </div>", vcNumber);
@@ -876,8 +876,8 @@ public static string PageWithJustText(int pageNumber, int tgNumber)
 		{
 			AssertThatXmlIn.Element(_contentPages[n]).HasSpecifiedNumberOfMatchesForXpath($".//div[contains(@class, 'bloom-imageContainer')]/img[@src='{src}']", 1);
 			// This is the ID for the standard "Just a picture" page
-			Assert.That(_contentPages[n].Attributes["data-pagelineage"].Value, Does.Contain("adcd48df-e9ab-4a07-afd4-6a24d0398385"));
-			Assert.That(_contentPages[n].Attributes["id"].Value, Is.Not.EqualTo("adcd48df-e9ab-4a07-afd4-6a24d0398385"));
+			Assert.That(_contentPages[n].Attributes["data-pagelineage"].Value, Does.Contain(Bloom.Book.Book.JustPictureGuid));
+			Assert.That(_contentPages[n].Attributes["id"].Value, Is.Not.EqualTo(Bloom.Book.Book.JustPictureGuid));
 		}
 
 		[TestCase(7, "this is something extra on a new page before 7", "LakePendOreille.jpg", "Copyright © 2012, Stephen McConnel")]
@@ -901,8 +901,8 @@ public static string PageWithJustText(int pageNumber, int tgNumber)
 		{
 			AssertThatXmlIn.Element(_contentPages[n]).HasSpecifiedNumberOfMatchesForXpath($".//div[contains(@class, 'bloom-translationGroup')]/div[contains(@class, 'bloom-editable') and @lang='en' and text()='{text}']", 1);
 			// This is the ID for the standard "Just text" page
-			Assert.That(_contentPages[n].Attributes["data-pagelineage"].Value, Does.Contain("a31c38d8-c1cb-4eb9-951b-d2840f6a8bdb"));
-			Assert.That(_contentPages[n].Attributes["id"].Value, Is.Not.EqualTo("a31c38d8-c1cb-4eb9-951b-d2840f6a8bdb"));
+			Assert.That(_contentPages[n].Attributes["data-pagelineage"].Value, Does.Contain(Bloom.Book.Book.JustTextGuid));
+			Assert.That(_contentPages[n].Attributes["id"].Value, Is.Not.EqualTo(Bloom.Book.Book.JustTextGuid));
 		}
 
 		[Test]
@@ -1064,8 +1064,8 @@ public static string PageWithJustText(int pageNumber, int tgNumber)
 		{
 			AssertThatXmlIn.Element(_contentPages[n]).HasSpecifiedNumberOfMatchesForXpath($".//div[contains(@class, 'bloom-imageContainer')]/img[@src='{src}']", 1);
 			// This is the ID for the standard "Just a picture" page
-			Assert.That(_contentPages[n].Attributes["data-pagelineage"].Value, Does.Contain("adcd48df-e9ab-4a07-afd4-6a24d0398385"));
-			Assert.That(_contentPages[n].Attributes["id"].Value, Is.Not.EqualTo("adcd48df-e9ab-4a07-afd4-6a24d0398385"));
+			Assert.That(_contentPages[n].Attributes["data-pagelineage"].Value, Does.Contain(Bloom.Book.Book.JustPictureGuid));
+			Assert.That(_contentPages[n].Attributes["id"].Value, Is.Not.EqualTo(Bloom.Book.Book.JustPictureGuid));
 			Assert.That(_contentPages[n].Attributes["class"].Value, Does.Contain("A4Landscape"));
 		}
 
@@ -1075,8 +1075,8 @@ public static string PageWithJustText(int pageNumber, int tgNumber)
 			AssertThatXmlIn.Element(_contentPages[n]).HasSpecifiedNumberOfMatchesForXpath($".//div[contains(@class, 'bloom-imageContainer')]/img[@src='{src}']", 1);
 			AssertThatXmlIn.Element(_contentPages[n]).HasSpecifiedNumberOfMatchesForXpath($".//div[contains(@class, 'bloom-translationGroup')]/div[contains(@class, 'bloom-editable') and @lang='en' and text()='{text}']", 1);
 			// This is the ID for the standard "Basic text and picture" page
-			Assert.That(_contentPages[n].Attributes["data-pagelineage"].Value, Does.Contain("7b192144-527c-417c-a2cb-1fb5e78bf38a"));
-			Assert.That(_contentPages[n].Attributes["id"].Value, Is.Not.EqualTo("7b192144-527c-417c-a2cb-1fb5e78bf38a"));
+			Assert.That(_contentPages[n].Attributes["data-pagelineage"].Value, Does.Contain(Bloom.Book.Book.PictureOnLeftGuid));
+			Assert.That(_contentPages[n].Attributes["id"].Value, Is.Not.EqualTo(Bloom.Book.Book.PictureOnLeftGuid));
 			Assert.That(_contentPages[n].Attributes["class"].Value, Does.Contain("A4Landscape"));
 		}
 
@@ -1085,8 +1085,8 @@ public static string PageWithJustText(int pageNumber, int tgNumber)
 		{
 			AssertThatXmlIn.Element(_contentPages[n]).HasSpecifiedNumberOfMatchesForXpath($".//div[contains(@class, 'bloom-translationGroup')]/div[contains(@class, 'bloom-editable') and @lang='en' and text()='{text}']", 1);
 			// This is the ID for the standard "Just text" page
-			Assert.That(_contentPages[n].Attributes["data-pagelineage"].Value, Does.Contain("a31c38d8-c1cb-4eb9-951b-d2840f6a8bdb"));
-			Assert.That(_contentPages[n].Attributes["id"].Value, Is.Not.EqualTo("a31c38d8-c1cb-4eb9-951b-d2840f6a8bdb"));
+			Assert.That(_contentPages[n].Attributes["data-pagelineage"].Value, Does.Contain(Bloom.Book.Book.JustTextGuid));
+			Assert.That(_contentPages[n].Attributes["id"].Value, Is.Not.EqualTo(Bloom.Book.Book.JustTextGuid));
 			Assert.That(_contentPages[n].Attributes["class"].Value, Does.Contain("A4Landscape"));
 		}
 

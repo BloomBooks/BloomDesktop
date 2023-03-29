@@ -207,10 +207,9 @@ namespace Bloom.Spreadsheet
 				catch (Exception e) when (e is IOException || e is SecurityException ||
 				                          e is UnauthorizedAccessException)
 				{
-					_progress.MessageWithParams("TroubleCopyingFolder", "",
-						"Bloom had trouble copying the folder {0} to the activities folder: " +
-						e.Message,
-						ProgressKind.Warning, sourceDir);
+					_progress.MessageWithParams("Spreadsheet.TroubleCopyingFolder", "",
+						"Bloom had trouble copying the folder {0} to the activities folder: {1}",
+						ProgressKind.Warning, sourceDir, e.Message);
 				}
 			}
 		}
@@ -233,10 +232,9 @@ namespace Bloom.Spreadsheet
 				catch (Exception e) when (e is IOException || e is SecurityException ||
 				                          e is UnauthorizedAccessException)
 				{
-					_progress.MessageWithParams("TroubleCopying", "",
-						"Bloom had trouble copying the file {0} to the video folder: " +
-						e.Message,
-						ProgressKind.Warning, sourcePath);
+					_progress.MessageWithParams("SpreadsheetTroubleCopying", "",
+						"Bloom had trouble copying the file {0} to the video folder: {1}",
+						ProgressKind.Warning, sourcePath, e.Message);
 				}
 			}
 		}
