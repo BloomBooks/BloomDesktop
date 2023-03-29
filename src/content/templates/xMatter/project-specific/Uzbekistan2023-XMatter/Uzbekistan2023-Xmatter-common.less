@@ -19,6 +19,15 @@ div.bloom-page.outsideBackCover.coverColor {
     background-color: gray !important;
 }
 
+/* show inside cover colors as white since this is full bleed, an so unlikely that someone is going to print the inside of the covers in a solid full-bleed color*/
+div.bloom-page {
+
+    &.insideFrontCover,
+    &.insideBackCover {
+        background-color: white !important;
+    }
+}
+
 //NB: these can't be only on <body> because they are also used in page thumbnails and in epubs
 *[data-bookshelfurlkey*="Grade1"] {
 
@@ -52,11 +61,14 @@ div.bloom-page.outsideBackCover.coverColor {
     }
 }
 
-.outsideFrontCover .marginBox {
-    top: 0;
-    left: 0 !important;
-    height: 100% !important;
-    width: 100% !important;
+.outsideFrontCover,
+.outsideBackCover {
+    .marginBox {
+        top: 0;
+        left: 0 !important;
+        height: 100% !important;
+        width: 100% !important;
+    }
 }
 
 .frontCover .placeholder,
@@ -106,13 +118,16 @@ div.bloom-page.outsideBackCover.coverColor {
 .frontCover .gradeBadgeRow {
     display: flex;
     justify-content: center;
-    height: 100px;
+    height: 70px;
     margin-bottom: 13px;
 }
 
 
+// a solid, semi-transparent line
 .creditsRow {
     border-top: solid rgba(255, 255, 255, 0.3);
+    border-width: 2px;
+    padding-top: 10px;
     height: 16mm;
 }
 
@@ -141,23 +156,21 @@ div.bloom-page.outsideBackCover.coverColor {
     }
 }
 
-
-/* Element | http://localhost:8089/bloom/C%3A/Users/hatto/Documents/Bloom/Kyrgyz%20Branding%20Test/Book/8444a5b9-4b6a-476a-90da-cc003fbc1fea-memsim-Preview.html */
-
-//.frontCover div.bloom-imageContainer:nth-child(2) > img:nth-child(1) {
-.frontCover div.bloom-imageContainer>img {
-    // We use "contain" instead of "unset" so that when previewing a book
-    // that has not been edited yet, we don't get a distorted picture. Instead,
-    // we get a white border that doesn't tightly fit the image. Then in
-    // bloomImage.SetImageDisplaySizeIfCalledFor(), we overwrite this to become object-fit:cover.
-    // object-fit: contain;
-    // margin-left: auto;
-    // margin-right: auto;
-    // margin-top: auto;
-    // margin-bottom: auto;
-    // box-sizing: border-box; // keep it within the image-container, not 6px beyond it because of the border
+.frontCover .bloom-imageContainer {
+    // the image should shrink if the text takes up more lines
+    flex-shrink: 10;
 }
 
+.frontCover [data-book="coverImage"] {
+    // we need it to top-align, maintain aspect ratio, and then be as wide as will fit
+    // but leave room the sides if it doesn't fit. This is just from me (JH), not the customer yet.
+    object-fit: contain;
+    max-width: 100%;
+    max-height: 100%;
+    width: 100%;
+    // 5.4, which has FF60, cannot handle "fit-content"
+    height: auto;
+}
 
 .Device16x9Portrait,
 .Device16x9Landscape {

@@ -9,10 +9,40 @@
     font-size: 15.4pt;
 }
 
-[data-book="credits-page-branding-bottom-html"] {
+[data-book="outside-back-cover-branding-bottom-html"] {
     display: flex;
     flex-direction: column;
     justify-content: space-between;
     font-size: 15.4pt;
     font-family: Arial; // mockup was in Aileron, a proprietary font from Adobe
+}
+
+[data-book="outside-back-cover-branding-bottom-html"] {
+    flex-direction: row;
+    align-content: flex-start;
+}
+
+[data-book*="branding"] img {
+    max-width: 100%;
+}
+
+[lang="uz"] {
+    font-size: 9pt;
+    font-family: arial;
+    color: black;
+}
+
+[data-book="outside-back-cover-USAID"] img {
+    height: 100px;
+}
+
+[data-book="outside-back-cover-ministry"] {
+    height: 100px;
+}
+
+[data-book='outside-back-cover-branding-bottom-html'] {
+    position: absolute;
+    bottom: 0;
+    background-color: white;
+    padding: 20px;
 }
