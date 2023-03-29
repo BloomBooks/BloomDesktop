@@ -108,7 +108,12 @@ namespace Bloom
 		/// <returns></returns>
 		public IEnumerable<string> GetCollectionFolders()
 		{
-			foreach(var root in _sourceRootFolders.Where(Directory.Exists))
+			return GetCollectionFolders(_sourceRootFolders);
+		}
+
+		public static IEnumerable<string> GetCollectionFolders(IEnumerable<string> sourceRootFolders)
+		{
+			foreach(var root in sourceRootFolders.Where(Directory.Exists))
 			{
 				foreach(var collectionDir in Directory.GetDirectories(root))
 				{

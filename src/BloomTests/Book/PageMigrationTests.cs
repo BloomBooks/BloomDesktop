@@ -39,7 +39,7 @@ namespace BloomTests.Book
 			var newPage = (XmlElement) dom.SafeSelectNodes("//div[@id='thePage']")[0];
 
 			CheckPageIsCustomizable(newPage);
-			CheckPageLineage(page, newPage, "d31c38d8-c1cb-4eb9-951b-d2840f6a8bdb", "a31c38d8-c1cb-4eb9-951b-d2840f6a8bdb");
+			CheckPageLineage(page, newPage, "d31c38d8-c1cb-4eb9-951b-d2840f6a8bdb", Bloom.Book.Book.JustTextGuid);
 			CheckEditableText(newPage, "en", "There was an old man called Bilanga who was very tall and also not yet married.");
 			CheckEditableText(newPage, "pis", "Wanfala olman nem blong hem Bilanga barava tol an hem no marit tu.");
 			CheckEditableText(newPage, "xyz", "Translation into xyz, the primary language.");
@@ -79,7 +79,7 @@ namespace BloomTests.Book
 			var newPage = (XmlElement)dom.SafeSelectNodes("//div[@id='thePage']")[0];
 
 			CheckPageIsCustomizable(newPage);
-			CheckPageLineage(page, newPage, "5dcd48df-e9ab-4a07-afd4-6a24d0398382", "adcd48df-e9ab-4a07-afd4-6a24d0398382");
+			CheckPageLineage(page, newPage, "5dcd48df-e9ab-4a07-afd4-6a24d0398382", Bloom.Book.Book.BasicTextAndImageGuid);
 			CheckEditableText(newPage, "en", "There was an old man called Bilanga who was very tall and also not yet married.");
 			CheckEditableText(newPage, "pis", "Wanfala olman nem blong hem Bilanga barava tol an hem no marit tu.");
 			CheckEditableText(newPage, "xyz", "Translation into xyz, the primary language.");
@@ -157,7 +157,7 @@ namespace BloomTests.Book
 			var newPage = (XmlElement)dom.SafeSelectNodes("//div[@id='thePage']")[0];
 
 			CheckPageIsCustomizable(newPage);
-			CheckPageLineage(page, newPage, "5dcd48df-e9ab-4a07-afd4-6a24d0398385", "adcd48df-e9ab-4a07-afd4-6a24d0398385");
+			CheckPageLineage(page, newPage, "5dcd48df-e9ab-4a07-afd4-6a24d0398385", Bloom.Book.Book.JustPictureGuid);
 			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//img[@data-license='cc-by-nc-sa' and @data-copyright='Copyright © 2012, LASI' and @src='erjwx3bl.q3c.png']", 1);
 			AssertThatXmlIn.Dom(dom).HasSpecifiedNumberOfMatchesForXpath("//img", 1);
 		}

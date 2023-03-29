@@ -8,6 +8,7 @@ using System.Linq;
 using System.Security;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Web.UI.WebControls;
 using System.Windows.Forms;
 using System.Xml;
 using Bloom.MiscUI;
@@ -17,6 +18,9 @@ using SIL.Progress;
 using SIL.Xml;
 using Bloom.Collection;
 using Bloom.History;
+using Bloom.ImageProcessing;
+using Bloom.web.controllers;
+using Label = System.Web.UI.WebControls.Label;
 
 namespace Bloom.Spreadsheet
 {
@@ -30,14 +34,21 @@ namespace Bloom.Spreadsheet
 		private InternalSpreadsheet _sheet;
 		private int _currentRowIndex;
 		private int _currentPageIndex;
-		private int _groupOnPageIndex;
 		private XmlElement _currentPage;
-		private XmlElement _currentGroup;
 		private List<XmlElement> _pages;
-		private List<XmlElement> _groupsOnPage;
-		private int _imageContainerOnPageIndex;
-		private List<XmlElement> _imageContainersOnPage;
-		private XmlElement _currentImageContainer;
+		// text, image, video, widget
+		const int blockTypeCount = 4;
+		// lists of translation groups (other than image descriptions),
+		// image containers, video containers, and widget containers.
+		List<XmlElement>[] _blocksOnPage = new List<XmlElement>[blockTypeCount];
+		public const int translationGroupIndex = 0;
+		public const int imageContainerIndex = 1;
+		public const int videoContainerIndex = 2;
+		public const int widgetContainerIndex = 3;
+		// for each kind of block, this gives the index in the corresponding list in blocksOnPage
+		// of the next block we should import into. May be -1 or too large if there are no more
+		// blocks of that type we can import into on this page.
+		int[] _blockOnPageIndexes = new int[blockTypeCount];
 		private List<string> _warnings;
 		private List<ContentRow> _inputRows;
 		private readonly XmlElement _dataDivElement;
@@ -99,13 +110,6 @@ namespace Bloom.Spreadsheet
 				"Somehow we made it into ImportWithProgressAsync() without a path to the book folder");
 			await BrowserProgressDialog.DoWorkWithProgressDialogAsync(_webSocketServer, async  (progress, worker) =>
 			{
-				var cannotImportEnding = " For this reason, we need to abandon the import. Instead, you can import into a blank book.";
-				var hasActivities = _destinationDom.HasActivityPages();
-				if (hasActivities)
-				{
-					progress.MessageWithoutLocalizing($"Warning: Spreadsheet import cannot currently preserve quizzes, widgets, or other activities that are already in this book."+ cannotImportEnding, ProgressKind.Error);
-					return true; // leave progress window up so user can see error.
-				}
 				var sheet = InternalSpreadsheet.ReadFromFile(inputFilepath, progress);
 				if (sheet == null)
 					return true;
@@ -215,45 +219,77 @@ namespace Bloom.Spreadsheet
 			_bookIsLandscape = _pages.FirstOrDefault()?.Attributes["class"]?.Value?.Contains("Landscape") ?? false;
 			_currentRowIndex = 0;
 			_currentPageIndex = -1;
-			_groupsOnPage = new List<XmlElement>();
-			_imageContainersOnPage = new List<XmlElement>();
+			_blocksOnPage[translationGroupIndex] = new List<XmlElement>();
+			_blocksOnPage[imageContainerIndex] = new List<XmlElement>();
 			_destLayout = Layout.FromDom(_destinationDom, Layout.A5Portrait);
+			var pageTypeIndex = sheet.GetColumnForTag(InternalSpreadsheet.PageTypeColumnLabel);
 			while (_currentRowIndex < _inputRows.Count)
 			{
 				var currentRow = _inputRows[_currentRowIndex];
 				string rowTypeLabel = currentRow.MetadataKey;
 				bool extraRow = false;
+				string pageType = null;
+				if (pageTypeIndex >= 0)
+					pageType = currentRow.GetCell(pageTypeIndex).Content.Trim();
 
 				if (rowTypeLabel == InternalSpreadsheet.PageContentRowLabel)
 				{
 					bool rowHasImage = !string.IsNullOrWhiteSpace(currentRow.GetCell(InternalSpreadsheet.ImageSourceColumnLabel).Text);
 					bool rowHasText = RowHasText(currentRow);
-					if (rowHasImage && rowHasText)
+					bool rowHasVideo = !string.IsNullOrWhiteSpace(currentRow.GetCell(InternalSpreadsheet.VideoSourceColumnLabel).Text);
+					bool rowHasWidget = !string.IsNullOrWhiteSpace(currentRow.GetCell(InternalSpreadsheet.WidgetSourceColumnLabel).Text);
+					var typesInRow = MakeBlockTypes(rowHasText, rowHasImage, rowHasVideo, rowHasWidget);
+					while (typesInRow != BlockTypes.None)
 					{
-						AdvanceToNextGroupAndImageContainer();
-					} else if (rowHasImage)
-					{
-						AdvanceToNextImageContainer();
-					} else if (rowHasText)
-					{
-						AdvanceToNextGroup();
-					}
-					if (rowHasImage)
-					{
-						ContentRow descriptionRow = null;
-						if (_currentRowIndex < _inputRows.Count - 1)
+						var typesToPut = AdvanceToNextSetOfBlocks(typesInRow, pageType);
+						// If we need another iteration because we could not find a page type that will hold
+						// all the data types we want on this row, we don't want to force the extra page to
+						// be the original type, which may well not have the slot we're missing (usually widget).
+						// Rather, we want a default page type that WILL hold the rest of the row data.
+						pageType = null;
+
+						if ((typesToPut & BlockTypes.Image) == BlockTypes.Image)
 						{
-							var nextRow = _inputRows[_currentRowIndex + 1];
-							if (nextRow.MetadataKey == InternalSpreadsheet.ImageDescriptionRowLabel)
+							ContentRow descriptionRow = null;
+							if (_currentRowIndex < _inputRows.Count - 1)
 							{
-								extraRow = true;
-								descriptionRow = nextRow;
+								var nextRow = _inputRows[_currentRowIndex + 1];
+								if (nextRow.MetadataKey == InternalSpreadsheet.ImageDescriptionRowLabel)
+								{
+									extraRow = true;
+									descriptionRow = nextRow;
+								}
 							}
+
+							await PutRowInImageAsync(currentRow, descriptionRow,
+								_blocksOnPage[imageContainerIndex][_blockOnPageIndexes[imageContainerIndex]]);
 						}
-						await PutRowInImageAsync(currentRow, descriptionRow);
-					}
-					if (rowHasText) {
-						await PutRowInGroupAsync(currentRow, _currentGroup);
+
+						if ((typesToPut & BlockTypes.Text) == BlockTypes.Text)
+						{
+							await PutRowInGroupAsync(currentRow,
+								_blocksOnPage[translationGroupIndex][_blockOnPageIndexes[translationGroupIndex]]);
+						}
+
+						if ((typesToPut & BlockTypes.Video) == BlockTypes.Video)
+						{
+							PutRowInVideo(currentRow,
+								_blocksOnPage[videoContainerIndex][_blockOnPageIndexes[videoContainerIndex]]);
+						}
+
+						if ((typesToPut & BlockTypes.Widget) == BlockTypes.Widget)
+						{
+							PutRowInWidget(currentRow,
+								_blocksOnPage[widgetContainerIndex][_blockOnPageIndexes[widgetContainerIndex]]);
+						}
+
+						// Remove whatever we already imported. Usually this makes it 'none' and
+						// the loop stops. However, we don't have default pages that can hold both
+						// widgets and other types, so if we get such a combination the widget
+						// will be left over and added later.
+						// Also, the row may specify a particular page type, which might
+						// not have all the required slots.
+						typesInRow &= ~typesToPut;
 					}
 				}
 				else if (rowTypeLabel.StartsWith("[") && rowTypeLabel.EndsWith("]")) //This row is xmatter
@@ -296,6 +332,240 @@ namespace Bloom.Spreadsheet
 			return _warnings;
 		}
 
+		class PageRecord
+		{
+			public XmlElement Page;
+			public string SourceBookPath;
+		}
+
+		// This dictionary is progressively built from our collection of possible template books
+		// as we need to process them in order to find a page with a requested label.
+		// For each label we've encountered in one of the processed template books, it contains
+		// the page XmlElement and a note of which book it came from.
+		Dictionary<string, PageRecord> _labelToPageRecord = new Dictionary<string, PageRecord>();
+		// A list of books in which we will look for template pages referred to in page types
+		// I thought it might be useful to set this in testing; otherwise, a default is used.
+		// But performance of the test seems OK without using it.
+		public List<string> BookTemplatePaths;
+		private List<string> _bookTemplatePaths;
+		// Books from which we've already used a page, and therefore, have imported any
+		// special stylesheets it uses.
+		HashSet<string> _importedBooks = new HashSet<string>();
+
+		public static string GetLabelFromPage(XmlElement page)
+		{
+			var labelElt = page?.SafeSelectNodes(".//div[@class='pageLabel' and @lang='en']").Cast<XmlElement>().FirstOrDefault();
+			if (labelElt != null)
+			{
+				// Note that while the file may show something like "Basic Text &amp; Picture",
+				// the InnerText property already converts this to "Basic Text & Picture".
+				return labelElt.InnerText.Trim();
+			}
+
+			return null;
+		}
+
+		/// <summary>
+		/// Get a page with the specified label. We look at books that would currently
+		/// show in the Add Page dialog for a page that has a div with class pageLabel
+		/// and lang en whose content is the requested label (ignoring case).
+		/// </summary>
+		private XmlElement GetPageForLabel(string label1)
+		{
+			var label = label1.ToLowerInvariant();
+			if (_bookTemplatePaths == null)
+			{
+				
+				if (BookTemplatePaths == null)
+				{
+					var sourceCollectionPaths = new[] { Path.GetDirectoryName(_pathToBookFolder) }.Concat(
+						SourceCollectionsList.GetCollectionFolders(ProjectContext.SourceRootFolders()));
+					var templateBookPaths = PageTemplatesApi.GetBooksInCollectionDirectories(sourceCollectionPaths);
+					_bookTemplatePaths = PageTemplatesApi.GetBookTemplatePaths(null, templateBookPaths);
+				}
+				else
+					_bookTemplatePaths = new List<string>(BookTemplatePaths);
+			}
+
+			PageRecord result;
+			while (!_labelToPageRecord.TryGetValue(label, out result) && _bookTemplatePaths.Count > 0)
+			{
+				// Process one more book. This is fairly time-consuming, so we only process as many
+				// as we need to find the requested label. Many of them are in basic book, one of the first we try.
+				var bookPath = _bookTemplatePaths[0];
+				_bookTemplatePaths.RemoveAt(0);
+				var dom = XmlHtmlConverter.GetXmlDomFromHtmlFile(bookPath, false);
+				var pages = dom.SafeSelectNodes("//div[contains(@class, 'bloom-page')]");
+				foreach (XmlElement page in pages)
+				{
+					var pageLabel = GetLabelFromPage(page).ToLowerInvariant();
+					// If we already found a page with this label, keep using the one we found first.
+					// This is so that if some random template contains a page with an unchanged
+					// label from one of our built-in templates, we will use the original on import.
+					if (pageLabel != null && !_labelToPageRecord.TryGetValue(pageLabel, out _))
+					{
+						_labelToPageRecord.Add(pageLabel, new PageRecord(){Page=page, SourceBookPath = bookPath});
+					}
+				}
+			}
+
+			if (result == null)
+				return null;
+			ImportStylesheetsIfNeeded(result.SourceBookPath);
+			ImportUserDefinedStylesForPage(result);
+
+			return result.Page;
+		}
+
+		private void ImportUserDefinedStylesForPage(PageRecord result)
+		{
+			var head = result.Page.OwnerDocument.GetElementsByTagName("head").Cast<XmlElement>().First();
+			var userStylesOnPage = HtmlDom.GetUserModifiableStylesUsedOnPage(head, result.Page);
+			var existingUserStyles = Book.Book.GetOrCreateUserModifiedStyleElementFromStorage(_destinationDom.Head);
+			var newMergedUserStyleXml = HtmlDom.MergeUserStylesOnInsertion(existingUserStyles, userStylesOnPage, out bool _);
+			existingUserStyles.InnerXml = newMergedUserStyleXml;
+		}
+
+		private void ImportStylesheetsIfNeeded(string sourceBook)
+		{
+			if (!_importedBooks.Contains(sourceBook))
+			{
+				// If we're pulling in pages from this book, we may need to pull in any unique stylesheets it uses, too.
+				var sourceDom = new HtmlDom(XmlHtmlConverter.GetXmlDomFromHtmlFile(sourceBook, false));
+				HtmlDom.AddStylesheetFromAnotherBook(sourceDom, _destinationDom);
+				HtmlDom.CopyMissingStylesheetFiles(sourceDom, Path.GetDirectoryName(sourceBook), _pathToBookFolder);
+				_importedBooks.Add(sourceBook);
+			}
+		}
+
+		private void PutRowInVideo(ContentRow currentRow, XmlElement videoContainer)
+		{
+			var source = currentRow.GetCell(InternalSpreadsheet.VideoSourceColumnLabel).Text;
+			Debug.Assert(!string.IsNullOrWhiteSpace(source), "Should not be trying to Put video when there is none");
+			var videoFile = Path.GetFileName(source);
+
+			var videoElt = videoContainer.GetElementsByTagName("video").Cast<XmlElement>().FirstOrDefault();
+			if (videoElt == null)
+			{
+				// pathological
+				videoElt = videoContainer.OwnerDocument.CreateElement("video");
+				videoContainer.AppendChild(videoElt);
+			}
+			var srcElt = videoElt.GetElementsByTagName("source").Cast<XmlElement>().FirstOrDefault();
+			if (srcElt == null)
+			{
+				// pathological?
+				srcElt = videoElt.OwnerDocument.CreateElement("source");
+				videoElt.AppendChild(srcElt);
+			}
+
+			if (_pathToSpreadsheetFolder != null) // only null in some unit tests
+			{
+				var sourcePath = Path.Combine(_pathToSpreadsheetFolder, source);
+				if (!RobustFile.Exists(sourcePath))
+				{
+					Warn(
+						$"Video \"{sourcePath}\" on row {CurrentRowIndexForMessages} was not found.");
+					return;
+				}
+				var videoDirectory = Path.Combine(_pathToBookFolder, "video");
+				Directory.CreateDirectory(videoDirectory);
+
+				var dest = Path.Combine(videoDirectory, videoFile);
+				while (RobustFile.Exists(dest))
+				{
+					videoFile = ImageUtils.GetUnusedFilename(videoDirectory,
+						Path.GetFileNameWithoutExtension(videoFile), Path.GetExtension(videoFile));
+					dest = Path.Combine(videoDirectory, videoFile);
+				}
+				// Enhance: we should probably do something to prevent multiple video elements
+				// targeting the same file? But if importing to an existing book, we don't want
+				// to duplicate them all.
+				try
+				{
+					RobustFile.Copy(sourcePath, dest, true);
+				}
+				catch (Exception e) when (e is IOException || e is SecurityException ||
+				                          e is UnauthorizedAccessException)
+				{
+					Warn(
+						$"Bloom had trouble copying the file {sourcePath} to the video folder: " +
+						e.Message);
+				}
+			}
+
+			// Note that we always want a forward slash, even in Windows,
+			// and we always copy directly to the video folder, wherever the file
+			// is found.
+			srcElt.SetAttribute("src", UrlPathString.CreateFromUnencodedString("video/" + videoFile).UrlEncoded);
+			HtmlDom.RemoveClass(videoContainer, "bloom-noVideoSelected");
+		}
+
+		private void PutRowInWidget(ContentRow currentRow, XmlElement widgetContainer)
+		{
+			var source = currentRow.GetCell(InternalSpreadsheet.WidgetSourceColumnLabel).Text;
+			Debug.Assert(!string.IsNullOrWhiteSpace(source), "Should not be trying to Put activity when there is none");
+			
+			// Sourcepath typically is activities/activityFolder/activityFile.html
+			// But it might conceivably not be in the spreadsheet activities folder.
+			// Then how do we know how many levels up to copy?
+			// It's possible index.html is nested more than one level in activityFolder!
+			// For now, require the path to start with activities.
+			if (!source.ToLowerInvariant().Replace("\\", "/").StartsWith("activities/"))
+			{
+				Warn($"Could not import the widget on row {CurrentRowIndexForMessages}. Widgets must be in the Spreadsheet folder's activities subfolder, but was '{source}'.");
+				return;
+			}
+
+			var activityDirectory = source.Substring("activities/".Length); // typically activityFolder/activityFile.html
+			var sourceDir = Path.GetDirectoryName(activityDirectory); // typically activityFolder
+			while (!string.IsNullOrEmpty(Path.GetDirectoryName(sourceDir)))
+				sourceDir = Path.GetDirectoryName(sourceDir);
+
+			var iframeElt = widgetContainer.GetElementsByTagName("iframe").Cast<XmlElement>().FirstOrDefault();
+			if (iframeElt == null)
+			{
+				// pathological
+				iframeElt = widgetContainer.OwnerDocument.CreateElement("iframe");
+				widgetContainer.AppendChild(iframeElt);
+			}
+
+			// Note that we always want a forward slash, even in Windows,
+			// and we always copy directly to the activities folder, wherever the file
+			// is found. It's important that slashes NOT be encoded; our fileserver will
+			// convert them and find the HTML file, but the iframe won't have the right
+			// base URL which interferes with finding its assets using relative URLs.
+			iframeElt.SetAttribute("src", UrlPathString.CreateFromUnencodedString(source).UrlEncodedForHttpPath);
+			HtmlDom.RemoveClass(widgetContainer, "bloom-noWidgetSelected");
+
+			if (_pathToSpreadsheetFolder != null)
+			{
+				var sourcePath = Path.Combine(_pathToSpreadsheetFolder, source);
+				if (!RobustFile.Exists(sourcePath))
+				{
+					Warn($"Could not find '{sourcePath}' for the widget on row {CurrentRowIndexForMessages}.");
+					return;
+				}
+
+				var activitiesDestDirectory = Path.Combine(_pathToBookFolder, "activities");
+				Directory.CreateDirectory(activitiesDestDirectory);
+				var sourceFolderPath = Path.Combine(_pathToSpreadsheetFolder, "activities", sourceDir);
+				try
+				{
+					var destFolderPath = Path.Combine(_pathToBookFolder, "activities");
+					SIL.IO.RobustIO.DeleteDirectoryAndContents(Path.Combine(destFolderPath, sourceDir));
+					DirectoryUtilities.CopyDirectory(sourceFolderPath, destFolderPath);
+				}
+				catch (Exception e) when (e is IOException || e is SecurityException ||
+				                          e is UnauthorizedAccessException)
+				{
+					Warn(
+						$"Bloom had trouble copying the folder {sourceFolderPath} to the activities folder: " +
+						e.Message);
+				}
+			}
+		}
+
 		private void CleanupLeftOverPages()
 		{
 			// the current page at _currentPageIndex must have some useful content,
@@ -314,7 +584,7 @@ namespace Bloom.Spreadsheet
 			}
 		}
 
-		private async Task PutRowInImageAsync(ContentRow currentRow, ContentRow descriptionRow)
+		private async Task PutRowInImageAsync(ContentRow currentRow, ContentRow descriptionRow, XmlElement currentImageContainer)
 		{
 			var spreadsheetImgPath = currentRow.GetCell(InternalSpreadsheet.ImageSourceColumnLabel).Content;
 			if (spreadsheetImgPath == InternalSpreadsheet.BlankContentIndicator)
@@ -324,7 +594,7 @@ namespace Bloom.Spreadsheet
 
 			var destFileName = Path.GetFileName(spreadsheetImgPath);
 
-			var imgElement = GetImgFromContainer(_currentImageContainer);
+			var imgElement = GetImgFromContainer(currentImageContainer);
 			// Enhance: warn if null?
 			imgElement?.SetAttribute("src", UrlPathString.CreateFromUnencodedString(destFileName).UrlEncoded);
 			// Earlier versions of Bloom often had explicit height and width settings on images.
@@ -335,7 +605,7 @@ namespace Bloom.Spreadsheet
 			// image containers often have a generated title attribute that gives the file name and
 			// notes about its resolution, etc. We think it will be regenerated as needed, but certainly
 			// the one from a previous image is no use.
-			_currentImageContainer.RemoveAttribute("title");
+			currentImageContainer.RemoveAttribute("title");
 			if (_pathToSpreadsheetFolder != null) //currently will only be null in tests
 			{
 				// To my surprise, if spreadsheetImgPath is rooted (a full path), this will just use it,
@@ -353,14 +623,14 @@ namespace Bloom.Spreadsheet
 
 			if (descriptionRow != null)
 			{
-				XmlElement group = _currentImageContainer.GetElementsByTagName("div")
+				XmlElement group = currentImageContainer.GetElementsByTagName("div")
 					.Cast<XmlElement>()
 					.FirstOrDefault(e => e.Attributes["class"].Value.Contains("bloom-imageDescription"));
 				if (group == null)
 				{
-					group = _currentImageContainer.OwnerDocument.CreateElement("div");
+					group = currentImageContainer.OwnerDocument.CreateElement("div");
 					group.SetAttribute("class", "bloom-translationGroup bloom-imageDescription bloom-trailingElement");
-					_currentImageContainer.AppendChild(group);
+					currentImageContainer.AppendChild(group);
 				}
 				await PutRowInGroupAsync(descriptionRow, group);
 			}
@@ -387,7 +657,7 @@ namespace Bloom.Spreadsheet
 						// +1 conversion from zero-based to 1-based counting, further adding header.RowCount
 						// makes it match up with the actual row label in the spreadsheet.
 						Warn(
-							$"Image \"{fullSpreadsheetPath}\" on row {_currentRowIndex + 1 + _sheet.Header.RowCount} was not found.");
+							$"Image \"{fullSpreadsheetPath}\" on row {CurrentRowIndexForMessages} was not found.");
 					}
 				}
 			}
@@ -603,35 +873,56 @@ namespace Bloom.Spreadsheet
 			_dataDivElement.AppendChild(node);
 		}
 
-		private void AdvanceToNextGroup()
-		{
-			_groupOnPageIndex++;
-			// We arrange for this to be always true initially
-			if (_groupOnPageIndex >= _groupsOnPage.Count)
-			{
-				AdvanceToNextNumberedPage(false, true);
-				_groupOnPageIndex = 0;
-			}
-
-			_currentGroup = _groupsOnPage[_groupOnPageIndex];
-		}
-
 		private int PageNumberToReport => _currentPageIndex + 1 - _frontMatterPagesSeen;
 
-		private XmlDocument _basicBookTemplate;
+		private List<XmlDocument> _sourcesForDefaultPages;
+		private HashSet<XmlDocument> _sourcesWithExtraStylesheets;
+		private string _activityTemplatePath;
 
-		private void GeneratePage(string guid)
+
+		/// <summary>
+		/// Return a copy of a page from one of our factory templates that has the specified guid.
+		/// This is used to get a default page that can contain a particular combination of block types.
+		/// </summary>
+		private void GenerateDefaultPage(string guid)
 		{
-			if (_basicBookTemplate == null)
+			
+			if (_sourcesForDefaultPages == null)
 			{
-				var path = Path.Combine(BloomFileLocator.FactoryCollectionsDirectory, "template books", "Basic Book", "Basic Book.html");
-				_basicBookTemplate = XmlHtmlConverter.GetXmlDomFromHtmlFile(path, false);
+				_sourcesForDefaultPages = new List<XmlDocument>();
+				_sourcesWithExtraStylesheets = new HashSet<XmlDocument>();
+				var path = Path.Combine(BloomFileLocator.FactoryCollectionsDirectory, "template books", "Basic Book",
+					"Basic Book.html");
+				_sourcesForDefaultPages.Add(XmlHtmlConverter.GetXmlDomFromHtmlFile(path, false));
+				path = Path.Combine(BloomFileLocator.FactoryCollectionsDirectory, "template books", "Sign Language",
+					"Sign Language.html");
+				_sourcesForDefaultPages.Add(XmlHtmlConverter.GetXmlDomFromHtmlFile(path, false));
+				_activityTemplatePath = Path.Combine(BloomFileLocator.FactoryCollectionsDirectory, "template books",
+					"Activity", "Activity.html");
+				var activityDoc = XmlHtmlConverter.GetXmlDomFromHtmlFile(_activityTemplatePath, false);
+				_sourcesForDefaultPages.Add(activityDoc);
+				_sourcesWithExtraStylesheets.Add(activityDoc);
 			}
 
-			var templatePage = _basicBookTemplate.SelectSingleNode($"//div[@id='{guid}']") as XmlElement;
-			ImportPage(templatePage);
-			var pageLabel = templatePage.SafeSelectNodes(".//div[@class='pageLabel']").Cast<XmlElement>().FirstOrDefault()?.InnerText ?? "";
-			Progress($"Adding page {PageNumberToReport} using a {pageLabel} layout");
+			for (int i = 0; i < _sourcesForDefaultPages.Count; i++)
+			{
+				var templatePage = _sourcesForDefaultPages[i].SelectSingleNode($"//div[@id='{guid}']") as XmlElement;
+				if (templatePage != null)
+				{
+					ImportPage(templatePage);
+					if (_sourcesWithExtraStylesheets.Contains(_sourcesForDefaultPages[i]))
+					{
+						// Activity folder is the only one that might require us to copy a stylesheet
+						ImportStylesheetsIfNeeded(_activityTemplatePath);
+					}
+					var pageLabel = templatePage.SafeSelectNodes(".//div[@class='pageLabel']").Cast<XmlElement>()
+						.FirstOrDefault()?.InnerText ?? "";
+					Progress($"Adding page {PageNumberToReport} using a {pageLabel} layout");
+					return;
+				}
+			}
+
+			throw new ApplicationException("Did not find expected page to insert");
 		}
 
 		// Insert a clone of templatePage into the document before _currentPage (or after _lastContentPage, if _currentPage is null),
@@ -646,13 +937,22 @@ namespace Bloom.Spreadsheet
 			// be true because we normally have at least backmatter page to insert before.
 			(_pages[0].ParentNode ?? _destinationDom.Body).InsertBefore(newPage, _currentPage);
 
+			ClearPageContent(newPage);
+
+			_currentPage = newPage;
+		}
+
+		private void ClearPageContent(XmlElement page)
+		{
 			// clear everything: this is useful in case it has slots we won't use.
 			// They might have content either from the original last page, or from the
 			// modifications we already made to it.
-			var editables = newPage.SelectNodes(".//div[contains(@class, 'bloom-editable') and @lang != 'z']").Cast<XmlElement>().ToArray();
+			var editables = page.SelectNodes(".//div[contains(@class, 'bloom-editable') and @lang != 'z']")
+				.Cast<XmlElement>().ToArray();
 			foreach (var e in editables)
 			{
-				var allInGroup = editables.Where(x => x.ParentNode == e.ParentNode && x != e);
+				var allInGroup = e.ParentNode.ChildNodes.Cast<XmlNode>()
+					.Where(x => x != e && x is XmlElement y && y.Attributes["class"].Value.Contains("bloom-editable"));
 				if (allInGroup.Any())
 					e.ParentNode.RemoveChild(e);
 				else
@@ -664,7 +964,7 @@ namespace Bloom.Spreadsheet
 				}
 			}
 
-			var imageContainers = GetImageContainers(newPage);
+			var imageContainers = GetImageContainers(page);
 			foreach (var c in imageContainers)
 			{
 				var img = GetImgFromContainer(c);
@@ -675,7 +975,7 @@ namespace Bloom.Spreadsheet
 			}
 
 			// This is not tested yet, but we want to remove video content if any from whatever last page we're copying.
-			foreach (var v in newPage.SelectNodes(".//div[contains(@class, 'bloom-videoContainer')]/video")
+			foreach (var v in page.SelectNodes(".//div[contains(@class, 'bloom-videoContainer')]/video")
 				         .Cast<XmlElement>().ToList())
 			{
 				HtmlDom.AddClass(v.ParentNode as XmlElement, "bloom-noVideoSelected");
@@ -683,26 +983,31 @@ namespace Bloom.Spreadsheet
 			}
 
 			// and widgets (also not tested)
-			foreach (var w in newPage.SelectNodes(".//div[contains(@class, 'bloom-widgetContainer')]/iframe")
+			foreach (var w in page.SelectNodes(".//div[contains(@class, 'bloom-widgetContainer')]/iframe")
 				         .Cast<XmlElement>().ToList())
 			{
 				HtmlDom.AddClass(w.ParentNode as XmlElement, "bloom-noWidgetSelected");
 				w.ParentNode.RemoveChild(w);
 			}
 
-			_currentPage = newPage;
+			if (GetLabelFromPage(page).ToLowerInvariant() == "quiz page")
+			{
+				// No answer should be marked correct unless a row specifies it
+				foreach (XmlElement tg in page.SafeSelectNodes(".//div[contains(@class, 'correct-answer')]"))
+					HtmlDom.RemoveClass(tg, "correct-answer");
+				// All the answers are, for the moment, empty, so mark them accordingly.
+				foreach (XmlElement tg in page.SafeSelectNodes(".//div[contains(@class, 'QuizAnswer-style')]"))
+					HtmlDom.AddClass(tg.ParentNode.ParentNode as XmlElement, "empty");
+			}
 		}
 
 		private XmlElement _lastContentPage; // Actually the last one we've seen so far, but used only when it really is the last
-		private bool _lastPageHasImageContainer;
-		private bool _lastPageHasTextGroup;
 		public const string MissingHeaderMessage = "Bloom can only import spreadsheets that match a certain layout. In this spreadsheet, Bloom was unable to find the required \"[row type]\" column in row 1";
 
-		private void AdvanceToNextNumberedPage(bool needImageContainer, bool needTextGroup)
+		private void AdvanceToNextNumberedPage(BlockTypes blocksNeeded, string pageType)
 		{
-			Debug.Assert(needTextGroup || needImageContainer,
+			Debug.Assert(blocksNeeded != BlockTypes.None,
 				"Shouldn't be advancing to another page unless we have something to put on it");
-			string guidOfPageToClone;
 			while (true)
 			{
 				_currentPageIndex++;
@@ -712,7 +1017,7 @@ namespace Bloom.Spreadsheet
 					// We'll have to generate a new page. It will have what we need, so the loop
 					// will terminate there.
 					_currentPage = null; // this has an effect on where we insert the new page.
-					InsertCloneOfLastPageOrDefault(needImageContainer, needTextGroup);
+					InsertCloneOfLastPageOrDefault(blocksNeeded, pageType);
 					return;
 				}
 
@@ -734,84 +1039,216 @@ namespace Bloom.Spreadsheet
 			var isBackMatter = XMatterHelper.IsBackMatterPage(_currentPage);
 			if (isBackMatter)
 			{
-				InsertCloneOfLastPageOrDefault(needImageContainer, needTextGroup);
+				InsertCloneOfLastPageOrDefault(blocksNeeded, pageType);
 				return;
 			}
 
 			// OK, we've found a page in the template book which can hold imported content.
 			// If it can hold the sort of content we have, we'll use it; otherwise,
 			// we'll insert a page that can.
-			GetElementsFromCurrentPage();
+			CollectElementsFromCurrentPage();
 			// Note that these are only updated when current page is set to an original usable page,
 			// not when it is set to an inserted one. Thus, once we start adding pages at the end,
 			// it and these variables are fixed at the values for the last content page.
 			_lastContentPage = _currentPage;
-			_lastPageHasImageContainer = _imageContainersOnPage.Count > 0;
-			_lastPageHasTextGroup = _groupsOnPage.Count > 0;
-			guidOfPageToClone = GuidOfPageToCopyIfNeeded(needImageContainer, needTextGroup, _lastPageHasImageContainer,
-				_lastPageHasTextGroup);
+			_blockTypesAvailableOnLastPage = BlockTypesAvailableOnPage;
+			_pageTypeOfLastPage = GetLabelFromPage(_lastContentPage);
 
-			if (guidOfPageToClone != null)
+			if (InsertDefaultPageIfNeeded(blocksNeeded, _blockTypesAvailableOnLastPage, pageType, _pageTypeOfLastPage))
 			{
-				GeneratePage(guidOfPageToClone); // includes progress message
-				GetElementsFromCurrentPage();
+				// progress message already sent
+				CollectElementsFromCurrentPage();
 			}
 			else
 			{
 				Progress($"Updating page {PageNumberToReport}");
 			}
 
-			_imageContainerOnPageIndex = -1;
-			_groupOnPageIndex = -1;
+			if (GetLabelFromPage(_currentPage).ToLowerInvariant() == "quiz page")
+			{
+				// I'm not clear why we don't want to do this for all pages. But a number of existing
+				// unit tests fail if we do, so for now I'm choosing not to change it. However, the
+				// Quiz page definitely needs to be cleared, so that we won't keep more answers
+				// than the current spreadsheet fills in.
+				ClearPageContent(_currentPage);
+			}
+
+			for (int i = 0; i < blockTypeCount; i++)
+				_blockOnPageIndexes[i] = -1;
 		}
 
-		private void InsertCloneOfLastPageOrDefault(bool needImageContainer, bool needTextGroup)
+		private BlockTypes _blockTypesAvailableOnLastPage = BlockTypes.None;
+		private string _pageTypeOfLastPage;
+
+		BlockTypes BlockTypesAvailableOnPage => BlockTypesAvailable(_blocksOnPage);
+
+		BlockTypes BlockTypesAvailable(List<XmlElement>[] blocksOnPage)
 		{
-			// If we don't have a last page at all, the _lastPageHas variables will both be false,
-			// so we'll know to create one.
-			var guidOfNeededPage = GuidOfPageToCopyIfNeeded(needImageContainer, needTextGroup,
-				_lastPageHasImageContainer, _lastPageHasTextGroup);
-			if (guidOfNeededPage == null)
+			var result = BlockTypes.None;
+			var bitval = 1;
+			for (var i = 0; i < blockTypeCount; i++)
+			{
+				var blocks = blocksOnPage[i];
+				if (blocks?.Count > 0)
+					result |= (BlockTypes)(bitval);
+				bitval *= 2;
+			}
+
+			return result;
+		}
+
+		private void InsertCloneOfLastPageOrDefault(BlockTypes blocksNeeded, string pageType)
+		{
+			// If we don't have a last page at all, the default state of the last page variables will
+			// tell us to create one.
+			if (!InsertDefaultPageIfNeeded(blocksNeeded,
+				    _blockTypesAvailableOnLastPage, pageType, _pageTypeOfLastPage))
 			{
 				Progress($"Adding page {PageNumberToReport} by copying the last page");
 				ImportPage(_lastContentPage);
 			}
-			else
-			{
-				GeneratePage(guidOfNeededPage);
-			}
 
-			GetElementsFromCurrentPage();
-			_imageContainerOnPageIndex = -1;
-			_groupOnPageIndex = -1;
+			CollectElementsFromCurrentPage();
+			for (int i = 0; i < blockTypeCount; i++)
+				_blockOnPageIndexes[i] = -1;
 		}
 
-		private const string basicTextAndImageGuid = "adcd48df-e9ab-4a07-afd4-6a24d0398382";
+		private Dictionary<BlockTypes, string> _pagesToInsert;
+
+		Dictionary<BlockTypes, string> PageToInsert()
+		{
+			if (_pagesToInsert == null)
+			{
+				_pagesToInsert = new Dictionary<BlockTypes, string>();
+				_pagesToInsert[BlockTypes.Image] = Book.Book.JustPictureGuid; // just an image
+				_pagesToInsert[BlockTypes.Image | BlockTypes.Text] = Book.Book.BasicTextAndImageGuid;
+				_pagesToInsert[BlockTypes.Image | BlockTypes.Text | BlockTypes.Landscape] = Book.Book.PictureOnLeftGuid;
+				_pagesToInsert[BlockTypes.Text] = Book.Book.JustTextGuid;
+				_pagesToInsert[BlockTypes.Video] = Book.Book.JustVideoGuid;
+				_pagesToInsert[BlockTypes.Text | BlockTypes.Video] = Book.Book.VideoOverTextGuid;
+				_pagesToInsert[BlockTypes.Image | BlockTypes.Video] = Book.Book.PictureAndVideoGuid;
+				// not obvious which arrangement of text, video, and image would be best. None of our templates is designed for
+				// portrait orientation. However, I think pictures and video are likely to shrink better than text, so it seems
+				// best to default to the layout that leaves the most room for text. ("Big text" does not refer to point size
+				// but to a large space for text).
+				_pagesToInsert[BlockTypes.Text | BlockTypes.Image | BlockTypes.Video] = Book.Book.BigTextDiglotGuid;
+				_pagesToInsert[BlockTypes.Widget] = Book.Book.WidgetGuid;
+			}
+			return _pagesToInsert;
+		}
+
+		BlockTypes MakeBlockTypes(bool needTextGroup, bool needImageContainer, bool needVideoContainer,
+			bool needWidgetContainer)
+		{
+			var result = BlockTypes.None;
+			if (needTextGroup)
+				result |= BlockTypes.Text;
+			if (needImageContainer)
+				result |= BlockTypes.Image;
+			if (needVideoContainer)
+				result |= BlockTypes.Video;
+			if (needWidgetContainer)
+				result |= BlockTypes.Widget;
+			return result;
+		}
 
 		/// <summary>
-		/// If current page does not have one of the elements we need, return the guid of a page from Basic Book
-		/// that does. If current page is fine, just return null.
+		/// If necessary, insert a page. This could be because the next page in the template
+		/// book won't hold all the block types we want to put on a single page, or because
+		/// it doesn't match the page type that the spreadsheet says to use. Returns true
+		/// if a page was inserted. (This is used in two contexts. In one, we already have
+		/// a _contentPage of type pageWeHave in which blocksWeHave are available,and have
+		/// already advanced to that, if a non-empty pageTypeNeeded required it. Returning
+		/// false means we will use that page. In the other context, we have used up all the
+		/// template pages. In that case, blocksWeHave and pageTypeWeHave reflect the last
+		/// template page, which we are considering cloning. Returning false indicates that
+		/// a clone of that page satisfies our constraints; the caller will then add the clone.)
 		/// </summary>
-		private string GuidOfPageToCopyIfNeeded(bool needImageContainer, bool needTextGroup, bool haveImageContainer, bool haveTextGroup)
+		private bool InsertDefaultPageIfNeeded(BlockTypes blocksNeeded, BlockTypes blocksWeHave, string pageTypeNeeded, string pageTypeWeHave)
 		{
-			string guid = null;
-			if (needImageContainer && !haveImageContainer)
+			if (pageTypeWeHave == pageTypeNeeded && !string.IsNullOrEmpty(pageTypeNeeded) && (blocksNeeded & blocksWeHave) != BlockTypes.None)
 			{
-				guid = needTextGroup
-					? basicTextAndImageGuid
-					: "adcd48df-e9ab-4a07-afd4-6a24d0398385"; // just an image
-			}
-			else if (needTextGroup && !haveTextGroup)
-			{
-				guid = needImageContainer
-					? basicTextAndImageGuid
-					: "a31c38d8-c1cb-4eb9-951b-d2840f6a8bdb"; // just text
+				// We have a page of the right type and it will hold something. So we will use it.
+				// (Since we were given pageTypeNeeded, we will use a page of that type even if it
+				// won't hold ALL the blocks we need.)
+				// Return false to indicate we did not insert a page to use instead.
+				return false;
 			}
 
-			if (_bookIsLandscape && guid == basicTextAndImageGuid)
-				guid = "7b192144-527c-417c-a2cb-1fb5e78bf38a"; // Picture on left
-			return guid;
+			if (_pathToBookFolder == null)
+			{
+				// In certain unit tests that predated page labels, we don't set things up enough for
+				// finding pages by type, so ignore page type.
+				pageTypeNeeded = null;
+			}
+
+			if (!string.IsNullOrEmpty(pageTypeNeeded))
+			{
+				// We need this particular type of page, and since we didn't return above,
+				// we need to add it.
+				var templatePage = GetPageForLabel(pageTypeNeeded);
+				if (templatePage != null)
+				{
+					var blocksOnPage = new List<XmlElement>[blockTypeCount];
+					CollectElementsFromPage(templatePage, blocksOnPage);
+					var typesOnTemplatePage = BlockTypesAvailable(blocksOnPage);
+					if ((typesOnTemplatePage & blocksNeeded) == BlockTypes.None)
+					{
+						Warn($"Row {CurrentRowIndexForMessages} requested page type '{pageTypeNeeded}' but contains no data suitable for that page type.");
+						// And we will continue to look for some page type that CAN hold the data.
+						// Review: alternatively, we could go ahead and insert/reuse the requested page, leave it empty, and carry on.
+						// Since we won't succeed in putting the current row data on it, the next iteration will be done without a pageTypeNeeded
+						// and should insert or reuse something more suitable.
+						blocksWeHave = BlockTypes.None; // Still want to force a new page, even if possibly what we need would fit on _currentPage.
+					}
+					else
+					{
+						ImportPage(templatePage);
+						return true;
+					}
+				}
+			}
+			var blocksWeDontHave = BlockTypes.All & ~ blocksWeHave;
+			var needNewPage = (blocksNeeded & blocksWeDontHave) != BlockTypes.None;
+			if (!needNewPage)
+				return false;
+			
+			var key = blocksNeeded;
+			if (_bookIsLandscape)
+			{
+				key |= BlockTypes.Landscape;
+			}
+
+			if (!PageToInsert().TryGetValue(key, out string guid) && _bookIsLandscape)
+			{
+				// Most of the blocktype combinations don't actually have a distinct entry
+				// for landscape mode. So we'll try again without specifying that.
+				PageToInsert().TryGetValue(blocksNeeded, out guid);
+			}
+			// If we still didn't get one, try removing widget flag. We don't have default pages
+			// that can hold combinations of widgets and other things, so we'll get a page
+			// that can hold everything else, and then make a separate page (in another iteration)
+			// to hold the widget.
+			if (string.IsNullOrEmpty(guid) && (blocksNeeded & BlockTypes.Widget) == BlockTypes.Widget)
+			{
+				key = blocksNeeded & ~BlockTypes.Widget;
+				// This will conveniently re-apply the landscape logic etc as necessary
+				// including returning false if we have all the other block types we need.
+				return InsertDefaultPageIfNeeded(key, blocksWeHave, pageTypeNeeded, _pageTypeOfLastPage);
+			}
+
+			if (string.IsNullOrEmpty(guid))
+			{
+				throw new ApplicationException("Failed to find a default page type");
+			}
+
+			GenerateDefaultPage(guid);
+			return true;
 		}
+
+		// A good index to show for the current row in messages. This should be the actual
+		// row number Excel displays next to the row.
+		private int CurrentRowIndexForMessages => _sheet.GetIndexOfRow(_inputRows[_currentRowIndex]) + 1;
 
 		private List<XmlElement> GetImageContainers(XmlElement ancestor)
 		{
@@ -819,44 +1256,89 @@ namespace Bloom.Spreadsheet
 				.ToList();
 		}
 
-		private void GetElementsFromCurrentPage()
+		private List<XmlElement> GetVideoContainers(XmlElement ancestor)
 		{
-			_imageContainersOnPage = GetImageContainers(_currentPage);
-			// For now we are ignoring image description slots as possible destinations for text.
-			// It's difficult to know whether a page intentionally has one or not, as empty ones
-			// can easily be added by just turning on the tool, and they can confuse alignment
-			// of images and main text blocks.
+			return ancestor.SafeSelectNodes(".//div[contains(@class, 'bloom-videoContainer')]").Cast<XmlElement>()
+				.ToList();
+		}
+
+		private List<XmlElement> GetWidgetContainers(XmlElement ancestor)
+		{
+			return ancestor.SafeSelectNodes(".//div[contains(@class, 'bloom-widgetContainer')]").Cast<XmlElement>()
+				.ToList();
+		}
+
+		private void CollectElementsFromCurrentPage()
+		{
+			CollectElementsFromPage(_currentPage, _blocksOnPage);
+		}
+
+		private void CollectElementsFromPage(XmlElement _currentPage, List<XmlElement>[] blocksOnPageCollector)
+		{
+			blocksOnPageCollector[imageContainerIndex] = GetImageContainers(_currentPage);
+			// We don't want image description slots as possible destinations for text.
+			// They are handled by special extra rows inserted after the row that has the image.
 			var allGroups = TranslationGroupManager.SortedGroupsOnPage(_currentPage, true);
-			_groupsOnPage = allGroups.Where(x => !x.Attributes["class"].Value.Contains("bloom-imageDescription")).ToList();
+			blocksOnPageCollector[translationGroupIndex] = allGroups.Where(x => !x.Attributes["class"].Value.Contains("bloom-imageDescription")).ToList();
+			blocksOnPageCollector[videoContainerIndex] = GetVideoContainers(_currentPage);
+			blocksOnPageCollector[widgetContainerIndex] = GetWidgetContainers(_currentPage);
 		}
 
-		private void AdvanceToNextImageContainer()
+		// This helper method supports various tasks that have to be done for each block type
+		// that is present in the enumeration. For each bit that is set in 'types',
+		// the action is invoked, passing the index of the bit and the type.
+		// For example, if types is Image | Video, the action will be invoked twice,
+		// first with 1 (imageContainerIndex) and BlockTypes.Image, then with
+		// 2 (videoContainerIndex) and BlockTypes.Video.
+		void ForEachIndexInTypes(BlockTypes types, Action<int, BlockTypes> action)
 		{
-			_imageContainerOnPageIndex++;
-			// We arrange for this to be always true initially
-			if (_imageContainerOnPageIndex >= _imageContainersOnPage.Count)
+			var bit = 1;
+			for (int i = 0; i < blockTypeCount; i++)
 			{
-				AdvanceToNextNumberedPage(true, false);
-				_imageContainerOnPageIndex = 0;
+				var currentType = (BlockTypes)bit;
+				if ((types & currentType) != 0)
+					action(i, currentType);
+				bit *= 2;
 			}
-
-			_currentImageContainer = _imageContainersOnPage[_imageContainerOnPageIndex];
 		}
 
-		private void AdvanceToNextGroupAndImageContainer()
+		// Set everything up so that we can insert as many as possible of the specified blocktypes into the current
+		// page. If pageType is empty and the current page will hold all the types, it just advances
+		// indexes in _blockOnPageIndexes so that they indicate the right places to insert. If pageType is
+		// set, we will always advance to a new page of that type, as long as it will hold at least
+		// one of the types of data needed.
+		private BlockTypes AdvanceToNextSetOfBlocks(BlockTypes typesNeeded, string pageType)
 		{
-			_imageContainerOnPageIndex++;
-			_groupOnPageIndex++;
-			// We arrange for this to be always true initially
-			if (_imageContainerOnPageIndex >= _imageContainersOnPage.Count || _groupOnPageIndex >= _groupsOnPage.Count)
+			var haveAllNeeded = true;
+			var result = typesNeeded;
+			ForEachIndexInTypes(typesNeeded, (i, _) =>
 			{
-				AdvanceToNextNumberedPage(true, true);
-				_imageContainerOnPageIndex = 0;
-				_groupOnPageIndex = 0;
+				_blockOnPageIndexes[i]++;
+				if (_blocksOnPage[i] == null || _blockOnPageIndexes[i] >= _blocksOnPage[i].Count)
+				{
+					haveAllNeeded = false;
+				}
+			});
+
+			if (!haveAllNeeded || !string.IsNullOrEmpty(pageType))
+			{
+				AdvanceToNextNumberedPage(typesNeeded, pageType);
+				ForEachIndexInTypes(typesNeeded, (i, blocktype) =>
+				{
+					if (_blocksOnPage[i].Count > 0)
+						// It's new page, we will use the first block of that type.
+						_blockOnPageIndexes[i] = 0;
+					else
+					{
+						// The new page doesn't have a block of this type, so clear the
+						// flag to let our caller know not to try to add it.
+						_blockOnPageIndexes[i] = -1;
+						result &= ~blocktype;
+					}
+				});
 			}
 
-			_currentImageContainer = _imageContainersOnPage[_imageContainerOnPageIndex];
-			_currentGroup = _groupsOnPage[_groupOnPageIndex];
+			return result;
 		}
 
 		private bool RowHasText(ContentRow row)
@@ -888,6 +1370,35 @@ namespace Bloom.Spreadsheet
 		/// <param name="group"></param>
 		private async Task PutRowInGroupAsync(ContentRow row, XmlElement group)
 		{
+			if (group.Attributes["class"].Value.Contains("QuizAnswer-style"))
+			{
+				HtmlDom.RemoveClass(group.ParentNode as XmlElement, "empty");
+			}
+			var attributeData = row.GetCell(InternalSpreadsheet.AttributeColumnLabel)?.Content;
+			if (!string.IsNullOrEmpty(attributeData))
+			{
+				var target = group;
+				if (attributeData.StartsWith("../"))
+				{
+					attributeData = attributeData.Substring(3);
+					target = (XmlElement)group.ParentNode;
+				}
+				var parts = attributeData.Split('=');
+				if (parts.Length == 2)
+				{
+					if (parts[0] == "class")
+					{
+						// A special case we need for historical reasons, particularly Quiz Page.
+						// In future, we want to avoid using this approach, and design so that
+						// we simply set the value of an attribute starting with data-content.
+						HtmlDom.AddClass(target, parts[1]);
+					}
+					else
+					{
+						target.SetAttribute(parts[0], parts[1]);
+					}
+				}
+			}
 			var sheetLanguages = _sheet.Languages;
 			foreach (var lang in sheetLanguages)
 			{
@@ -1296,5 +1807,28 @@ namespace Bloom.Spreadsheet
 		{
 			return Utils.MiscUtils.GetMp3TimeSpan(path, true).TotalSeconds;
 		}
+	}
+
+
+	/// <summary>
+	/// Encapsulates combinations of types of block that a page might contain
+	/// as sources or destinations for spreadsheet content.
+	/// </summary>
+	[Flags]
+	enum BlockTypes
+	{
+		None = 0,
+		// The bitshifts make sure these stay in sync
+		Text = 1 << SpreadsheetImporter.translationGroupIndex,
+		Image = 1 << SpreadsheetImporter.imageContainerIndex,
+		Video = 1 << SpreadsheetImporter.videoContainerIndex,
+		Widget = 1 << SpreadsheetImporter.widgetContainerIndex,
+		All = 15, // deliberately not including landscape!
+		// This is special. A combination of the above flags may be used as an index
+		// to look up a page guid that should be inserted when we need that combination
+		// of blocks on a page. Sometimes, we want a different page for Landscape.
+		// If so, we can or this value in to make a suitable key.
+		// It is not actually a type of block.
+		Landscape = 1024
 	}
 }

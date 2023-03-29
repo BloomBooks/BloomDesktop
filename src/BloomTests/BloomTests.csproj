@@ -316,8 +316,10 @@
     <Compile Include="Spreadsheet\InternalSpreadsheetTests.cs" />
     <Compile Include="Spreadsheet\SpreadsheetAudioImportTests.cs" />
     <Compile Include="Spreadsheet\SpreadsheetAudioTests.cs" />
+    <Compile Include="Spreadsheet\SpreadsheetExportVideosAndWidgetsTests.cs" />
     <Compile Include="Spreadsheet\SpreadSheetImageDescriptionTests.cs" />
     <Compile Include="Spreadsheet\SpreadsheetImporterWithBookTests.cs" />
+    <Compile Include="Spreadsheet\SpreadsheetPageTypeImportTests.cs" />
     <Compile Include="Spreadsheet\TestSpreadsheetImporter.cs" />
     <Compile Include="Utils\BloomArchiveFileTests.cs" />
     <Compile Include="Utils\BloomTarArchiveTests.cs" />

@@ -1761,17 +1761,17 @@ p {
 </html>");
 
 			// SUT
-			var resultNode = HtmlDom.GetUserModifiableStylesUsedOnPage(domForTestingInsertedPage);
+			var result = HtmlDom.GetUserModifiableStylesUsedOnPage(domForTestingInsertedPage);
 
 			// Verification
 			const string expectedStyle1 = ".QuizAnswer-style";
 			const string expectedStyle2 = ".QuizQuestion-style";
 			const string unexpectedStyle1 = ".BigWords-style";
 			const string unexpectedStyle2 = ".QuizHeader-style";
-			Assert.That(resultNode.InnerXml.Contains(expectedStyle1), Is.True);
-			Assert.That(resultNode.InnerXml.Contains(expectedStyle2), Is.True);
-			Assert.That(resultNode.InnerXml.Contains(unexpectedStyle1), Is.False);
-			Assert.That(resultNode.InnerXml.Contains(unexpectedStyle2), Is.False);
+			Assert.That(result.Contains(expectedStyle1), Is.True);
+			Assert.That(result.Contains(expectedStyle2), Is.True);
+			Assert.That(result.Contains(unexpectedStyle1), Is.False);
+			Assert.That(result.Contains(unexpectedStyle2), Is.False);
 		}
 
 		[TestCase("A5Portrait")]

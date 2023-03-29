@@ -76,13 +76,10 @@ const SpreadsheetExportDialog: React.FunctionComponent<{
                 <p></p>
                 <WarningBox>
                     <span>
-                        This feature is still a work in progress. Though you can{" "}
-                        <em>export</em> all books, Bloom cannot <em>import</em>{" "}
-                        books with these features: Quizzes and other Activities.
-                        If you change the text after recording audio and before
-                        exporting, the audio may not import correctly. There may
-                        be other export and import limitations we are not aware
-                        of.
+                        This feature is still a work in progress. If you change
+                        the text after recording audio and before exporting, the
+                        audio may not import correctly. There may be other
+                        export and import limitations we are not aware of.
                     </span>
                 </WarningBox>
                 <p></p>
