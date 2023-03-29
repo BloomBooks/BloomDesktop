@@ -2,8 +2,10 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Dynamic;
 using System.IO;
 using System.Linq;
+using System.Text.Json.Nodes;
 using System.Windows.Forms;
 using System.Xml;
 using Bloom.Api;
@@ -11,8 +13,10 @@ using Bloom.Book;
 using Bloom.Properties;
 using DesktopAnalytics;
 using L10NSharp;
+using SIL.Data;
 using SIL.IO;
 using SIL.Reporting;
+using static SQLite.SQLite3;
 using Application = System.Windows.Forms.Application;
 
 namespace Bloom.Publish.PDF
@@ -52,7 +56,7 @@ namespace Bloom.Publish.PDF
 			apiHandler.RegisterEndpointHandler(kApiUrlPart + "cover", HandleCreateCoverPdf, true);
 			apiHandler.RegisterEndpointHandler(kApiUrlPart + "cancel", HandleCancel, true);
 			apiHandler.RegisterEndpointHandler(kApiUrlPart + "pages", HandleCreatePagesPdf, true);
-			apiHandler.RegisterEndpointHandler(kApiUrlPart + "printSettingsPath", HandlePrintSettingsPath, true);
+			apiHandler.RegisterEndpointHandler(kApiUrlPart + "printSettingsHelp", HandlePrintSettingsHelp, true);
 			apiHandler.RegisterEndpointHandler(kApiUrlPart + "save", HandleSavePdf, true);
 			apiHandler.RegisterBooleanEndpointHandler(kApiUrlPart + "allowBooklet", request => _publishModel.AllowPdfBooklet, null, false);
 			apiHandler.RegisterBooleanEndpointHandler(kApiUrlPart + "allowFullBleed",
@@ -97,26 +101,85 @@ namespace Bloom.Publish.PDF
 			request.PostSucceeded();
 		}
 
-		/// <summary>
-		/// Gets the url of the image we should show (if any) to help the user configure
-		/// the printer to correctly print a booklet.
-		/// </summary>
-		private void HandlePrintSettingsPath(ApiRequest request)
+		private void HandlePrintSettingsHelp(ApiRequest request)
 		{
-			var printSettingsPreviewFolder =
-				FileLocationUtilities.GetDirectoryDistributedWithApplication("printer settings images");
-			var printSettingsSamplePrefix = Path.Combine(printSettingsPreviewFolder,
-				PageLayout.SizeAndOrientation + "-" + (isBooklet() ? "Booklet-" : ""));
-			string printSettingsSampleName = null;
-			if (printSettingsSampleName == null || !RobustFile.Exists(printSettingsSampleName))
-				printSettingsSampleName = printSettingsSamplePrefix + LocalizationManager.UILanguageId + ".png";
-			if (!RobustFile.Exists(printSettingsSampleName))
-				printSettingsSampleName = printSettingsSamplePrefix + "en" + ".png";
-			if (Settings.Default.DontShowPrintNotification || !RobustFile.Exists(printSettingsSampleName))
-				printSettingsSampleName = "";
-			else
-				printSettingsSampleName = printSettingsSampleName.ToLocalhost();
-			request.ReplyWithText(printSettingsSampleName);
+			var needA4Paper = false;
+			var needLandscape = false;
+			var needLongEdge = false;
+			var needCutAndStack = false;
+			var needCutAndFold = false;
+			var needHelps = true;
+			dynamic result = new ExpandoObject();
+			switch (PageLayout.SizeAndOrientation.PageSizeName)
+			{
+				case "A5":
+					needA4Paper = true;
+					if (PageLayout.SizeAndOrientation.IsLandScape)  // Portrait, long edge, A4; cut and stack
+					{
+						needLongEdge = true;
+						needCutAndStack = true;
+					}
+					else                                            // Landscape, short edge, A4
+					{
+						needLandscape = true;
+					}
+					break;
+				case "A6":
+					needA4Paper = true;
+					needCutAndFold = true;
+					if (PageLayout.SizeAndOrientation.IsLandScape)  // Landscape, short edge, A4; cut and fold
+						needLandscape = true;
+					else                                            // Portrait, long edge, A4; cut and fold
+						needLongEdge = true;
+					break;
+				case "HalfLetter":
+					if (PageLayout.SizeAndOrientation.IsLandScape)	// Portrait, long edge, Letter; cut and stack
+					{
+						needLongEdge = true;
+						needCutAndStack = true;
+					}
+					else                                            // Landscape, short edge, Letter
+					{
+						needLandscape = true;
+					}
+					break;
+				case "QuarterLetter":
+					if (PageLayout.SizeAndOrientation.IsLandScape)	// Landscape, short edge, Letter; cut and fold
+						needLandscape = true;
+					else                                            // Portrait, long edge, Letter; cut and fold
+						needLongEdge = true;
+					needCutAndFold = true;
+					break;
+				default:
+					needHelps = false;
+					result.note = "This paper size is not recommended for booklets.";
+					break;
+
+			}
+			if (needCutAndFold)
+				result.note = LocalizationManager.GetString("PublishTab.PDF.Booklet.FourPages.CutAndFold",
+						"This will put four pages on each sheet of paper. Cut the stack, then fold to get two booklets.");
+			else if (needCutAndStack)
+				result.note = LocalizationManager.GetString("PublishTab.PDF.Booklet.TwoPages.CutAndStack",
+						"This will put two pages on each sheet of paper. Cut horizontally and stack to make one booklet.");
+			if (needHelps)
+			{
+				result.helps = new string[4];
+				if (needLandscape)
+					result.helps[0] = LocalizationManager.GetString("PublishTab.PDF.Booklet.Layout.Landscape", "1. Layout: Landscape");
+				else
+					result.helps[0] = LocalizationManager.GetString("PublishTab.PDF.Booklet.Layout.Portrait", "1. Layout: Portrait");
+				if (needLongEdge)
+					result.helps[1] = LocalizationManager.GetString("PublishTab.PDF.Booklet.Flip.LongEdge", "2. Print on both sides: \"Flip on long edge\"");
+				else
+					result.helps[1] = LocalizationManager.GetString("PublishTab.PDF.Booklet.Flip.ShortEdge", "2. Print on both sides: \"Flip on short edge\"");
+				if (needA4Paper)
+					result.helps[2] = LocalizationManager.GetString("PublishTab.PDF.Booklet.PaperSize.A4", "3. More settings > Paper size: \"A4\"");
+				else
+					result.helps[2] = LocalizationManager.GetString("PublishTab.PDF.Booklet.PaperSize.Letter", "3. More settings > Paper size: \"Letter\"");
+				result.helps[3] = LocalizationManager.GetString("PublishTab.PDF.Booklet.Scale.Actual Size", "4. More settings > Scale: \"Actual size\"");
+			}
+			request.ReplyWithJson(result);
 		}
 
 		private void HandlePrintAnalytics(ApiRequest request)

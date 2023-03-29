@@ -21,7 +21,7 @@ interface PdfReadyMessage {
 }
 
 export const PDFPrintFeaturesGroup: React.FunctionComponent<{
-    onChange?: () => void;
+    onChange?: (mode: string) => void;
     onGotPdf: (path: string) => void;
 }> = props => {
     useSubscribeToWebSocketForObject(
@@ -69,7 +69,7 @@ export const PDFPrintFeaturesGroup: React.FunctionComponent<{
                         onClick={() => {
                             post("publish/pdf/simple");
                             setActiveButton("simple");
-                            props.onChange?.();
+                            props.onChange?.("simple");
                         }}
                         label="Simple"
                         labelId="PublishTab.OnePagePerPaperRadio"
@@ -82,7 +82,7 @@ export const PDFPrintFeaturesGroup: React.FunctionComponent<{
                         onClick={() => {
                             post("publish/pdf/cover");
                             setActiveButton("cover");
-                            props.onChange?.();
+                            props.onChange?.("cover");
                         }}
                         label="Booklet cover"
                         labelId="PublishTab.CoverOnlyRadio"
@@ -97,7 +97,7 @@ export const PDFPrintFeaturesGroup: React.FunctionComponent<{
                         onClick={() => {
                             post("publish/pdf/pages");
                             setActiveButton("pages");
-                            props.onChange?.();
+                            props.onChange?.("pages");
                         }}
                         label="Booklet Insides"
                         labelId="PublishTab.BodyOnlyRadio"
@@ -128,7 +128,7 @@ export const PDFPrintFeaturesGroup: React.FunctionComponent<{
                                 // haven't chosen a mode yet. We just want to fix an obsolete
                                 // Simple mode preview if one is showing.
                                 if (activeButton === "simple") {
-                                    props.onChange?.();
+                                    props.onChange?.(activeButton);
                                     post("publish/pdf/" + activeButton);
                                 }
                             }}
@@ -150,7 +150,7 @@ export const PDFPrintFeaturesGroup: React.FunctionComponent<{
                             const newVal = e.target.value as string;
                             setCmyk(newVal === "cmyk");
                             if (activeButton) {
-                                props.onChange?.();
+                                props.onChange?.(activeButton);
                                 post("publish/pdf/" + activeButton);
                             }
                         }}
