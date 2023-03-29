@@ -1093,8 +1093,6 @@ namespace Bloom.Spreadsheet
 				_blockOnPageIndexes[i] = -1;
 		}
 
-		private const string basicTextAndImageGuid = "adcd48df-e9ab-4a07-afd4-6a24d0398382";
-
 		private Dictionary<BlockTypes, string> _pagesToInsert;
 
 		Dictionary<BlockTypes, string> PageToInsert()
@@ -1102,19 +1100,19 @@ namespace Bloom.Spreadsheet
 			if (_pagesToInsert == null)
 			{
 				_pagesToInsert = new Dictionary<BlockTypes, string>();
-				_pagesToInsert[BlockTypes.Image] = "adcd48df-e9ab-4a07-afd4-6a24d0398385"; // just an image
-				_pagesToInsert[BlockTypes.Image | BlockTypes.Text] = basicTextAndImageGuid;
-				_pagesToInsert[BlockTypes.Image | BlockTypes.Text | BlockTypes.Landscape] = "7b192144-527c-417c-a2cb-1fb5e78bf38a"; // Picture on left;
-				_pagesToInsert[BlockTypes.Text] = "a31c38d8-c1cb-4eb9-951b-d2840f6a8bdb"; // just text;
-				_pagesToInsert[BlockTypes.Video] = "8bedcdf8-3ad6-4967-b027-6c186436572f"; // Just Video;
-				_pagesToInsert[BlockTypes.Text | BlockTypes.Video] = "299644f5-addb-476f-a4a5-e3978139b188"; // Video Over Text;
-				_pagesToInsert[BlockTypes.Image | BlockTypes.Video] = "24c90e90-2711-465d-8f20-980d9ffae299"; // Picture & Video;
+				_pagesToInsert[BlockTypes.Image] = Book.Book.JustPictureGuid; // just an image
+				_pagesToInsert[BlockTypes.Image | BlockTypes.Text] = Book.Book.BasicTextAndImageGuid;
+				_pagesToInsert[BlockTypes.Image | BlockTypes.Text | BlockTypes.Landscape] = Book.Book.PictureOnLeftGuid;
+				_pagesToInsert[BlockTypes.Text] = Book.Book.JustTextGuid;
+				_pagesToInsert[BlockTypes.Video] = Book.Book.JustVideoGuid;
+				_pagesToInsert[BlockTypes.Text | BlockTypes.Video] = Book.Book.VideoOverTextGuid;
+				_pagesToInsert[BlockTypes.Image | BlockTypes.Video] = Book.Book.PictureAndVideoGuid;
 				// not obvious which arrangement of text, video, and image would be best. None of our templates is designed for
 				// portrait orientation. However, I think pictures and video are likely to shrink better than text, so it seems
 				// best to default to the layout that leaves the most room for text. ("Big text" does not refer to point size
 				// but to a large space for text).
-				_pagesToInsert[BlockTypes.Text | BlockTypes.Image | BlockTypes.Video] = "08422e7b-9406-4d11-8c71-02005b1b8095"; // Big Text Diglot;
-				_pagesToInsert[BlockTypes.Widget] = "3a705ac1-c1f2-45cd-8a7d-011c009cf406"; // Widget Page
+				_pagesToInsert[BlockTypes.Text | BlockTypes.Image | BlockTypes.Video] = Book.Book.BigTextDiglotGuid;
+				_pagesToInsert[BlockTypes.Widget] = Book.Book.WidgetGuid;
 			}
 			return _pagesToInsert;
 		}

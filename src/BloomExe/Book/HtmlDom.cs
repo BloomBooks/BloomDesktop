@@ -1348,7 +1348,7 @@ namespace Bloom.Book
 		public static string MergeUserStylesOnInsertion(XmlNode existingUserStyleNode,
 			XmlNode insertedPageUserStyleNode)
 		{
-			return MergeUserStylesOnInsertion(existingUserStyleNode, insertedPageUserStyleNode.InnerXml, out bool dummy);
+			return MergeUserStylesOnInsertion(existingUserStyleNode, insertedPageUserStyleNode?.InnerXml ?? "", out bool dummy);
 		}
 
 		/// <summary>

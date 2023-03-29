@@ -71,5 +71,25 @@ namespace BloomTests
 			string expectedResult = $@"http://localhost:{BloomServer.portForHttp}/bloom/C%3A/PathToTemp/PlaceForStagingBook/{expectedEscapedTitle}/meta.json";
 			Assert.That(result, Is.EqualTo(expectedResult));
 		}
+
+		[Test]
+		public static void MapUnevenLists_HandlesEmptyList()
+		{
+			var input1 = new List<string>(new[] { "A1", "A2" });
+			var input2 = new List<string>();
+			var input3 = new List<string>(new[] { "C1" });
+			var mainInput = new[] {input1, input2, input3};
+			var result = Extensions.MapUnevenLists(mainInput).ToArray();
+			Assert.That(result, Has.Length.EqualTo(2));
+			var r1 = result[0]; // First element from each input
+			Assert.That(r1[0], Is.EqualTo("A1"));
+			Assert.That(r1[1], Is.Null);
+			Assert.That(r1[2], Is.EqualTo("C1"));
+
+			var r2 = result[1]; // second element from each input
+			Assert.That(r2[0], Is.EqualTo("A2"));
+			Assert.That(r2[1], Is.Null);
+			Assert.That(r2[2], Is.Null);
+		}
 	}
 }
