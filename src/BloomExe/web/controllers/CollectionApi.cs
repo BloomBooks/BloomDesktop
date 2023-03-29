@@ -162,6 +162,7 @@ namespace Bloom.web.controllers
 
 			apiHandler.RegisterEndpointHandler(kApiUrlPart + "removeSourceCollection", HandleRemoveSourceCollection, false);
 			apiHandler.RegisterEndpointHandler(kApiUrlPart + "addSourceCollection", HandleAddSourceCollection, true);
+			apiHandler.RegisterEndpointHandler(kApiUrlPart + "removeSourceFolder", HandleRemoveSourceFolder, true);
 		}
 
 		private void HandleRemoveSourceCollection(ApiRequest request)
@@ -173,12 +174,53 @@ namespace Bloom.web.controllers
 			if (RobustFile.Exists(linkFile))
 			{
 				RobustFile.Delete(linkFile);
+				_collectionModel.ReloadCollections();
 				request.PostSucceeded();
 			}
 			else
 			{
 				request.Failed();
 			}
+		}
+
+		bool _updateAfterExplorerOpened;
+		private void HandleRemoveSourceFolder(ApiRequest request)
+		{
+			var collectionFolderPath = request.RequiredPostString();
+			if (Directory.Exists(collectionFolderPath))
+			{
+				request.PostSucceeded();
+				var startInfo = new ProcessStartInfo
+				{
+					Arguments = $"/select, \"{collectionFolderPath}\"",
+					FileName = "explorer.exe"
+				};
+				_updateAfterExplorerOpened = true;
+				Process.Start(startInfo);
+			}
+			else
+			{
+				request.Failed();
+				return;
+			}
+		}
+
+		internal void CheckForCollectionUpdates()
+		{
+			if (_updateAfterExplorerOpened)
+			{
+				// trigger a list request?.
+				_collectionModel.ReloadCollections();
+				dynamic result = new DynamicJson();
+				result.success = true;
+				result.list = GetCollectionList();
+				_webSocketServer.SendBundle("collections", "updateCollectionList", result);
+			}
+		}
+
+		internal void ResetUpdatingList()
+		{
+			_updateAfterExplorerOpened = false;
 		}
 
 		private void HandleAddSourceCollection(ApiRequest request)
@@ -202,8 +244,9 @@ namespace Bloom.web.controllers
 				dlg.InitialDirectory = NewCollectionWizard.DefaultParentDirectoryForCollections;
 				dlg.CheckFileExists = true;
 				dlg.CheckPathExists = true;
-				if (dlg.ShowDialog() != DialogResult.Cancel)
-					pathToCollectionFile = dlg.FileName;
+				if (dlg.ShowDialog() == DialogResult.Cancel)
+					return;
+				pathToCollectionFile = dlg.FileName;
 			}
 			var pathToCollectionDirectory = Path.GetDirectoryName(pathToCollectionFile);
 			var collectionName = Path.GetFileNameWithoutExtension(pathToCollectionFile);
@@ -218,6 +261,7 @@ namespace Bloom.web.controllers
 			result.collection.isSourceCollection = false; // nothing is a "source collection" any longer.  but everything can be.
 			result.collection.shouldLocalizeName = false;
 			result.collection.isLink = true;
+			result.collection.isRemovableFolder = false;
 			_collectionModel.ReloadCollections();
 			_webSocketServer.SendBundle("collections", "addSourceCollection-results", result);
 		}
@@ -237,6 +281,12 @@ namespace Bloom.web.controllers
 		// List out all the collections we have loaded
 		public void HandleListRequest(ApiRequest request)
 		{
+			dynamic output = GetCollectionList();
+			request.ReplyWithJson(JsonConvert.SerializeObject(output));
+		}
+
+		private dynamic GetCollectionList()
+		{
 			dynamic output = new List<dynamic>();
 			_collectionModel.GetBookCollections().ForEach(c =>
 			{
@@ -254,11 +304,13 @@ namespace Bloom.web.controllers
 							name = c.Name,
 							isSourceCollection = _collectionModel.IsSourceCollection,
 							shouldLocalizeName = c.PathToDirectory.StartsWith(BloomFileLocator.FactoryCollectionsDirectory) || c.ContainsDownloadedBooks,
-							isLink = c.Type != BookCollection.CollectionType.TheOneEditableCollection && IsFromLinkFile(c.PathToDirectory)
-						}) ;
+							isLink = c.Type != BookCollection.CollectionType.TheOneEditableCollection && IsFromLinkFile(c.PathToDirectory),
+							isRemovableFolder = c.Type != BookCollection.CollectionType.TheOneEditableCollection && !IsFromLinkFile(c.PathToDirectory) &&
+								!c.ContainsDownloadedBooks && !c.PathToDirectory.StartsWith(BloomFileLocator.FactoryCollectionsDirectory)
+						});
 				}
 			});
-			request.ReplyWithJson(JsonConvert.SerializeObject(output));
+			return output;
 		}
 
 		private bool IsFromLinkFile(string collectionFolderPath)

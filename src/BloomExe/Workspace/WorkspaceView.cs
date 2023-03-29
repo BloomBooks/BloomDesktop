@@ -71,6 +71,7 @@ namespace Bloom.Workspace
 		private BloomWebSocketServer _webSocketServer;
 		private BookServer _bookServer;
 		private WorkspaceTabSelection _tabSelection;
+		private CollectionApi _collectionApi;
 
 		//autofac uses this
 
@@ -108,6 +109,7 @@ namespace Bloom.Workspace
 			_bookServer = bookServer;
 			_tabSelection = tabSelection;
 			collectionApi.WorkspaceView = this; // avoids an Autofac exception that appears if collectionApi constructor takes a WorkspaceView
+			_collectionApi = collectionApi;
 			appApi.WorkspaceView = this; // it needs to know, and there's some circularity involved in having factory pass it in
 			workspaceApi.WorkspaceView = this; // and yet one more
 
@@ -753,6 +755,8 @@ namespace Bloom.Workspace
 
 		public bool InEditMode => _tabStrip.SelectedTab == _editTab;
 
+		public bool InCollectionTab => _tabStrip.SelectedTab == _reactCollectionTab;
+
 		internal bool IsInTabStrip(Point pt)
 		{
 			return _tabStrip != null && _tabStrip.DisplayRectangle.Contains(pt);
@@ -911,6 +915,7 @@ namespace Bloom.Workspace
 											});
 
 			_previouslySelectedControl = view;
+			_collectionApi.ResetUpdatingList();
 
 			var zoomManager = CurrentTabView as IZoomManager;
 			if (zoomManager != null)
@@ -1122,6 +1127,11 @@ namespace Bloom.Workspace
 			{
 				g.Dispose();
 			}
+		}
+
+		public void CheckForCollectionUpdates()
+		{
+			_collectionApi.CheckForCollectionUpdates();
 		}
 
 		public void CheckForUpdates()
