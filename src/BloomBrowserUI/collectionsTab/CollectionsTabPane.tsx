@@ -2,7 +2,7 @@
 import { jsx, css } from "@emotion/react";
 
 import React = require("react");
-import { get, post, postString, useApiJson } from "../utils/bloomApi";
+import { get, post, postString } from "../utils/bloomApi";
 import { BooksOfCollection } from "./BooksOfCollection";
 import { Transition } from "react-transition-group";
 import { SplitPane } from "react-collapse-pane";
@@ -36,7 +36,15 @@ import { BloomTooltip } from "../react_components/BloomToolTip";
 const kResizerSize = 10;
 
 export const CollectionsTabPane: React.FunctionComponent<{}> = () => {
-    const collections = useApiJson("collections/list");
+    // This sort of duplicates useApiJson, but allows us to use the underlying state variable.
+    // Which we really need.
+    const [collections, setCollections] = useState<[any] | undefined>();
+    useEffect(() => {
+        get("collections/list", c => {
+            setCollections(c.data);
+        });
+    }, []);
+
     // Setting the collectionCount to a new value causes a refresh.  Even though it's
     // not explicitly referenced anywhere except for being set, not having it results
     // in no refreshes when collections are removed.
@@ -53,6 +61,7 @@ export const CollectionsTabPane: React.FunctionComponent<{}> = () => {
     const [newCollection, setNewCollection] = useState<any | undefined>();
 
     const finishAddingNewSourceCollection = (collection: any) => {
+        if (!collections) return;
         const currentIndex = collections.findIndex(value => {
             return value.id && value.id === collection.id;
         });
@@ -72,6 +81,7 @@ export const CollectionsTabPane: React.FunctionComponent<{}> = () => {
     };
 
     function finishDeletingCollection(id: string) {
+        if (!collections) return;
         let newIndex = -1;
         collections.filter((value, index, array) => {
             if (value.id === id) {
@@ -117,11 +127,9 @@ export const CollectionsTabPane: React.FunctionComponent<{}> = () => {
 
     useSubscribeToWebSocketForObject<{
         success: boolean;
-        message: string;
-    }>("collections", "removeSourceFolder-results", results => {
-        if (results.success) {
-            setDeletedCollection(results.message);
-        }
+        list: [any];
+    }>("collections", "updateCollectionList", results => {
+        setCollections(results.list);
     });
 
     const [draggingSplitter, setDraggingSplitter] = useState(false);

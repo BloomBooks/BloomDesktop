@@ -183,29 +183,44 @@ namespace Bloom.web.controllers
 			}
 		}
 
+		bool _updateAfterExplorerOpened;
 		private void HandleRemoveSourceFolder(ApiRequest request)
 		{
 			var collectionFolderPath = request.RequiredPostString();
 			if (Directory.Exists(collectionFolderPath))
 			{
 				request.PostSucceeded();
-				BloomFolderChooser.ChooseFolder(collectionFolderPath);
-				if (Directory.Exists(collectionFolderPath))
-					return;	// The user didn't delete the folder.
+				var startInfo = new ProcessStartInfo
+				{
+					Arguments = $"/select, \"{collectionFolderPath}\"",
+					FileName = "explorer.exe"
+				};
+				_updateAfterExplorerOpened = true;
+				Process.Start(startInfo);
 			}
 			else
 			{
 				request.Failed();
 				return;
 			}
-			if (!Directory.Exists(collectionFolderPath))
+		}
+
+		internal void CheckForCollectionUpdates()
+		{
+			if (_updateAfterExplorerOpened)
 			{
+				// trigger a list request?.
 				_collectionModel.ReloadCollections();
 				dynamic result = new DynamicJson();
 				result.success = true;
-				result.message = collectionFolderPath;
-				_webSocketServer.SendBundle("collections", "removeSourceFolder-results", result);
+				result.list = GetCollectionList();
+				_webSocketServer.SendBundle("collections", "updateCollectionList", result);
 			}
+		}
+
+		internal void ResetUpdatingList()
+		{
+			_updateAfterExplorerOpened = false;
 		}
 
 		private void HandleAddSourceCollection(ApiRequest request)
@@ -266,6 +281,12 @@ namespace Bloom.web.controllers
 		// List out all the collections we have loaded
 		public void HandleListRequest(ApiRequest request)
 		{
+			dynamic output = GetCollectionList();
+			request.ReplyWithJson(JsonConvert.SerializeObject(output));
+		}
+
+		private dynamic GetCollectionList()
+		{
 			dynamic output = new List<dynamic>();
 			_collectionModel.GetBookCollections().ForEach(c =>
 			{
@@ -286,10 +307,10 @@ namespace Bloom.web.controllers
 							isLink = c.Type != BookCollection.CollectionType.TheOneEditableCollection && IsFromLinkFile(c.PathToDirectory),
 							isRemovableFolder = c.Type != BookCollection.CollectionType.TheOneEditableCollection && !IsFromLinkFile(c.PathToDirectory) &&
 								!c.ContainsDownloadedBooks && !c.PathToDirectory.StartsWith(BloomFileLocator.FactoryCollectionsDirectory)
-						}) ;
+						});
 				}
 			});
-			request.ReplyWithJson(JsonConvert.SerializeObject(output));
+			return output;
 		}
 
 		private bool IsFromLinkFile(string collectionFolderPath)
