@@ -10,7 +10,7 @@ using System.Xml.Serialization;
 using Bloom.Api;
 using Bloom.Book;
 using Bloom.MiscUI;
-using Bloom.Publish.Android;
+using Bloom.Publish.BloomPub;
 using Bloom.web.controllers;
 using DesktopAnalytics;
 using L10NSharp;

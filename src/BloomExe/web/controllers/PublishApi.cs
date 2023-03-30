@@ -11,7 +11,7 @@ using Bloom.Book;
 using Bloom.Collection;
 using Bloom.ImageProcessing;
 using Bloom.Publish;
-using Bloom.Publish.Android;
+using Bloom.Publish.BloomPub;
 using Bloom.Publish.BloomLibrary;
 using BloomTemp;
 using Newtonsoft.Json;
@@ -32,17 +32,17 @@ namespace Bloom.web.controllers
 		private HashSet<string> _languagesWithAudio = new HashSet<string>();
 		private Book.Book _bookForLanguagesToPublish = null;
 		private object _lockForLanguages = new object();
-		internal AndroidPublishSettings _lastSettings;
+		internal BloomPubPublishSettings _lastSettings;
 		internal Color _thumbnailBackgroundColor = Color.Transparent; // can't be actual book cover color <--- why not?
 		private Color _lastThumbnailBackgroundColor;
-		// This constant must match the ID that is used for the listener set up in the React component AndroidPublishUI
+		// This constant must match the ID that is used for the listener set up in the client
 		private const string kWebsocketEventId_Preview = "androidPreview";
 		private Book.Book _coverColorSourceBook; public const string StagingFolder = "PlaceForStagingBook";
 
 		// This constant must match the ID used for the useWatchString called by the React component MethodChooser.
 		private const string kWebsocketState_LicenseOK = "publish/licenseOK";
 
-		internal const string kWebSocketContext = "publish-android"; // must match what is in AndroidPublishUI.tsx
+		internal const string kWebSocketContext = "publish-android"; // must match client
 
 		private static TemporaryFolder _stagingFolder;
 
@@ -412,7 +412,7 @@ namespace Bloom.web.controllers
 		/// Generates an unzipped, staged BloomPUB from the book
 		/// </summary>
 		/// <returns>A valid, well-formed URL on localhost that points to the staged book's htm file</returns>
-		public string MakeBloomPubForPreview(Book.Book book, BookServer bookServer, WebSocketProgress progress, Color backColor, AndroidPublishSettings settings = null)
+		public string MakeBloomPubForPreview(Book.Book book, BookServer bookServer, WebSocketProgress progress, Color backColor, BloomPubPublishSettings settings = null)
 		{
 			progress.Message("PublishTab.Epub.PreparingPreview", "Preparing Preview");  // message shared with Epub publishing
 			if (settings?.LanguagesToInclude != null)
@@ -480,9 +480,9 @@ namespace Bloom.web.controllers
 			UpdatePreview(request, false);
 		}
 
-		internal AndroidPublishSettings GetSettings()
+		internal BloomPubPublishSettings GetSettings()
 		{
-			return AndroidPublishSettings.FromBookInfo(_bookForLanguagesToPublish.BookInfo);
+			return BloomPubPublishSettings.FromBookInfo(_bookForLanguagesToPublish.BookInfo);
 		}
 
 

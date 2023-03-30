@@ -461,10 +461,10 @@
     <Compile Include="MiscUI\BrowserProgressDialog.cs" />
     <Compile Include="MiscUI\Enterprise.cs" />
     <Compile Include="MiscUI\StartupScreenManager.cs" />
-    <Compile Include="Publish\Android\BulkBloomPubPublishSettings.cs" />
+    <Compile Include="Publish\BloomPub\BulkBloomPubPublishSettings.cs" />
     <Compile Include="Publish\InclusionSetting.cs" />
     <Compile Include="Publish\LangsToPublishSetting.cs" />
-    <Compile Include="Publish\Android\BulkBloomPubCreator.cs" />
+    <Compile Include="Publish\BloomPub\BulkBloomPubCreator.cs" />
     <Compile Include="Publish\LanguagePublishInfo.cs" />
     <Compile Include="Spreadsheet\MarkedUpText.cs" />
     <Compile Include="Spreadsheet\ContentRow.cs" />
@@ -500,8 +500,8 @@
     <Compile Include="ErrorReporter\SentryErrorReporter.cs" />
     <Compile Include="ErrorReporter\HtmlErrorReporter.cs" />
     <Compile Include="MiscUI\ReactDialogFactory.cs" />
-    <Compile Include="Publish\Android\AndroidPublishSettings.cs" />
-    <Compile Include="Publish\Android\BloomPubMaker.cs" />
+    <Compile Include="Publish\BloomPub\BloomPubPublishSettings.cs" />
+    <Compile Include="Publish\BloomPub\BloomPubMaker.cs" />
     <Compile Include="Book\BookSelectionChangedEventArgs.cs" />
     <Compile Include="Book\QuestionGroup.cs" />
     <Compile Include="Book\VersionRequirements.cs" />
@@ -509,7 +509,7 @@
     <Compile Include="Collection\BrandingProject.cs" />
     <Compile Include="MiscUI\DefenderFolderProtectionCheck.cs" />
     <Compile Include="Edit\PageControlsApi.cs" />
-    <Compile Include="Publish\Android\usb\AndroidDeviceUsbConnection.cs" />
+    <Compile Include="Publish\BloomPub\usb\AndroidDeviceUsbConnection.cs" />
     <Compile Include="ApplicationContainer.cs" />
     <Compile Include="BloomFileLocator.cs" />
     <Compile Include="BookThumbNailer.cs" />
@@ -532,10 +532,10 @@
     <Compile Include="MiscUI\TroubleShooterDialog.Designer.cs">
       <DependentUpon>TroubleShooterDialog.cs</DependentUpon>
     </Compile>
-    <Compile Include="Publish\Android\file\FilePublisher.cs" />
-    <Compile Include="Publish\Android\wifi\BloomReaderUDPListener.cs" />
-    <Compile Include="Publish\Android\wifi\WiFiAdvertiser.cs" />
-    <Compile Include="Publish\Android\wifi\WiFiPublisher.cs" />
+    <Compile Include="Publish\BloomPub\file\FilePublisher.cs" />
+    <Compile Include="Publish\BloomPub\wifi\BloomReaderUDPListener.cs" />
+    <Compile Include="Publish\BloomPub\wifi\WiFiAdvertiser.cs" />
+    <Compile Include="Publish\BloomPub\wifi\WiFiPublisher.cs" />
     <Compile Include="Publish\AudioProcessor.cs" />
     <Compile Include="Publish\BloomLibrary\BloomLibraryPublishModel.cs" />
     <Compile Include="Publish\AccessibilityChecker\AccessibilityCheckWindow.cs">
@@ -544,7 +544,7 @@
     <Compile Include="Publish\AccessibilityChecker\AccessibilityCheckWindow.Designer.cs">
       <DependentUpon>AccessibilityCheckWindow.cs</DependentUpon>
     </Compile>
-    <Compile Include="Publish\Android\usb\UsbPublisher.cs" />
+    <Compile Include="Publish\BloomPub\usb\UsbPublisher.cs" />
     <Compile Include="Publish\Epub\PublishEpubApi.cs" />
     <Compile Include="TeamCollection\BookStatusChangeEventArgs.cs" />
     <Compile Include="MiscUI\ReactDialog.cs">
@@ -857,8 +857,8 @@
     <Compile Include="web\BloomWebSocketServer.cs" />
     <Compile Include="web\CommandAvailabilityPublisher.cs" />
     <Compile Include="web\controllers\AddOrChangePageApi.cs" />
-    <Compile Include="Publish\Android\wifi\AndroidMessageArgs.cs" />
-    <Compile Include="Publish\Android\PublishToAndroidApi.cs" />
+    <Compile Include="Publish\BloomPub\wifi\AndroidMessageArgs.cs" />
+    <Compile Include="Publish\BloomPub\PublishToBloomPubApi.cs" />
     <Compile Include="web\controllers\BookMetadataApi.cs" />
     <Compile Include="web\controllers\CommonApi.cs" />
     <Compile Include="web\controllers\FileIOApi.cs" />

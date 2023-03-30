@@ -6,7 +6,7 @@ using L10NSharp;
 using Bloom.Properties;
 using Bloom.Book;
 using BloomTemp;
-using Bloom.Publish.Android;
+using Bloom.Publish.BloomPub;
 using SIL.Reporting;
 
 namespace Bloom.CLI
@@ -107,7 +107,7 @@ namespace Bloom.CLI
 					_projectContext.TeamCollectionManager.CurrentCollectionEvenIfDisconnected ?? new AlwaysEditSaveContext() as ISaveContext));
 
 				bool isTemplateBook = _book.BookInfo.IsSuitableForMakingShells;
-				var settings = AndroidPublishSettings.GetPublishSettingsForBook(_projectContext.BookServer, _book.BookInfo);
+				var settings = BloomPubPublishSettings.GetPublishSettingsForBook(_projectContext.BookServer, _book.BookInfo);
 				// This method will gather up the desired font analytics as a side-effect.
 				BloomPubMaker.PrepareBookForBloomReader(settings, bookFolderPath: options.BookPath, bookServer: _projectContext.BookServer, temp: stagingFolder,
 					progress: new Bloom.web.NullWebSocketProgress(), isTemplateBook: isTemplateBook);

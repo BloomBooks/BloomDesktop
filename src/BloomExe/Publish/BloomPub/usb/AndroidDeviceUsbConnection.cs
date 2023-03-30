@@ -9,7 +9,7 @@ using System.Text;
 using System.Threading;
 using PodcastUtilities.PortableDevices;
 
-namespace Bloom.Publish.Android.usb
+namespace Bloom.Publish.BloomPub.usb
 {
 	enum DeviceNotFoundReportType
 	{
@@ -36,7 +36,7 @@ namespace Bloom.Publish.Android.usb
 	/// </summary>
 	class AndroidDeviceUsbConnection
 	{
-		public Action<Book.Book, Color, AndroidPublishSettings> OneReadyDeviceFound;
+		public Action<Book.Book, Color, BloomPubPublishSettings> OneReadyDeviceFound;
 		public Action<DeviceNotFoundReportType, List<string>> OneReadyDeviceNotFound;
 
 		private const string kBloomFolderOnDevice = "Bloom";
@@ -47,7 +47,7 @@ namespace Bloom.Publish.Android.usb
 		/// <summary>
 		/// Attempt to establish a connection with an Android device; then send it the book.
 		/// </summary>
-		public void ConnectAndSendToOneDevice(Book.Book book, Color backColor, AndroidPublishSettings settings = null)
+		public void ConnectAndSendToOneDevice(Book.Book book, Color backColor, BloomPubPublishSettings settings = null)
 		{
 			_stopLookingForDevice = false;
 			_device = null;
@@ -149,7 +149,7 @@ namespace Bloom.Publish.Android.usb
 		/// and send to it.
 		/// </summary>
 		/// <returns>true if it found one ready device</returns>
-		private bool ConnectAndSendToOneDeviceInternal(IEnumerable<IDevice> devices, Book.Book book, Color backColor, AndroidPublishSettings settings = null)
+		private bool ConnectAndSendToOneDeviceInternal(IEnumerable<IDevice> devices, Book.Book book, Color backColor, BloomPubPublishSettings settings = null)
 		{
 			List<IDevice> applicableDevices = new List<IDevice>();
 			foreach (var device in devices)

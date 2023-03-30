@@ -89,11 +89,11 @@ namespace Bloom.Api
 		private void WriteOutput(byte[] buffer, HttpListenerResponse response)
 		{
 			response.ContentLength64 += buffer.Length;
-			// This is particularly useful in allowing the bloom-player used in the android preview
+			// This is particularly useful in allowing the bloom-player used in the BloomPUB preview
 			// to access the current preview book. Also allows local browsers running bloom-player
 			// to access it.
 			response.AppendHeader("Access-Control-Allow-Origin", "*");
-			// Allows bloomlibrary.org to call the common/loginData endpoint.
+			// Allows bloomlibrary.org to call the external endpoints.
 			response.AppendHeader("Access-Control-Allow-Headers", "*");
 			Stream output = response.OutputStream;
 			try

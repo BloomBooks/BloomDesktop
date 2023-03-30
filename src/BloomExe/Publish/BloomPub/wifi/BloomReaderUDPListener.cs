@@ -3,9 +3,9 @@ using System.Diagnostics;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
-using Bloom.Api;
+using Bloom.Publish.BloomPUB.wifi;
 
-namespace Bloom.Publish.Android.wifi
+namespace Bloom.Publish.BloomPub.wifi
 {
 	/// <summary>
 	/// Helper class to listen for a single packet from the Android. Construct an instance to start

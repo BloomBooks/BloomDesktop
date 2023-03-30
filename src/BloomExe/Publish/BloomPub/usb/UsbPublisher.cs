@@ -9,7 +9,7 @@ using Bloom.Book;
 using Bloom.web;
 using SIL.Reporting;
 
-namespace Bloom.Publish.Android.usb
+namespace Bloom.Publish.BloomPub.usb
 {
 	public class UsbPublisher
 	{
@@ -33,7 +33,7 @@ namespace Bloom.Publish.Android.usb
 		/// Attempt to connect to a device
 		/// </summary>
 		/// <param name="book"></param>
-		public void Connect(Book.Book book, Color backColor, AndroidPublishSettings settings = null)
+		public void Connect(Book.Book book, Color backColor, BloomPubPublishSettings settings = null)
 		{
 			try
 			{
@@ -42,7 +42,7 @@ namespace Bloom.Publish.Android.usb
 				// to figure out what was connected.
 				lock (this)
 				{
-					PublishToAndroidApi.CheckBookLayout(book, _progress);
+					PublishToBloomPubApi.CheckBookLayout(book, _progress);
 					if (_connectionHandler != null)
 					{
 						// we're in an odd state...should only be able to click the button that calls this
@@ -99,7 +99,7 @@ namespace Bloom.Publish.Android.usb
 			Stopped();
 		}
 
-		private void HandleOneReadyDeviceFound(Book.Book book, Color backColor, AndroidPublishSettings settings = null)
+		private void HandleOneReadyDeviceFound(Book.Book book, Color backColor, BloomPubPublishSettings settings = null)
 		{
 			_progress.MessageWithParams(idSuffix: "Connected",
 				message: "Connected to {0} via USB...",
@@ -135,7 +135,7 @@ namespace Bloom.Publish.Android.usb
 		/// <summary>
 		/// Attempt to send the book to the device
 		/// </summary>
-		public void SendBookAsync(Book.Book book, Color backColor, AndroidPublishSettings settings = null)
+		public void SendBookAsync(Book.Book book, Color backColor, BloomPubPublishSettings settings = null)
 		{
 			try
 			{
@@ -168,9 +168,9 @@ namespace Bloom.Publish.Android.usb
 			return size.ToString("F1");
 		}
 
-		protected virtual void SendBookDoWork(Book.Book book, Color backColor, AndroidPublishSettings settings = null)
+		protected virtual void SendBookDoWork(Book.Book book, Color backColor, BloomPubPublishSettings settings = null)
 		{
-			PublishToAndroidApi.SendBook(book, _bookServer,
+			PublishToBloomPubApi.SendBook(book, _bookServer,
 				null, (publishedFileName, path) =>
 				{
 					_lastPublishedBloomdSize = GetSizeOfBloomdFile(path);
@@ -184,7 +184,7 @@ namespace Bloom.Publish.Android.usb
 				publishedFileName => _androidDeviceUsbConnection.BookExists(publishedFileName),
 				backColor,
 				settings:settings);
-			PublishToAndroidApi.ReportAnalytics("usb", book);
+			PublishToBloomPubApi.ReportAnalytics("usb", book);
 		}
 
 		private void FailSendBook(Exception e)

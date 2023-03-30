@@ -2,7 +2,7 @@
 using System.Linq;
 using System.Xml.Linq;
 
-namespace Bloom.Publish.Android
+namespace Bloom.Publish.BloomPub
 {
 	// NB: this must match IBulkSaveBloomPubsParams on the typescript side
 	public class BulkBloomPubPublishSettings

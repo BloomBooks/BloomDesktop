@@ -7,7 +7,7 @@ using System.Linq;
 using Bloom;
 using Bloom.Book;
 using Bloom.FontProcessing;
-using Bloom.Publish.Android;
+using Bloom.Publish.BloomPub;
 using Bloom.web;
 using BloomTests.Book;
 using ICSharpCode.SharpZipLib.Zip;
@@ -66,7 +66,7 @@ namespace BloomTests.Publish
 
 			using (var bloomdTempFile = TempFile.WithFilenameInTempFolder(testBook.Title + BloomPubMaker.BloomPubExtensionWithDot))
 			{
-				BloomPubMaker.CreateBloomPub(new AndroidPublishSettings(), bloomdTempFile.Path, testBook, _bookServer, new NullWebSocketProgress());
+				BloomPubMaker.CreateBloomPub(new BloomPubPublishSettings(), bloomdTempFile.Path, testBook, _bookServer, new NullWebSocketProgress());
 				Assert.AreEqual(testBook.Title + BloomPubMaker.BloomPubExtensionWithDot,
 					Path.GetFileName(bloomdTempFile.Path));
 			}
@@ -1379,10 +1379,10 @@ namespace BloomTests.Publish
 
 			using (var bloomdTempFile = TempFile.WithFilenameInTempFolder(testBook.Title + BloomPubMaker.BloomPubExtensionWithDot))
 			{
-				var androidPublishSettings = new AndroidPublishSettings() { Motion = testBook.BookInfo.PublishSettings.BloomPub.Motion};
+				var bloomPubPublishSettings = new BloomPubPublishSettings() { Motion = testBook.BookInfo.PublishSettings.BloomPub.Motion};
 				if (languagesToInclude != null)
-					androidPublishSettings.LanguagesToInclude = languagesToInclude;
-				BloomPubMaker.CreateBloomPub(settings: androidPublishSettings, outputPath: bloomdTempFile.Path, bookFolderPath: testBook.FolderPath, bookServer: _bookServer,
+					bloomPubPublishSettings.LanguagesToInclude = languagesToInclude;
+				BloomPubMaker.CreateBloomPub(settings: bloomPubPublishSettings, outputPath: bloomdTempFile.Path, bookFolderPath: testBook.FolderPath, bookServer: _bookServer,
 					progress: new NullWebSocketProgress(), isTemplateBook: false,
 					creator: creator);
 				var zip = new ZipFile(bloomdTempFile.Path);
@@ -1396,7 +1396,7 @@ namespace BloomTests.Publish
 					using (var extraTempFile =
 						TempFile.WithFilenameInTempFolder(testBook.Title + "2" + BloomPubMaker.BloomPubExtensionWithDot))
 					{
-						BloomPubMaker.CreateBloomPub(androidPublishSettings, extraTempFile.Path, testBook, _bookServer, new NullWebSocketProgress());
+						BloomPubMaker.CreateBloomPub(bloomPubPublishSettings, extraTempFile.Path, testBook, _bookServer, new NullWebSocketProgress());
 						zip = new ZipFile(extraTempFile.Path);
 						assertionsOnRepeat(zip);
 					}

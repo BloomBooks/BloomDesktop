@@ -236,7 +236,7 @@ namespace BloomTests.Collection
 		public void BulkPublishBloomPubSettings_GivenBulkPublishSettings_SavesToXmlProperly()
 		{
 			var settings = CreateCollectionSettings(_folder.Path, "test");
-			settings.BulkPublishBloomPubSettings = new Bloom.Publish.Android.BulkBloomPubPublishSettings()
+			settings.BulkPublishBloomPubSettings = new Bloom.Publish.BloomPub.BulkBloomPubPublishSettings()
 			{
 				makeBookshelfFile = false,
 				makeBloomBundle = false,

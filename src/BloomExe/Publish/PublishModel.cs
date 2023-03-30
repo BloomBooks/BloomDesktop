@@ -49,7 +49,7 @@ namespace Bloom.Publish
 			Upload_Obsolete,
 			Printing,
 			ResumeAfterPrint,
-			Android,
+			BloomPUB,
 			AudioVideo,
 			EPUB,
 			PdfPrint,
@@ -395,7 +395,7 @@ namespace Bloom.Publish
 
 		public bool AllowEPUB => CanPublish;
 
-		public bool AllowAndroid => CanPublish;
+		public bool AllowBloomPub => CanPublish;
 
 		public bool AllowUpload => BookSelection.CurrentSelection.BookInfo.AllowUploading && CanPublish;
 

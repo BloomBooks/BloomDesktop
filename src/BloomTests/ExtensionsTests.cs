@@ -59,7 +59,7 @@ namespace BloomTests
 		[TestCase("A'", "A%27")]
 		[TestCase("A,", "A%2C")]
 		[TestCase("A.", "A.")]
-		public static void ToLocalhost_AndroidPreviewBookTitleWithPunc_GeneratesWellFormedUrl(string bookTitle, string expectedEscapedTitle)
+		public static void ToLocalhost_BloomPubPreviewBookTitleWithPunc_GeneratesWellFormedUrl(string bookTitle, string expectedEscapedTitle)
 		{
 			// Setup
 			string fileName = $@"C:\PathToTemp\PlaceForStagingBook\{bookTitle}\meta.json";

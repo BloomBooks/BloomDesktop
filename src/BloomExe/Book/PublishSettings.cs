@@ -1,13 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.IO;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using Bloom.Api;
 using Bloom.Publish;
-using Bloom.Utils;
 using Newtonsoft.Json;
 using Sentry;
 using SIL.Extensions;
@@ -287,7 +283,7 @@ namespace Bloom.Book
 	}
 
 	/// <summary>
-	/// Settings used by the Android (BloomPUB) publish tab.
+	/// Settings used by the BloomPUB publish tab.
 	/// Currently incomplete; others should move here eventually.
 	/// </summary>
 	public class BloomPubSettings

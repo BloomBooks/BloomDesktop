@@ -1661,7 +1661,7 @@ namespace Bloom.Book
 		}
 
 		/// <summary>
-		/// PublishHelper (ePUB and Android) and BloomS3Client (Upload) call this after copying a book
+		/// PublishHelper (ePUB and BloomPUB) and BloomS3Client (Upload) call this after copying a book
 		/// to a staging folder.
 		/// </summary>
 		internal static void EnsureSingleHtmFile(string folderPath)
@@ -2146,7 +2146,7 @@ namespace Bloom.Book
 		}
 
 		// Brandings come with logos and such... we want them in the book folder itself so that they work
-		// apart from Bloom and in web browsing, epub, and android contexts.
+		// apart from Bloom and in web browsing, ePUB, and BloomPUB contexts.
 		private void CopyBrandingFiles()
 		{
 			_brandingImageNames.Clear();

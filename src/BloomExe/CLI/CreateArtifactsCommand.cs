@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using Bloom.Book;
 using Bloom.Properties;
-using Bloom.Publish.Android;
+using Bloom.Publish.BloomPub;
 using Bloom.Publish.Epub;
 using Bloom.ToPalaso;
 using Bloom.web;
@@ -211,7 +211,7 @@ namespace Bloom.CLI
 				// (similarly to a bulk publish operation)
 				// See https://issues.bloomlibrary.org/youtrack/issue/BL-10300.
 				var bookInfo = new BookInfo(bookPath, false);
-				var settings = AndroidPublishSettings.GetPublishSettingsForBook(bookServer, bookInfo);
+				var settings = BloomPubPublishSettings.GetPublishSettingsForBook(bookServer, bookInfo);
 
 				using (var folderForUnzipped = new TemporaryFolder("BloomCreateArtifacts_Unzipped"))
 				{

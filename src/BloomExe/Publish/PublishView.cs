@@ -16,7 +16,7 @@ using SIL.IO;
 using System.Drawing;
 using System.Threading.Tasks;
 using Bloom.Api;
-using Bloom.Publish.Android;
+using Bloom.Publish.BloomPub;
 using Bloom.Publish.BloomLibrary;
 using Bloom.Publish.Epub;
 using Bloom.Publish.PDF;
@@ -35,7 +35,7 @@ namespace Bloom.Publish
 		private PictureBox _previewBox;
 		private HtmlPublishPanel _htmlControl;
 		private NavigationIsolator _isolator;
-		private PublishToAndroidApi _publishApi;
+		private PublishToBloomPubApi _publishApi;
 		private PublishAudioVideoAPI _publishToVideoApi;
 		private PublishEpubApi _publishEpubApi;
 		private BloomWebSocketServer _webSocketServer;
@@ -47,7 +47,7 @@ namespace Bloom.Publish
 
 		public PublishView(PublishModel model,
 			SelectedTabChangedEvent selectedTabChangedEvent, LocalizationChangedEvent localizationChangedEvent, BookUpload bookTransferrer, NavigationIsolator isolator,
-			PublishToAndroidApi publishApi, PublishEpubApi publishEpubApi, BloomWebSocketServer webSocketServer,
+			PublishToBloomPubApi publishApi, PublishEpubApi publishEpubApi, BloomWebSocketServer webSocketServer,
 			PublishAudioVideoAPI publishToVideoApi)
 		{
 			_bookTransferrer = bookTransferrer;
@@ -325,7 +325,7 @@ namespace Bloom.Publish
 				else if (_epubRadio.Checked)
 					_model.DisplayMode = PublishModel.DisplayModes.EPUB;
 				else if (_bloomPUBRadio.Checked)
-					_model.DisplayMode = PublishModel.DisplayModes.Android;
+					_model.DisplayMode = PublishModel.DisplayModes.BloomPUB;
 				else if (_recordVideoRadio.Checked)
 					_model.DisplayMode = PublishModel.DisplayModes.AudioVideo;
 				else if (_model.PdfGenerationSucceeded)
@@ -361,7 +361,7 @@ namespace Bloom.Publish
 			_uploadRadio.Enabled = _model.AllowUpload;
 			_uploadRadioObsolete.Enabled = _model.AllowUpload;
 			_openinBrowserMenuItem.Enabled = _openPDF.Enabled = _model.PdfGenerationSucceeded;
-			_bloomPUBRadio.Enabled = _model.AllowAndroid;
+			_bloomPUBRadio.Enabled = _model.AllowBloomPub;
 			_epubRadio.Enabled = _model.AllowEPUB;
 
 			// No reason to update from model...we only change the model when the user changes the check box,
@@ -384,7 +384,7 @@ namespace Bloom.Publish
 				Controls.Remove(_uploadControl);
 				_uploadControl = null;
 			}
-			if (displayMode != PublishModel.DisplayModes.Android &&
+			if (displayMode != PublishModel.DisplayModes.BloomPUB &&
 				displayMode != PublishModel.DisplayModes.EPUB &&
 				displayMode != PublishModel.DisplayModes.AudioVideo &&
 				displayMode != PublishModel.DisplayModes.PdfPrint &&
@@ -464,7 +464,7 @@ namespace Bloom.Publish
 					// This view uses react-pdf which depends on stuff that won't work in Gecko.
 					ShowHtmlPanel(BloomFileLocator.GetBrowserFile(false, "publish", "PDFPrintPublish", "PublishPdfPrint.html"), forceWv2:true);
 					break;
-				case PublishModel.DisplayModes.Android:
+				case PublishModel.DisplayModes.BloomPUB:
 					PublishApi.Model = new BloomLibraryPublishModel(_bookTransferrer, _model.BookSelection.CurrentSelection, _model);
 					BloomPubMaker.ControlForInvoke = ParentForm; // something created on UI thread that won't go away
 					ShowHtmlPanel(BloomFileLocator.GetBrowserFile(false, "publish", "ReaderPublish", "loader.html"));
@@ -650,7 +650,7 @@ namespace Bloom.Publish
 			}
 			else if (_bloomPUBRadio.Checked)
 			{
-				_model.DisplayMode = PublishModel.DisplayModes.Android;
+				_model.DisplayMode = PublishModel.DisplayModes.BloomPUB;
 			}
 			else if (_recordVideoRadio.Checked)
 			{

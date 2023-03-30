@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Xml;
 using Bloom.Book;
-using Bloom.Publish.Android;
+using Bloom.Publish.BloomPub;
 using NUnit.Framework;
 
 namespace BloomTests.Publish

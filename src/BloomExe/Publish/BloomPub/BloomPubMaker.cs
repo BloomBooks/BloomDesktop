@@ -15,7 +15,7 @@ using BloomTemp;
 using SIL.IO;
 using SIL.Xml;
 
-namespace Bloom.Publish.Android
+namespace Bloom.Publish.BloomPub
 {
 	/// <summary>
 	/// This class is the beginnings of a separate place to put code for creating .bloompub files.
@@ -35,18 +35,18 @@ namespace Bloom.Publish.Android
 		public static string HashOfMostRecentlyCreatedBook { get; private set; }
 		public static Control ControlForInvoke { get; set; }
 
-		public static void CreateBloomPub(AndroidPublishSettings settings, BookInfo bookInfo, string outputFolder, BookServer bookServer, IWebSocketProgress progress)
+		public static void CreateBloomPub(BloomPubPublishSettings settings, BookInfo bookInfo, string outputFolder, BookServer bookServer, IWebSocketProgress progress)
 		{
 			var outputPath = Path.Combine(outputFolder, Path.GetFileName(bookInfo.FolderPath) + BloomPubExtensionWithDot);
 			BloomPubMaker.CreateBloomPub(settings: settings, outputPath: outputPath, bookFolderPath: bookInfo.FolderPath, bookServer: bookServer, progress: progress, isTemplateBook: bookInfo.IsSuitableForMakingShells);
 		}
-		public static void CreateBloomPub(AndroidPublishSettings settings, string outputPath, Book.Book book, BookServer bookServer, IWebSocketProgress progress)
+		public static void CreateBloomPub(BloomPubPublishSettings settings, string outputPath, Book.Book book, BookServer bookServer, IWebSocketProgress progress)
 		{
 			CreateBloomPub(settings, outputPath, bookFolderPath: book.FolderPath, bookServer, progress: progress, isTemplateBook: book.IsTemplateBook);
 		}
 
 		// Create a BloomReader book while also creating the temporary folder for it (according to the specified parameter) and disposing of it
-		public static void CreateBloomPub(AndroidPublishSettings settings, string outputPath, string bookFolderPath,
+		public static void CreateBloomPub(BloomPubPublishSettings settings, string outputPath, string bookFolderPath,
 BookServer bookServer,
 			IWebSocketProgress progress, bool isTemplateBook,
 			string tempFolderName = BRExportFolder, string creator = kCreatorBloom)
@@ -69,7 +69,7 @@ BookServer bookServer,
 		/// <param name="creator">value for &lt;meta name="creator" content="..."/&gt; (defaults to "bloom")</param>
 		/// <param name="isTemplateBook"></param>
 		/// <returns>Path to the unzipped .bloompub</returns>
-		public static string CreateBloomPub(AndroidPublishSettings settings, string outputPath, string bookFolderPath,
+		public static string CreateBloomPub(BloomPubPublishSettings settings, string outputPath, string bookFolderPath,
 			BookServer bookServer, IWebSocketProgress progress, TemporaryFolder tempFolder, string creator = kCreatorBloom,
 			bool isTemplateBook = false)
 		{
@@ -214,7 +214,7 @@ BookServer bookServer,
 
 		public static Dictionary<string, HashSet<string>> BloomPubFontsAndLangsUsed = null;
 
-		public static Book.Book PrepareBookForBloomReader(AndroidPublishSettings settings, string bookFolderPath,
+		public static Book.Book PrepareBookForBloomReader(BloomPubPublishSettings settings, string bookFolderPath,
 			BookServer bookServer,
 			TemporaryFolder temp, IWebSocketProgress progress,
 			bool isTemplateBook,
@@ -350,7 +350,7 @@ BookServer bookServer,
 		/// Add a `.distribution` file to the zip which will be reported on for analytics from Bloom Reader.
 		/// See https://issues.bloomlibrary.org/youtrack/issue/BL-8875.
 		/// </summary>
-		private static void AddDistributionFile(string bookFolder, string creator, AndroidPublishSettings settings)
+		private static void AddDistributionFile(string bookFolder, string creator, BloomPubPublishSettings settings)
 		{
 			string distributionValue;
 			switch (creator)
