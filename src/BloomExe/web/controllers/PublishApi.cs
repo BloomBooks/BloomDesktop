@@ -151,7 +151,7 @@ namespace Bloom.web.controllers
 						}
 
 						var required = false;
-						if (BloomLibraryPublishModel.IsRequiredLanguageForBook(kvp.Key, Model.Book))
+						if (Model.Book.IsRequiredLanguage(kvp.Key))
 						{
 							includeText = true;
 							required = true;

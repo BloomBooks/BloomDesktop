@@ -72,52 +72,6 @@ namespace Bloom.web.controllers
 			apiHandler.RegisterEndpointHandler("libraryPublish/checkForLoggedInUser", HandleCheckForLoggedInUser, true);
 			apiHandler.RegisterEndpointHandler("libraryPublish/login", HandleLogin, true);
 			apiHandler.RegisterEndpointHandler("libraryPublish/logout", HandleLogout, true);
-			apiHandler.RegisterBooleanEndpointHandler("libraryPublish/signLanguage",
-				request => Model.Book.HasSignLanguageVideos() && Model.IsPublishSignLanguage(),
-				(request, val) =>
-				{
-					if (val)
-					{
-						// If we don't know a sign language to advertise, nothing will happen in
-						// the book metadata. The UI will show a link to let the user select a language.
-						// If the user does not do so, the checked state will not persist.
-						if (!string.IsNullOrEmpty(Model.Book.CollectionSettings.SignLanguageTag))
-							Model.SetOnlySignLanguageToPublish(Model.Book.CollectionSettings.SignLanguageTag);
-					}
-					else
-						Model.ClearSignLanguageToPublish();
-				}, true);
-
-			apiHandler.RegisterBooleanEndpointHandler("libraryPublish/signLanguageEnabled",
-				request => Model.Book.HasSignLanguageVideos(),
-				null, true);
-			apiHandler.RegisterBooleanEndpointHandler("libraryPublish/hasActivities",
-				request => Model.Book.HasActivities,
-				null, true);
-			apiHandler.RegisterBooleanEndpointHandler("libraryPublish/comicEnabled",
-				request => Model.Book.HasOverlayPages,
-				null, true);
-			apiHandler.RegisterBooleanEndpointHandler("libraryPublish/comic",
-				request => Model.Book.HasOverlayPages && Model.Book.BookInfo.PublishSettings.BloomLibrary.Comic,
-				(request, val) =>
-				{
-					Model.Book.BookInfo.PublishSettings.BloomLibrary.Comic = val;
-					Model.Book.BookInfo.Save();
-				}, true);
-			apiHandler.RegisterBooleanEndpointHandler("libraryPublish/visuallyImpairedEnabled",
-				request => Model.Book.OurHtmlDom.HasImageDescriptions,
-				null, true);
-			apiHandler.RegisterBooleanEndpointHandler("libraryPublish/visuallyImpaired",
-				request => Model.Book.OurHtmlDom.HasImageDescriptions &&
-				           Model.Book.BookInfo.PublishSettings.BloomLibrary.AccessibleToVisuallyImpaired,
-				(request, val) =>
-				{
-					Model.Book.BookInfo.PublishSettings.BloomLibrary.AccessibleToVisuallyImpaired = val;
-					Model.Book.BookInfo.Save();
-				}, true);
-			apiHandler.RegisterEndpointHandler("libraryPublish/signLanguageName",
-				(request) => { request.ReplyWithText(Model.Book.CollectionSettings.SignLanguage?.Name ?? ""); }, true);
-			apiHandler.RegisterEndpointHandler("libraryPublish/chooseSignLanguage", HandleChooseSignLanguage, true);
 		}
 
 		private static bool ModelIndicatesSignLanguageChecked => Model.Book.HasSignLanguageVideos() && Model.IsPublishSignLanguage();
