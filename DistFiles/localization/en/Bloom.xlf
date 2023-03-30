@@ -4148,6 +4148,64 @@
         <note>ID: PublishTab.Options_ToolTip_</note>
         <note>tooltip for the menu header in the Publish tab</note>
       </trans-unit>
+      <trans-unit id="PublishTab.PDF.Booklet.HelpHeader" translate="no">
+        <!-- added in 5.5 -->
+        <source xml:lang="en">Here are the settings you need for printing this booklet:</source>
+        <note>ID: PublishTab.PDF.Booklet.HelpHeader</note>
+        <note>heading for list of setting recommendations</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.PDF.Booklet.PageLayout.Portrait" translate="no">
+        <!-- added in 5.5 -->
+        <source xml:lang="en">1. Layout: Portrait</source>
+        <note>ID: PublishTab.PDF.Booklet.PageLayout.Portrait</note>
+        <note>first recommendation is page layout / orientation (taller than it is wide)</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.PDF.Booklet.PageLayout.Landscape" translate="no">
+        <!-- added in 5.5 -->
+        <source xml:lang="en">1. Layout: Landscape</source>
+        <note>ID: PublishTab.PDF.Booklet.PageLayout.Landscape</note>
+        <note>first recommendation is page layout / orientation (wider than it is tall)</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.PDF.Booklet.Flip.ShortEdge" translate="no">
+        <!-- added in 5.5 -->
+        <source xml:lang="en">2. Print on both sides: "Flip on short edge"</source>
+        <note>ID: PublishTab.PDF.Booklet.Flip.ShortEdge</note>
+        <note>second recommendation is two-sided printing, flipping the paper on the short edge</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.PDF.Booklet.Flip.LongEdge" translate="no">
+        <!-- added in 5.5 -->
+        <source xml:lang="en">2. Print on both sides: "Flip on long edge"</source>
+        <note>ID: PublishTab.PDF.Booklet.Flip.LongEdge</note>
+        <note>second recommendation is two-sided printing, flipping the paper on the long edge</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.PDF.Booklet.PaperSize.A4" translate="no">
+        <!-- added in 5.5 -->
+        <source xml:lang="en">3. More settings &gt; Paper size: "A4"</source>
+        <note>ID: PublishTab.PDF.Booklet.PaperSize.A4</note>
+        <note>third recommendation is paper size (A4, the standard metric paper size)</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.PDF.Booklet.PaperSize.Letter" translate="no">
+        <!-- added in 5.5 -->
+        <source xml:lang="en">3. More settings &gt; Paper size: "Letter"</source>
+        <note>ID: PublishTab.PDF.Booklet.PaperSize.Letter</note>
+        <note>third recommendation is paper size (Letter, the standard paper size in the U.S.)</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.PDF.Booklet.Scale.ActualSize" translate="no">
+        <!-- added in 5.5 -->
+        <source xml:lang="en">4. More settings &gt; Scale: "Actual size"</source>
+        <note>ID: PublishTab.PDF.Booklet.Scale.ActualSize</note>
+        <note>fourth recommendation is image scaling (use actual size, don't scale)</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.PDF.Booklet.TwoPages.CutAndStack" translate="no">
+        <!-- added in 5.5 -->
+        <source xml:lang="en">This will put two pages on each sheet of paper. Cut horizontally and stack to make one booklet.</source>
+        <note>ID: PublishTab.PDF.Booklet.TwoPages.CutAndStack</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.PDF.Booklet.FourPages.CutAndFold" translate="no">
+        <!-- added in 5.5 -->
+        <source xml:lang="en">This will put four pages on each sheet of paper. Cut the stack, then fold to get two booklets.</source>
+        <note>ID: PublishTab.PDF.Booklet.FourPages.CutAndFold</note>
+      </trans-unit>
       <trans-unit id="PublishTab.PDF.Error.Failed">
         <source xml:lang="en">Bloom was not able to create the PDF file ({0}).{1}{1}Details: BloomPdfMaker (command line) did not produce the expected document.</source>
         <note>ID: PublishTab.PDF.Error.Failed</note>
