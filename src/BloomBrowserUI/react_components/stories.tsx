@@ -298,7 +298,7 @@ storiesOf("Localizable Widgets/ApiCheckbox", module).add("ApiCheckbox", () =>
         <ApiCheckbox
             english="Motion Book"
             l10nKey="PublishTab.Android.MotionBookMode"
-            apiEndpoint="publish/android/motionBookMode"
+            apiEndpoint="publish/bloompub/motionBookMode"
         />
     ))
 );

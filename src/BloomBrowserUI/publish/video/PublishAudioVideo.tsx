@@ -199,7 +199,7 @@ const PublishAudioVideoInternalInternal: React.FunctionComponent<{
     );
 
     const [defaultLandscape] = useApiBoolean(
-        "publish/android/defaultLandscape",
+        "publish/bloompub/defaultLandscape",
         false
     );
 
@@ -210,8 +210,8 @@ const PublishAudioVideoInternalInternal: React.FunctionComponent<{
 
     const [playing, setPlaying] = useState(false);
     useSubscribeToWebSocketForStringMessage(
-        "publish-android",
-        "androidPreview",
+        "publish-bloompub",
+        "bloomPubPreview",
         url => {
             setBookUrl(url);
         }
@@ -634,7 +634,7 @@ const PublishAudioVideoInternalInternal: React.FunctionComponent<{
                 <PublishProgressDialog
                     heading={heading}
                     startApiEndpoint="publish/av/updatePreview"
-                    webSocketClientContext="publish-android"
+                    webSocketClientContext="publish-bloompub"
                     progressState={progressState}
                     setProgressState={setProgressState}
                     closePending={closePending}

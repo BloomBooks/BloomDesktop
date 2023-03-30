@@ -9,7 +9,7 @@ import {
 // This is a "controlled component".
 
 /* Example use:
-    const [method, setMethod] = useApiString("publish/android/method", "wifi");
+    const [method, setMethod] = useApiString("publish/bloompub/method", "wifi");
     return(
         <ConciseRadioGroup
           value={method}

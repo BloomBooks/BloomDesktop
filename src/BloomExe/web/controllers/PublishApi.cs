@@ -36,13 +36,13 @@ namespace Bloom.web.controllers
 		internal Color _thumbnailBackgroundColor = Color.Transparent; // can't be actual book cover color <--- why not?
 		private Color _lastThumbnailBackgroundColor;
 		// This constant must match the ID that is used for the listener set up in the client
-		private const string kWebsocketEventId_Preview = "androidPreview";
+		private const string kWebsocketEventId_Preview = "bloomPubPreview";
 		private Book.Book _coverColorSourceBook; public const string StagingFolder = "PlaceForStagingBook";
 
 		// This constant must match the ID used for the useWatchString called by the React component MethodChooser.
 		private const string kWebsocketState_LicenseOK = "publish/licenseOK";
 
-		internal const string kWebSocketContext = "publish-android"; // must match client
+		internal const string kWebSocketContext = "publish-bloompub"; // must match client
 
 		private static TemporaryFolder _stagingFolder;
 

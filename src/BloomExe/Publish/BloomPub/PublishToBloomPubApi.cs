@@ -29,8 +29,8 @@ namespace Bloom.Publish.BloomPub
 	/// </summary>
 	public class PublishToBloomPubApi
 	{
-		private const string kApiUrlPart = "publish/android/";
-		private const string kWebsocketState_EventId = "publish/android/state";
+		private const string kApiUrlPart = "publish/bloompub/";
+		private const string kWebsocketState_EventId = "publish/bloompub/state";
 		private readonly WiFiPublisher _wifiPublisher;
 #if !__MonoCS__
 		private readonly UsbPublisher _usbPublisher;

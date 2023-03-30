@@ -269,8 +269,8 @@ namespace Bloom.Api
 				// thumbnails/previews at the same time, and one that prevents working on other api requests at the same time.
 				var syncOn = SyncObj;
 				if (localPathLc.StartsWith("api/pagetemplatethumbnail", StringComparison.InvariantCulture)
-				    || localPathLc == "api/publish/android/thumbnail"
-				    || localPathLc == "api/publish/android/updatepreview")
+				    || localPathLc == "api/publish/bloompub/thumbnail"
+				    || localPathLc == "api/publish/bloompub/updatepreview")
 					syncOn = ThumbnailsAndPreviewsSyncObj;
 				else if (localPathLc.StartsWith("api/i18n/"))
 					syncOn = I18NLock;
