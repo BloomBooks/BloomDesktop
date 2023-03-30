@@ -1,0 +1,1 @@
+Supports full-bleed cover color with images, adds a specific graphic tied to the grade level, which we get from the chosen bookshelf.

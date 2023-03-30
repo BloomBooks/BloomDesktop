@@ -1814,6 +1814,8 @@ namespace Bloom.Book
 
 			var dataBookLangs = bookDOM.GatherDataBookLanguages();
 			TranslationGroupManager.PrepareDataBookTranslationGroups(bookDOM.RawDom, dataBookLangs);
+
+			helper.InjectDefaultUserStylesFromXMatter();
 		}
 
 
