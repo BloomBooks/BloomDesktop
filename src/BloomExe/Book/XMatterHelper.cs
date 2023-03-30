@@ -206,6 +206,12 @@ namespace Bloom.Book
 		/// </summary>
 		public XmlDocument XMatterDom { get; set; }
 
+		/// <summary>
+		/// Add any default user styles defined in xmatter that are not already defined in the book.
+		/// (This allows us to define default formatting for xmatter elements using "user-defined"
+		/// styles that the user can modify later. We must not re-insert them after the user has
+		/// done so, so we limit the insertion to styles that are not already present.)
+		/// </summary>
 		public void InjectDefaultUserStylesFromXMatter()
 		{
 			var xmatterStylesNode = XMatterDom.SelectSingleNode("html/head/"+ HtmlDom.UserModifiedStyleXPath);
@@ -224,8 +230,8 @@ namespace Bloom.Book
 				var existing = HtmlDom.GetUserModifiedStyleElement(_bookDom.Head);
 				if (existing != null)
 				{
-					var copy = _bookDom.RawDom.ImportNode(xmatterStylesNode,true);
-					existing.ParentNode.ReplaceChild(copy, existing);
+					var newMergedUserStyleXml = HtmlDom.MergeUserStylesOnInsertion(existing, xmatterStylesNode);
+					existing.InnerXml = newMergedUserStyleXml;
 				}
 				else
 				{

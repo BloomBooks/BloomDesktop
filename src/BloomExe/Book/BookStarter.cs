@@ -507,8 +507,6 @@ namespace Bloom.Book
 				helper.FolderPathForCopyingXMatterFiles = storage.FolderPath;
 				helper.InjectXMatter(data, sizeAndOrientation, false, _collectionSettings.Language2.Tag);
 				//TranslationGroupManager.PrepareDataBookTranslationGroups(storage.Dom,languages);
-
-				helper.InjectDefaultUserStylesFromXMatter();
 			}
 		}
 
