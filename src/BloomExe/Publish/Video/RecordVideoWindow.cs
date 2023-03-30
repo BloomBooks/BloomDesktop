@@ -655,7 +655,11 @@ namespace Bloom.Publish.Video
 					}
 				}
 			}
-			progress.MessageWithoutLocalizing($"- Progress: 100%");
+
+			if (isSuccess)
+			{
+				progress.MessageWithoutLocalizing($"- Progress: 100%");
+			}
 			
 			// Restore original names, since that's what is expected if we preview the book or record again
 			// (the html is still referencing the original names...the renaming was solely for the process
