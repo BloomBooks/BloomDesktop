@@ -434,7 +434,7 @@ namespace Bloom.Book
 			pageDom.AddStyleSheet("");
 			pageDom.SortStyleSheetLinks();
 			AddJavaScriptForEditing(pageDom);
-			RuntimeInformationInjector.AddUIDictionaryToDom(pageDom, _bookData);
+			RuntimeInformationInjector.AddUIDictionaryToDom(pageDom, _bookData, BookInfo);
 			RuntimeInformationInjector.AddUISettingsToDom(pageDom, _bookData, Storage.GetFileLocator());
 			UpdateMultilingualSettings(pageDom);
 

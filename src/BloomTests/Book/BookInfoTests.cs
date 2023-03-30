@@ -635,22 +635,22 @@ namespace BloomTests.Book
 			CollectionAssert.AreEqual(expectedResult, metadata.Feature_SignLanguage_LangCodes, "SL Language Codes");
 		}
 
-		// JohnT March 2022: don't see what this test is getting at. The JSON appears to be
-		// perfectly normal for the now-obsolete way of storing audioLangsToPublish for bloomPub.
-		// Without understanding its purpose, I don't see how to migrate it to the new system.
-		// Certainly we have tests for successfully migrating data like this.
-		//[Test]
-		//public void AudioLangsToPublishForBloomReader_GivenNonDefaultJson_DeserializesProperly()
-		//{
-		//	var json = "{ \"audioLangsToPublish\": { \"bloomPUB\": { \"en\": \"Include\" } } }";
+		[Test]
+		public void RuntimeInformationInjector_PullInCollectionLanguagesDisplayNames_GetsItRight()
+		{
+			var jsonPath = Path.Combine(_folder.Path, BookInfo.MetaDataFileName);
+			File.WriteAllText(jsonPath, @"{""language-display-names"":{""sok"":""Sokoro"",""en"":""English"",""de"":""Custom German Name"",""fr"":""French"",""tza"":""Tanzanian Sign Language""}}");
+			var bookInfo = new BookInfo(_folder.Path, true);
+			var d = new Dictionary<string, string>();
 
-		//	// System under test
-		//	var metadata = BookMetaData.FromString(json);
+			// SUT
+			RuntimeInformationInjector.PullInCollectionLanguagesDisplayNames(d, bookInfo);
 
-		//	// Verification
-		//	var expected = new Dictionary<string, Bloom.Publish.InclusionSetting>();
-		//	expected.Add("en", Bloom.Publish.InclusionSetting.Include);
-		//	CollectionAssert.AreEquivalent(expected, metadata.AudioLangsToPublish.ForBloomPUB);
-		//}
+			// Verification
+			Assert.AreEqual(d["en"], "English");
+			Assert.AreEqual(d["fr"], "French");
+			Assert.AreEqual(d["de"], "Custom German Name");
+			Assert.AreEqual(d["sok"], "Sokoro");
+		}
 	}
 }
