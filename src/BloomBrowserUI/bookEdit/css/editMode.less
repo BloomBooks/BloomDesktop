@@ -47,10 +47,10 @@
 
 body {
     background-color: @bloom-darkestBackground;
-    transform-origin: top left;
     /* This works with a transform:scale style added in Javascript to allow zooming just the main page*/
-    transition: transform 20ms;
+    transform-origin: top left;
     /* This works around a bug in Gecko29 and should be removed when we upgrade. It prevents redraw errors during crtl-wheel zooming*/
+    transition: transform 20ms;
 }
 
 // See comments on .bloom-mediaBox in basePage.less for a description of the mediaBox.
