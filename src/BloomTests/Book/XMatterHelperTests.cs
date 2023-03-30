@@ -307,6 +307,38 @@ namespace BloomTests.Book
 			Assert.That(helper1.GetStyleSheetFileName(), Is.EqualTo(expected));
 		}
 
+		[Test]
+		public void InjectDefaultUserStylesFromXMatter_InjectsOnlyStylesNotPresent()
+		{
+			_dom = new HtmlDom(@"
+<html>
+	<head>
+		<style type=""text/css"" title=""userModifiedStyles"">
+		    /*<![CDATA[*/
+			.Title-Front-Cover-style { font-size: 28pt !important; font-family:""Times New Roman""; color:white;     text-align: center;}
+			.BigWords-style { font-size: 45pt !important; text-align: center !important; }/*]]>*/
+		</style>
+		<link href='file://blahblah\\a5portrait.css' type='text/css' />
+	</head>
+	<body>
+		<div id='bloomDataDiv'></div>
+		<div id ='firstPage' class='bloom-page'>1st page</div>
+	</body>
+</html>");
+			var helper = new XMatterHelper(_dom, "Uzbekistan2023",
+				new FileLocator(new[] { Path.Combine(_factoryXMatter, "project-specific") }));
+
+			helper.InjectDefaultUserStylesFromXMatter();
+
+			var styles = _dom.SelectSingleNode("//head/style[@title='userModifiedStyles']").InnerText;
+			Assert.That(styles, Contains.Substring(@".Title-Front-Cover-style { font-size: 28pt !important; font-family:""Times New Roman"";"),
+				"Should not have overwritten existing style");
+			Assert.That(styles,
+				Contains.Substring(
+					@".Cover-Lower-Credits-style { font-size: 16pt !important; font-style:italic; font-family:""Aileron; Arial"";"),
+				"Should have inserted default version of missing style");
+		}
+
 		//		TODO: at the moment, we'd have to create a whole xmatter folder
 		//		/// <summary>
 		//		/// NB: It's not clear what the behavior should eventually be... how do we know it isn't supposed to be in english?
@@ -316,7 +348,7 @@ namespace BloomTests.Book
 		//		public void CreateBookOnDiskFromTemplate_HasParagraphMarkedV_ConvertsToVernacular()//??????????????
 		//		{
 		//			_starter.TestingSoSkipAddingXMatter = true;
-		//			var body = @"<div class='bloom-page'>
+		//			var body = @" < div class='bloom-page'>
 		//                        <p id='bookTitle' lang='en' data-book='bookTitle'>Book Title</p>
 		//                    </div>";
 		//			string sourceTemplateFolder = GetShellBookFolder(body);

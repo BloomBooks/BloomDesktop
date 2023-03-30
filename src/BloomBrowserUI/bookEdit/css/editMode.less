@@ -47,10 +47,10 @@
 
 body {
     background-color: @bloom-darkestBackground;
-    transform-origin: top left;
     /* This works with a transform:scale style added in Javascript to allow zooming just the main page*/
-    transition: transform 20ms;
+    transform-origin: top left;
     /* This works around a bug in Gecko29 and should be removed when we upgrade. It prevents redraw errors during crtl-wheel zooming*/
+    transition: transform 20ms;
 }
 
 // See comments on .bloom-mediaBox in basePage.less for a description of the mediaBox.
@@ -58,7 +58,7 @@ body {
 .bloom-mediaBox {
     pointer-events: none; // we want all clicks to go through this to the child
 
-    &>* {
+    & > * {
         pointer-events: auto; // start up clicks again a the next level
     }
 
@@ -129,9 +129,8 @@ div.bloom-imageContainer {
 // The editing buttons are hidden when this class is added (currently by motion and comic tools)
 .bloom-imageContainer.bloom-hideImageButtons,
 .bloom-imageContainer.ui-suppressImageButtons {
-
-    >.imageButton,
-    >.miniButton {
+    > .imageButton,
+    > .miniButton {
         display: none;
     }
 }
@@ -150,7 +149,6 @@ div.bloom-imageContainer {
 
 [data-derived="originalCopyrightAndLicense"] {
     cite {
-
         &.missingOriginalTitle,
         &:hover {
             color: red;
@@ -228,7 +226,6 @@ body:not(.origami-drag) .customPage .bloom-videoContainer.hoverUp,
 body:not(.origami-drag) .bloom-imageContainer.hoverUp {
     background-color: @ImageAndVideoHoverOverlay;
 }
-
 
 .imageButton {
     width: 87px;
@@ -354,7 +351,6 @@ body.bloom-fullBleed {
     }
 
     .imageButton {
-
         &.changeImageButton,
         &.pasteImageButton {
             right: 50%;
@@ -379,9 +375,8 @@ body.bloom-fullBleed {
     }
 
     .bloom-imageContainer {
-
         // Requiring a direct child helps prevent this from applying to things like the format cog
-        >img {
+        > img {
             height: calc(100% - @imageDescriptionTopBorderWidth);
         }
 
@@ -403,7 +398,8 @@ body.bloom-fullBleed {
     // image description tool is active.
     border-style: solid;
     border-color: @accordion-active-element;
-    border-width: 0 @imageDescriptionBorderWidth @imageDescriptionBorderWidth @imageDescriptionBorderWidth;
+    border-width: 0 @imageDescriptionBorderWidth @imageDescriptionBorderWidth
+        @imageDescriptionBorderWidth;
     background-repeat: no-repeat;
 
     // This rule produces the border and icon at the top of each image when the image description tool is active
@@ -589,7 +585,6 @@ div.pageLabel[contenteditable="true"]:focus {
     }
 
     &[dir="rtl"] {
-
         p:after,
         .bloom-linebreak:after {
             right: auto;
@@ -733,7 +728,7 @@ div.marginBox {
     width: 116px;
 }
 
-#pagedragtoolbox>ul>li>div {
+#pagedragtoolbox > ul > li > div {
     border: 1px dotted @PageDragInnerItemBorderColor;
     margin-top: 34px;
     /*[empty]padding-top:;*/
@@ -841,7 +836,8 @@ span.word-too-long {
     z-index: 20000;
 }
 
-span.sight-word {}
+span.sight-word {
+}
 
 span.word-not-found {
     background-color: @DecodableReaderViolationColor;
