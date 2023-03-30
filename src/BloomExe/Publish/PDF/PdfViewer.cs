@@ -7,7 +7,9 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Threading.Tasks;
 using System.Windows.Forms;
+using Bloom.MiscUI;
 using Gecko;
 using Gecko.Interop;
 using L10NSharp;
@@ -16,7 +18,6 @@ using Microsoft.Web.WebView2.Core;
 using Microsoft.Win32;
 #endif
 using SIL.IO;
-using SIL.Reporting;
 
 namespace Bloom.Publish.PDF
 {
@@ -102,24 +103,6 @@ namespace Bloom.Publish.PDF
 		}
 #endif
 
-#if !__MonoCS__
-		private async void HideButtons()
-		{
-			var cv2 = (_pdfViewerControl as WebView2Browser).InternalBrowser.CoreWebView2;
-			cv2.Settings.HiddenPdfToolbarItems = CoreWebView2PdfToolbarItems.Print // we prefer our big print button, and it may show a dialog first
-			                                     | CoreWebView2PdfToolbarItems.Rotate // shouldn't be needed, just clutter
-			                                     | CoreWebView2PdfToolbarItems.Save // would always be disabled, there's no known place to save
-			                                     | CoreWebView2PdfToolbarItems.SaveAs; //We want our Save code, which checks things like not saving in the book folder
-			// We'd also like to hide the "Enter full screen" button, since it doesn't work right and is hard to recover from,
-			// and the "Settings and more" button since none of its functions seem useful, but there's no way to disable those.
-			// Note, I tried extensively to disable them by using RunJavaScript to inject CSS into the document.
-			// The problem is, the way WebView2 displays a PDF file URL is with a top-level document that is mostly a single 'embed'.
-			// What is embedded is, as far as I can discover, completely opaque. (You can't see this dialog by right-clicking
-			// and choosing Inspect. The dev tools that brings up are showing the content of what's embedded...the thing you
-			// can't otherwise get at. (You can get at the root dev tools by calling OpenDevToolsWindow() on the CoreWebView2.)
-		}
-#endif
-
 		public bool ShowPdf(string pdfFile)
 		{
 			_pdfPath = pdfFile;
@@ -127,7 +110,6 @@ namespace Bloom.Publish.PDF
 			if (ExperimentalFeatures.IsFeatureEnabled(ExperimentalFeatures.kWebView2))
 			{
 				var wv2 = _pdfViewerControl as WebView2Browser;
-				HideButtons();
 				wv2.Navigate(pdfFile, false);
 				return true;
 			}
@@ -212,13 +194,13 @@ namespace Bloom.Publish.PDF
 			return null;
 		}
 
-		public void Print()
+		public async Task PrintAsync()
 		{
 #if !__MonoCS__
 			if (ExperimentalFeatures.IsFeatureEnabled(ExperimentalFeatures.kWebView2))
 			{
 				var wv2 = _pdfViewerControl as WebView2Browser;
-				wv2.RunJavaScript("window.print()");
+				await wv2.RunJavaScriptAsync("window.print()");
 				return;
 			}
 			var arc = _pdfViewerControl as AdobeReaderControl;
@@ -230,8 +212,9 @@ namespace Bloom.Publish.PDF
 				return;
 			}
 
-			ErrorReport.NotifyUserOfProblem(LocalizationManager.GetString("PublishTab.Notifications.AdobeForPrint",
-				"If you want to print directly from Bloom, you will need to install the free Adobe Reader and then re-start Bloom. Or instead, you can save the PDF, open it in some other program, and then print from there."));
+			var msg = LocalizationManager.GetString("PublishTab.Notifications.AdobeForPrint",
+				"If you want to print directly from Bloom, you will need to install the free Adobe Reader and then re-start Bloom. Or instead, you can save the PDF, open it in some other program, and then print from there.");
+			BloomMessageBox.ShowInfo(msg);
 			return;
 			// If we decide to have another go at this, see https://issues.bloomlibrary.org/youtrack/issue/BL-11113
 			// and the associated PR, https://github.com/BloomBooks/BloomDesktop/pull/5147.

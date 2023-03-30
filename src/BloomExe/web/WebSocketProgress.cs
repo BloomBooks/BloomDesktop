@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Diagnostics;
 using Bloom.Api;
 using L10NSharp;
@@ -112,12 +112,14 @@ namespace Bloom.web
 			_clientContext = clientContext;
 		}
 
+		public bool LogAllMessages;
+
 		public virtual void MessageWithoutLocalizing(string message, ProgressKind kind=ProgressKind.Progress)
 		{
 			dynamic messageBundle = new DynamicJson();
 			messageBundle.message = message;
 			messageBundle.progressKind = kind.ToString();
-			_bloomWebSocketServer.SendBundle(_clientContext, "message", messageBundle);
+			_bloomWebSocketServer?.SendBundle(_clientContext, "message", messageBundle);
 			switch (kind)
 			{
 				case ProgressKind.Fatal:
@@ -129,6 +131,16 @@ namespace Bloom.web
 					HaveProblemsBeenReported = true;
 					break;
 			}
+
+			if (LogAllMessages)
+				SIL.Reporting.Logger.WriteEvent(message);
+		}
+
+		public void SendPercent(int percent)
+		{
+			dynamic messageBundle = new DynamicJson();
+			messageBundle.percent = percent;
+			_bloomWebSocketServer?.SendBundle(_clientContext, "percent", messageBundle);
 		}
 		public virtual void ShowButtons()
 		{
@@ -138,7 +150,7 @@ namespace Bloom.web
 		// Stop spinners and such
 		public virtual void Finished()
 		{
-			_bloomWebSocketServer.SendBundle(_clientContext, "finished", new DynamicJson());
+			_bloomWebSocketServer?.SendBundle(_clientContext, "finished", new DynamicJson());
 		}
 
 		public virtual void Message(string idSuffix, string comment, string message, ProgressKind progressKind = ProgressKind.Progress, bool useL10nIdPrefix =true)

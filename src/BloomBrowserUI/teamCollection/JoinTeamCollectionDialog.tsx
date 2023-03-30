@@ -15,7 +15,7 @@ import {
     DialogCancelButton,
     DialogReportButton,
     ErrorBox,
-    NoteBox
+    NoteBoxSansBorder
 } from "../react_components/BloomDialog/commonDialogComponents";
 import { WireUpForWinforms } from "../utils/WireUpWinform";
 import {
@@ -130,7 +130,7 @@ export const JoinTeamCollectionDialog: React.FunctionComponent<{
         return (
             <React.Fragment>
                 {getBloomWillSetYouUp()}
-                <NoteBox>
+                <NoteBoxSansBorder>
                     <Span
                         l10nKey="TeamCollection.Merging"
                         l10nParam0={props.collectionName}
@@ -141,7 +141,7 @@ export const JoinTeamCollectionDialog: React.FunctionComponent<{
                         collection with the Team Collection that you are
                         joining.
                     </Span>
-                </NoteBox>
+                </NoteBoxSansBorder>
                 {getMatchingCollection()}
             </React.Fragment>
         );
@@ -165,7 +165,7 @@ export const JoinTeamCollectionDialog: React.FunctionComponent<{
     function getDialogBodyExistingTC(): JSX.Element {
         return (
             <React.Fragment>
-                <NoteBox>
+                <NoteBoxSansBorder>
                     <Div
                         l10nKey="TeamCollection.AlreadyJoined"
                         temporarilyDisableI18nWarning={true}
@@ -173,7 +173,7 @@ export const JoinTeamCollectionDialog: React.FunctionComponent<{
                         This computer is already connected to this collection.
                         Bloom will open it for you.
                     </Div>
-                </NoteBox>
+                </NoteBoxSansBorder>
                 {getMatchingCollection()}
             </React.Fragment>
         );
@@ -235,7 +235,7 @@ export const JoinTeamCollectionDialog: React.FunctionComponent<{
     function getDialogBodyExistingTcElsewhere() {
         return (
             <React.Fragment>
-                <NoteBox>
+                <NoteBoxSansBorder>
                     <Div
                         l10nKey="TeamCollection.AlreadyJoinedElsewhere"
                         temporarilyDisableI18nWarning={true}
@@ -244,7 +244,7 @@ export const JoinTeamCollectionDialog: React.FunctionComponent<{
                         which appears to have moved. Bloom will fix things up
                         and open it for you.
                     </Div>
-                </NoteBox>
+                </NoteBoxSansBorder>
                 {getMatchingCollection()}
             </React.Fragment>
         );
@@ -334,7 +334,7 @@ export const JoinTeamCollectionDialog: React.FunctionComponent<{
                 >
                     {joinButtonEnglish}
                 </BloomButton>
-                <DialogCancelButton onClick={closeDialog} />
+                <DialogCancelButton onClick_DEPRECATED={closeDialog} />
             </DialogBottomButtons>
         </BloomDialog>
     );

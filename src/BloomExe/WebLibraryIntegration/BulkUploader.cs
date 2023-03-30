@@ -340,11 +340,10 @@ namespace Bloom.WebLibraryIntegration
 			currentEditableCollectionSelection.SelectCollection(collection);
 
 			var publishModel = new PublishModel(bookSelection, new PdfMaker(), currentEditableCollectionSelection, context.Settings, server, _thumbnailer);
-			publishModel.PageLayout = book.GetLayout();
 			var view = new PublishView(publishModel, new SelectedTabChangedEvent(), new LocalizationChangedEvent(), _singleBookUploader, null, null, null, null, null);
 			var blPublishModel = new BloomLibraryPublishModel(_singleBookUploader, book, publishModel);
 
-			if (book.BookInfo.PublishSettings.BloomLibrary.TextLangs == null)
+			if (book.BookInfo.PublishSettings.BloomLibrary.TextLangs.Count == 0)
 			{
 				BloomLibraryPublishModel.InitializeLanguages(book);
 			}

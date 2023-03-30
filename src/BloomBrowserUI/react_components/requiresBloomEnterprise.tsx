@@ -24,6 +24,9 @@ import {
     IBloomDialogEnvironmentParams,
     useSetupBloomDialog
 } from "./BloomDialog/BloomDialogPlumbing";
+import { getBloomApiPrefix } from "../utils/bloomApi";
+
+const badgeUrl = `${getBloomApiPrefix(false)}images/bloom-enterprise-badge.svg`;
 
 /**
  * This function sets up the hooks to get the status of whether Bloom Enterprise is available or not
@@ -39,6 +42,22 @@ export function useEnterpriseAvailable() {
     }, []);
 
     return enterpriseAvailable;
+}
+
+/**
+ * This function sets up a hook to get the Bloom Enterprise status.
+ * @returns A string which matches one of the enum values in CollectionSettingsApi.cs.
+ */
+export function useGetEnterpriseStatus(): string {
+    const [enterpriseStatus, setEnterpriseStatus] = useState<string>("None");
+
+    useEffect(() => {
+        get("settings/enterpriseStatus", result => {
+            setEnterpriseStatus(result.data);
+        });
+    }, []);
+
+    return enterpriseStatus;
 }
 
 /**
@@ -66,8 +85,11 @@ export const RequiresBloomEnterpriseAdjacentIconWrapper = (props: {
 
     // Note: currently the tooltip only appears over the icon itself. But it might be nice if it could go over the children too?
     const tooltip = useL10n(
-        "To use this feature, you'll need to enable Bloom Enterprise.",
-        "EditTab.RequiresEnterprise"
+        enterpriseAvailable
+            ? "This Bloom Enterprise feature is enabled for you."
+            : "To use this feature, you'll need to enable Bloom Enterprise.",
+        "EditTab." +
+            (enterpriseAvailable ? "EnterpriseEnabled" : "RequiresEnterprise")
     );
 
     // Set the disabled property on all the children
@@ -83,7 +105,7 @@ export const RequiresBloomEnterpriseAdjacentIconWrapper = (props: {
                 ${"height: 16px; margin-left: 6px; cursor: pointer; " +
                     (props.iconStyles ?? "")}
             `}
-            src="/bloom/images/bloom-enterprise-badge.svg"
+            src={badgeUrl}
             title={tooltip}
             onClick={() => {
                 if (!enterpriseAvailable) {
@@ -130,7 +152,7 @@ export const BloomEnterpriseIcon = props => {
                 margin-left: 1em;
             `}
             {...props} // let caller override the size and whatever
-            src="/bloom/images/bloom-enterprise-badge.svg"
+            src={badgeUrl}
             title={tooltip}
         />
     );
@@ -327,7 +349,7 @@ export const RequiresBloomEnterpriseNotice: React.VoidFunctionComponent<IRequire
                                           `
                                 }
                             >
-                                <img src="/bloom/images/bloom-enterprise-badge.svg" />
+                                <img src={badgeUrl} />
                                 <Div l10nKey="EditTab.EnterpriseSettingsButton">
                                     Bloom Enterprise Settings
                                 </Div>

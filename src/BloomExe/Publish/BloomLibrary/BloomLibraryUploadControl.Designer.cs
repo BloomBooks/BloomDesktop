@@ -1,3 +1,4 @@
+using Bloom.web.controllers;
 using System.Windows.Forms;
 
 namespace Bloom.Publish.BloomLibrary
@@ -19,6 +20,7 @@ namespace Bloom.Publish.BloomLibrary
 			{
 				components.Dispose();
 			}
+			CommonApi.LoginSuccessful -= HandleLoginSuccessful;
 			base.Dispose(disposing);
 		}
 
@@ -590,7 +592,7 @@ namespace Bloom.Publish.BloomLibrary
             this._blindCheckBox.Size = new System.Drawing.Size(133, 17);
             this._blindCheckBox.TabIndex = 1;
             this._blindCheckBox.Text = "Accessible to the Blind";
-			this._blindCheckBox.CheckedChanged += new System.EventHandler(this._blindCheckBox_CheckedChanged);
+            this._blindCheckBox.CheckedChanged += new System.EventHandler(this._blindCheckBox_CheckedChanged);
             // 
             // _signLanguageCheckBox
             // 

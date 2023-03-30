@@ -11,6 +11,8 @@ import theOneLocalizationManager from "../../lib/localizationManager/localizatio
 
 import { theOneBubbleManager, updateOverlayClass } from "./bubbleManager";
 
+import { farthest } from "../../utils/elementUtils";
+
 const kPlaybackOrderContainerSelector: string =
     ".bloom-playbackOrderControlsContainer";
 
@@ -356,9 +358,15 @@ export function EnableImageEditing(imageContainer: HTMLElement) {
  * Like EnableImageEditing, but for the entire document instead of a single container.
  */
 export function EnableAllImageEditing() {
-    Array.from(
-        document.getElementsByClassName("bloom-hideImageButtons")
-    ).forEach(EnableImageEditing);
+    // getElementsByClassName returns these in document order.
+    // EnableImageEditing has side effects. Whose should win?
+    // We'd rather have the first primary image container win, rather than the last child container,
+    // so apply these in reverse document order.
+    // (This may not be strictly needed because currently, all calls to this function
+    // occur when the side effects don't matter. But just in case.)
+    Array.from(document.getElementsByClassName("bloom-hideImageButtons"))
+        .reverse()
+        .forEach(EnableImageEditing);
 }
 
 /**
@@ -432,10 +440,28 @@ function getImgFromContainer(imageContainer: HTMLElement) {
         .not(".bloom-ui img"); // e.g. cog.svg
 }
 
+/**
+ * Disables the current image tooltip
+ */
 function DisableImageTooltip(container: HTMLElement) {
-    container.title = "";
+    // The patriarch represents the main .bloom-imageContainer, which would be the earliest in the DOM hierarchy.
+    // We use the patriarch's title to represent the title for itself or whichever of its child overlayImages is active
+    // (to avoid complicated conflicting z-index issues)
+    const patriarch = farthest<HTMLElement>(container, ".bloom-imageContainer");
+
+    // Before clearing the patriarch's title, first check if the patriarch
+    // still represents this particular container.
+    // When switching between containers, it might not, because we need to both set the title for the new one
+    // and disable the old title.
+    // So, check first before clearing the title.
+    if (patriarch?.title === container.getAttribute("data-title")) {
+        patriarch.title = "";
+    }
 }
 
+// Note: since this function (obviously) updates state / has side effects,
+// callers should consider the order operations are done if multiple operations happen at or near the same time
+// to ensure that the final state is the one they desire.
 function UpdateImageTooltipVisibility(container: HTMLElement) {
     if (
         container.classList.contains("bloom-hideImageButtons") ||
@@ -449,7 +475,30 @@ function UpdateImageTooltipVisibility(container: HTMLElement) {
 
         // If dataTitle is null for some unexpected reason, let's just leave the title unchanged.
         if (dataTitle !== null) {
-            container.title = dataTitle;
+            //
+            // Set title on the main image container
+            // The intuitive thing to do would be to set each container's title individually.
+            // However, that relies on each container being able to receive mouse events.
+            // Overlay images have problems receiving mouse events on the majority of their surface area
+            // because the canvas is above them.
+            // One could mess around with an invisible layer for each overlay image above the canvas, and it seems to work
+            // but that's a lot more complicated z-index wise and introduces other undesired side effects which need to be coded against.
+            // It's less complicated to just set the title of the main container (its events trigger because the canvas is its descendant,
+            // and the canvas is receiving events)
+            //
+            const patriarch = farthest<HTMLElement>(
+                container,
+                ".bloom-imageContainer"
+            );
+
+            if (patriarch) {
+                patriarch.title = dataTitle;
+            } else {
+                console.assert(
+                    false,
+                    ".bloom-imageContainer expected but not found."
+                );
+            }
         }
     }
 }

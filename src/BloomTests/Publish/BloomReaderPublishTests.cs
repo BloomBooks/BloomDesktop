@@ -64,10 +64,10 @@ namespace BloomTests.Publish
 		{
 			var testBook = CreateBookWithPhysicalFile(kMinimumValidBookHtml, bringBookUpToDate: true);
 
-			using (var bloomdTempFile = TempFile.WithFilenameInTempFolder(testBook.Title + BookCompressor.BloomPubExtensionWithDot))
+			using (var bloomdTempFile = TempFile.WithFilenameInTempFolder(testBook.Title + BloomPubMaker.BloomPubExtensionWithDot))
 			{
-				BloomPubMaker.CreateBloomPub(bloomdTempFile.Path, testBook, _bookServer,  new NullWebSocketProgress());
-				Assert.AreEqual(testBook.Title + BookCompressor.BloomPubExtensionWithDot,
+				BloomPubMaker.CreateBloomPub(new AndroidPublishSettings(), bloomdTempFile.Path, testBook, _bookServer, new NullWebSocketProgress());
+				Assert.AreEqual(testBook.Title + BloomPubMaker.BloomPubExtensionWithDot,
 					Path.GetFileName(bloomdTempFile.Path));
 			}
 		}
@@ -311,9 +311,9 @@ namespace BloomTests.Publish
 					// The page above expects these two audio files to exist. Their content doesn't matter.
 					var audioFolder = Path.Combine(bookFolderPath, "audio");
 					Directory.CreateDirectory(audioFolder);
-					File.WriteAllText(Path.Combine(audioFolder, "aace3497-02e1-46e7-9af3-52bb74010fcc.wav"),
+					File.WriteAllText(Path.Combine(audioFolder, "aace3497-02e1-46e7-9af3-52bb74010fcc.mp3"),
 						@"this is a fake for testing");
-					File.WriteAllText(Path.Combine(audioFolder, "i2335f5ae-2cff-4029-a85c-951cc33256a4.wav"),
+					File.WriteAllText(Path.Combine(audioFolder, "i2335f5ae-2cff-4029-a85c-951cc33256a4.mp3"),
 						@"this is a fake for testing");
 					testBook.BookInfo.PublishSettings.BloomPub.Motion = true;
 					testBook.BookInfo.Save();
@@ -337,7 +337,8 @@ namespace BloomTests.Publish
 					Assert.That(meta.Feature_TalkingBook, Is.True);
 					Assert.That(meta.Feature_Blind, Is.True);
 					Assert.That(meta.Feature_Motion, Is.True);
-				});
+				},
+				languagesToInclude: new HashSet<string>(new[] {"xyz", "de", "es"}));
 		}
 
 		[Test]
@@ -1016,7 +1017,7 @@ namespace BloomTests.Publish
 
 			var path = SIL.IO.FileLocationUtilities.GetFileDistributedWithApplication(_pathToTestImages, "bird.png");
 			byte[] originalBytes = File.ReadAllBytes(path);
-			byte[] reducedBytes = BookCompressor.GetImageBytesForElectronicPub(path,true);
+			byte[] reducedBytes = BookCompressor.GetImageBytesForElectronicPub(path,true, new ImagePublishSettings());
 			Assert.That(reducedBytes, Is.Not.EqualTo(originalBytes)); // no easy way to check it was made transparent, but should be changed.
 			// Size should not change much.
 			if (Platform.IsLinux)
@@ -1056,7 +1057,7 @@ namespace BloomTests.Publish
 
 			var path = SIL.IO.FileLocationUtilities.GetFileDistributedWithApplication(_pathToTestImages, "man.jpg");
 			var originalBytes = File.ReadAllBytes(path);
-			var reducedBytes = BookCompressor.GetImageBytesForElectronicPub(path, true);
+			var reducedBytes = BookCompressor.GetImageBytesForElectronicPub(path, true, new ImagePublishSettings());
 			Assert.AreEqual(originalBytes, reducedBytes, "man.jpg is already small enough (118x154)");
 			using (var tempFile = TempFile.WithExtension(Path.GetExtension(path)))
 			{
@@ -1084,7 +1085,7 @@ namespace BloomTests.Publish
 
 			var path = SIL.IO.FileLocationUtilities.GetFileDistributedWithApplication(_pathToTestImages, "shirt.png");
 			var originalBytes = File.ReadAllBytes(path);
-			var reducedBytes = BookCompressor.GetImageBytesForElectronicPub(path, true);
+			var reducedBytes = BookCompressor.GetImageBytesForElectronicPub(path, true, new ImagePublishSettings());
 			Assert.Greater(originalBytes.Length, reducedBytes.Length, "shirt.png is reduced from 2208x2400");
 			using (var tempFile = TempFile.WithExtension(Path.GetExtension(path)))
 			{
@@ -1112,7 +1113,7 @@ namespace BloomTests.Publish
 			// non-transparent pixels are white (and need to stay that way!)
 			var path = FileLocationUtilities.GetFileDistributedWithApplication(_pathToTestImages, "levels.png");
 			var originalBytes = File.ReadAllBytes(path);
-			var reducedBytes = BookCompressor.GetImageBytesForElectronicPub(path, true);
+			var reducedBytes = BookCompressor.GetImageBytesForElectronicPub(path, true, new ImagePublishSettings());
 			Assert.AreEqual(originalBytes.Length, reducedBytes.Length, "levels.png is not reduced");
 		}
 
@@ -1123,7 +1124,7 @@ namespace BloomTests.Publish
 
 			var path = SIL.IO.FileLocationUtilities.GetFileDistributedWithApplication(_pathToTestImages, "LakePendOreille.jpg");
 			var originalBytes = File.ReadAllBytes(path);
-			var reducedBytes = BookCompressor.GetImageBytesForElectronicPub(path, true);
+			var reducedBytes = BookCompressor.GetImageBytesForElectronicPub(path, true, new ImagePublishSettings());
 			Assert.Greater(originalBytes.Length, reducedBytes.Length, "LakePendOreille.jpg is reduced from 3264x2448");
 			using (var tempFile = TempFile.WithExtension(Path.GetExtension(path)))
 			{
@@ -1151,7 +1152,7 @@ namespace BloomTests.Publish
 
 			var path = FileLocationUtilities.GetFileDistributedWithApplication(_pathToTestImages, "lady24b.png");
 			var originalBytes = File.ReadAllBytes(path);
-			var reducedBytes = BookCompressor.GetImageBytesForElectronicPub(path, true);
+			var reducedBytes = BookCompressor.GetImageBytesForElectronicPub(path, true, new ImagePublishSettings());
 			// Is it reduced, even tho' we switched from 24bit depth to 32bit depth?
 			Assert.Greater(originalBytes.Length, reducedBytes.Length, "lady24b.png is reduced from 3632x3872");
 			using (var tempFile = TempFile.WithExtension(Path.GetExtension(path)))
@@ -1378,11 +1379,14 @@ namespace BloomTests.Publish
 
 			actionsOnFolderBeforeCompressing?.Invoke(testBook.FolderPath);
 
-			using (var bloomdTempFile = TempFile.WithFilenameInTempFolder(testBook.Title + BookCompressor.BloomPubExtensionWithDot))
+			using (var bloomdTempFile = TempFile.WithFilenameInTempFolder(testBook.Title + BloomPubMaker.BloomPubExtensionWithDot))
 			{
-				BloomPubMaker.CreateBloomPub(bloomdTempFile.Path, testBook.FolderPath, _bookServer,  new NullWebSocketProgress(),
-					isTemplateBook: false, creator: creator, 
-					settings: new AndroidPublishSettings() {LanguagesToInclude = languagesToInclude, Motion = testBook.BookInfo.PublishSettings.BloomPub.Motion});
+				var androidPublishSettings = new AndroidPublishSettings() { Motion = testBook.BookInfo.PublishSettings.BloomPub.Motion};
+				if (languagesToInclude != null)
+					androidPublishSettings.LanguagesToInclude = languagesToInclude;
+				BloomPubMaker.CreateBloomPub(settings: androidPublishSettings, outputPath: bloomdTempFile.Path, bookFolderPath: testBook.FolderPath, bookServer: _bookServer,
+					progress: new NullWebSocketProgress(), isTemplateBook: false,
+					creator: creator);
 				var zip = new ZipFile(bloomdTempFile.Path);
 				var newHtml = GetEntryContents(zip, bookFileName);
 				var paramObj = new ZipHtmlObj(zip, newHtml);
@@ -1392,9 +1396,9 @@ namespace BloomTests.Publish
 				{
 					// compress it again! Used for checking important repeatable results
 					using (var extraTempFile =
-						TempFile.WithFilenameInTempFolder(testBook.Title + "2" + BookCompressor.BloomPubExtensionWithDot))
+						TempFile.WithFilenameInTempFolder(testBook.Title + "2" + BloomPubMaker.BloomPubExtensionWithDot))
 					{
-						BloomPubMaker.CreateBloomPub(extraTempFile.Path, testBook, _bookServer,  new NullWebSocketProgress());
+						BloomPubMaker.CreateBloomPub(androidPublishSettings, extraTempFile.Path, testBook, _bookServer, new NullWebSocketProgress());
 						zip = new ZipFile(extraTempFile.Path);
 						assertionsOnRepeat(zip);
 					}

@@ -130,9 +130,6 @@
 }
 
 .HalfLetterPortrait.outsideFrontCover {
-    .bloom-translationGroup.bookTitle .bloom-editable.bloom-contentNational1 {
-        font-size: 16pt;
-    }
     .creditsRow .Cover-Default-style {
         font-size: 14pt;
         text-align: center;
@@ -219,6 +216,14 @@ body[bookcreationtype="translation"] {
             }
         }
     }
+}
+
+// If the L1 name is too long to fit on one line, and there is not Topic, we want the wrapped text centered.
+.frontCover
+    .bottomBlock
+    .bottomRow[data-have-topic="false"]
+    .coverBottomLangName {
+    text-align: center;
 }
 
 .L1-Name-Cover-style {

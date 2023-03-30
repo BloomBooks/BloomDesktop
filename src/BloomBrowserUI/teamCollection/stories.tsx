@@ -369,7 +369,7 @@ storiesOf("BloomDialog", module).add("Test drag & resize", () => (
             <p>Blah</p>
         </DialogMiddle>
         <DialogBottomButtons>
-            <DialogCancelButton onClick={() => undefined} />
+            <DialogCancelButton onClick_DEPRECATED={() => undefined} />
         </DialogBottomButtons>
     </BloomDialog>
 ));

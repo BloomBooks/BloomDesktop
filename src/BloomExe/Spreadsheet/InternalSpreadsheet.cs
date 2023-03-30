@@ -22,6 +22,8 @@ namespace Bloom.Spreadsheet
 		public static Color AlternatingRowsColor2 = Color.FromArgb(237, 249, 250); // even lighter version of Color.PowderBlue
 		public static Color HiddenColor = Color.FromArgb(210, 210, 210); // light gray
 
+		// Column labels should not be possible to confuse with language tags.
+		// See Languages property. Basically, have more than three letters and no hyphens. 
 		public const string RowTypeColumnLabel = "[row type]";
 		public const string RowTypeColumnFriendlyName = "Row type";
 		public const string PageNumberColumnLabel = "(exported page)";
@@ -29,6 +31,10 @@ namespace Bloom.Spreadsheet
 		public const string ImageThumbnailColumnLabel = "[image thumbnail]";
 		public const string ImageThumbnailColumnFriendlyName = "Image";
 		public const string ImageSourceColumnLabel = "[image source]";
+		public const string VideoSourceColumnLabel = "[video source]";
+		public const string WidgetSourceColumnLabel = "[activities source]";
+		public const string PageTypeColumnLabel = "[page type]";
+		public const string AttributeColumnLabel = "[attribute]";
 		public const string ImageSourceColumnFriendlyName = "Image File Path";
 
 		public const string BlankContentIndicator = "[blank]";
@@ -36,6 +42,7 @@ namespace Bloom.Spreadsheet
 		public const string BookTitleRowLabel = "[bookTitle]";
 		public const string CoverImageRowLabel = "[coverImage]";
 		public const string PageContentRowLabel = "[page content]";
+		public const string ImageDescriptionRowLabel = "[image description]";
 
 		private List<SpreadsheetRow> _rows = new List<SpreadsheetRow>();
 		public SpreadsheetExportParams Params = new SpreadsheetExportParams();
@@ -64,10 +71,23 @@ namespace Bloom.Spreadsheet
 						continue;
 					if (!content.EndsWith("]"))
 						continue;
-					if (content.StartsWith("[audio"))
-						continue; // main audio column, audio alignment column
-					// Todo: may need to skip some [] columns, if we use only that convention
-					// to indicate meaningful columns.
+					// A valid language tag must be two or three letters (at least before the
+					// first hyphen). The main point of this, though, isn't to validate them,
+					// but to prevent optional special columns being treated as language codes.
+					// In particular the audio, video, and widget columns are not languages!
+					// We could test for that explicitly, but I wanted a test that (at least)
+					// would not fail if we add another special column and forget to fix this.
+					if (content.Length > 5)
+					{
+						var index = content.IndexOf('-');
+						if (index < 0 || index > 4)
+							continue;
+					}
+					// Or, we could be explicit:
+					//if (content.StartsWith("[audio"))
+					//	continue; // main audio column, audio alignment column
+					//if (content == VideoSourceColumnLabel || content == WidgetSourceColumnLabel |...)
+					//	continue;
 					result.Add(content.Substring(1, content.Length - 2));
 				}
 
@@ -228,6 +248,16 @@ namespace Bloom.Spreadsheet
 				addedCells.nameCell.Comment = friendlyNameComment;
 			}
 
+			if (Header.ColumnIdRow.GetCell(Header.ColumnCount - 2).Content == "[*]")
+			{
+				foreach (var row in _rows)
+				{
+					row.SwapNext(Header.ColumnCount - 2);
+				}
+
+				return Header.ColumnCount - 2;
+			}
+
 			return Header.ColumnCount - 1;
 		}
 
@@ -273,6 +303,11 @@ namespace Bloom.Spreadsheet
 			}
 
 			return result;
+		}
+
+		public int GetIndexOfRow(SpreadsheetRow row)
+		{
+			return _rows.IndexOf(row);
 		}
 	}
 

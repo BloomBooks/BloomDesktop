@@ -65,7 +65,12 @@ namespace Bloom
 			// source collections we search. So just create it directly.
 			// This makes the method name somewhat deceptive. But I was trying not to
 			// disrupt things too badly. And there's still a consistency with the fileName version.
-			return CreateTemplateBookByFolderPath(Path.GetDirectoryName(path));
+			var folderPath = Path.GetDirectoryName(path);
+			if (!Directory.Exists(folderPath))
+				// This can happen if we're opening the AddPage dialog and the template that this book is
+				// derived from doesn't exist on this machine.
+				return null;
+			return CreateTemplateBookByFolderPath(folderPath);
 		}
 
 		private Book.Book CreateTemplateBookByFolderPath(string folderPath)
@@ -103,7 +108,12 @@ namespace Bloom
 		/// <returns></returns>
 		public IEnumerable<string> GetCollectionFolders()
 		{
-			foreach(var root in _sourceRootFolders.Where(Directory.Exists))
+			return GetCollectionFolders(_sourceRootFolders);
+		}
+
+		public static IEnumerable<string> GetCollectionFolders(IEnumerable<string> sourceRootFolders)
+		{
+			foreach(var root in sourceRootFolders.Where(Directory.Exists))
 			{
 				foreach(var collectionDir in Directory.GetDirectories(root))
 				{

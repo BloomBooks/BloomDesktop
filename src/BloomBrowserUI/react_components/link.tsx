@@ -6,12 +6,14 @@ import { Link as MuiLink } from "@mui/material";
 import { LinkBaseProps } from "@mui/material/Link";
 
 import { ILocalizationProps, LocalizableElement } from "./l10nComponents";
+import { kBloomDisabledText } from "../utils/colorUtils";
 
 interface ILinkProps extends ILocalizationProps {
     id?: string;
     href?: string;
     onClick?: any; // overrides following any href.
     disabled?: boolean;
+    openInExternalBrowser?: boolean;
     color?:
         | "initial"
         | "inherit"
@@ -38,6 +40,7 @@ export class Link extends LocalizableElement<ILinkProps, {}> {
                 }
                 id={"" + this.props.id}
                 color={this.props.color}
+                target={this.props.openInExternalBrowser ? "_blank" : undefined}
                 // href must be defined in order to maintain normal link UI
                 // I tried to do like the 'id' attribute above, but it caused an error.
                 href={
@@ -109,7 +112,7 @@ export const LinkWithDisabledStyles = (props: ILinkProps) => {
             css={css`
                 &.disabled {
                     // color same as .MuiFormControlLabel-label.Mui-disabled
-                    color: rgba(0, 0, 0, 0.38);
+                    color: ${kBloomDisabledText};
                     cursor: default;
 
                     &:hover {

@@ -4,6 +4,7 @@ using CommandLine;
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Threading.Tasks;
 
 namespace Bloom.CLI
 {
@@ -14,7 +15,7 @@ namespace Bloom.CLI
 	/// </summary>
 	class SpreadsheetImportCommand
 	{
-		public static int Handle(SpreadsheetImportParameters options)
+		public static async Task<int> Handle(SpreadsheetImportParameters options)
 		{
 			try
 			{
@@ -25,7 +26,7 @@ namespace Bloom.CLI
 				var importer = new SpreadsheetImporter(null, dom,Path.GetDirectoryName(options.InputPath), folderPath);
 				if (!string.IsNullOrEmpty(options.ParamsPath))
 					importer.Params = SpreadsheetImportParams.FromFile(options.ParamsPath);
-				var messages = importer.Import(sheet);
+				var messages = await importer.ImportAsync(sheet);
 				foreach (var message in messages)
 				{
 					Debug.WriteLine(message);
@@ -39,9 +40,7 @@ namespace Bloom.CLI
 			}
 			catch (Exception ex)
 			{
-				Debug.WriteLine(ex.Message);
-				Console.WriteLine(ex.Message);
-				Console.WriteLine(ex.StackTrace);
+				Console.WriteLine(ex);
 				return 1;
 			}
 		}

@@ -29,6 +29,7 @@ using SIL.Windows.Forms.Widgets;
 using System.Globalization;
 using Bloom.web;
 using System.Reflection;
+using System.Threading.Tasks;
 using System.Xml;
 using Bloom.Utils;
 using Bloom.MiscUI;
@@ -413,7 +414,7 @@ namespace Bloom.Edit
 		/// <summary>
 		/// this is called by our model, as a result of a "SelectedTabChangedEvent". So it's a lot more reliable than the normal winforms one.
 		/// </summary>
-		public void OnVisibleChanged(bool visible)
+		public async Task OnVisibleChanged(bool visible)
 		{
 			_visible = visible;
 			if(visible)
@@ -1599,14 +1600,14 @@ namespace Bloom.Edit
 		{
 			PageTemplatesApi.ForPageLayout = false;
 			//if the dialog is already showing, it is up to this method we're calling to detect that and ignore our request
-			RunJavaScript("editTabBundle.showAddPageDialog(false);");
+			RunJavaScript("editTabBundle.showPageChooserDialog(false);");
 		}
 
 		internal void ShowChangeLayoutDialog()
 		{
 			PageTemplatesApi.ForPageLayout = true;
 			//if the dialog is already showing, it is up to this method we're calling to detect that and ignore our request
-			RunJavaScript("editTabBundle.showAddPageDialog(true);");
+			RunJavaScript("editTabBundle.showPageChooserDialog(true);");
 		}
 
 		// The zoom factor that is shown in the top right of the toolbar (a percent).

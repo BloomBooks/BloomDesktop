@@ -13,11 +13,13 @@ import BloomButton from "../bloomButton";
 import InfoIcon from "@mui/icons-material/Info";
 import WarningIcon from "@mui/icons-material/Warning";
 import ErrorIcon from "@mui/icons-material/Error";
+import WaitIcon from "@mui/icons-material/HourglassEmpty";
 import { useSubscribeToWebSocketForObject } from "../../utils/WebSocketManager";
 import {
     kBloomDarkTextOverWarning,
     kBloomWarning
 } from "../../utils/colorUtils";
+import { BloomDialogContext } from "./BloomDialog";
 
 export const kErrorBoxColor = "#eb3941";
 const kLightBlueBackground = "#F0FDFE";
@@ -160,20 +162,25 @@ export const DialogOkButton: React.FunctionComponent<{
 );
 
 export const DialogCancelButton: React.FunctionComponent<{
-    onClick: () => void;
+    // Use of onClick is deprecated. Instead, use the onCancel function on BloomDialog, so that
+    // we get consistent behavior with Escape, upper-right close button, etc.
+    onClick_DEPRECATED?: () => void;
     default?: boolean;
-}> = props => (
-    <BloomButton
-        l10nKey="Common.Cancel"
-        hasText={true}
-        enabled={true}
-        // by default, Cancel is NOT the default button
-        variant={props.default === true ? "contained" : "outlined"}
-        onClick={props.onClick}
-    >
-        Cancel
-    </BloomButton>
-);
+}> = props => {
+    const context = React.useContext(BloomDialogContext);
+    return (
+        <BloomButton
+            l10nKey="Common.Cancel"
+            hasText={true}
+            enabled={true}
+            // by default, Cancel is NOT the default button
+            variant={props.default === true ? "contained" : "outlined"}
+            onClick={context.onCancel ?? props.onClick_DEPRECATED}
+        >
+            Cancel
+        </BloomButton>
+    );
+};
 export const DialogReportButton: React.FunctionComponent<{
     className?: string; // also supports Emotion CSS
     buttonText?: string; // defaults to 'Report'
@@ -205,95 +212,118 @@ export const DialogReportButton: React.FunctionComponent<{
     </BloomButton>
 );
 
-export const NoteBox: React.FunctionComponent<{
-    addBorder?: boolean;
+export const BoxWithIconAndText: React.FunctionComponent<{
+    hasBorder?: boolean;
+    color?: string;
+    borderColor?: string;
+    backgroundColor?: string;
+    icon?: JSX.Element;
 }> = props => {
     let border = css``;
-    if (props.addBorder) {
+    if (props.hasBorder) {
         border = css`
-            border: solid 1px ${kBloomBlue50Transparent};
+            border: solid 1px ${props.borderColor || kBloomBlue50Transparent};
         `;
     }
-    const { addBorder, ...propsToPass } = props;
+    const {
+        hasBorder,
+        color,
+        borderColor,
+        backgroundColor,
+        icon,
+        ...propsToPass
+    } = props;
+    const cssForIcon = css`
+        margin-right: ${kDialogPadding};
+    `;
+    // React's cloneElement doesn't work with Emotion's css prop, so we have to do this.
+    // See https://github.com/emotion-js/emotion/issues/1102.
+    const cloneElement = (element, props) =>
+        jsx(element.type, {
+            key: element.key,
+            ref: element.ref,
+            ...element.props,
+            ...props
+        });
     return (
         <div
             css={css`
                 display: flex;
-                background-color: ${kLightBlueBackground};
+                background-color: ${props.backgroundColor ||
+                    kLightBlueBackground};
                 border-radius: ${kBorderRadiusForSpecialBlocks};
                 padding: ${kDialogPadding};
-                color: ${kBloomBlue};
+                color: ${props.color || kBloomBlue};
                 // The original version of this used p instead of div to get this spacing below.
                 // But we want div so we have more flexibility with adding children.
                 margin-block-end: 1em;
                 ${border};
                 a {
-                    color: ${kBloomBlue};
+                    color: ${props.color || kBloomBlue};
                 }
             `}
             {...propsToPass} // allows defining more css rules from container
         >
-            <InfoIcon
-                color="primary"
-                css={css`
-                    margin-right: ${kDialogPadding};
-                `}
-            />
+            {props.icon ? (
+                cloneElement(props.icon, { css: cssForIcon })
+            ) : (
+                <InfoIcon color="primary" css={cssForIcon} />
+            )}
             {props.children}
         </div>
     );
 };
 
-export const WarningBox: React.FunctionComponent<{}> = props => (
-    <div
-        css={css`
-            display: flex;
-            &,
-            * {
-                color: ${kBloomDarkTextOverWarning} !important;
-            }
-            background-color: ${kBloomWarning};
-            border-radius: ${kBorderRadiusForSpecialBlocks};
-            padding: ${kDialogPadding};
-            font-weight: 500;
-            // The original version of this used p instead of div to get this spacing below.
-            // But we want div so we have more flexibility with adding children.
-            margin-block-end: 1em;
-        `}
-        {...props} // allows defining more css rules from container
-    >
-        <WarningIcon
-            css={css`
-                margin-right: ${kDialogPadding};
-                color: ${kBloomDarkTextOverWarning};
-            `}
-        />
-        {props.children}
-    </div>
-);
+export const NoteBoxSansBorder: React.FunctionComponent<{}> = props => {
+    return <BoxWithIconAndText {...props}>{props.children}</BoxWithIconAndText>;
+};
 
-export const ErrorBox: React.FunctionComponent<{}> = props => (
-    <div
-        css={css`
-            display: flex;
-            background-color: ${kErrorBoxColor};
-            border-radius: ${kBorderRadiusForSpecialBlocks};
-            padding: ${kDialogPadding};
-            &,
-            * {
-                color: white;
-            }
-            // The original version of this used p instead of div to get this spacing below.
-            // But we want div so we have more flexibility with adding children.
-            margin-block-end: 1em;
-        `}
-        {...props} // allows defining more css rules from container
-    >
-        <ErrorIcon
+export const NoteBox: React.FunctionComponent<{}> = props => {
+    return (
+        <BoxWithIconAndText hasBorder={true} {...props}>
+            {props.children}
+        </BoxWithIconAndText>
+    );
+};
+
+export const WaitBox: React.FunctionComponent<{}> = props => {
+    return (
+        <BoxWithIconAndText
+            color="white"
+            backgroundColor="#96668F"
+            icon={<WaitIcon />}
+            {...props}
+        >
+            {props.children}
+        </BoxWithIconAndText>
+    );
+};
+
+export const WarningBox: React.FunctionComponent<{}> = props => {
+    return (
+        <BoxWithIconAndText
+            color={kBloomDarkTextOverWarning}
+            backgroundColor={kBloomWarning}
+            icon={<WarningIcon />}
             css={css`
-                margin-right: ${kDialogPadding};
+                font-weight: 500;
             `}
-        />
-        {props.children}
-    </div>
-);
+            {...props}
+        >
+            {props.children}
+        </BoxWithIconAndText>
+    );
+};
+
+export const ErrorBox: React.FunctionComponent<{}> = props => {
+    return (
+        <BoxWithIconAndText
+            color="white"
+            backgroundColor={kErrorBoxColor}
+            icon={<ErrorIcon />}
+            {...props}
+        >
+            {props.children}
+        </BoxWithIconAndText>
+    );
+};

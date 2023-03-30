@@ -282,7 +282,13 @@ namespace Bloom.Publish.Epub
 			if (_bookServer != null)
 			{
 				// It should only be null while running unit tests which don't create a physical file.
-				_book = PublishHelper.MakeDeviceXmatterTempBook(_book.FolderPath, _bookServer, tempBookPath, _book.IsTemplateBook, _omittedPageLabels);
+				_book = PublishHelper.MakeDeviceXmatterTempBook(_book.FolderPath, _bookServer, tempBookPath,
+					_book.IsTemplateBook, _omittedPageLabels,
+					includeVideoAndActivities: false, // no activities in Epubs.
+					// We could enhance this if we can figure out exactly what languages we will publish audio of.
+					// For now, I'm including them all in this initial copy. Later stages will filter to just
+					// what's visible.
+					narrationLanguages: null); 
 			}
 
 			// The readium control remembers the current page for each book.
@@ -586,6 +592,10 @@ namespace Bloom.Publish.Epub
 			var coverImage = Path.GetFileNameWithoutExtension(coverPageImageFile);
 			if (!string.IsNullOrEmpty(coverImage))
 				metadataElt.Add(new XElement("meta", new XAttribute("name", "cover"), new XAttribute("content", coverImage)));
+			// Bloom's style sheets contain rules for how the audio element that is playing should be highlighted.
+			// They assume that the agent will apply the class ui-audioCurrent to the playing element.
+			// This makes it so.
+			metadataElt.Add(new XElement("meta", new XAttribute("property", "media:active-class"), "ui-audioCurrent"));
 			if (!Unpaginated)
 			{
 				metadataElt.Add(new XElement("meta", new XAttribute("property","rendition:layout"), "pre-paginated"));
@@ -2431,7 +2441,8 @@ namespace Bloom.Publish.Epub
 				dstPath = SubfolderAdjustedContentPath(subfolder, fileName);
 			}
 			Directory.CreateDirectory (Path.GetDirectoryName (dstPath));
-			CopyFile (srcPath, dstPath, limitImageDimensions, needTransparentBackground);
+			// enhance: I'm preserving the old behavior here by making an new one with defaults, but why doesn't epubmaker have access to our settings?
+			CopyFile(srcPath, dstPath, new ImagePublishSettings(), limitImageDimensions, needTransparentBackground );
 			_manifestItems.Add(SubfolderAdjustedName(subfolder, fileName));
 			_mapSrcPathToDestFileName [srcPath] = dstPath;
 			return dstPath;
@@ -2502,11 +2513,11 @@ namespace Bloom.Publish.Epub
 		/// <summary>
 		/// This supports testing without actually copying files.
 		/// </summary>
-		internal virtual void CopyFile(string srcPath, string dstPath, bool limitImageDimensions=false, bool needTransparentBackground=false)
+		internal virtual void CopyFile(string srcPath, string dstPath, ImagePublishSettings imagePublishSettings, bool limitImageDimensions=false, bool needTransparentBackground=false)
 		{
-			if (limitImageDimensions && BookCompressor.ImageFileExtensions.Contains(Path.GetExtension(srcPath).ToLowerInvariant()))
+			if (limitImageDimensions && BookCompressor.CompressableImageFileExtensions.Contains(Path.GetExtension(srcPath).ToLowerInvariant()))
 			{
-				var imageBytes = BookCompressor.GetImageBytesForElectronicPub(srcPath, needTransparentBackground);
+				var imageBytes = BookCompressor.GetImageBytesForElectronicPub(srcPath, needTransparentBackground, imagePublishSettings);
 				RobustFile.WriteAllBytes(dstPath, imageBytes);
 				return;
 			}

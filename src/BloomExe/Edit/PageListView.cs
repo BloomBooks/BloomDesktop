@@ -102,7 +102,15 @@ namespace Bloom.Edit
 				new WebThumbNailList.MenuItemSpec() {
 					Label = LocalizationManager.GetString("EditTab.ChooseLayoutButton", "Choose Different Layout"),
 					EnableFunction = (page) => page != null && !page.Required,
-					ExecuteCommand = (page) => _model.ChangePageLayout(page)});
+					ExecuteCommand = (page) =>
+					{
+						// While we have separate browsers running for this page list and the editing view, we switch
+						// the focus to the editing browser before launching the dialog so that Esc will work to close
+						// the dialog without interacting with the dialog first.
+						_model.GetEditingBrowser().Focus();
+						_model.ChangePageLayout(page);
+					}
+				});
 			// This sets up the context menu items that will be shown when the user clicks the
 			// arrow in the thumbnail list or right-clicks in the page list.
 			// Note that we can't use ContextMenuProvider here, because there is no reasonable

@@ -353,6 +353,11 @@ namespace Bloom.Book
 			return pageDiv.SelectSingleNode("self::div[contains(@class, 'bloom-backMatter')]") != null;
 		}
 
+		public static bool IsXMatterPage(XmlElement pageDiv)
+		{
+			return pageDiv.SelectSingleNode("self::div[contains(@class, 'bloom-frontMatter') or contains(@class, 'bloom-backMatter')]") != null;
+		}
+
 		public static bool ShouldBeInBackForDeviceUse(XmlElement pageDiv)
 		{
 			return pageDiv.SelectSingleNode("self::div[contains(@class, 'frontCover')]") == null;

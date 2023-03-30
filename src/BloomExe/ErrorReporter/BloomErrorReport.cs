@@ -1,6 +1,7 @@
 ﻿using SIL.Reporting;
 using System;
 using System.Diagnostics;
+using Bloom.MiscUI;
 
 namespace Bloom.ErrorReporter
 {
@@ -54,6 +55,22 @@ namespace Bloom.ErrorReporter
 
 				return ErrorResult.OK;
 			});
+		}
+
+		/// <summary>
+		/// Notify the user by first showing a toast containing shortMsg. If the user clicks that,
+		/// show longerMsg. (This is meant to be something relatively unimportant, so we don't
+		/// allow the user to report it, and don't do any logging here except what the regular
+		/// NotifyUserOfProblem may do if the toast is clicked.)
+		/// </summary>
+		public static void NotifyUserUnobtrusively(string shortMsg, string longerMsg, Exception ex = null)
+		{
+			var toast = new ToastNotifier();
+			toast.ToastClicked += (sender, args) =>
+			{
+				BloomErrorReport.NotifyUserOfProblem(longerMsg, ex, new NotifyUserOfProblemSettings(AllowSendReport.Disallow));
+			};
+			toast.Show(shortMsg, null, 10);
 		}
 	}
 }

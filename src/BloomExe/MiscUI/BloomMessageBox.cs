@@ -1,4 +1,6 @@
-﻿using System.Windows.Forms;
+﻿using System;
+using System.Windows.Forms;
+using L10NSharp;
 using Newtonsoft.Json;
 
 namespace Bloom.MiscUI
@@ -13,15 +15,22 @@ namespace Bloom.MiscUI
 	/// </summary>
 	public class BloomMessageBox
 	{
+		private static bool s_justRecordMessageBoxMessagesForTesting=false;
+		private static string s_previousMessageBoxMessage;
+
 		public static string Show(IWin32Window owner, string messageHtml, MessageBoxButton[] rightButtons, MessageBoxIcon icon = MessageBoxIcon.None)
 		{
+			if (s_justRecordMessageBoxMessagesForTesting)
+			{
+				s_previousMessageBoxMessage = messageHtml;
+				return "closedByReportButton";
+			}
 			using (var dlg = new ReactDialog("messageBoxBundle", new
 			{
 				messageHtml,
 				rightButtonDefinitions = rightButtons,
 				icon = icon.ToString().ToLowerInvariant(),
 				closeWithAPICall = true
-
 			}))
 			{
 				dlg.Width = 500;
@@ -30,8 +39,55 @@ namespace Bloom.MiscUI
 				// drag it around. There's nothing left to give it one if we don't set a title
 				// and remove the control box.
 				dlg.ControlBox = false;
+				if (owner == null)
+					dlg.StartPosition = FormStartPosition.CenterScreen;
 				dlg.ShowDialog(owner);
 				return dlg.CloseSource;
+			}
+		}
+
+		/// <summary>
+		/// This version assumes we just want a warning box with a single Close button to give some information.
+		/// </summary>
+		public static string ShowInfo(string message)
+		{
+			var closeText = LocalizationManager.GetString("Common.Close", "Close");
+			var messageBoxButtons = new[]
+			{
+				new MessageBoxButton() { Text = closeText, Id = "close", Default = true }
+			};
+			var openForm = Shell.GetShellOrOtherOpenForm();
+			return Show(openForm, message, messageBoxButtons, MessageBoxIcon.Information);
+		}
+
+		/// <summary>
+		/// Use this in unit tests to cleanly check that a messagebox would have been shown.
+		/// E.g.  using (new Bloom.MiscUI.BloomMessageBox.ShowInfoExpected()) {...}
+		/// </summary>
+		/// <remarks>Based on the similar ErrorReport.NonFatalErrorReportExpected.</remarks>
+		public class ShowExpected :IDisposable
+		{
+			private readonly bool previousJustRecordMessageBoxMessagesForTesting;
+			public ShowExpected()
+			{
+				previousJustRecordMessageBoxMessagesForTesting = s_justRecordMessageBoxMessagesForTesting;
+				s_justRecordMessageBoxMessagesForTesting = true;
+				// This is a static, so a previous unit test could have filled it with something (yuck)
+				s_previousMessageBoxMessage = null;
+			}
+			public void Dispose()
+			{
+				s_justRecordMessageBoxMessagesForTesting = previousJustRecordMessageBoxMessagesForTesting;
+				if (s_previousMessageBoxMessage == null)
+					throw new Exception("BloomMessageBox was expected but wasn't generated.");
+				s_previousMessageBoxMessage = null;
+			}
+			/// <summary>
+			/// use this to check the actual contents of the message that was triggered
+			/// </summary>
+			public string Message
+			{
+				get { return s_previousMessageBoxMessage; }
 			}
 		}
 	}

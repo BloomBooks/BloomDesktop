@@ -9,7 +9,7 @@ import { Div } from "../../react_components/l10nComponents";
 import { FormControl, MenuItem, Select, Typography } from "@mui/material";
 import Slider from "@mui/material/Slider";
 import "../../bookEdit/css/rc-slider-bloom.less";
-import { kBloomBlue } from "../../bloomMaterialUITheme";
+import { kBloomBlue, kSelectCss } from "../../bloomMaterialUITheme";
 import AudioIcon from "@mui/icons-material/VolumeUp";
 import { useEffect, useState } from "react";
 import { NoteBox } from "../../react_components/BloomDialog/commonDialogComponents";
@@ -296,17 +296,9 @@ export const AudioVideoOptionsGroup: React.FunctionComponent<{
                             >
                                 <Select
                                     css={css`
-                                        background-color: white;
-                                        &.MuiOutlinedInput-root {
-                                            border-radius: 0 !important;
-
-                                            .MuiOutlinedInput-notchedOutline {
-                                                border-width: 1px !important;
-                                                border-color: ${kBloomBlue} !important; // it usually is anyway, but not before MUI decides to focus it.
-                                            }
-                                        }
+                                        ${kSelectCss}
                                     `}
-                                    variant="standard"
+                                    variant="outlined"
                                     value={props.format}
                                     open={formatDropdownIsOpen}
                                     onOpen={() => {
@@ -355,9 +347,7 @@ export const AudioVideoOptionsGroup: React.FunctionComponent<{
                                 </Select>
                             </div>
                         </div>
-                        {tooBigMsg && (
-                            <NoteBox addBorder={true}>{tooBigMsg}</NoteBox>
-                        )}
+                        {tooBigMsg && <NoteBox>{tooBigMsg}</NoteBox>}
                         {/** The below div is disabled for MP3 because currently, we ignore this setting and immediately flip pages with no narration in mp3 mode.
                          * That's because, in the context of making an mp3, it doesn't make much sense to spend time on pages with no audio at all, especially x-matter pages.
                          * Pages with background music but no narration are a trickier case. We think usually it won't be valuable to linger on them, but there could be some exceptions.

@@ -1,18 +1,21 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Xml;
 using Bloom.Properties;
 using BookInstance = Bloom.Book.Book;
 using Bloom.WebLibraryIntegration;
 using SIL.Windows.Forms.ClearShare;
-using SIL.Windows.Forms.Progress;
-using SIL.Xml;
 using BloomTemp;
 using System.IO;
-using Bloom.Collection;
-using Bloom.Book;
 using System.Diagnostics;
+using Bloom.Utils;
+using Bloom.web;
+using SIL.IO;
+using SIL.Progress;
+using Bloom.Book;
+using System.Globalization;
+using Bloom.ImageProcessing;
+using System.Drawing;
 
 namespace Bloom.Publish.BloomLibrary
 {
@@ -31,6 +34,8 @@ namespace Bloom.Publish.BloomLibrary
 		public BloomLibraryPublishModel(BookUpload uploader, BookInstance book, PublishModel model)
 		{
 			Book = book;
+			InitializeLanguages();
+
 			_uploader = uploader;
 			_publishModel = model;
 
@@ -151,31 +156,26 @@ namespace Bloom.Publish.BloomLibrary
 
 		internal bool IsThisVersionAllowedToUpload => _uploader.IsThisVersionAllowedToUpload();
 
-		internal string UploadOneBook(BookInstance book, LogBox progressBox, PublishView publishView, bool excludeMusic, out string parseId)
+		internal string UploadOneBook(BookInstance book, IProgress progress, PublishView publishView, bool excludeMusic, out string parseId)
 		{
 			using (var tempFolder = new TemporaryFolder(Path.Combine("BloomUpload", Path.GetFileName(book.FolderPath))))
 			{
-				BookUpload.PrepareBookForUpload(ref book, _publishModel.BookServer, tempFolder.FolderPath, progressBox);
+				BookUpload.PrepareBookForUpload(ref book, _publishModel.BookServer, tempFolder.FolderPath, progress);
 				var bookParams = new BookUploadParameters
 				{
 					ExcludeMusic = excludeMusic,
 					PreserveThumbnails = false,
 				};
-				return _uploader.FullUpload(book, progressBox, publishView, bookParams, out parseId);
+				return _uploader.FullUpload(book, progress, publishView, bookParams, out parseId);
 			}
 		}
 
-		/// <summary>
-		/// Try to login using stored userid and password
-		/// Test LoggedIn property to verify.
-		/// </summary>
-		/// <returns></returns>
 		internal void LogIn()
 		{
-			FirebaseLoginDialog.FirebaseUpdateToken();
+			BloomLibraryAuthentication.LogIn();
 		}
 
-		internal void Logout()
+		internal void LogOut()
 		{
 			_uploader.Logout();
 		}
@@ -260,16 +260,11 @@ namespace Bloom.Publish.BloomLibrary
 			var bookInfo = book.BookInfo;
 			Debug.Assert(bookInfo?.MetaData != null, "Precondition: MetaData must not be null");
 
-			if (bookInfo.PublishSettings.BloomLibrary.TextLangs == null)
-			{
-				bookInfo.PublishSettings.BloomLibrary.TextLangs = new Dictionary<string, InclusionSetting>();
-			}
-
 			// reinitialize our list of which languages to publish, defaulting to the ones that are complete.
 			foreach (var kvp in allLanguages)
 			{
 				var langCode = kvp.Key;
-				var isRequiredLang = IsRequiredLanguageForBook(langCode, book);
+				var isRequiredLang = book.IsRequiredLanguage(langCode);
 
 				// First, check if the user has already explicitly set the value. If so, we'll just use that value and be done.
 				if (bookInfo.PublishSettings.BloomLibrary.TextLangs.TryGetValue(langCode, out InclusionSetting checkboxValFromSettings))
@@ -293,10 +288,6 @@ namespace Bloom.Publish.BloomLibrary
 			}
 
 			// Initialize the Talking Book Languages settings
-			if (bookInfo.PublishSettings.BloomLibrary.AudioLangs == null)
-			{
-				bookInfo.PublishSettings.BloomLibrary.AudioLangs = new Dictionary<string, InclusionSetting>();
-			}
 
 			var allLangCodes = allLanguages.Select(x => x.Key);
 
@@ -327,8 +318,6 @@ namespace Bloom.Publish.BloomLibrary
 					bookInfo.PublishSettings.BloomLibrary.AudioLangs[langCode] = settingForNewLang;
 			}
 
-			if (bookInfo.PublishSettings.BloomLibrary.SignLangs == null)
-			bookInfo.PublishSettings.BloomLibrary.SignLangs = new Dictionary<string, InclusionSetting>();
 			var collectionSignLangCode = book.CollectionSettings.SignLanguageTag;
 			// User may have unset or modified the sign language for the collection in which case we need to exclude the old one it if it was previously included.
 			foreach (var includedSignLangCode in bookInfo.PublishSettings.BloomLibrary.SignLangs.IncludedLanguages().ToList())
@@ -350,15 +339,6 @@ namespace Bloom.Publish.BloomLibrary
 
 			// The metadata may have been changed, so save it.
 			bookInfo.Save();
-		}
-
-		public static bool IsRequiredLanguageForBook(string langCode, Book.Book book)
-		{
-			// Languages which have been selected for display in this book need to be selected
-			return
-				langCode == book.BookData.Language1.Tag ||
-				langCode == book.Language2Tag ||
-				langCode == book.Language3Tag;
 		}
 
 		public void ClearSignLanguageToPublish()
@@ -393,6 +373,298 @@ namespace Bloom.Publish.BloomLibrary
 		{
 			Book.UpdateBlindFeature(true, new List<string> { langCode });
 			Book.BookInfo.Save();
+		}
+
+		public string CheckBookBeforeUpload(string[] languages)
+		{
+			return new LicenseChecker().CheckBook(Book, languages);
+		}
+
+		public void AddHistoryRecordForLibraryUpload(string url)
+		{
+			Book.AddHistoryRecordForLibraryUpload(url);
+		}
+
+		public void BulkUpload(string rootFolderPath, IProgress progress)
+		{
+			var target = BookUpload.UseSandbox ? UploadDestination.Development : UploadDestination.Production;
+
+			var bloomExePath = Program.BloomExePath;
+			var command = $"\"{bloomExePath}\" upload \"{rootFolderPath}\" -u {WebUserId} -d {target}";
+			if (SIL.PlatformUtilities.Platform.IsLinux)
+				command = $"/opt/mono5-sil/bin/mono {command}";
+
+			ProcessStartInfo startInfo;
+			if (SIL.PlatformUtilities.Platform.IsWindows)
+			{
+				startInfo = new ProcessStartInfo()
+				{
+					FileName = "cmd.exe",
+					Arguments = $"/k {MiscUtils.EscapeForCmd(command)}",
+
+					WorkingDirectory = Path.GetDirectoryName(bloomExePath)
+				};
+			}
+			else
+			{
+				string program = GetLinuxTerminalProgramAndAdjustCommand(ref command);
+				if (String.IsNullOrEmpty(program))
+				{
+					progress.WriteMessage("Cannot bulk upload because unable to find terminal window for output messages.");
+					return;
+				}
+				startInfo = new ProcessStartInfo()
+				{
+					FileName = program,
+					Arguments = command,
+					WorkingDirectory = Path.GetDirectoryName(bloomExePath)
+				};
+				// LD_PRELOAD is a Linux environment variable for a shared library that should be loaded before any other library is
+				// loaded by a program that is starting up.  It is rarely needed, but the mozilla code used by Geckofx is one place
+				// where this feature is used, specifically to load a xulrunner patch (libgeckofix.so) that must be in place before
+				// xulrunner can be initialized for GeckoFx60 on Linux.  This must be in place in the environment before launching
+				// any process (such as Bloom, here) that will initialize xulrunner, but may cause problems for other programs so
+				// it is best not to have it in the environment unless we know it is needed.  In particular having LD_PRELOAD set to
+				// load libgeckofix.so is known to cause problems when running some programs (possibly only BloomPdfMaker.exe) using
+				// CommandLineRunner.  To guard against this Program.Main() removes it from the environment, but here we need to
+				// temporarily restore it so it can be inherited by the instance of Bloom we are about to launch. Fortunately, it's
+				// easy to reconstruct.
+				var xulRunner = Environment.GetEnvironmentVariable("XULRUNNER");
+				if (!String.IsNullOrEmpty("xulRunner"))
+					Environment.SetEnvironmentVariable("LD_PRELOAD", $"{xulRunner}/libgeckofix.so");
+			}
+
+			Process.Start(startInfo);
+			progress.WriteMessage("Starting bulk upload in a terminal window...");
+			progress.WriteMessage("This process will skip books if it can tell that nothing has changed since the last bulk upload.");
+			progress.WriteMessage("When the upload is complete, there will be a file named 'BloomBulkUploadLog.txt' in your collection folder.");
+			var url = $"{BloomLibraryUrls.BloomLibraryUrlPrefix}/{Book.CollectionSettings.DefaultBookshelf}";
+			progress.WriteMessage("Your books will show up at {0}", url);
+			if (SIL.PlatformUtilities.Platform.IsLinux) // LD_PRELOAD interferes with CommandLineRunner and GeckoFx60 on Linux
+				Environment.SetEnvironmentVariable("LD_PRELOAD", null);
+		}
+
+		private string QuoteQuotes(string command)
+		{
+			return command.Replace("\\", "\\\\").Replace("\"", "\\\"");
+		}
+
+		private string GetLinuxTerminalProgramAndAdjustCommand(ref string command)
+		{
+			// See https://askubuntu.com/questions/484993/run-command-on-anothernew-terminal-window
+
+			if (RobustFile.Exists("/usr/bin/gnome-terminal"))   // standard for GNOME (Ubuntu/Wasta)
+			{
+				// /usr/bin/gnome-terminal -- /bin/bash -c "bloom upload \"folder\" -u user -d dest; read line"
+				command = $"-- /bin/bash -c \"{QuoteQuotes(command)}; read line\"";
+				return "/usr/bin/gnome-terminal";
+			}
+			if (RobustFile.Exists("/usr/bin/terminator")) // popular alternative
+			{
+				// /usr/bin/terminator -x /bin/bash -c "bloom upload \"folder\" -u user -d dest; read line"
+				command = $"-x /bin/bash -c \"{QuoteQuotes(command)}; read line\"";
+				return "/usr/bin/terminator";
+			}
+			if (RobustFile.Exists("/usr/bin/xfce4-terminal"))    // standard for XFCE4 (XUbuntu)
+			{
+				// /usr/bin/xterm -hold -x /bin/bash -c "bloom upload \"folder\" -u user -d dest"
+				command = $"-T \"Bloom upload\" --hold -x /bin/bash -c \"{QuoteQuotes(command)}\"";
+				return "/usr/bin/xfce4-terminal";
+			}
+			if (RobustFile.Exists("/usr/bin/xterm"))    // antique original (slightly better than nothing)
+			{
+				// /usr/bin/xterm -hold -x /bin/bash -c "bloom upload \"folder\" -u user -d dest"
+				command = $"-T \"Bloom upload\" -hold -e /bin/bash -c \"{QuoteQuotes(command)}\"";
+				return "/usr/bin/xterm";
+			}
+			// Neither konsole nor qterminal will launch with Bloom.  The ones above have been tested on Wasta 20.
+			// symbol lookup error: /usr/lib/x86_64-linux-gnu/qt5/plugins/styles/libqgtk2style.so: undefined symbol: gtk_combo_box_entry_new
+			// I suspect because they're still linking with GTK2 while Bloom has to use GTK3 with Geckofx60.
+
+			// Give up.
+			return null;
+		}
+
+		public dynamic GetUploadCollisionDialogProps(IEnumerable<string> languagesToUpload, bool signLanguageFeatureSelected)
+		{
+			var newThumbPath = ChooseBestUploadingThumbnailPath(Book).ToLocalhost();
+			var newTitle = Book.TitleBestForUserDisplay;
+			var newLanguages = ConvertLanguageCodesToNames(languagesToUpload, Book.BookData);
+			if (signLanguageFeatureSelected && !string.IsNullOrEmpty(CurrentSignLanguageName))
+			{
+				var newLangs = newLanguages.ToList();
+				if (!newLangs.Contains(CurrentSignLanguageName))
+					newLangs.Add(CurrentSignLanguageName);
+				newLanguages = newLangs;
+			}
+
+			var existingBookInfo = ConflictingBookInfo;
+			var updatedDateTime = (DateTime)existingBookInfo.updatedAt;
+			var createdDateTime = (DateTime)existingBookInfo.createdAt;
+			// Find the best title available (BL-11027)
+			// Users can click on this title to bring up the existing book's page.
+			var existingTitle = existingBookInfo.title?.Value;
+			if (String.IsNullOrEmpty(existingTitle))
+			{
+				// If title is undefined (which should not be the case), then use the first title from allTitles.
+				var allTitlesString = existingBookInfo.allTitles?.Value;
+				if (!String.IsNullOrEmpty(allTitlesString))
+				{
+					try
+					{
+						var allTitles = Newtonsoft.Json.Linq.JObject.Parse(allTitlesString);
+						foreach (var title in allTitles)
+						{
+							// title.Value is dynamic language code / title string pair
+							// title.Value.Value is the actual book title in the associated language
+							if (title?.Value?.Value != null)
+							{
+								existingTitle = title.Value.Value;
+								break;
+							}
+						}
+					}
+					catch
+					{
+						// ignore parse failure -- should never happen at this point.
+					}
+				}
+			}
+			// If neither title nor allTitles are defined, just give a placeholder value.
+			if (String.IsNullOrEmpty(existingTitle))
+				existingTitle = "Unknown";
+			var existingId = existingBookInfo.objectId.ToString();
+			var existingBookUrl = BloomLibraryUrls.BloomLibraryDetailPageUrlFromBookId(existingId);
+
+			var existingLanguages = ConvertLanguagePointerObjectsToNames(existingBookInfo.langPointers);
+			var createdDate = createdDateTime.ToString("d", CultureInfo.CurrentCulture);
+			var updatedDate = updatedDateTime.ToString("d", CultureInfo.CurrentCulture);
+			var existingThumbUrl = GetBloomLibraryThumbnailUrl(existingBookInfo);
+
+			// Must match IUploadCollisionDlgProps in uploadCollisionDlg.tsx.
+			return new
+			{
+				shouldShow = BookIsAlreadyOnServer,
+				userEmail = LoggedIn ? WebUserId : "",
+				newThumbUrl = newThumbPath,
+				newTitle,
+				newLanguages,
+				existingTitle,
+				existingLanguages,
+				existingCreatedDate = createdDate,
+				existingUpdatedDate = updatedDate,
+				existingBookUrl,
+				existingThumbUrl
+			};
+		}
+
+		// We are trying our best to end up with a thumbnail whose height/width ratio
+		// is the same as the original image. This allows the Uploading and Already in Bloom Library
+		// thumbs to top-align.
+		private string ChooseBestUploadingThumbnailPath(Book.Book book)
+		{
+			// If this exists, it will have the original image's ratio of height to width.
+			var thumb70Path = Path.Combine(book.FolderPath, "thumbnail-70.png");
+			if (RobustFile.Exists(thumb70Path))
+				return thumb70Path;
+			var coverImagePath = book.GetCoverImagePath();
+			if (coverImagePath == null)
+			{
+				return book.ThumbnailPath;
+			}
+			else
+			{
+				RuntimeImageProcessor.GenerateThumbnail(book.GetCoverImagePath(),
+					book.NonPaddedThumbnailPath, 70, ColorTranslator.FromHtml(book.GetCoverColor()));
+				return book.NonPaddedThumbnailPath;
+
+			}
+		}
+		private static string GetBloomLibraryThumbnailUrl(dynamic existingBookInfo)
+		{
+			// Code basically copied from bloomlibrary2 Book.ts
+			var baseUrl = existingBookInfo.baseUrl.ToString();
+			var harvestState = existingBookInfo.harvestState.ToString();
+			var updatedTime = existingBookInfo.updatedAt.ToString();
+			var harvesterThumbnailUrl = GetHarvesterThumbnailUrl(baseUrl, harvestState, updatedTime);
+			if (harvesterThumbnailUrl != null)
+			{
+				return harvesterThumbnailUrl;
+			}
+			// Try "legacy" version (the one uploaded with the book)
+			return CreateThumbnailUrlFromBase(baseUrl, updatedTime);
+		}
+
+		// Code modified from bloomlibrary2 Book.ts.
+		// Bloomlibrary2 code still (as of 11/11/2021) checks the harvest date to see if the thumbnail is useful,
+		// But now there are no books in circulation on bloomlibrary that haven't been harvested since that date.
+		// So now we can consider any harvester thumbnail as valid, as long as the harvestState is "Done".
+		private static string GetHarvesterThumbnailUrl(string baseUrl, string harvestState, string lastUpdate)
+		{
+			if (harvestState != "Done")
+				return null;
+
+			var harvesterBaseUrl = GetHarvesterBaseUrl(baseUrl);
+			return CreateThumbnailUrlFromBase(harvesterBaseUrl, lastUpdate);
+		}
+
+		private static string CreateThumbnailUrlFromBase(string baseUrl, string lastUpdate)
+		{
+			// The bloomlibrary2 code calls Book.getCloudFlareUrl(), but it just passes the parameter through
+			// at this point with a bunch of comments on why we don't do anything there.
+			return baseUrl + "thumbnails/thumbnail-256.png?version=" + lastUpdate;
+		}
+
+		// Code basically copied from bloomlibrary2 Book.ts
+		private static string GetHarvesterBaseUrl(string baseUrl)
+		{
+			const string slash = "%2f";
+			var folderWithoutLastSlash = baseUrl;
+			if (baseUrl.EndsWith(slash))
+			{
+				folderWithoutLastSlash = baseUrl.Substring(0, baseUrl.Length - 3);
+			}
+
+			var index = folderWithoutLastSlash.LastIndexOf(slash, StringComparison.InvariantCulture);
+			var pathWithoutBookName = folderWithoutLastSlash.Substring(0, index);
+			return pathWithoutBookName.Replace("BloomLibraryBooks-Sandbox", "bloomharvest-sandbox")
+					   .Replace("BloomLibraryBooks", "bloomharvest") + "/";
+		}
+
+		private IEnumerable<string> ConvertLanguageCodesToNames(IEnumerable<string> languageCodesToUpload, BookData bookData)
+		{
+			foreach (var langCode in languageCodesToUpload)
+			{
+				yield return bookData.GetDisplayNameForLanguage(langCode);
+			}
+		}
+
+		private IEnumerable<string> ConvertLanguagePointerObjectsToNames(IEnumerable<dynamic> langPointers)
+		{
+			foreach (var languageObject in langPointers)
+			{
+				yield return languageObject.name;
+			}
+		}
+
+		internal void ChangeBookId(IProgress progress)
+		{
+			progress.WriteMessage("Setting new instance ID...");
+			Book.BookInfo.Id = BookInfo.InstallFreshInstanceGuid(Book.FolderPath);
+			progress.WriteMessage("ID is now " + Book.BookInfo.Id);
+		}
+
+		internal void UpdateLangDataCache()
+		{
+			Book.BookData.UpdateCache();
+		}
+
+		private string CurrentSignLanguageName
+		{
+			get
+			{
+				return Book.CollectionSettings.SignLanguage.Name;
+			}
 		}
 	}
 

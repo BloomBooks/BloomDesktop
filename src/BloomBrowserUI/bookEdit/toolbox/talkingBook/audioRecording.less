@@ -22,9 +22,12 @@
 }
 span.ui-audioCurrent:not(.ui-suppressHighlight):not(.ui-disableHighlight),
 div.ui-audioCurrent:not(.ui-suppressHighlight):not(.ui-disableHighlight) p {
-    background: @highlightColor;
-    /* make highlighted text easier to read if it is normally a light color (like white)*/
-    color: @textOnLightBackground;
+    // This behavior is now achieved by a default rule in content/basePage-shared.less,
+    // from whence it can work in various players and be overridden by our new audio-hightlighting
+    // control. The negation for suppress/disable is now handled by a separate rule below.
+    // background: @highlightColor;
+    // /* make highlighted text easier to read if it is normally a light color (like white)*/
+    // color: @textOnLightBackground;
 
     &:before {
         background-image: url(currentTextIndicator.svg);
@@ -38,6 +41,25 @@ div.ui-audioCurrent:not(.ui-suppressHighlight):not(.ui-disableHighlight) p {
         position: absolute;
         content: " ";
     }
+}
+
+// These classes get applied to ui-audioCurrent elements when we don't currently want
+// them highlighted. Because a lot of rules now set various foreground and background
+// colors for .ui-audioCurrent, not only during editing when the suppress and disable
+// classes are relevant, it's cleaner to do the suppression with separate rules
+// rather than :not claues like the above.
+// The goal is that rules that set background and foreground color for the current
+// playback element shall be defeated when the disable/suppress classes are present.
+// There could pathologically be a case where some other rule was defeated unintentionally,
+// but we don't have any other rule-based text or background coloring that applies to
+// audio elements, so I think the neatness of not having to complicate many rules
+// with :not clauses that aren't relevant in most contexts is worth it.
+.ui-audioCurrent.ui-suppressHighlight,
+.ui-audioCurrent.ui-suppressHighlight p,
+.ui-audioCurrent.ui-disableHighlight,
+.ui-audioCurrent.ui-disableHighlight p {
+    background-color: unset !important;
+    color: unset !important;
 }
 
 .ui-audioCurrent .ui-enableHighlight {

@@ -58,6 +58,8 @@ namespace Bloom
 				// is cached.
 				if (_workspaceView.InEditMode)
 					signLanguageApi.CheckForChangedVideoOnActivate(sender, args);
+				if (_workspaceView.InCollectionTab)
+					_workspaceView.CheckForCollectionUpdates();
 			};
 			Deactivate += (sender, args) => signLanguageApi.DeactivateTime = DateTime.Now;
 

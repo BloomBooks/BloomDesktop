@@ -9,6 +9,7 @@ using Bloom.Api;
 using Bloom.Book;
 using Bloom.Collection;
 using Bloom.CollectionTab;
+using Bloom.History;
 using Bloom.MiscUI;
 using Bloom.Registration;
 using Bloom.Utils;
@@ -659,8 +660,8 @@ namespace Bloom.TeamCollection
 							{"BookId", _bookSelection?.CurrentSelection?.ID},
 							{"BookName", _bookSelection?.CurrentSelection?.Title}
 						});
-					BookHistory.AddEvent(_bookSelection.CurrentSelection, BookHistoryEventType.SyncProblem, msg);
-					ErrorReport.NotifyUserOfProblem(msg);
+					BookHistory.AddEvent(_bookSelection?.CurrentSelection, BookHistoryEventType.SyncProblem, msg);
+					BloomMessageBox.ShowInfo(msg);
 				}
 				UpdateUiForBook();
 				request.PostSucceeded();

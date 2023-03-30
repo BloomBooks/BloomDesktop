@@ -462,10 +462,18 @@ export function SetupElements(container: HTMLElement) {
             });
         });
 
-    //in bilingual/trilingual situation, re-order the boxes to match the content languages, so that stylesheets don't have to
     $(container)
         .find(".bloom-translationGroup")
         .each(function() {
+            // If we get focus on a translation group, move it to the first editable. See BL-11922.
+            $(this).focus(e => {
+                $(e.target)
+                    ?.find("div.bloom-editable:visible")
+                    ?.first()
+                    ?.focus();
+            });
+
+            //in bilingual/trilingual situation, re-order the boxes to match the content languages, so that stylesheets don't have to
             const contentElements = $(this).find(
                 "textarea, div.bloom-editable"
             );
@@ -1257,7 +1265,11 @@ export const userStylesheetContent = () => {
 };
 
 export const pageUnloading = () => {
-    theOneBubbleManager.cleanUp();
+    // It's just possible that 'theOneBubbleManager' hasn't been initialized.
+    // If not, just ignore this, since it's a no-op at this point anyway.
+    if (theOneBubbleManager) {
+        theOneBubbleManager.cleanUp();
+    }
 };
 
 // This is invoked from C# when we are about to leave a page (often right after the previous

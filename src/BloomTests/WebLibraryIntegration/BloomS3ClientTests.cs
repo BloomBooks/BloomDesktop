@@ -45,7 +45,7 @@ namespace BloomTests.WebLibraryIntegration
 			var storageKeyOfBookFolder = Guid.NewGuid().ToString();
 			using (var f = new TemporaryFolder(_workFolder, "emptyFolder"))
 			{
-				_client.UploadBook(storageKeyOfBookFolder, f.FolderPath, new NullProgress(), null, null, null, null, null, null);
+				_client.UploadBook(storageKeyOfBookFolder, f.FolderPath, new NullProgress(), null, true, true, null, null, null);
 			}
 			// This doesn't actually create an entry, since the folder is empty,
 			// so no need to delete it after our test

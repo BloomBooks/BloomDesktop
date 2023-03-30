@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using Bloom.Book;
 using Bloom.Collection;
@@ -23,7 +24,7 @@ namespace Bloom.CLI
 	// new layout has places for.
 	class ChangeLayoutCommand
 	{
-		public static int Handle(ChangeLayoutParameters options)
+		public static Task<int> Handle(ChangeLayoutParameters options)
 		{
 			// This task will be all the program does. We need to do enough setup so that
 			// books can be created, then do our work, then tear things down.
@@ -37,14 +38,12 @@ namespace Bloom.CLI
 					LocalizationManager.SetUILanguage(Settings.Default.UserInterfaceLanguage, false);
 					ChangeLayoutForAllContentPagesInAllBooks(options.CollectionPath, options.BookPath, options.PageGuid);
 				}
-				return 0;
+				return Task.FromResult(0);
 			}
 			catch (Exception ex)
 			{
-				Debug.WriteLine(ex.Message);
-				Console.WriteLine(ex.Message);
-				Console.WriteLine(ex.StackTrace);
-				return 1;
+				Console.WriteLine(ex);
+				return Task.FromResult(1);
 			}
 		}
 
@@ -117,9 +116,7 @@ namespace Bloom.CLI
 				}
 				catch (Exception ex)
 				{
-					Debug.WriteLine(ex.Message);
-					Console.WriteLine(ex.Message);
-					Console.WriteLine(ex.StackTrace);
+					Console.WriteLine(ex);
 					problems.AppendLine(Path.GetFileName(bookInfo.FolderPath));
 				}
 			}

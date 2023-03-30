@@ -12,6 +12,7 @@ using System.Xml.Xsl;
 using Bloom.Api;
 using Bloom.Publish; // for DynamicJson
 using Bloom.Publish.Epub;
+using Bloom.ToPalaso;
 using Bloom.web.controllers;
 using DesktopAnalytics;
 using Gecko;
@@ -19,6 +20,7 @@ using L10NSharp;
 using Microsoft.CSharp.RuntimeBinder;
 using SIL.Code;
 using SIL.Extensions;
+using SIL.IO;
 using SIL.Reporting;
 using SIL.Text;
 using SIL.Xml;
@@ -664,6 +666,19 @@ namespace Bloom.Book
 			}
 		}
 
+		public static void CopyMissingStylesheetFiles(HtmlDom sourceDom, string sourceFolder, string destFolder)
+		{
+			foreach (string sheetName in sourceDom.GetTemplateStyleSheets())
+			{
+				var destinationPath = Path.Combine(destFolder, sheetName);
+				if (!RobustFile.Exists(destinationPath))
+				{
+					var sourcePath = Path.Combine(sourceFolder, sheetName);
+					if (RobustFile.Exists(sourcePath))
+						RobustFile.Copy(sourcePath, destinationPath);
+				}
+			}
+		}
 
 		public void AddPublishClassToBody(string kindOfPublication=null)
 		{
@@ -848,7 +863,7 @@ namespace Bloom.Book
 		// The reason for this is that images can have textOverPicture divs and imageDescription divs inside of them
 		// and these are completely independent of the template page. We need to count regular translationGroups and
 		// also ensure that translationGroups inside of images get migrated correctly. If this algorithm changes, be
-		// sure to also change 'countTranslationGroupsForChangeLayout()' in page-chooser.ts.
+		// sure to also change 'countTranslationGroupsForChangeLayout()' in PageChooserDialog.tsx.
 		// We could just do this with an xpath if bloom-textOverPicture divs and bloom-imageDescription divs had
 		// the same structure internally, but text over picture CONTAINS a translationGroup,
 		// whereas image description IS a translationGroup.
@@ -1294,32 +1309,32 @@ namespace Bloom.Book
 		}
 
 		/// <summary>
-		/// This method should only be used on the page DOM being inserted into a book by the Add Page/Change Layout dialog.
-		/// It compares the styles in the head's user-defined styles section (inherited from the template book)
-		/// with the ones referenced in the class attributes in the domForInsertedPage's body to see which styles need to be
-		/// copied over to the new book.
+		/// Return the definitions of the user-modifiable styles used in the page.
 		/// </summary>
 		/// <param name="domForInsertedPage"></param>
 		/// <returns></returns>
-		internal static XmlNode GetUserModifiableStylesUsedOnPage(HtmlDom domForInsertedPage)
+		internal static string GetUserModifiableStylesUsedOnPage(HtmlDom domForInsertedPage)
+		{
+			return GetUserModifiableStylesUsedOnPage(domForInsertedPage.Head, domForInsertedPage.Body);
+		}
+
+		internal static string GetUserModifiableStylesUsedOnPage(XmlElement head, XmlElement contentToSearch)
 		{
 			// there should only be one userModifiedStyles node, so this will only grab the first one
-			var userStyleElementFromTemplate = GetUserModifiedStyleElement(domForInsertedPage.Head);
+			var userStyleElementFromTemplate = GetUserModifiedStyleElement(head);
 			if (userStyleElementFromTemplate == null)
-				return AddEmptyUserModifiedStylesNode(domForInsertedPage.Head);
+				return "";
 
 			var keyDict = GetUserStyleKeyDict(userStyleElementFromTemplate);
 			var keysUsedOnPage = new Dictionary<string, string>();
 			foreach (var keyPair in keyDict)
 			{
 				var style = GetStyleNameFromRuleSelector(keyPair.Key);
-				var searchResult = GetAllDivsWithClass(domForInsertedPage.Body, style);
+				var searchResult = GetAllDivsWithClass(contentToSearch, style);
 				if (searchResult.Count > 0)
 					keysUsedOnPage.Add(keyPair.Key, keyPair.Value);
 			}
-			userStyleElementFromTemplate.InnerText =
-				GetCompleteFilteredUserStylesInnerText(keysUsedOnPage);
-			return userStyleElementFromTemplate;
+			return GetCompleteFilteredUserStylesInnerText(keysUsedOnPage);
 		}
 
 		private static string GetStyleNameFromRuleSelector(string selector)
@@ -1333,7 +1348,7 @@ namespace Bloom.Book
 		public static string MergeUserStylesOnInsertion(XmlNode existingUserStyleNode,
 			XmlNode insertedPageUserStyleNode)
 		{
-			return MergeUserStylesOnInsertion(existingUserStyleNode, insertedPageUserStyleNode, out bool dummy);
+			return MergeUserStylesOnInsertion(existingUserStyleNode, insertedPageUserStyleNode?.InnerXml ?? "", out bool dummy);
 		}
 
 		/// <summary>
@@ -1342,16 +1357,16 @@ namespace Bloom.Book
 		/// It might, however, add a style where a pre-existing style differed only in language attribute.
 		/// </summary>
 		/// <param name="existingUserStyleNode">From current book's storage</param>
-		/// <param name="insertedPageUserStyleNode"></param>
+		/// <param name="insertedPageUserStyles"></param>
 		/// <returns>The InnerXml to which the user modified styles element should be set.</returns>
-		public static string MergeUserStylesOnInsertion(XmlNode existingUserStyleNode, XmlNode insertedPageUserStyleNode, out bool didAdd)
+		public static string MergeUserStylesOnInsertion(XmlNode existingUserStyleNode, string insertedPageUserStyles, out bool didAdd)
 		{
 			didAdd = false;
 			// this method in production is currently always called just after
 			// CurrentBook.GetOrCreateUserModifiedStyleElementFromStorage()
 			Guard.AgainstNull(existingUserStyleNode, "existingUserStyleNode");
 
-			if (insertedPageUserStyleNode == null || insertedPageUserStyleNode.InnerXml == String.Empty)
+			if (insertedPageUserStyles == null || insertedPageUserStyles == String.Empty)
 				return WrapUserStyleInCdata(existingUserStyleNode.InnerText);
 
 			var existingStyleKeyDict = GetUserStyleKeyDict(existingUserStyleNode);
@@ -1360,7 +1375,7 @@ namespace Bloom.Book
 			{
 				existingStyleNames.Add(GetStyleNameFromRuleSelector(key));
 			}
-			var insertedPageStyleKeyDict = GetUserStyleKeyDict(insertedPageUserStyleNode); // could be empty
+			var insertedPageStyleKeyDict = GetUserStyleKeyDict(insertedPageUserStyles); // could be empty
 			foreach (var keyPair in insertedPageStyleKeyDict)
 			{
 				if (existingStyleNames.Contains(GetStyleNameFromRuleSelector(keyPair.Key)))
@@ -1419,8 +1434,13 @@ namespace Bloom.Book
 
 		private static IDictionary<string, string> GetUserStyleKeyDict(XmlNode userStyleNode)
 		{
-			var keyDict = new Dictionary<string, string>();
-			var styleStrings = GetStyles(userStyleNode.InnerText); // skips empty lines
+			return GetUserStyleKeyDict(userStyleNode.InnerText);
+		}
+
+		private static IDictionary<string, string> GetUserStyleKeyDict(string userStyles)
+		{
+		var keyDict = new Dictionary<string, string>();
+			var styleStrings = GetStyles(userStyles); // skips empty lines
 			foreach (var styleString in styleStrings)
 			{
 				if (styleString.Length < minStyleLength)
@@ -2238,6 +2258,38 @@ namespace Bloom.Book
 			return element.SelectNodes(".//img | .//*[contains(@style,'background-image')]");
 		}
 
+		/// <summary>
+		/// Returns all file names for background music which are referenced in the DOM.
+		/// This should include items from the data div.
+		/// </summary>
+		public IEnumerable<string> GetBackgroundMusicFileNamesReferencedInBook()
+		{
+			return GetAudioSourceIdentifiers(HtmlDom.SelectChildBackgroundMusicElements(RawDom.DocumentElement))
+				.Where(AudioProcessor.HasBackgroundMusicFileExtension)
+				.Select(BookStorage.GetNormalizedPathForOS);
+		}
+
+		/// <summary>
+		/// Could be simply an ID without an extension (as for narration)
+		/// or an actual file name (as for background music)
+		/// </summary>
+		private static List<string> GetAudioSourceIdentifiers(XmlNodeList nodeList)
+		{
+			return (from XmlElement audio in nodeList
+				select HtmlDom.GetAudioElementUrl(audio).PathOnly.NotEncoded).Distinct().ToList();
+		}
+
+		public static IEnumerable<XmlElement> SelectRealChildNarrationAudioElements(XmlElement element,
+			bool includeSplitTextBoxAudio, IEnumerable<string> langsToExclude = null)
+		{
+			return SelectChildNarrationAudioElements(element, includeSplitTextBoxAudio, langsToExclude)
+				.Cast<XmlElement>()
+				.Where(e => e.ParentOrSelfWithClass("bloom-editable") != null);
+		}
+
+		/// <summary>
+		/// Note that this currently includes elements with this class in the data-div
+		/// </summary>
 		public static XmlNodeList SelectChildNarrationAudioElements(XmlElement element, bool includeSplitTextBoxAudio, IEnumerable<string> langsToExclude = null)
 		{
 			string xPathToEditable = "";
@@ -2271,6 +2323,18 @@ namespace Bloom.Book
 		public static XmlNodeList SelectChildVideoSourceElements(XmlElement element)
 		{
 			return element.SafeSelectNodes(".//div[contains(@class,'bloom-videoContainer')]/video/source");
+		}
+
+		public IEnumerable<string> GetAllVideoPaths()
+		{
+			var paths = new List<string>();
+			foreach (var source in SelectChildVideoSourceElements(RawDom.DocumentElement).Cast<XmlElement>())
+			{
+				var src = source.GetAttribute("src");
+				if (!String.IsNullOrEmpty(src))
+					paths.Add(src);
+			}
+			return paths;
 		}
 
 		private static readonly string kAudioSentenceElementsXPath = "descendant-or-self::node()[contains(@class,'audio-sentence') and string-length(@id) > 0]";
@@ -3022,7 +3086,7 @@ namespace Bloom.Book
 		// It seems safest to just list the ones that can occur empty in Bloom...if we can't find a more reliable way to convert to HTML5.
 		private static string CleanupHtml5(string xhtml)
 		{
-			var re = new Regex("<(title|div|i|table|td|span|style|script) ([^<]*)/>");
+			var re = new Regex("<(title|div|i|table|td|span|style|script|textarea) ([^<]*)/>");
 			xhtml = re.Replace(xhtml, "<$1 $2></$1>");
 			//now insert the non-xml-ish <!doctype html>
 			return string.Format("<!DOCTYPE html>{0}{1}", Environment.NewLine, xhtml);

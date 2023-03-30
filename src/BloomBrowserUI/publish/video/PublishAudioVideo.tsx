@@ -44,7 +44,6 @@ import {
     Step,
     StepContent,
     StepLabel,
-    Stepper,
     Typography
 } from "@mui/material";
 import { kBloomRed } from "../../utils/colorUtils";
@@ -59,6 +58,7 @@ import { useEffect } from "react";
 import { isLinux } from "../../utils/isLinux";
 import PublishScreenTemplate from "../commonPublish/PublishScreenTemplate";
 import { EmbeddedProgressDialog } from "../../react_components/Progress/ProgressDialog";
+import { BloomStepper } from "../../react_components/BloomStepper";
 
 export const PublishAudioVideo = () => {
     // When the user changes some features, included languages, etc., we
@@ -66,6 +66,7 @@ export const PublishAudioVideo = () => {
     // This requires a hard-reset of the whole screen, which we do by
     // incrementing a `key` prop on the core of this screen.
     const [keyForReset, setKeyForReset] = useState(0);
+
     if (isLinux()) {
         return (
             <div
@@ -306,22 +307,10 @@ const PublishAudioVideoInternalInternal: React.FunctionComponent<{
     color: grey;`;
     const mainPanel = (
         <PublishPanel>
-            <Stepper
+            <BloomStepper
                 activeStep={activeStep}
+                areStepsAlwaysEnabled={true}
                 orientation="vertical"
-                // We need to defeat Material-UI's attempt to make the step numbers and text look disabled.
-                // Also, we need to defeat the MUI Stepper's padding, which is already standardized
-                // by MainPanel.
-                css={css`
-                    .MuiStepLabel-label {
-                        color: black !important;
-                        font-size: larger;
-                    }
-                    .MuiStepIcon-root {
-                        color: ${kBloomBlue} !important;
-                    }
-                    padding: 0 !important;
-                `}
             >
                 <Step expanded={true}>
                     <StepLabel>{configAndPreview}</StepLabel>
@@ -563,7 +552,7 @@ const PublishAudioVideoInternalInternal: React.FunctionComponent<{
                         </BloomButton>
                     </StepContent>
                 </Step>
-            </Stepper>
+            </BloomStepper>
         </PublishPanel>
     );
 
@@ -605,9 +594,7 @@ const PublishAudioVideoInternalInternal: React.FunctionComponent<{
                     margin-top: auto;
                 `}
             />
-            {hasActivities && (
-                <NoteBox addBorder={true}>{activitiesSkipped}</NoteBox>
-            )}
+            {hasActivities && <NoteBox>{activitiesSkipped}</NoteBox>}
             <HelpGroup>
                 <HelpLink
                     l10nKey="PublishTab.RecordVideo.OverviewHelpLink"

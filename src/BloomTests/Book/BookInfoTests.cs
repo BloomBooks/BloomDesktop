@@ -70,12 +70,12 @@ namespace BloomTests.Book
 			Assert.That(bi.PublishSettings.AudioVideo.PageTurnDelay, Is.EqualTo(3000));
 			Assert.That(bi.PublishSettings.AudioVideo.PlayerSettings, Is.EqualTo(""));
 			Assert.That(bi.PublishSettings.BloomPub.Motion, Is.False);
-			Assert.That(bi.PublishSettings.BloomLibrary.TextLangs, Is.Null);
-			Assert.That(bi.PublishSettings.BloomPub.TextLangs, Is.Null);
-			Assert.That(bi.PublishSettings.BloomLibrary.AudioLangs, Is.Null);
-			Assert.That(bi.PublishSettings.BloomPub.AudioLangs, Is.Null);
-			Assert.That(bi.PublishSettings.BloomLibrary.SignLangs, Is.Null);
-			Assert.That(bi.PublishSettings.BloomPub.SignLangs, Is.Null);
+			Assert.That(bi.PublishSettings.BloomLibrary.TextLangs, Is.Not.Null);
+			Assert.That(bi.PublishSettings.BloomPub.TextLangs, Is.Not.Null);
+			Assert.That(bi.PublishSettings.BloomLibrary.AudioLangs, Is.Not.Null);
+			Assert.That(bi.PublishSettings.BloomPub.AudioLangs, Is.Not.Null);
+			Assert.That(bi.PublishSettings.BloomLibrary.SignLangs, Is.Not.Null);
+			Assert.That(bi.PublishSettings.BloomPub.SignLangs, Is.Not.Null);
 		}
 
 		[Test]
@@ -89,8 +89,23 @@ namespace BloomTests.Book
 			// Verification
 			CollectionAssert.AreEquivalent(new string[] {"bookshelf:value1" }, bi.MetaData.Tags);
 		}
-
 		[Test]
+		public void LoadPublishSettings_NullsInBloomPubReplaceWithDefault()
+		{
+			var input =
+				@"{'bloomPUB': {'motion': true, 'textLangs': null,
+						'audioLangs':null,
+						'signLangs': null,
+						'imageSettings':null},
+			}";
+			var ps = PublishSettings.FromString(input);
+			Assert.That(ps.BloomPub.TextLangs.Count, Is.EqualTo(0));
+			Assert.That(ps.BloomPub.AudioLangs.Count, Is.EqualTo(0));
+			Assert.That(ps.BloomPub.SignLangs.Count, Is.EqualTo(0));
+			Assert.That(ps.BloomPub.ImageSettings, Is.Not.Null);
+		}
+
+			[Test]
 		public void LoadPublishSettings_AllSettings_Works()
 		{
 			var input =
@@ -154,12 +169,12 @@ namespace BloomTests.Book
 			Assert.That(original.PublishSettings.AudioVideo.Motion, Is.False);
 			Assert.That(original.PublishSettings.Epub.HowToPublishImageDescriptions, Is.EqualTo(BookInfo.HowToPublishImageDescriptions.None));
 			Assert.That(original.PublishSettings.Epub.RemoveFontSizes, Is.False);
-			Assert.That(original.PublishSettings.BloomPub.TextLangs, Is.Null);
-			Assert.That(original.PublishSettings.BloomLibrary.TextLangs, Is.Null);
-			Assert.That(original.PublishSettings.BloomPub.AudioLangs, Is.Null);
-			Assert.That(original.PublishSettings.BloomLibrary.AudioLangs, Is.Null);
-			Assert.That(original.PublishSettings.BloomPub.SignLangs, Is.Null);
-			Assert.That(original.PublishSettings.BloomLibrary.SignLangs, Is.Null);
+			Assert.That(original.PublishSettings.BloomPub.TextLangs, Is.Not.Null);
+			Assert.That(original.PublishSettings.BloomLibrary.TextLangs, Is.Not.Null);
+			Assert.That(original.PublishSettings.BloomPub.AudioLangs, Is.Not.Null);
+			Assert.That(original.PublishSettings.BloomLibrary.AudioLangs, Is.Not.Null);
+			Assert.That(original.PublishSettings.BloomPub.SignLangs, Is.Not.Null);
+			Assert.That(original.PublishSettings.BloomLibrary.SignLangs, Is.Not.Null);
 
 			// oldMetaJson was produced by the following code, which depends on the obsolete properties:
 			//original.MetaData.Feature_Motion = true;

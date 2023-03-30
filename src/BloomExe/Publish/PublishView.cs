@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.ComponentModel.Composition.Primitives;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -9,13 +8,13 @@ using System.Threading;
 using System.Windows.Forms;
 using Bloom.Book;
 using Bloom.CollectionTab;
-using Bloom.Edit;
 using Bloom.Properties;
 using Bloom.WebLibraryIntegration;
 using L10NSharp;
 using SIL.Reporting;
 using SIL.IO;
 using System.Drawing;
+using System.Threading.Tasks;
 using Bloom.Api;
 using Bloom.Publish.Android;
 using Bloom.Publish.BloomLibrary;
@@ -23,7 +22,7 @@ using Bloom.Publish.Epub;
 using Bloom.Publish.PDF;
 using Bloom.Publish.Video;
 using SIL.Progress;
-using Bloom.ToPalaso;
+using Bloom.web.controllers;
 
 namespace Bloom.Publish
 {
@@ -100,14 +99,7 @@ namespace Bloom.Publish
 //			linkLabel.Click+=new EventHandler((x,y)=>_model.DebugCurrentPDFLayout());
 //        	tableLayoutPanel1.Controls.Add(linkLabel);
 //#endif
-			_menusToolStrip.BackColor = _pdfOptions.BackColor = tableLayoutPanel1.BackColor = Palette.GeneralBackground;
-			if (SIL.PlatformUtilities.Platform.IsMono)
-			{
-				BackgroundColorsForLinux();
-			}
-
-			// Adding this renderer prevents a white line from showing up under the components.
-			_menusToolStrip.Renderer = new EditingView.FixedToolStripRenderer();
+			tableLayoutPanel1.BackColor = Palette.GeneralBackground;
 
 			// As far as I can tell, this is not needed anymore, and its presence,
 			// at least in this place in the code, causes errors when running command-line tools
@@ -117,7 +109,6 @@ namespace Bloom.Publish
 			localizationChangedEvent.Subscribe(o =>
 			{
 				SetupLocalization();
-				UpdatePdfOptions();
 				UpdateSaveButton();
 			});
 
@@ -131,9 +122,7 @@ namespace Bloom.Publish
 		public void SetStateOfNonUploadRadios(bool enable)
 		{
 			_epubRadio.Enabled = enable;
-			_bookletBodyRadio.Enabled = enable;
-			_bookletCoverRadio.Enabled = enable;
-			_simpleAllPagesRadio.Enabled = enable;
+			_pdfPrintRadio.Enabled = enable;
 			_bloomPUBRadio.Enabled = enable;
 			_recordVideoRadio.Enabled = enable;
 		}
@@ -162,27 +151,11 @@ namespace Bloom.Publish
 			PublishHelper.InPublishTab = false;
 		}
 
-		private void BackgroundColorsForLinux() {
-
-			var bmp = new Bitmap(_menusToolStrip.Width, _menusToolStrip.Height);
-			using (var g = Graphics.FromImage(bmp))
-			{
-				using (var b = new SolidBrush(_menusToolStrip.BackColor))
-				{
-					g.FillRectangle(b, 0, 0, bmp.Width, bmp.Height);
-				}
-			}
-			_menusToolStrip.BackgroundImage = bmp;
-		}
-
 		private void SetAutoCheck(bool autoCheck)
 		{
-			if (_simpleAllPagesRadio.AutoCheck == autoCheck)
+			if (_pdfPrintRadio.AutoCheck == autoCheck)
 				return;
 
-			_simpleAllPagesRadio.AutoCheck = autoCheck;
-			_bookletCoverRadio.AutoCheck = autoCheck;
-			_bookletBodyRadio.AutoCheck = autoCheck;
 			_pdfPrintRadio.AutoCheck = autoCheck;
 			_uploadRadio.AutoCheck = autoCheck;
 			_uploadRadioObsolete.AutoCheck = autoCheck;
@@ -193,9 +166,6 @@ namespace Bloom.Publish
 
 		private void SetupLocalization()
 		{
-			LocalizeSuperToolTip(_simpleAllPagesRadio, "PublishTab.OnePagePerPaperRadio");
-			LocalizeSuperToolTip(_bookletCoverRadio, "PublishTab.CoverOnlyRadio");
-			LocalizeSuperToolTip(_bookletBodyRadio, "PublishTab.BodyOnlyRadio");
 			LocalizeSuperToolTip(_pdfPrintRadio, "PublishTab.PdfPrint.Button");
 			LocalizeSuperToolTip(_uploadRadio, "PublishTab.ButtonThatShowsUploadForm");
 			LocalizeSuperToolTip(_uploadRadioObsolete, "PublishTab.ButtonThatShowsUploadForm");
@@ -264,8 +234,7 @@ namespace Bloom.Publish
 
 		private void ClearRadioButtons()
 		{
-			_bookletCoverRadio.Checked = _bookletBodyRadio.Checked =
-				_simpleAllPagesRadio.Checked = _pdfPrintRadio.Checked = _uploadRadio.Checked = _uploadRadioObsolete.Checked = _epubRadio.Checked = _bloomPUBRadio.Checked = _recordVideoRadio.Checked = false;
+			_pdfPrintRadio.Checked = _uploadRadio.Checked = _uploadRadioObsolete.Checked = _epubRadio.Checked = _bloomPUBRadio.Checked = _recordVideoRadio.Checked = false;
 		}
 
 		internal bool IsMakingPdf
@@ -378,9 +347,6 @@ namespace Bloom.Publish
 			if (_model == null || _model.BookSelection.CurrentSelection==null)
 				return;
 
-			_bookletCoverRadio.Checked = _model.BookletPortion == PublishModel.BookletPortions.BookletCover && !_model.UploadModeObsolete;
-			_bookletBodyRadio.Checked = _model.BookletPortion == PublishModel.BookletPortions.BookletPages && !_model.UploadModeObsolete;
-			_simpleAllPagesRadio.Checked = _model.BookletPortion == PublishModel.BookletPortions.AllPagesNoBooklet && !_model.UploadModeObsolete;
 			_pdfPrintRadio.Checked = _model.PdfPrintMode;
 			_uploadRadio.Checked = _model.UploadMode;
 			_uploadRadioObsolete.Checked = _model.UploadModeObsolete;
@@ -394,121 +360,13 @@ namespace Bloom.Publish
 			_pdfPrintRadio.Enabled = _model.AllowPdf;
 			_uploadRadio.Enabled = _model.AllowUpload;
 			_uploadRadioObsolete.Enabled = _model.AllowUpload;
-			_simpleAllPagesRadio.Enabled = _model.AllowPdf;
-			_bookletBodyRadio.Enabled = _model.AllowPdfBooklet;
-			_bookletCoverRadio.Enabled = _model.AllowPdfCover;
 			_openinBrowserMenuItem.Enabled = _openPDF.Enabled = _model.PdfGenerationSucceeded;
 			_bloomPUBRadio.Enabled = _model.AllowAndroid;
 			_epubRadio.Enabled = _model.AllowEPUB;
 
-
-			// When PDF is allowed but booklets are not, allow the noBookletsMessage to grow
-			// to fit its text. Otherwise the height of 0 keeps it hidden (the "visible" property didn't work).
-			_noBookletsMessage.AutoSize = _model.AllowPdf && !_model.AllowPdfBooklet;
-			_noBookletsMessage.Height = 0;
-
 			// No reason to update from model...we only change the model when the user changes the check box,
 			// or when uploading...and we do NOT want to update the check box when uploading temporarily changes the model.
 			//_showCropMarks.Checked = _model.ShowCropMarks;
-
-			UpdatePdfOptions();
-		}
-
-		private void UpdatePdfOptions()
-		{
-			if (_model == null || _model.BookSelection == null || _model.BookSelection.CurrentSelection == null)
-				return; // May get called when localization changes even though tab is not visible.
-			_pdfOptions.DropDownItems.Clear();
-			// Disabled as requested in BL-8872. We are waiting to see if anyone misses these.
-			//var layout = _model.PageLayout;
-			//var layoutChoices = _model.BookSelection.CurrentSelection.GetSizeAndOrientationChoices();
-			//_pdfOptions.DropDownItems.Add(new ToolStripSeparator());
-			//var headerText = LocalizationManager.GetString(@"PublishTab.OptionsMenu.SizeLayout", "Size/Orientation",
-			//	@"Header for a region of the menu which lists various standard page sizes and orientations");
-			//var headerItem2 = (ToolStripMenuItem) _pdfOptions.DropDownItems.Add(headerText);
-			//headerItem2.Enabled = false;
-			//foreach (var lc in layoutChoices)
-			//{
-			//	var text = LocalizationManager.GetDynamicString("Bloom", "LayoutChoices." + lc, lc.ToString());
-			//	ToolStripMenuItem item = (ToolStripMenuItem) _pdfOptions.DropDownItems.Add(text);
-			//	item.Tag = lc;
-			//	item.Text = text;
-			//	item.Checked = lc.ToString() == layout.ToString();
-			//	item.CheckOnClick = true;
-			//	item.Click += OnLayoutChosen;
-			//}
-
-			var headerText = LocalizationManager.GetString(@"PublishTab.OptionsMenu.PreparePrintshop", "Prepare for Print Shop:");
-			var headerItem2 = (ToolStripMenuItem)_pdfOptions.DropDownItems.Add(headerText);
-			headerItem2.Enabled = false;
-
-			var cmykText = LocalizationManager.GetString("PublishTab.PdfMaker.PdfWithCmykSwopV2", "CMYK color (U.S. Web Coated (SWOP) v2)");
-			var cmykItem = (ToolStripMenuItem)_pdfOptions.DropDownItems.Add(cmykText);
-			cmykItem.Checked = _model.BookSelection.CurrentSelection.UserPrefs.CmykPdf;
-			cmykItem.CheckOnClick = true;
-			cmykItem.Click += (sender, args) =>
-				{
-					_model.BookSelection.CurrentSelection.UserPrefs.CmykPdf = cmykItem.Checked;
-					SetModelFromButtons(); // this calls for updating the preview so the user won't think it's done already
-				};
-
-			var fullBleedText = LocalizationManager.GetString("PublishTab.PdfMaker.FullBleed", "Full Bleed");
-			var fullBleedItem = (ToolStripMenuItem)_pdfOptions.DropDownItems.Add(fullBleedText);
-			fullBleedItem.Checked = _model.BookSelection.CurrentSelection.UserPrefs.FullBleed;
-			fullBleedItem.CheckOnClick = true;
-			if (!_model.IsCurrentBookFullBleed)
-			{
-				fullBleedItem.Checked = false;
-				fullBleedItem.Enabled = false;
-				fullBleedItem.ToolTipText = LocalizationManager.GetString("PublishTab.PdfMaker.NoFullBleed", "Full Bleed has not been set up for this book");
-			}
-
-			if (_bookletCoverRadio.Checked || _bookletBodyRadio.Checked)
-			{
-				// Can't do full-bleed printing for booklets (the bleed areas at the junction of the pages would overlap the page on the other half of the paper).
-				// (Conceivably we could print bleed on the other three sides of the page only; but this is complicated as it differs from page to page
-				// so we will wait and see whether anyone wants it.)
-				// I'm only disabling the item if the actual booklet buttons are chosen so the user can e.g. turn it on before choosing the No Booklet button.
-				// I'm intentionally not turning the check box off so any previous setting will be remembered if they go back to No Booklet.
-				fullBleedItem.Enabled = false;
-				fullBleedItem.ToolTipText = LocalizationManager.GetString("PublishTab.PdfMaker.NoFullBleedBooklet", "Full Bleed is not applicable to booklet printing");
-			}
-			fullBleedItem.Click += (sender, args) =>
-			{
-				_model.BookSelection.CurrentSelection.UserPrefs.FullBleed = fullBleedItem.Checked;
-				SetModelFromButtons(); // this calls for updating the preview
-			};
-
-			_pdfOptions.DropDownItems.Add(new ToolStripSeparator());
-			var textItem = LocalizationManager.GetString("PublishTab.LessMemoryPdfMode", "Use less memory (slower)");
-			var menuItem = (ToolStripMenuItem) _pdfOptions.DropDownItems.Add(textItem);
-			menuItem.Checked = _model.BookSelection.CurrentSelection.UserPrefs.ReducePdfMemoryUse;
-			menuItem.CheckOnClick = true;
-			menuItem.CheckedChanged += OnSinglePageModeChanged;
-
-			// Something like this might want to be restored if we reinstate the layout options,
-			// but the menu now has other important commands.
-			// "EditTab" because it is the same text.  No sense in having it listed twice.
-			//_pdfOptions.ToolTipText = LocalizationManager.GetString("EditTab.PageSizeAndOrientation.Tooltip",
-			//	"Choose a page size and orientation");
-
-		}
-
-		private void OnLayoutChosen(object sender, EventArgs e)
-		{
-			var item = (ToolStripMenuItem)sender;
-			_model.PageLayout = ((Layout)item.Tag);
-			ClearRadioButtons();
-			UpdateDisplay();
-			// A side effect of UpdateDisplay will select the appropriate radio button,
-			// since we haven't changed the display mode. If the selected button is a PDF
-			// one, that will trigger regenerating the PDF.
-		}
-
-		private void OnSinglePageModeChanged(object sender, EventArgs e)
-		{
-			var item = (ToolStripMenuItem)sender;
-			_model.BookSelection.CurrentSelection.UserPrefs.ReducePdfMemoryUse = item.Checked;
 		}
 
 		public void SetDisplayMode(PublishModel.DisplayModes displayMode)
@@ -526,8 +384,13 @@ namespace Bloom.Publish
 				Controls.Remove(_uploadControl);
 				_uploadControl = null;
 			}
-			if((displayMode != PublishModel.DisplayModes.Android && displayMode != PublishModel.DisplayModes.EPUB && displayMode != PublishModel.DisplayModes.AudioVideo)
-			   && _htmlControl != null && Controls.Contains(_htmlControl))
+			if (displayMode != PublishModel.DisplayModes.Android &&
+				displayMode != PublishModel.DisplayModes.EPUB &&
+				displayMode != PublishModel.DisplayModes.AudioVideo &&
+				displayMode != PublishModel.DisplayModes.PdfPrint &&
+				displayMode != PublishModel.DisplayModes.Upload &&
+				_htmlControl != null &&
+				Controls.Contains(_htmlControl))
 			{
 				Controls.Remove(_htmlControl);
 
@@ -568,16 +431,12 @@ namespace Bloom.Publish
 					}
 					break;
 				case PublishModel.DisplayModes.Printing:
-					_simpleAllPagesRadio.Enabled = false;
-					_bookletCoverRadio.Enabled = false;
-					_bookletBodyRadio.Enabled = false;
 					_workingIndicator.Cursor = Cursors.WaitCursor;
 					Cursor = Cursors.WaitCursor;
 					_workingIndicator.Visible = true;
 					_pdfViewer.Visible = true;
 					break;
 				case PublishModel.DisplayModes.ResumeAfterPrint:
-					_simpleAllPagesRadio.Enabled = true;
 					_pdfViewer.Visible = true;
 					_workingIndicator.Visible = false;
 					Cursor = Cursors.Default;
@@ -597,12 +456,13 @@ namespace Bloom.Publish
 					break;
 					}
 				case PublishModel.DisplayModes.Upload:
-					//BloomPubMaker.ControlForInvoke = ParentForm; // something created on UI thread that won't go away
+					LibraryPublishApi.Model = new BloomLibraryPublishModel(_bookTransferrer, _model.BookSelection.CurrentSelection, _model);
 					ShowHtmlPanel(BloomFileLocator.GetBrowserFile(false, "publish", "LibraryPublish", "loader.html"));
 					break;
 				case PublishModel.DisplayModes.PdfPrint:
 					BloomPubMaker.ControlForInvoke = ParentForm; // something created on UI thread that won't go away
-					ShowHtmlPanel(BloomFileLocator.GetBrowserFile(false, "publish", "PDFPrintPublish", "PublishPdfPrint.html"));
+					// This view uses react-pdf which depends on stuff that won't work in Gecko.
+					ShowHtmlPanel(BloomFileLocator.GetBrowserFile(false, "publish", "PDFPrintPublish", "PublishPdfPrint.html"), forceWv2:true);
 					break;
 				case PublishModel.DisplayModes.Android:
 					BloomPubMaker.ControlForInvoke = ParentForm; // something created on UI thread that won't go away
@@ -681,7 +541,7 @@ namespace Bloom.Publish
 			tableLayoutPanel1.Visible = true;
 		}
 
-		private void ShowHtmlPanel(string pathToHtml)
+		private void ShowHtmlPanel(string pathToHtml, bool forceWv2 = false)
 		{
 			_model.BookSelection.CurrentSelection.ReportIfBrokenAudioSentenceElements();
 			Logger.WriteEvent("Entering Publish Screen: "+ pathToHtml);
@@ -694,7 +554,7 @@ namespace Bloom.Publish
 				Controls.Remove(_htmlControl);
 				_htmlControl.Dispose();
 			}
-			_htmlControl = new HtmlPublishPanel(pathToHtml);
+			_htmlControl = new HtmlPublishPanel(pathToHtml, forceWv2= forceWv2);
 			// Setting the location explicitly makes the transition a bit smoother.
 			_htmlControl.Location = new Point(tableLayoutPanel1.Width, 0);
 			_htmlControl.Dock = DockStyle.Fill;
@@ -759,6 +619,7 @@ namespace Bloom.Publish
 		/// </summary>
 		private void SetModelFromButtons()
 		{
+			_model.UploadMode = _uploadRadio.Checked;
 			_model.UploadModeObsolete = _uploadRadioObsolete.Checked;
 			_model.EpubMode = _epubRadio.Checked;
 			var pdfPreviewMode = false;
@@ -768,21 +629,6 @@ namespace Bloom.Publish
 				_model.PdfPrintMode = _pdfPrintRadio.Checked;
 				_model.DisplayMode = PublishModel.DisplayModes.PdfPrint;
 				//pdfPreviewMode = true;
-			}
-			else if (_simpleAllPagesRadio.Checked)
-			{
-				_model.BookletPortion = PublishModel.BookletPortions.AllPagesNoBooklet;
-				pdfPreviewMode = true;
-			}
-			else if (_bookletCoverRadio.Checked)
-			{
-				_model.BookletPortion = PublishModel.BookletPortions.BookletCover;
-				pdfPreviewMode = true;
-			}
-			else if (_bookletBodyRadio.Checked)
-			{
-				_model.BookletPortion = PublishModel.BookletPortions.BookletPages;
-				pdfPreviewMode = true;
 			}
 			else if (_epubRadio.Checked)
 			{
@@ -868,14 +714,20 @@ namespace Bloom.Publish
 				return;
 			}
 			_model.PdfGenerationSucceeded = false; // and so it stays unless we generate it successfully.
+
+			// We aren't going to display it, so don't bother generating it unless the user actually uploads.
+			// Unfortunately, the completion of the generation process is normally responsible for putting us into
+			// the right display mode for what we generated (or failed to), after this routine puts us into the
+			// mode that shows generation is pending. For the upload button case, we want to go straight to the Upload
+			// mode, so the upload control appears. This is a bizarre place to do it, but I can't find a better one.
 			if (_uploadRadioObsolete.Checked)
 			{
-				// We aren't going to display it, so don't bother generating it unless the user actually uploads.
-				// Unfortunately, the completion of the generation process is normally responsible for putting us into
-				// the right display mode for what we generated (or failed to), after this routine puts us into the
-				// mode that shows generation is pending. For the upload button case, we want to go straight to the Upload
-				// mode, so the upload control appears. This is a bizarre place to do it, but I can't find a better one.
 				SetDisplayMode(PublishModel.DisplayModes.Upload_Obsolete);
+				return;
+			}
+			if (_uploadRadio.Checked)
+			{
+				SetDisplayMode(PublishModel.DisplayModes.Upload);
 				return;
 			}
 
@@ -920,7 +772,8 @@ namespace Bloom.Publish
 					|| _model.BookletPortion == PublishModel.BookletPortions.InnerContent; // Not sure this last is used, but play safe...
 		}
 
-		private void OnPrint_Click(object sender, EventArgs e)
+		// Must be void, this is an event handler.
+		private async void OnPrint_ClickAsync(object sender, EventArgs e)
 		{
 			var printSettingsPreviewFolder = FileLocationUtilities.GetDirectoryDistributedWithApplication("printer settings images");
 			var printSettingsSamplePrefix = Path.Combine(printSettingsPreviewFolder,
@@ -982,7 +835,7 @@ namespace Bloom.Publish
 					}
 				}
 			}
-			_pdfViewer.Print();
+			await _pdfViewer.PrintAsync();
 			Logger.WriteEvent("Calling Print on PDF Viewer");
 			_model.ReportAnalytics("Print PDF");
 			this._model.BookSelection.CurrentSelection.ReportSimplisticFontAnalytics(FontAnalytics.FontEventType.PublishPdf, "Print PDF");
@@ -1049,7 +902,7 @@ namespace Bloom.Publish
 
 		private void OnSave_Click(object sender, EventArgs e)
 		{
-			_model.Save();
+			_model.SavePdf();
 		}
 		public string HelpTopicUrl
 		{

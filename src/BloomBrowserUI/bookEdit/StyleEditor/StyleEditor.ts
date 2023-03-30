@@ -28,6 +28,8 @@ import {
     showSimpleColorPickerDialog
 } from "../../react_components/color-picking/colorPickerDialog";
 import { BloomPalette } from "../../react_components/color-picking/bloomPalette";
+import { kBloomYellow } from "../../bloomMaterialUITheme";
+import { RenderRoot } from "./AudioHilitePage";
 
 // Controls the CSS text-align value
 // Note: CSS text-align W3 standard does not specify "start" or "end", but Firefox/Chrome/Edge do support it.
@@ -46,6 +48,15 @@ interface IFormattingValues {
     italic: boolean;
     underline: boolean;
     color: string;
+    // I'm allowing undefined here partly to emphasize that it's very possible to
+    // leave hiliteTextColor unspecified. In contrast, if we don't want a
+    // background color, we need to make it explicitly transparent, since there
+    // is a default rule to override. In practice, though, the 'undefined' value
+    // is rarely if ever used, since if there is a hilite style rule at all,
+    // its 'color' property is an empty string rather than undefined or null
+    // when it is not specified.
+    hiliteTextColor: string | undefined;
+    hiliteBgColor: string;
 }
 
 // Class provides a convenient way to group a style id and display name
@@ -292,9 +303,18 @@ export default class StyleEditor {
         }
     }
 
-    // Get the existing rule for the specified style.
-    // Will return null if the style has no definition, OR if it already has a user-defined version
-    public getPredefinedStyle(target: string): CSSRule | null {
+    // Get the predefined rule for a style that is not yet used in this document.
+    // It was probably a case of premature optimization, but we decided at some point not to
+    // have all the predefined styles embedded in every document, or even defined in a stylesheet
+    // that is included in every document in all circumstances. Instead, some common ones are
+    // defined in editMode.less, while some are defined in particular xmatter packs, and maybe
+    // even elsewhere. This code searches all the stylesheets that the document loads and picks
+    // the one that will currently win (that is, the last found) if there is more than one.
+    // It then modifies the rule, for example, making everything !important as we do for
+    // the settings the user makes, and possibly breaking font family out into a separate,
+    // language-specific rule.
+    // Will return null if the style has no definition, OR if it already has a user-defined version in this document
+    public getMissingPredefinedStyle(target: string): CSSRule | null {
         let result: CSSRule | null = null;
 
         // Get the book's non-inlined stylesheets (notably, excluding the stylesheets for the Bloom UI)
@@ -428,6 +448,34 @@ export default class StyleEditor {
         ignoreLanguage: boolean,
         forChildParas?: boolean
     ): CSSStyleRule | null {
+        let addToSelector = "";
+        // if we are authoring a book, style changes should apply to all translations of it
+        // if we are translating, changes should only apply to this language.
+        // a downside of this is that when authoring in multiple languages, to get a different
+        // appearance for different languages a different style must be created.
+        if (!ignoreLanguage) {
+            if (langAttrValue && langAttrValue.length > 0) {
+                addToSelector += '[lang="' + langAttrValue + '"]';
+            } else {
+                addToSelector += ":not([lang])";
+            }
+        }
+
+        if (forChildParas) {
+            addToSelector += " > p";
+        }
+
+        return this.GetRuleForStyle(styleName, addToSelector, true);
+    }
+
+    public GetRuleForStyle(
+        styleName: string, // The main name, such as "Heading1"
+        // modifiers identifying which particular rule for that style we want,
+        // such as [lang='fr'] or span.ui-audioCurrent
+        addToSelector: string,
+        // If there is not already such a rule, should we create it, or return null?
+        create: boolean
+    ): CSSStyleRule | null {
         const styleSheet = this.GetOrCreateUserModifiedStyleSheet();
         if (styleSheet == null) {
             return null;
@@ -438,23 +486,7 @@ export default class StyleEditor {
             ruleList = new CSSRuleList();
         }
 
-        let selector = styleName;
-        // if we are authoring a book, style changes should apply to all translations of it
-        // if we are translating, changes should only apply to this language.
-        // a downside of this is that when authoring in multiple languages, to get a different
-        // appearance for different languages a different style must be created.
-        if (!ignoreLanguage) {
-            if (langAttrValue && langAttrValue.length > 0) {
-                selector = styleName + '[lang="' + langAttrValue + '"]';
-            } else {
-                selector = styleName + ":not([lang])";
-            }
-        }
-
-        if (forChildParas) {
-            selector += " > p";
-        }
-
+        let selector = styleName + addToSelector;
         const lookFor = selector.toLowerCase();
 
         for (let i = 0; i < ruleList.length; i++) {
@@ -473,10 +505,87 @@ export default class StyleEditor {
                 return <CSSStyleRule>ruleList[i];
             }
         }
+        if (!create) {
+            return null;
+        }
         selector = "." + selector;
         styleSheet.insertRule(selector + " { }", ruleList.length);
 
         return <CSSStyleRule>ruleList[ruleList.length - 1]; //new guy is last
+    }
+
+    // What we stick after something like ".normal-style" to make a selector that targets
+    // the current audio element (or its paragraph children).
+    private sentenceHiliteRuleSelector = " span.ui-audioCurrent";
+    // note, no leading space here. We want (for example) .normal-style.ui-audioCurrent since this rule
+    // targets textbox mode where both classes occur on the same element.
+    private paraHiliteRuleSelector = ".ui-audioCurrent p";
+
+    // Update the DOM with the rules that will make the current audio element have
+    // the specified properties if it occurs in a block with the specified style.
+    public putAudioHiliteRulesInDom(
+        styleName: string,
+        hiliteTextColor: string | undefined,
+        hiliteBgColor: string
+    ) {
+        const sentenceRule = this.GetRuleForStyle(
+            styleName,
+            this.sentenceHiliteRuleSelector,
+            true
+        );
+        this.updateHiliteStyleRuleBody(
+            sentenceRule,
+            hiliteTextColor,
+            hiliteBgColor
+        );
+
+        const paraRule = this.GetRuleForStyle(
+            styleName,
+            this.paraHiliteRuleSelector,
+            true
+        );
+        this.updateHiliteStyleRuleBody(
+            paraRule,
+            hiliteTextColor,
+            hiliteBgColor
+        );
+        this.cleanupAfterStyleChange();
+    }
+
+    private updateHiliteStyleRuleBody(
+        rule: CSSStyleRule | null,
+        hiliteTextColor: string | undefined,
+        hiliteBgColor: string
+    ) {
+        if (!rule) {
+            return; // paranoia
+        }
+        rule.style.setProperty("background-color", hiliteBgColor);
+        if (hiliteTextColor) {
+            rule.style.setProperty("color", hiliteTextColor);
+        } else {
+            rule.style.removeProperty("color");
+        }
+    }
+
+    public getAudioHiliteProps(
+        styleName: string
+    ): { hiliteTextColor: string | undefined; hiliteBgColor: string } {
+        const sentenceRule = this.GetRuleForStyle(
+            styleName,
+            // The two should have the same content, so for reading, we only need one.
+            this.sentenceHiliteRuleSelector,
+            false
+        );
+        const hiliteTextColor = sentenceRule?.style?.color;
+        let hiliteBgColor = sentenceRule?.style?.backgroundColor;
+        if (!hiliteBgColor) {
+            hiliteBgColor = kBloomYellow;
+        }
+        return {
+            hiliteTextColor,
+            hiliteBgColor
+        };
     }
 
     // Replaces a style in 'sheet' at the specified 'index' with a (presumably) modified style.
@@ -796,6 +905,13 @@ export default class StyleEditor {
         let textColor = box.css("color");
         if (!textColor) textColor = "rgba(0,0,0,1.0)";
 
+        const styleName = StyleEditor.GetStyleNameForElement(
+            this.boxBeingEdited
+        );
+        const { hiliteTextColor, hiliteBgColor } = this.getAudioHiliteProps(
+            styleName ?? ""
+        );
+
         return {
             ptSize: ptSize.toString(),
             fontName: this.getFontNameFromTextBox(box),
@@ -807,7 +923,9 @@ export default class StyleEditor {
             bold: bold,
             italic: italic,
             underline: underline,
-            color: textColor
+            color: textColor,
+            hiliteTextColor,
+            hiliteBgColor
         };
     }
 
@@ -1030,6 +1148,15 @@ export default class StyleEditor {
                         });
                         toolbar.draggable("disable"); // until after we make sure it's in the Viewport
                         toolbar.css("opacity", 1.0);
+                        RenderRoot(
+                            styleName ?? "",
+                            current.color,
+                            current.hiliteTextColor,
+                            current.hiliteBgColor,
+                            (textColor, bgColor) =>
+                                this.changeHiliteProps(textColor, bgColor)
+                        );
+
                         if (!noFormatChange) {
                             ReactDOM.render(
                                 React.createElement(FontSelectComponent, {
@@ -1042,7 +1169,7 @@ export default class StyleEditor {
                                     // FontSelectComponent or WinFormsStyleSelect. It would be preferable to
                                     // bring our z-index scheme in line with material-UIs and have the dialog
                                     // lower than the 1300 which is material UI's default for the popover.
-                                    // But, see the long explanation in bloomDilog.less of why @dialogZindex
+                                    // But, see the long explanation in bloomDialog.less of why @dialogZindex
                                     // is 60,000. Looks like fixing that would be a project.
                                     // (Earlier, this high z-index was built into WinFormsStyleSelect, but
                                     // in other contexts, such as the Book Making tab, we need to NOT mess with
@@ -1056,7 +1183,7 @@ export default class StyleEditor {
                                 }),
                                 document.getElementById("fontSelectComponent")
                             );
-                            this.getCharTabDescription();
+                            this.updateLabelsWithStyleName();
 
                             this.AddQtipToElement(
                                 $("#fontSelectComponent"),
@@ -1144,7 +1271,11 @@ export default class StyleEditor {
                             $("#para-spacing-select").change(() => {
                                 this.changeParaSpacing();
                             });
-                            this.setColorButtonColor(current.color);
+                            this.setColorButtonColor(
+                                "colorSelectButton",
+                                current.color
+                            );
+                            // (The hiliting color buttons are updated by re-rendering the control above.)
                             const colorButton = $("#colorSelectButton");
                             colorButton?.click(() => {
                                 const style = getComputedStyle(colorButton[0]);
@@ -1376,7 +1507,7 @@ export default class StyleEditor {
     }
 
     // The Char tab description is language-dependent when localizing, not when authoring.
-    public getCharTabDescription() {
+    public updateLabelsWithStyleName() {
         const styleName = StyleEditor.GetBaseStyleNameForElement(
             this.boxBeingEdited
         );
@@ -1702,12 +1833,51 @@ export default class StyleEditor {
             rule.style.setProperty("color", color);
             this.cleanupAfterStyleChange();
         }
-        this.setColorButtonColor(color);
+        this.setColorButtonColor("colorSelectButton", color);
     }
 
-    private setColorButtonColor(color: string) {
-        const colorButton = $("#colorSelectButton");
-        colorButton[0]?.setAttribute("style", `background-color:${color}`);
+    // Always updates the UI to show the specified values for audio-hiliting props,
+    // and if ignoreControlChanges is false (i.e., the change isn't from a style switch)
+    // also updates the style definition in the DOM.
+    public changeHiliteProps(
+        hiliteTextColor: string | undefined, // text color when hilited (null or empty to not specify)
+        hiliteBgColor: string, // bg color when hilited
+        color?: string // ordinary text color
+    ) {
+        if (!color) {
+            color = this.getFormatValues().color;
+        }
+        const styleName = StyleEditor.GetStyleNameForElement(
+            this.boxBeingEdited
+        );
+        const uiStyleName = StyleEditor.GetBaseStyleNameForElement(
+            this.boxBeingEdited
+        );
+        // The only way I know to get the new hilight color in there is to re-render
+        // completely.
+        RenderRoot(
+            uiStyleName ?? "",
+            color,
+            hiliteTextColor,
+            hiliteBgColor,
+            (textColor, bgColor) => this.changeHiliteProps(textColor, bgColor)
+        );
+        if (this.ignoreControlChanges) {
+            return;
+        }
+
+        if (styleName) {
+            this.putAudioHiliteRulesInDom(
+                styleName,
+                hiliteTextColor,
+                hiliteBgColor
+            );
+        }
+    }
+
+    private setColorButtonColor(id: string, color: string) {
+        const colorButton = document.getElementById(id);
+        colorButton?.setAttribute("style", `background-color:${color}`);
     }
 
     // Return true if font-tab changes (other than font family) for the current element should be applied
@@ -1916,7 +2086,7 @@ export default class StyleEditor {
             this.boxBeingEdited,
             style + "-style"
         );
-        const predefined = this.getPredefinedStyle(style + "-style");
+        const predefined = this.getMissingPredefinedStyle(style + "-style");
         if (predefined) {
             // doesn't exist in user-defined yet; need to copy it there
             // (so it works even if from a stylesheet not part of the book)
@@ -1984,7 +2154,8 @@ export default class StyleEditor {
             $("#" + buttonIds[i]).removeClass("selectedIcon");
         }
         this.selectButtons(current);
-        this.setColorButtonColor(current.color);
+        this.setColorButtonColor("colorSelectButton", current.color);
+        this.changeHiliteProps(current.color, current.hiliteBgColor);
         this.ignoreControlChanges = false;
         this.cleanupAfterStyleChange();
     }
@@ -2026,7 +2197,7 @@ export default class StyleEditor {
             return; // bizarre, since we put up the dialog
         }
         OverflowChecker.MarkOverflowInternal(target);
-        this.getCharTabDescription();
+        this.updateLabelsWithStyleName();
         this.getParagraphTabDescription();
     }
 
@@ -2042,12 +2213,22 @@ export default class StyleEditor {
     }
 
     public launchColorPicker(buttonColor: string) {
+        StyleEditor.showColorPicker(buttonColor, this.textColorTitle, color =>
+            this.changeColor(color)
+        );
+    }
+
+    public static showColorPicker(
+        initialColor: string,
+        title: string,
+        onChange: (s: string) => void
+    ) {
         const colorPickerDialogProps: ISimpleColorPickerDialogProps = {
             noAlphaSlider: true,
-            localizedTitle: this.textColorTitle,
-            initialColor: buttonColor,
+            localizedTitle: title,
+            initialColor: initialColor,
             palette: BloomPalette.Text,
-            onChange: color => this.changeColor(color),
+            onChange: onChange,
             // eslint-disable-next-line @typescript-eslint/no-empty-function
             onInputFocus: () => {}
         };

@@ -7,6 +7,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using Bloom.Api;
 using Bloom.Book;
@@ -390,7 +391,7 @@ namespace Bloom.Publish.Video
 		/// if any).
 		/// </summary>
 		/// <param name="soundLogJson"></param>
-		public void StopRecording(string soundLogJson)
+		public async Task StopRecordingAsync(string soundLogJson)
 		{
 			// Couldn't get this to work. See comment in constructor. If we do get it working,
 			// make sure it gets turned off, however things turn out. Or maybe we can turn it
@@ -410,9 +411,9 @@ namespace Bloom.Publish.Video
 			ClearPreventSleepTimer();
 			Close();
 
-			BrowserProgressDialog.DoWorkWithProgressDialog(
+			await BrowserProgressDialog.DoWorkWithProgressDialogAsync(
 				_webSocketServer,
-				(progress, worker) =>
+				async (progress, worker) =>
 				{
 					StopRecordingInternal(progress, soundLogJson);
 					FinishedProcessingRecording?.Invoke(this, new EventArgs());
@@ -790,8 +791,8 @@ namespace Bloom.Publish.Video
 							   
 					           + audioArgs
 					           + "-map [out] " // send the output of the audio mix to the output
-					           + outputPath //and this is where we send it (until the user saves it elsewhere).
-					           + $" -progress {_ffmpegProgressFile.Path}";
+					           + $"\"{outputPath}\"" //and this is where we send it (until the user saves it elsewhere).
+					           + $" -progress \"{_ffmpegProgressFile.Path}\"";
 					// Debug.WriteLine("ffmpeg merge args: " + args);
 
 					// This magic number is documented at https://docs.microsoft.com/en-us/dotnet/api/system.diagnostics.processstartinfo.arguments?view=net-6.0
@@ -1080,15 +1081,13 @@ namespace Bloom.Publish.Video
 
 		private string PrettyPrintProcessStartInfo(Process process) => $"{process.StartInfo.WorkingDirectory}>{process.StartInfo.FileName} {process.StartInfo.Arguments}";
 
-		public bool AnyVideoHasAudio(string videoList, string basePath)
+		public bool AnyVideoHasAudio(Book.Book book)
 		{
-			// The separator here must match the one used by bloom player (see bloom-player-core getVideoList())
-			foreach (var path in videoList.Split('|'))
+			foreach (var videoPath in book.OurHtmlDom.GetAllVideoPaths())
 			{
-				if (VideoHasAudio(Path.Combine(basePath, path)))
+				if (VideoHasAudio(Path.Combine(book.FolderPath, videoPath)))
 					return true;
 			}
-
 			return false;
 		}
 
@@ -1124,7 +1123,7 @@ namespace Bloom.Publish.Video
 			// Careful here! We want to clean up in case the user manually closes the window,
 			// which amounts to a cancel. But we also close it when the recording finishes
 			// properly, BEFORE we do the next stage of processing the video; don't clean
-			// up anything we will need for that. See code at start of StopRecording,
+			// up anything we will need for that. See code at start of StopRecordingAsync,
 			// which sets things up so that Close will not mess things up.
 			_saveReceived = false;
 			_webSocketServer.SendString("recordVideo", "recording", "false");
@@ -1189,9 +1188,10 @@ namespace Bloom.Publish.Video
 
 		/// <summary>
 		/// Gets the suggested file basename to use in the save file dialog
+		/// If possible, this is based on the selected language and corresponding title of the book.
 		/// </summary>
 		/// <returns>The base name (the filename WITHOUT THE EXTENSION nor the path)</returns>
-		public string GetSuggestedSaveFileNameBase()
+		public string GetSuggestedSaveFileNameBase(out string langTag)
 		{
 			// If _videoSettingsFromPreview has been set (e.g. on multilingual books),
 			// check the video settings from the Bloom Player preview to see
@@ -1218,6 +1218,7 @@ namespace Bloom.Publish.Video
 					var allTitlesDict = JsonConvert.DeserializeObject<Dictionary<string, string>>(_book.BookInfo.AllTitles);
 					if (allTitlesDict.TryGetValue(langCode, out string titleForRequestedLangCode))
 					{
+						langTag = langCode;
 						return titleForRequestedLangCode;
 					}
 				}
@@ -1225,11 +1226,10 @@ namespace Bloom.Publish.Video
 				// In case of any unexpected errors above, just fallback to the legacy way which just uses the path to the book.
 			}
 
+			langTag = null;
 			// Default method
 			return Path.GetFileName(_pathToRealBook);
 		}
-
-		string _previousVideoFolder;
 
 		// Note: this method is normally called after the window is closed and therefore disposed.
 		public void SaveVideo()
@@ -1238,11 +1238,8 @@ namespace Bloom.Publish.Video
 			if (!GotFullRecording)
 				return; // nothing to save, this shouldn't have happened.
 			var extension = _codec.ToExtension();
-			string suggestedName = $"{GetSuggestedSaveFileNameBase()}{extension}";
-			var folder = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-			if (!String.IsNullOrEmpty(_previousVideoFolder) && Directory.Exists(_previousVideoFolder))
-				folder = _previousVideoFolder;
-			var initialPath = Path.Combine(folder, suggestedName);
+			var filename = GetSuggestedSaveFileNameBase(out string langTag);
+			var initialPath = OutputFilenames.GetOutputFilePath(_book, extension, filename, langTag);
 			var outputFileLabel = L10NSharp.LocalizationManager.GetString(@"PublishTab.RecordVideo.VideoFile",
 				"Video File",
 				@"displayed as file type for Save File dialog");
@@ -1258,7 +1255,7 @@ namespace Bloom.Publish.Video
 			var destFileName = MiscUtils.GetOutputFilePathOutsideCollectionFolder(initialPath, filter);
 			if (!String.IsNullOrEmpty(destFileName))
 			{
-				_previousVideoFolder = Path.GetDirectoryName(destFileName);
+				OutputFilenames.RememberOutputFilePath(_book, extension, destFileName, langTag);
 				RobustFile.Copy(_finalVideo.Path, destFileName, true);
 			}
 		}

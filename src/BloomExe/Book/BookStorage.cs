@@ -12,6 +12,7 @@ using System.Web.UI.WebControls;
 using System.Xml;
 using Bloom.Api;
 using Bloom.Collection;
+using Bloom.ErrorReporter;
 using Bloom.ImageProcessing;
 using Bloom.Publish;
 using Bloom.MiscUI;
@@ -143,7 +144,7 @@ namespace Bloom.Book
 		public string InitialLoadErrors { get; private set; }
 		public bool ErrorAllowsReporting { get; private set; }    // True if we want to display a Report to Bloom Support button
 
-		public BookInfo BookInfo
+		public virtual BookInfo BookInfo
 		{
 			get
 			{
@@ -152,6 +153,12 @@ namespace Bloom.Book
 				return _metaData;
 			}
 			set { _metaData = value; }
+		}
+
+		public BookStorage()
+		{
+			if (!Program.RunningUnitTests)
+				throw new ApplicationException("Parameterless BookStorage constructor is allowed only in unit tests!");
 		}
 
 		public BookStorage(string folderPath, IChangeableFileLocator baseFileLocator,
@@ -805,6 +812,12 @@ namespace Bloom.Book
 				// in an older version of Bloom which nevertheless has comical, it will give it a normal bubble tail.
 				// This xpath finds a bubble with a "caption" style and a non-empty tail spec.
 				XPath = "//div[contains(@class,'bloom-textOverPicture') and contains(@data-bubble, '`caption`') and contains(@data-bubble, '`tails`:[{`')]"
+			},
+			new Feature() {FeatureId = "hiddenAudioSplitMarkers",
+				FeaturePhrase = "Hide audio split markers (|) outside the talking book tool",
+				BloomDesktopMinVersion = "5.5",
+				BloomReaderMinVersion = "1.0",
+				XPath = "//span[contains(@class,'bloom-audio-split-marker')]"
 			}
 		};
 
@@ -1132,19 +1145,7 @@ namespace Bloom.Book
 		/// </summary>
 		public IEnumerable<string> GetBackgroundMusicFileNamesReferencedInBook()
 		{
-			return GetAudioSourceIdentifiers(HtmlDom.SelectChildBackgroundMusicElements(Dom.RawDom.DocumentElement))
-				.Where(AudioProcessor.HasBackgroundMusicFileExtension)
-				.Select(GetNormalizedPathForOS);
-		}
-
-		/// <summary>
-		/// Could be simply an ID without an extension (as for narration)
-		/// or an actual file name (as for background music)
-		/// </summary>
-		private List<string> GetAudioSourceIdentifiers(XmlNodeList nodeList)
-		{
-			return (from XmlElement audio in nodeList
-				select HtmlDom.GetAudioElementUrl(audio).PathOnly.NotEncoded).Distinct().ToList();
+			return Dom.GetBackgroundMusicFileNamesReferencedInBook();
 		}
 
 		#endregion Audio Files
@@ -2190,7 +2191,15 @@ namespace Bloom.Book
 					}
 					catch (UnauthorizedAccessException err)
 					{
-						throw new BloomUnauthorizedAccessException(destPath, err);
+						if (File.Exists(destPath))
+						{
+							// It's probably a minor problem if we just can't update it but already have it.
+							ReportCantUpdateSupportFile(sourcePath, destPath);
+						}
+						else
+						{
+							throw new BloomUnauthorizedAccessException(destPath, err);
+						}
 					}
 
 					_brandingImageNames.Add(fileName);
@@ -2340,14 +2349,43 @@ namespace Bloom.Book
 					Logger.WriteEvent("Could not update file {0} because it was in the program directory.", documentPath);
 					return;
 				}
-				if(_alreadyNotifiedAboutOneFailedCopy)
-					return;//don't keep bugging them
-				_alreadyNotifiedAboutOneFailedCopy = true;
-				// We probably can't help the user if they create an issue, but we can display a bit more information to help local tech support.
-				var msg = MiscUtils.GetExtendedFileCopyErrorInformation(documentPath,
-					$"Could not update one of the support files in this document ({documentPath} from {factoryPath}).");
-				NonFatalProblem.Report(ModalIf.None, PassiveIf.All, "Can't Update Support File", msg, e, showSendReport:false, showRequestDetails:true);
+
+				ReportCantUpdateSupportFile(factoryPath, documentPath);
 			}
+		}
+
+		private static void ReportCantUpdateSupportFile(string factoryPath, string documentPath)
+		{
+			if (_alreadyNotifiedAboutOneFailedCopy)
+				return; //don't keep bugging them
+			_alreadyNotifiedAboutOneFailedCopy = true;
+			// We probably can't help the user if they create an issue, but we can log a bit more information to help local tech support.
+			// (Only the shortMessage, which is what typical users actually see, is currently localized.)
+			var msg = MiscUtils.GetExtendedFileCopyErrorInformation(documentPath,
+				$"Could not update one of the support files in this document ({documentPath} from {factoryPath}).");
+			Logger.WriteEvent(msg);
+			var shortMsg =
+				LocalizationManager.GetString("Errors.CannotUpdateFile", "There was a problem updating a support file");
+			var howToTroubleshoot = LocalizationManager.GetString("Errors.CannotUpdateTroubleshoot",
+				"How to troubleshoot file updating errors");
+
+			var longerMsgTemplate = LocalizationManager.GetString("Errors.CannotUpdateFileLonger",
+				"Bloom was not able to update a support file named \"{0}\". This is usually not a problem. If you continue to see these messages, see \"{1}\".");
+			var longerMsg = string.Format(longerMsgTemplate, Path.GetFileName(documentPath),
+				$"<a href='https://docs.bloomlibrary.org/troubleshooting-file-access' target='_blank'>{howToTroubleshoot}</a>");
+
+
+			// Something like this was called for in the comment on BL-11863 that led to this,
+			// but we finally decided not to.
+			// var avProgs = MiscUtils.InstalledAntivirusProgramNames();
+			//if (!string.IsNullOrEmpty(avProgs))
+			//{
+			//	var avTemplate = LocalizationManager.GetString("Errors.TryPausingAV",
+			//		"Try pausing \"{0}\" or telling \"{0}\" that you trust Bloom.");
+			//	shortMsg += Environment.NewLine + string.Format(avTemplate, avProgs);
+			//}
+
+			BloomErrorReport.NotifyUserUnobtrusively(shortMsg, longerMsg);
 		}
 
 		private void RemoveExistingFilesBySuffix(string suffix)

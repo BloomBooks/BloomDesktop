@@ -5,9 +5,11 @@ using System.Drawing.Imaging;
 using System.Dynamic;
 using System.IO;
 using System.Linq;
+using System.Windows.Forms;
 using Bloom.Api;
 using Bloom.Book;
 using Bloom.Collection;
+using Bloom.CollectionCreating;
 using Bloom.CollectionTab;
 using Bloom.MiscUI;
 using Bloom.Properties;
@@ -158,12 +160,118 @@ namespace Bloom.web.controllers
 				},
 				true);
 
+			apiHandler.RegisterEndpointHandler(kApiUrlPart + "removeSourceCollection", HandleRemoveSourceCollection, false);
+			apiHandler.RegisterEndpointHandler(kApiUrlPart + "addSourceCollection", HandleAddSourceCollection, true);
+			apiHandler.RegisterEndpointHandler(kApiUrlPart + "removeSourceFolder", HandleRemoveSourceFolder, true);
+		}
+
+		private void HandleRemoveSourceCollection(ApiRequest request)
+		{
+			var collectionFolderPath = request.RequiredPostString();
+			var filename = Path.GetFileName(collectionFolderPath);
+			var collectionsFolder = ProjectContext.GetInstalledCollectionsDirectory();
+			var linkFile = Path.Combine(collectionsFolder, filename + ".lnk");
+			if (RobustFile.Exists(linkFile))
+			{
+				RobustFile.Delete(linkFile);
+				_collectionModel.ReloadCollections();
+				request.PostSucceeded();
+			}
+			else
+			{
+				request.Failed();
+			}
+		}
+
+		bool _updateAfterExplorerOpened;
+		private void HandleRemoveSourceFolder(ApiRequest request)
+		{
+			var collectionFolderPath = request.RequiredPostString();
+			if (Directory.Exists(collectionFolderPath))
+			{
+				request.PostSucceeded();
+				var startInfo = new ProcessStartInfo
+				{
+					Arguments = $"/select, \"{collectionFolderPath}\"",
+					FileName = "explorer.exe"
+				};
+				_updateAfterExplorerOpened = true;
+				Process.Start(startInfo);
+			}
+			else
+			{
+				request.Failed();
+				return;
+			}
+		}
+
+		internal void CheckForCollectionUpdates()
+		{
+			if (_updateAfterExplorerOpened)
+			{
+				// trigger a list request?.
+				_collectionModel.ReloadCollections();
+				dynamic result = new DynamicJson();
+				result.success = true;
+				result.list = GetCollectionList();
+				_webSocketServer.SendBundle("collections", "updateCollectionList", result);
+			}
+		}
+
+		internal void ResetUpdatingList()
+		{
+			_updateAfterExplorerOpened = false;
+		}
+
+		private void HandleAddSourceCollection(ApiRequest request)
+		{
+			if (!Directory.Exists(NewCollectionWizard.DefaultParentDirectoryForCollections))
+			{
+				Directory.CreateDirectory(NewCollectionWizard.DefaultParentDirectoryForCollections);
+			}
+			// We send the result through a websocket rather than simply returning it because
+			// if the user is very slow (one site said FF times out after 90s) the browser may
+			// abandon the request before it completes. The POST result is ignored and the
+			// browser simply listens to the socket.
+			request.PostSucceeded();
+			var pathToCollectionFile = "";
+			using (var dlg = new DialogAdapters.OpenFileDialogAdapter())
+			{
+				dlg.Title = LocalizationManager.GetString("CollectionTab.ChooseCollection", "Choose Collection",
+					"This is the title of the file-open dialog that you use to choose a Bloom collection");
+				dlg.Filter = LocalizationManager.GetString("OpenCreateNewCollectionsDialog.Bloom Collections", "Bloom Collections",
+					"This shows in the file-open dialog that you use to open a different bloom collection") + @"|*.bloomLibrary;*.bloomCollection";
+				dlg.InitialDirectory = NewCollectionWizard.DefaultParentDirectoryForCollections;
+				dlg.CheckFileExists = true;
+				dlg.CheckPathExists = true;
+				if (dlg.ShowDialog() == DialogResult.Cancel)
+					return;
+				pathToCollectionFile = dlg.FileName;
+			}
+			var pathToCollectionDirectory = Path.GetDirectoryName(pathToCollectionFile);
+			var collectionName = Path.GetFileNameWithoutExtension(pathToCollectionFile);
+			var collectionsFolder = ProjectContext.GetInstalledCollectionsDirectory();
+			// This overwrites any existing shortcut with the same collectionName.
+			ShortcutMaker.CreateDirectoryShortcut(pathToCollectionDirectory, collectionsFolder);
+			dynamic result = new DynamicJson();
+			result.success = !String.IsNullOrEmpty(pathToCollectionFile);
+			result.collection = new DynamicJson();
+			result.collection.id = pathToCollectionDirectory;
+			result.collection.name = collectionName;
+			result.collection.isSourceCollection = false; // nothing is a "source collection" any longer.  but everything can be.
+			result.collection.shouldLocalizeName = false;
+			result.collection.isLink = true;
+			result.collection.isRemovableFolder = false;
+			_collectionModel.ReloadCollections();
+			_webSocketServer.SendBundle("collections", "addSourceCollection-results", result);
 		}
 
 		// needs to be thread-safe
 		private void HandleCollectionProps(ApiRequest request)
 		{
 			var collection = GetCollectionOfRequest(request);
+			if (collection == null)
+				return;	// request.Failed() has already been signaled.
 			dynamic props = new ExpandoObject();
 			props.isFactoryInstalled = collection.IsFactoryInstalled;
 			props.containsDownloadedBooks = collection.ContainsDownloadedBooks;
@@ -172,6 +280,12 @@ namespace Bloom.web.controllers
 
 		// List out all the collections we have loaded
 		public void HandleListRequest(ApiRequest request)
+		{
+			dynamic output = GetCollectionList();
+			request.ReplyWithJson(JsonConvert.SerializeObject(output));
+		}
+
+		private dynamic GetCollectionList()
 		{
 			dynamic output = new List<dynamic>();
 			_collectionModel.GetBookCollections().ForEach(c =>
@@ -189,11 +303,23 @@ namespace Bloom.web.controllers
 							id = c.PathToDirectory,
 							name = c.Name,
 							isSourceCollection = _collectionModel.IsSourceCollection,
-							shouldLocalizeName = c.PathToDirectory.StartsWith(BloomFileLocator.FactoryCollectionsDirectory) || c.ContainsDownloadedBooks
+							shouldLocalizeName = c.PathToDirectory.StartsWith(BloomFileLocator.FactoryCollectionsDirectory) || c.ContainsDownloadedBooks,
+							isLink = c.Type != BookCollection.CollectionType.TheOneEditableCollection && IsFromLinkFile(c.PathToDirectory),
+							isRemovableFolder = c.Type != BookCollection.CollectionType.TheOneEditableCollection && !IsFromLinkFile(c.PathToDirectory) &&
+								!c.ContainsDownloadedBooks && !c.PathToDirectory.StartsWith(BloomFileLocator.FactoryCollectionsDirectory)
 						});
 				}
 			});
-			request.ReplyWithJson(JsonConvert.SerializeObject(output));
+			return output;
+		}
+
+		private bool IsFromLinkFile(string collectionFolderPath)
+		{
+			var collectionsFolder = ProjectContext.GetInstalledCollectionsDirectory();
+			if (collectionFolderPath.StartsWith(collectionsFolder))
+				return false;
+			var linkFile = Path.Combine(collectionsFolder, Path.GetFileName(collectionFolderPath) + ".lnk");
+			return RobustFile.Exists(linkFile);
 		}
 
 		public void HandleBooksRequest(ApiRequest request)

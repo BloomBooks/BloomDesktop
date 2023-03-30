@@ -16,6 +16,7 @@ using Bloom.MiscUI;
 using Bloom.Properties;
 using Bloom.Spreadsheet;
 using Bloom.TeamCollection;
+using Bloom.Utils;
 using DesktopAnalytics;
 using L10NSharp;
 using SIL.IO;
@@ -32,7 +33,6 @@ namespace Bloom.web.controllers
 		private BookSelection _bookSelection;
 		private readonly SpreadsheetApi _spreadsheetApi;
 		private readonly BloomWebSocketServer _webSocketServer;
-		private string _previousTargetSaveAs; // enhance: should this be shared with CollectionApi or other save as locations?
 
 		public BookCommandsApi(CollectionModel collectionModel, BloomWebSocketServer webSocketServer, BookSelection bookSelection, SpreadsheetApi spreadsheetApi)
 		{
@@ -274,23 +274,20 @@ namespace Bloom.web.controllers
 
 		private void HandleMakeBloompack(Book.Book book)
 		{
-			string chosenFilename = GetOutputFileOutsideBookFolder(".BloomPack", "BloomPack files|*.BloomPack|All files (*.*)|*.*", book.Storage);
+			string chosenFilename = GetOutputFileOutsideBookFolder(".BloomPack", "BloomPack files|*.BloomPack|All files (*.*)|*.*", book);
 			if (String.IsNullOrEmpty(chosenFilename))
 				return;
 			_collectionModel.MakeSingleBookBloomPack(chosenFilename, book.Storage.FolderPath);
 		}
 
-		public string GetOutputFileOutsideBookFolder(string defaultExtension, string filter, IBookStorage bookStorage)
+		public string GetOutputFileOutsideBookFolder(string defaultExtension, string filter, Book.Book book)
 		{
-			var folder = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-			if (!string.IsNullOrEmpty(_previousTargetSaveAs) && Directory.Exists(_previousTargetSaveAs))
-				folder = _previousTargetSaveAs;
-			var initialPath = Path.Combine(folder, bookStorage.FolderName + defaultExtension);
+			var initialPath = OutputFilenames.GetOutputFilePath(book, defaultExtension);
 
 			var destFileName = Utils.MiscUtils.GetOutputFilePathOutsideCollectionFolder(initialPath, filter);
 
 			if (!String.IsNullOrEmpty(destFileName))
-				_previousTargetSaveAs = Path.GetDirectoryName(destFileName);
+				OutputFilenames.RememberOutputFilePath(book, defaultExtension, destFileName);
 			return destFileName;
 		}
 
@@ -340,7 +337,7 @@ namespace Bloom.web.controllers
 			book.EnsureUpToDate();
 
 			const string bloomFilter = "Bloom Source files (*.bloomSource)|*.bloomSource|All files (*.*)|*.*";
-			var destFileName = GetOutputFileOutsideBookFolder(".bloomSource", bloomFilter, book.Storage);
+			var destFileName = GetOutputFileOutsideBookFolder(".bloomSource", bloomFilter, book);
 			if (String.IsNullOrEmpty(destFileName))
 				return;
 

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
@@ -10,6 +10,7 @@ using Bloom.Book;
 using Bloom.FontProcessing;
 using Bloom.Publish.Epub;
 using Bloom.web;
+using Bloom.web.controllers;
 using BloomTemp;
 using SIL.IO;
 using SIL.Xml;
@@ -23,6 +24,7 @@ namespace Bloom.Publish.Android
 	/// </summary>
 	public static class BloomPubMaker
 	{
+		public const string BloomPubExtensionWithDot = ".bloompub";
 		public const string kQuestionFileName = "questions.json";
 		public const string BRExportFolder = "BloomReaderExport";
 		internal const string kDistributionFileName = ".distribution";
@@ -30,34 +32,35 @@ namespace Bloom.Publish.Android
 		internal const string kDistributionBloomWeb = "bloom-web";
 		internal const string kCreatorBloom = "bloom";
 		internal const string kCreatorHarvester = "harvester";
-
+		public static string HashOfMostRecentlyCreatedBook { get; private set; }
 		public static Control ControlForInvoke { get; set; }
 
-		public static void CreateBloomPub(BookInfo bookInfo, AndroidPublishSettings settings, string outputFolder, BookServer bookServer, IWebSocketProgress progress )
+		public static void CreateBloomPub(AndroidPublishSettings settings, BookInfo bookInfo, string outputFolder, BookServer bookServer, IWebSocketProgress progress)
 		{
-			var outputPath = Path.Combine(outputFolder, Path.GetFileName(bookInfo.FolderPath) + BookCompressor.BloomPubExtensionWithDot);
-			BloomPubMaker.CreateBloomPub(outputPath, bookInfo.FolderPath, bookServer, progress, bookInfo.IsSuitableForMakingShells, settings: settings);
+			var outputPath = Path.Combine(outputFolder, Path.GetFileName(bookInfo.FolderPath) + BloomPubExtensionWithDot);
+			BloomPubMaker.CreateBloomPub(settings: settings, outputPath: outputPath, bookFolderPath: bookInfo.FolderPath, bookServer: bookServer, progress: progress, isTemplateBook: bookInfo.IsSuitableForMakingShells);
 		}
-		public static void CreateBloomPub(string outputPath, Book.Book book, BookServer bookServer, IWebSocketProgress progress, AndroidPublishSettings settings = null)
+		public static void CreateBloomPub(AndroidPublishSettings settings, string outputPath, Book.Book book, BookServer bookServer, IWebSocketProgress progress)
 		{
-			CreateBloomPub(outputPath, book.FolderPath, bookServer, progress, book.IsTemplateBook, settings:settings);
+			CreateBloomPub(settings, outputPath, bookFolderPath: book.FolderPath, bookServer, progress: progress, isTemplateBook: book.IsTemplateBook);
 		}
 
 		// Create a BloomReader book while also creating the temporary folder for it (according to the specified parameter) and disposing of it
-		public static void CreateBloomPub(string outputPath, string bookFolderPath, BookServer bookServer,
-	
-			IWebSocketProgress progress, bool isTemplateBook, string tempFolderName = BRExportFolder,
-			string creator = kCreatorBloom, AndroidPublishSettings settings = null)
+		public static void CreateBloomPub(AndroidPublishSettings settings, string outputPath, string bookFolderPath,
+BookServer bookServer,
+			IWebSocketProgress progress, bool isTemplateBook,
+			string tempFolderName = BRExportFolder, string creator = kCreatorBloom)
 		{
 			using (var temp = new TemporaryFolder(tempFolderName))
 			{
-				CreateBloomPub(outputPath, bookFolderPath, bookServer, progress, temp, creator, isTemplateBook, settings);
+				CreateBloomPub(settings, outputPath, bookFolderPath, bookServer, progress, temp, creator, isTemplateBook);
 			}
 		}
 
 		/// <summary>
 		/// Create a Bloom Digital book (the zipped .bloompub file) as used by BloomReader (and Bloom Library etc)
 		/// </summary>
+		/// <param name="settings"></param>
 		/// <param name="outputPath">The path to create the zipped .bloompub output file at</param>
 		/// <param name="bookFolderPath">The path to the input book</param>
 		/// <param name="bookServer"></param>
@@ -65,31 +68,157 @@ namespace Bloom.Publish.Android
 		/// <param name="tempFolder">A temporary folder. This function will not dispose of it when done</param>
 		/// <param name="creator">value for &lt;meta name="creator" content="..."/&gt; (defaults to "bloom")</param>
 		/// <param name="isTemplateBook"></param>
-		/// <param name="settings"></param>
 		/// <returns>Path to the unzipped .bloompub</returns>
-		public static string CreateBloomPub(string outputPath, string bookFolderPath, BookServer bookServer,
-			IWebSocketProgress progress, TemporaryFolder tempFolder, string creator = kCreatorBloom, bool isTemplateBook=false,
-			AndroidPublishSettings settings = null)
+		public static string CreateBloomPub(AndroidPublishSettings settings, string outputPath, string bookFolderPath,
+			BookServer bookServer, IWebSocketProgress progress, TemporaryFolder tempFolder, string creator = kCreatorBloom,
+			bool isTemplateBook = false)
 		{
-			var modifiedBook = PrepareBookForBloomReader(bookFolderPath, bookServer, tempFolder, progress, isTemplateBook, creator, settings);
+			var modifiedBook = PrepareBookForBloomReader(settings, bookFolderPath, bookServer, tempFolder, progress, isTemplateBook, creator);
 			// We want at least 256 for Bloom Reader, because the screens have a high pixel density. And (at the moment) we are asking for
 			// 64dp in Bloom Reader.
 
 			BookCompressor.MakeSizedThumbnail(modifiedBook, modifiedBook.FolderPath, 256);
 
-			BookCompressor.CompressBookDirectory(outputPath, modifiedBook.FolderPath, "", forDevice: true, imagePublishSettings: settings?.ImagePublishSettings ?? ImagePublishSettings.Default,
-				omitMetaJson: false, wrapWithFolder: false, pathToFileForSha: BookStorage.FindBookHtmlInFolder(bookFolderPath));
+			MakeSha(BookStorage.FindBookHtmlInFolder(bookFolderPath), modifiedBook.FolderPath);
+			CompressImages(modifiedBook.FolderPath, settings.ImagePublishSettings, modifiedBook.RawDom);
+			SignLanguageApi.ProcessVideos(HtmlDom.SelectChildVideoElements(modifiedBook.RawDom.DocumentElement).Cast<XmlElement>(),
+				modifiedBook.FolderPath);
+			var newContent = XmlHtmlConverter.ConvertDomToHtml5(modifiedBook.RawDom);
+			RobustFile.WriteAllText(BookStorage.FindBookHtmlInFolder(modifiedBook.FolderPath), newContent, Encoding.UTF8);
+
+			BookCompressor.CompressBookDirectory(outputPath, modifiedBook.FolderPath,
+				MakeFilter(modifiedBook.FolderPath),
+				"",
+				wrapWithFolder: false);
 
 			return modifiedBook.FolderPath;
 		}
 
-		public static Dictionary<string,HashSet<string>> BloomPubFontsAndLangsUsed = null;
+		/// <summary>
+		/// Make a filter suitable for passing the files a BloomPub needs.
+		/// </summary>
+		public static IFilter MakeFilter(string folderPath)
+		{
+			var filter = new BookFileFilter(folderPath)
+			{
+				IncludeFilesNeededForBloomPlayer = true,
+				WantMusic = true,
+				WantVideo = true,
+				NarrationLanguages = null
+			};
+			// these are artifacts of uploading book to BloomLibrary.org and not useful in BloomPubs
+			filter.AlwaysReject("thumbnail-256.png");
+			filter.AlwaysReject("thumbnail-70.png");
+			return filter;
+		}
 
-		public static Book.Book PrepareBookForBloomReader(string bookFolderPath, BookServer bookServer,
-			TemporaryFolder temp,
-			IWebSocketProgress progress, bool isTemplateBook,
-			string creator = kCreatorBloom,
-			AndroidPublishSettings settings = null)
+		private static void CompressImages(string modifiedBookFolderPath, ImagePublishSettings imagePublishSettings, XmlDocument dom)
+		{
+			List<string> imagesToPreserveResolution;
+			List<string> imagesToGiveTransparentBackgrounds;
+
+			var fullScreenAttr = dom.GetElementsByTagName("body").Cast<XmlElement>().First().Attributes["data-bffullscreenpicture"]?.Value;
+			if (fullScreenAttr != null && fullScreenAttr.IndexOf("bloomReader", StringComparison.InvariantCulture) >= 0)
+			{
+				// This feature (currently used for motion books in landscape mode) triggers an all-black background,
+				// due to a rule in bookFeatures.less.
+				// Making white pixels transparent on an all-black background makes line-art disappear,
+				// which is bad (BL-6564), so just make an empty list in this case.
+				imagesToGiveTransparentBackgrounds = new List<string>();
+			}
+			else
+			{
+				imagesToGiveTransparentBackgrounds = FindCoverImages(dom);
+			}
+			imagesToPreserveResolution = FindImagesToPreserveResolution(dom);
+
+			foreach (var filePath in Directory.GetFiles(modifiedBookFolderPath))
+			{
+				if (BookCompressor.CompressableImageFileExtensions.Contains(Path.GetExtension(filePath).ToLowerInvariant()))
+				{
+					var fileName = Path.GetFileName(filePath);
+					if (imagesToPreserveResolution.Contains(fileName))
+						continue; // don't compress these
+								  // Cover images should be transparent if possible.  Others don't need to be.
+					var makeBackgroundTransparent = imagesToGiveTransparentBackgrounds.Contains(fileName);
+					var modifiedContent = BookCompressor.GetImageBytesForElectronicPub(filePath,
+						makeBackgroundTransparent,
+						imagePublishSettings);
+					// In a previous version, we did this during the compression, and therefore didn't have to
+					// write out a modified version. There's a small savings in this, but the price is
+					// a nasty leak of knowledge about making BloomPubs into a class responsible for
+					// compressing to zip files. If we really need this savings, we could refactor to
+					// use the overrides parameter of CompressDirectory.
+					RobustFile.WriteAllBytes(filePath, modifiedContent);
+				}
+			}
+		}
+
+		private const string kBackgroundImage = "background-image:url('";   // must match format string in HtmlDom.SetImageElementUrl()
+		private static List<string> FindCoverImages(XmlDocument xmlDom)
+		{
+			var transparentImageFiles = new List<string>();
+			foreach (var div in xmlDom.SafeSelectNodes("//div[contains(concat(' ',@class,' '),' coverColor ')]//div[contains(@class,'bloom-imageContainer')]").Cast<XmlElement>())
+			{
+				var style = div.GetAttribute("style");
+				if (!String.IsNullOrEmpty(style) && style.Contains(kBackgroundImage))
+				{
+					System.Diagnostics.Debug.Assert(div.GetStringAttribute("class").Contains("bloom-backgroundImage"));
+					// extract filename from the background-image style
+					transparentImageFiles.Add(ExtractFilenameFromBackgroundImageStyleUrl(style));
+				}
+				else
+				{
+					// extract filename from child img element
+					var img = div.SelectSingleNode("//img[@src]");
+					if (img != null)
+						transparentImageFiles.Add(System.Web.HttpUtility.UrlDecode(img.GetStringAttribute("src")));
+				}
+			}
+			return transparentImageFiles;
+		}
+
+		private static List<string> FindImagesToPreserveResolution(XmlDocument dom)
+		{
+			var preservedImages = new List<string>();
+			foreach (var div in dom.SafeSelectNodes("//div[contains(@class,'marginBox')]//div[contains(@class,'bloom-preserveResolution')]").Cast<XmlElement>())
+			{
+				var style = div.GetAttribute("style");
+				if (!string.IsNullOrEmpty(style) && style.Contains(kBackgroundImage))
+				{
+					System.Diagnostics.Debug.Assert(div.GetStringAttribute("class").Contains("bloom-backgroundImage"));
+					preservedImages.Add(ExtractFilenameFromBackgroundImageStyleUrl(style));
+				}
+			}
+			foreach (var img in dom.SafeSelectNodes("//div[contains(@class,'marginBox')]//img[contains(@class,'bloom-preserveResolution')]").Cast<XmlElement>())
+			{
+				preservedImages.Add(System.Web.HttpUtility.UrlDecode(img.GetStringAttribute("src")));
+			}
+			return preservedImages;
+		}
+
+		private static string ExtractFilenameFromBackgroundImageStyleUrl(string style)
+		{
+			var filename = style.Substring(style.IndexOf(kBackgroundImage) + kBackgroundImage.Length);
+			filename = filename.Substring(0, filename.IndexOf("'"));
+			return System.Web.HttpUtility.UrlDecode(filename);
+		}
+
+		private static void MakeSha(string pathToFileForSha, string folderForSha)
+		{
+			var sha = Book.Book.ComputeHashForAllBookRelatedFiles(pathToFileForSha);
+			var name = "version.txt"; // must match what BloomReader is looking for in NewBookListenerService.IsBookUpToDate()
+			RobustFile.WriteAllText(Path.Combine(folderForSha, name), sha, Encoding.UTF8);
+			HashOfMostRecentlyCreatedBook = sha;
+		}
+
+		public static Dictionary<string, HashSet<string>> BloomPubFontsAndLangsUsed = null;
+
+		public static Book.Book PrepareBookForBloomReader(AndroidPublishSettings settings, string bookFolderPath,
+			BookServer bookServer,
+			TemporaryFolder temp, IWebSocketProgress progress,
+			bool isTemplateBook,
+			string creator = kCreatorBloom)
 		{
 			// MakeDeviceXmatterTempBook needs to be able to copy customCollectionStyles.css etc into parent of bookFolderPath
 			// And bloom-player expects folder name to match html file name.
@@ -99,7 +228,9 @@ namespace Bloom.Publish.Android
 				BookStorage.SanitizeNameForFileSystem(Path.GetFileNameWithoutExtension(htmPath)));
 			Directory.CreateDirectory(tentativeBookFolderPath);
 			var modifiedBook = PublishHelper.MakeDeviceXmatterTempBook(bookFolderPath, bookServer,
-				tentativeBookFolderPath, isTemplateBook);
+				tentativeBookFolderPath, isTemplateBook,
+				narrationLanguages: settings?.AudioLanguagesToInclude,
+				wantMusic:true);
 
 			modifiedBook.SetMotionAttributesOnBody(settings?.Motion ?? false);
 
@@ -164,7 +295,7 @@ namespace Bloom.Publish.Android
 				helper.ControlForInvoke = ControlForInvoke;
 				ISet<string> warningMessages = new HashSet<string>();
 				helper.RemoveUnwantedContent(modifiedBook.OurHtmlDom, modifiedBook, false,
-					warningMessages, keepPageLabels:settings?.WantPageLabels??false);
+					warningMessages, keepPageLabels: settings?.WantPageLabels ?? false);
 				PublishHelper.SendBatchedWarningMessagesToProgress(warningMessages, progress);
 				fontsUsed = helper.FontsUsed;
 				BloomPubFontsAndLangsUsed = helper.FontsAndLangsUsed;
@@ -194,7 +325,7 @@ namespace Bloom.Publish.Android
 				isSignLanguageEnabled: enableSignLanguage,
 				isTalkingBookEnabled: true, // talkingBook is only ever set automatically as far as I can tell.
 				allowedLanguages: null // allow all because we've already filtered out the unwanted ones from the dom above.
-				);	
+				);
 
 			modifiedBook.SetAnimationDurationsFromAudioDurations();
 
@@ -206,7 +337,7 @@ namespace Bloom.Publish.Android
 			StripImgIfWeCannotFindFile(modifiedBook.RawDom, bookFile);
 			StripContentEditableAndTabIndex(modifiedBook.RawDom);
 			InsertReaderStylesheet(modifiedBook.RawDom);
-			RobustFile.Copy(FileLocationUtilities.GetFileDistributedWithApplication(BloomFileLocator.BrowserRoot,"publish","ReaderPublish","readerStyles.css"),
+			RobustFile.Copy(FileLocationUtilities.GetFileDistributedWithApplication(BloomFileLocator.BrowserRoot, "publish", "ReaderPublish", "readerStyles.css"),
 				Path.Combine(modifiedBookFolderPath, "readerStyles.css"));
 			ConvertImagesToBackground(modifiedBook.RawDom);
 
@@ -221,7 +352,7 @@ namespace Bloom.Publish.Android
 		/// Add a `.distribution` file to the zip which will be reported on for analytics from Bloom Reader.
 		/// See https://issues.bloomlibrary.org/youtrack/issue/BL-8875.
 		/// </summary>
-		private static void AddDistributionFile(string bookFolder, string creator, AndroidPublishSettings settings=null)
+		private static void AddDistributionFile(string bookFolder, string creator, AndroidPublishSettings settings)
 		{
 			string distributionValue;
 			switch (creator)
@@ -231,7 +362,7 @@ namespace Bloom.Publish.Android
 					break;
 				case kCreatorBloom:
 					distributionValue = kDistributionBloomDirect;
-					if(settings!=null && !string.IsNullOrEmpty(settings.DistributionTag))
+					if (settings != null && !string.IsNullOrEmpty(settings.DistributionTag))
 						distributionValue = settings.DistributionTag;
 					break;
 				default: throw new ArgumentException("Unknown creator", creator);
@@ -292,17 +423,17 @@ namespace Bloom.Publish.Android
 			if (string.IsNullOrEmpty(lang))
 				return; // paranoia, bloom-editable without lang should not be content1
 
-			var group = new QuestionGroup() { lang = lang, onlyForBloomReader1 = true};
+			var group = new QuestionGroup() { lang = lang, onlyForBloomReader1 = true };
 			var question = new Question()
 			{
 				question = questionElt.InnerText.Trim(),
 				answers = answerElts.Select(a => new Answer()
 				{
-					text= a.InnerText.Trim(),
-					correct = ((a.ParentNode?.ParentNode as XmlElement)?.Attributes["class"]?.Value ??"").Contains("correct-answer")
+					text = a.InnerText.Trim(),
+					correct = ((a.ParentNode?.ParentNode as XmlElement)?.Attributes["class"]?.Value ?? "").Contains("correct-answer")
 				}).ToArray()
 			};
-			group.questions = new [] {question};
+			group.questions = new[] { question };
 
 			questions.Add(group);
 		}
@@ -396,7 +527,7 @@ namespace Bloom.Publish.Android
 		/// electronic publishing code to combine ePUB and BloomReader preparation as much
 		/// as possible.
 		/// </remarks>
-		private static void RemoveInvisibleImageElements(Bloom.Book.Book book)
+		private static void RemoveInvisibleImageElements(Book.Book book)
 		{
 			var isLandscape = book.GetLayout().SizeAndOrientation.IsLandScape;
 			foreach (var img in book.RawDom.SafeSelectNodes("//img").Cast<XmlElement>().ToArray())
@@ -486,10 +617,10 @@ namespace Bloom.Publish.Android
 		{
 			foreach (XmlElement source in page.SafeSelectNodes(".//div[contains(@class, 'bloom-editable')]"))
 			{
-				var lang = source.Attributes["lang"]?.Value??"";
+				var lang = source.Attributes["lang"]?.Value ?? "";
 				if (String.IsNullOrEmpty(lang) || lang == "z")
 					continue;
-				var group = new QuestionGroup() {lang = lang};
+				var group = new QuestionGroup() { lang = lang };
 				// this looks weird, but it's just driven by the test cases which are in turn collected
 				// from various ways of getting the questions on the page (typing, pasting).
 				// See BookReaderFileMakerTests.ExtractQuestionGroups_ParsesCorrectly()
@@ -507,8 +638,8 @@ namespace Bloom.Publish.Android
 				foreach (var line in lines)
 				{
 					var cleanLine = line.Replace("<p>", ""); // our split above just looks at the ends of paragraphs, ignores the starts.
-					// Similarly, our split above just looks at the ends of brs, ignores the starts
-					//(separate start vs. end br elements might not occur in real FF tests, see note above).
+															 // Similarly, our split above just looks at the ends of brs, ignores the starts
+															 //(separate start vs. end br elements might not occur in real FF tests, see note above).
 					cleanLine = cleanLine.Replace("<br>", "");
 					cleanLine = cleanLine.Replace("\u200c", "");
 					if (String.IsNullOrWhiteSpace(cleanLine))
@@ -522,13 +653,14 @@ namespace Bloom.Publish.Android
 							questions.Add(question);
 							question = null;
 						}
-					} else
+					}
+					else
 					{
 						var trimLine = cleanLine.Trim();
 						if (question == null)
 						{
 							// If we don't already have a question being built, this first line is the question.
-							question = new Question() { question=trimLine};
+							question = new Question() { question = trimLine };
 						}
 						else
 						{
@@ -539,7 +671,7 @@ namespace Bloom.Publish.Android
 							{
 								trimLine = trimLine.Substring(1).Trim();
 							}
-							answers.Add(new Answer() {text=trimLine, correct = correct});
+							answers.Add(new Answer() { text = trimLine, correct = correct });
 						}
 					}
 				}

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-empty-function */
 // Don't add /** @jsxFrag React.Fragment */ or these stories won't show up in StoryBook! (at least in Aug 2022)
 /** @jsx jsx **/
 import { jsx, css } from "@emotion/react";
@@ -11,7 +12,12 @@ import { MuiCheckbox } from "./muiCheckBox";
 import { useState } from "react";
 import { ApiCheckbox } from "./ApiCheckbox";
 import BloomButton from "./bloomButton";
-import { showConfirmDialog, IConfirmDialogProps } from "./confirmDialog";
+import {
+    showConfirmDialogFromOutsideReact,
+    IConfirmDialogProps,
+    ConfirmDialog,
+    showConfirmDialog
+} from "./confirmDialog";
 import ImportIcon from "./icons/ImportIcon";
 import DeleteIcon from "@mui/icons-material/Delete";
 import PlaybackOrderControls from "./playbackOrderControls";
@@ -43,6 +49,7 @@ import { MuiRadio } from "./muiRadio";
 import WinFormsStyleSelect from "./winFormsStyleSelect";
 import BookMakingSettingsControl from "../collection/bookMakingSettingsControl";
 import { Link } from "./link";
+import { BloomSplitButton } from "./bloomSplitButton";
 
 storiesOf("Localizable Widgets", module)
     .add("Expandable", () => (
@@ -117,6 +124,29 @@ storiesOf("Localizable Widgets", module)
             >
                 Small
             </BloomButton>
+        </div>
+    ))
+    .add("BloomSplitButton", () => (
+        <div>
+            <BloomSplitButton
+                options={[
+                    {
+                        english: "Option 1",
+                        l10nId: "already-localized",
+                        requiresAnyEnterprise: true,
+                        onClick: () => {
+                            alert("Option 1 clicked");
+                        }
+                    },
+                    {
+                        english: "Option 2",
+                        l10nId: "already-localized",
+                        onClick: () => {
+                            alert("Option 2 clicked");
+                        }
+                    }
+                ]}
+            ></BloomSplitButton>
         </div>
     ));
 
@@ -357,6 +387,8 @@ const normalMenuItem = React.createElement(() => (
         l10nId="PublishTab.Android.MotionBookMode"
         icon={<DeleteIcon />}
         onClick={() => {}}
+        disabled={true}
+        tooltipIfDisabled="This has a tooltip!"
     />
 ));
 
@@ -374,7 +406,17 @@ const normalMenuItemWithEllipsisAndEnterprise = React.createElement(() => (
         english="Open or Create Another Collection"
         l10nId="CollectionTab.OpenCreateCollectionMenuItem"
         addEllipsis={true}
-        requiresEnterprise={true}
+        requiresAnyEnterprise={true}
+        onClick={() => {}}
+    />
+));
+
+const requiresEnterpriseSubscriptionWithIcon = React.createElement(() => (
+    <LocalizableMenuItem
+        english="BE subscription required, has disabled icon"
+        l10nId="already-localized"
+        requiresEnterpriseSubscription={true}
+        icon={<DeleteIcon />}
         onClick={() => {}}
     />
 ));
@@ -387,7 +429,8 @@ const nestedMenu = React.createElement(() => (
         {[
             normalMenuItem,
             checkboxMenuItem,
-            normalMenuItemWithEllipsisAndEnterprise
+            normalMenuItemWithEllipsisAndEnterprise,
+            requiresEnterpriseSubscriptionWithIcon
         ]}
     </LocalizableNestedMenuItem>
 ));
@@ -397,6 +440,7 @@ const divider = React.createElement(() => <Divider />);
 const testMenu = [
     normalMenuItem,
     normalMenuItemWithEllipsisAndEnterprise,
+    requiresEnterpriseSubscriptionWithIcon,
     checkboxMenuItem,
     divider,
     nestedMenu
@@ -467,8 +511,24 @@ storiesOf("Misc", module)
             <div>
                 <div id="modal-container" />
                 <BloomButton
+                    onClick={() => showConfirmDialog()}
+                    enabled={true}
+                    hasText={true}
+                    l10nKey={"dummyKey"}
+                >
+                    Open Confirm Dialog
+                </BloomButton>
+                <ConfirmDialog {...confirmDialogProps} />
+            </div>
+        ))
+    )
+    .add("ConfirmDialog as launched from outside React", () =>
+        React.createElement(() => (
+            <div>
+                <div id="modal-container" />
+                <BloomButton
                     onClick={() =>
-                        showConfirmDialog(
+                        showConfirmDialogFromOutsideReact(
                             confirmDialogProps,
                             document.getElementById("modal-container")
                         )

@@ -162,7 +162,7 @@ export class BubbleManager {
         }
 
         wrapperBox.style.height = newHeight + "px"; // next line will change to percent
-        BubbleManager.convertTextboxPositionToPercentage(wrapperBox, container);
+        BubbleManager.convertTextboxPositionToAbsolute(wrapperBox, container);
         return true;
     }
 
@@ -300,6 +300,7 @@ export class BubbleManager {
         const imageContainers: HTMLElement[] = this.getAllPrimaryImageContainersOnPage();
 
         imageContainers.forEach(container => {
+            this.adjustOverlaysForCurrentLanguage(container);
             this.ensureBubblesIntersectParent(container);
             // image containers are already set by CSS to overflow:hidden, so they
             // SHOULD never scroll. But there's also a rule that when something is
@@ -514,6 +515,104 @@ export class BubbleManager {
         );
     }
 
+    adjustOverlaysForCurrentLanguage(container: HTMLElement) {
+        const overlayLang = GetSettings().languageForNewTextBoxes;
+        Array.from(
+            container.getElementsByClassName("bloom-textOverPicture")
+        ).forEach(top => {
+            const editable = Array.from(
+                top.getElementsByClassName("bloom-editable")
+            ).find(e => e.getAttribute("lang") === overlayLang);
+            if (editable) {
+                const alternatesString = editable.getAttribute(
+                    "data-bubble-alternate"
+                );
+                if (alternatesString) {
+                    const alternate = JSON.parse(
+                        alternatesString.replace(/`/g, '"')
+                    ) as IAlternate;
+                    top.setAttribute("style", alternate.style);
+                    const bubbleData = top.getAttribute("data-bubble");
+                    if (bubbleData) {
+                        const bubbleDataObj = JSON.parse(
+                            bubbleData.replace(/`/g, '"')
+                        );
+                        bubbleDataObj.tails = alternate.tails;
+                        const newBubbleData = JSON.stringify(
+                            bubbleDataObj
+                        ).replace(/"/g, "`");
+                        top.setAttribute("data-bubble", newBubbleData);
+                    }
+                }
+            }
+
+            // If we don't find a matching bloom-editable, or there is no alternate attribute
+            // there, that's fine; just let the current state of the bubble serve as a
+            // default for the new language.
+        });
+        // If we have an existing alternate SVG for this language, remove it.
+        // (It will effectively be replaced by the new active comical-generated svg
+        // made when we save the page.)
+        const altSvg = Array.from(
+            container.getElementsByClassName("comical-alternate")
+        ).find(svg => svg.getAttribute("data-lang") === overlayLang);
+        if (altSvg) {
+            container.removeChild(altSvg);
+        }
+
+        const currentSvg = container.getElementsByClassName(
+            "comical-generated"
+        )[0];
+        if (currentSvg) {
+            const currentSvgLang = currentSvg.getAttribute("data-lang");
+            if (currentSvgLang && currentSvgLang !== overlayLang) {
+                // it was generated for some other language. Save it for possible use with
+                // that language in Bloom Player.
+                // We need to remove this class so Comical won't delete it.
+                currentSvg.classList.remove("comical-generated");
+                // and add this one to help bloom-player (and the code above) find it
+                currentSvg.classList.add("comical-alternate");
+                // Make sure nothing sees it unless it gets reactivated by bloom-player.
+                // We do this instead of having a CSS rule to hide comical-alternate so
+                // alternates will be hidden even in a book being shown by an old version
+                // of bloom-player.
+                (currentSvg as HTMLElement).style.display = "none";
+            }
+        }
+    }
+
+    // Save the current state of things so that we can later position everything
+    // correctly for this language, even if in the meantime we change bubble
+    // positions for other languages.
+    saveCurrentOverlayStateAsCurrentLangAlternate(container: HTMLElement) {
+        const overlayLang = GetSettings().languageForNewTextBoxes;
+        Array.from(
+            container.getElementsByClassName("bloom-textOverPicture")
+        ).forEach(top => {
+            const editable = Array.from(
+                top.getElementsByClassName("bloom-editable")
+            ).find(e => e.getAttribute("lang") === overlayLang);
+            if (editable) {
+                const bubbleData = top.getAttribute("data-bubble") ?? "";
+                const bubbleDataObj = JSON.parse(bubbleData.replace(/`/g, '"'));
+                const alternate = {
+                    lang: overlayLang,
+                    style: top.getAttribute("style") ?? "",
+                    tails: bubbleDataObj.tails as object[]
+                };
+                editable.setAttribute(
+                    "data-bubble-alternate",
+                    JSON.stringify(alternate).replace(/"/g, "`")
+                );
+            }
+        });
+        // Record that the current comical-generated SVG is for this language.
+        const currentSvg = container.getElementsByClassName(
+            "comical-generated"
+        )[0];
+        currentSvg?.setAttribute("data-lang", overlayLang);
+    }
+
     // "container" refers to a .bloom-textOverPicture div, which holds one (and only one) of the
     // 3 main types of "bubble": text, video or image.
     // This method will attach the focusin event to each of these.
@@ -549,7 +648,7 @@ export class BubbleManager {
         return Array.from(unfilteredContainers).filter(
             (el: Element) =>
                 el.parentElement!.closest(kImageContainerSelector) === null
-        ) as any;
+        ) as HTMLElement[];
     }
 
     // Use this one when adding/duplicating a bubble to avoid re-navigating the page.
@@ -966,6 +1065,7 @@ export class BubbleManager {
         const overlays = Array.from(
             parentContainer.getElementsByClassName(kTextOverPictureClass)
         );
+        let changed = false;
         overlays.forEach(overlay => {
             const bubbleRect = overlay.getBoundingClientRect();
             this.adjustBubbleLocation(
@@ -978,7 +1078,61 @@ export class BubbleManager {
                     "ensureBubblesIntersectParent"
                 )
             );
+            changed = this.ensureTailsInsideParent(
+                parentContainer,
+                overlay as HTMLElement,
+                changed
+            );
         });
+        if (changed) {
+            Comical.update(parentContainer);
+        }
+    }
+
+    // Make sure the handles of the tail(s) of the overlay are within the container.
+    // Return true if any tail was changed (or if changed was already true)
+    private ensureTailsInsideParent(
+        imageContainer: HTMLElement,
+        overlay: HTMLElement,
+        changed: boolean
+    ) {
+        const originalTailSpecs = Bubble.getBubbleSpec(overlay).tails;
+        const newTails = originalTailSpecs.map(spec => {
+            const tipPoint = this.adjustRelativePointToImageContainer(
+                imageContainer,
+                new Point(
+                    spec.tipX,
+                    spec.tipY,
+                    PointScaling.Unscaled,
+                    "ensureTailsInsideParent.tip"
+                )
+            );
+            const midPoint = this.adjustRelativePointToImageContainer(
+                imageContainer,
+                new Point(
+                    spec.midpointX,
+                    spec.midpointY,
+                    PointScaling.Unscaled,
+                    "ensureTailsInsideParent.tip"
+                )
+            );
+            changed =
+                changed || // using changed ||= works but defeats prettier
+                spec.tipX != tipPoint.getUnscaledX() ||
+                spec.tipY != tipPoint.getUnscaledY() ||
+                spec.midpointX != midPoint.getUnscaledX() ||
+                spec.midpointY != midPoint.getUnscaledY();
+            return {
+                ...spec,
+                tipX: tipPoint.getUnscaledX(),
+                tipY: tipPoint.getUnscaledY(),
+                midpointX: midPoint.getUnscaledX(),
+                midpointY: midPoint.getUnscaledY()
+            };
+        });
+        const bubble = new Bubble(overlay);
+        bubble.mergeWithNewBubbleProps({ tails: newTails });
+        return changed;
     }
     // This is pretty small, but it's the amount of the text box that has to be visible;
     // typically a bit more of the actual bubble can be seen.
@@ -1192,7 +1346,7 @@ export class BubbleManager {
 
         // Now there are several options depending on various conditions. There's some
         // overlap in the conditions and it is tempting to try to combine into a single compound
-        // "if" statement. But note, this first one may change hoveredBubble to undefined,
+        // "if" statement. But note, this first one may change hoveredBubble to null,
         // which then changes which of the following options is chosen. Be careful!
         if (hoveredBubble && hoveredBubble.content !== this.activeElement) {
             // The hovered bubble is not selected. If it's an image, the user might
@@ -1224,11 +1378,13 @@ export class BubbleManager {
             // Make sure the image editing buttons are present as expected.
             // (It does not get them in the usual way by mouseEnter, because that event is
             // suppressed by the comicaljs canvas, which is above the image container.)
-            addImageEditingButtons(
-                hoveredBubble.content.getElementsByClassName(
-                    "bloom-imageContainer"
-                )[0] as HTMLElement
+            const imageContainers = hoveredBubble.content.getElementsByClassName(
+                "bloom-imageContainer"
             );
+            if (imageContainers.length) {
+                const imageContainer = imageContainers[0] as HTMLElement;
+                addImageEditingButtons(imageContainer);
+            }
         }
 
         const isVideo = this.isVideoOverPictureElement(hoveredBubble.content);
@@ -1888,6 +2044,11 @@ export class BubbleManager {
 
         Comical.setActiveBubbleListener(undefined);
         Comical.stopEditing();
+        this.getAllPrimaryImageContainersOnPage().forEach(container =>
+            this.saveCurrentOverlayStateAsCurrentLangAlternate(
+                container as HTMLElement
+            )
+        );
 
         EnableAllImageEditing();
 
@@ -2122,29 +2283,29 @@ export class BubbleManager {
     // here are already relative to the imageContainer's coordinates, which introduces some differences.
     private adjustRelativePointToImageContainer(
         imageContainer: Element,
-        x: number,
-        y: number
+        point: Point
     ): Point {
-        const containerBoundingRect = imageContainer.getBoundingClientRect();
-        let newX = x;
-        let newY = y;
+        const maxWidth = (imageContainer as HTMLElement).offsetWidth;
+        const maxHeight = (imageContainer as HTMLElement).offsetHeight;
+        let newX = point.getUnscaledX();
+        let newY = point.getUnscaledY();
 
         const bufferPixels = 15;
         if (newX < 1) {
             newX = bufferPixels;
-        } else if (newX > containerBoundingRect.width) {
-            newX = containerBoundingRect.width - bufferPixels;
+        } else if (newX > maxWidth) {
+            newX = maxWidth - bufferPixels;
         }
 
         if (newY < 1) {
             newY = bufferPixels;
-        } else if (newY > containerBoundingRect.height) {
-            newY = containerBoundingRect.height - bufferPixels;
+        } else if (newY > maxHeight) {
+            newY = maxHeight - bufferPixels;
         }
         return new Point(
             newX,
             newY,
-            PointScaling.Scaled,
+            PointScaling.Unscaled,
             "Scaled viewport coordinates"
         );
     }
@@ -2452,11 +2613,7 @@ export class BubbleManager {
         wrapperBox.css("left", xOffset); // assumes numbers are in pixels
         wrapperBox.css("top", yOffset); // assumes numbers are in pixels
 
-        BubbleManager.setTextboxPositionAsPercentage(
-            wrapperBox,
-            xOffset,
-            yOffset
-        ); // translate px to %
+        BubbleManager.setTextboxPosition(wrapperBox, xOffset, yOffset);
     }
 
     // This used to be called from a right-click context menu, but now it only gets called
@@ -2622,13 +2779,21 @@ export class BubbleManager {
         return originalTailSpecs.map(spec => {
             const tipPoint = this.adjustRelativePointToImageContainer(
                 imageContainer,
-                spec.tipX + offSetFromSource.getUnscaledX(),
-                spec.tipY + offSetFromSource.getUnscaledY()
+                new Point(
+                    spec.tipX + offSetFromSource.getUnscaledX(),
+                    spec.tipY + offSetFromSource.getUnscaledY(),
+                    PointScaling.Unscaled,
+                    "getAdjustedTailSpec.tip"
+                )
             );
             const midPoint = this.adjustRelativePointToImageContainer(
                 imageContainer,
-                spec.midpointX + offSetFromSource.getUnscaledX(),
-                spec.midpointY + offSetFromSource.getUnscaledY()
+                new Point(
+                    spec.midpointX + offSetFromSource.getUnscaledX(),
+                    spec.midpointY + offSetFromSource.getUnscaledY(),
+                    PointScaling.Unscaled,
+                    "getAdjustedTailSpec.mid"
+                )
             );
             return {
                 ...spec,
@@ -2831,9 +2996,7 @@ export class BubbleManager {
                 stop: event => {
                     const target = event.target as Element;
                     if (target) {
-                        BubbleManager.convertTextboxPositionToPercentage(
-                            target
-                        );
+                        BubbleManager.convertTextboxPositionToAbsolute(target);
                     }
 
                     const handles = thisOverPictureElement.getElementsByClassName(
@@ -2977,7 +3140,7 @@ export class BubbleManager {
                 if (target) {
                     // Resizing also changes size and position to pixels. Change it back to percentage.
 
-                    BubbleManager.convertTextboxPositionToPercentage(target);
+                    BubbleManager.convertTextboxPositionToAbsolute(target);
 
                     // There was a problem where resizing a box messed up its draggable containment,
                     // so now after we resize we go back through making it draggable and clickable again.
@@ -3095,29 +3258,28 @@ export class BubbleManager {
         }
     }
 
-    // Converts a text box's position into percentages (using CSS styling)
-    // wrapperBoxElement: The specified text box
+    // Converts a text box's position to absolute in pixels (using CSS styling)
+    // (Used to be a percentage of parent size. See comments on setTextboxPosition.)
+    // textBox: The thing we want to position
     // container: Optional. The image container the text box is in. If this parameter is not defined, the function will automatically determine it.
-    private static convertTextboxPositionToPercentage(
-        wrapperBoxElement: Element,
+    private static convertTextboxPositionToAbsolute(
+        textBox: Element,
         container?: Element | null | undefined
     ): void {
         let unscaledRelativeLeft: number;
         let unscaledRelativeTop: number;
 
         if (!container) {
-            container = BubbleManager.getTopLevelImageContainerElement(
-                wrapperBoxElement
-            );
+            container = BubbleManager.getTopLevelImageContainerElement(textBox);
         }
 
         if (container) {
-            const positionInfo = wrapperBoxElement.getBoundingClientRect();
+            const positionInfo = textBox.getBoundingClientRect();
             const wrapperBoxPos = new Point(
                 positionInfo.left,
                 positionInfo.top,
                 PointScaling.Scaled,
-                "convertTextboxPositionToPercentage()"
+                "convertTextboxPositionToAbsolute()"
             );
             const reframedPoint = this.convertPointFromViewportToElementFrame(
                 wrapperBoxPos,
@@ -3128,56 +3290,53 @@ export class BubbleManager {
         } else {
             console.assert(
                 false,
-                "convertTextboxPositionToPercentage(): container was null or undefined."
+                "convertTextboxPositionToAbsolute(): container was null or undefined."
             );
 
             // If can't find the container for some reason, fallback to the old, deprecated calculation.
             // (This algorithm does not properly account for the border of the imageContainer when zoomed,
             //  so the results may be slightly off by perhaps up to 2 pixels)
             const scale = EditableDivUtils.getPageScale();
-            const pos = $(wrapperBoxElement).position();
+            const pos = $(textBox).position();
             unscaledRelativeLeft = pos.left / scale;
             unscaledRelativeTop = pos.top / scale;
         }
 
-        this.setTextboxPositionAsPercentage(
-            $(wrapperBoxElement),
+        this.setTextboxPosition(
+            $(textBox),
             unscaledRelativeLeft,
             unscaledRelativeTop
         );
     }
 
-    // Sets a text box's position in percentages (using CSS styling)
-    // wrapperBox: The text box in question
-    // unscaledRelativeLeft/unscaledRelativeTop: The position to set the top-left corner/at.
-    // It should be in unscaled pixels, relative to the parent.
-    private static setTextboxPositionAsPercentage(
-        wrapperBox: JQuery,
+    // Sets a text box's position permanently to where it is now.
+    // (Not sure if this ever changes anything, except when migrating. Earlier versions of Bloom
+    // stored the bubble position and size as a percentage of the image container size.
+    // The reasons for that are lost in history; probably we thought that it would better
+    // preserve the user's intent to keep in the same shape and position.
+    // But in practice it didn't work well, especially since everything was relative to the
+    // image container, and the image moves around in that as determined by content:fit etc
+    // to keep its aspect ratio. The reasons to prefer an absolute position and
+    // size are in BL-11667. Basically, we don't want the overlay to change its size or position
+    // relative to its own tail when the image is resized, either because the page size changed
+    // or because of dragging a splitter. It would usually be even better if everything kept
+    // its position relative to the image itself, but that is much harder to do since the overlay
+    // isn't (can't be) a child of the img.)
+    private static setTextboxPosition(
+        textBox: JQuery,
         unscaledRelativeLeft: number,
         unscaledRelativeTop: number
     ) {
-        const container = BubbleManager.getTopLevelImageContainerElement(
-            wrapperBox.get(0)
-        );
-        if (!container) {
-            return; // highly unlikely!
-        }
-        const containerSize = this.getInteriorWidthHeight(container);
-        const width = containerSize.getUnscaledX();
-        const height = containerSize.getUnscaledY();
-
-        // the textbox is contained by the image, and it's actual positioning is now based on the imageContainer too.
-        // so we will position by percentage of container size.
-        wrapperBox
-            .css("left", (unscaledRelativeLeft / width) * 100 + "%")
-            .css("top", (unscaledRelativeTop / height) * 100 + "%")
-            // FYI: The wrapperBox width/height is rounded to the nearest whole pixel. Ideally we might like its more precise value...
+        textBox
+            .css("left", unscaledRelativeLeft + "px")
+            .css("top", unscaledRelativeTop + "px")
+            // FYI: The textBox width/height is rounded to the nearest whole pixel. Ideally we might like its more precise value...
             // But it's a huge performance hit to get its getBoundingClientRect()
             // It seems that getBoundingClientRect() may be internally cached under the hood,
             // since getting the bounding rect of the image container once per mousemove event or even 100x per mousemove event caused no ill effect,
             // but getting this one is quite taxing on the CPU
-            .css("width", (wrapperBox.width() / width) * 100 + "%")
-            .css("height", (wrapperBox.height() / height) * 100 + "%");
+            .css("width", textBox.width() + "px")
+            .css("height", textBox.height() + "px");
     }
 
     // Determines the unrounded width/height of the content of an element (i.e, excluding its margin, border, padding)
@@ -3254,4 +3413,11 @@ export function initializeBubbleManager() {
     if (theOneBubbleManager) return;
     theOneBubbleManager = new BubbleManager();
     theOneBubbleManager.initializeBubbleManager();
+}
+
+// This is a definition of the object we store as JSON in data-bubble-alternate.
+// Tails has further structure but BubbleManager doesn't care about it.
+interface IAlternate {
+    style: string; // What to put in the style attr of the overlay; determines size and position
+    tails: object[]; // The tails of the data-bubble; determines placing of tail.
 }

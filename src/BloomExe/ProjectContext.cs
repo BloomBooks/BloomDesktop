@@ -16,10 +16,13 @@ using Bloom.WebLibraryIntegration;
 using Bloom.Workspace;
 using Bloom.Api;
 using Bloom.TeamCollection;
+using Bloom.Publish;
 using Bloom.Publish.AccessibilityChecker;
 using Bloom.Publish.Android;
 using Bloom.Publish.Epub;
+using Bloom.Publish.PDF;
 using Bloom.Publish.Video;
+using Bloom.Spreadsheet;
 using Bloom.Utils;
 using Bloom.web;
 using Bloom.web.controllers;
@@ -27,7 +30,6 @@ using BloomTests.web.controllers;
 using SIL.Extensions;
 using SIL.IO;
 using SIL.Reporting;
-using SIL.Code;
 
 namespace Bloom
 {
@@ -144,6 +146,7 @@ namespace Bloom
 							typeof(SpreadsheetApi),
 							typeof(BookMetadataApi),
 							typeof(PublishToAndroidApi),
+							typeof(PublishPdfApi),
 							typeof(PublishAudioVideoAPI),
 							typeof(PublishEpubApi),
 							typeof(AccessibilityCheckApi),
@@ -179,7 +182,8 @@ namespace Bloom
 							typeof(WorkspaceApi),
 							typeof(BookCollectionHolder),
 							typeof(WorkspaceTabSelection),
-							typeof(CopyrightAndLicenseApi)
+							typeof(CopyrightAndLicenseApi),
+							typeof(PublishView)
 						}.Contains(t));
 
 					builder.RegisterAssemblyTypes(Assembly.GetExecutingAssembly())
@@ -255,7 +259,7 @@ namespace Bloom
 					builder.Register<SourceCollectionsList>(c =>
 					{
 						var l = new SourceCollectionsList(c.Resolve<Book.Book.Factory>(), c.Resolve<BookStorage.Factory>(),
-							 editableCollectionDirectory, new string[] {BloomFileLocator.FactoryCollectionsDirectory, GetInstalledCollectionsDirectory()});
+							 editableCollectionDirectory, SourceRootFolders());
 						return l;
 					}).InstancePerLifetimeScope();
 
@@ -337,6 +341,7 @@ namespace Bloom
 			_scope.Resolve<PageTemplatesApi>().RegisterWithApiHandler(server.ApiHandler);
 			_scope.Resolve<AddOrChangePageApi>().RegisterWithApiHandler(server.ApiHandler);
 			_scope.Resolve<PublishToAndroidApi>().RegisterWithApiHandler(server.ApiHandler);
+			_scope.Resolve<PublishPdfApi>().RegisterWithApiHandler(server.ApiHandler);
 			_scope.Resolve<PublishAudioVideoAPI>().RegisterWithApiHandler(server.ApiHandler);
 			_scope.Resolve<PublishEpubApi>().RegisterWithApiHandler(server.ApiHandler);
 			_scope.Resolve<AccessibilityCheckApi>().RegisterWithApiHandler(server.ApiHandler);
@@ -367,9 +372,15 @@ namespace Bloom
 			_scope.Resolve<ProgressDialogApi>().RegisterWithApiHandler(server.ApiHandler);
 			_scope.Resolve<EditingViewApi>().RegisterWithApiHandler(server.ApiHandler);
 			_scope.Resolve<LibraryPublishApi>().RegisterWithApiHandler(server.ApiHandler);
+			_scope.Resolve<LibraryPublishApi_Obsolete>().RegisterWithApiHandler(server.ApiHandler);
 			_scope.Resolve<PerformanceMeasurement>().RegisterWithApiHandler(server.ApiHandler);
 			_scope.Resolve<FontsApi>().RegisterWithApiHandler(server.ApiHandler);
 			_scope.Resolve<WorkspaceApi>().RegisterWithApiHandler(server.ApiHandler);
+		}
+
+		public static string[] SourceRootFolders()
+		{
+			return new string[] {BloomFileLocator.FactoryCollectionsDirectory, GetInstalledCollectionsDirectory()};
 		}
 
 		// Get the collection settings. Passed the expected path, but if not found,

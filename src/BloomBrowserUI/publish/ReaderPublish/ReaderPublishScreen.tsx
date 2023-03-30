@@ -8,7 +8,7 @@ import {
     HelpGroup,
     SettingsPanel,
     CommandsGroup,
-    PreviewPublishPanel
+    PublishPanel
 } from "../commonPublish/PublishScreenBaseComponents";
 import { MethodChooser } from "./MethodChooser";
 import { PublishFeaturesGroup } from "./PublishFeaturesGroup";
@@ -68,7 +68,6 @@ const ReaderPublishScreenInternal: React.FunctionComponent<{
     const [closePending, setClosePending] = useState(false);
     const [highlightRefresh, setHighlightRefresh] = useState(false);
     const [progressState, setProgressState] = useState(ProgressState.Working);
-    React.useEffect(() => hookupLinkHandler(), []);
 
     // bookUrl is expected to be a normal, well-formed URL.
     // (that is, one that you can directly copy/paste into your browser and it would work fine)
@@ -129,14 +128,14 @@ const ReaderPublishScreenInternal: React.FunctionComponent<{
 
     const mainPanel = (
         <React.Fragment>
-            <PreviewPublishPanel
+            <PublishPanel
                 css={css`
                     display: block;
                     flex-grow: 1;
                 `}
             >
                 <MethodChooser />
-            </PreviewPublishPanel>
+            </PublishPanel>
             <PreviewPanel>
                 <StyledEngineProvider injectFirst>
                     <ThemeProvider theme={darkTheme}>

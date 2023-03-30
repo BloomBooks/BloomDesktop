@@ -14,6 +14,7 @@ import { BookSelectionManager, useIsSelected } from "./bookSelectionManager";
 import { IBookInfo, ICollection } from "./BooksOfCollection";
 import { makeMenuItems, MenuItemSpec } from "./CollectionsTabPane";
 import DeleteIcon from "@mui/icons-material/Delete";
+import { useL10n } from "../react_components/l10nHooks";
 
 export const bookButtonHeight = 120;
 export const bookButtonWidth = 90;
@@ -330,6 +331,12 @@ export const BookButton: React.FunctionComponent<{
         }
     };
 
+    const tooltipIfCannotSaveBook = useL10n(
+        "This feature requires the book to be checked out to you.",
+        "CollectionTab.BookMenu.MustCheckOutTooltip",
+        "This tooltip pops up when the user hovers over a disabled menu item."
+    );
+
     // If relevant, compute the menu items for a right-click on this button.
     // contextMenuPoint has a value if this button has been right-clicked.
     // if it wasn't the selected button at the time, however, the menu will not show
@@ -350,7 +357,8 @@ export const BookButton: React.FunctionComponent<{
             handleClose,
             props.book.id,
             props.collection.id,
-            props.isSpreadsheetFeatureActive
+            props.isSpreadsheetFeatureActive,
+            tooltipIfCannotSaveBook
         );
     }
 
@@ -511,5 +519,33 @@ export const BookButton: React.FunctionComponent<{
                 </div>
             )}
         </div>
+    );
+};
+
+// A place holder needs to signal somehow when the corresponding book's thumbnail
+// image has been updated and the real book button can be displayed.  So we define
+// this placeholder component to receive the signal from the server and pass on
+// the signal to the collection component.
+// See https://issues.bloomlibrary.org/youtrack/issue/BL-12026.
+export const BookButtonPlaceHolder: React.FunctionComponent<{
+    book: IBookInfo;
+    reload: (id: string) => void;
+}> = props => {
+    const [reload, setReload] = useState(0);
+    // Force a reload when the placeholder's book thumbnail image changed
+    useSubscribeToWebSocketForEvent("bookImage", "reload", args => {
+        if (args.message === props.book.id) {
+            setReload(reload + 1);
+            props.reload(props.book.id);
+        }
+    });
+    return (
+        <div
+            className="placeholder"
+            style={{
+                height: bookButtonHeight.toString(10) + "px",
+                width: bookButtonWidth.toString(10) + "px"
+            }}
+        ></div>
     );
 };

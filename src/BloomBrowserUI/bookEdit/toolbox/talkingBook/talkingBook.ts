@@ -22,7 +22,7 @@ export default class TalkingBookTool implements ITool {
     }
 
     public configureElements(container: HTMLElement) {
-        // Implements ITool interface, but we don't need to do anything
+        // one-time setup whether or not the tool is open.
     }
 
     // When are showTool, newPageReady, and updateMarkup called?
@@ -47,9 +47,78 @@ export default class TalkingBookTool implements ITool {
     // Called when a new page is loaded.
     public async newPageReady(): Promise<void> {
         this.showImageDescriptionsIfAny();
-        return AudioRecorder.theOneAudioRecorder.newPageReady(
+        const pageReadyPromise = AudioRecorder.theOneAudioRecorder.newPageReady(
             this.isImageDescriptionToolActive()
         );
+        pageReadyPromise.then(() =>
+            TalkingBookTool.deshroudPhraseDelimiters(ToolBox.getPage())
+        );
+        return pageReadyPromise;
+    }
+
+    // Replace any span marked as a "bloom-audio-split-marker" with a plain "|".
+    // This allows internal processing to proceed without having to contend with
+    // that markup.
+    public static deshroudPhraseDelimiters(page: HTMLElement | null) {
+        if (!page) return;
+        const delimitingSpans = page.getElementsByClassName(
+            "bloom-audio-split-marker"
+        );
+        // delimitingSpans is a live collection that changes as we remove spans.
+        // So we stick all the values into a real array to ensure we process all of them.
+        const spansToReplace = Array.from(delimitingSpans);
+        spansToReplace.forEach(span => {
+            span.replaceWith(page.ownerDocument.createTextNode("|"));
+        });
+    }
+
+    // Replace each phrase delimiter bar ("|") with a span containing a zero-width space
+    // and a class that will result in it being invisible as well as zero-width outside
+    // of this tool.
+    public static enshroudPhraseDelimiters(page: HTMLElement | null) {
+        if (!page || !page.hasChildNodes()) return;
+        // page.childNodes is a live collection that changes as we add/remove nodes.
+        // So we stick all the values into a real array for processing.
+        const children = Array.from(page.childNodes);
+        // Processing from the end of the list should prevent problems.
+        for (let i = 0; i < children.length; ++i) {
+            const node = children[i];
+            switch (node.nodeType) {
+                case Node.ELEMENT_NODE:
+                    this.enshroudPhraseDelimiters(node as HTMLElement);
+                    break;
+                case Node.TEXT_NODE:
+                    {
+                        const originalText = node.textContent;
+                        if (originalText?.includes("|")) {
+                            const matches = originalText.match(
+                                /(([^\|]+)|(\|))/g
+                            );
+                            if (matches && matches.length > 0) {
+                                const newNodes = matches.map(val => {
+                                    if (val === "|") {
+                                        const newSpan = page.ownerDocument.createElement(
+                                            "span"
+                                        );
+                                        newSpan.classList.add(
+                                            "bloom-audio-split-marker"
+                                        );
+                                        const newText = page.ownerDocument.createTextNode(
+                                            "\u200B" // zero-width space
+                                        );
+                                        newSpan.appendChild(newText);
+                                        return newSpan as Node;
+                                    } else {
+                                        return val;
+                                    }
+                                });
+                                node.replaceWith(...newNodes);
+                            }
+                        }
+                    }
+                    break;
+            }
+        }
     }
 
     public hideTool() {
@@ -67,6 +136,7 @@ export default class TalkingBookTool implements ITool {
         const page = ToolBox.getPage();
         if (page) {
             page.classList.remove("bloom-showImageDescriptions");
+            TalkingBookTool.enshroudPhraseDelimiters(page);
         }
     }
 

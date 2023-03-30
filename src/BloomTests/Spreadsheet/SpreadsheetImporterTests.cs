@@ -1,3 +1,4 @@
+using System;
 using Bloom.Book;
 using Bloom.Spreadsheet;
 using Moq;
@@ -5,6 +6,8 @@ using NUnit.Framework;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
+using System.Text;
 using System.Xml;
 using BloomTemp;
 using BloomTests.TeamCollection;
@@ -23,7 +26,7 @@ namespace BloomTests.Spreadsheet
 		protected HtmlDom _dom;
 
 		[OneTimeSetUp]
-		public void OneTimeSetUp()
+		public async Task OneTimeSetUp()
 		{
 			_dom = new HtmlDom(SpreadsheetTests.kSimpleTwoPageBook, true);
 			AssertThatXmlIn.Dom(_dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@lang='en']/p[text()='Riding on elephants can be risky.']", 1); // unchanged
@@ -86,7 +89,7 @@ namespace BloomTests.Spreadsheet
 
 			var importer = new TestSpreadsheetImporter(null, this._dom);
 			InitializeImporter(importer);
-			importer.Import(_sheet);
+			await importer.ImportAsync(_sheet);
 		}
 
 		/// <summary>
@@ -120,7 +123,7 @@ namespace BloomTests.Spreadsheet
 		public void EnglishAndFrenchKeptOrModified()
 		{
 			var assertDom = AssertThatXmlIn.Dom(_dom.RawDom);
-			assertDom.HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class, 'bloom-translationGroup') and not(contains(@class, 'box-header-off'))]/div[contains(@class, 'bloom-editable') and @lang='en' and not(@data-book='bookTitle')]", 5);
+			assertDom.HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class, 'bloom-translationGroup') and not(contains(@class, 'box-header-off'))]/div[contains(@class, 'bloom-editable') and @lang='en' and not(@data-book='bookTitle')]", 6);
 			assertDom.HasSpecifiedNumberOfMatchesForXpath("//div[contains(@class, 'bloom-editable') and @lang='fr' and not(@data-book='bookTitle')]", 3);
 			// Make sure these are in the right places. We put this in the first row, which because of tab index should be imported to the SECOND TG.
 			assertDom.HasSpecifiedNumberOfMatchesForXpath("//div[@tabindex='1']/div[@lang='en']/p[text()='This elephant is running amok.']", 1); // modified
@@ -217,7 +220,7 @@ namespace BloomTests.Spreadsheet
 		private TemporaryFolder _otherImagesFolder;
 		private ProgressSpy _progressSpy;
 
-		public static string PageWithImageAndText(int pageNumber, int tgNumber, int icNumber, string editableDivs = "")
+		public static string PageWithImageAndText(int pageNumber, int tgNumber, int icNumber, string editableDivs = "", string imgDescription = "")
 		{
 			return string.Format(@"	<div class=""bloom-page numberedPage customPage bloom-combinedPage A5Portrait side-right bloom-monolingual"" data-page="""" id=""dc90dbe0-7584-4d9f-bc06-0e0326060054"" data-pagelineage=""adcd48df-e9ab-4a07-afd4-6a24d0398382"" data-page-number=""{0}"" lang="""">
         <div class=""pageLabel"" data-i18n=""TemplateBooks.PageLabel.Basic Text &amp; Picture"" lang=""en"">
@@ -241,11 +244,11 @@ namespace BloomTests.Spreadsheet
             </div>
 			<div class=""split-pane-component position-top"">
                 <div class=""split-pane-component-inner"" min-width=""60px 150px 250px"" min-height=""60px 150px 250px"">
-                    <div class=""bloom-imageContainer bloom-leadingElement"" data-test-id=""ic{2}""><img src=""placeHolder.png"" alt="""" data-copyright="""" data-creator="""" data-license=""""></img></div>
+                    <div class=""bloom-imageContainer bloom-leadingElement"" data-test-id=""ic{2}""><img src=""placeHolder.png"" alt="""" data-copyright="""" data-creator="""" data-license=""""></img>{4}</div>
                 </div>
             </div>
         </div>
-    </div>", pageNumber, tgNumber, icNumber, editableDivs);
+    </div>", pageNumber, tgNumber, icNumber, editableDivs, imgDescription);
 		}
 
 		public static string PageWith2ImagesAnd2Texts(int pageNumber, int tgNumber, int icNumber)
@@ -309,7 +312,153 @@ namespace BloomTests.Spreadsheet
 ", pageNumber, tgNumber, icNumber, tgNumber+1, icNumber+1);
 		}
 
-		public static string PageWithJustText(int pageNumber, int tgNumber)
+		// Some of these are not actually used in this class. But it has become a repository for
+		// reusable page creating functions, so I wanted to keep them together.
+		public static string PageWithJustVideo(int pageNumber, int vcNumber)
+		{
+			return String.Format(
+				@"<div class=""bloom-page numberedPage customPage A5Portrait side-right"" id=""dc90dbe0-7584-4d9f-bc06-0e0326060059"" data-pagelineage=""adcd48df-e9ab-4a07-afd4-6a24d0398382"" data-page-number=""{0}"" lang="""">", pageNumber)
+				+ VideoContainer(vcNumber)
++ "</div>"
+;
+		}
+
+		static string VideoContainer(int vcNumber)
+		{
+			return String.Format(
+				@"<div class=""bloom-videoContainer bloom-leadingElement bloom-selected"" id=""vc{0}"">
+        <video>
+        <source src=""old.mp4""></source></video>
+    </div>", vcNumber);
+		}
+
+		static string TranslationGroup(int tgNumber, string enContent = null)
+		{
+			var enEditable = enContent == null
+				? ""
+				: @"
+		<div class=""bloom-editable normal-style"" style="""" lang=""en"" contenteditable=""true"">
+	        <p></p>
+	    </div>";
+			return string.Format(
+				@"
+<div class=""bloom-translationGroup "" data-default-languages=""auto"" data-test-id=""tg{0}"">
+   <div class=""bloom-editable normal-style"" style="""" lang=""z"" contenteditable=""true"">
+        <p></p>
+    </div>
+	{1}
+</div>", tgNumber, enEditable);
+		}
+
+		static string ImageContainer(int icNumber)
+		{
+			return String.Format(
+				@"<div class=""bloom-imageContainer bloom-leadingElement"" data-test-id=""ic{0}""><img src=""Othello 199.jpg"" alt="""" data-copyright="""" data-creator="""" data-license=""""></img></div>", icNumber);
+		}
+
+		static string WidgetContainer(int wdgtNumber)
+		{
+			return string.Format(@"
+<div class=""bloom-widgetContainer bloom-leadingElement"" data-test-id=""wdgt{0}"">
+                    <iframe src=""activities/balldragTouch/index.html"">Must have a closing tag in HTML</iframe>
+                </div>", wdgtNumber);
+		}
+
+		public static string PageWith2OfEverything(int pageNumber, int idNumber)
+		{
+			return string.Format(@"	<div class=""bloom-page numberedPage customPage bloom-combinedPage A5Portrait side-right bloom-monolingual"" data-page="""" id=""dc90dbe0-7584-4d9f-bc06-0e0326060054"" data-pagelineage=""adcd48df-e9ab-4a07-afd4-6a24d0398382"" data-page-number=""{0}"" lang="""">
+        <div class=""pageLabel"" data-i18n=""TemplateBooks.PageLabel.Basic Text &amp; Picture"" lang=""en"">
+            Basic Text &amp; Picture
+        </div>
+
+        <div class=""pageDescription"" lang=""en""></div>
+
+        <div class=""marginBox"" style="""">", pageNumber)
+								 + TranslationGroup(idNumber)
+								 + ImageContainer(idNumber)
+								 + VideoContainer(idNumber)
+								 + WidgetContainer(idNumber)
+								 + TranslationGroup(idNumber+1)
+								 + ImageContainer(idNumber + 1)
+								 + VideoContainer(idNumber + 1)
+								 + WidgetContainer(idNumber + 1)
+
+		+ @"</div>
+    </div>";
+		}
+
+		public static string Quiz(int idNumber, string question, string[] answers, int correct)
+		{
+			var builder = new StringBuilder(@"
+<div class=""bloom-page simple-comprehension-quiz bloom-ignoreForReaderStats bloom-interactive-page enterprise-only numberedPage side-right A5Portrait bloom-monolingual"" id=""ca363e76-9474-4e54-bd99-c3f554b67784"" data-page="""" data-analyticscategories=""comprehension"" data-reader-version=""2"" data-pagelineage=""F125A8B6-EA15-4FB7-9F8D-271D7B3C8D4D"" data-page-number=""1"" lang="""">
+    <div class=""pageLabel"" lang=""en"" data-i18n=""TemplateBooks.PageLabel.Quiz Page"">
+        Quiz Page
+    </div>
+    <div class=""pageDescription"" lang=""en""></div>
+
+    <div class=""marginBox"">
+		<div class=""quiz"">
+			<div class=""bloom-translationGroup bloom-ignoreChildrenForBookLanguageList"" data-test-id=""tg" +
+			                                idNumber +
+			                                @""" data-default-languages=""auto"" data-hasqtip=""true"" aria-describedby=""qtip-0"">
+			    <div class=""bloom-editable QuizHeader-style bloom-content1 bloom-visibility-code-on"" lang=""akl"" contenteditable=""true"" data-collection=""simpleComprehensionQuizHeading"" data-languagetipcontent=""Aklanon"" tabindex=""0"" spellcheck=""true"" role=""textbox"" aria-label=""false"">
+			        <p>Check your understanding</p>
+			    </div>
+
+			    <div class=""bloom-editable QuizHeader-style bloom-contentNational1"" lang=""en"" contenteditable=""true"" data-collection=""simpleComprehensionQuizHeading"" data-languagetipcontent=""English"" style="""" tabindex=""0"" spellcheck=""true"" role=""textbox"" aria-label=""false"">
+			        <p>Check Your Understanding</p>
+			    </div>
+			</div>");
+			builder.Append(TranslationGroup(idNumber + 1, question));
+			for (int i = 0; i < 6; i++)
+			{
+				if (i < answers.Length)
+					builder.Append(QuizAnswer(idNumber + 2 + i, answers[i], i == correct));
+				else
+					builder.Append(EmptyQuizAnswer(idNumber + 2 + i));
+			}
+
+			builder.Append("</div></div></div>");
+
+			return builder.ToString();
+		}
+
+		public static string QuizAnswer(int idNumber, string content, bool correct)
+		{
+			return @"
+<div class=""checkbox-and-textbox-choice " + (correct ? "correct-answer" : "") + @""">
+    <input class=""styled-check-box"" type=""checkbox"" name=""Correct""></input>
+
+    <div class=""bloom-translationGroup"" data-test-id=""tg" + idNumber +
+   @""" data-default-languages=""auto"" data-hint=""Put a possible answer here. Check it if it is correct."" data-hasqtip=""true"" aria-describedby=""qtip-3"">
+        <div class=""bloom-editable QuizAnswer-style"" lang=""z"" contenteditable=""true"" style="""">
+            <p></p>
+        </div>
+
+        <div class=""bloom-editable QuizAnswer-style bloom-contentNational1"" lang=""en"" contenteditable=""true"" data-languagetipcontent=""English"" style="""" tabindex=""0"" spellcheck=""true"" role=""textbox"" aria-label=""false"">
+            <p>" + content + @"</p>
+        </div>
+    </div>
+    <div class=""placeToPutVariableCircle""></div>
+</div>";
+		}
+
+		public static string EmptyQuizAnswer(int idNumber)
+		{
+			return @"
+<div class=""checkbox-and-textbox-choice empty"">
+    <input class=""styled-check-box"" type=""checkbox"" name=""Correct""></input>
+
+    <div class=""bloom-translationGroup"" data-test-id=""tg" + idNumber + @""" data-default-languages=""auto"" data-hint=""Put a possible answer here. Check it if it is correct."" data-hasqtip=""true"" aria-describedby=""qtip-7"">
+        <div class=""bloom-editable QuizAnswer-style"" lang=""z"" contenteditable=""true"" style="""">
+            <p></p>
+        </div>
+    </div>
+    <div class=""placeToPutVariableCircle""></div>
+</div>";
+		}
+
+public static string PageWithJustText(int pageNumber, int tgNumber)
 		{
 			return string.Format(@"	<div class=""bloom-page numberedPage customPage bloom-combinedPage A5Portrait side-right bloom-monolingual"" data-page="""" id=""dc90dbe0-7584-4d9f-bc06-0e0326060054"" data-pagelineage=""adcd48df-e9ab-4a07-afd4-6a24d0398382"" data-page-number=""{0}"" lang="""">
         <div class=""pageLabel"" data-i18n=""TemplateBooks.PageLabel.Basic Text &amp; Picture"" lang=""en"">
@@ -383,7 +532,11 @@ namespace BloomTests.Spreadsheet
                 </div>
                 <div class=""bloom-editable bloom-nodefaultstylerule Title-On-Cover-style"" lang=""*"" contenteditable=""true"" data-book=""bookTitle""></div>
             </div>
-            <div class=""bloom-imageContainer bloom-backgroundImage"" data-book=""coverImage"" style=""background-image:url('Othello 199.jpg')"" data-copyright=""Copyright, SIL International 2009."" data-creator="""" data-license=""cc-by-nd""></div>
+            <div class=""bloom-imageContainer bloom-backgroundImage"" data-book=""coverImage"" style=""background-image:url('Othello 199.jpg')"" data-copyright=""Copyright, SIL International 2009."" data-creator="""" data-license=""cc-by-nd"">
+				<div class=""bloom-translationGroup bloom-imageDescription bloom-trailingElement"" data-default-languages=""auto"">
+					<div class=""bloom-editable ImageDescriptionEdit-style"" lang=""z"" contenteditable=""true"" data-book=""coverImageDescription""></div>
+				</div>
+			</div>
 
             <div class=""bottomBlock"">
                 <img class=""branding"" src=""/bloom/api/branding/image?id=cover-bottom-left.svg"" type=""image/svg"" onerror=""this.style.display='none'""></img> 
@@ -487,7 +640,7 @@ namespace BloomTests.Spreadsheet
 		private string _spreadsheetFolder;
 
 		[OneTimeSetUp]
-		public void OneTimeSetUp()
+		public async Task OneTimeSetUp()
 		{
 			// We will re-use the images from another test.
 			// Conveniently the images are in a folder called "images" which is what the importer expects.
@@ -637,7 +790,7 @@ namespace BloomTests.Spreadsheet
 			// Do the import
 			_progressSpy = new ProgressSpy();
 			var importer = new TestSpreadsheetImporter(null, _dom, _spreadsheetFolder, _bookFolder.FolderPath, settings);
-			_warnings = importer.Import(ss, _progressSpy);
+			_warnings = await importer.ImportAsync(ss, _progressSpy);
 
 			_contentPages = _dom.SafeSelectNodes("//div[contains(@class, 'bloom-page')]").Cast<XmlElement>().ToList();
 
@@ -723,8 +876,8 @@ namespace BloomTests.Spreadsheet
 		{
 			AssertThatXmlIn.Element(_contentPages[n]).HasSpecifiedNumberOfMatchesForXpath($".//div[contains(@class, 'bloom-imageContainer')]/img[@src='{src}']", 1);
 			// This is the ID for the standard "Just a picture" page
-			Assert.That(_contentPages[n].Attributes["data-pagelineage"].Value, Does.Contain("adcd48df-e9ab-4a07-afd4-6a24d0398385"));
-			Assert.That(_contentPages[n].Attributes["id"].Value, Is.Not.EqualTo("adcd48df-e9ab-4a07-afd4-6a24d0398385"));
+			Assert.That(_contentPages[n].Attributes["data-pagelineage"].Value, Does.Contain(Bloom.Book.Book.JustPictureGuid));
+			Assert.That(_contentPages[n].Attributes["id"].Value, Is.Not.EqualTo(Bloom.Book.Book.JustPictureGuid));
 		}
 
 		[TestCase(7, "this is something extra on a new page before 7", "LakePendOreille.jpg", "Copyright © 2012, Stephen McConnel")]
@@ -748,8 +901,8 @@ namespace BloomTests.Spreadsheet
 		{
 			AssertThatXmlIn.Element(_contentPages[n]).HasSpecifiedNumberOfMatchesForXpath($".//div[contains(@class, 'bloom-translationGroup')]/div[contains(@class, 'bloom-editable') and @lang='en' and text()='{text}']", 1);
 			// This is the ID for the standard "Just text" page
-			Assert.That(_contentPages[n].Attributes["data-pagelineage"].Value, Does.Contain("a31c38d8-c1cb-4eb9-951b-d2840f6a8bdb"));
-			Assert.That(_contentPages[n].Attributes["id"].Value, Is.Not.EqualTo("a31c38d8-c1cb-4eb9-951b-d2840f6a8bdb"));
+			Assert.That(_contentPages[n].Attributes["data-pagelineage"].Value, Does.Contain(Bloom.Book.Book.JustTextGuid));
+			Assert.That(_contentPages[n].Attributes["id"].Value, Is.Not.EqualTo(Bloom.Book.Book.JustTextGuid));
 		}
 
 		[Test]
@@ -844,7 +997,7 @@ namespace BloomTests.Spreadsheet
 		private string _spreadsheetFolder;
 
 		[OneTimeSetUp]
-		public void OneTimeSetUp()
+		public async Task OneTimeSetUp()
 		{
 			// We will re-use the images from another test.
 			// Conveniently the images are in a folder called "images" which is what the importer expects.
@@ -885,7 +1038,7 @@ namespace BloomTests.Spreadsheet
 
 			// Do the import
 			var importer = new TestSpreadsheetImporter(null, _dom, _spreadsheetFolder, _bookFolder.FolderPath);
-			_warnings = importer.Import(ss);
+			_warnings = await importer.ImportAsync(ss);
 
 			_contentPages = _dom.SafeSelectNodes("//div[contains(@class, 'bloom-page')]").Cast<XmlElement>().ToList();
 
@@ -911,8 +1064,8 @@ namespace BloomTests.Spreadsheet
 		{
 			AssertThatXmlIn.Element(_contentPages[n]).HasSpecifiedNumberOfMatchesForXpath($".//div[contains(@class, 'bloom-imageContainer')]/img[@src='{src}']", 1);
 			// This is the ID for the standard "Just a picture" page
-			Assert.That(_contentPages[n].Attributes["data-pagelineage"].Value, Does.Contain("adcd48df-e9ab-4a07-afd4-6a24d0398385"));
-			Assert.That(_contentPages[n].Attributes["id"].Value, Is.Not.EqualTo("adcd48df-e9ab-4a07-afd4-6a24d0398385"));
+			Assert.That(_contentPages[n].Attributes["data-pagelineage"].Value, Does.Contain(Bloom.Book.Book.JustPictureGuid));
+			Assert.That(_contentPages[n].Attributes["id"].Value, Is.Not.EqualTo(Bloom.Book.Book.JustPictureGuid));
 			Assert.That(_contentPages[n].Attributes["class"].Value, Does.Contain("A4Landscape"));
 		}
 
@@ -922,8 +1075,8 @@ namespace BloomTests.Spreadsheet
 			AssertThatXmlIn.Element(_contentPages[n]).HasSpecifiedNumberOfMatchesForXpath($".//div[contains(@class, 'bloom-imageContainer')]/img[@src='{src}']", 1);
 			AssertThatXmlIn.Element(_contentPages[n]).HasSpecifiedNumberOfMatchesForXpath($".//div[contains(@class, 'bloom-translationGroup')]/div[contains(@class, 'bloom-editable') and @lang='en' and text()='{text}']", 1);
 			// This is the ID for the standard "Basic text and picture" page
-			Assert.That(_contentPages[n].Attributes["data-pagelineage"].Value, Does.Contain("7b192144-527c-417c-a2cb-1fb5e78bf38a"));
-			Assert.That(_contentPages[n].Attributes["id"].Value, Is.Not.EqualTo("7b192144-527c-417c-a2cb-1fb5e78bf38a"));
+			Assert.That(_contentPages[n].Attributes["data-pagelineage"].Value, Does.Contain(Bloom.Book.Book.PictureOnLeftGuid));
+			Assert.That(_contentPages[n].Attributes["id"].Value, Is.Not.EqualTo(Bloom.Book.Book.PictureOnLeftGuid));
 			Assert.That(_contentPages[n].Attributes["class"].Value, Does.Contain("A4Landscape"));
 		}
 
@@ -932,8 +1085,8 @@ namespace BloomTests.Spreadsheet
 		{
 			AssertThatXmlIn.Element(_contentPages[n]).HasSpecifiedNumberOfMatchesForXpath($".//div[contains(@class, 'bloom-translationGroup')]/div[contains(@class, 'bloom-editable') and @lang='en' and text()='{text}']", 1);
 			// This is the ID for the standard "Just text" page
-			Assert.That(_contentPages[n].Attributes["data-pagelineage"].Value, Does.Contain("a31c38d8-c1cb-4eb9-951b-d2840f6a8bdb"));
-			Assert.That(_contentPages[n].Attributes["id"].Value, Is.Not.EqualTo("a31c38d8-c1cb-4eb9-951b-d2840f6a8bdb"));
+			Assert.That(_contentPages[n].Attributes["data-pagelineage"].Value, Does.Contain(Bloom.Book.Book.JustTextGuid));
+			Assert.That(_contentPages[n].Attributes["id"].Value, Is.Not.EqualTo(Bloom.Book.Book.JustTextGuid));
 			Assert.That(_contentPages[n].Attributes["class"].Value, Does.Contain("A4Landscape"));
 		}
 
@@ -959,7 +1112,7 @@ namespace BloomTests.Spreadsheet
 		private string _spreadsheetFolder;
 
 		[OneTimeSetUp]
-		public void OneTimeSetUp()
+		public async Task OneTimeSetUp()
 		{
 			// We will re-use the images from another test.
 			// Conveniently the images are in a folder called "images" which is what the importer expects.
@@ -994,7 +1147,7 @@ namespace BloomTests.Spreadsheet
 
 			// Do the import
 			var importer = new TestSpreadsheetImporter(null, _dom, _spreadsheetFolder, _bookFolder.FolderPath);
-			importer.Import(ss);
+			await importer.ImportAsync(ss);
 
 			_contentPages = _dom.SafeSelectNodes("//div[contains(@class, 'bloom-page')]").Cast<XmlElement>().ToList();
 
@@ -1037,7 +1190,7 @@ namespace BloomTests.Spreadsheet
 		private string _spreadsheetFolder;
 
 		[OneTimeSetUp]
-		public void OneTimeSetUp()
+		public async Task OneTimeSetUp()
 		{
 			// We will re-use the images from another test.
 			// Conveniently the images are in a folder called "images" which is what the importer expects.
@@ -1080,7 +1233,7 @@ namespace BloomTests.Spreadsheet
 
 			// Do the import
 			var importer = new TestSpreadsheetImporter(null, _dom, _spreadsheetFolder, _bookFolder.FolderPath);
-			_warnings = importer.Import(ss);
+			_warnings = await importer.ImportAsync(ss);
 
 			_contentPages = _dom.SafeSelectNodes("//div[contains(@class, 'bloom-page')]").Cast<XmlElement>().ToList();
 
@@ -1122,6 +1275,110 @@ namespace BloomTests.Spreadsheet
 		[TestCase(0, "ic2", "shirt.png")]
 		[TestCase(1, "ic1", "man.png")]
 		[TestCase(1, "ic2", "placeHolder.png")]
+		public void GotImageSourceOnPageN(int n, string tag, string text)
+		{
+			AssertThatXmlIn.Element(_contentPages[n]).HasSpecifiedNumberOfMatchesForXpath($".//div[@data-test-id='{tag}']/img[@src='{text}']", 1);
+		}
+
+		[Test]
+		public void NoUnexpectedWarnings()
+		{
+			// Currently we don't expect any.
+			// Adjust as necessary if we add some.
+			Assert.That(_warnings.Count, Is.EqualTo(0));
+		}
+	}
+
+	public class SpreadsheetImportDeleteExtraPagesTest
+	{
+		private HtmlDom _dom;
+
+		private TemporaryFolder _bookFolder;
+
+
+		private List<XmlElement> _contentPages;
+		private XmlElement _firstPage;
+		private XmlElement _lastPage;
+		private XmlElement _secondLastPage;
+		private List<string> _warnings;
+		private string _spreadsheetFolder;
+
+		[OneTimeSetUp]
+		public async Task OneTimeSetUp()
+		{
+			// We will re-use the images from another test.
+			// Conveniently the images are in a folder called "images" which is what the importer expects.
+			// So we give it the parent directory of that images folder.
+			_spreadsheetFolder = SIL.IO.FileLocationUtilities.GetDirectoryDistributedWithApplication("src/BloomTests/ImageProcessing");
+
+			// Create an HtmlDom for a template to import into
+			var xml = string.Format(SpreadsheetImageAndTextImportTests.templateDom,
+				SpreadsheetImageAndTextImportTests.coverPage
+				+ SpreadsheetImageAndTextImportTests.PageWithImageAndText(1, 1, 1)
+				+ SpreadsheetImageAndTextImportTests.PageWithImageAndText(2, 1, 1)
+				+ SpreadsheetImageAndTextImportTests.PageWithImageAndText(3, 1, 1)
+				+ SpreadsheetImageAndTextImportTests.insideBackCoverPage
+				+ SpreadsheetImageAndTextImportTests.backCoverPage);
+			_dom = new HtmlDom(xml, true);
+
+			// Create an internal spreadsheet with the row content we want to test
+			var ss = new InternalSpreadsheet();
+			var columnForEn = ss.AddColumnForLang("en", "English");
+			var columnForImage = ss.GetColumnForTag(InternalSpreadsheet.ImageSourceColumnLabel);
+
+			// Will fill the first page in the original
+			var contentRow1 = new ContentRow(ss);
+			contentRow1.AddCell(InternalSpreadsheet.PageContentRowLabel);
+			contentRow1.SetCell(columnForImage, "images/lady24b.png");
+			contentRow1.SetCell(columnForEn, "this is page 1");
+
+			_bookFolder = new TemporaryFolder("SpreadsheetImageAndTextImportToBookWithComplexLastPageTests");
+
+			// Do the import
+			var importer = new TestSpreadsheetImporter(null, _dom, _spreadsheetFolder, _bookFolder.FolderPath);
+			_warnings = await importer.ImportAsync(ss);
+
+			_contentPages = _dom.SafeSelectNodes("//div[contains(@class, 'bloom-page')]").Cast<XmlElement>().ToList();
+
+			// Remove the xmatter to get just the content pages, but save so we can test that too.
+			_firstPage = _contentPages[0];
+			_contentPages.RemoveAt(0);
+			_lastPage = _contentPages.Last();
+			_contentPages.RemoveAt(_contentPages.Count - 1);
+			_secondLastPage = _contentPages.Last();
+			_contentPages.RemoveAt(_contentPages.Count - 1);
+
+			// (individual test methods will evaluate the result)
+		}
+
+		[OneTimeTearDown]
+		public void OneTimeTearDown()
+		{
+			_bookFolder?.Dispose();
+		}
+
+		// This is the main point of this test class. The other tests just make sure nothing got broken
+		[Test]
+		public void ExtraPagesDeleted()
+		{
+			Assert.That(_contentPages.Count, Is.EqualTo(1));
+		}
+
+		[Test]
+		public void CoverPagesSurvive()
+		{
+			Assert.That(_lastPage.Attributes["class"].Value, Does.Match("outsideBackCover"));
+			Assert.That(_secondLastPage.Attributes["class"].Value, Does.Match("insideBackCover"));
+		}
+
+		[TestCase(0, "tg1", "this is page 1")]
+		public void GotTextOnPageN(int n, string tag, string text)
+		{
+			AssertThatXmlIn.Element(_contentPages[n]).HasSpecifiedNumberOfMatchesForXpath($".//div[@data-test-id='{tag}']/div[@lang='en' and text() = '{text}']", 1);
+		}
+
+
+		[TestCase(0, "ic1", "lady24b.png")]
 		public void GotImageSourceOnPageN(int n, string tag, string text)
 		{
 			AssertThatXmlIn.Element(_contentPages[n]).HasSpecifiedNumberOfMatchesForXpath($".//div[@data-test-id='{tag}']/img[@src='{text}']", 1);
@@ -1226,7 +1483,7 @@ namespace BloomTests.Spreadsheet
 		private TemporaryFolder _bookFolder;
 
 		[OneTimeSetUp]
-		public void OneTimeSetUp()
+		public async Task OneTimeSetUp()
 		{
 			// Create an HtmlDom for a template to import into.
 			var xml = string.Format(licenseTestsDom);
@@ -1248,7 +1505,7 @@ namespace BloomTests.Spreadsheet
 
 			// Do the import
 			var importer = new TestSpreadsheetImporter(null, _dom, null, _bookFolder.FolderPath);
-			importer.Import(ss);
+			await importer.ImportAsync(ss);
 
 			// (individual test methods will evaluate the result)
 		}
@@ -1289,7 +1546,7 @@ namespace BloomTests.Spreadsheet
 		private TemporaryFolder _bookFolder;
 
 		[OneTimeSetUp]
-		public void OneTimeSetUp()
+		public async Task OneTimeSetUp()
 		{
 			// Create an HtmlDom for a template to import into.
 			var xml = string.Format(SpreadsheetImportRemovingLicenseUrlandNotes.licenseTestsDom);
@@ -1309,7 +1566,7 @@ namespace BloomTests.Spreadsheet
 
 			// Do the import
 			var importer = new TestSpreadsheetImporter(null, _dom, null, _bookFolder.FolderPath);
-			importer.Import(ss);
+			await importer.ImportAsync(ss);
 
 			// (individual test methods will evaluate the result)
 		}
@@ -1337,7 +1594,7 @@ namespace BloomTests.Spreadsheet
 		private TemporaryFolder _bookFolder;
 
 		[OneTimeSetUp]
-		public void OneTimeSetUp()
+		public async Task OneTimeSetUp()
 		{
 			// Create an HtmlDom for a template to import into.
 			var xml = string.Format(SpreadsheetImportRemovingLicenseUrlandNotes.licenseTestsDom);
@@ -1362,7 +1619,7 @@ namespace BloomTests.Spreadsheet
 
 			// Do the import
 			var importer = new TestSpreadsheetImporter(null, _dom, null, _bookFolder.FolderPath);
-			importer.Import(ss);
+			await importer.ImportAsync(ss);
 
 			// (individual test methods will evaluate the result)
 		}

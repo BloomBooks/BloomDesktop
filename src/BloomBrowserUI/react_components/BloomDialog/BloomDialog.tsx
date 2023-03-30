@@ -1,19 +1,26 @@
 /** @jsx jsx **/
 import { jsx, css } from "@emotion/react";
-import * as React from "react";
 import { forwardRef, useEffect } from "react";
+import { FunctionComponent } from "react";
 import { ThemeProvider, StyledEngineProvider } from "@mui/material/styles";
-import { Dialog, DialogProps, Paper, PaperProps } from "@mui/material";
+import {
+    Dialog,
+    DialogProps,
+    IconButton,
+    Paper,
+    PaperProps
+} from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import CloseOnEscape from "react-close-on-escape";
 import {
-    kBloomBlue50Transparent,
     kDialogPadding,
     kUiFontStack,
     lightTheme
 } from "../../bloomMaterialUITheme";
 import { useL10n } from "../l10nHooks";
 import Draggable from "react-draggable";
+import { hookupLinkHandler } from "../../utils/linkHandler";
+import * as React from "react";
 
 // The <BloomDialog> component and its children provides consistent layout across Bloom Dialogs.
 // It can be used either inside of a winforms dialog, or as a MaterialUI Dialog.
@@ -23,7 +30,7 @@ import Draggable from "react-draggable";
 
 // Enhance: Would be interested to see if this would improve if we used https://github.com/eBay/nice-modal-react
 
-const kDialogTopPadding = "24px";
+export const kDialogTopPadding = "24px";
 const kDialogSidePadding = "24px";
 const kDialogBottomPadding = "10px"; // per material, the bottom buttons are supposed to be closer to the edges
 
@@ -34,13 +41,18 @@ export interface IBloomDialogProps extends DialogProps {
     // If it is desired to have a close button in the top right corner of the dialog, see DialogTitle.
     // The available reasons come from MUI's DialogProps.
     onClose: (evt?: object, reason?: "escapeKeyDown" | "backdropClick") => void;
+
+    // If you define this, then ways of leaving the dialog other than the OK/accept button (escape, clicking out, the cancel button)
+    // will call it.
+    onCancel?: () => void;
+
     // we know of at least one scenario (CopyrightAndLicenseDialog) which needs to do
     // this because enabling it causes a react render loop. Our theory is that there is
     // a focus war going on.
     disableDragging?: boolean;
 }
 
-export const BloomDialog: React.FunctionComponent<IBloomDialogProps> = forwardRef(
+export const BloomDialog: FunctionComponent<IBloomDialogProps> = forwardRef(
     (props, ref) => {
         // About custom styling:
         // We need the parent to be able to specify things about the size of the dialog. Example:
@@ -82,6 +94,8 @@ export const BloomDialog: React.FunctionComponent<IBloomDialogProps> = forwardRe
             </div>
         );
 
+        useEffect(() => hookupLinkHandler(), []);
+
         // If the dialog content contains something with class initialFocus, this will give it
         // initial focus.
         useEffect(() => {
@@ -109,28 +123,68 @@ export const BloomDialog: React.FunctionComponent<IBloomDialogProps> = forwardRe
         const {
             dialogFrameProvidedExternally,
             disableDragging,
+            onClose,
+            onCancel,
             ...propsToPass
         } = props;
 
+        function hasChildOfType(typeName: string) {
+            return React.Children.toArray(props.children).some(c => {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                return (c as any)?.type?.name === typeName;
+            });
+        }
+
+        const hasTitle = hasChildOfType("DialogTitle");
+
+        //const cancellable = hasChildOfType("DialogCancelButton");
+        const cancellable = props.onCancel != undefined;
+
+        function getPaperComponent() {
+            if (disableDragging) {
+                return undefined;
+            } else {
+                return DraggablePaperLimited;
+            }
+        }
         return (
-            <CloseOnEscape
-                onEscape={() => {
-                    props.onClose(undefined, "escapeKeyDown");
-                }}
-            >
-                <StyledEngineProvider injectFirst>
-                    <ThemeProvider theme={lightTheme}>
-                        {dialogFrameProvidedExternally ? (
-                            inner
-                        ) : (
+            <StyledEngineProvider injectFirst>
+                <ThemeProvider theme={lightTheme}>
+                    {dialogFrameProvidedExternally ? (
+                        inner
+                    ) : (
+                        <BloomDialogContext.Provider
+                            value={{
+                                onCancel: props.onCancel,
+                                disableDragging: !!props.disableDragging
+                            }}
+                        >
                             <Dialog
-                                PaperComponent={
-                                    disableDragging ? undefined : DraggablePaper
+                                onClose={(
+                                    event: object,
+                                    reason: "escapeKeyDown" | "backdropClick"
+                                ) => {
+                                    // MUI.Dialog onClose() is only called if you click outside the dialog or escape, so that's
+                                    // the same as canceling for dialogs that have a notion of canceling.
+                                    if (props.onCancel) props.onCancel();
+                                    else props.onClose(event, reason);
+                                }}
+                                // maxWidth={false} Instead, if you want more than the default (600px?) then add maxWidth={false} in the props.
+                                PaperComponent={getPaperComponent()}
+                                aria-labelledby={
+                                    "draggable-dialog-" + hasTitle
+                                        ? "title"
+                                        : "middle"
                                 }
                                 css={css`
                                     flex-grow: 1; // see note on the display property on PaperComponent
                                     [role="dialog"] {
                                         overflow: hidden; // only the middle should scroll. The DialogTitle and DialogBottomButtons should not.
+                                    }
+                                    // without this, you can't get the dialog close to the edge
+                                    // because there is a huge invisible margin around the dialog
+                                    .MuiPaper-root {
+                                        margin: 0 !important;
                                     }
                                 `}
                                 ref={ref}
@@ -138,33 +192,31 @@ export const BloomDialog: React.FunctionComponent<IBloomDialogProps> = forwardRe
                             >
                                 {inner}
                             </Dialog>
-                        )}
-                    </ThemeProvider>
-                </StyledEngineProvider>
-            </CloseOnEscape>
+                        </BloomDialogContext.Provider>
+                    )}
+                </ThemeProvider>
+            </StyledEngineProvider>
         );
     }
 );
 
-export const DialogTitle: React.FunctionComponent<{
+export const DialogTitle: FunctionComponent<{
     backgroundColor?: string;
     color?: string;
     icon?: string;
     title: string; // note, this is prop instead of just a child so that we can ensure vertical alignment and bar height, which are easy to mess up.
-    disableDragging?: boolean;
-    // If closeButtonOptions is defined, the title will have a close button at the far right side.
-    closeButtonOptions?: {
-        onClose: (evt?: object, reason?: "closeButtonClick") => void;
-    };
 }> = props => {
     const color = props.color || "black";
     const background = props.backgroundColor || "transparent";
-    const cursor = props.disableDragging ? "unset" : "move";
+
     const closeText = useL10n("Close", "Common.Close");
 
     // This is lame, but it's really what looks right to me. When there is a color bar, it looks better to have less padding at the top.
     const titleTopPadding =
         background === "transparent" ? kDialogTopPadding : kDialogPadding;
+
+    const context = React.useContext(BloomDialogContext);
+    const cursor = context.disableDragging ? "unset" : "move";
     return (
         <div
             id="draggable-dialog-title"
@@ -206,45 +258,44 @@ export const DialogTitle: React.FunctionComponent<{
             </h1>
             {/* Example child would be a Spinner in a progress dialog. */}
             {props.children}
-            {props.closeButtonOptions && (
-                <CloseIcon
-                    color="primary"
+            {context.onCancel && (
+                <IconButton
+                    aria-label={closeText}
+                    title={closeText}
                     css={css`
-                        margin-left: auto;
+                        position: relative;
+                        margin-left: auto !important;
                         margin-top: auto;
                         margin-bottom: auto;
-                        display: inline-block;
-                        cursor: default;
-                        border: 1px solid ${kBloomBlue50Transparent};
-                        border-radius: 6px;
-                        :hover {
-                            background-color: ${kBloomBlue50Transparent};
-                        }
+                        padding: unset;
+                        display: flex;
                     `}
-                    titleAccess={closeText}
-                    onClick={e => {
-                        props.closeButtonOptions?.onClose(
-                            e,
-                            "closeButtonClick"
-                        );
-                    }}
-                />
+                    onClick={context.onCancel}
+                >
+                    <CloseIcon />
+                </IconButton>
             )}
         </div>
     );
 };
+DialogTitle.displayName = "DialogTitle";
 
 // The height of this is determined by what is inside of it. If the content might grow (e.g. a progress box), then it's up to the
 // client to set maxes or fixed dimensions. See <ProgressDialog> for an example.
-export const DialogMiddle: React.FunctionComponent<{}> = props => {
+export const DialogMiddle: FunctionComponent<{}> = props => {
     return (
         <div
+            id="draggable-dialog-middle"
             css={css`
                 overflow-y: auto;
                 display: flex;
                 flex-direction: column;
                 flex-grow: 1;
                 font-size: 14px;
+                // When the dialog doesn't have a title we want some padding above the content.
+                &:first-child {
+                    margin-top: ${kDialogTopPadding};
+                }
 
                 p {
                     margin-block-start: 0;
@@ -263,7 +314,7 @@ export const DialogMiddle: React.FunctionComponent<{}> = props => {
 };
 
 // should be a child of DialogBottomButtons
-export const DialogBottomLeftButtons: React.FunctionComponent<{}> = props => (
+export const DialogBottomLeftButtons: FunctionComponent<{}> = props => (
     <div
         css={css`
             margin-right: auto;
@@ -287,7 +338,7 @@ export const DialogBottomLeftButtons: React.FunctionComponent<{}> = props => (
 );
 
 // normally one or more buttons. 1st child can also be <DialogBottomLeftButtons> if you have left-aligned buttons to show
-export const DialogBottomButtons: React.FunctionComponent<{}> = props => {
+export const DialogBottomButtons: FunctionComponent<{}> = props => {
     return (
         <div
             css={css`
@@ -316,16 +367,20 @@ export const DialogBottomButtons: React.FunctionComponent<{}> = props => {
     );
 };
 
-// For some reason, making this a FunctionComponent rather than just a function
-// which returns a component makes a significant difference.
-// When this was a function, typing 3 digits in the hex box would cause
-// a loss of focus which caused it to convert, e.g. FFF to FFFFFF.
-// See BL-11406.
-const DraggablePaper: React.FunctionComponent<PaperProps> = props => {
+interface EnhancedPaperProps extends PaperProps {
+    handleId: string;
+}
+
+// Don't be tempted to make this an anonymous function that returns a JSX.Element
+// (instead of a FunctionComponent), it causes focus problems. (BL-11406).
+// (Probably the same for the things below that use it.)
+const DraggablePaperCore: FunctionComponent<EnhancedPaperProps> = props => {
+    const { handleId, ...paperProps } = props;
     return (
         <Draggable
-            handle="#draggable-dialog-title"
+            handle={"#" + handleId}
             cancel={'[class*="MuiDialogContent-root"]'}
+            bounds="body" // don't let the dialog be dragged outside the window
         >
             <Paper
                 css={css`
@@ -333,8 +388,25 @@ const DraggablePaper: React.FunctionComponent<PaperProps> = props => {
                     // the children can grow into it.
                     display: flex;
                 `}
-                {...props}
+                {...paperProps}
             />
         </Draggable>
     );
 };
+
+// We need things that just take PaperProps to pass to the PaperComponent
+// property of Dialog. So the above component gets instantiated several ways.
+
+const DraggablePaperLimited: FunctionComponent<PaperProps> = props => {
+    return <DraggablePaperCore handleId="draggable-dialog-title" {...props} />;
+};
+
+// This used to pass down things to components of the dialog
+type BloomDialogContextArgs = {
+    onCancel?: () => void;
+    disableDragging: boolean;
+};
+export const BloomDialogContext = React.createContext<BloomDialogContextArgs>({
+    onCancel: undefined,
+    disableDragging: false
+});

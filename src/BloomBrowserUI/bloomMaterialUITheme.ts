@@ -1,4 +1,5 @@
 import { createTheme, adaptV4Theme, Theme } from "@mui/material/styles";
+import { kBloomDisabledOpacity, kBloomDisabledText } from "./utils/colorUtils";
 
 export const kBloomBlue = "#1d94a4";
 export const kBloomBlue50Transparent = "#8ecad280";
@@ -19,6 +20,21 @@ export const kDisabledControlGray = "#bbb";
 export const kMutedTextGray = "gray";
 export const kVerticalSpacingBetweenDialogSections = "20px";
 export const kBorderRadiusForSpecialBlocks = "3px";
+export const kBloomBuff = "#d2d2d2";
+export const kWarningColor = "#d65649";
+// css we want to apply to each MuiSelect to get the look we like.
+export const kSelectCss = `
+    background-color: white;
+    width: 100%;
+    &.MuiOutlinedInput-root {
+        border-radius: 0 !important;
+
+        .MuiOutlinedInput-notchedOutline {
+            border-width: 1px !important;
+            border-color: ${kBloomBlue} !important; // it usually is anyway, but not before MUI decides to focus it.
+        }
+    }
+    .MuiSelect-select {padding: 7px 11px;}`;
 
 // Should match @UIFontStack in bloomWebFonts.less
 export const kUiFontStack = "NotoSans, Roboto, sans-serif";
@@ -41,7 +57,12 @@ export const lightTheme = createTheme(
         palette: {
             primary: { main: kBloomBlue },
             secondary: { main: kBloomPurple },
-            warning: { main: kBloomGold }
+            warning: { main: kBloomGold },
+            text: { disabled: kBloomDisabledText },
+            action: {
+                disabled: kBloomDisabledText,
+                disabledOpacity: kBloomDisabledOpacity
+            }
         },
         typography: {
             fontSize: 12,

@@ -1,6 +1,6 @@
 import {
     IConfirmDialogProps,
-    showConfirmDialog as doShowConfirmDialog
+    showConfirmDialogFromOutsideReact
 } from "../react_components/confirmDialog";
 import {
     IColorPickerDialogProps,
@@ -32,13 +32,15 @@ import { getToolboxBundleExports } from "./js/bloomFrames";
 export { getToolboxBundleExports };
 import { getEditablePageBundleExports } from "./js/bloomFrames";
 export { getEditablePageBundleExports };
-import { showAddPageDialog } from "../pageChooser/launch-page-chooser";
-export { showAddPageDialog };
+import { showPageChooserDialog } from "../pageChooser/PageChooserDialog";
+export { showPageChooserDialog };
 import "errorHandler";
 import { reportError } from "../lib/errorHandler";
 import { IToolboxFrameExports } from "./toolbox/toolboxBootstrap";
 import { showCopyrightAndLicenseInfoOrDialog } from "./copyrightAndLicense/CopyrightAndLicenseDialog";
 import { showTopicChooserDialog } from "./TopicChooser/TopicChooserDialog";
+import ReactDOM = require("react-dom");
+import { FunctionComponentElement } from "react";
 export { getImageUrlFromImageButton } from "./js/bloomImages";
 
 //Called by c# using editTabBundle.handleUndo()
@@ -177,8 +179,24 @@ export function getModalDialogContainer(): HTMLElement | null {
     return document.getElementById("modal-dialog-container");
 }
 
+export function ShowEditViewDialog(dialog: FunctionComponentElement<any>) {
+    let root = document.getElementById("modal-dialog-react-root");
+    // remove any left over dialog stuff
+    if (root) {
+        document.body.removeChild(root);
+    }
+    // add a place to root the React system.
+    root = document.createElement("div");
+    root.id = "modal-dialog-react-root";
+    document.body.appendChild(root);
+    // Note that modal dialogs actually create a sibling to this, they don't actually end up being children in the DOM.
+    // Also note that if we call this twice, everything is fine: MUI doesn't seem to actually care if we remove the
+    // root we called render on; it has already made a child of Body that it is using for the root of its dialog.
+    ReactDOM.render(dialog, root);
+}
+
 export function showConfirmDialog(props: IConfirmDialogProps): void {
-    doShowConfirmDialog(props);
+    showConfirmDialogFromOutsideReact(props);
 }
 
 export function showColorPickerDialog(props: IColorPickerDialogProps): void {

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Threading.Tasks;
 using System.Xml;
 using Bloom.Book;
 using Bloom.Collection;
@@ -22,7 +23,7 @@ namespace Bloom.CLI
 	/// </summary>
 	class HydrateBookCommand
 	{
-		public static int Handle(HydrateParameters options)
+		public static Task<int> Handle(HydrateParameters options)
 		{
 			if (!Directory.Exists(options.Path))
 			{
@@ -36,7 +37,7 @@ namespace Bloom.CLI
 					Debug.WriteLine("Could not find " + options.Path);
 					Console.Error.WriteLine("Could not find " + options.Path);
 				}
-				return 1;
+				return Task.FromResult(1);
 			}
 			Console.WriteLine("Starting Hydrating.");
 
@@ -90,7 +91,7 @@ namespace Bloom.CLI
 			book.EnsureUpToDate();
 			Console.WriteLine("Finished Hydrating.");
 			Debug.WriteLine("Finished Hydrating.");
-			return 0;
+			return Task.FromResult(0);
 		}
 	}
 }

@@ -1,6 +1,7 @@
 using System;
 using System.Diagnostics;
 using System.Text;
+using System.Threading.Tasks;
 using Bloom.Properties;
 using Bloom.WebLibraryIntegration;
 using CommandLine;
@@ -17,7 +18,7 @@ namespace Bloom.CLI
 	{
 		public static bool IsUploading;
 
-		public static int Handle(UploadParameters options)
+		public static Task<int> Handle(UploadParameters options)
 		{
 			try
 			{
@@ -41,7 +42,7 @@ namespace Bloom.CLI
 					break;
 				default:
 					Console.WriteLine($"Error: Upload destination (-d) must be one of {UploadDestination.Development} or {UploadDestination.Production}");
-					return 1;
+					return Task.FromResult(1);
 			}
 			BookUpload.Destination = options.Dest;    // must be set before calling SetupErrorHandling() (or BloomParseClient constructor)
 			BookUpload.IsDryRun = options.DryRun;	  // must be set before calling SetupErrorHandling() (or BloomParseClient constructor)
@@ -81,14 +82,12 @@ namespace Bloom.CLI
 					uploader.BulkUpload(applicationContainer, options);
 					Console.WriteLine(("\nBulk upload complete.\n"));
 				}
-				return 0;
+				return Task.FromResult(0);
 			}
 			catch (Exception ex)
 			{
-				Debug.WriteLine(ex.Message);
-				Console.WriteLine(ex.Message);
-				Console.WriteLine(ex.StackTrace);
-				return 1;
+				Console.WriteLine(ex);
+				return Task.FromResult(1);
 			}
 		}
 	}

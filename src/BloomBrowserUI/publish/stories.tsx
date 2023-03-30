@@ -26,6 +26,7 @@ import { PublishAudioVideo } from "./video/PublishAudioVideo";
 import PublishScreenTemplate from "./commonPublish/PublishScreenTemplate";
 import PublishScreenBanner from "./commonPublish/PublishScreenBanner";
 import { Button, Typography } from "@mui/material";
+import { LibraryPublishScreen } from "./LibraryPublish/LibraryPublishScreen";
 
 addDecorator(withA11y as any);
 
@@ -197,7 +198,10 @@ const propsObject: IUploadCollisionDlgProps = {
 
 const lotsOfLanguages = ["Sokoro", "English", "Swahili", "Hausa"];
 
-storiesOf("Publish/Share on the web", module)
+storiesOf("Publish/Web", module)
+    .add("LibraryPublishScreen", () =>
+        React.createElement(() => <LibraryPublishScreen />)
+    )
     .add("Upload Collision Dialog", () =>
         React.createElement(() => <UploadCollisionDlg {...propsObject} />)
     )

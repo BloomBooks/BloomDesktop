@@ -92,6 +92,16 @@ describe("jquery.text-markup", function() {
         expect(result).toBe(out);
     });
 
+    it("checkLeveledReader.handleNestedSpans", function() {
+        const input =
+            '<p><span class="bloom-highlightSegment">This is a test,<span class="bloom-audio-split-marker">|</span></span></p>';
+        $("#text_entry1")
+            .html(input)
+            .checkLeveledReader({ maxWordsPerSentence: 6 });
+        const result = $("#text_entry1").html();
+        expect(result).toBe(input);
+    });
+
     it("marks up invalid words", function() {
         var input = "a ae big";
         var out =
@@ -229,5 +239,10 @@ describe("jquery.text-markup", function() {
             "A sti<span class='something'>tch</span> in <a href='https://somewhere.com/abcde/'>time</a> saves <i><b>nine</b></i>!"
         );
         expect(out4).toBe("A stitch in time saves nine!");
+
+        var out5 = removeAllHtmlMarkupFromString(
+            "<p><span id='xyzzy1' class='bloom-highlightSegment'>This is a test,<span class='bloom-audio-split-marker'>|</span></span> <span id='xyzzy2' class='bloom-highlightSegment'>this is only a test.</span></p>"
+        );
+        expect(out5).toBe(" This is a test, this is only a test. ");
     });
 });

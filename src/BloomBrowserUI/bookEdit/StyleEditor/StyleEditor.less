@@ -89,6 +89,12 @@
             margin-left: 1px;
         }
     }
+
+    .tab-row {
+        // Don't really understand this. Without it, the dialog doesn't grow quite wide
+        // enough to hold the tabs when an individual tab content is less wide.
+        margin-right: 3px;
+    }
 }
 
 // The select2 dropdown gets appended to the body, not to our dialog, so its z-index must be at least as high as the dialog's z-index.

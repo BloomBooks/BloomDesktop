@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Threading.Tasks;
 using Bloom.Properties;
 using Bloom.WebLibraryIntegration;
 using CommandLine;
@@ -13,7 +14,7 @@ namespace Bloom.CLI
 	/// </summary>
 	class DownloadBookCommand
 	{
-		public static int HandleSilentDownload(DownloadBookOptions options)
+		public static Task<int> HandleSilentDownload(DownloadBookOptions options)
 		{
 			// This task will be all the program does. We need to do enough setup so that
 			// the download code can work, then tear it down.
@@ -33,14 +34,12 @@ namespace Bloom.CLI
 					downloader.HandleDownloadWithoutProgress(options.Url, options.DestinationPath);
 					Console.WriteLine(("\ndownload complete\n"));
 				}
-				return 0;
+				return Task.FromResult(0);
 			}
 			catch (Exception ex)
 			{
-				Debug.WriteLine(ex.Message);
-				Console.WriteLine(ex.Message);
-				Console.WriteLine(ex.StackTrace);
-				return 1;
+				Console.WriteLine(ex);
+				return Task.FromResult(1);
 			}
 		}
 	}

@@ -2,6 +2,7 @@
 using System.Drawing;
 using System.IO;
 using System.Text;
+using System.Threading.Tasks;
 using Bloom.Api;
 using Bloom.Book;
 using Bloom.CollectionTab;
@@ -34,10 +35,10 @@ namespace Bloom.Publish.Android
 		}
 
 		// Precondition: bulkSaveSettings must be non-null
-		public void PublishAllBooks(BulkBloomPubPublishSettings bulkSaveSettings)
+		public async Task PublishAllBooksAsync(BulkBloomPubPublishSettings bulkSaveSettings)
 		{
-			BrowserProgressDialog.DoWorkWithProgressDialog(_webSocketServer,
-				(progress, worker) =>
+			await BrowserProgressDialog.DoWorkWithProgressDialogAsync(_webSocketServer,
+				async (progress, worker) =>
 				{
 					var dest = new TemporaryFolder("BloomPubs");
 					progress.MessageWithoutLocalizing($"Creating files in {dest.FolderPath}...");
@@ -81,7 +82,7 @@ namespace Bloom.Publish.Android
 						{
 							settings.BookshelfTag = _collectionModel.CollectionSettings.DefaultBookshelf;
 						}
-						BloomPubMaker.CreateBloomPub(bookInfo, settings, dest.FolderPath, _bookServer, progress);
+						BloomPubMaker.CreateBloomPub(settings, bookInfo, dest.FolderPath, _bookServer, progress);
 					}
 
 					if (bulkSaveSettings.makeBloomBundle)

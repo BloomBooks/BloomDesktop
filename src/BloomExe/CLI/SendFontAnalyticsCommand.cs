@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading;
+using System.Threading.Tasks;
 using CommandLine;
 using L10NSharp;
 using Bloom.Properties;
@@ -25,7 +26,7 @@ namespace Bloom.CLI
 		static ProjectContext _projectContext;
 		static Book.Book _book;
 
-		public static int Handle(SendFontAnalyticsParameters options)
+		public static Task<int> Handle(SendFontAnalyticsParameters options)
 		{
 			Program.SetUpErrorHandling();
 			try
@@ -46,17 +47,16 @@ namespace Bloom.CLI
 							// (See https://issues.bloomlibrary.org/youtrack/issue/BL-11512.)
 							ReportFontAnalytics(_book.ID, "harvester sendFontAnalytics", options.Testing,
 								options.SkipEpubAnalytics, options.SkipPdfAnalytics);
-							return (int)SendFontAnalyticsExitCode.Success;
+							return Task.FromResult((int)SendFontAnalyticsExitCode.Success);
 						}
 					}
-					return (int)SendFontAnalyticsExitCode.NoFontsFound;
+					return Task.FromResult((int)SendFontAnalyticsExitCode.NoFontsFound);
 				}
 			}
 			catch (Exception ex)
 			{
-				Console.WriteLine(ex.Message);
-				Console.WriteLine(ex.StackTrace);
-				return (int)SendFontAnalyticsExitCode.UnhandledException;
+				Console.WriteLine(ex);
+				return Task.FromResult((int)SendFontAnalyticsExitCode.UnhandledException);
 			}
 		}
 
@@ -109,8 +109,8 @@ namespace Bloom.CLI
 				bool isTemplateBook = _book.BookInfo.IsSuitableForMakingShells;
 				var settings = AndroidPublishSettings.GetPublishSettingsForBook(_projectContext.BookServer, _book.BookInfo);
 				// This method will gather up the desired font analytics as a side-effect.
-				BloomPubMaker.PrepareBookForBloomReader(options.BookPath, _projectContext.BookServer, stagingFolder,
-					new Bloom.web.NullWebSocketProgress(), isTemplateBook, settings: settings);
+				BloomPubMaker.PrepareBookForBloomReader(settings, bookFolderPath: options.BookPath, bookServer: _projectContext.BookServer, temp: stagingFolder,
+					progress: new Bloom.web.NullWebSocketProgress(), isTemplateBook: isTemplateBook);
 			}
 		}
 	}

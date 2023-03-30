@@ -67,7 +67,7 @@ namespace Bloom.Spreadsheet
 
 		public SpreadsheetCell GetCell(int index)
 		{
-			if (index >= _cells.Count)
+			if (index >= _cells.Count || index < 0)
 				return new SpreadsheetCell() {Content = ""};
 			return _cells[index];
 		}
@@ -84,5 +84,28 @@ namespace Bloom.Spreadsheet
 		internal IEnumerable<string> CellContents => _cells.Select(c => c.Content);
 
 		public int Count => _cells.Count;
+
+		/// <summary>
+		/// If there is a cell at index, move it to the next column.
+		/// If there is already a cell in that column, move it back;
+		/// otherwise, insert an empty one.
+		/// </summary>
+		/// <param name="index"></param>
+		public void SwapNext(int index)
+		{
+			if (_cells.Count <= index)
+				return;
+			if (_cells.Count == index + 1)
+			{
+				var cell = new SpreadsheetCell() { Content = "" };
+				_cells.Insert(index, cell);
+			}
+			else
+			{
+				var cell = _cells[index + 1];
+				_cells.RemoveAt(index + 1);
+				_cells.Insert(index, cell);
+			}
+		}
 	}	
 }

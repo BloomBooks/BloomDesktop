@@ -135,6 +135,7 @@ namespace Bloom.Book
 
 		private static void GenerateEditableDivsWithPreTranslatedContent(XmlNode elementOrDom)
 		{
+			var ownerDoc = elementOrDom.NodeType == XmlNodeType.Document ? (XmlDocument)elementOrDom : elementOrDom.OwnerDocument;
 			foreach (XmlElement editableDiv in elementOrDom.SafeSelectNodes(".//*[contains(@class,'bloom-editable') and @data-generate-translations and @data-i18n]"))
 			{
 				var englishText = editableDiv.InnerText;
@@ -147,8 +148,7 @@ namespace Bloom.Book
 					var translation = LocalizationManager.GetDynamicStringOrEnglish("Bloom", l10nId, englishText, null, uiLanguage);
 					if (translation == englishText)
 						continue;
-
-					var newEditableDiv = elementOrDom.OwnerDocument.CreateElement("div");
+					var newEditableDiv = ownerDoc.CreateElement("div");
 					newEditableDiv.SetAttribute("class", "bloom-editable");
 					newEditableDiv.SetAttribute("lang", IetfLanguageTag.GetGeneralCode(uiLanguage));
 					newEditableDiv.InnerText = translation;

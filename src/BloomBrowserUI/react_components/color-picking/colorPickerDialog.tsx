@@ -10,7 +10,6 @@ import { get, postJson } from "../../utils/bloomApi";
 import ColorPicker from "./colorPicker";
 import * as tinycolor from "tinycolor2";
 import { IColorInfo, normalizeColorInfoColorsAsHex } from "./colorSwatch";
-import "./colorPickerDialog.less";
 import { getRgbaColorStringFromColorAndOpacity } from "../../utils/colorUtils";
 import {
     BloomPalette,
@@ -288,7 +287,21 @@ const ColorPickerDialog: React.FC<IColorPickerDialogProps> = props => {
         <StyledEngineProvider injectFirst>
             <ThemeProvider theme={lightTheme}>
                 <BloomDialog
-                    className="bloomModalDialog color-picker-dialog"
+                    className="bloomModalDialog"
+                    css={css`
+                        z-index: 60001; // dialogZIndexPlusOne (yuck!)
+                        .MuiBackdrop-root {
+                            // We want the overlay barely visible so it doesn't interfere with picking colors.
+                            background-color: rgba(0, 0, 0, 0.05) !important;
+                        }
+                        .MuiDialog-paperScrollPaper {
+                            max-height: unset;
+                        }
+                        overflow-y: unset !important; // something from bloomModalDialog that we don't want
+                        .MuiDialogActions-spacing {
+                            padding: 10px 14px 10px 10px; // maintain same spacing all around dialog content and between header/footer
+                        }
+                    `}
                     open={props.open === undefined ? open : props.open}
                     ref={dlgRef}
                     onClose={(
@@ -301,7 +314,13 @@ const ColorPickerDialog: React.FC<IColorPickerDialogProps> = props => {
                             onClose(DialogResult.Cancel);
                     }}
                 >
-                    <DialogTitle title={props.localizedTitle} />
+                    <DialogTitle
+                        title={props.localizedTitle}
+                        css={css`
+                            text-align: center;
+                            padding: 14px 24px; // maintain same spacing all around dialog content
+                        `}
+                    />
                     <DialogMiddle>
                         <ColorPicker
                             onChange={handleOnChange}
@@ -322,7 +341,9 @@ const ColorPickerDialog: React.FC<IColorPickerDialogProps> = props => {
                         />
                         <DialogCancelButton
                             default={false}
-                            onClick={() => onClose(DialogResult.Cancel)}
+                            onClick_DEPRECATED={() =>
+                                onClose(DialogResult.Cancel)
+                            }
                         />
                     </DialogBottomButtons>
                 </BloomDialog>
@@ -388,6 +409,10 @@ export const showSimpleColorPickerDialog = (
 };
 
 export interface IColorDisplayButtonProps {
+    // This is slightly more than an initial color. The button will change color
+    // independently of this to follow the state of the color picker dialog;
+    // but if the client re-renders with a DIFFERENT initialColor, the button
+    // will change to match.
     initialColor: string;
     localizedTitle: string;
     noAlphaSlider: boolean;
@@ -404,6 +429,17 @@ export const ColorDisplayButton: React.FC<IColorDisplayButtonProps> = props => {
     );
     const widthString = props.width ? `width: ${props.width}px;` : "";
 
+    useEffect(() => {
+        if (currentButtonColor !== props.initialColor) {
+            setCurrentButtonColor(props.initialColor);
+        }
+        // If the client changes the initial color, it should take effect.
+        // Otherwise, it can follow what's going on in the dialog.
+        // (For this to work, in defiance of lint, we MUST NOT put currentButtonColor
+        // in the dependencies list; we want it NOT to get reset when something
+        // other than a new props value changes it. )
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [props.initialColor]);
     return (
         <div>
             <div
@@ -440,7 +476,7 @@ export const ColorDisplayButton: React.FC<IColorDisplayButtonProps> = props => {
                 }}
                 localizedTitle={props.localizedTitle}
                 noAlphaSlider={props.noAlphaSlider}
-                palette={BloomPalette.CoverBackground}
+                palette={props.palette}
                 initialColor={getColorInfoFromSpecialNameOrColorString(
                     props.initialColor
                 )}

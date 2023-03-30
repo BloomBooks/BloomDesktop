@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.Globalization;
@@ -8,6 +9,7 @@ using System.Management;
 using System.Security.AccessControl;
 using System.Security.Principal;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using Mono.Unix;
 using NAudio.Wave;
@@ -120,7 +122,15 @@ namespace Bloom.Utils
 
 		public static string InstalledAntivirusPrograms()
 		{
-			string result = "";
+			var collector = new List<string>();
+			var error = InstalledAntivirusProgramsMof(collector);
+			if (error != null)
+				return error;
+			return string.Join(Environment.NewLine, collector);
+		}
+
+		public static string InstalledAntivirusProgramsMof(List<string> collector)
+		{
 			if (Platform.IsWindows)
 			{
 				string wmipathstr = @"\\" + Environment.MachineName + @"\root\SecurityCenter2";
@@ -131,7 +141,7 @@ namespace Bloom.Utils
 					var instances = searcher.Get();
 					foreach (var instance in instances)
 					{
-						result += instance.GetText(TextFormat.Mof) + Environment.NewLine;
+						collector.Add(instance.GetText(TextFormat.Mof));
 					}
 				}
 				catch (Exception error)
@@ -139,7 +149,26 @@ namespace Bloom.Utils
 					return error.Message;
 				}
 			}
-			return result;
+			return null; // no error
+		}
+
+		public static string InstalledAntivirusProgramNames()
+		{
+			var collector = new List<string>();
+			var error = InstalledAntivirusProgramsMof(collector);
+			if (error != null)
+				return error;
+			var result = new List<string>();
+			foreach (var mof in collector)
+			{
+				var match = new Regex("displayName = \"(.*?)\"").Match(mof);
+				if (match.Success)
+				{
+					result.Add(match.Groups[1].Value);
+				}
+			}
+
+			return string.Join(", ", result);
 		}
 
 		/// <summary>

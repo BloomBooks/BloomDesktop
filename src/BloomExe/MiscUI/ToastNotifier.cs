@@ -103,6 +103,12 @@ namespace Bloom.MiscUI
 
 		void GoUpTimerTick(object sender, EventArgs e)
 		{
+			if (IsDisposed || (Owner != null && Owner.IsDisposed))
+			{
+				_goUpTimer.Stop();
+				return;
+			}
+
 			//Debug.WriteLine(String.Format("DEBUG Begin Toast.GoUpTimerTick(): Bounds = {0}", this.DesktopBounds));
 			//Lift window by 5 pixels
 			_startPosY -= 5;

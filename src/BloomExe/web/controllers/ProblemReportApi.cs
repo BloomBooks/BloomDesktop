@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Imaging;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net.Mail;
@@ -13,6 +14,7 @@ using Bloom.Api;
 using Bloom.Book;
 using Bloom.Collection;
 using Bloom.ErrorReporter;
+using Bloom.History;
 using Bloom.MiscUI;
 using Bloom.ToPalaso;
 using Bloom.Utils;
@@ -87,7 +89,7 @@ namespace Bloom.web.controllers
 
 		private BloomZipFile _reportZipFile;
 		private TempFile _reportZipFileTemp;
-		public static string YouTrackProjectKey = "BL";
+		public static string YouTrackProjectKey = "BL"; // this can be used to send to the "Sandbox" for testing: "SB";
 		const string kFailureResult = "failed";
 
 		/// <summary>
@@ -478,7 +480,7 @@ namespace Bloom.web.controllers
 			GatherReportInfoExceptScreenshot(exception, detailedMessage, shortUserLevelMessage, isShortMessagePreEncoded);
 
 			if (controlForScreenshotting == null)
-				controlForScreenshotting = Form.ActiveForm;
+				controlForScreenshotting = Shell.GetShellOrOtherOpenForm();
 			if (controlForScreenshotting == null) // still possible if we come from a "Details" button
 				controlForScreenshotting = FatalExceptionHandler.ControlOnUIThread;
 			ResetScreenshotFile();
@@ -758,9 +760,60 @@ namespace Bloom.web.controllers
 			GetInformationAboutUser(bldr, userEmail);
 			GetExceptionInformation(bldr);
 			GetStandardErrorReportingProperties(bldr, true);
+			GetBookHistoryEvents(bldr);
 			GetAdditionalBloomEnvironmentInfo(bldr);
 			GetAdditionalFileInfo(bldr, includeBook);
 			return bldr.ToString();
+		}
+
+		private static string GetDomainlessEmail(string rawEmail)
+		{
+			var atIndex = rawEmail.IndexOf("@");
+			return atIndex < 0 ? rawEmail : rawEmail.Substring(0, atIndex);
+		}
+
+		private static void GetBookHistoryEvents(StringBuilder bldr)
+		{
+			var book = _reportInfo.Book;
+			if (string.IsNullOrEmpty(book?.FolderPath) || book.BookInfo == null)
+				return;
+			try
+			{
+				var events = CollectionHistory.GetBookEvents(book.BookInfo);
+				if (events.Count == 0)
+					return;
+
+				bldr.AppendLine();
+				bldr.AppendLine("#### History of Book Events");
+				bldr.AppendLine("<details>");
+
+				// Unfortunately, the collapsible <details> section doesn't allow normal markdown styling.
+				// So we need <br>s here (and html styling below).
+				void AddLine(StringBuilder sb, string text = "")
+				{
+					sb.AppendLine(text + "<br>");
+				}
+				for (var i = 0; i < events.Count; i++)
+				{
+					var historyEvent = events[i];
+					var time = historyEvent.When.ToString("G", CultureInfo.InvariantCulture);
+					var version = historyEvent.BloomVersion ?? "{unknown version}";
+					var email = GetDomainlessEmail(historyEvent.UserId);
+					AddLine(bldr, $"<b>{i + 1}  {historyEvent.Type}</b>");
+					AddLine(bldr, $"  Time: {time}UTC, with Bloom {version}, User: {historyEvent.UserName} ({email})");
+					AddLine(bldr, $"  Book with Title: {historyEvent.Title}");
+					if (!string.IsNullOrEmpty(historyEvent.Message))
+						AddLine(bldr, $"  {historyEvent.Message}");
+				}
+
+				bldr.AppendLine("</details>");
+				bldr.AppendLine();
+			}
+			catch (Exception e)
+			{
+				Console.WriteLine("GetBookHistoryEvents says: " + e);
+				bldr.AppendLine("GetBookHistoryEvents says: " + e.Message);
+			}
 		}
 
 		private static void GetExceptionInformation(StringBuilder bldr)
@@ -907,6 +960,7 @@ namespace Bloom.web.controllers
 			AppendWritingSystem(book.BookData.Language1, "Language1", bldr);
 			AppendWritingSystem(book.BookData.Language2, "Language2", bldr);
 			AppendWritingSystem(book.BookData.Language3, "Language3", bldr);
+			AppendWritingSystem(book.BookData.SignLanguage, "SignLanguage", bldr);
 			AppendWritingSystem(book.BookData.MetadataLanguage1, "MetadataLanguage1", bldr);
 		}
 

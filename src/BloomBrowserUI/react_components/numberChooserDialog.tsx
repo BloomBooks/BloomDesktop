@@ -75,7 +75,7 @@ export const NumberChooserDialog: React.FunctionComponent<INumberChooserDialogPr
                 >
                     OK
                 </BloomButton>
-                <DialogCancelButton onClick={closeDialog} />
+                <DialogCancelButton onClick_DEPRECATED={closeDialog} />
             </DialogBottomButtons>
         </BloomDialog>
     );

@@ -6,7 +6,7 @@ import { useState, useContext } from "react";
 import {
     PreviewPanel,
     SettingsPanel,
-    PreviewPublishPanel
+    PublishPanel
 } from "../commonPublish/PublishScreenBaseComponents";
 import PublishScreenTemplate from "../commonPublish/PublishScreenTemplate";
 import { DeviceAndControls } from "../commonPublish/DeviceAndControls";
@@ -30,7 +30,6 @@ import {
     useApiStringState,
     useWatchBooleanEvent
 } from "../../utils/bloomApi";
-import { hookupLinkHandler } from "../../utils/linkHandler";
 import { NoteBox } from "../../react_components/BloomDialog/commonDialogComponents";
 import { Div, P } from "../../react_components/l10nComponents";
 import { StyledEngineProvider, ThemeProvider } from "@mui/material/styles";
@@ -79,7 +78,6 @@ const EPUBPublishScreenInternal: React.FunctionComponent<{
     const [closePending, setClosePending] = useState(false);
     const [highlightRefresh, setHighlightRefresh] = useState(false);
     const [progressState, setProgressState] = useState(ProgressState.Working);
-    React.useEffect(() => hookupLinkHandler(), []);
     const [bookUrl, setBookUrl] = useState(
         inStorybookMode
             ? window.location.protocol +
@@ -126,7 +124,7 @@ const EPUBPublishScreenInternal: React.FunctionComponent<{
                 flex: 5;
             `}
         >
-            <PreviewPublishPanel>
+            <PublishPanel>
                 <div
                     css={css`
                         display: flex;
@@ -146,7 +144,6 @@ const EPUBPublishScreenInternal: React.FunctionComponent<{
                         Save...
                     </BloomButton>
                     <NoteBox
-                        addBorder={true}
                         css={css`
                             width: 430px;
                         `}
@@ -206,7 +203,7 @@ const EPUBPublishScreenInternal: React.FunctionComponent<{
                         </div>
                     </NoteBox>
                 </div>
-            </PreviewPublishPanel>
+            </PublishPanel>
             <PreviewPanel>
                 <StyledEngineProvider injectFirst>
                     <ThemeProvider theme={darkTheme}>

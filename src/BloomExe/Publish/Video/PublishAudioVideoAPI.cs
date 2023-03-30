@@ -1,9 +1,13 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Text;
 using System.Windows.Forms;
+using System.Xml;
 using Bloom.Api;
+using Bloom.Book;
 using Bloom.MiscUI;
 using Bloom.Publish.Android;
 using L10NSharp;
@@ -40,10 +44,10 @@ namespace Bloom.Publish.Video
 			// This is sent directly from BloomPlayer when it gets to the end of making the recording.
 			// The player gives Bloom a list of all the sounds it played and their timings so we can
 			// merge them into the captured video.
-			apiHandler.RegisterEndpointHandler(kApiUrlPart + "soundLog", request =>
+			apiHandler.RegisterAsyncEndpointHandler(kApiUrlPart + "soundLog", async request =>
 			{
 				var soundLog = request.RequiredPostJson();
-				_recordVideoWindow.StopRecording(soundLog);
+				await _recordVideoWindow.StopRecordingAsync(soundLog);
 				request.PostSucceeded();
 			}, true, false);
 
@@ -158,25 +162,6 @@ namespace Bloom.Publish.Video
 
 			apiHandler.RegisterEndpointHandler(kApiUrlPart + "startRecording", request =>
 			{
-				var videoList = request.GetPostStringOrNull();
-				var anyVideoHasAudio = _recordVideoWindow?.AnyVideoHasAudio(videoList, request.CurrentBook.FolderPath) ?? false;
-				if (anyVideoHasAudio)
-				{
-					var messageBoxButtons = new[]
-					{
-						new MessageBoxButton() { Text = LocalizationManager.GetString("Common.Continue","Continue"), Id = "continue" },
-						new MessageBoxButton() { Text = LocalizationManager.GetString("Common.Cancel", "Cancel"), Id = "cancel", Default = true }
-					};
-					if (BloomMessageBox.Show(null,
-						    LocalizationManager.GetString("PublishTab.RecordVideo.NoAudioInVideo",
-							"Currently, Bloom does not support including audio from Sign Language videos in video output."),
-						    messageBoxButtons) == "cancel")
-					{
-						request.Failed("canceled");
-						_recordVideoWindow.Close();
-						return;
-					}
-				}
 				_recordVideoWindow?.StartFfmpegForVideoCapture();
 				request.PostSucceeded();
 			}, true, false);
@@ -359,6 +344,25 @@ namespace Bloom.Publish.Video
 		private void RecordVideo(ApiRequest request)
 		{
 			_recordVideoWindow = RecordVideoWindow.Create(_webSocketServer);
+			var anyVideoHasAudio = _recordVideoWindow.AnyVideoHasAudio(request.CurrentBook);
+			if (anyVideoHasAudio)
+			{
+				var messageBoxButtons = new[]
+				{
+					new MessageBoxButton() { Text = LocalizationManager.GetString("Common.Continue","Continue"), Id = "continue" },
+					new MessageBoxButton() { Text = LocalizationManager.GetString("Common.Cancel", "Cancel"), Id = "cancel", Default = true }
+				};
+				if (BloomMessageBox.Show(null,
+						LocalizationManager.GetString("PublishTab.RecordVideo.NoAudioInVideo",
+						"Currently, Bloom does not support including audio from Sign Language videos in video output."),
+						messageBoxButtons) == "cancel")
+				{
+					_recordVideoWindow.Close();
+					_recordVideoWindow.Dispose();
+					_recordVideoWindow = null;
+					return;
+				}
+			}
 			string format = request.CurrentBook.BookInfo.PublishSettings.AudioVideo.Format;
 			_recordVideoWindow.SetFormat(format,
 				ShouldRecordAsLandscape(request.CurrentBook, format), request.CurrentBook.GetLayout());

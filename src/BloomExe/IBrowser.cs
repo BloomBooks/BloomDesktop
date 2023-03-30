@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Drawing;
 using System.Net;
 using System.Text;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Xml;
 using Gecko;
@@ -34,12 +35,12 @@ namespace Bloom
 		/// We can remove the offScreen parameter when we retire Gecko, even if we decide to keep this
 		/// static method for creating browsers.
 		/// </remarks>
-		public static Browser MakeBrowser(bool offScreen = false)
+		public static Browser MakeBrowser(bool offScreen = false, bool forceWv2 = false)
 		{
 		// Using this #if is the simplest way in this file to allow the WebView2Browser work
 		// to proceed without breaking the Linux build.
 #if !__MonoCS__
-			if (Program.RunningUnitTests || ExperimentalFeatures.IsFeatureEnabled(ExperimentalFeatures.kWebView2))
+			if (Program.RunningUnitTests || ExperimentalFeatures.IsFeatureEnabled(ExperimentalFeatures.kWebView2) || forceWv2)
 				return new WebView2Browser();
 #endif
 			return new GeckoFxBrowser(offScreen);
@@ -443,6 +444,9 @@ namespace Bloom
 		}
 
 		public abstract string RunJavaScript(string script);
+
+		public abstract Task<string> RunJavaScriptAsync(string script);
+
 		public abstract void SaveHTML(string path);
 
 		public void SetEditDom(HtmlDom editDom)
@@ -544,6 +548,11 @@ namespace Bloom
 		}
 
 		public abstract void SaveDocument(string path);
+
+		public async virtual Task SaveDocumentAsync(string path)
+		{
+			SaveDocument(path);
+		}
 	}
 
 	public interface IMenuItemAdder

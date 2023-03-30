@@ -14,17 +14,15 @@ using Bloom.ImageProcessing;
 using SIL.Windows.Forms.ImageToolbox;
 using SIL.Xml;
 using System.Collections.Generic;
-using Bloom.web.controllers;
+using Bloom.Collection;
+using Bloom.CollectionTab;
 
 namespace Bloom.Book
 {
 	public class BookCompressor
 	{
-		public const string BloomPubExtensionWithDot = ".bloompub";
-		public static string LastVersionCode { get; private set; }
-
 		// these image files may need to be reduced before being stored in the compressed output file
-		internal static readonly string[] ImageFileExtensions = { ".tif", ".tiff", ".png", ".bmp", ".jpg", ".jpeg" };
+		public static readonly string[] CompressableImageFileExtensions = { ".tif", ".tiff", ".png", ".bmp", ".jpg", ".jpeg" };
 
 		// Since BL-8956, we whitelist files so that only those we expect will make it through the
 		// compression process.
@@ -50,11 +48,11 @@ namespace Bloom.Book
 				if (RobustFile.Exists(blankImage))
 					coverImagePath = blankImage;
 			}
-			if(coverImagePath != null)
+			if (coverImagePath != null)
 			{
 				var thumbPath = Path.Combine(destinationFolder, "thumbnail.png");
-				
-				RuntimeImageProcessor.GenerateEBookThumbnail(coverImagePath, thumbPath, heightAndWidth, heightAndWidth,System.Drawing.ColorTranslator.FromHtml(book.GetCoverColor()));
+
+				RuntimeImageProcessor.GenerateEBookThumbnail(coverImagePath, thumbPath, heightAndWidth, heightAndWidth, System.Drawing.ColorTranslator.FromHtml(book.GetCoverColor()));
 			}
 		}
 
@@ -66,11 +64,31 @@ namespace Bloom.Book
 		/// <param name="dirNamePrefix">string to prefix to the zip entry name</param>
 		/// <param name="forReaderTools">If True, then some pre-processing will be done to the contents of decodable
 		/// and leveled readers before they are added to the ZipStream</param>
-		/// <param name="forDevice">Indicates if it is for device, which means that device-specific things will happen, like reducing images/videos will be reduced, creating version.txt, etc</param>
-		/// <param name="excludeAudio">If true, the contents of the audio directory will not be included</param>
-		public static void CompressCollectionDirectory(string outputPath, string directoryToCompress, string dirNamePrefix, bool forReaderTools, bool forDevice, bool excludeAudio)
+		public static void CompressCollectionDirectory(string outputPath, string directoryToCompress,
+			string dirNamePrefix, bool forReaderTools)
 		{
-			CompressDirectory(outputPath, directoryToCompress, dirNamePrefix, forReaderTools, forDevice, excludeAudio, depthFromCollection: 0);
+			var overrides = new Dictionary<string, byte[]>();
+			var filter = new CollectionFileFilter();
+			if (forReaderTools)
+			{
+				foreach (var bookFolder in Directory.GetDirectories(directoryToCompress))
+				{
+					CollectReaderTemplateBookOverrides(bookFolder, overrides);
+				}
+
+				foreach (var collectionFile in Directory.GetFiles(directoryToCompress, "*.bloomcollection"))
+				{
+					overrides[collectionFile] =
+						Encoding.UTF8.GetBytes(GetBloomCollectionModifiedForTemplate(collectionFile));
+				}
+			}
+
+			foreach (var bookFolder in Directory.GetDirectories(directoryToCompress))
+			{
+				filter.AddBookFilter(CollectionModel.MakeBloomPackFilter(bookFolder));
+			}
+
+			CompressDirectory(outputPath, directoryToCompress, filter, dirNamePrefix, overrides);
 		}
 
 		/// <summary>
@@ -78,24 +96,37 @@ namespace Bloom.Book
 		/// </summary>
 		/// <param name="outputPath">The location to which to create the output zip file</param>
 		/// <param name="directoryToCompress">The directory to add recursively</param>
+		/// <param name="filter">A BookFileFilter configured to accept the desired files</param>
 		/// <param name="dirNamePrefix">string to prefix to the zip entry name</param>
 		/// <param name="forReaderTools">If True, then some pre-processing will be done to the contents of decodable
 		/// and leveled readers before they are added to the ZipStream</param>
-		/// <param name="forDevice">Indicates if it is for device, which means that device-specific things will happen, like reducing images/videos will be reduced, creating version.txt, etc</param>
-		/// <param name="excludeAudio">If true, the contents of the audio directory will not be included</param>
-		/// <param name="imagePublishSettings">If non-null, image files are reduced in size before saving to no larger than the max size specified by this object</para>
-		/// <param name="omitMetaJson">If true, meta.json is excluded (typically for HTML readers).</param>
-		public static void CompressBookDirectory(string outputPath, string directoryToCompress, string dirNamePrefix,
-			bool forReaderTools = false, bool forDevice = false, bool excludeAudio = false, ImagePublishSettings imagePublishSettings = null, bool omitMetaJson = false, bool wrapWithFolder = true,
-			string pathToFileForSha = null)
+		public static void CompressBookDirectory(string outputPath, string directoryToCompress, IFilter filter, string dirNamePrefix,
+			bool forReaderTools = false, bool wrapWithFolder = true)
 		{
-			CompressDirectory(outputPath, directoryToCompress, dirNamePrefix, forReaderTools, forDevice, excludeAudio, imagePublishSettings, omitMetaJson,
-				wrapWithFolder, pathToFileForSha, depthFromCollection: 1);
+			var overrides = new Dictionary<string, byte[]>();
+			if (forReaderTools)
+			{
+				CollectReaderTemplateBookOverrides(directoryToCompress, overrides);
+			}
+
+			CompressDirectory(outputPath, directoryToCompress, filter,
+				dirNamePrefix, overrides, wrapWithFolder);
 		}
 
-		private static void CompressDirectory(string outputPath, string directoryToCompress, string dirNamePrefix,
-			bool forReaderTools, bool forDevice, bool excludeAudio, ImagePublishSettings imagePublishSettings = null, bool omitMetaJson = false, bool wrapWithFolder = true,
-			string pathToFileForSha = null, int depthFromCollection = 1)
+		/// <summary>
+		/// "Collect" (collector pattern) replacements for any files in the book folder that
+		/// should be modified for a reader template.
+		/// </summary>
+		private static void CollectReaderTemplateBookOverrides(string bookFolderPath, Dictionary<string, byte[]> overrides)
+		{
+			var htmlPath = BookStorage.FindBookHtmlInFolder(bookFolderPath);
+			overrides[htmlPath] = Encoding.UTF8.GetBytes(GetBookReplacedWithTemplate(htmlPath));
+			var metaPath = Path.Combine(bookFolderPath, "meta.json");
+			overrides[metaPath] = Encoding.UTF8.GetBytes(GetMetaJsonModfiedForTemplate(metaPath));
+		}
+
+		private static void CompressDirectory(string outputPath, string directoryToCompress, IFilter filter, string dirNamePrefix,
+			Dictionary<string, byte[]> overrides = null, bool wrapWithFolder = true)
 		{
 			using (var fsOut = RobustFile.Create(outputPath))
 			{
@@ -118,7 +149,7 @@ namespace Bloom.Book
 						// a zip, as with .bloompub files)
 						dirNameOffset = directoryToCompress.Length + 1;
 					}
-					CompressDirectory(directoryToCompress, zipStream, dirNameOffset, dirNamePrefix, depthFromCollection, forReaderTools, forDevice, excludeAudio, imagePublishSettings, omitMetaJson, pathToFileForSha);
+					CompressDirectory(directoryToCompress, zipStream, filter, dirNameOffset, dirNamePrefix, overrides);
 
 					zipStream.IsStreamOwner = true; // makes the Close() also close the underlying stream
 					zipStream.Close();
@@ -131,81 +162,19 @@ namespace Bloom.Book
 		/// </summary>
 		/// <param name="directoryToCompress">The directory to add recursively</param>
 		/// <param name="zipStream">The ZipStream to which the files and directories will be added</param>
-		/// <param name="dirNameOffset">This number of characters will be removed from the full directory or file name
+		/// <param name="dirNameOffset">This number of characters will be removed from the full directory or file path
 		/// before creating the zip entry name</param>
 		/// <param name="dirNamePrefix">string to prefix to the zip entry name</param>
-		/// <param name="depthFromCollection">int with the number of folders away it is from the collection folder. The collection folder itself is 0,
-		/// a book is 1, a subfolder of the book is 2, etc.</param>
-		/// <param name="forReaderTools">If True, then some pre-processing will be done to the contents of decodable
-		/// and leveled readers before they are added to the ZipStream</param>
-		/// <param name="forDevice">Indicates if it is for device, which means that device-specific things will happen, like reducing images/videos will be reduced, creating version.txt, etc</param>
-		/// <param name="excludeAudio">If true, the contents of the audio directory will not be included</param>
-		/// <param name="imagePublishSettings">If <paramref name="forDevice"/> is true, controls how much image files are reduced in size. If this parameter is null, the default settings will be used.</para>
-		/// <param name="omitMetaJson">If true, meta.json is excluded (typically for HTML readers).</param>
-		private static void CompressDirectory(string directoryToCompress, ZipOutputStream zipStream, int dirNameOffset, string dirNamePrefix,
-			int depthFromCollection, bool forReaderTools, bool forDevice, bool excludeAudio, ImagePublishSettings imagePublishSettings, bool omitMetaJson = false, string pathToFileForSha = null)
+		/// <param name="overrides">Any file whose path is found in overrides will be entered in the zip with the corresponding
+		/// value instead of its actual content</param>
+		private static void CompressDirectory(string directoryToCompress, ZipOutputStream zipStream, IFilter filter, int dirNameOffset, string dirNamePrefix,
+			 Dictionary<string, byte[]> overrides = null)
 		{
-			var folderName = Path.GetFileName(directoryToCompress).ToLowerInvariant();
-			if (!IsValidBookFolder(folderName, excludeAudio, depthFromCollection))
-				return;
 			var files = Directory.GetFiles(directoryToCompress);
 
-			// Don't get distracted by HTML files in any folder other than the book folder.
-			// These HTML files in other locations aren't generated by Bloom. They may not have the format Bloom expects,
-			// causing needless parsing errors to be thrown if we attempt to read them using Bloom code.
-			bool shouldScanHtml = depthFromCollection == 1;	// 1 means 1 level below the collection level, i.e. this is the book level
-			var bookFile = shouldScanHtml ? BookStorage.FindBookHtmlInFolder(directoryToCompress) : null;
-			XmlDocument dom = null;
-			List<string> imagesToGiveTransparentBackgrounds = null;
-			List<string> imagesToPreserveResolution = null;
-			// Tests can also result in bookFile being null.
-			if (!String.IsNullOrEmpty(bookFile))
-			{
-				var originalContent = File.ReadAllText(bookFile, Encoding.UTF8);
-				dom = XmlHtmlConverter.GetXmlDomFromHtml(originalContent);
-				var fullScreenAttr = dom.GetElementsByTagName("body").Cast<XmlElement>().First().Attributes["data-bffullscreenpicture"]?.Value;
-				if (fullScreenAttr != null && fullScreenAttr.IndexOf("bloomReader", StringComparison.InvariantCulture) >= 0)
-				{
-					// This feature (currently used for motion books in landscape mode) triggers an all-black background,
-					// due to a rule in bookFeatures.less.
-					// Making white pixels transparent on an all-black background makes line-art disappear,
-					// which is bad (BL-6564), so just make an empty list in this case.
-					imagesToGiveTransparentBackgrounds = new List<string>();
-				}
-				else
-				{
-					imagesToGiveTransparentBackgrounds = FindCoverImages(dom);
-				}
-				imagesToPreserveResolution = FindImagesToPreserveResolution(dom);
-				FindBackgroundAudioFiles(dom);
-			}
-			else
-			{
-				imagesToGiveTransparentBackgrounds = new List<string>();
-				imagesToPreserveResolution = new List<string>();
-			}
-
-			// Some of the knowledge about IncludedFileExtensions might one day move into this method.
-			// But we'd have to check carefully the other places it is used.
-			var localOnlyFiles = BookStorage.LocalOnlyFiles(directoryToCompress);
 			foreach (var filePath in files)
 			{
-				if (!FileIsWhitelisted(filePath, depthFromCollection))
-					continue; // BL-2246: skip putting this one into the BloomPack or .bloompub
-				if (IsUnneededWaveFile(filePath, depthFromCollection))
-					continue;
-				if (localOnlyFiles.Contains(filePath))
-					continue;
-				var fileName = Path.GetFileName(filePath).ToLowerInvariant();
-				if (fileName.StartsWith(BookStorage.PrefixForCorruptHtmFiles))
-					continue;
-				// Various stuff we keep in the book folder that is useful for editing or bloom library
-				// or displaying collections but not needed by the reader. The most important is probably
-				// eliminating the pdf, which can be very large. Note that we do NOT eliminate the
-				// basic thumbnail.png, as we want eventually to extract that to use in the Reader UI.
-				if (fileName == "thumbnail-70.png" || fileName == "thumbnail-256.png")
-					continue;
-				if (fileName == "meta.json" && omitMetaJson)
+				if (!filter.Filter(filePath))
 					continue;
 
 				FileInfo fi = new FileInfo(filePath);
@@ -217,64 +186,17 @@ namespace Bloom.Book
 					DateTime = fi.LastWriteTime,
 					IsUnicodeText = true
 				};
-				// encode filename and comment in UTF8
-				byte[] modifiedContent = {};
 
-				// if this is a ReaderTools book, call GetBookReplacedWithTemplate() to get the contents
-				if (forReaderTools && (bookFile == filePath))
-				{
-					modifiedContent = Encoding.UTF8.GetBytes(GetBookReplacedWithTemplate(filePath));
-					newEntry.Size = modifiedContent.Length;
-				}
-				else if (forReaderTools && (Path.GetFileName(filePath) == "meta.json"))
-				{
-					modifiedContent = Encoding.UTF8.GetBytes(GetMetaJsonModfiedForTemplate(filePath));
-					newEntry.Size = modifiedContent.Length;
-				}
-				else if (forDevice && ImageFileExtensions.Contains(Path.GetExtension(filePath).ToLowerInvariant()))
-				{
-					fileName = Path.GetFileName(filePath);	// restore original capitalization
-					if (imagesToPreserveResolution.Contains(fileName))
-					{
-						modifiedContent = RobustFile.ReadAllBytes(filePath);
-					}
-					else
-					{
-						// Cover images should be transparent if possible.  Others don't need to be.
-						var makeBackgroundTransparent = imagesToGiveTransparentBackgrounds.Contains(fileName);
-						modifiedContent = GetImageBytesForElectronicPub(filePath, makeBackgroundTransparent, imagePublishSettings);
-					}
-					newEntry.Size = modifiedContent.Length;
-				}
-				else if (Path.GetExtension(filePath).ToLowerInvariant() == ".bloomcollection")
-				{
-					modifiedContent = Encoding.UTF8.GetBytes(GetBloomCollectionModifiedForTemplate(filePath));
-					newEntry.Size = modifiedContent.Length;
-				}
-				else if (forDevice && bookFile == filePath)
-				{
-					SignLanguageApi.ProcessVideos(HtmlDom.SelectChildVideoElements(dom.DocumentElement).Cast<XmlElement>(), directoryToCompress);
-					var newContent = XmlHtmlConverter.ConvertDomToHtml5(dom);
-					modifiedContent = Encoding.UTF8.GetBytes(newContent);
-					newEntry.Size = modifiedContent.Length;
+				byte[] modifiedContent = null;
 
-					if (pathToFileForSha != null)
-					{
-						// Make an extra entry containing the sha
-						var sha = Book.ComputeHashForAllBookRelatedFiles(pathToFileForSha);
-						var name = "version.txt"; // must match what BloomReader is looking for in NewBookListenerService.IsBookUpToDate()
-						MakeExtraEntry(zipStream, name, sha);
-						LastVersionCode = sha;
-					}
-				}
+				if (overrides != null && overrides.TryGetValue(filePath, out modifiedContent))
+					newEntry.Size = modifiedContent.Length;
 				else
-				{
 					newEntry.Size = fi.Length;
-				}
 
 				zipStream.PutNextEntry(newEntry);
 
-				if (modifiedContent.Length > 0)
+				if (modifiedContent != null)
 				{
 					using (var memStream = new MemoryStream(modifiedContent))
 					{
@@ -300,172 +222,8 @@ namespace Bloom.Book
 
 			foreach (var folder in folders)
 			{
-				var dirName = Path.GetFileName(folder);
-				if ((dirName == null) || (dirName.ToLowerInvariant() == "sample texts"))
-					continue; // Don't want to bundle these up
-
-				// Skip all subsubfolders, unless they are inside of 'activities'.
-				if (depthFromCollection == 2 && !IsInActivitiesFolder(folder, depthFromCollection))
-					continue;
-
-				CompressDirectory(folder, zipStream, dirNameOffset, dirNamePrefix, depthFromCollection + 1, forReaderTools, forDevice, excludeAudio, imagePublishSettings);
+				CompressDirectory(folder, zipStream, filter, dirNameOffset, dirNamePrefix, overrides);
 			}
-		}
-
-		// We let files through as long as they are in the 'activities' folder (widgets) or they have
-		// one of the whitelisted extensions (BL-8956).
-		// This method should return 'false' only if the .bloompub doesn't need this file.
-		private static bool FileIsWhitelisted(string filePath, int depthFromCollection)
-		{
-			var fileExtensionLc = Path.GetExtension(filePath).ToLowerInvariant();
-			// Whitelist appropriate book folder level files (also applies to Collection-level files for BloomPacks)
-			if (depthFromCollection < 2)
-				return BookLevelFileExtensionsLowerCase.Contains(fileExtensionLc);
-
-			if (depthFromCollection == 2)
-			{
-				var dirName = Path.GetFileName(Path.GetDirectoryName(filePath));
-
-				// Whitelist appropriate 'audio' folder files
-				if (dirName == "audio")
-					return AudioFileExtensions.Contains(fileExtensionLc);
-
-				// Whitelist appropriate 'video' folder files
-				if (dirName == "video")
-					return VideoFileExtensions.Contains(fileExtensionLc);
-			}
-
-			// Whitelist any file inside of 'activities' folder at any level.
-			if (depthFromCollection > 2 && IsInActivitiesFolder(filePath, depthFromCollection))
-				return true; // We accept any file in 'activities' and its subfolders
-			// Found a file we don't need
-			return false;
-		}
-
-		private readonly static string[] validSubFolders = { "audio", "video", "activities" };
-
-		private static bool IsValidBookFolder(string folderName, bool excludeAudio, int depthFromCollection)
-		{
-			// 'depthFromCollection' of 2 corresponds to the level where we want to see only the valid subfolders.
-			// We only check depth 2. We don't check depth 1, because it is not a subfolder. We don't check
-			// farther down, because we limit the subfolders at depth 2 and if we get deeper, we are probably
-			// inside of 'activities' where we want everything.
-			if (depthFromCollection != 2)
-				return true;
-
-			if (excludeAudio && folderName == "audio")
-				return false;
-			// BL-8956 If we have users who store other folders of (to us) junk in their book folder or
-			// if the user somehow (as we've seen) gets a book folder embedded in another book folder,
-			// we don't want to include those folders in our output.
-			return validSubFolders.Contains(folderName);
-		}
-
-		private static bool IsInActivitiesFolder(string filePath, int depthFromCollection)
-		{
-			const string activityFolderName = "activities";
-			var pathToCheck = Path.GetDirectoryName(filePath);
-			for(int i = depthFromCollection; i > 0 ; i--)
-			{
-				if (pathToCheck.EndsWith(Path.DirectorySeparatorChar + activityFolderName))
-					return true;
-				pathToCheck = Path.GetDirectoryName(pathToCheck);
-			}
-			return false;
-		}
-
-		private static HashSet<string> _backgroundAudioFiles = new HashSet<string>();
-
-		private static void FindBackgroundAudioFiles(XmlDocument dom)
-		{
-			_backgroundAudioFiles.Clear();
-			foreach (var div in dom.DocumentElement.SafeSelectNodes("//div[@data-backgroundaudio]").Cast<XmlElement>())
-			{
-				var filename = div.GetStringAttribute("data-backgroundaudio");
-				if (!String.IsNullOrEmpty(filename))
-					_backgroundAudioFiles.Add(filename);
-			}
-		}
-
-		/// <summary>
-		/// We used to record narration in a .wav file that got converted to mp3 if the user set
-		/// up LAME when we published the book.  LAME is now freely available so we automatically
-		/// convert narration to mp3 as soon as we record it.  But we never want to upload old
-		/// narration .wav files.  On the other hand, the user can select .wav files for background
-		/// music, and we don't try to convert those so they do need to be uploaded.  We detect
-		/// this situation by saving background audio (music) filenames in an earlier pass from
-		/// scanning the XHTML file and saving the set of filenames found.
-		/// </summary>
-		private static bool IsUnneededWaveFile(string filePath, int depthFromCollection)
-		{
-			if (Path.GetExtension(filePath).ToLowerInvariant() != ".wav")
-				return false;   // not a wave file
-			var filename = Path.GetFileName(filePath);
-			return !_backgroundAudioFiles.Contains(filename);
-		}
-
-		private const string kBackgroundImage = "background-image:url('";	// must match format string in HtmlDom.SetImageElementUrl()
-
-		private static List<string> FindCoverImages (XmlDocument xmlDom)
-		{
-			var transparentImageFiles = new List<string>();
-			foreach (var div in xmlDom.SafeSelectNodes("//div[contains(concat(' ',@class,' '),' coverColor ')]//div[contains(@class,'bloom-imageContainer')]").Cast<XmlElement>())
-			{
-				var style = div.GetAttribute("style");
-				if (!String.IsNullOrEmpty(style) && style.Contains(kBackgroundImage))
-				{
-					System.Diagnostics.Debug.Assert(div.GetStringAttribute("class").Contains("bloom-backgroundImage"));
-					// extract filename from the background-image style
-					transparentImageFiles.Add(ExtractFilenameFromBackgroundImageStyleUrl(style));
-				}
-				else
-				{
-					// extract filename from child img element
-					var img = div.SelectSingleNode("//img[@src]");
-					if (img != null)
-						transparentImageFiles.Add(System.Web.HttpUtility.UrlDecode(img.GetStringAttribute("src")));
-				}
-			}
-			return transparentImageFiles;
-		}
-
-		private static List<string> FindImagesToPreserveResolution(XmlDocument dom)
-		{
-			var preservedImages = new List<string>();
-			foreach (var div in dom.SafeSelectNodes("//div[contains(@class,'marginBox')]//div[contains(@class,'bloom-preserveResolution')]").Cast<XmlElement>())
-			{
-				var style = div.GetAttribute("style");
-				if (!string.IsNullOrEmpty(style) && style.Contains(kBackgroundImage))
-				{
-					System.Diagnostics.Debug.Assert(div.GetStringAttribute("class").Contains("bloom-backgroundImage"));
-					preservedImages.Add(ExtractFilenameFromBackgroundImageStyleUrl(style));
-				}
-			}
-			foreach (var img in dom.SafeSelectNodes("//div[contains(@class,'marginBox')]//img[contains(@class,'bloom-preserveResolution')]").Cast<XmlElement>())
-			{
-				preservedImages.Add(System.Web.HttpUtility.UrlDecode(img.GetStringAttribute("src")));
-			}
-			return preservedImages;
-		}
-
-		private static string ExtractFilenameFromBackgroundImageStyleUrl(string style)
-		{
-			var filename = style.Substring(style.IndexOf(kBackgroundImage) + kBackgroundImage.Length);
-			filename = filename.Substring(0, filename.IndexOf("'"));
-			return System.Web.HttpUtility.UrlDecode(filename);
-		}
-
-		private static void MakeExtraEntry(ZipOutputStream zipStream, string name, string content)
-		{
-			ZipEntry entry = new ZipEntry(name);
-			var shaBytes = Encoding.UTF8.GetBytes(content);
-			entry.Size = shaBytes.Length;
-			zipStream.PutNextEntry(entry);
-			using (var memStream = new MemoryStream(shaBytes))
-			{
-				StreamUtils.Copy(memStream, zipStream, new byte[1024]);
-			}
-			zipStream.CloseEntry();
 		}
 
 		private static string GetMetaJsonModfiedForTemplate(string path)
@@ -490,11 +248,11 @@ namespace Bloom.Book
 			dom.Load(filePath);
 			foreach (var node in dom.SafeSelectNodes("//SubscriptionCode").Cast<XmlElement>().ToArray())
 			{
-				node.RemoveAll();	// should happen at most once
+				node.RemoveAll();   // should happen at most once
 			}
 			foreach (var node in dom.SafeSelectNodes("//BrandingProjectName").Cast<XmlElement>().ToArray())
 			{
-				node.RemoveAll();	// should happen at most once
+				node.RemoveAll();   // should happen at most once
 				node.AppendChild(dom.CreateTextNode("Default"));
 			}
 			return dom.OuterXml;
@@ -532,7 +290,7 @@ namespace Bloom.Book
 					if (matchSuppress.Groups[3].Value.ToLower() != "true")
 					{
 						text = text.Substring(0, matchSuppress.Groups[3].Index) + "true"
-								+  text.Substring(matchSuppress.Groups[3].Index + matchSuppress.Groups[3].Length);
+								+ text.Substring(matchSuppress.Groups[3].Index + matchSuppress.Groups[3].Length);
 					}
 				}
 				else
@@ -564,11 +322,8 @@ namespace Bloom.Book
 		/// transparent backgrounds.
 		/// </remarks>
 		/// <returns>The bytes of the (possibly) adjusted image.</returns>
-		internal static byte[] GetImageBytesForElectronicPub(string filePath, bool needsTransparentBackground, ImagePublishSettings imagePublishSettings = null)
+		internal static byte[] GetImageBytesForElectronicPub(string filePath, bool needsTransparentBackground, ImagePublishSettings imagePublishSettings)
 		{
-			if (imagePublishSettings == null)
-				imagePublishSettings = ImagePublishSettings.Default;
-
 			var maxWidth = imagePublishSettings.MaxWidth;
 			var maxHeight = imagePublishSettings.MaxHeight;
 
@@ -602,11 +357,11 @@ namespace Bloom.Book
 						// we should keep the original just because it's a smaller file.
 						// - possibly we don't need a 32-bit bitmap? Unfortunately the 1bpp/4bpp/8bpp only tells us
 						// that the image uses two, 16, or 256 distinct colors, not what they are or what precision they have.
-							case PixelFormat.Format1bppIndexed:
-							case PixelFormat.Format4bppIndexed:
-							case PixelFormat.Format8bppIndexed:
+						case PixelFormat.Format1bppIndexed:
+						case PixelFormat.Format4bppIndexed:
+						case PixelFormat.Format8bppIndexed:
 							imagePixelFormat = PixelFormat.Format32bppArgb;
-								break;
+							break;
 					}
 					// OTOH, always using 32-bit format for .png files keeps us from having problems in BloomReader
 					// like BL-5740 (where 24bit format files came out in BR with black backgrounds).

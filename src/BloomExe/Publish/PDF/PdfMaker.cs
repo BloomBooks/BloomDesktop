@@ -52,6 +52,11 @@ namespace Bloom.Publish.PDF
 
 				if (doWorkEventArgs.Cancel || (doWorkEventArgs.Result != null && doWorkEventArgs.Result is Exception))
 					return;
+				if (worker?.CancellationPending ?? false)
+				{
+					doWorkEventArgs.Cancel = true;
+					return;
+				}
 				if (RobustFile.Exists(specs.OutputPdfPath))
 					break; // normally the first time
 			}
@@ -82,14 +87,11 @@ namespace Bloom.Publish.PDF
 				// Note: previously compression was the last step, after making a booklet. We moved it before for
 				// the reason above. Seems like it would also have performance benefits, if anything, to shrink
 				// the file before manipulating it further. Just noting it in case there are unexpected issues.
-				var fixPdf = new ProcessPdfWithGhostscript(ProcessPdfWithGhostscript.OutputType.DesktopPrinting, worker);
+				var fixPdf = new ProcessPdfWithGhostscript(ProcessPdfWithGhostscript.OutputType.DesktopPrinting, worker, doWorkEventArgs);
 				fixPdf.ProcessPdfFile(specs.OutputPdfPath, specs.OutputPdfPath);
 				/*RobustFile.Copy(specs.OutputPdfPath, System.IO.Path.ChangeExtension(specs.OutputPdfPath, pgid + "-1.pdf"), true);*/
-				if (specs.BookIsFullBleed && specs.PrintWithFullBleed)
-				{
-					RemoveBlankPagesIfNecessary(specs.OutputPdfPath, specs.HtmlPageCount);
-					/*RobustFile.Copy(specs.OutputPdfPath, System.IO.Path.ChangeExtension(specs.OutputPdfPath, pgid + "-2.pdf"), true);*/
-				}
+				AddMetadataAndRemoveBlankPagesIfNecessary(specs);
+				/*RobustFile.Copy(specs.OutputPdfPath, System.IO.Path.ChangeExtension(specs.OutputPdfPath, pgid + "-2.pdf"), true);*/
 				if (specs.BookletPortion != PublishModel.BookletPortions.AllPagesNoBooklet || specs.PrintWithFullBleed)
 				{
 					//remake the pdf by reordering the pages (and sometimes rotating, shrinking, etc)
@@ -141,27 +143,32 @@ namespace Bloom.Publish.PDF
 		/// <remarks>
 		/// This would be easy to move to a simple command line program if memory use proves to be a problem.
 		/// </remarks>
-		private void RemoveBlankPagesIfNecessary(string pdfPath, int htmlPageCount)
+		private void AddMetadataAndRemoveBlankPagesIfNecessary(PdfMakingSpecs specs)
 		{
 			//Bloom.Utils.MemoryManagement.CheckMemory(true, "about to check for blank pages in full bleed PDF file", false);
-			using (var pdfDoc = PdfReader.Open(pdfPath, PdfDocumentOpenMode.Modify))
+			using (var pdfDoc = PdfReader.Open(specs.OutputPdfPath, PdfDocumentOpenMode.Modify))
 			{
-				if (pdfDoc.PageCount == htmlPageCount)
-					return;
-				var lastEven = 0;
-				if (pdfDoc.PageCount == 2 * htmlPageCount)
-					lastEven = pdfDoc.PageCount - 1;
-				else if (pdfDoc.PageCount == 2 * htmlPageCount - 1)
-					lastEven = pdfDoc.PageCount - 2;
-				if (lastEven == 0)
+				pdfDoc.Info.Author = specs.Author;
+				pdfDoc.Info.Title = specs.Title;
+				pdfDoc.Info.Subject = specs.Summary;
+				pdfDoc.Info.Keywords = specs.Keywords;
+				if (specs.BookIsFullBleed && specs.PrintWithFullBleed && pdfDoc.PageCount != specs.HtmlPageCount)
 				{
-					Debug.Assert(pdfDoc.PageCount == htmlPageCount,
-						$"Unexpected PDF page count = {pdfDoc.PageCount}, html page count = {htmlPageCount}");
-					return; /* something is screwy */
+					var lastEven = 0;
+					if (pdfDoc.PageCount == 2 * specs.HtmlPageCount)
+						lastEven = pdfDoc.PageCount - 1;
+					else if (pdfDoc.PageCount == 2 * specs.HtmlPageCount - 1)
+						lastEven = pdfDoc.PageCount - 2;
+					if (lastEven == 0)
+					{
+						Debug.Assert(pdfDoc.PageCount == specs.HtmlPageCount,
+							$"Unexpected PDF page count = {pdfDoc.PageCount}, html page count = {specs.HtmlPageCount}");
+						return; /* something is screwy */
+					}
+					for (int i = lastEven; i > 0; i -= 2)
+						pdfDoc.Pages.RemoveAt(i);
 				}
-				for (int i = lastEven; i > 0; i -= 2)
-					pdfDoc.Pages.RemoveAt(i);
-				pdfDoc.Save(pdfPath);
+				pdfDoc.Save(specs.OutputPdfPath);
 			}
 			//Bloom.Utils.MemoryManagement.CheckMemory(true, "done checking for blank pages in full bleed PDF file", false);
 		}

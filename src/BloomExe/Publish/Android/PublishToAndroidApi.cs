@@ -238,13 +238,13 @@ namespace Bloom.Publish.Android
 				request.ReplyWithJson(JsonConvert.SerializeObject(_collectionSettings.BulkPublishBloomPubSettings));
 			}, true);
 
-			apiHandler.RegisterEndpointLegacy(kApiUrlPart + "file/bulkSaveBloomPubs", request =>
+			apiHandler.RegisterAsyncEndpointHandler(kApiUrlPart + "file/bulkSaveBloomPubs", async request =>
 			{
 				// update what's in the collection so that we remember for next time
 				_collectionSettings.BulkPublishBloomPubSettings = request.RequiredPostObject<BulkBloomPubPublishSettings>();
 				_collectionSettings.Save();
 
-				_bulkBloomPubCreator.PublishAllBooks(_collectionSettings.BulkPublishBloomPubSettings);
+				await _bulkBloomPubCreator.PublishAllBooksAsync(_collectionSettings.BulkPublishBloomPubSettings);
 				SetState("stopped");
 				request.PostSucceeded();
 			}, true);
@@ -421,12 +421,6 @@ namespace Bloom.Publish.Android
 		{
 			Debug.Assert(bookInfo?.MetaData != null, "Precondition: MetaData must not be null");
 
-
-			if (bookInfo.PublishSettings.BloomPub.TextLangs == null)
-			{
-				bookInfo.PublishSettings.BloomPub.TextLangs = new Dictionary<string, InclusionSetting>();
-			}
-
 			// reinitialize our list of which languages to publish, defaulting to the ones
 			// that are complete.
 			foreach (var kvp in allLanguages)
@@ -456,9 +450,8 @@ namespace Bloom.Publish.Android
 			}
 
 			// Initialize the Talking Book Languages settings
-			if (bookInfo.PublishSettings.BloomPub.AudioLangs == null)
+			if (bookInfo.PublishSettings.BloomPub.AudioLangs.Count == 0)
 			{
-				bookInfo.PublishSettings.BloomPub.AudioLangs = new Dictionary<string, InclusionSetting>();
 				var allLangCodes = allLanguages.Select(x => x.Key);
 				foreach (var langCode in allLangCodes)
 				{
@@ -575,7 +568,7 @@ namespace Bloom.Publish.Android
 				progress.Message("CompressingAudio", "Compressing audio files");
 				AudioProcessor.TryCompressingAudioAsNeeded(book.FolderPath, book.RawDom);
 			}
-			var publishedFileName = Path.GetFileName(book.FolderPath) + BookCompressor.BloomPubExtensionWithDot;
+			var publishedFileName = Path.GetFileName(book.FolderPath) + BloomPubMaker.BloomPubExtensionWithDot;
 			if (startingMessageFunction != null)
 				progress.MessageWithoutLocalizing(startingMessageFunction(publishedFileName, bookTitle));
 			if (destFileName == null)
@@ -583,7 +576,7 @@ namespace Bloom.Publish.Android
 				// wifi or usb...make the .bloompub in a temp folder.
 				using (var bloomdTempFile = TempFile.WithFilenameInTempFolder(publishedFileName))
 				{
-					BloomPubMaker.CreateBloomPub(bloomdTempFile.Path, book, bookServer,  progress, settings);
+					BloomPubMaker.CreateBloomPub(settings, bloomdTempFile.Path, book, bookServer, progress);
 					sendAction(publishedFileName, bloomdTempFile.Path);
 					if (confirmFunction != null && !confirmFunction(publishedFileName))
 						throw new ApplicationException("Book does not exist after write operation.");
@@ -594,7 +587,7 @@ namespace Bloom.Publish.Android
 			{
 				// save file...user has supplied name, there is no further action.
 				Debug.Assert(sendAction == null, "further actions are not supported when passing a path name");
-				BloomPubMaker.CreateBloomPub(destFileName, book, bookServer,  progress, settings);
+				BloomPubMaker.CreateBloomPub(settings, destFileName, book, bookServer, progress);
 				progress.Message("PublishTab.Epub.Done", "Done", useL10nIdPrefix: false);	// share message string with epub publishing
 			}
 
@@ -639,7 +632,7 @@ namespace Bloom.Publish.Android
 			// I'd prefer this to include the book folder, but we need it before PrepareBookForBloomReader returns.
 			// I believe we only ever have one book being made there, so it works.
 			CurrentPublicationFolder = _stagingFolder.FolderPath;
-			var modifiedBook = BloomPubMaker.PrepareBookForBloomReader(book.FolderPath, bookServer, _stagingFolder, progress,book.IsTemplateBook, settings: settings);
+			var modifiedBook = BloomPubMaker.PrepareBookForBloomReader(settings, bookFolderPath: book.FolderPath, bookServer: bookServer, temp: _stagingFolder, progress,   isTemplateBook: book.IsTemplateBook);
 			progress.Message("Common.Done", "Shown in a list of messages when Bloom has completed a task.", "Done");
 			if (settings?.WantPageLabels ?? false)
 			{

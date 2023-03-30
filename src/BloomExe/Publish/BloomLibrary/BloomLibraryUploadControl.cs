@@ -1,19 +1,13 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Diagnostics;
 using System.Drawing;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Windows.Forms;
 using Bloom.Book;
 using Bloom.Collection;
-using Bloom.ErrorReporter;
-using Bloom.ImageProcessing;
 using Bloom.MiscUI;
-using Bloom.TeamCollection;
-using Bloom.Utils;
 using Bloom.web;
 using Bloom.web.controllers;
 using Bloom.WebLibraryIntegration;
@@ -62,21 +56,8 @@ namespace Bloom.Publish.BloomLibrary
 			_progressBox.LinkClicked += _progressBox_LinkClicked;
 
 			_okToUpload = _model.MetadataIsReadyToPublish;
-
-			// See if saved credentials work.
-			try
-			{
-				_model.LogIn();
-			}
-			catch (Exception e)
-			{
-				LogAndInformButDontReportFailureToConnectToServer(e);
-			}
-			CommonApi.NotifyLogin(() =>
-			{
-				this.Invoke((Action)(UpdateDisplay));
-				;
-			});
+			
+			CommonApi.LoginSuccessful += HandleLoginSuccessful;
 
 			switch (_model.LicenseType)
 			{
@@ -143,7 +124,7 @@ namespace Bloom.Publish.BloomLibrary
 				}
 				// Disable clicking on languages that have been selected for display in this book.
 				// See https://issues.bloomlibrary.org/youtrack/issue/BL-7166.
-				if (BloomLibraryPublishModel.IsRequiredLanguageForBook(lang, _model.Book))
+				if (_model.Book.IsRequiredLanguage(lang))
 				{
 					checkBox.Checked = true;	// even if partial
 					checkBox.AutoCheck = false;
@@ -186,7 +167,7 @@ namespace Bloom.Publish.BloomLibrary
 				_uploadButton.Width += neededWidth - oldTextWidth;
 			}
 
-			LibraryPublishApi.SetUploadControl = this; // Needed to get the Upload Id Collision dialog working.
+			LibraryPublishApi_Obsolete.SetUploadControl = this; // Needed to get the Upload Id Collision dialog working.
 
 			// After considering all the factors except whether any languages are selected,
 			// if we can upload at this point, whether we can from here on depends on whether one is checked.
@@ -203,6 +184,11 @@ namespace Bloom.Publish.BloomLibrary
 				// Note: We no longer prevent the user from uploading if there are no text languages. Just provide the red warning text.
 				// _okToUpload = false;
 			}
+		}
+
+		private void HandleLoginSuccessful(object sender, EventArgs args)
+		{
+			Invoke((Action)UpdateDisplay);
 		}
 
 		private void UpdateFeaturesCheckBoxesDisplay()
@@ -245,14 +231,6 @@ namespace Bloom.Publish.BloomLibrary
 
 		private bool LanguagesOkToUpload =>
 			_model.OkToUploadWithNoLanguages || _languagesFlow.Controls.Cast<CheckBox>().Any(b => b.Checked);
-
-		private void LogAndInformButDontReportFailureToConnectToServer(Exception exc)
-		{
-			var msg = LocalizationManager.GetString("PublishTab.Upload.LoginFailure",
-				"Bloom could not sign in to BloomLibrary.org using your saved credentials. Please check your network connection.");
-			MessageBox.Show(this, msg, FirebaseLoginDialog.LoginFailureString, MessageBoxButtons.OK, MessageBoxIcon.Error);
-			Logger.WriteEvent("Failure connecting to parse server " + exc.Message);
-		}
 
 		void _progressBox_LinkClicked(object sender, LinkClickedEventArgs e)
 		{
@@ -314,7 +292,8 @@ namespace Bloom.Publish.BloomLibrary
  _targetProduction.Visible = false;
 //#endif
 	//		 _targetProduction.Checked = !BookUpload.UseSandbox;
-		
+
+			_okToUpload = _model.MetadataIsReadyToPublish;
 
 			_uploadButton.Enabled = _model.MetadataIsReadyToPublish && _model.LoggedIn && _okToUpload;
 			_progressBox.Clear();
@@ -361,13 +340,11 @@ namespace Bloom.Publish.BloomLibrary
 			if (_model.LoggedIn)
 			{
 				// This becomes a logout button
-				_model.Logout();
+				_model.LogOut();
 			}
 			else
 			{
-				// The dialog is configured by Autofac to interact with the single instance of BloomParseClient,
-				// which it will update with all the relevant information if login is successful.
-				FirebaseLoginDialog.ShowFirebaseLoginDialog(_webSocketServer);
+				_model.LogIn();
 			}
 			UpdateDisplay();
 		}
@@ -413,7 +390,10 @@ namespace Bloom.Publish.BloomLibrary
 			if ( _uploadSource.SelectedIndex > 0 && missingDefaultBookshelf)
 			{
 				// Intentionally not localized ( because it's complicated, rare, and generally advanced )
-				ErrorReport.NotifyUserOfProblem("Before sending all of your books to BloomLibrary.org, you probably want to tell Bloom which bookshelf this collection belongs in. Please go to Collection Tab : Settings: Book Making and set the \"Bloom Library Bookshelf\".");
+				const string msg = "Before sending all of your books to BloomLibrary.org, you probably want to tell " +
+				                   "Bloom which bookshelf this collection belongs in. Please go to Collection Tab : Settings: " +
+				                   "Book Making and set the \"Bloom Library Bookshelf\".";
+				BloomMessageBox.ShowInfo(msg);
 				return;
 			}
 			if (_uploadSource.SelectedIndex == 1)
@@ -483,7 +463,7 @@ namespace Bloom.Publish.BloomLibrary
 					return;
 				}
 				// OK, so we do need our uploadIDCollision dialog.
-				ShowIdCollisionDialog();
+				ShowIdCollisionDialog(LanguagesCheckedToUpload, _signLanguageCheckBox.Checked);
 			}
 			catch (Exception)
 			{
@@ -492,77 +472,10 @@ namespace Bloom.Publish.BloomLibrary
 			}
 		}
 
-		private void ShowIdCollisionDialog()
+		public void ShowIdCollisionDialog(IEnumerable<string> languagesToUpload, bool signLanguageFeatureSelected)
 		{
-			var newThumbPath = ChooseBestUploadingThumbnailPath(_model.Book).ToLocalhost();
-			var newTitle = _model.Book.TitleBestForUserDisplay;
-			var newLanguages = ConvertLanguageCodesToNames(LanguagesCheckedToUpload, _model.Book.BookData);
-			if (_signLanguageCheckBox.Checked && !string.IsNullOrEmpty(CurrentSignLanguageName))
-			{
-				var newLangs = newLanguages.ToList();
-				if (!newLangs.Contains(CurrentSignLanguageName))
-					newLangs.Add(CurrentSignLanguageName);
-				newLanguages = newLangs;
-			}
-
-			var existingBookInfo = _model.ConflictingBookInfo;
-			var updatedDateTime = (DateTime) existingBookInfo.updatedAt;
-			var createdDateTime = (DateTime) existingBookInfo.createdAt;
-			// Find the best title available (BL-11027)
-			// Users can click on this title to bring up the existing book's page.
-			var existingTitle = existingBookInfo.title?.Value;
-			if (String.IsNullOrEmpty(existingTitle))
-			{
-				// If title is undefined (which should not be the case), then use the first title from allTitles.
-				var allTitlesString = existingBookInfo.allTitles?.Value;
-				if (!String.IsNullOrEmpty(allTitlesString))
-				{
-					try
-					{
-						var allTitles = Newtonsoft.Json.Linq.JObject.Parse(allTitlesString);
-						foreach (var title in allTitles)
-						{
-							// title.Value is dynamic language code / title string pair
-							// title.Value.Value is the actual book title in the associated language
-							if (title?.Value?.Value != null)
-							{
-								existingTitle = title.Value.Value;
-								break;
-							}
-						}
-					}
-					catch
-					{
-						// ignore parse failure -- should never happen at this point.
-					}
-				}
-			}
-			// If neither title nor allTitles are defined, just give a placeholder value.
-			if (String.IsNullOrEmpty(existingTitle))
-				existingTitle = "Unknown";
-
-			var existingId = existingBookInfo.objectId.ToString();
-			var existingBookUrl = BloomLibraryUrls.BloomLibraryDetailPageUrlFromBookId(existingId);
-
-			var existingLanguages = ConvertLanguagePointerObjectsToNames(existingBookInfo.langPointers);
-			var createdDate = createdDateTime.ToString("d", CultureInfo.CurrentCulture);
-			var updatedDate = updatedDateTime.ToString("d", CultureInfo.CurrentCulture);
-			var existingThumbUrl = GetBloomLibraryThumbnailUrl(existingBookInfo);
 			using (var dlg = new ReactDialog("uploadIDCollisionDlgBundle",
-				// Props for dialog; must be the same as IUploadCollisionDlgProps in js-land.
-				new
-				{
-					userEmail = _model.LoggedIn ? _userId.Text : "",
-					newThumbUrl = newThumbPath,
-					newTitle,
-					newLanguages,
-					existingTitle = existingTitle,
-					existingLanguages,
-					existingCreatedDate = createdDate,
-					existingUpdatedDate = updatedDate,
-					existingBookUrl,
-					existingThumbUrl
-				}
+				_model.GetUploadCollisionDialogProps(languagesToUpload, signLanguageFeatureSelected)
 			))
 			{
 				dlg.Width = 770;
@@ -572,109 +485,16 @@ namespace Bloom.Publish.BloomLibrary
 			}
 		}
 
-		// We are trying our best to end up with a thumbnail whose height/width ratio
-		// is the same as the original image. This allows the Uploading and Already in Bloom Library
-		// thumbs to top-align.
-		private string ChooseBestUploadingThumbnailPath(Book.Book book)
-		{
-			// If this exists, it will have the original image's ratio of height to width.
-			var thumb70Path = Path.Combine(book.FolderPath, "thumbnail-70.png");
-			if (RobustFile.Exists(thumb70Path))
-				return thumb70Path;
-			var coverImagePath = book.GetCoverImagePath();
-			if (coverImagePath == null)
-			{
-				return book.ThumbnailPath;
-			} else
-			{
-				RuntimeImageProcessor.GenerateThumbnail(book.GetCoverImagePath(),
-					book.NonPaddedThumbnailPath, 70, ColorTranslator.FromHtml(book.GetCoverColor()));
-				return book.NonPaddedThumbnailPath;
-
-			}
-		}
-
 		public void CancelUpload()
 		{
 			_progressBox.WriteMessage("Canceled.");
 
 		}
 
-		private static string GetBloomLibraryThumbnailUrl(dynamic existingBookInfo)
-		{
-			// Code basically copied from bloomlibrary2 Book.ts
-			var baseUrl = existingBookInfo.baseUrl.ToString();
-			var harvestState = existingBookInfo.harvestState.ToString();
-			var updatedTime = existingBookInfo.updatedAt.ToString();
-			var harvesterThumbnailUrl = GetHarvesterThumbnailUrl(baseUrl, harvestState, updatedTime);
-			if (harvesterThumbnailUrl != null)
-			{
-				return harvesterThumbnailUrl;
-			}
-			// Try "legacy" version (the one uploaded with the book)
-			return CreateThumbnailUrlFromBase(baseUrl, updatedTime);
-		}
-
-		// Code modified from bloomlibrary2 Book.ts.
-		// Bloomlibrary2 code still (as of 11/11/2021) checks the harvest date to see if the thumbnail is useful,
-		// But now there are no books in circulation on bloomlibrary that haven't been harvested since that date.
-		// So now we can consider any harvester thumbnail as valid, as long as the harvestState is "Done".
-		private static string GetHarvesterThumbnailUrl(string baseUrl, string harvestState, string lastUpdate)
-		{
-			if (harvestState != "Done")
-				return null;
-
-			var harvesterBaseUrl = GetHarvesterBaseUrl(baseUrl);
-			return CreateThumbnailUrlFromBase(harvesterBaseUrl, lastUpdate);
-		}
-
-		private static string CreateThumbnailUrlFromBase(string baseUrl, string lastUpdate)
-		{
-			// The bloomlibrary2 code calls Book.getCloudFlareUrl(), but it just passes the parameter through
-			// at this point with a bunch of comments on why we don't do anything there.
-			return baseUrl + "thumbnails/thumbnail-256.png?version=" + lastUpdate;
-		}
-
-		// Code basically copied from bloomlibrary2 Book.ts
-		private static string GetHarvesterBaseUrl(string baseUrl)
-		{
-			const string slash = "%2f";
-			var folderWithoutLastSlash = baseUrl;
-			if (baseUrl.EndsWith(slash))
-			{
-				folderWithoutLastSlash = baseUrl.Substring(0, baseUrl.Length - 3);
-			}
-
-			var index = folderWithoutLastSlash.LastIndexOf(slash, StringComparison.InvariantCulture);
-			var pathWithoutBookName = folderWithoutLastSlash.Substring(0, index);
-			return pathWithoutBookName.Replace("BloomLibraryBooks-Sandbox", "bloomharvest-sandbox")
-				       .Replace("BloomLibraryBooks", "bloomharvest") + "/";
-		}
-
-		private IEnumerable<string> ConvertLanguageCodesToNames(IEnumerable<string> languageCodesToUpload, BookData bookData)
-		{
-			foreach (var langCode in languageCodesToUpload)
-			{
-				yield return bookData.GetDisplayNameForLanguage(langCode);
-			}
-		}
-
-		private IEnumerable<string> ConvertLanguagePointerObjectsToNames(IEnumerable<dynamic> langPointers)
-		{
-			foreach (var languageObject in langPointers)
-			{
-				yield return languageObject.name;
-			}
-		}
-
 		public void UploadBookAfterChangingId()
 		{
-			_progressBox.WriteMessage("Setting new instance ID...");
-			var newGuid = BookInfo.InstallFreshInstanceGuid(_model.Book.FolderPath);
-			_model.Book.BookInfo.Id = newGuid;
-			_progressBox.WriteMessage("ID is now " + _model.Book.BookInfo.Id);
+			_model.ChangeBookId(_progressBox);
 			UploadBook();
-
 		}
 
 		public void UploadBook()
@@ -722,7 +542,7 @@ namespace Bloom.Publish.BloomLibrary
 							"Congratulations, \"{0}\" is now available on BloomLibrary.org ({1})",
 							"{0} is the book title; {1} is a clickable url which will display the book on the website");
 						_progressBox.WriteMessageWithColor(Color.Blue, congratsMessage, _model.Title, url);
-						BookHistory.AddEvent(_model.Book, BookHistoryEventType.Uploaded, "Book uploaded to Bloom Library");
+						_model.AddHistoryRecordForLibraryUpload(url);
 					}
 				}
 
@@ -841,6 +661,7 @@ namespace Bloom.Publish.BloomLibrary
 			var slIsCustom = collectionSettings.SignLanguage.Name != l.DesiredName;
 			collectionSettings.SignLanguage.SetName(l.DesiredName, slIsCustom);
 			collectionSettings.Save();
+			_model.UpdateLangDataCache();
 
 			_model.SetOnlySignLanguageToPublish(collectionSettings.SignLanguageTag);
 		}
@@ -879,109 +700,13 @@ namespace Bloom.Publish.BloomLibrary
 
 		private void BulkUpload(string rootFolderPath)
 		{
-			var target = BookUpload.UseSandbox ? UploadDestination.Development : UploadDestination.Production;
-
-			var bloom = Application.ExecutablePath;
-			var command = $"\"{bloom}\" upload \"{rootFolderPath}\" -u {_userId.Text} -d {target}";
-			if (SIL.PlatformUtilities.Platform.IsLinux)
-				command = $"/opt/mono5-sil/bin/mono {command}";
-
-			ProcessStartInfo startInfo;
-			if (SIL.PlatformUtilities.Platform.IsWindows)
-			{
-				startInfo = new ProcessStartInfo()
-				{
-					FileName = "cmd.exe",
-					Arguments = $"/k {MiscUtils.EscapeForCmd(command)}",
-					
-					WorkingDirectory = Path.GetDirectoryName(Application.ExecutablePath)
-				};
-			}
-			else
-			{
-				string program = GetLinuxTerminalProgramAndAdjustCommand(ref command);
-				if (String.IsNullOrEmpty(program))
-				{
-					_progressBox.Clear();
-					_progressBox.WriteMessage("Cannot bulk upload because unable to find terminal window for output messages.");
-					return;
-				}
-				startInfo = new ProcessStartInfo()
-				{
-					FileName = program,
-					Arguments = command,
-					WorkingDirectory = Path.GetDirectoryName(Application.ExecutablePath)
-				};
-				// LD_PRELOAD is a Linux environment variable for a shared library that should be loaded before any other library is
-				// loaded by a program that is starting up.  It is rarely needed, but the mozilla code used by Geckofx is one place
-				// where this feature is used, specifically to load a xulrunner patch (libgeckofix.so) that must be in place before
-				// xulrunner can be initialized for GeckoFx60 on Linux.  This must be in place in the environment before launching
-				// any process (such as Bloom, here) that will initialize xulrunner, but may cause problems for other programs so
-				// it is best not to have it in the environment unless we know it is needed.  In particular having LD_PRELOAD set to
-				// load libgeckofix.so is known to cause problems when running some programs (possibly only BloomPdfMaker.exe) using
-				// CommandLineRunner.  To guard against this Program.Main() removes it from the environment, but here we need to
-				// temporarily restore it so it can be inherited by the instance of Bloom we are about to launch. Fortunately, it's
-				// easy to reconstruct.
-				var xulRunner = Environment.GetEnvironmentVariable("XULRUNNER");
-				if (!String.IsNullOrEmpty("xulRunner"))
-					Environment.SetEnvironmentVariable("LD_PRELOAD", $"{xulRunner}/libgeckofix.so");
-			}
-
-			Process.Start(startInfo);
 			_progressBox.Clear();
-			_progressBox.WriteMessage("Starting bulk upload in a terminal window...");
-			_progressBox.WriteMessage("This process will skip books if it can tell that nothing has changed since the last bulk upload.");
-			_progressBox.WriteMessage("When the upload is complete, there will be a file named 'BloomBulkUploadLog.txt' in your collection folder.");
-			var url = $"{BloomLibraryUrls.BloomLibraryUrlPrefix}/{_model.Book.CollectionSettings.DefaultBookshelf}";
-			_progressBox.WriteMessage("Your books will show up at {0}", url);
-			if (SIL.PlatformUtilities.Platform.IsLinux)	// LD_PRELOAD interferes with CommandLineRunner and GeckoFx60 on Linux
-				Environment.SetEnvironmentVariable("LD_PRELOAD", null);
+			_model.BulkUpload(rootFolderPath, _progressBox);
 		}
 
 		private void _uploadSource_SelectedIndexChanged(object sender, EventArgs e)
 		{
 			UpdateDisplay();
-		}
-
-		private string QuoteQuotes(string command)
-		{
-			return command.Replace("\\", "\\\\").Replace("\"", "\\\"");
-		}
-
-		private string GetLinuxTerminalProgramAndAdjustCommand(ref string command)
-		{
-			// See https://askubuntu.com/questions/484993/run-command-on-anothernew-terminal-window
-
-			if (RobustFile.Exists("/usr/bin/gnome-terminal"))	// standard for GNOME (Ubuntu/Wasta)
-			{
-				// /usr/bin/gnome-terminal -- /bin/bash -c "bloom upload \"folder\" -u user -d dest; read line"
-				command = $"-- /bin/bash -c \"{QuoteQuotes(command)}; read line\"";
-				return "/usr/bin/gnome-terminal";
-			}
-			if (RobustFile.Exists("/usr/bin/terminator")) // popular alternative
-			{
-				// /usr/bin/terminator -x /bin/bash -c "bloom upload \"folder\" -u user -d dest; read line"
-				command = $"-x /bin/bash -c \"{QuoteQuotes(command)}; read line\"";
-				return "/usr/bin/terminator";
-			}
-			if (RobustFile.Exists("/usr/bin/xfce4-terminal"))    // standard for XFCE4 (XUbuntu)
-			{
-				// /usr/bin/xterm -hold -x /bin/bash -c "bloom upload \"folder\" -u user -d dest"
-				command = $"-T \"Bloom upload\" --hold -x /bin/bash -c \"{QuoteQuotes(command)}\"";
-				return "/usr/bin/xfce4-terminal";
-			}
-			if (RobustFile.Exists("/usr/bin/xterm"))	// antique original (slightly better than nothing)
-			{
-				// /usr/bin/xterm -hold -x /bin/bash -c "bloom upload \"folder\" -u user -d dest"
-				command = $"-T \"Bloom upload\" -hold -e /bin/bash -c \"{QuoteQuotes(command)}\"";
-				return "/usr/bin/xterm";
-			}
-			// Neither konsole nor qterminal will launch with Bloom.  The ones above have been tested on Wasta 20.
-			// symbol lookup error: /usr/lib/x86_64-linux-gnu/qt5/plugins/styles/libqgtk2style.so: undefined symbol: gtk_combo_box_entry_new
-			// I suspect because they're still linking with GTK2 while Bloom has to use GTK3 with Geckofx60.
-
-			// Give up.
-			return null;
 		}
 
 		private void _targetProduction_CheckedChanged(object sender, EventArgs e)

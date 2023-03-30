@@ -9,9 +9,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Threading;
-using NUnit.Framework.Constraints;
-using SIL.Reporting;
-using RobustIO = Bloom.RobustIO;
+using Bloom.MiscUI;
 
 namespace BloomTests.TeamCollection
 {
@@ -265,9 +263,10 @@ namespace BloomTests.TeamCollection
 					var repoWriteTimeBeforeSut10 = new FileInfo(otherFilesPath).LastWriteTime;
 
 					// SUT10: both modified, doing check on idle. No changes. User warned.
-					using (var nfes = new ErrorReport.NonFatalErrorReportExpected())
+					using (var se = new BloomMessageBox.ShowExpected())
 					{
 						tc.SyncLocalAndRepoCollectionFiles(false);
+						Assert.That(se.Message, Is.Not.Empty);
 					}
 
 					Assert.That(tc._haveShownRemoteSettingsChangeWarning, Is.True, "user should have been warned");

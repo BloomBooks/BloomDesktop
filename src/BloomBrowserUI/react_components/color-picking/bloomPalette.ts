@@ -1,5 +1,4 @@
 import { IColorInfo, getColorInfoFromString } from "./colorSwatch";
-import "./colorPickerDialog.less";
 import { kBloomGray } from "../../utils/colorUtils";
 import { getWithPromise } from "../../utils/bloomApi";
 
@@ -7,7 +6,8 @@ export enum BloomPalette {
     Text = "text",
     CoverBackground = "cover-background",
     BloomReaderBookshelf = "bloom-reader-bookshelf",
-    TextBackground = "overlay-background"
+    TextBackground = "overlay-background",
+    HighlightBackground = "highlight-background"
 }
 
 // This array provides a useful default palette for the color picker dialog.
@@ -56,6 +56,14 @@ export const CoverBackgroundPalette: string[] = [
     "#FFAAD4"
 ];
 
+export const HighlightBackgroundPalette: string[] = [
+    "#FEBF00",
+    "#FFFF00",
+    "#FBDBCF",
+    "#BBF4BB",
+    "#C5F0FF"
+];
+
 const specialColors: IColorInfo[] = [
     // #DFB28B is the color Comical has been using as the default for captions.
     // It's fairly close to the "Calico" color defined at https://www.htmlcsscolor.com/hex/D5B185 (#D5B185)
@@ -96,6 +104,9 @@ export async function getHexColorsForPalette(
 ): Promise<string[]> {
     let factoryColors: string[];
     switch (palette) {
+        case BloomPalette.HighlightBackground:
+            factoryColors = HighlightBackgroundPalette;
+            break;
         case BloomPalette.BloomReaderBookshelf:
         case BloomPalette.CoverBackground:
             factoryColors = CoverBackgroundPalette;
@@ -135,6 +146,9 @@ export function getDefaultColorsFromPalette(
 
     let palette;
     switch (paletteType) {
+        case BloomPalette.HighlightBackground:
+            palette = HighlightBackgroundPalette;
+            break;
         case BloomPalette.BloomReaderBookshelf:
         case BloomPalette.CoverBackground:
             palette = CoverBackgroundPalette;

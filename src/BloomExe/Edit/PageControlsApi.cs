@@ -1,8 +1,7 @@
-using System;
-using System.Diagnostics;
-using System.Windows.Forms;
 using Bloom.Api;
 using Newtonsoft.Json;
+using System;
+using System.Diagnostics;
 
 namespace Bloom.Edit
 {
@@ -33,7 +32,7 @@ namespace Bloom.Edit
 
 		public void RegisterWithApiHandler(BloomApiHandler apiHandler)
 		{
-			apiHandler.RegisterEndpointLegacy(kApiUrlPart + "requestState", request =>
+			apiHandler.RegisterEndpointHandler(kApiUrlPart + "requestState", request =>
 			{
 				if (request.HttpMethod == HttpMethods.Get)
 				{
@@ -46,50 +45,50 @@ namespace Bloom.Edit
 				}
 			}, true);
 
-			apiHandler.RegisterEndpointLegacy(kApiUrlPart + "addPage", request =>
+			apiHandler.RegisterEndpointHandler(kApiUrlPart + "addPage", request =>
 			{
 				AddPageButton_Click();
 				request.PostSucceeded();
 			}, true).Measureable();
 
-			apiHandler.RegisterEndpointLegacy(kApiUrlPart + "duplicatePage", request =>
+			apiHandler.RegisterEndpointHandler(kApiUrlPart + "duplicatePage", request =>
 			{
 				_editingModel.OnDuplicatePage();
 				request.PostSucceeded();
 			}, true).Measureable();
 
-			apiHandler.RegisterEndpointLegacy(kApiUrlPart + "deletePage", request =>
+			apiHandler.RegisterEndpointHandler(kApiUrlPart + "deletePage", request =>
 			{
 				if (ConfirmRemovePageDialog.Confirm())
 					_editingModel.OnDeletePage();
 				request.PostSucceeded();
 			}, true).Measureable();
 
-			apiHandler.RegisterEndpointLegacy(kApiUrlPart + "cleanup", request =>
+			apiHandler.RegisterEndpointHandler(kApiUrlPart + "cleanup", request =>
 			{
 				SendCleanupState();
 				request.PostSucceeded();
 			}, true);
 
-			apiHandler.RegisterEndpointLegacy(kApiUrlPart + "zoomMinus", request =>
+			apiHandler.RegisterEndpointHandler(kApiUrlPart + "zoomMinus", request =>
 			{
 				_editingModel.AdjustPageZoom(-10);
 				request.PostSucceeded();
 			}, true);
 
-			apiHandler.RegisterEndpointLegacy(kApiUrlPart + "zoomPlus", request =>
+			apiHandler.RegisterEndpointHandler(kApiUrlPart + "zoomPlus", request =>
 			{
 				_editingModel.AdjustPageZoom(10);
 				request.PostSucceeded();
 			}, true);
 
-			apiHandler.RegisterEndpointLegacy(kApiUrlPart + "requestVideoPlaceHolder", request =>
+			apiHandler.RegisterEndpointHandler(kApiUrlPart + "requestVideoPlaceHolder", request =>
 			{
 				_editingModel.RequestVideoPlaceHolder();
 				request.PostSucceeded();
 			}, true);
 
-			apiHandler.RegisterEndpointLegacy(kApiUrlPart + "requestWidgetPlaceHolder", request =>
+			apiHandler.RegisterEndpointHandler(kApiUrlPart + "requestWidgetPlaceHolder", request =>
 			{
 				_editingModel.RequestWidgetPlaceHolder();
 				request.PostSucceeded();
@@ -129,6 +128,10 @@ namespace Bloom.Edit
 
 			if (_editingModel.CanAddPages)
 			{
+				// While we have separate browsers running for the page list view and the editing view, we switch
+				// the focus to the editing browser before launching the dialog so that Esc will work to close
+				// the dialog without interacting with the dialog first.
+				_editingModel.GetEditingBrowser().Focus();
 				_editingModel.ShowAddPageDialog();
 			}
 		}

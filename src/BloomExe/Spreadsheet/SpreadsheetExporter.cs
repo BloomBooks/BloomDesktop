@@ -14,6 +14,8 @@ using System.IO;
 using System.Linq;
 using System.Security;
 using System.Text;
+using System.Threading.Tasks;
+using System.Web.UI.WebControls;
 using System.Windows.Forms;
 using System.Xml;
 
@@ -66,10 +68,10 @@ namespace Bloom.Spreadsheet
 		//have a src attribute nor actually contain an img element
 		public static List<string> DataDivImagesWithNoSrcAttributes = new List<string>() { "licenseImage" };
 
-		public void ExportToFolderWithProgress(HtmlDom dom, string bookFolderPath, string outputFolder,
+		public async Task ExportToFolderWithProgressAsync(HtmlDom dom, string bookFolderPath, string outputFolder,
 			Action<string> resultCallback)
 		{
-			BrowserProgressDialog.DoWorkWithProgressDialog(_webSocketServer, (progress, worker) =>
+			await BrowserProgressDialog.DoWorkWithProgressDialogAsync(_webSocketServer, async (progress, worker) =>
 		{
 			var spreadsheet = ExportToFolder(dom, bookFolderPath, outputFolder, out string outputFilePath,
 				progress);
@@ -93,12 +95,10 @@ namespace Bloom.Spreadsheet
 			var iContentPage = 0;
 			foreach (var page in pages)
 			{
-				var pageNumber = page.Attributes["data-page-number"]?.Value ?? "";
-				// For now we will ignore all un-numbered pages, particularly xmatter,
-				// which was handled above by exporting data div data.
-				if (pageNumber == "")
+				// We ignore all xmatter pages, which were handled above by exporting data div data.
+				if (XMatterHelper.IsXMatterPage(page))
 					continue;
-
+				var pageNumber = page.Attributes["data-page-number"]?.Value ?? "";
 				//Each page alternates colors
 				var colorForPage = iContentPage++ % 2 == 0 ? InternalSpreadsheet.AlternatingRowsColor1 : InternalSpreadsheet.AlternatingRowsColor2;
 				AddContentRows(page, pageNumber, bookFolderPath, colorForPage);
@@ -114,52 +114,163 @@ namespace Bloom.Spreadsheet
 			var imageContainers = GetImageContainers(page);
 			var allGroups = TranslationGroupManager.SortedGroupsOnPage(page, true);
 			var groups = allGroups.Where(x => !x.Attributes["class"].Value.Contains("bloom-imageDescription")).ToList();
-			if (!_reportedImageDescription && groups.Count < allGroups.Count)
-			{
-				_progress?.MessageWithoutLocalizing("Image descriptions are not currently supported by spreadsheet import/export. They will be ignored.", ProgressKind.Warning);
-				_reportedImageDescription = true;
-			}
+			var videoContainers = page.SafeSelectNodes(".//*[contains(@class,'bloom-videoContainer')]").Cast<XmlElement>()
+				.ToList();
+			var widgetContainers = page.SafeSelectNodes(".//*[contains(@class,'bloom-widgetContainer')]").Cast<XmlElement>()
+				.ToList();
 
-			var pageContentTuples = imageContainers.MapUnevenPairs(groups, (imageContainer, group) => (imageContainer, group));
-			foreach (var pageContent in pageContentTuples)
+			var pageType = SpreadsheetImporter.GetLabelFromPage(page);
+
+			// Each of these will result in one row in the output.
+			var rowContentSources = Extensions.MapUnevenLists(new [] {groups, imageContainers, videoContainers, widgetContainers});
+			foreach (var pageContent in rowContentSources)
 			{
 				var row = new ContentRow(_spreadsheet);
+				if (!string.IsNullOrEmpty(pageType))
+				{
+					var pageTypeIndex = _spreadsheet.AddColumnForTag(InternalSpreadsheet.PageTypeColumnLabel, "Page Type");
+					row.SetCell(pageTypeIndex, pageType);
+					// If we make more rows for this page, don't specify a type.
+					// This allows subsequent rows to go onto the same page if there is room.
+					pageType = null;
+				}
 				row.SetCell(InternalSpreadsheet.RowTypeColumnLabel, InternalSpreadsheet.PageContentRowLabel);
 				row.SetCell(InternalSpreadsheet.PageNumberColumnLabel, pageNumber);
+				var translationGroup = pageContent[0];
+				var imageContainer = pageContent[1];
+				var videoContainer = pageContent[2];
+				var widgetContainer = pageContent[3];
 
-				if (pageContent.imageContainer != null)
+				if (imageContainer != null)
 				{
-					var image = (XmlElement)pageContent.imageContainer.SafeSelectNodes(".//img").Item(0);
-					var imagePath = ImagePath(bookFolderPath, image.GetAttribute("src"));
+					var image = (XmlElement)imageContainer.SafeSelectNodes(".//img").Item(0);
+					var imagePath = ImagePath(bookFolderPath, image?.GetAttribute("src") ?? "placeHolder.png");
 					var fileName = Path.GetFileName(imagePath);
 					var outputPath = Path.Combine("images", fileName);
 					if (fileName == "placeHolder.png")
 						outputPath = InternalSpreadsheet.BlankContentIndicator;
 					row.SetCell(InternalSpreadsheet.ImageSourceColumnLabel, outputPath);
 					CopyImageFileToSpreadsheetFolder(imagePath);
+					var descriptions = imageContainer.GetElementsByTagName("div")
+						.Cast<XmlElement>()
+						.Where(e => e.Attributes["class"].Value.Contains("bloom-imageDescription"));
+					foreach (var description in descriptions) // typically at most one
+					{
+						var descriptionRow = new ContentRow(_spreadsheet);
+						descriptionRow.SetCell(InternalSpreadsheet.RowTypeColumnLabel, InternalSpreadsheet.ImageDescriptionRowLabel);
+						descriptionRow.SetCell(InternalSpreadsheet.PageNumberColumnLabel, pageNumber);
+						// Give this row the same color. It is conceptually part of the export of the same chunk of the document.
+						descriptionRow.BackgroundColor = colorForPage;
+						WriteTranslationGroup(description, descriptionRow, bookFolderPath);
+					}
 				}
 
-				if (pageContent.group != null)
+				if (translationGroup != null)
 				{
-					foreach (var editable in pageContent.group.SafeSelectNodes("./*[contains(@class, 'bloom-editable')]").Cast<XmlElement>())
-					{
-						var langCode = editable.Attributes["lang"]?.Value ?? "";
-						if (langCode == "z" || langCode == "")
-							continue;
-						var index = GetOrAddColumnForLang(langCode);
-						var content = editable.InnerXml;
-						// Don't just test content, it typically contains paragraph markup.
-						if (String.IsNullOrWhiteSpace(editable.InnerText))
-						{
-							content = InternalSpreadsheet.BlankContentIndicator;
-						}
-						row.SetCell(index, content);
-						ExportAudio(editable, row, bookFolderPath);
-					}
+					WriteTranslationGroup(translationGroup, row, bookFolderPath);
+				}
+
+				if (videoContainer != null)
+				{
+					WriteVideo(videoContainer, row, bookFolderPath);
+				}
+
+				if (widgetContainer != null)
+				{
+					WriteWidget(widgetContainer, row, bookFolderPath);
 				}
 
 				row.BackgroundColor = colorForPage;
 			}
+		}
+
+		private void WriteWidget(XmlElement widgetContainer, ContentRow row, string bookFolderPath)
+		{
+			var source = UrlPathString.CreateFromUrlEncodedString(widgetContainer.GetElementsByTagName("iframe").Cast<XmlElement>().FirstOrDefault()
+				?.Attributes["src"]?.Value ?? "").NotEncoded;
+			var index = _spreadsheet.AddColumnForTag(InternalSpreadsheet.WidgetSourceColumnLabel, "Widgets");
+			row.SetCell(index, source);
+
+			if (_outputFolder != null) // only null in some unit tests
+			{
+				// We expect source to be something like activities/widgetFolder/.../something.html
+				// We want to copy widgetFolder (which might not be the direct parent of something.html)
+				var sourceDir = Path.GetDirectoryName(source.Substring("activities/".Length)); // typically widgetFolder
+				while (!string.IsNullOrEmpty(Path.GetDirectoryName(sourceDir)))
+					sourceDir = Path.GetDirectoryName(sourceDir);
+				try
+				{
+					var destFolderPath = Path.Combine(_outputFolder, "activities");
+					Directory.CreateDirectory(destFolderPath);
+					DirectoryUtilities.CopyDirectory(Path.Combine(bookFolderPath, "activities", sourceDir), destFolderPath);
+				}
+				catch (Exception e) when (e is IOException || e is SecurityException ||
+				                          e is UnauthorizedAccessException)
+				{
+					_progress.MessageWithParams("Spreadsheet.TroubleCopyingFolder", "",
+						"Bloom had trouble copying the folder {0} to the activities folder: {1}",
+						ProgressKind.Warning, sourceDir, e.Message);
+				}
+			}
+		}
+
+		private void WriteVideo(XmlElement videoContainer, ContentRow row, string bookFolderPath)
+		{
+			var source = UrlPathString.CreateFromUrlEncodedString(videoContainer.GetElementsByTagName("source").Cast<XmlElement>().FirstOrDefault()
+				?.Attributes["src"]?.Value ?? "").NotEncoded;
+			var index = _spreadsheet.AddColumnForTag(InternalSpreadsheet.VideoSourceColumnLabel, "Video");
+			row.SetCell(index, source);
+			if (_outputFolder != null)
+			{
+				var sourcePath = Path.Combine(bookFolderPath, source);
+				var destPath = Path.Combine(_outputFolder, source);
+				try
+				{
+					Directory.CreateDirectory(Path.GetDirectoryName(destPath));
+					RobustFile.Copy(sourcePath, destPath);
+				}
+				catch (Exception e) when (e is IOException || e is SecurityException ||
+				                          e is UnauthorizedAccessException)
+				{
+					_progress.MessageWithParams("SpreadsheetTroubleCopying", "",
+						"Bloom had trouble copying the file {0} to the video folder: {1}",
+						ProgressKind.Warning, sourcePath, e.Message);
+				}
+			}
+		}
+
+		private void WriteTranslationGroup(XmlElement translationGroup, ContentRow row, string bookFolderPath)
+		{
+			foreach (var editable in translationGroup.SafeSelectNodes("./*[contains(@class, 'bloom-editable')]")
+				         .Cast<XmlElement>())
+			{
+				var langCode = editable.Attributes["lang"]?.Value ?? "";
+				if (langCode == "z" || langCode == "")
+					continue;
+				var index = GetOrAddColumnForLang(langCode);
+				var content = editable.InnerXml;
+				content = content.Replace("<span class=\"bloom-audio-split-marker\">\u200B</span>", "|");
+				// Don't just test content, it typically contains paragraph markup.
+				if (String.IsNullOrWhiteSpace(editable.InnerText))
+				{
+					content = InternalSpreadsheet.BlankContentIndicator;
+				}
+				row.SetCell(index, content);
+				ExportAudio(editable, row, bookFolderPath);
+				
+			}
+			// A special case just for Quiz pages.
+			if (((XmlElement)translationGroup.ParentNode).Attributes["class"]?.Value
+			    ?.Contains("correct-answer") ?? false)
+			{
+				var indexAttr = _spreadsheet.AddColumnForTag(InternalSpreadsheet.AttributeColumnLabel,
+					"Attribute data");
+				row.SetCell(indexAttr, "../class=correct-answer");
+			}
+			// Enhance: as necessary, we plan to enhance this to look for attributes whose names
+			// start with data-content on the translation group, possibly its parent, maybe if
+			// necessary the bloom-editables as well though that might need multiple columns,
+			// and export it into the attributes column.
 		}
 
 		private void ExportAudio(XmlElement editable, SpreadsheetRow row, string bookFolderPath)
@@ -312,10 +423,10 @@ namespace Bloom.Spreadsheet
 			return elementOrDom.SafeSelectNodes(".//div[@id='bloomDataDiv']").Cast<XmlElement>().First();
 		}
 
-		private XmlElement[] GetImageContainers(XmlElement elementOrDom)
+		private List<XmlElement> GetImageContainers(XmlElement elementOrDom)
 		{
 			return elementOrDom.SafeSelectNodes(".//*[contains(@class,'bloom-imageContainer')]").Cast<XmlElement>()
-				.ToArray();
+				.ToList();
 		}
 
 		private string ImagePath(string imagesFolderPath, string imageSrc)

@@ -20,9 +20,10 @@ import {
     Select,
     Typography
 } from "@mui/material";
-import { kBloomBlue } from "../../bloomMaterialUITheme";
+import { kBloomBlue, kSelectCss } from "../../bloomMaterialUITheme";
 import { useState } from "react";
 import { BloomTooltip } from "../../react_components/BloomToolTip";
+import { kBloomDisabledText } from "../../utils/colorUtils";
 
 const epubModes: IEpubMode[] = [
     {
@@ -55,7 +56,7 @@ export const EPUBSettingsGroup: React.FunctionComponent<{
     const linkCss = "margin-top: 1em !important; display: block;";
     const disabledLinkCss = canModifyCurrentBook
         ? ""
-        : "color: rgba(0, 0, 0, 0.38) !important;";
+        : `color: ${kBloomDisabledText} !important;`;
 
     const [isModeDropdownOpen, setIsModeDropdownOpen] = useState(false);
 
@@ -101,17 +102,9 @@ export const EPUBSettingsGroup: React.FunctionComponent<{
                         >
                             <Select
                                 css={css`
-                                    background-color: white;
-                                    &.MuiOutlinedInput-root {
-                                        border-radius: 0 !important;
-
-                                        .MuiOutlinedInput-notchedOutline {
-                                            border-width: 1px !important;
-                                            border-color: ${kBloomBlue} !important; // it usually is anyway, but not before MUI decides to focus it.
-                                        }
-                                    }
+                                    ${kSelectCss}
                                 `}
-                                variant="standard"
+                                variant="outlined"
                                 value={props.mode}
                                 disabled={false}
                                 open={isModeDropdownOpen}

@@ -1,88 +1,166 @@
 /** @jsx jsx **/
 import { jsx, css } from "@emotion/react";
 import * as React from "react";
-import { useState, useContext } from "react";
+import { useState, useRef } from "react";
 
 import {
     PreviewPanel,
     HelpGroup,
-    SettingsPanel,
-    PreviewPublishPanel
+    SettingsPanel
 } from "../commonPublish/PublishScreenBaseComponents";
 import { PDFPrintFeaturesGroup } from "./PDFPrintFeaturesGroup";
 import PublishScreenTemplate from "../commonPublish/PublishScreenTemplate";
 import ReactDOM = require("react-dom");
 import { ThemeProvider, StyledEngineProvider } from "@mui/material/styles";
-import { darkTheme, lightTheme } from "../../bloomMaterialUITheme";
-import { StorybookContext } from "../../.storybook/StoryBookContext";
+import { darkTheme, lightTheme, kBannerGray } from "../../bloomMaterialUITheme";
 import { useL10n } from "../../react_components/l10nHooks";
-import { Button, Typography } from "@mui/material";
+import Typography from "@mui/material/Typography";
+import Button from "@mui/material/Button";
+import ArrowForwardRounded from "@mui/icons-material/ArrowForwardRounded";
+import { getString, post } from "../../utils/bloomApi";
 
-export const PDFPrintPublishScreen = () => {
-    // When the user changes booklet mode, printshop features, etc., we
-    // need to rebuild the book and re-run all of our Bloom API queries.
-    // This requires a hard-reset of the whole screen, which we do by
-    // incrementing a `key` prop on the core of this screen.
-    const [keyForReset, setKeyForReset] = useState(0);
+import { Div } from "../../react_components/l10nComponents";
+import { ApiCheckbox } from "../../react_components/ApiCheckbox";
+import { DialogOkButton } from "../../react_components/BloomDialog/commonDialogComponents";
+import {
+    BloomDialog,
+    DialogBottomButtons,
+    DialogMiddle
+} from "../../react_components/BloomDialog/BloomDialog";
+import { ProgressDialog } from "../../react_components/Progress/ProgressDialog";
+import HelpLink from "../../react_components/helpLink";
+import { RequiresBloomEnterpriseDialog } from "../../react_components/requiresBloomEnterprise";
+
+// The common behavior of the Print and Save buttons.
+// There is probably some way to get this look out of BloomButton,
+// but it seems more trouble than it's worth.
+const PrintSaveButton: React.FunctionComponent<{
+    onClick: () => void;
+    label: string;
+    l10nId: string;
+    imgSrc: string;
+    enabled: boolean;
+}> = props => {
+    const label = useL10n(props.label, props.l10nId);
     return (
-        <PDFPrintPublishScreenInternal
-            key={keyForReset}
-            onReset={() => {
-                setKeyForReset(keyForReset + 1);
-            }}
-        />
+        <Button
+            css={css`
+                opacity: ${props.enabled ? "100%" : "25%"};
+            `}
+            onClick={props.onClick}
+            disabled={!props.enabled}
+        >
+            <img src={props.imgSrc} />
+            <span
+                css={css`
+                    color: black;
+                    margin-left: 0.5em;
+                    text-transform: none !important;
+                `}
+            >
+                {label}
+            </span>
+        </Button>
     );
 };
 
-const PDFPrintPublishScreenInternal: React.FunctionComponent<{
-    onReset: () => void;
-}> = props => {
-    const inStorybookMode = useContext(StorybookContext);
-    // I left some commented code in here that may be useful in previewing; from Publish -> Android
-    // const [heading, setHeading] = useState(
-    //     useL10n("Creating Digital Book", "PublishTab.Android.Creating")
-    // );
-    // const [closePending, setClosePending] = useState(false);
-    // const [highlightRefresh, setHighlightRefresh] = useState(false);
-    // const [progressState, setProgressState] = useState(ProgressState.Working);
+export const PDFPrintPublishScreen = () => {
+    const [path, setPath] = useState("");
+    const [printSettings, setPrintSettings] = useState("");
+    // We need a ref to the real DOM object of the iframe that holds the print preview
+    // so we can actually tell it to print.
+    const iframeRef = useRef<HTMLIFrameElement>(null);
 
-    // bookUrl is expected to be a normal, well-formed URL.
-    // (that is, one that you can directly copy/paste into your browser and it would work fine)
-    // const [bookUrl, setBookUrl] = useState(
-    //     inStorybookMode
-    //         ? window.location.protocol +
-    //               "//" +
-    //               window.location.host +
-    //               "/templates/Sample Shells/The Moon and the Cap" // Enhance: provide an actual bloompub in the source tree
-    //         : // otherwise, wait for the websocket to deliver a url when the c# has finished creating the bloompub.
-    //           //BloomPlayer recognizes "working" as a special value; it will show some spinner or some such.
-    //           "working"
-    // );
-
-    //const pathToOutputBrowser = inStorybookMode ? "./" : "../../";
+    const progressHeader = useL10n("Progress", "Common.Progress");
+    const formatModeText = useL10n(
+        "Bloom can format your PDF in several ways.",
+        "PublishTab.PdfMaker.ClickToStart"
+    );
+    const chooseModeText = useL10n(
+        "Choose one here:",
+        "PublishTab.PdfMaker.ClickToStart2"
+    );
+    const showProgress = useRef<() => void | undefined>();
+    const closeProgress = useRef<() => void | undefined>();
 
     const mainPanel = (
         <React.Fragment>
-            <PreviewPanel>
+            <PreviewPanel
+                // This panel has a black background. If it is visible, it looks odd combined with
+                // the grey background (which we can't change) that WebView2 shows when previewing a PDF.
+                css={css`
+                    padding: 0;
+                `}
+            >
                 <StyledEngineProvider injectFirst>
                     <ThemeProvider theme={darkTheme}>
-                        <Typography
-                            css={css`
-                                color: white;
-                                align-self: center;
-                            `}
-                        >
-                            Temporary placeholder for eventual Preview
-                        </Typography>
+                        {path ? (
+                            <iframe
+                                ref={iframeRef}
+                                css={css`
+                                    height: 100%;
+                                    width: 100%;
+                                    box-sizing: border-box;
+                                    // By default in WV2, an iframe has a 2px inset border,
+                                    // which against our background only shows up on the top and left.
+                                    border-color: gray;
+                                    border-style: solid;
+                                `}
+                                src={path}
+                            />
+                        ) : (
+                            <div
+                                css={css`
+                                    background-color: ${kBannerGray};
+                                    display: flex;
+                                    flex: 1;
+                                `}
+                            >
+                                <div
+                                    css={css`
+                                        display: flex;
+                                        flex: 1;
+                                        flex-direction: row;
+                                        align-items: center;
+                                        justify-content: center;
+                                        padding: 0 20px 75px;
+                                        max-height: 530px; // Keep the text and arrow up in the options
+                                    `}
+                                >
+                                    <div
+                                        css={css`
+                                            display: flex;
+                                            flex-direction: column;
+                                        `}
+                                    >
+                                        <Typography
+                                            color="primary"
+                                            fontSize={42}
+                                            fontWeight="bold"
+                                        >
+                                            {formatModeText}
+                                        </Typography>
+                                        <Typography
+                                            color="primary"
+                                            fontSize={42}
+                                            fontWeight="bold"
+                                        >
+                                            {chooseModeText}
+                                        </Typography>{" "}
+                                    </div>
+                                    <ArrowForwardRounded
+                                        color="primary"
+                                        fontWeight="bold"
+                                        css={css`
+                                            font-size: 90pt;
+                                        `}
+                                    />
+                                </div>
+                            </div>
+                        )}
                     </ThemeProvider>
                 </StyledEngineProvider>
             </PreviewPanel>
-            <PreviewPublishPanel
-                css={css`
-                    display: block;
-                    flex-grow: 1;
-                `}
-            ></PreviewPublishPanel>
         </React.Fragment>
     );
 
@@ -90,7 +168,11 @@ const PDFPrintPublishScreenInternal: React.FunctionComponent<{
         <SettingsPanel>
             <PDFPrintFeaturesGroup
                 onChange={() => {
-                    props.onReset();
+                    showProgress.current?.();
+                }}
+                onGotPdf={path => {
+                    setPath(path);
+                    closeProgress.current?.();
                 }}
             />
             {/* push everything to the bottom */}
@@ -100,48 +182,58 @@ const PDFPrintPublishScreenInternal: React.FunctionComponent<{
                 `}
             />
             <HelpGroup>
-                <Typography>Not a real "HelpGroup"; needs changing</Typography>
-                {/* Replace with links to PDF and Printing help
                 <HelpLink
-                    l10nKey="PublishTab.Android.AboutBloomPUB"
-                    helpId="Tasks/Publish_tasks/Make_a_BloomPUB_file_overview.htm"
+                    l10nKey="PublishTab.PdfPrint.AboutPdfPrint"
+                    // Wants to be PDF_and_Print.htm when that gets written
+                    helpId="Tasks/Publish_tasks/PDF_and_Print.htm"
+                    temporarilyDisableI18nWarning={true}
                 >
-                    About BloomPUB
+                    About PDF & Print
                 </HelpLink>
-                */}
             </HelpGroup>
         </SettingsPanel>
     );
 
-    const printButtonText = useL10n("Print...", "PublishTab.PrintButton");
+    const printNow = () => {
+        if (iframeRef.current) {
+            iframeRef.current.contentWindow?.print();
+            // Unfortunately, we have no way to know whether the user really
+            // printed, or canceled in the browser print dialog.
+            post("publish/pdf/printAnalytics");
+        }
+    };
 
-    const saveButtonText = useL10n("Save PDF...", "PublishTab.SaveButton");
+    const handlePrint = () => {
+        getString("publish/pdf/printSettingsPath", instructions => {
+            if (instructions) {
+                // This causes the instructions image to be displayed along with a dialog
+                // in which the user can continue (or set a checkbox to prevent this
+                // happening again.)
+                setPrintSettings(instructions);
+            } else {
+                printNow();
+            }
+        });
+    };
 
     const rightSideControls = (
         <React.Fragment>
-            <Button onClick={() => {}}>
-                <img src="./Print.png" />
-                <div
-                    css={css`
-                        width: 0.5em;
-                    `}
-                />
-                {printButtonText}
-            </Button>
-            <div
-                css={css`
-                    width: 1em;
-                `}
+            <PrintSaveButton
+                onClick={handlePrint}
+                enabled={!!path}
+                l10nId="PublishTab.PrintButton"
+                imgSrc="./Print.png"
+                label="Print..."
             />
-            <Button onClick={() => {}}>
-                <img src="./Usb.png" />
-                <div
-                    css={css`
-                        width: 0.5em;
-                    `}
-                />
-                {saveButtonText}
-            </Button>
+            <PrintSaveButton
+                onClick={() => {
+                    post("publish/pdf/save");
+                }}
+                enabled={!!path}
+                l10nId="PublishTab.SaveButton"
+                imgSrc="./Usb.png"
+                label="Save PDF..."
+            />
         </React.Fragment>
     );
 
@@ -155,6 +247,69 @@ const PDFPrintPublishScreenInternal: React.FunctionComponent<{
             >
                 {mainPanel}
             </PublishScreenTemplate>
+
+            <ProgressDialog
+                title={progressHeader}
+                determinate={true}
+                size="small"
+                showCancelButton={true}
+                onCancel={() => {
+                    post("publish/pdf/cancel");
+                    closeProgress.current?.();
+                    setPath("");
+                }}
+                setShowDialog={showFunc => (showProgress.current = showFunc)}
+                setCloseDialog={closeFunc =>
+                    (closeProgress.current = closeFunc)
+                }
+            />
+            <RequiresBloomEnterpriseDialog />
+
+            <BloomDialog
+                open={!!printSettings}
+                // eslint-disable-next-line @typescript-eslint/no-empty-function
+                onClose={() => {}}
+            >
+                <DialogMiddle>
+                    <Div l10nKey="SamplePrintNotification.PleaseNotice">
+                        Please notice the sample printer settings below. Use
+                        them as a guide while you set up the printer.
+                    </Div>
+                    <ApiCheckbox
+                        english="I get it. Do not show this again."
+                        l10nKey="SamplePrintNotification.IGetIt"
+                        apiEndpoint="publish/pdf/dontShowSamplePrint"
+                    ></ApiCheckbox>
+                </DialogMiddle>
+                <DialogBottomButtons>
+                    <DialogOkButton
+                        onClick={() => {
+                            printNow();
+                            // This is unfortunate. It will hide not only this dialog but the image that
+                            // shows how to set things. The call to printNow will initially show the dialog that
+                            // the print settings are supposed to help with. We'd like to have it
+                            // visible until the user clicks Print or Cancel. But
+                            // - We can't find any way to find out when the user clicks Print or Cancel,
+                            //   so we'd have to leave it up to the user to click some Close control to get rid
+                            //   of the settings (we could of course get rid of this dialog right away).
+                            // - The print dialog occupies more-or-less the entire WebView2 control; there's
+                            //   nowhere left to show the recommendations.
+                            // So we just have to hope the user can remember them.
+                            setPrintSettings("");
+                        }}
+                    ></DialogOkButton>
+                </DialogBottomButtons>
+            </BloomDialog>
+            <div
+                css={css`
+                    position: absolute;
+                    bottom: 0;
+                    right: 0;
+                    display: ${printSettings ? "block" : "none"};
+                `}
+            >
+                <img src={printSettings} />
+            </div>
             {/* In storybook, there's no bloom backend to run the progress dialog */}
             {/* {inStorybookMode || (
                 <PublishProgressDialog

@@ -8,7 +8,6 @@ using System.Windows.Forms;
 using Bloom.Api;
 using Bloom.Book;
 using Bloom.Edit;
-using Bloom.Utils;
 using Newtonsoft.Json;
 using SIL.IO;
 using SIL.PlatformUtilities;
@@ -24,7 +23,6 @@ namespace Bloom.web.controllers
 		public const string TemplateFolderName = "template";
 		private readonly SourceCollectionsList _sourceCollectionsList;
 		private readonly BookSelection _bookSelection;
-		private readonly PageSelection _pageSelection;
 		private readonly TemplateInsertionCommand _templateInsertionCommand;
 		private readonly BookThumbNailer _thumbNailer;
 		private IBloomWebSocketServer _webSocketServer;
@@ -36,12 +34,11 @@ namespace Bloom.web.controllers
 		public static bool ForPageLayout = false; // set when most recent relevant command is ShowChangeLayoutDialog
 
 		public PageTemplatesApi(SourceCollectionsList  sourceCollectionsList, BookSelection bookSelection,
-			PageSelection pageSelection, TemplateInsertionCommand templateInsertionCommand,
+			TemplateInsertionCommand templateInsertionCommand,
 			BookThumbNailer thumbNailer, Book.Book.Factory bookFactory, BookStorage.Factory storageFactory, BloomWebSocketServer webSocketServer)
 		{
 			_sourceCollectionsList = sourceCollectionsList;
 			_bookSelection = bookSelection;
-			_pageSelection = pageSelection;
 			_templateInsertionCommand = templateInsertionCommand;
 			_thumbNailer = thumbNailer;
 			_bookFactory = bookFactory;
@@ -71,7 +68,9 @@ namespace Bloom.web.controllers
 
 			addPageSettings.groups = GetBookTemplatePaths(GetPathToCurrentTemplateHtml(), GetCurrentAndSourceBookPaths())
 				.Select(bookTemplatePath => GetPageGroup(bookTemplatePath));
-			addPageSettings.currentLayout = _pageSelection.CurrentSelection.IdOfFirstAncestor;
+			// Never used on the javascript side.
+			// addPageSettings.currentLayout = _pageSelection.CurrentSelection.IdOfFirstAncestor
+
 			// This works because this is only used for the add/change page dialog and we never show them
 			// both at once. Pushing this information into the settings that the dialog loads removes the
 			// need for cross-domain communication between the dialog and the page that launches it.
@@ -85,8 +84,16 @@ namespace Bloom.web.controllers
 		/// </summary>
 		public IEnumerable<string> GetCurrentAndSourceBookPaths()
 		{
-			return new [] {_bookSelection.CurrentSelection.CollectionSettings.FolderPath} // Start with the current collection
-				.Concat(_sourceCollectionsList.GetCollectionFolders()) // add all other source collections
+			return GetBooksInCollectionDirectories(new[]
+				{
+					_bookSelection.CurrentSelection.CollectionSettings.FolderPath // Start with the current collection
+				}
+				.Concat(_sourceCollectionsList.GetCollectionFolders()) // add all other source collections)
+			); 
+		}
+
+		public static IEnumerable<string> GetBooksInCollectionDirectories(IEnumerable<string> collections) {
+		return collections
 				.Distinct() //seems to be needed in case a shortcut points to a folder that's already in the list.
 				.SelectMany(ProjectContext.SafeGetDirectories) // get all the (book) folders in those collections
 					.Select(BookStorage.FindBookHtmlInFolder); // and get the book from each
@@ -181,14 +188,14 @@ namespace Bloom.web.controllers
 
 					//note: the caption is used here as a key to find the template page.
 					var caption = Path.GetFileNameWithoutExtension(expectedPathOfThumbnailImage).Trim();
-					var isLandscape = caption.EndsWith("-landscape"); // matches string in page-chooser.ts
+					var isLandscape = caption.EndsWith("-landscape"); // matches string in PageChooserDialog.tsx
 					if (isLandscape)
 						caption = caption.Substring(0, caption.Length - "-landscape".Length);
 					var isSquare = caption.EndsWith("-square");
 					if (isSquare)
 						caption = caption.Substring(0, caption.Length - "-square".Length);
 
-					// The Replace of & with + corresponds to a replacement made in page-chooser.ts method loadPagesFromCollection.
+					// The Replace of & with + corresponds to a replacement made in PageChooserDialog.tsx method getTemplatePageImageSource().
 					// The Trim is needed because template may now be created by users editing the pageLabel div, and those
 					// labels typically include a trailing newline.
 					IPage templatePage = templateBook.GetPages()
@@ -207,7 +214,7 @@ namespace Bloom.web.controllers
 					// until it is saved, we get all gray rectangles. So for now, we just quickly do the clone and unlock.
 					var resultPath = "";
 					Bitmap clone;
-					// Review: the coarse lock(SyncObj) in BloomServer.ProcessRequest() may have removed the need for this finer grained lock.
+					// Review: the coarse lock(SyncObj) in BloomServer.ProcessRequestAsync() may have removed the need for this finer grained lock.
 					lock (thumbnail)
 					{
 						clone = new Bitmap((Image)thumbnail.Clone());
@@ -328,7 +335,8 @@ namespace Bloom.web.controllers
 			var bookTemplatePaths = new List<string>();
 
 			// 1) we start the list with the template that was used to start this book (or the book itself if it IS a template)
-			bookTemplatePaths.Add(Platform.IsWindows ? pathToCurrentTemplateHtml.ToLowerInvariant() : pathToCurrentTemplateHtml);
+			if (pathToCurrentTemplateHtml != null)
+				bookTemplatePaths.Add(Platform.IsWindows ? pathToCurrentTemplateHtml.ToLowerInvariant() : pathToCurrentTemplateHtml);
 
 			// 2) Look in their current collection...this is the first one used to make sourceBookPaths
 

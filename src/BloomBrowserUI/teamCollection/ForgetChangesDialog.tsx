@@ -73,7 +73,10 @@ export const ForgetChangesDialog: React.FunctionComponent<{
                         Forget My Changes
                     </BloomButton>
                 </DialogBottomLeftButtons>
-                <DialogCancelButton default={true} onClick={props.close} />
+                <DialogCancelButton
+                    default={true}
+                    onClick_DEPRECATED={props.close}
+                />
             </DialogBottomButtons>
         </BloomDialog>
     );

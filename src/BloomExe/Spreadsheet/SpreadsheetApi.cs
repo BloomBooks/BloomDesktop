@@ -1,18 +1,15 @@
 using System;
-using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Windows.Forms;
 using Bloom.Api;
 using Bloom.Book;
 using Bloom.CollectionTab;
 using Bloom.MiscUI;
 using Bloom.Properties;
-using Bloom.Spreadsheet;
 using L10NSharp;
 using SIL.IO;
 
-namespace Bloom.web.controllers
+namespace Bloom.Spreadsheet
 {
 	/// <summary>
 	/// Commands that affect entire books, typically menu commands in the Collection tab right-click menu
@@ -66,7 +63,7 @@ namespace Bloom.web.controllers
 				SetSpreadsheetFolder(book, outputFolder);
 				string imagesFolderPath = Path.GetDirectoryName(bookPath);
 
-				exporter.ExportToFolderWithProgress(dom, imagesFolderPath, outputFolder, outputFilePath =>
+				exporter.ExportToFolderWithProgressAsync(dom, imagesFolderPath, outputFolder, outputFilePath =>
 				{
 					if (outputFilePath != null)
 						PathUtilities.OpenFileInApplication(outputFilePath);
@@ -112,7 +109,7 @@ namespace Bloom.web.controllers
 
 				var importer = new SpreadsheetImporter(_webSocketServer, book, Path.GetDirectoryName(inputFilepath));
 				importer.ControlForInvoke = Shell.GetShellOrOtherOpenForm();
-				importer.ImportWithProgress(inputFilepath, () =>
+				importer.ImportWithProgressAsync(inputFilepath, () =>
 				{
 
 					// The importer now does BringBookUpToDate() which accomplishes everything this did,
@@ -120,7 +117,6 @@ namespace Bloom.web.controllers
 					// due to a newly imported title. That would cause this call to fail.
 					//XmlHtmlConverter.SaveDOMAsHtml5(book.OurHtmlDom.RawDom, bookPath);
 					book.ReloadFromDisk(null);
-					BookHistory.AddEvent(book, TeamCollection.BookHistoryEventType.ImportSpreadsheet);
 					_bookSelection.InvokeSelectionChanged(false);
 				});
 			}

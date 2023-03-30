@@ -14,6 +14,7 @@ export interface IBloomWebSocketProgressEvent extends IBloomWebSocketEvent {
         | "Instruction"
         | "Heading"
         | "Fatal";
+    percent?: number;
 }
 
 export function useWebSocketListener(

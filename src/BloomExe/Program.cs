@@ -24,6 +24,7 @@ using SIL.Windows.Forms.Registration;
 using SIL.Windows.Forms.Reporting;
 using SIL.Windows.Forms.UniqueToken;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Xml;
 using Bloom.CLI;
 using Bloom.CollectionChoosing;
@@ -33,7 +34,6 @@ using Bloom.MiscUI;
 using Bloom.web;
 using CommandLine;
 using Sentry;
-using Sentry.Protocol;
 using SIL.Windows.Forms.HtmlBrowser;
 using SIL.WritingSystems;
 using SIL.Xml;
@@ -139,7 +139,7 @@ namespace Bloom
 
 				RunningInConsoleMode = true;
 
-				var exitCode = CommandLine.Parser.Default.ParseArguments(args1,
+				var mainTask = CommandLine.Parser.Default.ParseArguments(args1,
 						new[]
 						{
 							typeof(HydrateParameters), typeof(UploadParameters), typeof(DownloadBookOptions), typeof(GetUsedFontsParameters),
@@ -148,13 +148,7 @@ namespace Bloom
 						})
 					.MapResult(
 						(HydrateParameters opts) => HydrateBookCommand.Handle(opts),
-						(UploadParameters opts) =>
-						{
-							using (InitializeAnalytics())
-							{
-								return UploadCommand.Handle(opts);
-							}
-						},
+						(UploadParameters opts) => HandleUpload(opts),
 						(DownloadBookOptions opts) => DownloadBookCommand.HandleSilentDownload(opts),
 						(GetUsedFontsParameters opts) => GetUsedFontsCommand.Handle(opts),
 						(ChangeLayoutParameters opts) => ChangeLayoutCommand.Handle(opts),
@@ -165,7 +159,7 @@ namespace Bloom
 						// This means that if we use this CLI version, care should be taken to update the book,
 						// so the pages get the correct "side" classes (side-left, side-right). (BL-10884)
 						(SpreadsheetImportParameters opts) => SpreadsheetImportCommand.Handle(opts),
-						errors =>
+						async errors =>
 						{
 							var code = 0;
 							foreach (var error in errors)
@@ -182,7 +176,28 @@ namespace Bloom
 
 							return code;
 						});
-				return exitCode; // we're done
+				// What we want to do here is await mainTask. But to do that we have to make
+				// Main async. That is allowed since C# 7.1, but if we do it, we don't get
+				// a Windows.Forms synchronization context, which means async tasks started on
+				// the UI thread don't have to complete on the UI thread. That will mess up
+				// WebView2, and it is so that we can use WebView2's ExecuteJavascriptAsync
+				// that we made all these commands async to begin with.
+				// As soon as we DO have a windows.forms sync context...even if we made it ourselves,
+				// which is tricky because await won't work on a windows.forms sync context
+				// until we enter Run() and start pumping messages...we run into the problem
+				// that we need the result of the main task to return as the result of Main().
+				// We can't just call Result, because that blocks the main thread, which stops
+				// it pumping messages, which means anything that awaits on the main thread
+				// will deadlock.
+				// So, the best I can find to do is to sit here pumping messages until the
+				// main task completes.
+				// (Many of the main tasks don't actually do any awaiting and will immediately
+				// show as completed.)
+				while (!mainTask.IsCompleted)
+				{
+					Application.DoEvents();
+				}
+				return mainTask.Result; // we're done; this is safe once there is nothing being awaited.
 			}
 
 			try
@@ -312,7 +327,7 @@ namespace Bloom
 									{
 										var msg = LocalizationManager.GetString("TeamCollection.QuitOtherBloom",
 											"Please close Bloom before joining a Team Collection");
-										ErrorReport.NotifyUserOfProblem(msg);
+										BloomMessageBox.ShowInfo(msg);
 										return 1;
 									}
 									gotUniqueToken = true;
@@ -525,12 +540,20 @@ namespace Bloom
 			return 0;
 		}
 
+		static async Task<int> HandleUpload(UploadParameters opts)
+		{
+			using (InitializeAnalytics())
+			{
+				return await UploadCommand.Handle(opts);
+			}
+		}
+
 		/// <summary>
-		/// Sets up different analytics channels depending on Debug or not.
-		/// Also determines whether or not Registration should occur.
-		/// </summary>
-		/// <returns></returns>
-		private static DesktopAnalytics.Analytics InitializeAnalytics()
+	/// Sets up different analytics channels depending on Debug or not.
+	/// Also determines whether or not Registration should occur.
+	/// </summary>
+	/// <returns></returns>
+	private static DesktopAnalytics.Analytics InitializeAnalytics()
 		{
 			// Ensures that registration settings for all channels of Bloom are stored in a common place,
 			// so the user is not asked to register each independently.
@@ -650,20 +673,22 @@ namespace Bloom
 			}
 		}
 
+		public static string BloomExePath => Application.ExecutablePath;
+
 		public static void RestartBloom(bool hardExit, string args = null)
 		{
 			try
 			{
-				var program = Application.ExecutablePath;
+				var program = BloomExePath;
 				if (SIL.PlatformUtilities.Platform.IsLinux)
 				{
 					// This is needed until the day comes (if it ever does) when we can use the
 					// system mono on Linux.
 					program = "/opt/mono5-sil/bin/mono";
 					if (args == null)
-						args = "\"" + Application.ExecutablePath + "\"";
+						args = "\"" + BloomExePath + "\"";
 					else
-						args = "\"" + Application.ExecutablePath + "\" " + args;
+						args = "\"" + BloomExePath + "\" " + args;
 					if (_originalPreload != null)
 						Environment.SetEnvironmentVariable("LD_PRELOAD", _originalPreload);
 				}
@@ -749,7 +774,10 @@ namespace Bloom
 				}, shouldHideSplashScreen: RegistrationDialog.ShouldWeShowRegistrationDialog(),
 				lowPriority:true);
 
-			Sldr.Initialize();
+			// Crashes if initialized twice, and there's at least once case when joining a TC
+			// where we can come here twice.
+			if (!Sldr.IsInitialized)
+				Sldr.Initialize();
 			try
 			{
 				Application.Run();

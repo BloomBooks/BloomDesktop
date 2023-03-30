@@ -22,30 +22,33 @@ namespace BloomTests.Spreadsheet
 		{
 		}
 
-		protected override Browser GetBrowser()
+		protected override Task<Browser> GetBrowserAsync()
 		{
 			throw new ApplicationException("Must not use real browser in unit testing");
 		}
 
 		// A dreadfully crude approximation, but good enough for these tests.
-		protected override string GetMd5(XmlElement elt)
+		protected override Task<string> GetMd5Async(XmlElement elt)
 		{
-			return elt.InnerText.GetHashCode().ToString();
+			return Task.FromResult(elt.InnerText.GetHashCode().ToString());
 		}
 
 		// This is also a crude approximation; it won't, for example, handle any sentence-ending punctuation
 		// besides period. But it covers the text used in the relevant tests.
-		protected override string[] GetSentenceFragments(string text)
+		protected override async Task<string[]> GetSentenceFragmentsAsync(string text)
 		{
 			return GetFrags(text).ToArray();
 		}
 
 		IEnumerable<string> GetFrags(string text)
 		{
-			var sentences = text.Replace("\\'", "'").Split('.');
+			var sentences = text.Replace("\\'", "'").Split(new char[] { '.', '|' });
 			for (int i = 0; i < sentences.Length - 1; i++)
 			{
-				sentences[i] = sentences[i] + ".";
+				if (sentences[i].EndsWith(" ") || sentences[i].EndsWith(","))
+					sentences[i] = sentences[i] + '|';
+				else
+					sentences[i] = sentences[i] + ".";
 			}
 
 			yield return "s" + sentences[0];
@@ -54,7 +57,7 @@ namespace BloomTests.Spreadsheet
 			{
 				var s1 = sentence.TrimStart();
 				if (sentence.Length > s1.Length)
-					yield return " " + sentence.Substring(sentence.Length - s1.Length);
+					yield return " " + sentence.Substring(0, sentence.Length - s1.Length);
 				if (s1.Length > 0)
 					yield return "s" + s1;
 			}

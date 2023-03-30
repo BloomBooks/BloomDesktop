@@ -170,5 +170,32 @@ namespace Bloom
 				}
 			}
 		}
+
+		/// <summary>
+		/// Returns the result of combining an array of lists into a list of arrays.
+		/// The resulting arrays will have the same length as the input array.
+		/// Items will have corresponding positions.
+		/// The input arrays may not always have the same length. The result's length
+		/// will equal the longest input list.
+		/// Where some inputs are shorter, the appropriate default value is inserted
+		/// into items that need it.
+		/// </summary>
+		public static IEnumerable<T[]> MapUnevenLists<T>(List<T>[] inputs)
+		{
+			var result = new List<T[]>();
+			var maxLength = inputs.Max(x => x.Count);
+			// I think of this starting with a row of columns (each item in inputs is a column),
+			// producing a column of rows (each item in results is a row)
+			for (int row = 0; row < maxLength; row++)
+			{
+				var item = new T[inputs.Length];
+				for (int column = 0; column < inputs.Length; column++)
+				{
+					item[column] = inputs[column].Count <= row ? default(T) : inputs[column][row];
+				}
+				result.Add(item);
+			}
+			return result;
+		}
 	}
 }
