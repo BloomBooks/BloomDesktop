@@ -197,7 +197,7 @@ namespace Bloom.Publish.BloomLibrary
 			var hasImageDesc = _model.Book.OurHtmlDom.GetLangCodesWithImageDescription().Any();
 
 			_blindCheckBox.Enabled = hasImageDesc;
-			_blindCheckBox.Checked = hasImageDesc && bookInfoMetaData.Feature_Blind;
+			_blindCheckBox.Checked = hasImageDesc && _model.L1SupportsVisuallyImpaired;
 			_signLanguageCheckBox.Enabled = _model.Book.HasSignLanguageVideos();
 			_signLanguageCheckBox.Checked = _signLanguageCheckBox.Enabled && _model.IsPublishSignLanguage();
 
@@ -600,7 +600,6 @@ namespace Bloom.Publish.BloomLibrary
 			}
 
 			_model.UpdateBookMetadataFeatures(
-				_blindCheckBox.Checked,
 				_narrationAudioCheckBox.Checked,
 				_signLanguageCheckBox.Checked);
 
@@ -676,14 +675,7 @@ namespace Bloom.Publish.BloomLibrary
 
 		private void _blindCheckBox_CheckedChanged(object sender, EventArgs e)
 		{
-			if (!_blindCheckBox.Checked)
-			{
-				_model.ClearBlindAccessibleToPublish();
-			}
-			else
-			{
-				_model.SetOnlyBlindAccessibleToPublish(LanguagesCheckedToUpload.FirstOrDefault());
-			}
+			_model.L1SupportsVisuallyImpaired = _blindCheckBox.Checked;
 		}
 
 		private void SelectFolderAndUploadCollectionsWithinIt()

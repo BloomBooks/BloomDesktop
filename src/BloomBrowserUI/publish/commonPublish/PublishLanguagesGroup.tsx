@@ -15,6 +15,7 @@ export interface ILanguagePublishInfo {
     includeText: boolean;
     containsAnyAudio: boolean;
     includeAudio: boolean;
+    required: boolean;
 }
 
 class LanguagePublishInfo implements ILanguagePublishInfo {
@@ -24,6 +25,7 @@ class LanguagePublishInfo implements ILanguagePublishInfo {
     public includeText: boolean;
     public containsAnyAudio: boolean;
     public includeAudio: boolean;
+    public required: boolean;
 
     public constructor(other?: ILanguagePublishInfo | undefined) {
         if (!other) {
@@ -37,6 +39,7 @@ class LanguagePublishInfo implements ILanguagePublishInfo {
             this.includeText = other.includeText;
             this.containsAnyAudio = other.containsAnyAudio;
             this.includeAudio = other.includeAudio;
+            this.required = other.required;
         }
     }
 }
@@ -50,7 +53,7 @@ export const PublishLanguagesGroup: React.FunctionComponent<{
     const [langs, setLangs] = React.useState(initialValue);
     React.useEffect(() => {
         get(
-            "publish/android/languagesInBook",
+            "publish/languagesInBook",
 
             // onSuccess
             result => {
@@ -79,8 +82,9 @@ export const PublishLanguagesGroup: React.FunctionComponent<{
             code: item.code,
             name: item.name,
             warnIncomplete: !item.complete,
-            isEnabled: true,
-            isChecked: item.includeText
+            isEnabled: !item.required,
+            isChecked: item.includeText,
+            required: item.required
         };
     });
 
@@ -107,7 +111,7 @@ export const PublishLanguagesGroup: React.FunctionComponent<{
                     newLangObj[fieldToUpdate] = newState;
 
                     post(
-                        `publish/android/includeLanguage?langCode=${newLangObj.code}&${fieldToUpdate}=${newState}`
+                        `publish/includeLanguage?langCode=${newLangObj.code}&${fieldToUpdate}=${newState}`
                     );
 
                     return newLangObj;

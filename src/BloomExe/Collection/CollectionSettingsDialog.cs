@@ -284,7 +284,7 @@ namespace Bloom.Collection
 				// See https://issues.bloomlibrary.org/youtrack/issue/BL-7641.
 				dlg.IncludeScriptMarkers = false;
 
-				if (DialogResult.OK != dlg.ShowDialog())
+				if (DialogResult.OK != dlg.ShowDialog(Shell.GetShellOrOtherOpenForm()))
 				{
 					return null;
 				}

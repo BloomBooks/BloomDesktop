@@ -178,6 +178,7 @@ namespace Bloom
 							typeof(ProblemReportApi),
 							typeof(FontsApi),
 							typeof(BulkBloomPubCreator),
+							typeof(PublishApi),
 							typeof(LibraryPublishApi),
 							typeof(WorkspaceApi),
 							typeof(BookCollectionHolder),
@@ -340,6 +341,7 @@ namespace Bloom
 			ToolboxView.RegisterWithApiHandler(server.ApiHandler);
 			_scope.Resolve<PageTemplatesApi>().RegisterWithApiHandler(server.ApiHandler);
 			_scope.Resolve<AddOrChangePageApi>().RegisterWithApiHandler(server.ApiHandler);
+			_scope.Resolve<PublishApi>().RegisterWithApiHandler(server.ApiHandler);
 			_scope.Resolve<PublishToAndroidApi>().RegisterWithApiHandler(server.ApiHandler);
 			_scope.Resolve<PublishPdfApi>().RegisterWithApiHandler(server.ApiHandler);
 			_scope.Resolve<PublishAudioVideoAPI>().RegisterWithApiHandler(server.ApiHandler);

@@ -5,6 +5,7 @@ import * as React from "react";
 import { useState } from "react";
 import { FormControlLabel, Checkbox } from "@mui/material";
 import { useL10n } from "./l10nHooks";
+import { LightTooltip } from "./lightTooltip";
 
 // wrap up the complex material-ui checkbox in something simple and make it handle tristate
 export const MuiCheckbox: React.FunctionComponent<{
@@ -16,6 +17,7 @@ export const MuiCheckbox: React.FunctionComponent<{
     tristate?: boolean;
     disabled?: boolean;
     alreadyLocalized?: boolean;
+    icon?: React.ReactNode;
     temporarilyDisableI18nWarning?: boolean;
     onCheckChanged: (v: boolean | undefined) => void;
     l10nParam0?: string;
@@ -26,6 +28,7 @@ export const MuiCheckbox: React.FunctionComponent<{
     // I ended up deep in the rabbit hole, so I punted and added this prop instead.
     // Ideally, we would fix those and get rid of this parameter.
     deprecatedVersionWhichDoesntEnsureMultilineLabelsWork?: boolean;
+    title?: React.ReactNode;
 }> = props => {
     const [previousTriState, setPreviousTriState] = useState<
         boolean | undefined
@@ -52,6 +55,28 @@ export const MuiCheckbox: React.FunctionComponent<{
         props.l10nParam1
     );
 
+    const mainLabel =
+        typeof props.label === "string" ? localizedLabel : props.label;
+    let finalLabel = mainLabel;
+    if (props.icon) {
+        finalLabel = (
+            <div
+                css={css`
+                    display: flex;
+                    align-items: baseline; // keeps text well aligned with checkbox
+                `}
+            >
+                {props.icon}{" "}
+                <div
+                    css={css`
+                        margin-left: 5px;
+                    `}
+                >
+                    {mainLabel}
+                </div>
+            </div>
+        );
+    }
     // Work has been done below to ensure that a wrapped label will align with the control correctly.
     // If messing with the layout, be sure you didn't break this by checking the storybook story.
 
@@ -92,8 +117,7 @@ export const MuiCheckbox: React.FunctionComponent<{
             color="primary"
         />
     );
-
-    return (
+    const mainContent = (
         <FormControlLabel
             css={
                 !props.deprecatedVersionWhichDoesntEnsureMultilineLabelsWork
@@ -112,10 +136,14 @@ export const MuiCheckbox: React.FunctionComponent<{
                     checkboxControl
                 )
             }
-            label={
-                typeof props.label === "string" ? localizedLabel : props.label
-            }
+            label={finalLabel}
             disabled={props.disabled}
         />
+    );
+
+    return props.title ? (
+        <LightTooltip title={props.title}>{mainContent}</LightTooltip>
+    ) : (
+        mainContent
     );
 };

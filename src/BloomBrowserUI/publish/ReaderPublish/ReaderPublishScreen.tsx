@@ -11,8 +11,8 @@ import {
     PublishPanel
 } from "../commonPublish/PublishScreenBaseComponents";
 import { MethodChooser } from "./MethodChooser";
-import { PublishFeaturesGroup } from "./PublishFeaturesGroup";
-import { CoverColorGroup } from "./CoverColorGroup";
+import { PublishFeaturesGroup } from "../commonPublish/PublishFeaturesGroup";
+import { CoverColorGroup } from "../commonPublish/CoverColorGroup";
 import PublishScreenTemplate from "../commonPublish/PublishScreenTemplate";
 import { DeviceAndControls } from "../commonPublish/DeviceAndControls";
 import ReactDOM = require("react-dom");
@@ -33,7 +33,7 @@ import {
 import { PublishProgressDialog } from "../commonPublish/PublishProgressDialog";
 import { useL10n } from "../../react_components/l10nHooks";
 import { ProgressState } from "../commonPublish/PublishProgressDialogInner";
-import { PublishLanguagesGroup } from "./PublishLanguagesGroup";
+import { PublishLanguagesGroup } from "../commonPublish/PublishLanguagesGroup";
 import {
     BulkBloomPubDialog,
     showBulkBloomPubDialog
@@ -68,6 +68,7 @@ const ReaderPublishScreenInternal: React.FunctionComponent<{
     const [closePending, setClosePending] = useState(false);
     const [highlightRefresh, setHighlightRefresh] = useState(false);
     const [progressState, setProgressState] = useState(ProgressState.Working);
+    const [generation, setGeneration] = useState(0);
 
     // bookUrl is expected to be a normal, well-formed URL.
     // (that is, one that you can directly copy/paste into your browser and it would work fine)
@@ -173,13 +174,20 @@ const ReaderPublishScreenInternal: React.FunctionComponent<{
 
     const optionsPanel = (
         <SettingsPanel>
+            <CoverColorGroup onChange={() => props.onReset()} />
+            <PublishLanguagesGroup
+                onChange={() => {
+                    setHighlightRefresh(true);
+                    // Forces features group to re-evaluate whether this will be a talking book.
+                    setGeneration(old => old + 1);
+                }}
+            />
             <PublishFeaturesGroup
                 onChange={() => {
                     props.onReset();
                 }}
+                generation={generation}
             />
-            <CoverColorGroup onChange={() => props.onReset()} />
-            <PublishLanguagesGroup onChange={() => setHighlightRefresh(true)} />
             {/* push everything to the bottom */}
             <div
                 css={css`
