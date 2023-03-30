@@ -778,10 +778,12 @@ even when the div is focused (as long as it is empty).*/
 /*This block handles marking elements that violate decodable book and leveled reader constraints*/
 span.sentence-too-long {
     background-color: @LeveledReaderViolationColor;
+    position: unset; // BL-11633, works around Chromium bug
 }
 
 span.word-too-long {
     background-color: @bloom-lightblue;
+    position: unset; // BL-11633, works around Chromium bug
 }
 
 .page-too-many-words-or-sentences .marginBox {
@@ -804,6 +806,7 @@ span.sight-word {}
 
 span.word-not-found {
     background-color: @DecodableReaderViolationColor;
+    position: unset; // BL-11633, works around Chromium bug
 }
 
 /* We are disabling the "Possible Word" feature at this time.

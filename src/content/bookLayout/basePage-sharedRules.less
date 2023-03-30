@@ -20,6 +20,9 @@ body {
 // we want to ensure a contrast with the background color (unless the user overrides,
 // in which case, adequate contrast is up to them).
 // (Color is @bloom-yellow.)
+// (When editing the text, this background causes problems (due to a Chromium bug)
+// if the elements have their default position: relative. This is overidden in
+// audioRecording.less.)
 span.ui-audioCurrent,
 div.ui-audioCurrent p {
     background-color: #febf00;

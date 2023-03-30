@@ -15,9 +15,11 @@
 
 .bloom-page.questions {
     background-color: @bloom-blue;
+    position: unset; // BL-11633, works around Chromium bug
 
     .quizIntructions {
         background-color: @bloom-lightgray;
+        position: unset; // BL-11633, works around Chromium bug
         font-size: 10pt;
         font-family: @UIFontStack;
         // Top and bottom padding are set to 0 so as not to clip scrolled text at the bottom.

@@ -931,6 +931,15 @@ export default class AudioRecording {
                 kSuppressHighlightClass
             );
         }
+
+        const iconHolders = Array.from(
+            parentElement.getElementsByClassName(
+                "bloom-ui-current-audio-marker"
+            )
+        );
+        for (let i = 0; i < iconHolders.length; i++) {
+            iconHolders[i].remove();
+        }
     }
 
     public async setSoundAndHighlightAsync(
@@ -980,6 +989,15 @@ export default class AudioRecording {
             // especially if the caller doesn't await this function.
             // This allows us to generally represent the correct current element immediately.
             newElement.classList.add(kAudioCurrent);
+            // This is a workaround for a Chromium bug; see BL-11633. We'd like our style rules
+            // to just put the icon on the element that has kAudioCurrent. But that element
+            // has a background color, so (due to the bug) it cannot have position:relative,
+            // or we lose the cursor. So insert an empty element (which by default will have
+            // position: relative) to hold the icon.
+            const iconHolder = newElement.ownerDocument.createElement("span");
+            iconHolder.classList.add("bloom-ui-current-audio-marker");
+            iconHolder.classList.add("bloom-ui"); // makes sure it never becomes part of saved document.
+            newElement.parentElement?.insertBefore(iconHolder, newElement);
         }
 
         if (suppressHighlightIfNoAudio) {
