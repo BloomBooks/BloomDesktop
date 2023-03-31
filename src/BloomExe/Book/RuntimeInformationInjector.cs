@@ -83,6 +83,8 @@ namespace Bloom.Book
 		internal static void PullInCollectionLanguagesDisplayNames(Dictionary<string, string> d, BookInfo bookInfo)
 		{
 			var displayNames = bookInfo.MetaData.DisplayNames;
+			if (displayNames == null)
+				return;
 			foreach (var kvp in displayNames)
 			{
 				SafelyAddLanguage(d, kvp.Key, kvp.Value);
