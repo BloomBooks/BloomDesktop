@@ -252,8 +252,9 @@ namespace BloomTests.Publish
             <div style='min-height: 42px;' class='split-pane horizontal-percent'>
                 <div class='split-pane-component position-top' style='bottom: 50%'>
                     <div class='split-pane-component-inner'>
-                        <div title='aor_BRD11.png 41.36 KB 1500 x 581 716 DPI (should be 300-600) Bit Depth: 32' class='bloom-imageContainer bloom-leadingElement'>
-                            <img data-license='cc-by-sa' data-creator='' data-copyright='Copyright SIL International 2009' src='aor_BRD11.png' alt='Two birds on a branch with beak tips touching'></img>
+                        <div title='aor_BRD11.png 41.36 KB 1500 x 581 716 DPI (should be 300-600) Bit Depth: 32' class='bloom-imageContainer bloom-leadingElement'
+							data-initialrect='0.0024509803921568627 0.002967359050445104 0.75 0.7507418397626113' data-finalrect='0.37745098039215685 0.12759643916913946 0.5 0.5014836795252225'>
+							< img data-license='cc-by-sa' data-creator='' data-copyright='Copyright SIL International 2009' src='aor_BRD11.png' alt='Two birds on a branch with beak tips touching'></img>
 
                             <div class='bloom-translationGroup bloom-imageDescription bloom-trailingElement'>
                                 <div data-audiorecordingmode='Sentence' data-languagetipcontent='English' aria-label='false' role='textbox' spellcheck='true' tabindex='0' class='bloom-editable normal-style bloom-content1 bloom-visibility-code-on' contenteditable='true' lang='xyz'>
