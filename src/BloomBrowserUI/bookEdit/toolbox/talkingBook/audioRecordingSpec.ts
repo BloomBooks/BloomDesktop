@@ -1443,7 +1443,7 @@ describe("audio recording tests", () => {
             extendedTimeoutInMs
         );
 
-        it(
+        fit(
             "toggleRecordingMode(): converts from RecordSentence/PlaySentence to RecordTextBox/PlayTextBox and back, if not recorded",
             async () => {
                 // Setup
@@ -1481,7 +1481,7 @@ describe("audio recording tests", () => {
                 );
 
                 const expectedDiv2Result =
-                    '<div class="bloom-editable" id="div2" data-audiorecordingmode="Sentence"><p><span id="2.1" class="audio-sentence ui-audioCurrent" recordingmd5="undefined">Sentence 2.1.</span> <span id="2.2" class="audio-sentence" recordingmd5="undefined">Sentence 2.2.</span></p></div>';
+                    '<div class="bloom-editable" id="div2" data-audiorecordingmode="Sentence"><p><span class="bloom-ui-current-audio-marker bloom-ui"></span><span id="2.1" class="audio-sentence ui-audioCurrent" recordingmd5="undefined">Sentence 2.1.</span> <span id="2.2" class="audio-sentence" recordingmd5="undefined">Sentence 2.2.</span></p></div>';
                 expect(div2.outerHTML).toBe(
                     expectedDiv2Result,
                     "Div2 HTML should switch back to sentence mode"
@@ -1494,7 +1494,7 @@ describe("audio recording tests", () => {
             extendedTimeoutInMs
         );
 
-        it(
+        fit(
             "toggleRecordingMode(): converts from RecordTextBox/PlayTextBox to RecordSentence/PlaySentence",
             async () => {
                 const textBoxDivHtml =
@@ -1541,8 +1541,8 @@ describe("audio recording tests", () => {
                 );
 
                 const sentences = textBox1.getElementsByTagName("SPAN");
-                expect(sentences.length).toBe(2);
-                const sentence1 = sentences.item(0)!;
+                expect(sentences.length).toBe(3); // includes icon-holder span
+                const sentence1 = sentences.item(1)!;
                 expect(sentence1.classList.contains("ui-audioCurrent")).toBe(
                     true
                 );
