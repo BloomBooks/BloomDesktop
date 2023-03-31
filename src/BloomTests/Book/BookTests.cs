@@ -3564,9 +3564,8 @@ namespace BloomTests.Book
 			var book = CreateBook();
 			book.CollectionSettings.SignLanguageTag = signLangaugeCode;
 
-			book.UpdateMetadataFeatures(true, true, true, allowedLangs);
+			book.UpdateMetadataFeatures(true, true, allowedLangs);
 
-			CollectionAssert.AreEquivalent(expectedResults, book.BookInfo.MetaData.Feature_Blind_LangCodes, "Blind");
 			CollectionAssert.AreEquivalent(expectedResults, book.BookInfo.MetaData.Feature_TalkingBook_LangCodes, "TalkingBook");
 
 			// SignLanaguage doesn't care about allowedLangs setting, only its enabled flag.
@@ -3588,7 +3587,7 @@ namespace BloomTests.Book
 			var book = CreateBook();
 			book.CollectionSettings.BrandingProjectKey = "MyCustomBrand";   // Needed so Enterprise Features is considered enabled which is needed for quizzes
 
-			book.UpdateMetadataFeatures(false, false, false, null);
+			book.UpdateMetadataFeatures(false, false, null);
 
 			Assert.AreEqual(false, book.BookInfo.MetaData.Feature_Quiz, "Quiz");
 			CollectionAssert.AreEquivalent(new string[0], book.BookInfo.MetaData.Features, "Features");
@@ -3609,7 +3608,7 @@ namespace BloomTests.Book
 			var book = CreateBook();
 			book.CollectionSettings.BrandingProjectKey = "MyCustomBrand";   // Needed so Enterprise Features is considered enabled which is needed for quizzes
 
-			book.UpdateMetadataFeatures(false, false, false, null);
+			book.UpdateMetadataFeatures(false, false, null);
 
 			Assert.AreEqual(true, book.BookInfo.MetaData.Feature_Quiz, "Quiz");
 			CollectionAssert.AreEquivalent(new string[] { "activity", "quiz" }, book.BookInfo.MetaData.Features, "Features");
@@ -3630,7 +3629,7 @@ namespace BloomTests.Book
 			var book = CreateBookWithPhysicalFile(html);
 			book.BookInfo.MetaData.Feature_Widget = true; // spurious, see if it gets cleaned up
 
-			book.UpdateMetadataFeatures(false, false, false, null);
+			book.UpdateMetadataFeatures(false, false, null);
 
 			Assert.AreEqual(false, book.BookInfo.MetaData.Feature_Activity, "Activity");
 			Assert.AreEqual(false, book.BookInfo.MetaData.Feature_Widget, "Widget");
@@ -3653,7 +3652,7 @@ namespace BloomTests.Book
 
 			var book = CreateBookWithPhysicalFile(html);
 
-			book.UpdateMetadataFeatures(false, false, false, null);
+			book.UpdateMetadataFeatures(false, false, null);
 
 			Assert.AreEqual(true, book.BookInfo.MetaData.Feature_Activity, "Activity");
 			Assert.AreEqual(true, book.BookInfo.MetaData.Feature_Widget, "Widget");
@@ -3678,7 +3677,7 @@ namespace BloomTests.Book
 
 			// System under test
 			bool propertyResult = book.HasOverlayPages;
-			book.UpdateMetadataFeatures(false, false, false, null);
+			book.UpdateMetadataFeatures(false, false, null);
 
 			// Verification
 			Assert.AreEqual(false, propertyResult);
@@ -3707,7 +3706,7 @@ namespace BloomTests.Book
 
 			// System under test
 			bool propertyResult = book.HasOverlayPages;
-			book.UpdateMetadataFeatures(false, false, false, null);
+			book.UpdateMetadataFeatures(false, false, null);
 
 			// Verification
 			Assert.AreEqual(true, propertyResult);
@@ -3736,7 +3735,7 @@ namespace BloomTests.Book
 
 			var book = CreateBook();
 
-			book.UpdateMetadataFeatures(false, false, false, null);
+			book.UpdateMetadataFeatures(false, false, null);
 
 			Assert.AreEqual(false, book.BookInfo.MetaData.Feature_Motion, "Feature_Motion");
 			CollectionAssert.AreEquivalent(new string[0], book.BookInfo.MetaData.Features, "Features");
@@ -3766,7 +3765,7 @@ namespace BloomTests.Book
 			var book = CreateBook();
 			book.BookInfo.PublishSettings.BloomPub.Motion = true;
 
-			book.UpdateMetadataFeatures(false, false, false, null);
+			book.UpdateMetadataFeatures(false, false, null);
 
 			Assert.AreEqual(true, book.BookInfo.MetaData.Feature_Motion, "Feature_Motion");
 			CollectionAssert.AreEquivalent(new string[] { "motion" }, book.BookInfo.MetaData.Features, "Features");

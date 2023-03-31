@@ -294,7 +294,9 @@ namespace Bloom.Book
 			TextLangs = new Dictionary<string, InclusionSetting>();
 			AudioLangs = new Dictionary<string, InclusionSetting>();
 			SignLangs = new Dictionary<string, InclusionSetting>();
-			Motion = true; // Default for new books (ignored if they have no motion settings)
+			// We want this to default true for books that actually have Motion,
+			// But then it gets published that way even for books that don't.
+			//Motion = true; // Default for new books (ignored if they have no motion settings)
 		}
 
 		// Whether to publish the book as a motion book, that can be rotated
