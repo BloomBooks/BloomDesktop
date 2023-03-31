@@ -69,7 +69,7 @@ namespace BloomTests.Book
 			Assert.That(bi.PublishSettings.AudioVideo.Motion, Is.False);
 			Assert.That(bi.PublishSettings.AudioVideo.PageTurnDelay, Is.EqualTo(3000));
 			Assert.That(bi.PublishSettings.AudioVideo.PlayerSettings, Is.EqualTo(""));
-			Assert.That(bi.PublishSettings.BloomPub.Motion, Is.False);
+			Assert.That(bi.PublishSettings.BloomPub.Motion, Is.True);
 			Assert.That(bi.PublishSettings.BloomLibrary.TextLangs, Is.Not.Null);
 			Assert.That(bi.PublishSettings.BloomPub.TextLangs, Is.Not.Null);
 			Assert.That(bi.PublishSettings.BloomLibrary.AudioLangs, Is.Not.Null);
