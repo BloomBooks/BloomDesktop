@@ -1,0 +1,57 @@
+@import "../branding-base.less";
+
+@bleed: 3mm; // enhance: not clear where this should be defined until 5.5 when we can use css variables
+@inset: 2 * @bleed;
+
+img.bloomBadge {
+    position: absolute;
+    right: @inset;
+    top: @inset;
+    height: 30px;
+    opacity: 0.7;
+}
+
+.back-cover-bottom {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    //width: 100%;
+    background-color: white;
+    padding-top: 10px;
+    padding-bottom: calc(@inset + 10px);
+    padding-left: @inset;
+    padding-right: @inset;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-content: flex-start;
+
+    [data-book="outside-back-cover-USAID"] {
+        img {
+            height: 50px;
+        }
+
+        .USAID {
+            font-size: 9pt;
+            color: black;
+            font-family: Arial; // mockup was in Aileron, a proprietary font from Adobe
+        }
+    }
+
+    [data-book="outside-back-cover-ministry"] img {
+        height: 100px;
+        // keep the USAID text away a bit
+        margin-left: 20px;
+    }
+}
+
+.A4Landscape {
+    .back-cover-bottom {
+        justify-content: unset;
+    }
+
+    .USAID {
+        max-width: 600px;
+    }
+}

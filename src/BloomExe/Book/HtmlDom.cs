@@ -1266,7 +1266,7 @@ namespace Bloom.Book
 
 		// Both of these are relative to the DOM's Head element
 		private const string CoverColorStyleXPath = "./style[@type='text/css' and contains(.,'coverColor')]";
-		private const string UserModifiedStyleXPath = "./style[@type='text/css' and @title='userModifiedStyles']";
+		public const string UserModifiedStyleXPath = "./style[@type='text/css' and @title='userModifiedStyles']";
 
 		/// <summary>
 		/// Finds the style element that contains css rules for 'userModifiedStyles',

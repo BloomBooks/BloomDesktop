@@ -1,0 +1,34 @@
+{
+    "presets": [
+        {
+            "data-book": "xmatter",
+            "lang": "*",
+            "content": "Uzbekistan2023",
+            "condition": "always"
+        },
+        {
+            "data-book": "level-image-html",
+            "lang": "*",
+            "content": "<img class='branding' src='{bookshelfUrlKey}.svg'/>",
+            "condition": "always"
+        },
+        {
+            "data-book": "outside-back-cover-USAID",
+            "lang": "*",
+            "content": "<img src='Kyrgyzstan2020-English-USAID-logo.png'/><div lang='uz' class='USAID'>Ushbu kitob Amerika Qo'shma Shtatlari Xalqaro Taraqqiyot Agentligi (USAID) orqali Amerika xalqining ko'magida ishlab chiqilgan. Kitobdagi fikrlar va mulohazalar USAID yoki AQSH hukumatining qarashlarini aks ettirmaydi.</div>",
+            "condition": "always"
+        },
+        {
+            "data-book": "outside-back-cover-ministry",
+            "lang": "*",
+            "content": "<img src='UzbekistanMinistryOfPreschoolAndSchoolEducation.svg'/>",
+            "condition": "always"
+        },
+        {
+            "data-book": "fullBleed",
+            "lang": "*",
+            "content": "true",
+            "condition": "always"
+        }
+    ]
+}

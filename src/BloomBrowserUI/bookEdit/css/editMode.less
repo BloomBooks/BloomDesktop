@@ -47,10 +47,10 @@
 
 body {
     background-color: @bloom-darkestBackground;
-    transform-origin: top left;
     /* This works with a transform:scale style added in Javascript to allow zooming just the main page*/
-    transition: transform 20ms;
+    transform-origin: top left;
     /* This works around a bug in Gecko29 and should be removed when we upgrade. It prevents redraw errors during crtl-wheel zooming*/
+    transition: transform 20ms;
 }
 
 // See comments on .bloom-mediaBox in basePage.less for a description of the mediaBox.
@@ -58,7 +58,7 @@ body {
 .bloom-mediaBox {
     pointer-events: none; // we want all clicks to go through this to the child
 
-    &>* {
+    & > * {
         pointer-events: auto; // start up clicks again a the next level
     }
 
@@ -71,7 +71,7 @@ body {
 
         top: 0;
         bottom: 0;
-        border: 3mm solid rgba(0, 0, 0, 0.4); // medium gray
+        border: 3mm solid rgba(0, 0, 0, 0.8);
         z-index: 1;
     }
 
@@ -83,7 +83,7 @@ body {
         right: @bleed;
         top: @bleed;
         bottom: @bleed;
-        border: 3mm solid @EditBoxItemsColor;
+        border: 3mm solid rgba(0, 0, 0, 0.05);
         z-index: 2;
     }
 }
@@ -129,9 +129,8 @@ div.bloom-imageContainer {
 // The editing buttons are hidden when this class is added (currently by motion and comic tools)
 .bloom-imageContainer.bloom-hideImageButtons,
 .bloom-imageContainer.ui-suppressImageButtons {
-
-    >.imageButton,
-    >.miniButton {
+    > .imageButton,
+    > .miniButton {
         display: none;
     }
 }
@@ -150,7 +149,6 @@ div.bloom-imageContainer {
 
 [data-derived="originalCopyrightAndLicense"] {
     cite {
-
         &.missingOriginalTitle,
         &:hover {
             color: red;
@@ -306,6 +304,46 @@ body:not(.origami-drag) .bloom-imageContainer.hoverUp {
     }
 }
 
+// we need to inset the buttons a bit when the full bleed borders are showing
+body.bloom-fullBleed {
+    @inset: calc(@bleed * 2);
+
+    // little cut and copy buttons
+    .miniButton {
+        right: calc(60px + @inset) !important;
+
+        &.cutImageButton {
+            bottom: calc(27px + @inset) !important;
+        }
+
+        &.copyImageButton {
+            bottom: calc(6px + @inset);
+        }
+    }
+
+    .imageButton {
+        &.changeImageButton {
+            right: @inset;
+            top: @inset;
+        }
+
+        &.chooseWidgetButton {
+            right: @inset;
+            top: @inset;
+        }
+
+        &.pasteImageButton {
+            right: @inset;
+            bottom: @inset;
+        }
+
+        &.editMetadataButton {
+            left: @inset;
+            top: @inset;
+        }
+    }
+}
+
 // override button positions when the image is shrunk to make room for an image description
 .bloom-showImageDescriptions {
     canvas {
@@ -313,7 +351,6 @@ body:not(.origami-drag) .bloom-imageContainer.hoverUp {
     }
 
     .imageButton {
-
         &.changeImageButton,
         &.pasteImageButton {
             right: 50%;
@@ -338,9 +375,8 @@ body:not(.origami-drag) .bloom-imageContainer.hoverUp {
     }
 
     .bloom-imageContainer {
-
         // Requiring a direct child helps prevent this from applying to things like the format cog
-        >img {
+        > img {
             height: calc(100% - @imageDescriptionTopBorderWidth);
         }
 
@@ -362,7 +398,8 @@ body:not(.origami-drag) .bloom-imageContainer.hoverUp {
     // image description tool is active.
     border-style: solid;
     border-color: @accordion-active-element;
-    border-width: 0 @imageDescriptionBorderWidth @imageDescriptionBorderWidth @imageDescriptionBorderWidth;
+    border-width: 0 @imageDescriptionBorderWidth @imageDescriptionBorderWidth
+        @imageDescriptionBorderWidth;
     background-repeat: no-repeat;
 
     // This rule produces the border and icon at the top of each image when the image description tool is active
@@ -548,7 +585,6 @@ div.pageLabel[contenteditable="true"]:focus {
     }
 
     &[dir="rtl"] {
-
         p:after,
         .bloom-linebreak:after {
             right: auto;
@@ -692,7 +728,7 @@ div.marginBox {
     width: 116px;
 }
 
-#pagedragtoolbox>ul>li>div {
+#pagedragtoolbox > ul > li > div {
     border: 1px dotted @PageDragInnerItemBorderColor;
     margin-top: 34px;
     /*[empty]padding-top:;*/
@@ -739,7 +775,9 @@ div.bloom-editable.Heading2-style {
 
 /*Put in little grey language tooltips in the bottom-right of the editable divs*/
 .languageTip,
-.bloom-editable[contentEditable="true"][data-languageTipContent]:not([data-languageTipContent=""]):after {
+.bloom-editable[contentEditable="true"][data-languageTipContent]:not(
+        [data-languageTipContent=""]
+    ):after {
     position: absolute;
     right: 0;
     /*Same grey color as pageLabel*/
@@ -757,7 +795,9 @@ div.bloom-editable.Heading2-style {
     bottom: 0;
 }
 
-.bloom-editable[contentEditable="true"][data-languageTipContent]:not([data-languageTipContent=""]):after {
+.bloom-editable[contentEditable="true"][data-languageTipContent]:not(
+        [data-languageTipContent=""]
+    ):after {
     content: attr(data-languageTipContent);
     bottom: 2px; // See Bl-10017
     margin-right: 2px;
@@ -802,7 +842,8 @@ span.word-too-long {
     z-index: 20000;
 }
 
-span.sight-word {}
+span.sight-word {
+}
 
 span.word-not-found {
     background-color: @DecodableReaderViolationColor;
@@ -924,11 +965,10 @@ div.bloom-metaData textarea {
 
 // end of block moved from editOriginalMode
 
-
 // normally, the height is just a bit more than the paper size. We changed this in Bloom 5.5 so that we
 // could make dialogs draggable but be constrained the the bounds of the body, without that meaning that
 // you could only have the dialog in the top part of the screen that also had the page.
 html,
 body {
-    height: 100%
+    height: 100%;
 }

@@ -1,0 +1,150 @@
+@import (reference) "../../bloom-xmatter-common.less";
+@import (reference) "../../../../bookLayout/basePage.less";
+
+:root {
+    --bleed-tolerance: 3mm;
+}
+
+// These rule are common to regular Uzbekistan2023-Xmatter and the epub version.
+// Some of these rules, especially for the front cover, may not work on all readers,
+// but by experiment they seem to produce reasonable results. They were originally
+// part of the main Uzbekistan2023-Xmatter, developed to produce exactly the result
+// we want in Bloom Player.
+
+// we need a lot of classes here to overcome the unfortunately "!important" class put in by Bloom at runtime
+div.bloom-page.outsideFrontCover.coverColor,
+div.bloom-page.outsideBackCover.coverColor {
+    color: white;
+    // this will get overwritten if they choose a background color
+    background-color: gray !important;
+}
+
+/* show inside cover colors as white since this is full bleed, an so unlikely that someone is going to print the inside of the covers in a solid full-bleed color*/
+div.bloom-page {
+    &.insideFrontCover,
+    &.insideBackCover {
+        background-color: white !important;
+    }
+}
+
+//NB: these can't be only on <body> because they are also used in page thumbnails and in epubs
+*[data-bookshelfurlkey*="Grade1"] {
+    div.bloom-page.outsideFrontCover.coverColor,
+    div.bloom-page.outsideBackCover.coverColor {
+        background-color: #143a63 !important;
+    }
+}
+
+*[data-bookshelfurlkey*="Grade2"] {
+    div.bloom-page.outsideFrontCover.coverColor,
+    div.bloom-page.outsideBackCover.coverColor {
+        background-color: #702a2d !important;
+    }
+}
+
+*[data-bookshelfurlkey*="Grade3"] {
+    div.bloom-page.outsideFrontCover.coverColor,
+    div.bloom-page.outsideBackCover.coverColor {
+        background-color: #776a5a !important;
+    }
+}
+
+*[data-bookshelfurlkey*="Grade4"] {
+    div.bloom-page.outsideFrontCover.coverColor,
+    div.bloom-page.outsideBackCover.coverColor {
+        background-color: #adc4d8 !important;
+    }
+}
+
+.outsideFrontCover,
+.outsideBackCover {
+    .marginBox {
+        top: 0;
+        left: 0 !important;
+        height: 100% !important;
+        width: 100% !important;
+    }
+}
+
+.frontCover .placeholder,
+.frontCover .bloom-imageContainer {
+    margin: 0;
+    margin-bottom: 15px;
+
+    img[data-book="coverImage"] {
+        margin-bottom: auto; // If the image is too short, align from the top. I don't know for certain that they want this
+    }
+}
+
+// don't show second language on cover
+.frontCover
+    .bloom-translationGroup.bookTitle
+    .bloom-editable.bloom-contentNational1:not(.bloom-content1) {
+    display: none;
+}
+
+.frontCover .gradeBadgeRow {
+    display: flex;
+    justify-content: center;
+    height: 70px;
+    margin-bottom: 13px;
+}
+
+// a solid, semi-transparent line
+.creditsRow {
+    border-top: solid rgba(255, 255, 255, 0.3);
+    border-width: 2px;
+    padding-top: 10px;
+    height: 16mm;
+}
+
+.frontCover .bloom-translationGroup {
+    // constrain text to within the safe area
+    margin-left: calc(2 * var(--bleed-tolerance));
+    margin-right: calc(2 * var(--bleed-tolerance));
+}
+
+// This much of the translation group will be trimmed off if the printer
+// achieves the ideal trim cut: the bleed area plus the amount of the original
+// A5 page that is cut off when we scale the width to RA4 which makes the height
+// a bit more than RA5. And similarly for other sizes.
+.frontCover.A5Portrait .bloom-translationGroup.bookTitle {
+    padding-top: @bleed + (@A5Portrait-Height-Excess / 2);
+}
+
+.frontCover.USComicPortrait .bloom-translationGroup.bookTitle {
+    padding-top: @bleed + (@USComicPortrait-Height-Excess / 2);
+}
+
+.outsideBackCover {
+    .Outside-Back-Cover-style {
+        margin-top: 8mm; // 15mm wasn't enough room for text 15mm;  In Landscape mode, we remove this
+        font-size: var(--OutsideBackCoverCreditsFontSize);
+    }
+}
+
+.frontCover .bloom-imageContainer {
+    // the image should shrink if the text takes up more lines
+    flex-shrink: 10;
+}
+
+.frontCover [data-book="coverImage"] {
+    // we need it to top-align, maintain aspect ratio, and then be as wide as will fit
+    // but leave room the sides if it doesn't fit. This is just from me (JH), not the customer yet.
+    object-fit: contain;
+    max-width: 100%;
+    max-height: 100%;
+    width: 100%;
+    // 5.4, which has FF60, cannot handle "fit-content"
+    height: auto;
+}
+
+.Device16x9Portrait,
+.Device16x9Landscape {
+    &.frontCover {
+        .bloom-translationGroup.bookTitle {
+            padding-top: 0;
+            padding-bottom: 0;
+        }
+    }
+}

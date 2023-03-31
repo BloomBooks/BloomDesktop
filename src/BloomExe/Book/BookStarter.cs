@@ -510,6 +510,7 @@ namespace Bloom.Book
 			}
 		}
 
+
 		private void RemoveDataDivElement(XmlNode dom, string key)
 		{
 			var dataDiv = HtmlDom.GetOrCreateDataDiv(dom);
