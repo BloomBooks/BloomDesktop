@@ -20,7 +20,7 @@ namespace Bloom.Book
 		private static bool _collectDynamicStrings;
 		private static bool _foundEnglish;
 
-		public static void AddUIDictionaryToDom(HtmlDom pageDom, BookData bookData)
+		public static void AddUIDictionaryToDom(HtmlDom pageDom, BookData bookData, BookInfo bookInfo)
 		{
 			CheckDynamicStrings();
 
@@ -32,15 +32,7 @@ namespace Bloom.Book
 			dictionaryScriptElement = pageDom.RawDom.CreateElement("script");
 			dictionaryScriptElement.SetAttribute("type", "text/javascript");
 			dictionaryScriptElement.SetAttribute("id", "ui-dictionary");
-			var d = new Dictionary<string, string>();
-
-			foreach (var lang in bookData.GetAllBookLanguages())
-				SafelyAddLanguage(d, lang.Tag, lang.GetNameInLanguage(lang.Tag));
-			SafelyAddLanguage(d, "vernacularLang", bookData.Language1.Tag);//use for making the vernacular the first tab
-			SafelyAddLanguage(d, "{V}", bookData.Language1.Name);
-			SafelyAddLanguage(d, "{N1}", bookData.MetadataLanguage1.GetNameInLanguage(bookData.MetadataLanguage1Tag));
-			if (!string.IsNullOrEmpty(bookData.Language3Tag))
-				SafelyAddLanguage(d, "{N2}", bookData.MetadataLanguage2.GetNameInLanguage(bookData.MetadataLanguage2Tag));
+			var d = CreateDictionaryFromBookLanguages(bookData, bookInfo);
 
 			// TODO: Eventually we need to look through all .bloom-translationGroup elements on the current page to determine
 			// whether there is text in a language not yet added to the dictionary.
@@ -68,6 +60,33 @@ namespace Bloom.Book
 			pageDom.Head.InsertAfter(dictionaryScriptElement, pageDom.Head.LastChild);
 
 			_collectDynamicStrings = false;
+		}
+
+		private static Dictionary<string, string> CreateDictionaryFromBookLanguages(BookData bookData, BookInfo bookInfo)
+		{
+			var d = new Dictionary<string, string>();
+			// This method grabs the display names from meta.json's 'language-display-names' field which will be the
+			// names the user expects to see as hints in text boxes because these are the names entered in the collection.
+			// Any that get added here won't be overwritten by 'SafelyAddLanguage()' calls in the foreach below.
+			// (See BL-12064.)
+			PullInCollectionLanguagesDisplayNames(d, bookInfo);
+			foreach (var lang in bookData.GetAllBookLanguages())
+				SafelyAddLanguage(d, lang.Tag, lang.GetNameInLanguage(lang.Tag));
+			SafelyAddLanguage(d, "vernacularLang", bookData.Language1.Tag);//use for making the vernacular the first tab
+			SafelyAddLanguage(d, "{V}", bookData.Language1.Name);
+			SafelyAddLanguage(d, "{N1}", bookData.MetadataLanguage1.GetNameInLanguage(bookData.MetadataLanguage1Tag));
+			if (!string.IsNullOrEmpty(bookData.Language3Tag))
+				SafelyAddLanguage(d, "{N2}", bookData.MetadataLanguage2.GetNameInLanguage(bookData.MetadataLanguage2Tag));
+			return d;
+		}
+
+		internal static void PullInCollectionLanguagesDisplayNames(Dictionary<string, string> d, BookInfo bookInfo)
+		{
+			var displayNames = bookInfo.MetaData.DisplayNames;
+			foreach (var kvp in displayNames)
+			{
+				SafelyAddLanguage(d, kvp.Key, kvp.Value);
+			}
 		}
 
 		/// <summary>
