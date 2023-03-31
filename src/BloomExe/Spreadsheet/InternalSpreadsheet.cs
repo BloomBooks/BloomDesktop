@@ -212,7 +212,9 @@ namespace Bloom.Spreadsheet
 		public int AddColumnForLang(string langCode, string langDisplayName)
 		{
 			string columnLabel = "[" + langCode + "]";
-			string comment = "Note, the real identification of this language is in a hidden row above this, e.g. [en]";
+			string comment = langCode == "*" ?
+				"This column, which is for language \"*\", is used for book metadata that is the same regardless of what language is being used to read the book. This includes copyright, license URL, content language, languages of book, and original title." :
+				"Note, the real identification of this language is in a hidden row above this, e.g. [en]";
 			return AddColumnForTag(columnLabel, langDisplayName, comment);
 		}
 		public int AddColumnForLangAudio(string langCode, string langDisplayName)
