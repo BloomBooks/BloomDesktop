@@ -45,7 +45,10 @@ namespace Bloom.Publish.Video
 		private TempFile _initialVideo;
 		private TempFile _capturedVideo;
 		private TempFile _finalVideo;
+		private TempFile _ffmpegProgressFile;
 		private bool _recording = true;
+		private int _numIterationsDone;
+		private int _lastIterationPrinted = 0;
 		private bool _saveReceived;
 		private Book.Book _book;
 		private string _pathToRealBook;
@@ -502,14 +505,40 @@ namespace Bloom.Publish.Video
 				return;
 			}
 
+			// configure ffmpeg to merge everything.
+
+			// There are multiple limits which mean we need to cap how many files we process at a time.
+			// One is the command line length limit, which caps us out at around 2900.
+			// Apart from that, ffmpeg will have "too many open files" error if there are too many files.
+			// This occurs somewhere inbetween 2036 and 2047 in my environment.
+			// To be conservative (since I'm not sure if this is consistent from environment to environment),
+			// let's just do 1,000 at a time.
+			const int batchSize = 1000;
+			bool isSuccess = MergeAudioFilesInBatches(progress, soundLog, haveVideo, finalOutputPath, videoDuration, batchSize);
+
+			if (!isSuccess)
+				return;
+			_recording = false;
+			GotFullRecording = true;
+			// Allows the Check and Save buttons to be enabled, now we have something we can play or save.
+			_webSocketServer.SendString("recordVideo", "ready", "true");
+			// Don't think this ever happens now...if we allowed the user to click Save before the recording
+			// was complete, this would be the time to proceed with saving.
+			if (_saveReceived)
+			{
+				// Reusing id from epub. (not creating a new one or extracting to common at this point as we don't think this is ever called)
+				progress.Message("PublishTab.Epub.Saving", message: "Saving");
+				SaveVideo(); // now we really can.
+			}
+			progress.MessageWithParams("Common.FinishedAt", "{0:hh:mm tt} is a time", "Finished at {0:hh:mm tt}", ProgressKind.Progress, DateTime.Now);
+		}
+		
+		private bool MergeAudioFilesInBatches(IWebSocketProgress progress, SoundLogItem[] soundLog, bool haveVideo, string finalOutputPath, TimeSpan videoDuration, int batchSize)
+		{
 			progress.Message("PublishTab.RecordVideo.ProcessingAudio", message: "Processing audio");
 
-			// Narration is never truncated, so always has a default endTime.
-			// If the last music ends up not being truncated (unlikely), I think we can let
-			// it play to its natural end. In this case pathologically we might fade some earlier music.
-			// But I think BP will currently put an end time on any music that didn't play to the end and
-			// then start repeating.
-			var lastMusic = soundLog.LastOrDefault(item => item.endTime != default(DateTime));
+			bool isSuccess = true;
+			_numIterationsDone = 0;
 
 			// In some very complex books, we are running into the 32K limit for the length of the args
 			// string that can be passed to Process.Start. We can put the complex_filter into a text file,
@@ -559,7 +588,102 @@ namespace Bloom.Publish.Video
 				}
 			}
 
-			// configure ffmpeg to merge everything.
+			// Narration is never truncated, so always has a default endTime.
+			// If the last music ends up not being truncated (unlikely), I think we can let
+			// it play to its natural end. In this case pathologically we might fade some earlier music.
+			// But I think BP will currently put an end time on any music that didn't play to the end and
+			// then start repeating.
+			var lastMusic = soundLog.LastOrDefault(item => item.endTime != default(DateTime));
+
+			var startTime = DateTime.Now;
+			if (haveVideo)
+				progress.MessageWithParams(
+					"PublishTab.RecordVideo.MergingAudioVideo",
+					"{0:hh:mm tt} is a time",
+					"Merging audio and video, starting at {0:hh:mm tt}",
+					ProgressKind.Progress,
+					startTime);
+			else
+				progress.Message("PublishTab.RecordVideo.FinalizingAudio", message: "Finalizing audio");
+
+			int numIterationsNeeded = (int)Math.Ceiling(((float)soundLog.Length) / batchSize);
+			_lastIterationPrinted = 0;
+			// System.Threading.Timer is the only one which will fire during _ffmpegProcess.WaitForExit()
+			using (new System.Threading.Timer((state) =>
+				{
+					OutputProgressEstimate(progress, startTime, numIterationsNeeded, videoDuration);
+				},
+				null,
+				5000, // initially at 5 seconds
+				60000 // then every 1 minute thereafter
+			)) 
+			{
+				using (var tempOutputs = new Utils.DisposableList<TempFile>())
+				{
+					bool videoHasAudio = false;
+					string inputVideoPath = _videoOnlyPath;				
+					for (int i = 0; i< soundLog.Length; i += batchSize)
+					{
+						// Prepare a temporary output file to write this iteration
+						string outputPath;
+						bool isFinalIteration = i + batchSize >= soundLog.Length;
+						if (!isFinalIteration)
+						{
+							var tempOutput = BloomTemp.TempFileUtils.GetTempFileWithPrettyExtension(_codec.ToExtension());
+							tempOutputs.Add(tempOutput);
+							outputPath = tempOutput.Path;
+						}
+						else
+						{
+							// On the final iteration, write directly to finalOutputPath
+							outputPath = finalOutputPath;
+						}
+						RobustFile.Delete(outputPath);
+
+						// Process one batch of files
+						var soundLogSubset = soundLog.Skip(i).Take(batchSize);
+						isSuccess = isSuccess && MergeAudioFiles(progress, soundLogSubset, lastMusic, haveVideo, videoHasAudio, inputVideoPath, outputPath, workingDirectory);
+
+						if (isSuccess)
+						{
+							// Success. Prepare for next iteration.
+							inputVideoPath = outputPath;
+							videoHasAudio = true;
+						}
+						else
+							break;
+					}
+				}
+			}
+
+			if (isSuccess)
+			{
+				progress.MessageWithoutLocalizing($"- Progress: 100%");
+			}
+			
+			// Restore original names, since that's what is expected if we preview the book or record again
+			// (the html is still referencing the original names...the renaming was solely for the process
+			// of running ffmpeg afterwards.)
+			// If anything goes wrong so that this doesn't happen, we should automatically rebuild the
+			// preview entirely.
+			foreach (var kvp in renames)
+			{
+				RobustFile.Move(Path.Combine(workingDirectory,kvp.Value), kvp.Key);
+			}
+
+			LocalAudioNamesMessedUp = false;
+
+			return isSuccess;
+		}
+
+		/// <summary>
+		/// Merge the specified sound items into the video
+		/// </summary>
+		/// <returns>True if merging was successful. False otherwise.</returns>
+		private bool MergeAudioFiles(IWebSocketProgress progress, IEnumerable<SoundLogItem> soundLog, SoundLogItem lastMusic, bool haveVideo, bool videoHasAudio, string inputVideoPath, string outputPath, string workingDirectory)
+		{
+			var soundLogCount = soundLog.Count();
+
 			// each sound file becomes an input by prefixing the path with -i.
 			var inputs = string.Join(" ", soundLog.Select(item => $"-i {item.shortName} "));
 
@@ -613,7 +737,7 @@ namespace Bloom.Publish.Video
 			var mixInputs = string.Join("", soundLog.Select((item, index) => $"[a{index}]"));
 			// the video, if any, will be one more input after the audio ones and will be at this index
 			// in the inputs.
-			var videoIndex = soundLog.Length;
+			var videoIndex = soundLogCount;
 
 			string audioArgs;
 			switch (_codec)
@@ -648,40 +772,33 @@ namespace Bloom.Publish.Video
 			                    // streams don't overlap, and the background music volume is presumed to have already
 			                    // been suitably adjusted, we do NOT want the default behavior of 'normalizing' volume
 			                    // by reducing it to 1/n where n is the total number of input streams.
-			                    + mixInputs + $"amix=inputs={soundLog.Length}:normalize=0[out]";
+								//
+								// If merging the audio in passes (to avoid the limit on how many inputs we can handle),
+								// we also want to pass through the audio from the prior iteration (in the input video already).
+								// FFMPEG errors out if the input video doesn't have an audio stream, so check first.
+			                    + mixInputs + (videoHasAudio ? $"[{videoIndex}:a]" : "") + $"amix=inputs={soundLogCount + (videoHasAudio ? 1 : 0)}:normalize=0[out]";
 			using (var filterFile = new TempFile(complexFilter)) {
 
-				using (var tempProgressOutputFile = TempFile.CreateAndGetPathButDontMakeTheFile())
+				using (_ffmpegProgressFile = TempFile.CreateAndGetPathButDontMakeTheFile())
 				{
 					var args = ""
 					           + inputs // the audio files are inputs, which may be referred to as [1:a], [2:a], etc.
 					           + (haveVideo
-						           ? $"-i \"{_videoOnlyPath}\" "
+						           ? $"-i \"{inputVideoPath}\" "
 						           : "") // last input (videoIndex) is the original video (if any)
 					           + "-filter_complex_script \"" // the next bit specifies a filter with multiple inputs
 					           + filterFile.Path + "\" "
-					           // copy the video channel (of input videoIndex) unchanged (if we have video).
-					           // (here 'copy' is a pseudo codec...instead of encoding it in some particular way,
-					           // we just copy the original.
-					           + (haveVideo ? $"-map {videoIndex}:v -vcodec copy " : "")
-
+							   // copy the video channel (of input videoIndex) unchanged (if we have video).
+							   // (here 'copy' is a pseudo codec...instead of encoding it in some particular way,
+							   // we just copy the original.
+							   + (haveVideo ? $"-map {videoIndex}:v -vcodec copy " : "")
+							   
 					           + audioArgs
 					           + "-map [out] " // send the output of the audio mix to the output
-					           + $"\"{finalOutputPath}\"" //and this is where we send it (until the user saves it elsewhere).
-							   + $" -progress \"{tempProgressOutputFile.Path}\"";
+					           + $"\"{outputPath}\"" //and this is where we send it (until the user saves it elsewhere).
+					           + $" -progress \"{_ffmpegProgressFile.Path}\"";
 					// Debug.WriteLine("ffmpeg merge args: " + args);
 
-					if (haveVideo)
-						progress.MessageWithParams(
-							"PublishTab.RecordVideo.MergingAudioVideo",
-							"{0:hh:mm tt} is a time",
-							"Merging audio and video, starting at {0:hh:mm tt}",
-							ProgressKind.Progress,
-							DateTime.Now);
-					else
-						progress.Message("PublishTab.RecordVideo.FinalizingAudio", message: "Finalizing audio");
-
-					var startTimeForFinalMix = DateTime.Now;
 					// This magic number is documented at https://docs.microsoft.com/en-us/dotnet/api/system.diagnostics.processstartinfo.arguments?view=net-6.0
 					if (args.Length >= 32699)
 					{
@@ -694,59 +811,32 @@ namespace Bloom.Publish.Video
 					{
 						RunFfmpeg(args, workingDirectory);
 
-						// System.Threading.Timer is the only one which will fire during _ffmpegProcess.WaitForExit()
-						var createEstimateTimer = new System.Threading.Timer((state) =>
-							{
-								if (_ffmpegExited) return;
-
-								OutputTimeRemainingEstimate(progress, tempProgressOutputFile, startTimeForFinalMix,
-									videoDuration);
-							},
-							null,
-							5000, // initially at 5 seconds
-							300000 // then every 5 minutes thereafter
-						);
 
 						_ffmpegProcess.WaitForExit();
 
-						createEstimateTimer.Dispose();
-					}
+						++_numIterationsDone;
+
+						// Check if the file was created successfully
+						if (_ffmpegProcess.ExitCode != 0 || !File.Exists(outputPath) || new FileInfo(outputPath).Length < 100)
+						{
+							// Failure - Log and abort.
+							var mergeErrors = _errorData.ToString();				
+							Logger.WriteError(new ApplicationException(mergeErrors));
+							Logger.WriteEvent(PrettyPrintProcessStartInfo(_ffmpegProcess));
+							Logger.WriteEvent("filter_complex_script contents: " + complexFilter);	// Write the temp file contents before it gets disposed
+							Logger.WriteEvent($"FFMPEG exit code: {_ffmpegProcess.ExitCode}");
+
+							// If you get this error, please check the logs above! You'll find the FFMPEG command, exit code, and output in the logs.
+							progress.MessageWithoutLocalizing("Merging audio and video failed", ProgressKind.Error);						
+							_recording = false;
+
+							return false;
+						}
+					}					
 				}
-
-				// Restore original names, since that's what is expected if we preview the book or record again
-				// (the html is still referencing the original names...the renaming was solely for the process
-				// of running ffmpeg afterwards.)
-				// If anything goes wrong so that this doesn't happen, we should automatically rebuild the
-				// preview entirely.
-				foreach (var kvp in renames)
-				{
-					RobustFile.Move(Path.Combine(workingDirectory,kvp.Value), kvp.Key);
-				}
-
-				LocalAudioNamesMessedUp = false;
 			}
 
-			var mergeErrors = _errorData.ToString();
-			if (!File.Exists(_finalVideo.Path) || new FileInfo(_finalVideo.Path).Length < 100)
-			{
-				Logger.WriteError(new ApplicationException(mergeErrors));
-				progress.MessageWithoutLocalizing("Merging audio and video failed", ProgressKind.Error);
-				_recording = false;
-				return;
-			}
-			_recording = false;
-			GotFullRecording = true;
-			// Allows the Check and Save buttons to be enabled, now we have something we can play or save.
-			_webSocketServer.SendString("recordVideo", "ready", "true");
-			// Don't think this ever happens now...if we allowed the user to click Save before the recording
-			// was complete, this would be the time to proceed with saving.
-			if (_saveReceived)
-			{
-				// Reusing id from epub. (not creating a new one or extracting to common at this point as we don't think this is ever called)
-				progress.Message("PublishTab.Epub.Saving", message: "Saving");
-				SaveVideo(); // now we really can.
-			}
-			progress.MessageWithParams("Common.FinishedAt", "{0:hh:mm tt} is a time", "Finished at {0:hh:mm tt}", ProgressKind.Progress, DateTime.Now);
+			return true;
 		}
 
 		private static char[] shortNameChars = "abcdefghijklmnopqrstuvwxyz0123456789".ToCharArray();
@@ -766,43 +856,108 @@ namespace Bloom.Publish.Video
 			return result;
 		}
 
-		private void OutputTimeRemainingEstimate(IWebSocketProgress progress, TempFile progressFile, DateTime startTime, TimeSpan totalDuration)
+		private void OutputProgressEstimate(IWebSocketProgress progress, DateTime startTime, int totalIterationsNeeded, TimeSpan totalDuration)
 		{
 			try
 			{
-				var progressFileContents = MiscUtils.ReadAllTextFromFileWhichMightGetWrittenTo(progressFile.Path);
+				double currentIterationProgress = GetCurrentIterationProgress(progress, totalDuration);
+				double iterationsSoFar = _numIterationsDone + currentIterationProgress;
 
-				if (string.IsNullOrWhiteSpace(progressFileContents))
-					return;
+				if (iterationsSoFar == 0)
+					return;	// Nothing meaningful to output yet.
 
-				// If progress=end, the process has finished and there is no point in estimating
-				if (GetLastOccurenceOfKeyValue(progressFileContents, "progress", out string progressValue) && progressValue == "end")
-					return;
+				progress.MessageWithoutLocalizing($"- Progress: {GetProgressMessage(iterationsSoFar, totalIterationsNeeded)}");
+				
+				if (_numIterationsDone > _lastIterationPrinted)
+				{
+					// Only calculate timeRemainingEstimates when a whole number iteration changes,
+					// because the fractional iteration progress produces highly inaccurate estimates
+					// (off by orders of magnitude, usually overestimating, producing very disheartening initial estimates for the user)
+					//
+					// The progress file seems to be updated pretty frequently by ffmpeg, but the estimates are still really inaccurate.
+					// Using the last modified time of the progress file (rather than DateTime.Now) also doesn't help (since the progress file is updated frequently)
+					// The bigger problem seems to be that working through the frames is extremely non-linear.
+					//    I often observe it'll slowly inch to halfway or to two-thirds of the frames,
+					//    then suddenly on the next iteration it's 99% or 100% of the way through the frames.
+					//    A linear extrapolation based on that produces awful estimates.
+					//
+					// Unfortunately, this now seems to underestimate the time required, but at least it's in a closer ballpark.
+					// Only cases that exceed the batch size see these estimates anyway.
 
-				if (!GetLastOccurenceOfKeyValue(progressFileContents, "frame", out string framesSoFarStr))
-					return;
+					var timeSoFar = DateTime.Now - startTime;
 
-				var framesSoFar = int.Parse(framesSoFarStr);
-				if (framesSoFar < 1) return;
+					double timePerIterationSoFar = timeSoFar.TotalMilliseconds / iterationsSoFar;
+					var iterationsRemaining = totalIterationsNeeded - iterationsSoFar;
+					if (iterationsRemaining <= 0) return;
 
-				var timeSoFar = DateTime.Now - startTime;
+					var estimatedTimeRemaining = timePerIterationSoFar * iterationsRemaining;
+					//Debug.WriteLine($"totalIterations:{totalIterationsNeeded}, iterationsSoFar:{iterationsSoFar}, iterationsRemaining:{iterationsRemaining}");
+					//Debug.WriteLine($"timeSoFar:{timeSoFar}, timePerIterationSoFar:{timePerIterationSoFar}");
+					//Debug.WriteLine($"estimatedTimeRemaining:{estimatedTimeRemaining}");
 
-				double timePerFrameSoFar = (double)timeSoFar.TotalMilliseconds / framesSoFar;
-				var framesTotal = totalDuration.TotalSeconds * kFrameRate;
-				var framesRemaining = framesTotal - framesSoFar;
-				if (framesRemaining < 1) return;
-
-				var estimatedTimeRemaining = timePerFrameSoFar * framesRemaining;
-				//Debug.WriteLine($"totalFrames:{framesTotal}, framesSoFar:{framesSoFar}, framesRemaining:{framesRemaining}");
-				//Debug.WriteLine($"totalDuration:{totalDuration}, timeSoFar:{timeSoFar}, timePerFrameSoFar:{timePerFrameSoFar}");
-				//Debug.WriteLine($"estimatedTimeRemaining:{estimatedTimeRemaining}");
-
-				if (!_ffmpegExited)
 					progress.MessageWithoutLocalizing($"- {GetEstimateMessageFromMillis(estimatedTimeRemaining)}");
+				}
+				_lastIterationPrinted = _numIterationsDone;				
 			}
 			catch (Exception e)
 			{
 				MiscUtils.SuppressUnusedExceptionVarWarning(e);
+			}
+		}
+
+		/// <summary>
+		/// Returns the progress of the current FFMPEG MergeAudioFiles() iteration, as a proportion between 0 to 1
+		/// </summary>
+		private double GetCurrentIterationProgress(IWebSocketProgress progress, TimeSpan totalDuration)
+		{
+			try
+			{
+				if (_ffmpegExited)
+					return 0;
+
+				var progressFileContents = MiscUtils.ReadAllTextFromFileWhichMightGetWrittenTo(_ffmpegProgressFile.Path);
+
+				if (string.IsNullOrWhiteSpace(progressFileContents))
+					return 0;
+
+				// If progress=end, the process has finished and there is no point in estimating
+				if (GetLastOccurenceOfKeyValue(progressFileContents, "progress", out string progressValue) && progressValue == "end")
+					return 0;	// We intentionally return 0 for currentIterationProgress and increment numIterationsDone instead.
+
+				if (!GetLastOccurenceOfKeyValue(progressFileContents, "frame", out string framesSoFarStr))
+					return 0;
+
+				var framesSoFar = int.Parse(framesSoFarStr);
+				if (framesSoFar < 1) return 0;
+
+				var framesTotal = totalDuration.TotalSeconds * kFrameRate;
+
+				double iterationProgress = Math.Min(framesSoFar / framesTotal, 1);
+				//Debug.WriteLine($"{framesSoFar} / {framesTotal} = {iterationProgress}", ProgressKind.Progress);
+
+				return iterationProgress;
+			}
+			catch (Exception e)
+			{
+				MiscUtils.SuppressUnusedExceptionVarWarning(e);
+				return 0;
+			}
+		}
+
+		private string GetProgressMessage(double iterationsSoFar, int totalIterationsNeeded)
+		{
+			var progressPercent = (int)Math.Round(iterationsSoFar / totalIterationsNeeded * 100);
+			if (progressPercent == 0 && iterationsSoFar > 0)
+			{
+				return "<1%";
+			}
+			else if (progressPercent == 100 && iterationsSoFar < totalIterationsNeeded)
+			{
+				return ">99%";
+			}
+			else
+			{
+				return $"{progressPercent}%";
 			}
 		}
 
@@ -927,6 +1082,8 @@ namespace Bloom.Publish.Video
 				throw;
 			}
 		}
+
+		private string PrettyPrintProcessStartInfo(Process process) => $"{process.StartInfo.WorkingDirectory}>{process.StartInfo.FileName} {process.StartInfo.Arguments}";
 
 		public bool AnyVideoHasAudio(Book.Book book)
 		{
