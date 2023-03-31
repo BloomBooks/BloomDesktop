@@ -1443,7 +1443,7 @@ describe("audio recording tests", () => {
             extendedTimeoutInMs
         );
 
-        fit(
+        it(
             "toggleRecordingMode(): converts from RecordSentence/PlaySentence to RecordTextBox/PlayTextBox and back, if not recorded",
             async () => {
                 // Setup
@@ -1494,7 +1494,7 @@ describe("audio recording tests", () => {
             extendedTimeoutInMs
         );
 
-        fit(
+        it(
             "toggleRecordingMode(): converts from RecordTextBox/PlayTextBox to RecordSentence/PlaySentence",
             async () => {
                 const textBoxDivHtml =
