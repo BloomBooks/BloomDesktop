@@ -24,12 +24,12 @@ const methodNameToImageFileName = {
 // This is a set of radio buttons and image that goes with each choice, plus a button to start off the sharing/saving
 export const MethodChooser: React.FunctionComponent = () => {
     const [method, setMethod] = useApiStringState(
-        "publish/android/method",
+        "publish/bloompub/method",
         "wifi"
     );
     const isLicenseOK = useWatchBooleanEvent(
         true,
-        "publish-android",
+        "publish-bloompub",
         "publish/licenseOK"
     );
 
@@ -122,7 +122,7 @@ function getStartButton(method: string, licenseOK: boolean) {
                     `}
                     l10nKey="PublishTab.Save"
                     l10nComment="Button that tells Bloom to save the book in the current format."
-                    clickApiEndpoint="publish/android/file/save"
+                    clickApiEndpoint="publish/bloompub/file/save"
                     enabled={licenseOK}
                     hasText={true}
                 >
@@ -138,7 +138,7 @@ function getStartButton(method: string, licenseOK: boolean) {
                     l10nKey="PublishTab.Android.Usb.Start"
                     l10nComment="Button that tells Bloom to send the book to a device via USB cable."
                     enabled={licenseOK}
-                    clickApiEndpoint="publish/android/usb/start"
+                    clickApiEndpoint="publish/bloompub/usb/start"
                     hidden={isLinux()}
                     hasText={true}
                 >
@@ -154,7 +154,7 @@ function getStartButton(method: string, licenseOK: boolean) {
                     l10nKey="PublishTab.Android.Wifi.Start"
                     l10nComment="Button that tells Bloom to begin offering this book on the wifi network."
                     enabled={licenseOK}
-                    clickApiEndpoint="publish/android/wifi/start"
+                    clickApiEndpoint="publish/bloompub/wifi/start"
                     hasText={true}
                 >
                     Share

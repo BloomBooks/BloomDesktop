@@ -38,7 +38,6 @@ class PageControls extends React.Component<{}, IPageControlsState> {
     constructor(props) {
         super(props);
 
-        // (Comment copied from androidPublishUI.tsx)
         // For some reason setting the callback to "this.updateStateForEvent" calls updateStateForEvent()
         // with "this" set to the button, not this overall control.
         // See https://medium.com/@rjun07a/binding-callbacks-in-react-components-9133c0b396c6

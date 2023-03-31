@@ -15,7 +15,7 @@ using SIL.Extensions;
 using SIL.IO;
 using SIL.Program;
 
-namespace Bloom.Publish.Android
+namespace Bloom.Publish.BloomPub
 {
 	public class BulkBloomPubCreator
 	{
@@ -76,7 +76,7 @@ namespace Bloom.Publish.Android
 						progress.MessageWithoutLocalizing($"Making BloomPUB for {bookInfo.QuickTitleUserDisplay}...",
 							ProgressKind.Heading);
 
-						var settings = AndroidPublishSettings.GetPublishSettingsForBook(_bookServer, bookInfo);
+						var settings = BloomPubPublishSettings.GetPublishSettingsForBook(_bookServer, bookInfo);
 						settings.DistributionTag = bulkSaveSettings.distributionTag;
 						if (bulkSaveSettings.makeBookshelfFile)
 						{

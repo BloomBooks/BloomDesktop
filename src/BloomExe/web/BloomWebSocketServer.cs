@@ -18,7 +18,7 @@ namespace Bloom.Api
 	/// Then on the client side, we have multiple connections to this same server; each connection is called a "socket",
 	/// note that these are on the same port.
 	/// For outgoing messages from c# to the client code, we have 3 levels:
-	/// * clientContext: normally the screen, like "publish to android".
+	/// * clientContext: normally the screen, like "publish to BloomPub".
 	/// * eventId: things like "progress message"
 	/// * message: (optional) for events that need some text, it goes in here
 	///

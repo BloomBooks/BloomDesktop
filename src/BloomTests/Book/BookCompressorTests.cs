@@ -1,7 +1,7 @@
 using System;
 using System.IO;
 using Bloom.Book;
-using Bloom.Publish.Android;
+using Bloom.Publish.BloomPub;
 using NUnit.Framework;
 using SIL.IO;
 using SIL.TestUtilities;

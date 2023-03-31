@@ -7,32 +7,30 @@ using System.Linq;
 using Bloom.Api;
 using Bloom.Book;
 using Bloom.Collection;
-using Bloom.ImageProcessing;
 using Bloom.Properties;
-using Bloom.Publish.Android.file;
+using Bloom.Publish.BloomPub.file;
 using SIL.Windows.Forms.Miscellaneous;
 
 #if !__MonoCS__
-using Bloom.Publish.Android.usb;
+using Bloom.Publish.BloomPub.usb;
 #endif
-using Bloom.Publish.Android.wifi;
+using Bloom.Publish.BloomPub.wifi;
 using Bloom.web;
 using Bloom.web.controllers;
-using BloomTemp;
 using DesktopAnalytics;
 using SIL.IO;
 using Newtonsoft.Json;
 using SIL.Reporting;
 
-namespace Bloom.Publish.Android
+namespace Bloom.Publish.BloomPub
 {
 	/// <summary>
-	/// Handles api request dealing with the publishing of books to an Android device
+	/// Handles api request dealing with the publishing of BloomPUBs
 	/// </summary>
-	public class PublishToAndroidApi
+	public class PublishToBloomPubApi
 	{
-		private const string kApiUrlPart = "publish/android/";
-		private const string kWebsocketState_EventId = "publish/android/state";
+		private const string kApiUrlPart = "publish/bloompub/";
+		private const string kWebsocketState_EventId = "publish/bloompub/state";
 		private readonly WiFiPublisher _wifiPublisher;
 #if !__MonoCS__
 		private readonly UsbPublisher _usbPublisher;
@@ -45,7 +43,7 @@ namespace Bloom.Publish.Android
 
 		private PublishApi _publishApi;
 		
-		public PublishToAndroidApi(CollectionSettings collectionSettings, BloomWebSocketServer bloomWebSocketServer, BookServer bookServer, BulkBloomPubCreator bulkBloomPubCreator,
+		public PublishToBloomPubApi(CollectionSettings collectionSettings, BloomWebSocketServer bloomWebSocketServer, BookServer bookServer, BulkBloomPubCreator bulkBloomPubCreator,
 			PublishApi publishApi)
 		{
 			_collectionSettings = collectionSettings;
@@ -225,7 +223,7 @@ namespace Bloom.Publish.Android
 		/// <param name="bookServer"></param>
 		/// <param name="startingMessageFunction"></param>
 		public static void SendBook(Book.Book book, BookServer bookServer, string destFileName, Action<string, string> sendAction, WebSocketProgress progress, Func<string, string, string> startingMessageFunction,
-			Func<string, bool> confirmFunction, Color backColor, AndroidPublishSettings settings = null)
+			Func<string, bool> confirmFunction, Color backColor, BloomPubPublishSettings settings = null)
 		{
 			var bookTitle = book.Title;
 			progress.MessageUsingTitle("PackagingBook", "Packaging \"{0}\" for use with Bloom Reader...", bookTitle, ProgressKind.Progress);

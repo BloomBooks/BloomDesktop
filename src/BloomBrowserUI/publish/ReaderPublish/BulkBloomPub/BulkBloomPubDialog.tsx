@@ -70,7 +70,7 @@ export const InnerBulkBloomPubDialog: React.FunctionComponent<{
     // We'll send the new state of the parameters if and when they click the "make" button.
     const [params, setParams] = useApiOneWayState<
         IBulkBloomPUBPublishParams | undefined
-    >("publish/android/file/bulkSaveBloomPubsParams", undefined);
+    >("publish/bloompub/file/bulkSaveBloomPubsParams", undefined);
 
     const bookshelfUrlKey = useApiData<any>("settings/bookShelfData", "")
         ?.defaultBookshelfUrlKey;
@@ -250,7 +250,7 @@ export const InnerBulkBloomPubDialog: React.FunctionComponent<{
                     variant={"contained"}
                     onClick={() => {
                         postData(
-                            "publish/android/file/bulkSaveBloomPubs",
+                            "publish/bloompub/file/bulkSaveBloomPubs",
                             params
                         );
                         props.closeDialog();

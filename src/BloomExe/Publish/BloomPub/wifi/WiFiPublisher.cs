@@ -12,7 +12,7 @@ using Bloom.web;
 using L10NSharp;
 using Newtonsoft.Json;
 
-namespace Bloom.Publish.Android.wifi
+namespace Bloom.Publish.BloomPub.wifi
 {
 	/// <summary>
 	/// Runs a service on the local net that advertises a book and then delivers it to Androids that request it
@@ -38,7 +38,7 @@ namespace Bloom.Publish.Android.wifi
 			_progress = progress.WithL10NPrefix("PublishTab.Android.Wifi.Progress.");
 		}
 
-		public void Start(Book.Book book, CollectionSettings collectionSettings, Color backColor, AndroidPublishSettings publishSettings = null)
+		public void Start(Book.Book book, CollectionSettings collectionSettings, Color backColor, BloomPubPublishSettings publishSettings = null)
 		{
 			if (_wifiAdvertiser != null)
 			{
@@ -91,7 +91,7 @@ namespace Bloom.Publish.Android.wifi
 				BookVersion = Book.Book.MakeVersionCode(File.ReadAllText(pathHtmlFile), pathHtmlFile)
 			};
 
-			PublishToAndroidApi.CheckBookLayout(book, _progress);
+			PublishToBloomPubApi.CheckBookLayout(book, _progress);
 			_wifiAdvertiser.Start();
 
 			var part1 = LocalizationManager.GetDynamicString(appId: "Bloom", id: "PublishTab.Android.Wifi.Progress.WifiInstructions1",
@@ -175,7 +175,7 @@ namespace Bloom.Publish.Android.wifi
 		/// is in progress, the thread will continue and complete the request. Quitting Bloom
 		/// is likely to leave the transfer incomplete.
 		/// </summary>
-		private void StartSendBookToClientOnLocalSubNet(Book.Book book, string androidIpAddress, string androidName, Color backColor, AndroidPublishSettings settings = null)
+		private void StartSendBookToClientOnLocalSubNet(Book.Book book, string androidIpAddress, string androidName, Color backColor, BloomPubPublishSettings settings = null)
 		{
 			// Locked in case more than one thread at a time can handle incoming packets, though I don't think
 			// this is true. Also, Stop() on the main thread cares whether _wifiSender is null.
@@ -190,7 +190,7 @@ namespace Bloom.Publish.Android.wifi
 			}
 			_wifiSender.UploadDataCompleted += WifiSenderUploadCompleted;
 			// Now we actually start the send...but using an async API, so there's no long delay here.
-			PublishToAndroidApi.SendBook(book, _bookServer,
+			PublishToBloomPubApi.SendBook(book, _bookServer,
 				null, (publishedFileName, bloomDPath) =>
 				{
 					var androidHttpAddress = "http://" + androidIpAddress + ":5914"; // must match BloomReader SyncServer._serverPort.
@@ -237,7 +237,7 @@ namespace Bloom.Publish.Android.wifi
 				}
 				_uploadTimer.Start();
 			}
-			PublishToAndroidApi.ReportAnalytics("wifi", book);
+			PublishToBloomPubApi.ReportAnalytics("wifi", book);
 		}
 
 		private void WifiSenderUploadCompleted(object sender, UploadDataCompletedEventArgs args)
@@ -273,7 +273,7 @@ namespace Bloom.Publish.Android.wifi
 			}
 		}
 
-		private void StartSendBookOverWiFi(Book.Book book, string androidIpAddress, string androidName, Color backColor, AndroidPublishSettings settings = null)
+		private void StartSendBookOverWiFi(Book.Book book, string androidIpAddress, string androidName, Color backColor, BloomPubPublishSettings settings = null)
 		{
 			try
 			{

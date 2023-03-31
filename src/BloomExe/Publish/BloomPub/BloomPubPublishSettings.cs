@@ -2,14 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Bloom.Book;
-using Bloom.web.controllers;
 using Bloom.Publish.BloomLibrary;
 
-namespace Bloom.Publish.Android
+namespace Bloom.Publish.BloomPub
 {
-	// This class is used to pass settings from the PublishToAndroidApi (or PublishToVideoApi, etc) to the many and varied
-	// places that they pass through before getting to BloomReaderFileMaker.
-	public class AndroidPublishSettings
+	// This class is used to pass settings from the PublishToBloomPubApi (or PublishToVideoApi, etc) to the many and varied
+	// places that they pass through before getting to BloomPubMaker.
+	public class BloomPubPublishSettings
 	{
 		// A distribution tag goes into analytics as a way of measuring the impact of various distribution efforts. E.g.,
 		// sd cards vs. web vs. distributed devices. Note, while we store this in the meta.json so that we don't lose it,
@@ -45,7 +44,7 @@ namespace Bloom.Publish.Android
 		// True to remove activities, quiz pages...stuff that's inappropriate for making videos.
 		public bool RemoveInteractivePages;
 
-		public AndroidPublishSettings()
+		public BloomPubPublishSettings()
 		{
 			ImagePublishSettings = new ImagePublishSettings();
 			LanguagesToInclude = new HashSet<string>();
@@ -62,9 +61,9 @@ namespace Bloom.Publish.Android
 
 		public override bool Equals(object obj)
 		{
-			if (!(obj is AndroidPublishSettings))
+			if (!(obj is BloomPubPublishSettings))
 				return false;
-			var other = (AndroidPublishSettings) obj;
+			var other = (BloomPubPublishSettings) obj;
 			return LanguagesToInclude.SetEquals(other.LanguagesToInclude) && DistributionTag == other.DistributionTag
 				&& Motion == other.Motion;
 
@@ -77,9 +76,9 @@ namespace Bloom.Publish.Android
 		/// </summary>
 		/// <param name="languages"></param>
 		/// <returns></returns>
-		public AndroidPublishSettings WithAllLanguages(IEnumerable<string> languages)
+		public BloomPubPublishSettings WithAllLanguages(IEnumerable<string> languages)
 		{
-			var result = this.MemberwiseClone() as AndroidPublishSettings;
+			var result = this.MemberwiseClone() as BloomPubPublishSettings;
 			result.AudioLanguagesToExclude = new HashSet<string>(); // exclude none!
 			result.LanguagesToInclude = new HashSet<string>(languages);
 			return result;
@@ -92,7 +91,7 @@ namespace Bloom.Publish.Android
 			// REVIEW: why wasn't AudioLanguagesToExclude included here?
 		}
 
-		// BL-10840 When the Harvester is getting AndroidPublishSettings, we want to use the settings
+		// BL-10840 When the Harvester is getting BloomPubPublishSettings, we want to use the settings
 		// for BloomLibrary, since the book has been uploaded using those settings for text and audio
 		// languages. (But, BL-11582, separate BloomPub settings are obsolete, so always use the Library ones,
 		// unless they are missing.)
@@ -127,7 +126,7 @@ namespace Bloom.Publish.Android
 			}
 		}
 
-		public static AndroidPublishSettings FromBookInfo(BookInfo bookInfo)
+		public static BloomPubPublishSettings FromBookInfo(BookInfo bookInfo)
 		{
 			var libraryTextLangs = bookInfo.PublishSettings.BloomLibrary.TextLangs;
 			var libraryAudioLangs = bookInfo.PublishSettings.BloomLibrary.AudioLangs;
@@ -154,7 +153,7 @@ namespace Bloom.Publish.Android
 				audioLanguagesToExclude = GetLanguagesToExclude(libraryAudioLangs);
 			}
 
-			return new AndroidPublishSettings()
+			return new BloomPubPublishSettings()
 			{
 				// Note - we want it such that even if the underlying data changes, this settings object won't.
 				// (Converting the IEnumerable to a HashSet above happens to accomplish that)
@@ -166,7 +165,7 @@ namespace Bloom.Publish.Android
 			};
 		}
 
-		public static AndroidPublishSettings GetPublishSettingsForBook(BookServer bookServer, BookInfo bookInfo)
+		public static BloomPubPublishSettings GetPublishSettingsForBook(BookServer bookServer, BookInfo bookInfo)
 		{
 			// Normally this is setup by the Publish (or library) screen, but if you've never visited such a screen for this book,
 			// perhaps because you are doing a bulk or command line publish, then one of them might be empty. In that case, initialize it here.

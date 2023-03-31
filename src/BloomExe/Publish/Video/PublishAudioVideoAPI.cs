@@ -1,15 +1,10 @@
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
-using System.Text;
 using System.Windows.Forms;
-using System.Xml;
 using Bloom.Api;
-using Bloom.Book;
 using Bloom.MiscUI;
-using Bloom.Publish.Android;
 using Bloom.web.controllers;
 using L10NSharp;
 using SIL.PlatformUtilities;
@@ -22,8 +17,6 @@ namespace Bloom.Publish.Video
 	public class PublishAudioVideoAPI
 	{
 		private readonly BloomWebSocketServer _webSocketServer;
-		// It's slightly weird that we use one of these, but the video is done by means
-		// of an android-type book preview, and this class knows all about how to make one.
 		private PublishApi _publishApi;
 		private const string kApiUrlPart = "publish/av/";
 		private RecordVideoWindow _recordVideoWindow;

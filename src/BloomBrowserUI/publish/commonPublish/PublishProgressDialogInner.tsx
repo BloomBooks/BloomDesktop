@@ -37,7 +37,7 @@ export const ProgressDialogInner: React.FunctionComponent<{
     const onCopy = () => {
         // document.execCommand("copy") does not work in Bloom's geckofx.
         postDataWithConfig(
-            "publish/android/textToClipboard",
+            "publish/bloompub/textToClipboard",
             messagesDivRef.current!.innerText,
             { headers: { "Content-Type": "text/plain" } }
         );

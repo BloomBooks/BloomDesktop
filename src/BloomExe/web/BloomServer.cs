@@ -27,7 +27,7 @@ using Bloom.Edit;
 using Bloom.Publish.Epub;
 using Bloom.Properties;
 using Bloom.Publish;
-using Bloom.Publish.Android;
+using Bloom.Publish.BloomPub;
 using Bloom.web;
 using SIL.PlatformUtilities;
 using ThreadState = System.Threading.ThreadState;

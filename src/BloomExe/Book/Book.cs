@@ -2198,7 +2198,7 @@ namespace Bloom.Book
 		/// a key in the dictionary unless includeLangsOccurringOnlyInXmatter is true
 		/// OR it is a "required" language (a content language of the book).
 		///
-		/// For determining which Text Languages to display in Publish -> Android and which pages to delete
+		/// For determining which Text Languages to display in Publish -> BloomPub and which pages to delete
 		/// from a .bloompub file, we pass the parameter as true. I (gjm) am unclear as to why historically
 		/// we did it this way, but BL-7967 might be part of the problem
 		/// (where xmatter pages only in L2 were erroneously deleted).

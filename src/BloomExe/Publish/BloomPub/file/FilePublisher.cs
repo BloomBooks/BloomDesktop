@@ -12,14 +12,14 @@ using Bloom.web;
 using L10NSharp;
 using Bloom.Utils;
 
-namespace Bloom.Publish.Android.file
+namespace Bloom.Publish.BloomPub.file
 {
 	/// <summary>
 	/// Saves a .bloompub as a local file which the user can somehow get onto devices using some other tools.
 	/// </summary>
 	public class FilePublisher
 	{
-		public static void Save(Book.Book book, BookServer bookServer, Color backColor, WebSocketProgress progress, AndroidPublishSettings settings = null)
+		public static void Save(Book.Book book, BookServer bookServer, Color backColor, WebSocketProgress progress, BloomPubPublishSettings settings = null)
 		{
 			var progressWithL10N = progress.WithL10NPrefix("PublishTab.Android.File.Progress.");
 
@@ -35,14 +35,14 @@ namespace Bloom.Publish.Android.file
 
 			OutputFilenames.RememberOutputFilePath(book, BloomPubMaker.BloomPubExtensionWithDot, destFileName);
 			Settings.Default.BloomDeviceFileExportFolder = Path.GetDirectoryName(destFileName);
-			PublishToAndroidApi.CheckBookLayout(book, progress);
-			PublishToAndroidApi.SendBook(book, bookServer, destFileName, null,
+			PublishToBloomPubApi.CheckBookLayout(book, progress);
+			PublishToBloomPubApi.SendBook(book, bookServer, destFileName, null,
 				progressWithL10N,
 				(publishedFileName, bookTitle) => progressWithL10N.GetMessageWithParams("Saving", "{0} is a file path", "Saving as {0}", destFileName),
 				null,
 				backColor,
 				settings: settings);
-			PublishToAndroidApi.ReportAnalytics("file", book);
+			PublishToBloomPubApi.ReportAnalytics("file", book);
 		}
 	}
 }

@@ -84,13 +84,13 @@ const ReaderPublishScreenInternal: React.FunctionComponent<{
     );
 
     const [defaultLandscape] = useApiBoolean(
-        "publish/android/defaultLandscape",
+        "publish/bloompub/defaultLandscape",
         false
     );
-    const [canRotate] = useApiBoolean("publish/android/canRotate", false);
+    const [canRotate] = useApiBoolean("publish/bloompub/canRotate", false);
     useSubscribeToWebSocketForStringMessage(
-        "publish-android",
-        "androidPreview",
+        "publish-bloompub",
+        "bloomPubPreview",
         url => {
             setBookUrl(url);
         }
@@ -101,8 +101,8 @@ const ReaderPublishScreenInternal: React.FunctionComponent<{
     const wifiWorking = useL10n("Publishing", "PublishTab.Common.Publishing");
 
     useSubscribeToWebSocketForEvent(
-        "publish-android",
-        "publish/android/state",
+        "publish-bloompub",
+        "publish/bloompub/state",
         e => {
             switch (e.message) {
                 case "stopped":
@@ -268,15 +268,15 @@ const ReaderPublishScreenInternal: React.FunctionComponent<{
             {inStorybookMode || (
                 <PublishProgressDialog
                     heading={heading}
-                    startApiEndpoint="publish/android/updatePreview"
-                    webSocketClientContext="publish-android"
+                    startApiEndpoint="publish/bloompub/updatePreview"
+                    webSocketClientContext="publish-bloompub"
                     progressState={progressState}
                     setProgressState={setProgressState}
                     closePending={closePending}
                     setClosePending={setClosePending}
                     onUserStopped={() => {
-                        postData("publish/android/usb/stop", {});
-                        postData("publish/android/wifi/stop", {});
+                        postData("publish/bloompub/usb/stop", {});
+                        postData("publish/bloompub/wifi/stop", {});
                         setClosePending(true);
                     }}
                 />

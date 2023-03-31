@@ -9,7 +9,7 @@ using Bloom.Api;
 using Bloom.web;
 using SIL.Progress;
 
-namespace Bloom.Publish.Android.wifi
+namespace Bloom.Publish.BloomPub.wifi
 {
 	/// <summary>
 	/// This class broadcasts a message over the network offering to supply a book to any Android that wants it.
