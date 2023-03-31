@@ -1,6 +1,6 @@
 import * as React from "react";
 import { post } from "../../utils/bloomApi";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useWebSocketListener } from "../../utils/WebSocketManager";
 
 // Which tab is open in Bloom.
@@ -83,15 +83,19 @@ export function useSetupBloomDialog(
 
     // the websocket event can have properties like props, comes from the opening of the dialog from c# (see useSetupBloomDialogFromServer())
     const [event, setEvent] = useState<any>({});
-    function showDialog(event?: any) {
+
+    // UseCallback ensures a stable reference, so that consumers of this hook don't get a new reference each time
+    // which could cause consumers to re-render needlessly.
+    const showDialog = useCallback((event?: any) => {
         setEvent(event);
         setOpen(true);
-    }
-    function closeDialog() {
+    }, []);
+    const closeDialog = useCallback(() => {
         if (dialogEnvironment?.dialogFrameProvidedExternally)
             post("common/closeReactDialog");
         setOpen(false);
-    }
+    }, [dialogEnvironment?.dialogFrameProvidedExternally]);
+
     return {
         openingEvent: event,
         showDialog,
