@@ -28,19 +28,19 @@ div.ui-audioCurrent:not(.ui-suppressHighlight):not(.ui-disableHighlight) p {
     // background: @highlightColor;
     // /* make highlighted text easier to read if it is normally a light color (like white)*/
     // color: @textOnLightBackground;
+}
 
-    &:before {
-        background-image: url(currentTextIndicator.svg);
-        background-repeat: no-repeat;
-        background-size: 10px 13px;
-        background-position: 2px 5px;
-        left: -15px;
-        top: 0; // should have no effect, but prevents a FF bug causing BL-6796
-        width: 15px;
-        height: 19px;
-        position: absolute;
-        content: " ";
-    }
+.bloom-ui-current-audio-marker:before {
+    background-image: url(currentTextIndicator.svg);
+    background-repeat: no-repeat;
+    background-size: 10px 13px;
+    background-position: 2px 5px;
+    left: -15px;
+    top: 0; // should have no effect, but prevents a FF bug causing BL-6796
+    width: 15px;
+    height: 19px;
+    position: absolute;
+    content: " ";
 }
 
 // These classes get applied to ui-audioCurrent elements when we don't currently want
@@ -64,6 +64,15 @@ div.ui-audioCurrent:not(.ui-suppressHighlight):not(.ui-disableHighlight) p {
 
 .ui-audioCurrent .ui-enableHighlight {
     background-color: @highlightColor;
+    // If we can one day get rid of this, we can simplify code for positioning the microphone icon near the span.
+    position: unset; // BL-11633, works around Chromium bug
+}
+
+span.ui-audioCurrent,
+div.ui-audioCurrent p {
+    // The rule that sets the background color is in basepage.less. However, we only need to
+    // interfere with position: relative when editing, so I _think_ this rule belongs here.
+    position: unset; // BL-11633, works around Chromium bug
 }
 
 .ui-audioCurrent.bloom-postAudioSplit[data-audiorecordingmode="TextBox"]:not(.ui-suppressHighlight):not(.ui-disableHighlight) {
@@ -79,6 +88,9 @@ div.ui-audioCurrent:not(.ui-suppressHighlight):not(.ui-disableHighlight) p {
     }
     span:nth-child(3n + 3) {
         background-color: #29c2d6;
+    }
+    span {
+        position: unset; // BL-11633, works around Chromium bug
     }
 
     p {
