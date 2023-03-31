@@ -4348,22 +4348,21 @@ namespace Bloom.Book
 		/// <summary>
 		/// Updates the feature in bookInfo.metadata to indicate whether the book contains comic pages.
 		/// These are now created with the Overlay Tool, but the feature retains the old name.
+		/// (But, we will only report it as a Comic book if the user didn't turn it off in the publish settings.)
 		/// </summary>
 		private void UpdateComicFeature()
 		{
-			BookInfo.MetaData.Feature_Comic = HasOverlayPages;
+			BookInfo.MetaData.Feature_Comic = HasOverlayPages && BookInfo.PublishSettings.BloomLibrary.Comic;
 		}
 
 		/// <summary>
 		/// Updates the feature in bookInfo.metadata to indicate whether the book is a motion book
+		/// (The publish setting is true by default, but only relevant...and the feature will only
+		/// be true...if the book actually has some motion settings.)
 		/// </summary>
 		private void UpdateMotionFeature()
 		{
-			// Conceptually, this *might* want to be a separate options from what you do in the BloomPUB publish.
-			// For example, motion is not currently one of your choices in the upload "features" setting, which
-			// is confusing. But in any case, at the moment, the BloomPUB screen is the way we give instructions
-			// to the Harvester for this setting, so this code is correct at the moment.
-			BookInfo.MetaData.Feature_Motion = BookInfo.PublishSettings.BloomPub.Motion;
+			BookInfo.MetaData.Feature_Motion = HasMotionPages && BookInfo.PublishSettings.BloomPub.Motion;
 		}
 
 		/// <summary>

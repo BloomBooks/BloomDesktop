@@ -294,16 +294,14 @@ namespace Bloom.Book
 			TextLangs = new Dictionary<string, InclusionSetting>();
 			AudioLangs = new Dictionary<string, InclusionSetting>();
 			SignLangs = new Dictionary<string, InclusionSetting>();
-			// We want this to default true for books that actually have Motion,
-			// But then it gets published that way even for books that don't.
-			//Motion = true; // Default for new books (ignored if they have no motion settings)
+			Motion = true; // Default for new books (ignored if they have no motion settings)
 		}
 
 		// Whether to publish the book as a motion book, that can be rotated
-		// horizontal to trigger autoplay with animations. Currently this mirrors
-		// the Motion feature (and the Feature_Motion property of BookInfo) but here
-		// the focus is on storing the publish setting rather than on listing book
-		// features in the library.
+		// horizontal to trigger autoplay with animations. This may well be true
+		// (it is by default) even if the book has no motion settings. However,
+		// in that case the corresponding feature will not be set, and of course
+		// the book can't actually be a motion book.
 		[JsonProperty("motion")]
 		public bool Motion;
 
