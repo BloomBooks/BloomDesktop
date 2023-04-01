@@ -525,7 +525,10 @@ export function post(
 export function postThatMightNavigate(urlSuffix: string) {
     // The internal catch should suppress any errors. In case that fails (which it has), passing
     // false to wrapAxios further suppresses any error reporting.
-    wrapAxios(axios.post(getBloomApiPrefix() + urlSuffix).catch(), false);
+    return wrapAxios(
+        axios.post(getBloomApiPrefix() + urlSuffix).catch(),
+        false
+    );
 }
 
 // This method is used to post something from Bloom with data.
