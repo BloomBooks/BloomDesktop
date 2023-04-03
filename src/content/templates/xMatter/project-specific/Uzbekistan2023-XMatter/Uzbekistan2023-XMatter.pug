@@ -20,12 +20,6 @@ html
 	body
 		+page-cover('Front Cover')(data-export='front-matter-cover', data-xmatter-page='frontCover')&attributes(attributes).frontCover.outsideFrontCover#7d7d1d2d-18b0-420f-ac96-6de20f659810
 			+standard-cover-image
-
-			+field-prototypeDeclaredExplicity("V").foobar
-				label.bubble Not clear what this is yet
-				//- TODO !!!!!!!!!!!!!!!!!!!!!!!! change both "foobar"s to something semantic once we figure out what this field is.
-				//- REMEMBER to change the style name too.
-				+editable(kLanguageForPrototypeOnly).Cover-Foobar-style(data-book='foobar')
 			+field-prototypeDeclaredExplicity("V").bookTitle
 				label.bubble Book title in {lang}
 				+editable(kLanguageForPrototypeOnly).bloom-nodefaultstylerule.Title-Front-Cover-style.bloom-padForOverflow(data-book='bookTitle')
@@ -38,7 +32,7 @@ html
 		+factoryStandard-titlePage
 
 		+page-xmatter("Credits Page").bloom-frontMatter.credits(data-export='front-matter-credits', data-xmatter-page='credits')#69E775AE-5BF1-49F1-89E7-2A932DAD932C
-			+credits-contents
+			+credits-contents(false)
 
 		+factoryStandard-insideBackCover
 
