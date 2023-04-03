@@ -314,9 +314,10 @@ namespace BloomTests.Book
 <html>
 	<head>
 		<style type=""text/css"" title=""userModifiedStyles"">
-		    /*<![CDATA[*/
-			.Title-Front-Cover-style { font-size: 28pt !important; font-family:""Times New Roman""; color:white;     text-align: center;}
-			.BigWords-style { font-size: 45pt !important; text-align: center !important; }/*]]>*/
+/*<![CDATA[*/
+.Title-Front-Cover-style { font-size: 28pt !important; font-family:""Times New Roman""; color:white;     text-align: center;}
+.BigWords-style { font-size: 45pt !important; text-align: center !important; }
+/*]]>*/
 		</style>
 		<link href='file://blahblah\\a5portrait.css' type='text/css' />
 	</head>
@@ -330,13 +331,20 @@ namespace BloomTests.Book
 
 			helper.InjectDefaultUserStylesFromXMatter();
 
-			var styles = _dom.SelectSingleNode("//head/style[@title='userModifiedStyles']").InnerText;
+			var stylesNode = _dom.SelectSingleNode("//head/style[@title='userModifiedStyles']");
+			var styles = stylesNode.InnerText;
 			Assert.That(styles, Contains.Substring(@".Title-Front-Cover-style { font-size: 28pt !important; font-family:""Times New Roman"";"),
 				"Should not have overwritten existing style");
 			Assert.That(styles,
 				Contains.Substring(
 					@".Cover-Lower-Credits-style { font-size: 16pt !important; font-style:italic; font-family:""Aileron; Arial"";"),
 				"Should have inserted default version of missing style");
+			var stylesXml = stylesNode.InnerXml.Trim();
+			Assert.That(stylesXml.StartsWith("/*<![CDATA[*/"));
+			Assert.That(stylesXml.EndsWith("/*]]>*/"));
+			// Guards against a regression to a problem where the closing wrapper got doubled.
+			Assert.That(stylesXml.Substring(13), Does.Not.Contain("<![CDATA["));
+			Assert.That(stylesXml.Substring(0, stylesXml.Length - 7), Does.Not.Contain("]]>"));
 		}
 
 		//		TODO: at the moment, we'd have to create a whole xmatter folder

@@ -1348,7 +1348,7 @@ namespace Bloom.Book
 		public static string MergeUserStylesOnInsertion(XmlNode existingUserStyleNode,
 			XmlNode insertedPageUserStyleNode)
 		{
-			return MergeUserStylesOnInsertion(existingUserStyleNode, insertedPageUserStyleNode?.InnerXml ?? "", out bool dummy);
+			return MergeUserStylesOnInsertion(existingUserStyleNode, insertedPageUserStyleNode?.InnerText ?? "", out bool dummy);
 		}
 
 		/// <summary>
@@ -1357,7 +1357,7 @@ namespace Bloom.Book
 		/// It might, however, add a style where a pre-existing style differed only in language attribute.
 		/// </summary>
 		/// <param name="existingUserStyleNode">From current book's storage</param>
-		/// <param name="insertedPageUserStyles"></param>
+		/// <param name="insertedPageUserStyles">Should be the InnerText (not InnerXml) of a style node.</param>
 		/// <returns>The InnerXml to which the user modified styles element should be set.</returns>
 		public static string MergeUserStylesOnInsertion(XmlNode existingUserStyleNode, string insertedPageUserStyles, out bool didAdd)
 		{
