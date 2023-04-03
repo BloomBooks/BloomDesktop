@@ -2,11 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Xml;
 using Bloom.Utils;
 using L10NSharp;
-using SIL.CommandLineProcessing;
 using SIL.IO;
 using SIL.Progress;
 using SIL.Reporting;
@@ -72,6 +70,13 @@ namespace Bloom.Book
 			{
 				UpdateImgMetadataAttributesToMatchImage(folderPath, img, progress, metadata);
 			}
+		}
+
+		private static readonly string[] _imagesThatShouldBeSingletons = new string[] { "placeholder.png", "license.png" };
+
+		public static bool IsPlaceholderOrLicense(string fileName)
+		{
+			return _imagesThatShouldBeSingletons.Contains(fileName.ToLowerInvariant());
 		}
 
 		private static readonly string[] ExcludedFiles = { "placeholder.png", "license.png", "thumbnail.png", "nonPaddedThumbnail.png" };
@@ -145,7 +150,7 @@ namespace Bloom.Book
 			//see also PageEditingModel.UpdateMetadataAttributesOnImage(), which does the same thing but on the browser dom
 			var url = HtmlDom.GetImageElementUrl(new ElementProxy(imgElement));
 			string fileName = url.PathOnly.NotEncoded;
-			if (fileName.ToLowerInvariant() == "placeholder.png" || fileName.ToLowerInvariant() == "license.png")
+			if (IsPlaceholderOrLicense(fileName))
 				return;
 			if (string.IsNullOrEmpty(fileName))
 			{

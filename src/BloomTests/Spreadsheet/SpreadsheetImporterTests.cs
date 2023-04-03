@@ -863,8 +863,8 @@ public static string PageWithJustText(int pageNumber, int tgNumber)
 		[TestCase(4, "ic4", "man.png")]
 		[TestCase(5, "ic5", "placeHolder.png")] // Todo: should be placeholder
 		[TestCase(5, "ic6", "shirt.png")]
-		[TestCase(11, "ic7", "Mars%203.png")]
-		[TestCase(13, "ic7", "shirt.png")]
+		[TestCase(11, "ic7", "Mars%2031.png")]
+		[TestCase(13, "ic7", "shirt1.png")]
 		public void GotImageSourceOnPageN(int n, string tag, string text)
 		{
 			AssertThatXmlIn.Element(_contentPages[n]).HasSpecifiedNumberOfMatchesForXpath($".//div[@data-test-id='{tag}']/img[@src='{text}']", 1);
@@ -882,7 +882,7 @@ public static string PageWithJustText(int pageNumber, int tgNumber)
 
 		[TestCase(7, "this is something extra on a new page before 7", "LakePendOreille.jpg", "Copyright © 2012, Stephen McConnel")]
 		[TestCase(10, "this is something extra on a new page before 8", "levels.png", "Copyright © 2021, USAID \"Okuu keremet!\"")]
-		[TestCase(12, "this is something extra after all the original pages", "man.png", "")]
+		[TestCase(12, "this is something extra after all the original pages", "man1.png", "")]
 		public void PageAddedWithTextAndPicture(int n, string text, string src, string copyright)
 		{
 			AssertThatXmlIn.Element(_contentPages[n]).HasSpecifiedNumberOfMatchesForXpath($".//div[contains(@class, 'bloom-imageContainer')]/img[@src='{src}']", 1);
@@ -931,6 +931,8 @@ public static string PageWithJustText(int pageNumber, int tgNumber)
 		[TestCase("levels.png")]
 		[TestCase("lady24b.png")]
 		[TestCase("Othello 199.jpg")]
+		[TestCase("man1.png")]
+		[TestCase("Mars 31.png")]
 		public void ImageCopiedToOutput(string fileName)
 		{
 			Assert.That(RobustFile.Exists(Path.Combine(_bookFolder.FolderPath, fileName)));
