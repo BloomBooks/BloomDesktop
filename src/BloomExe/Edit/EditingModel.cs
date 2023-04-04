@@ -141,7 +141,7 @@ namespace Bloom.Edit
 				{
 					SaveNow();
 					_view.UpdateButtonLocalizations();
-					RefreshDisplayOfCurrentPage();
+					RefreshDisplayOfCurrentPage(true);
 					//_view.UpdateDisplay();
 					_view.UpdatePageList(false);
 				}
@@ -739,9 +739,9 @@ namespace Bloom.Edit
 			}
 		}
 
-		public void RefreshDisplayOfCurrentPage()
+		public void RefreshDisplayOfCurrentPage(bool changingUiLanguage = false)
 		{
-			_view.UpdateSingleDisplayedPage(_pageSelection.CurrentSelection);
+			_view.UpdateSingleDisplayedPage(_pageSelection.CurrentSelection, changingUiLanguage);
 		}
 
 		public void UpdateMetaData(string url)
