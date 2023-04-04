@@ -440,7 +440,7 @@ namespace Bloom.Edit
 
 		DateTime _beginPageLoad;
 
-		public void UpdateSingleDisplayedPage(IPage page)
+		public void UpdateSingleDisplayedPage(IPage page, bool changingUiLanguage = false)
 		{
 			if(!_model.Visible)
 			{
@@ -482,7 +482,7 @@ namespace Bloom.Edit
 				// never happens.
 				// Do this before we change the src of the iframe to make sure we're ready when the document-completed arrives.
 				_browser1.DocumentCompleted += WebBrowser_ReadyStateChanged;
-				if (_model.AreToolboxAndOuterFrameCurrent() && !ShouldDoFullReload())
+				if (_model.AreToolboxAndOuterFrameCurrent() && !changingUiLanguage && !ShouldDoFullReload())
 				{
 					// Keep the top document and toolbox iframe, just navigate the page iframe to the new page.
 					_browser1.SetEditDom(domForCurrentPage);
