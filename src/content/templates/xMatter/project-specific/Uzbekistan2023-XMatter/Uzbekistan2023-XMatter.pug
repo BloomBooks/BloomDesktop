@@ -29,10 +29,50 @@ html
 					+editable(kLanguageForPrototypeOnly).smallCoverCredits.Cover-Lower-Credits-style(data-book='smallCoverCredits')
 
 		+factory-insideFrontCover
-		+factoryStandard-titlePage
+		+page-xmatter('Title Page').titlePage.bloom-frontMatter(data-export='front-matter-title-page', data-xmatter-page='titlePage')&attributes(attributes)#5dcd48df-e9ab-4a07-afd4-6a24d0398382
+			block titlePageContents
+				// TITLE PAGE
+				+field-prototypeDeclaredExplicity("V,N1")
+					label.bubble Author
+					+editable(kLanguageForPrototypeOnly).Author-style.bloom-padForOverflow(data-book='author')
+				div.smallFlexGap
+				+field-prototypeDeclaredExplicity("V,N1")#titlePageTitleBlock
+					label.bubble Book title in {lang}
+					+editable(kLanguageForPrototypeOnly).bloom-nodefaultstylerule.Title-On-Title-Page-style.bloom-padForOverflow(data-book='bookTitle')
+				div.largeFlexGap
+				+standard-originalContributions
+				div.smallFlexGap
+				+field-prototypeDeclaredExplicity("N1")#funding
+					label.bubble Use this to acknowledge any funding agencies.
+					+editable(kLanguageForPrototypeOnly).funding.Content-On-Title-Page-style.bloom-copyFromOtherLanguageIfNecessary(data-book='funding')
+				div.smallFlexGap
+				+field-prototypeDeclaredExplicity("N1")
+					label.bubble Place and year of issue
+					+editable(kLanguageForPrototypeOnly).Place-And-Year-style(data-book='placeAndYear')
+				div.largeFlexGap
 
-		+page-xmatter("Credits Page").bloom-frontMatter.credits(data-export='front-matter-credits', data-xmatter-page='credits')#69E775AE-5BF1-49F1-89E7-2A932DAD932C
-			+credits-contents(false)
+				div.fillPageFlexGap.
+				+title-page-branding-bottom
+
+		+page-xmatter("Credits Page").bloom-frontMatter.credits(data-export='front-matter-credits', data-xmatter-page='credits')#69E775AE-5BF1-49F1-89E7-2A932DAD932D
+			block creditsContent
+				+credits-page-branding-top
+				.bloom-metaData.licenseAndCopyrightBlock(data-functiononhintclick="showCopyrightAndLicenseDialog",data-hint="Click to Edit Copyright & License",lang="V")
+					.copyright(data-derived="copyright", lang="*").Credits-Page-style
+						| {copyright}
+					block copyrightHolderAddress
+						// no default content
+					.licenseBlock
+						img.licenseImage(src="license.png" data-derived="licenseImage")
+						.licenseDescription(lang="uz").Credits-Page-style Ushbu asar Creative Commons Attribution- 4.0 (http://creativecommons.org/licenses/by/4.0/) xalqaro ruxsatnomasi bo‘yicha litsenziyadan o‘tgan
+						.licenseNotes.Credits-Page-style Siz mualiflar, rassomlar va boshqalarning mualliflik xuquqlarini saqlab qolishingiz kerak.
+							| Siz ushbu asarni tijorat maqsadida ishlatishingiz mumkin.
+							| Siz ushbu asarni moslashtirishingiz va unga o‘zgarishlar kiritishingiz mumkin.
+				+field-acknowledgments-localizedVersion
+				//- Here code puts in something like "From the original Copyright Pratham Books 2016. CC-BY. Any license notes here."
+				.copyright(data-derived="originalCopyrightAndLicense").Credits-Page-style
+				+field-acknowledgments-originalVersion
+				+credits-page-branding-bottom
 
 		+factoryStandard-insideBackCover
 
