@@ -9,6 +9,7 @@ import {
     getBloomApiPrefix,
     getBoolean,
     post,
+    postBoolean,
     postString
 } from "../../utils/bloomApi";
 import { kBloomRed } from "../../utils/colorUtils";
@@ -90,6 +91,10 @@ export const LibraryPublishSteps: React.FunctionComponent = () => {
     const [bookInfo, setBookInfo] = useState<IReadonlyBookInfo>();
     useEffect(() => {
         post("libraryPublish/checkForLoggedInUser");
+        getBoolean("libraryPublish/agreementsAccepted", result => {
+            setAgreedPreviously(result);
+            setAgreementsAccepted(result);
+        });
         get("libraryPublish/getBookInfo", result => {
             setBookInfo(result.data);
             setSummary(result.data.summary);
@@ -115,15 +120,23 @@ export const LibraryPublishSteps: React.FunctionComponent = () => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [summary]); // purposefully not including bookInfo, so we don't post on initial load
 
-    // Only set this to true for development. It's a shortcut to allow uploading without having to agree to the terms.
-    const isDevelopmentShortcutOn = false;
-
     function isReadyForAgreements(): boolean {
         return !!bookInfo?.title && !!bookInfo?.copyright;
     }
+    const [agreedPreviously, setAgreedPreviously] = useState<boolean>(false);
     const [agreementsAccepted, setAgreementsAccepted] = useState<boolean>(
         false
     );
+    // This useRef silliness is to prevent the postBoolean from happening on the initial render.
+    const hasRenderedRef = useRef(false);
+    useEffect(() => {
+        if (hasRenderedRef.current)
+            postBoolean(
+                "libraryPublish/agreementsAccepted",
+                agreementsAccepted
+            );
+        else hasRenderedRef.current = true;
+    }, [agreementsAccepted]);
 
     const [loggedInEmail, setLoggedInEmail] = useState<string>();
 
@@ -136,10 +149,7 @@ export const LibraryPublishSteps: React.FunctionComponent = () => {
     );
 
     function isReadyForUpload(): boolean {
-        return (
-            isDevelopmentShortcutOn ||
-            (isReadyForAgreements() && agreementsAccepted)
-        );
+        return isReadyForAgreements() && agreementsAccepted;
     }
 
     function confirmWithUserIfNecessaryAndUpload() {
@@ -334,7 +344,6 @@ export const LibraryPublishSteps: React.FunctionComponent = () => {
                             aria-label="Book summary"
                             fullWidth
                             css={css`
-                                margin-left: -15px; // Align the label with the read-only data labels. Determined experimentally.
                                 margin-top: 24px;
 
                                 // This is messy. MUI doesn't seem to let you easily (and correctly) change the label size.
@@ -374,6 +383,7 @@ export const LibraryPublishSteps: React.FunctionComponent = () => {
                     </StepLabel>
                     <StepContent>
                         <Agreements
+                            initiallyChecked={agreedPreviously}
                             disabled={!isReadyForAgreements()}
                             onReadyChange={setAgreementsAccepted}
                         />
@@ -471,7 +481,7 @@ export const LibraryPublishSteps: React.FunctionComponent = () => {
                                         setLoggedInEmail(undefined);
                                     }}
                                 >
-                                    Sign Out as %0
+                                    Sign out (%0)
                                 </BloomButton>
                             ) : (
                                 <BloomButton
@@ -582,18 +592,15 @@ export const LibraryPublishSteps: React.FunctionComponent = () => {
     );
 };
 
-// remaining from JH's original TODO list:
-// (some of these apply to the Settings)
-// Choose languages to upload
-// Really hook up login/signup
-// Features
-
 const Agreements: React.FunctionComponent<{
+    initiallyChecked: boolean;
     disabled: boolean;
     onReadyChange: (v: boolean) => void;
 }> = props => {
     const totalCheckboxes = 3;
-    const [numChecked, setNumChecked] = useState<number>(0);
+    const [numChecked, setNumChecked] = useState<number>(
+        props.initiallyChecked ? 3 : 0
+    );
     useEffect(() => {
         props.onReadyChange(numChecked === totalCheckboxes);
     }, [numChecked]);
@@ -605,6 +612,7 @@ const Agreements: React.FunctionComponent<{
     return (
         <React.Fragment>
             <AgreementCheckbox
+                initiallyChecked={props.initiallyChecked}
                 label={
                     <React.Fragment>
                         <Span l10nKey="PublishTab.Upload.Agreement.PermissionToPublish">
@@ -620,6 +628,7 @@ const Agreements: React.FunctionComponent<{
                 onChange={checked => handleChange(checked)}
             />
             <AgreementCheckbox
+                initiallyChecked={props.initiallyChecked}
                 label={
                     <Span l10nKey={"PublishTab.Upload.Agreement.GivesCredit"}>
                         The book gives credit to the the author, translator, and
@@ -630,6 +639,7 @@ const Agreements: React.FunctionComponent<{
                 onChange={checked => handleChange(checked)}
             />
             <AgreementCheckbox
+                initiallyChecked={props.initiallyChecked}
                 label={
                     <PWithLink
                         href={"https://bloomlibrary.org/terms"}
@@ -649,16 +659,13 @@ const Agreements: React.FunctionComponent<{
     );
 };
 
-// This component is a bit odd. It doesn't quite fit into controlled or uncontrolled.
-// We have an onChange handler because we need to know when its state changes.
-// But we never pass in the value it because always starts in a certain state (unchecked/false).
-// We can do this because it is only designed to be used in this limited context.
 const AgreementCheckbox: React.FunctionComponent<{
+    initiallyChecked: boolean;
     label: string | React.ReactNode;
     disabled: boolean;
     onChange: (v: boolean) => void;
 }> = props => {
-    const [isChecked, setIsChecked] = useState(false);
+    const [isChecked, setIsChecked] = useState(props.initiallyChecked);
     function handleCheckChanged(isChecked: boolean) {
         setIsChecked(isChecked);
         props.onChange(isChecked);
