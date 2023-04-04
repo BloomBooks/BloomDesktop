@@ -766,8 +766,30 @@ function getRemovableCollectionHeaderDiv(
     tooltipText: string,
     icon: JSX.Element
 ): JSX.Element {
+    // Make the book list semi-transparent when hovering over the
+    // "remove collection" button.  This function is called with true
+    // for onMouseEnter and false for onMouseLeave.
+    function setBooklistTransparency(
+        ev: React.MouseEvent<HTMLDivElement, MouseEvent>,
+        makeTransparent: boolean
+    ): void {
+        let div: HTMLElement | null = ev.target as HTMLElement;
+        if (div) {
+            while (
+                (div = div.parentElement) &&
+                !div.classList.contains("removable-collection-header")
+            );
+            const dest = div?.nextElementSibling;
+            if (dest) {
+                if (makeTransparent) dest.classList.add("largely-transparent");
+                else dest.classList.remove("largely-transparent");
+            }
+        }
+    }
+
     return (
         <div
+            className="removable-collection-header"
             css={css`
                 display: flex;
                 flex-flow: row;
@@ -785,11 +807,10 @@ function getRemovableCollectionHeaderDiv(
                     display: none;
                     color: ${kBloomBlue};
                     background-color: transparent;
-                    &:hover {
-                        visibility: visible;
-                    }
                 `}
                 onClick={() => clickFunction(collectionId)}
+                onMouseEnter={ev => setBooklistTransparency(ev, true)}
+                onMouseLeave={ev => setBooklistTransparency(ev, false)}
             >
                 <BloomTooltip
                     id={tooltipId}
