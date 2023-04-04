@@ -1,10 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 using Bloom.Api;
 using Bloom.Book;
@@ -295,6 +292,7 @@ namespace Bloom.web.controllers
 			var slIsCustom = collectionSettings.SignLanguage.Name != l.DesiredName;
 			collectionSettings.SignLanguage.SetName(l.DesiredName, slIsCustom);
 			collectionSettings.Save();
+			Model.UpdateLangDataCache();
 
 			Model.SetOnlySignLanguageToPublish(collectionSettings.SignLanguageTag);
 			_webSocketServer.SendString("publish", "signLang", l.DesiredName);
