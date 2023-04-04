@@ -766,8 +766,41 @@ function getRemovableCollectionHeaderDiv(
     tooltipText: string,
     icon: JSX.Element
 ): JSX.Element {
+    function addOpacityToBooks(
+        ev: React.MouseEvent<HTMLDivElement, MouseEvent>
+    ): void {
+        let div: HTMLElement | null = ev.target as HTMLElement;
+        if (div) {
+            while (
+                (div = div.parentElement) &&
+                !div.classList.contains("removable-collection-header")
+            );
+            const dest = div?.nextElementSibling;
+            if (dest) {
+                dest.classList.add("opaque20");
+            }
+        }
+    }
+
+    function removeOpacityFromBooks(
+        ev: React.MouseEvent<HTMLDivElement, MouseEvent>
+    ): void {
+        let div: HTMLElement | null = ev.target as HTMLElement;
+        if (div) {
+            while (
+                (div = div.parentElement) &&
+                !div.classList.contains("removable-collection-header")
+            );
+            const dest = div?.nextElementSibling;
+            if (dest) {
+                dest.classList.remove("opaque20");
+            }
+        }
+    }
+
     return (
         <div
+            className="removable-collection-header"
             css={css`
                 display: flex;
                 flex-flow: row;
@@ -785,11 +818,10 @@ function getRemovableCollectionHeaderDiv(
                     display: none;
                     color: ${kBloomBlue};
                     background-color: transparent;
-                    &:hover {
-                        visibility: visible;
-                    }
                 `}
                 onClick={() => clickFunction(collectionId)}
+                onMouseEnter={ev => addOpacityToBooks(ev)}
+                onMouseLeave={ev => removeOpacityFromBooks(ev)}
             >
                 <BloomTooltip
                     id={tooltipId}
