@@ -50,6 +50,7 @@ import WinFormsStyleSelect from "./winFormsStyleSelect";
 import BookMakingSettingsControl from "../collection/bookMakingSettingsControl";
 import { Link } from "./link";
 import { BloomSplitButton } from "./bloomSplitButton";
+import { AutoUpdateSoftwareDialog } from "./AutoUpdateSoftwareDialog";
 
 storiesOf("Localizable Widgets", module)
     .add("Expandable", () => (
@@ -611,6 +612,13 @@ storiesOf("Misc", module)
                 </React.Fragment>
             );
         })
+    )
+    .add("AutoUpdateSoftwareDialog", () =>
+        React.createElement(() => (
+            <AutoUpdateSoftwareDialog
+                dialogEnvironment={normalDialogEnvironmentForStorybook}
+            />
+        ))
     )
     .add("RadioGroup", () =>
         React.createElement(() => {

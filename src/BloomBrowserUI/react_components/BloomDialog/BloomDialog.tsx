@@ -122,11 +122,16 @@ export const BloomDialog: FunctionComponent<IBloomDialogProps> = forwardRef(
 
         const {
             dialogFrameProvidedExternally,
-            disableDragging,
+            disableDragging: disableDraggingProp,
             onClose,
             onCancel,
             ...propsToPass
         } = props;
+
+        const disableDragging =
+            disableDraggingProp !== undefined
+                ? disableDraggingProp
+                : !!dialogFrameProvidedExternally;
 
         function hasChildOfType(typeName: string) {
             return React.Children.toArray(props.children).some(c => {
@@ -156,7 +161,7 @@ export const BloomDialog: FunctionComponent<IBloomDialogProps> = forwardRef(
                         <BloomDialogContext.Provider
                             value={{
                                 onCancel: props.onCancel,
-                                disableDragging: !!props.disableDragging
+                                disableDragging: disableDragging
                             }}
                         >
                             <Dialog
@@ -408,5 +413,5 @@ type BloomDialogContextArgs = {
 };
 export const BloomDialogContext = React.createContext<BloomDialogContextArgs>({
     onCancel: undefined,
-    disableDragging: false
+    disableDragging: true
 });
