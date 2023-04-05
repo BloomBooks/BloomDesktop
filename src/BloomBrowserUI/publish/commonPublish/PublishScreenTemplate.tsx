@@ -17,6 +17,7 @@ export const PublishScreenTemplate: React.FunctionComponent<{
     bannerDescriptionL10nId?: string;
     // This one "node" should include all the publishing mode options as well as the Help links.
     optionsPanelContents?: React.ReactNode;
+    bottomBanner?: React.ReactNode;
 }> = props => {
     // Tells CSharp land to handle our external links correctly (by opening in the system browser)
     React.useEffect(() => hookupLinkHandler(), []);
@@ -57,6 +58,7 @@ export const PublishScreenTemplate: React.FunctionComponent<{
                 <MainPanel>{props.children}</MainPanel>
                 <OptionPanel>{props.optionsPanelContents}</OptionPanel>
             </div>
+            {props.bottomBanner}
         </div>
     );
 };

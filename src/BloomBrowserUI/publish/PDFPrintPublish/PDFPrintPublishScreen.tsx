@@ -187,51 +187,6 @@ export const PDFPrintPublishScreen = () => {
                     </ThemeProvider>
                 </StyledEngineProvider>
             </PreviewPanel>
-            <div
-                css={css`
-                    display: ${helpVisible ? "block" : "none"};
-                    background-color: ${kBloomBlue};
-                    color: white;
-                    position: sticky;
-                    border-radius: 4px;
-                `}
-            >
-                <div
-                    css={css`
-                        font-weight: 600;
-                        padding-top: 5px;
-                        padding-left: 15px;
-                    `}
-                >
-                    <InfoOutlinedIcon
-                        css={css`
-                            padding-right: 5px;
-                            position: relative;
-                            top: 4px;
-                        `}
-                    />
-                    {helpHeader}
-                </div>
-                <CloseIcon
-                    css={css`
-                        position: absolute;
-                        top: 5px;
-                        right: 5px;
-                    `}
-                    onClick={() => setHelpVisible(false)}
-                />
-                <div
-                    css={css`
-                        column-count: 2;
-                        padding-left: 20px;
-                        padding-top: 10px;
-                        padding-bottom: 10px;
-                    `}
-                >
-                    {settingsHelp}
-                    {settingsNote}
-                </div>
-            </div>
         </React.Fragment>
     );
 
@@ -308,6 +263,54 @@ export const PDFPrintPublishScreen = () => {
         </React.Fragment>
     );
 
+    const bottomBanner = (
+        <div
+            css={css`
+                display: ${helpVisible ? "block" : "none"};
+                background-color: ${kBloomBlue};
+                color: white;
+                position: sticky;
+                border-radius: 4px;
+            `}
+        >
+            <div
+                css={css`
+                    font-weight: 600;
+                    padding-top: 5px;
+                    padding-left: 15px;
+                `}
+            >
+                <InfoOutlinedIcon
+                    css={css`
+                        padding-right: 5px;
+                        position: relative;
+                        top: 4px;
+                    `}
+                />
+                {helpHeader}
+            </div>
+            <CloseIcon
+                css={css`
+                    position: absolute;
+                    top: 5px;
+                    right: 5px;
+                `}
+                onClick={() => setHelpVisible(false)}
+            />
+            <div
+                css={css`
+                    column-count: 2;
+                    padding-left: 20px;
+                    padding-top: 10px;
+                    padding-bottom: 10px;
+                `}
+            >
+                {settingsHelp}
+                {settingsNote}
+            </div>
+        </div>
+    );
+
     return (
         <React.Fragment>
             <PublishScreenTemplate
@@ -315,6 +318,7 @@ export const PDFPrintPublishScreen = () => {
                 bannerTitleL10nId="PublishTab.PdfPrint.BannerTitle"
                 bannerRightSideControls={rightSideControls}
                 optionsPanelContents={optionsPanel}
+                bottomBanner={bottomBanner}
             >
                 {mainPanel}
             </PublishScreenTemplate>
