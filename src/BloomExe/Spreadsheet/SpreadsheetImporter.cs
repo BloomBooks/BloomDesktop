@@ -1,5 +1,4 @@
 using System;
-using Bloom.Book;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
@@ -11,16 +10,17 @@ using System.Threading.Tasks;
 using System.Web.UI.WebControls;
 using System.Windows.Forms;
 using System.Xml;
-using Bloom.MiscUI;
-using Bloom.web;
+using SIL.Extensions;
 using SIL.IO;
 using SIL.Progress;
 using SIL.Xml;
+using Bloom.Book;
+using Bloom.MiscUI;
+using Bloom.web;
 using Bloom.Collection;
 using Bloom.History;
 using Bloom.ImageProcessing;
 using Bloom.web.controllers;
-using Label = System.Web.UI.WebControls.Label;
 
 namespace Bloom.Spreadsheet
 {
@@ -593,6 +593,24 @@ namespace Bloom.Spreadsheet
 			}
 
 			var destFileName = Path.GetFileName(spreadsheetImgPath);
+			var fullSpreadsheetPath = spreadsheetImgPath;
+			if (_pathToSpreadsheetFolder != null) //currently will only be null in tests
+			{
+				// To my surprise, if spreadsheetImgPath is rooted (a full path), this will just use it,
+				// ignoring _pathToSpreadsheetFolder, which is what we want.
+				fullSpreadsheetPath = Path.Combine(_pathToSpreadsheetFolder, spreadsheetImgPath);
+			}
+			// _pathToBookFolder can be null in tests
+			if(!ImageUpdater.IsPlaceholderOrLicense(destFileName) && _pathToBookFolder != null)
+			{
+				var fullDestinationPath = Path.Combine(_pathToBookFolder, destFileName);
+				while (RobustFile.Exists(fullDestinationPath))
+				{
+					destFileName = ImageUtils.GetUnusedFilename(_pathToBookFolder,
+						Path.GetFileNameWithoutExtension(destFileName), Path.GetExtension(destFileName));
+					fullDestinationPath = Path.Combine(_pathToBookFolder, destFileName);
+				}
+			}
 
 			var imgElement = GetImgFromContainer(currentImageContainer);
 			// Enhance: warn if null?
@@ -608,9 +626,6 @@ namespace Bloom.Spreadsheet
 			currentImageContainer.RemoveAttribute("title");
 			if (_pathToSpreadsheetFolder != null) //currently will only be null in tests
 			{
-				// To my surprise, if spreadsheetImgPath is rooted (a full path), this will just use it,
-				// ignoring _pathToSpreadsheetFolder, which is what we want.
-				var fullSpreadsheetPath = Path.Combine(_pathToSpreadsheetFolder, spreadsheetImgPath);
 				if (spreadsheetImgPath == "placeHolder.png")
 				{
 					// Don't assume the source has it, let's get a copy from files shipped with Bloom
@@ -636,7 +651,7 @@ namespace Bloom.Spreadsheet
 			}
 		}
 
-		private void CopyImageFileToDestination(string destFileName, string fullSpreadsheetPath, XmlElement imgElement=null)
+		private void CopyImageFileToDestination(string destFileName, string fullSpreadsheetPath, XmlElement imgElement = null)
 		{
 			try
 			{
