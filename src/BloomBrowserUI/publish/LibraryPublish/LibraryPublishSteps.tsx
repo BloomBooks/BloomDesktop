@@ -12,7 +12,6 @@ import {
     postBoolean,
     postString
 } from "../../utils/bloomApi";
-import { kBloomRed } from "../../utils/colorUtils";
 import { BloomStepper } from "../../react_components/BloomStepper";
 import { Div, Span } from "../../react_components/l10nComponents";
 import BloomButton from "../../react_components/bloomButton";
@@ -690,7 +689,7 @@ const WarningMessage: React.FunctionComponent = props => {
         <div
             css={css`
                 font-size: small;
-                color: ${kBloomRed};
+                color: red;
             `}
         >
             {props.children}
@@ -707,8 +706,8 @@ const MissingInfo: React.FunctionComponent<{
             l10nKey={props.l10nKey}
             css={css`
                 font-size: unset;
-                font-weight: normal;
-                color: ${kBloomRed};
+                font-weight: bold;
+                color: red;
             `}
         >
             {props.text}
