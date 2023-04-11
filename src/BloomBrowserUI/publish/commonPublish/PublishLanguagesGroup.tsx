@@ -126,6 +126,14 @@ export const PublishLanguagesGroup: React.FunctionComponent<{
         }
     };
 
+    const talkingLabel = useL10n(
+        "Talking Book Languages",
+        "PublishTab.Android.TalkingBookLanguages"
+    );
+
+    const enabledAudio =
+        checkboxValuesForAudioLangs?.filter(item => item.isEnabled).length > 0;
+
     return (
         <div>
             <LanguageSelectionSettingsGroup
@@ -138,16 +146,17 @@ export const PublishLanguagesGroup: React.FunctionComponent<{
                     onLanguageUpdated(item, newState, "includeText");
                 }}
             />
-            <LanguageSelectionSettingsGroup
-                label={useL10n(
-                    "Talking Book Languages",
-                    "PublishTab.Android.TalkingBookLanguages"
-                )}
-                langCheckboxValues={checkboxValuesForAudioLangs}
-                onChange={(item, newState: boolean) => {
-                    onLanguageUpdated(item, newState, "includeAudio");
-                }}
-            />
+            {enabledAudio ? (
+                <LanguageSelectionSettingsGroup
+                    label={talkingLabel}
+                    langCheckboxValues={checkboxValuesForAudioLangs}
+                    onChange={(item, newState: boolean) => {
+                        onLanguageUpdated(item, newState, "includeAudio");
+                    }}
+                />
+            ) : (
+                ""
+            )}
         </div>
     );
 };
