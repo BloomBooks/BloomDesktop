@@ -68,8 +68,6 @@ export const LanguageSelectionSettingsGroup: React.FunctionComponent<{
             <SettingsGroup label={props.label}>
                 <FormGroup
                     css={css`
-                        overflow-y: auto;
-                        max-height: 150px;
                         // The 'important' overrides the MUI default so we only get one column of checkboxes.
                         flex-wrap: nowrap !important;
                         margin-right: 20px;
