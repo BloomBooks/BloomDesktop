@@ -32,7 +32,6 @@ export const LibraryPublishScreen = () => {
 
     const settingsPanel = (
         <SettingsPanel>
-            <CoverColorGroup />
             <PublishLanguagesGroup
                 onChange={() => {
                     // Forces features group to re-evaluate whether this will be a talking book.
@@ -40,6 +39,7 @@ export const LibraryPublishScreen = () => {
                 }}
             />
             <PublishFeaturesGroup generation={generation} />
+            <CoverColorGroup />
 
             {/* push everything below this to the bottom */}
             <div

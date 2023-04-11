@@ -174,7 +174,6 @@ const ReaderPublishScreenInternal: React.FunctionComponent<{
 
     const optionsPanel = (
         <SettingsPanel>
-            <CoverColorGroup onChange={() => props.onReset()} />
             <PublishLanguagesGroup
                 onChange={() => {
                     setHighlightRefresh(true);
@@ -188,6 +187,7 @@ const ReaderPublishScreenInternal: React.FunctionComponent<{
                 }}
                 generation={generation}
             />
+            <CoverColorGroup onChange={() => props.onReset()} />
             {/* push everything to the bottom */}
             <div
                 css={css`
