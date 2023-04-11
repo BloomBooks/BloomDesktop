@@ -23,7 +23,8 @@ namespace Bloom.Publish.BloomPub.file
 		{
 			var progressWithL10N = progress.WithL10NPrefix("PublishTab.Android.File.Progress.");
 
-			var initialPath = OutputFilenames.GetOutputFilePath(book, BloomPubMaker.BloomPubExtensionWithDot, Settings.Default.BloomDeviceFileExportFolder);
+			var initialPath = OutputFilenames.GetOutputFilePath(book, BloomPubMaker.BloomPubExtensionWithDot,
+				proposedFolder: Settings.Default.BloomDeviceFileExportFolder);
 
 			var bloomdFileDescription = LocalizationManager.GetString("PublishTab.Android.bloomdFileFormatLabel", "Bloom Book for Devices",
 				"This is shown in the 'Save' dialog when you save a bloom book in the format that works with the Bloom Reader Android App");
