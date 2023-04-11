@@ -3903,22 +3903,20 @@ namespace Bloom.Book
 					//	debugBldr.AppendLineFormat("hashing simplified HTML [{0} bytes] => {1}", bytes.Length, Convert.ToBase64String(sha2.Hash));
 					//}
 					var folder = Path.GetDirectoryName(filePath);
+					var filter = new BookFileFilter(folder)
+					{
+						IncludeFilesForContinuedEditing = true,
+						NarrationLanguages = null,	// include every narration language
+						WantVideo = true,
+						WantMusic = true
+					};
+					filter.AlwaysReject("meta.json");		// ignore since this stores currentTool and toolboxIsOpen, which are irrelevant
+					filter.AlwaysReject("video-placeholder.svg");	// ignore since placeholder file is provided as needed
+					filter.AlwaysReject("thumbnail.png");	// ignore since it seems to vary gratuitously (still check other thumbnail images)
 					// Order must be predictable but does not otherwise matter.
 					foreach (var path in Directory.GetFiles(folder, "*", SearchOption.AllDirectories).OrderBy(x => x))
 					{
-						var name = Path.GetFileName(path);
-						// ignore files like .lastUploadInfo: they may contain output from this function anyway
-						// these are "hidden" files on Linux.
-						if (name.StartsWith(".", StringComparison.Ordinal))
-							continue;
-						var ext = Path.GetExtension(path);
-						// PDF files are generated, we don't care whether they are identical.
-						// we don't care about .bak files either.
-						// .status files contain the output of this function among other team collection
-						// information; counting them would mean that writing a new status with the
-						// new version code would immediately change the next version code computed.
-						// .BloomBookOrder files are essentially copies of the meta.json files.
-						if (ext == ".pdf" || ext == ".status" || ext == ".bak" || ext == ".BloomBookOrder")
+						if (!filter.Filter(path))
 							continue;
 						if (path == filePath)
 							continue; // we already included a simplified version of the main HTML file

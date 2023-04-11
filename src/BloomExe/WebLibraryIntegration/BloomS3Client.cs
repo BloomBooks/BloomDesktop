@@ -209,7 +209,7 @@ namespace Bloom.WebLibraryIntegration
 		/// </summary>
 		public void UploadBook(string storageKeyOfBookFolder, string pathToBloomBookDirectory, IProgress progress,
 			string pdfToInclude, bool includeNarrationAudio, bool includeMusic,
-			string[] languagesToInclude, string metadataLang1Code, string metadataLang2Code)
+			string[] languagesToInclude, string metadataLang1Code, string metadataLang2Code, bool isForBulkUpload = false)
 		{
 			BaseUrl = null;
 			BookOrderUrlOfRecentUpload = null;
@@ -249,6 +249,8 @@ namespace Bloom.WebLibraryIntegration
 			if (pdfToInclude != null)
 				filter.AlwaysAccept(pdfToInclude);
 			filter.AlwaysAccept(Path.GetFileNameWithoutExtension(pathToBloomBookDirectory) + BookInfo.BookOrderExtension);
+			if (isForBulkUpload)
+				filter.AlwaysAccept(".lastUploadInfo");
 			filter.CopyBookFolderFiltered(destDirName);
 
 			ProcessVideosInTempDirectory(destDirName);

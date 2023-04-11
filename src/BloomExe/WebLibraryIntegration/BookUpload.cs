@@ -154,7 +154,7 @@ namespace Bloom.WebLibraryIntegration
 
 		private string UploadBook(string bookFolder, IProgress progress, out string parseId,
 			string pdfToInclude, bool includeNarrationAudio, bool includeMusic, string[] languages,
-			CollectionSettings collectionSettings, string metadataLang1Code, string metadataLang2Code)
+			CollectionSettings collectionSettings, string metadataLang1Code, string metadataLang2Code, bool isForBulkUpload = false)
 		{
 			// Books in the library should generally show as locked-down, so new users are automatically in localization mode.
 			// Occasionally we may want to upload a new authoring template, that is, a 'book' that is suitableForMakingShells.
@@ -222,7 +222,7 @@ namespace Bloom.WebLibraryIntegration
 			try
 			{
 				_s3Client.UploadBook(s3BookId, bookFolder, progress, pdfToInclude, includeNarrationAudio, includeMusic,
-					languages, metadataLang1Code, metadataLang2Code);
+					languages, metadataLang1Code, metadataLang2Code, isForBulkUpload);
 				metadata.BaseUrl = _s3Client.BaseUrl;
 				metadata.BookOrder = _s3Client.BookOrderUrlOfRecentUpload;
 				var metaMsg = LocalizationManager.GetString("PublishTab.Upload.UploadingBookMetadata", "Uploading book metadata", "In this step, Bloom is uploading things like title, languages, and topic tags to the BloomLibrary.org database.");
@@ -564,7 +564,7 @@ namespace Bloom.WebLibraryIntegration
 					languagesToUpload,
 					book.CollectionSettings,
 					book.BookData.MetadataLanguage1Tag,
-					book.BookData.MetadataLanguage2Tag);
+					book.BookData.MetadataLanguage2Tag, bookParams.IsForBulkUpload);
 
 				var url = BloomLibraryUrls.BloomLibraryDetailPageUrlFromBookId(parseId); 
 				book.ReportSimplisticFontAnalytics(FontAnalytics.FontEventType.PublishWeb,url);
@@ -663,6 +663,7 @@ namespace Bloom.WebLibraryIntegration
 		public bool ExcludeMusic;
 		public bool PreserveThumbnails;
 		public bool ForceUpload;
+		public bool IsForBulkUpload;
 
 		public BookUploadParameters()
 		{
@@ -674,6 +675,7 @@ namespace Bloom.WebLibraryIntegration
 			ExcludeMusic = options.ExcludeMusicAudio;
 			PreserveThumbnails = options.PreserveThumbnails;
 			ForceUpload = options.ForceUpload;
+			IsForBulkUpload = true;
 		}
 	}
 }
