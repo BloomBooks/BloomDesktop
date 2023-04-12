@@ -19,6 +19,7 @@ using Bloom.web;
 using Bloom.web.controllers;
 using BloomTemp;
 using L10NSharp;
+using Newtonsoft.Json;
 #if __MonoCS__
 using SIL.CommandLineProcessing;
 #else
@@ -151,10 +152,8 @@ namespace Bloom.Publish.Epub
 		private string _firstContentPageItem;
 		private string _contentFolder;
 		private string _navFileName;
-		// This temporary folder holds the staging folder with the bloom content. It also (temporarily)
-		// holds a copy of the Readium code, since I haven't been able to figure out how to get that
-		// code to redirect to display a folder which isn't a child of the folder containing the
-		// readium HTML.
+		// This temporary folder holds the staging folder with the bloom content. It also holds the manifest
+		// file required by our preview reader, but which does not need to be part of the epub.
 		private TemporaryFolder _outerStagingFolder;
 		public string BookInStagingFolder { get; private set; }
 		private BookThumbNailer _thumbNailer;
@@ -891,9 +890,10 @@ namespace Bloom.Publish.Epub
 			int index = 1;
 			TimeSpan pageDuration = new TimeSpan();
 			string mergedAudioPath = null;
+			var sortedElements = SortAudioElements(audioSentenceElementsWithRecordedAudio);
 			if (OneAudioPerPage && audioSentenceElementsWithRecordedAudio.Count() > 1)
-				mergedAudioPath = MergeAudioElements(audioSentenceElementsWithRecordedAudio, warningMessages);
-			foreach(var audioSentenceElement in audioSentenceElementsWithRecordedAudio)
+				mergedAudioPath = MergeAudioElements(sortedElements, warningMessages);
+			foreach(var audioSentenceElement in sortedElements)
 			{
 				// These are going to be the same regardless of whether this audio sentence has sub-elements to highlight.
 				var audioId = audioSentenceElement.Attributes["id"].Value;
@@ -1022,11 +1022,7 @@ namespace Bloom.Publish.Epub
 					new XAttribute("clipEnd", clipEndSecs.ToString(@"h\:mm\:ss\.fff")))));
 		}
 
-		/// <summary>
-		/// Merge the audio files corresponding to the specified elements. Returns the path to the merged MP3 if all is well, null if
-		/// we somehow failed to merge.
-		/// </summary>
-		private string MergeAudioElements(IEnumerable<XmlElement> elementsWithAudio, ISet<string> warningMessages)
+		private XmlElement[] SortAudioElements(IEnumerable<XmlElement> elementsWithAudio)
 		{
 			// The elementsWithAudio need to be ordered the same way as in bloom-player
 			// (narrationUtils.ts): by data-audio-order if it exists, or by document order
@@ -1036,15 +1032,19 @@ namespace Bloom.Publish.Epub
 			var elementArray = elementsWithAudio.ToArray();
 			var keys = new List<(int index, int order)>(count);
 			for (int i = 0; i < count; ++i)
-				keys.Add((i, int.Parse(elementArray[i].GetOptionalStringAttribute("data-audio-order","999"), CultureInfo.InvariantCulture)));
-			// See BL-11722. We must NOT sort the recordings in the file unless we put the corresponding
-			// IDs in the smil file in the same adjusted order. See the branch correctSmil in JohnT's repo.
-			// But, we don't want to do that for 5.4 since our old Readium preview does not properly
-			// handle a smil file where the first audio is not for the first element in document order
-			// on the page. We hope to update the preview code in 5.5.
-			// Note: don't just merge the correctSmil branch, it should have unit tests and probably more comments.
-			//Array.Sort(keys.ToArray(), elementArray, new CompareAudioOrder());
+				keys.Add((i,
+					int.Parse(elementArray[i].GetOptionalStringAttribute("data-audio-order", "999"),
+						CultureInfo.InvariantCulture)));
+			Array.Sort(keys.ToArray(), elementArray, new CompareAudioOrder());
+			return elementArray;
+		}
 
+		/// <summary>
+		/// Merge the audio files corresponding to the specified elements. Returns the path to the merged MP3 if all is well, null if
+		/// we somehow failed to merge.
+		/// </summary>
+		private string MergeAudioElements(XmlElement[] elementArray, ISet<string> warningMessages)
+		{
 			var mergeFiles =
 				elementArray
 					.Select(s => AudioProcessor.GetOrCreateCompressedAudio(Storage.FolderPath, s.Attributes["id"]?.Value))
@@ -2780,6 +2780,146 @@ namespace Bloom.Publish.Epub
 			if (_publishHelper != null)
 				_publishHelper.Dispose();
 			_publishHelper = null;
+		}
+
+		public static string MakeReadiumManifest(string rootFolderPath)
+		{
+			var contentPath = Path.Combine(rootFolderPath, "content");
+			var opfPath = Path.Combine(contentPath, "content.opf");
+			var opfData = RobustFile.ReadAllText(opfPath, Encoding.UTF8);
+			var opfDoc = new XmlDocument ();
+			opfDoc.LoadXml(opfData);
+
+			var manifest = new ReadiumManifest();
+			var outputPath = Path.Combine(rootFolderPath, "manifest.json");
+
+			var ns = new XmlNamespaceManager(new NameTable());
+			ns.AddNamespace("dc", "http://purl.org/dc/elements/1.1/");
+			ns.AddNamespace("smil", "http://www.w3.org/ns/SMIL");
+			ns.AddNamespace("opf", "http://www.idpf.org/2007/opf");
+
+			manifest.Type = "application/webpub+json";
+			manifest.title = opfDoc.SelectSingleNode("//dc:title", ns)?.InnerText;
+			// Todo: we probably need rendition and media-overlay
+
+			var link1 = new ReadiumLink() {type= "application/webpub+json", rel="self", href= outputPath.ToLocalhost()};
+			// The manifest that R2D2BC generated had another link (probably only for books with media overlays)
+			//{
+			//	"type": "application/vnd.syncnarr+json",
+			//	"templated": true,
+			//	"rel": "media-overlay",
+			//	"href": "media-overlay.json?resource={path}"
+			//}
+			// It doesn't seem to be needed for things to work, and I'm not sure what should be
+			// in the href field, so I'm just leavng it out.
+			manifest.links = new[] { link1 };
+
+			var spineElts = opfDoc.SafeSelectNodes("//spine/itemref").Cast<XmlElement>();
+			var itemElts = opfDoc.SafeSelectNodes("//manifest/item");
+			var itemDict = new Dictionary<string, XmlElement>();
+			foreach (XmlElement item in itemElts)
+			{
+				itemDict[item.Attributes["id"].Value] = item;
+			}
+
+			var readimMetadata = new ReadiumMetadata();
+			manifest.metadata = readimMetadata;
+
+			var renditionElt = opfDoc.SelectSingleNode("//opf:meta[@property='rendition:layout']", ns);
+			// Not sure what it should be otherwise...probably flowable? Anyway that is presumably the default
+			// So I think we can just leave it out otherwise.
+			if (renditionElt?.InnerText == "pre-paginated")
+				readimMetadata.rendition = new ReadiumRendition() { layout = "fixed" };
+
+			var mediaElt = opfDoc.SelectSingleNode("//opf:meta[@property='media:active-class']", ns);
+			if (!string.IsNullOrEmpty(mediaElt?.InnerText))
+				readimMetadata.MediaOverlay = new ReadiumMediaProps() { ActiveClass = mediaElt.InnerText };
+
+			manifest.readingOrder = spineElts.Select(spineElt =>
+			{
+				var spineManifestItem = itemDict[spineElt.Attributes["idref"].Value];
+				var roItem = new ReadiumItem() {
+					type = "application/xhtml+xml",
+					href = "content/" + spineManifestItem.Attributes["href"].Value };
+				var mediaOverlayId = spineManifestItem.Attributes["media-overlay"]?.Value;
+				if (!string.IsNullOrEmpty(mediaOverlayId))
+				{
+					var overlayElt = itemDict[mediaOverlayId];
+					var overlayFileName = overlayElt.Attributes["href"].Value;
+					var overlayPath = Path.Combine(contentPath, overlayFileName);
+					// Typically, something like 2_overlay.smil becomes "2".
+					var namePrefix= Path.GetFileNameWithoutExtension(overlayFileName).Replace("_overlay", "");
+					var readiumMediaName = Path.ChangeExtension(namePrefix + "-media-overlay", "json");
+					roItem.properties = new ReadiumProperty() { MediaOverlay = readiumMediaName };
+					var smilContent = RobustFile.ReadAllText(overlayPath, Encoding.UTF8);
+					var smilDoc = new XmlDocument();
+					smilDoc.LoadXml(smilContent);
+					var seqElt = smilDoc.SelectSingleNode("//smil:seq", ns);
+					var textRef = seqElt.Attributes["textref", "http://www.idpf.org/2007/ops"].Value;
+
+					var readiumOverlay = new ReadiumMediaOverlay();
+					
+
+					var parElts = smilDoc.SafeSelectNodes("//par").Cast<XmlElement>().ToArray();
+					var maxClipEnd = 0m;
+					var narrations = new ReadiumInnerNarrationBlock[parElts.Length];
+					readiumOverlay.role = "section";
+					readiumOverlay.narration = new ReadiumOuterNarrationBlock[1];
+					readiumOverlay.narration[0] = new ReadiumOuterNarrationBlock()
+					{
+						role = new[] { "section", "bodymatter", "chapter" },
+						text = "content/" + textRef,
+						narration = narrations
+					};
+					for (int i = 0; i < parElts.Length; i++)
+					{
+						XmlElement parElt = parElts[i];
+						var audioElt = parElt.GetElementsByTagName("audio").Cast<XmlElement>().First();
+						var clipEnd = TimeToDecimal(audioElt.Attributes["clipEnd"].Value);
+						maxClipEnd = Math.Max(maxClipEnd, clipEnd);
+						var clipStart = TimeToDecimal(audioElt.Attributes["clipBegin"].Value);
+						narrations[i] = new ReadiumInnerNarrationBlock()
+						{
+							text = "content/" + parElt.GetElementsByTagName("text")[0].Attributes["src"].Value,
+							audio = "content/" +
+							        parElt.GetElementsByTagName("audio")[0].Attributes["src"].Value + "#t="
+							        + clipStart.ToString(CultureInfo.InvariantCulture) + "," + clipEnd.ToString(CultureInfo.InvariantCulture)
+						};
+					}
+					RobustFile.WriteAllText(Path.Combine(rootFolderPath, readiumMediaName), JsonConvert.SerializeObject(readiumOverlay));
+
+					roItem.duration = maxClipEnd.ToString(CultureInfo.InvariantCulture);
+				}
+				return roItem;
+			}).ToArray();
+
+			// We don't have the reader configured to show the TOC, so it doesn't matter much what we put in it,
+			// but Readium crashes if we don't have one at all.
+			var tocItem = new ReadiumTocItem() { title = "Front Cover", href = "content/1.xhtml" };
+			manifest.toc= new[] { tocItem };
+
+			var output = JsonConvert.SerializeObject (manifest,Newtonsoft.Json.Formatting.Indented, new JsonSerializerSettings
+			{
+				NullValueHandling = NullValueHandling.Ignore
+			});
+			RobustFile.WriteAllText(outputPath, output);
+			return outputPath;
+		}
+
+		private static decimal TimeToDecimal(string timeString)
+		{
+			var parts = timeString.Split(':');
+			var time = Decimal.Parse(parts[parts.Length - 1], CultureInfo.InvariantCulture);
+			if (parts.Length > 1)
+			{
+				time += int.Parse(parts[parts.Length - 2]) * 60;
+				if (parts.Length > 1)
+				{
+					time += int.Parse(parts[parts.Length - 3]) * 3600;
+				}
+			}
+
+			return time;
 		}
 	}
 }
