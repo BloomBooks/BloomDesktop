@@ -23,8 +23,10 @@ namespace Bloom.Publish.BloomPub.file
 		{
 			var progressWithL10N = progress.WithL10NPrefix("PublishTab.Android.File.Progress.");
 
-			var initialPath = OutputFilenames.GetOutputFilePath(book, BloomPubMaker.BloomPubExtensionWithDot,
-				proposedFolder: Settings.Default.BloomDeviceFileExportFolder);
+			// Settings.Default.BloomDeviceFileExportFolder was used to save between sessions, but is no longer.
+			// Similar functionality may be extended to all save options such as PDF, BloomPub, and ePUB, but a
+			// better name will probably be chosen at that point.  See BL-11996.
+			var initialPath = OutputFilenames.GetOutputFilePath(book, BloomPubMaker.BloomPubExtensionWithDot);
 
 			var bloomdFileDescription = LocalizationManager.GetString("PublishTab.Android.bloomdFileFormatLabel", "Bloom Book for Devices",
 				"This is shown in the 'Save' dialog when you save a bloom book in the format that works with the Bloom Reader Android App");
@@ -35,7 +37,7 @@ namespace Bloom.Publish.BloomPub.file
 				return;
 
 			OutputFilenames.RememberOutputFilePath(book, BloomPubMaker.BloomPubExtensionWithDot, destFileName);
-			Settings.Default.BloomDeviceFileExportFolder = Path.GetDirectoryName(destFileName);
+			//Settings.Default.BloomDeviceFileExportFolder = Path.GetDirectoryName(destFileName);
 			PublishToBloomPubApi.CheckBookLayout(book, progress);
 			PublishToBloomPubApi.SendBook(book, bookServer, destFileName, null,
 				progressWithL10N,
