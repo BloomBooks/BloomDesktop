@@ -20,7 +20,7 @@ import {
     Select,
     Typography
 } from "@mui/material";
-import { kBloomBlue, kSelectCss } from "../../bloomMaterialUITheme";
+import { kSelectCss } from "../../bloomMaterialUITheme";
 import { useState } from "react";
 import { BloomTooltip } from "../../react_components/BloomToolTip";
 import { kBloomDisabledText } from "../../utils/colorUtils";
@@ -240,33 +240,15 @@ interface IProps extends IEpubMode {
 
 const EpubModeItem: React.FunctionComponent<IProps> = props => {
     const id = "mouse-over-popover-" + props.mode;
-    const popupColor = kBloomBlue;
 
     return (
         <BloomTooltip
             id={id}
-            tooltipBackColor={popupColor}
             popupAnchorElement={props.popupAnchorElement}
             changePopupAnchor={props.changePopupAnchor}
             side="left"
-            tooltipContent={
-                <div
-                    css={css`
-                        display: flex;
-                        flex-direction: column;
-                        align-items: center;
-                    `}
-                >
-                    <Div
-                        l10nKey={props.descriptionL10nKey}
-                        css={css`
-                            max-width: 200px;
-                        `}
-                    >
-                        {props.description}
-                    </Div>
-                </div>
-            }
+            tooltipL10nKey={props.descriptionL10nKey}
+            tooltipText={props.description}
         >
             <div
                 css={css`

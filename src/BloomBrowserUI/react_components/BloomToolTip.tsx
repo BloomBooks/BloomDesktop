@@ -1,23 +1,23 @@
 /** @jsx jsx **/
 import { jsx, css } from "@emotion/react";
 import React = require("react");
-import { default as InfoIcon } from "@mui/icons-material/InfoOutlined";
 import { Popover, PopoverOrigin, Typography } from "@mui/material";
+import { Div } from "./l10nComponents";
+import { kBloomBlue } from "../bloomMaterialUITheme";
 
 // This class supports adding a tooltip to its children.
 // We use this for a more controllable tooltip than we get with title and similar properties.
 // We use Popover rather than various more obvious React components partly because of some
 // dependency incompatibilities with our version of Storybook.
 // BloomTooltip basically displays its children. When hovered over (including when clicked)
-// it displays the message indicated by tooltipContent
-// (currently at a fixed position below the root, but we may want to make this more
-// configurable).
+// it displays the message indicated by either tooltipContent or tooltipText/tooltipL10nKey.
 export const BloomTooltip: React.FunctionComponent<{
     // The color to use for the background of the tooltip, and, crucially, also for the
     // arrow that points up at the thing described. This should usually be somewhat
     // contrastive with the background of the children, but it also needs to contrast
     // with the content, currently set to white unless the tooltipContent element overrides.)
-    tooltipBackColor: string;
+    // If not set, the tooltip background color is kBloomBlue from bloomMaterialUITheme.
+    tooltipBackColor?: string;
     // The Children which this primarily displays may (when hovered over) display a popup.
     // Usually the BloomTooltip controls for itself whether this is shown; but we also permit
     // this behavior to work in the controlled component mode, where the client controls
@@ -31,18 +31,32 @@ export const BloomTooltip: React.FunctionComponent<{
     // make sense to set it to anything other than a value received from changePopupAnchor or null.
     changePopupAnchor?: (anchor: HTMLElement | null) => void;
     popupAnchorElement?: HTMLElement | null;
-    tooltipContent: React.ReactNode;
+    // Either tooltipContent should be set, or tooltipText and tooltipL10nKey should be set.
+    // The former allows arbitrary content of the tooltip, while the latter is the simple case
+    // of a single localized string.
+    tooltipContent?: React.ReactNode;
+    tooltipText?: string;
+    tooltipL10nKey?: string;
     // Good practice with a popup calls for some aria attributes to indicate the relationship
     // of the popup to its parent, so we need a unique ID. The supplied ID will be applied to the popup.
     // Enhance: there's probably some way we could come up with a safe default for this.
     id: string;
     side?: "bottom" | "left" | "right";
+    // A default origin is supplied that will work okay in many cases.  But these values
+    // can be used to tweak the popup's origin if desired.
+    sideVerticalOrigin?: number;
+    sideHorizontalOrigin?: number;
+    arrowLoc?: "middle" | "edge"; // default is edge for side=left|right.
 }> = props => {
     // controls visibility and placement of the 'tooltip' (if props.changePopupAnchor is null).
     const [
         localAnchorEl,
         setLocalAnchorEl
     ] = React.useState<HTMLElement | null>(null);
+
+    const popupBackColor = props.tooltipBackColor
+        ? props.tooltipBackColor
+        : kBloomBlue;
 
     // Handle an event that should open the popover.
     const handlePopoverOpen = (event: React.MouseEvent<HTMLElement>) => {
@@ -61,13 +75,13 @@ export const BloomTooltip: React.FunctionComponent<{
     const anchorOrigin: PopoverOrigin =
         props.side === "left"
             ? {
-                  vertical: "top",
-                  // 10 pixels left of the anchor; leaves room for arrow and a little margin.
-                  horizontal: -20
+                  vertical: props.sideVerticalOrigin ?? "top",
+                  // 20 pixels left of the anchor; leaves room for arrow and a little margin.
+                  horizontal: props.sideHorizontalOrigin ?? -20
               }
             : props.side === "right"
             ? {
-                  vertical: "top",
+                  vertical: props.sideVerticalOrigin ?? "top",
                   horizontal: "right"
               }
             : {
@@ -85,13 +99,13 @@ export const BloomTooltip: React.FunctionComponent<{
             ? {
                   vertical: "top",
                   // 10 pixels to the right allows room for the arrow and some margin
-                  horizontal: -10
+                  horizontal: props.sideHorizontalOrigin ?? -10
               }
             : {
                   // 15 pixels below the bottom (based on anchorOrigin) of the anchor;
                   // leaves room for arrow and a bit of margin.
-                  vertical: -15,
-                  horizontal: "center"
+                  vertical: props.sideVerticalOrigin ?? -15,
+                  horizontal: props.sideHorizontalOrigin ?? "center"
               };
 
     const arrowSize = 8;
@@ -107,8 +121,10 @@ export const BloomTooltip: React.FunctionComponent<{
                   position: absolute;
                   border-color: transparent;
                   right: -${arrowSize * 2}px;
-                  top: 5px;
-                  border-left-color: ${props.tooltipBackColor};
+                  top: ${props.arrowLoc === "middle"
+                      ? `calc(50% - ${arrowSize / 2}px)`
+                      : `5px`};
+                  border-left-color: ${popupBackColor};
               `
             : props.side === "right"
             ? css`
@@ -116,16 +132,20 @@ export const BloomTooltip: React.FunctionComponent<{
                   position: absolute;
                   border-color: transparent;
                   left: -${arrowSize * 2}px;
-                  top: 5px;
-                  border-right-color: ${props.tooltipBackColor};
+                  top: ${props.arrowLoc === "middle"
+                      ? `calc(50% - ${arrowSize / 2}px)`
+                      : `5px`};
+                  border-right-color: ${popupBackColor};
               `
             : css`
                   border: solid ${arrowSize}px;
                   position: absolute;
                   border-color: transparent;
                   top: ${1 - 2 * arrowSize}px;
-                  left: calc(50% - ${arrowSize / 2}px);
-                  border-bottom-color: ${props.tooltipBackColor};
+                  left: ${props.arrowLoc === "edge"
+                      ? `5px`
+                      : `calc(50% - ${arrowSize / 2}px)`};
+                  border-bottom-color: ${popupBackColor};
               `;
 
     // Handle an event that should close the popover.
@@ -188,14 +208,25 @@ export const BloomTooltip: React.FunctionComponent<{
                     <div css={arrowCss}></div>
                     <div
                         css={css`
-                            background-color: ${props.tooltipBackColor};
+                            background-color: ${popupBackColor};
                             color: white;
                             border-radius: 4px;
                             padding: 4px 8px;
                             position: relative;
                         `}
                     >
-                        {props.tooltipContent}
+                        {props.tooltipContent ? (
+                            props.tooltipContent
+                        ) : (
+                            <Div
+                                l10nKey={props.tooltipL10nKey ?? ""}
+                                css={css`
+                                    max-width: 200px;
+                                `}
+                            >
+                                {props.tooltipText}
+                            </Div>
+                        )}
                     </div>
                 </Typography>
             </Popover>
