@@ -463,12 +463,10 @@ export const AudioVideoOptionsGroup: React.FunctionComponent<{
 
 const VideoFormatItem: React.FunctionComponent<IProps> = props => {
     const id = "mouse-over-popover-" + props.format;
-    const popupColor = kBloomBlue;
 
     return (
         <BloomTooltip
             id={id}
-            tooltipBackColor={popupColor}
             popupAnchorElement={props.popupAnchorElement}
             changePopupAnchor={props.changePopupAnchor}
             tooltipContent={

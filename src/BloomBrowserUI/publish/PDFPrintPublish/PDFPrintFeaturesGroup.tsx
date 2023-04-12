@@ -6,7 +6,7 @@ import { SettingsGroup } from "../commonPublish/PublishScreenBaseComponents";
 import { useL10n } from "../../react_components/l10nHooks";
 import { useSubscribeToWebSocketForObject } from "../../utils/WebSocketManager";
 import { post, useApiBoolean } from "../../utils/bloomApi";
-import Button from "@mui/material/Button";
+import { BloomTooltip } from "../../react_components/BloomToolTip";
 import { kBloomBlue, kBloomDisabledText } from "../../utils/colorUtils";
 import { useState } from "react";
 import { ApiCheckbox } from "../../react_components/ApiCheckbox";
@@ -36,10 +36,6 @@ export const PDFPrintFeaturesGroup: React.FunctionComponent<{
         }
     );
     const [activeButton, setActiveButton] = useState("");
-    const noBookletsMessage = useL10n(
-        "Bloom cannot make booklets using the current page size.",
-        "PublishTab.NoBookletsMessage"
-    );
     const [allowBooklet] = useApiBoolean("publish/pdf/allowBooklet", true);
     // Eventually this may have more options and will no longer be boolean.
     // But at this point even the underlying model in C# is boolean, so I decided
@@ -51,6 +47,17 @@ export const PDFPrintFeaturesGroup: React.FunctionComponent<{
         "PublishTab.PdfMaker.PdfWithCmykSwopV2"
     );
     const [allowFullBleed] = useApiBoolean("publish/pdf/allowFullBleed", false);
+
+    // These are used to allow the tooltips to appear only when booklets are disabled.
+    const [
+        coverTooltipAnchor,
+        setCoverTooltipAnchor
+    ] = useState<HTMLElement | null>(null);
+    const [
+        insideTooltipAnchor,
+        setInsideTooltipAnchor
+    ] = useState<HTMLElement | null>(null);
+
     return (
         <div
             css={css`
@@ -77,36 +84,66 @@ export const PDFPrintFeaturesGroup: React.FunctionComponent<{
                         descId="PublishTab.OnePagePerPaper-description"
                         selected={activeButton === "simple"}
                     />
-                    <FeatureButton
-                        imgSrc="/bloom/images/coverOnly.svg"
-                        onClick={() => {
-                            post("publish/pdf/cover");
-                            setActiveButton("cover");
-                            props.onChange?.("cover");
-                        }}
-                        label="Booklet cover"
-                        labelId="PublishTab.CoverOnlyRadio"
-                        desc="The cover, ready to print on colored paper."
-                        descId="PublishTab.CoverOnly-description"
-                        selected={activeButton === "cover"}
-                        disabled={!allowBooklet}
-                        title={allowBooklet ? "" : noBookletsMessage}
-                    />
-                    <FeatureButton
-                        imgSrc="/bloom/images/insideBookletPages.svg"
-                        onClick={() => {
-                            post("publish/pdf/pages");
-                            setActiveButton("pages");
-                            props.onChange?.("pages");
-                        }}
-                        label="Booklet Insides"
-                        labelId="PublishTab.BodyOnlyRadio"
-                        desc="The inside pages, re-arranged so that when folded, you get a booklet ready to staple."
-                        descId="PublishTab.BodyOnly-description"
-                        selected={activeButton === "pages"}
-                        disabled={!allowBooklet}
-                        title={allowBooklet ? "" : noBookletsMessage}
-                    />
+                    <BloomTooltip
+                        id="cover-disabled"
+                        side="left"
+                        sideVerticalOrigin={30}
+                        sideHorizontalOrigin={10}
+                        arrowLoc="middle"
+                        tooltipL10nKey="PublishTab.NoBookletsMessage"
+                        tooltipText="This is disabled because Bloom cannot make booklets using the current size and orientation."
+                        popupAnchorElement={coverTooltipAnchor}
+                        changePopupAnchor={val =>
+                            allowBooklet
+                                ? setCoverTooltipAnchor(null) // don't show if enabled
+                                : setCoverTooltipAnchor(val)
+                        }
+                    >
+                        <FeatureButton
+                            imgSrc="/bloom/images/coverOnly.svg"
+                            onClick={() => {
+                                post("publish/pdf/cover");
+                                setActiveButton("cover");
+                                props.onChange?.("cover");
+                            }}
+                            label="Booklet cover"
+                            labelId="PublishTab.CoverOnlyRadio"
+                            desc="The cover, ready to print on colored paper."
+                            descId="PublishTab.CoverOnly-description"
+                            selected={activeButton === "cover"}
+                            disabled={!allowBooklet}
+                        />
+                    </BloomTooltip>
+                    <BloomTooltip
+                        id="cover-disabled"
+                        side="left"
+                        sideVerticalOrigin={30}
+                        sideHorizontalOrigin={10}
+                        arrowLoc="middle"
+                        tooltipL10nKey="PublishTab.NoBookletsMessage"
+                        tooltipText="This is disabled because Bloom cannot make booklets using the current size and orientation."
+                        popupAnchorElement={insideTooltipAnchor}
+                        changePopupAnchor={val =>
+                            allowBooklet
+                                ? setInsideTooltipAnchor(null) // don't show if enabled
+                                : setInsideTooltipAnchor(val)
+                        }
+                    >
+                        <FeatureButton
+                            imgSrc="/bloom/images/insideBookletPages.svg"
+                            onClick={() => {
+                                post("publish/pdf/pages");
+                                setActiveButton("pages");
+                                props.onChange?.("pages");
+                            }}
+                            label="Booklet Insides"
+                            labelId="PublishTab.BodyOnlyRadio"
+                            desc="The inside pages, re-arranged so that when folded, you get a booklet ready to staple."
+                            descId="PublishTab.BodyOnly-description"
+                            selected={activeButton === "pages"}
+                            disabled={!allowBooklet}
+                        />
+                    </BloomTooltip>
                 </FormGroup>
             </SettingsGroup>
             <SettingsGroup

@@ -4115,7 +4115,7 @@
         <note>The parenthesized word indicates the negative effect of using this option. This text is for a menu item.</note>
       </trans-unit>
       <trans-unit id="PublishTab.NoBookletsMessage">
-        <source xml:lang="en">Bloom cannot make booklets using the current page size.</source>
+        <source xml:lang="en">This is disabled because Bloom cannot make booklets using the current size and orientation.</source>
         <note>ID: PublishTab.NoBookletsMessage</note>
         <note>If a book has a paper size that is too big (like A4), Bloom does not know how to make booklets with it. So the controls for booklets get disabled and this message is shown.</note>
       </trans-unit>

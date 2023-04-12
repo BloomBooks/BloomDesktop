@@ -814,18 +814,9 @@ function getRemovableCollectionHeaderDiv(
             >
                 <BloomTooltip
                     id={tooltipId}
-                    tooltipBackColor={kBloomBlue}
                     side="right"
-                    tooltipContent={
-                        <Div
-                            l10nKey={tooltipL10nKey}
-                            css={css`
-                                max-width: 200px;
-                            `}
-                        >
-                            {tooltipText}
-                        </Div>
-                    }
+                    tooltipL10nKey={tooltipL10nKey}
+                    tooltipText={tooltipText}
                 >
                     {icon}
                 </BloomTooltip>
