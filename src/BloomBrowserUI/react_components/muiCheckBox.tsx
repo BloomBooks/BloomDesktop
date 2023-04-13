@@ -3,10 +3,11 @@ import { jsx, css } from "@emotion/react";
 
 import * as React from "react";
 import { useState } from "react";
-import { useTheme, Checkbox } from "@mui/material";
+import { useTheme, Checkbox, FormControlLabel } from "@mui/material";
 import { useL10n } from "./l10nHooks";
 import { LightTooltip } from "./lightTooltip";
 import { Check } from "@mui/icons-material";
+import { kBloomDisabledOpacity } from "../utils/colorUtils";
 
 // wrap up the complex material-ui checkbox in something simple and make it handle tristate
 export const BloomCheckbox: React.FunctionComponent<{
@@ -131,11 +132,13 @@ export const BloomCheckbox: React.FunctionComponent<{
                     <UniformInlineIcon
                         icon={props.icon}
                         iconScale={props.iconScale}
+                        disabled={props.disabled}
                     />
                 )}
                 <div
                     css={css`
                         margin-top: -1px;
+                        ${props.disabled && `opacity: ${kBloomDisabledOpacity}`}
                     `}
                 >
                     {mainLabel}
@@ -144,19 +147,22 @@ export const BloomCheckbox: React.FunctionComponent<{
         </div>
     );
 
-    return props.tooltipContents ? (
+    const c = props.tooltipContents ? (
         <LightTooltip title={props.tooltipContents}>
             {checkboxControl}
         </LightTooltip>
     ) : (
         checkboxControl
     );
+
+    return <FormControlLabel control={c} label="" />;
 };
 
 // wrap the icons so that they can be center-aligned with each other
 export const UniformInlineIcon: React.FunctionComponent<{
     icon?: React.ReactNode;
     iconScale?: number;
+    disabled?: boolean;
 }> = props => {
     const theme = useTheme();
     return (
@@ -178,6 +184,7 @@ export const UniformInlineIcon: React.FunctionComponent<{
                     height: 100% !important;
                     ${props.iconScale !== undefined &&
                         `transform: scale(${props.iconScale});`} /* border: solid 0.1px purple; */
+                    ${props.disabled && `opacity: ${kBloomDisabledOpacity}`}
                 }
             `}
         >

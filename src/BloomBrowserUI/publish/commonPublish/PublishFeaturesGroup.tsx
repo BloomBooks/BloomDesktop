@@ -7,20 +7,17 @@ import { SettingsGroup } from "../commonPublish/PublishScreenBaseComponents";
 import { useL10n } from "../../react_components/l10nHooks";
 import {
     get,
-    getBoolean,
     post,
     useApiBoolean,
     useApiString,
     useWatchString
 } from "../../utils/bloomApi";
 import { kBloomBlue } from "../../bloomMaterialUITheme";
-import { TickableBox } from "../../react_components/tickableBox";
 import { ILanguagePublishInfo } from "./PublishLanguagesGroup";
 import { Link as MuiLink } from "@mui/material";
 import { ActivityIcon } from "../../react_components/icons/ActivityIcon";
 import { TalkingBookIcon } from "../../react_components/icons/TalkingBookIcon";
 import { SignLanguageIcon } from "../../react_components/icons/SignLanguageIcon";
-import { kBloomDisabledOpacity } from "../../utils/colorUtils";
 import { MotionIcon } from "../../react_components/icons/MotionIcon";
 import { ComicIcon } from "../../react_components/icons/ComicIcon";
 import { VisuallyImpairedIcon } from "../../react_components/icons/VisuallyImpairedIcon";
@@ -237,13 +234,6 @@ export const PublishFeaturesGroup: React.FunctionComponent<{
                             css={css`
                                 /* height: 20px; */
                                 align-self: center;
-                                // I would prefer if this happened automatically as a result of the check box
-                                // being disabled. But that currently just modifies the css color. I don't
-                                // think there is a way to make the SVG be displayed using the current
-                                // CSS foreground color.
-                                ${signLanguageEnabled
-                                    ? ""
-                                    : `opacity: ${kBloomDisabledOpacity};`}
                             `}
                             color={kBloomBlue}
                         />
@@ -277,9 +267,6 @@ export const PublishFeaturesGroup: React.FunctionComponent<{
                                 /* height: 20px;
                                 width: 20px; */
                                 align-self: center;
-                                ${comicEnabled
-                                    ? ""
-                                    : `opacity: ${kBloomDisabledOpacity};`}
                             `}
                             color={kBloomBlue}
                         />
@@ -311,9 +298,6 @@ export const PublishFeaturesGroup: React.FunctionComponent<{
                                 /* height: 20px;
                                 width: 20px; */
                                 align-self: start;
-                                ${visuallyImpairedEnabled
-                                    ? ""
-                                    : `opacity: ${kBloomDisabledOpacity};`}
                             `}
                             color={kBloomBlue}
                         />
