@@ -122,9 +122,6 @@ export const InnerBulkBloomPubDialog: React.FunctionComponent<{
                                     makeBookshelfFile: !params.makeBookshelfFile
                                 })
                             }
-                            deprecatedVersionWhichDoesntEnsureMultilineLabelsWork={
-                                true
-                            }
                         ></BloomCheckbox>
                         <ConditionallyEnabledBlock
                             enable={
@@ -235,9 +232,6 @@ export const InnerBulkBloomPubDialog: React.FunctionComponent<{
                                     makeBloomBundle: !!checked
                                 });
                             }}
-                            deprecatedVersionWhichDoesntEnsureMultilineLabelsWork={
-                                true
-                            }
                         ></BloomCheckbox>
                     </WhatsThisBlock>
                 </DialogMiddle>

@@ -74,7 +74,6 @@ export const LanguageSelectionSettingsGroup: React.FunctionComponent<{
                     css={css`
                         // The 'important' overrides the MUI default so we only get one column of checkboxes.
                         flex-wrap: nowrap !important;
-                        margin-right: 20px;
                         // These two "cancel out" except that they defeat a bug in the HTML spec that prevents
                         // overflow-x from being visible when overflow-y is hidden. The check box shadows can
                         // 'overflow' from the normal space occupied by the scrollingFeature.

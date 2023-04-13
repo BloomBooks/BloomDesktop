@@ -362,9 +362,6 @@ export const ReportDialog: React.FunctionComponent<{
                                                                 v as boolean
                                                             )
                                                         }
-                                                        deprecatedVersionWhichDoesntEnsureMultilineLabelsWork={
-                                                            true
-                                                        }
                                                     />
                                                     <BloomCheckbox
                                                         label="Include this screenshot"
@@ -376,9 +373,6 @@ export const ReportDialog: React.FunctionComponent<{
                                                             setIncludeScreenshot(
                                                                 v as boolean
                                                             )
-                                                        }
-                                                        deprecatedVersionWhichDoesntEnsureMultilineLabelsWork={
-                                                            true
                                                         }
                                                     />
                                                     <img

@@ -26,7 +26,6 @@ export const BloomCheckbox: React.FunctionComponent<{
     alreadyLocalized?: boolean;
     icon?: React.ReactNode;
     iconScale?: number;
-    deprecatedVersionWhichDoesntEnsureMultilineLabelsWork?: boolean;
     temporarilyDisableI18nWarning?: boolean;
     onCheckChanged: (v: boolean | undefined) => void;
     l10nParam0?: string;
@@ -62,30 +61,29 @@ export const BloomCheckbox: React.FunctionComponent<{
 
     // if the label is a string, we need to localize it. If it's a react node, we assume it's already localized.
     const labelComponent =
-        typeof props.label === "string" ? (
-            <Typography>{localizedLabel}</Typography>
-        ) : (
-            props.label
-        );
+        typeof props.label === "string" ? localizedLabel : props.label;
 
     // If messing with the layout, be sure you didn't break this by checking the storybook story.
     const checkboxControl = (
         <div
+            className="bloom-checkbox"
             css={css`
                 display: flex;
                 flex-direction: row;
-                min-height: 39px; // ensures that the cases without an actual checkbox are the same minimum height as the ones with a checkbox
+                min-height: 29px; // ensures that the cases without an actual checkbox are the same minimum height as the ones with a checkbox
                 align-items: start;
             `}
         >
             {props.hideBox || (
                 <Checkbox
                     css={css`
+                        padding-top: 0; //  default is 9px, from somewhere (mui?)
+
                         padding-left: 0;
                         // this is a bit of a mystery, but it is needed to get rid of that extra 2 pixels on the left
                         margin-left: -2px;
                     `}
-                    className={props.className}
+                    className={props.className} // I'm suspicious of this being used and it making things brittle, so removing it for now
                     disabled={props.disabled}
                     checked={!!props.checked}
                     indeterminate={props.checked == null}
@@ -134,7 +132,7 @@ export const BloomCheckbox: React.FunctionComponent<{
                 css={css`
                     display: flex;
                     //align-items: baseline;
-                    padding-top: 10px;
+                    //padding-top: 10px;
                     ${props.icon && "margin-left: -8px;"}
                 `}
             >
@@ -146,8 +144,14 @@ export const BloomCheckbox: React.FunctionComponent<{
                     />
                 )}
                 <div
+                    className="bloom-checkbox-label" // this classname is to help overlay toolbox hack a fix
                     css={css`
-                        ${props.disabled && `opacity: ${kBloomDisabledOpacity}`}
+                        ${props.disabled &&
+                            `opacity: ${kBloomDisabledOpacity}`};
+                        // these two rules are about helping this to keep working even when font is small, as in the Overlay Tool
+                        //padding-top: 4px;
+                        min-height: 15px;
+                        //border: solid red 0.1px;
                     `}
                 >
                     {labelComponent}
