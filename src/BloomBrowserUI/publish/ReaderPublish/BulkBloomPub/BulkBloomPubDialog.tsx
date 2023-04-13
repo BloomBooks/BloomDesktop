@@ -11,7 +11,7 @@ import {
 } from "../../../react_components/BloomDialog/BloomDialog";
 import { DialogCancelButton } from "../../../react_components/BloomDialog/commonDialogComponents";
 import { useL10n } from "../../../react_components/l10nHooks";
-import { MuiCheckbox } from "../../../react_components/muiCheckBox";
+import { BloomCheckbox } from "../../../react_components/muiCheckBox";
 import TextField from "@mui/material/TextField";
 import { WhatsThisBlock } from "../../../react_components/helpLink";
 import { BloomPalette } from "../../../react_components/color-picking/bloomPalette";
@@ -109,7 +109,7 @@ export const InnerBulkBloomPubDialog: React.FunctionComponent<{
             {!!params && (
                 <DialogMiddle>
                     <WhatsThisBlock url="https://docs.bloomlibrary.org/bloom-reader-shelves">
-                        <MuiCheckbox
+                        <BloomCheckbox
                             label="Produce a .bloomshelf file"
                             checked={
                                 bookshelfUrlKey && params.makeBookshelfFile
@@ -125,7 +125,7 @@ export const InnerBulkBloomPubDialog: React.FunctionComponent<{
                             deprecatedVersionWhichDoesntEnsureMultilineLabelsWork={
                                 true
                             }
-                        ></MuiCheckbox>
+                        ></BloomCheckbox>
                         <ConditionallyEnabledBlock
                             enable={
                                 params.makeBookshelfFile && !!bookshelfUrlKey
@@ -225,7 +225,7 @@ export const InnerBulkBloomPubDialog: React.FunctionComponent<{
                             margin-top: ${kBlockSeparation};
                         `}
                     >
-                        <MuiCheckbox
+                        <BloomCheckbox
                             label="Compress into a single .bloombundle file"
                             checked={params.makeBloomBundle}
                             l10nKey="PublishTab.BulkBloomPub.MakeBloomBundle"
@@ -238,7 +238,7 @@ export const InnerBulkBloomPubDialog: React.FunctionComponent<{
                             deprecatedVersionWhichDoesntEnsureMultilineLabelsWork={
                                 true
                             }
-                        ></MuiCheckbox>
+                        ></BloomCheckbox>
                     </WhatsThisBlock>
                 </DialogMiddle>
             )}

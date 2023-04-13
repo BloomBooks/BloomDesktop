@@ -6,6 +6,7 @@ import { Div } from "./l10nComponents";
 import { kBloomBlue } from "../bloomMaterialUITheme";
 import { LightTooltip } from "./lightTooltip";
 import { kBloomDisabledOpacity } from "../utils/colorUtils";
+import { UniformInlineIcon } from "./muiCheckBox";
 
 // A localized label that may show a tick mark next to it
 export const TickableBox: React.FunctionComponent<{
@@ -37,7 +38,7 @@ export const TickableBox: React.FunctionComponent<{
         >
             <div
                 css={css`
-                    width: 30px; // Seems to line things up in a column with Mui check boxes
+                    width: 28px; // Seems to line things up in a column with Mui check boxes
                     color: ${kBloomBlue};
                     font-size: larger;
                 `}
@@ -45,7 +46,7 @@ export const TickableBox: React.FunctionComponent<{
                 {props.ticked && checkMarkString}
             </div>
 
-            {props.icon}
+            <UniformInlineIcon icon={props.icon} />
 
             <Div
                 css={css`

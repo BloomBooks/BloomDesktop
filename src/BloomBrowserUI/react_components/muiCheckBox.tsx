@@ -3,12 +3,12 @@ import { jsx, css } from "@emotion/react";
 
 import * as React from "react";
 import { useState } from "react";
-import { FormControlLabel, Checkbox } from "@mui/material";
+import { useTheme, Checkbox } from "@mui/material";
 import { useL10n } from "./l10nHooks";
 import { LightTooltip } from "./lightTooltip";
 
 // wrap up the complex material-ui checkbox in something simple and make it handle tristate
-export const MuiCheckbox: React.FunctionComponent<{
+export const BloomCheckbox: React.FunctionComponent<{
     className?: string;
     label: string | React.ReactNode;
     l10nKey?: string;
@@ -18,18 +18,16 @@ export const MuiCheckbox: React.FunctionComponent<{
     disabled?: boolean;
     alreadyLocalized?: boolean;
     icon?: React.ReactNode;
+    iconScale?: number;
+    deprecatedVersionWhichDoesntEnsureMultilineLabelsWork?: boolean;
     temporarilyDisableI18nWarning?: boolean;
     onCheckChanged: (v: boolean | undefined) => void;
     l10nParam0?: string;
     l10nParam1?: string;
-    // The original version of this didn't properly handle multiline (wrapped) labels.
-    // To make multiline labels work, we had to add an extra div layer.
-    // That broke some existing usages. When I started trying to fix them,
-    // I ended up deep in the rabbit hole, so I punted and added this prop instead.
-    // Ideally, we would fix those and get rid of this parameter.
-    deprecatedVersionWhichDoesntEnsureMultilineLabelsWork?: boolean;
-    title?: React.ReactNode;
+    tooltipContents?: React.ReactNode;
+    hideBox?: boolean; // used for when a control is *never* user-operable, but we're just showin a check mark or not
 }> = props => {
+    const theme = useTheme();
     const [previousTriState, setPreviousTriState] = useState<
         boolean | undefined
     >(props.checked);
@@ -57,93 +55,132 @@ export const MuiCheckbox: React.FunctionComponent<{
 
     const mainLabel =
         typeof props.label === "string" ? localizedLabel : props.label;
-    let finalLabel = mainLabel;
-    if (props.icon) {
-        finalLabel = (
+
+    // // Work has been done below to ensure that a wrapped label will align with the control correctly.
+    // If messing with the layout, be sure you didn't break this by checking the storybook story.
+    const kCheckMarkString: string = "\u2713"; // elsewhere we used \u10004 but not sure how to do 5 digits in Javascript;
+    const checkboxControl = (
+        <div
+            css={css`
+                display: flex;
+                flex-direction: row;
+
+                /* border: solid 0.1px orange; */
+                //align-items: center;
+                align-items: start;
+            `}
+        >
+            {props.hideBox || (
+                <Checkbox
+                    css={css`
+                        padding-left: 0;
+                        // this is a bit of a mystery, but it is needed to get rid of that extra 2 pixels on the left
+                        margin-left: -2px;
+                    `}
+                    className={props.className}
+                    disabled={props.disabled}
+                    checked={!!props.checked}
+                    indeterminate={props.checked == null}
+                    //enhance; I would like  it to show a square with a question mark inside: indeterminateIcon={"?"}
+                    onChange={(e, newState) => {
+                        if (!props.tristate) {
+                            props.onCheckChanged(newState);
+                        } else {
+                            let next: boolean | undefined = false;
+                            switch (previousTriState) {
+                                case null:
+                                    next = false;
+                                    break;
+                                case true:
+                                    next = undefined;
+                                    break;
+                                case false:
+                                    next = true;
+                                    break;
+                            }
+                            setPreviousTriState(next);
+                            props.onCheckChanged(next);
+                        }
+                    }}
+                    color="primary"
+                />
+            )}
+            {props.hideBox && (
+                <span
+                    css={css`
+                        width: 27px;
+                        font-weight: 700;
+                        padding-top: 7px;
+                        color: ${theme.palette.primary.main};
+                    `}
+                >
+                    {props.checked ? kCheckMarkString : ""}
+                </span>
+            )}
+
             <div
                 css={css`
                     display: flex;
-                    align-items: baseline; // keeps text well aligned with checkbox
+                    //align-items: baseline;
+                    padding-top: 10px;
+                    ${props.icon && "margin-left: -8px;"}
                 `}
             >
-                {props.icon}{" "}
+                {props.icon && (
+                    <UniformInlineIcon
+                        icon={props.icon}
+                        iconScale={props.iconScale}
+                    />
+                )}
                 <div
                     css={css`
-                        margin-left: 5px;
+                        margin-top: -1px;
                     `}
                 >
                     {mainLabel}
                 </div>
             </div>
-        );
-    }
-    // Work has been done below to ensure that a wrapped label will align with the control correctly.
-    // If messing with the layout, be sure you didn't break this by checking the storybook story.
-
-    const checkboxControl = (
-        <Checkbox
-            css={
-                !props.deprecatedVersionWhichDoesntEnsureMultilineLabelsWork
-                    ? css`
-                          margin-top: -1px !important;
-                      `
-                    : css``
-            }
-            className={props.className}
-            disabled={props.disabled}
-            checked={!!props.checked}
-            indeterminate={props.checked == null}
-            //enhance; I would like  it to show a square with a question mark inside: indeterminateIcon={"?"}
-            onChange={(e, newState) => {
-                if (!props.tristate) {
-                    props.onCheckChanged(newState);
-                } else {
-                    let next: boolean | undefined = false;
-                    switch (previousTriState) {
-                        case null:
-                            next = false;
-                            break;
-                        case true:
-                            next = undefined;
-                            break;
-                        case false:
-                            next = true;
-                            break;
-                    }
-                    setPreviousTriState(next);
-                    props.onCheckChanged(next);
-                }
-            }}
-            color="primary"
-        />
-    );
-    const mainContent = (
-        <FormControlLabel
-            css={
-                !props.deprecatedVersionWhichDoesntEnsureMultilineLabelsWork
-                    ? css`
-                          align-items: baseline !important; // !important needed to override MUI default
-                      `
-                    : css``
-            }
-            className={props.className}
-            control={
-                // Without this empty div, the vertical alignment between the button and the label is wrong
-                // when the label wraps.
-                !props.deprecatedVersionWhichDoesntEnsureMultilineLabelsWork ? (
-                    <div>{checkboxControl}</div>
-                ) : (
-                    checkboxControl
-                )
-            }
-            label={finalLabel}
-            disabled={props.disabled}
-        />
+        </div>
     );
 
-    return props.title ? (
-        <LightTooltip title={props.title}>{mainContent}</LightTooltip>
+    return props.tooltipContents ? (
+        <LightTooltip title={props.tooltipContents}>
+            {checkboxControl}
+        </LightTooltip>
     ) : (
-        mainContent
+        checkboxControl
+    );
+};
+
+// wrap the icons so that they can be center-aligned with each other
+export const UniformInlineIcon: React.FunctionComponent<{
+    icon?: React.ReactNode;
+    iconScale?: number;
+}> = props => {
+    const theme = useTheme();
+    return (
+        <div
+            css={css`
+                min-width: 20px;
+                max-width: 20px;
+                // the height here has to be about the same as the text or
+                // else it stick up. We have align-items: baseline on the parent, but
+                // there isn't, like, an align-items:top.
+                height: 18px;
+                //overflow-y: clip;
+                /* border: solid 0.1px red; */
+                display: flex;
+                justify-content: center;
+                margin-right: 4px;
+                svg {
+                    fill: ${theme.palette.primary.main};
+                    height: 100% !important;
+                    ${props.iconScale !== undefined &&
+                        `transform: scale(${props.iconScale});`} /* border: solid 0.1px purple; */
+                }
+            `}
+        >
+            {props.icon}
+        </div>
     );
 };

@@ -11,8 +11,8 @@ export const SignLanguageIcon: React.FunctionComponent<{
     return (
         <svg
             className={props.className}
-            width="23"
-            height="25"
+            // width="23"
+            // height="25"
             viewBox="0 0 23 25"
             fill={props.color}
             xmlns="http://www.w3.org/2000/svg"

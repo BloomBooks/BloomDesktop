@@ -20,7 +20,7 @@ import {
     ProgressBox,
     ProgressBoxHandle
 } from "../../react_components/Progress/progressBox";
-import { MuiCheckbox } from "../../react_components/muiCheckBox";
+import { BloomCheckbox } from "../../react_components/muiCheckBox";
 import { useL10n } from "../../react_components/l10nHooks";
 import { kWebSocketContext } from "./LibraryPublishScreen";
 import {
@@ -671,7 +671,7 @@ const AgreementCheckbox: React.FunctionComponent<{
     }
     return (
         <div>
-            <MuiCheckbox
+            <BloomCheckbox
                 label={props.label}
                 checked={isChecked}
                 onCheckChanged={newState => {
@@ -679,7 +679,7 @@ const AgreementCheckbox: React.FunctionComponent<{
                 }}
                 disabled={props.disabled}
                 alreadyLocalized={true}
-            ></MuiCheckbox>
+            ></BloomCheckbox>
         </div>
     );
 };

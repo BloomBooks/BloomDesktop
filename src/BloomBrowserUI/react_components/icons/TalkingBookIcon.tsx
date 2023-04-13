@@ -6,13 +6,13 @@ import React = require("react");
 // Different from the toolbox Talking Book icon
 export const TalkingBookIcon: React.FunctionComponent<{
     className?: string;
-    color: string;
+    color?: string;
 }> = props => {
     return (
         <svg
             className={props.className}
-            width="19"
-            height="18"
+            // width="19"
+            // height="18"
             viewBox="0 0 19 18"
             fill={props.color}
             xmlns="http://www.w3.org/2000/svg"

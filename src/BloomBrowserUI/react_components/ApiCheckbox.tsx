@@ -1,5 +1,5 @@
 import * as React from "react";
-import { MuiCheckbox } from "./muiCheckBox";
+import { BloomCheckbox } from "./muiCheckBox";
 import { useApiBoolean } from "../utils/bloomApi";
 
 // A localized checkbox that is backed by a boolean API get/set
@@ -12,6 +12,7 @@ export const ApiCheckbox: React.FunctionComponent<{
     apiEndpoint: string;
     disabled?: boolean;
     icon?: React.ReactNode;
+    iconScale?: number;
     // If defined, the checkbox should have this value when disabled,
     // whatever value we get from the API.
     forceDisabledValue?: boolean;
@@ -26,7 +27,7 @@ export const ApiCheckbox: React.FunctionComponent<{
     }
 
     return (
-        <MuiCheckbox
+        <BloomCheckbox
             checked={showChecked}
             disabled={props.disabled}
             label={props.english}
@@ -34,7 +35,8 @@ export const ApiCheckbox: React.FunctionComponent<{
             l10nComment={props.l10nComment}
             l10nParam0={props.l10nParam0}
             icon={props.icon}
-            title={props.title}
+            iconScale={props.iconScale}
+            tooltipContents={props.title}
             onCheckChanged={(newState: boolean | undefined) => {
                 setChecked(!!newState);
                 if (props.onChange) {

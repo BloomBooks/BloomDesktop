@@ -1,6 +1,6 @@
 import * as React from "react";
 import { ILocalizationProps, LocalizableElement } from "./l10nComponents";
-import { MuiCheckbox } from "./muiCheckBox";
+import { BloomCheckbox } from "./muiCheckBox";
 
 interface IProps extends ILocalizationProps {
     list: string;
@@ -71,7 +71,7 @@ export class StringListCheckbox extends LocalizableElement<IProps, {}> {
     public render() {
         const checkStatus = this.getCheckStatus();
         return (
-            <MuiCheckbox
+            <BloomCheckbox
                 tristate={!!this.props.tristateItemOffName}
                 l10nKey={this.props.l10nKey}
                 alreadyLocalized={this.props.alreadyLocalized}

@@ -5,13 +5,13 @@ import React = require("react");
 // component.
 export const ActivityIcon: React.FunctionComponent<{
     className?: string;
-    color: string;
+    color?: string;
 }> = props => {
     return (
         <svg
             className={props.className}
-            width="14"
-            height="9"
+            // width="14"
+            // height="9"
             viewBox="0 0 14 9"
             fill={props.color}
             xmlns="http://www.w3.org/2000/svg"

@@ -23,7 +23,7 @@ import * as toastr from "toastr";
 import { default as TrashIcon } from "@mui/icons-material/Delete";
 import { get } from "../../../utils/bloomApi";
 import { isLinux } from "../../../utils/isLinux";
-import { MuiCheckbox } from "../../../react_components/muiCheckBox";
+import { BloomCheckbox } from "../../../react_components/muiCheckBox";
 import { ColorBar } from "./colorBar";
 import { IColorInfo } from "../../../react_components/color-picking/colorSwatch";
 import { IColorPickerDialogProps } from "../../../react_components/color-picking/colorPickerDialog";
@@ -645,7 +645,7 @@ const OverlayToolControls: React.FunctionComponent = () => {
                                 </MenuItem>
                             </Select>
                             <div className="comicCheckbox">
-                                <MuiCheckbox
+                                <BloomCheckbox
                                     label="Show Tail"
                                     l10nKey="EditTab.Toolbox.ComicTool.Options.ShowTail"
                                     checked={showTailChecked}
@@ -659,7 +659,7 @@ const OverlayToolControls: React.FunctionComponent = () => {
                                 />
                             </div>
                             <div className="comicCheckbox">
-                                <MuiCheckbox
+                                <BloomCheckbox
                                     label="Rounded Corners"
                                     l10nKey="EditTab.Toolbox.ComicTool.Options.RoundedCorners"
                                     checked={isRoundedCornersChecked}
