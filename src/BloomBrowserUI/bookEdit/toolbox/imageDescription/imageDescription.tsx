@@ -12,6 +12,7 @@ import { Label } from "../../../react_components/l10nComponents";
 import { Checkbox } from "../../../react_components/checkbox";
 import { Link } from "../../../react_components/link";
 import { ToolBottomHelpLink } from "../../../react_components/helpLink";
+import { BloomCheckbox } from "../../../react_components/BloomCheckBox";
 
 interface IImageDescriptionState {
     enabled: boolean;
@@ -89,29 +90,30 @@ export class ImageDescriptionToolControls extends React.Component<
                         <Label l10nKey="EditTab.Toolbox.ImageDescriptionTool.CheckThisBox">
                             Otherwise, check this box:
                         </Label>
-                        <Checkbox
+                        <BloomCheckbox
                             key={0}
+                            label={"This image should not be described."}
                             l10nKey={
                                 "EditTab.Toolbox.ImageDescriptionTool.ShouldNotDescribe"
                             }
                             className="imageDescriptionCheck"
-                            name=""
                             checked={this.state.descriptionNotNeeded}
                             onCheckChanged={checked =>
-                                this.onCheckChanged(checked)
+                                this.onCheckChanged(checked!)
                             }
                             // This is a rather ugly way of reaching inside our checkbox class,
                             // but the usual box positioning just doesn't look right in this context.
                             css={css`
+                                p {
+                                    font-size: 8pt;
+                                }
                                 input {
                                     margin-right: 3px;
                                     align-self: center;
                                     margin-top: -4px;
                                 }
                             `}
-                        >
-                            This image should not be described.
-                        </Checkbox>
+                        />
                     </div>
                     <div className="imgDescLabelBlock">
                         <Label l10nKey="EditTab.Toolbox.ImageDescriptionTool.MoreInformation">
