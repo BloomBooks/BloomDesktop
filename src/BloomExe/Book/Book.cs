@@ -2329,10 +2329,10 @@ namespace Bloom.Book
 
 		private static bool HasContentInLang(XmlElement parent, string lang)
 		{
-			foreach (var divN in parent.ChildNodes)
+			foreach (var node in parent.ChildNodes)
 			{
-				var div = divN as XmlElement;
-				if (div?.Attributes["lang"] == null || div.Attributes["lang"].Value != lang)
+				var div = node as XmlElement;
+				if (div?.Attributes["lang"] == null || div.Attributes["lang"].Value != lang || div.Name == "label")
 					continue;
 				return !string.IsNullOrWhiteSpace(div.InnerText); // this one settles it: success if non-empty
 			}
