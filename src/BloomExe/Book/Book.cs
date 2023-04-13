@@ -2193,17 +2193,18 @@ namespace Bloom.Book
 		/// that are present, and the (boolean) values are true if the book is considered to be "complete"
 		/// in that language, which in some contexts (such as publishing to bloom library) governs whether
 		/// the language is published by default.
+		///
+		/// As of 5.5, we are no longer calling this with includeLangsOccurringOnlyInXmatter = true.
+		/// We think all the problems it used to solve (originally BL-7967) are now solved in other ways.
+		/// I'm leaving the code and comment in place for the moment, in case we need to revert.
+		/// START OBSOLETE COMMENT
 		/// It also makes a difference whether an interesting element occurs in xmatter or not.
 		/// A language is never considered an "incomplete translation" because it is missing in an xmatter element,
 		/// mainly because it's so common for elements there to be in just a national language (BL-8527).
 		/// For some purposes, a language that occurs ONLY in xmatter doesn't count at all... it won't even be
 		/// a key in the dictionary unless includeLangsOccurringOnlyInXmatter is true
 		/// OR it is a "required" language (a content language of the book).
-		///
-		/// For determining which Text Languages to display in Publish -> BloomPub and which pages to delete
-		/// from a .bloompub file, we pass the parameter as true. I (gjm) am unclear as to why historically
-		/// we did it this way, but BL-7967 might be part of the problem
-		/// (where xmatter pages only in L2 were erroneously deleted).
+		/// END OBSOLETE COMMENT
 		/// </summary>
 		/// <remarks>The logic here is used to determine how to present (show and/or enable) language checkboxes on the publish screens.
 		/// Nearly identical logic is used in bloom-player to determine which languages to show on the Language Menu,
@@ -2214,7 +2215,9 @@ namespace Bloom.Book
 			var parents = new HashSet<XmlElement>(); // of interesting non-empty children
 			var langDivs = OurHtmlDom.GetLanguageDivs(includeLangsOccurringOnlyInXmatter).ToArray();
 
-			// Always include required languages
+			// Always include required languages.
+			// Note that if we ever decide to NOT always include these languages, we think we will have a problem
+			// initializing the settings of older (before we uploaded settings in meta.json or publish-settings.json) picture books when harvesting.
 			foreach (var lang in GetRequiredLanguages())
 				result[lang] = true;
 

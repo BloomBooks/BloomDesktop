@@ -318,7 +318,7 @@ namespace Bloom.web.controllers
 		{
 			lock (_lockForLanguages)
 			{
-				_allLanguages = request.CurrentBook.AllPublishableLanguages(includeLangsOccurringOnlyInXmatter: true);
+				_allLanguages = request.CurrentBook.AllPublishableLanguages();
 
 				// Note that at one point, we had a check that would bypass most of this function if the book hadn't changed.
 				// However, one side effect of this is that any settings behind the if guard would not be updated if the book was edited
