@@ -186,7 +186,10 @@ export function showTopicChooserDialog() {
             const topics = (topicsAndCurrent.Topics as string[]).map(t =>
                 JSON.parse(t)
             );
-            const currentTopic = topicsAndCurrent.Current;
+            const currentTopic =
+                topicsAndCurrent.Current === "No Topic"
+                    ? undefined
+                    : topicsAndCurrent.Current;
 
             // Here, topics will be an array with an entry for each known topic. Each topic is an
             // englishKey/translated pair.
