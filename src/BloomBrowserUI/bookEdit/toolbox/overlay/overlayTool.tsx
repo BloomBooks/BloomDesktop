@@ -644,38 +644,30 @@ const OverlayToolControls: React.FunctionComponent = () => {
                                     </Div>
                                 </MenuItem>
                             </Select>
-                            <div className="comicCheckbox">
-                                <BloomCheckbox
-                                    label="Show Tail"
-                                    l10nKey="EditTab.Toolbox.ComicTool.Options.ShowTail"
-                                    checked={showTailChecked}
-                                    disabled={isChild(currentItemSpec)}
-                                    onCheckChanged={v => {
-                                        handleShowTailChanged(v as boolean);
-                                    }}
-                                    deprecatedVersionWhichDoesntEnsureMultilineLabelsWork={
-                                        true
-                                    }
-                                />
-                            </div>
-                            <div className="comicCheckbox">
-                                <BloomCheckbox
-                                    label="Rounded Corners"
-                                    l10nKey="EditTab.Toolbox.ComicTool.Options.RoundedCorners"
-                                    checked={isRoundedCornersChecked}
-                                    disabled={
-                                        !styleSupportsRoundedCorners(
-                                            currentFamilySpec
-                                        )
-                                    }
-                                    onCheckChanged={newValue => {
-                                        handleRoundedCornersChanged(newValue);
-                                    }}
-                                    deprecatedVersionWhichDoesntEnsureMultilineLabelsWork={
-                                        true
-                                    }
-                                />
-                            </div>
+
+                            <BloomCheckbox
+                                label="Show Tail"
+                                l10nKey="EditTab.Toolbox.ComicTool.Options.ShowTail"
+                                checked={showTailChecked}
+                                disabled={isChild(currentItemSpec)}
+                                onCheckChanged={v => {
+                                    handleShowTailChanged(v as boolean);
+                                }}
+                            />
+
+                            <BloomCheckbox
+                                label="Rounded Corners"
+                                l10nKey="EditTab.Toolbox.ComicTool.Options.RoundedCorners"
+                                checked={isRoundedCornersChecked}
+                                disabled={
+                                    !styleSupportsRoundedCorners(
+                                        currentFamilySpec
+                                    )
+                                }
+                                onCheckChanged={newValue => {
+                                    handleRoundedCornersChanged(newValue);
+                                }}
+                            />
                         </FormControl>
                         <FormControl variant="standard">
                             <InputLabel htmlFor="text-color-bar" shrink={true}>
