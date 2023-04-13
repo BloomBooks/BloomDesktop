@@ -6,6 +6,7 @@ import { useState } from "react";
 import { useTheme, Checkbox } from "@mui/material";
 import { useL10n } from "./l10nHooks";
 import { LightTooltip } from "./lightTooltip";
+import { Check } from "@mui/icons-material";
 
 // wrap up the complex material-ui checkbox in something simple and make it handle tristate
 export const BloomCheckbox: React.FunctionComponent<{
@@ -58,15 +59,12 @@ export const BloomCheckbox: React.FunctionComponent<{
 
     // // Work has been done below to ensure that a wrapped label will align with the control correctly.
     // If messing with the layout, be sure you didn't break this by checking the storybook story.
-    const kCheckMarkString: string = "\u2713"; // elsewhere we used \u10004 but not sure how to do 5 digits in Javascript;
     const checkboxControl = (
         <div
             css={css`
                 display: flex;
                 flex-direction: row;
-
-                /* border: solid 0.1px orange; */
-                //align-items: center;
+                min-height: 39px; // ensures that the cases without an actual checkbox are the same minimum height as the ones with a checkbox
                 align-items: start;
             `}
         >
@@ -106,16 +104,19 @@ export const BloomCheckbox: React.FunctionComponent<{
                 />
             )}
             {props.hideBox && (
-                <span
+                <div
                     css={css`
                         width: 27px;
-                        font-weight: 700;
                         padding-top: 7px;
                         color: ${theme.palette.primary.main};
+                        svg {
+                            transform: scale(0.8);
+                        }
+                        visibility: ${props.checked ? "visible" : "hidden"};
                     `}
                 >
-                    {props.checked ? kCheckMarkString : ""}
-                </span>
+                    <Check />
+                </div>
             )}
 
             <div
