@@ -3019,7 +3019,7 @@ namespace BloomTests.Book
 		}
 
 		[Test]
-		public void AllLanguages_DoesNotIncludeTemplateHintText()
+		public void AllPublishableLanguages_DoesNotIncludeTemplateHintText()
 		{
 			_bookDom = new HtmlDom(
 				@"<html>
@@ -3045,14 +3045,15 @@ namespace BloomTests.Book
 				</body></html>");
 
 			var book = CreateBook();
-			var allLanguages = book.AllLanguages();
+			var allLanguages = book.AllPublishableLanguages();
+			Assert.That(allLanguages.ContainsKey("xyz"), Is.True); // always included because it is book L1
 			Assert.That(allLanguages["de"], Is.True);
 			Assert.That(allLanguages["en"], Is.True);
-			Assert.That(allLanguages.Count, Is.EqualTo(2));
+			Assert.That(allLanguages.Count, Is.EqualTo(3));
 		}
 
 		[Test]
-		public void AllLanguages_TemplateHintTextDoesNotMakeLanguageComplete()
+		public void AllPublishableLanguages_TemplateHintTextDoesNotMakeLanguageComplete()
 		{
 			_bookDom = new HtmlDom(
 				@"<html>
@@ -3086,10 +3087,11 @@ namespace BloomTests.Book
 				</body></html>");
 
 			var book = CreateBook();
-			var allLanguages = book.AllLanguages();
+			var allLanguages = book.AllPublishableLanguages();
+			Assert.That(allLanguages.ContainsKey("xyz"), Is.True); // always included because it is book L1
 			Assert.That(allLanguages["de"], Is.True);
 			Assert.That(allLanguages["en"], Is.False);
-			Assert.That(allLanguages.Count, Is.EqualTo(2));
+			Assert.That(allLanguages.Count, Is.EqualTo(3));
 		}
 
 		[Test]
