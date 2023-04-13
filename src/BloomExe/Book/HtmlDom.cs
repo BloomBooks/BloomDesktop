@@ -15,7 +15,6 @@ using Bloom.Publish.Epub;
 using Bloom.ToPalaso;
 using Bloom.web.controllers;
 using DesktopAnalytics;
-using Gecko;
 using L10NSharp;
 using Microsoft.CSharp.RuntimeBinder;
 using SIL.Code;

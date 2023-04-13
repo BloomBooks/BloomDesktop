@@ -11,7 +11,6 @@ namespace Bloom
 		public const string kExperimentalSourceBooks = "experimental-source-books";
 		public const string kTeamCollections = "team-collections";
 		public const string kSpreadsheetImportExport = "spreadsheet-import-export";
-		public const string kWebView2 = "webView2";
 
 		public static string TokensOfEnabledFeatures => Settings.Default.EnabledExperimentalFeatures;
 
@@ -25,6 +24,8 @@ namespace Bloom
 				SetValue(kExperimentalSourceBooks, true);
 				Settings.Default.ShowExperimentalFeatures = false;
 			}
+			// remove obsolete experimental feature that has gone mainstream
+			SetValue("webView2", false);
 		}
 
 		public static void SetValue(string featureName, bool isEnabled)

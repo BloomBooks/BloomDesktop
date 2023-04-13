@@ -1,8 +1,6 @@
 ﻿using System;
 using System.ComponentModel;
-using System.Drawing;
 using System.Windows.Forms;
-using Gecko;
 using SIL.Windows.Forms.Extensions;
 
 namespace Bloom.MiscUI

@@ -134,18 +134,6 @@
     <Reference Include="GdkSharp, Version=3.22.24.37, Culture=neutral, PublicKeyToken=313398f2149d753f, processorArchitecture=MSIL">
       <HintPath>..\..\packages\GdkSharp-signed.3.22.24.37\lib\netstandard2.0\GdkSharp.dll</HintPath>
     </Reference>
-    <Reference Include="Geckofx-Core" Condition="'$(OS)'!='Windows_NT'">
-      <HintPath>..\..\packages\Geckofx60.64.Linux.60.0.51\lib\net40\Geckofx-Core.dll</HintPath>
-    </Reference>
-    <Reference Include="Geckofx-Core, Version=60.0.50.0, Culture=neutral, PublicKeyToken=3209ac31600d1857, processorArchitecture=x86" Condition="'$(OS)'=='Windows_NT'">
-      <HintPath>..\..\packages\Geckofx60.32.60.0.50\lib\net45\Geckofx-Core.dll</HintPath>
-    </Reference>
-    <Reference Include="Geckofx-Winforms" Condition="'$(OS)'!='Windows_NT'">
-      <HintPath>..\..\packages\Geckofx60.64.Linux.60.0.51\lib\net40\Geckofx-Winforms.dll</HintPath>
-    </Reference>
-    <Reference Include="Geckofx-Winforms, Version=60.0.50.0, Culture=neutral, PublicKeyToken=3209ac31600d1857, processorArchitecture=x86" Condition="'$(OS)'=='Windows_NT'">
-      <HintPath>..\..\packages\Geckofx60.32.60.0.50\lib\net45\Geckofx-Winforms.dll</HintPath>
-    </Reference>
     <Reference Include="GioSharp, Version=3.22.24.37, Culture=neutral, PublicKeyToken=313398f2149d753f, processorArchitecture=MSIL">
       <HintPath>..\..\packages\GioSharp-signed.3.22.24.37\lib\netstandard2.0\GioSharp.dll</HintPath>
     </Reference>
@@ -259,9 +247,6 @@
     </Reference>
     <Reference Include="SIL.Windows.Forms, Version=12.0.0.0, Culture=neutral, PublicKeyToken=cab3c8c5232dfcf2, processorArchitecture=MSIL">
       <HintPath>..\..\packages\SIL.Windows.Forms.12.0.1-beta0003\lib\net461\SIL.Windows.Forms.dll</HintPath>
-    </Reference>
-    <Reference Include="SIL.Windows.Forms.GeckoBrowserAdapter, Version=12.0.0.0, Culture=neutral, PublicKeyToken=cab3c8c5232dfcf2, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\SIL.Windows.Forms.GeckoBrowserAdapter.12.0.1-beta0003\lib\net461\SIL.Windows.Forms.GeckoBrowserAdapter.dll</HintPath>
     </Reference>
     <Reference Include="SIL.Windows.Forms.Keyboarding, Version=12.0.0.0, Culture=neutral, PublicKeyToken=cab3c8c5232dfcf2, processorArchitecture=MSIL">
       <HintPath>..\..\packages\SIL.Windows.Forms.Keyboarding.12.0.1-beta0003\lib\net461\SIL.Windows.Forms.Keyboarding.dll</HintPath>
@@ -725,7 +710,6 @@
     <Compile Include="MiscUI\ToastNotifier.designer.cs">
       <DependentUpon>ToastNotifier.cs</DependentUpon>
     </Compile>
-    <Compile Include="NavigationIsolator.cs" />
     <Compile Include="Publish\PDF\AdobeReaderControl.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -908,12 +892,6 @@
       <DependentUpon>ConfigurationDialog.cs</DependentUpon>
     </Compile>
     <Compile Include="Edit\Configurator.cs" />
-    <Compile Include="GeckoFxBrowser.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="GeckoFxBrowser.Designer.cs">
-      <DependentUpon>GeckoFxBrowser.cs</DependentUpon>
-    </Compile>
     <Compile Include="Command.cs" />
     <Compile Include="web\DynamicJson.cs" />
     <Compile Include="Edit\JSONUtils.cs" />
@@ -1004,10 +982,6 @@
     <Compile Include="XmlString.cs" />
     <EmbeddedResource Include="WebView2Browser.resx" Condition="'$(OS)'=='Windows_NT'">
       <DependentUpon>WebView2Browser.cs</DependentUpon>
-      <SubType>Designer</SubType>
-    </EmbeddedResource>
-    <EmbeddedResource Include="GeckoFxBrowser.resx">
-      <DependentUpon>GeckoFxBrowser.cs</DependentUpon>
       <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="CollectionTab\BloomLibraryLinkVerification.resx">
@@ -1192,7 +1166,6 @@
     <Compile Include="Shell.Designer.cs">
       <DependentUpon>Shell.cs</DependentUpon>
     </Compile>
-    <Compile Include="StyleSheetService.cs" />
     <Compile Include="Workspace\ZoomControl.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -1488,32 +1461,16 @@ copy /Y "$(SolutionDir)\lib\dotnet\Interop.Acrobat.dll" $(OutDir)
     </PostBuildEvent>
   </PropertyGroup>
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
-  <Target Name="BeforeBuild" Condition="'$(OS)'=='Windows_NT'">
-    <Exec Command="mkdir $(OutDir)Firefox" Condition="!Exists('$(OutDir)Firefox')" />
-    <Exec Command="copy /Y &quot;$(SolutionDir)packages\Geckofx60.32.60.0.50\content\Firefox\*.*&quot; $(OutDir)Firefox" />
-    <!-- Firefox relies on some dlls (namely msvcp140.dll and vcruntime140.dll) from the Visual C++ Redistributable.
-        The Geckofx package doesn't include them. I tried to get them included but got outvoted. (Note that Firefox itself installs them.)
-        The other option, and what some of our products do, is include the Redistributable in the installer.
-        But that is even more complicated and inflates the installer by 14MB.
-        Be careful if you ever think about getting rid of this. The problem only shows up on machines
-        which don't already have Visual Studio or the Redistributable and thus don't have these dlls in \Windows\System32.
-        In that case, the app crashes on load. BL-9065 -->
-    <Exec Command="copy /Y &quot;$(SolutionDir)lib\FirefoxDependencies\*.*&quot; $(OutDir)Firefox" />
-  </Target>
   <!-- these operations cannot all be done BeforeBuild, because the nuget download occurs as part of Build after BeforeBuild -->
   <Target Name="BeforeResolveReferences" Condition="'$(OS)'!='Windows_NT'">
     <!-- compile the various typescript, jade, and less files in BloomBrowserUI. -->
     <Exec Command="cd &quot;$(SolutionDir)/src/content&quot; &amp;&amp; ( [ -f node_modules/less-watch-compiler/package.json ] || yarn config set registry &quot;http://registry.npmjs.org&quot; &amp;&amp; yarn --network-timeout 600000) &amp;&amp; cd &quot;$(SolutionDir)/src/BloomBrowserUI&quot; &amp;&amp; ( [ -f node_modules/typescript/package.json ] || yarn config set registry &quot;http://registry.npmjs.org&quot; &amp;&amp; yarn --network-timeout 600000) &amp;&amp; ( [ -f ../../output/browser/commonBundle.js ] || yarn build)" />
-    <!-- copy the appropriate Geckofx60 files to the output directory, first creating it if necessary -->
-    <Exec Command="mkdir -p $(OutDir)" />
-    <Exec Command="rm -rf $(OutDir)Firefox" />
-    <Exec Command="find &quot;$(SolutionDir)packages/Geckofx60.64.Linux.60.0.51&quot; -name 'Geckofx-*.*' -exec cp -pvn '{}' $(OutDir) ';' &amp;&amp; find &quot;$(SolutionDir)packages/Geckofx60.64.Linux.60.0.51&quot; -name Firefox* -type d -exec cp -pRvn '{}' $(OutDir)/Firefox ';';" />
   </Target>
   <ItemGroup>
     <BasicBookCssFiles Include="..\..\DistFiles\factoryCollections\Templates\Basic Book\*.css" />
   </ItemGroup>
   <ItemGroup>
-    <SourceFiles Include="..\..\lib\dotnet\*.config" Exclude="..\..\lib\dotnet\GeckofxHtmlToPdf.exe.config" />
+    <SourceFiles Include="..\..\lib\dotnet\*.config" />
   </ItemGroup>
   <ItemGroup>
     <LameFiles Include="..\..\lib\lame\lame*.*" />
@@ -1611,8 +1568,7 @@ copy /Y "$(SolutionDir)\lib\dotnet\Interop.Acrobat.dll" $(OutDir)
     <Analyzer Include="..\..\packages\AWSSDK.S3.3.5.3.10\analyzers\dotnet\cs\AWSSDK.S3.CodeAnalysis.dll" />
   </ItemGroup>
   <Import Project="..\..\packages\icu.net.2.8.1\build\icu.net.props" Condition="Exists('..\..\packages\icu.net.2.8.1\build\icu.net.props')" />
-  <Import Project="..\..\packages\Geckofx60.32.60.0.50\build\Geckofx60.32.targets" Condition="Exists('..\..\packages\Geckofx60.32.60.0.50\build\Geckofx60.32.targets')" />
-  <Import Project="../../packages/Geckofx60.64.Linux.60.0.51/build/Geckofx60.64.Linux.targets" Condition="Exists('../../packages/Geckofx60.64.Linux.60.0.51/build/Geckofx60.64.Linux.targets')" />
+
   <Import Project="..\..\packages\LargeAddressAware.1.0.5\build\LargeAddressAware.targets" Condition="'$(OS)'=='Windows_NT' AND Exists('..\..\packages\LargeAddressAware.1.0.5\build\LargeAddressAware.targets')" />
   <Import Project="..\..\packages\NDesk.DBus.0.15.0\build\NDesk.DBus.targets" Condition="Exists('..\..\packages\NDesk.DBus.0.15.0\build\NDesk.DBus.targets')" />
   <Import Project="..\..\packages\SQLitePCLRaw.lib.e_sqlite3.2.0.3\build\net461\SQLitePCLRaw.lib.e_sqlite3.targets" Condition="Exists('..\..\packages\SQLitePCLRaw.lib.e_sqlite3.2.0.3\build\net461\SQLitePCLRaw.lib.e_sqlite3.targets')" />
@@ -1635,8 +1591,6 @@ copy /Y "$(SolutionDir)\lib\dotnet\Interop.Acrobat.dll" $(OutDir)
     <PropertyGroup>
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
-    <Error Condition="'$(OS)'=='Windows_NT' AND !Exists('..\..\packages\Geckofx60.32.60.0.50\build\Geckofx60.32.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\Geckofx60.32.60.0.50\build\Geckofx60.32.targets'))" />
-    <Error Condition="'$(OS)'!='Windows_NT' AND !Exists('../../packages/Geckofx60.64.Linux.60.0.51/build/Geckofx60.64.Linux.targets')" Text="$([System.String]::Format('$(ErrorText)', '../../packages/Geckofx60.64.Linux.60.0.51/build/Geckofx60.64.Linux.targets'))" />
     <Error Condition="'$(OS)'=='Windows_NT' AND !Exists('..\..\packages\LargeAddressAware.1.0.5\build\LargeAddressAware.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\LargeAddressAware.1.0.5\build\LargeAddressAware.targets'))" />
     <Error Condition="!Exists('..\..\packages\NDesk.DBus.0.15.0\build\NDesk.DBus.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\NDesk.DBus.0.15.0\build\NDesk.DBus.targets'))" />
     <Error Condition="'$(OS)'=='Windows_NT' AND !Exists('..\..\packages\Microsoft.Web.WebView2.1.0.1518.46\build\Microsoft.Web.WebView2.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\Microsoft.Web.WebView2.1.0.1518.46\build\Microsoft.Web.WebView2.targets'))" />

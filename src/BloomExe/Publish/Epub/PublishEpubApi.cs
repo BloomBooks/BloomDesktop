@@ -86,7 +86,7 @@ namespace Bloom.Publish.Epub
 		public EpubMaker EpubMaker { get; private set; }
 		public static Control ControlForInvoke { get; set; }
 
-		public PublishEpubApi(BookThumbNailer thumbNailer, NavigationIsolator isolator, BookServer bookServer,
+		public PublishEpubApi(BookThumbNailer thumbNailer, BookServer bookServer,
 			BookSelection bookSelection, CollectionSettings collectionSettings, BloomWebSocketServer webSocketServer)
 		{
 			_thumbNailer = thumbNailer;

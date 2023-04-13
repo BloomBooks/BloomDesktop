@@ -55,7 +55,6 @@ namespace Bloom.CLI
 				using (var applicationContainer = new ApplicationContainer())
 				{
 					Program.SetUpLocalization(applicationContainer);
-					GeckoFxBrowser.SetUpXulRunner();	// needed for browsers used by book processing during upload preparations
 					LocalizationManager.SetUILanguage(Settings.Default.UserInterfaceLanguage, false);
 					var singleBookUploader = new BookUpload(new BloomParseClient(), ProjectContext.CreateBloomS3Client(),
 						applicationContainer.BookThumbNailer);

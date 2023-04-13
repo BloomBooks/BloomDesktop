@@ -27,7 +27,6 @@ using Bloom.TeamCollection;
 using Bloom.ToPalaso;
 using Bloom.Utils;
 using Bloom.web.controllers;
-using Gecko.Cache;
 using Newtonsoft.Json;
 using SIL.PlatformUtilities;
 using SIL.Windows.Forms.Miscellaneous;
@@ -665,7 +664,7 @@ namespace Bloom.Workspace
 			var tag = (LanguageItem)item.Tag;
 
 			LocalizationManager.SetUILanguage(tag.LangTag, true);
-			GeckoFxBrowser.SetBrowserLanguage(tag.LangTag);
+			// TODO-WV2: Can we set the browser language in WV2?  Do we need to?
 			Settings.Default.UserInterfaceLanguage = tag.LangTag;
 			Settings.Default.UserInterfaceLanguageSetExplicitly = true;
 			Settings.Default.Save();
@@ -930,17 +929,7 @@ namespace Bloom.Workspace
 				if (_toolStrip.Items.Contains(_zoomWrapper))
 					_toolStrip.Items.Remove(_zoomWrapper);
 			}
-			// Possibly overkill, but makes sure nothing obsolete hangs around long.
-			try
-			{
-				CacheService.Clear(CacheStoragePolicy.Anywhere);
-			}
-			catch (Exception e)
-			{
-				// Unfortunately it typically throws, being for some reason unable to clear everything...
-				// doc says it may still have got rid of some things, so seems marginally worth doing...
-				Bloom.Utils.MiscUtils.SuppressUnusedExceptionVarWarning(e);
-			}
+			// TODO-WV2: Can we clear the cache in WV2?  Do we need to?
 		}
 
 		private void BackgroundColorsForLinux(IBloomTabArea currentTabView) {

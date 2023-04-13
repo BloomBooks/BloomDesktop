@@ -65,7 +65,6 @@ namespace Bloom.Collection
 			this._teamCollectionTab = new System.Windows.Forms.TabPage();
 			this.teamCollectionSettingsReactControl = new Bloom.web.ReactControl();
 			this.tabPage4 = new System.Windows.Forms.TabPage();
-            this._allowWebView2 = new System.Windows.Forms.CheckBox();
 			this._automaticallyUpdate = new System.Windows.Forms.CheckBox();
 			this.label2 = new System.Windows.Forms.Label();
 			this._showExperimentalBookSources = new System.Windows.Forms.CheckBox();
@@ -545,7 +544,6 @@ namespace Bloom.Collection
             // 
             // tabPage4
             // 
-            this.tabPage4.Controls.Add(this._allowWebView2);
             this.tabPage4.Controls.Add(this._automaticallyUpdate);
             this.tabPage4.Controls.Add(this.label2);
             this.tabPage4.Controls.Add(this._showExperimentalBookSources);
@@ -562,21 +560,6 @@ namespace Bloom.Collection
             this.tabPage4.Size = new System.Drawing.Size(642, 452);
             this.tabPage4.TabIndex = 5;
             this.tabPage4.Text = "Advanced Program Settings";
-            // 
-            // _allowWebView2
-            // 
-            this._allowWebView2.AutoSize = true;
-            this._L10NSharpExtender.SetLocalizableToolTip(this._allowWebView2, null);
-            this._L10NSharpExtender.SetLocalizationComment(this._allowWebView2, null);
-            this._L10NSharpExtender.SetLocalizationPriority(this._allowWebView2, L10NSharp.LocalizationPriority.Low);
-            this._L10NSharpExtender.SetLocalizingId(this._allowWebView2, "CollectionSettingsDialog.AdvancedTab.Experimental.UseExperimentalUI");
-            this._allowWebView2.Location = new System.Drawing.Point(27, 187);
-            this._allowWebView2.Name = "_allowWebView2";
-            this._allowWebView2.Size = new System.Drawing.Size(369, 23);
-            this._allowWebView2.TabIndex = 12;
-            this._allowWebView2.Text = "Use the experimental next version of the UI (WebView2)";
-            this._allowWebView2.UseVisualStyleBackColor = false;
-            this._allowWebView2.CheckedChanged += new System.EventHandler(this._allowWebView2_CheckedChanged);
             // 
             // _automaticallyUpdate
             // 
@@ -837,6 +820,5 @@ namespace Bloom.Collection
 		protected Label _signLanguageName;
 		protected Label _signLanguageLabel;
 		private Label _noRenameTeamCollectionLabel;
-		private CheckBox _allowWebView2;
 	}
 }

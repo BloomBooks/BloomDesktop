@@ -78,7 +78,7 @@ namespace Bloom.web
 
 			// currently this is used only in ReactDialog. E.g., "Report a problem".
 			if (UseEditContextMenu)
-				_browser.ContextMenuProvider = (target, adder) =>
+				_browser.ContextMenuProvider = (adder) =>
 				{
 					adder.Add(L10NSharp.LocalizationManager.GetString("Common.Copy", "Copy"),
 							(s1, e1) => { _browser.CopySelection(); });

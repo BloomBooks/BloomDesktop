@@ -64,7 +64,7 @@ namespace BloomTests.Edit
 		[STAThread]
 		public void ShowConfigureDialog()
 		{
-			var c = new Configurator(_collectionFolder.Path, NavigationIsolator.GetOrCreateTheOneNavigationIsolator());
+			var c = new Configurator(_collectionFolder.Path);
 
 			var stringRep = DynamicJson.Serialize(new
 			{
@@ -80,7 +80,7 @@ namespace BloomTests.Edit
 		[Test]
 		public void GetAllData_LocalOnly_ReturnLocal()
 		{
-			var c = new Configurator(_collectionFolder.Path, NavigationIsolator.GetOrCreateTheOneNavigationIsolator());
+			var c = new Configurator(_collectionFolder.Path);
 			dynamic j = new DynamicJson();
 			j.one = 1;
 			c.CollectJsonData(j.ToString());
@@ -90,7 +90,7 @@ namespace BloomTests.Edit
 		[Test]
 		public void CollectionSettingsAreRoundTriped()
 		{
-			var first = new Configurator(_collectionFolder.Path, NavigationIsolator.GetOrCreateTheOneNavigationIsolator());
+			var first = new Configurator(_collectionFolder.Path);
 			var stringRep = DynamicJson.Serialize(new
 						{
 							library = new {stuff = "foo"}
@@ -98,7 +98,7 @@ namespace BloomTests.Edit
 
 			first.CollectJsonData(stringRep.ToString());
 
-			var second = new Configurator(_collectionFolder.Path, NavigationIsolator.GetOrCreateTheOneNavigationIsolator());
+			var second = new Configurator(_collectionFolder.Path);
 			dynamic j = (DynamicJson)DynamicJson.Parse(second.GetCollectionData());
 			Assert.AreEqual("foo", j.library.stuff);
 		}
@@ -115,11 +115,11 @@ namespace BloomTests.Edit
 				library = new { two = "2", color = "blue" }
 			});
 
-			var first = new Configurator(_collectionFolder.Path, NavigationIsolator.GetOrCreateTheOneNavigationIsolator());
+			var first = new Configurator(_collectionFolder.Path);
 			first.CollectJsonData(firstData.ToString());
 			first.CollectJsonData(secondData.ToString());
 
-			var second = new Configurator(_collectionFolder.Path, NavigationIsolator.GetOrCreateTheOneNavigationIsolator());
+			var second = new Configurator(_collectionFolder.Path);
 			dynamic j= (DynamicJson) DynamicJson.Parse(second.GetCollectionData());
 			Assert.AreEqual("2", j.library.two);
 			Assert.AreEqual("1", j.library.one);
@@ -133,11 +133,11 @@ namespace BloomTests.Edit
 			var firstData = "{\"library\":{\"days\":[\"1\",\"2\"]}}";
 			var secondData = "{\"library\":{\"days\":[\"o:e\",\"two\"]}}";
 
-			var first = new Configurator(_collectionFolder.Path, NavigationIsolator.GetOrCreateTheOneNavigationIsolator());
+			var first = new Configurator(_collectionFolder.Path);
 			first.CollectJsonData(firstData.ToString());
 			first.CollectJsonData(secondData.ToString());
 
-			var second = new Configurator(_collectionFolder.Path, NavigationIsolator.GetOrCreateTheOneNavigationIsolator());
+			var second = new Configurator(_collectionFolder.Path);
 			dynamic j = (DynamicJson)DynamicJson.Parse(second.GetCollectionData());
 			Assert.AreEqual("o:e", j.library.days[0]);
 			Assert.AreEqual("two", j.library.days[1]);
@@ -158,11 +158,11 @@ namespace BloomTests.Edit
 				library = new { food = new { bread = "b", fruit = "{f\\:", nuts = "\"nut\"" } }
 			});
 
-			var first = new Configurator(_collectionFolder.Path, NavigationIsolator.GetOrCreateTheOneNavigationIsolator());
+			var first = new Configurator(_collectionFolder.Path);
 			first.CollectJsonData(firstData.ToString());
 			first.CollectJsonData(secondData.ToString());
 
-			var second = new Configurator(_collectionFolder.Path, NavigationIsolator.GetOrCreateTheOneNavigationIsolator());
+			var second = new Configurator(_collectionFolder.Path);
 			dynamic j = (DynamicJson)DynamicJson.Parse(second.GetCollectionData());
 			Assert.AreEqual("v", j.library.food.veg);
 			Assert.AreEqual("{f\\:", j.library.food.fruit);
@@ -200,11 +200,11 @@ namespace BloomTests.Edit
 				}
 			});
 
-			var first = new Configurator(_collectionFolder.Path, NavigationIsolator.GetOrCreateTheOneNavigationIsolator());
+			var first = new Configurator(_collectionFolder.Path);
 			first.CollectJsonData(firstData.ToString());
 			first.CollectJsonData(secondData.ToString());
 
-			var second = new Configurator(_collectionFolder.Path, NavigationIsolator.GetOrCreateTheOneNavigationIsolator());
+			var second = new Configurator(_collectionFolder.Path);
 			dynamic j = (DynamicJson)DynamicJson.Parse(second.GetCollectionData());
 			Assert.AreEqual("green beans", j.library.food.vegetables[0]);
 			Assert.AreEqual("\"fruit\"", j.library.food.vegetables[1]);
@@ -218,7 +218,7 @@ namespace BloomTests.Edit
 		[Test]
 		public void WhenCollectedNoLocalDataThenLocalDataIsEmpty()
 		{
-			var first = new Configurator(_collectionFolder.Path, NavigationIsolator.GetOrCreateTheOneNavigationIsolator());
+			var first = new Configurator(_collectionFolder.Path);
 			var stringRep = DynamicJson.Serialize(new
 				{
 					library = new {librarystuff = "foo"}
@@ -236,7 +236,7 @@ namespace BloomTests.Edit
 		[Test]
 		public void WhenCollectedNoGlobalDataThenGlobalDataIsEmpty()
 		{
-			var first = new Configurator(_collectionFolder.Path, NavigationIsolator.GetOrCreateTheOneNavigationIsolator());
+			var first = new Configurator(_collectionFolder.Path);
 			dynamic j = new DynamicJson();
 			j.one = 1;
 			first.CollectJsonData(j.ToString());
@@ -246,7 +246,7 @@ namespace BloomTests.Edit
 		[Test]
 		public void GetCollectionData_NoGlobalData_Empty()
 		{
-			var first = new Configurator(_collectionFolder.Path, NavigationIsolator.GetOrCreateTheOneNavigationIsolator());
+			var first = new Configurator(_collectionFolder.Path);
 			dynamic j = new DynamicJson();
 			j.one = 1;
 			first.CollectJsonData(j.ToString());
@@ -255,13 +255,13 @@ namespace BloomTests.Edit
 		[Test]
 		public void GetCollectionData_NothingCollected_Empty()
 		{
-			var first = new Configurator(_collectionFolder.Path, NavigationIsolator.GetOrCreateTheOneNavigationIsolator());
+			var first = new Configurator(_collectionFolder.Path);
 			Assert.AreEqual("{}", first.GetCollectionData());
 		}
 		[Test]
 		public void LocalData_NothingCollected_Empty()
 		{
-			var first = new Configurator(_collectionFolder.Path, NavigationIsolator.GetOrCreateTheOneNavigationIsolator());
+			var first = new Configurator(_collectionFolder.Path);
 			Assert.AreEqual("", first.LocalData);
 		}
 

@@ -39,7 +39,7 @@ namespace BloomTests.WebLibraryIntegration
 			// Todo: Make sure the S3 unit test bucket is empty.
 			// Todo: Make sure the parse.com unit test book table is empty
 			_parseClient = new BloomParseClientTestDouble(_thisTestId);
-			_htmlThumbNailer = new HtmlThumbNailer(NavigationIsolator.GetOrCreateTheOneNavigationIsolator());
+			_htmlThumbNailer = new HtmlThumbNailer();
 			_uploader = new BookUpload(_parseClient, new BloomS3Client(BloomS3Client.UnitTestBucketName), new BookThumbNailer(_htmlThumbNailer));
 			BookUpload.IsDryRun = false;
 			_downloader = new BookDownload(_parseClient, new BloomS3Client(BloomS3Client.UnitTestBucketName), new BookDownloadStartingEvent());

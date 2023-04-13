@@ -34,7 +34,6 @@ namespace Bloom.CLI
 				using (var applicationContainer = new ApplicationContainer())
 				{
 					Program.SetUpLocalization(applicationContainer);
-					GeckoFxBrowser.SetUpXulRunner();
 					LocalizationManager.SetUILanguage(Settings.Default.UserInterfaceLanguage, false);   // Unclear if this line is needed or not.
 					Program.RunningHarvesterMode = true;
 					using (_projectContext = applicationContainer.CreateProjectContext(options.CollectionPath))

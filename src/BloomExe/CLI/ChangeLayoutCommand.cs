@@ -34,7 +34,6 @@ namespace Bloom.CLI
 				using (var applicationContainer = new ApplicationContainer())
 				{
 					Program.SetUpLocalization(applicationContainer);
-					GeckoFxBrowser.SetUpXulRunner();
 					LocalizationManager.SetUILanguage(Settings.Default.UserInterfaceLanguage, false);
 					ChangeLayoutForAllContentPagesInAllBooks(options.CollectionPath, options.BookPath, options.PageGuid);
 				}

@@ -34,7 +34,6 @@ namespace Bloom.Publish
 		private BookUpload _bookTransferrer;
 		private PictureBox _previewBox;
 		private HtmlPublishPanel _htmlControl;
-		private NavigationIsolator _isolator;
 		private PublishToBloomPubApi _publishApi;
 		private PublishAudioVideoAPI _publishToVideoApi;
 		private PublishEpubApi _publishEpubApi;
@@ -46,12 +45,10 @@ namespace Bloom.Publish
 		public delegate PublishView Factory();//autofac uses this
 
 		public PublishView(PublishModel model,
-			SelectedTabChangedEvent selectedTabChangedEvent, LocalizationChangedEvent localizationChangedEvent, BookUpload bookTransferrer, NavigationIsolator isolator,
-			PublishToBloomPubApi publishApi, PublishEpubApi publishEpubApi, BloomWebSocketServer webSocketServer,
+			SelectedTabChangedEvent selectedTabChangedEvent, LocalizationChangedEvent localizationChangedEvent, BookUpload bookTransferrer,			PublishToBloomPubApi publishApi, PublishEpubApi publishEpubApi, BloomWebSocketServer webSocketServer,
 			PublishAudioVideoAPI publishToVideoApi)
 		{
 			_bookTransferrer = bookTransferrer;
-			_isolator = isolator;
 			_publishApi = publishApi;
 			_publishEpubApi = publishEpubApi;
 			_webSocketServer = webSocketServer;
@@ -145,8 +142,7 @@ namespace Bloom.Publish
 				_htmlControl.Dispose();
 				_htmlControl = null;
 			}
-			GeckoFxBrowser.SuppressJavaScriptErrors = false;
-			GeckoFxBrowser.ClearCache(); // of anything used in publish mode; may help free memory.
+			// TODO-WV2: Can we clear the cache for WV2? Do we need to?
 			PublishHelper.Cancel();
 			PublishHelper.InPublishTab = false;
 		}
@@ -371,9 +367,7 @@ namespace Bloom.Publish
 
 		public void SetDisplayMode(PublishModel.DisplayModes displayMode)
 		{
-			// This is only supposed to be active in one mode of PublishView.
-			GeckoFxBrowser.SuppressJavaScriptErrors = false;
-			GeckoFxBrowser.ClearCache(); // try to free memory when switching
+			// TODO-WV2: Can we clear the cache for WV2? Do we need to?
 			// Abort any work we're doing to prepare a preview (at least stop it interfering with other navigation).
 			PublishHelper.Cancel();
 
@@ -461,8 +455,7 @@ namespace Bloom.Publish
 					break;
 				case PublishModel.DisplayModes.PdfPrint:
 					BloomPubMaker.ControlForInvoke = ParentForm; // something created on UI thread that won't go away
-					// This view uses react-pdf which depends on stuff that won't work in Gecko.
-					ShowHtmlPanel(BloomFileLocator.GetBrowserFile(false, "publish", "PDFPrintPublish", "PublishPdfPrint.html"), forceWv2:true);
+					ShowHtmlPanel(BloomFileLocator.GetBrowserFile(false, "publish", "PDFPrintPublish", "PublishPdfPrint.html"));
 					break;
 				case PublishModel.DisplayModes.BloomPUB:
 					PublishApi.Model = new BloomLibraryPublishModel(_bookTransferrer, _model.BookSelection.CurrentSelection, _model);
@@ -474,12 +467,6 @@ namespace Bloom.Publish
 					ShowHtmlPanel(BloomFileLocator.GetBrowserFile(false, "publish", "video", "PublishAudioVideo.html"));
 					break;
 				case PublishModel.DisplayModes.EPUB:
-					// We rather mangled the Readium code in the process of cutting away its own navigation
-					// and other controls. It produces all kinds of JavaScript errors, but it seems to do
-					// what we want in our preview. So just suppress the toasts for all of them. This is unfortunate because
-					// we'll lose them for all the other JS code in this pane. But I don't have a better solution.
-					// We still get them in the output window, in case we really want to look for one.
-					GeckoFxBrowser.SuppressJavaScriptErrors = true;
 					PublishEpubApi.ControlForInvoke = ParentForm; // something created on UI thread that won't go away
 					ShowHtmlPanel(BloomFileLocator.GetBrowserFile(false, "publish", "ePUBPublish", "loader.html"));
 					break;
@@ -542,7 +529,7 @@ namespace Bloom.Publish
 			tableLayoutPanel1.Visible = true;
 		}
 
-		private void ShowHtmlPanel(string pathToHtml, bool forceWv2 = false)
+		private void ShowHtmlPanel(string pathToHtml)
 		{
 			_model.BookSelection.CurrentSelection.ReportIfBrokenAudioSentenceElements();
 			Logger.WriteEvent("Entering Publish Screen: "+ pathToHtml);
@@ -555,7 +542,7 @@ namespace Bloom.Publish
 				Controls.Remove(_htmlControl);
 				_htmlControl.Dispose();
 			}
-			_htmlControl = new HtmlPublishPanel(pathToHtml, forceWv2= forceWv2);
+			_htmlControl = new HtmlPublishPanel(pathToHtml);
 			// Setting the location explicitly makes the transition a bit smoother.
 			_htmlControl.Location = new Point(tableLayoutPanel1.Width, 0);
 			_htmlControl.Dock = DockStyle.Fill;
@@ -634,8 +621,7 @@ namespace Bloom.Publish
 			else if (_epubRadio.Checked)
 			{
 				_model.DisplayMode = PublishModel.DisplayModes.EPUB;
-				// Forget where we were.  See https://silbloom.myjetbrains.com/youtrack/issue/BL-6286.
-				Gecko.CookieManager.RemoveAll();
+				// TODO-WV2: Can we delete cookies in WV2?  Do we need to?
 			}
 			else if (_uploadRadio.Checked)
 			{
@@ -776,108 +762,10 @@ namespace Bloom.Publish
 		// Must be void, this is an event handler.
 		private async void OnPrint_ClickAsync(object sender, EventArgs e)
 		{
-			var printSettingsPreviewFolder = FileLocationUtilities.GetDirectoryDistributedWithApplication("printer settings images");
-			var printSettingsSamplePrefix = Path.Combine(printSettingsPreviewFolder,
-				_model.PageLayout.SizeAndOrientation + "-" + (isBooklet() ? "Booklet-" : ""));
-			string printSettingsSampleName = null;
-			if (SIL.PlatformUtilities.Platform.IsLinux)
-			{
-				printSettingsSampleName = printSettingsSamplePrefix + "Linux-" + LocalizationManager.UILanguageId + ".png";
-				if (!RobustFile.Exists(printSettingsSampleName))
-					printSettingsSampleName = printSettingsSamplePrefix + "Linux-en.png";
-			}
-			if (printSettingsSampleName == null || !RobustFile.Exists(printSettingsSampleName))
-				printSettingsSampleName = printSettingsSamplePrefix + LocalizationManager.UILanguageId + ".png";
-			if (!RobustFile.Exists(printSettingsSampleName))
-				printSettingsSampleName = printSettingsSamplePrefix + "en" + ".png";
-			if (RobustFile.Exists(printSettingsSampleName))
-			{
-				// We display the _previewBox to show sample print settings. We need to get rid of it when the
-				// print dialog goes away. For Windows, the only way I've found to know when that happens is
-				// that the main Bloom form gets activated again.  For Linux, waiting for process spawned off
-				// to print the pdf file to finish seems to be the only way to know it's safe to hide the
-				// sample print settings.  (On Linux/Mono, the form activates almost as soon as the print
-				// dialog appears.)
-#if __MonoCS__
-				_pdfViewer.PrintFinished += FormActivatedAfterPrintDialog;
-#else
-				var form = FindForm();
-				form.Activated += FormActivatedAfterPrintDialog;
-#endif
-				// Eventually we may want a new set of screen shots for WebView2 printing settings;
-				// but it seems to be picking good defaults, at least for A5 portrait booklets.
-				if (!ExperimentalFeatures.IsFeatureEnabled(ExperimentalFeatures.kWebView2))
-				{
-					_previewBox.Image = Image.FromFile(printSettingsSampleName);
-					_previewBox.Bounds = GetPreviewBounds();
-					_previewBox.SizeMode = PictureBoxSizeMode.Zoom;
-					_previewBox.BringToFront(); // prevents BL-6001
-					_previewBox.Show();
-					if (!Settings.Default.DontShowPrintNotification)
-					{
-						using (var dlg = new SamplePrintNotification())
-						{
-							dlg.StartPosition = FormStartPosition.CenterParent;
-#if __MonoCS__
-						_pdfViewer.PrintFinished -= FormActivatedAfterPrintDialog;
-						dlg.ShowDialog(this);
-						_pdfViewer.PrintFinished += FormActivatedAfterPrintDialog;
-#else
-							form.Activated -= FormActivatedAfterPrintDialog; // not wanted when we close the dialog.
-							dlg.ShowDialog(this);
-							form.Activated += FormActivatedAfterPrintDialog;
-#endif
-							if (dlg.StopShowing)
-							{
-								Settings.Default.DontShowPrintNotification = true;
-								Settings.Default.Save();
-							}
-						}
-					}
-				}
-			}
 			await _pdfViewer.PrintAsync();
 			Logger.WriteEvent("Calling Print on PDF Viewer");
 			_model.ReportAnalytics("Print PDF");
 			this._model.BookSelection.CurrentSelection.ReportSimplisticFontAnalytics(FontAnalytics.FontEventType.PublishPdf, "Print PDF");
-		}
-
-		/// <summary>
-		/// Computes the preview bounds (since the image may be bigger than what we have room
-		/// for).
-		/// </summary>
-		Rectangle GetPreviewBounds()
-		{
-			double horizontalScale = 1.0;
-			double verticalScale = 1.0;
-			if (_previewBox.Image.Width > ClientRectangle.Width)
-				horizontalScale = (double)(ClientRectangle.Width) / (double)(_previewBox.Image.Width);
-			if (_previewBox.Image.Height > ClientRectangle.Height)
-				verticalScale = (double)(ClientRectangle.Height) / (double)(_previewBox.Image.Height);
-			double scale = Math.Min(horizontalScale, verticalScale);
-			int widthPreview = (int)(_previewBox.Image.Width * scale);
-			int heightPreview = (int)(_previewBox.Image.Height * scale);
-			var sizePreview = new Size(widthPreview, heightPreview);
-			var xPreview = ClientRectangle.Width - widthPreview;
-			var yPreview = ClientRectangle.Height - heightPreview;
-			var originPreview = new Point(xPreview, yPreview);
-			return new Rectangle(originPreview, sizePreview);
-		}
-
-		private void FormActivatedAfterPrintDialog(object sender, EventArgs eventArgs)
-		{
-#if __MonoCS__
-			_pdfViewer.PrintFinished -= FormActivatedAfterPrintDialog;
-#else
-			var form = FindForm();
-			form.Activated -= FormActivatedAfterPrintDialog;
-#endif
-			_previewBox.Hide();
-			if (_previewBox.Image != null)
-			{
-				_previewBox.Image.Dispose();
-				_previewBox.Image = null;
-			}
 		}
 
 		private void OnPrintProgress(object sender, PdfPrintProgressEventArgs e)
