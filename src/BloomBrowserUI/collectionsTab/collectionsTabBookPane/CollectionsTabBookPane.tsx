@@ -2,7 +2,7 @@
 import { jsx, css } from "@emotion/react";
 import * as React from "react";
 import { useRef, useState } from "react";
-import { get, getBoolean } from "../../utils/bloomApi";
+import { get, getBoolean, postThatMightNavigate } from "../../utils/bloomApi";
 import { TeamCollectionBookStatusPanel } from "../../teamCollection/TeamCollectionBookStatusPanel";
 import {
     IBookTeamCollectionStatus,
@@ -18,6 +18,9 @@ import { LocalizedString } from "../../react_components/l10nComponents";
 import { CollectionHistoryTable } from "../../teamCollection/CollectionHistoryTable";
 import "react-tabs/style/react-tabs.less";
 import { BloomTabs } from "../../react_components/BloomTabs";
+import { ProgressDialog } from "../../react_components/Progress/ProgressDialog";
+import { useL10n } from "../../react_components/l10nHooks";
+import { Mode } from "../../react_components/BloomDialog/BloomDialogPlumbing";
 
 export const CollectionsTabBookPane: React.FunctionComponent<{
     // If false, as it usually is, the overlay above the preview iframe
@@ -119,6 +122,10 @@ export const CollectionsTabBookPane: React.FunctionComponent<{
     // Note: If canMakeBook is true, then saveable is probably false (the source book is likely not in the editable collection),
     // but you still want the button to be enabled
     const isButtonEnabled = canMakeBook || saveable;
+    const clickApiEndpoint = canMakeBook
+        ? "app/makeFromSelectedBook"
+        : "app/editSelectedBook";
+
     const editOrMakeButton: JSX.Element | boolean = collectionKind !==
         "error" && (
         <BloomButton
@@ -129,12 +136,16 @@ export const CollectionsTabBookPane: React.FunctionComponent<{
                     ? "CollectionTab.MakeBookUsingThisTemplate"
                     : "CollectionTab.EditBookButton"
             }
-            clickApiEndpoint={
-                canMakeBook
-                    ? "app/makeFromSelectedBook"
-                    : "app/editSelectedBook"
-            }
-            mightNavigate={true}
+            onClick={async () => {
+                const timeoutId = setTimeout(() => {
+                    setProgressOpen(true);
+                }, 5000); // Wait 5 seconds before showing this.
+
+                await postThatMightNavigate(clickApiEndpoint);
+
+                clearTimeout(timeoutId); // If the async op completes quickly, make sure not to show the progress dialog after we "close" it
+                setProgressOpen(false);
+            }}
             enabledImageFile={
                 canMakeBook
                     ? "/bloom/images/New Book.svg"
@@ -158,6 +169,34 @@ export const CollectionsTabBookPane: React.FunctionComponent<{
         >
             {canMakeBook ? "Make a book using this source" : "Edit this book"}
         </BloomButton>
+    );
+
+    const [progressOpen, setProgressOpen] = useState(false);
+    const longRunningOperationText = useL10n(
+        "This may take a while...",
+        "Common.LongRunningOperation"
+    );
+    // Although you could control a single ProgressDialog instance using the "open" prop,
+    // that dialog will receive messages/side effects from any other ProgressDialog that gets opened up too,
+    // such as those in the Publish tab.
+    // An easy way out is to use the pattern of mounting the ProgressDialog only when needed.
+    // That way we'll have a fresh instance each time that hasn't had a bunch of messages pumped to it already.
+    const editOrMakeProgress = progressOpen && (
+        <ProgressDialog
+            title={longRunningOperationText}
+            determinate={false}
+            size="small"
+            showCancelButton={false}
+            open={progressOpen}
+            dialogEnvironment={{
+                dialogFrameProvidedExternally: false,
+                initiallyOpen: false,
+                mode: Mode.Collection
+            }}
+            onReadyToReceive={() => {
+                // no-op - no need to post any messages to the Bloom server
+            }}
+        />
     );
 
     return (
@@ -308,6 +347,7 @@ export const CollectionsTabBookPane: React.FunctionComponent<{
                         </TabPanel>
                     )}
                 </BloomTabs>
+                {editOrMakeProgress}
             </div>
             {// Currently, canMakeBook is a synonym for 'book is not in the current TC'
             // If that stops being true we might need another more specialized status flag.

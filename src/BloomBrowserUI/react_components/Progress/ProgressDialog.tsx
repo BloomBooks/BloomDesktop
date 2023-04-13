@@ -40,31 +40,8 @@ export interface IProgressDialogProps {
     showCancelButton?: boolean;
     onCancel?: () => void;
     onReadyToReceive?: () => void;
-    // Be very careful how you use these. A typical pattern is that you want to pass a function
-    // which will save the show() or close() function to use later, possibly in a listener. The temptation
-    // is to save it in state, something like this:
-    // const [show, setShow] = useState<()=>void|undefined>();
-    // useEffect(() => something.addEventListener(..., () => show?()), []);
-    // ...
-    // <ProgressDialog ... setShowDialog={showFunc => setShow(showFunc)}...>
-    // This looks as though it will save the function passed to setShowDialog in the "show" state
-    // and use it when the event happens. But it actually fails in two different and baffling ways.
-    // First, because the state is a function, when you call setShow(func), it does not save func in show;
-    // it EXECUTES func immediately and saves the result, with the result that the progress dialog
-    // mysteriously appears at once. (When the argument to a state setter is a function, it is
-    // assumed to be an update function.) This could be fixed by passing a function that returns showFunc:
-    // <ProgressDialog ... setShowDialog={showFunc => setShow(() => showFunc)}...>.
-    // Now, () => showFunc is executed immediately, and the result (showFunc) is saved as we want...almost...
-    // But this still fails; bafflingly, all logging and the debugger show that "show" is a function, but
-    // in the listener it remains undefined. The listener was set up in the first render, when "show"
-    // had not yet been set! It "captured" the initial state.
-    // The right pattern is
-    // const show = useRef<()=>void|undefined>();
-    // useEffect(() => something.addEventListener(..., () => show.current?()), []);
-    // ...
-    // <ProgressDialog ... setShowDialog={showFunc => show.current = showFunc}...>
-    setShowDialog?: (show: () => void) => void;
-    setCloseDialog?: (close: () => void) => void;
+
+    open?: boolean; // Controls whether or not the dialog is open (visible). If undefined, defaults to dialogEnvironment.initiallyOpen.
     dialogEnvironment?: IBloomDialogEnvironmentParams;
     determinate?: boolean;
     size?: "small"; // For a much smaller dialog, when we only expect a few lines.
@@ -81,12 +58,16 @@ export const ProgressDialog: React.FunctionComponent<IProgressDialogProps> = pro
         propsForBloomDialog
     } = useSetupBloomDialog(props.dialogEnvironment);
     const { onClose, ...propsToPassToBloomDialog } = propsForBloomDialog;
-    if (props.setShowDialog) {
-        props.setShowDialog(showDialog);
-    }
-    if (props.setCloseDialog) {
-        props.setCloseDialog(closeDialog);
-    }
+
+    const isOpen = props.open ?? propsForBloomDialog.open;
+    useEffect(() => {
+        if (isOpen) {
+            showDialog();
+        } else {
+            closeDialog();
+        }
+    }, [isOpen, showDialog, closeDialog]); // showDialog and closeDialog should be created using useCallback/useMemo/useRef or something like that to avoid triggering the useEffect unnecessarily.
+
     const [done, setDone] = useState(false);
     const [sawAnError, setSawAnError] = useState(false);
     const [sawAWarning, setSawAWarning] = useState(false);
@@ -99,6 +80,7 @@ export const ProgressDialog: React.FunctionComponent<IProgressDialogProps> = pro
 
     const [listenerReady, setListenerReady] = useState(false);
     const [progressBoxReady, setProgressBoxReady] = useState(false);
+    // TODO: props.onReadyToReceive should theoretically be in dependencies array.
     useEffect(() => {
         if (listenerReady && progressBoxReady && propsForBloomDialog.open) {
             if (props.onReadyToReceive) {
@@ -200,7 +182,7 @@ export const ProgressDialog: React.FunctionComponent<IProgressDialogProps> = pro
         <BloomDialog
             {...propsToPassToBloomDialog}
             onClose={(evt, reason) => {
-                // Progress dialogs imply some operation is procediing. It may
+                // Progress dialogs imply some operation is proceeding. It may
                 // or may not be possible to cancel it, but we shouldn't just lose
                 // the dialog because the user clicked outside it or even pressed Escape.
                 if (reason !== "escapeKeyDown" && reason !== "backdropClick") {
@@ -358,24 +340,19 @@ export const EmbeddedProgressDialog: React.FunctionComponent<{
             dialogFrameProvidedExternally: false
         }
     });
-    // Used to store the functions that we get through ProgressDialog props callback functions
-    // for showing and closing the progress dialog.
-    const showProgress = useRef<() => void | undefined>();
-    const closeProgress = useRef<() => void | undefined>();
     const openProgress = (args: IEmbeddedProgressProps) => {
         if (args.which !== props.id) {
             return; // message for another progress dialog, typically in another browser instance
         }
         // Note, we can't get the dialog shown here by setting props to
         // something with dialogEnvironment having initiallyOpen true;
-        // that initial value gets captured on the first render. We have to capture
-        // the function which the ProgressDialog hands out for showing itself.
+        // that initial value gets captured on the first render. We have to use
+        // the "open" prop for controlling that instead.
         // args are sent from the C# code that wants to open the dialog.
         setProgressProps({
-            ...progressProps,
-            ...args
+            ...args,
+            open: true
         });
-        showProgress.current?.(); // better not be null, but lint insists
     };
     useSubscribeToWebSocketForObject(
         "progress",
@@ -383,13 +360,14 @@ export const EmbeddedProgressDialog: React.FunctionComponent<{
         (args: IEmbeddedProgressProps) => openProgress(args)
     );
     useSubscribeToWebSocketForEvent("progress", "close-progress", () =>
-        closeProgress.current?.()
+        setProgressProps({
+            ...progressProps,
+            open: false
+        })
     );
     return (
         <ProgressDialog
             {...progressProps}
-            setShowDialog={showFunc => (showProgress.current = showFunc)}
-            setCloseDialog={closeFunc => (closeProgress.current = closeFunc)}
             onReadyToReceive={() => post("progress/ready")}
         />
     );

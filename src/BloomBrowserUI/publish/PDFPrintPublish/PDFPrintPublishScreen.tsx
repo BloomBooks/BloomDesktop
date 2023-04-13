@@ -77,8 +77,7 @@ export const PDFPrintPublishScreen = () => {
         "Choose one here:",
         "PublishTab.PdfMaker.ClickToStart2"
     );
-    const showProgress = useRef<() => void | undefined>();
-    const closeProgress = useRef<() => void | undefined>();
+    const [isProgressDialogOpen, setIsProgressDialogOpen] = useState(false);
 
     const settingsHelp = bookletPrintHelp?.map((help, index) => (
         <p
@@ -194,13 +193,13 @@ export const PDFPrintPublishScreen = () => {
         <SettingsPanel>
             <PDFPrintFeaturesGroup
                 onChange={(newMode: string) => {
-                    showProgress.current?.();
+                    setIsProgressDialogOpen(true);
                     setBookletMode(newMode);
                     setHelpVisible(false);
                 }}
                 onGotPdf={path => {
                     setPath(path);
-                    closeProgress.current?.();
+                    setIsProgressDialogOpen(false);
                 }}
             />
             {/* push everything to the bottom */}
@@ -330,13 +329,10 @@ export const PDFPrintPublishScreen = () => {
                 showCancelButton={true}
                 onCancel={() => {
                     post("publish/pdf/cancel");
-                    closeProgress.current?.();
+                    setIsProgressDialogOpen(false);
                     setPath("");
                 }}
-                setShowDialog={showFunc => (showProgress.current = showFunc)}
-                setCloseDialog={closeFunc =>
-                    (closeProgress.current = closeFunc)
-                }
+                open={isProgressDialogOpen}
             />
             <RequiresBloomEnterpriseDialog />
         </React.Fragment>
