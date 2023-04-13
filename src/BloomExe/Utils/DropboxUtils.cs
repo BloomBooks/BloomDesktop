@@ -2,8 +2,6 @@
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
-using Gecko.WebIDL;
-using Sentry;
 using SIL.IO;
 using SIL.PlatformUtilities;
 

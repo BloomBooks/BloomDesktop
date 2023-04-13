@@ -89,7 +89,7 @@ namespace Bloom
 				}
 				menuList.RemoveAt(index);
 			}
-			AdjustContextMenu(null, new WebViewItemAdder(_webview, menuList));
+			AdjustContextMenu(new WebViewItemAdder(_webview, menuList));
 		}
 
 		public override void OnRefresh(object sender, EventArgs e)

@@ -9,7 +9,6 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Xml;
-using Gecko;
 using L10NSharp;
 using SIL.IO;
 using SIL.Reporting;
@@ -21,8 +20,7 @@ namespace Bloom
 	public class BrowserMaker
 	{
 		/// <summary>
-		/// Create a new Browser, either a GeckoFxBrowser or a WebView2Browser, depending on the
-		/// ExperimentalFeatures settings.
+		/// Create a new WebView2Browser.
 		/// <summary>
 		/// <param name="offScreen">
 		/// Passing offscreen true means that, on Linux, we will use an OffScreenGeckoWebBrowser internally
@@ -35,15 +33,9 @@ namespace Bloom
 		/// We can remove the offScreen parameter when we retire Gecko, even if we decide to keep this
 		/// static method for creating browsers.
 		/// </remarks>
-		public static Browser MakeBrowser(bool offScreen = false, bool forceWv2 = false)
+		public static Browser MakeBrowser()
 		{
-		// Using this #if is the simplest way in this file to allow the WebView2Browser work
-		// to proceed without breaking the Linux build.
-#if !__MonoCS__
-			if (Program.RunningUnitTests || ExperimentalFeatures.IsFeatureEnabled(ExperimentalFeatures.kWebView2) || forceWv2)
-				return new WebView2Browser();
-#endif
-			return new GeckoFxBrowser(offScreen);
+			return new WebView2Browser();
 		}
 	}
 
@@ -103,17 +95,10 @@ namespace Bloom
 		public abstract Bitmap GetPreview();
 
 		/// <summary>
-		/// This function is in the process of migrating from GeckoFx to Webview2.
-		/// It originally took a GeckoContextMenuEventArgs, but most users only wanted
-		/// the ContextMenu, to which they could add items. A couple also used the TargetNode.
-		/// There is no WebView2 equivalent of targetNode, so those menus will have to migrate
-		/// to Javascript. However, as long as those panes have not been migrated, we'll keep
-		/// passing the targetNode. It is the first argument if the browser is really a
-		/// GeckoFxBrowser; otherwise, null (and eventually will go away).
 		/// If it returns true these are in place of our standard extensions; if false, the
 		/// standard ones will follow whatever it adds.
 		/// </summary>
-		public Func<object, IMenuItemAdder, bool> ContextMenuProvider { get; set; }
+		public Func<IMenuItemAdder, bool> ContextMenuProvider { get; set; }
 
 		// To allow Typescript code to implement right-click, we'll do our special developer menu
 		// only if the control key is down. Though, if ContextMenuProvider is non-null, we'll assume
@@ -457,7 +442,7 @@ namespace Bloom
 		public abstract void ShowHtml(string html);
 		public abstract void UpdateEditButtons();
 
-		protected void AdjustContextMenu(GeckoNode targetNode, IMenuItemAdder adder)
+		protected void AdjustContextMenu(IMenuItemAdder adder)
 		{
 			if (WantNativeMenu)
 				return;
@@ -467,7 +452,7 @@ namespace Bloom
 			ContextMenuLocation = PointToClient(Cursor.Position);
 			if (ContextMenuProvider != null)
 			{
-				var replacesStdMenu = ContextMenuProvider(targetNode, adder);
+				var replacesStdMenu = ContextMenuProvider(adder);
 				if (WantDebugMenuItems || ((ModifierKeys & Keys.Control) == Keys.Control))
 				{
 					AddOpenPageInFFItem(adder);

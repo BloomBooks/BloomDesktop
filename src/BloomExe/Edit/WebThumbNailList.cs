@@ -7,18 +7,13 @@ using System.Drawing;
 using System.Text;
 using System.Windows.Forms;
 using System.Linq;
-using System.Runtime.InteropServices;
-using System.Xml;
 using Bloom.Book;
 using Bloom.Api;
 using Bloom.MiscUI;
 using Bloom.Utils;
 using Bloom.web;
-using Gecko;
-using SIL.Xml;
 using L10NSharp;
 using SIL.IO;
-using SIL.Reporting;
 
 namespace Bloom.Edit
 {
@@ -116,7 +111,7 @@ namespace Bloom.Edit
 			_baseHtml = RobustFile.ReadAllText(frame, Encoding.UTF8).Replace("DarkGray", backColor);
 		}
 
-		public Func<object, IMenuItemAdder, bool> ContextMenuProvider
+		public Func<IMenuItemAdder, bool> ContextMenuProvider
 		{
 			get { return _browser.ContextMenuProvider; }
 			set { _browser.ContextMenuProvider = value; }
@@ -349,41 +344,6 @@ namespace Bloom.Edit
 				_browser.OnBrowserClick -= Browser_Click;
 				Model.GetEditingBrowser().OnBrowserClick -= Browser_Click;
 			}
-		}
-
-		/// <summary>
-		/// Given a particular node (typically one the user right-clicked), determine whether it is clearly part of
-		/// a particular page (inside a PageContainerClass div).
-		/// If so, return the corresponding Page object. If not, return null.
-		/// </summary>
-		/// <param name="clickNode"></param>
-		/// <returns></returns>
-		internal IPage GetPageContaining(GeckoNode clickNode)
-		{
-			bool gotPageElt = false;
-			for (var elt = clickNode as GeckoElement ?? clickNode.ParentElement; elt != null; elt = elt.ParentElement)
-			{
-				var classAttr = elt.Attributes["class"];
-				if (classAttr != null)
-				{
-					var className = " " + classAttr.NodeValue + " ";
-					if (className.Contains(" " + PageContainerClass + " "))
-					{
-						// Click is inside a page element: can succeed. But we want to keep going to find the parent grid
-						// element that has the ID we're looking for.
-						gotPageElt = true;
-						continue;
-					}
-					if (className.Contains(" " + GridItemClass + " "))
-					{
-						if (!gotPageElt)
-							return null; // clicked somewhere in a grid, but not actually on the page: intended page may be ambiguous.
-						var id = elt.Attributes["id"].NodeValue;
-						return PageListApi?.PageFromId(id);
-					}
-				}
-			}
-			return null;
 		}
 
 		// This gets invoked by Javascript (via the PageListApi) when it determines that a particular page has been moved.

@@ -24,7 +24,6 @@ namespace Bloom.CLI
 				using (var applicationContainer = new ApplicationContainer())
 				{
 					Program.SetUpLocalization(applicationContainer);
-					GeckoFxBrowser.SetUpXulRunner();
 					LocalizationManager.SetUILanguage(Settings.Default.UserInterfaceLanguage, false);
 					var downloader = new BookDownload(new BloomParseClient(), ProjectContext.CreateBloomS3Client(),
 						 new BookDownloadStartingEvent()); /*not hooked to anything*/;

@@ -5,20 +5,14 @@ using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.IO;
-using System.Linq;
 using System.Threading;
 using System.Windows.Forms;
 using System.Xml;
 using Bloom.ImageProcessing;
 using Bloom.Api;
-using Gecko;
-using Gecko.Events;
-using SIL.Code;
 using SIL.Reporting;
 using Bloom.Book;
 using Bloom.Properties;
-using Bloom.web;
-using Gecko.DOM;
 using SIL.IO;
 
 namespace Bloom
@@ -27,9 +21,6 @@ namespace Bloom
 	{
 		readonly Dictionary<string, Image> _images = new Dictionary<string, Image>();
 
-		// This is used to synchronize browser access between different
-		// instances of Gecko which are used in various classes.
-		private readonly NavigationIsolator _isolator;
 		private Color _backgroundColorOfResult;
 		private static HtmlThumbNailer _theOnlyOneAllowed;
 
@@ -49,7 +40,7 @@ namespace Bloom
 
 		private bool _disposed;
 
-		public HtmlThumbNailer(NavigationIsolator isolator)
+		public HtmlThumbNailer()
 		{
 			if (_theOnlyOneAllowed != null)
 			{
@@ -58,8 +49,6 @@ namespace Bloom
 			}
 
 			_theOnlyOneAllowed = this;
-
-			_isolator = isolator;
 
 			_syncControl = new Control();
 			_syncControl.CreateControl();
@@ -251,63 +240,13 @@ namespace Bloom
 		private bool OpenTempFileInBrowser(Browser browser, HtmlDom dom)
 		{
 			var order = (ThumbnailOrder) browser.Tag;
-			bool navigationHappened = true;
 			if (_syncControl.InvokeRequired)
 			{
 				// Note: the new WebView2 code here had some testing before, in the course of changing other things,
 				// we stopped calling this method on background threads. There have been further changes to the code
 				// since then, particularly, we stopped passing a filePath (really a URL) argument and switched
 				// to creating the simulated page file here (or in NavigateAndWaitTillDonw).
-				// The Gecko code here has therefore never been tested
-				// in its current form. Most likely, we will never need to use it before we delete everything Gecko.
-				// For the same reason I am not very concerned about a certain amount of duplication between the Gecko
-				// and WebView branches here. If we were keeping both, I would be more inclined to try to make the
-				// Gecko one use NavigateAndWaitTillDone and so merge the branches. That would involve either dropping
-				// the ability to cancel if the isolator is not idle, or enhancing NavigateAndWaitTillDone to have that
-				// option. I don't think the way we're using this now (making thumbnails for pages in the background
-				// after the Add Page dialog launches) really needs that sort of laziness, so I consider it YAGNI.
-				// Basically, the Gecko code is changed as little as possible to make the WebView code work. Eventually,
-				// only the WebView branch will remain, and hopefully will suffice for any future browser components.
-				if (browser is GeckoFxBrowser gb)
-				{
-					using (var temp = BloomServer.MakeSimulatedPageFileInBookFolder(order.Document,
-						       source: BloomServer.SimulatedPageFileSource.Thumb))
-					{
-						using (var waitHandle = new AutoResetEvent(false))
-						{
-							order.WaitHandle = waitHandle;
-							_syncControl.BeginInvoke(new Action<string>(path =>
-							{
-								if (!_isolator.NavigateIfIdle(gb.WebBrowser, temp.Key))
-									navigationHappened = false; // some browser is busy, try again later.
-							}), temp.Key);
-							waitHandle.WaitOne(10000);
-							order.WaitHandle = null; // any doc completed after this will fail if it tries to set it.
-						}
-
-						if (_disposed || !navigationHappened || order.Canceled)
-							return false;
-						if (!order.Done)
-						{
-							Logger.WriteEvent("HtmlThumbNailer ({1}): Timed out on ({0})", order.ThumbNailFilePath,
-								Thread.CurrentThread.ManagedThreadId);
-#if DEBUG
-							if (!_thumbnailTimeoutAlreadyDisplayed)
-							{
-								_thumbnailTimeoutAlreadyDisplayed = true;
-								_syncControl.Invoke((Action)(() =>
-									Debug.Fail("(debug only) Make thumbnail timed out (won't show again)")));
-							}
-#endif
-							return false;
-						}
-					}
-				}
-				else
-				{
-					// WebView2
 					bool success = false;
-
 					_syncControl.Invoke((Action)(() =>
 					{
 						success =browser.NavigateAndWaitTillDone(dom, 100000, BloomServer.SimulatedPageFileSource.Thumb, null, false);
@@ -326,22 +265,13 @@ namespace Bloom
 						}
 					}));
 					return true;
-				}
 			}
 			else
 			{
 				using (var temp = BloomServer.MakeSimulatedPageFileInBookFolder(order.Document,
 					       source: BloomServer.SimulatedPageFileSource.Thumb))
 				{
-					if (browser is GeckoFxBrowser gb)
-					{
-						_isolator.Navigate(gb.WebBrowser, temp.Key); // main thread, not async, we really need it now.
-
-					}
-					else
-					{
-						browser.Navigate(temp.Key, false);
-					}
+					browser.Navigate(temp.Key, false);
 
 					while (!order.Done)
 					{
@@ -731,7 +661,7 @@ namespace Bloom
 		private Browser MakeNewBrowser()
 		{
 			Debug.WriteLine("making browser for HtmlThumbNailer ({0})", Thread.CurrentThread.ManagedThreadId);
-			var browser = BrowserMaker.MakeBrowser(offScreen: true);	// offScreen affects only Linux/Mono
+			var browser = BrowserMaker.MakeBrowser();
 			browser.CreateControl();
 			browser.DocumentCompleted += _browser_OnDocumentCompleted;
 			return browser;

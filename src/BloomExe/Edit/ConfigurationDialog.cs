@@ -1,9 +1,6 @@
 ﻿using System;
-using System.Linq;
 using System.Text;
 using System.Windows.Forms;
-using Gecko;
-using Gecko.WebIDL;
 using SIL.IO;
 
 namespace Bloom.Edit
@@ -18,7 +15,7 @@ namespace Bloom.Edit
 		/// </summary>
 		/// <param name="configurationHtmlPath"></param>
 		/// <param name="libraryJsonData">Values saved previously</param>
-		public ConfigurationDialog(string configurationHtmlPath, string libraryJsonData, NavigationIsolator isolator)
+		public ConfigurationDialog(string configurationHtmlPath, string libraryJsonData)
 		{
 			_filePath = configurationHtmlPath;
 			_libraryJsonData = libraryJsonData;

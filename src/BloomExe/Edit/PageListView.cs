@@ -6,8 +6,6 @@ using System.Windows.Forms;
 using Bloom.Api;
 using Bloom.Book;
 using Bloom.web;
-using Fleck;
-using Gecko;
 using L10NSharp;
 using SIL.Reporting;
 using SIL.Windows.Forms.Reporting;
@@ -23,7 +21,7 @@ namespace Bloom.Edit
 		private bool _hyperlinkMessageShown = false;
 
 		public PageListView(PageSelection pageSelection, RelocatePageEvent relocatePageEvent, EditingModel model,
-			HtmlThumbNailer thumbnailProvider, NavigationIsolator isolator, ControlKeyEvent controlKeyEvent, PageListApi pageListApi, BloomWebSocketServer webSocketServer)
+			HtmlThumbNailer thumbnailProvider, ControlKeyEvent controlKeyEvent, PageListApi pageListApi, BloomWebSocketServer webSocketServer)
 		{
 			_pageSelection = pageSelection;
 			_model = model;

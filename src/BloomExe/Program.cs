@@ -15,7 +15,6 @@ using Bloom.Registration;
 using Bloom.ToPalaso;
 using Bloom.WebLibraryIntegration;
 using BloomTemp;
-using Gecko;
 using L10NSharp;
 using SIL.IO;
 using SIL.Reporting;
@@ -61,8 +60,6 @@ namespace Bloom
 		private static int _uiThreadId;
 		private static ApplicationContainer _applicationContainer;
 		public static bool StartUpWithFirstOrNewVersionBehavior;
-
-		private static GeckoWebBrowser _debugServerStarter;
 
 		static string _originalPreload; // saves LD_PRELOAD environment variable for restarting Bloom
 
@@ -238,7 +235,6 @@ namespace Bloom
 				// by the user.
 				if (!Settings.Default.LicenseAccepted)
 				{
-					GeckoFxBrowser.SetUpXulRunner();
 					using (var dlg = new LicenseDialog("license.htm"))
 						if (dlg.ShowDialog() != DialogResult.OK)
 							return 1;
@@ -315,7 +311,6 @@ namespace Bloom
 						using (_applicationContainer = new ApplicationContainer())
 						{
 							SetUpLocalization();
-							GeckoFxBrowser.SetUpXulRunner();
 							using (var fakeProjectFolder = new TemporaryFolder("projectName"))
 							{
 								var fakeCollectionPath = FolderTeamCollection.SetupMinimumLocalCollectionFilesForRepo(
@@ -476,11 +471,6 @@ namespace Bloom
 							}
 
 						}
-						GeckoFxBrowser.SetUpXulRunner();
-#if DEBUG
-						if (SIL.PlatformUtilities.Platform.IsWindows)
-							StartDebugServer();
-#endif
 
 						if (!BloomIntegrityDialog.CheckIntegrity())
 						{
@@ -493,7 +483,7 @@ namespace Bloom
 						}
 
 						LocalizationManager.SetUILanguage(Settings.Default.UserInterfaceLanguage, false);
-						GeckoFxBrowser.SetBrowserLanguage(Settings.Default.UserInterfaceLanguage);
+						// TODO-WV2: Can we set the browser language for WV2?  Do we need to?
 
 						DialogAdapters.CommonDialogAdapter.ForceKeepAbove = true;
 						DialogAdapters.CommonDialogAdapter.UseMicrosoftPositioning = true;
@@ -655,7 +645,6 @@ namespace Bloom
 				SetUpLocalization();
 				//JT please review: is this needed? InstallerSupport.MakeBloomRegistryEntries(args);
 				BookDownloadSupport.EnsureDownloadFolderExists();
-				GeckoFxBrowser.SetUpXulRunner();
 				LocalizationManager.SetUILanguage(Settings.Default.UserInterfaceLanguage, false);
 				var downloader = new BookDownload(new BloomParseClient(), ProjectContext.CreateBloomS3Client(),
 					new BookDownloadStartingEvent()) /*not hooked to anything*/;
@@ -1157,58 +1146,6 @@ namespace Bloom
 			{
 				Application.Exit();
 			}
-		}
-
-		static Gecko.nsILocalFileWin toNsFile(string file)
-		{
-			var nsfile = Xpcom.CreateInstance<nsILocalFileWin>("@mozilla.org/file/local;1");
-			nsfile.InitWithPath(new nsAString(file));
-			return nsfile;
-		}
-
-		static void registerChromeDir(string dir)
-		{
-			var chromeDir = toNsFile(dir);
-			var chromeFile = chromeDir.Clone();
-			chromeFile.Append(new nsAString("chrome.manifest"));
-			Xpcom.ComponentRegistrar.AutoRegister(chromeFile);
-			Xpcom.ComponentManager.AddBootstrappedManifestLocation(chromeDir);
-		}
-
-		/// <summary>
-		/// This code (and the two methods above) were taken from https://bitbucket.org/duanyao/moz-devtools-patch
-		/// with thanks to Duane Yao.
-		/// It starts up a server that allows FireFox to be used to inspect and debug the content of geckofx windows.
-		/// See the ReadMe in remoteDebugging for instructions.
-		/// Note that this should NOT be done in production. There are security issues.
-		/// </summary>
-		static void StartDebugServer()
-		{
-			// There's no point in starting up a debug server...which AFAIK doesn't work anyway...
-			// for debugging GeckoFx if we're using WebView2 instead.
-			if (ExperimentalFeatures.IsFeatureEnabled(ExperimentalFeatures.kWebView2))
-				return;
-			GeckoPreferences.User["devtools.debugger.remote-enabled"] = true;
-
-			// It seems these files MUST be in a subdirectory of the application directory. At least, I haven't figured out
-			// how it can be anywhere else. Therefore the build copies the necessary files there.
-			// If you try to change it, be aware that the chrome.manifest file contains the name of the parent folder;
-			// if you rename the folder and don't change the name there, you get navigation errors in the code below and
-			// remote debugging doesn't work.
-			var chromeDir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "remoteDebugging");
-			registerChromeDir(chromeDir);
-			_debugServerStarter = new GeckoWebBrowser();
-			_debugServerStarter.NavigationError += (s, e) => {
-				Console.WriteLine(">>>StartDebugServer error: " + e.ErrorCode.ToString("X"));
-				_debugServerStarter.Dispose();
-				_debugServerStarter = null;
-			};
-			_debugServerStarter.DocumentCompleted += (s, e) => {
-				Console.WriteLine(">>>StartDebugServer complete");
-				_debugServerStarter.Dispose();
-				_debugServerStarter = null;
-			};
-			_debugServerStarter.Navigate("chrome://remoteDebugging/content/moz-remote-debug.html");
 		}
 
 		private static void ReopenProject(object sender, EventArgs e)

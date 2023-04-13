@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.IO;
-using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Xml;
@@ -12,13 +11,10 @@ using Bloom.Book;
 using Newtonsoft.Json.Linq;
 using SIL.Code;
 using SIL.Extensions;
-using Gecko;
-using Gecko.WebIDL;
 using Newtonsoft.Json;
 using SIL.IO;
 using SIL.Reporting;
 using SIL.Xml;
-using File = System.IO.File;
 
 namespace Bloom.Edit
 {
@@ -28,13 +24,11 @@ namespace Bloom.Edit
 	public class Configurator
 	{
 		private readonly string _folderInWhichToReadAndSaveCollectionSettings;
-		private readonly NavigationIsolator _isolator;
 		public delegate Configurator Factory(string folderInWhichToReadAndSaveCollectionSettings);//autofac uses this
 
-		public Configurator(string folderInWhichToReadAndSaveCollectionSettings, NavigationIsolator isolator)
+		public Configurator(string folderInWhichToReadAndSaveCollectionSettings)
 		{
 			_folderInWhichToReadAndSaveCollectionSettings = folderInWhichToReadAndSaveCollectionSettings;
-			_isolator = isolator;
 			PathToCollectionJson = _folderInWhichToReadAndSaveCollectionSettings.CombineForPath("configuration.txt");
 			RequireThat.Directory(folderInWhichToReadAndSaveCollectionSettings).Exists();
 			LocalData = string.Empty;
@@ -52,7 +46,7 @@ namespace Bloom.Edit
 
 		public DialogResult ShowConfigurationDialog(string folderPath)
 		{
-			using (var dlg = new ConfigurationDialog(Path.Combine(folderPath, "configuration.html"), GetCollectionData(), _isolator))
+			using (var dlg = new ConfigurationDialog(Path.Combine(folderPath, "configuration.html"), GetCollectionData()))
 			{
 				var result = dlg.ShowDialog(null);
 				if (result == DialogResult.OK)
@@ -202,47 +196,6 @@ namespace Bloom.Edit
 			}
 
 			//NB: we *want* exceptions thrown from the above to make it out.
-		}
-
-		private void NavigateAndWait(GeckoWebBrowser browser, string url)
-		{
-			Cursor.Current = Cursors.WaitCursor;
-			try
-			{
-				browser.DocumentCompleted += browser_DocumentCompleted;
-
-				_isolator.Navigate(browser, url);
-
-				//in geckofx 14, there wasn't a reliable event for knowing when navigating was done
-				//this could be simplified when we upgrade
-				DateTime giveUpTime = DateTime.Now.AddSeconds(2);
-				while (DateTime.Now < giveUpTime && browser.Tag == null)
-				{
-					Application.DoEvents();
-					Application.RaiseIdle(new EventArgs()); //required for Mono
-				}
-				if (browser.Tag == null)
-					throw new ApplicationException("Timed out waiting for browser to configure book");
-
-				//the above doesn't really ensure that the javascript is done. Wait another few seconds.
-				DateTime minimumTimeToWait = DateTime.Now.AddSeconds(4);
-				while (DateTime.Now < minimumTimeToWait)
-				{
-					Application.DoEvents();
-					Application.RaiseIdle(new EventArgs()); //required for Mono
-				}
-			}
-			finally
-			{
-				// Ensure this doesn't get added multiple times, or fire on a disposed browser.
-				browser.DocumentCompleted -= browser_DocumentCompleted;
-				Cursor.Current = Cursors.Default;
-			}
-		}
-
-		void browser_DocumentCompleted(object sender, EventArgs e)
-		{
-			((GeckoWebBrowser)sender).Tag = sender;
 		}
 
 		public string LocalData { get; set; }
