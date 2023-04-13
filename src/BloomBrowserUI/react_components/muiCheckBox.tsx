@@ -137,7 +137,6 @@ export const BloomCheckbox: React.FunctionComponent<{
                 )}
                 <div
                     css={css`
-                        padding-left: 11px;
                         ${props.disabled && `opacity: ${kBloomDisabledOpacity}`}
                     `}
                 >
@@ -188,7 +187,9 @@ export const UniformInlineIcon: React.FunctionComponent<{
                 justify-content: center;
                 margin-right: 4px;
                 svg {
-                    fill: ${theme.palette.primary.main};
+                    fill: ${
+                        props.disabled ? "black" : theme.palette.primary.main
+                    };
                     height: 100% !important;
                     ${props.iconScale !== undefined &&
                         `transform: scale(${props.iconScale});`} /* border: solid 0.1px purple; */

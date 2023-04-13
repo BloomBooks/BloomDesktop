@@ -5,7 +5,6 @@ import {
     LangCheckboxValue,
     LanguageSelectionSettingsGroup
 } from "./LanguageSelectionSettingsGroup";
-import "./PublishLanguagesGroup.less";
 
 // NOTE: Must correspond to C#"s LanguagePublishInfo
 export interface ILanguagePublishInfo {

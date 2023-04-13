@@ -4,6 +4,7 @@ import { FormGroup, Checkbox, FormControlLabel } from "@mui/material";
 import * as React from "react";
 import { useL10n } from "../../react_components/l10nHooks";
 import { SettingsGroup } from "../commonPublish/PublishScreenBaseComponents";
+import { BloomCheckbox } from "../../react_components/muiCheckBox";
 
 export interface LangCheckboxValue {
     code; // the language code
@@ -34,33 +35,64 @@ export const LanguageSelectionSettingsGroup: React.FunctionComponent<{
     );
 
     const languageCheckboxes = props.langCheckboxValues.map(item => (
-        <FormControlLabel
+        <BloomCheckbox
             key={item.code}
-            className="languageLabel"
-            title={item.required ? required : undefined}
-            control={
-                <Checkbox
-                    disabled={!item.isEnabled}
-                    checked={item.isChecked}
-                    onChange={(e, newState) => {
-                        if (props.onChange) {
-                            props.onChange(item, newState);
-                        }
-                    }}
-                    color="primary"
-                />
-            }
+            tooltipContents={item.required ? required : undefined}
+            disabled={!item.isEnabled}
+            checked={item.isChecked}
+            onCheckChanged={newState => {
+                if (props.onChange) {
+                    props.onChange(item, newState!);
+                }
+            }}
             label={
-                <div className="check-box-label">
+                <div
+                    css={css`
+                        //line-height: 1;
+                    `}
+                >
                     <div>{item.name}</div>
                     {item.warnIncomplete && (
-                        <div className="incompleteTranslation">
+                        <div
+                            css={css`
+                                color: grey;
+                                font-size: smaller;
+                            `}
+                        >
                             {incomplete}
                         </div>
                     )}
                 </div>
             }
         />
+
+        // <FormControlLabel
+        //     key={item.code}
+        //     className="languageLabel"
+        //     title={item.required ? required : undefined}
+        //     control={
+        //         <Checkbox
+        //             disabled={!item.isEnabled}
+        //             checked={item.isChecked}
+        //             onChange={(e, newState) => {
+        //                 if (props.onChange) {
+        //                     props.onChange(item, newState);
+        //                 }
+        //             }}
+        //             color="primary"
+        //         />
+        //     }
+        //     label={
+        //         <div className="check-box-label">
+        //             <div>{item.name}</div>
+        //             {item.warnIncomplete && (
+        //                 <div className="incompleteTranslation">
+        //                     {incomplete}
+        //                 </div>
+        //             )}
+        //         </div>
+        //     }
+        // />
     ));
 
     return (
