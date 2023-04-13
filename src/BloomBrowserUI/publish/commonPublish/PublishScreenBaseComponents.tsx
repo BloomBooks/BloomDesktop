@@ -50,17 +50,7 @@ export const PublishPanel: React.FunctionComponent = props => (
 );
 
 export const SettingsPanel: React.FunctionComponent = props => {
-    return (
-        <div
-            css={css`
-                h1 {
-                    margin-bottom: 8px !important;
-                }
-            `}
-        >
-            {props.children}
-        </div>
-    );
+    return <React.Fragment>{props.children}</React.Fragment>;
 };
 
 export const SettingsGroup: React.FunctionComponent<{

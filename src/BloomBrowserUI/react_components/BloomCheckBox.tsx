@@ -70,7 +70,7 @@ export const BloomCheckbox: React.FunctionComponent<{
             css={css`
                 display: flex;
                 flex-direction: row;
-                min-height: 29px; // ensures that the cases without an actual checkbox are the same minimum height as the ones with a checkbox
+                //min-height: 29px; // ensures that the cases without an actual checkbox are the same minimum height as the ones with a checkbox
                 align-items: start;
             `}
         >
@@ -78,7 +78,7 @@ export const BloomCheckbox: React.FunctionComponent<{
                 <Checkbox
                     css={css`
                         padding-top: 0; //  default is 9px, from somewhere (mui?)
-
+                        padding-bottom: 0;
                         padding-left: 0;
                         // this is a bit of a mystery, but it is needed to get rid of that extra 2 pixels on the left
                         margin-left: -2px;
@@ -114,6 +114,7 @@ export const BloomCheckbox: React.FunctionComponent<{
             {props.hideBox && (
                 <div
                     css={css`
+                        height: 0; // I don't understand this... in the devtools I can't tell why it has a larger height than its child, and I don't understand why this fixes it
                         width: 28px; // align with the rows that have an actual checkbox
                         padding-top: 7px;
                         color: ${theme.palette.primary.main};
@@ -171,6 +172,7 @@ export const BloomCheckbox: React.FunctionComponent<{
     return (
         <FormControlLabel
             css={css`
+                padding-top: 10px; // maintain the default behavior for spacing
                 margin-left: 0; // I don't understand why this is needed, but he default has 11px
             `}
             control={c}
