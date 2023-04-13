@@ -141,7 +141,8 @@
             font-size: 0.75rem;
         }
 
-        label + .MuiInput-formControl {
+        label + .MuiInput-formControl,
+        label + .MuiInputBase-formControl {
             // This does 2 things:
             // 1) MUI's default is 16px, but that also takes into account that the label uses position: absolute instead of being positioned as a flex-item.
             //    Now that we're positioning it as a flex-item, we need to unset or override margin-top:
