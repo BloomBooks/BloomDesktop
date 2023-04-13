@@ -220,6 +220,9 @@ export const PublishFeaturesGroup: React.FunctionComponent<{
                     ticked={isTalkingBook}
                 />
                 <ApiCheckbox
+                    // Changing the key each time signLanguageEnabled changes ensures that the checkbox rerenders with the latest value from the server.
+                    // Otherwise, if the user sets the sign language, we will not get the checkbox checked by default.
+                    key={`signLanguageFeature-${signLanguageEnabled}`}
                     css={css`
                         .MuiCheckbox-Root {
                             padding-top: 0;
