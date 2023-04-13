@@ -74,8 +74,10 @@ export const LanguageSelectionSettingsGroup: React.FunctionComponent<{
                         // These two "cancel out" except that they defeat a bug in the HTML spec that prevents
                         // overflow-x from being visible when overflow-y is hidden. The check box shadows can
                         // 'overflow' from the normal space occupied by the scrollingFeature.
-                        padding-left: 11px;
-                        margin-left: -11px;
+                        // [JH, later] I don't exactly know what the problem was, but we don't have scrolling any more in this
+                        // area and this was causing problems
+                        /* padding-left: 11px;
+                        margin-left: -11px; */
                     `}
                 >
                     {languageCheckboxes}

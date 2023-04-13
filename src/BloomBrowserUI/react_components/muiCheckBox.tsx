@@ -137,7 +137,7 @@ export const BloomCheckbox: React.FunctionComponent<{
                 )}
                 <div
                     css={css`
-                        margin-top: -1px;
+                        padding-left: 11px;
                         ${props.disabled && `opacity: ${kBloomDisabledOpacity}`}
                     `}
                 >
@@ -155,7 +155,15 @@ export const BloomCheckbox: React.FunctionComponent<{
         checkboxControl
     );
 
-    return <FormControlLabel control={c} label="" />;
+    return (
+        <FormControlLabel
+            css={css`
+                margin-left: 0; // I don't understand why this is needed, but he default has 11px
+            `}
+            control={c}
+            label=""
+        />
+    );
 };
 
 // wrap the icons so that they can be center-aligned with each other
