@@ -1041,7 +1041,7 @@
         <note>ID: Common.Loading</note>
         <note>This is shown when Bloom is slowly loading something, so the user doesn't worry about why they don't see the result immediately.</note>
       </trans-unit>
-      <trans-unit id="Common.LongRunningOperation" sil:dynamic="true">
+      <trans-unit id="Common.LongRunningOperation" sil:dynamic="true" translate="no">
         <!-- added in 5.5 -->
         <source xml:lang="en">This may take a while...</source>
         <note>ID: Common.LongRunningOperation</note>
