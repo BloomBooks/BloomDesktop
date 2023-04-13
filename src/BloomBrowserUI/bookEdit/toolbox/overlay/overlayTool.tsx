@@ -23,7 +23,7 @@ import * as toastr from "toastr";
 import { default as TrashIcon } from "@mui/icons-material/Delete";
 import { get } from "../../../utils/bloomApi";
 import { isLinux } from "../../../utils/isLinux";
-import { BloomCheckbox } from "../../../react_components/muiCheckBox";
+import { BloomCheckbox } from "../../../react_components/BloomCheckBox";
 import { ColorBar } from "./colorBar";
 import { IColorInfo } from "../../../react_components/color-picking/colorSwatch";
 import { IColorPickerDialogProps } from "../../../react_components/color-picking/colorPickerDialog";

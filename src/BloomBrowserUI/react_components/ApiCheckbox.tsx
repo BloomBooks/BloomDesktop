@@ -1,5 +1,5 @@
 import * as React from "react";
-import { BloomCheckbox } from "./muiCheckBox";
+import { BloomCheckbox } from "./BloomCheckBox";
 import { useApiBoolean } from "../utils/bloomApi";
 
 // A localized checkbox that is backed by a boolean API get/set

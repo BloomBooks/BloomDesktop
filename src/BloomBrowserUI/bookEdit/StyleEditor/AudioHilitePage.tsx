@@ -5,7 +5,7 @@ import { useState, useEffect } from "react";
 import { ThemeProvider } from "@mui/material/styles";
 import { kBloomYellow, lightTheme } from "../../bloomMaterialUITheme";
 import { Div } from "../../react_components/l10nComponents";
-import { BloomCheckbox } from "../../react_components/muiCheckBox";
+import { BloomCheckbox } from "../../react_components/BloomCheckBox";
 import StyleEditor from "./StyleEditor";
 import { useL10n } from "../../react_components/l10nHooks";
 import ReactDOM = require("react-dom");

@@ -3,7 +3,12 @@ import { jsx, css } from "@emotion/react";
 
 import * as React from "react";
 import { useState } from "react";
-import { useTheme, Checkbox, FormControlLabel } from "@mui/material";
+import {
+    useTheme,
+    Checkbox,
+    FormControlLabel,
+    Typography
+} from "@mui/material";
 import { useL10n } from "./l10nHooks";
 import { LightTooltip } from "./lightTooltip";
 import { Check } from "@mui/icons-material";
@@ -55,10 +60,14 @@ export const BloomCheckbox: React.FunctionComponent<{
         props.l10nParam1
     );
 
-    const mainLabel =
-        typeof props.label === "string" ? localizedLabel : props.label;
+    // if the label is a string, we need to localize it. If it's a react node, we assume it's already localized.
+    const labelComponent =
+        typeof props.label === "string" ? (
+            <Typography>{localizedLabel}</Typography>
+        ) : (
+            props.label
+        );
 
-    // // Work has been done below to ensure that a wrapped label will align with the control correctly.
     // If messing with the layout, be sure you didn't break this by checking the storybook story.
     const checkboxControl = (
         <div
@@ -107,11 +116,12 @@ export const BloomCheckbox: React.FunctionComponent<{
             {props.hideBox && (
                 <div
                     css={css`
-                        width: 27px;
+                        width: 28px; // align with the rows that have an actual checkbox
                         padding-top: 7px;
                         color: ${theme.palette.primary.main};
                         svg {
                             transform: scale(0.8);
+                            margin-left: -2px; // move so it's centered in the box
                         }
                         visibility: ${props.checked ? "visible" : "hidden"};
                     `}
@@ -140,7 +150,7 @@ export const BloomCheckbox: React.FunctionComponent<{
                         ${props.disabled && `opacity: ${kBloomDisabledOpacity}`}
                     `}
                 >
-                    {mainLabel}
+                    {labelComponent}
                 </div>
             </div>
         </div>
@@ -178,11 +188,11 @@ export const UniformInlineIcon: React.FunctionComponent<{
                 min-width: 20px;
                 max-width: 20px;
                 // the height here has to be about the same as the text or
-                // else it stick up. We have align-items: baseline on the parent, but
-                // there isn't, like, an align-items:top.
+                // else it sticks up. I could not figure out how to use something
+                // that would grow to the right height when the label size changes
+                // (or better, just not be tied in any way to the label size).
                 height: 18px;
-                //overflow-y: clip;
-                /* border: solid 0.1px red; */
+                //border: solid 0.1px red;
                 display: flex;
                 justify-content: center;
                 margin-right: 4px;

@@ -8,7 +8,7 @@ import { storiesOf } from "@storybook/react";
 import { Radio, RadioGroup as MuiRadioGroup, Typography } from "@mui/material";
 import { Expandable } from "./expandable";
 import { Checkbox } from "./checkbox";
-import { BloomCheckbox } from "./muiCheckBox";
+import { BloomCheckbox } from "./BloomCheckBox";
 import { useState } from "react";
 import { ApiCheckbox } from "./ApiCheckbox";
 import BloomButton from "./bloomButton";

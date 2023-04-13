@@ -6,7 +6,7 @@ import { Div } from "./l10nComponents";
 import { kBloomBlue } from "../bloomMaterialUITheme";
 import { LightTooltip } from "./lightTooltip";
 import { kBloomDisabledOpacity } from "../utils/colorUtils";
-import { UniformInlineIcon } from "./muiCheckBox";
+import { UniformInlineIcon } from "./BloomCheckBox";
 
 // A localized label that may show a tick mark next to it
 export const TickableBox: React.FunctionComponent<{

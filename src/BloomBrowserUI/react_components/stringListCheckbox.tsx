@@ -1,6 +1,6 @@
 import * as React from "react";
 import { ILocalizationProps, LocalizableElement } from "./l10nComponents";
-import { BloomCheckbox } from "./muiCheckBox";
+import { BloomCheckbox } from "./BloomCheckBox";
 
 interface IProps extends ILocalizationProps {
     list: string;

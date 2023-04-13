@@ -12,7 +12,7 @@ import { post, postJson, useApiStringState } from "../utils/bloomApi";
 import { ThemeProvider, StyledEngineProvider } from "@mui/material/styles";
 import "./ProblemDialog.less";
 import BloomButton from "../react_components/bloomButton";
-import { BloomCheckbox } from "../react_components/muiCheckBox";
+import { BloomCheckbox } from "../react_components/BloomCheckBox";
 import { useState, useEffect, useRef } from "react";
 import { HowMuchGroup } from "./HowMuchGroup";
 import { PrivacyNotice } from "./PrivacyNotice";

@@ -21,7 +21,7 @@ import { SignLanguageIcon } from "../../react_components/icons/SignLanguageIcon"
 import { MotionIcon } from "../../react_components/icons/MotionIcon";
 import { ComicIcon } from "../../react_components/icons/ComicIcon";
 import { VisuallyImpairedIcon } from "../../react_components/icons/VisuallyImpairedIcon";
-import { BloomCheckbox } from "../../react_components/muiCheckBox";
+import { BloomCheckbox } from "../../react_components/BloomCheckBox";
 
 export const PublishFeaturesGroup: React.FunctionComponent<{
     onChange?: () => void;
@@ -232,7 +232,6 @@ export const PublishFeaturesGroup: React.FunctionComponent<{
                     icon={
                         <SignLanguageIcon
                             css={css`
-                                /* height: 20px; */
                                 align-self: center;
                             `}
                             color={kBloomBlue}
@@ -264,8 +263,6 @@ export const PublishFeaturesGroup: React.FunctionComponent<{
                     icon={
                         <ComicIcon
                             css={css`
-                                /* height: 20px;
-                                width: 20px; */
                                 align-self: center;
                             `}
                             color={kBloomBlue}
@@ -295,8 +292,6 @@ export const PublishFeaturesGroup: React.FunctionComponent<{
                     icon={
                         <VisuallyImpairedIcon
                             css={css`
-                                /* height: 20px;
-                                width: 20px; */
                                 align-self: start;
                             `}
                             color={kBloomBlue}

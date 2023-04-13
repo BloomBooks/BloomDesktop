@@ -20,7 +20,7 @@ import {
     ProgressBox,
     ProgressBoxHandle
 } from "../../react_components/Progress/progressBox";
-import { BloomCheckbox } from "../../react_components/muiCheckBox";
+import { BloomCheckbox } from "../../react_components/BloomCheckBox";
 import { useL10n } from "../../react_components/l10nHooks";
 import { kWebSocketContext } from "./LibraryPublishScreen";
 import {

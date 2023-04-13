@@ -5,7 +5,7 @@ import { jsx, css } from "@emotion/react";
 
 import * as React from "react";
 import { storiesOf } from "@storybook/react";
-import { BloomCheckbox } from "./muiCheckBox";
+import { BloomCheckbox } from "./BloomCheckBox";
 import { useState } from "react";
 import { ApiCheckbox } from "./ApiCheckbox";
 

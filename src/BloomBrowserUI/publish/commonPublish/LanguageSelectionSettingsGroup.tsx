@@ -4,7 +4,7 @@ import { FormGroup, Checkbox, FormControlLabel } from "@mui/material";
 import * as React from "react";
 import { useL10n } from "../../react_components/l10nHooks";
 import { SettingsGroup } from "../commonPublish/PublishScreenBaseComponents";
-import { BloomCheckbox } from "../../react_components/muiCheckBox";
+import { BloomCheckbox } from "../../react_components/BloomCheckBox";
 
 export interface LangCheckboxValue {
     code; // the language code
@@ -65,34 +65,6 @@ export const LanguageSelectionSettingsGroup: React.FunctionComponent<{
                 </div>
             }
         />
-
-        // <FormControlLabel
-        //     key={item.code}
-        //     className="languageLabel"
-        //     title={item.required ? required : undefined}
-        //     control={
-        //         <Checkbox
-        //             disabled={!item.isEnabled}
-        //             checked={item.isChecked}
-        //             onChange={(e, newState) => {
-        //                 if (props.onChange) {
-        //                     props.onChange(item, newState);
-        //                 }
-        //             }}
-        //             color="primary"
-        //         />
-        //     }
-        //     label={
-        //         <div className="check-box-label">
-        //             <div>{item.name}</div>
-        //             {item.warnIncomplete && (
-        //                 <div className="incompleteTranslation">
-        //                     {incomplete}
-        //                 </div>
-        //             )}
-        //         </div>
-        //     }
-        // />
     ));
 
     return (
@@ -107,7 +79,7 @@ export const LanguageSelectionSettingsGroup: React.FunctionComponent<{
                         // overflow-x from being visible when overflow-y is hidden. The check box shadows can
                         // 'overflow' from the normal space occupied by the scrollingFeature.
                         // [JH, later] I don't exactly know what the problem was, but we don't have scrolling any more in this
-                        // area and this was causing problems
+                        // area and this was causing problems. Leaving here in a comment in case we need to revisit.
                         /* padding-left: 11px;
                         margin-left: -11px; */
                     `}

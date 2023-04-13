@@ -14,7 +14,7 @@ import AudioIcon from "@mui/icons-material/VolumeUp";
 import { useEffect, useState } from "react";
 import { NoteBox } from "../../react_components/BloomDialog/commonDialogComponents";
 import { BloomTooltip } from "../../react_components/BloomToolTip";
-import { BloomCheckbox } from "../../react_components/muiCheckBox";
+import { BloomCheckbox } from "../../react_components/BloomCheckBox";
 import { useSubscribeToWebSocketForObject } from "../../utils/WebSocketManager";
 import { IFormatDimensionsResponseEntry } from "./IFormatDimensionsResponseEntry";
 

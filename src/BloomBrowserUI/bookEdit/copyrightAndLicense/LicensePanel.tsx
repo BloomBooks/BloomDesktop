@@ -8,7 +8,7 @@ import { RadioGroup, TextField } from "@mui/material";
 import { kMutedTextGray } from "../../bloomMaterialUITheme";
 import { Div, LocalizedString } from "../../react_components/l10nComponents";
 import { NoteBox } from "../../react_components/BloomDialog/commonDialogComponents";
-import { BloomCheckbox } from "../../react_components/muiCheckBox";
+import { BloomCheckbox } from "../../react_components/BloomCheckBox";
 import { MuiRadio } from "../../react_components/muiRadio";
 import { IDerivativeInfo } from "./CopyrightAndLicenseDialog";
 import { useGetLicenseShorthand } from "./LicenseBadge";
