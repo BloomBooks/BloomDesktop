@@ -258,7 +258,7 @@ const ReaderPublishScreenInternal: React.FunctionComponent<{
                 // The BloomPUB Viewer link "should" jump to the "Related Software" section.
                 // Unfortunately our blorg load process doesn't seem to handle hash suffixes yet.
                 // Perhaps someday we'll figure out how to do that.
-                bannerDescriptionMarkdown="BloomPUBs are a kind of eBook that can be read on phone apps ([Bloom Reader](https://bloomlibrary.org/page/create/bloom-reader) and [Reading App Builder](https://software.sil.org/readingappbuilder/)) and on Windows using [BloomPUB Viewer](https://bloomlibrary.org/page/create/downloads#related-software). They offer many advantages over ePUBs, including WYSIWYG fidelity and the full range of Bloom digital book features."
+                bannerDescriptionMarkdown="BloomPUBs are a kind of eBook that can be read on phone apps ([Bloom Reader](https://bloomlibrary.org/page/create/bloom-reader) and [Reading App Builder](https://software.sil.org/readingappbuilder/)) and on Windows using [BloomPUB Viewer](https://bloomlibrary.org/page/create/downloads#related-software). They offer many advantages over ePUBs, including *What You See Is What You Get* and the full range of Bloom digital book features."
                 bannerDescriptionL10nId="PublishTab.BloomPUB.BannerDescription"
                 optionsPanelContents={optionsPanel}
             >
