@@ -40,6 +40,7 @@ import {
     showUploadCollisionDialog,
     UploadCollisionDlg
 } from "./uploadCollisionDlg";
+import { useEnterpriseBookshelves } from "../../collection/useEnterpriseBookshelves";
 
 interface IReadonlyBookInfo {
     title: string;
@@ -55,6 +56,41 @@ const kWebSocketEventId_uploadSuccessful: string = "uploadSuccessful";
 const kWebSocketEventId_loginSuccessful: string = "loginSuccessful";
 
 export const LibraryPublishSteps: React.FunctionComponent = () => {
+    const [bookshelfHasProblem, setBookshelfHasProblem] = useState(false);
+    const {
+        project,
+        defaultBookshelfUrlKey,
+        validBookshelves,
+        error
+    } = useEnterpriseBookshelves();
+
+    useEffect(() => {
+        if (error) {
+            return;
+        } else {
+            if (
+                project !== "" &&
+                project !== "local-community" &&
+                defaultBookshelfUrlKey !== ""
+            ) {
+                setBookshelfHasProblem(
+                    validBookshelves.filter(
+                        b => b.value === defaultBookshelfUrlKey
+                    ).length === 0
+                );
+            }
+        }
+    }, [project, defaultBookshelfUrlKey, validBookshelves, error]);
+
+    const errorCaseDescription = useL10n(
+        "Bloom could not reach server to get the list of bookshelves.",
+        "CollectionSettingsDialog.BookMakingTab.NoBookshelvesFromServer"
+    );
+
+    const bookshelfErrorDescription = useL10n(
+        "The collection's bookshelf was not on the list of bookshelves for this Subscription.",
+        "PublishTab.Upload.BookshelfError"
+    );
     const localizedSummary = useL10n("Summary", "PublishTab.Upload.Summary");
     const localizedAllRightsReserved = useL10n(
         "All rights reserved (Contact the Copyright holder for any permissions.)",
@@ -434,7 +470,23 @@ export const LibraryPublishSteps: React.FunctionComponent = () => {
                             ) : (
                                 <BloomSplitButton
                                     disabled={
-                                        !isReadyForUpload() || !loggedInEmail
+                                        !isReadyForUpload() ||
+                                        !loggedInEmail ||
+                                        // If 'error', there's probably an internet problem that will
+                                        // hinder upload anyway.
+                                        // If 'bookshelfHasProblem', the collection settings have a
+                                        // bookshelf that isn't acceptable according to the current
+                                        // subscription. In both cases, we give the user a tool tip on the
+                                        // disabled button to tell them what the problem is.
+                                        error ||
+                                        bookshelfHasProblem
+                                    }
+                                    title={
+                                        error
+                                            ? errorCaseDescription
+                                            : bookshelfHasProblem
+                                            ? bookshelfErrorDescription
+                                            : ""
                                     }
                                     options={[
                                         {
@@ -529,7 +581,7 @@ export const LibraryPublishSteps: React.FunctionComponent = () => {
                                 span {
                                     // Otherwise we get Bloom blue.
                                     // This button is different than others because using
-                                    // href rather than onClick means it uses the a tag.
+                                    // href rather than onClick means it uses the 'a' tag.
                                     color: white;
                                 }
                             `}

@@ -19,6 +19,7 @@ export const BloomSplitButton: React.FunctionComponent<{
     options: ILocalizableMenuItemProps[];
     disabled?: boolean;
     hideArrow?: boolean;
+    title?: string;
 }> = props => {
     const [open, setOpen] = React.useState(false);
     const anchorRef = React.useRef<HTMLDivElement>(null);
@@ -55,6 +56,7 @@ export const BloomSplitButton: React.FunctionComponent<{
                 variant="contained"
                 ref={anchorRef}
                 aria-label="split button"
+                title={props.title}
             >
                 <Button onClick={handleButtonClick}>
                     {props.options[selectedIndex].english}

@@ -44,6 +44,11 @@
                 <source xml:lang="en">Bloom needs to verify your email, but our attempt to resend the request failed, possibly because you made too many requests too close together. Please check your email, and if you can't find the message, try again later.</source>
                 <note>ID: PublishTab.Upload.CheckEmailFailed</note>
             </trans-unit>
+            <!-- New in 5.5-->
+            <trans-unit id="PublishTab.Upload.BookshelfError" translate="no">
+                <source xml:lang="en">The collection's bookshelf was not on the list of bookshelves for this Subscription.</source>
+                <note>ID: PublishTab.Upload.BookshelfError</note>
+            </trans-unit>
             <trans-unit id="Settings.Enterprise.Community">
                 <source xml:lang="en">Funded by the local community only</source>
                 <note>ID: Settings.Enterprise.Community</note>
