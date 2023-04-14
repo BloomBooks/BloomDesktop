@@ -73,6 +73,7 @@ namespace Bloom.web.controllers
 			apiHandler.RegisterEndpointHandler("libraryPublish/login", HandleLogin, true);
 			apiHandler.RegisterEndpointHandler("libraryPublish/logout", HandleLogout, true);
 			apiHandler.RegisterEndpointHandler("libraryPublish/agreementsAccepted", HandleAgreementsAccepted, true);
+			apiHandler.RegisterEndpointHandler("libraryPublish/fixMissingBookInfo", HandleFixMissingBookInfo, true);
 		}
 
 		private static bool ModelIndicatesSignLanguageChecked => Model.Book.HasSignLanguageVideos() && Model.IsPublishSignLanguage();
@@ -242,10 +243,15 @@ namespace Bloom.web.controllers
 		{
 			_publishView.SetStateOfNonUploadRadios(enable);
 
+			GetWorkspaceView()?.SetStateOfNonPublishTabs(enable);
+		}
+
+		private WorkspaceView GetWorkspaceView()
+		{
 			var parent = _publishView.Parent;
 			while (parent != null && !(parent is WorkspaceView))
 				parent = parent.Parent;
-			((WorkspaceView)parent)?.SetStateOfNonPublishTabs(enable);
+			return (WorkspaceView)parent;
 		}
 
 		private void HandleUploadCollection(ApiRequest request)
@@ -340,6 +346,16 @@ namespace Bloom.web.controllers
 				Model.Book.UserPrefs.UploadAgreementsAccepted = request.RequiredPostBooleanAsJson();
 				request.PostSucceeded();
 			}
+		}
+
+		private void HandleFixMissingBookInfo(ApiRequest request)
+		{
+			// This will take us to the cover. That's what we want for missing title.
+			// For missing copyright, we would like to take the user to the credits page.
+			// But we don't have a way to do that yet.
+			Model.Book.UserPrefs.MostRecentPage = 0;
+			GetWorkspaceView()?.ChangeTab(WorkspaceTab.edit);
+			request.PostSucceeded();
 		}
 	}
 }
