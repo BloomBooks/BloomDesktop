@@ -413,7 +413,6 @@ namespace Bloom.Collection
 				OneTimeCheckVersionNumber = ReadInteger(xml, "OneTimeCheckVersionNumber", 0);
 				BrandingProjectKey = ReadString(xml, "BrandingProjectName", "Default");
 				SubscriptionCode = ReadString(xml, "SubscriptionCode", null);
-
 				if (BrandingProjectKey != "Default" && BrandingProjectKey != "Local-Community" && !Program.RunningHarvesterMode)
 				{
 					// Validate branding, so things can't be circumvented by just typing something random into settings

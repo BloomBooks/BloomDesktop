@@ -403,10 +403,6 @@
         <note>ID: CollectionSettingsDialog.BookMakingTab.Front/BackMatterPack.Video</note>
         <note>Name of a Front/Back Matter Pack that is used for talking/animating experiences</note>
       </trans-unit>
-      <!-- <trans-unit id="CollectionSettingsDialog.BookMakingTab.NoBookshelvesFromServer" sil:dynamic="true"> -->
-      <!-- <source xml:lang="en">Bloom could not reach server to get the list of bookshelves.</source> -->
-      <!-- <note>ID: CollectionSettingsDialog.BookMakingTab.NoBookshelvesFromServer</note> -->
-      <!-- </trans-unit> -->
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Arabic-Indic" sil:dynamic="true">
         <source xml:lang="en">Arabic-Indic</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Arabic-Indic</note>

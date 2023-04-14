@@ -5,11 +5,9 @@ using Bloom.WebLibraryIntegration;
 using Bloom.Workspace;
 using SIL.Progress;
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
-using Bloom.Collection;
 
 namespace Bloom.web.controllers
 {
