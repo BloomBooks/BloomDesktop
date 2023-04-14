@@ -1849,7 +1849,7 @@ namespace BloomTests.Book
 					<div class='languagesOfBook' data-derived='languagesOfBook' lang='en'>PlaceholderThatWillGetUpdated</div>
 				</div>
 				</body></html>");
-			
+
 			var data = new BookData(bookDom, _collectionSettings, null);
 
 			// For BL-9972, the languagesOfBook key was somehow set again via XMLString (which generates the entity reference version of "ö".
@@ -1863,6 +1863,30 @@ namespace BloomTests.Book
 			// Verification
 			var titlePageNode = bookDom.RawDom.SelectSingleNode("//div[@data-derived='languagesOfBook']");
 			Assert.AreEqual("Hakö", titlePageNode.InnerText);
+		}
+
+		[Test]
+		public void SetupDisplayOfLanguagesOfBook_XmatterHasNoLanguagesOfBookField_LanguagesOfBookInDataDivStaysLanguageNeutralAndSingular()
+		{
+			var bookDom = new HtmlDom(@"<html><body>
+				<div id='bloomDataDiv'>
+					<div data-book='languagesOfBook' lang='*'>English</div>
+				</div>
+				</body></html>");
+
+			var data = new BookData(bookDom, _collectionSettings, null);
+
+			// System Under Test
+			data.SetupDisplayOfLanguagesOfBook();
+
+			// Verification
+			var dataDivLanguagesOfBookNodes = bookDom.RawDom.SelectNodes("//div[@id='bloomDataDiv']//div[@data-book='languagesOfBook']");
+			// The live bug was also creating multiple copies of the languagesOfBook element.
+			// I can't figure out how to make that happen in a test, but the cause of it getting the wrong lang attribute
+			// and multiple copies was the same.
+			Assert.That(dataDivLanguagesOfBookNodes.Count, Is.EqualTo(1));
+			Assert.That(dataDivLanguagesOfBookNodes[0].GetStringAttribute("lang"), Is.EqualTo("*"));
+			Assert.AreEqual("English", dataDivLanguagesOfBookNodes[0].InnerText);
 		}
 
 		private bool AndikaNewBasicIsInstalled()

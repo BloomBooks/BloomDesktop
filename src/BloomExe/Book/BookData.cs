@@ -585,9 +585,10 @@ namespace Bloom.Book
 				return;
 			var elements = this._dom.SafeSelectNodes("//div[@data-derived='languagesOfBook']");
 
-			// We don't think this can happen because xmatter pages should get updated to have data-derived.
+			// Normally, this doesn't happen because xmatter pages should get updated to have data-derived.
+			// But some custom xmatters don't contain this field.
 			if (elements == null || elements.Count == 0)
-				elements = this._dom.SafeSelectNodes("//div[not(id='bloomDataDiv')]//div[@data-book='languagesOfBook']");
+				elements = this._dom.SafeSelectNodes("//div[not(@id='bloomDataDiv')]//div[@data-book='languagesOfBook']");				
 
 			if (elements == null || elements.Count == 0)
 				return;		// must be in a test...
@@ -595,12 +596,6 @@ namespace Bloom.Book
 			{
 				element.SetAttribute("lang", MetadataLanguage1Tag);
 				SetNodeXml("languagesOfBook", XmlString.FromXml(languagesXml), element );
-				// Was until April 2021
-				//element.InnerText = languages;
-				// This is wrong because languages, coming from data.TextVariables, is encoded.
-				// It would probably be OK to use element.InnerXml = languages, which is what
-				// SetNodeXml ends up doing; but it seems safest to use the routine made for the
-				// purpose of setting node contents.
 			}
 		}
 
