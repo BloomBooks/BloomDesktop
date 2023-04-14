@@ -12,7 +12,12 @@ import { useL10n } from "./l10nHooks";
 import { WireUpForWinforms } from "../utils/WireUpWinform";
 import { Dialog, DialogActions, DialogContent } from "@mui/material";
 import BloomButton from "./bloomButton";
-import { kFormBackground, kBloomGray, kBloomBlue } from "../utils/colorUtils";
+import {
+    kFormBackground,
+    kBloomGray,
+    kBloomBlue,
+    kBloomDisabledOpacity
+} from "../utils/colorUtils";
 import {
     BloomDialog,
     DialogTitle,
@@ -92,12 +97,14 @@ export const RequiresBloomEnterpriseAdjacentIconWrapper = (props: {
             (enterpriseAvailable ? "EnterpriseEnabled" : "RequiresEnterprise")
     );
 
-    // Set the disabled property on all the children
-    const children = React.Children.map(props.children, child =>
-        React.cloneElement(child, {
-            disabled: !enterpriseAvailable
-        })
-    );
+    // // Set the disabled property on all the children
+    const children = enterpriseAvailable
+        ? props.children
+        : React.Children.map(props.children, child =>
+              React.cloneElement(child, {
+                  disabled: false // we're going to slap a partial opacity on the whole thing, so we don't want the children to be disabled
+              })
+          );
 
     const icon = (
         <img
@@ -123,7 +130,20 @@ export const RequiresBloomEnterpriseAdjacentIconWrapper = (props: {
                 align-items: center;
             `}
         >
-            {children}
+            <div
+                css={css`
+                    opacity: ${enterpriseAvailable
+                        ? 1.0
+                        : kBloomDisabledOpacity};
+                `}
+                ref={
+                    node =>
+                        node &&
+                        (enterpriseAvailable || node.setAttribute("inert", "")) // later version of react reportedly do support `inert`, but this version doesn't
+                }
+            >
+                {children}
+            </div>
             {icon}
         </div>
     );
