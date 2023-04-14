@@ -54,8 +54,15 @@ const menuItemColor = "black";
 
 export const LocalizableMenuItem: React.FunctionComponent<ILocalizableMenuItemProps> = props => {
     const label = useL10n(props.english, props.l10nId);
+    // BL-10638 In the case of an expired subscription code, 'useEnterpriseAvailable()` returns false,
+    // but `useGetEnterpriseStatus()` returns "Subscription". That state of things is useful for the
+    // CollectionSettingsDialog, but not here in menu items. The absence of enterpriseAvailable needs to
+    // take precedence. But by rules of hooks we still need to run the hook and then modify the value.
     const enterpriseAvailable = useEnterpriseAvailable();
-    const enterpriseStatus = useGetEnterpriseStatus();
+    let enterpriseStatus = useGetEnterpriseStatus();
+    if (!enterpriseAvailable) {
+        enterpriseStatus = "None";
+    }
 
     const meetsEnterpriseRequirement = props.requiresEnterpriseSubscription
         ? enterpriseStatus === "Subscription"

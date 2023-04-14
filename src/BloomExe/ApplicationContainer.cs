@@ -34,7 +34,7 @@ namespace Bloom
 
 				builder.Register(c => LocalizationManager).SingleInstance();
 				
-			if (Settings.Default.MruProjects==null)
+				if (Settings.Default.MruProjects==null)
 				{
 					Settings.Default.MruProjects = new MostRecentPathsList();
 				}
