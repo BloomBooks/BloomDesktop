@@ -12,7 +12,7 @@ import { useState } from "react";
 import { ApiCheckbox } from "../../react_components/ApiCheckbox";
 import Select from "@mui/material/Select";
 import MenuItem from "@mui/material/MenuItem";
-import { Div } from "../../react_components/l10nComponents";
+import { Div, H1, H3, Span } from "../../react_components/l10nComponents";
 import { RequiresBloomEnterpriseAdjacentIconWrapper } from "../../react_components/requiresBloomEnterprise";
 import { kSelectCss } from "../../bloomMaterialUITheme";
 
@@ -171,30 +171,41 @@ export const PDFPrintFeaturesGroup: React.FunctionComponent<{
                             }}
                         />
                     </RequiresBloomEnterpriseAdjacentIconWrapper>
-                    <Div
-                        l10nKey="PublishTab.PdfMaker.Cmyk"
-                        temporarilyDisableI18nWarning={true}
-                    >
-                        CMYK
-                    </Div>
-                    <Select
-                        css={css`
-                            ${kSelectCss}
-                        `}
-                        variant="outlined"
-                        value={cmyk ? "cmyk" : "none"}
-                        onChange={e => {
-                            const newVal = e.target.value as string;
-                            setCmyk(newVal === "cmyk");
-                            if (activeButton) {
-                                props.onChange?.(activeButton);
-                                post("publish/pdf/" + activeButton);
-                            }
-                        }}
-                    >
-                        <MenuItem value="none">{none}</MenuItem>
-                        <MenuItem value="cmyk">{cmykSwop2}</MenuItem>
-                    </Select>
+                    <RequiresBloomEnterpriseAdjacentIconWrapper>
+                        <div
+                            css={css`
+                                display: flex;
+                                align-items: baseline;
+                                gap: 5px;
+                                margin-top: 1em; // hack
+                            `}
+                        >
+                            <Div
+                                l10nKey="PublishTab.PdfMaker.Cmyk"
+                                temporarilyDisableI18nWarning={true}
+                            >
+                                CMYK
+                            </Div>
+                            <Select
+                                css={css`
+                                    ${kSelectCss}
+                                `}
+                                variant="outlined"
+                                value={cmyk ? "cmyk" : "none"}
+                                onChange={e => {
+                                    const newVal = e.target.value as string;
+                                    setCmyk(newVal === "cmyk");
+                                    if (activeButton) {
+                                        props.onChange?.(activeButton);
+                                        post("publish/pdf/" + activeButton);
+                                    }
+                                }}
+                            >
+                                <MenuItem value="none">{none}</MenuItem>
+                                <MenuItem value="cmyk">{cmykSwop2}</MenuItem>
+                            </Select>
+                        </div>
+                    </RequiresBloomEnterpriseAdjacentIconWrapper>
                 </FormGroup>
             </SettingsGroup>
         </div>
