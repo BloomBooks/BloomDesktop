@@ -74,11 +74,10 @@ interface IDisableable {
 
 /**
  * Checks the Bloom Enterprise settings and appends a Bloom Enterprise icon after the children if enterprise is off.
- * The children will also have disabled set to true in that case.
  * The children and the icon (if applicable) will be displayed as a flex row.
  * @param props.iconStyles: Optional. If specified, provides additional CSS styles for the Bloom Enterprise icon. Omit to use just the default styles.
  * Note that you can override a style in the default styles by specifying it in iconStyles (because the last one wins)
- * @param props.children: The ReactElements that should be wrapped. The children must all support the "disabled" property
+ * @param props.children: The ReactElements that should be wrapped.
  */
 export const RequiresBloomEnterpriseAdjacentIconWrapper = (props: {
     iconStyles?: string;
@@ -136,10 +135,11 @@ export const RequiresBloomEnterpriseAdjacentIconWrapper = (props: {
                         ? 1.0
                         : kBloomDisabledOpacity};
                 `}
-                ref={
-                    node =>
-                        node &&
-                        (enterpriseAvailable || node.setAttribute("inert", "")) // later version of react reportedly do support `inert`, but this version doesn't
+                ref={node =>
+                    node &&
+                    // later version of react reportedly do support `inert`, but this version doesn't,
+                    // so we are using this `ref` way to get it into the DOM.
+                    (enterpriseAvailable || node.setAttribute("inert", ""))
                 }
             >
                 {children}

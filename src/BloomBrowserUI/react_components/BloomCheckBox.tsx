@@ -3,12 +3,7 @@ import { jsx, css } from "@emotion/react";
 
 import * as React from "react";
 import { useState } from "react";
-import {
-    useTheme,
-    Checkbox,
-    FormControlLabel,
-    Typography
-} from "@mui/material";
+import { useTheme, Checkbox, FormControlLabel } from "@mui/material";
 import { useL10n } from "./l10nHooks";
 import { LightTooltip } from "./lightTooltip";
 import { Check } from "@mui/icons-material";
@@ -31,7 +26,7 @@ export const BloomCheckbox: React.FunctionComponent<{
     l10nParam0?: string;
     l10nParam1?: string;
     tooltipContents?: React.ReactNode;
-    hideBox?: boolean; // used for when a control is *never* user-operable, but we're just showin a check mark or not
+    hideBox?: boolean; // used for when a control is *never* user-operable, but we're just showing a check mark or not
 }> = props => {
     const theme = useTheme();
     const [previousTriState, setPreviousTriState] = useState<
@@ -70,7 +65,6 @@ export const BloomCheckbox: React.FunctionComponent<{
             css={css`
                 display: flex;
                 flex-direction: row;
-                //min-height: 29px; // ensures that the cases without an actual checkbox are the same minimum height as the ones with a checkbox
                 align-items: start;
             `}
         >
@@ -83,7 +77,7 @@ export const BloomCheckbox: React.FunctionComponent<{
                         // this is a bit of a mystery, but it is needed to get rid of that extra 2 pixels on the left
                         margin-left: -2px;
                     `}
-                    className={props.className} // I'm suspicious of this being used and it making things brittle, so removing it for now
+                    className={props.className}
                     disabled={props.disabled}
                     checked={!!props.checked}
                     indeterminate={props.checked == null}
@@ -149,8 +143,7 @@ export const BloomCheckbox: React.FunctionComponent<{
                     css={css`
                         ${props.disabled &&
                             `opacity: ${kBloomDisabledOpacity}`};
-                        // these two rules are about helping this to keep working even when font is small, as in the Overlay Tool
-                        //padding-top: 4px;
+                        // this rule is about helping this to keep working even when font is small, as in the Overlay Tool
                         min-height: 15px;
                         //border: solid red 0.1px;
                     `}
@@ -173,7 +166,7 @@ export const BloomCheckbox: React.FunctionComponent<{
         <FormControlLabel
             css={css`
                 padding-top: 10px; // maintain the default behavior for spacing
-                margin-left: 0; // I don't understand why this is needed, but he default has 11px
+                margin-left: 0; // I don't understand why this is needed, but the default has 11px
             `}
             control={c}
             label=""
@@ -182,7 +175,7 @@ export const BloomCheckbox: React.FunctionComponent<{
 };
 
 // wrap the icons so that they can be center-aligned with each other
-export const UniformInlineIcon: React.FunctionComponent<{
+const UniformInlineIcon: React.FunctionComponent<{
     icon?: React.ReactNode;
     iconScale?: number;
     disabled?: boolean;

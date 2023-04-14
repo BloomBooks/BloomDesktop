@@ -46,11 +46,7 @@ export const LanguageSelectionSettingsGroup: React.FunctionComponent<{
                 }
             }}
             label={
-                <div
-                    css={css`
-                        //line-height: 1;
-                    `}
-                >
+                <div>
                     <div>{item.name}</div>
                     {item.warnIncomplete && (
                         <div
