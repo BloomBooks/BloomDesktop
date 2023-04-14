@@ -3,12 +3,7 @@ import { jsx, css } from "@emotion/react";
 
 import * as React from "react";
 import { useState } from "react";
-import {
-    useTheme,
-    Checkbox,
-    FormControlLabel,
-    Typography
-} from "@mui/material";
+import { useTheme, Checkbox, FormControlLabel } from "@mui/material";
 import { useL10n } from "./l10nHooks";
 import { LightTooltip } from "./lightTooltip";
 import { Check } from "@mui/icons-material";
@@ -31,7 +26,7 @@ export const BloomCheckbox: React.FunctionComponent<{
     l10nParam0?: string;
     l10nParam1?: string;
     tooltipContents?: React.ReactNode;
-    hideBox?: boolean; // used for when a control is *never* user-operable, but we're just showin a check mark or not
+    hideBox?: boolean; // used for when a control is *never* user-operable, but we're just showing a check mark or not
 }> = props => {
     const theme = useTheme();
     const [previousTriState, setPreviousTriState] = useState<
@@ -182,7 +177,7 @@ export const BloomCheckbox: React.FunctionComponent<{
 };
 
 // wrap the icons so that they can be center-aligned with each other
-export const UniformInlineIcon: React.FunctionComponent<{
+const UniformInlineIcon: React.FunctionComponent<{
     icon?: React.ReactNode;
     iconScale?: number;
     disabled?: boolean;
