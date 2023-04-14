@@ -4702,6 +4702,11 @@
         <note>ID: PublishTab.Upload.ChooseSignLanguageWarning</note>
         <note>Obsolete as of Bloom 5.5</note>
       </trans-unit>
+      <trans-unit id="PublishTab.Upload.ClickToFix" translate="no">
+        <!-- added in 5.5 -->
+        <source xml:lang="en">Click to fix</source>
+        <note>ID: PublishTab.Upload.ClickToFix</note>
+      </trans-unit>
       <trans-unit id="PublishTab.Upload.ConfirmMetadata" translate="no">
         <!-- added in 5.5 -->
         <source xml:lang="en">Confirm Metadata</source>

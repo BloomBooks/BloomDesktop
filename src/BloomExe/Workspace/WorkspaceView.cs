@@ -973,6 +973,22 @@ namespace Bloom.Workspace
 			AdjustTabStripDisplayForScreenSize();
 		}
 
+		public void ChangeTab(WorkspaceTab newTab)
+		{
+			switch (newTab)
+			{
+				case WorkspaceTab.edit:
+					_tabStrip.SelectedTab = _editTab;
+					break;
+				case WorkspaceTab.collection:
+					_tabStrip.SelectedTab = _reactCollectionTab;
+					break;
+				case WorkspaceTab.publish:
+					_tabStrip.SelectedTab = _publishTab;
+					break;
+			}
+		}
+
 		private void _tabStrip_BackColorChanged(object sender, EventArgs e)
 		{
 			//_topBarButtonTable.BackColor = _toolSpecificPanel.BackColor =  _tabStrip.BackColor;

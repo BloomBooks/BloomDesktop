@@ -36,7 +36,10 @@ import {
 } from "../../react_components/confirmDialog";
 import { BloomTooltip } from "../../react_components/BloomToolTip";
 import { BloomSplitButton } from "../../react_components/bloomSplitButton";
-import { WaitBox } from "../../react_components/BloomDialog/commonDialogComponents";
+import {
+    ErrorBox,
+    WaitBox
+} from "../../react_components/BloomDialog/commonDialogComponents";
 import {
     IUploadCollisionDlgProps,
     showUploadCollisionDialog,
@@ -343,30 +346,31 @@ export const LibraryPublishSteps: React.FunctionComponent = () => {
                                 font-size: larger;
                             `}
                         >
-                            <div
-                                css={css`
-                                    font-weight: bold;
-                                `}
-                            >
-                                {bookInfo?.title || (
-                                    <MissingInfo
-                                        text="Title Missing"
-                                        l10nKey={
-                                            "PublishTab.Upload.Missing.Title"
-                                        }
-                                    />
-                                )}
-                            </div>
-                            <div>
-                                {bookInfo?.copyright || (
-                                    <MissingInfo
-                                        text="Copyright Missing"
-                                        l10nKey={
-                                            "PublishTab.Upload.Missing.Copyright"
-                                        }
-                                    />
-                                )}
-                            </div>
+                            {bookInfo?.title ? (
+                                <div
+                                    css={css`
+                                        font-weight: bold;
+                                    `}
+                                >
+                                    {bookInfo?.title}
+                                </div>
+                            ) : (
+                                <MissingInfo
+                                    text="Missing Title"
+                                    l10nKey={"PublishTab.Upload.Missing.Title"}
+                                />
+                            )}
+
+                            {bookInfo?.copyright ? (
+                                <div>{bookInfo?.copyright}</div>
+                            ) : (
+                                <MissingInfo
+                                    text="Missing Copyright"
+                                    l10nKey={
+                                        "PublishTab.Upload.Missing.Copyright"
+                                    }
+                                />
+                            )}
                             {licenseBlock}
                         </div>
                         <MustBeCheckedOut
@@ -774,15 +778,30 @@ const MissingInfo: React.FunctionComponent<{
     l10nKey: string;
 }> = props => {
     return (
-        <Div
-            l10nKey={props.l10nKey}
+        <ErrorBox
             css={css`
-                font-size: unset;
-                font-weight: bold;
-                color: red;
+                max-width: 550px;
             `}
         >
-            {props.text}
-        </Div>
+            <div>
+                <Div
+                    css={css`
+                        font-style: italic;
+                    `}
+                    l10nKey={props.l10nKey}
+                >
+                    {props.text}
+                </Div>
+                <Link
+                    css={css`
+                        text-decoration: underline;
+                    `}
+                    l10nKey={"PublishTab.Upload.ClickToFix"}
+                    onClick={() => post("libraryPublish/fixMissingBookInfo")}
+                >
+                    Click to fix
+                </Link>
+            </div>
+        </ErrorBox>
     );
 };
