@@ -21,8 +21,7 @@ namespace Bloom.WebLibraryIntegration
 
 			// Uncomment for local or alpha testing
 			//host = "http://localhost:3000";
-			//TODO comment next line when login code moves to production blorg
-			host = BookUpload.UseSandbox ? "https://dev-alpha.bloomlibrary.org" : "https://alpha.bloomlibrary.org";
+			//host = BookUpload.UseSandbox ? "https://dev-alpha.bloomlibrary.org" : "https://alpha.bloomlibrary.org";
 
 			return $"{host}/login-for-editor?port={BloomServer.portForHttp}";
 		}
