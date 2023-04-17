@@ -18,7 +18,6 @@ using BloomTemp;
 using DesktopAnalytics;
 using SIL.IO;
 using SIL.Xml;
-using Bloom.ToPalaso.Experimental;
 using Newtonsoft.Json;
 using SIL.Extensions;
 using SIL.Reporting;
