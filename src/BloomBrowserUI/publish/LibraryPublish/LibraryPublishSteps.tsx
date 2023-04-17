@@ -12,6 +12,7 @@ import {
     postBoolean,
     postString
 } from "../../utils/bloomApi";
+import { kBloomDisabledOpacity } from "../../utils/colorUtils";
 import { BloomStepper } from "../../react_components/BloomStepper";
 import { Div, Span } from "../../react_components/l10nComponents";
 import BloomButton from "../../react_components/bloomButton";
@@ -45,6 +46,7 @@ import {
     showUploadCollisionDialog,
     UploadCollisionDlg
 } from "./uploadCollisionDlg";
+import { showCopyrightAndLicenseInfoOrDialog } from "../../bookEdit/copyrightAndLicense/CopyrightAndLicenseDialog";
 import { useGetEnterpriseBookshelves } from "../../collection/useGetEnterpriseBookshelves";
 import { MustBeCheckedOut } from "../../react_components/MustBeCheckedOut";
 import { SelectedBookContext } from "../../app/SelectedBookContext";
@@ -121,8 +123,11 @@ export const LibraryPublishSteps: React.FunctionComponent = () => {
         "PublishTab.Upload.EnterpriseShelfRequiredTooltip"
     );
 
+    const [reload, setReload] = useState<number>(0);
+
     const progressBoxRef = useRef<ProgressBoxHandle>(null);
 
+    const [isLoading, setIsLoading] = useState<boolean>(true);
     const [bookInfo, setBookInfo] = useState<IReadonlyBookInfo>();
     useEffect(() => {
         post("libraryPublish/checkForLoggedInUser");
@@ -133,8 +138,17 @@ export const LibraryPublishSteps: React.FunctionComponent = () => {
         get("libraryPublish/getBookInfo", result => {
             setBookInfo(result.data);
             setSummary(result.data.summary);
+            setIsLoading(false);
         });
-    }, []);
+    }, [reload]);
+    useSubscribeToWebSocketForStringMessage(
+        "bookCopyrightAndLicense",
+        "saved",
+        () => {
+            setReload(reload => reload + 1);
+        }
+    );
+
     const [useSandbox, setUseSandbox] = useState<boolean>(false);
     const [uploadButtonText, setUploadButtonText] = useState<string>(
         localizedUploadBook
@@ -341,41 +355,51 @@ export const LibraryPublishSteps: React.FunctionComponent = () => {
                         </Span>
                     </StepLabel>
                     <StepContent>
-                        <div
-                            css={css`
-                                font-size: larger;
-                            `}
-                        >
-                            {bookInfo?.title ? (
-                                <div
-                                    css={css`
-                                        font-weight: bold;
-                                    `}
-                                >
-                                    {bookInfo?.title}
-                                </div>
-                            ) : (
-                                <MissingInfo
-                                    text="Missing Title"
-                                    l10nKey={"PublishTab.Upload.Missing.Title"}
-                                />
-                            )}
-
-                            {bookInfo?.copyright ? (
-                                <div>{bookInfo?.copyright}</div>
-                            ) : (
-                                <MissingInfo
-                                    text="Missing Copyright"
-                                    l10nKey={
-                                        "PublishTab.Upload.Missing.Copyright"
-                                    }
-                                />
-                            )}
-                            {licenseBlock}
-                        </div>
-                        <MustBeCheckedOut
-                            id={"book-summary-not-checked-out-tooltip"}
-                        >
+                        {/* The isLoading check prevents pretty bad flashing of the "missing" error boxes. */}
+                        {!isLoading && (
+                            <div
+                                css={css`
+                                    font-size: larger;
+                                `}
+                            >
+                                {bookInfo?.title ? (
+                                    <div
+                                        css={css`
+                                            font-weight: bold;
+                                        `}
+                                    >
+                                        {bookInfo?.title}
+                                    </div>
+                                ) : (
+                                    <MissingInfo
+                                        text="Missing Title"
+                                        l10nKey={
+                                            "PublishTab.Upload.Missing.Title"
+                                        }
+                                        onClick={() =>
+                                            post(
+                                                "libraryPublish/goToEditBookCover"
+                                            )
+                                        }
+                                    />
+                                )}
+                                {bookInfo?.copyright ? (
+                                    <div>{bookInfo?.copyright}</div>
+                                ) : (
+                                    <MissingInfo
+                                        text="Missing Copyright"
+                                        l10nKey={
+                                            "PublishTab.Upload.Missing.Copyright"
+                                        }
+                                        onClick={
+                                            showCopyrightAndLicenseInfoOrDialog
+                                        }
+                                    />
+                                )}
+                                {licenseBlock}
+                            </div>
+                        )}
+                        <MustBeCheckedOut>
                             <TextField
                                 // needed by aria for a11y
                                 id="book summary"
@@ -776,7 +800,9 @@ const WarningMessage: React.FunctionComponent = props => {
 const MissingInfo: React.FunctionComponent<{
     text: string;
     l10nKey: string;
+    onClick: () => void;
 }> = props => {
+    const selectedBookContext = React.useContext(SelectedBookContext);
     return (
         <ErrorBox
             css={css`
@@ -792,15 +818,26 @@ const MissingInfo: React.FunctionComponent<{
                 >
                     {props.text}
                 </Div>
-                <Link
-                    css={css`
-                        text-decoration: underline;
-                    `}
-                    l10nKey={"PublishTab.Upload.ClickToFix"}
-                    onClick={() => post("libraryPublish/fixMissingBookInfo")}
+                <MustBeCheckedOut
+                    anchorOriginOverride={{
+                        vertical: "bottom",
+                        horizontal: "left"
+                    }}
                 >
-                    Click to fix
-                </Link>
+                    <Link
+                        css={css`
+                            text-decoration: underline;
+                            opacity: ${selectedBookContext.saveable
+                                ? 1
+                                : kBloomDisabledOpacity};
+                        `}
+                        l10nKey={"PublishTab.Upload.ClickToFix"}
+                        onClick={props.onClick}
+                        disabled={!selectedBookContext.saveable}
+                    >
+                        Click to fix
+                    </Link>
+                </MustBeCheckedOut>
             </div>
         </ErrorBox>
     );
