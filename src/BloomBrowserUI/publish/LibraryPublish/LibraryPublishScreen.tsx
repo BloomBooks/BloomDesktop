@@ -41,6 +41,24 @@ export const LibraryPublishScreen = () => {
             <PublishFeaturesGroup generation={generation} />
             <CoverColorGroup />
 
+            {/*
+                <MuiCheckbox
+                label={
+                    <React.Fragment>
+                        <img src="/bloom/publish/LibraryPublish/DRAFT-Stamp.svg" />
+                        <Span l10nKey="PublishTab.Upload.Draft">
+                            Show this book only to reviewers with whom I
+                            share the URL of this book.
+                        </Span>
+                    </React.Fragment>
+                }
+                checked={false} //TODO
+                onCheckChanged={newValue => {
+                    //TODO
+                }}
+                disabled={!isReadyForUpload()}
+            /> */}
+
             {/* push everything below this to the bottom */}
             <div
                 css={css`

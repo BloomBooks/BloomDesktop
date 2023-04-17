@@ -397,23 +397,6 @@ export const LibraryPublishSteps: React.FunctionComponent = () => {
                         <Span l10nKey={"Common.Upload"}>Upload</Span>
                     </StepLabel>
                     <StepContent>
-                        {/* This will move to the settings section
-                        <MuiCheckbox
-                        label={
-                            <React.Fragment>
-                                <img src="/bloom/publish/LibraryPublish/DRAFT-Stamp.svg" />
-                                <Span l10nKey="PublishTab.Upload.Draft">
-                                    Show this book only to reviewers with whom I
-                                    share the URL of this book.
-                                </Span>
-                            </React.Fragment>
-                        }
-                        checked={false} //TODO
-                        onCheckChanged={newValue => {
-                            //TODO
-                        }}
-                        disabled={!isReadyForUpload()}
-                    /> */}
                         <div
                             css={css`
                                 display: flex;
@@ -618,7 +601,12 @@ const Agreements: React.FunctionComponent<{
                             I have permission to publish all the text and images
                             in this book.
                         </Span>{" "}
-                        <Link href={"TODO"} l10nKey="Common.LearnMore">
+                        <Link
+                            href={
+                                "https://docs.bloomlibrary.org/permission-to-publish"
+                            }
+                            l10nKey="Common.LearnMore"
+                        >
                             Learn More
                         </Link>
                     </React.Fragment>
@@ -644,8 +632,15 @@ const Agreements: React.FunctionComponent<{
                         href={"https://bloomlibrary.org/terms"}
                         l10nKey={"PublishTab.Upload.Agreement.AgreeToTerms"}
                         css={css`
-                            // We don't want normal padding the browser adds, mostly so the height matches the other checkboxes.
+                            /* We don't want normal padding the browser adds, mostly so the height matches the other checkboxes. */
                             margin: 0;
+
+                            & a {
+                                text-decoration: none;
+                                :hover {
+                                    text-decoration: underline;
+                                }
+                            }
                         `}
                     >
                         I agree to the [Bloom Library Terms of Use].
