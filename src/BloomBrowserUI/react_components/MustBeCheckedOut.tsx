@@ -3,9 +3,7 @@ import { BloomTooltip, IBloomToolTipProps } from "./BloomToolTip";
 import { SelectedBookContext } from "../app/SelectedBookContext";
 
 export const MustBeCheckedOut: React.FunctionComponent<React.PropsWithChildren<
-    {
-        id: string;
-    } & IBloomToolTipProps
+    IBloomToolTipProps
 >> = props => {
     const selectedBookInfo = React.useContext(SelectedBookContext);
 
