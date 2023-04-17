@@ -1,0 +1,16 @@
+{
+    "presets": [
+        {
+            "data-book": "outside-back-cover-branding-top-html",
+            "lang": "*",
+            "content": "<img class='branding badge' src='acr-badge-row.svg'/>",
+            "condition": "always"
+        },
+        {
+            "data-book": "outside-back-cover-branding-bottom-html",
+            "lang": "*",
+            "content": "<img class='branding textAndLogos' src='acr-text-and-logos.svg'/>",
+            "condition": "always"
+        }
+    ]
+}
