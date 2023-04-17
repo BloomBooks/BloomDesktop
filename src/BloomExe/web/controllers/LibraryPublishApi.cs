@@ -72,13 +72,14 @@ namespace Bloom.web.controllers
 			apiHandler.RegisterEndpointHandler("libraryPublish/login", HandleLogin, true);
 			apiHandler.RegisterEndpointHandler("libraryPublish/logout", HandleLogout, true);
 			apiHandler.RegisterEndpointHandler("libraryPublish/agreementsAccepted", HandleAgreementsAccepted, true);
-			apiHandler.RegisterEndpointHandler("libraryPublish/fixMissingBookInfo", HandleFixMissingBookInfo, true);
+			apiHandler.RegisterEndpointHandler("libraryPublish/goToEditBookCover", HandleGoToEditBookCover, true);
 		}
 
 		private static bool ModelIndicatesSignLanguageChecked => Model.Book.HasSignLanguageVideos() && Model.IsPublishSignLanguage();
 
 		private void HandleGetBookInfo(ApiRequest request)
 		{
+			Model.EnsureUpToDateLicense();
 			dynamic bookInfo = new
 			{
 				title = Model.Title,
@@ -348,11 +349,9 @@ namespace Bloom.web.controllers
 			}
 		}
 
-		private void HandleFixMissingBookInfo(ApiRequest request)
+		private void HandleGoToEditBookCover(ApiRequest request)
 		{
-			// This will take us to the cover. That's what we want for missing title.
-			// For missing copyright, we would like to take the user to the credits page.
-			// But we don't have a way to do that yet.
+			// 0 is the index of the first page, the front cover.
 			Model.Book.UserPrefs.MostRecentPage = 0;
 			GetWorkspaceView()?.ChangeTab(WorkspaceTab.edit);
 			request.PostSucceeded();

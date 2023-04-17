@@ -38,8 +38,9 @@ export interface IBloomToolTipProps {
     side?: "bottom" | "left" | "right";
     // A default origin is supplied that will work okay in many cases.  But these values
     // can be used to tweak the popup's origin if desired.
-    sideVerticalOrigin?: number;
-    sideHorizontalOrigin?: number;
+    sideVerticalOrigin?: number | "bottom" | "center" | "top";
+    sideHorizontalOrigin?: number | "center" | "left" | "right";
+    anchorOriginOverride?: PopoverOrigin;
     arrowLoc?: "middle" | "edge"; // default is edge for side=left|right.
 }
 
@@ -75,7 +76,8 @@ export const BloomTooltip: React.FunctionComponent<IBloomToolTipProps> = props =
     const tooltipOpen = Boolean(anchorEl);
 
     const anchorOrigin: PopoverOrigin =
-        props.side === "left"
+        props.anchorOriginOverride ||
+        (props.side === "left"
             ? {
                   vertical: props.sideVerticalOrigin ?? "top",
                   // 20 pixels left of the anchor; leaves room for arrow and a little margin.
@@ -89,7 +91,7 @@ export const BloomTooltip: React.FunctionComponent<IBloomToolTipProps> = props =
             : {
                   vertical: "bottom",
                   horizontal: "center"
-              };
+              });
 
     const transformOrigin: PopoverOrigin =
         props.side === "left"
