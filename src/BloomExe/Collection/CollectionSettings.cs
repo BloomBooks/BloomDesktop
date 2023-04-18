@@ -932,5 +932,30 @@ namespace Bloom.Collection
 				collectionSettingsLanguageName + " (" + GetLanguageName(baseIsoCode, metadataLanguageTag) + ")"
 				: collectionSettingsLanguageName + "-" + srvCodes + " (" + collectionSettingsLanguageName + ")";
 		}
+
+		/// <summary>
+		/// Return true if the part of the subscription code that identifies the branding is one we know about.
+		/// Either the branding files must exist or the expiration date must be set, even if expired.
+		/// This allows new, not yet implemented, subscriptions/brandings to be recognized as valid, and expired
+		/// subscriptions to be flagged as such but not treated as totally invalid.
+		/// </summary>
+		public bool IsSubscriptionCodeKnown()
+		{
+			return BrandingProject.HaveFilesForBranding(BrandingProjectKey) || CollectionSettingsApi.GetExpirationDate(SubscriptionCode) != DateTime.MinValue;
+		}
+
+		public CollectionSettingsApi.EnterpriseStatus GetEnterpriseStatus()
+		{
+			if (CollectionSettingsApi.FixEnterpriseSubscriptionCodeMode)
+			{
+				// We're displaying the dialog to fix a branding code...select that option
+				return CollectionSettingsApi.EnterpriseStatus.Subscription;
+			}
+			if (BrandingProjectKey == "Default")
+				return CollectionSettingsApi.EnterpriseStatus.None;
+			else if (BrandingProjectKey == "Local-Community")
+				return CollectionSettingsApi.EnterpriseStatus.Community;
+			return CollectionSettingsApi.EnterpriseStatus.Subscription;
+		}
 	}
 }

@@ -56,6 +56,8 @@ namespace Bloom.web.controllers
 		{
 			_collectionSettings = collectionSettings;
 			_xmatterPackFinder = xmatterPackFinder;
+
+			SetSubscriptionCode(_collectionSettings.SubscriptionCode, _collectionSettings.IsSubscriptionCodeKnown(), _collectionSettings.GetEnterpriseStatus());
 		}
 
 		private bool IsEnterpriseEnabled
@@ -385,7 +387,7 @@ namespace Bloom.web.controllers
 		{
 			FixEnterpriseSubscriptionCodeMode = true;
 			if (SubscriptionCodeLooksIncomplete(subscriptionCode))
-				LegacyBrandingName = invalidBranding; // otherwise we wont' show the legacy branding message, just bring up the dialog and show whatever's wrong.
+				LegacyBrandingName = invalidBranding; // otherwise we won't show the legacy branding message, just bring up the dialog and show whatever's wrong.
 		}
 
 		public static void EndFixEnterpriseBranding()
@@ -476,8 +478,9 @@ namespace Bloom.web.controllers
 			return sum;
 		}
 
-		// Updates things when the legacy combo in another tab is used to set the enterprise project.
-		// Does not try to inform the HTML; that is done by reloading the page.
+		// Used to initialize things in the constructor.
+		// 
+		// Also used by the settings dialog to ensure things are initialized properly there for a special "legacy" case.
 		public static void SetSubscriptionCode(string code, bool knownCode, EnterpriseStatus status)
 		{
 			SubscriptionCode = code;
