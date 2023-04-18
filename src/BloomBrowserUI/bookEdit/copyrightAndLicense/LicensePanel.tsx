@@ -8,7 +8,7 @@ import { RadioGroup, TextField } from "@mui/material";
 import { kMutedTextGray } from "../../bloomMaterialUITheme";
 import { Div, LocalizedString } from "../../react_components/l10nComponents";
 import { NoteBox } from "../../react_components/BloomDialog/commonDialogComponents";
-import { MuiCheckbox } from "../../react_components/muiCheckBox";
+import { BloomCheckbox } from "../../react_components/BloomCheckBox";
 import { MuiRadio } from "../../react_components/muiRadio";
 import { IDerivativeInfo } from "./CopyrightAndLicenseDialog";
 import { useGetLicenseShorthand } from "./LicenseBadge";
@@ -178,7 +178,7 @@ export const LicensePanel: React.FunctionComponent<{
                             max-width: 350px;
                         `}
                     >
-                        <MuiCheckbox
+                        <BloomCheckbox
                             label={`copy this ${getBookOrImage()} for free`}
                             l10nKey={getL10nIdForBookOrImage(
                                 "License.CreativeCommons.CopyForFree"
@@ -191,7 +191,7 @@ export const LicensePanel: React.FunctionComponent<{
                                 // No handler needed because the checkbox is disabled.
                             }}
                         />
-                        <MuiCheckbox
+                        <BloomCheckbox
                             label={`use the ${getBookOrImage()} in a commercial way`}
                             l10nKey={getL10nIdForBookOrImage(
                                 "License.CreativeCommons.AllowCommercial"
@@ -212,7 +212,7 @@ export const LicensePanel: React.FunctionComponent<{
                         {/* These two check boxes govern the allowDerivatives value. Both apply only to CC licenses.
                         The first determines whether derivatives are allowed at all.
                         If so, the second is enabled and determines whether allowDerivatives should be "sharealike" or simply "yes" */}
-                        <MuiCheckbox
+                        <BloomCheckbox
                             label={
                                 props.isForBook
                                     ? "make new versions of this book, but they must keep the author, illustrator, and other credits"
@@ -234,7 +234,7 @@ export const LicensePanel: React.FunctionComponent<{
                                 reportChange();
                             }}
                         />
-                        <MuiCheckbox
+                        <BloomCheckbox
                             label={`apply a different license to new versions of this ${getBookOrImage()}`}
                             l10nKey={getL10nIdForBookOrImage(
                                 "License.CreativeCommons.DifferentLicense"

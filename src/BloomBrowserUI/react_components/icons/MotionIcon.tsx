@@ -6,13 +6,13 @@ import React = require("react");
 // Different from the motion icon we use in the toolbox.
 export const MotionIcon: React.FunctionComponent<{
     className?: string;
-    color: string;
+    color?: string;
 }> = props => {
     return (
         <svg
             className={props.className}
-            width="20"
-            height="13"
+            // width="20"
+            // height="13"
             viewBox="0 0 20 13"
             fill={props.color}
             xmlns="http://www.w3.org/2000/svg"

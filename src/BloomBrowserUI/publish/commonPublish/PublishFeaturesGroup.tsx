@@ -7,23 +7,21 @@ import { SettingsGroup } from "../commonPublish/PublishScreenBaseComponents";
 import { useL10n } from "../../react_components/l10nHooks";
 import {
     get,
-    getBoolean,
     post,
     useApiBoolean,
     useApiString,
     useWatchString
 } from "../../utils/bloomApi";
 import { kBloomBlue } from "../../bloomMaterialUITheme";
-import { TickableBox } from "../../react_components/tickableBox";
 import { ILanguagePublishInfo } from "./PublishLanguagesGroup";
 import { Link as MuiLink } from "@mui/material";
 import { ActivityIcon } from "../../react_components/icons/ActivityIcon";
 import { TalkingBookIcon } from "../../react_components/icons/TalkingBookIcon";
 import { SignLanguageIcon } from "../../react_components/icons/SignLanguageIcon";
-import { kBloomDisabledOpacity } from "../../utils/colorUtils";
 import { MotionIcon } from "../../react_components/icons/MotionIcon";
 import { ComicIcon } from "../../react_components/icons/ComicIcon";
 import { VisuallyImpairedIcon } from "../../react_components/icons/VisuallyImpairedIcon";
+import { BloomCheckbox } from "../../react_components/BloomCheckBox";
 
 export const PublishFeaturesGroup: React.FunctionComponent<{
     onChange?: () => void;
@@ -95,7 +93,7 @@ export const PublishFeaturesGroup: React.FunctionComponent<{
         "No talking book languages are selected",
         "PublishTab.Feature.TallkingBook.NoNarrationSelected"
     );
-    const tbTitle = isTalkingBook
+    const talkingBookTooltip = isTalkingBook
         ? ""
         : couldBeTalkingBook
         ? noNarrationSelected
@@ -211,13 +209,16 @@ export const PublishFeaturesGroup: React.FunctionComponent<{
             label={useL10n("Features", "PublishTab.Android.Features")}
         >
             <FormGroup>
-                <TickableBox
-                    english="Talking Book"
+                <BloomCheckbox
+                    label="Talking Book"
                     l10nKey="PublishTab.TalkingBook"
-                    icon={<TalkingBookIcon color={kBloomBlue} />}
-                    title={tbTitle}
+                    icon={<TalkingBookIcon />}
+                    iconScale={0.9}
                     disabled={!isTalkingBook}
-                    ticked={isTalkingBook}
+                    checked={isTalkingBook}
+                    onCheckChanged={() => {}}
+                    hideBox={true}
+                    tooltipContents={talkingBookTooltip}
                 />
                 <ApiCheckbox
                     // Changing the key each time signLanguageEnabled changes ensures that the checkbox rerenders with the latest value from the server.
@@ -234,15 +235,7 @@ export const PublishFeaturesGroup: React.FunctionComponent<{
                     icon={
                         <SignLanguageIcon
                             css={css`
-                                height: 20px;
                                 align-self: center;
-                                // I would prefer if this happened automatically as a result of the check box
-                                // being disabled. But that currently just modifies the css color. I don't
-                                // think there is a way to make the SVG be displayed using the current
-                                // CSS foreground color.
-                                ${signLanguageEnabled
-                                    ? ""
-                                    : `opacity: ${kBloomDisabledOpacity};`}
                             `}
                             color={kBloomBlue}
                         />
@@ -250,21 +243,16 @@ export const PublishFeaturesGroup: React.FunctionComponent<{
                     title={slTitle}
                     disabled={!signLanguageEnabled}
                 />
-                <TickableBox
-                    english="Activity"
+                <BloomCheckbox
+                    label="Activity"
                     l10nKey="PublishTab.Activity"
-                    icon={
-                        <ActivityIcon
-                            css={css`
-                                height: 20px;
-                                width: 20px;
-                            `}
-                            color={kBloomBlue}
-                        />
-                    }
-                    title={activitiesTitle}
+                    icon={<ActivityIcon />}
+                    iconScale={0.9}
                     disabled={!hasActivities}
-                    ticked={hasActivities}
+                    checked={hasActivities}
+                    onCheckChanged={() => {}}
+                    hideBox={true}
+                    tooltipContents={activitiesTitle}
                 />
                 <ApiCheckbox
                     css={css`
@@ -278,12 +266,7 @@ export const PublishFeaturesGroup: React.FunctionComponent<{
                     icon={
                         <ComicIcon
                             css={css`
-                                height: 20px;
-                                width: 20px;
                                 align-self: center;
-                                ${comicEnabled
-                                    ? ""
-                                    : `opacity: ${kBloomDisabledOpacity};`}
                             `}
                             color={kBloomBlue}
                         />
@@ -312,16 +295,12 @@ export const PublishFeaturesGroup: React.FunctionComponent<{
                     icon={
                         <VisuallyImpairedIcon
                             css={css`
-                                height: 20px;
-                                width: 20px;
                                 align-self: start;
-                                ${visuallyImpairedEnabled
-                                    ? ""
-                                    : `opacity: ${kBloomDisabledOpacity};`}
                             `}
                             color={kBloomBlue}
                         />
                     }
+                    iconScale={0.9}
                     title={visionTitle}
                     disabled={!visuallyImpairedEnabled}
                 />

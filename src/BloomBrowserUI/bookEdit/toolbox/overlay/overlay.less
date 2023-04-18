@@ -30,6 +30,7 @@
     padding: @SideMargin;
     display: flex;
     flex-wrap: wrap;
+
     .overlayToolControlDraggableBubble {
         cursor: grab;
     }
@@ -48,6 +49,7 @@
 
         // Each row gets a little vertical cushion
         margin-top: 10px;
+
         > .shapeChooserRow {
             // second row
             margin-top: 0;
@@ -103,6 +105,12 @@
 #overlayToolControlOptionsRegion {
     padding: @SideMargin @SideMargin 0 @SideMargin;
 
+    // a toolbox-wide rule sets to x-small, but that makes for tiny checkboxes
+    .bloom-checkbox-label {
+        font-size: medium;
+        padding-top: 3px; // this is hack, I gave up trying to figure out what is different about this context from other uses of BloomCheckbox
+    }
+
     // This corresponds to the wrapper div generated for each control within the form
     // It is also the parent flex container for each option
     .MuiFormControl-root {
@@ -133,7 +141,8 @@
             font-size: 0.75rem;
         }
 
-        label + .MuiInput-formControl {
+        label + .MuiInput-formControl,
+        label + .MuiInputBase-formControl {
             // This does 2 things:
             // 1) MUI's default is 16px, but that also takes into account that the label uses position: absolute instead of being positioned as a flex-item.
             //    Now that we're positioning it as a flex-item, we need to unset or override margin-top:
@@ -141,21 +150,26 @@
             //    we need to create that manually.
             margin-top: 4px;
         }
+
         // The goal here is to get all the controls spaced vertically the same distance apart
         & + .MuiFormControl-root,
         & + button {
             margin-top: @ControlVerticalSpacing;
         }
+
         .comicCheckbox {
             .MuiFormControlLabel-root {
                 padding-top: @ControlVerticalSpacing;
+
                 .MuiCheckbox-root {
                     padding-bottom: 0;
                 }
             }
+
             span {
                 padding-top: 1px;
             }
+
             .MuiSvgIcon-root {
                 font-size: 1.3rem; // reduce size of checkbox a bit
             }
@@ -212,10 +226,12 @@
         margin-left: -5px; // hack to left-align the icon itself, which is framed by a larger SVG
         display: block;
     }
+
     .option-button-row {
         display: flex;
         flex-direction: row;
         justify-content: space-between;
+
         .duplicate-bubble-icon {
             margin-top: 18px; // to match material-ui icon on same row
         }
@@ -252,6 +268,7 @@
     // Getting overwritten by the inline styles... :(
     // TODO: Experiment with whether you can pass in a style through Material UI instead of using !important to bypass the inline style.
     z-index: @NecessaryZIndex !important; // Note: 18,000 was experimentally determined to be the minimum required z-index, but seems safer to go up a bit from the minimum
+
     .MuiMenu-paper {
         min-width: calc(@toolboxWidth - 2 * @dropdownLeftMargin) !important;
     }

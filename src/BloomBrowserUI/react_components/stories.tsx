@@ -8,7 +8,7 @@ import { storiesOf } from "@storybook/react";
 import { Radio, RadioGroup as MuiRadioGroup, Typography } from "@mui/material";
 import { Expandable } from "./expandable";
 import { Checkbox } from "./checkbox";
-import { MuiCheckbox } from "./muiCheckBox";
+import { BloomCheckbox } from "./BloomCheckBox";
 import { useState } from "react";
 import { ApiCheckbox } from "./ApiCheckbox";
 import BloomButton from "./bloomButton";
@@ -51,6 +51,10 @@ import BookMakingSettingsControl from "../collection/bookMakingSettingsControl";
 import { Link } from "./link";
 import { BloomSplitButton } from "./bloomSplitButton";
 import { AutoUpdateSoftwareDialog } from "./AutoUpdateSoftwareDialog";
+import { VisuallyImpairedIcon } from "./icons/VisuallyImpairedIcon";
+
+const kLongText =
+    "Bacon ipsum dolor amet ribeye spare ribs bresaola t-bone. Strip steak turkey shankle pig ground round, biltong t-bone kevin alcatra flank ribeye beef ribs meatloaf filet mignon. Buffalo ham t-bone short ribs.";
 
 storiesOf("Localizable Widgets", module)
     .add("Expandable", () => (
@@ -151,158 +155,6 @@ storiesOf("Localizable Widgets", module)
         </div>
     ));
 
-storiesOf("Localizable Widgets/Checkbox", module)
-    .add("off", () => <Checkbox l10nKey="bogus">Click me</Checkbox>)
-    .add("on", () => (
-        <Checkbox checked={true} l10nKey="bogus">
-            Click me
-        </Checkbox>
-    ))
-    .add("indeterminate", () => (
-        <Checkbox tristate={true} l10nKey="bogus">
-            Click me
-        </Checkbox>
-    ));
-// see https://github.com/storybooks/storybook/issues/5721
-
-storiesOf("Localizable Widgets/MuiCheckbox", module)
-    .add("off", () =>
-        React.createElement(() => {
-            const [checked, setChecked] = useState<boolean | undefined>(false);
-            return (
-                <MuiCheckbox
-                    label=" Click me"
-                    checked={checked}
-                    onCheckChanged={newState => setChecked(newState)}
-                    l10nKey="bogus"
-                />
-            );
-        })
-    )
-    .add("on", () =>
-        React.createElement(() => {
-            const [checked, setChecked] = useState<boolean | undefined>(true);
-            return (
-                <MuiCheckbox
-                    label=" Click me"
-                    checked={checked}
-                    onCheckChanged={newState => setChecked(newState)}
-                    l10nKey="bogus"
-                />
-            );
-        })
-    )
-    .add("indeterminate", () =>
-        React.createElement(() => {
-            const [checked, setChecked] = useState<boolean | undefined>(
-                undefined
-            );
-            return (
-                <MuiCheckbox
-                    label=" Click me"
-                    checked={checked}
-                    tristate={true}
-                    onCheckChanged={newState => setChecked(newState)}
-                    l10nKey="bogus"
-                />
-            );
-        })
-    )
-    .add("short and long label", () =>
-        React.createElement(() => (
-            <React.Fragment>
-                original mui checkbox:
-                <div>
-                    <FormControlLabel
-                        control={<OriginalMuiCheckbox />}
-                        label={"short"}
-                    />
-                    <FormControlLabel
-                        control={<OriginalMuiCheckbox />}
-                        label={
-                            "Bacon ipsum dolor amet ribeye spare ribs bresaola t-bone. Strip steak turkey shankle pig ground round, biltong t-bone kevin alcatra flank ribeye beef ribs meatloaf filet mignon. Buffalo ham t-bone short ribs. Sausage alcatra tail, sirloin andouille pork belly corned beef shoulder meatloaf venison rump frankfurter bresaola chicken. Ball tip strip steak burgdoggen spare ribs picanha, turducken filet mignon ham hock short loin porchetta rump andouille t-bone boudin."
-                        }
-                    />
-                </div>
-                <hr />
-                our mui checkbox NOT tweaked for proper alignment when the label
-                wraps:
-                <div>
-                    <MuiCheckbox
-                        label="short"
-                        checked={true}
-                        onCheckChanged={() => {}}
-                        l10nKey="bogus"
-                        deprecatedVersionWhichDoesntEnsureMultilineLabelsWork={
-                            true
-                        }
-                    />
-                    <MuiCheckbox
-                        label="Bacon ipsum dolor amet ribeye spare ribs bresaola t-bone. Strip steak turkey shankle pig ground round, biltong t-bone kevin alcatra flank ribeye beef ribs meatloaf filet mignon. Buffalo ham t-bone short ribs. Sausage alcatra tail, sirloin andouille pork belly corned beef shoulder meatloaf venison rump frankfurter bresaola chicken. Ball tip strip steak burgdoggen spare ribs picanha, turducken filet mignon ham hock short loin porchetta rump andouille t-bone boudin."
-                        checked={true}
-                        onCheckChanged={() => {}}
-                        l10nKey="bogus"
-                        deprecatedVersionWhichDoesntEnsureMultilineLabelsWork={
-                            true
-                        }
-                    />
-                </div>
-                <hr />
-                our mui checkbox tweaked for proper alignment when the label
-                wraps:
-                <div>
-                    <MuiCheckbox
-                        label="short"
-                        checked={true}
-                        onCheckChanged={() => {}}
-                        l10nKey="bogus"
-                    />
-                    <MuiCheckbox
-                        label="Bacon ipsum dolor amet ribeye spare ribs bresaola t-bone. Strip steak turkey shankle pig ground round, biltong t-bone kevin alcatra flank ribeye beef ribs meatloaf filet mignon. Buffalo ham t-bone short ribs. Sausage alcatra tail, sirloin andouille pork belly corned beef shoulder meatloaf venison rump frankfurter bresaola chicken. Ball tip strip steak burgdoggen spare ribs picanha, turducken filet mignon ham hock short loin porchetta rump andouille t-bone boudin."
-                        checked={true}
-                        onCheckChanged={() => {}}
-                        l10nKey="bogus"
-                    />
-                </div>
-                <hr />
-                tweaked / NOT tweaked / original:
-                <div
-                    css={css`
-                        display: flex;
-                    `}
-                >
-                    <MuiCheckbox
-                        label="short"
-                        checked={true}
-                        onCheckChanged={() => {}}
-                        l10nKey="bogus"
-                    />
-                    <MuiCheckbox
-                        label="short"
-                        checked={true}
-                        onCheckChanged={() => {}}
-                        l10nKey="bogus"
-                        deprecatedVersionWhichDoesntEnsureMultilineLabelsWork={
-                            true
-                        }
-                    />
-                    <FormControlLabel
-                        control={<OriginalMuiCheckbox />}
-                        label={"short"}
-                    />
-                </div>
-            </React.Fragment>
-        ))
-    );
-storiesOf("Localizable Widgets/ApiCheckbox", module).add("ApiCheckbox", () =>
-    React.createElement(() => (
-        <ApiCheckbox
-            english="Motion Book"
-            l10nKey="PublishTab.Android.MotionBookMode"
-            apiEndpoint="publish/bloompub/motionBookMode"
-        />
-    ))
-);
 storiesOf("Localizable Widgets/MuiRadio", module).add("MuiRadio", () =>
     React.createElement(() => (
         <MuiRadioGroup>

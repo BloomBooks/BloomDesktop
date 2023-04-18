@@ -12,7 +12,12 @@ import { useL10n } from "./l10nHooks";
 import { WireUpForWinforms } from "../utils/WireUpWinform";
 import { Dialog, DialogActions, DialogContent } from "@mui/material";
 import BloomButton from "./bloomButton";
-import { kFormBackground, kBloomGray, kBloomBlue } from "../utils/colorUtils";
+import {
+    kFormBackground,
+    kBloomGray,
+    kBloomBlue,
+    kBloomDisabledOpacity
+} from "../utils/colorUtils";
 import {
     BloomDialog,
     DialogTitle,
@@ -69,11 +74,10 @@ interface IDisableable {
 
 /**
  * Checks the Bloom Enterprise settings and appends a Bloom Enterprise icon after the children if enterprise is off.
- * The children will also have disabled set to true in that case.
  * The children and the icon (if applicable) will be displayed as a flex row.
  * @param props.iconStyles: Optional. If specified, provides additional CSS styles for the Bloom Enterprise icon. Omit to use just the default styles.
  * Note that you can override a style in the default styles by specifying it in iconStyles (because the last one wins)
- * @param props.children: The ReactElements that should be wrapped. The children must all support the "disabled" property
+ * @param props.children: The ReactElements that should be wrapped.
  */
 export const RequiresBloomEnterpriseAdjacentIconWrapper = (props: {
     iconStyles?: string;
@@ -92,12 +96,14 @@ export const RequiresBloomEnterpriseAdjacentIconWrapper = (props: {
             (enterpriseAvailable ? "EnterpriseEnabled" : "RequiresEnterprise")
     );
 
-    // Set the disabled property on all the children
-    const children = React.Children.map(props.children, child =>
-        React.cloneElement(child, {
-            disabled: !enterpriseAvailable
-        })
-    );
+    // // Set the disabled property on all the children
+    const children = enterpriseAvailable
+        ? props.children
+        : React.Children.map(props.children, child =>
+              React.cloneElement(child, {
+                  disabled: false // we're going to slap a partial opacity on the whole thing, so we don't want the children to be disabled
+              })
+          );
 
     const icon = (
         <img
@@ -123,7 +129,21 @@ export const RequiresBloomEnterpriseAdjacentIconWrapper = (props: {
                 align-items: center;
             `}
         >
-            {children}
+            <div
+                css={css`
+                    opacity: ${enterpriseAvailable
+                        ? 1.0
+                        : kBloomDisabledOpacity};
+                `}
+                ref={node =>
+                    node &&
+                    // later version of react reportedly do support `inert`, but this version doesn't,
+                    // so we are using this `ref` way to get it into the DOM.
+                    (enterpriseAvailable || node.setAttribute("inert", ""))
+                }
+            >
+                {children}
+            </div>
             {icon}
         </div>
     );

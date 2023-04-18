@@ -12,8 +12,8 @@ export const ComicIcon: React.FunctionComponent<{
         <svg
             className={props.className}
             fill={props.color}
-            width="16"
-            height="13"
+            // width="16"
+            // height="13"
             viewBox="0 0 16 13"
             xmlns="http://www.w3.org/2000/svg"
         >

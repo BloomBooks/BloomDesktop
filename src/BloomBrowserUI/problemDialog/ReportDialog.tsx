@@ -12,7 +12,7 @@ import { post, postJson, useApiStringState } from "../utils/bloomApi";
 import { ThemeProvider, StyledEngineProvider } from "@mui/material/styles";
 import "./ProblemDialog.less";
 import BloomButton from "../react_components/bloomButton";
-import { MuiCheckbox } from "../react_components/muiCheckBox";
+import { BloomCheckbox } from "../react_components/BloomCheckBox";
 import { useState, useEffect, useRef } from "react";
 import { HowMuchGroup } from "./HowMuchGroup";
 import { PrivacyNotice } from "./PrivacyNotice";
@@ -348,7 +348,7 @@ export const ReportDialog: React.FunctionComponent<{
                                                     />
                                                 </div>
                                                 <div className="column2">
-                                                    <MuiCheckbox
+                                                    <BloomCheckbox
                                                         className="includeBook"
                                                         label="Include Book '{0}'"
                                                         l10nKey="ReportProblemDialog.IncludeBookButton"
@@ -362,11 +362,8 @@ export const ReportDialog: React.FunctionComponent<{
                                                                 v as boolean
                                                             )
                                                         }
-                                                        deprecatedVersionWhichDoesntEnsureMultilineLabelsWork={
-                                                            true
-                                                        }
                                                     />
-                                                    <MuiCheckbox
+                                                    <BloomCheckbox
                                                         label="Include this screenshot"
                                                         l10nKey="ReportProblemDialog.IncludeScreenshotButton"
                                                         checked={
@@ -376,9 +373,6 @@ export const ReportDialog: React.FunctionComponent<{
                                                             setIncludeScreenshot(
                                                                 v as boolean
                                                             )
-                                                        }
-                                                        deprecatedVersionWhichDoesntEnsureMultilineLabelsWork={
-                                                            true
                                                         }
                                                     />
                                                     <img

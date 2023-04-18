@@ -3,6 +3,7 @@
 .bookMetadataDialog {
     .bookMetadataTable {
         max-height: 700px; // allows/enforces scrolling of content if it gets too tall
+
         // React-table will prevent a position:absolute dropdown from growing larger than the cell we give it.
         // This is needed by the subject chooser (and any future drop-downs)
         .rt-td {
@@ -12,45 +13,53 @@
         .MuiFormControl-root {
             margin-top: 0;
         }
+
         .checkbox-list {
             display: flex;
             flex-direction: column;
-            .MuiButtonBase-root {
-                padding-top: 0;
-                padding-bottom: 0;
-            }
         }
+
         border: none;
+
         a.whatsthis {
             text-align: right;
             text-decoration: none;
             font-size: 9px;
+
             &:focus {
                 outline: 0;
             }
+
             &:hover {
                 text-decoration: underline;
             }
+
             // Ensure this displays on a separate line (BL-7284)
             display: block;
         }
+
         .rt-tr-group {
             border-bottom: none;
             margin-bottom: 10px;
         }
+
         .rt-td {
             border-right: none;
         }
+
         width: 550px;
+
         .rt-thead.-header {
             display: none;
         }
+
         .rt-td.label {
             padding-top: @fieldVerticalPadding;
             padding-bottom: @fieldVerticalPadding;
             text-align: right;
             margin-right: 10px;
         }
+
         .rt-td.value {
             // Enhance in the future: if this dialog actually gets used much, someone somewhere
             // will need it to be a different font in order to show the title or the author's name.
@@ -76,13 +85,16 @@
                 padding-bottom: @fieldVerticalPadding;
             }
         }
+
         .MuiOutlinedInput-multiline {
             padding: 5px;
         }
+
         // cover art
         img {
             height: 70px;
         }
+
         .loading {
             margin-left: auto;
             margin-right: auto;
@@ -93,6 +105,7 @@
             padding: 0 !important;
             margin-top: @fieldVerticalPadding;
             margin-bottom: @fieldVerticalPadding;
+
             & > div {
                 background-color: white;
             }

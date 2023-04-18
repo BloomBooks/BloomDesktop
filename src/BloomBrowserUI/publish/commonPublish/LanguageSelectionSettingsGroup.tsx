@@ -4,6 +4,7 @@ import { FormGroup, Checkbox, FormControlLabel } from "@mui/material";
 import * as React from "react";
 import { useL10n } from "../../react_components/l10nHooks";
 import { SettingsGroup } from "../commonPublish/PublishScreenBaseComponents";
+import { BloomCheckbox } from "../../react_components/BloomCheckBox";
 
 export interface LangCheckboxValue {
     code; // the language code
@@ -34,27 +35,26 @@ export const LanguageSelectionSettingsGroup: React.FunctionComponent<{
     );
 
     const languageCheckboxes = props.langCheckboxValues.map(item => (
-        <FormControlLabel
+        <BloomCheckbox
             key={item.code}
-            className="languageLabel"
-            title={item.required ? required : undefined}
-            control={
-                <Checkbox
-                    disabled={!item.isEnabled}
-                    checked={item.isChecked}
-                    onChange={(e, newState) => {
-                        if (props.onChange) {
-                            props.onChange(item, newState);
-                        }
-                    }}
-                    color="primary"
-                />
-            }
+            tooltipContents={item.required ? required : undefined}
+            disabled={!item.isEnabled}
+            checked={item.isChecked}
+            onCheckChanged={newState => {
+                if (props.onChange) {
+                    props.onChange(item, newState!);
+                }
+            }}
             label={
-                <div className="check-box-label">
+                <div>
                     <div>{item.name}</div>
                     {item.warnIncomplete && (
-                        <div className="incompleteTranslation">
+                        <div
+                            css={css`
+                                color: grey;
+                                font-size: smaller;
+                            `}
+                        >
                             {incomplete}
                         </div>
                     )}
@@ -70,12 +70,13 @@ export const LanguageSelectionSettingsGroup: React.FunctionComponent<{
                     css={css`
                         // The 'important' overrides the MUI default so we only get one column of checkboxes.
                         flex-wrap: nowrap !important;
-                        margin-right: 20px;
                         // These two "cancel out" except that they defeat a bug in the HTML spec that prevents
                         // overflow-x from being visible when overflow-y is hidden. The check box shadows can
                         // 'overflow' from the normal space occupied by the scrollingFeature.
-                        padding-left: 11px;
-                        margin-left: -11px;
+                        // [JH, later] I don't exactly know what the problem was, but we don't have scrolling any more in this
+                        // area and this was causing problems. Leaving here in a comment in case we need to revisit.
+                        /* padding-left: 11px;
+                        margin-left: -11px; */
                     `}
                 >
                     {languageCheckboxes}

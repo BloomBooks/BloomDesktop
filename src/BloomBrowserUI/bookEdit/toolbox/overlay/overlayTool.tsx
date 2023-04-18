@@ -23,7 +23,7 @@ import * as toastr from "toastr";
 import { default as TrashIcon } from "@mui/icons-material/Delete";
 import { get } from "../../../utils/bloomApi";
 import { isLinux } from "../../../utils/isLinux";
-import { MuiCheckbox } from "../../../react_components/muiCheckBox";
+import { BloomCheckbox } from "../../../react_components/BloomCheckBox";
 import { ColorBar } from "./colorBar";
 import { IColorInfo } from "../../../react_components/color-picking/colorSwatch";
 import { IColorPickerDialogProps } from "../../../react_components/color-picking/colorPickerDialog";
@@ -644,38 +644,30 @@ const OverlayToolControls: React.FunctionComponent = () => {
                                     </Div>
                                 </MenuItem>
                             </Select>
-                            <div className="comicCheckbox">
-                                <MuiCheckbox
-                                    label="Show Tail"
-                                    l10nKey="EditTab.Toolbox.ComicTool.Options.ShowTail"
-                                    checked={showTailChecked}
-                                    disabled={isChild(currentItemSpec)}
-                                    onCheckChanged={v => {
-                                        handleShowTailChanged(v as boolean);
-                                    }}
-                                    deprecatedVersionWhichDoesntEnsureMultilineLabelsWork={
-                                        true
-                                    }
-                                />
-                            </div>
-                            <div className="comicCheckbox">
-                                <MuiCheckbox
-                                    label="Rounded Corners"
-                                    l10nKey="EditTab.Toolbox.ComicTool.Options.RoundedCorners"
-                                    checked={isRoundedCornersChecked}
-                                    disabled={
-                                        !styleSupportsRoundedCorners(
-                                            currentFamilySpec
-                                        )
-                                    }
-                                    onCheckChanged={newValue => {
-                                        handleRoundedCornersChanged(newValue);
-                                    }}
-                                    deprecatedVersionWhichDoesntEnsureMultilineLabelsWork={
-                                        true
-                                    }
-                                />
-                            </div>
+
+                            <BloomCheckbox
+                                label="Show Tail"
+                                l10nKey="EditTab.Toolbox.ComicTool.Options.ShowTail"
+                                checked={showTailChecked}
+                                disabled={isChild(currentItemSpec)}
+                                onCheckChanged={v => {
+                                    handleShowTailChanged(v as boolean);
+                                }}
+                            />
+
+                            <BloomCheckbox
+                                label="Rounded Corners"
+                                l10nKey="EditTab.Toolbox.ComicTool.Options.RoundedCorners"
+                                checked={isRoundedCornersChecked}
+                                disabled={
+                                    !styleSupportsRoundedCorners(
+                                        currentFamilySpec
+                                    )
+                                }
+                                onCheckChanged={newValue => {
+                                    handleRoundedCornersChanged(newValue);
+                                }}
+                            />
                         </FormControl>
                         <FormControl variant="standard">
                             <InputLabel htmlFor="text-color-bar" shrink={true}>

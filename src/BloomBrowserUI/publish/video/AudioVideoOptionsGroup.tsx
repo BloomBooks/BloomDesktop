@@ -14,7 +14,7 @@ import AudioIcon from "@mui/icons-material/VolumeUp";
 import { useEffect, useState } from "react";
 import { NoteBox } from "../../react_components/BloomDialog/commonDialogComponents";
 import { BloomTooltip } from "../../react_components/BloomToolTip";
-import { MuiCheckbox } from "../../react_components/muiCheckBox";
+import { BloomCheckbox } from "../../react_components/BloomCheckBox";
 import { useSubscribeToWebSocketForObject } from "../../utils/WebSocketManager";
 import { IFormatDimensionsResponseEntry } from "./IFormatDimensionsResponseEntry";
 
@@ -400,12 +400,12 @@ export const AudioVideoOptionsGroup: React.FunctionComponent<{
                                     margin-top: 20px;
                                 `}
                             >
-                                <MuiCheckbox
+                                <BloomCheckbox
                                     label="Motion Book"
                                     l10nKey="PublishTab.Android.MotionBookMode"
                                     checked={props.motion}
                                     onCheckChanged={props.onMotionChange}
-                                ></MuiCheckbox>
+                                ></BloomCheckbox>
                             </FormGroup>
                         )}
                         {/* We need the > 0 here to force a boolean...the number zero will actually be shown */}
