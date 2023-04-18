@@ -557,7 +557,7 @@ BookServer bookServer,
 		/// <param name="fontFileFinder">use new FontFinder() for real, or a stub in testing</param>
 		public static void EmbedFonts(Book.Book book, IWebSocketProgress progress, HashSet<string> fontsWanted, IFontFinder fontFileFinder)
 		{
-			const string defaultFont = "Andika New Basic"; // already in BR, don't need to embed or make rule.
+			const string defaultFont = "Andika"; // "Andika" already in BR, don't need to embed or make rule.
 			fontsWanted.Remove(defaultFont);
 			PublishHelper.CheckFontsForEmbedding(progress, fontsWanted, fontFileFinder, out List<string> filesToEmbed, out HashSet<string> badFonts);
 			foreach (var file in filesToEmbed)
@@ -586,6 +586,7 @@ BookServer bookServer,
 			RobustFile.WriteAllText(Path.Combine(book.FolderPath, "fonts.css"), sb.ToString());
 			// Tell the document to use the new stylesheet.
 			book.OurHtmlDom.AddStyleSheet("fonts.css");
+			PublishHelper.RemoveAndikaFontFaceDeclarations(book.FolderPath);
 			// Repair defaultLangStyles.css and other places in the output book if needed.
 			if (badFonts.Any())
 			{

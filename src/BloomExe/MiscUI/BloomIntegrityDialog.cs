@@ -28,7 +28,7 @@ namespace Bloom.MiscUI
 
 				string[] dirs;
 			if (Platform.IsWindows)
-				dirs = new[] { "AndikaNewBasic", "localization", "xslts", "icons" };
+				dirs = new[] { "fonts", "localization", "xslts", "icons" };
 			else
 				dirs = new[] { "localization", "xslts", "icons" };
 

@@ -16,6 +16,7 @@ using System.Xml;
 using Bloom.Api;
 using Bloom.Collection;
 using Bloom.Edit;
+using Bloom.FontProcessing;
 using Bloom.History;
 using Bloom.Publish;
 using Bloom.TeamCollection;
@@ -1578,9 +1579,30 @@ namespace Bloom.Book
 						copyCurrentRule = false;
 				}
 			}
+			var cssHeader = "";
+			var css = cssBuilder.ToString();
+			if (FontsApi.IsServingAndika)
+			{
+				cssHeader = @"@font-face { font-family: Andika; src: url(/host/fonts/Andika-Regular.woff2); }
+@font-face { font-family: Andika; font-style: italic; src: url(/host/fonts/Andika-Italic.woff2); }
+@font-face { font-family: Andika; font-weight: bold; src: url(/host/fonts/Andika-Bold.woff2); }
+@font-face { font-family: Andika; font-weight: bold; font-style: italic; src: url(/host/fonts/Andika-BoldItalic.woff2); }
+";
+				if (FontsApi.AndikaNewBasicIsAndika)
+					cssHeader = cssHeader + @"@font-face { font-family: 'Andika New Basic'; src: url(/host/fonts/Andika-Regular.woff2); }
+@font-face { font-family: 'Andika New Basic'; font-style: italic; src: url(/host/fonts/Andika-Italic.woff2); }
+@font-face { font-family: 'Andika New Basic'; font-weight: bold; src: url(/host/fonts/Andika-Bold.woff2); }
+@font-face { font-family: 'Andika New Basic'; font-weight: bold; font-style: italic; src: url(/host/fonts/Andika-BoldItalic.woff2); }
+";
+			}
+			else if (FontsApi.AndikaNewBasicIsAndika && css.Contains("'Andika New Basic';"))
+			{
+				// Andika is installed, but not Andika New Basic: add a fallback for Andika New Basic
+				css = css.Replace("'Andika New Basic';", "'Andika New Basic','Andika';");
+			}
 			try
 			{
-				RobustFile.WriteAllText(path, cssBuilder.ToString());
+				RobustFile.WriteAllText(path, cssHeader + css);
 			}
 			catch (UnauthorizedAccessException e)
 			{
