@@ -400,11 +400,11 @@ namespace BloomTests.Publish
 		private static void CreateCommonCssFiles(Bloom.Book.Book book)
 		{
 			var settingsCollectionPath = Path.Combine(book.FolderPath, "defaultLangStyles.css");
-			File.WriteAllText(settingsCollectionPath, "body:{font-family: 'Andika New Basic';}");
+			File.WriteAllText(settingsCollectionPath, "body:{font-family: 'Andika';}");
 			var customCollectionPath = Path.Combine(book.FolderPath, "customCollectionStyles.css");
-			File.WriteAllText(customCollectionPath, "body:{font-family: 'Andika New Basic';}");
+			File.WriteAllText(customCollectionPath, "body:{font-family: 'Andika';}");
 			var customBookPath = Path.Combine(book.FolderPath, "customBookStyles.css");
-			File.WriteAllText(customBookPath, "body:{font-family: 'Andika New Basic';}");
+			File.WriteAllText(customBookPath, "body:{font-family: 'Andika';}");
 		}
 
 		protected override Bloom.Book.Book CreateBook(bool bringBookUpToDate = false)
@@ -469,10 +469,10 @@ namespace BloomTests.Publish
 			assertThatManifest.HasAtLeastOneMatchForXpath("package/manifest/item[@id='customCollectionStyles' and @href='"+kCssSlash+"customCollectionStyles.css']");
 			assertThatManifest.HasAtLeastOneMatchForXpath("package/manifest/item[@id='customBookStyles' and @href='"+kCssSlash+"customBookStyles.css']");
 
-			assertThatManifest.HasAtLeastOneMatchForXpath("package/manifest/item[@id='AndikaNewBasic-R' and @href='"+kFontsSlash+"AndikaNewBasic-R.ttf' and @media-type='application^slash^vnd.ms-opentype']");
+			assertThatManifest.HasAtLeastOneMatchForXpath("package/manifest/item[@id='Andika-Regular' and @href='"+kFontsSlash+ "Andika-Regular.woff2' and @media-type='application^slash^font-woff2']");
 			// This used to be a test that it DOES include the bold (along with italic and BI) variants. But we decided not to...see BL-4202 and comments in EpubMaker.EmbedFonts().
 			// So this is now a negative to check that they don't creep back in (unless we change our minds).
-			assertThatManifest.HasNoMatchForXpath("package/manifest/item[@id='AndikaNewBasic-B' and @href='"+kFontsSlash+"AndikaNewBasic-B.ttf' and @media-type='application^slash^vnd.ms-opentype']");
+			assertThatManifest.HasNoMatchForXpath("package/manifest/item[@id='Andika-Bold' and @href='"+kFontsSlash+"Andika-Bold.woff2' and @media-type='application^slash^font-woff2']");
 			assertThatManifest.HasAtLeastOneMatchForXpath("package/manifest/item[@id='fonts' and @href='"+kCssSlash+"fonts.css']");
 
 			foreach (var image in imageFiles)
@@ -666,6 +666,8 @@ namespace BloomTests.Publish
 						Assert.AreEqual(EpubMaker.kVideoFolder, path[1]);
 					break;
 				case ".ttf":
+				case ".woff":
+				case ".woff2":
 					Assert.AreEqual(3, path.Length);
 					Assert.AreEqual("content", path[0]);
 					Assert.AreEqual(EpubMaker.kFontsFolder, path[1]);

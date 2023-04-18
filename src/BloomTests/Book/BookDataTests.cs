@@ -1896,13 +1896,6 @@ namespace BloomTests.Book
 		}
 
 		[Test]
-		[Category("SkipOnTeamCity")]
-		public void AndikaNewBasic_MustBeInstalled()
-		{
-			Assert.That(AndikaNewBasicIsInstalled());
-		}
-
-		[Test]
 		public void OneTimeCheckVersionNumber_AndikaNewBasicMigration_alreadyDone()
 		{
 			var filepath = _collectionSettings.SettingsFilePath;
