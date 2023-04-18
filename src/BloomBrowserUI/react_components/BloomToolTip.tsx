@@ -5,13 +5,7 @@ import { Popover, PopoverOrigin, Typography } from "@mui/material";
 import { Div } from "./l10nComponents";
 import { kBloomBlue } from "../bloomMaterialUITheme";
 
-// This class supports adding a tooltip to its children.
-// We use this for a more controllable tooltip than we get with title and similar properties.
-// We use Popover rather than various more obvious React components partly because of some
-// dependency incompatibilities with our version of Storybook.
-// BloomTooltip basically displays its children. When hovered over (including when clicked)
-// it displays the message indicated by either tooltipContent or tooltipText/tooltipL10nKey.
-export const BloomTooltip: React.FunctionComponent<{
+export interface IBloomToolTipProps {
     // The color to use for the background of the tooltip, and, crucially, also for the
     // arrow that points up at the thing described. This should usually be somewhat
     // contrastive with the background of the children, but it also needs to contrast
@@ -47,7 +41,15 @@ export const BloomTooltip: React.FunctionComponent<{
     sideVerticalOrigin?: number;
     sideHorizontalOrigin?: number;
     arrowLoc?: "middle" | "edge"; // default is edge for side=left|right.
-}> = props => {
+}
+
+// This class supports adding a tooltip to its children.
+// We use this for a more controllable tooltip than we get with title and similar properties.
+// We use Popover rather than various more obvious React components partly because of some
+// dependency incompatibilities with our version of Storybook.
+// BloomTooltip basically displays its children. When hovered over (including when clicked)
+// it displays the message indicated by either tooltipContent or tooltipText/tooltipL10nKey.
+export const BloomTooltip: React.FunctionComponent<IBloomToolTipProps> = props => {
     // controls visibility and placement of the 'tooltip' (if props.changePopupAnchor is null).
     const [
         localAnchorEl,
