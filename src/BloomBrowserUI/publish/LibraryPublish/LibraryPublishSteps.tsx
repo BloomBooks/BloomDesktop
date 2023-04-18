@@ -24,6 +24,7 @@ import { MuiCheckbox } from "../../react_components/muiCheckBox";
 import { useL10n } from "../../react_components/l10nHooks";
 import { kWebSocketContext } from "./LibraryPublishScreen";
 import {
+    useSubscribeToWebSocketForEvent,
     useSubscribeToWebSocketForObject,
     useSubscribeToWebSocketForStringMessage
 } from "../../utils/WebSocketManager";
@@ -54,6 +55,7 @@ interface IReadonlyBookInfo {
 }
 
 const kWebSocketEventId_uploadSuccessful: string = "uploadSuccessful";
+const kWebSocketEventId_uploadCanceled: string = "uploadCanceled";
 const kWebSocketEventId_loginSuccessful: string = "loginSuccessful";
 
 export const LibraryPublishSteps: React.FunctionComponent = () => {
@@ -209,6 +211,15 @@ export const LibraryPublishSteps: React.FunctionComponent = () => {
             } else post("libraryPublish/upload");
         });
     }
+
+    const [isCanceling, setIsCanceling] = useState<boolean>(false);
+    useSubscribeToWebSocketForEvent(
+        kWebSocketContext,
+        kWebSocketEventId_uploadCanceled,
+        () => {
+            setIsCanceling(false);
+        }
+    );
 
     function bulkUploadCollection() {
         post("libraryPublish/uploadCollection");
@@ -433,9 +444,10 @@ export const LibraryPublishSteps: React.FunctionComponent = () => {
                         >
                             {isUploading ? (
                                 <BloomButton
-                                    enabled={true}
+                                    enabled={!isCanceling}
                                     l10nKey={"Common.Cancel"}
                                     onClick={() => {
+                                        setIsCanceling(true);
                                         setIsUploading(false);
                                         post("libraryPublish/cancel");
                                     }}
@@ -462,6 +474,7 @@ export const LibraryPublishSteps: React.FunctionComponent = () => {
                                 >
                                     <BloomSplitButton
                                         disabled={
+                                            isCanceling ||
                                             !isReadyForUpload() ||
                                             !loggedInEmail ||
                                             // If 'error', there's probably an internet problem that will
