@@ -52,6 +52,7 @@ interface IReadonlyBookInfo {
     licenseToken: string;
     licenseRights: string;
     isTemplate: boolean;
+    isSaveable: boolean;
 }
 
 const kWebSocketEventId_uploadSuccessful: string = "uploadSuccessful";
@@ -321,6 +322,65 @@ export const LibraryPublishSteps: React.FunctionComponent = () => {
         localizedSuggestChangeCC
     ]);
 
+    const isSummaryDisabled = bookInfo === undefined || !bookInfo?.isSaveable;
+    const summaryTextField = (
+        <TextField
+            // needed by aria for a11y
+            id="book summary"
+            value={summary}
+            onChange={e => setSummary(e.target.value)}
+            label={localizedSummary}
+            margin="normal"
+            variant="outlined"
+            InputLabelProps={{
+                shrink: true
+            }}
+            multiline
+            rows="2"
+            aria-label="Book summary"
+            fullWidth
+            css={css`
+                margin-top: 24px;
+
+                // This is messy. MUI doesn't seem to let you easily (and correctly) change the label size.
+                // You're supposed to be able to set a style on InputLabelProps and set fontSize, but then
+                // the border around the textbox partially goes through it.
+                // The way that break in the border is implemented is a "legend" which obscures the border.
+                // The legend has the same text as the label. So we have to make the text the same size.
+                // The original transform is translate(14px, -9px) scale(1). In order to make "larger" match,
+                // we unscale it here -- scale(1), and as a result we have to increase the scale of the legend.
+                .MuiInputLabel-root {
+                    color: inherit;
+                    font-weight: 500;
+                    font-size: larger;
+                    transform: translate(14px, -9px) scale(1);
+                    &.Mui-focused {
+                        color: inherit;
+                    }
+                }
+                legend {
+                    font-weight: 500;
+                    font-size: larger;
+                    transform: scale(1.5);
+                }
+            `}
+            disabled={isSummaryDisabled}
+        />
+    );
+
+    const summaryWithPossibleTooltip = isSummaryDisabled ? (
+        <BloomTooltip
+            id={"book-summary"}
+            tooltipText="This feature requires the book to be checked out to you."
+            tooltipL10nKey="CollectionTab.BookMenu.MustCheckOutTooltip"
+            sideVerticalOrigin={0}
+        >
+            {summaryTextField}
+        </BloomTooltip>
+    ) : (
+        summaryTextField
+    );
+
     return (
         <React.Fragment>
             <BloomStepper orientation="vertical">
@@ -366,47 +426,7 @@ export const LibraryPublishSteps: React.FunctionComponent = () => {
                             </div>
                             {licenseBlock}
                         </div>
-                        <TextField
-                            // needed by aria for a11y
-                            id="book summary"
-                            value={summary}
-                            onChange={e => setSummary(e.target.value)}
-                            label={localizedSummary}
-                            margin="normal"
-                            variant="outlined"
-                            InputLabelProps={{
-                                shrink: true
-                            }}
-                            multiline
-                            rows="2"
-                            aria-label="Book summary"
-                            fullWidth
-                            css={css`
-                                margin-top: 24px;
-
-                                // This is messy. MUI doesn't seem to let you easily (and correctly) change the label size.
-                                // You're supposed to be able to set a style on InputLabelProps and set fontSize, but then
-                                // the border around the textbox partially goes through it.
-                                // The way that break in the border is implemented is a "legend" which obscures the border.
-                                // The legend has the same text as the label. So we have to make the text the same size.
-                                // The original transform is translate(14px, -9px) scale(1). In order to make "larger" match,
-                                // we unscale it here -- scale(1), and as a result we have to increase the scale of the legend.
-                                .MuiInputLabel-root {
-                                    color: inherit;
-                                    font-weight: 500;
-                                    font-size: larger;
-                                    transform: translate(14px, -9px) scale(1);
-                                    &.Mui-focused {
-                                        color: inherit;
-                                    }
-                                }
-                                legend {
-                                    font-weight: 500;
-                                    font-size: larger;
-                                    transform: scale(1.5);
-                                }
-                            `}
-                        />
+                        {summaryWithPossibleTooltip}
                     </StepContent>
                 </Step>
                 <Step
