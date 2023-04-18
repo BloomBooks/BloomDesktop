@@ -366,20 +366,9 @@ namespace Bloom.Collection
 			{
 				_subscriptionCode = CollectionSettingsApi.LegacyBrandingName;
 			}
-			CollectionSettingsApi.SetSubscriptionCode(_subscriptionCode, IsSubscriptionCodeKnown(), GetEnterpriseStatus());
+			CollectionSettingsApi.SetSubscriptionCode(_subscriptionCode, _collectionSettings.IsSubscriptionCodeKnown(), _collectionSettings.GetEnterpriseStatus());
 			_loaded = true;
 			Logger.WriteEvent("Entered Settings Dialog");
-		}
-
-		/// <summary>
-		/// Return true if the part of the subscription code that identifies the branding is one we know about.
-		/// Either the branding files must exist or the expiration date must be set, even if expired.
-		/// This allows new, not yet implemented, subscriptions/brandings to be recognized as valid, and expired
-		/// subscriptions to be flagged as such but not treated as totally invalid.
-		/// </summary>
-		bool IsSubscriptionCodeKnown()
-		{
-			return BrandingProject.HaveFilesForBranding(_brand) || CollectionSettingsApi.GetExpirationDate(_subscriptionCode) != DateTime.MinValue;
 		}
 
 		private void _cancelButton_Click(object sender, EventArgs e)
@@ -452,19 +441,6 @@ namespace Bloom.Collection
 			}
 		}
 
-		private CollectionSettingsApi.EnterpriseStatus GetEnterpriseStatus()
-		{
-			if (CollectionSettingsApi.FixEnterpriseSubscriptionCodeMode)
-			{
-				// We're being displayed to fix a branding code...select that option
-				return CollectionSettingsApi.EnterpriseStatus.Subscription;
-			}
-			if (_brand == "Default")
-				return CollectionSettingsApi.EnterpriseStatus.None;
-			else if (_brand == "Local-Community")
-				return CollectionSettingsApi.EnterpriseStatus.Community;
-			return CollectionSettingsApi.EnterpriseStatus.Subscription; ;
-		}
 		/// <summary>
 		/// We configure the SettingsApi to use this method to notify this (as the manager of the whole dialog
 		/// including the "need to reload" message and the Ok/Cancel buttons) of changes the user makes
