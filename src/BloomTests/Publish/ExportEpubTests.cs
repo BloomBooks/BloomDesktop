@@ -232,17 +232,17 @@ namespace BloomTests.Publish
 			var fontCssData = ExportEpubTestsBaseClass.GetZipContent(_epub, "content/"+EpubMaker.kCssFolder+"/fonts.css");
 			Assert.That(fontCssData,
 				Does.Contain(
-					"@font-face {font-family:'Andika New Basic'; font-weight:normal; font-style:normal; src:url('../"+EpubMaker.kFontsFolder+"/AndikaNewBasic-R.ttf') format('opentype');}"));
+					"@font-face {font-family:'Andika'; font-weight:normal; font-style:normal; src:url('../"+EpubMaker.kFontsFolder+"/Andika-Regular.woff2') format('woff2');}"));
 			// Currently we're not embedding bold and italic fonts (BL-4202)
 			//Assert.That(fontCssData,
 			//	Does.Contain(
-			//		"@font-face {font-family:'Andika New Basic'; font-weight:bold; font-style:normal; src:url(AndikaNewBasic-B.ttf) format('opentype');}"));
+			//		"@font-face {font-family:'Andika'; font-weight:bold; font-style:normal; src:url(Andika-Bold.woff2) format('woff2');}"));
 			//Assert.That(fontCssData,
 			//	Does.Contain(
-			//		"@font-face {font-family:'Andika New Basic'; font-weight:normal; font-style:italic; src:url(AndikaNewBasic-I.ttf) format('opentype');}"));
+			//		"@font-face {font-family:'Andika'; font-weight:normal; font-style:italic; src:url(Andika-Italic.woff2) format('woff2');}"));
 			//Assert.That(fontCssData,
 			//	Does.Contain(
-			//		"@font-face {font-family:'Andika New Basic'; font-weight:bold; font-style:italic; src:url(AndikaNewBasic-BI.ttf) format('opentype');}"));
+			//		"@font-face {font-family:'Andika'; font-weight:bold; font-style:italic; src:url(Andika-BoldItalic.woff2) format('woff2');}"));
 		}
 
 		private void CheckPageBreakMarker(string pageData, string pageId="pg1", string pageLabel="1")

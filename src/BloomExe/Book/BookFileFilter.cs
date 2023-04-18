@@ -220,7 +220,7 @@ namespace Bloom.Book
 		// These file extensions are the default ones that will be included in the compressed version
 		// at the top book level.
 		internal readonly HashSet<string> BookLevelFileExtensionsLowerCase =
-			new HashSet<string>(new[] { ".svg", ".png", ".jpg", ".jpeg", ".tif", ".tiff", ".bmp", ".otf", ".ttf", ".woff", ".css", ".json", ".txt", ".js", ".distribution" });
+			new HashSet<string>(new[] { ".svg", ".png", ".jpg", ".jpeg", ".tif", ".tiff", ".bmp", ".otf", ".ttf", ".woff", ".woff2", ".css", ".json", ".txt", ".js", ".distribution" });
 
 		/// <summary>
 		/// Return true if the file at fullPath should be included in the output.

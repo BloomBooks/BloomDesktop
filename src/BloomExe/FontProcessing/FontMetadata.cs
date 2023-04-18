@@ -9,6 +9,7 @@ using SharpFont;
 #else
 using System.Windows.Media;
 #endif
+using Bloom.Api;
 
 namespace Bloom.FontProcessing
 {
@@ -212,11 +213,27 @@ namespace Bloom.FontProcessing
 			}
 			catch (Exception e)
 			{
-				// file is somehow corrupt or not really a font file? Just ignore it.
-				Console.WriteLine("GlyphTypeface for \"{0}\" threw an exception: {1}", group.Normal, e);
-				determinedSuitability = kInvalid;
-				determinedSuitabilityNotes = $"GlyphTypeface exception: {e}";
-				return;
+				var serve = FontServe.GetInstance();
+				if (!serve.HasFamily(fontName))
+				{
+					// file is somehow corrupt or not really a font file? Just ignore it.
+					Console.WriteLine("GlyphTypeface for \"{0}\" threw an exception: {1}", group.Normal, e);
+					determinedSuitability = kInvalid;
+					determinedSuitabilityNotes = $"GlyphTypeface exception: {e}";
+					return;
+				}
+				var info = serve.GetFontInformationForFamily(fontName);
+				// These values are for the version of the font that Bloom ships with.
+				copyright = info.metadata.copyright;
+				designer = info.metadata.designer;
+				designerURL = info.metadata.designerURL;
+				fsType = info.metadata.fsType;
+				license = info.metadata.license;
+				licenseURL = info.metadata.licenseURL;
+				manufacturer = info.metadata.manufacturer;
+				manufacturerURL = info.metadata.manufacturerURL;
+				trademark = info.metadata.trademark;
+				version = info.metadata.version;
 			}
 #endif
 			variants = group.GetAvailableVariants().ToArray();
