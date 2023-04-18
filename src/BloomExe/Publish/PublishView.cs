@@ -28,7 +28,6 @@ namespace Bloom.Publish
 	{
 		public readonly PublishModel _model;
 		private bool _activated;
-		private BloomLibraryUploadControl _uploadControl;
 		private BookUpload _bookTransferrer;
 		private PictureBox _previewBox;
 		private HtmlPublishPanel _htmlControl;
@@ -146,7 +145,6 @@ namespace Bloom.Publish
 
 			_pdfPrintRadio.AutoCheck = autoCheck;
 			_uploadRadio.AutoCheck = autoCheck;
-			_uploadRadioObsolete.AutoCheck = autoCheck;
 			_epubRadio.AutoCheck = autoCheck;
 			_bloomPUBRadio.AutoCheck = autoCheck;
 			_recordVideoRadio.AutoCheck = autoCheck;
@@ -156,7 +154,6 @@ namespace Bloom.Publish
 		{
 			LocalizeSuperToolTip(_pdfPrintRadio, "PublishTab.PdfPrint.Button");
 			LocalizeSuperToolTip(_uploadRadio, "PublishTab.ButtonThatShowsUploadForm");
-			LocalizeSuperToolTip(_uploadRadioObsolete, "PublishTab.ButtonThatShowsUploadForm");
 			LocalizeSuperToolTip(_bloomPUBRadio, "PublishTab.bloomPUBButton");
 			LocalizeSuperToolTip(_recordVideoRadio, "PublishTab.RecordVideoButton");
 		}
@@ -218,7 +215,7 @@ namespace Bloom.Publish
 
 		private void ClearRadioButtons()
 		{
-			_pdfPrintRadio.Checked = _uploadRadio.Checked = _uploadRadioObsolete.Checked = _epubRadio.Checked = _bloomPUBRadio.Checked = _recordVideoRadio.Checked = false;
+			_pdfPrintRadio.Checked = _uploadRadio.Checked = _epubRadio.Checked = _bloomPUBRadio.Checked = _recordVideoRadio.Checked = false;
 		}
 
 		internal bool IsMakingPdf
@@ -300,8 +297,6 @@ namespace Bloom.Publish
 			{
 				if (_uploadRadio.Checked)
 					_model.DisplayMode = PublishModel.DisplayModes.Upload;
-				else if (_uploadRadioObsolete.Checked)
-					_model.DisplayMode = PublishModel.DisplayModes.Upload_Obsolete;
 				else if (_epubRadio.Checked)
 					_model.DisplayMode = PublishModel.DisplayModes.EPUB;
 				else if (_bloomPUBRadio.Checked)
@@ -327,17 +322,10 @@ namespace Bloom.Publish
 
 			_pdfPrintRadio.Checked = _model.PdfPrintMode;
 			_uploadRadio.Checked = _model.UploadMode;
-			_uploadRadioObsolete.Checked = _model.UploadModeObsolete;
 			_epubRadio.Checked = _model.EpubMode;
-
-			if (!_model.AllowUpload)
-			{
-			   //this doesn't actually show when disabled		        _superToolTip.GetSuperStuff(_uploadRadioObsolete).SuperToolTipInfo.BodyText = "This creator of this book, or its template, has marked it as not being appropriate for upload to BloomLibrary.org";
-			}
 
 			_pdfPrintRadio.Enabled = _model.AllowPdf;
 			_uploadRadio.Enabled = _model.AllowUpload;
-			_uploadRadioObsolete.Enabled = _model.AllowUpload;
 			_openinBrowserMenuItem.Enabled = _openPDF.Enabled = _model.PdfGenerationSucceeded;
 			_bloomPUBRadio.Enabled = _model.AllowBloomPub;
 			_epubRadio.Enabled = _model.AllowEPUB;
@@ -355,11 +343,6 @@ namespace Bloom.Publish
 
 			// Suspending/resuming layout makes the transition between modes a bit smoother.
 			SuspendLayout();
-			if (displayMode != PublishModel.DisplayModes.Upload_Obsolete && _uploadControl != null)
-			{
-				Controls.Remove(_uploadControl);
-				_uploadControl = null;
-			}
 			if (displayMode != PublishModel.DisplayModes.BloomPUB &&
 				displayMode != PublishModel.DisplayModes.EPUB &&
 				displayMode != PublishModel.DisplayModes.AudioVideo &&
@@ -385,15 +368,8 @@ namespace Bloom.Publish
 			{
 				case PublishModel.DisplayModes.WaitForUserToChooseSomething:
 					break;
-				case PublishModel.DisplayModes.Upload_Obsolete:
-					Logger.WriteEvent("Entering Publish Upload Screen");
-
-					if (_uploadControl == null)
-					{
-						SetupPublishControl();
-					}
-					break;
 				case PublishModel.DisplayModes.Upload:
+					Logger.WriteEvent("Entering Publish Web Upload Screen");
 					LibraryPublishApi.Model = PublishApi.Model = new BloomLibraryPublishModel(_bookTransferrer, _model.BookSelection.CurrentSelection, _model);
 					ShowHtmlPanel(BloomFileLocator.GetBrowserFile(false, "publish", "LibraryPublish", "loader.html"));
 					break;
@@ -466,26 +442,6 @@ namespace Bloom.Publish
 			Cursor = Cursors.Default;
 		}
 
-		private void SetupPublishControl()
-		{
-			if (_uploadControl != null)
-			{
-				//we currently rebuild it to update contents, as currently the constructor is where setup logic happens (we could change that)
-				Controls.Remove(_uploadControl); ;
-			}
-
-			var libaryPublishModel = new BloomLibraryPublishModel(_bookTransferrer, _model.BookSelection.CurrentSelection, _model);
-			_uploadControl = new BloomLibraryUploadControl(this, libaryPublishModel, _webSocketServer);
-			// Setting the location explicitly makes the transition a bit smoother.
-			_uploadControl.Location = new Point(tableLayoutPanel1.Width, 0);
-			_uploadControl.Dock = DockStyle.Fill;
-			var saveBackColor = _uploadControl.BackColor;
-			Controls.Add(_uploadControl); // somehow this changes the backcolor
-			_uploadControl.BackColor = saveBackColor; // Need a normal back color for this so links and text can be seen
-			// This control is dock.fill. It has to be in front of tableLayoutPanel1 (which is Left) for Fill to work.
-			_uploadControl.BringToFront();
-		}
-
 		private void OnPublishRadioChanged(object sender, EventArgs e)
 		{
 			if (!_activated)
@@ -514,7 +470,6 @@ namespace Bloom.Publish
 		private void SetModelFromButtons()
 		{
 			_model.UploadMode = _uploadRadio.Checked;
-			_model.UploadModeObsolete = _uploadRadioObsolete.Checked;
 			_model.EpubMode = _epubRadio.Checked;
 			_model.PdfPrintMode = false;
 			if (_pdfPrintRadio.Checked)
@@ -531,13 +486,6 @@ namespace Bloom.Publish
 			{
 				_model.DisplayMode = PublishModel.DisplayModes.Upload;
 			}
-			else if (_uploadRadioObsolete.Checked)
-			{
-				// We want to upload the simple PDF with the book, but we don't make it
-				// until we actually start the upload.
-				_model.BookletPortion = PublishModel.BookletPortions.AllPagesNoBooklet;
-				_model.DisplayMode = PublishModel.DisplayModes.Upload_Obsolete;
-			}
 			else if (_bloomPUBRadio.Checked)
 			{
 				_model.DisplayMode = PublishModel.DisplayModes.BloomPUB;
@@ -549,7 +497,7 @@ namespace Bloom.Publish
 			else // no buttons selected
 			{
 				_model.DisplayMode = PublishModel.DisplayModes.WaitForUserToChooseSomething;
-			}
+			}			
 			_model.ShowCropMarks = false;
 		}
 

@@ -1074,6 +1074,7 @@
       <trans-unit id="Common.Optional">
         <source xml:lang="en">optional</source>
         <note>ID: Common.Optional</note>
+        <note>Obsolete as of Bloom 5.5</note>
       </trans-unit>
       <trans-unit id="Common.Other" sil:dynamic="true">
         <source xml:lang="en">Other</source>
@@ -4621,14 +4622,17 @@
       <trans-unit id="PublishTab.Upload.AccessibleToBlind">
         <source xml:lang="en">Accessible to the Blind</source>
         <note>ID: PublishTab.Upload.AccessibleToBlind</note>
+        <note>Obsolete as of Bloom 5.5</note>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.Acknowledgments">
         <source xml:lang="en">Acknowledgments</source>
         <note>ID: PublishTab.Upload.Acknowledgments</note>
+        <note>Obsolete as of Bloom 5.5</note>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.AdditionalRequests">
         <source xml:lang="en">Additional Requests: </source>
         <note>ID: PublishTab.Upload.AdditionalRequests</note>
+        <note>Obsolete as of Bloom 5.5</note>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.AllReserved">
         <source xml:lang="en">All rights reserved (Contact the Copyright holder for any permissions.)</source>
@@ -4657,6 +4661,7 @@
       <trans-unit id="PublishTab.Upload.BackgroundMusic">
         <source xml:lang="en">Background Music</source>
         <note>ID: PublishTab.Upload.BackgroundMusic</note>
+        <note>Obsolete as of Bloom 5.5</note>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.BannerDescription" translate="no">
         <!-- added in 5.5 -->
@@ -4680,6 +4685,7 @@
       <trans-unit id="PublishTab.Upload.CcLink">
         <source xml:lang="en">CC-BY-NC</source>
         <note>ID: PublishTab.Upload.CcLink</note>
+        <note>Obsolete as of Bloom 5.5</note>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.CheckingVersionEligibility" translate="no">
         <!-- added in 5.5 -->
@@ -4694,6 +4700,7 @@
       <trans-unit id="PublishTab.Upload.ChooseSignLanguageWarning">
         <source xml:lang="en">Please choose the sign language for this book</source>
         <note>ID: PublishTab.Upload.ChooseSignLanguageWarning</note>
+        <note>Obsolete as of Bloom 5.5</note>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.ConfirmMetadata" translate="no">
         <!-- added in 5.5 -->
@@ -4708,6 +4715,7 @@
       <trans-unit id="PublishTab.Upload.Credits">
         <source xml:lang="en">credits</source>
         <note>ID: PublishTab.Upload.Credits</note>
+        <note>Obsolete as of Bloom 5.5</note>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.EnterpriseShelfRequiredTooltip" translate="no">
         <!-- added in 5.5 -->
@@ -4721,10 +4729,12 @@
       <trans-unit id="PublishTab.Upload.Features">
         <source xml:lang="en">Features</source>
         <note>ID: PublishTab.Upload.Features</note>
+        <note>Obsolete as of Bloom 5.5</note>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.FieldsNeedAttention">
         <source xml:lang="en">One or more fields above need your attention before uploading.</source>
         <note>ID: PublishTab.Upload.FieldsNeedAttention</note>
+        <note>Obsolete as of Bloom 5.5</note>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.FinalUploadFailureNotice">
         <source xml:lang="en">Sorry, "{0}" was not successfully uploaded. Sometimes this is caused by temporary problems with the servers we use. It's worth trying again in an hour or two. If you regularly get this problem please report it to us.</source>
@@ -4822,6 +4832,7 @@
       <trans-unit id="PublishTab.Upload.Gaurantee">
         <source xml:lang="en">By uploading, you confirm your agreement with the Bloom Library Terms of Use and grant the rights it describes.</source>
         <note>ID: PublishTab.Upload.Gaurantee</note>
+        <note>Obsolete as of Bloom 5.5</note>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.GenericUploadProblemNotice">
         <source xml:lang="en">There was a problem uploading your book.</source>
@@ -4830,10 +4841,12 @@
       <trans-unit id="PublishTab.Upload.GiveBack">
         <source xml:lang="en">It’s easy to “give back”</source>
         <note>ID: PublishTab.Upload.GiveBack</note>
+        <note>Obsolete as of Bloom 5.5</note>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.HelpEachOther">
         <source xml:lang="en">In the Bloom community, we help each other by sharing both new and newly translated books on the Bloom Library.</source>
         <note>ID: PublishTab.Upload.HelpEachOther</note>
+        <note>Obsolete as of Bloom 5.5</note>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.IncompleteTranslation">
         <source xml:lang="en">(incomplete translation)</source>
@@ -4848,6 +4861,7 @@
       <trans-unit id="PublishTab.Upload.License">
         <source xml:lang="en">Usage/License</source>
         <note>ID: PublishTab.Upload.License</note>
+        <note>Obsolete as of Bloom 5.5</note>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.Login.AccountAlreadyExists">
         <source xml:lang="en">Account Already Exists</source>
@@ -4926,10 +4940,12 @@
         <note xml:lang="en">OLD TEXT (before 4.9, added "sign in" and changed "log in" to "sign in"): Log in to BloomLibrary.org</note>
         <note>We have kept the old message ID since a translation of that will be better than nothing. The terminology should ideally match the buttons in the dialog,
           which we don't control, such as "Sign in with Google", but so far we haven't been able to get those localized.</note>
+        <note>Obsolete as of Bloom 5.5</note>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.Logout">
         <source xml:lang="en">Sign out of BloomLibrary.org</source>
         <note>ID: PublishTab.Upload.Logout</note>
+        <note>Obsolete as of Bloom 5.5</note>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.MakingPdf">
         <source xml:lang="en">Making PDF Preview...</source>
@@ -4952,10 +4968,12 @@
       <trans-unit id="PublishTab.Upload.Narration">
         <source xml:lang="en">Narration</source>
         <note>ID: PublishTab.Upload.Narration</note>
+        <note>Obsolete as of Bloom 5.5</note>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.NoLangsFound">
         <source xml:lang="en">(None found)</source>
         <note>ID: PublishTab.Upload.NoLangsFound</note>
+        <note>Obsolete as of Bloom 5.5</note>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.OldVersion">
         <source xml:lang="en">Sorry, this version of Bloom Desktop is not compatible with the current version of BloomLibrary.org. Please upgrade to a newer version.</source>
@@ -4964,15 +4982,18 @@
       <trans-unit id="PublishTab.Upload.PleaseLogIn">
         <source xml:lang="en">Please sign in to BloomLibrary.org (or sign up) before uploading</source>
         <note>ID: PublishTab.Upload.PleaseLogIn</note>
+        <note>Obsolete as of Bloom 5.5</note>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.PleaseSetThis">
         <source xml:lang="en">Please set this from the edit tab</source>
         <note>ID: PublishTab.Upload.PleaseSetThis</note>
         <note>This shows next to the license, if the license has not yet been set.</note>
+        <note>Obsolete as of Bloom 5.5</note>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.SetSignLanguageLink">
         <source xml:lang="en">Set Sign Language...</source>
         <note>ID: PublishTab.Upload.SetSignLanguageLink</note>
+        <note>Obsolete as of Bloom 5.5</note>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.SignLanguage">
         <source xml:lang="en">Sign Language</source>
@@ -5006,10 +5027,12 @@
       <trans-unit id="PublishTab.Upload.Step1">
         <source xml:lang="en">Step 1: Confirm Metadata</source>
         <note>ID: PublishTab.Upload.Step1</note>
+        <note>Obsolete as of Bloom 5.5</note>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.Step2">
         <source xml:lang="en">Step 2: Upload</source>
         <note>ID: PublishTab.Upload.Step2</note>
+        <note>Obsolete as of Bloom 5.5</note>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.SuggestAssignCC">
         <source xml:lang="en">Suggestion: Assigning a Creative Commons License makes it easy for you to clearly grant certain permissions to everyone.</source>
@@ -5033,6 +5056,7 @@ Do you want to go ahead?</note>
       <trans-unit id="PublishTab.Upload.TermsLink">
         <source xml:lang="en">Show Terms of Use</source>
         <note>ID: PublishTab.Upload.TermsLink</note>
+        <note>Obsolete as of Bloom 5.5</note>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.ViewOnBloomLibrary" translate="no">
         <!-- added in 5.5 -->
@@ -5056,10 +5080,12 @@ Do you want to go ahead?</note>
       <trans-unit id="PublishTab.Upload.Title">
         <source xml:lang="en">Title</source>
         <note>ID: PublishTab.Upload.Title</note>
+        <note>Obsolete as of Bloom 5.5</note>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.UploadAudio">
         <source xml:lang="en">Upload Audio</source>
         <note>ID: PublishTab.Upload.UploadAudio</note>
+        <note>Obsolete as of Bloom 5.5</note>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.UploadButton">
         <source xml:lang="en">Upload Book</source>
@@ -5074,6 +5100,7 @@ Do you want to go ahead?</note>
         <source xml:lang="en">Congratulations, "{0}" is now available on BloomLibrary.org ({1})</source>
         <note>ID: PublishTab.Upload.UploadCompleteNotice</note>
         <note>{0} is the book title; {1} is a clickable url which will display the book on the website</note>
+        <note>Obsolete as of Bloom 5.5</note>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.UploadFolder" translate="no">
         <!-- added in 5.5 -->
@@ -5083,6 +5110,7 @@ Do you want to go ahead?</note>
       <trans-unit id="PublishTab.Upload.UploadNotAllowed">
         <source xml:lang="en">Upload Not Allowed</source>
         <note>ID: PublishTab.Upload.UploadNotAllowed</note>
+        <note>Obsolete as of Bloom 5.5</note>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.UploadProblemNotice">
         <source xml:lang="en">There was a problem uploading your book. You may need to restart Bloom or get technical help.</source>

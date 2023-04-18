@@ -18,7 +18,6 @@ using BloomTemp;
 using DesktopAnalytics;
 using SIL.IO;
 using SIL.Xml;
-using Bloom.ToPalaso.Experimental;
 using Newtonsoft.Json;
 using SIL.Extensions;
 using SIL.Reporting;
@@ -44,7 +43,6 @@ namespace Bloom.Publish
 		{
 			WaitForUserToChooseSomething,
 			Upload,
-			Upload_Obsolete,
 			BloomPUB,
 			AudioVideo,
 			EPUB,
@@ -101,7 +99,6 @@ namespace Bloom.Publish
 
 		// True when we are showing the controls for uploading. (Review: does this belong in the model or view?)
 		public bool UploadMode { get; set; }
-		public bool UploadModeObsolete { get; set; }
 
 		// True when showing an ePUB preview.
 		public bool EpubMode;
