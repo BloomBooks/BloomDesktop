@@ -157,79 +157,92 @@ export const BloomTooltip: React.FunctionComponent<{
         }
     };
 
+    const hasContent =
+        props.tooltipContent && props.tooltipContent.toString() !== ""
+            ? true
+            : props.tooltipText && props.tooltipText !== ""
+            ? true
+            : false;
+
     return (
-        <div
-            aria-owns={tooltipOpen ? props.id : undefined}
-            aria-haspopup="true"
-            onMouseEnter={handlePopoverOpen}
-            onMouseLeave={handlePopoverClose}
-        >
-            {props.children}
-            <Popover
-                id={"popover-info-tooltip"}
-                css={css`
-                    // This is just an informational popover, we don't need to suppress events outside it.
-                    // Even more importantly, we don't want to prevent the parent control from receiving
-                    // the mouse-move events that would indicate the mouse is no longer over the anchor
-                    // and so the popover should be removed!
-                    pointer-events: none;
-                    .MuiPopover-paper {
-                        // This allows the arrow to be seen. (If instead we try to make the arrow be
-                        // inside the main content area of the popover, it is impossible to get the
-                        // right background color to make the area either side of the arrow look right.
-                        // The popover div is added at the root level so that the whole thing doesn't
-                        // get clipped; therefore, a transparent background doesn't 'see' the thing that
-                        // it seems, visibly, to be on top of. And the background is very variable, as it
-                        // might be over a selected item, an unselected item, the shadow that gets created
-                        // around the popover, a combination of the above...)
-                        overflow: visible !important;
-                    }
-                `}
-                // This might be a better way to do it in material-ui 5? Not in V4 API, but in MUI examples.
-                // sx={{
-                //     pointerEvents: 'none',
-                //   }}
-                open={tooltipOpen}
-                anchorEl={anchorEl}
-                anchorOrigin={anchorOrigin}
-                transformOrigin={transformOrigin}
-                onClose={handlePopoverClose}
-                disableRestoreFocus // most MUI examples have this, not sure what it does.
-            >
-                <Typography
-                    // We need our standard Typography here because when rendered it's not an actual
-                    // child (in the DOM) of the thing its a (React) child of. It gets put in a popover
-                    // at the root level. So we need to pull in our standard text appearance.
-                    component="div"
-                    css={css`
-                        position: relative;
-                    `}
+        <React.Fragment>
+            {hasContent ? (
+                <div
+                    aria-owns={tooltipOpen ? props.id : undefined}
+                    aria-haspopup="true"
+                    onMouseEnter={handlePopoverOpen}
+                    onMouseLeave={handlePopoverClose}
                 >
-                    <div css={arrowCss}></div>
-                    <div
+                    {props.children}
+                    <Popover
+                        id={"popover-info-tooltip"}
                         css={css`
-                            background-color: ${popupBackColor};
-                            color: white;
-                            border-radius: 4px;
-                            padding: 4px 8px;
-                            position: relative;
+                            // This is just an informational popover, we don't need to suppress events outside it.
+                            // Even more importantly, we don't want to prevent the parent control from receiving
+                            // the mouse-move events that would indicate the mouse is no longer over the anchor
+                            // and so the popover should be removed!
+                            pointer-events: none;
+                            .MuiPopover-paper {
+                                // This allows the arrow to be seen. (If instead we try to make the arrow be
+                                // inside the main content area of the popover, it is impossible to get the
+                                // right background color to make the area either side of the arrow look right.
+                                // The popover div is added at the root level so that the whole thing doesn't
+                                // get clipped; therefore, a transparent background doesn't 'see' the thing that
+                                // it seems, visibly, to be on top of. And the background is very variable, as it
+                                // might be over a selected item, an unselected item, the shadow that gets created
+                                // around the popover, a combination of the above...)
+                                overflow: visible !important;
+                            }
                         `}
+                        // This might be a better way to do it in material-ui 5? Not in V4 API, but in MUI examples.
+                        // sx={{
+                        //     pointerEvents: 'none',
+                        //   }}
+                        open={tooltipOpen}
+                        anchorEl={anchorEl}
+                        anchorOrigin={anchorOrigin}
+                        transformOrigin={transformOrigin}
+                        onClose={handlePopoverClose}
+                        disableRestoreFocus // most MUI examples have this, not sure what it does.
                     >
-                        {props.tooltipContent ? (
-                            props.tooltipContent
-                        ) : (
-                            <Div
-                                l10nKey={props.tooltipL10nKey ?? ""}
+                        <Typography
+                            // We need our standard Typography here because when rendered it's not an actual
+                            // child (in the DOM) of the thing its a (React) child of. It gets put in a popover
+                            // at the root level. So we need to pull in our standard text appearance.
+                            component="div"
+                            css={css`
+                                position: relative;
+                            `}
+                        >
+                            <div css={arrowCss}></div>
+                            <div
                                 css={css`
-                                    max-width: 200px;
+                                    background-color: ${popupBackColor};
+                                    color: white;
+                                    border-radius: 4px;
+                                    padding: 4px 8px;
+                                    position: relative;
                                 `}
                             >
-                                {props.tooltipText}
-                            </Div>
-                        )}
-                    </div>
-                </Typography>
-            </Popover>
-        </div>
+                                {props.tooltipContent ? (
+                                    props.tooltipContent
+                                ) : (
+                                    <Div
+                                        l10nKey={props.tooltipL10nKey ?? ""}
+                                        css={css`
+                                            max-width: 200px;
+                                        `}
+                                    >
+                                        {props.tooltipText}
+                                    </Div>
+                                )}
+                            </div>
+                        </Typography>
+                    </Popover>
+                </div>
+            ) : (
+                <React.Fragment>{props.children}</React.Fragment>
+            )}
+        </React.Fragment>
     );
 };

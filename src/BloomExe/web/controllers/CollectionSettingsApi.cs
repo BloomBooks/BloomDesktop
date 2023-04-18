@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -112,6 +112,16 @@ namespace Bloom.web.controllers
 					var requestData = DynamicJson.Parse(request.RequiredPostJson());
 					SubscriptionCode = requestData.subscriptionCode;
 					_enterpriseExpiry = GetExpirationDate(SubscriptionCode);
+					var newBranding = GetBrandingFromCode(SubscriptionCode);
+					var oldBranding = !string.IsNullOrEmpty(_collectionSettings.InvalidBranding) ? _collectionSettings.InvalidBranding : "";
+					// If the user has entered a different subscription code then what was previously saved, we
+					// generally want to clear out the Bookshelf. But if the BrandingKey is the same as the old one,
+					// we'll leave it alone, since they probably renewed for another year or so and want to use the
+					// same bookshelf.
+					if (DialogBeingEdited != null &&
+						SubscriptionCode != _collectionSettings.SubscriptionCode &&
+						newBranding != oldBranding)
+							DialogBeingEdited.PendingDefaultBookshelf = "";
 					if (_enterpriseExpiry < DateTime.Now) // expired or invalid
 					{
 						BrandingChangeHandler("Default", null);
@@ -166,7 +176,6 @@ namespace Bloom.web.controllers
 			}, false);
 
 			// Enhance: The get here has one signature {brandingProjectName, defaultBookshelf} while the post has another (defaultBookshelfId:string).
-			// It's 
 			apiHandler.RegisterEndpointHandler(kApiUrlPart + "bookShelfData", request =>
 			{
 				if (request.HttpMethod == HttpMethods.Get)

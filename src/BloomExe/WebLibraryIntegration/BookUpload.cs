@@ -198,7 +198,15 @@ namespace Bloom.WebLibraryIntegration
 
 			if (!String.IsNullOrEmpty(collectionSettings?.DefaultBookshelf))
 			{
-				tags = tags.Concat(new [] {"bookshelf:" + collectionSettings.DefaultBookshelf});
+				if (collectionSettings.HaveEnterpriseFeatures)
+					tags = tags.Concat(new [] {"bookshelf:" + collectionSettings.DefaultBookshelf});
+				else
+				{
+					// At least at this point, we aren't localizing this message, because the people with Enterprise
+					// bookshelves likely know enough English to understand this message.
+					progress.WriteWarning("This book was not uploaded to the '" + collectionSettings.DefaultBookshelf +
+						"' bookshelf. Uploading to a bookshelf requires a valid Enterprise subscription.");
+				}
 			}
 			metadata.Tags = tags.ToArray();
 

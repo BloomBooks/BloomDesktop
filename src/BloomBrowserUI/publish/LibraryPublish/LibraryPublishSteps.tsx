@@ -33,6 +33,7 @@ import {
     ConfirmDialog,
     showConfirmDialog
 } from "../../react_components/confirmDialog";
+import { BloomTooltip } from "../../react_components/BloomToolTip";
 import { BloomSplitButton } from "../../react_components/bloomSplitButton";
 import { WaitBox } from "../../react_components/BloomDialog/commonDialogComponents";
 import {
@@ -40,6 +41,7 @@ import {
     showUploadCollisionDialog,
     UploadCollisionDlg
 } from "./uploadCollisionDlg";
+import { useGetEnterpriseBookshelves } from "../../collection/useGetEnterpriseBookshelves";
 
 interface IReadonlyBookInfo {
     title: string;
@@ -55,6 +57,32 @@ const kWebSocketEventId_uploadSuccessful: string = "uploadSuccessful";
 const kWebSocketEventId_loginSuccessful: string = "loginSuccessful";
 
 export const LibraryPublishSteps: React.FunctionComponent = () => {
+    const [bookshelfHasProblem, setBookshelfHasProblem] = useState(false);
+    const {
+        project,
+        defaultBookshelfUrlKey,
+        validBookshelves,
+        error
+    } = useGetEnterpriseBookshelves();
+
+    useEffect(() => {
+        if (error) {
+            return;
+        } else {
+            if (
+                project !== "" &&
+                project !== "local-community" &&
+                defaultBookshelfUrlKey !== ""
+            ) {
+                setBookshelfHasProblem(
+                    validBookshelves.filter(
+                        b => b.value === defaultBookshelfUrlKey
+                    ).length === 0
+                );
+            }
+        }
+    }, [project, defaultBookshelfUrlKey, validBookshelves, error]);
+
     const localizedSummary = useL10n("Summary", "PublishTab.Upload.Summary");
     const localizedAllRightsReserved = useL10n(
         "All rights reserved (Contact the Copyright holder for any permissions.)",
@@ -415,41 +443,68 @@ export const LibraryPublishSteps: React.FunctionComponent = () => {
                                     Cancel
                                 </BloomButton>
                             ) : (
-                                <BloomSplitButton
-                                    disabled={
-                                        !isReadyForUpload() || !loggedInEmail
+                                <BloomTooltip
+                                    id="LibraryPublishUploadTip"
+                                    tooltipText={
+                                        error
+                                            ? "Bloom could not reach the server to get the list of bookshelves."
+                                            : bookshelfHasProblem
+                                            ? "The collection's bookshelf was not on the list of bookshelves for this Enterprise subscription."
+                                            : ""
                                     }
-                                    options={[
-                                        {
-                                            english: uploadButtonText,
-                                            l10nId: "already-localized",
-                                            onClick: () => {
-                                                progressBoxRef.current?.clear();
-                                                confirmWithUserIfNecessaryAndUpload();
-                                            }
-                                        },
-                                        {
-                                            english: localizedUploadCollection,
-                                            l10nId: "already-localized",
-                                            requiresEnterpriseSubscription: true,
-                                            enterpriseTooltipOverride: localizedEnterpriseTooltip,
-                                            onClick: () => {
-                                                progressBoxRef.current?.clear();
-                                                bulkUploadCollection();
-                                            }
-                                        },
-                                        {
-                                            english: localizedUploadFolder,
-                                            l10nId: "already-localized",
-                                            requiresEnterpriseSubscription: true,
-                                            enterpriseTooltipOverride: localizedEnterpriseTooltip,
-                                            onClick: () => {
-                                                progressBoxRef.current?.clear();
-                                                bulkUploadFolderOfCollections();
-                                            }
+                                    tooltipL10nKey={
+                                        error
+                                            ? "CollectionSettingsDialog.BookMakingTab.NoBookshelvesFromServer"
+                                            : bookshelfHasProblem
+                                            ? "PublishTab.Upload.BookshelfError"
+                                            : ""
+                                    }
+                                >
+                                    <BloomSplitButton
+                                        disabled={
+                                            !isReadyForUpload() ||
+                                            !loggedInEmail ||
+                                            // If 'error', there's probably an internet problem that will
+                                            // hinder upload anyway.
+                                            // If 'bookshelfHasProblem', the collection settings have a
+                                            // bookshelf that isn't acceptable according to the current
+                                            // subscription. In both cases, we give the user a tool tip on the
+                                            // disabled button to tell them what the problem is.
+                                            error ||
+                                            bookshelfHasProblem
                                         }
-                                    ]}
-                                ></BloomSplitButton>
+                                        options={[
+                                            {
+                                                english: uploadButtonText,
+                                                l10nId: "already-localized",
+                                                onClick: () => {
+                                                    progressBoxRef.current?.clear();
+                                                    confirmWithUserIfNecessaryAndUpload();
+                                                }
+                                            },
+                                            {
+                                                english: localizedUploadCollection,
+                                                l10nId: "already-localized",
+                                                requiresEnterpriseSubscription: true,
+                                                enterpriseTooltipOverride: localizedEnterpriseTooltip,
+                                                onClick: () => {
+                                                    progressBoxRef.current?.clear();
+                                                    bulkUploadCollection();
+                                                }
+                                            },
+                                            {
+                                                english: localizedUploadFolder,
+                                                l10nId: "already-localized",
+                                                requiresEnterpriseSubscription: true,
+                                                enterpriseTooltipOverride: localizedEnterpriseTooltip,
+                                                onClick: () => {
+                                                    progressBoxRef.current?.clear();
+                                                    bulkUploadFolderOfCollections();
+                                                }
+                                            }
+                                        ]}
+                                    ></BloomSplitButton>
+                                </BloomTooltip>
                             )}
                             {loggedInEmail ? (
                                 <BloomButton
@@ -512,7 +567,7 @@ export const LibraryPublishSteps: React.FunctionComponent = () => {
                                 span {
                                     // Otherwise we get Bloom blue.
                                     // This button is different than others because using
-                                    // href rather than onClick means it uses the a tag.
+                                    // href rather than onClick means it uses the 'a' tag.
                                     color: white;
                                 }
                             `}
