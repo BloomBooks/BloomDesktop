@@ -756,7 +756,6 @@
     <Compile Include="ToPalaso\BetterSplitContainer.Designer.cs">
       <DependentUpon>BetterSplitContainer.cs</DependentUpon>
     </Compile>
-    <Compile Include="ToPalaso\FontInstaller.cs" />
     <Compile Include="ToPalaso\MessageLabelProgress.cs">
       <SubType>Component</SubType>
     </Compile>

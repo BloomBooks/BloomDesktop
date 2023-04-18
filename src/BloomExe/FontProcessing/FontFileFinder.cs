@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using System.Drawing.Text;
 using System.IO;
-using Bloom.web;
+using Bloom.Api;
+using SIL.IO;
+using System.Threading;
 #if __MonoCS__
 using SharpFont;				// Linux only (interface to libfreetype.so.6)
 #else
@@ -161,6 +163,44 @@ namespace Bloom.FontProcessing
 					FontNameToFiles[name] = files;
 				}
 				files.Add(gtf, fontFile);
+			}
+			try
+			{
+				// If Andika is installed on the system, we'll use that version of the font.
+				// If it's not installed, we'll have BloomServer serve it from the .woff2 files
+				// distributed with Bloom.
+				if (!FontNameToFiles.TryGetValue("Andika", out FontGroup filesForAndika))
+				{
+					// We need the real ServerUrl including the port number.  This runs on a worker
+					// thread, so busy waiting should be okay.
+					while (!BloomServer.ServerIsListening)
+						Thread.Sleep(100);
+					filesForAndika = new FontGroup();
+					var pathNormal = FileLocationUtilities.GetFileDistributedWithApplication(true, "fonts/Andika-Regular.woff2");
+					if (pathNormal != null && RobustFile.Exists(pathNormal))
+						filesForAndika.Normal = Api.BloomServer.ServerUrlWithBloomPrefixEndingInSlash + "host/fonts/Andika-Regular.woff2";
+					var pathItalic = FileLocationUtilities.GetFileDistributedWithApplication(true, "fonts/Andika-Italic.woff2");
+					if (pathItalic != null && RobustFile.Exists(pathItalic))
+						filesForAndika.Italic = Api.BloomServer.ServerUrlWithBloomPrefixEndingInSlash + "host/fonts/Andika-Italic.woff2";
+					var pathBold = FileLocationUtilities.GetFileDistributedWithApplication(true, "fonts/Andika-Bold.woff2");
+					if (pathBold != null && RobustFile.Exists(pathBold))
+						filesForAndika.Bold = Api.BloomServer.ServerUrlWithBloomPrefixEndingInSlash + "host/fonts/Andika-Bold.woff2";
+					var pathBoldItalic = FileLocationUtilities.GetFileDistributedWithApplication(true, "fonts/Andika-BoldItalic.woff2");
+					if (pathBoldItalic != null && RobustFile.Exists(pathBoldItalic))
+						filesForAndika.BoldItalic = Api.BloomServer.ServerUrlWithBloomPrefixEndingInSlash + "host/fonts/Andika-BoldItalic.woff2";
+					if (!String.IsNullOrEmpty(filesForAndika.Normal))
+					{
+						FontNameToFiles["Andika"] = filesForAndika;
+						FontsApi.IsServingAndika = true;
+					}
+				}
+				// If Andika New Basic is not installed, note that it should fall back to Andika.
+				if (!FontNameToFiles.TryGetValue("Andika New Basic", out FontGroup filesANB))
+					FontsApi.AndikaNewBasicIsAndika = true;
+			}
+			catch (Exception e)
+			{
+				Console.WriteLine("DEBUG: Exception for requesting Andika: {0}", e);
 			}
 #endif
 		}

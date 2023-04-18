@@ -6,6 +6,8 @@ using Newtonsoft.Json;
 using System.Collections.Concurrent;
 using SIL.Reporting;
 using System.Linq;
+using SIL.IO;
+using System.IO;
 
 namespace Bloom.FontProcessing
 {
@@ -15,6 +17,8 @@ namespace Bloom.FontProcessing
 		private static ConcurrentDictionary<string, FontMetadata> _fontNameToMetadata = new ConcurrentDictionary<string, FontMetadata>();
 		private static FontFileFinder _finder;
 
+		public static bool IsServingAndika;
+		public static bool AndikaNewBasicIsAndika;
 		public FontsApi()
 		{
 		}
@@ -62,16 +66,14 @@ namespace Bloom.FontProcessing
 						continue;
 						// sorry, we just can't display that font, it will come out as some browser default font (at least on Windows, and at least up to Firefox 36)
 					}
-					foundAndika |= family.Name == "Andika New Basic";
+					foundAndika |= family.Name == "Andika";
 
 					yield return family.Name;
 				}
 			}
-			if (!foundAndika) // see BL-3674. We want to offer Andika even if the Andika installer isn't finished yet.
-			{   // it's possible that the user actually uninstalled Andika, but that's ok. Until they change to another font,
-				// they'll get a message that this font is not actually installed when they try to edit a book.
-				Logger.WriteMinorEvent("Andika not installed (BL-3674)");
-				yield return "Andika New Basic";
+			if (!foundAndika) // see BL-3674. We want to offer Andika even if it isn't installed.
+			{   // Bloom serves up Andika on demand while editing / publishing and Bloom Reader includes Andika.
+				yield return "Andika";
 			}
 		}
 
@@ -135,6 +137,49 @@ namespace Bloom.FontProcessing
 				list.Sort((a, b) => a.name.CompareTo(b.name));
 				return list;
 			}
+		}
+
+		static HashSet<string> _fontExtensions = new HashSet<string>(new[] { ".ttf", ".woff", ".woff2" });
+
+		internal static bool IsFontTypeThatCanBeReturned(string path)
+		{
+			return _fontExtensions.Contains((Path.GetExtension(path) ?? "").ToLowerInvariant());
+		}
+
+		internal static bool ProcessAndikaFontRequest(IRequestInfo info, string localPath)
+		{
+			if (localPath.StartsWith("host/fonts/Andika") && IsFontTypeThatCanBeReturned(localPath))
+			{
+				var path = FileLocationUtilities.GetFileDistributedWithApplication(true, localPath.Substring(5));
+				if (path != null && RobustFile.Exists(path))
+				{
+					var contentType = BloomServer.GetContentType(Path.GetExtension(path));
+					info.ResponseContentType = contentType;
+					info.ReplyWithFileContent(path);
+					return true;
+				}
+			}
+			var idx = localPath.IndexOf("/host/fonts/Andika");
+			if (idx >= 0)
+			{
+				var fontDesc = localPath.Substring(idx + 12);
+				var tail = "Regular";
+				if (fontDesc.Contains("Bold") && fontDesc.Contains("Italic"))
+					tail = "BoldItalic";
+				else if (fontDesc.Contains("Bold"))
+					tail = "Bold";
+				else if (fontDesc.Contains("Italic"))
+					tail = "Italic";
+				var path = FileLocationUtilities.GetFileDistributedWithApplication(true, $"fonts/Andika-{tail}.woff2");
+				if (path != null && RobustFile.Exists(path))
+				{
+					info.ResponseContentType = "font/woff2";
+					info.ReplyWithFileContent(path);
+					return true;
+				}
+			}
+			Console.WriteLine("FAILED FontsApi.ProcessAndikaFontRequest(): localPath={0}", localPath);
+			return false;
 		}
 	}
 }
