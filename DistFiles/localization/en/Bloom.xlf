@@ -4281,10 +4281,11 @@
         <source xml:lang="en">Error creating, compressing, or recoloring the PDF file</source>
         <note>ID: PublishTab.PdfMaker.ErrorProcessing</note>
         <note>Message briefly displayed to the user in a toast</note>
+        <note>Obsolete as of Bloom 5.5</note>
       </trans-unit>
       <trans-unit id="PublishTab.PdfMaker.ErrorSaving">
         <source xml:lang="en">Error compressing or recoloring the PDF file</source>
-        <note>ID: PublishTab.PdfMaker.ErrorProcessing</note>
+        <note>ID: PublishTab.PdfMaker.ErrorSaving</note>
         <note>Message briefly displayed to the user in a toast</note>
       </trans-unit>
       <trans-unit id="PublishTab.PdfMaker.Finished">
