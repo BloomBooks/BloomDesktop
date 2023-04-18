@@ -2116,6 +2116,7 @@ namespace Bloom.Publish.Epub
 			Directory.CreateDirectory(Path.Combine(_contentFolder, kCssFolder));
 			RobustFile.WriteAllText(Path.Combine(_contentFolder, kCssFolder, "fonts.css"), sb.ToString());
 			_manifestItems.Add(kCssFolder+"/" + "fonts.css");
+			PublishHelper.RemoveAndikaFontFaceDeclarations(Path.Combine(_contentFolder, kCssFolder));
 			// Repair defaultLangStyles.css and other places in the output book if needed.
 			if (badFonts.Any())
 			{
@@ -2723,6 +2724,8 @@ namespace Bloom.Publish.Epub
 				return "text/css";
 			case "woff":
 				return "application/font-woff"; // http://stackoverflow.com/questions/2871655/proper-mime-type-for-fonts
+			case "woff2":
+				return "application/font-woff2";
 			case "ttf":
 			case "otf":
 				// According to http://stackoverflow.com/questions/2871655/proper-mime-type-for-fonts, the proper

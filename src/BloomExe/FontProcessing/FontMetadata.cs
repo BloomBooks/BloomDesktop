@@ -9,6 +9,7 @@ using SharpFont;
 #else
 using System.Windows.Media;
 #endif
+using Bloom.Api;
 
 namespace Bloom.FontProcessing
 {
@@ -212,11 +213,28 @@ namespace Bloom.FontProcessing
 			}
 			catch (Exception e)
 			{
-				// file is somehow corrupt or not really a font file? Just ignore it.
-				Console.WriteLine("GlyphTypeface for \"{0}\" threw an exception: {1}", group.Normal, e);
-				determinedSuitability = kInvalid;
-				determinedSuitabilityNotes = $"GlyphTypeface exception: {e}";
-				return;
+				if (fontName == "Andika" && group.Normal.StartsWith(BloomServer.ServerUrlWithBloomPrefixEndingInSlash))
+				{
+					// These values are for the version of Andika that Bloom ships with.
+					copyright = "Copyright (c) 2004-2023 SIL International";
+					designer = "Victor Gaultney, Annie Olsen, Julie Remington, Don Collingsworth, Eric Hays, Becca Hirsbrunner";
+					designerURL = "https://scripts.sil.org/";
+					fsType = "Installable";
+					license = "Copyright (c) 2004-2023 SIL International (https://www.sil.org/) with Reserved Font Names \"Andika\" and \"SIL\".\n\nThis Font Software is licensed under the SIL Open Font License, Version 1.1. This license is available with a FAQ at: https://scripts.sil.org/OFL";
+					licenseURL = "https://scripts.sil.org/OFL";
+					manufacturer = "SIL International";
+					manufacturerURL = "https://www.sil.org/";
+					trademark = "Andika is a trademark of SIL International.";
+					version = "6.200";
+				}
+				else
+				{
+					// file is somehow corrupt or not really a font file? Just ignore it.
+					Console.WriteLine("GlyphTypeface for \"{0}\" threw an exception: {1}", group.Normal, e);
+					determinedSuitability = kInvalid;
+					determinedSuitabilityNotes = $"GlyphTypeface exception: {e}";
+					return;
+				}
 			}
 #endif
 			variants = group.GetAvailableVariants().ToArray();

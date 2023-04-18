@@ -17,6 +17,7 @@ using L10NSharp;
 using SIL.IO;
 using SIL.Progress;
 using Bloom.FontProcessing;
+using System.Text.RegularExpressions;
 
 namespace Bloom.Publish
 {
@@ -592,7 +593,7 @@ namespace Bloom.Publish
 		{
 			filesToEmbed = new List<string>();
 			badFonts = new HashSet<string>();
-			const string defaultFont = "Andika New Basic";
+			const string defaultFont = "Andika";
 
 			fontFileFinder.NoteFontsWeCantInstall = true;
 			if (_fontMetadataMap == null)
@@ -644,13 +645,20 @@ namespace Bloom.Publish
 				}
 				if (filesFound && !badFileType && !badLicense)
 				{
-					filesToEmbed.AddRange(fontFiles);
+					foreach (var file in fontFiles)
+					{
+						if (file.StartsWith(BloomServer.ServerUrlWithBloomPrefixEndingInSlash+"host/"))
+							filesToEmbed.Add(FileLocationUtilities.GetFileDistributedWithApplication(false,
+								file.Substring(BloomServer.ServerUrlWithBloomPrefixEndingInSlash.Length+5)));
+						else
+							filesToEmbed.Add(file);
+					}
 					if (missingLicense)
 						progress.MessageWithParams("PublishTab.Android.File.Progress.UnknownLicense", "{0} is a font name", "Checking {0} font: Unknown license", ProgressKind.Progress, font);
 					else
 						progress.MessageWithParams("PublishTab.Android.File.Progress.CheckFontOK", "{0} is a font name", "Checking {0} font: License OK for embedding.", ProgressKind.Progress, font);
 					// Assumes only one font file per font; if we embed multiple ones will need to enhance this.
-					var size = new FileInfo(fontFiles.First()).Length;
+					var size = new FileInfo(filesToEmbed.First()).Length;
 					var sizeToReport = (size / 1000000.0).ToString("F1"); // purposely locale-specific; might be e.g. 1,2
 					progress.MessageWithParams("PublishTab.Android.File.Progress.Embedding",
 						"{1} is a number with one decimal place, the number of megabytes the font file takes up",
@@ -673,6 +681,23 @@ namespace Bloom.Publish
 				}
 				progress.MessageWithParams("PublishTab.Android.File.Progress.SubstitutingAndika", "{0} is a font name", "Bloom will substitute \"{0}\" instead.", ProgressKind.Error, defaultFont, font);
 				badFonts.Add(font); // need to prevent the bad/missing font from showing up in fonts.css and elsewhere
+			}
+		}
+
+		/// <summary>
+		/// Fix the defaultLangStyles.css file to not have @font-face declarations for Andika.
+		/// </summary>
+		public static void RemoveAndikaFontFaceDeclarations(string cssFolderPath)
+		{
+			var defaultLangStyles = Path.Combine(cssFolderPath, "defaultLangStyles.css");
+			if (RobustFile.Exists(defaultLangStyles))
+			{
+				var cssTextOrig = RobustFile.ReadAllText(defaultLangStyles);
+				var cssText = cssTextOrig;
+				// remove possible header for getting Andika from local server
+				cssText = Regex.Replace(cssText, "@font-face *{[^}]*}", "");
+				if (cssText != cssTextOrig)
+					RobustFile.WriteAllText(defaultLangStyles, cssText);
 			}
 		}
 
