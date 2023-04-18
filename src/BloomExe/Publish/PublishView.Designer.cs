@@ -59,10 +59,7 @@ namespace Bloom.Publish
             SIL.Windows.Forms.SuperToolTip.SuperToolTipInfo superToolTipInfo6 = new SIL.Windows.Forms.SuperToolTip.SuperToolTipInfo();
             this._loadTimer = new System.Windows.Forms.Timer(this.components);
             this._makePdfBackgroundWorker = new System.ComponentModel.BackgroundWorker();
-            this._workingIndicator = new System.Windows.Forms.Panel();
             this._topBarPanel = new System.Windows.Forms.Panel();
-            this._saveButton = new System.Windows.Forms.Button();
-            this._printButton = new System.Windows.Forms.Button();
             this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
             this._contextMenuStrip = new System.Windows.Forms.ContextMenuStrip(this.components);
             this._openinBrowserMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -79,10 +76,8 @@ namespace Bloom.Publish
             this._publishReqEntProblem = new System.Windows.Forms.Label();
             this._publishReqEntOptions = new System.Windows.Forms.Label();
             this._publishReqEntOverlayPage = new System.Windows.Forms.Label();
-            this._pdfViewer = new PdfViewer();
             this._superToolTip = new SIL.Windows.Forms.SuperToolTip.SuperToolTip(this.components);
             this._publishRequiresEnterprisePanel = new System.Windows.Forms.Panel();
-            this._workingIndicator.SuspendLayout();
             this._topBarPanel.SuspendLayout();
             this.tableLayoutPanel1.SuspendLayout();
             this._contextMenuStrip.SuspendLayout();
@@ -96,70 +91,13 @@ namespace Bloom.Publish
             this._makePdfBackgroundWorker.WorkerSupportsCancellation = true;
             this._makePdfBackgroundWorker.DoWork += new System.ComponentModel.DoWorkEventHandler(this._makePdfBackgroundWorker_DoWork);
             // 
-            // _workingIndicator
-            // 
-            this._workingIndicator.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this._workingIndicator.BackColor = System.Drawing.Color.White;
-            this._workingIndicator.Controls.Add(this._topBarPanel);
-            this._workingIndicator.Location = new System.Drawing.Point(114, 24);
-            this._workingIndicator.Name = "_workingIndicator";
-            this._workingIndicator.Size = new System.Drawing.Size(714, 653);
-            this._workingIndicator.TabIndex = 8;
-            // 
             // _topBarPanel
             // 
             this._topBarPanel.AutoSize = true;
-            this._topBarPanel.Controls.Add(this._saveButton);
-            this._topBarPanel.Controls.Add(this._printButton);
             this._topBarPanel.Location = new System.Drawing.Point(296, 320);
             this._topBarPanel.Name = "_topBarPanel";
             this._topBarPanel.Size = new System.Drawing.Size(327, 74);
             this._topBarPanel.TabIndex = 14;
-            // 
-            // _saveButton
-            // 
-            this._saveButton.AutoSize = true;
-            this._saveButton.BackColor = System.Drawing.Color.Transparent;
-            this._saveButton.FlatAppearance.BorderSize = 0;
-            this._saveButton.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this._saveButton.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this._saveButton.ForeColor = System.Drawing.Color.Black;
-            this._saveButton.Image = global::Bloom.Properties.Resources.Usb;
-            this._L10NSharpExtender.SetLocalizableToolTip(this._saveButton, null);
-            this._L10NSharpExtender.SetLocalizationComment(this._saveButton, null);
-            this._L10NSharpExtender.SetLocalizationPriority(this._saveButton, L10NSharp.LocalizationPriority.NotLocalizable);
-            this._L10NSharpExtender.SetLocalizingId(this._saveButton, "PublishView._saveButton");
-            this._saveButton.Location = new System.Drawing.Point(139, 0);
-            this._saveButton.Name = "_saveButton";
-            this._saveButton.Size = new System.Drawing.Size(185, 71);
-            this._saveButton.TabIndex = 15;
-            this._saveButton.Text = "Save stub";
-            this._saveButton.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageBeforeText;
-            this._saveButton.UseVisualStyleBackColor = false;
-            this._saveButton.Click += new System.EventHandler(this.OnSave_Click);
-            // 
-            // _printButton
-            // 
-            this._printButton.AutoSize = true;
-            this._printButton.BackColor = System.Drawing.Color.Transparent;
-            this._printButton.FlatAppearance.BorderSize = 0;
-            this._printButton.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this._printButton.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this._printButton.ForeColor = System.Drawing.Color.Black;
-            this._printButton.Image = global::Bloom.Properties.Resources.print;
-            this._L10NSharpExtender.SetLocalizableToolTip(this._printButton, null);
-            this._L10NSharpExtender.SetLocalizationComment(this._printButton, null);
-            this._L10NSharpExtender.SetLocalizingId(this._printButton, "PublishTab.PrintButton");
-            this._printButton.Location = new System.Drawing.Point(0, 0);
-            this._printButton.Name = "_printButton";
-            this._printButton.Size = new System.Drawing.Size(160, 64);
-            this._printButton.TabIndex = 14;
-            this._printButton.Text = "&Print...";
-            this._printButton.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageBeforeText;
-            this._printButton.UseVisualStyleBackColor = false;
-            this._printButton.Click += new System.EventHandler(this.OnPrint_ClickAsync);
             // 
             // tableLayoutPanel1
             // 
@@ -472,18 +410,6 @@ namespace Bloom.Publish
             this._publishRequiresEnterprisePanel.Size = new System.Drawing.Size(616, 204);
             this._publishRequiresEnterprisePanel.TabIndex = 17;
             this._publishRequiresEnterprisePanel.Visible = false;
-			//
-			// _pdfViewer
-			//
-			this._pdfViewer.BackColor = System.Drawing.Color.White;
-			this._pdfViewer.Dock = DockStyle.Fill;
-			this._L10NSharpExtender.SetLocalizableToolTip(this._pdfViewer, null);
-			this._L10NSharpExtender.SetLocalizationComment(this._pdfViewer, null);
-			this._L10NSharpExtender.SetLocalizingId(this._pdfViewer, "PdfViewer.PdfViewer");
-			this._pdfViewer.Location = new Point(114, 0);
-			this._pdfViewer.Name = "_pdfViewer";
-			this._pdfViewer.Size = new Size(719, 677);
-			this._pdfViewer.TabIndex = 16;
             // 
             // PublishView
             // 
@@ -492,14 +418,11 @@ namespace Bloom.Publish
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.Controls.Add(this._publishRequiresEnterprisePanel);
             this.Controls.Add(this.tableLayoutPanel1);
-            this.Controls.Add(this._workingIndicator);
             this._L10NSharpExtender.SetLocalizableToolTip(this, null);
             this._L10NSharpExtender.SetLocalizationComment(this, null);
             this._L10NSharpExtender.SetLocalizingId(this, "PublishView.PublishView");
             this.Name = "PublishView";
             this.Size = new System.Drawing.Size(833, 677);
-            this._workingIndicator.ResumeLayout(false);
-            this._workingIndicator.PerformLayout();
             this._topBarPanel.ResumeLayout(false);
             this._topBarPanel.PerformLayout();
             this.tableLayoutPanel1.ResumeLayout(false);
@@ -516,13 +439,9 @@ namespace Bloom.Publish
 		private System.Windows.Forms.Timer _loadTimer;
 
 		private System.ComponentModel.BackgroundWorker _makePdfBackgroundWorker;
-		private System.Windows.Forms.Panel _workingIndicator;
 		private System.Windows.Forms.TableLayoutPanel tableLayoutPanel1;
 		private System.Windows.Forms.Panel _topBarPanel;
-		private System.Windows.Forms.Button _saveButton;
-		private System.Windows.Forms.Button _printButton;
 		private L10NSharp.UI.L10NSharpExtender _L10NSharpExtender;
-		private PdfViewer _pdfViewer;
 		private System.Windows.Forms.ContextMenuStrip _contextMenuStrip;
 		private System.Windows.Forms.ToolStripMenuItem _openinBrowserMenuItem;
 		private System.Windows.Forms.ToolStripDropDownButton _pdfOptions;

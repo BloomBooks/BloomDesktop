@@ -729,12 +729,6 @@
       <DependentUpon>BulkUploadProgressDlg.cs</DependentUpon>
     </Compile>
     <Compile Include="Publish\PDF\MakePdfUsingExternalPdfMakerProgram.cs" />
-    <Compile Include="Publish\PDF\PdfViewer.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="Publish\PDF\PdfViewer.Designer.cs">
-      <DependentUpon>PdfViewer.cs</DependentUpon>
-    </Compile>
     <Compile Include="Publish\PDF\ProcessPdfWithGhostscript.cs" />
     <Compile Include="Publish\PDF\SamplePrintNotification.cs">
       <SubType>Form</SubType>
@@ -1054,9 +1048,6 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Publish\HtmlPublishPanel.resx">
       <DependentUpon>HtmlPublishPanel.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Publish\PDF\PdfViewer.resx">
-      <DependentUpon>PdfViewer.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Publish\PDF\SamplePrintNotification.resx">
       <DependentUpon>SamplePrintNotification.cs</DependentUpon>
@@ -1568,7 +1559,6 @@ copy /Y "$(SolutionDir)\lib\dotnet\Interop.Acrobat.dll" $(OutDir)
     <Analyzer Include="..\..\packages\AWSSDK.S3.3.5.3.10\analyzers\dotnet\cs\AWSSDK.S3.CodeAnalysis.dll" />
   </ItemGroup>
   <Import Project="..\..\packages\icu.net.2.8.1\build\icu.net.props" Condition="Exists('..\..\packages\icu.net.2.8.1\build\icu.net.props')" />
-
   <Import Project="..\..\packages\LargeAddressAware.1.0.5\build\LargeAddressAware.targets" Condition="'$(OS)'=='Windows_NT' AND Exists('..\..\packages\LargeAddressAware.1.0.5\build\LargeAddressAware.targets')" />
   <Import Project="..\..\packages\NDesk.DBus.0.15.0\build\NDesk.DBus.targets" Condition="Exists('..\..\packages\NDesk.DBus.0.15.0\build\NDesk.DBus.targets')" />
   <Import Project="..\..\packages\SQLitePCLRaw.lib.e_sqlite3.2.0.3\build\net461\SQLitePCLRaw.lib.e_sqlite3.targets" Condition="Exists('..\..\packages\SQLitePCLRaw.lib.e_sqlite3.2.0.3\build\net461\SQLitePCLRaw.lib.e_sqlite3.targets')" />

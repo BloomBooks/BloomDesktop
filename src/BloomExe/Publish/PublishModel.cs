@@ -43,12 +43,8 @@ namespace Bloom.Publish
 		public enum DisplayModes
 		{
 			WaitForUserToChooseSomething,
-			Working,
-			ShowPdf,
 			Upload,
 			Upload_Obsolete,
-			Printing,
-			ResumeAfterPrint,
 			BloomPUB,
 			AudioVideo,
 			EPUB,
