@@ -23,6 +23,7 @@ namespace Bloom.web.controllers
 		private const string kWebSocketContext = "libraryPublish"; // must match what is in LibraryPublishScreen.tsx
 
 		private const string kWebSocketEventId_uploadSuccessful = "uploadSuccessful"; // must match what is in LibraryPublishSteps.tsx
+		private const string kWebSocketEventId_uploadCanceled = "uploadCanceled"; // must match what is in LibraryPublishSteps.tsx
 		private const string kWebSocketEventId_loginSuccessful = "loginSuccessful"; // must match what is in LibraryPublishSteps.tsx
 
 		private PublishView _publishView;
@@ -153,6 +154,7 @@ namespace Bloom.web.controllers
 				if (_progress.CancelRequested)
 				{
 					_webSocketProgress.Message("Cancelled", "Upload was cancelled", ProgressKind.Error);
+					_webSocketServer.SendEvent(kWebSocketContext, kWebSocketEventId_uploadCanceled);
 					return;
 				}
 
