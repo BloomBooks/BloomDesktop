@@ -146,11 +146,13 @@ namespace Bloom.FontProcessing
 			return _fontExtensions.Contains((Path.GetExtension(path) ?? "").ToLowerInvariant());
 		}
 
-		internal static bool ProcessAndikaFontRequest(IRequestInfo info, string localPath)
+		internal static bool ProcessHostFontsRequest(IRequestInfo info, string localPath)
 		{
-			if (localPath.StartsWith("host/fonts/Andika") && IsFontTypeThatCanBeReturned(localPath))
+			var idx = localPath.IndexOf("/host/fonts/");
+			if (idx >= 0)
 			{
-				var path = FileLocationUtilities.GetFileDistributedWithApplication(true, localPath.Substring(5));
+				// If the request is for an existing file, return it.
+				var path = FileLocationUtilities.GetFileDistributedWithApplication(true, localPath.Substring(idx + 6));
 				if (path != null && RobustFile.Exists(path))
 				{
 					var contentType = BloomServer.GetContentType(Path.GetExtension(path));
@@ -158,27 +160,37 @@ namespace Bloom.FontProcessing
 					info.ReplyWithFileContent(path);
 					return true;
 				}
-			}
-			var idx = localPath.IndexOf("/host/fonts/Andika");
-			if (idx >= 0)
-			{
+				var serve = FontServe.GetInstance();
 				var fontDesc = localPath.Substring(idx + 12);
-				var tail = "Regular";
-				if (fontDesc.Contains("Bold") && fontDesc.Contains("Italic"))
-					tail = "BoldItalic";
-				else if (fontDesc.Contains("Bold"))
-					tail = "Bold";
-				else if (fontDesc.Contains("Italic"))
-					tail = "Italic";
-				var path = FileLocationUtilities.GetFileDistributedWithApplication(true, $"fonts/Andika-{tail}.woff2");
-				if (path != null && RobustFile.Exists(path))
+				foreach (var fontInfo in serve.FontsServed)
 				{
-					info.ResponseContentType = "font/woff2";
-					info.ReplyWithFileContent(path);
-					return true;
+					// Note that "Andika New Basic" requests will be answered by "Andika"
+					if (fontDesc.Contains(fontInfo.family))
+					{
+						// If the request is for a descriptive font name, do the best we can.
+						var file = fontInfo.files.normal;
+						if (fontDesc.Contains("Bold") && fontDesc.Contains("Italic"))
+							file = fontInfo.files.bolditalic;
+						else if (fontDesc.Contains("Bold"))
+							file = fontInfo.files.bold;
+						else if (fontDesc.Contains("Italic"))
+							file = fontInfo.files.italic;
+						if (String.IsNullOrEmpty(file))
+							file = fontInfo.files.normal;	// must not have a requested variant.
+						path = FileLocationUtilities.GetFileDistributedWithApplication(true, $"fonts/{file}");
+						if (path != null && RobustFile.Exists(path))
+						{
+							var contentType = BloomServer.GetContentType(Path.GetExtension(path));
+							info.ResponseContentType = contentType;
+							info.ReplyWithFileContent(path);
+							return true;
+						}
+						break;
+					}
 				}
+
 			}
-			Console.WriteLine("FAILED FontsApi.ProcessAndikaFontRequest(): localPath={0}", localPath);
+			Console.WriteLine("FAILED FontsApi.ProcessHostFontsRequest(): localPath={0}", localPath);
 			return false;
 		}
 	}

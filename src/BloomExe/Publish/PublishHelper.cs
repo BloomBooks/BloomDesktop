@@ -453,7 +453,8 @@ namespace Bloom.Publish
 		/// so that needs to be a folder we can write in.
 		/// </summary>
 		public static Book.Book MakeDeviceXmatterTempBook(string bookFolderPath, BookServer bookServer, string tempFolderPath, bool isTemplateBook,
-			Dictionary<string,int> omittedPageLabels = null, bool includeVideoAndActivities = true, string[] narrationLanguages = null,bool wantMusic=false)
+			Dictionary<string,int> omittedPageLabels = null, bool includeVideoAndActivities = true, string[] narrationLanguages = null,bool wantMusic=false,
+			bool wantFontFaceDeclarations=true)
 		{
 			var filter = new BookFileFilter(bookFolderPath) {IncludeFilesNeededForBloomPlayer = includeVideoAndActivities,
 				WantVideo = includeVideoAndActivities, NarrationLanguages = narrationLanguages, WantMusic = true};
@@ -461,6 +462,7 @@ namespace Bloom.Publish
 			// We can always save in a temp book
 			var bookInfo = new BookInfo(tempFolderPath, true, new AlwaysEditSaveContext()) {UseDeviceXMatter = !isTemplateBook};
 			var modifiedBook = bookServer.GetBookFromBookInfo(bookInfo);
+			modifiedBook.WriteFontFaces = wantFontFaceDeclarations;
 			modifiedBook.BringBookUpToDate(new NullProgress(), true);
 			modifiedBook.RemoveNonPublishablePages(omittedPageLabels);
 			var domForVideoProcessing = modifiedBook.OurHtmlDom;
@@ -647,9 +649,9 @@ namespace Bloom.Publish
 				{
 					foreach (var file in fontFiles)
 					{
-						if (file.StartsWith(BloomServer.ServerUrlWithBloomPrefixEndingInSlash+"host/"))
+						if (file.StartsWith(BloomServer.ServerUrlWithBloomPrefixEndingInSlash))
 							filesToEmbed.Add(FileLocationUtilities.GetFileDistributedWithApplication(false,
-								file.Substring(BloomServer.ServerUrlWithBloomPrefixEndingInSlash.Length+5)));
+								file.Substring(BloomServer.ServerUrlWithBloomPrefixEndingInSlash.Length)));
 						else
 							filesToEmbed.Add(file);
 					}
@@ -681,23 +683,6 @@ namespace Bloom.Publish
 				}
 				progress.MessageWithParams("PublishTab.Android.File.Progress.SubstitutingAndika", "{0} is a font name", "Bloom will substitute \"{0}\" instead.", ProgressKind.Error, defaultFont, font);
 				badFonts.Add(font); // need to prevent the bad/missing font from showing up in fonts.css and elsewhere
-			}
-		}
-
-		/// <summary>
-		/// Fix the defaultLangStyles.css file to not have @font-face declarations for Andika.
-		/// </summary>
-		public static void RemoveAndikaFontFaceDeclarations(string cssFolderPath)
-		{
-			var defaultLangStyles = Path.Combine(cssFolderPath, "defaultLangStyles.css");
-			if (RobustFile.Exists(defaultLangStyles))
-			{
-				var cssTextOrig = RobustFile.ReadAllText(defaultLangStyles);
-				var cssText = cssTextOrig;
-				// remove possible header for getting Andika from local server
-				cssText = Regex.Replace(cssText, "@font-face *{[^}]*}", "");
-				if (cssText != cssTextOrig)
-					RobustFile.WriteAllText(defaultLangStyles, cssText);
 			}
 		}
 
