@@ -212,6 +212,7 @@
     "comments": {
         "react-grid-layout": "We use a github dependency to pull in some changes we made that haven't yet been accepted by the author. Hopefully we can get rid of this if the changes are accepted."
     },
+    "packageManager": "yarn@1.22.19",
     "volta": {
         "node": "16.13.0",
         "yarn": "1.22.19"

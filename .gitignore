@@ -163,6 +163,19 @@ src/BloomBrowserUI/templates/template books/Activity/domActivities.css
 
 src/BloomBrowserUI/templates/template books/Activity/choiceActivities.css
 
-src/BloomBrowserUI/.yarn/cache/
+# per https://yarnpkg.com/getting-started/qa#which-files-should-be-gitignored
+src/BloomBrowserUI/.pnp.*
+src/BloomBrowserUI/.yarn/*
+!src/BloomBrowserUI/.yarn/patches
+!src/BloomBrowserUI/.yarn/plugins
+!src/BloomBrowserUI/.yarn/releases
+!src/BloomBrowserUI/.yarn/sdks
+!src/BloomBrowserUI/.yarn/versions
 
-src/BloomBrowserUI/.yarn/
+src/content/.pnp.*
+src/content/.yarn/*
+!src/content/.yarn/patches
+!src/content/.yarn/plugins
+!src/content/.yarn/releases
+!src/content/.yarn/sdks
+!src/content/.yarn/versions
