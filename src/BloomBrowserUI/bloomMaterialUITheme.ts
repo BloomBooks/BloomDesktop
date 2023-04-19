@@ -1,4 +1,4 @@
-import { createTheme, adaptV4Theme, Theme } from "@mui/material/styles";
+import { createTheme, Theme } from "@mui/material/styles";
 import { kBloomDisabledOpacity, kBloomDisabledText } from "./utils/colorUtils";
 
 export const kBloomBlue = "#1d94a4";
@@ -49,53 +49,57 @@ declare module "@mui/styles" {
 }
 
 // lots of examples: https://github.com/search?q=createMuiTheme&type=Code
-export const lightTheme = createTheme(
-    adaptV4Theme({
-        //this spacing doesn't seem to do anything. The example at https://material-ui.com/customization/default-theme/
-        // would be spacing{unit:23} but that gives an error saying to use a number
-        //spacing: 23,
-        palette: {
-            primary: { main: kBloomBlue },
-            secondary: { main: kBloomPurple },
-            warning: { main: kBloomGold },
+export const lightTheme = createTheme({
+    //this spacing doesn't seem to do anything. The example at https://material-ui.com/customization/default-theme/
+    // would be spacing{unit:23} but that gives an error saying to use a number
+    //spacing: 23,
+    palette: {
+        primary: { main: kBloomBlue },
+        secondary: { main: kBloomPurple },
+        warning: { main: kBloomGold }
+    },
+    typography: {
+        fontSize: 12,
+        fontFamily: kUiFontStack,
+        h6: {
+            fontSize: "1rem"
+        }
+    },
+    components: {
+        MuiLink: {
+            variants: [
+                {
+                    props: { variant: "body1" },
+                    style: {
+                        variantMapping: {
+                            h6: "h1"
+                        }
+                    }
             text: { disabled: kBloomDisabledText },
             action: {
                 disabled: kBloomDisabledText,
                 disabledOpacity: kBloomDisabledOpacity
             }
-        },
-        typography: {
-            fontSize: 12,
-            fontFamily: kUiFontStack
-        },
-        props: {
-            MuiLink: {
-                variant: "body1" // without this, they come out in times new roman :-)
-            },
-            MuiTypography: {
-                variantMapping: {
-                    h6: "h1"
                 }
-            }
+            ]
         },
-        overrides: {
-            MuiDialogTitle: {
+        MuiDialogTitle: {
+            styleOverrides: {
                 root: {
                     backgroundColor: kDialogTopBottomGray,
                     "& h6": { fontWeight: "bold" }
                 }
-            },
-            MuiDialogActions: {
+            }
+        },
+        MuiDialogActions: {
+            styleOverrides: {
                 root: {
                     backgroundColor: kDialogTopBottomGray
                 }
-            },
-            MuiTypography: {
-                h6: {
-                    fontSize: "1rem"
-                }
-            },
-            MuiCheckbox: {
+            }
+        },
+        MuiCheckbox: {
+            styleOverrides: {
                 root: {
                     // for some reason,  in Material-UI 4.0 without this, we instead get unchecked boxes having the color of secondary text!!!!
                     color: kBloomBlue,
@@ -106,18 +110,15 @@ export const lightTheme = createTheme(
                 }
             }
         }
-    })
-);
+    }
+});
 
 // Starting with the lightTheme, make any changes.
-export const darkTheme = createTheme(
-    lightTheme,
-    adaptV4Theme({
-        palette: {
-            text: {
-                // the only place I *know* this is currently used is the refresh button in the BloomPub publish preview panel
-                secondary: kGreyOnDarkColor
-            }
+export const darkTheme = createTheme(lightTheme, {
+    palette: {
+        text: {
+            // the only place I *know* this is currently used is the refresh button in the BloomPub publish preview panel
+            secondary: kGreyOnDarkColor
         }
-    })
-);
+    }
+});
