@@ -1,0 +1,58 @@
+:root {
+    --side-by-side-gap: 1mm;
+    --top-bottom-gap: 1mm;
+    --pageNumberFontSize: 10pt;
+    --pageNumberBottom: 2mm;
+}
+
+/* Below you find the settings of this custom theme. This theme only applies to "Device 16x9 Landscape" and "Device 16x9 Portrait".   */
+
+/* The statement below hides the credits row from the Front page. It allows for a bigger picture. Simply delete this line if you want the credits row back.   */
+ .creditsRow {display:none}
+
+/* The statements below control the design for 'Device16x9Landscape'. */
+
+/* The below statement on max-width allows for a page without margins.    */
+ .Device16x9Landscape .marginBox img {
+  max-width: 177.777778mm;
+}
+
+
+/* The below statements control the size and color of the marginbox. It holds the text and picture of that page. The top and left numbers determine the position of the margin box on the page.   */
+:not(.bloom-interactive-page).numberedPage.Device16x9Landscape .marginBox {
+  background-color: #ffffff;
+  border-radius: 15px;
+  padding: 1.5mm;
+  height: 93mm;
+  width: 170.777778mm;
+  top: 2mm;
+  left:2mm !important;
+}
+
+/* since we're curved, hide the corners of page that are outside of the curve */
+:not(.bloom-interactive-page).numberedPage.Device16x9Landscape {
+ background-color: transparent; /* was #2E2E2E */
+}
+
+/* The following two statements control the position of the page number   */
+.Device16x9Landscape.numberedPage.side-left::after {
+  left: calc(100% / 2 -  86.5mm);
+}
+
+.Device16x9Landscape.numberedPage.side-right::after {
+  left: calc(100% / 2 -  167.5mm);
+}
+
+/* The section below controls the pagenumber and the white circle around it.  */
+.Device16x9Landscape.numberedPage::after {
+  z-index: 1000;
+  /* color: black; */
+  display: inline-block;
+  border-radius: 50%;
+  background: #ffffff;
+  width: 33px;
+  line-height: 33px;
+  text-align: center !important;
+  margin: auto;
+}
+/* End of statements controlling layout of 'Device16x9Landscape'.

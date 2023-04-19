@@ -402,6 +402,7 @@
   <ItemGroup>
     <Compile Include="Book\BookFileFilter.cs" />
     <Compile Include="Book\AppearanceSettings.cs" />
+    <Compile Include="Book\CoverColorManager.cs" />
     <Compile Include="Book\PublishSettings.cs" />
     <Compile Include="Book\SaveContext.cs" />
     <Compile Include="Book\WidgetHelper.cs" />

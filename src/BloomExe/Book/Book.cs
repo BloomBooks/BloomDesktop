@@ -39,15 +39,6 @@ namespace Bloom.Book
 	public class Book
 	{
 		public delegate Book Factory(BookInfo info, IBookStorage storage);//autofac uses this
-		public static Color[] CoverColors = { Color.FromArgb(228, 140, 132), Color.FromArgb(176, 222, 228), Color.FromArgb(152, 208, 185), Color.FromArgb(194, 166, 191) };
-
-
-		//We only randomize the initial value for each run. Without it, we were making a lot
-		// more red books than any other color, because the
-		//first book for a given run would always be red, and people are unlikely to make more
-		//than one book per session.
-		private static int s_coverColorIndex=new Random().Next(CoverColors.Length-1);
-
 		private readonly ITemplateFinder _templateFinder;
 		private readonly PageSelection _pageSelection;
 		private readonly PageListChangedEvent _pageListChangedEvent;
@@ -59,6 +50,7 @@ namespace Bloom.Book
 		public event EventHandler ContentsChanged;
 		private BookData _bookData;
 		public const string ReadMeImagesFolderName = "ReadMeImages";
+		private CoverColorManager _coverColorManager;
 
 		int _audioFilesCopiedForDuplication;
 
@@ -84,6 +76,8 @@ namespace Bloom.Book
 			BookSavedEvent bookSavedEvent=null, ISaveContext context = null)
 		{
 			BookInfo = info;
+			_coverColorManager = new CoverColorManager(this.OurHtmlDom, BookInfo, BookInfo.AppearanceSettings);
+
 			if (bookSavedEvent == null) // unit testing
 			{
 				bookSavedEvent = new BookSavedEvent();
@@ -138,21 +132,6 @@ namespace Bloom.Book
 			// to get inserted properly. So we make sure there is one.
 			GetOrCreateUserModifiedStyleElementFromStorage();
 
-			// If we're showing the user one of our built-in templates (like Basic Book), pick a color for it.
-			// If it is editable or from bloomlibrary or a BloomPack, then we don't want to change to the next color,
-			// we want to use the color that we used for the sample shell/template we showed them previously.
-			// (BL-11490 Even shells or downloaded books should preserve the original cover color.)
-			if (!info.IsEditable && Path.GetDirectoryName(info.FolderPath) == BloomFileLocator.FactoryTemplateBookDirectory)
-			{
-				SelectNextCoverColor(); // we only increment when showing a built-in template
-				InitCoverColor();
-			}
-
-			// If it doesn't already have a cover color, give it one.
-			if (HtmlDom.GetCoverColorStyleElement(OurHtmlDom.Head) == null)
-			{
-				InitCoverColor(); // should use the same color as what they saw in the preview of the template/shell
-			}
 			FixBookIdAndLineageIfNeeded();
 			FixUrlEncodedCoverImageIfNeeded();
 			Storage.Dom.RemoveExtraBookTitles();
@@ -220,15 +199,6 @@ namespace Bloom.Book
 			ResetPreviewDom();
 		}
 
-		/// <summary>
-		/// This just increments the color index so that the next book to be constructed that doesn't already have a color will use it
-		/// </summary>
-		public static void SelectNextCoverColor()
-		{
-			s_coverColorIndex = s_coverColorIndex+1;
-			if( s_coverColorIndex >= CoverColors.Length)
-				s_coverColorIndex = 0;
-		}
 
 		public CollectionSettings CollectionSettings { get; }
 
@@ -1407,10 +1377,10 @@ namespace Bloom.Book
 			RepairQuestionsPages(bookDOM);
 			MigrateNonstandardClassNames(bookDOM);
 
-			// migrate our cover color to the new system
-			if (string.IsNullOrEmpty(BookInfo.AppearanceSettings.CoverColor)) {
-				BookInfo.AppearanceSettings.CoverColor = GetCoverColor();
-			}
+			//// migrate our cover color to the new system
+			//if (string.IsNullOrEmpty(BookInfo.AppearanceSettings.CoverColor)) {
+			//	BookInfo.AppearanceSettings.CoverColor = GetCoverColorFromDom(RawDom);
+			//}
 
 			progress.WriteStatus("Gathering Data...");
 			TranslationGroupManager.PrepareElementsInPageOrDocument(bookDOM.RawDom, _bookData);
@@ -2539,54 +2509,53 @@ namespace Bloom.Book
 
 		public string AboutBookMdPath => BloomFileLocator.GetBestLocalizedFile(Storage.FolderPath.CombineForPath("ReadMe-en.md"));
 
-		public void InitCoverColor()
-		{
-			// for digital comic template, we want a black cover.
-			// NOTE as this writing, at least, xmatter cannot set <meta> values, so this isn't a complete solution. It's only
-			// useful for starting off a book from a template book.
-			var preserve = this.OurHtmlDom.GetMetaValue("preserveCoverColor", "false");
-			if ( preserve == "false")
-			{
-				AddCoverColor(this.OurHtmlDom, CoverColors[s_coverColorIndex]);
-			}
-		}
+		//		public void InitCoverColor()
+		//		{
+		//			// for digital comic template, we want a black cover.
+		//			// NOTE as this writing, at least, xmatter cannot set <meta> values, so this isn't a complete solution. It's only
+		//			// useful for starting off a book from a template book.
+		//			var preserve = this.OurHtmlDom.GetMetaValue("preserveCoverColor", "false");
+		//			if ( preserve == "false")
+		//			{
+		//				WriteCoverColorToDom(this.OurHtmlDom, BookInfo.AppearanceSettings.CoverColor);
+		//			}
+		//		}
 
-		private void AddCoverColor(HtmlDom dom, Color coverColor)
-		{
-			var colorValue = ColorTranslator.ToHtml(coverColor);
-//            var colorValue = String.Format("#{0:X2}{1:X2}{2:X2}", coverColor.R, coverColor.G, coverColor.B);
-			XmlElement colorStyle = dom.RawDom.CreateElement("style");
-			colorStyle.SetAttribute("type","text/css");
-			colorStyle.InnerXml = @"
-				DIV.bloom-page.coverColor	{		background-color: colorValue !important;	}
-				".Replace("colorValue", colorValue);//string.format has a hard time with all those {'s
+		//		private void WriteCoverColorToDom(HtmlDom dom, string coverColor)
+		//		{
+		////            var colorValue = String.Format("#{0:X2}{1:X2}{2:X2}", coverColor.R, coverColor.G, coverColor.B);
+		//			XmlElement colorStyle = dom.RawDom.CreateElement("style");
+		//			colorStyle.SetAttribute("type","text/css");
+		//			colorStyle.InnerXml = @"
+		//				DIV.bloom-page.coverColor	{		background-color: colorValue !important;	}
+		//				".Replace("colorValue", coverColor);//string.format has a hard time with all those {'s
 
-			dom.Head.AppendChild(colorStyle);
-		}
+		//			dom.Head.AppendChild(colorStyle);
+		//		}
 
 		public String GetCoverColor()
 		{
-			return GetCoverColorFromDom(RawDom);
+			return BookInfo.AppearanceSettings.CoverColor;
 		}
 
-		public static String GetCoverColorFromDom(XmlDocument dom)
-		{
-			foreach (XmlElement stylesheet in dom.SafeSelectNodes("//style"))
-			{
-				var content = stylesheet.InnerText;
-				// Our XML representation of an HTML DOM doesn't seem to have any object structure we can
-				// work with. The Stylesheet content is just raw CDATA text.
-				// Regex updated to handle comments and lowercase 'div' in the cover color rule.
-				var match = new Regex(
-					@"(DIV|div).bloom-page.coverColor\s*{.*?background-color:\s*(#[0-9a-fA-F]*|[a-z]*)",
-					RegexOptions.Singleline).Match(content);
-				if (match.Success)
-				{
-					return match.Groups[2].Value;
-				}
-			}
-			return "#FFFFFF";
-		}
+		//		public static String GetCoverColorFromDom(XmlDocument dom)
+		//		{
+		//			foreach (XmlElement stylesheet in dom.SafeSelectNodes("//style"))
+		//			{
+		//				var content = stylesheet.InnerText;
+		//				// Our XML representation of an HTML DOM doesn't seem to have any object structure we can
+		//				// work with. The Stylesheet content is just raw CDATA text.
+		//				// Regex updated to handle comments and lowercase 'div' in the cover color rule.
+		//				var match = new Regex(
+		//					@"(DIV|div).bloom-page.coverColor\s*{.*?background-color:\s*(#[0-9a-fA-F]*|[a-z]*)",
+		//					RegexOptions.Singleline).Match(content);
+		//				if (match.Success)
+		//				{
+		//					return match.Groups[2].Value;
+		//				}
+		//			}
+		//			return "#FFFFFF";
+		//		}
 
 		/// <summary>
 		/// Set the cover color. Not used initially; assumes there is already an (unfortunately unmarked)
@@ -2595,36 +2564,36 @@ namespace Bloom.Book
 		/// <param name="color"></param>
 		public void SetCoverColor(string color)
 		{
-			if (SetCoverColorInternal(color))
+			if (_coverColorManager.SetCoverColorInternal(color))
 			{
 				Save();
 				ContentsChanged?.Invoke(this, new EventArgs());
 			}
 		}
 
-		/// <summary>
-		/// Internal method is testable
-		/// </summary>
-		/// <param name="color"></param>
-		/// <returns>true if a change was made</returns>
-		internal bool SetCoverColorInternal(string color)
-		{
-			foreach (XmlElement stylesheet in RawDom.SafeSelectNodes("//style"))
-			{
-				string content = stylesheet.InnerXml;
-				var regex =
-					new Regex(
-						@"(DIV.(coverColor\s*TEXTAREA|bloom-page.coverColor)\s*{\s*background-color:\s*)(#[0-9a-fA-F]*)",
-						RegexOptions.IgnoreCase);
-				if (!regex.IsMatch(content))
-					continue;
-				var newContent = regex.Replace(content, "$1" + color);
-				stylesheet.InnerXml = newContent;
-				return true;
-			}
+		//		/// <summary>
+		//		/// Internal method is testable
+		//		/// </summary>
+		//		/// <param name="color"></param>
+		//		/// <returns>true if a change was made</returns>
+		//		internal bool SetCoverColorInternal(string color)
+		//		{
+		//			foreach (XmlElement stylesheet in RawDom.SafeSelectNodes("//style"))
+		//			{
+		//				string content = stylesheet.InnerXml;
+		//				var regex =
+		//					new Regex(
+		//						@"(DIV.(coverColor\s*TEXTAREA|bloom-page.coverColor)\s*{\s*background-color:\s*)([#,\w]*)",
+		//						RegexOptions.IgnoreCase|RegexOptions.Multiline);
+		//				if (!regex.IsMatch(content))
+		//					continue;
+		//				var newContent = regex.Replace(content, "$1" + color);
+		//				stylesheet.InnerXml = newContent;
+		//				return true;
+		//			}
 
-			return false;
-		}
+		//			return false;
+		//		}
 
 		/// <summary>
 		/// Make stuff readonly, which isn't doable via css, surprisingly. And even more
@@ -3430,7 +3399,7 @@ namespace Bloom.Book
 				InsertFullBleedMarkup(printingDom.Body);
 			}
 			if (!FullBleed)
-				AddCoverColor(printingDom, Color.White);
+				CoverColorManager.WriteCoverColorToDom(printingDom, "#FFFFFF"/*white*/);
 			AddPreviewJavascript(printingDom);
 			return printingDom;
 		}

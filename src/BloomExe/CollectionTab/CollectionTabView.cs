@@ -32,13 +32,19 @@ namespace Bloom.CollectionTab
 		public CollectionTabView(CollectionModel model,
 			SelectedTabChangedEvent selectedTabChangedEvent,
 			TeamCollectionManager tcManager, BookSelection bookSelection,
-			WorkspaceTabSelection tabSelection, BloomWebSocketServer webSocketServer, LocalizationChangedEvent localizationChangedEvent)
+			WorkspaceTabSelection tabSelection, BloomWebSocketServer webSocketServer, LocalizationChangedEvent localizationChangedEvent,
+			BookRefreshEvent bookRefreshEvent)
 		{
 			_model = model;
 			_tabSelection = tabSelection;
 			_bookSelection = bookSelection;
 			_webSocketServer = webSocketServer;
 			_tcManager = tcManager;
+			bookRefreshEvent.Subscribe(book => {
+				// this prevents us responding to book changes too early in the startup process
+				if(bookSelection.CurrentSelection!=null)
+					UpdateForBookChanges(book);
+			});
 
 			BookCollection.CollectionCreated += OnBookCollectionCreated;
 
