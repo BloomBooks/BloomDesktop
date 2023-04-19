@@ -56,7 +56,12 @@ export const lightTheme = createTheme({
     palette: {
         primary: { main: kBloomBlue },
         secondary: { main: kBloomPurple },
-        warning: { main: kBloomGold }
+        warning: { main: kBloomGold },
+        text: { disabled: kBloomDisabledText },
+        action: {
+            disabled: kBloomDisabledText,
+            disabledOpacity: kBloomDisabledOpacity
+        }
     },
     typography: {
         fontSize: 12,
@@ -75,11 +80,6 @@ export const lightTheme = createTheme({
                             h6: "h1"
                         }
                     }
-            text: { disabled: kBloomDisabledText },
-            action: {
-                disabled: kBloomDisabledText,
-                disabledOpacity: kBloomDisabledOpacity
-            }
                 }
             ]
         },
