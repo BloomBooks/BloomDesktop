@@ -710,9 +710,9 @@ namespace Bloom.Api
 			{
 				return ProcessCssFile(info, localPath);
 			}
-			if (localPath.Contains("host/fonts/Andika"))
+			if (localPath.Contains("/host/fonts/"))
 			{
-				return FontsApi.ProcessAndikaFontRequest(info, localPath);
+				return FontsApi.ProcessHostFontsRequest(info, localPath);
 			}
 
 			switch (localPath)
