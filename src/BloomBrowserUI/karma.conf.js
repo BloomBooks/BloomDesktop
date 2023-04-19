@@ -41,7 +41,7 @@ module.exports = function(config) {
         // - Chrome IF YOU USE CHROME, NOTE THAT IF YOU MINIMIZE CHROME, IT WILL RUN TESTS SUPER SLOWLY
         // - Firefox
         // - PhantomJS
-        browsers: ["Firefox", "Chrome_allow_autoplay"],
+        browsers: ["Chrome_allow_autoplay"],
 
         customLaunchers: {
             Chrome_allow_autoplay: {
