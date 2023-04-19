@@ -90,9 +90,11 @@ namespace Bloom.web.controllers
 					if (_enterpriseStatus == EnterpriseStatus.None)
 					{
 						_knownBrandingInSubscriptionCode = true;
+						ResetBookshelf();
 						BrandingChangeHandler("Default", null);
 					} else if (_enterpriseStatus == EnterpriseStatus.Community)
 					{
+						ResetBookshelf();
 						BrandingChangeHandler("Local-Community", null);
 					}
 					else
@@ -120,10 +122,9 @@ namespace Bloom.web.controllers
 					// generally want to clear out the Bookshelf. But if the BrandingKey is the same as the old one,
 					// we'll leave it alone, since they probably renewed for another year or so and want to use the
 					// same bookshelf.
-					if (DialogBeingEdited != null &&
-						SubscriptionCode != _collectionSettings.SubscriptionCode &&
+					if (SubscriptionCode != _collectionSettings.SubscriptionCode &&
 						newBranding != oldBranding)
-							DialogBeingEdited.PendingDefaultBookshelf = "";
+							ResetBookshelf();
 					if (_enterpriseExpiry < DateTime.Now) // expired or invalid
 					{
 						BrandingChangeHandler("Default", null);
@@ -264,6 +265,12 @@ namespace Bloom.web.controllers
 
 			apiHandler.RegisterEndpointHandler(kApiUrlPart + "getCustomPaletteColors", HandleGetCustomColorsRequest, false);
 			apiHandler.RegisterEndpointHandler(kApiUrlPart + "addCustomPaletteColor", HandleAddCustomColor, false);
+		}
+
+		private void ResetBookshelf()
+		{
+			if (DialogBeingEdited != null)
+				DialogBeingEdited.PendingDefaultBookshelf = "";
 		}
 
 		private void HandleGetCustomColorsRequest(ApiRequest request)

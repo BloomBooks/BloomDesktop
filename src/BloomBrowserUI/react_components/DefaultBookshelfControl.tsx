@@ -35,6 +35,11 @@ export const DefaultBookshelfControl: React.FunctionComponent = () => {
         </MenuItem>
     ));
 
+    const disableControl =
+        !validBookshelves ||
+        validBookshelves.length === 0 ||
+        (validBookshelves.length === 1 && validBookshelves[0].value === "none");
+
     const BLBookshelfLabel = useL10n(
         "Bloom Library Bookshelf",
         "CollectionSettingsDialog.BloomLibraryBookshelf",
@@ -164,9 +169,7 @@ export const DefaultBookshelfControl: React.FunctionComponent = () => {
                             }
                         }}
                         // If we can't get the options from contentful, or there are none, disable.
-                        disabled={
-                            !validBookshelves || validBookshelves.length == 0
-                        }
+                        disabled={disableControl}
                         onChange={event => {
                             const newShelf = event.target.value as string;
                             setProjectBookshelfUrlKey(newShelf);
