@@ -90,9 +90,11 @@ namespace Bloom.web.controllers
 					if (_enterpriseStatus == EnterpriseStatus.None)
 					{
 						_knownBrandingInSubscriptionCode = true;
+						ResetBookshelf();
 						BrandingChangeHandler("Default", null);
 					} else if (_enterpriseStatus == EnterpriseStatus.Community)
 					{
+						ResetBookshelf();
 						BrandingChangeHandler("Local-Community", null);
 					}
 					else
@@ -264,6 +266,12 @@ namespace Bloom.web.controllers
 
 			apiHandler.RegisterEndpointHandler(kApiUrlPart + "getCustomPaletteColors", HandleGetCustomColorsRequest, false);
 			apiHandler.RegisterEndpointHandler(kApiUrlPart + "addCustomPaletteColor", HandleAddCustomColor, false);
+		}
+
+		private void ResetBookshelf()
+		{
+			if (DialogBeingEdited != null)
+				DialogBeingEdited.PendingDefaultBookshelf = "";
 		}
 
 		private void HandleGetCustomColorsRequest(ApiRequest request)
