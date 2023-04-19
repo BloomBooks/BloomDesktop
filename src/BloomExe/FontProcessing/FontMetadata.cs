@@ -213,21 +213,8 @@ namespace Bloom.FontProcessing
 			}
 			catch (Exception e)
 			{
-				if (fontName == "Andika" && group.Normal.StartsWith(BloomServer.ServerUrlWithBloomPrefixEndingInSlash))
-				{
-					// These values are for the version of Andika that Bloom ships with.
-					copyright = "Copyright (c) 2004-2023 SIL International";
-					designer = "Victor Gaultney, Annie Olsen, Julie Remington, Don Collingsworth, Eric Hays, Becca Hirsbrunner";
-					designerURL = "https://scripts.sil.org/";
-					fsType = "Installable";
-					license = "Copyright (c) 2004-2023 SIL International (https://www.sil.org/) with Reserved Font Names \"Andika\" and \"SIL\".\n\nThis Font Software is licensed under the SIL Open Font License, Version 1.1. This license is available with a FAQ at: https://scripts.sil.org/OFL";
-					licenseURL = "https://scripts.sil.org/OFL";
-					manufacturer = "SIL International";
-					manufacturerURL = "https://www.sil.org/";
-					trademark = "Andika is a trademark of SIL International.";
-					version = "6.200";
-				}
-				else
+				var serve = FontServe.GetInstance();
+				if (!serve.HasFamily(fontName) || !group.Normal.StartsWith(BloomServer.ServerUrlWithBloomPrefixEndingInSlash))
 				{
 					// file is somehow corrupt or not really a font file? Just ignore it.
 					Console.WriteLine("GlyphTypeface for \"{0}\" threw an exception: {1}", group.Normal, e);
@@ -235,6 +222,18 @@ namespace Bloom.FontProcessing
 					determinedSuitabilityNotes = $"GlyphTypeface exception: {e}";
 					return;
 				}
+				var info = serve.GetFontInformationForFamily(fontName);
+				// These values are for the version of the font that Bloom ships with.
+				copyright = info.metadata.copyright;
+				designer = info.metadata.designer;
+				designerURL = info.metadata.designerURL;
+				fsType = info.metadata.fsType;
+				license = info.metadata.license;
+				licenseURL = info.metadata.licenseURL;
+				manufacturer = info.metadata.manufacturer;
+				manufacturerURL = info.metadata.manufacturerURL;
+				trademark = info.metadata.trademark;
+				version = info.metadata.version;
 			}
 #endif
 			variants = group.GetAvailableVariants().ToArray();

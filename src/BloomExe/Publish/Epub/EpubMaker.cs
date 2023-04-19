@@ -288,7 +288,9 @@ namespace Bloom.Publish.Epub
 					// We could enhance this if we can figure out exactly what languages we will publish audio of.
 					// For now, I'm including them all in this initial copy. Later stages will filter to just
 					// what's visible.
-					narrationLanguages: null); 
+					narrationLanguages: null,
+					// Epubs write out their own @font-face declarations to static locations for embedded fonts.
+					wantFontFaceDeclarations: false);
 			}
 
 			// The readium control remembers the current page for each book.
@@ -1126,7 +1128,8 @@ namespace Bloom.Publish.Epub
 				if (name == "customCollectionStyles.css" || name == "defaultLangStyles.css" || name == "branding.css")
 				{
 					// These files should be in the book's folder, not in some arbitrary place in our search path.
-					path = Path.Combine(_originalBook.FolderPath, name);
+					// defaultLangStyles.css is newly generated for the ePUB, the others are copied from _originalBook.FolderPath
+					path = Path.Combine(_book.FolderPath, name);
 					// It's OK not to find these.
 					if (!File.Exists(path))
 					{
@@ -2116,7 +2119,6 @@ namespace Bloom.Publish.Epub
 			Directory.CreateDirectory(Path.Combine(_contentFolder, kCssFolder));
 			RobustFile.WriteAllText(Path.Combine(_contentFolder, kCssFolder, "fonts.css"), sb.ToString());
 			_manifestItems.Add(kCssFolder+"/" + "fonts.css");
-			PublishHelper.RemoveAndikaFontFaceDeclarations(Path.Combine(_contentFolder, kCssFolder));
 			// Repair defaultLangStyles.css and other places in the output book if needed.
 			if (badFonts.Any())
 			{

@@ -166,41 +166,51 @@ namespace Bloom.FontProcessing
 			}
 			try
 			{
-				// If Andika is installed on the system, we'll use that version of the font.
-				// If it's not installed, we'll have BloomServer serve it from the .woff2 files
-				// distributed with Bloom.
-				if (!FontNameToFiles.TryGetValue("Andika", out FontGroup filesForAndika))
+				var serve = FontServe.GetInstance();
+				if (serve.FontsServed.Count > 0)
 				{
-					// We need the real ServerUrl including the port number.  This runs on a worker
-					// thread, so busy waiting should be okay.
+					// Add the font(s) that we're serving from BloomServer.
+					// We need the real ServerUrl including the port number.  (This method runs on a worker
+					// thread, so busy waiting should be okay.)
 					while (!BloomServer.ServerIsListening)
 						Thread.Sleep(100);
-					filesForAndika = new FontGroup();
-					var pathNormal = FileLocationUtilities.GetFileDistributedWithApplication(true, "fonts/Andika-Regular.woff2");
-					if (pathNormal != null && RobustFile.Exists(pathNormal))
-						filesForAndika.Normal = Api.BloomServer.ServerUrlWithBloomPrefixEndingInSlash + "host/fonts/Andika-Regular.woff2";
-					var pathItalic = FileLocationUtilities.GetFileDistributedWithApplication(true, "fonts/Andika-Italic.woff2");
-					if (pathItalic != null && RobustFile.Exists(pathItalic))
-						filesForAndika.Italic = Api.BloomServer.ServerUrlWithBloomPrefixEndingInSlash + "host/fonts/Andika-Italic.woff2";
-					var pathBold = FileLocationUtilities.GetFileDistributedWithApplication(true, "fonts/Andika-Bold.woff2");
-					if (pathBold != null && RobustFile.Exists(pathBold))
-						filesForAndika.Bold = Api.BloomServer.ServerUrlWithBloomPrefixEndingInSlash + "host/fonts/Andika-Bold.woff2";
-					var pathBoldItalic = FileLocationUtilities.GetFileDistributedWithApplication(true, "fonts/Andika-BoldItalic.woff2");
-					if (pathBoldItalic != null && RobustFile.Exists(pathBoldItalic))
-						filesForAndika.BoldItalic = Api.BloomServer.ServerUrlWithBloomPrefixEndingInSlash + "host/fonts/Andika-BoldItalic.woff2";
-					if (!String.IsNullOrEmpty(filesForAndika.Normal))
+					// Mark each font we're serving for being served even if it has been installed locally.
+					foreach (var fontInfo in serve.FontsServed)
 					{
-						FontNameToFiles["Andika"] = filesForAndika;
-						FontsApi.IsServingAndika = true;
+						if (!FontNameToFiles.TryGetValue(fontInfo.family, out FontGroup filesForFont))
+							filesForFont = new FontGroup();
+						if (!String.IsNullOrEmpty(fontInfo.files.normal))
+						{
+							var pathNormal = FileLocationUtilities.GetFileDistributedWithApplication(true, $"fonts/{fontInfo.files.normal}");
+							if (pathNormal != null && RobustFile.Exists(pathNormal))
+								filesForFont.Normal = BloomServer.ServerUrlWithBloomPrefixEndingInSlash + $"fonts/{fontInfo.files.normal}";
+						}
+						if (!String.IsNullOrEmpty(fontInfo.files.bold))
+						{
+							var pathBold = FileLocationUtilities.GetFileDistributedWithApplication(true, $"fonts/{fontInfo.files.bold}");
+							if (pathBold != null && RobustFile.Exists(pathBold))
+								filesForFont.Bold = BloomServer.ServerUrlWithBloomPrefixEndingInSlash + $"fonts/{fontInfo.files.bold}";
+						}
+						if (!String.IsNullOrEmpty(fontInfo.files.italic))
+						{
+							var pathItalic = FileLocationUtilities.GetFileDistributedWithApplication(true, $"fonts/{fontInfo.files.italic}");
+							if (pathItalic != null && RobustFile.Exists(pathItalic))
+								filesForFont.Italic = BloomServer.ServerUrlWithBloomPrefixEndingInSlash + $"fonts/{fontInfo.files.italic}";
+						}
+						if (!String.IsNullOrEmpty(fontInfo.files.bolditalic))
+						{
+							var pathBoldItalic = FileLocationUtilities.GetFileDistributedWithApplication(true, $"fonts/{fontInfo.files.bolditalic}");
+							if (pathBoldItalic != null && RobustFile.Exists(pathBoldItalic))
+								filesForFont.BoldItalic = BloomServer.ServerUrlWithBloomPrefixEndingInSlash + $"fonts/{fontInfo.files.bolditalic}";
+						}
+						if (!String.IsNullOrEmpty(filesForFont.Normal))
+							FontNameToFiles[fontInfo.family] = filesForFont;
 					}
 				}
-				// If Andika New Basic is not installed, note that it should fall back to Andika.
-				if (!FontNameToFiles.TryGetValue("Andika New Basic", out FontGroup filesANB))
-					FontsApi.AndikaNewBasicIsAndika = true;
 			}
 			catch (Exception e)
 			{
-				Console.WriteLine("DEBUG: Exception for requesting Andika: {0}", e);
+				Console.WriteLine("DEBUG: Exception for processing font being served: {0}", e);
 			}
 #endif
 		}

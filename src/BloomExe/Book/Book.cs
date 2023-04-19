@@ -72,6 +72,13 @@ namespace Bloom.Book
 		public const string BigTextDiglotGuid = "08422e7b-9406-4d11-8c71-02005b1b8095";
 		public const string WidgetGuid = "3a705ac1-c1f2-45cd-8a7d-011c009cf406"; // default page type for a single widget
 
+		/// <summary>
+		/// Flag whether we want to write out the @font-face lines for served fonts to defaultLangStyles.css.
+		/// (ePUB and BloomPub publishing are when we don't want to do this, either because those fonts will
+		/// be embedded or because bloom-player already has compatible @font-face declarations for Andika.)
+		/// </summary>
+		public bool WriteFontFaces = true;
+
 		//for moq'ing only; parameterless ctor required by Moq
 		public Book()
 		{
@@ -1579,30 +1586,20 @@ namespace Bloom.Book
 						copyCurrentRule = false;
 				}
 			}
-			var cssHeader = "";
-			var css = cssBuilder.ToString();
-			if (FontsApi.IsServingAndika)
+			if (WriteFontFaces)
 			{
-				cssHeader = @"@font-face { font-family: Andika; src: url(/host/fonts/Andika-Regular.woff2); }
-@font-face { font-family: Andika; font-style: italic; src: url(/host/fonts/Andika-Italic.woff2); }
-@font-face { font-family: Andika; font-weight: bold; src: url(/host/fonts/Andika-Bold.woff2); }
-@font-face { font-family: Andika; font-weight: bold; font-style: italic; src: url(/host/fonts/Andika-BoldItalic.woff2); }
-";
-				if (FontsApi.AndikaNewBasicIsAndika)
-					cssHeader = cssHeader + @"@font-face { font-family: 'Andika New Basic'; src: url(/host/fonts/Andika-Regular.woff2); }
-@font-face { font-family: 'Andika New Basic'; font-style: italic; src: url(/host/fonts/Andika-Italic.woff2); }
-@font-face { font-family: 'Andika New Basic'; font-weight: bold; src: url(/host/fonts/Andika-Bold.woff2); }
-@font-face { font-family: 'Andika New Basic'; font-weight: bold; font-style: italic; src: url(/host/fonts/Andika-BoldItalic.woff2); }
-";
-			}
-			else if (FontsApi.AndikaNewBasicIsAndika && css.Contains("'Andika New Basic';"))
-			{
-				// Andika is installed, but not Andika New Basic: add a fallback for Andika New Basic
-				css = css.Replace("'Andika New Basic';", "'Andika New Basic','Andika';");
+				var serve = FontServe.GetInstance();
+				var headerBuilder = new StringBuilder();
+				foreach (var fontInfo in serve.FontsServed)
+				{
+					foreach (var face in fontInfo.faces)
+						headerBuilder.AppendLine(face);
+				}
+				cssBuilder.Insert(0, headerBuilder.ToString());
 			}
 			try
 			{
-				RobustFile.WriteAllText(path, cssHeader + css);
+				RobustFile.WriteAllText(path, cssBuilder.ToString());
 			}
 			catch (UnauthorizedAccessException e)
 			{

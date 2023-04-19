@@ -230,7 +230,10 @@ BookServer bookServer,
 			var modifiedBook = PublishHelper.MakeDeviceXmatterTempBook(bookFolderPath, bookServer,
 				tentativeBookFolderPath, isTemplateBook,
 				narrationLanguages: settings?.AudioLanguagesToInclude,
-				wantMusic:true);
+				wantMusic:true,
+				// bloom-player has its own @font-face declarations built in for Andika which are compatible with ours.
+				// Other fonts that BloomDesktop may serve need to be embedded in the .bloompub file.
+				wantFontFaceDeclarations: false);
 
 			modifiedBook.SetMotionAttributesOnBody(settings?.Motion ?? false);
 
@@ -559,6 +562,7 @@ BookServer bookServer,
 		{
 			const string defaultFont = "Andika"; // "Andika" already in BR, don't need to embed or make rule.
 			fontsWanted.Remove(defaultFont);
+			fontsWanted.Remove("Andika New Basic");	// This will be handled by the Andika font which is available in BR.
 			PublishHelper.CheckFontsForEmbedding(progress, fontsWanted, fontFileFinder, out List<string> filesToEmbed, out HashSet<string> badFonts);
 			foreach (var file in filesToEmbed)
 			{
@@ -586,7 +590,6 @@ BookServer bookServer,
 			RobustFile.WriteAllText(Path.Combine(book.FolderPath, "fonts.css"), sb.ToString());
 			// Tell the document to use the new stylesheet.
 			book.OurHtmlDom.AddStyleSheet("fonts.css");
-			PublishHelper.RemoveAndikaFontFaceDeclarations(book.FolderPath);
 			// Repair defaultLangStyles.css and other places in the output book if needed.
 			if (badFonts.Any())
 			{
