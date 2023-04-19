@@ -195,7 +195,6 @@ export const PDFPrintPublishScreen = () => {
                 onChange={(newMode: string) => {
                     setIsProgressDialogOpen(true);
                     setBookletMode(newMode);
-                    setHelpVisible(false);
                 }}
                 onGotPdf={path => {
                     setPath(path);
@@ -312,15 +311,17 @@ export const PDFPrintPublishScreen = () => {
 
     return (
         <React.Fragment>
-            <PublishScreenTemplate
-                bannerTitleEnglish="Publish to PDF &amp; Print"
-                bannerTitleL10nId="PublishTab.PdfPrint.BannerTitle"
-                bannerRightSideControls={rightSideControls}
-                optionsPanelContents={optionsPanel}
-                bottomBanner={bottomBanner}
-            >
-                {mainPanel}
-            </PublishScreenTemplate>
+            <div onClick={() => setHelpVisible(false)}>
+                <PublishScreenTemplate
+                    bannerTitleEnglish="Publish to PDF &amp; Print"
+                    bannerTitleL10nId="PublishTab.PdfPrint.BannerTitle"
+                    bannerRightSideControls={rightSideControls}
+                    optionsPanelContents={optionsPanel}
+                    bottomBanner={bottomBanner}
+                >
+                    {mainPanel}
+                </PublishScreenTemplate>
+            </div>
 
             <ProgressDialog
                 title={progressHeader}
