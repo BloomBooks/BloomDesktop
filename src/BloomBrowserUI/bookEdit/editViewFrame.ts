@@ -6,7 +6,7 @@ import {
     IColorPickerDialogProps,
     showColorPickerDialog as doShowColorPickerDialog
 } from "../react_components/color-picking/colorPickerDialog";
-import "jquery-ui/jquery-ui-1.10.3.custom.min.js"; //for dialog()
+import "../modified_libraries/jquery-ui/jquery-ui-1.10.3.custom.min.js"; //for dialog()
 
 export interface IEditViewFrameExports {
     showDialog(dialogContents: string | JQuery, options: any): JQuery;
@@ -34,7 +34,7 @@ import { getEditablePageBundleExports } from "./js/bloomFrames";
 export { getEditablePageBundleExports };
 import { showPageChooserDialog } from "../pageChooser/PageChooserDialog";
 export { showPageChooserDialog };
-import "errorHandler";
+import "../lib/errorHandler";
 import { reportError } from "../lib/errorHandler";
 import { IToolboxFrameExports } from "./toolbox/toolboxBootstrap";
 import { showCopyrightAndLicenseInfoOrDialog } from "./copyrightAndLicense/CopyrightAndLicenseDialog";
