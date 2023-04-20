@@ -53,7 +53,8 @@ export interface IBloomDialogProps extends DialogProps {
 }
 
 export const BloomDialog: FunctionComponent<IBloomDialogProps> = forwardRef(
-    (props, ref) => {
+    // a named function here instead of a lamda to avoid the "Component definition is missing display name"
+    function BloomDialog(props, ref) {
         // About custom styling:
         // We need the parent to be able to specify things about the size of the dialog. Example:
         //     <BloomDialog
