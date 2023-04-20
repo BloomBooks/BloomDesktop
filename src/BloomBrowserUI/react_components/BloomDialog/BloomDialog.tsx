@@ -190,7 +190,8 @@ export const BloomDialog: FunctionComponent<IBloomDialogProps> = forwardRef(
                                     }
                                     // without this, you can't get the dialog close to the edge
                                     // because there is a huge invisible margin around the dialog
-                                    .MuiPaper-root {
+                                    // Note that we want to restrict this to just this top-level paper thing, not *all* off them
+                                    .MuiDialog-container > .MuiPaper-root {
                                         margin: 0 !important;
                                     }
                                 `}
