@@ -649,21 +649,17 @@ namespace Bloom.Publish
 				{
 					foreach (var file in fontFiles)
 					{
-						if (file.StartsWith(BloomServer.ServerUrlWithBloomPrefixEndingInSlash))
-							filesToEmbed.Add(FileLocationUtilities.GetFileDistributedWithApplication(false,
-								file.Substring(BloomServer.ServerUrlWithBloomPrefixEndingInSlash.Length)));
-						else
-							filesToEmbed.Add(file);
+						filesToEmbed.Add(GetRealFontFilePath(file));
 					}
 					if (missingLicense)
 						progress.MessageWithParams("PublishTab.Android.File.Progress.UnknownLicense", "{0} is a font name", "Checking {0} font: Unknown license", ProgressKind.Progress, font);
 					else
 						progress.MessageWithParams("PublishTab.Android.File.Progress.CheckFontOK", "{0} is a font name", "Checking {0} font: License OK for embedding.", ProgressKind.Progress, font);
-					// Assumes only one font file per font; if we embed multiple ones will need to enhance this.
-					var size = new FileInfo(filesToEmbed.First()).Length;
-					var sizeToReport = (size / 1000000.0).ToString("F1"); // purposely locale-specific; might be e.g. 1,2
+					// Assumes only one font file per font; if we embed multiple font files, will need to enhance this.
+					var size = new FileInfo(GetRealFontFilePath(fontFiles.First())).Length;
+					var sizeToReport = (size / 1000000.0).ToString("F2"); // purposely locale-specific; might be e.g. 1,2
 					progress.MessageWithParams("PublishTab.Android.File.Progress.Embedding",
-						"{1} is a number with one decimal place, the number of megabytes the font file takes up",
+						"{1} is a number with two decimal places, the number of megabytes the font file takes up",
 						"Embedding font {0} at a cost of {1} megs",
 						ProgressKind.Note,
 						font, sizeToReport);
@@ -684,6 +680,14 @@ namespace Bloom.Publish
 				progress.MessageWithParams("PublishTab.Android.File.Progress.SubstitutingAndika", "{0} is a font name", "Bloom will substitute \"{0}\" instead.", ProgressKind.Error, defaultFont, font);
 				badFonts.Add(font); // need to prevent the bad/missing font from showing up in fonts.css and elsewhere
 			}
+		}
+
+		private static string GetRealFontFilePath(string file)
+		{
+			if (file.StartsWith(BloomServer.ServerUrlWithBloomPrefixEndingInSlash))
+				return FileLocationUtilities.GetFileDistributedWithApplication(false,
+					file.Substring(BloomServer.ServerUrlWithBloomPrefixEndingInSlash.Length));
+			return file;
 		}
 
 		/// <summary>

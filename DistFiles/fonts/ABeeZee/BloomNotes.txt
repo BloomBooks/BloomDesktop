@@ -1,0 +1,29 @@
+I downloaded the other text files in this directory from
+
+https://raw.githubusercontent.com/google/fonts/main/ofl/abeezee/
+
+and the ABeeZee-Regular.ttf ABeeZee-Italic.ttf files from
+
+https://github.com/google/fonts/raw/main/ofl/abeezee/ABeeZee-Regular.ttf and
+https://github.com/google/fonts/raw/main/ofl/abeezee/ABeeZee-Italic.ttf
+
+I then followed the instructions found at
+
+https://henry.codes/writing/how-to-convert-variable-ttf-font-files-to-woff2/
+
+to convert the .ttf files to .woff2 files.  This involved cloning google's git
+repository for a woff2 converter by
+
+git clone --recursive https://github.com/google/woff2.git
+
+and then building the code and running the converter on the two .ttf files.  (I
+had the advantage of having a Linux system to build with.  Windows users may be
+able to use a build system based on Cygwin (or MinGW) similarly to how we've
+worked on ffmpeg and other programs.)
+
+An alternative may be to use the font downloader at
+
+https://www.axllent.org/code/google-font-downloader/#disqus_thread
+
+which produces a zip file containing the fonts in a variety of formats.  But
+why trust a random website when you can use google's github repositories?

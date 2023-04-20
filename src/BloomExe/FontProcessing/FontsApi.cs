@@ -163,7 +163,7 @@ namespace Bloom.FontProcessing
 				foreach (var fontInfo in serve.FontsServed)
 				{
 					// Note that "Andika New Basic" requests will be answered by "Andika".  This
-					// code mimics what BloomReader does (in a somewhat generalize way) for handling
+					// code mimics what BloomReader does (in a somewhat generalized way) for handling
 					// Andika and Andika New Basic /host/fonts/ requests from bloom-player.  We need
 					// to handle bloom-player requests for BloomPub previews.
 					if (fontDesc.StartsWith(fontInfo.family) && fontInfo.family == "Andika")
