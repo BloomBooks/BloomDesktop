@@ -101,7 +101,8 @@ export const BookSettingsDialog: React.FunctionComponent<{
                         &:first-child {
                             margin-top: 0; // override the default that sees a lack of a title and adds a margin
                         }
-                        overflow-y: scroll;
+                        // normally we want this: overflow-y: scroll;
+                        overflow-y: hidden; // but I need help on the css, so we're going with this for now
                     `}
                 >
                     {settings && (
@@ -117,19 +118,20 @@ export const BookSettingsDialog: React.FunctionComponent<{
                                 }
                             }}
                             showAppBar={false}
-                            showJson={true}
+                            showJson={false}
                             setValueOnRender={s => {
                                 setSettingsToReturnLater(s);
                                 //setSettings(s);
                             }}
                         >
+                            {/* we'll bring this back later
                             <ConfigrGroup label="Appearance" level={1}>
                                 <ConfigrCustomStringInput
                                     path={`appearance.coverColor`}
                                     label="Cover Color"
                                     control={ColorPickerForConfigr}
                                 />
-                            </ConfigrGroup>
+                            </ConfigrGroup> */}
                             <ConfigrGroup label="BloomPUB" level={1}>
                                 <ConfigrSubgroup
                                     label="Resolution"
@@ -210,6 +212,7 @@ const BloomResolutionSliderInner: React.FunctionComponent<{
             <Typography
                 css={css`
                     text-align: right;
+                    font-size: 12px;
                 `}
                 variant="h4"
             >{`${current.l}`}</Typography>
