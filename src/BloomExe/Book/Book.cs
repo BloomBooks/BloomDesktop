@@ -16,7 +16,6 @@ using System.Xml;
 using Bloom.Api;
 using Bloom.Collection;
 using Bloom.Edit;
-using Bloom.FontProcessing;
 using Bloom.History;
 using Bloom.Publish;
 using Bloom.TeamCollection;
@@ -71,13 +70,6 @@ namespace Bloom.Book
 		public const string PictureAndVideoGuid = "24c90e90-2711-465d-8f20-980d9ffae299";
 		public const string BigTextDiglotGuid = "08422e7b-9406-4d11-8c71-02005b1b8095";
 		public const string WidgetGuid = "3a705ac1-c1f2-45cd-8a7d-011c009cf406"; // default page type for a single widget
-
-		/// <summary>
-		/// Flag whether we want to write out the @font-face lines for served fonts to defaultLangStyles.css.
-		/// (ePUB and BloomPub publishing are when we don't want to do this, either because those fonts will
-		/// be embedded or because bloom-player already has compatible @font-face declarations for Andika.)
-		/// </summary>
-		public bool WriteFontFaces = true;
 
 		//for moq'ing only; parameterless ctor required by Moq
 		public Book()
@@ -1585,17 +1577,6 @@ namespace Bloom.Book
 					if (line == "}")
 						copyCurrentRule = false;
 				}
-			}
-			if (WriteFontFaces)
-			{
-				var serve = FontServe.GetInstance();
-				var headerBuilder = new StringBuilder();
-				foreach (var fontInfo in serve.FontsServed)
-				{
-					foreach (var face in fontInfo.faces)
-						headerBuilder.AppendLine(face);
-				}
-				cssBuilder.Insert(0, headerBuilder.ToString());
 			}
 			try
 			{

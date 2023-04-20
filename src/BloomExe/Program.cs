@@ -488,6 +488,12 @@ namespace Bloom
 						DialogAdapters.CommonDialogAdapter.ForceKeepAbove = true;
 						DialogAdapters.CommonDialogAdapter.UseMicrosoftPositioning = true;
 
+						// BL-1258: sometimes the newly installed fonts are not available until after Bloom restarts
+						// We don't even want to try to install fonts if we are installed by an admin for all users;
+						// it will have been installed already as part of the allUsers install.
+						if (!InstallerSupport.SharedByAllUsers() && FontInstaller.InstallFont("AndikaNewBasic"))
+							return 1;
+
 						// Kick off getting all the font metadata for fonts currently installed in the system.
 						// This can take several seconds on slow machines with lots of fonts installed, so we
 						// run it in the background once at startup.  (The results are cached automatically.)

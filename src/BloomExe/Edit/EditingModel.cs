@@ -25,7 +25,6 @@ using SIL.Windows.Forms.ImageToolbox;
 using SIL.Xml;
 using Bloom.ErrorReporter;
 using SIL.Windows.Forms.Miscellaneous;
-using Bloom.FontProcessing;
 
 namespace Bloom.Edit
 {
@@ -1334,9 +1333,6 @@ namespace Bloom.Edit
 
 			if (null == FontFamily.Families.FirstOrDefault(f => f.Name.ToLowerInvariant() == name))
 			{
-				var group = FontFileFinder.GetInstance(true).GetGroupForFont(language1FontName);
-				if (group != null && group.Normal.StartsWith(BloomServer.ServerUrlWithBloomPrefixEndingInSlash))
-					return null;
 				var s = LocalizationManager.GetString("EditTab.FontMissing",
 														   "The current selected " +
 														   "font is '{0}', but it is not installed on this computer. Some other font will be used.");
