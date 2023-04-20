@@ -179,5 +179,3 @@ src/content/.yarn/*
 !src/content/.yarn/releases
 !src/content/.yarn/sdks
 !src/content/.yarn/versions
-
-src/BloomBrowserUI/.yarnrc
