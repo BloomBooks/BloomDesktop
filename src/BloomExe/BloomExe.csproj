@@ -397,6 +397,7 @@
     <Compile Include="ErrorReporter\IBloomErrorReporter.cs" />
     <Compile Include="ErrorReporter\AllowSendReport.cs" />
     <Compile Include="ErrorReporter\NotifyUserOfProblemSettings.cs" />
+    <Compile Include="FontProcessing\FontServe.cs" />
     <Compile Include="History\CollectionHistory.cs" />
     <Compile Include="History\HistoryEvent.cs" />
     <Compile Include="Utils\AsyncUtil.cs" />
@@ -749,7 +750,6 @@
     <Compile Include="ToPalaso\BetterSplitContainer.Designer.cs">
       <DependentUpon>BetterSplitContainer.cs</DependentUpon>
     </Compile>
-    <Compile Include="ToPalaso\FontInstaller.cs" />
     <Compile Include="ToPalaso\MessageLabelProgress.cs">
       <SubType>Component</SubType>
     </Compile>

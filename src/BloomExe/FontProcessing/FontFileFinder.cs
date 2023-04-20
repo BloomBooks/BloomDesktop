@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using System.Drawing.Text;
 using System.IO;
-using Bloom.web;
+using Bloom.Api;
+using SIL.IO;
+using System.Threading;
 #if __MonoCS__
 using SharpFont;				// Linux only (interface to libfreetype.so.6)
 #else
@@ -161,6 +163,54 @@ namespace Bloom.FontProcessing
 					FontNameToFiles[name] = files;
 				}
 				files.Add(gtf, fontFile);
+			}
+			try
+			{
+				var serve = FontServe.GetInstance();
+				if (serve.FontsServed.Count > 0)
+				{
+					// Add the font(s) that we're serving from BloomServer.
+					// We need the real ServerUrl including the port number.  (This method runs on a worker
+					// thread, so busy waiting should be okay.)
+					while (!BloomServer.ServerIsListening)
+						Thread.Sleep(100);
+					// Mark each font we're serving for being served even if it has been installed locally.
+					foreach (var fontInfo in serve.FontsServed)
+					{
+						if (!FontNameToFiles.TryGetValue(fontInfo.family, out FontGroup filesForFont))
+							filesForFont = new FontGroup();
+						if (!String.IsNullOrEmpty(fontInfo.files.normal))
+						{
+							var pathNormal = FileLocationUtilities.GetFileDistributedWithApplication(true, $"fonts/{fontInfo.files.normal}");
+							if (pathNormal != null && RobustFile.Exists(pathNormal))
+								filesForFont.Normal = BloomServer.ServerUrlWithBloomPrefixEndingInSlash + $"fonts/{fontInfo.files.normal}";
+						}
+						if (!String.IsNullOrEmpty(fontInfo.files.bold))
+						{
+							var pathBold = FileLocationUtilities.GetFileDistributedWithApplication(true, $"fonts/{fontInfo.files.bold}");
+							if (pathBold != null && RobustFile.Exists(pathBold))
+								filesForFont.Bold = BloomServer.ServerUrlWithBloomPrefixEndingInSlash + $"fonts/{fontInfo.files.bold}";
+						}
+						if (!String.IsNullOrEmpty(fontInfo.files.italic))
+						{
+							var pathItalic = FileLocationUtilities.GetFileDistributedWithApplication(true, $"fonts/{fontInfo.files.italic}");
+							if (pathItalic != null && RobustFile.Exists(pathItalic))
+								filesForFont.Italic = BloomServer.ServerUrlWithBloomPrefixEndingInSlash + $"fonts/{fontInfo.files.italic}";
+						}
+						if (!String.IsNullOrEmpty(fontInfo.files.bolditalic))
+						{
+							var pathBoldItalic = FileLocationUtilities.GetFileDistributedWithApplication(true, $"fonts/{fontInfo.files.bolditalic}");
+							if (pathBoldItalic != null && RobustFile.Exists(pathBoldItalic))
+								filesForFont.BoldItalic = BloomServer.ServerUrlWithBloomPrefixEndingInSlash + $"fonts/{fontInfo.files.bolditalic}";
+						}
+						if (!String.IsNullOrEmpty(filesForFont.Normal))
+							FontNameToFiles[fontInfo.family] = filesForFont;
+					}
+				}
+			}
+			catch (Exception e)
+			{
+				Console.WriteLine("DEBUG: Exception for processing font being served: {0}", e);
 			}
 #endif
 		}

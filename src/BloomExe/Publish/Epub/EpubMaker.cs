@@ -288,7 +288,9 @@ namespace Bloom.Publish.Epub
 					// We could enhance this if we can figure out exactly what languages we will publish audio of.
 					// For now, I'm including them all in this initial copy. Later stages will filter to just
 					// what's visible.
-					narrationLanguages: null); 
+					narrationLanguages: null,
+					// Epubs write out their own @font-face declarations to static locations for embedded fonts.
+					wantFontFaceDeclarations: false);
 			}
 
 			// The readium control remembers the current page for each book.
@@ -1126,7 +1128,8 @@ namespace Bloom.Publish.Epub
 				if (name == "customCollectionStyles.css" || name == "defaultLangStyles.css" || name == "branding.css")
 				{
 					// These files should be in the book's folder, not in some arbitrary place in our search path.
-					path = Path.Combine(_originalBook.FolderPath, name);
+					// defaultLangStyles.css is newly generated for the ePUB, the others are copied from _originalBook.FolderPath
+					path = Path.Combine(_book.FolderPath, name);
 					// It's OK not to find these.
 					if (!File.Exists(path))
 					{
@@ -2723,6 +2726,8 @@ namespace Bloom.Publish.Epub
 				return "text/css";
 			case "woff":
 				return "application/font-woff"; // http://stackoverflow.com/questions/2871655/proper-mime-type-for-fonts
+			case "woff2":
+				return "application/font-woff2";
 			case "ttf":
 			case "otf":
 				// According to http://stackoverflow.com/questions/2871655/proper-mime-type-for-fonts, the proper

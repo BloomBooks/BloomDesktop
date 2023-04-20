@@ -1,0 +1,23 @@
+{
+    "family": "ABeeZee",
+    "files": {
+        "normal": "ABeeZee-Regular.woff2",
+        "italic": "ABeeZee-Italic.woff2"
+    },
+    "faces": [
+        "@font-face { font-family: ABeeZee; src: url(./host/fonts/ABeeZee-Regular.woff2); }",
+        "@font-face { font-family: ABeeZee; font-style: italic; src: url(./host/fonts/ABeeZee-Italic.woff2); }"
+    ],
+    "metadata": {
+        "copyright": "Copyright 2011 The ABeeZee Project Authors (https://github.com/googlefonts/abeezee) with Reserved Font Name ABeeZee",
+        "designer": "Anja Meiners",
+        "designerURL": "https://carrois.com/",
+        "fsType": "Installable",
+        "license": "This Font Software is licensed under the SIL Open Font License, Version 1.1. This license is available with a FAQ at: https://scripts.sil.org/OFL",
+        "licenseURL": "https://scripts.sil.org/OFL",
+        "manufacturer": "Anja Meiners",
+        "manufacturerURL": "https://carrois.com/",
+        "trademark": "ABeeZee is a trademark of Anja Meiners.",
+        "version": "1.003"
+    }
+}

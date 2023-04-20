@@ -17,6 +17,7 @@ using L10NSharp;
 using SIL.IO;
 using SIL.Progress;
 using Bloom.FontProcessing;
+using System.Text.RegularExpressions;
 
 namespace Bloom.Publish
 {
@@ -452,7 +453,8 @@ namespace Bloom.Publish
 		/// so that needs to be a folder we can write in.
 		/// </summary>
 		public static Book.Book MakeDeviceXmatterTempBook(string bookFolderPath, BookServer bookServer, string tempFolderPath, bool isTemplateBook,
-			Dictionary<string,int> omittedPageLabels = null, bool includeVideoAndActivities = true, string[] narrationLanguages = null,bool wantMusic=false)
+			Dictionary<string,int> omittedPageLabels = null, bool includeVideoAndActivities = true, string[] narrationLanguages = null,bool wantMusic=false,
+			bool wantFontFaceDeclarations=true)
 		{
 			var filter = new BookFileFilter(bookFolderPath) {IncludeFilesNeededForBloomPlayer = includeVideoAndActivities,
 				WantVideo = includeVideoAndActivities, NarrationLanguages = narrationLanguages, WantMusic = true};
@@ -460,6 +462,7 @@ namespace Bloom.Publish
 			// We can always save in a temp book
 			var bookInfo = new BookInfo(tempFolderPath, true, new AlwaysEditSaveContext()) {UseDeviceXMatter = !isTemplateBook};
 			var modifiedBook = bookServer.GetBookFromBookInfo(bookInfo);
+			modifiedBook.WriteFontFaces = wantFontFaceDeclarations;
 			modifiedBook.BringBookUpToDate(new NullProgress(), true);
 			modifiedBook.RemoveNonPublishablePages(omittedPageLabels);
 			var domForVideoProcessing = modifiedBook.OurHtmlDom;
@@ -592,7 +595,7 @@ namespace Bloom.Publish
 		{
 			filesToEmbed = new List<string>();
 			badFonts = new HashSet<string>();
-			const string defaultFont = "Andika New Basic";
+			const string defaultFont = "Andika";
 
 			fontFileFinder.NoteFontsWeCantInstall = true;
 			if (_fontMetadataMap == null)
@@ -644,16 +647,19 @@ namespace Bloom.Publish
 				}
 				if (filesFound && !badFileType && !badLicense)
 				{
-					filesToEmbed.AddRange(fontFiles);
+					foreach (var file in fontFiles)
+					{
+						filesToEmbed.Add(GetRealFontFilePath(file));
+					}
 					if (missingLicense)
 						progress.MessageWithParams("PublishTab.Android.File.Progress.UnknownLicense", "{0} is a font name", "Checking {0} font: Unknown license", ProgressKind.Progress, font);
 					else
 						progress.MessageWithParams("PublishTab.Android.File.Progress.CheckFontOK", "{0} is a font name", "Checking {0} font: License OK for embedding.", ProgressKind.Progress, font);
-					// Assumes only one font file per font; if we embed multiple ones will need to enhance this.
-					var size = new FileInfo(fontFiles.First()).Length;
-					var sizeToReport = (size / 1000000.0).ToString("F1"); // purposely locale-specific; might be e.g. 1,2
+					// Assumes only one font file per font; if we embed multiple font files, will need to enhance this.
+					var size = new FileInfo(GetRealFontFilePath(fontFiles.First())).Length;
+					var sizeToReport = (size / 1000000.0).ToString("F2"); // purposely locale-specific; might be e.g. 1,2
 					progress.MessageWithParams("PublishTab.Android.File.Progress.Embedding",
-						"{1} is a number with one decimal place, the number of megabytes the font file takes up",
+						"{1} is a number with two decimal places, the number of megabytes the font file takes up",
 						"Embedding font {0} at a cost of {1} megs",
 						ProgressKind.Note,
 						font, sizeToReport);
@@ -674,6 +680,14 @@ namespace Bloom.Publish
 				progress.MessageWithParams("PublishTab.Android.File.Progress.SubstitutingAndika", "{0} is a font name", "Bloom will substitute \"{0}\" instead.", ProgressKind.Error, defaultFont, font);
 				badFonts.Add(font); // need to prevent the bad/missing font from showing up in fonts.css and elsewhere
 			}
+		}
+
+		private static string GetRealFontFilePath(string file)
+		{
+			if (file.StartsWith(BloomServer.ServerUrlWithBloomPrefixEndingInSlash))
+				return FileLocationUtilities.GetFileDistributedWithApplication(false,
+					file.Substring(BloomServer.ServerUrlWithBloomPrefixEndingInSlash.Length));
+			return file;
 		}
 
 		/// <summary>
