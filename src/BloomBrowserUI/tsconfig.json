@@ -5,15 +5,11 @@
         "sourceMap": true,
         "jsx": "react-jsx",
         "jsxImportSource": "@emotion/react",
-        "types": [ /*"@emotion/core",*/
+        "types": [
+            /*"@emotion/core",*/
             "@emotion/react/types/css-prop"
         ],
-        "lib": [
-            "dom",
-            "es6",
-            "scripthost",
-            "es2017"
-        ],
+        "lib": ["dom", "es6", "scripthost", "es2017"],
         "experimentalDecorators": true,
         "alwaysStrict": true,
         "noImplicitReturns": true,
@@ -23,17 +19,8 @@
         // this solved the 'foo' cannot be used as a JSX component. Its instance type 'foo' is not a valid JSX element,
         // which came in when we were at react 17 but some things are going towards 18
         "paths": {
-            "react": [
-                "./node_modules/@types/react"
-            ]
+            "react": ["./node_modules/@types/react"]
         }
     },
-    "exclude": [
-        "node_modules",
-        "typings"
-    ],
-    "resolutions": {
-        "@types/react": "^17",
-        "react-is": "^17"
-    }
+    "exclude": ["node_modules", "typings"]
 }

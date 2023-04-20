@@ -82,8 +82,6 @@ export const BloomSplitButton: React.FunctionComponent<{
                 transition
                 disablePortal
                 nonce={undefined}
-                // onResize={undefined}
-                // onResizeCapture={undefined}
             >
                 {({ TransitionProps, placement }) => (
                     <Grow
