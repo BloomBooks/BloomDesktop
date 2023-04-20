@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
@@ -223,11 +223,7 @@ namespace Bloom.web.controllers
 			apiHandler.RegisterBooleanEndpointHandler("publish/motionBookMode",
 				readRequest =>
 				{
-					// If the user has taken off all possible motion, force not having motion in the
-					// Bloom Reader book.  See https://issues.bloomlibrary.org/youtrack/issue/BL-7680.
-					if (!readRequest.CurrentBook.HasMotionPages)
-						readRequest.CurrentBook.BookInfo.PublishSettings.BloomPub.Motion = false;
-					return readRequest.CurrentBook.BookInfo.PublishSettings.BloomPub.Motion;
+					return readRequest.CurrentBook.HasMotionPages && readRequest.CurrentBook.BookInfo.PublishSettings.BloomPub.Motion;
 				},
 				(writeRequest, value) =>
 				{
