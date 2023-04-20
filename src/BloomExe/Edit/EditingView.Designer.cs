@@ -147,7 +147,6 @@ namespace Bloom.Edit
             this._rightToolStrip.TabIndex = 32;
             this._rightToolStrip.Text = "_toolStrip";
             this._rightToolStrip.Visible = false;
-            this._rightToolStrip.ItemClicked += new System.Windows.Forms.ToolStripItemClickedEventHandler(this._rightToolStrip_ItemClicked);
             // 
             // _bookSettingsButton
             // 
