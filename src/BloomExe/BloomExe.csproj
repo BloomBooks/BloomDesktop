@@ -566,7 +566,6 @@
     <Compile Include="web\controllers\CollectionApi.cs" />
     <Compile Include="web\controllers\CopyrightAndLicenseApi.cs" />
     <Compile Include="web\controllers\ExternalApi.cs" />
-    <Compile Include="web\controllers\LibraryPublishApi_Obsolete.cs" />
     <Compile Include="web\controllers\ProgressDialogApi.cs" />
     <Compile Include="web\controllers\PublishApi.cs" />
     <Compile Include="web\controllers\WorkspaceApi.cs" />
@@ -715,12 +714,6 @@
     </Compile>
     <Compile Include="Publish\PDF\AdobeReaderControl.Designer.cs">
       <DependentUpon>AdobeReaderControl.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Publish\BloomLibrary\BloomLibraryUploadControl.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="Publish\BloomLibrary\BloomLibraryUploadControl.Designer.cs">
-      <DependentUpon>BloomLibraryUploadControl.cs</DependentUpon>
     </Compile>
     <Compile Include="Publish\BulkUploadProgressDlg.cs">
       <SubType>Form</SubType>
@@ -1039,9 +1032,6 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Publish\PDF\AdobeReaderControl.resx">
       <DependentUpon>AdobeReaderControl.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Publish\BloomLibrary\BloomLibraryUploadControl.resx">
-      <DependentUpon>BloomLibraryUploadControl.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Publish\BulkUploadProgressDlg.resx">
       <DependentUpon>BulkUploadProgressDlg.cs</DependentUpon>
