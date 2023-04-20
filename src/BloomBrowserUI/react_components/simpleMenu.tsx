@@ -87,7 +87,7 @@ export const SimpleMenu: React.FunctionComponent<{
 
     const items = props.items.map((item, index) =>
         item === "-" ? (
-            <Divider />
+            <Divider key={index} />
         ) : (
             <SimpleMenuRow
                 key={index}

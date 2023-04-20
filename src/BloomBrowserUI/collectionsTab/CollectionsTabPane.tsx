@@ -598,9 +598,9 @@ export const makeMenuItems = (
     tooltipIfCannotSaveBook?: string
 ) => {
     const menuItemsT = menuItemsSpecs
-        .map((spec: MenuItemSpec) => {
+        .map((spec: MenuItemSpec, index: number) => {
             if (spec.label === "-") {
-                return <Divider />;
+                return <Divider key={index} />;
             }
             if (spec.submenu) {
                 const submenuItems = makeMenuItems(
@@ -645,6 +645,7 @@ export const makeMenuItems = (
             if (spec.checkbox) {
                 return (
                     <LocalizableCheckboxMenuItem
+                        key={index}
                         english={spec.label}
                         l10nId={spec.l10nId!}
                         onClick={() => {
