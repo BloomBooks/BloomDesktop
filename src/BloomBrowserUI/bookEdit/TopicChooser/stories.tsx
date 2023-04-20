@@ -1,11 +1,12 @@
 import * as React from "react";
 import { ThemeProvider, StyledEngineProvider } from "@mui/material/styles";
-import { addDecorator, ComponentStory } from "@storybook/react";
 import { StorybookContext } from "../../.storybook/StoryBookContext";
 import { lightTheme } from "../../bloomMaterialUITheme";
 import { TopicChooserDialog } from "./TopicChooserDialog";
 import { normalDialogEnvironmentForStorybook } from "../../react_components/BloomDialog/BloomDialogPlumbing";
+import { ComponentStory } from "@storybook/react";
 
+/* addDecorator is gone
 addDecorator(storyFn => (
     <StyledEngineProvider injectFirst>
         <ThemeProvider theme={lightTheme}>
@@ -15,6 +16,7 @@ addDecorator(storyFn => (
         </ThemeProvider>
     </StyledEngineProvider>
 ));
+*/
 
 export default {
     title: "Choose Topic"

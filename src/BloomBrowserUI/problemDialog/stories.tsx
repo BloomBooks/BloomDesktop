@@ -2,12 +2,12 @@ import { lightTheme } from "../bloomMaterialUITheme";
 import * as React from "react";
 import { ThemeProvider, StyledEngineProvider } from "@mui/material/styles";
 import { storiesOf } from "@storybook/react";
-import { addDecorator } from "@storybook/react";
 import { StorybookContext } from "../.storybook/StoryBookContext";
 import { ProblemDialog, ProblemKind } from "./ProblemDialog";
 import { NotifyDialog } from "./NotifyDialog";
 import { ReportDialog } from "./ReportDialog";
 
+/* addDecorator is gone
 // ENHANCE: Could we make this have the exact same dimensions the browser dialog would have?
 addDecorator(storyFn => (
     <StyledEngineProvider injectFirst>
@@ -18,6 +18,7 @@ addDecorator(storyFn => (
         </ThemeProvider>
     </StyledEngineProvider>
 ));
+*/
 
 const message =
     "Fake error with a line break<br> and <b>bold</b> and <a href='https://google.com'>link</a>...";

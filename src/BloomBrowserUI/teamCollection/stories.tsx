@@ -5,7 +5,7 @@ import { jsx, css } from "@emotion/react";
 import { lightTheme, kBloomYellow } from "../bloomMaterialUITheme";
 import { ThemeProvider, StyledEngineProvider } from "@mui/material/styles";
 import * as React from "react";
-import { storiesOf, addDecorator } from "@storybook/react";
+import { storiesOf } from "@storybook/react";
 import { StorybookContext } from "../.storybook/StoryBookContext";
 import { StatusPanelCommon, getLockedInfoChild } from "./statusPanelCommon";
 import { getBloomButton } from "./TeamCollectionBookStatusPanel";
@@ -28,6 +28,7 @@ import {
     StorybookDialogWrapper
 } from "../react_components/BloomDialog/BloomDialogPlumbing";
 
+/* addDecorator is gone
 addDecorator(storyFn => (
     <StyledEngineProvider injectFirst>
         <ThemeProvider theme={lightTheme}>
@@ -37,6 +38,7 @@ addDecorator(storyFn => (
         </ThemeProvider>
     </StyledEngineProvider>
 ));
+*/
 
 // Try to simulate the environment of the page preview
 const wrapperStyles: React.CSSProperties = {

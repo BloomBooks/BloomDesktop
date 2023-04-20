@@ -3,7 +3,6 @@ import { lightTheme } from "../bloomMaterialUITheme";
 import * as React from "react";
 import { ThemeProvider, StyledEngineProvider } from "@mui/material/styles";
 import { storiesOf } from "@storybook/react";
-import { addDecorator } from "@storybook/react";
 import { ReaderPublishScreen } from "./ReaderPublish/ReaderPublishScreen";
 import { DeviceAndControls } from "./commonPublish/DeviceAndControls";
 import { StorybookContext } from "../.storybook/StoryBookContext";
@@ -12,7 +11,7 @@ import {
     ProgressState
 } from "./commonPublish/PublishProgressDialogInner";
 import { loremIpsum } from "lorem-ipsum";
-import { withA11y } from "@storybook/addon-a11y";
+
 import { EPUBPublishScreen } from "./ePUBPublish/ePUBPublishScreen";
 import BookMetadataDialog from "./metadata/BookMetadataDialog";
 import "./storiesApiMocks";
@@ -28,6 +27,7 @@ import PublishScreenBanner from "./commonPublish/PublishScreenBanner";
 import { Button, Typography } from "@mui/material";
 import { LibraryPublishScreen } from "./LibraryPublish/LibraryPublishScreen";
 
+/* addDecorator is gone
 addDecorator(withA11y as any);
 
 addDecorator(storyFn => (
@@ -39,6 +39,7 @@ addDecorator(storyFn => (
         </ThemeProvider>
     </StyledEngineProvider>
 ));
+*/
 
 const testText =
     loremIpsum({

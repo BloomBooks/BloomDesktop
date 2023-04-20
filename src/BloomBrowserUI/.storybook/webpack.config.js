@@ -11,15 +11,15 @@ module.exports = async ({ config }) => {
     // https://github.com/storybooks/storybook/issues/5708#issuecomment-467364602
     // remove the "svg" from the webpack file-loader, which had;
     // test: /\.(svg|ico|jpg|jpeg|png|gif|eot|otf|webp|ttf|woff|woff2|cur|ani)(\?.*)?$/,
-    config.module.rules.forEach(function(data, key) {
-        if (data.test.toString().indexOf("svg|") >= 0) {
-            // remove svg from the loader of storybook, so that Bloom's webpack can handle it
-            config.module.rules[key].test = data.test
-                .toString()
-                .replace("svg|", "");
-            return false;
-        }
-    });
+    // config.module.rules.forEach(function(data, key) {
+    //     if (data.test.toString().indexOf("svg|") >= 0) {
+    //         // remove svg from the loader of storybook, so that Bloom's webpack can handle it
+    //         config.module.rules[key].test = data.test
+    //             .toString()
+    //             .replace("svg|", "");
+    //         return false;
+    //     }
+    // });
     return merge(config, bloomCompilationCoreStuff);
 };
 

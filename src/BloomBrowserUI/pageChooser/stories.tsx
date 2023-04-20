@@ -5,7 +5,7 @@ import { lightTheme } from "../bloomMaterialUITheme";
 import * as React from "react";
 import { ThemeProvider, StyledEngineProvider } from "@mui/material/styles";
 import { storiesOf } from "@storybook/react";
-import { addDecorator } from "@storybook/react";
+
 import { StorybookContext } from "../.storybook/StoryBookContext";
 import { SelectedTemplatePageControls } from "./selectedTemplatePageControls";
 import TemplateBookPages from "./TemplateBookPages";
@@ -14,6 +14,7 @@ import { getTemplatePageImageSource, IGroupData } from "./PageChooserDialog";
 import { TemplateBookErrorReplacement } from "./TemplateBookErrorReplacement";
 
 // ENHANCE: Could we make this have the exact same dimensions the browser dialog would have?
+/* addDecorator is gone
 addDecorator(storyFn => (
     <StyledEngineProvider injectFirst>
         <ThemeProvider theme={lightTheme}>
@@ -23,6 +24,7 @@ addDecorator(storyFn => (
         </ThemeProvider>
     </StyledEngineProvider>
 ));
+*/
 
 const PreviewFrame: React.FC = props => (
     <div

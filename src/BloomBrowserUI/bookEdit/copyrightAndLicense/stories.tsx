@@ -1,6 +1,6 @@
 import * as React from "react";
 import { ThemeProvider, StyledEngineProvider } from "@mui/material/styles";
-import { addDecorator, ComponentStory } from "@storybook/react";
+import { ComponentStory } from "@storybook/react";
 import { StorybookContext } from "../../.storybook/StoryBookContext";
 import { lightTheme } from "../../bloomMaterialUITheme";
 import {
@@ -11,7 +11,7 @@ import { normalDialogEnvironmentForStorybook } from "../../react_components/Bloo
 import { CopyrightPanel } from "./CopyrightPanel";
 import { LicensePanel, LicenseType } from "./LicensePanel";
 import { LicenseBadge } from "./LicenseBadge";
-
+/* addDecorator is gone
 addDecorator(storyFn => (
     <StyledEngineProvider injectFirst>
         <ThemeProvider theme={lightTheme}>
@@ -21,7 +21,7 @@ addDecorator(storyFn => (
         </ThemeProvider>
     </StyledEngineProvider>
 ));
-
+*/
 export default {
     title: "Copyright and License Dialog"
 };

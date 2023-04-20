@@ -5,10 +5,14 @@ module.exports = {
         "@storybook/addon-controls",
         "@storybook/addon-a11y"
     ],
-    core: {
-        builder: "webpack5"
-    },
     features: {
         emotionAlias: false
+    },
+    framework: {
+        name: "@storybook/react-webpack5",
+        options: {}
+    },
+    docs: {
+        autodocs: true
     }
 };
