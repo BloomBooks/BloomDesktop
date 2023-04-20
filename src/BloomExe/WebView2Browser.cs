@@ -61,13 +61,6 @@ namespace Bloom
 
 				_readyToNavigate = true;
 			};
-
-			FinishInitializing();
-		}
-
-		public override void HideTemporaryLabelForDevelopment()
-		{
-			label1.Visible = false;
 		}
 
 		private void ContextMenuRequested(object sender, CoreWebView2ContextMenuRequestedEventArgs e)
