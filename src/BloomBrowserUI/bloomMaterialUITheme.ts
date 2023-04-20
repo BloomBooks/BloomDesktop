@@ -75,11 +75,11 @@ export const lightTheme = createTheme({
                             h6: "h1"
                         }
                     }
-            text: { disabled: kBloomDisabledText },
-            action: {
-                disabled: kBloomDisabledText,
-                disabledOpacity: kBloomDisabledOpacity
-            }
+                    // text: { disabled: kBloomDisabledText },
+                    // action: {
+                    //     disabled: kBloomDisabledText,
+                    //     disabledOpacity: kBloomDisabledOpacity
+                    // }
                 }
             ]
         },
