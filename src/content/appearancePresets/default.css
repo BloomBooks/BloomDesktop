@@ -3,8 +3,10 @@
     --page-margin-bottom: 10mm;
     --page-margin-inner: 20mm;
     --page-margin-outer: 10mm;
-    --vertical-split-bottom-margin: 10mm;
-    --horizontal-split-right-margin: 10mm;
+    --side-by-side-gap: 10mm; /* review */
+    --top-bottom-gap: 10mm;
+    --pageNumberFontSize: 14pt;
+    --pageNumberBottom: 20px;
 }
 
 .device16x9portrait {

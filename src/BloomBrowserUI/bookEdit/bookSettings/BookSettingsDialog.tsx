@@ -34,7 +34,11 @@ import {
     DialogResult
 } from "../../react_components/color-picking/colorPickerDialog";
 import { IColorInfo } from "../../react_components/color-picking/colorSwatch";
-import { postJson, useApiStringState } from "../../utils/bloomApi";
+import {
+    postJson,
+    useApiObject,
+    useApiStringState
+} from "../../utils/bloomApi";
 import { ShowEditViewDialog } from "../editViewFrame";
 
 let isOpenAlready = false;
@@ -133,13 +137,13 @@ export const BookSettingsDialog: React.FunctionComponent<{
                                 //setSettings(s);
                             }}
                         >
-                            {/* we'll bring this back later
                             <ConfigrGroup label="Appearance" level={1}>
+                                {/* we'll bring this back later
                                 <ConfigrCustomStringInput
                                     path={`appearance.coverColor`}
                                     label="Cover Color"
                                     control={ConfigrColorPicker}
-                                />
+                        /> */}
 
                                 <ConfigrSelect
                                     description={`Choose a "page style" to easily change margins, borders, an other page settings.`}
