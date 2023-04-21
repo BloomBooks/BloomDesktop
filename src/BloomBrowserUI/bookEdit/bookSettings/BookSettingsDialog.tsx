@@ -53,8 +53,8 @@ export const BookSettingsDialog: React.FunctionComponent<{
         dialogFrameProvidedExternally: false
     });
 
-    const pageStyles: IPageStyles = useApiObject<IPageStyles>(
-        "book/settings/page-styles",
+    const presetNames: IPageStyles = useApiObject<IPageStyles>(
+        "book/settings/available-preset-names",
         []
     );
 
@@ -132,16 +132,12 @@ export const BookSettingsDialog: React.FunctionComponent<{
                                     label="Cover Color"
                                     control={ConfigrColorPicker}
                                 />
-                                <ConfigrInput
-                                    label="Gap"
-                                    path="appearance.imageTextGapMillimeters"
-                                />
 
                                 <ConfigrSelect
                                     description={`Choose a "page style" to easily change margins, borders, an other page settings.`}
-                                    path={`appearance.customCssRules`}
+                                    path={`appearance.presetName`}
                                     label="Page Style"
-                                    options={pageStyles}
+                                    options={presetNames}
                                 />
                             </ConfigrGroup>
                             <ConfigrGroup label="BloomPUB" level={1}>

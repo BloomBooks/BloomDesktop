@@ -348,11 +348,11 @@ namespace Bloom.Book
 		}
 		public void BookPublishSettings()
 		{
-			AppearanceSettings.WriteToFolder(FolderPath);
+			AppearanceSettings.WriteAppearanceCss(FolderPath);
 		}
 		public void SaveAppearanceSettings()
 		{
-			AppearanceSettings.WriteToFolder(FolderPath);
+			AppearanceSettings.WriteAppearanceCss(FolderPath);
 		}
 
 		public void Save()
@@ -815,7 +815,6 @@ namespace Bloom.Book
 		internal void SettingsUpdated()
 		{
 			Save();
-			SaveAppearanceSettings();
 		}
 	}
 

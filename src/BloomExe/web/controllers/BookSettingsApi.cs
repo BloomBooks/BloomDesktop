@@ -30,12 +30,12 @@ namespace Bloom.Api
 		{
 			// Not sure this needs UI thread, but it can result in saving the page, which seems
 			// safest to do that way.
-			apiHandler.RegisterEndpointLegacy("book/settings", HandleBookSettings, true);
-			apiHandler.RegisterEndpointHandler("book/settings/page-styles", HandleGetPageStyles, true);
+			apiHandler.RegisterEndpointHandler("book/settings", HandleBookSettings, true /* review */);
+			apiHandler.RegisterEndpointHandler("book/settings/available-preset-names", HandleGetAvailablePresetNames, false);
 		}
-		private void HandleGetPageStyles(ApiRequest request)
+		private void HandleGetAvailablePresetNames(ApiRequest request)
 		{
-			var names = from path in ProjectContext.GetPageStyleFiles() select Path.GetFileName(path);
+			var names = from path in ProjectContext.GetAppearancePresetFileNames() select Path.GetFileName(path);
 			var x = from name in names.ToArray<string>() select new { label = name, value = name };
 			var json = JsonConvert.SerializeObject(x);
 			request.ReplyWithJson(json);
@@ -75,12 +75,9 @@ namespace Bloom.Api
 					// is irrelevant. The nice thing is, it retains the identity of PublishSettings in case someone is holing on it.
 					var jsonOfJustPublishSettings = JsonConvert.SerializeObject(newSettings.publish);
 					_bookSelection.CurrentSelection.BookInfo.PublishSettings.LoadNewJson(jsonOfJustPublishSettings);
-					var jsonOfJustAppearanceSettings = JsonConvert.SerializeObject(newSettings.appearance);
-					_bookSelection.CurrentSelection.BookInfo.AppearanceSettings.LoadNewJson(jsonOfJustAppearanceSettings);
-					// temporary while we're in transition
-					_bookSelection.CurrentSelection.SetCoverColor(_bookSelection.CurrentSelection.BookInfo.AppearanceSettings.CoverColor);
+					//var jsonOfJustAppearanceSettings = JsonConvert.SerializeObject(newSettings.appearance);
+					_bookSelection.CurrentSelection.BookInfo.AppearanceSettings.Update(newSettings.appearance);
 
-					
 					_bookSelection.CurrentSelection.SettingsUpdated();
 
 					//_pageRefreshEvent.Raise(PageRefreshEvent.SaveBehavior.SaveBeforeRefresh);
