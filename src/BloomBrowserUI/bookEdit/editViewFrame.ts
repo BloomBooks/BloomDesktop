@@ -34,6 +34,7 @@ import { getEditablePageBundleExports } from "./js/bloomFrames";
 export { getEditablePageBundleExports };
 import { showPageChooserDialog } from "../pageChooser/PageChooserDialog";
 export { showPageChooserDialog };
+export { showBookSettingsDialog };
 import "../lib/errorHandler";
 import { showBookSettingsDialog } from "./bookSettings/bookSettingsDialog";
 export { showBookSettingsDialog };

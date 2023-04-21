@@ -1022,12 +1022,12 @@ books may contain divs with box-header-off, so we need a rule to hide them.*/
 .numberedPage {
     &:after {
         content: attr(data-page-number);
-        font-size: 14pt;
+        font-size: var(--pageNumberFontSize);
         position: absolute;
-        bottom: 20px;
+        bottom: var(--pageNumberBottom);
     }
 
-    &.side-left:after {
+    var(--pageNumberFontSize) &.side-left:after {
         // side-___ maintained by c#
         left: @OddPageNumberPosition;
     }

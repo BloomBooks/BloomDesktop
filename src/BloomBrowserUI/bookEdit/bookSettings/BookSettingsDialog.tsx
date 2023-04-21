@@ -34,7 +34,11 @@ import {
     DialogResult
 } from "../../react_components/color-picking/colorPickerDialog";
 import { IColorInfo } from "../../react_components/color-picking/colorSwatch";
-import { postJson, useApiStringState } from "../../utils/bloomApi";
+import {
+    postJson,
+    useApiObject,
+    useApiStringState
+} from "../../utils/bloomApi";
 import { ShowEditViewDialog } from "../editViewFrame";
 
 let isOpenAlready = false;
@@ -106,32 +110,42 @@ export const BookSettingsDialog: React.FunctionComponent<{
                     overflow-y: hidden; // but I need help on the css, so we're going with this for now
                 `}
             >
-                {settings && (
-                    <ConfigrPane
-                        label="Book Settings"
-                        initialValues={settings}
-                        showAllGroups={true}
-                        //themeOverrides={lightTheme}
-                        themeOverrides={{
-                            // enhance: we'd like to just be passing `lightTheme` but at the moment that seems to clobber everything
-                            palette: {
-                                primary: { main: kBloomBlue }
-                            }
-                        }}
-                        showAppBar={false}
-                        showJson={false}
-                        setValueOnRender={s => {
-                            setSettingsToReturnLater(s);
-                            //setSettings(s);
-                        }}
-                    >
-                        {/* we'll bring this back later
+                <DialogTitle title="Book Settings" />
+                <DialogMiddle
+                    css={css`
+                        &:first-child {
+                            margin-top: 0; // override the default that sees a lack of a title and adds a margin
+                        }
+                        // normally we want this: overflow-y: scroll;
+                        overflow-y: hidden; // but I need help on the css, so we're going with this for now
+                    `}
+                >
+                    {settings && (
+                        <ConfigrPane
+                            label="Book Settings"
+                            initialValues={settings}
+                            showAllGroups={true}
+                            //themeOverrides={lightTheme}
+                            themeOverrides={{
+                                // enhance: we'd like to just be passing `lightTheme` but at the moment that seems to clobber everything
+                                palette: {
+                                    primary: { main: kBloomBlue }
+                                }
+                            }}
+                            showAppBar={false}
+                            showJson={false}
+                            setValueOnRender={s => {
+                                setSettingsToReturnLater(s);
+                                //setSettings(s);
+                            }}
+                        >
                             <ConfigrGroup label="Appearance" level={1}>
+                                {/* we'll bring this back later
                                 <ConfigrCustomStringInput
                                     path={`appearance.coverColor`}
                                     label="Cover Color"
                                     control={ConfigrColorPicker}
-                                />
+                        /> */}
 
                                 <ConfigrSelect
                                     description={`Choose a "page style" to easily change margins, borders, an other page settings.`}
