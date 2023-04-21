@@ -3,6 +3,7 @@
     --page-margin-bottom: 15mm;
     --page-margin-inner: 25mm;
     --page-margin-outer: 15mm;
-    --vertical-split-bottom-margin: 3mm;
-    --horizontal-split-right-margin: 3mm;
+    --side-by-side-gap: 3mm;
+    --top-bottom-gap: 3mm;
+    --pageNumberFontSize: 14pt;
 }

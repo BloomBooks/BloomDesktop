@@ -3,6 +3,7 @@ using Newtonsoft.Json;
 using SIL.Extensions;
 using SIL.IO;
 using System;
+using System.Drawing;
 using System.IO;
 using System.Text;
 
@@ -48,13 +49,13 @@ public class AppearanceSettings
 			
 			var css = RobustFile.ReadAllText(appearanceSettingsPath);
 			// regex to select the value of the --cover-color property in css
-			var match = System.Text.RegularExpressions.Regex.Match(css, @"--cover-color:\s*(\w+)");
+			var match = System.Text.RegularExpressions.Regex.Match(css, @"--cover-color:\s*([#\w]+)");
 			if (match.Success)
 			{
 				settings.CoverColor = match.Groups[1].Value;
 			}
 
-			match = System.Text.RegularExpressions.Regex.Match(css, @"--preset-name:\s*""(\w+)""");
+			match = System.Text.RegularExpressions.Regex.Match(css, @"--preset-name:\s*""(.+)""");
 			if (match.Success)
 			{
 				settings.PresetName = match.Groups[1].Value;
@@ -102,4 +103,7 @@ public class AppearanceSettings
 		this.CoverColor=appearance.coverColor;
 		this.PresetName=appearance.presetName;
 	}
+
+
+
 }

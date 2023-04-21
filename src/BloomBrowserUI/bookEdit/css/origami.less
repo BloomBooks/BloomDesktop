@@ -11,25 +11,25 @@
 @flowerPetalGrey: #7e7e7e; // shouldn't this just be @bloom-gray?
 @inactiveColor: @bloom-buff;
 
-.split-pane>.split-pane-component {
+.split-pane > .split-pane-component {
     overflow: hidden !important; // override split-pane.css rules that call for overflow: auto
 }
 
-.split-pane.vertical-percent>.split-pane-component.position-left {
+.split-pane.vertical-percent > .split-pane-component.position-left {
     right: 50%;
-    margin-bottom: var(--vertical-split-bottom-margin);
+    margin-right: var(--side-by-side-gap);
 }
 
-.split-pane.vertical-percent>.split-pane-component.position-right {
+.split-pane.vertical-percent > .split-pane-component.position-right {
     width: 50%;
 }
 
-.split-pane.horizontal-percent>.split-pane-component.position-top {
+.split-pane.horizontal-percent > .split-pane-component.position-top {
     bottom: 50%;
-    margin-bottom: var(--vertical-split-bottom-margin);
+    margin-bottom: var(--top-bottom-gap);
 }
 
-.split-pane.horizontal-percent>.split-pane-component.position-bottom {
+.split-pane.horizontal-percent > .split-pane-component.position-bottom {
     height: 50%;
 }
 
@@ -40,12 +40,12 @@
     visibility: hidden;
 }
 
-.split-pane.vertical-percent>.vertical-divider {
+.split-pane.vertical-percent > .vertical-divider {
     right: 50%;
     border-right: 3px dashed transparent;
 }
 
-.split-pane.horizontal-percent>.horizontal-divider {
+.split-pane.horizontal-percent > .horizontal-divider {
     bottom: 50%;
     border-bottom: 3px dashed transparent;
 }
@@ -141,7 +141,7 @@
         }
     }
 
-    .horizontal-adders>div {
+    .horizontal-adders > div {
         float: left;
     }
 }
@@ -229,7 +229,8 @@
     }
 }
 
-.split-pane-component-inner[min-width~="150px"][min-height~="150px"] .textBox-identifier {
+.split-pane-component-inner[min-width~="150px"][min-height~="150px"]
+    .textBox-identifier {
     transition-property: font-size;
     transition-duration: 0.5s;
     font-size: 24pt;
@@ -259,7 +260,6 @@
 
 .origami-layout-mode {
     .bloom-editable {
-
         // BL-9953 Added 'p' so a competing audioRecording rule won't have more precedence. The competing
         // rule also "targets" the p element and all the text whose color we are concerned about is inside
         // of p elements anyway.

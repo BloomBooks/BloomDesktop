@@ -1,14 +1,9 @@
 using System;
-using System.Collections.Generic;
-using System.Dynamic;
 using System.IO;
 using System.Linq;
-using System.Windows.Forms;
 using Bloom.Book;
-using Gecko.WebIDL;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using TagLib.Mpeg;
+
 
 namespace Bloom.Api
 {
@@ -19,11 +14,13 @@ namespace Bloom.Api
 	{
 		private readonly BookSelection _bookSelection;
 		private readonly PageRefreshEvent _pageRefreshEvent;
+		private readonly BookRefreshEvent _bookRefreshEvent;
 
-		public BookSettingsApi(BookSelection bookSelection, PageRefreshEvent pageRefreshEvent)
+		public BookSettingsApi(BookSelection bookSelection, PageRefreshEvent pageRefreshEvent, BookRefreshEvent bookRefreshEvent)
 		{
 			_bookSelection = bookSelection;
 			_pageRefreshEvent = pageRefreshEvent;
+			_bookRefreshEvent = bookRefreshEvent;
 		}
 
 		public void RegisterWithApiHandler(BloomApiHandler apiHandler)
@@ -79,6 +76,7 @@ namespace Bloom.Api
 					_bookSelection.CurrentSelection.BookInfo.AppearanceSettings.Update(newSettings.appearance);
 
 					_bookSelection.CurrentSelection.SettingsUpdated();
+					_bookRefreshEvent.Raise(_bookSelection.CurrentSelection);
 
 					//_pageRefreshEvent.Raise(PageRefreshEvent.SaveBehavior.SaveBeforeRefresh);
 

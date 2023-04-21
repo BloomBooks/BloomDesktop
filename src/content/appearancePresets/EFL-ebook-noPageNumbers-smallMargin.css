@@ -1,0 +1,50 @@
+:root {
+    --side-by-side-gap: 1mm;
+    --top-bottom-gap: 1mm;
+}
+
+/* This first line of code hides the page numbers. */
+.numberedPage::after {
+    display: none;
+}
+
+/* The line below hides the credits row on the front cover. */
+.creditsRow {
+    display: none;
+}
+
+/* Below you find code that controls layout for pages in Device16x9Landscape layout */
+
+.Device16x9Landscape .marginBox img {
+    max-width: 177.777778mm;
+}
+
+.Device16x9Landscape.fullScreen .bloom-imageContainer.bloom-backgroundImage {
+    /* Get past ios "background-size:cover" bug. See BL-7458 */
+    width: 177.77777778mm;
+}
+
+:not(.bloom-interactive-page).numberedPage.Device16x9Landscape .marginBox {
+    height: 95mm;
+    width: 172.777778mm;
+    top: 2.5mm;
+    left: 2.5mm !important;
+}
+
+/* Below you find code that controls layout for pages in Device16x9Portrait layout */
+
+.Device16x9Portrait .marginBox img {
+    max-width: 100mm;
+}
+
+.Device16x9Portrait.fullScreen .bloom-imageContainer.bloom-backgroundImage {
+    /* Get past ios "background-size:cover" bug. See BL-7458 */
+    width: 100mm;
+}
+
+:not(.bloom-interactive-page).numberedPage.Device16x9Portrait .marginBox {
+    height: 172.777778mm;
+    width: 95mm;
+    top: 2.5mm;
+    left: 2.5mm !important;
+}
