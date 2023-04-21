@@ -1383,7 +1383,7 @@ namespace Bloom.Book
 			AddReaderBodyAttributes(bookDOM);
 			AddLanguageAttributesToBody(bookDOM);
 			bookDOM.Body.SetAttribute("data-bookshelfurlkey", this.CollectionSettings.DefaultBookshelf);
-			BookInfo.AppearanceSettings.WriteAppearanceCss(Storage.FolderPath);// REVIEW: Where should this go?
+			//BookInfo.SettingsUpdated();// REVIEW: Where should this go? Stuck in here just so it gets written at least once
 			if (IsTemplateBook)
 			{
 				// this will turn on rules in previewMode.css that show the structure of the template and names of pages
@@ -4732,7 +4732,8 @@ namespace Bloom.Book
 		internal void SettingsUpdated()
 		{
 			BookInfo.SettingsUpdated();
-			
+			// temporary while we're in transition between storing cover color in the HTML and in the bookInfo
+			SetCoverColor(BookInfo.AppearanceSettings.CoverColor);
 		}
 	}
 }
