@@ -13708,6 +13708,11 @@ react-element-to-jsx-string@^14.3.4:
     is-plain-object "5.0.0"
     react-is "17.0.2"
 
+react-fast-compare@^2.0.1:
+  version "2.0.4"
+  resolved "https://registry.yarnpkg.com/react-fast-compare/-/react-fast-compare-2.0.4.tgz#e84b4d455b0fec113e0402c329352715196f81f9"
+  integrity sha512-suNP+J1VU1MWFKcyt7RtjiSWUjvidmQSlqu+eHslq+342xCbGTYmC0mEhPCOHxlW0CywylOC1u2DFAT+bv4dBw==
+
 "react-grid-layout@https://github.com/JohnThomson/react-grid-layout.git#includeTypes":
   version "0.18.4"
   resolved "https://github.com/JohnThomson/react-grid-layout.git#cd3f4f85ed9850d2c07e3d347f5d2a82f9d4b437"

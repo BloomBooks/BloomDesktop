@@ -455,7 +455,9 @@ namespace Bloom
 			order.Done = false;
 			browser.Tag = order;
 			Color coverColor;
-			ImageUtils.TryCssColorFromString(Book.Book.GetCoverColorFromDom(order.Document.RawDom), out coverColor);
+			ImageUtils.TryCssColorFromString(CoverColorManager.GetCoverColorFromDom(order.Document), out coverColor);
+			//ImageUtils.TryCssColorFromString(Book.Book.GetCoverColorFromDom(order.Document.RawDom), out coverColor);
+
 			if (!OpenTempFileInBrowser(browser, order.Document))
 				return false;
 

@@ -87,7 +87,7 @@ namespace BloomTests.Book
 				</style>");
 			var book = CreateBook();
 			var dom = book.RawDom;
-			book.SetCoverColorInternal(newValue);
+			book.SetCoverColor(newValue);
 			var coverColorText = dom.SafeSelectNodes("//style[text()]")[0].InnerText;
 			var first = coverColorText.IndexOf(newValue, StringComparison.InvariantCulture);
 			var last = coverColorText.LastIndexOf(newValue, StringComparison.InvariantCulture);
@@ -114,7 +114,7 @@ namespace BloomTests.Book
 				</style>");
 			var book = CreateBook();
 			var dom = book.RawDom;
-			book.SetCoverColorInternal(newValue);
+			book.SetCoverColor(newValue);
 			var coverColorText = dom.SafeSelectNodes("//style[text()]")[0].InnerText;
 			var first = coverColorText.IndexOf(newValue, StringComparison.InvariantCulture);
 			var last = coverColorText.LastIndexOf(newValue, StringComparison.InvariantCulture);
@@ -920,6 +920,8 @@ namespace BloomTests.Book
 		}
 
 		[Test]
+
+		/* I don't have a clue what this was testing. Why would we want empty user styles?*/
 		public void CreateBook_AlreadyHasCoverColor_GetsEmptyUserStyles()
 		{
 			var coverStyle = @"<style type='text/css'>
@@ -1529,7 +1531,7 @@ namespace BloomTests.Book
 			document.LoadXml(xml);
 
 			// SUT
-			var result = Bloom.Book.Book.GetCoverColorFromDom(document);
+			var result = CoverColorManager.GetCoverColorFromDom(new HtmlDom(document));
 
 			Assert.AreEqual("#abcdef", result);
 		}
@@ -1543,7 +1545,7 @@ namespace BloomTests.Book
 			    <style type='text/css'>
 				    div.bloom-page.coverColor {
 				        /* note that above, we have a meta ""preserveCoverColor"" tag to preserve this*/
-				        background-color: black !important;
+		background-color: black !important;
 				    }
 			    </style>
 			</head><body></body></html>";
@@ -1551,7 +1553,7 @@ namespace BloomTests.Book
 			document.LoadXml(xml);
 
 			// SUT
-			var result = Bloom.Book.Book.GetCoverColorFromDom(document);
+			var result = CoverColorManager.GetCoverColorFromDom(new HtmlDom(document));
 
 			Assert.AreEqual("black", result);
 		}
@@ -1574,7 +1576,7 @@ namespace BloomTests.Book
 			document.LoadXml(xml);
 
 			// SUT
-			var result = Bloom.Book.Book.GetCoverColorFromDom(document);
+			var result = CoverColorManager.GetCoverColorFromDom(new HtmlDom(document));
 
 			Assert.AreEqual("#ffd4d4", result);
 		}

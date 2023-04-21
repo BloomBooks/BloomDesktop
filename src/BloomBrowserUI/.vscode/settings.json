@@ -7,7 +7,6 @@
         "*.map": true,
         "**/output": true
     },
-
     // Controls if the editor will insert spaces for tabs. Accepted values:  "auto", true, false. If set to "auto", the value will be guessed when a file is opened.
     "editor.detectIndentation": true,
     "editor.defaultFormatter": "esbenp.prettier-vscode",
@@ -19,7 +18,6 @@
         "statusBar.noFolderBackground": "#75416E",
         "statussBar.prominentBackground": "#D65649"
     },
-
     "cSpell.words": [
         "Affordance",
         "bloomlibrary",
@@ -31,5 +29,8 @@
         "Winform",
         "Winforms",
         "xmatter"
-    ]
+    ],
+    "[html]": {
+        "editor.defaultFormatter": "esbenp.prettier-vscode"
+    }
 }
