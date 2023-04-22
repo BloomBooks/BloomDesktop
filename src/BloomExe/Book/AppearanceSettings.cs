@@ -2,10 +2,9 @@
 using Newtonsoft.Json;
 using SIL.Extensions;
 using SIL.IO;
-using System;
-using System.Drawing;
 using System.IO;
 using System.Text;
+using System.Text.RegularExpressions;
 
 public class AppearanceSettings
 {
@@ -13,6 +12,10 @@ public class AppearanceSettings
 	{
 		PresetName = "default";
 		CoverColor = "yellow"; // book will migrate its legacy cover into this
+		CoverShowTitleL2 = true;
+		CoverShowTitleL3 = true;
+		CoverShowLanguageName = true;
+		CoverShowTopic = true;
 	}
 
 	[JsonProperty("presetName")]
@@ -20,6 +23,18 @@ public class AppearanceSettings
 
 	[JsonProperty("coverColor")]
 	public string CoverColor;
+
+	[JsonProperty("coverShowTitleL2")]
+	public bool CoverShowTitleL2;
+
+	[JsonProperty("coverShowTitleL3")]
+	public bool CoverShowTitleL3;
+
+	[JsonProperty("coverShowTopic")]
+	public bool CoverShowTopic;
+
+	[JsonProperty("coverShowLanguageName")]
+	public bool CoverShowLanguageName;
 
 
 	public static AppearanceSettings FromString(string json)
@@ -61,11 +76,30 @@ public class AppearanceSettings
 				settings.PresetName = match.Groups[1].Value;
 			}
 
-		} 
-		
+			settings.CoverShowTitleL2 = GetShowFromCss(css, "coverShowTitleL2", true);
+			settings.CoverShowTitleL2 = GetShowFromCss(css, "coverShowTitleL3", true);
+			settings.CoverShowTopic = GetShowFromCss(css, "coverShowTopic", false);
+			settings.CoverShowLanguageName = GetShowFromCss(css, "coverShowLanguageName", false);
+		}
+
 		return settings;
 	}
 
+	private static bool GetShowFromCss(string css, string name, bool defaultValue)
+	{
+		Regex regex = new Regex($"--${name}\\s*:\\s*none");
+		Match match = regex.Match(css);
+
+		if (match.Success)
+		{
+			return false;
+		}
+		return defaultValue;
+	}
+	private static string GetValueForDisplay(string name, bool show)
+	{
+		return show ? $"--{name}:ignore-this;" : $"--{name}:none;";
+	}
 	public void WriteAppearanceCss(string folder)
 	{
 		var targetPath = AppearanceSettingsPath(folder);
@@ -81,6 +115,11 @@ public class AppearanceSettings
 		cssBuilder.AppendLine(":root{");
 		cssBuilder.AppendLine($"--cover-color:{CoverColor};");
 		cssBuilder.AppendLine($"--preset-name:\"{PresetName}\";");
+		cssBuilder.AppendLine(GetValueForDisplay("coverShowTitleL2", CoverShowTitleL2));
+		cssBuilder.AppendLine(GetValueForDisplay("coverShowTitleL3", CoverShowTitleL3));
+		cssBuilder.AppendLine(GetValueForDisplay("coverShowTopic", CoverShowTopic));
+		cssBuilder.AppendLine(GetValueForDisplay("coverShowLanguageName", CoverShowLanguageName));
+
 		cssBuilder.AppendLine("}");
 		if (!string.IsNullOrEmpty(PresetName))
 		{
@@ -102,6 +141,10 @@ public class AppearanceSettings
 	{
 		this.CoverColor=appearance.coverColor;
 		this.PresetName=appearance.presetName;
+		this.CoverShowTitleL2=appearance.coverShowTitleL2;
+		this.CoverShowTitleL3 = appearance.coverShowTitleL3;
+		this.CoverShowTopic = appearance.coverShowTopic;
+		this.CoverShowLanguageName = appearance.coverShowLanguageName;
 	}
 
 
