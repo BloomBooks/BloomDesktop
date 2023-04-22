@@ -1,47 +1,112 @@
 ﻿using Bloom;
-using Newtonsoft.Json;
 using SIL.Extensions;
 using SIL.IO;
+using System.Collections.Generic;
+using System.Dynamic;
 using System.IO;
+using System.Linq;
 using System.Text;
-using System.Text.RegularExpressions;
 
+abstract class PropertyDef
+{
+	public string Name;
+	public abstract void SetDefault(ref dynamic prop);
 
+}
+abstract class CssPropertyDef : PropertyDef
+{
+	public abstract string GetCssVariableDeclaration(dynamic property);
+}
+class StringPropertyDef : PropertyDef
+{
+	public string DefaultValue;
+	public StringPropertyDef(string name, string defaultValue)
+	{
+		Name = name; DefaultValue = defaultValue;
+	}
+	public override void SetDefault(ref dynamic prop)
+	{
+		prop = DefaultValue;
+	}
+
+}
+
+class CssStringVariableDef : CssPropertyDef
+{
+	public string DefaultValue;
+	public CssStringVariableDef(string name, string defaultValue)
+	{
+		Name = name; DefaultValue = defaultValue;
+	}
+
+	public override string GetCssVariableDeclaration(dynamic property)
+	{
+		return $"--{Name}:{property.value}";
+	}
+	public override void SetDefault(ref dynamic prop)
+	{
+		prop = DefaultValue;
+	}
+}
+
+/// <summary>
+/// variables that can be used in rules like `display: var(--something)`
+/// </summary>
+class CssDisplayVariableDef : CssPropertyDef
+{
+	public string TrueValue;
+	public string FalseValue;
+	public bool DefaultValue;
+	public CssDisplayVariableDef(string name, bool defaultValue)
+	{
+		Name = name; TrueValue = "ignore-this"; FalseValue = "none";
+		DefaultValue = defaultValue;
+	}
+
+	public override string GetCssVariableDeclaration(dynamic property)
+	{
+		var value = property.value ? TrueValue : FalseValue;
+		return $"--{Name}:{value}";
+	}
+	public override void SetDefault(ref dynamic prop)
+	{
+		prop = DefaultValue;
+	}
+}
 public class AppearanceSettings
 {
+
+	private dynamic _properties;
+
+	// create an array of properties and fill it in
+	private PropertyDef[] propertyDefinitions = new PropertyDef[]
+	{
+		new StringPropertyDef("presetName","default"),
+		new CssStringVariableDef("coverColor","yellow"),
+		new CssDisplayVariableDef("coverShowTitleL2",true),
+		new CssDisplayVariableDef("coverShowTitleL3",false),
+		new CssDisplayVariableDef("coverShowTopic",true),
+		new CssDisplayVariableDef("coverShowLanguageName",false),
+	};
+	private string PresetName { get { return _properties.presetName; } }
+
 	public AppearanceSettings()
 	{
-		CoverColor = "yellow"; // book will migrate its legacy cover into this
+		_properties = new ExpandoObject();
+		foreach (var definition in propertyDefinitions)
+		{
+			var prop = ((IDictionary<string, object>)_properties)[definition.Name];
+			definition.SetDefault(ref prop);
+		}
 	}
 
-	[JsonProperty("presetName")]
-	public string PresetName = "default";
-
-	[JsonProperty("coverColor")]
-	public string CoverColor;
-
-	[JsonProperty("coverShowTitleL2")]
-	public bool CoverShowTitleL2 = true;
-
-	[JsonProperty("coverShowTitleL3")]
-	public bool CoverShowTitleL3= false;
-
-	[JsonProperty("coverShowTopic")]
-	public bool CoverShowTopic = true;
-
-	[JsonProperty("coverShowLanguageName")]
-	public bool CoverShowLanguageName = true;
-
-
-	public static AppearanceSettings FromString(string json)
-	{
-		var ps = new AppearanceSettings();
-		return ps;
-	}
-
-	public static string AppearanceSettingsPath(string bookFolderPath)
+	public static string AppearanceCssPath(string bookFolderPath)
 	{
 		return bookFolderPath.CombineForPath("appearance.css");
+	}
+	private static string AppearanceJsonPath(string bookFolderPath)
+	{
+		return bookFolderPath.CombineForPath("appearance.json");
 	}
 
 	/// <summary>
@@ -53,52 +118,19 @@ public class AppearanceSettings
 	/// <returns></returns>
 	public static AppearanceSettings FromFolderOrNew(string bookFolderPath)
 	{
-		var appearanceSettingsPath = AppearanceSettingsPath(bookFolderPath);
+		var jsonPath = AppearanceJsonPath(bookFolderPath);
 		AppearanceSettings settings = new AppearanceSettings();
-		if (RobustFile.Exists(appearanceSettingsPath))
+		if (RobustFile.Exists(jsonPath))
 		{
-			
-			var css = RobustFile.ReadAllText(appearanceSettingsPath);
-			// regex to select the value of the --cover-color property in css
-			var match = System.Text.RegularExpressions.Regex.Match(css, @"--cover-color:\s*([#\w]+)");
-			if (match.Success)
-			{
-				settings.CoverColor = match.Groups[1].Value;
-			}
-
-			match = System.Text.RegularExpressions.Regex.Match(css, @"--preset-name:\s*""(.+)""");
-			if (match.Success)
-			{
-				settings.PresetName = match.Groups[1].Value;
-			}
-
-			settings.CoverShowTitleL2 = GetShowFromCss(css, "coverShowTitleL2", true);
-			settings.CoverShowTitleL2 = GetShowFromCss(css, "coverShowTitleL3", true);
-			settings.CoverShowTopic = GetShowFromCss(css, "coverShowTopic", false);
-			settings.CoverShowLanguageName = GetShowFromCss(css, "coverShowLanguageName", false);
+			var json = RobustFile.ReadAllText(jsonPath);
+			settings.Update(json);
 		}
 
 		return settings;
 	}
-
-	private static bool GetShowFromCss(string css, string name, bool defaultValue)
-	{
-		Regex regex = new Regex($"--${name}\\s*:\\s*none");
-		Match match = regex.Match(css);
-
-		if (match.Success)
-		{
-			return false;
-		}
-		return defaultValue;
-	}
-	private static string GetValueForDisplay(string name, bool show)
-	{
-		return show ? $"--{name}:ignore-this;" : $"--{name}:none;";
-	}
 	public void WriteAppearanceCss(string folder)
 	{
-		var targetPath = AppearanceSettingsPath(folder);
+		var targetPath = AppearanceCssPath(folder);
 
 		if (Program.RunningHarvesterMode && RobustFile.Exists(targetPath))
 		{
@@ -109,17 +141,16 @@ public class AppearanceSettings
 
 		var cssBuilder = new StringBuilder();
 		cssBuilder.AppendLine(":root{");
-		cssBuilder.AppendLine($"--cover-color:{CoverColor};");
-		cssBuilder.AppendLine($"--preset-name:\"{PresetName}\";");
-		cssBuilder.AppendLine(GetValueForDisplay("coverShowTitleL2", CoverShowTitleL2));
-		cssBuilder.AppendLine(GetValueForDisplay("coverShowTitleL3", CoverShowTitleL3));
-		cssBuilder.AppendLine(GetValueForDisplay("coverShowTopic", CoverShowTopic));
-		cssBuilder.AppendLine(GetValueForDisplay("coverShowLanguageName", CoverShowLanguageName));
-
+		foreach (var property in _properties)
+		{
+			var definition = propertyDefinitions.First(d => d.Name == property.Name);
+			if (definition is CssPropertyDef)
+				cssBuilder.AppendLine(((CssPropertyDef)definition).GetCssVariableDeclaration(property));
+		}
 		cssBuilder.AppendLine("}");
 		if (!string.IsNullOrEmpty(PresetName))
 		{
-			var sourcePath = Path.Combine(ProjectContext.GetFolderContainingAppearancePresetFiles(), PresetName+".css");
+			var sourcePath = Path.Combine(ProjectContext.GetFolderContainingAppearancePresetFiles(), PresetName + ".css");
 			if (!RobustFile.Exists(sourcePath))
 			{
 				// TODO: We should toast I suppose?
@@ -135,14 +166,6 @@ public class AppearanceSettings
 
 	internal void Update(dynamic appearance)
 	{
-		this.CoverColor=appearance.coverColor;
-		this.PresetName=appearance.presetName;
-		this.CoverShowTitleL2=appearance.coverShowTitleL2;
-		this.CoverShowTitleL3 = appearance.coverShowTitleL3;
-		this.CoverShowTopic = appearance.coverShowTopic;
-		this.CoverShowLanguageName = appearance.coverShowLanguageName;
+		_properties = appearance;
 	}
-
-
-
 }
