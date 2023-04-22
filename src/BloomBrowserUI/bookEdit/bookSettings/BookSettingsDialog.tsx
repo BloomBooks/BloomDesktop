@@ -9,7 +9,8 @@ import {
     ConfigrColorPicker,
     ConfigrInput,
     ConfigrCustomObjectInput,
-    ConfigrSelect
+    ConfigrSelect,
+    ConfigrBoolean
 } from "@sillsdev/config-r";
 import React = require("react");
 import { kBloomBlue } from "../../bloomMaterialUITheme";
@@ -146,7 +147,26 @@ export const BookSettingsDialog: React.FunctionComponent<{
                                     label="Cover Color"
                                     control={ConfigrColorPicker}
                         /> */}
-
+                                <ConfigrBoolean
+                                    immediateEffect={false}
+                                    label="Show L2 title on cover"
+                                    path="appearance.coverShowTitleL2"
+                                />
+                                <ConfigrBoolean
+                                    immediateEffect={false}
+                                    label="Show L3 title on cover"
+                                    path="appearance.coverShowTitleL3"
+                                />
+                                <ConfigrBoolean
+                                    immediateEffect={false}
+                                    label="Show topic on cover"
+                                    path="appearance.coverShowTopic"
+                                />
+                                <ConfigrBoolean
+                                    immediateEffect={false}
+                                    label="Show language name on cover"
+                                    path="appearance.coverShowLanguageName"
+                                />
                                 <ConfigrSelect
                                     description={`Choose a "page style" to easily change margins, borders, an other page settings.`}
                                     path={`appearance.presetName`}
