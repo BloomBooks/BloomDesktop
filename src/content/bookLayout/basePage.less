@@ -9,7 +9,6 @@
 @bloom-page-background: white;
 
 .Browser-Reset() {
-
     /*+init {*/
     * {
         position: relative;
@@ -76,7 +75,8 @@
         border: 0;
     }
 
-    body {}
+    body {
+    }
 }
 
 .Browser-Reset();
@@ -104,11 +104,13 @@ To handling the mis-match.*/
         // There's often an incomplete 'line'. "To bottom" puts it at the bottom.
         // Read as: start transparent, stay transparent to 1em, switch abruptly to grey at 1em,
         // stay grey out to 4em, then repeat (which will mean an abrupt transition back to transparent).
-        background: repeating-linear-gradient(to bottom,
-                transparent,
-                transparent 1em,
-                grey 1em,
-                grey 4em);
+        background: repeating-linear-gradient(
+            to bottom,
+            transparent,
+            transparent 1em,
+            grey 1em,
+            grey 4em
+        );
         padding: 1em 0em; // text usually doesn't go to the outermost edges.
         box-sizing: border-box;
         // Makes background respect padding. However, the pattern still BEGINS at the outermost edge;
@@ -220,7 +222,6 @@ div.bloom-page {
     &:before {
         content: var(--preset-name); // using this during dev only
         color: green;
-
     }
 }
 
@@ -259,16 +260,17 @@ div#bloomDataDiv {
 @RUSComicPortrait-Height: @USComicPortrait-Height + @bleed + @bleed;
 @RUSComic-Scale: unit(@RUSComicPortrait-Width / @USComicPortrait-Width);
 @USComicPortrait-HeightFB: @USComicPortrait-Height * @RUSComic-Scale;
-@USComicPortrait-Height-Excess: @USComicPortrait-HeightFB - @RUSComicPortrait-Height;
+@USComicPortrait-Height-Excess: @USComicPortrait-HeightFB -
+    @RUSComicPortrait-Height;
 
 @RSize6x9Portrait-Width: @Size6x9Portrait-Width + @bleed + @bleed;
 @RSize6x9Portrait-Height: @Size6x9Portrait-Height + @bleed + @bleed;
 @RSize6x9-Scale: unit(@RSize6x9Portrait-Width / @Size6x9Portrait-Width);
 @Size6x9Portrait-HeightFB: @Size6x9Portrait-Height * @RSize6x9-Scale;
-@Size6x9Portrait-Height-Excess: @Size6x9Portrait-HeightFB - @RSize6x9Portrait-Height;
+@Size6x9Portrait-Height-Excess: @Size6x9Portrait-HeightFB -
+    @RSize6x9Portrait-Height;
 
 .bloom-fullBleed {
-
     //background-color: green;
     .bloom-page {
         transform-origin: top left;
@@ -276,47 +278,56 @@ div#bloomDataDiv {
 
         &.A5Portrait {
             // NB: transform order is rightmost first
-            transform: translate(0, -@A5Portrait-Height-Excess / 2) scale(@RA5-Scale);
+            transform: translate(0, -@A5Portrait-Height-Excess / 2)
+                scale(@RA5-Scale);
         }
 
         &.A5Landscape {
             // NB: transform order is rightmost first
-            transform: translate(-@A5Portrait-Height-Excess / 2, 0) scale(@RA5-Scale);
+            transform: translate(-@A5Portrait-Height-Excess / 2, 0)
+                scale(@RA5-Scale);
         }
 
         &.A4Portrait {
             // NB: transform order is rightmost first
-            transform: translate(0, -@A4Portrait-Height-Excess / 2) scale(@RA4-Scale);
+            transform: translate(0, -@A4Portrait-Height-Excess / 2)
+                scale(@RA4-Scale);
         }
 
         &.A4Landscape {
             // NB: transform order is rightmost first
-            transform: translate(-@A4Portrait-Height-Excess / 2, 0) scale(@RA4-Scale);
+            transform: translate(-@A4Portrait-Height-Excess / 2, 0)
+                scale(@RA4-Scale);
         }
 
         &.A3Portrait {
             // NB: transform order is rightmost first
-            transform: translate(0, -@A3Portrait-Height-Excess / 2) scale(@RA3-Scale);
+            transform: translate(0, -@A3Portrait-Height-Excess / 2)
+                scale(@RA3-Scale);
         }
 
         &.A3Landscape {
             // NB: transform order is rightmost first
-            transform: translate(-@A3Portrait-Height-Excess / 2, 0) scale(@RA3-Scale);
+            transform: translate(-@A3Portrait-Height-Excess / 2, 0)
+                scale(@RA3-Scale);
         }
 
         &.USComicPortrait {
             // NB: transform order is rightmost first
-            transform: translate(0, -@USComicPortrait-Height-Excess / 2) scale(@RUSComic-Scale);
+            transform: translate(0, -@USComicPortrait-Height-Excess / 2)
+                scale(@RUSComic-Scale);
         }
 
         &.Size6x9Portrait {
             // NB: transform order is rightmost first
-            transform: translate(0, -@Size6x9Portrait-Height-Excess / 2) scale(@RSize6x9-Scale);
+            transform: translate(0, -@Size6x9Portrait-Height-Excess / 2)
+                scale(@RSize6x9-Scale);
         }
 
         &.Size6x9Landscape {
             // NB: transform order is rightmost first
-            transform: translate(-@Size6x9Portrait-Height-Excess / 2, 0) scale(@RSize6x9-Scale);
+            transform: translate(-@Size6x9Portrait-Height-Excess / 2, 0)
+                scale(@RSize6x9-Scale);
         }
     }
 }
@@ -687,10 +698,14 @@ body.publishingWithoutFullBleed {
 
 // Mixin for setting .marginBox margins.
 .SetMarginBox(@PageWidth, @PageHeight) {
-    height: calc(~"@{PageHeight} - (var(--page-margin-top) + var(--page-margin-bottom))");
+    height: calc(
+        ~"@{PageHeight} - (var(--page-margin-top) + var(--page-margin-bottom))"
+    );
     //height: @PageHeight - (@MarginTop + @MarginBottom);
     //width: @PageWidth - (@MarginOuter + @MarginInner);
-    width: calc(~"@{PageWidth} - (var(--page-margin-outer) + var(--page-margin-inner))");
+    width: calc(
+        ~"@{PageWidth} - (var(--page-margin-outer) + var(--page-margin-inner))"
+    );
 }
 
 .marginBox {
@@ -731,13 +746,17 @@ body.publishingWithoutFullBleed {
     }
 
     .QuarterLetterPortrait & {
-        .SetMarginBox(@QuarterLetterPortrait-Width,
-            @QuarterLetterPortrait-Height );
+        .SetMarginBox(
+            @QuarterLetterPortrait-Width,
+            @QuarterLetterPortrait-Height
+        );
     }
 
     .QuarterLetterLandscape & {
-        .SetMarginBox(@QuarterLetterLandscape-Width,
-            @QuarterLetterLandscape-Height );
+        .SetMarginBox(
+            @QuarterLetterLandscape-Width,
+            @QuarterLetterLandscape-Height
+        );
     }
 
     .HalfLetterPortrait & {
@@ -785,10 +804,11 @@ body.publishingWithoutFullBleed {
     }
 }
 
-:not(.calendarFold) :not(.outsideFrontCover):not(.outsideBackCover):not(.screen-only) {
+:not(.calendarFold)
+    :not(.outsideFrontCover):not(.outsideBackCover):not(.screen-only) {
     &.side-left // maintained by c#
 
-        {
+ {
         .marginBox {
             left: var(--page-margin-outer);
         }
@@ -796,7 +816,7 @@ body.publishingWithoutFullBleed {
 
     &.side-right // maintained by c#
 
-        {
+ {
         .marginBox {
             left: var(--page-margin-inner);
         }
@@ -887,7 +907,7 @@ books may contain divs with box-header-off, so we need a rule to hide them.*/
         }
 
         // above canvas so we can click playback controls
-        z-index: @bubbleCanvasZIndex +1;
+        z-index: @bubbleCanvasZIndex + 1;
 
         video {
             // I don't know exactly why this works, but it makes the video shrink to fit,
@@ -1073,7 +1093,7 @@ books may contain divs with box-header-off, so we need a rule to hide them.*/
     }
 
     // Requiring a direct child helps prevent this from applying to things like the format cog
-    >img {
+    > img {
         width: 50%;
     }
 }
@@ -1081,7 +1101,6 @@ books may contain divs with box-header-off, so we need a rule to hide them.*/
 // if brandings has hyperlinks, we default to not showing ugly blue underlines in print.
 // those could be re-enabled for digital products
 div[data-book*="branding"] {
-
     a:link,
     a:visited {
         color: unset;
@@ -1144,3 +1163,20 @@ div[data-book*="branding"] {
 @import "bookFeatures.less";
 
 @import "langVisibility.less";
+
+/* these are all controlled by appearance.css (which are set by the user through settings) */
+.Title-On-Cover-style.bloom-contentNational1 {
+    display: var(--coverShowTitleL2);
+}
+
+.Title-On-Cover-style.bloom-contentNational2 {
+    display: var(--coverShowTitleL3);
+}
+
+.coverBottomBookTopic {
+    display: var(--coverShowTopic);
+}
+
+.coverBottomLangName {
+    display: var(--coverShowLanguageName);
+}
