@@ -6,35 +6,31 @@ using System.IO;
 using System.Text;
 using System.Text.RegularExpressions;
 
+
 public class AppearanceSettings
 {
 	public AppearanceSettings()
 	{
-		PresetName = "default";
 		CoverColor = "yellow"; // book will migrate its legacy cover into this
-		CoverShowTitleL2 = true;
-		CoverShowTitleL3 = true;
-		CoverShowLanguageName = true;
-		CoverShowTopic = true;
 	}
 
 	[JsonProperty("presetName")]
-	public string PresetName;
+	public string PresetName = "default";
 
 	[JsonProperty("coverColor")]
 	public string CoverColor;
 
 	[JsonProperty("coverShowTitleL2")]
-	public bool CoverShowTitleL2;
+	public bool CoverShowTitleL2 = true;
 
 	[JsonProperty("coverShowTitleL3")]
-	public bool CoverShowTitleL3;
+	public bool CoverShowTitleL3= false;
 
 	[JsonProperty("coverShowTopic")]
-	public bool CoverShowTopic;
+	public bool CoverShowTopic = true;
 
 	[JsonProperty("coverShowLanguageName")]
-	public bool CoverShowLanguageName;
+	public bool CoverShowLanguageName = true;
 
 
 	public static AppearanceSettings FromString(string json)
