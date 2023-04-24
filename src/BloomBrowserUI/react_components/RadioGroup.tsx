@@ -30,8 +30,7 @@ export const RadioGroup: React.FunctionComponent<{
     onChange: (method: string) => void;
 }> = props => {
     return (
-        //this margin='dense' doesn't seem to do anything?
-        <FormControl margin="dense">
+        <FormControl>
             <MuiRadioGroup
                 value={props.value}
                 onChange={(event, newValue) => props.onChange(newValue)}
