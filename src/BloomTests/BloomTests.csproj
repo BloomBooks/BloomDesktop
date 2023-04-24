@@ -307,6 +307,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BloomFileLocatorTests.cs" />
+    <Compile Include="Book\AppearanceSettingsTests.cs" />
     <Compile Include="Book\BookFileFilterTests.cs" />
     <Compile Include="Collection\CollectionFilterTests.cs" />
     <Compile Include="FontProcessingTests.cs" />
