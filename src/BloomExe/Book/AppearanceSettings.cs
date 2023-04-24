@@ -1,4 +1,6 @@
 ﻿using Bloom;
+using Newtonsoft.Json;
+using SIL.Code;
 using SIL.Extensions;
 using SIL.IO;
 using System.Collections.Generic;
@@ -10,7 +12,11 @@ using System.Text;
 abstract class PropertyDef
 {
 	public string Name;
-	public abstract void SetDefault(ref dynamic prop);
+	public dynamic DefaultValue;
+	public void SetDefault(dynamic prop)
+	{
+		((IDictionary<string, object>)prop)[Name] = DefaultValue;
+	}
 	public string OverrideGroup;
 }
 abstract class CssPropertyDef : PropertyDef
@@ -19,22 +25,18 @@ abstract class CssPropertyDef : PropertyDef
 }
 class StringPropertyDef : PropertyDef
 {
-	public string DefaultValue;
+
 	public StringPropertyDef(string name, string defaultValue, string overrideGroup)
 	{
 		Name = name;
 		DefaultValue = defaultValue;
 		OverrideGroup = overrideGroup;
 	}
-	public override void SetDefault(ref dynamic prop)
-	{
-		prop = DefaultValue;
-	}
 }
 
 class CssStringVariableDef : CssPropertyDef
 {
-	public string DefaultValue;
+
 	public CssStringVariableDef(string name, string defaultValue, string overrideGroup)
 	{
 		Name = name; DefaultValue = defaultValue;
@@ -43,12 +45,9 @@ class CssStringVariableDef : CssPropertyDef
 
 	public override string GetCssVariableDeclaration(dynamic property)
 	{
-		return $"--{Name}: {property.value};";
+		return $"--{Name}: {property.Value};";
 	}
-	public override void SetDefault(ref dynamic prop)
-	{
-		prop = DefaultValue;
-	}
+
 }
 
 /// <summary>
@@ -58,7 +57,6 @@ class CssDisplayVariableDef : CssPropertyDef
 {
 	public string TrueValue;
 	public string FalseValue;
-	public bool DefaultValue;
 	public CssDisplayVariableDef(string name, bool defaultValue, string overrideGroup)
 	{
 		Name = name;
@@ -70,22 +68,15 @@ class CssDisplayVariableDef : CssPropertyDef
 
 	public override string GetCssVariableDeclaration(dynamic property)
 	{
-		var value = property.value ? TrueValue : FalseValue;
+		var value = property.Value ? TrueValue : FalseValue;
 		return $"--{Name}: {value};";
-	}
-	public override void SetDefault(ref dynamic prop)
-	{
-		prop = DefaultValue;
 	}
 }
 public class AppearanceSettings
 {
 
 	private dynamic _properties;
-	public dynamic TestOnlyPropertyAccess(string name)
-	{
-		return _properties.Get(name);
-	}
+	public dynamic TestOnlyPropertiesAccess { get { return _properties; } }
 
 	// create an array of properties and fill it in
 	private PropertyDef[] propertyDefinitions = new PropertyDef[]
@@ -106,8 +97,7 @@ public class AppearanceSettings
 		// copy in the default values from each definition
 		foreach (var definition in propertyDefinitions)
 		{
-			var prop = ((IDictionary<string, object>)_properties)[definition.Name];
-			definition.SetDefault(ref prop); // this is a workaround using ref because c# doesn't have union types, or `any`, sigh
+			definition.SetDefault(_properties); // this is a workaround using ref because c# doesn't have union types, or `any`, sigh
 		}
 	}
 
@@ -145,10 +135,27 @@ public class AppearanceSettings
 		cssBuilder.AppendLine(":root{");
 		foreach (var property in _properties)
 		{
-			//if (key == "overrides") continue;
-			var definition = propertyDefinitions.First(d => d.Name == property.Name);
+			if (property.Key == "overrides")
+				continue;
+			var definition = propertyDefinitions.FirstOrDefault(d => d.Name == property.Key);
+			var m = "Could not find definition for:" + property.Key;
+			Guard.AgainstNull(definition, m);
+
+			var keyValuePair = property;
+			if (parent != null)
+			{
+				var overrides = this._properties.overrides;
+
+				// unless this group is listed as something to override, use the parent's value
+				if (overrides == null || !((string[])overrides.ToObject<string[]>()).Contains(definition.OverrideGroup))
+				{
+					var v = ((IDictionary<string, object>)parent._properties)[property.Key];
+					keyValuePair = new { Key = property.Key, Value = v };
+				}
+			}
+
 			if (definition is CssPropertyDef)
-				cssBuilder.AppendLine(((CssPropertyDef)definition).GetCssVariableDeclaration(property));
+				cssBuilder.AppendLine(((CssPropertyDef)definition).GetCssVariableDeclaration(keyValuePair));
 		}
 		cssBuilder.AppendLine("}");
 		return cssBuilder.ToString();
@@ -181,7 +188,18 @@ public class AppearanceSettings
 		}
 		RobustFile.WriteAllText(targetPath, cssBuilder.ToString());
 	}
+	internal void UpdateFromJson(string json)
+	{
+		//dynamic x = JObject.Parse("{overrides:[\"one\"]}");
 
+
+		JsonConvert.PopulateObject(json, _properties,
+					// Previously, various things could be null. As part of simplifying the use of PublishSettings,
+					// we now never have nulls; everything gets defaults when it is created.
+					// For backwards capabilty, if the json we are reading has a null for a value,
+					// do not override the default value that we already have loaded.
+					new JsonSerializerSettings() { NullValueHandling = NullValueHandling.Ignore });
+	}
 	internal void Update(dynamic replacement)
 	{
 		_properties = replacement;
