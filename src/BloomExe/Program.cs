@@ -403,6 +403,14 @@ namespace Bloom
 						}
 						gotUniqueToken = true;
 					}
+					if (IsInstallerLaunch(args))
+					{
+						// Start the splash screen early for installer launches to reassure
+						// user while localization and other one-time setup is happening.  For
+						// installer launches, no more dialogs should be popping up after this.
+						// See https://issues.bloomlibrary.org/youtrack/issue/BL-12085.
+						StartupScreenManager.StartManaging();
+					}
 					OldVersionCheck();
 
 					SetUpErrorHandling();
@@ -497,7 +505,7 @@ namespace Bloom
 						_originalPreload = Environment.GetEnvironmentVariable("LD_PRELOAD");
 						Environment.SetEnvironmentVariable("LD_PRELOAD", null);
 
-						Run();
+						Run(args);
 					}
 				}
 			}
@@ -731,9 +739,10 @@ namespace Bloom
 		}
 
 		[HandleProcessCorruptedStateExceptions]
-		private static void Run()
+		private static void Run(string[] args)
 		{
-			StartupScreenManager.StartManaging();
+			if (!IsInstallerLaunch(args))
+				StartupScreenManager.StartManaging();
 			
 			Settings.Default.Save();
 
