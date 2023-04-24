@@ -2,11 +2,11 @@
 /* They may be over-ridden by rules in customCollectionStyles.css or customBookStyles.css */
 
 .numberedPage::after {
-    font-family: "Andika New Basic";
+    font-family: Andika;
     direction: ltr;
 }
 
 [lang="en"] {
-    font-family: "Andika New Basic";
+    font-family: Andika;
     direction: ltr;
 }

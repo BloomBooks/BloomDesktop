@@ -32,6 +32,7 @@ using Bloom.web;
 using SIL.PlatformUtilities;
 using ThreadState = System.Threading.ThreadState;
 using Bloom.web.controllers;
+using Bloom.FontProcessing;
 
 namespace Bloom.Api
 {
@@ -708,6 +709,10 @@ namespace Bloom.Api
 			if (localPath.EndsWith(".css"))
 			{
 				return ProcessCssFile(info, localPath);
+			}
+			if (localPath.Contains("/host/fonts/"))
+			{
+				return FontsApi.ProcessHostFontsRequest(info, localPath);
 			}
 
 			switch (localPath)
@@ -1501,9 +1506,7 @@ namespace Bloom.Api
 				EpubMaker.kEPUBExportFolder.ToLowerInvariant(),
 				// bloom-player always asks for questions.json for every book.
 				// Being only for quiz pages, not every book has it, so we don't want spurious error reports.
-				BloomPubMaker.kQuestionFileName.ToLowerInvariant(),
-				// In 5.5, we plan to handle this request. But for now, we just want to ignore it.
-				"/host/fonts/"
+				BloomPubMaker.kQuestionFileName.ToLowerInvariant()
 			};
 			return !stuffToIgnore.Any(s => localPath.ToLowerInvariant().Contains(s));
 		}

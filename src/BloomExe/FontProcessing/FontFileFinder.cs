@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using System.Drawing.Text;
 using System.IO;
-using Bloom.web;
+using Bloom.Api;
+using SIL.IO;
+using System.Threading;
 #if __MonoCS__
 using SharpFont;				// Linux only (interface to libfreetype.so.6)
 #else
@@ -161,6 +163,49 @@ namespace Bloom.FontProcessing
 					FontNameToFiles[name] = files;
 				}
 				files.Add(gtf, fontFile);
+			}
+			try
+			{
+				var serve = FontServe.GetInstance();
+				if (serve.FontsServed.Count > 0)
+				{
+					foreach (var fontInfo in serve.FontsServed)
+					{
+						// Store the actual paths of the fonts we'll be serving, overriding any installed font paths.
+						if (!FontNameToFiles.TryGetValue(fontInfo.family, out FontGroup filesForFont))
+							filesForFont = new FontGroup();
+						if (!String.IsNullOrEmpty(fontInfo.files.normal))
+						{
+							var pathNormal = FileLocationUtilities.GetFileDistributedWithApplication(true, $"fonts/{fontInfo.files.normal}");
+							if (pathNormal != null && RobustFile.Exists(pathNormal))
+								filesForFont.Normal = pathNormal;
+						}
+						if (!String.IsNullOrEmpty(fontInfo.files.bold))
+						{
+							var pathBold = FileLocationUtilities.GetFileDistributedWithApplication(true, $"fonts/{fontInfo.files.bold}");
+							if (pathBold != null && RobustFile.Exists(pathBold))
+								filesForFont.Bold = pathBold;
+						}
+						if (!String.IsNullOrEmpty(fontInfo.files.italic))
+						{
+							var pathItalic = FileLocationUtilities.GetFileDistributedWithApplication(true, $"fonts/{fontInfo.files.italic}");
+							if (pathItalic != null && RobustFile.Exists(pathItalic))
+								filesForFont.Italic = pathItalic;
+						}
+						if (!String.IsNullOrEmpty(fontInfo.files.bolditalic))
+						{
+							var pathBoldItalic = FileLocationUtilities.GetFileDistributedWithApplication(true, $"fonts/{fontInfo.files.bolditalic}");
+							if (pathBoldItalic != null && RobustFile.Exists(pathBoldItalic))
+								filesForFont.BoldItalic = pathBoldItalic;
+						}
+						if (!String.IsNullOrEmpty(filesForFont.Normal))
+							FontNameToFiles[fontInfo.family] = filesForFont;
+					}
+				}
+			}
+			catch (Exception e)
+			{
+				Console.WriteLine("DEBUG: Exception for processing font being served: {0}", e);
 			}
 #endif
 		}

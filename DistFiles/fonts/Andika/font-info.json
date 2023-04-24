@@ -1,0 +1,31 @@
+{
+    "family": "Andika",
+    "files": {
+        "normal": "Andika-Regular.woff2",
+        "bold": "Andika-Bold.woff2",
+        "italic": "Andika-Italic.woff2",
+        "bolditalic": "Andika-BoldItalic.woff2"
+    },
+    "faces": [
+        "@font-face { font-family: Andika; src: url(./host/fonts/Andika-Regular.woff2); }",
+        "@font-face { font-family: Andika; font-weight: bold; src: url(./host/fonts/Andika-Bold.woff2); }",
+        "@font-face { font-family: Andika; font-style: italic; src: url(./host/fonts/Andika-Italic.woff2); }",
+        "@font-face { font-family: Andika; font-weight: bold; font-style: italic; src: url(./host/fonts/Andika-BoldItalic.woff2); }",
+        "@font-face { font-family: \"Andika New Basic\"; font-weight: normal; font-style: normal; src: url(\"./host/fonts/Andika New Basic\"); }",
+        "@font-face { font-family: \"Andika New Basic\"; font-weight: bold; font-style: normal; src: url(\"./host/fonts/Andika New Basic Bold\"); }",
+        "@font-face { font-family: \"Andika New Basic\"; font-weight: normal; font-style: italic; src: url(\"./host/fonts/Andika New Basic Italic\"); }",
+        "@font-face { font-family: \"Andika New Basic\"; font-weight: bold; font-style: italic; src: url(\"./host/fonts/Andika New Basic Bold Italic\") ; }"
+    ],
+    "metadata": {
+        "copyright": "Copyright (c) 2004-2023 SIL International",
+        "designer": "Victor Gaultney, Annie Olsen, Julie Remington, Don Collingsworth, Eric Hays, Becca Hirsbrunner",
+        "designerURL": "https://scripts.sil.org/",
+        "fsType": "Installable",
+        "license": "Copyright (c) 2004-2023 SIL International (https://www.sil.org/) with Reserved Font Names \"Andika\" and \"SIL\".\n\nThis Font Software is licensed under the SIL Open Font License, Version 1.1. This license is available with a FAQ at: https://scripts.sil.org/OFL",
+        "licenseURL": "https://scripts.sil.org/OFL",
+        "manufacturer": "SIL International",
+        "manufacturerURL": "https://www.sil.org/",
+        "trademark": "Andika is a trademark of SIL International.",
+        "version": "6.200"
+    }
+}

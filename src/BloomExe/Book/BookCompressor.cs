@@ -24,16 +24,6 @@ namespace Bloom.Book
 		// these image files may need to be reduced before being stored in the compressed output file
 		public static readonly string[] CompressableImageFileExtensions = { ".tif", ".tiff", ".png", ".bmp", ".jpg", ".jpeg" };
 
-		// Since BL-8956, we whitelist files so that only those we expect will make it through the
-		// compression process.
-		// These audio file extensions are the only ones we expect in the 'audio' folder.
-		internal static readonly string[] AudioFileExtensions = { ".mp3", ".wav", ".ogg" };
-		// This video file extension is the only one we expect in the 'video' folder.
-		internal static readonly string[] VideoFileExtensions = { ".mp4" };
-		// These file extensions are the only ones that will be included in the compressed version
-		// at the top book level.
-		internal static readonly string[] BookLevelFileExtensionsLowerCase = { ".svg", ".png", ".jpg", ".jpeg", ".tif", ".tiff", ".bmp", ".otf", ".ttf", ".woff", ".htm", ".css", ".json", ".txt", ".js", ".distribution" };
-
 		internal static void MakeSizedThumbnail(Book book, string destinationFolder, int heightAndWidth)
 		{
 			// If this fails to create a 'coverImage200.jpg', either the cover image is missing or it's only a placeholder.
