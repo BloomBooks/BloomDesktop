@@ -297,18 +297,6 @@
 		<!-- These are generated in other TC projects but I think it's OK to sign them here since we control those projects too.-->
 		<Exec Command='sign "$(RootDir)\output\$(Configuration)\BloomPdfMaker.exe"' ContinueOnError="$(ContinueOnExeSignError)"></Exec>
 		<Exec Command='sign "$(RootDir)\output\$(Configuration)\PdfDroplet.exe"' ContinueOnError="$(ContinueOnExeSignError)"></Exec>
-
-		<!-- We don't really need to do this every time since the file is checked in. But this way any updated version
-		is automatically signed, which saves the hassle of coming up with a new signed exe every time we need to check in. -->
-		<!-- I can't figure out how to get the signtool to take a file name with spaces, even if the path is surrounded in quotes.
-		So I gave up. Copy to a filename without spaces and back.-->
-		<Copy SourceFiles="$(RootDir)\DistFiles\AndikaNewBasic\Install Bloom Literacy Fonts.exe"
-		DestinationFiles="$(RootDir)\DistFiles\AndikaNewBasic\FontInstaller.exe" />
-		<Exec Command='sign "$(RootDir)\DistFiles\AndikaNewBasic\FontInstaller.exe"' ContinueOnError="$(ContinueOnExeSignError)"></Exec>
-		<Copy SourceFiles="$(RootDir)\DistFiles\AndikaNewBasic\FontInstaller.exe"
-		DestinationFiles="$(RootDir)\DistFiles\AndikaNewBasic\Install Bloom Literacy Fonts.exe" />
-		<Delete Files="$(RootDir)\DistFiles\AndikaNewBasic\FontInstaller.exe" />
-
 	</Target>
 
 	<!-- This target is designed to be an target on TeamCity (but using Upload is more likely) that includes target Installer. Review: squirrel itself
