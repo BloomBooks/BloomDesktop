@@ -2497,7 +2497,10 @@ export default class AudioRecording {
         }
     }
 
-    public async newPageReady(imageDescToolActive: boolean): Promise<void> {
+    public async newPageReady(
+        imageDescToolActive: boolean,
+        deshroudPhraseDelimiters?: (page: HTMLElement | null) => void
+    ): Promise<void> {
         // Changing the page causes the previous page's audio to stop playing (be "emptied").
         ++this.currentAudioSessionNum;
 
@@ -2521,6 +2524,8 @@ export default class AudioRecording {
             // no editable text on this page.
             return this.changeStateAndSetExpectedAsync("");
         } else {
+            if (deshroudPhraseDelimiters)
+                deshroudPhraseDelimiters(this.getPageDocBody());
             await this.setupAndUpdateMarkupAsync();
 
             // See comment on this method.

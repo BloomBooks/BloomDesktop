@@ -48,10 +48,8 @@ export default class TalkingBookTool implements ITool {
     public async newPageReady(): Promise<void> {
         this.showImageDescriptionsIfAny();
         const pageReadyPromise = AudioRecorder.theOneAudioRecorder.newPageReady(
-            this.isImageDescriptionToolActive()
-        );
-        pageReadyPromise.then(() =>
-            TalkingBookTool.deshroudPhraseDelimiters(ToolBox.getPage())
+            this.isImageDescriptionToolActive(),
+            TalkingBookTool.deshroudPhraseDelimiters
         );
         return pageReadyPromise;
     }
