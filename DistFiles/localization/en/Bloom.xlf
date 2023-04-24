@@ -3566,18 +3566,36 @@
         <note>ID: PublishTab.AdobeReaderControl.UnknownError</note>
       </trans-unit>
       <trans-unit id="PublishTab.Android.BloomPUB.Hint.Heading" sil:dynamic="true">
+        <!-- Obsolete in 5.5 -->
         <source xml:lang="en">Sharing BloomPUB Files</source>
         <note>ID: PublishTab.Android.BloomPUB.Hint.Heading</note>
       </trans-unit>
       <trans-unit id="PublishTab.Android.BloomPUB.Hint" sil:dynamic="true">
+        <!-- Obsolete in 5.5 -->
         <source xml:lang="en">You can use SD cards and sharing apps like email, Google Drive, and WhatsApp to get your .bloompub file onto a device that has &lt;a href="https://bloomlibrary.org/page/create/bloom-reader"&gt;Bloom Reader&lt;/a&gt; (Android) or &lt;a href="https://bloomlibrary.org/page/create/downloads#related-software"&gt;BloomPUB Viewer&lt;/a&gt; (Windows). You can also create a stand-alone app using &lt;a href="https://software.sil.org/readingappbuilder/"&gt;Reading App Builder&lt;/a&gt;.</source>
         <note>ID: PublishTab.Android.BloomPUB.Hint</note>
         <note>The 3 links should be left untranslated as well as the file type '.bloompub'. Beware of machine translations that eliminate the 'b'.</note>
       </trans-unit>
       <trans-unit id="PublishTab.Android.BloomPUB.Hint2" sil:dynamic="true">
+        <!-- Obsolete in 5.5 -->
         <source xml:lang="en">Note that when you upload your book to &lt;a href="https://bloomlibrary.org/"&gt;BloomLibrary.org&lt;/a&gt;, we will create a BloomPUB file for you that people can download.</source>
         <note>ID: PublishTab.Android.BloomPUB.Hint2</note>
         <note>The link should be left untranslated as well as the file type 'BloomPUB'.</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Android.BloomPUB.MakeRABAppHelpLink" translate="no">
+        <!-- added in 5.5 -->
+        <source xml:lang="en">Making BloomPUB Apps with Reading App Builder</source>
+        <note>ID: PublishTab.Android.BloomPUB.MakeRABAppHelpLink</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Android.BloomPUB.ViewingWithBRHelpLink" translate="no">
+        <!-- added in 5.5 -->
+        <source xml:lang="en">Viewing BloomPUBs on Bloom Reader (Android)</source>
+        <note>ID: PublishTab.Android.BloomPUB.ViewingWithBRHelpLink</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Android.BloomPUB.ViewingOnWindowsHelpLink" translate="no">
+        <!-- added in 5.5 -->
+        <source xml:lang="en">Viewing BloomPUBs on Windows</source>
+        <note>ID: PublishTab.Android.BloomPUB.ViewingOnWindowsHelpLink</note>
       </trans-unit>
       <trans-unit id="PublishTab.Android.USB.Hint.Heading" sil:dynamic="true">
         <source xml:lang="en"> USB is Difficult</source>
