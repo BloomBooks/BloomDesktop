@@ -13,6 +13,7 @@ import { default as InfoIcon } from "@mui/icons-material/InfoOutlined";
 import HtmlHelpLink from "../../react_components/htmlHelpLink";
 import { kMutedTextGray } from "../../bloomMaterialUITheme";
 import { kBloomWarning } from "../../utils/colorUtils";
+import HelpLink from "../../react_components/helpLink";
 
 const methodNameToImageFileName = {
     wifi: "publish-via-wifi.svg",
@@ -34,6 +35,16 @@ export const MethodChooser: React.FunctionComponent = () => {
     );
 
     const methodImageFileName: string = methodNameToImageFileName[method];
+
+    const radioLabelElement = (label: string): JSX.Element => (
+        <Typography
+            css={css`
+                font-size: 1rem;
+            `}
+        >
+            {label}
+        </Typography>
+    );
 
     return (
         <React.Fragment>
@@ -69,17 +80,23 @@ export const MethodChooser: React.FunctionComponent = () => {
                         value={method}
                         onChange={m => setMethod(m)}
                         choices={{
-                            wifi: useL10n(
-                                "Share over Wi-Fi",
-                                "PublishTab.Android.ChooseWifi"
+                            file: radioLabelElement(
+                                useL10n(
+                                    "Save BloomPUB File",
+                                    "PublishTab.Android.ChooseBloomPUBFile"
+                                )
                             ),
-                            file: useL10n(
-                                "Save BloomPUB File",
-                                "PublishTab.Android.ChooseBloomPUBFile"
+                            wifi: radioLabelElement(
+                                useL10n(
+                                    "Share over Wi-Fi",
+                                    "PublishTab.Android.ChooseWifi"
+                                )
                             ),
-                            usb: useL10n(
-                                "Send over USB Cable",
-                                "PublishTab.Android.ChooseUSB"
+                            usb: radioLabelElement(
+                                useL10n(
+                                    "Send over USB Cable",
+                                    "PublishTab.Android.ChooseUSB"
+                                )
                             )
                         }}
                     />
@@ -112,7 +129,8 @@ export const MethodChooser: React.FunctionComponent = () => {
 };
 
 function getStartButton(method: string, licenseOK: boolean) {
-    const buttonCss = "align-self: flex-end;";
+    const buttonCss =
+        "align-self: flex-end; min-width: 120px; margin-top: 20px;";
     switch (method) {
         case "file":
             return (
@@ -125,6 +143,7 @@ function getStartButton(method: string, licenseOK: boolean) {
                     clickApiEndpoint="publish/bloompub/file/save"
                     enabled={licenseOK}
                     hasText={true}
+                    size="large"
                 >
                     Save...
                 </BloomButton>
@@ -141,6 +160,7 @@ function getStartButton(method: string, licenseOK: boolean) {
                     clickApiEndpoint="publish/bloompub/usb/start"
                     hidden={isLinux()}
                     hasText={true}
+                    size="large"
                 >
                     Connect with USB cable
                 </BloomButton>
@@ -156,6 +176,7 @@ function getStartButton(method: string, licenseOK: boolean) {
                     enabled={licenseOK}
                     clickApiEndpoint="publish/bloompub/wifi/start"
                     hasText={true}
+                    size="large"
                 >
                     Share
                 </BloomButton>
@@ -173,75 +194,34 @@ function getHint(method: string) {
     switch (method) {
         case "file":
             return (
-                <React.Fragment>
-                    <div
-                        css={css`
-                            ${hintHeadingCss}
-                        `}
+                <div
+                    css={css`
+                        display: flex;
+                        flex-direction: column;
+                        a {
+                            margin-bottom: 0.5em;
+                        }
+                    `}
+                >
+                    <HelpLink
+                        l10nKey="PublishTab.Android.BloomPUB.MakeRABAppHelpLink"
+                        helpId="Tasks/Publish_tasks/Making_BloomPUB_Apps_with_Reading_App_Builder.htm"
                     >
-                        <InfoIcon color="primary" />
-                        <Typography variant="h6">
-                            <LocalizedString l10nKey="PublishTab.Android.BloomPUB.Hint.Heading">
-                                Sharing BloomPUB Files
-                            </LocalizedString>
-                        </Typography>
-                    </div>
-                    <Typography
-                        css={css`
-                            color: ${kMutedTextGray};
-                            a {
-                                color: ${kMutedTextGray};
-                            }
-                        `}
+                        Making BloomPUB Apps with Reading App Builder
+                    </HelpLink>
+                    <HelpLink
+                        l10nKey="PublishTab.Android.BloomPUB.ViewingWithBRHelpLink"
+                        helpId="Tasks/Publish_tasks/Make_a_BloomPUB_file_overview.htm"
                     >
-                        <LocalizedString
-                            l10nKey="PublishTab.Android.BloomPUB.Hint"
-                            l10nComment="The 3 links should be left untranslated as well as the file type '.bloompub'. Beware of machine translations that eliminate the 'b'."
-                        >
-                            You can use SD cards and sharing apps like email,
-                            Google Drive, and WhatsApp to get your .bloompub
-                            file onto a device that has{" "}
-                            <a href="https://bloomlibrary.org/page/create/bloom-reader">
-                                Bloom Reader
-                            </a>{" "}
-                            (Android) or{" "}
-                            <a href="https://bloomlibrary.org/page/create/downloads#related-software">
-                                BloomPUB Viewer
-                            </a>{" "}
-                            (Windows). You can also create a stand-alone app
-                            using{" "}
-                            <a href="https://software.sil.org/readingappbuilder/">
-                                Reading App Builder
-                            </a>
-                            .
-                        </LocalizedString>
-                    </Typography>
-                    <div
-                        css={css`
-                            height: 1em !important;
-                        `}
-                    />
-                    <Typography
-                        css={css`
-                            color: ${kMutedTextGray};
-                            a {
-                                color: ${kMutedTextGray};
-                            }
-                        `}
+                        Viewing BloomPUBs on Bloom Reader (Android)
+                    </HelpLink>
+                    <HelpLink
+                        l10nKey="PublishTab.Android.BloomPUB.ViewingOnWindowsHelpLink"
+                        helpId="Tasks/Publish_tasks/Viewing_BloomPUBs_on_Windows.htm"
                     >
-                        <LocalizedString
-                            l10nKey="PublishTab.Android.BloomPUB.Hint2"
-                            l10nComment="The link should be left untranslated as well as the file type 'BloomPUB'."
-                        >
-                            Note that when you upload your book to{" "}
-                            <a href="https://bloomlibrary.org/">
-                                BloomLibrary.org
-                            </a>
-                            , we will create a BloomPUB file for you that people
-                            can download.
-                        </LocalizedString>
-                    </Typography>
-                </React.Fragment>
+                        Viewing BloomPUBs on Windows
+                    </HelpLink>
+                </div>
             );
         case "usb":
             return (
