@@ -58,7 +58,6 @@ namespace Bloom.Publish
             SIL.Windows.Forms.SuperToolTip.SuperToolTipInfoWrapper superToolTipInfoWrapper6 = new SIL.Windows.Forms.SuperToolTip.SuperToolTipInfoWrapper();
             SIL.Windows.Forms.SuperToolTip.SuperToolTipInfo superToolTipInfo6 = new SIL.Windows.Forms.SuperToolTip.SuperToolTipInfo();
             this._loadTimer = new System.Windows.Forms.Timer(this.components);
-            this._makePdfBackgroundWorker = new System.ComponentModel.BackgroundWorker();
             this._topBarPanel = new System.Windows.Forms.Panel();
             this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
             this._contextMenuStrip = new System.Windows.Forms.ContextMenuStrip(this.components);
@@ -83,12 +82,6 @@ namespace Bloom.Publish
             ((System.ComponentModel.ISupportInitialize)(this._L10NSharpExtender)).BeginInit();
             this._publishRequiresEnterprisePanel.SuspendLayout();
             this.SuspendLayout();
-            // 
-            // _makePdfBackgroundWorker
-            // 
-            this._makePdfBackgroundWorker.WorkerReportsProgress = true;
-            this._makePdfBackgroundWorker.WorkerSupportsCancellation = true;
-            this._makePdfBackgroundWorker.DoWork += new System.ComponentModel.DoWorkEventHandler(this._makePdfBackgroundWorker_DoWork);
             // 
             // _topBarPanel
             // 
@@ -408,7 +401,6 @@ namespace Bloom.Publish
 
 		private System.Windows.Forms.Timer _loadTimer;
 
-		private System.ComponentModel.BackgroundWorker _makePdfBackgroundWorker;
 		private System.Windows.Forms.TableLayoutPanel tableLayoutPanel1;
 		private System.Windows.Forms.Panel _topBarPanel;
 		private L10NSharp.UI.L10NSharpExtender _L10NSharpExtender;

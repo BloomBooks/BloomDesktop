@@ -6,6 +6,7 @@ using Bloom.Workspace;
 using SIL.Progress;
 using System;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 
@@ -27,13 +28,16 @@ namespace Bloom.web.controllers
 		private const string kWebSocketEventId_loginSuccessful = "loginSuccessful"; // must match what is in LibraryPublishSteps.tsx
 
 		private PublishView _publishView;
+		private PublishModel _publishModel;
 		private IBloomWebSocketServer _webSocketServer;
 		private WebSocketProgress _webSocketProgress;
 		private IProgress _progress;
-
-		public LibraryPublishApi(BloomWebSocketServer webSocketServer, PublishView publishView)
+		public LibraryPublishApi(BloomWebSocketServer webSocketServer, PublishView publishView, PublishModel publishModel)
 		{
 			_publishView = publishView;
+			_publishModel = publishModel;
+			Debug.Assert(publishModel == publishView._model);
+
 			_webSocketServer = webSocketServer;
 			var progress = new WebSocketProgress(_webSocketServer, kWebSocketContext);
 			_webSocketProgress = progress.WithL10NPrefix("PublishTab.Upload.");
@@ -213,7 +217,7 @@ namespace Bloom.web.controllers
 			// We currently have no way to turn this off. This is by design, we don't think it is a needed complication.
 			var includeBackgroundMusic = true;
 
-			var uploadResult = Model.UploadOneBook(Model.Book, _progress, _publishView, !includeBackgroundMusic, out var parseId);
+			var uploadResult = Model.UploadOneBook(Model.Book, _progress, _publishModel, !includeBackgroundMusic, out var parseId);
 
 			e.Result = (uploadResult, parseId);
 		}
