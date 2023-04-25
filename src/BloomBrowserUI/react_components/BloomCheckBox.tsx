@@ -34,7 +34,7 @@ export const BloomCheckbox: React.FunctionComponent<{
     >(props.checked);
 
     let labelStr: string;
-    let labelL10nKey: string;
+    let labelL10nKey: string | null;
     if (typeof props.label === "string") {
         labelStr = props.label;
         if (props.l10nKey === undefined)
@@ -42,7 +42,7 @@ export const BloomCheckbox: React.FunctionComponent<{
         labelL10nKey = props.l10nKey;
     } else {
         labelStr = "";
-        labelL10nKey = "";
+        labelL10nKey = null; // null is a special value which causes useL10n not to ask the server for a translation
     }
     const localizedLabel = useL10n(
         labelStr,
