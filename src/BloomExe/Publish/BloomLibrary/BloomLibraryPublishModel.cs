@@ -164,7 +164,7 @@ namespace Bloom.Publish.BloomLibrary
 
 		internal bool IsThisVersionAllowedToUpload => _uploader.IsThisVersionAllowedToUpload();
 
-		internal string UploadOneBook(BookInstance book, IProgress progress, PublishView publishView, bool excludeMusic, out string parseId)
+		internal string UploadOneBook(BookInstance book, IProgress progress, PublishModel publishModel, bool excludeMusic, out string parseId)
 		{
 			using (var tempFolder = new TemporaryFolder(Path.Combine("BloomUpload", Path.GetFileName(book.FolderPath))))
 			{
@@ -174,7 +174,7 @@ namespace Bloom.Publish.BloomLibrary
 					ExcludeMusic = excludeMusic,
 					PreserveThumbnails = false,
 				};
-				return _uploader.FullUpload(book, progress, publishView, bookParams, out parseId);
+				return _uploader.FullUpload(book, progress, publishModel, bookParams, out parseId);
 			}
 		}
 

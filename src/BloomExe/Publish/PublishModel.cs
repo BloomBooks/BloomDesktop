@@ -22,6 +22,8 @@ using Newtonsoft.Json;
 using SIL.Extensions;
 using SIL.Reporting;
 using Bloom.Utils;
+using L10NSharp;
+using SIL.Progress;
 
 namespace Bloom.Publish
 {
@@ -75,6 +77,7 @@ namespace Bloom.Publish
 		private readonly BookThumbNailer _thumbNailer;
 		private string _lastDirectory;
 
+		private BackgroundWorker _makePdfBackgroundWorker = new BackgroundWorker();
 
 		public PublishModel(BookSelection bookSelection, PdfMaker pdfMaker, CurrentEditableCollectionSelection currentBookCollectionSelection, CollectionSettings collectionSettings,
 			BookServer bookServer, BookThumbNailer thumbNailer)
@@ -91,6 +94,11 @@ namespace Bloom.Publish
 			bookSelection.SelectionChanged += OnBookSelectionChanged;
 			//we don't want to default anymore: BookletPortion = BookletPortions.BookletPages;
 			CanPublish = DeterminePublishability();
+
+			_makePdfBackgroundWorker.WorkerReportsProgress = true;
+			_makePdfBackgroundWorker.WorkerSupportsCancellation = true;
+			_makePdfBackgroundWorker.DoWork += new DoWorkEventHandler(_makePdfBackgroundWorker_DoWork);
+			_makePdfBackgroundWorker.RunWorkerCompleted += _makePdfBackgroundWorker_RunWorkerCompleted;
 		}
 
 		public bool CanPublish { get; set; }
@@ -106,7 +114,12 @@ namespace Bloom.Publish
 		// True when showing the controls for PDF generation and printing.
 		public bool PdfPrintMode;
 
-		public bool PdfGenerationSucceeded { get; set; }
+		bool _pdfSucceeded;
+		public bool PdfGenerationSucceeded
+		{
+			get { return _pdfSucceeded; }
+			set { _pdfSucceeded = value; View.UpdateDisplayFeatures(); }
+		}
 
 		private void OnBookSelectionChanged(object sender, BookSelectionChangedEventArgs bookSelectionChangedEventArgs)
 		{
@@ -114,6 +127,118 @@ namespace Bloom.Publish
 			if (BookSelection != null && View != null && BookSelection.CurrentSelection!=null && _currentlyLoadedBook != BookSelection.CurrentSelection && View.Visible)
 			{
 				CanPublish = DeterminePublishability();
+			}
+		}
+
+		private void _makePdfBackgroundWorker_DoWork(object sender, DoWorkEventArgs e)
+		{
+			e.Result = BookletPortion; //record what our parameters were, so that if the user changes the request and we cancel, we can detect that we need to re-run
+			LoadBook(sender as BackgroundWorker, e);
+		}
+
+		/// <summary>
+		/// Make the preview required for publishing the book.
+		/// </summary>
+		internal void MakePDFForUpload(IProgress progress)
+		{
+			if (_makePdfBackgroundWorker.IsBusy)
+			{
+				// Can't start another until current attempt finishes.
+				_makePdfBackgroundWorker.CancelAsync();
+				while (_makePdfBackgroundWorker.IsBusy)
+					System.Threading.Thread.Sleep(100);
+			}
+
+			var message = new LicenseChecker().CheckBook(BookSelection.CurrentSelection,
+				BookSelection.CurrentSelection.ActiveLanguages.ToArray());
+			if (message != null)
+			{
+				MessageBox.Show(message, LocalizationManager.GetString("Common.Warning", "Warning"));
+				return;
+			}
+
+			_previewProgress = progress;
+			_makePdfBackgroundWorker.ProgressChanged += UpdatePreviewProgress;
+
+			// Usually these will have been set by SetModelFromButtons, but the publish button might already be showing when we go to this page.
+			ShowCropMarks = false; // don't want in online preview
+			BookletPortion = PublishModel.BookletPortions.AllPagesNoBooklet; // has all the pages and cover in form suitable for online use
+			_makePdfBackgroundWorker.RunWorkerAsync();
+			// We normally generate PDFs in the background, but this routine should not return until we actually have one.
+			while (_makePdfBackgroundWorker.IsBusy)
+			{
+				System.Threading.Thread.Sleep(100);
+				Application.DoEvents(); // Wish we didn't need this, but without it bulk upload freezes making 'preview' which is really the PDF to upload.
+			}
+			_makePdfBackgroundWorker.ProgressChanged -= UpdatePreviewProgress;
+			_previewProgress = null;
+			_previousStatus = null;
+		}
+
+		IProgress _previewProgress;
+		string _previousStatus;
+		private void UpdatePreviewProgress(object sender, ProgressChangedEventArgs e)
+		{
+			if (_previewProgress == null)
+				return;
+			if (_previewProgress.ProgressIndicator != null)
+				_previewProgress.ProgressIndicator.PercentCompleted = e.ProgressPercentage;
+			var status = e.UserState as string;
+			// Don't repeat a status message, even if modified by trailing spaces or periods or ellipses.
+			if (status != null && status != _previousStatus && status.Trim(new[] { ' ', '.', '\u2026' }) != _previousStatus)
+				_previewProgress.WriteStatus(status);
+			_previousStatus = status;
+		}
+
+		internal bool IsMakingPdf
+		{
+			get { return _makePdfBackgroundWorker.IsBusy; }
+		}
+
+		internal void CancelMakingPdf()
+		{
+			_makePdfBackgroundWorker.CancelAsync();
+		}
+
+		void _makePdfBackgroundWorker_RunWorkerCompleted(object sender, System.ComponentModel.RunWorkerCompletedEventArgs e)
+		{
+			if (!e.Cancelled && e.Result is Exception)
+				ReportPdfGenerationError(e.Result as Exception);
+		}
+
+		internal static void ReportPdfGenerationError(Exception error)
+		{
+			if (error is ApplicationException)
+			{
+				//For common exceptions, we catch them earlier (in the worker thread) and give a more helpful message
+				//note, we don't want to include the original, as it leads to people sending in reports we don't
+				//actually want to see. E.g., we don't want a bug report just because they didn't have Acrobat
+				//installed, or they had the PDF open in Word, or something like that.
+				ErrorReport.NotifyUserOfProblem(error.Message);
+			}
+			else if (error is PdfMaker.MakingPdfFailedException)
+			{
+				// Ignore this error here.  It will be reported elsewhere if desired.
+			}
+			else if (error is FileNotFoundException && ((FileNotFoundException)error).FileName == "BloomPdfMaker.exe")
+			{
+				ErrorReport.NotifyUserOfProblem(error, error.Message);
+			}
+			else if (error is OutOfMemoryException)
+			{
+				// See https://silbloom.myjetbrains.com/youtrack/issue/BL-5467.
+				var fmt = LocalizationManager.GetString("PublishTab.PdfMaker.OutOfMemory",
+					"Bloom ran out of memory while making the PDF. See {0}this article{1} for some suggestions to try.",
+					"{0} and {1} are HTML link markup.  You can think of them as fancy quotation marks.");
+				var msg = String.Format(fmt, "<a href='https://community.software.sil.org/t/solving-memory-problems-while-printing/500'>", "</a>");
+				using (var f = new MiscUI.HtmlLinkDialog(msg))
+				{
+					f.ShowDialog();
+				}
+			}
+			else // for others, just give a generic message and include the original exception in the message
+			{
+				ErrorReport.NotifyUserOfProblem(error, "Sorry, Bloom had a problem creating the PDF.");
 			}
 		}
 
@@ -393,6 +518,8 @@ namespace Bloom.Publish
 		public bool AllowUpload => BookSelection.CurrentSelection.BookInfo.AllowUploading && CanPublish;
 
 		public bool AllowPdf => CanPublish;
+
+		public bool AllowRecordVideo => CanPublish;
 
 		public bool AllowPdfBooklet
 		{
