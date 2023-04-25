@@ -202,8 +202,6 @@ namespace Bloom
 				Application.EnableVisualStyles();
 				Application.SetCompatibleTextRenderingDefault(false);
 
-				XWebBrowser.DefaultBrowserType = XWebBrowser.BrowserType.GeckoFx;
-
 				var args = args1;
 
 				if (SIL.PlatformUtilities.Platform.IsWindows)

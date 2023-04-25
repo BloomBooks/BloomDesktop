@@ -10,6 +10,7 @@ using System.Windows.Forms;
 using System.Xml;
 using Bloom.Api;
 using Bloom.Book;
+using Bloom.MiscUI;
 using Bloom.Properties;
 using DesktopAnalytics;
 using L10NSharp;
@@ -275,10 +276,7 @@ namespace Bloom.Publish.PDF
 							"Bloom ran out of memory while making the PDF. See {0}this article{1} for some suggestions to try.",
 							"{0} and {1} are HTML link markup.  You can think of them as fancy quotation marks.");
 						var msg = String.Format(fmt, "<a href='https://community.software.sil.org/t/solving-memory-problems-while-printing/500'>", "</a>");
-						using (var f = new MiscUI.HtmlLinkDialog(msg))
-						{
-							f.ShowDialog();
-						}
+						BloomMessageBox.ShowWarning(msg);
 					}
 					else // for others, just give a generic message and include the original exception in the message
 					{

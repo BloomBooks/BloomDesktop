@@ -47,9 +47,25 @@ namespace Bloom.MiscUI
 		}
 
 		/// <summary>
-		/// This version assumes we just want a warning box with a single Close button to give some information.
+		/// This version assumes we just want a message, info icon, and a single Close button.
 		/// </summary>
 		public static string ShowInfo(string message)
+		{
+			return ShowSimple(message, MessageBoxIcon.Information);
+		}
+
+		/// <summary>
+		/// This version assumes we just want a message, warning icon, and a single Close button.
+		/// </summary>
+		public static string ShowWarning(string message)
+		{
+			return ShowSimple(message, MessageBoxIcon.Warning);
+		}
+
+		/// <summary>
+		/// This version assumes we just want a message, (optional) icon, and a single Close button.
+		/// </summary>
+		public static string ShowSimple(string message, MessageBoxIcon icon = MessageBoxIcon.None)
 		{
 			var closeText = LocalizationManager.GetString("Common.Close", "Close");
 			var messageBoxButtons = new[]
@@ -57,7 +73,7 @@ namespace Bloom.MiscUI
 				new MessageBoxButton() { Text = closeText, Id = "close", Default = true }
 			};
 			var openForm = Shell.GetShellOrOtherOpenForm();
-			return Show(openForm, message, messageBoxButtons, MessageBoxIcon.Information);
+			return Show(openForm, message, messageBoxButtons, icon);
 		}
 
 		/// <summary>
