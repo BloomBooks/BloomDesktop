@@ -365,7 +365,7 @@ namespace Bloom.WebLibraryIntegration
 				using (var tempFolder = new TemporaryFolder(Path.Combine("BloomUpload", Path.GetFileName(book.FolderPath))))
 				{
 					BookUpload.PrepareBookForUpload(ref book, server, tempFolder.FolderPath, progress);
-					_singleBookUploader.FullUpload(book, progress, view, uploadParams, out var _);
+					_singleBookUploader.FullUpload(book, progress, publishModel, uploadParams, out var _);
 				}
 
 				progress.WriteMessageWithColor("Green", "{0} has been uploaded", uploadParams.Folder);

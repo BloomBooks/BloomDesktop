@@ -98,28 +98,21 @@ cd -
 #     clean: false
 #     revision: latest.lastSuccessful
 #     paths: {"*.chm"=>"DistFiles"}
-# [4] build: pdf.js (bt401)
-#     project: BuildTasks
-#     URL: https://build.palaso.org/viewType.html?buildTypeId=bt401
-#     clean: false
-#     revision: latest.lastSuccessful
-#     paths: {"pdfjs-viewer.zip!**"=>"DistFiles/pdf"}
-#     VCS: https://github.com/mozilla/pdf.js.git [gh-pages]
-# [5] build: PdfDroplet-Win-master-Continuous (bt54)
+# [4] build: PdfDroplet-Win-master-Continuous (bt54)
 #     project: PdfDroplet
 #     URL: https://build.palaso.org/viewType.html?buildTypeId=bt54
 #     clean: false
 #     revision: latest.lastSuccessful
 #     paths: {"PdfDroplet.exe"=>"lib/dotnet", "PdfSharp.dll"=>"lib/dotnet"}
 #     VCS: https://github.com/sillsdev/pdfDroplet [master]
-# [6] build: TidyManaged-master-win32-continuous (bt349)
+# [5] build: TidyManaged-master-win32-continuous (bt349)
 #     project: TidyManaged
 #     URL: https://build.palaso.org/viewType.html?buildTypeId=bt349
 #     clean: false
 #     revision: latest.lastSuccessful
 #     paths: {"*.*"=>"lib/dotnet"}
 #     VCS: https://github.com/BloomBooks/TidyManaged.git [master]
-# [7] build: Windows master continuous (XliffForHtml_WindowsMasterContinuous)
+# [6] build: Windows master continuous (XliffForHtml_WindowsMasterContinuous)
 #     project: XliffForHtml
 #     URL: https://build.palaso.org/viewType.html?buildTypeId=XliffForHtml_WindowsMasterContinuous
 #     clean: false
@@ -130,7 +123,6 @@ cd -
 # make sure output directories exist
 mkdir -p ../DistFiles
 mkdir -p ../DistFiles/ghostscript
-mkdir -p ../DistFiles/pdf
 mkdir -p ../Downloads
 mkdir -p ../build
 mkdir -p ../lib
@@ -189,7 +181,6 @@ copy_auto https://build.palaso.org/guestAuth/repository/download/Bloom_Squirrel/
 copy_auto https://build.palaso.org/guestAuth/repository/download/Bloom_Squirrel/latest.lastSuccessful/squirrel.windows.props ../lib/dotnet/squirrel.windows.props
 copy_auto https://build.palaso.org/guestAuth/repository/download/Bloom_Squirrel/latest.lastSuccessful/update.com ../lib/dotnet/update.com
 copy_auto https://build.palaso.org/guestAuth/repository/download/Bloom_Help_BloomHelp55/latest.lastSuccessful/Bloom.chm ../DistFiles/Bloom.chm
-copy_auto https://build.palaso.org/guestAuth/repository/download/bt401/latest.lastSuccessful/pdfjs-viewer.zip ../Downloads/pdfjs-viewer.zip
 copy_auto https://build.palaso.org/guestAuth/repository/download/bt54/latest.lastSuccessful/PdfDroplet.exe ../lib/dotnet/PdfDroplet.exe
 copy_auto https://build.palaso.org/guestAuth/repository/download/bt54/latest.lastSuccessful/PdfSharp.dll ../lib/dotnet/PdfSharp.dll
 copy_auto https://build.palaso.org/guestAuth/repository/download/bt349/latest.lastSuccessful/TidyManaged.dll ../lib/dotnet/TidyManaged.dll
@@ -203,5 +194,4 @@ unzip -uqo ../Downloads/ghostscript-win32.zip -d "../DistFiles/ghostscript"
 unzip -uqo ../Downloads/Lame.zip -d "../lib/lame"
 unzip -uqo ../Downloads/gm.zip -d "../lib"
 unzip -uqo ../Downloads/RedistributableDlls.zip -d "../lib/RedistributableDlls"
-unzip -uqo ../Downloads/pdfjs-viewer.zip -d "../DistFiles/pdf"
 # End of script
