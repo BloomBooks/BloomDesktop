@@ -1404,8 +1404,21 @@ namespace Bloom.Edit
 		public void ChangeBookLicenseMetaData(Metadata metadata)
 		{
 			CurrentBook.SetMetadata(metadata);
+
+			// This is awkward.
+			// Originally, one could only open the CopyrightAndLicenseDialog from the Edit tab, and we ensured the book was saved
+			// by other means. Now, one can open it from the Publish tab.
+			// I wanted to introduce an event or other mechanism such that Edit and Publish could each do what they need to when
+			// the dialog is closed, but CopyrightAndLicenseApi is already so entangled with EditModel, it wasn't going to be clean
+			// no matter what I did. And this is simpler.
+
+			// For Edit tab:
 			_pageHasUnsavedDataDerivedChange = true;
 			RefreshDisplayOfCurrentPage(); //the cleanup() that is part of Save removes qtips, so let's redraw everything
+
+			// For Publish tab:
+			CurrentBook.BookInfo.Save();
+			_webSocketServer.SendString("bookCopyrightAndLicense", "saved", CurrentBook.BookInfo.Copyright);
 		}
 
 #if __MonoCS__
