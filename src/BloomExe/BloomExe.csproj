@@ -668,7 +668,7 @@
     <Compile Include="Extensions.cs" />
     <Compile Include="ImageProcessing\ImageUtils.cs" />
     <Compile Include="InstallerSupport.cs" />
-    <Compile Include="MiscUI\BloomIntegrityDialog.cs" />
+    <Compile Include="BloomIntegrityChecker.cs" />
     <Compile Include="MiscUI\DontShowThisAgainButton.cs">
       <SubType>Component</SubType>
     </Compile>

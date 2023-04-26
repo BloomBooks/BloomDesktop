@@ -478,7 +478,7 @@ namespace Bloom
 
 						}
 
-						if (!BloomIntegrityDialog.CheckIntegrity())
+						if (!BloomIntegrityChecker.CheckIntegrity())
 						{
 							Environment.Exit(-1);
 						}

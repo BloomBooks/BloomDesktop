@@ -12,7 +12,7 @@ using SIL.Windows.Forms.ReleaseNotes;
 
 namespace Bloom.MiscUI
 {
-	public class BloomIntegrityDialog
+	public class BloomIntegrityChecker
 	{
 		/// <summary>
 		/// We've had a number of user reports that suggest that files were either missing or inaccessible.
