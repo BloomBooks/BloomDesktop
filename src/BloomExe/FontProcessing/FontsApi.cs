@@ -51,7 +51,10 @@ namespace Bloom.FontProcessing
 		/// <returns></returns>
 		public static IEnumerable<string> NamesOfFontsThatBrowserCanRender()
 		{
-			var foundAndika = false;
+			var serve = FontServe.GetInstance();
+			var servedFontsNotInstalled = new HashSet<string>();
+			foreach (var font in serve.FontsServed)
+				servedFontsNotInstalled.Add(font.family);
 			using (var installedFontCollection = new InstalledFontCollection())
 			{
 				var modifierTerms = new string[] { "condensed", "semilight", "black", "bold", "medium", "semibold", "light", "narrow" };
@@ -64,15 +67,16 @@ namespace Bloom.FontProcessing
 						continue;
 						// sorry, we just can't display that font, it will come out as some browser default font (at least on Windows, and at least up to Firefox 36)
 					}
-					foundAndika |= family.Name == "Andika";
+					// If one of the fonts Bloom is serving is also installed, don't repeat it later.
+					if (servedFontsNotInstalled.Contains(family.Name))
+						servedFontsNotInstalled.Remove(family.Name);
 
 					yield return family.Name;
 				}
 			}
-			if (!foundAndika) // see BL-3674. We want to offer Andika even if it isn't installed.
-			{   // Bloom serves up Andika on demand while editing / publishing and Bloom Reader includes Andika.
-				yield return "Andika";
-			}
+			// Add any fonts that Bloom is serving that are not also installed on the local computer.
+			foreach (var fontFamily in servedFontsNotInstalled)
+				yield return fontFamily;
 		}
 
 		/// <summary>
@@ -91,9 +95,9 @@ namespace Bloom.FontProcessing
 				return GetFontMetadataSortedByName();
 
 			var starting = DateTime.Now;
+			_finder = FontFileFinder.GetInstance(isReuseAllowed: true);
 			foreach (var name in SortedListOfFontNames())
 			{
-				_finder = FontFileFinder.GetInstance(isReuseAllowed: true);
 				try
 				{
 					var group = _finder.GetGroupForFont(name);
