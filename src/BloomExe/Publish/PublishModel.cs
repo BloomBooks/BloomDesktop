@@ -752,9 +752,13 @@ namespace Bloom.Publish
 					// retain the .pageLabel and .pageDescription divs (which are always lang='en')
 					// Also retain any .Instructions-style divs, which may have the original with lang='en', and
 					// which are usually translated to the national language.
+					// Also retain any XMatter .licenseDescription divs, which may exist only with lang='en'
 					// REVIEW: are there any other classes that should be checked here?
-					if (classAttr.Contains("pageLabel") || classAttr.Contains("pageDescription") || classAttr.Contains("Instructions-style"))
+					if (classAttr.Contains("pageLabel") || classAttr.Contains("pageDescription") ||
+						classAttr.Contains("Instructions-style") || (isXMatter && classAttr.Contains("licenseDescription")))
+					{
 						continue;
+					}
 					// check whether any descendant divs are desired before deleting this div.
 					bool deleteDiv = true;
 					foreach (var subdiv in div.SafeSelectNodes(".//div[@lang]").Cast<XmlElement>().ToList())
