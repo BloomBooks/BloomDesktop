@@ -119,8 +119,10 @@ namespace Bloom.web.controllers
 			apiHandler.RegisterEndpointHandler(kApiUrlPart + "deleteBook/", (request) =>
 			{
 				var collection = GetCollectionOfRequest(request);
-				_collectionModel.DeleteBook(GetBookObjectFromPost(request), collection);
-				request.PostSucceeded();
+				if (_collectionModel.DeleteBook(GetBookObjectFromPost(request), collection))
+					request.PostSucceeded();
+				else
+					request.Failed();
 			}, true);
 			apiHandler.RegisterEndpointHandler(kApiUrlPart + "collectionProps/", HandleCollectionProps, false, false);
 
