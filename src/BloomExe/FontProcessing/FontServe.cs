@@ -4,7 +4,6 @@ using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using Newtonsoft.Json;
 using SIL.IO;
 
@@ -63,6 +62,17 @@ namespace Bloom.FontProcessing
 		public FontServeInfo GetFontInformationForFamily(string familyName)
 		{
 			return FontsServed.Find(info => info.family == familyName);
+		}
+
+		public string GetAllFontFaceDeclarations()
+		{
+			var facesBldr = new StringBuilder();
+			foreach (var fontInfo in FontsServed)
+			{
+				foreach (var face in fontInfo.faces)
+					facesBldr.AppendLine(face);
+			}
+			return facesBldr.ToString();
 		}
 	}
 

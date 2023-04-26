@@ -8,18 +8,16 @@ using System.Globalization;
 using System.Linq;
 using System.IO;
 using System.Net;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Web;
 using System.Windows.Forms;
 using System.Xml;
 using DesktopAnalytics;
 using L10NSharp;
-using Newtonsoft.Json;
 using SIL.Code;
 using SIL.IO;
 using SIL.Reporting;
-using BloomTemp;
 using Bloom.Book;
 using Bloom.ImageProcessing;
 using Bloom.Collection;
@@ -419,6 +417,25 @@ namespace Bloom.Api
 					var html = CurrentBook.GetPreviewHtmlFileForWholeBook().getHtmlStringDisplayOnly();
 					info.WriteCompleteOutput(html);
 					return true;
+				}
+				else if (localPath == "book-preview/defaultLangStyles.css")
+				{
+					// read in current defaultLangStyles.css content, add @font-face info to it if necessary.
+					var cssLangStyles = "";
+					var cssFilePath = Path.Combine(CurrentBook.FolderPath, "defaultLangStyles.css");
+					if (RobustFile.Exists(cssFilePath))
+						cssLangStyles = RobustFile.ReadAllText(cssFilePath);
+					if (!cssLangStyles.Contains("@font-face"))
+					{
+						info.ResponseContentType = "text/css";
+						var serve = FontServe.GetInstance();
+						var cssBuilder = new StringBuilder();
+						cssBuilder.Append(serve.GetAllFontFaceDeclarations());
+						cssBuilder.Append(cssLangStyles);
+						info.WriteCompleteOutput(cssBuilder.ToString());
+						return true;
+					}
+					localPath = localPath.Replace("book-preview", CurrentBook.FolderPath);
 				}
 				else
 				{
