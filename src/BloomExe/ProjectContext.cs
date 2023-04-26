@@ -175,7 +175,6 @@ namespace Bloom
 							typeof(FileIOApi),
 							typeof(ProgressDialogApi),
 							typeof(EditingViewApi),
-							typeof(BrowserDialogApi),
 							typeof(ProblemReportApi),
 							typeof(FontsApi),
 							typeof(BulkBloomPubCreator),
@@ -368,7 +367,6 @@ namespace Bloom
 			_scope.Resolve<AppApi>().RegisterWithApiHandler(server.ApiHandler);
 			_scope.Resolve<SignLanguageApi>().RegisterWithApiHandler(server.ApiHandler);
 			_scope.Resolve<AudioSegmentationApi>().RegisterWithApiHandler(server.ApiHandler);
-			_scope.Resolve<BrowserDialogApi>().RegisterWithApiHandler(server.ApiHandler);
 			_scope.Resolve<ProblemReportApi>().RegisterWithApiHandler(server.ApiHandler);
 			_scope.Resolve<CopyrightAndLicenseApi>().RegisterWithApiHandler(server.ApiHandler);
 			_scope.Resolve<I18NApi>().RegisterWithApiHandler(server.ApiHandler);

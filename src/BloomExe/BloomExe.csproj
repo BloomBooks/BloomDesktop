@@ -476,12 +476,7 @@
     <Compile Include="TeamCollection\NewBookEventArgs.cs" />
     <Compile Include="TeamCollection\TeamCollectionApi.cs" />
     <Compile Include="FatalExceptionHandler.cs" />
-    <Compile Include="MiscUI\BrowserDialog.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="MiscUI\BrowserDialog.Designer.cs">
-      <DependentUpon>BrowserDialog.cs</DependentUpon>
-    </Compile>
+    <Compile Include="MiscUI\BrowserDialog.cs" />
     <Compile Include="CLI\CreateArtifactsCommand.cs" />
     <Compile Include="Collection\WritingSystem.cs" />
     <Compile Include="ErrorReporter\SentryErrorReporter.cs" />
@@ -798,7 +793,6 @@
     <Compile Include="WebLibraryIntegration\IProgressDialog.cs" />
     <Compile Include="web\controllers\AudioSegmentationApi.cs" />
     <Compile Include="web\controllers\ProblemReportApi.cs" />
-    <Compile Include="web\controllers\BrowserDialogApi.cs" />
     <Compile Include="web\controllers\CollectionSettingsApi.cs" />
     <Compile Include="web\controllers\AccessibilityCheckApi.cs" />
     <Compile Include="Book\AccessibilityCheckers.cs" />
@@ -973,9 +967,6 @@
     <EmbeddedResource Include="Edit\WebThumbNailList.resx">
       <DependentUpon>WebThumbNailList.cs</DependentUpon>
       <SubType>Designer</SubType>
-    </EmbeddedResource>
-    <EmbeddedResource Include="MiscUI\BrowserDialog.resx">
-      <DependentUpon>BrowserDialog.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="MiscUI\LanguageFontDetails.resx">
       <DependentUpon>LanguageFontDetails.cs</DependentUpon>
