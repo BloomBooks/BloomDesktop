@@ -1589,13 +1589,7 @@ namespace Bloom.Book
 			if (WriteFontFaces)
 			{
 				var serve = FontServe.GetInstance();
-				var headerBuilder = new StringBuilder();
-				foreach (var fontInfo in serve.FontsServed)
-				{
-					foreach (var face in fontInfo.faces)
-						headerBuilder.AppendLine(face);
-				}
-				cssBuilder.Insert(0, headerBuilder.ToString());
+				cssBuilder.Insert(0, serve.GetAllFontFaceDeclarations());
 			}
 			try
 			{
