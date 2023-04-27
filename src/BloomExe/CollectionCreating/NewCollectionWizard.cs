@@ -98,9 +98,9 @@ namespace Bloom.CollectionCreating
 			_wizardControl.CancelButtonText = LocalizationManager.GetString("Common.CancelButton", "&Cancel");
 
 			var one = LocalizationManager.GetString("NewCollectionWizard.WelcomePage.WelcomeLine1", "You are almost ready to start making books.");
-			var two = LocalizationManager.GetString("NewCollectionWizard.WelcomePage.WelcomeLine2", "In order to keep things simple and organized, Bloom keeps all the books you make in one or more <i>Collections</i>. The first thing we need to do is make one for you.");
+			var two = LocalizationManager.GetString("NewCollectionWizard.WelcomePage.WelcomeLine2.V2", "In order to keep things simple and organized, Bloom keeps all the books you make in one or more 'Collections'. The first thing we need to do is make one for you.");
 			var three = LocalizationManager.GetString("NewCollectionWizard.WelcomePage.WelcomeLine3", "Click 'Next' to get started.");
-			_welcomeHtml.HTML = one + "<br/>" + two + "<br/>" + three;
+			_welcomeHtml.Text = one + Environment.NewLine + two + Environment.NewLine + three;
 		}
 
 		protected bool ReallyDesignMode
@@ -218,13 +218,10 @@ namespace Bloom.CollectionCreating
 
 		private void _finishPage_Initialize(object sender, EventArgs e)
 		{
-			var pattern = LocalizationManager.GetString("NewCollectionWizard.FinishPageContent",
+			var format = LocalizationManager.GetString("NewCollectionWizard.FinishPageContent",
 				"OK, that's all we need to get started with your new '{0}' collection.\r\nClick on the 'Finish' button.",
 				"{0} is the name of the new collection");
-			// Convert newlines into HTML <br/>, handling messy \r\n or \n or \r
-			var pieces = pattern.Split(new[]{'\r', '\n'}, StringSplitOptions.RemoveEmptyEntries);
-			var format = string.Join("<br/>", pieces);
-			_finalMessage.HTML = String.Format(format, Path.GetFileNameWithoutExtension(_collectionInfo.PathToSettingsFile));
+			_finalMessage.Text = String.Format(format, Path.GetFileNameWithoutExtension(_collectionInfo.PathToSettingsFile));
 		}
 	}
 

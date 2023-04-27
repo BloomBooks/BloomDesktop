@@ -21,6 +21,7 @@ using Bloom.Publish.PDF;
 using Bloom.Publish.Video;
 using SIL.Progress;
 using Bloom.web.controllers;
+using Bloom.MiscUI;
 
 namespace Bloom.Publish
 {
@@ -273,10 +274,7 @@ namespace Bloom.Publish
 							"Bloom ran out of memory while making the PDF. See {0}this article{1} for some suggestions to try.",
 							"{0} and {1} are HTML link markup.  You can think of them as fancy quotation marks.");
 						var msg = String.Format(fmt, "<a href='https://community.software.sil.org/t/solving-memory-problems-while-printing/500'>", "</a>");
-						using (var f = new MiscUI.HtmlLinkDialog(msg))
-						{
-							f.ShowDialog();
-						}
+						BloomMessageBox.ShowWarning(msg);
 					}
 					else // for others, just give a generic message and include the original exception in the message
 					{

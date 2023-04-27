@@ -3357,6 +3357,11 @@
       <trans-unit id="NewCollectionWizard.AlreadyCollectionWithThatName">
         <source xml:lang="en">There is already a collection with that name, at &lt;a href='file://{0}'&gt;{0}&lt;/a&gt;.\nPlease pick a unique name.</source>
         <note>ID: NewCollectionWizard.AlreadyCollectionWithThatName</note>
+        <note>Obsolete as of Bloom 5.5</note>
+      </trans-unit>
+      <trans-unit id="NewCollectionWizard.AlreadyCollectionWithThatName.V2">
+        <source xml:lang="en">There is already a collection with that name, at {0}.\nPlease pick a unique name.</source>
+        <note>ID: NewCollectionWizard.AlreadyCollectionWithThatName.V2</note>
       </trans-unit>
       <trans-unit id="NewCollectionWizard.ChooseLanguagePage">
         <source xml:lang="en">Choose the main language for this collection.</source>
@@ -3463,6 +3468,11 @@
       <trans-unit id="NewCollectionWizard.WelcomePage.WelcomeLine2">
         <source xml:lang="en">In order to keep things simple and organized, Bloom keeps all the books you make in one or more &lt;i&gt;Collections&lt;/i&gt;. The first thing we need to do is make one for you.</source>
         <note>ID: NewCollectionWizard.WelcomePage.WelcomeLine2</note>
+        <note>Obsolete as of Bloom 5.5</note>
+      </trans-unit>
+      <trans-unit id="NewCollectionWizard.WelcomePage.WelcomeLine2.V2">
+        <source xml:lang="en">In order to keep things simple and organized, Bloom keeps all the books you make in one or more 'Collections'. The first thing we need to do is make one for you.</source>
+        <note>ID: NewCollectionWizard.WelcomePage.WelcomeLine2.V2</note>
       </trans-unit>
       <trans-unit id="NewCollectionWizard.WelcomePage.WelcomeLine3">
         <source xml:lang="en">Click 'Next' to get started.</source>

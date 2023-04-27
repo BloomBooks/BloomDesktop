@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Drawing;
 using System.IO;
 using System.Windows.Forms;
@@ -30,36 +30,27 @@ namespace Bloom.CollectionCreating
 			_setNextButtonState(this, nameIsOK);
 			if (nameIsOK)
 			{
-//				string[] dirs = Path.GetDirectoryName(_collectionInfo.PathToSettingsFile).Split(Path.DirectorySeparatorChar);
-//				if (dirs.Length > 2)
-//				{
-//					htmlLabel1.ColorName = "gray";
-//					string root = Path.Combine(dirs[dirs.Length - 3], dirs[dirs.Length - 2]);
-//					htmlLabel1.HTML = String.Format("Collection will be created at: {0}",
-//													Path.Combine(root, dirs[dirs.Length - 1]));
-//				}
-
-				htmlLabel1.ForeColor = Color.Gray;
-				htmlLabel1.HTML = String.Format(LocalizationManager.GetString("NewCollectionWizard.CollectionWillBeCreatedAt","Collection will be created at: {0}"),
+				_collectionInfoLabel.ForeColor = Color.Gray;
+				_collectionInfoLabel.Text = String.Format(LocalizationManager.GetString("NewCollectionWizard.CollectionWillBeCreatedAt","Collection will be created at: {0}"),
 								_collectionInfo.PathToSettingsFile);
 			}
 			else
 			{
 				if (_collectionNameControl.Text.Length > 0)
 				{
-					htmlLabel1.ForeColor = Color.Red;
+					_collectionInfoLabel.ForeColor = Color.Red;
 					if (DestinationAlreadyExists)
 					{
-						htmlLabel1.HTML = string.Format(LocalizationManager.GetString("NewCollectionWizard.AlreadyCollectionWithThatName","There is already a collection with that name, at <a href='file://{0}'>{0}</a>.\r\nPlease pick a unique name."), Path.GetDirectoryName(_collectionInfo.PathToSettingsFile));
+						_collectionInfoLabel.Text = string.Format(LocalizationManager.GetString("NewCollectionWizard.AlreadyCollectionWithThatName.V2", "There is already a collection with that name, at {0}.\r\nPlease pick a unique name."), Path.GetDirectoryName(_collectionInfo.PathToSettingsFile));
 					}
 					else
 					{
-						htmlLabel1.HTML = LocalizationManager.GetString("NewCollectionWizard.UnableToCreateANewCollectionUsingThatName","Unable to create a new collection using that name.");
+						_collectionInfoLabel.Text = LocalizationManager.GetString("NewCollectionWizard.UnableToCreateANewCollectionUsingThatName", "Unable to create a new collection using that name.");
 					}
 				}
 				else
 				{
-					htmlLabel1.HTML  = "";
+					_collectionInfoLabel.Text  = "";
 				}
 			}
 		}

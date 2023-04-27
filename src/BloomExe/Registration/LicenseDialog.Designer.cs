@@ -1,4 +1,4 @@
-﻿namespace Bloom.Registration
+namespace Bloom.Registration
 {
 	partial class LicenseDialog
 	{
@@ -74,7 +74,7 @@
 			this.BackgroundImageLayout = System.Windows.Forms.ImageLayout.None;
 			this.ClientSize = new System.Drawing.Size(515, 302);
 			this.Controls.Add(this._acceptButton);
-			this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
+			this.Icon = global::Bloom.Properties.Resources.BloomIcon;
 			this.l10NSharpExtender1.SetLocalizableToolTip(this, null);
 			this.l10NSharpExtender1.SetLocalizationComment(this, null);
 			this.l10NSharpExtender1.SetLocalizingId(this, "LicenseDialog.WindowTitle");

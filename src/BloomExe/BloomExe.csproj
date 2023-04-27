@@ -625,12 +625,6 @@
     <Compile Include="CollectionTab\BloomLibraryLinkVerification.Designer.cs">
       <DependentUpon>BloomLibraryLinkVerification.cs</DependentUpon>
     </Compile>
-    <Compile Include="CollectionTab\InDesignXmlInformationDialog.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="CollectionTab\InDesignXmlInformationDialog.Designer.cs">
-      <DependentUpon>InDesignXmlInformationDialog.cs</DependentUpon>
-    </Compile>
     <Compile Include="CollectionTab\MakeReaderTemplateBloomPackDlg.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -674,29 +668,12 @@
     <Compile Include="Extensions.cs" />
     <Compile Include="ImageProcessing\ImageUtils.cs" />
     <Compile Include="InstallerSupport.cs" />
-    <Compile Include="MiscUI\BloomIntegrityDialog.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="MiscUI\BloomIntegrityDialog.Designer.cs">
-      <DependentUpon>BloomIntegrityDialog.cs</DependentUpon>
-    </Compile>
+    <Compile Include="BloomIntegrityChecker.cs" />
     <Compile Include="MiscUI\DontShowThisAgainButton.cs">
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="MiscUI\DontShowThisAgainButton.Designer.cs">
       <DependentUpon>DontShowThisAgainButton.cs</DependentUpon>
-    </Compile>
-    <Compile Include="MiscUI\HtmlLinkDialog.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="MiscUI\HtmlLinkDialog.Designer.cs">
-      <DependentUpon>HtmlLinkDialog.cs</DependentUpon>
-    </Compile>
-    <Compile Include="MiscUI\HtmlTextBox.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="MiscUI\HtmlTextBox.Designer.cs">
-      <DependentUpon>HtmlTextBox.cs</DependentUpon>
     </Compile>
     <Compile Include="MiscUI\TipDialog.cs">
       <SubType>Form</SubType>
@@ -974,9 +951,6 @@
     <EmbeddedResource Include="CollectionTab\BloomLibraryLinkVerification.resx">
       <DependentUpon>BloomLibraryLinkVerification.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="CollectionTab\InDesignXmlInformationDialog.resx">
-      <DependentUpon>InDesignXmlInformationDialog.cs</DependentUpon>
-    </EmbeddedResource>
     <EmbeddedResource Include="CollectionTab\MakeReaderTemplateBloomPackDlg.resx">
       <DependentUpon>MakeReaderTemplateBloomPackDlg.cs</DependentUpon>
     </EmbeddedResource>
@@ -1000,20 +974,11 @@
       <DependentUpon>WebThumbNailList.cs</DependentUpon>
       <SubType>Designer</SubType>
     </EmbeddedResource>
-    <EmbeddedResource Include="MiscUI\BloomIntegrityDialog.resx">
-      <DependentUpon>BloomIntegrityDialog.cs</DependentUpon>
-    </EmbeddedResource>
     <EmbeddedResource Include="MiscUI\BrowserDialog.resx">
       <DependentUpon>BrowserDialog.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="MiscUI\HtmlLinkDialog.resx">
-      <DependentUpon>HtmlLinkDialog.cs</DependentUpon>
-    </EmbeddedResource>
     <EmbeddedResource Include="MiscUI\LanguageFontDetails.resx">
       <DependentUpon>LanguageFontDetails.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="MiscUI\HtmlTextBox.resx">
-      <DependentUpon>HtmlTextBox.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="MiscUI\TipDialog.resx">
       <DependentUpon>TipDialog.cs</DependentUpon>
