@@ -110,7 +110,6 @@ export const BloomCheckbox: React.FunctionComponent<{
                     css={css`
                         height: 0; // I don't understand this... in the devtools I can't tell why it has a larger height than its child, and I don't understand why this fixes it
                         width: 28px; // align with the rows that have an actual checkbox
-                        padding-top: 7px;
                         color: ${theme.palette.primary.main};
                         svg {
                             transform: scale(0.8);
