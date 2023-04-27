@@ -36,6 +36,8 @@ using Sentry;
 using SIL.Windows.Forms.HtmlBrowser;
 using SIL.WritingSystems;
 using SIL.Xml;
+using Microsoft.Web.WebView2.Core;
+using System.Text;
 
 namespace Bloom
 {
@@ -208,6 +210,9 @@ namespace Bloom
 				{
 					OldVersionCheck();
 				}
+
+				if (IsWebviewMissingOrTooOld())
+					return 1;
 
 				//bring in settings from any previous version
 				if (Settings.Default.NeedUpgrade)
@@ -528,6 +533,51 @@ namespace Bloom
 			Settings.Default.FirstTimeRun = false;
 			Settings.Default.Save();
 			return 0;
+		}
+
+		private static bool IsWebviewMissingOrTooOld()
+		{
+			const string kBloomMinimum= "112.0.0.0";
+			string version;
+			bool missingOrAntique;
+			try
+			{
+				version = CoreWebView2Environment.GetAvailableBrowserVersionString();
+				missingOrAntique = (CoreWebView2Environment.CompareBrowserVersions(version, kBloomMinimum) < 0);
+			}
+			catch (WebView2RuntimeNotFoundException e)
+			{
+				version = "not installed";
+				missingOrAntique = true;
+			}
+			if (missingOrAntique)
+			{
+				using (_applicationContainer = new ApplicationContainer())
+				{
+					SetUpLocalization();
+					var msgBldr = new StringBuilder();
+					var msgFmt1 = LocalizationManager.GetString("Webview.MissingOrTooOld", "Bloom depends on Microsoft WebView2 Evergreen, at least version {0}. We will now send you to a webpage that will help you add this to your computer.");
+					msgBldr.AppendFormat(msgFmt1, kBloomMinimum);
+					msgBldr.AppendLine();
+					if (version == "not installed")
+					{
+						msgBldr.Append(LocalizationManager.GetString("Webview.NotInstalled", "(Currently not installed)"));
+					}
+					else
+					{
+						var msgFmt2 = LocalizationManager.GetString("Webview.CurrentVersion", "(Currently {0})");
+						msgBldr.AppendFormat(msgFmt2, version);
+					}
+					MessageBox.Show(msgBldr.ToString());
+					var psi = new ProcessStartInfo
+					{
+						FileName = "https://docs.bloomlibrary.org/webview2",
+						UseShellExecute = true
+					};
+					Process.Start(psi);
+				}
+			}
+			return missingOrAntique;
 		}
 
 		static async Task<int> HandleUpload(UploadParameters opts)
