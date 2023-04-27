@@ -6471,6 +6471,20 @@ Do you want to go ahead?</note>
         <source xml:lang="en">Put the correct answer in this button. Bloom will shuffle the order later.</source>
         <note>On the page where you create a "Simple Choice Activity", you have to put the correct answer in a certain button. This message points out where to put that correct answer. The word "shuffle" here is like what you do to a deck of cards.</note>
       </trans-unit>
+      <trans-unit id="Webview.MissingOrTooOld">
+        <source xml:lang="en">Bloom depends on Microsoft WebView2 Evergreen, at least version {0}. We will now send you to a webpage that will help you add this to your computer.</source>
+        <note>ID: Webview.MissingOrTooOld</note>
+        <note>{0} is the minimum version number</note>
+      </trans-unit>
+      <trans-unit id="Webview.CurrentVersion">
+        <source xml:lang="en">(Currently {0})</source>
+        <note>ID: Webview.CurrentVersion</note>
+        <note>{0} is the version number of the installed version of Webview</note>
+      </trans-unit>
+      <trans-unit id="Webview.NotInstalled">
+        <source xml:lang="en">(Currently not installed)</source>
+        <note>ID: Webview.NotInstalled</note>
+      </trans-unit>
     </body>
   </file>
 </xliff>
