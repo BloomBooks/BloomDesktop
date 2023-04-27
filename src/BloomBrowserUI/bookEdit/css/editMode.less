@@ -775,9 +775,7 @@ div.bloom-editable.Heading2-style {
 
 /*Put in little grey language tooltips in the bottom-right of the editable divs*/
 .languageTip,
-.bloom-editable[contentEditable="true"][data-languageTipContent]:not(
-        [data-languageTipContent=""]
-    ):after {
+.bloom-editable[contentEditable="true"][data-languageTipContent]:not([data-languageTipContent=""]):after {
     position: absolute;
     right: 0;
     /*Same grey color as pageLabel*/
@@ -795,9 +793,7 @@ div.bloom-editable.Heading2-style {
     bottom: 0;
 }
 
-.bloom-editable[contentEditable="true"][data-languageTipContent]:not(
-        [data-languageTipContent=""]
-    ):after {
+.bloom-editable[contentEditable="true"][data-languageTipContent]:not([data-languageTipContent=""]):after {
     content: attr(data-languageTipContent);
     bottom: 2px; // See Bl-10017
     margin-right: 2px;
@@ -971,4 +967,14 @@ div.bloom-metaData textarea {
 html,
 body {
     height: 100%;
+}
+
+// Due to a Chromium bug, elements with our default relative position
+// and a background color cause the caret not to show up. Somehow, this
+// triggers when a decodable reader error span is nested inside one of these
+// spans, even though when DR is active the rules that give these segments
+// background color are not active. Nothing depends on thei being position:relative,
+// so it's easiest to just prevent it.
+.bloom-highlightSegment {
+    position: unset;
 }
