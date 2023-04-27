@@ -1066,7 +1066,6 @@ namespace Bloom.Edit
 				// Check memory for the benefit of developers.
 				MemoryManagement.CheckMemory(false, "before EditingModel.SaveNow()", false);
 #endif
-				var watch = Stopwatch.StartNew();
 				try
 				{
 					_webSocketServer.SendString("pageThumbnailList", "saving", "");
@@ -1078,7 +1077,6 @@ namespace Bloom.Edit
 					{
 						NonFatalProblem.Report(ModalIf.Beta, PassiveIf.Beta, "SaveNow called on wrong thread", null);
 						_view.Invoke((Action)(() => SaveNow(forceFullSave)));
-						watch.Stop();
 						return;
 					}
 					CheckForBL2634("beginning SaveNow");
@@ -1134,8 +1132,6 @@ namespace Bloom.Edit
 					_tasksToDoAfterSaving.RemoveAt(0);
 					task();
 				}
-				watch.Stop();
-				TroubleShooterDialog.Report($"Saving changes took {watch.ElapsedMilliseconds} milliseconds");
 #if MEMORYCHECK
 				// Check memory for the benefit of developers.
 				MemoryManagement.CheckMemory(false, "after EditingModel.SaveNow()", false);
