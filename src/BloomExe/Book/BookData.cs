@@ -1436,6 +1436,13 @@ namespace Bloom.Book
 					var currentSet = new HashSet<string>(classes);
 					foreach (var newClass in newClasses)
 					{
+						// If "ui-audioCurrent" has managed to make its way into the class attribute, it needs
+						// to be removed (and not reinserted!).  See BL-12094.
+						if (newClass == "ui-audioCurrent")
+						{
+							classesToRemove.Add(newClass);
+							continue;
+						}
 						classesToRemove.Remove(newClass); // in the source, should not remove
 						if (!currentSet.Contains(newClass))
 							classes.Add(newClass);
