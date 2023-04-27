@@ -4130,15 +4130,6 @@
         <source xml:lang="en">Make an ePUB (electronic book) out of this book, allowing it to be read on various electronic reading devices.</source>
         <note>ID: PublishTab.EpubRadio-tooltip</note>
       </trans-unit>
-      <trans-unit id="PublishTab.InDesignDialog.DontShowThisAgainButton">
-        <source xml:lang="en">Don't Show This Again</source>
-        <note>ID: PublishTab.InDesignDialog.DontShowThisAgainButton</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.InDesignDialog.WindowTitle">
-        <source xml:lang="en">InDesign XML Information</source>
-        <note>ID: PublishTab.InDesignDialog.WindowTitle</note>
-        <note>This is the title of a dialog about exporting a Bloom book to the InDesign XML format</note>
-      </trans-unit>
       <trans-unit id="PublishTab.LessMemoryPdfMode">
         <source xml:lang="en">Use less memory (slower)</source>
         <note>ID: PublishTab.LessMemoryPdfMode</note>
