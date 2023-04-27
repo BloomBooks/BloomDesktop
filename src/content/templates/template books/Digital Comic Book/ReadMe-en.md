@@ -4,14 +4,11 @@ Use this template as a starting point for comics designed for use on screens.
 
 ## Limitations of Bloom’s current comic book support
 
--   Epub readers will not show comics correctly. These comics are intended for publishing on the web, Bloom Reader, and Reading App Builder.
 -   As with other text, Bloom's Talking Book Tool allows recording audio for comic bubbles. The checkbox "Show Playback Order buttons" in the Talking Book Tool enables you to define the playback order of the bubbles.
--   If you change the paper-size or layout of a book, bubbles will get messed up and you’ll have to fix them.
+-   If you change the paper-size or layout of a book, you may have to adjust the locations of bubbles.
 -   The text in bubbles is currently limited to a rectangle, rather than conforming to the actual outlines of the bubble. You can use &lt;enter&gt; to manually break lines. Your comic will look more professional if you take the time to resize bubbles to be as tight as possible.
--   Comics are monolingual.
-    -   You cannot make comic books that show multiple languages on an image at the same time.
-    -   Even if a comic book contains multiple languages (as sources), users cannot switch between languages in Bloom Reader, the web, etc.
--   Only one version of bubble size and placement is stored in a book. Yet each time a comic is used for a different language, bubble sizes and locations will need to be adjusted. So if you if you get bubbles just right for, e.g., English, then go work on Spanish and then switch back to English, the bubble sizes and locations will again have to be adjusted.
+-   Comic books can show only one language on an image at the same time.
+-   If a comic book contains multiple languages (as sources), users can switch between languages in Bloom Reader, the web, etc.
 
 ## Tips on adapting existing comic images to Bloom device format
 
