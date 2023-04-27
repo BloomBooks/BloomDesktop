@@ -94,7 +94,7 @@ storiesOf("Publish/DeviceFrame", module)
             defaultLandscape={true}
             canRotate={false}
             url=""
-            showRefresh={true}
+            showPreviewButton={true}
         >
             Landscape
         </DeviceAndControls>
@@ -104,7 +104,7 @@ storiesOf("Publish/DeviceFrame", module)
             defaultLandscape={true}
             canRotate={false}
             url=""
-            showRefresh={true}
+            showPreviewButton={true}
             highlightRefreshIcon={true}
         >
             Landscape

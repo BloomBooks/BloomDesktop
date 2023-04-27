@@ -39,8 +39,6 @@ import {
     showBulkBloomPubDialog
 } from "./BulkBloomPub/BulkBloomPubDialog";
 import { EmbeddedProgressDialog } from "../../react_components/Progress/ProgressDialog";
-import { hookupLinkHandler } from "../../utils/linkHandler";
-import { Div } from "../../react_components/l10nComponents";
 
 export const ReaderPublishScreen = () => {
     // When the user changes some features, included languages, etc., we
@@ -54,12 +52,14 @@ export const ReaderPublishScreen = () => {
             onReset={() => {
                 setKeyForReset(keyForReset + 1);
             }}
+            previewEnabled={keyForReset > 0}
         />
     );
 };
 
 const ReaderPublishScreenInternal: React.FunctionComponent<{
     onReset: () => void;
+    previewEnabled: boolean;
 }> = props => {
     const inStorybookMode = useContext(StorybookContext);
     const [heading, setHeading] = useState(
@@ -67,7 +67,7 @@ const ReaderPublishScreenInternal: React.FunctionComponent<{
     );
     const [closePending, setClosePending] = useState(false);
     const [highlightRefresh, setHighlightRefresh] = useState(false);
-    const [progressState, setProgressState] = useState(ProgressState.Working);
+    const [progressState, setProgressState] = useState(ProgressState.Done);
     const [generation, setGeneration] = useState(0);
 
     // bookUrl is expected to be a normal, well-formed URL.
@@ -127,6 +127,15 @@ const ReaderPublishScreenInternal: React.FunctionComponent<{
         }
     );
 
+    const previewUrl =
+        pathToOutputBrowser +
+        "bloom-player/dist/bloomplayer.htm?centerVertically=true&url=" +
+        encodeURIComponent(bookUrl) + // Need to apply encoding to the bookUrl again as data to use it as a parameter of another URL
+        "&independent=false" + // you can temporarily comment this out to send BloomPlayer analytics from Bloom Editor
+        "&host=bloomdesktop" +
+        "&roundPageWidthToNearestK=2" + // Fractional pixels can cause a small sliver of the next page or background color to show (See BL-11497)
+        "&roundMarginToNearestK=2"; // Fractional pixels can cause a small sliver of the next page or background color to show (See BL-11497)
+
     const mainPanel = (
         <React.Fragment>
             <PublishPanel
@@ -140,29 +149,12 @@ const ReaderPublishScreenInternal: React.FunctionComponent<{
             <PreviewPanel>
                 <StyledEngineProvider injectFirst>
                     <ThemeProvider theme={darkTheme}>
-                        <Div
-                            css={css`
-                                color: white;
-                                font-weight: bold;
-                                flex-shrink: 1;
-                            `}
-                            l10nKey="Common.Preview"
-                        >
-                            Preview
-                        </Div>
                         <DeviceAndControls
                             defaultLandscape={defaultLandscape}
                             canRotate={canRotate}
-                            url={
-                                pathToOutputBrowser +
-                                "bloom-player/dist/bloomplayer.htm?centerVertically=true&url=" +
-                                encodeURIComponent(bookUrl) + // Need to apply encoding to the bookUrl again as data to use it as a parameter of another URL
-                                "&independent=false" + // you can temporarily comment this out to send BloomPlayer analytics from Bloom Editor
-                                "&host=bloomdesktop" +
-                                "&roundPageWidthToNearestK=2" + // Fractional pixels can cause a small sliver of the next page or background color to show (See BL-11497)
-                                "&roundMarginToNearestK=2" // Fractional pixels can cause a small sliver of the next page or background color to show (See BL-11497)
-                            }
-                            showRefresh={true}
+                            // The following leaves a blank screen until the Preview button is pressed
+                            url={`${props.previewEnabled ? previewUrl : ""}`}
+                            showPreviewButton={true}
                             highlightRefreshIcon={highlightRefresh}
                             onRefresh={() => props.onReset()}
                         />
@@ -265,22 +257,23 @@ const ReaderPublishScreenInternal: React.FunctionComponent<{
                 {mainPanel}
             </PublishScreenTemplate>
             {/* In storybook, there's no bloom backend to run the progress dialog */}
-            {inStorybookMode || (
-                <PublishProgressDialog
-                    heading={heading}
-                    startApiEndpoint="publish/bloompub/updatePreview"
-                    webSocketClientContext="publish-bloompub"
-                    progressState={progressState}
-                    setProgressState={setProgressState}
-                    closePending={closePending}
-                    setClosePending={setClosePending}
-                    onUserStopped={() => {
-                        postData("publish/bloompub/usb/stop", {});
-                        postData("publish/bloompub/wifi/stop", {});
-                        setClosePending(true);
-                    }}
-                />
-            )}
+            {inStorybookMode ||
+                (props.previewEnabled && (
+                    <PublishProgressDialog
+                        heading={heading}
+                        startApiEndpoint="publish/bloompub/updatePreview"
+                        webSocketClientContext="publish-bloompub"
+                        progressState={progressState}
+                        setProgressState={setProgressState}
+                        closePending={closePending}
+                        setClosePending={setClosePending}
+                        onUserStopped={() => {
+                            postData("publish/bloompub/usb/stop", {});
+                            postData("publish/bloompub/wifi/stop", {});
+                            setClosePending(true);
+                        }}
+                    />
+                ))}
             <EmbeddedProgressDialog id="readerPublish" />
         </React.Fragment>
     );
