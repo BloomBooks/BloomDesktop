@@ -974,7 +974,7 @@ body {
 // triggers when a decodable reader error span is nested inside one of these
 // spans, even though when DR is active the rules that give these segments
 // background color are not active. Nothing depends on thei being position:relative,
-// so it's easiest to just prevent it.
+// so it's easiest to just prevent it. See BL-11633 for reproduction steps in Bloom 5.5.
 .bloom-highlightSegment {
     position: unset;
 }
