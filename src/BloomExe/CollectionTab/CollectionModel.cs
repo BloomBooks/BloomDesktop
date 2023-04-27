@@ -337,7 +337,7 @@ namespace Bloom.CollectionTab
 			{
 				if (IsCurrentBookInCollection())
 				{
-					if (!_tcManager.CheckConnection())
+					if (_tcManager.CollectionStatus != TeamCollectionStatus.None && !_tcManager.CheckConnection())
 					{
 						return false;
 					}
