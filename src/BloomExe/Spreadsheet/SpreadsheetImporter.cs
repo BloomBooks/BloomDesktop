@@ -1797,7 +1797,8 @@ namespace Bloom.Spreadsheet
 		{
 			if (ControlForInvoke != null && ControlForInvoke.InvokeRequired)
 			{
-				return (string)ControlForInvoke.Invoke(new ElementStringTask(GetMd5Async), elt);
+				var result =  (Task<string>)ControlForInvoke.Invoke(new ElementStringTask(GetMd5Async), elt);
+				return await (result);
 			}
 			return await (await GetBrowserAsync()).RunJavaScriptAsync($"spreadsheetBundle.getMd5('{elt.InnerText.Replace("'", "\\'")}')");
 		}
