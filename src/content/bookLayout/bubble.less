@@ -13,30 +13,6 @@
 @ComicAffordanceFilter: invert(48%) sepia(14%) saturate(1147%)
     hue-rotate(257deg) brightness(90%) contrast(84%);
 
-// Don't show text over picture borders, resizing handles, or format buttons unless hovering over the image
-.bloom-imageContainer:not(.hoverUp) .bloom-textOverPicture {
-    .bloom-editable {
-        border: none;
-
-        &:after {
-            display: none !important;
-        }
-    }
-    .ui-resizable-handle {
-        display: none !important;
-    }
-    .bloom-dragHandle {
-        display: none;
-    }
-    #formatButton {
-        display: none;
-    }
-    .bloom-imageContainer {
-        &:after {
-            border: none; // overwrite rule from editMode.less
-        }
-    }
-}
 .bloom-imageContainer.ui-ctrlDown .bloom-textOverPicture .ui-resizable-handle {
     display: none !important;
 }
@@ -155,16 +131,6 @@
 
                 // Move the format button and language tip out of the box, since we have a smaller-than-normal editable box here
                 overflow: visible;
-                #formatButton {
-                    &:hover {
-                        background-color: white;
-                    }
-                    filter: @ComicAffordanceFilter;
-                    left: unset;
-                    // NB: right is set by a rule at the end of this file
-                    //right: 100% + 33px;
-                    bottom: -18px;
-                }
             }
 
             // Language tip CSS
@@ -190,14 +156,13 @@
                     }
                 }
             }
-            // Allows the format gear and language tip to be suppressed by adding a class
+            // Allows the language tip to be suppressed by adding a class
             // (currently, during overflow testing). Don't normally like !important,
             // but the rules this has to override are complex and trying to make this
             // rule always more specific means breaking it up and putting it in multiple
             // places (and is bug prone, if we change the other visibility rules).
             // We absolutely want these hidden during overflow calculations!
             .bloom-editable.disableTOPControls {
-                #formatButton,
                 &:after {
                     display: none !important;
                 }
@@ -248,26 +213,6 @@
         // Make this rule !important because we have some quite complex rules to make certain bubbles
         // display:flex and this needs to win.
         display: none !important;
-    }
-}
-
-// different bubble shapes require different positioning of the affordances
-[data-bubble] {
-    // These happen to be multiples of 1.4 is because they are 1% increments of 140px (the default text box width)
-    .bloom-dragHandle {
-        right: calc(100% + 1.4px);
-    }
-    #formatButton {
-        right: calc(100% + 2.8px);
-    }
-    // we need to push the label left-ward to get out of the way of the fat part of the bubble
-    [data-languageTipContent]:after {
-        right: calc(100% + 14px) !important;
-    }
-}
-[data-bubble*="caption"] {
-    [data-languageTipContent]:after {
-        right: calc(100% + 2.8px) !important;
     }
 }
 

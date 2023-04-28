@@ -170,14 +170,6 @@
     }
 }
 
-// The quiz page is formatted with just enough space for each question/answer, so a format button in
-// the usual place on the left overlaps the text annoyingly. So for these pages we move it to the
-// right. (Not sure why that wouldn't always be better.)
-.quiz #formatButton {
-    left: unset;
-    right: 0;
-}
-
 // overrides a rule in EditMode.less to push the language label over and make room for cog on right.
 .bloom-editable.QuizHeader-style[contentEditable="true"][data-languageTipContent]:not([data-languageTipContent=""]):after,
 .bloom-editable.QuizAnswer-style[contentEditable="true"][data-languageTipContent]:not([data-languageTipContent=""]):after,

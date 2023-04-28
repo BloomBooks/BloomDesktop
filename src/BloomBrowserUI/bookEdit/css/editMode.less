@@ -689,8 +689,6 @@ div.marginBox {
     overflow: hidden;
     position: absolute;
     margin-left: 3px;
-    bottom: 0;
-    left: 0;
     /*The font-size here is weird, but if we don't set it, the growing/shrinking font of the text will actually move the button up/down on the page*/
     font-size: 10pt;
     height: 20px;
@@ -927,7 +925,7 @@ body.simulateColorBlindness {
 }
 
 // using :focus-within works better than .cke-focus (See BL-11803.)
-.bloom-editable:focus-within {
+.bloom-translationGroup:focus-within {
     #formatButton {
         display: inherit;
     }
@@ -977,4 +975,76 @@ body {
 // so it's easiest to just prevent it. See BL-11633 for reproduction steps in Bloom 5.5.
 .bloom-highlightSegment {
     position: unset;
+}
+
+// Don't show text over picture borders, resizing handles, or format buttons unless hovering over the image
+// (This and several following rules were moved from content/bookLayout/bubble.less)
+.bloom-imageContainer:not(.hoverUp) .bloom-textOverPicture {
+    .bloom-editable {
+        border: none;
+
+        &:after {
+            display: none !important;
+        }
+    }
+    .ui-resizable-handle {
+        display: none !important;
+    }
+    .bloom-dragHandle {
+        display: none;
+    }
+    #formatButton {
+        display: none;
+    }
+    .bloom-imageContainer {
+        &:after {
+            border: none; // overwrite rule from editMode.less
+        }
+    }
+}
+
+// This can color the svg into whatever color we want. Currently bloom-purple.
+// While working on this PR I changed the color 4 times and it's a pain to keep
+// exporting new svgs.
+// Eventually if the color settles down, we can replace this with just svg's colored like we want.
+// To generate new filter rules like this, use https://codepen.io/sosuke/pen/Pjoqqp
+@ComicAffordanceFilter: invert(48%) sepia(14%) saturate(1147%)
+    hue-rotate(257deg) brightness(90%) contrast(84%);
+
+@BlackToWhiteFilter: invert(100%) sepia(3%) saturate(7468%) hue-rotate(173deg)
+    brightness(116%) contrast(100%);
+
+.bloom-imageContainer {
+    .bloom-textOverPicture {
+        .bloom-translationGroup {
+            #formatButton {
+                &:hover {
+                    background-color: white; // make it stand out more from the image behind
+                }
+                img {
+                    // turns the cog purple to match other Comic affordances, without requiring
+                    // a different SVG. (Don't do this to the whole button, it messes with
+                    // the background too when it's not transparent, e.g., when hovered.)
+                    filter: @ComicAffordanceFilter;
+                }
+            }
+        }
+    }
+}
+
+// different bubble shapes require different positioning of the affordances
+[data-bubble] {
+    // These happen to be multiples of 1.4 is because they are 1% increments of 140px (the default text box width)
+    .bloom-dragHandle {
+        right: calc(100% + 1.4px);
+    }
+    // we need to push the label left-ward to get out of the way of the fat part of the bubble
+    [data-languageTipContent]:after {
+        right: calc(100% + 14px) !important;
+    }
+}
+[data-bubble*="caption"] {
+    [data-languageTipContent]:after {
+        right: calc(100% + 2.8px) !important;
+    }
 }
