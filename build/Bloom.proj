@@ -150,7 +150,7 @@
 		<NUnit3
 			Condition="$(isOnTeamCity) == false"
 			Assemblies="@(TestAssemblies)"
-			ToolPath="$(RootDir)/packages/NUnit.ConsoleRunner.3.16.2/tools"
+			ToolPath="$(UserProfile)/.nuget/packages/nunit.consolerunner/3.16.2/tools"
 			ExcludeCategory="$(excludedCategories)"
 			WorkingDirectory="$(RootDir)/output/$(Configuration)"
 			Force32Bit="$(useNUnit-x86)"
@@ -164,7 +164,7 @@
 		<NUnit3
 			Condition="$(isOnTeamCity) == true"
 			Assemblies="@(TestAssemblies)"
-			ToolPath="$(RootDir)/packages/NUnit.ConsoleRunner.3.16.2/tools"
+			ToolPath="$(UserProfile)/.nuget/packages/nunit.consolerunner/3.16.2/tools"
 			ExcludeCategory="SkipOnTeamCity,$(excludedCategories)"
 			WorkingDirectory="$(RootDir)/output/$(Configuration)"
 			Force32Bit="$(useNUnit-x86)"
