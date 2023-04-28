@@ -7,7 +7,6 @@ using Bloom.Book;
 using System.Windows.Forms;
 using System.Xml;
 using Bloom.Api;
-using Bloom.Publish.AccessibilityChecker;
 using SIL.Reporting;
 using SIL.Xml;
 using Bloom.Publish.Epub;
@@ -17,7 +16,6 @@ using L10NSharp;
 using SIL.IO;
 using SIL.Progress;
 using Bloom.FontProcessing;
-using System.Text.RegularExpressions;
 
 namespace Bloom.Publish
 {
@@ -244,6 +242,16 @@ namespace Bloom.Publish
 				// if we actually can't find the element we need in IsDisplayed().
 				Debug.WriteLine("Failed to navigate fully to RemoveUnwantedContentInternal DOM");
 				Logger.WriteEvent("Failed to navigate fully to RemoveUnwantedContentInternal DOM");
+				if (epubMaker != null)
+				{
+					// BL-11513: We might end up with an ePUB that hasn't had everything removed that should be...
+					// but if we don't get out of here, we'll just keep saying "Building ePUB" every few seconds
+					// and be stuck. I tried increasing the timeout on the 'NavigateAndWaitTillDone()', but that
+					// didn't seem to help. Trying to continue on is just asking for trouble in 'IsDisplayed(elt)'
+					// below.
+					Cancel();
+					return;
+				}
 			}
 			if (this != _latestInstance)
 				return;
@@ -802,7 +810,7 @@ namespace Bloom.Publish
 						var msgFmt1 = LocalizationManager.GetString("PublishTab.FontProblem",
 							"This book has a font, \"{0}\", which has the following problem:");
 						var msg3 = LocalizationManager.GetString("PublishTab.FontProblem.Result",
-							"BloomLibrary.org will display the PDF and allow downloads for translation, but cannot offer the “READ” button or downloads for BloomPUB or ePUB.");
+							"BloomLibrary.org will display the PDF and allow downloads for translation, but cannot offer the ï¿½READï¿½ button or downloads for BloomPUB or ePUB.");
 						// progress.WriteError() uses Color.Red, but also exposes a link to "report error" which we don't want here.
 						progress.WriteMessageWithColor("Red", msgFmt1, font);
 						progress.WriteMessageWithColor("Red", " \u2022 {0}", msg2);
