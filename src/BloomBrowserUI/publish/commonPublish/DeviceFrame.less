@@ -10,7 +10,7 @@
 @scale: 25;
 @screenWidth: 9px * @scale;
 @screenHeight: 16px * @scale;
-@buttonScale: 0.2;
+@buttonScale: 0.15;
 // gets filled by the components children, if there are any
 
 // Desktop pixels are much larger, so things come out bloated.
@@ -18,81 +18,19 @@
 // then shrink it all.
 @pixelDensityMultiplier: 2;
 
-// These first few rules actually apply to other elements of the deviceAndControls, outside the
-// various device frames.
-.deviceAndControls {
-    display: flex;
-    flex-direction: row;
-
-    .refresh-button-row {
-        // The elements of the deviceAndControls are displayed as a flex row.
-        // the refresh-button-row is an optional extra child.
-        // It doesn't actually want to be in the row, but rather, aligned below the
-        // left orientation button and right of the bottom of the preview.
-        // But the actual positions of the other three elements are a complex
-        // function of transforms involving both scale and position.
-        // Rather than try to figure out some way of re-organizing the row into
-        // nested rows and columns, it's easier just to use yet another transform
-        // to put this one where we want it, even though it takes two more rules
-        // below to put it in different places when there are orientation buttons
-        // and/or we're in landscape
-        transform: translate(220px, 420px); // landscape, no rotation buttons
-        display: flex;
-        flex-direction: row;
-        cursor: pointer;
-        .refresh-icon {
-            padding: 0;
-            height: 1.7em;
-            width: 1.7em;
-            margin-top: -8px;
-        }
-        &.with-orientation-buttons {
-            transform: translate(-332px, 420px); // portrait, rotation buttons
-            &.landscape {
-                transform: translate(
-                    -332px,
-                    225px
-                ); // landscape, rotation buttons
-            }
-        }
-        &.landscape {
-            transform: translate(220px, 225px); // portrait, no rotation buttons
-        }
-        // We don't know why this gets the height of its parent, but it does without this.
-        // We need to limit the height so we don't get extraneous vertical scroll bars.
-        height: 50px;
-    }
-}
-
 .deviceFrame {
-    background: rgb(241, 241, 241);
-    box-sizing: content-box; // Our width & height are sizing the screen (the glass). All the bezel and stuff doesn't count.
     width: @screenWidth;
     height: @screenHeight;
-    border-width: @bezelWidth;
-    border-style: solid;
-    border-color: #636363;
-    border-top-width: 20px;
-    border-bottom-width: 20px;
-    border-radius: 15px;
-
-    position: relative;
-    flex-direction: column;
-    flex-shrink: 0;
-
-    display: flex !important;
     --scale: 1;
 
     &.orientation-button {
         --scale: @buttonScale;
         transform-origin: top;
         &.portrait {
-            margin-right: -60px;
-            margin-left: 150px;
-            transform: translate(0, 65px) scale(@buttonScale);
+            transform: scale(@buttonScale);
         }
         &.landscape {
-            transform: translate(0, 117px) rotate(-90deg /*counter clockwise*/)
+            transform: translate(0, 50px) rotate(-90deg /*counter clockwise*/)
                 scale(@buttonScale);
         }
         &.disabled {
@@ -107,19 +45,9 @@
             border-width: 7px;
         }
     }
-    transition: all 200ms;
-
-    iframe {
-        background-color: black;
-
-        border: none;
-
-        flex-shrink: 0; // without this, the height doesn't grow
-        transform-origin: top left;
-    }
     &.portrait {
         &.fullSize {
-            transform: translate(143px, 0);
+            transform: translate(80px, 0px);
         }
         iframe {
             width: @pixelDensityMultiplier * 100% !important;
@@ -130,8 +58,8 @@
 
     &.landscape {
         transform-origin: top left;
-        transform: translate(0, @screenWidth+ (2 * @bezelWidth) /* down*/)
-            rotate(-90deg /*counter clockwise*/) scale(var(--scale));
+        transform: translate(0, 245px) rotate(-90deg /*counter clockwise*/)
+            scale(var(--scale));
         /*@bezelWidth*/
         iframe {
             height: (@pixelDensityMultiplier * 900% / 16); //  9/16

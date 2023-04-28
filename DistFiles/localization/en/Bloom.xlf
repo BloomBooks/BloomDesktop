@@ -1096,6 +1096,7 @@
         <source xml:lang="en">Refresh</source>
         <note>ID: Common.Refresh</note>
         <note>Sense of refreshing a web page.</note>
+        <note>Obsolete as of Bloom 5.5</note>
       </trans-unit>
       <trans-unit id="Common.Replace">
         <source xml:lang="en">Replace</source>
