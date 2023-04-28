@@ -314,7 +314,7 @@ namespace Bloom.Publish.Epub
 			//	audioSituationClass = "isTalkingBook";
 
 			var targetFile = Path.Combine(root, "index.html");
-			var manifestPath = EpubMaker.MakeReadiumManifest(StagingDirectory);
+			var manifestPath = ReadiumManifest.MakeReadiumManifest(StagingDirectory);
 
 			var iframeSource = targetFile.ToLocalhost() + "?url=" + UrlPathString.CreateFromUnencodedString(manifestPath.ToLocalhost()).UrlEncoded;
 			return iframeSource;

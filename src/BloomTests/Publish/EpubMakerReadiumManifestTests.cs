@@ -129,7 +129,7 @@ namespace BloomTests.Publish
 </smil>";
 
 		private TemporaryFolder _folder;
-		ReadiumManifest _manifest;
+		ReadiumManifestRoot _manifest;
 		private ReadiumMediaOverlay[] _overlays = new ReadiumMediaOverlay[2];
 
 
@@ -146,9 +146,9 @@ namespace BloomTests.Publish
 			var smil4Path = Path.Combine(contentFolder, "4_overlay.smil");
 			RobustFile.WriteAllText(smil4Path, page4Smil);
 
-			var outputPath = EpubMaker.MakeReadiumManifest(_folder.FolderPath);
+			var outputPath = ReadiumManifest.MakeReadiumManifest(_folder.FolderPath);
 
-			_manifest = JsonConvert.DeserializeObject<ReadiumManifest>(RobustFile.ReadAllText(outputPath));
+			_manifest = JsonConvert.DeserializeObject<ReadiumManifestRoot>(RobustFile.ReadAllText(outputPath));
 			var overlay2Path = Path.Combine(_folder.FolderPath, "2-media-overlay.json");
 			_overlays[0] = JsonConvert.DeserializeObject<ReadiumMediaOverlay>(RobustFile.ReadAllText(overlay2Path));
 			var overlay4Path = Path.Combine(_folder.FolderPath, "4-media-overlay.json");
@@ -164,7 +164,7 @@ namespace BloomTests.Publish
 		[Test]
 		public void HasExpectedType()
 		{
-			Assert.That(_manifest.Type, Is.EqualTo("application/webpub+json"));
+			Assert.That(_manifest.type, Is.EqualTo("application/webpub+json"));
 		}
 
 		[Test]
