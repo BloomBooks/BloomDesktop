@@ -1,14 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.IO;
 using Bloom;
-using Bloom.Book;
 using Bloom.Publish.Epub;
 using BloomTemp;
-using Gtk;
 using Newtonsoft.Json;
 using NUnit.Framework;
 using SIL.IO;
