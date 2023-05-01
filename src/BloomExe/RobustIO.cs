@@ -7,6 +7,7 @@ using SIL.IO;
 using SIL.Windows.Forms.ClearShare;
 using TidyManaged;
 using Bloom.ImageProcessing;
+using System;
 
 namespace Bloom
 {
@@ -58,7 +59,15 @@ namespace Bloom
 				}
 			}
 			// Assume everything is okay.
-			return MetadataFromFileInternal(path);
+			try
+			{
+				return MetadataFromFileInternal(path);
+			}
+			catch (Exception ex)
+			{
+				// But if it isn't, at least report the name of the file!
+				throw new Exception($"The image file {path} appears to be invalid.", ex);
+			}
 		}
 
 		private static Metadata MetadataFromFileInternal(string path)
