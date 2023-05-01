@@ -388,7 +388,8 @@ export const CollectionsTabPane: React.FunctionComponent<{}> = () => {
                     hoverCss: {
                         width: `${kResizerSize}px`,
                         background: `${kDarkestBackground}`
-                    }
+                    },
+                    grabberSize: `${kResizerSize / 2}px`
                 }}
                 hooks={{
                     onDragStarted: () => {
