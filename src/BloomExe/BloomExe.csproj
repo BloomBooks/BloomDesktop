@@ -514,12 +514,6 @@
     <Compile Include="Edit\DecodableReaderToolSettings.cs" />
     <Compile Include="Edit\ToolboxView.cs" />
     <Compile Include="ElementProxy.cs" />
-    <Compile Include="MiscUI\TroubleShooterDialog.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="MiscUI\TroubleShooterDialog.Designer.cs">
-      <DependentUpon>TroubleShooterDialog.cs</DependentUpon>
-    </Compile>
     <Compile Include="Publish\BloomPub\file\FilePublisher.cs" />
     <Compile Include="Publish\BloomPub\wifi\BloomReaderUDPListener.cs" />
     <Compile Include="Publish\BloomPub\wifi\WiFiAdvertiser.cs" />
@@ -620,12 +614,6 @@
     <Compile Include="Book\XMatterHelper.cs" />
     <Compile Include="Book\XMatterInfo.cs" />
     <Compile Include="Book\XMatterPackFinder.cs" />
-    <Compile Include="CollectionTab\BloomLibraryLinkVerification.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="CollectionTab\BloomLibraryLinkVerification.Designer.cs">
-      <DependentUpon>BloomLibraryLinkVerification.cs</DependentUpon>
-    </Compile>
     <Compile Include="CollectionTab\MakeReaderTemplateBloomPackDlg.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -670,18 +658,6 @@
     <Compile Include="ImageProcessing\ImageUtils.cs" />
     <Compile Include="InstallerSupport.cs" />
     <Compile Include="BloomIntegrityChecker.cs" />
-    <Compile Include="MiscUI\DontShowThisAgainButton.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Include="MiscUI\DontShowThisAgainButton.Designer.cs">
-      <DependentUpon>DontShowThisAgainButton.cs</DependentUpon>
-    </Compile>
-    <Compile Include="MiscUI\TipDialog.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="MiscUI\TipDialog.designer.cs">
-      <DependentUpon>TipDialog.cs</DependentUpon>
-    </Compile>
     <Compile Include="MiscUI\ToastNotifier.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -949,9 +925,6 @@
       <DependentUpon>WebView2Browser.cs</DependentUpon>
       <SubType>Designer</SubType>
     </EmbeddedResource>
-    <EmbeddedResource Include="CollectionTab\BloomLibraryLinkVerification.resx">
-      <DependentUpon>BloomLibraryLinkVerification.cs</DependentUpon>
-    </EmbeddedResource>
     <EmbeddedResource Include="CollectionTab\MakeReaderTemplateBloomPackDlg.resx">
       <DependentUpon>MakeReaderTemplateBloomPackDlg.cs</DependentUpon>
     </EmbeddedResource>
@@ -981,14 +954,8 @@
     <EmbeddedResource Include="MiscUI\LanguageFontDetails.resx">
       <DependentUpon>LanguageFontDetails.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="MiscUI\TipDialog.resx">
-      <DependentUpon>TipDialog.cs</DependentUpon>
-    </EmbeddedResource>
     <EmbeddedResource Include="MiscUI\ToastNotifier.resx">
       <DependentUpon>ToastNotifier.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="MiscUI\TroubleShooterDialog.resx">
-      <DependentUpon>TroubleShooterDialog.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Publish\AccessibilityChecker\AccessibilityCheckWindow.resx">
       <DependentUpon>AccessibilityCheckWindow.cs</DependentUpon>
@@ -1094,7 +1061,6 @@
       <SubType>Designer</SubType>
     </None>
     <None Include="ClassDiagram1.cd" />
-    <None Include="Firefox\omni.ja" />
     <None Include="packages.config">
       <SubType>Designer</SubType>
     </None>
@@ -1454,33 +1420,6 @@ copy /Y "$(SolutionDir)\lib\dotnet\Interop.Acrobat.dll" $(OutDir)
   </ItemGroup>
   <ItemGroup>
     <Content Include="bloom.ico" />
-    <Content Include="Firefox\AccessibleHandler.dll" />
-    <Content Include="Firefox\AccessibleMarshal.dll" />
-    <Content Include="Firefox\breakpadinjector.dll" />
-    <Content Include="Firefox\D3DCompiler_43.dll" />
-    <Content Include="Firefox\d3dcompiler_47.dll" />
-    <Content Include="Firefox\freebl3.dll" />
-    <Content Include="Firefox\IA2Marshal.dll" />
-    <Content Include="Firefox\icudt56.dll" />
-    <Content Include="Firefox\icuin56.dll" />
-    <Content Include="Firefox\icuuc56.dll" />
-    <Content Include="Firefox\lgpllibs.dll" />
-    <Content Include="Firefox\libEGL.dll" />
-    <Content Include="Firefox\libGLESv2.dll" />
-    <Content Include="Firefox\mozavcodec.dll" />
-    <Content Include="Firefox\mozavutil.dll" />
-    <Content Include="Firefox\mozglue.dll" />
-    <Content Include="Firefox\msvcp120.dll" />
-    <Content Include="Firefox\msvcr120.dll" />
-    <Content Include="Firefox\nss3.dll" />
-    <Content Include="Firefox\nssckbi.dll" />
-    <Content Include="Firefox\nssdbm3.dll" />
-    <Content Include="Firefox\plugin-container.exe" />
-    <Content Include="Firefox\plugin-hang-ui.exe" />
-    <Content Include="Firefox\qipcap.dll" />
-    <Content Include="Firefox\sandboxbroker.dll" />
-    <Content Include="Firefox\softokn3.dll" />
-    <Content Include="Firefox\xul.dll" />
     <None Include="Resources\PdfPrint.png" />
     <None Include="Resources\BloomPUB.png" />
     <None Include="Resources\publish video.png" />

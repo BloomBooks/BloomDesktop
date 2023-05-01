@@ -443,11 +443,7 @@ namespace Bloom.Book
 				Dom.RemoveMetaElement("FeatureRequirement");
 			}
 
-			var watch = Stopwatch.StartNew();
 			string tempPath = SaveHtml(Dom);
-			watch.Stop();
-			TroubleShooterDialog.Report($"Saving xml to html took {watch.ElapsedMilliseconds} milliseconds");
-
 			ValidateSave(tempPath);
 
 			BookInfo.Save();
@@ -457,11 +453,7 @@ namespace Bloom.Book
 		// and if all is well moves the current file to a backup and the new one to replace the original.
 		private void ValidateSave(string tempPath)
 		{
-			Stopwatch watch;
-			watch = Stopwatch.StartNew();
 			string errors = ValidateBook(Dom, tempPath);
-			watch.Stop();
-			TroubleShooterDialog.Report($"Validating book took {watch.ElapsedMilliseconds} milliseconds");
 
 			if (!String.IsNullOrEmpty(errors))
 			{
@@ -502,8 +494,6 @@ namespace Bloom.Book
 		public void SaveForPageChanged(string pageId, XmlElement modifiedPage)
 		{
 			// Convert the one page to HTML
-			var watch = new Stopwatch();
-			watch.Start();
 			string pageHtml = XmlHtmlConverter.ConvertElementToHtml5(modifiedPage);
 
 			// Read the old file and copy it to the new one, except for replacing the one page.
@@ -515,8 +505,6 @@ namespace Bloom.Book
 					ReplacePage(pageId, reader, writer, pageHtml);
 				}
 			}
-			watch.Stop();
-			TroubleShooterDialog.Report($"SaveForPageChanged took {watch.ElapsedMilliseconds} milliseconds");
 			ValidateSave(tempPath);
 			BookInfo.Save();
 		}
