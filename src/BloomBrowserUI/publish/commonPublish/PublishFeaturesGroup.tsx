@@ -282,8 +282,6 @@ export const PublishFeaturesGroup: React.FunctionComponent<{
                     apiEndpoint="publish/motionBookMode"
                     icon={<MotionIcon color={kBloomBlue} />}
                     title={motionTitle}
-                    // This causes the preview to be regenerated...the only feature that actually affects the
-                    // preview results.
                     onChange={props.onChange}
                     disabled={!motionEnabled}
                 />

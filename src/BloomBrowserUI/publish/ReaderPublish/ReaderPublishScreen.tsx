@@ -66,7 +66,7 @@ const ReaderPublishScreenInternal: React.FunctionComponent<{
         useL10n("Creating Digital Book", "PublishTab.Android.Creating")
     );
     const [closePending, setClosePending] = useState(false);
-    const [highlightRefresh, setHighlightRefresh] = useState(false);
+    const [highlightPreview, setHighlightPreview] = useState(false);
     // Starting in ProgressState.Done hides the progress dialog initially.
     const [progressState, setProgressState] = useState(ProgressState.Done);
     const [generation, setGeneration] = useState(0);
@@ -154,7 +154,7 @@ const ReaderPublishScreenInternal: React.FunctionComponent<{
                     // The following leaves a blank screen until the Preview button is pressed
                     url={`${props.showPreview ? previewUrl : ""}`}
                     showPreviewButton={true}
-                    highlightPreviewButton={highlightRefresh}
+                    highlightPreviewButton={highlightPreview}
                     onPreviewButtonClicked={() => props.onReset()}
                 />
             </PreviewPanel>
@@ -165,18 +165,16 @@ const ReaderPublishScreenInternal: React.FunctionComponent<{
         <SettingsPanel>
             <PublishLanguagesGroup
                 onChange={() => {
-                    setHighlightRefresh(true);
+                    setHighlightPreview(true);
                     // Forces features group to re-evaluate whether this will be a talking book.
                     setGeneration(old => old + 1);
                 }}
             />
             <PublishFeaturesGroup
-                onChange={() => {
-                    props.onReset();
-                }}
                 generation={generation}
+                onChange={() => setHighlightPreview(true)}
             />
-            <CoverColorGroup onChange={() => props.onReset()} />
+            <CoverColorGroup onChange={() => setHighlightPreview(true)} />
             {/* push everything to the bottom */}
             <div
                 css={css`
