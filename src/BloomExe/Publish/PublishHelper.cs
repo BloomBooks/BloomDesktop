@@ -662,6 +662,9 @@ namespace Bloom.Publish
 						font, sizeToReport);
 					continue;
 				}
+				// If the missing font is Andika New Basic, don't complain because Andika subsumes Andika New Basic,
+				// and will be automatically substituted for it.
+				var dontComplain = font == "Andika New Basic";
 				if (badFileType)
 				{
 					progress.MessageWithParams("PublishTab.Android.File.Progress.IncompatibleFontFileFormat", "{0} is a font name, {1} is a file extension (for example: .ttc)", "This book has text in a font named \"{0}\". Bloom cannot publish this font's format ({1}).", ProgressKind.Error, font, fileExtension);
@@ -670,11 +673,12 @@ namespace Bloom.Publish
 				{
 					progress.MessageWithParams("PublishTab.Android.File.Progress.LicenseForbids", "{0} is a font name", "This book has text in a font named \"{0}\". The license for \"{0}\" does not permit Bloom to embed the font in the book.", ProgressKind.Error, font);
 				}
-				else
+				else if (!dontComplain)
 				{
 					progress.MessageWithParams("PublishTab.Android.File.Progress.NoFontFound", "{0} is a font name", "This book has text in a font named \"{0}\", but Bloom could not find that font on this computer.", ProgressKind.Error, font);
 				}
-				progress.MessageWithParams("PublishTab.Android.File.Progress.SubstitutingAndika", "{0} is a font name", "Bloom will substitute \"{0}\" instead.", ProgressKind.Error, defaultFont, font);
+				if (!dontComplain)
+					progress.MessageWithParams("PublishTab.Android.File.Progress.SubstitutingAndika", "{0} is a font name", "Bloom will substitute \"{0}\" instead.", ProgressKind.Error, defaultFont, font);
 				badFonts.Add(font); // need to prevent the bad/missing font from showing up in fonts.css and elsewhere
 			}
 		}

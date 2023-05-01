@@ -1333,6 +1333,8 @@ namespace Bloom.Edit
 				var serve = FontServe.GetInstance();
 				if (serve.HasFamily(language1FontName))
 					return null;
+				if (serve.HasFamily("Andika") && language1FontName == "Andika New Basic")
+					return null;	// Andika subsumes Andika New Basic and is served for it
 				var s = LocalizationManager.GetString("EditTab.FontMissing",
 														   "The current selected " +
 														   "font is '{0}', but it is not installed on this computer. Some other font will be used.");
