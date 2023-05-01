@@ -24,7 +24,6 @@ import { VisuallyImpairedIcon } from "../../react_components/icons/VisuallyImpai
 import { BloomCheckbox } from "../../react_components/BloomCheckBox";
 
 export const PublishFeaturesGroup: React.FunctionComponent<{
-    onChange?: () => void;
     generation?: number; // bump this to force recalc of computed features
 }> = props => {
     const [motionEnabled] = useApiBoolean("publish/canHaveMotionMode", false);
@@ -282,9 +281,8 @@ export const PublishFeaturesGroup: React.FunctionComponent<{
                     apiEndpoint="publish/motionBookMode"
                     icon={<MotionIcon color={kBloomBlue} />}
                     title={motionTitle}
-                    // This causes the preview to be regenerated...the only feature that actually affects the
-                    // preview results.
-                    onChange={props.onChange}
+                    // BL-12116: We no longer update the Preview automatically. Let the user choose when to Preview.
+                    //onChange={props.onChange}
                     disabled={!motionEnabled}
                 />
                 <ApiCheckbox

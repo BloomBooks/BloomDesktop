@@ -170,13 +170,8 @@ const ReaderPublishScreenInternal: React.FunctionComponent<{
                     setGeneration(old => old + 1);
                 }}
             />
-            <PublishFeaturesGroup
-                onChange={() => {
-                    props.onReset();
-                }}
-                generation={generation}
-            />
-            <CoverColorGroup onChange={() => props.onReset()} />
+            <PublishFeaturesGroup generation={generation} />
+            <CoverColorGroup />
             {/* push everything to the bottom */}
             <div
                 css={css`
