@@ -94,6 +94,8 @@ namespace Bloom.web
 			// So just don't show it at all until it contains what we want to see.
 			_browser.DocumentCompleted += (unused, args) =>
 			{
+				if (this.IsDisposed)
+					return;
 				Controls.Add((UserControl)_browser);//review this cast
 
 				// This allows us to bring up a react control/dialog with focus already set to a specific element.

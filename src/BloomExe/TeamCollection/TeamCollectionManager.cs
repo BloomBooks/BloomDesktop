@@ -144,11 +144,17 @@ namespace Bloom.TeamCollection
 		/// </summary>
 		/// <param name="bookFolderPath"></param>
 		/// <returns></returns>
-		public bool CannotDeleteBecauseDisconnected(string bookFolderPath)
+		public bool CannotDeleteBecauseDisconnected(Book.Book book)
 		{
+			// not in a team collection?  delete away.
+			if (CollectionStatus == TeamCollectionStatus.None)
+				return false;
+			// double-check current connection if book has ever been checked in
+			if (book.HasBeenCheckedInAtLeastOnce() && !CheckConnection())
+				return true;
 			if (CurrentCollectionEvenIfDisconnected == null)
 				return false;
-			return CurrentCollectionEvenIfDisconnected.CannotDeleteBecauseDisconnected(bookFolderPath);
+			return CurrentCollectionEvenIfDisconnected.CannotDeleteBecauseDisconnected(book.FolderPath);
 		}
 
 		public TeamCollectionStatus CollectionStatus

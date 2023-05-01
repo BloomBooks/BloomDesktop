@@ -323,6 +323,20 @@ namespace Bloom.Book
 			return display;
 		}
 
+		internal bool HasBeenCheckedInAtLeastOnce()
+		{
+			try
+			{
+				var events = BookHistory.GetHistory(BookInfo);
+				return events.Any(ev => ev.Type == BookHistoryEventType.CheckIn);
+			}
+			catch (Exception e)
+			{
+				Debug.WriteLine("DEBUG: exception getting book history: {0}", e);
+			}
+			return true;
+		}
+
 		public enum LineBreakSpanConversionMode
 		{
 			ToNewline,
