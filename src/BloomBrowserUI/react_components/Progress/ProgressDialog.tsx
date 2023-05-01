@@ -41,32 +41,31 @@ export interface IProgressDialogProps {
     onCancel?: () => void;
     onReadyToReceive?: () => void;
 
-    open?: boolean; // Controls whether or not the dialog is open (visible). If undefined, defaults to dialogEnvironment.initiallyOpen.
+    open: boolean; // Controls whether or not the dialog is open (visible). If undefined, defaults to dialogEnvironment.initiallyOpen.
+    onClose: () => void; // Callback fired when the component requests to be closed.
+
     dialogEnvironment?: IBloomDialogEnvironmentParams;
     determinate?: boolean;
     size?: "small"; // For a much smaller dialog, when we only expect a few lines.
 }
 
-interface IEmbeddedProgressProps extends IProgressDialogProps {
-    which: string; // must match props.which to open
-}
+type IEmbeddedProgressProps = Omit<
+    IProgressDialogProps & {
+        which: string; // must match props.which to open
+    },
+    "open" | "onClose"
+>;
 
 export const ProgressDialog: React.FunctionComponent<IProgressDialogProps> = props => {
     const {
         showDialog,
         closeDialog,
         propsForBloomDialog
-    } = useSetupBloomDialog(props.dialogEnvironment);
-    const { onClose, ...propsToPassToBloomDialog } = propsForBloomDialog;
-
-    const isOpen = props.open ?? propsForBloomDialog.open;
-    useEffect(() => {
-        if (isOpen) {
-            showDialog();
-        } else {
-            closeDialog();
-        }
-    }, [isOpen, showDialog, closeDialog]); // showDialog and closeDialog should be created using useCallback/useMemo/useRef or something like that to avoid triggering the useEffect unnecessarily.
+    } = useSetupBloomDialog(props.dialogEnvironment); // TODO: Think harder about initiallyOpen
+    const {
+        onClose: _, // Remove it from propsToPassToBloomDialog, but we don't actually want this variable (causes confusion with props.onClose)
+        ...propsToPassToBloomDialog
+    } = propsForBloomDialog;
 
     const [done, setDone] = useState(false);
     const [sawAnError, setSawAnError] = useState(false);
@@ -80,8 +79,34 @@ export const ProgressDialog: React.FunctionComponent<IProgressDialogProps> = pro
 
     const [listenerReady, setListenerReady] = useState(false);
     const [progressBoxReady, setProgressBoxReady] = useState(false);
+
+    // The parent's mechanism to control opening/closing the dialog via props.open
+    // (Same model as MaterialUI's Dialog or Modal components)
+    // All our current non-Storybook parents want to have at least partial (if not full) influence
+    // over when the dialog is opened/closed anyway.  If the parent wants at least some influence over open/close,
+    // it's a lot more idiomatic in React for the state to be in the parent.
+    //
+    // Under the hood, this is managed by useSetupBloomDialog
+    // To hide some complexity / boilerplate from callers,
+    // this component manages the useSetupBloomDialog stuff,
+    // although one minor side effect of this is that useSetupBloomDialog has a sort of duplicate copy of the state
+    // (Exposed via propsForBloomDialog.open)
+    //
+    // This useEffect is responsible for keeping the two in sync.
+    useEffect(() => {
+        if (props.open) {
+            showDialog(); // Under the hood, modifies propsForBloomDialog.open
+        } else {
+            closeDialog(); // Under the hood, modifies propsForBloomDialog.open
+        }
+    }, [props.open, showDialog, closeDialog]); // showDialog and closeDialog should be created using stable references (e.g. useCallback) to avoid triggering the useEffect unnecessarily.
+
     // TODO: props.onReadyToReceive should theoretically be in dependencies array.
     useEffect(() => {
+        // Note: I have this to check for propsForBloomDialog.open rather than props.open,
+        // because I (pre-emptively) worry that props.onReadyToReceive will fire while the underlying
+        // propsForBloomDialog is still transitioning from closed to open, and maybe it won't actually be ready to receive.
+        // So wait for propsForBloomDialog.open to become true, so that we're really sure everything's ready
         if (listenerReady && progressBoxReady && propsForBloomDialog.open) {
             if (props.onReadyToReceive) {
                 props.onReadyToReceive();
@@ -136,7 +161,7 @@ export const ProgressDialog: React.FunctionComponent<IProgressDialogProps> = pro
     // Any time we are closed and reopened we want to show a new set of messages.
     const everOpened = useRef(false); // we don't need, or want, a change to this to trigger a render.
     useEffect(() => {
-        if (propsForBloomDialog.open) {
+        if (props.open) {
             everOpened.current = true;
             setPercent(0); // always want to start here
         } else {
@@ -161,7 +186,7 @@ export const ProgressDialog: React.FunctionComponent<IProgressDialogProps> = pro
                 post("progress/closed");
             }
         }
-    }, [propsForBloomDialog.open]);
+    }, [props.open]);
 
     const buttonForSendingErrorReportIsRelevant =
         props.showReportButton == "always" ||
@@ -186,7 +211,7 @@ export const ProgressDialog: React.FunctionComponent<IProgressDialogProps> = pro
                 // or may not be possible to cancel it, but we shouldn't just lose
                 // the dialog because the user clicked outside it or even pressed Escape.
                 if (reason !== "escapeKeyDown" && reason !== "backdropClick") {
-                    onClose();
+                    props.onClose();
                 }
             }}
         >
@@ -287,12 +312,12 @@ export const ProgressDialog: React.FunctionComponent<IProgressDialogProps> = pro
                                 enabled={true}
                                 variant="contained"
                                 temporarilyDisableI18nWarning={true} // only used in TC context so far
-                                onClick={closeDialog}
+                                onClick={props.onClose}
                             >
                                 Quit
                             </BloomButton>
                         ) : (
-                            <DialogCloseButton onClick={closeDialog} />
+                            <DialogCloseButton onClick={props.onClose} />
                         )}
                     </React.Fragment>
                 ) : // if we're not done, show the cancel button if that was called for...
@@ -330,6 +355,7 @@ export const ProgressDialog: React.FunctionComponent<IProgressDialogProps> = pro
 export const EmbeddedProgressDialog: React.FunctionComponent<{
     id: string;
 }> = props => {
+    const [isOpen, setIsOpen] = useState(false);
     const [progressProps, setProgressProps] = useState<IEmbeddedProgressProps>({
         which: "",
         // just lets us know something is wrong if it shows up; a real title should
@@ -350,24 +376,28 @@ export const EmbeddedProgressDialog: React.FunctionComponent<{
         // the "open" prop for controlling that instead.
         // args are sent from the C# code that wants to open the dialog.
         setProgressProps({
-            ...args,
-            open: true
+            ...args
         });
+        setIsOpen(true);
     };
     useSubscribeToWebSocketForObject(
         "progress",
         "open-progress",
         (args: IEmbeddedProgressProps) => openProgress(args)
     );
-    useSubscribeToWebSocketForEvent("progress", "close-progress", () =>
-        setProgressProps({
-            ...progressProps,
-            open: false
-        })
-    );
+    useSubscribeToWebSocketForEvent("progress", "close-progress", () => {
+        // Handles "close" initiated from over the websocket
+        setIsOpen(false);
+    });
+
     return (
         <ProgressDialog
             {...progressProps}
+            open={isOpen}
+            onClose={() => {
+                // Handles "close" initiated from React-land (e.g. clicking on a button)
+                setIsOpen(false);
+            }}
             onReadyToReceive={() => post("progress/ready")}
         />
     );

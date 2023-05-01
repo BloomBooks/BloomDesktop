@@ -188,6 +188,9 @@ export const CollectionsTabBookPane: React.FunctionComponent<{
             size="small"
             showCancelButton={false}
             open={progressOpen}
+            onClose={() => {
+                setProgressOpen(false);
+            }}
             dialogEnvironment={{
                 dialogFrameProvidedExternally: false,
                 initiallyOpen: false,
