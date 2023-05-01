@@ -1438,7 +1438,7 @@ namespace Bloom.TeamCollection
 			return GetStatusFilePathFromBookFolderPath(bookFolderPath);
 		}
 
-		private static string GetStatusFilePathFromBookFolderPath(string bookFolderPath)
+		internal static string GetStatusFilePathFromBookFolderPath(string bookFolderPath)
 		{
 			var statusFile = Path.Combine(bookFolderPath, "TeamCollection.status");
 			return statusFile;
