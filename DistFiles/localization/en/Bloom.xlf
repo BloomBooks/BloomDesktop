@@ -3552,14 +3552,17 @@
       <trans-unit id="PublishTab.AdobeReaderControl.NotInstalled">
         <source xml:lang="en">Please install Adobe Reader so that Bloom can show your completed book. Until then, you can still save the PDF Book and open it in some other program.</source>
         <note>ID: PublishTab.AdobeReaderControl.NotInstalled</note>
+        <note>Obsolete as of Bloom 5.5</note>
       </trans-unit>
       <trans-unit id="PublishTab.AdobeReaderControl.ProblemShowingPDF">
         <source xml:lang="en">That's strange... Adobe Reader gave an error when trying to show that PDF. You can still try saving the PDF Book.</source>
         <note>ID: PublishTab.AdobeReaderControl.ProblemShowingPDF</note>
+        <note>Obsolete as of Bloom 5.5</note>
       </trans-unit>
       <trans-unit id="PublishTab.AdobeReaderControl.UnknownError">
         <source xml:lang="en">Sad News. Bloom wasn't able to get Adobe Reader to show here, so Bloom can't show your completed book.\nPlease uninstall your existing version of 'Adobe Reader' and (re)install 'Adobe Reader'.\nUntil you get that fixed, you can still save the PDF Book and open it in some other program.</source>
         <note>ID: PublishTab.AdobeReaderControl.UnknownError</note>
+        <note>Obsolete as of Bloom 5.5</note>
       </trans-unit>
       <trans-unit id="PublishTab.Android.BloomPUB.Hint.Heading" sil:dynamic="true">
         <source xml:lang="en">Sharing BloomPUB Files</source>
@@ -4130,10 +4133,12 @@
       <trans-unit id="PublishTab.Notifications.AdobeForPrint">
         <source xml:lang="en">If you want to print directly from Bloom, you will need to install the free Adobe Reader and then re-start Bloom. Or instead, you can save the PDF, open it in some other program, and then print from there.</source>
         <note>ID: PublishTab.Notifications.AdobeForPrint</note>
+        <note>Obsolete as of Bloom 5.5</note>
       </trans-unit>
       <trans-unit id="PublishTab.Notifications.AdobeReaderRecommendation">
         <source xml:lang="en">This PDF viewer can be improved by installing the free Adobe Reader on this computer.</source>
         <note>ID: PublishTab.Notifications.AdobeReaderRecommendation</note>
+        <note>Obsolete as of Bloom 5.5</note>
       </trans-unit>
       <trans-unit id="PublishTab.OnePagePerPaperRadio">
         <source xml:lang="en">Simple</source>
