@@ -84,6 +84,9 @@ To handling the mis-match.*/
 
 // When making a thumbnail for a template page, add a kind of text mockup to text areas
 .bloom-templateThumbnail {
+    // template page thumbnail shouldn't have scrollbars (see BL-11855)
+    overflow: clip;
+    // template page thumbnail shouldn't have a page number
     .numberedPage:after {
         display: none;
     }
