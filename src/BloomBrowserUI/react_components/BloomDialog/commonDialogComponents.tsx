@@ -1,28 +1,14 @@
 /** @jsx jsx **/
 import { jsx, css } from "@emotion/react";
 import * as React from "react";
-import {
-    kDialogPadding,
-    kBloomBlue,
-    kBorderRadiusForSpecialBlocks,
-    kBloomBlue50Transparent
-} from "../../bloomMaterialUITheme";
+import { kDialogPadding } from "../../bloomMaterialUITheme";
 import { post, postJson } from "../../utils/bloomApi";
 import BloomButton from "../bloomButton";
 
-import InfoIcon from "@mui/icons-material/Info";
-import WarningIcon from "@mui/icons-material/Warning";
-import ErrorIcon from "@mui/icons-material/Error";
-import WaitIcon from "@mui/icons-material/HourglassEmpty";
 import { useSubscribeToWebSocketForObject } from "../../utils/WebSocketManager";
-import {
-    kBloomDarkTextOverWarning,
-    kBloomWarning
-} from "../../utils/colorUtils";
 import { BloomDialogContext } from "./BloomDialog";
 
 export const kErrorBoxColor = "#eb3941";
-const kLightBlueBackground = "#F0FDFE";
 
 // just puts a rounded rectangle around the children
 export const DialogControlGroup: React.FunctionComponent<{}> = props => (
@@ -211,119 +197,3 @@ export const DialogReportButton: React.FunctionComponent<{
         {props.buttonText ?? "Report"}
     </BloomButton>
 );
-
-export const BoxWithIconAndText: React.FunctionComponent<{
-    hasBorder?: boolean;
-    color?: string;
-    borderColor?: string;
-    backgroundColor?: string;
-    icon?: JSX.Element;
-}> = props => {
-    let border = css``;
-    if (props.hasBorder) {
-        border = css`
-            border: solid 1px ${props.borderColor || kBloomBlue50Transparent};
-        `;
-    }
-    const {
-        hasBorder,
-        color,
-        borderColor,
-        backgroundColor,
-        icon,
-        ...propsToPass
-    } = props;
-    const cssForIcon = css`
-        margin-right: ${kDialogPadding};
-    `;
-    // React's cloneElement doesn't work with Emotion's css prop, so we have to do this.
-    // See https://github.com/emotion-js/emotion/issues/1102.
-    const cloneElement = (element, props) =>
-        jsx(element.type, {
-            key: element.key,
-            ref: element.ref,
-            ...element.props,
-            ...props
-        });
-    return (
-        <div
-            css={css`
-                display: flex;
-                background-color: ${props.backgroundColor ||
-                    kLightBlueBackground};
-                border-radius: ${kBorderRadiusForSpecialBlocks};
-                padding: ${kDialogPadding};
-                color: ${props.color || kBloomBlue};
-                // The original version of this used p instead of div to get this spacing below.
-                // But we want div so we have more flexibility with adding children.
-                margin-block-end: 1em;
-                ${border};
-                a {
-                    color: ${props.color || kBloomBlue};
-                }
-            `}
-            {...propsToPass} // allows defining more css rules from container
-        >
-            {props.icon ? (
-                cloneElement(props.icon, { css: cssForIcon })
-            ) : (
-                <InfoIcon color="primary" css={cssForIcon} />
-            )}
-            {props.children}
-        </div>
-    );
-};
-
-export const NoteBoxSansBorder: React.FunctionComponent<{}> = props => {
-    return <BoxWithIconAndText {...props}>{props.children}</BoxWithIconAndText>;
-};
-
-export const NoteBox: React.FunctionComponent<{}> = props => {
-    return (
-        <BoxWithIconAndText hasBorder={true} {...props}>
-            {props.children}
-        </BoxWithIconAndText>
-    );
-};
-
-export const WaitBox: React.FunctionComponent<{}> = props => {
-    return (
-        <BoxWithIconAndText
-            color="white"
-            backgroundColor="#96668F"
-            icon={<WaitIcon />}
-            {...props}
-        >
-            {props.children}
-        </BoxWithIconAndText>
-    );
-};
-
-export const WarningBox: React.FunctionComponent<{}> = props => {
-    return (
-        <BoxWithIconAndText
-            color={kBloomDarkTextOverWarning}
-            backgroundColor={kBloomWarning}
-            icon={<WarningIcon />}
-            css={css`
-                font-weight: 500;
-            `}
-            {...props}
-        >
-            {props.children}
-        </BoxWithIconAndText>
-    );
-};
-
-export const ErrorBox: React.FunctionComponent<{}> = props => {
-    return (
-        <BoxWithIconAndText
-            color="white"
-            backgroundColor={kErrorBoxColor}
-            icon={<ErrorIcon />}
-            {...props}
-        >
-            {props.children}
-        </BoxWithIconAndText>
-    );
-};

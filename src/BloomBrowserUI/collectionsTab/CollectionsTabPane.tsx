@@ -814,9 +814,8 @@ function getRemovableCollectionHeaderDiv(
             >
                 <BloomTooltip
                     id={tooltipId}
-                    side="right"
-                    tooltipL10nKey={tooltipL10nKey}
-                    tooltipText={tooltipText}
+                    placement="right"
+                    tip={{ english: tooltipText, l10nKey: tooltipL10nKey }}
                 >
                     {icon}
                 </BloomTooltip>
