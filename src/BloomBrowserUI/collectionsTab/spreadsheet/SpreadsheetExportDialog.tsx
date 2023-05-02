@@ -15,14 +15,14 @@ import {
 } from "../../react_components/BloomDialog/BloomDialog";
 import {
     DialogCancelButton,
-    DialogFolderChooser,
-    WarningBox
+    DialogFolderChooser
 } from "../../react_components/BloomDialog/commonDialogComponents";
 
 import { kVerticalSpacingBetweenDialogSections } from "../../bloomMaterialUITheme";
 import { ExperimentalBadge } from "../../react_components/experimentalBadge";
 import { Div } from "../../react_components/l10nComponents";
 import { useEventLaunchedBloomDialog } from "../../react_components/BloomDialog/BloomDialogPlumbing";
+import { WarningBox } from "../../react_components/boxes";
 
 export const SpreadsheetExportDialogLauncher: React.FunctionComponent<{}> = () => {
     const {

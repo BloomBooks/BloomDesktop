@@ -6,10 +6,7 @@ import { useL10n } from "../react_components/l10nHooks";
 import { Div } from "../react_components/l10nComponents";
 import BloomButton from "../react_components/bloomButton";
 import { post } from "../utils/bloomApi";
-import {
-    DialogCancelButton,
-    WarningBox
-} from "../react_components/BloomDialog/commonDialogComponents";
+import { DialogCancelButton } from "../react_components/BloomDialog/commonDialogComponents";
 import {
     BloomDialog,
     DialogTitle,
@@ -18,6 +15,7 @@ import {
     DialogMiddle
 } from "../react_components/BloomDialog/BloomDialog";
 import { kBloomRed } from "../utils/colorUtils";
+import { WarningBox } from "../react_components/boxes";
 
 // Dialog shown (when props.open is true) in response to the "Force Unlock (Administrator Only)..." menu item
 // in the TeamCollectionBookStatusPanel.

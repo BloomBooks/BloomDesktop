@@ -18,8 +18,7 @@ import {
 import {
     DialogCancelButton,
     DialogControlGroup,
-    DialogFolderChooserWithApi,
-    ErrorBox
+    DialogFolderChooserWithApi
 } from "../react_components/BloomDialog/commonDialogComponents";
 import { useL10n } from "../react_components/l10nHooks";
 import { Checkbox } from "../react_components/checkbox";
@@ -29,6 +28,7 @@ import {
     IBloomDialogEnvironmentParams,
     useSetupBloomDialog
 } from "../react_components/BloomDialog/BloomDialogPlumbing";
+import { ErrorBox } from "../react_components/boxes";
 
 // Contents of a dialog launched from TeamCollectionSettingsPanel Create Team Collection button.
 

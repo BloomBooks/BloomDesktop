@@ -2,6 +2,7 @@ import { createTheme, adaptV4Theme, Theme } from "@mui/material/styles";
 import { kBloomDisabledOpacity, kBloomDisabledText } from "./utils/colorUtils";
 
 export const kBloomBlue = "#1d94a4";
+export const kBloomBlueTextBackground = "#19818f"; // darker for better contrast
 export const kBloomBlue50Transparent = "#8ecad280";
 export const kBloomPurple = "#96668f";
 const kDialogTopBottomGray = "#F1F3F4";
@@ -79,6 +80,21 @@ export const lightTheme = createTheme(
             }
         },
         overrides: {
+            MuiTooltip: {
+                tooltip: {
+                    backgroundColor: kBloomBlueTextBackground,
+                    fontSize: "12px",
+                    fontWeight: "normal",
+                    padding: "10px",
+                    a: {
+                        color: "white",
+                        textDecorationColor: "white"
+                    }
+                },
+                arrow: {
+                    color: kBloomBlueTextBackground
+                }
+            },
             MuiDialogTitle: {
                 root: {
                     backgroundColor: kDialogTopBottomGray,

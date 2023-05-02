@@ -22,8 +22,8 @@ import {
 } from "@mui/material";
 import { kSelectCss } from "../../bloomMaterialUITheme";
 import { useState } from "react";
-import { BloomTooltip } from "../../react_components/BloomToolTip";
 import { kBloomDisabledText } from "../../utils/colorUtils";
+import { BloomTooltip } from "../../react_components/BloomToolTip";
 
 const epubModes: IEpubMode[] = [
     {
@@ -51,7 +51,6 @@ export const EPUBSettingsGroup: React.FunctionComponent<{
     mode: string;
     setMode: (mode: string) => void;
 }> = props => {
-    //const [includeImageDescriptionOnPage,setIncludeImageDescriptionOnPage] = useApiBoolean("publish/epub/imageDescriptionSetting", true);
     const canModifyCurrentBook = useCanModifyCurrentBook();
     const linkCss = "margin-top: 1em !important; display: block;";
     const disabledLinkCss = canModifyCurrentBook
@@ -59,12 +58,6 @@ export const EPUBSettingsGroup: React.FunctionComponent<{
         : `color: ${kBloomDisabledText} !important;`;
 
     const [isModeDropdownOpen, setIsModeDropdownOpen] = useState(false);
-
-    // Manages visibility of the description popup for the main Mode label (that shows in the
-    // control when the dropdown is closed).
-    const [modePopupAnchor, setModePopupAnchor] = useState<HTMLElement | null>(
-        null
-    );
 
     const [hasOverlays] = useApiBoolean("publish/epub/overlays", true);
 
@@ -123,29 +116,38 @@ export const EPUBSettingsGroup: React.FunctionComponent<{
                                     const item = epubModes.find(
                                         item => item.mode === f
                                     )!;
-                                    return (
-                                        <EpubModeItem
-                                            {...item}
-                                            popupAnchorElement={modePopupAnchor}
-                                            changePopupAnchor={
-                                                setModePopupAnchor
-                                            }
-                                        />
-                                    );
+                                    return <EpubModeItem {...item} />;
                                 }}
                             >
                                 {epubModes.map(item => {
-                                    return (
+                                    const disabled =
+                                        hasOverlays && item.mode === "flowable";
+                                    const menuItem = (
                                         <MenuItem
                                             value={item.mode}
                                             key={item.mode}
-                                            disabled={
-                                                hasOverlays &&
-                                                item.mode === "flowable"
-                                            }
+                                            disabled={disabled}
                                         >
                                             <EpubModeItem {...item} />
                                         </MenuItem>
+                                    );
+                                    // normally, the tooltip is inside of the EpubModeItem, but when disabled,
+                                    // the menuItem  doesn't allow the tooltip, so we have to put it outside.
+                                    // Meanwhile, if we put it outside of the menuItem when it's not disabled,
+                                    // the menuItem stops working.  So we have these two cases.
+                                    return disabled ? (
+                                        <BloomTooltip
+                                            key={item.mode}
+                                            showDisabled={true}
+                                            tipWhenDisabled={{
+                                                l10nKey:
+                                                    "PublishTab.Epub.Flowable.DisabledTooltip"
+                                            }}
+                                        >
+                                            {menuItem}
+                                        </BloomTooltip>
+                                    ) : (
+                                        menuItem
                                     );
                                 })}
                             </Select>
@@ -160,14 +162,21 @@ export const EPUBSettingsGroup: React.FunctionComponent<{
                     "Here, the English 'Accessibility' is a common way of referring to technologies that are usable by people with disabilities. With computers, this usually means people with visual impairments. It includes botht he blind and people who might need text to be larger, or who are colorblind, etc."
                 )}
             >
-                <ApiCheckbox
-                    english="Include image descriptions on page"
-                    apiEndpoint="publish/epub/imageDescriptionSetting"
-                    l10nKey="PublishTab.Epub.IncludeOnPage"
-                    disabled={props.mode === "fixed"}
-                    forceDisabledValue={false}
-                    onChange={props.onChange}
-                />
+                <BloomTooltip
+                    showDisabled={props.mode === "fixed"}
+                    tipWhenDisabled={{
+                        l10nKey: "PublishTab.Epub.IncludeOnPage.Disabled"
+                    }}
+                >
+                    <ApiCheckbox
+                        english="Include image descriptions on page"
+                        apiEndpoint="publish/epub/imageDescriptionSetting"
+                        l10nKey="PublishTab.Epub.IncludeOnPage"
+                        disabled={props.mode === "fixed"}
+                        forceDisabledValue={false}
+                        onChange={props.onChange}
+                    />
+                </BloomTooltip>
 
                 {/* l10nKey is intentionally not under PublishTab.Epub... we may end up with this link in other places */}
                 <Link
@@ -243,12 +252,11 @@ const EpubModeItem: React.FunctionComponent<IProps> = props => {
 
     return (
         <BloomTooltip
-            id={id}
-            popupAnchorElement={props.popupAnchorElement}
-            changePopupAnchor={props.changePopupAnchor}
-            side="left"
-            tooltipL10nKey={props.descriptionL10nKey}
-            tooltipText={props.description}
+            key={"tooltip-" + props.mode}
+            tip={{
+                english: props.description,
+                l10nKey: props.descriptionL10nKey
+            }}
         >
             <div
                 css={css`

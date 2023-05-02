@@ -21,18 +21,18 @@ import BloomButton from "../../react_components/bloomButton";
 import { EPUBHelpGroup } from "./ePUBHelpGroup";
 import { PWithLink } from "../../react_components/pWithLink";
 import { EPUBSettingsGroup } from "./ePUBSettingsGroup";
-import { PublishProgressDialog } from "../commonPublish/PublishProgressDialog";
 import BookMetadataDialog from "../metadata/BookMetadataDialog";
-import { useL10n } from "../../react_components/l10nHooks";
 import { ProgressState } from "../commonPublish/PublishProgressDialogInner";
 import {
     useApiBoolean,
     useApiStringState,
     useWatchBooleanEvent
 } from "../../utils/bloomApi";
-import { NoteBox } from "../../react_components/BloomDialog/commonDialogComponents";
-import { P } from "../../react_components/l10nComponents";
+import { NoteBox } from "../../react_components/boxes";
+import { Div, P } from "../../react_components/l10nComponents";
 import { StyledEngineProvider, ThemeProvider } from "@mui/material/styles";
+import { PublishProgressDialog } from "../commonPublish/PublishProgressDialog";
+import { useL10n } from "../../react_components/l10nHooks";
 
 export const EPUBPublishScreen = () => {
     // When the user changes some features, included languages, etc., we

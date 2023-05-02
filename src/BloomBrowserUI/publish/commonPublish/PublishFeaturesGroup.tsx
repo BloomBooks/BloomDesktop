@@ -22,6 +22,7 @@ import { MotionIcon } from "../../react_components/icons/MotionIcon";
 import { ComicIcon } from "../../react_components/icons/ComicIcon";
 import { VisuallyImpairedIcon } from "../../react_components/icons/VisuallyImpairedIcon";
 import { BloomCheckbox } from "../../react_components/BloomCheckBox";
+import { BloomTooltip } from "../../react_components/BloomToolTip";
 
 export const PublishFeaturesGroup: React.FunctionComponent<{
     onChange?: () => void;
@@ -85,33 +86,33 @@ export const PublishFeaturesGroup: React.FunctionComponent<{
     );
 
     const couldBeTalkingBook = langs.some(item => item.containsAnyAudio);
-    const noNarration = useL10n(
-        "This book has no recorded narration",
-        "PublishTab.Feature.TallkingBook.NoNarration"
+    const NoRecordings = useL10n(
+        "This is disabled because this book does not have any Talking Book recordings.",
+        "PublishTab.Feature.TallkingBook.NoRecordings"
     );
-    const noNarrationSelected = useL10n(
-        "No talking book languages are selected",
-        "PublishTab.Feature.TallkingBook.NoNarrationSelected"
+    const NoLanguagesSelected = useL10n(
+        "This is disabled because no “Talking Book Languages” are selected.",
+        "PublishTab.Feature.TallkingBook.NoLanguagesSelected"
     );
     const talkingBookTooltip = isTalkingBook
         ? ""
         : couldBeTalkingBook
-        ? noNarrationSelected
-        : noNarration;
+        ? NoLanguagesSelected
+        : NoRecordings;
 
     const slPresent = useL10n(
         "The videos in this book contain {N}",
         "PublishTab.Feature.SignLanguage.Present"
     );
     const slNoVideo = useL10n(
-        "No videos found in this book",
+        "This is disabled because this book does not have any videos.",
         "PublishTab.Feature.SignLanguage.NoVideos"
     );
     const slUnknown = useL10n(
-        "This collection has {no sign language selected}",
+        "This is disabled because this collection has no {no sign language selected}.",
         "PublishTab.Feature.SignLanguage.Unknown"
     );
-    let slTitle: React.ReactNode = slNoVideo; // default
+    let slTooltip: React.ReactElement | string = slNoVideo; // default
     let linkPart = "";
     let beforePart = "";
     let afterPart = "";
@@ -144,7 +145,7 @@ export const PublishFeaturesGroup: React.FunctionComponent<{
     // named group to a particular click action. However, it will be difficult to generalize
     // to more than one link because translation might change the order.
     if (linkPart) {
-        slTitle = (
+        slTooltip = (
             <React.Fragment>
                 {beforePart}
                 <MuiLink
@@ -160,150 +161,161 @@ export const PublishFeaturesGroup: React.FunctionComponent<{
         );
     }
 
-    const noActivitiesTitle = useL10n(
-        "No activities were found in this book",
+    const noActivitiesTooltip = useL10n(
+        "This book does not have any interactive activities.",
         "PublishTab.Feature.Activities.None"
     );
-    const hasActivitiesTitle = useL10n(
-        "The book has activities",
+    const hasActivitiesTooltip = useL10n(
+        "This book has interactive activities.",
         "PublishTab.Feature.Activities.Present"
     );
-    const activitiesTitle = hasActivities
-        ? hasActivitiesTitle
-        : noActivitiesTitle;
+    const activitiesTooltip = hasActivities
+        ? hasActivitiesTooltip
+        : noActivitiesTooltip;
 
-    const noComicTitle = useL10n(
-        "No overlays that might make this a Comic book were found",
+    const noComicTooltip = useL10n(
+        "This is disabled because this book does not have any overlay elements that qualify as “comic-like”, such as speech bubbles.",
         "PublishTab.Feature.Comic.None"
     );
-    const hasComicTitle = useL10n(
-        "This is a comic book",
+    const hasComicTooltip = useL10n(
+        "Select this if you want to list this book as a Comic Book. This only affects how the book is categorized, it does not affect the content of the book.",
         "PublishTab.Feature.Comic.Possible"
     );
-    const comicTitle = comicEnabled ? hasComicTitle : noComicTitle;
+    const comicTooltip = comicEnabled ? hasComicTooltip : noComicTooltip;
 
-    const noMotionTitle = useL10n(
-        "No motion settings were found in this book",
+    const noMotionTooltip = useL10n(
+        "This is disabled because this book does not have any pages with motion enabled.",
         "PublishTab.Feature.Motion.None"
     );
-    const hasMotionTitle = useL10n(
-        "Publish this book to show motion in landscape mode",
+    const hasMotionTooltip = useL10n(
+        "Select this if you want to show motion when the book is read in landscape mode.",
         "PublishTab.Feature.Motion.Possible"
     );
-    const motionTitle = motionEnabled ? hasMotionTitle : noMotionTitle;
+    const motionTooltip = motionEnabled ? hasMotionTooltip : noMotionTooltip;
 
-    const noVisionTitle = useL10n(
-        "No image descriptions were found in this book",
+    const noVisionTooltip = useL10n(
+        "This is disabled because this book does not have any image descriptions in the primary language.",
         "PublishTab.Feature.Vision.None"
     );
-    const hasVisionTitle = useL10n(
-        "This book is usable by people whose vision is impaired",
+    const hasVisionTooltip = useL10n(
+        "Select this if you want to list this book as accessible to the visually impaired in the primary language.  This only affects how the book is categorized, it does not affect the content of the book.",
         "PublishTab.Feature.Vision.Possible"
     );
-    const visionTitle = visuallyImpairedEnabled
-        ? hasVisionTitle
-        : noVisionTitle;
+    const visionTooltip = visuallyImpairedEnabled
+        ? hasVisionTooltip
+        : noVisionTooltip;
 
     return (
         <SettingsGroup
             label={useL10n("Features", "PublishTab.Android.Features")}
         >
             <FormGroup>
-                <BloomCheckbox
-                    label="Talking Book"
-                    l10nKey="PublishTab.TalkingBook"
-                    icon={<TalkingBookIcon />}
-                    iconScale={0.9}
-                    disabled={!isTalkingBook}
-                    checked={isTalkingBook}
-                    onCheckChanged={() => {}}
-                    hideBox={true}
-                    tooltipContents={talkingBookTooltip}
-                />
-                <ApiCheckbox
-                    // Changing the key each time signLanguageEnabled changes ensures that the checkbox rerenders with the latest value from the server.
-                    // Otherwise, if the user sets the sign language, we will not get the checkbox checked by default.
-                    key={`signLanguageFeature-${signLanguageEnabled}`}
-                    css={css`
-                        .MuiCheckbox-Root {
-                            padding-top: 0;
+                <BloomTooltip key={"tb-tooltip"} tip={talkingBookTooltip}>
+                    <BloomCheckbox
+                        label="Talking Book"
+                        l10nKey="PublishTab.TalkingBook"
+                        icon={<TalkingBookIcon />}
+                        iconScale={0.9}
+                        disabled={!isTalkingBook}
+                        checked={isTalkingBook}
+                        onCheckChanged={() => {}}
+                        hideBox={true}
+                    />
+                </BloomTooltip>
+                <BloomTooltip
+                    key={"sl-tooltip"}
+                    id={"sl-tooltip"}
+                    tip={slTooltip}
+                >
+                    <ApiCheckbox
+                        // Changing the key each time signLanguageEnabled changes ensures that the checkbox rerenders with the latest value from the server.
+                        // Otherwise, if the user sets the sign language, we will not get the checkbox checked by default.
+                        key={`signLanguageFeature-${signLanguageEnabled}`}
+                        css={css`
+                            .MuiCheckbox-Root {
+                                padding-top: 0;
+                            }
+                        `}
+                        english="Sign Language"
+                        l10nKey="PublishTab.Upload.SignLanguage"
+                        apiEndpoint="publish/signLanguage"
+                        icon={
+                            <SignLanguageIcon
+                                css={css`
+                                    align-self: center;
+                                `}
+                                color={kBloomBlue}
+                            />
                         }
-                    `}
-                    english="Sign Language"
-                    l10nKey="PublishTab.Upload.SignLanguage"
-                    apiEndpoint="publish/signLanguage"
-                    icon={
-                        <SignLanguageIcon
-                            css={css`
-                                align-self: center;
-                            `}
-                            color={kBloomBlue}
-                        />
-                    }
-                    title={slTitle}
-                    disabled={!signLanguageEnabled}
-                />
-                <BloomCheckbox
-                    label="Activity"
-                    l10nKey="PublishTab.Activity"
-                    icon={<ActivityIcon />}
-                    iconScale={0.9}
-                    disabled={!hasActivities}
-                    checked={hasActivities}
-                    onCheckChanged={() => {}}
-                    hideBox={true}
-                    tooltipContents={activitiesTitle}
-                />
-                <ApiCheckbox
-                    css={css`
-                        .MuiCheckbox-Root {
-                            padding-top: 0;
+                        // tooltip={slTooltip}
+                        disabled={!signLanguageEnabled}
+                    />
+                </BloomTooltip>
+                <BloomTooltip key={"activity-tooltip"} tip={activitiesTooltip}>
+                    <BloomCheckbox
+                        label="Activity"
+                        l10nKey="PublishTab.Activity"
+                        icon={<ActivityIcon />}
+                        iconScale={0.9}
+                        disabled={!hasActivities}
+                        checked={hasActivities}
+                        onCheckChanged={() => {}}
+                        hideBox={true}
+                    />
+                </BloomTooltip>
+                <BloomTooltip key={"comic-tooltip"} tip={comicTooltip}>
+                    <ApiCheckbox
+                        css={css`
+                            .MuiCheckbox-Root {
+                                padding-top: 0;
+                            }
+                        `}
+                        english="Comic"
+                        l10nKey="PublishTab.Comic"
+                        apiEndpoint="publish/comic"
+                        icon={
+                            <ComicIcon
+                                css={css`
+                                    align-self: center;
+                                `}
+                                color={kBloomBlue}
+                            />
                         }
-                    `}
-                    english="Comic"
-                    l10nKey="PublishTab.Comic"
-                    apiEndpoint="publish/comic"
-                    icon={
-                        <ComicIcon
-                            css={css`
-                                align-self: center;
-                            `}
-                            color={kBloomBlue}
-                        />
-                    }
-                    title={comicTitle}
-                    disabled={!comicEnabled}
-                />
-                <ApiCheckbox
-                    english="Motion Book"
-                    l10nKey="PublishTab.Android.MotionBookMode"
-                    // tslint:disable-next-line:max-line-length
-                    l10nComment="Motion Books are Talking Books in which the picture fills the screen, then pans and zooms while you hear the voice recording. This happens only if you turn the book sideways."
-                    apiEndpoint="publish/motionBookMode"
-                    icon={<MotionIcon color={kBloomBlue} />}
-                    title={motionTitle}
-                    // This causes the preview to be regenerated...the only feature that actually affects the
-                    // preview results.
-                    onChange={props.onChange}
-                    disabled={!motionEnabled}
-                />
-                <ApiCheckbox
-                    english="Accessible to the Visually Impaired in %0"
-                    l10nKey="PublishTab.AccessibleVisually"
-                    l10nParam0={l1Name}
-                    apiEndpoint="publish/visuallyImpaired"
-                    icon={
-                        <VisuallyImpairedIcon
-                            css={css`
-                                align-self: start;
-                            `}
-                            color={kBloomBlue}
-                        />
-                    }
-                    iconScale={0.9}
-                    title={visionTitle}
-                    disabled={!visuallyImpairedEnabled}
-                />
+                        disabled={!comicEnabled}
+                    />
+                </BloomTooltip>
+                <BloomTooltip key={"motion-tooltip"} tip={motionTooltip}>
+                    <ApiCheckbox
+                        english="Motion Book"
+                        l10nKey="PublishTab.Android.MotionBookMode"
+                        // tslint:disable-next-line:max-line-length
+                        l10nComment="Motion Books are Talking Books in which the picture fills the screen, then pans and zooms while you hear the voice recording. This happens only if you turn the book sideways."
+                        apiEndpoint="publish/motionBookMode"
+                        icon={<MotionIcon color={kBloomBlue} />}
+                        // This causes the preview to be regenerated...the only feature that actually affects the
+                        // preview results.
+                        onChange={props.onChange}
+                        disabled={!motionEnabled}
+                    />
+                </BloomTooltip>
+                <BloomTooltip key={"visual-tooltip"} tip={visionTooltip}>
+                    <ApiCheckbox
+                        english="Accessible to the Visually Impaired in %0"
+                        l10nKey="PublishTab.AccessibleVisually"
+                        l10nParam0={l1Name}
+                        apiEndpoint="publish/visuallyImpaired"
+                        icon={
+                            <VisuallyImpairedIcon
+                                css={css`
+                                    align-self: start;
+                                `}
+                                color={kBloomBlue}
+                            />
+                        }
+                        iconScale={0.9}
+                        disabled={!visuallyImpairedEnabled}
+                    />
+                </BloomTooltip>
             </FormGroup>
         </SettingsGroup>
     );

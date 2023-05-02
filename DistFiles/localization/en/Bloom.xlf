@@ -4002,6 +4002,11 @@
         <note>ID: PublishTab.CoverOnlyRadio-tooltip</note>
         <note>Obsolete as of Bloom 5.5 (replaced by PublishTab.CoverOnly-description)</note>
       </trans-unit>
+      <trans-unit id="PublishTab.Epub.IncludeOnPage.Disabled">
+        <!-- added in 5.5 -->
+        <source xml:lang="en">This is disabled because Bloom can only do this if the ePUB mode is "Flowable".</source>
+        <note>ID: PublishTab.Epub.IncludeOnPage.Disabled</note>
+      </trans-unit>
       <trans-unit id="PublishTab.Epub.BackLinkLabel">
         <source xml:lang="en">Back</source>
         <note>ID: PublishTab.Epub.BackLinkLabel</note>
@@ -4327,6 +4332,15 @@
         <note>ID: PublishTab.PdfMaker.FullBleed</note>
         <note>displayed as an option in the PDF Options menu in Publish tab. Be careful, "full bleed" is a technical term in printing, meaning to print into an area outside the main page content that is ideally trimmed off; do not translate literally</note>
       </trans-unit>
+      <trans-unit id="PublishTab.PdfMaker.FullBleed.DisableBecauseBookIsNotFullBleed">
+        <source xml:lang="en">This is disabled because this book is not set up to be full bleed.</source>
+        <note>ID: PublishTab.PdfMaker.FullBleed.DisableBecauseBookIsNotFullBleed</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.PdfMaker.FullBleed">
+        <source xml:lang="en">Full Bleed</source>
+        <note>ID: PublishTab.PdfMaker.FullBleed</note>
+        <note>displayed as an option in the PDF Options menu in Publish tab. Be careful, "full bleed" is a technical term in printing, meaning to print into an area outside the main page content that is ideally trimmed off; do not translate literally</note>
+      </trans-unit>
       <trans-unit id="PublishTab.PdfMaker.MakingFromHtml">
         <source xml:lang="en">Making PDF from HTML</source>
         <note>ID: PublishTab.PdfMaker.MakingFromHtml</note>
@@ -4549,6 +4563,10 @@
         <source xml:lang="en">Mp3 Audio</source>
         <note>ID: PublishTab.RecordVideo.Mp3</note>
       </trans-unit>
+      <trans-unit id="PublishTab.RecordVideo.Mp3.Disabled">
+        <source xml:lang="en">This is disabled because the book does not have audio.</source>
+        <note>ID: PublishTab.RecordVideo.Mp3.Disabled</note>
+      </trans-unit>
       <trans-unit id="PublishTab.RecordVideo.OverviewHelpLink">
         <source xml:lang="en">Publishing Audio or Video Books</source>
         <note>ID: PublishTab.RecordVideo.OverviewHelpLink</note>
@@ -4618,11 +4636,35 @@
         <source xml:lang="en">Make an audio or video file of the book being read.</source>
         <note>ID: PublishTab.RecordVideoButton-tooltip</note>
       </trans-unit>
-      <trans-unit id="PublishTab.RequiredLanguage" sil:dynamic="true" translate="no">
+      <trans-unit id="PublishTab.Language.Enabled" sil:dynamic="true">
         <!-- added in 5.5 -->
-        <source xml:lang="en">This language is required because it is currently shown in the book</source>
-        <note>ID: PublishTab.RequiredLanguage</note>
-        <note>Button that tells Bloom to save the book in the current format.</note>
+        <source xml:lang="en">Select this if you want readers to be choose to read the book in this language.</source>
+        <note>ID: PublishTab.Language.Enabled</note>
+        <note>This is a tooltip on a checkbox. The checkbox contains the name of a language. The checkbox controls whether this language will be included in the published book.</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Language.Disabled" sil:dynamic="true">
+        <!-- added in 5.5 -->
+        <source xml:lang="en">This is disabled because this book does not have any text in this language.</source>
+        <note>ID: PublishTab.Language.Disabled</note>
+        <note>This is a tooltip on a checkbox. The checkbox contains the name of a language. The checkbox controls whether this language will be included in the published book. In this case, the user is not allowed to change the value.</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Language.Required" sil:dynamic="true">
+        <!-- added in 5.5 -->
+        <source xml:lang="en">This is disabled because this language is currently shown in the book, so it is required.</source>
+        <note>ID: PublishTab.Language.Required</note>
+        <note>This is a tooltip on a checkbox. The checkbox contains the name of a language. The checkbox controls whether this language will be included in the published book. In this case, the user is not allowed to change the value.</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.AudioLanguage.Enabled" sil:dynamic="true">
+        <!-- added in 5.5 -->
+        <source xml:lang="en">Select this if you want to include this audio.</source>
+        <note>ID: PublishTab.AudioLanguage.Enabled</note>
+        <note>This is a tooltip on a checkbox. The checkbox contains the name of a language. The checkbox controls whether the Talking Book audio for this language will be included in the published book.</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.AudioLanguage.Disabled" sil:dynamic="true">
+        <!-- added in 5.5 -->
+        <source xml:lang="en">This is disabled because this book does not have any audio in this language.</source>
+        <note>ID: PublishTab.AudioLanguage.Disabled</note>
+        <note>This is a tooltip on a checkbox. The checkbox contains the name of a language. The checkbox controls whether the Talking Book audio for this language will be included in the published book. In this case, the user is not allowed to change the value.</note>
       </trans-unit>
       <trans-unit id="PublishTab.Save" sil:dynamic="true">
         <source xml:lang="en">Save...</source>
@@ -4774,37 +4816,37 @@
       </trans-unit>
       <trans-unit id="PublishTab.Feature.Activities.None" translate="no">
         <!-- added in 5.5 -->
-        <source xml:lang="en">No activities were found in this book</source>
+        <source xml:lang="en">This book does not have any interactive activities.</source>
         <note>ID: PublishTab.Feature.Activities.None</note>
       </trans-unit>
       <trans-unit id="PublishTab.Feature.Activities.Present" translate="no">
         <!-- added in 5.5 -->
-        <source xml:lang="en">The book has activities</source>
+        <source xml:lang="en">This book has interactive activities.</source>
         <note>ID: PublishTab.Feature.Activities.None</note>
       </trans-unit>
       <trans-unit id="PublishTab.Feature.Comic.None" translate="no">
         <!-- added in 5.5 -->
-        <source xml:lang="en">No overlays that might make this a Comic book were found</source>
+        <source xml:lang="en">This is disabled because this book does not have any overlay elements that qualify as “comic-like”, such as speech bubbles.</source>
         <note>ID: PublishTab.Feature.Comic.None</note>
       </trans-unit>
       <trans-unit id="PublishTab.Feature.Comic.Possible" translate="no">
         <!-- added in 5.5 -->
-        <source xml:lang="en">This is a comic book</source>
-        <note>ID: PublishTab.Feature.Comic.None</note>
+        <source xml:lang="en">Select this if you want to list this book as a Comic Book. This only affects how the book is categorized, it does not affect the content of the book.</source>
+        <note>ID: PublishTab.Feature.Comic.Possible</note>
       </trans-unit>
       <trans-unit id="PublishTab.Feature.Motion.None" translate="no">
         <!-- added in 5.5 -->
-        <source xml:lang="en">No motion settings were found in this book</source>
+        <source xml:lang="en">This is disabled because this book does not have any pages with motion enabled.</source>
         <note>ID: PublishTab.Feature.Motion.None</note>
       </trans-unit>
       <trans-unit id="PublishTab.Feature.Motion.Possible" translate="no">
         <!-- added in 5.5 -->
-        <source xml:lang="en">Publish this book to show motion in landscape mode</source>
+        <source xml:lang="en">Select this if you want to show motion when the book is read in landscape mode.</source>
         <note>ID: PublishTab.Feature.Motion.None</note>
       </trans-unit>
       <trans-unit id="PublishTab.Feature.SignLanguage.NoVideos" translate="no">
         <!-- added in 5.5 -->
-        <source xml:lang="en">No videos found in this book</source>
+        <source xml:lang="en">This is disabled because this book does not have any videos.</source>
         <note>ID: PublishTab.Feature.SignLanguage.NoVideos</note>
       </trans-unit>
       <trans-unit id="PublishTab.Feature.SignLanguage.Present" translate="no">
@@ -4815,29 +4857,29 @@
       </trans-unit>
       <trans-unit id="PublishTab.Feature.SignLanguage.Unknown" translate="no">
         <!-- added in 5.5 -->
-        <source xml:lang="en">This collection has {no sign language selected}</source>
+        <source xml:lang="en">This is disabled because this collection has no {no sign language selected}.</source>
         <note>ID: PublishTab.Feature.SignLanguage.Unknown</note>
-        <note>The result should have a section in braces. This will become a hot link for selecting a sign language.</note>
+        <note>The result should have a section in braces. This will become a hot link which will open a user interface that lets the user select a sign language.</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Feature.TallkingBook.NoNarration" translate="no">
+      <trans-unit id="PublishTab.Feature.TallkingBook.NoRecordings" translate="no">
         <!-- added in 5.5 -->
-        <source xml:lang="en">This book has no recorded narration</source>
-        <note>ID: PublishTab.Feature.TallkingBook.NoNarration</note>
+        <source xml:lang="en">This is disabled because this book does not have any Talking Book recordings.</source>
+        <note>ID: PublishTab.Feature.TallkingBook.NoRecordings</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Feature.TallkingBook.NoNarrationSelected" translate="no">
+      <trans-unit id="PublishTab.Feature.TallkingBook.NoLanguagesSelected" translate="no">
         <!-- added in 5.5 -->
-        <source xml:lang="en">No talking book languages are selected</source>
-        <note>ID: PublishTab.Feature.TallkingBook.NoNarrationSelected</note>
+        <source xml:lang="en">This is disabled because no “Talking Book Languages” are selected.</source>
+        <note>ID: PublishTab.Feature.TallkingBook.NoLanguagesSelected</note>
       </trans-unit>
       <trans-unit id="PublishTab.Feature.Vision.None" translate="no">
         <!-- added in 5.5 -->
-        <source xml:lang="en">No image descriptions were found in this book</source>
+        <source xml:lang="en">This is disabled because this book does not have any image descriptions in the primary language.</source>
         <note>ID: PublishTab.Feature.Vision.None</note>
       </trans-unit>
       <trans-unit id="PublishTab.Feature.Vision.Possible" translate="no">
         <!-- added in 5.5 -->
-        <source xml:lang="en">This book is usable by people whose vision is impaired</source>
-        <note>ID: PublishTab.Feature.Vision.None</note>
+        <source xml:lang="en">Select this if you want to list this book as accessible to the visually impaired in the primary language.  This only affects how the book is categorized, it does not affect the content of the book.</source>
+        <note>ID: PublishTab.Feature.Vision.Possible</note>
       </trans-unit>
       <trans-unit id="PublishTab.FontProblem">
         <source xml:lang="en">This book has a font, “{0}”, which has the following problem:</source>
