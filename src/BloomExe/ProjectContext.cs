@@ -80,15 +80,6 @@ namespace Bloom
 			if (!justEnoughForHtmlDialog)
 			ProjectWindow = _scope.Resolve <Shell>();
 
-			string collectionDirectory = Path.GetDirectoryName(projectSettingsPath);
-
-			//should we save a link to this in the list of collections?
-			var collectionSettings = _scope.Resolve<CollectionSettings>();
-			if(!justEnoughForHtmlDialog && collectionSettings.IsSourceCollection)
-			{
-				AddShortCutInComputersBloomCollections(collectionDirectory);
-			}
-
 			ToolboxView.SetupToolboxForCollection(Settings);
 			_scope.Resolve<TeamCollectionManager>().Settings = Settings;
 		}
@@ -743,32 +734,6 @@ namespace Bloom
 //			_commandAvailabilityPublisher = null;
 
 			GC.SuppressFinalize(this);
-		}
-
-		/// <summary>
-		/// The idea here is that if someone is editing a shell collection, then next thing they are likely to do is
-		/// open a vernacular library and try it out.  By adding this link, well they'll see this collection like
-		/// they probably expect.
-		/// </summary>
-		private void AddShortCutInComputersBloomCollections(string vernacularCollectionDirectory)
-		{
-			if (!Directory.Exists(ProjectContext.GetInstalledCollectionsDirectory()))
-				return;//well, that would be a bug, I suppose...
-
-			try
-			{
-				ShortcutMaker.CreateDirectoryShortcut(vernacularCollectionDirectory, ProjectContext.GetInstalledCollectionsDirectory());
-			}
-			catch (ApplicationException e)
-			{
-				ErrorReport.NotifyUserOfProblem(new ShowOncePerSessionBasedOnExactMessagePolicy(), e.Message);
-			}
-			catch (Exception e)
-			{
-				ErrorReport.NotifyUserOfProblem(e,
-					"Could not add a link for this shell library in the user collections directory");
-			}
-
 		}
 	}
 }
