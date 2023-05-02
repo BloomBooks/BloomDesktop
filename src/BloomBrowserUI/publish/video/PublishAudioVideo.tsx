@@ -50,10 +50,7 @@ import { kBloomRed } from "../../utils/colorUtils";
 import { SimplePreview } from "./simplePreview";
 import { AudioVideoOptionsGroup } from "./AudioVideoOptionsGroup";
 import { Div, Span } from "../../react_components/l10nComponents";
-import {
-    ErrorBox,
-    NoteBox
-} from "../../react_components/BloomDialog/commonDialogComponents";
+import { ErrorBox, NoteBox } from "../../react_components/boxes";
 import { useEffect } from "react";
 import { isLinux } from "../../utils/isLinux";
 import PublishScreenTemplate from "../commonPublish/PublishScreenTemplate";

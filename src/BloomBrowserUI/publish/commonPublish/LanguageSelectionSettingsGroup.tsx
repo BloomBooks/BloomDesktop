@@ -5,6 +5,7 @@ import * as React from "react";
 import { useL10n } from "../../react_components/l10nHooks";
 import { SettingsGroup } from "../commonPublish/PublishScreenBaseComponents";
 import { BloomCheckbox } from "../../react_components/BloomCheckBox";
+import { BloomTooltip } from "../../react_components/BloomToolTip";
 
 export interface LangCheckboxValue {
     code; // the language code
@@ -16,8 +17,7 @@ export interface LangCheckboxValue {
 }
 
 export const LanguageSelectionSettingsGroup: React.FunctionComponent<{
-    // The label (heading) of this settings group.
-    label: string;
+    forAudioLanguages: boolean;
 
     // The state of the checkboxes.
     langCheckboxValues: LangCheckboxValue[];
@@ -25,47 +25,93 @@ export const LanguageSelectionSettingsGroup: React.FunctionComponent<{
     // If defined, will be invoked after the checkbox changes its value.
     onChange?: (item: LangCheckboxValue, newState: boolean) => void;
 }> = props => {
-    const incomplete = useL10n(
+    const incompleteTag = useL10n(
         "(incomplete translation)",
         "PublishTab.Upload.IncompleteTranslation"
     );
-    const required = useL10n(
-        "This language is required because it is currently shown in the book",
-        "PublishTab.RequiredLanguage"
+    const talkingLabel = useL10n(
+        "Talking Book Languages",
+        "PublishTab.Android.TalkingBookLanguages"
     );
 
-    const languageCheckboxes = props.langCheckboxValues.map(item => (
-        <BloomCheckbox
-            key={item.code}
-            tooltipContents={item.required ? required : undefined}
-            disabled={!item.isEnabled}
-            checked={item.isChecked}
-            onCheckChanged={newState => {
-                if (props.onChange) {
-                    props.onChange(item, newState!);
-                }
-            }}
-            label={
-                <div>
-                    <div>{item.name}</div>
-                    {item.warnIncomplete && (
-                        <div
-                            css={css`
-                                color: grey;
-                                font-size: smaller;
-                            `}
-                        >
-                            {incomplete}
-                        </div>
-                    )}
-                </div>
+    const textLabel = useL10n(
+        "Text Languages",
+        "PublishTab.Android.TextLanguages"
+    );
+
+    const tooltipStrings = {
+        enabled: {
+            text: {
+                l10nKey: "PublishTab.Language.Enabled"
+            },
+            audio: {
+                l10nKey: "PublishTab.AudioLanguage.Enabled"
             }
-        />
+        },
+        disabled: {
+            text:
+                "This situation does not happen; we don't language unless they are enabled or required.",
+            audio: {
+                l10nKey: "PublishTab.AudioLanguage.Disabled"
+            }
+        },
+        required: {
+            text: {
+                l10nKey: "PublishTab.Language.Required"
+            }
+        }
+    };
+
+    //: undefined // at the moment isn't ever possible. But maybe in the future we'll have a case where a language is disabled for another reason.
+    const languageCheckboxes = props.langCheckboxValues.map(item => (
+        <BloomTooltip
+            key={item.code}
+            showDisabled={!item.isEnabled}
+            tip={
+                tooltipStrings.enabled[
+                    props.forAudioLanguages ? "audio" : "text"
+                ]
+            }
+            tipWhenDisabled={
+                item.required
+                    ? tooltipStrings.required.text // audio is never required
+                    : tooltipStrings.disabled[
+                          props.forAudioLanguages ? "audio" : "text"
+                      ]
+            }
+        >
+            <BloomCheckbox
+                disabled={!item.isEnabled}
+                checked={item.isChecked}
+                onCheckChanged={newState => {
+                    if (props.onChange) {
+                        props.onChange(item, newState!);
+                    }
+                }}
+                label={
+                    <div>
+                        <div>{item.name}</div>
+                        {item.warnIncomplete && (
+                            <div
+                                css={css`
+                                    color: grey;
+                                    font-size: smaller;
+                                `}
+                            >
+                                {incompleteTag}
+                            </div>
+                        )}
+                    </div>
+                }
+            />
+        </BloomTooltip>
     ));
 
     return (
         <div className="publishLanguagesGroup">
-            <SettingsGroup label={props.label}>
+            <SettingsGroup
+                label={props.forAudioLanguages ? talkingLabel : textLabel}
+            >
                 <FormGroup
                     css={css`
                         // The 'important' overrides the MUI default so we only get one column of checkboxes.
