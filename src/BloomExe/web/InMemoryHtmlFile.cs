@@ -13,7 +13,7 @@ namespace Bloom.Api
 	/// (In that regard, it is used in rather the same way as a TempFile object is used to
 	/// make sure that a temp file gets deleted when the Browser no longer needs it.)
 	/// </summary>
-	public class SimulatedPageFile : IDisposable
+	public class InMemoryHtmlFile : IDisposable
 	{
 		public void Dispose()
 		{

@@ -157,7 +157,7 @@ namespace Bloom
 			_pageEditDom = editDom ?? dom;
 
 			XmlHtmlConverter.MakeXmlishTagsSafeForInterpretationAsHtml(dom);
-			var fakeTempFile = BloomServer.MakeSimulatedPageFileInBookFolder(htmlDom, setAsCurrentPageForDebugging: setAsCurrentPageForDebugging, source: source);
+			var fakeTempFile = BloomServer.MakeInMemoryHtmlFileInBookFolder(htmlDom, setAsCurrentPageForDebugging: setAsCurrentPageForDebugging, source: source);
 			SetNewDependent(fakeTempFile);
 			UpdateDisplay(fakeTempFile.Key);
 		}
@@ -165,7 +165,7 @@ namespace Bloom
 		private void SetNewDependent(IDisposable dependent)
 		{
 			// Save information needed to prevent http://issues.bloomlibrary.org/youtrack/issue/BL-4268.
-			var simulated = _dependentContent as SimulatedPageFile;
+			var simulated = _dependentContent as InMemoryHtmlFile;
 			_replacedUrl = (simulated != null) ? simulated.Key : null;
 
 			if (_dependentContent != null)

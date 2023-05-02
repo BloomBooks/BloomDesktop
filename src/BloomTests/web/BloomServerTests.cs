@@ -308,7 +308,7 @@ namespace BloomTests.web
 				var dom = new HtmlDom(html);
 				dom.BaseForRelativePaths =_folder.Path.ToLocalhost();
 				string url;
-				using (var fakeTempFile = BloomServer.MakeSimulatedPageFileInBookFolder(dom))
+				using (var fakeTempFile = BloomServer.MakeInMemoryHtmlFileInBookFolder(dom))
 				{
 					url = fakeTempFile.Key;
 					var transaction = new PretendRequestInfo(url);
@@ -370,7 +370,7 @@ namespace BloomTests.web
 						</div>
 					</body></html>";
 				var dom = new HtmlDom(html) {BaseForRelativePaths = _folder.Path.ToLocalhost()};
-				using (var fakeTempFile = BloomServer.MakeSimulatedPageFileInBookFolder(dom, true, true, source))
+				using (var fakeTempFile = BloomServer.MakeInMemoryHtmlFileInBookFolder(dom, true, true, source))
 				{
 					var url = fakeTempFile.Key;
 					var transaction = new PretendRequestInfo(url);
@@ -437,7 +437,7 @@ namespace BloomTests.web
 			PretendRequestInfo transaction;
 			using (var server = CreateBloomServer())
 			{
-				using (var fakeTempFile = BloomServer.MakeSimulatedPageFileInBookFolder(dom, simulateCallingFromJavascript))
+				using (var fakeTempFile = BloomServer.MakeInMemoryHtmlFileInBookFolder(dom, simulateCallingFromJavascript))
 				{
 					var url = fakeTempFile.Key;
 					transaction = new PretendRequestInfo(url, forPrinting: false, forSrcAttr: simulateCallingFromJavascript);

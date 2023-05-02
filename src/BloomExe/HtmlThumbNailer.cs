@@ -268,7 +268,7 @@ namespace Bloom
 			}
 			else
 			{
-				using (var temp = BloomServer.MakeSimulatedPageFileInBookFolder(order.Document,
+				using (var temp = BloomServer.MakeInMemoryHtmlFileInBookFolder(order.Document,
 					       source: BloomServer.SimulatedPageFileSource.Thumb))
 				{
 					browser.Navigate(temp.Key, false);

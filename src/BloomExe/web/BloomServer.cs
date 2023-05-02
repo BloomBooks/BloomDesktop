@@ -288,7 +288,7 @@ namespace Bloom.Api
 			{
 				ReplaceAnyVideoElementsWithPlaceholder(dom);
 			}
-
+			dom.Title = "book page"; // makes this show up in Windows Process Explorer WebView2 listing
 			var html5String = dom.getHtmlStringDisplayOnly();
 			lock (_theOneInstance._queue)
 			{
