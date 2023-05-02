@@ -1,23 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Diagnostics;
 using System.Dynamic;
 using System.IO;
 using System.Linq;
-using System.Text.Json.Nodes;
 using System.Windows.Forms;
-using System.Xml;
 using Bloom.Api;
 using Bloom.Book;
 using Bloom.MiscUI;
 using Bloom.Properties;
 using DesktopAnalytics;
 using L10NSharp;
-using SIL.Data;
-using SIL.IO;
 using SIL.Reporting;
-using static SQLite.SQLite3;
 using Application = System.Windows.Forms.Application;
 
 namespace Bloom.Publish.PDF
@@ -252,36 +246,7 @@ namespace Bloom.Publish.PDF
 			{
 				if (e.Result is Exception)
 				{
-					var error = e.Result as Exception;
-					if (error is ApplicationException)
-					{
-						//For common exceptions, we catch them earlier (in the worker thread) and give a more helpful message
-						//note, we don't want to include the original, as it leads to people sending in reports we don't
-						//actually want to see. E.g., we don't want a bug report just because they didn't have Acrobat
-						//installed, or they had the PDF open in Word, or something like that.
-						ErrorReport.NotifyUserOfProblem(error.Message);
-					}
-					else if (error is PdfMaker.MakingPdfFailedException)
-					{
-						// Ignore this error here.  It will be reported elsewhere if desired.
-					}
-					else if (error is FileNotFoundException && ((FileNotFoundException)error).FileName == "BloomPdfMaker.exe")
-					{
-						ErrorReport.NotifyUserOfProblem(error, error.Message);
-					}
-					else if (error is OutOfMemoryException)
-					{
-						// See https://silbloom.myjetbrains.com/youtrack/issue/BL-5467.
-						var fmt = LocalizationManager.GetString("PublishTab.PdfMaker.OutOfMemory",
-							"Bloom ran out of memory while making the PDF. See {0}this article{1} for some suggestions to try.",
-							"{0} and {1} are HTML link markup.  You can think of them as fancy quotation marks.");
-						var msg = String.Format(fmt, "<a href='https://community.software.sil.org/t/solving-memory-problems-while-printing/500'>", "</a>");
-						BloomMessageBox.ShowWarning(msg);
-					}
-					else // for others, just give a generic message and include the original exception in the message
-					{
-						ErrorReport.NotifyUserOfProblem(error, "Sorry, Bloom had a problem creating the PDF.");
-					}
+					PublishModel.ReportPdfGenerationError(e.Result as Exception);
 					dynamic messageBundleCancel = new DynamicJson();
 					messageBundleCancel.path = "";
 					_webSocketServer.SendBundle("publish", "pdfReady", messageBundleCancel);

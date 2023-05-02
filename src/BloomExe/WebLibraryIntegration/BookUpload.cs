@@ -481,7 +481,7 @@ namespace Bloom.WebLibraryIntegration
 		/// <summary>
 		/// Common routine used in normal upload and bulk upload.
 		/// </summary>
-		internal string FullUpload(Book.Book book, IProgress progress, PublishView publishView, BookUploadParameters bookParams, out string parseId)
+		internal string FullUpload(Book.Book book, IProgress progress, PublishModel publishModel, BookUploadParameters bookParams, out string parseId)
 		{
 			// this (isForPublish:true) is dangerous and the product of much discussion.
 			// See "finally" block later to see that we put branding files back
@@ -549,10 +549,10 @@ namespace Bloom.WebLibraryIntegration
 						var pdfMsg = LocalizationManager.GetString("PublishTab.Upload.MakingPdf", "Making PDF Preview...");
 						progress.WriteStatus(pdfMsg);
 
-						publishView.MakePDFForUpload(progress);
-						if (RobustFile.Exists(publishView.PdfPreviewPath))
+						publishModel.MakePDFForUpload(progress);
+						if (RobustFile.Exists(publishModel.PdfFilePath))
 						{
-							RobustFile.Copy(publishView.PdfPreviewPath, uploadPdfPath, true);
+							RobustFile.Copy(publishModel.PdfFilePath, uploadPdfPath, true);
 						}
 						else
 						{
