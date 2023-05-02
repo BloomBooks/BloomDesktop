@@ -245,11 +245,11 @@ namespace Bloom
 				// Note: the new WebView2 code here had some testing before, in the course of changing other things,
 				// we stopped calling this method on background threads. There have been further changes to the code
 				// since then, particularly, we stopped passing a filePath (really a URL) argument and switched
-				// to creating the simulated page file here (or in NavigateAndWaitTillDonw).
+				// to creating the in memory page file here (or in NavigateAndWaitTillDonw).
 					bool success = false;
 					_syncControl.Invoke((Action)(() =>
 					{
-						success =browser.NavigateAndWaitTillDone(dom, 100000, BloomServer.SimulatedPageFileSource.Thumb, null, false);
+						success =browser.NavigateAndWaitTillDone(dom, 100000, InMemoryHtmlFileSource.Thumb, null, false);
 						if (!success)
 						{
 							Logger.WriteEvent("HtmlThumbNailer ({1}): Timed out on ({0})", order.ThumbNailFilePath,
@@ -269,7 +269,7 @@ namespace Bloom
 			else
 			{
 				using (var temp = BloomServer.MakeInMemoryHtmlFileInBookFolder(order.Document,
-					       source: BloomServer.SimulatedPageFileSource.Thumb))
+					       source: InMemoryHtmlFileSource.Thumb))
 				{
 					browser.Navigate(temp.Key, false);
 

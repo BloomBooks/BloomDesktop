@@ -211,7 +211,7 @@ namespace Bloom
 			}
 		}
 
-		public override bool NavigateAndWaitTillDone(HtmlDom htmlDom, int timeLimit, BloomServer.SimulatedPageFileSource source, Func<bool> cancelCheck, bool throwOnTimeout)
+		public override bool NavigateAndWaitTillDone(HtmlDom htmlDom, int timeLimit, InMemoryHtmlFileSource source, Func<bool> cancelCheck, bool throwOnTimeout)
 		{
 			// Should be called on UI thread. Since it is quite typical for this method to create the
 			// window handle and browser, it can't do its own Invoke, which depends on already having a handle.

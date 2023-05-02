@@ -53,7 +53,7 @@ namespace Bloom
 		private XmlDocument _pageEditDom; // DOM, dypically in an iframe of _rootDom, which we are editing.
 		private XmlDocument _rootDom; // root DOM we navigate the browser to; typically a shell with other doms in iframes
 		// A temporary object needed just as long as it is the content of this browser.
-		// Currently may be a TempFile (a real filesystem file) or a SimulatedPageFile (just a dictionary entry).
+		// Currently may be a TempFile (a real filesystem file) or a InMemoryHtmlFile (just a dictionary entry).
 		// It gets disposed when the Browser goes away.
 		private IDisposable _dependentContent;
 		protected string _replacedUrl;
@@ -140,11 +140,11 @@ namespace Bloom
 		// 'cause that provides the information needed
 		// to fake out the browser about where the 'file' is so internal references work.();
 		public void Navigate(HtmlDom htmlDom, HtmlDom htmlEditDom = null, bool setAsCurrentPageForDebugging = false,
-			BloomServer.SimulatedPageFileSource source = BloomServer.SimulatedPageFileSource.Nav)
+			InMemoryHtmlFileSource source = InMemoryHtmlFileSource.Nav)
 		{
 			if (InvokeRequired)
 			{
-				Invoke(new Action<HtmlDom, HtmlDom, bool, BloomServer.SimulatedPageFileSource>(Navigate), htmlDom, htmlEditDom, setAsCurrentPageForDebugging, source);
+				Invoke(new Action<HtmlDom, HtmlDom, bool, InMemoryHtmlFileSource>(Navigate), htmlDom, htmlEditDom, setAsCurrentPageForDebugging, source);
 				return;
 			}
 			// This must already be called before calling Navigate(), but it doesn't really hurt to call it again.
@@ -220,7 +220,7 @@ namespace Bloom
 			}
 			UpdateDisplay(url);
 		}
-		public abstract bool NavigateAndWaitTillDone(HtmlDom htmlDom, int timeLimit, BloomServer.SimulatedPageFileSource source, Func<bool> cancelCheck = null, bool throwOnTimeout = true);
+		public abstract bool NavigateAndWaitTillDone(HtmlDom htmlDom, int timeLimit, InMemoryHtmlFileSource source, Func<bool> cancelCheck = null, bool throwOnTimeout = true);
 
 		public void NavigateRawHtml(string html)
 		{

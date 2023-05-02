@@ -144,12 +144,12 @@ namespace Bloom.Api
 		/// </summary>
 		private int _countBlockedThreads = 0;
 
-		public const string OriginalImageMarker = "OriginalImages"; // Inserted into paths to suppress image processing (for simulated pages and PDF creation)
+		public const string OriginalImageMarker = "OriginalImages"; // Inserted into paths to suppress image processing (for in memory pages and PDF creation)
 		private RuntimeImageProcessor _cache;
 		private bool _useCache;
 
 		private const string SimulatedFileUrlMarker = "-memsim-";
-		static Dictionary<string, string> _urlToSimulatedPageContent = new Dictionary<string, string>(); // see comment on MakeSimulatedPageFileInBookFolder
+		static Dictionary<string, string> _urlToSimulatedPageContent = new Dictionary<string, string>(); // see comment on MakeInMemoryHtmlFileInBookFolder
 		private BloomFileLocator _fileLocator;
 		private readonly BookSelection _bookSelection;
 
@@ -199,18 +199,6 @@ namespace Bloom.Api
 
 		public Book.Book CurrentBook => _bookSelection?.CurrentSelection;
 
-		public enum SimulatedPageFileSource
-		{
-			Normal,     // Normal page preview
-			Pub,        // PDF preview
-			Thumb,      // Thumbnailer
-			Pagelist,   // Initial list of page thumbs
-			JustCheckingPage, // Currently used in epub/BloomPub page checking. Causes Server to replace videos with placeholders.
-			Nav,        // Navigating to a new page?
-			Preview,    // Preview whole book
-			Frame       // Editing View is updating single displayed page
-		}
-
 		/// <summary>
 		/// This code sets things up so that we can edit (or make a thumbnail of, etc.) one page of a book.
 		/// This is tricky because we have to satisfy several constraints:
@@ -221,7 +209,7 @@ namespace Bloom.Api
 		/// the images. (We previously did this by making a file elsewhere and setting the 'base'
 		/// for interpreting urls. But this fails for internal hrefs (starting with #)).
 		/// - We don't want to risk leaving junk page files in the real book folder if anything goes wrong.
-		/// - There may be several of these simulated pages around at the same time (e.g., when the thumbnailer is
+		/// - There may be several of these in memory pages around at the same time (e.g., when the thumbnailer is
 		/// working on several threads).
 		/// - The simulated files need to hang around for an unpredictable time (until the browser is done
 		/// with them).
@@ -231,10 +219,10 @@ namespace Bloom.Api
 		/// for the right file in the right folder. However, the page file never exists as a real file
 		/// system file; instead, a request for the page file itself will be intercepted, and this server
 		/// simply returns the content it has remembered.
-		/// To manage the lifetime of the page data, we use a SimulatedPageFile object, which the Browser
+		/// To manage the lifetime of the page data, we use a InMemoryHtmlFile object, which the Browser
 		/// disposes of when it is no longer looking at that URL. Its dispose method tells this class
-		/// to discard the simulated page data.
-		/// To handle the need for multiple simulated page files and quickly check whether a particular
+		/// to discard the in memory page data.
+		/// To handle the need for multiple in memory page files and quickly check whether a particular
 		/// url is one of them, we have a dictionary in which the urls are keys.
 		/// A marker is inserted into the generated urls if the input HtmlDom wants to use original images.
 		/// </summary>
@@ -244,30 +232,30 @@ namespace Bloom.Api
 		/// URL can cause errors in JavaScript strings. Also, we want to use the same name each time
 		/// for current page content, so Open Page in Browser works even after changing pages.</param>
 		/// <param name="setAsCurrentPageForDebugging"></param>
-		/// <param name="source">SimulatedPageFileSource enum</param>
+		/// <param name="source">InMemoryHtmlFileSource enum</param>
 		/// <returns></returns>
-		public static SimulatedPageFile MakeSimulatedPageFileInBookFolder(HtmlDom dom, bool isCurrentPageContent = false, bool setAsCurrentPageForDebugging = false, BloomServer.SimulatedPageFileSource source = BloomServer.SimulatedPageFileSource.Normal)
+		public static InMemoryHtmlFile MakeInMemoryHtmlFileInBookFolder(HtmlDom dom, bool isCurrentPageContent = false, bool setAsCurrentPageForDebugging = false, InMemoryHtmlFileSource source = InMemoryHtmlFileSource.Normal)
 		{
 			var simulatedPageFileName = Path.ChangeExtension((isCurrentPageContent ? "currentPage" : Guid.NewGuid().ToString()) + SimulatedFileUrlMarker + source, ".html");
-			var pathToSimulatedPageFile = simulatedPageFileName; // a default, if there is no special folder
+			var pathToInMemoryHtmlFile = simulatedPageFileName; // a default, if there is no special folder
 			if (dom.BaseForRelativePaths != null)
 			{
-				pathToSimulatedPageFile = Path.Combine(dom.BaseForRelativePaths, simulatedPageFileName).Replace('\\', '/');
+				pathToInMemoryHtmlFile = Path.Combine(dom.BaseForRelativePaths, simulatedPageFileName).Replace('\\', '/');
 			}
-			if (File.Exists(pathToSimulatedPageFile))
+			if (File.Exists(pathToInMemoryHtmlFile))
 			{
 				// Just in case someone perversely calls a book "currentPage" we will use another name.
 				// (We want one that does NOT conflict with anything really in the folder.)
 				// We only allow one HTML file per folder so we shouldn't need multiple attempts.
-				pathToSimulatedPageFile = Path.Combine(dom.BaseForRelativePaths, "X" + simulatedPageFileName).Replace('\\', '/');
+				pathToInMemoryHtmlFile = Path.Combine(dom.BaseForRelativePaths, "X" + simulatedPageFileName).Replace('\\', '/');
 			}
 			// FromLocalHost is smart about doing nothing if it is not a localhost url. In case it is, we
 			// want the OriginalImageMarker (if any) after the localhost stuff.
-			pathToSimulatedPageFile = pathToSimulatedPageFile.FromLocalhost();
+			pathToInMemoryHtmlFile = pathToInMemoryHtmlFile.FromLocalhost();
 			if (dom.UseOriginalImages)
-				pathToSimulatedPageFile = OriginalImageMarker + "/" + pathToSimulatedPageFile;
-			var url = pathToSimulatedPageFile.ToLocalhost();
-			var key = pathToSimulatedPageFile.Replace('\\', '/');
+				pathToInMemoryHtmlFile = OriginalImageMarker + "/" + pathToInMemoryHtmlFile;
+			var url = pathToInMemoryHtmlFile.ToLocalhost();
+			var key = pathToInMemoryHtmlFile.Replace('\\', '/');
 			if (isCurrentPageContent)
 			{
 				// We need to UrlEncode the single and double quote characters, and the space character,
@@ -275,20 +263,20 @@ namespace Bloom.Api
 				var urlPath = UrlPathString.CreateFromUnencodedString(url);
 				url = urlPath.UrlEncodedForHttpPath;
 			}
-			if(setAsCurrentPageForDebugging)
+			if (setAsCurrentPageForDebugging)
 			{
 				_keyToCurrentPage = key;
 			}
 
 			// If we are creating a page thumbnail and we have videos,
 			// replace them with our standard video placeholder image.
-			if (source == SimulatedPageFileSource.Thumb ||
-			    source == SimulatedPageFileSource.Pagelist ||
-			    source == SimulatedPageFileSource.JustCheckingPage)
+			if (source == InMemoryHtmlFileSource.Thumb ||
+				source == InMemoryHtmlFileSource.Pagelist ||
+				source == InMemoryHtmlFileSource.JustCheckingPage)
 			{
 				ReplaceAnyVideoElementsWithPlaceholder(dom);
 			}
-			dom.Title = "book page"; // makes this show up in Windows Process Explorer WebView2 listing
+			dom.Title = InMemoryHtmlFile.GetTitleForProcessExplorer(source) + " (InMemoryHtmlFile)"; // makes this show up in Windows Process Explorer WebView2 listing
 			var html5String = dom.getHtmlStringDisplayOnly();
 			lock (_theOneInstance._queue)
 			{
@@ -308,7 +296,7 @@ namespace Bloom.Api
 				_urlToSimulatedPageContent[key] = html5String;
 			}
 
-			return new SimulatedPageFile {Key = url};
+			return new InMemoryHtmlFile { Key = url };
 		}
 
 		private const string vidPlaceHolderDivContents =
@@ -338,11 +326,11 @@ namespace Bloom.Api
 			}
 		}
 
-		internal static void RemoveSimulatedPageFile(string key)
+		internal static void RemoveInMemoryHtmlFile(string key)
 		{
-			// There are potential race conditions where one server thread is asked to fetch a simulated page,
+			// There are potential race conditions where one server thread is asked to fetch an in memory page,
 			// but meanwhile, some other thread disposes of it, so it can't be found. We therefore wait to dispose
-			// of simulated pages until there are no busy worker threads and no queued actions.
+			// of in memory pages until there are no busy worker threads and no queued actions.
 			var realKey = key.FromLocalhost();
 			Action removeIt = () =>
 			{
@@ -494,9 +482,10 @@ namespace Bloom.Api
 				return true;
 			}
 
-			if (localPath.StartsWith(OriginalImageMarker)) {
-				// Path relative to simulated page file, and we want the file contents without modification.
-				// (Note that the simulated page file's own URL starts with this, so it's important to check
+			if (localPath.StartsWith(OriginalImageMarker))
+			{
+				// Path relative to in memory page file, and we want the file contents without modification.
+				// (Note that the in memory page file's own URL starts with this, so it's important to check
 				// for that BEFORE we do this check.)
 				// BL-11162 If we get here with the 'OriginalImageMarker' prefix and it's not an image type
 				// that can be degraded, there's no point in continuing on with the prefix!
@@ -1013,7 +1002,7 @@ namespace Bloom.Api
 			string path = "";
 			var localWins = new string[] { "custombookstyles", "branding.css" };
 			if (RobustFile.Exists(localPath) &&
-			    localWins.Any(s => fileName.ToLowerInvariant().Contains(s)))
+				localWins.Any(s => fileName.ToLowerInvariant().Contains(s)))
 			{
 				path = localPath;
 			}
@@ -1181,7 +1170,7 @@ namespace Bloom.Api
 			{
 				zoneAlarm =
 					Directory.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86),
-					                              "CheckPoint/ZoneAlarm")) ||
+												  "CheckPoint/ZoneAlarm")) ||
 					         Directory.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles),
 					                              "CheckPoint/ZoneAlarm"));
 
@@ -1205,7 +1194,7 @@ namespace Bloom.Api
 			}
 
 			return LocalizationManager.GetString("Errors.CannotConnectToBloomServer",
-			                                     "Bloom was unable to start its own HTTP listener that it uses to talk to its embedded Firefox browser. If this happens even if you just restarted your computer, then ask someone to investigate if you have an aggressive firewall product installed, which may need to be uninstalled before you can use Bloom.");
+												 "Bloom was unable to start its own HTTP listener that it uses to talk to its embedded Firefox browser. If this happens even if you just restarted your computer, then ask someone to investigate if you have an aggressive firewall product installed, which may need to be uninstalled before you can use Bloom.");
 		}
 
 		// After the initial startup, this should only be called inside a lock(_queue),
@@ -1297,7 +1286,7 @@ namespace Bloom.Api
 						_ready.Reset();
 						continue;
 					}
-					
+
 					isRecursiveRequestContext = IsRecursiveRequestContext(context);
 					if (isRecursiveRequestContext)
 					{
@@ -1323,7 +1312,7 @@ namespace Bloom.Api
 					// In other words, we (humans) can tell what it wants, but this code doesn't have chance.
 					// So for now, we just say "sorry, can't find it".
 					if (rawurl.Contains("accessibilityCheck") &&
-					    (rawurl.Contains(".png") || rawurl.Contains(".jpg") || rawurl.Contains(".svg")))
+						(rawurl.Contains(".png") || rawurl.Contains(".jpg") || rawurl.Contains(".svg")))
 					{
 						var r = new RequestInfo(new BloomHttpListenerContext(context));
 						r.WriteError(404);
@@ -1489,7 +1478,7 @@ namespace Bloom.Api
 			// missing while creating the book, it's just confusing to do so when they create a publication preview. See BL-9738
 			// for one example.
 			if (PublishApi.CurrentPublicationFolder != null &&
-			    localPath.StartsWith(PublishApi.CurrentPublicationFolder.Replace("\\", "/")))
+				localPath.StartsWith(PublishApi.CurrentPublicationFolder.Replace("\\", "/")))
 			{
 				return false;
 			}
@@ -1499,8 +1488,8 @@ namespace Bloom.Api
 			// (Case for CurrentCollectionSettings null is needed for unit tests.)
 			var collectionPath = CurrentCollectionSettings?.FolderPath;
 			if (currentBookFolderPath == null && !Directory.Exists(Path.GetDirectoryName(localPath))
-			                                  && collectionPath != null
-			                                  && localPath.StartsWith(collectionPath.Replace("\\", "/")))
+											  && collectionPath != null
+											  && localPath.StartsWith(collectionPath.Replace("\\", "/")))
 			{
 				return false;
 			}
@@ -1539,10 +1528,10 @@ namespace Bloom.Api
 			if (localPath.StartsWith(BloomUrlPrefix))
 			{
 				localPath = localPath.Substring(BloomUrlPrefix.Length);
-				#if __MonoCS__
+#if __MonoCS__
 				if (localPath.StartsWith("tmp/ePUB"))
 					localPath = "/" + localPath;	// restore leading slash for full path
-				#endif
+#endif
 			}
 			// and if the file is using localhost:1234/foo.js, at this point it will say "/foo.js", so let's strip off that leading slash
 			else if (localPath.StartsWith("/"))
@@ -1561,24 +1550,24 @@ namespace Bloom.Api
 		{
 			switch (extension)
 			{
-			case ".css": return "text/css";
-			case ".gif": return "image/gif";
-			case ".htm":
-			case ".html": return "text/html";
-			case ".jpg":
-			case ".jpeg": return "image/jpeg";
-			case ".js": return "application/x-javascript";
-			case ".png": return "image/png";
-			case ".pdf": return "application/pdf";
-			case ".txt": return "text/plain";
-			case ".svg": return "image/svg+xml";
-			case ".mp3": return "audio/mpeg";
-			case ".ogg": return "audio/ogg";
-			case ".woff": return "font/woff";
-			case ".woff2": return "font/woff2";
-			case ".xml": return "application/xml";
-			case ".xhtml": return "application/xhtml+xml";
-			default: return "application/octet-stream";
+				case ".css": return "text/css";
+				case ".gif": return "image/gif";
+				case ".htm":
+				case ".html": return "text/html";
+				case ".jpg":
+				case ".jpeg": return "image/jpeg";
+				case ".js": return "application/x-javascript";
+				case ".png": return "image/png";
+				case ".pdf": return "application/pdf";
+				case ".txt": return "text/plain";
+				case ".svg": return "image/svg+xml";
+				case ".mp3": return "audio/mpeg";
+				case ".ogg": return "audio/ogg";
+				case ".woff": return "font/woff";
+				case ".woff2": return "font/woff2";
+				case ".xml": return "application/xml";
+				case ".xhtml": return "application/xhtml+xml";
+				default: return "application/octet-stream";
 			}
 		}
 
@@ -1601,7 +1590,7 @@ namespace Bloom.Api
 			{
 				// Note: So far only BloomApiHandler and problem report dialog have been analyzed to call this when needed.
 				Interlocked.Increment(ref _countBlockedThreads);
-			}			
+			}
 		}
 
 		/// <summary>
@@ -1616,7 +1605,7 @@ namespace Bloom.Api
 			if (IsWorkerThread(Thread.CurrentThread))
 			{
 				Interlocked.Decrement(ref _countBlockedThreads);
-			}			
+			}
 		}
 
 		private bool IsWorkerThread(Thread thread) => thread?.Name?.IndexOf(WorkerThreadNamePrefix) == 0;
@@ -1642,7 +1631,7 @@ namespace Bloom.Api
 				</body>
 				</html>";
 		}
-#region Disposable stuff
+		#region Disposable stuff
 
 		private bool IsDisposed { get; set; }
 
@@ -1717,10 +1706,10 @@ namespace Bloom.Api
 				catch (Exception e)
 				{
 					//prompted by the mysterious BL 273, Crash while closing down the imageserver
-					#if DEBUG
-						Bloom.Utils.MiscUtils.SuppressUnusedExceptionVarWarning(e);
-						throw;
-					#else
+#if DEBUG
+					Bloom.Utils.MiscUtils.SuppressUnusedExceptionVarWarning(e);
+					throw;
+#else
 						//just quietly report this
 						DesktopAnalytics.Analytics.ReportException(e);
 #endif
@@ -1729,21 +1718,21 @@ namespace Bloom.Api
 			IsDisposed = true;
 		}
 
-#endregion
+		#endregion
 	}
 
 	class IdleTaskQueueItem
 	{
 		// The actual thing to do when idle
-		// (currently typically to delete an obsolete simulated page)
+		// (currently typically to delete an obsolete in memory page)
 		public Action WhatToDo;
 		// An ID which can be used to identify obsolete idle tasks
-		// (currently typically the Key of a simulated page)
+		// (currently typically the Key of an in memory page)
 		public string Id;
 		// True if the idle task should not be done after all;
 		// we need this because there is no API to simply remove an
 		// item from a Queue.
-		// (currently set when we add a new simulated page with the same
+		// (currently set when we add a new in memory page with the same
 		// key as one we had queued for deletion but not yet deleted)
 		public bool Cancelled;
 	}

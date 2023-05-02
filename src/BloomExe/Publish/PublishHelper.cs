@@ -232,7 +232,7 @@ namespace Bloom.Publish
 				epubMaker.AddEpubVisibilityStylesheetAndClass(displayDom);
 			if (this != _latestInstance)
 				return;
-			if (!BrowserForPageChecks.NavigateAndWaitTillDone(displayDom, 10000, BloomServer.SimulatedPageFileSource.JustCheckingPage, () => this != _latestInstance,
+			if (!BrowserForPageChecks.NavigateAndWaitTillDone(displayDom, 10000, InMemoryHtmlFileSource.JustCheckingPage, () => this != _latestInstance,
 				false))
 			{
 				// We started having problems with timeouts here (BL-7892).

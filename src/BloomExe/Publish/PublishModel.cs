@@ -1,3 +1,15 @@
+using Bloom.Api;
+using Bloom.Book;
+using Bloom.Collection;
+using Bloom.Publish.PDF;
+using Bloom.Utils;
+using BloomTemp;
+using DesktopAnalytics;
+using Newtonsoft.Json;
+using SIL.Extensions;
+using SIL.IO;
+using SIL.Reporting;
+using SIL.Xml;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -10,18 +22,6 @@ using System.Linq;
 using System.Reflection;
 using System.Windows.Forms;
 using System.Xml;
-using Bloom.Book;
-using Bloom.Collection;
-using Bloom.Api;
-using Bloom.Publish.PDF;
-using BloomTemp;
-using DesktopAnalytics;
-using SIL.IO;
-using SIL.Xml;
-using Newtonsoft.Json;
-using SIL.Extensions;
-using SIL.Reporting;
-using Bloom.Utils;
 
 namespace Bloom.Publish
 {
@@ -81,10 +81,10 @@ namespace Bloom.Publish
 		{
 			BookSelection = bookSelection;
 			_pdfMaker = pdfMaker;
-			_pdfMaker.CompressPdf = true;	// See http://issues.bloomlibrary.org/youtrack/issue/BL-3721.
-			//_pdfMaker.EngineChoice = collectionSettings.PdfEngineChoice;
+			_pdfMaker.CompressPdf = true;   // See http://issues.bloomlibrary.org/youtrack/issue/BL-3721.
+											//_pdfMaker.EngineChoice = collectionSettings.PdfEngineChoice;
 			_currentBookCollectionSelection = currentBookCollectionSelection;
-			ShowCropMarks=false;
+			ShowCropMarks = false;
 			_collectionSettings = collectionSettings;
 			_bookServer = bookServer;
 			_thumbNailer = thumbNailer;
@@ -111,7 +111,7 @@ namespace Bloom.Publish
 		private void OnBookSelectionChanged(object sender, BookSelectionChangedEventArgs bookSelectionChangedEventArgs)
 		{
 			//some of this checking is about bl-272, which was replicated by having one book, going to publish, then deleting that last book.
-			if (BookSelection != null && View != null && BookSelection.CurrentSelection!=null && _currentlyLoadedBook != BookSelection.CurrentSelection && View.Visible)
+			if (BookSelection != null && View != null && BookSelection.CurrentSelection != null && _currentlyLoadedBook != BookSelection.CurrentSelection && View.Visible)
 			{
 				CanPublish = DeterminePublishability();
 			}
@@ -127,7 +127,7 @@ namespace Bloom.Publish
 			var overlayElementNodes = BookSelection?.CurrentSelection?.RawDom.SelectNodes("//div[contains(@class, 'bloom-textOverPicture')]");
 			var bookContainsOverlayElements = (overlayElementNodes?.Count ?? 0) > 0;
 
-			var bookIsTranslatedFromShell = BookSelection?.CurrentSelection?.BookData?.BookIsDerivative()?? false;
+			var bookIsTranslatedFromShell = BookSelection?.CurrentSelection?.BookData?.BookIsDerivative() ?? false;
 			return _collectionSettings.HaveEnterpriseFeatures || !bookContainsOverlayElements || bookIsTranslatedFromShell;
 		}
 
@@ -135,7 +135,7 @@ namespace Bloom.Publish
 		{
 			var msgFmt = L10NSharp.LocalizationManager.GetString("ImageUtils.PreparingImage", "Preparing image: {0}", "{0} is a placeholder for the image file name");
 			var idx = msgFmt.IndexOf("{0}");
-			return idx >= 0 ? msgFmt.Substring(0,idx) : msgFmt; // translated string is missing the filename placeholder?
+			return idx >= 0 ? msgFmt.Substring(0, idx) : msgFmt; // translated string is missing the filename placeholder?
 		}
 
 		public void LoadBook(BackgroundWorker worker, DoWorkEventArgs doWorkEventArgs, Control owner = null)
@@ -154,23 +154,26 @@ namespace Bloom.Publish
 
 					// Check memory for the benefit of developers.  The user won't see anything.
 					Bloom.Utils.MemoryManagement.CheckMemory(true, "about to create PDF file", false);
-					_pdfMaker.MakePdf(new PdfMakingSpecs() {InputHtmlPath = tempHtml.Key,
-							OutputPdfPath=PdfFilePath,
-							PaperSizeName=PageLayout.SizeAndOrientation.PageSizeName,
-							Landscape=PageLayout.SizeAndOrientation.IsLandScape,
-							SaveMemoryMode=_currentlyLoadedBook.UserPrefs.ReducePdfMemoryUse,
-							LayoutPagesForRightToLeft=LayoutPagesForRightToLeft,
-							BooketLayoutMethod=layoutMethod,
-							BookletPortion=BookletPortion,
-							BookIsFullBleed = _currentlyLoadedBook.FullBleed,
-							PrintWithFullBleed = GetPrintingWithFullBleed(),
-							Cmyk = _currentlyLoadedBook.UserPrefs.CmykPdf,
-							HtmlPageCount = this.HtmlPageCount,
-							Author = _currentlyLoadedBook.BookInfo.MetaData.Author,
-							Title = _currentlyLoadedBook.BookInfo.MetaData.Title,
-							Summary = _currentlyLoadedBook.BookInfo.MetaData.Summary,
-							Keywords = GetKeywords(_currentlyLoadedBook.BookInfo.MetaData) },
-						worker, doWorkEventArgs, owner );
+					_pdfMaker.MakePdf(new PdfMakingSpecs()
+					{
+						InputHtmlPath = tempHtml.Key,
+						OutputPdfPath = PdfFilePath,
+						PaperSizeName = PageLayout.SizeAndOrientation.PageSizeName,
+						Landscape = PageLayout.SizeAndOrientation.IsLandScape,
+						SaveMemoryMode = _currentlyLoadedBook.UserPrefs.ReducePdfMemoryUse,
+						LayoutPagesForRightToLeft = LayoutPagesForRightToLeft,
+						BooketLayoutMethod = layoutMethod,
+						BookletPortion = BookletPortion,
+						BookIsFullBleed = _currentlyLoadedBook.FullBleed,
+						PrintWithFullBleed = GetPrintingWithFullBleed(),
+						Cmyk = _currentlyLoadedBook.UserPrefs.CmykPdf,
+						HtmlPageCount = this.HtmlPageCount,
+						Author = _currentlyLoadedBook.BookInfo.MetaData.Author,
+						Title = _currentlyLoadedBook.BookInfo.MetaData.Title,
+						Summary = _currentlyLoadedBook.BookInfo.MetaData.Summary,
+						Keywords = GetKeywords(_currentlyLoadedBook.BookInfo.MetaData)
+					},
+						worker, doWorkEventArgs, owner);
 					// Warn the user if we're starting to use too much memory.
 					Bloom.Utils.MemoryManagement.CheckMemory(false, "finished creating PDF file", true);
 				}
@@ -215,17 +218,17 @@ namespace Bloom.Publish
 
 		private bool LayoutPagesForRightToLeft
 		{
-			get { return _currentlyLoadedBook.BookData.Language1.IsRightToLeft;  }
+			get { return _currentlyLoadedBook.BookData.Language1.IsRightToLeft; }
 		}
 
-		public SimulatedPageFile MakeFinalHtmlForPdfMaker()
+		public InMemoryHtmlFile MakeFinalHtmlForPdfMaker()
 		{
 			if (_currentlyLoadedBook == null)
 				_currentlyLoadedBook = BookSelection.CurrentSelection;
 			PdfFilePath = GetPdfPath(Path.GetFileName(_currentlyLoadedBook.FolderPath));
 
 			var orientationChanging = BookSelection.CurrentSelection.GetLayout().SizeAndOrientation.IsLandScape !=
-			                          PageLayout.SizeAndOrientation.IsLandScape;
+									  PageLayout.SizeAndOrientation.IsLandScape;
 			var dom = BookSelection.CurrentSelection.GetDomForPrinting(BookletPortion, _currentBookCollectionSelection.CurrentSelection,
 				_bookServer, orientationChanging, PageLayout);
 
@@ -242,7 +245,7 @@ namespace Bloom.Publish
 			dom.UseOriginalImages = true; // don't want low-res images or transparency in PDF.
 			HtmlPageCount = dom.SafeSelectNodes("//div[contains(@class,'bloom-page')]").Count;
 
-			return BloomServer.MakeSimulatedPageFileInBookFolder(dom, source:BloomServer.SimulatedPageFileSource.Pub);
+			return BloomServer.MakeInMemoryHtmlFileInBookFolder(dom, source: InMemoryHtmlFileSource.Pub);
 		}
 
 		private void ClipBookToRemoveFullBleed(HtmlDom dom)
@@ -272,7 +275,7 @@ namespace Bloom.Publish
 				HtmlDom.AddClassToBody(dom, "publishingWithoutFullBleed");
 			}
 			HtmlDom.AddPublishClassToBody(dom);
-			
+
 
 			if (LayoutPagesForRightToLeft)
 				HtmlDom.AddRightToLeftClassToBody(dom);
@@ -490,7 +493,7 @@ namespace Bloom.Publish
 									{"BookId", BookSelection.CurrentSelection.ID },
 									{"Country", _collectionSettings.Country}
 								});
-				this._currentlyLoadedBook.ReportSimplisticFontAnalytics(FontAnalytics.FontEventType.PublishPdf,"Save PDF");
+				this._currentlyLoadedBook.ReportSimplisticFontAnalytics(FontAnalytics.FontEventType.PublishPdf, "Save PDF");
 			}
 			catch (Exception err)
 			{
@@ -532,17 +535,19 @@ namespace Bloom.Publish
 					"Saving PDF...",
 					@"Message displayed in a progress report dialog box");
 				progress.BackgroundWorker = new BackgroundWorker();
-				progress.BackgroundWorker.DoWork += (object sender, DoWorkEventArgs e) => {
+				progress.BackgroundWorker.DoWork += (object sender, DoWorkEventArgs e) =>
+				{
 					var pdfProcess = new ProcessPdfWithGhostscript(type, sender as BackgroundWorker, e);
 					pdfProcess.ProcessPdfFile(pdfFilePath, outputPath);
 				};
-				progress.BackgroundWorker.ProgressChanged += (object sender, ProgressChangedEventArgs e) => {
+				progress.BackgroundWorker.ProgressChanged += (object sender, ProgressChangedEventArgs e) =>
+				{
 					progress.Progress = e.ProgressPercentage;
 					var status = e.UserState as string;
 					if (!String.IsNullOrWhiteSpace(status))
 						progress.StatusText = status;
 				};
-				progress.ShowDialog();	// will start the background process when loaded/showing
+				progress.ShowDialog();  // will start the background process when loaded/showing
 				if (progress.ProgressStateResult != null && progress.ProgressStateResult.ExceptionThatWasEncountered != null)
 				{
 					string shortMsg = L10NSharp.LocalizationManager.GetString(@"PublishTab.PdfMaker.ErrorSaving",
@@ -557,23 +562,23 @@ namespace Bloom.Publish
 		public void DebugCurrentPDFLayout()
 		{
 
-//			var dom = BookSelection.CurrentSelection.GetDomForPrinting(BookletPortion, _currentBookCollectionSelection.CurrentSelection, _bookServer);
-//
-//			SizeAndOrientation.UpdatePageSizeAndOrientationClasses(dom, PageLayout);
-//			PageLayout.UpdatePageSplitMode(dom);
-//
-//			XmlHtmlConverter.MakeXmlishTagsSafeForInterpretationAsHtml(dom);
-//			var tempHtml = BloomTemp.TempFile.CreateHtm5FromXml(dom); //nb: we intentially don't ever delete this, to aid in debugging
-//			//var tempHtml = TempFile.WithExtension(".htm");
-//
-//			var settings = new XmlWriterSettings {Indent = true, CheckCharacters = true};
-//			using (var writer = XmlWriter.Create(tempHtml.Path, settings))
-//			{
-//				dom.WriteContentTo(writer);
-//				writer.Close();
-//			}
+			//			var dom = BookSelection.CurrentSelection.GetDomForPrinting(BookletPortion, _currentBookCollectionSelection.CurrentSelection, _bookServer);
+			//
+			//			SizeAndOrientation.UpdatePageSizeAndOrientationClasses(dom, PageLayout);
+			//			PageLayout.UpdatePageSplitMode(dom);
+			//
+			//			XmlHtmlConverter.MakeXmlishTagsSafeForInterpretationAsHtml(dom);
+			//			var tempHtml = BloomTemp.TempFile.CreateHtm5FromXml(dom); //nb: we intentially don't ever delete this, to aid in debugging
+			//			//var tempHtml = TempFile.WithExtension(".htm");
+			//
+			//			var settings = new XmlWriterSettings {Indent = true, CheckCharacters = true};
+			//			using (var writer = XmlWriter.Create(tempHtml.Path, settings))
+			//			{
+			//				dom.WriteContentTo(writer);
+			//				writer.Close();
+			//			}
 
-//			System.Diagnostics.Process.Start(tempHtml.Path);
+			//			System.Diagnostics.Process.Start(tempHtml.Path);
 
 			var htmlFilePath = MakeFinalHtmlForPdfMaker().Key;
 			if (SIL.PlatformUtilities.Platform.IsWindows)
@@ -615,10 +620,10 @@ namespace Bloom.Publish
 					//need to hide the "notes for illustrators" on SHRP, which is controlled by the layout
 					book.SetLayout(new Layout()
 					{
-						SizeAndOrientation =  SizeAndOrientation.FromString("B5Portrait"),
+						SizeAndOrientation = SizeAndOrientation.FromString("B5Portrait"),
 						Style = "HideProductionNotes"
 					});
-					foreach (var page in  book.GetPages())
+					foreach (var page in book.GetPages())
 					{
 						//yield return book.GetPreviewXmlDocumentForPage(page);
 
@@ -651,7 +656,7 @@ namespace Bloom.Publish
 			}
 		}
 
-		public void GetThumbnailAsync(int width, int height, HtmlDom dom,Action<Image> onReady ,Action<Exception> onError)
+		public void GetThumbnailAsync(int width, int height, HtmlDom dom, Action<Image> onReady, Action<Exception> onError)
 		{
 			var thumbnailOptions = new HtmlThumbNailer.ThumbnailOptions()
 			{
@@ -662,7 +667,7 @@ namespace Bloom.Publish
 				Width = width
 			};
 			dom.UseOriginalImages = true; // apparently these thumbnails can be big...anyway we want printable images.
-			_thumbNailer.HtmlThumbNailer.GetThumbnailAsync(String.Empty, string.Empty, dom, thumbnailOptions,onReady, onError);
+			_thumbNailer.HtmlThumbNailer.GetThumbnailAsync(String.Empty, string.Empty, dom, thumbnailOptions, onReady, onError);
 		}
 
 		public IEnumerable<ToolStripItem> GetExtensionMenuItems()
@@ -676,10 +681,10 @@ namespace Bloom.Publish
 				var catalog = new AssemblyCatalog(Assembly.GetExecutingAssembly());
 				var container = new CompositionContainer(catalog);
 				//inject what we have to offer for the extension to consume
-				container.ComposeExportedValue<string>("PathToBookFolder",BookSelection.CurrentSelection.FolderPath);
+				container.ComposeExportedValue<string>("PathToBookFolder", BookSelection.CurrentSelection.FolderPath);
 				container.ComposeExportedValue<string>("Language1Tag", _currentlyLoadedBook.BookData.Language1.Tag);
 				container.ComposeExportedValue<Func<IEnumerable<HtmlDom>>>(GetPageDoms);
-			  //  container.ComposeExportedValue<Func<string>>("pathToPublishedHtmlFile",GetFileForPrinting);
+				//  container.ComposeExportedValue<Func<string>>("pathToPublishedHtmlFile",GetFileForPrinting);
 				//get the original images, not compressed ones (just in case the thumbnails are, like, full-size & they want quality)
 				container.ComposeExportedValue<Action<int, int, HtmlDom, Action<Image>, Action<Exception>>>(GetThumbnailAsync);
 				container.SatisfyImportsOnce(this);
@@ -739,7 +744,8 @@ namespace Bloom.Publish
 
 				// We must preserve M1 and M2 in xmatter.
 				// Most xmatters do not contain M2, but the mxb ones do.
-				bool shouldOtherwisePreserve(string langCode) {
+				bool shouldOtherwisePreserve(string langCode)
+				{
 					return isXMatter && (langCode == metadataLang1Code || langCode == metadataLang2Code);
 				}
 
@@ -782,8 +788,8 @@ namespace Bloom.Publish
 			if (stylesNode != null)
 			{
 				var cssTextOrig = stylesNode.InnerXml;   // InnerXml needed to preserve CDATA markup
-				// For 5.3, we wholesale keep all L2/L3 rules even though this might result in incorrect error messages about fonts. (BL-11357)
-				// In 5.4, we hope to clean up all this font determination stuff by using a real browser to determine what is used.
+														 // For 5.3, we wholesale keep all L2/L3 rules even though this might result in incorrect error messages about fonts. (BL-11357)
+														 // In 5.4, we hope to clean up all this font determination stuff by using a real browser to determine what is used.
 				var cssText = HtmlDom.RemoveUnwantedLanguageRulesFromCss(cssTextOrig, languagesToInclude.Append(metadataLang1Code).Append(metadataLang2Code));
 				if (cssText != cssTextOrig)
 					stylesNode.InnerXml = cssText;
@@ -809,8 +815,8 @@ namespace Bloom.Publish
 		{
 			var container = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "bloom audio export");
 			Directory.CreateDirectory(container);
-			var parentFolderForAllOfTheseExports  = TemporaryFolder.TrackExisting(container);
-			var  folderForThisBook = new TemporaryFolder(parentFolderForAllOfTheseExports, Path.GetFileName(this.BookSelection.CurrentSelection.FolderPath));
+			var parentFolderForAllOfTheseExports = TemporaryFolder.TrackExisting(container);
+			var folderForThisBook = new TemporaryFolder(parentFolderForAllOfTheseExports, Path.GetFileName(this.BookSelection.CurrentSelection.FolderPath));
 			var pageIndex = 0;
 
 			foreach (XmlElement pageElement in this.BookSelection.CurrentSelection.GetPageElements())
@@ -847,7 +853,7 @@ namespace Bloom.Publish
 						//}
 						var bookName = Path.GetFileName(this.BookSelection.CurrentSelection.FolderPath);// not title, that isn't sanitized to safe characters
 						var filename =
-							$"{bookName}_{this._currentlyLoadedBook.BookData.Language1.Name}_{pageIndex:0000}.mp3".Replace(' ','_');
+							$"{bookName}_{this._currentlyLoadedBook.BookData.Language1.Name}_{pageIndex:0000}.mp3".Replace(' ', '_');
 						var combinedAudioPath = Path.Combine(folderForThisBook.FolderPath, filename);
 						var errorMessage = AudioProcessor.MergeAudioFiles(mergeFiles, combinedAudioPath);
 						if (errorMessage != null)

@@ -252,7 +252,7 @@ namespace Bloom.Edit
 
 			_baseForRelativePaths = pageListDom.BaseForRelativePaths;
 			if (this.IsHandleCreated) // somehow we can get here when the edit view is not active at all
-				Invoke((Action)(()=>_browser.Navigate(pageListDom, source:BloomServer.SimulatedPageFileSource.Pagelist)));
+				Invoke((Action)(()=>_browser.Navigate(pageListDom, source:InMemoryHtmlFileSource.Pagelist)));
 			return result.ToList();
 		}
 

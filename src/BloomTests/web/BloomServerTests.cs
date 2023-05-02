@@ -1,4 +1,4 @@
-﻿// Copyright (c) 2014-2018 SIL International
+// Copyright (c) 2014-2018 SIL International
 // This software is licensed under the MIT License (http://opensource.org/licenses/MIT)
 
 using System.Diagnostics;
@@ -335,15 +335,15 @@ namespace BloomTests.web
 		}
 
 		[Test]
-		[TestCase(BloomServer.SimulatedPageFileSource.JustCheckingPage, false)]
-		[TestCase(BloomServer.SimulatedPageFileSource.Frame, true)]
-		[TestCase(BloomServer.SimulatedPageFileSource.Nav, true)]
-		[TestCase(BloomServer.SimulatedPageFileSource.Normal, true)]
-		[TestCase(BloomServer.SimulatedPageFileSource.Pagelist, false)]
-		[TestCase(BloomServer.SimulatedPageFileSource.Preview, true)]
-		[TestCase(BloomServer.SimulatedPageFileSource.Pub, true)]
-		[TestCase(BloomServer.SimulatedPageFileSource.Thumb, false)]
-		public void ServerKnowsDifferenceBetweenRealAndThumbVideos(BloomServer.SimulatedPageFileSource source, bool expectVideo)
+		[TestCase(InMemoryHtmlFileSource.JustCheckingPage, false)]
+		[TestCase(InMemoryHtmlFileSource.Frame, true)]
+		[TestCase(InMemoryHtmlFileSource.Nav, true)]
+		[TestCase(InMemoryHtmlFileSource.Normal, true)]
+		[TestCase(InMemoryHtmlFileSource.Pagelist, false)]
+		[TestCase(InMemoryHtmlFileSource.Preview, true)]
+		[TestCase(InMemoryHtmlFileSource.Pub, true)]
+		[TestCase(InMemoryHtmlFileSource.Thumb, false)]
+		public void ServerKnowsDifferenceBetweenRealAndThumbVideos(InMemoryHtmlFileSource source, bool expectVideo)
 		{
 			using (var server = CreateBloomServer())
 			{

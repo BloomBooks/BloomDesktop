@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.IO;
@@ -151,7 +151,7 @@ namespace Bloom.Edit
 			using (var b = BrowserMaker.MakeBrowser())
 			{
 				var dom = new HtmlDom(XmlHtmlConverter.GetXmlDomFromHtmlFile(bookPath, false));
-				b.NavigateAndWaitTillDone(dom, 30000, BloomServer.SimulatedPageFileSource.Nav);
+				b.NavigateAndWaitTillDone(dom, 30000, InMemoryHtmlFileSource.Nav);
 
 				//Now we call the method which takes that confuration data and adds/removes/updates pages.
 				//We have the data as json string, so first we turn it into object for the updateDom's convenience.

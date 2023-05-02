@@ -480,7 +480,7 @@ namespace Bloom.Edit
 					// Set everything up and navigate the top browser to a new root document.
 					_model.SetupServerWithCurrentBookToolboxContents();
 					var dom = _model.GetXmlDocumentForEditScreenWebPage();
-					_browser1.Navigate(dom, domForCurrentPage, setAsCurrentPageForDebugging: true, source:BloomServer.SimulatedPageFileSource.Frame);
+					_browser1.Navigate(dom, domForCurrentPage, setAsCurrentPageForDebugging: true, source:InMemoryHtmlFileSource.Frame);
 				}
 				_model.CheckForBL2634("navigated to page");
 				SetModalState(false);	// ensure _pageListView is enabled (BL-9712).
