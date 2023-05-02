@@ -30,31 +30,38 @@ import {
     useSetupBloomDialog
 } from "../BloomDialog/BloomDialogPlumbing";
 
-export interface IProgressDialogProps {
+/**
+ * Shared configuration between ProgressDialog and EmbeddedProgressDialog
+ */
+export interface IProgressDialogConfig {
     title: string;
     titleColor?: string;
     titleIcon?: string;
     titleBackgroundColor?: string;
-    // defaults to "never"
+    // defaults means "never"
     showReportButton?: "always" | "if-error" | "never";
     showCancelButton?: boolean;
-    onCancel?: () => void;
-    onReadyToReceive?: () => void;
+}
 
+/**
+ * The schema for the websocket data that EmbeddedProgressDialog is expecting
+ * Should stay in sync with whatever props JSON that BrowserProgressDialog.cs in API land might generate
+ */
+interface IEmbeddedProgressDialogConfig extends IProgressDialogConfig {
+    which: string; // must match props.which to open
+}
+
+export interface IProgressDialogProps extends IProgressDialogConfig {
     open: boolean; // Controls whether or not the dialog is open (visible). If undefined, defaults to dialogEnvironment.initiallyOpen.
     onClose: () => void; // Callback fired when the component requests to be closed.
+
+    onCancel?: () => void;
+    onReadyToReceive?: () => void;
 
     dialogEnvironment?: IBloomDialogEnvironmentParams;
     determinate?: boolean;
     size?: "small"; // For a much smaller dialog, when we only expect a few lines.
 }
-
-type IEmbeddedProgressProps = Omit<
-    IProgressDialogProps & {
-        which: string; // must match props.which to open
-    },
-    "open" | "onClose"
->;
 
 export const ProgressDialog: React.FunctionComponent<IProgressDialogProps> = props => {
     const {
@@ -356,17 +363,15 @@ export const EmbeddedProgressDialog: React.FunctionComponent<{
     id: string;
 }> = props => {
     const [isOpen, setIsOpen] = useState(false);
-    const [progressProps, setProgressProps] = useState<IEmbeddedProgressProps>({
+    const [progressConfig, setProgressConfig] = useState<
+        IEmbeddedProgressDialogConfig
+    >({
         which: "",
         // just lets us know something is wrong if it shows up; a real title should
         // be supplied by the code that causes it to become visible.
-        title: "This should not be seen",
-        dialogEnvironment: {
-            initiallyOpen: false,
-            dialogFrameProvidedExternally: false
-        }
+        title: "This should not be seen"
     });
-    const openProgress = (args: IEmbeddedProgressProps) => {
+    const openProgress = (args: IEmbeddedProgressDialogConfig) => {
         if (args.which !== props.id) {
             return; // message for another progress dialog, typically in another browser instance
         }
@@ -375,7 +380,7 @@ export const EmbeddedProgressDialog: React.FunctionComponent<{
         // that initial value gets captured on the first render. We have to use
         // the "open" prop for controlling that instead.
         // args are sent from the C# code that wants to open the dialog.
-        setProgressProps({
+        setProgressConfig({
             ...args
         });
         setIsOpen(true);
@@ -383,7 +388,7 @@ export const EmbeddedProgressDialog: React.FunctionComponent<{
     useSubscribeToWebSocketForObject(
         "progress",
         "open-progress",
-        (args: IEmbeddedProgressProps) => openProgress(args)
+        (args: IEmbeddedProgressDialogConfig) => openProgress(args)
     );
     useSubscribeToWebSocketForEvent("progress", "close-progress", () => {
         // Handles "close" initiated from over the websocket
@@ -392,13 +397,17 @@ export const EmbeddedProgressDialog: React.FunctionComponent<{
 
     return (
         <ProgressDialog
-            {...progressProps}
+            {...progressConfig}
             open={isOpen}
             onClose={() => {
                 // Handles "close" initiated from React-land (e.g. clicking on a button)
                 setIsOpen(false);
             }}
             onReadyToReceive={() => post("progress/ready")}
+            dialogEnvironment={{
+                initiallyOpen: false,
+                dialogFrameProvidedExternally: false
+            }}
         />
     );
 };
