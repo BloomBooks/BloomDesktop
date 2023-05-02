@@ -59,15 +59,7 @@ namespace Bloom
 				}
 			}
 			// Assume everything is okay.
-			try
-			{
-				return MetadataFromFileInternal(path);
-			}
-			catch (Exception ex)
-			{
-				// But if it isn't, at least report the name of the file!
-				throw new Exception($"The image file {path} appears to be invalid.", ex);
-			}
+			return MetadataFromFileInternal(path);
 		}
 
 		private static Metadata MetadataFromFileInternal(string path)

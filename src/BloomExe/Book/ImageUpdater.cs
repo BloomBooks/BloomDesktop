@@ -117,10 +117,12 @@ namespace Bloom.Book
 			{
 				return PalasoImage.FromFileRobustly(path);
 			}
-			catch (CorruptFileException e)
+			catch (Exception e)
 			{
-				ErrorReport.NotifyUserOfProblem(e,
-					"Bloom ran into a problem while trying to read the metadata portion of this image, " + path);
+				var msgFmt = LocalizationManager.GetString("Errors.CorruptImageFile", "The image file {0} is corrupt and needs to be replaced. ({1})");
+				string msg = string.Format(msgFmt, Path.GetFileName(path), e.Message);
+				Logger.WriteEvent($"Book.UpdateImgMetadataAttributesToMatchImage() Image {path} is corrupt: {e.Message}");
+				NonFatalProblem.Report(ModalIf.All, PassiveIf.None, msg, null, null, false, false, true);
 				return null;
 			}
 		}
@@ -180,6 +182,17 @@ namespace Bloom.Book
 				catch (UnauthorizedAccessException e)
 				{
 					throw new BloomUnauthorizedAccessException(path, e);
+				}
+				catch (Exception e)
+				{
+					imgElement.RemoveAttribute("data-copyright");
+					imgElement.RemoveAttribute("data-creator");
+					imgElement.RemoveAttribute("data-license");
+					Logger.WriteEvent($"Book.UpdateImgMetadataAttributesToMatchImage() Image {path} is corrupt: {e.Message}");
+					var msgFmt = LocalizationManager.GetString("Errors.CorruptImageFile", "The image file {0} is corrupt and needs to be replaced. ({1})");
+					string msg = string.Format(msgFmt, fileName, e.Message);
+					NonFatalProblem.Report(ModalIf.All, PassiveIf.None, msg, null, null, false, false, true);
+					return;
 				}
 			}
 
