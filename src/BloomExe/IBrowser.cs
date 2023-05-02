@@ -147,7 +147,7 @@ namespace Bloom
 				Invoke(new Action<HtmlDom, HtmlDom, bool, BloomServer.SimulatedPageFileSource>(Navigate), htmlDom, htmlEditDom, setAsCurrentPageForDebugging, source);
 				return;
 			}
-
+			// This must already be called before calling Navigate(), but it doesn't really hurt to call it again.
 			EnsureBrowserReadyToNavigate();
 
 			XmlDocument dom = htmlDom.RawDom;

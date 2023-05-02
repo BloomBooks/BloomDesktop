@@ -216,6 +216,9 @@ namespace Bloom
 			// Should be called on UI thread. Since it is quite typical for this method to create the
 			// window handle and browser, it can't do its own Invoke, which depends on already having a handle.
 			// OTOH, Unit tests are often not run on the UI thread (and would therefore just pop up annoying asserts).
+			// For future reference, if we are navigating to produce a preview, make sure that the api call that
+			// requests the call is syncing on the correct thumbnail/preview sync object, otherwise we can get a
+			// deadlock here while trying to navigate (See BL-11513).
 			Debug.Assert(Program.RunningOnUiThread || Program.RunningUnitTests || Program.RunningInConsoleMode,
 				"Should be running on UI Thread or Unit Tests or Console mode");
 			var done = false;
