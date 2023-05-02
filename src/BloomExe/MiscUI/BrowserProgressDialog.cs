@@ -127,6 +127,7 @@ namespace Bloom.MiscUI
 			Action doWhenDialogCloses = null,
 			string titleIcon= null)
 		{
+			// Should correspond with IEmbeddedProgressDialogConfig in ProgressDialog.tsx
 			var props = new DynamicJson();
 			// same object, but the function call wants it to be DynamicJson,
 			// while it's easier to set the props when it is typed as dynamic.
