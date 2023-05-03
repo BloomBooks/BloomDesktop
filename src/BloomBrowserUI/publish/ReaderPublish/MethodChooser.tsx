@@ -26,7 +26,7 @@ const methodNameToImageFileName = {
 export const MethodChooser: React.FunctionComponent = () => {
     const [method, setMethod] = useApiStringState(
         "publish/bloompub/method",
-        "wifi"
+        "file"
     );
     const isLicenseOK = useWatchBooleanEvent(
         true,
