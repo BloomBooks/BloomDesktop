@@ -1011,9 +1011,6 @@ body {
 @ComicAffordanceFilter: invert(48%) sepia(14%) saturate(1147%)
     hue-rotate(257deg) brightness(90%) contrast(84%);
 
-@BlackToWhiteFilter: invert(100%) sepia(3%) saturate(7468%) hue-rotate(173deg)
-    brightness(116%) contrast(100%);
-
 .bloom-imageContainer {
     .bloom-textOverPicture {
         .bloom-translationGroup {
@@ -1028,6 +1025,17 @@ body {
                     filter: @ComicAffordanceFilter;
                 }
             }
+        }
+        .bloom-dragHandle {
+            filter: @ComicAffordanceFilter;
+            position: absolute;
+            left: unset;
+            // NB: right is set by a rule at the end of this file
+            width: 22px;
+            height: 22px;
+            top: -15px;
+            // This z-index should be above the canvas
+            z-index: @dragHandleEventZIndex;
         }
     }
 }
