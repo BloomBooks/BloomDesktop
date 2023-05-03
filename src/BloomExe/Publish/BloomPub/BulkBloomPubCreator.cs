@@ -98,7 +98,7 @@ namespace Bloom.Publish.BloomPub
 					Process.SafeStart(dest.FolderPath);
 					// true means wait for the user, don't close automatically
 					return true;
-				}, "readerPublish", "Bulk Save BloomPubs");
+				}, "readerPublish", "Bulk Save BloomPubs", showCancelButton: true);
 		}
 
 
