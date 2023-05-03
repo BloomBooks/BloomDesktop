@@ -38,9 +38,7 @@ import { ShowEditViewDialog } from "../editViewFrame";
 
 let isOpenAlready = false;
 
-export const BookSettingsDialog: React.FunctionComponent<{
-    data: any;
-}> = () => {
+export const BookSettingsDialog: React.FunctionComponent<{}> = () => {
     const {
         showDialog,
         closeDialog,
@@ -49,12 +47,6 @@ export const BookSettingsDialog: React.FunctionComponent<{
         initiallyOpen: true,
         dialogFrameProvidedExternally: false
     });
-
-    // const [settings, setSettings] = useApiStringState(
-    //     "book/settings",
-    //     "{}",
-    //     () => propsForBloomDialog.open
-    // );
 
     const [settingsString, setSettingsString] = useApiStringState(
         "book/settings",
@@ -81,50 +73,49 @@ export const BookSettingsDialog: React.FunctionComponent<{
     }, [settingsString]);
 
     return (
-        <React.Fragment>
-            <BloomDialog
-                cssForDialogContents={css`
-                    background-color: white;
+        <BloomDialog
+            cssForDialogContents={css`
+                background-color: white;
+            `}
+            {...propsForBloomDialog}
+            onClose={closeDialog}
+            onCancel={() => {
+                isOpenAlready = false;
+                closeDialog();
+            }}
+            draggable={false}
+            maxWidth={false}
+        >
+            <DialogTitle title="Book Settings" />
+            <DialogMiddle
+                css={css`
+                    &:first-child {
+                        margin-top: 0; // override the default that sees a lack of a title and adds a margin
+                    }
+                    // normally we want this: overflow-y: scroll;
+                    overflow-y: hidden; // but I need help on the css, so we're going with this for now
                 `}
-                {...propsForBloomDialog}
-                onClose={closeDialog}
-                onCancel={() => {
-                    isOpenAlready = false;
-                    closeDialog();
-                }}
-                draggable={false}
-                maxWidth={false}
             >
-                <DialogTitle title="Book Settings" />
-                <DialogMiddle
-                    css={css`
-                        &:first-child {
-                            margin-top: 0; // override the default that sees a lack of a title and adds a margin
-                        }
-                        // normally we want this: overflow-y: scroll;
-                        overflow-y: hidden; // but I need help on the css, so we're going with this for now
-                    `}
-                >
-                    {settings && (
-                        <ConfigrPane
-                            label="Book Settings"
-                            initialValues={settings}
-                            showAllGroups={true}
-                            //themeOverrides={lightTheme}
-                            themeOverrides={{
-                                // enhance: we'd like to just be passing `lightTheme` but at the moment that seems to clobber everything
-                                palette: {
-                                    primary: { main: kBloomBlue }
-                                }
-                            }}
-                            showAppBar={false}
-                            showJson={false}
-                            setValueOnRender={s => {
-                                setSettingsToReturnLater(s);
-                                //setSettings(s);
-                            }}
-                        >
-                            {/* we'll bring this back later
+                {settings && (
+                    <ConfigrPane
+                        label="Book Settings"
+                        initialValues={settings}
+                        showAllGroups={true}
+                        //themeOverrides={lightTheme}
+                        themeOverrides={{
+                            // enhance: we'd like to just be passing `lightTheme` but at the moment that seems to clobber everything
+                            palette: {
+                                primary: { main: kBloomBlue }
+                            }
+                        }}
+                        showAppBar={false}
+                        showJson={false}
+                        setValueOnRender={s => {
+                            setSettingsToReturnLater(s);
+                            //setSettings(s);
+                        }}
+                    >
+                        {/* we'll bring this back later
                             <ConfigrGroup label="Appearance" level={1}>
                                 <ConfigrCustomStringInput
                                     path={`appearance.coverColor`}
@@ -132,39 +123,38 @@ export const BookSettingsDialog: React.FunctionComponent<{
                                     control={ColorPickerForConfigr}
                                 />
                             </ConfigrGroup> */}
-                            <ConfigrGroup label="BloomPUB" level={1}>
-                                <ConfigrSubgroup
-                                    label="Resolution"
+                        <ConfigrGroup label="BloomPUB" level={1}>
+                            <ConfigrSubgroup
+                                label="Resolution"
+                                path={`publish.bloomPUB.imageSettings`}
+                                description={
+                                    "When images in books are really high resolution, it makes the books more difficult to view over poor internet connections. They will also take more space on phones. For this reason, Bloom reduces images to a maximum size."
+                                }
+                            >
+                                <BloomResolutionSlider
                                     path={`publish.bloomPUB.imageSettings`}
-                                    description={
-                                        "When images in books are really high resolution, it makes the books more difficult to view over poor internet connections. They will also take more space on phones. For this reason, Bloom reduces images to a maximum size."
-                                    }
-                                >
-                                    <BloomResolutionSlider
-                                        path={`publish.bloomPUB.imageSettings`}
-                                        label="Resolution"
-                                    />
-                                </ConfigrSubgroup>
-                            </ConfigrGroup>
-                        </ConfigrPane>
-                    )}
-                </DialogMiddle>
-                <DialogBottomButtons>
-                    <DialogOkButton
-                        default={true}
-                        onClick={() => {
-                            postJson("book/settings", settingsToReturnLater);
-                            isOpenAlready = false;
-                            closeDialog();
-                            // todo: how do we make the pageThumbnailList reload? It's in a different browser, so
-                            // we can't use a global. It listens to websocket, but we currently can only listen,
-                            // we cannot send.
-                        }}
-                    />
-                    <DialogCancelButton />
-                </DialogBottomButtons>
-            </BloomDialog>
-        </React.Fragment>
+                                    label="Resolution"
+                                />
+                            </ConfigrSubgroup>
+                        </ConfigrGroup>
+                    </ConfigrPane>
+                )}
+            </DialogMiddle>
+            <DialogBottomButtons>
+                <DialogOkButton
+                    default={true}
+                    onClick={() => {
+                        postJson("book/settings", settingsToReturnLater);
+                        isOpenAlready = false;
+                        closeDialog();
+                        // todo: how do we make the pageThumbnailList reload? It's in a different browser, so
+                        // we can't use a global. It listens to websocket, but we currently can only listen,
+                        // we cannot send.
+                    }}
+                />
+                <DialogCancelButton />
+            </DialogBottomButtons>
+        </BloomDialog>
     );
 };
 
@@ -243,7 +233,7 @@ export function showBookSettingsDialog() {
     // for now, we need to prevent that.
     if (!isOpenAlready) {
         isOpenAlready = true;
-        ShowEditViewDialog(<BookSettingsDialog data={{}} />);
+        ShowEditViewDialog(<BookSettingsDialog />);
     }
 }
 

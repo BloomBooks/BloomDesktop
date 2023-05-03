@@ -910,6 +910,10 @@
         <note>ID: ColorPicker.New</note>
         <note>A background color selection that enables a color picker.</note>
       </trans-unit>
+      <trans-unit id="Common.BookSettings" translate="no">
+        <source xml:lang="en">Book Settings</source>
+        <note>ID: Common.BookSettings</note>
+      </trans-unit>
       <trans-unit id="Common.Advanced">
         <source xml:lang="en">Advanced</source>
         <note>ID: Common.Advanced</note>
