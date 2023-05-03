@@ -1,3 +1,9 @@
+using Bloom.Api;
+using Bloom.Book;
+using Microsoft.Web.WebView2.Core;
+using Microsoft.Web.WebView2.WinForms;
+using Newtonsoft.Json;
+using SIL.IO;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -7,17 +13,10 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using Bloom.Book;
-using Bloom.Api;
-using Bloom.Utils;
-using Microsoft.Web.WebView2.Core;
-using Microsoft.Web.WebView2.WinForms;
-using Newtonsoft.Json;
-using SIL.IO;
 
 namespace Bloom
 {
-	public partial class WebView2Browser :  Browser
+	public partial class WebView2Browser : Browser
 	{
 		private bool _readyToNavigate;
 		public WebView2Browser()
@@ -53,11 +52,11 @@ namespace Bloom
 				// It removes some unwanted controls from the toolbar that WebView2 inserts when
 				// previewing a PDF file.
 				_webview.CoreWebView2.Settings.HiddenPdfToolbarItems = CoreWebView2PdfToolbarItems.Print // we prefer our big print button, and it may show a dialog first
-				                                                       | CoreWebView2PdfToolbarItems.Rotate // shouldn't be needed, just clutter
-				                                                       | CoreWebView2PdfToolbarItems.Save // would always be disabled, there's no known place to save
-				                                                       | CoreWebView2PdfToolbarItems.SaveAs // We want our Save code, which checks things like not saving in the book folder
-				                                                       | CoreWebView2PdfToolbarItems.FullScreen // doesn't work right and is hard to recover from
-				                                                       | CoreWebView2PdfToolbarItems.MoreSettings; // none of its functions seem useful
+																	   | CoreWebView2PdfToolbarItems.Rotate // shouldn't be needed, just clutter
+																	   | CoreWebView2PdfToolbarItems.Save // would always be disabled, there's no known place to save
+																	   | CoreWebView2PdfToolbarItems.SaveAs // We want our Save code, which checks things like not saving in the book folder
+																	   | CoreWebView2PdfToolbarItems.FullScreen // doesn't work right and is hard to recover from
+																	   | CoreWebView2PdfToolbarItems.MoreSettings; // none of its functions seem useful
 
 				_readyToNavigate = true;
 			};
@@ -73,7 +72,7 @@ namespace Bloom
 			// Remove built-in items (except a couple of useful ones, if we're in a debugging context)
 			var menuList = e.MenuItems;
 
-			for (int index = 0; index < menuList.Count; )
+			for (int index = 0; index < menuList.Count;)
 			{
 				if (wantDebug && (menuList[index].Name == "inspectElement"))
 				{
@@ -122,12 +121,12 @@ namespace Bloom
 				// this should clear what we need and nothing else.
 				await _webview.CoreWebView2.Profile.ClearBrowsingDataAsync(CoreWebView2BrowsingDataKinds.CacheStorage | CoreWebView2BrowsingDataKinds.DiskCache);
 			}
-			
+
 		}
 
 		// needed by geckofx but not webview2
 		public override void EnsureHandleCreated()
-		{		
+		{
 		}
 		public override void CopySelection()
 		{
@@ -153,7 +152,7 @@ namespace Bloom
 			_webview.Select();
 		}
 
-		public override void ActivateFocussed() 
+		public override void ActivateFocussed()
 		{
 			// I can't find any place where this does anything useful in GeckoFx that would allow me to
 			// test a WebView2 implementation. For example, from the comment in the ReactControl_Load
@@ -284,11 +283,6 @@ namespace Bloom
 			return new Bitmap(stream);
 		}
 
-		public override void OnGetTroubleShootingInformation(object sender, EventArgs e)
-		{
-			throw new NotImplementedException();
-		}
-
 		public override void SaveDocument(string path)
 		{
 			var html = RunJavaScript("document.documentElement.outerHTML");
@@ -323,7 +317,7 @@ namespace Bloom
 			return result;
 		}
 
-		public  override async Task<string> RunJavaScriptAsync(string script)
+		public override async Task<string> RunJavaScriptAsync(string script)
 		{
 			var result = await _webview.ExecuteScriptAsync(script);
 			// Whatever the javascript produces gets JSON encoded automatically by ExecuteScriptAsync.
@@ -340,7 +334,7 @@ namespace Bloom
 
 		public override void SetEditingCommands(CutCommand cutCommand, CopyCommand copyCommand, PasteCommand pasteCommand, UndoCommand undoCommand)
 		{
-			
+
 		}
 
 		public override void ShowHtml(string html)
@@ -350,7 +344,7 @@ namespace Bloom
 
 		public override void UpdateEditButtons()
 		{
-			
+
 		}
 
 	}
@@ -369,7 +363,7 @@ namespace Bloom
 			CoreWebView2ContextMenuItem newItem =
 				_webview.CoreWebView2.Environment.CreateContextMenuItem(
 					caption, null, CoreWebView2ContextMenuItemKind.Command);
-			newItem.CustomItemSelected += (sender,args) => handler(sender, new EventArgs());
+			newItem.CustomItemSelected += (sender, args) => handler(sender, new EventArgs());
 			newItem.IsEnabled = enabled;
 			_menuList.Insert(_menuList.Count, newItem);
 		}
