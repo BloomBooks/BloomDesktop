@@ -118,7 +118,7 @@ namespace Bloom.Spreadsheet
 					SIL.IO.RobustIO.DeleteDirectoryAndContents(audioFolder);
 				Import(sheet, progress);
 				return true; // always leave the dialog up until the user chooses 'close'
-			}, "collectionTab", "Importing Spreadsheet", doWhenDialogCloses: doWhenProgressCloses);
+			}, "collectionTab", "Importing Spreadsheet", showCancelButton: false, doWhenDialogCloses: doWhenProgressCloses);
 		}
 
 		private Browser _browser;
