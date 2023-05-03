@@ -334,6 +334,9 @@ export const PDFPrintPublishScreen = () => {
                     setPath("");
                 }}
                 open={isProgressDialogOpen}
+                onClose={() => {
+                    setIsProgressDialogOpen(false);
+                }}
             />
             <RequiresBloomEnterpriseDialog />
         </React.Fragment>

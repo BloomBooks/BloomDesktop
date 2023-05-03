@@ -20,7 +20,10 @@ import "react-tabs/style/react-tabs.less";
 import { BloomTabs } from "../../react_components/BloomTabs";
 import { ProgressDialog } from "../../react_components/Progress/ProgressDialog";
 import { useL10n } from "../../react_components/l10nHooks";
-import { Mode } from "../../react_components/BloomDialog/BloomDialogPlumbing";
+import {
+    IBloomDialogEnvironmentParams,
+    Mode
+} from "../../react_components/BloomDialog/BloomDialogPlumbing";
 
 export const CollectionsTabBookPane: React.FunctionComponent<{
     // If false, as it usually is, the overlay above the preview iframe
@@ -171,7 +174,14 @@ export const CollectionsTabBookPane: React.FunctionComponent<{
         </BloomButton>
     );
 
-    const [progressOpen, setProgressOpen] = useState(false);
+    const progressDialogEnvironment: IBloomDialogEnvironmentParams = {
+        dialogFrameProvidedExternally: false,
+        initiallyOpen: false,
+        mode: Mode.Collection
+    };
+    const [progressOpen, setProgressOpen] = useState(
+        progressDialogEnvironment.initiallyOpen
+    );
     const longRunningOperationText = useL10n(
         "This may take a while...",
         "Common.LongRunningOperation"
@@ -188,11 +198,10 @@ export const CollectionsTabBookPane: React.FunctionComponent<{
             size="small"
             showCancelButton={false}
             open={progressOpen}
-            dialogEnvironment={{
-                dialogFrameProvidedExternally: false,
-                initiallyOpen: false,
-                mode: Mode.Collection
+            onClose={() => {
+                setProgressOpen(false);
             }}
+            dialogEnvironment={progressDialogEnvironment}
             onReadyToReceive={() => {
                 // no-op - no need to post any messages to the Bloom server
             }}
