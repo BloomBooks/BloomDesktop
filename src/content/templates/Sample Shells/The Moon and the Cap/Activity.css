@@ -107,10 +107,7 @@
     transform: scale(1);
     transition: opacity 0.3s, transform 0.2s;
 }
-.quiz #formatButton {
-    left: unset;
-    right: 0;
-}
+
 .bloom-editable.QuizHeader-style[contentEditable="true"][data-languageTipContent]:not([data-languageTipContent=""]):after,
 .bloom-editable.QuizAnswer-style[contentEditable="true"][data-languageTipContent]:not([data-languageTipContent=""]):after,
 .bloom-editable.QuizQuestion-style[contentEditable="true"][data-languageTipContent]:not([data-languageTipContent=""]):after {
