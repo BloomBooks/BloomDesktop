@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="..\..\packages\SIL.Windows.Forms.Keyboarding.12.0.1-beta0003\build\SIL.Windows.Forms.Keyboarding.props" Condition="Exists('..\..\packages\SIL.Windows.Forms.Keyboarding.12.0.1-beta0003\build\SIL.Windows.Forms.Keyboarding.props')" />
   <Import Project="..\..\packages\icu.net.2.8.1\build\icu.net.props" Condition="Exists('..\..\packages\icu.net.2.8.1\build\icu.net.props')" />
@@ -159,15 +159,6 @@
     <Reference Include="Microsoft.VisualBasic" />
     <Reference Include="Microsoft.VisualStudio.QualityTools.UnitTestFramework, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\..\packages\Microsoft.VisualStudio.QualityTools.UnitTestFramework.Updated.15.0.26228\lib\Microsoft.VisualStudio.QualityTools.UnitTestFramework.dll\Microsoft.VisualStudio.QualityTools.UnitTestFramework.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.Web.WebView2.Core, Version=1.0.1518.46, Culture=neutral, PublicKeyToken=2a8ab48044d2601e, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Microsoft.Web.WebView2.1.0.1518.46\lib\net45\Microsoft.Web.WebView2.Core.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.Web.WebView2.WinForms, Version=1.0.1518.46, Culture=neutral, PublicKeyToken=2a8ab48044d2601e, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Microsoft.Web.WebView2.1.0.1518.46\lib\net45\Microsoft.Web.WebView2.WinForms.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.Web.WebView2.Wpf, Version=1.0.1518.46, Culture=neutral, PublicKeyToken=2a8ab48044d2601e, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Microsoft.Web.WebView2.1.0.1518.46\lib\net45\Microsoft.Web.WebView2.Wpf.dll</HintPath>
     </Reference>
     <Reference Include="Mono.Unix, Version=7.1.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>..\..\packages\Mono.Unix.7.1.0-final.1.21458.1\lib\net45\Mono.Unix.dll</HintPath>
@@ -564,7 +555,6 @@
     <Delete Files="@(DeleteForSILMedia)" TreatErrorsAsWarnings="true" />
     <RemoveDir Directories="@(RemoveForSILMedia)" />
   </Target>
-  <Import Project="..\..\packages\Microsoft.Web.WebView2.1.0.1518.46\build\Microsoft.Web.WebView2.targets" Condition="Exists('..\..\packages\Microsoft.Web.WebView2.1.0.1518.46\build\Microsoft.Web.WebView2.targets')" />
   <!-- Note: Visual Studio automatically inserts any imports from installing packages into the end here,
   but the AfterBuild target may not run if .targets files are imported after it.
   I recommend you move the Import statements before the "AfterBuild" target,

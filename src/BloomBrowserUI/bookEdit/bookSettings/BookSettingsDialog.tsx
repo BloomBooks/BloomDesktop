@@ -38,9 +38,7 @@ import { ShowEditViewDialog } from "../editViewFrame";
 
 let isOpenAlready = false;
 
-export const BookSettingsDialog: React.FunctionComponent<{
-    data: any;
-}> = () => {
+export const BookSettingsDialog: React.FunctionComponent<{}> = () => {
     const {
         showDialog,
         closeDialog,
@@ -243,7 +241,7 @@ export function showBookSettingsDialog() {
     // for now, we need to prevent that.
     if (!isOpenAlready) {
         isOpenAlready = true;
-        ShowEditViewDialog(<BookSettingsDialog data={{}} />);
+        ShowEditViewDialog(<BookSettingsDialog />);
     }
 }
 
