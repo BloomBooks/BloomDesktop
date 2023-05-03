@@ -301,10 +301,6 @@
         <source xml:lang="en">Copy Troubleshooting Information</source>
         <note>ID: Browser.CopyTroubleshootingInfo</note>
       </trans-unit>
-      <trans-unit id="Browser.OpenPageInFirefox">
-        <source xml:lang="en">Open Page in Firefox (which must be in the PATH environment variable)</source>
-        <note>ID: Browser.OpenPageInFirefox</note>
-      </trans-unit>
       <trans-unit id="Browser.ProblemSaving">
         <source xml:lang="en">There was a problem while saving. Please return to the previous page and make sure it looks correct.</source>
         <note>ID: Browser.ProblemSaving</note>
