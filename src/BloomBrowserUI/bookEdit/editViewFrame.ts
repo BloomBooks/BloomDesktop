@@ -167,7 +167,7 @@ export function canUndo(): string {
     if (contentWindow && contentWindow.ckeditorCanUndo()) {
         return "yes";
     }
-    return "fail"; //go ask the browser
+    return "fail"; //can't undo in Javascript, possibly something in C# can?
 }
 
 //noinspection JSUnusedGlobalSymbols
