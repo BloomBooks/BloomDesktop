@@ -138,17 +138,30 @@ namespace Bloom.TeamCollection
 
 		/// <summary>
 		/// This is an additional check on delete AFTER we make sure the book is checked out.
-		/// Even if it is, we can't delete it while disconnected because we don't have a way
-		/// to actually remove it from the TC. Our current Delete mechanism, unlike git etc.,
-		/// does not postpone delete until commit.
+		/// If the collection is actually NOT a Team Collection, or if the book actually exists
+		/// only locally (and thus has never been checked in to the Team Collection), it's okay
+		/// to delete.  If the book is checked out, and the Team Collection knows about it, we
+		/// can't delete it while disconnected because we don't have a way to actually remove it
+		/// from the TC while disconnected.  Our current Delete mechanism, unlike git etc., does
+		/// not postpone delete until commit.
 		/// </summary>
-		/// <param name="bookFolderPath"></param>
-		/// <returns></returns>
-		public bool CannotDeleteBecauseDisconnected(string bookFolderPath)
+		/// <remarks>
+		/// This method has to handle the case of the computer getting disconnected from the
+		/// internet after Bloom has started and CurrentCollectionEvenIfDisconnected has been
+		/// initialized in the "connected" state.
+		/// </remarks>
+		/// <returns>true if the book should not be deleted, false if it's okay to delete</returns>
+		public bool CannotDeleteBecauseDisconnected(Book.Book book)
 		{
+			// not in a team collection?  delete away.
+			if (CollectionStatus == TeamCollectionStatus.None)
+				return false;
+			// check whether book is known to team collection and we're disconnected at this point in time (not just at startup)
+			if (TeamCollection.IsBookKnownToTeamCollection(book.FolderPath) && !CheckConnection())
+				return true;
 			if (CurrentCollectionEvenIfDisconnected == null)
 				return false;
-			return CurrentCollectionEvenIfDisconnected.CannotDeleteBecauseDisconnected(bookFolderPath);
+			return CurrentCollectionEvenIfDisconnected.CannotDeleteBecauseDisconnected(book.FolderPath);
 		}
 
 		public TeamCollectionStatus CollectionStatus

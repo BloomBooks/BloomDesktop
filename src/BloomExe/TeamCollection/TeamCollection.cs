@@ -1450,6 +1450,12 @@ namespace Bloom.TeamCollection
 			return statusFile;
 		}
 
+		internal static bool IsBookKnownToTeamCollection(string bookFolderPath)
+		{
+			var statusFile = GetStatusFilePathFromBookFolderPath(bookFolderPath);
+			return RobustFile.Exists(statusFile);
+		}
+
 		internal void WriteLocalStatus(string bookFolderName, BookStatus status, string collectionFolder = null, string collectionId = null)
 		{
 #if DEBUG

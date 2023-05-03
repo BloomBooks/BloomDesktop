@@ -334,10 +334,6 @@ namespace Bloom.CollectionTab
 			{
 				if (IsCurrentBookInCollection())
 				{
-					if (_tcManager.CollectionStatus != TeamCollectionStatus.None && !_tcManager.CheckConnection())
-					{
-						return false;
-					}
 					if (!_bookSelection.CurrentSelection.IsSaveable)
 					{
 						var msg = LocalizationManager.GetString("TeamCollection.CheckOutForDelete",
@@ -345,7 +341,7 @@ namespace Bloom.CollectionTab
 						BloomMessageBox.ShowInfo(msg);
 						return false;
 					}
-					if (_tcManager.CannotDeleteBecauseDisconnected(_bookSelection.CurrentSelection.FolderPath))
+					if (_tcManager.CannotDeleteBecauseDisconnected(_bookSelection.CurrentSelection))
 					{
 						var msg = LocalizationManager.GetString("TeamCollection.ConnectForDelete",
 							"Please connect to the Team Collection before deleting books that are part of it.");

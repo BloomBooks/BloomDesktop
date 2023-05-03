@@ -126,7 +126,7 @@ namespace Bloom.Spreadsheet
 					"Spreadsheet imported from " + inputFilepath);
 
 				return true; // always leave the dialog up until the user chooses 'close'
-			}, "collectionTab", "Importing Spreadsheet", doWhenDialogCloses: doWhenProgressCloses);
+			}, "collectionTab", "Importing Spreadsheet", showCancelButton: false, doWhenDialogCloses: doWhenProgressCloses);
 		}
 
 		private Browser _browser;
