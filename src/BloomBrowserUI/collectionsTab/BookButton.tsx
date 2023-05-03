@@ -222,16 +222,6 @@ export const BookButton: React.FunctionComponent<{
             //     }
             // },
             {
-                label: "Book Settings",
-                l10nId: "Common.BookSettings",
-                addEllipsis: true,
-                requiresSavePermission: true,
-                onClick: () => {
-                    handleClose(); // not clear why this is needed on this one, we assume it's because we're doing an onClick
-                    showBookSettingsDialog();
-                }
-            },
-            {
                 label: "Delete Book",
                 l10nId: "CollectionTab.BookMenu.DeleteBook",
                 command: "collections/deleteBook",
