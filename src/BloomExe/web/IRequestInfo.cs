@@ -22,9 +22,9 @@ namespace Bloom.Api
 		string RawUrl { get; }
 		bool HaveOutput { get; }
 		void WriteCompleteOutput(string s);
-		void ReplyWithFileContent(string path, string originalPath = null);
+		void ReplyWithFileContent(string path, string originalPath = null, bool dontCache = false);
 		void ReplyWithStreamContent(Stream input, string responseType);
-		void ReplyWithImage(string path, string originalPath = null);
+		void ReplyWithImage(string path, string originalPath = null, bool dontCache = false);
 		void WriteError(int errorCode);
 		void WriteError(int errorCode, string errorDescription);
 		System.Collections.Specialized.NameValueCollection GetQueryParameters();

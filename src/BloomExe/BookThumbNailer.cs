@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Xml;
 using Bloom.Book;
@@ -313,24 +314,48 @@ namespace Bloom
 			{
 				thumbnailOptions.Width = 210;	// Image is square, but otherwise displayed similarly to Landscape
 				thumbnailOptions.Height = 210;
-				pageDiv.SetAttribute("class", pageDiv.Attributes["class"].Value.Replace("Portrait", "Landscape"));
+				SetSizeAndOrientationClass(pageDiv, "Cm13Landscape");
 			}
 			else if (isLandscape)
 			{
 				thumbnailOptions.Width = 297;
 				thumbnailOptions.Height = 210;
-				pageDiv.SetAttribute("class", pageDiv.Attributes["class"].Value.Replace("Portrait", "Landscape"));
+				SetSizeAndOrientationClass(pageDiv, "A4Landscape");
 			}
 			else
 			{
 				thumbnailOptions.Width = 210;
 				thumbnailOptions.Height = 297;
 				// On the offchance someone makes a template with by-default-landscape pages...
-				pageDiv.SetAttribute("class", pageDiv.Attributes["class"].Value.Replace("Landscape", "Portrait"));
+				SetSizeAndOrientationClass(pageDiv, "A4Portrait");
 			}
 			// In different books (or even the same one) in the same session we may have portrait and landscape
 			// versions of the same template page. So we must use different IDs.
-			return _thumbnailProvider.GetThumbnail(page.Id + (isLandscape ? "L" : ""), pageDom, thumbnailOptions);
+			return _thumbnailProvider.GetThumbnail(page.Id + (isSquare ? "S" : (isLandscape ? "L" : "")), pageDom, thumbnailOptions);
+		}
+
+		private void SetSizeAndOrientationClass(XmlElement pageDiv, string sizeOrientationClass)
+		{
+			var classes = pageDiv.GetAttribute("class");
+			if (string.IsNullOrWhiteSpace(classes))
+			{
+				pageDiv.SetAttribute("class", sizeOrientationClass);
+				return;
+			}
+			var parts = classes.Split( new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+			var classBldr = new StringBuilder();
+			foreach (var part in parts)
+			{
+				if (part.ToLowerInvariant().EndsWith("portrait") || part.ToLowerInvariant().EndsWith("landscape"))
+					continue;
+				if (classBldr.Length > 0)
+					classBldr.Append(" ");
+				classBldr.Append(part);
+			}
+			if (classBldr.Length > 0)
+				classBldr.Append(" ");
+			classBldr.Append(sizeOrientationClass);
+			pageDiv.SetAttribute("class", classBldr.ToString());
 		}
 
 		/// <summary>

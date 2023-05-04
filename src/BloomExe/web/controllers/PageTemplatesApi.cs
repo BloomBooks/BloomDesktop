@@ -105,13 +105,13 @@ namespace Bloom.web.controllers
 		public void HandleThumbnailRequest(ApiRequest request)
 		{
 			var filePath = request.LocalPath().Replace("api/pageTemplateThumbnail/","");
-			var pathToExistingOrGeneratedThumbnail = FindOrGenerateThumbnail(filePath);
+			var pathToExistingOrGeneratedThumbnail = FindOrGenerateThumbnail(filePath, out bool isGenerating);
 			if(string.IsNullOrEmpty(pathToExistingOrGeneratedThumbnail) || !RobustFile.Exists(pathToExistingOrGeneratedThumbnail))
 			{
 				request.Failed("Could not make a page thumbnail for "+filePath);
 				return;
 			}
-			request.ReplyWithImage(pathToExistingOrGeneratedThumbnail);
+			request.ReplyWithImage(pathToExistingOrGeneratedThumbnail, dontCache: isGenerating);
 		}
 
 		List<Action> _idleUpdates = new List<Action>();
@@ -123,8 +123,9 @@ namespace Bloom.web.controllers
 		/// start a process to generate an image from the template page content.
 		/// </summary>
 		/// <returns>Should always return a valid image path, unless we really can't come up with an image at all.</returns>
-		private string FindOrGenerateThumbnail(string expectedPathOfThumbnailImage)
+		private string FindOrGenerateThumbnail(string expectedPathOfThumbnailImage, out bool isGenerating)
 		{
+			isGenerating = false;
 			var localPath = AdjustPossibleLocalHostPathToFilePath(expectedPathOfThumbnailImage);
 
 			var svgpath = Path.ChangeExtension(localPath, "svg");
@@ -270,12 +271,15 @@ namespace Bloom.web.controllers
 				Application.Idle += Handler;
 
 			}));
+
+			isGenerating = true;
 			if (tempPath != null)
 				return tempPath;
 			// We need to return something here, but what is pretty arbitrary. It won't be seen for long.
 			// This SVG basically has nothing in it, so will hopefully produce the least flicker.
+			// But let's at least make it the right shape if we can.
 			return BloomFileLocator.GetBrowserFile(false, "templates", "template books", "Basic Book", "template",
-				"Custom.svg");
+				localPath.ToLowerInvariant().Contains("landscape") ? "Custom-landscape.svg" : "Custom.svg");
 		}
 
 		/// <summary>
