@@ -95,7 +95,8 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<IBookTeamCol
         props.changedRemotely,
         props.who,
         lockedByMe,
-        props.currentUser
+        props.currentUser,
+        props.hasInvalidRepoData
     ]);
 
     React.useEffect(() => {
