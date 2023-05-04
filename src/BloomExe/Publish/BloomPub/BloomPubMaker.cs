@@ -234,8 +234,8 @@ BookServer bookServer,
 				// bloom-player has its own @font-face declarations built in for Andika which are compatible with ours.
 				// Other fonts that BloomDesktop may serve need to be embedded in the .bloompub file.
 				wantFontFaceDeclarations: false);
-
-			modifiedBook.SetMotionAttributesOnBody(settings?.Motion ?? false);
+			
+			modifiedBook.SetMotionAttributesOnBody(settings?.Motion == true && modifiedBook.HasMotionPages);
 
 			// Although usually tentativeBookFolderPath and modifiedBook.FolderPath are the same, there are some exceptions
 			// In the process of bringing a book up-to-date (called by MakeDeviceXmatterTempBook), the folder path may change.
