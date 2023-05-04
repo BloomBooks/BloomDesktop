@@ -47,8 +47,7 @@ let isOpenAlready = false;
 type IPageStyle = { label: string; value: string };
 type IPageStyles = Array<IPageStyle>;
 
-export const BookSettingsDialog: React.FunctionComponent<{
-}> = () => {
+export const BookSettingsDialog: React.FunctionComponent<{}> = () => {
     const {
         showDialog,
         closeDialog,
@@ -89,9 +88,14 @@ export const BookSettingsDialog: React.FunctionComponent<{
 
     return (
         <BloomDialog
-            cssForDialogContents={css`
-                background-color: white;
+            css={css`
+                background-color: yellow;
+                height: 500px;
             `}
+            // cssForDialogContents={css`
+            //     background-color: #e4f1f3;
+            //     height: 500px;
+            // `}
             {...propsForBloomDialog}
             onClose={closeDialog}
             onCancel={() => {
@@ -108,79 +112,68 @@ export const BookSettingsDialog: React.FunctionComponent<{
                         margin-top: 0; // override the default that sees a lack of a title and adds a margin
                     }
                     // normally we want this: overflow-y: scroll;
-                    overflow-y: hidden; // but I need help on the css, so we're going with this for now
+                    //overflow-y: hidden; // but I need help on the css, so we're going with this for now
                 `}
             >
-                <DialogTitle title="Book Settings" />
-                <DialogMiddle
-                    css={css`
-                        &:first-child {
-                            margin-top: 0; // override the default that sees a lack of a title and adds a margin
-                        }
-                        // normally we want this: overflow-y: scroll;
-                        overflow-y: hidden; // but I need help on the css, so we're going with this for now
-                    `}
-                >
-                    {settings && (
-                        <ConfigrPane
-                            label="Book Settings"
-                            initialValues={settings}
-                            showAllGroups={true}
-                            //themeOverrides={lightTheme}
-                            themeOverrides={{
-                                // enhance: we'd like to just be passing `lightTheme` but at the moment that seems to clobber everything
-                                palette: {
-                                    primary: { main: kBloomBlue }
-                                }
-                            }}
-                            showAppBar={false}
-                            showJson={false}
-                            setValueOnRender={s => {
-                                setSettingsToReturnLater(s);
-                                //setSettings(s);
-                            }}
-                        >
-                            <ConfigrGroup label="Appearance" level={1}>
-                                {/* we'll bring this back later
+                {settings && (
+                    <ConfigrPane
+                        label="Book Settings"
+                        initialValues={settings}
+                        showAllGroups={true}
+                        //themeOverrides={lightTheme}
+                        themeOverrides={{
+                            // enhance: we'd like to just be passing `lightTheme` but at the moment that seems to clobber everything
+                            palette: {
+                                primary: { main: kBloomBlue }
+                            }
+                        }}
+                        showAppBar={false}
+                        showJson={false}
+                        setValueOnRender={s => {
+                            setSettingsToReturnLater(s);
+                            //setSettings(s);
+                        }}
+                    >
+                        <ConfigrGroup label="Appearance" level={1}>
+                            {/* we'll bring this back later
                                 <ConfigrCustomStringInput
                                     path={`appearance.coverColor`}
                                     label="Cover Color"
                                     control={ConfigrColorPicker}
                         /> */}
-                                <ConfigrBoolean
-                                    immediateEffect={false}
-                                    label="Show L2 title on cover"
-                                    path="appearance.coverShowTitleL2"
-                                />
-                                <ConfigrBoolean
-                                    immediateEffect={false}
-                                    label="Show L3 title on cover"
-                                    path="appearance.coverShowTitleL3"
-                                />
-                                <ConfigrBoolean
-                                    immediateEffect={false}
-                                    label="Show topic on cover"
-                                    path="appearance.coverShowTopic"
-                                />
-                                <ConfigrBoolean
-                                    immediateEffect={false}
-                                    label="Show language name on cover"
-                                    path="appearance.coverShowLanguageName"
-                                />
-                                <ConfigrSelect
-                                    description={`Choose a "page style" to easily change margins, borders, an other page settings.`}
-                                    path={`appearance.presetName`}
-                                    label="Page Style"
-                                    options={presetNames}
-                                />
-                            </ConfigrGroup>
-                            <ConfigrGroup label="BloomPUB" level={1}>
-                                <ConfigrSubgroup
-                                    label="Resolution"
-                                    path={`publish.bloomPUB.imageSettings`}
-                                    label="Resolution"
-                                />
-                            </ConfigrSubgroup>
+
+                            <ConfigrBoolean
+                                immediateEffect={false}
+                                label="Show L2 title on cover"
+                                path="appearance.coverShowTitleL2"
+                            />
+                            <ConfigrBoolean
+                                immediateEffect={false}
+                                label="Show L3 title on cover"
+                                path="appearance.coverShowTitleL3"
+                            />
+                            <ConfigrBoolean
+                                immediateEffect={false}
+                                label="Show topic on cover"
+                                path="appearance.coverShowTopic"
+                            />
+                            <ConfigrBoolean
+                                immediateEffect={false}
+                                label="Show language name on cover"
+                                path="appearance.coverShowLanguageName"
+                            />
+                            <ConfigrSelect
+                                description={`Choose a "page style" to easily change margins, borders, an other page settings.`}
+                                path={`appearance.presetName`}
+                                label="Page Style"
+                                options={presetNames}
+                            />
+                        </ConfigrGroup>
+                        <ConfigrGroup label="BloomPUB" level={1}>
+                            <BloomResolutionSlider
+                                label="Resolution"
+                                path={`publish.bloomPUB.imageSettings`}
+                            />
                         </ConfigrGroup>
                     </ConfigrPane>
                 )}
