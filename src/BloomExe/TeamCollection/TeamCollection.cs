@@ -2168,6 +2168,7 @@ namespace Bloom.TeamCollection
 					// props to send to the react component
 					new
 					{
+						open=true,
 						title,
 						titleIcon = "/bloom/TeamCollection/Team Collection.svg",
 						titleColor = "white",
