@@ -873,8 +873,15 @@ namespace Bloom.TeamCollection
 			                          repoFolderPathFromLinkPath == repoFolder;
 			var joiningGuid = CollectionSettings.CollectionIdFromCollectionFolder(tcManager.CurrentCollection
 				.LocalCollectionFolder);
-			var localGuid = CollectionSettings.CollectionIdFromCollectionFolder(localCollectionFolder);
-			var isSameCollection = _joiningSameCollection = joiningGuid == localGuid;
+			var localGuid = joiningGuid;
+			var isSameCollection = true;
+			if (isCurrentCollection)
+			{
+				// If it's not a current collection at all, we can't get a local guid, and it can't be different.
+				localGuid = CollectionSettings.CollectionIdFromCollectionFolder(localCollectionFolder);
+				isSameCollection = _joiningSameCollection = joiningGuid == localGuid;
+			}
+
 			// If it's a different collection and associated with a TC that exists, we're going to
 			// not allow the user to join. But if the TC doesn't exist...we'll let them just go
 			// ahead and merge, as if it was never linked.

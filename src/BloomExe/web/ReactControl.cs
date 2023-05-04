@@ -134,7 +134,21 @@ namespace Bloom.web
 			var tempFile = TempFile.WithExtension("htm");
 			tempFile.Detach(); // the browser control will clean it up
 
-			var props = Props == null ? "{}" : JsonConvert.SerializeObject(Props);
+			// If we're launching a WinForms dialog to show this content, we want it to be visible.
+			// I'm not sure both of these are (always) necessary, but things got badly broken by a recent
+			// change to ProgressDialog, and I think this will make it more robust against breaking again.
+			string props;
+			if (Props == null)
+			{
+				props = "{\"open\":true, \"initiallyOpen\": true}";
+			}
+			else
+			{
+				props = JsonConvert.SerializeObject(Props);
+				props = "{\"open\":true, \"initiallyOpen\": true," + props.Substring(1);
+			}
+
+			//var props = Props == null ? "{open:true}" : JsonConvert.SerializeObject(Props);
 
 			if (_javascriptBundleName == null)
 			{
