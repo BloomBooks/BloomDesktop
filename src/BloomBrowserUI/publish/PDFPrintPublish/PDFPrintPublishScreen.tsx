@@ -311,7 +311,12 @@ export const PDFPrintPublishScreen = () => {
 
     return (
         <React.Fragment>
-            <div onClick={() => setHelpVisible(false)}>
+            <div
+                onClick={() => setHelpVisible(false)}
+                css={css`
+                    height: 100%;
+                `}
+            >
                 <PublishScreenTemplate
                     bannerTitleEnglish="Publish to PDF &amp; Print"
                     bannerTitleL10nId="PublishTab.PdfPrint.BannerTitle"
