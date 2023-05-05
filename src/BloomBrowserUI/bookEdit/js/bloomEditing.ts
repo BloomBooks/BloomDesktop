@@ -19,11 +19,11 @@ import BloomSourceBubbles from "../sourceBubbles/BloomSourceBubbles";
 import BloomHintBubbles from "./BloomHintBubbles";
 import { initializeBubbleManager, theOneBubbleManager } from "./bubbleManager";
 import { showTopicChooserDialog } from "../TopicChooser/TopicChooserDialog";
-import "jquery-ui/jquery-ui-1.10.3.custom.min.js";
-import "jquery.hasAttr.js"; //reviewSlog for CenterVerticallyInParent
-import "jquery.qtip.js";
-import "jquery.qtipSecondary.js";
-import "long-press/jquery.longpress.js";
+import "../../modified_libraries/jquery-ui/jquery-ui-1.10.3.custom.min.js";
+import "./jquery.hasAttr.js"; //reviewSlog for CenterVerticallyInParent
+import "../../lib/jquery.qtip.js";
+import "../../lib/jquery.qtipSecondary.js";
+import "../../lib/long-press/jquery.longpress.js";
 import "jquery.hotkeys"; //makes the on(keydown work with keynames)
 import "../../lib/jquery.resize"; // makes jquery resize work on all elements
 import { getEditTabBundleExports } from "./bloomFrames";

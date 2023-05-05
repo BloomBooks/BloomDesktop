@@ -461,7 +461,7 @@ const OverlayToolControls: React.FunctionComponent = () => {
 
     const launchTextColorChooser = () => {
         const colorPickerDialogProps: IColorPickerDialogProps = {
-            noAlphaSlider: true,
+            transparency: false,
             noGradientSwatches: true,
             localizedTitle: textColorTitle,
             initialColor: textColorSwatch,
@@ -479,9 +479,9 @@ const OverlayToolControls: React.FunctionComponent = () => {
     // The background color chooser uses an alpha slider for transparency.
     // Unfortunately, with an alpha slider, the hex input will automatically switch to rgb
     // the moment the user sets alpha to anything but max opacity.
-    const launchBackgroundColorChooser = (noAlpha: boolean) => {
+    const launchBackgroundColorChooser = (transparency: boolean) => {
         const colorPickerDialogProps: IColorPickerDialogProps = {
-            noAlphaSlider: noAlpha,
+            transparency: transparency,
             localizedTitle: backgroundColorTitle,
             initialColor: backgroundColorSwatch,
             palette: BloomPalette.TextBackground,
@@ -694,7 +694,7 @@ const OverlayToolControls: React.FunctionComponent = () => {
                             <ColorBar
                                 id="background-color-bar"
                                 onClick={() =>
-                                    launchBackgroundColorChooser(isCaption)
+                                    launchBackgroundColorChooser(!isCaption)
                                 }
                                 colorInfo={backgroundColorSwatch}
                                 text={percentTransparencyString}

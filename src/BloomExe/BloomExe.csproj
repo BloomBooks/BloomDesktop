@@ -580,11 +580,11 @@
     <Compile Include="MiscUI\LanguageFontDetails.Designer.cs">
       <DependentUpon>LanguageFontDetails.cs</DependentUpon>
     </Compile>
-    <Compile Include="Properties\Resources.Designer.cs">
+	<Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>Resources.resx</DependentUpon>
-    </Compile>
+	  <DesignTime>True</DesignTime>
+	  <DependentUpon>Resources.resx</DependentUpon>
+	</Compile>
     <Compile Include="Publish\Epub\EpubMaker.cs" />
     <Compile Include="Book\RuntimeInformationInjector.cs" />
     <Compile Include="Book\HtmlDom.cs" />
@@ -1397,6 +1397,9 @@ copy /Y "$(SolutionDir)\lib\dotnet\libtidy.dll" $(OutDir)
   </ItemGroup>
   <ItemGroup>
     <Content Include="bloom.ico" />
+    <None Include="Resources\BookSettings.png" />
+    <None Include="Resources\BookSettingsBlack32High.png" />
+    <None Include="Resources\GearBlack16x16.png" />
     <None Include="Resources\PdfPrint.png" />
     <None Include="Resources\BloomPUB.png" />
     <None Include="Resources\publish video.png" />

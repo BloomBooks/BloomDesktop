@@ -1,5 +1,4 @@
-/** @jsx jsx **/
-import { jsx, css } from "@emotion/react";
+import { css, SerializedStyles } from "@emotion/react";
 import { forwardRef, useEffect } from "react";
 import { FunctionComponent } from "react";
 import { ThemeProvider, StyledEngineProvider } from "@mui/material/styles";
@@ -11,7 +10,6 @@ import {
     PaperProps
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
-import CloseOnEscape from "react-close-on-escape";
 import {
     kDialogPadding,
     kUiFontStack,
@@ -53,7 +51,8 @@ export interface IBloomDialogProps extends DialogProps {
 }
 
 export const BloomDialog: FunctionComponent<IBloomDialogProps> = forwardRef(
-    (props, ref) => {
+    // a named function here instead of a lamda to avoid the "Component definition is missing display name"
+    function BloomDialog(props, ref) {
         // About custom styling:
         // We need the parent to be able to specify things about the size of the dialog. Example:
         //     <BloomDialog
@@ -188,7 +187,8 @@ export const BloomDialog: FunctionComponent<IBloomDialogProps> = forwardRef(
                                     }
                                     // without this, you can't get the dialog close to the edge
                                     // because there is a huge invisible margin around the dialog
-                                    .MuiPaper-root {
+                                    // Note that we want to restrict this to just this top-level paper thing, not *all* off them
+                                    .MuiDialog-container > .MuiPaper-root {
                                         margin: 0 !important;
                                     }
                                 `}
