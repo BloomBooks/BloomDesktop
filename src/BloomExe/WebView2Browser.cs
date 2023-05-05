@@ -13,12 +13,20 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using Sentry.Protocol;
+using SIL.Windows.Forms.Miscellaneous;
+using Bloom.Edit;
+using SIL.Reporting;
 
 namespace Bloom
 {
 	public partial class WebView2Browser : Browser
 	{
 		private bool _readyToNavigate;
+		private PasteCommand _pasteCommand;
+		private CopyCommand _copyCommand;
+		private UndoCommand _undoCommand;
+		private CutCommand _cutCommand;
 		public WebView2Browser()
 		{
 			InitializeComponent();
@@ -58,6 +66,15 @@ namespace Bloom
 																	   | CoreWebView2PdfToolbarItems.FullScreen // doesn't work right and is hard to recover from
 																	   | CoreWebView2PdfToolbarItems.MoreSettings; // none of its functions seem useful
 
+				// Based on https://github.com/MicrosoftEdge/WebView2Feedback/issues/308,
+				// this attempts to prevent Bloom asking permission to read the clipboard
+				// the first time the user does a paste. I can't test it, because I don't know
+				// how to revoke that permission.
+				_webview.CoreWebView2.PermissionRequested += (o, e) =>
+				{
+					if (e.PermissionKind == CoreWebView2PermissionKind.ClipboardRead)
+						e.State = CoreWebView2PermissionState.Allow;
+				};
 				_readyToNavigate = true;
 			};
 		}
@@ -334,7 +351,35 @@ namespace Bloom
 
 		public override void SetEditingCommands(CutCommand cutCommand, CopyCommand copyCommand, PasteCommand pasteCommand, UndoCommand undoCommand)
 		{
+			_cutCommand = cutCommand;
+			_copyCommand = copyCommand;
+			_pasteCommand = pasteCommand;
+			_undoCommand = undoCommand;
 
+			// These implementations are all specific to our Edit tab. This is currently the only place
+			// we show the buttons that use these commands, but we will have to generalize somehow if
+			// that changes. I'm not sure whether the checks for existence of editTabBundle etc are needed.
+			// I deliberately use RunJavaScriptAsync here without awaiting it, because nothing requires the
+			// result (we only care about the side effects on the clipboard and document)
+			_cutCommand.Implementer = () =>
+			{
+				RunJavaScriptAsync("editTabBundle?.getEditablePageBundleExports()?.cutSelection()");
+			};
+			_copyCommand.Implementer = () =>
+			{
+				RunJavaScriptAsync("editTabBundle?.getEditablePageBundleExports()?.copySelection()");
+			};
+			_pasteCommand.Implementer = () =>
+			{
+				RunJavaScriptAsync("editTabBundle?.getEditablePageBundleExports()?.pasteClipboardText()");
+
+			};
+			_undoCommand.Implementer = () =>
+			{
+				// Note: this is only used for the Undo button in the toolbar;
+				// ctrl-z is handled in JavaScript directly.
+				RunJavaScript("editTabBundle.handleUndo()");
+			};
 		}
 
 		public override void ShowHtml(string html)
@@ -342,12 +387,57 @@ namespace Bloom
 			throw new NotImplementedException();
 		}
 
-		public override void UpdateEditButtons()
+		/// <summary>
+		/// We configure something in Javascript to keep track of this, since WebView2 doesn't provide an API for it
+		/// (This means this method is only reliable in EditingView, but that's also the only context where we
+		/// currently use it).
+		/// </summary>
+		/// <returns></returns>
+		private bool IsThereACurrentTextSelection()
 		{
-
+			return EditingModel.IsTextSelected;
 		}
 
+		public override void UpdateEditButtons()
+		{
+			if (_copyCommand == null)
+				return;
+
+			if (InvokeRequired)
+			{
+				Invoke(new Action(UpdateEditButtons));
+				return;
+			}
+
+			try
+			{
+				var isTextSelection = IsThereACurrentTextSelection();
+				_cutCommand.Enabled = isTextSelection;
+				_copyCommand.Enabled = isTextSelection;
+				_pasteCommand.Enabled = PortableClipboard.ContainsText();
+
+				_undoCommand.Enabled = CanUndo;
+
+			}
+			catch (Exception)
+			{
+				_pasteCommand.Enabled = false;
+				Logger.WriteMinorEvent("UpdateEditButtons(): Swallowed exception.");
+				//REf jira.palaso.org/issues/browse/BL-197
+				//I saw this happen when Bloom was in the background, with just normal stuff on the clipboard.
+				//so it's probably just not ok to check if you're not front-most.
+			}
+		}
+		private bool CanUndo
+		{
+			get
+			{
+				var result = RunJavaScript("editTabBundle?.canUndo?.()");
+				return result == "yes"; // currently only returns 'yes' or 'fail'
+			}
+		}
 	}
+
 
 	class WebViewItemAdder : IMenuItemAdder
 	{
