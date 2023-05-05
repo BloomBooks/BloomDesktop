@@ -952,6 +952,7 @@ export default class StyleEditor {
     fmtButtonHeight = this.fmtButtonWidth;
 
     public AdjustFormatButton(element: Element): void {
+        var scale = EditableDivUtils.getPageScale();
         const eltBounds = element.getBoundingClientRect();
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         const parentBounds = element.parentElement!.getBoundingClientRect();
@@ -965,15 +966,15 @@ export default class StyleEditor {
         // the usual place on the left overlaps the text annoyingly. So for these pages we move it to the
         // right. (Not sure why that wouldn't always be better.)
         if (element.closest(".quiz")) {
-            fmtButton.style.top = bottom - this.fmtButtonHeight + "px";
+            fmtButton.style.top = bottom / scale - this.fmtButtonHeight + "px";
             fmtButton.style.left = "unset";
             fmtButton.style.right = "0";
         } else if (element.closest(".bloom-textOverPicture")) {
             // This element is inside a text-over-picture element.
-            fmtButton.style.top = bottom + "px";
+            fmtButton.style.top = bottom / scale + "px";
             fmtButton.style.left = -5 - this.fmtButtonWidth + "px";
         } else {
-            fmtButton.style.top = bottom - this.fmtButtonHeight + "px";
+            fmtButton.style.top = bottom / scale - this.fmtButtonHeight + "px";
             fmtButton.style.left = "0";
         }
     }
@@ -1010,13 +1011,13 @@ export default class StyleEditor {
                 return;
             }
         }
-        if (this._previousBox == targetBox) {
+        const oldCog = document.getElementById("formatButton");
+        if (oldCog && this._previousBox == targetBox) {
             return;
         }
         if (this._previousBox != null) {
             StyleEditor.CleanupElement(this._previousBox);
         }
-        const oldCog = document.getElementById("formatButton");
         if (oldCog) {
             oldCog.remove();
         }

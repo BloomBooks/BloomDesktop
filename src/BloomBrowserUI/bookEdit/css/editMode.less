@@ -919,17 +919,25 @@ body.simulateColorBlindness {
     }
 }
 
+// I decided to take these out. The cog wheel is not very conspicuous and
+// we already have code to make sure there's only one. The second rule
+// is intented to make the cog visible (overriding the first one) when focus is in
+// its translation group. It developed a problem when the cog moved outside the
+// bloom-editable. Clicking the cog apparently causes the TG to lose focus,
+// possibly because we're now clicking on something that is outside the
+// (contenteditable) bloom-editable. Then the cog disappears without
+// performing its click action.
 // Hide the gear button unless the text box is focused for editing.
-#formatButton {
-    display: none;
-}
+// #formatButton {
+//     display: none;
+// }
 
 // using :focus-within works better than .cke-focus (See BL-11803.)
-.bloom-translationGroup:focus-within {
-    #formatButton {
-        display: inherit;
-    }
-}
+// .bloom-translationGroup:focus-within {
+//     #formatButton {
+//         display: inherit;
+//     }
+// }
 
 // Moved from editOriginalMode.css when it became obsolete
 //(no longer have original/translation=unlocked/locked modes)
