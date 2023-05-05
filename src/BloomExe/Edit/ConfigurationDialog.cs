@@ -70,35 +70,4 @@ namespace Bloom.Edit
 			Close();
 		}
 	}
-
-
-	/*DOM.GeckoScriptElement script = Document.CreateElement("script").AsScriptElement();
-script.Type = "text/javascript";
-script.Text = "function doAlert(){ alert('My alert - fired by automating a button click on the [Automated Button]'); }";
-Document.Body.AppendChild(script);
-
-script = Document.CreateElement("script").AsScriptElement();
-script.Type = "text/javascript";
-script.Text = "function callDoAlert(id){ var el = document.getElementById(id); el.click(); }";
-Document.Body.AppendChild(script);
-
-DOM.GeckoInputElement button = Document.CreateElement("input").AsInputElement();
-button.Type = "button";
-button.Id = "myButton";
-button.Value = "Automated Button";
-button.SetAttribute("onclick", "javascript:doAlert();");
-
-Document.Body.AppendChild(button);
-
-DOM.GeckoInputElement button2 = Document.CreateElement("input").AsInputElement();
-button2.Type = "button";
-button2.Id = "myOtherButton";
-button2.Value = "Press Me";
-button2.SetAttribute("onclick", "javascript:document.getElementById('myButton').click();");
-
-Document.Body.AppendChild(button2);
-
-//uncomment to fully automate without the <webbrowser>.Navigate("javascript:.."); hack
-//button2.click();
-*/
 }

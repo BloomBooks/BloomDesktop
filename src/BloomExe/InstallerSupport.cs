@@ -147,14 +147,6 @@ namespace Bloom
 									null, // can provide arguments to pass to Update.exe in shortcut, defaults are OK
 									iconPath,
 									SharedByAllUsers());
-								// Normally we can't do this in our quick silent run as part of install, because of the need to escalate
-								// privilege. But if we're being installed for all users we must already be running as admin.
-								// We don't need to do an extra restart of Bloom because this install-setup run of Bloom will finish
-								// right away anyway. We do this last because we've had some trouble (BL-3342) with timeouts
-								// if this install somehow ties up the CPU until Squirrel thinks Bloom is taking too long to do its
-								// install-only run.
-								if (SharedByAllUsers())
-									FontInstaller.InstallFont("AndikaNewBasic", needsRestart: false);
 							},
 							onAppUpdate: v => HandleAppUpdate(mgr),
 							onAppUninstall: v => mgr.RemoveShortcutsForExecutable(Path.GetFileName(Assembly.GetEntryAssembly().Location), StartMenuLocations, SharedByAllUsers()),

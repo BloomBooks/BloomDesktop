@@ -341,8 +341,7 @@ namespace Bloom.CollectionTab
 						BloomMessageBox.ShowInfo(msg);
 						return false;
 					}
-
-					if (_tcManager.CannotDeleteBecauseDisconnected(_bookSelection.CurrentSelection.FolderPath))
+					if (_tcManager.CannotDeleteBecauseDisconnected(_bookSelection.CurrentSelection))
 					{
 						var msg = LocalizationManager.GetString("TeamCollection.ConnectForDelete",
 							"Please connect to the Team Collection before deleting books that are part of it.");

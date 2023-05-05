@@ -1,3 +1,9 @@
+using Bloom.Api;
+using Bloom.Book;
+using Microsoft.Web.WebView2.Core;
+using Microsoft.Web.WebView2.WinForms;
+using Newtonsoft.Json;
+using SIL.IO;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -7,19 +13,20 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using Bloom.Book;
-using Bloom.Api;
-using Bloom.Utils;
-using Microsoft.Web.WebView2.Core;
-using Microsoft.Web.WebView2.WinForms;
-using Newtonsoft.Json;
-using SIL.IO;
+using Sentry.Protocol;
+using SIL.Windows.Forms.Miscellaneous;
+using Bloom.Edit;
+using SIL.Reporting;
 
 namespace Bloom
 {
-	public partial class WebView2Browser :  Browser
+	public partial class WebView2Browser : Browser
 	{
 		private bool _readyToNavigate;
+		private PasteCommand _pasteCommand;
+		private CopyCommand _copyCommand;
+		private UndoCommand _undoCommand;
+		private CutCommand _cutCommand;
 		public WebView2Browser()
 		{
 			InitializeComponent();
@@ -53,21 +60,23 @@ namespace Bloom
 				// It removes some unwanted controls from the toolbar that WebView2 inserts when
 				// previewing a PDF file.
 				_webview.CoreWebView2.Settings.HiddenPdfToolbarItems = CoreWebView2PdfToolbarItems.Print // we prefer our big print button, and it may show a dialog first
-				                                                       | CoreWebView2PdfToolbarItems.Rotate // shouldn't be needed, just clutter
-				                                                       | CoreWebView2PdfToolbarItems.Save // would always be disabled, there's no known place to save
-				                                                       | CoreWebView2PdfToolbarItems.SaveAs // We want our Save code, which checks things like not saving in the book folder
-				                                                       | CoreWebView2PdfToolbarItems.FullScreen // doesn't work right and is hard to recover from
-				                                                       | CoreWebView2PdfToolbarItems.MoreSettings; // none of its functions seem useful
+																	   | CoreWebView2PdfToolbarItems.Rotate // shouldn't be needed, just clutter
+																	   | CoreWebView2PdfToolbarItems.Save // would always be disabled, there's no known place to save
+																	   | CoreWebView2PdfToolbarItems.SaveAs // We want our Save code, which checks things like not saving in the book folder
+																	   | CoreWebView2PdfToolbarItems.FullScreen // doesn't work right and is hard to recover from
+																	   | CoreWebView2PdfToolbarItems.MoreSettings; // none of its functions seem useful
 
+				// Based on https://github.com/MicrosoftEdge/WebView2Feedback/issues/308,
+				// this attempts to prevent Bloom asking permission to read the clipboard
+				// the first time the user does a paste. I can't test it, because I don't know
+				// how to revoke that permission.
+				_webview.CoreWebView2.PermissionRequested += (o, e) =>
+				{
+					if (e.PermissionKind == CoreWebView2PermissionKind.ClipboardRead)
+						e.State = CoreWebView2PermissionState.Allow;
+				};
 				_readyToNavigate = true;
 			};
-
-			FinishInitializing();
-		}
-
-		public override void HideTemporaryLabelForDevelopment()
-		{
-			label1.Visible = false;
 		}
 
 		private void ContextMenuRequested(object sender, CoreWebView2ContextMenuRequestedEventArgs e)
@@ -80,7 +89,7 @@ namespace Bloom
 			// Remove built-in items (except a couple of useful ones, if we're in a debugging context)
 			var menuList = e.MenuItems;
 
-			for (int index = 0; index < menuList.Count; )
+			for (int index = 0; index < menuList.Count;)
 			{
 				if (wantDebug && (menuList[index].Name == "inspectElement"))
 				{
@@ -129,12 +138,12 @@ namespace Bloom
 				// this should clear what we need and nothing else.
 				await _webview.CoreWebView2.Profile.ClearBrowsingDataAsync(CoreWebView2BrowsingDataKinds.CacheStorage | CoreWebView2BrowsingDataKinds.DiskCache);
 			}
-			
+
 		}
 
 		// needed by geckofx but not webview2
 		public override void EnsureHandleCreated()
-		{		
+		{
 		}
 		public override void CopySelection()
 		{
@@ -160,7 +169,7 @@ namespace Bloom
 			_webview.Select();
 		}
 
-		public override void ActivateFocussed() 
+		public override void ActivateFocussed()
 		{
 			// I can't find any place where this does anything useful in GeckoFx that would allow me to
 			// test a WebView2 implementation. For example, from the comment in the ReactControl_Load
@@ -218,11 +227,14 @@ namespace Bloom
 			}
 		}
 
-		public override bool NavigateAndWaitTillDone(HtmlDom htmlDom, int timeLimit, BloomServer.SimulatedPageFileSource source, Func<bool> cancelCheck, bool throwOnTimeout)
+		public override bool NavigateAndWaitTillDone(HtmlDom htmlDom, int timeLimit, InMemoryHtmlFileSource source, Func<bool> cancelCheck, bool throwOnTimeout)
 		{
 			// Should be called on UI thread. Since it is quite typical for this method to create the
 			// window handle and browser, it can't do its own Invoke, which depends on already having a handle.
 			// OTOH, Unit tests are often not run on the UI thread (and would therefore just pop up annoying asserts).
+			// For future reference, if we are navigating to produce a preview, make sure that the api call that
+			// requests the call is syncing on the correct thumbnail/preview sync object, otherwise we can get a
+			// deadlock here while trying to navigate (See BL-11513).
 			Debug.Assert(Program.RunningOnUiThread || Program.RunningUnitTests || Program.RunningInConsoleMode,
 				"Should be running on UI Thread or Unit Tests or Console mode");
 			var done = false;
@@ -288,11 +300,6 @@ namespace Bloom
 			return new Bitmap(stream);
 		}
 
-		public override void OnGetTroubleShootingInformation(object sender, EventArgs e)
-		{
-			throw new NotImplementedException();
-		}
-
 		public override void SaveDocument(string path)
 		{
 			var html = RunJavaScript("document.documentElement.outerHTML");
@@ -327,7 +334,7 @@ namespace Bloom
 			return result;
 		}
 
-		public  override async Task<string> RunJavaScriptAsync(string script)
+		public override async Task<string> RunJavaScriptAsync(string script)
 		{
 			var result = await _webview.ExecuteScriptAsync(script);
 			// Whatever the javascript produces gets JSON encoded automatically by ExecuteScriptAsync.
@@ -344,7 +351,35 @@ namespace Bloom
 
 		public override void SetEditingCommands(CutCommand cutCommand, CopyCommand copyCommand, PasteCommand pasteCommand, UndoCommand undoCommand)
 		{
-			
+			_cutCommand = cutCommand;
+			_copyCommand = copyCommand;
+			_pasteCommand = pasteCommand;
+			_undoCommand = undoCommand;
+
+			// These implementations are all specific to our Edit tab. This is currently the only place
+			// we show the buttons that use these commands, but we will have to generalize somehow if
+			// that changes. I'm not sure whether the checks for existence of editTabBundle etc are needed.
+			// I deliberately use RunJavaScriptAsync here without awaiting it, because nothing requires the
+			// result (we only care about the side effects on the clipboard and document)
+			_cutCommand.Implementer = () =>
+			{
+				RunJavaScriptAsync("editTabBundle?.getEditablePageBundleExports()?.cutSelection()");
+			};
+			_copyCommand.Implementer = () =>
+			{
+				RunJavaScriptAsync("editTabBundle?.getEditablePageBundleExports()?.copySelection()");
+			};
+			_pasteCommand.Implementer = () =>
+			{
+				RunJavaScriptAsync("editTabBundle?.getEditablePageBundleExports()?.pasteClipboardText()");
+
+			};
+			_undoCommand.Implementer = () =>
+			{
+				// Note: this is only used for the Undo button in the toolbar;
+				// ctrl-z is handled in JavaScript directly.
+				RunJavaScript("editTabBundle.handleUndo()");
+			};
 		}
 
 		public override void ShowHtml(string html)
@@ -352,12 +387,57 @@ namespace Bloom
 			throw new NotImplementedException();
 		}
 
-		public override void UpdateEditButtons()
+		/// <summary>
+		/// We configure something in Javascript to keep track of this, since WebView2 doesn't provide an API for it
+		/// (This means this method is only reliable in EditingView, but that's also the only context where we
+		/// currently use it).
+		/// </summary>
+		/// <returns></returns>
+		private bool IsThereACurrentTextSelection()
 		{
-			
+			return EditingModel.IsTextSelected;
 		}
 
+		public override void UpdateEditButtons()
+		{
+			if (_copyCommand == null)
+				return;
+
+			if (InvokeRequired)
+			{
+				Invoke(new Action(UpdateEditButtons));
+				return;
+			}
+
+			try
+			{
+				var isTextSelection = IsThereACurrentTextSelection();
+				_cutCommand.Enabled = isTextSelection;
+				_copyCommand.Enabled = isTextSelection;
+				_pasteCommand.Enabled = PortableClipboard.ContainsText();
+
+				_undoCommand.Enabled = CanUndo;
+
+			}
+			catch (Exception)
+			{
+				_pasteCommand.Enabled = false;
+				Logger.WriteMinorEvent("UpdateEditButtons(): Swallowed exception.");
+				//REf jira.palaso.org/issues/browse/BL-197
+				//I saw this happen when Bloom was in the background, with just normal stuff on the clipboard.
+				//so it's probably just not ok to check if you're not front-most.
+			}
+		}
+		private bool CanUndo
+		{
+			get
+			{
+				var result = RunJavaScript("editTabBundle?.canUndo?.()");
+				return result == "yes"; // currently only returns 'yes' or 'fail'
+			}
+		}
 	}
+
 
 	class WebViewItemAdder : IMenuItemAdder
 	{
@@ -373,7 +453,7 @@ namespace Bloom
 			CoreWebView2ContextMenuItem newItem =
 				_webview.CoreWebView2.Environment.CreateContextMenuItem(
 					caption, null, CoreWebView2ContextMenuItemKind.Command);
-			newItem.CustomItemSelected += (sender,args) => handler(sender, new EventArgs());
+			newItem.CustomItemSelected += (sender, args) => handler(sender, new EventArgs());
 			newItem.IsEnabled = enabled;
 			_menuList.Insert(_menuList.Count, newItem);
 		}

@@ -1,4 +1,4 @@
-﻿// Copyright (c) 2014-2018 SIL International
+// Copyright (c) 2014-2018 SIL International
 // This software is licensed under the MIT License (http://opensource.org/licenses/MIT)
 
 using System.Diagnostics;
@@ -308,7 +308,7 @@ namespace BloomTests.web
 				var dom = new HtmlDom(html);
 				dom.BaseForRelativePaths =_folder.Path.ToLocalhost();
 				string url;
-				using (var fakeTempFile = BloomServer.MakeSimulatedPageFileInBookFolder(dom))
+				using (var fakeTempFile = BloomServer.MakeInMemoryHtmlFileInBookFolder(dom))
 				{
 					url = fakeTempFile.Key;
 					var transaction = new PretendRequestInfo(url);
@@ -335,15 +335,15 @@ namespace BloomTests.web
 		}
 
 		[Test]
-		[TestCase(BloomServer.SimulatedPageFileSource.JustCheckingPage, false)]
-		[TestCase(BloomServer.SimulatedPageFileSource.Frame, true)]
-		[TestCase(BloomServer.SimulatedPageFileSource.Nav, true)]
-		[TestCase(BloomServer.SimulatedPageFileSource.Normal, true)]
-		[TestCase(BloomServer.SimulatedPageFileSource.Pagelist, false)]
-		[TestCase(BloomServer.SimulatedPageFileSource.Preview, true)]
-		[TestCase(BloomServer.SimulatedPageFileSource.Pub, true)]
-		[TestCase(BloomServer.SimulatedPageFileSource.Thumb, false)]
-		public void ServerKnowsDifferenceBetweenRealAndThumbVideos(BloomServer.SimulatedPageFileSource source, bool expectVideo)
+		[TestCase(InMemoryHtmlFileSource.JustCheckingPage, false)]
+		[TestCase(InMemoryHtmlFileSource.Frame, true)]
+		[TestCase(InMemoryHtmlFileSource.Nav, true)]
+		[TestCase(InMemoryHtmlFileSource.Normal, true)]
+		[TestCase(InMemoryHtmlFileSource.Pagelist, false)]
+		[TestCase(InMemoryHtmlFileSource.Preview, true)]
+		[TestCase(InMemoryHtmlFileSource.Pub, true)]
+		[TestCase(InMemoryHtmlFileSource.Thumb, false)]
+		public void ServerKnowsDifferenceBetweenRealAndThumbVideos(InMemoryHtmlFileSource source, bool expectVideo)
 		{
 			using (var server = CreateBloomServer())
 			{
@@ -370,7 +370,7 @@ namespace BloomTests.web
 						</div>
 					</body></html>";
 				var dom = new HtmlDom(html) {BaseForRelativePaths = _folder.Path.ToLocalhost()};
-				using (var fakeTempFile = BloomServer.MakeSimulatedPageFileInBookFolder(dom, true, true, source))
+				using (var fakeTempFile = BloomServer.MakeInMemoryHtmlFileInBookFolder(dom, true, true, source))
 				{
 					var url = fakeTempFile.Key;
 					var transaction = new PretendRequestInfo(url);
@@ -437,7 +437,7 @@ namespace BloomTests.web
 			PretendRequestInfo transaction;
 			using (var server = CreateBloomServer())
 			{
-				using (var fakeTempFile = BloomServer.MakeSimulatedPageFileInBookFolder(dom, simulateCallingFromJavascript))
+				using (var fakeTempFile = BloomServer.MakeInMemoryHtmlFileInBookFolder(dom, simulateCallingFromJavascript))
 				{
 					var url = fakeTempFile.Key;
 					transaction = new PretendRequestInfo(url, forPrinting: false, forSrcAttr: simulateCallingFromJavascript);

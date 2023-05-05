@@ -1,4 +1,4 @@
-﻿namespace Bloom.Edit
+namespace Bloom.Edit
 {
 	partial class JpegWarningDialog
 	{
@@ -121,7 +121,7 @@
 			this.Controls.Add(this._okButton);
 			this.Controls.Add(this._cancelRadioButton);
 			this.Controls.Add(this._photographRadioButton);
-			this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
+			this.Icon = global::Bloom.Properties.Resources.BloomIcon;
 			this._L10NSharpExtender.SetLocalizableToolTip(this, null);
 			this._L10NSharpExtender.SetLocalizationComment(this, null);
 			this._L10NSharpExtender.SetLocalizingId(this, "EditTab.JpegWarningDialog.WindowTitle");

@@ -19,7 +19,6 @@ using Newtonsoft.Json;
 using Sentry;
 using SIL.IO;
 using SIL.Reporting;
-using DontShowThisAgainButton = Bloom.MiscUI.DontShowThisAgainButton;
 
 namespace Bloom.Publish.Video
 {

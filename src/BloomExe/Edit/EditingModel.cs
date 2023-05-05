@@ -25,6 +25,7 @@ using SIL.Windows.Forms.ImageToolbox;
 using SIL.Xml;
 using Bloom.ErrorReporter;
 using SIL.Windows.Forms.Miscellaneous;
+using Bloom.FontProcessing;
 
 namespace Bloom.Edit
 {
@@ -39,7 +40,7 @@ namespace Bloom.Edit
 		private HtmlDom _domForCurrentPage;
 		// We dispose of this when we create a new one. It may hang around a little longer than needed, but memory
 		// is the only resource being used, and there is only one instance of this object.
-		private SimulatedPageFile _currentPage;
+		private InMemoryHtmlFile _currentPage;
 		public bool Visible;
 		private Book.Book _currentlyDisplayedBook;
 		private Book.Book _bookForToolboxContent;
@@ -51,7 +52,7 @@ namespace Bloom.Edit
 		private BloomServer _server;
 		private readonly BloomWebSocketServer _webSocketServer;
 		internal IPage PageChangingLayout; // used to save the page on which the choose different layout command was invoked while the dialog is active.
-		// This event fires after the EditingModel has finished responding to a PageSelection change.
+										   // This event fires after the EditingModel has finished responding to a PageSelection change.
 		internal event EventHandler PageSelectModelChangesComplete;
 
 		// These variables are not thread-safe. Access only on UI thread.
@@ -380,7 +381,7 @@ namespace Bloom.Edit
 			get
 			{
 				return _pageSelection != null && _pageSelection.CurrentSelection != null &&
-				       !_pageSelection.CurrentSelection.Required && _currentlyDisplayedBook != null;
+					   !_pageSelection.CurrentSelection.Required && _currentlyDisplayedBook != null;
 			}
 		}
 
@@ -405,7 +406,7 @@ namespace Bloom.Edit
 			get
 			{
 				return _pageSelection != null && _pageSelection.CurrentSelection != null &&
-				       !_pageSelection.CurrentSelection.Required && _currentlyDisplayedBook != null;
+					   !_pageSelection.CurrentSelection.Required && _currentlyDisplayedBook != null;
 			}
 
 		}
@@ -470,7 +471,7 @@ namespace Bloom.Edit
 		{
 			SaveNow();
 			var changedOrientation = CurrentBook.GetLayout().SizeAndOrientation.IsLandScape !=
-			                         layout.SizeAndOrientation.IsLandScape;
+									 layout.SizeAndOrientation.IsLandScape;
 			CurrentBook.SetLayout(layout);
 			if (changedOrientation)
 			{
@@ -571,10 +572,10 @@ namespace Bloom.Edit
 				//		BL-5973 GetMultilingualContentLanguages() doesn't want to update _contentLanguages
 				//		normally, but in this case we do.
 				var dummy = ContentLanguages; // updates _contentLanguages based on CurrentBook and collection settings
-				// Reset the book's languages in case the user changed the collection's languages.
-				// See https://issues.bloomlibrary.org/youtrack/issue/BL-5444.
-				// But (see above) this should NOT mess with which languages are selected for display in the book
-				// (unless a previously selected language is no longer a valid collection language).
+											  // Reset the book's languages in case the user changed the collection's languages.
+											  // See https://issues.bloomlibrary.org/youtrack/issue/BL-5444.
+											  // But (see above) this should NOT mess with which languages are selected for display in the book
+											  // (unless a previously selected language is no longer a valid collection language).
 				var contentLanguages = GetMultilingualContentLanguages();
 				CurrentBook.SetMultilingualContentLanguages(contentLanguages);
 				CurrentBook.PrepareForEditing();
@@ -594,7 +595,7 @@ namespace Bloom.Edit
 				ErrorReport.NotifyUserOfProblem(errors);
 				return;
 			}
-			
+
 			ErrorReportUtils.CheckForFakeTestErrorsIfNotRealUser(_currentlyDisplayedBook.Title);
 
 			// BL-2339: try to choose the last edited page
@@ -717,7 +718,7 @@ namespace Bloom.Edit
 					{
 						continue;
 					}
-										
+
 					var id = node.GetOptionalStringAttribute("id", null);
 					if (id != null)
 					{
@@ -733,7 +734,7 @@ namespace Bloom.Edit
 							// No need to report multiple modals at the same time
 							return;
 						}
-					
+
 					}
 				}
 			}
@@ -779,8 +780,8 @@ namespace Bloom.Edit
 			if (_currentPage != null)
 				_currentPage.Dispose();
 			InsertLabelAndLayoutTogglePane(_domForCurrentPage);
-			_currentPage = BloomServer.MakeSimulatedPageFileInBookFolder(_domForCurrentPage, true);
-			CheckForBL2634("made simulated page");
+			_currentPage = BloomServer.MakeInMemoryHtmlFileInBookFolder(_domForCurrentPage, true);
+			CheckForBL2634("made in memory page");
 		}
 
 		private void AddMissingCopyrightNoticeIfNeeded()
@@ -898,7 +899,7 @@ namespace Bloom.Edit
 			// {simulatedPageFileInBookFolder} is placed in the template file where we want the source file for the 'page' iframe.
 			// We don't really make a file for the page, the contents are just saved in our local server.
 			// But we give it a url that makes it seem to be in the book folder so local urls work.
-			// See BloomServer.MakeSimulatedPageFileInBookFolder() for more details.
+			// See BloomServer.MakeInMemoryHtmlFileInBookFolder() for more details.
 			var frameText = RobustFile.ReadAllText(path, Encoding.UTF8).Replace("{simulatedPageFileInBookFolder}", _currentPage.Key);
 			var dom = new HtmlDom(XmlHtmlConverter.GetXmlDomFromHtml(frameText));
 
@@ -969,34 +970,34 @@ namespace Bloom.Edit
 		///
 		/// This is, for now, a TODO
 		///
-//		public void HandleAddNewPageKeystroke(string unused)
-//		{
-//			if (!HaveCurrentEditableBook || _currentlyDisplayedBook.LockedDown)
-//				return;
-//
-//			try
-//			{
-//				if (CanDuplicatePage)
-//				{
-//					if (AddNewPageBasedOnTemplate(this._pageSelection.CurrentSelection.IdOfFirstAncestor))
-//						return;
-//				}
-//				var idOfFirstPageInTemplateBook = CurrentBook.FindTemplateBook().GetPageByIndex(0).Id;
-//				if (AddNewPageBasedOnTemplate(idOfFirstPageInTemplateBook))
-//					return;
-//			}
-//			catch (Exception error)
-//			{
-//				Logger.WriteEvent(error.Message);
-//				//this is not worth bothering the user about
-//#if DEBUG
-//				throw error;
-//#endif
-//			}
-//			//there was some error figuring out a default page, let's just let the user choose what they want
-//			if(this._view!=null)
-//				this._view.ShowAddPageDialog();
-//		}
+		//		public void HandleAddNewPageKeystroke(string unused)
+		//		{
+		//			if (!HaveCurrentEditableBook || _currentlyDisplayedBook.LockedDown)
+		//				return;
+		//
+		//			try
+		//			{
+		//				if (CanDuplicatePage)
+		//				{
+		//					if (AddNewPageBasedOnTemplate(this._pageSelection.CurrentSelection.IdOfFirstAncestor))
+		//						return;
+		//				}
+		//				var idOfFirstPageInTemplateBook = CurrentBook.FindTemplateBook().GetPageByIndex(0).Id;
+		//				if (AddNewPageBasedOnTemplate(idOfFirstPageInTemplateBook))
+		//					return;
+		//			}
+		//			catch (Exception error)
+		//			{
+		//				Logger.WriteEvent(error.Message);
+		//				//this is not worth bothering the user about
+		//#if DEBUG
+		//				throw error;
+		//#endif
+		//			}
+		//			//there was some error figuring out a default page, let's just let the user choose what they want
+		//			if(this._view!=null)
+		//				this._view.ShowAddPageDialog();
+		//		}
 
 		//invoked from TopicChooserDialog.tsx via API
 		internal void SetTopic(string englishTopicAsKey)
@@ -1065,7 +1066,6 @@ namespace Bloom.Edit
 				// Check memory for the benefit of developers.
 				MemoryManagement.CheckMemory(false, "before EditingModel.SaveNow()", false);
 #endif
-				var watch = Stopwatch.StartNew();
 				try
 				{
 					_webSocketServer.SendString("pageThumbnailList", "saving", "");
@@ -1077,7 +1077,6 @@ namespace Bloom.Edit
 					{
 						NonFatalProblem.Report(ModalIf.Beta, PassiveIf.Beta, "SaveNow called on wrong thread", null);
 						_view.Invoke((Action)(() => SaveNow(forceFullSave)));
-						watch.Stop();
 						return;
 					}
 					CheckForBL2634("beginning SaveNow");
@@ -1090,7 +1089,7 @@ namespace Bloom.Edit
 					//	CurrentBook.SavePage(_domForCurrentPage);
 					//would some times ask book X to save a page from book Y.
 					//We could never reproduce it at will, so this is to help with that...
-					if(this._pageSelection.CurrentSelection.Book != _currentlyDisplayedBook)
+					if (this._pageSelection.CurrentSelection.Book != _currentlyDisplayedBook)
 					{
 						Debug.Fail("This is the BL-1064 Situation");
 						Logger.WriteEvent("Warning: SaveNow() with a page that is not the current book. That should be ok, but it is the BL-1064 situation (though we now work around it).");
@@ -1102,7 +1101,7 @@ namespace Bloom.Edit
 						if (!_pageSelection.CurrentSelection.Book.CanUpdate)
 						{
 							Logger.WriteEvent("Error: SaveNow() found that this book had CanUpdate=='false'");
-							Logger.WriteEvent("Book path was {0}",_pageSelection.CurrentSelection.Book.FolderPath);
+							Logger.WriteEvent("Book path was {0}", _pageSelection.CurrentSelection.Book.FolderPath);
 							throw new ApplicationException("Bloom tried to save a page to a book that was not in a position to be updated.");
 						}
 					}
@@ -1111,7 +1110,7 @@ namespace Bloom.Edit
 						Logger.WriteEvent("Error: SaveNow() found that this book was disposed.");
 						throw err;
 					}
-					catch(Exception err) // in case even calling CanUpdate gave an error
+					catch (Exception err) // in case even calling CanUpdate gave an error
 					{
 						Logger.WriteEvent("Error: SaveNow():CanUpdate threw an exception");
 						throw err;
@@ -1133,8 +1132,6 @@ namespace Bloom.Edit
 					_tasksToDoAfterSaving.RemoveAt(0);
 					task();
 				}
-				watch.Stop();
-				TroubleShooterDialog.Report($"Saving changes took {watch.ElapsedMilliseconds} milliseconds");
 #if MEMORYCHECK
 				// Check memory for the benefit of developers.
 				MemoryManagement.CheckMemory(false, "after EditingModel.SaveNow()", false);
@@ -1162,7 +1159,7 @@ namespace Bloom.Edit
 		{
 			try
 			{
-				if (_pageSelection.CurrentSelection == null || _domForCurrentPage ==null)
+				if (_pageSelection.CurrentSelection == null || _domForCurrentPage == null)
 					return;
 				XmlElement divElement =
 					_domForCurrentPage.SelectSingleNodeHonoringDefaultNS("//div[contains(@class, 'bloom-page')]");
@@ -1204,7 +1201,7 @@ namespace Bloom.Edit
 			string translationGroupHtml = TranslationGroupManager.GetDefaultTranslationGroupContent(_domForCurrentPage.RawDom, CurrentBook);
 			request.ReplyWithHtml(translationGroupHtml);
 		}
-		
+
 		public void ChangePicture(int imgIndex, XmlElement imageElement, PalasoImage imageInfo, IProgress progress)
 		{
 			try
@@ -1333,6 +1330,11 @@ namespace Bloom.Edit
 
 			if (null == FontFamily.Families.FirstOrDefault(f => f.Name.ToLowerInvariant() == name))
 			{
+				var serve = FontServe.GetInstance();
+				if (serve.HasFamily(language1FontName))
+					return null;
+				if (serve.HasFamily("Andika") && language1FontName == "Andika New Basic")
+					return null;	// Andika subsumes Andika New Basic and is served for it
 				var s = LocalizationManager.GetString("EditTab.FontMissing",
 														   "The current selected " +
 														   "font is '{0}', but it is not installed on this computer. Some other font will be used.");
@@ -1400,8 +1402,21 @@ namespace Bloom.Edit
 		public void ChangeBookLicenseMetaData(Metadata metadata)
 		{
 			CurrentBook.SetMetadata(metadata);
+
+			// This is awkward.
+			// Originally, one could only open the CopyrightAndLicenseDialog from the Edit tab, and we ensured the book was saved
+			// by other means. Now, one can open it from the Publish tab.
+			// I wanted to introduce an event or other mechanism such that Edit and Publish could each do what they need to when
+			// the dialog is closed, but CopyrightAndLicenseApi is already so entangled with EditModel, it wasn't going to be clean
+			// no matter what I did. And this is simpler.
+
+			// For Edit tab:
 			_pageHasUnsavedDataDerivedChange = true;
 			RefreshDisplayOfCurrentPage(); //the cleanup() that is part of Save removes qtips, so let's redraw everything
+
+			// For Publish tab:
+			CurrentBook.BookInfo.Save();
+			_webSocketServer.SendString("bookCopyrightAndLicense", "saved", CurrentBook.BookInfo.Copyright);
 		}
 
 #if __MonoCS__
@@ -1429,10 +1444,10 @@ namespace Bloom.Edit
 
 		public void CopyPage(IPage page)
 		{
-			SaveNow();	// need to preserve any typing they've done but not yet saved (BL-4512)
-			// We have to clone this so that if the user changes the page after doing the copy,
-			// when they paste they get the page as it was, not as it is now.
-			_pageDivFromCopyPage = (XmlElement) page.GetDivNodeForThisPage().CloneNode(true);
+			SaveNow();  // need to preserve any typing they've done but not yet saved (BL-4512)
+						// We have to clone this so that if the user changes the page after doing the copy,
+						// when they paste they get the page as it was, not as it is now.
+			_pageDivFromCopyPage = (XmlElement)page.GetDivNodeForThisPage().CloneNode(true);
 			_bookPathFromCopyPage = page.Book.GetPathHtmlFile();
 		}
 

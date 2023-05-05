@@ -270,7 +270,8 @@ namespace Bloom.Api
 				var syncOn = SyncObj;
 				if (localPathLc.StartsWith("api/pagetemplatethumbnail", StringComparison.InvariantCulture)
 				    || localPathLc == "api/publish/bloompub/thumbnail"
-				    || localPathLc == "api/publish/bloompub/updatepreview")
+				    || localPathLc == "api/publish/bloompub/updatepreview"
+					|| localPathLc == "api/publish/epub/updatepreview")
 					syncOn = ThumbnailsAndPreviewsSyncObj;
 				else if (localPathLc.StartsWith("api/i18n/"))
 					syncOn = I18NLock;

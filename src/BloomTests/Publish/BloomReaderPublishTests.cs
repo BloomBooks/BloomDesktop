@@ -1307,20 +1307,20 @@ namespace BloomTests.Publish
 				Assert.That(File.Exists(Path.Combine(testBook.FolderPath, timesNewRomanFileName)));
 				Assert.That(File.Exists(Path.Combine(testBook.FolderPath, calibreFileName)));
 				Assert.That(stubProgress.MessagesNotLocalized, Has.Member("Checking Times New Roman font: License OK for embedding."));
-				// 0.0 megs is culture-specific; ignore that part.
+				// 0.00 megs is culture-specific; ignore that part.
 				Assert.That(stubProgress.MessagesNotLocalized.Any(
-					s => s.StartsWith("Embedding font Times New Roman at a cost of 0") && s.EndsWith("0 megs")));
+					s => s.StartsWith("Embedding font Times New Roman at a cost of 0") && s.EndsWith("00 megs")));
 				Assert.That(stubProgress.MessagesNotLocalized, Has.Member("This book has text in a font named \"Wen Yei\". Bloom cannot publish this font's format (.ttc)."));
-				Assert.That(stubProgress.MessagesNotLocalized, Has.Member("Bloom will substitute \"Andika New Basic\" instead."));
+				Assert.That(stubProgress.MessagesNotLocalized, Has.Member("Bloom will substitute \"Andika\" instead."));
 				Assert.That(stubProgress.MessagesNotLocalized, Has.Member("Checking Calibre font: License OK for embedding."));
-				// 0.2 megs is culture-specific.
+				// 0.20 megs is culture-specific.
 				Assert.That(stubProgress.MessagesNotLocalized.Any(
-					s => s.StartsWith("Embedding font Calibre at a cost of 0") && s.EndsWith("2 megs")));
+					s => s.StartsWith("Embedding font Calibre at a cost of 0") && s.EndsWith("20 megs")));
 
 				Assert.That(stubProgress.MessagesNotLocalized, Has.Member("This book has text in a font named \"NotAllowed\". The license for \"NotAllowed\" does not permit Bloom to embed the font in the book."));
-				Assert.That(stubProgress.MessagesNotLocalized, Has.Member("Bloom will substitute \"Andika New Basic\" instead."));
+				Assert.That(stubProgress.MessagesNotLocalized, Has.Member("Bloom will substitute \"Andika\" instead."));
 				Assert.That(stubProgress.MessagesNotLocalized, Has.Member("This book has text in a font named \"NotFound\", but Bloom could not find that font on this computer."));
-				Assert.That(stubProgress.MessagesNotLocalized, Has.Member("Bloom will substitute \"Andika New Basic\" instead."));
+				Assert.That(stubProgress.MessagesNotLocalized, Has.Member("Bloom will substitute \"Andika\" instead."));
 
 				var fontSourceRulesPath = Path.Combine(testBook.FolderPath, "fonts.css");
 				var fontSource = RobustFile.ReadAllText(fontSourceRulesPath);
@@ -1337,14 +1337,14 @@ namespace BloomTests.Publish
 				var styleText = styleNode.InnerXml;
 				Assert.That(styleText.Contains(".Times-style[lang='tpi'] { font-family: Times New Roman ! important; font-size: 12pt  }"), Is.True, "Times New Roman reference unchanged");
 				Assert.That(styleText.Contains("Wen Yei"), Is.False, "Wen Yei reference has been removed");
-				Assert.That(styleText.Contains(".Times-style[lang='zh'] { font-family: Andika New Basic !important; font-size: 12pt  }"), Is.True, "Wen Yei reference replaced with Andika New Basic");
+				Assert.That(styleText.Contains(".Times-style[lang='zh'] { font-family: Andika !important; font-size: 12pt  }"), Is.True, "Wen Yei reference replaced with Andika");
 
 				var customCss = File.ReadAllText(customStylesPath);
 				Assert.That(customCss.Contains(".someStyle {font-family:'Calibre';}"), Is.True, "Calibre reference unchanged");
 				Assert.That(customCss.Contains("NotFound"), Is.False, "NotFound reference has been removed");
-				Assert.That(customCss.Contains(".otherStyle {font-family: 'Andika New Basic';}"), Is.True, "NotFound reference replaced with Andika New Basic");
+				Assert.That(customCss.Contains(".otherStyle {font-family: 'Andika';}"), Is.True, "NotFound reference replaced with Andika");
 				Assert.That(customCss.Contains("NotAllowed"), Is.False, "NotAllowed reference has been removed");
-				Assert.That(customCss.Contains(".yetAnother {font-family: 'Andika New Basic';}"), Is.True, "NotAllowed reference replaced with Andika New Basic");
+				Assert.That(customCss.Contains(".yetAnother {font-family: 'Andika';}"), Is.True, "NotAllowed reference replaced with Andika");
 			}
 		}
 

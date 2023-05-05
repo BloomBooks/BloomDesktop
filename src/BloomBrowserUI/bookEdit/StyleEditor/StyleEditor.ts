@@ -84,6 +84,7 @@ class FormattingStyle {
 
 export default class StyleEditor {
     private _previousBox: Element;
+    _observer: ResizeObserver;
     private _supportFilesRoot: string;
     private MIN_FONT_SIZE: number = 7;
     public boxBeingEdited: HTMLElement; // public for testing
@@ -945,24 +946,36 @@ export default class StyleEditor {
         }
     }
 
-    public AdjustFormatButton(element: Element): void {
-        if (element.closest(".bloom-textOverPicture")) {
-            // This element is inside a text-over-picture element.
-            // Because the format button is positioned differently in those cases, we don't need the following logic.
-            //
-            // (Note: Or maybe we do, but because of the auto-grow feature, it's never "needed"?
-            // Maybe we'd need to take the scrollTop and subtract the original bottom position?).
-            return;
-        }
+    // It's tempting to get these from fmtButton.getBoundingClientRect(), but that yields
+    // an empty rectangle when it is hidden.
+    fmtButtonWidth = 20;
+    fmtButtonHeight = this.fmtButtonWidth;
 
-        // Bizarrely, bottom:0 means to place it where the bottom of the content would be
-        // if not scrolled. That's where we want it, but we want it to stay at the bottom
-        // even if the block is overflowing and scrolled, and bottom:0 doesn't keep it
-        // there; the button scrolls with the other content. We can't use postion: sticky,
-        // because this may be inside other scrolling elements. So we do this hack.
-        $("#formatButton").css({
-            bottom: -$(element).scrollTop()
-        });
+    public AdjustFormatButton(element: Element): void {
+        const eltBounds = element.getBoundingClientRect();
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        const parentBounds = element.parentElement!.getBoundingClientRect();
+        const bottom = eltBounds.bottom - parentBounds.top;
+        const fmtButton = document.getElementById("formatButton");
+
+        if (!fmtButton) {
+            return; // should not happen
+        }
+        // The quiz page is formatted with just enough space for each question/answer, so a format button in
+        // the usual place on the left overlaps the text annoyingly. So for these pages we move it to the
+        // right. (Not sure why that wouldn't always be better.)
+        if (element.closest(".quiz")) {
+            fmtButton.style.top = bottom - this.fmtButtonHeight + "px";
+            fmtButton.style.left = "unset";
+            fmtButton.style.right = "0";
+        } else if (element.closest(".bloom-textOverPicture")) {
+            // This element is inside a text-over-picture element.
+            fmtButton.style.top = bottom + "px";
+            fmtButton.style.left = -5 - this.fmtButtonWidth + "px";
+        } else {
+            fmtButton.style.top = bottom - this.fmtButtonHeight + "px";
+            fmtButton.style.left = "0";
+        }
     }
 
     private uiLang: string;
@@ -997,8 +1010,15 @@ export default class StyleEditor {
                 return;
             }
         }
+        if (this._previousBox == targetBox) {
+            return;
+        }
         if (this._previousBox != null) {
             StyleEditor.CleanupElement(this._previousBox);
+        }
+        const oldCog = document.getElementById("formatButton");
+        if (oldCog) {
+            oldCog.remove();
         }
 
         let styleName = StyleEditor.GetStyleNameForElement(targetBox);
@@ -1016,25 +1036,34 @@ export default class StyleEditor {
             formatButtonFilename = "cog.svg";
         }
 
-        // put the format button in the editable text box itself, so that it's always in the right place.
-        // unfortunately it will be subject to deletion because this is an editable box. But we can mark it as uneditable, so that
-        // the user won't see resize and drag controls when they click on it
-        $(targetBox).append(
+        // Put the format button in the parent translation group. This prevents it being editable,
+        // and avoids various complications; also, in WebView2, having it inside the content-editable
+        // element somehow prevents ctrl-A from working (BL-12118).
+        // It doesn't much matter where it goes in the parent, as it is positioned absolutely,
+        // but being after the element we want it on top of at least makes it be above that element.
+        // If the parent were display:block, we might be able to get it in the right place
+        // (that is, near the end of targetBox) by NOT setting any of its top,right,bottom,left;
+        // but the parent is display:flex so it just ends up in the top left.
+        // Instead, we have to actually compute the position, and observe changes in the size of
+        // targetBox that might require adjusting it.
+        // As far as I know, nothing ELSE can change (while this box has focus and the button exists)
+        // that would require moving it. (Moving a bubble moves the TG, so the button goes along.)
+        $(targetBox).after(
             '<div id="formatButton" contenteditable="false" class="bloom-ui"><img contenteditable="false" src="' +
                 this._supportFilesRoot +
                 `/img/${formatButtonFilename}"></div>`
         );
 
-        //make the button stay at the bottom if we overflow and thus scroll
-        //review: It's not clear to me that this is actually working (JH 3/19/2016)
-        $(targetBox).on("scroll", e => {
-            this.AdjustFormatButton(e.target);
-        });
-
-        // And in case we are starting out on a centerVertically page we might need to adjust it now
         this.AdjustFormatButton(targetBox);
+        if (this._observer) {
+            this._observer.disconnect();
+        }
+        this._observer = new ResizeObserver(() =>
+            this.AdjustFormatButton(targetBox)
+        );
+        this._observer.observe(targetBox);
 
-        const formatButton = $("#formatButton");
+        const formatButton = document.getElementById("formatButton");
         /* we removed this for BL-799, plus it was always getting in the way, once the format popup was opened
         const txt = theOneLocalizationManager.getText('EditTab.FormatDialogTip', 'Adjust formatting for style');
         editor.AddQtipToElement(formatButton, txt, 1500);
@@ -1057,14 +1086,7 @@ export default class StyleEditor {
         //    return;
         //}
 
-        // It is not reliable to attach the click handler directly, as in  $(#formatButton).click(...)
-        // I don't know why it doesn't work because even when it fails $(#formatButton).length is 1, so it seems to be
-        // finding the right element. But some of the time it doesn't work. See BL-2701. This rather awkard
-        // approach is the recommended way to make events fire for dynamically added elements.
-        // The .off prevents adding multiple event handlers as the parent box gains focus repeatedly.
-        // The namespace (".formatButton") in the event name prevents off from interfering with other click handlers.
-        $(targetBox).off("click.formatButton");
-        $(targetBox).on("click.formatButton", "#formatButton", () => {
+        formatButton?.addEventListener("click", () => {
             // Using axios directly because bloomApi does not support combining multiple promises with .all
             wrapAxios(
                 axios

@@ -297,14 +297,6 @@
         <source xml:lang="en">It appears that some part of the folder path to this book has been moved or renamed. As a result, Bloom cannot save your changes to this page, and will need to exit now. If you haven't been renaming or moving things, please report the problem to us.</source>
         <note>ID: BookStorage.FolderMoved</note>
       </trans-unit>
-      <trans-unit id="Browser.CopyTroubleshootingInfo">
-        <source xml:lang="en">Copy Troubleshooting Information</source>
-        <note>ID: Browser.CopyTroubleshootingInfo</note>
-      </trans-unit>
-      <trans-unit id="Browser.OpenPageInFirefox">
-        <source xml:lang="en">Open Page in Firefox (which must be in the PATH environment variable)</source>
-        <note>ID: Browser.OpenPageInFirefox</note>
-      </trans-unit>
       <trans-unit id="Browser.ProblemSaving">
         <source xml:lang="en">There was a problem while saving. Please return to the previous page and make sure it looks correct.</source>
         <note>ID: Browser.ProblemSaving</note>
@@ -625,21 +617,6 @@
         <source xml:lang="en">Get more source books at BloomLibrary.org</source>
         <note>ID: CollectionTab.BloomLibraryLinkLabel</note>
         <note>Shown at the bottom of the list of books. User can click on it and it will attempt to open a browser to show the Bloom Library</note>
-      </trans-unit>
-      <trans-unit id="CollectionTab.BloomLibraryLinkVerification.Part1">
-        <source xml:lang="en">Note: The Bloom Library contains shell books, whereas your current collection is a "source collection", meaning it is for making shell books, not for translating them into the local language.</source>
-        <note>ID: CollectionTab.BloomLibraryLinkVerification.Part1</note>
-        <note>get this clicking on BloomLibrary.org link in source collection</note>
-      </trans-unit>
-      <trans-unit id="CollectionTab.BloomLibraryLinkVerification.Part2">
-        <source xml:lang="en">When you've made a shell, you can then upload it to the Bloom Library from the Publish tab.</source>
-        <note>ID: CollectionTab.BloomLibraryLinkVerification.Part2</note>
-        <note>get this clicking on BloomLibrary.org link in source collection</note>
-      </trans-unit>
-      <trans-unit id="CollectionTab.BloomLibraryLinkVerificationCaption">
-        <source xml:lang="en">Source Collection</source>
-        <note>ID: CollectionTab.BloomLibraryLinkVerificationCaption</note>
-        <note>get this clicking on BloomLibrary.org link in source collection</note>
       </trans-unit>
       <trans-unit id="CollectionTab.BookMenu.DeleteBook">
         <source xml:lang="en">Delete Book</source>
@@ -1078,6 +1055,7 @@
       <trans-unit id="Common.Optional">
         <source xml:lang="en">optional</source>
         <note>ID: Common.Optional</note>
+        <note>Obsolete as of Bloom 5.5</note>
       </trans-unit>
       <trans-unit id="Common.Other" sil:dynamic="true">
         <source xml:lang="en">Other</source>
@@ -1099,6 +1077,7 @@
         <source xml:lang="en">Refresh</source>
         <note>ID: Common.Refresh</note>
         <note>Sense of refreshing a web page.</note>
+        <note>Obsolete as of Bloom 5.5</note>
       </trans-unit>
       <trans-unit id="Common.Replace">
         <source xml:lang="en">Replace</source>
@@ -3360,6 +3339,11 @@
       <trans-unit id="NewCollectionWizard.AlreadyCollectionWithThatName">
         <source xml:lang="en">There is already a collection with that name, at &lt;a href='file://{0}'&gt;{0}&lt;/a&gt;.\nPlease pick a unique name.</source>
         <note>ID: NewCollectionWizard.AlreadyCollectionWithThatName</note>
+        <note>Obsolete as of Bloom 5.5</note>
+      </trans-unit>
+      <trans-unit id="NewCollectionWizard.AlreadyCollectionWithThatName.V2">
+        <source xml:lang="en">There is already a collection with that name, at {0}.\nPlease pick a unique name.</source>
+        <note>ID: NewCollectionWizard.AlreadyCollectionWithThatName.V2</note>
       </trans-unit>
       <trans-unit id="NewCollectionWizard.ChooseLanguagePage">
         <source xml:lang="en">Choose the main language for this collection.</source>
@@ -3466,6 +3450,11 @@
       <trans-unit id="NewCollectionWizard.WelcomePage.WelcomeLine2">
         <source xml:lang="en">In order to keep things simple and organized, Bloom keeps all the books you make in one or more &lt;i&gt;Collections&lt;/i&gt;. The first thing we need to do is make one for you.</source>
         <note>ID: NewCollectionWizard.WelcomePage.WelcomeLine2</note>
+        <note>Obsolete as of Bloom 5.5</note>
+      </trans-unit>
+      <trans-unit id="NewCollectionWizard.WelcomePage.WelcomeLine2.V2">
+        <source xml:lang="en">In order to keep things simple and organized, Bloom keeps all the books you make in one or more 'Collections'. The first thing we need to do is make one for you.</source>
+        <note>ID: NewCollectionWizard.WelcomePage.WelcomeLine2.V2</note>
       </trans-unit>
       <trans-unit id="NewCollectionWizard.WelcomePage.WelcomeLine3">
         <source xml:lang="en">Click 'Next' to get started.</source>
@@ -3559,28 +3548,49 @@
       <trans-unit id="PublishTab.AdobeReaderControl.NotInstalled">
         <source xml:lang="en">Please install Adobe Reader so that Bloom can show your completed book. Until then, you can still save the PDF Book and open it in some other program.</source>
         <note>ID: PublishTab.AdobeReaderControl.NotInstalled</note>
+        <note>Obsolete as of Bloom 5.5</note>
       </trans-unit>
       <trans-unit id="PublishTab.AdobeReaderControl.ProblemShowingPDF">
         <source xml:lang="en">That's strange... Adobe Reader gave an error when trying to show that PDF. You can still try saving the PDF Book.</source>
         <note>ID: PublishTab.AdobeReaderControl.ProblemShowingPDF</note>
+        <note>Obsolete as of Bloom 5.5</note>
       </trans-unit>
       <trans-unit id="PublishTab.AdobeReaderControl.UnknownError">
         <source xml:lang="en">Sad News. Bloom wasn't able to get Adobe Reader to show here, so Bloom can't show your completed book.\nPlease uninstall your existing version of 'Adobe Reader' and (re)install 'Adobe Reader'.\nUntil you get that fixed, you can still save the PDF Book and open it in some other program.</source>
         <note>ID: PublishTab.AdobeReaderControl.UnknownError</note>
+        <note>Obsolete as of Bloom 5.5</note>
       </trans-unit>
       <trans-unit id="PublishTab.Android.BloomPUB.Hint.Heading" sil:dynamic="true">
         <source xml:lang="en">Sharing BloomPUB Files</source>
         <note>ID: PublishTab.Android.BloomPUB.Hint.Heading</note>
+        <note>Obsolete in 5.5</note>
       </trans-unit>
       <trans-unit id="PublishTab.Android.BloomPUB.Hint" sil:dynamic="true">
         <source xml:lang="en">You can use SD cards and sharing apps like email, Google Drive, and WhatsApp to get your .bloompub file onto a device that has &lt;a href="https://bloomlibrary.org/page/create/bloom-reader"&gt;Bloom Reader&lt;/a&gt; (Android) or &lt;a href="https://bloomlibrary.org/page/create/downloads#related-software"&gt;BloomPUB Viewer&lt;/a&gt; (Windows). You can also create a stand-alone app using &lt;a href="https://software.sil.org/readingappbuilder/"&gt;Reading App Builder&lt;/a&gt;.</source>
         <note>ID: PublishTab.Android.BloomPUB.Hint</note>
+        <note>Obsolete in 5.5</note>
         <note>The 3 links should be left untranslated as well as the file type '.bloompub'. Beware of machine translations that eliminate the 'b'.</note>
       </trans-unit>
       <trans-unit id="PublishTab.Android.BloomPUB.Hint2" sil:dynamic="true">
         <source xml:lang="en">Note that when you upload your book to &lt;a href="https://bloomlibrary.org/"&gt;BloomLibrary.org&lt;/a&gt;, we will create a BloomPUB file for you that people can download.</source>
         <note>ID: PublishTab.Android.BloomPUB.Hint2</note>
+        <note>Obsolete in 5.5</note>
         <note>The link should be left untranslated as well as the file type 'BloomPUB'.</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Android.BloomPUB.MakeRABAppHelpLink" translate="no">
+        <!-- added in 5.5 -->
+        <source xml:lang="en">Making BloomPUB Apps with Reading App Builder</source>
+        <note>ID: PublishTab.Android.BloomPUB.MakeRABAppHelpLink</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Android.BloomPUB.ViewingWithBRHelpLink" translate="no">
+        <!-- added in 5.5 -->
+        <source xml:lang="en">Viewing BloomPUBs on Bloom Reader (Android)</source>
+        <note>ID: PublishTab.Android.BloomPUB.ViewingWithBRHelpLink</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Android.BloomPUB.ViewingOnWindowsHelpLink" translate="no">
+        <!-- added in 5.5 -->
+        <source xml:lang="en">Viewing BloomPUBs on Windows</source>
+        <note>ID: PublishTab.Android.BloomPUB.ViewingOnWindowsHelpLink</note>
       </trans-unit>
       <trans-unit id="PublishTab.Android.USB.Hint.Heading" sil:dynamic="true">
         <source xml:lang="en"> USB is Difficult</source>
@@ -4105,15 +4115,6 @@
         <source xml:lang="en">Make an ePUB (electronic book) out of this book, allowing it to be read on various electronic reading devices.</source>
         <note>ID: PublishTab.EpubRadio-tooltip</note>
       </trans-unit>
-      <trans-unit id="PublishTab.InDesignDialog.DontShowThisAgainButton">
-        <source xml:lang="en">Don't Show This Again</source>
-        <note>ID: PublishTab.InDesignDialog.DontShowThisAgainButton</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.InDesignDialog.WindowTitle">
-        <source xml:lang="en">InDesign XML Information</source>
-        <note>ID: PublishTab.InDesignDialog.WindowTitle</note>
-        <note>This is the title of a dialog about exporting a Bloom book to the InDesign XML format</note>
-      </trans-unit>
       <trans-unit id="PublishTab.LessMemoryPdfMode">
         <source xml:lang="en">Use less memory (slower)</source>
         <note>ID: PublishTab.LessMemoryPdfMode</note>
@@ -4128,10 +4129,12 @@
       <trans-unit id="PublishTab.Notifications.AdobeForPrint">
         <source xml:lang="en">If you want to print directly from Bloom, you will need to install the free Adobe Reader and then re-start Bloom. Or instead, you can save the PDF, open it in some other program, and then print from there.</source>
         <note>ID: PublishTab.Notifications.AdobeForPrint</note>
+        <note>Obsolete as of Bloom 5.5</note>
       </trans-unit>
       <trans-unit id="PublishTab.Notifications.AdobeReaderRecommendation">
         <source xml:lang="en">This PDF viewer can be improved by installing the free Adobe Reader on this computer.</source>
         <note>ID: PublishTab.Notifications.AdobeReaderRecommendation</note>
+        <note>Obsolete as of Bloom 5.5</note>
       </trans-unit>
       <trans-unit id="PublishTab.OnePagePerPaperRadio">
         <source xml:lang="en">Simple</source>
@@ -4180,42 +4183,49 @@
         <source xml:lang="en">1. Layout: Portrait</source>
         <note>ID: PublishTab.PDF.Booklet.PageLayout.Portrait</note>
         <note>first recommendation is page layout / orientation (taller than it is wide)</note>
+        <note>This should follow how Microsoft translated these terms in the print dialog.</note>
       </trans-unit>
       <trans-unit id="PublishTab.PDF.Booklet.PageLayout.Landscape" translate="no">
         <!-- added in 5.5 -->
         <source xml:lang="en">1. Layout: Landscape</source>
         <note>ID: PublishTab.PDF.Booklet.PageLayout.Landscape</note>
         <note>first recommendation is page layout / orientation (wider than it is tall)</note>
+        <note>This should follow how Microsoft translated these terms in the print dialog.</note>
       </trans-unit>
       <trans-unit id="PublishTab.PDF.Booklet.Flip.ShortEdge" translate="no">
         <!-- added in 5.5 -->
         <source xml:lang="en">2. Print on both sides: "Flip on short edge"</source>
         <note>ID: PublishTab.PDF.Booklet.Flip.ShortEdge</note>
         <note>second recommendation is two-sided printing, flipping the paper on the short edge</note>
+        <note>This should follow how Microsoft translated these terms in the print dialog.</note>
       </trans-unit>
       <trans-unit id="PublishTab.PDF.Booklet.Flip.LongEdge" translate="no">
         <!-- added in 5.5 -->
         <source xml:lang="en">2. Print on both sides: "Flip on long edge"</source>
         <note>ID: PublishTab.PDF.Booklet.Flip.LongEdge</note>
         <note>second recommendation is two-sided printing, flipping the paper on the long edge</note>
+        <note>This should follow how Microsoft translated these terms in the print dialog.</note>
       </trans-unit>
       <trans-unit id="PublishTab.PDF.Booklet.PaperSize.A4" translate="no">
         <!-- added in 5.5 -->
         <source xml:lang="en">3. More settings &gt; Paper size: "A4"</source>
         <note>ID: PublishTab.PDF.Booklet.PaperSize.A4</note>
         <note>third recommendation is paper size (A4, the standard metric paper size)</note>
+        <note>This should follow how Microsoft translated these terms in the print dialog.</note>
       </trans-unit>
       <trans-unit id="PublishTab.PDF.Booklet.PaperSize.Letter" translate="no">
         <!-- added in 5.5 -->
         <source xml:lang="en">3. More settings &gt; Paper size: "Letter"</source>
         <note>ID: PublishTab.PDF.Booklet.PaperSize.Letter</note>
         <note>third recommendation is paper size (Letter, the standard paper size in the U.S.)</note>
+        <note>This should follow how Microsoft translated these terms in the print dialog.</note>
       </trans-unit>
       <trans-unit id="PublishTab.PDF.Booklet.Scale.ActualSize" translate="no">
         <!-- added in 5.5 -->
         <source xml:lang="en">4. More settings &gt; Scale: "Actual size"</source>
         <note>ID: PublishTab.PDF.Booklet.Scale.ActualSize</note>
         <note>fourth recommendation is image scaling (use actual size, don't scale)</note>
+        <note>This should follow how Microsoft translated these terms in the print dialog.</note>
       </trans-unit>
       <trans-unit id="PublishTab.PDF.Booklet.TwoPages.CutAndStack" translate="no">
         <!-- added in 5.5 -->
@@ -4625,14 +4635,17 @@
       <trans-unit id="PublishTab.Upload.AccessibleToBlind">
         <source xml:lang="en">Accessible to the Blind</source>
         <note>ID: PublishTab.Upload.AccessibleToBlind</note>
+        <note>Obsolete as of Bloom 5.5</note>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.Acknowledgments">
         <source xml:lang="en">Acknowledgments</source>
         <note>ID: PublishTab.Upload.Acknowledgments</note>
+        <note>Obsolete as of Bloom 5.5</note>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.AdditionalRequests">
         <source xml:lang="en">Additional Requests: </source>
         <note>ID: PublishTab.Upload.AdditionalRequests</note>
+        <note>Obsolete as of Bloom 5.5</note>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.AllReserved">
         <source xml:lang="en">All rights reserved (Contact the Copyright holder for any permissions.)</source>
@@ -4661,6 +4674,7 @@
       <trans-unit id="PublishTab.Upload.BackgroundMusic">
         <source xml:lang="en">Background Music</source>
         <note>ID: PublishTab.Upload.BackgroundMusic</note>
+        <note>Obsolete as of Bloom 5.5</note>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.BannerDescription" translate="no">
         <!-- added in 5.5 -->
@@ -4684,6 +4698,7 @@
       <trans-unit id="PublishTab.Upload.CcLink">
         <source xml:lang="en">CC-BY-NC</source>
         <note>ID: PublishTab.Upload.CcLink</note>
+        <note>Obsolete as of Bloom 5.5</note>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.CheckingVersionEligibility" translate="no">
         <!-- added in 5.5 -->
@@ -4698,6 +4713,12 @@
       <trans-unit id="PublishTab.Upload.ChooseSignLanguageWarning">
         <source xml:lang="en">Please choose the sign language for this book</source>
         <note>ID: PublishTab.Upload.ChooseSignLanguageWarning</note>
+        <note>Obsolete as of Bloom 5.5</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.ClickToFix" translate="no">
+        <!-- added in 5.5 -->
+        <source xml:lang="en">Click to fix</source>
+        <note>ID: PublishTab.Upload.ClickToFix</note>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.ConfirmMetadata" translate="no">
         <!-- added in 5.5 -->
@@ -4712,6 +4733,7 @@
       <trans-unit id="PublishTab.Upload.Credits">
         <source xml:lang="en">credits</source>
         <note>ID: PublishTab.Upload.Credits</note>
+        <note>Obsolete as of Bloom 5.5</note>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.EnterpriseShelfRequiredTooltip" translate="no">
         <!-- added in 5.5 -->
@@ -4725,10 +4747,12 @@
       <trans-unit id="PublishTab.Upload.Features">
         <source xml:lang="en">Features</source>
         <note>ID: PublishTab.Upload.Features</note>
+        <note>Obsolete as of Bloom 5.5</note>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.FieldsNeedAttention">
         <source xml:lang="en">One or more fields above need your attention before uploading.</source>
         <note>ID: PublishTab.Upload.FieldsNeedAttention</note>
+        <note>Obsolete as of Bloom 5.5</note>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.FinalUploadFailureNotice">
         <source xml:lang="en">Sorry, "{0}" was not successfully uploaded. Sometimes this is caused by temporary problems with the servers we use. It's worth trying again in an hour or two. If you regularly get this problem please report it to us.</source>
@@ -4826,6 +4850,7 @@
       <trans-unit id="PublishTab.Upload.Gaurantee">
         <source xml:lang="en">By uploading, you confirm your agreement with the Bloom Library Terms of Use and grant the rights it describes.</source>
         <note>ID: PublishTab.Upload.Gaurantee</note>
+        <note>Obsolete as of Bloom 5.5</note>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.GenericUploadProblemNotice">
         <source xml:lang="en">There was a problem uploading your book.</source>
@@ -4834,10 +4859,12 @@
       <trans-unit id="PublishTab.Upload.GiveBack">
         <source xml:lang="en">It’s easy to “give back”</source>
         <note>ID: PublishTab.Upload.GiveBack</note>
+        <note>Obsolete as of Bloom 5.5</note>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.HelpEachOther">
         <source xml:lang="en">In the Bloom community, we help each other by sharing both new and newly translated books on the Bloom Library.</source>
         <note>ID: PublishTab.Upload.HelpEachOther</note>
+        <note>Obsolete as of Bloom 5.5</note>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.IncompleteTranslation">
         <source xml:lang="en">(incomplete translation)</source>
@@ -4852,6 +4879,7 @@
       <trans-unit id="PublishTab.Upload.License">
         <source xml:lang="en">Usage/License</source>
         <note>ID: PublishTab.Upload.License</note>
+        <note>Obsolete as of Bloom 5.5</note>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.Login.AccountAlreadyExists">
         <source xml:lang="en">Account Already Exists</source>
@@ -4930,10 +4958,12 @@
         <note xml:lang="en">OLD TEXT (before 4.9, added "sign in" and changed "log in" to "sign in"): Log in to BloomLibrary.org</note>
         <note>We have kept the old message ID since a translation of that will be better than nothing. The terminology should ideally match the buttons in the dialog,
           which we don't control, such as "Sign in with Google", but so far we haven't been able to get those localized.</note>
+        <note>Obsolete as of Bloom 5.5</note>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.Logout">
         <source xml:lang="en">Sign out of BloomLibrary.org</source>
         <note>ID: PublishTab.Upload.Logout</note>
+        <note>Obsolete as of Bloom 5.5</note>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.MakingPdf">
         <source xml:lang="en">Making PDF Preview...</source>
@@ -4956,10 +4986,12 @@
       <trans-unit id="PublishTab.Upload.Narration">
         <source xml:lang="en">Narration</source>
         <note>ID: PublishTab.Upload.Narration</note>
+        <note>Obsolete as of Bloom 5.5</note>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.NoLangsFound">
         <source xml:lang="en">(None found)</source>
         <note>ID: PublishTab.Upload.NoLangsFound</note>
+        <note>Obsolete as of Bloom 5.5</note>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.OldVersion">
         <source xml:lang="en">Sorry, this version of Bloom Desktop is not compatible with the current version of BloomLibrary.org. Please upgrade to a newer version.</source>
@@ -4968,15 +5000,18 @@
       <trans-unit id="PublishTab.Upload.PleaseLogIn">
         <source xml:lang="en">Please sign in to BloomLibrary.org (or sign up) before uploading</source>
         <note>ID: PublishTab.Upload.PleaseLogIn</note>
+        <note>Obsolete as of Bloom 5.5</note>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.PleaseSetThis">
         <source xml:lang="en">Please set this from the edit tab</source>
         <note>ID: PublishTab.Upload.PleaseSetThis</note>
         <note>This shows next to the license, if the license has not yet been set.</note>
+        <note>Obsolete as of Bloom 5.5</note>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.SetSignLanguageLink">
         <source xml:lang="en">Set Sign Language...</source>
         <note>ID: PublishTab.Upload.SetSignLanguageLink</note>
+        <note>Obsolete as of Bloom 5.5</note>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.SignLanguage">
         <source xml:lang="en">Sign Language</source>
@@ -5010,10 +5045,12 @@
       <trans-unit id="PublishTab.Upload.Step1">
         <source xml:lang="en">Step 1: Confirm Metadata</source>
         <note>ID: PublishTab.Upload.Step1</note>
+        <note>Obsolete as of Bloom 5.5</note>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.Step2">
         <source xml:lang="en">Step 2: Upload</source>
         <note>ID: PublishTab.Upload.Step2</note>
+        <note>Obsolete as of Bloom 5.5</note>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.SuggestAssignCC">
         <source xml:lang="en">Suggestion: Assigning a Creative Commons License makes it easy for you to clearly grant certain permissions to everyone.</source>
@@ -5037,6 +5074,7 @@ Do you want to go ahead?</note>
       <trans-unit id="PublishTab.Upload.TermsLink">
         <source xml:lang="en">Show Terms of Use</source>
         <note>ID: PublishTab.Upload.TermsLink</note>
+        <note>Obsolete as of Bloom 5.5</note>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.ViewOnBloomLibrary" translate="no">
         <!-- added in 5.5 -->
@@ -5060,10 +5098,12 @@ Do you want to go ahead?</note>
       <trans-unit id="PublishTab.Upload.Title">
         <source xml:lang="en">Title</source>
         <note>ID: PublishTab.Upload.Title</note>
+        <note>Obsolete as of Bloom 5.5</note>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.UploadAudio">
         <source xml:lang="en">Upload Audio</source>
         <note>ID: PublishTab.Upload.UploadAudio</note>
+        <note>Obsolete as of Bloom 5.5</note>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.UploadButton">
         <source xml:lang="en">Upload Book</source>
@@ -5078,6 +5118,7 @@ Do you want to go ahead?</note>
         <source xml:lang="en">Congratulations, "{0}" is now available on BloomLibrary.org ({1})</source>
         <note>ID: PublishTab.Upload.UploadCompleteNotice</note>
         <note>{0} is the book title; {1} is a clickable url which will display the book on the website</note>
+        <note>Obsolete as of Bloom 5.5</note>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.UploadFolder" translate="no">
         <!-- added in 5.5 -->
@@ -5087,6 +5128,7 @@ Do you want to go ahead?</note>
       <trans-unit id="PublishTab.Upload.UploadNotAllowed">
         <source xml:lang="en">Upload Not Allowed</source>
         <note>ID: PublishTab.Upload.UploadNotAllowed</note>
+        <note>Obsolete as of Bloom 5.5</note>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.UploadProblemNotice">
         <source xml:lang="en">There was a problem uploading your book. You may need to restart Bloom or get technical help.</source>
@@ -6415,6 +6457,20 @@ Do you want to go ahead?</note>
       <trans-unit id="SimpleChoiceActivity.CorrectAnswerIndicator">
         <source xml:lang="en">Put the correct answer in this button. Bloom will shuffle the order later.</source>
         <note>On the page where you create a "Simple Choice Activity", you have to put the correct answer in a certain button. This message points out where to put that correct answer. The word "shuffle" here is like what you do to a deck of cards.</note>
+      </trans-unit>
+      <trans-unit id="Webview.MissingOrTooOld">
+        <source xml:lang="en">Bloom depends on Microsoft WebView2 Evergreen, at least version {0}. We will now send you to a webpage that will help you add this to your computer.</source>
+        <note>ID: Webview.MissingOrTooOld</note>
+        <note>{0} is the minimum version number</note>
+      </trans-unit>
+      <trans-unit id="Webview.CurrentVersion">
+        <source xml:lang="en">(Currently {0})</source>
+        <note>ID: Webview.CurrentVersion</note>
+        <note>{0} is the version number of the installed version of Webview</note>
+      </trans-unit>
+      <trans-unit id="Webview.NotInstalled">
+        <source xml:lang="en">(Currently not installed)</source>
+        <note>ID: Webview.NotInstalled</note>
       </trans-unit>
     </body>
   </file>

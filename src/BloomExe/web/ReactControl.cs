@@ -94,6 +94,8 @@ namespace Bloom.web
 			// So just don't show it at all until it contains what we want to see.
 			_browser.DocumentCompleted += (unused, args) =>
 			{
+				if (this.IsDisposed)
+					return;
 				Controls.Add((UserControl)_browser);//review this cast
 
 				// This allows us to bring up a react control/dialog with focus already set to a specific element.
@@ -154,6 +156,7 @@ namespace Bloom.web
 			RobustFile.WriteAllText(tempFile.Path, $@"<!DOCTYPE html>
 				<html style='height:100%'>
 				<head>
+					<title>ReactControl ({_javascriptBundleName})</title>
 					<meta charset = 'UTF-8' />
 					<script src = '/commonBundle.js' ></script>
                     <script src = '/{bundleNameWithExtension}'></script>
@@ -162,7 +165,7 @@ namespace Bloom.web
 							const rootDiv = document.getElementById('reactRoot');
 							window.wireUpRootComponentFromWinforms(rootDiv, {props});
 						}};
-					</script>					
+					</script>
 				</head>
 				<body style='margin:0; height:100%; display: flex; flex: 1; flex-direction: column; background-color:{backColor};'>
 					<div id='reactRoot' style='height:100%'>Javascript should have replaced this. Make sure that the javascript bundle '{bundleNameWithExtension}' includes a single call to WireUpForWinforms()</div>

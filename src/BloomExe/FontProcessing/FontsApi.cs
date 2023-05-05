@@ -6,6 +6,8 @@ using Newtonsoft.Json;
 using System.Collections.Concurrent;
 using SIL.Reporting;
 using System.Linq;
+using SIL.IO;
+using System.IO;
 
 namespace Bloom.FontProcessing
 {
@@ -49,7 +51,10 @@ namespace Bloom.FontProcessing
 		/// <returns></returns>
 		public static IEnumerable<string> NamesOfFontsThatBrowserCanRender()
 		{
-			var foundAndika = false;
+			var serve = FontServe.GetInstance();
+			var servedFontsNotInstalled = new HashSet<string>();
+			foreach (var font in serve.FontsServed)
+				servedFontsNotInstalled.Add(font.family);
 			using (var installedFontCollection = new InstalledFontCollection())
 			{
 				var modifierTerms = new string[] { "condensed", "semilight", "black", "bold", "medium", "semibold", "light", "narrow" };
@@ -62,17 +67,16 @@ namespace Bloom.FontProcessing
 						continue;
 						// sorry, we just can't display that font, it will come out as some browser default font (at least on Windows, and at least up to Firefox 36)
 					}
-					foundAndika |= family.Name == "Andika New Basic";
+					// If one of the fonts Bloom is serving is also installed, don't repeat it later.
+					if (servedFontsNotInstalled.Contains(family.Name))
+						servedFontsNotInstalled.Remove(family.Name);
 
 					yield return family.Name;
 				}
 			}
-			if (!foundAndika) // see BL-3674. We want to offer Andika even if the Andika installer isn't finished yet.
-			{   // it's possible that the user actually uninstalled Andika, but that's ok. Until they change to another font,
-				// they'll get a message that this font is not actually installed when they try to edit a book.
-				Logger.WriteMinorEvent("Andika not installed (BL-3674)");
-				yield return "Andika New Basic";
-			}
+			// Add any fonts that Bloom is serving that are not also installed on the local computer.
+			foreach (var fontFamily in servedFontsNotInstalled)
+				yield return fontFamily;
 		}
 
 		/// <summary>
@@ -91,9 +95,9 @@ namespace Bloom.FontProcessing
 				return GetFontMetadataSortedByName();
 
 			var starting = DateTime.Now;
+			_finder = FontFileFinder.GetInstance(isReuseAllowed: true);
 			foreach (var name in SortedListOfFontNames())
 			{
-				_finder = FontFileFinder.GetInstance(isReuseAllowed: true);
 				try
 				{
 					var group = _finder.GetGroupForFont(name);
@@ -135,6 +139,57 @@ namespace Bloom.FontProcessing
 				list.Sort((a, b) => a.name.CompareTo(b.name));
 				return list;
 			}
+		}
+
+		internal static bool ProcessHostFontsRequest(IRequestInfo info, string localPath)
+		{
+			var idx = localPath.IndexOf("/host/fonts/");
+			if (idx >= 0)
+			{
+				// If the request is for an existing file, return it.
+				var path = FileLocationUtilities.GetFileDistributedWithApplication(true, localPath.Substring(idx + 6));
+				if (path != null && RobustFile.Exists(path))
+				{
+					var contentType = BloomServer.GetContentType(Path.GetExtension(path));
+					info.ResponseContentType = contentType;
+					info.ReplyWithFileContent(path);
+					return true;
+				}
+				var serve = FontServe.GetInstance();
+				var fontDesc = localPath.Substring(idx + 12);
+				foreach (var fontInfo in serve.FontsServed)
+				{
+					// Note that "Andika New Basic" requests will be answered by "Andika".  This
+					// code mimics what BloomReader does (in a somewhat generalized way) for handling
+					// Andika and Andika New Basic /host/fonts/ requests from bloom-player.  We need
+					// to handle bloom-player requests for BloomPub previews.
+					if (fontDesc.StartsWith(fontInfo.family) && fontInfo.family == "Andika")
+					{
+						// If the request is for a descriptive font name, do the best we can.
+						var file = fontInfo.files.normal;
+						if (fontDesc.Contains("Bold") && fontDesc.Contains("Italic"))
+							file = fontInfo.files.bolditalic;
+						else if (fontDesc.Contains("Bold"))
+							file = fontInfo.files.bold;
+						else if (fontDesc.Contains("Italic"))
+							file = fontInfo.files.italic;
+						if (String.IsNullOrEmpty(file))
+							file = fontInfo.files.normal;	// must not have a requested variant.
+						path = FileLocationUtilities.GetFileDistributedWithApplication(true, $"fonts/{file}");
+						if (path != null && RobustFile.Exists(path))
+						{
+							var contentType = BloomServer.GetContentType(Path.GetExtension(path));
+							info.ResponseContentType = contentType;
+							info.ReplyWithFileContent(path);
+							return true;
+						}
+						break;
+					}
+				}
+
+			}
+			Console.WriteLine("FAILED FontsApi.ProcessHostFontsRequest(): localPath={0}", localPath);
+			return false;
 		}
 	}
 }

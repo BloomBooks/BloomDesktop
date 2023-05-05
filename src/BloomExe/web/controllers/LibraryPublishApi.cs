@@ -6,6 +6,7 @@ using Bloom.Workspace;
 using SIL.Progress;
 using System;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 
@@ -27,13 +28,16 @@ namespace Bloom.web.controllers
 		private const string kWebSocketEventId_loginSuccessful = "loginSuccessful"; // must match what is in LibraryPublishSteps.tsx
 
 		private PublishView _publishView;
+		private PublishModel _publishModel;
 		private IBloomWebSocketServer _webSocketServer;
 		private WebSocketProgress _webSocketProgress;
 		private IProgress _progress;
-
-		public LibraryPublishApi(BloomWebSocketServer webSocketServer, PublishView publishView)
+		public LibraryPublishApi(BloomWebSocketServer webSocketServer, PublishView publishView, PublishModel publishModel)
 		{
 			_publishView = publishView;
+			_publishModel = publishModel;
+			Debug.Assert(publishModel == publishView._model);
+
 			_webSocketServer = webSocketServer;
 			var progress = new WebSocketProgress(_webSocketServer, kWebSocketContext);
 			_webSocketProgress = progress.WithL10NPrefix("PublishTab.Upload.");
@@ -72,12 +76,14 @@ namespace Bloom.web.controllers
 			apiHandler.RegisterEndpointHandler("libraryPublish/login", HandleLogin, true);
 			apiHandler.RegisterEndpointHandler("libraryPublish/logout", HandleLogout, true);
 			apiHandler.RegisterEndpointHandler("libraryPublish/agreementsAccepted", HandleAgreementsAccepted, true);
+			apiHandler.RegisterEndpointHandler("libraryPublish/goToEditBookCover", HandleGoToEditBookCover, true);
 		}
 
 		private static bool ModelIndicatesSignLanguageChecked => Model.Book.HasSignLanguageVideos() && Model.IsPublishSignLanguage();
 
 		private void HandleGetBookInfo(ApiRequest request)
 		{
+			Model.EnsureUpToDateLicense();
 			dynamic bookInfo = new
 			{
 				title = Model.Title,
@@ -211,7 +217,7 @@ namespace Bloom.web.controllers
 			// We currently have no way to turn this off. This is by design, we don't think it is a needed complication.
 			var includeBackgroundMusic = true;
 
-			var uploadResult = Model.UploadOneBook(Model.Book, _progress, _publishView, !includeBackgroundMusic, out var parseId);
+			var uploadResult = Model.UploadOneBook(Model.Book, _progress, _publishModel, !includeBackgroundMusic, out var parseId);
 
 			e.Result = (uploadResult, parseId);
 		}
@@ -242,10 +248,15 @@ namespace Bloom.web.controllers
 		{
 			_publishView.SetStateOfNonUploadRadios(enable);
 
+			GetWorkspaceView()?.SetStateOfNonPublishTabs(enable);
+		}
+
+		private WorkspaceView GetWorkspaceView()
+		{
 			var parent = _publishView.Parent;
 			while (parent != null && !(parent is WorkspaceView))
 				parent = parent.Parent;
-			((WorkspaceView)parent)?.SetStateOfNonPublishTabs(enable);
+			return (WorkspaceView)parent;
 		}
 
 		private void HandleUploadCollection(ApiRequest request)
@@ -340,6 +351,14 @@ namespace Bloom.web.controllers
 				Model.Book.UserPrefs.UploadAgreementsAccepted = request.RequiredPostBooleanAsJson();
 				request.PostSucceeded();
 			}
+		}
+
+		private void HandleGoToEditBookCover(ApiRequest request)
+		{
+			// 0 is the index of the first page, the front cover.
+			Model.Book.UserPrefs.MostRecentPage = 0;
+			GetWorkspaceView()?.ChangeTab(WorkspaceTab.edit);
+			request.PostSucceeded();
 		}
 	}
 }

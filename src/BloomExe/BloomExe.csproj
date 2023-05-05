@@ -368,9 +368,6 @@
     <Reference Include="System.Drawing" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
-    <Reference Include="AxInterop.AcroPDFLib">
-      <HintPath>..\..\lib\dotnet\AxInterop.AcroPDFLib.dll</HintPath>
-    </Reference>
     <Reference Include="TagLibSharp, Version=2.3.0.0, Culture=neutral, PublicKeyToken=db62eba44689b5b0, processorArchitecture=MSIL">
       <HintPath>..\..\packages\TagLibSharp.2.3.0\lib\net462\TagLibSharp.dll</HintPath>
     </Reference>
@@ -397,8 +394,10 @@
     <Compile Include="ErrorReporter\IBloomErrorReporter.cs" />
     <Compile Include="ErrorReporter\AllowSendReport.cs" />
     <Compile Include="ErrorReporter\NotifyUserOfProblemSettings.cs" />
+    <Compile Include="FontProcessing\FontServe.cs" />
     <Compile Include="History\CollectionHistory.cs" />
     <Compile Include="History\HistoryEvent.cs" />
+    <Compile Include="Publish\Epub\ReadiumManifest.cs" />
     <Compile Include="Utils\AsyncUtil.cs" />
     <Compile Include="Publish\PDF\PublishPdfApi.cs" />
     <Compile Include="Utils\DisposableList.cs" />
@@ -475,12 +474,7 @@
     <Compile Include="TeamCollection\NewBookEventArgs.cs" />
     <Compile Include="TeamCollection\TeamCollectionApi.cs" />
     <Compile Include="FatalExceptionHandler.cs" />
-    <Compile Include="MiscUI\BrowserDialog.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="MiscUI\BrowserDialog.Designer.cs">
-      <DependentUpon>BrowserDialog.cs</DependentUpon>
-    </Compile>
+    <Compile Include="MiscUI\BrowserDialog.cs" />
     <Compile Include="CLI\CreateArtifactsCommand.cs" />
     <Compile Include="Collection\WritingSystem.cs" />
     <Compile Include="ErrorReporter\SentryErrorReporter.cs" />
@@ -512,12 +506,6 @@
     <Compile Include="Edit\DecodableReaderToolSettings.cs" />
     <Compile Include="Edit\ToolboxView.cs" />
     <Compile Include="ElementProxy.cs" />
-    <Compile Include="MiscUI\TroubleShooterDialog.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="MiscUI\TroubleShooterDialog.Designer.cs">
-      <DependentUpon>TroubleShooterDialog.cs</DependentUpon>
-    </Compile>
     <Compile Include="Publish\BloomPub\file\FilePublisher.cs" />
     <Compile Include="Publish\BloomPub\wifi\BloomReaderUDPListener.cs" />
     <Compile Include="Publish\BloomPub\wifi\WiFiAdvertiser.cs" />
@@ -566,7 +554,6 @@
     <Compile Include="web\controllers\CollectionApi.cs" />
     <Compile Include="web\controllers\CopyrightAndLicenseApi.cs" />
     <Compile Include="web\controllers\ExternalApi.cs" />
-    <Compile Include="web\controllers\LibraryPublishApi_Obsolete.cs" />
     <Compile Include="web\controllers\ProgressDialogApi.cs" />
     <Compile Include="web\controllers\PublishApi.cs" />
     <Compile Include="web\controllers\WorkspaceApi.cs" />
@@ -619,18 +606,6 @@
     <Compile Include="Book\XMatterHelper.cs" />
     <Compile Include="Book\XMatterInfo.cs" />
     <Compile Include="Book\XMatterPackFinder.cs" />
-    <Compile Include="CollectionTab\BloomLibraryLinkVerification.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="CollectionTab\BloomLibraryLinkVerification.Designer.cs">
-      <DependentUpon>BloomLibraryLinkVerification.cs</DependentUpon>
-    </Compile>
-    <Compile Include="CollectionTab\InDesignXmlInformationDialog.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="CollectionTab\InDesignXmlInformationDialog.Designer.cs">
-      <DependentUpon>InDesignXmlInformationDialog.cs</DependentUpon>
-    </Compile>
     <Compile Include="CollectionTab\MakeReaderTemplateBloomPackDlg.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -674,53 +649,12 @@
     <Compile Include="Extensions.cs" />
     <Compile Include="ImageProcessing\ImageUtils.cs" />
     <Compile Include="InstallerSupport.cs" />
-    <Compile Include="MiscUI\BloomIntegrityDialog.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="MiscUI\BloomIntegrityDialog.Designer.cs">
-      <DependentUpon>BloomIntegrityDialog.cs</DependentUpon>
-    </Compile>
-    <Compile Include="MiscUI\DontShowThisAgainButton.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Include="MiscUI\DontShowThisAgainButton.Designer.cs">
-      <DependentUpon>DontShowThisAgainButton.cs</DependentUpon>
-    </Compile>
-    <Compile Include="MiscUI\HtmlLinkDialog.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="MiscUI\HtmlLinkDialog.Designer.cs">
-      <DependentUpon>HtmlLinkDialog.cs</DependentUpon>
-    </Compile>
-    <Compile Include="MiscUI\HtmlTextBox.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="MiscUI\HtmlTextBox.Designer.cs">
-      <DependentUpon>HtmlTextBox.cs</DependentUpon>
-    </Compile>
-    <Compile Include="MiscUI\TipDialog.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="MiscUI\TipDialog.designer.cs">
-      <DependentUpon>TipDialog.cs</DependentUpon>
-    </Compile>
+    <Compile Include="BloomIntegrityChecker.cs" />
     <Compile Include="MiscUI\ToastNotifier.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="MiscUI\ToastNotifier.designer.cs">
       <DependentUpon>ToastNotifier.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Publish\PDF\AdobeReaderControl.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="Publish\PDF\AdobeReaderControl.Designer.cs">
-      <DependentUpon>AdobeReaderControl.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Publish\BloomLibrary\BloomLibraryUploadControl.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="Publish\BloomLibrary\BloomLibraryUploadControl.Designer.cs">
-      <DependentUpon>BloomLibraryUploadControl.cs</DependentUpon>
     </Compile>
     <Compile Include="Publish\BulkUploadProgressDlg.cs">
       <SubType>Form</SubType>
@@ -756,7 +690,6 @@
     <Compile Include="ToPalaso\BetterSplitContainer.Designer.cs">
       <DependentUpon>BetterSplitContainer.cs</DependentUpon>
     </Compile>
-    <Compile Include="ToPalaso\FontInstaller.cs" />
     <Compile Include="ToPalaso\MessageLabelProgress.cs">
       <SubType>Component</SubType>
     </Compile>
@@ -828,7 +761,6 @@
     <Compile Include="WebLibraryIntegration\IProgressDialog.cs" />
     <Compile Include="web\controllers\AudioSegmentationApi.cs" />
     <Compile Include="web\controllers\ProblemReportApi.cs" />
-    <Compile Include="web\controllers\BrowserDialogApi.cs" />
     <Compile Include="web\controllers\CollectionSettingsApi.cs" />
     <Compile Include="web\controllers\AccessibilityCheckApi.cs" />
     <Compile Include="Book\AccessibilityCheckers.cs" />
@@ -856,7 +788,7 @@
     <Compile Include="web\controllers\MusicApi.cs" />
     <Compile Include="web\controllers\ToolboxApi.cs" />
     <Compile Include="web\PageListApi.cs" />
-    <Compile Include="web\SimulatedPageFile.cs" />
+    <Compile Include="web\InMemoryHtmlFile.cs" />
     <Compile Include="web\I18NApi.cs" />
     <Compile Include="web\ReadersApi.cs" />
     <Compile Include="web\controllers\ExternalLinkController.cs" />
@@ -978,12 +910,6 @@
       <DependentUpon>WebView2Browser.cs</DependentUpon>
       <SubType>Designer</SubType>
     </EmbeddedResource>
-    <EmbeddedResource Include="CollectionTab\BloomLibraryLinkVerification.resx">
-      <DependentUpon>BloomLibraryLinkVerification.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="CollectionTab\InDesignXmlInformationDialog.resx">
-      <DependentUpon>InDesignXmlInformationDialog.cs</DependentUpon>
-    </EmbeddedResource>
     <EmbeddedResource Include="CollectionTab\MakeReaderTemplateBloomPackDlg.resx">
       <DependentUpon>MakeReaderTemplateBloomPackDlg.cs</DependentUpon>
     </EmbeddedResource>
@@ -1007,41 +933,17 @@
       <DependentUpon>WebThumbNailList.cs</DependentUpon>
       <SubType>Designer</SubType>
     </EmbeddedResource>
-    <EmbeddedResource Include="MiscUI\BloomIntegrityDialog.resx">
-      <DependentUpon>BloomIntegrityDialog.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="MiscUI\BrowserDialog.resx">
-      <DependentUpon>BrowserDialog.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="MiscUI\HtmlLinkDialog.resx">
-      <DependentUpon>HtmlLinkDialog.cs</DependentUpon>
-    </EmbeddedResource>
     <EmbeddedResource Include="MiscUI\LanguageFontDetails.resx">
       <DependentUpon>LanguageFontDetails.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="MiscUI\HtmlTextBox.resx">
-      <DependentUpon>HtmlTextBox.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="MiscUI\TipDialog.resx">
-      <DependentUpon>TipDialog.cs</DependentUpon>
-    </EmbeddedResource>
     <EmbeddedResource Include="MiscUI\ToastNotifier.resx">
       <DependentUpon>ToastNotifier.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="MiscUI\TroubleShooterDialog.resx">
-      <DependentUpon>TroubleShooterDialog.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Publish\AccessibilityChecker\AccessibilityCheckWindow.resx">
       <DependentUpon>AccessibilityCheckWindow.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Publish\Video\RecordVideoWindow.resx">
       <DependentUpon>RecordVideoWindow.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Publish\PDF\AdobeReaderControl.resx">
-      <DependentUpon>AdobeReaderControl.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Publish\BloomLibrary\BloomLibraryUploadControl.resx">
-      <DependentUpon>BloomLibraryUploadControl.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Publish\BulkUploadProgressDlg.resx">
       <DependentUpon>BulkUploadProgressDlg.cs</DependentUpon>
@@ -1138,7 +1040,6 @@
       <SubType>Designer</SubType>
     </None>
     <None Include="ClassDiagram1.cd" />
-    <None Include="Firefox\omni.ja" />
     <None Include="packages.config">
       <SubType>Designer</SubType>
     </None>
@@ -1447,8 +1348,6 @@ copy /Y "$(SolutionDir)\lib\ffmpeg.exe" $(OutDir)
 xcopy "$(SolutionDir)lib\RedistributableDlls" $(OutDir) /S /R /Y
 xcopy "$(SolutionDir)lib\gm" "$(OutDir)gm\" /S /R /Y
 copy /Y "$(SolutionDir)\lib\dotnet\libtidy.dll" $(OutDir)
-copy /Y "$(SolutionDir)\lib\dotnet\Interop.AcroPDFLib.dll" $(OutDir)
-copy /Y "$(SolutionDir)\lib\dotnet\Interop.Acrobat.dll" $(OutDir)
     </PostBuildEvent>
   </PropertyGroup>
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
@@ -1498,34 +1397,6 @@ copy /Y "$(SolutionDir)\lib\dotnet\Interop.Acrobat.dll" $(OutDir)
   </ItemGroup>
   <ItemGroup>
     <Content Include="bloom.ico" />
-    <Content Include="Firefox\AccessibleHandler.dll" />
-    <Content Include="Firefox\AccessibleMarshal.dll" />
-    <Content Include="Firefox\breakpadinjector.dll" />
-    <Content Include="Firefox\D3DCompiler_43.dll" />
-    <Content Include="Firefox\d3dcompiler_47.dll" />
-    <Content Include="Firefox\freebl3.dll" />
-    <Content Include="Firefox\IA2Marshal.dll" />
-    <Content Include="Firefox\icudt56.dll" />
-    <Content Include="Firefox\icuin56.dll" />
-    <Content Include="Firefox\icuuc56.dll" />
-    <Content Include="Firefox\lgpllibs.dll" />
-    <Content Include="Firefox\libEGL.dll" />
-    <Content Include="Firefox\libGLESv2.dll" />
-    <Content Include="Firefox\mozavcodec.dll" />
-    <Content Include="Firefox\mozavutil.dll" />
-    <Content Include="Firefox\mozglue.dll" />
-    <Content Include="Firefox\msvcp120.dll" />
-    <Content Include="Firefox\msvcr120.dll" />
-    <Content Include="Firefox\nss3.dll" />
-    <Content Include="Firefox\nssckbi.dll" />
-    <Content Include="Firefox\nssdbm3.dll" />
-    <Content Include="Firefox\plugin-container.exe" />
-    <Content Include="Firefox\plugin-hang-ui.exe" />
-    <Content Include="Firefox\qipcap.dll" />
-    <Content Include="Firefox\sandboxbroker.dll" />
-    <Content Include="Firefox\softokn3.dll" />
-    <Content Include="Firefox\xul.dll" />
-    <None Include="Resources\gear-black-24x24.png" />
     <None Include="Resources\BookSettings.png" />
     <None Include="Resources\BookSettingsBlack32High.png" />
     <None Include="Resources\GearBlack16x16.png" />
@@ -1555,9 +1426,6 @@ copy /Y "$(SolutionDir)\lib\dotnet\Interop.Acrobat.dll" $(OutDir)
   <ItemGroup>
     <IccFiles Include="..\..\DistFiles\ColorProfiles\CMYK\USWebCoatedSWOP.icc" />
     <IccFiles Include="..\..\DistFiles\ColorProfiles\RGB\AdobeRGB1998.icc" />
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Communication\" />
   </ItemGroup>
   <ItemGroup>
     <Analyzer Include="..\..\packages\AWSSDK.S3.3.5.3.10\analyzers\dotnet\cs\AWSSDK.S3.CodeAnalysis.dll" />

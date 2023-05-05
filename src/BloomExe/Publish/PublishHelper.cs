@@ -7,7 +7,6 @@ using Bloom.Book;
 using System.Windows.Forms;
 using System.Xml;
 using Bloom.Api;
-using Bloom.Publish.AccessibilityChecker;
 using SIL.Reporting;
 using SIL.Xml;
 using Bloom.Publish.Epub;
@@ -233,7 +232,7 @@ namespace Bloom.Publish
 				epubMaker.AddEpubVisibilityStylesheetAndClass(displayDom);
 			if (this != _latestInstance)
 				return;
-			if (!BrowserForPageChecks.NavigateAndWaitTillDone(displayDom, 10000, BloomServer.SimulatedPageFileSource.JustCheckingPage, () => this != _latestInstance,
+			if (!BrowserForPageChecks.NavigateAndWaitTillDone(displayDom, 10000, InMemoryHtmlFileSource.JustCheckingPage, () => this != _latestInstance,
 				false))
 			{
 				// We started having problems with timeouts here (BL-7892).
@@ -452,7 +451,8 @@ namespace Bloom.Publish
 		/// so that needs to be a folder we can write in.
 		/// </summary>
 		public static Book.Book MakeDeviceXmatterTempBook(string bookFolderPath, BookServer bookServer, string tempFolderPath, bool isTemplateBook,
-			Dictionary<string,int> omittedPageLabels = null, bool includeVideoAndActivities = true, string[] narrationLanguages = null,bool wantMusic=false)
+			Dictionary<string,int> omittedPageLabels = null, bool includeVideoAndActivities = true, string[] narrationLanguages = null,bool wantMusic=false,
+			bool wantFontFaceDeclarations=true)
 		{
 			var filter = new BookFileFilter(bookFolderPath) {IncludeFilesNeededForBloomPlayer = includeVideoAndActivities,
 				WantVideo = includeVideoAndActivities, NarrationLanguages = narrationLanguages, WantMusic = true};
@@ -460,6 +460,7 @@ namespace Bloom.Publish
 			// We can always save in a temp book
 			var bookInfo = new BookInfo(tempFolderPath, true, new AlwaysEditSaveContext()) {UseDeviceXMatter = !isTemplateBook};
 			var modifiedBook = bookServer.GetBookFromBookInfo(bookInfo);
+			modifiedBook.WriteFontFaces = wantFontFaceDeclarations;
 			modifiedBook.BringBookUpToDate(new NullProgress(), true);
 			modifiedBook.RemoveNonPublishablePages(omittedPageLabels);
 			var domForVideoProcessing = modifiedBook.OurHtmlDom;
@@ -592,7 +593,7 @@ namespace Bloom.Publish
 		{
 			filesToEmbed = new List<string>();
 			badFonts = new HashSet<string>();
-			const string defaultFont = "Andika New Basic";
+			const string defaultFont = "Andika";
 
 			fontFileFinder.NoteFontsWeCantInstall = true;
 			if (_fontMetadataMap == null)
@@ -649,16 +650,19 @@ namespace Bloom.Publish
 						progress.MessageWithParams("PublishTab.Android.File.Progress.UnknownLicense", "{0} is a font name", "Checking {0} font: Unknown license", ProgressKind.Progress, font);
 					else
 						progress.MessageWithParams("PublishTab.Android.File.Progress.CheckFontOK", "{0} is a font name", "Checking {0} font: License OK for embedding.", ProgressKind.Progress, font);
-					// Assumes only one font file per font; if we embed multiple ones will need to enhance this.
+					// Assumes only one font file per font; if we embed multiple font files, will need to enhance this.
 					var size = new FileInfo(fontFiles.First()).Length;
-					var sizeToReport = (size / 1000000.0).ToString("F1"); // purposely locale-specific; might be e.g. 1,2
+					var sizeToReport = (size / 1000000.0).ToString("F2"); // purposely locale-specific; might be e.g. 1,2
 					progress.MessageWithParams("PublishTab.Android.File.Progress.Embedding",
-						"{1} is a number with one decimal place, the number of megabytes the font file takes up",
+						"{1} is a number with two decimal places, the number of megabytes the font file takes up",
 						"Embedding font {0} at a cost of {1} megs",
 						ProgressKind.Note,
 						font, sizeToReport);
 					continue;
 				}
+				// If the missing font is Andika New Basic, don't complain because Andika subsumes Andika New Basic,
+				// and will be automatically substituted for it.
+				var dontComplain = font == "Andika New Basic";
 				if (badFileType)
 				{
 					progress.MessageWithParams("PublishTab.Android.File.Progress.IncompatibleFontFileFormat", "{0} is a font name, {1} is a file extension (for example: .ttc)", "This book has text in a font named \"{0}\". Bloom cannot publish this font's format ({1}).", ProgressKind.Error, font, fileExtension);
@@ -667,11 +671,12 @@ namespace Bloom.Publish
 				{
 					progress.MessageWithParams("PublishTab.Android.File.Progress.LicenseForbids", "{0} is a font name", "This book has text in a font named \"{0}\". The license for \"{0}\" does not permit Bloom to embed the font in the book.", ProgressKind.Error, font);
 				}
-				else
+				else if (!dontComplain)
 				{
 					progress.MessageWithParams("PublishTab.Android.File.Progress.NoFontFound", "{0} is a font name", "This book has text in a font named \"{0}\", but Bloom could not find that font on this computer.", ProgressKind.Error, font);
 				}
-				progress.MessageWithParams("PublishTab.Android.File.Progress.SubstitutingAndika", "{0} is a font name", "Bloom will substitute \"{0}\" instead.", ProgressKind.Error, defaultFont, font);
+				if (!dontComplain)
+					progress.MessageWithParams("PublishTab.Android.File.Progress.SubstitutingAndika", "{0} is a font name", "Bloom will substitute \"{0}\" instead.", ProgressKind.Error, defaultFont, font);
 				badFonts.Add(font); // need to prevent the bad/missing font from showing up in fonts.css and elsewhere
 			}
 		}
@@ -799,7 +804,7 @@ namespace Bloom.Publish
 						var msgFmt1 = LocalizationManager.GetString("PublishTab.FontProblem",
 							"This book has a font, \"{0}\", which has the following problem:");
 						var msg3 = LocalizationManager.GetString("PublishTab.FontProblem.Result",
-							"BloomLibrary.org will display the PDF and allow downloads for translation, but cannot offer the “READ” button or downloads for BloomPUB or ePUB.");
+							"BloomLibrary.org will display the PDF and allow downloads for translation, but cannot offer the ï¿½READï¿½ button or downloads for BloomPUB or ePUB.");
 						// progress.WriteError() uses Color.Red, but also exposes a link to "report error" which we don't want here.
 						progress.WriteMessageWithColor("Red", msgFmt1, font);
 						progress.WriteMessageWithColor("Red", " \u2022 {0}", msg2);

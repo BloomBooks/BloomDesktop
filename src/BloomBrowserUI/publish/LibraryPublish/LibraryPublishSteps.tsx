@@ -12,6 +12,7 @@ import {
     postBoolean,
     postString
 } from "../../utils/bloomApi";
+import { kBloomDisabledOpacity } from "../../utils/colorUtils";
 import { BloomStepper } from "../../react_components/BloomStepper";
 import { Div, Span } from "../../react_components/l10nComponents";
 import BloomButton from "../../react_components/bloomButton";
@@ -36,13 +37,19 @@ import {
 } from "../../react_components/confirmDialog";
 import { BloomTooltip } from "../../react_components/BloomToolTip";
 import { BloomSplitButton } from "../../react_components/bloomSplitButton";
-import { WaitBox } from "../../react_components/BloomDialog/commonDialogComponents";
+import {
+    ErrorBox,
+    WaitBox
+} from "../../react_components/BloomDialog/commonDialogComponents";
 import {
     IUploadCollisionDlgProps,
     showUploadCollisionDialog,
     UploadCollisionDlg
 } from "./uploadCollisionDlg";
+import { showCopyrightAndLicenseInfoOrDialog } from "../../bookEdit/copyrightAndLicense/CopyrightAndLicenseDialog";
 import { useGetEnterpriseBookshelves } from "../../collection/useGetEnterpriseBookshelves";
+import { MustBeCheckedOut } from "../../react_components/MustBeCheckedOut";
+import { SelectedBookContext } from "../../app/SelectedBookContext";
 
 interface IReadonlyBookInfo {
     title: string;
@@ -59,6 +66,7 @@ const kWebSocketEventId_uploadCanceled: string = "uploadCanceled";
 const kWebSocketEventId_loginSuccessful: string = "loginSuccessful";
 
 export const LibraryPublishSteps: React.FunctionComponent = () => {
+    const selectedBookContext = React.useContext(SelectedBookContext);
     const [bookshelfHasProblem, setBookshelfHasProblem] = useState(false);
     const {
         project,
@@ -115,8 +123,11 @@ export const LibraryPublishSteps: React.FunctionComponent = () => {
         "PublishTab.Upload.EnterpriseShelfRequiredTooltip"
     );
 
+    const [reload, setReload] = useState<number>(0);
+
     const progressBoxRef = useRef<ProgressBoxHandle>(null);
 
+    const [isLoading, setIsLoading] = useState<boolean>(true);
     const [bookInfo, setBookInfo] = useState<IReadonlyBookInfo>();
     useEffect(() => {
         post("libraryPublish/checkForLoggedInUser");
@@ -127,8 +138,17 @@ export const LibraryPublishSteps: React.FunctionComponent = () => {
         get("libraryPublish/getBookInfo", result => {
             setBookInfo(result.data);
             setSummary(result.data.summary);
+            setIsLoading(false);
         });
-    }, []);
+    }, [reload]);
+    useSubscribeToWebSocketForStringMessage(
+        "bookCopyrightAndLicense",
+        "saved",
+        () => {
+            setReload(reload => reload + 1);
+        }
+    );
+
     const [useSandbox, setUseSandbox] = useState<boolean>(false);
     const [uploadButtonText, setUploadButtonText] = useState<string>(
         localizedUploadBook
@@ -335,78 +355,95 @@ export const LibraryPublishSteps: React.FunctionComponent = () => {
                         </Span>
                     </StepLabel>
                     <StepContent>
-                        <div
-                            css={css`
-                                font-size: larger;
-                            `}
-                        >
+                        {/* The isLoading check prevents pretty bad flashing of the "missing" error boxes. */}
+                        {!isLoading && (
                             <div
                                 css={css`
-                                    font-weight: bold;
+                                    font-size: larger;
                                 `}
                             >
-                                {bookInfo?.title || (
+                                {bookInfo?.title ? (
+                                    <div
+                                        css={css`
+                                            font-weight: bold;
+                                        `}
+                                    >
+                                        {bookInfo?.title}
+                                    </div>
+                                ) : (
                                     <MissingInfo
-                                        text="Title Missing"
+                                        text="Missing Title"
                                         l10nKey={
                                             "PublishTab.Upload.Missing.Title"
                                         }
-                                    />
-                                )}
-                            </div>
-                            <div>
-                                {bookInfo?.copyright || (
-                                    <MissingInfo
-                                        text="Copyright Missing"
-                                        l10nKey={
-                                            "PublishTab.Upload.Missing.Copyright"
+                                        onClick={() =>
+                                            post(
+                                                "libraryPublish/goToEditBookCover"
+                                            )
                                         }
                                     />
                                 )}
+                                {bookInfo?.copyright ? (
+                                    <div>{bookInfo?.copyright}</div>
+                                ) : (
+                                    <MissingInfo
+                                        text="Missing Copyright"
+                                        l10nKey={
+                                            "PublishTab.Upload.Missing.Copyright"
+                                        }
+                                        onClick={
+                                            showCopyrightAndLicenseInfoOrDialog
+                                        }
+                                    />
+                                )}
+                                {licenseBlock}
                             </div>
-                            {licenseBlock}
-                        </div>
-                        <TextField
-                            // needed by aria for a11y
-                            id="book summary"
-                            value={summary}
-                            onChange={e => setSummary(e.target.value)}
-                            label={localizedSummary}
-                            margin="normal"
-                            variant="outlined"
-                            InputLabelProps={{
-                                shrink: true
-                            }}
-                            multiline
-                            rows="2"
-                            aria-label="Book summary"
-                            fullWidth
-                            css={css`
-                                margin-top: 24px;
+                        )}
+                        <MustBeCheckedOut>
+                            <TextField
+                                // needed by aria for a11y
+                                id="book summary"
+                                value={summary}
+                                onChange={e => setSummary(e.target.value)}
+                                label={localizedSummary}
+                                margin="normal"
+                                variant="outlined"
+                                InputLabelProps={{
+                                    shrink: true
+                                }}
+                                multiline
+                                rows="2"
+                                aria-label="Book summary"
+                                fullWidth
+                                css={css`
+                                    margin-top: 24px;
 
-                                // This is messy. MUI doesn't seem to let you easily (and correctly) change the label size.
-                                // You're supposed to be able to set a style on InputLabelProps and set fontSize, but then
-                                // the border around the textbox partially goes through it.
-                                // The way that break in the border is implemented is a "legend" which obscures the border.
-                                // The legend has the same text as the label. So we have to make the text the same size.
-                                // The original transform is translate(14px, -9px) scale(1). In order to make "larger" match,
-                                // we unscale it here -- scale(1), and as a result we have to increase the scale of the legend.
-                                .MuiInputLabel-root {
-                                    color: inherit;
-                                    font-weight: 500;
-                                    font-size: larger;
-                                    transform: translate(14px, -9px) scale(1);
-                                    &.Mui-focused {
+                                    // This is messy. MUI doesn't seem to let you easily (and correctly) change the label size.
+                                    // You're supposed to be able to set a style on InputLabelProps and set fontSize, but then
+                                    // the border around the textbox partially goes through it.
+                                    // The way that break in the border is implemented is a "legend" which obscures the border.
+                                    // The legend has the same text as the label. So we have to make the text the same size.
+                                    // The original transform is translate(14px, -9px) scale(1). In order to make "larger" match,
+                                    // we unscale it here -- scale(1), and as a result we have to increase the scale of the legend.
+                                    .MuiInputLabel-root {
                                         color: inherit;
+                                        font-weight: 500;
+                                        font-size: larger;
+                                        transform: translate(14px, -9px)
+                                            scale(1);
+                                        &.Mui-focused {
+                                            color: inherit;
+                                        }
                                     }
-                                }
-                                legend {
-                                    font-weight: 500;
-                                    font-size: larger;
-                                    transform: scale(1.5);
-                                }
-                            `}
-                        />
+                                    legend {
+                                        font-weight: 500;
+                                        font-size: larger;
+                                        transform: scale(1.5);
+                                    }
+                                `}
+                                disabled={!selectedBookContext.saveable}
+                            />
+                        </MustBeCheckedOut>
                     </StepContent>
                 </Step>
                 <Step
@@ -763,17 +800,45 @@ const WarningMessage: React.FunctionComponent = props => {
 const MissingInfo: React.FunctionComponent<{
     text: string;
     l10nKey: string;
+    onClick: () => void;
 }> = props => {
+    const selectedBookContext = React.useContext(SelectedBookContext);
     return (
-        <Div
-            l10nKey={props.l10nKey}
+        <ErrorBox
             css={css`
-                font-size: unset;
-                font-weight: bold;
-                color: red;
+                max-width: 550px;
             `}
         >
-            {props.text}
-        </Div>
+            <div>
+                <Div
+                    css={css`
+                        font-style: italic;
+                    `}
+                    l10nKey={props.l10nKey}
+                >
+                    {props.text}
+                </Div>
+                <MustBeCheckedOut
+                    anchorOriginOverride={{
+                        vertical: "bottom",
+                        horizontal: "left"
+                    }}
+                >
+                    <Link
+                        css={css`
+                            text-decoration: underline;
+                            opacity: ${selectedBookContext.saveable
+                                ? 1
+                                : kBloomDisabledOpacity};
+                        `}
+                        l10nKey={"PublishTab.Upload.ClickToFix"}
+                        onClick={props.onClick}
+                        disabled={!selectedBookContext.saveable}
+                    >
+                        Click to fix
+                    </Link>
+                </MustBeCheckedOut>
+            </div>
+        </ErrorBox>
     );
 };

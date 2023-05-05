@@ -26,8 +26,7 @@ namespace Bloom.Publish.BloomLibrary
 	/// </summary>
 	public class BloomLibraryPublishModel
 	{
-		private readonly Metadata _licenseMetadata;
-		private readonly LicenseInfo _license;
+		private LicenseInfo _license;
 		private readonly BookUpload _uploader;
 		private readonly PublishModel _publishModel;
 
@@ -39,11 +38,11 @@ namespace Bloom.Publish.BloomLibrary
 			_uploader = uploader;
 			_publishModel = model;
 
-			_licenseMetadata = Book.GetLicenseMetadata();
+			var licenseMetadata = Book.GetLicenseMetadata();
 			// This is usually redundant, but might not be on old books where the license was set before the new
 			// editing code was written.
-			Book.SetMetadata(_licenseMetadata);
-			_license = _licenseMetadata.License;
+			Book.SetMetadata(licenseMetadata);
+			_license = licenseMetadata.License;
 
 			EnsureBookAndUploaderId();
 		}
@@ -92,6 +91,15 @@ namespace Bloom.Publish.BloomLibrary
 		internal string PrettyLanguageName(string code)
 		{
 			return Book.PrettyPrintLanguage(code);
+		}
+
+		// This is awkward. We really just want to always get the latest license info.
+		// But Book.GetLicenseMetadata() is not a trivial operation.
+		// The original code assumed that the book's license would not change during the lifetime of the model.
+		// But now the user can open the CopyrightAndLicenseDialog from Publish tab.
+		internal void EnsureUpToDateLicense()
+		{
+			_license = Book.GetLicenseMetadata().License;
 		}
 
 		/// <summary>
@@ -156,7 +164,7 @@ namespace Bloom.Publish.BloomLibrary
 
 		internal bool IsThisVersionAllowedToUpload => _uploader.IsThisVersionAllowedToUpload();
 
-		internal string UploadOneBook(BookInstance book, IProgress progress, PublishView publishView, bool excludeMusic, out string parseId)
+		internal string UploadOneBook(BookInstance book, IProgress progress, PublishModel publishModel, bool excludeMusic, out string parseId)
 		{
 			using (var tempFolder = new TemporaryFolder(Path.Combine("BloomUpload", Path.GetFileName(book.FolderPath))))
 			{
@@ -166,7 +174,7 @@ namespace Bloom.Publish.BloomLibrary
 					ExcludeMusic = excludeMusic,
 					PreserveThumbnails = false,
 				};
-				return _uploader.FullUpload(book, progress, publishView, bookParams, out parseId);
+				return _uploader.FullUpload(book, progress, publishModel, bookParams, out parseId);
 			}
 		}
 

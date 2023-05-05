@@ -7,6 +7,7 @@ using SIL.IO;
 using SIL.Windows.Forms.ClearShare;
 using TidyManaged;
 using Bloom.ImageProcessing;
+using System;
 
 namespace Bloom
 {

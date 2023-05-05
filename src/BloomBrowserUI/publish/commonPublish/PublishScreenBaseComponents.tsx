@@ -4,6 +4,7 @@ import * as React from "react";
 import Typography from "@mui/material/Typography";
 import "./PublishScreenBaseComponents.less";
 import { LocalizedString } from "../../react_components/l10nComponents";
+import { kOptionPanelBackgroundColor } from "../../bloomMaterialUITheme";
 
 // This file contains a collection of components which works together with the PublishScreenTemplate
 // to create the basic layout of a publishing screen in Bloom.
@@ -14,12 +15,7 @@ export const PreviewPanel: React.FunctionComponent<{
     return (
         <section
             css={css`
-                background: radial-gradient(
-                        641.32px at 29.05% 29.83%,
-                        rgba(112, 112, 112, 0) 0%,
-                        #0c0c0c 100%
-                    ),
-                    #2d2d2d;
+                background-color: ${kOptionPanelBackgroundColor};
                 padding-left: 20px;
                 padding-top: 10px;
                 box-sizing: border-box;

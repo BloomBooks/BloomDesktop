@@ -127,9 +127,17 @@ namespace Bloom
 				//logged in.
 				if (TextContentsOfTable.ToLower().Contains("<html"))
 				{
-					LogTableContents();
-					var msg = "Internet connection did not allow check for update.";
-					NonFatalProblem.Report(ModalIf.Alpha, PassiveIf.All, msg); // hopefully this will just 'toast'
+					string msg;
+					if (ApplicationUpdateSupport.ChannelName == "Developer/Debug")
+					{
+						msg = "Just debugging during development...";
+					}
+					else
+					{
+						LogTableContents();
+						msg = "Internet connection did not allow check for update.";
+						NonFatalProblem.Report(ModalIf.Alpha, PassiveIf.All, msg); // hopefully this will just 'toast'
+					}
 					errorResult = new UpdateTableLookupResult {URL = string.Empty, Error = new WebException(msg)};
 					return false;
 				}

@@ -1,4 +1,4 @@
-﻿using System.Windows.Forms;
+using System.Windows.Forms;
 using Bloom.MiscUI;
 using Bloom.Wizard;
 
@@ -41,10 +41,10 @@ namespace Bloom.CollectionCreating
             this._languageLocationPage = new Bloom.Wizard.WizardAdapterPage();
 			this._languageFontPage = new Bloom.Wizard.WizardAdapterPage();
             this._finishPage = new Bloom.Wizard.WizardAdapterPage();
-			this._finalMessage = new SIL.Windows.Forms.Widgets.HtmlLabel();
+			this._finalMessage = new SIL.Windows.Forms.Widgets.BetterLabel();
             this._collectionNamePage = new Bloom.Wizard.WizardAdapterPage();
             this._collectionNameProblemPage = new Bloom.Wizard.WizardAdapterPage();
-			this._welcomeHtml = new SIL.Windows.Forms.Widgets.HtmlLabel();
+			this._welcomeHtml = new SIL.Windows.Forms.Widgets.BetterLabel();
 			this._vernacularLanguageIdControl = new Bloom.CollectionCreating.LanguageIdControl();
 			this._fontDetails = new Bloom.MiscUI.LanguageFontDetails();
 			this._languageLocationControl = new Bloom.CollectionCreating.LanguageLocationControl();
@@ -155,9 +155,8 @@ namespace Bloom.CollectionCreating
 			//
 			// _welcomeHtml
 			//
-			this._welcomeHtml.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
 			this._welcomeHtml.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this._welcomeHtml.HTML = "hi there";
+			this._welcomeHtml.Text = "hi there";
 			this._welcomeHtml.Location = new System.Drawing.Point(0, 0);
 			this._welcomeHtml.Margin = new System.Windows.Forms.Padding(0);
 			this._welcomeHtml.Name = "_welcomeHtml";
@@ -231,8 +230,8 @@ namespace Bloom.CollectionCreating
 		private Bloom.Wizard.WizardAdapterPage _languageFontPage;
 		private Bloom.MiscUI.LanguageFontDetails _fontDetails;
 		private LanguageLocationControl _languageLocationControl;
-		private SIL.Windows.Forms.Widgets.HtmlLabel _finalMessage;
+		private SIL.Windows.Forms.Widgets.BetterLabel _finalMessage;
         private Bloom.Wizard.WizardAdapterPage _welcomePage;
-		private SIL.Windows.Forms.Widgets.HtmlLabel _welcomeHtml;
+		private SIL.Windows.Forms.Widgets.BetterLabel _welcomeHtml;
 	}
 }

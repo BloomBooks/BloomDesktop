@@ -11,7 +11,7 @@ import {
 import PublishScreenTemplate from "../commonPublish/PublishScreenTemplate";
 import { DeviceAndControls } from "../commonPublish/DeviceAndControls";
 import * as ReactDOM from "react-dom";
-import { darkTheme, lightTheme } from "../../bloomMaterialUITheme";
+import { lightTheme } from "../../bloomMaterialUITheme";
 import { StorybookContext } from "../../.storybook/StoryBookContext";
 import {
     useSubscribeToWebSocketForStringMessage,
@@ -31,7 +31,7 @@ import {
     useWatchBooleanEvent
 } from "../../utils/bloomApi";
 import { NoteBox } from "../../react_components/BloomDialog/commonDialogComponents";
-import { Div, P } from "../../react_components/l10nComponents";
+import { P } from "../../react_components/l10nComponents";
 import { StyledEngineProvider, ThemeProvider } from "@mui/material/styles";
 
 export const EPUBPublishScreen = () => {
@@ -60,6 +60,7 @@ export const EPUBPublishScreen = () => {
             onReset={() => {
                 setKeyForReset(keyForReset + 1);
             }}
+            showPreview={keyForReset > 0}
             epubMode={epubMode}
             setEpubMode={(mode: string) => {
                 setEpubmode(mode);
@@ -71,13 +72,15 @@ export const EPUBPublishScreen = () => {
 
 const EPUBPublishScreenInternal: React.FunctionComponent<{
     onReset: () => void;
+    showPreview: boolean;
     epubMode: string;
     setEpubMode: (mode: string) => void;
 }> = props => {
     const inStorybookMode = useContext(StorybookContext);
     const [closePending, setClosePending] = useState(false);
     const [highlightRefresh, setHighlightRefresh] = useState(false);
-    const [progressState, setProgressState] = useState(ProgressState.Working);
+    // Starting in ProgressState.Done hides the progress dialog initially.
+    const [progressState, setProgressState] = useState(ProgressState.Done);
     const [bookUrl, setBookUrl] = useState(
         inStorybookMode
             ? window.location.protocol +
@@ -205,28 +208,14 @@ const EPUBPublishScreenInternal: React.FunctionComponent<{
                 </div>
             </PublishPanel>
             <PreviewPanel>
-                <StyledEngineProvider injectFirst>
-                    <ThemeProvider theme={darkTheme}>
-                        <Div
-                            css={css`
-                                color: white;
-                                font-weight: bold;
-                                flex-shrink: 1;
-                            `}
-                            l10nKey="Common.Preview"
-                        >
-                            Preview
-                        </Div>
-                        <DeviceAndControls
-                            defaultLandscape={landscape}
-                            canRotate={false}
-                            url={bookUrl}
-                            showRefresh={true}
-                            highlightRefreshIcon={highlightRefresh}
-                            onRefresh={() => props.onReset()}
-                        />
-                    </ThemeProvider>
-                </StyledEngineProvider>
+                <DeviceAndControls
+                    defaultLandscape={landscape}
+                    canRotate={false}
+                    url={bookUrl}
+                    showPreviewButton={true}
+                    highlightPreviewButton={highlightRefresh}
+                    onPreviewButtonClicked={() => props.onReset()}
+                />
             </PreviewPanel>
         </div>
     );
@@ -248,6 +237,11 @@ const EPUBPublishScreenInternal: React.FunctionComponent<{
         </SettingsPanel>
     );
 
+    const creatingHeading = useL10n(
+        "Creating ePUB",
+        "PublishTab.Epub.Creating"
+    );
+
     return (
         <React.Fragment>
             <PublishScreenTemplate
@@ -259,15 +253,17 @@ const EPUBPublishScreenInternal: React.FunctionComponent<{
             >
                 {mainPanel}
             </PublishScreenTemplate>
-            <PublishProgressDialog
-                heading={useL10n("Creating ePUB", "PublishTab.Epub.Creating")}
-                webSocketClientContext="publish-epub"
-                startApiEndpoint="publish/epub/updatePreview"
-                progressState={progressState}
-                setProgressState={setProgressState}
-                closePending={closePending}
-                setClosePending={setClosePending}
-            />
+            {props.showPreview && (
+                <PublishProgressDialog
+                    heading={creatingHeading}
+                    webSocketClientContext="publish-epub"
+                    startApiEndpoint="publish/epub/updatePreview"
+                    progressState={progressState}
+                    setProgressState={setProgressState}
+                    closePending={closePending}
+                    setClosePending={setClosePending}
+                />
+            )}
             <BookMetadataDialog />
         </React.Fragment>
     );

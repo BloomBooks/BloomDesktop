@@ -122,11 +122,12 @@ namespace Bloom.MiscUI
 			Func<IWebSocketProgress, BackgroundWorker, Task<bool>> doWhat,
 			string id,
 			string title,
-			bool showCancelButton = true,
+			bool showCancelButton = false,	// true will add a cancel button, but the caller is still responsible for handling the clicks (either here in C# via checking worker.CancellationPending or on the Javascript/React side)
 			Action doWhenMainActionFalse = null,
 			Action doWhenDialogCloses = null,
 			string titleIcon= null)
 		{
+			// Should correspond with IEmbeddedProgressDialogConfig in ProgressDialog.tsx
 			var props = new DynamicJson();
 			// same object, but the function call wants it to be DynamicJson,
 			// while it's easier to set the props when it is typed as dynamic.

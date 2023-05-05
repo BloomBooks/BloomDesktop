@@ -34,7 +34,7 @@ export const BloomCheckbox: React.FunctionComponent<{
     >(props.checked);
 
     let labelStr: string;
-    let labelL10nKey: string;
+    let labelL10nKey: string | null;
     if (typeof props.label === "string") {
         labelStr = props.label;
         if (props.l10nKey === undefined)
@@ -42,7 +42,7 @@ export const BloomCheckbox: React.FunctionComponent<{
         labelL10nKey = props.l10nKey;
     } else {
         labelStr = "";
-        labelL10nKey = "";
+        labelL10nKey = null; // null is a special value which causes useL10n not to ask the server for a translation
     }
     const localizedLabel = useL10n(
         labelStr,
@@ -110,7 +110,6 @@ export const BloomCheckbox: React.FunctionComponent<{
                     css={css`
                         height: 0; // I don't understand this... in the devtools I can't tell why it has a larger height than its child, and I don't understand why this fixes it
                         width: 28px; // align with the rows that have an actual checkbox
-                        padding-top: 7px;
                         color: ${theme.palette.primary.main};
                         svg {
                             transform: scale(0.8);

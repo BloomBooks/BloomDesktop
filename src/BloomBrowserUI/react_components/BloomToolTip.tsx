@@ -5,13 +5,7 @@ import { Popover, PopoverOrigin, Typography } from "@mui/material";
 import { Div } from "./l10nComponents";
 import { kBloomBlue } from "../bloomMaterialUITheme";
 
-// This class supports adding a tooltip to its children.
-// We use this for a more controllable tooltip than we get with title and similar properties.
-// We use Popover rather than various more obvious React components partly because of some
-// dependency incompatibilities with our version of Storybook.
-// BloomTooltip basically displays its children. When hovered over (including when clicked)
-// it displays the message indicated by either tooltipContent or tooltipText/tooltipL10nKey.
-export const BloomTooltip: React.FunctionComponent<{
+export interface IBloomToolTipProps {
     // The color to use for the background of the tooltip, and, crucially, also for the
     // arrow that points up at the thing described. This should usually be somewhat
     // contrastive with the background of the children, but it also needs to contrast
@@ -39,15 +33,26 @@ export const BloomTooltip: React.FunctionComponent<{
     tooltipL10nKey?: string;
     // Good practice with a popup calls for some aria attributes to indicate the relationship
     // of the popup to its parent, so we need a unique ID. The supplied ID will be applied to the popup.
-    // Enhance: there's probably some way we could come up with a safe default for this.
-    id: string;
+    // If it isn't supplied, we'll generate one.
+    id?: string;
     side?: "bottom" | "left" | "right";
     // A default origin is supplied that will work okay in many cases.  But these values
     // can be used to tweak the popup's origin if desired.
-    sideVerticalOrigin?: number;
-    sideHorizontalOrigin?: number;
+    sideVerticalOrigin?: number | "bottom" | "center" | "top";
+    sideHorizontalOrigin?: number | "center" | "left" | "right";
+    anchorOriginOverride?: PopoverOrigin;
     arrowLoc?: "middle" | "edge"; // default is edge for side=left|right.
-}> = props => {
+}
+
+// This class supports adding a tooltip to its children.
+// We use this for a more controllable tooltip than we get with title and similar properties.
+// We use Popover rather than various more obvious React components partly because of some
+// dependency incompatibilities with our version of Storybook.
+// BloomTooltip basically displays its children. When hovered over (including when clicked)
+// it displays the message indicated by either tooltipContent or tooltipText/tooltipL10nKey.
+export const BloomTooltip: React.FunctionComponent<IBloomToolTipProps> = props => {
+    const id = props.id || crypto.randomUUID();
+
     // controls visibility and placement of the 'tooltip' (if props.changePopupAnchor is null).
     const [
         localAnchorEl,
@@ -73,7 +78,8 @@ export const BloomTooltip: React.FunctionComponent<{
     const tooltipOpen = Boolean(anchorEl);
 
     const anchorOrigin: PopoverOrigin =
-        props.side === "left"
+        props.anchorOriginOverride ||
+        (props.side === "left"
             ? {
                   vertical: props.sideVerticalOrigin ?? "top",
                   // 20 pixels left of the anchor; leaves room for arrow and a little margin.
@@ -87,7 +93,7 @@ export const BloomTooltip: React.FunctionComponent<{
             : {
                   vertical: "bottom",
                   horizontal: "center"
-              };
+              });
 
     const transformOrigin: PopoverOrigin =
         props.side === "left"
@@ -168,14 +174,14 @@ export const BloomTooltip: React.FunctionComponent<{
         <React.Fragment>
             {hasContent ? (
                 <div
-                    aria-owns={tooltipOpen ? props.id : undefined}
+                    aria-owns={tooltipOpen ? id : undefined}
                     aria-haspopup="true"
                     onMouseEnter={handlePopoverOpen}
                     onMouseLeave={handlePopoverClose}
                 >
                     {props.children}
                     <Popover
-                        id={"popover-info-tooltip"}
+                        id={id}
                         css={css`
                             // This is just an informational popover, we don't need to suppress events outside it.
                             // Even more importantly, we don't want to prevent the parent control from receiving

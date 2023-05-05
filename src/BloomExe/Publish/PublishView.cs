@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Windows.Forms;
@@ -17,10 +16,10 @@ using Bloom.Api;
 using Bloom.Publish.BloomPub;
 using Bloom.Publish.BloomLibrary;
 using Bloom.Publish.Epub;
-using Bloom.Publish.PDF;
 using Bloom.Publish.Video;
 using SIL.Progress;
 using Bloom.web.controllers;
+using Bloom.MiscUI;
 
 namespace Bloom.Publish
 {
@@ -28,7 +27,6 @@ namespace Bloom.Publish
 	{
 		public readonly PublishModel _model;
 		private bool _activated;
-		private BloomLibraryUploadControl _uploadControl;
 		private BookUpload _bookTransferrer;
 		private PictureBox _previewBox;
 		private HtmlPublishPanel _htmlControl;
@@ -62,13 +60,6 @@ namespace Bloom.Publish
 
 			_cantPublishPageWithPlaceholder = _publishReqEntOverlayPage.Text;
 			_cantPublishProblemWithPlaceholder = _publishReqEntProblem.Text;
-			_makePdfBackgroundWorker.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(_makePdfBackgroundWorker_RunWorkerCompleted);
-
-			// BL-625: With mono, if a RadioButton group has its AutoCheck properties set to true, the default RadioButton.OnEnter
-			//         event checks to make sure one of the RadioButtons is checked. If none are checked, the one the mouse pointer
-			//         is over is checked, causing the CheckChanged event to fire.
-			if (SIL.PlatformUtilities.Platform.IsMono)
-				SetAutoCheck(false);
 
 			//NB: just triggering off "VisibilityChanged" was unreliable. So now we trigger
 			//off the tab itself changing, either to us or away from us.
@@ -88,11 +79,6 @@ namespace Bloom.Publish
 
 			//			DeskAnalytics.Track("Publish");
 
-//#if DEBUG
-//        	var linkLabel = new LinkLabel() {Text = "DEBUG"};
-//			linkLabel.Click+=new EventHandler((x,y)=>_model.DebugCurrentPDFLayout());
-//        	tableLayoutPanel1.Controls.Add(linkLabel);
-//#endif
 			tableLayoutPanel1.BackColor = Palette.GeneralBackground;
 
 			SetupLocalization();
@@ -118,8 +104,8 @@ namespace Bloom.Publish
 
 		private void Deactivate()
 		{
-			if (IsMakingPdf)
-				_makePdfBackgroundWorker.CancelAsync();
+			if (_model.IsMakingPdf)
+				_model.CancelMakingPdf();
 			_publishEpubApi?.AbortMakingEpub();
 			_publishToVideoApi.AbortMakingVideo();
 			// This allows various cleanup of controls which we won't use again, since we
@@ -139,24 +125,10 @@ namespace Bloom.Publish
 			PublishHelper.InPublishTab = false;
 		}
 
-		private void SetAutoCheck(bool autoCheck)
-		{
-			if (_pdfPrintRadio.AutoCheck == autoCheck)
-				return;
-
-			_pdfPrintRadio.AutoCheck = autoCheck;
-			_uploadRadio.AutoCheck = autoCheck;
-			_uploadRadioObsolete.AutoCheck = autoCheck;
-			_epubRadio.AutoCheck = autoCheck;
-			_bloomPUBRadio.AutoCheck = autoCheck;
-			_recordVideoRadio.AutoCheck = autoCheck;
-		}
-
 		private void SetupLocalization()
 		{
 			LocalizeSuperToolTip(_pdfPrintRadio, "PublishTab.PdfPrint.Button");
 			LocalizeSuperToolTip(_uploadRadio, "PublishTab.ButtonThatShowsUploadForm");
-			LocalizeSuperToolTip(_uploadRadioObsolete, "PublishTab.ButtonThatShowsUploadForm");
 			LocalizeSuperToolTip(_bloomPUBRadio, "PublishTab.bloomPUBButton");
 			LocalizeSuperToolTip(_recordVideoRadio, "PublishTab.RecordVideoButton");
 		}
@@ -186,7 +158,7 @@ namespace Bloom.Publish
 			PublishHelper.InPublishTab = true;
 
 			Logger.WriteEvent("Entered Publish Tab");
-			if (IsMakingPdf)
+			if (_model.IsMakingPdf)
 				return;
 
 			_model.UpdateModelUponActivation();
@@ -218,12 +190,7 @@ namespace Bloom.Publish
 
 		private void ClearRadioButtons()
 		{
-			_pdfPrintRadio.Checked = _uploadRadio.Checked = _uploadRadioObsolete.Checked = _epubRadio.Checked = _bloomPUBRadio.Checked = _recordVideoRadio.Checked = false;
-		}
-
-		internal bool IsMakingPdf
-		{
-			get { return _makePdfBackgroundWorker.IsBusy; }
+			_pdfPrintRadio.Checked = _uploadRadio.Checked = _epubRadio.Checked = _bloomPUBRadio.Checked = _recordVideoRadio.Checked = false;
 		}
 
 
@@ -240,85 +207,13 @@ namespace Bloom.Publish
 		}
 
 		public Bitmap ToolStripBackground { get; set; }
-		public bool CanChangeTo()
-		{
-			return true;
-		}
 
-		void _makePdfBackgroundWorker_RunWorkerCompleted(object sender, System.ComponentModel.RunWorkerCompletedEventArgs e)
+		internal void UpdateDisplayFeatures()
 		{
-			_model.PdfGenerationSucceeded = false;
-			if (!e.Cancelled)
-			{
-				if (e.Result is Exception)
-				{
-					var error = e.Result as Exception;
-					if (error is ApplicationException)
-					{
-						//For common exceptions, we catch them earlier (in the worker thread) and give a more helpful message
-						//note, we don't want to include the original, as it leads to people sending in reports we don't
-						//actually want to see. E.g., we don't want a bug report just because they didn't have Acrobat
-						//installed, or they had the PDF open in Word, or something like that.
-						ErrorReport.NotifyUserOfProblem(error.Message);
-					}
-					else if (error is PdfMaker.MakingPdfFailedException)
-					{
-						// Ignore this error here.  It will be reported elsewhere if desired.
-					}
-					else if (error is FileNotFoundException && ((FileNotFoundException) error).FileName == "BloomPdfMaker.exe")
-					{
-						ErrorReport.NotifyUserOfProblem(error, error.Message);
-					}
-					else if (error is OutOfMemoryException)
-					{
-						// See https://silbloom.myjetbrains.com/youtrack/issue/BL-5467.
-						var fmt = LocalizationManager.GetString("PublishTab.PdfMaker.OutOfMemory",
-							"Bloom ran out of memory while making the PDF. See {0}this article{1} for some suggestions to try.",
-							"{0} and {1} are HTML link markup.  You can think of them as fancy quotation marks.");
-						var msg = String.Format(fmt, "<a href='https://community.software.sil.org/t/solving-memory-problems-while-printing/500'>", "</a>");
-						using (var f = new MiscUI.HtmlLinkDialog(msg))
-						{
-							f.ShowDialog();
-						}
-					}
-					else // for others, just give a generic message and include the original exception in the message
-					{
-						ErrorReport.NotifyUserOfProblem(error, "Sorry, Bloom had a problem creating the PDF.");
-					}
-					UpdateDisplayMode();
-					return;
-				}
-				_model.PdfGenerationSucceeded = true;
-					// should be the only place this is set, when we generated successfully.
-				UpdateDisplayMode();
-			}
-		}
-
-		private void UpdateDisplayMode()
-		{
-			if (IsHandleCreated) // May not be when bulk uploading
-			{
-				if (_uploadRadio.Checked)
-					_model.DisplayMode = PublishModel.DisplayModes.Upload;
-				else if (_uploadRadioObsolete.Checked)
-					_model.DisplayMode = PublishModel.DisplayModes.Upload_Obsolete;
-				else if (_epubRadio.Checked)
-					_model.DisplayMode = PublishModel.DisplayModes.EPUB;
-				else if (_bloomPUBRadio.Checked)
-					_model.DisplayMode = PublishModel.DisplayModes.BloomPUB;
-				else if (_recordVideoRadio.Checked)
-					_model.DisplayMode = PublishModel.DisplayModes.AudioVideo;
-				else
-					_model.DisplayMode = PublishModel.DisplayModes.WaitForUserToChooseSomething;
+			if (IsHandleCreated)
 				Invoke((Action) (UpdateDisplay));
-			}
 		}
 
-
-		protected override void OnLoad(EventArgs e)
-		{
-			base.OnLoad(e);
-		}
 
 		private void UpdateDisplay()
 		{
@@ -327,20 +222,14 @@ namespace Bloom.Publish
 
 			_pdfPrintRadio.Checked = _model.PdfPrintMode;
 			_uploadRadio.Checked = _model.UploadMode;
-			_uploadRadioObsolete.Checked = _model.UploadModeObsolete;
 			_epubRadio.Checked = _model.EpubMode;
-
-			if (!_model.AllowUpload)
-			{
-			   //this doesn't actually show when disabled		        _superToolTip.GetSuperStuff(_uploadRadioObsolete).SuperToolTipInfo.BodyText = "This creator of this book, or its template, has marked it as not being appropriate for upload to BloomLibrary.org";
-			}
 
 			_pdfPrintRadio.Enabled = _model.AllowPdf;
 			_uploadRadio.Enabled = _model.AllowUpload;
-			_uploadRadioObsolete.Enabled = _model.AllowUpload;
 			_openinBrowserMenuItem.Enabled = _openPDF.Enabled = _model.PdfGenerationSucceeded;
 			_bloomPUBRadio.Enabled = _model.AllowBloomPub;
 			_epubRadio.Enabled = _model.AllowEPUB;
+			_recordVideoRadio.Enabled = _model.AllowRecordVideo;
 
 			// No reason to update from model...we only change the model when the user changes the check box,
 			// or when uploading...and we do NOT want to update the check box when uploading temporarily changes the model.
@@ -355,11 +244,6 @@ namespace Bloom.Publish
 
 			// Suspending/resuming layout makes the transition between modes a bit smoother.
 			SuspendLayout();
-			if (displayMode != PublishModel.DisplayModes.Upload_Obsolete && _uploadControl != null)
-			{
-				Controls.Remove(_uploadControl);
-				_uploadControl = null;
-			}
 			if (displayMode != PublishModel.DisplayModes.BloomPUB &&
 				displayMode != PublishModel.DisplayModes.EPUB &&
 				displayMode != PublishModel.DisplayModes.AudioVideo &&
@@ -385,15 +269,8 @@ namespace Bloom.Publish
 			{
 				case PublishModel.DisplayModes.WaitForUserToChooseSomething:
 					break;
-				case PublishModel.DisplayModes.Upload_Obsolete:
-					Logger.WriteEvent("Entering Publish Upload Screen");
-
-					if (_uploadControl == null)
-					{
-						SetupPublishControl();
-					}
-					break;
 				case PublishModel.DisplayModes.Upload:
+					Logger.WriteEvent("Entering Publish Web Upload Screen");
 					LibraryPublishApi.Model = PublishApi.Model = new BloomLibraryPublishModel(_bookTransferrer, _model.BookSelection.CurrentSelection, _model);
 					ShowHtmlPanel(BloomFileLocator.GetBrowserFile(false, "publish", "LibraryPublish", "loader.html"));
 					break;
@@ -466,26 +343,6 @@ namespace Bloom.Publish
 			Cursor = Cursors.Default;
 		}
 
-		private void SetupPublishControl()
-		{
-			if (_uploadControl != null)
-			{
-				//we currently rebuild it to update contents, as currently the constructor is where setup logic happens (we could change that)
-				Controls.Remove(_uploadControl); ;
-			}
-
-			var libaryPublishModel = new BloomLibraryPublishModel(_bookTransferrer, _model.BookSelection.CurrentSelection, _model);
-			_uploadControl = new BloomLibraryUploadControl(this, libaryPublishModel, _webSocketServer);
-			// Setting the location explicitly makes the transition a bit smoother.
-			_uploadControl.Location = new Point(tableLayoutPanel1.Width, 0);
-			_uploadControl.Dock = DockStyle.Fill;
-			var saveBackColor = _uploadControl.BackColor;
-			Controls.Add(_uploadControl); // somehow this changes the backcolor
-			_uploadControl.BackColor = saveBackColor; // Need a normal back color for this so links and text can be seen
-			// This control is dock.fill. It has to be in front of tableLayoutPanel1 (which is Left) for Fill to work.
-			_uploadControl.BringToFront();
-		}
-
 		private void OnPublishRadioChanged(object sender, EventArgs e)
 		{
 			if (!_activated)
@@ -499,10 +356,6 @@ namespace Bloom.Publish
 			if (!((RadioButton)sender).Checked)
 				return;
 
-			// BL-625: One of the RadioButtons is now checked, so it is safe to re-enable AutoCheck.
-			if (SIL.PlatformUtilities.Platform.IsMono)
-				SetAutoCheck(true);
-
 			SetModelFromButtons();
 		}
 
@@ -514,7 +367,6 @@ namespace Bloom.Publish
 		private void SetModelFromButtons()
 		{
 			_model.UploadMode = _uploadRadio.Checked;
-			_model.UploadModeObsolete = _uploadRadioObsolete.Checked;
 			_model.EpubMode = _epubRadio.Checked;
 			_model.PdfPrintMode = false;
 			if (_pdfPrintRadio.Checked)
@@ -531,13 +383,6 @@ namespace Bloom.Publish
 			{
 				_model.DisplayMode = PublishModel.DisplayModes.Upload;
 			}
-			else if (_uploadRadioObsolete.Checked)
-			{
-				// We want to upload the simple PDF with the book, but we don't make it
-				// until we actually start the upload.
-				_model.BookletPortion = PublishModel.BookletPortions.AllPagesNoBooklet;
-				_model.DisplayMode = PublishModel.DisplayModes.Upload_Obsolete;
-			}
 			else if (_bloomPUBRadio.Checked)
 			{
 				_model.DisplayMode = PublishModel.DisplayModes.BloomPUB;
@@ -549,26 +394,24 @@ namespace Bloom.Publish
 			else // no buttons selected
 			{
 				_model.DisplayMode = PublishModel.DisplayModes.WaitForUserToChooseSomething;
-			}
+			}			
 			_model.ShowCropMarks = false;
 		}
 
-		internal string PdfPreviewPath { get { return _model.PdfFilePath; } }
 
-		private void _makePdfBackgroundWorker_DoWork(object sender, System.ComponentModel.DoWorkEventArgs e)
-		{
-			e.Result = _model.BookletPortion; //record what our parameters were, so that if the user changes the request and we cancel, we can detect that we need to re-run
-			_model.LoadBook(sender as BackgroundWorker, e);
-		}
 
-		private void OnSave_Click(object sender, EventArgs e)
-		{
-			_model.SavePdf();
-		}
+		// This property is invoked in WorkspaceView as "CurrentTabView.HelpTopicUrl".  Until the
+		// tab view mechanism and overall WorkspaceView is converted to typescript, carrying the
+		// help menu with it, this property needs to stay in C#.
+
 		public string HelpTopicUrl
 		{
 			get { return "/Tasks/Publish_tasks/Publish_tasks_overview.htm"; }
 		}
+
+		// The following three methods are invoked from a menu on the PDF radio button.  When
+		// the radio buttons are migrated to typescript, the menu will be also and these methods
+		// will no longer be needed.
 
 		private void _openinBrowserMenuItem_Click(object sender, EventArgs e)
 		{
@@ -578,60 +421,6 @@ namespace Bloom.Publish
 		private void _openPDF_Click(object sender, EventArgs e)
 		{
 			PathUtilities.OpenFileInApplication(_model.PdfFilePath);
-		}
-
-		/// <summary>
-		/// Make the preview required for publishing the book.
-		/// </summary>
-		internal void MakePDFForUpload(IProgress progress)
-		{
-			if (IsMakingPdf)
-			{
-				// Can't start another until current attempt finishes.
-				_makePdfBackgroundWorker.CancelAsync();
-				while (IsMakingPdf)
-					Thread.Sleep(100);
-			}
-
-			var message = new LicenseChecker().CheckBook(_model.BookSelection.CurrentSelection,
-				_model.BookSelection.CurrentSelection.ActiveLanguages.ToArray());
-			if (message != null)
-			{
-				MessageBox.Show(message, LocalizationManager.GetString("Common.Warning", "Warning"));
-				return;
-			}
-
-			_previewProgress = progress;
-			_makePdfBackgroundWorker.ProgressChanged += UpdatePreviewProgress;
-
-			// Usually these will have been set by SetModelFromButtons, but the publish button might already be showing when we go to this page.
-			_model.ShowCropMarks = false; // don't want in online preview
-			_model.BookletPortion = PublishModel.BookletPortions.AllPagesNoBooklet; // has all the pages and cover in form suitable for online use
-			_makePdfBackgroundWorker.RunWorkerAsync();
-			// We normally generate PDFs in the background, but this routine should not return until we actually have one.
-			while (IsMakingPdf)
-			{
-				Thread.Sleep(100);
-				Application.DoEvents(); // Wish we didn't need this, but without it bulk upload freezes making 'preview' which is really the PDF to upload.
-			}
-			_makePdfBackgroundWorker.ProgressChanged -= UpdatePreviewProgress;
-			_previewProgress = null;
-			_previousStatus = null;
-		}
-
-		IProgress _previewProgress;
-		string _previousStatus;
-		private void UpdatePreviewProgress(object sender, ProgressChangedEventArgs e)
-		{
-			if (_previewProgress == null)
-				return;
-			if (_previewProgress.ProgressIndicator != null)
-				_previewProgress.ProgressIndicator.PercentCompleted = e.ProgressPercentage;
-			var status = e.UserState as string;
-			// Don't repeat a status message, even if modified by trailing spaces or periods or ellipses.
-			if (status != null && status != _previousStatus && status.Trim(new[] {' ', '.', '\u2026'}) != _previousStatus)
-				_previewProgress.WriteStatus(status);
-			_previousStatus = status;
 		}
 
 		private void ExportAudioFiles1PerPageToolStripMenuItem_Click(object sender, EventArgs e)

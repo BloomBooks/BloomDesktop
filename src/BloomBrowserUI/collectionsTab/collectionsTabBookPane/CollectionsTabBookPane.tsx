@@ -20,7 +20,10 @@ import "react-tabs/style/react-tabs.less";
 import { BloomTabs } from "../../react_components/BloomTabs";
 import { ProgressDialog } from "../../react_components/Progress/ProgressDialog";
 import { useL10n } from "../../react_components/l10nHooks";
-import { Mode } from "../../react_components/BloomDialog/BloomDialogPlumbing";
+import {
+    IBloomDialogEnvironmentParams,
+    Mode
+} from "../../react_components/BloomDialog/BloomDialogPlumbing";
 
 export const CollectionsTabBookPane: React.FunctionComponent<{
     // If false, as it usually is, the overlay above the preview iframe
@@ -58,7 +61,8 @@ export const CollectionsTabBookPane: React.FunctionComponent<{
                 setBookStatus(data.data as IBookTeamCollectionStatus);
             },
             err => {
-                // Something went wrong. Maybe not registered. Already reported to Sentry, we don't need
+                // Something went wrong. Maybe the user has not registered. Maybe the network has gone
+                // down. This error has already been reported to Sentry, and we don't need to do
                 // another 'throw' here, with less information. Displaying the message may tell the user
                 // something. I don't think it's worth localizing the fallback message here, which is even
                 // less likely to be seen.
@@ -67,10 +71,14 @@ export const CollectionsTabBookPane: React.FunctionComponent<{
                 const errorMessage =
                     err?.response?.statusText ??
                     "Bloom could not determine the status of this book";
-                setBookStatus({ ...bookStatus, error: errorMessage });
+                setBookStatus({
+                    ...bookStatus,
+                    disconnected: true,
+                    error: errorMessage
+                });
             }
         );
-    }, [selectedBookId, saveable, reload, reloadStatus]);
+    }, [selectedBookId, saveable, reload, reloadStatus, bookStatus]);
 
     const canMakeBook = collectionKind != "main";
     // History, and thus the tab controls, are only relevant if there's a selected book
@@ -171,7 +179,14 @@ export const CollectionsTabBookPane: React.FunctionComponent<{
         </BloomButton>
     );
 
-    const [progressOpen, setProgressOpen] = useState(false);
+    const progressDialogEnvironment: IBloomDialogEnvironmentParams = {
+        dialogFrameProvidedExternally: false,
+        initiallyOpen: false,
+        mode: Mode.Collection
+    };
+    const [progressOpen, setProgressOpen] = useState(
+        progressDialogEnvironment.initiallyOpen
+    );
     const longRunningOperationText = useL10n(
         "This may take a while...",
         "Common.LongRunningOperation"
@@ -188,11 +203,10 @@ export const CollectionsTabBookPane: React.FunctionComponent<{
             size="small"
             showCancelButton={false}
             open={progressOpen}
-            dialogEnvironment={{
-                dialogFrameProvidedExternally: false,
-                initiallyOpen: false,
-                mode: Mode.Collection
+            onClose={() => {
+                setProgressOpen(false);
             }}
+            dialogEnvironment={progressDialogEnvironment}
             onReadyToReceive={() => {
                 // no-op - no need to post any messages to the Bloom server
             }}

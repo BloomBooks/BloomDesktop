@@ -367,7 +367,7 @@
 			this.Controls.Add(this._iAmStuckLabel);
 			this.Controls.Add(this.tableLayoutPanel1);
 			this.Controls.Add(this._okButton);
-			this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
+			this.Icon = global::Bloom.Properties.Resources.BloomIcon;
 			this.l10NSharpExtender1.SetLocalizableToolTip(this, null);
 			this.l10NSharpExtender1.SetLocalizationComment(this, "Place a {0} where the name of the program goes.");
 			this.l10NSharpExtender1.SetLocalizingId(this, "RegisterDialog.WindowTitle");

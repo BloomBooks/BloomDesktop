@@ -164,6 +164,7 @@ const kLongListOfAllTypes: Array<IStoryMessage> = [
 
 storiesOf("Progress Dialog", module)
     .add("Short, with report button if there is an error", () => {
+        const [isOpen, setIsOpen] = React.useState(true);
         return React.createElement(() => {
             return (
                 <ProgressDialog
@@ -199,12 +200,17 @@ storiesOf("Progress Dialog", module)
                             }
                         ])
                     }
+                    open={isOpen}
+                    onClose={() => {
+                        setIsOpen(false);
+                    }}
                     dialogEnvironment={normalDialogEnvironmentForStorybook}
                 />
             );
         });
     })
     .add("Long", () => {
+        const [isOpen, setIsOpen] = React.useState(true);
         return React.createElement(() => {
             return (
                 <ProgressDialog
@@ -214,12 +220,17 @@ storiesOf("Progress Dialog", module)
                     titleBackgroundColor="transparent"
                     showReportButton={"never"}
                     onReadyToReceive={() => sendEvents(kLongListOfAllTypes)}
+                    open={isOpen}
+                    onClose={() => {
+                        setIsOpen(false);
+                    }}
                     dialogEnvironment={normalDialogEnvironmentForStorybook}
                 />
             );
         });
     })
     .add("Not wrapped in a dialog", () => {
+        const [isOpen, setIsOpen] = React.useState(true);
         return React.createElement(() => {
             return (
                 <ProgressDialog
@@ -227,6 +238,10 @@ storiesOf("Progress Dialog", module)
                     titleColor="white"
                     titleBackgroundColor="green"
                     showReportButton={"never"}
+                    open={isOpen}
+                    onClose={() => {
+                        setIsOpen(false);
+                    }}
                     onReadyToReceive={() =>
                         sendEvents([
                             {
@@ -259,6 +274,7 @@ storiesOf("Progress Dialog", module)
         });
     })
     .add("Not wrapped in a dialog, long vertically", () => {
+        const [isOpen, setIsOpen] = React.useState(true);
         return React.createElement(() => {
             return (
                 <ProgressDialog
@@ -266,6 +282,10 @@ storiesOf("Progress Dialog", module)
                     titleColor="white"
                     titleBackgroundColor="green"
                     showReportButton={"never"}
+                    open={isOpen}
+                    onClose={() => {
+                        setIsOpen(false);
+                    }}
                     onReadyToReceive={() => sendEvents(kLongListOfAllTypes)}
                     {...noFrameProps}
                 />

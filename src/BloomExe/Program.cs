@@ -36,6 +36,8 @@ using Sentry;
 using SIL.Windows.Forms.HtmlBrowser;
 using SIL.WritingSystems;
 using SIL.Xml;
+using Microsoft.Web.WebView2.Core;
+using System.Text;
 
 namespace Bloom
 {
@@ -202,14 +204,15 @@ namespace Bloom
 				Application.EnableVisualStyles();
 				Application.SetCompatibleTextRenderingDefault(false);
 
-				XWebBrowser.DefaultBrowserType = XWebBrowser.BrowserType.GeckoFx;
-
 				var args = args1;
 
 				if (SIL.PlatformUtilities.Platform.IsWindows)
 				{
 					OldVersionCheck();
 				}
+
+				if (IsWebviewMissingOrTooOld())
+					return 1;
 
 				//bring in settings from any previous version
 				if (Settings.Default.NeedUpgrade)
@@ -403,6 +406,14 @@ namespace Bloom
 						}
 						gotUniqueToken = true;
 					}
+					if (IsInstallerLaunch(args))
+					{
+						// Start the splash screen early for installer launches to reassure
+						// user while localization and other one-time setup is happening.  For
+						// installer launches, no more dialogs should be popping up after this.
+						// See https://issues.bloomlibrary.org/youtrack/issue/BL-12085.
+						StartupScreenManager.StartManaging();
+					}
 					OldVersionCheck();
 
 					SetUpErrorHandling();
@@ -472,7 +483,7 @@ namespace Bloom
 
 						}
 
-						if (!BloomIntegrityDialog.CheckIntegrity())
+						if (!BloomIntegrityChecker.CheckIntegrity())
 						{
 							Environment.Exit(-1);
 						}
@@ -488,12 +499,6 @@ namespace Bloom
 						DialogAdapters.CommonDialogAdapter.ForceKeepAbove = true;
 						DialogAdapters.CommonDialogAdapter.UseMicrosoftPositioning = true;
 
-						// BL-1258: sometimes the newly installed fonts are not available until after Bloom restarts
-						// We don't even want to try to install fonts if we are installed by an admin for all users;
-						// it will have been installed already as part of the allUsers install.
-						if (!InstallerSupport.SharedByAllUsers() && FontInstaller.InstallFont("AndikaNewBasic"))
-							return 1;
-
 						// Kick off getting all the font metadata for fonts currently installed in the system.
 						// This can take several seconds on slow machines with lots of fonts installed, so we
 						// run it in the background once at startup.  (The results are cached automatically.)
@@ -503,7 +508,7 @@ namespace Bloom
 						_originalPreload = Environment.GetEnvironmentVariable("LD_PRELOAD");
 						Environment.SetEnvironmentVariable("LD_PRELOAD", null);
 
-						Run();
+						Run(args);
 					}
 				}
 			}
@@ -528,6 +533,51 @@ namespace Bloom
 			Settings.Default.FirstTimeRun = false;
 			Settings.Default.Save();
 			return 0;
+		}
+
+		private static bool IsWebviewMissingOrTooOld()
+		{
+			const string kBloomMinimum= "112.0.0.0";
+			string version;
+			bool missingOrAntique;
+			try
+			{
+				version = CoreWebView2Environment.GetAvailableBrowserVersionString();
+				missingOrAntique = (CoreWebView2Environment.CompareBrowserVersions(version, kBloomMinimum) < 0);
+			}
+			catch (WebView2RuntimeNotFoundException e)
+			{
+				version = "not installed";
+				missingOrAntique = true;
+			}
+			if (missingOrAntique)
+			{
+				using (_applicationContainer = new ApplicationContainer())
+				{
+					SetUpLocalization();
+					var msgBldr = new StringBuilder();
+					var msgFmt1 = LocalizationManager.GetString("Webview.MissingOrTooOld", "Bloom depends on Microsoft WebView2 Evergreen, at least version {0}. We will now send you to a webpage that will help you add this to your computer.");
+					msgBldr.AppendFormat(msgFmt1, kBloomMinimum);
+					msgBldr.AppendLine();
+					if (version == "not installed")
+					{
+						msgBldr.Append(LocalizationManager.GetString("Webview.NotInstalled", "(Currently not installed)"));
+					}
+					else
+					{
+						var msgFmt2 = LocalizationManager.GetString("Webview.CurrentVersion", "(Currently {0})");
+						msgBldr.AppendFormat(msgFmt2, version);
+					}
+					MessageBox.Show(msgBldr.ToString());
+					var psi = new ProcessStartInfo
+					{
+						FileName = "https://docs.bloomlibrary.org/webview2",
+						UseShellExecute = true
+					};
+					Process.Start(psi);
+				}
+			}
+			return missingOrAntique;
 		}
 
 		static async Task<int> HandleUpload(UploadParameters opts)
@@ -737,9 +787,10 @@ namespace Bloom
 		}
 
 		[HandleProcessCorruptedStateExceptions]
-		private static void Run()
+		private static void Run(string[] args)
 		{
-			StartupScreenManager.StartManaging();
+			if (!IsInstallerLaunch(args))
+				StartupScreenManager.StartManaging();
 			
 			Settings.Default.Save();
 

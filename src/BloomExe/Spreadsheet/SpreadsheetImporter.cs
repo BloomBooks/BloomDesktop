@@ -126,7 +126,7 @@ namespace Bloom.Spreadsheet
 					"Spreadsheet imported from " + inputFilepath);
 
 				return true; // always leave the dialog up until the user chooses 'close'
-			}, "collectionTab", "Importing Spreadsheet", doWhenDialogCloses: doWhenProgressCloses);
+			}, "collectionTab", "Importing Spreadsheet", showCancelButton: false, doWhenDialogCloses: doWhenProgressCloses);
 		}
 
 		private Browser _browser;
@@ -1797,7 +1797,8 @@ namespace Bloom.Spreadsheet
 		{
 			if (ControlForInvoke != null && ControlForInvoke.InvokeRequired)
 			{
-				return (string)ControlForInvoke.Invoke(new ElementStringTask(GetMd5Async), elt);
+				var result =  (Task<string>)ControlForInvoke.Invoke(new ElementStringTask(GetMd5Async), elt);
+				return await (result);
 			}
 			return await (await GetBrowserAsync()).RunJavaScriptAsync($"spreadsheetBundle.getMd5('{elt.InnerText.Replace("'", "\\'")}')");
 		}

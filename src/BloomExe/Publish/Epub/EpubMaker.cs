@@ -19,6 +19,7 @@ using Bloom.web;
 using Bloom.web.controllers;
 using BloomTemp;
 using L10NSharp;
+using Newtonsoft.Json;
 #if __MonoCS__
 using SIL.CommandLineProcessing;
 #else
@@ -151,10 +152,8 @@ namespace Bloom.Publish.Epub
 		private string _firstContentPageItem;
 		private string _contentFolder;
 		private string _navFileName;
-		// This temporary folder holds the staging folder with the bloom content. It also (temporarily)
-		// holds a copy of the Readium code, since I haven't been able to figure out how to get that
-		// code to redirect to display a folder which isn't a child of the folder containing the
-		// readium HTML.
+		// This temporary folder holds the staging folder with the bloom content. It also holds the manifest
+		// file required by our preview reader, but which does not need to be part of the epub.
 		private TemporaryFolder _outerStagingFolder;
 		public string BookInStagingFolder { get; private set; }
 		private BookThumbNailer _thumbNailer;
@@ -288,7 +287,9 @@ namespace Bloom.Publish.Epub
 					// We could enhance this if we can figure out exactly what languages we will publish audio of.
 					// For now, I'm including them all in this initial copy. Later stages will filter to just
 					// what's visible.
-					narrationLanguages: null); 
+					narrationLanguages: null,
+					// Epubs write out their own @font-face declarations to static locations for embedded fonts.
+					wantFontFaceDeclarations: false);
 			}
 
 			// The readium control remembers the current page for each book.
@@ -889,9 +890,10 @@ namespace Bloom.Publish.Epub
 			int index = 1;
 			TimeSpan pageDuration = new TimeSpan();
 			string mergedAudioPath = null;
+			var sortedElements = SortAudioElements(audioSentenceElementsWithRecordedAudio);
 			if (OneAudioPerPage && audioSentenceElementsWithRecordedAudio.Count() > 1)
-				mergedAudioPath = MergeAudioElements(audioSentenceElementsWithRecordedAudio, warningMessages);
-			foreach(var audioSentenceElement in audioSentenceElementsWithRecordedAudio)
+				mergedAudioPath = MergeAudioElements(sortedElements, warningMessages);
+			foreach(var audioSentenceElement in sortedElements)
 			{
 				// These are going to be the same regardless of whether this audio sentence has sub-elements to highlight.
 				var audioId = audioSentenceElement.Attributes["id"].Value;
@@ -1020,11 +1022,7 @@ namespace Bloom.Publish.Epub
 					new XAttribute("clipEnd", clipEndSecs.ToString(@"h\:mm\:ss\.fff")))));
 		}
 
-		/// <summary>
-		/// Merge the audio files corresponding to the specified elements. Returns the path to the merged MP3 if all is well, null if
-		/// we somehow failed to merge.
-		/// </summary>
-		private string MergeAudioElements(IEnumerable<XmlElement> elementsWithAudio, ISet<string> warningMessages)
+		private XmlElement[] SortAudioElements(IEnumerable<XmlElement> elementsWithAudio)
 		{
 			// The elementsWithAudio need to be ordered the same way as in bloom-player
 			// (narrationUtils.ts): by data-audio-order if it exists, or by document order
@@ -1034,15 +1032,19 @@ namespace Bloom.Publish.Epub
 			var elementArray = elementsWithAudio.ToArray();
 			var keys = new List<(int index, int order)>(count);
 			for (int i = 0; i < count; ++i)
-				keys.Add((i, int.Parse(elementArray[i].GetOptionalStringAttribute("data-audio-order","999"), CultureInfo.InvariantCulture)));
-			// See BL-11722. We must NOT sort the recordings in the file unless we put the corresponding
-			// IDs in the smil file in the same adjusted order. See the branch correctSmil in JohnT's repo.
-			// But, we don't want to do that for 5.4 since our old Readium preview does not properly
-			// handle a smil file where the first audio is not for the first element in document order
-			// on the page. We hope to update the preview code in 5.5.
-			// Note: don't just merge the correctSmil branch, it should have unit tests and probably more comments.
-			//Array.Sort(keys.ToArray(), elementArray, new CompareAudioOrder());
+				keys.Add((i,
+					int.Parse(elementArray[i].GetOptionalStringAttribute("data-audio-order", "999"),
+						CultureInfo.InvariantCulture)));
+			Array.Sort(keys.ToArray(), elementArray, new CompareAudioOrder());
+			return elementArray;
+		}
 
+		/// <summary>
+		/// Merge the audio files corresponding to the specified elements. Returns the path to the merged MP3 if all is well, null if
+		/// we somehow failed to merge.
+		/// </summary>
+		private string MergeAudioElements(XmlElement[] elementArray, ISet<string> warningMessages)
+		{
 			var mergeFiles =
 				elementArray
 					.Select(s => AudioProcessor.GetOrCreateCompressedAudio(Storage.FolderPath, s.Attributes["id"]?.Value))
@@ -1126,7 +1128,8 @@ namespace Bloom.Publish.Epub
 				if (name == "customCollectionStyles.css" || name == "defaultLangStyles.css" || name == "branding.css")
 				{
 					// These files should be in the book's folder, not in some arbitrary place in our search path.
-					path = Path.Combine(_originalBook.FolderPath, name);
+					// defaultLangStyles.css is newly generated for the ePUB, the others are copied from _originalBook.FolderPath
+					path = Path.Combine(_book.FolderPath, name);
 					// It's OK not to find these.
 					if (!File.Exists(path))
 					{
@@ -2071,7 +2074,7 @@ namespace Bloom.Publish.Epub
 		{
 			ISet<string> warningMessages = new HashSet<string>();
 			var fontFileFinder = FontFileFinder.GetInstance(Program.RunningUnitTests);
-			const string defaultFont = "Andika New Basic";
+			const string defaultFont = "Andika";
 			PublishHelper.CheckFontsForEmbedding(progress, _fontsUsedInBook, fontFileFinder, out List<string> filesToEmbed, out HashSet<string> badFonts);
 			foreach (var file in filesToEmbed) {
 				var extension = Path.GetExtension(file).ToLowerInvariant();
@@ -2151,8 +2154,12 @@ namespace Bloom.Publish.Epub
 			if (sanitizeFileName)
 				fontFileName = GetAdjustedFilename(fontFileName, "");
 			var fullRelativePath = relativePathFromCss + fontFileName;
-			var format = Path.GetExtension(path) == ".woff" ? "woff" : "opentype";
-
+			var format = "opentype";
+			switch (Path.GetExtension(path))
+			{
+				case ".woff":  format = "woff";  break;
+				case ".woff2": format = "woff2"; break;
+			}
 			sb.AppendLine(
 				$"@font-face {{font-family:'{name}'; font-weight:{weight}; font-style:{style}; src:url('{fullRelativePath}') format('{format}');}}");
 		}
@@ -2723,6 +2730,8 @@ namespace Bloom.Publish.Epub
 				return "text/css";
 			case "woff":
 				return "application/font-woff"; // http://stackoverflow.com/questions/2871655/proper-mime-type-for-fonts
+			case "woff2":
+				return "application/font-woff2";
 			case "ttf":
 			case "otf":
 				// According to http://stackoverflow.com/questions/2871655/proper-mime-type-for-fonts, the proper
@@ -2772,5 +2781,7 @@ namespace Bloom.Publish.Epub
 				_publishHelper.Dispose();
 			_publishHelper = null;
 		}
+
+		
 	}
 }
