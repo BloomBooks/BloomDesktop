@@ -74,8 +74,8 @@ export const BookSettingsDialog: React.FunctionComponent<{}> = () => {
 
     return (
         <BloomDialog
-            cssForDialogContents={css`
-                background-color: white;
+            css={css`
+                background-color: #fbf8ff;
             `}
             {...propsForBloomDialog}
             onClose={closeDialog}
