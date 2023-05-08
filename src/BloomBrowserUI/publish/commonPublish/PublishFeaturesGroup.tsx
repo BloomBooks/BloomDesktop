@@ -22,6 +22,7 @@ import { MotionIcon } from "../../react_components/icons/MotionIcon";
 import { ComicIcon } from "../../react_components/icons/ComicIcon";
 import { VisuallyImpairedIcon } from "../../react_components/icons/VisuallyImpairedIcon";
 import { BloomCheckbox } from "../../react_components/BloomCheckBox";
+import { useEnterpriseAvailable } from "../../react_components/requiresBloomEnterprise";
 
 export const PublishFeaturesGroup: React.FunctionComponent<{
     onChange?: () => void;
@@ -34,6 +35,7 @@ export const PublishFeaturesGroup: React.FunctionComponent<{
         "publish/visuallyImpairedEnabled",
         false
     );
+    const enterpriseAvailable = useEnterpriseAvailable();
     const [langs, setLangs] = React.useState<ILanguagePublishInfo[]>([]);
     React.useEffect(() => {
         get(
@@ -168,9 +170,19 @@ export const PublishFeaturesGroup: React.FunctionComponent<{
         "The book has activities",
         "PublishTab.Feature.Activities.Present"
     );
+
+    const enterpriseRequiredTitle = useL10n(
+        "Enterprise Required",
+        "Common.EnterpriseRequired"
+    );
+
     const activitiesTitle = hasActivities
-        ? hasActivitiesTitle
+        ? enterpriseAvailable
+            ? hasActivitiesTitle
+            : enterpriseRequiredTitle
         : noActivitiesTitle;
+
+    const checkTheActivityBox = hasActivities && enterpriseAvailable;
 
     const noComicTitle = useL10n(
         "No overlays that might make this a Comic book were found",
@@ -248,8 +260,8 @@ export const PublishFeaturesGroup: React.FunctionComponent<{
                     l10nKey="PublishTab.Activity"
                     icon={<ActivityIcon />}
                     iconScale={0.9}
-                    disabled={!hasActivities}
-                    checked={hasActivities}
+                    disabled={!checkTheActivityBox}
+                    checked={checkTheActivityBox}
                     onCheckChanged={() => {}}
                     hideBox={true}
                     tooltipContents={activitiesTitle}
