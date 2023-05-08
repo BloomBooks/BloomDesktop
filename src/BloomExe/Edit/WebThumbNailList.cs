@@ -111,12 +111,6 @@ namespace Bloom.Edit
 			_baseHtml = RobustFile.ReadAllText(frame, Encoding.UTF8).Replace("DarkGray", backColor);
 		}
 
-		public Func<IMenuItemAdder, bool> ContextMenuProvider
-		{
-			get { return _browser.ContextMenuProvider; }
-			set { _browser.ContextMenuProvider = value; }
-		}
-
 		protected bool ReallyDesignMode =>
 			(base.DesignMode || GetService(typeof(IDesignerHost)) != null) ||
 			(LicenseManager.UsageMode == LicenseUsageMode.Designtime);

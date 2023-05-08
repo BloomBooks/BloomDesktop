@@ -124,7 +124,6 @@ namespace Bloom.Edit
 
 			//we're giving it to the parent control through the TopBarControls property
 			Controls.Remove(_topBarPanel);
-			SetupBrowserContextMenu();
 			bookRenamedEvent.Subscribe((oldToNewPath) =>
 			{
 				// If the selected book is renamed, we should update our saved CurrentBookPath.
@@ -222,24 +221,6 @@ namespace Bloom.Edit
 #endif
 
 		public EditingModel Model => _model;
-
-		/// <summary>
-		/// Might add a menu item to the browser context menu.
-		/// If the current book is LockedDown, we don't add any text over picture options.
-		/// If we are in a "bloom-imageContainer" div the menu item will be to add a text box to the image.
-		/// If we are in a "bloom-textOverPicture" div the menu item will be to delete a text box from the image.
-		/// Otherwise no menu item is added.
-		/// </summary>
-		private void SetupBrowserContextMenu()
-		{
-			// "return false" means we don't want to override other menu items that might be added
-			// We might be able to remove doing this altogether. However, currently there is a subtle
-			// difference in behavior when ContextMenuProvider is non-null.
-			_browser1.ContextMenuProvider = (menu) =>
-			{
-				return false;
-			};
-		}
 
 		private void HandleControlKeyEvent(object keyData)
 		{
