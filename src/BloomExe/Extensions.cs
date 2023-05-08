@@ -31,7 +31,7 @@ namespace Bloom
 			return uri;
 		}
 
-		private static readonly char[] kDirectorySeparators = new char[] { '\\', '/' };
+		public static readonly char[] kDirectorySeparators = new char[] { '\\', '/' };
 
 		/// <summary>
 		/// Escapes a number of characters that need it for our url/http processing.
