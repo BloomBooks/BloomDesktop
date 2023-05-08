@@ -501,13 +501,15 @@ namespace Bloom.Book
 
 			// Read the old file and copy it to the new one, except for replacing the one page.
 			string tempPath = GetNameForATempFileInStorageFolder();
-			using (var reader = new StreamReader(new FileStream(PathToExistingHtml, FileMode.Open), Encoding.UTF8))
-			{
-				using (var writer = new StreamWriter(new FileStream(tempPath, FileMode.Create), Encoding.UTF8))
+			RetryUtility.Retry(() => {
+				using (var reader = new StreamReader(new FileStream(PathToExistingHtml, FileMode.Open), Encoding.UTF8))
 				{
-					ReplacePage(pageId, reader, writer, pageHtml);
+					using (var writer = new StreamWriter(new FileStream(tempPath, FileMode.Create), Encoding.UTF8))
+					{
+						ReplacePage(pageId, reader, writer, pageHtml);
+					}
 				}
-			}
+			});
 			watch.Stop();
 			TroubleShooterDialog.Report($"SaveForPageChanged took {watch.ElapsedMilliseconds} milliseconds");
 			ValidateSave(tempPath);

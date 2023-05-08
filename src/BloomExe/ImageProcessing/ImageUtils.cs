@@ -15,6 +15,7 @@ using SIL.IO;
 using SIL.PlatformUtilities;
 using SIL.Progress;
 using SIL.Windows.Forms.ImageToolbox;
+using SIL.Code;
 using TagLib;
 using TagLib.Png;
 using TagLib.Xmp;
@@ -1148,6 +1149,19 @@ namespace Bloom.ImageProcessing
 		public static Image GetImageFromFile(string path)
 		{
 			Debug.Assert(RobustFile.Exists(path), String.Format("{0} does not exist for ImageUtils.GetImageFromFile()?!", path));
+			return RetryUtility.Retry(() =>
+				GetImageFromFileInternal(path),
+				RetryUtility.kDefaultMaxRetryAttempts,
+				RetryUtility.kDefaultRetryDelay,
+				new HashSet<Type>
+				{
+					Type.GetType("System.IO.IOException"),
+					Type.GetType("System.Runtime.InteropServices.ExternalException")
+				});
+		}
+
+		private static Image GetImageFromFileInternal(string path)
+		{
 			using (var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
 			{
 				using (var image = new Bitmap(stream))
