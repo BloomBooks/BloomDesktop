@@ -104,16 +104,16 @@
         <note>The result should have a section in braces. This will become a hot link which will open a user interface that lets the user select a sign language.</note>
         <note>This is a tooltip.</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Feature.TallkingBook.NoRecordings" translate="no">
+      <trans-unit id="PublishTab.Feature.TalkingBook.NoRecordings" translate="no">
         <!-- added in 5.5 -->
         <source xml:lang="en">This is disabled because this book does not have any Talking Book recordings.</source>
-        <note>ID: PublishTab.Feature.TallkingBook.NoRecordings</note>
+        <note>ID: PublishTab.Feature.TalkingBook.NoRecordings</note>
         <note>This is a tooltip.</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Feature.TallkingBook.NoLanguagesSelected" translate="no">
+      <trans-unit id="PublishTab.Feature.TalkingBook.NoLanguagesSelected" translate="no">
         <!-- added in 5.5 -->
         <source xml:lang="en">This is disabled because no “Talking Book Languages” are selected.</source>
-        <note>ID: PublishTab.Feature.TallkingBook.NoLanguagesSelected</note>
+        <note>ID: PublishTab.Feature.TalkingBook.NoLanguagesSelected</note>
         <note>This is a tooltip.</note>
       </trans-unit>
       <trans-unit id="PublishTab.Feature.Vision.None" translate="no">

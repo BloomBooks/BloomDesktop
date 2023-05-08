@@ -88,11 +88,11 @@ export const PublishFeaturesGroup: React.FunctionComponent<{
     const couldBeTalkingBook = langs.some(item => item.containsAnyAudio);
     const NoRecordings = useL10n(
         "This is disabled because this book does not have any Talking Book recordings.",
-        "PublishTab.Feature.TallkingBook.NoRecordings"
+        "PublishTab.Feature.TalkingBook.NoRecordings"
     );
     const NoLanguagesSelected = useL10n(
         "This is disabled because no “Talking Book Languages” are selected.",
-        "PublishTab.Feature.TallkingBook.NoLanguagesSelected"
+        "PublishTab.Feature.TalkingBook.NoLanguagesSelected"
     );
     const talkingBookTooltip = isTalkingBook
         ? ""
