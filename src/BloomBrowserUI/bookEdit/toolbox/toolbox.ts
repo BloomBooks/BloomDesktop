@@ -1,6 +1,6 @@
 /// <reference path="../../typings/jqueryui/jqueryui.d.ts" />
 
-import "jquery-ui/jquery-ui-1.10.3.custom.min.js";
+import "../../modified_libraries/jquery-ui/jquery-ui-1.10.3.custom.min.js";
 import "../../lib/jquery.i18n.custom";
 import "../../lib/jquery.onSafe";
 import axios from "axios";

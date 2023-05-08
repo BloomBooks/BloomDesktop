@@ -66,14 +66,14 @@ namespace Bloom.Publish.BloomPub
 			// This is just for storing the user preference of method
 			// If we had a couple of these, we could just have a generic preferences api
 			// that browser-side code could use.
-			apiHandler.RegisterEndpointLegacy(kApiUrlPart + "method", request =>
+			apiHandler.RegisterEndpointHandler(kApiUrlPart + "method", request =>
 			{
 				if(request.HttpMethod == HttpMethods.Get)
 				{
 					var method = Settings.Default.PublishAndroidMethod;
 					if(!new string[]{"wifi", "usb", "file"}.Contains(method))
 					{
-						method = "wifi";
+						method = "file";
 					}
 					request.ReplyWithText(method);
 				}

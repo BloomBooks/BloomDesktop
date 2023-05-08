@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using Bloom.Book;
@@ -63,7 +63,7 @@ namespace Bloom.Publish.BloomPub
 		{
 			if (!(obj is BloomPubPublishSettings))
 				return false;
-			var other = (BloomPubPublishSettings) obj;
+			var other = (BloomPubPublishSettings)obj;
 			return LanguagesToInclude.SetEquals(other.LanguagesToInclude) && DistributionTag == other.DistributionTag
 				&& PublishAsMotionBookIfApplicable == other.PublishAsMotionBookIfApplicable;
 
@@ -112,7 +112,7 @@ namespace Bloom.Publish.BloomPub
 		private static HashSet<string> GetLanguagesToExclude(Dictionary<string, InclusionSetting> libraryDict)
 		{
 			ThrowIfLanguagesNotInitialized(libraryDict);
-			return new HashSet<string>(libraryDict.Where(kvp => !kvp.Value.IsIncluded()).Select(kvp =>kvp.Key));
+			return new HashSet<string>(libraryDict.Where(kvp => !kvp.Value.IsIncluded()).Select(kvp => kvp.Key));
 		}
 
 		private static void ThrowIfLanguagesNotInitialized(Dictionary<string, InclusionSetting> langDictionary)

@@ -19,11 +19,11 @@ import BloomSourceBubbles from "../sourceBubbles/BloomSourceBubbles";
 import BloomHintBubbles from "./BloomHintBubbles";
 import { initializeBubbleManager, theOneBubbleManager } from "./bubbleManager";
 import { showTopicChooserDialog } from "../TopicChooser/TopicChooserDialog";
-import "jquery-ui/jquery-ui-1.10.3.custom.min.js";
-import "jquery.hasAttr.js"; //reviewSlog for CenterVerticallyInParent
-import "jquery.qtip.js";
-import "jquery.qtipSecondary.js";
-import "long-press/jquery.longpress.js";
+import "../../modified_libraries/jquery-ui/jquery-ui-1.10.3.custom.min.js";
+import "./jquery.hasAttr.js"; //reviewSlog for CenterVerticallyInParent
+import "../../lib/jquery.qtip.js";
+import "../../lib/jquery.qtipSecondary.js";
+import "../../lib/long-press/jquery.longpress.js";
 import "jquery.hotkeys"; //makes the on(keydown work with keynames)
 import "../../lib/jquery.resize"; // makes jquery resize work on all elements
 import { getEditTabBundleExports } from "./bloomFrames";
@@ -1296,6 +1296,71 @@ export const disconnectForGarbageCollection = () => {
         $(this).remove();
     });
 };
+
+// These clipboard functions are implemented in Javascript because WebView2 doesn't seem to have
+// a C# api for doing them. I've made the exported functions synchronous because I'm not sure
+// what complications might come from calling an async function from C#. The implementations
+// mostly use clipboard API functions that are async, so those functions must be async.
+// We don't need to await them because nothing is using the result.
+// The buttons that implement clipboard operations are currently only in Edit mode, so
+// this is a reasonable place for this code. If we support them elsewhere, we'll have to
+// find a way to share the code (and call it when not part of the editTabBundle).
+export const copySelection = () => {
+    copyImpl();
+};
+
+async function copyImpl() {
+    const sel = document.getSelection();
+    if (!sel) return;
+    navigator.clipboard.writeText(sel.toString());
+}
+
+// See comment on copySelection
+export const cutSelection = () => {
+    cutSelectionImpl();
+};
+
+async function cutSelectionImpl() {
+    const sel = document.getSelection();
+    if (!sel) return;
+    await navigator.clipboard.writeText(sel.toString());
+    // Using ckeditor here because it's the only way I've found to integrate clipboard
+    // ops into an Undo stack that we can operate from an external button.
+    // We do a Save before and after to make sure that the cut is distinct from
+    // any other editing and that ckEditor actually has an item in its undo stack
+    // so that the Undo gets activated.
+    (<any>CKEDITOR.currentInstance).undoManager.save(true);
+    const range = CKEDITOR.currentInstance.getSelection().getRanges()[0];
+    range.deleteContents();
+    range.select(); // Select emptied range to place the caret in its place.
+    (<any>CKEDITOR.currentInstance).undoManager.save(true);
+    // This is a non-ckeditor way to perform the deletion, but doesn't integrate with Undo.
+    //sel.deleteFromDocument();
+}
+
+// See comment on copySelection
+export const pasteClipboardText = () => {
+    pasteImpl();
+};
+
+async function pasteImpl() {
+    // Using ckeditor here because it's the only way I've found to integrate clipboard
+    // ops into an Undo stack that we can operate from an external button.
+    // We do a Save before and after to make sure that the cut is distinct from
+    // any other editing and that ckEditor actually has an item in its undo stack
+    // so that the Undo gets activated.
+    const textToPaste = await navigator.clipboard.readText();
+    (<any>CKEDITOR.currentInstance).undoManager.save(true);
+    CKEDITOR.currentInstance.insertText(textToPaste);
+    (<any>CKEDITOR.currentInstance).undoManager.save(true);
+    // Works but isn't undoable.
+    //const sel = document.getSelection();
+    // if (sel) {
+    //     const range = sel.getRangeAt(0);
+    //     range.deleteContents();
+    //     range.insertNode(document.createTextNode(textToPaste));
+    // }
+}
 
 export function loadLongpressInstructions(jQuerySetOfMatchedElements) {
     // using axios directly because we already have a catch...though not obviously better than the Bloom Api one?

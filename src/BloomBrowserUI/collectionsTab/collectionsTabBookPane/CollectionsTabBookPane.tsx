@@ -61,7 +61,8 @@ export const CollectionsTabBookPane: React.FunctionComponent<{
                 setBookStatus(data.data as IBookTeamCollectionStatus);
             },
             err => {
-                // Something went wrong. Maybe not registered. Already reported to Sentry, we don't need
+                // Something went wrong. Maybe the user has not registered. Maybe the network has gone
+                // down. This error has already been reported to Sentry, and we don't need to do
                 // another 'throw' here, with less information. Displaying the message may tell the user
                 // something. I don't think it's worth localizing the fallback message here, which is even
                 // less likely to be seen.
@@ -70,7 +71,12 @@ export const CollectionsTabBookPane: React.FunctionComponent<{
                 const errorMessage =
                     err?.response?.statusText ??
                     "Bloom could not determine the status of this book";
-                setBookStatus({ ...bookStatus, error: errorMessage });
+
+                setBookStatus(prevBookStatus => ({
+                    ...prevBookStatus,
+                    disconnected: true,
+                    error: errorMessage
+                }));
             }
         );
     }, [selectedBookId, saveable, reload, reloadStatus]);

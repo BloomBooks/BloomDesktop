@@ -15,6 +15,9 @@ export interface IPageFrameExports {
     prepareToSavePage(): void;
     pageUnloading(): void;
     disconnectForGarbageCollection(): void;
+    copySelection(): void;
+    cutSelection(): void;
+    pasteClipboardText(): void;
     makeElement(
         html: string,
         parent?: JQuery,
@@ -43,6 +46,9 @@ import {
     userStylesheetContent,
     pageUnloading,
     disconnectForGarbageCollection,
+    copySelection,
+    cutSelection,
+    pasteClipboardText,
     makeElement,
     SetupElements,
     attachToCkEditor
@@ -53,6 +59,9 @@ export {
     userStylesheetContent,
     pageUnloading,
     disconnectForGarbageCollection,
+    copySelection,
+    cutSelection,
+    pasteClipboardText,
     makeElement,
     SetupElements,
     attachToCkEditor

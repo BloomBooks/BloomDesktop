@@ -8,7 +8,7 @@
         "test": "test"
     },
     "engines": {
-        "node": ">=16.13.0"
+        "node": ">=16.14.0"
     },
     "scripts": {
         "// COMMENTS: make the action a space rather than empty string so `yarn run` can list the scripts": " ",
@@ -24,7 +24,7 @@
         "// 'build:l10n': should be run after build.  (build-prod includes this functionality.)": " ",
         "build:l10n": "gulp build-l10n",
         "build:content": "cd ../content && npm run build",
-        "watchCode": "set NODE_ENV=debug&& webpack --watch",
+        "watchCode": "set NODE_ENV=debug&& webpack watch --mode development --progress ",
         "// You can use yarn link to symlink bloom-player. But also, bloom needs a copy in output/!": " ",
         "// note that ls -l node_modules | grep ^l will tell you what packages you are currently linking to": " ",
         "// note that this wants to be 'watch', but on windows cpx doesn't actually notice changes from a BP build, symlinked by yarn link": " ",
@@ -51,14 +51,15 @@
     "dependencies": {
         "@emotion/react": "^11.10.5",
         "@emotion/styled": "^11.10.5",
-        "@fortawesome/fontawesome-svg-core": "^1.2.17",
-        "@fortawesome/free-solid-svg-icons": "^5.8.1",
-        "@fortawesome/react-fontawesome": "^0.1.4",
+        "@fortawesome/fontawesome-svg-core": "^6.4.0",
+        "@fortawesome/free-solid-svg-icons": "^6.4.0",
+        "@fortawesome/react-fontawesome": "^0.2.0",
         "@mui/icons-material": "^5.11.0",
-        "@mui/material": "^5.11.4",
-        "@mui/styles": "^5.11.2",
+        "@mui/material": "^5.11.8",
+        "@mui/styles": "^5.11.7",
         "@nivo/core": "^0.80.0",
         "@nivo/scatterplot": "^0.80.0",
+        "@sillsdev/config-r": "^1.0.0-alpha.4",
         "@types/filesize": "^5.0.0",
         "@types/react-transition-group": "^4.4.1",
         "@use-it/event-listener": "^0.1.6",
@@ -192,9 +193,9 @@
         "url-loader": "^4.1.1",
         "webpack": "^5.75.0",
         "webpack-build-notifier": "^2.3.0",
-        "webpack-cli": "^4.10.0",
-        "webpack-merge": "^5.7.3",
-        "webpack-stream": "^6.1.1",
+        "webpack-cli": "^5.0.1",
+        "webpack-merge": "^5.8.0",
+        "webpack-stream": "^7.0.0",
         "yarn": "^1.22.19"
     },
     "lint-staged": {
@@ -211,7 +212,7 @@
     },
     "packageManager": "yarn@1.22.19",
     "volta": {
-        "node": "16.13.0",
+        "node": "16.14.0",
         "yarn": "1.22.19"
     }
 }

@@ -6,7 +6,7 @@ import {
     IColorPickerDialogProps,
     showColorPickerDialog as doShowColorPickerDialog
 } from "../react_components/color-picking/colorPickerDialog";
-import "jquery-ui/jquery-ui-1.10.3.custom.min.js"; //for dialog()
+import "../modified_libraries/jquery-ui/jquery-ui-1.10.3.custom.min.js"; //for dialog()
 
 export interface IEditViewFrameExports {
     showDialog(dialogContents: string | JQuery, options: any): JQuery;
@@ -23,7 +23,7 @@ export interface IEditViewFrameExports {
 }
 
 export function SayHello() {
-    alert("Hello from editViewFrame");
+    alert("Hello!! from editViewFrame");
 }
 
 // These functions should be available for calling by non-module code (such as C# directly)
@@ -34,12 +34,13 @@ import { getEditablePageBundleExports } from "./js/bloomFrames";
 export { getEditablePageBundleExports };
 import { showPageChooserDialog } from "../pageChooser/PageChooserDialog";
 export { showPageChooserDialog };
-import "errorHandler";
+import "../lib/errorHandler";
 import { reportError } from "../lib/errorHandler";
 import { IToolboxFrameExports } from "./toolbox/toolboxBootstrap";
 import { showCopyrightAndLicenseInfoOrDialog } from "./copyrightAndLicense/CopyrightAndLicenseDialog";
 import { showTopicChooserDialog } from "./TopicChooser/TopicChooserDialog";
 import ReactDOM = require("react-dom");
+import { showBookSettingsDialog } from "./bookSettings/BookSettingsDialog";
 import { FunctionComponentElement } from "react";
 export { getImageUrlFromImageButton } from "./js/bloomImages";
 
@@ -167,7 +168,7 @@ export function canUndo(): string {
     if (contentWindow && contentWindow.ckeditorCanUndo()) {
         return "yes";
     }
-    return "fail"; //go ask the browser
+    return "fail"; //can't undo in Javascript, possibly something in C# can?
 }
 
 //noinspection JSUnusedGlobalSymbols
@@ -209,4 +210,7 @@ export function showCopyrightAndLicenseDialog(imageUrl?: string) {
 
 export function showEditViewTopicChooserDialog() {
     showTopicChooserDialog();
+}
+export function showEditViewBookSettingsDialog() {
+    showBookSettingsDialog();
 }

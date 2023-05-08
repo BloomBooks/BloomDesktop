@@ -340,6 +340,28 @@ export const ProgressDialog: React.FunctionComponent<IProgressDialogProps> = pro
     );
 };
 
+// Same as IProgressDialogProps, except:
+//   * Makes dialogEnvironment required
+//   * Removes the open prop
+type IWinFormsProgressDialogProps = Omit<
+    IProgressDialogProps &
+        Required<Pick<IProgressDialogProps, "dialogEnvironment">>,
+    "open"
+>;
+
+/**
+ * Designed to be used in conjunction with WireUpForWinforms, which sets initiallyOpen to true.
+ * The open state of ProgressDialog is determined solely from {dialogEnvironment.initiallyOpen}
+ */
+export const WinFormsProgressDialog: React.FunctionComponent<IWinFormsProgressDialogProps> = props => {
+    return (
+        <ProgressDialog
+            {...props}
+            open={props.dialogEnvironment.initiallyOpen}
+        />
+    );
+};
+
 /**
  * The schema for the websocket data that EmbeddedProgressDialog is expecting
  * Should stay in sync with whatever props JSON that BrowserProgressDialog.cs in API land might generate
@@ -413,4 +435,4 @@ export const EmbeddedProgressDialog: React.FunctionComponent<{
     );
 };
 
-WireUpForWinforms(ProgressDialog);
+WireUpForWinforms(WinFormsProgressDialog);

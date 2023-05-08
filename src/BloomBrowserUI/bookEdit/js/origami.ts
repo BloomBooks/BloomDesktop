@@ -1,7 +1,7 @@
-//not yet: neither bloomEditing nor this is yet a module import {SetupImage} from './bloomEditing';
+// not yet: neither bloomEditing nor this is yet a module import {SetupImage} from './bloomEditing';
 ///<reference path="../../lib/split-pane/split-pane.d.ts" />
 import { SetupImage } from "./bloomImages";
-import "split-pane/split-pane.js";
+import "../../lib/split-pane/split-pane.js";
 import TextBoxProperties from "../TextBoxProperties/TextBoxProperties";
 import { get, post, postThatMightNavigate } from "../../utils/bloomApi";
 import { ElementQueries } from "css-element-queries";
