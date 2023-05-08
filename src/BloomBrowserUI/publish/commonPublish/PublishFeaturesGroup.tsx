@@ -23,6 +23,7 @@ import { ComicIcon } from "../../react_components/icons/ComicIcon";
 import { VisuallyImpairedIcon } from "../../react_components/icons/VisuallyImpairedIcon";
 import { BloomCheckbox } from "../../react_components/BloomCheckBox";
 import { BloomTooltip } from "../../react_components/BloomToolTip";
+import { useEnterpriseAvailable } from "../../react_components/requiresBloomEnterprise";
 
 export const PublishFeaturesGroup: React.FunctionComponent<{
     onChange?: () => void;
@@ -35,6 +36,7 @@ export const PublishFeaturesGroup: React.FunctionComponent<{
         "publish/visuallyImpairedEnabled",
         false
     );
+    const enterpriseAvailable = useEnterpriseAvailable();
     const [langs, setLangs] = React.useState<ILanguagePublishInfo[]>([]);
     React.useEffect(() => {
         get(
@@ -169,9 +171,19 @@ export const PublishFeaturesGroup: React.FunctionComponent<{
         "This book has interactive activities.",
         "PublishTab.Feature.Activities.Present"
     );
+
+    const enterpriseRequiredTooltip = useL10n(
+        "Enterprise Required",
+        "Common.EnterpriseRequired"
+    );
+
     const activitiesTooltip = hasActivities
-        ? hasActivitiesTooltip
+        ? enterpriseAvailable
+            ? hasActivitiesTooltip
+            : enterpriseRequiredTooltip
         : noActivitiesTooltip;
+
+    const checkTheActivityBox = hasActivities && enterpriseAvailable;
 
     const noComicTooltip = useL10n(
         "This is disabled because this book does not have any overlay elements that qualify as “comic-like”, such as speech bubbles.",
@@ -257,8 +269,8 @@ export const PublishFeaturesGroup: React.FunctionComponent<{
                         l10nKey="PublishTab.Activity"
                         icon={<ActivityIcon />}
                         iconScale={0.9}
-                        disabled={!hasActivities}
-                        checked={hasActivities}
+                        disabled={!checkTheActivityBox}
+                        checked={checkTheActivityBox}
                         onCheckChanged={() => {}}
                         hideBox={true}
                     />
