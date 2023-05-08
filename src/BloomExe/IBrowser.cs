@@ -83,32 +83,7 @@ namespace Bloom
 		/// </summary>
 		public Func<IMenuItemAdder, bool> ContextMenuProvider { get; set; }
 
-		// To allow Typescript code to implement right-click, we'll do our special developer menu
-		// only if the control key is down. Though, if ContextMenuProvider is non-null, we'll assume
-		// C# is supposed to handle the context menu here.
-		virtual protected bool WantNativeMenu
-		{
-			get
-			{
-				return (Control.ModifierKeys & Keys.Control) != Keys.Control && ContextMenuProvider == null;
-			}
-		}
-
-		protected bool WantDebugMenuItems
-		{
-			get
-			{
-#if DEBUG
-				var addDebuggingMenuItems = true;
-#else
-			var debugBloom = Environment.GetEnvironmentVariable("DEBUGBLOOM")?.ToLowerInvariant();
-			var addDebuggingMenuItems =
- !String.IsNullOrEmpty(debugBloom) && debugBloom != "false" && debugBloom != "no" && debugBloom != "off";
-#endif
-				return addDebuggingMenuItems || ApplicationUpdateSupport.IsDevOrAlpha;
-			}
-
-		}
+		protected bool WantDebugMenuItems => ApplicationUpdateSupport.IsDevOrAlpha || ((ModifierKeys & Keys.Control) == Keys.Control);
 
 		public abstract void CopySelection();
 		public abstract void SelectAll();
@@ -398,46 +373,38 @@ namespace Bloom
 
 		protected void AdjustContextMenu(IMenuItemAdder adder)
 		{
-			if (WantNativeMenu)
-				return;
-			bool addedBrowserMenuItem = false;
 			Debug.Assert(!InvokeRequired);
 
 			ContextMenuLocation = PointToClient(Cursor.Position);
+
 			if (ContextMenuProvider != null)
 			{
 				var replacesStdMenu = ContextMenuProvider(adder);
-				if (WantDebugMenuItems || ((ModifierKeys & Keys.Control) == Keys.Control))
-				{
-					AddOpenPageInBrowserItem(adder);
-					addedBrowserMenuItem = true;
-				}
 
-				if (replacesStdMenu)
-					return;
+				// Currently, this whole if condition is useless and we could just remove it.
+				// But some day we may reinstitute non-debug, standard menu items, and then
+				// this logic will be needed.
+				//if (replacesStdMenu)
+				//{
+				//	AddOtherMenuItemsForDebugging(adder);
+				//	return;
+				//}
 			}
 
-			if (!addedBrowserMenuItem)
-				AddOpenPageInBrowserItem(adder);
-			// Allow debugging entries on any alpha builds as well as any debug builds.
-			if (WantDebugMenuItems)
-				AddOtherMenuItemsForDebugging(adder);
-		}
+			// Here is where we would add the standard menu items, if we had any.
 
-		private void AddOpenPageInBrowserItem(IMenuItemAdder adder)
-		{
-			adder.Add(
-				"Open Page in Edge",// dev only, no need to localize
-				OnOpenPageInEdge);
+			AddOtherMenuItemsForDebugging(adder);
 		}
 
 		private void AddOtherMenuItemsForDebugging(IMenuItemAdder adder)
 		{
-			adder.Add((string)"Refresh", (EventHandler)OnRefresh);
+			if (!WantDebugMenuItems)
+				return;
+
+			adder.Add(
+				"Open Page in Edge", // dev only, no need to localize
+				OnOpenPageInEdge);
 		}
-
-		public abstract void OnRefresh(object sender, EventArgs e);
-
 
 		public abstract void SaveDocument(string path);
 

@@ -13,10 +13,11 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using Sentry.Protocol;
 using SIL.Windows.Forms.Miscellaneous;
 using Bloom.Edit;
 using SIL.Reporting;
+using SIL.Extensions;
+using System.Linq;
 
 namespace Bloom
 {
@@ -81,17 +82,12 @@ namespace Bloom
 
 		private void ContextMenuRequested(object sender, CoreWebView2ContextMenuRequestedEventArgs e)
 		{
-			// 		Name	"inspectElement"	string
-			//"reload"
-			if (WantNativeMenu)
-				return;
 			var wantDebug = WantDebugMenuItems;
-			// Remove built-in items (except a couple of useful ones, if we're in a debugging context)
+			// Remove built-in items (except "Inspect" and "Refresh", if we're in a debugging context)
 			var menuList = e.MenuItems;
-
 			for (int index = 0; index < menuList.Count;)
 			{
-				if (wantDebug && (menuList[index].Name == "inspectElement"))
+				if (wantDebug && new string[] { "inspectElement", "reload" }.Contains(menuList[index].Name))
 				{
 					index++;
 					continue;
@@ -99,11 +95,6 @@ namespace Bloom
 				menuList.RemoveAt(index);
 			}
 			AdjustContextMenu(new WebViewItemAdder(_webview, menuList));
-		}
-
-		public override void OnRefresh(object sender, EventArgs e)
-		{
-			_webview.Reload();
 		}
 
 		private static bool _clearedCache;
