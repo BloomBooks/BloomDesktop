@@ -153,9 +153,9 @@ namespace Bloom.Api
 			_requestInfo.WriteCompleteOutput(JsonConvert.SerializeObject(objectToMakeJson));
 		}
 
-		public void ReplyWithImage(string imagePath)
+		public void ReplyWithImage(string imagePath, bool dontCache = false)
 		{
-			_requestInfo.ReplyWithImage(imagePath);
+			_requestInfo.ReplyWithImage(imagePath, dontCache: dontCache);
 		}
 
 		public void ReplyWithStreamContent(Stream input, string responseType)
