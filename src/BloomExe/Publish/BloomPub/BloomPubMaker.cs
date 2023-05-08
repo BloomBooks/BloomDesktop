@@ -235,7 +235,7 @@ BookServer bookServer,
 				// Other fonts that BloomDesktop may serve need to be embedded in the .bloompub file.
 				wantFontFaceDeclarations: false);
 			
-			modifiedBook.SetMotionAttributesOnBody(settings?.Motion == true && modifiedBook.HasMotionPages);
+			modifiedBook.SetMotionAttributesOnBody(settings?.PublishAsMotionBookIfApplicable == true && modifiedBook.HasMotionPages);
 
 			// Although usually tentativeBookFolderPath and modifiedBook.FolderPath are the same, there are some exceptions
 			// In the process of bringing a book up-to-date (called by MakeDeviceXmatterTempBook), the folder path may change.

@@ -4378,7 +4378,7 @@ namespace Bloom.Book
 		/// </summary>
 		private void UpdateMotionFeature()
 		{
-			BookInfo.MetaData.Feature_Motion = HasMotionPages && BookInfo.PublishSettings.BloomPub.Motion;
+			BookInfo.MetaData.Feature_Motion = HasMotionPages && BookInfo.PublishSettings.BloomPub.PublishAsMotionBookIfApplicable;
 		}
 
 		/// <summary>

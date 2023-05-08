@@ -315,7 +315,7 @@ namespace BloomTests.Publish
 						@"this is a fake for testing");
 					File.WriteAllText(Path.Combine(audioFolder, "i2335f5ae-2cff-4029-a85c-951cc33256a4.mp3"),
 						@"this is a fake for testing");
-					testBook.BookInfo.PublishSettings.BloomPub.Motion = true;
+					testBook.BookInfo.PublishSettings.BloomPub.PublishAsMotionBookIfApplicable = true;
 					testBook.BookInfo.Save();
 				},
 				assertionsOnResultingHtmlString: html =>
@@ -1380,7 +1380,7 @@ namespace BloomTests.Publish
 
 			using (var bloomdTempFile = TempFile.WithFilenameInTempFolder(testBook.Title + BloomPubMaker.BloomPubExtensionWithDot))
 			{
-				var bloomPubPublishSettings = new BloomPubPublishSettings() { Motion = testBook.BookInfo.PublishSettings.BloomPub.Motion};
+				var bloomPubPublishSettings = new BloomPubPublishSettings() { PublishAsMotionBookIfApplicable = testBook.BookInfo.PublishSettings.BloomPub.PublishAsMotionBookIfApplicable};
 				if (languagesToInclude != null)
 					bloomPubPublishSettings.LanguagesToInclude = languagesToInclude;
 				BloomPubMaker.CreateBloomPub(settings: bloomPubPublishSettings, outputPath: bloomdTempFile.Path, bookFolderPath: testBook.FolderPath, bookServer: _bookServer,
