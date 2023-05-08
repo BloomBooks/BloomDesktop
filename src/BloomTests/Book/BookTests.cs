@@ -3839,7 +3839,7 @@ namespace BloomTests.Book
 </html>");
 
 			var book = CreateBook();
-			book.BookInfo.PublishSettings.BloomPub.Motion = true;
+			book.BookInfo.PublishSettings.BloomPub.PublishAsMotionBookIfApplicable = true;
 
 			book.UpdateMetadataFeatures(false, false, null);
 

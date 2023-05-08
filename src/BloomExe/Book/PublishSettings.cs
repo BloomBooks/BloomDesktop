@@ -132,7 +132,7 @@ namespace Bloom.Book
 					{
 						if (features != null && features.Any(f => f == "motion"))
 						{
-							settings.BloomPub.Motion = true;
+							settings.BloomPub.PublishAsMotionBookIfApplicable = true;
 							settings.AudioVideo.Motion = true; // something of a guess
 						}
 					}
@@ -294,7 +294,7 @@ namespace Bloom.Book
 			TextLangs = new Dictionary<string, InclusionSetting>();
 			AudioLangs = new Dictionary<string, InclusionSetting>();
 			SignLangs = new Dictionary<string, InclusionSetting>();
-			Motion = true; // Default for new books (ignored if they have no motion settings)
+			PublishAsMotionBookIfApplicable = true; // Default for new books (ignored if they have no motion settings)
 		}
 
 		// Whether to publish the book as a motion book, that can be rotated
@@ -303,7 +303,7 @@ namespace Bloom.Book
 		// in that case the corresponding feature will not be set, and of course
 		// the book can't actually be a motion book.
 		[JsonProperty("motion")]
-		public bool Motion;
+		public bool PublishAsMotionBookIfApplicable;
 
 		/// <summary>
 		/// This used to correspond to the checkbox values of which languages the user wants to publish the text for.

@@ -223,11 +223,11 @@ namespace Bloom.web.controllers
 			apiHandler.RegisterBooleanEndpointHandler("publish/motionBookMode",
 				readRequest =>
 				{
-					return readRequest.CurrentBook.HasMotionPages && readRequest.CurrentBook.BookInfo.PublishSettings.BloomPub.Motion;
+					return readRequest.CurrentBook.HasMotionPages && readRequest.CurrentBook.BookInfo.PublishSettings.BloomPub.PublishAsMotionBookIfApplicable;
 				},
 				(writeRequest, value) =>
 				{
-					writeRequest.CurrentBook.BookInfo.PublishSettings.BloomPub.Motion = value;
+					writeRequest.CurrentBook.BookInfo.PublishSettings.BloomPub.PublishAsMotionBookIfApplicable = value;
 					writeRequest.CurrentBook.BookInfo.SavePublishSettings();
 					_webSocketServer.SendEvent("publish", "motionChanged");
 				}
@@ -363,7 +363,7 @@ namespace Bloom.web.controllers
 				_lastSettings = _lastSettings.WithAllLanguages(allowedLanguages);
 			}
 
-			_lastSettings.Motion = forVideo ? request.CurrentBook.BookInfo.PublishSettings.AudioVideo.Motion : request.CurrentBook.BookInfo.PublishSettings.BloomPub.Motion;
+			_lastSettings.PublishAsMotionBookIfApplicable = forVideo ? request.CurrentBook.BookInfo.PublishSettings.AudioVideo.Motion : request.CurrentBook.BookInfo.PublishSettings.BloomPub.PublishAsMotionBookIfApplicable;
 			_lastSettings.WantPageLabels = forVideo;
 			// BloomPlayer is capable of skipping these, but they confuse the page list we use to populate
 			// the page-range control.

@@ -51,7 +51,7 @@ namespace BloomTests.Book
 			Assert.That(ps.AudioVideo.Motion, Is.True);
 			Assert.That(ps.AudioVideo.PageTurnDelay, Is.EqualTo(3500));
 			Assert.That(ps.AudioVideo.PlayerSettings, Is.EqualTo("{\"lang\":\"qaa\",\"imageDescriptions\":false}"));
-			Assert.That(ps.BloomPub.Motion, Is.True);
+			Assert.That(ps.BloomPub.PublishAsMotionBookIfApplicable, Is.True);
 			Assert.That(ps.BloomLibrary.TextLangs["de"], Is.EqualTo(InclusionSetting.ExcludeByDefault));
 			Assert.That(ps.BloomLibrary.TextLangs["en"], Is.EqualTo(InclusionSetting.Exclude));
 		}
@@ -69,7 +69,7 @@ namespace BloomTests.Book
 			Assert.That(bi.PublishSettings.AudioVideo.Motion, Is.False);
 			Assert.That(bi.PublishSettings.AudioVideo.PageTurnDelay, Is.EqualTo(3000));
 			Assert.That(bi.PublishSettings.AudioVideo.PlayerSettings, Is.EqualTo(""));
-			Assert.That(bi.PublishSettings.BloomPub.Motion, Is.True);
+			Assert.That(bi.PublishSettings.BloomPub.PublishAsMotionBookIfApplicable, Is.True);
 			Assert.That(bi.PublishSettings.BloomLibrary.TextLangs, Is.Not.Null);
 			Assert.That(bi.PublishSettings.BloomPub.TextLangs, Is.Not.Null);
 			Assert.That(bi.PublishSettings.BloomLibrary.AudioLangs, Is.Not.Null);
@@ -126,7 +126,7 @@ namespace BloomTests.Book
 			Assert.That(ps.AudioVideo.PageTurnDelay, Is.EqualTo(2500));
 			Assert.That(ps.AudioVideo.PlayerSettings, Is.EqualTo("{\"lang\":\"fr\",\"imageDescriptions\":true}"));
 
-			Assert.That(ps.BloomPub.Motion, Is.True);
+			Assert.That(ps.BloomPub.PublishAsMotionBookIfApplicable, Is.True);
 			Assert.That(ps.BloomPub.TextLangs["baa"], Is.EqualTo(InclusionSetting.Include));
 			Assert.That(ps.BloomPub.TextLangs["es"], Is.EqualTo(InclusionSetting.Exclude));
 			Assert.That(ps.BloomPub.AudioLangs["baa"], Is.EqualTo(InclusionSetting.IncludeByDefault));

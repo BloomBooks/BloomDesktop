@@ -163,7 +163,7 @@ namespace Bloom.Publish.BloomPub
 			apiHandler.RegisterBooleanEndpointHandler(kApiUrlPart + "canRotate",
 				request =>
 				{
-					return request.CurrentBook.BookInfo.PublishSettings.BloomPub.Motion && request.CurrentBook.HasMotionPages;
+					return request.CurrentBook.BookInfo.PublishSettings.BloomPub.PublishAsMotionBookIfApplicable && request.CurrentBook.HasMotionPages;
 				},
 				null, // no write action
 				false,

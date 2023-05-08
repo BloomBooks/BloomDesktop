@@ -55,7 +55,7 @@ namespace Bloom.Publish.BloomPub
 		// Note: rather than a default of false, this should normally be set to the PublishSettings.BloomPub.Motion
 		// value stored in the book's BookInfo. This happens automatically if creating one using ForBloomInfo.
 		// If you want a different value, for example, AudioVideo.Settings, be sure to set that up.
-		public bool Motion;
+		public bool PublishAsMotionBookIfApplicable;
 
 		public ImagePublishSettings ImagePublishSettings { get; set; }
 
@@ -65,7 +65,7 @@ namespace Bloom.Publish.BloomPub
 				return false;
 			var other = (BloomPubPublishSettings)obj;
 			return LanguagesToInclude.SetEquals(other.LanguagesToInclude) && DistributionTag == other.DistributionTag
-				&& Motion == other.Motion;
+				&& PublishAsMotionBookIfApplicable == other.PublishAsMotionBookIfApplicable;
 
 			// REVIEW: why wasn't AudioLanguagesToExclude included here?
 		}
@@ -86,7 +86,7 @@ namespace Bloom.Publish.BloomPub
 
 		public override int GetHashCode()
 		{
-			return LanguagesToInclude.GetHashCode() + DistributionTag.GetHashCode() + (Motion ? 1 : 0);
+			return LanguagesToInclude.GetHashCode() + DistributionTag.GetHashCode() + (PublishAsMotionBookIfApplicable? 1 : 0);
 
 			// REVIEW: why wasn't AudioLanguagesToExclude included here?
 		}
@@ -160,7 +160,7 @@ namespace Bloom.Publish.BloomPub
 				LanguagesToInclude = languagesToInclude,
 				AudioLanguagesToExclude = audioLanguagesToExclude,
 				// All the paths that use this are making settings for BloomPub, not Video.
-				Motion = bookInfo.PublishSettings.BloomPub.Motion,
+				PublishAsMotionBookIfApplicable = bookInfo.PublishSettings.BloomPub.PublishAsMotionBookIfApplicable,
 				ImagePublishSettings = bookInfo.PublishSettings.BloomPub.ImageSettings
 			};
 		}
