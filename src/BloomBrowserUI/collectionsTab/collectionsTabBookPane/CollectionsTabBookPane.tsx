@@ -71,14 +71,15 @@ export const CollectionsTabBookPane: React.FunctionComponent<{
                 const errorMessage =
                     err?.response?.statusText ??
                     "Bloom could not determine the status of this book";
-                setBookStatus({
-                    ...bookStatus,
+
+                setBookStatus(prevBookStatus => ({
+                    ...prevBookStatus,
                     disconnected: true,
                     error: errorMessage
-                });
+                }));
             }
         );
-    }, [selectedBookId, saveable, reload, reloadStatus, bookStatus]);
+    }, [selectedBookId, saveable, reload, reloadStatus]);
 
     const canMakeBook = collectionKind != "main";
     // History, and thus the tab controls, are only relevant if there's a selected book
