@@ -413,6 +413,7 @@
     <Compile Include="ErrorReporter\IBloomErrorReporter.cs" />
     <Compile Include="ErrorReporter\AllowSendReport.cs" />
     <Compile Include="ErrorReporter\NotifyUserOfProblemSettings.cs" />
+    <Compile Include="ToPalaso\RobustImageIO.cs" />
     <Compile Include="Utils\AsyncUtil.cs" />
     <Compile Include="WebView2Browser.cs" Condition="'$(OS)'=='Windows_NT'">
       <SubType>UserControl</SubType>
@@ -1215,7 +1216,7 @@
     <Compile Include="FontProcessing\FontsApi.cs" />
   </ItemGroup>
   <ItemGroup>
-	  <None Include="Resources\current-service-urls.json" />
+    <None Include="Resources\current-service-urls.json" />
     <None Include="Resources\Logo27x32.png" />
   </ItemGroup>
   <ItemGroup>

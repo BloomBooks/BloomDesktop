@@ -326,7 +326,7 @@ namespace Bloom.Book
 			{
 				try
 				{
-					image = ImageUtils.GetImageFromFile(path);
+					image = ToPalaso.RobustImageIO.GetImageFromFile(path);
 					return true;
 				}
 				catch (Exception e) // If that file became corrupted, we would not want to lock user out of their book.

@@ -63,7 +63,7 @@ namespace BloomTests
 					var destDogImagePath = dest.Combine("dog.png");
 					File.WriteAllText(destDogImagePath, "old dog");
 					ChangePicture(dest.Path, dom, "two", original);
-					Assert.IsTrue(ImageUtils.GetImageFromFile(destDogImagePath).Width == kSampleImageDimension);
+					Assert.IsTrue(Bloom.ToPalaso.RobustImageIO.GetImageFromFile(destDogImagePath).Width == kSampleImageDimension);
 				}
 			}
 		}
