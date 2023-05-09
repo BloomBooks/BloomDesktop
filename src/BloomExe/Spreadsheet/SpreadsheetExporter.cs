@@ -524,6 +524,8 @@ namespace Bloom.Spreadsheet
 
 					if (IsDataDivImageElement(dataBookElement, dataBookLabel))
 					{
+						if (imageSrcAttribute.Length > 0)
+							UrlPathString.GetFullyDecodedPath(bookFolderPath, ref imageSrcAttribute);
 						if (imageSrcAttribute.Length > 0
 							&& dataBookElement.InnerText.Trim().Length > 0
 							&& !imageSrcAttribute.Equals(dataBookElement.InnerText.Trim()))
