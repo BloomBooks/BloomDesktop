@@ -958,6 +958,19 @@ namespace Bloom.Edit
 			if (_currentlyDisplayedBook != null)
 			{
 				ToolboxView.SaveToolboxSettings(_currentlyDisplayedBook, data);
+				EnsureLevelAttrCorrect();
+			}
+		}
+
+		private void EnsureLevelAttrCorrect()
+		{
+			var currentLevel = _domForCurrentPage.Body.Attributes["data-leveledreaderlevel"]?.Value;
+			var correctLevel = _currentlyDisplayedBook.BookInfo.MetaData.LeveledReaderLevel.ToString();
+			if (correctLevel != currentLevel)
+			{
+				SaveNow();
+				_currentlyDisplayedBook.OurHtmlDom.Body.SetAttribute("data-leveledreaderlevel", correctLevel);
+				RethinkPageAndReloadIt();
 			}
 		}
 
