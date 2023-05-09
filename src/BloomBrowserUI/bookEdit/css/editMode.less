@@ -49,8 +49,16 @@ body {
     background-color: @bloom-darkestBackground;
     /* This works with a transform:scale style added in Javascript to allow zooming just the main page*/
     transform-origin: top left;
-    /* This works around a bug in Gecko29 and should be removed when we upgrade. It prevents redraw errors during crtl-wheel zooming*/
+    // This was marked as working around a bug in Geckofx and that it should be removed when we weren't on
+    // Geckofx anymore. However, its purpose is to keep the browser from having redraw errors during
+    // Ctrl + mousewheel zooming and I saw some errors doing that, so I left it here.
     transition: transform 20ms;
+}
+
+// This rule fixes a long-standing bug where scaling > 100% automatically produced a horizontal scrollbar,
+// even when unnecessary. (BL-11640)
+#page-scaling-container {
+    width: fit-content;
 }
 
 // See comments on .bloom-mediaBox in basePage.less for a description of the mediaBox.
