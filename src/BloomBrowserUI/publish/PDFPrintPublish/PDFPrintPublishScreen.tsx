@@ -69,14 +69,7 @@ export const PDFPrintPublishScreen = () => {
     const iframeRef = useRef<HTMLIFrameElement>(null);
 
     const progressHeader = useL10n("Progress", "Common.Progress");
-    const formatModeText = useL10n(
-        "Bloom can format your PDF in several ways.",
-        "PublishTab.PdfMaker.ClickToStart"
-    );
-    const chooseModeText = useL10n(
-        "Choose one here:",
-        "PublishTab.PdfMaker.ClickToStart2"
-    );
+
     const [isProgressDialogOpen, setIsProgressDialogOpen] = useState(false);
 
     const settingsHelp = bookletPrintHelp?.map((help, index) => (
@@ -119,7 +112,7 @@ export const PDFPrintPublishScreen = () => {
             >
                 <StyledEngineProvider injectFirst>
                     <ThemeProvider theme={darkTheme}>
-                        {path ? (
+                        {path && (
                             <iframe
                                 ref={iframeRef}
                                 css={css`
@@ -133,55 +126,6 @@ export const PDFPrintPublishScreen = () => {
                                 `}
                                 src={path}
                             />
-                        ) : (
-                            <div
-                                css={css`
-                                    background-color: ${kBannerGray};
-                                    display: flex;
-                                    flex: 1;
-                                `}
-                            >
-                                <div
-                                    css={css`
-                                        display: flex;
-                                        flex: 1;
-                                        flex-direction: row;
-                                        align-items: center;
-                                        justify-content: center;
-                                        padding: 0 20px 75px;
-                                        max-height: 530px; // Keep the text and arrow up in the options
-                                    `}
-                                >
-                                    <div
-                                        css={css`
-                                            display: flex;
-                                            flex-direction: column;
-                                        `}
-                                    >
-                                        <Typography
-                                            color="primary"
-                                            fontSize={42}
-                                            fontWeight="bold"
-                                        >
-                                            {formatModeText}
-                                        </Typography>
-                                        <Typography
-                                            color="primary"
-                                            fontSize={42}
-                                            fontWeight="bold"
-                                        >
-                                            {chooseModeText}
-                                        </Typography>{" "}
-                                    </div>
-                                    <ArrowForwardRounded
-                                        color="primary"
-                                        fontWeight="bold"
-                                        css={css`
-                                            font-size: 90pt;
-                                        `}
-                                    />
-                                </div>
-                            </div>
                         )}
                     </ThemeProvider>
                 </StyledEngineProvider>

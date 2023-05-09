@@ -5,7 +5,7 @@ import * as React from "react";
 import { useEffect, useState } from "react";
 
 import { kMutedTextGray } from "../../bloomMaterialUITheme";
-import { NoteBox } from "../../react_components/BloomDialog/commonDialogComponents";
+import { NoteBox } from "../../react_components/boxes";
 import { Div } from "../../react_components/l10nComponents";
 import { BloomCheckbox } from "../../react_components/BloomCheckBox";
 import { MuiTextField } from "../../react_components/muiTextField";

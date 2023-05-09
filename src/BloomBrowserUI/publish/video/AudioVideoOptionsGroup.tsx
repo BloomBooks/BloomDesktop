@@ -12,39 +12,24 @@ import "../../bookEdit/css/rc-slider-bloom.less";
 import { kBloomBlue, kSelectCss } from "../../bloomMaterialUITheme";
 import AudioIcon from "@mui/icons-material/VolumeUp";
 import { useEffect, useState } from "react";
-import { NoteBox } from "../../react_components/BloomDialog/commonDialogComponents";
-import { BloomTooltip } from "../../react_components/BloomToolTip";
+import { NoteBox } from "../../react_components/boxes";
 import { BloomCheckbox } from "../../react_components/BloomCheckBox";
 import { useSubscribeToWebSocketForObject } from "../../utils/WebSocketManager";
 import { IFormatDimensionsResponseEntry } from "./IFormatDimensionsResponseEntry";
+import { BloomTooltip } from "../../react_components/BloomToolTip";
+import { kBloomDisabledOpacity } from "../../utils/colorUtils";
 
 // The things that define each item in the Format menu
 interface IFormatItem {
     format: string; // to pass to bloomApi
     label: string;
     l10nKey: string; // for label
+    disabledL10nKey?: string; // for tooltip when disabled
     idealDimension: string; // like 1920x1080; assuming does not need localization
     actualDimension?: string | undefined; // like 1280x720; assuming does not need localization
     fileFormat: string; // like MP4; assuming does not need localization
     codec?: string | undefined; // like "H.264"; assuming does not need localization
     icon: React.ReactNode;
-}
-
-// Props for the VideoFormatOptions component, which displays an instance of IFormatItem
-interface IProps extends IFormatItem {
-    // The VideoFormatItem may (when hovered over) display a popup with more details.
-    // Usually the VFM controls for itself whether this is shown; but we also permit
-    // this behavior to work in the controlled component mode, where the client controls
-    // its visibility. Technically, the appearance of the popup is controlled by keeping
-    // track of which component it is anchored to (if visible), or storing a null if it
-    // isn't. If the component is controlled, the client provides changePopupAnchor to
-    // receive notification that the control wishes to change this (because it is hovered over),
-    // and popupAnchorElement to actually control the presence (and placement) of the popup.
-    // The client should normally change popupAnchorElement to whatever changePopupAnchor
-    // tell it to, but may also set it to null to force the popup closed. It probably doesn't
-    // make sense to set it to anything other than a value received from changePopupAnchor or null.
-    changePopupAnchor?: (anchor: HTMLElement | null) => void;
-    popupAnchorElement?: HTMLElement | null;
 }
 
 export const AudioVideoOptionsGroup: React.FunctionComponent<{
@@ -62,16 +47,6 @@ export const AudioVideoOptionsGroup: React.FunctionComponent<{
     const [motionEnabled] = useApiBoolean("publish/canHaveMotionMode", false);
 
     const [tooBigMsg, setTooBigMsg] = useState("");
-    // Manages visibility of the details popup for the main Format label (that shows in the
-    // control when the dropdown is closed).
-    const [
-        formatPopupAnchor,
-        setFormatPopupAnchor
-    ] = useState<HTMLElement | null>(null);
-    // Using this we make the appearance of the dropdown 'controlled', not because
-    // we want independent control over the dropdown, but so we can hide the popup details
-    // thing when we show the dropdown.
-    const [formatDropdownIsOpen, setFormatDropdownIsOpen] = useState(false);
 
     // When component is mounted, find out which formats should be disabled, then update the state.
     useEffect(() => {
@@ -176,6 +151,7 @@ export const AudioVideoOptionsGroup: React.FunctionComponent<{
             format: "mp3",
             label: "Mp3 Audio",
             l10nKey: "PublishTab.RecordVideo.Mp3",
+            disabledL10nKey: "PublishTab.RecordVideo.Mp3.Disabled",
             idealDimension: "64 kbps", // For audio, use the bitrate instead.
             fileFormat: "MP3",
             codec: undefined,
@@ -297,14 +273,6 @@ export const AudioVideoOptionsGroup: React.FunctionComponent<{
                                     `}
                                     variant="outlined"
                                     value={props.format}
-                                    open={formatDropdownIsOpen}
-                                    onOpen={() => {
-                                        setFormatPopupAnchor(null);
-                                        setFormatDropdownIsOpen(true);
-                                    }}
-                                    onClose={() =>
-                                        setFormatDropdownIsOpen(false)
-                                    }
                                     onChange={e => {
                                         const newFormat = e.target
                                             .value as string;
@@ -317,13 +285,10 @@ export const AudioVideoOptionsGroup: React.FunctionComponent<{
                                         )!;
                                         return (
                                             <VideoFormatItem
+                                                disabled={disabledFormats.includes(
+                                                    item.format
+                                                )}
                                                 {...item}
-                                                popupAnchorElement={
-                                                    formatPopupAnchor
-                                                }
-                                                changePopupAnchor={
-                                                    setFormatPopupAnchor
-                                                }
                                             />
                                         );
                                     }}
@@ -333,11 +298,14 @@ export const AudioVideoOptionsGroup: React.FunctionComponent<{
                                             <MenuItem
                                                 value={item.format}
                                                 key={item.format}
-                                                disabled={disabledFormats.includes(
-                                                    item.format
-                                                )}
+                                                // disabled=... we are doing our own disabling because letting the MenuItem do it hides our tooltip
                                             >
-                                                <VideoFormatItem {...item} />
+                                                <VideoFormatItem
+                                                    disabled={disabledFormats.includes(
+                                                        item.format
+                                                    )}
+                                                    {...item}
+                                                />
                                             </MenuItem>
                                         );
                                     })}
@@ -461,15 +429,21 @@ export const AudioVideoOptionsGroup: React.FunctionComponent<{
     );
 };
 
-const VideoFormatItem: React.FunctionComponent<IProps> = props => {
+const VideoFormatItem: React.FunctionComponent<IFormatItem & {
+    disabled: boolean;
+}> = props => {
     const id = "mouse-over-popover-" + props.format;
 
     return (
         <BloomTooltip
             id={id}
-            popupAnchorElement={props.popupAnchorElement}
-            changePopupAnchor={props.changePopupAnchor}
-            tooltipContent={
+            placement="left"
+            showDisabled={props.disabled}
+            tipWhenDisabled={{
+                english: "unused",
+                l10nKey: props.disabledL10nKey!
+            }}
+            tip={
                 <div
                     css={css`
                         display: flex;
@@ -494,6 +468,7 @@ const VideoFormatItem: React.FunctionComponent<IProps> = props => {
                 css={css`
                     display: flex;
                     min-width: 155px;
+                    opacity: ${props.disabled ? kBloomDisabledOpacity : 1};
                 `}
             >
                 {props.icon}

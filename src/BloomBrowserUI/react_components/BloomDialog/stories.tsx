@@ -14,15 +14,17 @@ import { Button, CircularProgress } from "@mui/material";
 
 import PersonIcon from "@mui/icons-material/Person";
 import {
-    WarningBox,
     DialogCancelButton,
-    DialogCloseButton,
+    DialogCloseButton
+} from "./commonDialogComponents";
+import {
+    WarningBox,
     ErrorBox,
     NoteBoxSansBorder,
     NoteBox,
     BoxWithIconAndText,
     WaitBox
-} from "./commonDialogComponents";
+} from "../boxes";
 import {
     INumberChooserDialogProps,
     NumberChooserDialog

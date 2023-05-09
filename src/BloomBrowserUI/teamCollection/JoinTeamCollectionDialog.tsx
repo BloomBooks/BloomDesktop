@@ -13,15 +13,14 @@ import {
 import { useL10n } from "../react_components/l10nHooks";
 import {
     DialogCancelButton,
-    DialogReportButton,
-    ErrorBox,
-    NoteBoxSansBorder
+    DialogReportButton
 } from "../react_components/BloomDialog/commonDialogComponents";
 import { WireUpForWinforms } from "../utils/WireUpWinform";
 import {
     IBloomDialogEnvironmentParams,
     useSetupBloomDialog
 } from "../react_components/BloomDialog/BloomDialogPlumbing";
+import { ErrorBox, NoteBoxSansBorder } from "../react_components/boxes";
 
 // Six variations are all handled here.
 enum JoinCollectionState {
