@@ -60,6 +60,12 @@
         <note>ID: PublishTab.Feature.Activities.None</note>
         <note>This is a tooltip.</note>
       </trans-unit>
+      <trans-unit id="PublishTab.Feature.Activities.RequiresEnterprise" translate="no">
+        <!-- added in 5.5 -->
+        <source xml:lang="en">This is disabled because publishing interactive activities is a Bloom Enterprise feature.</source>
+        <note>ID: PublishTab.Feature.Activities.RequiresEnterprise</note>
+        <note>This is a tooltip.</note>
+      </trans-unit>
       <trans-unit id="PublishTab.Feature.Comic.None" translate="no">
         <!-- added in 5.5 -->
         <source xml:lang="en">This is disabled because this book does not have any overlay elements that qualify as “comic-like”, such as speech bubbles.</source>

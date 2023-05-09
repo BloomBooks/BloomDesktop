@@ -173,8 +173,8 @@ export const PublishFeaturesGroup: React.FunctionComponent<{
     );
 
     const enterpriseRequiredTooltip = useL10n(
-        "Enterprise Required",
-        "Common.EnterpriseRequired"
+        "This is disabled because publishing interactive activities is a Bloom Enterprise feature.",
+        "PublishTab.Feature.Activities.RequiresEnterprise"
     );
 
     const activitiesTooltip = hasActivities
