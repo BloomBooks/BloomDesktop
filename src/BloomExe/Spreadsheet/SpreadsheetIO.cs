@@ -186,7 +186,7 @@ namespace Bloom.Spreadsheet
 							}
 						}
 					}
-					catch (Exception)
+					catch (Exception ex)
 					{
 						string errorText;
 						if (!RobustFile.Exists(imageSrcPath))
@@ -202,7 +202,7 @@ namespace Bloom.Spreadsheet
 							errorText = "Bad image file";
 						}
 
-						progress?.MessageWithoutLocalizing(errorText + ": " + imageSrcPath);
+						progress?.MessageWithoutLocalizing(errorText + ": " + imageSrcPath + ": " + ex.Message, ProgressKind.Warning);
 						worksheet.Cells[r, imageThumbnailColumn + 1].Value = errorText;
 					}
 
