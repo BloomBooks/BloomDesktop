@@ -3974,6 +3974,11 @@ namespace Bloom.Book
 		/// </remarks>
 		public static string MakeVersionCode(string fileContent, string filePath = null)
 		{
+			return RetryUtility.Retry(() => MakeVersionCodeInternal(fileContent, filePath));
+		}
+
+		private static string MakeVersionCodeInternal(string fileContent, string filePath = null)
+		{
 			//var debugBldr = new StringBuilder();
 			//string debugPath = null;
 			var simplified = fileContent;

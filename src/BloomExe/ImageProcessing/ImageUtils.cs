@@ -15,6 +15,7 @@ using SIL.IO;
 using SIL.PlatformUtilities;
 using SIL.Progress;
 using SIL.Windows.Forms.ImageToolbox;
+using SIL.Code;
 using TagLib;
 using TagLib.Png;
 using TagLib.Xmp;
@@ -864,7 +865,7 @@ namespace Bloom.ImageProcessing
 							return null;
 						}
 						imageInfo.SetCurrentFilePath(destPath);
-						return GetImageFromFile(destPath);
+						return ToPalaso.RobustImageIO.GetImageFromFile(destPath);
 					}
 					else
 					{
@@ -1133,27 +1134,6 @@ namespace Bloom.ImageProcessing
 					RobustImageIO.SaveImage(safetyImage, temp.Path, jpgEncoder, parameters);
 				}
 				FileUtils.ReplaceFileWithUserInteractionIfNeeded(temp.Path, destinationPath, null);
-			}
-		}
-
-		/// <summary>
-		/// Read a bitmap image from a file.  The file must be known to exist before calling this method.
-		/// </summary>
-		/// <remarks>
-		/// Image.FromFile and Image.FromStream lock the file until the image is disposed of.  Therefore,
-		/// we copy the image and dispose of the original.  On Windows, Image.FromFile leaks file handles,
-		/// so we use FromStream instead.  For details, see the last answer to
-		/// http://stackoverflow.com/questions/16055667/graphics-drawimage-out-of-memory-exception
-		/// </remarks>
-		public static Image GetImageFromFile(string path)
-		{
-			Debug.Assert(RobustFile.Exists(path), String.Format("{0} does not exist for ImageUtils.GetImageFromFile()?!", path));
-			using (var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
-			{
-				using (var image = new Bitmap(stream))
-				{
-					return new Bitmap(image);
-				}
 			}
 		}
 

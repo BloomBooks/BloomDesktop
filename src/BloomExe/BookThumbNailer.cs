@@ -211,7 +211,7 @@ namespace Bloom
 			{
 				if (RuntimeImageProcessor.MakePngBackgroundTransparentIfDesirable(imageSrc, transparentImageFile))
 					imageSrc = transparentImageFile;
-				using (var coverImage = PalasoImage.FromFile(imageSrc))
+				using (var coverImage = PalasoImage.FromFileRobustly(imageSrc))
 				{
 					if (imageSrc == transparentImageFile || ImageUtils.HasTransparency(coverImage.Image))
 						coverImage.Image = MakeImageOpaque(coverImage.Image, book.GetCoverColor());
