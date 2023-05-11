@@ -275,7 +275,7 @@ export const PageChooserDialog: React.FunctionComponent<IPageChooserdialogProps>
         if (newCount === templateBookUrls.length) {
             setTemplateBooksLoadedCount(0);
             setAllPagesLoaded(true);
-        } else {
+        } else if (!allPagesLoaded) {
             setTemplateBooksLoadedCount(newCount);
         }
     };
