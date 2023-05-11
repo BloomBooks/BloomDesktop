@@ -31,6 +31,7 @@ import CloseIcon from "@mui/icons-material/Close";
 import FolderOpenOutlinedIcon from "@mui/icons-material/FolderOpenOutlined";
 import { kBloomBlue } from "../bloomMaterialUITheme";
 import { BloomTooltip } from "../react_components/BloomToolTip";
+import { Link } from "../react_components/link";
 
 const kResizerSize = 10;
 
@@ -495,18 +496,16 @@ export const CollectionsTabPane: React.FunctionComponent<{}> = () => {
                                 >
                                     {collectionComponents}
                                 </ShowAfterDelay>
-                                <Div
+                                <Link
                                     l10nKey="CollectionTab.AddSourceCollection"
                                     css={css`
                                         text-transform: uppercase;
-                                        color: ${kBloomBlue};
                                         padding-bottom: 10px;
-                                        cursor: pointer;
                                     `}
                                     onClick={() => addSourceCollection()}
                                 >
                                     Show another collection...
-                                </Div>
+                                </Link>
                             </div>
                         )}
                     </Transition>

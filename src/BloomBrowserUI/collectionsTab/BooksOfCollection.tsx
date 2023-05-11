@@ -146,10 +146,9 @@ export const BooksOfCollection: React.FunctionComponent<{
                 <Link
                     l10nKey="CollectionTab.BloomLibraryLinkLabel"
                     href="https://bloomlibrary.org"
+                    // Make this look like "Show another collection..."
                     css={css`
-                        // Make this look like "Show another collection..."
                         text-transform: uppercase;
-                        color: ${kBloomBlue};
                         font-size: initial;
                     `}
                 >
