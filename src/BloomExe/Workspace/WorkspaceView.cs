@@ -312,26 +312,7 @@ namespace Bloom.Workspace
 		public string GetCurrentSelectedBookInfo()
 		{
 			var book = _bookSelection.CurrentSelection;
-			var collectionKind = "other";
-
-			if (book == null || book.HasFatalError)
-			{
-				// not exactly a kind of collection, but a convenient way to indicate these states,
-				// in which edit/make button should not show at all.
-				collectionKind = "error";
-			}
-			else if (book != null && book.IsEditable)
-			{
-				collectionKind = "main";
-			}
-			// Review: we're tentatively thinking that "delete book" and "open folder on disk"
-			// will both be enabled for all but factory collections. Currently, Bloom is more
-			// restrictive on delete: only books in main or "Books from BloomLibrary.org" can be deleted.
-			// But there doesn't seem to be any reason to prevent deleting books from e.g. a bloompack.
-			else if (book != null && BloomFileLocator.IsInstalledFileOrDirectory(book.CollectionSettings.FolderPath))
-			{
-				collectionKind = "factory";
-			}
+			var collectionKind = Book.Book.CollectionKind(book);
 
 			string aboutBookInfoUrl = null;
 			if (book != null && book.HasAboutBookInformationToShow)

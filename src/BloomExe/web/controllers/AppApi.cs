@@ -48,38 +48,54 @@ namespace Bloom.Api
 			/* It's not totally clear if these kinds of things fit well in this App api, or if we
 			 will want to introduce a separate api for dealing with these kinds of things. I'm
 			erring on the side of less classes, code, for now, easy to split later.*/
-			apiHandler.RegisterEndpointLegacy(kAppUrlPrefix + "editSelectedBook",
-				request =>
-				{
-					_editBookCommand.Raise(_bookSelection.CurrentSelection);
-					request.PostSucceeded();
-				}, true);
-			apiHandler.RegisterEndpointLegacy(kAppUrlPrefix + "makeFromSelectedBook",
-				request =>
-				{
-					// Original in LibraryBookView had this...not sure if we might want it again.
-					//nb: don't move this to after the raise command, as the selection changes
-					// var checkinNotice = string.Format("Created book from '{0}'", _bookSelection.CurrentSelection.TitleBestForUserDisplay);
-
-					try
-					{
-						_createFromSourceBookCommand.Raise(_bookSelection.CurrentSelection);
-					}
-					catch (Exception error)
-					{
-						SIL.Reporting.ErrorReport.NotifyUserOfProblem(error,
-							"Bloom could not add that book to the collection.");
-					}
-
-					request.PostSucceeded();
-				}, true);
-			apiHandler.RegisterEndpointLegacy(kAppUrlPrefix + "selectedBookInfo",
+			apiHandler.RegisterEndpointHandler(kAppUrlPrefix + "makeOrEditBook", HandleMakeOrEditBook, true);
+			// Looks like we could just use the API above, but a template book can be in the main collection,
+			// where the button will say to edit it and that's what makeOrEditBook will do, yet it can
+			// also have a right-click option to "make a book from this source" which uses this API.
+			apiHandler.RegisterEndpointHandler(kAppUrlPrefix + "makeFromSelectedBook", HandleMakeFromSelectedBook, true);
+			apiHandler.RegisterEndpointHandler(kAppUrlPrefix + "selectedBookInfo",
 				request =>
 				{
 					// Requests the same information that is sent to the websocket
 					// when the selection changes.
 					request.ReplyWithJson(WorkspaceView.GetCurrentSelectedBookInfo());
 				}, true);
+		}
+
+		private void HandleMakeFromSelectedBook(ApiRequest request)
+		{
+			// Original in LibraryBookView had this...not sure if we might want it again.
+			//nb: don't move this to after the raise command, as the selection changes
+			// var checkinNotice = string.Format("Created book from '{0}'", _bookSelection.CurrentSelection.TitleBestForUserDisplay);
+
+			try
+			{
+				_createFromSourceBookCommand.Raise(_bookSelection.CurrentSelection);
+			}
+			catch (Exception error)
+			{
+				SIL.Reporting.ErrorReport.NotifyUserOfProblem(error,
+					"Bloom could not add that book to the collection.");
+			}
+
+			request.PostSucceeded();
+		}
+
+		private void HandleMakeOrEditBook(ApiRequest request)
+		{
+			if (_bookSelection.CurrentSelection == null)
+			{
+				request.Failed("No book selected");
+			}
+
+			if (Book.Book.CollectionKind(_bookSelection.CurrentSelection) != "main")
+			{
+				// We can't edit, so we'll try making a book from it
+				HandleMakeFromSelectedBook(request);
+				return;
+			}
+			_editBookCommand.Raise(_bookSelection.CurrentSelection);
+			request.PostSucceeded();
 		}
 
 		public void HandleAutoUpdate(ApiRequest request)
