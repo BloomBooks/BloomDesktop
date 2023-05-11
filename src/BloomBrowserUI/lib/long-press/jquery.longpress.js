@@ -108,7 +108,8 @@ require("./jquery.mousewheel.js");
         ">": "»≥›",
         "=": "≈≠≡",
         "/": "÷",
-        "\u0020": narrowNoBreakSpace // Spacebar; see comment on narrowNoBreakSpace above
+        "\u0020": narrowNoBreakSpace, // Spacebar; see comment on narrowNoBreakSpace above
+        "\u00a0": narrowNoBreakSpace // Spacebar (see BL-12191); see comment on narrowNoBreakSpace above
     });
     // http://www.cambiaresearch.com/articles/15/javascript-char-codes-key-codes
     // 8  backspace
