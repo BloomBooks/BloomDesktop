@@ -131,9 +131,6 @@ export const CollectionsTabBookPane: React.FunctionComponent<{
     // Note: If canMakeBook is true, then saveable is probably false (the source book is likely not in the editable collection),
     // but you still want the button to be enabled
     const isButtonEnabled = canMakeBook || saveable;
-    const clickApiEndpoint = canMakeBook
-        ? "app/makeFromSelectedBook"
-        : "app/editSelectedBook";
 
     const editOrMakeButton: JSX.Element | boolean = collectionKind !==
         "error" && (
@@ -150,7 +147,7 @@ export const CollectionsTabBookPane: React.FunctionComponent<{
                     setProgressOpen(true);
                 }, 5000); // Wait 5 seconds before showing this.
 
-                await postThatMightNavigate(clickApiEndpoint);
+                await postThatMightNavigate("app/makeOrEditBook");
 
                 clearTimeout(timeoutId); // If the async op completes quickly, make sure not to show the progress dialog after we "close" it
                 setProgressOpen(false);
