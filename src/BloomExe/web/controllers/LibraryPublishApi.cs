@@ -94,7 +94,8 @@ namespace Bloom.web.controllers
 				licenseType = Model.LicenseType.ToString(),
 				licenseToken = Model.LicenseToken,
 				licenseRights = Model.LicenseRights,
-				isTemplate = Model.IsTemplate
+				isTemplate = Model.IsTemplate,
+				titleOKToPublish = Model.IsTitleOKToPublish
 			};
 			request.ReplyWithJson(bookInfo);
 		}
