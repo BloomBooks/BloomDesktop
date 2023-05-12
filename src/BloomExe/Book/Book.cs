@@ -24,6 +24,7 @@ using Bloom.Utils;
 using Bloom.web.controllers;
 using Bloom.WebLibraryIntegration;
 using L10NSharp;
+using Newtonsoft.Json;
 using SIL.Code;
 using SIL.Extensions;
 using SIL.IO;
@@ -4730,6 +4731,14 @@ namespace Bloom.Book
 		{
 			OurHtmlDom.SetClassOnBody(isLeveled, "leveled-reader");
 			OurHtmlDom.SetClassOnBody(!isLeveled, "leveled-reader-off");
+		}
+
+		public bool HasL1Title()
+		{
+			var titleDict = JsonConvert.DeserializeObject<Dictionary<string, string>>(BookInfo.AllTitles);
+			if (!titleDict.TryGetValue(Language1Tag, out string l1Title))
+				return false;
+			return !string.IsNullOrEmpty(l1Title);
 		}
 	}
 }
