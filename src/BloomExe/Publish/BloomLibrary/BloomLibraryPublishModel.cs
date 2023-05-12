@@ -17,6 +17,7 @@ using System.Globalization;
 using Bloom.ImageProcessing;
 using System.Drawing;
 using Bloom.ToPalaso;
+using Newtonsoft.Json;
 
 namespace Bloom.Publish.BloomLibrary
 {
@@ -120,6 +121,16 @@ namespace Bloom.Publish.BloomLibrary
 
 		internal dynamic ConflictingBookInfo => _uploader.GetBookOnServer(Book.FolderPath);
 
+		private bool BookHasL1Title()
+		{
+			var titleDict = JsonConvert.DeserializeObject<Dictionary<string, string>>(Book.BookInfo.AllTitles);
+			if (!titleDict.TryGetValue(Book.Language1Tag, out string l1Title))
+				return false;
+			return !string.IsNullOrEmpty(l1Title);
+		}
+
+		internal bool TitleIsOKToPublish => OkToUploadWithNoLanguages || BookHasL1Title();
+
 		private string Uploader => _uploader.UserId;
 
 		/// <summary>
@@ -137,8 +148,8 @@ namespace Bloom.Publish.BloomLibrary
 		    // Copyright info is not required if the book has been put in the public domain
 			// Also, (BL-5563) if there is an original copyright and we're publishing from a source collection,
 			// we don't need to have a copyright.
-			(IsBookPublicDomain || !string.IsNullOrWhiteSpace(Copyright) || HasOriginalCopyrightInfo) &&
-		    !string.IsNullOrWhiteSpace(Title);
+		    (IsBookPublicDomain || !string.IsNullOrWhiteSpace(Copyright) ||
+				HasOriginalCopyrightInfo) && TitleIsOKToPublish;
 
 		internal bool LoggedIn => _uploader.LoggedIn;
 
@@ -211,7 +222,7 @@ namespace Bloom.Publish.BloomLibrary
 			// It might be because we're missing required metadata.
 			if (!MetadataIsReadyToPublish)
 			{
-				if (string.IsNullOrWhiteSpace(Title))
+				if (!TitleIsOKToPublish)
 				{
 					return couldNotUpload + "Required book Title is empty.";
 				}
