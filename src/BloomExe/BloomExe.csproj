@@ -400,6 +400,7 @@
     <Compile Include="Publish\Epub\ReadiumManifest.cs" />
     <Compile Include="Utils\AsyncUtil.cs" />
     <Compile Include="Publish\PDF\PublishPdfApi.cs" />
+    <Compile Include="ToPalaso\RobustImageIO.cs" />
     <Compile Include="Utils\DisposableList.cs" />
     <Compile Include="Utils\OutputFilenames.cs" />
     <Compile Include="WebView2Browser.cs" Condition="'$(OS)'=='Windows_NT'">

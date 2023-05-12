@@ -779,27 +779,34 @@ namespace Bloom.TeamCollection
 
 		private string MakeChecksumOnFiles(IEnumerable<string> files)
 		{
-			var sha = SHA256Managed.Create();
+			return RetryUtility.Retry(() => MakeChecksumOnFilesInternal(files));
+		}
 
-			// Order must be predictable but does not otherwise matter.
-			foreach (var path in files.OrderBy(x => x))
+		private string MakeChecksumOnFilesInternal(IEnumerable<string> files)
+		{
+			using (var sha = SHA256Managed.Create())
 			{
-				if (File.Exists(path)) // won't usually be passed ones that don't, but useful for unit testing at least.
+
+				// Order must be predictable but does not otherwise matter.
+				foreach (var path in files.OrderBy(x => x))
 				{
-					using (var input = new FileStream(path, FileMode.Open))
+					if (RobustFile.Exists(path)) // won't usually be passed ones that don't, but useful for unit testing at least.
 					{
-						byte[] buffer = new byte[4096];
-						int count;
-						while ((count = input.Read(buffer, 0, 4096)) > 0)
+						using (var input = new FileStream(path, FileMode.Open))
 						{
-							sha.TransformBlock(buffer, 0, count, buffer, 0);
+							byte[] buffer = new byte[4096];
+							int count;
+							while ((count = input.Read(buffer, 0, 4096)) > 0)
+							{
+								sha.TransformBlock(buffer, 0, count, buffer, 0);
+							}
 						}
 					}
 				}
-			}
 
-			sha.TransformFinalBlock(new byte[0], 0, 0);
-			return Convert.ToBase64String(sha.Hash);
+				sha.TransformFinalBlock(new byte[0], 0, 0);
+				return Convert.ToBase64String(sha.Hash);
+			}
 		}
 
 		private void RecordCollectionFilesSyncData()

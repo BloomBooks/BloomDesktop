@@ -13,6 +13,7 @@ using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using Mono.Unix;
 using NAudio.Wave;
+using SIL.Code;
 using SIL.CommandLineProcessing;
 using SIL.IO;
 using SIL.PlatformUtilities;
@@ -355,6 +356,11 @@ namespace Bloom.Utils
 		/// <param name="path">path of the file to read</param>
 		/// <returns>the contents of the file as a string</returns>
 		public static string ReadAllTextFromFileWhichMightGetWrittenTo(string path)
+		{
+			return RetryUtility.Retry(()=> ReadAllTextFromFileWhichMightGetWrittenToInternal(path));
+		}
+
+		private static string ReadAllTextFromFileWhichMightGetWrittenToInternal(string path)
 		{
 			using (FileStream logFileStream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
 			using (StreamReader logFileReader = new StreamReader(logFileStream))

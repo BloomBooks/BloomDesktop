@@ -250,7 +250,8 @@ namespace Bloom.Workspace
 				// It would be better still if most of the work of SelectPreviouslySelectedBook could
 				// be done on a background thread so it could make progress as quickly as possible
 				// without holding up drawing the collection panes.
-				waitForMilestone: "collectionButtonsDrawn");
+				waitForMilestone: "collectionButtonsDrawn",
+				shouldHideSplashScreen: true);	// possibility of error message boxes (BL-12155)
 		}
 
 		private void ReadyToShowCollections()

@@ -56,7 +56,7 @@ namespace BloomTests.RuntimeImageProcessing
 			using (var cache = new RuntimeImageProcessor(new BookRenamedEvent()) { TargetDimension = 100 })
 			using (var file = MakeTempPNGImage(10,10))
 			{
-				using (var img = ImageUtils.GetImageFromFile(cache.GetPathToAdjustedImage(file.Path)))
+				using (var img = Bloom.ToPalaso.RobustImageIO.GetImageFromFile(cache.GetPathToAdjustedImage(file.Path)))
 				{
 					Assert.AreEqual(10, img.Width);
 				}

@@ -701,7 +701,7 @@ namespace Bloom.web.controllers
 								}
 
 								_reportInfo.ScreenshotTempFile = TempFile.WithFilename(ScreenshotName);
-								RobustImageIO.SaveImage(screenshot, _reportInfo.ScreenshotTempFile.Path,
+								SIL.IO.RobustImageIO.SaveImage(screenshot, _reportInfo.ScreenshotTempFile.Path,
 									ImageFormat.Png);
 							}
 						}
