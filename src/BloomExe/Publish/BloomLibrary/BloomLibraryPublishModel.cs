@@ -120,6 +120,8 @@ namespace Bloom.Publish.BloomLibrary
 
 		internal dynamic ConflictingBookInfo => _uploader.GetBookOnServer(Book.FolderPath);
 
+		internal bool IsTitleOKToPublish => OkToUploadWithNoLanguages || Book.HasL1Title();
+
 		private string Uploader => _uploader.UserId;
 
 		/// <summary>
@@ -137,8 +139,8 @@ namespace Bloom.Publish.BloomLibrary
 		    // Copyright info is not required if the book has been put in the public domain
 			// Also, (BL-5563) if there is an original copyright and we're publishing from a source collection,
 			// we don't need to have a copyright.
-			(IsBookPublicDomain || !string.IsNullOrWhiteSpace(Copyright) || HasOriginalCopyrightInfo) &&
-		    !string.IsNullOrWhiteSpace(Title);
+		    (IsBookPublicDomain || !string.IsNullOrWhiteSpace(Copyright) ||
+				HasOriginalCopyrightInfo) && IsTitleOKToPublish;
 
 		internal bool LoggedIn => _uploader.LoggedIn;
 
@@ -211,7 +213,7 @@ namespace Bloom.Publish.BloomLibrary
 			// It might be because we're missing required metadata.
 			if (!MetadataIsReadyToPublish)
 			{
-				if (string.IsNullOrWhiteSpace(Title))
+				if (!IsTitleOKToPublish)
 				{
 					return couldNotUpload + "Required book Title is empty.";
 				}
