@@ -33,7 +33,10 @@ namespace Bloom.Publish.Video
 	/// </summary>
 	public partial class RecordVideoWindow : Form
 	{
-		private Browser _content;
+		// We only want to calculate this once per run and cache it.
+		private static Resolution s_maxResolution;
+
+		private UserControl _content;
 		private Process _ffmpegProcess;
 		private bool _ffmpegExited;
 		private StringBuilder _errorData;
@@ -79,7 +82,9 @@ namespace Bloom.Publish.Video
 		{
 			InitializeComponent();
 			_webSocketServer = webSocketServer;
-			_content = BrowserMaker.MakeBrowser();
+			// If we don't have a webSocketServer, we're just creating this to get our max resolution and don't
+			// need/want the overhead of creating a browser and cleaning it up. See BL-12164.
+			_content = webSocketServer == null ? new UserControl() : BrowserMaker.MakeBrowser();
 			_content.Dock = DockStyle.Fill;
 			_content.AutoScaleMode = AutoScaleMode.None;
 			Controls.Add(_content);
@@ -204,7 +209,9 @@ namespace Bloom.Publish.Video
 				url = _htmlFile.Path.ToLocalhost();
 			}
 
-			_content.Navigate(url, false);
+			// _content is not defined as Browser in case we don't want to create a real browser.
+			// See constructor.
+			((Browser)_content).Navigate(url, false);
 
 			// Couldn't get this to work. See comment in constructor.
 			//_originalAwareness = SetThreadDpiAwarenessContext(ThreadDpiAwareContext.PerMonitorAwareV2);
@@ -1371,22 +1378,25 @@ namespace Bloom.Publish.Video
 			var mainWindow = Application.OpenForms.Cast<Form>().FirstOrDefault(f => f is Shell);
 			if (mainWindow != null)
 			{
-				// Couldn't get this to work. See comment in constructor.
-				//var originalAwareness = SetThreadDpiAwarenessContext(ThreadDpiAwareContext.PerMonitorAwareV2);
-				var bounds = Screen.FromControl(mainWindow).Bounds;
-				var proto = RecordVideoWindow.Create(null);
-				// Enhance: can we improve on this? We seem to be getting numbers just a bit bigger than
-				// we need, so the output doesn't quite fill the screen.
-				var deltaV = proto.Height - proto._content.Height;
-				var deltaH = proto.Width - proto._content.Width;
+				if (s_maxResolution.Equals(default(Resolution)))
+				{
+					// Couldn't get this to work. See comment in constructor.
+					//var originalAwareness = SetThreadDpiAwarenessContext(ThreadDpiAwareContext.PerMonitorAwareV2);
+					var bounds = Screen.FromControl(mainWindow).Bounds;
+					var proto = RecordVideoWindow.Create(null);
+					// Enhance: can we improve on this? We seem to be getting numbers just a bit bigger than
+					// we need, so the output doesn't quite fill the screen.
+					var deltaV = proto.Height - proto._content.Height;
+					var deltaH = proto.Width - proto._content.Width;
 
-				var maxResolution = new Resolution(bounds.Width - deltaH, bounds.Height - deltaV);
+					s_maxResolution = new Resolution(bounds.Width - deltaH, bounds.Height - deltaV);
+				}
 
-				actualResolution = GetBestResolutionForFormat(format, desiredResolution, maxResolution, landscape);
-				if (ShouldRotateBookForRecording(format, landscape, actualResolution, desiredResolution, maxResolution))
+				actualResolution = GetBestResolutionForFormat(format, desiredResolution, s_maxResolution, landscape);
+				if (ShouldRotateBookForRecording(format, landscape, actualResolution, desiredResolution, s_maxResolution))
 				{
 					shouldRotateBook = true;
-					actualResolution = GetBestResolutionForFormat(format, desiredResolution, maxResolution.GetInverse(), landscape);
+					actualResolution = GetBestResolutionForFormat(format, desiredResolution, s_maxResolution.GetInverse(), landscape);
 				}
 
 				// Couldn't get this to work. See comment in constructor.
