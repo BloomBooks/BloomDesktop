@@ -28,9 +28,9 @@ namespace Bloom.MiscUI
 
 				string[] dirs;
 			if (Platform.IsWindows)
-				dirs = new[] { "AndikaNewBasic", "localization", "xslts", "icons" };
+				dirs = new[] { "AndikaNewBasic", "localization", "icons" };
 			else
-				dirs = new[] { "localization", "xslts", "icons" };
+				dirs = new[] { "localization", "icons" };
 
 			foreach(var fileName in files)
 			{
