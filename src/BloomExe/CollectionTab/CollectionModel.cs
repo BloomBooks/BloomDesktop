@@ -416,23 +416,6 @@ namespace Bloom.CollectionTab
 			_bookSelection.SelectBook(b);
 		}
 
-
-		public void ExportInDesignXml(string path)
-		{
-			var pathToXnDesignXslt = FileLocationUtilities.GetFileDistributedWithApplication("xslts", "BloomXhtmlToDataForMergingIntoInDesign.xsl");
-
-#if DEBUG
-			 _bookSelection.CurrentSelection.OurHtmlDom.RawDom.Save(path.Replace(".xml",".xhtml"));
-#endif
-
-			var dom = _bookSelection.CurrentSelection.OurHtmlDom.ApplyXSLT(pathToXnDesignXslt);
-
-			using (var writer = XmlWriter.Create(path, CanonicalXmlSettings.CreateXmlWriterSettings()))
-			{
-				dom.Save(writer);
-			}
-		}
-
 		private bool bookHasClass(string className)
 		{
 			return _bookSelection.CurrentSelection?.OurHtmlDom.Body.GetAttribute("class").Contains(className) ?? false;
