@@ -166,7 +166,45 @@ namespace Bloom.CollectionTab
 						// but there are states where that would be dangerous.
 						var newBook = new BookInfo(eventArgs.Path, false);
 						var book = _model.GetBookFromBookInfo(newBook, true);
-						_bookSelection.SelectBook(book, false);
+						if (string.IsNullOrEmpty(book.Storage.ErrorMessagesHtml))
+						{
+							// Happy path. Usually we can make a book object out of a downloaded book folder.
+							_bookSelection.SelectBook(book, false);
+						}
+						else
+						{
+							// We failed to load it. In BL-12034, this took the form of not finding an HTM
+							// file in the folder. This might be because debouncing didn't work
+							// and we haven't finished copying the folder to the final destination.
+							// Try again in a couple of seconds.
+							var t = new Timer();
+							var retries = 1;
+							t.Tick += (o, args1) =>
+							{
+								retries++;
+								book = _model.GetBookFromBookInfo(newBook, true);
+								if (string.IsNullOrEmpty(book.Storage.ErrorMessagesHtml))
+								{
+									t.Stop();
+									t.Dispose();
+									_bookSelection.SelectBook(book, false);
+								}
+								else if (retries > 3)
+								{
+									t.Stop();
+									t.Dispose();
+									// Locks Bloom up. Come back to this in 5.6 (BL-12034)
+									//ErrorReport.NotifyUserOfProblem(book.Storage.ErrorMessagesHtml);
+
+									// So instead, go ahead and select it, even though it won't get added to the list
+									// of books if it has no HTML file. This at least allows the user to see the message once.
+									_bookSelection.SelectBook(book, false);
+								}
+							};
+							t.Interval = 2000;
+							t.Start();
+							return;
+						}
 					}
 				};
 			}
