@@ -155,11 +155,10 @@
         <target xml:lang="es-ES" state="final">Advertencia de exportación: Se han encontrado varios elementos para el elemento de imagen {0}. Sólo se exportará el primero.</target>
         <note>ID: Spreadsheet.DataDivImageMultiple</note>
       </trans-unit>
-      <trans-unit id="Spreadsheet.ExportFailed" approved="yes">
+      <trans-unit id="Spreadsheet.ExportFailed">
         <source xml:lang="en">Export failed: {0}</source>
-        <target xml:lang="es-ES" state="final">Falló la exportación: {0}</target>
+        <target xml:lang="es-ES" state="translated">Falló la exportación:</target>
         <note>ID: Spreadsheet.ExportFailed</note>
-        <note>{0} is a placeholder for an exception message</note>
       </trans-unit>
       <trans-unit id="Spreadsheet.SpreadsheetLocked" approved="yes">
         <source xml:lang="en">Bloom could not write to the spreadsheet because another program has it locked. Do you have it open in another program?</source>
