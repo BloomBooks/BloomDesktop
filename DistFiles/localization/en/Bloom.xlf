@@ -599,8 +599,7 @@
         <source xml:lang="en">Make Reader Template Bloom Pack...</source>
         <note>ID: CollectionTab.AddMakeReaderTemplateBloomPackToolStripMenuItem</note>
       </trans-unit>
-      <trans-unit id="CollectionTab.AddSourceCollection" translate="no">
-        <!-- added in 5.5 -->
+      <trans-unit id="CollectionTab.AddSourceCollection">
         <source xml:lang="en">Show another collection...</source>
         <note>Shown at the very bottom of the list of books and collections.  The user can click on this text and then choose an existing collection to use as an additional source of books to translate or otherwise adapt.</note>
         <note>ID: CollectionTab.AddSourceCollection</note>
@@ -687,8 +686,7 @@
         <source xml:lang="en">Books From BloomLibrary.org</source>
         <note>ID: CollectionTab.Books From BloomLibrary.org</note>
       </trans-unit>
-      <trans-unit id="CollectionTab.ChooseCollection" translate="no">
-        <!-- added in 5.5 -->
+      <trans-unit id="CollectionTab.ChooseCollection">
         <source xml:lang="en">Choose Collection</source>
         <note>This is the title of the file-open dialog that you use to choose a Bloom collection</note>
         <note>ID: CollectionTab.ChooseCollection</note>
@@ -737,8 +735,7 @@
         <source xml:lang="en">Troubleshooting</source>
         <note>ID: CollectionTab.ContextMenu.Troubleshooting</note>
       </trans-unit>
-      <trans-unit id="CollectionTab.DoNotShowCollection" translate="no">
-        <!-- added in 5.5 -->
+      <trans-unit id="CollectionTab.DoNotShowCollection">
         <source xml:lang="en">Do not show this collection here.</source>
         <note>This is a tooltip for the X icon that allows the user to remove a collection from displaying as a source of books.</note>
         <note>ID: CollectionTab.DoNotShowCollection</note>
@@ -791,8 +788,7 @@
         <source xml:lang="en">({0}% complete)</source>
         <note>ID: CollectionTab.Progress</note>
       </trans-unit>
-      <trans-unit id="CollectionTab.RemoveThisGroup" translate="no">
-        <!-- added in 5.5 -->
+      <trans-unit id="CollectionTab.RemoveThisGroup">
         <source xml:lang="en">To remove this group, you will need to delete the folder. Click here to view the folder on your drive.</source>
         <note>This is a tooltip for the folder icon that allows the user to remove a folder that is serving as a source of books.</note>
         <note>ID: CollectionTab.RemoveThisGroup</note>
@@ -1018,8 +1014,7 @@
         <note>ID: Common.Loading</note>
         <note>This is shown when Bloom is slowly loading something, so the user doesn't worry about why they don't see the result immediately.</note>
       </trans-unit>
-      <trans-unit id="Common.LongRunningOperation" sil:dynamic="true" translate="no">
-        <!-- added in 5.5 -->
+      <trans-unit id="Common.LongRunningOperation" sil:dynamic="true">
         <source xml:lang="en">This may take a while...</source>
         <note>ID: Common.LongRunningOperation</note>
         <note>Used to indicate that an operation may take a long amount of time to complete.</note>
@@ -1034,8 +1029,7 @@
         <note>ID: Common.NextButton</note>
         <note>In a wizard, this button takes you to the next step.</note>
       </trans-unit>
-      <trans-unit id="Common.No" translate="no">
-        <!-- added in 5.5 -->
+      <trans-unit id="Common.No">
         <source xml:lang="en">No</source>
         <note>ID: Common.No</note>
       </trans-unit>
@@ -1115,8 +1109,7 @@
         <source xml:lang="en">Settings</source>
         <note>ID: Common.Settings</note>
       </trans-unit>
-      <trans-unit id="Common.Starting" translate="no">
-        <!-- added in 5.5 -->
+      <trans-unit id="Common.Starting">
         <source xml:lang="en">Starting...</source>
         <note>ID: Common.Starting</note>
       </trans-unit>
@@ -1147,8 +1140,7 @@
         <note>ID: Common.WhatCausedThisProblem</note>
         <note>This is usually a link to an explanatory document.</note>
       </trans-unit>
-      <trans-unit id="Common.Yes" translate="no">
-        <!-- added in 5.5 -->
+      <trans-unit id="Common.Yes">
         <source xml:lang="en">Yes</source>
         <note>ID: Common.Yes</note>
       </trans-unit>
@@ -1507,8 +1499,7 @@
         <source xml:lang="en">That style already exists. Please choose another name.</source>
         <note>ID: EditTab.FormatDialog.AlreadyExists</note>
       </trans-unit>
-      <trans-unit id="EditTab.FormatDialog.BackgroundColor" sil:dynamic="true" translate="no">
-        <!-- added in 5.5 -->
+      <trans-unit id="EditTab.FormatDialog.BackgroundColor" sil:dynamic="true">
         <source xml:lang="en">Background color</source>
         <note>ID: EditTab.FormatDialog.BackgroundColor</note>
       </trans-unit>
@@ -1628,13 +1619,11 @@
         <source xml:lang="en">Format</source>
         <note>ID: EditTab.FormatDialog.Format</note>
       </trans-unit>
-      <trans-unit id="EditTab.FormatDialog.Highlighting" sil:dynamic="true" translate="no">
-        <!-- added in 5.5 -->
+      <trans-unit id="EditTab.FormatDialog.Highlighting" sil:dynamic="true">
         <source xml:lang="en">Highlighting</source>
         <note>ID: EditTab.FormatDialog.Highlighting</note>
       </trans-unit>
-      <trans-unit id="EditTab.FormatDialog.HowToHighlightAudio" sil:dynamic="true" translate="no">
-        <!-- added in 5.5 -->
+      <trans-unit id="EditTab.FormatDialog.HowToHighlightAudio" sil:dynamic="true">
         <source xml:lang="en">Choose how to highlight text of style "%0" while its audio is playing:</source>
         <note>ID: EditTab.FormatDialog.HowToHighlightAudio</note>
         <note>%0 should remain and will be replaced with the name of a style</note>
@@ -1675,8 +1664,7 @@
         <source xml:lang="en">Style Name</source>
         <note>ID: EditTab.FormatDialog.StyleNameTab</note>
       </trans-unit>
-      <trans-unit id="EditTab.FormatDialog.TextColor" sil:dynamic="true" translate="no">
-        <!-- added in 5.5 -->
+      <trans-unit id="EditTab.FormatDialog.TextColor" sil:dynamic="true">
         <source xml:lang="en">Text Color</source>
         <note>ID: EditTab.FormatDialog.TextColor</note>
       </trans-unit>
@@ -3520,13 +3508,11 @@
         <note>ID: PublishTab.AdobeEulaTitle</note>
         <note>dialog title for license agreement</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Activity" translate="no">
-        <!-- added in 5.5 -->
+      <trans-unit id="PublishTab.Activity">
         <source xml:lang="en">Activity</source>
         <note>ID: PublishTab.Activity</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Comic" translate="no">
-        <!-- added in 5.5 -->
+      <trans-unit id="PublishTab.Comic">
         <source xml:lang="en">Comic</source>
         <note>ID: PublishTab.Comic</note>
       </trans-unit>
@@ -3540,8 +3526,7 @@
         <note>This is shown while Bloom is sharing a book over wifi or over a usb cable. </note>
         <note>ID: PublishTab.Common.StopPublishing</note>
       </trans-unit>
-      <trans-unit id="PublishTab.AccessibleVisually" translate="no">
-        <!-- added in 5.5 -->
+      <trans-unit id="PublishTab.AccessibleVisually">
         <source xml:lang="en">Accessible to the Visually Impaired in %0</source>
         <note>ID: PublishTab.AccessibleVisually</note>
       </trans-unit>
@@ -3577,18 +3562,15 @@
         <note>Obsolete in 5.5</note>
         <note>The link should be left untranslated as well as the file type 'BloomPUB'.</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Android.BloomPUB.MakeRABAppHelpLink" translate="no">
-        <!-- added in 5.5 -->
+      <trans-unit id="PublishTab.Android.BloomPUB.MakeRABAppHelpLink">
         <source xml:lang="en">Making BloomPUB Apps with Reading App Builder</source>
         <note>ID: PublishTab.Android.BloomPUB.MakeRABAppHelpLink</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Android.BloomPUB.ViewingWithBRHelpLink" translate="no">
-        <!-- added in 5.5 -->
+      <trans-unit id="PublishTab.Android.BloomPUB.ViewingWithBRHelpLink">
         <source xml:lang="en">Viewing BloomPUBs on Bloom Reader (Android)</source>
         <note>ID: PublishTab.Android.BloomPUB.ViewingWithBRHelpLink</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Android.BloomPUB.ViewingOnWindowsHelpLink" translate="no">
-        <!-- added in 5.5 -->
+      <trans-unit id="PublishTab.Android.BloomPUB.ViewingOnWindowsHelpLink">
         <source xml:lang="en">Viewing BloomPUBs on Windows</source>
         <note>ID: PublishTab.Android.BloomPUB.ViewingOnWindowsHelpLink</note>
       </trans-unit>
@@ -3904,8 +3886,7 @@
         <source xml:lang="en">Booklet Insides</source>
         <note>ID: PublishTab.BodyOnlyRadio</note>
       </trans-unit>
-      <trans-unit id="PublishTab.BodyOnly-description" translate="no">
-        <!-- added in 5.5 -->
+      <trans-unit id="PublishTab.BodyOnly-description">
         <source xml:lang="en">The inside pages, re-arranged so that when folded, you get a booklet ready to staple.</source>
         <note>ID: PublishTab.BodyOnly-description</note>
       </trans-unit>
@@ -3976,8 +3957,7 @@
         <source xml:lang="en">Booklet Cover</source>
         <note>ID: PublishTab.CoverOnlyRadio</note>
       </trans-unit>
-      <trans-unit id="PublishTab.CoverOnly-description" sil:dynamic="true" translate="no">
-        <!-- added in 5.5 -->
+      <trans-unit id="PublishTab.CoverOnly-description" sil:dynamic="true">
         <source xml:lang="en">The cover, ready to print on colored paper.</source>
         <note>ID: PublishTab.CoverOnly-description</note>
       </trans-unit>
@@ -3987,7 +3967,6 @@
         <note>Obsolete as of Bloom 5.5 (replaced by PublishTab.CoverOnly-description)</note>
       </trans-unit>
       <trans-unit id="PublishTab.Epub.IncludeOnPage.Disabled">
-        <!-- added in 5.5 -->
         <source xml:lang="en">This is disabled because Bloom can only do this if the ePUB mode is "Flowable".</source>
         <note>ID: PublishTab.Epub.IncludeOnPage.Disabled</note>
       </trans-unit>
@@ -4146,8 +4125,7 @@
         <note>ID: PublishTab.OnePagePerPaperRadio</note>
         <note>Instead of making a booklet, just make normal pages. (This is no longer a radio button, but keeping the name for backwards compatiblity with translations.)</note>
       </trans-unit>
-      <trans-unit id="PublishTab.OnePagePerPaper-description" sil:dynamic="true" translate="no">
-        <!-- added in 5.5 -->
+      <trans-unit id="PublishTab.OnePagePerPaper-description" sil:dynamic="true">
         <source xml:lang="en">A simple PDF instead of a booklet.</source>
         <note>ID: PublishTab.OnePagePerPaper-description</note>
       </trans-unit>
@@ -4177,68 +4155,58 @@
         <note>ID: PublishTab.Options_ToolTip_</note>
         <note>tooltip for the menu header in the Publish tab</note>
       </trans-unit>
-      <trans-unit id="PublishTab.PDF.Booklet.HelpHeader" translate="no">
-        <!-- added in 5.5 -->
+      <trans-unit id="PublishTab.PDF.Booklet.HelpHeader">
         <source xml:lang="en">Here are the settings you need for printing this booklet:</source>
         <note>ID: PublishTab.PDF.Booklet.HelpHeader</note>
         <note>heading for list of setting recommendations</note>
       </trans-unit>
-      <trans-unit id="PublishTab.PDF.Booklet.PageLayout.Portrait" translate="no">
-        <!-- added in 5.5 -->
+      <trans-unit id="PublishTab.PDF.Booklet.PageLayout.Portrait">
         <source xml:lang="en">1. Layout: Portrait</source>
         <note>ID: PublishTab.PDF.Booklet.PageLayout.Portrait</note>
         <note>first recommendation is page layout / orientation (taller than it is wide)</note>
         <note>This should follow how Microsoft translated these terms in the print dialog.</note>
       </trans-unit>
-      <trans-unit id="PublishTab.PDF.Booklet.PageLayout.Landscape" translate="no">
-        <!-- added in 5.5 -->
+      <trans-unit id="PublishTab.PDF.Booklet.PageLayout.Landscape">
         <source xml:lang="en">1. Layout: Landscape</source>
         <note>ID: PublishTab.PDF.Booklet.PageLayout.Landscape</note>
         <note>first recommendation is page layout / orientation (wider than it is tall)</note>
         <note>This should follow how Microsoft translated these terms in the print dialog.</note>
       </trans-unit>
-      <trans-unit id="PublishTab.PDF.Booklet.Flip.ShortEdge" translate="no">
-        <!-- added in 5.5 -->
+      <trans-unit id="PublishTab.PDF.Booklet.Flip.ShortEdge">
         <source xml:lang="en">2. Print on both sides: "Flip on short edge"</source>
         <note>ID: PublishTab.PDF.Booklet.Flip.ShortEdge</note>
         <note>second recommendation is two-sided printing, flipping the paper on the short edge</note>
         <note>This should follow how Microsoft translated these terms in the print dialog.</note>
       </trans-unit>
-      <trans-unit id="PublishTab.PDF.Booklet.Flip.LongEdge" translate="no">
-        <!-- added in 5.5 -->
+      <trans-unit id="PublishTab.PDF.Booklet.Flip.LongEdge">
         <source xml:lang="en">2. Print on both sides: "Flip on long edge"</source>
         <note>ID: PublishTab.PDF.Booklet.Flip.LongEdge</note>
         <note>second recommendation is two-sided printing, flipping the paper on the long edge</note>
         <note>This should follow how Microsoft translated these terms in the print dialog.</note>
       </trans-unit>
-      <trans-unit id="PublishTab.PDF.Booklet.PaperSize.A4" translate="no">
-        <!-- added in 5.5 -->
+      <trans-unit id="PublishTab.PDF.Booklet.PaperSize.A4">
         <source xml:lang="en">3. More settings &gt; Paper size: "A4"</source>
         <note>ID: PublishTab.PDF.Booklet.PaperSize.A4</note>
         <note>third recommendation is paper size (A4, the standard metric paper size)</note>
         <note>This should follow how Microsoft translated these terms in the print dialog.</note>
       </trans-unit>
-      <trans-unit id="PublishTab.PDF.Booklet.PaperSize.Letter" translate="no">
-        <!-- added in 5.5 -->
+      <trans-unit id="PublishTab.PDF.Booklet.PaperSize.Letter">
         <source xml:lang="en">3. More settings &gt; Paper size: "Letter"</source>
         <note>ID: PublishTab.PDF.Booklet.PaperSize.Letter</note>
         <note>third recommendation is paper size (Letter, the standard paper size in the U.S.)</note>
         <note>This should follow how Microsoft translated these terms in the print dialog.</note>
       </trans-unit>
-      <trans-unit id="PublishTab.PDF.Booklet.Scale.ActualSize" translate="no">
-        <!-- added in 5.5 -->
+      <trans-unit id="PublishTab.PDF.Booklet.Scale.ActualSize">
         <source xml:lang="en">4. More settings &gt; Scale: "Actual size"</source>
         <note>ID: PublishTab.PDF.Booklet.Scale.ActualSize</note>
         <note>fourth recommendation is image scaling (use actual size, don't scale)</note>
         <note>This should follow how Microsoft translated these terms in the print dialog.</note>
       </trans-unit>
-      <trans-unit id="PublishTab.PDF.Booklet.TwoPages.CutAndStack" translate="no">
-        <!-- added in 5.5 -->
+      <trans-unit id="PublishTab.PDF.Booklet.TwoPages.CutAndStack">
         <source xml:lang="en">This will put two pages on each sheet of paper. Cut horizontally and stack to make one booklet.</source>
         <note>ID: PublishTab.PDF.Booklet.TwoPages.CutAndStack</note>
       </trans-unit>
-      <trans-unit id="PublishTab.PDF.Booklet.FourPages.CutAndFold" translate="no">
-        <!-- added in 5.5 -->
+      <trans-unit id="PublishTab.PDF.Booklet.FourPages.CutAndFold">
         <source xml:lang="en">This will put four pages on each sheet of paper. Cut the stack, then fold to get two booklets.</source>
         <note>ID: PublishTab.PDF.Booklet.FourPages.CutAndFold</note>
       </trans-unit>
@@ -4270,13 +4238,11 @@
         <source xml:lang="en">Bloom had a problem making a PDF of this book.</source>
         <note>ID: PublishTab.PdfMaker.BadPdfShort</note>
       </trans-unit>
-      <trans-unit id="PublishTab.PdfMaker.ClickToStart" translate="no">
-        <!-- added in 5.5 -->
+      <trans-unit id="PublishTab.PdfMaker.ClickToStart">
         <source xml:lang="en">Bloom can format your PDF in several ways.</source>
         <note>ID: PublishTab.PdfMaker.ClickToStart</note>
       </trans-unit>
-      <trans-unit id="PublishTab.PdfMaker.ClickToStart2" translate="no">
-        <!-- added in 5.5 -->
+      <trans-unit id="PublishTab.PdfMaker.ClickToStart2">
         <source xml:lang="en">Choose one here:</source>
         <note>ID: PublishTab.PdfMaker.ClickToStart2</note>
       </trans-unit>
@@ -4343,8 +4309,7 @@
         <note>ID: PublishTab.PdfMaker.NoFullBleed</note>
         <note>Obsolete for Bloom 5.5 and later</note>
       </trans-unit>
-      <trans-unit id="PublishTab.PdfMaker.None" translate="no">
-        <!-- added in 5.5 -->
+      <trans-unit id="PublishTab.PdfMaker.None">
         <source xml:lang="en">None</source>
         <note>ID: PublishTab.PdfMaker.None</note>
         <note>This is an option in a menu of CMYK settings, indicating the PDF should be made without using CMYK at all.</note>
@@ -4369,8 +4334,7 @@
         <note>displayed as a checkable menu option for the Publish tab, PDF options menu. 'SWOP' and 'CMYK' may not be translatable, they are print shop standards.</note>
         <note>Previously this item was "PDF with CMYK ..." and it occurred as an option within the Save dialog for PDF files</note>
       </trans-unit>
-      <trans-unit id="PublishTab.PdfMaker.Cmyk" translate="no">
-        <!-- added in 5.5 -->
+      <trans-unit id="PublishTab.PdfMaker.Cmyk">
         <source xml:lang="en">CMYK</source>
         <note>ID: PublishTab.PdfMaker.Cmyk</note>
         <note>Displayed as a label in the PDF &amp; Print tab. 'CMYK' may not be translatable, it is a print shop standard.</note>
@@ -4402,31 +4366,26 @@
         <note>ID: PublishTab.PdfNotSavedWhy</note>
         <note>explanation that file was not saved displayed in a message box</note>
       </trans-unit>
-      <trans-unit id="PublishTab.PdfPrint.Button" translate="no">
-        <!-- added in 5.5 -->
+      <trans-unit id="PublishTab.PdfPrint.Button">
         <source xml:lang="en">PDF &amp; Print</source>
         <note>ID: PublishTab.PdfPrint.Button</note>
         <note>Text under button to select Print and PDF preview</note>
       </trans-unit>
-      <trans-unit id="PublishTab.PdfPrint.BannerTitle" translate="no">
-        <!-- added in 5.5 -->
+      <trans-unit id="PublishTab.PdfPrint.BannerTitle">
         <source xml:lang="en">Publish to PDF &amp; Print</source>
         <note>ID: PublishTab.PdfPrint.BannerTitle</note>
         <note>Header on PDF/Print Publishing page</note>
       </trans-unit>
-      <trans-unit id="PublishTab.PdfPrint.BookletModes" translate="no">
-        <!-- added in 5.5 -->
+      <trans-unit id="PublishTab.PdfPrint.BookletModes">
         <source xml:lang="en">Booklet Mode</source>
         <note>ID: PublishTab.PdfPrint.BookletModes</note>
         <note>Heading above Option panel to right of PDF preview</note>
       </trans-unit>
-      <trans-unit id="PublishTab.PdfPrint.AboutPdfPrint" translate="no">
-        <!-- added in 5.5 -->
+      <trans-unit id="PublishTab.PdfPrint.AboutPdfPrint">
         <source xml:lang="en">About PDF &amp; Print</source>
         <note>ID: PublishTab.PdfPrint.AboutPdfPrint</note>
       </trans-unit>
-      <trans-unit id="PublishTab.PdfPrint.PrintshopOptions" translate="no">
-        <!-- added in 5.5 -->
+      <trans-unit id="PublishTab.PdfPrint.PrintshopOptions">
         <source xml:lang="en">Prepare for Printshop</source>
         <note>ID: PublishTab.PdfPrint.PrintshopOptions</note>
         <note>Heading over lower part of Option panel to right of PDF preview</note>
@@ -4639,8 +4598,7 @@
         <source xml:lang="en">Publish tab tasks overview</source>
         <note>ID: PublishTab.TasksOverview</note>
       </trans-unit>
-      <trans-unit id="PublishTab.TalkingBook" sil:dynamic="true" translate="no">
-        <!-- added in 5.5 -->
+      <trans-unit id="PublishTab.TalkingBook" sil:dynamic="true">
         <source xml:lang="en">Talking Book</source>
         <note>ID: PublishTab.TalkingBook</note>
       </trans-unit>
@@ -4663,23 +4621,19 @@
         <source xml:lang="en">All rights reserved (Contact the Copyright holder for any permissions.)</source>
         <note>ID: PublishTab.Upload.AllReserved</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Upload.Agreement.PermissionToPublish" translate="no">
-        <!-- added in 5.5 -->
+      <trans-unit id="PublishTab.Upload.Agreement.PermissionToPublish">
         <source xml:lang="en">I have permission to publish all the text and images in this book.</source>
         <note>ID: PublishTab.Upload.Agreement.PermissionToPublish</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Upload.Agreement.GivesCredit" translate="no">
-        <!-- added in 5.5 -->
+      <trans-unit id="PublishTab.Upload.Agreement.GivesCredit">
         <source xml:lang="en">The book gives credit to the the author, translator, and illustrator(s).</source>
         <note>ID: PublishTab.Upload.Agreement.GivesCredit</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Upload.Agreement.AgreeToTerms" translate="no">
-        <!-- added in 5.5 -->
+      <trans-unit id="PublishTab.Upload.Agreement.AgreeToTerms">
         <source xml:lang="en">I agree to the [Bloom Library Terms of Use].</source>
         <note>ID: PublishTab.Upload.Agreement.AgreeToTerms</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Upload.Agreements" translate="no">
-        <!-- added in 5.5 -->
+      <trans-unit id="PublishTab.Upload.Agreements">
         <source xml:lang="en">Agreements</source>
         <note>ID: PublishTab.Upload.Agreements</note>
       </trans-unit>
@@ -4688,13 +4642,11 @@
         <note>ID: PublishTab.Upload.BackgroundMusic</note>
         <note>Obsolete as of Bloom 5.5</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Upload.BannerDescription" translate="no">
-        <!-- added in 5.5 -->
+      <trans-unit id="PublishTab.Upload.BannerDescription">
         <source xml:lang="en">Let speakers find your books in [Bloom Reader](https://bloomlibrary.org/page/create/bloom-reader) and on [BloomLibrary.org](https://bloomlibrary.org/).</source>
         <note>ID: PublishTab.Upload.BannerDescription</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Upload.BannerTitle" translate="no">
-        <!-- added in 5.5 -->
+      <trans-unit id="PublishTab.Upload.BannerTitle">
         <source xml:lang="en">Publish to Web</source>
         <note>ID: PublishTab.Upload.BannerTitle</note>
       </trans-unit>
@@ -4712,13 +4664,11 @@
         <note>ID: PublishTab.Upload.CcLink</note>
         <note>Obsolete as of Bloom 5.5</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Upload.CheckingVersionEligibility" translate="no">
-        <!-- added in 5.5 -->
+      <trans-unit id="PublishTab.Upload.CheckingVersionEligibility">
         <source xml:lang="en">Checking Bloom version eligibility...</source>
         <note>ID: PublishTab.Upload.CheckingVersionEligibility</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Upload.CheckingExistingCopy" translate="no">
-        <!-- added in 5.5 -->
+      <trans-unit id="PublishTab.Upload.CheckingExistingCopy">
         <source xml:lang="en">Checking for existing copy on server...</source>
         <note>ID: PublishTab.Upload.CheckingExistingCopy</note>
       </trans-unit>
@@ -4727,13 +4677,11 @@
         <note>ID: PublishTab.Upload.ChooseSignLanguageWarning</note>
         <note>Obsolete as of Bloom 5.5</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Upload.ClickToFix" translate="no">
-        <!-- added in 5.5 -->
+      <trans-unit id="PublishTab.Upload.ClickToFix">
         <source xml:lang="en">Click to fix</source>
         <note>ID: PublishTab.Upload.ClickToFix</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Upload.ConfirmMetadata" translate="no">
-        <!-- added in 5.5 -->
+      <trans-unit id="PublishTab.Upload.ConfirmMetadata">
         <source xml:lang="en">Confirm Metadata</source>
         <note>ID: PublishTab.Upload.ConfirmMetadata</note>
       </trans-unit>
@@ -4747,8 +4695,7 @@
         <note>ID: PublishTab.Upload.Credits</note>
         <note>Obsolete as of Bloom 5.5</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Upload.EnterpriseShelfRequiredTooltip" translate="no">
-        <!-- added in 5.5 -->
+      <trans-unit id="PublishTab.Upload.EnterpriseShelfRequiredTooltip">
         <source xml:lang="en">This feature requires an Enterprise subscription and a destination shelf selected in Collection Settings.</source>
         <note>ID: PublishTab.Upload.EnterpriseShelfRequiredTooltip</note>
       </trans-unit>
@@ -4918,13 +4865,11 @@
         <source xml:lang="en">Making thumbnail image...</source>
         <note>ID: PublishTab.Upload.MakingThumbnail</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Upload.Missing.Copyright" translate="no">
-        <!-- added in 5.5 -->
+      <trans-unit id="PublishTab.Upload.Missing.Copyright">
         <source xml:lang="en">Missing Copyright</source>
         <note>ID: PublishTab.Upload.Missing.Copyright</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Upload.Missing.Title" translate="no">
-        <!-- added in 5.5 -->
+      <trans-unit id="PublishTab.Upload.Missing.Title">
         <source xml:lang="en">Missing Title</source>
         <note>ID: PublishTab.Upload.Missing.Title</note>
       </trans-unit>
@@ -4962,8 +4907,7 @@
         <source xml:lang="en">Sign Language</source>
         <note>ID: PublishTab.Upload.SignLanguage</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Upload.SignIn" translate="no">
-        <!-- added in 5.5 -->
+      <trans-unit id="PublishTab.Upload.SignIn">
         <source xml:lang="en">Sign in or sign up to BloomLibrary.org</source>
         <note>ID: PublishTab.Upload.SignIn</note>
       </trans-unit>
@@ -4972,8 +4916,7 @@
         <note>ID: PublishTab.Upload.SignInSignUp</note>
         <note>Obsolete as of Bloom 5.5</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Upload.SignOut" translate="no">
-        <!-- added in 5.5 -->
+      <trans-unit id="PublishTab.Upload.SignOut">
         <source xml:lang="en">Sign out (%0)</source>
         <note>ID: PublishTab.Upload.SignOut</note>
         <note>The %0 will be replaced with the email address of the user.</note>
@@ -5021,18 +4964,15 @@ Do you want to go ahead?</note>
         <note>ID: PublishTab.Upload.TermsLink</note>
         <note>Obsolete as of Bloom 5.5</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Upload.ViewOnBloomLibrary" translate="no">
-        <!-- added in 5.5 -->
+      <trans-unit id="PublishTab.Upload.ViewOnBloomLibrary">
         <source xml:lang="en">View on Bloom Library</source>
         <note>ID: PublishTab.Upload.ViewOnBloomLibrary</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Upload.YourBookOnBloomLibrary" translate="no">
-        <!-- added in 5.5 -->
+      <trans-unit id="PublishTab.Upload.YourBookOnBloomLibrary">
         <source xml:lang="en">Your Book on BloomLibrary.org</source>
         <note>ID: PublishTab.Upload.YourBookOnBloomLibrary</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Upload.YourBookOnBloomLibrary.ServerWillProcess" translate="no">
-        <!-- added in 5.5 -->
+      <trans-unit id="PublishTab.Upload.YourBookOnBloomLibrary.ServerWillProcess">
         <source xml:lang="en">Our server will soon process your book into various formats and add them to [your book's page] on BloomLibrary.org. Check back in about 10 minutes. If we encounter any problems, your book's page will tell you about them.</source>
         <note>ID: PublishTab.Upload.YourBookOnBloomLibrary.ServerWillProcess</note>
       </trans-unit>
@@ -5054,8 +4994,7 @@ Do you want to go ahead?</note>
         <source xml:lang="en">Upload Book</source>
         <note>ID: PublishTab.Upload.UploadButton</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Upload.UploadCollection" translate="no">
-        <!-- added in 5.5 -->
+      <trans-unit id="PublishTab.Upload.UploadCollection">
         <source xml:lang="en">Upload this Collection</source>
         <note>ID: PublishTab.Upload.UploadCollection</note>
       </trans-unit>
@@ -5065,8 +5004,7 @@ Do you want to go ahead?</note>
         <note>{0} is the book title; {1} is a clickable url which will display the book on the website</note>
         <note>Obsolete as of Bloom 5.5</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Upload.UploadFolder" translate="no">
-        <!-- added in 5.5 -->
+      <trans-unit id="PublishTab.Upload.UploadFolder">
         <source xml:lang="en">Upload Folder of Collections</source>
         <note>ID: PublishTab.Upload.UploadFolder</note>
       </trans-unit>
