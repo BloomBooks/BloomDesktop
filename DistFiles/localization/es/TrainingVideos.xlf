@@ -100,18 +100,6 @@
         <target xml:lang="es-ES" state="final">Debajo del vídeo que desea descargar, debe haber un botón de Descarga.</target>
         <note>ID: training.videos.download.2</note>
       </trans-unit>
-      <trans-unit id="training.videos.hires" approved="yes">
-        <source xml:lang="en"><g id="genid-10" ctype="x-html-a" html:href="http://tiny.cc/bloomHDVideos">High Resolution</g> (Large files)</source>
-        <target xml:lang="es-ES" state="final"><g id="genid-10" ctype="x-html-a" html:href="http://tiny.cc/bloomHDVideos">Alta Resolución</g> (Archivos grandes)</target>
-        <note>ID: training.videos.hires</note>
-        <note>Obsolete for Bloom 5.3</note>
-      </trans-unit>
-      <trans-unit id="training.videos.lores" approved="yes">
-        <source xml:lang="en"><g id="genid-11" ctype="x-html-a" html:href="http://tiny.cc/bloomSDVideos">Low Resolution</g> (Smaller files)</source>
-        <target xml:lang="es-ES" state="final"><g id="genid-11" ctype="x-html-a" html:href="http://tiny.cc/bloomSDVideos">Baja Resolución</g> (Archivos más pequeños)</target>
-        <note>ID: training.videos.lores</note>
-        <note>Obsolete for Bloom 5.3</note>
-      </trans-unit>
     </body>
   </file>
 </xliff>

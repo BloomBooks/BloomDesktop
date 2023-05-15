@@ -4,36 +4,34 @@
     <body>
       <trans-unit id="bigbook.title">
         <source xml:lang="en">About Big Books</source>
-        <target xml:lang="th" state="needs-translation">About Big Books</target>
+        <target xml:lang="th" state="translated">เกี่ยวกับหนังสือเล่มใหญ่</target>
         <note>ID: bigbook.title</note>
       </trans-unit>
       <trans-unit id="bigbook.use">
         <source xml:lang="en">Big Books are designed for teachers to hold and read in front of a class. For more information, see this <g id="genid-1" ctype="x-html-a" html:href="http://www.scholastic.ca/munsch/downloads/AGuidetoUsingBigBooksintheClassroom.pdf">PDF from Scholastic</g>.</source>
-        <target xml:lang="th" state="needs-translation">Big Books are designed for teachers to hold and read in front of a class. For more information, see this <g id="genid-1" ctype="x-html-a" html:href="http://www.scholastic.ca/munsch/downloads/AGuidetoUsingBigBooksintheClassroom.pdf">PDF from Scholastic</g>.</target>
+        <target xml:lang="th" state="translated">หนังสือเล่มใหญ่ถูกออกเเบบไว้สําหรับครูเพื่อถือและอ่านหน้าชั้นเรียน สำหรับข้อมูลเพิ่มเติม ดูที่นี่  <g id="genid-1" ctype="x-html-a" html:href="http://www.scholastic.ca/munsch/downloads/AGuidetoUsingBigBooksintheClassroom.pdf">PDF (ภาษาอังกฤษ) จาก Scholastic</g>.</target>
         <note>ID: bigbook.use</note>
       </trans-unit>
       <trans-unit id="bigbook.printing">
         <source xml:lang="en">Printing a Big Book</source>
-        <target xml:lang="th" state="needs-translation">Printing a Big Book</target>
+        <target xml:lang="th" state="translated">พิมพ์หนังสือเล่มใหญ่</target>
         <note>ID: bigbook.printing</note>
       </trans-unit>
       <trans-unit id="bigbook.printing.enlargeA4">
         <source xml:lang="en">To make things more manageable, this template is set at A4 Landscape, with large fonts.
 You can easily produce books that are A3 (twice as large).
 Just take your A4 PDF to a printer and ask them to enlarge it to A3.</source>
-        <target xml:lang="th" state="needs-translation">To make things more manageable, this template is set at A4 Landscape, with large fonts.
-You can easily produce books that are A3 (twice as large).
-Just take your A4 PDF to a printer and ask them to enlarge it to A3.</target>
+        <target xml:lang="th" state="translated">เพื่อจัดการสิ่งต่างๆ ได้ง่ายขึ้นเทมเพลตนี้ตั้งไว้ A4 แนวนอน ด้วยฟอนต์ขนาดใหญ่ คุณสามารถผลิตหนังสือ A3 (ขนาดใหญ่สองเท่า) อย่างง่ายดายโดยนำไฟล์ PDF ขนาด A4 ไปที่ร้านพิมพ์และขอให้ขยายเป็น A3</target>
         <note>ID: bigbook.printing.enlargeA4</note>
       </trans-unit>
       <trans-unit id="bigbook.limits">
         <source xml:lang="en">Limitations of this version</source>
-        <target xml:lang="th" state="needs-translation">Limitations of this version</target>
+        <target xml:lang="th" state="translated">ข้อจำกัดของเวอร์ชันนี้</target>
         <note>ID: bigbook.limits</note>
       </trans-unit>
       <trans-unit id="bigbook.limits.smallscreen">
         <source xml:lang="en">If you are using a small screen, it can be hard to read the credits page. Try zooming in using the +/- zoom control at the top-right of your screen so you can edit it.</source>
-        <target xml:lang="th" state="needs-translation">If you are using a small screen, it can be hard to read the credits page. Try zooming in using the +/- zoom control at the top-right of your screen so you can edit it.</target>
+        <target xml:lang="th" state="translated">หากคุณใช้หน้าจอขนาดเล็ก อาจอ่านหน้าเครดิตได้ยาก เพื่อแก้ไขลองซูมเข้าไปโดยใช้ปุ่มควบคุมการซูม +/- ที่ด้านบนขวาของหน้าจอ</target>
         <note>ID: bigbook.limits.smallscreen</note>
       </trans-unit>
       <trans-unit id="bigbook.limits.Englishtemplate">
