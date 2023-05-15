@@ -7,6 +7,19 @@
         <target xml:lang="ha" state="needs-translation">Installing...</target>
         <note>This isn't used by code, but rather we harvest some of these for use in making the GIF that shows when the software is installing.</note>
       </trans-unit>
+      <trans-unit id="Errors.CorruptImageFile" translate="no">
+        <!-- added in 5.5 -->
+        <source xml:lang="en">The image file {0} is corrupt and needs to be replaced. ({1})</source>
+        <note>ID: Errors.CorruptImageFile</note>
+        <note>The placeholder {0} represents the name of the corrupt file. The placeholder {0} represents a message describing the problem with the file.</note>
+        <target xml:lang="ha" state="needs-translation">The image file {0} is corrupt and needs to be replaced. ({1})</target>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.NoBookshelvesFromServer" sil:dynamic="true" translate="no">
+        <!-- New in 5.5 -->
+        <source xml:lang="en">Bloom could not reach the server to get the list of bookshelves.</source>
+        <note>ID: CollectionSettingsDialog.BookMakingTab.NoBookshelvesFromServer</note>
+        <target xml:lang="ha" state="needs-translation">Bloom could not reach the server to get the list of bookshelves.</target>
+      </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.ESpeakPreview.ConversionFileUsed">
         <source xml:lang="en">Conversion file used:</source>
         <target xml:lang="ha" state="needs-translation">Conversion file used:</target>
@@ -46,6 +59,12 @@
         <source xml:lang="en">Bloom needs to verify your email, but our attempt to resend the request failed, possibly because you made too many requests too close together. Please check your email, and if you can't find the message, try again later.</source>
         <target xml:lang="ha" state="needs-translation">Bloom needs to verify your email, but our attempt to resend the request failed, possibly because you made too many requests too close together. Please check your email, and if you can't find the message, try again later.</target>
         <note>ID: PublishTab.Upload.CheckEmailFailed</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.BookshelfError" translate="no">
+        <!-- New in 5.5-->
+        <source xml:lang="en">The collection's bookshelf was not on the list of bookshelves for this Enterprise subscription.</source>
+        <note>ID: PublishTab.Upload.BookshelfError</note>
+        <target xml:lang="ha" state="needs-translation">The collection's bookshelf was not on the list of bookshelves for this Enterprise subscription.</target>
       </trans-unit>
       <trans-unit id="Settings.Enterprise.Community">
         <source xml:lang="en">Funded by the local community only</source>
@@ -137,8 +156,8 @@
         <note>ID: Spreadsheet.DataDivImageMultiple</note>
       </trans-unit>
       <trans-unit id="Spreadsheet.ExportFailed">
-        <source xml:lang="en">Export failed: </source>
-        <target xml:lang="ha" state="needs-translation">Export failed: </target>
+        <source xml:lang="en">Export failed: {0}</source>
+        <target xml:lang="ha" state="needs-translation">Export failed: {0}</target>
         <note>ID: Spreadsheet.ExportFailed</note>
       </trans-unit>
       <trans-unit id="Spreadsheet.SpreadsheetLocked">
@@ -165,6 +184,17 @@
         <source xml:lang="en">The folder named {0} already exists and looks like it might be a Bloom book folder!</source>
         <target xml:lang="ha" state="needs-translation">The folder named {0} already exists and looks like it might be a Bloom book folder!</target>
         <note>ID: Spreadsheet.OverwriteBook</note>
+      </trans-unit>
+      <!-- 5.5? But we may not want to translate any Spreadsheet stuff yet? Anyway, this is new in 5.5-->
+      <trans-unit id="Spreadsheet.TroubleCopying" translate="no">
+        <source xml:lang="en">Bloom had trouble copying the file {0} to the video folder: {1}</source>
+        <target xml:lang="ha" state="needs-translation">Bloom had trouble copying the file {0} to the video folder: {1}</target>
+        <note>ID: Spreadsheet.TroubleCopying</note>
+      </trans-unit>
+      <trans-unit id="Spreadsheet.TroubleCopyingFolder" translate="no">
+        <source xml:lang="en">Bloom had trouble copying the folder {0} to the activities folder: {1}</source>
+        <target xml:lang="ha" state="needs-translation">Bloom had trouble copying the folder {0} to the activities folder: {1}</target>
+        <note>ID: Spreadsheet.TroubleCopyingFolder</note>
       </trans-unit>
       <trans-unit id="Spreadsheet.WriteFailed">
         <source xml:lang="en">Bloom had problems writing files to that location ({0}). Check that you have permission to write there.</source>

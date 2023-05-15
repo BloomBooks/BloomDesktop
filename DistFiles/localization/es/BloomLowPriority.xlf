@@ -7,6 +7,19 @@
         <target xml:lang="es-ES" state="final">Instalando...</target>
         <note>This isn't used by code, but rather we harvest some of these for use in making the GIF that shows when the software is installing.</note>
       </trans-unit>
+      <trans-unit id="Errors.CorruptImageFile" translate="no">
+        <!-- added in 5.5 -->
+        <source xml:lang="en">The image file {0} is corrupt and needs to be replaced. ({1})</source>
+        <note>ID: Errors.CorruptImageFile</note>
+        <note>The placeholder {0} represents the name of the corrupt file. The placeholder {0} represents a message describing the problem with the file.</note>
+        <target xml:lang="es-ES" state="needs-translation">The image file {0} is corrupt and needs to be replaced. ({1})</target>
+      </trans-unit>
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.NoBookshelvesFromServer" sil:dynamic="true" translate="no">
+        <!-- New in 5.5 -->
+        <source xml:lang="en">Bloom could not reach the server to get the list of bookshelves.</source>
+        <note>ID: CollectionSettingsDialog.BookMakingTab.NoBookshelvesFromServer</note>
+        <target xml:lang="es-ES" state="needs-translation">Bloom could not reach the server to get the list of bookshelves.</target>
+      </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.ESpeakPreview.ConversionFileUsed" approved="yes">
         <source xml:lang="en">Conversion file used:</source>
         <target xml:lang="es-ES" state="final">Archivo de conversión usado:</target>
@@ -37,15 +50,21 @@
         <target xml:lang="es-ES" state="final">Color de estantería</target>
         <note>ID: PublishTab.Android.BulkBookshelfColor</note>
       </trans-unit>
-      <trans-unit id="PublishTab.RecordVideo.NoAudioInVideo">
+      <trans-unit id="PublishTab.RecordVideo.NoAudioInVideo" approved="yes">
         <source xml:lang="en">Currently, Bloom does not support including audio from Sign Language videos in video output.</source>
-        <target xml:lang="es-ES" state="translated">Actualmente, Bloom no permite que el video de salida incluya el audio de los vídeos de lengua de signos.</target>
+        <target xml:lang="es-ES" state="final">Actualmente, Bloom no permite que el video de salida incluya el audio de los vídeos de lengua de signos.</target>
         <note>ID: PublishTab.RecordVideo.NoAudioInVideo</note>
       </trans-unit>
       <trans-unit id="PublishTab.Upload.CheckEmailFailed" approved="yes">
         <source xml:lang="en">Bloom needs to verify your email, but our attempt to resend the request failed, possibly because you made too many requests too close together. Please check your email, and if you can't find the message, try again later.</source>
         <target xml:lang="es-ES" state="final">Bloom necesita verificar su correo electrónico, pero nuestro intento de reenviar la solicitud falló, posiblemente porque hizo demasiadas solicitudes demasiadamente rápido. Por favor, compruebe su correo electrónico, y si no puede encontrar el mensaje, inténtelo de nuevo más tarde.</target>
         <note>ID: PublishTab.Upload.CheckEmailFailed</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.BookshelfError" translate="no">
+        <!-- New in 5.5-->
+        <source xml:lang="en">The collection's bookshelf was not on the list of bookshelves for this Enterprise subscription.</source>
+        <note>ID: PublishTab.Upload.BookshelfError</note>
+        <target xml:lang="es-ES" state="needs-translation">The collection's bookshelf was not on the list of bookshelves for this Enterprise subscription.</target>
       </trans-unit>
       <trans-unit id="Settings.Enterprise.Community" approved="yes">
         <source xml:lang="en">Funded by the local community only</source>
@@ -166,6 +185,17 @@
         <source xml:lang="en">The folder named {0} already exists and looks like it might be a Bloom book folder!</source>
         <target xml:lang="es-ES" state="final">¡La carpeta llamada {0} ya existe y parece que podría ser una carpeta de libros de Bloom!</target>
         <note>ID: Spreadsheet.OverwriteBook</note>
+      </trans-unit>
+      <!-- 5.5? But we may not want to translate any Spreadsheet stuff yet? Anyway, this is new in 5.5-->
+      <trans-unit id="Spreadsheet.TroubleCopying" translate="no">
+        <source xml:lang="en">Bloom had trouble copying the file {0} to the video folder: {1}</source>
+        <target xml:lang="es-ES" state="needs-translation">Bloom had trouble copying the file {0} to the video folder: {1}</target>
+        <note>ID: Spreadsheet.TroubleCopying</note>
+      </trans-unit>
+      <trans-unit id="Spreadsheet.TroubleCopyingFolder" translate="no">
+        <source xml:lang="en">Bloom had trouble copying the folder {0} to the activities folder: {1}</source>
+        <target xml:lang="es-ES" state="needs-translation">Bloom had trouble copying the folder {0} to the activities folder: {1}</target>
+        <note>ID: Spreadsheet.TroubleCopyingFolder</note>
       </trans-unit>
       <trans-unit id="Spreadsheet.WriteFailed" approved="yes">
         <source xml:lang="en">Bloom had problems writing files to that location ({0}). Check that you have permission to write there.</source>
