@@ -310,7 +310,13 @@ export const ProgressDialog: React.FunctionComponent<IProgressDialogProps> = pro
                                 Quit
                             </BloomButton>
                         ) : (
-                            <DialogCloseButton onClick={props.onClose} />
+                            <DialogCloseButton
+                                onClick={
+                                    props.onClose
+                                        ? props.onClose
+                                        : () => post("common/closeReactDialog")
+                                }
+                            />
                         )}
                     </React.Fragment>
                 ) : // if we're not done, show the cancel button if that was called for...
