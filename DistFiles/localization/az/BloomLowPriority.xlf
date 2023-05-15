@@ -157,9 +157,8 @@
       </trans-unit>
       <trans-unit id="Spreadsheet.ExportFailed">
         <source xml:lang="en">Export failed: {0}</source>
-        <target xml:lang="az" state="translated">İxrac alınmadı: {0}</target>
+        <target xml:lang="az" state="translated">İxrac alınmadı:</target>
         <note>ID: Spreadsheet.ExportFailed</note>
-        <note>{0} is a placeholder for an exception message</note>
       </trans-unit>
       <trans-unit id="Spreadsheet.SpreadsheetLocked">
         <source xml:lang="en">Bloom could not write to the spreadsheet because another program has it locked. Do you have it open in another program?</source>
