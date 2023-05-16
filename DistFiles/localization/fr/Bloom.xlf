@@ -4660,9 +4660,9 @@
         <target xml:lang="fr" state="final">Permettre aux lecteurs ePUB de faire la mise en page des images et du texte qu'ils veulent. L'utilisateur risque d'être mieux placé pour augmenter la taille de la police. Une mise en page personnalisée ne sera pas agréable à l'œil. Ce mode n'est pas disponible si votre livre a des pages de superposition (bandes dessinées).</target>
         <note>ID: PublishTab.Epub.Flowable.Description</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Epub.Flowable.DisabledTooltip">
+      <trans-unit id="PublishTab.Epub.Flowable.DisabledTooltip" approved="yes">
         <source xml:lang="en">This is disabled because an ePUB viewer in flowable mode would not be able to display the overlay pages (comics) in this book.</source>
-        <target xml:lang="fr" state="needs-translation">This is disabled because an ePUB viewer in flowable mode would not be able to display the overlay pages (comics) in this book.</target>
+        <target xml:lang="fr" state="final">Cette option est désactivée car une visionneuse ePUB en mode fluide ne serait pas en mesure d'afficher les pages de superposition (bandes dessinées) dans ce livre.</target>
         <note>ID: PublishTab.Epub.Flowable.DisabledTooltip</note>
       </trans-unit>
       <trans-unit id="PublishTab.Epub.Mode" approved="yes">
