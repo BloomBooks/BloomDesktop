@@ -581,10 +581,11 @@ namespace Bloom.Api
 				// in the root folder of the current book.
 				var bloomRoot = FileLocationUtilities.GetDirectoryDistributedWithApplication(BloomFileLocator.BrowserRoot);
 				var sourceDir = bloomRoot;
-				if (Path.GetDirectoryName(imageFile) == "book-preview")
+
+				if (GetLocalPathRoot(imageFile) == "book-preview")
 				{
 					sourceDir = CurrentBook.FolderPath; // no way we should be making a book-preview without a current book
-					imageFile = Path.GetFileName(imageFile);
+					imageFile = GetLocalPathAfterRoot(imageFile);
 				}
 
 				imageFile = Path.Combine(sourceDir, imageFile);
@@ -1545,6 +1546,51 @@ namespace Bloom.Api
 			}
 			return localPath;
 		}
+
+		/// <summary>
+		/// Given the localPath, returns the "root" (first directory) of the local path.
+		/// </summary>
+		/// <remarks>
+		/// Can't use C#'s Path.GetPathRoot because "bloom-preview/..." returns ""
+		/// </remarks>
+		private static string GetLocalPathRoot(string localPath)
+		{
+			if (String.IsNullOrEmpty(localPath))
+				return localPath;
+
+			Debug.Assert(!localPath.StartsWith("/") && !localPath.StartsWith("\\"), "Precondition violated. localPath is not supposed to have a leading slash");
+
+			var firstDirSeparatorIndex = localPath.IndexOfAny(Extensions.kDirectorySeparators);
+			if (firstDirSeparatorIndex < 0)
+			{
+				return "";
+			}
+
+			return localPath.Substring(0, firstDirSeparatorIndex);
+		}
+
+		/// <summary>
+		/// Given the localPath, returns the part of the path after the "root" (first directory) of the local path.
+		/// </summary>
+		/// <returns>
+		/// The path after the root (no leading slash)
+		/// </returns>
+		private static string GetLocalPathAfterRoot(string localPath)
+		{
+			if (String.IsNullOrEmpty(localPath))
+				return localPath;
+
+			Debug.Assert(!localPath.StartsWith("/") && !localPath.StartsWith("\\"), "Precondition violated. localPath is not supposed to have a leading slash");
+
+			var firstDirSeparatorIndex = localPath.IndexOfAny(Extensions.kDirectorySeparators);
+			if (firstDirSeparatorIndex < 0)
+			{
+				return localPath;
+			}
+
+			return localPath.Substring(firstDirSeparatorIndex + 1);
+		}
+
 
 		public static string GetContentType(string extension)
 		{
