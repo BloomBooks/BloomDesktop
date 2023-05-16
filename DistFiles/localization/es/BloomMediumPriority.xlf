@@ -30,28 +30,28 @@
         <source xml:lang="en">Select this if you want readers to be able to choose to read the book in this language.</source>
         <note>ID: PublishTab.Language.Enabled</note>
         <note>This is a tooltip on a checkbox. The checkbox contains the name of a language. The checkbox controls whether this language will be included in the published book.</note>
-        <target xml:lang="es-ES" state="needs-translation">Select this if you want readers to be able to choose to read the book in this language.</target>
+        <target xml:lang="es-ES" state="translated">Seleccione esta opción si desea que los lectores puedan elegir leer el libro en este idioma.</target>
       </trans-unit>
       <trans-unit id="PublishTab.Language.Required" sil:dynamic="true">
         <!-- added in 5.5 -->
         <source xml:lang="en">This is disabled because this language is currently shown in the book, so it is required.</source>
         <note>ID: PublishTab.Language.Required</note>
         <note>This is a tooltip on a checkbox. The checkbox contains the name of a language. The checkbox controls whether this language will be included in the published book. In this case, the user is not allowed to change the value.</note>
-        <target xml:lang="es-ES" state="needs-translation">This is disabled because this language is currently shown in the book, so it is required.</target>
+        <target xml:lang="es-ES" state="translated">Esto está desactivado porque este idioma se muestra actualmente en el libro, por lo que es necesario.</target>
       </trans-unit>
       <trans-unit id="PublishTab.AudioLanguage.Enabled" sil:dynamic="true">
         <!-- added in 5.5 -->
         <source xml:lang="en">Select this if you want to include this audio.</source>
         <note>ID: PublishTab.AudioLanguage.Enabled</note>
         <note>This is a tooltip on a checkbox. The checkbox contains the name of a language. The checkbox controls whether the Talking Book audio for this language will be included in the published book.</note>
-        <target xml:lang="es-ES" state="needs-translation">Select this if you want to include this audio.</target>
+        <target xml:lang="es-ES" state="translated">Seleccione esta opción si desea incluir este audio.</target>
       </trans-unit>
       <trans-unit id="PublishTab.AudioLanguage.Disabled" sil:dynamic="true">
         <!-- added in 5.5 -->
         <source xml:lang="en">This is disabled because this book does not have any audio in this language.</source>
         <note>ID: PublishTab.AudioLanguage.Disabled</note>
         <note>This is a tooltip on a checkbox. The checkbox contains the name of a language. The checkbox controls whether the Talking Book audio for this language will be included in the published book. In this case, the user is not allowed to change the value.</note>
-        <target xml:lang="es-ES" state="needs-translation">This is disabled because this book does not have any audio in this language.</target>
+        <target xml:lang="es-ES" state="translated">Esto está desactivado porque este libro no tiene ningún audio en este idioma.</target>
       </trans-unit>
       <trans-unit id="PublishTab.Feature.Activities.None" translate="no">
         <!-- added in 5.5 -->
