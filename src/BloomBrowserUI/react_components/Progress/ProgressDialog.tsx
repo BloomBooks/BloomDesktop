@@ -354,10 +354,14 @@ type IWinFormsProgressDialogProps = Omit<
  * The open state of ProgressDialog is determined solely from {dialogEnvironment.initiallyOpen}
  */
 export const WinFormsProgressDialog: React.FunctionComponent<IWinFormsProgressDialogProps> = props => {
+    const [isOpen, setIsOpen] = useState(props.dialogEnvironment.initiallyOpen);
     return (
         <ProgressDialog
             {...props}
-            open={props.dialogEnvironment.initiallyOpen}
+            open={isOpen}
+            onClose={() => {
+                setIsOpen(false);
+            }}
         />
     );
 };
