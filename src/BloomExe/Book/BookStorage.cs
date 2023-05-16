@@ -1804,20 +1804,37 @@ namespace Bloom.Book
 				}
 				else
 				{
-					// NOTE:  I'm not sure we ever hit this code even when there's not any html files in the book's folder.
+					// This was  observed to happen at the end of downloading a very large book (BL-12034).
+					// It's also of course possible that the user has been messing with the book folder,
+					// or that we have a bug. It's rare enough that we don't feel a need to make it a super-nice
+					// message, but it should give some useful information and not crash.
+					// Generally this will not be seen, because Bloom does not create a book icon in a collection
+					// at all for a folder that does not contain at least one HTM{L} file.
+					// If it IS seen, currently it will appear as ErrorMessagesHtml, so it needs to be valid HTML,
+					// and to use <br> for newlines. If we manage to get NotifyUserOfProblem working in this
+					// situation, we probably need to switch back to newlines.
 					var b = new StringBuilder();
-					b.AppendLine("Could not find an html file in the folder to use.");
+					b.AppendLine("Could not find an html file in the folder to use.<br/>");
 					if (files.Count == 0)
 					{
-						b.AppendLine("***There are no files.");
+						b.AppendLine("***There are no files.<br>");
 					}
 					else
 					{
 						b.AppendLine("Files in this book are:");
 						foreach (var f in files)
-							b.AppendLine("  " + f);
+							b.AppendLine("<br/>" + f);
 					}
-					throw new ApplicationException(b.ToString());
+					ErrorMessagesHtml =b.ToString();
+					// This freezes the app and does not show. I can't figure out why. We plan to come back to this in 5.6 (BL-12034)
+					//ErrorReport.NotifyUserOfProblem(ErrorMessagesHtml);
+
+					// It's tempting to throw here, but then the constructor fails,
+					// and we get a very confusing stack dump because usually creating
+					// a BookStorage happens deep in the depths of AutoFac (BL-12034).
+					// So I'm going for returning a BookStorage in an error state, though
+					// that has some problems too.
+					return;
 				}
 			}
 			else
