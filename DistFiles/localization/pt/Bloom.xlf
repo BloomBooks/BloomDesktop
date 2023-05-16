@@ -4658,6 +4658,11 @@
         <target xml:lang="pt-PT" state="final">Permita que os leitores ePUB exibam imagens e texto da maneira que quiserem. O utilizador é mais capaz de aumentar o tamanho da fonte. As disposições da página personalizada não parecerão bons. Este modo não está disponível se o seu livro tiver páginas de sobreposição (quadrinhos).</target>
         <note>ID: PublishTab.Epub.Flowable.Description</note>
       </trans-unit>
+      <trans-unit id="PublishTab.Epub.Flowable.DisabledTooltip">
+        <source xml:lang="en">This is disabled because an ePUB viewer in flowable mode would not be able to display the overlay pages (comics) in this book.</source>
+        <target xml:lang="pt-PT" state="needs-translation">This is disabled because an ePUB viewer in flowable mode would not be able to display the overlay pages (comics) in this book.</target>
+        <note>ID: PublishTab.Epub.Flowable.DisabledTooltip</note>
+      </trans-unit>
       <trans-unit id="PublishTab.Epub.Mode" approved="yes">
         <source xml:lang="en">ePUB mode</source>
         <target xml:lang="pt-PT" state="final">Modo ePUB</target>
