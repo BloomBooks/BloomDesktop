@@ -4885,7 +4885,7 @@ Por ejemplo, darle crédito al traductor de esta versión.</target>
       </trans-unit>
       <trans-unit id="PublishTab.PdfMaker.FullBleed.DisableBecauseBookIsNotFullBleed">
         <source xml:lang="en">This is disabled because this book is not set up to be full bleed.</source>
-        <target xml:lang="es-ES" state="needs-translation">This is disabled because this book is not set up to be full bleed.</target>
+        <target xml:lang="es-ES" state="translated">Esto está deshabilitado porque este libro no está configurado para sangría completa.</target>
         <note>ID: PublishTab.PdfMaker.FullBleed.DisableBecauseBookIsNotFullBleed</note>
       </trans-unit>
       <trans-unit id="PublishTab.PdfMaker.FullBleed" approved="yes">
@@ -5143,7 +5143,7 @@ Por ejemplo, darle crédito al traductor de esta versión.</target>
       </trans-unit>
       <trans-unit id="PublishTab.RecordVideo.Mp3.Disabled">
         <source xml:lang="en">This is disabled because the book does not have audio.</source>
-        <target xml:lang="es-ES" state="needs-translation">This is disabled because the book does not have audio.</target>
+        <target xml:lang="es-ES" state="translated">Esto está desactivado porque el libro no tiene audio.</target>
         <note>ID: PublishTab.RecordVideo.Mp3.Disabled</note>
       </trans-unit>
       <trans-unit id="PublishTab.RecordVideo.OverviewHelpLink" approved="yes">
@@ -7254,17 +7254,17 @@ Por ejemplo, darle crédito al traductor de esta versión.</target>
       </trans-unit>
       <trans-unit id="Webview.MissingOrTooOld">
         <source xml:lang="en">Bloom depends on Microsoft WebView2 Evergreen, at least version {0}. We will now send you to a webpage that will help you add this to your computer.</source>
-        <target xml:lang="es-ES" state="needs-translation">Bloom depends on Microsoft WebView2 Evergreen, at least version {0}. We will now send you to a webpage that will help you add this to your computer.</target>
+        <target xml:lang="es-ES" state="translated">Bloom depende de Microsoft WebView2 Evergreen, al menos la versión {0}. Ahora le enviaremos a una página web que le ayudará a añadir esto a su computadora.</target>
         <note>ID: Webview.MissingOrTooOld</note>
       </trans-unit>
       <trans-unit id="Webview.CurrentVersion">
         <source xml:lang="en">(Currently {0})</source>
-        <target xml:lang="es-ES" state="needs-translation">(Currently {0})</target>
+        <target xml:lang="es-ES" state="translated">(Actualmente {0})</target>
         <note>ID: Webview.CurrentVersion</note>
       </trans-unit>
       <trans-unit id="Webview.NotInstalled">
         <source xml:lang="en">(Currently not installed)</source>
-        <target xml:lang="es-ES" state="needs-translation">(Currently not installed)</target>
+        <target xml:lang="es-ES" state="translated">(Actualmente no está instalado)</target>
         <note>ID: Webview.NotInstalled</note>
       </trans-unit>
     </body>
