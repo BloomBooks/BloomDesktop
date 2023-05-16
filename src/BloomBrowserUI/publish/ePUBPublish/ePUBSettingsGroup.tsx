@@ -141,7 +141,9 @@ export const EPUBSettingsGroup: React.FunctionComponent<{
                                             showDisabled={true}
                                             tipWhenDisabled={{
                                                 l10nKey:
-                                                    "PublishTab.Epub.Flowable.DisabledTooltip"
+                                                    "PublishTab.Epub.Flowable.DisabledTooltip",
+                                                english:
+                                                    "This is disabled because an ePUB viewer in flowable mode would not be able to display the overlay pages (comics) in this book."
                                             }}
                                         >
                                             {menuItem}
