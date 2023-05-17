@@ -47,8 +47,17 @@ export default class TalkingBookTool implements ITool {
     // Called when a new page is loaded.
     public async newPageReady(): Promise<void> {
         this.showImageDescriptionsIfAny();
+        const imageDescToolActive = this.isImageDescriptionToolActive();
+        const checkbox = document.getElementById(
+            "audio-showImageDescription-wrapper"
+        );
+        if (checkbox) {
+            checkbox.style.display = imageDescToolActive
+                ? "inline-block"
+                : "none";
+        }
         const pageReadyPromise = AudioRecorder.theOneAudioRecorder.newPageReady(
-            this.isImageDescriptionToolActive(),
+            imageDescToolActive,
             TalkingBookTool.deshroudPhraseDelimiters
         );
         return pageReadyPromise;

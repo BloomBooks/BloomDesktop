@@ -51,6 +51,7 @@ import { getEditTabBundleExports } from "../../js/bloomFrames";
 import PlaybackOrderControls from "../../../react_components/playbackOrderControls";
 import Recordable from "./recordable";
 import { getMd5 } from "./md5Util";
+import { setupImageDescriptions } from "../imageDescription/imageDescription";
 
 enum Status {
     Disabled, // Can't use button now (e.g., Play when there is no recording)
@@ -119,10 +120,13 @@ const kRecordingModeClickHandler: string =
     "audio-recordingModeControl-clickHandler";
 
 const kPlaybackOrderControl: string = "audio-playbackOrderControl";
+const kShowImageDescriptionControl: string = "audio-showImageDescription";
 const kPlaybackOrderClickHandler: string =
     "audio-playbackOrderControl-clickHandler";
 const kPlaybackOrderContainerClass: string =
     "bloom-playbackOrderControlsContainer";
+const kShowImageDescriptionClickHandler: string =
+    "audio-showImageDescription-clickHandler";
 
 const kEndTimeAttributeName: string = "data-audioRecordingEndTimes";
 
@@ -169,6 +173,7 @@ export default class AudioRecording {
     private audioSplitButton: HTMLButtonElement;
     public recordingModeInput: HTMLInputElement; // Currently a checkbox, could change to a radio button in the future
     public showPlaybackInput: HTMLInputElement;
+    public showImageDescriptionInput: HTMLInputElement;
 
     public audioRecordingMode: AudioRecordingMode;
 
@@ -210,6 +215,9 @@ export default class AudioRecording {
 
         this.showPlaybackInput = <HTMLInputElement>(
             document.getElementById(kPlaybackOrderControl)!
+        );
+        this.showImageDescriptionInput = <HTMLInputElement>(
+            document.getElementById(kShowImageDescriptionControl)!
         );
         this.levelCanvas = <HTMLCanvasElement>(
             document.getElementById("audio-meter")!
@@ -259,6 +267,9 @@ export default class AudioRecording {
         $("#" + kPlaybackOrderClickHandler)
             .off()
             .click(e => this.togglePlaybackOrder());
+        $("#" + kShowImageDescriptionClickHandler)
+            .off()
+            .click(e => this.toggleShowImageDescription());
 
         $("#player").off();
         const player = this.getMediaPlayer();
@@ -601,7 +612,7 @@ export default class AudioRecording {
                     return false;
                 }
                 if (
-                    !$this.isImageDescriptionActive &&
+                    !this.showingImageDescriptions() &&
                     transgroup.classList.contains("bloom-imageDescription")
                 ) {
                     return false;
@@ -1908,6 +1919,61 @@ export default class AudioRecording {
         }
     }
 
+    setShowImageDescriptionCheckbox(showingImageDescriptions: boolean) {
+        // This controls the checked state of the checkbox, which is the
+        // master indication of whether we're in this mode.
+        this.showImageDescriptionInput.checked = showingImageDescriptions;
+        // This sets a class on the label (not sure we use it for this checkbox)
+        this.setCheckboxLabelClass(
+            showingImageDescriptions,
+            kShowImageDescriptionClickHandler
+        );
+    }
+
+    // It's a bit of a toss-up whether this function belongs here or in talkingBook.ts. It's primary
+    // responsibility is to toggle the checkbox which is in toolbox land, so in that way it would
+    // be more at home in talkingBooks.ts, which manages the toolbox. But many of the side effects
+    // of switching it on (and especially off) involve functions here, and it affects the content
+    // page as well as the toolbox. Another reason is that other checkboxes in the toolbox, like
+    // Show playback order buttons, have their logic here, so it feels cleaner to keep their handling
+    // together in one place.
+    public toggleShowImageDescription() {
+        const showingImageDescriptions = !this.showImageDescriptionInput
+            .checked;
+        this.setShowImageDescriptionCheckbox(showingImageDescriptions);
+        const page = ToolBox.getPage();
+        if (showingImageDescriptions) {
+            // makes them visible
+            page?.classList.add("bloom-showImageDescriptions");
+            // If we don't already have them, set them up
+            let changed = false;
+            if (page) {
+                setupImageDescriptions(
+                    page,
+                    () => {},
+                    () => (changed = true)
+                );
+                if (changed) {
+                    // Make sure audio recording is set up for the new image descriptions,
+                    // even though for now they will be empty.
+                    this.setupAndUpdateMarkupAsync();
+                }
+                // The main reason for this is that we may need to change the enabled state
+                // of buttons so the audio highlight can be moved into the image description.
+                this.changeStateAndSetExpectedAsync("record");
+            }
+        } else if (page) {
+            // page should always be set, just making compiler happy
+            // hides them
+            page?.classList.remove("bloom-showImageDescriptions");
+            // If an image description was selected, move the selection
+            const current = this.getCurrentHighlight();
+            if (current && current.closest(".bloom-imageDescription")) {
+                this.removeAudioCurrent(page);
+                this.setCurrentAudioElementToFirstAudioElementAsync();
+            }
+        }
+    }
     private showPlaybackOrderUi(docBody: HTMLElement) {
         this.removeAudioCurrent(docBody);
         this.playbackOrderCache = [];
@@ -1945,7 +2011,7 @@ export default class AudioRecording {
         this.renderPlaybackControls();
         this.toggleToolDisablingOverlay(true);
         this.showPlaybackInput.checked = true;
-        this.togglePlaybackOrderCheckedClass(true);
+        this.setPlaybackOrderCheckedClass(true);
     }
 
     private renderPlaybackControls() {
@@ -2045,7 +2111,7 @@ export default class AudioRecording {
         });
         this.toggleToolDisablingOverlay(false);
         if (!leaveChecked) {
-            this.togglePlaybackOrderCheckedClass(false);
+            this.setPlaybackOrderCheckedClass(false);
             this.showPlaybackInput.checked = false;
             this.updateButtonStateAsync("check");
         }
@@ -2087,10 +2153,13 @@ export default class AudioRecording {
     }
 
     // With css, the presence/absence of the checked class on the checkbox label determines its color.
-    private togglePlaybackOrderCheckedClass(addClass: boolean) {
+    private setCheckboxLabelClass(
+        addClass: boolean,
+        clickHandlerElementId: string
+    ) {
         const checkedClass = "checked";
         const checkboxLabel = (<HTMLLabelElement>(
-            document.getElementById(kPlaybackOrderClickHandler)
+            document.getElementById(clickHandlerElementId)
         )).nextElementSibling;
         if (checkboxLabel != null) {
             if (addClass) {
@@ -2099,6 +2168,10 @@ export default class AudioRecording {
                 checkboxLabel.classList.remove(checkedClass);
             }
         }
+    }
+
+    private setPlaybackOrderCheckedClass(checked: boolean) {
+        this.setCheckboxLabelClass(checked, kPlaybackOrderClickHandler);
     }
 
     // Update the input element (e.g. checkbox) which visually represents the recording mode and updates the textbox markup to reflect the new mode.
@@ -2505,6 +2578,12 @@ export default class AudioRecording {
         ++this.currentAudioSessionNum;
 
         this.isImageDescriptionActive = imageDescToolActive;
+        const page = ToolBox.getPage();
+        // The toolbox code already decided whether we should show image descriptions, but we
+        // need to bring the state of the checkbox into alignment.
+        const showingImageDescriptions =
+            !!page && page.classList.contains("bloom-showImageDescriptions");
+        this.setShowImageDescriptionCheckbox(showingImageDescriptions);
 
         // FYI, it is possible for newPageReady to be called without updateMarkup() being called
         // (e.g. when opening the toolbox with an empty text box).
@@ -2903,6 +2982,13 @@ export default class AudioRecording {
         }
     }
 
+    private showingImageDescriptions(): boolean {
+        return (
+            this.isImageDescriptionActive &&
+            this.showImageDescriptionInput.checked
+        );
+    }
+
     public async setCurrentAudioElementToFirstAudioElementAsync(): Promise<HTMLElement | null> {
         const pageDocBody = this.getPageDocBody();
         if (!pageDocBody) {
@@ -2920,7 +3006,16 @@ export default class AudioRecording {
         );
 
         const visibleAudioSentenceElems = audioSentenceElems.filter(elem => {
-            return this.isVisible(elem);
+            if (!this.isVisible(elem)) {
+                return false;
+            }
+            if (
+                !this.showingImageDescriptions() &&
+                elem.closest(".bloom-imageDescription")
+            ) {
+                return false;
+            }
+            return true;
         });
         const firstSentenceArray = this.sortByTabindex(
             visibleAudioSentenceElems

@@ -2801,6 +2801,11 @@
         <note>ID: EditTab.Toolbox.TalkingBookTool.ShowPlaybackOrder</note>
         <note>Shown if you open TalkingBookTool and then open the 'Advanced' subsection</note>
       </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.ShowImageDescription" sil:dynamic="true">
+        <source xml:lang="en">Show image description</source>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.ShowImageDescription</note>
+        <note>Shown if you open TalkingBookTool and then open the 'Advanced' subsection</note>
+      </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.SpeakLabel" sil:dynamic="true">
         <source xml:lang="en">Speak</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.SpeakLabel</note>
