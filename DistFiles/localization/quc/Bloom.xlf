@@ -3204,6 +3204,11 @@ K'amab’al no’j, chya uq'ij ri q'axanel tzijob'al rech we jun rilik ub'ixik.<
         <target xml:lang="quc" state="needs-translation">Show playback order buttons</target>
         <note>ID: EditTab.Toolbox.TalkingBookTool.ShowPlaybackOrder</note>
       </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.ShowImageDescription" sil:dynamic="true">
+        <source xml:lang="en">Show image description</source>
+        <target xml:lang="quc" state="needs-translation">Show image description</target>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.ShowImageDescription</note>
+      </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.SpeakLabel" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Speak</source>
         <target xml:lang="quc" state="final">Ch'awik</target>
