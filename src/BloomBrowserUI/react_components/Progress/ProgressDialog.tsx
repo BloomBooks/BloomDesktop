@@ -351,7 +351,8 @@ type IWinFormsProgressDialogProps = Omit<
 
 /**
  * Designed to be used in conjunction with WireUpForWinforms, which sets initiallyOpen to true.
- * The open state of ProgressDialog is determined solely from {dialogEnvironment.initiallyOpen}
+ * The open state of ProgressDialog is initialized from {dialogEnvironment.initiallyOpen},
+ * but then subsequently managed by this component
  */
 export const WinFormsProgressDialog: React.FunctionComponent<IWinFormsProgressDialogProps> = props => {
     const [isOpen, setIsOpen] = useState(props.dialogEnvironment.initiallyOpen);
