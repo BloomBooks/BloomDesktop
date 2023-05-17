@@ -8,20 +8,26 @@
 div.bloom-page.coverColor {
     background-color: @PreviewCoverColor;
 }
-/*When in preview, people often think they are looking at something editable. Give them this visual feedback*/
-.disabledVisual {
-    cursor: not-allowed;
+
+// These rules are a partial polyfill for inert in Gecko60 and can be removed in 5.5.
+[inert] {
+    pointer-events: none;
 }
-.disabledVisual img {
-    opacity: 0.4;
+[inert],
+[inert] * {
+    user-select: none;
+    -webkit-user-select: none;
+    -ms-user-select: none;
+}
+// When in preview, people often think they are looking at something editable. Give them this visual feedback.
+// (Setting the cursor doesn't seem to work in inert elements, so this rule is applied one level above
+// the body, which is what we set to inert.)
+html {
+    cursor: not-allowed;
 }
 /* Some images, like the copyright one, have no src initially. Don't puzzle the user with a missing-image icon.''*/
 img[src=""] {
     display: none;
-}
-.disabledVisual div {
-    opacity: 0.4;
-    cursor: not-allowed;
 }
 input {
     border: 1px solid transparent;
