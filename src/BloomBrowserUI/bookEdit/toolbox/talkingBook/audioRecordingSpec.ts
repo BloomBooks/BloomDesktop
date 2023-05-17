@@ -2544,7 +2544,7 @@ export function SetupTalkingBookUIElements() {
     document.body.appendChild(document.createElement("div")); // Ensures there is always an element.
 
     const html =
-        '<button id="audio-record" ></button><button id="audio-play"></button><div id="audio-split-wrapper"><button id="audio-split"></button></div><button id="audio-next"></button><button id="audio-prev"></button><button id="audio-clear"></button><input id="audio-recordingModeControl"><div id="audio-recordingModeControl-clickHandler" /></input><div id="audio-playbackOrderControl"></div><audio id="player" ></audio>';
+        '<button id="audio-record" ></button><button id="audio-play"></button><div id="audio-split-wrapper"><button id="audio-split"></button></div><button id="audio-next"></button><button id="audio-prev"></button><button id="audio-clear"></button><input id="audio-recordingModeControl"><div id="audio-recordingModeControl-clickHandler" /></input><div id="audio-playbackOrderControl"></div><input id="audio-showImageDescription"><div id="audio-showImageDescription-clickHandler" /></input><audio id="player" ></audio>';
     document.body.firstElementChild!.insertAdjacentHTML("afterend", html);
 }
 
