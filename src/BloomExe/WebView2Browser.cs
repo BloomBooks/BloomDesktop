@@ -57,6 +57,7 @@ namespace Bloom
 				//	}
 				//};
 				_webview.CoreWebView2.ContextMenuRequested += ContextMenuRequested;
+
 				// This is only really needed for the print tab. But it is harmless elsewhere.
 				// It removes some unwanted controls from the toolbar that WebView2 inserts when
 				// previewing a PDF file.

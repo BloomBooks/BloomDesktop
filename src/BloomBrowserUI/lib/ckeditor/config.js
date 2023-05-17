@@ -80,6 +80,11 @@ CKEDITOR.editorConfig = function(config) {
     // See http://docs.ckeditor.com/#!/guide/dev_acf for a description of this setting.
     config.allowedContent = true;
 
+    // See https://ckeditor.com/docs/ckeditor4/latest/api/CKEDITOR_config.html#cfg-disableNativeSpellChecker
+    // This setting results in bloom-editable divs having an attribute 'spellcheck="false"'.
+    // No more red squiggles. (BL-12205)
+    config.disableNativeSpellChecker = true;
+
     // Filter out any html that might be dangerous.  Specifically, a div element might be copied from the same book and
     // could introduce duplicate ids.  See https://silbloom.myjetbrains.com/youtrack/issue/BL-3899.
     // Note that the first attempt to fix BL-3899 set allowedContent rather than pasteFilter, but that caused
