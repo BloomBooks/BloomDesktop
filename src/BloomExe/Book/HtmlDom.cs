@@ -1918,38 +1918,19 @@ namespace Bloom.Book
 
 		private static void FindFontsUsedInEmbeddedCss(string htmlContent, HashSet<string> result, bool includeFallbackFonts)
 		{
-			// Remove any HTML comments from the HTML string.
-			for (var idx = htmlContent.IndexOf("<!--"); idx >= 0; idx = htmlContent.IndexOf("<!--", idx))
+			var dom = XmlHtmlConverter.GetXmlDomFromHtml(htmlContent);
+			var styles = dom.SafeSelectNodes("/html/head/style");
+			foreach (XmlElement style in styles)
 			{
-				var endIdx = htmlContent.IndexOf("-->", idx + 4);
-				if (endIdx > idx)
-					htmlContent = htmlContent.Remove(idx, endIdx + 3 - idx);
+				var cssContent = style.InnerText;
+				FindFontsUsedInCss(cssContent, result, includeFallbackFonts);
 			}
-			// Capturing the content of a <style> element is too hard for Regex.  But we can capture
-			// the start tag okay, and work from there.
-			var styleElements = new Regex("<style[^>]*type=[\"']text/css[\"'][^>]*>");
-			foreach (Match match in styleElements.Matches(htmlContent))
+			var elementsWithStyleAttribute = dom.SafeSelectNodes("/html/body//*[@style]");
+			foreach (XmlElement element in elementsWithStyleAttribute)
 			{
-				var idxStart = match.Index + match.Length;
-				var idxEnd = htmlContent.IndexOf("</style>", idxStart);
-				if (idxEnd > idxStart)
-				{
-					var cssContent = htmlContent.Substring(idxStart, idxEnd - idxStart);
-					//Console.WriteLine("DEBUG cssContent from HTML <style> = \"{0}\"", cssContent);
+				var cssContent = element.GetAttribute("style");
+				if (!String.IsNullOrEmpty(cssContent) && cssContent.Contains("font-family:") && !String.IsNullOrEmpty(element.InnerText))
 					FindFontsUsedInCss(cssContent, result, includeFallbackFonts);
-				}
-			}
-			var styleAttributes1 = new Regex(" style=\"([^\"]*)\"");
-			foreach (Match match in styleAttributes1.Matches(htmlContent))
-			{
-				var cssContent = HttpUtility.HtmlDecode(match.Groups[1].Value);
-				FindFontsUsedInCss(cssContent, result, includeFallbackFonts);
-			}
-			var styleAttributes2 = new Regex(" style='([^']*)'");
-			foreach (Match match in styleAttributes2.Matches(htmlContent))
-			{
-				var cssContent = HttpUtility.HtmlDecode(match.Groups[1].Value);
-				FindFontsUsedInCss(cssContent, result, includeFallbackFonts);
 			}
 		}
 
