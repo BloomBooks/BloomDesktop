@@ -215,6 +215,99 @@ export class ImageDescriptionToolControls extends React.Component<
     }
 }
 
+// This function is a bit messy. It was extracted from a block of code in ImageDescriptionAdapter
+// so that Talking Book can set up image descriptions on request.
+export function setupImageDescriptions(
+    page: HTMLElement,
+    // This function will be run on the (usually single-member) collection of image descriptions
+    // for each image container, either immediately if it already exists, or (asynchronously)
+    // after it gets created, if it does not.
+    doToImageDescriptions: (descriptions: HTMLCollectionOf<Element>) => void,
+    // This function is called for each image container that gets modified by adding an image description
+    doIfContentAdded: () => void
+) {
+    const imageContainers = page.getElementsByClassName("bloom-imageContainer");
+
+    for (let i = 0; i < imageContainers.length; i++) {
+        const container = imageContainers[i];
+        let imageDescriptions = container.getElementsByClassName(
+            "bloom-imageDescription"
+        );
+        if (imageDescriptions.length === 0) {
+            // Adds a new bloom-translationGroup
+            // Gets the information we need to fill out the interior bloom-editables of the newly added bloom-translation group.
+            // Preferable to only send a request for the info we need and not save and refresh the whole page.
+            //   (Allows us to avoid the synchronous reload of the page, makes the UI experience much snappier)
+            post("editView/requestTranslationGroupContent", result => {
+                // newPageReady() can be called twice, and both calls might occur before this async
+                // callback happens for either of them, so both may take this "no translation groups"
+                // branch and start to create them.  So check again before actually adding the new
+                // description elements.
+                // See https://issues.bloomlibrary.org/youtrack/issue/BL-6798 for some
+                // confusing behavior that can result without this check.
+                imageDescriptions = container.getElementsByClassName(
+                    "bloom-imageDescription"
+                );
+                if (result && imageDescriptions.length == 0) {
+                    appendTranslationGroup(result.data, container);
+                    doIfContentAdded();
+                    imageDescriptions = container.getElementsByClassName(
+                        "bloom-imageDescription"
+                    );
+                    doToImageDescriptions(imageDescriptions);
+                }
+            });
+        } else {
+            doToImageDescriptions(imageDescriptions);
+        }
+    }
+}
+
+// Adds a new bloom-translationGroup
+// This function is meant to get called after we send a request to C# land to figure out what kind of bloom-editables/languages we need inside this translation group
+// The container must be inside the (editing) page iFrame (because this relies on getPageFromExports()
+function appendTranslationGroup(innerHtml, container: Element) {
+    // Fill the interior of the new element with the HTML we get back from the API call.
+
+    // from somewhere else I (John Thomson) copied this as a typical default set of classes for a translation group,
+    // except for the extra bloom-imageDescription. This distinguishes it from other TGs (such as in
+    // textOverPicture) which might be nested in image containers.
+    // Note that, like normal-style, the class imageDescriptionEdit-style class is not defined
+    // anywhere. Image descriptions will get the book's default font and Bloom's default text size
+    // from other style sheets, unless the user edits the imageDescriptionEdit-style directly.
+    // Using a unique name serves to prevent image description from using the possibly very large
+    // text set for the main content (normal-style); this style will inherit the defaults independently.
+    // Including 'edit' in the name of the style is intended to convey that this style is only
+    // intended for use in editing; we will style it otherwise if we actually make it visible
+    // in an epub.
+    const newElementHtmlPrefix =
+        "<div class='bloom-translationGroup bloom-imageDescription bloom-trailingElement ImageDescriptionEdit-style'>";
+    const newElementHtmlSuffix = "</div>";
+
+    let newElementHtmlInterior: string = "";
+    if (innerHtml) {
+        newElementHtmlInterior = innerHtml;
+    }
+    const newElementHtml =
+        newElementHtmlPrefix + newElementHtmlInterior + newElementHtmlSuffix;
+
+    const newTg = getEditablePageBundleExports()!
+        .makeElement(newElementHtml)
+        .get(0);
+
+    container.appendChild(newTg);
+
+    // This is necessary for the data-language tooltip to appear, probably among other things.
+    getEditablePageBundleExports()!.SetupElements(container as HTMLElement);
+
+    $(newTg)
+        .find(".bloom-editable")
+        .each((index, newEditable) => {
+            // Attaching CKEditor is necessary for range select formatting to work.
+            getEditablePageBundleExports()!.attachToCkEditor(newEditable);
+        });
+}
+
 export class ImageDescriptionAdapter extends ToolboxToolReactAdaptor {
     private reactControls: ImageDescriptionToolControls | null;
     public static kToolID = "imageDescription";
@@ -274,47 +367,15 @@ export class ImageDescriptionAdapter extends ToolboxToolReactAdaptor {
             // turn on special layout to make image descriptions visible (might already be on)
             page.classList.add("bloom-showImageDescriptions");
             // Make sure every image container has a child bloom-translationGroup to hold the image description.
-            const imageContainers = page.getElementsByClassName(
-                "bloom-imageContainer"
+            setupImageDescriptions(
+                page,
+                // BL-6798: we need to add focus listeners to these new (or newly visible) description elements.
+                imageDescriptions => this.addFocusListeners(imageDescriptions),
+                // BL-6775 if we just added image description
+                // translationGroups to a page that didn't have them before,
+                // we need to reset our state.
+                () => imageDescControls.setStateForNewPage()
             );
-
-            for (let i = 0; i < imageContainers.length; i++) {
-                const container = imageContainers[i];
-                let imageDescriptions = container.getElementsByClassName(
-                    "bloom-imageDescription"
-                );
-                if (imageDescriptions.length === 0) {
-                    // Adds a new bloom-translationGroup
-                    // Gets the information we need to fill out the interior bloom-editables of the newly added bloom-translation group.
-                    // Preferable to only send a request for the info we need and not save and refresh the whole page.
-                    //   (Allows us to avoid the synchronous reload of the page, makes the UI experience much snappier)
-                    post("editView/requestTranslationGroupContent", result => {
-                        // newPageReady() can be called twice, and both calls might occur before this async
-                        // callback happens for either of them, so both may take this "no translation groups"
-                        // branch and start to create them.  So check again before actually adding the new
-                        // description elements.
-                        // See https://issues.bloomlibrary.org/youtrack/issue/BL-6798 for some
-                        // confusing behavior that can result without this check.
-                        imageDescriptions = container.getElementsByClassName(
-                            "bloom-imageDescription"
-                        );
-                        if (result && imageDescriptions.length == 0) {
-                            this.appendTranslationGroup(result.data, container);
-                            // BL-6775 if we just added image description
-                            // translationGroups to a page that didn't have them before,
-                            // we need to reset our state.
-                            imageDescControls.setStateForNewPage();
-                            // BL-6798: we need to add focus listeners to these new description elements.
-                            imageDescriptions = container.getElementsByClassName(
-                                "bloom-imageDescription"
-                            );
-                            this.addFocusListeners(imageDescriptions);
-                        }
-                    });
-                } else {
-                    this.addFocusListeners(imageDescriptions);
-                }
-            }
         }
     }
 
@@ -335,52 +396,5 @@ export class ImageDescriptionAdapter extends ToolboxToolReactAdaptor {
                 true
             );
         }
-    }
-
-    // Adds a new bloom-translationGroup
-    // This function is meant to get called after we send a request to C# land to figure out what kind of bloom-editables/languages we need inside this translation group
-    // The container must be inside the (editing) page iFrame (because this relies on getPageFromExports()
-    private appendTranslationGroup(innerHtml, container: Element) {
-        // Fill the interior of the new element with the HTML we get back from the API call.
-
-        // from somewhere else I (John Thomson) copied this as a typical default set of classes for a translation group,
-        // except for the extra bloom-imageDescription. This distinguishes it from other TGs (such as in
-        // textOverPicture) which might be nested in image containers.
-        // Note that, like normal-style, the class imageDescriptionEdit-style class is not defined
-        // anywhere. Image descriptions will get the book's default font and Bloom's default text size
-        // from other style sheets, unless the user edits the imageDescriptionEdit-style directly.
-        // Using a unique name serves to prevent image description from using the possibly very large
-        // text set for the main content (normal-style); this style will inherit the defaults independently.
-        // Including 'edit' in the name of the style is intended to convey that this style is only
-        // intended for use in editing; we will style it otherwise if we actually make it visible
-        // in an epub.
-        const newElementHtmlPrefix =
-            "<div class='bloom-translationGroup bloom-imageDescription bloom-trailingElement ImageDescriptionEdit-style'>";
-        const newElementHtmlSuffix = "</div>";
-
-        let newElementHtmlInterior: string = "";
-        if (innerHtml) {
-            newElementHtmlInterior = innerHtml;
-        }
-        const newElementHtml =
-            newElementHtmlPrefix +
-            newElementHtmlInterior +
-            newElementHtmlSuffix;
-
-        const newTg = getEditablePageBundleExports()!
-            .makeElement(newElementHtml)
-            .get(0);
-
-        container.appendChild(newTg);
-
-        // This is necessary for the data-language tooltip to appear, probably among other things.
-        getEditablePageBundleExports()!.SetupElements(container as HTMLElement);
-
-        $(newTg)
-            .find(".bloom-editable")
-            .each((index, newEditable) => {
-                // Attaching CKEditor is necessary for range select formatting to work.
-                getEditablePageBundleExports()!.attachToCkEditor(newEditable);
-            });
     }
 }
