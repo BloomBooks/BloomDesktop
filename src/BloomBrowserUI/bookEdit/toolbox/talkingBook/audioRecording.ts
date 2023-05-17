@@ -1919,16 +1919,7 @@ export default class AudioRecording {
         }
     }
 
-    // It's a bit of a toss-up whether this function belongs here or in talkingBook.ts. It's primary
-    // responsibility is to toggle the checkbox which is in toolbox land, so in that way it would
-    // be more at home in talkingBooks.ts, which manages the toolbox. But many of the side effects
-    // of switching it on (and especially off) involve functions here, and it affects the content
-    // page as well as the toolbox. Another reason is that other checkboxes in the toolbox, like
-    // Show playback order buttons, have their logic here, so it feels cleaner to keep their handling
-    //
-    public toggleShowImageDescription() {
-        const showingImageDescriptions = !this.showImageDescriptionInput
-            .checked;
+    setShowImageDescriptionCheckbox(showingImageDescriptions: boolean) {
         // This controls the checked state of the checkbox, which is the
         // master indication of whether we're in this mode.
         this.showImageDescriptionInput.checked = showingImageDescriptions;
@@ -1937,6 +1928,19 @@ export default class AudioRecording {
             showingImageDescriptions,
             kShowImageDescriptionClickHandler
         );
+    }
+
+    // It's a bit of a toss-up whether this function belongs here or in talkingBook.ts. It's primary
+    // responsibility is to toggle the checkbox which is in toolbox land, so in that way it would
+    // be more at home in talkingBooks.ts, which manages the toolbox. But many of the side effects
+    // of switching it on (and especially off) involve functions here, and it affects the content
+    // page as well as the toolbox. Another reason is that other checkboxes in the toolbox, like
+    // Show playback order buttons, have their logic here, so it feels cleaner to keep their handling
+    // together in one place.
+    public toggleShowImageDescription() {
+        const showingImageDescriptions = !this.showImageDescriptionInput
+            .checked;
+        this.setShowImageDescriptionCheckbox(showingImageDescriptions);
         const page = ToolBox.getPage();
         if (showingImageDescriptions) {
             // makes them visible
@@ -2579,12 +2583,7 @@ export default class AudioRecording {
         // need to bring the state of the checkbox into alignment.
         const showingImageDescriptions =
             !!page && page.classList.contains("bloom-showImageDescriptions");
-        this.showImageDescriptionInput.checked = showingImageDescriptions;
-        // This sets a class on the label (not sure we use it for this checkbox)
-        this.setCheckboxLabelClass(
-            showingImageDescriptions,
-            kShowImageDescriptionClickHandler
-        );
+        this.setShowImageDescriptionCheckbox(showingImageDescriptions);
 
         // FYI, it is possible for newPageReady to be called without updateMarkup() being called
         // (e.g. when opening the toolbox with an empty text box).
