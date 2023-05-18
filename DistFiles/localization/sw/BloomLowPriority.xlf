@@ -157,7 +157,7 @@
       </trans-unit>
       <trans-unit id="Spreadsheet.ExportFailed">
         <source xml:lang="en">Export failed: {0}</source>
-        <target xml:lang="sw" state="translated">Kuhamisha kulifeli:</target>
+        <target xml:lang="sw" state="translated">Kuhamisha kulifeli: {0}</target>
         <note>ID: Spreadsheet.ExportFailed</note>
       </trans-unit>
       <trans-unit id="Spreadsheet.SpreadsheetLocked">
