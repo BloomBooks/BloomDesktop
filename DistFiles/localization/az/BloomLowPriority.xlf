@@ -157,7 +157,7 @@
       </trans-unit>
       <trans-unit id="Spreadsheet.ExportFailed">
         <source xml:lang="en">Export failed: {0}</source>
-        <target xml:lang="az" state="translated">İxrac alınmadı:</target>
+        <target xml:lang="az" state="translated">İxrac alınmadı: {0}</target>
         <note>ID: Spreadsheet.ExportFailed</note>
       </trans-unit>
       <trans-unit id="Spreadsheet.SpreadsheetLocked">
