@@ -3202,9 +3202,9 @@
         <target xml:lang="pt-PT" state="final">Mostrar botões de ordem de reprodução</target>
         <note>ID: EditTab.Toolbox.TalkingBookTool.ShowPlaybackOrder</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.TalkingBookTool.ShowImageDescription" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.ShowImageDescription" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Show image description</source>
-        <target xml:lang="pt-PT" state="needs-translation">Show image description</target>
+        <target xml:lang="pt-PT" state="final">Mostrar descrição da imagem</target>
         <note>ID: EditTab.Toolbox.TalkingBookTool.ShowImageDescription</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.SpeakLabel" sil:dynamic="true" approved="yes">
