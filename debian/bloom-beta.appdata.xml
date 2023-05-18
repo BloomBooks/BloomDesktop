@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Copyright 2023 SIL International -->
 <component type="desktop-application">
-  <id>org.sil.BloomAlpha</id>
+  <id>org.sil.BloomBeta</id>
   <launchable type="desktop-id">bloom-beta.desktop</launchable>
   <metadata_license>MIT</metadata_license>
   <project_license>MIT</project_license>
