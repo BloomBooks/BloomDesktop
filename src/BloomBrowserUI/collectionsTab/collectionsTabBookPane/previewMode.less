@@ -9,16 +9,6 @@ div.bloom-page.coverColor {
     background-color: @PreviewCoverColor;
 }
 
-// These rules are a partial polyfill for inert in Gecko60 and can be removed in 5.5.
-[inert] {
-    pointer-events: none;
-}
-[inert],
-[inert] * {
-    user-select: none;
-    -webkit-user-select: none;
-    -ms-user-select: none;
-}
 // When in preview, people often think they are looking at something editable. Give them this visual feedback.
 // (Setting the cursor doesn't seem to work in inert elements, so this rule is applied one level above
 // the body, which is what we set to inert.)
