@@ -20,16 +20,14 @@ $(document).ready(() => {
     $("textarea").focus(function() {
         $(this).attr("readonly", "readonly");
     });
-
-    // Preview is currently used for the main document window when not editing, but also for the template pages view.
-    // We want the disabledVisual style for the main page when not editing, but not in the template pages chooser.
-    // Pages in the latter view are embedded in a .gridItem div, so we use that to suppress adding the style.
-    $(".bloom-page:not('.gridItem .bloom-page')").mouseenter(function() {
-        $(this).addClass("disabledVisual");
-    });
-    $(".bloom-page:not('.gridItem .bloom-page')").mouseleave(function() {
-        $(this).removeClass("disabledVisual");
-    });
+    //When in preview, people often think they are looking at something editable. Make it quite definitely not so.
+    // Style rules can also provide a visual clue.
+    document.body.setAttribute("inert", "inert");
+    // Can remove in 5.5. Helps make preview inert for old browser.
+    const editables = Array.from(
+        document.getElementsByClassName("bloom-editable")
+    );
+    editables.forEach(e => e.removeAttribute("contenteditable"));
 
     // In preview mode we set videos to be preload="none" to prevent a memory leak. This observer is set up
     // so that videos that are scrolled into view will be loaded, so the user can see

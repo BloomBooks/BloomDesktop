@@ -235,7 +235,6 @@ namespace Bloom.web.controllers
 				case "openFolderOnDisk":
 					// Currently, the request comes with data to let us identify which book,
 					// but it will always be the current book, which is all the model api lets us open anyway.
-					//var book = GetBookObjectFromPost(request);
 					_collectionModel.OpenFolderOnDisk();
 					break;
 				case "exportToWord":
@@ -375,6 +374,18 @@ namespace Bloom.web.controllers
 		private Book.Book GetBookObjectFromPost(ApiRequest request)
 		{
 			var info = GetBookInfoFromPost(request);
+			if (info == null)
+			{
+				Logger.WriteEvent("GetBookInfoFromPost could not find a book corresponding to " +
+				                  request.RequiredPostString());
+				// Most of the commands where this is called will fail if it returns null.
+				// This should not happen: these commands are invoked by book buttons, which
+				// are created with book IDs derived from the list of bookinfos which gets searched
+				// by GetBookInfoFromPost.
+				// It's not clear how to make things more robust. At least the log above may provide a clue.
+				return null;
+			}
+
 			return _collectionModel.GetBookFromBookInfo(info);
 
 		}
