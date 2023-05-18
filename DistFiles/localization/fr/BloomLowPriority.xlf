@@ -155,9 +155,9 @@
         <target xml:lang="fr" state="final">Avertissement d'exportation : On note plusieurs éléments pour l'élément d'image {0}. Seul le premier sera exporté.</target>
         <note>ID: Spreadsheet.DataDivImageMultiple</note>
       </trans-unit>
-      <trans-unit id="Spreadsheet.ExportFailed">
+      <trans-unit id="Spreadsheet.ExportFailed" approved="yes">
         <source xml:lang="en">Export failed: {0}</source>
-        <target xml:lang="fr" state="translated">Echec de l'exportation:</target>
+        <target xml:lang="fr" state="final">Echec de l'exportation: {0}</target>
         <note>ID: Spreadsheet.ExportFailed</note>
       </trans-unit>
       <trans-unit id="Spreadsheet.SpreadsheetLocked" approved="yes">
