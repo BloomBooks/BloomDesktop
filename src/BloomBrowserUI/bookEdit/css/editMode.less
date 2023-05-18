@@ -122,7 +122,10 @@ body {
 
 /*+}*/
 div.bloom-imageContainer {
-    .borderOnTopOfElement(@MediumGray);
+    // Allow book templates to define a custom borderColor, otherwise fallback to the default color
+    .borderOnTopOfElement(
+        var(--bloom-editMode-custom-border-color, @MediumGray)
+    );
 
     // This shows the focus border on the root (hasOverlay) image container
     // when it has been clicked on to show its editing buttons (:not(.bloom-hideImageButtons)).
@@ -541,10 +544,12 @@ div.pageLabel[contenteditable="true"] {
     /*[disabled]min-height:34px;*/
 }
 
-/*need a darker border when we have a background color*/
-.coverColor textarea,
+// NOTE: I don't think .coverColor textarea matches anything anymore. It and many of the textarea references may be able to be removed?
+.coverColor textarea,   /*need a darker border when we have a background color*/
 div.bloom-editable {
-    border: thin solid rgba(0, 0, 0, 0.2);
+    // Allow book templates to define a custom borderColor, otherwise fallback to the default color
+    border: thin solid
+        var(--bloom-editMode-custom-border-color, rgba(0, 0, 0, 0.2));
 }
 
 img.hoverUp {

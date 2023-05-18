@@ -27,6 +27,8 @@
     // the .borderOnTopOfElement(@color) mixin in editMode.less
     div.bloom-imageContainer:after {
         // you can't see the default border with a dark background
-        border: thin solid white;
+        // This sets a custom CSS property on the element, which other stylesheets
+        // (e.g. editMode.less) can reference
+        --bloom-editMode-custom-border-color: white;
     }
 }
