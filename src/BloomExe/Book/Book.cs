@@ -998,10 +998,12 @@ namespace Bloom.Book
 		/// Fix errors that users have encountered.
 		/// 1) duplication of language div elements inside of translationGroup divs.
 		/// 2) duplication of audio id values in the book.
+		/// 3) improper license change
 		/// </summary>
 		/// <remarks>
 		/// See https://issues.bloomlibrary.org/youtrack/issue/BL-6923.
 		/// See https://issues.bloomlibrary.org/youtrack/issue/BL-9503 and several other issues.
+		/// See https://issues.bloomlibrary.org/youtrack/issue/BL-11903.
 		/// </remarks>
 		private void FixErrorsEncounteredByUsers(HtmlDom bookDOM)
 		{
@@ -1043,6 +1045,8 @@ namespace Bloom.Book
 			FixMissingAudioIdsInBookPages(bookDOM);
 			// Fix bug reported in BL-10786: coverImage multiply HTML-encoded.
 			FixExcessiveHTMLEncodingOfCoverImage(bookDOM);
+			// Fix bug reported in BL-11093: improper change of license.
+			FixImproperLicenseChange(bookDOM, _bookData);
 		}
 
 		/// <summary>
@@ -1175,6 +1179,36 @@ namespace Bloom.Book
 				var altValue = String.Format(localizedFormatString, filename);
 				coverImgElt.SetAttribute("alt", altValue);
 			}
+		}
+
+		private void FixImproperLicenseChange(HtmlDom bookDom, BookData bookData)
+		{
+			var originalMetadata = BookCopyrightAndLicense.GetOriginalMetadata(bookDom, bookData);
+			if (!BookCopyrightAndLicense.IsDerivative(originalMetadata))
+				return;
+			var originalLicense = originalMetadata.License;
+			if (originalLicense == null)
+				return;		// just to be safe
+			var keepOriginal = originalLicense is NullLicense ||	// must preserve "contact copyright holder"
+				originalLicense is CustomLicense ||					// must preserve custom licenses
+				(originalLicense is CreativeCommonsLicense &&
+					(originalLicense as CreativeCommonsLicense).DerivativeRule == CreativeCommonsLicense.DerivativeRules.NoDerivatives);
+			if (!keepOriginal)
+				return;
+			var metadata = BookCopyrightAndLicense.GetMetadata(bookDom, bookData);
+			var license = metadata.License;
+			if (AreLicensesDifferent(license, originalLicense))
+			{
+				metadata.License = originalLicense;
+				BookCopyrightAndLicense.SetMetadata(metadata, bookDom, this.FolderPath, bookData, false);
+			}
+		}
+
+		private bool AreLicensesDifferent(LicenseInfo license, LicenseInfo originalLicense)
+		{
+			return license.Token != originalLicense.Token ||
+				license.RightsStatement != originalLicense.RightsStatement ||
+				license.Url != originalLicense.Url;
 		}
 
 		class GuidAndPath
