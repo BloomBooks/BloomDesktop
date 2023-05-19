@@ -6,7 +6,6 @@ import { useApiBoolean } from "../utils/bloomApi";
 // This is a "uncontrolled component".
 export const ApiCheckbox: React.FunctionComponent<{
     label: string | React.ReactNode;
-    // TODO test BloomCheckbox handles correctly if label string and not l10nKey
     l10nKey?: string;
     l10nComment?: string;
     l10nParam0?: string;

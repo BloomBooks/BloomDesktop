@@ -11,7 +11,7 @@ export const PublishVisibilityGroup: React.FunctionComponent<{
 }> = props => {
     return (
         <SettingsGroup
-            label={useL10n("Visibility", "PublishTab.Android.Visibility")} // TODO what is this android localization thing?
+            label={useL10n("Visibility", "PublishTab.Upload.Visibility")}
         >
             <ApiCheckbox
                 label={

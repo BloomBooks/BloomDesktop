@@ -271,9 +271,6 @@ namespace Bloom.web.controllers
 				{
 					System.Console.Write("writerequest");
 					writeRequest.CurrentBook.BookInfo.MetaData.Draft = value;
-					// writeRequest.CurrentBook.BookInfo.MetaData.WriteToFolder(...);
-						// TODO how to save?
-					writeRequest.CurrentBook.Save();
 				}, false);
 		}
 
