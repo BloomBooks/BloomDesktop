@@ -124,7 +124,7 @@ storiesOf("BloomCheckbox", module)
 storiesOf("BloomCheckbox/ApiCheckbox", module).add("ApiCheckbox", () =>
     React.createElement(() => (
         <ApiCheckbox
-            english="Motion Book"
+            label="Motion Book"
             l10nKey="PublishTab.Android.MotionBookMode"
             apiEndpoint="publish/bloompub/motionBookMode"
         />
