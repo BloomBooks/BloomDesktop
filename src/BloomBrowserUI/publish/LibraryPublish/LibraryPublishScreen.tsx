@@ -18,6 +18,7 @@ import PublishScreenTemplate from "../commonPublish/PublishScreenTemplate";
 import { PublishLanguagesGroup } from "../commonPublish/PublishLanguagesGroup";
 import { CoverColorGroup } from "../commonPublish/CoverColorGroup";
 import { useState } from "react";
+import { PublishVisibilityGroup } from "../commonPublish/PublishVisibilityGroup";
 
 export const kWebSocketContext = "libraryPublish";
 
@@ -40,24 +41,7 @@ export const LibraryPublishScreen = () => {
             />
             <PublishFeaturesGroup generation={generation} />
             <CoverColorGroup />
-
-            {/*
-                <MuiCheckbox
-                label={
-                    <React.Fragment>
-                        <img src="/bloom/publish/LibraryPublish/DRAFT-Stamp.svg" />
-                        <Span l10nKey="PublishTab.Upload.Draft">
-                            Show this book only to reviewers with whom I
-                            share the URL of this book.
-                        </Span>
-                    </React.Fragment>
-                }
-                checked={false} //TODO
-                onCheckChanged={newValue => {
-                    //TODO
-                }}
-                disabled={!isReadyForUpload()}
-            /> */}
+            <PublishVisibilityGroup />
 
             {/* push everything below this to the bottom */}
             <div

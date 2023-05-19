@@ -261,6 +261,20 @@ namespace Bloom.web.controllers
 				//	request.ReplyWithText(_languagesToPublish.Contains(langCode) ? "true" : "false");
 				//}
 			}, false);
+			apiHandler.RegisterBooleanEndpointHandler("publish/markAsDraft", 
+				readRequest =>
+				{
+					System.Console.Write("readrequest");
+						return readRequest.CurrentBook.BookInfo.MetaData.Draft;
+				},
+				(writeRequest, value) =>
+				{
+					System.Console.Write("writerequest");
+					writeRequest.CurrentBook.BookInfo.MetaData.Draft = value;
+					// writeRequest.CurrentBook.BookInfo.MetaData.WriteToFolder(...);
+						// TODO how to save?
+					writeRequest.CurrentBook.Save();
+				}, false);
 		}
 
 		private void HandleChooseSignLanguage(ApiRequest request)
