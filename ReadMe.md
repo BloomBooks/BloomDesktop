@@ -1,6 +1,6 @@
 # Let's Grow Some Libraries
 
-Bloom is an [award winning](http://allchildrenreading.org/sil-international-wins-enabling-writers-prize-for-software-solution-to-childrens-book-shortage/) software solution to the children's book shortage among most of the world's languages. It is an application for Windows and [Linux](https://flathub.org/apps/org.sil.Bloom) that dramatically "lowers the bar" for creating, translating, and sharing books. With Bloom, communities can do the work for themselves instead of depending on outsiders.
+Bloom is an [award winning](http://allchildrenreading.org/sil-international-wins-enabling-writers-prize-for-software-solution-to-childrens-book-shortage/) software solution to the children's book shortage among most of the world's languages. It is an application for Windows and [Linux](https://bloomlibrary.org/page/create/linux) that dramatically "lowers the bar" for creating, translating, and sharing books. With Bloom, communities can do the work for themselves instead of depending on outsiders.
 
 Internally, Bloom is a hybrid. It started as a C#/WinForms app with an embedded browser for editing documents and an embedded Adobe Acrobat for displaying PDF outputs. It is growing up to be a pure React-driven offline-capable web app, with a C# backend. In its current state, Bloom is hybrid of C#/web app in which the bits of the UI are gradually moving to html.
 
@@ -70,7 +70,8 @@ npm dependencies should be introduced using
 
 5.4 is the last version for Linux until we get rid of WinForms.
 See the `Version5.4` branch and ReadMe if you need to update it.
-It is available via [flathub](https://flathub.org/apps/org.sil.Bloom).
+
+See [this page](https://bloomlibrary.org/page/create/linux) for how to run it.
 
 ## Disable analytics
 
