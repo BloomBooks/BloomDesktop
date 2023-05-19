@@ -169,7 +169,7 @@ export const EPUBSettingsGroup: React.FunctionComponent<{
                     }}
                 >
                     <ApiCheckbox
-                        english="Include image descriptions on page"
+                        label="Include image descriptions on page"
                         apiEndpoint="publish/epub/imageDescriptionSetting"
                         l10nKey="PublishTab.Epub.IncludeOnPage"
                         disabled={props.mode === "fixed"}
