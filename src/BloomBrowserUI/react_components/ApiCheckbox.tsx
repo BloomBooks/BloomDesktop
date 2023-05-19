@@ -5,8 +5,8 @@ import { useApiBoolean } from "../utils/bloomApi";
 // A localized checkbox that is backed by a boolean API get/set
 // This is a "uncontrolled component".
 export const ApiCheckbox: React.FunctionComponent<{
-    english: string;
-    l10nKey: string;
+    label: string | React.ReactNode;
+    l10nKey?: string;
     l10nComment?: string;
     l10nParam0?: string;
     apiEndpoint: string;
@@ -30,7 +30,7 @@ export const ApiCheckbox: React.FunctionComponent<{
         <BloomCheckbox
             checked={showChecked}
             disabled={props.disabled}
-            label={props.english}
+            label={props.label}
             l10nKey={props.l10nKey}
             l10nComment={props.l10nComment}
             l10nParam0={props.l10nParam0}

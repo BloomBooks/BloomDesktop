@@ -828,6 +828,7 @@ namespace Bloom.Book
 		{
 			IsExperimental = false;
 			AllowUploadingToBloomLibrary = true;
+			Draft = false;
 			BookletMakingIsAppropriate = true;
 			IsSuitableForVernacularLibrary = true;
 			Id = Guid.NewGuid().ToString();
@@ -1051,7 +1052,8 @@ namespace Bloom.Book
 						updateSource = GetUpdateSource(),
 						lastUploaded = GetCurrentDate(),
 						publisher = Publisher,
-						originalPublisher = OriginalPublisher
+						originalPublisher = OriginalPublisher,
+						draft = Draft,
 						// Other fields are not needed by the web site and we don't expect they will be.
 					});
 			}
@@ -1194,6 +1196,11 @@ namespace Bloom.Book
 		[JsonProperty("allowUploadingToBloomLibrary", DefaultValueHandling = DefaultValueHandling.Populate)]
 		[DefaultValue(true)]
 		public bool AllowUploadingToBloomLibrary { get; set; }
+
+		// Make book visible only to reviewers with URL
+		[JsonProperty("draft")]
+		[DefaultValue(false)]
+		public bool Draft { get; set; }
 
 		[JsonProperty("bookletMakingIsAppropriate", DefaultValueHandling = DefaultValueHandling.Populate)]
 		[DefaultValue(true)]
