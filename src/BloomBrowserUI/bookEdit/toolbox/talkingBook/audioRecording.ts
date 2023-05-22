@@ -587,7 +587,8 @@ export default class AudioRecording {
     // And also (BL-8515) filter out image description text, if that tool is not active.
     private getRecordableDivs(
         includeCheckForText: boolean = true,
-        includeCheckForPlaybackOrder: boolean = true
+        includeCheckForPlaybackOrder: boolean = true,
+        includeCheckForTempHidden: boolean = true
     ): HTMLElement[] {
         // REVIEW: this may in fact be unneeded but I'm just trying to get eslint set up and conceivably it is intentional
         // eslint-disable-next-line @typescript-eslint/no-this-alias
@@ -603,20 +604,8 @@ export default class AudioRecording {
             elem => <HTMLElement>elem
         );
         const recordableDivs = editableDivs.filter(elt => {
-            if (!$this.isVisible(elt)) {
+            if (!$this.isVisible(elt, includeCheckForTempHidden)) {
                 return false;
-            }
-            const transgroup = elt.closest(".bloom-translationGroup");
-            if (transgroup) {
-                if (transgroup.classList.contains("box-header-off")) {
-                    return false;
-                }
-                if (
-                    !this.showingImageDescriptions() &&
-                    transgroup.classList.contains("bloom-imageDescription")
-                ) {
-                    return false;
-                }
             }
             if (!includeCheckForText) {
                 return true;
@@ -658,7 +647,10 @@ export default class AudioRecording {
     }
 
     // Corresponds to getRecordableDivs() but only applies the check to the current element
-    public isRecordableDiv(element: Element | null): boolean {
+    public isRecordableDiv(
+        element: Element | null,
+        includeCheckForTempHidden: boolean = true
+    ): boolean {
         if (!element) {
             return false;
         }
@@ -674,7 +666,7 @@ export default class AudioRecording {
                 return false;
             }
 
-            if (!this.isVisible(element)) {
+            if (!this.isVisible(element, includeCheckForTempHidden)) {
                 return false;
             }
 
@@ -686,7 +678,40 @@ export default class AudioRecording {
         }
     }
 
-    private isVisible(elem: Element) {
+    private isVisible(
+        elem: Element,
+        includeCheckForTempHidden: boolean = true
+    ) {
+        if (this.isInHiddenLanguageBlock(elem)) {
+            return false;
+        }
+        if (!includeCheckForTempHidden) {
+            return true;
+        }
+        const transgroup = elem.closest(".bloom-translationGroup");
+        if (transgroup) {
+            if (transgroup.classList.contains("box-header-off")) {
+                return false;
+            }
+            if (this.showingImageDescriptions()) {
+                // overlays are hidden, don't include them
+                if (
+                    transgroup.parentElement?.classList?.contains(
+                        "bloom-textOverPicture"
+                    )
+                ) {
+                    return false;
+                }
+            } else {
+                // image descriptions are hidden, don't include them
+                if (transgroup.classList.contains("bloom-imageDescription")) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+    private isInHiddenLanguageBlock(elem: Element) {
         // Spans (and probably other inline elements?) can have display=inline even if they're inside a div that's display=none
         let elemToCheck = elem;
 
@@ -704,18 +729,24 @@ export default class AudioRecording {
         }
 
         const style = window.getComputedStyle(elemToCheck);
-        return style.display !== "none";
+        return style.display === "none";
     }
 
     private containsAnyAudioElements(): boolean {
         return this.getAudioElements().length > 0;
     }
 
-    private getAudioElements(): HTMLElement[] {
+    private getAudioElements(
+        includeCheckForTempHidden: boolean = true
+    ): HTMLElement[] {
         // Starting with the recordable divs, get all of these or their descendants that have
         // the 'kAudioSentence' class. We now need to maintain the order that was given to us
         // by getRecordableDivs().
-        const recordableDivs = this.getRecordableDivs();
+        const recordableDivs = this.getRecordableDivs(
+            true,
+            true,
+            includeCheckForTempHidden
+        );
         let result: HTMLElement[] = [];
         recordableDivs.forEach(div => {
             if (div.classList.contains(kAudioSentence)) {
@@ -980,10 +1011,12 @@ export default class AudioRecording {
             oldElement = this.getCurrentHighlight();
         }
 
+        const visible = this.isVisible(newElement);
+
         // This should happen even if oldElement and newElement are the same.
         // e.g. the user could navigate (with arrows or mousewheel) such that oldElement is out of view, then press Play.
         // It would be worthwhile to scroll it back into view in that case.
-        if (shouldScrollToElement) {
+        if (shouldScrollToElement && visible) {
             this.scrollElementIntoView(newElement);
         }
 
@@ -1000,18 +1033,22 @@ export default class AudioRecording {
             // especially if the caller doesn't await this function.
             // This allows us to generally represent the correct current element immediately.
             newElement.classList.add(kAudioCurrent);
-            // This is a workaround for a Chromium bug; see BL-11633. We'd like our style rules
-            // to just put the icon on the element that has kAudioCurrent. But that element
-            // has a background color, so (due to the bug) it cannot have position:relative,
-            // or we lose the cursor. So insert an empty element (which by default will have
-            // position: relative) to hold the icon.
-            const iconHolder = newElement.ownerDocument.createElement("span");
-            iconHolder.classList.add("bloom-ui-current-audio-marker");
-            iconHolder.classList.add("bloom-ui"); // makes sure it never becomes part of saved document.
-            newElement.parentElement?.insertBefore(iconHolder, newElement);
+            if (visible) {
+                // This is a workaround for a Chromium bug; see BL-11633. We'd like our style rules
+                // to just put the icon on the element that has kAudioCurrent. But that element
+                // has a background color, so (due to the bug) it cannot have position:relative,
+                // or we lose the cursor. So insert an empty element (which by default will have
+                // position: relative) to hold the icon.
+                const iconHolder = newElement.ownerDocument.createElement(
+                    "span"
+                );
+                iconHolder.classList.add("bloom-ui-current-audio-marker");
+                iconHolder.classList.add("bloom-ui"); // makes sure it never becomes part of saved document.
+                newElement.parentElement?.insertBefore(iconHolder, newElement);
+            }
         }
 
-        if (suppressHighlightIfNoAudio) {
+        if (suppressHighlightIfNoAudio && visible) {
             // prevents highlight showing at once
             // FYI: Because of how JS works, no rendering should happen between setting audioCurrent above and setting ui-suppressHighlight here.
             newElement.classList.add(kSuppressHighlightClass);
@@ -1623,11 +1660,19 @@ export default class AudioRecording {
     // Returns a promise that is fulfilled when the play has been STARTED (not completed).
     public async listenAsync(): Promise<void> {
         this.resetAudioIfPaused();
+        const page = ToolBox.getPage();
+        if (
+            this.showingImageDescriptions() &&
+            (page?.getElementsByClassName("bloom-textOverPicture") ?? [])
+                .length > 0
+        ) {
+            this.toggleShowImageDescription();
+        }
 
         this.fixHighlighting();
 
         this.elementsToPlayConsecutivelyStack = jQuery
-            .makeArray(this.sortByTabindex(this.getAudioElements()))
+            .makeArray(this.sortByTabindex(this.getAudioElements(false)))
             .reverse();
 
         const stackSize = this.elementsToPlayConsecutivelyStack.length;
@@ -1966,12 +2011,12 @@ export default class AudioRecording {
             // page should always be set, just making compiler happy
             // hides them
             page?.classList.remove("bloom-showImageDescriptions");
-            // If an image description was selected, move the selection
-            const current = this.getCurrentHighlight();
-            if (current && current.closest(".bloom-imageDescription")) {
-                this.removeAudioCurrent(page);
-                this.setCurrentAudioElementToFirstAudioElementAsync();
-            }
+        }
+        // If the highlight was on something not currently visible, move the selection
+        const current = this.getCurrentHighlight();
+        if (page && current && !this.isVisible(current)) {
+            this.removeAudioCurrent(page);
+            this.setCurrentAudioElementToFirstAudioElementAsync();
         }
     }
     private showPlaybackOrderUi(docBody: HTMLElement) {
@@ -2536,7 +2581,7 @@ export default class AudioRecording {
     private getTextBoxOfElement(element: Element | null): Element | null {
         let currToExamine: Element | null = element;
 
-        while (currToExamine && !this.isRecordableDiv(currToExamine)) {
+        while (currToExamine && !this.isRecordableDiv(currToExamine, false)) {
             // Recursively go up the tree to find the enclosing div, if necessary
             currToExamine = currToExamine.parentElement; // Will return null if no parent
         }
@@ -3007,12 +3052,6 @@ export default class AudioRecording {
 
         const visibleAudioSentenceElems = audioSentenceElems.filter(elem => {
             if (!this.isVisible(elem)) {
-                return false;
-            }
-            if (
-                !this.showingImageDescriptions() &&
-                elem.closest(".bloom-imageDescription")
-            ) {
                 return false;
             }
             return true;
