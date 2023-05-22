@@ -1075,7 +1075,7 @@ namespace Bloom.ImageProcessing
 				{
 					var path = image.GetCurrentFilePath();
 					if (path == null || !RobustFile.Exists(path))
-						path = CreateSourceFileForImage(image, false);	// already know it's not jpeg
+						path = CreateSourceFileForImage(image, false);	// already know it's not jpe
 					var proc = RunGraphicsMagick(graphicsMagickPath, path, jpegFilePath, new Size(image.Image.Width, image.Image.Height), false);
 					if (proc.ExitCode == 0)
 					{
