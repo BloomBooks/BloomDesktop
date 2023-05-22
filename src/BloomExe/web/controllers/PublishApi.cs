@@ -261,6 +261,15 @@ namespace Bloom.web.controllers
 				//	request.ReplyWithText(_languagesToPublish.Contains(langCode) ? "true" : "false");
 				//}
 			}, false);
+			apiHandler.RegisterBooleanEndpointHandler("publish/markAsDraft", 
+				readRequest =>
+				{
+					return readRequest.CurrentBook.BookInfo.MetaData.Draft;
+				},
+				(writeRequest, value) =>
+				{
+					writeRequest.CurrentBook.BookInfo.MetaData.Draft = value;
+				}, false);
 		}
 
 		private void HandleChooseSignLanguage(ApiRequest request)
