@@ -105,8 +105,7 @@ const ReaderPublishScreenInternal: React.FunctionComponent<{
     );
 
     const pathToOutputBrowser = inStorybookMode ? "./" : "../../";
-    const usbWorking = useL10n("Publishing", "PublishTab.Common.Publishing");
-    const wifiWorking = useL10n("Publishing", "PublishTab.Common.Publishing");
+    const publishing = useL10n("Publishing", "PublishTab.Common.Publishing");
 
     useSubscribeToWebSocketForEvent(
         "publish-bloompub",
@@ -116,15 +115,23 @@ const ReaderPublishScreenInternal: React.FunctionComponent<{
                 case "stopped":
                     setClosePending(true);
                     break;
+                case "done":
+                    setProgressState(ProgressState.Done);
+                    break;
                 case "UsbStarted":
                     setClosePending(false);
-                    setHeading(usbWorking);
+                    setHeading(publishing);
                     setProgressState(ProgressState.Serving);
                     break;
                 case "ServingOnWifi":
                     setClosePending(false);
-                    setHeading(wifiWorking);
+                    setHeading(publishing);
                     setProgressState(ProgressState.Serving);
+                    break;
+                case "SavingFile":
+                    setClosePending(false);
+                    setHeading(publishing);
+                    setProgressState(ProgressState.Working);
                     break;
                 default:
                     throw new Error(

@@ -156,8 +156,7 @@ function getStartButton(
                     l10nKey="PublishTab.Save"
                     l10nComment="Button that tells Bloom to save the book in the current format."
                     onClick={() => {
-                        onClick(); // TODO: This doesn't seem to have any effect yet.
-                        post("publish/bloompub/file/save");
+                        onButtonClick("publish/bloompub/file/save");
                     }}
                     enabled={licenseOK}
                     hasText={true}
