@@ -1,9 +1,8 @@
 ﻿using System;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
-using Gecko.WebIDL;
-using Sentry;
 using SIL.IO;
 using SIL.PlatformUtilities;
 
@@ -25,7 +24,7 @@ namespace Bloom.Utils
 
 		/// <summary>
 		/// It's a bit of a toss-up whether to use a Regex or a JSON parser to extract data from
-		/// the info.json file. The documentation at the URL above has several mistakes. There 
+		/// the info.json file. The documentation at the URL above has several mistakes. There
 		/// are at least a couple of paths to navigate through the JSON to possible dropbox folder
 		/// paths (personal.path and business.path) and one of these is not documented for Linux;
 		/// could there be others they have not mentioned?  Then we'd also have to handle the file
@@ -39,7 +38,33 @@ namespace Bloom.Utils
 		/// be running but not the one we really need? But it's the best we can find so far.
 		/// </summary>
 		public static bool IsDropboxProcessRunning =>
-			System.Diagnostics.Process.GetProcesses().Any(p => Platform.IsLinux ? p.ProcessName == "dropbox" : p.ProcessName.Contains("Dropbox"));
+			System.Diagnostics.Process.GetProcesses().Any(p => Platform.IsLinux ? p.ProcessName.Contains("dropbox") : p.ProcessName.Contains("Dropbox"))
+				|| (Platform.IsLinux && IsDropboxLogCurrent());
+
+		/// <summary>
+		/// Check whether an appropriate log file exists and has been written to in the last minute.
+		/// This works on Linux in the flatpak environment where process checking won't work.  (It
+		/// might even be as reliable as process checking on Linux in general.  See BL-12244.)
+		/// </summary>
+		public static bool IsDropboxLogCurrent()
+		{
+			var maxDelta = new TimeSpan(0,1,0);
+			foreach (var jsonPath in s_jsonPaths)
+			{
+				var expandedPath = Environment.ExpandEnvironmentVariables(jsonPath);
+				var logDir = Path.Combine(Path.GetDirectoryName(expandedPath), "logs", "1");
+				if (Directory.Exists(logDir))
+				{
+					foreach (var file in Directory.EnumerateFiles(logDir, "1-*.tmp"))
+					{
+						var writeTime = File.GetLastWriteTime(file);
+						if (DateTime.Now - writeTime < maxDelta)
+							return true;
+					}
+				}
+			}
+			return false;
+		}
 
 		public static bool IsPathInDropboxFolder(string path)
 		{
