@@ -22,6 +22,8 @@ using System.Text;
 using System.Text.RegularExpressions;
 using Bloom.web;
 using System.Linq;
+using static SQLite.TableMapping;
+using System.Drawing.Imaging;
 
 namespace Bloom.Spreadsheet
 {
@@ -181,8 +183,13 @@ namespace Bloom.Spreadsheet
 							var size = new Size(finalWidth, finalHeight);
 							using (Image thumbnail = ImageUtils.ResizeImageIfNecessary(size, image, false))
 							{
-								var excelImage = worksheet.Drawings.AddPicture(imageName, thumbnail);
-								excelImage.SetPosition(rowNum, 2, colNum, 2);
+								using (var ms = new MemoryStream())
+								{
+									thumbnail.Save(ms, ImageFormat.Jpeg);
+									ms.Seek(0, SeekOrigin.Begin);
+									var excelImage = worksheet.Drawings.AddPicture(imageName, ms);
+									excelImage.SetPosition(rowNum, 2, colNum, 2);
+								}
 							}
 						}
 					}
