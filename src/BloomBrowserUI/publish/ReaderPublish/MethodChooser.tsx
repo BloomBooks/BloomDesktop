@@ -139,6 +139,11 @@ function getStartButton(
     licenseOK: boolean,
     onClick: () => void
 ) {
+    const onButtonClick = (apiEndpoint: string) => {
+        onClick();
+        post(apiEndpoint);
+    };
+
     const buttonCss =
         "align-self: flex-end; min-width: 120px; margin-top: 20px;";
     switch (method) {
@@ -170,8 +175,9 @@ function getStartButton(
                     l10nKey="PublishTab.Android.Usb.Start"
                     l10nComment="Button that tells Bloom to send the book to a device via USB cable."
                     enabled={licenseOK}
-                    // TODO: Should this call onClick too?
-                    clickApiEndpoint="publish/bloompub/usb/start"
+                    onClick={() => {
+                        onButtonClick("publish/bloompub/usb/start");
+                    }}
                     hidden={isLinux()}
                     hasText={true}
                     size="large"
@@ -189,8 +195,7 @@ function getStartButton(
                     l10nComment="Button that tells Bloom to begin offering this book on the wifi network."
                     enabled={licenseOK}
                     onClick={() => {
-                        onClick();
-                        post("publish/bloompub/wifi/start");
+                        onButtonClick("publish/bloompub/wifi/start");
                     }}
                     hasText={true}
                     size="large"
