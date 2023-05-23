@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="..\..\packages\SIL.Windows.Forms.Keyboarding.12.0.1-beta0003\build\SIL.Windows.Forms.Keyboarding.props" Condition="Exists('..\..\packages\SIL.Windows.Forms.Keyboarding.12.0.1-beta0003\build\SIL.Windows.Forms.Keyboarding.props')" />
+  <Import Project="..\..\packages\SIL.Windows.Forms.Keyboarding.12.0.1-beta0008\build\SIL.Windows.Forms.Keyboarding.props" Condition="Exists('..\..\packages\SIL.Windows.Forms.Keyboarding.12.0.1-beta0008\build\SIL.Windows.Forms.Keyboarding.props')" />
   <Import Project="..\..\packages\icu.net.2.8.1\build\icu.net.props" Condition="Exists('..\..\packages\icu.net.2.8.1\build\icu.net.props')" />
   <PropertyGroup>
     <ApplicationManifest>app.manifest</ApplicationManifest>
@@ -250,28 +250,28 @@
       <HintPath>../../packages/SharpFont.3.1.0/lib/net20/SharpFont.dll</HintPath>
     </Reference>
     <Reference Include="SIL.Core, Version=12.0.0.0, Culture=neutral, PublicKeyToken=cab3c8c5232dfcf2, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\SIL.Core.12.0.1-beta0003\lib\net461\SIL.Core.dll</HintPath>
+      <HintPath>..\..\packages\SIL.Core.12.0.1-beta0008\lib\net461\SIL.Core.dll</HintPath>
     </Reference>
     <Reference Include="SIL.Core.Desktop, Version=12.0.0.0, Culture=neutral, PublicKeyToken=cab3c8c5232dfcf2, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\SIL.Core.Desktop.12.0.1-beta0003\lib\net461\SIL.Core.Desktop.dll</HintPath>
+      <HintPath>..\..\packages\SIL.Core.Desktop.12.0.1-beta0008\lib\net461\SIL.Core.Desktop.dll</HintPath>
     </Reference>
     <Reference Include="SIL.Media, Version=12.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\SIL.Media.12.0.1-beta0003\lib\net461\SIL.Media.dll</HintPath>
+      <HintPath>..\..\packages\SIL.Media.12.0.1-beta0008\lib\net461\SIL.Media.dll</HintPath>
     </Reference>
     <Reference Include="SIL.Windows.Forms, Version=12.0.0.0, Culture=neutral, PublicKeyToken=cab3c8c5232dfcf2, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\SIL.Windows.Forms.12.0.1-beta0003\lib\net461\SIL.Windows.Forms.dll</HintPath>
+      <HintPath>..\..\packages\SIL.Windows.Forms.12.0.1-beta0008\lib\net461\SIL.Windows.Forms.dll</HintPath>
     </Reference>
     <Reference Include="SIL.Windows.Forms.GeckoBrowserAdapter, Version=12.0.0.0, Culture=neutral, PublicKeyToken=cab3c8c5232dfcf2, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\SIL.Windows.Forms.GeckoBrowserAdapter.12.0.1-beta0003\lib\net461\SIL.Windows.Forms.GeckoBrowserAdapter.dll</HintPath>
+      <HintPath>..\..\packages\SIL.Windows.Forms.GeckoBrowserAdapter.12.0.1-beta0008\lib\net461\SIL.Windows.Forms.GeckoBrowserAdapter.dll</HintPath>
     </Reference>
     <Reference Include="SIL.Windows.Forms.Keyboarding, Version=12.0.0.0, Culture=neutral, PublicKeyToken=cab3c8c5232dfcf2, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\SIL.Windows.Forms.Keyboarding.12.0.1-beta0003\lib\net461\SIL.Windows.Forms.Keyboarding.dll</HintPath>
+      <HintPath>..\..\packages\SIL.Windows.Forms.Keyboarding.12.0.1-beta0008\lib\net461\SIL.Windows.Forms.Keyboarding.dll</HintPath>
     </Reference>
     <Reference Include="SIL.Windows.Forms.WritingSystems, Version=12.0.0.0, Culture=neutral, PublicKeyToken=cab3c8c5232dfcf2, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\SIL.Windows.Forms.WritingSystems.12.0.1-beta0003\lib\net461\SIL.Windows.Forms.WritingSystems.dll</HintPath>
+      <HintPath>..\..\packages\SIL.Windows.Forms.WritingSystems.12.0.1-beta0008\lib\net461\SIL.Windows.Forms.WritingSystems.dll</HintPath>
     </Reference>
     <Reference Include="SIL.WritingSystems, Version=12.0.0.0, Culture=neutral, PublicKeyToken=cab3c8c5232dfcf2, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\SIL.WritingSystems.12.0.1-beta0003\lib\net461\SIL.WritingSystems.dll</HintPath>
+      <HintPath>..\..\packages\SIL.WritingSystems.12.0.1-beta0008\lib\net461\SIL.WritingSystems.dll</HintPath>
     </Reference>
     <Reference Include="SourceMapDotNet, Version=1.0.5478.26629, Culture=neutral, PublicKeyToken=d357635542166cea, processorArchitecture=MSIL">
       <HintPath>..\..\packages\SourceMapDotNet.1.0.5478.26629\lib\SourceMapDotNet.dll</HintPath>
@@ -1632,9 +1632,9 @@ cp -p "$(SolutionDir)lib/dotnet/GeckofxHtmlToPdf.exe.config" "$(OutDir)BloomPdfM
   <Import Project="..\..\packages\Microsoft.Web.WebView2.1.0.1293.44\build\Microsoft.Web.WebView2.targets" Condition="Exists('..\..\packages\Microsoft.Web.WebView2.1.0.1293.44\build\Microsoft.Web.WebView2.targets')" />
   <Import Project="..\..\packages\Mono.Unix.7.1.0-final.1.21458.1\build\Mono.Unix.targets" Condition="Exists('..\..\packages\Mono.Unix.7.1.0-final.1.21458.1\build\Mono.Unix.targets')" />
   <Import Project="..\..\packages\icu.net.2.8.1\build\icu.net.targets" Condition="Exists('..\..\packages\icu.net.2.8.1\build\icu.net.targets')" />
-  <Import Project="..\..\packages\SIL.Media.12.0.1-beta0003\build\SIL.Media.targets" Condition="Exists('..\..\packages\SIL.Media.12.0.1-beta0003\build\SIL.Media.targets')" />
-  <Import Project="..\..\packages\SIL.Windows.Forms.12.0.1-beta0003\build\SIL.Windows.Forms.targets" Condition="Exists('..\..\packages\SIL.Windows.Forms.12.0.1-beta0003\build\SIL.Windows.Forms.targets')" />
-  <Import Project="..\..\packages\SIL.Windows.Forms.Keyboarding.12.0.1-beta0003\build\SIL.Windows.Forms.Keyboarding.targets" Condition="Exists('..\..\packages\SIL.Windows.Forms.Keyboarding.12.0.1-beta0003\build\SIL.Windows.Forms.Keyboarding.targets')" />
+  <Import Project="..\..\packages\SIL.Media.12.0.1-beta0008\build\SIL.Media.targets" Condition="Exists('..\..\packages\SIL.Media.12.0.1-beta0008\build\SIL.Media.targets')" />
+  <Import Project="..\..\packages\SIL.Windows.Forms.12.0.1-beta0008\build\SIL.Windows.Forms.targets" Condition="Exists('..\..\packages\SIL.Windows.Forms.12.0.1-beta0008\build\SIL.Windows.Forms.targets')" />
+  <Import Project="..\..\packages\SIL.Windows.Forms.Keyboarding.12.0.1-beta0008\build\SIL.Windows.Forms.Keyboarding.targets" Condition="Exists('..\..\packages\SIL.Windows.Forms.Keyboarding.12.0.1-beta0008\build\SIL.Windows.Forms.Keyboarding.targets')" />
   <Target Name="AfterBuild">
     <Copy SourceFiles="@(SourceFiles)" DestinationFolder="$(OutDir)" />
     <Copy SourceFiles="@(LameFiles)" DestinationFolder="../../DistFiles" Condition="'$(OS)'=='Windows_NT'" />
@@ -1657,10 +1657,10 @@ cp -p "$(SolutionDir)lib/dotnet/GeckofxHtmlToPdf.exe.config" "$(OutDir)BloomPdfM
     <Error Condition="!Exists('..\..\packages\Mono.Unix.7.1.0-final.1.21458.1\build\Mono.Unix.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\Mono.Unix.7.1.0-final.1.21458.1\build\Mono.Unix.targets'))" />
     <Error Condition="!Exists('..\..\packages\icu.net.2.8.1\build\icu.net.props')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\icu.net.2.8.1\build\icu.net.props'))" />
     <Error Condition="!Exists('..\..\packages\icu.net.2.8.1\build\icu.net.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\icu.net.2.8.1\build\icu.net.targets'))" />
-    <Error Condition="!Exists('..\..\packages\SIL.Media.12.0.1-beta0003\build\SIL.Media.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\SIL.Media.12.0.1-beta0003\build\SIL.Media.targets'))" />
-    <Error Condition="!Exists('..\..\packages\SIL.Windows.Forms.12.0.1-beta0003\build\SIL.Windows.Forms.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\SIL.Windows.Forms.12.0.1-beta0003\build\SIL.Windows.Forms.targets'))" />
-    <Error Condition="!Exists('..\..\packages\SIL.Windows.Forms.Keyboarding.12.0.1-beta0003\build\SIL.Windows.Forms.Keyboarding.props')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\SIL.Windows.Forms.Keyboarding.12.0.1-beta0003\build\SIL.Windows.Forms.Keyboarding.props'))" />
-    <Error Condition="!Exists('..\..\packages\SIL.Windows.Forms.Keyboarding.12.0.1-beta0003\build\SIL.Windows.Forms.Keyboarding.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\SIL.Windows.Forms.Keyboarding.12.0.1-beta0003\build\SIL.Windows.Forms.Keyboarding.targets'))" />
+    <Error Condition="!Exists('..\..\packages\SIL.Media.12.0.1-beta0008\build\SIL.Media.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\SIL.Media.12.0.1-beta0008\build\SIL.Media.targets'))" />
+    <Error Condition="!Exists('..\..\packages\SIL.Windows.Forms.12.0.1-beta0008\build\SIL.Windows.Forms.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\SIL.Windows.Forms.12.0.1-beta0008\build\SIL.Windows.Forms.targets'))" />
+    <Error Condition="!Exists('..\..\packages\SIL.Windows.Forms.Keyboarding.12.0.1-beta0008\build\SIL.Windows.Forms.Keyboarding.props')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\SIL.Windows.Forms.Keyboarding.12.0.1-beta0008\build\SIL.Windows.Forms.Keyboarding.props'))" />
+    <Error Condition="!Exists('..\..\packages\SIL.Windows.Forms.Keyboarding.12.0.1-beta0008\build\SIL.Windows.Forms.Keyboarding.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\SIL.Windows.Forms.Keyboarding.12.0.1-beta0008\build\SIL.Windows.Forms.Keyboarding.targets'))" />
   </Target>
   <!-- msbuild mistakenly copies the 64-bit version of irrKlang.NET4.dll to $(Output) as it resolves
        SIL.Media.dll in our 32-bit build.  It also always copies both the 32-bit and 64-bit versions
