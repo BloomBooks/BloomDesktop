@@ -869,6 +869,12 @@ namespace Bloom.Book
 		}
 
 		public const string BackupFilename = "bookhtml.bak"; // need to know this in BookCollection too.
+		// We try to keep all filenames in the book folder less than this.
+		// The basic idea is to avoid running into the 260 character max path length.
+		// We don't know exactly what directory we might want to unzip a book into
+		// (and even if this computer has been configured to allow longer paths, some other
+		// computer using the book might not be) so it makes sense to keep them fairly short.
+		public const int MaxFilenameLength = 50;
 
 		private string GetBackupFilePath()
 		{
@@ -2521,9 +2527,8 @@ namespace Bloom.Book
 			// May as well do that first as it may result in less truncation.
 			name = name.Normalize(NormalizationForm.FormC);
 			// Then make sure it's not too long.
-			const int MAX = 50;	//arbitrary
-			if (name.Length > MAX)
-				name = name.Substring(0, MAX);
+			if (name.Length > MaxFilenameLength)
+				name = name.Substring(0, MaxFilenameLength);
 			// Then replace invalid characters with spaces and trim off characters
 			// that shouldn't start or finish a directory name.
 			name = RemoveDangerousCharacters(name);
