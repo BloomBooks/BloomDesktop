@@ -100,9 +100,6 @@ namespace Bloom.Publish.BloomPub
 		private static HashSet<string> GetLanguagesToInclude(PublishSettings settings)
 		{
 			var dictToUse = settings.BloomLibrary.TextLangs;
-
-			ThrowIfLanguagesNotInitialized(dictToUse);
-
 			return new HashSet<string>(dictToUse.Where(kvp => kvp.Value.IsIncluded()).Select(kvp => kvp.Key));
 		}
 
@@ -111,19 +108,7 @@ namespace Bloom.Publish.BloomPub
 		// still needs to yield library language settings when harvesting; see BL-10840.
 		private static HashSet<string> GetLanguagesToExclude(Dictionary<string, InclusionSetting> libraryDict)
 		{
-			ThrowIfLanguagesNotInitialized(libraryDict);
 			return new HashSet<string>(libraryDict.Where(kvp => !kvp.Value.IsIncluded()).Select(kvp => kvp.Key));
-		}
-
-		private static void ThrowIfLanguagesNotInitialized(Dictionary<string, InclusionSetting> langDictionary)
-		{
-			if (langDictionary.Count == 0)
-			{
-				// This should never happen. If we are running from the UI, we will have initialized things
-				// when going into the publish screen. If we are running from the command line, we will
-				// have called GetPublishSettingsForBook which guarantees we are properly initialized.
-				throw new ApplicationException("Trying to use PublishSettings languages which have not been initialized");
-			}
 		}
 
 		public static BloomPubPublishSettings FromBookInfo(BookInfo bookInfo)
@@ -169,6 +154,9 @@ namespace Bloom.Publish.BloomPub
 		{
 			// Normally this is setup by the Publish (or library) screen, but if you've never visited such a screen for this book,
 			// perhaps because you are doing a bulk or command line publish, then one of them might be empty. In that case, initialize it here.
+			//
+			// There is one scenario where we legitimately don't have any TextLangs or AudioLangs: a picture book.
+			// In that case, we may call InitializeLanguages unnecessarily, but it's harmless.
 			if (bookInfo.PublishSettings.BloomLibrary.TextLangs.Count == 0 || bookInfo.PublishSettings.BloomLibrary.AudioLangs.Count == 0)
 			{
 				var book = bookServer.GetBookFromBookInfo(bookInfo);

@@ -913,8 +913,8 @@ namespace Bloom.Publish
 			if (stylesNode != null)
 			{
 				var cssTextOrig = stylesNode.InnerXml;   // InnerXml needed to preserve CDATA markup
-														 // For 5.3, we wholesale keep all L2/L3 rules even though this might result in incorrect error messages about fonts. (BL-11357)
-														 // In 5.4, we hope to clean up all this font determination stuff by using a real browser to determine what is used.
+				// For 5.3, we wholesale keep all L2/L3 rules even though this might result in incorrect error messages about fonts. (BL-11357)
+				// In 5.4, we hope to clean up all this font determination stuff by using a real browser to determine what is used.
 				var cssText = HtmlDom.RemoveUnwantedLanguageRulesFromCss(cssTextOrig, languagesToInclude.Append(metadataLang1Code).Append(metadataLang2Code));
 				if (cssText != cssTextOrig)
 					stylesNode.InnerXml = cssText;
