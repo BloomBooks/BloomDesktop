@@ -383,7 +383,7 @@ namespace Bloom.TeamCollection
 			catch (Exception e) when (e is ICSharpCode.SharpZipLib.Zip.ZipException || e is IOException)
 			{
 				NonFatalProblem.Report(ModalIf.All, PassiveIf.All,
-					"Bloom could not unpack the collection files in your Team Collection");
+					"Bloom could not unpack the collection files in your Team Collection", exception:e);
 			}
 		}
 
