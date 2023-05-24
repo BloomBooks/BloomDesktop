@@ -67,6 +67,7 @@ export const PublishProgressDialog: React.FunctionComponent<{
             // But the alternative gets complicated too... the weirdness here is that we need to
             // do something (change the state of the dialog) when the postData's promise is satisfied.
             // (That is, when the preview construction is complete).
+            props.setProgressState(ProgressState.Working);
             postData(
                 props.startApiEndpoint,
                 {},
