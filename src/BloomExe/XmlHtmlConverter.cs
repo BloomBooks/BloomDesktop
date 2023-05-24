@@ -46,8 +46,8 @@ namespace Bloom
 			content = content.Replace(@"REMOVEWHITESPACE", "");
 
 			// tidy likes to insert newlines before <b>, <u>, <i>, and these other elements and convert any existing whitespace
-			// there to a space.  (span was found by pursuing BL-7558)
-			content = new Regex(@"<([ubi]|em|strong|sup|sub|span[^>]*)>").Replace(content, "REMOVEWHITESPACE<$1>");
+			// there to a space.  (<span...> was found by pursuing BL-7558, <a...> from BL-12248)
+			content = new Regex(@"<([ubi]|em|strong|sup|sub|span[^>]*|a[^>]*)>").Replace(content, "REMOVEWHITESPACE<$1>");
 
 			// fix for <br></br> tag doubling
 			content = content.Replace("<br></br>", "<br />");
@@ -119,7 +119,7 @@ namespace Bloom
 
 						// The regex here is mainly for the \s* as a convenient way to remove whatever whitespace TIDY
 						// has inserted. It's a fringe benefit that we can use the[biu]|... to deal with all these elements in one replace.
-						newContents = Regex.Replace(newContents, @"REMOVEWHITESPACE\s*<([biu]|em|strong|sup|sub|span[^>]*)>", "<$1>");
+						newContents = Regex.Replace(newContents, @"REMOVEWHITESPACE\s*<([biu]|em|strong|sup|sub|span[^>]*|a[^>]*)>", "<$1>");
 
 						//In BL2250, we still had REMOVEWHITESPACE sticking around sometimes. The way we reproduced it was
 						//with <u> </u>. That is, we started with
