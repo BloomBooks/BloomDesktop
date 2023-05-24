@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Net.Sockets;
 using System.Windows.Forms;
-using Bloom;
-using Bloom.Api;
 using Bloom.web;
 using Fleck;
 using SIL.Reporting;
@@ -12,7 +10,8 @@ using SIL.Reporting;
 namespace Bloom.Api
 {
 	/// <summary>
-	/// Runs a web socket server on the given port. Useful for high-frequency messages (like audio levels) and allows the backend to send messages to the client.
+	/// Runs a web socket server on the given port. Useful for high-frequency messages (like audio levels)
+	/// and allows the backend to send messages to the client.
 	///
 	/// About ports... we currently only have a single server that is used to pass any number of messages.
 	/// Then on the client side, we have multiple connections to this same server; each connection is called a "socket",
@@ -33,6 +32,10 @@ namespace Bloom.Api
 		//only a single client, we think more in terms of 1 to 1.  However there's nothing preventing multiple parts of the Bloom client from opening their
 		//own connection (socket).
 		private WebSocketServer _server;
+
+		// It would be nice to use something from .Net's System.Collections.Concurrent namespace, but none of the options
+		// seem to fit our needs (i.e. remove a particular connection when it wants to close). To get around this, we just
+		// lock the list whenever we're changing it or reading it.
 		private List<IWebSocketConnection> _allSockets;
 
 		// The one instance which any client may use.
@@ -60,11 +63,6 @@ namespace Bloom.Api
 			Instance = this;
 		}
 
-		public bool IsSocketOpen(string name)
-		{
-			return _allSockets.Exists(s => s.ConnectionInfo?.SubProtocol == name);
-		}
-
 		public void Init(string port)
 		{
 			FleckLog.Level = LogLevel.Warn;
@@ -78,7 +76,7 @@ namespace Bloom.Api
 			// It would allow Chrome to work without any special Chrome code on the client side.
 			// But it seems like a pain. Firefox is able to negotiate with Fleck just fine, and
 			// we only use subprotocols for debugging, so rather than list every
-			// subprotocol we use here, for now I just changed our browser-side code to to not send
+			// subprotocol we use here, for now I just changed our browser-side code to not send
 			// the subprotocol unless we're in Firefox.
 
 			try
@@ -93,7 +91,10 @@ namespace Bloom.Api
 						//Debug.WriteLine($"Opening websocket \"{socket.ConnectionInfo?.SubProtocol}\"");
 
 						// But that breaks Chrome
-						_allSockets.Add(socket);
+						lock (this)
+						{
+							_allSockets.Add(socket);
+						}
 					};
 					socket.OnClose = () =>
 					{
@@ -103,12 +104,14 @@ namespace Bloom.Api
 					// WebSocketManager.ts:87 WebSocket connection to 'ws://127.0.0.1:8090/' failed: Error during WebSocket
 					// handshake: Sent non-empty 'Sec-WebSocket-Protocol' header but no response was received
 						Debug.WriteLine($"Closing websocket \"{socket.ConnectionInfo?.SubProtocol}\"");
-						_allSockets.Remove(socket);
-						socket.Close();
+						lock (this) {
+							_allSockets.Remove(socket);
+							socket.Close();
+						}
 					};
 					socket.OnError = (err) =>
 					{
-						Debug.WriteLine($"Error on websocket \"{socket.ConnectionInfo?.SubProtocol}\": {err.ToString()}");
+						Debug.WriteLine($"Error on websocket \"{socket.ConnectionInfo?.SubProtocol}\": {err}");
 					};
 				});
 			}
@@ -158,18 +161,19 @@ namespace Bloom.Api
 		/// <param name="eventBundle"></param>
 		public void SendBundle(string clientContext, string eventId, dynamic eventBundle)
 		{
-			// We're going to take this and add routing info to it, so it's
-			// no longer just the "details".
+			// We're going to take this and add routing info to it, so it's no longer just the "details".
 			var eventObject = eventBundle;
 			eventObject.clientContext = clientContext;
 			eventObject.id = eventId;
 
-			//note, if there is no open socket, this isn't going to do anything, and
-			//that's (currently) fine.
+			// Note, if there is no open socket, this isn't going to do anything, and that's (currently) fine.
 			lock (this)
 			{
-				// the ToArray() here gives us a copy so that if a socket
-				// is removed while we're doing this, it will be ok
+				// The ToArray() here gives us a copy so that if a socket is removed while we're doing the 'foreach' below,
+				// it will be ok.
+				// We actually got a user report (BL-12245) of an error where _allSockets apparently added another connection
+				// in the midst of doing the copy that is part of ToArray(). That's why we've now added locks anywhere in this
+				// class that changes or reads '_allSockets'.
 				foreach (var socket in _allSockets.ToArray())
 				{
 					// see if it's been removed
@@ -198,8 +202,8 @@ namespace Bloom.Api
 								// Note that while we don't have an explanation of why/how this happens at all for nulls or
 								// so often for !IsAvailable, we are hopeful that users aren't actually losing important events.
 								// Likely, the socket we want to send on is truly irrelevant by the time we get into this situation.
-								// It is important to note that we are trying to send on all open sockets. So hopefully the one we
-								// actually care about is being sent on successfully.
+								// It is important to note that we are trying to send on all open sockets.
+								// So hopefully the one we actually care about is being sent on successfully.
 								var subProtocolDetail = socket?.ConnectionInfo?.SubProtocol == null ? "subprotocol is null" : $"subprotocol: { socket.ConnectionInfo.SubProtocol}";
 								var connectionInfoDetail = socket?.ConnectionInfo == null ? "socket.ConnectionInfo is null" : subProtocolDetail;
 								var socketDetail = socket == null ? "web socket is null; " : $"web socket is not available, {connectionInfoDetail}; ";
