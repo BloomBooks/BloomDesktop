@@ -7,15 +7,13 @@
         <target xml:lang="es-ES" state="final">Instalando...</target>
         <note>This isn't used by code, but rather we harvest some of these for use in making the GIF that shows when the software is installing.</note>
       </trans-unit>
-      <trans-unit id="Errors.CorruptImageFile" translate="no">
-        <!-- added in 5.5 -->
+      <trans-unit id="Errors.CorruptImageFile">
         <source xml:lang="en">The image file {0} is corrupt and needs to be replaced. ({1})</source>
         <note>ID: Errors.CorruptImageFile</note>
         <note>The placeholder {0} represents the name of the corrupt file. The placeholder {0} represents a message describing the problem with the file.</note>
         <target xml:lang="es-ES" state="needs-translation">The image file {0} is corrupt and needs to be replaced. ({1})</target>
       </trans-unit>
-      <trans-unit id="CollectionSettingsDialog.BookMakingTab.NoBookshelvesFromServer" sil:dynamic="true" translate="no">
-        <!-- New in 5.5 -->
+      <trans-unit id="CollectionSettingsDialog.BookMakingTab.NoBookshelvesFromServer" sil:dynamic="true">
         <source xml:lang="en">Bloom could not reach the server to get the list of bookshelves.</source>
         <note>ID: CollectionSettingsDialog.BookMakingTab.NoBookshelvesFromServer</note>
         <target xml:lang="es-ES" state="needs-translation">Bloom could not reach the server to get the list of bookshelves.</target>
@@ -60,8 +58,7 @@
         <target xml:lang="es-ES" state="final">Bloom necesita verificar su correo electrónico, pero nuestro intento de reenviar la solicitud falló, posiblemente porque hizo demasiadas solicitudes demasiadamente rápido. Por favor, compruebe su correo electrónico, y si no puede encontrar el mensaje, inténtelo de nuevo más tarde.</target>
         <note>ID: PublishTab.Upload.CheckEmailFailed</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Upload.BookshelfError" translate="no">
-        <!-- New in 5.5-->
+      <trans-unit id="PublishTab.Upload.BookshelfError">
         <source xml:lang="en">The collection's bookshelf was not on the list of bookshelves for this Enterprise subscription.</source>
         <note>ID: PublishTab.Upload.BookshelfError</note>
         <target xml:lang="es-ES" state="needs-translation">The collection's bookshelf was not on the list of bookshelves for this Enterprise subscription.</target>
@@ -186,13 +183,12 @@
         <target xml:lang="es-ES" state="final">¡La carpeta llamada {0} ya existe y parece que podría ser una carpeta de libros de Bloom!</target>
         <note>ID: Spreadsheet.OverwriteBook</note>
       </trans-unit>
-      <!-- 5.5? But we may not want to translate any Spreadsheet stuff yet? Anyway, this is new in 5.5-->
-      <trans-unit id="Spreadsheet.TroubleCopying" translate="no">
+      <trans-unit id="Spreadsheet.TroubleCopying">
         <source xml:lang="en">Bloom had trouble copying the file {0} to the video folder: {1}</source>
         <target xml:lang="es-ES" state="needs-translation">Bloom had trouble copying the file {0} to the video folder: {1}</target>
         <note>ID: Spreadsheet.TroubleCopying</note>
       </trans-unit>
-      <trans-unit id="Spreadsheet.TroubleCopyingFolder" translate="no">
+      <trans-unit id="Spreadsheet.TroubleCopyingFolder">
         <source xml:lang="en">Bloom had trouble copying the folder {0} to the activities folder: {1}</source>
         <target xml:lang="es-ES" state="needs-translation">Bloom had trouble copying the folder {0} to the activities folder: {1}</target>
         <note>ID: Spreadsheet.TroubleCopyingFolder</note>

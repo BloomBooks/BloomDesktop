@@ -7,14 +7,12 @@
                 <note>This isn't used by code, but rather we harvest some of these for use in making the GIF that shows when the software is installing.</note>
                 <note> In English, given the context, just "Installing..." is enough. But your translation can be verbose, like "Software Installation in Progress...".</note>
             </trans-unit>
-            <trans-unit id="Errors.CorruptImageFile" translate="no">
-              <!-- added in 5.5 -->
+            <trans-unit id="Errors.CorruptImageFile">
               <source xml:lang="en">The image file {0} is corrupt and needs to be replaced. ({1})</source>
               <note>ID: Errors.CorruptImageFile</note>
               <note>The placeholder {0} represents the name of the corrupt file. The placeholder {0} represents a message describing the problem with the file.</note>
             </trans-unit>
-            <trans-unit id="CollectionSettingsDialog.BookMakingTab.NoBookshelvesFromServer" sil:dynamic="true" translate="no">
-              <!-- New in 5.5 -->
+            <trans-unit id="CollectionSettingsDialog.BookMakingTab.NoBookshelvesFromServer" sil:dynamic="true">
               <source xml:lang="en">Bloom could not reach the server to get the list of bookshelves.</source>
               <note>ID: CollectionSettingsDialog.BookMakingTab.NoBookshelvesFromServer</note>
             </trans-unit>
@@ -55,8 +53,7 @@
                 <source xml:lang="en">Bloom needs to verify your email, but our attempt to resend the request failed, possibly because you made too many requests too close together. Please check your email, and if you can't find the message, try again later.</source>
                 <note>ID: PublishTab.Upload.CheckEmailFailed</note>
             </trans-unit>
-            <trans-unit id="PublishTab.Upload.BookshelfError" translate="no">
-                <!-- New in 5.5-->
+            <trans-unit id="PublishTab.Upload.BookshelfError">
                 <source xml:lang="en">The collection's bookshelf was not on the list of bookshelves for this Enterprise subscription.</source>
                 <note>ID: PublishTab.Upload.BookshelfError</note>
             </trans-unit>
@@ -157,13 +154,12 @@
                 <source xml:lang="en">The folder named {0} already exists and looks like it might be a Bloom book folder!</source>
                 <note>ID: Spreadsheet.OverwriteBook</note>
             </trans-unit>
-          <!-- 5.5? But we may not want to translate any Spreadsheet stuff yet? Anyway, this is new in 5.5-->
-          <trans-unit id="Spreadsheet.TroubleCopying" translate="no">
+          <trans-unit id="Spreadsheet.TroubleCopying">
             <source xml:lang="en">Bloom had trouble copying the file {0} to the video folder: {1}</source>
             <note>ID: Spreadsheet.TroubleCopying</note>
             <note>{1} is a more detailed, usually technical, error message and should be at the end if possible.</note>
           </trans-unit>
-            <trans-unit id="Spreadsheet.TroubleCopyingFolder" translate="no">
+            <trans-unit id="Spreadsheet.TroubleCopyingFolder">
                 <source xml:lang="en">Bloom had trouble copying the folder {0} to the activities folder: {1}</source>
                 <note>ID: Spreadsheet.TroubleCopyingFolder</note>
               <note>{1} is a more detailed, usually technical, error message and should be at the end if possible.</note>

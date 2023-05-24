@@ -700,8 +700,7 @@
         <target xml:lang="ha" state="final">Ka yi Muhallin Maikaratu na manhajar Bloom...</target>
         <note>ID: CollectionTab.AddMakeReaderTemplateBloomPackToolStripMenuItem</note>
       </trans-unit>
-      <trans-unit id="CollectionTab.AddSourceCollection" translate="no">
-        <!-- added in 5.5 -->
+      <trans-unit id="CollectionTab.AddSourceCollection">
         <source xml:lang="en">Show another collection...</source>
         <note>Shown at the very bottom of the list of books and collections.  The user can click on this text and then choose an existing collection to use as an additional source of books to translate or otherwise adapt.</note>
         <note>ID: CollectionTab.AddSourceCollection</note>
@@ -807,8 +806,7 @@
         <target xml:lang="ha" state="final">Litattafai daga ɗakin karatun yanar gizo na BloomLibrary.org</target>
         <note>ID: CollectionTab.Books From BloomLibrary.org</note>
       </trans-unit>
-      <trans-unit id="CollectionTab.ChooseCollection" translate="no">
-        <!-- added in 5.5 -->
+      <trans-unit id="CollectionTab.ChooseCollection">
         <source xml:lang="en">Choose Collection</source>
         <note>This is the title of the file-open dialog that you use to choose a Bloom collection</note>
         <note>ID: CollectionTab.ChooseCollection</note>
@@ -869,8 +867,7 @@
         <target xml:lang="ha" state="needs-translation">Troubleshooting</target>
         <note>ID: CollectionTab.ContextMenu.Troubleshooting</note>
       </trans-unit>
-      <trans-unit id="CollectionTab.DoNotShowCollection" translate="no">
-        <!-- added in 5.5 -->
+      <trans-unit id="CollectionTab.DoNotShowCollection">
         <source xml:lang="en">Do not show this collection here.</source>
         <note>This is a tooltip for the X icon that allows the user to remove a collection from displaying as a source of books.</note>
         <note>ID: CollectionTab.DoNotShowCollection</note>
@@ -931,8 +928,7 @@
         <target xml:lang="ha" state="needs-translation">({0}% complete)</target>
         <note>ID: CollectionTab.Progress</note>
       </trans-unit>
-      <trans-unit id="CollectionTab.RemoveThisGroup" translate="no">
-        <!-- added in 5.5 -->
+      <trans-unit id="CollectionTab.RemoveThisGroup">
         <source xml:lang="en">To remove this group, you will need to delete the folder. Click here to view the folder on your drive.</source>
         <note>This is a tooltip for the folder icon that allows the user to remove a folder that is serving as a source of books.</note>
         <note>ID: CollectionTab.RemoveThisGroup</note>
@@ -1182,8 +1178,7 @@
         <target xml:lang="ha" state="final">Saukewa...</target>
         <note>ID: Common.Loading</note>
       </trans-unit>
-      <trans-unit id="Common.LongRunningOperation" sil:dynamic="true" translate="no">
-        <!-- added in 5.5 -->
+      <trans-unit id="Common.LongRunningOperation" sil:dynamic="true">
         <source xml:lang="en">This may take a while...</source>
         <note>ID: Common.LongRunningOperation</note>
         <note>Used to indicate that an operation may take a long amount of time to complete.</note>
@@ -1199,8 +1194,7 @@
         <target xml:lang="ha" state="final">Gaba</target>
         <note>ID: Common.NextButton</note>
       </trans-unit>
-      <trans-unit id="Common.No" translate="no">
-        <!-- added in 5.5 -->
+      <trans-unit id="Common.No">
         <source xml:lang="en">No</source>
         <note>ID: Common.No</note>
         <target xml:lang="ha" state="needs-translation">No</target>
@@ -1290,8 +1284,7 @@
         <target xml:lang="ha" state="needs-translation">Settings</target>
         <note>ID: Common.Settings</note>
       </trans-unit>
-      <trans-unit id="Common.Starting" translate="no">
-        <!-- added in 5.5 -->
+      <trans-unit id="Common.Starting">
         <source xml:lang="en">Starting...</source>
         <note>ID: Common.Starting</note>
         <target xml:lang="ha" state="needs-translation">Starting...</target>
@@ -1326,8 +1319,7 @@
         <target xml:lang="ha" state="needs-translation">What caused this problem?</target>
         <note>ID: Common.WhatCausedThisProblem</note>
       </trans-unit>
-      <trans-unit id="Common.Yes" translate="no">
-        <!-- added in 5.5 -->
+      <trans-unit id="Common.Yes">
         <source xml:lang="en">Yes</source>
         <note>ID: Common.Yes</note>
         <target xml:lang="ha" state="needs-translation">Yes</target>
@@ -1732,8 +1724,7 @@
         <target xml:lang="ha" state="final">Wannan tsarin da ma akwai shi. Don Allah ka zabi wani suna.</target>
         <note>ID: EditTab.FormatDialog.AlreadyExists</note>
       </trans-unit>
-      <trans-unit id="EditTab.FormatDialog.BackgroundColor" sil:dynamic="true" translate="no">
-        <!-- added in 5.5 -->
+      <trans-unit id="EditTab.FormatDialog.BackgroundColor" sil:dynamic="true">
         <source xml:lang="en">Background color</source>
         <note>ID: EditTab.FormatDialog.BackgroundColor</note>
         <target xml:lang="ha" state="needs-translation">Background color</target>
@@ -1868,14 +1859,12 @@
         <target xml:lang="ha" state="final">Tsari</target>
         <note>ID: EditTab.FormatDialog.Format</note>
       </trans-unit>
-      <trans-unit id="EditTab.FormatDialog.Highlighting" sil:dynamic="true" translate="no">
-        <!-- added in 5.5 -->
+      <trans-unit id="EditTab.FormatDialog.Highlighting" sil:dynamic="true">
         <source xml:lang="en">Highlighting</source>
         <note>ID: EditTab.FormatDialog.Highlighting</note>
         <target xml:lang="ha" state="needs-translation">Highlighting</target>
       </trans-unit>
-      <trans-unit id="EditTab.FormatDialog.HowToHighlightAudio" sil:dynamic="true" translate="no">
-        <!-- added in 5.5 -->
+      <trans-unit id="EditTab.FormatDialog.HowToHighlightAudio" sil:dynamic="true">
         <source xml:lang="en">Choose how to highlight text of style "%0" while its audio is playing:</source>
         <note>ID: EditTab.FormatDialog.HowToHighlightAudio</note>
         <note>%0 should remain and will be replaced with the name of a style</note>
@@ -1926,8 +1915,7 @@
         <target xml:lang="ha" state="final">Sunan Tsari</target>
         <note>ID: EditTab.FormatDialog.StyleNameTab</note>
       </trans-unit>
-      <trans-unit id="EditTab.FormatDialog.TextColor" sil:dynamic="true" translate="no">
-        <!-- added in 5.5 -->
+      <trans-unit id="EditTab.FormatDialog.TextColor" sil:dynamic="true">
         <source xml:lang="en">Text Color</source>
         <note>ID: EditTab.FormatDialog.TextColor</note>
         <target xml:lang="ha" state="needs-translation">Text Color</target>
@@ -4027,14 +4015,12 @@
         <target xml:lang="ha" state="needs-translation">Adobe Color Profile License Agreement</target>
         <note>ID: PublishTab.AdobeEulaTitle</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Activity" translate="no">
-        <!-- added in 5.5 -->
+      <trans-unit id="PublishTab.Activity">
         <source xml:lang="en">Activity</source>
         <note>ID: PublishTab.Activity</note>
         <target xml:lang="ha" state="needs-translation">Activity</target>
       </trans-unit>
-      <trans-unit id="PublishTab.Comic" translate="no">
-        <!-- added in 5.5 -->
+      <trans-unit id="PublishTab.Comic">
         <source xml:lang="en">Comic</source>
         <note>ID: PublishTab.Comic</note>
         <target xml:lang="ha" state="needs-translation">Comic</target>
@@ -4049,8 +4035,7 @@
         <target xml:lang="ha" state="needs-translation">Stop Publishing</target>
         <note>This is shown while Bloom is sharing a book over wifi or over a usb cable. </note>
       </trans-unit>
-      <trans-unit id="PublishTab.AccessibleVisually" translate="no">
-        <!-- added in 5.5 -->
+      <trans-unit id="PublishTab.AccessibleVisually">
         <source xml:lang="en">Accessible to the Visually Impaired in %0</source>
         <note>ID: PublishTab.AccessibleVisually</note>
         <target xml:lang="ha" state="needs-translation">Accessible to the Visually Impaired in %0</target>
@@ -4085,20 +4070,17 @@
         <target xml:lang="ha" state="needs-translation">Note that when you upload your book to &lt;a href="https://bloomlibrary.org/"&gt;BloomLibrary.org&lt;/a&gt;, we will create a BloomPUB file for you that people can download.</target>
         <note>ID: PublishTab.Android.BloomPUB.Hint2</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Android.BloomPUB.MakeRABAppHelpLink" translate="no">
-        <!-- added in 5.5 -->
+      <trans-unit id="PublishTab.Android.BloomPUB.MakeRABAppHelpLink">
         <source xml:lang="en">Making BloomPUB Apps with Reading App Builder</source>
         <note>ID: PublishTab.Android.BloomPUB.MakeRABAppHelpLink</note>
         <target xml:lang="ha" state="needs-translation">Making BloomPUB Apps with Reading App Builder</target>
       </trans-unit>
-      <trans-unit id="PublishTab.Android.BloomPUB.ViewingWithBRHelpLink" translate="no">
-        <!-- added in 5.5 -->
+      <trans-unit id="PublishTab.Android.BloomPUB.ViewingWithBRHelpLink">
         <source xml:lang="en">Viewing BloomPUBs on Bloom Reader (Android)</source>
         <note>ID: PublishTab.Android.BloomPUB.ViewingWithBRHelpLink</note>
         <target xml:lang="ha" state="needs-translation">Viewing BloomPUBs on Bloom Reader (Android)</target>
       </trans-unit>
-      <trans-unit id="PublishTab.Android.BloomPUB.ViewingOnWindowsHelpLink" translate="no">
-        <!-- added in 5.5 -->
+      <trans-unit id="PublishTab.Android.BloomPUB.ViewingOnWindowsHelpLink">
         <source xml:lang="en">Viewing BloomPUBs on Windows</source>
         <note>ID: PublishTab.Android.BloomPUB.ViewingOnWindowsHelpLink</note>
         <target xml:lang="ha" state="needs-translation">Viewing BloomPUBs on Windows</target>
@@ -4437,8 +4419,7 @@
         <target xml:lang="ha" state="final">Cikin Ɗan Ƙaramin Littafi</target>
         <note>ID: PublishTab.BodyOnlyRadio</note>
       </trans-unit>
-      <trans-unit id="PublishTab.BodyOnly-description" translate="no">
-        <!-- added in 5.5 -->
+      <trans-unit id="PublishTab.BodyOnly-description">
         <source xml:lang="en">The inside pages, re-arranged so that when folded, you get a booklet ready to staple.</source>
         <note>ID: PublishTab.BodyOnly-description</note>
         <target xml:lang="ha" state="needs-translation">The inside pages, re-arranged so that when folded, you get a booklet ready to staple.</target>
@@ -4513,8 +4494,7 @@
         <target xml:lang="ha" state="final">Murfin Ɗan Ƙaramin Littafi</target>
         <note>ID: PublishTab.CoverOnlyRadio</note>
       </trans-unit>
-      <trans-unit id="PublishTab.CoverOnly-description" sil:dynamic="true" translate="no">
-        <!-- added in 5.5 -->
+      <trans-unit id="PublishTab.CoverOnly-description" sil:dynamic="true">
         <source xml:lang="en">The cover, ready to print on colored paper.</source>
         <note>ID: PublishTab.CoverOnly-description</note>
         <target xml:lang="ha" state="needs-translation">The cover, ready to print on colored paper.</target>
@@ -4525,7 +4505,6 @@
         <note>ID: PublishTab.CoverOnlyRadio-tooltip</note>
       </trans-unit>
       <trans-unit id="PublishTab.Epub.IncludeOnPage.Disabled">
-        <!-- added in 5.5 -->
         <source xml:lang="en">This is disabled because Bloom can only do this if the ePUB mode is "Flowable".</source>
         <note>ID: PublishTab.Epub.IncludeOnPage.Disabled</note>
         <target xml:lang="ha" state="needs-translation">This is disabled because Bloom can only do this if the ePUB mode is "Flowable".</target>
@@ -4700,8 +4679,7 @@
         <target xml:lang="ha" state="final">A sauƙaƙe</target>
         <note>ID: PublishTab.OnePagePerPaperRadio</note>
       </trans-unit>
-      <trans-unit id="PublishTab.OnePagePerPaper-description" sil:dynamic="true" translate="no">
-        <!-- added in 5.5 -->
+      <trans-unit id="PublishTab.OnePagePerPaper-description" sil:dynamic="true">
         <source xml:lang="en">A simple PDF instead of a booklet.</source>
         <note>ID: PublishTab.OnePagePerPaper-description</note>
         <target xml:lang="ha" state="needs-translation">A simple PDF instead of a booklet.</target>
@@ -4731,77 +4709,67 @@
         <target xml:lang="ha" state="needs-translation">Choose print shop setup</target>
         <note>ID: PublishTab.Options_ToolTip_</note>
       </trans-unit>
-      <trans-unit id="PublishTab.PDF.Booklet.HelpHeader" translate="no">
-        <!-- added in 5.5 -->
+      <trans-unit id="PublishTab.PDF.Booklet.HelpHeader">
         <source xml:lang="en">Here are the settings you need for printing this booklet:</source>
         <note>ID: PublishTab.PDF.Booklet.HelpHeader</note>
         <note>heading for list of setting recommendations</note>
         <target xml:lang="ha" state="needs-translation">Here are the settings you need for printing this booklet:</target>
       </trans-unit>
-      <trans-unit id="PublishTab.PDF.Booklet.PageLayout.Portrait" translate="no">
-        <!-- added in 5.5 -->
+      <trans-unit id="PublishTab.PDF.Booklet.PageLayout.Portrait">
         <source xml:lang="en">1. Layout: Portrait</source>
         <note>ID: PublishTab.PDF.Booklet.PageLayout.Portrait</note>
         <note>first recommendation is page layout / orientation (taller than it is wide)</note>
         <note>This should follow how Microsoft translated these terms in the print dialog.</note>
         <target xml:lang="ha" state="needs-translation">1. Layout: Portrait</target>
       </trans-unit>
-      <trans-unit id="PublishTab.PDF.Booklet.PageLayout.Landscape" translate="no">
-        <!-- added in 5.5 -->
+      <trans-unit id="PublishTab.PDF.Booklet.PageLayout.Landscape">
         <source xml:lang="en">1. Layout: Landscape</source>
         <note>ID: PublishTab.PDF.Booklet.PageLayout.Landscape</note>
         <note>first recommendation is page layout / orientation (wider than it is tall)</note>
         <note>This should follow how Microsoft translated these terms in the print dialog.</note>
         <target xml:lang="ha" state="needs-translation">1. Layout: Landscape</target>
       </trans-unit>
-      <trans-unit id="PublishTab.PDF.Booklet.Flip.ShortEdge" translate="no">
-        <!-- added in 5.5 -->
+      <trans-unit id="PublishTab.PDF.Booklet.Flip.ShortEdge">
         <source xml:lang="en">2. Print on both sides: "Flip on short edge"</source>
         <note>ID: PublishTab.PDF.Booklet.Flip.ShortEdge</note>
         <note>second recommendation is two-sided printing, flipping the paper on the short edge</note>
         <note>This should follow how Microsoft translated these terms in the print dialog.</note>
         <target xml:lang="ha" state="needs-translation">2. Print on both sides: "Flip on short edge"</target>
       </trans-unit>
-      <trans-unit id="PublishTab.PDF.Booklet.Flip.LongEdge" translate="no">
-        <!-- added in 5.5 -->
+      <trans-unit id="PublishTab.PDF.Booklet.Flip.LongEdge">
         <source xml:lang="en">2. Print on both sides: "Flip on long edge"</source>
         <note>ID: PublishTab.PDF.Booklet.Flip.LongEdge</note>
         <note>second recommendation is two-sided printing, flipping the paper on the long edge</note>
         <note>This should follow how Microsoft translated these terms in the print dialog.</note>
         <target xml:lang="ha" state="needs-translation">2. Print on both sides: "Flip on long edge"</target>
       </trans-unit>
-      <trans-unit id="PublishTab.PDF.Booklet.PaperSize.A4" translate="no">
-        <!-- added in 5.5 -->
+      <trans-unit id="PublishTab.PDF.Booklet.PaperSize.A4">
         <source xml:lang="en">3. More settings &gt; Paper size: "A4"</source>
         <note>ID: PublishTab.PDF.Booklet.PaperSize.A4</note>
         <note>third recommendation is paper size (A4, the standard metric paper size)</note>
         <note>This should follow how Microsoft translated these terms in the print dialog.</note>
         <target xml:lang="ha" state="needs-translation">3. More settings &gt; Paper size: "A4"</target>
       </trans-unit>
-      <trans-unit id="PublishTab.PDF.Booklet.PaperSize.Letter" translate="no">
-        <!-- added in 5.5 -->
+      <trans-unit id="PublishTab.PDF.Booklet.PaperSize.Letter">
         <source xml:lang="en">3. More settings &gt; Paper size: "Letter"</source>
         <note>ID: PublishTab.PDF.Booklet.PaperSize.Letter</note>
         <note>third recommendation is paper size (Letter, the standard paper size in the U.S.)</note>
         <note>This should follow how Microsoft translated these terms in the print dialog.</note>
         <target xml:lang="ha" state="needs-translation">3. More settings &gt; Paper size: "Letter"</target>
       </trans-unit>
-      <trans-unit id="PublishTab.PDF.Booklet.Scale.ActualSize" translate="no">
-        <!-- added in 5.5 -->
+      <trans-unit id="PublishTab.PDF.Booklet.Scale.ActualSize">
         <source xml:lang="en">4. More settings &gt; Scale: "Actual size"</source>
         <note>ID: PublishTab.PDF.Booklet.Scale.ActualSize</note>
         <note>fourth recommendation is image scaling (use actual size, don't scale)</note>
         <note>This should follow how Microsoft translated these terms in the print dialog.</note>
         <target xml:lang="ha" state="needs-translation">4. More settings &gt; Scale: "Actual size"</target>
       </trans-unit>
-      <trans-unit id="PublishTab.PDF.Booklet.TwoPages.CutAndStack" translate="no">
-        <!-- added in 5.5 -->
+      <trans-unit id="PublishTab.PDF.Booklet.TwoPages.CutAndStack">
         <source xml:lang="en">This will put two pages on each sheet of paper. Cut horizontally and stack to make one booklet.</source>
         <note>ID: PublishTab.PDF.Booklet.TwoPages.CutAndStack</note>
         <target xml:lang="ha" state="needs-translation">This will put two pages on each sheet of paper. Cut horizontally and stack to make one booklet.</target>
       </trans-unit>
-      <trans-unit id="PublishTab.PDF.Booklet.FourPages.CutAndFold" translate="no">
-        <!-- added in 5.5 -->
+      <trans-unit id="PublishTab.PDF.Booklet.FourPages.CutAndFold">
         <source xml:lang="en">This will put four pages on each sheet of paper. Cut the stack, then fold to get two booklets.</source>
         <note>ID: PublishTab.PDF.Booklet.FourPages.CutAndFold</note>
         <target xml:lang="ha" state="needs-translation">This will put four pages on each sheet of paper. Cut the stack, then fold to get two booklets.</target>
@@ -4836,14 +4804,12 @@
         <target xml:lang="ha" state="needs-translation">Bloom had a problem making a PDF of this book.</target>
         <note>ID: PublishTab.PdfMaker.BadPdfShort</note>
       </trans-unit>
-      <trans-unit id="PublishTab.PdfMaker.ClickToStart" translate="no">
-        <!-- added in 5.5 -->
+      <trans-unit id="PublishTab.PdfMaker.ClickToStart">
         <source xml:lang="en">Bloom can format your PDF in several ways.</source>
         <note>ID: PublishTab.PdfMaker.ClickToStart</note>
         <target xml:lang="ha" state="needs-translation">Bloom can format your PDF in several ways.</target>
       </trans-unit>
-      <trans-unit id="PublishTab.PdfMaker.ClickToStart2" translate="no">
-        <!-- added in 5.5 -->
+      <trans-unit id="PublishTab.PdfMaker.ClickToStart2">
         <source xml:lang="en">Choose one here:</source>
         <note>ID: PublishTab.PdfMaker.ClickToStart2</note>
         <target xml:lang="ha" state="needs-translation">Choose one here:</target>
@@ -4908,8 +4874,7 @@
         <target xml:lang="ha" state="needs-translation">Full Bleed has not been set up for this book</target>
         <note>ID: PublishTab.PdfMaker.NoFullBleed</note>
       </trans-unit>
-      <trans-unit id="PublishTab.PdfMaker.None" translate="no">
-        <!-- added in 5.5 -->
+      <trans-unit id="PublishTab.PdfMaker.None">
         <source xml:lang="en">None</source>
         <note>ID: PublishTab.PdfMaker.None</note>
         <note>This is an option in a menu of CMYK settings, indicating the PDF should be made without using CMYK at all.</note>
@@ -4935,8 +4900,7 @@
         <target xml:lang="ha" state="needs-translation">U.S. Web Coated (SWOP) v2</target>
         <note>ID: PublishTab.PdfMaker.PdfWithCmykSwopV2</note>
       </trans-unit>
-      <trans-unit id="PublishTab.PdfMaker.Cmyk" translate="no">
-        <!-- added in 5.5 -->
+      <trans-unit id="PublishTab.PdfMaker.Cmyk">
         <source xml:lang="en">CMYK</source>
         <note>ID: PublishTab.PdfMaker.Cmyk</note>
         <note>Displayed as a label in the PDF &amp; Print tab. 'CMYK' may not be translatable, it is a print shop standard.</note>
@@ -4972,35 +4936,30 @@
         <target xml:lang="ha" state="needs-translation">The PDF file has not been saved because you chose not to allow producing a "PDF for print shop".</target>
         <note>ID: PublishTab.PdfNotSavedWhy</note>
       </trans-unit>
-      <trans-unit id="PublishTab.PdfPrint.Button" translate="no">
-        <!-- added in 5.5 -->
+      <trans-unit id="PublishTab.PdfPrint.Button">
         <source xml:lang="en">PDF &amp; Print</source>
         <note>ID: PublishTab.PdfPrint.Button</note>
         <note>Text under button to select Print and PDF preview</note>
         <target xml:lang="ha" state="needs-translation">PDF &amp; Print</target>
       </trans-unit>
-      <trans-unit id="PublishTab.PdfPrint.BannerTitle" translate="no">
-        <!-- added in 5.5 -->
+      <trans-unit id="PublishTab.PdfPrint.BannerTitle">
         <source xml:lang="en">Publish to PDF &amp; Print</source>
         <note>ID: PublishTab.PdfPrint.BannerTitle</note>
         <note>Header on PDF/Print Publishing page</note>
         <target xml:lang="ha" state="needs-translation">Publish to PDF &amp; Print</target>
       </trans-unit>
-      <trans-unit id="PublishTab.PdfPrint.BookletModes" translate="no">
-        <!-- added in 5.5 -->
+      <trans-unit id="PublishTab.PdfPrint.BookletModes">
         <source xml:lang="en">Booklet Mode</source>
         <note>ID: PublishTab.PdfPrint.BookletModes</note>
         <note>Heading above Option panel to right of PDF preview</note>
         <target xml:lang="ha" state="needs-translation">Booklet Mode</target>
       </trans-unit>
-      <trans-unit id="PublishTab.PdfPrint.AboutPdfPrint" translate="no">
-        <!-- added in 5.5 -->
+      <trans-unit id="PublishTab.PdfPrint.AboutPdfPrint">
         <source xml:lang="en">About PDF &amp; Print</source>
         <note>ID: PublishTab.PdfPrint.AboutPdfPrint</note>
         <target xml:lang="ha" state="needs-translation">About PDF &amp; Print</target>
       </trans-unit>
-      <trans-unit id="PublishTab.PdfPrint.PrintshopOptions" translate="no">
-        <!-- added in 5.5 -->
+      <trans-unit id="PublishTab.PdfPrint.PrintshopOptions">
         <source xml:lang="en">Prepare for Printshop</source>
         <note>ID: PublishTab.PdfPrint.PrintshopOptions</note>
         <note>Heading over lower part of Option panel to right of PDF preview</note>
@@ -5249,8 +5208,7 @@
         <target xml:lang="ha" state="needs-translation">Publish tab tasks overview</target>
         <note>ID: PublishTab.TasksOverview</note>
       </trans-unit>
-      <trans-unit id="PublishTab.TalkingBook" sil:dynamic="true" translate="no">
-        <!-- added in 5.5 -->
+      <trans-unit id="PublishTab.TalkingBook" sil:dynamic="true">
         <source xml:lang="en">Talking Book</source>
         <note>ID: PublishTab.TalkingBook</note>
         <target xml:lang="ha" state="needs-translation">Talking Book</target>
@@ -5275,26 +5233,22 @@
         <target xml:lang="ha" state="final">Ba a yarda a yi aiki da wannan ba tare da izini ba  (Tuntubi Mai haƙƙin Mallaka don neman izini.)</target>
         <note>ID: PublishTab.Upload.AllReserved</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Upload.Agreement.PermissionToPublish" translate="no">
-        <!-- added in 5.5 -->
+      <trans-unit id="PublishTab.Upload.Agreement.PermissionToPublish">
         <source xml:lang="en">I have permission to publish all the text and images in this book.</source>
         <note>ID: PublishTab.Upload.Agreement.PermissionToPublish</note>
         <target xml:lang="ha" state="needs-translation">I have permission to publish all the text and images in this book.</target>
       </trans-unit>
-      <trans-unit id="PublishTab.Upload.Agreement.GivesCredit" translate="no">
-        <!-- added in 5.5 -->
+      <trans-unit id="PublishTab.Upload.Agreement.GivesCredit">
         <source xml:lang="en">The book gives credit to the the author, translator, and illustrator(s).</source>
         <note>ID: PublishTab.Upload.Agreement.GivesCredit</note>
         <target xml:lang="ha" state="needs-translation">The book gives credit to the the author, translator, and illustrator(s).</target>
       </trans-unit>
-      <trans-unit id="PublishTab.Upload.Agreement.AgreeToTerms" translate="no">
-        <!-- added in 5.5 -->
+      <trans-unit id="PublishTab.Upload.Agreement.AgreeToTerms">
         <source xml:lang="en">I agree to the [Bloom Library Terms of Use].</source>
         <note>ID: PublishTab.Upload.Agreement.AgreeToTerms</note>
         <target xml:lang="ha" state="needs-translation">I agree to the [Bloom Library Terms of Use].</target>
       </trans-unit>
-      <trans-unit id="PublishTab.Upload.Agreements" translate="no">
-        <!-- added in 5.5 -->
+      <trans-unit id="PublishTab.Upload.Agreements">
         <source xml:lang="en">Agreements</source>
         <note>ID: PublishTab.Upload.Agreements</note>
         <target xml:lang="ha" state="needs-translation">Agreements</target>
@@ -5304,14 +5258,12 @@
         <target xml:lang="ha" state="needs-translation">Background Music</target>
         <note>ID: PublishTab.Upload.BackgroundMusic</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Upload.BannerDescription" translate="no">
-        <!-- added in 5.5 -->
+      <trans-unit id="PublishTab.Upload.BannerDescription">
         <source xml:lang="en">Let speakers find your books in [Bloom Reader](https://bloomlibrary.org/page/create/bloom-reader) and on [BloomLibrary.org](https://bloomlibrary.org/).</source>
         <note>ID: PublishTab.Upload.BannerDescription</note>
         <target xml:lang="ha" state="needs-translation">Let speakers find your books in [Bloom Reader](https://bloomlibrary.org/page/create/bloom-reader) and on [BloomLibrary.org](https://bloomlibrary.org/).</target>
       </trans-unit>
-      <trans-unit id="PublishTab.Upload.BannerTitle" translate="no">
-        <!-- added in 5.5 -->
+      <trans-unit id="PublishTab.Upload.BannerTitle">
         <source xml:lang="en">Publish to Web</source>
         <note>ID: PublishTab.Upload.BannerTitle</note>
         <target xml:lang="ha" state="needs-translation">Publish to Web</target>
@@ -5331,14 +5283,12 @@
         <target xml:lang="ha" state="needs-translation">CC-BY-NC</target>
         <note>ID: PublishTab.Upload.CcLink</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Upload.CheckingVersionEligibility" translate="no">
-        <!-- added in 5.5 -->
+      <trans-unit id="PublishTab.Upload.CheckingVersionEligibility">
         <source xml:lang="en">Checking Bloom version eligibility...</source>
         <note>ID: PublishTab.Upload.CheckingVersionEligibility</note>
         <target xml:lang="ha" state="needs-translation">Checking Bloom version eligibility...</target>
       </trans-unit>
-      <trans-unit id="PublishTab.Upload.CheckingExistingCopy" translate="no">
-        <!-- added in 5.5 -->
+      <trans-unit id="PublishTab.Upload.CheckingExistingCopy">
         <source xml:lang="en">Checking for existing copy on server...</source>
         <note>ID: PublishTab.Upload.CheckingExistingCopy</note>
         <target xml:lang="ha" state="needs-translation">Checking for existing copy on server...</target>
@@ -5348,14 +5298,12 @@
         <target xml:lang="ha" state="needs-translation">Please choose the sign language for this book</target>
         <note>ID: PublishTab.Upload.ChooseSignLanguageWarning</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Upload.ClickToFix" translate="no">
-        <!-- added in 5.5 -->
+      <trans-unit id="PublishTab.Upload.ClickToFix">
         <source xml:lang="en">Click to fix</source>
         <note>ID: PublishTab.Upload.ClickToFix</note>
         <target xml:lang="ha" state="needs-translation">Click to fix</target>
       </trans-unit>
-      <trans-unit id="PublishTab.Upload.ConfirmMetadata" translate="no">
-        <!-- added in 5.5 -->
+      <trans-unit id="PublishTab.Upload.ConfirmMetadata">
         <source xml:lang="en">Confirm Metadata</source>
         <note>ID: PublishTab.Upload.ConfirmMetadata</note>
         <target xml:lang="ha" state="needs-translation">Confirm Metadata</target>
@@ -5370,8 +5318,7 @@
         <target xml:lang="ha" state="final">ta'allaƙawa</target>
         <note>ID: PublishTab.Upload.Credits</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Upload.EnterpriseShelfRequiredTooltip" translate="no">
-        <!-- added in 5.5 -->
+      <trans-unit id="PublishTab.Upload.EnterpriseShelfRequiredTooltip">
         <source xml:lang="en">This feature requires an Enterprise subscription and a destination shelf selected in Collection Settings.</source>
         <note>ID: PublishTab.Upload.EnterpriseShelfRequiredTooltip</note>
         <target xml:lang="ha" state="needs-translation">This feature requires an Enterprise subscription and a destination shelf selected in Collection Settings.</target>
@@ -5561,14 +5508,12 @@
         <target xml:lang="ha" state="final">Yin surar bayyanawa...</target>
         <note>ID: PublishTab.Upload.MakingThumbnail</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Upload.Missing.Copyright" translate="no">
-        <!-- added in 5.5 -->
+      <trans-unit id="PublishTab.Upload.Missing.Copyright">
         <source xml:lang="en">Missing Copyright</source>
         <note>ID: PublishTab.Upload.Missing.Copyright</note>
         <target xml:lang="ha" state="needs-translation">Missing Copyright</target>
       </trans-unit>
-      <trans-unit id="PublishTab.Upload.Missing.Title" translate="no">
-        <!-- added in 5.5 -->
+      <trans-unit id="PublishTab.Upload.Missing.Title">
         <source xml:lang="en">Missing Title</source>
         <note>ID: PublishTab.Upload.Missing.Title</note>
         <target xml:lang="ha" state="needs-translation">Missing Title</target>
@@ -5608,8 +5553,7 @@
         <target xml:lang="ha" state="needs-translation">Sign Language</target>
         <note>ID: PublishTab.Upload.SignLanguage</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Upload.SignIn" translate="no">
-        <!-- added in 5.5 -->
+      <trans-unit id="PublishTab.Upload.SignIn">
         <source xml:lang="en">Sign in or sign up to BloomLibrary.org</source>
         <note>ID: PublishTab.Upload.SignIn</note>
         <target xml:lang="ha" state="needs-translation">Sign in or sign up to BloomLibrary.org</target>
@@ -5619,8 +5563,7 @@
         <target xml:lang="ha" state="needs-translation">Sign In / Sign Up to BloomLibrary.org</target>
         <note>ID: PublishTab.Upload.SignInSignUp</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Upload.SignOut" translate="no">
-        <!-- added in 5.5 -->
+      <trans-unit id="PublishTab.Upload.SignOut">
         <source xml:lang="en">Sign out (%0)</source>
         <note>ID: PublishTab.Upload.SignOut</note>
         <note>The %0 will be replaced with the email address of the user.</note>
@@ -5671,20 +5614,17 @@
         <target xml:lang="ha" state="final">Nuna Sharuɗɗan Amfani</target>
         <note>ID: PublishTab.Upload.TermsLink</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Upload.ViewOnBloomLibrary" translate="no">
-        <!-- added in 5.5 -->
+      <trans-unit id="PublishTab.Upload.ViewOnBloomLibrary">
         <source xml:lang="en">View on Bloom Library</source>
         <note>ID: PublishTab.Upload.ViewOnBloomLibrary</note>
         <target xml:lang="ha" state="needs-translation">View on Bloom Library</target>
       </trans-unit>
-      <trans-unit id="PublishTab.Upload.YourBookOnBloomLibrary" translate="no">
-        <!-- added in 5.5 -->
+      <trans-unit id="PublishTab.Upload.YourBookOnBloomLibrary">
         <source xml:lang="en">Your Book on BloomLibrary.org</source>
         <note>ID: PublishTab.Upload.YourBookOnBloomLibrary</note>
         <target xml:lang="ha" state="needs-translation">Your Book on BloomLibrary.org</target>
       </trans-unit>
-      <trans-unit id="PublishTab.Upload.YourBookOnBloomLibrary.ServerWillProcess" translate="no">
-        <!-- added in 5.5 -->
+      <trans-unit id="PublishTab.Upload.YourBookOnBloomLibrary.ServerWillProcess">
         <source xml:lang="en">Our server will soon process your book into various formats and add them to [your book's page] on BloomLibrary.org. Check back in about 10 minutes. If we encounter any problems, your book's page will tell you about them.</source>
         <note>ID: PublishTab.Upload.YourBookOnBloomLibrary.ServerWillProcess</note>
         <target xml:lang="ha" state="needs-translation">Our server will soon process your book into various formats and add them to [your book's page] on BloomLibrary.org. Check back in about 10 minutes. If we encounter any problems, your book's page will tell you about them.</target>
@@ -5709,8 +5649,7 @@
         <target xml:lang="ha" state="final">Ɗora Littafi</target>
         <note>ID: PublishTab.Upload.UploadButton</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Upload.UploadCollection" translate="no">
-        <!-- added in 5.5 -->
+      <trans-unit id="PublishTab.Upload.UploadCollection">
         <source xml:lang="en">Upload this Collection</source>
         <note>ID: PublishTab.Upload.UploadCollection</note>
         <target xml:lang="ha" state="needs-translation">Upload this Collection</target>
@@ -5720,8 +5659,7 @@
         <target xml:lang="ha" state="final">Muna taya ka murna, "{0}' yanzu yana kan ɗakin karatun Bloom na yanar gizo BloomLibrary.org ({1})</target>
         <note>ID: PublishTab.Upload.UploadCompleteNotice</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Upload.UploadFolder" translate="no">
-        <!-- added in 5.5 -->
+      <trans-unit id="PublishTab.Upload.UploadFolder">
         <source xml:lang="en">Upload Folder of Collections</source>
         <note>ID: PublishTab.Upload.UploadFolder</note>
         <target xml:lang="ha" state="needs-translation">Upload Folder of Collections</target>
