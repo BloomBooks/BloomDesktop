@@ -9,6 +9,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Windows.Forms;
+using Bloom.Book;
 using Bloom.Utils;
 using BloomTemp;
 using SIL.IO;
@@ -414,10 +415,12 @@ namespace Bloom.ImageProcessing
 
 		/// <summary>
 		/// Get an unused filename in the given folder based on the basename and extension. "extension" must
-		/// start with a period.
+		/// start with a period. As well as being unused, the name will be truncated enough to minimize
+		/// the danger of exceeding the maximum path length for Windows.
 		/// </summary>
-		internal static string GetUnusedFilename(string bookFolderPath, string basename, string extension)
+		internal static string GetUnusedFilename(string bookFolderPath, string basenameIn, string extension)
 		{
+			var basename = BookStorage.SanitizeNameForFileSystem(basenameIn);
 			// basename may already end in one or more digits. Try to strip off digits, parse and increment.
 			try
 			{
