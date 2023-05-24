@@ -13,7 +13,7 @@ import WebSocketManager, {
 export const PublishProgressDialog: React.FunctionComponent<{
     heading: string; // up to client to localize
     webSocketClientContext: string;
-    startApiEndpoint: string;
+    startApiEndpoint: string | null; // Null means no need to start with any API endpoint.
     onUserStopped?: () => void;
     closePending: boolean;
     setClosePending: (boolean) => void;
@@ -61,12 +61,14 @@ export const PublishProgressDialog: React.FunctionComponent<{
         // we need to be ready to listen to progress messages from the server,
         // before we kick anything off on the server.
         WebSocketManager.notifyReady(props.webSocketClientContext, () => {
-            // We agonized over the fact that "updatePreview" doesn't have anything to do with displaying progress.
-            // It just so happens that 1) this is the first thing we do in this screen and 2) after it, we
-            // need to do something to the state of the dialog.
-            // But the alternative gets complicated too... the weirdness here is that we need to
-            // do something (change the state of the dialog) when the postData's promise is satisfied.
-            // (That is, when the preview construction is complete).
+            if (!props.startApiEndpoint) {
+                // Note: If no startApiEndpoint is fired, we don't setClosePending immediately.
+                // It doesn't seem to make much sense to do so currently.
+                return;
+            }
+
+            // Handle an optional API request that fires immediately upon mounting,
+            // and handle changing the state of the dialog when the postData's promise is satisfied.
             postData(
                 props.startApiEndpoint,
                 {},

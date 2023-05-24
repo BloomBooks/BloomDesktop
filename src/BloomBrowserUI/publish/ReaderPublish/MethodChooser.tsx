@@ -4,7 +4,11 @@ import { jsx, css } from "@emotion/react";
 import * as React from "react";
 import { RadioGroup } from "../../react_components/RadioGroup";
 import BloomButton from "../../react_components/bloomButton";
-import { useApiStringState, useWatchBooleanEvent } from "../../utils/bloomApi";
+import {
+    post,
+    useApiStringState,
+    useWatchBooleanEvent
+} from "../../utils/bloomApi";
 import { isLinux } from "../../utils/isLinux";
 import { useL10n } from "../../react_components/l10nHooks";
 import Typography from "@mui/material/Typography";
@@ -23,7 +27,9 @@ const methodNameToImageFileName = {
 
 // Lets the user choose how they want to "publish" the bloompub, along with a button to start that process.
 // This is a set of radio buttons and image that goes with each choice, plus a button to start off the sharing/saving
-export const MethodChooser: React.FunctionComponent = () => {
+export const MethodChooser: React.FunctionComponent<{
+    onStartPublish: () => void;
+}> = props => {
     const [method, setMethod] = useApiStringState(
         "publish/bloompub/method",
         "file"
@@ -100,7 +106,7 @@ export const MethodChooser: React.FunctionComponent = () => {
                             )
                         }}
                     />
-                    {getStartButton(method, isLicenseOK)}
+                    {getStartButton(method, isLicenseOK, props.onStartPublish)}
                 </div>
                 <div
                     css={css`
@@ -128,7 +134,11 @@ export const MethodChooser: React.FunctionComponent = () => {
     );
 };
 
-function getStartButton(method: string, licenseOK: boolean) {
+function getStartButton(
+    method: string,
+    licenseOK: boolean,
+    onClick: () => void
+) {
     const buttonCss =
         "align-self: flex-end; min-width: 120px; margin-top: 20px;";
     switch (method) {
@@ -140,7 +150,10 @@ function getStartButton(method: string, licenseOK: boolean) {
                     `}
                     l10nKey="PublishTab.Save"
                     l10nComment="Button that tells Bloom to save the book in the current format."
-                    clickApiEndpoint="publish/bloompub/file/save"
+                    onClick={() => {
+                        onClick(); // TODO: This doesn't seem to have any effect yet.
+                        post("publish/bloompub/file/save");
+                    }}
                     enabled={licenseOK}
                     hasText={true}
                     size="large"
@@ -157,6 +170,7 @@ function getStartButton(method: string, licenseOK: boolean) {
                     l10nKey="PublishTab.Android.Usb.Start"
                     l10nComment="Button that tells Bloom to send the book to a device via USB cable."
                     enabled={licenseOK}
+                    // TODO: Should this call onClick too?
                     clickApiEndpoint="publish/bloompub/usb/start"
                     hidden={isLinux()}
                     hasText={true}
@@ -174,7 +188,10 @@ function getStartButton(method: string, licenseOK: boolean) {
                     l10nKey="PublishTab.Android.Wifi.Start"
                     l10nComment="Button that tells Bloom to begin offering this book on the wifi network."
                     enabled={licenseOK}
-                    clickApiEndpoint="publish/bloompub/wifi/start"
+                    onClick={() => {
+                        onClick();
+                        post("publish/bloompub/wifi/start");
+                    }}
                     hasText={true}
                     size="large"
                 >

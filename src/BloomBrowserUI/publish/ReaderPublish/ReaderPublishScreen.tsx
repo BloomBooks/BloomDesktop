@@ -48,7 +48,7 @@ export const ReaderPublishScreen = () => {
     const [keyForReset, setKeyForReset] = useState(0);
     return (
         <ReaderPublishScreenInternal
-            key={keyForReset}
+            key={keyForReset} // NOTE: Updating the key mounts a new component instance (beware of trying to keep state after reset... it's not the same instance!)
             onReset={() => {
                 setKeyForReset(keyForReset + 1);
             }}
@@ -70,6 +70,13 @@ const ReaderPublishScreenInternal: React.FunctionComponent<{
     // Starting in ProgressState.Done hides the progress dialog initially.
     const [progressState, setProgressState] = useState(ProgressState.Done);
     const [generation, setGeneration] = useState(0);
+    const [publishStarted, setPublishStarted] = useState(false);
+
+    // Caution: Every time onReset() is called, key is updated -> new instance -> all state goes back to default
+    // That means the initial state must be what you want when onReset() is called (AKA whenever "Preview" is clicked)
+    const [startApiEndpoint, setStartApiEndpoint] = useState<string | null>(
+        "publish/bloompub/updatePreview"
+    );
 
     // bookUrl is expected to be a normal, well-formed URL.
     // (that is, one that you can directly copy/paste into your browser and it would work fine)
@@ -145,7 +152,12 @@ const ReaderPublishScreenInternal: React.FunctionComponent<{
                     flex-grow: 1;
                 `}
             >
-                <MethodChooser />
+                <MethodChooser
+                    onStartPublish={() => {
+                        setPublishStarted(true);
+                        setStartApiEndpoint(null);
+                    }}
+                />
             </PublishPanel>
             <PreviewPanel>
                 <DeviceAndControls
@@ -155,7 +167,9 @@ const ReaderPublishScreenInternal: React.FunctionComponent<{
                     url={`${props.showPreview ? previewUrl : ""}`}
                     showPreviewButton={true}
                     highlightPreviewButton={highlightPreview}
-                    onPreviewButtonClicked={() => props.onReset()}
+                    onPreviewButtonClicked={() => {
+                        props.onReset();
+                    }}
                 />
             </PreviewPanel>
         </React.Fragment>
@@ -235,6 +249,8 @@ const ReaderPublishScreenInternal: React.FunctionComponent<{
         </SettingsPanel>
     );
 
+    const showProgressDialog = props.showPreview || publishStarted;
+
     return (
         <React.Fragment>
             <BulkBloomPubDialog />
@@ -253,10 +269,10 @@ const ReaderPublishScreenInternal: React.FunctionComponent<{
             </PublishScreenTemplate>
             {/* In storybook, there's no bloom backend to run the progress dialog */}
             {inStorybookMode ||
-                (props.showPreview && (
+                (showProgressDialog && (
                     <PublishProgressDialog
                         heading={heading}
-                        startApiEndpoint="publish/bloompub/updatePreview"
+                        startApiEndpoint={startApiEndpoint}
                         webSocketClientContext="publish-bloompub"
                         progressState={progressState}
                         setProgressState={setProgressState}
