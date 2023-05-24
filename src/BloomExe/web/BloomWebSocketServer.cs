@@ -1,18 +1,18 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Net.Sockets;
 using System.Windows.Forms;
-using Bloom;
-using Bloom.Api;
 using Bloom.web;
 using Fleck;
 using SIL.Reporting;
+using Logger = SIL.Reporting.Logger;
 
 namespace Bloom.Api
 {
 	/// <summary>
-	/// Runs a web socket server on the given port. Useful for high-frequency messages (like audio levels) and allows the backend to send messages to the client.
+	/// Runs a web socket server on the given port. Useful for high-frequency messages (like audio levels)
+	/// and allows the backend to send messages to the client.
 	///
 	/// About ports... we currently only have a single server that is used to pass any number of messages.
 	/// Then on the client side, we have multiple connections to this same server; each connection is called a "socket",
@@ -33,7 +33,15 @@ namespace Bloom.Api
 		//only a single client, we think more in terms of 1 to 1.  However there's nothing preventing multiple parts of the Bloom client from opening their
 		//own connection (socket).
 		private WebSocketServer _server;
+
+		// It would be nice to use something from .Net's System.Collections.Concurrent namespace, but none of the options
+		// seem to fit our needs (i.e. remove a particular connection when it wants to close). To get around this, we will
+		// lock the thread whenever we're changing or reading the collection.
 		private List<IWebSocketConnection> _allSockets;
+
+		// I (gjm) prefer to use a private object for locking, rather than locking on the list itself.
+		// See https://stackoverflow.com/questions/38653739/locking-on-the-object-that-is-being-synchronized-or-using-a-dedicated-lock-objec
+		private readonly object _connectionLock = new object();
 
 		// The one instance which any client may use.
 		// BloomWebSocketServer wants to be an application singleton, but currently,
@@ -60,11 +68,6 @@ namespace Bloom.Api
 			Instance = this;
 		}
 
-		public bool IsSocketOpen(string name)
-		{
-			return _allSockets.Exists(s => s.ConnectionInfo?.SubProtocol == name);
-		}
-
 		public void Init(string port)
 		{
 			FleckLog.Level = LogLevel.Warn;
@@ -78,7 +81,7 @@ namespace Bloom.Api
 			// It would allow Chrome to work without any special Chrome code on the client side.
 			// But it seems like a pain. Firefox is able to negotiate with Fleck just fine, and
 			// we only use subprotocols for debugging, so rather than list every
-			// subprotocol we use here, for now I just changed our browser-side code to to not send
+			// subprotocol we use here, for now I just changed our browser-side code to not send
 			// the subprotocol unless we're in Firefox.
 
 			try
@@ -93,22 +96,30 @@ namespace Bloom.Api
 						//Debug.WriteLine($"Opening websocket \"{socket.ConnectionInfo?.SubProtocol}\"");
 
 						// But that breaks Chrome
-						_allSockets.Add(socket);
+						lock (_connectionLock)
+						{
+							_allSockets.Add(socket);
+						}
 					};
 					socket.OnClose = () =>
 					{
 						// The following is probably out of date as of Bloom 5.0, which fixed the Chrome problem.
 
-					//NB: In May 2019, we found that chrome could not open a socket, and we'd immediately get here and close.
-					// WebSocketManager.ts:87 WebSocket connection to 'ws://127.0.0.1:8090/' failed: Error during WebSocket
-					// handshake: Sent non-empty 'Sec-WebSocket-Protocol' header but no response was received
+						// NB: In May 2019, we found that chrome could not open a socket, and we'd immediately get here
+						// and close. WebSocketManager.ts:87 WebSocket connection to 'ws://127.0.0.1:8090/' failed:
+						// Error during WebSocket handshake: Sent non-empty 'Sec-WebSocket-Protocol' header but no response
+						// was received.
 						Debug.WriteLine($"Closing websocket \"{socket.ConnectionInfo?.SubProtocol}\"");
-						_allSockets.Remove(socket);
-						socket.Close();
+						lock (_connectionLock) {
+							_allSockets.Remove(socket);
+							socket.Close();
+						}
 					};
 					socket.OnError = (err) =>
 					{
-						Debug.WriteLine($"Error on websocket \"{socket.ConnectionInfo?.SubProtocol}\": {err.ToString()}");
+						var msg = $"Error on websocket \"{socket.ConnectionInfo?.SubProtocol}\": {err}";
+						Debug.WriteLine(msg);
+						Logger.WriteError(err);
 					};
 				});
 			}
@@ -158,65 +169,112 @@ namespace Bloom.Api
 		/// <param name="eventBundle"></param>
 		public void SendBundle(string clientContext, string eventId, dynamic eventBundle)
 		{
-			// We're going to take this and add routing info to it, so it's
-			// no longer just the "details".
+			// We're going to take this and add routing info to it, so it's no longer just the "details".
 			var eventObject = eventBundle;
 			eventObject.clientContext = clientContext;
 			eventObject.id = eventId;
 
-			//note, if there is no open socket, this isn't going to do anything, and
-			//that's (currently) fine.
-			lock (this)
+			// Note, if there is no open socket, this isn't going to do anything, and that's (currently) fine.
+			IWebSocketConnection[] connectionArray;
+			lock (_connectionLock)
 			{
-				// the ToArray() here gives us a copy so that if a socket
-				// is removed while we're doing this, it will be ok
-				foreach (var socket in _allSockets.ToArray())
+				// The ToArray() here gives us a copy so that if a socket is removed while we're doing the 'foreach' below,
+				// it will be ok.
+				// We actually got a user report (BL-12245) of an error where _allSockets apparently added another connection
+				// in the midst of doing the copy that is part of ToArray(). That's why we've now added locks anywhere in this
+				// class that changes or reads '_allSockets'.
+				connectionArray = _allSockets.ToArray();
+			}
+
+			foreach (var socket in connectionArray)
+			{
+				// see if it's been removed
+				bool socketIsPresent;
+				lock (_connectionLock)
 				{
-					// see if it's been removed
-					if (_allSockets.Contains(socket))
+					socketIsPresent = _allSockets.Contains(socket);
+				}
+				if (socketIsPresent)
+				{
+					try
 					{
-						try
+						if (socket != null && socket.IsAvailable)
 						{
-							if (socket != null && socket.IsAvailable)
+							// If this fails, it is likely to result in a TaskScheduler.UnobservedTaskException event
+							// and will not get caught in the catch clause below. But it does get picked up
+							// by Sentry's handler and reported. Now that we are checking for IsAvailable above,
+							// we don't expect that to happen anymore. See BL-11124.
+
+							// In addition now that we aren't locking this whole method, we need to catch the
+							// ConnectionNotAvailableException that we get if the socket becomes unavailable
+							// between when we check for its presence and when we try to send to it.
+
+							// Don't be tempted to reinstate the locking to fix this. We don't want to hold a lock
+							// on either the whole collection of sockets or a particular one while calling 'Send()'.
+							// The reason is that it's not certain that the 'Send()' will return before the javascript
+							// that receives it starts to do things. That javascript might make calls back to our server
+							// on another thread. If that results in trying to broadcast another socket message,
+							// while this thread still has the socket server locked, we'll be in a deadlock.
+							// (It's actually unlikely that the same thread that sends the message is used to handle it
+							// in Javascript, or even gets held up until the message is handled, especially in WebView2
+							// which mostly runs in another process. But let's not risk it.)
+							try
 							{
-								// If this fails, it is likely to result in a TaskScheduler.UnobservedTaskException event
-								// and will not get caught in the catch clause below. But it does get picked up
-								// by Sentry's handler and reported. Now that we are checking for IsAvailable above,
-								// we don't expect that to happen anymore. See BL-11124.
 								socket.Send(eventObject.ToString());
 							}
-							else if (ApplicationUpdateSupport.IsDev)
+							catch (ConnectionNotAvailableException)
 							{
-								// In mid-April 2022, we realized that we were not checking for IsAvailable and were getting
-								// lots of Sentry errors on the original call: `socket?.Send(eventObject.ToString());`.
-								// So we started only calling `Send` if `socket.IsAvailable` but also started sending
-								// Sentry errors with more info, hoping to discern why we are getting into that state so much.
-								// We did get over 200 reports for "web socket is not available when trying to send"
-								// but the info did not give us any more understanding. So we decided to stop sending the Sentry
-								// reports. For now, we'll bother devs if they get into this situation. But it may soon
-								// be evident that we don't want to even do that. See BL-11124.
-								// Note that while we don't have an explanation of why/how this happens at all for nulls or
-								// so often for !IsAvailable, we are hopeful that users aren't actually losing important events.
-								// Likely, the socket we want to send on is truly irrelevant by the time we get into this situation.
-								// It is important to note that we are trying to send on all open sockets. So hopefully the one we
-								// actually care about is being sent on successfully.
-								var subProtocolDetail = socket?.ConnectionInfo?.SubProtocol == null ? "subprotocol is null" : $"subprotocol: { socket.ConnectionInfo.SubProtocol}";
-								var connectionInfoDetail = socket?.ConnectionInfo == null ? "socket.ConnectionInfo is null" : subProtocolDetail;
-								var socketDetail = socket == null ? "web socket is null; " : $"web socket is not available, {connectionInfoDetail}; ";
-								NonFatalProblem.Report(ModalIf.Alpha, PassiveIf.Alpha, "web socket is not available when trying to send",
-									$"{socketDetail} bundle clientContext: {clientContext}, eventId: {eventId}, eventBundle: {eventBundle}",
-									skipSentryReport: true);
+								if (!ApplicationUpdateSupport.IsDev)
+								{
+									// We don't want to bother users with this, but we do want to know about it.
+									Logger.WriteEvent("web socket was available, until actually trying to send");
+									continue;
+								}
+								ReportConnectionError(socket, eventObject, eventBundle);
 							}
 						}
-						catch (Exception error)
+						else
 						{
-							// See comment on Send call above. We don't expect this catch clause to fire,
-							// but I'm leaving it here in case there is another situation we don't know about.
-							NonFatalProblem.Report(ModalIf.Alpha, PassiveIf.All, exception: error);
+							if (!ApplicationUpdateSupport.IsDev)
+							{
+								// We don't want to bother users with this, but we do want to know about it.
+								Logger.WriteEvent("web socket is not available when trying to send");
+								continue;
+							}
+							ReportConnectionError(socket, eventObject, eventBundle);
 						}
+					}
+					catch (Exception error)
+					{
+						// See comment on Send call above. We don't expect this catch clause to fire,
+						// but I'm leaving it here in case there is another situation we don't know about.
+						NonFatalProblem.Report(ModalIf.Alpha, PassiveIf.All, exception: error);
 					}
 				}
 			}
+		}
+
+		private void ReportConnectionError(IWebSocketConnection socket, dynamic eventObject, dynamic eventBundle)
+		{
+			// In mid-April 2022, we realized that we were not checking for IsAvailable and were getting
+			// lots of Sentry errors on the original call: `socket?.Send(eventObject.ToString());`.
+			// So we started only calling `Send` if `socket.IsAvailable` but also started sending
+			// Sentry errors with more info, hoping to discern why we are getting into that state so much.
+			// We did get over 200 reports for "web socket is not available when trying to send"
+			// but the info did not give us any more understanding. So we decided to stop sending the Sentry
+			// reports. For now, we'll bother devs if they get into this situation. But it may soon
+			// be evident that we don't want to even do that. See BL-11124.
+			// Note that while we don't have an explanation of why/how this happens at all for nulls or
+			// so often for !IsAvailable, we are hopeful that users aren't actually losing important events.
+			// Likely, the socket we want to send on is truly irrelevant by the time we get into this situation.
+			// It is important to note that we are trying to send on all open sockets.
+			// So hopefully the one we actually care about is being sent on successfully.
+			var subProtocolDetail = socket?.ConnectionInfo?.SubProtocol == null ? "subprotocol is null" : $"subprotocol: { socket.ConnectionInfo.SubProtocol}";
+			var connectionInfoDetail = socket?.ConnectionInfo == null ? "socket.ConnectionInfo is null" : subProtocolDetail;
+			var socketDetail = socket == null ? "web socket is null; " : $"web socket is not available, {connectionInfoDetail}; ";
+			NonFatalProblem.Report(ModalIf.Alpha, PassiveIf.Alpha, "web socket is not available when trying to send",
+				$"{socketDetail} bundle clientContext: {eventObject.clientContext}, eventId: {eventObject.eventId}, eventBundle: {eventBundle}",
+				skipSentryReport: true);
 		}
 
 		public void SendString(string clientContext, string eventId, string message)
@@ -233,7 +291,7 @@ namespace Bloom.Api
 
 		public void Dispose()
 		{
-			lock(this)
+			lock(_connectionLock)
 			{
 				if(_server != null)
 				{
