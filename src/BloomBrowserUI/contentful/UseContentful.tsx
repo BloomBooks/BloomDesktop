@@ -29,7 +29,7 @@ export function useContentful(
 
     const queryString = JSON.stringify(query);
     useEffect(() => {
-        if (!query) {
+        if (!query || query["fields.urlKey"] === "") {
             // arguably we could setResult, but it's better not to trigger
             // a state change that would cause another render.
             return;
@@ -61,7 +61,7 @@ export function useContentful(
         // a new object with the same content on each call.
     }, [queryString, locale]);
 
-    if (!query) {
+    if (!query || query["fields.urlKey"] === "") {
         // now we're past the hooks, we can take our early exit.
         return { loading: false, result: [], error: false };
     }
@@ -69,7 +69,6 @@ export function useContentful(
     if (!results || !results.result || results.queryString !== queryString) {
         return { loading: true, result: [], error: false };
     }
-
     return { loading: false, result: results.result, error: results.error };
 }
 

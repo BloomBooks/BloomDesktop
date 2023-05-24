@@ -305,10 +305,12 @@ namespace Bloom.Collection
 			}
 
 			_collectionSettings.PageNumberStyle = PendingNumberingStyle; // non-localized key
-			
 
+			var oldBrand = _collectionSettings.BrandingProjectKey;
 			_collectionSettings.BrandingProjectKey = _brand;
 			_collectionSettings.SubscriptionCode = _subscriptionCode;
+			if (oldBrand != _brand)
+				_collectionSettings.DefaultBookshelf = "";
 
 			string xmatterKeyForcedByBranding = _collectionSettings.GetXMatterPackNameSpecifiedByBrandingOrNull();
 			PendingXmatter =

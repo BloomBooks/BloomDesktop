@@ -468,7 +468,7 @@ namespace Bloom.Collection
 					.Split(new[] { "," }, StringSplitOptions.RemoveEmptyEntries);
 				var defaultTags = ReadString(xml, "DefaultBookTags", "").Split(',');
 				var defaultBookshelfTag = defaultTags.Where(t => t.StartsWith("bookshelf:")).FirstOrDefault();
-				DefaultBookshelf = defaultBookshelfTag == null
+				DefaultBookshelf = (defaultBookshelfTag == null || BrandingProjectKey == "Default" || BrandingProjectKey == "Local-Community")
 					? ""
 					: defaultBookshelfTag.Substring("bookshelf:".Length);
 
