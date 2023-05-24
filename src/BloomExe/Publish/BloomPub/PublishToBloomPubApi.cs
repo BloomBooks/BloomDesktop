@@ -138,7 +138,7 @@ namespace Bloom.Publish.BloomPub
 				SetState("SavingFile");
 				_publishApi.UpdatePreviewIfNeeded(request);
 				FilePublisher.Save(request.CurrentBook, _bookServer, _publishApi._thumbnailBackgroundColor, _progress, _publishApi.GetSettings());
-				SetState("done");
+				SetState("stopped");
 				request.PostSucceeded();
 			}, true);
 
@@ -295,7 +295,7 @@ namespace Bloom.Publish.BloomPub
 					"{0} and {1} are book layout tags.");
 				var desiredLayout = desiredLayoutSize + layout.SizeAndOrientation.OrientationName;
 				var msg = String.Format(msgFormat, layout.SizeAndOrientation.ToString(), desiredLayout, Environment.NewLine);
-				progress.MessageWithoutLocalizing(msg, ProgressKind.Note);
+				progress.MessageWithoutLocalizing(msg, ProgressKind.Warning);
 			}
 		}
 	}
