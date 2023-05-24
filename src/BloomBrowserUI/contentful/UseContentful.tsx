@@ -69,7 +69,6 @@ export function useContentful(
     if (!results || !results.result || results.queryString !== queryString) {
         return { loading: true, result: [], error: false };
     }
-
     return { loading: false, result: results.result, error: results.error };
 }
 
@@ -112,15 +111,21 @@ export function useContentfulBookShelvesForSubscription(
     };
 }
 
+// If urlKey is defined, get the corresponding label for the collection.
+// If it's undefined, return the provided default value.
 export function useGetLabelForCollection(
     urlKey: string,
     defaultResult: string
 ): string {
-    const { loading, result, error } = useContentful({
-        content_type: "collection",
-        select: "fields.label",
-        include: 2, // depth: we want the bookshelf collection objects as part of this query
-        "fields.urlKey": `${urlKey}`
-    });
+    const { loading, result, error } = useContentful(
+        urlKey
+            ? {
+                  content_type: "collection",
+                  select: "fields.label",
+                  include: 2, // depth: we want the bookshelf collection objects as part of this query
+                  "fields.urlKey": `${urlKey}`
+              }
+            : undefined
+    );
     return result && result.length > 0 ? result[0].fields.label : defaultResult;
 }
