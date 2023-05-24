@@ -2017,6 +2017,11 @@ export default class AudioRecording {
         if (page && current && !this.isVisible(current)) {
             this.removeAudioCurrent(page);
             this.setCurrentAudioElementToFirstAudioElementAsync();
+        } else {
+            // We didn't have to MOVE the selection, but some button states may need to change.
+            // For example, perhaps there was previously nowhere for the 'next' button to take us,
+            // but now we revealed a overlay which is set to be after the current element.
+            this.updateButtonStateAsync("record");
         }
     }
     private showPlaybackOrderUi(docBody: HTMLElement) {
@@ -2706,7 +2711,10 @@ export default class AudioRecording {
 
     // Called upon newPageReady(). Calls updateMarkup
     public async setupAndUpdateMarkupAsync(): Promise<void> {
-        const recordables = this.getRecordableDivs();
+        // For this purpose we want to include overlays even if they are hidden to show an image description,
+        // since they may become visible when the show image description checkbox is deselected without
+        // this code running again.
+        const recordables = this.getRecordableDivs(true, true, false);
 
         const asyncTasks: Promise<() => void>[] = recordables.map(
             async elem => {
