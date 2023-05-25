@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -542,6 +543,8 @@ namespace Bloom.Publish.Video
 			// each sound file becomes an input by prefixing the path with -i.
 			var inputs = string.Join(" ", soundLog.Select(item => $"-i {item.shortName} "));
 
+			var enUS = new CultureInfo("en-US");
+
 			// arguments to configure 'filters' ahead of audio mixer which will combine the sounds into a single stream.
 			var audioFilters = string.Join(" ", soundLog.Select((item, index) =>
 			{
@@ -551,7 +554,7 @@ namespace Bloom.Publish.Video
 				if (item.endTime != default(DateTime))
 				{
 					var duration = (item.endTime - item.startTime);
-					result += $"atrim=end={duration.TotalSeconds},";
+					result += $"atrim=end={duration.TotalSeconds.ToString(enUS)},";
 					if (item == lastMusic)
 					{
 						// Make sure the fadeDuration is at least slightly less than the actual duration,
@@ -561,7 +564,7 @@ namespace Bloom.Publish.Video
 						// - t=out makes it fade out (at the end) rather than in (at the beginning)
 						// - st=x makes the fade start x seconds from the start (and so fadeDuration from the end)
 						// - d=n makes the fade last for n seconds
-						result += $"afade=t=out:st={duration.TotalSeconds - fadeDuration}:d={fadeDuration},";
+						result += $"afade=t=out:st={(duration.TotalSeconds - fadeDuration).ToString(enUS)}:d={fadeDuration.ToString(enUS)},";
 					}
 				}
 
@@ -571,12 +574,12 @@ namespace Bloom.Publish.Video
 				// We shouldn't get negative delays, since startTime
 				// is recorded during a method that completes before we return
 				Debug.Assert(delay.TotalMilliseconds >= 0);
-				result += $"adelay={Math.Max(delay.TotalMilliseconds, 0)}:all=1";
+				result += $"adelay={Math.Max(delay.TotalMilliseconds, 0).ToString(enUS)}:all=1";
 
 				// possibly reduce its volume.
 				if (item.volume != 1.0)
 				{
-					result += $",volume={item.volume}";
+					result += $",volume={item.volume.ToString(enUS)}";
 				}
 
 				// add another label by which the mixer will refer to this stream
@@ -671,6 +674,11 @@ namespace Bloom.Publish.Video
 					}
 					else
 					{
+						var currentCulture = CultureInfo.CurrentCulture;
+						var currentUICulture = CultureInfo.CurrentUICulture;
+						CultureInfo.CurrentCulture = enUS;
+						CultureInfo.CurrentUICulture = enUS;
+
 						RunFfmpeg(args, workingDirectory);
 
 						// System.Threading.Timer is the only one which will fire during _ffmpegProcess.WaitForExit()
@@ -687,6 +695,9 @@ namespace Bloom.Publish.Video
 						);
 
 						_ffmpegProcess.WaitForExit();
+
+						CultureInfo.CurrentCulture = currentCulture;
+						CultureInfo.CurrentUICulture = currentUICulture;
 
 						createEstimateTimer.Dispose();
 					}
@@ -709,6 +720,8 @@ namespace Bloom.Publish.Video
 			if (!File.Exists(_finalVideo.Path) || new FileInfo(_finalVideo.Path).Length < 100)
 			{
 				Logger.WriteError(new ApplicationException(mergeErrors));
+				Logger.WriteEvent("filter_complex_script contents: " + complexFilter);  // Write the temp file contents before it gets disposed
+				Logger.WriteEvent($"FFMPEG exit code: {_ffmpegProcess.ExitCode}");
 				progress.MessageWithoutLocalizing("Merging audio and video failed", ProgressKind.Error);
 				_recording = false;
 				return;
