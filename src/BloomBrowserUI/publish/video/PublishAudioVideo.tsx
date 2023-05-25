@@ -609,6 +609,10 @@ const PublishAudioVideoInternalInternal: React.FunctionComponent<{
         </SettingsPanel>
     );
 
+    const applyClosePending = React.useCallback(() => {
+        setClosePending(true);
+    }, []);
+
     return (
         <Typography
             component={"div"}
@@ -631,14 +635,13 @@ const PublishAudioVideoInternalInternal: React.FunctionComponent<{
                 <PublishProgressDialog
                     heading={heading}
                     startApiEndpoint="publish/av/updatePreview"
+                    onStartApiSuccess={applyClosePending}
                     webSocketClientContext="publish-bloompub"
                     progressState={progressState}
                     setProgressState={setProgressState}
                     closePending={closePending}
                     setClosePending={setClosePending}
-                    onUserStopped={() => {
-                        setClosePending(true);
-                    }}
+                    onUserStopped={applyClosePending}
                 />
             )}
             <EmbeddedProgressDialog id="avPublish" />

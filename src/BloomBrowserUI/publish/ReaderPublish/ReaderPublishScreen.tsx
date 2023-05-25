@@ -10,7 +10,7 @@ import {
     CommandsGroup,
     PublishPanel
 } from "../commonPublish/PublishScreenBaseComponents";
-import { MethodChooser } from "./MethodChooser";
+import { MethodChooser, ReaderPublishMethods } from "./MethodChooser";
 import { PublishFeaturesGroup } from "../commonPublish/PublishFeaturesGroup";
 import { CoverColorGroup } from "../commonPublish/CoverColorGroup";
 import PublishScreenTemplate from "../commonPublish/PublishScreenTemplate";
@@ -57,6 +57,7 @@ export const ReaderPublishScreen = () => {
     );
 };
 
+const kUpdatePreviewApi = "publish/bloompub/updatePreview";
 const ReaderPublishScreenInternal: React.FunctionComponent<{
     onReset: () => void;
     showPreview: boolean;
@@ -71,12 +72,24 @@ const ReaderPublishScreenInternal: React.FunctionComponent<{
     const [progressState, setProgressState] = useState(ProgressState.Done);
     const [generation, setGeneration] = useState(0);
     const [publishStarted, setPublishStarted] = useState(false);
+    const [
+        forceProgressDialogResetCounter,
+        setForceProgressDialogResetCounter
+    ] = useState(0);
 
     // Caution: Every time onReset() is called, key is updated -> new instance -> all state goes back to default
     // That means the initial state must be what you want when onReset() is called (AKA whenever "Preview" is clicked)
-    const [startApiEndpoint, setStartApiEndpoint] = useState<string | null>(
-        "publish/bloompub/updatePreview"
+
+    const [startApiEndpoint, setStartApiEndpoint] = useState<string>(
+        kUpdatePreviewApi
     );
+
+    const onStartApiSuccess =
+        startApiEndpoint === kUpdatePreviewApi
+            ? () => {
+                  setClosePending(true);
+              }
+            : undefined;
 
     // bookUrl is expected to be a normal, well-formed URL.
     // (that is, one that you can directly copy/paste into your browser and it would work fine)
@@ -157,9 +170,21 @@ const ReaderPublishScreenInternal: React.FunctionComponent<{
                 `}
             >
                 <MethodChooser
-                    onStartPublish={() => {
+                    onStartButtonClick={(
+                        publishMethod: ReaderPublishMethods
+                    ) => {
+                        const apiSuffix =
+                            publishMethod === "file"
+                                ? "file/save"
+                                : publishMethod === "usb"
+                                ? "usb/start"
+                                : "wifi/start";
+                        const apiEndpoint = `publish/bloompub/${apiSuffix}`;
                         setPublishStarted(true);
-                        setStartApiEndpoint(null);
+                        setStartApiEndpoint(apiEndpoint);
+                        setForceProgressDialogResetCounter(
+                            oldValue => oldValue + 1
+                        );
                     }}
                 />
             </PublishPanel>
@@ -277,6 +302,7 @@ const ReaderPublishScreenInternal: React.FunctionComponent<{
                     <PublishProgressDialog
                         heading={heading}
                         startApiEndpoint={startApiEndpoint}
+                        onStartApiSuccess={onStartApiSuccess}
                         webSocketClientContext="publish-bloompub"
                         progressState={progressState}
                         setProgressState={setProgressState}
@@ -287,6 +313,7 @@ const ReaderPublishScreenInternal: React.FunctionComponent<{
                             postData("publish/bloompub/wifi/stop", {});
                             setClosePending(true);
                         }}
+                        forceResetCounter={forceProgressDialogResetCounter}
                     />
                 ))}
             <EmbeddedProgressDialog id="readerPublish" />

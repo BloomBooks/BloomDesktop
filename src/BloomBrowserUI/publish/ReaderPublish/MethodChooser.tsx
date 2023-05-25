@@ -19,16 +19,28 @@ import { kMutedTextGray } from "../../bloomMaterialUITheme";
 import { kBloomWarning } from "../../utils/colorUtils";
 import HelpLink from "../../react_components/helpLink";
 
-const methodNameToImageFileName = {
+export type ReaderPublishMethods = "file" | "usb" | "wifi";
+
+const methodNameToImageFileName: {
+    [Property in ReaderPublishMethods]: string;
+} = {
     wifi: "publish-via-wifi.svg",
     usb: "publish-via-usb.svg",
     file: "publish-to-file.svg"
 };
 
+/**
+ * Typeguard for ReaderPublishMethods
+ */
+export function isReaderPublishMethods(x: string): x is ReaderPublishMethods {
+    return Object.prototype.hasOwnProperty.call(methodNameToImageFileName, x);
+}
+
 // Lets the user choose how they want to "publish" the bloompub, along with a button to start that process.
 // This is a set of radio buttons and image that goes with each choice, plus a button to start off the sharing/saving
 export const MethodChooser: React.FunctionComponent<{
-    onStartPublish: () => void;
+    // A callback that runs when the start button for that process (e.g. "Save", "Share", etc) is clicked
+    onStartButtonClick: (publishMethod: ReaderPublishMethods) => void;
 }> = props => {
     const [method, setMethod] = useApiStringState(
         "publish/bloompub/method",
@@ -106,7 +118,11 @@ export const MethodChooser: React.FunctionComponent<{
                             )
                         }}
                     />
-                    {getStartButton(method, isLicenseOK, props.onStartPublish)}
+                    {getStartButton(
+                        method,
+                        isLicenseOK,
+                        props.onStartButtonClick
+                    )}
                 </div>
                 <div
                     css={css`
@@ -137,13 +153,15 @@ export const MethodChooser: React.FunctionComponent<{
 function getStartButton(
     method: string,
     licenseOK: boolean,
-    onClick: () => void
+    onStartButtonClick: (publishMethod: ReaderPublishMethods) => void
 ) {
-    const onButtonClick = (apiEndpoint: string) => {
-        onClick();
-        post(apiEndpoint);
-    };
+    if (!isReaderPublishMethods(method)) {
+        throw new Error("Unhandled method choice");
+    }
 
+    const onClick = () => {
+        onStartButtonClick(method);
+    };
     const buttonCss =
         "align-self: flex-end; min-width: 120px; margin-top: 20px;";
     switch (method) {
@@ -155,9 +173,7 @@ function getStartButton(
                     `}
                     l10nKey="PublishTab.Save"
                     l10nComment="Button that tells Bloom to save the book in the current format."
-                    onClick={() => {
-                        onButtonClick("publish/bloompub/file/save");
-                    }}
+                    onClick={onClick}
                     enabled={licenseOK}
                     hasText={true}
                     size="large"
@@ -174,9 +190,7 @@ function getStartButton(
                     l10nKey="PublishTab.Android.Usb.Start"
                     l10nComment="Button that tells Bloom to send the book to a device via USB cable."
                     enabled={licenseOK}
-                    onClick={() => {
-                        onButtonClick("publish/bloompub/usb/start");
-                    }}
+                    onClick={onClick}
                     hidden={isLinux()}
                     hasText={true}
                     size="large"
@@ -193,9 +207,7 @@ function getStartButton(
                     l10nKey="PublishTab.Android.Wifi.Start"
                     l10nComment="Button that tells Bloom to begin offering this book on the wifi network."
                     enabled={licenseOK}
-                    onClick={() => {
-                        onButtonClick("publish/bloompub/wifi/start");
-                    }}
+                    onClick={onClick}
                     hasText={true}
                     size="large"
                 >
