@@ -242,6 +242,10 @@ const EPUBPublishScreenInternal: React.FunctionComponent<{
         "PublishTab.Epub.Creating"
     );
 
+    const onStartApiSuccess = React.useCallback(() => {
+        setClosePending(true);
+    }, []);
+
     return (
         <React.Fragment>
             <PublishScreenTemplate
@@ -257,7 +261,8 @@ const EPUBPublishScreenInternal: React.FunctionComponent<{
                 <PublishProgressDialog
                     heading={creatingHeading}
                     webSocketClientContext="publish-epub"
-                    startApiEndpoint="publish/epub/updatePreview"
+                    apiForStartingTask="publish/epub/updatePreview"
+                    onTaskComplete={onStartApiSuccess}
                     progressState={progressState}
                     setProgressState={setProgressState}
                     closePending={closePending}
