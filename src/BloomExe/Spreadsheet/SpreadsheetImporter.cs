@@ -1733,8 +1733,8 @@ namespace Bloom.Spreadsheet
 				HtmlDom.SetNewHtmlIdValue(elt);
 				return "0";
 			}
-			var destFile = SanitizeXHtmlId(BookStorage.SanitizeNameForFileSystem(Path.GetFileName(audioFile)));
-			var id = Path.GetFileNameWithoutExtension(destFile);
+			var id = SanitizeXHtmlId(BookStorage.SanitizeNameForFileSystem(Path.GetFileNameWithoutExtension(audioFile)));
+			var destFile = id + Path.GetExtension(audioFile);
 			// We may as well set this; elements with class audio-sentence are supposed to have
 			// ids, even if there is no corresponding file.
 			elt.SetAttribute("id", id);

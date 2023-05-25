@@ -404,12 +404,6 @@ namespace Bloom.ImageProcessing
 				// See https://silbloom.myjetbrains.com/youtrack/issue/BL-2627 ("Weird Image Problem").
 				basename = Path.GetFileNameWithoutExtension(imageInfo.FileName);
 			}
-
-			// Multiple spaces are prone to being collapsed in HTML, particularly if the name ends up in
-			// the content of some element like a data-div one, such as the coverImage src. See BL-9145.
-			// So we will just collapse them before we save the file.
-			while (basename.Contains("  "))
-				basename = basename.Replace("  ", " ");
 			return GetUnusedFilename(bookFolderPath, basename, extension);
 		}
 
@@ -420,7 +414,7 @@ namespace Bloom.ImageProcessing
 		/// </summary>
 		internal static string GetUnusedFilename(string bookFolderPath, string basenameIn, string extension)
 		{
-			var basename = BookStorage.SanitizeNameForFileSystem(basenameIn);
+			var basename = BookStorage.SanitizeNameForFileSystem(basenameIn, "image");
 			// basename may already end in one or more digits. Try to strip off digits, parse and increment.
 			try
 			{
