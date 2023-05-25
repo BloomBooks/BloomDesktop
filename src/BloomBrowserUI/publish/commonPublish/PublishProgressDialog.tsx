@@ -58,6 +58,7 @@ export const PublishProgressDialog: React.FunctionComponent<{
     }, [props.closePending]);
 
     React.useEffect(() => {
+        props.setProgressState(ProgressState.Working);
         // we need to be ready to listen to progress messages from the server,
         // before we kick anything off on the server.
         WebSocketManager.notifyReady(props.webSocketClientContext, () => {
@@ -67,7 +68,6 @@ export const PublishProgressDialog: React.FunctionComponent<{
             // But the alternative gets complicated too... the weirdness here is that we need to
             // do something (change the state of the dialog) when the postData's promise is satisfied.
             // (That is, when the preview construction is complete).
-            props.setProgressState(ProgressState.Working);
             postData(
                 props.startApiEndpoint,
                 {},
