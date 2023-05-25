@@ -22,13 +22,8 @@
 .comic {
     background-color: @dark !important;
 
-    div.bloom-editable,
-    // To understand more about this :after selector, reference
-    // the .borderOnTopOfElement(@color) mixin in editMode.less
-    div.bloom-imageContainer:after {
-        // you can't see the default border with a dark background
-        // This sets a custom CSS property on the element, which other stylesheets
-        // (e.g. editMode.less) can reference
-        --bloom-editMode-custom-border-color: white;
-    }
+    // because of the @dark background, we need a different color in various places where we insert a border
+    // in edit mode so it will contrast.
+    --bloom-editMode-custom-text-border-color: white;
+    --bloom-editMode-custom-image-border-color: white;
 }

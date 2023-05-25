@@ -124,7 +124,7 @@ body {
 div.bloom-imageContainer {
     // Allow book templates to define a custom borderColor, otherwise fallback to the default color
     .borderOnTopOfElement(
-        var(--bloom-editMode-custom-border-color, @MediumGray)
+        var(--bloom-editMode-custom-image-border-color, @MediumGray)
     );
 
     // This shows the focus border on the root (hasOverlay) image container
@@ -549,7 +549,7 @@ div.pageLabel[contenteditable="true"] {
 div.bloom-editable {
     // Allow book templates to define a custom borderColor, otherwise fallback to the default color
     border: thin solid
-        var(--bloom-editMode-custom-border-color, rgba(0, 0, 0, 0.2));
+        var(--bloom-editMode-custom-text-border-color, rgba(0, 0, 0, 0.2));
 }
 
 img.hoverUp {
