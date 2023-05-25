@@ -106,6 +106,8 @@ namespace BloomTests.Collection
 			var bloomCollectionFileContents =
 				@"<?xml version=""1.0"" encoding=""utf-8""?>
 <Collection version=""0.2"">
+	<BrandingProjectName>Kygyzstan2020</BrandingProjectName>
+	<SubscriptionCode>FakeCode</SubscriptionCode>
 	<DefaultBookTags>bookshelf:kygyzstan2020-ky-grade1-term1</DefaultBookTags>
 </Collection>";
 			const string collectionName = "test";
@@ -113,11 +115,23 @@ namespace BloomTests.Collection
 			Directory.CreateDirectory(Path.GetDirectoryName(collectionPath));
 			RobustFile.WriteAllText(collectionPath, bloomCollectionFileContents);
 			var settings = CreateCollectionSettings(_folder.Path, collectionName);
-			Assert.That(settings.DefaultBookshelf, Is.EqualTo("kygyzstan2020-ky-grade1-term1"));
+			// If there isn't a valid project name/code pair, then the project goes to Default and the bookshelf to none.
+			// We don't want to expose a valid name/code pair in the source code so this test is all we have.
+			Assert.That(settings.DefaultBookshelf, Is.EqualTo(""));
+			Assert.That(settings.BrandingProjectKey, Is.EqualTo("Default"));
+			Assert.That(settings.SubscriptionCode, Is.EqualTo("FakeCode"));
+			// We don't protect writing the same way as reading, since users aren't able to select a bookshelf unless
+			// they've established a valid project which has one or more bookshelves.
 			settings.DefaultBookshelf = "some-other-shelf";
 			settings.Save();
 			var newContents = RobustFile.ReadAllText(collectionPath);
 			AssertThatXmlIn.String(newContents).HasSpecifiedNumberOfMatchesForXpath("//DefaultBookTags[text()='bookshelf:some-other-shelf']", 1);
+			var settings2 = CreateCollectionSettings(Path.GetDirectoryName(collectionPath), collectionName);
+			// And the assigned bookshelf will disappear on loading into the CollectionSettings object.
+			// The fake SubscriptionCode has disappeared because the Default project doesn't need a subscription code so it isn't saved.
+			Assert.That(settings2.DefaultBookshelf, Is.EqualTo(""));
+			Assert.That(settings2.BrandingProjectKey, Is.EqualTo("Default"));
+			Assert.That(settings2.SubscriptionCode, Is.Null);
 		}
 
 
