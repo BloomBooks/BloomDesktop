@@ -2521,7 +2521,7 @@ namespace Bloom.Book
 		}
 
 
-		public static string SanitizeNameForFileSystem(string name)
+		public static string SanitizeNameForFileSystem(string name, bool nameIsAlreadyFileName = false)
 		{
 			// We want NFC to prevent Dropbox complaining about encoding conflicts.
 			// May as well do that first as it may result in less truncation.
@@ -2529,6 +2529,8 @@ namespace Bloom.Book
 			// Then make sure it's not too long.
 			if (name.Length > MaxFilenameLength)
 				name = name.Substring(0, MaxFilenameLength);
+			if (nameIsAlreadyFileName)
+				return name.Trim();	// we don't need to worry about dangerous/invalid characters from an existing filename.
 			// Then replace invalid characters with spaces and trim off characters
 			// that shouldn't start or finish a directory name.
 			name = RemoveDangerousCharacters(name);
