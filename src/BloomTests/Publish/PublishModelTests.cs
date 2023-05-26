@@ -2,6 +2,7 @@ using NUnit.Framework;
 using Bloom.Book;
 using Bloom.Publish;
 using System.Collections.Generic;
+using System.Linq;
 using Newtonsoft.Json;
 
 namespace BloomTests.Publish
@@ -69,7 +70,7 @@ namespace BloomTests.Publish
 			VerifyDataDivValues(dom);
 
 			// SUT
-			PublishModel.RemoveUnwantedLanguageData(dom, new[] {"en"}, false, null, null);
+			PublishModel.RemoveUnwantedLanguageData(dom, new[] {"en"}, false, new HashSet<string>());
 
 			// Check occurrences in modified HTML.  This should be exactly the same as before.
 			VerifyDataDivValues(dom);
@@ -99,7 +100,7 @@ namespace BloomTests.Publish
 			VerifyDataDivValues(dom);
 
 			// SUT
-			PublishModel.RemoveUnwantedLanguageData(dom, new[] {"en"}, true, metadataLang1Code, null);
+			PublishModel.RemoveUnwantedLanguageData(dom, new[] {"en"}, true, new HashSet<string>(new [] {metadataLang1Code}));
 
 			// Check occurrences in modified HTML.  This should be exactly the same as before.
 			VerifyDataDivValues(dom);
@@ -196,7 +197,7 @@ namespace BloomTests.Publish
 			VerifyFrontCoverValues(dom, false);
 
 			// SUT
-			PublishModel.RemoveUnwantedLanguageData(dom, new[] {"en"}, false, null, null);
+			PublishModel.RemoveUnwantedLanguageData(dom, new[] {"en"}, false, new HashSet<string>());
 
 			// Check occurrences in modified HTML.  This should be exactly the same as before.
 			VerifyFrontCoverValues(dom, false);
@@ -210,7 +211,7 @@ namespace BloomTests.Publish
 			VerifyFrontCoverValues(dom, false);
 
 			// SUT
-			PublishModel.RemoveUnwantedLanguageData(dom, new[] { "tl" }, true, "en", null);
+			PublishModel.RemoveUnwantedLanguageData(dom, new[] { "tl" }, true, new HashSet<string>(new [] {"en"}));
 
 			// Check occurrences in modified HTML.  This should NOT be exactly the same as before.
 			VerifyFrontCoverValues(dom, true);
@@ -224,7 +225,7 @@ namespace BloomTests.Publish
 			VerifyFrontCoverValues(dom, false);
 
 			// SUT
-			PublishModel.RemoveUnwantedLanguageData(dom, new[] { "tl" }, true, null, "en");
+			PublishModel.RemoveUnwantedLanguageData(dom, new[] { "tl" }, true, new HashSet<string>(new[] { "en" }));
 
 			// Check occurrences in modified HTML.  This should NOT be exactly the same as before.
 			VerifyFrontCoverValues(dom, true);
@@ -313,7 +314,7 @@ namespace BloomTests.Publish
 			VerifyCreditsPageValues(dom, false);
 
 			// SUT
-			PublishModel.RemoveUnwantedLanguageData(dom, new[] {"en"}, false, null, null);
+			PublishModel.RemoveUnwantedLanguageData(dom, new[] {"en"}, false, new HashSet<string>());
 
 			// Check occurrences in modified HTML.  This should be exactly the same as before.
 			VerifyCreditsPageValues(dom, false);
@@ -327,7 +328,7 @@ namespace BloomTests.Publish
 			VerifyCreditsPageValues(dom, false);
 
 			// SUT
-			PublishModel.RemoveUnwantedLanguageData(dom, new[] {"en"}, true, "en", null);
+			PublishModel.RemoveUnwantedLanguageData(dom, new[] {"en"}, true, new HashSet<string>(new[] { "en" }));
 
 			// Check occurrences in modified HTML.  This should NOT be exactly the same as before.
 			VerifyCreditsPageValues(dom, true);
@@ -404,7 +405,7 @@ namespace BloomTests.Publish
 			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang and @testRemoves='true']", 2);
 
 			// SUT
-			PublishModel.RemoveUnwantedLanguageData(dom, new[] {"en"}, false, null, null);
+			PublishModel.RemoveUnwantedLanguageData(dom, new[] {"en"}, false, new HashSet<string>());
 
 			// Check occurrences in modified HTML.
 			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='' and contains(@class, 'bloom-page')]", 1);	// unchanged
@@ -456,7 +457,7 @@ namespace BloomTests.Publish
 			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang and @testRemoves='true']", 1);
 
 			// SUT
-			PublishModel.RemoveUnwantedLanguageData(dom, new[] {"tl"}, false, null, null);
+			PublishModel.RemoveUnwantedLanguageData(dom, new[] {"tl"}, false, new HashSet<string>());
 
 			// Check occurrences in modified HTML.
 			assertThatDom.HasSpecifiedNumberOfMatchesForXpath("//div[@lang='' and contains(@class, 'bloom-page')]", 1);	// unchanged
@@ -498,7 +499,7 @@ namespace BloomTests.Publish
 			VerifyOriginalEmbeddedDivsAreAllThere(dom);
 
 			// SUT
-			PublishModel.RemoveUnwantedLanguageData(dom, new[] {"en"}, shouldPruneXmatter, "de", null);
+			PublishModel.RemoveUnwantedLanguageData(dom, new[] {"en"}, shouldPruneXmatter, new HashSet<string>(new[] { "de" }));
 
 			// Check occurrences in modified HTML.
 			VerifyOnlyUnwantedEmbeddedDivsAreRemoved(dom, false);
@@ -531,7 +532,7 @@ namespace BloomTests.Publish
 			VerifyOriginalEmbeddedDivsAreAllThere(dom);
 
 			// SUT
-			PublishModel.RemoveUnwantedLanguageData(dom, new[] {"en"}, shouldPruneXmatter: false, null, null);
+			PublishModel.RemoveUnwantedLanguageData(dom, new[] {"en"}, shouldPruneXmatter: false, new HashSet<string>());
 
 			// Check occurrences in modified HTML: nothing removed from xmatter unless shouldPruneXmatter is true
 			VerifyOriginalEmbeddedDivsAreAllThere(dom);
@@ -546,7 +547,7 @@ namespace BloomTests.Publish
 			VerifyOriginalEmbeddedDivsAreAllThere(dom);
 
 			// SUT
-			PublishModel.RemoveUnwantedLanguageData(dom, new[] {"en"}, shouldPruneXmatter: true, "de", null);
+			PublishModel.RemoveUnwantedLanguageData(dom, new[] {"en"}, shouldPruneXmatter: true, new HashSet<string>(new [] {"de"}));
 
 			// Check occurrences in modified HTML: German should be preserved, French and Spanish removed.
 			VerifyOnlyUnwantedEmbeddedDivsAreRemoved(dom, true);
@@ -594,10 +595,19 @@ namespace BloomTests.Publish
     .normal-style[lang='en'] { font-size: 16pt !important; font-family: Cambria !important; }
     .normal-style[lang='fr'] { font-size: 13pt !important; font-family: ABC !important; }
     .normal-style[lang='es'] { font-size: 10pt !important; font-family: Hola !important; }
+	.normal-style[lang='xkal'] { font-size: 17pt !important; font-family: QED !important; }
     .normal-style { font-size: 16pt !important; }/*]]>*/
     </style>
 </head>
 <body>
+	<div class='bloom-page bloom-frontMatter credits' data-xmatter-page='credits' id='2cea9462-98e9-4077-be4e-d303a45e95b3' lang=''>
+		<div class='bloom-translationGroup versionAcknowledgments' data-default-languages='N1'>
+			<div data-hasqtip='true' data-languagetipcontent='français' class='bloom-editable versionAcknowledgments Credits-Page-style bloom-content2 bloom-visibility-code-on' data-book='versionAcknowledgments' lang='fr' contenteditable='true'>
+				<p>Joe a traduit ce livre.</p>
+			</div>
+			<div data-languagetipcontent='español' style='' class='bloom-editable versionAcknowledgments Credits-Page-style bloom-content3' data-book='versionAcknowledgments' lang='es' contenteditable='true'></div>
+		</div>
+	</div>
 </body>
 </html>";
 
@@ -618,51 +628,43 @@ namespace BloomTests.Publish
 			Assert.That(dom.InnerXml.Contains(".normal-style[lang='en'] { font-size: 16pt !important; font-family: Cambria !important; }"));
 			Assert.That(dom.InnerXml.Contains(".normal-style[lang='fr'] { font-size: 13pt !important; font-family: ABC !important; }"));
 			Assert.That(dom.InnerXml.Contains(".normal-style[lang='es'] { font-size: 10pt !important; font-family: Hola !important; }"));
+			Assert.That(dom.InnerXml.Contains(".normal-style[lang='xkal'] { font-size: 17pt !important; font-family: QED !important; }"));
 			Assert.That(dom.InnerXml.Contains(".normal-style { font-size: 16pt !important; }"));
 
 			// SUT
-			PublishModel.RemoveUnwantedLanguageData(dom, languagesToInclude, shouldPruneXmatter, "en", null);
+			PublishModel.RemoveUnwantedLanguageData(dom, languagesToInclude, shouldPruneXmatter, new HashSet<string>(new[] { "es", "xkal" }));
 
 			// Check occurrences in modified HTML
+			// We always preserve tl (L1) since it is in all the languagesToInclude sets
 			Assert.That(dom.InnerXml.Contains(".normal-style[lang='tl'] { font-size: 19pt !important; font-family: XYZ !important; }"));
-			Assert.That(dom.InnerXml.Contains(".normal-style[lang='en'] { font-size: 16pt !important; font-family: Cambria !important; }"));
-			Assert.That(!dom.InnerXml.Contains(".normal-style[lang='fr']"));
-			Assert.That(!dom.InnerXml.Contains(".normal-style[lang='es']"));
-			Assert.That(dom.InnerXml.Contains(".normal-style { font-size: 16pt !important; }"));
-		}
+			if (languagesToInclude.Contains("en"))
+			{
+				Assert.That(dom.InnerXml.Contains(
+					".normal-style[lang='en'] { font-size: 16pt !important; font-family: Cambria !important; }"));
+			}
+			else
+			{
+				Assert.That(!dom.InnerXml.Contains(".normal-style[lang='en']"));
+			}
 
-		// All test cases produce the same result because we always preserve tl (L1), en (L2), or fr (L3) in the css styles regardless
-		// of shouldPruneXmatter or the languagesToInclude (since languagesToInclude don't contain es)
-		// Note, we expect these tests to change or be replaced in 5.4 when we start being smarter about
-		// removing styles which actually aren't used in the dom.
-		[TestCase(true, new[] { "tl" })]
-		[TestCase(false, new[] { "tl" })]
-		[TestCase(true, new[] { "tl", "en" })]
-		[TestCase(false, new[] { "tl", "en" })]
-		[TestCase(true, new[] { "tl", "fr" })]
-		[TestCase(false, new[] { "tl", "fr" })]
-		[TestCase(true, new[] { "tl", "en", "fr" })]
-		[TestCase(false, new[] { "tl", "en", "fr" })]
-		public void RemoveUnwantedLanguageData_PreserveCssStylesForN2(bool shouldPruneXmatter, IEnumerable<string> languagesToInclude)
-		{
-			var dom = new HtmlDom(kCssStylesHtml);
-			// Check occurrences in original HTML.
-			Assert.That(dom.InnerXml.Contains(".normal-style[lang='tl'] { font-size: 19pt !important; font-family: XYZ !important; }"));
-			Assert.That(dom.InnerXml.Contains(".normal-style[lang='en'] { font-size: 16pt !important; font-family: Cambria !important; }"));
-			Assert.That(dom.InnerXml.Contains(".normal-style[lang='fr'] { font-size: 13pt !important; font-family: ABC !important; }"));
+			// French rule should be kept if we are not pruning xmatter, since we will keep the french in the xmatter
+			if (shouldPruneXmatter)
+			{
+				Assert.That(!dom.InnerXml.Contains(".normal-style[lang='fr']"));
+			}
+			else
+			{
+				Assert.That(dom.InnerXml.Contains(".normal-style[lang='fr'] { font-size: 13pt !important; font-family: ABC !important; }"));
+			}
+
+			// es is kept even if pruning xmatter, since it occurs in the xmatter and in the list of additional xmatter languages
 			Assert.That(dom.InnerXml.Contains(".normal-style[lang='es'] { font-size: 10pt !important; font-family: Hola !important; }"));
-			Assert.That(dom.InnerXml.Contains(".normal-style { font-size: 16pt !important; }"));
-
-			// SUT
-			PublishModel.RemoveUnwantedLanguageData(dom, languagesToInclude, shouldPruneXmatter, "en", "fr");
-
-			// Check occurrences in modified HTML
-			Assert.That(dom.InnerXml.Contains(".normal-style[lang='tl'] { font-size: 19pt !important; font-family: XYZ !important; }"));
-			Assert.That(dom.InnerXml.Contains(".normal-style[lang='en'] { font-size: 16pt !important; font-family: Cambria !important; }"));
-			Assert.That(dom.InnerXml.Contains(".normal-style[lang='fr'] { font-size: 13pt !important; font-family: ABC !important; }"));
-			Assert.That(!dom.InnerXml.Contains(".normal-style[lang='es']"));
+			// We won't keep xkal even though it's in the list of additional xmatter languges, because the code is smart enough
+			// to notice that there is no data in that language.
+			Assert.That(!dom.InnerXml.Contains(".normal-style[lang='xkal']"));
 			Assert.That(dom.InnerXml.Contains(".normal-style { font-size: 16pt !important; }"));
 		}
+
 		#endregion
 	}
 }

@@ -291,6 +291,18 @@ namespace Bloom.Publish.BloomLibrary
 				var newInitialValue = shouldBeChecked ? InclusionSetting.IncludeByDefault : InclusionSetting.ExcludeByDefault;
 				book.BookInfo.PublishSettings.BloomLibrary.TextLangs[langCode] = newInitialValue;
 			}
+			// Get rid of settings for languages that the book doesn't have, so we don't publish a claim
+			// that it has that data. This is rarely needed, currently only if the book was previously
+			// prepared for publication with data in a language and then all of it was deleted. It can also
+			// happen because, briefly in the alpha stage of Bloom 5.5, we had an option to include
+			// publish settings for languages that only occur in xmatter.
+			foreach (var lang in book.BookInfo.PublishSettings.BloomLibrary.TextLangs.Keys.ToArray())
+			{
+				if (!allLanguages.ContainsKey(lang))
+				{
+					book.BookInfo.PublishSettings.BloomLibrary.TextLangs.Remove(lang);
+				}
+			}
 		}
 
 		private static void InitializeAudioLanguages(BookInfo bookInfo, IEnumerable<string> allLanguageTags)

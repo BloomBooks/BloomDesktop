@@ -155,8 +155,9 @@ namespace Bloom.Publish.BloomPub
 			// Normally this is setup by the Publish (or library) screen, but if you've never visited such a screen for this book,
 			// perhaps because you are doing a bulk or command line publish, then one of them might be empty. In that case, initialize it here.
 			//
-			// There is one scenario where we legitimately don't have any TextLangs or AudioLangs: a picture book.
-			// In that case, we may call InitializeLanguages unnecessarily, but it's harmless.
+			// There are two scenarios where we legitimately don't have any TextLangs or AudioLangs: a picture book and a book
+			// with only sign language.
+			// In those cases, we may call InitializeLanguages unnecessarily, but it's harmless.
 			if (bookInfo.PublishSettings.BloomLibrary.TextLangs.Count == 0 || bookInfo.PublishSettings.BloomLibrary.AudioLangs.Count == 0)
 			{
 				var book = bookServer.GetBookFromBookInfo(bookInfo);
