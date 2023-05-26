@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -225,14 +225,14 @@ namespace Bloom.FontProcessing
 			// Check out the license information.
 			if (!String.IsNullOrEmpty(license))
 			{
-				if (license.Contains("Open Font License") || license.Contains("OFL") ||
+				if (license.Contains("Open Font License") || license.Contains("OFL") || /* Kmhmu OT has this typo */ license.Contains("SIL OpenFont License") ||
 					license.StartsWith("Licensed under the Apache License") ||
 					license.Contains("GNU GPL") || license.Contains("GNU General Public License") || license.Contains(" GPL ") || license.Contains(" GNU ") ||
 					(license.Contains("GNU license") && license.Contains("www.gnu.org")) ||
 					license.Contains("GNU LGPL") || license.Contains("GNU Lesser General Public License"))
 				{
 					determinedSuitability = kOK;
-					if (license.Contains("Open Font License") || license.Contains("OFL"))
+					if (license.Contains("Open Font License") || license.Contains("OFL") || /* Kmhmu OT has this typo */ license.Contains("SIL OpenFont License"))
 						determinedSuitabilityNotes = "Open Font License";
 					else if (license.StartsWith("Licensed under the Apache License"))
 						determinedSuitabilityNotes = "Apache License";
