@@ -108,132 +108,146 @@ export const InnerBulkBloomPubDialog: React.FunctionComponent<{
             </DialogTitle>
             {!!params && (
                 <DialogMiddle>
-                    <WhatsThisBlock url="https://docs.bloomlibrary.org/bloom-reader-shelves">
-                        <BloomCheckbox
-                            label="Produce a .bloomshelf file"
-                            checked={
-                                bookshelfUrlKey && params.makeBookshelfFile
-                            }
-                            disabled={!bookshelfUrlKey}
-                            l10nKey="PublishTab.BulkBloomPub.ProduceBloomShelf"
-                            onCheckChanged={() =>
-                                setParams({
-                                    ...params,
-                                    makeBookshelfFile: !params.makeBookshelfFile
-                                })
-                            }
-                        ></BloomCheckbox>
-                        <ConditionallyEnabledBlock
-                            enable={
-                                params.makeBookshelfFile && !!bookshelfUrlKey
-                            }
-                        >
-                            <div
-                                css={css`
-                                    margin-left: 28px;
-                                `}
+                    <div
+                        css={css`
+                            // don't let this get a scrollbar
+                            padding: 5px 0;
+                        `}
+                    >
+                        <WhatsThisBlock url="https://docs.bloomlibrary.org/bloom-reader-shelves">
+                            <BloomCheckbox
+                                label="Produce a .bloomshelf file"
+                                checked={
+                                    bookshelfUrlKey && params.makeBookshelfFile
+                                }
+                                disabled={!bookshelfUrlKey}
+                                l10nKey="PublishTab.BulkBloomPub.ProduceBloomShelf"
+                                onCheckChanged={() =>
+                                    setParams({
+                                        ...params,
+                                        makeBookshelfFile: !params.makeBookshelfFile
+                                    })
+                                }
+                            ></BloomCheckbox>
+                            <ConditionallyEnabledBlock
+                                enable={
+                                    params.makeBookshelfFile &&
+                                    !!bookshelfUrlKey
+                                }
                             >
-                                <Div
-                                    l10nKey={
-                                        "PublishTab.BulkBloomPub.Explanation"
-                                    }
-                                    l10nParam0={params.bookshelfLabel ?? ""}
+                                <div
                                     css={css`
-                                        font-size: 10px;
-                                        color: ${kMutedTextGray};
-                                        margin-top: -9px;
+                                        margin-left: 28px;
+                                        // keep the overlay from overlapping its previous siblings
+                                        margin-top: 10px;
                                     `}
                                 >
-                                    {`This file will cause these books to be
+                                    <Div
+                                        l10nKey={
+                                            "PublishTab.BulkBloomPub.Explanation"
+                                        }
+                                        l10nParam0={params.bookshelfLabel ?? ""}
+                                        css={css`
+                                            font-size: 10px;
+                                            color: ${kMutedTextGray};
+                                            margin-top: -9px;
+                                        `}
+                                    >
+                                        {`This file will cause these books to be
                                     grouped under a single bookshelf in Bloom
                                     Reader. This collection's bookshelf is set
                                     to "${params.bookshelfLabel ?? ""}"`}
-                                </Div>
-                                <div
-                                    css={css`
-                                        margin-top: 10px;
-                                        display: flex;
-                                    `}
-                                >
+                                    </Div>
                                     <div
                                         css={css`
-                                            border: dotted 1px gray;
-                                            width: 225px;
-                                            height: 20px;
-                                            padding-left: 5px;
-                                            padding-top: 3px;
+                                            margin-top: 10px;
+                                            display: flex;
                                         `}
                                     >
-                                        {params.bookshelfLabel}
-                                    </div>
-                                    <div
-                                        css={css`
-                                            margin-left: 16px;
-                                        `}
-                                    >
-                                        <ColorDisplayButton
-                                            initialColor={params.bookshelfColor}
-                                            localizedTitle={colorPickerTitle}
-                                            transparency={false}
-                                            palette={
-                                                BloomPalette.BloomReaderBookshelf
-                                            }
-                                            width={75}
-                                            onClose={(
-                                                _result,
-                                                newColor: string
-                                            ) => {
-                                                setParams({
-                                                    ...params,
-                                                    bookshelfColor: newColor
-                                                });
-                                            }}
-                                        />
+                                        <div
+                                            css={css`
+                                                border: dotted 1px gray;
+                                                width: 225px;
+                                                height: 20px;
+                                                padding-left: 5px;
+                                                padding-top: 3px;
+                                            `}
+                                        >
+                                            {params.bookshelfLabel}
+                                        </div>
+                                        <div
+                                            css={css`
+                                                margin-left: 16px;
+                                            `}
+                                        >
+                                            <ColorDisplayButton
+                                                initialColor={
+                                                    params.bookshelfColor
+                                                }
+                                                localizedTitle={
+                                                    colorPickerTitle
+                                                }
+                                                transparency={false}
+                                                palette={
+                                                    BloomPalette.BloomReaderBookshelf
+                                                }
+                                                width={75}
+                                                onClose={(
+                                                    _result,
+                                                    newColor: string
+                                                ) => {
+                                                    setParams({
+                                                        ...params,
+                                                        bookshelfColor: newColor
+                                                    });
+                                                }}
+                                            />
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                        </ConditionallyEnabledBlock>
-                    </WhatsThisBlock>
-                    <WhatsThisBlock
-                        url="https://docs.bloomlibrary.org/bloom-reader-distribution-tags"
-                        css={css`
-                            margin-top: ${kBlockSeparation};
-                        `}
-                    >
-                        <TextField
-                            label={"Distribution Tag"}
-                            defaultValue={params.distributionTag}
-                            onChange={event =>
-                                setParams({
-                                    ...params,
-                                    distributionTag: event.target.value
-                                })
-                            }
-                            margin="dense"
-                            variant="outlined"
+                            </ConditionallyEnabledBlock>
+                        </WhatsThisBlock>
+                        <WhatsThisBlock
+                            url="https://docs.bloomlibrary.org/bloom-reader-distribution-tags"
                             css={css`
-                                margin-top: 0 !important;
+                                margin-top: ${kBlockSeparation};
                             `}
-                        ></TextField>
-                    </WhatsThisBlock>
-                    <WhatsThisBlock
-                        url="https://docs.bloomlibrary.org/bloomPUB-bundles"
-                        css={css`
-                            margin-top: ${kBlockSeparation};
-                        `}
-                    >
-                        <BloomCheckbox
-                            label="Compress into a single .bloombundle file"
-                            checked={params.makeBloomBundle}
-                            l10nKey="PublishTab.BulkBloomPub.MakeBloomBundle"
-                            onCheckChanged={checked => {
-                                setParams({
-                                    ...params,
-                                    makeBloomBundle: !!checked
-                                });
-                            }}
-                        ></BloomCheckbox>
-                    </WhatsThisBlock>
+                        >
+                            <TextField
+                                label={"Distribution Tag"}
+                                defaultValue={params.distributionTag}
+                                onChange={event =>
+                                    setParams({
+                                        ...params,
+                                        distributionTag: event.target.value
+                                    })
+                                }
+                                margin="dense"
+                                variant="outlined"
+                                css={css`
+                                    margin-top: 0 !important;
+                                `}
+                            ></TextField>
+                        </WhatsThisBlock>
+                        <WhatsThisBlock
+                            url="https://docs.bloomlibrary.org/bloomPUB-bundles"
+                            css={css`
+                                margin-top: ${kBlockSeparation};
+                            `}
+                        >
+                            <BloomCheckbox
+                                label="Compress into a single .bloombundle file"
+                                checked={params.makeBloomBundle}
+                                l10nKey="PublishTab.BulkBloomPub.MakeBloomBundle"
+                                onCheckChanged={checked => {
+                                    setParams({
+                                        ...params,
+                                        makeBloomBundle: !!checked
+                                    });
+                                }}
+                            ></BloomCheckbox>
+                        </WhatsThisBlock>
+                    </div>
                 </DialogMiddle>
             )}
             <DialogBottomButtons>
