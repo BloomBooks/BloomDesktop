@@ -34,6 +34,7 @@ import {
     get,
     getWithPromise,
     postData,
+    postDataWithConfig,
     postJson
 } from "../../../utils/bloomApi";
 import * as toastr from "toastr";
@@ -255,7 +256,25 @@ export default class AudioRecording {
 
         $("#audio-split")
             .off()
-            .click(e => this.split());
+            .click(async e => {
+                if (e.ctrlKey) {
+                    const result = await postJson("fileIO/chooseFile", {
+                        title: "Choose Audacity Timing File",
+                        fileTypes: [
+                            {
+                                name: "Audacity Timing File",
+                                extensions: ["txt"]
+                            }
+                        ]
+                    });
+                    if (!result) {
+                        return;
+                    }
+                    this.split(result.data);
+                } else {
+                    this.split();
+                }
+            });
 
         $("#audio-listen")
             .off()
@@ -4008,7 +4027,7 @@ export default class AudioRecording {
         return false;
     }
 
-    private async split(): Promise<void> {
+    private async split(manualTimingsPath?: string): Promise<void> {
         this.setStatus("split", Status.Disabled); // Disable it immediately (not asynchronously!) so that the button stops registering clicks
         this.resetAudioIfPaused();
         await this.setHighlightToAsync({
@@ -4024,7 +4043,7 @@ export default class AudioRecording {
                 this.setStatus("split", Status.Enabled);
                 this.endBusy();
             } else {
-                this.autoSegment();
+                this.autoSegment(manualTimingsPath);
                 // endBusy is handled when promises in autoSegment complete.
             }
         });
@@ -4036,7 +4055,7 @@ export default class AudioRecording {
     // * Call API server to split the whole audio file into pieces, one piece per sentence.
     // *   (Black Box internals:  by using Aeneas to find the timing of each sentence start, then FFMPEG to split)
     // * Update the state of the UI to utilize the new files created by API server
-    private autoSegment(): void {
+    private autoSegment(manualTimingsPath?: string): void {
         this.audioSplitButton.setAttribute("title", ""); // remove any error tooltips
 
         // First, check if there's even an audio recorded yet.
@@ -4067,7 +4086,8 @@ export default class AudioRecording {
             const inputParameters = {
                 audioFilenameBase: currentTextBox.id,
                 audioTextFragments: fragmentIdTuples,
-                lang: this.getAutoSegmentLanguageCode()
+                lang: this.getAutoSegmentLanguageCode(),
+                manualTimingsPath
             };
 
             this.disableInteraction();
@@ -4256,7 +4276,7 @@ export default class AudioRecording {
 
         if (isSuccess) {
             // Now that we know the Auto Segmentation succeeded, finally update the markup
-            const allEndTimesString: string = result.data;
+            const allEndTimesString: string = result.data.allEndTimesString;
             const currentTextBox = this.getCurrentTextBox();
             if (currentTextBox) {
                 currentTextBox.setAttribute(
@@ -4284,6 +4304,20 @@ export default class AudioRecording {
             this.sentenceToIdListMap = {};
             this.changeStateAndSetExpectedAsync("next");
             this.setStatus("split", Status.Disabled); // No need to run it again if it was successful. (Until the settings are changed).
+            if (result.data.warningMessage) {
+                // something is clear()ing my warning message, so I have to delay it a bit
+                setTimeout(() => {
+                    toastr.warning(result.data.warningMessage, "Warning", {
+                        timeOut: 10000
+                    });
+                }, 1000);
+            }
+            if (result.data.successMessage) {
+                // something is clear()ing my toast, so I have to delay it a bit
+                setTimeout(() => {
+                    toastr.success(result.data.successMessage, "Success");
+                }, 1000);
+            }
         } else {
             this.changeStateAndSetExpectedAsync("record");
             doneCallback();
@@ -4462,7 +4496,10 @@ export default class AudioRecording {
     }
 
     public async importRecordingAsync(): Promise<void> {
-        const result = await getWithPromise("fileIO/chooseFile");
+        const result = await postJson("fileIO/chooseFile", {
+            title: "Choose Audio File",
+            fileTypes: [{ name: "MP3 File", extensions: ["mp3"] }]
+        });
         if (!result) {
             return;
         }

@@ -1,3 +1,12 @@
+using Bloom.Api;
+using Bloom.Book;
+using Bloom.Edit;
+using Bloom.Utils;
+using Newtonsoft.Json;
+using SIL.Code;
+using SIL.IO;
+using SIL.PlatformUtilities;
+using SIL.Reporting;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -5,14 +14,6 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Bloom.Api;
-using Bloom.Book;
-using Bloom.Utils;
-using Newtonsoft.Json;
-using SIL.IO;
-using SIL.Reporting;
-using SIL.PlatformUtilities;
-using SIL.Code;
 using System.Globalization;
 using Bloom.ToPalaso;
 using SIL.Progress;
@@ -24,6 +25,7 @@ namespace Bloom.web.controllers
 		public string audioFilenameBase;
 		public AudioTextFragment[] audioTextFragments;
 		public string lang;
+		public string manualTimingsPath;
 	}
 
 	internal class AudioTextFragment
@@ -42,7 +44,7 @@ namespace Bloom.web.controllers
 	public class AudioSegmentationApi
 	{
 		public const string kApiUrlPart = "audioSegmentation/";
-		private const string kWorkingDirectory = "%HOMEDRIVE%\\%HOMEPATH%";	// Linux will use "/tmp" when the working directory doesn't matter
+		private const string kWorkingDirectory = "%HOMEDRIVE%\\%HOMEPATH%"; // Linux will use "/tmp" when the working directory doesn't matter
 		private const string kTimingsOutputFormat = "tsv";
 
 		// 0 could be a useful value for this if you hard-split. (on the rationale that you won't accidentally cut off anything useful).
@@ -51,19 +53,22 @@ namespace Bloom.web.controllers
 		// which seems to improve identification of when the that fragment ENDS.
 		// For soft splits, there's not really a huge cost to if the head period is a little too long
 		// because the 1st fragment is highlighted even during the head period
-		private const float maxAudioHeadDurationSec = 5;	// maximum potentially allowable length in seconds of the non-useful "head" part of the audio which Aeneas will attempt to identify (if it exists) and then exclude from the timings
+		private const float maxAudioHeadDurationSec = 5;    // maximum potentially allowable length in seconds of the non-useful "head" part of the audio which Aeneas will attempt to identify (if it exists) and then exclude from the timings
 
 		BookSelection _bookSelection;
-		public AudioSegmentationApi(BookSelection bookSelection)
+		private PageSelection _pageSelection;
+
+		public AudioSegmentationApi(BookSelection bookSelection, PageSelection pageSelection)
 		{
 			_bookSelection = bookSelection;
+			_pageSelection = pageSelection;
 		}
 
 		public void RegisterWithApiHandler(BloomApiHandler apiHandler)
 		{
 			apiHandler.RegisterEndpointLegacy(kApiUrlPart + "checkAutoSegmentDependencies", CheckAutoSegmentDependenciesMet, handleOnUiThread: false, requiresSync: false);
-			apiHandler.RegisterEndpointLegacy(kApiUrlPart + "autoSegmentAudio", AutoSegment, handleOnUiThread: false, requiresSync : false);
-			apiHandler.RegisterEndpointLegacy(kApiUrlPart + "getForcedAlignmentTimings", GetForcedAlignmentTimings, handleOnUiThread: false, requiresSync : false);
+			// JH: this is unused: apiHandler.RegisterEndpointLegacy(kApiUrlPart + "autoSegmentAudio", AutoSegment, handleOnUiThread: true/* may ask for a file*/, requiresSync: false);
+			apiHandler.RegisterEndpointLegacy(kApiUrlPart + "getForcedAlignmentTimings", GetForcedAlignmentTimings, handleOnUiThread: false, requiresSync: false);
 			apiHandler.RegisterEndpointLegacy(kApiUrlPart + "eSpeakPreview", ESpeakPreview, handleOnUiThread: false, requiresSync: false);
 		}
 
@@ -182,7 +187,7 @@ namespace Bloom.web.controllers
 				else
 				{
 					command = commandString.Substring(0, idx);
-					arguments = commandString.Substring(idx+1);
+					arguments = commandString.Substring(idx + 1);
 				}
 			}
 			else
@@ -208,7 +213,7 @@ namespace Bloom.web.controllers
 
 			if (result.ExitCode == 0)
 			{
-				return false;	// No error
+				return false;   // No error
 			}
 			else if (errorCodesToIgnore != null && errorCodesToIgnore.Contains(result.ExitCode))
 			{
@@ -236,6 +241,7 @@ namespace Bloom.web.controllers
 		///
 		/// Replies with true if AutoSegment completed successfully, or false if there was an error. In addition, a NonFatal message/exception may be reported with the error
 		/// </summary>
+		/* (JH) I don't know why this exists, it is unused
 		public void AutoSegment(ApiRequest request)
 		{
 			Logger.WriteEvent("AudioSegmentationApi.AutoSegment(): AutoSegment started.");
@@ -270,17 +276,43 @@ namespace Bloom.web.controllers
 
 			request.ReplyWithBoolean(true); // Success
 		}
+		*/
 
-		internal List<Tuple<string, string>> GetAeneasTimings(AutoSegmentRequest requestParameters)
+		internal List<Tuple<string, string>> GetAeneasTimings(AutoSegmentRequest requestParameters, out string successMessage, out string warningMessage)
 		{
+			warningMessage = "";
 			string dummy1;
 			List<string> dummy2;
-			return GetAeneasTimings(requestParameters, out dummy1, out dummy2);
+			return GetAeneasTimings(requestParameters, out dummy1, out dummy2, out successMessage, out warningMessage);
 		}
 
-		internal List<Tuple<string, string>> GetAeneasTimings(AutoSegmentRequest requestParameters, out string audioFilenameToSegment, out List<string> fragmentIds)
+		private string SelectTimingFileUsingDialog()
+		{
+			var fileType = ".mp3";
+			var dlg = new DialogAdapters.OpenFileDialogAdapter
+			{
+				Multiselect = false,
+				CheckFileExists = true,
+				Filter = $"{fileType} files|*{fileType}"
+			};
+			var result = dlg.ShowDialog();
+			if (result == DialogResult.OK)
+			{
+				// We are not trying get a memory or time diff, just a point measure.
+				PerformanceMeasurement.Global.Measure("Choose file", dlg.FileName)?.Dispose();
+
+				return dlg.FileName.Replace("\\", "/");
+			}
+
+
+			return String.Empty;
+		}
+
+		internal List<Tuple<string, string>> GetAeneasTimings(AutoSegmentRequest requestParameters, out string audioFilenameToSegment, out List<string> fragmentIds, out string successMessage, out string warningMessage)
 		{
 			fragmentIds = null;
+			successMessage = "";
+			warningMessage = "";
 
 			// The client was supposed to validate this already, but double-check in case something strange happened.
 			string directoryName = GetAudioDirectory();
@@ -292,8 +324,8 @@ namespace Bloom.web.controllers
 					// I'm intentionally not adding this to the l10n load, as it seems like a pretty sophisticated thing, to be running in a VM
 					// or directly off a server, and it seems a bit hard to translate.  Ref BL-9959.
 					ErrorReport.NotifyUserOfProblem(
-						"Sorry, Bloom cannot split timings if the collection's path does not start with a drive letter. Feel free to contact us for more help."+
-						"\r\n\r\n"+GetAudioDirectory());
+						"Sorry, Bloom cannot split timings if the collection's path does not start with a drive letter. Feel free to contact us for more help." +
+						"\r\n\r\n" + GetAudioDirectory());
 					audioFilenameToSegment = null;
 					return null;
 				}
@@ -340,6 +372,8 @@ namespace Bloom.web.controllers
 			Logger.WriteMinorEvent($"AudioSegmentationApi.GetAeneasTimings(): Attempting to segment with langCode={langCode}");
 
 			string textFragmentsFilename = Path.Combine(directoryName, $"{requestParameters.audioFilenameBase}_fragments.txt");
+
+
 			string audioTimingsFilename = Path.Combine(directoryName, $"{requestParameters.audioFilenameBase}_timings.{kTimingsOutputFormat}");
 
 			// Clean up the fragments
@@ -366,7 +400,25 @@ namespace Bloom.web.controllers
 					File.WriteAllLines(textFragmentsFilename, fragmentList)
 				);
 
-				timingStartEndRangeList = GetSplitStartEndTimings(audioFilenameToSegment, textFragmentsFilename, audioTimingsFilename, langCode);
+				if (!string.IsNullOrEmpty(requestParameters.manualTimingsPath))
+				{
+					Logger.WriteEvent("AudioSegmentationApi applying manual timings file.");
+					var lines = RobustFile.ReadAllLines(requestParameters.manualTimingsPath);
+					timingStartEndRangeList = ParseTimingFileTSV(lines);
+					Logger.WriteEvent($"Parsed {timingStartEndRangeList.Count()} lines.");
+					if (timingStartEndRangeList.Count() != fragmentList.Count())
+					{
+						warningMessage = $"This box has {fragmentList.Count()} text fragments, but the timings file has {timingStartEndRangeList.Count()} lines";
+					}
+					else
+					{
+						successMessage = $"Applied {timingStartEndRangeList.Count()} manual timings.";
+					}
+				}
+				else
+				{
+					timingStartEndRangeList = GetSplitStartEndTimings(audioFilenameToSegment, textFragmentsFilename, audioTimingsFilename, langCode);
+				}
 			}
 			catch (Exception e)
 			{
@@ -455,7 +507,7 @@ namespace Bloom.web.controllers
 			}
 
 			// Add more default fallback languages to the end
-			potentialFallbackLangs.Add("eo");	// "eo" is Esperanto
+			potentialFallbackLangs.Add("eo");   // "eo" is Esperanto
 			potentialFallbackLangs.Add("en");
 
 			// Now go and try the fallback languages until we (possibly) find one that works
@@ -484,8 +536,8 @@ namespace Bloom.web.controllers
 			// Parse the JSON containing the text segmentation data.
 			string json = request.RequiredPostJson();
 			AutoSegmentRequest requestParameters = ParseJson(json);
-
-			var timingStartEndRangeList = GetAeneasTimings(requestParameters);
+			string successMessage, warningMessage;
+			var timingStartEndRangeList = GetAeneasTimings(requestParameters, out successMessage, out warningMessage);
 			if (timingStartEndRangeList == null)
 			{
 				request.ReplyWithText("");
@@ -495,7 +547,7 @@ namespace Bloom.web.controllers
 			string allEndTimesStr = String.Join(" ", timingStartEndRangeList.Select(tuple => tuple.Item2));
 
 			Logger.WriteEvent("AudioSegmentationApi.GetForcedAlignmentTimings(): Completed successfully.");
-			request.ReplyWithText(allEndTimesStr);
+			request.ReplyWithJson(new { allEndTimesString = allEndTimesStr, successMessage = successMessage, warningMessage = warningMessage });
 		}
 
 
@@ -509,7 +561,7 @@ namespace Bloom.web.controllers
 
 			foreach (var extension in extensions)
 			{
-				string filePath =  Path.Combine(directoryName, fileNameBase + extension);
+				string filePath = Path.Combine(directoryName, fileNameBase + extension);
 
 				if (RobustFile.Exists(filePath))
 				{
@@ -667,7 +719,7 @@ namespace Bloom.web.controllers
 				{
 					if (!timings.Any())
 					{
-						timingStart = "0.000";	// Note: format generated by Aeneas seems independent of your Date/Time/Number Format settings. 
+						timingStart = "0.000";  // Note: format generated by Aeneas seems independent of your Date/Time/Number Format settings. 
 					}
 					else
 					{
@@ -744,9 +796,9 @@ namespace Bloom.web.controllers
 		private void ExtractAudioSegments(IList<string> idList, IList<Tuple<string, string>> timingStartEndRangeList, string inputAudioFilename)
 		{
 			Debug.Assert(idList.Count == timingStartEndRangeList.Count, $"Number of text fragments ({idList.Count}) does not match number of extracted timings ({timingStartEndRangeList.Count}). The parsed timing ranges might be completely incorrect. The last parsed timing is: ({timingStartEndRangeList.Last()?.Item1 ?? "null"}, {timingStartEndRangeList.Last()?.Item2 ?? "null"}).");
-			int size = Math.Min(timingStartEndRangeList.Count, idList.Count);	// Note: it could differ if there is some discrepancy in line endings in the fragments file. This doesn't seem like it should happen but occasionally I see it.
+			int size = Math.Min(timingStartEndRangeList.Count, idList.Count);   // Note: it could differ if there is some discrepancy in line endings in the fragments file. This doesn't seem like it should happen but occasionally I see it.
 
-			string extension = Path.GetExtension(inputAudioFilename);	// Will include the "." e.g. ".mp3"
+			string extension = Path.GetExtension(inputAudioFilename);   // Will include the "." e.g. ".mp3"
 			if (string.IsNullOrWhiteSpace(extension))
 			{
 				extension = ".mp3";
@@ -913,7 +965,7 @@ namespace Bloom.web.controllers
 					"EditTab.Toolbox.TalkingBookTool.ESpeakPreview.Error",
 					"eSpeak failed.",
 					"This text is shown if an error occurred while running eSpeak. eSpeak is a piece of software that this program uses to do text-to-speech (have the computer read text out loud).");
-				NonFatalProblem.Report(ModalIf.None, PassiveIf.All, message, null, null, false);	// toast without allowing error report.
+				NonFatalProblem.Report(ModalIf.None, PassiveIf.All, message, null, null, false);    // toast without allowing error report.
 			}
 		}
 
