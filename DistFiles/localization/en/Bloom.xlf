@@ -2736,8 +2736,14 @@
         <note>ID: EditTab.Toolbox.TalkingBookTool.Listen</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.ImportRecording" sil:dynamic="true">
-        <source xml:lang="en">Import Recording</source>
+        <source xml:lang="en">Import Recording...</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.ImportRecording</note>
+        <note>Shown if you open TalkingBookTool and then open the 'Advanced' subsection</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.InsertSegmentMarker" sil:dynamic="true">
+        <source xml:lang="en">Insert Segment Marker</source>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.InsertSegmentMarker</note>
+        <note>A segment marker is just "|" and it is used to break a sentence up into smaller sections for highlighting in sync with the audio.</note>
         <note>Shown if you open TalkingBookTool and then open the 'Advanced' subsection</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.ImportRecording.ConfirmReplace" sil:dynamic="true">
@@ -2747,6 +2753,12 @@
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.ImportRecording.ConfirmReplaceMessage" sil:dynamic="true">
         <source xml:lang="en">If you import this recording, it will replace all the audio for this text box.</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.ImportRecording.ConfirmReplaceMessage</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.UseTimingsFile" sil:dynamic="true">
+        <source xml:lang="en">Use Timings File...</source>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.UseTimingsFile</note>
+        <note>A timings file is usually from Audacity. It contains one line for each segment of the text. The line contains the start and stop time of the audio that should be synchronized with that text segment.</note>
+        <note>Shown if you open TalkingBookTool and then open the 'Advanced' subsection</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.LookAtSentenceLabel" sil:dynamic="true">
         <source xml:lang="en">Look at the highlighted text</source>

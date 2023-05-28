@@ -20,6 +20,7 @@
     span.ui-audioCurrent:not(.ui-suppressHighlight):not(.ui-disableHighlight) {
     display: inline-block;
 }
+
 span.ui-audioCurrent:not(.ui-suppressHighlight):not(.ui-disableHighlight),
 div.ui-audioCurrent:not(.ui-suppressHighlight):not(.ui-disableHighlight) p {
     // This behavior is now achieved by a default rule in content/basePage-shared.less,
@@ -83,12 +84,15 @@ div.ui-audioCurrent p {
     span:nth-child(3n + 1) {
         background-color: #bfedf3;
     }
+
     span:nth-child(3n + 2) {
         background-color: #7fdae6;
     }
+
     span:nth-child(3n + 3) {
         background-color: #29c2d6;
     }
+
     span {
         position: unset; // BL-11633, works around Chromium bug
     }
@@ -102,10 +106,12 @@ div.ui-audioCurrent p {
 .ui-audioBody {
     padding-left: 15px;
     padding-right: 15px;
+
     *,
     a {
         color: @textColor;
     }
+
     background-color: @toolboxBackgroundColor;
 
     background-position: center;
@@ -115,6 +121,7 @@ div.ui-audioCurrent p {
         margin-top: 5px;
         font-size: large;
     }
+
     .ui-audio-button {
         height: @buttonColumnWidth;
         width: @buttonColumnWidth;
@@ -124,10 +131,12 @@ div.ui-audioCurrent p {
         background-repeat: no-repeat;
         display: inline-block;
         border: solid thin transparent; // just be a little responsive to indicate that it is clickable
+
         &:hover {
             border: none; // makes it grow a little on mouse hover
         }
     }
+
     #audio-prev,
     #audio-clear {
         height: 20px;
@@ -135,6 +144,7 @@ div.ui-audioCurrent p {
         //margin-left: 10px;
         background-position: center;
     }
+
     .disabled {
         // Note: There is a similar rule in signLanguage.less which actually does have the scope to affect this talking book code.
         opacity: 0.4;
@@ -150,15 +160,19 @@ div.ui-audioCurrent p {
             opacity: 1;
         }
     }
+
     #audio-record {
         background-image: url("record_enabled.svg");
+
         &.expected {
             background-image: url("record_expected.svg");
         }
+
         &.active {
             background-image: url("record_active.svg");
         }
     }
+
     #audio-play {
         // We need a path here because this image is in a shared folder, not at the same
         // location as the generated audioRecording.css itself like the others.
@@ -169,6 +183,7 @@ div.ui-audioCurrent p {
         &.expected {
             background-image: url(play_expected.svg);
         }
+
         &.active {
             // we want to switch to a yellow square. This is a cheap way to get it.
             // If we want some other special shape when play is active, we have a currently-unused
@@ -177,6 +192,7 @@ div.ui-audioCurrent p {
             //background-color: @bloom-yellow;
         }
     }
+
     #audio-split {
         background-image: url(split_enabled.svg);
         height: 45px;
@@ -190,42 +206,51 @@ div.ui-audioCurrent p {
     .audio-about {
         margin-top: @sectionVerticalGap;
     }
+
     #audio-look-at,
     #audio-check {
         max-width: none;
     }
+
     #audio-listen-label {
         position: relative;
         width: 80px;
     }
+
     a {
         display: block; //start on a new line
         margin-top: 10px;
         text-decoration: underline;
         cursor: pointer;
     }
+
     .ui-audioFooter {
         margin-top: 30px;
         margin-bottom: 5px;
     }
+
     .ui-audioInput,
     .ui-audioMeter {
         display: inline-block;
         background-color: @bloom-panelBackground;
     }
+
     .ui-audioInputGroup {
         margin-top: 5px;
         margin-bottom: 12px;
     }
+
     img#audio-input-dev {
         height: 30px;
         width: 30px;
         box-sizing: border-box;
         border: solid thin transparent; // just be a little responsive to indicate that it is clickable
+
         &:hover {
             border: none; // makes it grow a little on mouse hover
         }
     }
+
     // hidden unless we need to choose between three or more input devices.
     #audio-devlist {
         display: none;
@@ -237,40 +262,50 @@ div.ui-audioCurrent p {
         cursor: pointer;
         z-index: 1000;
         overflow-x: hidden;
+
         li {
             min-height: 20px;
             font-size: 12px;
             color: @textOnLightBackground;
             padding-left: 5px;
             white-space: nowrap;
+
             &:hover {
                 background-color: @hoverBackgroundColor;
             }
         }
+
         #audio-input-dev {
             margin-top: 2px;
             width: 15px;
         }
     }
+
     #audio-next {
         background-image: url(next_enabled.svg);
+
         &.expected {
             background-image: url(next_expected.svg);
         }
     }
+
     #audio-prev {
         background-image: url(prev_enabled.svg);
     }
+
     #audio-listen {
         margin-left: 2px; // visually centered
         background-image: url(listen_enabled.svg);
+
         &.active {
             background-image: url(listen_active.svg);
         }
     }
+
     #audio-clear {
         background-image: url(clear_enabled.svg);
     }
+
     .button-label-wrapper {
         margin-top: 10px;
         margin-bottom: 5px; // Was originally part of the button. Note that vertical margins will auto-collapse with the next element's margin-top. You can switch this to padding-bottom if this is undesirable.
@@ -279,6 +314,7 @@ div.ui-audioCurrent p {
     @buttonWidth: 60px;
     @uiAudioBodyMinWidth: 149px; // The minimum width of the container, which occurs if the scroll bar is present. It is 17 pixels larger otherwise. Could be 150 or 149.67 pixels, so round down to 149
     @whitespaceFillerWidth: 3px; // Caused by the whitespace in the PUG code I think.
+
     .button-wrapper {
         display: inline-block;
         min-width: @buttonWidth;
@@ -317,9 +353,11 @@ div.ui-audioCurrent p {
 .ui-audioBody {
     counter-reset: talkingBookListCounter;
 }
+
 *:not(.hide-countable) > .audio-label.talking-book-counter {
     counter-increment: talkingBookListCounter;
 }
+
 // Intuitively, one would expect this to be prefixed by "*:not(.hide-countable) > "
 // However, this would cause the counter to be removed, which may change the number of lines the text takes
 // That changes the vertical height needed, which affects the vertical centering, which affects the position of the top of the button.
@@ -336,6 +374,7 @@ div.ui-audioCurrent p {
 .audio-label.talking-book-counter.hide-counter-still-count:before {
     display: none;
 }
+
 // Customized number styles for UI languages which need it:
 *:not(.hide-countable) > .audio-label.talking-book-counter[lang="bn"]:before {
     // bn = Bangla also known as Bengali
@@ -395,10 +434,12 @@ div.ui-audioCurrent p {
 .cursor-progress {
     cursor: progress;
 }
+
 body .cursor-progress {
     // A rule with higher specificity to beat out some ckeditor rules that set it to cursor: text
     cursor: progress;
 }
+
 .cursor-progress button {
     // Deal with buttons on the image container, which will appear grabbable by default. Especially the on-hover buttons for the bloom-imageContainer, those are hard to modify in the JS layer.
     cursor: progress;
@@ -409,36 +450,45 @@ body .cursor-progress {
     font-family: @UIFontStack;
     font-size: 9pt;
 }
+
 #toast-container > .toast {
     opacity: 1 !important;
     box-shadow: none !important;
     background-image: none !important;
     padding-left: 8px; //don't leave room for the icon
 }
+
 .toast-toolbox-bottom {
     left: 32px;
     bottom: 46px;
 }
 
-#import-recording-button {
-    font-family: @UIFontStack;
+#import-advanced-container {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
 
-    text-transform: none; // Material buttons are all caps by default
-
-    &:disabled {
-        svg {
+    #import-recording-button,
+    #split-with-timings-file-button,
+    #insert-segment-marker-button {
+        &:disabled {
             opacity: 0.4;
         }
-    }
 
-    // Ok, not ideal, but we add these rules to override Material's defaults and
-    // make the icon and text align with the (non-Material) checkbox above it
-    .MuiButton-startIcon {
-        margin-left: -1px;
-        margin-right: 5px;
-    }
-    .MuiButton-iconSizeSmall > :first-child {
-        font-size: 16px;
+        font-family: @UIFontStack;
+
+        text-transform: none; // Material buttons are all caps by default
+
+        // Ok, not ideal, but we add these rules to override Material's defaults and
+        // make the icon and text align with the (non-Material) checkbox above it
+        .MuiButton-startIcon {
+            margin-left: -1px;
+            margin-right: 5px;
+        }
+
+        .MuiButton-iconSizeSmall > :first-child {
+            font-size: 16px;
+        }
     }
 }
 
@@ -446,6 +496,7 @@ body .cursor-progress {
     &.initiallyHidden {
         display: none;
     }
+
     background-color: @micProblemColor;
     color: @textOnLightBackground;
     border-radius: 6px;
@@ -455,6 +506,7 @@ body .cursor-progress {
 
 #audio-playbackOrderControl-wrapper {
     z-index: @disablingOverlayZindex + 1;
+
     label.checked {
         color: @highlightColor;
     }

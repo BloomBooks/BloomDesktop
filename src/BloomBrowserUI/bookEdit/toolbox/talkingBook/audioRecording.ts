@@ -47,12 +47,12 @@ import {
     IConfirmDialogProps,
     DialogResult
 } from "../../../react_components/confirmDialog";
-import ImportIcon from "../../../react_components/icons/ImportIcon";
 import { getEditTabBundleExports } from "../../js/bloomFrames";
 import PlaybackOrderControls from "../../../react_components/playbackOrderControls";
 import Recordable from "./recordable";
 import { getMd5 } from "./md5Util";
 import { setupImageDescriptions } from "../imageDescription/imageDescription";
+import { TalkingBookAdvancedButtons } from "./talkingBookAdvancedButtons";
 
 enum Status {
     Disabled, // Can't use button now (e.g., Play when there is no recording)
@@ -257,23 +257,7 @@ export default class AudioRecording {
         $("#audio-split")
             .off()
             .click(async e => {
-                if (e.ctrlKey) {
-                    const result = await postJson("fileIO/chooseFile", {
-                        title: "Choose Audacity Timing File",
-                        fileTypes: [
-                            {
-                                name: "Audacity Timing File",
-                                extensions: ["txt"]
-                            }
-                        ]
-                    });
-                    if (!result) {
-                        return;
-                    }
-                    this.split(result.data);
-                } else {
-                    this.split();
-                }
+                this.split();
             });
 
         $("#audio-listen")
@@ -1303,7 +1287,9 @@ export default class AudioRecording {
         }
 
         this.updatePlayerStatus();
-        return this.changeStateAndSetExpectedAsync("play");
+
+        await this.changeStateAndSetExpectedAsync("play");
+        this.renderAdvancedButtons();
     }
 
     // Called when we get a duration for a current audio element. Mainly we want it after recording a new one.
@@ -1961,7 +1947,9 @@ export default class AudioRecording {
         this.updatePlayerStatus();
 
         await Promise.all(promisesToAwait);
-        return this.changeStateAndSetExpectedAsync("record");
+
+        await this.changeStateAndSetExpectedAsync("record");
+        this.renderAdvancedButtons();
     }
 
     private doesRecordingExistForCurrentSelection(): boolean {
@@ -2361,7 +2349,7 @@ export default class AudioRecording {
         } else {
             this.hideSplitButton();
         }
-        this.renderImportRecordingButton();
+        this.renderAdvancedButtons();
     }
 
     private enableRecordingModeControl() {
@@ -4439,32 +4427,23 @@ export default class AudioRecording {
         }
     }
 
-    private renderImportRecordingButton(): void {
-        const container = document.getElementById(
-            "import-recording-button-container"
-        );
+    private renderAdvancedButtons(): void {
+        const container = document.getElementById("import-advanced-container");
         if (!container) {
             // Won't exist for unit tests
             return;
         }
 
         ReactDOM.render(
-            React.createElement(
-                BloomButton,
-                {
-                    id: "import-recording-button",
-                    iconBeforeText: React.createElement(ImportIcon),
-                    hasText: true,
-                    variant: "text",
-                    size: "small",
-                    enabled:
-                        this.recordingModeInput.checked &&
-                        this.getRecordableDivs(false, false).length > 0,
-                    l10nKey: "EditTab.Toolbox.TalkingBookTool.ImportRecording",
-                    onClick: this.handleImportRecordingClick.bind(this)
-                },
-                "Import Recording"
-            ),
+            React.createElement(TalkingBookAdvancedButtons, {
+                wholeTextBoxMode: this.recordingModeInput.checked,
+                hasAudio: this.getStatus("clear") === Status.Enabled, // plausibly, we could instead require that we have *all* the audio
+                hasRecordableDivs:
+                    this.getRecordableDivs(false, false).length > 0,
+                handleImportRecordingClick: () =>
+                    this.handleImportRecordingClick(),
+                split: this.split.bind(this)
+            }),
             container
         );
     }
