@@ -613,14 +613,14 @@ namespace Bloom.Publish.BloomLibrary
 				return null;
 
 			var harvesterBaseUrl = GetHarvesterBaseUrl(baseUrl);
-			return CreateThumbnailUrlFromBase(harvesterBaseUrl, lastUpdate);
+			return CreateThumbnailUrlFromBase(harvesterBaseUrl, lastUpdate, true);
 		}
 
-		private static string CreateThumbnailUrlFromBase(string baseUrl, string lastUpdate)
+		private static string CreateThumbnailUrlFromBase(string baseUrl, string lastUpdate, bool forHarvester = false)
 		{
 			// The bloomlibrary2 code calls Book.getCloudFlareUrl(), but it just passes the parameter through
 			// at this point with a bunch of comments on why we don't do anything there.
-			return baseUrl + "thumbnails/thumbnail-256.png?version=" + lastUpdate;
+			return baseUrl + (forHarvester ? "thumbnails/" : "") + "thumbnail-256.png?version=" + lastUpdate;
 		}
 
 		// Code basically copied from bloomlibrary2 Book.ts
