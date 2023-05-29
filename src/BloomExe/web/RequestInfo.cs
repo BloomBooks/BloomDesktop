@@ -139,9 +139,14 @@ namespace Bloom.Api
 			}
 			catch(Exception error)
 			{
-
+				// Something odd happened while trying to read the file. Maybe the file is locked by another process?
+				// Let's not throw an error, but we'll record it in the log.
+				// BL-12237 actually had a FileNotFoundException here, in a Team Collection setting, which should
+				// have been caught by the RobustFile.Exists() above. So we'll just log it and continue.
+				// The important thing for avoiding a big ugly EndpointHandler error (in the case of BL-12237) is to
+				// set HaveOutput to true, which WriteError() does.
 				Logger.WriteError("Server could not read " + path, error);
-				_actualContext.Response.StatusCode = 500;
+				WriteError(500, "Server could not read " + path + ": " + error.Message);
 				return;
 			}
 
