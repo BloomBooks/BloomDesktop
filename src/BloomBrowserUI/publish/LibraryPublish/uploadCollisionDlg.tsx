@@ -43,17 +43,8 @@ export interface IUploadCollisionDlgProps {
     dialogEnvironment?: IBloomDialogEnvironmentParams;
 }
 
-let legacyMode: boolean = true;
-export function showUploadCollisionDialog() {
-    // This is a hack we have in place until the old upload screen dies.
-    // The old screens opens uploadCollisionDlg as a winforms dialog and doesn't take this code path.
-    // So we use `legacyMode` to know whether we are dealing with the old screen or new.
-    legacyMode = false;
-    showUploadCollectionDialogInternal();
-}
-
-let showUploadCollectionDialogInternal: () => void = () => {
-    console.error("showUploadCollectionDialogInternal is not set up yet.");
+export let showUploadCollisionDialog: () => void = () => {
+    console.error("showUploadCollisionDialog is not set up yet.");
 };
 
 export const UploadCollisionDlg: React.FunctionComponent<IUploadCollisionDlgProps> = props => {
@@ -62,7 +53,7 @@ export const UploadCollisionDlg: React.FunctionComponent<IUploadCollisionDlgProp
         closeDialog,
         propsForBloomDialog
     } = useSetupBloomDialog(props.dialogEnvironment);
-    showUploadCollectionDialogInternal = showDialog;
+    showUploadCollisionDialog = showDialog;
 
     enum RadioState {
         Indeterminate,
@@ -225,9 +216,6 @@ export const UploadCollisionDlg: React.FunctionComponent<IUploadCollisionDlgProp
 
     function cancel() {
         props.onCancel?.();
-        if (legacyMode) {
-            post("libraryPublish/cancel_obsolete");
-        }
         closeDialog();
     }
 
@@ -368,21 +356,13 @@ export const UploadCollisionDlg: React.FunctionComponent<IUploadCollisionDlgProp
                     onClick={() => {
                         const isSameBook: boolean =
                             buttonState === RadioState.Same;
-                        if (legacyMode) {
-                            postJson("libraryPublish/upload_obsolete", {
-                                sameOrDifferent: isSameBook
-                                    ? "same"
-                                    : "different"
-                            });
-                        } else {
-                            post(
-                                `libraryPublish/${
-                                    isSameBook
-                                        ? "upload"
-                                        : "uploadAfterChangingBookId"
-                                }`
-                            );
-                        }
+                        post(
+                            `libraryPublish/${
+                                isSameBook
+                                    ? "upload"
+                                    : "uploadAfterChangingBookId"
+                            }`
+                        );
                         closeDialog();
                     }}
                 >

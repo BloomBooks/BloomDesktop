@@ -588,6 +588,9 @@ namespace Bloom.Publish.BloomLibrary
 
 			}
 		}
+
+		private static readonly string kThumbnailFileName = "thumbnail-256.png";
+
 		private static string GetBloomLibraryThumbnailUrl(dynamic existingBookInfo)
 		{
 			// Code basically copied from bloomlibrary2 Book.ts
@@ -600,7 +603,7 @@ namespace Bloom.Publish.BloomLibrary
 				return harvesterThumbnailUrl;
 			}
 			// Try "legacy" version (the one uploaded with the book)
-			return CreateThumbnailUrlFromBase(baseUrl, updatedTime);
+			return CreateUrlWithCacheBusting(baseUrl + BloomLibraryPublishModel.kThumbnailFileName, updatedTime);
 		}
 
 		// Code modified from bloomlibrary2 Book.ts.
@@ -612,20 +615,6 @@ namespace Bloom.Publish.BloomLibrary
 			if (harvestState != "Done")
 				return null;
 
-			var harvesterBaseUrl = GetHarvesterBaseUrl(baseUrl);
-			return CreateThumbnailUrlFromBase(harvesterBaseUrl, lastUpdate);
-		}
-
-		private static string CreateThumbnailUrlFromBase(string baseUrl, string lastUpdate)
-		{
-			// The bloomlibrary2 code calls Book.getCloudFlareUrl(), but it just passes the parameter through
-			// at this point with a bunch of comments on why we don't do anything there.
-			return baseUrl + "thumbnails/thumbnail-256.png?version=" + lastUpdate;
-		}
-
-		// Code basically copied from bloomlibrary2 Book.ts
-		private static string GetHarvesterBaseUrl(string baseUrl)
-		{
 			const string slash = "%2f";
 			var folderWithoutLastSlash = baseUrl;
 			if (baseUrl.EndsWith(slash))
@@ -635,8 +624,21 @@ namespace Bloom.Publish.BloomLibrary
 
 			var index = folderWithoutLastSlash.LastIndexOf(slash, StringComparison.InvariantCulture);
 			var pathWithoutBookName = folderWithoutLastSlash.Substring(0, index);
-			return pathWithoutBookName.Replace("BloomLibraryBooks-Sandbox", "bloomharvest-sandbox")
-					   .Replace("BloomLibraryBooks", "bloomharvest") + "/";
+			var pathToHarvestedBookFolder = pathWithoutBookName.Replace("BloomLibraryBooks-Sandbox", "bloomharvest-sandbox")
+					   .Replace("BloomLibraryBooks", "bloomharvest");
+
+			// Harvested books are stored in a separate S3 bucket from the original uploads.
+			// Harvester stores harvested thumbnails in a 'thumbnails' subfolder,
+			// whereas the orignally-uploaded book doesn't have a separate subfolder for thumbnails.
+			// BloomLibrary code depends on this location to find the thumbnails it displays.
+			return CreateUrlWithCacheBusting(
+				pathToHarvestedBookFolder + "/thumbnails/" + BloomLibraryPublishModel.kThumbnailFileName,
+				lastUpdate);
+		}
+
+		private static string CreateUrlWithCacheBusting(string url, string lastUpdate)
+		{
+			return url + "?version=" + lastUpdate;
 		}
 
 		private IEnumerable<string> ConvertLanguageCodesToNames(IEnumerable<string> languageCodesToUpload, BookData bookData)
