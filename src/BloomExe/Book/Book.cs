@@ -19,7 +19,6 @@ using Bloom.Edit;
 using Bloom.FontProcessing;
 using Bloom.History;
 using Bloom.Publish;
-using Bloom.TeamCollection;
 using Bloom.ToPalaso;
 using Bloom.Utils;
 using Bloom.web.controllers;
