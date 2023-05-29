@@ -612,15 +612,17 @@ namespace Bloom.Publish.BloomLibrary
 			if (harvestState != "Done")
 				return null;
 
-			var harvesterBaseUrl = GetHarvesterBaseUrl(baseUrl);
+			// Harvested books are stored in a separate S3 bucket from the original uploads.
+			// For some historical reason, Harvester repo code stores harvested thumbnails in a thumbnails subfolder of
+			// the book's S3 bucket, whereas regular Bloom books don't have a separate subfolder for thumbnails.
+			// BloomLibrary code depends on this location to find the thumbnails it displays.
+			var harvesterBaseUrl = GetHarvesterBaseUrl(baseUrl) + "thumbnails/";
 			return CreateThumbnailUrlFromBase(harvesterBaseUrl, lastUpdate);
 		}
 
 		private static string CreateThumbnailUrlFromBase(string baseUrl, string lastUpdate)
 		{
-			// The bloomlibrary2 code calls Book.getCloudFlareUrl(), but it just passes the parameter through
-			// at this point with a bunch of comments on why we don't do anything there.
-			return baseUrl + "thumbnails/thumbnail-256.png?version=" + lastUpdate;
+			return baseUrl + "thumbnail-256.png?version=" + lastUpdate;
 		}
 
 		// Code basically copied from bloomlibrary2 Book.ts
