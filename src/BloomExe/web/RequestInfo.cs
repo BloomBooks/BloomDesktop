@@ -330,6 +330,14 @@ namespace Bloom.Api
 					_actualContext.Response.ContentType = BloomServer.GetContentType(path.Substring(pos));
 			}
 			ReplyWithFileContent(path, originalPath, dontCache);
+			// Fix for BL-12237.
+			if (_actualContext.Response.StatusCode == 500)
+			{
+				// We actually did NOT find the image file. Responding to the failed request this way, prevents an api
+				// request from complaining about the endpoint handler never calling a response method. This error will show
+				// up in the log, if the user complains about e.g. a missing thumbnail.
+				WriteError(500, "Error reading image file: " + path);
+			}
 		}
 
 		public void WriteError(int errorCode, string errorDescription)
