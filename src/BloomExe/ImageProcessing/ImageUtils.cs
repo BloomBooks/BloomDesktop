@@ -404,12 +404,6 @@ namespace Bloom.ImageProcessing
 				// See https://silbloom.myjetbrains.com/youtrack/issue/BL-2627 ("Weird Image Problem").
 				basename = Path.GetFileNameWithoutExtension(imageInfo.FileName);
 			}
-
-			// Multiple spaces are prone to being collapsed in HTML, particularly if the name ends up in
-			// the content of some element like a data-div one, such as the coverImage src. See BL-9145.
-			// So we will just collapse them before we save the file.
-			while (basename.Contains("  "))
-				basename = basename.Replace("  ", " ");
 			return GetUnusedFilename(bookFolderPath, basename, extension);
 		}
 
@@ -418,9 +412,9 @@ namespace Bloom.ImageProcessing
 		/// start with a period. As well as being unused, the name will be truncated enough to minimize
 		/// the danger of exceeding the maximum path length for Windows.
 		/// </summary>
-		internal static string GetUnusedFilename(string bookFolderPath, string basenameIn, string extension)
+		internal static string GetUnusedFilename(string bookFolderPath, string basenameIn, string extension, string defaultName = "image")
 		{
-			var basename = BookStorage.SanitizeNameForFileSystem(basenameIn);
+			var basename = BookStorage.SanitizeNameForFileSystem(basenameIn, defaultName);
 			// basename may already end in one or more digits. Try to strip off digits, parse and increment.
 			try
 			{
