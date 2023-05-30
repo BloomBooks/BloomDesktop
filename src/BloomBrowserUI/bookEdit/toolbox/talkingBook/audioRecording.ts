@@ -197,6 +197,7 @@ export default class AudioRecording {
     private disablingOverlay: HTMLDivElement;
 
     private isImageDescriptionActive: boolean = false;
+    lastTimingsFilePath?: string; // enhance: just having the "last" one isn't as good for the user, but we're should of time to ship this out in 5.5
 
     constructor() {
         this.audioSplitButton = <HTMLButtonElement>(
@@ -4091,6 +4092,7 @@ export default class AudioRecording {
                     this.endBusy(); // This always needs to happen regardless of what path through processAutoSegmentResponse the code takes.
 
                     this.processAutoSegmentResponse(result);
+                    this.renderAdvancedButtons();
                 },
 
                 // onError
@@ -4099,10 +4101,12 @@ export default class AudioRecording {
                     // Otherwise, classes like cursor-progress will not go away upon a C# exception.
                     // It can even be persisted into the saved HTML file and re-loaded with the cursor-progress state still applied
                     this.endBusy();
+                    this.renderAdvancedButtons();
                 }
             );
         } else {
             this.endBusy();
+            this.renderAdvancedButtons();
         }
     }
 
@@ -4263,13 +4267,14 @@ export default class AudioRecording {
         const isSuccess = result && result.data;
 
         if (isSuccess) {
+            const autoSegmentResponse = result.data;
+            this.lastTimingsFilePath = autoSegmentResponse.timingsFilePath;
             // Now that we know the Auto Segmentation succeeded, finally update the markup
-            const allEndTimesString: string = result.data.allEndTimesString;
             const currentTextBox = this.getCurrentTextBox();
             if (currentTextBox) {
                 currentTextBox.setAttribute(
                     kEndTimeAttributeName,
-                    allEndTimesString
+                    autoSegmentResponse.allEndTimesString
                 );
 
                 // Precondition: Assumes that re-running stringToSentences on the same input will give
@@ -4436,8 +4441,13 @@ export default class AudioRecording {
 
         ReactDOM.render(
             React.createElement(TalkingBookAdvancedButtons, {
+                toggleRecordingModeAsync: async () => {
+                    this.toggleRecordingModeAsync();
+                },
+                lastTimingsFilePath: this.lastTimingsFilePath,
                 wholeTextBoxMode: this.recordingModeInput.checked,
-                hasAudio: this.getStatus("clear") === Status.Enabled, // plausibly, we could instead require that we have *all* the audio
+                //hasAudio: this.getStatus("clear") === Status.Enabled, // plausibly, we could instead require that we have *all* the audio
+                hasAudio: true, // enhance: the current tangle of pre-react state handling makes the getStatus() call above often wrong
                 hasRecordableDivs:
                     this.getRecordableDivs(false, false).length > 0,
                 handleImportRecordingClick: () =>

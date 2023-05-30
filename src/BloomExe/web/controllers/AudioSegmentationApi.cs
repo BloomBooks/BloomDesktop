@@ -14,9 +14,6 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using System.Globalization;
-using Bloom.ToPalaso;
-using SIL.Progress;
 
 namespace Bloom.web.controllers
 {
@@ -26,6 +23,13 @@ namespace Bloom.web.controllers
 		public AudioTextFragment[] audioTextFragments;
 		public string lang;
 		public string manualTimingsPath;
+	}
+	internal class AutoSegmentResponse
+	{
+		public string allEndTimesString;
+		public string timingsFilePath;
+		public string warningMessage;
+		public string successMessage;
 	}
 
 	internal class AudioTextFragment
@@ -278,41 +282,16 @@ namespace Bloom.web.controllers
 		}
 		*/
 
-		internal List<Tuple<string, string>> GetAeneasTimings(AutoSegmentRequest requestParameters, out string successMessage, out string warningMessage)
+		internal AutoSegmentResponse GetAeneasTimings(AutoSegmentRequest requestParameters)
 		{
-			warningMessage = "";
-			string dummy1;
-			List<string> dummy2;
-			return GetAeneasTimings(requestParameters, out dummy1, out dummy2, out successMessage, out warningMessage);
-		}
-
-		private string SelectTimingFileUsingDialog()
-		{
-			var fileType = ".mp3";
-			var dlg = new DialogAdapters.OpenFileDialogAdapter
+			List<string> fragmentIds = null;
+			var response = new AutoSegmentResponse
 			{
-				Multiselect = false,
-				CheckFileExists = true,
-				Filter = $"{fileType} files|*{fileType}"
+				timingsFilePath = null,
+				allEndTimesString = null,
+				successMessage = "",
+				warningMessage = "",
 			};
-			var result = dlg.ShowDialog();
-			if (result == DialogResult.OK)
-			{
-				// We are not trying get a memory or time diff, just a point measure.
-				PerformanceMeasurement.Global.Measure("Choose file", dlg.FileName)?.Dispose();
-
-				return dlg.FileName.Replace("\\", "/");
-			}
-
-
-			return String.Empty;
-		}
-
-		internal List<Tuple<string, string>> GetAeneasTimings(AutoSegmentRequest requestParameters, out string audioFilenameToSegment, out List<string> fragmentIds, out string successMessage, out string warningMessage)
-		{
-			fragmentIds = null;
-			successMessage = "";
-			warningMessage = "";
 
 			// The client was supposed to validate this already, but double-check in case something strange happened.
 			string directoryName = GetAudioDirectory();
@@ -326,13 +305,13 @@ namespace Bloom.web.controllers
 					ErrorReport.NotifyUserOfProblem(
 						"Sorry, Bloom cannot split timings if the collection's path does not start with a drive letter. Feel free to contact us for more help." +
 						"\r\n\r\n" + GetAudioDirectory());
-					audioFilenameToSegment = null;
+					//audioFilenameToSegment = null;
 					return null;
 				}
 			}
 
 
-			audioFilenameToSegment = GetFileNameToSegment(directoryName, requestParameters.audioFilenameBase);
+			var audioFilenameToSegment = GetFileNameToSegment(directoryName, requestParameters.audioFilenameBase);
 			if (string.IsNullOrEmpty(audioFilenameToSegment))
 			{
 				Logger.WriteEvent("AudioSegmentationApi.GetAeneasTimings(): No input audio file found.");
@@ -374,7 +353,7 @@ namespace Bloom.web.controllers
 			string textFragmentsFilename = Path.Combine(directoryName, $"{requestParameters.audioFilenameBase}_fragments.txt");
 
 
-			string audioTimingsFilename = Path.Combine(directoryName, $"{requestParameters.audioFilenameBase}_timings.{kTimingsOutputFormat}");
+			response.timingsFilePath = Path.Combine(directoryName, $"{requestParameters.audioFilenameBase}_timings.{kTimingsOutputFormat}");
 
 			// Clean up the fragments
 			audioTextFragments = audioTextFragments.Where(obj => !String.IsNullOrWhiteSpace(obj.fragmentText)); // Remove entries containing only whitespace
@@ -408,16 +387,16 @@ namespace Bloom.web.controllers
 					Logger.WriteEvent($"Parsed {timingStartEndRangeList.Count()} lines.");
 					if (timingStartEndRangeList.Count() != fragmentList.Count())
 					{
-						warningMessage = $"This box has {fragmentList.Count()} text fragments, but the timings file has {timingStartEndRangeList.Count()} lines";
+						response.warningMessage = $"This box has {fragmentList.Count()} text fragments, but the timings file has {timingStartEndRangeList.Count()} lines";
 					}
 					else
 					{
-						successMessage = $"Applied {timingStartEndRangeList.Count()} manual timings.";
+						response.successMessage = $"Applied {timingStartEndRangeList.Count()} manual timings.";
 					}
 				}
 				else
 				{
-					timingStartEndRangeList = GetSplitStartEndTimings(audioFilenameToSegment, textFragmentsFilename, audioTimingsFilename, langCode);
+					timingStartEndRangeList = GetSplitStartEndTimings(audioFilenameToSegment, textFragmentsFilename, response.timingsFilePath, langCode);
 				}
 			}
 			catch (Exception e)
@@ -437,17 +416,20 @@ namespace Bloom.web.controllers
 				Debug.Assert(false, $"Attempted to delete {textFragmentsFilename} but it threw an exception. Message={e.Message}, Stack={e.StackTrace}");
 			}
 
-			try
-			{
-				RobustFile.Delete(audioTimingsFilename);
-			}
-			catch (Exception e)
-			{
-				// These exceptions are unfortunate but not bad enough that we need to inform the user
-				Debug.Assert(false, $"Attempted to delete {audioTimingsFilename} but it threw an exception. Message={e.Message}, Stack={e.StackTrace}");
-			}
 
-			return timingStartEndRangeList;
+			/* leave it around so that people can edit it if they want
+				try
+				{
+					RobustFile.Delete(response.timingsFilePath);
+				}
+				catch (Exception e)
+				{
+					// These exceptions are unfortunate but not bad enough that we need to inform the user
+					Debug.Assert(false, $"Attempted to delete {response.timingsFilePath} but it threw an exception. Message={e.Message}, Stack={e.StackTrace}");
+				}
+			*/
+			response.allEndTimesString = String.Join(" ", timingStartEndRangeList.Select(tuple => tuple.Item2));
+			return response;
 		}
 
 		public string GetAudioDirectory()
@@ -469,7 +451,7 @@ namespace Bloom.web.controllers
 			stdOut = "";
 			stdErr = "";
 
-			// Normally requestedLangCode should be under our control. 
+			// Normally requestedLangCode should be under our control.
 			// But just do a quick and easy check to make sure it looks reasonable. (there are some highly contrived scenarios where a XSS injection would be possible with some social engineering.)
 			if (requestedLangCode.Contains('"') || requestedLangCode.Contains('\\'))
 			{
@@ -536,18 +518,15 @@ namespace Bloom.web.controllers
 			// Parse the JSON containing the text segmentation data.
 			string json = request.RequiredPostJson();
 			AutoSegmentRequest requestParameters = ParseJson(json);
-			string successMessage, warningMessage;
-			var timingStartEndRangeList = GetAeneasTimings(requestParameters, out successMessage, out warningMessage);
-			if (timingStartEndRangeList == null)
+
+			var response = GetAeneasTimings(requestParameters);
+			if (response == null)
 			{
 				request.ReplyWithText("");
 				return;
 			}
-
-			string allEndTimesStr = String.Join(" ", timingStartEndRangeList.Select(tuple => tuple.Item2));
-
 			Logger.WriteEvent("AudioSegmentationApi.GetForcedAlignmentTimings(): Completed successfully.");
-			request.ReplyWithJson(new { allEndTimesString = allEndTimesStr, successMessage = successMessage, warningMessage = warningMessage });
+			request.ReplyWithJson(response);
 		}
 
 
@@ -719,7 +698,7 @@ namespace Bloom.web.controllers
 				{
 					if (!timings.Any())
 					{
-						timingStart = "0.000";  // Note: format generated by Aeneas seems independent of your Date/Time/Number Format settings. 
+						timingStart = "0.000";  // Note: format generated by Aeneas seems independent of your Date/Time/Number Format settings.
 					}
 					else
 					{
