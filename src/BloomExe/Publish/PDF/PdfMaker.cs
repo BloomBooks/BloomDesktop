@@ -152,7 +152,7 @@ namespace Bloom.Publish.PDF
 				pdfDoc.Info.Title = specs.Title;
 				pdfDoc.Info.Subject = specs.Summary;
 				pdfDoc.Info.Keywords = specs.Keywords;
-				if (specs.BookIsFullBleed && specs.PrintWithFullBleed && pdfDoc.PageCount != specs.HtmlPageCount)
+				if (specs.BookIsFullBleed && pdfDoc.PageCount != specs.HtmlPageCount)
 				{
 					var lastEven = 0;
 					if (pdfDoc.PageCount == 2 * specs.HtmlPageCount)
