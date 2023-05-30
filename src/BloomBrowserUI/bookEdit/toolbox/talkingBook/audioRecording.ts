@@ -2017,12 +2017,11 @@ export default class AudioRecording {
         if (page && current && !this.isVisible(current)) {
             this.removeAudioCurrent(page);
             this.setCurrentAudioElementToFirstAudioElementAsync();
-        } else {
-            // We didn't have to MOVE the selection, but some button states may need to change.
-            // For example, perhaps there was previously nowhere for the 'next' button to take us,
-            // but now we revealed a overlay which is set to be after the current element.
-            this.updateButtonStateAsync("record");
         }
+        // Whether or not we had to move the selection, some button states may need to change.
+        // For example, perhaps there was previously nowhere for the 'next' button to take us,
+        // but now we revealed a overlay which is set to be after the current element.
+        this.updateButtonStateAsync("record");
     }
     private showPlaybackOrderUi(docBody: HTMLElement) {
         this.removeAudioCurrent(docBody);
