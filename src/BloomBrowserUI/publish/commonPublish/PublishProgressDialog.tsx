@@ -58,6 +58,7 @@ export const PublishProgressDialog: React.FunctionComponent<{
     }, [props.closePending]);
 
     React.useEffect(() => {
+        props.setProgressState(ProgressState.Working);
         // we need to be ready to listen to progress messages from the server,
         // before we kick anything off on the server.
         WebSocketManager.notifyReady(props.webSocketClientContext, () => {
