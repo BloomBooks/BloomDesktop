@@ -125,11 +125,11 @@ namespace Bloom.Api
 			FileStream fs;
 			if(!RobustFile.Exists(path))
 			{
-				//for audio, at least, this is not really an error. We constantly are asking if audio already exists for the current segment
-				//enhance: maybe audio should go through a different path, e.g. "/bloom/audio/somefile.wav"
-				//then this path COULD write and error
-				//Logger.WriteError("Server could not find" + path);
-				_actualContext.Response.StatusCode = 404;
+				// Earlier there was concern that we were coming here to look for .wav file existence, but that task
+				// is now handled in the "/bloom/api/audio" endpoint. So if we get here, we're looking for a different file.
+				// Besides, if we don't set HaveOutput to true (w/WriteError), we'll have other problems.
+				Logger.WriteError("Server could not find" + path, new FileNotFoundException());
+				WriteError(404, "Server could not find " + path);
 				return;
 			}
 
@@ -139,9 +139,14 @@ namespace Bloom.Api
 			}
 			catch(Exception error)
 			{
-
+				// Something odd happened while trying to read the file. Maybe the file is locked by another process?
+				// Let's not throw an error, but we'll record it in the log.
+				// BL-12237 actually had a FileNotFoundException here, in a Team Collection setting, which should
+				// have been caught by the RobustFile.Exists() above. So we'll just log it and continue.
+				// The important thing for avoiding a big ugly EndpointHandler error (in the case of BL-12237) is to
+				// set HaveOutput to true, which WriteError() does.
 				Logger.WriteError("Server could not read " + path, error);
-				_actualContext.Response.StatusCode = 500;
+				WriteError(500, "Server could not read " + path + ": " + error.Message);
 				return;
 			}
 
