@@ -65,7 +65,7 @@ namespace Bloom.TeamCollection
 			apiHandler.RegisterEndpointHandler("teamCollection/getLog", HandleGetLog, false);
 			apiHandler.RegisterEndpointHandler("teamCollection/getCollectionName", HandleGetCollectionName, false);
 			apiHandler.RegisterEndpointHandler("teamCollection/showCreateTeamCollectionDialog", HandleShowCreateTeamCollectionDialog, true);
-			apiHandler.RegisterEndpointHandler("teamCollection/reportBadZip", HandleReportBadZip, true);
+			apiHandler.RegisterEndpointHandler("teamCollection/reportBadZip", HandleReportBadZip, true, false);
 			apiHandler.RegisterEndpointHandler("teamCollection/showRegistrationDialog", HandleShowRegistrationDialog, true, false);
 			apiHandler.RegisterEndpointHandler("teamCollection/getHistory", HandleGetHistory, true);
 			apiHandler.RegisterEndpointHandler("teamCollection/checkinMessage", HandleCheckinMessage, false);
@@ -140,10 +140,10 @@ namespace Bloom.TeamCollection
 		{
 			var fileEncoded = request.Parameters["file"];
 			var file = UrlPathString.CreateFromUrlEncodedString(fileEncoded).NotEncoded;
+			request.PostSucceeded();    // this should come before a modal dialog
 			NonFatalProblem.Report(ModalIf.All, PassiveIf.All,
 				(_tcManager.CurrentCollection as FolderTeamCollection)
-					.GetSimpleBadZipFileMessage(Path.GetFileNameWithoutExtension(file)),additionalFilesToInclude: new[] { file });
-			request.PostSucceeded();
+					.GetSimpleBadZipFileMessage(Path.GetFileNameWithoutExtension(file)), additionalFilesToInclude: new[] { file });
 		}
 
 		private void HandleShowRegistrationDialog(ApiRequest request)
