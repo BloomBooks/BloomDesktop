@@ -143,6 +143,20 @@ export const darkTheme = createTheme(lightTheme, {
 });
 
 export const toolboxTheme = createTheme({
+    palette: {
+        primary: { main: kBloomBlue },
+        secondary: { main: kBloomPurple },
+        warning: { main: kBloomGold },
+        text: { disabled: kBloomDisabledText },
+        action: {
+            disabled: kBloomDisabledText,
+            disabledOpacity: kBloomDisabledOpacity
+        }
+    },
+    typography: {
+        fontSize: 11, // text is smaller in the toolbox
+        fontFamily: kUiFontStack
+    },
     components: {
         MuiLink: {
             variants: [
@@ -178,6 +192,43 @@ export const toolboxTheme = createTheme({
                 },
                 arrow: {
                     color: kBloomBlueTextBackground
+                }
+            }
+        },
+        // Make MuiFormControlLabel use a 10px font
+        MuiFormControlLabel: {
+            styleOverrides: {
+                label: {
+                    fontSize: "10px"
+                }
+            }
+        },
+
+        // set the border color of disabled buttons to kBloomBlue
+        MuiButton: {
+            styleOverrides: {
+                root: {
+                    // fill the width of the slim toolbox, this makes multiple
+                    // buttons in the Talking book tool "Advanced" section look good next to each other
+                    width: "100%",
+                    textTransform: "none", // Material buttons are all caps by default
+                    color: "#d2d2d2"
+                },
+                outlined: {
+                    "&.Mui-disabled": {
+                        color: "#d4d4d45c !important", // TODO: still getting overwritten by audiorecording.less
+                        borderColor: "#d4d4d45c"
+                    }
+                }
+            }
+        },
+        // Because of our dark background in the toolbox, disabled items need to be lighter
+        MuiDivider: {
+            styleOverrides: {
+                root: {
+                    backgroundColor: "#d4d4d480",
+                    marginTop: "5px",
+                    marginBottom: "5px"
                 }
             }
         }

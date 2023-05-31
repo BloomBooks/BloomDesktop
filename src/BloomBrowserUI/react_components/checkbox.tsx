@@ -7,6 +7,7 @@ import {
     LocalizableElement,
     Label
 } from "./l10nComponents";
+import { FormControlLabel, Switch } from "@mui/material";
 
 interface ICheckboxProps extends ILocalizationProps {
     id?: string;
@@ -20,6 +21,8 @@ interface ICheckboxProps extends ILocalizationProps {
     checked?: boolean;
     // Note: the parameter given will be undefined if  tristate==true and the checkbox is in the indeterminate state
     onCheckChanged?: (boolean) => void;
+
+    useSwitchControl?: boolean;
 }
 
 // A checkbox that is localizable and can toggle between either a 2 or 3 states.
@@ -70,29 +73,43 @@ export class Checkbox extends LocalizableElement<ICheckboxProps, {}> {
                     align-items: self-start;
                 `}
             >
-                <input
-                    id={this.props.id}
-                    type="checkbox"
-                    className={this.props.inputClassName}
-                    name={this.props.name}
-                    disabled={this.props.disabled}
-                    checked={this.props.checked}
-                    onChange={event => {
-                        this.onChange(event.target);
-                    }}
-                    ref={input => (this.input = input)}
-                    css={css`
-                        margin-right: 10px;
-                    `}
-                />
-                <Label
-                    {...this.props}
-                    onClick={() => this.onLabelClicked()}
-                    className={this.props.disabled ? "disabled" : ""}
-                >
-                    {/* this.props.children is the English text */}
-                    {this.props.children}
-                </Label>
+                {this.props.useSwitchControl && (
+                    <React.Fragment>
+                        <FormControlLabel
+                            value="start"
+                            control={<Switch color="primary" />}
+                            label="Start"
+                            labelPlacement="start"
+                        />
+                    </React.Fragment>
+                )}
+                {!this.props.useSwitchControl && (
+                    <React.Fragment>
+                        <input
+                            id={this.props.id}
+                            type="checkbox"
+                            className={this.props.inputClassName}
+                            name={this.props.name}
+                            disabled={this.props.disabled}
+                            checked={this.props.checked}
+                            onChange={event => {
+                                this.onChange(event.target);
+                            }}
+                            ref={input => (this.input = input)}
+                            css={css`
+                                margin-right: 10px;
+                            `}
+                        />
+                        <Label
+                            {...this.props}
+                            onClick={() => this.onLabelClicked()}
+                            className={this.props.disabled ? "disabled" : ""}
+                        >
+                            {/* this.props.children is the English text */}
+                            {this.props.children}
+                        </Label>
+                    </React.Fragment>
+                )}
             </div>
         );
     }

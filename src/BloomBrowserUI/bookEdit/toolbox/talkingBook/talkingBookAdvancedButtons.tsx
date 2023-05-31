@@ -8,15 +8,12 @@ import {
     InsertSegmentMarkerIcon
 } from "./TalkingBookToolboxIcons";
 import { postJson } from "../../../utils/bloomApi";
-import { Box, Button, Collapse, TooltipProps, styled } from "@mui/material";
+import { Button, Collapse, Divider, TooltipProps } from "@mui/material";
 import { Span } from "../../../react_components/l10nComponents";
-import { CheckBox } from "@mui/icons-material";
 import { Checkbox } from "../../../react_components/checkbox";
-import {
-    BloomTooltip,
-    IBloomToolTipProps
-} from "../../../react_components/BloomToolTip";
+import { BloomTooltip } from "../../../react_components/BloomToolTip";
 import { toolboxTheme } from "../../../bloomMaterialUITheme";
+import { BloomSwitch } from "../../../react_components/BloomSwitch";
 
 export const TalkingBookAdvancedButtons: React.FunctionComponent<{
     hasAudio: boolean;
@@ -48,19 +45,6 @@ export const TalkingBookAdvancedButtons: React.FunctionComponent<{
             <TriangleCollapse
                 initiallyOpen={true} /*for dev. enhance: remember the state*/
             >
-                <BloomTooltip
-                    tip={
-                        "Control the order in which various boxes on the page are played back."
-                    }
-                    {...commonTooltipProps}
-                >
-                    <Checkbox
-                        id="showPlaybackOrder"
-                        checked={props.showPlaybackOrder}
-                        l10nKey="EditTab.Toolbox.TalkingBookTool.ShowPlaybackOrder"
-                        onClick={() => props.toggleShowPlaybackOrder()}
-                    />
-                </BloomTooltip>
                 <BloomTooltip
                     showDisabled={!enabledRecordModeControl}
                     tip={
@@ -174,6 +158,20 @@ export const TalkingBookAdvancedButtons: React.FunctionComponent<{
                         enabled={props.hasRecordableDivs}
                         l10nKey="EditTab.Toolbox.TalkingBookTool.InsertSegmentMarker"
                         onClick={props.insertSegmentMarker}
+                    />
+                </BloomTooltip>
+                <Divider />
+                <BloomTooltip
+                    tip={
+                        "Control the order in which various boxes on the page are played back."
+                    }
+                    {...commonTooltipProps}
+                >
+                    <BloomSwitch
+                        size="small"
+                        checked={props.showPlaybackOrder}
+                        onChange={() => props.toggleShowPlaybackOrder()}
+                        l10nKey="EditTab.Toolbox.TalkingBookTool.ShowPlaybackOrder"
                     />
                 </BloomTooltip>
             </TriangleCollapse>

@@ -4433,12 +4433,13 @@ export default class AudioRecording {
     }
 
     private renderAdvancedButtons(): void {
-        const container = document.getElementById("import-advanced-container");
+        const container = document.getElementById(
+            "advanced-talking-book-controls-react-container"
+        );
         if (!container) {
             // Won't exist for unit tests
             return;
         }
-
         ReactDOM.render(
             React.createElement(TalkingBookAdvancedButtons, {
                 showPlaybackOrder: true, //todo

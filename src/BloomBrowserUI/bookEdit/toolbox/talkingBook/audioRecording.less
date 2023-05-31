@@ -112,6 +112,10 @@ div.ui-audioCurrent p {
         color: @textColor;
     }
 
+    #advanced-talking-book-controls-react-container disabled {
+        color: red;
+    }
+
     background-color: @toolboxBackgroundColor;
 
     background-position: center;
@@ -463,6 +467,12 @@ body .cursor-progress {
     bottom: 46px;
 }
 
+// TEMP: these controls are going away
+#audio-recordingModeControl-wrapper,
+#audio-playbackOrderControl-wrapper {
+    opacity: 0.1;
+}
+
 #import-advanced-container {
     display: flex;
     flex-direction: column;
@@ -472,13 +482,13 @@ body .cursor-progress {
     #apply-timings-file-button,
     #insert-segment-marker-button,
     #edit-timings-file-button {
-        &:disabled {
-            opacity: 0.4;
-        }
+        // &:disabled {
+        //     opacity: 0.4;
+        // }
 
-        font-family: @UIFontStack;
+        // font-family: @UIFontStack;
 
-        text-transform: none; // Material buttons are all caps by default
+        //text-transform: none; // Material buttons are all caps by default
 
         // Ok, not ideal, but we add these rules to override Material's defaults and
         // make the icon and text align with the (non-Material) checkbox above it
@@ -487,9 +497,9 @@ body .cursor-progress {
             margin-right: 5px;
         }
 
-        .MuiButton-iconSizeSmall > :first-child {
-            font-size: 16px;
-        }
+        // .MuiButton-iconSizeSmall > :first-child {
+        //     font-size: 16px;
+        // }
     }
 }
 
