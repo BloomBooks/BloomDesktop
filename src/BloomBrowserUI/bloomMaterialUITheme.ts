@@ -141,3 +141,45 @@ export const darkTheme = createTheme(lightTheme, {
         }
     }
 });
+
+export const toolboxTheme = createTheme({
+    components: {
+        MuiLink: {
+            variants: [
+                {
+                    props: { variant: "body1" },
+                    style: {
+                        variantMapping: {
+                            h6: "h1"
+                        }
+                    }
+                }
+            ]
+        },
+
+        MuiTooltip: {
+            styleOverrides: {
+                tooltip: {
+                    placement: "bottom", // DOESN'T SEEM TO WORKtoolbox is currently its own iframe, so we can't spill out to the left yet
+                    backgroundColor: kBloomBlueTextBackground,
+                    fontSize: "12px",
+                    fontWeight: "normal",
+
+                    padding: "10px",
+                    marginLeft: "10px",
+                    marginRight: "10px",
+                    a: {
+                        color: "white",
+                        textDecorationColor: "white"
+                    }
+                },
+                popper: {
+                    zIndex: 200000
+                },
+                arrow: {
+                    color: kBloomBlueTextBackground
+                }
+            }
+        }
+    }
+});

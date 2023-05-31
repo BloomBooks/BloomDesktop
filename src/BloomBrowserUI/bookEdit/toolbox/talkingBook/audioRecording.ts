@@ -4441,7 +4441,12 @@ export default class AudioRecording {
 
         ReactDOM.render(
             React.createElement(TalkingBookAdvancedButtons, {
-                toggleRecordingModeAsync: async () => {
+                showPlaybackOrder: true, //todo
+                toggleShowPlaybackOrder: () => {
+                    //todo    this.toggleShowPlaybackOrder();
+                },
+                fullTextMode: true, //todo this.fullTextMode,
+                toggleRecordingMode: async () => {
                     this.toggleRecordingModeAsync();
                 },
                 lastTimingsFilePath: this.lastTimingsFilePath,
@@ -4452,7 +4457,13 @@ export default class AudioRecording {
                     this.getRecordableDivs(false, false).length > 0,
                 handleImportRecordingClick: () =>
                     this.handleImportRecordingClick(),
-                split: this.split.bind(this)
+                split: this.split.bind(this),
+                insertSegmentMarker: () => {
+                    const selection = window.getSelection();
+                    const range = selection!.getRangeAt(0);
+                    const marker = document.createTextNode("|");
+                    range.insertNode(marker);
+                }
             }),
             container
         );
