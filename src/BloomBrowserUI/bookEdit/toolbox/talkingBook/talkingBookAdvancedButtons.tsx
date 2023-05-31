@@ -24,8 +24,8 @@ export const TalkingBookAdvancedButtons: React.FunctionComponent<{
     split: (timingFilePath: string) => Promise<void>;
     fullTextMode: boolean;
     toggleRecordingMode: () => Promise<void>;
-    showPlaybackOrder: boolean;
-    toggleShowPlaybackOrder: () => void;
+    inShowPlaybackOrderMode: boolean;
+    setShowPlaybackOrder: (on: boolean) => void;
     insertSegmentMarker: () => void;
 }> = props => {
     // return a triangle button. Its children are normally hidden. When you click it, it rotates and shows its children.
@@ -37,7 +37,7 @@ export const TalkingBookAdvancedButtons: React.FunctionComponent<{
     const enabledImportRecordingButton =
         props.wholeTextBoxMode && props.hasRecordableDivs;
     const commonTooltipProps = {
-        placement: "top" as TooltipProps["placement"] // toolbox is currently its own iframe, so we can't spill out to the left yet
+        placement: "bottom" as TooltipProps["placement"] // toolbox is currently its own iframe, so we can't spill out to the left yet
     };
 
     return (
@@ -121,7 +121,11 @@ export const TalkingBookAdvancedButtons: React.FunctionComponent<{
                         hasText={true}
                         variant="outlined"
                         size="small"
-                        enabled={props.wholeTextBoxMode && props.hasAudio}
+                        enabled={
+                            props.hasRecordableDivs &&
+                            props.wholeTextBoxMode &&
+                            props.hasAudio
+                        }
                         l10nKey="EditTab.Toolbox.TalkingBookTool.ApplyTimingsFile"
                         onClick={async () => {
                             const result = await postJson("fileIO/chooseFile", {
@@ -168,9 +172,17 @@ export const TalkingBookAdvancedButtons: React.FunctionComponent<{
                     {...commonTooltipProps}
                 >
                     <BloomSwitch
+                        css={css`
+                            z-index: 1002; // has to be above the disableOverlay because this is the one control we don't want to disable in show playback order mode
+                        `}
                         size="small"
-                        checked={props.showPlaybackOrder}
-                        onChange={() => props.toggleShowPlaybackOrder()}
+                        // disabled={!props.hasRecordableDivs}
+                        checked={props.inShowPlaybackOrderMode}
+                        onChange={() =>
+                            props.setShowPlaybackOrder(
+                                !props.inShowPlaybackOrderMode
+                            )
+                        }
                         l10nKey="EditTab.Toolbox.TalkingBookTool.ShowPlaybackOrder"
                     />
                 </BloomTooltip>

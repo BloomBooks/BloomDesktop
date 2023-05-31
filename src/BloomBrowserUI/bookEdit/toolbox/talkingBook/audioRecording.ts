@@ -34,7 +34,6 @@ import {
     get,
     getWithPromise,
     postData,
-    postDataWithConfig,
     postJson
 } from "../../../utils/bloomApi";
 import * as toastr from "toastr";
@@ -120,7 +119,6 @@ const kRecordingModeControl: string = "audio-recordingModeControl";
 const kRecordingModeClickHandler: string =
     "audio-recordingModeControl-clickHandler";
 
-const kPlaybackOrderControl: string = "audio-playbackOrderControl";
 const kShowImageDescriptionControl: string = "audio-showImageDescription";
 const kPlaybackOrderClickHandler: string =
     "audio-playbackOrderControl-clickHandler";
@@ -173,10 +171,10 @@ export default class AudioRecording {
 
     private audioSplitButton: HTMLButtonElement;
     public recordingModeInput: HTMLInputElement; // Currently a checkbox, could change to a radio button in the future
-    public showPlaybackInput: HTMLInputElement;
     public showImageDescriptionInput: HTMLInputElement;
 
     public audioRecordingMode: AudioRecordingMode;
+    private inShowPlaybackOrderMode: boolean = false;
 
     // Corresponds to the collection default recording mode which we would theoretically get via async call to C# API
     // This is rather annoying because then we have async calls being introduced all over the place.
@@ -215,9 +213,6 @@ export default class AudioRecording {
         // to initialize things on startup.
         this.recordingModeInput.disabled = true;
 
-        this.showPlaybackInput = <HTMLInputElement>(
-            document.getElementById(kPlaybackOrderControl)!
-        );
         this.showImageDescriptionInput = <HTMLInputElement>(
             document.getElementById(kShowImageDescriptionControl)!
         );
@@ -268,9 +263,6 @@ export default class AudioRecording {
             .off()
             .click(e => this.clearRecordingAsync());
 
-        $("#" + kPlaybackOrderClickHandler)
-            .off()
-            .click(e => this.togglePlaybackOrder());
         $("#" + kShowImageDescriptionClickHandler)
             .off()
             .click(e => this.toggleShowImageDescription());
@@ -550,7 +542,7 @@ export default class AudioRecording {
         page.find(kAudioCurrentClassSelector)
             .removeClass(kAudioCurrent)
             .removeClass(kSuppressHighlightClass);
-        if (this.showPlaybackInput.checked) {
+        if (this.inShowPlaybackOrderMode) {
             // We are removing the UI because we're changing tools or pages, but we want to leave
             // the checkbox checked for the next time this tool is active, so it will turn on the
             // playback order UI again. The 'true' param tells the method to leave the checkbox checked.
@@ -1033,7 +1025,7 @@ export default class AudioRecording {
         // Get rid of all the audio-currents just to be sure.
         this.removeAudioCurrentFromPageDocBody();
 
-        if (!this.showPlaybackInput.checked) {
+        if (!this.inShowPlaybackOrderMode) {
             // It's good for this to happen before awaiting the subsequent async behavior,
             // especially if the caller doesn't await this function.
             // This allows us to generally represent the correct current element immediately.
@@ -1961,16 +1953,18 @@ export default class AudioRecording {
 
     // Update the input element (checkbox) and turn on the playback order controls on the visible
     // translation-groups.
-    public togglePlaybackOrder() {
+    public setShowPlaybackOrderMode(isOn: boolean) {
+        this.inShowPlaybackOrderMode = isOn;
         const docBody = this.getPageDocBody();
         if (!docBody) {
             return;
         }
-        if (this.showPlaybackInput.checked) {
-            this.removePlaybackOrderUi(docBody);
-        } else {
+        if (this.inShowPlaybackOrderMode) {
             this.showPlaybackOrderUi(docBody);
+        } else {
+            this.removePlaybackOrderUi(docBody);
         }
+        this.renderAdvancedButtons();
     }
 
     setShowImageDescriptionCheckbox(showingImageDescriptions: boolean) {
@@ -2067,8 +2061,7 @@ export default class AudioRecording {
         }
         this.sortOutTabindexValues();
         this.renderPlaybackControls();
-        this.toggleToolDisablingOverlay(true);
-        this.showPlaybackInput.checked = true;
+        this.setDisableEverythingMode(true);
         this.setPlaybackOrderCheckedClass(true);
     }
 
@@ -2167,10 +2160,9 @@ export default class AudioRecording {
         Array.from(elementsToRemove).forEach(element => {
             element.parentElement!.removeChild(element);
         });
-        this.toggleToolDisablingOverlay(false);
+        this.setDisableEverythingMode(false);
         if (!leaveChecked) {
             this.setPlaybackOrderCheckedClass(false);
-            this.showPlaybackInput.checked = false;
             this.updateButtonStateAsync("check");
         }
         this.setCurrentAudioElementToFirstAudioElementAsync();
@@ -2198,12 +2190,12 @@ export default class AudioRecording {
         return result;
     }
 
-    private toggleToolDisablingOverlay(disableEverythingElse: boolean) {
+    private setDisableEverythingMode(doDisable: boolean) {
         if (!this.disablingOverlay) {
             return; // should have been setup by now
         }
         const hiddenClass = "hiddenOverlay";
-        if (disableEverythingElse) {
+        if (doDisable) {
             this.disablingOverlay.classList.remove(hiddenClass);
         } else {
             this.disablingOverlay.classList.add(hiddenClass);
@@ -2521,7 +2513,7 @@ export default class AudioRecording {
         if (
             !pageBody ||
             // Tests may not have a value for 'showPlaybackInput'.
-            (this.showPlaybackInput && this.showPlaybackInput.checked)
+            this.inShowPlaybackOrderMode
         ) {
             return null;
         }
@@ -2568,7 +2560,7 @@ export default class AudioRecording {
         if (
             !pageBody ||
             // Tests may not have a value for 'showPlaybackInput'.
-            (this.showPlaybackInput && this.showPlaybackInput.checked)
+            this.inShowPlaybackOrderMode
         ) {
             return null;
         }
@@ -2649,7 +2641,7 @@ export default class AudioRecording {
 
         // This check needs to be before the check for recordable divs below (which may return immediately), because sometimes
         // we may have empty textboxes that should nevertheless show the playback order UI.
-        if (this.showPlaybackInput.checked) {
+        if (this.inShowPlaybackOrderMode) {
             const docBody = this.getPageDocBody();
             if (docBody) {
                 this.showPlaybackOrderUi(docBody);
@@ -4442,9 +4434,9 @@ export default class AudioRecording {
         }
         ReactDOM.render(
             React.createElement(TalkingBookAdvancedButtons, {
-                showPlaybackOrder: true, //todo
-                toggleShowPlaybackOrder: () => {
-                    //todo    this.toggleShowPlaybackOrder();
+                inShowPlaybackOrderMode: this.inShowPlaybackOrderMode,
+                setShowPlaybackOrder: (isOn: boolean) => {
+                    this.setShowPlaybackOrderMode(isOn);
                 },
                 fullTextMode: true, //todo this.fullTextMode,
                 toggleRecordingMode: async () => {
@@ -4460,7 +4452,7 @@ export default class AudioRecording {
                     this.handleImportRecordingClick(),
                 split: this.split.bind(this),
                 insertSegmentMarker: () => {
-                    const selection = window.getSelection();
+                    const selection = this.getPageFrame()!.contentWindow!.getSelection();
                     const range = selection!.getRangeAt(0);
                     const marker = document.createTextNode("|");
                     range.insertNode(marker);

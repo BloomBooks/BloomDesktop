@@ -3,6 +3,7 @@ import { FormControlLabel, Switch, SwitchProps } from "@mui/material";
 import { useL10n } from "./l10nHooks";
 
 interface IProps extends SwitchProps {
+    className?: string;
     english?: string;
     l10nKey: string;
 }
@@ -15,6 +16,7 @@ export const BloomSwitch: React.FunctionComponent<IProps> = props => {
             control={<Switch {...props} />}
             label={label}
             labelPlacement="end"
+            className={props.className}
         />
     );
 };

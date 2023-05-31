@@ -55,6 +55,10 @@ export const BloomTooltip: React.FunctionComponent<IBloomToolTipProps> = props =
             title={tipContent}
             placement={props.placement || "left"}
             arrow
+            // make the tooltip disappear when the mouse is over the tooltip itself
+            disableInteractive={true}
+            enterDelay={500}
+            enterNextDelay={500}
         >
             {/* The added <span> here allows the tooltip to show even when the target control is disabled */}
             <span>{props.children}</span>
