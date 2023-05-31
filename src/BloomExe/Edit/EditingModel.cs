@@ -845,10 +845,12 @@ namespace Bloom.Edit
 		/// </summary>
 		/// <remarks>
 		/// See http://issues.bloomlibrary.org/youtrack/issue/BL-4172.
+		/// And https://issues.bloomlibrary.org/youtrack/issue/BL-11640 and
+		/// https://issues.bloomlibrary.org/youtrack/issue/BL-12253.
 		/// </remarks>
 		private void SetupPageZoom()
 		{
-			var pageZoom = (float)_view.Zoom / 100F;
+			var pageZoom = _view.Zoom / 100F;
 			var body = _domForCurrentPage.Body;
 			var pageDiv = body.SelectSingleNode("//div[contains(concat(' ', @class, ' '), ' bloom-page ')]") as XmlElement;
 			if (pageDiv != null)
@@ -857,7 +859,12 @@ namespace Bloom.Edit
 				// The HTML expects floating point values in the invariant culture, not the current culture.
 				// See https://issues.bloomlibrary.org/youtrack/issue/BL-5579.
 				var zoomString = pageZoom.ToString(CultureInfo.InvariantCulture);
-				outerDiv.SetAttribute("style", String.Format("transform: scale({0}); transform-origin: left top;", zoomString));
+				// If we don't set the width, any zoom will cause the page will be too wide and there will be an unnecessary
+				// horizontal scrollbar (BL-11640). If we just say 'fit-content', the page will be too narrow and the
+				// hint bubbles (especially; BL-12253) will be too constrained.
+				// Subtracting 5px from 100% ensures that we don't have a horizontal scrollbar and leaves a small margin
+				// between the main page and the toolbox.
+				outerDiv.SetAttribute("style", String.Format("transform: scale({0}); transform-origin: left top; width: calc((100% - 5px) / {0})", zoomString));
 			}
 			CheckForBL2634("set page zoom");
 		}
