@@ -8,6 +8,7 @@ using System.Reflection;
 using System.Windows.Forms;
 using Bloom.Api;
 using Bloom.Collection;
+using Bloom.Edit;
 using Bloom.Properties;
 using Bloom.Utils;
 using Bloom.web.controllers;
@@ -31,6 +32,7 @@ namespace Bloom
 		private readonly CollectionClosing _collectionClosingEvent;
 		private readonly ControlKeyEvent _controlKeyEvent;
 		private readonly WorkspaceView _workspaceView;
+		private AudioRecording _audioRecording;
 
 		// This is needed because on Linux the ResizeEnd event is firing before the Load event handler is
 		// finished, overwriting the saved RestoreBounds before they are applied.
@@ -42,13 +44,15 @@ namespace Bloom
 			CollectionClosing collectionClosingEvent,
 			QueueRenameOfCollection queueRenameOfCollection,
 			ControlKeyEvent controlKeyEvent,
-			SignLanguageApi signLanguageApi)
+			SignLanguageApi signLanguageApi,
+			AudioRecording audioRecording)
 		{
 			queueRenameOfCollection.Subscribe(newName =>
 				_nameToChangeCollectionUponClosing = newName.Trim().SanitizeFilename('-'));
 			_collectionSettings = collectionSettings;
 			_collectionClosingEvent = collectionClosingEvent;
 			_controlKeyEvent = controlKeyEvent;
+			_audioRecording = audioRecording;
 			InitializeComponent();
 			Activated += (sender, args) =>
 			{
@@ -116,6 +120,18 @@ namespace Bloom
 
 			// BL-552, BL-779: a bug in Mono requires us to wait to set Icon until handle created.
 			this.Icon = global::Bloom.Properties.Resources.BloomIcon;
+		}
+
+		protected override void OnActivated(EventArgs e)
+		{
+			base.OnActivated(e);
+			_audioRecording.ResumeRecorder();
+		}
+
+		protected override void OnDeactivate(EventArgs e)
+		{
+			base.OnDeactivate(e);
+			_audioRecording.PauseRecorder(true);
 		}
 
 		protected override void OnClosing(CancelEventArgs e)

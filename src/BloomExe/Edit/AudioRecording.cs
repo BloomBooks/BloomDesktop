@@ -78,6 +78,7 @@ namespace Bloom.Edit
 		private static AudioRecording CurrentRecording { get; set; }
 		private ManualResetEvent _completingRecording;	// Note: For simplicity, recommend that any function needing this lock should just check it regardless of the file path. The file paths get tricky with the multiple extensions possible, sequencing, etc., so for now, we recommend avoiding pre-mature optimization until needed.
 		private int _collectionAudioTrimEndMilliseconds;
+		private bool _monitoringAudio;
 
 		public AudioRecording(BookSelection bookSelection, BloomWebSocketServer bloomWebSocketServer)
 		{
@@ -117,8 +118,22 @@ namespace Bloom.Edit
 			apiHandler.RegisterEndpointLegacy("audio/devices", HandleAudioDevices, true);
 
 			apiHandler.RegisterEndpointLegacy("audio/copyAudioFile", HandleCopyAudioFile, false);
+			apiHandler.RegisterEndpointLegacy("audio/stopMonitoring", HandleStopMonitoring, true);
 
 			Debug.Assert(BloomServer.portForHttp > 0,"Need the server to be listening before this can be registered (BL-3337).");
+		}
+
+		/// <summary>
+		/// Dispose of our Recorder, thus we stop using the microphone.
+		/// This is invoked when the talking book tool is deactivated.
+		/// </summary>
+		/// <remarks>There is not a corresponding API to start monitoring, because it happens
+		/// automatically when we create a Recorder, which in turn happens when the talking book
+		/// tool is activated and request the list of audio devices.</remarks>
+		private void HandleStopMonitoring(ApiRequest request)
+		{
+			PauseRecorder(false);
+			request.PostSucceeded();
 		}
 
 		// Does this page have any audio at all? Used to enable 'Listen to the whole page'.
@@ -222,6 +237,7 @@ namespace Bloom.Edit
 			if (RecordingDevice != null)
 			{
 				Recorder.BeginMonitoring();
+				_monitoringAudio = true;
 			}
 		}
 
@@ -293,6 +309,36 @@ namespace Bloom.Edit
 			{
 				// Report success now that we're sure we succeeded.
 				request.PostSucceeded();
+			}
+		}
+
+		/// <summary>
+		/// If bloom is currently using the microphone (typically to monitor volume), stop.
+		/// If autoResume is true, Bloom should start monitoring again when activated,
+		/// iff it is currently monitoring.
+		/// </summary>
+		public void PauseRecorder(bool autoResume)
+		{
+			if (_recorder != null)
+			{
+				_recorder.Dispose();
+				_recorder = null;
+			}
+
+			if (!autoResume)
+				_monitoringAudio = false;
+		}
+
+		public void ResumeRecorder()
+		{
+			// In most cases, when the talking book tool is activated, it initializes a Recorder
+			// and monitoring starts (a side effect of building a list of possible audio devices).
+			// The one current exception is when Bloom is deactivated while the talking book tool
+			// is visible. In that case, we need to force it to be re-created, since the talking
+			// book tool has no awareness of the app being activated.
+			if (_monitoringAudio)
+			{
+				var dummy = Recorder;
 			}
 		}
 
@@ -749,7 +795,7 @@ namespace Bloom.Edit
 				// to update the icon. At that point we start really sending volume requests.
 				if (_recorder == null)
 				{
-					var formToInvokeOn = Application.OpenForms.Cast<Form>().FirstOrDefault(f => f is Shell);
+					var formToInvokeOn = Shell.GetShellOrOtherOpenForm();
 					if (formToInvokeOn == null)
 					{
 						NonFatalProblem.Report(ModalIf.All, PassiveIf.All, "Bloom could not find a form on which to start the level monitoring code. Please restart Bloom.");

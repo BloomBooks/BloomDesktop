@@ -71,6 +71,7 @@ namespace Bloom.Workspace
 		private BookServer _bookServer;
 		private WorkspaceTabSelection _tabSelection;
 		private CollectionApi _collectionApi;
+		private AudioRecording _audioRecording;
 
 		//autofac uses this
 
@@ -94,7 +95,8 @@ namespace Bloom.Workspace
 							BookServer bookServer,
 							CollectionApi collectionApi,
 							WorkspaceApi workspaceApi,
-							WorkspaceTabSelection tabSelection
+							WorkspaceTabSelection tabSelection,
+							AudioRecording audioRecording
 		)
 		{
 			_model = model;
@@ -107,6 +109,7 @@ namespace Bloom.Workspace
 			_webSocketServer = webSocketServer;
 			_bookServer = bookServer;
 			_tabSelection = tabSelection;
+			_audioRecording = audioRecording;
 			collectionApi.WorkspaceView = this; // avoids an Autofac exception that appears if collectionApi constructor takes a WorkspaceView
 			_collectionApi = collectionApi;
 			appApi.WorkspaceView = this; // it needs to know, and there's some circularity involved in having factory pass it in
@@ -861,8 +864,19 @@ namespace Bloom.Workspace
 			// Warn the user if we're starting to use too much memory.
 			MemoryManagement.CheckMemory(false, "switched page in workspace", true);
 
-			if(_previouslySelectedControl !=null)
+			if (_previouslySelectedControl != null)
+			{
 				_containerPanel.Controls.Remove(_previouslySelectedControl);
+				if (_previouslySelectedControl is EditingView)
+				{
+					// I wish this was unnecessary; ideally, we'd get the notification to
+					// stop monitoring from the stopMonitoring function in audioRecording.ts.
+					// We should be able to achieve that when the tabs are embedded in a single
+					// Browser control. For now, the shutdown of the EditingView seems to
+					// preempt it, so we handle it here.
+					_audioRecording.PauseRecorder(false);
+				}
+			}
 
 			view.Dock = DockStyle.Fill;
 			_containerPanel.Controls.Add(view);

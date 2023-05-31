@@ -558,6 +558,7 @@ export default class AudioRecording {
     }
 
     public stopListeningForLevels() {
+        axios.post("/bloom/api/audio/stopMonitoring");
         WebSocketManager.closeSocket(kWebsocketContext);
     }
 
