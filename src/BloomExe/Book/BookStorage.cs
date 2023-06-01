@@ -2521,23 +2521,40 @@ namespace Bloom.Book
 		}
 
 
-		public static string SanitizeNameForFileSystem(string name)
+		public static string SanitizeNameForFileSystem(string name, string defaultName = null)
 		{
 			// We want NFC to prevent Dropbox complaining about encoding conflicts.
 			// May as well do that first as it may result in less truncation.
 			name = name.Normalize(NormalizationForm.FormC);
-			// Then make sure it's not too long.
-			if (name.Length > MaxFilenameLength)
-				name = name.Substring(0, MaxFilenameLength);
 			// Then replace invalid characters with spaces and trim off characters
 			// that shouldn't start or finish a directory name.
 			name = RemoveDangerousCharacters(name);
-			if (name.Length == 0)
+			// Multiple spaces are prone to being collapsed in HTML, particularly if the name ends up in
+			// the content of some element like a data-div one, such as the coverImage src. See BL-9145 and BL-12261.
+			// Even if that doesn't happen, it's hard for humans to tell filenames like "a  b" and "a   b" apart,
+			// especially with variable width fonts. So we will just collapse them while sanitizing the name.
+			while (name.Contains("  "))
+				name = name.Replace("  ", " ");
+			// Then make sure it's not too long.
+			if (name.Length > MaxFilenameLength)
 			{
-				// The localized default book name could itself have dangerous characters.
-				name = RemoveDangerousCharacters(BookStarter.UntitledBookName);
-				if (name.Length == 0)
-					name = "Book";	// This should absolutely never be needed, but let's be paranoid.
+				name = name.Substring(0, MaxFilenameLength);
+				// Remove trailing whitespace and periods at the truncation point.
+				name = Regex.Replace(name, "[\\s.]*$", "", RegexOptions.Compiled);
+			}
+			if (String.IsNullOrWhiteSpace(name))
+			{
+				if (String.IsNullOrWhiteSpace(defaultName))
+				{
+					// The localized default book name could itself have dangerous characters.
+					name = RemoveDangerousCharacters(BookStarter.UntitledBookName);
+					if (name.Length == 0)
+						name = "Book";  // This should absolutely never be needed, but let's be paranoid.
+				}
+				else
+				{
+					name = defaultName;
+				}
 			}
 			return name;
 		}

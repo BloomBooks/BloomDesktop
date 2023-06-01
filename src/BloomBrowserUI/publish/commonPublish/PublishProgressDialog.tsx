@@ -13,12 +13,19 @@ import WebSocketManager, {
 export const PublishProgressDialog: React.FunctionComponent<{
     heading: string; // up to client to localize
     webSocketClientContext: string;
-    startApiEndpoint: string;
+    // The API call to start whatever task we are displaying the progress of
+    // When this component is ready to receive progress messages, it will send A POST request to this endpoint
+    // It should just be the relative API path, not the full URL. e.g. just use "publish/[...]/[...]"
+    apiForStartingTask: string;
+    // Callback executed when {apiForStartingTask} completes successfully.
+    // For example, if you want it to automatically close upon completion of the start API, you can make that happen here.
+    onTaskComplete: (() => void) | undefined;
     onUserStopped?: () => void;
     closePending: boolean;
-    setClosePending: (boolean) => void;
+    setClosePending: React.Dispatch<React.SetStateAction<boolean>>; // the type of the setter from React.useState<boolean>
     progressState: ProgressState;
-    setProgressState: (ProgressState) => void;
+    setProgressState: React.Dispatch<React.SetStateAction<ProgressState>>; // the type of the setter from React.useState<ProgressState>
+    generation?: number; // bump this to force restarting.
 }> = props => {
     const [instructionMessage, setInstructionMessage] = useState<
         string | undefined
@@ -27,6 +34,21 @@ export const PublishProgressDialog: React.FunctionComponent<{
 
     const [errorEncountered, setErrorEncountered] = useState(false);
 
+    const {
+        setProgressState: setProgressStateProp,
+        setClosePending: setClosePendingProp
+    } = props;
+    const closeAndResetDialog = React.useCallback(() => {
+        // close it
+        setProgressStateProp(ProgressState.Closed);
+
+        // set up for next time
+        setClosePendingProp(false);
+        setAccumulatedMessages("");
+        setInstructionMessage(undefined);
+        setErrorEncountered(false);
+    }, [setProgressStateProp, setClosePendingProp]);
+
     //Note, originally this was just a function, closeIfNoError().
     // However that would be called before the errorEncountered had been updated.
     // So now we make it happen by calling setClosePending() and then in the next
@@ -34,7 +56,7 @@ export const PublishProgressDialog: React.FunctionComponent<{
     React.useEffect(() => {
         if (props.closePending) {
             if (errorEncountered) {
-                props.setProgressState(() =>
+                setProgressStateProp(() =>
                     errorEncountered ? ProgressState.Done : ProgressState.Closed
                 );
                 // Although we may be in state 'Done' and thus not actually closed yet,
@@ -44,46 +66,37 @@ export const PublishProgressDialog: React.FunctionComponent<{
                 // In case the dialog is used again (e.g., to update a preview with
                 // different parameters), we need to turn this off so the useEffect will notice
                 // the next time it is turned on.
-                props.setClosePending(false);
+                setClosePendingProp(false);
             } else {
-                // set up for next time
-                setAccumulatedMessages("");
-                setInstructionMessage(undefined);
-                setErrorEncountered(false);
-                // close it
-                props.setProgressState(ProgressState.Closed);
-                props.setClosePending(false);
+                closeAndResetDialog();
             }
         }
-    }, [props.closePending]);
+    }, [
+        props.closePending,
+        setProgressStateProp,
+        setClosePendingProp,
+        closeAndResetDialog
+    ]);
 
     React.useEffect(() => {
+        props.setProgressState(ProgressState.Working);
         // we need to be ready to listen to progress messages from the server,
         // before we kick anything off on the server.
         WebSocketManager.notifyReady(props.webSocketClientContext, () => {
-            // We agonized over the fact that "updatePreview" doesn't have anything to do with displaying progress.
-            // It just so happens that 1) this is the first thing we do in this screen and 2) after it, we
-            // need to do something to the state of the dialog.
-            // But the alternative gets complicated too... the weirdness here is that we need to
-            // do something (change the state of the dialog) when the postData's promise is satisfied.
-            // (That is, when the preview construction is complete).
-            postData(
-                props.startApiEndpoint,
-                {},
-                () => props.setClosePending(true),
-                r => {
-                    // Error handler if server encountered a really bad error and wasn't able to return a message to us.
-                    setErrorEncountered(true);
-                    setAccumulatedMessages(
-                        oldMessages =>
-                            oldMessages +
-                            `<span class='Error'>Failed to prepare the book for publish. Request '${props.startApiEndpoint}' returned: ${r}.</span>`
-                    );
-                    props.setProgressState(ProgressState.Done);
-                }
-            );
+            // Handle an optional API request that fires immediately upon mounting,
+            // and handle changing the state of the dialog when the postData's promise is satisfied.
+            postData(props.apiForStartingTask, {}, props.onTaskComplete, r => {
+                // Error handler if server encountered a really bad error and wasn't able to return a message to us.
+                setErrorEncountered(true);
+                setAccumulatedMessages(
+                    oldMessages =>
+                        oldMessages +
+                        `<span class='Error'>Failed to prepare the book for publish. Request '${props.apiForStartingTask}' returned: ${r}.</span>`
+                );
+                props.setProgressState(ProgressState.Done);
+            });
         });
-    }, []);
+    }, [props.apiForStartingTask, props.generation]); // Every time the start API endpoint changes, we basically restart the component
 
     useSubscribeToWebSocketForEvent(
         props.webSocketClientContext,
@@ -124,11 +137,7 @@ export const PublishProgressDialog: React.FunctionComponent<{
             messages={accumulatedMessages}
             progressState={props.progressState}
             onUserStopped={() => props.onUserStopped && props.onUserStopped()}
-            onUserClosed={() => {
-                setAccumulatedMessages("");
-                setErrorEncountered(false);
-                props.setProgressState(ProgressState.Closed);
-            }}
+            onUserClosed={closeAndResetDialog}
             errorEncountered={errorEncountered}
         />
     );

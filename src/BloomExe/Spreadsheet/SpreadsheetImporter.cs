@@ -475,7 +475,7 @@ namespace Bloom.Spreadsheet
 				while (RobustFile.Exists(dest))
 				{
 					videoFile = ImageUtils.GetUnusedFilename(videoDirectory,
-						Path.GetFileNameWithoutExtension(videoFile), Path.GetExtension(videoFile));
+						Path.GetFileNameWithoutExtension(videoFile), Path.GetExtension(videoFile), "video");
 					dest = Path.Combine(videoDirectory, videoFile);
 				}
 				// Enhance: we should probably do something to prevent multiple video elements
@@ -607,7 +607,7 @@ namespace Bloom.Spreadsheet
 				while (RobustFile.Exists(fullDestinationPath))
 				{
 					destFileName = ImageUtils.GetUnusedFilename(_pathToBookFolder,
-						Path.GetFileNameWithoutExtension(destFileName), Path.GetExtension(destFileName));
+						Path.GetFileNameWithoutExtension(destFileName), Path.GetExtension(destFileName), "image");
 					fullDestinationPath = Path.Combine(_pathToBookFolder, destFileName);
 				}
 			}
@@ -1733,8 +1733,8 @@ namespace Bloom.Spreadsheet
 				HtmlDom.SetNewHtmlIdValue(elt);
 				return "0";
 			}
-			var destFile = SanitizeXHtmlId(BookStorage.SanitizeNameForFileSystem(Path.GetFileName(audioFile)));
-			var id = Path.GetFileNameWithoutExtension(destFile);
+			var id = SanitizeXHtmlId(BookStorage.SanitizeNameForFileSystem(Path.GetFileNameWithoutExtension(audioFile), "sound"));
+			var destFile = id + Path.GetExtension(audioFile);
 			// We may as well set this; elements with class audio-sentence are supposed to have
 			// ids, even if there is no corresponding file.
 			elt.SetAttribute("id", id);
