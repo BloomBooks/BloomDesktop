@@ -142,15 +142,18 @@ export const darkTheme = createTheme(lightTheme, {
     }
 });
 
+const toolboxTextColor = "#d2d2d2";
+const kToolboxDisabledOpacity = 0.5;
+
 export const toolboxTheme = createTheme({
     palette: {
         primary: { main: kBloomBlue },
         secondary: { main: kBloomPurple },
         warning: { main: kBloomGold },
-        text: { disabled: kBloomDisabledText },
+        text: { primary: toolboxTextColor, disabled: kBloomDisabledText },
         action: {
-            disabled: kBloomDisabledText,
-            disabledOpacity: kBloomDisabledOpacity
+            //disabled: kBloomDisabledText,
+            //disabledOpacity: kToolboxDisabledOpacity
         }
     },
     typography: {
@@ -199,7 +202,33 @@ export const toolboxTheme = createTheme({
         MuiFormControlLabel: {
             styleOverrides: {
                 label: {
-                    fontSize: "10px"
+                    fontSize: "10px",
+                    "&.Mui-disabled": {
+                        color: `red !important`
+                        //opacity: kToolboxDisabledOpacity
+                    }
+                },
+                root: {
+                    alignItems: "flex-start"
+                }
+            }
+        },
+        // make radio buttons closer together
+        MuiRadio: {
+            styleOverrides: {
+                root: {
+                    paddingBottom: "0px",
+                    paddingTop: "0px"
+                }
+            }
+        },
+
+        MuiTypography: {
+            styleOverrides: {
+                h2: {
+                    fontSize: "11px",
+                    fontWeight: "bold",
+                    marginBottom: "5px"
                 }
             }
         },
@@ -212,12 +241,13 @@ export const toolboxTheme = createTheme({
                     // buttons in the Talking book tool "Advanced" section look good next to each other
                     width: "100%",
                     textTransform: "none", // Material buttons are all caps by default
-                    color: "#d2d2d2"
+                    color: toolboxTextColor
                 },
                 outlined: {
                     "&.Mui-disabled": {
-                        color: "#d4d4d45c !important", // TODO: still getting overwritten by audiorecording.less
-                        borderColor: "#d4d4d45c"
+                        // color: `${toolboxDisabledLabelColor} !important`, // TODO: still getting overwritten by audiorecording.less
+                        // borderColor: toolboxDisabledLabelColor
+                        //opacity: kToolboxDisabledOpacity
                     }
                 }
             }

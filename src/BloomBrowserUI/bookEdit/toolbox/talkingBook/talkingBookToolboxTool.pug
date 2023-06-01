@@ -24,30 +24,31 @@ html
 		div(data-toolId='talkingBookTool')
 			div.hiddenOverlay(id='disablingOverlay')
 			div.ui-audioBody
-				div
-					// preload=none prevents the audio element from asking for the audio as soon as it gets a new src value,
-					// which in BL-3153 was faster than the c# thread writing the file could finish with it.
-					// As an alternative, a settimeout() in the javascript also worked, button
-					// this seems more durable. By the time the user can click Play, we'll be done.
-					audio(id='player', preload='none')
+				div.ui-audioJqueryStuff
+					div
+						// preload=none prevents the audio element from asking for the audio as soon as it gets a new src value,
+						// which in BL-3153 was faster than the c# thread writing the file could finish with it.
+						// As an alternative, a settimeout() in the javascript also worked, button
+						// this seems more durable. By the time the user can click Play, we'll be done.
+						audio(id='player', preload='none')
 
-				div.audio-label.talking-book-counter(id='audio-check' data-i18n='EditTab.Toolbox.TalkingBookTool.CheckSettingsLabel') Check that you are recording into the correct device and that these levels are showing blue:
-				div.ui-audioInputGroup
-					div.ui-audioInput
-						img(id='audio-input-dev' src='/bloom/bookEdit/toolbox/talkingBook/microphone.svg' height='15' width='15' alt='mic')
-						ul(id='audio-devlist')
-					div.ui-audioMeter
-						canvas(id='audio-meter' width='80' height='15')
-				div.audio-label.talking-book-counter(id='audio-look-at' data-i18n='EditTab.Toolbox.TalkingBookTool.LookAtSentenceLabel') Look at the highlighted text
-				+buttonGroup('record', 'expected', 'talking-book-counter', '', 'Speak', 'SpeakLabel')
-				div.initiallyHidden(id='mic-problem-message' data-i18n='EditTab.Toolbox.TalkingBookTool.MicrophoneProblem') Bloom is having problems connecting to your microphone. Please restart your computer and try again.
-				+buttonGroup('play', 'enabled', 'talking-book-counter', '', 'Check', 'CheckLabel')
-				+buttonGroup('split', 'enabled', 'talking-book-counter', 'initial-state', 'Split', 'SplitLabel')
-				+buttonGroup('next', 'enabled', 'talking-book-counter', '', 'Next', 'NextLabel')
+					div.audio-label.talking-book-counter(id='audio-check' data-i18n='EditTab.Toolbox.TalkingBookTool.CheckSettingsLabel') Check that you are recording into the correct device and that these levels are showing blue:
+					div.ui-audioInputGroup
+						div.ui-audioInput
+							img(id='audio-input-dev' src='/bloom/bookEdit/toolbox/talkingBook/microphone.svg' height='15' width='15' alt='mic')
+							ul(id='audio-devlist')
+						div.ui-audioMeter
+							canvas(id='audio-meter' width='80' height='15')
+					div.audio-label.talking-book-counter(id='audio-look-at' data-i18n='EditTab.Toolbox.TalkingBookTool.LookAtSentenceLabel') Look at the highlighted text
+					+buttonGroup('record', 'expected', 'talking-book-counter', '', 'Speak', 'SpeakLabel')
+					div.initiallyHidden(id='mic-problem-message' data-i18n='EditTab.Toolbox.TalkingBookTool.MicrophoneProblem') Bloom is having problems connecting to your microphone. Please restart your computer and try again.
+					+buttonGroup('play', 'disabled', 'talking-book-counter', '', 'Check', 'CheckLabel')
+					+buttonGroup('split', 'disabled', 'talking-book-counter', 'initial-state', 'Split', 'SplitLabel')
+					+buttonGroup('next', 'disabled', 'talking-book-counter', '', 'Next', 'NextLabel')
 
-				+buttonGroup('prev', 'disabled', '', '', 'Back', 'Back')
-				+buttonGroup('clear', 'enabled', '', '', 'Clear', 'Clear')
-				+buttonGroup('listen', 'disabled', '', '', 'Listen to the whole page', 'Listen')
+					+buttonGroup('prev', 'disabled', '', '', 'Back', 'Back')
+					+buttonGroup('clear', 'disabled', '', '', 'Clear', 'Clear')
+					+buttonGroup('listen', 'disabled', '', '', 'Listen to the whole page', 'Listen')
 				#advanced-talking-book-controls-react-container
 				//- div.audio-advanced
 				+checkboxWithHiddenClickHandler('recordingModeControl', 'EditTab.Toolbox.TalkingBookTool.RecordByTextBox','Record by whole text box, then let Bloom split it into sentences later.', true, 'padding-top:16px')

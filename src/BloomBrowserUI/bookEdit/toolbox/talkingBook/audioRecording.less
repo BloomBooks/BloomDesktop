@@ -107,247 +107,249 @@ div.ui-audioCurrent p {
     padding-left: 15px;
     padding-right: 15px;
 
-    *,
-    a {
-        color: @textColor;
-    }
-
-    #advanced-talking-book-controls-react-container disabled {
-        color: red;
-    }
-
-    background-color: @toolboxBackgroundColor;
-
-    background-position: center;
-
-    .ui-audioTitle {
-        font-size: larger;
-        margin-top: 5px;
-        font-size: large;
-    }
-
-    .ui-audio-button {
-        height: @buttonColumnWidth;
-        width: @buttonColumnWidth;
-        border: none;
-        background-size: contain;
-        background-color: transparent;
-        background-repeat: no-repeat;
-        display: inline-block;
-        border: solid thin transparent; // just be a little responsive to indicate that it is clickable
-
-        &:hover {
-            border: none; // makes it grow a little on mouse hover
+    .ui-audioJqueryStuff {
+        *,
+        a {
+            color: @textColor;
         }
-    }
 
-    #audio-prev,
-    #audio-clear {
-        height: 20px;
-        //width:20px;
-        //margin-left: 10px;
+        #advanced-talking-book-controls-react-container disabled {
+            color: red;
+        }
+
+        background-color: @toolboxBackgroundColor;
+
         background-position: center;
-    }
 
-    .disabled {
-        // Note: There is a similar rule in signLanguage.less which actually does have the scope to affect this talking book code.
-        opacity: 0.4;
-        pointer-events: none;
-    }
-
-    // This is kind of like disabled, except that pointer-events are still allowed. This allows it to look visually enabled when hovered.
-    .disabledUnlessHover {
-        opacity: 0.4;
-
-        // No need to actually disable clicks unless hovered because you are more or less probably going to be hovering it if you're going to click it
-        &:hover {
-            opacity: 1;
-        }
-    }
-
-    #audio-record {
-        background-image: url("record_enabled.svg");
-
-        &.expected {
-            background-image: url("record_expected.svg");
+        .ui-audioTitle {
+            font-size: larger;
+            margin-top: 5px;
+            font-size: large;
         }
 
-        &.active {
-            background-image: url("record_active.svg");
-        }
-    }
-
-    #audio-play {
-        // We need a path here because this image is in a shared folder, not at the same
-        // location as the generated audioRecording.css itself like the others.
-        background-image: url(/bloom/images/play_enabled.svg);
-        height: 45px;
-        width: 45px; // visually same width as record button
-
-        &.expected {
-            background-image: url(play_expected.svg);
-        }
-
-        &.active {
-            // we want to switch to a yellow square. This is a cheap way to get it.
-            // If we want some other special shape when play is active, we have a currently-unused
-            // svg we can use/edit at url("play-active.svg")
-            background-image: url(pause_yellow.svg);
-            //background-color: @bloom-yellow;
-        }
-    }
-
-    #audio-split {
-        background-image: url(split_enabled.svg);
-        height: 45px;
-        width: 45px; // visually same width as record button
-
-        &.expected {
-            background-image: url(split_expected.svg);
-        }
-    }
-
-    .audio-about {
-        margin-top: @sectionVerticalGap;
-    }
-
-    #audio-look-at,
-    #audio-check {
-        max-width: none;
-    }
-
-    #audio-listen-label {
-        position: relative;
-        width: 80px;
-    }
-
-    a {
-        display: block; //start on a new line
-        margin-top: 10px;
-        text-decoration: underline;
-        cursor: pointer;
-    }
-
-    .ui-audioFooter {
-        margin-top: 30px;
-        margin-bottom: 5px;
-    }
-
-    .ui-audioInput,
-    .ui-audioMeter {
-        display: inline-block;
-        background-color: @bloom-panelBackground;
-    }
-
-    .ui-audioInputGroup {
-        margin-top: 5px;
-        margin-bottom: 12px;
-    }
-
-    img#audio-input-dev {
-        height: 30px;
-        width: 30px;
-        box-sizing: border-box;
-        border: solid thin transparent; // just be a little responsive to indicate that it is clickable
-
-        &:hover {
-            border: none; // makes it grow a little on mouse hover
-        }
-    }
-
-    // hidden unless we need to choose between three or more input devices.
-    #audio-devlist {
-        display: none;
-        position: absolute;
-        background-color: white;
-        width: 180px;
-        padding-left: 0;
-        list-style: none;
-        cursor: pointer;
-        z-index: 1000;
-        overflow-x: hidden;
-
-        li {
-            min-height: 20px;
-            font-size: 12px;
-            color: @textOnLightBackground;
-            padding-left: 5px;
-            white-space: nowrap;
+        .ui-audio-button {
+            height: @buttonColumnWidth;
+            width: @buttonColumnWidth;
+            border: none;
+            background-size: contain;
+            background-color: transparent;
+            background-repeat: no-repeat;
+            display: inline-block;
+            border: solid thin transparent; // just be a little responsive to indicate that it is clickable
 
             &:hover {
-                background-color: @hoverBackgroundColor;
+                border: none; // makes it grow a little on mouse hover
             }
         }
 
-        #audio-input-dev {
-            margin-top: 2px;
-            width: 15px;
+        #audio-prev,
+        #audio-clear {
+            height: 20px;
+            //width:20px;
+            //margin-left: 10px;
+            background-position: center;
         }
-    }
 
-    #audio-next {
-        background-image: url(next_enabled.svg);
-
-        &.expected {
-            background-image: url(next_expected.svg);
+        .disabled {
+            // Note: There is a similar rule in signLanguage.less which actually does have the scope to affect this talking book code.
+            opacity: 0.4;
+            pointer-events: none;
         }
-    }
 
-    #audio-prev {
-        background-image: url(prev_enabled.svg);
-    }
+        // This is kind of like disabled, except that pointer-events are still allowed. This allows it to look visually enabled when hovered.
+        .disabledUnlessHover {
+            opacity: 0.4;
 
-    #audio-listen {
-        margin-left: 2px; // visually centered
-        background-image: url(listen_enabled.svg);
-
-        &.active {
-            background-image: url(listen_active.svg);
+            // No need to actually disable clicks unless hovered because you are more or less probably going to be hovering it if you're going to click it
+            &:hover {
+                opacity: 1;
+            }
         }
-    }
 
-    #audio-clear {
-        background-image: url(clear_enabled.svg);
-    }
+        #audio-record {
+            background-image: url("record_enabled.svg");
 
-    .button-label-wrapper {
-        margin-top: 10px;
-        margin-bottom: 5px; // Was originally part of the button. Note that vertical margins will auto-collapse with the next element's margin-top. You can switch this to padding-bottom if this is undesirable.
-    }
+            &.expected {
+                background-image: url("record_expected.svg");
+            }
 
-    @buttonWidth: 60px;
-    @uiAudioBodyMinWidth: 149px; // The minimum width of the container, which occurs if the scroll bar is present. It is 17 pixels larger otherwise. Could be 150 or 149.67 pixels, so round down to 149
-    @whitespaceFillerWidth: 3px; // Caused by the whitespace in the PUG code I think.
-
-    .button-wrapper {
-        display: inline-block;
-        min-width: @buttonWidth;
-        vertical-align: middle; // Align the button with the label in case the label is really long.
-    }
-
-    .audio-label {
-        display: inline-block;
-        max-width: (
-            @uiAudioBodyMinWidth - @buttonWidth - @whitespaceFillerWidth
-        );
-        vertical-align: middle;
-
-        &.expected {
-            color: @highlightColor;
-            //font-weight: bold;
-            //font-size: 11pt;
+            &.active {
+                background-image: url("record_active.svg");
+            }
         }
-    }
 
-    .audio-advanced {
-        padding-top: 35px;
-    }
+        #audio-play {
+            // We need a path here because this image is in a shared folder, not at the same
+            // location as the generated audioRecording.css itself like the others.
+            background-image: url(/bloom/images/play_enabled.svg);
+            height: 45px;
+            width: 45px; // visually same width as record button
 
-    .help-link,
-    .audio-about {
-        z-index: @disablingOverlayZindex + 1;
-        // I have no idea why this next rule is necessary, but the z-index rule has no effect without it.
-        position: relative;
+            &.expected {
+                background-image: url(play_expected.svg);
+            }
+
+            &.active {
+                // we want to switch to a yellow square. This is a cheap way to get it.
+                // If we want some other special shape when play is active, we have a currently-unused
+                // svg we can use/edit at url("play-active.svg")
+                background-image: url(pause_yellow.svg);
+                //background-color: @bloom-yellow;
+            }
+        }
+
+        #audio-split {
+            background-image: url(split_enabled.svg);
+            height: 45px;
+            width: 45px; // visually same width as record button
+
+            &.expected {
+                background-image: url(split_expected.svg);
+            }
+        }
+
+        .audio-about {
+            margin-top: @sectionVerticalGap;
+        }
+
+        #audio-look-at,
+        #audio-check {
+            max-width: none;
+        }
+
+        #audio-listen-label {
+            position: relative;
+            width: 80px;
+        }
+
+        a {
+            display: block; //start on a new line
+            margin-top: 10px;
+            text-decoration: underline;
+            cursor: pointer;
+        }
+
+        .ui-audioFooter {
+            margin-top: 30px;
+            margin-bottom: 5px;
+        }
+
+        .ui-audioInput,
+        .ui-audioMeter {
+            display: inline-block;
+            background-color: @bloom-panelBackground;
+        }
+
+        .ui-audioInputGroup {
+            margin-top: 5px;
+            margin-bottom: 12px;
+        }
+
+        img#audio-input-dev {
+            height: 30px;
+            width: 30px;
+            box-sizing: border-box;
+            border: solid thin transparent; // just be a little responsive to indicate that it is clickable
+
+            &:hover {
+                border: none; // makes it grow a little on mouse hover
+            }
+        }
+
+        // hidden unless we need to choose between three or more input devices.
+        #audio-devlist {
+            display: none;
+            position: absolute;
+            background-color: white;
+            width: 180px;
+            padding-left: 0;
+            list-style: none;
+            cursor: pointer;
+            z-index: 1000;
+            overflow-x: hidden;
+
+            li {
+                min-height: 20px;
+                font-size: 12px;
+                color: @textOnLightBackground;
+                padding-left: 5px;
+                white-space: nowrap;
+
+                &:hover {
+                    background-color: @hoverBackgroundColor;
+                }
+            }
+
+            #audio-input-dev {
+                margin-top: 2px;
+                width: 15px;
+            }
+        }
+
+        #audio-next {
+            background-image: url(next_enabled.svg);
+
+            &.expected {
+                background-image: url(next_expected.svg);
+            }
+        }
+
+        #audio-prev {
+            background-image: url(prev_enabled.svg);
+        }
+
+        #audio-listen {
+            margin-left: 2px; // visually centered
+            background-image: url(listen_enabled.svg);
+
+            &.active {
+                background-image: url(listen_active.svg);
+            }
+        }
+
+        #audio-clear {
+            background-image: url(clear_enabled.svg);
+        }
+
+        .button-label-wrapper {
+            margin-top: 10px;
+            margin-bottom: 5px; // Was originally part of the button. Note that vertical margins will auto-collapse with the next element's margin-top. You can switch this to padding-bottom if this is undesirable.
+        }
+
+        @buttonWidth: 60px;
+        @uiAudioBodyMinWidth: 149px; // The minimum width of the container, which occurs if the scroll bar is present. It is 17 pixels larger otherwise. Could be 150 or 149.67 pixels, so round down to 149
+        @whitespaceFillerWidth: 3px; // Caused by the whitespace in the PUG code I think.
+
+        .button-wrapper {
+            display: inline-block;
+            min-width: @buttonWidth;
+            vertical-align: middle; // Align the button with the label in case the label is really long.
+        }
+
+        .audio-label {
+            display: inline-block;
+            max-width: (
+                @uiAudioBodyMinWidth - @buttonWidth - @whitespaceFillerWidth
+            );
+            vertical-align: middle;
+
+            &.expected {
+                color: @highlightColor;
+                //font-weight: bold;
+                //font-size: 11pt;
+            }
+        }
+
+        .audio-advanced {
+            padding-top: 35px;
+        }
+
+        .help-link,
+        .audio-about {
+            z-index: @disablingOverlayZindex + 1;
+            // I have no idea why this next rule is necessary, but the z-index rule has no effect without it.
+            position: relative;
+        }
     }
 }
 

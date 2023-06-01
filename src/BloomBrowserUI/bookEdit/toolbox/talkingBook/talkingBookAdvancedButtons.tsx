@@ -8,34 +8,51 @@ import {
     InsertSegmentMarkerIcon
 } from "./TalkingBookToolboxIcons";
 import { postJson } from "../../../utils/bloomApi";
-import { Button, Collapse, Divider, TooltipProps } from "@mui/material";
+import {
+    Button,
+    Collapse,
+    Divider,
+    TooltipProps,
+    Checkbox,
+    FormControl,
+    FormControlLabel,
+    FormLabel,
+    RadioGroup,
+    Radio,
+    Typography
+} from "@mui/material";
 import { Span } from "../../../react_components/l10nComponents";
-import { Checkbox } from "../../../react_components/checkbox";
+//import { Checkbox } from "../../../react_components/checkbox";
 import { BloomTooltip } from "../../../react_components/BloomToolTip";
 import { toolboxTheme } from "../../../bloomMaterialUITheme";
 import { BloomSwitch } from "../../../react_components/BloomSwitch";
+import { RecordingMode } from "./audioRecording";
 
 export const TalkingBookAdvancedButtons: React.FunctionComponent<{
+    isXmatter: boolean;
     hasAudio: boolean;
     lastTimingsFilePath?: string;
-    wholeTextBoxMode: boolean;
+    //enableRecordingModeControl: boolean;
+    recordingMode: RecordingMode;
     hasRecordableDivs: boolean;
     handleImportRecordingClick: () => void;
     split: (timingFilePath: string) => Promise<void>;
-    fullTextMode: boolean;
-    toggleRecordingMode: () => Promise<void>;
+    enableRecordingModeControl: boolean;
+    setRecordingMode: (recordingMode: RecordingMode) => Promise<void>;
     inShowPlaybackOrderMode: boolean;
-    setShowPlaybackOrder: (on: boolean) => void;
+    setShowPlaybackOrder: (isOn: boolean) => void;
     insertSegmentMarker: () => void;
 }> = props => {
     // return a triangle button. Its children are normally hidden. When you click it, it rotates and shows its children.
 
     const enableEditTimings =
-        props.wholeTextBoxMode && props.hasAudio && !!props.lastTimingsFilePath;
-    const enabledRecordModeControl =
-        props.wholeTextBoxMode && props.hasRecordableDivs;
+        props.recordingMode === RecordingMode.TextBox &&
+        props.hasAudio &&
+        !!props.lastTimingsFilePath;
+
     const enabledImportRecordingButton =
-        props.wholeTextBoxMode && props.hasRecordableDivs;
+        props.recordingMode === RecordingMode.TextBox &&
+        props.hasRecordableDivs;
     const commonTooltipProps = {
         placement: "bottom" as TooltipProps["placement"] // toolbox is currently its own iframe, so we can't spill out to the left yet
     };
@@ -46,24 +63,60 @@ export const TalkingBookAdvancedButtons: React.FunctionComponent<{
                 initiallyOpen={true} /*for dev. enhance: remember the state*/
             >
                 <BloomTooltip
-                    showDisabled={!enabledRecordModeControl}
-                    tip={
-                        "Record the whole text box in one take, or load in a recording."
-                    }
+                    showDisabled={!props.enableRecordingModeControl}
                     tipWhenDisabled={
-                        props.hasRecordableDivs
+                        (props.isXmatter && {
+                            l10nKey:
+                                "EditTab.Toolbox.TalkingBookTool.RecordingModeXMatter"
+                        }) ||
+                        (props.hasRecordableDivs
                             ? `First select a box has something to record.`
-                            : `If you want to turn off this mode, first use the "Clear" button to remove your recording.`
+                            : `If you want to turn change this mode, first use the "Clear" button to remove your recording.`)
                     }
                     {...commonTooltipProps}
                 >
-                    <Checkbox
-                        id="audio-recordingModeControl"
-                        disabled={!enabledRecordModeControl}
-                        l10nKey="EditTab.Toolbox.TalkingBookTool.RecordByTextBox"
-                        checked={props.fullTextMode}
-                        onClick={() => props.handleImportRecordingClick()}
-                    />
+                    <Typography variant="h2">Recording Mode</Typography>
+                    <RadioGroup
+                        value={props.recordingMode}
+                        onChange={(
+                            event: React.ChangeEvent<HTMLInputElement>
+                        ) =>
+                            props.setRecordingMode(
+                                RecordingMode[
+                                    (event.target as HTMLInputElement).value
+                                ]
+                            )
+                        }
+                    >
+                        {" "}
+                        <BloomTooltip
+                            tip={
+                                "Record one sentence at a time. You can break up sentences using the `|` character."
+                            }
+                            {...commonTooltipProps}
+                        >
+                            <FormControlLabel
+                                disabled={!props.enableRecordingModeControl}
+                                value={RecordingMode.Sentence}
+                                control={<Radio />}
+                                label="By Sentence"
+                            ></FormControlLabel>
+                        </BloomTooltip>
+                        <BloomTooltip
+                            showDisabled={!props.enableRecordingModeControl}
+                            tip={
+                                "Record the whole text box in one take, or load in a recording."
+                            }
+                            {...commonTooltipProps}
+                        >
+                            <FormControlLabel
+                                disabled={!props.enableRecordingModeControl}
+                                value={RecordingMode.TextBox}
+                                control={<Radio />}
+                                label="By Whole Textbox"
+                            ></FormControlLabel>
+                        </BloomTooltip>
+                    </RadioGroup>
                 </BloomTooltip>
                 <BloomTooltip
                     showDisabled={!enabledImportRecordingButton}
@@ -123,7 +176,7 @@ export const TalkingBookAdvancedButtons: React.FunctionComponent<{
                         size="small"
                         enabled={
                             props.hasRecordableDivs &&
-                            props.wholeTextBoxMode &&
+                            props.recordingMode &&
                             props.hasAudio
                         }
                         l10nKey="EditTab.Toolbox.TalkingBookTool.ApplyTimingsFile"
@@ -146,7 +199,7 @@ export const TalkingBookAdvancedButtons: React.FunctionComponent<{
                     />
                 </BloomTooltip>
                 <BloomTooltip
-                    tip={`Insert a "|" character into the text at the current cursor position. This character tells Bloom to introduce a new segment for the purpose of highlighting the text during audio playback. You can also just type the "|" character using your keyboard`}
+                    tip={`Insert a "|" character into the text at the current cursor position. This character tells Bloom to introduce a new segment for the purpose of highlighting the text during audio playback. You can also just type the "|" character using your keyboard.`}
                     showDisabled={!props.hasRecordableDivs}
                     tipWhenDisabled={`First select a box has something to record.`}
                     {...commonTooltipProps}
@@ -215,6 +268,7 @@ const TriangleCollapse: React.FC<{
                 css={css`
                     justify-content: start;
                     text-transform: none;
+                    padding-left: 0;
                 `}
             >
                 <svg
