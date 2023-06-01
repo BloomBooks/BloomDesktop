@@ -395,7 +395,11 @@ namespace Bloom.Book
 					string message =
 						$"<strong>{messageNewVersionNeededHeader}</strong><br/><br/><br/>" +
 						$"{messageCurrentRunningVersion}. {messageFeatureRequiresNewerVersion}<br/><br/>" +
-						$"<a href='{UrlLookup.LookupUrl(UrlType.LibrarySite, null)}/installers'>{messageDownloadLatestVersion}</a>";  // Enhance: is there a market-specific version of Bloom Library? If so, ideal to link to it somehow.
+						// If we just embed the URL, since we show this document in a plain browser without any
+						// of our code loaded (in particular, our linkHandler code in typescript), the browser
+						// control inside bloom will navigate there, which isn't what we want. The easiest
+						// way around this is to have an api which does what we want.
+						$"<a href='/bloom/api/app/showDownloadsPage'>{messageDownloadLatestVersion}</a>";
 
 					return message;
 				}
