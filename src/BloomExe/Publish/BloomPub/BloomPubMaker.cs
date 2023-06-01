@@ -208,7 +208,9 @@ BookServer bookServer,
 		{
 			var sha = Book.Book.ComputeHashForAllBookRelatedFiles(pathToFileForSha);
 			var name = "version.txt"; // must match what BloomReader is looking for in NewBookListenerService.IsBookUpToDate()
-			RobustFile.WriteAllText(Path.Combine(folderForSha, name), sha, Encoding.UTF8);
+			// We send the straight string without a BOM in our advertisement, so that needs to be what we write
+			// in the file, otherwise, BR never recognizes that it already has the current version.
+			RobustFile.WriteAllText(Path.Combine(folderForSha, name), sha, new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
 			HashOfMostRecentlyCreatedBook = sha;
 		}
 
