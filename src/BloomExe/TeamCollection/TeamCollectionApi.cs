@@ -65,7 +65,7 @@ namespace Bloom.TeamCollection
 			apiHandler.RegisterEndpointHandler("teamCollection/getLog", HandleGetLog, false);
 			apiHandler.RegisterEndpointHandler("teamCollection/getCollectionName", HandleGetCollectionName, false);
 			apiHandler.RegisterEndpointHandler("teamCollection/showCreateTeamCollectionDialog", HandleShowCreateTeamCollectionDialog, true);
-			apiHandler.RegisterEndpointHandler("teamCollection/reportBadZip", HandleReportBadZip, true);
+			apiHandler.RegisterEndpointHandler("teamCollection/reportBadZip", HandleReportBadZip, true, false);
 			apiHandler.RegisterEndpointHandler("teamCollection/showRegistrationDialog", HandleShowRegistrationDialog, true, false);
 			apiHandler.RegisterEndpointHandler("teamCollection/getHistory", HandleGetHistory, true);
 			apiHandler.RegisterEndpointHandler("teamCollection/checkinMessage", HandleCheckinMessage, false);
@@ -136,14 +136,24 @@ namespace Bloom.TeamCollection
 
 		public static string BadZipPath;
 
+		/// <summary>
+		/// Report a bad zip file to the user, allowing a report back to the developers.
+		/// </summary>
+		/// <remarks>
+		/// This method is run without sync and should not touch anything that is not private to the thread.
+		/// It needs to be without sync because it launches a modal dialog that needs to access the server
+		/// and could otherwise cause deadlocks.
+		/// See https://issues.bloomlibrary.org/youtrack/issue/BL-12278 for what happens if the method is
+		/// run with sync.
+		/// </remarks>
 		private void HandleReportBadZip(ApiRequest request)
 		{
 			var fileEncoded = request.Parameters["file"];
 			var file = UrlPathString.CreateFromUrlEncodedString(fileEncoded).NotEncoded;
+			request.PostSucceeded();    // this should come before a modal dialog
 			NonFatalProblem.Report(ModalIf.All, PassiveIf.All,
 				(_tcManager.CurrentCollection as FolderTeamCollection)
-					.GetSimpleBadZipFileMessage(Path.GetFileNameWithoutExtension(file)),additionalFilesToInclude: new[] { file });
-			request.PostSucceeded();
+					.GetSimpleBadZipFileMessage(Path.GetFileNameWithoutExtension(file)), additionalFilesToInclude: new[] { file });
 		}
 
 		private void HandleShowRegistrationDialog(ApiRequest request)
