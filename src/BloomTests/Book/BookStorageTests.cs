@@ -859,7 +859,7 @@ namespace BloomTests.Book
 		public void SetBookName_SanitizedName_JunkMidFoo_ChangesFolder()
 		{
 			using (var x = new TemporaryFolder(_folder, "foo"))
-			using (var y = new TemporaryFolder(_folder, "fo o"))
+			using (var y = new TemporaryFolder(_folder, "fo         o"))
 			using (var projectFolder = new TemporaryFolder("BookStorage_ProjectCollection"))
 			{
 				File.WriteAllText(Path.Combine(x.Path, "foo.htm"), "<html><head> href='file://blahblah\\editMode.css' type='text/css' /></head><body><div class='bloom-page'></div></body></html>");
@@ -872,8 +872,7 @@ namespace BloomTests.Book
 				// BL-7816 We added some new characters to the sanitization routine
 				const string newBookName = "fo?:&<>\'\"{}o";
 				storage.SetBookName(newBookName);
-				//BL-12261 We now collapse multiple spaces to one
-				var newPath = y.Combine("fo o.htm");
+				var newPath = y.Combine("fo         o.htm");
 				Assert.IsTrue(Directory.Exists(y.Path), "Expected folder:" + y.Path);
 				Assert.IsTrue(File.Exists(newPath), "Expected file:" + newPath);
 			}
