@@ -131,6 +131,8 @@ export const InnerBulkBloomPubDialog: React.FunctionComponent<{
                             <div
                                 css={css`
                                     margin-left: 28px;
+                                    // keep the overlay from overlapping its previous siblings
+                                    margin-top: 10px;
                                 `}
                             >
                                 <Div
@@ -145,9 +147,9 @@ export const InnerBulkBloomPubDialog: React.FunctionComponent<{
                                     `}
                                 >
                                     {`This file will cause these books to be
-                                    grouped under a single bookshelf in Bloom
-                                    Reader. This collection's bookshelf is set
-                                    to "${params.bookshelfLabel ?? ""}"`}
+                                grouped under a single bookshelf in Bloom
+                                Reader. This collection's bookshelf is set
+                                to "${params.bookshelfLabel ?? ""}"`}
                                 </Div>
                                 <div
                                     css={css`

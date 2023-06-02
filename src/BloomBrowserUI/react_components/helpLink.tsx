@@ -65,6 +65,12 @@ export const WhatsThisBlock: React.FunctionComponent<{
                     position: absolute !important;
                     right: 0;
                     top: 0;
+                    // The MUI component that builds the actual button adds padding, which causes
+                    // layout problems in some cases. So we reduce the vertical padding by 1 px top and bottom.
+                    // This is enough to keep the BulkBloomPubDialog from having a vertical scrollbar.
+                    // See BL-12249.
+                    padding-top: 5px;
+                    padding-bottom: 5px;
                 `}
                 href={props.url}
             >
