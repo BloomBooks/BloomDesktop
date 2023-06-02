@@ -114,7 +114,6 @@ const kBloomTranslationGroupClass = "bloom-translationGroup";
 
 const kAudioSplitId = "audio-split";
 
-const kRecordingModeControl: string = "audio-recordingModeControl";
 const kShowImageDescriptionControl: string = "audio-showImageDescription";
 const kPlaybackOrderClickHandler: string =
     "audio-playbackOrderControl-clickHandler";
@@ -166,7 +165,6 @@ export default class AudioRecording {
     private awaitingNewRecording: boolean;
 
     private audioSplitButton: HTMLButtonElement;
-    public recordingModeInput: HTMLInputElement; // Currently a checkbox, could change to a radio button in the future
     public showImageDescriptionInput: HTMLInputElement;
 
     public recordingMode: RecordingMode;
@@ -203,13 +201,6 @@ export default class AudioRecording {
         // Initialize to Unknown (as opposed to setting to the default Sentence) so we can identify
         // when we need to fetch from Collection Settings vs. when it's already set.
         this.recordingMode = RecordingMode.Unknown;
-
-        this.recordingModeInput = <HTMLInputElement>(
-            document.getElementById(kRecordingModeControl)!
-        );
-        // Initial state should be disabled so that enableRecordingMode will recognize it needs
-        // to initialize things on startup.
-        this.recordingModeInput.disabled = true;
 
         this.showImageDescriptionInput = <HTMLInputElement>(
             document.getElementById(kShowImageDescriptionControl)!

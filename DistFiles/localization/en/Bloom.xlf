@@ -2829,6 +2829,7 @@
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.ToolPurpose" sil:dynamic="true">
         <source xml:lang="en">Make an e-book that can play audio recordings while highlighting text.</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.ToolPurpose</note>
+        <note>We aren't using this in 5.5, but we may use it in the future</note>
       </trans-unit>
       <trans-unit id="EditTab.Trilingual">
         <source xml:lang="en">Three Languages</source>

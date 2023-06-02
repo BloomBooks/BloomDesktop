@@ -1816,7 +1816,6 @@ describe("audio recording tests", () => {
 
             const recording = new AudioRecording();
             recording.recordingMode = RecordingMode.Sentence;
-            recording.recordingModeInput = document.createElement("input");
 
             // Just to make sure that the code under test can read the current div at all.
             const currentTextBox = recording.getCurrentTextBox();
@@ -1827,10 +1826,6 @@ describe("audio recording tests", () => {
             recording.initializeAudioRecordingMode();
 
             expect(recording.recordingMode).toBe(RecordingMode.TextBox);
-            expect(recording.recordingModeInput.checked).toBe(
-                true,
-                "Checkbox state"
-            );
         });
 
         it("initializeAudioRecordingMode gets mode from current div if available (synchronous) (Sentence)", () => {
@@ -1840,7 +1835,6 @@ describe("audio recording tests", () => {
 
             const recording = new AudioRecording();
             recording.recordingMode = RecordingMode.Sentence;
-            recording.recordingModeInput = document.createElement("input");
 
             // Just to make sure that the code under test can read the current div at all.
             const currentDiv = recording.getCurrentTextBox();
@@ -1851,10 +1845,6 @@ describe("audio recording tests", () => {
             recording.initializeAudioRecordingMode();
 
             expect(recording.recordingMode).toBe(RecordingMode.Sentence);
-            expect(recording.recordingModeInput.checked).toBe(
-                false,
-                "Checkbox state"
-            );
         });
 
         it("initializeAudioRecordingMode gets mode from other divs on page as fallback (synchronous) (TextBox)", () => {
@@ -1864,7 +1854,6 @@ describe("audio recording tests", () => {
 
             const recording = new AudioRecording();
             recording.recordingMode = RecordingMode.Sentence;
-            recording.recordingModeInput = document.createElement("input");
 
             // Just to make sure that the code under test can read the current div at all.
             const currentDiv = recording.getCurrentTextBox();
@@ -1875,10 +1864,6 @@ describe("audio recording tests", () => {
             recording.initializeAudioRecordingMode();
 
             expect(recording.recordingMode).toBe(RecordingMode.TextBox);
-            expect(recording.recordingModeInput.checked).toBe(
-                true,
-                "Checkbox state"
-            );
         });
 
         it("initializeAudioRecordingMode gets mode from other divs on page as fallback (synchronous) (Sentence)", () => {
@@ -1890,7 +1875,6 @@ describe("audio recording tests", () => {
 
             const recording = new AudioRecording();
             recording.recordingMode = RecordingMode.TextBox;
-            recording.recordingModeInput = document.createElement("input");
 
             // Just to make sure that the code under test can read the current div at all.
             const currentDiv = recording.getCurrentTextBox();
@@ -1901,10 +1885,6 @@ describe("audio recording tests", () => {
             recording.initializeAudioRecordingMode();
 
             expect(recording.recordingMode).toBe(RecordingMode.Sentence);
-            expect(recording.recordingModeInput.checked).toBe(
-                false,
-                "Checkbox state"
-            );
         });
 
         it("initializeAudioRecordingMode identifies 4.3 audio-sentences (synchronous)", () => {
@@ -1914,7 +1894,6 @@ describe("audio recording tests", () => {
 
             const recording = new AudioRecording();
             recording.recordingMode = RecordingMode.TextBox;
-            recording.recordingModeInput = document.createElement("input");
 
             // Just to make sure that the code under test can read the current div at all.
             const currentDiv = recording.getCurrentTextBox();
@@ -1925,10 +1904,6 @@ describe("audio recording tests", () => {
             recording.initializeAudioRecordingMode();
 
             expect(recording.recordingMode).toBe(RecordingMode.Sentence);
-            expect(recording.recordingModeInput.checked).toBe(
-                false,
-                "Checkbox state"
-            );
         });
     });
 
