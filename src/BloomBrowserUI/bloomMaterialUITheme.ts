@@ -1,5 +1,9 @@
 import { createTheme, Theme } from "@mui/material/styles";
-import { kBloomDisabledOpacity, kBloomDisabledText } from "./utils/colorUtils";
+import {
+    kBloomDisabledOpacity,
+    kBloomDisabledText,
+    kBloomToolboxWhite
+} from "./utils/colorUtils";
 
 export const kBloomBlue = "#1d94a4";
 export const kBloomBlueTextBackground = "#19818f"; // darker for better contrast
@@ -218,7 +222,8 @@ export const toolboxTheme = createTheme({
             styleOverrides: {
                 root: {
                     paddingBottom: "0px",
-                    paddingTop: "0px"
+                    paddingTop: "0px",
+                    color: kBloomToolboxWhite
                 }
             }
         },
@@ -241,13 +246,24 @@ export const toolboxTheme = createTheme({
                     // buttons in the Talking book tool "Advanced" section look good next to each other
                     width: "100%",
                     textTransform: "none", // Material buttons are all caps by default
-                    color: toolboxTextColor
+                    color: toolboxTextColor,
+                    borderWidth: "2px",
+                    // set the color of the icon in the button to red
+                    "& .MuiButton-startIcon": {
+                        color: kBloomBlue
+                    }
                 },
                 outlined: {
                     "&.Mui-disabled": {
-                        // color: `${toolboxDisabledLabelColor} !important`, // TODO: still getting overwritten by audiorecording.less
+                        // color: `${toolboxDisabledLabelColor} !important`,
                         // borderColor: toolboxDisabledLabelColor
-                        //opacity: kToolboxDisabledOpacity
+                        borderColor: kBloomToolboxWhite,
+                        color: kBloomToolboxWhite,
+                        opacity: kToolboxDisabledOpacity,
+
+                        ".MuiButton-startIcon": {
+                            color: kBloomToolboxWhite
+                        }
                     }
                 }
             }

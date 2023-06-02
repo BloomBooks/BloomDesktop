@@ -13,16 +13,12 @@ import {
     Collapse,
     Divider,
     TooltipProps,
-    Checkbox,
-    FormControl,
     FormControlLabel,
-    FormLabel,
     RadioGroup,
     Radio,
     Typography
 } from "@mui/material";
 import { Span } from "../../../react_components/l10nComponents";
-//import { Checkbox } from "../../../react_components/checkbox";
 import { BloomTooltip } from "../../../react_components/BloomToolTip";
 import { toolboxTheme } from "../../../bloomMaterialUITheme";
 import { BloomSwitch } from "../../../react_components/BloomSwitch";
