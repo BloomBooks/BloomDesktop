@@ -51,6 +51,7 @@ import Recordable from "./recordable";
 import { getMd5 } from "./md5Util";
 import { setupImageDescriptions } from "../imageDescription/imageDescription";
 import { TalkingBookAdvancedButtons } from "./talkingBookAdvancedButtons";
+import { Update, UpdateDisabled } from "@mui/icons-material";
 
 enum Status {
     Disabled, // Can't use button now (e.g., Play when there is no recording)
@@ -114,13 +115,8 @@ const kBloomTranslationGroupClass = "bloom-translationGroup";
 
 const kAudioSplitId = "audio-split";
 
-const kShowImageDescriptionControl: string = "audio-showImageDescription";
-const kPlaybackOrderClickHandler: string =
-    "audio-playbackOrderControl-clickHandler";
 const kPlaybackOrderContainerClass: string =
     "bloom-playbackOrderControlsContainer";
-const kShowImageDescriptionClickHandler: string =
-    "audio-showImageDescription-clickHandler";
 
 const kEndTimeAttributeName: string = "data-audioRecordingEndTimes";
 
@@ -165,8 +161,8 @@ export default class AudioRecording {
     private awaitingNewRecording: boolean;
 
     private audioSplitButton: HTMLButtonElement;
-    public showImageDescriptionInput: HTMLInputElement;
 
+    private showingImageDescriptions: boolean;
     public recordingMode: RecordingMode;
     private previousRecordMode: RecordingMode;
     private haveAudio: boolean;
@@ -190,7 +186,6 @@ export default class AudioRecording {
     private playbackOrderCache: IPlaybackOrderInfo[] = [];
     private disablingOverlay: HTMLDivElement;
 
-    private isImageDescriptionActive: boolean = false;
     lastTimingsFilePath?: string; // enhance: just having the "last" one isn't as good for the user, but we're should of time to ship this out in 5.5
 
     constructor() {
@@ -202,9 +197,6 @@ export default class AudioRecording {
         // when we need to fetch from Collection Settings vs. when it's already set.
         this.recordingMode = RecordingMode.Unknown;
 
-        this.showImageDescriptionInput = <HTMLInputElement>(
-            document.getElementById(kShowImageDescriptionControl)!
-        );
         this.levelCanvas = <HTMLCanvasElement>(
             document.getElementById("audio-meter")!
         );
@@ -253,10 +245,6 @@ export default class AudioRecording {
         $("#audio-clear")
             .off()
             .click(e => this.clearRecordingAsync());
-
-        $("#" + kShowImageDescriptionClickHandler)
-            .off()
-            .click(e => this.toggleShowImageDescription());
 
         $("#player").off();
         const player = this.getMediaPlayer();
@@ -349,7 +337,6 @@ export default class AudioRecording {
             this.recordingMode = RecordingMode.Sentence;
         }
 
-        this.setRecordingModeInput();
         this.updateDisplay();
     }
 
@@ -429,24 +416,6 @@ export default class AudioRecording {
         }
 
         return recordingMode;
-    }
-
-    private setRecordingModeInput() {
-        // if (!this.recordingModeInput) {
-        //     // Button is null for some reason, no need to update its checked status. And don't bother doing anything else either.
-        //     return;
-        // }
-        // // We initialize the checkbox based on our state.
-        // if (this.recordingMode == RecordingMode.Sentence) {
-        //     this.setRecordingModeCheckbox(false);
-        // } else if (this.recordingMode == RecordingMode.TextBox) {
-        //     this.setRecordingModeCheckbox(true);
-        // } else {
-        //     console.assert(
-        //         false,
-        //         "Unimplemented format: " + this.recordingMode
-        //     );
-        // }
     }
 
     // At this point we are handling all missing dependencies the same.
@@ -675,7 +644,7 @@ export default class AudioRecording {
             if (transgroup.classList.contains("box-header-off")) {
                 return false;
             }
-            if (this.showingImageDescriptions()) {
+            if (this.showingImageDescriptions) {
                 // overlays are hidden, don't include them
                 if (
                     transgroup.parentElement?.classList?.contains(
@@ -1646,14 +1615,6 @@ export default class AudioRecording {
     // Returns a promise that is fulfilled when the play has been STARTED (not completed).
     public async listenAsync(): Promise<void> {
         this.resetAudioIfPaused();
-        const page = ToolBox.getPage();
-        if (
-            this.showingImageDescriptions() &&
-            (page?.getElementsByClassName("bloom-textOverPicture") ?? [])
-                .length > 0
-        ) {
-            this.toggleShowImageDescription();
-        }
 
         this.fixHighlighting();
 
@@ -1954,17 +1915,6 @@ export default class AudioRecording {
         this.updateDisplay();
     }
 
-    setShowImageDescriptionCheckbox(showingImageDescriptions: boolean) {
-        // This controls the checked state of the checkbox, which is the
-        // master indication of whether we're in this mode.
-        this.showImageDescriptionInput.checked = showingImageDescriptions;
-        // This sets a class on the label (not sure we use it for this checkbox)
-        this.setCheckboxLabelClass(
-            showingImageDescriptions,
-            kShowImageDescriptionClickHandler
-        );
-    }
-
     // It's a bit of a toss-up whether this function belongs here or in talkingBook.ts. It's primary
     // responsibility is to toggle the checkbox which is in toolbox land, so in that way it would
     // be more at home in talkingBooks.ts, which manages the toolbox. But many of the side effects
@@ -1972,12 +1922,10 @@ export default class AudioRecording {
     // page as well as the toolbox. Another reason is that other checkboxes in the toolbox, like
     // Show playback order buttons, have their logic here, so it feels cleaner to keep their handling
     // together in one place.
-    public toggleShowImageDescription() {
-        const showingImageDescriptions = !this.showImageDescriptionInput
-            .checked;
-        this.setShowImageDescriptionCheckbox(showingImageDescriptions);
+    public setShowingImageDescriptions(isOn: boolean) {
+        this.showingImageDescriptions = isOn;
         const page = ToolBox.getPage();
-        if (showingImageDescriptions) {
+        if (this.showingImageDescriptions) {
             // makes them visible
             page?.classList.add("bloom-showImageDescriptions");
             // If we don't already have them, set them up
@@ -2008,10 +1956,7 @@ export default class AudioRecording {
             this.removeAudioCurrent(page);
             this.setCurrentAudioElementToFirstAudioElementAsync();
         }
-        // Whether or not we had to move the selection, some button states may need to change.
-        // For example, perhaps there was previously nowhere for the 'next' button to take us,
-        // but now we revealed a overlay which is set to be after the current element.
-        this.updateButtonStateAsync("record");
+        this.updateDisplay();
     }
     private showPlaybackOrderUi(docBody: HTMLElement) {
         this.removeAudioCurrent(docBody);
@@ -2049,7 +1994,7 @@ export default class AudioRecording {
         this.sortOutTabindexValues();
         this.renderPlaybackControls();
         this.setDisableEverythingMode(true);
-        this.setPlaybackOrderCheckedClass(true);
+        this.inShowPlaybackOrderMode = true;
     }
 
     private renderPlaybackControls() {
@@ -2148,10 +2093,6 @@ export default class AudioRecording {
             element.parentElement!.removeChild(element);
         });
         this.setDisableEverythingMode(false);
-        if (!leaveChecked) {
-            this.setPlaybackOrderCheckedClass(false);
-            this.updateButtonStateAsync("check");
-        }
         this.setCurrentAudioElementToFirstAudioElementAsync();
     }
 
@@ -2205,10 +2146,6 @@ export default class AudioRecording {
                 checkboxLabel.classList.remove(checkedClass);
             }
         }
-    }
-
-    private setPlaybackOrderCheckedClass(checked: boolean) {
-        this.setCheckboxLabelClass(checked, kPlaybackOrderClickHandler);
     }
 
     // Update the input element (e.g. checkbox) which visually represents the recording mode and updates the textbox markup to reflect the new mode.
@@ -2586,13 +2523,7 @@ export default class AudioRecording {
         // Changing the page causes the previous page's audio to stop playing (be "emptied").
         ++this.currentAudioSessionNum;
 
-        this.isImageDescriptionActive = imageDescToolActive;
-        const page = ToolBox.getPage();
-        // The toolbox code already decided whether we should show image descriptions, but we
-        // need to bring the state of the checkbox into alignment.
-        const showingImageDescriptions =
-            !!page && page.classList.contains("bloom-showImageDescriptions");
-        this.setShowImageDescriptionCheckbox(showingImageDescriptions);
+        this.showingImageDescriptions = imageDescToolActive;
 
         // FYI, it is possible for newPageReady to be called without updateMarkup() being called
         // (e.g. when opening the toolbox with an empty text box).
@@ -2619,6 +2550,7 @@ export default class AudioRecording {
             // See comment on this method.
             this.ensureHighlight(20);
         }
+        this.updateDisplay();
     }
 
     private ensureHighlightToken;
@@ -2994,13 +2926,6 @@ export default class AudioRecording {
                 shouldScrollToElement: false
             });
         }
-    }
-
-    private showingImageDescriptions(): boolean {
-        return (
-            this.isImageDescriptionActive &&
-            this.showImageDescriptionInput.checked
-        );
     }
 
     public async setCurrentAudioElementToFirstAudioElementAsync(): Promise<HTMLElement | null> {
@@ -4416,6 +4341,10 @@ export default class AudioRecording {
                 inShowPlaybackOrderMode: this.inShowPlaybackOrderMode,
                 setShowPlaybackOrder: (isOn: boolean) => {
                     this.setShowPlaybackOrderMode(isOn);
+                },
+                showingImageDescriptions: this.showingImageDescriptions,
+                setShowingImageDescriptions: (isOn: boolean) => {
+                    this.setShowingImageDescriptions(isOn);
                 }
             }),
             container

@@ -104,6 +104,9 @@ div.ui-audioCurrent p {
 }
 
 .ui-audioBody {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
     padding-left: 15px;
     padding-right: 15px;
 
@@ -344,11 +347,11 @@ div.ui-audioCurrent p {
             padding-top: 35px;
         }
 
-        .help-link,
-        .audio-about {
+        .help-link {
             z-index: @disablingOverlayZindex + 1;
             // I have no idea why this next rule is necessary, but the z-index rule has no effect without it.
             position: relative;
+            margin-top: auto; //push to the bottom
         }
     }
 }

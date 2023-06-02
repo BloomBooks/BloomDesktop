@@ -208,8 +208,7 @@ export const toolboxTheme = createTheme({
                 label: {
                     fontSize: "10px",
                     "&.Mui-disabled": {
-                        color: `red !important`
-                        //opacity: kToolboxDisabledOpacity
+                        opacity: kToolboxDisabledOpacity
                     }
                 },
                 root: {
@@ -238,6 +237,17 @@ export const toolboxTheme = createTheme({
             }
         },
 
+        MuiSwitch: {
+            styleOverrides: {
+                track: {
+                    backgroundColor: kBloomBlue
+                },
+                thumb: {
+                    backgroundColor: kBloomToolboxWhite
+                }
+            }
+        },
+
         // set the border color of disabled buttons to kBloomBlue
         MuiButton: {
             styleOverrides: {
@@ -254,6 +264,7 @@ export const toolboxTheme = createTheme({
                     }
                 },
                 outlined: {
+                    justifyContent: "flex-start",
                     "&.Mui-disabled": {
                         // color: `${toolboxDisabledLabelColor} !important`,
                         // borderColor: toolboxDisabledLabelColor
