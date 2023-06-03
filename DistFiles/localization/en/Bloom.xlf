@@ -2806,9 +2806,10 @@
         <note>ID: EditTab.Toolbox.TalkingBookTool.ShowPlaybackOrder</note>
         <note>Shown if you open TalkingBookTool and then open the 'Advanced' subsection</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.TalkingBookTool.ShowImageDescription" sil:dynamic="true">
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.ShowImageDescriptions" sil:dynamic="true">
         <source xml:lang="en">Show image description</source>
-        <note>ID: EditTab.Toolbox.TalkingBookTool.ShowImageDescription</note>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.ShowImageDescriptions</note>
+        <note>Image descriptions are typed out, then recorded, so that the book can be used by the blind. This is a switch that shows the typed out image descriptions next to each image on the page.</note>
         <note>Shown if you open TalkingBookTool and then open the 'Advanced' subsection</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.SpeakLabel" sil:dynamic="true">

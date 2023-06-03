@@ -202,13 +202,23 @@ export const toolboxTheme = createTheme({
                 }
             }
         },
-        // Make MuiFormControlLabel use a 10px font
+
+        MuiFormGroup: {
+            styleOverrides: {
+                root: {
+                    // getting the spacing I want from radio groups
+                    "&[role=radiogroup]": { gap: "5px" }
+                }
+            }
+        },
+
         MuiFormControlLabel: {
             styleOverrides: {
                 label: {
                     fontSize: "10px",
                     "&.Mui-disabled": {
-                        opacity: kToolboxDisabledOpacity
+                        opacity: kToolboxDisabledOpacity,
+                        color: kBloomToolboxWhite
                     }
                 },
                 root: {
@@ -216,13 +226,19 @@ export const toolboxTheme = createTheme({
                 }
             }
         },
-        // make radio buttons closer together
+
         MuiRadio: {
             styleOverrides: {
                 root: {
+                    // make radio buttons closer together
                     paddingBottom: "0px",
                     paddingTop: "0px",
-                    color: kBloomToolboxWhite
+                    color: kBloomToolboxWhite,
+                    "&.Mui-disabled": {
+                        borderColor: kBloomToolboxWhite,
+                        color: kBloomToolboxWhite,
+                        opacity: kToolboxDisabledOpacity
+                    }
                 }
             }
         },
@@ -231,7 +247,7 @@ export const toolboxTheme = createTheme({
             styleOverrides: {
                 h2: {
                     fontSize: "11px",
-                    fontWeight: "bold",
+
                     marginBottom: "5px"
                 }
             }
@@ -239,6 +255,11 @@ export const toolboxTheme = createTheme({
 
         MuiSwitch: {
             styleOverrides: {
+                root: {
+                    // for some reason, without this tweak,
+                    // the switch sticks out to the left over the left of its container
+                    marginLeft: "6px"
+                },
                 track: {
                     backgroundColor: kBloomBlue
                 },

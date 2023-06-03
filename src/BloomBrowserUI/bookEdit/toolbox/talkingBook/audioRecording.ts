@@ -4097,7 +4097,6 @@ export default class AudioRecording {
         // 3- An unrecoverable error has occurred
         this.setStatus("record", Status.Disabled);
         this.setStatus("play", Status.Disabled);
-        this.haveAudio = false;
         this.setStatus("split", Status.Disabled);
         this.setStatus("next", Status.Disabled);
         this.setStatus("prev", Status.Disabled);
@@ -4345,6 +4344,27 @@ export default class AudioRecording {
                 showingImageDescriptions: this.showingImageDescriptions,
                 setShowingImageDescriptions: (isOn: boolean) => {
                     this.setShowingImageDescriptions(isOn);
+                },
+                editTimingsFile: async () => {
+                    postJson("fileIO/openFileInDefaultEditor", {
+                        path: this.lastTimingsFilePath
+                    });
+                },
+                applyTimingsFile: async () => {
+                    const result = await postJson("fileIO/chooseFile", {
+                        title: "Choose Timing File",
+                        fileTypes: [
+                            {
+                                name: "Tab-separated Timing File",
+                                extensions: ["txt", "tsv"]
+                            }
+                        ],
+                        defaultPath: this.lastTimingsFilePath
+                    });
+                    if (!result || !result.data) {
+                        return;
+                    }
+                    this.split(result.data);
                 }
             }),
             container

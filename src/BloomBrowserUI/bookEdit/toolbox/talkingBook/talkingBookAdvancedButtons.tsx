@@ -34,6 +34,8 @@ export const TalkingBookAdvancedButtons: React.FunctionComponent<{
     hasRecordableDivs: boolean;
     handleImportRecordingClick: () => void;
     split: (timingFilePath: string) => Promise<void>;
+    editTimingsFile: () => void;
+    applyTimingsFile: () => void;
     enableRecordingModeControl: boolean;
     setRecordingMode: (recordingMode: RecordingMode) => Promise<void>;
     inShowPlaybackOrderMode: boolean;
@@ -61,7 +63,31 @@ export const TalkingBookAdvancedButtons: React.FunctionComponent<{
         <ThemeProvider theme={toolboxTheme}>
             <TriangleCollapse
                 initiallyOpen={true} /*for dev. enhance: remember the state*/
+                css={css`
+                    padding-left: 10px;
+                `}
             >
+                <div>{props.lastTimingsFilePath}</div>
+                <BloomTooltip
+                    tip={`Press this to insert a "|" character into the text at the current cursor position. This character tells Bloom to introduce a new segment for the purpose of highlighting the text during audio playback. You can also just type the "|" character using your keyboard.`}
+                    showDisabled={!props.hasRecordableDivs}
+                    tipWhenDisabled={`First select a box has something to record.`}
+                    {...commonTooltipProps}
+                >
+                    <BloomButton
+                        id="insert-segment-marker-button"
+                        iconBeforeText={React.createElement(
+                            InsertSegmentMarkerIcon
+                        )}
+                        hasText={true}
+                        variant="outlined"
+                        size="small"
+                        enabled={props.hasRecordableDivs}
+                        l10nKey="EditTab.Toolbox.TalkingBookTool.InsertSegmentMarker"
+                        onClick={props.insertSegmentMarker}
+                    />
+                </BloomTooltip>
+                <Divider />
                 <BloomTooltip
                     showDisabled={!props.enableRecordingModeControl}
                     tipWhenDisabled={
@@ -69,9 +95,9 @@ export const TalkingBookAdvancedButtons: React.FunctionComponent<{
                             l10nKey:
                                 "EditTab.Toolbox.TalkingBookTool.RecordingModeXMatter"
                         }) ||
-                        (props.hasRecordableDivs
-                            ? `First select a box has something to record.`
-                            : `If you want to turn change this mode, first use the "Clear" button to remove your recording.`)
+                        (props.hasAudio
+                            ? `If you want to turn change this mode, first use the "Clear" button to remove your recording.`
+                            : `First select a box has something to record.`)
                     }
                     {...commonTooltipProps}
                 >
@@ -88,11 +114,11 @@ export const TalkingBookAdvancedButtons: React.FunctionComponent<{
                             )
                         }
                     >
-                        {" "}
                         <BloomTooltip
                             tip={
                                 "Record one sentence at a time. You can break up sentences using the `|` character."
                             }
+                            showDisabled={!props.enableRecordingModeControl}
                             {...commonTooltipProps}
                         >
                             <FormControlLabel
@@ -118,107 +144,82 @@ export const TalkingBookAdvancedButtons: React.FunctionComponent<{
                         </BloomTooltip>
                     </RadioGroup>
                 </BloomTooltip>
-                <BloomTooltip
-                    showDisabled={!enabledImportRecordingButton}
-                    tip={"Import an mp3 recording of the whole text box."}
-                    tipWhenDisabled={
-                        "This is disabled because this box is not in `Record by Text Box` mode."
-                    }
-                    {...commonTooltipProps}
+                <div
+                    css={css`
+                        display: flex;
+                        flex-direction: column;
+                        gap: 10px;
+                        padding-left: 10px;
+                    `}
                 >
-                    <BloomButton
-                        id="import-recording-button"
-                        iconBeforeText={React.createElement(ImportIcon)}
-                        hasText={true}
-                        variant="outlined"
-                        size="small"
-                        enabled={enabledImportRecordingButton}
-                        l10nKey="EditTab.Toolbox.TalkingBookTool.ImportRecording"
-                        onClick={() => props.handleImportRecordingClick()}
-                    />
-                </BloomTooltip>
-                <BloomTooltip
-                    id="edit-timings-file-button-tooltip"
-                    tip={
-                        "Open the timing file in a text editor. After you save your changes, click the `Apply Timings File` button."
-                    }
-                    showDisabled={!enableEditTimings}
-                    tipWhenDisabled={`This is only enabled after doing a "Split" of a recording of the whole text box.`}
-                    {...commonTooltipProps}
-                >
-                    <BloomButton
-                        id="edit-timings-file-button"
-                        iconBeforeText={React.createElement(
-                            EditTimingsFileIcon
-                        )}
-                        hasText={true}
-                        variant="outlined"
-                        size="small"
-                        enabled={enableEditTimings}
-                        l10nKey="EditTab.Toolbox.TalkingBookTool.EditTimingsFile"
-                        onClick={async () => {
-                            const result = await postJson("fileIO/openFile", {
-                                path: props.lastTimingsFilePath
-                            });
-                        }}
-                    />
-                </BloomTooltip>
-                <BloomTooltip
-                    tip={
-                        "This lets you choose a file containing timings for aligning the audio with the text. The format of the file is tab-separated values, with the first column being the start time in seconds, and the second column being the end time in seconds. The third column is often a label, but it will be ignored."
-                    }
-                    showDisabled={!enableEditTimings}
-                    tipWhenDisabled={`This is only enabled after doing a "Split" of a recording of the whole text box.`}
-                    {...commonTooltipProps}
-                >
-                    <BloomButton
-                        id="apply-timings-file-button"
-                        iconBeforeText={React.createElement(UseTimingsFileIcon)}
-                        hasText={true}
-                        variant="outlined"
-                        size="small"
-                        enabled={
-                            props.recordingMode === RecordingMode.TextBox &&
-                            props.hasAudio
+                    <BloomTooltip
+                        showDisabled={!enabledImportRecordingButton}
+                        tip={"Import an mp3 recording of the whole text box."}
+                        tipWhenDisabled={
+                            "This is disabled because this box is not in `Record by Text Box` mode."
                         }
-                        l10nKey="EditTab.Toolbox.TalkingBookTool.ApplyTimingsFile"
-                        onClick={async () => {
-                            const result = await postJson("fileIO/chooseFile", {
-                                title: "Choose Timing File",
-                                fileTypes: [
-                                    {
-                                        name: "Tab-separated Timing File",
-                                        extensions: ["txt", "tsv"]
-                                    }
-                                ],
-                                defaultPath: props.lastTimingsFilePath
-                            });
-                            if (!result || !result.data) {
-                                return;
+                        {...commonTooltipProps}
+                    >
+                        <BloomButton
+                            id="import-recording-button"
+                            iconBeforeText={React.createElement(ImportIcon)}
+                            hasText={true}
+                            variant="outlined"
+                            size="small"
+                            enabled={enabledImportRecordingButton}
+                            l10nKey="EditTab.Toolbox.TalkingBookTool.ImportRecording"
+                            onClick={() => props.handleImportRecordingClick()}
+                        />
+                    </BloomTooltip>
+                    <BloomTooltip
+                        id="edit-timings-file-button-tooltip"
+                        tip={
+                            "Open the timing file in a text editor. After you save your changes, click the `Apply Timings File` button."
+                        }
+                        showDisabled={!enableEditTimings}
+                        tipWhenDisabled={`This is only enabled after doing a "Split" of a recording of the whole text box.`}
+                        {...commonTooltipProps}
+                    >
+                        <BloomButton
+                            id="edit-timings-file-button"
+                            iconBeforeText={React.createElement(
+                                EditTimingsFileIcon
+                            )}
+                            hasText={true}
+                            variant="outlined"
+                            size="small"
+                            enabled={enableEditTimings}
+                            l10nKey="EditTab.Toolbox.TalkingBookTool.EditTimingsFile"
+                            onClick={props.editTimingsFile}
+                        />
+                    </BloomTooltip>
+                    <BloomTooltip
+                        tip={
+                            "This lets you choose a file containing timings for aligning the audio with the text. The format of the file is tab-separated values, with the first column being the start time in seconds, and the second column being the end time in seconds. The third column is often a label, but it will be ignored."
+                        }
+                        showDisabled={
+                            props.recordingMode !== RecordingMode.TextBox ||
+                            !props.hasAudio
+                        }
+                        {...commonTooltipProps}
+                    >
+                        <BloomButton
+                            id="apply-timings-file-button"
+                            iconBeforeText={React.createElement(
+                                UseTimingsFileIcon
+                            )}
+                            hasText={true}
+                            variant="outlined"
+                            size="small"
+                            enabled={
+                                props.recordingMode === RecordingMode.TextBox &&
+                                props.hasAudio
                             }
-                            props.split(result.data);
-                        }}
-                    />
-                </BloomTooltip>
-                <BloomTooltip
-                    tip={`Insert a "|" character into the text at the current cursor position. This character tells Bloom to introduce a new segment for the purpose of highlighting the text during audio playback. You can also just type the "|" character using your keyboard.`}
-                    showDisabled={!props.hasRecordableDivs}
-                    tipWhenDisabled={`First select a box has something to record.`}
-                    {...commonTooltipProps}
-                >
-                    <BloomButton
-                        id="insert-segment-marker-button"
-                        iconBeforeText={React.createElement(
-                            InsertSegmentMarkerIcon
-                        )}
-                        hasText={true}
-                        variant="outlined"
-                        size="small"
-                        enabled={props.hasRecordableDivs}
-                        l10nKey="EditTab.Toolbox.TalkingBookTool.InsertSegmentMarker"
-                        onClick={props.insertSegmentMarker}
-                    />
-                </BloomTooltip>
+                            l10nKey="EditTab.Toolbox.TalkingBookTool.ApplyTimingsFile"
+                            onClick={props.applyTimingsFile}
+                        />
+                    </BloomTooltip>
+                </div>
                 <Divider />
                 <BloomTooltip
                     css={css`
@@ -242,18 +243,18 @@ export const TalkingBookAdvancedButtons: React.FunctionComponent<{
                         highlightWhenTrue={true}
                     />
                 </BloomTooltip>
+                <BloomSwitch
+                    size="small"
+                    checked={props.showingImageDescriptions}
+                    onChange={() =>
+                        props.setShowingImageDescriptions(
+                            !props.showingImageDescriptions
+                        )
+                    }
+                    l10nKey="EditTab.Toolbox.TalkingBookTool.ShowImageDescription"
+                    highlightWhenTrue={true}
+                />
             </TriangleCollapse>
-            <BloomSwitch
-                size="small"
-                checked={props.showingImageDescriptions}
-                onChange={() =>
-                    props.setShowingImageDescriptions(
-                        !props.showingImageDescriptions
-                    )
-                }
-                l10nKey="EditTab.Toolbox.TalkingBookTool.ShowImageDescription"
-                highlightWhenTrue={true}
-            />
         </ThemeProvider>
     );
 };

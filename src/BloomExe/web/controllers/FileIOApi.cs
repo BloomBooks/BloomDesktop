@@ -39,7 +39,7 @@ namespace Bloom.web.controllers
 
 		public void RegisterWithApiHandler(BloomApiHandler apiHandler)
 		{
-			apiHandler.RegisterEndpointLegacy("fileIO/openFile", OpenFile, true);
+			apiHandler.RegisterEndpointLegacy("fileIO/openFileInDefaultEditor", OpenFile, true);
 			apiHandler.RegisterEndpointLegacy("fileIO/chooseFile", ChooseFile, true);
 			apiHandler.RegisterEndpointLegacy("fileIO/getSpecialLocation", GetSpecialLocation, true);
 			apiHandler.RegisterEndpointLegacy("fileIO/copyFile", CopyFile, true);
