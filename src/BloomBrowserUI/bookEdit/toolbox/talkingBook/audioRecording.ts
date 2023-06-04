@@ -50,7 +50,7 @@ import PlaybackOrderControls from "../../../react_components/playbackOrderContro
 import Recordable from "./recordable";
 import { getMd5 } from "./md5Util";
 import { setupImageDescriptions } from "../imageDescription/imageDescription";
-import { TalkingBookAdvancedButtons } from "./talkingBookAdvancedButtons";
+import { TalkingBookAdvancedSection } from "./talkingBookAdvancedSection";
 import { Update, UpdateDisabled } from "@mui/icons-material";
 
 enum Status {
@@ -1829,12 +1829,13 @@ export default class AudioRecording {
     // Clear the recording for this sentence
     public async clearRecordingAsync(): Promise<void> {
         toastr.clear();
+
         this.resetAudioIfPaused();
 
         if (!this.isEnabledOrExpected("clear")) {
             return;
         }
-
+        this.lastTimingsFilePath = undefined;
         // First determine which IDs we need to delete.
         const elementIdsToDelete: string[] = [];
         if (this.recordingMode == RecordingMode.Sentence) {
@@ -1956,6 +1957,10 @@ export default class AudioRecording {
             this.removeAudioCurrent(page);
             this.setCurrentAudioElementToFirstAudioElementAsync();
         }
+        // Whether or not we had to move the selection, some button states may need to change.
+        // For example, perhaps there was previously nowhere for the 'next' button to take us,
+        // but now we revealed a overlay which is set to be after the current element.
+        this.updateButtonStateAsync("record");
         this.updateDisplay();
     }
     private showPlaybackOrderUi(docBody: HTMLElement) {
@@ -2522,6 +2527,7 @@ export default class AudioRecording {
     ): Promise<void> {
         // Changing the page causes the previous page's audio to stop playing (be "emptied").
         ++this.currentAudioSessionNum;
+        this.lastTimingsFilePath = undefined;
 
         this.showingImageDescriptions = imageDescToolActive;
 
@@ -2713,7 +2719,7 @@ export default class AudioRecording {
         return false;
     }
 
-    // Asychronously works out how to update the markup on the specified text box, but only if the operation is currently allowed.
+    // Asynchronously works out how to update the markup on the specified text box, but only if the operation is currently allowed.
     // Returns a function which will actually do the update (but should only be executed if no further edits happened in the meantime).
     private async tryGetUpdateMarkupForTextBoxActionAsync(
         textBox: HTMLElement
@@ -3893,17 +3899,20 @@ export default class AudioRecording {
             forceRedisplay: true
         });
         this.showBusy();
-        get("audioSegmentation/checkAutoSegmentDependencies", result => {
-            if (result.data === "FALSE") {
-                // The specific missing dependency is only reported in the error log on the C# side.
-                this.handleMissingDependency();
-                this.setStatus("split", Status.Enabled);
-                this.endBusy();
-            } else {
-                this.autoSegment(manualTimingsPath);
-                // endBusy is handled when promises in autoSegment complete.
+        await get(
+            "audioSegmentation/checkAutoSegmentDependencies",
+            async result => {
+                if (result.data === "FALSE") {
+                    // The specific missing dependency is only reported in the error log on the C# side.
+                    this.handleMissingDependency();
+                    this.setStatus("split", Status.Enabled);
+                    this.endBusy();
+                } else {
+                    await this.autoSegment(manualTimingsPath);
+                    // endBusy is handled when promises in autoSegment complete.
+                }
             }
-        });
+        );
     }
     // Callback for when the user clicks on the "Auto Segment" button.
     // This will automatically segment the audio to synchronize with the text (a.k.a. forced alignment)
@@ -3912,7 +3921,7 @@ export default class AudioRecording {
     // * Call API server to split the whole audio file into pieces, one piece per sentence.
     // *   (Black Box internals:  by using Aeneas to find the timing of each sentence start, then FFMPEG to split)
     // * Update the state of the UI to utilize the new files created by API server
-    private autoSegment(manualTimingsPath?: string): void {
+    private async autoSegment(manualTimingsPath?: string): Promise<void> {
         this.audioSplitButton.setAttribute("title", ""); // remove any error tooltips
 
         // First, check if there's even an audio recorded yet.
@@ -3950,7 +3959,7 @@ export default class AudioRecording {
             this.disableInteraction();
             // this.setStatus("split", Status.Active);  // Now we decide to just keep it disabled instead.
 
-            postJson(
+            await postJson(
                 "audioSegmentation/getForcedAlignmentTimings", // Or can use "audioSegmentation/autoSegmentAudio" to create hard splits of the audio
                 JSON.stringify(inputParameters),
 
@@ -4127,11 +4136,7 @@ export default class AudioRecording {
         }
     }
 
-    public processAutoSegmentResponse(
-        result: AxiosResponse<any>,
-        // eslint-disable-next-line @typescript-eslint/no-empty-function
-        doneCallback = () => {}
-    ): void {
+    public processAutoSegmentResponse(result: AxiosResponse<any>): void {
         const isSuccess = result && result.data;
 
         if (isSuccess) {
@@ -4181,7 +4186,6 @@ export default class AudioRecording {
             }
         } else {
             this.changeStateAndSetExpectedAsync("record");
-            doneCallback();
 
             // If there is a more detailed error from C#, it should be reported via ErrorReport.ReportNonFatal[...]
 
@@ -4311,7 +4315,7 @@ export default class AudioRecording {
             return;
         }
         ReactDOM.render(
-            React.createElement(TalkingBookAdvancedButtons, {
+            React.createElement(TalkingBookAdvancedSection, {
                 isXmatter: ToolBox.isXmatterPage(),
 
                 enableRecordingModeControl:
@@ -4364,7 +4368,8 @@ export default class AudioRecording {
                     if (!result || !result.data) {
                         return;
                     }
-                    this.split(result.data);
+
+                    await this.split(result.data);
                 }
             }),
             container

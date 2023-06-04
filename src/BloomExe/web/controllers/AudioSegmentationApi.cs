@@ -353,7 +353,6 @@ namespace Bloom.web.controllers
 			string textFragmentsFilename = Path.Combine(directoryName, $"{requestParameters.audioFilenameBase}_fragments.txt");
 
 
-			response.timingsFilePath = Path.Combine(directoryName, $"{requestParameters.audioFilenameBase}_timings.{kTimingsOutputFormat}");
 
 			// Clean up the fragments
 			audioTextFragments = audioTextFragments.Where(obj => !String.IsNullOrWhiteSpace(obj.fragmentText)); // Remove entries containing only whitespace
@@ -381,6 +380,7 @@ namespace Bloom.web.controllers
 
 				if (!string.IsNullOrEmpty(requestParameters.manualTimingsPath))
 				{
+					response.timingsFilePath = Path.Combine(directoryName, requestParameters.manualTimingsPath);
 					Logger.WriteEvent("AudioSegmentationApi applying manual timings file.");
 					var lines = RobustFile.ReadAllLines(requestParameters.manualTimingsPath);
 					timingStartEndRangeList = ParseTimingFileTSV(lines);
@@ -396,6 +396,7 @@ namespace Bloom.web.controllers
 				}
 				else
 				{
+					response.timingsFilePath = Path.Combine(directoryName, $"{requestParameters.audioFilenameBase}_timings.{kTimingsOutputFormat}");
 					timingStartEndRangeList = GetSplitStartEndTimings(audioFilenameToSegment, textFragmentsFilename, response.timingsFilePath, langCode);
 				}
 			}

@@ -8,10 +8,7 @@ import {
     InsertSegmentMarkerIcon,
     EditTimingsFileIcon
 } from "./TalkingBookToolboxIcons";
-import { postJson } from "../../../utils/bloomApi";
 import {
-    Button,
-    Collapse,
     Divider,
     TooltipProps,
     FormControlLabel,
@@ -19,13 +16,13 @@ import {
     Radio,
     Typography
 } from "@mui/material";
-import { Span } from "../../../react_components/l10nComponents";
 import { BloomTooltip } from "../../../react_components/BloomToolTip";
 import { toolboxTheme } from "../../../bloomMaterialUITheme";
 import { BloomSwitch } from "../../../react_components/BloomSwitch";
 import { RecordingMode } from "./audioRecording";
+import { TriangleCollapse } from "../../../react_components/TriangleCollapse";
 
-export const TalkingBookAdvancedButtons: React.FunctionComponent<{
+export const TalkingBookAdvancedSection: React.FunctionComponent<{
     isXmatter: boolean;
     hasAudio: boolean;
     lastTimingsFilePath?: string;
@@ -67,7 +64,6 @@ export const TalkingBookAdvancedButtons: React.FunctionComponent<{
                     padding-left: 10px;
                 `}
             >
-                <div>{props.lastTimingsFilePath}</div>
                 <BloomTooltip
                     tip={`Press this to insert a "|" character into the text at the current cursor position. This character tells Bloom to introduce a new segment for the purpose of highlighting the text during audio playback. You can also just type the "|" character using your keyboard.`}
                     showDisabled={!props.hasRecordableDivs}
@@ -252,69 +248,8 @@ export const TalkingBookAdvancedButtons: React.FunctionComponent<{
                         )
                     }
                     l10nKey="EditTab.Toolbox.TalkingBookTool.ShowImageDescription"
-                    highlightWhenTrue={true}
                 />
             </TriangleCollapse>
         </ThemeProvider>
-    );
-};
-
-// todo: move this to its own component
-const TriangleCollapse: React.FC<{
-    initiallyOpen: boolean;
-    children: React.ReactNode;
-}> = props => {
-    const [open, setOpen] = React.useState(props.initiallyOpen);
-
-    const handleClick = () => {
-        setOpen(!open);
-    };
-
-    return (
-        <div
-            css={css`
-                display: flex;
-                flex-direction: column;
-                gap: 5px;
-            `}
-        >
-            <Button
-                onClick={handleClick}
-                css={css`
-                    justify-content: start;
-                    text-transform: none;
-                    padding-left: 0;
-                `}
-            >
-                <svg
-                    width="10"
-                    height="10"
-                    css={css`
-                        transition: transform 0.2s ease-in-out;
-                        transform: ${open ? "rotate(135deg)" : "rotate(90deg)"};
-                    `}
-                >
-                    <path d="M 0 10 L 5 0 L 10 10 Z" fill="white" />
-                </svg>
-                <Span
-                    css={css`
-                        margin-left: 5px;
-                    `}
-                    l10nKey="Common.Advanced"
-                ></Span>
-            </Button>
-            <Collapse
-                in={open}
-                css={css`
-                    .MuiCollapse-wrapperInner {
-                        display: flex;
-                        flex-direction: column;
-                        gap: 5px;
-                    }
-                `}
-            >
-                {props.children}
-            </Collapse>
-        </div>
     );
 };

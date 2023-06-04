@@ -2,7 +2,7 @@ import { css } from "@emotion/react";
 import * as React from "react";
 import { FormControlLabel, Switch, SwitchProps } from "@mui/material";
 import { useL10n } from "./l10nHooks";
-import { kBloomGold } from "../bloomMaterialUITheme";
+import { kBloomBlue, kBloomGold } from "../bloomMaterialUITheme";
 
 interface IProps extends SwitchProps {
     className?: string; // carry in the css props from the caller
@@ -20,9 +20,10 @@ export const BloomSwitch: React.FunctionComponent<IProps> = props => {
             label={label}
             labelPlacement="end"
             css={
-                props.highlightWhenTrue &&
                 props.checked &&
-                kHighlightSwitchWhenTrueCSS
+                (props.highlightWhenTrue
+                    ? kHighlightSwitchWhenTrueCSS
+                    : kNormalStylingWhenTrueCSS)
             }
             className={props.className} // carry in the css props from the caller
         />
@@ -37,5 +38,15 @@ const kHighlightSwitchWhenTrueCSS = css`
     // actually under the .Mui-Checked element. Sigh.
     .MuiSwitch-track {
         background-color: ${kBloomGold} !important;
+    }
+`;
+const kNormalStylingWhenTrueCSS = css`
+    .MuiSwitch-thumb {
+        background-color: ${kBloomBlue};
+    }
+    // we want this, but it doesn't work because the track isn't
+    // actually under the .Mui-Checked element. Sigh.
+    .MuiSwitch-track {
+        background-color: ${kBloomBlue} !important;
     }
 `;
