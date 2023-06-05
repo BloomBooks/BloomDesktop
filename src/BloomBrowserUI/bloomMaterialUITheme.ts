@@ -186,6 +186,8 @@ export const toolboxTheme = createTheme({
                     fontSize: "12px",
                     fontWeight: "normal",
 
+                    width: "180px",
+
                     // padding: "10px",
                     // marginLeft: "10px",
                     // marginRight: "10px",
