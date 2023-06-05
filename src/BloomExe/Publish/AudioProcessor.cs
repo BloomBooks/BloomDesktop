@@ -7,6 +7,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Xml;
 using Bloom.Edit;
+using Bloom.Utils;
 using SIL.CommandLineProcessing;
 using SIL.IO;
 using SIL.Progress;
@@ -144,9 +145,7 @@ namespace Bloom.Publish
 		/// </summary>
 		public static string MergeAudioFiles(IEnumerable<string> mergeFiles, string combinedAudioPath)
 		{
-			var ffmpeg = "/usr/bin/ffmpeg"; // standard Linux location
-			if (SIL.PlatformUtilities.Platform.IsWindows)
-				ffmpeg = Path.Combine(BloomFileLocator.GetCodeBaseFolder(), "ffmpeg.exe");
+			var ffmpeg = MiscUtils.FindFfmpegProgram();
 			if (RobustFile.Exists(ffmpeg))
 			{
 				// A command something like
