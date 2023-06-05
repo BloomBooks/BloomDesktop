@@ -116,10 +116,6 @@ div.ui-audioCurrent p {
             color: @textColor;
         }
 
-        #advanced-talking-book-controls-react-container disabled {
-            color: red;
-        }
-
         background-color: @toolboxBackgroundColor;
 
         background-position: center;
@@ -350,8 +346,6 @@ div.ui-audioCurrent p {
 
     .help-link {
         z-index: @disablingOverlayZindex + 1;
-        // I have no idea why this next rule is necessary, but the z-index rule has no effect without it.
-        position: relative;
         margin-top: auto; //push to the bottom
     }
 }
@@ -470,42 +464,6 @@ body .cursor-progress {
 .toast-toolbox-bottom {
     left: 32px;
     bottom: 46px;
-}
-
-// TEMP: these controls are going away
-#audio-recordingModeControl-wrapper,
-#audio-playbackOrderControl-wrapper {
-    opacity: 0.1;
-}
-
-#import-advanced-container {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-
-    #import-recording-button,
-    #apply-timings-file-button,
-    #insert-segment-marker-button,
-    #edit-timings-file-button {
-        // &:disabled {
-        //     opacity: 0.4;
-        // }
-
-        // font-family: @UIFontStack;
-
-        //text-transform: none; // Material buttons are all caps by default
-
-        // Ok, not ideal, but we add these rules to override Material's defaults and
-        // make the icon and text align with the (non-Material) checkbox above it
-        .MuiButton-startIcon {
-            margin-left: -1px;
-            margin-right: 5px;
-        }
-
-        // .MuiButton-iconSizeSmall > :first-child {
-        //     font-size: 16px;
-        // }
-    }
 }
 
 #mic-problem-message {

@@ -181,16 +181,12 @@ export const toolboxTheme = createTheme({
         MuiTooltip: {
             styleOverrides: {
                 tooltip: {
-                    placement: "bottom", // DOESN'T SEEM TO WORKtoolbox is currently its own iframe, so we can't spill out to the left yet
+                    placement: "bottom",
                     backgroundColor: kBloomBlueTextBackground,
                     fontSize: "12px",
                     fontWeight: "normal",
 
-                    width: "180px",
-
-                    // padding: "10px",
-                    // marginLeft: "10px",
-                    // marginRight: "10px",
+                    width: "180px", // width of the toolbox (which is 200px) minus a bit of padding
                     a: {
                         color: "white",
                         textDecorationColor: "white"
@@ -289,8 +285,6 @@ export const toolboxTheme = createTheme({
                 outlined: {
                     justifyContent: "flex-start",
                     "&.Mui-disabled": {
-                        // color: `${toolboxDisabledLabelColor} !important`,
-                        // borderColor: toolboxDisabledLabelColor
                         borderColor: kBloomToolboxWhite,
                         color: kBloomToolboxWhite,
                         opacity: kToolboxDisabledOpacity,
