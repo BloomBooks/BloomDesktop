@@ -3125,30 +3125,10 @@
         <target xml:lang="fr" state="final">Effacer</target>
         <note>ID: EditTab.Toolbox.TalkingBookTool.Clear</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.TalkingBookTool.ESpeakPreview.Error" approved="yes">
-        <source xml:lang="en">eSpeak failed.</source>
-        <target xml:lang="fr" state="final">eSpeak a échoué.</target>
-        <note>ID: EditTab.Toolbox.TalkingBookTool.ESpeakPreview.Error</note>
-      </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.Listen" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Listen to the whole page</source>
         <target xml:lang="fr" state="final">Écoutez l'intégralité de la page</target>
         <note>ID: EditTab.Toolbox.TalkingBookTool.Listen</note>
-      </trans-unit>
-      <trans-unit id="EditTab.Toolbox.TalkingBookTool.ImportRecording" sil:dynamic="true" approved="yes">
-        <source xml:lang="en">Import Recording</source>
-        <target xml:lang="fr" state="final">Importer Enregistrement</target>
-        <note>ID: EditTab.Toolbox.TalkingBookTool.ImportRecording</note>
-      </trans-unit>
-      <trans-unit id="EditTab.Toolbox.TalkingBookTool.ImportRecording.ConfirmReplace" sil:dynamic="true" approved="yes">
-        <source xml:lang="en">Replace with new audio?</source>
-        <target xml:lang="fr" state="final">Remplacer par un nouvel enregistrement?</target>
-        <note>ID: EditTab.Toolbox.TalkingBookTool.ImportRecording.ConfirmReplace</note>
-      </trans-unit>
-      <trans-unit id="EditTab.Toolbox.TalkingBookTool.ImportRecording.ConfirmReplaceMessage" sil:dynamic="true" approved="yes">
-        <source xml:lang="en">If you import this recording, it will replace all the audio for this text box.</source>
-        <target xml:lang="fr" state="final">Si vous importez cet enregistrement, il remplacera tout l'enregistrement audio de cette zone de texte.</target>
-        <note>ID: EditTab.Toolbox.TalkingBookTool.ImportRecording.ConfirmReplaceMessage</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.LookAtSentenceLabel" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Look at the highlighted text</source>

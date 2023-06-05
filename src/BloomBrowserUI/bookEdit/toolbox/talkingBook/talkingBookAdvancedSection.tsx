@@ -8,14 +8,8 @@ import {
     InsertSegmentMarkerIcon,
     EditTimingsFileIcon
 } from "./TalkingBookToolboxIcons";
-import {
-    Divider,
-    TooltipProps,
-    FormControlLabel,
-    RadioGroup,
-    Radio,
-    Typography
-} from "@mui/material";
+import { Divider, TooltipProps, RadioGroup, Typography } from "@mui/material";
+import { MuiRadio } from "../../../react_components/muiRadio";
 import { BloomTooltip } from "../../../react_components/BloomToolTip";
 import { toolboxTheme } from "../../../bloomMaterialUITheme";
 import { BloomSwitch } from "../../../react_components/BloomSwitch";
@@ -65,9 +59,15 @@ export const TalkingBookAdvancedSection: React.FunctionComponent<{
                 `}
             >
                 <BloomTooltip
-                    tip={`Press this to insert a "|" character into the text at the current cursor position. This character tells Bloom to introduce a new segment for the purpose of highlighting the text during audio playback. You can also just type the "|" character using your keyboard.`}
+                    tip={{
+                        l10nKey:
+                            "EditTab.Toolbox.TalkingBookTool.InsertSegmentMarkerTip"
+                    }}
                     showDisabled={!props.hasRecordableDivs}
-                    tipWhenDisabled={`First select a box has something to record.`}
+                    tipWhenDisabled={{
+                        l10nKey:
+                            "EditTab.Toolbox.TalkingBookTool.NeedCursorInRecordableThingDisabledTip"
+                    }}
                     {...commonTooltipProps}
                 >
                     <BloomButton
@@ -92,8 +92,13 @@ export const TalkingBookAdvancedSection: React.FunctionComponent<{
                                 "EditTab.Toolbox.TalkingBookTool.RecordingModeXMatter"
                         }) ||
                         (props.hasAudio
-                            ? `If you want to turn change this mode, first use the "Clear" button to remove your recording.`
-                            : `First select a box has something to record.`)
+                            ? {
+                                  l10nKey: `EditTab.Toolbox.TalkingBookTool.RecordingModeDisabledBecauseHasAudioTip`
+                              }
+                            : {
+                                  l10nKey:
+                                      "EditTab.Toolbox.TalkingBookTool.NeedCursorInRecordableThingDisabledTip"
+                              })
                     }
                     {...commonTooltipProps}
                 >
@@ -111,32 +116,34 @@ export const TalkingBookAdvancedSection: React.FunctionComponent<{
                         }
                     >
                         <BloomTooltip
-                            tip={
-                                "Record one sentence at a time. You can break up sentences using the `|` character."
-                            }
+                            tip={{
+                                l10nKey:
+                                    "EditTab.Toolbox.TalkingBookTool.RecordingModeSentenceTip"
+                            }}
                             showDisabled={!props.enableRecordingModeControl}
                             {...commonTooltipProps}
                         >
-                            <FormControlLabel
+                            <MuiRadio
                                 disabled={!props.enableRecordingModeControl}
                                 value={RecordingMode.Sentence}
-                                control={<Radio />}
                                 label="By Sentence"
-                            ></FormControlLabel>
+                                l10nKey="EditTab.Toolbox.TalkingBookTool.RecordingModeSentence"
+                            />
                         </BloomTooltip>
                         <BloomTooltip
                             showDisabled={!props.enableRecordingModeControl}
-                            tip={
-                                "Record the whole text box in one take, or load in a recording."
-                            }
+                            tip={{
+                                l10nKey:
+                                    "EditTab.Toolbox.TalkingBookTool.RecordingModeTextBoxTip"
+                            }}
                             {...commonTooltipProps}
                         >
-                            <FormControlLabel
+                            <MuiRadio
                                 disabled={!props.enableRecordingModeControl}
                                 value={RecordingMode.TextBox}
-                                control={<Radio />}
                                 label="By Whole Textbox"
-                            ></FormControlLabel>
+                                l10nKey="EditTab.Toolbox.TalkingBookTool.RecordingModeTextBox"
+                            />
                         </BloomTooltip>
                     </RadioGroup>
                 </BloomTooltip>
@@ -150,10 +157,14 @@ export const TalkingBookAdvancedSection: React.FunctionComponent<{
                 >
                     <BloomTooltip
                         showDisabled={!enabledImportRecordingButton}
-                        tip={"Import an mp3 recording of the whole text box."}
-                        tipWhenDisabled={
-                            "This is disabled because this box is not in `Record by Text Box` mode."
-                        }
+                        tip={{
+                            l10nKey:
+                                "EditTab.Toolbox.TalkingBookTool.ImportRecordingTip"
+                        }}
+                        tipWhenDisabled={{
+                            l10nKey:
+                                "EditTab.Toolbox.TalkingBookTool.ImportRecordingDisabledTip"
+                        }}
                         {...commonTooltipProps}
                     >
                         <BloomButton
@@ -169,11 +180,15 @@ export const TalkingBookAdvancedSection: React.FunctionComponent<{
                     </BloomTooltip>
                     <BloomTooltip
                         id="edit-timings-file-button-tooltip"
-                        tip={
-                            "Open the timing file in a text editor. After you save your changes, click the `Apply Timings File` button."
-                        }
+                        tip={{
+                            l10nKey:
+                                "EditTab.Toolbox.TalkingBookTool.EditTimingsFileTip"
+                        }}
                         showDisabled={!enableEditTimings}
-                        tipWhenDisabled={`This is only enabled after doing a "Split" of a recording of the whole text box.`}
+                        tipWhenDisabled={{
+                            l10nKey:
+                                "EditTab.Toolbox.TalkingBookTool.EditTimingsFileDisabledTip"
+                        }}
                         {...commonTooltipProps}
                     >
                         <BloomButton
@@ -190,9 +205,10 @@ export const TalkingBookAdvancedSection: React.FunctionComponent<{
                         />
                     </BloomTooltip>
                     <BloomTooltip
-                        tip={
-                            "This lets you choose a file containing timings for aligning the audio with the text. The format of the file is tab-separated values, with the first column being the start time in seconds, and the second column being the end time in seconds. The third column is often a label, but it will be ignored."
-                        }
+                        tip={{
+                            l10nKey:
+                                "EditTab.Toolbox.TalkingBookTool.SplitRecordingTip"
+                        }}
                         showDisabled={
                             props.recordingMode !== RecordingMode.TextBox ||
                             !props.hasAudio
@@ -221,9 +237,10 @@ export const TalkingBookAdvancedSection: React.FunctionComponent<{
                     css={css`
                         z-index: 1002; // has to be above the disableOverlay because this is the one control we don't want to disable in show playback order mode
                     `}
-                    tip={
-                        "Control the order in which various boxes on the page are played back."
-                    }
+                    tip={{
+                        l10nKey:
+                            "EditTab.Toolbox.TalkingBookTool.ShowPlaybackOrderTip"
+                    }}
                     {...commonTooltipProps}
                 >
                     <BloomSwitch
