@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.ComponentModel;
 using System.IO;
 using System.Threading.Tasks;
@@ -119,7 +119,10 @@ namespace WebView2PdfMaker
 		private async Task InitWebViewAsync()
 		{
 			var op = new CoreWebView2EnvironmentOptions("--autoplay-policy=no-user-gesture-required");
-			var env = await CoreWebView2Environment.CreateAsync(null, Path.Combine(Path.GetTempPath(),"WebView2PdfMaker"), op);
+			var env = await CoreWebView2Environment.CreateAsync(browserExecutableFolder: _options.WebView2Path,
+				userDataFolder: Path.Combine(Path.GetTempPath(), "WebView2PdfMaker"),
+				options: op);
+
 			await _webview.EnsureCoreWebView2Async(env);
 			if (!_clearedCache)
 			{
