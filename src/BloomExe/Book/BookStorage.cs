@@ -925,7 +925,7 @@ namespace Bloom.Book
 			var imageFiles = new List<string>();
 			var imageExtentions = new HashSet<string>(new []{ ".jpg", ".png", ".svg" });
 			var ignoredFilenameStarts = new HashSet<string>(new [] { "thumbnail", "license", "video-placeholder", "coverImage200", "widget-placeholder" });
-			foreach (var path in Directory.EnumerateFiles(FolderPath).Where(
+			foreach (var path in Bloom.ToPalaso.RobustIO.EnumerateFilesInDirectory(FolderPath).Where(
 				s => imageExtentions.Contains(Path.GetExtension(s).ToLowerInvariant())))
 			{
 				var filename = Path.GetFileName(path);
