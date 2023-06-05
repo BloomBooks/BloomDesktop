@@ -47,8 +47,10 @@ export const TalkingBookAdvancedSection: React.FunctionComponent<{
         props.recordingMode === RecordingMode.TextBox &&
         props.hasRecordableDivs;
     const commonTooltipProps = {
-        placement: "bottom" as TooltipProps["placement"] // toolbox is currently its own iframe, so we can't spill out to the left yet
+        placement: "bottom-start" as TooltipProps["placement"] // toolbox is currently its own iframe, so we can't spill out to the left yet
     };
+
+    const [foo, setFoo] = React.useState(false);
 
     return (
         <ThemeProvider theme={toolboxTheme}>
@@ -264,6 +266,7 @@ export const TalkingBookAdvancedSection: React.FunctionComponent<{
                             !props.showingImageDescriptions
                         )
                     }
+                    highlightWhenTrue={true}
                     l10nKey="EditTab.Toolbox.TalkingBookTool.ShowImageDescription"
                 />
             </TriangleCollapse>

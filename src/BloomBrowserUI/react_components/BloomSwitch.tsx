@@ -31,6 +31,7 @@ export const BloomSwitch: React.FunctionComponent<IProps> = props => {
 };
 
 const kHighlightSwitchWhenTrueCSS = css`
+    color: ${kBloomGold};
     .MuiSwitch-thumb {
         background-color: ${kBloomGold};
     }

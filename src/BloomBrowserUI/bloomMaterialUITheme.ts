@@ -186,9 +186,9 @@ export const toolboxTheme = createTheme({
                     fontSize: "12px",
                     fontWeight: "normal",
 
-                    padding: "10px",
-                    marginLeft: "10px",
-                    marginRight: "10px",
+                    // padding: "10px",
+                    // marginLeft: "10px",
+                    // marginRight: "10px",
                     a: {
                         color: "white",
                         textDecorationColor: "white"

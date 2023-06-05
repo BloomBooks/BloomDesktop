@@ -51,7 +51,6 @@ import Recordable from "./recordable";
 import { getMd5 } from "./md5Util";
 import { setupImageDescriptions } from "../imageDescription/imageDescription";
 import { TalkingBookAdvancedSection } from "./talkingBookAdvancedSection";
-import { Update, UpdateDisabled } from "@mui/icons-material";
 
 enum Status {
     Disabled, // Can't use button now (e.g., Play when there is no recording)
@@ -2529,8 +2528,6 @@ export default class AudioRecording {
         ++this.currentAudioSessionNum;
         this.lastTimingsFilePath = undefined;
 
-        this.showingImageDescriptions = imageDescToolActive;
-
         // FYI, it is possible for newPageReady to be called without updateMarkup() being called
         // (e.g. when opening the toolbox with an empty text box).
         this.initializeAudioRecordingMode();
@@ -2556,6 +2553,9 @@ export default class AudioRecording {
             // See comment on this method.
             this.ensureHighlight(20);
         }
+
+        this.setShowingImageDescriptions(this.showingImageDescriptions);
+
         this.updateDisplay();
     }
 
