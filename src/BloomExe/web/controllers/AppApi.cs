@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Diagnostics;
 using Bloom.Book;
 using Bloom.Properties;
+using Bloom.web;
 using Bloom.Workspace;
 using Newtonsoft.Json;
 
@@ -43,6 +45,19 @@ namespace Bloom.Api
 				}
 			}, false);
 			apiHandler.RegisterEndpointHandler(kAppUrlPrefix + "autoUpdateSoftwareChoice", HandleAutoUpdate, false);
+			apiHandler.RegisterEndpointHandler(kAppUrlPrefix + "showDownloadsPage", (request) =>
+			{
+				// Enhance: is there a market-specific version of Bloom Library? If so, ideal to link to it somehow.
+				var url = UrlLookup.LookupUrl(UrlType.LibrarySite, null) + "/installers";
+				if (SIL.PlatformUtilities.Platform.IsWindows)
+					// Other places where we do similar things force the link to open in Firefox, but that will fail
+					// if it's not installed. I don't see any reason not to just let the default browser open the link.
+					//Process.Start("Firefox.exe", '"' + url + '"');
+					Process.Start('"' + url + '"');
+				else
+					SIL.Program.Process.SafeStart("xdg-open", Uri.EscapeUriString(url));
+				request.ExternalLinkSucceeded();
+			}, true);
 
 
 			/* It's not totally clear if these kinds of things fit well in this App api, or if we

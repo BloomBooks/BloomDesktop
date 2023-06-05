@@ -1,23 +1,23 @@
 using Bloom.Api;
 using Bloom.Book;
+using Bloom.Edit;
 using Microsoft.Web.WebView2.Core;
 using Microsoft.Web.WebView2.WinForms;
 using Newtonsoft.Json;
+using SIL.Extensions;
 using SIL.IO;
+using SIL.Reporting;
+using SIL.Windows.Forms.Miscellaneous;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using SIL.Windows.Forms.Miscellaneous;
-using Bloom.Edit;
-using SIL.Reporting;
-using SIL.Extensions;
-using System.Linq;
 
 namespace Bloom
 {
@@ -37,10 +37,20 @@ namespace Bloom
 
 			_webview.CoreWebView2InitializationCompleted += (object sender, CoreWebView2InitializationCompletedEventArgs args) =>
 			{
-				_webview.CoreWebView2.NavigationCompleted += (object sender2, CoreWebView2NavigationCompletedEventArgs args2) =>
-					{
-						RaiseDocumentCompleted(sender2, args2);
-					};
+				try
+				{
+					_webview.CoreWebView2.NavigationCompleted += (object sender2, CoreWebView2NavigationCompletedEventArgs args2) =>
+						{
+							RaiseDocumentCompleted(sender2, args2);
+						};
+				}
+				catch (Exception ex)
+				{
+					// enhance: how to show using the winforms error dialog?
+					MessageBox.Show("Bloom was unable to initialize the WebView2 browser. Please see https://docs.bloomlibrary.org/wv2trouble");
+					// hard exit
+					Environment.Exit(1);
+				}
 				_webview.CoreWebView2.FrameNavigationCompleted += (o, eventArgs) =>
 				{
 					RaiseDocumentCompleted(o, eventArgs);

@@ -402,7 +402,11 @@ namespace Bloom.Book
 					string message =
 						$"<strong>{messageNewVersionNeededHeader}</strong><br/><br/><br/>" +
 						$"{messageCurrentRunningVersion}. {messageFeatureRequiresNewerVersion}<br/><br/>" +
-						$"<a href='{UrlLookup.LookupUrl(UrlType.LibrarySite, null)}/installers'>{messageDownloadLatestVersion}</a>";  // Enhance: is there a market-specific version of Bloom Library? If so, ideal to link to it somehow.
+						// If we just embed the URL, since we show this document in a plain browser without any
+						// of our code loaded (in particular, our linkHandler code in typescript), the browser
+						// control inside bloom will navigate there, which isn't what we want. The easiest
+						// way around this is to have an api which does what we want.
+						$"<a href='/bloom/api/app/showDownloadsPage'>{messageDownloadLatestVersion}</a>";
 
 					return message;
 				}
@@ -2520,8 +2524,14 @@ namespace Bloom.Book
 			dom.RemoveFileProtocolFromStyleSheetLinks();
 		}
 
-
-		public static string SanitizeNameForFileSystem(string name, string defaultName = null)
+		/// <summary>
+		/// Sanitize a book's title for use as a file (or folder) name.
+		/// The title is normalized to Unicode Normalization Form C.
+		/// If the title contains invalid characters, they are replaced with spaces.
+		/// If a title is too long, it is truncated.
+		/// If the title is empty, "Book" (or the localized equivalent) is returned.
+		/// </summary>
+		public static string SanitizeNameForFileSystem(string name)
 		{
 			// We want NFC to prevent Dropbox complaining about encoding conflicts.
 			// May as well do that first as it may result in less truncation.
@@ -2529,12 +2539,6 @@ namespace Bloom.Book
 			// Then replace invalid characters with spaces and trim off characters
 			// that shouldn't start or finish a directory name.
 			name = RemoveDangerousCharacters(name);
-			// Multiple spaces are prone to being collapsed in HTML, particularly if the name ends up in
-			// the content of some element like a data-div one, such as the coverImage src. See BL-9145 and BL-12261.
-			// Even if that doesn't happen, it's hard for humans to tell filenames like "a  b" and "a   b" apart,
-			// especially with variable width fonts. So we will just collapse them while sanitizing the name.
-			while (name.Contains("  "))
-				name = name.Replace("  ", " ");
 			// Then make sure it's not too long.
 			if (name.Length > MaxFilenameLength)
 			{
@@ -2544,17 +2548,10 @@ namespace Bloom.Book
 			}
 			if (String.IsNullOrWhiteSpace(name))
 			{
-				if (String.IsNullOrWhiteSpace(defaultName))
-				{
-					// The localized default book name could itself have dangerous characters.
-					name = RemoveDangerousCharacters(BookStarter.UntitledBookName);
-					if (name.Length == 0)
-						name = "Book";  // This should absolutely never be needed, but let's be paranoid.
-				}
-				else
-				{
-					name = defaultName;
-				}
+				// The localized default book name could itself have dangerous characters.
+				name = RemoveDangerousCharacters(BookStarter.UntitledBookName);
+				if (name.Length == 0)
+					name = "Book";  // This should absolutely never be needed, but let's be paranoid.
 			}
 			return name;
 		}

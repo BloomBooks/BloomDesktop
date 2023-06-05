@@ -76,6 +76,8 @@ export const InnerBulkBloomPubDialog: React.FunctionComponent<{
         ?.defaultBookshelfUrlKey;
 
     // the server doesn't actually know the label for the bookshelf, just its urlKey. So we have to look that up ourselves.
+    // If bookshelfUrlKey is falsy, then we get back an empty string for the label without actually asking the server for
+    // it, but calling all the hooks along the way.
     const bookshelfLabel = useGetLabelForCollection(bookshelfUrlKey, "");
     React.useEffect(() => {
         if (bookshelfLabel) {
@@ -131,6 +133,8 @@ export const InnerBulkBloomPubDialog: React.FunctionComponent<{
                             <div
                                 css={css`
                                     margin-left: 28px;
+                                    // keep the overlay from overlapping its previous siblings
+                                    margin-top: 10px;
                                 `}
                             >
                                 <Div
@@ -145,9 +149,9 @@ export const InnerBulkBloomPubDialog: React.FunctionComponent<{
                                     `}
                                 >
                                     {`This file will cause these books to be
-                                    grouped under a single bookshelf in Bloom
-                                    Reader. This collection's bookshelf is set
-                                    to "${params.bookshelfLabel ?? ""}"`}
+                                grouped under a single bookshelf in Bloom
+                                Reader. This collection's bookshelf is set
+                                to "${params.bookshelfLabel ?? ""}"`}
                                 </Div>
                                 <div
                                     css={css`

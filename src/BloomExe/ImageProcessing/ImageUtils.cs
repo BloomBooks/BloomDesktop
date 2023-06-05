@@ -410,11 +410,14 @@ namespace Bloom.ImageProcessing
 		/// <summary>
 		/// Get an unused filename in the given folder based on the basename and extension. "extension" must
 		/// start with a period. As well as being unused, the name will be truncated enough to minimize
-		/// the danger of exceeding the maximum path length for Windows.
+		/// the danger of exceeding the maximum path length for Windows.  Multiple consecutive spaces will
+		/// be collapsed to a single space, and leading and trailing spaces will be removed.
 		/// </summary>
 		internal static string GetUnusedFilename(string bookFolderPath, string basenameIn, string extension, string defaultName = "image")
 		{
-			var basename = BookStorage.SanitizeNameForFileSystem(basenameIn, defaultName);
+			if (extension == null)
+				extension = "";
+			var basename = MiscUtils.TruncateFileBasename(basenameIn, extension, defaultName);
 			// basename may already end in one or more digits. Try to strip off digits, parse and increment.
 			try
 			{

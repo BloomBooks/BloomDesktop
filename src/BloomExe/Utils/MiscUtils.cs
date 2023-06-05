@@ -11,6 +11,7 @@ using System.Security.Principal;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
+using Bloom.Book;
 using Mono.Unix;
 using NAudio.Wave;
 using SIL.Code;
@@ -486,6 +487,28 @@ namespace Bloom.Utils
 					new MiscUI.MessageBoxButton { Default = true, Text = L10NSharp.LocalizationManager.GetString("Common.OK","OK"), Id = "ok" }
 				};
 			MiscUI.BloomMessageBox.Show(Form.ActiveForm, $"<p>{msg}</p><p>{chosenDestination}</p>", buttons, MessageBoxIcon.Warning);
+		}
+
+		/// <summary>
+		/// Truncate the basename enough to minimize the danger of exceeding the maximum path length for Windows.
+		/// Multiple consecutive spaces will be collapsed to a single space, and leading and trailing spaces will
+		/// be removed.  The default name is used if the truncated name would be empty.
+		/// </summary>
+		public static string TruncateFileBasename(string basenameIn, string extension, string defaultName)
+		{
+			if (!String.IsNullOrWhiteSpace(basenameIn))
+			{
+				var basename = basenameIn.Normalize(NormalizationForm.FormC).Trim();
+				// Multiple spaces are prone to being collapsed in HTML, particularly if the name ends up in
+				// the content of some element like a data-div one, such as the coverImage src. See BL-9145.
+				// So we will just collapse them before we save the file.
+				basename = Regex.Replace(basename, @"\s+", " ");
+				if (basename.Length + extension.Length > BookStorage.MaxFilenameLength)
+					basename = basename.Substring(0, BookStorage.MaxFilenameLength - extension.Length);
+				if (!String.IsNullOrWhiteSpace(basename))
+					return basename.Trim();
+			}
+			return defaultName;
 		}
 
 		public static void DoOnceOnIdle(Action actionToDoOnIdle)

@@ -244,7 +244,7 @@ export const PageChooserDialog: React.FunctionComponent<IPageChooserdialogProps>
     ): void => {
         // N.B. The double click handler in the inner component does the single-click actions first.
         const pageIsEnterpriseOnly = selectedPageDiv.classList.contains(
-            "enterprise-only-flag"
+            "enterprise-only"
         );
         if (pageIsEnterpriseOnly && !isEnterpriseAvailable) {
             return;
