@@ -112,9 +112,14 @@
 	  <Reference Include="Enchant.Net, Version=1.4.0.0, Culture=neutral, PublicKeyToken=ae135aeb3d479ab9, processorArchitecture=MSIL">
       <HintPath>..\..\packages\Enchant.Net.1.4.2\lib\net461\Enchant.Net.dll</HintPath>
     </Reference>
-    <Reference Include="EPPlus, Version=5.6.4.0, Culture=neutral, PublicKeyToken=ea159fdaa78159a1, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\packages\EPPlus.5.6.4\lib\net45\EPPlus.dll</HintPath>
+    <Reference Include="EPPlus, Version=6.2.4.0, Culture=neutral, PublicKeyToken=ea159fdaa78159a1, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\EPPlus.6.2.4\lib\net462\EPPlus.dll</HintPath>
+    </Reference>
+    <Reference Include="EPPlus.Interfaces, Version=6.1.1.0, Culture=neutral, PublicKeyToken=a694d7f3b0907a61, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\EPPlus.Interfaces.6.1.1\lib\net462\EPPlus.Interfaces.dll</HintPath>
+    </Reference>
+    <Reference Include="EPPlus.System.Drawing, Version=6.1.1.0, Culture=neutral, PublicKeyToken=2308d35469c9bac0, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\EPPlus.System.Drawing.6.1.1\lib\net462\EPPlus.System.Drawing.dll</HintPath>
     </Reference>
     <Reference Include="GdkSharp, Version=3.22.24.37, Culture=neutral, PublicKeyToken=313398f2149d753f, processorArchitecture=MSIL">
       <HintPath>..\..\packages\GdkSharp-signed.3.22.24.37\lib\netstandard2.0\GdkSharp.dll</HintPath>
