@@ -70,6 +70,7 @@ export const EPUBPublishScreen = () => {
     );
 };
 
+const kUpdatePreviewApi = "publish/epub/updatePreview";
 const EPUBPublishScreenInternal: React.FunctionComponent<{
     onReset: () => void;
     showPreview: boolean;
@@ -81,6 +82,8 @@ const EPUBPublishScreenInternal: React.FunctionComponent<{
     const [highlightRefresh, setHighlightRefresh] = useState(false);
     // Starting in ProgressState.Done hides the progress dialog initially.
     const [progressState, setProgressState] = useState(ProgressState.Done);
+    const [publishStarted, setPublishStarted] = useState(false);
+    const [progressDialogGeneration, setProgressDialogGeneration] = useState(0); // Increment the counter to force the PublishProgressDialog to start over (notably, apply its initial side effects again)
     const [bookUrl, setBookUrl] = useState(
         inStorybookMode
             ? window.location.protocol +
@@ -88,6 +91,10 @@ const EPUBPublishScreenInternal: React.FunctionComponent<{
                   window.location.host +
                   "/templates/Sample Shells/The Moon and the Cap" // Enhance: provide an actual epub in the source tree
             : "" // otherwise, wait for the websocket to deliver a url when the c# has finished creating the epub
+    );
+
+    const [currentTaskApi, setCurrentTaskApi] = useState<string>(
+        kUpdatePreviewApi
     );
 
     const [landscape] = useApiBoolean("publish/epub/landscape", false);
@@ -140,7 +147,13 @@ const EPUBPublishScreenInternal: React.FunctionComponent<{
                             margin-inline-end: 50px !important; // !important needed to override material button base
                         `}
                         enabled={isLicenseOK}
-                        clickApiEndpoint={"publish/epub/save"}
+                        onClick={() => {
+                            setPublishStarted(true);
+                            setCurrentTaskApi("publish/epub/save");
+                            setProgressDialogGeneration(
+                                oldValue => oldValue + 1
+                            );
+                        }}
                         hasText={true}
                         l10nKey="PublishTab.Save"
                     >
@@ -246,6 +259,8 @@ const EPUBPublishScreenInternal: React.FunctionComponent<{
         setClosePending(true);
     }, []);
 
+    const showProgressDialog = props.showPreview || publishStarted;
+
     return (
         <React.Fragment>
             <PublishScreenTemplate
@@ -257,16 +272,17 @@ const EPUBPublishScreenInternal: React.FunctionComponent<{
             >
                 {mainPanel}
             </PublishScreenTemplate>
-            {props.showPreview && (
+            {showProgressDialog && (
                 <PublishProgressDialog
                     heading={creatingHeading}
                     webSocketClientContext="publish-epub"
-                    apiForStartingTask="publish/epub/updatePreview"
+                    apiForStartingTask={currentTaskApi}
                     onTaskComplete={onTaskComplete}
                     progressState={progressState}
                     setProgressState={setProgressState}
                     closePending={closePending}
                     setClosePending={setClosePending}
+                    generation={progressDialogGeneration}
                 />
             )}
             <BookMetadataDialog />

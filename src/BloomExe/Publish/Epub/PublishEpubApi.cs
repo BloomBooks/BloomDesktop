@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -80,9 +80,6 @@ namespace Bloom.Publish.Epub
 		private string _pendingSaveAsPath;
 
 
-		// This constant must match the ID that is used for the listener set up in the React component ProgressBox
-		private const string kWebsocketEventId_Progress = "progress";
-
 		public EpubMaker EpubMaker { get; private set; }
 		public static Control ControlForInvoke { get; set; }
 
@@ -97,15 +94,9 @@ namespace Bloom.Publish.Epub
 			_standardProgress = new WebSocketProgress(_webSocketServer, kWebsocketContext);
 		}
 
-		// Message is presumed already localized.
-		private void ReportProgress(string message)
-		{
-			_webSocketServer.SendString(kWebsocketContext, kWebsocketEventId_Progress, message);
-		}
-
 		public void RegisterWithApiHandler(BloomApiHandler apiHandler)
 		{
-			apiHandler.RegisterEndpointHandler(kApiUrlPart + "save", HandleEpubSave, true, false);
+			apiHandler.RegisterEndpointHandler(kApiUrlPart + "save", HandleEpubSave, false, false);
 
 			apiHandler.RegisterEndpointHandler(kApiUrlPart + "epubMode", request =>
 			{
@@ -162,6 +153,35 @@ namespace Bloom.Publish.Epub
 
 		private void HandleEpubSave(ApiRequest request)
 		{
+			if (ControlForInvoke != null && ControlForInvoke.InvokeRequired)
+			{
+				ControlForInvoke.Invoke((Action)(() => getSaveAsPath(request)));
+			}
+			else
+			{
+				getSaveAsPath(request);
+			}
+						
+			// If we ARE in the middle of staging the epub...quite possible since this
+			// handler is registered with permission to execute in parallel with other
+			// API handlers, the user just has to click Save before the preview is finished...
+			// then we need not do any more here. A call to SaveAsEpub at the end of the
+			// preview generation process will pick up the pending request in _pendingSaveAsPath
+			// and complete the Save. 
+			// 
+			// Otherwise, RefreshPreview will call SaveAsEpub which will pick up the 
+			// _pendingSaveAsPath and save
+
+			if (!_stagingEpub && _pendingSaveAsPath != null) // this should only happen if an output path was chosen
+			{
+				RefreshPreview(request.CurrentBook.BookInfo.PublishSettings.Epub, false);
+			}
+
+			request.PostSucceeded();
+		}
+			
+		private void getSaveAsPath(ApiRequest request)
+		{
 			var initialPath = OutputFilenames.GetOutputFilePath(_bookSelection.CurrentSelection, ".epub");
 			var destFileName = Utils.MiscUtils.GetOutputFilePathOutsideCollectionFolder(initialPath, "ePUB files|*.epub");
 			if (!string.IsNullOrEmpty(destFileName))
@@ -170,25 +190,12 @@ namespace Bloom.Publish.Epub
 				lock (_epubMakerLock)
 				{
 					_pendingSaveAsPath = destFileName;
-					if (!_stagingEpub)
-					{
-						// we can do it right now. No need to check version etc., because anything
-						// that will change the epub we want to save will immediately trigger a new
-						// preview, and we will be staging it until we have it.
-						SaveAsEpub();
-					}
-					// If we ARE in the middle of staging the epub...quite possible since this
-					// handler is registered with permission to execute in parallel with other
-					// API handlers, the user just has to click Save before the preview is finished...
-					// then we need not do any more here. A call to SaveAsEpub at the end of the
-					// preview generation process will pick up the pending request in _pendingSaveAsPath
-					// and complete the Save.
+
 				}
 
-				ReportProgress(LocalizationManager.GetString("PublishTab.Epub.Done", "Done"));
+				_standardProgress.Message("PublishTab.Epub.Done", "Done");
 				ReportAnalytics("Save ePUB");
 			}
-			request.PostSucceeded();
 		}
 
 		public void AbortMakingEpub()
@@ -203,7 +210,7 @@ namespace Bloom.Publish.Epub
 			}
 		}
 
-		private void RefreshPreview(EpubSettings newSettings)
+		private void RefreshPreview(EpubSettings newSettings, bool forceUpdate = true)
 		{
 			// We have seen some exceptions thrown during refresh that cause a pretty yellow
 			// dialog box pop up informing the user, e.g., that the program couldn't find
@@ -215,7 +222,7 @@ namespace Bloom.Publish.Epub
 			{
 				try
 				{
-					if (UpdatePreview(newSettings, true))
+					if (UpdatePreview(newSettings, forceUpdate))
 						_webSocketServer.SendString(kWebsocketContext, kWebsocketEventId_epubReady, _previewSrc);
 					return;
 				}
@@ -394,7 +401,7 @@ namespace Bloom.Publish.Epub
 				// we will really be changing the src attr in the preview iframe so the display will update.
 				_webSocketServer.SendEvent(kWebsocketContext, kWebsocketEventId_epubReady);
 				_bookVersion = newVersion;
-				ReportProgress(LocalizationManager.GetString("PublishTab.Epub.PreparingPreview", "Preparing Preview"));
+				_progress.Message("PreparingPreview", "Preparing Preview");
 
 				// This three-tries loop is an attempt to recover from a weird state the system sometimes gets into
 				// where a browser won't navigate to a temporary page that the EpubMaker uses. I'm not sure it actually
@@ -416,10 +423,10 @@ namespace Bloom.Publish.Epub
 
 						if (i >= 2)
 							throw;
-						ReportProgress("Something went wrong, trying again");
+						_progress.MessageWithoutLocalizing("Something went wrong, trying again", ProgressKind.Error);
 						continue;
 					}
-
+					
 					break; // normal case, no exception
 				}
 
@@ -439,7 +446,7 @@ namespace Bloom.Publish.Epub
 
 			// Do pending save if the user requested it while the preview was still in progress.
 			SaveAsEpub();
-			ReportProgress(LocalizationManager.GetString("PublishTab.Epub.Done", "Done"));
+			_progress.Message("Done", "Done");
 			return true;
 		}
 	}

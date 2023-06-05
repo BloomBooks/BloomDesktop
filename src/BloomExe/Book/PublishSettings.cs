@@ -392,6 +392,31 @@ namespace Bloom.Book
 			var serialized = JsonConvert.SerializeObject(this);
 			return JsonConvert.DeserializeObject<EpubSettings>(serialized);
 		}
+
+		public override bool Equals(object obj)
+		{
+			if (ReferenceEquals(null, obj)) return false;
+			if (ReferenceEquals(this, obj)) return true;
+			if (!(obj is EpubSettings)) return false;
+			var other = (EpubSettings)obj;
+			return HowToPublishImageDescriptions == other.HowToPublishImageDescriptions && RemoveFontSizes == other.RemoveFontSizes && Mode == other.Mode;
+		}
+
+		public static bool operator ==(EpubSettings a, EpubSettings b)
+		{
+			if (ReferenceEquals(null, a)) return false;
+			return a.Equals(b);
+		}
+
+		public static bool operator !=(EpubSettings a, EpubSettings b)
+		{
+			return !(a == b);
+		}
+
+		public override int GetHashCode()
+		{
+			return HowToPublishImageDescriptions.GetHashCode() + Mode.GetHashCode() + (RemoveFontSizes? 1 : 0);
+		}
 	}
 
 	public class BloomLibrarySettings
