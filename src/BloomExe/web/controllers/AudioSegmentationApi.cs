@@ -13,6 +13,7 @@ using SIL.IO;
 using SIL.Reporting;
 using SIL.PlatformUtilities;
 using SIL.Code;
+using System.Globalization;
 
 namespace Bloom.web.controllers
 {
@@ -574,7 +575,7 @@ namespace Bloom.web.controllers
 			// This identifies a "head" region of between 0 seconds or up to the max-specified duration (e.g. 5 seconds or 12 seconds) of silence/non-intelligible.
 			// This would prevent it from being included in the first sentence's audio. (FYI, the hidden format will suppress it from the output timings file).
 			// Specify 0 to turn this off.
-			string audioHeadParams = $"|os_task_file_head_tail_format=hidden|is_audio_file_detect_head_min=0.00|is_audio_file_detect_head_max={maxAudioHeadDurationSec}";
+			string audioHeadParams = $"|os_task_file_head_tail_format=hidden|is_audio_file_detect_head_min=0.00|is_audio_file_detect_head_max={maxAudioHeadDurationSec.ToString(CultureInfo.InvariantCulture)}";
 			var audioFile = Path.GetFileName(inputAudioFilename);
 			var fragmentsFile = Path.GetFileName(inputTextFragmentsFilename);
 			var outputFile = Path.GetFileName(outputTimingsFilename);
