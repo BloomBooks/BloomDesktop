@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading;
@@ -110,6 +110,9 @@ namespace WebView2PdfMaker
 
 		[Option("debug", Default = false, HelpText = "Send debugging information to the console.")]
 		public bool Debug { get; set; }
+
+		[Option("webview2-path", Required = false, HelpText = "The path to the webview2 component to use.")]
+		public string WebView2Path { get; set; }
 
 		[Value(0, MetaName = "input", Required = true, HelpText = "The URI to the input html, including \"file:///\" if a local file. Use quotation marks if it includes spaces.")]
 		public string InputHtmlUri { get; set; }

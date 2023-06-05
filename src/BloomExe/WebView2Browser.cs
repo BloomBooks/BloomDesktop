@@ -24,6 +24,7 @@ namespace Bloom
 {
 	public partial class WebView2Browser : Browser
 	{
+		public static string AlternativeWebView2Path;
 		private bool _readyToNavigate;
 		private PasteCommand _pasteCommand;
 		private CopyCommand _copyCommand;
@@ -135,25 +136,25 @@ namespace Bloom
 			// is to point to the WV2 in edge using an environment variable.
 			// THIS IS DESCRIBED in the troubleshooting documentation at https://docs.bloomlibrary.org/wv2trouble,
 			// so if you change it here, change the instructions there.
-			var altPath = Environment.GetEnvironmentVariable("BloomWV2Path");
+			AlternativeWebView2Path = Environment.GetEnvironmentVariable("BloomWV2Path");
 
-			if (!string.IsNullOrEmpty(altPath))
+			if (!string.IsNullOrEmpty(AlternativeWebView2Path))
 			{
-				if (altPath.ToLower() == "edge")
+				if (AlternativeWebView2Path.ToLower() == "edge")
 				{
-					altPath = GetEdgeInstallationPath();
+					AlternativeWebView2Path = GetEdgeInstallationPath();
 				}
 
-				if (!Directory.Exists(altPath))
+				if (!Directory.Exists(AlternativeWebView2Path))
 				{
-					MessageBox.Show(altPath + " does not exist anymore. Please remove or update the environment variable 'BloomWV2Path' to point to a valid folder.", "BloomWV2Path is invalid", MessageBoxButtons.OK, MessageBoxIcon.Error);
+					MessageBox.Show(AlternativeWebView2Path + " does not exist anymore. Please remove or update the environment variable 'BloomWV2Path' to point to a valid folder.", "BloomWV2Path is invalid", MessageBoxButtons.OK, MessageBoxIcon.Error);
 					MessageBox.Show("Bloom will now attempt with the default path (the WebView2 Evergreen Runtime");
-					altPath = null;
+					AlternativeWebView2Path = null;
 				}
-				Bloom.ErrorReporter.BloomErrorReport.NotifyUserUnobtrusively("Using alternate WebView2 path: " + altPath, "");
+				Bloom.ErrorReporter.BloomErrorReport.NotifyUserUnobtrusively("Using alternate WebView2 path: " + AlternativeWebView2Path, "");
 			}
 
-			var env = await CoreWebView2Environment.CreateAsync(browserExecutableFolder: altPath, userDataFolder: ProjectContext.GetBloomAppDataFolder(), options: op);
+			var env = await CoreWebView2Environment.CreateAsync(browserExecutableFolder: AlternativeWebView2Path, userDataFolder: ProjectContext.GetBloomAppDataFolder(), options: op);
 			await _webview.EnsureCoreWebView2Async(env);
 			if (!_clearedCache)
 			{
