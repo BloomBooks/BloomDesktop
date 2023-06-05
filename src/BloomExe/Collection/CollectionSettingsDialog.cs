@@ -300,10 +300,14 @@ namespace Bloom.Collection
 			}
 
 			_collectionSettings.PageNumberStyle = PendingNumberingStyle; // non-localized key
-			
 
+			var oldBrand = _collectionSettings.BrandingProjectKey;
 			_collectionSettings.BrandingProjectKey = _brand;
 			_collectionSettings.SubscriptionCode = _subscriptionCode;
+			// We don't know which if any of the new branding's bookshelves we should upload to by default,
+			// but it will certainly be wrong to upload to one that belongs to some previous branding.
+			if (oldBrand != _brand)
+				_collectionSettings.DefaultBookshelf = "";
 
 			string xmatterKeyForcedByBranding = _collectionSettings.GetXMatterPackNameSpecifiedByBrandingOrNull();
 			PendingXmatter =

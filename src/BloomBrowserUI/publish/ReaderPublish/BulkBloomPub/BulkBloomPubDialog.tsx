@@ -76,6 +76,8 @@ export const InnerBulkBloomPubDialog: React.FunctionComponent<{
         ?.defaultBookshelfUrlKey;
 
     // the server doesn't actually know the label for the bookshelf, just its urlKey. So we have to look that up ourselves.
+    // If bookshelfUrlKey is falsy, then we get back an empty string for the label without actually asking the server for
+    // it, but calling all the hooks along the way.
     const bookshelfLabel = useGetLabelForCollection(bookshelfUrlKey, "");
     React.useEffect(() => {
         if (bookshelfLabel) {
