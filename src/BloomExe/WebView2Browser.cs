@@ -3,6 +3,7 @@ using Bloom.Book;
 using Bloom.Edit;
 using Microsoft.Web.WebView2.Core;
 using Microsoft.Web.WebView2.WinForms;
+using Microsoft.Win32;
 using Newtonsoft.Json;
 using SIL.Extensions;
 using SIL.IO;
@@ -47,7 +48,7 @@ namespace Bloom
 				catch (Exception ex)
 				{
 					// enhance: how to show using the winforms error dialog?
-					MessageBox.Show("Bloom was unable to initialize the WebView2 browser. Please see https://docs.bloomlibrary.org/wv2trouble");
+					MessageBox.Show("Bloom was unable to initialize the WebView2 browser. Please see https://docs.bloomlibrary.org/wv2trouble", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
 					// hard exit
 					Environment.Exit(1);
 				}
@@ -128,7 +129,31 @@ namespace Bloom
 			//var env = await CoreWebView2Environment.CreateAsync(null, null, op);
 			//await _webview.EnsureCoreWebView2Async(env);
 			var op = new CoreWebView2EnvironmentOptions("--autoplay-policy=no-user-gesture-required");
-			var env = await CoreWebView2Environment.CreateAsync(null, ProjectContext.GetBloomAppDataFolder(), op);
+
+
+			// John Hatton keeps getting broken by updates to WV2. This could happen to a user too. A workaround
+			// is to point to the WV2 in edge using an environment variable.
+			// THIS IS DESCRIBED in the troubleshooting documentation at https://docs.bloomlibrary.org/wv2trouble,
+			// so if you change it here, change the instructions there.
+			var altPath = Environment.GetEnvironmentVariable("BloomWV2Path");
+
+			if (!string.IsNullOrEmpty(altPath))
+			{
+				if (altPath.ToLower() == "edge")
+				{
+					altPath = GetEdgeInstallationPath();
+				}
+
+				if (!Directory.Exists(altPath))
+				{
+					MessageBox.Show(altPath + " does not exist anymore. Please remove or update the environment variable 'BloomWV2Path' to point to a valid folder.", "BloomWV2Path is invalid", MessageBoxButtons.OK, MessageBoxIcon.Error);
+					MessageBox.Show("Bloom will now attempt with the default path (the WebView2 Evergreen Runtime");
+					altPath = null;
+				}
+				Bloom.ErrorReporter.BloomErrorReport.NotifyUserUnobtrusively("Using alternate WebView2 path: " + altPath, "");
+			}
+
+			var env = await CoreWebView2Environment.CreateAsync(browserExecutableFolder: altPath, userDataFolder: ProjectContext.GetBloomAppDataFolder(), options: op);
 			await _webview.EnsureCoreWebView2Async(env);
 			if (!_clearedCache)
 			{
@@ -140,8 +165,33 @@ namespace Bloom
 				// this should clear what we need and nothing else.
 				await _webview.CoreWebView2.Profile.ClearBrowsingDataAsync(CoreWebView2BrowsingDataKinds.CacheStorage | CoreWebView2BrowsingDataKinds.DiskCache);
 			}
-
 		}
+
+		// used when the WebView2 installation is broken
+		public static string GetEdgeInstallationPath()
+		{
+			string path = null;
+
+			// Check registry for Edge installation path
+			RegistryKey regKey = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\WOW6432Node\Microsoft\EdgeUpdate\Clients");
+			if (regKey != null)
+			{
+				string edgeAppId = "{56EB18F8-B008-4CBD-B6D2-8C97FE7E9062}";
+				RegistryKey edgeKey = regKey.OpenSubKey(edgeAppId);
+				if (edgeKey != null)
+				{
+					string version = edgeKey.GetValue("pv") as string;
+					if (!string.IsNullOrEmpty(version))
+					{
+						string programFiles = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86);
+						path = Path.Combine(programFiles, "Microsoft", "EdgeCore", version);
+					}
+				}
+			}
+
+			return path;
+		}
+
 
 		// needed by geckofx but not webview2
 		public override void EnsureHandleCreated()
