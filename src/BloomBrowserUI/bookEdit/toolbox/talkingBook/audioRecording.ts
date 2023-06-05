@@ -185,7 +185,7 @@ export default class AudioRecording {
     private playbackOrderCache: IPlaybackOrderInfo[] = [];
     private disablingOverlay: HTMLDivElement;
 
-    lastTimingsFilePath?: string; // enhance: just having the "last" one isn't as good for the user, but we're should of time to ship this out in 5.5
+    lastTimingsFilePath?: string;
 
     constructor() {
         this.audioSplitButton = <HTMLButtonElement>(
@@ -2168,7 +2168,6 @@ export default class AudioRecording {
                 this.recordingMode == RecordingMode.TextBox &&
                 this.getCurrentPlaybackMode() == RecordingMode.TextBox
             ) {
-                this.notifyRecordingModeControlDisabled();
                 return;
             }
         }
@@ -2246,70 +2245,6 @@ export default class AudioRecording {
 
         // This only set the RECORDING mode. Don't touch the audio-sentence markup, which represents the PLAYBACK mode.
     }
-
-    private enableRecordingModeControl() {
-        //toastr.clear();
-        //this.recodingModeControlEnabled = true;
-        // if (this.recordingModeInput.disabled) {
-        //     this.recordingModeInput.disabled = false;
-        //     // The click handler (an invisible div over the checkbox) is used to handle events on the checkbox even while the checkbox is disabled (which would suppress events on the checkbox itself)
-        //     // Note: In the future, if the click handler is no longer used, just assign the same onClick function() to the checkbox itself.
-        //     $("#" + kRecordingModeClickHandler)
-        //         .off()
-        //         .click(() => {
-        //             this.setRecordingModeAsync();
-        //         });
-        // }
-    }
-
-    private disableRecordingModeControl(
-        useClearRecordingsNotification: boolean = true
-    ) {
-        // Note: Possibly could be neat to check if all the audio is re-usable before disabling.
-        //       (But then what happens if they modify the text box?  Well, it's kinda awkward, but it's already awkward if they modify the text in by-sentence mode)
-        // const handlerJquery = $("#" + kRecordingModeClickHandler);
-        // handlerJquery.off();
-        // toastr.clear();
-        // if (useClearRecordingsNotification) {
-        //     // Note: In the future, if the click handler is no longer used, just assign the same onClick function() to the checkbox itself.
-        //     handlerJquery.click(e => this.notifyRecordingModeControlDisabled());
-        // } else {
-        //     handlerJquery.click(e => {
-        //         if (ToolBox.isXmatterPage())
-        //             this.notifyRecordingModeControlDisabledXMatter();
-        //     });
-        // }
-    }
-
-    private notifyRecordingModeControlDisabled() {
-        // console.assert(
-        //     this.recordingModeInput.disabled,
-        //     "notifyRecordingModeControlDisabled(): Caller seems to imply that it believes recordingModeInput should be disabled, but the actual state is marked as enabled."
-        // );
-        // if (this.recordingModeInput.disabled) {
-        //     theOneLocalizationManager
-        //         .asyncGetText(
-        //             "EditTab.Toolbox.TalkingBookTool.RecordingModeSplitOrClearExistingRecordingTextBox",
-        //             "Please split or clear the existing recording in this text box before changing modes.",
-        //             ""
-        //         )
-        //         .done(localizedNotification => {
-        //             toastr.warning(localizedNotification);
-        //         });
-        // }
-    }
-
-    // private notifyRecordingModeControlDisabledXMatter() {
-    //     theOneLocalizationManager
-    //         .asyncGetText(
-    //             "EditTab.Toolbox.TalkingBookTool.RecordingModeXMatter",
-    //             "Sorry, front and back-matter pages must be recorded by sentences.",
-    //             ""
-    //         )
-    //         .done(localizedNotification => {
-    //             toastr.warning(localizedNotification);
-    //         });
-    // }
 
     // Gets the "page" iframe. May return null is the iframe doesn't exist.
     public getPageFrame(): HTMLIFrameElement | null {
@@ -3463,11 +3398,6 @@ export default class AudioRecording {
         // the audio recording controls.)
         if (expectedVerb == "") {
             this.disableInteraction();
-            // Whether we disable the Recording Mode control depends on whether we COULD have text
-            // on this page (i.e. is there a textbox) and on whether this is an xMatter page.  (We
-            // require sentence-by-sentence recording on xMatter pages due to the nature of their
-            // content.)
-            this.enableRecordingModeIfAppropriate();
             return;
         }
 
@@ -3671,29 +3601,6 @@ export default class AudioRecording {
         } else {
             this.setStatus("prev", Status.Disabled);
         }
-
-        // Recording Mode checkbox
-
-        // Determine whether the recording mode checkbox should be enabled or not, based on whether any audio files are present
-        // for anything in the current text box
-        if (doesTextBoxAudioExist) {
-            if (
-                this.recordingMode === RecordingMode.TextBox &&
-                currentPlaybackMode === RecordingMode.TextBox
-            ) {
-                // There is some audio set to play back in Text Box mode. If we switch the Record Mode to sentence mode, it also implies switching the Playback mode to Sentence mode.
-                // Disable the control so that the user can't accidentally lose data during this switch.
-                this.disableRecordingModeControl(true);
-            } else {
-                // Even though there is audio on this page, nothing immediately bad will happen if the user switches the checkbox mode, so go ahead and enable it.
-                this.enableRecordingModeControl();
-            }
-        } else {
-            // No existing audio on a normal page means definitely safe to enable. (No audio can be lost because none exists)
-            this.enableRecordingModeControl();
-        }
-
-        // Note: Listen (Listen to whole page) button is not included here. Call it separately.
     }
 
     private async updateListenButtonStateAsync(): Promise<void> {
@@ -3745,21 +3652,6 @@ export default class AudioRecording {
         }
 
         return currentElementIds;
-    }
-
-    // Enable the recording mode checkbox only for non-xMatter pages that have visible text divs.
-    // It doesn't matter whether any of the text divs actually contain text.
-    private enableRecordingModeIfAppropriate() {
-        // The 'false' parameter here checks for visible text divs, but doesn't check
-        // for actual text in them. We already know there aren't any WITH text.
-        if (this.getRecordableDivs(false, false).length > 0) {
-            // Enable the control, although we don't currently have any text on this page, because
-            // we could add text at some point.
-            this.enableRecordingModeControl();
-        } else {
-            // Disable the control and its notification, since we can't have text on this page.
-            this.disableRecordingModeControl(false);
-        }
     }
 
     public setEnabledOrExpecting(verb: string, expectedVerb: string) {
@@ -4111,7 +4003,6 @@ export default class AudioRecording {
         this.setStatus("prev", Status.Disabled);
         this.setStatus("clear", Status.Disabled);
         this.setStatus("listen", Status.Disabled);
-        this.disableRecordingModeControl();
     }
 
     private showBusy(): void {

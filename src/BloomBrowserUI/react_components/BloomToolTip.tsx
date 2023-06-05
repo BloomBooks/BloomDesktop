@@ -52,7 +52,6 @@ export const BloomTooltip: React.FunctionComponent<IBloomToolTipProps> = props =
     return (
         <Tooltip
             id={props.id}
-            // when the tooltip opens, show an alert
             title={tipContent}
             placement={props.placement || "left"}
             arrow

@@ -35,8 +35,6 @@ const kHighlightSwitchWhenTrueCSS = css`
     .MuiSwitch-thumb {
         background-color: ${kBloomGold};
     }
-    // we want this, but it doesn't work because the track isn't
-    // actually under the .Mui-Checked element. Sigh.
     .MuiSwitch-track {
         background-color: ${kBloomGold} !important;
     }
@@ -45,8 +43,6 @@ const kNormalStylingWhenTrueCSS = css`
     .MuiSwitch-thumb {
         background-color: ${kBloomBlue};
     }
-    // we want this, but it doesn't work because the track isn't
-    // actually under the .Mui-Checked element. Sigh.
     .MuiSwitch-track {
         background-color: ${kBloomBlue} !important;
     }

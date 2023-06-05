@@ -63,7 +63,7 @@
         <note>This is shown on a button that only makes sense if the cursor is in a box of text.</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.RecordingModeDisabledBecauseHasAudioTip" sil:dynamic="true">
-        <source xml:lang="en">If you want to turn change this mode, first use the "Clear" button to remove your recording.</source>
+        <source xml:lang="en">If you want to change this mode, first use the "Clear" button to remove your recording.</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.EditTab.Toolbox.TalkingBookTool.RecordingModeDisabledBecauseHasAudioTip</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.RecordingModeSentenceTip" sil:dynamic="true">

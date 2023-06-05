@@ -50,12 +50,10 @@ export const TalkingBookAdvancedSection: React.FunctionComponent<{
         placement: "bottom-start" as TooltipProps["placement"] // toolbox is currently its own iframe, so we can't spill out to the left yet
     };
 
-    const [foo, setFoo] = React.useState(false);
-
     return (
         <ThemeProvider theme={toolboxTheme}>
             <TriangleCollapse
-                initiallyOpen={true} /*for dev. enhance: remember the state*/
+                initiallyOpen={false}
                 css={css`
                     padding-left: 10px;
                 `}
