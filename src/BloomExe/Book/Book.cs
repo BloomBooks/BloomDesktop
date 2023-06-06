@@ -2248,8 +2248,7 @@ namespace Bloom.Book
 		/// A language is never considered an "incomplete translation" because it is missing in an xmatter element,
 		/// mainly because it's so common for elements there to be in just a national language (BL-8527).
 		/// For some purposes, a language that occurs ONLY in xmatter doesn't count at all... it won't even be
-		/// a key in the dictionary unless includeLangsOccurringOnlyInXmatter is true
-		/// OR it is a "required" language (a content language of the book).
+		/// a key in the dictionary unless includeLangsOccurringOnlyInXmatter is true.
 		/// END OBSOLETE COMMENT
 		/// </summary>
 		/// <remarks>The logic here is used to determine how to present (show and/or enable) language checkboxes on the publish screens.
@@ -2260,12 +2259,6 @@ namespace Bloom.Book
 			var result = new Dictionary<string, bool>();
 			var parents = new HashSet<XmlElement>(); // of interesting non-empty children
 			var langDivs = OurHtmlDom.GetLanguageDivs(includeLangsOccurringOnlyInXmatter).ToArray();
-
-			// Always include required languages.
-			// Note that if we ever decide to NOT always include these languages, we think we will have a problem
-			// initializing the settings of older (before we uploaded settings in meta.json or publish-settings.json) picture books when harvesting.
-			foreach (var lang in GetRequiredLanguages())
-				result[lang] = true;
 
 			// First pass: fill in the dictionary with languages which have non-empty content in relevant divs
 			foreach (var div in langDivs)

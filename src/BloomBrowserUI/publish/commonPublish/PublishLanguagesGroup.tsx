@@ -130,14 +130,16 @@ export const PublishLanguagesGroup: React.FunctionComponent<{
 
     return (
         <div>
-            <LanguageSelectionSettingsGroup
-                forAudioLanguages={false}
-                langCheckboxValues={checkboxValuesForTextLangs}
-                onChange={(item, newState: boolean) => {
-                    onLanguageUpdated(item, newState, "includeText");
-                }}
-            />
-            {showAudioLanguageCheckboxes ? (
+            {checkboxValuesForTextLangs?.length > 0 && (
+                <LanguageSelectionSettingsGroup
+                    forAudioLanguages={false}
+                    langCheckboxValues={checkboxValuesForTextLangs}
+                    onChange={(item, newState: boolean) => {
+                        onLanguageUpdated(item, newState, "includeText");
+                    }}
+                />
+            )}
+            {showAudioLanguageCheckboxes && (
                 <LanguageSelectionSettingsGroup
                     forAudioLanguages={true}
                     langCheckboxValues={checkboxValuesForAudioLangs}
@@ -145,8 +147,6 @@ export const PublishLanguagesGroup: React.FunctionComponent<{
                         onLanguageUpdated(item, newState, "includeAudio");
                     }}
                 />
-            ) : (
-                ""
             )}
         </div>
     );

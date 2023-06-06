@@ -272,6 +272,11 @@ namespace Bloom.Publish.PDF
 						bldr.Append(" -O landscape");
 				}
 			}
+			if (!string.IsNullOrEmpty(WebView2Browser.AlternativeWebView2Path))
+			{
+				// tell webview2 to use the alternative path from WebView2Browser.AlternativeWebView2Path
+				bldr.Append($" --webview2-path \"{WebView2Browser.AlternativeWebView2Path}\"");
+			}
 			//bldr.Append(" --debug");
 		}
 

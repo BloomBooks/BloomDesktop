@@ -267,15 +267,16 @@ BookServer bookServer,
 					page.ParentNode.RemoveChild(page);
 			}
 
-			var mdLang1Code = modifiedBook.BookData.MetadataLanguage1Tag;
-			var mdLang2Code = modifiedBook.BookData.MetadataLanguage2Tag;
+			var xmatterLangsToKeep = new HashSet<string>(modifiedBook.BookData.GetAllBookLanguageCodes(true, true));
 			if (settings?.LanguagesToInclude != null)
 			{
 				PublishModel.RemoveUnwantedLanguageData(modifiedBook.OurHtmlDom, settings.LanguagesToInclude,
-					shouldPruneXmatter: true, mdLang1Code, mdLang2Code);
+					shouldPruneXmatter: true, xmatterLangsToKeep);
 				// For 5.3, we wholesale keep all L2/L3 rules even though this might result in incorrect error messages about fonts. (BL-11357)
 				// In 5.4, we hope to clean up all this font determination stuff by using a real browser to determine what is used.
-				PublishModel.RemoveUnwantedLanguageRulesFromCssFiles(modifiedBook.FolderPath, settings.LanguagesToInclude.Append(mdLang1Code).Append(mdLang2Code));
+				var cssLangsToKeep = new HashSet<string> (settings.LanguagesToInclude);
+				cssLangsToKeep.UnionWith(xmatterLangsToKeep);
+				PublishModel.RemoveUnwantedLanguageRulesFromCssFiles(modifiedBook.FolderPath, cssLangsToKeep);
 			}
 			else if (Program.RunningHarvesterMode && modifiedBook.OurHtmlDom.SelectSingleNode(BookStorage.ComicalXpath) != null)
 			{
@@ -288,7 +289,7 @@ BookServer bookServer,
 				// and if you can't switch language, there's no point in the book containing more than one.
 				var languagesToInclude = new string[1] { modifiedBook.BookData.Language1.Tag };
 				PublishModel.RemoveUnwantedLanguageData(modifiedBook.OurHtmlDom, languagesToInclude,
-					shouldPruneXmatter: true, mdLang1Code, mdLang2Code);
+					shouldPruneXmatter: true, xmatterLangsToKeep);
 			}
 
 			// Do this after processing interactive pages, as they can satisfy the criteria for being 'blank'

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -702,7 +703,7 @@ namespace Bloom.Publish.Video
 				if (item.endTime != default(DateTime))
 				{
 					var duration = (item.endTime - item.startTime);
-					result += $"atrim=end={duration.TotalSeconds},";
+					result += $"atrim=end={duration.TotalSeconds.ToString(CultureInfo.InvariantCulture)},";
 					if (item == lastMusic)
 					{
 						// Make sure the fadeDuration is at least slightly less than the actual duration,
@@ -712,7 +713,7 @@ namespace Bloom.Publish.Video
 						// - t=out makes it fade out (at the end) rather than in (at the beginning)
 						// - st=x makes the fade start x seconds from the start (and so fadeDuration from the end)
 						// - d=n makes the fade last for n seconds
-						result += $"afade=t=out:st={duration.TotalSeconds - fadeDuration}:d={fadeDuration},";
+						result += $"afade=t=out:st={(duration.TotalSeconds - fadeDuration).ToString(CultureInfo.InvariantCulture)}:d={fadeDuration.ToString(CultureInfo.InvariantCulture)},";
 					}
 				}
 
@@ -722,12 +723,12 @@ namespace Bloom.Publish.Video
 				// We shouldn't get negative delays, since startTime
 				// is recorded during a method that completes before we return
 				Debug.Assert(delay.TotalMilliseconds >= 0);
-				result += $"adelay={Math.Max(delay.TotalMilliseconds, 0)}:all=1";
+				result += $"adelay={Math.Max(delay.TotalMilliseconds, 0).ToString(CultureInfo.InvariantCulture)}:all=1";
 
 				// possibly reduce its volume.
 				if (item.volume != 1.0)
 				{
-					result += $",volume={item.volume}";
+					result += $",volume={item.volume.ToString(CultureInfo.InvariantCulture)}";
 				}
 
 				// add another label by which the mixer will refer to this stream
@@ -1033,8 +1034,14 @@ namespace Bloom.Publish.Video
 
 		private void RunFfmpeg(string args, string workingDirectory = null)
 		{
+
+			var currentCulture = CultureInfo.CurrentCulture;
+			var currentUICulture = CultureInfo.CurrentUICulture;
 			try
 			{
+				CultureInfo.CurrentCulture = CultureInfo.InvariantCulture;
+				CultureInfo.CurrentUICulture = CultureInfo.InvariantCulture;
+
 				if (_errorData == null)
 					_errorData = new StringBuilder();
 				if (_ffmpegPath == null)
@@ -1086,6 +1093,11 @@ namespace Bloom.Publish.Video
 			{
 				Logger.WriteError("Starting ffmpeg failed: command line was " + args, ex);
 				throw;
+			}
+			finally
+			{
+				CultureInfo.CurrentCulture = currentCulture;
+				CultureInfo.CurrentUICulture = currentUICulture;
 			}
 		}
 
