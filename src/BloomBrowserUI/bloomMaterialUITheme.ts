@@ -267,7 +267,6 @@ export const toolboxTheme = createTheme({
             }
         },
 
-        // set the border color of disabled buttons to kBloomBlue
         MuiButton: {
             styleOverrides: {
                 root: {
@@ -276,11 +275,14 @@ export const toolboxTheme = createTheme({
                     width: "100%",
                     textTransform: "none", // Material buttons are all caps by default
                     color: toolboxTextColor,
-                    borderWidth: "2px",
+                    "&, &:hover": {
+                        borderWidth: "2px"
+                    },
                     // set the color of the icon in the button to red
                     "& .MuiButton-startIcon": {
                         color: kBloomBlue
                     }
+                    // set the border width when hovering over the button
                 },
                 outlined: {
                     justifyContent: "flex-start",

@@ -27,7 +27,6 @@ export const TalkingBookAdvancedSection: React.FunctionComponent<{
     split: (timingFilePath: string) => Promise<void>;
     editTimingsFile: () => void;
     applyTimingsFile: () => void;
-    enableRecordingModeControl: boolean;
     setRecordingMode: (recordingMode: RecordingMode) => Promise<void>;
     inShowPlaybackOrderMode: boolean;
     setShowPlaybackOrder: (isOn: boolean) => void;
@@ -85,20 +84,25 @@ export const TalkingBookAdvancedSection: React.FunctionComponent<{
                 </BloomTooltip>
                 <Divider />
                 <BloomTooltip
-                    showDisabled={!props.enableRecordingModeControl}
+                    showDisabled={props.isXmatter || !props.hasAudio}
                     tipWhenDisabled={
                         (props.isXmatter && {
                             l10nKey:
                                 "EditTab.Toolbox.TalkingBookTool.RecordingModeXMatter"
                         }) ||
-                        (props.hasAudio
-                            ? {
-                                  l10nKey: `EditTab.Toolbox.TalkingBookTool.RecordingModeDisabledBecauseHasAudioTip`
-                              }
-                            : {
-                                  l10nKey:
-                                      "EditTab.Toolbox.TalkingBookTool.NeedCursorInRecordableThingDisabledTip"
-                              })
+                        (!props.hasRecordableDivs && {
+                            l10nKey:
+                                "EditTab.Toolbox.TalkingBookTool.NeedCursorInRecordableThingDisabledTip"
+                        }) ||
+                        ""
+                        // (props.hasAudio
+                        //     ? {
+                        //           l10nKey: `EditTab.Toolbox.TalkingBookTool.RecordingModeDisabledBecauseHasAudioTip`
+                        //       }
+                        //     : {
+                        //           l10nKey:
+                        //               "EditTab.Toolbox.TalkingBookTool.NeedCursorInRecordableThingDisabledTip"
+                        //       })
                     }
                     {...commonTooltipProps}
                 >
@@ -120,18 +124,33 @@ export const TalkingBookAdvancedSection: React.FunctionComponent<{
                                 l10nKey:
                                     "EditTab.Toolbox.TalkingBookTool.RecordingModeSentenceTip"
                             }}
-                            showDisabled={!props.enableRecordingModeControl}
+                            showDisabled={
+                                props.isXmatter ||
+                                !props.hasRecordableDivs ||
+                                // we don't allow you to go from textbox to sentence mode if you have audio
+                                props.hasAudio
+                            }
+                            tipWhenDisabled={{
+                                l10nKey: `EditTab.Toolbox.TalkingBookTool.RecordingModeDisabledBecauseHasAudioTip`
+                            }}
                             {...commonTooltipProps}
                         >
                             <MuiRadio
-                                disabled={!props.enableRecordingModeControl}
+                                disabled={
+                                    props.isXmatter ||
+                                    !props.hasRecordableDivs ||
+                                    // we don't allow you to go from textbox to sentence mode if you have audio
+                                    props.hasAudio
+                                }
                                 value={RecordingMode.Sentence}
                                 label="By Sentence"
                                 l10nKey="EditTab.Toolbox.TalkingBookTool.RecordingModeSentence"
                             />
                         </BloomTooltip>
                         <BloomTooltip
-                            showDisabled={!props.enableRecordingModeControl}
+                            showDisabled={
+                                props.isXmatter || !props.hasRecordableDivs
+                            }
                             tip={{
                                 l10nKey:
                                     "EditTab.Toolbox.TalkingBookTool.RecordingModeTextBoxTip"
@@ -139,7 +158,9 @@ export const TalkingBookAdvancedSection: React.FunctionComponent<{
                             {...commonTooltipProps}
                         >
                             <MuiRadio
-                                disabled={!props.enableRecordingModeControl}
+                                disabled={
+                                    props.isXmatter || !props.hasRecordableDivs
+                                }
                                 value={RecordingMode.TextBox}
                                 label="By Whole Textbox"
                                 l10nKey="EditTab.Toolbox.TalkingBookTool.RecordingModeTextBox"
@@ -265,7 +286,7 @@ export const TalkingBookAdvancedSection: React.FunctionComponent<{
                         )
                     }
                     highlightWhenTrue={true}
-                    l10nKey="EditTab.Toolbox.TalkingBookTool.ShowImageDescription"
+                    l10nKey="EditTab.Toolbox.TalkingBookTool.ShowImageDescriptions"
                 />
             </TriangleCollapse>
         </ThemeProvider>

@@ -4209,9 +4209,6 @@ export default class AudioRecording {
         ReactDOM.render(
             React.createElement(TalkingBookAdvancedSection, {
                 isXmatter: ToolBox.isXmatterPage(),
-
-                enableRecordingModeControl:
-                    !ToolBox.isXmatterPage() && !this.haveAudio,
                 recordingMode: this.recordingMode,
                 setRecordingMode: async (recordingMode: RecordingMode) => {
                     this.setRecordingModeAsync(recordingMode);
@@ -4244,7 +4241,7 @@ export default class AudioRecording {
                 editTimingsFile: async () => {
                     // we'll give this a real UI in the future. Also, not going to localize this yet.
                     alert(
-                        `Bloom will now open the timings file so that you can edit it directly. Alternatively, you can use Audacity by importing/exporting Blooms timings file as a "labels" file. For information on how to edit this file using Audacity, search docs.bloomlibrary.org for "Audacity" Either way, you will need to use the "Apply Timings File..." button to apply your changes.\r\n\r\nCurrent timings file is ${this.lastTimingsFilePath}\r\nCurrent audio file is ${this.currentAudioId} (.wav or .mp3)`
+                        `Bloom will now open the timings file so that you can edit it directly. Alternatively, you can use Audacity by importing/exporting this file as a "labels" file. For information on how to edit this file using Audacity, search docs.bloomlibrary.org for "Audacity" Either way, you will need to use the "Apply Timings File..." button to apply your changes.\r\n\r\nCurrent timings file is ${this.lastTimingsFilePath}\r\nCurrent audio file is ${this.currentAudioId} (.wav or .mp3)`
                     );
                     postJson("fileIO/openFileInDefaultEditor", {
                         path: this.lastTimingsFilePath
