@@ -1,5 +1,6 @@
 using System;
 using System.ComponentModel;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -97,106 +98,118 @@ namespace Bloom.Publish.PDF
 					"Making PDF from HTML",
 					@"Message displayed in a progress report dialog box"));
 
-			var runner = new CommandLineRunner();
-			string exePath;
-			var bldr = new StringBuilder();
-			// Codebase is reliable even when Resharper copies the EXE somewhere else for testing.
-			var execDir = BloomFileLocator.GetCodeBaseFolder();
-			var fromDirectory = String.Empty;
-			var filePath = Path.Combine(execDir, "BloomPdfMaker.exe");
-			if (!RobustFile.Exists(filePath))
+			var currentCulture = CultureInfo.CurrentCulture;
+			var currentUICulture = CultureInfo.CurrentUICulture;
+			try
 			{
-				var msg = LocalizationManager.GetString("InstallProblem.BloomPdfMaker",
-					"A component of Bloom, BloomPdfMaker.exe, seems to be missing. This prevents previews and printing. Antivirus software sometimes does this. You may need technical help to repair the Bloom installation and protect this file from being deleted again.");
-				throw new FileNotFoundException(msg, "BloomPdfMaker.exe"); // must be this class to trigger the right reporting mechanism.
-			}
-			if (Platform.IsMono)
-			{
-				exePath = Path.ChangeExtension(filePath, "sh");
-			}
-			else
-			{
-				exePath = filePath;
-			}
-
-			SetArguments(bldr, specs);
-			var arguments = bldr.ToString();
-
-			Logger.WriteEvent($"Running {exePath} with arguments: {arguments}");
-			Console.WriteLine($"Running {exePath} with arguments: {arguments}");
-
-			var timeoutInSeconds = 3600;
-			if (Program.RunningUnitTests)
-				timeoutInSeconds = 20;
-
-			var creating = LocalizationManager.GetString("PublishTab.PdfMaker.Creating", "Creating PDF...");
-			var socketProgress = new WebSocketProgress(BloomWebSocketServer.Instance, "progress");
-			socketProgress.MessageWithoutLocalizing(creating);
-
-			var progress = new NullProgress();
-			// NB: WebView2 does not appear to support progress reporting while making PDFs.
-			var res = runner.Start(exePath, arguments, Encoding.UTF8, fromDirectory, timeoutInSeconds, progress,
-				(msg) =>
+				CultureInfo.CurrentCulture = CultureInfo.InvariantCulture;
+				CultureInfo.CurrentUICulture = CultureInfo.InvariantCulture;
+				var runner = new CommandLineRunner();
+				string exePath;
+				var bldr = new StringBuilder();
+				// Codebase is reliable even when Resharper copies the EXE somewhere else for testing.
+				var execDir = BloomFileLocator.GetCodeBaseFolder();
+				var fromDirectory = String.Empty;
+				var filePath = Path.Combine(execDir, "BloomPdfMaker.exe");
+				if (!RobustFile.Exists(filePath))
 				{
-					var parts = msg.Split('|');
-					if (parts.Length == 2 && parts[1].StartsWith("Percent: "))
-					{
-						var percent = int.Parse(parts[1].Substring(@"Percent: ".Length));
-						socketProgress.SendPercent(percent * (100 - ProcessPdfWithGhostscript.kPdfCompressionShare) / 100);
-						if (worker?.CancellationPending ?? false)
-						{
-							doWorkEventArgs.Cancel = true;
-							try
-							{
-								runner.Abort(1);
-							}
-							catch (InvalidOperationException)
-							{
-								// Typically means the process already stopped.
-								// Possibly a race condition between aborting the process and getting another
-								// line of output from it.
-							}
-
-						}
-					}
-				});
-
-			Logger.WriteEvent($"Call to {exePath} completed");
-			Console.WriteLine($"Call to {exePath} completed");
-
-			if (res.DidTimeOut || !RobustFile.Exists(specs.OutputPdfPath))
-			{
-				Logger.WriteEvent(@"***ERROR PDF generation failed: res.StandardOutput = " + res.StandardOutput);
-				Console.Error.WriteLine(@"***ERROR PDF generation failed: res.StandardOutput = " + res.StandardOutput);
-				Logger.WriteEvent(@"***ERROR PDF generation failed: res.StandardError = " + res.StandardError);
-				Console.Error.WriteLine(@"***ERROR PDF generation failed: res.StandardError = " + res.StandardError);
-
-				var msg = L10NSharp.LocalizationManager.GetString(@"PublishTab.PDF.Error.Failed",
-					"Bloom was not able to create the PDF file ({0}).{1}{1}Details: BloomPdfMaker (command line) did not produce the expected document.",
-					@"Error message displayed in a message dialog box. {0} is the filename, {1} is a newline character.");
-
-				// This message string is intentionally separate because it was added after the previous string had already been localized in most languages.
-				// It's not useful to add if we're already in save memory mode.
-				var msg2 = specs.SaveMemoryMode ? "" : L10NSharp.LocalizationManager.GetString(@"PublishTab.PDF.Error.TrySinglePage",
-					"The book's images might have exceeded the amount of RAM memory available. Please turn on the \"Use Less Memory\" option which is slower but uses less memory.",
-					@"Error message displayed in a message dialog box") + Environment.NewLine;
-
-				var fullMsg = String.Format(msg, specs.OutputPdfPath, Environment.NewLine) + Environment.NewLine +
-				              msg2 + res.StandardOutput;
-
-				var except = new ApplicationException(fullMsg);
-				// Note that if we're being run by a BackgroundWorker, it will catch the exception.
-				// If not, but the caller provides a DoWorkEventArgs, pass the exception through
-				// that object rather than throwing it.
-				if (worker != null || doWorkEventArgs == null)
-					throw except;
+					var msg = LocalizationManager.GetString("InstallProblem.BloomPdfMaker",
+						"A component of Bloom, BloomPdfMaker.exe, seems to be missing. This prevents previews and printing. Antivirus software sometimes does this. You may need technical help to repair the Bloom installation and protect this file from being deleted again.");
+					throw new FileNotFoundException(msg, "BloomPdfMaker.exe"); // must be this class to trigger the right reporting mechanism.
+				}
+				if (Platform.IsMono)
+				{
+					exePath = Path.ChangeExtension(filePath, "sh");
+				}
 				else
-					doWorkEventArgs.Result = except;
+				{
+					exePath = filePath;
+				}
+
+				SetArguments(bldr, specs);
+				var arguments = bldr.ToString();
+
+				Logger.WriteEvent($"Running {exePath} with arguments: {arguments}");
+				Console.WriteLine($"Running {exePath} with arguments: {arguments}");
+
+				var timeoutInSeconds = 3600;
+				if (Program.RunningUnitTests)
+					timeoutInSeconds = 20;
+
+				var creating = LocalizationManager.GetString("PublishTab.PdfMaker.Creating", "Creating PDF...");
+				var socketProgress = new WebSocketProgress(BloomWebSocketServer.Instance, "progress");
+				socketProgress.MessageWithoutLocalizing(creating);
+
+				var progress = new NullProgress();
+				// NB: WebView2 does not appear to support progress reporting while making PDFs.
+				var res = runner.Start(exePath, arguments, Encoding.UTF8, fromDirectory, timeoutInSeconds, progress,
+					(msg) =>
+					{
+						var parts = msg.Split('|');
+						if (parts.Length == 2 && parts[1].StartsWith("Percent: "))
+						{
+							var percent = int.Parse(parts[1].Substring(@"Percent: ".Length));
+							socketProgress.SendPercent(percent * (100 - ProcessPdfWithGhostscript.kPdfCompressionShare) / 100);
+							if (worker?.CancellationPending ?? false)
+							{
+								doWorkEventArgs.Cancel = true;
+								try
+								{
+									runner.Abort(1);
+								}
+								catch (InvalidOperationException)
+								{
+									// Typically means the process already stopped.
+									// Possibly a race condition between aborting the process and getting another
+									// line of output from it.
+								}
+
+							}
+						}
+					});
+
+				Logger.WriteEvent($"Call to {exePath} completed");
+				Console.WriteLine($"Call to {exePath} completed");
+
+				if (res.DidTimeOut || !RobustFile.Exists(specs.OutputPdfPath))
+				{
+					Logger.WriteEvent(@"***ERROR PDF generation failed: res.StandardOutput = " + res.StandardOutput);
+					Console.Error.WriteLine(@"***ERROR PDF generation failed: res.StandardOutput = " + res.StandardOutput);
+					Logger.WriteEvent(@"***ERROR PDF generation failed: res.StandardError = " + res.StandardError);
+					Console.Error.WriteLine(@"***ERROR PDF generation failed: res.StandardError = " + res.StandardError);
+
+					var msg = L10NSharp.LocalizationManager.GetString(@"PublishTab.PDF.Error.Failed",
+						"Bloom was not able to create the PDF file ({0}).{1}{1}Details: BloomPdfMaker (command line) did not produce the expected document.",
+						@"Error message displayed in a message dialog box. {0} is the filename, {1} is a newline character.");
+
+					// This message string is intentionally separate because it was added after the previous string had already been localized in most languages.
+					// It's not useful to add if we're already in save memory mode.
+					var msg2 = specs.SaveMemoryMode ? "" : L10NSharp.LocalizationManager.GetString(@"PublishTab.PDF.Error.TrySinglePage",
+						"The book's images might have exceeded the amount of RAM memory available. Please turn on the \"Use Less Memory\" option which is slower but uses less memory.",
+						@"Error message displayed in a message dialog box") + Environment.NewLine;
+
+					var fullMsg = String.Format(msg, specs.OutputPdfPath, Environment.NewLine) + Environment.NewLine +
+								  msg2 + res.StandardOutput;
+
+					var except = new ApplicationException(fullMsg);
+					// Note that if we're being run by a BackgroundWorker, it will catch the exception.
+					// If not, but the caller provides a DoWorkEventArgs, pass the exception through
+					// that object rather than throwing it.
+					if (worker != null || doWorkEventArgs == null)
+						throw except;
+					else
+						doWorkEventArgs.Result = except;
+				}
+				else
+				{
+					Console.WriteLine("DEBUG PDF success: res.StandardOutput=\r\n{0}\r\nres.StandardError=\r\n{1}\r\n",
+						res.StandardOutput, res.StandardError);
+				}
 			}
-			else
+			finally
 			{
-				Console.WriteLine("DEBUG PDF success: res.StandardOutput=\r\n{0}\r\nres.StandardError=\r\n{1}\r\n",
-					res.StandardOutput, res.StandardError);
+				CultureInfo.CurrentCulture = currentCulture;
+				CultureInfo.CurrentUICulture = currentUICulture;
 			}
 		}
 

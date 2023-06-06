@@ -163,7 +163,7 @@ namespace Bloom.Publish
 					var argsBuilder = new StringBuilder("-hide_banner -i \"concat:");
 					argsBuilder.Append(string.Join("|", monoFiles));
 					argsBuilder.Append($"\" -c copy \"{combinedAudioPath}\"");
-					var result = CommandLineRunner.Run(ffmpeg, argsBuilder.ToString(), "", 60 * 10, new NullProgress());
+					var result = ToPalaso.CommandLineRunner.RunWithInvariantCulture(ffmpeg, argsBuilder.ToString(), "", 60 * 10, new NullProgress());
 					// Having a WAV file masquerading as a .mp3 file in the file list doesn't work, but ffmpeg still
 					// returns an exit code of zero when that happens.  We can detect the problem by checking the stderr
 					// output.  See https://issues.bloomlibrary.org/youtrack/issue/BL-11435.
@@ -262,7 +262,7 @@ namespace Bloom.Publish
 			foreach (var file in mergeFiles)
 			{
 				var args = $"-hide_banner -i \"{file}\" -f null -";
-				var result = CommandLineRunner.Run(ffmpeg, args, "", 60, new NullProgress());
+				var result = ToPalaso.CommandLineRunner.RunWithInvariantCulture(ffmpeg, args, "", 60, new NullProgress());
 				var output = result.StandardError;
 				var match = Regex.Match(output, "Audio: ([^,]*), ([0-9]+) Hz, ([a-z]+), [^,]*, ([0-9]+) kb/s");
 				if (match.Success)
@@ -278,7 +278,7 @@ namespace Bloom.Publish
 						tempFile.Detach();
 						args = $"-i \"{file}\" -ac 1 -ar 44100 -b:a {bitRate}k \"{tempFile.Path}.mp3\"";
 						Debug.WriteLine($"DEBUG: ffmpeg {args}");
-						result = CommandLineRunner.Run(ffmpeg, args, "", 120, new NullProgress());
+						result = ToPalaso.CommandLineRunner.RunWithInvariantCulture(ffmpeg, args, "", 120, new NullProgress());
 						if (result.ExitCode == 0)
 						{
 							monoFiles.Add(tempFile.Path + ".mp3");

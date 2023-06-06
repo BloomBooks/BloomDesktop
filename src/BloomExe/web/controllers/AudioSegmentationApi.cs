@@ -801,30 +801,42 @@ namespace Bloom.web.controllers
 		/// <returns></returns>
 		private Task<int> ExtractAudioSegmentAsync(string inputAudioFilename, string timingStartString, string timingEndString, string outputSplitFilename)
 		{
-			string commandString = $"ffmpeg -i \"{inputAudioFilename}\" -acodec copy -ss {timingStartString} -to {timingEndString} \"{outputSplitFilename}\"";
-			string command;
-			string arguments;
-			var workingDir = Platform.IsLinux ? "/tmp" : kWorkingDirectory;
-			if (Platform.IsLinux)
+			var currentCulture = CultureInfo.CurrentCulture;
+			var currentUICulture = CultureInfo.CurrentUICulture;
+			try
 			{
-				command = _ffmpegFound;
-				arguments = commandString.Substring(7);
-			}
-			else
-			{
-				command = "CMD.EXE";
-				arguments = $"/C {commandString}";
-			}
-			var startInfo = new ProcessStartInfo()
-			{
-				FileName = command,
-				Arguments = arguments,
-				WorkingDirectory = workingDir,
-				UseShellExecute = false,
-				CreateNoWindow = true
-			};	
+				CultureInfo.CurrentCulture = CultureInfo.InvariantCulture;
+				CultureInfo.CurrentUICulture = CultureInfo.InvariantCulture;
+				string commandString = $"ffmpeg -i \"{inputAudioFilename}\" -acodec copy -ss {timingStartString} -to {timingEndString} \"{outputSplitFilename}\"";
+				string command;
+				string arguments;
+				var workingDir = Platform.IsLinux ? "/tmp" : kWorkingDirectory;
+				if (Platform.IsLinux)
+				{
+					command = _ffmpegFound;
+					arguments = commandString.Substring(7);
+				}
+				else
+				{
+					command = "CMD.EXE";
+					arguments = $"/C {commandString}";
+				}
+				var startInfo = new ProcessStartInfo()
+				{
+					FileName = command,
+					Arguments = arguments,
+					WorkingDirectory = workingDir,
+					UseShellExecute = false,
+					CreateNoWindow = true
+				};
 
-			return RunProcessAsync(startInfo);
+				return RunProcessAsync(startInfo);
+			}
+			finally
+			{
+				CultureInfo.CurrentCulture = currentCulture;
+				CultureInfo.CurrentUICulture = currentUICulture;
+			}
 		}
 
 		// Starts a process and returns a task (that you can use to wait/await for the completion of the process)

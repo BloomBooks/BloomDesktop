@@ -1,6 +1,7 @@
 ﻿using System;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Text;
 using Bloom.Api;
@@ -68,30 +69,42 @@ namespace Bloom.Publish.PDF
 					_worker.ReportProgress(0, GetSpecificStatus());
 				using (var tempPdfFile = TempFile.WithExtension(".pdf"))
 				{
-					_runner = new CommandLineRunner();
-					var arguments = GetArguments(tempPdfFile.Path, null);
-					var fromDirectory = String.Empty;
-					var progress = new NullProgress();	// I can't figure out how to use any IProgress based code, but we show progress okay as is.
-					var res = _runner.Start(exePath, arguments, Encoding.UTF8, fromDirectory, 3600, progress, ProcessGhostcriptReporting);
-					if (res.ExitCode != 0)
+					var currentCulture = CultureInfo.CurrentCulture;
+					var currentUICulture = CultureInfo.CurrentUICulture;
+					try
 					{
-						// On Linux, ghostscript doesn't deal well with some Unicode filenames.  Try renaming the input
-						// file temporarily to something innocuous to see if this makes the ghostscript process succeed.
-						// See https://issues.bloomlibrary.org/youtrack/issue/BL-7177.
-						using (var tempInputFile = TempFile.WithExtension(".pdf"))
+						CultureInfo.CurrentCulture = CultureInfo.InvariantCulture;
+						CultureInfo.CurrentUICulture = CultureInfo.InvariantCulture;
+						_runner = new CommandLineRunner();
+						var arguments = GetArguments(tempPdfFile.Path, null);
+						var fromDirectory = String.Empty;
+						var progress = new NullProgress();  // I can't figure out how to use any IProgress based code, but we show progress okay as is.
+						var res = _runner.Start(exePath, arguments, Encoding.UTF8, fromDirectory, 3600, progress, ProcessGhostcriptReporting);
+						if (res.ExitCode != 0)
 						{
-							RobustFile.Delete(tempInputFile.Path);		// Move won't replace even empty files.
-							RobustFile.Move(_inputPdfPath, tempInputFile.Path);
-							arguments = GetArguments(tempPdfFile.Path, tempInputFile.Path);
-							res = _runner.Start(exePath, arguments, Encoding.UTF8, fromDirectory, 3600, progress, ProcessGhostcriptReporting);
-							RobustFile.Move(tempInputFile.Path, _inputPdfPath);
+							// On Linux, ghostscript doesn't deal well with some Unicode filenames.  Try renaming the input
+							// file temporarily to something innocuous to see if this makes the ghostscript process succeed.
+							// See https://issues.bloomlibrary.org/youtrack/issue/BL-7177.
+							using (var tempInputFile = TempFile.WithExtension(".pdf"))
+							{
+								RobustFile.Delete(tempInputFile.Path);		// Move won't replace even empty files.
+								RobustFile.Move(_inputPdfPath, tempInputFile.Path);
+								arguments = GetArguments(tempPdfFile.Path, tempInputFile.Path);
+								res = _runner.Start(exePath, arguments, Encoding.UTF8, fromDirectory, 3600, progress, ProcessGhostcriptReporting);
+								RobustFile.Move(tempInputFile.Path, _inputPdfPath);
+							}
+						}
+						if (res.ExitCode != 0 || res.DidTimeOut || !RobustFile.Exists(tempPdfFile.Path))
+						{
+							if (_inputPdfPath != _outputPdfPath)
+								RobustFile.Copy(_inputPdfPath, _outputPdfPath, true);
+							return;
 						}
 					}
-					if (res.ExitCode != 0 || res.DidTimeOut || !RobustFile.Exists(tempPdfFile.Path))
+					finally
 					{
-						if (_inputPdfPath != _outputPdfPath)
-							RobustFile.Copy(_inputPdfPath, _outputPdfPath, true);
-						return;
+						CultureInfo.CurrentCulture = currentCulture;
+						CultureInfo.CurrentUICulture = currentUICulture;
 					}
 					// If the process made the file larger and didn't change the color scheme, ignore the result.
 					var oldInfo = new FileInfo(_inputPdfPath);

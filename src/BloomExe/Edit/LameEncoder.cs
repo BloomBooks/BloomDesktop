@@ -38,7 +38,7 @@ namespace Bloom.Edit
 
 			//-a downmix to mono
 			string arguments = $"-a \"{sourcePath}\" \"{destinationPath}\"";
-			ExecutionResult result = CommandLineRunner.Run(GetLamePath(), arguments, null, 60, new NullProgress());
+			ExecutionResult result = ToPalaso.CommandLineRunner.RunWithInvariantCulture(GetLamePath(), arguments, null, 60, new NullProgress());
 			result.RaiseExceptionIfFailed("");
 			return destinationPath;
 		}

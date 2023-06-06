@@ -965,8 +965,12 @@ namespace Bloom.ImageProcessing
 			var safeDestPath = destPath;
 			if (!IsAsciiFilepath(destPath))
 				safeDestPath = TempFileUtils.GetTempFilepathWithExtension(Path.GetExtension(destPath));
+			var currentCulture = CultureInfo.CurrentCulture;
+			var currentUICulture = CultureInfo.CurrentUICulture;
 			try
 			{
+				CultureInfo.CurrentCulture = CultureInfo.InvariantCulture;
+				CultureInfo.CurrentUICulture = CultureInfo.InvariantCulture;
 				var argsBldr = new StringBuilder();
 				argsBldr.AppendFormat("convert \"{0}\"", safeSourcePath);
 				if (makeOpaque)
@@ -981,6 +985,7 @@ namespace Bloom.ImageProcessing
 					argsBldr.Append(" -quality 99");	// still lossy, but not near as bad as the default (bigger file, however)
 				argsBldr.AppendFormat(" -scale {0}x{1} \"{2}\"", size.Width, size.Height, safeDestPath);
 				var arguments = argsBldr.ToString();
+
 				var proc = new Process
 				{
 					StartInfo =
@@ -1001,6 +1006,8 @@ namespace Bloom.ImageProcessing
 			}
 			finally
 			{
+				CultureInfo.CurrentCulture = currentCulture;
+				CultureInfo.CurrentUICulture = currentUICulture;
 				// remove unneeded copies
 				if (sourcePath != safeSourcePath)
 					RobustFile.Delete(safeSourcePath);

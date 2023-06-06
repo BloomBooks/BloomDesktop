@@ -404,6 +404,7 @@
     <Compile Include="History\CollectionHistory.cs" />
     <Compile Include="History\HistoryEvent.cs" />
     <Compile Include="Publish\Epub\ReadiumManifest.cs" />
+    <Compile Include="ToPalaso\CommandLineRunner.cs" />
     <Compile Include="ToPalaso\RobustIO.cs" />
     <Compile Include="Utils\AsyncUtil.cs" />
     <Compile Include="Publish\PDF\PublishPdfApi.cs" />

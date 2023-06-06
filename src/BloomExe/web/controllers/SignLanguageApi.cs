@@ -122,7 +122,7 @@ namespace Bloom.web.controllers
 				// On slowish machines, this compression seems to take about 1/5 as long as the video took to record.
 				// Allowing for some possibly being slower still, we're basing the timeout on half the length of the video,
 				// plus a minute to be sure.
-				var result = CommandLineRunner.Run(FfmpegProgram, parameters, "", seconds / 2 + 60, new NullProgress());
+				var result = ToPalaso.CommandLineRunner.RunWithInvariantCulture(FfmpegProgram, parameters, "", seconds / 2 + 60, new NullProgress());
 				var msg = string.Empty;
 				if (result.DidTimeOut)
 				{
@@ -269,7 +269,7 @@ namespace Bloom.web.controllers
 			// -hide_banner = don't write all the version and build information to the console
 			// -i <path> = specify input file
 			var parameters = $"-hide_banner -i \"{videoFilePath}\"";
-			var result = CommandLineRunner.Run(FfmpegProgram, parameters, "", 60, new NullProgress());
+			var result = ToPalaso.CommandLineRunner.RunWithInvariantCulture(FfmpegProgram, parameters, "", 60, new NullProgress());
 			if (result.DidTimeOut)
 			{
 				request?.Failed("ffmpeg timed out getting video statistics");
@@ -626,7 +626,7 @@ namespace Bloom.web.controllers
 			// -to HH:MM:SS.T = trim to this end time
 			// -c:v copy -c:a copy = copy video (and audio) streams with no codec modification
 			var parameters = $"-hide_banner -i \"{sourceVideoFilePath}\" -ss {startTiming} -to {endTiming} -c:v copy -c:a copy \"{destinationPath}\"";
-			var result = CommandLineRunner.Run(FfmpegProgram, parameters, "", 60, new NullProgress());
+			var result = ToPalaso.CommandLineRunner.RunWithInvariantCulture(FfmpegProgram, parameters, "", 60, new NullProgress());
 			if (result.DidTimeOut)
 			{
 				Logger.WriteEvent("ffmpeg timed out trimming video for publication");

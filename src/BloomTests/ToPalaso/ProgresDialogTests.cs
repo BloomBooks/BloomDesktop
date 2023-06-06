@@ -15,7 +15,7 @@ namespace BloomTests.ToPalaso
 		{
 			using (var dlg = new ProgressDialogBackground())
 			{
-				dlg.ShowAndDoWork((progress,args) => CommandLineRunner.Run("PalasoUIWindowsForms.TestApp.exe", "CommandLineRunnerTest", null, string.Empty, 60, progress
+				dlg.ShowAndDoWork((progress,args) => Bloom.ToPalaso.CommandLineRunner.RunWithInvariantCulture("PalasoUIWindowsForms.TestApp.exe", "CommandLineRunnerTest", null, string.Empty, 60, progress
 				,(s)=>
 					{
 						progress.WriteStatus(s);
