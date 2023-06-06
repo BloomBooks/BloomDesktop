@@ -49,7 +49,9 @@ namespace Bloom.web.controllers
 	{
 		public const string kApiUrlPart = "audioSegmentation/";
 		private const string kWorkingDirectory = "%HOMEDRIVE%\\%HOMEPATH%"; // Linux will use "/tmp" when the working directory doesn't matter
-		private const string kTimingsOutputFormat = "tsv";
+																			// about the format here:
+																			// "tsv" gives [start stop f0001]. That's fine for just splitting, but if a user wants to edit that, the text is useful.
+																			// "txt" gives [f0001 start stop text]
 
 		// 0 could be a useful value for this if you hard-split. (on the rationale that you won't accidentally cut off anything useful).
 		// For soft splits, you might as well set this to something useful.
@@ -396,7 +398,7 @@ namespace Bloom.web.controllers
 				}
 				else
 				{
-					response.timingsFilePath = Path.Combine(directoryName, $"{requestParameters.audioFilenameBase}_timings.{kTimingsOutputFormat}");
+					response.timingsFilePath = Path.Combine(directoryName, $"{requestParameters.audioFilenameBase}_timings.txt");
 					timingStartEndRangeList = GetSplitStartEndTimings(audioFilenameToSegment, textFragmentsFilename, response.timingsFilePath, langCode);
 				}
 			}
@@ -580,7 +582,7 @@ namespace Bloom.web.controllers
 			return converter.ApplyMappings(text);
 		}
 
-		public List<Tuple<string, string>> GetSplitStartEndTimings(string inputAudioFilename, string inputTextFragmentsFilename, string outputTimingsFilename, string ttsEngineLang = "en")
+		public List<Tuple<string, string>> GetSplitStartEndTimings(string inputAudioFilename, string inputTextFragmentsFilename, string outputTimingsPath, string ttsEngineLang = "en")
 		{
 			// Just setting some default value here (Esperanto - which is more phonetic so we think it works well for a large variety),
 			// but really rely-ing on the TTS override to specify the real lang, so this value doesn't really matter.
@@ -602,7 +604,11 @@ namespace Bloom.web.controllers
 			string audioHeadParams = $"|os_task_file_head_tail_format=hidden|is_audio_file_detect_head_min=0.00|is_audio_file_detect_head_max={maxAudioHeadDurationSec.ToString(CultureInfo.InvariantCulture)}";
 			var audioFile = Path.GetFileName(inputAudioFilename);
 			var fragmentsFile = Path.GetFileName(inputTextFragmentsFilename);
-			var outputFile = Path.GetFileName(outputTimingsFilename);
+			var outputFile = Path.GetFileName(outputTimingsPath);
+
+			// Have Aeneas output in "txt" format, which is [f0001 start stop "label contents"] per line
+			// later we will strip off the first field so that we have an Audacity-compatible label file that a user can edit
+			var kTimingsOutputFormat = "txt";
 			string commandString = $"python -m aeneas.tools.execute_task \"{audioFile}\" \"{fragmentsFile}\" \"task_language={aeneasLang}|is_text_type=plain|os_task_file_format={kTimingsOutputFormat}{audioHeadParams}{boundaryAdjustmentParams}\" \"{outputFile}\" --runtime-configuration=\"tts_voice_code={ttsEngineLang}\"";
 			string command;
 			string arguments;
@@ -648,12 +654,24 @@ namespace Bloom.web.controllers
 
 
 			// This might throw exceptions, but IMO best to let the error handler pass it, and have the Javascript code be as robust as possible, instead of passing on error messages to user
-			var segmentationResults = RobustFile.ReadAllLines(outputTimingsFilename);
+			var segmentationResults = RobustFile.ReadAllLines(outputTimingsPath);
 
 			List<Tuple<string, string>> timingStartEndRangeList;
 			if (kTimingsOutputFormat.Equals("srt", StringComparison.OrdinalIgnoreCase))
 			{
 				timingStartEndRangeList = ParseTimingFileSRT(segmentationResults);
+			}
+			else if (kTimingsOutputFormat.Equals("txt", StringComparison.OrdinalIgnoreCase))
+			{
+				var startStopLabelList = ParseTimingFileTXT(segmentationResults);
+				timingStartEndRangeList = startStopLabelList.Select(x => new Tuple<string, string>(x.Item1, x.Item2)).ToList();
+				// now save it out in Aeneas timings format in case the user wants to edit it
+				var aeneasTimingsContents = startStopLabelList.Select(x => $"{x.Item1}\t{x.Item2}\t{x.Item3}").ToList();
+				// regardless of the input file extension, we want to use txt as the output because Audacity is extra painful if you are working with anything else, e.g. "tsv"
+				var labelPath = Path.ChangeExtension(outputTimingsPath, ".txt");
+				// convert that to a single string
+				var aeneasTimingsContentsString = string.Join("\n", aeneasTimingsContents);
+				RobustFile.WriteAllText(outputTimingsPath, aeneasTimingsContentsString);
 			}
 			else
 			{
@@ -680,6 +698,58 @@ namespace Bloom.web.controllers
 		}
 
 
+
+		/// <summary>
+		/// Parses the contents of a timing file and returns the start and end timing fields as a list of tuples.
+		/// </summary>
+		/// <param name="segmentationResults">The contents (line-by-line) of a .tsv timing file. Example: "1.000\t4.980\tf000001"</param>
+		public static List<Tuple<string, string, string>> ParseTimingFileTXT(IEnumerable<string> segmentationResults)
+		{
+			var timings = new List<Tuple<string, string, string>>();
+
+			foreach (string line in segmentationResults)
+			{
+				// each line is "id\tstart\tstop\tlabel], e.g.  'f0001 1.000 4.980 "I have a dog"'
+				var fields = line.Split(' ');
+				if (fields.Length < 3)
+				{
+					continue;
+				}
+				string timingStart = (fields.Length > 1 ? fields[1].Trim() : null);
+				string timingEnd = (fields.Length > 2 ? fields[2].Trim() : null);
+				// make the label be the rest of the line
+				string label = (fields.Length > 3 ? string.Join(" ", fields.Skip(3)) : null);
+
+				if (String.IsNullOrEmpty(timingStart))
+				{
+					if (!timings.Any())
+					{
+						timingStart = "0.000";  // Note: format generated by Aeneas seems independent of your Date/Time/Number Format settings.
+					}
+					else
+					{
+						timingStart = timings.Last().Item2;
+					}
+				}
+
+				// If timingEnd is messed up, we'll continue to pass the record. In theory, it is valid for the timings to be defined solely by timingStart without specifying an explicit timingEnd (as long as you don't need the highlight to disappear for a time)
+				// timingEnd is easily inferred as the next timingStart
+				// so don't remove records if timingEnd is missing
+				timings.Add(Tuple.Create(timingStart, timingEnd, label));
+			}
+
+			// Fix up any missing timingEnd values that we can trivially fix
+			for (int i = 0; i < timings.Count - 1; ++i)
+			{
+				if (String.IsNullOrWhiteSpace(timings[i].Item2))
+				{
+					var inferredTimingEnd = timings[i + 1].Item1;   // Get the new timingEnd from the next timingStart
+					timings[i] = Tuple.Create(timings[i].Item1, inferredTimingEnd, timings[i].Item3);
+				}
+			}
+
+			return timings;
+		}
 
 		/// <summary>
 		/// Parses the contents of a timing file and returns the start and end timing fields as a list of tuples.
