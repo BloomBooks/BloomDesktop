@@ -14,6 +14,8 @@ using SIL.Reporting;
 using SIL.PlatformUtilities;
 using SIL.Code;
 using System.Globalization;
+using Bloom.ToPalaso;
+using SIL.Progress;
 
 namespace Bloom.web.controllers
 {
@@ -192,33 +194,23 @@ namespace Bloom.web.controllers
 					workingDirectory = Environment.ExpandEnvironmentVariables(workingDirectory);
 			}
 
-			var process = new Process {
-				StartInfo = new ProcessStartInfo()
-				{
-					FileName = command,
-					Arguments = arguments,
-					UseShellExecute = false,
-					CreateNoWindow = true,
-					RedirectStandardOutput = true,
-					RedirectStandardError = true,
-				},
-			};
-			if (!string.IsNullOrEmpty(workingDirectory) && Directory.Exists(workingDirectory))
-				process.StartInfo.WorkingDirectory = workingDirectory;
-			SetPythonEncodingIfNeeded(process.StartInfo);
-			process.Start();
-			process.WaitForExit();
+			if (workingDirectory == null || !Directory.Exists(workingDirectory))
+				workingDirectory = "";
+			var setPythonEncoding = SetPythonEncodingIfNeeded();
+			var result = CommandLineRunnerExtra.RunWithInvariantCulture(command, arguments, workingDirectory, 600, new NullProgress());
+			if (setPythonEncoding)
+				Environment.SetEnvironmentVariable(PythonIoEncodingKey, null);
 
-			standardOutput = process.StandardOutput.ReadToEnd();
-			standardError = process.StandardError.ReadToEnd();
+			standardOutput = result.StandardOutput;
+			standardError = result.StandardError;
 
-			Debug.Assert(process.ExitCode != -1073741510, "Process Exit Code was 0xc000013a, indicating that the command prompt exited. That means we can't read the value of the exit code of the last command of the session");
+			Debug.Assert(result.ExitCode != -1073741510, "Process Exit Code was 0xc000013a, indicating that the command prompt exited. That means we can't read the value of the exit code of the last command of the session");
 
-			if (process.ExitCode == 0)
+			if (result.ExitCode == 0)
 			{
 				return false;	// No error
 			}
-			else if (errorCodesToIgnore != null && errorCodesToIgnore.Contains(process.ExitCode))
+			else if (errorCodesToIgnore != null && errorCodesToIgnore.Contains(result.ExitCode))
 			{
 				// It seemed to return an error, but the caller has actually specified that this error is nothing to worry about, so return no error
 				return false;
@@ -593,32 +585,19 @@ namespace Bloom.web.controllers
 				arguments = $"/C {commandString}";
 			}
 
-			var processStartInfo = new ProcessStartInfo()
-			{
-				FileName = command,
-				Arguments = arguments,
-				UseShellExecute = false,
-				RedirectStandardOutput = true,
-				RedirectStandardError = true,
-				WorkingDirectory = workingDirectory,
-				CreateNoWindow = true
-			};
-			SetPythonEncodingIfNeeded(processStartInfo);
-
-			var process = Process.Start(processStartInfo);
-
-			// TODO: Should I set a timeout?  In general Aeneas is reasonably fast but it doesn't really seem like I could guarantee that it would return within a certain time..
-			// Block the current thread of execution until aeneas has completed, so that we can read the correct results from the output file.
+			var setPythonEncoding = SetPythonEncodingIfNeeded();
 			Logger.WriteMinorEvent("AudioSegmentationApi.GetSplitStartEndTimings(): Command started, preparing to wait...");
-			process.WaitForExit();
+			var result = CommandLineRunnerExtra.RunWithInvariantCulture(command, arguments, workingDirectory, 3600, new NullProgress());
+			if (setPythonEncoding)
+				Environment.SetEnvironmentVariable(PythonIoEncodingKey, null);
 
 			// Note: we could also request Aeneas write the standard output/error, or a log (or verbose log... or very verbose log) if desired
-			if (process.ExitCode != 0)
+			if (result.ExitCode != 0)
 			{
-				var stdout = process.StandardOutput.ReadToEnd();
-				var stderr = process.StandardError.ReadToEnd();
+				var stdout = result.StandardOutput;
+				var stderr = result.StandardError;
 				var sb = new StringBuilder();
-				sb.AppendLine($"ERROR: python aeneas process to segment the audio file finished with exit code = {process.ExitCode}.");
+				sb.AppendLine($"ERROR: python aeneas process to segment the audio file finished with exit code = {result.ExitCode}.");
 				sb.AppendLine($"working directory = {workingDirectory}");
 				sb.AppendLine($"failed command = {commandString}");
 				sb.AppendLine($"process.stdout = {stdout.Trim()}");
@@ -653,17 +632,21 @@ namespace Bloom.web.controllers
 			return timingStartEndRangeList;
 		}
 
+		const string PythonIoEncodingKey = "PYTHONIOENCODING";
+
 		/// <summary>
 		/// Prevent python from complaining about unspecified encoding.  UTF-8 has to be what we want.
 		/// </summary>
-		private static void SetPythonEncodingIfNeeded(ProcessStartInfo processStartInfo)
+		private static bool SetPythonEncodingIfNeeded()
 		{
-			string pythonIoEncodingKey = "PYTHONIOENCODING";
-			if (!processStartInfo.EnvironmentVariables.ContainsKey(pythonIoEncodingKey))
+			if (!Environment.GetEnvironmentVariables().Contains(PythonIoEncodingKey))
 			{
-				processStartInfo.EnvironmentVariables.Add(pythonIoEncodingKey, "UTF-8");
+				Environment.SetEnvironmentVariable(PythonIoEncodingKey, "UTF-8");
+				return true;
 			}
+			return false;
 		}
+
 
 
 		/// <summary>
@@ -801,30 +784,44 @@ namespace Bloom.web.controllers
 		/// <returns></returns>
 		private Task<int> ExtractAudioSegmentAsync(string inputAudioFilename, string timingStartString, string timingEndString, string outputSplitFilename)
 		{
-			string commandString = $"ffmpeg -i \"{inputAudioFilename}\" -acodec copy -ss {timingStartString} -to {timingEndString} \"{outputSplitFilename}\"";
-			string command;
-			string arguments;
-			var workingDir = Platform.IsLinux ? "/tmp" : kWorkingDirectory;
-			if (Platform.IsLinux)
+			// Since we are running this process aynchronously, we need to make sure that the process is not
+			// affected by the current culture settings.  We can't use the CommandLineRunner methods.
+			var currentCulture = CultureInfo.CurrentCulture;
+			var currentUICulture = CultureInfo.CurrentUICulture;
+			try
 			{
-				command = _ffmpegFound;
-				arguments = commandString.Substring(7);
-			}
-			else
-			{
-				command = "CMD.EXE";
-				arguments = $"/C {commandString}";
-			}
-			var startInfo = new ProcessStartInfo()
-			{
-				FileName = command,
-				Arguments = arguments,
-				WorkingDirectory = workingDir,
-				UseShellExecute = false,
-				CreateNoWindow = true
-			};	
+				CultureInfo.CurrentCulture = CultureInfo.InvariantCulture;
+				CultureInfo.CurrentUICulture = CultureInfo.InvariantCulture;
+				string commandString = $"ffmpeg -i \"{inputAudioFilename}\" -acodec copy -ss {timingStartString} -to {timingEndString} \"{outputSplitFilename}\"";
+				string command;
+				string arguments;
+				var workingDir = Platform.IsLinux ? "/tmp" : kWorkingDirectory;
+				if (Platform.IsLinux)
+				{
+					command = _ffmpegFound;
+					arguments = commandString.Substring(7);
+				}
+				else
+				{
+					command = "CMD.EXE";
+					arguments = $"/C {commandString}";
+				}
+				var startInfo = new ProcessStartInfo()
+				{
+					FileName = command,
+					Arguments = arguments,
+					WorkingDirectory = workingDir,
+					UseShellExecute = false,
+					CreateNoWindow = true
+				};
 
-			return RunProcessAsync(startInfo);
+				return RunProcessAsync(startInfo);
+			}
+			finally
+			{
+				CultureInfo.CurrentCulture = currentCulture;
+				CultureInfo.CurrentUICulture = currentUICulture;
+			}
 		}
 
 		// Starts a process and returns a task (that you can use to wait/await for the completion of the process)

@@ -23,6 +23,8 @@ using TagLib.Xmp;
 using Encoder = System.Drawing.Imaging.Encoder;
 using Logger = SIL.Reporting.Logger;
 using TempFile = SIL.IO.TempFile;
+using Bloom.ToPalaso;
+using SIL.CommandLineProcessing;
 
 namespace Bloom.ImageProcessing
 {
@@ -692,8 +694,8 @@ namespace Bloom.ImageProcessing
 			var tempCopy = TempFileUtils.GetTempFilepathWithExtension(Path.GetExtension(path));
 			try
 			{
-				var proc = RunGraphicsMagick(exeGraphicsMagick, path, tempCopy, size, makeOpaque);
-				if (proc.ExitCode == 0)
+				var result = RunGraphicsMagick(exeGraphicsMagick, path, tempCopy, size, makeOpaque);
+				if (result.ExitCode == 0)
 				{
 					RobustFile.Copy(tempCopy, path, true);
 					// Copy metadata from older file to the new one.  GraphicsMagick does a poor job on metadata.
@@ -705,7 +707,7 @@ namespace Bloom.ImageProcessing
 				}
 				else
 				{
-					LogGraphicsMagickFailure(proc);
+					LogGraphicsMagickFailure(result);
 				}
 			}
 			catch (Exception e)
@@ -857,8 +859,8 @@ namespace Bloom.ImageProcessing
 				var destPath = TempFileUtils.GetTempFilepathWithExtension(isJpegImage ? ".jpg" : ".png");
 				try
 				{
-					var proc = RunGraphicsMagick(graphicsMagickPath, sourcePath, destPath, size, makeOpaque);
-					if (proc.ExitCode == 0)
+					var result = RunGraphicsMagick(graphicsMagickPath, sourcePath, destPath, size, makeOpaque);
+					if (result.ExitCode == 0)
 					{
 						if(new FileInfo(destPath).Length > new FileInfo(sourcePath).Length){
 							// The new file is actually larger (BL-11441) so bail out
@@ -869,7 +871,7 @@ namespace Bloom.ImageProcessing
 					}
 					else
 					{
-						LogGraphicsMagickFailure(proc);
+						LogGraphicsMagickFailure(result);
 					}
 				}
 				catch (Exception e)
@@ -931,15 +933,15 @@ namespace Bloom.ImageProcessing
 			return sourcePath;
 		}
 
-		private static void LogGraphicsMagickFailure(Process proc)
+		private static void LogGraphicsMagickFailure(ExecutionResult result)
 		{
-			var standardOutput = proc.StandardOutput.ReadToEnd();
-			var standardError = proc.StandardError.ReadToEnd();
+			var standardOutput = result.StandardOutput;
+			var standardError = result.StandardError;
 			var msgBldr = new StringBuilder();
 			msgBldr.AppendLine("GraphicsMagick failed to convert an image file.");
-			msgBldr.AppendFormat("{0} {1}", proc.StartInfo.FileName, proc.StartInfo.Arguments);
+			msgBldr.AppendFormat("{0} {1}", result.ExePath, result.Arguments);
 			msgBldr.AppendLine();
-			msgBldr.AppendFormat("GraphicsMagick exit code = {0}", proc.ExitCode);
+			msgBldr.AppendFormat("GraphicsMagick exit code = {0}", result.ExitCode);
 			msgBldr.AppendLine();
 			msgBldr.AppendLine("stderr =");
 			msgBldr.AppendLine(standardError);
@@ -949,7 +951,7 @@ namespace Bloom.ImageProcessing
 			Console.Write(msgBldr.ToString());
 		}
 
-		private static Process RunGraphicsMagick(string graphicsMagickPath, string sourcePath, string destPath, Size size,
+		private static ExecutionResult RunGraphicsMagick(string graphicsMagickPath, string sourcePath, string destPath, Size size,
 			bool makeOpaque)
 		{
 			// We have no idea what the input (and output) file names are, and whether they can be safely represented
@@ -981,23 +983,12 @@ namespace Bloom.ImageProcessing
 					argsBldr.Append(" -quality 99");	// still lossy, but not near as bad as the default (bigger file, however)
 				argsBldr.AppendFormat(" -scale {0}x{1} \"{2}\"", size.Width, size.Height, safeDestPath);
 				var arguments = argsBldr.ToString();
-				var proc = new Process
-				{
-					StartInfo =
-					{
-						FileName = graphicsMagickPath,
-						Arguments = arguments,
-						UseShellExecute = false, // enables CreateNoWindow
-						CreateNoWindow = true, // don't need a DOS box
-						RedirectStandardOutput = true,
-						RedirectStandardError = true,
-					}
-				};
-				proc.Start();
-				proc.WaitForExit();
+
+				var result = CommandLineRunnerExtra.RunWithInvariantCulture(graphicsMagickPath, arguments, "", 600, new NullProgress());
+
 				if (destPath != safeDestPath)
 					RobustFile.Copy(safeDestPath, destPath, true);
-				return proc;
+				return result;
 			}
 			finally
 			{
@@ -1076,8 +1067,8 @@ namespace Bloom.ImageProcessing
 					var path = image.GetCurrentFilePath();
 					if (path == null || !RobustFile.Exists(path))
 						path = CreateSourceFileForImage(image, false);	// already know it's not jpeg
-					var proc = RunGraphicsMagick(graphicsMagickPath, path, jpegFilePath, new Size(image.Image.Width, image.Image.Height), false);
-					if (proc.ExitCode == 0)
+					var result = RunGraphicsMagick(graphicsMagickPath, path, jpegFilePath, new Size(image.Image.Width, image.Image.Height), false);
+					if (result.ExitCode == 0)
 					{
 						var pngInfo = new FileInfo(path);
 						var jpegInfo = new FileInfo(jpegFilePath);
@@ -1091,7 +1082,7 @@ namespace Bloom.ImageProcessing
 					}
 					else
 					{
-						LogGraphicsMagickFailure(proc);
+						LogGraphicsMagickFailure(result);
 					}
 				}
 				return false;
@@ -1131,7 +1122,7 @@ namespace Bloom.ImageProcessing
 				{
 					//0 = max compression, 100 = least
 					parameters.Param[0] = new EncoderParameter(encoder, 100L);
-					RobustImageIO.SaveImage(safetyImage, temp.Path, jpgEncoder, parameters);
+					SIL.IO.RobustImageIO.SaveImage(safetyImage, temp.Path, jpgEncoder, parameters);
 				}
 				FileUtils.ReplaceFileWithUserInteractionIfNeeded(temp.Path, destinationPath, null);
 			}
@@ -1317,7 +1308,7 @@ namespace Bloom.ImageProcessing
 				{
 					using (Stream fs = new FileStream(imagePath, FileMode.Create))
 					{
-						RobustImageIO.SaveImage(image, fs, ImageFormat.Png);
+						SIL.IO.RobustImageIO.SaveImage(image, fs, ImageFormat.Png);
 					}
 					if (originalReadOnly == FileAttributes.ReadOnly)
 					{

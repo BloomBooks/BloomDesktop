@@ -10,6 +10,7 @@ using Bloom.Api;
 using Bloom.Book;
 using Bloom.Publish.AccessibilityChecker;
 using Bloom.Publish.Epub;
+using Bloom.ToPalaso;
 using SIL.CommandLineProcessing;
 using SIL.IO;
 using SIL.PlatformUtilities;
@@ -223,7 +224,7 @@ namespace Bloom.web.controllers
 					// wrong version of a library as part of our mozilla code.
 					ldpath = Environment.GetEnvironmentVariable("LD_LIBRARY_PATH");
 					Environment.SetEnvironmentVariable("LD_LIBRARY_PATH", null);
-					res = CommandLineRunner.Run("node", arguments, Encoding.UTF8, daisyDirectory, kSecondsBeforeTimeout,
+					res = CommandLineRunnerExtra.RunWithInvariantCulture("node", arguments, Encoding.UTF8, daisyDirectory, kSecondsBeforeTimeout,
 						progress,
 						(dummy) => { });
 				}
@@ -317,7 +318,7 @@ namespace Bloom.web.controllers
 			_webSocketProgress.Message("FindingAce", "Finding Ace by DAISY on this computer...");
 			var whereProgram = Platform.IsWindows ? "where" : "which";
 			var npmFileName = Platform.IsWindows ? "npm.cmd" : "npm";
-			var whereResult = CommandLineRunner.Run(whereProgram, npmFileName, Encoding.ASCII, "", 2, new NullProgress());
+			var whereResult = CommandLineRunnerExtra.RunWithInvariantCulture(whereProgram, npmFileName, Encoding.ASCII, "", 2, new NullProgress());
 			if (!String.IsNullOrEmpty(whereResult.StandardError))
 			{
 				_webSocketProgress.MessageWithoutLocalizing(whereResult.StandardError, ProgressKind.Error);
@@ -331,7 +332,7 @@ namespace Bloom.web.controllers
 			var fullNpmPath = whereResult.StandardOutput.Split('\n')[0].Trim();
 			// note: things like nvm will mess with where the global node_modules lives. The best way seems to be
 			// to ask npm:
-			var result = CommandLineRunner.Run(npmFileName, "root -g", Encoding.ASCII, Path.GetDirectoryName(fullNpmPath), 10,
+			var result = CommandLineRunnerExtra.RunWithInvariantCulture(npmFileName, "root -g", Encoding.ASCII, Path.GetDirectoryName(fullNpmPath), 10,
 				new NullProgress());
 
 			const string kCoreError = "Could not get \"npm -g root\" to work. Is Node & npm installed and working?";

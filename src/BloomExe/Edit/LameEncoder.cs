@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using Bloom.ToPalaso;
 using L10NSharp;
 using SIL.CommandLineProcessing;
 using SIL.IO;
@@ -38,7 +39,7 @@ namespace Bloom.Edit
 
 			//-a downmix to mono
 			string arguments = $"-a \"{sourcePath}\" \"{destinationPath}\"";
-			ExecutionResult result = CommandLineRunner.Run(GetLamePath(), arguments, null, 60, new NullProgress());
+			ExecutionResult result = CommandLineRunnerExtra.RunWithInvariantCulture(GetLamePath(), arguments, null, 60, new NullProgress());
 			result.RaiseExceptionIfFailed("");
 			return destinationPath;
 		}

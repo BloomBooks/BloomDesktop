@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Text;
 using Bloom.Api;
+using Bloom.ToPalaso;
 using Bloom.web;
 using Cairo;
 using L10NSharp;
@@ -68,11 +69,11 @@ namespace Bloom.Publish.PDF
 					_worker.ReportProgress(0, GetSpecificStatus());
 				using (var tempPdfFile = TempFile.WithExtension(".pdf"))
 				{
-					_runner = new CommandLineRunner();
+					_runner = new SIL.CommandLineProcessing.CommandLineRunner();
 					var arguments = GetArguments(tempPdfFile.Path, null);
 					var fromDirectory = String.Empty;
 					var progress = new NullProgress();	// I can't figure out how to use any IProgress based code, but we show progress okay as is.
-					var res = _runner.Start(exePath, arguments, Encoding.UTF8, fromDirectory, 3600, progress, ProcessGhostcriptReporting);
+					var res = _runner.StartWithInvariantCulture(exePath, arguments, Encoding.UTF8, fromDirectory, 3600, progress, ProcessGhostcriptReporting);
 					if (res.ExitCode != 0)
 					{
 						// On Linux, ghostscript doesn't deal well with some Unicode filenames.  Try renaming the input
@@ -83,7 +84,7 @@ namespace Bloom.Publish.PDF
 							RobustFile.Delete(tempInputFile.Path);		// Move won't replace even empty files.
 							RobustFile.Move(_inputPdfPath, tempInputFile.Path);
 							arguments = GetArguments(tempPdfFile.Path, tempInputFile.Path);
-							res = _runner.Start(exePath, arguments, Encoding.UTF8, fromDirectory, 3600, progress, ProcessGhostcriptReporting);
+							res = _runner.StartWithInvariantCulture(exePath, arguments, Encoding.UTF8, fromDirectory, 3600, progress, ProcessGhostcriptReporting);
 							RobustFile.Move(tempInputFile.Path, _inputPdfPath);
 						}
 					}
@@ -280,7 +281,7 @@ namespace Bloom.Publish.PDF
 
 		int _firstPage;
 		int _numPages;
-		private CommandLineRunner _runner;
+		private SIL.CommandLineProcessing.CommandLineRunner _runner;
 		private WebSocketProgress _socketProgress;
 
 		// Magic strings to match for progress reporting.  ghostscript itself doesn't seem to be localized

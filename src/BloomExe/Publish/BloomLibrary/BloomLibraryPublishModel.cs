@@ -410,6 +410,8 @@ namespace Bloom.Publish.BloomLibrary
 			if (SIL.PlatformUtilities.Platform.IsLinux)
 				command = $"/opt/mono5-sil/bin/mono {command}";
 
+			// The Bloom process run as a command line tool for bulk upload is safe for using the current culture.
+			// We don't wait for this to finish, so we don't use the CommandLineRunner methods.
 			ProcessStartInfo startInfo;
 			if (SIL.PlatformUtilities.Platform.IsWindows)
 			{
