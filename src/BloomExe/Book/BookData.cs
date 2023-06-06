@@ -2050,7 +2050,7 @@ namespace Bloom.Book
 		/// GetAllBookLanguageCodes should be used instead.  It's conceivable in the long run
 		/// that this method may or may not be needed.
 		/// </remarks>
-		public List<string> GetBasicBookLanguageCodes(bool includeLanguage1 = true, bool includeSignLanguage = false)
+		public List<string> GetBasicBookLanguageCodes(bool includeLanguage1 = true, bool includeSignLanguage = false, bool includeMetaData2 = false)
 		{
 			var langCodes = new List<string>();
 			if (includeLanguage1)
@@ -2060,6 +2060,8 @@ namespace Bloom.Book
 			AddLang(langCodes, MetadataLanguage1Tag);
 			AddLang(langCodes, Language2Tag);
 			AddLang(langCodes, Language3Tag);
+			if (includeMetaData2 && !string.IsNullOrEmpty(MetadataLanguage2Tag) && !langCodes.Contains(MetadataLanguage2Tag))
+				langCodes.Add(MetadataLanguage2Tag);
 			return langCodes;
 		}
 
@@ -2088,6 +2090,8 @@ namespace Bloom.Book
 		}
 		/// <summary>
 		/// Return an ordered list of codes of distinct languages used in this book.
+		/// Eventually we may want to add a param for including sign language; for now, none of the callers want it,
+		/// so it is just excluded.
 		/// L1 will always be first, following by L2 if different, and then L3 if it exists and
 		/// is different.  The order of any remainng languages is (at the moment) undefined.
 		/// L1 will always be the first language, unless includeLanguage1 is set false.  Then
@@ -2096,9 +2100,9 @@ namespace Bloom.Book
 		/// <remarks>
 		/// This method obviously will need to be worked on...
 		/// </remarks>
-		public List<string> GetAllBookLanguageCodes(bool includeLanguage1 = true)
+		public List<string> GetAllBookLanguageCodes(bool includeLanguage1 = true, bool includeMetaData2 = false)
 		{
-			return GetBasicBookLanguageCodes(includeLanguage1);	// until we get a better list to work with...
+			return GetBasicBookLanguageCodes(includeLanguage1, false, includeMetaData2);	// until we get a better list to work with...
 		}
 
 		/// <summary>
