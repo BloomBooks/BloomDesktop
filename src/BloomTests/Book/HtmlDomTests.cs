@@ -765,6 +765,76 @@ namespace BloomTests.Book
 		}
 
 		[Test]
+		public void AddMissingAudioHighlightRules_WorksForMissing()
+		{
+			var bookDom = new HtmlDom(
+@"<html>
+  <head>
+    <style type='text/css' title='userModifiedStyles'>
+    /*<![CDATA[*/
+    .Bubble-style[lang=""en""] { line-height: 1.2 !important; font-weight: bold !important; }
+    .Bubble-style { line-height: 1.2 !important; text-align: initial !important; font-weight: bold !important; }
+    .Title-On-Cover-style { color: white; }
+    .Cover-Default-style { color: white; }
+    .Bubble-style span.ui-audioCurrent { background-color: transparent; color: rgb(0, 255, 255); }
+    .Bubble-style.ui-audioCurrent p { background-color: transparent; color: rgb(0, 255, 255); }
+    .Title-On-Cover-style span.ui-audioCurrent { background-color: rgb(254, 191, 0); }
+    .Title-On-Cover-style.ui-audioCurrent p { background-color: rgb(254, 191, 0); }/*]]>*/
+    </style>
+  </head>
+  <body>
+    <div class='Title-On-Cover-style'></div>
+   </body>
+</html>");
+			var bookStyleNode = HtmlDom.GetUserModifiedStyleElement(bookDom.Head);
+			var originalCssRules = bookStyleNode.InnerText;
+
+			Assert.That(originalCssRules, Does.Contain(".Bubble-style span.ui-audioCurrent { background-color: transparent; color: rgb(0, 255, 255); }"));
+			Assert.That(originalCssRules, Does.Contain(".Title-On-Cover-style span.ui-audioCurrent { background-color: rgb(254, 191, 0); }"));
+			Assert.That(originalCssRules, Does.Not.Contain(".Bubble-style span.ui-audioCurrent > span.ui-enableHighlight { background-color: transparent; color: rgb(0, 255, 255); }"));
+			Assert.That(originalCssRules, Does.Not.Contain(".Title-On-Cover-style span.ui-audioCurrent > span.ui-enableHighlight { background-color: rgb(254, 191, 0); }"));
+
+			var cssRulesCDATA = HtmlDom.AddMissingAudioHighlightRules(bookStyleNode);
+
+			Assert.That(cssRulesCDATA, Is.Not.EqualTo(originalCssRules));
+			Assert.That(cssRulesCDATA, Does.Contain(".Bubble-style span.ui-audioCurrent { background-color: transparent; color: rgb(0, 255, 255); }"));
+			Assert.That(cssRulesCDATA, Does.Contain(".Title-On-Cover-style span.ui-audioCurrent { background-color: rgb(254, 191, 0); }"));
+			Assert.That(cssRulesCDATA, Does.Contain(".Bubble-style span.ui-audioCurrent > span.ui-enableHighlight { background-color: transparent; color: rgb(0, 255, 255); }"));
+			Assert.That(cssRulesCDATA, Does.Contain(".Title-On-Cover-style span.ui-audioCurrent > span.ui-enableHighlight { background-color: rgb(254, 191, 0); }"));
+		}
+
+		[Test]
+		public void AddMissingAudioHighlightRules_WorksForNoneMissing()
+		{
+			var bookDom = new HtmlDom(
+@"<html>
+  <head>
+    <style type='text/css' title='userModifiedStyles'>
+    /*<![CDATA[*/
+    .Bubble-style[lang=""en""] { line-height: 1.2 !important; font-weight: bold !important; }
+    .Bubble-style { line-height: 1.2 !important; text-align: initial !important; font-weight: bold !important; }
+    .Title-On-Cover-style { color: white; }
+    .Cover-Default-style { color: white; }
+    .Bubble-style span.ui-audioCurrent { background-color: transparent; color: rgb(0, 255, 255); }
+    .Bubble-style span.ui-audioCurrent > span.ui-enableHighlight { background-color: transparent; color: rgb(0, 255, 255); }
+    .Bubble-style.ui-audioCurrent p { background-color: transparent; color: rgb(0, 255, 255); }
+    .Title-On-Cover-style span.ui-audioCurrent { background-color: rgb(254, 191, 0); }
+    .Title-On-Cover-style span.ui-audioCurrent > span.ui-enableHighlight { background-color: rgb(254, 191, 0); }
+    .Title-On-Cover-style.ui-audioCurrent p { background-color: rgb(254, 191, 0); }/*]]>*/
+    </style>
+  </head>
+  <body>
+    <div class='Title-On-Cover-style'></div>
+   </body>
+</html>");
+			var bookStyleNode = HtmlDom.GetUserModifiedStyleElement(bookDom.Head);
+			var originalCssRules = bookStyleNode.InnerXml;
+			var cssRulesCDATA = HtmlDom.AddMissingAudioHighlightRules(bookStyleNode);
+
+			Assert.That(cssRulesCDATA, Is.EqualTo(originalCssRules));
+		}
+
+		[Test]
 		public void FixAnyAddedCustomPages_Works()
 		{
 			var content =

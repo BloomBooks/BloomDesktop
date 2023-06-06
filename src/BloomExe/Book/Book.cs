@@ -1046,6 +1046,14 @@ namespace Bloom.Book
 			FixExcessiveHTMLEncodingOfCoverImage(bookDOM);
 			// Fix bug reported in BL-11093: improper change of license.
 			FixImproperLicenseChange(bookDOM, _bookData);
+			// Fix bug reported in BL-12287: improper audio highlighting of padded sentences.
+			FixImproperAudioHighlightingOfPaddedSentences(bookDOM);
+		}
+
+		private void FixImproperAudioHighlightingOfPaddedSentences(HtmlDom bookDOM)
+		{
+			var existingUserStyleNode = GetOrCreateUserModifiedStyleElementFromStorage(bookDOM.Head);
+			existingUserStyleNode.InnerXml = HtmlDom.AddMissingAudioHighlightRules(existingUserStyleNode);
 		}
 
 		/// <summary>

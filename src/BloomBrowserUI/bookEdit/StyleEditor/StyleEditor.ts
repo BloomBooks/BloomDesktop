@@ -518,6 +518,10 @@ export default class StyleEditor {
     // What we stick after something like ".normal-style" to make a selector that targets
     // the current audio element (or its paragraph children).
     private sentenceHiliteRuleSelector = " span.ui-audioCurrent";
+    // Spans with padding get split into multiple embedded spans, so we need to target the
+    // inner span.
+    private paddedSentenceHiliteRuleSelector =
+        " span.ui-audioCurrent > span.ui-enableHighlight";
     // note, no leading space here. We want (for example) .normal-style.ui-audioCurrent since this rule
     // targets textbox mode where both classes occur on the same element.
     private paraHiliteRuleSelector = ".ui-audioCurrent p";
@@ -536,6 +540,16 @@ export default class StyleEditor {
         );
         this.updateHiliteStyleRuleBody(
             sentenceRule,
+            hiliteTextColor,
+            hiliteBgColor
+        );
+        const paddedSentenceRule = this.GetRuleForStyle(
+            styleName,
+            this.paddedSentenceHiliteRuleSelector,
+            true
+        );
+        this.updateHiliteStyleRuleBody(
+            paddedSentenceRule,
             hiliteTextColor,
             hiliteBgColor
         );

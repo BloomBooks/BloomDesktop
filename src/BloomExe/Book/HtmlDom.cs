@@ -3098,5 +3098,36 @@ namespace Bloom.Book
 			return this.Body.Attributes.Cast<XmlAttribute>()
 				.Where(a => a.Name.StartsWith("data-"));
 		}
+
+		internal static string AddMissingAudioHighlightRules(XmlElement existingUserStyleNode)
+		{
+			var existingStyleKeyDict = GetUserStyleKeyDict(existingUserStyleNode);
+			var ruleToAppend = new HashSet<string>();
+			var updatedRule = false;
+			foreach (var key in existingStyleKeyDict.Keys)
+			{
+				if (key.EndsWith(" span.ui-audioCurrent"))
+					ruleToAppend.Add(key);
+			}
+			foreach (var key in ruleToAppend)
+			{
+				var newKey = key + " > span.ui-enableHighlight";
+				if (!existingStyleKeyDict.Keys.Contains(newKey))
+				{
+					// The value includes the key, so we can't just add a new key with the old value.
+					var value = existingStyleKeyDict[key].Replace(".ui-audioCurrent {", ".ui-audioCurrent > span.ui-enableHighlight {");
+					existingStyleKeyDict.Add(newKey, value);
+					updatedRule = true;
+				}
+			}
+			if (updatedRule)
+			{
+				// Update the DOM to reflect the changes.
+				var rawCSS = GetCompleteFilteredUserStylesInnerText(existingStyleKeyDict);
+				var rawCSSCData = WrapUserStyleInCdata(rawCSS);
+				return rawCSSCData;
+			}
+			return existingUserStyleNode.InnerXml;
+		}
 	}
 }
