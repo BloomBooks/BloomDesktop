@@ -22,6 +22,9 @@ export const TalkingBookAdvancedSection: React.FunctionComponent<{
     lastTimingsFilePath?: string;
     //enableRecordingModeControl: boolean;
     recordingMode: RecordingMode;
+    // this will differ from recordingMode if we changed to textbox mode but
+    // haven't yet recorded anything or imported audio. It is used to let someone go back to sentence mode before committing to textbox mode.
+    haveACurrentTextboxModeRecording: boolean;
     hasRecordableDivs: boolean;
     handleImportRecordingClick: () => void;
     split: (timingFilePath: string) => Promise<void>;
@@ -95,14 +98,6 @@ export const TalkingBookAdvancedSection: React.FunctionComponent<{
                                 "EditTab.Toolbox.TalkingBookTool.NeedCursorInRecordableThingDisabledTip"
                         }) ||
                         ""
-                        // (props.hasAudio
-                        //     ? {
-                        //           l10nKey: `EditTab.Toolbox.TalkingBookTool.RecordingModeDisabledBecauseHasAudioTip`
-                        //       }
-                        //     : {
-                        //           l10nKey:
-                        //               "EditTab.Toolbox.TalkingBookTool.NeedCursorInRecordableThingDisabledTip"
-                        //       })
                     }
                     {...commonTooltipProps}
                 >
@@ -140,7 +135,8 @@ export const TalkingBookAdvancedSection: React.FunctionComponent<{
                                     props.isXmatter ||
                                     !props.hasRecordableDivs ||
                                     // we don't allow you to go from textbox to sentence mode if you have audio
-                                    props.hasAudio
+                                    //props.hasAudio
+                                    props.haveACurrentTextboxModeRecording
                                 }
                                 value={RecordingMode.Sentence}
                                 label="By Sentence"

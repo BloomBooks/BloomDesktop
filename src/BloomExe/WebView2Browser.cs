@@ -483,12 +483,25 @@ namespace Bloom
 				//so it's probably just not ok to check if you're not front-most.
 			}
 		}
+
+		bool currentlyRunningCanUndo = false;
 		private bool CanUndo
 		{
 			get
 			{
-				var result = RunJavaScript("editTabBundle?.canUndo?.()");
-				return result == "yes"; // currently only returns 'yes' or 'fail'
+				// once we got a stackoverflow exception here, when, apparently, JS took longer to complete this than the timer interval
+				if (currentlyRunningCanUndo)
+					return true;
+				try
+				{
+					currentlyRunningCanUndo = true;
+					var result = RunJavaScript("editTabBundle?.canUndo?.()");
+					return result == "yes"; // currently only returns 'yes' or 'fail'
+				}
+				finally
+				{
+					currentlyRunningCanUndo = false;
+				}
 			}
 		}
 	}

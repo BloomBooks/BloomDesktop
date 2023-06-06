@@ -282,7 +282,6 @@ export const toolboxTheme = createTheme({
                     "& .MuiButton-startIcon": {
                         color: kBloomBlue
                     }
-                    // set the border width when hovering over the button
                 },
                 outlined: {
                     justifyContent: "flex-start",

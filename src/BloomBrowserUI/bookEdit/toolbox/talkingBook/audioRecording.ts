@@ -4210,6 +4210,9 @@ export default class AudioRecording {
             React.createElement(TalkingBookAdvancedSection, {
                 isXmatter: ToolBox.isXmatterPage(),
                 recordingMode: this.recordingMode,
+                haveACurrentTextboxModeRecording:
+                    this.haveAudio &&
+                    this.getCurrentPlaybackMode() === RecordingMode.TextBox,
                 setRecordingMode: async (recordingMode: RecordingMode) => {
                     this.setRecordingModeAsync(recordingMode);
                     this.updateDisplay();

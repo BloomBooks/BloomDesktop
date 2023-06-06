@@ -49,9 +49,6 @@ namespace Bloom.web.controllers
 	{
 		public const string kApiUrlPart = "audioSegmentation/";
 		private const string kWorkingDirectory = "%HOMEDRIVE%\\%HOMEPATH%"; // Linux will use "/tmp" when the working directory doesn't matter
-																			// about the format here:
-																			// "tsv" gives [start stop f0001]. That's fine for just splitting, but if a user wants to edit that, the text is useful.
-																			// "txt" gives [f0001 start stop text]
 
 		// 0 could be a useful value for this if you hard-split. (on the rationale that you won't accidentally cut off anything useful).
 		// For soft splits, you might as well set this to something useful.
@@ -606,8 +603,8 @@ namespace Bloom.web.controllers
 			var fragmentsFile = Path.GetFileName(inputTextFragmentsFilename);
 			var outputFile = Path.GetFileName(outputTimingsPath);
 
-			// Have Aeneas output in "txt" format, which is [f0001 start stop "label contents"] per line
-			// later we will strip off the first field so that we have an Audacity-compatible label file that a user can edit
+			// Have Aeneas output in its "txt" format, which is [f0001 start stop "label contents"] per line.
+			// Later we will strip off the first field so that we have an Audacity-compatible label file ([start stop "label contents"]) that a user can edit
 			var kTimingsOutputFormat = "txt";
 			string commandString = $"python -m aeneas.tools.execute_task \"{audioFile}\" \"{fragmentsFile}\" \"task_language={aeneasLang}|is_text_type=plain|os_task_file_format={kTimingsOutputFormat}{audioHeadParams}{boundaryAdjustmentParams}\" \"{outputFile}\" --runtime-configuration=\"tts_voice_code={ttsEngineLang}\"";
 			string command;
