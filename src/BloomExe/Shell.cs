@@ -92,7 +92,7 @@ namespace Bloom
 			_workspaceView.CloseCurrentProject += ((x, y) =>
 			{
 				UserWantsToOpenADifferentProject = true;
-				Close();
+				Program.ChooseACollection(this);
 			});
 
 			_workspaceView.ReopenCurrentProject += ((x, y) =>
