@@ -2707,6 +2707,8 @@ export default class AudioRecording {
 
         // Need to clear out any state. The next time this tool gets reopened, there is no guarantee that it will be reopened in the same context.
         this.audioRecordingMode = AudioRecordingMode.Unknown;
+        // Don't want to leave this markup around to confuse other things.
+        this.removeAudioCurrentFromPageDocBody();
     }
 
     // Called upon newPageReady(). Calls updateMarkup
@@ -3358,6 +3360,8 @@ export default class AudioRecording {
         // otherwise fairly generic code didn't have to know about it.
         const formatButton = copy.find("#formatButton");
         formatButton.remove(); // nothing happens if not found
+        const currentMarker = copy.find(".bloom-ui-current-audio-marker");
+        currentMarker.remove();
 
         const markedSentences = copy.find(
             `${kAudioSentenceClassSelector},.${kSegmentClass}`

@@ -244,22 +244,63 @@ export function addBloomSynphonyExtensions() {
             paragraph = paragraph.replace(/\u0001/g, "<br />");
             paragraph = paragraph.replace(/\u0002/g, "\r\n");
 
+            var unclosedTags = [];
             // split the paragraph into sentences and
             var fragments = paragraph.split(delimiter);
+            var prevFragmentWithoutMarkup = "";
             for (var j = 0; j < fragments.length; j++) {
                 var fragment = fragments[j];
 
-                // put the opening html tags back in
+                const fragmentWithoutMarkup = fragment.replace(
+                    /[\u0004\u0005\u0006\u0007]/g,
+                    ""
+                );
+
+                // if some tags from earlier segments are still open, reopen at start
+                // For example, if earlier segments opened <span...> and then <em> and closed neither,
+                // we want to re-open them in that order. They remain in the unclosedTags list.
+                // That is, we will insert <span...><em> at the start of the fragment.
+                // This should come after the special character that identifies white-space
+                // segments, if it is present.
+                if (fragment.startsWith(nonSentence)) {
+                    fragment =
+                        nonSentence +
+                        unclosedTags.join("") +
+                        fragment.substring(1);
+                } else {
+                    fragment = unclosedTags.join("") + fragment;
+                }
+
+                // put the empty html tags back in
                 while (fragment.indexOf("\u0007") > -1)
                     fragment = fragment.replace(/\u0007/, emptyTags.shift());
 
                 // put the opening html tags back in
-                while (fragment.indexOf("\u0004") > -1)
-                    fragment = fragment.replace(/\u0004/, openTags.shift());
+                while (fragment.indexOf("\u0004") > -1) {
+                    const tag = openTags.shift();
+                    fragment = fragment.replace(/\u0004/, tag);
+                    unclosedTags.push(tag);
+                }
 
                 // put the closing html tags back in
-                while (fragment.indexOf("\u0005") > -1)
-                    fragment = fragment.replace(/\u0005/, closeTags.shift());
+                // (unless this is an empty segment...then just leave them out; already closed at end of previous segment)
+                while (fragment.indexOf("\u0005") > -1) {
+                    const closeTag = closeTags.shift();
+                    fragment = fragment.replace(/\u0005/, closeTag);
+                    unclosedTags.pop();
+                }
+
+                // If some tags are still unclosed, close them. (Will reopen next fragment).
+                // For example, if <span...> was opened, and later <em>, and neither has been
+                // closed, unclosedTags contains <span...>, <em>.
+                // We want to append </em></span>
+
+                for (let i = unclosedTags.length - 1; i >= 0; i--) {
+                    const tagToClose = unclosedTags[i];
+                    const closingTag =
+                        "</" + tagToClose.substring(1).replace(/ .*>/, ">"); // remove from first space to closing wedge
+                    fragment = fragment + closingTag;
+                }
 
                 // put the self-closing html tags back in
                 while (fragment.indexOf("\u0006") > -1)
@@ -269,7 +310,10 @@ export function addBloomSynphonyExtensions() {
                 fragment = fragment.replace(/\u0008/g, "&nbsp;");
 
                 // check to avoid empty segments at the end
-                if (j < fragments.length - 1 || fragment.length > 0) {
+                if (
+                    j < fragments.length - 1 ||
+                    fragmentWithoutMarkup.length > 0
+                ) {
                     // is this space between sentences?
                     if (fragment.substring(0, 1) === nonSentence) {
                         returnVal.push(
@@ -277,8 +321,8 @@ export function addBloomSynphonyExtensions() {
                         );
                     } else if (
                         j > 0 &&
-                        fragments[j - 1].endsWith("|") && // previous fragment ends with "|""
-                        fragment.match(/^\s/) // current fragment starts with whitespace
+                        prevFragmentWithoutMarkup.endsWith("|") &&
+                        fragmentWithoutMarkup.match(/^\s/) // current fragment starts with whitespace
                     ) {
                         // Check for a phrase marker at the end of the previous fragment followed by
                         // whitespace at the beginning of this fragment to maintain "interphrase" spacing.
@@ -307,6 +351,7 @@ export function addBloomSynphonyExtensions() {
                         returnVal.push(new TextFragment(fragment, false));
                     }
                 }
+                prevFragmentWithoutMarkup = fragmentWithoutMarkup;
             }
         }
 
