@@ -393,18 +393,43 @@ namespace Bloom.Book
 			return JsonConvert.DeserializeObject<EpubSettings>(serialized);
 		}
 
+		
+		#region We do a comparison of settings to determine whether the Epub files need to be regenerated
+		
 		public override bool Equals(object obj)
 		{
-			if (ReferenceEquals(null, obj)) return false;
-			if (ReferenceEquals(this, obj)) return true;
-			if (!(obj is EpubSettings)) return false;
-			var other = (EpubSettings)obj;
+			var other = obj as EpubSettings;
+			if (other == null)
+				return false;
+			return Equals(other);
+		}
+
+		protected bool Equals(EpubSettings other)
+		{
 			return HowToPublishImageDescriptions == other.HowToPublishImageDescriptions && RemoveFontSizes == other.RemoveFontSizes && Mode == other.Mode;
+		}
+
+		public override int GetHashCode()
+		{
+			unchecked
+			{
+				var hashCode = (int)HowToPublishImageDescriptions;
+				hashCode = (hashCode * 397) ^ RemoveFontSizes.GetHashCode();
+				hashCode = (hashCode * 397) ^ (Mode != null ? Mode.GetHashCode() : 0);
+				return hashCode;
+			}
 		}
 
 		public static bool operator ==(EpubSettings a, EpubSettings b)
 		{
-			if (ReferenceEquals(null, a)) return false;
+			if (Object.ReferenceEquals(a, b)) return true; // same object, including both null
+			// If one is null, but not both, return false. The casts are needed to prevent
+			// calling this method again recursively (and infinitely).
+			if (((object)a == null) || ((object)b == null))
+			{
+				return false;
+			}
+
 			return a.Equals(b);
 		}
 
@@ -413,10 +438,8 @@ namespace Bloom.Book
 			return !(a == b);
 		}
 
-		public override int GetHashCode()
-		{
-			return HowToPublishImageDescriptions.GetHashCode() + Mode.GetHashCode() + (RemoveFontSizes? 1 : 0);
-		}
+		#endregion
+
 	}
 
 	public class BloomLibrarySettings

@@ -192,9 +192,6 @@ namespace Bloom.Publish.Epub
 					_pendingSaveAsPath = destFileName;
 
 				}
-
-				_standardProgress.Message("PublishTab.Epub.Done", "Done");
-				ReportAnalytics("Save ePUB");
 			}
 		}
 
@@ -275,6 +272,7 @@ namespace Bloom.Publish.Epub
 				EpubMaker.ZipAndSaveEpub(_pendingSaveAsPath, _progress);
 				_pendingSaveAsPath = null;
 				_bookSelection.CurrentSelection.ReportSimplisticFontAnalytics(FontAnalytics.FontEventType.PublishEbook,"ePUB");
+				ReportAnalytics("Save ePUB");
 			}
 		}
 
