@@ -1034,7 +1034,8 @@ namespace Bloom.Publish.Video
 
 		private void RunFfmpeg(string args, string workingDirectory = null)
 		{
-
+			// This method attaches event handlers to the process and doesn't wait for the process
+			// to finish, so it can't use the CommandLineRunner methods.
 			var currentCulture = CultureInfo.CurrentCulture;
 			var currentUICulture = CultureInfo.CurrentUICulture;
 			try

@@ -192,6 +192,8 @@ namespace Bloom.web.controllers
 			if (Directory.Exists(collectionFolderPath))
 			{
 				request.PostSucceeded();
+				// Running Windows explorer should use the current culture, so we don't need to change it.
+				// Since we don't wait to finish, we can't use the CommandLineRunner methods.
 				var startInfo = new ProcessStartInfo
 				{
 					Arguments = $"/select, \"{collectionFolderPath}\"",

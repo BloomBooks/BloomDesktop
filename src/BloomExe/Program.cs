@@ -569,6 +569,8 @@ namespace Bloom
 						msgBldr.AppendFormat(msgFmt2, version);
 					}
 					MessageBox.Show(msgBldr.ToString());
+					// The new process showing a website should use the current culture, so we don't need to worry about that.
+					// We don't wait for this to finish, so we don't use the CommandLineRunner methods.
 					var psi = new ProcessStartInfo
 					{
 						FileName = "https://docs.bloomlibrary.org/webview2",
@@ -1516,6 +1518,9 @@ Anyone looking specifically at our issue tracking system can read what you sent 
 			if (!updateNeeded) return;
 
 			// if there were changes, notify the system
+			// The new process isn't affected by the culture, and chains to additional processes
+			// that aren't affected by the culture setting.  Since we use events to chain the
+			// processes, we can't use the CommandLineRunner methods.
 			var proc = new Process
 			{
 				StartInfo = {
