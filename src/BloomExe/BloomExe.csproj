@@ -722,12 +722,6 @@
     </Compile>
     <Compile Include="ImageProcessing\RuntimeImageProcessor.cs" />
     <Compile Include="CollectionTab\IBloomTabArea.cs" />
-    <Compile Include="CollectionTab\ListHeader.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="CollectionTab\ListHeader.Designer.cs">
-      <DependentUpon>ListHeader.cs</DependentUpon>
-    </Compile>
     <Compile Include="Collection\ShortcutMaker.cs" />
     <Compile Include="CollectionCreating\LanguageLocationControl.cs">
       <SubType>UserControl</SubType>
@@ -838,9 +832,6 @@
       <DependentUpon>SourceTextControl.cs</DependentUpon>
     </Compile>
     <Compile Include="LanguageSettings.cs" />
-    <Compile Include="CollectionTab\FlyingImage.cs">
-      <SubType>Component</SubType>
-    </Compile>
     <Compile Include="Collection\CollectionSettingsDialog.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -979,9 +970,6 @@
     </EmbeddedResource>
     <EmbeddedResource Include="ToPalaso\ProgressDialogBackground.resx">
       <DependentUpon>ProgressDialogBackground.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="CollectionTab\ListHeader.resx">
-      <DependentUpon>ListHeader.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="CollectionCreating\LanguageLocationControl.resx">
       <DependentUpon>LanguageLocationControl.cs</DependentUpon>

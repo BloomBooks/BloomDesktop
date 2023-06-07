@@ -1,25 +1,19 @@
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
-using System.Threading;
 using System.Windows.Forms;
-using Bloom.Book;
 using Bloom.CollectionTab;
 using Bloom.WebLibraryIntegration;
 using L10NSharp;
 using SIL.Reporting;
 using SIL.IO;
 using System.Drawing;
-using Bloom.Api;
 using Bloom.Publish.BloomPub;
 using Bloom.Publish.BloomLibrary;
 using Bloom.Publish.Epub;
 using Bloom.Publish.Video;
-using SIL.Progress;
 using Bloom.web.controllers;
-using Bloom.MiscUI;
 
 namespace Bloom.Publish
 {
@@ -28,12 +22,10 @@ namespace Bloom.Publish
 		public readonly PublishModel _model;
 		private bool _activated;
 		private BookUpload _bookTransferrer;
-		private PictureBox _previewBox;
 		private HtmlPublishPanel _htmlControl;
 		private PublishToBloomPubApi _publishApi;
 		private PublishAudioVideoAPI _publishToVideoApi;
 		private PublishEpubApi _publishEpubApi;
-		private BloomWebSocketServer _webSocketServer;
 		private readonly string _cantPublishPageWithPlaceholder;
 		private readonly string _cantPublishProblemWithPlaceholder;
 
@@ -41,13 +33,12 @@ namespace Bloom.Publish
 		public delegate PublishView Factory();//autofac uses this
 
 		public PublishView(PublishModel model,
-			SelectedTabChangedEvent selectedTabChangedEvent, LocalizationChangedEvent localizationChangedEvent, BookUpload bookTransferrer,			PublishToBloomPubApi publishApi, PublishEpubApi publishEpubApi, BloomWebSocketServer webSocketServer,
-			PublishAudioVideoAPI publishToVideoApi)
+			SelectedTabChangedEvent selectedTabChangedEvent, LocalizationChangedEvent localizationChangedEvent, BookUpload bookTransferrer,
+			PublishToBloomPubApi publishApi, PublishEpubApi publishEpubApi, PublishAudioVideoAPI publishToVideoApi)
 		{
 			_bookTransferrer = bookTransferrer;
 			_publishApi = publishApi;
 			_publishEpubApi = publishEpubApi;
-			_webSocketServer = webSocketServer;
 			_publishToVideoApi = publishToVideoApi;
 
 			InitializeComponent();
@@ -63,7 +54,7 @@ namespace Bloom.Publish
 
 			//NB: just triggering off "VisibilityChanged" was unreliable. So now we trigger
 			//off the tab itself changing, either to us or away from us.
-			selectedTabChangedEvent.Subscribe(c=>
+			selectedTabChangedEvent.Subscribe(c =>
 												{
 													if (c.To == this)
 													{
@@ -86,12 +77,6 @@ namespace Bloom.Publish
 			{
 				SetupLocalization();
 			});
-
-			// Make this extra box available to show when wanted.
-			_previewBox = new PictureBox();
-			_previewBox.Visible = false;
-			Controls.Add(_previewBox);
-			_previewBox.BringToFront();
 		}
 
 		public void SetStateOfNonUploadRadios(bool enable)
