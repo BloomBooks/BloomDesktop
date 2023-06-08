@@ -80,6 +80,8 @@ namespace Bloom
 																	   | CoreWebView2PdfToolbarItems.FullScreen // doesn't work right and is hard to recover from
 																	   | CoreWebView2PdfToolbarItems.MoreSettings; // none of its functions seem useful
 
+				_webview.CoreWebView2.Settings.IsStatusBarEnabled = false;
+
 				// Based on https://github.com/MicrosoftEdge/WebView2Feedback/issues/308,
 				// this attempts to prevent Bloom asking permission to read the clipboard
 				// the first time the user does a paste. I can't test it, because I don't know
