@@ -226,7 +226,7 @@ namespace Bloom.Api
 				}
 				if (!info.HaveOutput)
 				{
-					throw new ApplicationException(string.Format("The EndpointHandler for {0} never called a Succeeded(), Failed(), or ReplyWith() Function.", info.RawUrl.ToString()));
+					throw new ApplicationException($"The EndpointHandler for {info.RawUrl} never called a Succeeded(), Failed(), or ReplyWith() Function.");
 				}
 			}
 			catch (System.IO.IOException e)
