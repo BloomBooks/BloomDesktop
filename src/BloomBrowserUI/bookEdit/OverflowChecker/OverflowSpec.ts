@@ -110,7 +110,7 @@ describe("Overflow Tests", () => {
     // Note: Ideally, nothing else should run between loadFixtures and actually running the test.
     // That means loadFixtures() needs to be inside the it().
 
-    it("Check test page for Self overflows (assumes Andika is installed)", () => {
+    it("Check test page for Self overflows (assumes Arial is installed)", () => {
         loadFixtures("OverflowFixture.html");
         expect($("#jasmine-fixtures")).toBeTruthy();
         if (window.console) {
@@ -120,7 +120,7 @@ describe("Overflow Tests", () => {
         $(".myTest").each((index, element) => RunTest(index, element));
     });
 
-    it("Check test page for Margin overflows (assumes Andika is installed)", () => {
+    it("Check test page for Margin overflows (assumes Arial is installed)", () => {
         loadFixtures("OverflowMarginFixture.html");
         expect($("#jasmine-fixtures")).toBeTruthy();
         if (window.console) {
@@ -132,7 +132,7 @@ describe("Overflow Tests", () => {
         );
     });
 
-    it("Check test page for Fixed Ancestor overflows (assumes Andika is installed)", () => {
+    it("Check test page for Fixed Ancestor overflows (assumes Arial is installed)", () => {
         loadFixtures("OverflowAncestorFixture.html");
         expect($("#jasmine-fixtures")).toBeTruthy();
         if (window.console) {
