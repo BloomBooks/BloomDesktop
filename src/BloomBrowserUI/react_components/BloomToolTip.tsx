@@ -16,7 +16,7 @@ export interface IBloomToolTipProps {
     showDisabled?: boolean;
     hidden?: boolean;
     placement?: TooltipProps["placement"];
-
+    className?: string; // carry in the css props from the caller
     // Good practice with a tooltip calls for some aria attributes to indicate the relationship
     // of the tooltip to its parent, so we need a unique ID. The supplied ID will be applied to the tooltip.
     id?: string;
@@ -55,6 +55,11 @@ export const BloomTooltip: React.FunctionComponent<IBloomToolTipProps> = props =
             title={tipContent}
             placement={props.placement || "left"}
             arrow
+            // make the tooltip disappear when the mouse is over the tooltip itself
+            disableInteractive={true}
+            enterDelay={500}
+            enterNextDelay={500}
+            className={props.className} // carry in the css props from the caller
         >
             {/* The added <span> here allows the tooltip to show even when the target control is disabled */}
             <span>{props.children}</span>
