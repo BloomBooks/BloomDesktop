@@ -978,6 +978,7 @@ export default class StyleEditor {
             const tg = fmtButton.closest(".bloom-translationGroup");
             let leftPx = 0;
             if (tg) {
+                // account for any left padding the translation group may have
                 const editables = Array.from(
                     tg.getElementsByClassName("bloom-editable")
                 );
