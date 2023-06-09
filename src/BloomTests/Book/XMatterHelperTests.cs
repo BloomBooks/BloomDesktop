@@ -337,7 +337,7 @@ namespace BloomTests.Book
 				"Should not have overwritten existing style");
 			Assert.That(styles,
 				Contains.Substring(
-					@".Cover-Lower-Credits-style { font-size: 16pt !important; font-style:italic; font-family:""Aileron; Arial"";"),
+					@".Cover-Lower-Credits-style { font-size: 16pt !important; font-style:italic; font-family: Aileron, Arial;"),
 				"Should have inserted default version of missing style");
 			var stylesXml = stylesNode.InnerXml.Trim();
 			Assert.That(stylesXml.StartsWith("/*<![CDATA[*/"));
