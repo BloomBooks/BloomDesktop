@@ -1,5 +1,9 @@
 import { createTheme, Theme } from "@mui/material/styles";
-import { kBloomDisabledOpacity, kBloomDisabledText } from "./utils/colorUtils";
+import {
+    kBloomDisabledOpacity,
+    kBloomDisabledText,
+    kBloomToolboxWhite
+} from "./utils/colorUtils";
 
 export const kBloomBlue = "#1d94a4";
 export const kBloomBlueTextBackground = "#19818f"; // darker for better contrast
@@ -138,6 +142,170 @@ export const darkTheme = createTheme(lightTheme, {
         text: {
             // the only place I *know* this is currently used is the refresh button in the BloomPub publish preview panel
             secondary: kGreyOnDarkColor
+        }
+    }
+});
+
+const toolboxTextColor = "#d2d2d2";
+const kToolboxDisabledOpacity = 0.5;
+
+export const toolboxTheme = createTheme({
+    palette: {
+        primary: { main: kBloomBlue },
+        secondary: { main: kBloomPurple },
+        warning: { main: kBloomGold },
+        text: { primary: toolboxTextColor, disabled: kBloomDisabledText },
+        action: {
+            //disabled: kBloomDisabledText,
+            //disabledOpacity: kToolboxDisabledOpacity
+        }
+    },
+    typography: {
+        fontSize: 11, // text is smaller in the toolbox
+        fontFamily: kUiFontStack
+    },
+    components: {
+        MuiLink: {
+            variants: [
+                {
+                    props: { variant: "body1" },
+                    style: {
+                        variantMapping: {
+                            h6: "h1"
+                        }
+                    }
+                }
+            ]
+        },
+
+        MuiTooltip: {
+            styleOverrides: {
+                tooltip: {
+                    placement: "bottom",
+                    backgroundColor: kBloomBlueTextBackground,
+                    fontSize: "12px",
+                    fontWeight: "normal",
+
+                    width: "180px", // width of the toolbox (which is 200px) minus a bit of padding
+                    a: {
+                        color: "white",
+                        textDecorationColor: "white"
+                    }
+                },
+                popper: {
+                    zIndex: 200000
+                },
+                arrow: {
+                    color: kBloomBlueTextBackground
+                }
+            }
+        },
+
+        MuiFormGroup: {
+            styleOverrides: {
+                root: {
+                    // getting the spacing I want from radio groups
+                    "&[role=radiogroup]": { gap: "5px" }
+                }
+            }
+        },
+
+        MuiFormControlLabel: {
+            styleOverrides: {
+                label: {
+                    fontSize: "10px",
+                    "&.Mui-disabled": {
+                        opacity: kToolboxDisabledOpacity,
+                        color: kBloomToolboxWhite
+                    }
+                },
+                root: {
+                    alignItems: "flex-start"
+                }
+            }
+        },
+
+        MuiRadio: {
+            styleOverrides: {
+                root: {
+                    // make radio buttons closer together
+                    paddingBottom: "0px",
+                    paddingTop: "0px",
+                    color: kBloomToolboxWhite,
+                    "&.Mui-disabled": {
+                        borderColor: kBloomToolboxWhite,
+                        color: kBloomToolboxWhite,
+                        opacity: kToolboxDisabledOpacity
+                    }
+                }
+            }
+        },
+
+        MuiTypography: {
+            styleOverrides: {
+                h2: {
+                    fontSize: "11px",
+
+                    marginBottom: "5px"
+                }
+            }
+        },
+
+        MuiSwitch: {
+            styleOverrides: {
+                root: {
+                    // for some reason, without this tweak,
+                    // the switch sticks out to the left over the left of its container
+                    marginLeft: "6px"
+                },
+                track: {
+                    backgroundColor: kBloomBlue
+                },
+                thumb: {
+                    backgroundColor: kBloomToolboxWhite
+                }
+            }
+        },
+
+        MuiButton: {
+            styleOverrides: {
+                root: {
+                    // fill the width of the slim toolbox, this makes multiple
+                    // buttons in the Talking book tool "Advanced" section look good next to each other
+                    width: "100%",
+                    textTransform: "none", // Material buttons are all caps by default
+                    color: toolboxTextColor,
+                    "&, &:hover": {
+                        borderWidth: "2px"
+                    },
+                    // set the color of the icon in the button to red
+                    "& .MuiButton-startIcon": {
+                        color: kBloomBlue
+                    }
+                },
+                outlined: {
+                    justifyContent: "flex-start",
+                    "&.Mui-disabled": {
+                        borderColor: kBloomToolboxWhite,
+                        color: kBloomToolboxWhite,
+                        opacity: kToolboxDisabledOpacity,
+
+                        ".MuiButton-startIcon": {
+                            color: kBloomToolboxWhite
+                        }
+                    }
+                }
+            }
+        },
+        // Because of our dark background in the toolbox, disabled items need to be lighter
+        MuiDivider: {
+            styleOverrides: {
+                root: {
+                    backgroundColor: "#d4d4d480",
+                    marginTop: "5px",
+                    marginBottom: "5px"
+                }
+            }
         }
     }
 });

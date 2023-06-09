@@ -1,4 +1,4 @@
-import AudioRecording, { AudioRecordingMode } from "./audioRecording";
+import AudioRecording, { RecordingMode } from "./audioRecording";
 import axios, { AxiosResponse } from "axios";
 
 const kAudioSentence = "audio-sentence";
@@ -40,14 +40,14 @@ export default class Recordable {
             return false;
         }
         if (
-            modeAttribute == AudioRecordingMode.TextBox &&
+            modeAttribute == RecordingMode.TextBox &&
             !this.textBox.classList.contains(kAudioSentence) && // Missing the normal state of text boxes (with audio-sentence on the text box itself)
             this.textBox.getElementsByClassName(kAudioSentence).length === 0 // Also missing the legacy Hard Split (v4.5) setup
         ) {
             return false;
         }
         if (
-            modeAttribute == AudioRecordingMode.Sentence &&
+            modeAttribute == RecordingMode.Sentence &&
             this.textBox.classList.contains(kAudioSentence)
         ) {
             // This looks so strange. Why does the text box itself have audioSentence? Only the children should have it.
@@ -55,7 +55,7 @@ export default class Recordable {
             return false;
         }
         if (
-            modeAttribute == AudioRecordingMode.Sentence &&
+            modeAttribute == RecordingMode.Sentence &&
             this.textBox.getElementsByClassName(kAudioSentence).length === 0
         ) {
             // Note: It might also be empty, but... oh well, we'll re-initialize it anyway.

@@ -1,15 +1,29 @@
-﻿using System;
-using System.IO;
-using System.Net;
-using System.Windows.Forms;
-using Bloom.Api;
+﻿using Bloom.Api;
 using Bloom.Book;
 using Bloom.Publish;
 using Bloom.Utils;
+using Newtonsoft.Json;
 using SIL.IO;
+using System;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using System.Net;
+using System.Windows.Forms;
 
 namespace Bloom.web.controllers
 {
+	class FileTypeForFileDialog
+	{
+		public string name;
+		public string[] extensions;
+	}
+	class OpenFileRequest
+	{
+		public string title;
+		public FileTypeForFileDialog[] fileTypes;
+		public string defaultPath;
+	}
 	public class FileIOApi
 	{
 		private readonly BookSelection _bookSelection;
@@ -25,25 +39,33 @@ namespace Bloom.web.controllers
 
 		public void RegisterWithApiHandler(BloomApiHandler apiHandler)
 		{
+			apiHandler.RegisterEndpointLegacy("fileIO/openFileInDefaultEditor", OpenFile, true);
 			apiHandler.RegisterEndpointLegacy("fileIO/chooseFile", ChooseFile, true);
 			apiHandler.RegisterEndpointLegacy("fileIO/getSpecialLocation", GetSpecialLocation, true);
 			apiHandler.RegisterEndpointLegacy("fileIO/copyFile", CopyFile, true);
 		}
-
 		private void ChooseFile(ApiRequest request)
 		{
 			lock (request)
-				request.ReplyWithText(SelectFileUsingDialog());
+			{
+				string json = request.RequiredPostJson();
+				OpenFileRequest requestParameters = JsonConvert.DeserializeObject<OpenFileRequest>(json);
+
+				request.ReplyWithText(SelectFileUsingDialog(requestParameters));
+			}
 		}
 
-		private string SelectFileUsingDialog()
+		private string SelectFileUsingDialog(OpenFileRequest requestParameters)
 		{
-			var fileType = ".mp3";
+
 			var dlg = new DialogAdapters.OpenFileDialogAdapter
 			{
+				Title = requestParameters.title,
+				InitialDirectory = Path.GetDirectoryName(requestParameters.defaultPath), // enhance would be better to actually select the file, not just the Dir?
+				FileName = Path.GetFileName(requestParameters.defaultPath),
 				Multiselect = false,
 				CheckFileExists = true,
-				Filter = $"{fileType} files|*{fileType}"
+				Filter = string.Join("|", requestParameters.fileTypes.Select(fileType => $"{fileType.name}|{string.Join(";", fileType.extensions.Select(e => "*." + e))}")),
 			};
 			var result = dlg.ShowDialog();
 			if (result == DialogResult.OK)
@@ -54,7 +76,7 @@ namespace Bloom.web.controllers
 				return dlg.FileName.Replace("\\", "/");
 			}
 
-			
+
 			return String.Empty;
 		}
 
@@ -74,6 +96,32 @@ namespace Bloom.web.controllers
 				}
 			}
 		}
+		private void OpenFile(ApiRequest request)
+		{
+			dynamic jsonData;
+			try
+			{
+				jsonData = DynamicJson.Parse(request.RequiredPostJson());
+			}
+			catch (Exception e)
+			{
+				request.Failed(HttpStatusCode.BadRequest, $"BadRequest: {e.ToString()}");
+				return;
+			}
+
+			try
+			{
+				Process.Start(jsonData.path);
+			}
+			catch (Exception e)
+			{
+				request.Failed(HttpStatusCode.InternalServerError, "InternalServerError while trying to open file. " + e.ToString());
+				return;
+			}
+
+			request.PostSucceeded();
+		}
+
 
 		private void CopyFile(ApiRequest request)
 		{
