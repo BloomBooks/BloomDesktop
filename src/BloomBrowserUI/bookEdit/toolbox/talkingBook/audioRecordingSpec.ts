@@ -2313,6 +2313,39 @@ describe("audio recording tests", () => {
         ).toBe(true);
     });
 
+    it("makeAudioSentenceElementsLeaf preserves color markup", () => {
+        const recording = new AudioRecording();
+
+        const sent1 = '<span style="color:#ff1616;">One. Two. Three</span>.';
+        // The outer <p>...</p> is needed to get the right jquery object passed to the method.
+        const elt1$ = $($.parseHTML(`<p>${sent1}</p>`));
+        expect(elt1$.html()).toBe(sent1); // verify original state
+        recording.makeAudioSentenceElementsLeafTest(elt1$);
+        expect(elt1$.text()).toBe("One. Two. Three.");
+        const elt1 = elt1$.get(0);
+        const sentences = Array.from(
+            elt1.getElementsByClassName("audio-sentence")
+        );
+        expect(sentences.length).toBe(3);
+        const ids = sentences.map(s => s.getAttribute("id"));
+        ids.forEach(id => expect(id?.length).toBeGreaterThan(35));
+        expect(ids[0]).not.toBe(ids[1]);
+        expect(ids[0]).not.toBe(ids[2]);
+        expect(ids[1]).not.toBe(ids[2]);
+
+        sentences.forEach(s => expect(s.parentElement).toBe(elt1));
+        const colorSpans = Array.from(elt1.getElementsByTagName("span")).filter(
+            s => s.getAttribute("style") === "color:#ff1616;"
+        );
+        expect(colorSpans.length).toBe(5);
+        for (let i = 0; i < 3; i++) {
+            expect(colorSpans[2 * i].parentElement).toBe(sentences[i]);
+        }
+        expect(colorSpans[0].innerText).toBe("One.");
+        expect(colorSpans[2].innerText).toBe("Two.");
+        expect(colorSpans[4].innerText).toBe("Three");
+    });
+
     describe("- fixHighlighting()", () => {
         const scenarios: ("Check" | "Listen to whole page")[] = [
             "Check",

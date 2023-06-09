@@ -13,9 +13,8 @@ html
 		style(type="text/css" title="userModifiedStyles")
 			= '\n'
 			| /*<![CDATA[*/
-			| .Cover-Foobar-style { font-size: 16pt !important; font-family:"Arial"; color:#FAD41E;     text-align: center;}
-			| .Title-Front-Cover-style { font-size: 34pt !important; font-family:"Aileron; Arial"; color:white;     text-align: center;}
-			| .Cover-Lower-Credits-style { font-size: 16pt !important; font-style:italic; font-family:"Aileron; Arial"; color:white;     text-align: center;}
+			| .Title-Front-Cover-style { font-size: 34pt !important; font-family: Aileron, Arial; color:white;     text-align: center;}
+			| .Cover-Lower-Credits-style { font-size: 16pt !important; font-style:italic; font-family: Aileron, Arial; color:white;     text-align: center;}
 			|   /*]]>*/
 	body
 		+page-cover('Front Cover')(data-export='front-matter-cover', data-xmatter-page='frontCover')&attributes(attributes).frontCover.outsideFrontCover#7d7d1d2d-18b0-420f-ac96-6de20f659810

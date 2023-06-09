@@ -92,6 +92,8 @@ namespace Bloom
 			}
 			try
 			{
+				// The new process should use the current culture, so we don't need to worry about that.
+				// We don't wait for this to finish, so we don't use the CommandLineRunner methods.
 				using (Process process = new Process ())
 				{
 					process.StartInfo.FileName = helpViewer;

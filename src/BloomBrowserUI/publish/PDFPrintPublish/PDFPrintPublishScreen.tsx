@@ -17,7 +17,7 @@ import { useL10n } from "../../react_components/l10nHooks";
 import Typography from "@mui/material/Typography";
 import Button from "@mui/material/Button";
 import ArrowForwardRounded from "@mui/icons-material/ArrowForwardRounded";
-import { get, post } from "../../utils/bloomApi";
+import { get, post, useApiBoolean } from "../../utils/bloomApi";
 import { ProgressDialog } from "../../react_components/Progress/ProgressDialog";
 import HelpLink from "../../react_components/helpLink";
 import { RequiresBloomEnterpriseDialog } from "../../react_components/requiresBloomEnterprise";
@@ -69,6 +69,11 @@ export const PDFPrintPublishScreen = () => {
     const iframeRef = useRef<HTMLIFrameElement>(null);
 
     const progressHeader = useL10n("Progress", "Common.Progress");
+
+    const [allowPublishing, _setAllowPublishing] = useApiBoolean(
+        "publish/pdf/licenseOK",
+        false
+    );
 
     const [isProgressDialogOpen, setIsProgressDialogOpen] = useState(false);
 
@@ -137,7 +142,7 @@ export const PDFPrintPublishScreen = () => {
         <SettingsPanel>
             <PDFPrintFeaturesGroup
                 onChange={(newMode: string) => {
-                    setIsProgressDialogOpen(true);
+                    setIsProgressDialogOpen(allowPublishing);
                     setBookletMode(newMode);
                 }}
                 onGotPdf={path => {

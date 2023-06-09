@@ -6,6 +6,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using Bloom.Api;
+using Bloom.ToPalaso;
 using Bloom.web;
 using L10NSharp;
 using SIL.CommandLineProcessing;
@@ -97,7 +98,7 @@ namespace Bloom.Publish.PDF
 					"Making PDF from HTML",
 					@"Message displayed in a progress report dialog box"));
 
-			var runner = new CommandLineRunner();
+			var runner = new SIL.CommandLineProcessing.CommandLineRunner();
 			string exePath;
 			var bldr = new StringBuilder();
 			// Codebase is reliable even when Resharper copies the EXE somewhere else for testing.
@@ -135,7 +136,7 @@ namespace Bloom.Publish.PDF
 
 			var progress = new NullProgress();
 			// NB: WebView2 does not appear to support progress reporting while making PDFs.
-			var res = runner.Start(exePath, arguments, Encoding.UTF8, fromDirectory, timeoutInSeconds, progress,
+			var res = runner.StartWithInvariantCulture(exePath, arguments, Encoding.UTF8, fromDirectory, timeoutInSeconds, progress,
 				(msg) =>
 				{
 					var parts = msg.Split('|');
@@ -182,7 +183,7 @@ namespace Bloom.Publish.PDF
 					@"Error message displayed in a message dialog box") + Environment.NewLine;
 
 				var fullMsg = String.Format(msg, specs.OutputPdfPath, Environment.NewLine) + Environment.NewLine +
-				              msg2 + res.StandardOutput;
+							  msg2 + res.StandardOutput;
 
 				var except = new ApplicationException(fullMsg);
 				// Note that if we're being run by a BackgroundWorker, it will catch the exception.

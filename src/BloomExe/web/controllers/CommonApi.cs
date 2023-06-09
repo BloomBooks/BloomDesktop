@@ -281,6 +281,8 @@ namespace Bloom.web.controllers
 				Thread.Sleep(100);
 
 				// if the system has wmctrl installed, use it to bring the folder to the front
+				// This process is not affected by the current culture, so we don't need to adjust it.
+				// We don't wait for this to finish, so we don't use the CommandLineRunner methods.
 				Process.Start(new ProcessStartInfo()
 				{
 					FileName = "wmctrl",

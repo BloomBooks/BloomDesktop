@@ -440,19 +440,20 @@ export const LibraryPublishSteps: React.FunctionComponent = () => {
                                         }
                                     />
                                 )}
-                                {bookInfo?.copyright ? (
-                                    <div>{bookInfo?.copyright}</div>
-                                ) : (
-                                    <MissingInfo
-                                        text="Missing Copyright"
-                                        l10nKey={
-                                            "PublishTab.Upload.Missing.Copyright"
-                                        }
-                                        onClick={
-                                            showCopyrightAndLicenseInfoOrDialog
-                                        }
-                                    />
-                                )}
+                                {bookInfo?.isTemplate ||
+                                    (bookInfo?.copyright ? (
+                                        <div>{bookInfo?.copyright}</div>
+                                    ) : (
+                                        <MissingInfo
+                                            text="Missing Copyright"
+                                            l10nKey={
+                                                "PublishTab.Upload.Missing.Copyright"
+                                            }
+                                            onClick={
+                                                showCopyrightAndLicenseInfoOrDialog
+                                            }
+                                        />
+                                    ))}
                                 {licenseBlock}
                             </div>
                         )}

@@ -47,6 +47,8 @@ namespace Bloom.Publish.PDF
 
 		public void RegisterWithApiHandler(BloomApiHandler apiHandler)
 		{
+			apiHandler.RegisterBooleanEndpointHandler(kApiUrlPart + "licenseOK",
+				request => String.IsNullOrEmpty(CheckForLicenseWarning()), (writeRequest, value) => { }, true);
 			apiHandler.RegisterEndpointHandler(kApiUrlPart + "simple", HandleCreateSimplePdf, true);
 			apiHandler.RegisterEndpointHandler(kApiUrlPart + "cover", HandleCreateCoverPdf, true);
 			apiHandler.RegisterEndpointHandler(kApiUrlPart + "cancel", HandleCancel, true);
@@ -82,6 +84,12 @@ namespace Bloom.Publish.PDF
 					Settings.Default.DontShowPrintNotification = value;
 					Settings.Default.Save();
 				}), false);
+		}
+
+		private string CheckForLicenseWarning()
+		{
+			return new LicenseChecker().CheckBook(_publishModel.BookSelection.CurrentSelection,
+				_publishModel.BookSelection.CurrentSelection.ActiveLanguages.ToArray());
 		}
 
 		private void HandleCancel(ApiRequest request)
@@ -222,6 +230,12 @@ namespace Bloom.Publish.PDF
 		// that calls PublishModel.LoadBook.
 		public void MakePdf()
 		{
+			var message = CheckForLicenseWarning();
+			if (!String.IsNullOrEmpty(message))
+			{
+				MessageBox.Show(message, LocalizationManager.GetString("Common.Warning", "Warning"), MessageBoxButtons.OK, MessageBoxIcon.Error);
+				return;
+			}
 			var shell = Application.OpenForms.Cast<Form>().FirstOrDefault(f => f is Shell);
 			_makePdfBackgroundWorker = new BackgroundWorker();
 			_makePdfBackgroundWorker.WorkerReportsProgress = true;

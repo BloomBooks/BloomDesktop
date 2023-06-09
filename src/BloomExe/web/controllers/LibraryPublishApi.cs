@@ -205,7 +205,7 @@ namespace Bloom.web.controllers
 			if (checkerResult != null)
 			{
 				_webSocketProgress.MessageWithoutLocalizing(checkerResult, ProgressKind.Error);
-				e.Result = "quiet"; // suppress other completion/fail messages
+				e.Result = ("quiet", ""); // suppress other completion/fail messages
 				return;
 			}
 
