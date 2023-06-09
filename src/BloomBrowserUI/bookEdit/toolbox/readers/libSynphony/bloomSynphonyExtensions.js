@@ -163,7 +163,7 @@ export function addBloomSynphonyExtensions() {
         textHTML = textHTML.replace(regexSelfTag, tagHolderSelf);
 
         // collect empty html tags and replace with tagHolderEmpty place holder
-        const regexEmptyTag = /\u0004\u0005/g;
+        const regexEmptyTag = new RegExp(tagHolderOpen + tagHolderClose, "g");
         const emptyTags = textHTML.match(regexEmptyTag);
         textHTML = textHTML.replace(regexEmptyTag, tagHolderEmpty);
 
@@ -182,8 +182,12 @@ export function addBloomSynphonyExtensions() {
         // We require at least one space between sentences, unless things have been configured so that
         // space IS a sentence-ending punctuation. In that case, zero or more.
 
-        var intersentenceSpace =
-            "([\\s\\p{PEP}\\u0006\\u0007\\u0008]" +
+        const intersentenceSpace =
+            "([\\s\\p{PEP}" +
+            tagHolderSelf +
+            tagHolderEmpty +
+            nbsp +
+            "]" +
             (LibSynphony.prototype.extraSentencePunct &&
             LibSynphony.prototype.extraSentencePunct.indexOf("\\u0020") >= 0
                 ? "*"
@@ -195,16 +199,14 @@ export function addBloomSynphonyExtensions() {
         // Pe: close punctuation (closing brackets),
         // Pf: final punctuation (closing quotes)
         // Pi: Initial punctuation (opening quotes)
-        // \\u0005: private shorthand for a closing HTML tag
-        var trailingPunct = "['\"\\p{Pe}\\p{Pf}\\p{Pi}\\u0005]";
+        var trailingPunct = "['\"\\p{Pe}\\p{Pf}\\p{Pi}" + tagHolderClose + "]";
         // What can follow the separator and be considered part of the preceding sentence.
         // These kinds of spaces are allowed, but only before a trailingPunct; otherwise,
         // they are considered part of the inter-sentence white space.
-        // \\u0008: private shorthand for NBSP
         // \\u202F: narrow non-breaking space that our long-press inserts for non-breaking space.
         // Using a non-capturing group here, because it's only to allow the space+trailing
         // sequence to repeat; we don't want to use it separately in the result.
-        var afterSEP = "(?:[\\u0008\\u202F]*" + trailingPunct + ")*";
+        var afterSEP = "(?:[" + nbsp + "\\u202F]*" + trailingPunct + ")*";
 
         // regex to find sentence ending sequences and inter-sentence space
         // \p{SEP} is defined as a list of sentence ending punctuation characters by a call to XRegExp.addUnicodeData
@@ -213,9 +215,13 @@ export function addBloomSynphonyExtensions() {
             "([\\p{SEP}]+" + // sentence ending punctuation (SEP)
             afterSEP + // what can follow SEP in same sentence,
             ")" + // then end group for the sentence
-            "([\\u0004]*)" + // private shorthand for opening tag between sentences
+            "([" +
+            tagHolderOpen +
+            "]*)" +
             intersentenceSpace +
-            "([\\u0005]*)" + // closing tag between sentences
+            "([" +
+            tagHolderClose +
+            "]*)" +
             "(?![^\\p{L}]*" + // may be followed by non-letter chars
                 "[\\p{Ll}\\p{SCP}]+)", // first letter following is not lower case. (This works by consuming all the lowercase letters/etc. up until the first uppercase letter/etc)
             "g"
@@ -241,8 +247,14 @@ export function addBloomSynphonyExtensions() {
             paragraph = XRegExp.replace(paragraph, /(\|+)/g, "$1" + delimiter);
 
             // restore line breaks
-            paragraph = paragraph.replace(/\u0001/g, "<br />");
-            paragraph = paragraph.replace(/\u0002/g, "\r\n");
+            paragraph = paragraph.replace(
+                new RegExp(htmlLineBreak, "g"),
+                "<br />"
+            );
+            paragraph = paragraph.replace(
+                new RegExp(windowsLineBreak, "g"),
+                "\r\n"
+            );
 
             var unclosedTags = [];
             // split the paragraph into sentences and
@@ -252,7 +264,15 @@ export function addBloomSynphonyExtensions() {
                 var fragment = fragments[j];
 
                 const fragmentWithoutMarkup = fragment.replace(
-                    /[\u0004\u0005\u0006\u0007]/g,
+                    new RegExp(
+                        "[" +
+                            tagHolderOpen +
+                            tagHolderClose +
+                            tagHolderSelf +
+                            tagHolderEmpty +
+                            "]",
+                        "g"
+                    ),
                     ""
                 );
 
@@ -272,21 +292,27 @@ export function addBloomSynphonyExtensions() {
                 }
 
                 // put the empty html tags back in
-                while (fragment.indexOf("\u0007") > -1)
-                    fragment = fragment.replace(/\u0007/, emptyTags.shift());
+                while (fragment.indexOf(tagHolderEmpty) > -1)
+                    fragment = fragment.replace(
+                        new RegExp(tagHolderEmpty),
+                        emptyTags.shift()
+                    );
 
                 // put the opening html tags back in
-                while (fragment.indexOf("\u0004") > -1) {
+                while (fragment.indexOf(tagHolderOpen) > -1) {
                     const tag = openTags.shift();
-                    fragment = fragment.replace(/\u0004/, tag);
+                    fragment = fragment.replace(new RegExp(tagHolderOpen), tag);
                     unclosedTags.push(tag);
                 }
 
                 // put the closing html tags back in
                 // (unless this is an empty segment...then just leave them out; already closed at end of previous segment)
-                while (fragment.indexOf("\u0005") > -1) {
+                while (fragment.indexOf(tagHolderClose) > -1) {
                     const closeTag = closeTags.shift();
-                    fragment = fragment.replace(/\u0005/, closeTag);
+                    fragment = fragment.replace(
+                        new RegExp(tagHolderClose),
+                        closeTag
+                    );
                     unclosedTags.pop();
                 }
 
@@ -297,17 +323,25 @@ export function addBloomSynphonyExtensions() {
 
                 for (let i = unclosedTags.length - 1; i >= 0; i--) {
                     const tagToClose = unclosedTags[i];
+                    // convert from opening tag to corresponding closing tag.
+                    // (Drop the opening wedge with substring, prepend '</'.
+                    // Then if there is anything after the tag, remove it.
+                    // If the regex doesn't match, that makes it something like <em>,
+                    // and there's nothing we need to remove; replace just does nothing.)
                     const closingTag =
-                        "</" + tagToClose.substring(1).replace(/ .*>/, ">"); // remove from first space to closing wedge
+                        "</" + tagToClose.substring(1).replace(/ .*>/, ">");
                     fragment = fragment + closingTag;
                 }
 
                 // put the self-closing html tags back in
-                while (fragment.indexOf("\u0006") > -1)
-                    fragment = fragment.replace(/\u0006/, selfTags.shift());
+                while (fragment.indexOf(tagHolderSelf) > -1)
+                    fragment = fragment.replace(
+                        new RegExp(tagHolderSelf),
+                        selfTags.shift()
+                    );
 
                 // put nbsp back in
-                fragment = fragment.replace(/\u0008/g, "&nbsp;");
+                fragment = fragment.replace(new RegExp(nbsp, "g"), "&nbsp;");
 
                 // check to avoid empty segments at the end
                 if (
