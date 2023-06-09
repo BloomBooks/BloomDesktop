@@ -975,7 +975,19 @@ export default class StyleEditor {
             fmtButton.style.left = -5 - this.fmtButtonWidth + "px";
         } else {
             fmtButton.style.top = bottom / scale - this.fmtButtonHeight + "px";
-            fmtButton.style.left = "0";
+            const tg = fmtButton.closest(".bloom-translationGroup");
+            let leftPx = 0;
+            if (tg) {
+                const editables = Array.from(
+                    tg.getElementsByClassName("bloom-editable")
+                );
+                const editable = editables.find(
+                    x => (x as HTMLElement).offsetHeight > 0 // need to find a visible one for a meaningful offsetLeft
+                );
+                leftPx = (editable as HTMLElement).offsetLeft;
+            }
+
+            fmtButton.style.left = leftPx + "px";
         }
     }
 
