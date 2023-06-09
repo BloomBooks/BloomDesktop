@@ -1017,6 +1017,17 @@ namespace Bloom.Book
 			FixExcessiveHTMLEncodingOfCoverImage(bookDOM);
 			// Fix bug reported in BL-11093: improper change of license.
 			FixImproperLicenseChange(bookDOM, _bookData);
+			// Fix temporarily bad userDefinedStyles rules in Uzbek xmatter
+			FixBadFontFamilyFromXMatter(bookDOM);
+		}
+
+		private void FixBadFontFamilyFromXMatter(HtmlDom bookDOM)
+		{
+			var userStyles = bookDOM.SelectSingleNode("//head/style[@title='userModifiedStyles']");
+			if (userStyles == null)
+				return;		// shouldn't happen, but paranoia sometimes pays off, especially in running tests.
+			var styleContents = userStyles.InnerXml;
+			userStyles.InnerXml = styleContents.Replace("font-family: \"Aileron; Arial\"", "font-family: Aileron, Arial");
 		}
 
 		/// <summary>
