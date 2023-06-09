@@ -146,6 +146,40 @@ describe("Splitting text into sentences", function() {
         expect(fragments[4].text).toBe("This is sentence 3.");
     });
 
+    it("multi-sentence tags", function() {
+        const inputText =
+            'This is <span class="test">sentence <em>1. This is sentence 2. This is</em> sentence</span> 3.';
+        const fragments = theOneLibSynphony.stringToSentences(inputText);
+
+        expect(fragments.length).toBe(5);
+        expect(fragments[0].text).toBe(
+            'This is <span class="test">sentence <em>1.</em></span>'
+        );
+        expect(fragments[1].text).toBe('<span class="test"><em> </em></span>');
+        expect(fragments[2].text).toBe(
+            '<span class="test"><em>This is sentence 2.</em></span>'
+        );
+        expect(fragments[3].text).toBe('<span class="test"><em> </em></span>');
+        expect(fragments[4].text).toBe(
+            '<span class="test"><em>This is</em> sentence</span> 3.'
+        );
+    });
+
+    it(" Tags close in empty segment", function() {
+        const inputText =
+            'This is <span class="test">sentence <em>1. This is sentence 2|</em></span>';
+        const fragments = theOneLibSynphony.stringToSentences(inputText);
+
+        expect(fragments.length).toBe(3);
+        expect(fragments[0].text).toBe(
+            'This is <span class="test">sentence <em>1.</em></span>'
+        );
+        expect(fragments[1].text).toBe('<span class="test"><em> </em></span>');
+        expect(fragments[2].text).toBe(
+            '<span class="test"><em>This is sentence 2|</em></span>'
+        );
+    });
+
     it("Tag between sentences", function() {
         var inputText =
             'This is sentence 1.<span class="test"> </span>This is sentence 2. This is sentence 3.';
