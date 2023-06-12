@@ -190,7 +190,11 @@ export const LocalizableCheckboxMenuItem: React.FunctionComponent<ILocalizableCh
         <div title={props.disabled ? props.tooltipIfDisabled : undefined}>
             <MenuItem
                 key={props.l10nId}
-                onClick={props.onClick}
+                onClick={() => {
+                    const newCheckedState = !checked;
+                    postBoolean(props.apiEndpoint, newCheckedState);
+                    setChecked(newCheckedState);
+                }}
                 dense={true}
                 css={css`
                     padding: 0 6px !important; // eliminate top and bottom padding to make even denser
