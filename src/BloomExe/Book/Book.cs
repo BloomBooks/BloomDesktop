@@ -1048,6 +1048,8 @@ namespace Bloom.Book
 			FixImproperLicenseChange(bookDOM, _bookData);
 			// Fix temporarily bad userModifiedStyles rules in Uzbek xmatter (BL-12047)
 			FixBadFontFamilyFromXMatter(bookDOM);
+			// Fix bug reported in BL-12287: improper audio highlighting of padded sentences.
+			FixImproperAudioHighlightingOfPaddedSentences(bookDOM);
 		}
 
 		/// <summary>
@@ -1063,6 +1065,14 @@ namespace Bloom.Book
 				return;		// shouldn't happen, but paranoia sometimes pays off, especially in running tests.
 			var styleContents = userStyles.InnerXml;
 			userStyles.InnerXml = styleContents.Replace("font-family: \"Aileron; Arial\"", "font-family: Aileron, Arial");
+		}
+
+		private void FixImproperAudioHighlightingOfPaddedSentences(HtmlDom bookDOM)
+		{
+			var userStylesNode = GetOrCreateUserModifiedStyleElementFromStorage(bookDOM.Head);
+			if (userStylesNode == null)
+				return;		// shouldn't happen, but paranoia sometimes pays off, especially in running tests.
+			HtmlDom.AddMissingAudioHighlightRules(userStylesNode);
 		}
 
 		/// <summary>
