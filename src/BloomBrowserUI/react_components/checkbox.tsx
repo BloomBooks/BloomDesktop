@@ -7,6 +7,7 @@ import {
     LocalizableElement,
     Label
 } from "./l10nComponents";
+import { FormControlLabel, Switch } from "@mui/material";
 
 interface ICheckboxProps extends ILocalizationProps {
     id?: string;
