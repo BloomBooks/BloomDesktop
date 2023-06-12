@@ -132,6 +132,41 @@ export default class WebSocketManager {
         [clientContext: string]: WebSocket;
     } = {};
 
+    // Currently calling this every two seconds. From my research, it appears that there
+    // could be multiple reasons for a websocket to get disconnected, and it is good
+    // practice to check regularly whether it needs to be reconnected if we are still
+    // using it...which presumably we are, since we have a mechanism for closing them.
+    // In particular, putting the computer to sleep seems to disconnect all web sockets
+    // in WebView2 (BL-12329).
+    private static ReconnectClosedSockets() {
+        const keys = Object.getOwnPropertyNames(this.socketMap);
+        keys.forEach(clientContext => {
+            const socket: WebSocket = WebSocketManager.socketMap[clientContext];
+            if (socket.readyState === WebSocket.CLOSED) {
+                delete WebSocketManager.socketMap[clientContext]; // force re-creating
+                // But note, we did not clear WebSocketManager.clientContextCallbacks[clientContext],
+                // so we will keep the same callbacks.
+                WebSocketManager.getOrCreateWebSocket(clientContext);
+                console.log("re-created socket for " + clientContext);
+            }
+        });
+    }
+
+    private static startedCheckingForClosedSockets = false;
+
+    private static continuouslyCheckForClosedSockets() {
+        if (this.startedCheckingForClosedSockets) {
+            return;
+        }
+        this.startedCheckingForClosedSockets = true;
+        const looper = () => {
+            // Just in case something goes wrong with this iteration of reconnecting,
+            // we'd still like to keep trying., so do this first.
+            setTimeout(looper, 2000);
+            this.ReconnectClosedSockets();
+        };
+        setTimeout(looper, 2000);
+    }
     /**
      *  In an attempt to make it easier to come to grips with some lifetime issues, we
      * are naming the websocket by a "clientContext" and making this private, so
@@ -140,6 +175,7 @@ export default class WebSocketManager {
      * up, call "closeSocket(clientContext)".
      */
     public static getOrCreateWebSocket(clientContext: string): WebSocket {
+        this.continuouslyCheckForClosedSockets();
         if (!WebSocketManager.socketMap[clientContext]) {
             //currently we use a different port for this websocket, and it's the main port + 1
             const websocketPort = parseInt(window.location.port, 10) + 1;
