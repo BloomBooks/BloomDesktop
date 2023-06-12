@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Xml;
@@ -174,7 +175,8 @@ namespace Bloom.Spreadsheet
 				foreach (XmlNode child in node.ChildNodes)
 				{
 					MarkedUpText markedUpChild = ParseXmlRecursive(child);
-					ApplyFormatting(node.Name, markedUpChild);
+					XmlElement el = (XmlElement)node;
+					ApplyFormatting(node.Name, el.GetAttribute("style"), markedUpChild);
 					markedUpText._runList.AddRange(markedUpChild._runList);
 				}
 			}
@@ -182,11 +184,11 @@ namespace Bloom.Spreadsheet
 
 		}
 
-		private static void ApplyFormatting(string formatName, MarkedUpText markedUpText)
+		private static void ApplyFormatting(string formatName, string styleAttribute, MarkedUpText markedUpText)
 		{
 			foreach (MarkedUpTextRun run in markedUpText._runList)
 			{
-				run.setProperty(formatName);
+				run.setProperty(formatName, styleAttribute);
 			}
 		}
 	}
@@ -209,12 +211,13 @@ namespace Bloom.Spreadsheet
 		public bool Italic { get; set; }
 		public bool Underlined { get; set; }
 		public bool Superscript { get; set; }
-		public bool HasFormatting => Bold | Italic | Underlined | Superscript;
+		public Color Color { get; set; }
 
+		public bool HasFormatting => Bold | Italic | Underlined | Superscript | Color != null;
 
-		public void setProperty(string propertyName)
+		public void setProperty(string propertyName, string styleAttribute)
 		{
-			if (propertyName.Equals("strong") || propertyName.Equals("b")) 
+			if (propertyName.Equals("strong") || propertyName.Equals("b"))
 			{
 				Bold = true;
 			}
@@ -229,6 +232,24 @@ namespace Bloom.Spreadsheet
 			else if (propertyName.Equals("u"))
 			{
 				Underlined = true;
+			}
+			else
+			{
+				// remove spaces from the style attribute
+				styleAttribute = styleAttribute.Replace(" ", "");
+				int colorFoundIndex = styleAttribute.IndexOf("color:");
+				if (colorFoundIndex > -1) {
+					// There is a color specified
+					int colorCodeStartIndex = colorFoundIndex + 6;
+					// color code end index is the next semicolon after the start, or the end of the style string
+					int colorCodeEndIndex = styleAttribute.IndexOf(';', colorCodeStartIndex);
+					if (colorCodeEndIndex == -1)
+					{
+						colorCodeEndIndex = styleAttribute.Length;
+					}
+					string colorString = styleAttribute.Substring(colorCodeStartIndex, colorCodeEndIndex - colorCodeStartIndex);
+					Color = ColorTranslator.FromHtml(colorString);
+				}
 			}
 		}
 
