@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Drawing;
-using System.Globalization;
-using System.IO;
 using System.Reflection;
 using System.Text;
 using System.Windows.Forms;
@@ -16,7 +14,7 @@ namespace Bloom.Registration
 		/// <summary>
 		/// Initialize a new instance of the <see cref="Bloom.Registration.LicenseDialog"/> class.
 		/// </summary>
-		/// <param name="licenseMdFile">filename of the license in HTML format</param>
+		/// <param name="licenseHtmlFile">filename of the license in HTML format</param>
 		/// <param name="prolog">prolog to the license (optional, already localized)</param>
 		/// <remarks>
 		/// The HTML file content should be suitable for inserting inside a body element.
@@ -41,26 +39,51 @@ namespace Bloom.Registration
 			_licenseBrowser.Name = "licenseBrowser";
 			_licenseBrowser.Size = new Size(_acceptButton.Right - 12, _acceptButton.Top - 24);
 			Controls.Add(_licenseBrowser);
-			var locale = CultureInfo.CurrentUICulture.Name;
+
 			string licenseFilePath = BloomFileLocator.GetBrowserFile(false, licenseHtmlFile);
-			var localizedLicenseFilePath = licenseFilePath.Substring(0, licenseFilePath.Length - 3) + "-" + locale + ".htm";
-			if (RobustFile.Exists(localizedLicenseFilePath))
-				licenseFilePath = localizedLicenseFilePath;
+
+			// Jun 2023:
+			// 1. There was a bug in this code which meant we never found a localized file, even if it existed. (I fixed that.)
+			// 2. We don't distribute any localized versions of the Bloom license or Adobe color profile file,
+			//    so this is overhead for now; I'm commenting it out.
+			//    If we ever decide to distribute localized versions, we just need to reenable this code.
+			//var locale = CultureInfo.CurrentUICulture.Name;
+			//var localizedLicenseFilePath = GetLocalizedLicenseFilePathIfExists(licenseFilePath, locale);
+			//if (localizedLicenseFilePath != null)
+			//	licenseFilePath = localizedLicenseFilePath;
+
+			var contents = prolog + RobustFile.ReadAllText(licenseFilePath, Encoding.UTF8);
+			var html = string.Format("<html><head><head/><body style=\"font-family:sans-serif\">{0}</body></html>", contents);
+			_licenseBrowser.NavigateRawHtml(html);
+			_licenseBrowser.Visible = true;
+		}
+
+		private string GetLocalizedLicenseFilePathIfExists(string defaultLicenseFilePath, string locale)
+		{
+			var localizedLicenseFilePath = GetLocalizedLicenseFilePathIfExistsInner(defaultLicenseFilePath, locale);
+			if (localizedLicenseFilePath != null)
+				return localizedLicenseFilePath;
 			else
 			{
 				var index = locale.IndexOf('-');
 				if (index > 0)
 				{
 					locale = locale.Substring(0, index);
-					localizedLicenseFilePath = licenseFilePath.Substring(0, licenseFilePath.Length - 3) + "-" + locale + ".htm";
-					if (RobustFile.Exists(localizedLicenseFilePath))
-						licenseFilePath = localizedLicenseFilePath;
+					localizedLicenseFilePath = GetLocalizedLicenseFilePathIfExistsInner(defaultLicenseFilePath, locale);
+					return localizedLicenseFilePath;
 				}
 			}
-			var contents = prolog + RobustFile.ReadAllText(licenseFilePath, Encoding.UTF8);
-			var html = string.Format("<html><head><head/><body style=\"font-family:sans-serif\">{0}</body></html>", contents);
-			_licenseBrowser.NavigateRawHtml(html);
-			_licenseBrowser.Visible = true;
+
+			return null;
+		}
+
+		private string GetLocalizedLicenseFilePathIfExistsInner(string defaultLicenseFilePath, string locale)
+		{
+			var localizedLicenseFilePath = defaultLicenseFilePath.Substring(0, defaultLicenseFilePath.Length - 4) + "-" + locale + ".htm";
+			if (RobustFile.Exists(localizedLicenseFilePath))
+				return localizedLicenseFilePath;
+
+			return null;
 		}
 	}
 }
