@@ -35,9 +35,12 @@ mixin mxb-titlePage-contents
 		.langName('data-library'='dialect')
 		.langName(data-library='languageLocation').bloom-writeOnly
 	+mxb-contributions
-	+field-prototypeDeclaredExplicity("N1")#funding
+	+field-prototypeDeclaredExplicity("N1")#funding.prepub-invisible
 		label.bubble Use this to acknowledge any funding agencies.
 		+editable(kLanguageForPrototypeOnly).funding.Funding-style.bloom-copyFromOtherLanguageIfNecessary(data-book='funding')
+	#prepubNotice.prepub-only
+		h1 Versión Preliminar
+		p Se permite imprimir un máximo de 25 ejemplares de esta publicación con propósitos de revisión
 	+title-page-branding-bottom
 
 mixin mxb-titlePage
