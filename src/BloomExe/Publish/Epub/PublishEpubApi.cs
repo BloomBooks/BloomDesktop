@@ -132,12 +132,14 @@ namespace Bloom.Publish.Epub
 			}
 
 			if (string.IsNullOrEmpty(destPath))  {
-				// No output path was specified
+				// No output path means the user cancelled the file chooser dialog.
+				// Simply posting a success with no other messages will cause the UI to do nothing further.
 				request.PostSucceeded();
 				return;
 			}
 				
-			RefreshPreview(request.CurrentBook.BookInfo.PublishSettings.Epub, false);
+			// Will only update the staged ePUB files if needed
+			RefreshPreview(request.CurrentBook.BookInfo.PublishSettings.Epub, forceUpdate:false);
 			SaveAsEpub(destPath);
 			request.PostSucceeded();
 		}
