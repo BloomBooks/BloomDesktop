@@ -21,7 +21,6 @@ div.bloom-page.outsideBackCover.coverColor {
 
 /* show inside cover colors as white since this is full bleed, an so unlikely that someone is going to print the inside of the covers in a solid full-bleed color*/
 div.bloom-page {
-
     &.insideFrontCover,
     &.insideBackCover {
         background-color: white !important;
@@ -30,34 +29,30 @@ div.bloom-page {
 
 //NB: these can't be only on <body> because they are also used in page thumbnails and in epubs
 *[data-bookshelfurlkey*="Grade1"] {
-
     div.bloom-page.outsideFrontCover.coverColor,
     div.bloom-page.outsideBackCover.coverColor {
-        background-color: #143A63 !important;
+        background-color: #143a63 !important;
     }
 }
 
 *[data-bookshelfurlkey*="Grade2"] {
-
     div.bloom-page.outsideFrontCover.coverColor,
     div.bloom-page.outsideBackCover.coverColor {
-        background-color: #702A2D !important;
+        background-color: #702a2d !important;
     }
 }
 
 *[data-bookshelfurlkey*="Grade3"] {
-
     div.bloom-page.outsideFrontCover.coverColor,
     div.bloom-page.outsideBackCover.coverColor {
-        background-color: #776A5A !important;
+        background-color: #776a5a !important;
     }
 }
 
 *[data-bookshelfurlkey*="Grade4"] {
-
     div.bloom-page.outsideFrontCover.coverColor,
     div.bloom-page.outsideBackCover.coverColor {
-        background-color: #ADC4D8 !important;
+        background-color: #adc4d8 !important;
     }
 }
 
@@ -81,9 +76,10 @@ div.bloom-page {
     }
 }
 
-
 // don't show second language on cover
-.frontCover .bloom-translationGroup.bookTitle .bloom-editable.bloom-contentNational1:not(.bloom-content1) {
+.frontCover
+    .bloom-translationGroup.bookTitle
+    .bloom-editable.bloom-contentNational1:not(.bloom-content1) {
     display: none;
 }
 
@@ -93,7 +89,6 @@ div.bloom-page {
     height: 70px;
     margin-bottom: 13px;
 }
-
 
 // a solid, semi-transparent line
 .creditsRow {
@@ -137,7 +132,7 @@ div.bloom-page {
     // we need it to top-align, maintain aspect ratio, and then be as wide as will fit
     // but leave room the sides if it doesn't fit. This is just from me (JH), not the customer yet.
     object-fit: contain;
-    max-width: 100%;
+    max-width: 100% !important; // important to override the basePage default which assumed margins
     max-height: 100%;
     width: 100%;
     // 5.4, which has FF60, cannot handle "fit-content"
