@@ -18,6 +18,7 @@ namespace BloomTests.CollectionTab
 	[SuppressMessage("ReSharper", "LocalizableElement")]
 	class CollectionModelTests
 	{
+		const string kCollectionName = "FakeCollection";
 		private TemporaryFolder _collection;
 		private TemporaryFolder _folder;
 		private FakeCollectionModel _testCollectionModel;
@@ -31,7 +32,7 @@ namespace BloomTests.CollectionTab
 			// ENHANCE: Sometimes making the FakeCollection temporary folder causes an UnauthorizedAccessException.
 			// Not exactly sure why or what to do about it. Possibly it could be related to file system operations
 			// being async in nature???
-			_collection = new TemporaryFolder(_folder, "FakeCollection");
+			_collection = new TemporaryFolder(_folder, kCollectionName);
 			MakeFakeCssFile();
 			_testCollectionModel = new FakeCollectionModel(_collection);
 		}
@@ -70,17 +71,17 @@ namespace BloomTests.CollectionTab
 		}
 
 		// Imitate CollectionModel.MakeBloomPack(), but bypasses the user interaction
-		private void MakeTestBloomPack(string path, bool forReaderTools)
+		private void MakeTestBloomPack(string outputPath, bool forReaderTools)
 		{
 			var (dirName, dirPrefix) = _testCollectionModel.GetDirNameAndPrefixForCollectionBloomPack();
-			_testCollectionModel.MakeBloomPackInternal(path, dirName, dirPrefix, forReaderTools, isCollection: true);
+			_testCollectionModel.MakeBloomPackInternal(outputPath, dirName, dirPrefix, forReaderTools, isCollection: true);
 		}
 
 		// Imitate CollectionModel.MakeBloomPack(), but bypasses the user interaction
-		private void MakeTestSingleBookBloomPack(string path, string bookSrcPath, bool forReaderTools)
+		private void MakeTestSingleBookBloomPack(string outputPath, string bookSrcPath, bool forReaderTools)
 		{
 			var (dirName, dirPrefix) = _testCollectionModel.GetDirNameAndPrefixForSingleBookBloomPack(bookSrcPath);
-			_testCollectionModel.MakeBloomPackInternal(path, dirName, dirPrefix, forReaderTools, isCollection: false);
+			_testCollectionModel.MakeBloomPackInternal(outputPath, dirName, dirPrefix, forReaderTools, isCollection: false);
 		}
 
 		// Don't do anything with the zip file except read in the filenames
@@ -174,7 +175,39 @@ namespace BloomTests.CollectionTab
 		}
 
 		[Test]
-		public void MakeBloomPack_AddslockFormattingMetaTagToReader()
+		public void MakeReaderTemplateBloomPack_IncludesExpectedFilesAndNotUnexpectedFolder()
+		{
+			string[] requiredCollectionLevelFiles = { "customCollectionStyles.css", "ReaderToolsSettings-en.json", "ReaderToolsWords-en.json" };
+			foreach (var requiredFile in requiredCollectionLevelFiles)
+				File.WriteAllText(Path.Combine(_testCollectionModel.TheOneEditableCollection.PathToDirectory, requiredFile), "rubbish");
+
+			Directory.CreateDirectory(Path.Combine(_testCollectionModel.TheOneEditableCollection.PathToDirectory, "Sample Texts"));
+			File.WriteAllText(Path.Combine(_testCollectionModel.TheOneEditableCollection.PathToDirectory, "Sample Texts", "something.txt"), "rubbish");
+
+			var srcBookPath = MakeBook(); // BloomPack must have at least one book
+
+			var bloomPackName = Path.Combine(_folder.Path, "testReaderPack.BloomPack");
+
+			// make the BloomPack
+			MakeTestBloomPack(bloomPackName, forReaderTools: true);
+
+			using (var zip = new ZipFile(bloomPackName))
+			{
+				foreach (var requiredFile in requiredCollectionLevelFiles)
+				{
+					Assert.That(zip.FindEntry($"{kCollectionName}/{requiredFile}", false) != -1,
+						() => { return $"{requiredFile} is missing from the BloomPack"; });
+				}
+
+				Assert.That(zip.FindEntry($"{kCollectionName}/Sample Texts", false) == -1,
+										() => { return "Sample Texts folder should not be in the BloomPack"; });
+				Assert.That(zip.FindEntry($"{kCollectionName}/Sample Texts/something.txt", false) == -1,
+										() => { return "Sample Texts files should not be in the BloomPack"; });
+			}
+		}
+
+		[Test]
+		public void MakeReaderTemplateBloomPack_AddsLockFormattingMetaTagToBookDom()
 		{
 			var srcBookPath = MakeBook();
 
@@ -202,7 +235,7 @@ namespace BloomTests.CollectionTab
 			File.WriteAllText(readerName, sb.ToString());
 
 			// make the BloomPack
-			MakeTestBloomPack(bloomPackName, true);
+			MakeTestBloomPack(bloomPackName, forReaderTools: true);
 
 			// get the reader file from the BloomPack
 			var actualFiles = GetActualFilenamesFromZipfile(bloomPackName);

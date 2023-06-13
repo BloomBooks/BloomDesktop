@@ -20,19 +20,32 @@ namespace Bloom.Collection
 		// key is the folder name, under _rootFolder, for the filter for files in that subfolder.
 		private Dictionary<string, BookFileFilter> _bookFilters = new Dictionary<string, BookFileFilter>();
 
-		public bool Filter(string fullPath)
+		public virtual bool Filter(string fullPath)
 		{
 			if (_rootFolder == null) return false; // can't accept anything without at least one book so this gets initialized.
-			var relativePath = fullPath.Substring(_rootFolder.Length + 1);
-			var index = relativePath.IndexOf(Path.DirectorySeparatorChar);
-			if (index < 0)
-			{
-				// file in the root folder
-				return Path.GetExtension(relativePath).ToLowerInvariant() == ".css";
-			}
-			var folder = relativePath.Substring(0, index);
+
+			if (IsFileInRootFolder(fullPath, out var folder))
+				return Path.GetExtension(fullPath).ToLowerInvariant() == ".css";
+
+			if (folder.ToLowerInvariant() == "sample texts")
+				return false;
+
 			if (_bookFilters.TryGetValue(folder, out BookFileFilter bookFilter))
 				return bookFilter.Filter(fullPath);
+
+			return false;
+		}
+
+		protected bool IsFileInRootFolder(string fullPath, out string folder)
+		{
+			folder = null;
+
+			var relativePath = fullPath.Substring(_rootFolder.Length + 1);
+			var index = relativePath.IndexOf(Path.DirectorySeparatorChar);
+			if (index == -1)
+				return true;
+
+			folder = relativePath.Substring(0, index);
 			return false;
 		}
 

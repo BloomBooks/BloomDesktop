@@ -326,7 +326,7 @@
   <ItemGroup>
     <Compile Include="BloomFileLocatorTests.cs" />
     <Compile Include="Book\BookFileFilterTests.cs" />
-    <Compile Include="Collection\CollectionFilterTests.cs" />
+    <Compile Include="Collection\CollectionFileFilterTests.cs" />
     <Compile Include="FontProcessingTests.cs" />
     <Compile Include="Publish\EpubMakerReadiumManifestTests.cs" />
     <Compile Include="Publish\ExportFixedLayoutEpubTests.cs" />
