@@ -163,6 +163,9 @@ export default class BloomField {
         //     alert(event.data.dataValue);
         // });
         ckeditor.on("paste", event => {
+            event.data.dataValue = this.restoreHtmlMarkupIfNecessary(
+                event.data
+            );
             event.data.dataValue = this.reconstituteParagraphsOnPlainTextPaste(
                 event.data
             );
@@ -295,6 +298,34 @@ export default class BloomField {
         // This makes it easy to find the right editor instance. There may be some ckeditor built-in way, but
         // I wasn't able to find one.
         (<any>bloomEditableDiv).bloomCkEditor = ckeditor;
+    }
+
+    // Spans can be dropped from the clipboard's default data (eventData.dataValue),
+    // but we need to keep them for possible color markup.  See BL-12357.
+    static restoreHtmlMarkupIfNecessary(eventData: any): any {
+        const dataVariants = eventData.dataTransfer?._?.data;
+        if (!dataVariants) return eventData.dataValue;
+        const fullHtml = dataVariants["text/html"] as string;
+        if (!fullHtml) return eventData.dataValue;
+        const reducedHtml = eventData.dataValue as string;
+        if (!reducedHtml) return eventData.dataValue;
+        if (fullHtml !== reducedHtml) {
+            const startMarker = "<!--StartFragment-->";
+            const endMarker = "<!--EndFragment-->";
+            if (
+                reducedHtml.startsWith(startMarker) &&
+                reducedHtml.endsWith(endMarker)
+            ) {
+                const start = fullHtml.indexOf(startMarker);
+                const end = fullHtml.indexOf(endMarker) + endMarker.length;
+                if (
+                    start >= 0 &&
+                    end >= start + startMarker.length + endMarker.length
+                )
+                    return fullHtml.substring(start, end);
+            }
+        }
+        return eventData.dataValue;
     }
 
     // If the original clipboard had no paragraph markup, but only (plain text) newlines (\n)
