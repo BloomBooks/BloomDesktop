@@ -88,7 +88,8 @@ CKEDITOR.editorConfig = function(config) {
     // the html via javascript, we can do whatever we want. When the user pastes, he is bounded by the following set.
 
     // See http://docs.ckeditor.com/#!/api/CKEDITOR.config-cfg-pasteFilter for a description of this setting.
-    // BL-4775: Removed span from this, so that you can't paste spans
+    // BL-4775: Removed span from this, so that you can't paste spans from external sources
+    // BL-12357: Added span{color} to allow spans with color in the style attribute through.
 
     // The following is safe:
     //      config.pasteFilter = 'h1 h2 h3 p blockquote table tr th td caption b bdi bdo br em i q strong sub sup u; a[!href]';
@@ -100,7 +101,8 @@ CKEDITOR.editorConfig = function(config) {
     // Therefore for now we're limiting pasting to things that a translator could also do.
     // The {font-weight} annotation says that a <b> element's font-weight style may be pasted.
     // Code in our paste handler deals with this so it doesn't end up in our documents.
-    config.pasteFilter = "p br em i strong sup u; b{font-weight}; a[!href];";
+    config.pasteFilter =
+        "p br em i strong sup u; b{font-weight}; a[!href]; span{color}";
 
     //BL-3009: don't remove empty spans, since we use <span class="bloom-linebreak"></span> when you press shift-enter.
     //http://stackoverflow.com/a/23983357/723299
