@@ -138,8 +138,17 @@ namespace Bloom.Publish.Epub
 			}
 		
 			// Will only update the staged ePUB files if needed
-			RefreshPreview(request.CurrentBook.BookInfo.PublishSettings.Epub, forceUpdate:false);
-			SaveAsEpub(destPath);
+			if (RefreshPreview(request.CurrentBook.BookInfo.PublishSettings.Epub, forceUpdate:false))
+			{
+				// The necessary ePUB files are present
+				SaveAsEpub(destPath);
+			}
+			else
+			{
+				// Preview generation failed; the ePUB files might not all be there, we should not save.
+				// Notify the user gently that updating the ePUB preview failed.
+				NonFatalProblem.Report(ModalIf.None, PassiveIf.All, "Something went wrong while saving the ePUB.");
+			}
 		}
 			
 		private string getSaveAsPath(ApiRequest request)
@@ -162,7 +171,7 @@ namespace Bloom.Publish.Epub
 			}
 		}
 
-		private void RefreshPreview(EpubSettings newSettings, bool forceUpdate = true)
+		private bool RefreshPreview(EpubSettings newSettings, bool forceUpdate = true)
 		{
 			// We have seen some exceptions thrown during refresh that cause a pretty yellow
 			// dialog box pop up informing the user, e.g., that the program couldn't find
@@ -175,17 +184,26 @@ namespace Bloom.Publish.Epub
 				try
 				{
 					if (UpdatePreview(newSettings, forceUpdate))
+					{
 						_webSocketServer.SendString(kWebsocketContext, kWebsocketEventId_epubReady, _previewSrc);
-					return;
+						return true;
+					}
 				}
 				catch (Exception e)
 				{
 					exception = e;	// the original stack trace is rather important for post mortem debugging!
 				}
 			}
+			string detailsMessage = "Updating the ePUB preview failed";
+			// If we are here because UpdatePreview repeatedly returned false indicating it failed, we won't have an exception
+			if (exception != null)
+			{
+				detailsMessage = detailsMessage + ": " + exception.Message;
+			}
 			// Notify the user gently that updating the ePUB preview failed.
 			NonFatalProblem.Report(ModalIf.None, PassiveIf.All, "Something went wrong while making the ePUB preview.",
-				"Updating the ePUB preview failed: " + exception.Message, exception);
+				detailsMessage, exception);
+			return false;
 		}
 
 		public void ReportAnalytics(string eventName)
@@ -292,7 +310,7 @@ namespace Bloom.Publish.Epub
 		public bool UpdatePreview(EpubSettings newSettings, bool force, WebSocketProgress progress = null)
 		{
 			_progress = progress ?? _standardProgress.WithL10NPrefix("PublishTab.Epub.");
-
+			
 			if (Program.RunningOnUiThread)
 			{
 				throw new ApplicationException(@"Must not attempt to make epubs on UI thread");
