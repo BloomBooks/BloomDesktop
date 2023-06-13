@@ -312,7 +312,7 @@ namespace Bloom.CollectionTab
 				var mainWindow = MainShell;
 				if (dlg.ShowDialog(mainWindow) != DialogResult.OK)
 					return;
-				MakeBloomPack(true);
+				MakeBloomPack(forReaderTools: true);
 			}
 		}
 
@@ -603,13 +603,13 @@ namespace Bloom.CollectionTab
 			return (dir, "");
 		}
 
-		public void MakeBloomPack(string path, bool forReaderTools = false)
+		public void MakeBloomPack(string outputPath, bool forReaderTools = false)
 		{
 			var (dirName, dirPrefix) = GetDirNameAndPrefixForCollectionBloomPack();
 			var rootName = Path.GetFileName(dirName);
 			if (rootName == null) return;
-			Logger.WriteEvent($"Making BloomPack at {path} forReaderTools={forReaderTools}");
-			MakeBloomPackWithUI(path, dirName, dirPrefix, forReaderTools, isCollection: true);
+			Logger.WriteEvent($"Making BloomPack at {outputPath} forReaderTools={forReaderTools}");
+			MakeBloomPackWithUI(outputPath, dirName, dirPrefix, forReaderTools, isCollection: true);
 		}
 
 		internal (string dirName, string dirPrefix) GetDirNameAndPrefixForSingleBookBloomPack(string inputBookFolder)
@@ -621,22 +621,22 @@ namespace Bloom.CollectionTab
 			return (inputBookFolder, rootName);
 		}
 
-		public void MakeSingleBookBloomPack(string path, string inputBookFolder)
+		public void MakeSingleBookBloomPack(string outputPath, string inputBookFolder)
 		{
 			var (dirName, dirPrefix) = GetDirNameAndPrefixForSingleBookBloomPack(inputBookFolder);
 			if (dirPrefix == null) return;
-			Logger.WriteEvent($"Making single book BloomPack at {path} bookFolderPath={inputBookFolder}");
-			MakeBloomPackWithUI(path, dirName, dirPrefix, false, isCollection: false);
+			Logger.WriteEvent($"Making single book BloomPack at {outputPath} bookFolderPath={inputBookFolder}");
+			MakeBloomPackWithUI(outputPath, dirName, dirPrefix, false, isCollection: false);
 		}
 
-		private void MakeBloomPackWithUI(string path, string dir, string dirNamePrefix, bool forReaderTools, bool isCollection)
+		private void MakeBloomPackWithUI(string outputPath, string sourceDirectory, string dirNamePrefix, bool forReaderTools, bool isCollection)
 		{
 			try
 			{
-				if (RobustFile.Exists(path))
+				if (RobustFile.Exists(outputPath))
 				{
 					// UI already got permission for this
-					RobustFile.Delete(path);
+					RobustFile.Delete(outputPath);
 				}
 				using (var pleaseWait = new SimpleMessageDialog("Creating BloomPack...", "Bloom"))
 				{
@@ -647,12 +647,12 @@ namespace Bloom.CollectionTab
 						Application.DoEvents(); // actually show it
 						Cursor.Current = Cursors.WaitCursor;
 
-						Logger.WriteEvent("BloomPack path will be " + path + ", made from " + dir + " with rootName " + Path.GetFileName(dir));
-						MakeBloomPackInternal(path, dir, dirNamePrefix, forReaderTools, isCollection);
+						Logger.WriteEvent("BloomPack outputPath will be " + outputPath + ", made from " + sourceDirectory + " with rootName " + Path.GetFileName(sourceDirectory));
+						MakeBloomPackInternal(outputPath, sourceDirectory, dirNamePrefix, forReaderTools, isCollection);
 
 						// show it
 						Logger.WriteEvent("Showing BloomPack on disk");
-						PathUtilities.SelectFileInExplorer(path);
+						PathUtilities.SelectFileInExplorer(outputPath);
 						Analytics.Track("Create BloomPack");
 					}
 					finally
@@ -664,31 +664,31 @@ namespace Bloom.CollectionTab
 			}
 			catch (Exception e)
 			{
-				ErrorReport.NotifyUserOfProblem(e, "Could not make the BloomPack at " + path);
+				ErrorReport.NotifyUserOfProblem(e, "Could not make the BloomPack at " + outputPath);
 			}
 		}
 
 		/// <summary>
-		/// Makes a BloomPack of the specified dir.
+		/// Makes a BloomPack of the specified sourceDirectory.
 		/// </summary>
-		/// <param name="path">The path to write to. Precondition: Must not exist.</param>
-		internal void MakeBloomPackInternal(string path, string dir, string dirNamePrefix, bool forReaderTools, bool isCollection)
+		/// <param name="outputPath">The outputPath to write to. Precondition: Must not exist.</param>
+		internal void MakeBloomPackInternal(string outputPath, string sourceDirectory, string dirNamePrefix, bool forReaderTools, bool isCollection)
 		{
 			if (isCollection)
 			{
-				BookCompressor.CompressCollectionDirectory(path, dir, dirNamePrefix, forReaderTools);
+				BookCompressor.CompressCollectionDirectory(outputPath, sourceDirectory, dirNamePrefix, forReaderTools);
 			}
 			else
 			{
-				BookCompressor.CompressBookDirectory(path, dir,
-					MakeBloomPackFilter(dir),
+				BookCompressor.CompressBookDirectory(outputPath, sourceDirectory,
+					MakeBloomPackBookFileFilter(sourceDirectory),
 					dirNamePrefix, forReaderTools);
 			}
 		}
 
-		public static BookFileFilter MakeBloomPackFilter(string dir)
+		public static BookFileFilter MakeBloomPackBookFileFilter(string bookFolderPath)
 		{
-			var filter = new BookFileFilter(dir)
+			var filter = new BookFileFilter(bookFolderPath)
 			{
 				IncludeFilesForContinuedEditing = true,
 				// want audio in bloompack: see https://issues.bloomlibrary.org/youtrack/issue/BL-11741.

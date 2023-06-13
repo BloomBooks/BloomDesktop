@@ -130,7 +130,7 @@ namespace Bloom.web.controllers
 
 			apiHandler.RegisterEndpointHandler(kApiUrlPart + "makeShellBooksBloompack/", (request) =>
 				{
-					_collectionModel.MakeBloomPack(false);
+					_collectionModel.MakeBloomPack(forReaderTools: false);
 					request.PostSucceeded();
 				}, true);
 
