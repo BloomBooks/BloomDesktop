@@ -359,8 +359,8 @@ namespace Bloom.Workspace
 				return;
 			if (this.IsDisposed)
 				return; // We can't need the notification, and Invoke will fail.
-			// Notify anything on the Javascript side that might care about the status change.
-			// (This includes buttons that are not selected.)
+						// Notify anything on the Javascript side that might care about the status change.
+						// (This includes buttons that are not selected.)
 			SafeInvoke.Invoke("sending reload status", this, false, true,
 				() =>
 				{
@@ -557,8 +557,8 @@ namespace Bloom.Workspace
 					e.Cancel = _ignoreNextAppFocusChange;
 					break;
 				case ToolStripDropDownCloseReason.AppClicked:
-					// "reason" is AppClicked, but is it legit?
-					// Every other time we get AppClicked even if we are just hovering over the help menu.
+				// "reason" is AppClicked, but is it legit?
+				// Every other time we get AppClicked even if we are just hovering over the help menu.
 				case ToolStripDropDownCloseReason.Keyboard:
 					// If "reason" is Keyboard, that seems to be generated just by moving the mouse over the
 					// adjacent (visible) button on Linux.
@@ -904,10 +904,10 @@ namespace Bloom.Workspace
 			});
 
 			_selectedTabChangedEvent.Raise(new TabChangedDetails()
-											{
-												From = _previouslySelectedControl,
-												To = view
-											});
+			{
+				From = _previouslySelectedControl,
+				To = view
+			});
 
 			_previouslySelectedControl = view;
 			_collectionApi.ResetUpdatingList();
@@ -1008,6 +1008,11 @@ namespace Bloom.Workspace
 			HelpLauncher.Show(this, CurrentTabView.HelpTopicUrl);
 		}
 
+		private void _bloom_docs_Click(object sender, EventArgs e)
+		{
+			SIL.Program.Process.SafeStart("https://docs.bloomlibrary.org");
+		}
+
 		private void _webSiteMenuItem_Click(object sender, EventArgs e)
 		{
 			SIL.Program.Process.SafeStart(UrlLookup.LookupUrl(UrlType.LibrarySite, null));
@@ -1015,18 +1020,7 @@ namespace Bloom.Workspace
 
 		private void _releaseNotesMenuItem_Click(object sender, EventArgs e)
 		{
-			var path = FileLocationUtilities.GetFileDistributedWithApplication("ReleaseNotes.md");
-			using (var dlg = new ShowReleaseNotesDialog(Resources.BloomIcon, path))
-			{
-				// Try to make the dialog big enough to show the embedded images without horizontal
-				// scrolling and without getting too big for the screen.  (BL-9867)
-				var screenSize = Screen.GetBounds(this);
-				dlg.Width = Math.Min(1024, screenSize.Width);
-				dlg.Height = Math.Min(768, screenSize.Height);
-				var uriCss = new Uri(FileLocationUtilities.GetFileDistributedWithApplication("ReleaseNotes.css"));
-				dlg.CssLinkHref = uriCss.AbsoluteUri;
-				dlg.ShowDialog();
-			}
+			SIL.Program.Process.SafeStart("https://docs.bloomlibrary.org/Release-Notes");
 		}
 
 		private void _requestAFeatureMenuItem_Click(object sender, EventArgs e)
@@ -1258,12 +1252,12 @@ namespace Bloom.Workspace
 			}
 		}
 
-#region Responsive Toolbar
+		#region Responsive Toolbar
 
 		enum Shrinkage { FullSize, Stage1, Stage2, Stage3 }
 		private Shrinkage _currentShrinkage = Shrinkage.FullSize;
 		private ToolStripControlHost _zoomWrapper;
-		
+
 
 		private const int MinToolStripMargin = 3;
 
@@ -1484,7 +1478,7 @@ namespace Bloom.Workspace
 		}
 
 
-#endregion
+		#endregion
 	}
 
 	public class NoBorderToolStripRenderer : ToolStripProfessionalRenderer

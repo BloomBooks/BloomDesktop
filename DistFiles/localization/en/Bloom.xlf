@@ -3007,9 +3007,14 @@
         <note xml:lang="en">OLD TEXT (before 3.9, added dots): About Bloom</note>
       </trans-unit>
       <trans-unit id="HelpMenu.DocumentationMenuItem">
-        <source xml:lang="en">Browse Help...</source>
+        <source xml:lang="en">Help...</source>
         <note>ID: HelpMenu.DocumentationMenuItem</note>
-        <note>Prior to 5.0, this was "Documentation"</note>
+        <note>Prior to 5.4, this was "Browse Help"</note>
+      </trans-unit>
+      <trans-unit id="HelpMenu.OnlineHelpMenuItem">
+        <source xml:lang="en">More Help (Web)</source>
+        <note>ID: HelpMenu.OnlineHelpMenuItem</note>
+        <note>This takes you to https://docs.bloomlibrary.org</note>
       </trans-unit>
       <trans-unit id="HelpMenu.Help Menu">
         <source xml:lang="en">Help</source>
