@@ -132,6 +132,62 @@ export default class WebSocketManager {
         [clientContext: string]: WebSocket;
     } = {};
 
+    // Currently calling this every two seconds. From my research, it appears that there
+    // could be multiple reasons for a websocket to get disconnected, and it is good
+    // practice to check regularly whether it needs to be reconnected if we are still
+    // using it...which presumably we are, since we have a mechanism for closing them.
+    // In particular, putting the computer to sleep seems to disconnect all web sockets
+    // in WebView2 (BL-12329).
+    // (If this throws some exception, it will be reported as usual for Javascript errors:
+    // that is, in Alpha builds there is a toast, otherwise it just gets logged. Then we will continue
+    // to attempt reconnection of any sockets that need it at regular intervals. If the same
+    // exception is thrown repeatedly as a result, no harm is done, since we already have
+    // code to suppress sequences of toasts with the same message. All but the first are ignored,
+    // unless some other toast intervenes. If a different exception is thrown each time, or
+    // in some alternation, an alpha build could get a lot of toasts; in that case, hopefully
+    // the user reports them and we can fix whatever is causing them, and in the meantime the
+    // alpha user will have to ignore them or go back to beta.)
+    private static ReconnectClosedSockets() {
+        const keys = Object.getOwnPropertyNames(this.socketMap);
+        keys.forEach(clientContext => {
+            const socket: WebSocket = WebSocketManager.socketMap[clientContext];
+            if (socket.readyState === WebSocket.CLOSED) {
+                delete WebSocketManager.socketMap[clientContext]; // force re-creating
+                // But note, we did not clear WebSocketManager.clientContextCallbacks[clientContext],
+                // so we will keep the same callbacks.
+                WebSocketManager.getOrCreateWebSocket(clientContext);
+                console.log("re-created socket for " + clientContext);
+            }
+        });
+    }
+
+    private static startedCheckingForClosedSockets = false;
+
+    private static continuouslyCheckForClosedSockets() {
+        if (this.startedCheckingForClosedSockets) {
+            return;
+        }
+        this.startedCheckingForClosedSockets = true;
+        const looper = () => {
+            // If ReconnectClosedSockets() throws an exception, it will be reported in the usual way
+            // (toast with option to report, only in Alpha/Debug builds?). But hopefully it's
+            // a one-time thing. By setting up the timeout for the next iteration before we do it,
+            // we ensure that the next iteration will happen even if the current one throws.
+            // Repeated occurrences of the same exception are ignored (by our Toast code).
+            // Of course, if it throws something different every time, it will get annoying. But if there's some
+            // situation where that happens, we want to know. And if we don't keep trying, we'll
+            // be right back in the situation where, long after the exception has been forgotten,
+            // the computer sleeps and then Bloom stops responding.
+            setTimeout(looper, 2000);
+            this.ReconnectClosedSockets();
+        };
+        // Could just call looper() here. But I'd rather wait for the first call to ReconnectClosedSockets()
+        // until we've finished the current getOrCreateWebSocket(). In fact, I'm going to make a longer
+        // timeout here...don't need the Reconnect code taking up time while Bloom is starting up, and if there
+        // is some async stuff going on that might somehow let Reconnect interfere with the startup process,
+        // this should help defend against it.
+        setTimeout(looper, 10000);
+    }
     /**
      *  In an attempt to make it easier to come to grips with some lifetime issues, we
      * are naming the websocket by a "clientContext" and making this private, so
@@ -140,6 +196,7 @@ export default class WebSocketManager {
      * up, call "closeSocket(clientContext)".
      */
     public static getOrCreateWebSocket(clientContext: string): WebSocket {
+        this.continuouslyCheckForClosedSockets();
         if (!WebSocketManager.socketMap[clientContext]) {
             //currently we use a different port for this websocket, and it's the main port + 1
             const websocketPort = parseInt(window.location.port, 10) + 1;
