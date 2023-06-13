@@ -37,7 +37,6 @@ namespace Bloom.Publish.Epub
 
 		private string _previewSrc;
 		private string _bookVersion;
-		private bool _stagingEpub;
 
 		// This goes out with our messages and, on the client side (typescript), messages are filtered
 		// down to the context (usually a screen) that requested them.
@@ -106,7 +105,8 @@ namespace Bloom.Publish.Epub
 					var message = new LicenseChecker().CheckBook(request.CurrentBook, request.CurrentBook.ActiveLanguages.ToArray());
 					_webSocketServer.SendString(kWebsocketContext, kWebsocketState_LicenseOK, (message == null) ? "true" : "false");
 				}
-			}, false); 
+			}, false); 	// must not be on the UI thread, because it's a long-running task and the UI thread must be available
+			// to update the progress dialog, respond to user actions, etc.
 
 			apiHandler.RegisterEndpointHandler(kApiUrlPart + "abortPreview", request =>
 			{
@@ -121,6 +121,7 @@ namespace Bloom.Publish.Epub
 
 		private void HandleEpubSave(ApiRequest request)
 		{
+			request.PostSucceeded();
 			string destPath = null;
 			if (ControlForInvoke != null && ControlForInvoke.InvokeRequired)
 			{
@@ -133,15 +134,12 @@ namespace Bloom.Publish.Epub
 
 			if (string.IsNullOrEmpty(destPath))  {
 				// No output path means the user cancelled the file chooser dialog.
-				// Simply posting a success with no other messages will cause the UI to do nothing further.
-				request.PostSucceeded();
 				return;
 			}
-				
+		
 			// Will only update the staged ePUB files if needed
 			RefreshPreview(request.CurrentBook.BookInfo.PublishSettings.Epub, forceUpdate:false);
 			SaveAsEpub(destPath);
-			request.PostSucceeded();
 		}
 			
 		private string getSaveAsPath(ApiRequest request)
@@ -157,7 +155,7 @@ namespace Bloom.Publish.Epub
 
 		public void AbortMakingEpub()
 		{
-			if (EpubMaker != null && _stagingEpub)
+			if (EpubMaker != null)
 			{
 				// typically will cause some OTHER thread that is making the epub to wind up quickly.
 				EpubMaker.AbortRequested = true;
@@ -303,7 +301,6 @@ namespace Bloom.Publish.Epub
 
 			if (EpubMaker != null)
 				EpubMaker.AbortRequested = false;
-			_stagingEpub = true;
 
 			// For some unknown reason, if the accessibility window is showing, some of the browser navigation
 			// that is needed to accurately determine which content is visible simply doesn't happen.
@@ -317,66 +314,59 @@ namespace Bloom.Publish.Epub
 			if (progress == null)
 				AccessibilityChecker.AccessibilityCheckWindow.StaticClose();
 
-			try
+			_webSocketServer.SendString(kWebsocketContext, "startingEbookCreation", _previewSrc);
+
+			var htmlPath = _bookSelection.CurrentSelection.GetPathHtmlFile();
+			var newVersion = Book.Book.ComputeHashForAllBookRelatedFiles(htmlPath);
+			bool previewIsAlreadyCurrent;
+			previewIsAlreadyCurrent = !newSettings.RequiresDifferentPreviewThan(_lastPreviewSettings) && EpubMaker != null && newVersion == _bookVersion &&
+										!EpubMaker.AbortRequested && !force;
+
+			if (previewIsAlreadyCurrent)
 			{
-				_webSocketServer.SendString(kWebsocketContext, "startingEbookCreation", _previewSrc);
+				return true; // preview is already up to date.
+			}
 
-				var htmlPath = _bookSelection.CurrentSelection.GetPathHtmlFile();
-				var newVersion = Book.Book.ComputeHashForAllBookRelatedFiles(htmlPath);
-				bool previewIsAlreadyCurrent;
-				previewIsAlreadyCurrent = _lastPreviewSettings == newSettings && EpubMaker != null && newVersion == _bookVersion &&
-											!EpubMaker.AbortRequested && !force;
+			// newSettings is typically the actual settigns object on the book, which could get updated by the UI.
+			// To be able to tell later whether it changed, we need a copy.
+			_lastPreviewSettings = newSettings.Clone();
 
-				if (previewIsAlreadyCurrent)
+			// clear the obsolete preview, if any; this also ensures that when the new one gets done,
+			// we will really be changing the src attr in the preview iframe so the display will update.
+			_webSocketServer.SendEvent(kWebsocketContext, kWebsocketEventId_epubReady);
+			_bookVersion = newVersion;
+			_progress.Message("PreparingPreview", "Preparing Preview");
+
+			// This three-tries loop is an attempt to recover from a weird state the system sometimes gets into
+			// where a browser won't navigate to a temporary page that the EpubMaker uses. I'm not sure it actually
+			// helps, once the system gets into this state even a brand new browser seems to have the same problem.
+			// Usually there will be no exception, and the loop breaks at the end of the first iteration.
+			for (int i = 0; i < 3; i++)
+			{
+				try
 				{
-					return true; // preview is already up to date.
+					if (!PublishHelper.InPublishTab)
+					{
+						return false;
+					}
+					_previewSrc = UpdateEpubControlContent();
 				}
-
-				// newSettings is typically the actual settigns object on the book, which could get updated by the UI.
-				// To be able to tell later whether it changed, we need a copy.
-				_lastPreviewSettings = newSettings.Clone();
-
-				// clear the obsolete preview, if any; this also ensures that when the new one gets done,
-				// we will really be changing the src attr in the preview iframe so the display will update.
-				_webSocketServer.SendEvent(kWebsocketContext, kWebsocketEventId_epubReady);
-				_bookVersion = newVersion;
-				_progress.Message("PreparingPreview", "Preparing Preview");
-
-				// This three-tries loop is an attempt to recover from a weird state the system sometimes gets into
-				// where a browser won't navigate to a temporary page that the EpubMaker uses. I'm not sure it actually
-				// helps, once the system gets into this state even a brand new browser seems to have the same problem.
-				// Usually there will be no exception, and the loop breaks at the end of the first iteration.
-				for (int i = 0; i < 3; i++)
+				catch (ApplicationException ex)
 				{
-					try
-					{
-						if (!PublishHelper.InPublishTab)
-						{
-							return false;
-						}
-						_previewSrc = UpdateEpubControlContent();
-					}
-					catch (ApplicationException ex)
-					{
-						Bloom.Utils.MiscUtils.SuppressUnusedExceptionVarWarning(ex);
+					Bloom.Utils.MiscUtils.SuppressUnusedExceptionVarWarning(ex);
 
-						if (i >= 2)
-							throw;
-						_progress.MessageWithoutLocalizing("Something went wrong, trying again", ProgressKind.Error);
-						continue;
-					}
+					if (i >= 2)
+						throw;
+					_progress.MessageWithoutLocalizing("Something went wrong, trying again", ProgressKind.Error);
+					continue;
+				}
 					
-					break; // normal case, no exception
-				}
-
-				if (EpubMaker.AbortRequested)
-					return false; // the code that set the abort flag will request a new preview.
+				break; // normal case, no exception
 			}
 
-			finally
-			{
-				_stagingEpub = false;
-			}
+			if (EpubMaker.AbortRequested)
+				return false; // the code that set the abort flag will request a new preview.
+
 			_progress.Message("Done", "Done");
 			return true;
 		}
