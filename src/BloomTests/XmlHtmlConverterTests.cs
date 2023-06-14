@@ -257,6 +257,14 @@ namespace BloomTests
 		}
 
 		[Test]
+		public void GetXmlDomFromHtml_PreservesSpaceAtElementBoundaries()
+		{
+			const string html = "<!DOCTYPE html><html><head></head><body><div><p>This is a<strong> bold </strong>sentence with a<span style=\"color:red\"> red </span>word</p></div></body></html>";
+			var dom = XmlHtmlConverter.GetXmlDomFromHtml(html, false);
+			Assert.That(dom.InnerXml, Does.Contain("<p>This is a<strong> bold </strong>sentence with a<span style=\"color:red\"> red </span>word</p>"));
+		}
+
+		[Test]
 		public void GetXmlDomFromHtml_HasEmptyParagraphs_RetainsEmptyParagraphs()
 		{
 			var pattern = "<p></p><p></p><p>a</p><p></p><p>b</p>";
@@ -270,12 +278,23 @@ namespace BloomTests
 		[Test]
 		public void GetXmlDomFromHtml_HasEmptyTags_RemoveTags()
 		{
-			var html = "<!DOCTYPE html><html><head></head><body><div><u> </u></div></body></html>";
+			var html = "<!DOCTYPE html><html><head></head><body><div><u></u></div></body></html>";
 			var dom = XmlHtmlConverter.GetXmlDomFromHtml(html);
 			var xml = dom.DocumentElement.GetElementsByTagName("body")[0].InnerXml;
 			// The XmlDocument.PreserveWhitespace setting appears to insert newlines that we don't care about.
 			xml = xml.Replace(Environment.NewLine, "");
 			Assert.AreEqual("<div></div>", xml);
+		}
+
+		[Test]
+		public void GetXmlDomFromHtml_HasSpaceOnlyTags_KeepTags()
+		{
+			var html = "<!DOCTYPE html><html><head></head><body><div><u> </u></div></body></html>";
+			var dom = XmlHtmlConverter.GetXmlDomFromHtml(html);
+			var xml = dom.DocumentElement.GetElementsByTagName("body")[0].InnerXml;
+			// The XmlDocument.PreserveWhitespace setting appears to insert newlines that we don't care about.
+			xml = xml.Replace(Environment.NewLine, "");
+			Assert.AreEqual("<div><u> </u></div>", xml);
 		}
 
 		[Test]
@@ -297,7 +316,7 @@ namespace BloomTests
 			var xml = dom.DocumentElement.GetElementsByTagName("body")[0].InnerXml;
 			// The XmlDocument.PreserveWhitespace setting appears to insert newlines that we don't care about.
 			xml = xml.Replace(Environment.NewLine, "");
-			Assert.AreEqual("<div><u style=\"test\"></u></div>", xml);
+			Assert.AreEqual("<div><u style=\"test\"> </u></div>", xml);
 
 			html = "<!DOCTYPE html><html><head></head><body><div><u><i style=\"test\" /></u></div></body></html>";
 			dom = XmlHtmlConverter.GetXmlDomFromHtml(html);
