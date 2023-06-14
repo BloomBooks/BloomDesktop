@@ -58,7 +58,7 @@
         <note>ID: EditTab.Toolbox.TalkingBookTool.InsertSegmentMarkerTip</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.NeedCursorInRecordableThingDisabledTip" sil:dynamic="true">
-        <source xml:lang="en">First, put the cursor in a box has something to record.</source>
+        <source xml:lang="en">First, put the cursor in a box which has something to record.</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.NeedCursorInRecordableThingDisabledTip</note>
         <note>This is shown on a button that only makes sense if the cursor is in a box of text.</note>
       </trans-unit>
