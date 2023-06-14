@@ -7,7 +7,8 @@ import BloomButton from "../../react_components/bloomButton";
 import {
     post,
     useApiStringState,
-    useWatchBooleanEvent
+    useWatchBooleanEvent,
+    useWatchString
 } from "../../utils/bloomApi";
 import { isLinux } from "../../utils/isLinux";
 import { useL10n } from "../../react_components/l10nHooks";
@@ -18,6 +19,8 @@ import HtmlHelpLink from "../../react_components/htmlHelpLink";
 import { kMutedTextGray } from "../../bloomMaterialUITheme";
 import { kBloomWarning } from "../../utils/colorUtils";
 import HelpLink from "../../react_components/helpLink";
+import { useEffect } from "react";
+import { BloomTooltip } from "../../react_components/BloomToolTip";
 
 export type ReaderPublishMethods = "file" | "usb" | "wifi";
 
@@ -46,10 +49,22 @@ export const MethodChooser: React.FunctionComponent<{
         "publish/bloompub/method",
         "file"
     );
+
+    useEffect(() => {
+        // The effects of this check will be handled by the two useWatchX hooks below.
+        post("publish/doInitialLicenseCheck");
+    }, []);
+
     const isLicenseOK = useWatchBooleanEvent(
         true,
         "publish-bloompub",
         "publish/licenseOK"
+    );
+
+    const licenseProblemMessage = useWatchString(
+        "",
+        "publish-bloompub",
+        "publish/licenseMessage"
     );
 
     const methodImageFileName: string = methodNameToImageFileName[method];
@@ -118,11 +133,19 @@ export const MethodChooser: React.FunctionComponent<{
                             )
                         }}
                     />
-                    {getStartButton(
-                        method,
-                        isLicenseOK,
-                        props.onStartButtonClick
-                    )}
+                    <BloomTooltip
+                        key={"mc-tooltip"}
+                        tip={licenseProblemMessage}
+                        css={css`
+                            align-self: flex-end;
+                        `}
+                    >
+                        {getStartButton(
+                            method,
+                            isLicenseOK,
+                            props.onStartButtonClick
+                        )}
+                    </BloomTooltip>
                 </div>
                 <div
                     css={css`
@@ -162,8 +185,7 @@ function getStartButton(
     const onClick = () => {
         onStartButtonClick(method);
     };
-    const buttonCss =
-        "align-self: flex-end; min-width: 120px; margin-top: 20px;";
+    const buttonCss = "min-width: 120px; margin-top: 20px;";
     switch (method) {
         case "file":
             return (

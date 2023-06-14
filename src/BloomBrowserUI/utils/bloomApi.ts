@@ -281,7 +281,7 @@ export function useWatchString(
 ): string {
     const [val, setVal] = useState(defaultValue);
     useSubscribeToWebSocketForEvent(clientContext, eventId, data => {
-        setVal(data.message!);
+        setVal(data.message ? data.message : defaultValue);
     });
     // If we get re-rendered with a different defaultValue, update our result to that.
     useEffect(() => {

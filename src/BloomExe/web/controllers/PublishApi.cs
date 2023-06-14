@@ -36,8 +36,9 @@ namespace Bloom.web.controllers
 		private const string kWebsocketEventId_Preview = "bloomPubPreview";
 		private Book.Book _coverColorSourceBook; public const string StagingFolder = "PlaceForStagingBook";
 
-		// This constant must match the ID used for the useWatchString called by the React component MethodChooser.
+		// These constants must match the IDs used for the useWatchStrings called by the React component MethodChooser.
 		private const string kWebsocketState_LicenseOK = "publish/licenseOK";
+		private const string kWebsocketState_LicenseMessage = "publish/licenseMessage";
 
 		internal const string kWebSocketContext = "publish-bloompub"; // must match client
 
@@ -261,6 +262,7 @@ namespace Bloom.web.controllers
 				//	request.ReplyWithText(_languagesToPublish.Contains(langCode) ? "true" : "false");
 				//}
 			}, false);
+			apiHandler.RegisterEndpointHandler("publish/doInitialLicenseCheck", request => HandleInitialLicenseCheck(request), true);
 		}
 
 		private void HandleChooseSignLanguage(ApiRequest request)
@@ -399,6 +401,30 @@ namespace Bloom.web.controllers
 					request.Failed("Error while updating preview. Message: " + e.Message);
 					NonFatalProblem.Report(ModalIf.Alpha, PassiveIf.All, "Error while updating preview.", null, e, true);
 				}
+			}
+		}
+
+		private void HandleInitialLicenseCheck(ApiRequest request)
+		{
+			if (request.HttpMethod == HttpMethods.Post)
+			{
+				InitializeLanguagesInBook(request);
+				var settings = GetSettings();
+				var message = new LicenseChecker().CheckBook(request.CurrentBook, settings.LanguagesToInclude.ToArray());
+				if (message != null)
+				{
+					LicenseOK = false;
+					_webSocketServer.SendString(kWebSocketContext, kWebsocketState_LicenseOK, "false");
+					_webSocketServer.SendString(kWebSocketContext, kWebsocketState_LicenseMessage, message);
+					request.PostSucceeded();
+				} else
+				{
+					LicenseOK = true;
+					_webSocketServer.SendString(kWebSocketContext, kWebsocketState_LicenseOK, "true");
+					request.PostSucceeded();
+				}
+			} else {
+				request.Failed("Request should be a Post");
 			}
 		}
 
