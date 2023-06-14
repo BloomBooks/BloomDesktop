@@ -392,6 +392,15 @@ namespace Bloom.Book
 			var serialized = JsonConvert.SerializeObject(this);
 			return JsonConvert.DeserializeObject<EpubSettings>(serialized);
 		}
+
+		
+		// We do a comparison of settings to determine whether the Epub files need to be regenerated
+		public bool RequiresDifferentPreviewThan(EpubSettings other)
+		{
+			return other == null || HowToPublishImageDescriptions != other.HowToPublishImageDescriptions
+				|| RemoveFontSizes != other.RemoveFontSizes || Mode != other.Mode;
+		}
+
 	}
 
 	public class BloomLibrarySettings

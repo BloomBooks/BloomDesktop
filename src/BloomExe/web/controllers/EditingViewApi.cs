@@ -210,7 +210,9 @@ namespace Bloom.web.controllers
 					// it causes the whole program to immediately crash without opportunity for error reporting
 					Bloom.Utils.MiscUtils.SuppressUnusedExceptionVarWarning(e);
 
-					request.ReplyWithBoolean(false);
+					// Causes the final result to be false
+					// Don't just ReplyWithBoolean here, that could result in trying to send two replies, which will fail.
+					clipContent = "";
 				}
 			}, null);
 			

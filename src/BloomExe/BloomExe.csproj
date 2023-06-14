@@ -393,6 +393,7 @@
     <Compile Include="Book\SaveContext.cs" />
     <Compile Include="Book\WidgetHelper.cs" />
     <Compile Include="CLI\SendFontAnalyticsCommand.cs" />
+    <Compile Include="Collection\BloomPack\ReaderToolsBloomPackCollectionFileFilter.cs" />
     <Compile Include="Collection\BookCollectionHolder.cs" />
     <Compile Include="Collection\CollectionFileFilter.cs" />
     <Compile Include="Collection\CollectionLock.cs" />
