@@ -5,6 +5,7 @@ using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Xml;
+using SIL.Xml;
 
 namespace Bloom.Spreadsheet
 {
@@ -175,8 +176,7 @@ namespace Bloom.Spreadsheet
 				foreach (XmlNode child in node.ChildNodes)
 				{
 					MarkedUpText markedUpChild = ParseXmlRecursive(child);
-					XmlElement el = (XmlElement)node;
-					ApplyFormatting(node.Name, el.GetAttribute("style"), markedUpChild);
+					ApplyFormatting(node.Name, node.GetOptionalStringAttribute("style", ""), markedUpChild);
 					markedUpText._runList.AddRange(markedUpChild._runList);
 				}
 			}
@@ -237,7 +237,7 @@ namespace Bloom.Spreadsheet
 			{
 				// remove spaces from the style attribute
 				styleAttribute = styleAttribute.Replace(" ", "");
-				int colorFoundIndex = styleAttribute.IndexOf("color:");
+				int colorFoundIndex = styleAttribute.IndexOf("color:#");
 				if (colorFoundIndex > -1) {
 					// There is a color specified
 					int colorCodeStartIndex = colorFoundIndex + 6;
@@ -249,6 +249,15 @@ namespace Bloom.Spreadsheet
 					}
 					string colorString = styleAttribute.Substring(colorCodeStartIndex, colorCodeEndIndex - colorCodeStartIndex);
 					Color = ColorTranslator.FromHtml(colorString);
+				}
+				else if (styleAttribute.IndexOf("color:rgb(") > -1)
+				{
+					//extract r, g, b values
+					int startIndex = styleAttribute.IndexOf("color:rgb(") + 10;
+					int endIndex = styleAttribute.IndexOf(")", startIndex);
+					string rgbString = styleAttribute.Substring(startIndex, endIndex - startIndex);
+					string[] rgbValues = rgbString.Split(',');
+					Color = Color.FromArgb(int.Parse(rgbValues[0]), int.Parse(rgbValues[1]), int.Parse(rgbValues[2]));
 				}
 			}
 		}

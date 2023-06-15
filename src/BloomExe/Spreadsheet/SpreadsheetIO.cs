@@ -94,7 +94,6 @@ namespace Bloom.Spreadsheet
 								currentCell.IsRichText = true;
 								foreach (MarkedUpTextRun run in markedUpText.Runs)
 								{
-									// Maybe in the future we could skip over all whitespace runs, not just empty ones?
 									if (!run.Text.Equals(""))
 									{
 										ExcelRichText text = currentCell.RichText.Add(run.Text);
