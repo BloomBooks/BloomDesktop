@@ -1923,7 +1923,7 @@ export default class AudioRecording {
     // page as well as the toolbox. Another reason is that other checkboxes in the toolbox, like
     // Show playback order buttons, have their logic here, so it feels cleaner to keep their handling
     // together in one place.
-    public setShowingImageDescriptions(isOn: boolean) {
+    public async setShowingImageDescriptions(isOn: boolean) {
         this.showingImageDescriptions = isOn;
         const page = ToolBox.getPage();
         if (this.showingImageDescriptions) {
@@ -1940,11 +1940,11 @@ export default class AudioRecording {
                 if (changed) {
                     // Make sure audio recording is set up for the new image descriptions,
                     // even though for now they will be empty.
-                    this.setupAndUpdateMarkupAsync();
+                    await this.setupAndUpdateMarkupAsync();
                 }
                 // The main reason for this is that we may need to change the enabled state
                 // of buttons so the audio highlight can be moved into the image description.
-                this.changeStateAndSetExpectedAsync("record");
+                await this.changeStateAndSetExpectedAsync("record");
             }
         } else if (page) {
             // page should always be set, just making compiler happy
@@ -1955,12 +1955,12 @@ export default class AudioRecording {
         const current = this.getCurrentHighlight();
         if (page && current && !this.isVisible(current)) {
             this.removeAudioCurrent(page);
-            this.setCurrentAudioElementToFirstAudioElementAsync();
+            await this.setCurrentAudioElementToFirstAudioElementAsync();
         }
         // Whether or not we had to move the selection, some button states may need to change.
         // For example, perhaps there was previously nowhere for the 'next' button to take us,
         // but now we revealed a overlay which is set to be after the current element.
-        this.updateButtonStateAsync("record");
+        await this.updateButtonStateAsync("record");
         this.updateDisplay();
     }
     private showPlaybackOrderUi(docBody: HTMLElement) {
@@ -2490,7 +2490,7 @@ export default class AudioRecording {
             this.ensureHighlight(20);
         }
 
-        this.setShowingImageDescriptions(this.showingImageDescriptions);
+        await this.setShowingImageDescriptions(this.showingImageDescriptions);
 
         this.updateDisplay();
     }
