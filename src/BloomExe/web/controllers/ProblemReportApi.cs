@@ -7,6 +7,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net.Mail;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Windows.Forms;
@@ -688,16 +689,19 @@ namespace Bloom.web.controllers
 							else
 							{
 								var bounds = controlForScreenshotting.Bounds;
-								var screenshot = new Bitmap(bounds.Width, bounds.Height);
+								int scalingFactorPercent = GetScalingFactor(controlForScreenshotting); // scale the screenshot if the display is scaled
+								// The origin point is always 0,0, so we don't need to worry about scaling it.
+								var scaledBounds = new Rectangle(bounds.X, bounds.Y, (int)(bounds.Width * scalingFactorPercent / 100), (int)(bounds.Height * scalingFactorPercent / 100));
+								var screenshot = new Bitmap(scaledBounds.Width, scaledBounds.Height);
 								using (var g = Graphics.FromImage(screenshot))
 								{
 									if (controlForScreenshotting.Parent == null)
-										g.CopyFromScreen(bounds.Left, bounds.Top, 0, 0,
-											bounds.Size); // bounds already in screen coords
+										g.CopyFromScreen(scaledBounds.Left, scaledBounds.Top, 0, 0,
+											scaledBounds.Size); // bounds already in screen coords
 									else
 										g.CopyFromScreen(
-											controlForScreenshotting.PointToScreen(new Point(bounds.Left, bounds.Top)),
-											Point.Empty, bounds.Size);
+											controlForScreenshotting.PointToScreen(new System.Drawing.Point(scaledBounds.Left, scaledBounds.Top)),
+											System.Drawing.Point.Empty, scaledBounds.Size);
 								}
 
 								_reportInfo.ScreenshotTempFile = TempFile.WithFilename(ScreenshotName);
@@ -728,6 +732,35 @@ namespace Bloom.web.controllers
 				Debug.Fail("This error would be swallowed in release version: " + error.Message);
 				SIL.Reporting.Logger.WriteEvent("**** "+error.Message);
 			}
+		}
+
+		[DllImport("Shcore.dll")]
+		private static extern int GetScaleFactorForMonitor(IntPtr hmonitor, out int pScale);
+
+		[DllImport("user32.dll")]
+		private static extern IntPtr MonitorFromWindow(IntPtr hwnd, uint dwFlags);
+
+		public const int MONITOR_DEFAULTTONEAREST = 0x00000002;
+		[DllImport("Shcore.dll")]
+		public static extern int GetDpiForMonitor(IntPtr hmonitor, Monitor_DPI_Type dpiType, out uint dpiX, out uint dpiY);
+
+		public enum Monitor_DPI_Type
+		{
+			MDT_Effective_DPI = 0,
+			MDT_Angular_DPI = 1,
+			MDT_Raw_DPI = 2,
+			MDT_Default = MDT_Effective_DPI
+		}
+
+		private static int GetScalingFactor(Control controlForScreenshotting)
+		{
+			IntPtr hwnd = controlForScreenshotting.Handle;
+			// This MONITOR_DEFAULTTONEAREST flag says to use the monitor that the window is on, not the primary monitor.
+			// It actually works quite well, so that it uses the monitor that Bloom is on, even if it's not the primary monitor.
+			IntPtr hmonitor = MonitorFromWindow(hwnd, MONITOR_DEFAULTTONEAREST);
+			GetDpiForMonitor(hmonitor, Monitor_DPI_Type.MDT_Effective_DPI, out uint dpiX, out uint dpiY);
+			GetScaleFactorForMonitor(hmonitor, out int percentScaleFactor);
+			return percentScaleFactor;
 		}
 
 		internal static void LogProblem(Exception exception, string detailedMessage, string levelOfProblem)
