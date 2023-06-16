@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
@@ -185,6 +186,17 @@ namespace Bloom
 				return true;
 		}
 
+		private static readonly HashSet<Type> kExceptionsToRetryWhenSavingImage = new HashSet<Type>
+		{
+			Type.GetType("System.IO.IOException"),
+			Type.GetType("System.Runtime.InteropServices.ExternalException"),
+
+			// PalasoImage.SaveImageSafely can also throw ApplicationExceptions
+			// (See https://github.com/sillsdev/libpalaso/blob/f2482a5b3c6c75b50ec5672b1eb731b1a040a05a/SIL.Windows.Forms/ImageToolbox/PalasoImage.cs#L155)
+			// This very well may be temporary (if it's a different Bloom thread that has it locked) and retrying it would likely succeed.
+			Type.GetType("System.ApplicationException"),
+		};
+
 		/// <summary>
 		/// Creates a thumbnail of just the cover image (no title, language name, etc.)
 		/// </summary>
@@ -227,7 +239,7 @@ namespace Bloom
 						ImageUtils.SaveAsTopQualityJpeg(coverImage.Image, destFilePath);
 						break;
 					default:
-						PalasoImage.SaveImageRobustly(coverImage, destFilePath);
+						coverImage.SaveImageRobustly(destFilePath, kExceptionsToRetryWhenSavingImage);
 						break;
 					}
 					if (callback != null)
