@@ -235,13 +235,13 @@ namespace Bloom
 						ImageUtils.ResizeImageIfNecessary(new Size(size, size), coverImage.Image, shouldAddDashedBorder);
 					switch(Path.GetExtension(destFilePath).ToLowerInvariant())
 					{
-					case ".jpg":
-					case ".jpeg":
-						ImageUtils.SaveAsTopQualityJpeg(coverImage.Image, destFilePath);
-						break;
-					default:
-						coverImage.SaveImageRobustly(destFilePath, kExceptionsToRetryWhenSavingImage);
-						break;
+						case ".jpg":
+						case ".jpeg":
+							ImageUtils.SaveAsTopQualityJpeg(coverImage.Image, destFilePath);
+							break;
+						default:
+							coverImage.SaveImageRobustly(destFilePath, kExceptionsToRetryWhenSavingImage);
+							break;
 					}
 					if (callback != null)
 						callback(coverImage.Image.Clone() as Image);	// don't leave GC to chance
