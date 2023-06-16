@@ -219,12 +219,10 @@ export const BookButton: React.FunctionComponent<{
                 icon: <DeleteIcon></DeleteIcon>,
                 requiresSavePermission: true, // for consistency, but not used since shouldShow is defined
                 addEllipsis: true,
-                // Allowed for the downloaded books collection and the editable collection (provided the book is checked out, if applicable)
+                // Allowed for the downloaded books collection and the editable collection
                 shouldShow: () =>
                     props.collection.containsDownloadedBooks ||
-                    (props.collection.isEditableCollection &&
-                        (props.manager.getSelectedBookInfo()?.saveable ??
-                            false))
+                    props.collection.isEditableCollection
             },
             { label: "-" },
             {
