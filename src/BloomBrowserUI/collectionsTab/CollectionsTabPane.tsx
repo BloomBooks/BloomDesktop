@@ -495,23 +495,21 @@ export const makeMenuItems = (
                     undefined
                 );
             }
-            let disabled = false;
-            if (spec.shouldShow) {
-                if (!spec.shouldShow()) {
-                    return undefined;
-                }
-            } else {
-                // Default logic for whether to show or disable a command
-                if (isEditableCollection) {
-                    // Disable commands that require permission to change the book, if we don't have it.
-                    if (spec.requiresSavePermission && !isBookSavable) {
-                        disabled = true;
-                    }
-                } else {
-                    // outside that collection, commands can only be shown if they have a shouldShow function.
-                    return undefined;
-                }
+            // Default logic for whether to show a command at all
+            // Outside the editable collection, we only show commands that have a shouldShow function.
+            if (
+                (spec.shouldShow && !spec.shouldShow()) ||
+                (!spec.shouldShow && !isEditableCollection)
+            ) {
+                return undefined;
             }
+            // If we have determined that a command should be shown, this logic determines whether it should be
+            // disabled or not.
+            // We disable commands that require permission to change the book, if we don't have such permission.
+            const disabled =
+                isEditableCollection && spec.requiresSavePermission
+                    ? spec.requiresSavePermission && !isBookSavable
+                    : false;
 
             if (spec.checkbox) {
                 return (
