@@ -549,16 +549,22 @@ function doWhenCkEditorReadyCore(arg: {
             }
         }
         if (!gotOne) {
-            // no instance at all...if one is later created, get us invoked.
-            arg.removers.push(
-                (<any>ToolBox.getPageFrame().contentWindow).CKEDITOR.on(
-                    "instanceReady",
-                    e => {
-                        doWhenCkEditorReadyCore(arg);
-                    }
-                )
-            );
-            return;
+            const page = ToolBox.getPage();
+            if (!page || page.querySelector("div.bloom-editable")) {
+                // If the page is not yet ready, or if any editable divs exist, call us again once the
+                // page gets set up with ckeditor. I'm pretty sure that page will always be truthy
+                // at this point, but I'm being paranoid about the possibility that I might be wrong.
+                // See BL-12381. (If page is not truthy here, the bug has no fix as far as I can tell.)
+                arg.removers.push(
+                    (<any>ToolBox.getPageFrame().contentWindow).CKEDITOR.on(
+                        "instanceReady",
+                        e => {
+                            doWhenCkEditorReadyCore(arg);
+                        }
+                    )
+                );
+                return;
+            }
         }
     }
     // OK, all CKEditors are ready (or page doesn't use it), we can finally do the action.
