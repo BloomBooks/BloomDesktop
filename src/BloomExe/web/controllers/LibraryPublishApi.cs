@@ -301,7 +301,7 @@ namespace Bloom.web.controllers
 			dynamic collisionDialogInfo;
 			if (Model.BookIsAlreadyOnServer)
 			{
-				collisionDialogInfo = Model.GetUploadCollisionDialogProps(Model.TextLanguagesToUpload, ModelIndicatesSignLanguageChecked);
+				collisionDialogInfo = Model.GetUploadCollisionDialogProps(Model.TextLanguagesToAdvertiseOnBloomLibrary, ModelIndicatesSignLanguageChecked);
 			}
 			else
 			{

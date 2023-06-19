@@ -248,7 +248,7 @@ namespace Bloom.Publish.BloomLibrary
 
 		public static void InitializeLanguages(BookInstance book)
 		{
-			var allLanguages = book.AllPublishableLanguages();
+			var allLanguages = book.AllPublishableLanguages(includeLangsOccurringOnlyInXmatter: true);
 
 			var bookInfo = book.BookInfo;
 			Debug.Assert(bookInfo?.MetaData != null, "Precondition: MetaData must not be null");
@@ -293,9 +293,7 @@ namespace Bloom.Publish.BloomLibrary
 			}
 			// Get rid of settings for languages that the book doesn't have, so we don't publish a claim
 			// that it has that data. This is rarely needed, currently only if the book was previously
-			// prepared for publication with data in a language and then all of it was deleted. It can also
-			// happen because, briefly in the alpha stage of Bloom 5.5, we had an option to include
-			// publish settings for languages that only occur in xmatter.
+			// prepared for publication with data in a language and then all of it was deleted.
 			foreach (var lang in book.BookInfo.PublishSettings.BloomLibrary.TextLangs.Keys.ToArray())
 			{
 				if (!allLanguages.ContainsKey(lang))
@@ -313,7 +311,7 @@ namespace Bloom.Publish.BloomLibrary
 			// Then there is NO item in the set to be switched on or off, so effectively, it remains off.
 			// (The old IncludeAudio was true if at least one is Include or IncludeByDefault).
 			// It is therefore necessary, minimally, to make sure the set has at least one language
-			// if allLangCodes has any. But properly, it is intended to  have a value for every language in
+			// if allLangCodes has any. But properly, it is intended to have a value for every language in
 			// allLangCodes...just in the old version they would all be the same.
 			// It seems more future-proof to add any languages that are missing, while not changing the
 			// setting for any we already have. But then, what setting should we use for any language
@@ -395,6 +393,8 @@ namespace Bloom.Publish.BloomLibrary
 		public IEnumerable<string> TextLanguagesToUpload => Book.BookInfo.PublishSettings.BloomLibrary.TextLangs
 			.Where(l => l.Value.IsIncluded())
 			.Select(l => l.Key);
+
+		public IEnumerable<string> TextLanguagesToAdvertiseOnBloomLibrary => Book.GetTextLanguagesToAdvertiseOnBloomLibrary(TextLanguagesToUpload);
 
 		public void AddHistoryRecordForLibraryUpload(string url)
 		{
@@ -503,11 +503,11 @@ namespace Bloom.Publish.BloomLibrary
 			return null;
 		}
 
-		public dynamic GetUploadCollisionDialogProps(IEnumerable<string> languagesToUpload, bool signLanguageFeatureSelected)
+		public dynamic GetUploadCollisionDialogProps(IEnumerable<string> languagesToAdvertise, bool signLanguageFeatureSelected)
 		{
 			var newThumbPath = ChooseBestUploadingThumbnailPath(Book).ToLocalhost();
 			var newTitle = Book.TitleBestForUserDisplay;
-			var newLanguages = ConvertLanguageCodesToNames(languagesToUpload, Book.BookData);
+			var newLanguages = ConvertLanguageCodesToNames(languagesToAdvertise, Book.BookData);
 			if (signLanguageFeatureSelected && !string.IsNullOrEmpty(CurrentSignLanguageName))
 			{
 				var newLangs = newLanguages.ToList();
@@ -651,9 +651,9 @@ namespace Bloom.Publish.BloomLibrary
 			return url + "?version=" + lastUpdate;
 		}
 
-		private IEnumerable<string> ConvertLanguageCodesToNames(IEnumerable<string> languageCodesToUpload, BookData bookData)
+		private IEnumerable<string> ConvertLanguageCodesToNames(IEnumerable<string> langCodes, BookData bookData)
 		{
-			foreach (var langCode in languageCodesToUpload)
+			foreach (var langCode in langCodes)
 			{
 				yield return bookData.GetDisplayNameForLanguage(langCode);
 			}
