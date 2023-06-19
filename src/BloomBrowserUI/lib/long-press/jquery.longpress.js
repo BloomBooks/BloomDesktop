@@ -294,7 +294,8 @@ require("./jquery.mousewheel.js");
         }
     }
     const charactersRepresentedByAlternativeText = {
-        [narrowNoBreakSpace]: "non-breaking space / espace insécable"
+        [narrowNoBreakSpace]:
+            "narrow non-breaking space / espace fine insécable"
     };
     function createOneButton(replacementText, shortcutText) {
         let cssClass = "long-press-letter";
