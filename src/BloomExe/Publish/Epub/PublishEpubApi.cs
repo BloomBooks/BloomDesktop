@@ -121,30 +121,37 @@ namespace Bloom.Publish.Epub
 
 		private void HandleEpubSave(ApiRequest request)
 		{
-			request.PostSucceeded();
-			string destPath = null;
-			if (ControlForInvoke != null && ControlForInvoke.InvokeRequired)
-			{
-				ControlForInvoke.Invoke((Action)(() => destPath = getSaveAsPath(request)));
-			}
-			else
-			{
-				destPath = getSaveAsPath(request);
-			}
-
-			if (string.IsNullOrEmpty(destPath))  {
-				// No output path means the user cancelled the file chooser dialog.
-				return;
-			}
-		
 			// Will only update the staged ePUB files if needed
 			if (RefreshPreview(request.CurrentBook.BookInfo.PublishSettings.Epub, forceUpdate:false))
 			{
+				request.PostSucceeded();
+				if (request.CurrentBook?.ActiveLanguages != null)
+				{
+					var message = new LicenseChecker().CheckBook(request.CurrentBook, request.CurrentBook.ActiveLanguages.ToArray());
+					_webSocketServer.SendString(kWebsocketContext, kWebsocketState_LicenseOK, (message == null) ? "true" : "false");
+					if (message != null)
+						return;
+				}
+				string destPath = null;
+				if (ControlForInvoke != null && ControlForInvoke.InvokeRequired)
+				{
+					ControlForInvoke.Invoke((Action)(() => destPath = getSaveAsPath(request)));
+				}
+				else
+				{
+					destPath = getSaveAsPath(request);
+				}
+				if (string.IsNullOrEmpty(destPath))
+				{
+					// No output path means the user cancelled the file chooser dialog.
+					return;
+				}
 				// The necessary ePUB files are present
 				SaveAsEpub(destPath);
 			}
 			else
 			{
+				request.PostSucceeded();
 				// Preview generation failed; the ePUB files might not all be there, we should not save.
 				// Notify the user gently that updating the ePUB preview failed.
 				NonFatalProblem.Report(ModalIf.None, PassiveIf.All, "Something went wrong while saving the ePUB.");
