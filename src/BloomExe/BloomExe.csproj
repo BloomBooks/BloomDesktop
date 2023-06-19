@@ -800,6 +800,7 @@
     <Compile Include="web\UrlLookup.cs" />
     <Compile Include="web\WebSocketProgress.cs" />
     <Compile Include="web\YouTrackIssueSubmission.cs" />
+    <Compile Include="WindowsMonitorScaling.cs" />
     <Compile Include="Wizard\WinForms\WizardControl.cs">
       <SubType>Component</SubType>
     </Compile>

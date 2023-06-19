@@ -158,7 +158,7 @@ export const TalkingBookAdvancedSection: React.FunctionComponent<{
                                     props.isXmatter || !props.hasRecordableDivs
                                 }
                                 value={RecordingMode.TextBox}
-                                label="By Whole Textbox"
+                                label="By Whole Text Box"
                                 l10nKey="EditTab.Toolbox.TalkingBookTool.RecordingModeTextBox"
                             />
                         </BloomTooltip>

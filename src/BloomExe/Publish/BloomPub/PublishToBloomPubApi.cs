@@ -103,8 +103,13 @@ namespace Bloom.Publish.BloomPub
 				// In 5.6, we should consider removing this UpdatePreviewIfNeeded line as it does not
 				// currently appear to be accomplishing anything. Also in "wifi/start" and 
 				// "file/save" endpoints below.
-				_publishApi.UpdatePreviewIfNeeded(request);
-				_usbPublisher.Connect(request.CurrentBook, _publishApi._thumbnailBackgroundColor, _publishApi.GetSettings());
+				if (_publishApi.UpdatePreviewIfNeeded(request))
+				{ 
+					_usbPublisher.Connect(request.CurrentBook, _publishApi._thumbnailBackgroundColor, _publishApi.GetSettings());
+				} else
+				{
+					SetState("stopped");
+				}
 #endif
 				request.PostSucceeded();
 			}, true);
@@ -120,8 +125,13 @@ namespace Bloom.Publish.BloomPub
 			apiHandler.RegisterEndpointHandler(kApiUrlPart + "wifi/start", request =>
 			{
 				SetState("ServingOnWifi");
-				_publishApi.UpdatePreviewIfNeeded(request);
-				_wifiPublisher.Start(request.CurrentBook, request.CurrentCollectionSettings, _publishApi._thumbnailBackgroundColor, _publishApi.GetSettings());
+				if (_publishApi.UpdatePreviewIfNeeded(request))
+				{
+					_wifiPublisher.Start(request.CurrentBook, request.CurrentCollectionSettings, _publishApi._thumbnailBackgroundColor, _publishApi.GetSettings());
+				} else
+				{
+					SetState("stopped");
+				}
 				
 				request.PostSucceeded();
 			}, true);
@@ -136,8 +146,10 @@ namespace Bloom.Publish.BloomPub
 			apiHandler.RegisterEndpointHandler(kApiUrlPart + "file/save", request =>
 			{
 				SetState("SavingFile");
-				_publishApi.UpdatePreviewIfNeeded(request);
-				FilePublisher.Save(request.CurrentBook, _bookServer, _publishApi._thumbnailBackgroundColor, _progress, _publishApi.GetSettings());
+				if (_publishApi.UpdatePreviewIfNeeded(request))
+				{
+					FilePublisher.Save(request.CurrentBook, _bookServer, _publishApi._thumbnailBackgroundColor, _progress, _publishApi.GetSettings());
+				}
 				SetState("stopped");
 				request.PostSucceeded();
 			}, true);
