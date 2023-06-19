@@ -191,19 +191,42 @@ export function addBloomSynphonyExtensions() {
         // break the text into paragraphs
         var paragraphs = XRegExp.match(textHTML, regex);
 
+        const zwsp = "\u200B"; // zero-width-space"
+
         // We require at least one space between sentences, unless things have been configured so that
         // space IS a sentence-ending punctuation. In that case, zero or more.
-
-        const intersentenceSpace =
-            "([\\s\\p{PEP}" +
+        // zero-width space does not COUNT as a space (if it's the only thing between period and next upper-case letter),
+        // but they may be interspersed.
+        // Review: Do selfClosingTagReplacement and emptyTagReplacement belong here or in
+        // sentenceSpacePadChars? We have specific unit tests that fail if they are put there:
+        // one asserting that an image counts as white space between sentences, and one that
+        // an empty span counts. The former strikes me as unlikely (an image is probably not
+        // white space) and the latter very strange: an empty span typically isn't visible at
+        // all. I'm leaving it this way since we're close to shipping and there may be a good
+        // reason I don't know, and a change is not needed to fix the problem.
+        const sentenceSpaceChars =
+            "\\s\\p{PEP}" +
             selfClosingTagReplacement +
             emptyTagReplacement +
-            nbspReplacement +
-            "]" +
+            nbspReplacement;
+
+        // Characters that may be considered part of the white space between sentences, but
+        // do not themselves constitute a gap that defines a sentence.
+        const sentenceSpacePadChars = zwsp;
+
+        // any number (including zero) of characters we consider white, including the ones that
+        // may be included in whitespace but don't COUNT as sentence-breaking white space
+        const whiteSpacePattern =
+            "[" + sentenceSpaceChars + sentenceSpacePadChars + "]*";
+
+        const intersentenceSpace =
+            "(" +
+            whiteSpacePattern +
             (LibSynphony.prototype.extraSentencePunct &&
             LibSynphony.prototype.extraSentencePunct.indexOf("\\u0020") >= 0
-                ? "*"
-                : "+") +
+                ? "" // nothing more needed
+                : // One definite (not zwsp etc.) white character, possibly followed by arbitrarily more space
+                  "[" + sentenceSpaceChars + "]" + whiteSpacePattern) +
             ")";
         // Note that categories Pf and Pi can both act as either Ps or Pe
         // (See https://issues.bloomlibrary.org/youtrack/issue/BL-5063.)
