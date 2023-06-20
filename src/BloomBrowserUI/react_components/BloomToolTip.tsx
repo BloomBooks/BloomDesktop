@@ -21,6 +21,7 @@ export interface IBloomToolTipProps {
     // of the tooltip to its parent, so we need a unique ID. The supplied ID will be applied to the tooltip.
     id?: string;
     children: React.ReactNode;
+    enableClickInTooltip?: boolean;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -56,7 +57,7 @@ export const BloomTooltip: React.FunctionComponent<IBloomToolTipProps> = props =
             placement={props.placement || "left"}
             arrow
             // make the tooltip disappear when the mouse is over the tooltip itself
-            disableInteractive={true}
+            disableInteractive={!props.enableClickInTooltip}
             enterDelay={500}
             enterNextDelay={500}
             className={props.className} // carry in the css props from the caller
