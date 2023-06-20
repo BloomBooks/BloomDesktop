@@ -296,7 +296,7 @@ namespace Bloom.ErrorReporter
 						// Note: HtmlErrorReporter supports up to 3 buttons (OK, Report, and [Secondary action]), but the fallback reporter only supports a max of two.
 						// Well, just going to have to drop the secondary action.
 
-						ShowFallbackProblemDialog(severity, exception, messageText, null, false);
+						ShowFallbackProblemDialog(severity, exception, messageText, null, false, reportButtonLabel, onReportButtonClicked);
 						return;
 					}
 
@@ -379,7 +379,8 @@ namespace Bloom.ErrorReporter
 			ErrorReport.ReportNonFatalExceptionWithMessage(error, message);
 		}
 
-		public static void ShowFallbackProblemDialog(string levelOfProblem, Exception exception, string detailedMessage, string shortUserLevelMessage, bool isShortMessagePreEncoded = false)
+		public static void ShowFallbackProblemDialog(string levelOfProblem, Exception exception, string detailedMessage, string shortUserLevelMessage,
+			bool isShortMessagePreEncoded = false, string reportButtonLabel = null, Action<string, Exception> onReportButtonClicked = null)
 		{
 			var fallbackReporter = new WinFormsErrorReporter();
 
@@ -410,7 +411,16 @@ namespace Bloom.ErrorReporter
 			}
 			else // Presumably, levelOfProblem = "notify" now
 			{
-				fallbackReporter.NotifyUserOfProblem(new ShowAlwaysPolicy(), exception, message);
+				if (!String.IsNullOrEmpty(message) && !String.IsNullOrEmpty(reportButtonLabel) && onReportButtonClicked != null)
+				{
+					var dialogResult = fallbackReporter.NotifyUserOfProblem(new ShowAlwaysPolicy(), reportButtonLabel, ErrorResult.Yes, message);
+					if (dialogResult == ErrorResult.Yes)
+						onReportButtonClicked(message, exception);
+				}
+				else
+				{
+					fallbackReporter.NotifyUserOfProblem(new ShowAlwaysPolicy(), exception, message);
+				}
 			}
 		}
 	}

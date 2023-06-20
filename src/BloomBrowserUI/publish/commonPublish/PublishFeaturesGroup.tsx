@@ -238,6 +238,7 @@ export const PublishFeaturesGroup: React.FunctionComponent<{
                     key={"sl-tooltip"}
                     id={"sl-tooltip"}
                     tip={slTooltip}
+                    enableClickInTooltip={true}
                 >
                     <ApiCheckbox
                         // Changing the key each time signLanguageEnabled changes ensures that the checkbox rerenders with the latest value from the server.
