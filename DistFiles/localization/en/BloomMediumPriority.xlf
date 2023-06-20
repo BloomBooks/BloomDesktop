@@ -54,11 +54,11 @@
         <note>Shown if you open TalkingBookTool and then open the 'Advanced' subsection</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.InsertSegmentMarkerTip" sil:dynamic="true">
-        <source xml:lang="en">Press this to insert a "|" character into the text at the current cursor position. This character tells Bloom to introduce a new segment for the purpose of highlighting the text during audio playback. You can also just type the "|" character using your keyboard.</source>
+        <source xml:lang="en">Click this to insert a "|" character into the text at the current cursor position. This character tells Bloom to introduce a new segment for the purpose of highlighting the text during audio playback. You can also just type the "|" character using your keyboard.</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.InsertSegmentMarkerTip</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.NeedCursorInRecordableThingDisabledTip" sil:dynamic="true">
-        <source xml:lang="en">First, put the cursor in a box has something to record.</source>
+        <source xml:lang="en">First, put the cursor in a box which has something to record.</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.NeedCursorInRecordableThingDisabledTip</note>
         <note>This is shown on a button that only makes sense if the cursor is in a box of text.</note>
       </trans-unit>
@@ -104,7 +104,7 @@
         <note>__</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.RecordingModeTextBox" sil:dynamic="true">
-        <source xml:lang="en">By Whole Textbox</source>
+        <source xml:lang="en">By Whole Text Box</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.RecordingModeTextBox</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.ShowPlaybackOrder" sil:dynamic="true">

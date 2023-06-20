@@ -144,6 +144,12 @@ namespace BloomTests.Book
 		}
 
 		[Test]
+		public void Filter_ForInteractive_PassesVersionDotTxt()
+		{
+			Assert.That(_filterForInteractive.FilterRelative("version.txt"), Is.True);
+		}
+
+		[Test]
 		public void Filter_PassesImagesInRootFolder()
 		{
 			Assert.That(_normalFilter.FilterRelative("green elephants.png"), Is.True);

@@ -61,9 +61,11 @@ namespace Bloom.Book
 			var filter = new CollectionFileFilter();
 			if (forReaderTools)
 			{
-				foreach (var bookFolder in Directory.GetDirectories(directoryToCompress))
+				filter = new ReaderToolsBloomPackCollectionFileFilter();
+
+				foreach (var folderPath in Directory.GetDirectories(directoryToCompress))
 				{
-					CollectReaderTemplateBookOverrides(bookFolder, overrides);
+					CollectReaderTemplateBookOverrides(folderPath, overrides);
 				}
 
 				foreach (var collectionFile in Directory.GetFiles(directoryToCompress, "*.bloomcollection"))
@@ -73,9 +75,9 @@ namespace Bloom.Book
 				}
 			}
 
-			foreach (var bookFolder in Directory.GetDirectories(directoryToCompress))
+			foreach (var bookFolderPath in Directory.GetDirectories(directoryToCompress))
 			{
-				filter.AddBookFilter(CollectionModel.MakeBloomPackFilter(bookFolder));
+				filter.AddBookFilter(CollectionModel.MakeBloomPackBookFileFilter(bookFolderPath));
 			}
 
 			CompressDirectory(outputPath, directoryToCompress, filter, dirNamePrefix, overrides);
@@ -110,6 +112,8 @@ namespace Bloom.Book
 		private static void CollectReaderTemplateBookOverrides(string bookFolderPath, Dictionary<string, byte[]> overrides)
 		{
 			var htmlPath = BookStorage.FindBookHtmlInFolder(bookFolderPath);
+			if (string.IsNullOrEmpty(htmlPath))
+				return;
 			overrides[htmlPath] = Encoding.UTF8.GetBytes(GetBookReplacedWithTemplate(htmlPath));
 			var metaPath = Path.Combine(bookFolderPath, "meta.json");
 			overrides[metaPath] = Encoding.UTF8.GetBytes(GetMetaJsonModfiedForTemplate(metaPath));

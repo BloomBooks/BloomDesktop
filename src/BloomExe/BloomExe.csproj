@@ -393,6 +393,7 @@
     <Compile Include="Book\SaveContext.cs" />
     <Compile Include="Book\WidgetHelper.cs" />
     <Compile Include="CLI\SendFontAnalyticsCommand.cs" />
+    <Compile Include="Collection\BloomPack\ReaderToolsBloomPackCollectionFileFilter.cs" />
     <Compile Include="Collection\BookCollectionHolder.cs" />
     <Compile Include="Collection\CollectionFileFilter.cs" />
     <Compile Include="Collection\CollectionLock.cs" />
@@ -805,6 +806,7 @@
     <Compile Include="web\UrlLookup.cs" />
     <Compile Include="web\WebSocketProgress.cs" />
     <Compile Include="web\YouTrackIssueSubmission.cs" />
+    <Compile Include="WindowsMonitorScaling.cs" />
     <Compile Include="Wizard\WinForms\WizardControl.cs">
       <SubType>Component</SubType>
     </Compile>

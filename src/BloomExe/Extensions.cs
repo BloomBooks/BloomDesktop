@@ -5,6 +5,7 @@ using System.Text;
 using System.Windows.Forms;
 using Bloom.Api;
 using Bloom.Utils;
+using SIL.Code;
 
 namespace Bloom
 {
@@ -196,6 +197,29 @@ namespace Bloom
 				result.Add(item);
 			}
 			return result;
+		}
+
+		/// <summary>
+		/// A re-implementation of PalasoImage.SaveImageRobustly, but with configurable parameters.
+		/// </summary>
+		/// <remarks>This is here because it's a lower risk way to introduce this change.
+		/// Longer-term, it'd make more sense to modify PalasoImage.SaveImageRobustly to provide this extra capability instead
+		/// </remarks>
+		public static void SaveImageRobustly(this SIL.Windows.Forms.ImageToolbox.PalasoImage image, string fileName, HashSet<Type> exceptionTypesToRetry, int maxRetryAttempts=RetryUtility.kDefaultMaxRetryAttempts, int retryDelay = RetryUtility.kDefaultRetryDelay)
+		{
+			if (exceptionTypesToRetry == null)
+			{
+				exceptionTypesToRetry = new HashSet<Type>
+				{
+					Type.GetType("System.IO.IOException"),
+					Type.GetType("System.Runtime.InteropServices.ExternalException")
+				};
+			}
+
+			RetryUtility.Retry(() => image.Save(fileName),
+				maxRetryAttempts,
+				retryDelay,
+				exceptionTypesToRetry);
 		}
 	}
 }

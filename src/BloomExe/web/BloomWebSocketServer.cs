@@ -273,7 +273,7 @@ namespace Bloom.Api
 			var connectionInfoDetail = socket?.ConnectionInfo == null ? "socket.ConnectionInfo is null" : subProtocolDetail;
 			var socketDetail = socket == null ? "web socket is null; " : $"web socket is not available, {connectionInfoDetail}; ";
 			NonFatalProblem.Report(ModalIf.Alpha, PassiveIf.Alpha, "web socket is not available when trying to send",
-				$"{socketDetail} bundle clientContext: {eventObject.clientContext}, eventId: {eventObject.eventId}, eventBundle: {eventBundle}",
+				$"{socketDetail} bundle clientContext: {eventObject.clientContext}, eventId: {eventObject.id}, eventBundle: {eventBundle}",
 				skipSentryReport: true);
 		}
 
