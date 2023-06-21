@@ -7,7 +7,7 @@ import axios from "axios";
 import { get, postString, wrapAxios } from "../../utils/bloomApi";
 import theOneLocalizationManager from "../../lib/localizationManager/localizationManager";
 import { hookupLinkHandler } from "../../utils/linkHandler";
-import { ckeditableSelector } from "../js/bloomEditing";
+import { ckeditableSelector } from "../../utils/shared";
 
 export const isLongPressEvaluating: string = "isLongPressEvaluating";
 
