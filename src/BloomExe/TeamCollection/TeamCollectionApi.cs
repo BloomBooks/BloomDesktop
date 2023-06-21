@@ -393,8 +393,8 @@ namespace Bloom.TeamCollection
 				{
 					// Keep this in sync with IBookTeamCollectionStatus defined in TeamCollectionApi.tsx
 					who = whoHasBookLocked,
-					whoFirstName = _tcManager.CurrentCollection?.WhoHasBookLockedFirstName(bookFolderName),
-					whoSurname = _tcManager.CurrentCollection?.WhoHasBookLockedSurname(bookFolderName),
+					whoFirstName = _tcManager.CurrentCollectionEvenIfDisconnected?.WhoHasBookLockedFirstName(bookFolderName),
+					whoSurname = _tcManager.CurrentCollectionEvenIfDisconnected?.WhoHasBookLockedSurname(bookFolderName),
 					when = whenLocked.ToLocalTime().ToShortDateString(),
 					where = _tcManager.CurrentCollectionEvenIfDisconnected?.WhatComputerHasBookLocked(bookFolderName),
 					currentUser = CurrentUser,
