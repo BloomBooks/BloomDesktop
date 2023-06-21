@@ -214,7 +214,7 @@
       </trans-unit>
       <trans-unit id="BookEditor.CharacterMap.Instructions" sil:dynamic="true" approved="yes">
         <source xml:lang="en">To select, use your mouse wheel or point at what you want, or press the key shown in purple. Finally, release the key that you pressed to show this list.</source>
-        <target xml:lang="es-ES" state="final">Para seleccionar, utilice la rueda del ratón, apunte a lo que quiere, o apriete la tecla mostrada en color púrpura. 
+        <target xml:lang="es-ES" state="final">Para seleccionar, utilice la rueda del ratón, apunte a lo que quiere, o apriete la tecla mostrada en color púrpura.
 Luego suelte la tecla que apretó para mostrar esta lista.</target>
         <note>ID: BookEditor.CharacterMap.Instructions</note>
       </trans-unit>
@@ -3127,30 +3127,10 @@ Por ejemplo, darle crédito al traductor de esta versión.</target>
         <target xml:lang="es-ES" state="final">Borrar</target>
         <note>ID: EditTab.Toolbox.TalkingBookTool.Clear</note>
       </trans-unit>
-      <trans-unit id="EditTab.Toolbox.TalkingBookTool.ESpeakPreview.Error" approved="yes">
-        <source xml:lang="en">eSpeak failed.</source>
-        <target xml:lang="es-ES" state="final">Falló eSpeak.</target>
-        <note>ID: EditTab.Toolbox.TalkingBookTool.ESpeakPreview.Error</note>
-      </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.Listen" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Listen to the whole page</source>
         <target xml:lang="es-ES" state="final">Escuchar la página entera</target>
         <note>ID: EditTab.Toolbox.TalkingBookTool.Listen</note>
-      </trans-unit>
-      <trans-unit id="EditTab.Toolbox.TalkingBookTool.ImportRecording" sil:dynamic="true" approved="yes">
-        <source xml:lang="en">Import Recording</source>
-        <target xml:lang="es-ES" state="final">Importar grabación</target>
-        <note>ID: EditTab.Toolbox.TalkingBookTool.ImportRecording</note>
-      </trans-unit>
-      <trans-unit id="EditTab.Toolbox.TalkingBookTool.ImportRecording.ConfirmReplace" sil:dynamic="true" approved="yes">
-        <source xml:lang="en">Replace with new audio?</source>
-        <target xml:lang="es-ES" state="final">¿Reemplazar con un nuevo audio?</target>
-        <note>ID: EditTab.Toolbox.TalkingBookTool.ImportRecording.ConfirmReplace</note>
-      </trans-unit>
-      <trans-unit id="EditTab.Toolbox.TalkingBookTool.ImportRecording.ConfirmReplaceMessage" sil:dynamic="true" approved="yes">
-        <source xml:lang="en">If you import this recording, it will replace all the audio for this text box.</source>
-        <target xml:lang="es-ES" state="final">Si importa esta grabación, reemplazará todo el audio de este cuadro de texto.</target>
-        <note>ID: EditTab.Toolbox.TalkingBookTool.ImportRecording.ConfirmReplaceMessage</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.LookAtSentenceLabel" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Look at the highlighted text</source>

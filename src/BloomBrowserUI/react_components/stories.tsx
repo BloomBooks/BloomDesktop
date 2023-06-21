@@ -18,7 +18,7 @@ import {
     ConfirmDialog,
     showConfirmDialog
 } from "./confirmDialog";
-import ImportIcon from "./icons/ImportIcon";
+import { ImportIcon } from "../bookEdit/toolbox/talkingBook/TalkingBookToolboxIcons";
 import DeleteIcon from "@mui/icons-material/Delete";
 import PlaybackOrderControls from "./playbackOrderControls";
 import SmallNumberPicker from "./smallNumberPicker";

@@ -33,7 +33,7 @@ namespace Bloom.Publish.BloomLibrary
 		public BloomLibraryPublishModel(BookUpload uploader, BookInstance book, PublishModel model)
 		{
 			Book = book;
-			InitializeLanguages();
+			InitializeLanguages(Book);
 
 			_uploader = uploader;
 			_publishModel = model;
@@ -75,15 +75,6 @@ namespace Bloom.Publish.BloomLibrary
 				Book.BookInfo.Save();
 			}
 		}
-
-		/// <summary>
-		/// This is a difficult concept to implement. The current usage of this is in creating metadata indicating which languages
-		/// the book contains. How are we to decide whether it contains enough of a particular language to be useful?
-		/// Based on BL-2017, we now return a Dictionary of booleans indicating whether a language should be uploaded by default.
-		/// The dictionary contains an entry for every language where the book contains non-x-matter text.
-		/// The value is true if every non-x-matter field which contains text in any language contains text in this.
-		/// </summary>
-		internal Dictionary<string, bool> AllLanguages => Book.AllPublishableLanguages();
 
 		/// <summary>
 		/// Gets a user-friendly language name.
@@ -255,18 +246,25 @@ namespace Bloom.Publish.BloomLibrary
 			Book.BookInfo.Save();   // We updated the BookInfo, so need to persist the changes. (but only the bookInfo is necessary, not the whole book)
 		}
 
-		public void InitializeLanguages()
-		{
-			InitializeLanguages(Book);
-		}
-
 		public static void InitializeLanguages(BookInstance book)
 		{
-			var allLanguages = book.AllPublishableLanguages();
+			var allLanguages = book.AllPublishableLanguages(includeLangsOccurringOnlyInXmatter: true);
 
 			var bookInfo = book.BookInfo;
 			Debug.Assert(bookInfo?.MetaData != null, "Precondition: MetaData must not be null");
 
+			InitializeTextLanguages(book, allLanguages);
+
+			InitializeAudioLanguages(bookInfo, allLanguages.Select(x => x.Key));
+
+			InitializeSignLanguage(bookInfo, book.CollectionSettings.SignLanguageTag);
+
+			// The metadata may have been changed, so save it.
+			bookInfo.Save();
+		}
+
+		private static void InitializeTextLanguages(BookInstance book, Dictionary<string, bool> allLanguages)
+		{
 			// reinitialize our list of which languages to publish, defaulting to the ones that are complete.
 			foreach (var kvp in allLanguages)
 			{
@@ -274,13 +272,13 @@ namespace Bloom.Publish.BloomLibrary
 				var isRequiredLang = book.IsRequiredLanguage(langCode);
 
 				// First, check if the user has already explicitly set the value. If so, we'll just use that value and be done.
-				if (bookInfo.PublishSettings.BloomLibrary.TextLangs.TryGetValue(langCode, out InclusionSetting checkboxValFromSettings))
+				if (book.BookInfo.PublishSettings.BloomLibrary.TextLangs.TryGetValue(langCode, out InclusionSetting checkboxValFromSettings))
 				{
 					if (checkboxValFromSettings.IsSpecified())
 					{
 						// ...unless the check box will be disabled and checked, in which case we better make sure it isn't Exclude
 						if (isRequiredLang && checkboxValFromSettings == InclusionSetting.Exclude)
-							bookInfo.PublishSettings.BloomLibrary.TextLangs[langCode] = InclusionSetting.IncludeByDefault;
+							book.BookInfo.PublishSettings.BloomLibrary.TextLangs[langCode] = InclusionSetting.IncludeByDefault;
 
 						continue;
 					}
@@ -291,20 +289,29 @@ namespace Bloom.Publish.BloomLibrary
 				bool shouldBeChecked = kvp.Value || isRequiredLang;
 
 				var newInitialValue = shouldBeChecked ? InclusionSetting.IncludeByDefault : InclusionSetting.ExcludeByDefault;
-				bookInfo.PublishSettings.BloomLibrary.TextLangs[langCode] = newInitialValue;
+				book.BookInfo.PublishSettings.BloomLibrary.TextLangs[langCode] = newInitialValue;
 			}
+			// Get rid of settings for languages that the book doesn't have, so we don't publish a claim
+			// that it has that data. This is rarely needed, currently only if the book was previously
+			// prepared for publication with data in a language and then all of it was deleted.
+			foreach (var lang in book.BookInfo.PublishSettings.BloomLibrary.TextLangs.Keys.ToArray())
+			{
+				if (!allLanguages.ContainsKey(lang))
+				{
+					book.BookInfo.PublishSettings.BloomLibrary.TextLangs.Remove(lang);
+				}
+			}
+		}
 
-			// Initialize the Talking Book Languages settings
-
-			var allLangCodes = allLanguages.Select(x => x.Key);
-
+		private static void InitializeAudioLanguages(BookInfo bookInfo, IEnumerable<string> allLanguageTags)
+		{
 			// This is tricky, because an earlier version of our UI did not support different settings for different languages.
 			// Thus, an older version of this code only did this init the first time, when AudioLangs was null.
 			// However, at least one book (BL-11784) got into a state where AudioLangs is an empty set.
 			// Then there is NO item in the set to be switched on or off, so effectively, it remains off.
 			// (The old IncludeAudio was true if at least one is Include or IncludeByDefault).
 			// It is therefore necessary, minimally, to make sure the set has at least one language
-			// if allLangCodes has any. But properly, it is intended to  have a value for every language in
+			// if allLangCodes has any. But properly, it is intended to have a value for every language in
 			// allLangCodes...just in the old version they would all be the same.
 			// It seems more future-proof to add any languages that are missing, while not changing the
 			// setting for any we already have. But then, what setting should we use for any language
@@ -312,36 +319,35 @@ namespace Bloom.Publish.BloomLibrary
 			// we'll go with that, otherwise, include.
 			var settingForNewLang = InclusionSetting.IncludeByDefault;
 			if (bookInfo.PublishSettings.BloomLibrary.AudioLangs.Any() &&
-			    bookInfo.PublishSettings.BloomLibrary.AudioLangs.All(kvp => !kvp.Value.IsIncluded()))
+				bookInfo.PublishSettings.BloomLibrary.AudioLangs.All(kvp => !kvp.Value.IsIncluded()))
 				settingForNewLang = InclusionSetting.ExcludeByDefault;
 
-			foreach (var langCode in allLangCodes)
+			foreach (var langCode in allLanguageTags)
 			{
 				if (!bookInfo.PublishSettings.BloomLibrary.AudioLangs.ContainsKey(langCode))
 					bookInfo.PublishSettings.BloomLibrary.AudioLangs[langCode] = settingForNewLang;
 			}
+		}
 
-			var collectionSignLangCode = book.CollectionSettings.SignLanguageTag;
+		private static void InitializeSignLanguage(BookInfo bookInfo, string collectionSignLanguageTag)
+		{
 			// User may have unset or modified the sign language for the collection in which case we need to exclude the old one it if it was previously included.
 			foreach (var includedSignLangCode in bookInfo.PublishSettings.BloomLibrary.SignLangs.IncludedLanguages().ToList())
 			{
-				if (includedSignLangCode != collectionSignLangCode)
+				if (includedSignLangCode != collectionSignLanguageTag)
 				{
 					bookInfo.PublishSettings.BloomLibrary.SignLangs[includedSignLangCode] = InclusionSetting.ExcludeByDefault;
 				}
 			}
 			// Include the collection sign language by default unless the user set it definitely.
-			if (!string.IsNullOrEmpty(collectionSignLangCode))
+			if (!string.IsNullOrEmpty(collectionSignLanguageTag))
 			{
-				if (!bookInfo.PublishSettings.BloomLibrary.SignLangs.ContainsKey(collectionSignLangCode) ||
-					bookInfo.PublishSettings.BloomLibrary.SignLangs[collectionSignLangCode] == InclusionSetting.ExcludeByDefault)
+				if (!bookInfo.PublishSettings.BloomLibrary.SignLangs.ContainsKey(collectionSignLanguageTag) ||
+					bookInfo.PublishSettings.BloomLibrary.SignLangs[collectionSignLanguageTag] == InclusionSetting.ExcludeByDefault)
 				{
-					bookInfo.PublishSettings.BloomLibrary.SignLangs[collectionSignLangCode] = InclusionSetting.IncludeByDefault;
+					bookInfo.PublishSettings.BloomLibrary.SignLangs[collectionSignLanguageTag] = InclusionSetting.IncludeByDefault;
 				}
 			}
-
-			// The metadata may have been changed, so save it.
-			bookInfo.Save();
 		}
 
 		public void ClearSignLanguageToPublish()
@@ -388,6 +394,8 @@ namespace Bloom.Publish.BloomLibrary
 			.Where(l => l.Value.IsIncluded())
 			.Select(l => l.Key);
 
+		public IEnumerable<string> TextLanguagesToAdvertiseOnBloomLibrary => Book.GetTextLanguagesToAdvertiseOnBloomLibrary(TextLanguagesToUpload);
+
 		public void AddHistoryRecordForLibraryUpload(string url)
 		{
 			Book.AddHistoryRecordForLibraryUpload(url);
@@ -402,6 +410,8 @@ namespace Bloom.Publish.BloomLibrary
 			if (SIL.PlatformUtilities.Platform.IsLinux)
 				command = $"/opt/mono5-sil/bin/mono {command}";
 
+			// The Bloom process run as a command line tool for bulk upload is safe for using the current culture.
+			// We don't wait for this to finish, so we don't use the CommandLineRunner methods.
 			ProcessStartInfo startInfo;
 			if (SIL.PlatformUtilities.Platform.IsWindows)
 			{
@@ -493,11 +503,11 @@ namespace Bloom.Publish.BloomLibrary
 			return null;
 		}
 
-		public dynamic GetUploadCollisionDialogProps(IEnumerable<string> languagesToUpload, bool signLanguageFeatureSelected)
+		public dynamic GetUploadCollisionDialogProps(IEnumerable<string> languagesToAdvertise, bool signLanguageFeatureSelected)
 		{
 			var newThumbPath = ChooseBestUploadingThumbnailPath(Book).ToLocalhost();
 			var newTitle = Book.TitleBestForUserDisplay;
-			var newLanguages = ConvertLanguageCodesToNames(languagesToUpload, Book.BookData);
+			var newLanguages = ConvertLanguageCodesToNames(languagesToAdvertise, Book.BookData);
 			if (signLanguageFeatureSelected && !string.IsNullOrEmpty(CurrentSignLanguageName))
 			{
 				var newLangs = newLanguages.ToList();
@@ -641,9 +651,9 @@ namespace Bloom.Publish.BloomLibrary
 			return url + "?version=" + lastUpdate;
 		}
 
-		private IEnumerable<string> ConvertLanguageCodesToNames(IEnumerable<string> languageCodesToUpload, BookData bookData)
+		private IEnumerable<string> ConvertLanguageCodesToNames(IEnumerable<string> langCodes, BookData bookData)
 		{
-			foreach (var langCode in languageCodesToUpload)
+			foreach (var langCode in langCodes)
 			{
 				yield return bookData.GetDisplayNameForLanguage(langCode);
 			}

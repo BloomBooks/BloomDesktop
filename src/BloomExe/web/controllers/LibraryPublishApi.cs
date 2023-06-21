@@ -205,7 +205,7 @@ namespace Bloom.web.controllers
 			if (checkerResult != null)
 			{
 				_webSocketProgress.MessageWithoutLocalizing(checkerResult, ProgressKind.Error);
-				e.Result = "quiet"; // suppress other completion/fail messages
+				e.Result = ("quiet", ""); // suppress other completion/fail messages
 				return;
 			}
 
@@ -301,7 +301,7 @@ namespace Bloom.web.controllers
 			dynamic collisionDialogInfo;
 			if (Model.BookIsAlreadyOnServer)
 			{
-				collisionDialogInfo = Model.GetUploadCollisionDialogProps(Model.TextLanguagesToUpload, ModelIndicatesSignLanguageChecked);
+				collisionDialogInfo = Model.GetUploadCollisionDialogProps(Model.TextLanguagesToAdvertiseOnBloomLibrary, ModelIndicatesSignLanguageChecked);
 			}
 			else
 			{

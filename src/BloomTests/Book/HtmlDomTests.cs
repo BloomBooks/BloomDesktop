@@ -765,6 +765,81 @@ namespace BloomTests.Book
 		}
 
 		[Test]
+		public void AddMissingAudioHighlightRules_WorksForMissing()
+		{
+			var bookDom = new HtmlDom(
+@"<html>
+  <head>
+    <style type='text/css' title='userModifiedStyles'>
+    /*<![CDATA[*/
+    .Bubble-style[lang=""en""] { line-height: 1.2 !important; font-weight: bold !important; }
+    .Bubble-style { line-height: 1.2 !important; text-align: initial !important; font-weight: bold !important; }
+    .Title-On-Cover-style { color: white; }
+    .Cover-Default-style { color: white; }
+    .Bubble-style span.ui-audioCurrent { background-color: transparent; color: rgb(0, 255, 255); }
+    .Bubble-style.ui-audioCurrent p { background-color: transparent; color: rgb(0, 255, 255); }
+    .Title-On-Cover-style span.ui-audioCurrent { background-color: rgb(254, 191, 0); }
+    .Title-On-Cover-style.ui-audioCurrent p { background-color: rgb(254, 191, 0); }/*]]>*/
+    </style>
+  </head>
+  <body>
+    <div class='Title-On-Cover-style'></div>
+   </body>
+</html>");
+			var bookStyleNode = HtmlDom.GetUserModifiedStyleElement(bookDom.Head);
+			var originalCssRules = bookStyleNode.InnerXml;
+
+			Assert.That(originalCssRules, Does.Contain(".Bubble-style span.ui-audioCurrent { background-color: transparent; color: rgb(0, 255, 255); }"));
+			Assert.That(originalCssRules, Does.Contain(".Title-On-Cover-style span.ui-audioCurrent { background-color: rgb(254, 191, 0); }"));
+			Assert.That(originalCssRules, Does.Not.Contain(".Bubble-style span.ui-audioCurrent > span.ui-enableHighlight { background-color: transparent; color: rgb(0, 255, 255); }"));
+			Assert.That(originalCssRules, Does.Not.Contain(".Title-On-Cover-style span.ui-audioCurrent > span.ui-enableHighlight { background-color: rgb(254, 191, 0); }"));
+
+			// SUT
+			HtmlDom.AddMissingAudioHighlightRules(bookStyleNode);
+			var updatedCssRules = bookStyleNode.InnerXml;
+
+			Assert.That(updatedCssRules, Is.Not.EqualTo(originalCssRules));
+			Assert.That(updatedCssRules, Does.Contain(".Bubble-style span.ui-audioCurrent { background-color: transparent; color: rgb(0, 255, 255); }"));
+			Assert.That(updatedCssRules, Does.Contain(".Title-On-Cover-style span.ui-audioCurrent { background-color: rgb(254, 191, 0); }"));
+			Assert.That(updatedCssRules, Does.Contain(".Bubble-style span.ui-audioCurrent > span.ui-enableHighlight { background-color: transparent; color: rgb(0, 255, 255); }"));
+			Assert.That(updatedCssRules, Does.Contain(".Title-On-Cover-style span.ui-audioCurrent > span.ui-enableHighlight { background-color: rgb(254, 191, 0); }"));
+		}
+
+		[Test]
+		public void AddMissingAudioHighlightRules_WorksForNoneMissing()
+		{
+			var bookDom = new HtmlDom(
+@"<html>
+  <head>
+    <style type='text/css' title='userModifiedStyles'>
+    /*<![CDATA[*/
+    .Bubble-style[lang=""en""] { line-height: 1.2 !important; font-weight: bold !important; }
+    .Bubble-style { line-height: 1.2 !important; text-align: initial !important; font-weight: bold !important; }
+    .Title-On-Cover-style { color: white; }
+    .Cover-Default-style { color: white; }
+    .Bubble-style span.ui-audioCurrent { background-color: transparent; color: rgb(0, 255, 255); }
+    .Bubble-style span.ui-audioCurrent > span.ui-enableHighlight { background-color: transparent; color: rgb(0, 255, 255); }
+    .Bubble-style.ui-audioCurrent p { background-color: transparent; color: rgb(0, 255, 255); }
+    .Title-On-Cover-style span.ui-audioCurrent { background-color: rgb(254, 191, 0); }
+    .Title-On-Cover-style span.ui-audioCurrent > span.ui-enableHighlight { background-color: rgb(254, 191, 0); }
+    .Title-On-Cover-style.ui-audioCurrent p { background-color: rgb(254, 191, 0); }/*]]>*/
+    </style>
+  </head>
+  <body>
+    <div class='Title-On-Cover-style'></div>
+   </body>
+</html>");
+			var bookStyleNode = HtmlDom.GetUserModifiedStyleElement(bookDom.Head);
+			var originalCssRules = bookStyleNode.InnerXml;
+
+			// SUT
+			HtmlDom.AddMissingAudioHighlightRules(bookStyleNode);
+			var updatedCssRules = bookStyleNode.InnerXml;
+
+			Assert.That(updatedCssRules, Is.EqualTo(originalCssRules));
+		}
+
+		[Test]
 		public void FixAnyAddedCustomPages_Works()
 		{
 			var content =
@@ -1961,6 +2036,39 @@ p {
 		{
 			var output = HtmlDom.RemoveUnwantedLanguageRulesFromCss(cssText, new[] { "en", "fr", "enc", "zh-CN" });
 			Assert.That(output, Is.EqualTo(cssText));
+		}
+
+		[TestCase("abc")]
+		[TestCase("<p>abc</p>")]
+		[TestCase("<span>abc</span>")]
+		[TestCase("<label>lbl</label>abc")]
+		public void DivHasContent_HasContent_ReturnsTrue(string innerXml)
+		{
+			XmlDocument doc = new XmlDocument();
+			doc.LoadXml($"<div>{innerXml}</div>");
+			XmlElement div = doc.DocumentElement;
+
+			Assert.That(HtmlDom.DivHasContent(div), Is.True);
+
+			// div is not modified
+			Assert.That(div.InnerXml, Is.EqualTo(innerXml));
+		}
+
+		[TestCase("")]
+		[TestCase("<p></p>")]
+		[TestCase("<span></span>")]
+		[TestCase("<label>lbl</label>")]
+		[TestCase("<label>lbl</label><p></p>")]
+		public void DivHasContent_HasNoContent_ReturnsFalse(string innerXml)
+		{
+			XmlDocument doc = new XmlDocument();
+			doc.LoadXml($"<div>{innerXml}</div>");
+			XmlElement div = doc.DocumentElement;
+
+			Assert.That(HtmlDom.DivHasContent(div), Is.False);
+
+			// div is not modified
+			Assert.That(div.InnerXml, Is.EqualTo(innerXml));
 		}
 	}
 }

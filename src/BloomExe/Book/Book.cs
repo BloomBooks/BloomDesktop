@@ -1048,6 +1048,8 @@ namespace Bloom.Book
 			FixImproperLicenseChange(bookDOM, _bookData);
 			// Fix temporarily bad userModifiedStyles rules in Uzbek xmatter (BL-12047)
 			FixBadFontFamilyFromXMatter(bookDOM);
+			// Fix bug reported in BL-12287: improper audio highlighting of padded sentences.
+			FixImproperAudioHighlightingOfPaddedSentences(bookDOM);
 		}
 
 		/// <summary>
@@ -1063,6 +1065,14 @@ namespace Bloom.Book
 				return;		// shouldn't happen, but paranoia sometimes pays off, especially in running tests.
 			var styleContents = userStyles.InnerXml;
 			userStyles.InnerXml = styleContents.Replace("font-family: \"Aileron; Arial\"", "font-family: Aileron, Arial");
+		}
+
+		private void FixImproperAudioHighlightingOfPaddedSentences(HtmlDom bookDOM)
+		{
+			var userStylesNode = GetOrCreateUserModifiedStyleElementFromStorage(bookDOM.Head);
+			if (userStylesNode == null)
+				return;		// shouldn't happen, but paranoia sometimes pays off, especially in running tests.
+			HtmlDom.AddMissingAudioHighlightRules(userStylesNode);
 		}
 
 		/// <summary>
@@ -2256,39 +2266,21 @@ namespace Bloom.Book
 		/// that are present, and the (boolean) values are true if the book is considered to be "complete"
 		/// in that language, which in some contexts (such as publishing to bloom library) governs whether
 		/// the language is published by default.
-		///
-		/// As of 5.5, we are no longer calling this with includeLangsOccurringOnlyInXmatter = true.
-		/// We think all the problems it used to solve (originally BL-7967) are now solved in other ways.
-		/// I'm leaving the code and comment in place for the moment, in case we need to revert.
-		/// START OBSOLETE COMMENT
-		/// It also makes a difference whether an interesting element occurs in xmatter or not.
-		/// A language is never considered an "incomplete translation" because it is missing in an xmatter element,
-		/// mainly because it's so common for elements there to be in just a national language (BL-8527).
-		/// For some purposes, a language that occurs ONLY in xmatter doesn't count at all... it won't even be
-		/// a key in the dictionary unless includeLangsOccurringOnlyInXmatter is true
-		/// OR it is a "required" language (a content language of the book).
-		/// END OBSOLETE COMMENT
 		/// </summary>
 		/// <remarks>The logic here is used to determine how to present (show and/or enable) language checkboxes on the publish screens.
 		/// Nearly identical logic is used in bloom-player to determine which languages to show on the Language Menu,
 		/// so changes here may need to be reflected there and vice versa.</remarks>
-		private Dictionary<string, bool> AllLanguages(bool includeLangsOccurringOnlyInXmatter = false)
+		public Dictionary<string, bool> AllPublishableLanguages(bool includeLangsOccurringOnlyInXmatter)
 		{
 			var result = new Dictionary<string, bool>();
 			var parents = new HashSet<XmlElement>(); // of interesting non-empty children
 			var langDivs = OurHtmlDom.GetLanguageDivs(includeLangsOccurringOnlyInXmatter).ToArray();
 
-			// Always include required languages.
-			// Note that if we ever decide to NOT always include these languages, we think we will have a problem
-			// initializing the settings of older (before we uploaded settings in meta.json or publish-settings.json) picture books when harvesting.
-			foreach (var lang in GetRequiredLanguages())
-				result[lang] = true;
-
 			// First pass: fill in the dictionary with languages which have non-empty content in relevant divs
 			foreach (var div in langDivs)
 			{
 				var lang = div.Attributes["lang"].Value;
-				if (!string.IsNullOrWhiteSpace(div.InnerText))
+				if (HtmlDom.DivHasContent(div))
 				{
 					result[lang] = true;	// may be set repeatedly, but no harm.
 					// Add each parent only once, but add every parent for divs with any text.
@@ -2297,21 +2289,37 @@ namespace Bloom.Book
 						parents.Add(parent);
 				}
 			}
+
+			var xmatterOnlyLangs = new HashSet<string>();
 			// Second pass: for each parent, if it lacks a non-empty child for one of the languages, set value for that lang to false.
 			// OTOH, if the parent is in XMatter, don't set the value.
 			foreach (var lang in result.Keys.ToList()) // ToList so we can modify original collection as we go
 			{
+				bool isXmatterOnly = true;
 				foreach (var parent in parents)
 				{
 					if (ElementIsInXMatter(parent))
 						continue;
+					isXmatterOnly = false;
 					if (IsLanguageWanted(parent, lang) && !HasContentInLang(parent, lang))
 					{
 						result[lang] = false; // not complete
 						break; // no need to check other parents.
 					}
 				}
+				if (isXmatterOnly)
+					xmatterOnlyLangs.Add(lang);
 			}
+
+			// Remove any languages that are only in xmatter, unless they are set for this book.
+			var languagesToIncludeEvenIfXmatterOnly =
+				new string[] { Language1Tag, BookData.MetadataLanguage1Tag, BookData.MetadataLanguage2Tag };
+			foreach (var lang in xmatterOnlyLangs)
+			{
+				if (!languagesToIncludeEvenIfXmatterOnly.Contains(lang))
+					result.Remove(lang);
+			}
+
 			return result;
 		}
 
@@ -2328,30 +2336,6 @@ namespace Bloom.Book
 			}
 
 			return false;
-		}
-
-		/// Return all the languages we should currently offer to include when publishing this book.
-		public Dictionary<string, bool> AllPublishableLanguages(bool includeLangsOccurringOnlyInXmatter = false)
-		{
-			var result = AllLanguages(includeLangsOccurringOnlyInXmatter);
-			// If users want to publish multiple languages with overlay pages, who are we to stop them from putting
-			// up with the limitations of the tool?  See https://issues.bloomlibrary.org/youtrack/issue/BL-10275.
-			// Note that if we want to keep/reinstate this commented out code, then we need to fix the metadata
-			// to remove any languages other than L1 which have been enabled for either textLangsToPublish.bloomPUB
-			// or textLangsToPublish.bloomLibrary.
-			//// For books with overlays, we only publish a single language. It's not currently feasible to
-			//// allow the reader to switch language in an Overlay(Comic) book, because typically that requires
-			//// adjusting the positions of the bubbles, and we don't yet support having more than one
-			//// set of bubble locations in a single book. See BL-7912 for some ideas on how we might
-			//// eventually improve this. In the meantime, switching language would have bad effects,
-			//// and if you can't switch language, there's no point in the book containing more than one.
-			//// Not including other languages neatly prevents switching and automatically saves the space.
-			//if (OurHtmlDom.SelectSingleNode(BookStorage.ComicalXpath) != null)
-			//{
-			//	result.Clear();
-			//	result[_bookData.Language1.Tag] = true;
-			//}
-			return result;
 		}
 
 		private bool IsLanguageWanted(XmlElement parent, string lang)
@@ -4682,6 +4666,15 @@ namespace Bloom.Book
 		private IEnumerable<string> GetRequiredLanguages()
 		{
 			return new[] { BookData.Language1.Tag, Language2Tag, Language3Tag }.Where(l => !string.IsNullOrEmpty(l));
+		}
+
+		/// <summary>
+		/// Given a superset of languages, return the subset that we should advertise on BloomLibrary.org.
+		/// Specifically, return the languages in the superset which also have text in the content pages of the book.
+		/// </summary>
+		public IEnumerable<string> GetTextLanguagesToAdvertiseOnBloomLibrary(IEnumerable<string> languagesSuperset)
+		{
+			return languagesSuperset.Intersect(AllPublishableLanguages(includeLangsOccurringOnlyInXmatter: false).Keys);
 		}
 	}
 }

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing.Imaging;
@@ -130,7 +130,7 @@ namespace Bloom.web.controllers
 
 			apiHandler.RegisterEndpointHandler(kApiUrlPart + "makeShellBooksBloompack/", (request) =>
 				{
-					_collectionModel.MakeBloomPack(false);
+					_collectionModel.MakeBloomPack(forReaderTools: false);
 					request.PostSucceeded();
 				}, true);
 
@@ -192,6 +192,8 @@ namespace Bloom.web.controllers
 			if (Directory.Exists(collectionFolderPath))
 			{
 				request.PostSucceeded();
+				// Running Windows explorer should use the current culture, so we don't need to change it.
+				// Since we don't wait to finish, we can't use the CommandLineRunner methods.
 				var startInfo = new ProcessStartInfo
 				{
 					Arguments = $"/select, \"{collectionFolderPath}\"",
@@ -393,6 +395,17 @@ namespace Bloom.web.controllers
 				}
 			}
 
+			// Not sure what causes bookInfo to be null, but apparently it's possible: See BL-12354
+			// Let's gracefully fail in this scenario
+			if (bookInfo == null)
+			{
+				using (var stream = ConvertImageToStream(Resources.Error70x70))
+				{
+					request.ReplyWithStreamContent(stream, "image/png");
+				}
+				return;
+			}
+
 			string path = Path.Combine(bookInfo.FolderPath, "thumbnail.png");
 			if (!RobustFile.Exists(path))
 			{
@@ -408,12 +421,24 @@ namespace Bloom.web.controllers
 				var errorImg = Resources.placeHolderBookThumbnail;
 				if (_collectionModel.GetBookFromBookInfo(bookInfo).HasFatalError)
 					errorImg = Resources.Error70x70;
-				var stream = new MemoryStream();
-				errorImg.Save(stream, ImageFormat.Png);
-				stream.Seek(0L, SeekOrigin.Begin);
-				request.ReplyWithStreamContent(stream, "image/png");
-				//request.Failed("Thumbnail doesn't exist, and making a new thumbnail is not yet implemented.");
+				using (var stream = ConvertImageToStream(errorImg))
+				{
+					request.ReplyWithStreamContent(stream, "image/png");
+					//request.Failed("Thumbnail doesn't exist, and making a new thumbnail is not yet implemented.");
+				}
 			}
+		}
+
+		/// <summary>
+		/// Convert an image bitmap into a MemoryStream
+		/// </summary>
+		/// <remarks>The caller is responsible for ensuring the stream gets closed somehow</remarks>
+		private MemoryStream ConvertImageToStream(System.Drawing.Bitmap image)
+		{
+			var stream = new MemoryStream();
+			image.Save(stream, ImageFormat.Png);
+			stream.Seek(0L, SeekOrigin.Begin);
+			return stream;
 		}
 
 		private BookInfo GetBookInfoFromRequestParam(ApiRequest request)

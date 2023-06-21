@@ -80,6 +80,8 @@ namespace Bloom
 																	   | CoreWebView2PdfToolbarItems.FullScreen // doesn't work right and is hard to recover from
 																	   | CoreWebView2PdfToolbarItems.MoreSettings; // none of its functions seem useful
 
+				_webview.CoreWebView2.Settings.IsStatusBarEnabled = false;
+
 				// Based on https://github.com/MicrosoftEdge/WebView2Feedback/issues/308,
 				// this attempts to prevent Bloom asking permission to read the clipboard
 				// the first time the user does a paste. I can't test it, because I don't know
@@ -234,32 +236,11 @@ namespace Bloom
 			// can leave implementing this until someone identifies a difference in Gecko vs WV2 behavior
 			// that we think is due to not implementing it.
 		}
-
-		private string _targetUrl;
-		private bool _ensuredCoreWebView2;
-		private bool _finishedUpdateDisplay;
-		private bool _urlMatches;
-
-		// For now I have decided not to make this return a Task and to consistently await it.
-		// The fan-out of methods that would have to be made async is daunting, and code
-		// that cares about the completion of the navigation will already have some
-		// mechanism in place for waiting not just until the call to Navigate after the
-		// await, but until we get an indication that the navigation is complete.
-		// Also, I suspect that EnsureCoreWebView2Async() will almost always be already completed
-		// and no awaiting will really be needed.
-		// Callers should nevertheless be aware that it is not absolutely guaranteed that
-		// Navigation has even started when this method returns.
-		protected override async void UpdateDisplay(string newUrl)
+		
+		protected override void UpdateDisplay(string newUrl)
 		{
-			_targetUrl = newUrl;
-			_ensuredCoreWebView2 = false;
-			_finishedUpdateDisplay = false;
-
-			await _webview.EnsureCoreWebView2Async();
-			_ensuredCoreWebView2 = true;
+			EnsureBrowserReadyToNavigate();
 			_webview.CoreWebView2.Navigate(newUrl);
-			_finishedUpdateDisplay = true;
-			_urlMatches = Url == newUrl;
 		}
 
 		protected override void EnsureBrowserReadyToNavigate()
@@ -481,12 +462,25 @@ namespace Bloom
 				//so it's probably just not ok to check if you're not front-most.
 			}
 		}
+
+		bool currentlyRunningCanUndo = false;
 		private bool CanUndo
 		{
 			get
 			{
-				var result = RunJavaScript("editTabBundle?.canUndo?.()");
-				return result == "yes"; // currently only returns 'yes' or 'fail'
+				// once we got a stackoverflow exception here, when, apparently, JS took longer to complete this than the timer interval
+				if (currentlyRunningCanUndo)
+					return true;
+				try
+				{
+					currentlyRunningCanUndo = true;
+					var result = RunJavaScript("editTabBundle?.canUndo?.()");
+					return result == "yes"; // currently only returns 'yes' or 'fail'
+				}
+				finally
+				{
+					currentlyRunningCanUndo = false;
+				}
 			}
 		}
 	}

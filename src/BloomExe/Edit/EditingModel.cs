@@ -1435,7 +1435,9 @@ namespace Bloom.Edit
 			RefreshDisplayOfCurrentPage(); //the cleanup() that is part of Save removes qtips, so let's redraw everything
 
 			// For Publish tab:
-			CurrentBook.BookInfo.Save();
+			// Apparently, there are two sources of truth for the book's metadata: the BookInfo object, and the dom. Sigh.
+			CurrentBook.BookInfo.Save(); // Save copyright/license in meta.json; believe it or not, this doesn't happen as part of Book.Save().
+			CurrentBook.Save(); // Save copyright/license in the dom.
 			_webSocketServer.SendString("bookCopyrightAndLicense", "saved", CurrentBook.BookInfo.Copyright);
 		}
 

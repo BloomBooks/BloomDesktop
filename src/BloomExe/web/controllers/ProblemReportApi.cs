@@ -687,17 +687,21 @@ namespace Bloom.web.controllers
 							}
 							else
 							{
-								var bounds = controlForScreenshotting.Bounds;
-								var screenshot = new Bitmap(bounds.Width, bounds.Height);
+#if !__MonoCS__
+								var scaledBounds = WindowsMonitorScaling.GetRectangleFromControlScaledToMonitorResolution(controlForScreenshotting);
+#else
+								var scaledBounds = controlForScreenshotting.Bounds;
+#endif
+								var screenshot = new Bitmap(scaledBounds.Width, scaledBounds.Height);
 								using (var g = Graphics.FromImage(screenshot))
 								{
 									if (controlForScreenshotting.Parent == null)
-										g.CopyFromScreen(bounds.Left, bounds.Top, 0, 0,
-											bounds.Size); // bounds already in screen coords
+										g.CopyFromScreen(scaledBounds.Left, scaledBounds.Top, 0, 0,
+											scaledBounds.Size); // bounds already in screen coords
 									else
 										g.CopyFromScreen(
-											controlForScreenshotting.PointToScreen(new Point(bounds.Left, bounds.Top)),
-											Point.Empty, bounds.Size);
+											controlForScreenshotting.PointToScreen(new Point(scaledBounds.Left, scaledBounds.Top)),
+											Point.Empty, scaledBounds.Size);
 								}
 
 								_reportInfo.ScreenshotTempFile = TempFile.WithFilename(ScreenshotName);

@@ -1,19 +1,22 @@
+using Bloom.Api;
+using Bloom.Book;
+using Bloom.Edit;
+using Bloom.ToPalaso;
+using Bloom.Utils;
+using Newtonsoft.Json;
+using SIL.Code;
+using SIL.IO;
+using SIL.PlatformUtilities;
+using SIL.Progress;
+using SIL.Reporting;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Bloom.Api;
-using Bloom.Book;
-using Bloom.Utils;
-using Newtonsoft.Json;
-using SIL.IO;
-using SIL.Reporting;
-using SIL.PlatformUtilities;
-using SIL.Code;
-using System.Globalization;
 
 namespace Bloom.web.controllers
 {
@@ -22,6 +25,14 @@ namespace Bloom.web.controllers
 		public string audioFilenameBase;
 		public AudioTextFragment[] audioTextFragments;
 		public string lang;
+		public string manualTimingsPath;
+	}
+	internal class AutoSegmentResponse
+	{
+		public string allEndTimesString;
+		public string timingsFilePath;
+		public string warningMessage;
+		public string successMessage;
 	}
 
 	internal class AudioTextFragment
@@ -40,8 +51,7 @@ namespace Bloom.web.controllers
 	public class AudioSegmentationApi
 	{
 		public const string kApiUrlPart = "audioSegmentation/";
-		private const string kWorkingDirectory = "%HOMEDRIVE%\\%HOMEPATH%";	// Linux will use "/tmp" when the working directory doesn't matter
-		private const string kTimingsOutputFormat = "tsv";
+		private const string kWorkingDirectory = "%HOMEDRIVE%\\%HOMEPATH%"; // Linux will use "/tmp" when the working directory doesn't matter
 
 		// 0 could be a useful value for this if you hard-split. (on the rationale that you won't accidentally cut off anything useful).
 		// For soft splits, you might as well set this to something useful.
@@ -49,19 +59,22 @@ namespace Bloom.web.controllers
 		// which seems to improve identification of when the that fragment ENDS.
 		// For soft splits, there's not really a huge cost to if the head period is a little too long
 		// because the 1st fragment is highlighted even during the head period
-		private const float maxAudioHeadDurationSec = 5;	// maximum potentially allowable length in seconds of the non-useful "head" part of the audio which Aeneas will attempt to identify (if it exists) and then exclude from the timings
+		private const float maxAudioHeadDurationSec = 5;    // maximum potentially allowable length in seconds of the non-useful "head" part of the audio which Aeneas will attempt to identify (if it exists) and then exclude from the timings
 
 		BookSelection _bookSelection;
-		public AudioSegmentationApi(BookSelection bookSelection)
+		private PageSelection _pageSelection;
+
+		public AudioSegmentationApi(BookSelection bookSelection, PageSelection pageSelection)
 		{
 			_bookSelection = bookSelection;
+			_pageSelection = pageSelection;
 		}
 
 		public void RegisterWithApiHandler(BloomApiHandler apiHandler)
 		{
 			apiHandler.RegisterEndpointLegacy(kApiUrlPart + "checkAutoSegmentDependencies", CheckAutoSegmentDependenciesMet, handleOnUiThread: false, requiresSync: false);
-			apiHandler.RegisterEndpointLegacy(kApiUrlPart + "autoSegmentAudio", AutoSegment, handleOnUiThread: false, requiresSync : false);
-			apiHandler.RegisterEndpointLegacy(kApiUrlPart + "getForcedAlignmentTimings", GetForcedAlignmentTimings, handleOnUiThread: false, requiresSync : false);
+			// JH: this is unused: apiHandler.RegisterEndpointLegacy(kApiUrlPart + "autoSegmentAudio", AutoSegment, handleOnUiThread: true/* may ask for a file*/, requiresSync: false);
+			apiHandler.RegisterEndpointLegacy(kApiUrlPart + "getForcedAlignmentTimings", GetForcedAlignmentTimings, handleOnUiThread: false, requiresSync: false);
 			apiHandler.RegisterEndpointLegacy(kApiUrlPart + "eSpeakPreview", ESpeakPreview, handleOnUiThread: false, requiresSync: false);
 		}
 
@@ -180,7 +193,7 @@ namespace Bloom.web.controllers
 				else
 				{
 					command = commandString.Substring(0, idx);
-					arguments = commandString.Substring(idx+1);
+					arguments = commandString.Substring(idx + 1);
 				}
 			}
 			else
@@ -192,33 +205,23 @@ namespace Bloom.web.controllers
 					workingDirectory = Environment.ExpandEnvironmentVariables(workingDirectory);
 			}
 
-			var process = new Process {
-				StartInfo = new ProcessStartInfo()
-				{
-					FileName = command,
-					Arguments = arguments,
-					UseShellExecute = false,
-					CreateNoWindow = true,
-					RedirectStandardOutput = true,
-					RedirectStandardError = true,
-				},
-			};
-			if (!string.IsNullOrEmpty(workingDirectory) && Directory.Exists(workingDirectory))
-				process.StartInfo.WorkingDirectory = workingDirectory;
-			SetPythonEncodingIfNeeded(process.StartInfo);
-			process.Start();
-			process.WaitForExit();
+			if (workingDirectory == null || !Directory.Exists(workingDirectory))
+				workingDirectory = "";
+			var setPythonEncoding = SetPythonEncodingIfNeeded();
+			var result = CommandLineRunnerExtra.RunWithInvariantCulture(command, arguments, workingDirectory, 600, new SIL.Progress.NullProgress());
+			if (setPythonEncoding)
+				Environment.SetEnvironmentVariable(PythonIoEncodingKey, null);
 
-			standardOutput = process.StandardOutput.ReadToEnd();
-			standardError = process.StandardError.ReadToEnd();
+			standardOutput = result.StandardOutput;
+			standardError = result.StandardError;
 
-			Debug.Assert(process.ExitCode != -1073741510, "Process Exit Code was 0xc000013a, indicating that the command prompt exited. That means we can't read the value of the exit code of the last command of the session");
+			Debug.Assert(result.ExitCode != -1073741510, "Process Exit Code was 0xc000013a, indicating that the command prompt exited. That means we can't read the value of the exit code of the last command of the session");
 
-			if (process.ExitCode == 0)
+			if (result.ExitCode == 0)
 			{
-				return false;	// No error
+				return false;   // No error
 			}
-			else if (errorCodesToIgnore != null && errorCodesToIgnore.Contains(process.ExitCode))
+			else if (errorCodesToIgnore != null && errorCodesToIgnore.Contains(result.ExitCode))
 			{
 				// It seemed to return an error, but the caller has actually specified that this error is nothing to worry about, so return no error
 				return false;
@@ -244,6 +247,7 @@ namespace Bloom.web.controllers
 		///
 		/// Replies with true if AutoSegment completed successfully, or false if there was an error. In addition, a NonFatal message/exception may be reported with the error
 		/// </summary>
+		/* (JH) I don't know why this exists, it is unused
 		public void AutoSegment(ApiRequest request)
 		{
 			Logger.WriteEvent("AudioSegmentationApi.AutoSegment(): AutoSegment started.");
@@ -278,17 +282,18 @@ namespace Bloom.web.controllers
 
 			request.ReplyWithBoolean(true); // Success
 		}
+		*/
 
-		internal List<Tuple<string, string>> GetAeneasTimings(AutoSegmentRequest requestParameters)
+		internal AutoSegmentResponse GetAeneasTimings(AutoSegmentRequest requestParameters)
 		{
-			string dummy1;
-			List<string> dummy2;
-			return GetAeneasTimings(requestParameters, out dummy1, out dummy2);
-		}
-
-		internal List<Tuple<string, string>> GetAeneasTimings(AutoSegmentRequest requestParameters, out string audioFilenameToSegment, out List<string> fragmentIds)
-		{
-			fragmentIds = null;
+			List<string> fragmentIds = null;
+			var response = new AutoSegmentResponse
+			{
+				timingsFilePath = null,
+				allEndTimesString = null,
+				successMessage = "",
+				warningMessage = "",
+			};
 
 			// The client was supposed to validate this already, but double-check in case something strange happened.
 			string directoryName = GetAudioDirectory();
@@ -300,15 +305,15 @@ namespace Bloom.web.controllers
 					// I'm intentionally not adding this to the l10n load, as it seems like a pretty sophisticated thing, to be running in a VM
 					// or directly off a server, and it seems a bit hard to translate.  Ref BL-9959.
 					ErrorReport.NotifyUserOfProblem(
-						"Sorry, Bloom cannot split timings if the collection's path does not start with a drive letter. Feel free to contact us for more help."+
-						"\r\n\r\n"+GetAudioDirectory());
-					audioFilenameToSegment = null;
+						"Sorry, Bloom cannot split timings if the collection's path does not start with a drive letter. Feel free to contact us for more help." +
+						"\r\n\r\n" + GetAudioDirectory());
+					//audioFilenameToSegment = null;
 					return null;
 				}
 			}
 
 
-			audioFilenameToSegment = GetFileNameToSegment(directoryName, requestParameters.audioFilenameBase);
+			var audioFilenameToSegment = GetFileNameToSegment(directoryName, requestParameters.audioFilenameBase);
 			if (string.IsNullOrEmpty(audioFilenameToSegment))
 			{
 				Logger.WriteEvent("AudioSegmentationApi.GetAeneasTimings(): No input audio file found.");
@@ -348,7 +353,8 @@ namespace Bloom.web.controllers
 			Logger.WriteMinorEvent($"AudioSegmentationApi.GetAeneasTimings(): Attempting to segment with langCode={langCode}");
 
 			string textFragmentsFilename = Path.Combine(directoryName, $"{requestParameters.audioFilenameBase}_fragments.txt");
-			string audioTimingsFilename = Path.Combine(directoryName, $"{requestParameters.audioFilenameBase}_timings.{kTimingsOutputFormat}");
+
+
 
 			// Clean up the fragments
 			audioTextFragments = audioTextFragments.Where(obj => !String.IsNullOrWhiteSpace(obj.fragmentText)); // Remove entries containing only whitespace
@@ -374,7 +380,27 @@ namespace Bloom.web.controllers
 					File.WriteAllLines(textFragmentsFilename, fragmentList)
 				);
 
-				timingStartEndRangeList = GetSplitStartEndTimings(audioFilenameToSegment, textFragmentsFilename, audioTimingsFilename, langCode);
+				if (!string.IsNullOrEmpty(requestParameters.manualTimingsPath))
+				{
+					response.timingsFilePath = Path.Combine(directoryName, requestParameters.manualTimingsPath);
+					Logger.WriteEvent("AudioSegmentationApi applying manual timings file.");
+					var lines = RobustFile.ReadAllLines(requestParameters.manualTimingsPath);
+					timingStartEndRangeList = ParseTimingFileTSV(lines);
+					Logger.WriteEvent($"Parsed {timingStartEndRangeList.Count()} lines.");
+					if (timingStartEndRangeList.Count() != fragmentList.Count())
+					{
+						response.warningMessage = $"This box has {fragmentList.Count()} text fragments, but the timings file has {timingStartEndRangeList.Count()} lines";
+					}
+					else
+					{
+						response.successMessage = $"Applied {timingStartEndRangeList.Count()} manual timings.";
+					}
+				}
+				else
+				{
+					response.timingsFilePath = Path.Combine(directoryName, $"{requestParameters.audioFilenameBase}_timings.txt");
+					timingStartEndRangeList = GetSplitStartEndTimings(audioFilenameToSegment, textFragmentsFilename, response.timingsFilePath, langCode);
+				}
 			}
 			catch (Exception e)
 			{
@@ -393,17 +419,20 @@ namespace Bloom.web.controllers
 				Debug.Assert(false, $"Attempted to delete {textFragmentsFilename} but it threw an exception. Message={e.Message}, Stack={e.StackTrace}");
 			}
 
-			try
-			{
-				RobustFile.Delete(audioTimingsFilename);
-			}
-			catch (Exception e)
-			{
-				// These exceptions are unfortunate but not bad enough that we need to inform the user
-				Debug.Assert(false, $"Attempted to delete {audioTimingsFilename} but it threw an exception. Message={e.Message}, Stack={e.StackTrace}");
-			}
 
-			return timingStartEndRangeList;
+			/* leave it around so that people can edit it if they want
+				try
+				{
+					RobustFile.Delete(response.timingsFilePath);
+				}
+				catch (Exception e)
+				{
+					// These exceptions are unfortunate but not bad enough that we need to inform the user
+					Debug.Assert(false, $"Attempted to delete {response.timingsFilePath} but it threw an exception. Message={e.Message}, Stack={e.StackTrace}");
+				}
+			*/
+			response.allEndTimesString = String.Join(" ", timingStartEndRangeList.Select(tuple => tuple.Item2));
+			return response;
 		}
 
 		public string GetAudioDirectory()
@@ -425,7 +454,7 @@ namespace Bloom.web.controllers
 			stdOut = "";
 			stdErr = "";
 
-			// Normally requestedLangCode should be under our control. 
+			// Normally requestedLangCode should be under our control.
 			// But just do a quick and easy check to make sure it looks reasonable. (there are some highly contrived scenarios where a XSS injection would be possible with some social engineering.)
 			if (requestedLangCode.Contains('"') || requestedLangCode.Contains('\\'))
 			{
@@ -463,7 +492,7 @@ namespace Bloom.web.controllers
 			}
 
 			// Add more default fallback languages to the end
-			potentialFallbackLangs.Add("eo");	// "eo" is Esperanto
+			potentialFallbackLangs.Add("eo");   // "eo" is Esperanto
 			potentialFallbackLangs.Add("en");
 
 			// Now go and try the fallback languages until we (possibly) find one that works
@@ -493,17 +522,14 @@ namespace Bloom.web.controllers
 			string json = request.RequiredPostJson();
 			AutoSegmentRequest requestParameters = ParseJson(json);
 
-			var timingStartEndRangeList = GetAeneasTimings(requestParameters);
-			if (timingStartEndRangeList == null)
+			var response = GetAeneasTimings(requestParameters);
+			if (response == null)
 			{
 				request.ReplyWithText("");
 				return;
 			}
-
-			string allEndTimesStr = String.Join(" ", timingStartEndRangeList.Select(tuple => tuple.Item2));
-
 			Logger.WriteEvent("AudioSegmentationApi.GetForcedAlignmentTimings(): Completed successfully.");
-			request.ReplyWithText(allEndTimesStr);
+			request.ReplyWithJson(response);
 		}
 
 
@@ -517,7 +543,7 @@ namespace Bloom.web.controllers
 
 			foreach (var extension in extensions)
 			{
-				string filePath =  Path.Combine(directoryName, fileNameBase + extension);
+				string filePath = Path.Combine(directoryName, fileNameBase + extension);
 
 				if (RobustFile.Exists(filePath))
 				{
@@ -556,7 +582,7 @@ namespace Bloom.web.controllers
 			return converter.ApplyMappings(text);
 		}
 
-		public List<Tuple<string, string>> GetSplitStartEndTimings(string inputAudioFilename, string inputTextFragmentsFilename, string outputTimingsFilename, string ttsEngineLang = "en")
+		public List<Tuple<string, string>> GetSplitStartEndTimings(string inputAudioFilename, string inputTextFragmentsFilename, string outputTimingsPath, string ttsEngineLang = "en")
 		{
 			// Just setting some default value here (Esperanto - which is more phonetic so we think it works well for a large variety),
 			// but really rely-ing on the TTS override to specify the real lang, so this value doesn't really matter.
@@ -578,7 +604,11 @@ namespace Bloom.web.controllers
 			string audioHeadParams = $"|os_task_file_head_tail_format=hidden|is_audio_file_detect_head_min=0.00|is_audio_file_detect_head_max={maxAudioHeadDurationSec.ToString(CultureInfo.InvariantCulture)}";
 			var audioFile = Path.GetFileName(inputAudioFilename);
 			var fragmentsFile = Path.GetFileName(inputTextFragmentsFilename);
-			var outputFile = Path.GetFileName(outputTimingsFilename);
+			var outputFile = Path.GetFileName(outputTimingsPath);
+
+			// Have Aeneas output in its "txt" format, which is [f0001 start stop "label contents"] per line.
+			// Later we will strip off the first field so that we have an Audacity-compatible label file ([start stop "label contents"]) that a user can edit
+			var kTimingsOutputFormat = "txt";
 			string commandString = $"python -m aeneas.tools.execute_task \"{audioFile}\" \"{fragmentsFile}\" \"task_language={aeneasLang}|is_text_type=plain|os_task_file_format={kTimingsOutputFormat}{audioHeadParams}{boundaryAdjustmentParams}\" \"{outputFile}\" --runtime-configuration=\"tts_voice_code={ttsEngineLang}\"";
 			string command;
 			string arguments;
@@ -593,32 +623,19 @@ namespace Bloom.web.controllers
 				arguments = $"/C {commandString}";
 			}
 
-			var processStartInfo = new ProcessStartInfo()
-			{
-				FileName = command,
-				Arguments = arguments,
-				UseShellExecute = false,
-				RedirectStandardOutput = true,
-				RedirectStandardError = true,
-				WorkingDirectory = workingDirectory,
-				CreateNoWindow = true
-			};
-			SetPythonEncodingIfNeeded(processStartInfo);
-
-			var process = Process.Start(processStartInfo);
-
-			// TODO: Should I set a timeout?  In general Aeneas is reasonably fast but it doesn't really seem like I could guarantee that it would return within a certain time..
-			// Block the current thread of execution until aeneas has completed, so that we can read the correct results from the output file.
+			var setPythonEncoding = SetPythonEncodingIfNeeded();
 			Logger.WriteMinorEvent("AudioSegmentationApi.GetSplitStartEndTimings(): Command started, preparing to wait...");
-			process.WaitForExit();
+			var result = CommandLineRunnerExtra.RunWithInvariantCulture(command, arguments, workingDirectory, 3600, new NullProgress());
+			if (setPythonEncoding)
+				Environment.SetEnvironmentVariable(PythonIoEncodingKey, null);
 
 			// Note: we could also request Aeneas write the standard output/error, or a log (or verbose log... or very verbose log) if desired
-			if (process.ExitCode != 0)
+			if (result.ExitCode != 0)
 			{
-				var stdout = process.StandardOutput.ReadToEnd();
-				var stderr = process.StandardError.ReadToEnd();
+				var stdout = result.StandardOutput;
+				var stderr = result.StandardError;
 				var sb = new StringBuilder();
-				sb.AppendLine($"ERROR: python aeneas process to segment the audio file finished with exit code = {process.ExitCode}.");
+				sb.AppendLine($"ERROR: python aeneas process to segment the audio file finished with exit code = {result.ExitCode}.");
 				sb.AppendLine($"working directory = {workingDirectory}");
 				sb.AppendLine($"failed command = {commandString}");
 				sb.AppendLine($"process.stdout = {stdout.Trim()}");
@@ -637,12 +654,25 @@ namespace Bloom.web.controllers
 
 
 			// This might throw exceptions, but IMO best to let the error handler pass it, and have the Javascript code be as robust as possible, instead of passing on error messages to user
-			var segmentationResults = RobustFile.ReadAllLines(outputTimingsFilename);
+			var segmentationResults = RobustFile.ReadAllLines(outputTimingsPath);
 
 			List<Tuple<string, string>> timingStartEndRangeList;
 			if (kTimingsOutputFormat.Equals("srt", StringComparison.OrdinalIgnoreCase))
 			{
 				timingStartEndRangeList = ParseTimingFileSRT(segmentationResults);
+			}
+			else if (kTimingsOutputFormat.Equals("txt", StringComparison.OrdinalIgnoreCase))
+			{
+				var startStopLabelList = ParseTimingLinesFromAeneasTXTFormat(segmentationResults);
+				timingStartEndRangeList = startStopLabelList.Select(x => new Tuple<string, string>(x.Item1, x.Item2)).ToList();
+
+				// That's all we need for now.  But next, we save it out in Audacity timings format in case the user wants to edit it
+				var aeneasTimingsContents = startStopLabelList.Select(x => $"{x.Item1}\t{x.Item2}\t{x.Item3}").ToList();
+				// regardless of the input file extension, we want to use txt as the output because Audacity is extra painful if you are working with anything else, e.g. "tsv"
+				var labelPath = Path.ChangeExtension(outputTimingsPath, ".txt");
+				// convert that to a single string
+				var aeneasTimingsContentsString = string.Join("\n", aeneasTimingsContents);
+				RobustFile.WriteAllText(outputTimingsPath, aeneasTimingsContentsString);
 			}
 			else
 			{
@@ -653,18 +683,60 @@ namespace Bloom.web.controllers
 			return timingStartEndRangeList;
 		}
 
+		const string PythonIoEncodingKey = "PYTHONIOENCODING";
+
 		/// <summary>
 		/// Prevent python from complaining about unspecified encoding.  UTF-8 has to be what we want.
 		/// </summary>
-		private static void SetPythonEncodingIfNeeded(ProcessStartInfo processStartInfo)
+		private static bool SetPythonEncodingIfNeeded()
 		{
-			string pythonIoEncodingKey = "PYTHONIOENCODING";
-			if (!processStartInfo.EnvironmentVariables.ContainsKey(pythonIoEncodingKey))
+			if (!Environment.GetEnvironmentVariables().Contains(PythonIoEncodingKey))
 			{
-				processStartInfo.EnvironmentVariables.Add(pythonIoEncodingKey, "UTF-8");
+				Environment.SetEnvironmentVariable(PythonIoEncodingKey, "UTF-8");
+				return true;
 			}
+			return false;
 		}
 
+
+
+		/// <summary>
+		/// Parses the contents of a timing file and returns the start and end timing fields as a list of tuples.
+		/// </summary>
+		/// <param name="lines">The contents (line-by-line) of a .tsv timing file. Example:  f0001 1.000 4.980 "I have a dog"</param>
+		public static List<Tuple<string, string, string>> ParseTimingLinesFromAeneasTXTFormat(IEnumerable<string> lines)
+		{
+			var timings = new List<Tuple<string, string, string>>();
+			var lastEnd = "0.000";
+			foreach (string line in lines)
+			{
+				// Each line in Aeneas TXT format is is "id start stop label], e.g.  'f0001 1.000 4.980 "I have a dog"'
+				// split into four fields, with the last one being the label. The label is everything between the quotes.
+				string[] fields = line.Split(new char[] { ' ' }, 4);
+
+				if (fields.Length < 4 || !fields[3].StartsWith("\""))
+				{
+					// so I don't know that Aeneas would ever fail to produce a valid line, but if it did, let's just
+					// output a line that sticks a label at a point in time after the last segment so that someone could
+					// fix it in Audacity or wherever. If this actually happens to someone, we might then look into
+					// it and see if we can do better.
+					timings.Add(Tuple.Create(lastEnd, lastEnd, $"Err:[{line}]"));
+				}
+				else
+				{
+					// note we're skipping the first field, which is the id
+					string timingStart = fields[1].Trim();
+					string timingEnd = lastEnd = fields[2].Trim();
+
+					// make the label be the rest of the line
+					string label = string.Join(" ", fields.Skip(3)).Trim('"');
+
+					timings.Add(Tuple.Create(timingStart, timingEnd, label));
+				}
+			}
+
+			return timings;
+		}
 
 		/// <summary>
 		/// Parses the contents of a timing file and returns the start and end timing fields as a list of tuples.
@@ -684,7 +756,7 @@ namespace Bloom.web.controllers
 				{
 					if (!timings.Any())
 					{
-						timingStart = "0.000";	// Note: format generated by Aeneas seems independent of your Date/Time/Number Format settings. 
+						timingStart = "0.000";  // Note: format generated by Aeneas seems independent of your Date/Time/Number Format settings.
 					}
 					else
 					{
@@ -761,9 +833,9 @@ namespace Bloom.web.controllers
 		private void ExtractAudioSegments(IList<string> idList, IList<Tuple<string, string>> timingStartEndRangeList, string inputAudioFilename)
 		{
 			Debug.Assert(idList.Count == timingStartEndRangeList.Count, $"Number of text fragments ({idList.Count}) does not match number of extracted timings ({timingStartEndRangeList.Count}). The parsed timing ranges might be completely incorrect. The last parsed timing is: ({timingStartEndRangeList.Last()?.Item1 ?? "null"}, {timingStartEndRangeList.Last()?.Item2 ?? "null"}).");
-			int size = Math.Min(timingStartEndRangeList.Count, idList.Count);	// Note: it could differ if there is some discrepancy in line endings in the fragments file. This doesn't seem like it should happen but occasionally I see it.
+			int size = Math.Min(timingStartEndRangeList.Count, idList.Count);   // Note: it could differ if there is some discrepancy in line endings in the fragments file. This doesn't seem like it should happen but occasionally I see it.
 
-			string extension = Path.GetExtension(inputAudioFilename);	// Will include the "." e.g. ".mp3"
+			string extension = Path.GetExtension(inputAudioFilename);   // Will include the "." e.g. ".mp3"
 			if (string.IsNullOrWhiteSpace(extension))
 			{
 				extension = ".mp3";
@@ -801,30 +873,44 @@ namespace Bloom.web.controllers
 		/// <returns></returns>
 		private Task<int> ExtractAudioSegmentAsync(string inputAudioFilename, string timingStartString, string timingEndString, string outputSplitFilename)
 		{
-			string commandString = $"ffmpeg -i \"{inputAudioFilename}\" -acodec copy -ss {timingStartString} -to {timingEndString} \"{outputSplitFilename}\"";
-			string command;
-			string arguments;
-			var workingDir = Platform.IsLinux ? "/tmp" : kWorkingDirectory;
-			if (Platform.IsLinux)
+			// Since we are running this process aynchronously, we need to make sure that the process is not
+			// affected by the current culture settings.  We can't use the CommandLineRunner methods.
+			var currentCulture = CultureInfo.CurrentCulture;
+			var currentUICulture = CultureInfo.CurrentUICulture;
+			try
 			{
-				command = _ffmpegFound;
-				arguments = commandString.Substring(7);
-			}
-			else
-			{
-				command = "CMD.EXE";
-				arguments = $"/C {commandString}";
-			}
-			var startInfo = new ProcessStartInfo()
-			{
-				FileName = command,
-				Arguments = arguments,
-				WorkingDirectory = workingDir,
-				UseShellExecute = false,
-				CreateNoWindow = true
-			};	
+				CultureInfo.CurrentCulture = CultureInfo.InvariantCulture;
+				CultureInfo.CurrentUICulture = CultureInfo.InvariantCulture;
+				string commandString = $"ffmpeg -i \"{inputAudioFilename}\" -acodec copy -ss {timingStartString} -to {timingEndString} \"{outputSplitFilename}\"";
+				string command;
+				string arguments;
+				var workingDir = Platform.IsLinux ? "/tmp" : kWorkingDirectory;
+				if (Platform.IsLinux)
+				{
+					command = _ffmpegFound;
+					arguments = commandString.Substring(7);
+				}
+				else
+				{
+					command = "CMD.EXE";
+					arguments = $"/C {commandString}";
+				}
+				var startInfo = new ProcessStartInfo()
+				{
+					FileName = command,
+					Arguments = arguments,
+					WorkingDirectory = workingDir,
+					UseShellExecute = false,
+					CreateNoWindow = true
+				};
 
-			return RunProcessAsync(startInfo);
+				return RunProcessAsync(startInfo);
+			}
+			finally
+			{
+				CultureInfo.CurrentCulture = currentCulture;
+				CultureInfo.CurrentUICulture = currentUICulture;
+			}
 		}
 
 		// Starts a process and returns a task (that you can use to wait/await for the completion of the process)
@@ -916,7 +1002,7 @@ namespace Bloom.web.controllers
 					"EditTab.Toolbox.TalkingBookTool.ESpeakPreview.Error",
 					"eSpeak failed.",
 					"This text is shown if an error occurred while running eSpeak. eSpeak is a piece of software that this program uses to do text-to-speech (have the computer read text out loud).");
-				NonFatalProblem.Report(ModalIf.None, PassiveIf.All, message, null, null, false);	// toast without allowing error report.
+				NonFatalProblem.Report(ModalIf.None, PassiveIf.All, message, null, null, false);    // toast without allowing error report.
 			}
 		}
 

@@ -314,7 +314,7 @@ namespace Bloom.web.controllers
 		{
 			lock (_lockForLanguages)
 			{
-				_allLanguages = request.CurrentBook.AllPublishableLanguages();
+				_allLanguages = request.CurrentBook.AllPublishableLanguages(includeLangsOccurringOnlyInXmatter: true);
 
 				// Note that at one point, we had a check that would bypass most of this function if the book hadn't changed.
 				// However, one side effect of this is that any settings behind the if guard would not be updated if the book was edited
@@ -343,7 +343,8 @@ namespace Bloom.web.controllers
 		/// If the caller wants to insert this URL as a query parameter to another URL (e.g. like what is often done with Bloom Player),
 		/// it's the caller's responsibility to apply another layer of URL encoding to make the URL suitable to be passed as data inside another URL.
 		/// </summary>
-		internal void UpdatePreview(ApiRequest request, bool forVideo)
+		/// <returns>True if the preview was updated successfully, false otherwise.</returns>
+		internal bool UpdatePreview(ApiRequest request, bool forVideo)
 		{
 			InitializeLanguagesInBook(request);
 			_lastSettings = GetSettings();
@@ -369,7 +370,13 @@ namespace Bloom.web.controllers
 			// the page-range control.
 			_lastSettings.RemoveInteractivePages = forVideo;
 			PreviewUrl = MakeBloomPubForPreview(request.CurrentBook, _bookServer, _progress, _thumbnailBackgroundColor, _lastSettings);
+			if (_progress.HaveProblemsBeenReported)
+			{
+				_webSocketServer.SendString(kWebSocketContext, kWebsocketEventId_Preview, "");
+				return false;
+			}
 			_webSocketServer.SendString(kWebSocketContext, kWebsocketEventId_Preview, PreviewUrl);
+			return true;
 		}
 
 
@@ -464,14 +471,14 @@ namespace Bloom.web.controllers
 			return modifiedBook.GetPathHtmlFile().ToLocalhost();
 		}
 
-		internal void UpdatePreviewIfNeeded(ApiRequest request)
+		internal bool UpdatePreviewIfNeeded(ApiRequest request)
 		{
 			var newSettings = GetSettings();
-			if (newSettings.Equals(_lastSettings) && _thumbnailBackgroundColor == _lastThumbnailBackgroundColor)
+			if (newSettings.Equals(_lastSettings) && _thumbnailBackgroundColor == _lastThumbnailBackgroundColor && LicenseOK)
 			{
-				return;
+				return true;
 			}
-			UpdatePreview(request, false);
+			return UpdatePreview(request, false);
 		}
 
 		internal BloomPubPublishSettings GetSettings()

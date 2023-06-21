@@ -358,7 +358,8 @@ namespace Bloom.WebLibraryIntegration
 			{
 				var xmlDomFromHtmlFile = XmlHtmlConverter.GetXmlDomFromHtmlFile(filepath, false);
 				var dom = new HtmlDom(xmlDomFromHtmlFile);
-				PublishModel.RemoveUnwantedLanguageData(dom, languagesToInclude, false, metadataLang1Code, metadataLang2Code);
+				// Since we're not pruning xmatter, it doesn't matter what we pass for the set of xmatter langs to keep.
+				PublishModel.RemoveUnwantedLanguageData(dom, languagesToInclude, false, new HashSet<string>());
 				XmlHtmlConverter.SaveDOMAsHtml5(dom.RawDom, filepath);
 			}
 			// Remove language specific style settings from all CSS files for unwanted languages.

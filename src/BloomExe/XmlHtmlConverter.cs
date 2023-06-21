@@ -22,6 +22,8 @@ namespace Bloom
 		private static readonly Regex _selfClosingRegex = new Regex(@"<([ubi]|em|strong|span)(\s+[^><]+\s*)/>");
 		private static readonly Regex _emptySelfClosingElementsToRemoveRegex = new Regex(@"<([ubi]|em|strong|span)\s*/>");
 		private static readonly Regex _emptyElementsWithAttributesRegex = new Regex(@"<([ubi]|em|strong|span|cite)(\s+[^><]+\s*)>(\s*)</\1>");
+		private static readonly Regex _inlineElementsWithLeadingSpaceRegex = new Regex(@"<([ubi]|em|strong|span|cite)([^>]*)> ");
+		private static readonly Regex _inlineElementsWithTrailingSpaceRegex = new Regex(@" </([ubi]|em|strong|span|cite)>");
 		private static readonly Regex _emptyElementsToPreserveRegex = new Regex(@"<(p|cite)\s*>(\s*)</\1>");
 		private static readonly Regex _selfClosingElementsToPreserveRegex = new Regex(@"<(p|cite)(\s+[^><]*\s*)/>");
 
@@ -39,7 +41,7 @@ namespace Bloom
 		public static XmlDocument GetXmlDomFromHtml(string content, bool includeXmlDeclaration = false)
 		{
 			var dom = new XmlDocument();
-			content = AddFillerToKeepTidyFromRemovingEmptyElements(content);
+			content = AddFillerToKeepTidyFromRemovingEmptyElementsAndWhiteSpace(content);
 
 			//in BL-2250, we found that in previous versions, this method would return, for example, "<u> </u>" REMOVEWHITESPACE.
 			//That is fixed now, but this is needed to give to clean up existing books.
@@ -100,7 +102,6 @@ namespace Bloom
 					tidy.MergeSpans = AutoBool.No;
 					tidy.DropEmptyParagraphs = false;
 					tidy.MergeDivs = AutoBool.No;
-
 
 					var errors = tidy.CleanAndRepair();
 					if (!string.IsNullOrEmpty(errors))
@@ -189,7 +190,7 @@ namespace Bloom
 		/// Tidy is over-zealous. This is a work-around. After running Tidy, then call RemoveFillerInEmptyElements() on the same text
 		/// </summary>
 		/// <returns></returns>
-		private static string AddFillerToKeepTidyFromRemovingEmptyElements(string content)
+		private static string AddFillerToKeepTidyFromRemovingEmptyElementsAndWhiteSpace(string content)
 		{
 
 			// This handles empty elements in the form of XML contractions like <i some-important-attributes />
@@ -208,6 +209,10 @@ namespace Bloom
 			// Prevent Tidy from deleting <p/> too
 			content = _selfClosingElementsToPreserveRegex.Replace(content, "<$1$2>REMOVEME</$1>");
 
+			// And, finding something like <strong> bold </strong>, Tidy removes the leading space,
+			// and moves the trailing one outside the element.
+			content = _inlineElementsWithLeadingSpaceRegex.Replace(content, "<$1$2>REMOVEME ");
+			content = _inlineElementsWithTrailingSpaceRegex.Replace(content, " REMOVEME</$1>");
             return content;
 		}
 
@@ -401,7 +406,7 @@ namespace Bloom
 		{
 			var xml = input;
 			// HTML Tidy will mess many things up, so we have these work arounds to make it "safe from libtidy"
-			xml = AddFillerToKeepTidyFromRemovingEmptyElements(xml);
+			xml = AddFillerToKeepTidyFromRemovingEmptyElementsAndWhiteSpace(xml);
 
 			// Tidy will convert <br /> to <br></br> which is not valid and produces an unexpected double line break.
 			var BrPlaceholder = "$$ConvertThisBackToBr$$";

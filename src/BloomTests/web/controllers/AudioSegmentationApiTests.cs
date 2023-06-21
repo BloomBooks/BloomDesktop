@@ -1,11 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.IO;
-using System.Text;
-using Bloom.web.controllers;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Bloom.web.controllers;
 using NUnit.Framework;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Text;
 using Assert = NUnit.Framework.Assert;
 
 namespace BloomTests.web.controllers
@@ -18,7 +17,7 @@ namespace BloomTests.web.controllers
 			string inputJson = "{\"audioFilenameBase\":\"id0\",\"audioTextFragments\":[{\"fragmentText\":\"Sentence 1.\",\"id\":\"id1\"},{\"fragmentText\":\"Sentence 2.\",\"id\":\"id2\"},{\"fragmentText\":\"Sentence 3.\",\"id\":\"id3\"}],\"lang\":\"es\"}";
 
 			var request = AudioSegmentationApi.ParseJson(inputJson);
-			
+
 			Assert.That(request.audioFilenameBase, Is.EqualTo("id0"));
 
 			Assert.That(request.audioTextFragments, Is.Not.Null);
@@ -26,7 +25,7 @@ namespace BloomTests.web.controllers
 			for (int i = 0; i < request.audioTextFragments.Length; ++i)
 			{
 				Assert.That(request.audioTextFragments[i].fragmentText, Is.EqualTo($"Sentence {i + 1}."));
-				Assert.That(request.audioTextFragments[i].id, Is.EqualTo($"id{i+1}"));
+				Assert.That(request.audioTextFragments[i].id, Is.EqualTo($"id{i + 1}"));
 			}
 
 			Assert.That(request.lang, Is.EqualTo("es"));
@@ -74,8 +73,8 @@ namespace BloomTests.web.controllers
 			string unsafeText = "One\" && espeak -v en \"Two.";
 			string safeText = AudioSegmentationApi.SanitizeTextForESpeakPreview(unsafeText);
 
-			Assert.That(safeText, Is.Not.EqualTo(unsafeText));	// Definitely must pass
-			Assert.That(safeText, Is.EqualTo("One  && espeak -v en  Two."));	// There are other acceptable variations that it could equal
+			Assert.That(safeText, Is.Not.EqualTo(unsafeText));  // Definitely must pass
+			Assert.That(safeText, Is.EqualTo("One  && espeak -v en  Two."));    // There are other acceptable variations that it could equal
 		}
 
 
@@ -155,6 +154,94 @@ namespace BloomTests.web.controllers
 
 			// Verification
 			Assert.That(mappedFragments[0], Is.EqualTo("alpha"));
+		}
+
+		[Test]
+		public void TestParseTimingFileTXT_WithNormalInput_ReturnsCorrectOutput()
+		{
+			// Arrange
+			var input = new List<string> { "f0001 1.000 4.980 \"I have a dog\"", "f0002 5.000 8.000 \"I have a cat\"" };
+			var expectedOutput = new List<Tuple<string, string, string>>
+			{
+				Tuple.Create("1.000", "4.980", "I have a dog"),
+				Tuple.Create("5.000", "8.000", "I have a cat")
+			};
+
+			// Act
+			var output = AudioSegmentationApi.ParseTimingLinesFromAeneasTXTFormat(input);
+
+			// Assert
+			CollectionAssert.AreEqual(expectedOutput, output);
+		}
+
+		[Test]
+		public void TestParseTimingFileTXT_WithFirstLineMissingLabel_OutputsErrorLine()
+		{
+			// Arrange
+			var input = new List<string> { "f0001 1.000 4.999",
+											"f0002 5.000 8.000 \"I have a cat\"" };
+			var expectedOutput = new List<Tuple<string, string, string>>
+			{
+				Tuple.Create("0.000", "0.000", "Err:[f0001 1.000 4.999]"),
+				Tuple.Create("5.000", "8.000", "I have a cat")
+			};
+
+			// Act
+			var output = AudioSegmentationApi.ParseTimingLinesFromAeneasTXTFormat(input);
+
+			// Assert
+			CollectionAssert.AreEqual(expectedOutput, output);
+		}
+
+		[Test]
+		public void TestParseTimingFileTXT_WithInitialMissingTimingEnd_OutputsErrorLine()
+		{
+			// Arrange
+			var input = new List<string> { "f0001 1.000 \"I have a dog\"", "f0002 5.000 6.000 \"I have a cat\"" };
+			var expectedOutput = new List<Tuple<string, string, string>>
+			{
+				Tuple.Create("0.000", "0.000", "Err:[f0001 1.000 \"I have a dog\"]"),
+				Tuple.Create("5.000", "6.000", "I have a cat")
+			};
+
+			// Act
+			var output = AudioSegmentationApi.ParseTimingLinesFromAeneasTXTFormat(input);
+
+			// Assert
+			CollectionAssert.AreEqual(expectedOutput, output);
+		}
+
+		[Test]
+		public void TestParseTimingFileTXT_WithSubsequentMissingFields_OutputsErrorLine()
+		{
+			// Arrange
+			var input = new List<string> { "f0001 0.000 1.000 \"I have a dog.\"", "f0002 \"I have a cat\"", "f003 6.123 7.123 \"named Leroy.\"" };
+			var expectedOutput = new List<Tuple<string, string, string>>
+			{
+				Tuple.Create("0.000", "1.000", "I have a dog."),
+				Tuple.Create("1.000", "1.000", "Err:[f0002 \"I have a cat\"]"),
+				Tuple.Create("6.123", "7.123", "named Leroy.")
+			};
+
+			// Act
+			var output = AudioSegmentationApi.ParseTimingLinesFromAeneasTXTFormat(input);
+
+			// Assert
+			CollectionAssert.AreEqual(expectedOutput, output);
+		}
+
+		[Test]
+		public void TestParseTimingFileTXT_WithEmptyInput_ReturnsEmptyList()
+		{
+			// Arrange
+			var input = new List<string>();
+			var expectedOutput = new List<Tuple<string, string, string>>();
+
+			// Act
+			var output = AudioSegmentationApi.ParseTimingLinesFromAeneasTXTFormat(input);
+
+			// Assert
+			CollectionAssert.AreEqual(expectedOutput, output);
 		}
 	}
 }

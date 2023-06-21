@@ -2,7 +2,7 @@ import TalkingBookTool from "./talkingBook";
 import {
     theOneAudioRecorder,
     initializeTalkingBookToolAsync,
-    AudioRecordingMode,
+    RecordingMode,
     AudioMode,
     getAllAudioModes
 } from "./audioRecording";
@@ -295,11 +295,9 @@ describe("talking book tests", () => {
             );
 
             if (scenario === AudioMode.PureSentence) {
-                theOneAudioRecorder.audioRecordingMode =
-                    AudioRecordingMode.Sentence;
+                theOneAudioRecorder.recordingMode = RecordingMode.Sentence;
             } else {
-                theOneAudioRecorder.audioRecordingMode =
-                    AudioRecordingMode.TextBox;
+                theOneAudioRecorder.recordingMode = RecordingMode.TextBox;
             }
 
             originalDiv1Html = getFrameElementById("page", "div1")!.outerHTML;

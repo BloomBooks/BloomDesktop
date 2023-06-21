@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -37,32 +37,6 @@ namespace Bloom.Publish.Epub
 
 		private string _previewSrc;
 		private string _bookVersion;
-		// lock for threads that test or change EpubMaker == null, _stagingEpub, EpubMaker.AbortRequested,
-		// and _saveAsPath.
-		// Normally, every Bloom API request is isolated by a lock from every other. That is, there can't be
-		// two api requests from JS land manipulating the DOM (or anything else) at the same time and causing
-		// race conditions. So we don't need to worry about locks to guard against different server threads
-		// entering this class at the same time.
-		// That won't work for aborting an epub generation that is in progress, because the API call to do the
-		// abort can't get the lock that is already held by the thread making the obsolete preview.
-		// So, that handler is NOT locked relative to all other API calls, including the other ones in this class.
-		// Also, it's annoying if the Save button doesn't respond until the preview is complete; so, since that
-		// only accesses a couple of private variables in this class, we allow that one to run without
-		// the lock and collect the destination file.
-		// We want to hold a lock just enough to make sure there are no race conditions involving changes to
-		// whether EpubMaker is null, whether we are staging it, and whether its abort flag has been set.
-		// That's not a problem for the abort thread, which holds no other lock.
-		// But what about the thread that holds the global API lock and is making the preview? If it seeks
-		// the EpubMaker lock, we need to be sure that no other thread will ever claim the epubmaker lock
-		// and then seek the global API lock. That's OK, because the only things that seek the EpubMaker lock
-		// either already have the API lock or never seek it (i.e., this two unlocked handlers).
-		// Make sure to only claim this lock in a thread that already holds the API lock or never seeks it.
-		// We also need to be careful about this lock and the UI thread. We can't have something holding this
-		// lock and waiting for the UI thread, while the UI thread is waiting for the lock. The convention for
-		// ensuring this is that, except for the Save action which runs ON the UI thread, nothing that holds
-		// this lock is allowed to use the UI thread.
-		private object _epubMakerLock = new object();
-		private bool _stagingEpub;
 
 		// This goes out with our messages and, on the client side (typescript), messages are filtered
 		// down to the context (usually a screen) that requested them.
@@ -72,16 +46,6 @@ namespace Bloom.Publish.Epub
 
 		// This constant must match the ID used for the useWatchString called by the React component EPUBPublishScreenInternal.
 		private const string kWebsocketState_LicenseOK = "publish/licenseOK";
-
-		// Holds the path the user has selected to save the results of the preview until it is actually saved.
-		// If the preview is complete at the time the user selects the file, it will hold it only very briefly
-		// while the file is actually saved. If the preview is incomplete, the path remains set until the
-		// preview is completed, and then the Save is completed.
-		private string _pendingSaveAsPath;
-
-
-		// This constant must match the ID that is used for the listener set up in the React component ProgressBox
-		private const string kWebsocketEventId_Progress = "progress";
 
 		public EpubMaker EpubMaker { get; private set; }
 		public static Control ControlForInvoke { get; set; }
@@ -97,15 +61,9 @@ namespace Bloom.Publish.Epub
 			_standardProgress = new WebSocketProgress(_webSocketServer, kWebsocketContext);
 		}
 
-		// Message is presumed already localized.
-		private void ReportProgress(string message)
-		{
-			_webSocketServer.SendString(kWebsocketContext, kWebsocketEventId_Progress, message);
-		}
-
 		public void RegisterWithApiHandler(BloomApiHandler apiHandler)
 		{
-			apiHandler.RegisterEndpointHandler(kApiUrlPart + "save", HandleEpubSave, true, false);
+			apiHandler.RegisterEndpointHandler(kApiUrlPart + "save", HandleEpubSave, false, false);
 
 			apiHandler.RegisterEndpointHandler(kApiUrlPart + "epubMode", request =>
 			{
@@ -147,7 +105,8 @@ namespace Bloom.Publish.Epub
 					var message = new LicenseChecker().CheckBook(request.CurrentBook, request.CurrentBook.ActiveLanguages.ToArray());
 					_webSocketServer.SendString(kWebsocketContext, kWebsocketState_LicenseOK, (message == null) ? "true" : "false");
 				}
-			}, false); // in fact, must NOT be on UI thread
+			}, false); 	// must not be on the UI thread, because it's a long-running task and the UI thread must be available
+			// to update the progress dialog, respond to user actions, etc.
 
 			apiHandler.RegisterEndpointHandler(kApiUrlPart + "abortPreview", request =>
 			{
@@ -162,48 +121,68 @@ namespace Bloom.Publish.Epub
 
 		private void HandleEpubSave(ApiRequest request)
 		{
+			// Will only update the staged ePUB files if needed.  If the license is not valid, we still want
+			// enough work done to display the error message to the user.  See BL-12334
+			if (RefreshPreview(request.CurrentBook.BookInfo.PublishSettings.Epub, forceUpdate:false))
+			{
+				request.PostSucceeded();
+				if (request.CurrentBook?.ActiveLanguages != null)
+				{
+					var message = new LicenseChecker().CheckBook(request.CurrentBook, request.CurrentBook.ActiveLanguages.ToArray());
+					_webSocketServer.SendString(kWebsocketContext, kWebsocketState_LicenseOK, (message == null) ? "true" : "false");
+					if (message != null)
+					{
+						EpubMaker.AbortRequested = true;	// cause license error message to be displayed if the user clicks again
+						return;
+					}
+				}
+				string destPath = null;
+				if (ControlForInvoke != null && ControlForInvoke.InvokeRequired)
+				{
+					ControlForInvoke.Invoke((Action)(() => destPath = getSaveAsPath(request)));
+				}
+				else
+				{
+					destPath = getSaveAsPath(request);
+				}
+				if (string.IsNullOrEmpty(destPath))
+				{
+					// No output path means the user cancelled the file chooser dialog.
+					return;
+				}
+				// The necessary ePUB files are present
+				SaveAsEpub(destPath);
+			}
+			else
+			{
+				request.PostSucceeded();
+				// Preview generation failed; the ePUB files might not all be there, we should not save.
+				// Notify the user gently that updating the ePUB preview failed.
+				NonFatalProblem.Report(ModalIf.None, PassiveIf.All, "Something went wrong while saving the ePUB.");
+			}
+		}
+			
+		private string getSaveAsPath(ApiRequest request)
+		{
 			var initialPath = OutputFilenames.GetOutputFilePath(_bookSelection.CurrentSelection, ".epub");
 			var destFileName = Utils.MiscUtils.GetOutputFilePathOutsideCollectionFolder(initialPath, "ePUB files|*.epub");
 			if (!string.IsNullOrEmpty(destFileName))
 			{
 				OutputFilenames.RememberOutputFilePath(_bookSelection.CurrentSelection, ".epub", destFileName);
-				lock (_epubMakerLock)
-				{
-					_pendingSaveAsPath = destFileName;
-					if (!_stagingEpub)
-					{
-						// we can do it right now. No need to check version etc., because anything
-						// that will change the epub we want to save will immediately trigger a new
-						// preview, and we will be staging it until we have it.
-						SaveAsEpub();
-					}
-					// If we ARE in the middle of staging the epub...quite possible since this
-					// handler is registered with permission to execute in parallel with other
-					// API handlers, the user just has to click Save before the preview is finished...
-					// then we need not do any more here. A call to SaveAsEpub at the end of the
-					// preview generation process will pick up the pending request in _pendingSaveAsPath
-					// and complete the Save.
-				}
-
-				ReportProgress(LocalizationManager.GetString("PublishTab.Epub.Done", "Done"));
-				ReportAnalytics("Save ePUB");
 			}
-			request.PostSucceeded();
-		}
+			return destFileName;
+		}			
 
 		public void AbortMakingEpub()
 		{
-			lock (_epubMakerLock)
+			if (EpubMaker != null)
 			{
-				if (EpubMaker != null && _stagingEpub)
-				{
-					// typically will cause some OTHER thread that is making the epub to wind up quickly.
-					EpubMaker.AbortRequested = true;
-				}
+				// typically will cause some OTHER thread that is making the epub to wind up quickly.
+				EpubMaker.AbortRequested = true;
 			}
 		}
 
-		private void RefreshPreview(EpubSettings newSettings)
+		private bool RefreshPreview(EpubSettings newSettings, bool forceUpdate = true)
 		{
 			// We have seen some exceptions thrown during refresh that cause a pretty yellow
 			// dialog box pop up informing the user, e.g., that the program couldn't find
@@ -215,18 +194,27 @@ namespace Bloom.Publish.Epub
 			{
 				try
 				{
-					if (UpdatePreview(newSettings, true))
+					if (UpdatePreview(newSettings, forceUpdate))
+					{
 						_webSocketServer.SendString(kWebsocketContext, kWebsocketEventId_epubReady, _previewSrc);
-					return;
+						return true;
+					}
 				}
 				catch (Exception e)
 				{
 					exception = e;	// the original stack trace is rather important for post mortem debugging!
 				}
 			}
+			string detailsMessage = "Updating the ePUB preview failed";
+			// If we are here because UpdatePreview repeatedly returned false indicating it failed, we won't have an exception
+			if (exception != null)
+			{
+				detailsMessage = detailsMessage + ": " + exception.Message;
+			}
 			// Notify the user gently that updating the ePUB preview failed.
 			NonFatalProblem.Report(ModalIf.None, PassiveIf.All, "Something went wrong while making the ePUB preview.",
-				"Updating the ePUB preview failed: " + exception.Message, exception);
+				detailsMessage, exception);
+			return false;
 		}
 
 		public void ReportAnalytics(string eventName)
@@ -240,17 +228,14 @@ namespace Bloom.Publish.Epub
 
 		internal void PrepareToStageEpub()
 		{
-			lock (_epubMakerLock)
+			if (EpubMaker != null)
 			{
-				if (EpubMaker != null)
-				{
-					//it has state that we don't want to reuse, so make a new one
-					EpubMaker.Dispose();
-					EpubMaker = null;
-				}
-
-				EpubMaker = new EpubMaker(_thumbNailer, _bookServer);
+				//it has state that we don't want to reuse, so make a new one
+				EpubMaker.Dispose();
+				EpubMaker = null;
 			}
+
+			EpubMaker = new EpubMaker(_thumbNailer, _bookServer);
 
 			EpubMaker.Book = _bookSelection.CurrentSelection;
 			EpubMaker.Unpaginated = _bookSelection.CurrentSelection.BookInfo.PublishSettings.Epub.Mode == "flowable";
@@ -259,16 +244,11 @@ namespace Bloom.Publish.Epub
 
 		internal string StagingDirectory { get { return EpubMaker.BookInStagingFolder; } }
 
-		internal void SaveAsEpub()
+		internal void SaveAsEpub(string destPath)
 		{
-			lock (_epubMakerLock)
-			{
-				if (_pendingSaveAsPath == null)
-					return;
-				EpubMaker.ZipAndSaveEpub(_pendingSaveAsPath, _progress);
-				_pendingSaveAsPath = null;
-				_bookSelection.CurrentSelection.ReportSimplisticFontAnalytics(FontAnalytics.FontEventType.PublishEbook,"ePUB");
-			}
+			EpubMaker.ZipAndSaveEpub(destPath, _progress);
+			_bookSelection.CurrentSelection.ReportSimplisticFontAnalytics(FontAnalytics.FontEventType.PublishEbook,"ePUB");
+			ReportAnalytics("Save ePUB");
 		}
 
 
@@ -341,18 +321,10 @@ namespace Bloom.Publish.Epub
 		public bool UpdatePreview(EpubSettings newSettings, bool force, WebSocketProgress progress = null)
 		{
 			_progress = progress ?? _standardProgress.WithL10NPrefix("PublishTab.Epub.");
+			
 			if (Program.RunningOnUiThread)
 			{
-				// There's some stuff inside this lock that has to run on the UI thread.
-				// If we lock the UI thread here, we can deadlock the whole program.
-				throw new ApplicationException(@"Must not attempt to make epubs on UI thread...will produce deadlocks");
-			}
-
-			lock (_epubMakerLock)
-			{
-				if (EpubMaker != null)
-					EpubMaker.AbortRequested = false;
-				_stagingEpub = true;
+				throw new ApplicationException(@"Must not attempt to make epubs on UI thread");
 			}
 
 			// For some unknown reason, if the accessibility window is showing, some of the browser navigation
@@ -367,79 +339,59 @@ namespace Bloom.Publish.Epub
 			if (progress == null)
 				AccessibilityChecker.AccessibilityCheckWindow.StaticClose();
 
-			try
+			_webSocketServer.SendString(kWebsocketContext, "startingEbookCreation", _previewSrc);
+
+			var htmlPath = _bookSelection.CurrentSelection.GetPathHtmlFile();
+			var newVersion = Book.Book.ComputeHashForAllBookRelatedFiles(htmlPath);
+			var previewIsAlreadyCurrent = !newSettings.RequiresDifferentPreviewThan(_lastPreviewSettings) && newVersion == _bookVersion &&
+										EpubMaker != null && !EpubMaker.AbortRequested && !force;
+
+			if (previewIsAlreadyCurrent)
 			{
-				_webSocketServer.SendString(kWebsocketContext, "startingEbookCreation", _previewSrc);
-
-				var htmlPath = _bookSelection.CurrentSelection.GetPathHtmlFile();
-				var newVersion = Book.Book.ComputeHashForAllBookRelatedFiles(htmlPath);
-				bool previewIsAlreadyCurrent;
-				lock (_epubMakerLock)
-				{
-					previewIsAlreadyCurrent = _lastPreviewSettings == newSettings && EpubMaker != null && newVersion == _bookVersion &&
-												!EpubMaker.AbortRequested && !force;
-				}
-
-				if (previewIsAlreadyCurrent)
-				{
-					SaveAsEpub(); // just in case there's a race condition where we haven't already saved it.
-					return true; // preview is already up to date.
-				}
-
-				// newSettings is typically the actual settigns object on the book, which could get updated by the UI.
-				// To be able to tell later whether it changed, we need a copy.
-				_lastPreviewSettings = newSettings.Clone();
-
-				// clear the obsolete preview, if any; this also ensures that when the new one gets done,
-				// we will really be changing the src attr in the preview iframe so the display will update.
-				_webSocketServer.SendEvent(kWebsocketContext, kWebsocketEventId_epubReady);
-				_bookVersion = newVersion;
-				ReportProgress(LocalizationManager.GetString("PublishTab.Epub.PreparingPreview", "Preparing Preview"));
-
-				// This three-tries loop is an attempt to recover from a weird state the system sometimes gets into
-				// where a browser won't navigate to a temporary page that the EpubMaker uses. I'm not sure it actually
-				// helps, once the system gets into this state even a brand new browser seems to have the same problem.
-				// Usually there will be no exception, and the loop breaks at the end of the first iteration.
-				for (int i = 0; i < 3; i++)
-				{
-					try
-					{
-						if (!PublishHelper.InPublishTab)
-						{
-							return false;
-						}
-						_previewSrc = UpdateEpubControlContent();
-					}
-					catch (ApplicationException ex)
-					{
-						Bloom.Utils.MiscUtils.SuppressUnusedExceptionVarWarning(ex);
-
-						if (i >= 2)
-							throw;
-						ReportProgress("Something went wrong, trying again");
-						continue;
-					}
-
-					break; // normal case, no exception
-				}
-
-				lock (_epubMakerLock)
-				{
-					if (EpubMaker.AbortRequested)
-						return false; // the code that set the abort flag will request a new preview.
-				}
-			}
-			finally
-			{
-				lock (_epubMakerLock)
-				{
-					_stagingEpub = false;
-				}
+				return true; // preview is already up to date.
 			}
 
-			// Do pending save if the user requested it while the preview was still in progress.
-			SaveAsEpub();
-			ReportProgress(LocalizationManager.GetString("PublishTab.Epub.Done", "Done"));
+			// newSettings is typically the actual settigns object on the book, which could get updated by the UI.
+			// To be able to tell later whether it changed, we need a copy.
+			_lastPreviewSettings = newSettings.Clone();
+
+			// clear the obsolete preview, if any; this also ensures that when the new one gets done,
+			// we will really be changing the src attr in the preview iframe so the display will update.
+			_webSocketServer.SendEvent(kWebsocketContext, kWebsocketEventId_epubReady);
+			_bookVersion = newVersion;
+			_progress.Message("PreparingPreview", "Preparing Preview");
+
+			// This three-tries loop is an attempt to recover from a weird state the system sometimes gets into
+			// where a browser won't navigate to a temporary page that the EpubMaker uses. I'm not sure it actually
+			// helps, once the system gets into this state even a brand new browser seems to have the same problem.
+			// Usually there will be no exception, and the loop breaks at the end of the first iteration.
+			for (int i = 0; i < 3; i++)
+			{
+				try
+				{
+					if (!PublishHelper.InPublishTab)
+					{
+						return false;
+					}
+					_previewSrc = UpdateEpubControlContent();
+				}
+				catch (ApplicationException ex)
+				{
+					Bloom.Utils.MiscUtils.SuppressUnusedExceptionVarWarning(ex);
+
+					if (i >= 2)
+						throw;
+					_progress.MessageWithoutLocalizing("Something went wrong, trying again", ProgressKind.Error);
+					continue;
+				}
+					
+				break; // normal case, no exception
+			}
+
+			if (EpubMaker.AbortRequested)
+				return false; // the code that set the abort flag will request a new preview.
+
+			_progress.Message("Done", "Done");
 			return true;
 		}
 	}

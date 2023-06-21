@@ -6,6 +6,8 @@ using System.Linq;
 using System.Diagnostics;
 using System.Text;
 using SharpFont;
+using SIL.Progress;
+using Bloom.ToPalaso;
 #else
 using System.Windows.Media;
 #endif
@@ -130,31 +132,16 @@ namespace Bloom.FontProcessing
 			}
 			try
 			{
-				var process = new Process
+				var res = CommandLineRunnerExtra.RunWithInvariantCulture("/usr/bin/otfinfo", $"-i \"{group.Normal}\"", "", 600, new NullProgress());
+				if (res.ExitCode == 0 && res.standardError.Length == 0)
 				{
-					StartInfo = new ProcessStartInfo()
-					{
-						FileName = "/usr/bin/otfinfo",
-						Arguments = $"-i \"{group.Normal}\"",
-						UseShellExecute = false,
-						CreateNoWindow = true,
-						RedirectStandardOutput = true,
-						RedirectStandardError = true,
-					},
-				};
-				process.Start();
-				process.WaitForExit();
-				var standardOutput = process.StandardOutput.ReadToEnd();
-				var standardError = process.StandardError.ReadToEnd();
-				if (process.ExitCode == 0 && standardError.Length == 0)
-				{
-					ParseOtfinfoOutput(standardOutput);
+					ParseOtfinfoOutput(res.standardOutput);
 				}
 				else
 				{
-					Console.WriteLine("otfinfo -i \"{0}\" returned {1}.  Standard Error =\n{2}", group.Normal, process.ExitCode, standardError);
+					Console.WriteLine("otfinfo -i \"{0}\" returned {1}.  Standard Error =\n{2}", group.Normal, res.ExitCode, res.standardError);
 					determinedSuitability = kInvalid;
-					determinedSuitabilityNotes = $"otfinfo returned: {process.ExitCode}. Standard Error={Environment.NewLine}{standardError}";
+					determinedSuitabilityNotes = $"otfinfo returned: {res.ExitCode}. Standard Error={Environment.NewLine}{res.standardError}";
 					return;
 				}
 			}

@@ -110,10 +110,6 @@ export default class TalkingBookTool implements ITool {
                                         newSpan.classList.add(
                                             "bloom-audio-split-marker"
                                         );
-                                        const newText = page.ownerDocument.createTextNode(
-                                            "\u200B" // zero-width space
-                                        );
-                                        newSpan.appendChild(newText);
                                         return newSpan as Node;
                                     } else {
                                         return val;

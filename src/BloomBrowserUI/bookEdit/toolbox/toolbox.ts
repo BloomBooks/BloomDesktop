@@ -7,6 +7,7 @@ import axios from "axios";
 import { get, postString, wrapAxios } from "../../utils/bloomApi";
 import theOneLocalizationManager from "../../lib/localizationManager/localizationManager";
 import { hookupLinkHandler } from "../../utils/linkHandler";
+import { ckeditableSelector } from "../js/bloomEditing";
 
 export const isLongPressEvaluating: string = "isLongPressEvaluating";
 
@@ -506,27 +507,33 @@ function doWhenPageReady(action: () => void) {
         setTimeout(e => doWhenPageReady(action), 100);
         return;
     }
-    doWhenCkEditorReady(action);
+    doWhenCkEditorReady(action, page);
 }
 
 // Do this action ONCE when all ckeditors are ready.
 // I'm not absolutely sure all the care to do it only once is necessary...the bug
 // I was trying to fix turned out to be caused by multiple calls to doWhenCkEditorReady...
 // but it seems a precaution worth keeping.
-function doWhenCkEditorReady(action: () => void) {
+function doWhenCkEditorReady(action: () => void, page: HTMLElement) {
     const removers = [];
-    doWhenCkEditorReadyCore({
-        removers: removers,
-        done: false,
-        action: action
-    });
+    doWhenCkEditorReadyCore(
+        {
+            removers: removers,
+            done: false,
+            action: action
+        },
+        page
+    );
 }
 
-function doWhenCkEditorReadyCore(arg: {
-    removers: Array<any>;
-    done: boolean;
-    action: () => void;
-}): void {
+function doWhenCkEditorReadyCore(
+    arg: {
+        removers: Array<any>;
+        done: boolean;
+        action: () => void;
+    },
+    page: HTMLElement
+): void {
     if ((<any>ToolBox.getPageFrame().contentWindow).CKEDITOR) {
         const editorInstances = (<any>ToolBox.getPageFrame().contentWindow)
             .CKEDITOR.instances;
@@ -534,36 +541,37 @@ function doWhenCkEditorReadyCore(arg: {
         // This wipes out (at least) our page initialization.
         // To prevent this we hold our initialization until CKEditor has done initializing.
         // If any instance on the page (e.g., one per div) is not ready, wait until all are.
-        // (The instances property leads to an object in which a field editorN is defined for each
-        // editor, so we just loop until some value of N which doesn't yield an editor instance.)
-        for (let i = 1; ; i++) {
-            const instance = editorInstances["editor" + i];
-            if (instance == null) {
-                if (i === 0) {
-                    // no instance at all...if one is later created, get us invoked.
-                    arg.removers.push(
-                        (<any>ToolBox.getPageFrame().contentWindow).CKEDITOR.on(
-                            "instanceReady",
-                            e => {
-                                doWhenCkEditorReadyCore(arg);
-                            }
-                        )
-                    );
-                    return;
-                }
-                break; // if we get here all instances are ready
-            }
+        // (The instances property leads to an object in which each property is an instance of CkEditor)
+        let gotOne = false;
+        for (const property in editorInstances) {
+            const instance = editorInstances[property];
+            gotOne = true;
             if (!instance.instanceReady) {
                 arg.removers.push(
                     instance.on("instanceReady", e => {
-                        doWhenCkEditorReadyCore(arg);
+                        doWhenCkEditorReadyCore(arg, page);
                     })
                 );
                 return;
             }
         }
+        if (!gotOne) {
+            if (page.querySelector(ckeditableSelector)) {
+                // If any editable divs exist, call us again once the page gets set up with ckeditor.
+                // See BL-12381.
+                arg.removers.push(
+                    (<any>ToolBox.getPageFrame().contentWindow).CKEDITOR.on(
+                        "instanceReady",
+                        e => {
+                            doWhenCkEditorReadyCore(arg, page);
+                        }
+                    )
+                );
+                return;
+            }
+        }
     }
-    // OK, CKEditor is done (or page doesn't use it), we can finally do the action.
+    // OK, all CKEditors are ready (or page doesn't use it), we can finally do the action.
     if (!arg.done) {
         // We are the first call-back to find all ready! Any other editors invoking this should be ignored.
         arg.done = true; // ensures action only done once

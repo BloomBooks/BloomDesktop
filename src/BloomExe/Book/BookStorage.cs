@@ -1733,7 +1733,7 @@ namespace Bloom.Book
 			Dom = new HtmlDom();
 			//the fileLocator we get doesn't know anything about this particular book.
 			_fileLocator.AddPath(FolderPath);
-			RequireThat.Directory(FolderPath).Exists();
+			ToPalaso.RobustIO.RequireThatDirectoryExists(FolderPath);
 			string pathToExistingHtml;
 			try
 			{
@@ -1806,6 +1806,8 @@ namespace Bloom.Book
 					b.AppendLine(msg2);
 					ErrorReport.NotifyUserOfProblem(b.ToString());
 					// Open the file explorer on the book's folder to allow the user to delete (or move?) the unwanted file.
+					// The new process should use the current culture, so we don't need to worry about that.
+					// We don't wait for this to finish, so we don't use the CommandLineRunner methods.
 					Process.Start(new ProcessStartInfo {
 						FileName = FolderPath + Path.DirectorySeparatorChar,	// trailing separator char is important!
 						UseShellExecute = true,

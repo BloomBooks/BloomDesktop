@@ -569,6 +569,8 @@ namespace Bloom
 						msgBldr.AppendFormat(msgFmt2, version);
 					}
 					MessageBox.Show(msgBldr.ToString());
+					// The new process showing a website should use the current culture, so we don't need to worry about that.
+					// We don't wait for this to finish, so we don't use the CommandLineRunner methods.
 					var psi = new ProcessStartInfo
 					{
 						FileName = "https://docs.bloomlibrary.org/webview2",
@@ -1015,7 +1017,7 @@ namespace Bloom
 			{
 				// Rather than just adding it to the idle queue, we make sure it doesn't overlap with any other startup idle tasks
 				// and that the splash screen will be closed to make way for it.
-				StartupScreenManager.AddStartupAction( ()=> ChooseAnotherProject(null, null),
+				StartupScreenManager.AddStartupAction( ()=> ChooseACollection(),
 					shouldHideSplashScreen:true);
 			}
 		}
@@ -1126,11 +1128,14 @@ namespace Bloom
 			}
 		}
 
-		/// ------------------------------------------------------------------------------------
-		static void ChooseAnotherProject(object sender, EventArgs e)
+		/// <summary>
+		/// Launches the Collection chooser UI and opens the selected collection.
+		/// </summary>
+		/// <param name="formToClose">If provided, this form will be closed after choosing a
+		/// collection and before opening it. Currently, this is used to close the Shell at the proper
+		/// time when switching collectons.</param>
+		public static void ChooseACollection(Form formToClose = null)
 		{
-			Application.Idle -= ChooseAnotherProject;
-
 			while (true)
 			{
 				// We decided to stop doing this (BL-1229) since the wizard can feel like part
@@ -1153,9 +1158,15 @@ namespace Bloom
 					dlg.SetDesktopLocation(50,50);
 					if (dlg.ShowDialog() != DialogResult.OK)
 					{
-						Application.Exit();
+						// If there is a form to close, it means the collection chooser is not the only thing open,
+						// and we don't want to exit the application. Otherwise, we are in initial startup and
+						// closing the chooser should exit the application.
+						if (formToClose == null)
+							Application.Exit();
 						return;
 					}
+
+					formToClose?.Close();
 
 					if (OpenCollection(dlg.SelectedPath)) return;
 				}
@@ -1183,7 +1194,10 @@ namespace Bloom
 
 			if (((Shell)sender).UserWantsToOpenADifferentProject)
 			{
-				Application.Idle += ChooseAnotherProject;
+				// On this path, we have already shown the collection chooser,
+				// and we are closing the Shell just to open it again with the selected collection.
+				// See ChooseACollection().
+				return;
 			}
 			else if (((Shell)sender).UserWantsToOpeReopenProject)
 			{
@@ -1516,6 +1530,9 @@ Anyone looking specifically at our issue tracking system can read what you sent 
 			if (!updateNeeded) return;
 
 			// if there were changes, notify the system
+			// The new process isn't affected by the culture, and chains to additional processes
+			// that aren't affected by the culture setting.  Since we use events to chain the
+			// processes, we can't use the CommandLineRunner methods.
 			var proc = new Process
 			{
 				StartInfo = {

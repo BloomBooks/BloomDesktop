@@ -146,6 +146,10 @@ namespace BloomTests.TeamCollection
 
 					File.WriteAllText(bloomCollectionPath, "This is a modified fake collection file");
 					var collectionWriteTime2 = new FileInfo(bloomCollectionPath).LastWriteTime;
+					// According to https://stackoverflow.com/questions/31519880/windows-compatible-filesystems-file-time-resolutions,
+					// LastWriteTime on NTFS has a resolution of 100ns, as does the DateTime object. So even a
+					// 1ms delay before we write a file should result in a strictly greater LastWriteTime. Using 2 for a little more margin.
+					Thread.Sleep(2);
 
 					// SUT 3: local change copied to repo (only when not at startup)
 					tc.SyncLocalAndRepoCollectionFiles(false);
@@ -170,6 +174,7 @@ namespace BloomTests.TeamCollection
 						"repo file written after local collection file [sanity check]");
 
 					// SUT 4: both changed: repo wins
+					Thread.Sleep(2);
 					tc.SyncLocalAndRepoCollectionFiles();
 					var localWriteTime4 = tc.LocalCollectionFilesRecordedSyncTime();
 					Assert.That(localWriteTime4, Is.GreaterThan(localWriteTime3),
@@ -181,7 +186,7 @@ namespace BloomTests.TeamCollection
 					// We got the original back.
 					Assert.That(File.ReadAllText(bloomCollectionPath), Is.EqualTo("This is a fake collection file"));
 
-					Thread.Sleep(10);
+					Thread.Sleep(2);
 					var allowedWords = Path.Combine(collectionFolder.FolderPath, "Allowed Words");
 					Directory.CreateDirectory(allowedWords);
 					File.WriteAllText(Path.Combine(allowedWords, "file1.txt"), "fake word list");
@@ -195,7 +200,7 @@ namespace BloomTests.TeamCollection
 					Assert.That(repoWriteTime5, Is.GreaterThan(repoWriteTime4),
 						"repoWriteTime5 should be greater than repoWriteTime4");
 
-					Thread.Sleep(5);
+					Thread.Sleep(2);
 					var sampleTexts = Path.Combine(collectionFolder.FolderPath, "Sample Texts");
 					Directory.CreateDirectory(sampleTexts);
 					File.WriteAllText(Path.Combine(allowedWords, "sample1.txt"), "fake sample list");
@@ -209,7 +214,7 @@ namespace BloomTests.TeamCollection
 					Assert.That(repoWriteTime6, Is.GreaterThan(repoWriteTime5),
 						"repoWriteTime6 should be greater than repoWriteTime5");
 
-					Thread.Sleep(10);
+					Thread.Sleep(2);
 					File.WriteAllText(Path.Combine(allowedWords, "sample1.txt"), "fake sample list");
 
 					// SUT7: local file write time modified, but not actually changed. Want the sync time to
@@ -228,6 +233,7 @@ namespace BloomTests.TeamCollection
 					var repoWriteTimeBeforeSut8 = new FileInfo(otherFilesPath).LastWriteTime;
 
 					// SUT 8: local change copied to repo on idle
+					Thread.Sleep(2);
 					tc.SyncLocalAndRepoCollectionFiles(false);
 					Assert.That(tc._haveShownRemoteSettingsChangeWarning, Is.False, "user should not have been warned");
 					var localWriteTimeAfterSut8 = tc.LocalCollectionFilesRecordedSyncTime();
@@ -241,7 +247,7 @@ namespace BloomTests.TeamCollection
 						Is.EqualTo(collectionWriteTimeBeforeSut8));
 
 					// modify the remote version by copying version2 back.
-					Thread.Sleep(10);
+					Thread.Sleep(2);
 					var repoWriteTimeBeforeSut9Copy = new FileInfo(otherFilesPath).LastWriteTime;
 					RobustFile.Copy(version2Path, otherFilesPath, true);
 					var collectionWriteTimeBeforeSut9 = new FileInfo(bloomCollectionPath).LastWriteTime;
@@ -251,6 +257,7 @@ namespace BloomTests.TeamCollection
 					tc._haveShownRemoteSettingsChangeWarning = false;
 
 					// SUT9: repo modified, doing check on idle. No changes or warning.
+					Thread.Sleep(2);
 					tc.SyncLocalAndRepoCollectionFiles(false);
 					Assert.That(tc._haveShownRemoteSettingsChangeWarning, Is.False, "user should not have been warned");
 					var collectionWriteTimeAfterSut9 = new FileInfo(bloomCollectionPath).LastWriteTime;
@@ -263,6 +270,7 @@ namespace BloomTests.TeamCollection
 					var repoWriteTimeBeforeSut10 = new FileInfo(otherFilesPath).LastWriteTime;
 
 					// SUT10: both modified, doing check on idle. No changes. User warned.
+					Thread.Sleep(2);
 					using (var se = new BloomMessageBox.ShowExpected())
 					{
 						tc.SyncLocalAndRepoCollectionFiles(false);
@@ -287,6 +295,7 @@ namespace BloomTests.TeamCollection
 					RobustFile.WriteAllText(collectionStylesPath, "This is the modified collection styles");
 
 					// SUT11: custom collection styles modified while Bloom was not running. Copied to repo.
+					Thread.Sleep(2);
 					tc.SyncLocalAndRepoCollectionFiles();
 					var repoWriteTimeAfterSut11 = new FileInfo(otherFilesPath).LastWriteTime;
 					Assert.That(repoWriteTimeAfterSut11, Is.GreaterThanOrEqualTo(repoWriteTimeBeforeSut11));

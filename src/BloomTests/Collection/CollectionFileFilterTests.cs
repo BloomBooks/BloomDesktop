@@ -12,7 +12,7 @@ using SIL.IO;
 
 namespace BloomTests.Collection
 {
-	internal class CollectionFilterTests
+	internal class CollectionFileFilterTests
 	{
 
 
