@@ -2037,5 +2037,38 @@ p {
 			var output = HtmlDom.RemoveUnwantedLanguageRulesFromCss(cssText, new[] { "en", "fr", "enc", "zh-CN" });
 			Assert.That(output, Is.EqualTo(cssText));
 		}
+
+		[TestCase("abc")]
+		[TestCase("<p>abc</p>")]
+		[TestCase("<span>abc</span>")]
+		[TestCase("<label>lbl</label>abc")]
+		public void DivHasContent_HasContent_ReturnsTrue(string innerXml)
+		{
+			XmlDocument doc = new XmlDocument();
+			doc.LoadXml($"<div>{innerXml}</div>");
+			XmlElement div = doc.DocumentElement;
+
+			Assert.That(HtmlDom.DivHasContent(div), Is.True);
+
+			// div is not modified
+			Assert.That(div.InnerXml, Is.EqualTo(innerXml));
+		}
+
+		[TestCase("")]
+		[TestCase("<p></p>")]
+		[TestCase("<span></span>")]
+		[TestCase("<label>lbl</label>")]
+		[TestCase("<label>lbl</label><p></p>")]
+		public void DivHasContent_HasNoContent_ReturnsFalse(string innerXml)
+		{
+			XmlDocument doc = new XmlDocument();
+			doc.LoadXml($"<div>{innerXml}</div>");
+			XmlElement div = doc.DocumentElement;
+
+			Assert.That(HtmlDom.DivHasContent(div), Is.False);
+
+			// div is not modified
+			Assert.That(div.InnerXml, Is.EqualTo(innerXml));
+		}
 	}
 }
