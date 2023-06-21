@@ -2819,6 +2819,9 @@ namespace BloomTests.Book
 							<div class='bloom-editable bloom-content1' contenteditable='true' lang='en'>
 								Some English in back matter.
 							</div>
+							<div class='bloom-editable Inside-Back-Cover-style bloom-content1 bloom-contentNational1 bloom-visibility-code-on' lang='lbl' contenteditable='true' data-book='insideBackCover'>
+								<label class='bubble'>If you need somewhere to put more information about the book, you can use this page, which is the inside of the back cover.</label>
+							</div>
 						</div>
 					</div>
 				</body></html>");
@@ -2942,7 +2945,7 @@ namespace BloomTests.Book
 				</body></html>");
 
 			var book = CreateBook();
-			var allLanguages = book.AllPublishableLanguages();
+			var allLanguages = book.AllPublishableLanguages(includeLangsOccurringOnlyInXmatter: true);
 			Assert.That(allLanguages["xyz"], Is.True);
 			Assert.That(allLanguages["bbb"], Is.True);
 			Assert.That(allLanguages.Count, Is.EqualTo(2));
@@ -2975,7 +2978,7 @@ namespace BloomTests.Book
 				</body></html>");
 
 			var book = CreateBook();
-			var allLanguages = book.AllPublishableLanguages();
+			var allLanguages = book.AllPublishableLanguages(includeLangsOccurringOnlyInXmatter: true);
 			Assert.That(allLanguages.ContainsKey("xyz"), Is.False); // book L1 does not have to be included if it does not occur (strange, but maybe picture or sign language book)
 			Assert.That(allLanguages["de"], Is.True);
 			Assert.That(allLanguages["en"], Is.True);
@@ -3018,11 +3021,47 @@ namespace BloomTests.Book
 				</body></html>");
 
 			var book = CreateBook();
-			var allLanguages = book.AllPublishableLanguages();
-			Assert.That(allLanguages.ContainsKey("xyz"), Is.False); // no xyz in content (or anywhere); no longer forced in because L1
+			var allLanguages = book.AllPublishableLanguages(includeLangsOccurringOnlyInXmatter: true);
+			Assert.That(allLanguages.ContainsKey("xyz"), Is.False); // no xyz in content (or anywhere); no longer forced in just because it is L1
 			Assert.That(allLanguages["de"], Is.True);
 			Assert.That(allLanguages["en"], Is.False); // in first tg as content; in second TG only as bubble. So present, but not complete.
 			Assert.That(allLanguages.Count, Is.EqualTo(2));
+		}
+
+		[Test]
+		public void AllPublishableLanguages_OnlyXmatterLangsWhichArePartOfTheCollection()
+		{
+			_bookDom = new HtmlDom(
+				@"<html>
+				<head>
+					<meta content='text/html; charset=utf-8' http-equiv='content-type' />
+					<title>Test Shell</title>
+					<link rel='stylesheet' href='Basic Book.css' type='text/css' />
+					<link rel='stylesheet' href='../../previewMode.css' type='text/css' />;
+				</head>
+				<body>
+					<div class='bloom-page bloom-backMatter' id='guid1'>
+						<div class='bloom-translationGroup bloom-trailingElement'>
+							<div class='bloom-editable bloom-content1' contenteditable='true' lang='en'>
+								English in xmatter
+							</div>
+							<div class='bloom-editable bloom-content1' contenteditable='true' lang='fr'>
+								French in xmatter
+							</div>
+						</div>
+					</div>
+				</body>
+				</html>");
+
+			var collectionSettings = CreateDefaultCollectionsSettings();
+			collectionSettings.Language1Tag = "tpi";
+			collectionSettings.Language2Tag = "en";
+			collectionSettings.Language3Tag = "pt";
+			var book = CreateBook(collectionSettings);
+			var allLanguages = book.AllPublishableLanguages(includeLangsOccurringOnlyInXmatter: true);
+			Assert.That(allLanguages.ContainsKey("en"), Is.True);
+			Assert.That(allLanguages.ContainsKey("fr"), Is.False);
+			Assert.That(allLanguages.Count, Is.EqualTo(1));
 		}
 
 		[Test]

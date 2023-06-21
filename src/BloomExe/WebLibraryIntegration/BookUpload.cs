@@ -492,17 +492,22 @@ namespace Bloom.WebLibraryIntegration
 				parseId = ""; // in case of early return
 
 				var languagesToUpload = book.BookInfo.PublishSettings.BloomLibrary.TextLangs.IncludedLanguages().ToArray();
+				var languagesToAdvertiseOnBlorg = book.GetTextLanguagesToAdvertiseOnBloomLibrary(languagesToUpload).ToArray();
+
 				// When initializing, we may set the collection's sign language to IncludeByDefault so the checkbox on the publish screen
 				// gets set by default. Also, videos could have been removed since the user last visited the publish screen (e.g. bulk upload).
 				// So we need to make sure we have videos before including the sign language.
 				if (book.HasSignLanguageVideos())
+				{
 					languagesToUpload = languagesToUpload.Union(book.BookInfo.PublishSettings.BloomLibrary.SignLangs.IncludedLanguages()).ToArray();
+					languagesToAdvertiseOnBlorg = languagesToAdvertiseOnBlorg.Union(book.BookInfo.PublishSettings.BloomLibrary.SignLangs.IncludedLanguages()).ToArray();
+				}
 
 				// Set this in the metadata so it gets uploaded. Do this in the background task as it can take some time.
 				// These bits of data can't easily be set while saving the book because we save one page at a time
 				// and they apply to the book as a whole.
 				book.BookInfo.LanguageTableReferences =
-					ParseClient.GetLanguagePointers(book.BookData.MakeLanguageUploadData(languagesToUpload));
+					ParseClient.GetLanguagePointers(book.BookData.MakeLanguageUploadData(languagesToAdvertiseOnBlorg));
 				book.BookInfo.PageCount = book.GetPages().Count();
 				book.BookInfo.Save();
 				// If the caller wants to preserve existing thumbnails, recreate them only if one or more of them do not exist.
