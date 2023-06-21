@@ -347,6 +347,7 @@ namespace Bloom.web.controllers
 		internal bool UpdatePreview(ApiRequest request, bool forVideo)
 		{
 			InitializeLanguagesInBook(request);
+			_progress.Reset(); // Otherwise errors get carried over between runs of the preview.
 			_lastSettings = GetSettings();
 			_lastThumbnailBackgroundColor = _thumbnailBackgroundColor;
 			if (forVideo)
@@ -370,9 +371,11 @@ namespace Bloom.web.controllers
 			// the page-range control.
 			_lastSettings.RemoveInteractivePages = forVideo;
 			PreviewUrl = MakeBloomPubForPreview(request.CurrentBook, _bookServer, _progress, _thumbnailBackgroundColor, _lastSettings);
-			if (_progress.HaveProblemsBeenReported)
+			if (_progress.HaveDisablingErrorsBeenReported)
 			{
-				_webSocketServer.SendString(kWebSocketContext, kWebsocketEventId_Preview, "");
+				// Tried sending empty string, but SendString() ignores empty messages. "stopPreview" gets interpreted as a command to stop
+				// the preview spinner.
+				_webSocketServer.SendString(kWebSocketContext, kWebsocketEventId_Preview, "stopPreview");
 				return false;
 			}
 			_webSocketServer.SendString(kWebSocketContext, kWebsocketEventId_Preview, PreviewUrl);
@@ -421,7 +424,7 @@ namespace Bloom.web.controllers
 				var message = new LicenseChecker().CheckBook(book, settings.LanguagesToInclude.ToArray());
 				if (message != null)
 				{
-					progress.MessageWithoutLocalizing(message, ProgressKind.Error);
+					progress.MessageWithoutLocalizing(message, ProgressKind.DisablingError);
 					LicenseOK = false;
 					_webSocketServer.SendString(kWebSocketContext, kWebsocketState_LicenseOK, "false");
 					return null;

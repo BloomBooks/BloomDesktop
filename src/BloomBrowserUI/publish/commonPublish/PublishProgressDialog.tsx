@@ -113,6 +113,7 @@ export const PublishProgressDialog: React.FunctionComponent<{
                 switch (progressEvent.progressKind) {
                     case "Error":
                     case "Warning":
+                    case "DisablingError":
                         setErrorEncountered(true);
                     // deliberately fall through
                     case "Progress":

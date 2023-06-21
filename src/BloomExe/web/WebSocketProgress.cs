@@ -8,7 +8,8 @@ namespace Bloom.web
 	public enum ProgressKind
 	{
 		Error, Warning, Instruction, Note, Progress, Heading,
-		Fatal // Like Error, but Bloom will have to quit after reporting.
+		Fatal, // Like Error, but Bloom will have to quit after reporting.
+		DisablingError // Like Error, but Bloom should disable any output from the thing using the progress.
 	};
 
 	// NB: This class is designed to map, via json, to IBloomWebSocketProgressEvent, so the
@@ -33,6 +34,9 @@ namespace Bloom.web
 			{
 				case ProgressKind.Error:
 					this.progressKind = "Error";
+					break;
+				case ProgressKind.DisablingError:
+					this.progressKind = "DisablingError";
 					break;
 				case ProgressKind.Fatal:
 					this.progressKind = "Fatal";
@@ -70,7 +74,6 @@ namespace Bloom.web
 	/// </summary>
 	public class WebSocketProgress : IWebSocketProgress
 	{
-
 
 		private readonly IBloomWebSocketServer _bloomWebSocketServer;
 		private readonly string _clientContext;
@@ -114,6 +117,16 @@ namespace Bloom.web
 
 		public bool LogAllMessages;
 
+		/// <summary>
+		/// Resets all the flags that track whether we've reported any problems.
+		/// </summary>
+		public void Reset()
+		{
+			HaveProblemsBeenReported = false;
+			HasFatalProblemBeenReported = false;
+			HaveDisablingErrorsBeenReported = false;
+		}
+
 		public virtual void MessageWithoutLocalizing(string message, ProgressKind kind=ProgressKind.Progress)
 		{
 			dynamic messageBundle = new DynamicJson();
@@ -125,6 +138,10 @@ namespace Bloom.web
 				case ProgressKind.Fatal:
 					HaveProblemsBeenReported = true;
 					HasFatalProblemBeenReported = true;
+					break;
+				case ProgressKind.DisablingError:
+					HaveProblemsBeenReported = true;
+					HaveDisablingErrorsBeenReported = true;
 					break;
 				case ProgressKind.Error:
 				case ProgressKind.Warning:
@@ -171,6 +188,7 @@ namespace Bloom.web
 
 		public bool HaveProblemsBeenReported { get; private set; }
 
+		public bool HaveDisablingErrorsBeenReported { get; private set; }
 		public bool HasFatalProblemBeenReported { get; private set; }
 
 		// Use with care: if the first parameter is a string, you can leave out one of the earlier arguments with no compiler warning.

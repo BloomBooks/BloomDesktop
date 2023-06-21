@@ -8,6 +8,7 @@ export interface IBloomWebSocketEvent {
 export interface IBloomWebSocketProgressEvent extends IBloomWebSocketEvent {
     progressKind?:
         | "Error"
+        | "DisablingError"
         | "Warning"
         | "Progress"
         | "Note"
