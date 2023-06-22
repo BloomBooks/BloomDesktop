@@ -144,6 +144,9 @@ namespace BloomTests.TeamCollection
 					Assert.That(new FileInfo(bloomCollectionPath).LastWriteTime,
 						Is.GreaterThanOrEqualTo(collectionWriteTime1));
 
+					// We need to make sure the write time of the modified file is measurably different
+					// so Bloom knows there is a change.
+					Thread.Sleep(2);
 					File.WriteAllText(bloomCollectionPath, "This is a modified fake collection file");
 					var collectionWriteTime2 = new FileInfo(bloomCollectionPath).LastWriteTime;
 					// According to https://stackoverflow.com/questions/31519880/windows-compatible-filesystems-file-time-resolutions,
@@ -162,12 +165,13 @@ namespace BloomTests.TeamCollection
 					// not modified by sync
 					Assert.That(new FileInfo(bloomCollectionPath).LastWriteTime, Is.EqualTo(collectionWriteTime2));
 
+					Thread.Sleep(2);
 					File.WriteAllText(bloomCollectionPath, "This is a further modified fake collection file");
 					var collectionWriteTime3 = new FileInfo(bloomCollectionPath).LastWriteTime;
 					var version2Path = Path.Combine(repoFolder.FolderPath, "version2.zip");
 					RobustFile.Copy(otherFilesPath, version2Path);
 					// modify the remote version by copying the old one back.
-					Thread.Sleep(10);
+					Thread.Sleep(2);
 					RobustFile.Copy(anotherPlace, otherFilesPath, true);
 					var repoWriteTime3 = new FileInfo(otherFilesPath).LastWriteTime;
 					Assert.That(repoWriteTime3, Is.GreaterThan(collectionWriteTime3),
@@ -227,6 +231,7 @@ namespace BloomTests.TeamCollection
 					Assert.That(repoWriteTime7, Is.EqualTo(repoWriteTime6));
 
 					tc._haveShownRemoteSettingsChangeWarning = false;
+					Thread.Sleep(2);
 					File.WriteAllText(bloomCollectionPath, "This is a modified fake collection file, for SUT 8");
 					var collectionWriteTimeBeforeSut8 = new FileInfo(bloomCollectionPath).LastWriteTime;
 					var localWriteTimeBeforeSut8 = tc.LocalCollectionFilesRecordedSyncTime();
@@ -292,6 +297,7 @@ namespace BloomTests.TeamCollection
 					tc.SyncLocalAndRepoCollectionFiles();
 					var localWriteTimeBeforeSut11 = tc.LocalCollectionFilesRecordedSyncTime();
 					var repoWriteTimeBeforeSut11 = new FileInfo(otherFilesPath).LastWriteTime;
+					Thread.Sleep(2);
 					RobustFile.WriteAllText(collectionStylesPath, "This is the modified collection styles");
 
 					// SUT11: custom collection styles modified while Bloom was not running. Copied to repo.
