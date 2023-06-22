@@ -384,7 +384,6 @@ namespace Bloom.web.controllers
 
 		public void HandleThumbnailRequest(ApiRequest request)
 		{
-			var bookInfo = GetBookInfoFromRequestParam(request);
 			lock (_thumbnailEventsLock)
 			{
 				if (_thumbnailEventsToWaitFor > 0)
@@ -394,6 +393,8 @@ namespace Bloom.web.controllers
 						StartupScreenManager.StartupMilestoneReached("collectionButtonsDrawn");
 				}
 			}
+
+			var bookInfo = GetBookInfoFromRequestParam(request);			
 
 			// Not sure what causes bookInfo to be null, but apparently it's possible: See BL-12354
 			// Let's gracefully fail in this scenario
