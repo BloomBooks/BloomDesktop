@@ -49,6 +49,11 @@ namespace Bloom.Collection
 		internal string PendingNumberingStyle { get; set; }
 		internal string PendingXmatter { get; set; }
 
+		internal WritingSystem PendingLanguage1;
+		internal WritingSystem PendingLanguage2;
+		internal WritingSystem PendingLanguage3;
+		internal WritingSystem PendingSignLanguage;
+
 		public CollectionSettingsDialog(CollectionSettings collectionSettings,
 			QueueRenameOfCollection queueRenameOfCollection, PageRefreshEvent pageRefreshEvent,
 			TeamCollectionManager tcManager, XMatterPackFinder xmatterPackFinder)
@@ -62,6 +67,11 @@ namespace Bloom.Collection
 			_language1Name.UseMnemonic = false; // Allow & to be part of the language display names.
 			_language2Name.UseMnemonic = false; // This may be unlikely, but can't be ruled out.
 			_language3Name.UseMnemonic = false; // See https://issues.bloomlibrary.org/youtrack/issue/BL-9919.
+
+			PendingLanguage1 = _collectionSettings.Language1.Clone();
+			PendingLanguage2 = _collectionSettings.Language2.Clone();
+			PendingLanguage3 = _collectionSettings.Language3.Clone();
+			PendingSignLanguage = _collectionSettings.SignLanguage;
 
 			PendingFontSelections[0] = _collectionSettings.LanguagesZeroBased[0].FontName;
 			PendingFontSelections[1] = _collectionSettings.LanguagesZeroBased[1].FontName;
@@ -143,12 +153,12 @@ namespace Bloom.Collection
 
 		private void UpdateDisplay()
 		{
-			var lang1UiName = _collectionSettings.Language1.Name;
-			var lang2UiName = _collectionSettings.Language2.Name;
-			_language1Name.Text = string.Format("{0} ({1})", lang1UiName, _collectionSettings.Language1Tag);
-			_language2Name.Text = string.Format("{0} ({1})", lang2UiName, _collectionSettings.Language2Tag);
+			var lang1UiName = PendingLanguage1.Name;
+			var lang2UiName = PendingLanguage2.Name;
+			_language1Name.Text = string.Format("{0} ({1})", lang1UiName, PendingLanguage1.Tag);
+			_language2Name.Text = string.Format("{0} ({1})", lang2UiName, PendingLanguage2.Tag);
 			const string unsetLanguageName = "--";
-			if (string.IsNullOrEmpty(_collectionSettings.Language3Tag))
+			if (string.IsNullOrEmpty(PendingLanguage3.Tag))
 			{
 				_language3Name.Text = unsetLanguageName;
 				_removeLanguage3Link.Visible = false;
@@ -156,13 +166,13 @@ namespace Bloom.Collection
 			}
 			else
 			{
-				var lang3UiName = _collectionSettings.Language3.Name;
-				_language3Name.Text = string.Format("{0} ({1})", lang3UiName, _collectionSettings.Language3Tag);
+				var lang3UiName = PendingLanguage3.Name;
+				_language3Name.Text = string.Format("{0} ({1})", lang3UiName, PendingLanguage3.Tag);
 				_removeLanguage3Link.Visible = true;
 				_changeLanguage3Link.Text = LocalizationManager.GetString("CollectionSettingsDialog.LanguageTab.ChangeLanguageLink", "Change...");
 			}
 
-			if (string.IsNullOrEmpty(_collectionSettings.SignLanguageTag))
+			if (string.IsNullOrEmpty(PendingSignLanguage.Tag))
 			{
 				_signLanguageName.Text = unsetLanguageName;
 				_removeSignLanguageLink.Visible = false;
@@ -172,8 +182,8 @@ namespace Bloom.Collection
 			}
 			else
 			{
-				var signLangUiName = _collectionSettings.SignLanguage.Name;
-				_signLanguageName.Text = string.Format("{0} ({1})", signLangUiName, _collectionSettings.SignLanguageTag);
+				var signLangUiName = PendingSignLanguage.Name;
+				_signLanguageName.Text = string.Format("{0} ({1})", signLangUiName, PendingSignLanguage.Tag);
 				_removeSignLanguageLink.Visible = true;
 				_changeSignLanguageLink.Text =
 					LocalizationManager.GetString("CollectionSettingsDialog.LanguageTab.ChangeLanguageLink", "Change...");
@@ -185,65 +195,65 @@ namespace Bloom.Collection
 
 		private void _language1ChangeLink_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
 		{
-			var potentiallyCustomName = _collectionSettings.Language1.Name;
+			var potentiallyCustomName = PendingLanguage1.Name;
 
-			var l = ChangeLanguage(_collectionSettings.Language1Tag, potentiallyCustomName);
+			var l = ChangeLanguage(PendingLanguage1.Tag, potentiallyCustomName);
 
 			if (l != null)
 			{
-				_collectionSettings.Language1.Tag = l.LanguageTag;
-				_collectionSettings.Language1.SetName(l.DesiredName, l.DesiredName != l.Names.FirstOrDefault());
+				PendingLanguage1.Tag = l.LanguageTag;
+				PendingLanguage1.SetName(l.DesiredName, l.DesiredName != l.Names.FirstOrDefault());
 				ChangeThatRequiresRestart();
 			}
 		}
 		private void _language2ChangeLink_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
 		{
-			var potentiallyCustomName = _collectionSettings.Language2.Name;
-			var l = ChangeLanguage(_collectionSettings.Language2Tag, potentiallyCustomName);
+			var potentiallyCustomName = PendingLanguage2.Name;
+			var l = ChangeLanguage(PendingLanguage2.Tag, potentiallyCustomName);
 			if (l != null)
 			{
-				_collectionSettings.Language2Tag = l.LanguageTag;
-				_collectionSettings.Language2.SetName(l.DesiredName, l.DesiredName != l.Names.FirstOrDefault());
+				PendingLanguage2.Tag = l.LanguageTag;
+				PendingLanguage2.SetName(l.DesiredName, l.DesiredName != l.Names.FirstOrDefault());
 				ChangeThatRequiresRestart();
 			}
 		}
 
 		private void _language3ChangeLink_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
 		{
-			var potentiallyCustomName = _collectionSettings.Language3.Name;
-			var l = ChangeLanguage(_collectionSettings.Language3Tag, potentiallyCustomName);
+			var potentiallyCustomName = PendingLanguage3.Name;
+			var l = ChangeLanguage(PendingLanguage3.Tag, potentiallyCustomName);
 			if (l != null)
 			{
-				_collectionSettings.Language3Tag = l.LanguageTag;
-				_collectionSettings.Language3.SetName(l.DesiredName, l.DesiredName != l.Names.FirstOrDefault());
+				PendingLanguage3.Tag = l.LanguageTag;
+				PendingLanguage3.SetName(l.DesiredName, l.DesiredName != l.Names.FirstOrDefault());
 				ChangeThatRequiresRestart();
 			}
 		}
 		private void _removeSecondNationalLanguageButton_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
 		{
-			_collectionSettings.Language3Tag = string.Empty;	// null causes a crash in trying to set it again (BL-5795)
+			PendingLanguage3.ChangeTag(string.Empty);	// null causes a crash in trying to set it again (BL-5795)
 			ChangeThatRequiresRestart();
 		}
 
 		private void _signLanguageChangeLink_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
 		{
-			var potentiallyCustomName = _collectionSettings.SignLanguage.Name;
-			var l = ChangeLanguage(_collectionSettings.SignLanguageTag, potentiallyCustomName, true);
+			var potentiallyCustomName = PendingSignLanguage.Name;
+			var l = ChangeLanguage(PendingSignLanguage.Tag, potentiallyCustomName, true);
 			if (l != null)
 			{
 				// How to know if the new sign language name is custom or not!?
 				// 1- set the Tag (which also sets the Name to the non-custom default
 				// 2- read the Name
 				// 3- if it's not the same as DesiredName, the new name is custom
-				_collectionSettings.SignLanguageTag = l.LanguageTag;
-				var slIsCustom = _collectionSettings.SignLanguage.Name != l.DesiredName;
-				_collectionSettings.SignLanguage.SetName(l.DesiredName, slIsCustom);
+				PendingSignLanguage.Tag = l.LanguageTag;
+				var slIsCustom = PendingSignLanguage.Name != l.DesiredName;
+				PendingSignLanguage.SetName(l.DesiredName, slIsCustom);
 				ChangeThatRequiresRestart();
 			}
 		}
 		private void _removeSignLanguageButton_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
 		{
-			_collectionSettings.SignLanguageTag = string.Empty;
+			PendingSignLanguage.ChangeTag(string.Empty);
 			ChangeThatRequiresRestart();
 		}
 
@@ -315,8 +325,20 @@ namespace Bloom.Collection
 			_collectionSettings.XMatterPackName = PendingXmatter;
 
 			//no point in letting them have the Nat lang 2 be the same as 1
-			if (_collectionSettings.Language2Tag == _collectionSettings.Language3Tag)
-				_collectionSettings.Language3Tag = null;
+			if (PendingLanguage2.Tag == PendingLanguage3.Tag)
+				PendingLanguage3.ChangeTag(String.Empty);
+			_collectionSettings.Language1.ChangeTag(PendingLanguage1.Tag);
+			_collectionSettings.Language1.SetName(PendingLanguage1.Name, PendingLanguage1.IsCustomName);
+			_collectionSettings.Language2.ChangeTag(PendingLanguage2.Tag);
+			// Note that setting the tag to empty will cause the name to be set to empty.
+			if (!String.IsNullOrEmpty(PendingLanguage2.Tag))
+				_collectionSettings.Language2.SetName(PendingLanguage2.Name, PendingLanguage2.IsCustomName);
+			_collectionSettings.Language3.ChangeTag(PendingLanguage3.Tag);
+			if (!String.IsNullOrEmpty(PendingLanguage3.Tag))
+				_collectionSettings.Language3.SetName(PendingLanguage3.Name, PendingLanguage3.IsCustomName);
+			_collectionSettings.SignLanguage.ChangeTag(PendingSignLanguage.Tag);
+			if (!String.IsNullOrEmpty(PendingSignLanguage.Tag))
+				_collectionSettings.SignLanguage.SetName(PendingSignLanguage.Name, PendingSignLanguage.IsCustomName);
 
 			if(_bloomCollectionName.Text.Trim()!=_collectionSettings.CollectionName)
 			{
