@@ -18,11 +18,11 @@ export const PublishVisibilityGroup: React.FunctionComponent<{}> = props => {
                             css={css`
                                 display: flex;
                                 align-items: start; // align image with top of checkbox
+                                margin-left: -9px; //The checkbox has some right-padding that we want to overlap
                             `}
                         >
                             <img
                                 css={css`
-                                    margin-left: -9px; //The checkbox has some right-padding that we want to overlap
                                     padding-right: 3px;
                                 `}
                                 src="/bloom/publish/LibraryPublish/DRAFT-Stamp.svg"
