@@ -250,15 +250,6 @@ namespace Bloom.Spreadsheet
 					string colorString = styleAttribute.Substring(colorCodeStartIndex, colorCodeEndIndex - colorCodeStartIndex);
 					Color = ColorTranslator.FromHtml(colorString);
 				}
-				else if (styleAttribute.IndexOf("color:rgb(") > -1)
-				{
-					//extract r, g, b values
-					int startIndex = styleAttribute.IndexOf("color:rgb(") + 10;
-					int endIndex = styleAttribute.IndexOf(")", startIndex);
-					string rgbString = styleAttribute.Substring(startIndex, endIndex - startIndex);
-					string[] rgbValues = rgbString.Split(',');
-					Color = Color.FromArgb(int.Parse(rgbValues[0]), int.Parse(rgbValues[1]), int.Parse(rgbValues[2]));
-				}
 			}
 		}
 

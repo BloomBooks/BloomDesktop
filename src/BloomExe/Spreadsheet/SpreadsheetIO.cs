@@ -462,7 +462,6 @@ namespace Bloom.Spreadsheet
 		private static bool IsBlack(Color color)
 		{
 			return color.R == 0 && color.B == 0 && color.G == 0;
-			//return ColorTranslator.ToHtml(color) == "Black" || ColorTranslator.ToHtml(color) == "#000000";
 		}
 
 		// Excel formatting can be at the entire cell level (e.g. the entire cell is marked italic)
