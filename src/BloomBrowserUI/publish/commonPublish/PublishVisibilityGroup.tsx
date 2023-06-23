@@ -6,9 +6,7 @@ import { useL10n } from "../../react_components/l10nHooks";
 import { Span } from "../../react_components/l10nComponents";
 import { ApiCheckbox } from "../../react_components/ApiCheckbox";
 
-export const PublishVisibilityGroup: React.FunctionComponent<{
-    onChange?: () => void;
-}> = props => {
+export const PublishVisibilityGroup: React.FunctionComponent<{}> = props => {
     return (
         <SettingsGroup
             label={useL10n("Visibility", "PublishTab.Upload.Visibility")}

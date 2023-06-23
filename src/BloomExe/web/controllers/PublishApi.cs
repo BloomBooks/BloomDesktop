@@ -264,12 +264,10 @@ namespace Bloom.web.controllers
 			apiHandler.RegisterBooleanEndpointHandler("publish/markAsDraft", 
 				readRequest =>
 				{
-					System.Console.Write("readrequest");
-						return readRequest.CurrentBook.BookInfo.MetaData.Draft;
+					return readRequest.CurrentBook.BookInfo.MetaData.Draft;
 				},
 				(writeRequest, value) =>
 				{
-					System.Console.Write("writerequest");
 					writeRequest.CurrentBook.BookInfo.MetaData.Draft = value;
 				}, false);
 		}
