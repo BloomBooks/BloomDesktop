@@ -28,8 +28,8 @@ export const PublishVisibilityGroup: React.FunctionComponent<{}> = props => {
                                 src="/bloom/publish/LibraryPublish/DRAFT-Stamp.svg"
                             />
                             <Span l10nKey="PublishTab.Upload.Draft">
-                                Show this book only to reviewers with whom I
-                                share the URL of this book.
+                                Do not show this book to the public yet. I will
+                                share its URL with reviewers for feedback.
                             </Span>
                         </div>
                     </React.Fragment>

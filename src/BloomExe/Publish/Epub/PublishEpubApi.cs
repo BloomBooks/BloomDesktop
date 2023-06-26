@@ -121,7 +121,8 @@ namespace Bloom.Publish.Epub
 
 		private void HandleEpubSave(ApiRequest request)
 		{
-			// Will only update the staged ePUB files if needed
+			// Will only update the staged ePUB files if needed.  If the license is not valid, we still want
+			// enough work done to display the error message to the user.  See BL-12334
 			if (RefreshPreview(request.CurrentBook.BookInfo.PublishSettings.Epub, forceUpdate:false))
 			{
 				request.PostSucceeded();
@@ -130,7 +131,10 @@ namespace Bloom.Publish.Epub
 					var message = new LicenseChecker().CheckBook(request.CurrentBook, request.CurrentBook.ActiveLanguages.ToArray());
 					_webSocketServer.SendString(kWebsocketContext, kWebsocketState_LicenseOK, (message == null) ? "true" : "false");
 					if (message != null)
+					{
+						EpubMaker.AbortRequested = true;	// cause license error message to be displayed if the user clicks again
 						return;
+					}
 				}
 				string destPath = null;
 				if (ControlForInvoke != null && ControlForInvoke.InvokeRequired)
@@ -323,10 +327,6 @@ namespace Bloom.Publish.Epub
 				throw new ApplicationException(@"Must not attempt to make epubs on UI thread");
 			}
 
-
-			if (EpubMaker != null)
-				EpubMaker.AbortRequested = false;
-
 			// For some unknown reason, if the accessibility window is showing, some of the browser navigation
 			// that is needed to accurately determine which content is visible simply doesn't happen.
 			// It would be disconcerting if it popped to the top after we close it and reopen it.
@@ -343,9 +343,8 @@ namespace Bloom.Publish.Epub
 
 			var htmlPath = _bookSelection.CurrentSelection.GetPathHtmlFile();
 			var newVersion = Book.Book.ComputeHashForAllBookRelatedFiles(htmlPath);
-			bool previewIsAlreadyCurrent;
-			previewIsAlreadyCurrent = !newSettings.RequiresDifferentPreviewThan(_lastPreviewSettings) && EpubMaker != null && newVersion == _bookVersion &&
-										!EpubMaker.AbortRequested && !force;
+			var previewIsAlreadyCurrent = !newSettings.RequiresDifferentPreviewThan(_lastPreviewSettings) && newVersion == _bookVersion &&
+										EpubMaker != null && !EpubMaker.AbortRequested && !force;
 
 			if (previewIsAlreadyCurrent)
 			{

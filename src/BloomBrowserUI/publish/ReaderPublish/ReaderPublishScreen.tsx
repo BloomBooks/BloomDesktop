@@ -157,6 +157,9 @@ const ReaderPublishScreenInternal: React.FunctionComponent<{
         "&roundPageWidthToNearestK=2" + // Fractional pixels can cause a small sliver of the next page or background color to show (See BL-11497)
         "&roundMarginToNearestK=2"; // Fractional pixels can cause a small sliver of the next page or background color to show (See BL-11497)
 
+    const showBlankPreviewScreen =
+        !props.showPreview || bookUrl === "stopPreview";
+
     const mainPanel = (
         <React.Fragment>
             <PublishPanel
@@ -187,7 +190,7 @@ const ReaderPublishScreenInternal: React.FunctionComponent<{
                     defaultLandscape={defaultLandscape}
                     canRotate={canRotate}
                     // The following leaves a blank screen until the Preview button is pressed
-                    url={`${props.showPreview ? previewUrl : ""}`}
+                    url={`${showBlankPreviewScreen ? "" : previewUrl}`}
                     showPreviewButton={true}
                     highlightPreviewButton={highlightPreview}
                     onPreviewButtonClicked={() => {

@@ -230,13 +230,11 @@
         <note>ID: PublishTab.Feature.Vision.Possible</note>
         <note>This is a tooltip.</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Upload.Draft" translate="no">
-        <!-- added in 5.6 -->
-        <source xml:lang="en">Show this book only to reviewers with whom I share the URL of this book.</source>
+      <trans-unit id="PublishTab.Upload.Draft">
+        <source xml:lang="en">Do not show this book to the public yet. I will share its URL with reviewers for feedback.</source>
         <note>ID: PublishTab.Upload.Draft</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Upload.Visibility" translate="no">
-        <!-- added in 5.6 -->
+      <trans-unit id="PublishTab.Upload.Visibility">
         <source xml:lang="en">Visibility</source>
         <note>ID: PublishTab.Upload.Visibility</note>
       </trans-unit>

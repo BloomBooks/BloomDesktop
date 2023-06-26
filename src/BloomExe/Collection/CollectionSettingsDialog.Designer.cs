@@ -574,7 +574,6 @@ namespace Bloom.Collection
 			this._automaticallyUpdate.TabIndex = 5;
 			this._automaticallyUpdate.Text = "Automatically Update Bloom";
 			this._automaticallyUpdate.UseVisualStyleBackColor = false;
-			this._automaticallyUpdate.CheckedChanged += new System.EventHandler(this._automaticallyUpdate_CheckedChanged);
 			// 
 			// label2
 			// 
@@ -603,7 +602,6 @@ namespace Bloom.Collection
 			this._showExperimentalBookSources.TabIndex = 7;
 			this._showExperimentalBookSources.Text = "Show Experimental Book Sources";
 			this._showExperimentalBookSources.UseVisualStyleBackColor = false;
-			this._showExperimentalBookSources.CheckedChanged += new System.EventHandler(this._showExperimentalBookSources_CheckedChanged);
 			// 
 			// _enterpriseRequiredForTeamCollection
 			// 
@@ -629,7 +627,6 @@ namespace Bloom.Collection
 			this._allowTeamCollection.TabIndex = 9;
 			this._allowTeamCollection.Text = "Team Collections";
 			this._allowTeamCollection.UseVisualStyleBackColor = false;
-			this._allowTeamCollection.CheckedChanged += new System.EventHandler(this._allowTeamCollection_CheckedChanged);
 			// 
 			// _enterpriseRequiredForSpreadsheetImportExport
 			// 
@@ -655,7 +652,6 @@ namespace Bloom.Collection
 			this._allowSpreadsheetImportExport.TabIndex = 11;
 			this._allowSpreadsheetImportExport.Text = "Spreadsheet Import/Export";
 			this._allowSpreadsheetImportExport.UseVisualStyleBackColor = false;
-			this._allowSpreadsheetImportExport.CheckedChanged += new System.EventHandler(this._allowSpreadsheetImportExport_CheckedChanged);
 			// 
 			// _okButton
 			// 

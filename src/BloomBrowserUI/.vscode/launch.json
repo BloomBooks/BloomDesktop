@@ -1,34 +1,62 @@
 {
-    // This works with the vscode debug Chrome and Firefox extensions,
-    // which you need to install.
-    // Firefox: CTRL+P: "ext install vscode-firefox-debug". See https://marketplace.visualstudio.com/items?itemName=hbenl.vscode-firefox-debug
-    // Chrome: CTRL+P: "ext install Debugger for Chrome"
-    // 1) Run Bloom, go to a page.
-    // 2) Here in VSCODE, run Debug (F5, once you've done it once)
-    //
-    // This should open the page in Firefox or Chrome. Breakpoints should point to the typescript.
-    //
-    // Firefox Troubleshooting tips
-    // Make sure you have loaded the VSCode Extension Debugger for Firefox (hbenl.vscode-firefox-debug)
-    // This works now (as of 6 June 2018). Yay! You may still have to refresh Firefox after running the debugger.
-    //
-    // Chrome Troubleshooting tips
-    // Note: you cannot (yet?) have the chrome inspector open at the same time (!!!) https://github.com/Microsoft/vscode-chrome-debug/issues/83,
-    //       https://github.com/Microsoft/vscode-chrome-debug/issues/95, https://bugs.chromium.org/p/chromium/issues/detail?id=129539#.
-    // Workaround: open a different tab with the same URL, you can Inspect that one.
-    // * If Chrome cannot get the page, check that your Bloom is really listening on 8089 as listed in the "url" below? Bloom has
-    //   the ability to change ports if the default isn't available.
-    // If the debugger says it cannot connect to Chrome:
-    // * Uncomment the diagnosticLogging line below
-    // * Stop all other chromes: TASKKILL /IM chrome.exe /F
-    // * Try launching chrome first. Comment out the runtimeExecutable and runtimeArgs lines below. Then in a command prompt, run chrome in debugger mode:
-    //     "c:/Program Files (x86)/Google/Chrome/Application/chrome.exe" --remote-debugging-port=9222 --no-first-run --incognito --disable-extensions
-    // * Try restarting your computer (clears out the bazillion chromes around), which somehow interfer.
-    // * Try avoiding using chrome for other things while doing this (e.g. use FF).
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Launch in Firefox",
+            // 1. Launch the test runner: `yarn karma start --browsers Chrome`.
+            // 2. Start this "Debug Unit Tests".
+            // 3. You may have to do a browser REFRESH before breakpoints are caught.
+            // Enhance: could we get it to attach to the chrome that karma starts? Maybe need to have karma start one with the debug port open?
+            "name": "Debug Unit Tests",
+            "type": "chrome",
+            "request": "launch",
+            "webRoot": "${workspaceFolder}",
+            "sourceMaps": true,
+            "url": "http://localhost:9876/debug.html",
+            "userDataDir": "${workspaceFolder}/output/chrome",
+            "breakOnLoad": true
+
+            // This started causing breakpoints not be hit, at least by version 5.5 (new webpack?)
+            // "sourceMapPathOverrides": {
+            //     "webpack://editTabBundle/./*": "${workspaceFolder}/*"
+            // }
+
+            // "trace": true, // when uncommented, this writes a log to %userprofile%\AppData\Local\Temp\vscode-chrome-debug.txt
+        },
+
+        ////////////////////////////////////////////////
+        // NOTE
+        // I think everything below this is obsolete...
+        ////////////////////////////////////////////////
+
+        // This works with the vscode debug Chrome and Firefox extensions,
+        // which you need to install.
+        // Firefox: CTRL+P: "ext install vscode-firefox-debug". See https://marketplace.visualstudio.com/items?itemName=hbenl.vscode-firefox-debug
+        // Chrome: CTRL+P: "ext install Debugger for Chrome"
+        // 1) Run Bloom, go to a page.
+        // 2) Here in VSCODE, run Debug (F5, once you've done it once)
+        //
+        // This should open the page in Firefox or Chrome. Breakpoints should point to the typescript.
+        //
+        // Firefox Troubleshooting tips
+        // Make sure you have loaded the VSCode Extension Debugger for Firefox (hbenl.vscode-firefox-debug)
+        // This works now (as of 6 June 2018). Yay! You may still have to refresh Firefox after running the debugger.
+        //
+        // Chrome Troubleshooting tips
+        // Note: you cannot (yet?) have the chrome inspector open at the same time (!!!) https://github.com/Microsoft/vscode-chrome-debug/issues/83,
+        //       https://github.com/Microsoft/vscode-chrome-debug/issues/95, https://bugs.chromium.org/p/chromium/issues/detail?id=129539#.
+        // Workaround: open a different tab with the same URL, you can Inspect that one.
+        // * If Chrome cannot get the page, check that your Bloom is really listening on 8089 as listed in the "url" below? Bloom has
+        //   the ability to change ports if the default isn't available.
+        // If the debugger says it cannot connect to Chrome:
+        // * Uncomment the diagnosticLogging line below
+        // * Stop all other chromes: TASKKILL /IM chrome.exe /F
+        // * Try launching chrome first. Comment out the runtimeExecutable and runtimeArgs lines below. Then in a command prompt, run chrome in debugger mode:
+        //     "c:/Program Files (x86)/Google/Chrome/Application/chrome.exe" --remote-debugging-port=9222 --no-first-run --incognito --disable-extensions
+        // * Try restarting your computer (clears out the bazillion chromes around), which somehow interfer.
+        // * Try avoiding using chrome for other things while doing this (e.g. use FF).
+
+        {
+            "name": "obsolete? Launch in Firefox",
             "type": "firefox",
             "request": "launch",
             "reAttach": true,
@@ -48,7 +76,7 @@
             }
         },
         {
-            "name": "Launch in Chrome",
+            "name": "obsolete? Launch in Chrome",
             "type": "chrome",
             "request": "launch",
             "runtimeExecutable": "c:/Program Files (x86)/Google/Chrome/Application/chrome.exe",
@@ -67,7 +95,7 @@
         {
             // Note the changed Port number.  I don't know why Linux successfully uses the first port tested, while Windows apparently
             // uses the third port tested.
-            "name": "Launch Linux Firefox",
+            "name": "obsolete? Launch Linux Firefox",
             "type": "firefox",
             "request": "launch",
             "url": "http://localhost:8089/bloom/CURRENTPAGE.htm",
@@ -82,7 +110,7 @@
         {
             // Note the changed Port number as well as the changed executable path.  I don't know why Linux successfully uses the first
             // port tested, while Windows apparently uses the third port tested.
-            "name": "Launch Linux Chromium",
+            "name": "obsolete? Launch Linux Chromium",
             "type": "chrome",
             "request": "launch",
             "runtimeExecutable": "/usr/bin/chromium-browser",
@@ -90,23 +118,6 @@
             "webRoot": "${workspaceRoot}",
             "sourceMaps": true,
             "userDataDir": "${workspaceRoot}/output/chrome"
-        },
-        {
-            // Note: you have to launch the test runner separately (karma start --browsers Chrome)
-            // and you may have to do a browser REFRESH before breakpoints are caught
-            // Enhance: could we get it to attach to the chrome that karma starts? Maybe need to have karma start one with the debug port open?
-            "name": "Debug Unit Tests",
-            "type": "chrome",
-            "request": "launch",
-            "webRoot": "${workspaceFolder}",
-            "sourceMaps": true,
-            "url": "http://localhost:9876/debug.html",
-            "userDataDir": "${workspaceFolder}/output/chrome",
-            "breakOnLoad": true,
-            "sourceMapPathOverrides": {
-                "webpack://editTabBundle/./*": "${workspaceFolder}/*"
-            }
-            // "trace": true, // when uncommented, this writes a log to %userprofile%\AppData\Local\Temp\vscode-chrome-debug.txt
         }
     ]
 }
