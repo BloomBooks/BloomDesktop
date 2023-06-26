@@ -203,13 +203,10 @@ namespace Bloom.web.controllers
 			{
 				if (request.HttpMethod == HttpMethods.Get)
 					return; // Should be a post
-				// Should contain a languageName and a (1-based) language number.
+				// Should have a (1-based) language number.
 				var data = DynamicJson.Parse(request.RequiredPostJson());
 				var languageNumber = (int)data.languageNumber;
-				var languageName = (string)data.languageName;
-				var needRestart = CollectionSettingsDialog.FontSettingsLinkClicked(_collectionSettings, languageName, languageNumber);
-				if (DialogBeingEdited != null && needRestart)
-					DialogBeingEdited.ChangeThatRequiresRestart();
+				HandlePendingFontSettings(languageNumber);
 				request.PostSucceeded();
 			}, true);
 			apiHandler.RegisterEndpointHandler(kApiUrlPart + "setFontForLanguage", request =>
@@ -342,6 +339,22 @@ namespace Bloom.web.controllers
 				langData[i] = new { languageName = name, fontName = font };
 			}
 			return langData;
+		}
+
+		// languageNumber is 1-based
+		private void HandlePendingFontSettings(int languageNumber)
+		{
+			Guard.Against(languageNumber == 0, "'languageNumber' should be 1-based index, but is 0");
+			var zeroBasedLanguageNumber = languageNumber - 1;
+			if (zeroBasedLanguageNumber == 2 &&
+				_collectionSettings.LanguagesZeroBased[zeroBasedLanguageNumber] == null)
+				return;
+			if (DialogBeingEdited != null)
+			{
+				var needRestart = DialogBeingEdited.FontSettingsLinkClicked(zeroBasedLanguageNumber);
+				if (needRestart)
+					DialogBeingEdited.ChangeThatRequiresRestart();
+			}
 		}
 
 		// languageNumber is 1-based
