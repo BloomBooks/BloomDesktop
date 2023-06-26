@@ -312,7 +312,7 @@ namespace Bloom.Collection
 			UpdateExperimentalBookSources();
 			UpdateTeamCollectionAllowed();
 			UpdateSpreadsheetImportExportAllowed();
-			UpdateUseWebView2();
+
 
 			_collectionSettings.Country = _countryText.Text.Trim();
 			_collectionSettings.Province = _provinceText.Text.Trim();
