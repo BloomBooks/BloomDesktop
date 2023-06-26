@@ -12,6 +12,7 @@ using Bloom.TeamCollection;
 using Bloom.MiscUI;
 using Bloom.web.controllers;
 using Bloom.Api;
+using SIL.Windows.Forms.SettingProtection;
 
 namespace Bloom.Collection
 {
@@ -27,6 +28,8 @@ namespace Bloom.Collection
 		private bool _loaded;
 		private string _subscriptionCode;
 		private string _brand;
+		private bool _settingsProtectionRequirePassword;
+		private bool _settingsProtectionNormallyHidden;
 
 		// Pending values edited through the CollectionSettingsApi
 		private string _pendingBookshelf;
@@ -54,6 +57,8 @@ namespace Bloom.Collection
 		internal WritingSystem PendingLanguage3;
 		internal string PendingSignLanguageName;
 		internal string PendingSignLanguageTag;
+		// Ugly I know, but we need to be able to access these by an index number sometimes.
+		internal WritingSystem[] PendingLanguages = new WritingSystem[3];
 
 		public CollectionSettingsDialog(CollectionSettings collectionSettings,
 			QueueRenameOfCollection queueRenameOfCollection, PageRefreshEvent pageRefreshEvent,
@@ -63,6 +68,8 @@ namespace Bloom.Collection
 			_queueRenameOfCollection = queueRenameOfCollection;
 			_pageRefreshEvent = pageRefreshEvent;
 			_xmatterPackFinder = xmatterPackFinder;
+			_settingsProtectionRequirePassword = SettingsProtectionSingleton.Settings.RequirePassword;
+			_settingsProtectionNormallyHidden = SettingsProtectionSingleton.Settings.NormallyHidden;
 			InitializeComponent();
 
 			_language1Name.UseMnemonic = false; // Allow & to be part of the language display names.
@@ -72,6 +79,9 @@ namespace Bloom.Collection
 			PendingLanguage1 = _collectionSettings.Language1.Clone();
 			PendingLanguage2 = _collectionSettings.Language2.Clone();
 			PendingLanguage3 = _collectionSettings.Language3.Clone();
+			PendingLanguages[0] = PendingLanguage1;
+			PendingLanguages[1] = PendingLanguage2;
+			PendingLanguages[2] = PendingLanguage3;
 			PendingSignLanguageName = _collectionSettings.GetSignLanguageName();
 			PendingSignLanguageTag = _collectionSettings.SignLanguageTag;
 
@@ -304,6 +314,13 @@ namespace Bloom.Collection
 			Logger.WriteMinorEvent("Settings Dialog OK Clicked");
 
 			CollectionSettingsApi.DialogBeingEdited = null;
+
+			Settings.Default.AutoUpdate = _automaticallyUpdate.Checked;
+			UpdateExperimentalBookSources();
+			UpdateTeamCollectionAllowed();
+			UpdateSpreadsheetImportExportAllowed();
+			UpdateUseWebView2();
+
 			_collectionSettings.Country = _countryText.Text.Trim();
 			_collectionSettings.Province = _provinceText.Text.Trim();
 			_collectionSettings.District = _districtText.Text.Trim();
@@ -314,6 +331,10 @@ namespace Bloom.Collection
 				if (languages[i] == null)
 					continue;
 				languages[i].FontName = PendingFontSelections[i];
+				languages[i].IsRightToLeft = PendingLanguages[i].IsRightToLeft;
+				languages[i].LineHeight = PendingLanguages[i].LineHeight;
+				languages[i].BaseUIFontSizeInPoints = PendingLanguages[i].BaseUIFontSizeInPoints;
+				languages[i].BreaksLinesOnlyAtSpaces = PendingLanguages[i].BreaksLinesOnlyAtSpaces;
 			}
 
 			_collectionSettings.PageNumberStyle = PendingNumberingStyle; // non-localized key
@@ -421,6 +442,14 @@ namespace Bloom.Collection
 		private void _cancelButton_Click(object sender, EventArgs e)
 		{
 			DialogResult = DialogResult.Cancel;
+			// Restore original value if we cancel this dialog.
+			if (SettingsProtectionSingleton.Settings.RequirePassword != _settingsProtectionRequirePassword ||
+				SettingsProtectionSingleton.Settings.NormallyHidden != _settingsProtectionNormallyHidden)
+			{
+				SettingsProtectionSingleton.Settings.RequirePassword = _settingsProtectionRequirePassword;
+				SettingsProtectionSingleton.Settings.NormallyHidden = _settingsProtectionNormallyHidden;
+				SettingsProtectionSingleton.Settings.Save();
+			}
 			CollectionSettingsApi.DialogBeingEdited = null;
 			Close();
 		}
@@ -447,27 +476,25 @@ namespace Bloom.Collection
 			ChangeThatRequiresRestart();
 		}
 
-		private void _showExperimentalBookSources_CheckedChanged(object sender, EventArgs e)
+		private void UpdateExperimentalBookSources()
 		{
-			ExperimentalFeatures.SetValue(ExperimentalFeatures.kExperimentalSourceBooks, _showExperimentalBookSources.Checked);
-			ChangeThatRequiresRestart();
+			if (ExperimentalFeatures.IsFeatureEnabled(ExperimentalFeatures.kExperimentalSourceBooks) != _showExperimentalBookSources.Checked)
+			{
+				ExperimentalFeatures.SetValue(ExperimentalFeatures.kExperimentalSourceBooks, _showExperimentalBookSources.Checked);
+				ChangeThatRequiresRestart();
+			}
 		}
 
-		private void _automaticallyUpdate_CheckedChanged(object sender, EventArgs e)
+		public bool FontSettingsLinkClicked(int zeroBasedLanguageNumber)
 		{
-			Settings.Default.AutoUpdate = _automaticallyUpdate.Checked;
-		}
-
-		public static bool FontSettingsLinkClicked(CollectionSettings settings, string langName, int langNum1Based)
-		{ 
-			var langSpec = settings.LanguagesZeroBased[langNum1Based - 1];
+			var pendingLanguage = PendingLanguages[zeroBasedLanguageNumber];
 			using (var frm = new ScriptSettingsDialog())
 			{
-				frm.LanguageName = langName;
-				frm.LanguageRightToLeft = langSpec.IsRightToLeft;
-				frm.LanguageLineSpacing = langSpec.LineHeight;
-				frm.UIFontSize = langSpec.BaseUIFontSizeInPoints;
-				frm.BreakLinesOnlyAtSpaces = langSpec.BreaksLinesOnlyAtSpaces;
+				frm.LanguageName = pendingLanguage.Name;
+				frm.LanguageRightToLeft = pendingLanguage.IsRightToLeft;
+				frm.LanguageLineSpacing = pendingLanguage.LineHeight;
+				frm.UIFontSize = pendingLanguage.BaseUIFontSizeInPoints;
+				frm.BreakLinesOnlyAtSpaces = pendingLanguage.BreaksLinesOnlyAtSpaces;
 				frm.ShowDialog();
 
 				// get the changes
@@ -476,15 +503,11 @@ namespace Bloom.Collection
 				// will save the .bloomCollection file. Later when a book
 				// is edited, defaultLangStyles.css will be written out in the book's folder, which is all
 				// that is needed for this setting to take effect.
-				langSpec.LineHeight = frm.LanguageLineSpacing;
-				langSpec.BreaksLinesOnlyAtSpaces = frm.BreakLinesOnlyAtSpaces;
-				langSpec.BaseUIFontSizeInPoints = frm.UIFontSize;
-				if (frm.LanguageRightToLeft != langSpec.IsRightToLeft) 
-				{
-					langSpec.IsRightToLeft = frm.LanguageRightToLeft;
-					return true;
-				}
-				return false;
+				pendingLanguage.LineHeight = frm.LanguageLineSpacing;
+				pendingLanguage.BreaksLinesOnlyAtSpaces = frm.BreakLinesOnlyAtSpaces;
+				pendingLanguage.BaseUIFontSizeInPoints = frm.UIFontSize;
+				pendingLanguage.IsRightToLeft = frm.LanguageRightToLeft;
+				return pendingLanguage.IsRightToLeft != _collectionSettings.LanguagesZeroBased[zeroBasedLanguageNumber].IsRightToLeft;
 			}
 		}
 
@@ -542,22 +565,31 @@ namespace Bloom.Collection
 			ChangeThatRequiresRestart();
 		}
 
-		private void _allowTeamCollection_CheckedChanged(object sender, EventArgs e)
+		private void UpdateTeamCollectionAllowed()
 		{
-			ExperimentalFeatures.SetValue(ExperimentalFeatures.kTeamCollections, _allowTeamCollection.Checked);
-			ChangeThatRequiresRestart();
+			if (ExperimentalFeatures.IsFeatureEnabled(ExperimentalFeatures.kTeamCollections) != _allowTeamCollection.Checked)
+			{
+				ExperimentalFeatures.SetValue(ExperimentalFeatures.kTeamCollections, _allowTeamCollection.Checked);
+				ChangeThatRequiresRestart();
+			}
 		}
 
-		private void _allowSpreadsheetImportExport_CheckedChanged(object sender, EventArgs e)
+		private void UpdateSpreadsheetImportExportAllowed()
 		{
-			ExperimentalFeatures.SetValue(ExperimentalFeatures.kSpreadsheetImportExport, _allowSpreadsheetImportExport.Checked);
-			ChangeThatRequiresRestart();
+			if (ExperimentalFeatures.IsFeatureEnabled(ExperimentalFeatures.kSpreadsheetImportExport) != _allowSpreadsheetImportExport.Checked)
+			{
+				ExperimentalFeatures.SetValue(ExperimentalFeatures.kSpreadsheetImportExport, _allowSpreadsheetImportExport.Checked);
+				ChangeThatRequiresRestart();
+			}
 		}
 
-		private void _allowWebView2_CheckedChanged(object sender, EventArgs e)
+		private void UpdateUseWebView2()
 		{
-			ExperimentalFeatures.SetValue(ExperimentalFeatures.kWebView2, _allowWebView2.Checked);
-			ChangeThatRequiresRestart();
+			if (ExperimentalFeatures.IsFeatureEnabled(ExperimentalFeatures.kWebView2) != _allowWebView2.Checked)
+			{
+				ExperimentalFeatures.SetValue(ExperimentalFeatures.kWebView2, _allowWebView2.Checked);
+				ChangeThatRequiresRestart();
+			}
 		}
 	}
 }
