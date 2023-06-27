@@ -81,6 +81,8 @@ namespace Bloom
 																	   | CoreWebView2PdfToolbarItems.MoreSettings; // none of its functions seem useful
 
 				_webview.CoreWebView2.Settings.IsStatusBarEnabled = false;
+				// Disable swipe navigation, which is a problem on trackpads (and touch screens). See BL-12405.
+				_webview.CoreWebView2.Settings.IsSwipeNavigationEnabled = false;
 
 				// Based on https://github.com/MicrosoftEdge/WebView2Feedback/issues/308,
 				// this attempts to prevent Bloom asking permission to read the clipboard
