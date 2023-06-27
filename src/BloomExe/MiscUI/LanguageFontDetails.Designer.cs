@@ -75,7 +75,7 @@
 			this._tallerLinesCheck.Name = "_tallerLinesCheck";
 			this._tallerLinesCheck.Size = new System.Drawing.Size(207, 23);
 			this._tallerLinesCheck.TabIndex = 2;
-			this._tallerLinesCheck.Text = "This script requires taller lines";
+			this._tallerLinesCheck.Text = "Use special line spacing.";
 			this._tallerLinesCheck.UseVisualStyleBackColor = true;
 			this._tallerLinesCheck.CheckedChanged += new System.EventHandler(this._tallerLinesCheck_CheckedChanged);
 			// 
