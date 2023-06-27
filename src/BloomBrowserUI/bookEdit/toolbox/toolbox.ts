@@ -38,6 +38,7 @@ export interface ITool {
     // Because it is async, it is not guaranteed that all the async processing will complete before another keystroke is received.
     // To guard against this, it should make no changes to the document; rather, it returns a function which will,
     // synchronously, make the changes. Toolbox will call this returned function iff no more keystrokes have been received.
+    // Note, new implementations of updateMarkupAsync may need to implement something like cleanUpCkEditorHtml() in audioRecording.ts.
     updateMarkupAsync(): Promise<() => void>;
     isUpdateMarkupAsync(): boolean; // should return true if updateMarkupAsync should be called and awaited instead of updateMarkup.
     newPageReady(); // called when a new page is displayed or tool is activated (called after showTool completes)
@@ -987,21 +988,70 @@ function handleKeyboardInput(): void {
                             actualUpdateFunc();
                         }
                     } else {
+                        // Replace the editable div contents with ckeditor's getData() result. See BL-12391.
+                        editableDiv.innerHTML = ckeditorOfThisBox.getData();
+
                         currentTool.updateMarkup();
                     }
                 }
+
+                cleanUpNbsps(editableDiv);
 
                 //set the selection to wherever our bookmark node ended up
                 //NB: in BL-3900: "Decodable & Talking Book tools delete text after longpress", it was here,
                 //restoring the selection, that we got interference with longpress's replacePreviousLetterWithText(),
                 // in some way that is still not understood. This was fixed by changing all this to trigger on
                 // a different event (keydown instead of keypress).
+                // Note: causing the bookmarks to be selected actually removes the bookmark spans.
                 ckeditorOfThisBox.getSelection().selectBookmarks(bookmarks);
             }
         }
         // clear this value to prevent unnecessary calls to clearTimeout() for timeouts that have already expired.
         keypressTimer = null;
     }, 500);
+}
+
+// Starting with webview2, we were getting scenarios where nbsps were could remain in the div when not wanted.
+// One way to cause this: type two spaces, not at the end of the text box. Then, delete one of them.
+// We want to remove nbsps unless
+// 1. they are at the start or end of the div
+// 2. they are adjacent to another space
+// 3. they are possibly wanted for French-style punctuation
+// See BL-12391.
+// (exported for testing)
+export function cleanUpNbsps(editableDiv: HTMLElement) {
+    let editableDivHtml = editableDiv.innerHTML;
+    let editableDivText = editableDiv.innerText;
+
+    const preserveNbspAfter = [" ", "«", "—"];
+    const preserveNbspBefore = [" ", "»", ":", ";", "!", "?"];
+
+    let i = -1;
+    let j = -1;
+    // The basic algorithm here is to look through the text to discover the adjacent characters, but
+    // do the actual replacement in the html so as to keep the markup. So we simultaneously loop
+    // through the text and the html, finding each corresponding nbsp.
+    // eslint-disable-next-line no-constant-condition
+    while (true) {
+        i = editableDivHtml.indexOf("&nbsp;", i + 1); // i+1 works whether or not we replaced the previous nbsp
+        if (i === -1) break;
+        j = editableDivText.indexOf("\u00A0", j + 1);
+        if (j === 0 || j === editableDivText.length - 1) continue;
+        if (
+            !preserveNbspAfter.includes(editableDivText[j - 1]) &&
+            !preserveNbspBefore.includes(editableDivText[j + 1])
+        ) {
+            editableDivHtml =
+                editableDivHtml.substring(0, i) +
+                " " +
+                editableDivHtml.substring(i + "&nbsp;".length);
+            editableDivText =
+                editableDivText.substring(0, j) +
+                " " +
+                editableDivText.substring(j + 1);
+        }
+    }
+    editableDiv.innerHTML = editableDivHtml;
 }
 
 // exported for testing

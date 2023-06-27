@@ -1234,6 +1234,14 @@ export const getBodyContentForSavePage = () => {
     if (document.activeElement instanceof HTMLElement) {
         document.activeElement.blur();
     }
+
+    // Get the cleaned up data (getData()) from ckeditor, rather than just the raw html.
+    // Specifically, we want it to remove the zero-width space characters that it inserts. See BL-12391.
+    for (const property in CKEDITOR.instances) {
+        const instance = CKEDITOR.instances[property];
+        instance.element.setHtml(instance.getData());
+    }
+
     const result = document.body.innerHTML;
     if (bubbleEditingOn) {
         theOneBubbleManager.turnOnBubbleEditing();
