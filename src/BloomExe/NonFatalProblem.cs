@@ -96,7 +96,7 @@ namespace Bloom
 
 				//just convert from PassiveIf to ModalIf so that we don't have to duplicate code
 				var passive = (ModalIf)ModalIf.Parse(typeof(ModalIf), passiveThreshold.ToString());
-				var formForSynchronizing = Application.OpenForms.Cast<Form>().LastOrDefault();
+				var formForSynchronizing = Shell.GetShellOrOtherOpenForm();
 				if (formForSynchronizing is ProgressDialog)
 				{
 					// Targetting ProgressDialog doesn't work so well for toasts, since the dialog tends
