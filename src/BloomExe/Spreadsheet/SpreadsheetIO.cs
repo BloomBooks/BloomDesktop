@@ -403,6 +403,8 @@ namespace Bloom.Spreadsheet
 			StringBuilder markedupStringBuilder = new StringBuilder();
 			var whitespaceSplitters = new string[] { "\n", "\r\n" };
 
+			// When a cell has no bold/italics/undelining/superscripting it may have cell.RichText=false  but we may
+			// still need to get colors from it. cell.RichText still contains the information we need even when cell.isRichText=false
 			var content = cell.RichText;
 			var cellLevelFormatting = cell.Style.Font;
 			foreach (var run in content)
