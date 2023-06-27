@@ -38,6 +38,7 @@ export default abstract class ToolboxToolReactAdaptor
     public hideTool() {}
     public updateMarkup() {}
     public async updateMarkupAsync() {
+        // If you implement this, you may need to do something like cleanUpCkEditorHtml() in audioRecording.ts.
         throw "not implemented...you must override this if you make isUpdateMarkupAsync return true";
         return () => {};
     }

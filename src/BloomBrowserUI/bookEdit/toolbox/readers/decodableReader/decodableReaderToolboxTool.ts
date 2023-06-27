@@ -171,6 +171,7 @@ export class DecodableReaderToolboxTool implements ITool {
         getTheOneReaderToolsModel().doMarkup();
     }
     public async updateMarkupAsync() {
+        // If you implement this, you may need to do something like cleanUpCkEditorHtml() in audioRecording.ts.
         throw "not implemented...use updateMarkup";
         return () => undefined;
     }
