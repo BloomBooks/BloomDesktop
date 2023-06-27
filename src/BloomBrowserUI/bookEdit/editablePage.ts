@@ -12,7 +12,6 @@ import { theOneBubbleManager, BubbleManager } from "./js/bubbleManager";
 // This allows strong typing to be done for exported functions
 export interface IPageFrameExports {
     pageSelectionChanging(): void;
-    prepareToSavePage(): void;
     pageUnloading(): void;
     disconnectForGarbageCollection(): void;
     copySelection(): void;
