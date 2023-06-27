@@ -238,16 +238,6 @@
         <source xml:lang="en">Visibility</source>
         <note>ID: PublishTab.Upload.Visibility</note>
       </trans-unit>
-      <trans-unit id="PublishTab.Upload.Draft" translate="no">
-        <!-- added in 5.6 -->
-        <source xml:lang="en">Show this book only to reviewers with whom I share the URL of this book.</source>
-        <note>ID: PublishTab.Upload.Draft</note>
-      </trans-unit>
-      <trans-unit id="PublishTab.Upload.Visibility" translate="no">
-        <!-- added in 5.6 -->
-        <source xml:lang="en">Visibility</source>
-        <note>ID: PublishTab.Upload.Visibility</note>
-      </trans-unit>      
       <trans-unit id="PublishTab.Epub.ConsiderBloomPUB" sil:dynamic="true">
         <source xml:lang="en">Consider whether you can distribute your book using the BloomPUB format instead of, or in addition to, the ePUB format.</source>
         <note>ID: PublishTab.Epub.ConsiderBloomPUB</note>
