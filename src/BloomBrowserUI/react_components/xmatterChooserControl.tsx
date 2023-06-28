@@ -102,7 +102,6 @@ const XmatterChooserControl: React.FunctionComponent = () => {
             <div className={useStyles().root}>
                 <Typography
                     css={css`
-                        font-family: Segoe UI !important;
                         font-weight: 700 !important;
                     `}
                 >
