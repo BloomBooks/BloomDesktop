@@ -158,15 +158,26 @@ namespace Bloom.CollectionTab
 					}
 					if (_tabSelection.ActiveTab == WorkspaceTab.collection)
 					{
-						// We got a new or modified book in the downloaded books collection.
-						// If this (collection) tab is active, we want to select it.
-						// (If we're in the middle of editing or publishing some book, we
-						// don't want to change that.)
-						// One day we may enhance it so that we switch tabs and show it,
-						// but there are states where that would be dangerous.
-						var newBook = new BookInfo(eventArgs.Path, false);
-						var book = _model.GetBookFromBookInfo(newBook, true);
-						_bookSelection.SelectBook(book, false);
+						try
+						{
+							// We got a new or modified book in the downloaded books collection.
+							// If this (collection) tab is active, we want to select it.
+							// (If we're in the middle of editing or publishing some book, we
+							// don't want to change that.)
+							// One day we may enhance it so that we switch tabs and show it,
+							// but there are states where that would be dangerous.
+							var newBook = new BookInfo(eventArgs.Path, false);
+							var book = _model.GetBookFromBookInfo(newBook, true);
+							_bookSelection.SelectBook(book, false);
+						}
+						catch (Autofac.Core.DependencyResolutionException e)
+						{
+							// e.g. if BookInfo constructor fails
+							NonFatalProblem.Report(ModalIf.Alpha, PassiveIf.All,
+								shortUserLevelMessage: "The downloaded book could not be opened.",	// Since this is expected to be very rare, we don't bother localizing this, not even in LowPriority.xlf
+								moreDetails: $"Folder: {eventArgs.Path}",
+								exception: e);
+						}
 					}
 				};
 			}
