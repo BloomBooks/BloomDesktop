@@ -9,9 +9,17 @@ import {
 } from "../bookEdit/toolbox/readers/libSynphony/bloomSynphonyExtensions";
 import AudioRecording from "../bookEdit/toolbox/talkingBook/audioRecording";
 
+// If a string only contains | and whitespace, it is a "segment" with no text
+// and should be skipped when matching to audio segments
+function isEmptySegment(s: string): boolean {
+    return s.search(/[^|\s]/) === -1;
+}
+
 export function split(text: string): string {
     const fragments: TextFragment[] = theOneLibSynphony.stringToSentences(text);
-    const sentences = fragments.map(f => (f.isSentence ? "s" : " ") + f.text);
+    const sentences = fragments.map(
+        f => (f.isSentence && !isEmptySegment(f.text) ? "s" : " ") + f.text
+    );
     return sentences.join("\n");
 }
 

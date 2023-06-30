@@ -12,6 +12,7 @@ using BloomTemp;
 using BloomTests.TeamCollection;
 using Moq;
 using NUnit.Framework;
+using OfficeOpenXml;
 using SIL.Extensions;
 using SIL.IO;
 
@@ -300,7 +301,7 @@ namespace BloomTests.Spreadsheet
                         <div class=""bloom-translationGroup bloom-trailingElement"" data-default-languages=""auto"">
                             <div class=""bloom-editable normal-style audio-sentence bloom-postAudioSplit bloom-content1 bloom-visibility-code-on"" lang=""fr"" contenteditable=""true"" style=""min-height: 24px;"" tabindex=""0"" spellcheck=""true"" role=""textbox"" aria-label=""false"" data-audiorecordingmode=""TextBox"" id=""a9d7b794-7a83-473a-8307-7968176ae4bc"" recordingmd5=""69f7226e062f6b4accaa8110787f81fb"" data-duration=""4.388571"" data-audiorecordingendtimes=""3.900 4.360"" data-languagetipcontent=""français"">
                                 <p><span id=""i4356108a-4647-4b01-8cb9-8acc227b4eea"" class=""bloom-highlightSegment"">A hand with a sore finger.</span> <span id=""cf66ff0d-f882-48b0-b789-cba83aa3ae84"" class=""bloom-highlightSegment"">It has a bandage.​</span></p>
-                            </div>
+							</div>
 
                             <div class=""bloom-editable normal-style"" lang=""z"" contenteditable=""true"" style="""" tabindex=""0"" spellcheck=""true"" role=""textbox"" aria-label=""false"">
                                 <p></p>
@@ -499,6 +500,140 @@ namespace BloomTests.Spreadsheet
 			Assert.That(row.CellContents.ToArray()[frAudioIndex], Is.EqualTo("./audio/" + expectedId + ".mp3"));
 			var frAudioAlignmentIndex = AllRows.First().CellContents.IndexOf($"[audio alignments {lang}]");
 			Assert.That(row.CellContents.ToArray()[frAudioAlignmentIndex], Is.EqualTo(expectedDuration));
+		}
+	}
+
+	public class SpreadsheetAudioSegmentMarkerTests
+	{
+		static SpreadsheetAudioSegmentMarkerTests()
+		{
+			// The package requires us to do this as a way of acknowledging that we
+			// accept the terms of the NonCommercial license.
+			ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
+		}
+
+		private const string testBook = @"
+<!DOCTYPE html>
+
+<html>
+<head>
+</head>
+<body data-l1=""es"" data-l2="""" data-l3="""">
+	<div id=""bloomDataDiv"">
+		<div data-book=""bookTitle"" lang=""en"" id=""idShouldGetKept"">
+			<p><em>Pineapple</em></p>
+
+            <p>Farm</p>
+
+		</div>
+        <div data-book=""topic"" lang=""en"">
+            Health
+		</div>
+		<div data-book=""coverImage"" lang=""*"" src=""cover.png"" alt=""This picture, cover.png, is missing or was loading too slowly."">
+			cover.png
+		</div>
+		<div data-book=""licenseImage"" lang= ""*"" >
+			license.png
+		</div>
+		<div data-book=""outside-back-cover-branding-bottom-html"" lang=""*""><img class=""branding"" src=""BloomWithTaglineAgainstLight.svg"" alt="""" data-copyright="""" data-creator="""" data-license=""""></img></div>
+	</div>
+
+
+
+
+    <div class=""bloom-page numberedPage customPage A5Portrait side-right bloom-monolingual"" data-page="""" id=""f3ee3ee0-9ce8-4122-a426-01bfbef98a5e"" data-pagelineage=""a31c38d8-c1cb-4eb9-951b-d2840f6a8bdb"" data-page-number=""1"" lang="""">
+        <div class=""pageLabel"" lang=""en"" data-i18n=""TemplateBooks.PageLabel.Just Text"">
+            Just Text
+        </div>
+
+        <div class=""pageDescription"" lang=""en""></div>
+
+        <div class=""marginBox"">
+            <div class=""split-pane-component-inner"">
+                <div class=""bloom-translationGroup bloom-trailingElement"" data-default-languages=""auto"">
+                    <div class=""bloom-editable normal-style audio-sentence bloom-postAudioSplit bloom-content1 bloom-contentNational1 bloom-visibility-code-on"" id=""audio-test"" lang=""en"" contenteditable=""true"" data-languagetipcontent=""English"" style=""min-height: 24px;"" tabindex=""0"" spellcheck=""false"" role=""textbox"" aria-label=""false"" data-audiorecordingmode=""TextBox"" recordingmd5=""4047597f4107c0c810bd57adc8f00adf"" data-duration=""3.892245"" data-audiorecordingendtimes=""2.420 3.840"">
+                        <p><span id=""i34299c13-8162-43ca-9a26-f2defd502951"" class=""bloom-highlightSegment"">There is a segment marker <span class=""bloom-audio-split-marker""></span></span><span id=""cdb6909e-0a60-4302-a114-836bd7f4d6f8"" class=""bloom-highlightSegment"">in this sentence.</span></p>
+                    </div>
+
+                    <div class=""bloom-editable normal-style"" lang=""z"" contenteditable=""true"" style="""">
+                        <p></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+";
+
+		private TempFile _spreadsheetFile;
+		private ExcelWorksheet _worksheet;
+		private ExcelPackage _excelPackage;
+
+		[OneTimeSetUp]
+		public async Task OneTimeSetUp()
+		{
+			var origDom = new HtmlDom(testBook, true);
+
+			AssertThatXmlIn.Dom(origDom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@id='audio-test']", 1);
+			var mockLangDisplayNameResolver = new Mock<ILanguageDisplayNameResolver>();
+			mockLangDisplayNameResolver.Setup(x => x.GetLanguageDisplayName("en")).Returns("English");
+			var exporter = new SpreadsheetExporter(mockLangDisplayNameResolver.Object);
+			exporter.Params = new SpreadsheetExportParams();
+			var sheetFromExport = exporter.Export(origDom, "fakeImagesFolderpath");
+			_spreadsheetFile = TempFile.WithExtension("xslx");
+			sheetFromExport.WriteToFile(_spreadsheetFile.Path);
+			var info = new FileInfo(_spreadsheetFile.Path);
+			_excelPackage = new ExcelPackage(info);
+			_worksheet = _excelPackage.Workbook.Worksheets[0];
+		}
+
+		[OneTimeTearDown]
+		public void OneTimeTearDown()
+		{
+			_spreadsheetFile.Dispose();
+			_excelPackage.Dispose();
+
+		}
+
+		[Test]
+		public void AudioSegmentMarkersInSpreadsheet()
+		{
+			var rowCount = _worksheet.Dimension.Rows;
+			var colCount = _worksheet.Dimension.Columns;
+			for (var c = 0; c < colCount; c++)
+			{
+				var header = _worksheet.Cells[1, c + 1];
+				// Find the english column
+				if (header.Value != null && header.Value.ToString().Contains("[en]"))
+				{
+					// Look for a cell with the desired text with audio segment marker in it
+					for (var r = 0; r < rowCount; r++)
+					{
+						var cell = _worksheet.Cells[r + 1, c + 1];
+						if (cell.Value != null && cell.Value.ToString().Contains("There is a segment marker |in this sentence."))
+						{
+							return;
+						}
+					}
+				}
+			}
+			Assert.Fail("Could not find the text with audio segment marker in the spreadsheet.");
+		}
+	}
+
+	public class SpreadsheetAudioSegmentMarkerConversionTests
+	{
+		// Audio segment markers should get converted to | on export so that they get retained in spreadsheet
+		[Test]
+		public void ParseXmlConvertsSegmentMarkers()
+		{
+			string xmlString = "<p>I have put a segment marker <span class=\"bloom-audio-split-marker\"></span>in the middle of this sentences</p>";
+			MarkedUpText parsed = MarkedUpText.ParseXml(xmlString);
+			Assert.That(parsed.Count, Is.EqualTo(3));
+			Assert.That(parsed.GetRun(0).Text, Is.EqualTo("I have put a segment marker "));
+			Assert.That(parsed.GetRun(1).Text, Is.EqualTo("|"));
+			Assert.That(parsed.GetRun(2).Text, Is.EqualTo("in the middle of this sentences"));
 		}
 	}
 }
