@@ -3189,6 +3189,8 @@ export default class AudioRecording {
         const currentMarker = copy.find(".bloom-ui-current-audio-marker");
         currentMarker.remove();
 
+        this.cleanUpCkEditorHtml(elt.get(0), copy.get(0));
+
         const markedSentences = copy.find(
             `${kAudioSentenceClassSelector},.${kSegmentClass}`
         );
@@ -3303,6 +3305,35 @@ export default class AudioRecording {
             elt.html(newHtml);
             elt.append(formatButton);
         };
+    }
+
+    // When we switched to webview2, we started getting errant zero-width spaces in the text from ckeditor.
+    // The "right" way to get text from ckeditor boxes is to call getData(). So that's what we're doing here.
+    // It does clean up at least most of the zero-width spaces.
+    // See BL-12391.
+    private cleanUpCkEditorHtml(element: HTMLElement, copy: HTMLElement) {
+        const editableDiv = element.closest(".bloom-editable") as HTMLElement;
+        if (!editableDiv) return;
+
+        const ckeditorOfThisBox = (<any>editableDiv).bloomCkEditor;
+        if (!ckeditorOfThisBox) return;
+
+        if (editableDiv.innerHTML !== ckeditorOfThisBox.getData()) {
+            // Flag the element we are processing so we can find it in the version we make from ckeditor's getData().
+            element.setAttribute("data-element-we-are-processing", "this-one");
+
+            // Create a dummy element just so we can stash the result of getData() and then find our element in it.
+            // getData() is for the whole text box, but we are processing one of the child elements.
+            const newElement = document.createElement("div");
+            newElement.innerHTML = ckeditorOfThisBox.getData(); // have to call getData() again so it contains data-element-we-are-processing
+            const newChild = newElement.querySelector(
+                "[data-element-we-are-processing]"
+            );
+            copy.innerHTML = newChild!.innerHTML;
+
+            // Make sure we remove the flag; we don't want to modify the original element.
+            element.removeAttribute("data-element-we-are-processing");
+        }
     }
 
     // Normalization rules for text which has already been processed by CKEditor

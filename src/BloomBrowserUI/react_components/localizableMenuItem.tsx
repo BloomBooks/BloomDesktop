@@ -20,6 +20,7 @@ import {
     useGetEnterpriseStatus
 } from "./requiresBloomEnterprise";
 import { kBloomDisabledOpacity } from "../utils/colorUtils";
+import { kUiFontStack } from "../bloomMaterialUITheme";
 
 interface IBaseLocalizableMenuItemProps {
     english: string;
@@ -152,16 +153,17 @@ export const LocalizableMenuItem: React.FunctionComponent<ILocalizableMenuItemPr
                         css={css`
                             .MuiTypography-h6 {
                                 font-weight: 400 !important; // H6 defaults to 500; too thick
-                                font-family: Segoe UI, NotoSans, Roboto,
-                                    sans-serif;
+                                font-family: ${kUiFontStack}
                                 color: ${menuItemColor} !important;
 
                                 // We can't use the disabled prop because it prevents the click from opening settings and
                                 // prevents the tooltip. So we just make it look disabled (using the same setting as Mui-disabled).
                                 // And we only do it on the icon and text so the enterprise icon doesn't look disabled.
-                                opacity: ${meetsEnterpriseRequirement
-                                    ? undefined
-                                    : kBloomDisabledOpacity};
+                                opacity: ${
+                                    meetsEnterpriseRequirement
+                                        ? undefined
+                                        : kBloomDisabledOpacity
+                                };
                             }
                         `}
                         primaryTypographyProps={typographyProps}
@@ -224,7 +226,7 @@ export const LocalizableCheckboxMenuItem: React.FunctionComponent<ILocalizableCh
                     css={css`
                         .MuiTypography-h6 {
                             font-weight: 400 !important; // H6 defaults to 500; too thick
-                            font-family: Segoe UI, NotoSans, Roboto, sans-serif;
+                            font-family: ${kUiFontStack};
                             color: ${menuItemColor} !important;
                         }
                     `}
@@ -255,7 +257,7 @@ export const LocalizableNestedMenuItem: React.FunctionComponent<IBaseLocalizable
             css={css`
                 margin-left: ${kIconCheckboxAffordance}px !important;
                 font-weight: 400 !important;
-                font-family: Segoe UI, NotoSans, Roboto, sans-serif !important;
+                font-family: ${kUiFontStack};
                 font-size: 1rem !important;
                 color: ${menuItemColor} !important;
                 padding: 4px 6px 0 6px !important; // adjust for denser layout

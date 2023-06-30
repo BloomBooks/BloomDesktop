@@ -62,9 +62,14 @@ export const ForgetChangesDialog: React.FunctionComponent<{
                         l10nKey="TeamCollection.ForgetChanges"
                         temporarilyDisableI18nWarning={true}
                         onClick={() => {
-                            props.close();
-                            // Do nothing here on either success or failure. (C# code will have already reported failure).
-                            post("teamCollection/forgetChangesInSelectedBook");
+                            // Do nothing here about reporting either success or failure. (C# code will have already reported failure).
+                            // Just close the dialog when done. (We want it to stay until then, as some indication that the
+                            // restoration of the old content is still in progress.)
+                            post(
+                                "teamCollection/forgetChangesInSelectedBook",
+                                props.close,
+                                props.close
+                            );
                         }}
                         hasText={true}
                     >

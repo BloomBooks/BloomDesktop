@@ -38,6 +38,7 @@ export interface ITool {
     // Because it is async, it is not guaranteed that all the async processing will complete before another keystroke is received.
     // To guard against this, it should make no changes to the document; rather, it returns a function which will,
     // synchronously, make the changes. Toolbox will call this returned function iff no more keystrokes have been received.
+    // Note, new implementations of updateMarkupAsync may need to implement something like cleanUpCkEditorHtml() in audioRecording.ts.
     updateMarkupAsync(): Promise<() => void>;
     isUpdateMarkupAsync(): boolean; // should return true if updateMarkupAsync should be called and awaited instead of updateMarkup.
     newPageReady(); // called when a new page is displayed or tool is activated (called after showTool completes)
@@ -987,21 +988,118 @@ function handleKeyboardInput(): void {
                             actualUpdateFunc();
                         }
                     } else {
+                        // Replace the editable div contents with ckeditor's getData() result. See BL-12391.
+                        editableDiv.innerHTML = ckeditorOfThisBox.getData();
+
                         currentTool.updateMarkup();
                     }
                 }
+
+                cleanUpNbsps(editableDiv);
 
                 //set the selection to wherever our bookmark node ended up
                 //NB: in BL-3900: "Decodable & Talking Book tools delete text after longpress", it was here,
                 //restoring the selection, that we got interference with longpress's replacePreviousLetterWithText(),
                 // in some way that is still not understood. This was fixed by changing all this to trigger on
                 // a different event (keydown instead of keypress).
+                // Note: causing the bookmarks to be selected actually removes the bookmark spans.
                 ckeditorOfThisBox.getSelection().selectBookmarks(bookmarks);
             }
         }
         // clear this value to prevent unnecessary calls to clearTimeout() for timeouts that have already expired.
         keypressTimer = null;
     }, 500);
+}
+
+// Starting with webview2, we were getting scenarios where nbsps were could remain in the div when not wanted.
+// One way to cause this: type two spaces, not at the end of the text box. Then, delete one of them.
+// We want to remove nbsps unless
+// 1. they are at the start or end of the div
+// 2. they are adjacent to a regular space (the browser collapses regular spaces but not other whitespace)
+// 3. they are possibly wanted for French-style punctuation
+// See BL-12391.
+// (exported for testing)
+export function cleanUpNbsps(editableDiv: HTMLElement) {
+    // Remove the &nbsp; from the bookmarks so they don't interfere with the algorithm below.
+    // We'll put them back in at the end.
+    const originalBookMarkContent = setCkeditorBookmarkContent(editableDiv, "");
+
+    let editableDivHtml = editableDiv.innerHTML;
+    // innerText does not include hidden text; innerHTML does.
+    // So we use textContent -- which includes hidden text -- to ensure the html and text are in sync.
+    let editableDivText = editableDiv.textContent;
+    if (!editableDivText) return;
+
+    const preserveNbspAfter = [" ", "«", "—"];
+    const preserveNbspBefore = [" ", "»", ":", ";", "!", "?"];
+
+    let i = -1;
+    let j = -1;
+    // Simultaneously loop through the text and the html, finding each corresponding nbsp.
+    // The text shows us what the adjacent characters are so we can make a replacement decision, but
+    // the actual replacement is done in the html so as to keep the markup.
+    // We also make the replacements in the text as we go so that, for example,
+    // if we change one nbsp to a regular space, that space prevents converting an adjacent nbsp.
+    // eslint-disable-next-line no-constant-condition
+    while (true) {
+        i = editableDivHtml.indexOf("&nbsp;", i + 1); // i+1 works whether or not we replaced the previous nbsp
+        if (i === -1) break;
+        j = editableDivText.indexOf("\u00A0", j + 1);
+        if (j === -1) {
+            // Pathological case; nbsp in attribute?
+            // Follow do no harm principle and just leave the div unaltered.
+            console.error(
+                "Unexpected situation discovered in cleanUpNbsps. Html has nbsp but text doesn't."
+            );
+            console.error("editableDivHtml: " + editableDivHtml);
+            console.error("editableDivText: " + editableDivText);
+
+            // Restore the bookmarks. See comment above.
+            if (originalBookMarkContent)
+                setCkeditorBookmarkContent(
+                    editableDiv,
+                    originalBookMarkContent
+                );
+            return;
+        }
+        if (j === 0 || j === editableDivText.length - 1) continue;
+        if (
+            !preserveNbspAfter.includes(editableDivText[j - 1]) &&
+            !preserveNbspBefore.includes(editableDivText[j + 1])
+        ) {
+            editableDivHtml =
+                editableDivHtml.substring(0, i) +
+                " " +
+                editableDivHtml.substring(i + "&nbsp;".length);
+            editableDivText =
+                editableDivText.substring(0, j) +
+                " " +
+                editableDivText.substring(j + 1);
+        }
+    }
+    editableDiv.innerHTML = editableDivHtml;
+
+    // Restore the bookmarks. See comment above.
+    if (originalBookMarkContent)
+        setCkeditorBookmarkContent(editableDiv, originalBookMarkContent);
+}
+
+// For the given div, replace the content of any ckeditor bookmarks with the given content.
+// We actually only expect one bookmark for our case, but we're being safe.
+// Return the original content (of the last one... we have to pick one...) so we can restore it later.
+function setCkeditorBookmarkContent(
+    editableDiv: HTMLElement,
+    content: string
+): string | undefined {
+    let existingContent: string | undefined = undefined;
+
+    const ckeBookmarks = editableDiv.querySelectorAll("[id^='cke_bm_']");
+    ckeBookmarks.forEach(bm => {
+        existingContent = bm.innerHTML;
+        bm.innerHTML = content;
+    });
+
+    return existingContent;
 }
 
 // exported for testing
