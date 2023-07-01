@@ -119,7 +119,7 @@ namespace Bloom.Api
 
 		public bool HaveOutput { get; private set; }
 
-		public void ReplyWithFileContent(string path, string originalPath = null, bool dontCache = false)
+		public void ReplyWithFileContent(string path, string originalPath = null)
 		{
 			//Deal with BL-3153, where the file was still open in another thread
 			FileStream fs;
@@ -155,20 +155,28 @@ namespace Bloom.Api
 				_actualContext.Response.ContentLength64 = fs.Length;
 				_actualContext.Response.AppendHeader("PathOnDisk", HttpUtility.UrlEncode(path));
 				_actualContext.Response.AppendHeader("Access-Control-Allow-Origin", "*");
+
 				// 60000s is about a week...if someone spends longer editing one book, well, files will get loaded one more time...
-				// When we want the browser NOT to cache, we still need to specify some value, otherwise, the browser may
+				// When we want the browser NOT to cache, we still need to specify the "no-store" value. Otherwise, the browser may
 				// impose a default that is LONGER than we want (since this is mainly to avoid stale assets during development,
 				// though we also avoid caching book folder stuff in case the user is doing something like directly editing
 				// images).
-				// I think 10s is short enough for stale builds and images not to be a problem, but it may be long enough to prevent
-				// some wasteful reloading of assets which are rapidly reused like avatars.
-				var maxAge = ShouldCache(path, originalPath) ? 600000 : 10;
-				// When generating thumbnail images, we don't want any caching of initial dummy images.
-				string cacheControl = dontCache ? "no-store" : $"max-age={maxAge}";
-				_actualContext.Response.AppendHeader("Cache-Control",
-					cacheControl);
+				// For years of GeckoFx, we were not setting the Cache-Control header at all if ShouldCache() returned true.
+				// It seems we were expecting that to mean the browser wouldn't cache. Now we're not sure if we truly weren't
+				// caching (due to some setting or specific behavior of Geckofx) or if we were getting lucky with the browser default.
+				// When we moved to Webview2, in an attempt to solve some caching issues (too much caching),
+				// we started setting the Cache-Control max-age to 10 seconds.
+				// However, it was shown with several bugs (such as BL-12437, BL-12440) that this was too long for some cases.
+				// We're going back to the idea that ShouldCache() == false means we don't want the browser to cache at all.
+				// But now we're making it explicit by setting the Cache-Control header to "no-store".
+				// A possible enhancement would be to change ShouldCache to return an enum (and change its name)
+				// such that we cache for the session, a short time (1 second?), or not at all. But for now, binary is ok.
+				// (At one point, we thought we wanted a short cache time for avatar images for Team Collections, but
+				// those don't even go through the Bloom server.)
+				string cacheControl = ShouldCache(path, originalPath) ? "max-age=600000" : "no-store";
+				_actualContext.Response.AppendHeader("Cache-Control", cacheControl);
 
-					// A HEAD request (rather than a GET or POST request) is a request for just headers, and nothing can be written
+				// A HEAD request (rather than a GET or POST request) is a request for just headers, and nothing can be written
 				// to the OutputStream. It is normally used to check if the contents of the file have changed without taking the
 				// time and bandwidth needed to download the full contents of the file. The 2 pieces of information being returned
 				// are the Content-Length and Last-Modified headers. The requestor can use this information to determine if the
@@ -323,10 +331,13 @@ namespace Bloom.Api
 			if (RawUrl.StartsWith("/book-preview/"))
 				return false;
 
+			if (RawUrl.EndsWith("no-cache=true"))
+				return false;
+
 			return _cacheableExtensions.Contains(Path.GetExtension(path));
 		}
 
-		public void ReplyWithImage(string path, string originalPath = null, bool dontCache = false)
+		public void ReplyWithImage(string path, string originalPath = null)
 		{
 			if (path != null)
 			{
@@ -334,7 +345,7 @@ namespace Bloom.Api
 				if (pos > 0)
 					_actualContext.Response.ContentType = BloomServer.GetContentType(path.Substring(pos));
 			}
-			ReplyWithFileContent(path, originalPath, dontCache);
+			ReplyWithFileContent(path, originalPath);
 		}
 
 		public void WriteError(int errorCode, string errorDescription)
