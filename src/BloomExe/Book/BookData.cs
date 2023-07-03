@@ -448,6 +448,7 @@ namespace Bloom.Book
 							}
 							var letters = string.Join(", ", allLetters.Trim().Split(' '));
 							incomingData.UpdateLanguageString("decodableStageLetters", XmlString.FromUnencoded(letters), Language1.Tag, false);
+							itemsToDelete.RemoveWhere(item => item.Item1 == "decodableStageLetters");
 						}
 						catch (XmlException e)
 						{
