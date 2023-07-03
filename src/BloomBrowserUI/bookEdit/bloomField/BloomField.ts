@@ -312,7 +312,7 @@ export default class BloomField {
         if (!fullHtml) return eventData.dataValue; // live with the default if no HTML (shouldn't happen by this point)
         const reducedHtml = eventData.dataValue as string;
         if (!reducedHtml) return eventData.dataValue; // live with the default if nothing to paste (shouldn't happen)
-        if (fullHtml !== reducedHtml) {
+        if (fullHtml !== reducedHtml && fullHtml.includes("<span style=")) {
             const startMarker = "<!--StartFragment-->";
             const endMarker = "<!--EndFragment-->";
             if (
@@ -324,8 +324,13 @@ export default class BloomField {
                 if (
                     start >= 0 &&
                     end >= start + startMarker.length + endMarker.length
-                )
+                ) {
+                    // actual fragment is marked with start and end comment markers
                     return fullHtml.substring(start, end);
+                }
+            } else {
+                // actual fragment is the whole thing
+                return fullHtml;
             }
         }
         return eventData.dataValue;
