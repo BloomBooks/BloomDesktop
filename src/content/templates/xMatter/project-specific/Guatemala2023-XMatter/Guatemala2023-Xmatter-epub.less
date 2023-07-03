@@ -1,0 +1,50 @@
+@import (reference) "../../bloom-xmatter-common.less";
+@import (reference) "../../../../bookLayout/basePage.less";
+
+// These rules are used solely in epubs using Guatemala2023-Xmatter. The idea is to produce
+// some approximation of the usual appearance, although we cannot guarantee getting exactly
+// what we want as many epub readers do not handle all the CSS styles. I am risking using
+// display:Flex to try to put the two logos side by side. Some readers ignore this, but
+// they then seem to make a reasonable column out of the two. If you mess with these rules,
+// try to make sure that as well as producing your desired improvement using a well-behaved
+// reader (June 2021: Ekitab, Lithium), you don't make things too ugly on poorer ones
+// (June 2021: Simply Reading by Daisy, Adobe Digital Editions on Windows, Cool Reader).
+
+.credits .marginBox {
+    width: 100%; // Override non-epub rule to ensure width will handle both government logos.
+    // we'd like height:100% also. But to make that work it has to be set on
+    // all parents up to body, which means it can't be just on the outsideBackCover.
+    .credits-page-branding-top-block {
+        margin: 0;
+        padding: 3px;
+        display: flex; // we'd prefer a row if the user agent can do it
+        width: 100%;
+        background-color: white;
+    }
+
+    // So far, these rules have worked exactly when the display:flex works,
+    // to make the left one left-aligned and the right one right-aligned.
+    [data-book="credits-page-branding-top-left-html"] {
+        img {
+            margin-right: auto;
+            margin-left: 0 !important;
+        }
+    }
+
+    [data-book="credits-page-branding-top-right-html"] {
+        img {
+            margin-left: auto;
+            margin-right: 0 !important;
+        }
+    }
+
+    [data-book="credits-page-branding-top-right-html"],
+    [data-book="credits-page-branding-top-left-html"] {
+        width: 50%;
+        img {
+            height: 10mm;
+            margin-top: 20px;
+            margin-bottom: 20px;
+        }
+    }
+}

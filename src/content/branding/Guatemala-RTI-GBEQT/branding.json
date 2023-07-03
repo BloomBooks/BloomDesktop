@@ -1,0 +1,52 @@
+{
+    "presets": [
+        {
+            "data-book": "xmatter",
+            "lang": "*",
+            "content": "Guatemala2023",
+            "condition": "always"
+        },
+        {
+            "data-book": "copyright",
+            "lang": "*",
+            "content": "Ministerio de Educación de Guatemala y RTI Intl.",
+            "condition": "ifEmpty"
+        },
+        {
+            "data-book": "credits-page-branding-top-middle-html",
+            "lang": "*",
+            "content": "<div lang='en'><p>Este libro fue posible gracias al generoso apoyo del pueblo de los Estados Unidos, a través de la Agencia de los Estados Unidos para el Desarrollo Internacional (USAID). El contenido de este documento es responsabilidad de los autores y no necesariamente refleja el punto de vista de USAID o del gobierno de los Estados Unidos.</p><p>La producción de este libro fue realizada bajo el programa Educación Básica de Calidad para la Transición, de RTI International y USAID.</p></div>",
+            "condition": "always"
+        },
+        {
+            "data-book": "credits-page-branding-top-left-html",
+            "lang": "*",
+            "content": "<img class='branding' src='LOGO_MINEDUC_2023.svg'/>",
+            "condition": "always"
+        },
+        {
+            "data-book": "credits-page-branding-top-right-html",
+            "lang": "*",
+            "content": "<img class='branding' src='USAID_Horiz_Spanish.svg'/>",
+            "condition": "always"
+        },
+        {
+            "data-book": "credits-page-branding-bottom-html",
+            "lang": "*",
+            "content": "<img class='branding' src='Logos-Consorcio-BEQT-_Without-USAID_.svg'/>",
+            "condition": "always"
+        },
+        {
+            "data-book": "licenseUrl",
+            "lang": "*",
+            "content": "http://creativecommons.org/licenses/by-nc-sa/4.0/",
+            "condition": "always"
+        },
+        {
+            "data-book": "outside-back-cover-branding-bottom-html",
+            "lang": "*",
+            "content": "<img class='branding' src='made-with-bloom-badge.svg'/>",
+            "condition": "always"
+        }
+    ]
+}
