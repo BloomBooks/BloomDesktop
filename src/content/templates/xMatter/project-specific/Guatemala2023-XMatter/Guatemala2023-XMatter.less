@@ -3,6 +3,7 @@
 
 @XMatterPackName: "Guatemala2023";
 @TopLogoMarginOffset: 2rem;
+@BottomLogoMarginOffset: 3rem;
 
 .credits-page-branding-top-block {
     display: flex;
@@ -40,6 +41,7 @@
 }
 
 .marginBox [data-book="credits-page-branding-bottom-html"] {
+    margin: 0 -@BottomLogoMarginOffset; // enlarge bottom logo to fill the space better
     margin-top: auto;
 }
 
