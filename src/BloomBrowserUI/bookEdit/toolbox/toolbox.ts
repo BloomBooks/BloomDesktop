@@ -542,6 +542,8 @@ function doWhenCkEditorReadyCore(
         // This wipes out (at least) our page initialization.
         // To prevent this we hold our initialization until CKEditor has done initializing.
         // If any instance on the page (e.g., one per div) is not ready, wait until all are.
+        // Enhance: this logic is roughly duplicated in StyleEditor.ts function AttachToBox.
+        // There may be some way to refactor it into a common place, but I don't know where.
         // (The instances property leads to an object in which each property is an instance of CkEditor)
         let gotOne = false;
         for (const property in editorInstances) {
