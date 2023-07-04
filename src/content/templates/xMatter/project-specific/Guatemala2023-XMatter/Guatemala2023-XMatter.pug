@@ -1,0 +1,19 @@
+extends ../../Traditional-XMatter/Traditional-XMatter.pug
+
+//- N.B. When changing this xmatter, keep in mind that multiple Enterprise brandings use it.
+block creditsContent
+	div.credits-page-branding-top-block
+		div.credits-page-branding-top-logo-block
+			div(data-book='credits-page-branding-top-left-html' lang="*")
+			div(data-book='credits-page-branding-top-right-html' lang="*")
+		div(data-book='credits-page-branding-top-middle-html' lang="*")
+	+block-licenseAndCopyright
+	+field-acknowledgments-localizedVersion
+	//- Here code puts in something like "From the original Copyright Pratham Books 2016. CC-BY. Any license notes here."
+	.copyright(data-derived="originalCopyrightAndLicense").Credits-Page-style
+	+field-acknowledgments-originalVersion
+	+field-ISBN
+	div(data-book='credits-page-branding-bottom-html' lang="*")
+
+block XMatterTitle
+	title Guatemala 2023 Front & Back Matter
