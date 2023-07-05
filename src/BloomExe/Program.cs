@@ -1134,7 +1134,7 @@ namespace Bloom
 		/// <param name="formToClose">If provided, this form will be closed after choosing a
 		/// collection and before opening it. Currently, this is used to close the Shell at the proper
 		/// time when switching collectons.</param>
-		public static void ChooseACollection(Form formToClose = null)
+		public static void ChooseACollection(Shell formToClose = null)
 		{
 			while (true)
 			{
@@ -1166,7 +1166,11 @@ namespace Bloom
 						return;
 					}
 
-					formToClose?.Close();
+					if (formToClose != null)
+					{
+						formToClose.UserWantsToOpenADifferentProject = true;
+						formToClose.Close();
+					}
 
 					if (OpenCollection(dlg.SelectedPath)) return;
 				}

@@ -56,7 +56,6 @@ namespace Bloom.Workspace
 		private PublishView _publishView;
 		private CollectionTabView _collectionTabView;
 		private Control _previouslySelectedControl;
-		public event EventHandler CloseCurrentProject;
 		public event EventHandler ReopenCurrentProject;
 		private readonly ILocalizationManager _localizationManager;
 		public static float DPIOfThisAccount;
@@ -783,11 +782,9 @@ namespace Bloom.Workspace
 				});
 
 				_previouslySelectedControl = null;
-				if (_model.CloseRequested())
-				{
-					Invoke(CloseCurrentProject);
-				}
-				return DialogResult.OK;
+
+					Invoke((Action)(() => Program.ChooseACollection(Shell.GetShellOrOtherOpenForm() as Shell)));
+					return DialogResult.OK;
 			});
 		}
 
