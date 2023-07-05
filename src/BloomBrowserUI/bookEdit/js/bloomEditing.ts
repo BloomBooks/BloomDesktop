@@ -70,6 +70,8 @@ export function makeElement(
     return result;
 }
 
+let showInvisiblesToggle = true;
+
 function isBrOrWhitespace(node) {
     return (
         node &&
@@ -157,6 +159,15 @@ function SetupDeletable(containerDiv) {
     return $(containerDiv);
 }
 
+function getUnicodePoint(char) {
+    const codePoint = char.charCodeAt(0);
+    let unicodePoint = codePoint.toString(16);
+    while (unicodePoint.length < 4) {
+        unicodePoint = "0" + unicodePoint;
+    }
+    return "\\u" + unicodePoint;
+}
+
 // Add various editing key handlers
 function AddEditKeyHandlers(container) {
     //Make F6 apply a superscript style (later we'll change to ctrl+shift+plus, as word does. But capturing those in js by hand is a pain.
@@ -211,6 +222,56 @@ function AddEditKeyHandlers(container) {
             //ctrl alt 2 is from google drive
             e.preventDefault();
             document.execCommand("formatBlock", false, "H2");
+        });
+
+    const invisibles = [
+        //{ re: "a|b|[0-9]", symbol: "🍎" },
+        { re: "&nbsp;|\u00A0", symbol: "🚀" }, // space (rocket == space)
+        { re: "\u202f", symbol: "🥐" }, // narrow space (croissant == french)
+        { re: "&ZeroWidthSpace;|\u200B", symbol: "0️⃣" },
+        { re: "&zwj;|\u200D", symbol: "🔗" }, // zero width joiner
+        {
+            re:
+                "[\u0009-\u000D]|\u0085|\u1680|\u180E|[\u2000-\u200A]|\u2028|\u2029|\u205F|\u3000|\uFEFF", //review: some list from some random dude
+            symbol: "🐻‍❄️" // random other whitespace
+        }
+    ];
+
+    // for testing only: show invisibles
+    $(container)
+        .find("div.bloom-editable")
+        .on("keydown", null, "CTRL+SPACE", e => {
+            e.preventDefault();
+            // get the parent that has the class bloom-editable
+            const editable = $(e.target).closest(".bloom-editable");
+
+            if (showInvisiblesToggle) {
+                showInvisiblesToggle = false;
+
+                editable.html((i, html) => {
+                    // for each replacement, replace all instances of the char with the symbol
+                    invisibles.forEach(function(pair) {
+                        const re = new RegExp(pair.re, "g");
+                        html = html.replace(re, match => {
+                            const code = getUnicodePoint(match); // get something like \u00A0
+                            return `<span data-original="${code}">${pair.symbol}</span>`;
+                        });
+                        return html;
+                    });
+                    return html;
+                });
+            } else {
+                // hide the invisibles
+                showInvisiblesToggle = true;
+                editable.html((i, html) => {
+                    return html.replace(
+                        /<span data-original="\\u(....)">..?.?<\/span>/g,
+                        function(match, p1) {
+                            return String.fromCharCode(parseInt(p1, 16));
+                        }
+                    );
+                });
+            }
         });
 
     $(document).keydown(e => {
