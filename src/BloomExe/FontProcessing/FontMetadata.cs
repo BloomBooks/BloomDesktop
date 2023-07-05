@@ -147,9 +147,9 @@ namespace Bloom.FontProcessing
 			}
 			catch (Exception e)
 			{
-				Console.WriteLine("Process.Start() of otfinfo -i \"{0}\" threw an exception: {1}", group.Normal, e);
+				Console.WriteLine("CommandLineRunnerExtra.RunWithInvariantCulture() of otfinfo -i \"{0}\" threw an exception: {1}", group.Normal, e);
 				determinedSuitability = kInvalid;
-				determinedSuitabilityNotes = $"Process.Start of \"otfinfo\" exception: {e}";
+				determinedSuitabilityNotes = $"otfinfo -i \"{group.Normal}\" exception: {e}";
 				return;
 			}
 #else

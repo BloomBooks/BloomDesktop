@@ -6,6 +6,7 @@ using Bloom.Book;
 using Bloom.CollectionTab;
 using Bloom.MiscUI;
 using Bloom.Properties;
+using Bloom.ToPalaso;
 using L10NSharp;
 using SIL.IO;
 
@@ -66,7 +67,7 @@ namespace Bloom.Spreadsheet
 				exporter.ExportToFolderWithProgressAsync(dom, imagesFolderPath, outputFolder, outputFilePath =>
 				{
 					if (outputFilePath != null)
-						PathUtilities.OpenFileInApplication(outputFilePath);
+						ProcessExtra.SafeStartInFront(outputFilePath);
 				});
 			}
 			catch (Exception ex)

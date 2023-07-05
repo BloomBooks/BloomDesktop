@@ -1,4 +1,5 @@
 using Bloom.Api;
+using Bloom.ToPalaso;
 using Bloom.web;
 
 namespace Bloom.WebLibraryIntegration
@@ -7,12 +8,12 @@ namespace Bloom.WebLibraryIntegration
 	{		
 		public static void LogIn()
 		{
-			SIL.Program.Process.SafeStart(GetUrl());
+			ProcessExtra.SafeStartInFront(GetUrl());
 		}
 
 		public static void Logout()
 		{
-			SIL.Program.Process.SafeStart(GetUrl() + "&mode=logout");
+			ProcessExtra.SafeStartInFront(GetUrl() + "&mode=logout");
 		}
 
 		private static string GetUrl()
