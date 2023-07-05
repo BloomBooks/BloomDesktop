@@ -1000,6 +1000,10 @@ export default class StyleEditor {
                     x => (x as HTMLElement).offsetHeight > 0 // need to find a visible one for a meaningful offsetLeft
                 );
                 leftPx = (editable as HTMLElement).offsetLeft;
+            } else {
+                // probably arithmetic template page, which has a numberRow instead of a TG.
+                //I think this is a better algorithm anyway, but play safe and avoid dangerous change near end of 5.5
+                leftPx = (eltBounds.left - parentBounds.left) / scale;
             }
 
             fmtButton.style.left = leftPx + "px";
