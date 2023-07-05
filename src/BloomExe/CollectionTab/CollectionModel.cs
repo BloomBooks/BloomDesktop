@@ -741,7 +741,7 @@ namespace Bloom.CollectionTab
 					MessageBox.Show("Bloom will now open a list of problems it found.");
 					var path = Path.GetTempFileName() + ".txt";
 					RobustFile.WriteAllText(path, dlg.ProgressString.Text);
-					PathUtilities.OpenFileInApplication(path);
+					ProcessExtra.SafeStartInFront(path);
 				}
 				else
 				{
@@ -768,7 +768,7 @@ namespace Bloom.CollectionTab
 				RobustFile.WriteAllText(path, dlg.ProgressString.Text);
 				try
 				{
-					PathUtilities.OpenFileInApplication(path);
+					ProcessExtra.SafeStartInFront(path);
 				}
 				catch (System.OutOfMemoryException)
 				{

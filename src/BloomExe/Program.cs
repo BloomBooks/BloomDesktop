@@ -571,12 +571,7 @@ namespace Bloom
 					MessageBox.Show(msgBldr.ToString());
 					// The new process showing a website should use the current culture, so we don't need to worry about that.
 					// We don't wait for this to finish, so we don't use the CommandLineRunner methods.
-					var psi = new ProcessStartInfo
-					{
-						FileName = "https://docs.bloomlibrary.org/webview2",
-						UseShellExecute = true
-					};
-					Process.Start(psi);
+					ProcessExtra.SafeStartInFront("https://docs.bloomlibrary.org/webview2");
 				}
 			}
 			return missingOrAntique;
@@ -860,6 +855,7 @@ namespace Bloom
 		/// </summary>
 		private static void ShowUserEmergencyShutdownMessage(Exception nasty)
 		{
+			StartupScreenManager.CloseSplashScreen();
 			if (SIL.PlatformUtilities.Platform.IsWindows)
 			{
 				try
@@ -886,7 +882,7 @@ namespace Bloom
 				writer.Flush();
 				writer.Close();
 			}
-			Process.Start(tempFileName);
+			ProcessExtra.SafeStartInFront(tempFileName);
 		}
 
 		private static bool IsBloomBookOrder(string[] args)

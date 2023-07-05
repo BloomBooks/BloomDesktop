@@ -65,7 +65,7 @@ namespace Bloom
 				//	if (eventArgs.Uri.StartsWith("https://"))
 				//	{
 				//		eventArgs.Handled = true;
-				//		Process.Start(eventArgs.Uri);
+				//		ProcessExtra.SafeStartInFront(eventArgs.Uri);
 				//	}
 				//};
 				_webview.CoreWebView2.ContextMenuRequested += ContextMenuRequested;

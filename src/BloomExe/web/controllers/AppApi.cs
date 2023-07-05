@@ -1,7 +1,7 @@
 ﻿using System;
-using System.Diagnostics;
 using Bloom.Book;
 using Bloom.Properties;
+using Bloom.ToPalaso;
 using Bloom.web;
 using Bloom.Workspace;
 using Newtonsoft.Json;
@@ -50,12 +50,10 @@ namespace Bloom.Api
 				// Enhance: is there a market-specific version of Bloom Library? If so, ideal to link to it somehow.
 				var url = UrlLookup.LookupUrl(UrlType.LibrarySite, null) + "/installers";
 				if (SIL.PlatformUtilities.Platform.IsWindows)
-					// Other places where we do similar things force the link to open in Firefox, but that will fail
-					// if it's not installed. I don't see any reason not to just let the default browser open the link.
-					//Process.Start("Firefox.exe", '"' + url + '"');
-					Process.Start('"' + url + '"');
+					// Let the default browser open the link.
+					ProcessExtra.SafeStartInFront('"' + url + '"');
 				else
-					SIL.Program.Process.SafeStart("xdg-open", Uri.EscapeUriString(url));
+					ProcessExtra.SafeStartInFront("xdg-open", Uri.EscapeUriString(url));	// may not need this distinction
 				request.ExternalLinkSucceeded();
 			}, true);
 

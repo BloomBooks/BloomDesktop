@@ -16,6 +16,7 @@ using Bloom.Book;
 using System.Globalization;
 using Bloom.ImageProcessing;
 using System.Drawing;
+using Bloom.ToPalaso;
 
 namespace Bloom.Publish.BloomLibrary
 {
@@ -452,7 +453,7 @@ namespace Bloom.Publish.BloomLibrary
 					Environment.SetEnvironmentVariable("LD_PRELOAD", $"{xulRunner}/libgeckofix.so");
 			}
 
-			Process.Start(startInfo);
+			ProcessExtra.StartInFront(startInfo);
 			progress.WriteMessage("Starting bulk upload in a terminal window...");
 			progress.WriteMessage("This process will skip books if it can tell that nothing has changed since the last bulk upload.");
 			progress.WriteMessage("When the upload is complete, there will be a file named 'BloomBulkUploadLog.txt' in your collection folder.");

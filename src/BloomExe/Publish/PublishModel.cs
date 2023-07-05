@@ -3,6 +3,7 @@ using Bloom.Book;
 using Bloom.Collection;
 using Bloom.MiscUI;
 using Bloom.Publish.PDF;
+using Bloom.ToPalaso;
 using Bloom.Utils;
 using BloomTemp;
 using DesktopAnalytics;
@@ -686,30 +687,11 @@ namespace Bloom.Publish
 
 		public void DebugCurrentPDFLayout()
 		{
-
-			//			var dom = BookSelection.CurrentSelection.GetDomForPrinting(BookletPortion, _currentBookCollectionSelection.CurrentSelection, _bookServer);
-			//
-			//			SizeAndOrientation.UpdatePageSizeAndOrientationClasses(dom, PageLayout);
-			//			PageLayout.UpdatePageSplitMode(dom);
-			//
-			//			XmlHtmlConverter.MakeXmlishTagsSafeForInterpretationAsHtml(dom);
-			//			var tempHtml = BloomTemp.TempFile.CreateHtm5FromXml(dom); //nb: we intentially don't ever delete this, to aid in debugging
-			//			//var tempHtml = TempFile.WithExtension(".htm");
-			//
-			//			var settings = new XmlWriterSettings {Indent = true, CheckCharacters = true};
-			//			using (var writer = XmlWriter.Create(tempHtml.Path, settings))
-			//			{
-			//				dom.WriteContentTo(writer);
-			//				writer.Close();
-			//			}
-
-			//			System.Diagnostics.Process.Start(tempHtml.Path);
-
 			var htmlFilePath = MakeFinalHtmlForPdfMaker().Key;
 			if (SIL.PlatformUtilities.Platform.IsWindows)
-				Process.Start("Firefox.exe", '"' + htmlFilePath + '"');
+				ProcessExtra.SafeStartInFront("Firefox.exe", '"' + htmlFilePath + '"');
 			else
-				SIL.Program.Process.SafeStart("xdg-open", '"' + htmlFilePath + '"');
+				ProcessExtra.SafeStartInFront("xdg-open", '"' + htmlFilePath + '"');
 		}
 
 		public void UpdateModelUponActivation()
@@ -1006,7 +988,7 @@ namespace Bloom.Publish
 				}
 			}
 
-			Process.Start(folderForThisBook.FolderPath);
+			ProcessExtra.SafeStartInFront(folderForThisBook.FolderPath);
 		}
 
 		public static string RemoveUnwantedLanguageDataFromAllTitles(string allTitles, string[] langsWanted)
