@@ -20,6 +20,7 @@ using Bloom.Publish.Video;
 using SIL.Progress;
 using Bloom.web.controllers;
 using Bloom.MiscUI;
+using Bloom.ToPalaso;
 
 namespace Bloom.Publish
 {
@@ -420,7 +421,7 @@ namespace Bloom.Publish
 
 		private void _openPDF_Click(object sender, EventArgs e)
 		{
-			PathUtilities.OpenFileInApplication(_model.PdfFilePath);
+			ProcessExtra.SafeStartInFront(_model.PdfFilePath);
 		}
 
 		private void ExportAudioFiles1PerPageToolStripMenuItem_Click(object sender, EventArgs e)

@@ -7,13 +7,13 @@ using Bloom.Api;
 using Bloom.Book;
 using Bloom.CollectionTab;
 using Bloom.MiscUI;
+using Bloom.ToPalaso;
 using Bloom.Utils;
 using Bloom.web;
 using BloomTemp;
 using Newtonsoft.Json;
 using SIL.Extensions;
 using SIL.IO;
-using SIL.Program;
 
 namespace Bloom.Publish.BloomPub
 {
@@ -95,7 +95,7 @@ namespace Bloom.Publish.BloomPub
 					}
 
 					progress.MessageWithoutLocalizing("Done.", ProgressKind.Heading);
-					Process.SafeStart(dest.FolderPath);
+					ProcessExtra.SafeStartInFront(dest.FolderPath);
 					// true means wait for the user, don't close automatically
 					return true;
 				}, "readerPublish", "Bulk Save BloomPubs", showCancelButton: true);

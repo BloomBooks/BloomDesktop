@@ -22,6 +22,7 @@ using L10NSharp;
 using Newtonsoft.Json.Linq;
 using SIL.PlatformUtilities;
 using SIL.Windows.Forms.Miscellaneous;
+using Bloom.ToPalaso;
 
 namespace Bloom.Api
 {
@@ -514,7 +515,7 @@ namespace Bloom.Api
 			RobustFile.WriteAllText(fileName, sb.ToString(), Encoding.UTF8);
 
 			// open the file
-			PathUtilities.OpenFileInApplication(fileName);
+			ProcessExtra.SafeStartInFront(fileName);
 		}
 
 		/// <summary></summary>
@@ -543,8 +544,15 @@ namespace Bloom.Api
 			if (!Directory.Exists(path))
 				Directory.CreateDirectory(path);
 
-			PathUtilities.OpenDirectoryInExplorer(path);
-			CommonApi.BringFolderToFrontInLinux("Sample Texts");
+			if (Platform.IsLinux)
+			{
+				PathUtilities.OpenDirectoryInExplorer(path);
+				CommonApi.BringFolderToFrontInLinux("Sample Texts");
+			}
+			else
+			{
+				ProcessExtra.SafeStartInFront(path);
+			}
 		}
 
 		private string ShowSelectAllowedWordsFileDialog()

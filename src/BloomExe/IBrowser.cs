@@ -1,5 +1,6 @@
 using Bloom.Api;
 using Bloom.Book;
+using Bloom.ToPalaso;
 using L10NSharp;
 using SIL.IO;
 using SIL.Reporting;
@@ -252,7 +253,7 @@ namespace Bloom
 		public void OnOpenPageInEdge(object sender, EventArgs e)
 		{
 			Debug.Assert(!InvokeRequired);
-			Process.Start("msedge", $"{Url}");
+			ProcessExtra.SafeStartInFront("msedge", $"{Url}");
 			// intentionally letting any errors just escape, give us an error
 		}
 
