@@ -783,8 +783,8 @@ namespace Bloom.Workspace
 
 				_previouslySelectedControl = null;
 
-					Invoke((Action)(() => Program.ChooseACollection(Shell.GetShellOrOtherOpenForm() as Shell)));
-					return DialogResult.OK;
+				Invoke((Action)(() => Program.ChooseACollection(Shell.GetShellOrOtherOpenForm() as Shell)));
+				return DialogResult.OK;
 			});
 		}
 
