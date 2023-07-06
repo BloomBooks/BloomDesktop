@@ -75,7 +75,17 @@ namespace Bloom.Spreadsheet
 		{
 			var spreadsheet = ExportToFolder(dom, bookFolderPath, outputFolder, out string outputFilePath,
 				progress);
-			resultCallback(outputFilePath);
+			// ExportToFolder will return null if export fails, in which case we don't want to open/foreground the spreadsheet
+			if (spreadsheet != null)
+			{
+				resultCallback(outputFilePath);
+			}
+			else if (!progress.HaveProblemsBeenReported)
+			{
+				// Export failed but we have no progress problem messages. Make sure there is at least some error message
+				// so we aren't just failing silently
+				progress.MessageWithParams("Spreadsheet.ExportFailed", "", "Export failed: {0}", ProgressKind.Error, "");
+			}
 			return progress.HaveProblemsBeenReported;
 		},"collectionTab", "Exporting Spreadsheet", showCancelButton: false);
 		}
@@ -724,11 +734,19 @@ namespace Bloom.Spreadsheet
 			}
 			catch (Exception e) when (e is IOException || e is SecurityException || e is UnauthorizedAccessException)
 			{
-				progress.MessageWithParams("Spreadsheet.WriteFailed", "",
-					"Bloom had problems writing files to that location ({0}). Check that you have permission to write there.",
-					ProgressKind.Error, _outputFolder);
+				if (e is IOException && (e.HResult & 0x0000FFFF) == 32) //ERROR_SHARING_VIOLATION
+				{
+					progress?.Message("Spreadsheet.SpreadsheetLocked", "",
+						"Bloom could not write to the spreadsheet because another program has it locked. Do you have it open in another program?",
+						ProgressKind.Error);
+				}
+				else
+				{
+					progress.MessageWithParams("Spreadsheet.WriteFailed", "",
+						"Bloom had problems writing files to that location ({0}). Check that you have permission to write there.",
+						ProgressKind.Error, _outputFolder);
+				}
 			}
-
 			outputPath = null;
 			return null; // some error occurred and was caught
 		}

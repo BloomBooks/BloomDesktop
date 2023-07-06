@@ -228,26 +228,9 @@ namespace Bloom.Spreadsheet
 					SetBackgroundColorOfColumn(worksheet, iColumn1Based, InternalSpreadsheet.HiddenColor);
 				}
 
-				try
-				{
-					RobustFile.Delete(outputPath);
-					var xlFile = new FileInfo(outputPath);
-					package.SaveAs(xlFile);
-				}
-				catch (IOException ex) when ((ex.HResult & 0x0000FFFF) == 32) //ERROR_SHARING_VIOLATION
-				{
-					Console.WriteLine("Writing Spreadsheet failed. Do you have it open in another program?");
-					Console.WriteLine(ex);
-
-					progress?.Message("Spreadsheet.SpreadsheetLocked", "",
-						"Bloom could not write to the spreadsheet because another program has it locked. Do you have it open in another program?",
-						ProgressKind.Error);
-				}
-				catch (Exception ex)
-				{
-					progress?.MessageWithParams("Spreadsheet.ExportFailed", "{0} is a placeholder for the exception message",
-						"Export failed: {0}", ProgressKind.Error, ex.Message);
-				}
+				RobustFile.Delete(outputPath);
+				var xlFile = new FileInfo(outputPath);
+				package.SaveAs(xlFile);
 			}
 		}
 
