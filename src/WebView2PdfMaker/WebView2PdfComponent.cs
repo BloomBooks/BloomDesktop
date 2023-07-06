@@ -264,6 +264,8 @@ namespace WebView2PdfMaker
 			// The title in the header if Microsoft.Web.WebView2.Core.CoreWebView2PrintSettings.ShouldPrintHeaderAndFooter is true.
 			// (The default value is the title of the current document.)
 			_printSettings.HeaderTitle = "";
+			// Fixes BL-12450 PDF drops the gray text box background.
+			_printSettings.ShouldPrintBackgrounds = true;
 			// The URI in the footer if Microsoft.Web.WebView2.Core.CoreWebView2PrintSettings.ShouldPrintHeaderAndFooter is true.
 			// (The default value is the current URI.)
 			_printSettings.FooterUri = "";
