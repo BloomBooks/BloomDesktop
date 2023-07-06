@@ -70,8 +70,6 @@ export function makeElement(
     return result;
 }
 
-let showInvisiblesToggle = true;
-
 function isBrOrWhitespace(node) {
     return (
         node &&
@@ -244,34 +242,31 @@ function AddEditKeyHandlers(container) {
             e.preventDefault();
             // get the parent that has the class bloom-editable
             const editable = $(e.target).closest(".bloom-editable");
-
-            if (showInvisiblesToggle) {
-                showInvisiblesToggle = false;
-
-                editable.html((i, html) => {
-                    // for each replacement, replace all instances of the char with the symbol
-                    invisibles.forEach(function(pair) {
-                        const re = new RegExp(pair.re, "g");
-                        html = html.replace(re, match => {
-                            const code = getUnicodePoint(match); // get something like \u00A0
-                            return `<span data-original="${code}">${pair.symbol}</span>`;
-                        });
-                        return html;
+            editable.html((i, html) => {
+                // for each replacement, replace all instances of the char with the symbol
+                invisibles.forEach(function(pair) {
+                    const re = new RegExp(pair.re, "g");
+                    html = html.replace(re, match => {
+                        const code = getUnicodePoint(match); // get something like \u00A0
+                        return `<span data-original="${code}">${pair.symbol}</span>`;
                     });
                     return html;
                 });
-            } else {
-                // hide the invisibles
-                showInvisiblesToggle = true;
-                editable.html((i, html) => {
-                    return html.replace(
-                        /<span data-original="\\u(....)">..?.?<\/span>/g,
-                        function(match, p1) {
-                            return String.fromCharCode(parseInt(p1, 16));
-                        }
-                    );
-                });
-            }
+                return html;
+            });
+        })
+        .on("keyup", null, "CTRL+SPACE", e => {
+            // restore all the original characters
+            e.preventDefault();
+            const editable = $(e.target).closest(".bloom-editable");
+            editable.html((i, html) => {
+                return html.replace(
+                    /<span data-original="\\u(....)">..?.?<\/span>/g,
+                    function(match, p1) {
+                        return String.fromCharCode(parseInt(p1, 16));
+                    }
+                );
+            });
         });
 
     $(document).keydown(e => {
