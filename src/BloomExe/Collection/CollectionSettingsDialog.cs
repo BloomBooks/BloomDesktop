@@ -476,13 +476,13 @@ namespace Bloom.Collection
 			ChangeThatRequiresRestart();
 		}
 
+		private void _showExperimentalBookSources_CheckedChanged(object sender, EventArgs e)
+		{
+			ChangeThatRequiresRestart();
+		}
 		private void UpdateExperimentalBookSources()
 		{
-			if (ExperimentalFeatures.IsFeatureEnabled(ExperimentalFeatures.kExperimentalSourceBooks) != _showExperimentalBookSources.Checked)
-			{
-				ExperimentalFeatures.SetValue(ExperimentalFeatures.kExperimentalSourceBooks, _showExperimentalBookSources.Checked);
-				ChangeThatRequiresRestart();
-			}
+			ExperimentalFeatures.SetValue(ExperimentalFeatures.kExperimentalSourceBooks, _showExperimentalBookSources.Checked);
 		}
 
 		public bool FontSettingsLinkClicked(int zeroBasedLanguageNumber)
@@ -565,31 +565,31 @@ namespace Bloom.Collection
 			ChangeThatRequiresRestart();
 		}
 
+		private void _allowTeamCollection_CheckedChanged(object sender, EventArgs e)
+		{
+			ChangeThatRequiresRestart();
+		}
 		private void UpdateTeamCollectionAllowed()
 		{
-			if (ExperimentalFeatures.IsFeatureEnabled(ExperimentalFeatures.kTeamCollections) != _allowTeamCollection.Checked)
-			{
-				ExperimentalFeatures.SetValue(ExperimentalFeatures.kTeamCollections, _allowTeamCollection.Checked);
-				ChangeThatRequiresRestart();
-			}
+			ExperimentalFeatures.SetValue(ExperimentalFeatures.kTeamCollections, _allowTeamCollection.Checked);
 		}
 
+		private void _allowSpreadsheetImportExport_CheckedChanged(object sender, EventArgs e)
+		{
+			ChangeThatRequiresRestart();
+		}
 		private void UpdateSpreadsheetImportExportAllowed()
 		{
-			if (ExperimentalFeatures.IsFeatureEnabled(ExperimentalFeatures.kSpreadsheetImportExport) != _allowSpreadsheetImportExport.Checked)
-			{
-				ExperimentalFeatures.SetValue(ExperimentalFeatures.kSpreadsheetImportExport, _allowSpreadsheetImportExport.Checked);
-				ChangeThatRequiresRestart();
-			}
+			ExperimentalFeatures.SetValue(ExperimentalFeatures.kSpreadsheetImportExport, _allowSpreadsheetImportExport.Checked);
 		}
 
+		private void _allowWebView2_CheckedChanged(object sender, EventArgs e)
+		{
+			ChangeThatRequiresRestart();
+		}
 		private void UpdateUseWebView2()
 		{
-			if (ExperimentalFeatures.IsFeatureEnabled(ExperimentalFeatures.kWebView2) != _allowWebView2.Checked)
-			{
-				ExperimentalFeatures.SetValue(ExperimentalFeatures.kWebView2, _allowWebView2.Checked);
-				ChangeThatRequiresRestart();
-			}
+			ExperimentalFeatures.SetValue(ExperimentalFeatures.kWebView2, _allowWebView2.Checked);
 		}
 	}
 }
