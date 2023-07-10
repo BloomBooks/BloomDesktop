@@ -1,0 +1,31 @@
+@import "../branding-base.less";
+
+[data-book="outside-back-cover-branding-top-html"] .branding {
+    // -2em "seats" the Bloom logo a bit tighter into the upper right corner.
+    margin-top: -2em;
+    margin-right: -2em;
+    width: 25%;
+}
+
+[class*="Landscape"] {
+    [data-book="outside-back-cover-branding-top-html"] .branding {
+        width: 17%;
+    }
+
+    [data-book="outside-back-cover-branding-bottom-html"] .branding {
+        width: 40%;
+    }
+}
+
+[data-book="outside-back-cover-branding-bottom-html"] .branding {
+    width: 65%;
+}
+
+// Snugging the logo into the upper right corner needs to be modified for device layout, or it'll be off the page.
+.Device16x9Portrait,
+.Device16x9Landscape {
+    [data-book="outside-back-cover-branding-top-html"] .branding {
+        margin-top: 0;
+        margin-right: 0;
+    }
+}
