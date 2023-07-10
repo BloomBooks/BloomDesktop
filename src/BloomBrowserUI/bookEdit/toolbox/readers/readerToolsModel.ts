@@ -1035,30 +1035,10 @@ export class ReaderToolsModel {
         if (this.currentMarkupType === MarkupType.None) return;
 
         let oldSelectionPosition = -1;
-        if (this.activeElement) {
+        if (this.activeElement)
             oldSelectionPosition = EditableDivUtils.getElementSelectionIndex(
                 this.activeElement
             );
-            console.log("oldSelectionPosition: " + oldSelectionPosition);
-            if (oldSelectionPosition >= 0) {
-                window.getSelection()!.removeAllRanges();
-            }
-            const ckeditorOfThisBox = (<any>this.activeElement).bloomCkEditor;
-            if (ckeditorOfThisBox) {
-                console.log(
-                    "ckeditorOfThisBox.getData(): " +
-                        ckeditorOfThisBox.getData()
-                );
-                if (
-                    ckeditorOfThisBox.getData() !== this.activeElement.innerHTML
-                ) {
-                    console.log(
-                        "innerHTML was " + this.activeElement.innerHTML
-                    );
-                    this.activeElement.innerHTML = ckeditorOfThisBox.getData();
-                }
-            }
-        }
 
         const editableElements = this.getElementsToCheck();
 
@@ -1151,15 +1131,6 @@ export class ReaderToolsModel {
                 offset: oldSelectionPosition
             });
             this.redoStack = []; // ok because only referred to by this variable.
-        }
-
-        if (oldSelectionPosition >= 0) {
-            EditableDivUtils.makeSelectionIn(
-                this.activeElement!,
-                oldSelectionPosition,
-                -1,
-                true
-            );
         }
 
         // the contentWindow is not available during unit testing

@@ -202,36 +202,6 @@ describe("readerTools-libSynphony tests", () => {
         expect(text1.html()).toEqual(
             '<span class="possible-word" data-segment="word">Cat</span><br><span class="possible-word" data-segment="word">Dog</span>.'
         );
-
-        // Valid word has embedded CkEditor bookmark
-        text1
-            .html(
-                'Ca<span id="cke_bm_577" style="display: none;">&nbsp;</span>t<br>Dog.'
-            )
-            .checkDecodableReader({ knownGraphemes: knownGraphemes });
-        expect(text1.html()).toEqual(
-            '<span class="possible-word" data-segment="word">Ca<span id="cke_bm_577" style="display: none;">&nbsp;</span>t</span><br><span class="possible-word" data-segment="word">Dog</span>.'
-        );
-        // CkEditor bookmark at start
-        text1
-            .html(
-                '<span id="cke_bm_577" style="display: none;">&nbsp;</span>Cat<br>Dog.'
-            )
-            .checkDecodableReader({ knownGraphemes: knownGraphemes });
-        expect(text1.html()).toEqual(
-            '<span class="possible-word" data-segment="word"><span id="cke_bm_577" style="display: none;">&nbsp;</span>Cat</span><br><span class="possible-word" data-segment="word">Dog</span>.'
-        );
-        // CkEditor bookmark at end of word
-        text1
-            .html(
-                'Cat<span id="cke_bm_577" style="display: none;">&nbsp;</span><br>Dog.'
-            )
-            .checkDecodableReader({ knownGraphemes: knownGraphemes });
-        expect(text1.html()).toEqual(
-            // It's ambiguous whether the restored bookmark should be inside or outside the span that was added to wrap "Cat".
-            // I think I would prefer it to be inside, but it's marginal, and the code is complicated enough already.
-            '<span class="possible-word" data-segment="word">Cat</span><span id="cke_bm_577" style="display: none;">&nbsp;</span><br><span class="possible-word" data-segment="word">Dog</span>.'
-        );
     });
 
     it("sightWordOnlyStages", () => {
@@ -260,26 +230,6 @@ describe("readerTools-libSynphony tests", () => {
             .checkDecodableReader({ sightWords: ["canine", "feline"] });
         expect(text1.html()).toEqual(
             '<span class="sight-word" data-segment="word">Canine</span> <span class="word-not-found" data-segment="word">Dog</span>.'
-        );
-
-        // handles CkEditor bookmark mid-word in a sight-word
-        text1
-            .html(
-                'Can<span id="cke_bm_577" style="display: none;">&nbsp;</span>ine Dog.'
-            )
-            .checkDecodableReader({ sightWords: ["canine", "feline"] });
-        expect(text1.html()).toEqual(
-            '<span class="sight-word" data-segment="word">Can<span id="cke_bm_577" style="display: none;">&nbsp;</span>ine</span> <span class="word-not-found" data-segment="word">Dog</span>.'
-        );
-
-        // handles CkEditor bookmark mid-word in a non-sight-word when there is a sight word
-        text1
-            .html(
-                'Canine Do<span id="cke_bm_52C" style="display: none;">&nbsp;</span>g.'
-            )
-            .checkDecodableReader({ sightWords: ["canine", "feline"] });
-        expect(text1.html()).toEqual(
-            '<span class="sight-word" data-segment="word">Canine</span> <span class="word-not-found" data-segment="word">Do<span id="cke_bm_52C" style="display: none;">&nbsp;</span>g</span>.'
         );
 
         text1
