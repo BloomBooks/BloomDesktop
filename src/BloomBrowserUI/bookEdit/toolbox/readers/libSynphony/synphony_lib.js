@@ -724,37 +724,134 @@ LibSynphony.prototype.wrap_words_extra = function(
     // escape special characters
     var escapedWords = aWords.map(RegExp.quote);
 
-    var regex = new XRegExp(
+    const regex = new XRegExp(
         beforeWord + "(" + escapedWords.join("|") + ")" + afterWord,
-        "xgi"
+        "xgid"
     );
 
     // We must not replace any occurrences inside <...>. For example, if html is abc <span class='word'>x</span>
     // and we are trying to wrap 'word', we should not change anything.
     // To prevent this we split the string into sections starting at <. If this is valid html, each except the first
     // should have exactly one >. We strip off everything up to the > and do the wrapping within the rest.
-    // Finally we put the pieces back together.
-    var parts = storyHTML.split("<");
-    var modParts = [];
-    for (var i = 0; i < parts.length; i++) {
-        var text = parts[i];
-        var prefix = "";
+    // Finally we put the pieces back together./
+    // However: a CkEditor bookmark like <span id=\"cke_bm_52C\" style=\"display: none;\">&nbsp;</span> may
+    // occur in the middle of a word and should not mess things up.
+    const bookmarkIndex = storyHTML.indexOf('<span id="cke_bm_');
+    let bookmarkReplacement = "\uDC05"; // an upper surrogate, unlikely to occur
+    let bookmark = "";
+    while (storyHTML.indexOf(bookmarkReplacement) >= 0) {
+        bookmarkReplacement = String.fromCharCode(
+            bookmarkReplacement.charCodeAt(0) + 1
+        ); // just in case we'll keep trying until we find one that does NOT occur.
+    }
+    if (bookmarkIndex >= 0) {
+        const bookmarkEndIndex =
+            storyHTML.indexOf("</span>", bookmarkIndex) + "</span>".length;
+        bookmark = storyHTML.substring(bookmarkIndex, bookmarkEndIndex);
+
+        storyHTML =
+            storyHTML.substring(0, bookmarkIndex) +
+            bookmarkReplacement +
+            storyHTML.substring(bookmarkEndIndex);
+    }
+    const parts = storyHTML.split("<");
+    const modParts = [];
+    for (let i = 0; i < parts.length; i++) {
+        let text = parts[i];
+        let prefix = "";
         if (i != 0) {
-            var index = text.indexOf(">");
+            const index = text.indexOf(">");
             prefix = text.substring(0, index + 1);
             text = text.substring(index + 1, text.length);
         }
-        modParts.push(
-            prefix +
-                XRegExp.replace(
-                    text,
-                    regex,
-                    '$1<span class="' + cssClass + '"' + extra + ">$2</span>"
-                )
-        );
+        const bmIndex = text.indexOf(bookmarkReplacement);
+        if (bmIndex >= 0) {
+            text = text.substring(0, bmIndex) + text.substring(bmIndex + 1);
+        }
+        let modText = prefix;
+        let lastIndex = 0;
+        let match;
+        // As we add each piece back into the replacement string, we need to restore the bookmark,
+        // if it was in that piece.
+        const restoreBookmark = (input, offset) => {
+            if (bmIndex < 0) {
+                return input;
+            }
+            const bmWordIndex = bmIndex - offset;
+            if (bmWordIndex >= 0 && bmWordIndex < input.length) {
+                return (
+                    input.substring(0, bmWordIndex) +
+                    bookmarkReplacement +
+                    input.substring(bmWordIndex)
+                );
+            }
+            return input;
+        };
+        while ((match = regex.exec(text))) {
+            modText += restoreBookmark(
+                text.substring(lastIndex, match.index),
+                lastIndex
+            ); // keep whatever didn't match, restoring bookmark
+            lastIndex = match.index + match[0].length; // match.lastIndex might be the same, but not sure.
+            const leading = restoreBookmark(match[1], match.indices);
+            const offset = match.indices[2][0]; // This is what we can only get by using exec.
+            const word = restoreBookmark(match[2], offset);
+            modText +=
+                leading +
+                '<span class="' +
+                cssClass +
+                '"' +
+                extra +
+                ">" +
+                word +
+                "</span>";
+        }
+        modText += restoreBookmark(text.substring(lastIndex), lastIndex);
+        // If it was right at the end, we won't otherwise put it in.
+        // This also servers as a fall-back: if we weren't otherwise successful at putting it back
+        // in the right place, at least it will be somewhere, and hopefully close.
+        if (bmIndex >= 0 && modText.indexOf(bookmarkReplacement) < 0) {
+            modText += bookmarkReplacement;
+        }
+        modParts.push(modText);
+        // text.replace(regex, (match, p1, p2, p3, offset) => {
+        //     let word = p2;
+        //     if (bmIndex >= 0) {
+        //         const bmWordIndex = bmIndex - offset;
+        //         console.log(
+        //             "word: " +
+        //                 word +
+        //                 " offset: " +
+        //                 offset +
+        //                 " bmWordIndex: " +
+        //                 bmWordIndex
+        //         );
+        //         if (bmWordIndex >= 0 && bmWordIndex < word.length) {
+        //             word =
+        //                 word.substring(0, bmWordIndex) +
+        //                 bookmarkReplacement +
+        //                 word.substring(bmWordIndex);
+        //         }
+        //     }
+        //     return (
+        //         p1 +
+        //         '<span class="' +
+        //         cssClass +
+        //         '"' +
+        //         extra +
+        //         ">" +
+        //         word +
+        //         "</span>"
+        //     );
+        // })
+        // XRegExp.replace(
+        //     text,
+        //     regex,
+        //     '$1<span class="' + cssClass + '"' + extra + ">$2</span>"
+        // )
     }
 
-    return modParts.join("<");
+    return modParts.join("<").replace(bookmarkReplacement, bookmark);
 };
 
 /**

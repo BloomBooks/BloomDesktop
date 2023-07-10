@@ -109,7 +109,7 @@
         "toastr": "^2.1.4",
         "underscore": "^1.9.1",
         "use-debounce": "^5.2.0",
-        "xregexp": "^4.2.4"
+        "xregexp": "^5.1.1"
     },
     "devDependencies": {
         "@babel/cli": "^7.17.10",
