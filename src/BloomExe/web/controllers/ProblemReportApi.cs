@@ -887,13 +887,18 @@ namespace Bloom.web.controllers
 				bldr.AppendLine("Book's CollectionSettings was null.");
 				return;
 			}
-			bldr.AppendLine("Collection name: " + settings.CollectionName);
+			var enterpriseStatus = settings.GetEnterpriseStatus().ToString();
+			var branding = settings.BrandingProjectKey;			bldr.AppendLine("Collection name: " + settings.CollectionName);
 			bldr.AppendLine("xMatter pack name: " + settings.XMatterPackName);
 			// TODO: rethink how to display language information if we expand the languages available.
 			AppendWritingSystem(book.BookData.Language1, "Language1", bldr);
 			AppendWritingSystem(book.BookData.Language2, "Language2", bldr);
 			AppendWritingSystem(book.BookData.Language3, "Language3", bldr);
 			AppendWritingSystem(book.BookData.MetadataLanguage1, "MetadataLanguage1", bldr);
+			bldr.AppendLine();
+			bldr.AppendLine("Enterprise status: " + enterpriseStatus);
+			bldr.AppendLine("Branding: " + (string.IsNullOrEmpty(branding) ? "None found" : branding));
+			bldr.AppendLine("User timezone: " + TimeZone.CurrentTimeZone.StandardName);
 		}
 
 		void AppendWritingSystem(WritingSystem ws, string label, StringBuilder bldr)
