@@ -1063,7 +1063,8 @@ IE/Win - Fix animation bug - #4615*/
     text-align: center;
     zoom: 1;
     overflow: visible;
-    font-family: NotoSans, Roboto, sans-serif;
+    /* Should match bloomWebFonts.less' @UIFontStack */
+    font-family: Roboto, NotoSans, sans-serif;
 }
 /*the overflow property removes extra width in IE*/
 .ui-button-icon-only {

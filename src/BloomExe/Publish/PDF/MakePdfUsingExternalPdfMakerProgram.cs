@@ -9,7 +9,6 @@ using Bloom.Api;
 using Bloom.ToPalaso;
 using Bloom.web;
 using L10NSharp;
-using SIL.CommandLineProcessing;
 using SIL.IO;
 using SIL.PlatformUtilities;
 using SIL.Progress;

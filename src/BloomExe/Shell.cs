@@ -89,11 +89,6 @@ namespace Bloom
 			_contextMenu.Opening += _contextMenu_Opening;
 
 			_workspaceView = projectViewFactory();
-			_workspaceView.CloseCurrentProject += ((x, y) =>
-			{
-				UserWantsToOpenADifferentProject = true;
-				Program.ChooseACollection(this);
-			});
 
 			_workspaceView.ReopenCurrentProject += ((x, y) =>
 			{

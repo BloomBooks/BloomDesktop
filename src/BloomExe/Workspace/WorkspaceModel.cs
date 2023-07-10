@@ -70,11 +70,6 @@ namespace Bloom.Workspace
 			return null;
 		}
 
-		public bool CloseRequested()
-		{
-			return true;
-		}
-
 		// Must be called before we call GetBookCollections() (or GetBookCollectionsOnce) in CollectionModel.
 		internal void HandleTeamStuffBeforeGetBookCollections(Action whenDone)
 		{
