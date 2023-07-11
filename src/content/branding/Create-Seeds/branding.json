@@ -1,0 +1,16 @@
+{
+    "presets": [
+        {
+            "data-book": "outside-back-cover-branding-top-html",
+            "lang": "*",
+            "content": "<img class='branding' src='made-with-bloom-badge-dark.svg'/>",
+            "condition": "always"
+        },
+        {
+            "data-book": "outside-back-cover-branding-bottom-html",
+            "lang": "*",
+            "content": "<img class='branding' src='CreateSeeds.png'/>",
+            "condition": "always"
+        }
+    ]
+}
