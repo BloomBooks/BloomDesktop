@@ -3,11 +3,6 @@ import { Slider, Typography } from "@mui/material";
 import {
     ConfigrPane,
     ConfigrGroup,
-    ConfigrSubgroup,
-    ConfigrCustomStringInput,
-    ConfigrCustomNumberInput,
-    ConfigrColorPicker,
-    ConfigrInput,
     ConfigrCustomObjectInput,
     ConfigrSelect,
     ConfigrBoolean
