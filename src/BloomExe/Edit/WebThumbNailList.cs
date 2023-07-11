@@ -182,7 +182,7 @@ namespace Bloom.Edit
 			List<IPage> result = null;
 			if (InvokeRequired)
 			{
-				Invoke((Action) (() => result = UpdateItemsInternal(pages)));
+				Invoke((Action)(() => result = UpdateItemsInternal(pages)));
 			}
 			else
 			{
@@ -246,7 +246,7 @@ namespace Bloom.Edit
 
 			_baseForRelativePaths = pageListDom.BaseForRelativePaths;
 			if (this.IsHandleCreated) // somehow we can get here when the edit view is not active at all
-				Invoke((Action)(()=>_browser.Navigate(pageListDom, source:InMemoryHtmlFileSource.Pagelist)));
+				Invoke((Action)(() => _browser.Navigate(pageListDom, source: InMemoryHtmlFileSource.Pagelist)));
 			return result.ToList();
 		}
 
@@ -262,7 +262,7 @@ namespace Bloom.Edit
 		void WebBrowser_DocumentCompleted(object sender, EventArgs e)
 		{
 			SelectPage(PageListApi?.SelectedPage);
-			_browser.DocumentCompleted -= WebBrowser_DocumentCompleted;	// need to do this only once
+			_browser.DocumentCompleted -= WebBrowser_DocumentCompleted; // need to do this only once
 		}
 
 		internal void PageClicked(IPage page)
@@ -283,21 +283,11 @@ namespace Bloom.Edit
 				menuItem.Enabled = item.EnableFunction(page);
 				menu.Items.Add(menuItem);
 			}
-			if (SIL.PlatformUtilities.Platform.IsLinux)
-			{
-				// The LostFocus event is never received by the ContextMenuStrip on Linux/Mono, and the menu
-				// stays open when the user clicks elsewhere in the Edit tool area of the Bloom window.
-				// To minimize user frustration, we hook up the local browser and the EditingView browser
-				// mouse click handlers to explicitly close the menu.  Perhaps fixing the Mono bug would
-				// be better, but I'd rather not go there if I don't have to.
-				// See https://issues.bloomlibrary.org/youtrack/issue/BL-6753.
-				// (This is currently the last place OnBrowserClick is used. Could therefore be removed
-				// when we complete the switch to WebView2 and drop Linux. However, we might want it if
-				// we ever manage to reinstate Linux.)
-				_browser.OnBrowserClick += Browser_Click;
-				Model.GetEditingBrowser().OnBrowserClick += Browser_Click;
-				_popupPageMenu = menu;
-			}
+
+			_browser.OnBrowserClick += Browser_Click;
+			Model.GetEditingBrowser().OnBrowserClick += Browser_Click;
+			_popupPageMenu = menu;
+
 			menu.Show(MousePosition);
 		}
 
@@ -323,7 +313,7 @@ namespace Bloom.Edit
 			// accounts for placeholder.
 			// Enhance: may not be needed in single-column mode, if we ever restore that.
 			newPageIndex--;
-			if (!movedPage.CanRelocate || !_pages[newPageIndex+1].CanRelocate)
+			if (!movedPage.CanRelocate || !_pages[newPageIndex + 1].CanRelocate)
 			{
 				var msg = LocalizationManager.GetString("EditTab.PageList.CantMoveXMatter",
 					"That change is not allowed. Front matter and back matter pages must remain where they are.");
