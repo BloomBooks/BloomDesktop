@@ -747,6 +747,13 @@ namespace Bloom.Spreadsheet
 						ProgressKind.Error, _outputFolder);
 				}
 			}
+			catch (Exception e)
+			{
+				progress.MessageWithParams("Spreadsheet.ExportFailed", "{0} is a placeholder for the exception message",
+					"Export failed: {0}", ProgressKind.Error, e.Message);
+
+			}
+
 			outputPath = null;
 			return null; // some error occurred and was caught
 		}
