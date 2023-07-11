@@ -513,7 +513,10 @@ namespace Bloom.Spreadsheet
 			else if (cellFormatting.Color.Rgb != null)
 			{
 				Color cellColor = ColorTranslator.FromHtml(cellFormatting.Color.LookupColor());
-				color = !IsBlack(cellColor) ? cellColor : color;
+				if (!IsBlack(cellColor))
+				{
+					color = cellColor;
+				}
 			}
 			// We do not import black coloration from Excel because Excel text is black by default
 			// and we cannot differentiate this from text the user specifically wants to be black.
