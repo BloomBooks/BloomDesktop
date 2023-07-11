@@ -860,6 +860,19 @@ span.word-not-found {
     background-color: @DecodableReaderViolationColor;
     position: unset; // BL-11633, works around Chromium bug
 }
+div.bloom-editable {
+    // Chrome 105 and later (ie, WebView2) has the :has selector.
+    // These rules may not need the :has(span) selector, but I
+    // don't want to risk breaking something.  This is enough to
+    // work around the Chromium bug reported in BL-11633.
+    span[style]:has(span),
+    em:has(span),
+    strong:has(span),
+    u:has(span),
+    sup:has(span) {
+        position: unset; // BL-11633, works around Chromium bug
+    }
+}
 
 /* We are disabling the "Possible Word" feature at this time.
 SPAN.possible-word
