@@ -265,7 +265,11 @@ export const BookButton: React.FunctionComponent<{
                 // I tried the obvious approach of putting an onBlur in the JSX for the renameDiv,
                 // but it gets activated immediately, and I cannot figure out why.
                 renameDiv.current?.addEventListener("blur", () => {
-                    finishRename(renameDiv.current!.innerText);
+                    // As the element loses focus, renameDiv.current is set to null, so we
+                    // must use p.innerText instead of renameDiv.current.innerText.
+                    // p is still assigned to the element losing focus, so it's safe to use.
+                    // (See BL-12384.)
+                    finishRename(p.innerText);
                 });
                 renameDiv.current?.addEventListener("keypress", e => {
                     if (e.key === "Enter") {
