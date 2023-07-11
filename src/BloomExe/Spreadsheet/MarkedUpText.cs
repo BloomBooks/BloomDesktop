@@ -164,6 +164,13 @@ namespace Bloom.Spreadsheet
 				markedUpText = new MarkedUpText();
 				markedUpText._runList.Add(run);
 			}
+			// replace audio split markers with pipes to retain audio segment markers
+			else if (node.Name == "span" && (node.Attributes["class"]?.Value??"").Equals("bloom-audio-split-marker"))
+			{
+				MarkedUpTextRun run = new MarkedUpTextRun("|");
+				markedUpText = new MarkedUpText();
+				markedUpText._runList.Add(run);
+			}
 			else if (!node.HasChildNodes)
 			{
 				MarkedUpTextRun run = new MarkedUpTextRun(node.InnerText);
