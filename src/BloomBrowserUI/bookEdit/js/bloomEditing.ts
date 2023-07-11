@@ -1293,34 +1293,12 @@ export const getBodyContentForSavePage = () => {
 
     // Get the cleaned up data (getData()) from ckeditor, rather than just the raw html.
     // Specifically, we want it to remove the zero-width space characters that it inserts.
+    // It inserts them to aid in preserving the cursor position, but we're saving the page;
+    // we don't need the cursor position preserved.
     // See BL-12391.
     for (const property in CKEDITOR.instances) {
         const instance = CKEDITOR.instances[property];
-
-        // Just like we do when updating markup via a call in toolbox.ts,
-        // we need to save the selection and restore it after modifying the html.
-        // There are some edge cases where, after saving the page, the user continues
-        // to edit the page without it reloading (such as opening the image chooser and cancelling).
-        const ckeditorSelection = instance.getSelection();
-        let bookmarks;
-        if (ckeditorSelection) {
-            try {
-                bookmarks = ckeditorSelection.createBookmarks(true);
-            } catch (e) {
-                // I don't know why createBookmarks() sometimes throws.
-                // Seems like a bug in ckeditor as far as I can tell.
-                // If it does throw, we want to remove the selection.
-                // Otherwise, a strange thing happens when switching levels in leveled reader.
-                // We call save twice in that case (I don't understand why), and the second time, we will end up
-                // inserting an extra nbsp if we've left the selection in place.
-                window?.getSelection()?.removeAllRanges();
-            }
-        }
-
         instance.element.setHtml(instance.getData());
-
-        if (ckeditorSelection && bookmarks)
-            ckeditorSelection.selectBookmarks(bookmarks);
     }
 
     const result = document.body.innerHTML;

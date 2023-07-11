@@ -5,22 +5,19 @@ interface qtipInterface extends JQuery {
     qtip(options: string): JQuery;
 }
 
-// If the current selection is an insertion point in editableDiv (which MUST be a div!), return the index of the selection,
-// as a character offset within the text of editableDiv. If the selection is not in editableDiv, return -1.
 export class EditableDivUtils {
-    public static getElementSelectionIndex(editableDiv: HTMLElement): number {
+    public static getElementSelectionIndex(element: HTMLElement): number {
         const page: HTMLIFrameElement | null = <HTMLIFrameElement | null>(
             parent.window.document.getElementById("page")
         );
-        if (!page || !page.contentWindow) return -1; // unit testing? Anyway there is no selection, so not in editableDiv.
+        if (!page || !page.contentWindow) return -1; // unit testing?
 
         const selection = page.contentWindow.getSelection();
-        if (!selection || !selection.anchorNode || !selection.isCollapsed)
-            return -1;
+        if (!selection || !selection.anchorNode) return -1;
         const active = $(selection.anchorNode)
             .closest("div")
             .get(0);
-        if (active != editableDiv) return -1; // the selection is not in editableDiv at all
+        if (active != element) return -1; // huh??
         if (!active || selection.rangeCount == 0) {
             return -1;
         }
