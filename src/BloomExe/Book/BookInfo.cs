@@ -733,14 +733,22 @@ namespace Bloom.Book
 			const string metaJsonFileName = "meta.json";
 
 			var metaJsonPath = Path.Combine(currentFolder, metaJsonFileName);
-			if (!File.Exists(metaJsonPath))
+			try
 			{
-				var subDirectories = Directory.GetDirectories(currentFolder);
-				foreach (var subDirectory in subDirectories)
+				if (!File.Exists(metaJsonPath))
 				{
-					GatherInstanceIdsRecursively(subDirectory, idToSortedFilepathsMap);
+					var subDirectories = Directory.GetDirectories(currentFolder);
+					foreach (var subDirectory in subDirectories)
+					{
+						GatherInstanceIdsRecursively(subDirectory, idToSortedFilepathsMap);
+					}
+					return;
 				}
-				return;
+			}
+			catch (UnauthorizedAccessException e)
+			{
+				Debug.WriteLine($"GatherInstanceIdsRecursively({currentFolder}: UnauthorizedAccessException: {e.Message}");
+				return; // we don't have permission to read this folder, so we can't do anything with it.
 			}
 			// Leaf node; we're in a book folder
 			var metaFileLastWriteTime = File.GetLastWriteTimeUtc(metaJsonPath);
