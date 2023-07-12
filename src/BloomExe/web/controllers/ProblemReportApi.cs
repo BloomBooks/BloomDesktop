@@ -1023,6 +1023,15 @@ namespace Bloom.web.controllers
 			AppendWritingSystem(book.BookData.Language3, "Language3", bldr);
 			AppendWritingSystem(book.BookData.SignLanguage, "SignLanguage", bldr);
 			AppendWritingSystem(book.BookData.MetadataLanguage1, "MetadataLanguage1", bldr);
+			var enterpriseStatus = settings.GetEnterpriseStatus().ToString();
+			var branding = settings.BrandingProjectKey;
+			bldr.AppendLine();
+			bldr.AppendLine("Enterprise status: " + enterpriseStatus);
+			bldr.AppendLine("Branding: " + (string.IsNullOrEmpty(branding) ? "None found" : branding));
+			var tzName = TimeZone.CurrentTimeZone.IsDaylightSavingTime(DateTime.Now) ? TimeZone.CurrentTimeZone.DaylightName : TimeZone.CurrentTimeZone.StandardName;
+			var tzOffset = TimeZone.CurrentTimeZone.GetUtcOffset(DateTime.Now);
+			var tzFormatString = (tzOffset < TimeSpan.Zero ? "\\-" : "") + "hh\\:mm";
+			bldr.AppendLine("User timezone: UTC" + tzOffset.ToString(tzFormatString) + "  (" + tzName + ")");
 		}
 
 		void AppendWritingSystem(WritingSystem ws, string label, StringBuilder bldr)

@@ -957,5 +957,19 @@ namespace Bloom.Collection
 				return CollectionSettingsApi.EnterpriseStatus.Community;
 			return CollectionSettingsApi.EnterpriseStatus.Subscription;
 		}
+
+		public CollectionSettingsApi.EnterpriseStatus GetEnterpriseStatus()
+		{
+			if (CollectionSettingsApi.FixEnterpriseSubscriptionCodeMode)
+			{
+				// We're displaying the dialog to fix a branding code...select that option
+				return CollectionSettingsApi.EnterpriseStatus.Subscription;
+			}
+			if (BrandingProjectKey == "Default")
+				return CollectionSettingsApi.EnterpriseStatus.None;
+			else if (BrandingProjectKey == "Local-Community")
+				return CollectionSettingsApi.EnterpriseStatus.Community;
+			return CollectionSettingsApi.EnterpriseStatus.Subscription;
+		}
 	}
 }
