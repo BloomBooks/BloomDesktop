@@ -214,7 +214,7 @@
       </trans-unit>
       <trans-unit id="BookEditor.CharacterMap.Instructions" sil:dynamic="true" approved="yes">
         <source xml:lang="en">To select, use your mouse wheel or point at what you want, or press the key shown in purple. Finally, release the key that you pressed to show this list.</source>
-        <target xml:lang="hi" state="final">चयन करने के लिए, अपने माउस व्हील का उपयोग करें या आप जिसे खोलना चाहते हैं उस पर रखें, या बैंगनी key दबाएँ। 
+        <target xml:lang="hi" state="final">चयन करने के लिए, अपने माउस व्हील का उपयोग करें या आप जिसे खोलना चाहते हैं उस पर रखें, या बैंगनी key दबाएँ।
 अंत में, सूची को देखने के लिए आपने जिस key को दबाए रखा है उसे छोड़ दें।</target>
         <note>ID: BookEditor.CharacterMap.Instructions</note>
       </trans-unit>
@@ -3457,7 +3457,7 @@
         <note>ID: HelpMenu.CreditsMenuItem</note>
       </trans-unit>
       <trans-unit id="HelpMenu.DocumentationMenuItem" approved="yes">
-        <source xml:lang="en">Browse Help...</source>
+        <source xml:lang="en">Help...</source>
         <target xml:lang="hi" state="final">लेख निर्देशन</target>
         <note>ID: HelpMenu.DocumentationMenuItem</note>
       </trans-unit>
