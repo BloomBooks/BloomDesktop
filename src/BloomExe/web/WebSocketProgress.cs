@@ -114,6 +114,15 @@ namespace Bloom.web
 
 		public bool LogAllMessages;
 
+		/// <summary>
+		/// Resets all the flags that track whether we've reported any problems.
+		/// </summary>
+		public void Reset()
+		{
+			HaveProblemsBeenReported = false;
+			HasFatalProblemBeenReported = false;
+		}
+
 		public virtual void MessageWithoutLocalizing(string message, ProgressKind kind=ProgressKind.Progress)
 		{
 			dynamic messageBundle = new DynamicJson();

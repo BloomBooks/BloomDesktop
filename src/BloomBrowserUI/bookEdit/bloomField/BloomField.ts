@@ -163,6 +163,9 @@ export default class BloomField {
         //     alert(event.data.dataValue);
         // });
         ckeditor.on("paste", event => {
+            event.data.dataValue = this.restoreHtmlMarkupIfNecessary(
+                event.data
+            );
             event.data.dataValue = this.reconstituteParagraphsOnPlainTextPaste(
                 event.data
             );
@@ -297,6 +300,42 @@ export default class BloomField {
         (<any>bloomEditableDiv).bloomCkEditor = ckeditor;
     }
 
+    // Spans are dropped from the clipboard's default data (eventData.dataValue) when the
+    // source is CKEditor (ie, inside Bloom), but we need to keep them for possible color
+    // markup.  See BL-12357.
+    static restoreHtmlMarkupIfNecessary(eventData: any): any {
+        const ckeId = eventData.dataTransfer.getData("cke/id");
+        if (!ckeId) return eventData.dataValue; // live with the default if not from CKEditor
+        const type = eventData.type;
+        if (type !== "html") return eventData.dataValue; // live with the default if not HTML paste
+        const fullHtml = eventData.dataTransfer.getData("text/html") as string;
+        if (!fullHtml) return eventData.dataValue; // live with the default if no HTML (shouldn't happen by this point)
+        const reducedHtml = eventData.dataValue as string;
+        if (!reducedHtml) return eventData.dataValue; // live with the default if nothing to paste (shouldn't happen)
+        if (fullHtml !== reducedHtml && fullHtml.includes("<span style=")) {
+            const startMarker = "<!--StartFragment-->";
+            const endMarker = "<!--EndFragment-->";
+            if (
+                reducedHtml.startsWith(startMarker) &&
+                reducedHtml.endsWith(endMarker)
+            ) {
+                const start = fullHtml.indexOf(startMarker);
+                const end = fullHtml.indexOf(endMarker) + endMarker.length;
+                if (
+                    start >= 0 &&
+                    end >= start + startMarker.length + endMarker.length
+                ) {
+                    // actual fragment is marked with start and end comment markers
+                    return fullHtml.substring(start, end);
+                }
+            } else {
+                // actual fragment is the whole thing
+                return fullHtml;
+            }
+        }
+        return eventData.dataValue;
+    }
+
     // If the original clipboard had no paragraph markup, but only (plain text) newlines (\n)
     // (e.g. pasting from Notepad), this method will remove the newlines and substitue HTML paragraph
     // markup.
@@ -306,16 +345,16 @@ export default class BloomField {
     // clipboard data) newlines, we reconstitute the needed paragraph marks from the original newlines
     // that we have to go fishing inside of the dataTransfer object to find. (BL-9961)
     static reconstituteParagraphsOnPlainTextPaste(eventData: any): any {
-        if (!eventData.dataValue.match(/<p>/g)) {
+        if (eventData.type != "html") {
             // If we're inserting plain text from Notepad, we will arrive here because 'dataValue'
             // doesn't have paragraphs, but we actually do want paragraph markup, if there
             // are multiple lines in the original clipboard data.
             // Finding where the original string with its newlines was passed inside the
             // dataTransfer object was a bit tricky.
-            const textWithReturns: string = eventData.dataTransfer._.data.Text;
+            const textWithReturns = eventData.dataTransfer.getData(
+                "text/plain"
+            ) as string;
             if (!textWithReturns.includes("\n")) {
-                // Enhance: should we remove the probable <span> and just leave the text?
-                // But it might be carrying some important style info.
                 return eventData.dataValue; // no change
             }
             // Split the text on carriage returns and put it back together with each bit in a paragraph.

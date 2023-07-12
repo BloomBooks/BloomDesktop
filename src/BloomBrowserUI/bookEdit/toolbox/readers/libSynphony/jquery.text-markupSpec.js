@@ -245,4 +245,36 @@ describe("jquery.text-markup", function() {
         );
         expect(out5).toBe(" This is a test, this is only a test. ");
     });
+
+    it("checkWrapWordsExtraIgnoresEmptyItems", function() {
+        const cssWordNotFound = "word-not-found";
+        const cssPossibleWord = "possible-word";
+        const html = "<p>This is a test.</p>";
+        const notFound = ["", "test", "", "is", ""];
+        const newHtml = theOneLibSynphony.wrap_words_extra(
+            html,
+            notFound,
+            cssWordNotFound,
+            ' data-segment="word"'
+        );
+        expect(newHtml).toBe(
+            '<p>This <span class="word-not-found" data-segment="word">is</span> a <span class="word-not-found" data-segment="word">test</span>.</p>'
+        );
+    });
+
+    it("checkWrapWordsExtraHandlesExtraWhitespace", function() {
+        const cssWordNotFound = "word-not-found";
+        const cssPossibleWord = "possible-word";
+        const html = "<p> This<em> is </em>a test.</p>";
+        const notFound = ["this", "is", ""];
+        const newHtml = theOneLibSynphony.wrap_words_extra(
+            html,
+            notFound,
+            cssWordNotFound,
+            ' data-segment="word"'
+        );
+        expect(newHtml).toBe(
+            '<p> <span class="word-not-found" data-segment="word">This</span><em> <span class="word-not-found" data-segment="word">is</span> </em>a test.</p>'
+        );
+    });
 });

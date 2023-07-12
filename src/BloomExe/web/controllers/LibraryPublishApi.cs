@@ -182,10 +182,11 @@ namespace Bloom.web.controllers
 				else if (string.IsNullOrEmpty(uploadResult))
 				{
 					// Something went wrong, possibly already reported.
-					if (!Model.PdfGenerationSucceeded)
-						ReportPdfGenerationFailed();
-					else
+					// If the book has sign language videos, we don't create a PDF, so we don't want to report a PDF generation failure.
+					if (Model.PdfGenerationSucceeded || Model.Book.HasSignLanguageVideos())
 						ReportTryAgainDuringUpload();
+					else
+						ReportPdfGenerationFailed();
 				}
 				else
 				{
@@ -301,7 +302,7 @@ namespace Bloom.web.controllers
 			dynamic collisionDialogInfo;
 			if (Model.BookIsAlreadyOnServer)
 			{
-				collisionDialogInfo = Model.GetUploadCollisionDialogProps(Model.TextLanguagesToUpload, ModelIndicatesSignLanguageChecked);
+				collisionDialogInfo = Model.GetUploadCollisionDialogProps(Model.TextLanguagesToAdvertiseOnBloomLibrary, ModelIndicatesSignLanguageChecked);
 			}
 			else
 			{

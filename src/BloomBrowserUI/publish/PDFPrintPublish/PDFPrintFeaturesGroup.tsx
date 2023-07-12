@@ -151,7 +151,7 @@ export const PDFPrintFeaturesGroup: React.FunctionComponent<{
                             }}
                         >
                             <ApiCheckbox
-                                english="Full Bleed"
+                                label="Full Bleed"
                                 l10nKey="PublishTab.PdfMaker.FullBleed"
                                 apiEndpoint="publish/pdf/fullBleed"
                                 disabled={!allowFullBleed}

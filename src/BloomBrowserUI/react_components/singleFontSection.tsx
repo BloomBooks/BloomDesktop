@@ -39,7 +39,6 @@ const SingleFontSection: React.FunctionComponent<{
         <React.Fragment>
             <Typography
                 css={css`
-                    font-family: Segoe UI !important;
                     font-weight: 700 !important;
                 `}
             >

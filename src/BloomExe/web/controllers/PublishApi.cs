@@ -261,6 +261,15 @@ namespace Bloom.web.controllers
 				//	request.ReplyWithText(_languagesToPublish.Contains(langCode) ? "true" : "false");
 				//}
 			}, false);
+			apiHandler.RegisterBooleanEndpointHandler("publish/markAsDraft", 
+				readRequest =>
+				{
+					return readRequest.CurrentBook.BookInfo.MetaData.Draft;
+				},
+				(writeRequest, value) =>
+				{
+					writeRequest.CurrentBook.BookInfo.MetaData.Draft = value;
+				}, false);
 		}
 
 		private void HandleChooseSignLanguage(ApiRequest request)
@@ -314,7 +323,7 @@ namespace Bloom.web.controllers
 		{
 			lock (_lockForLanguages)
 			{
-				_allLanguages = request.CurrentBook.AllPublishableLanguages();
+				_allLanguages = request.CurrentBook.AllPublishableLanguages(includeLangsOccurringOnlyInXmatter: true);
 
 				// Note that at one point, we had a check that would bypass most of this function if the book hadn't changed.
 				// However, one side effect of this is that any settings behind the if guard would not be updated if the book was edited
@@ -343,8 +352,10 @@ namespace Bloom.web.controllers
 		/// If the caller wants to insert this URL as a query parameter to another URL (e.g. like what is often done with Bloom Player),
 		/// it's the caller's responsibility to apply another layer of URL encoding to make the URL suitable to be passed as data inside another URL.
 		/// </summary>
-		internal void UpdatePreview(ApiRequest request, bool forVideo)
+		/// <returns>True if the preview was updated successfully, false otherwise.</returns>
+		internal bool UpdatePreview(ApiRequest request, bool forVideo)
 		{
+			_progress.Reset(); // Otherwise errors get carried over between runs of the preview.
 			InitializeLanguagesInBook(request);
 			_lastSettings = GetSettings();
 			_lastThumbnailBackgroundColor = _thumbnailBackgroundColor;
@@ -369,7 +380,15 @@ namespace Bloom.web.controllers
 			// the page-range control.
 			_lastSettings.RemoveInteractivePages = forVideo;
 			PreviewUrl = MakeBloomPubForPreview(request.CurrentBook, _bookServer, _progress, _thumbnailBackgroundColor, _lastSettings);
+			if (PreviewUrl == null)
+			{
+				// Tried sending empty string, but SendString() ignores empty messages. "stopPreview" gets interpreted as a command to stop
+				// the preview spinner.
+				_webSocketServer.SendString(kWebSocketContext, kWebsocketEventId_Preview, "stopPreview");
+				return false;
+			}
 			_webSocketServer.SendString(kWebSocketContext, kWebsocketEventId_Preview, PreviewUrl);
+			return true;
 		}
 
 
@@ -405,7 +424,8 @@ namespace Bloom.web.controllers
 		/// <summary>
 		/// Generates an unzipped, staged BloomPUB from the book
 		/// </summary>
-		/// <returns>A valid, well-formed URL on localhost that points to the staged book's htm file</returns>
+		/// <returns>A valid, well-formed URL on localhost that points to the staged book's htm file,
+		/// or null if we aren't allowed to publish this book in this language (LicenseChecker).</returns>
 		public string MakeBloomPubForPreview(Book.Book book, BookServer bookServer, WebSocketProgress progress, Color backColor, BloomPubPublishSettings settings = null)
 		{
 			progress.Message("PublishTab.Epub.PreparingPreview", "Preparing Preview");  // message shared with Epub publishing
@@ -464,14 +484,14 @@ namespace Bloom.web.controllers
 			return modifiedBook.GetPathHtmlFile().ToLocalhost();
 		}
 
-		internal void UpdatePreviewIfNeeded(ApiRequest request)
+		internal bool UpdatePreviewIfNeeded(ApiRequest request)
 		{
 			var newSettings = GetSettings();
-			if (newSettings.Equals(_lastSettings) && _thumbnailBackgroundColor == _lastThumbnailBackgroundColor)
+			if (newSettings.Equals(_lastSettings) && _thumbnailBackgroundColor == _lastThumbnailBackgroundColor && LicenseOK)
 			{
-				return;
+				return true;
 			}
-			UpdatePreview(request, false);
+			return UpdatePreview(request, false);
 		}
 
 		internal BloomPubPublishSettings GetSettings()

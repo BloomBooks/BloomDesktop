@@ -1026,6 +1026,11 @@ div[data-book*="branding"] {
     display: none;
 }
 
+// Very long words should just allow themselves to be broken at the end of a line if they're
+// longer than a line.  See BL-12330.
+.bloom-page .bloom-editable.bloom-visibility-code-on {
+    word-wrap: break-word;
+}
 //... to be continued. We sandwich most other sheets between this one and the langVisibility.css, which comes last-ish
 
 // now apply any book features

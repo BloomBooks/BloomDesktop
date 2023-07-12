@@ -238,6 +238,7 @@ export const PublishFeaturesGroup: React.FunctionComponent<{
                     key={"sl-tooltip"}
                     id={"sl-tooltip"}
                     tip={slTooltip}
+                    enableClickInTooltip={true}
                 >
                     <ApiCheckbox
                         // Changing the key each time signLanguageEnabled changes ensures that the checkbox rerenders with the latest value from the server.
@@ -248,7 +249,7 @@ export const PublishFeaturesGroup: React.FunctionComponent<{
                                 padding-top: 0;
                             }
                         `}
-                        english="Sign Language"
+                        label="Sign Language"
                         l10nKey="PublishTab.Upload.SignLanguage"
                         apiEndpoint="publish/signLanguage"
                         icon={
@@ -282,7 +283,7 @@ export const PublishFeaturesGroup: React.FunctionComponent<{
                                 padding-top: 0;
                             }
                         `}
-                        english="Comic"
+                        label="Comic"
                         l10nKey="PublishTab.Comic"
                         apiEndpoint="publish/comic"
                         icon={
@@ -298,7 +299,7 @@ export const PublishFeaturesGroup: React.FunctionComponent<{
                 </BloomTooltip>
                 <BloomTooltip key={"motion-tooltip"} tip={motionTooltip}>
                     <ApiCheckbox
-                        english="Motion Book"
+                        label="Motion Book"
                         l10nKey="PublishTab.Android.MotionBookMode"
                         // tslint:disable-next-line:max-line-length
                         l10nComment="Motion Books are Talking Books in which the picture fills the screen, then pans and zooms while you hear the voice recording. This happens only if you turn the book sideways."
@@ -310,7 +311,7 @@ export const PublishFeaturesGroup: React.FunctionComponent<{
                 </BloomTooltip>
                 <BloomTooltip key={"visual-tooltip"} tip={visionTooltip}>
                     <ApiCheckbox
-                        english="Accessible to the Visually Impaired in %0"
+                        label="Accessible to the Visually Impaired in %0"
                         l10nKey="PublishTab.AccessibleVisually"
                         l10nParam0={l1Name}
                         apiEndpoint="publish/visuallyImpaired"

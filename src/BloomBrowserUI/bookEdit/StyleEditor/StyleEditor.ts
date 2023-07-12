@@ -1000,10 +1000,45 @@ export default class StyleEditor {
                     x => (x as HTMLElement).offsetHeight > 0 // need to find a visible one for a meaningful offsetLeft
                 );
                 leftPx = (editable as HTMLElement).offsetLeft;
+            } else {
+                // probably arithmetic template page, which has a numberRow instead of a TG.
+                //I think this is a better algorithm anyway, but play safe and avoid dangerous change near end of 5.5
+                leftPx = (eltBounds.left - parentBounds.left) / scale;
             }
 
             fmtButton.style.left = leftPx + "px";
         }
+    }
+
+    private updateFontControl(
+        fontMetadata: IFontMetaData[],
+        fontName: string
+    ): void {
+        ReactDOM.render(
+            React.createElement(FontSelectComponent, {
+                fontMetadata: fontMetadata,
+                currentFontName: fontName,
+                languageNumber: 0,
+                onChangeFont: name => this.changeFont(name),
+                // Needed to make sure the font menu that pops up is above the BloomDialog.
+                // This is ugly...I'd much rather we didn't need this prop on either
+                // FontSelectComponent or WinFormsStyleSelect. It would be preferable to
+                // bring our z-index scheme in line with material-UIs and have the dialog
+                // lower than the 1300 which is material UI's default for the popover.
+                // But, see the long explanation in bloomDialog.less of why @dialogZindex
+                // is 60,000. Looks like fixing that would be a project.
+                // (Earlier, this high z-index was built into WinFormsStyleSelect, but
+                // in other contexts, such as the Book Making tab, we need to NOT mess with
+                // the z-index. See BL-11271.)
+                // Another option worth considering is to make a wrapper for the FontSelectComponent
+                // when it is used in this context, move the Theme management into the wrapper,
+                // and let the wrapper mess with the lightTheme in the way that WinFormsStyleSelect
+                // currently does. Feels more complicated, and it's also ugly to mess with a theme
+                // to patch a child component. I'm not sure which is worse.
+                popoverZindex: "60001"
+            }),
+            document.getElementById("fontSelectComponent")
+        );
     }
 
     private uiLang: string;
@@ -1018,25 +1053,26 @@ export default class StyleEditor {
         // config.allowedContent, and data-cke-survive did not work.
         // The only solution we have found is to postpone adding the gear icon until CkEditor has done
         // its nefarious work. The following block achieves this.
-        // Enhance: this logic is roughly duplicated in toolbox.ts restoreToolboxSettingsWhenCkEditorReady.
+        // Enhance: this logic is roughly duplicated in toolbox.ts function doWhenCkEditorReadyCore.
         // There may be some way to refactor it into a common place, but I don't know where.
         const editorInstances = (<any>window).CKEDITOR.instances;
-        for (let i = 1; ; i++) {
-            const instance = editorInstances["editor" + i];
-            if (instance == null) {
-                if (i === 0) {
-                    // no instance at all...if one is later created, get us invoked.
-                    (<any>window).CKEDITOR.on("instanceReady", e =>
-                        this.AttachToBox(targetBox)
-                    );
-                    return;
-                }
-                break; // if we get here all instances are ready
-            }
+        // (The instances property leads to an object in which each property is an instance of CkEditor)
+        let gotOne = false;
+        for (const property in editorInstances) {
+            const instance = editorInstances[property];
+            gotOne = true;
             if (!instance.instanceReady) {
                 instance.on("instanceReady", e => this.AttachToBox(targetBox));
                 return;
             }
+        }
+        if (!gotOne) {
+            // If any editable divs exist, call us again once the page gets set up with ckeditor.
+            // no instance at all...if one is later created, get us invoked.
+            (<any>window).CKEDITOR.on("instanceReady", e =>
+                this.AttachToBox(targetBox)
+            );
+            return;
         }
         const oldCog = document.getElementById("formatButton");
         if (oldCog && this._previousBox == targetBox) {
@@ -1208,30 +1244,9 @@ export default class StyleEditor {
                         );
 
                         if (!noFormatChange) {
-                            ReactDOM.render(
-                                React.createElement(FontSelectComponent, {
-                                    fontMetadata: fontMetadata,
-                                    currentFontName: current.fontName,
-                                    languageNumber: 0,
-                                    onChangeFont: name => this.changeFont(name),
-                                    // Needed to make sure the font menu that pops up is above the BloomDialog.
-                                    // This is ugly...I'd much rather we didn't need this prop on either
-                                    // FontSelectComponent or WinFormsStyleSelect. It would be preferable to
-                                    // bring our z-index scheme in line with material-UIs and have the dialog
-                                    // lower than the 1300 which is material UI's default for the popover.
-                                    // But, see the long explanation in bloomDialog.less of why @dialogZindex
-                                    // is 60,000. Looks like fixing that would be a project.
-                                    // (Earlier, this high z-index was built into WinFormsStyleSelect, but
-                                    // in other contexts, such as the Book Making tab, we need to NOT mess with
-                                    // the z-index. See BL-11271.)
-                                    // Another option worth considering is to make a wrapper for the FontSelectComponent
-                                    // when it is used in this context, move the Theme management into the wrapper,
-                                    // and let the wrapper mess with the lightTheme in the way that WinFormsStyleSelect
-                                    // currently does. Feels more complicated, and it's also ugly to mess with a theme
-                                    // to patch a child component. I'm not sure which is worse.
-                                    popoverZindex: "60001"
-                                }),
-                                document.getElementById("fontSelectComponent")
+                            this.updateFontControl(
+                                fontMetadata,
+                                current.fontName
                             );
                             this.updateLabelsWithStyleName();
 
@@ -2187,9 +2202,12 @@ export default class StyleEditor {
         const current = this.getFormatValues();
         this.ignoreControlChanges = true;
 
-        // IIF the new style changed fonts, we need to reset the dialog so the font select updates.
+        // IF the new style changed fonts, we need to reset the font control
         if (oldFontName !== current.fontName) {
-            $("#format-toolbar").remove();
+            get("fonts/metadata", result => {
+                const fontMetadata: IFontMetaData[] = result.data;
+                this.updateFontControl(fontMetadata, current.fontName);
+            });
         }
         this.setValueAndUpdateSelect2Control("size-select", current.ptSize);
         this.setValueAndUpdateSelect2Control(

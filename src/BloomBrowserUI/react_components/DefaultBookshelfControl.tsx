@@ -123,7 +123,6 @@ export const DefaultBookshelfControl: React.FunctionComponent = () => {
                     >
                         <Typography
                             css={css`
-                                font-family: Segoe UI !important;
                                 font-weight: 700 !important;
                             `}
                         >

@@ -104,6 +104,9 @@ namespace Bloom.Spreadsheet
 										{
 											text.VerticalAlign = ExcelVerticalAlignmentFont.Superscript;
 										}
+										// run.Color is black by default unless another color has been specified
+										// We will lose any specified black coloration anyway, because excel text is black default
+										text.Color = run.Color;
 									}
 								}
 							}
@@ -400,30 +403,25 @@ namespace Bloom.Spreadsheet
 			StringBuilder markedupStringBuilder = new StringBuilder();
 			var whitespaceSplitters = new string[] { "\n", "\r\n" };
 
-			if (cell.IsRichText)
+			// When a cell has no bold/italics/undelining/superscripting it may have cell.RichText=false  but we may
+			// still need to get colors from it. cell.RichText still contains the information we need even when cell.isRichText=false
+			var content = cell.RichText;
+			var cellLevelFormatting = cell.Style.Font;
+			foreach (var run in content)
 			{
-				var content = cell.RichText;
-				var cellLevelFormatting = cell.Style.Font;
-				foreach (var run in content)
+				if (run.Text.Length > 0)
 				{
-					if (run.Text.Length > 0)
-					{
-						run.Text = ReplaceExcelEscapedCharsAndEscapeXmlOnes(run.Text);
-					}
-					var splits = run.Text.Split(whitespaceSplitters, StringSplitOptions.None);
-					string pending = "";
-					foreach (var split in splits)
-					{
-						markedupStringBuilder.Append(pending);
-						AddRunToXmlString(run, cellLevelFormatting, split, markedupStringBuilder);
-						// Not something that is or might be \r\n. See comment in MarkedUpText.ParseXml()
-						pending = "\n";
-					}
+					run.Text = ReplaceExcelEscapedCharsAndEscapeXmlOnes(run.Text);
 				}
-			}
-			else
-			{
-				markedupStringBuilder.Append(ReplaceExcelEscapedCharsAndEscapeXmlOnes(rawText));
+				var splits = run.Text.Split(whitespaceSplitters, StringSplitOptions.None);
+				string pending = "";
+				foreach (var split in splits)
+				{
+					markedupStringBuilder.Append(pending);
+					AddRunToXmlString(run, cellLevelFormatting, split, markedupStringBuilder);
+					// Not something that is or might be \r\n. See comment in MarkedUpText.ParseXml()
+					pending = "\n";
+				}
 			}
 
 			StringBuilder paragraphedStringBuilder = new StringBuilder();
@@ -463,6 +461,11 @@ namespace Bloom.Spreadsheet
 			return paragraphedStringBuilder.ToString();
 		}
 
+		private static bool IsBlack(Color color)
+		{
+			return color.R == 0 && color.B == 0 && color.G == 0;
+		}
+
 		// Excel formatting can be at the entire cell level (e.g. the entire cell is marked italic)
 		// or at the text level (e.g. some words in the cell are marked italic).
 		// We detect and import both types, but if the user mixes levels for the same formatting type
@@ -498,17 +501,47 @@ namespace Bloom.Spreadsheet
 				addTags("sup", endTags);
 			}
 
-			stringBuilder.Append(text);
+			// text color is black by default and cell color rgb is null by default. If one of these has been changed, import the new color
+			Color? color = null;
+			// inline color has precedence over cell level color
+			if (!IsBlack(formattingText.Color))
+			{
+				color = formattingText.Color;
+			}
+			// I'm not sure checking the cellFormatting color is even necessary because it looks like the formattingText color picks it up
+			// whenever it is not overriden by inline coloration. But here's just in case
+			else if (cellFormatting.Color.Rgb != null)
+			{
+				Color cellColor = ColorTranslator.FromHtml(cellFormatting.Color.LookupColor());
+				if (!IsBlack(cellColor))
+				{
+					color = cellColor;
+				}
+			}
+			// We do not import black coloration from Excel because Excel text is black by default
+			// and we cannot differentiate this from text the user specifically wants to be black.
+			// We decided to live with the loss of coloration when a user marks text as black.
+			if (color != null)
+			{
+				string colorHtmlString = ColorTranslator.ToHtml((Color)color);
+				addTags("span", endTags, attributesString: string.Format("style=\"color:{0};\"", colorHtmlString));
+			}
 
+			stringBuilder.Append(text);
+					
 			endTags.Reverse();
 			foreach (var endTag in endTags)
 			{
 				stringBuilder.Append(endTag);
 			}
 		
-			void addTags(string tagName, List<string> endTag)
+			void addTags(string tagName, List<string> endTag, string attributesString=null)
 			{
-				stringBuilder.Append("<" + tagName + ">");
+				stringBuilder.Append("<" + tagName);
+				if (!string.IsNullOrEmpty(attributesString)) {
+					stringBuilder.Append(" " + attributesString);
+				}
+				stringBuilder.Append(">");
 				endTag.Add("</" + tagName + ">");
 
 			}

@@ -2,7 +2,7 @@
 import { jsx, css } from "@emotion/react";
 import { ThemeProvider, StyledEngineProvider } from "@mui/material";
 import * as React from "react";
-import { lightTheme } from "../bloomMaterialUITheme";
+import { kUiFontStack, lightTheme } from "../bloomMaterialUITheme";
 import DefaultBookshelfControl from "../react_components/DefaultBookshelfControl";
 import PageNumberStyleControl from "../react_components/pageNumberStyleControl";
 import XmatterChooserControl from "../react_components/xmatterChooserControl";
@@ -23,6 +23,7 @@ const BookMakingSettingsControl: React.FunctionComponent = () => {
                         margin: ${tabMargins.top} ${tabMargins.side}
                             ${tabMargins.bottom};
                         font-size: 10pt;
+                        font-family: ${kUiFontStack};
                     `}
                 >
                     <div

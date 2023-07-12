@@ -81,6 +81,9 @@ namespace Bloom
 																	   | CoreWebView2PdfToolbarItems.MoreSettings; // none of its functions seem useful
 
 				_webview.CoreWebView2.Settings.IsStatusBarEnabled = false;
+				_webview.CoreWebView2.Settings.IsWebMessageEnabled = true;
+				// Disable swipe navigation, which is a problem on trackpads (and touch screens). See BL-12405.
+				_webview.CoreWebView2.Settings.IsSwipeNavigationEnabled = false;
 
 				// Based on https://github.com/MicrosoftEdge/WebView2Feedback/issues/308,
 				// this attempts to prevent Bloom asking permission to read the clipboard
@@ -158,6 +161,38 @@ namespace Bloom
 
 			var env = await CoreWebView2Environment.CreateAsync(browserExecutableFolder: AlternativeWebView2Path, userDataFolder: ProjectContext.GetBloomAppDataFolder(), options: op);
 			await _webview.EnsureCoreWebView2Async(env);
+
+			// I is kinda hard to get a click event from webview2. This needs to be explicitly sent from the browser code,
+			// e.g. (window as any).chrome.webview.postMessage("browser-clicked");
+			_webview.WebMessageReceived += (o, e) =>
+			{
+				// for now the only thing we're using this for is to close the page thumbnail list context menu when the user clicks outside it
+				if (e.TryGetWebMessageAsString() == "browser-clicked")
+				{
+					RaiseBrowserClick(null, null);
+				}
+			};
+
+			// Now do the same thing for any iframes. When an iframe is created...
+			_webview.CoreWebView2.FrameCreated += (o, e) =>
+			{
+				// ... register for a message that our javascript will send us.
+				// We are using this in the Edit View
+				// to know when to cancel a page context menu until we rewrite that in React.
+				// Note that _webview.GotFocus() is easier, but I was not able to get the
+				// winforms popup menu to receive focus such that the webview would lose it
+				// and thus tell us when it regained it.
+				e.Frame.WebMessageReceived += (a, b) =>
+				{
+					if (b.TryGetWebMessageAsString() == "browser-clicked")
+					{
+						RaiseBrowserClick(null, null);
+					}
+				};
+			};
+
+
+
 			if (!_clearedCache)
 			{
 				_clearedCache = true;
@@ -237,31 +272,10 @@ namespace Bloom
 			// that we think is due to not implementing it.
 		}
 
-		private string _targetUrl;
-		private bool _ensuredCoreWebView2;
-		private bool _finishedUpdateDisplay;
-		private bool _urlMatches;
-
-		// For now I have decided not to make this return a Task and to consistently await it.
-		// The fan-out of methods that would have to be made async is daunting, and code
-		// that cares about the completion of the navigation will already have some
-		// mechanism in place for waiting not just until the call to Navigate after the
-		// await, but until we get an indication that the navigation is complete.
-		// Also, I suspect that EnsureCoreWebView2Async() will almost always be already completed
-		// and no awaiting will really be needed.
-		// Callers should nevertheless be aware that it is not absolutely guaranteed that
-		// Navigation has even started when this method returns.
-		protected override async void UpdateDisplay(string newUrl)
+		protected override void UpdateDisplay(string newUrl)
 		{
-			_targetUrl = newUrl;
-			_ensuredCoreWebView2 = false;
-			_finishedUpdateDisplay = false;
-
-			await _webview.EnsureCoreWebView2Async();
-			_ensuredCoreWebView2 = true;
+			EnsureBrowserReadyToNavigate();
 			_webview.CoreWebView2.Navigate(newUrl);
-			_finishedUpdateDisplay = true;
-			_urlMatches = Url == newUrl;
 		}
 
 		protected override void EnsureBrowserReadyToNavigate()

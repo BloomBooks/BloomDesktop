@@ -3438,7 +3438,7 @@ Por ejemplo, darle crédito al traductor de esta versión.</target>
         <note>ID: HelpMenu.CreditsMenuItem</note>
       </trans-unit>
       <trans-unit id="HelpMenu.DocumentationMenuItem" approved="yes">
-        <source xml:lang="en">Browse Help...</source>
+        <source xml:lang="en">Help...</source>
         <target xml:lang="es-ES" state="final">Documentación (inglés)</target>
         <note>ID: HelpMenu.DocumentationMenuItem</note>
       </trans-unit>

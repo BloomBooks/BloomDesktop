@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -44,12 +44,20 @@ namespace Bloom
 		/// The restartBloom argument is an action that is executed if the user clicks the toast that suggests
 		/// a restart. This is the responsibility of the caller (typically the workspace view). It is passed the new
 		/// install directory.
-		/// </summary>
-		internal static async void CheckForASquirrelUpdate(BloomUpdateMessageVerbosity verbosity, Action<string> restartBloom, bool autoUpdate)
-		{
+        /// </summary>
+        internal static async void CheckForASquirrelUpdate(BloomUpdateMessageVerbosity verbosity, Action<string> restartBloom, bool autoUpdate)
+        {
+
+            // In early 2023, MS stopped updating WebView2 for Windows 7, 8, and 8.1. So for 5.4, we would like to "just get the latest 5.4".
+            // But at the moment, we aren't investing in that. We're just stranding these users at whatever 5.4 version they have.
+            if (Environment.OSVersion.Version.Major < 10)
+            {
+                return;
+            }
+
 #if !__MonoCS__
-			if (OkToInitiateUpdateManager)
-			{
+            if (OkToInitiateUpdateManager)
+            {
 				string updateUrl;
 				string rootDirectory = null; // null default causes squirrel to figure out the version actually running.
 				if (Debugger.IsAttached)

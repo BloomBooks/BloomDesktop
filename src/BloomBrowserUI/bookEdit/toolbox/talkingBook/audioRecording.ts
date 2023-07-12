@@ -1923,7 +1923,7 @@ export default class AudioRecording {
     // page as well as the toolbox. Another reason is that other checkboxes in the toolbox, like
     // Show playback order buttons, have their logic here, so it feels cleaner to keep their handling
     // together in one place.
-    public setShowingImageDescriptions(isOn: boolean) {
+    public async setShowingImageDescriptions(isOn: boolean) {
         this.showingImageDescriptions = isOn;
         const page = ToolBox.getPage();
         if (this.showingImageDescriptions) {
@@ -1940,11 +1940,11 @@ export default class AudioRecording {
                 if (changed) {
                     // Make sure audio recording is set up for the new image descriptions,
                     // even though for now they will be empty.
-                    this.setupAndUpdateMarkupAsync();
+                    await this.setupAndUpdateMarkupAsync();
                 }
                 // The main reason for this is that we may need to change the enabled state
                 // of buttons so the audio highlight can be moved into the image description.
-                this.changeStateAndSetExpectedAsync("record");
+                await this.changeStateAndSetExpectedAsync("record");
             }
         } else if (page) {
             // page should always be set, just making compiler happy
@@ -1955,12 +1955,12 @@ export default class AudioRecording {
         const current = this.getCurrentHighlight();
         if (page && current && !this.isVisible(current)) {
             this.removeAudioCurrent(page);
-            this.setCurrentAudioElementToFirstAudioElementAsync();
+            await this.setCurrentAudioElementToFirstAudioElementAsync();
         }
         // Whether or not we had to move the selection, some button states may need to change.
         // For example, perhaps there was previously nowhere for the 'next' button to take us,
         // but now we revealed a overlay which is set to be after the current element.
-        this.updateButtonStateAsync("record");
+        await this.updateButtonStateAsync("record");
         this.updateDisplay();
     }
     private showPlaybackOrderUi(docBody: HTMLElement) {
@@ -2490,7 +2490,7 @@ export default class AudioRecording {
             this.ensureHighlight(20);
         }
 
-        this.setShowingImageDescriptions(this.showingImageDescriptions);
+        await this.setShowingImageDescriptions(this.showingImageDescriptions);
 
         this.updateDisplay();
     }
@@ -3189,6 +3189,8 @@ export default class AudioRecording {
         const currentMarker = copy.find(".bloom-ui-current-audio-marker");
         currentMarker.remove();
 
+        this.cleanUpCkEditorHtml(elt.get(0), copy.get(0));
+
         const markedSentences = copy.find(
             `${kAudioSentenceClassSelector},.${kSegmentClass}`
         );
@@ -3303,6 +3305,35 @@ export default class AudioRecording {
             elt.html(newHtml);
             elt.append(formatButton);
         };
+    }
+
+    // When we switched to webview2, we started getting errant zero-width spaces in the text from ckeditor.
+    // The "right" way to get text from ckeditor boxes is to call getData(). So that's what we're doing here.
+    // It does clean up at least most of the zero-width spaces.
+    // See BL-12391.
+    private cleanUpCkEditorHtml(element: HTMLElement, copy: HTMLElement) {
+        const editableDiv = element.closest(".bloom-editable") as HTMLElement;
+        if (!editableDiv) return;
+
+        const ckeditorOfThisBox = (<any>editableDiv).bloomCkEditor;
+        if (!ckeditorOfThisBox) return;
+
+        if (editableDiv.innerHTML !== ckeditorOfThisBox.getData()) {
+            // Flag the element we are processing so we can find it in the version we make from ckeditor's getData().
+            element.setAttribute("data-element-we-are-processing", "this-one");
+
+            // Create a dummy element just so we can stash the result of getData() and then find our element in it.
+            // getData() is for the whole text box, but we are processing one of the child elements.
+            const newElement = document.createElement("div");
+            newElement.innerHTML = ckeditorOfThisBox.getData(); // have to call getData() again so it contains data-element-we-are-processing
+            const newChild = newElement.querySelector(
+                "[data-element-we-are-processing]"
+            );
+            copy.innerHTML = newChild!.innerHTML;
+
+            // Make sure we remove the flag; we don't want to modify the original element.
+            element.removeAttribute("data-element-we-are-processing");
+        }
     }
 
     // Normalization rules for text which has already been processed by CKEditor

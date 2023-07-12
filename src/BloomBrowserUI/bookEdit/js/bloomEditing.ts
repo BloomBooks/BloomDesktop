@@ -48,6 +48,7 @@ import {
     BloomPalette,
     getHexColorsForPalette
 } from "../../react_components/color-picking/bloomPalette";
+import { ckeditableSelector } from "../../utils/shared";
 
 // Allows toolbox code to make an element properly in the context of this iframe.
 export function makeElement(
@@ -156,6 +157,15 @@ function SetupDeletable(containerDiv) {
     return $(containerDiv);
 }
 
+function getUnicodePoint(char) {
+    const codePoint = char.charCodeAt(0);
+    let unicodePoint = codePoint.toString(16);
+    while (unicodePoint.length < 4) {
+        unicodePoint = "0" + unicodePoint;
+    }
+    return "\\u" + unicodePoint;
+}
+
 // Add various editing key handlers
 function AddEditKeyHandlers(container) {
     //Make F6 apply a superscript style (later we'll change to ctrl+shift+plus, as word does. But capturing those in js by hand is a pain.
@@ -210,6 +220,53 @@ function AddEditKeyHandlers(container) {
             //ctrl alt 2 is from google drive
             e.preventDefault();
             document.execCommand("formatBlock", false, "H2");
+        });
+
+    const invisibles = [
+        //{ re: "a|b|[0-9]", symbol: "🍎" },
+        { re: "&nbsp;|\u00A0", symbol: "🚀" }, // space (rocket == space)
+        { re: "\u202f", symbol: "🥐" }, // narrow space (croissant == french)
+        { re: "&ZeroWidthSpace;|\u200B", symbol: "0️⃣" },
+        { re: "&zwj;|\u200D", symbol: "🔗" }, // zero width joiner
+        {
+            re:
+                "[\u0009-\u000D]|\u0085|\u1680|\u180E|[\u2000-\u200A]|\u2028|\u2029|\u205F|\u3000|\uFEFF", //review: some list from some random dude
+            symbol: "🐻‍❄️" // random other whitespace
+        }
+    ];
+
+    // for testing only: show invisibles
+    $(container)
+        .find("div.bloom-editable")
+        .on("keydown", null, "CTRL+SPACE", e => {
+            e.preventDefault();
+            // get the parent that has the class bloom-editable
+            const editable = $(e.target).closest(".bloom-editable");
+            editable.html((i, html) => {
+                // for each replacement, replace all instances of the char with the symbol
+                invisibles.forEach(function(pair) {
+                    const re = new RegExp(pair.re, "g");
+                    html = html.replace(re, match => {
+                        const code = getUnicodePoint(match); // get something like \u00A0
+                        return `<span data-original="${code}">${pair.symbol}</span>`;
+                    });
+                    return html;
+                });
+                return html;
+            });
+        })
+        .on("keyup", null, "CTRL+SPACE", e => {
+            // restore all the original characters
+            e.preventDefault();
+            const editable = $(e.target).closest(".bloom-editable");
+            editable.html((i, html) => {
+                return html.replace(
+                    /<span data-original="\\u(....)">..?.?<\/span>/g,
+                    function(match, p1) {
+                        return String.fromCharCode(parseInt(p1, 16));
+                    }
+                );
+            });
         });
 
     $(document).keydown(e => {
@@ -1077,6 +1134,7 @@ function isTextSelected(): boolean {
 }
 
 let reportedTextSelected = isTextSelected();
+
 // ---------------------------------------------------------------------------------
 // called inside document ready function
 // ---------------------------------------------------------------------------------
@@ -1132,23 +1190,10 @@ export function bootstrap() {
         return;
     }
 
-    // attach ckeditor to the contenteditable="true" class="bloom-content1"
-    // also to contenteditable="true" and class="bloom-content2" or class="bloom-content3"
-    // as well as Equation-style (Used by ArithmeticTemplate.pug, these are language neutral and don't have a content language)
-    // attachToCkEditor will skip any element with class="bloom-userCannotModifyStyles" (which might be on the translationGroup)
-    // Update 1 Feb 2022: JohnT: in dealing with BL-10893 it became clear that ckEditor should also be attached to
-    // contenteditable things with class bloom-contentNational2, as it had previously been made to attach to bloom-contentNational1,
-    // though the comment was not updated. It is NOT clear to me exactly what principle is meant to really govern what elements
-    // get ckeditor attached (which, at least, allows them to have styled text). There is presumably some reason not to
-    // just attach it to everything that is contenteditable or everything with bloom-visibility-code-on, but unfortunately
-    // we did not comment that. Possibly there are special fields (ISBN comes to mind) in xmatter that should not be styled?
-    const complicatedFind =
-        ".bloom-content1[contenteditable='true'],.bloom-content2[contenteditable='true']," +
-        ".bloom-content3[contenteditable='true'],.bloom-contentNational1[contenteditable='true']," +
-        ".bloom-contentNational2[contenteditable='true'],.Equation-style[contenteditable='true']";
-
+    // Attach ckeditor to the fields that can have styled editable text.
+    // (See comment above on ckeditableSelector for what fields those are.)
     $("div.bloom-page")
-        .find(complicatedFind)
+        .find(ckeditableSelector)
         .each((index: number, element: Element) => {
             attachToCkEditor(element);
         });
@@ -1245,6 +1290,17 @@ export const getBodyContentForSavePage = () => {
     if (document.activeElement instanceof HTMLElement) {
         document.activeElement.blur();
     }
+
+    // Get the cleaned up data (getData()) from ckeditor, rather than just the raw html.
+    // Specifically, we want it to remove the zero-width space characters that it inserts.
+    // It inserts them to aid in preserving the cursor position, but we're saving the page;
+    // we don't need the cursor position preserved.
+    // See BL-12391.
+    for (const property in CKEDITOR.instances) {
+        const instance = CKEDITOR.instances[property];
+        instance.element.setHtml(instance.getData());
+    }
+
     const result = document.body.innerHTML;
     if (bubbleEditingOn) {
         theOneBubbleManager.turnOnBubbleEditing();

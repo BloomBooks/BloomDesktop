@@ -119,16 +119,22 @@ export function RenderRoot(
     hiliteBgColor: string,
     changeHiliteProps: (textColor: string | undefined, bgColor: string) => void
 ) {
-    ReactDOM.render(
-        <AudioHilitePage
-            styleName={uiStyleName ?? ""}
-            color={color}
-            hiliteBgColor={hiliteBgColor}
-            hiliteTextColor={hiliteTextColor}
-            onHilitePropsChanged={(textColor, bgColor) =>
-                changeHiliteProps(textColor, bgColor)
-            }
-        />,
-        document.getElementById("audioHilitePage")
-    );
+    const root = document.getElementById("audioHilitePage");
+    // This test is for paranoia. At one point it was briefly possible to be trying to
+    // update this after the dialog closed. If we can't find the place to render into,
+    // just don't do it.
+    if (root) {
+        ReactDOM.render(
+            <AudioHilitePage
+                styleName={uiStyleName ?? ""}
+                color={color}
+                hiliteBgColor={hiliteBgColor}
+                hiliteTextColor={hiliteTextColor}
+                onHilitePropsChanged={(textColor, bgColor) =>
+                    changeHiliteProps(textColor, bgColor)
+                }
+            />,
+            root
+        );
+    }
 }

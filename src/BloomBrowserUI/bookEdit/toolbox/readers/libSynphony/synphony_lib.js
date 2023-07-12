@@ -712,14 +712,19 @@ LibSynphony.prototype.wrap_words_extra = function(
 ) {
     if (aWords === undefined || aWords.length === 0) return storyHTML;
 
+    // Remove empty strings from the aWords array.  And if the array is then
+    // empty, return the original storyHTML.
+    aWords = aWords.filter(x => x);
+    if (aWords.length === 0) return storyHTML;
+
     if (storyHTML.trim().length === 0) return storyHTML;
 
     // make sure extra starts with a space
     if (extra.length > 0 && extra.substring(0, 1) !== " ") extra = " " + extra;
 
-    var beforeWord = "(^|>|[\\s\\p{Z}]|\\p{P}|&nbsp;)"; // word beginning delimiter
+    var beforeWord = "(^\\s*|>\\s*|[\\s\\p{Z}]|\\p{P}|&nbsp;)"; // word beginning delimiter
     var afterWord =
-        "(?=($|<|[\\s\\p{Z}]|\\p{P}+\\s|\\p{P}+<br|[\\s]*&nbsp;|\\p{P}+&nbsp;|\\p{P}+$))"; // word ending delimiter
+        "(?=(\\s*$|\\s*<|[\\s\\p{Z}]|\\p{P}+\\s|\\p{P}+<br|[\\s]*&nbsp;|\\p{P}+&nbsp;|\\p{P}+$))"; // word ending delimiter
 
     // escape special characters
     var escapedWords = aWords.map(RegExp.quote);

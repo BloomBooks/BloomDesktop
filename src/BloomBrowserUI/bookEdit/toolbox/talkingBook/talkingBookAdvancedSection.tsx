@@ -48,8 +48,10 @@ export const TalkingBookAdvancedSection: React.FunctionComponent<{
     const enabledImportRecordingButton =
         props.recordingMode === RecordingMode.TextBox &&
         props.hasRecordableDivs;
+    // The toolbox is currently its own iframe, so we can't spill out to the left yet.
+    // Unfortunately, we can't spill out the bottom without bad side effects either (BL-12366), so we go topside.
     const commonTooltipProps = {
-        placement: "bottom-start" as TooltipProps["placement"] // toolbox is currently its own iframe, so we can't spill out to the left yet
+        placement: "top-start" as TooltipProps["placement"]
     };
 
     return (
@@ -158,7 +160,7 @@ export const TalkingBookAdvancedSection: React.FunctionComponent<{
                                     props.isXmatter || !props.hasRecordableDivs
                                 }
                                 value={RecordingMode.TextBox}
-                                label="By Whole Textbox"
+                                label="By Whole Text Box"
                                 l10nKey="EditTab.Toolbox.TalkingBookTool.RecordingModeTextBox"
                             />
                         </BloomTooltip>

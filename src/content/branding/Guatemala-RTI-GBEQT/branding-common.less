@@ -1,0 +1,94 @@
+@import "../branding-base.less";
+
+// I made a branding-common.less file, because there are 2 similar Guatemala brandings being created at the same time.
+@TopLogoMarginOffset: 2rem;
+@BottomLogoMarginOffset: 3rem;
+
+p {
+    margin-bottom: 1em;
+}
+
+.credits-page-branding-top-block {
+    display: flex;
+    flex-direction: column;
+
+    .credits-page-branding-top-logo-block {
+        display: flex;
+        flex-direction: row;
+        max-height: 75px;
+        justify-content: space-between;
+
+        // This is the top of the credits page, where we put the logos. There is a top left and a top right nested
+        // inside of the top logo section.
+        .credits-page-branding-top-logo-right,
+        .credits-page-branding-top-logo-left {
+            width: calc(50% + @TopLogoMarginOffset);
+            display: flex;
+            max-width: 300px; // in case of large page sizes, we don't want the logos to get carried away
+        }
+
+        // Move the logos toward the left and right edges of the page.
+        .credits-page-branding-top-logo-left {
+            margin-left: -@TopLogoMarginOffset;
+            align-content: flex-start;
+            img.branding {
+                margin-left: unset;
+            }
+        }
+
+        .credits-page-branding-top-logo-right {
+            margin-right: -@TopLogoMarginOffset;
+            align-content: flex-end;
+            img.branding {
+                margin-right: unset;
+            }
+        }
+    }
+}
+
+.marginBox [data-book="credits-page-branding-bottom-html"] {
+    margin: 0 -@BottomLogoMarginOffset; // enlarge bottom logo to fill the space better
+    margin-top: auto;
+}
+
+// NOTE. The existence of this selector tells XMatterHelper that we can handle device layout, so don't revert to a specialized one.
+.Device16x9Portrait,
+.Device16x9Landscape {
+    &.credits {
+        .marginBox {
+            left: 10px !important;
+            height: calc(100% - 8mm) !important;
+            .credits-page-branding-top-block {
+                padding-top: unset;
+                font-size: 8pt; // otherwise we'll never fit in all the text.
+                img {
+                    max-width: 100%;
+                }
+                .credits-page-branding-top-logo-left {
+                    margin-left: unset;
+                }
+                .credits-page-branding-top-logo-right {
+                    margin-right: unset;
+                }
+            }
+            .licenseDescription,
+            .licenseNotes {
+                font-size: 8pt; // otherwise we'll never fit in all the text.
+            }
+            [data-book="credits-page-branding-bottom-html"] {
+                margin: unset;
+            }
+        }
+    }
+}
+
+.Device16x9Landscape {
+    &.credits {
+        .marginBox {
+            .copyright,
+            .licenseBlock {
+                margin-bottom: 0; // Device landscape is especially limited in vertical space.
+            }
+        }
+    }
+}

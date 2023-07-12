@@ -423,6 +423,66 @@ namespace Bloom.web.controllers
 		// Extra locking object because 1) you can't lock primitives directly, and 2) you shouldn't use the object whose value you'll be reading as the lock object (reads to the object are not blocked)
 		static object _showingProblemReportLock = new object();
 
+		static bool IsOwnedForm(Form child, Form parent)
+		{
+			var test = child;
+			while (test != null)
+			{
+				if (test == parent)
+					return true;
+				test = test.Owner;
+			}
+
+			return false;
+		}
+
+		public static Form GetParentFormForErrorDialogs()
+		{
+			var active = Form.ActiveForm;
+			var shell = Shell.GetShellOrOtherOpenForm();
+			if (active == null)
+			{
+				// no active form. Might be because we are debugging, then typically, shell is the main shell and is good.
+				// It's also possible that we're in some startup or shutting-down state where there really
+				// is no active form, and probably, shell is null too. In such cases, there is no parent window to
+				// try to be in front of, so we just return null.
+				return shell;
+			}
+
+			if (shell is Shell)
+			{
+				// normal state, we have a Shell window available.
+				if (IsOwnedForm(active, shell))
+				{
+					// We can safely use the active form and still be in front of the shell, since the shell
+					// (directly or indirectly) is the owner of active (or simply IS the active form)
+					return active;
+				}
+				else
+				{
+					// This is an unfortunate situation. We should launch dialogs with an appropriate owner,
+					// so the dialog stays in front of its owner (and the shell) and starts on the same screen.
+					// Perhaps the ActiveForm is something quite unexpected, like the Toast window.
+					// It might be something that doesn't have a taskbar entry, so if the shell somehow later
+					// gets in front of the current active form, there will be no easy way to recover, especially
+					// once we launch another modal dialog and it gets behind the Shell (BL-12412).
+					// So, if we're in a debug build, we will stop and encourage the programmer to give the
+					// window an owner.
+					// Otherwise, it seems safest to return the Shell. At least that can be selected from the
+					// task bar, and then if it is the owner of the error dialog, then the dialog should be
+					// in front of it.
+					Debug.Fail("Dialogs should have owners!");
+					return shell;
+				}
+			}
+			else
+			{
+				// No Shell window active, maybe we're in startup or shutdown? May as well go with
+				// the most likely form, or anything we can find if there isn't an active one.
+				return active ?? shell;
+			}
+		}
+
 		// ENHANCE: Reduce duplication in HtmlErrorReporter and ProblemReportApi code. Some of the ProblemReportApi code can move to HtmlErrorReporter code.
 
 		// ENHANCE: I think levelOfProblem would benefit from being required and being an enum.
@@ -531,10 +591,7 @@ namespace Bloom.web.controllers
 						try
 						{
 							// Keep dialog on top of program window if possible.  See https://issues.bloomlibrary.org/youtrack/issue/BL-10292.
-							if (controlForScreenshotting is Bloom.Shell)
-								dlg.ShowDialog(controlForScreenshotting);
-							else
-								dlg.ShowDialog();
+							dlg.ShowDialog(GetParentFormForErrorDialogs());
 						}
 						finally
 						{
@@ -687,17 +744,21 @@ namespace Bloom.web.controllers
 							}
 							else
 							{
-								var bounds = controlForScreenshotting.Bounds;
-								var screenshot = new Bitmap(bounds.Width, bounds.Height);
+#if !__MonoCS__
+								var scaledBounds = WindowsMonitorScaling.GetRectangleFromControlScaledToMonitorResolution(controlForScreenshotting);
+#else
+								var scaledBounds = controlForScreenshotting.Bounds;
+#endif
+								var screenshot = new Bitmap(scaledBounds.Width, scaledBounds.Height);
 								using (var g = Graphics.FromImage(screenshot))
 								{
 									if (controlForScreenshotting.Parent == null)
-										g.CopyFromScreen(bounds.Left, bounds.Top, 0, 0,
-											bounds.Size); // bounds already in screen coords
+										g.CopyFromScreen(scaledBounds.Left, scaledBounds.Top, 0, 0,
+											scaledBounds.Size); // bounds already in screen coords
 									else
 										g.CopyFromScreen(
-											controlForScreenshotting.PointToScreen(new Point(bounds.Left, bounds.Top)),
-											Point.Empty, bounds.Size);
+											controlForScreenshotting.PointToScreen(new Point(scaledBounds.Left, scaledBounds.Top)),
+											Point.Empty, scaledBounds.Size);
 								}
 
 								_reportInfo.ScreenshotTempFile = TempFile.WithFilename(ScreenshotName);
@@ -962,6 +1023,15 @@ namespace Bloom.web.controllers
 			AppendWritingSystem(book.BookData.Language3, "Language3", bldr);
 			AppendWritingSystem(book.BookData.SignLanguage, "SignLanguage", bldr);
 			AppendWritingSystem(book.BookData.MetadataLanguage1, "MetadataLanguage1", bldr);
+			var enterpriseStatus = settings.GetEnterpriseStatus().ToString();
+			var branding = settings.BrandingProjectKey;
+			bldr.AppendLine();
+			bldr.AppendLine("Enterprise status: " + enterpriseStatus);
+			bldr.AppendLine("Branding: " + (string.IsNullOrEmpty(branding) ? "None found" : branding));
+			var tzName = TimeZone.CurrentTimeZone.IsDaylightSavingTime(DateTime.Now) ? TimeZone.CurrentTimeZone.DaylightName : TimeZone.CurrentTimeZone.StandardName;
+			var tzOffset = TimeZone.CurrentTimeZone.GetUtcOffset(DateTime.Now);
+			var tzFormatString = (tzOffset < TimeSpan.Zero ? "\\-" : "") + "hh\\:mm";
+			bldr.AppendLine("User timezone: UTC" + tzOffset.ToString(tzFormatString) + "  (" + tzName + ")");
 		}
 
 		void AppendWritingSystem(WritingSystem ws, string label, StringBuilder bldr)

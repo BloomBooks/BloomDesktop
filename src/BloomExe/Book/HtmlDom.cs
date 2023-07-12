@@ -1062,6 +1062,20 @@ namespace Bloom.Book
 			return result;
 		}
 
+		public static bool DivHasContent(XmlElement div)
+		{
+			var divClone = div.CloneNode(true);
+
+			// Don't count a language if it only has text in a label.
+			// For some xmatter fields, the label is outside the editables.
+			// But for back cover, at least, it is inside.
+			var labels = divClone.SafeSelectNodes("label").Cast<XmlElement>();
+			foreach (var label in labels)
+				divClone.RemoveChild(label);
+
+			return !string.IsNullOrWhiteSpace(divClone.InnerText);
+		}
+
 		/// <summary>
 		/// Checks if the specified language is considered valid (e.g. non-empty, not "*", not "z")
 		/// </summary>

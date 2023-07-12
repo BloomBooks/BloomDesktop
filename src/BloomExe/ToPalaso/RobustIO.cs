@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using SIL.Code;
@@ -36,6 +36,19 @@ namespace Bloom.ToPalaso
 		{
 			foreach (var file in System.IO.Directory.EnumerateFiles(folderPath, searchPattern, option))
 				fileSet.Add(file);
+		}
+
+		public static void RequireThatDirectoryExists(string path)
+		{
+			bool exists = false;
+			RetryUtility.Retry(() =>
+			{
+				exists = Directory.Exists(path);
+			});
+			if (!exists)
+			{
+				throw new ArgumentException("The path '\" + path + \"' does not exist.\"");
+			}
 		}
 	}
 }

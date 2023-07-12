@@ -1733,7 +1733,7 @@ namespace Bloom.Book
 			Dom = new HtmlDom();
 			//the fileLocator we get doesn't know anything about this particular book.
 			_fileLocator.AddPath(FolderPath);
-			RequireThat.Directory(FolderPath).Exists();
+			ToPalaso.RobustIO.RequireThatDirectoryExists(FolderPath);
 			string pathToExistingHtml;
 			try
 			{
