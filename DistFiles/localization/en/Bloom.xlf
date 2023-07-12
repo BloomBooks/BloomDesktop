@@ -3038,6 +3038,10 @@
         <source xml:lang="en">Release Notes...</source>
         <note>ID: HelpMenu.ReleaseNotesMenuItem</note>
       </trans-unit>
+      <trans-unit id="HelpMenu.ReleaseNotesWebMenuItem">
+        <source xml:lang="en">Release Notes (Web)</source>
+        <note>ID: HelpMenu.ReleaseNotesWebMenuItem</note>
+      </trans-unit>
       <trans-unit id="HelpMenu.ReportAProblemToolStripMenuItem">
         <source xml:lang="en">Report a Problem...</source>
         <note>ID: HelpMenu.ReportAProblemToolStripMenuItem</note>

@@ -4,38 +4,38 @@ namespace Bloom.Workspace
 {
 
 	partial class WorkspaceView
-    {
-        /// <summary>
-        /// Required designer variable.
-        /// </summary>
-        private System.ComponentModel.IContainer components = null;
+	{
+		/// <summary>
+		/// Required designer variable.
+		/// </summary>
+		private System.ComponentModel.IContainer components = null;
 
-        /// <summary>
-        /// Clean up any resources being used.
-        /// </summary>
-        /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
-        protected override void Dispose(bool disposing)
-        {
-            if (disposing && (components != null))
-            {
-	            components.Dispose();
-            }
+		/// <summary>
+		/// Clean up any resources being used.
+		/// </summary>
+		/// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
+		protected override void Dispose(bool disposing)
+		{
+			if (disposing && (components != null))
+			{
+				components.Dispose();
+			}
 			if (_tempBookInfoHtmlPath != null && SIL.IO.RobustFile.Exists(_tempBookInfoHtmlPath))
 			{
 				SIL.IO.RobustFile.Delete(_tempBookInfoHtmlPath);
 				_tempBookInfoHtmlPath = null;
 			}
 			base.Dispose(disposing);
-        }
+		}
 
-        #region Component Designer generated code
+		#region Component Designer generated code
 
-        /// <summary>
-        /// Required method for Designer support - do not modify
-        /// the contents of this method with the code editor.
-        /// </summary>
-        private void InitializeComponent()
-        {
+		/// <summary>
+		/// Required method for Designer support - do not modify
+		/// the contents of this method with the code editor.
+		/// </summary>
+		private void InitializeComponent()
+		{
 			this.components = new System.ComponentModel.Container();
 			this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
 			this._settingsLauncherHelper = new SIL.Windows.Forms.SettingProtection.SettingsProtectionHelper(this.components);
@@ -49,7 +49,7 @@ namespace Bloom.Workspace
 			this._uiLanguageMenu = new System.Windows.Forms.ToolStripDropDownButton();
 			this._helpMenu = new System.Windows.Forms.ToolStripDropDownButton();
 			this._documentationMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this._bloomDocsMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this._bloomDocsMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this._trainingVideosMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.buildingReaderTemplatesMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.usingReaderTemplatesMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -72,34 +72,34 @@ namespace Bloom.Workspace
 			this._toolStrip.SuspendLayout();
 			this._panelHoldingToolStrip.SuspendLayout();
 			this.SuspendLayout();
-			// 
+			//
 			// _containerPanel
-			// 
-			this._containerPanel.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
+			//
+			this._containerPanel.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+			| System.Windows.Forms.AnchorStyles.Left)
+			| System.Windows.Forms.AnchorStyles.Right)));
 			this._containerPanel.Location = new System.Drawing.Point(0, 74);
 			this._containerPanel.Name = "_containerPanel";
 			this._containerPanel.Size = new System.Drawing.Size(1098, 463);
 			this._containerPanel.TabIndex = 16;
-			// 
+			//
 			// _toolSpecificPanel
-			// 
-			this._toolSpecificPanel.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
+			//
+			this._toolSpecificPanel.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
+			| System.Windows.Forms.AnchorStyles.Right)));
 			this._toolSpecificPanel.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(29)))), ((int)(((byte)(148)))), ((int)(((byte)(164)))));
 			this._toolSpecificPanel.Location = new System.Drawing.Point(357, 2);
 			this._toolSpecificPanel.Name = "_toolSpecificPanel";
 			this._toolSpecificPanel.Size = new System.Drawing.Size(652, 66);
 			this._toolSpecificPanel.TabIndex = 17;
-			// 
+			//
 			// _L10NSharpExtender
-			// 
+			//
 			this._L10NSharpExtender.LocalizationManagerId = "Bloom";
 			this._L10NSharpExtender.PrefixForNewItems = "HelpMenu";
-			// 
+			//
 			// _tabStrip
-			// 
+			//
 			this._tabStrip.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(29)))), ((int)(((byte)(148)))), ((int)(((byte)(164)))));
 			this._tabStrip.FlipButtons = false;
 			this._tabStrip.GripStyle = System.Windows.Forms.ToolStripGripStyle.Hidden;
@@ -107,7 +107,7 @@ namespace Bloom.Workspace
 			this._tabStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
 			this._reactCollectionTab,
 			this._editTab,
-            this._publishTab});
+			this._publishTab});
 			this._L10NSharpExtender.SetLocalizableToolTip(this._tabStrip, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._tabStrip, null);
 			this._L10NSharpExtender.SetLocalizationPriority(this._tabStrip, L10NSharp.LocalizationPriority.NotLocalizable);
@@ -121,9 +121,9 @@ namespace Bloom.Workspace
 			this._tabStrip.UseVisualStyles = false;
 			this._tabStrip.SelectedTabChanged += new System.EventHandler<Messir.Windows.Forms.SelectedTabChangedEventArgs>(this._tabStrip_SelectedTabChanged);
 			this._tabStrip.BackColorChanged += new System.EventHandler(this._tabStrip_BackColorChanged);
-			// 
+			//
 			// _editTab
-			// 
+			//
 			this._editTab.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(87)))), ((int)(((byte)(87)))), ((int)(((byte)(87)))));
 			this._editTab.BarColor = System.Drawing.Color.FromArgb(((int)(((byte)(150)))), ((int)(((byte)(102)))), ((int)(((byte)(143)))));
 			this._editTab.ForeColor = System.Drawing.Color.Black;
@@ -143,9 +143,9 @@ namespace Bloom.Workspace
 			this._editTab.Text = "Edit";
 			this._editTab.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
 			this._editTab.TextChanged += new System.EventHandler(this.HandleTabTextChanged);
-			// 
+			//
 			// _publishTab
-			// 
+			//
 			this._publishTab.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(87)))), ((int)(((byte)(87)))), ((int)(((byte)(87)))));
 			this._publishTab.BarColor = System.Drawing.Color.FromArgb(((int)(((byte)(214)))), ((int)(((byte)(86)))), ((int)(((byte)(73)))));
 			this._publishTab.ForeColor = System.Drawing.Color.Black;
@@ -166,16 +166,16 @@ namespace Bloom.Workspace
 			this._publishTab.Text = "Publish";
 			this._publishTab.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
 			this._publishTab.TextChanged += new System.EventHandler(this.HandleTabTextChanged);
-			// 
+			//
 			// _toolStrip
-			// 
+			//
 			this._toolStrip.BackColor = System.Drawing.Color.Transparent;
 			this._toolStrip.Dock = System.Windows.Forms.DockStyle.Right;
 			this._toolStrip.GripMargin = new System.Windows.Forms.Padding(0);
 			this._toolStrip.GripStyle = System.Windows.Forms.ToolStripGripStyle.Hidden;
 			this._toolStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this._uiLanguageMenu,
-            this._helpMenu});
+			this._uiLanguageMenu,
+			this._helpMenu});
 			this._L10NSharpExtender.SetLocalizableToolTip(this._toolStrip, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._toolStrip, null);
 			this._L10NSharpExtender.SetLocalizationPriority(this._toolStrip, L10NSharp.LocalizationPriority.NotLocalizable);
@@ -186,9 +186,9 @@ namespace Bloom.Workspace
 			this._toolStrip.Size = new System.Drawing.Size(59, 66);
 			this._toolStrip.TabIndex = 28;
 			this._toolStrip.Text = "_toolStrip";
-			// 
+			//
 			// _uiLanguageMenu
-			// 
+			//
 			this._uiLanguageMenu.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
 			this._uiLanguageMenu.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(49)))), ((int)(((byte)(32)))), ((int)(((byte)(46)))));
 			this._uiLanguageMenu.Image = global::Bloom.Properties.Resources.multilingualSettings;
@@ -200,26 +200,26 @@ namespace Bloom.Workspace
 			this._uiLanguageMenu.Name = "_uiLanguageMenu";
 			this._uiLanguageMenu.Size = new System.Drawing.Size(56, 19);
 			this._uiLanguageMenu.Text = "English";
-			// 
+			//
 			// _helpMenu
-			// 
+			//
 			this._helpMenu.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this._documentationMenuItem,
-            this._bloomDocsMenuItem,
-            this._trainingVideosMenuItem,
-            this.buildingReaderTemplatesMenuItem,
-            this.usingReaderTemplatesMenuItem,
-            this.toolStripSeparator1,
-            this._askAQuestionMenuItem,
-            this._requestAFeatureMenuItem,
-            this._reportAProblemMenuItem,
-            this._divider1,
-            this._releaseNotesMenuItem,
-            this._checkForNewVersionMenuItem,
-            this._registrationMenuItem,
-            this._divider2,
-            this._webSiteMenuItem,
-            this._aboutBloomMenuItem});
+			this._documentationMenuItem,
+			this._bloomDocsMenuItem,
+			this._trainingVideosMenuItem,
+			this.buildingReaderTemplatesMenuItem,
+			this.usingReaderTemplatesMenuItem,
+			this.toolStripSeparator1,
+			this._askAQuestionMenuItem,
+			this._requestAFeatureMenuItem,
+			this._reportAProblemMenuItem,
+			this._divider1,
+			this._releaseNotesMenuItem,
+			this._checkForNewVersionMenuItem,
+			this._registrationMenuItem,
+			this._divider2,
+			this._webSiteMenuItem,
+			this._aboutBloomMenuItem});
 			this._helpMenu.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(49)))), ((int)(((byte)(32)))), ((int)(((byte)(46)))));
 			this._helpMenu.Image = global::Bloom.Properties.Resources.help16x16Darker;
 			this._helpMenu.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None;
@@ -230,31 +230,31 @@ namespace Bloom.Workspace
 			this._helpMenu.Name = "_helpMenu";
 			this._helpMenu.Size = new System.Drawing.Size(56, 20);
 			this._helpMenu.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
-			// 
+			//
 			// _documentationMenuItem
-			// 
+			//
 			this._documentationMenuItem.Image = global::Bloom.Properties.Resources.help24x24;
 			this._L10NSharpExtender.SetLocalizableToolTip(this._documentationMenuItem, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._documentationMenuItem, null);
 			this._L10NSharpExtender.SetLocalizingId(this._documentationMenuItem, "HelpMenu.DocumentationMenuItem");
 			this._documentationMenuItem.Name = "_documentationMenuItem";
 			this._documentationMenuItem.Size = new System.Drawing.Size(213, 22);
-            this._documentationMenuItem.Text = "Help...";
+			this._documentationMenuItem.Text = "Help...";
 			this._documentationMenuItem.Click += new System.EventHandler(this.toolStripMenuItem3_Click);
-			// 
-            // _bloomDocsMenuItem
-            // 
-            this._bloomDocsMenuItem.Image = global::Bloom.Properties.Resources.help24x24;
-            this._L10NSharpExtender.SetLocalizableToolTip(this._bloomDocsMenuItem, null);
-            this._L10NSharpExtender.SetLocalizationComment(this._bloomDocsMenuItem, null);
-            this._L10NSharpExtender.SetLocalizingId(this._bloomDocsMenuItem, "HelpMenu.OnlineHelpMenuItem");
-            this._bloomDocsMenuItem.Name = "_bloomDocsMenuItem";
-            this._bloomDocsMenuItem.Size = new System.Drawing.Size(321, 34);
-            this._bloomDocsMenuItem.Text = "More Help (Web)";
-            this._bloomDocsMenuItem.Click += new System.EventHandler(this._bloom_docs_Click);
-            // 
+			//
+			// _bloomDocsMenuItem
+			//
+			this._bloomDocsMenuItem.Image = global::Bloom.Properties.Resources.help24x24;
+			this._L10NSharpExtender.SetLocalizableToolTip(this._bloomDocsMenuItem, null);
+			this._L10NSharpExtender.SetLocalizationComment(this._bloomDocsMenuItem, null);
+			this._L10NSharpExtender.SetLocalizingId(this._bloomDocsMenuItem, "HelpMenu.OnlineHelpMenuItem");
+			this._bloomDocsMenuItem.Name = "_bloomDocsMenuItem";
+			this._bloomDocsMenuItem.Size = new System.Drawing.Size(321, 34);
+			this._bloomDocsMenuItem.Text = "More Help (Web)";
+			this._bloomDocsMenuItem.Click += new System.EventHandler(this._bloom_docs_Click);
+			//
 			// _trainingVideosMenuItem
-			// 
+			//
 			this._trainingVideosMenuItem.Image = global::Bloom.Properties.Resources.videos;
 			this._L10NSharpExtender.SetLocalizableToolTip(this._trainingVideosMenuItem, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._trainingVideosMenuItem, null);
@@ -263,9 +263,9 @@ namespace Bloom.Workspace
 			this._trainingVideosMenuItem.Size = new System.Drawing.Size(213, 22);
 			this._trainingVideosMenuItem.Text = "Training Videos";
 			this._trainingVideosMenuItem.Click += new System.EventHandler(this._trainingVideosMenuItem_Click);
-			// 
+			//
 			// buildingReaderTemplatesMenuItem
-			// 
+			//
 			this.buildingReaderTemplatesMenuItem.Image = global::Bloom.Properties.Resources.pdf16x16;
 			this._L10NSharpExtender.SetLocalizableToolTip(this.buildingReaderTemplatesMenuItem, null);
 			this._L10NSharpExtender.SetLocalizationComment(this.buildingReaderTemplatesMenuItem, null);
@@ -275,9 +275,9 @@ namespace Bloom.Workspace
 			this.buildingReaderTemplatesMenuItem.Size = new System.Drawing.Size(213, 22);
 			this.buildingReaderTemplatesMenuItem.Text = "Building Reader Templates";
 			this.buildingReaderTemplatesMenuItem.Click += new System.EventHandler(this.buildingReaderTemplatesMenuItem_Click);
-			// 
+			//
 			// usingReaderTemplatesMenuItem
-			// 
+			//
 			this.usingReaderTemplatesMenuItem.Image = global::Bloom.Properties.Resources.pdf16x16;
 			this._L10NSharpExtender.SetLocalizableToolTip(this.usingReaderTemplatesMenuItem, null);
 			this._L10NSharpExtender.SetLocalizationComment(this.usingReaderTemplatesMenuItem, null);
@@ -287,14 +287,14 @@ namespace Bloom.Workspace
 			this.usingReaderTemplatesMenuItem.Size = new System.Drawing.Size(213, 22);
 			this.usingReaderTemplatesMenuItem.Text = "Using Reader Templates ";
 			this.usingReaderTemplatesMenuItem.Click += new System.EventHandler(this.usingReaderTemplatesMenuItem_Click);
-			// 
+			//
 			// toolStripSeparator1
-			// 
+			//
 			this.toolStripSeparator1.Name = "toolStripSeparator1";
 			this.toolStripSeparator1.Size = new System.Drawing.Size(210, 6);
-			// 
+			//
 			// _askAQuestionMenuItem
-			// 
+			//
 			this._askAQuestionMenuItem.Image = global::Bloom.Properties.Resources.weblink;
 			this._L10NSharpExtender.SetLocalizableToolTip(this._askAQuestionMenuItem, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._askAQuestionMenuItem, null);
@@ -303,9 +303,9 @@ namespace Bloom.Workspace
 			this._askAQuestionMenuItem.Size = new System.Drawing.Size(213, 22);
 			this._askAQuestionMenuItem.Text = "Ask a Question";
 			this._askAQuestionMenuItem.Click += new System.EventHandler(this._askAQuestionMenuItem_Click);
-			// 
+			//
 			// _requestAFeatureMenuItem
-			// 
+			//
 			this._requestAFeatureMenuItem.Image = global::Bloom.Properties.Resources.weblink;
 			this._L10NSharpExtender.SetLocalizableToolTip(this._requestAFeatureMenuItem, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._requestAFeatureMenuItem, null);
@@ -314,9 +314,9 @@ namespace Bloom.Workspace
 			this._requestAFeatureMenuItem.Size = new System.Drawing.Size(213, 22);
 			this._requestAFeatureMenuItem.Text = "Request a Feature";
 			this._requestAFeatureMenuItem.Click += new System.EventHandler(this._requestAFeatureMenuItem_Click);
-			// 
+			//
 			// _reportAProblemMenuItem
-			// 
+			//
 			this._reportAProblemMenuItem.Image = global::Bloom.Properties.Resources.sad16x16;
 			this._L10NSharpExtender.SetLocalizableToolTip(this._reportAProblemMenuItem, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._reportAProblemMenuItem, null);
@@ -325,24 +325,24 @@ namespace Bloom.Workspace
 			this._reportAProblemMenuItem.Size = new System.Drawing.Size(213, 22);
 			this._reportAProblemMenuItem.Text = "Report a Problem...";
 			this._reportAProblemMenuItem.Click += new System.EventHandler(this._reportAProblemMenuItem_Click);
-			// 
+			//
 			// _divider1
-			// 
+			//
 			this._divider1.Name = "_divider1";
 			this._divider1.Size = new System.Drawing.Size(210, 6);
-			// 
+			//
 			// _releaseNotesMenuItem
-			// 
+			//
 			this._L10NSharpExtender.SetLocalizableToolTip(this._releaseNotesMenuItem, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._releaseNotesMenuItem, null);
-			this._L10NSharpExtender.SetLocalizingId(this._releaseNotesMenuItem, "HelpMenu.ReleaseNotesMenuItem");
+			this._L10NSharpExtender.SetLocalizingId(this._releaseNotesMenuItem, "HelpMenu.ReleaseNotesWebMenuItem");
 			this._releaseNotesMenuItem.Name = "_releaseNotesMenuItem";
-            this._releaseNotesMenuItem.Size = new System.Drawing.Size(321, 34);
-            this._releaseNotesMenuItem.Text = "Release Notes (Web)";
+			this._releaseNotesMenuItem.Size = new System.Drawing.Size(321, 34);
+			this._releaseNotesMenuItem.Text = "Release Notes (Web)";
 			this._releaseNotesMenuItem.Click += new System.EventHandler(this._releaseNotesMenuItem_Click);
-			// 
+			//
 			// _checkForNewVersionMenuItem
-			// 
+			//
 			this._L10NSharpExtender.SetLocalizableToolTip(this._checkForNewVersionMenuItem, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._checkForNewVersionMenuItem, null);
 			this._L10NSharpExtender.SetLocalizingId(this._checkForNewVersionMenuItem, "HelpMenu.CheckForNewVersionMenuItem");
@@ -350,9 +350,9 @@ namespace Bloom.Workspace
 			this._checkForNewVersionMenuItem.Size = new System.Drawing.Size(213, 22);
 			this._checkForNewVersionMenuItem.Text = "Check For New Version";
 			this._checkForNewVersionMenuItem.Click += new System.EventHandler(this._checkForNewVersionMenuItem_Click);
-			// 
+			//
 			// _registrationMenuItem
-			// 
+			//
 			this._L10NSharpExtender.SetLocalizableToolTip(this._registrationMenuItem, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._registrationMenuItem, null);
 			this._L10NSharpExtender.SetLocalizingId(this._registrationMenuItem, "HelpMenu.RegistrationMenuItem");
@@ -360,14 +360,14 @@ namespace Bloom.Workspace
 			this._registrationMenuItem.Size = new System.Drawing.Size(213, 22);
 			this._registrationMenuItem.Text = "Registration...";
 			this._registrationMenuItem.Click += new System.EventHandler(this.OnRegistrationMenuItem_Click);
-			// 
+			//
 			// _divider2
-			// 
+			//
 			this._divider2.Name = "_divider2";
 			this._divider2.Size = new System.Drawing.Size(210, 6);
-			// 
+			//
 			// _webSiteMenuItem
-			// 
+			//
 			this._webSiteMenuItem.Image = global::Bloom.Properties.Resources.weblink;
 			this._L10NSharpExtender.SetLocalizableToolTip(this._webSiteMenuItem, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._webSiteMenuItem, null);
@@ -376,9 +376,9 @@ namespace Bloom.Workspace
 			this._webSiteMenuItem.Size = new System.Drawing.Size(213, 22);
 			this._webSiteMenuItem.Text = "BloomLibrary.org";
 			this._webSiteMenuItem.Click += new System.EventHandler(this._webSiteMenuItem_Click);
-			// 
+			//
 			// _aboutBloomMenuItem
-			// 
+			//
 			this._L10NSharpExtender.SetLocalizableToolTip(this._aboutBloomMenuItem, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._aboutBloomMenuItem, null);
 			this._L10NSharpExtender.SetLocalizingId(this._aboutBloomMenuItem, "HelpMenu.CreditsMenuItem");
@@ -386,9 +386,9 @@ namespace Bloom.Workspace
 			this._aboutBloomMenuItem.Size = new System.Drawing.Size(213, 22);
 			this._aboutBloomMenuItem.Text = "About Bloom...";
 			this._aboutBloomMenuItem.Click += new System.EventHandler(this.OnAboutBoxClick);
-			// 
+			//
 			// _panelHoldingToolStrip
-			// 
+			//
 			this._panelHoldingToolStrip.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
 			this._panelHoldingToolStrip.BackColor = System.Drawing.Color.Transparent;
 			this._panelHoldingToolStrip.Controls.Add(this._toolStrip);
@@ -400,14 +400,14 @@ namespace Bloom.Workspace
 			this._panelHoldingToolStrip.Name = "_panelHoldingToolStrip";
 			this._panelHoldingToolStrip.Size = new System.Drawing.Size(89, 66);
 			this._panelHoldingToolStrip.TabIndex = 29;
-			// 
+			//
 			// _applicationUpdateCheckTimer
-			// 
+			//
 			this._applicationUpdateCheckTimer.Interval = 60000;
 			this._applicationUpdateCheckTimer.Tick += new System.EventHandler(this._applicationUpdateCheckTimer_Tick);
-			// 
+			//
 			// _reactCollectionTab
-			// 
+			//
 			this._reactCollectionTab.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(87)))), ((int)(((byte)(87)))), ((int)(((byte)(87)))));
 			this._reactCollectionTab.BarColor = System.Drawing.Color.FromArgb(((int)(((byte)(29)))), ((int)(((byte)(148)))), ((int)(((byte)(164)))));
 			this._reactCollectionTab.Checked = true;
@@ -427,9 +427,9 @@ namespace Bloom.Workspace
 			this._reactCollectionTab.Size = new System.Drawing.Size(103, 71);
 			this._reactCollectionTab.Text = "Collections";
 			this._reactCollectionTab.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
-			// 
+			//
 			// WorkspaceView
-			// 
+			//
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.Controls.Add(this._panelHoldingToolStrip);
@@ -453,9 +453,9 @@ namespace Bloom.Workspace
 			this.ResumeLayout(false);
 			this.PerformLayout();
 
-        }
+		}
 
-        #endregion
+		#endregion
 
 		private System.Windows.Forms.ToolTip toolTip1;
 		private SIL.Windows.Forms.SettingProtection.SettingsProtectionHelper _settingsLauncherHelper;
@@ -487,5 +487,5 @@ namespace Bloom.Workspace
 		private System.Windows.Forms.ToolStripMenuItem _askAQuestionMenuItem;
 		private Messir.Windows.Forms.TabStripButton _reactCollectionTab;
 		private System.Windows.Forms.ToolStripMenuItem _bloomDocsMenuItem;
-    }
+	}
 }
