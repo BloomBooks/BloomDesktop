@@ -94,7 +94,7 @@
       </trans-unit>
       <trans-unit id="AccessibilityCheck.LearnAbout.Footnote" sil:dynamic="true" approved="yes">
         <source xml:lang="en">While the ideal is that a single book can serve everyone, the ePUB standard and ePUB readers do not actually support that. They currently only work for blind people who speak a language that is supported by "Text to Speech" (TTS) systems. At this time, TTS is only available for large or commercially interesting languages. Until the standard and accessible readers improve, it is necessary to make special versions of accessible books for minority language speakers. For blind readers to hear the image descriptions, we need to put something special on the page. In this version of Bloom, you do this by clicking the "Include image descriptions on page" checkbox in the Publish:ePUB screen. Future versions may have other options in this area.</source>
-        <target xml:lang="sw" state="final">Ingawaje ni bora kwamba kitabu kimoja kinaweza kuhudumia kila mtu, kiwango cha ePUB na ePUB reader haviungi mkono jambo hilo. Hivi sasa vinafanya kazi tu kwa watu wasioona ambao huzungumza lugha ambayo inasaidiwa na mifumo ya "Maandishi kwa Matamshi" (TTS,kwa Kiingereza). Kwa wakati huu, TTS inapatikana tu kwa lugha kubwa au zile ambazo zinavutia kibiashara. 
+        <target xml:lang="sw" state="final">Ingawaje ni bora kwamba kitabu kimoja kinaweza kuhudumia kila mtu, kiwango cha ePUB na ePUB reader haviungi mkono jambo hilo. Hivi sasa vinafanya kazi tu kwa watu wasioona ambao huzungumza lugha ambayo inasaidiwa na mifumo ya "Maandishi kwa Matamshi" (TTS,kwa Kiingereza). Kwa wakati huu, TTS inapatikana tu kwa lugha kubwa au zile ambazo zinavutia kibiashara.
 Hadi wakati ambapo vitabu vya kiwango na kufasiriwa vitakapobereshwa, ni muhimu kutengeneza matoleo maalum ya vitabu vya kufasiriwa kwa wazungumzaji wa lugha zinazozungumzwa na wachache. Ili wasomaji vipofu wasikie maelezo ya picha, tunahitaji kuweka kitu maalum kwenye ukurasa. Katika toleo hili la Bloom, unafanya hivyo kwa kubofya kisanduku cha kuangalia "Jumuisha maelezo ya picha kwenye ukurasa" kwenye skrini ya Chapisha: ePUB. Matoleo ya baadaye huenda yakawa na chaguzi zingine katika eneo hili.</target>
         <note>ID: AccessibilityCheck.LearnAbout.Footnote</note>
       </trans-unit>
@@ -3469,7 +3469,7 @@ Hadi wakati ambapo vitabu vya kiwango na kufasiriwa vitakapobereshwa, ni muhimu 
         <note>ID: HelpMenu.CreditsMenuItem</note>
       </trans-unit>
       <trans-unit id="HelpMenu.DocumentationMenuItem" approved="yes">
-        <source xml:lang="en">Browse Help...</source>
+        <source xml:lang="en">Help...</source>
         <target xml:lang="sw" state="final">Hifadhi ya hati</target>
         <note>ID: HelpMenu.DocumentationMenuItem</note>
       </trans-unit>
@@ -4626,7 +4626,7 @@ Hadi wakati ambapo vitabu vya kiwango na kufasiriwa vitakapobereshwa, ni muhimu 
       </trans-unit>
       <trans-unit id="PublishTab.Epub.RemoveFontSizes" approved="yes">
         <source xml:lang="en">Use ePUB reader's text size</source>
-        <target xml:lang="sw" state="final">Tumia saizi ya maandishi ya 
+        <target xml:lang="sw" state="final">Tumia saizi ya maandishi ya
 kisomaji cha ePUB</target>
         <note>ID: PublishTab.Epub.RemoveFontSizes</note>
       </trans-unit>

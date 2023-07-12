@@ -3468,7 +3468,7 @@
         <note>ID: HelpMenu.CreditsMenuItem</note>
       </trans-unit>
       <trans-unit id="HelpMenu.DocumentationMenuItem">
-        <source xml:lang="en">Browse Help...</source>
+        <source xml:lang="en">Help...</source>
         <target xml:lang="my" state="needs-translation">Browse Help...</target>
         <note>ID: HelpMenu.DocumentationMenuItem</note>
       </trans-unit>
