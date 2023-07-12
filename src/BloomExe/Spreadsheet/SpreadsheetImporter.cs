@@ -1645,7 +1645,11 @@ namespace Bloom.Spreadsheet
 							else
 							{
 								// a white space fragment.
-								var node = para.OwnerDocument.CreateTextNode(fragment);
+								// There may be formatting tags (e.g. italics or colors) which we will ignore since this is just whitespace anyway
+								// And otherwise they will get escaped and end up in the text
+								var tempElement = para.OwnerDocument.CreateElement("span");
+								tempElement.InnerXml = fragment;
+								var node = para.OwnerDocument.CreateTextNode(tempElement.InnerText);
 								para.AppendChild(node);
 							}
 						}

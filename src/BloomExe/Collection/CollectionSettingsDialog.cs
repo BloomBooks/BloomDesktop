@@ -109,13 +109,14 @@ namespace Bloom.Collection
 				this._tab.Controls.Remove(this._teamCollectionTab);
 			}
 			// Don't allow the user to disable the Team Collection feature if we're currently in a Team Collection.
-			_allowTeamCollection.Enabled = !(_allowTeamCollection.Checked && tcManager.CurrentCollectionEvenIfDisconnected != null);
+            _allowTeamCollection.Enabled = !(_allowTeamCollection.Checked && tcManager.CurrentCollectionEvenIfDisconnected != null);
 
-			// AutoUpdate applies only to Windows: see https://silbloom.myjetbrains.com/youtrack/issue/BL-2317.
-			if (SIL.PlatformUtilities.Platform.IsWindows)
-				_automaticallyUpdate.Checked = Settings.Default.AutoUpdate;
-			else
-				_automaticallyUpdate.Hide();
+            // AutoUpdate applies only to Windows: see https://silbloom.myjetbrains.com/youtrack/issue/BL-2317.
+            // Also, we are stranding pre-windows 10 people at 5.4.
+            if (SIL.PlatformUtilities.Platform.IsWindows && Environment.OSVersion.Version.Major >= 10)
+                _automaticallyUpdate.Checked = Settings.Default.AutoUpdate;
+            else
+                _automaticallyUpdate.Hide();
 
 			// Without this, PendingDefaultBookshelf stays null unless the user changes it.
 			// The result is the bookshelf selection gets cleared when other collection settings are saved. See BL-10093.
@@ -306,12 +307,12 @@ namespace Bloom.Collection
 		{
 			Logger.WriteMinorEvent("Settings Dialog OK Clicked");
 
-			CollectionSettingsApi.DialogBeingEdited = null;
+            CollectionSettingsApi.DialogBeingEdited = null;
 
-			Settings.Default.AutoUpdate = _automaticallyUpdate.Checked;
-			UpdateExperimentalBookSources();
-			UpdateTeamCollectionAllowed();
-			UpdateSpreadsheetImportExportAllowed();
+            Settings.Default.AutoUpdate = _automaticallyUpdate.Checked && Environment.OSVersion.Version.Major >= 10;
+            UpdateExperimentalBookSources();
+            UpdateTeamCollectionAllowed();
+            UpdateSpreadsheetImportExportAllowed();
 
 
 			_collectionSettings.Country = _countryText.Text.Trim();
