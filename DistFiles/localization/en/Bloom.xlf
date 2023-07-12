@@ -3015,6 +3015,11 @@
         <note>ID: HelpMenu.DocumentationMenuItem</note>
         <note>Prior to 5.4, this was "Browse Help..."</note>
       </trans-unit>
+      <trans-unit id="HelpMenu.OnlineHelpMenuItem">
+        <source xml:lang="en">More Help (Web)</source>
+        <note>ID: HelpMenu.OnlineHelpMenuItem</note>
+        <note>This takes you to https://docs.bloomlibrary.org</note>
+      </trans-unit>
       <trans-unit id="HelpMenu.Help Menu">
         <source xml:lang="en">Help</source>
         <note>ID: HelpMenu.Help Menu</note>
@@ -3036,6 +3041,10 @@
       <trans-unit id="HelpMenu.ReleaseNotesMenuItem">
         <source xml:lang="en">Release Notes...</source>
         <note>ID: HelpMenu.ReleaseNotesMenuItem</note>
+      </trans-unit>
+      <trans-unit id="HelpMenu.ReleaseNotesWebMenuItem">
+        <source xml:lang="en">Release Notes (Web)</source>
+        <note>ID: HelpMenu.ReleaseNotesWebMenuItem</note>
       </trans-unit>
       <trans-unit id="HelpMenu.ReportAProblemToolStripMenuItem">
         <source xml:lang="en">Report a Problem...</source>

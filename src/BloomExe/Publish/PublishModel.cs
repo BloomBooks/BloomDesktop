@@ -707,7 +707,7 @@ namespace Bloom.Publish
 
 			var htmlFilePath = MakeFinalHtmlForPdfMaker().Key;
 			if (SIL.PlatformUtilities.Platform.IsWindows)
-				Process.Start("Firefox.exe", '"' + htmlFilePath + '"');
+				Process.Start(htmlFilePath);
 			else
 				SIL.Program.Process.SafeStart("xdg-open", '"' + htmlFilePath + '"');
 		}
@@ -854,7 +854,7 @@ namespace Bloom.Publish
 			contentLanguages.Add("z");
 			var xmatterLangsToKeep = new HashSet<string>(contentLanguages);
 			xmatterLangsToKeep.UnionWith(additionalXmatterLangsToKeep);
-			
+
 			// Don't change the div#bloomDataDiv:  thus we have an outer loop that
 			// selects only xmatter and user content pages.
 			// While we could probably safely remove elements from div#bloomDataDiv,
@@ -922,8 +922,8 @@ namespace Bloom.Publish
 			if (stylesNode != null)
 			{
 				var cssTextOrig = stylesNode.InnerXml;   // InnerXml needed to preserve CDATA markup
-				// For 5.3, we wholesale keep all L2/L3 rules even though this might result in incorrect error messages about fonts. (BL-11357)
-				// In 5.4, we hope to clean up all this font determination stuff by using a real browser to determine what is used.
+														 // For 5.3, we wholesale keep all L2/L3 rules even though this might result in incorrect error messages about fonts. (BL-11357)
+														 // In 5.4, we hope to clean up all this font determination stuff by using a real browser to determine what is used.
 				var cssText = HtmlDom.RemoveUnwantedLanguageRulesFromCss(cssTextOrig, styleLanguages);
 				if (cssText != cssTextOrig)
 					stylesNode.InnerXml = cssText;
