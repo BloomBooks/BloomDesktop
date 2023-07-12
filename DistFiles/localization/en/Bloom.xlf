@@ -2813,7 +2813,7 @@
         <note>"Report" as in "Report this problem to Bloom Support"</note>
       </trans-unit>
       <trans-unit id="ErrorReport.Pre10WindowsNotSupported">
-        <source xml:lang="en">We are sorry, but your version of Windows is no longer supported by Microsoft. This version requires Windows 10 or greater. As a result, you will need to install Bloom version 5.4. Bloom will now open a web page where you can download Bloom 5.4.</source>
+        <source xml:lang="en">We are sorry, but your version of Windows is no longer supported by Microsoft. This version of Bloom requires Windows 10 or greater. As a result, you will need to install Bloom version 5.4. Bloom will now open a web page where you can download Bloom 5.4.</source>
         <note>ID: ErrorReport.Pre10WindowsNotSupported</note>
       </trans-unit>
       <trans-unit id="Errors.PathTooLong">
