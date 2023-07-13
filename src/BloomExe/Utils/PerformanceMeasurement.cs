@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Windows.Forms;
 using Bloom.Api;
+using Bloom.ToPalaso;
 using BloomTemp;
 using Newtonsoft.Json;
 using SIL.IO;
@@ -38,7 +39,7 @@ namespace Bloom.Utils
 		{
 			apiHandler.RegisterEndpointLegacy("performance/showCsvFile", (request) =>
 			{
-				Process.Start(_csvFilePath);
+				ProcessExtra.SafeStartInFront(_csvFilePath);
 				request.PostSucceeded();
 			}, false);
 			apiHandler.RegisterEndpointLegacy("performance/applicationInfo", (request) =>

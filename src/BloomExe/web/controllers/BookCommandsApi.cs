@@ -16,6 +16,7 @@ using Bloom.MiscUI;
 using Bloom.Properties;
 using Bloom.Spreadsheet;
 using Bloom.TeamCollection;
+using Bloom.ToPalaso;
 using Bloom.Utils;
 using DesktopAnalytics;
 using L10NSharp;
@@ -310,7 +311,7 @@ namespace Bloom.web.controllers
 				var destPath = Path.Combine(outputFolderPath, Path.GetFileName(bookHtmlPath).Replace(".htm", ".doc"));
 
 				_collectionModel.ExportDocFormat(destPath);
-				PathUtilities.OpenFileInApplication(destPath);
+				ProcessExtra.SafeStartInFront(destPath);
 				Analytics.Track("Exported To Doc format");
 			}
 			catch (IOException error)

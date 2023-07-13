@@ -1808,11 +1808,7 @@ namespace Bloom.Book
 					// Open the file explorer on the book's folder to allow the user to delete (or move?) the unwanted file.
 					// The new process should use the current culture, so we don't need to worry about that.
 					// We don't wait for this to finish, so we don't use the CommandLineRunner methods.
-					Process.Start(new ProcessStartInfo {
-						FileName = FolderPath + Path.DirectorySeparatorChar,	// trailing separator char is important!
-						UseShellExecute = true,
-						Verb = "open"
-					});
+					ProcessExtra.SafeStartInFront(FolderPath);
 				}
 				else
 				{

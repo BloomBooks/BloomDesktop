@@ -1128,11 +1128,6 @@ namespace Bloom.Edit
 			ErrorReport.NotifyUserOfProblem(ex, msg);
 		}
 
-		private void FormOnHelpRequested(object sender, HelpEventArgs hlpevent)
-		{
-			System.Diagnostics.Process.Start("http://community.bloomlibrary.org/t/running-out-of-memory-loading-images/3956");
-		}
-
 		public void SaveChangedImage(int imgIndex, XmlElement imageElement, PalasoImage imageInfo, string exceptionMsg)
 		{
 			try

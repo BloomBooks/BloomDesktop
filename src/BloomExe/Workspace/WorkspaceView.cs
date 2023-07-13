@@ -629,7 +629,7 @@ namespace Bloom.Workspace
 				"The final item in the UI Language menu. When clicked, it opens Bloom's page in the Crowdin web-based translation system.");
 			var helpItem = uiMenuControl.DropDownItems.Add(message);
 			helpItem.Image = Resources.weblink;
-			helpItem.Click += (sender, args) => SIL.Program.Process.SafeStart(UrlLookup.LookupUrl(UrlType.LocalizingSystem, null));
+			helpItem.Click += (sender, args) => ProcessExtra.SafeStartInFront(UrlLookup.LookupUrl(UrlType.LocalizingSystem, null));
 		}
 
 		private static int compareLangItems(LanguageItem a, LanguageItem b)
@@ -1012,7 +1012,7 @@ namespace Bloom.Workspace
 
 		private void _webSiteMenuItem_Click(object sender, EventArgs e)
 		{
-			SIL.Program.Process.SafeStart(UrlLookup.LookupUrl(UrlType.LibrarySite, null));
+			ProcessExtra.SafeStartInFront(UrlLookup.LookupUrl(UrlType.LibrarySite, null));
 		}
 
 		private void _releaseNotesMenuItem_Click(object sender, EventArgs e)
@@ -1022,12 +1022,12 @@ namespace Bloom.Workspace
 
 		private void _requestAFeatureMenuItem_Click(object sender, EventArgs e)
 		{
-			SIL.Program.Process.SafeStart(UrlLookup.LookupUrl(UrlType.UserSuggestions, null));
+			ProcessExtra.SafeStartInFront(UrlLookup.LookupUrl(UrlType.UserSuggestions, null));
 		}
 
 		private void _askAQuestionMenuItem_Click(object sender, EventArgs e)
 		{
-			SIL.Program.Process.SafeStart(UrlLookup.LookupUrl(UrlType.Support, null));
+			ProcessExtra.SafeStartInFront(UrlLookup.LookupUrl(UrlType.Support, null));
 		}
 
 		// Currently not used, but I'm leaving the method in case we want to put it
@@ -1176,7 +1176,7 @@ namespace Bloom.Workspace
 		private static void OpenInfoFile(string fileName)
 		{
 			// These are PDF files, but stored under browser/infoPages.
-			Process.Start(BloomFileLocator.GetBrowserFile(false, "infoPages", fileName));
+			ProcessExtra.SafeStartInFront(BloomFileLocator.GetBrowserFile(false, "infoPages", fileName));
 		}
 
 		private void buildingReaderTemplatesMenuItem_Click(object sender, EventArgs e)
