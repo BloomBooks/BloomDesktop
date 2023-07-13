@@ -80,12 +80,6 @@ namespace Bloom.Spreadsheet
 			{
 				resultCallback(outputFilePath);
 			}
-			else if (!progress.HaveProblemsBeenReported)
-			{
-				// Export failed but we have no progress problem messages. Make sure there is at least some error message
-				// so we aren't just failing silently
-				progress.MessageWithParams("Spreadsheet.ExportFailed", "", "Export failed: {0}", ProgressKind.Error, "");
-			}
 			return progress.HaveProblemsBeenReported;
 		},"collectionTab", "Exporting Spreadsheet", showCancelButton: false);
 		}
@@ -736,12 +730,16 @@ namespace Bloom.Spreadsheet
 			{
 				if (e is IOException && (e.HResult & 0x0000FFFF) == 32) //ERROR_SHARING_VIOLATION
 				{
+					Console.WriteLine("Writing Spreadsheet failed. Do you have it open in another program?");
+					Console.WriteLine(e);
 					progress?.Message("Spreadsheet.SpreadsheetLocked", "",
 						"Bloom could not write to the spreadsheet because another program has it locked. Do you have it open in another program?",
 						ProgressKind.Error);
 				}
 				else
 				{
+					Console.WriteLine(String.Format("Bloom had problems writing files to that location ({0}). Check that you have permission to write there.", _outputFolder));
+					Console.WriteLine(e);
 					progress.MessageWithParams("Spreadsheet.WriteFailed", "",
 						"Bloom had problems writing files to that location ({0}). Check that you have permission to write there.",
 						ProgressKind.Error, _outputFolder);
@@ -749,9 +747,10 @@ namespace Bloom.Spreadsheet
 			}
 			catch (Exception e)
 			{
-				progress.MessageWithParams("Spreadsheet.ExportFailed", "{0} is a placeholder for the exception message",
-					"Export failed: {0}", ProgressKind.Error, e.Message);
-
+				var msg = LocalizationManager.GetString("Spreadsheet:ExportFailed", "Export failed: ");
+				Console.WriteLine(msg);
+				Console.WriteLine(e);
+				progress.Message("Spreadsheet:ExportFailed", "", msg + e.Message, ProgressKind.Error);
 			}
 
 			outputPath = null;
