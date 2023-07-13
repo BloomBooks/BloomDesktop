@@ -747,10 +747,10 @@ namespace Bloom.Spreadsheet
 			}
 			catch (Exception e)
 			{
-				var msg = LocalizationManager.GetString("Spreadsheet:ExportFailed", "Export failed: ");
-				Console.WriteLine(msg);
+				Console.WriteLine("Export failed: ");
 				Console.WriteLine(e);
-				progress.Message("Spreadsheet:ExportFailed", "", msg + e.Message, ProgressKind.Error);
+				progress.MessageWithParams("Spreadsheet.ExportFailed", "{0} is a placeholder for the exception message",
+					"Export failed: {0}", ProgressKind.Error, e.Message);
 			}
 
 			outputPath = null;
