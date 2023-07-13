@@ -80,7 +80,7 @@ namespace Bloom.MiscUI
 			this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
 			this._L10NSharpExtender.SetLocalizableToolTip(this, null);
 			this._L10NSharpExtender.SetLocalizationComment(this, null);
-			this._L10NSharpExtender.SetLocalizingId(this, "BloomIntegrity.WindowTitle");
+			this._L10NSharpExtender.SetLocalizingId(this, "Common.ProblemTitle");
 			this.MaximizeBox = false;
 			this.MinimizeBox = false;
 			this.Name = "BloomIntegrityDialog";
