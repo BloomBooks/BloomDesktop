@@ -1,6 +1,7 @@
 ﻿using Bloom.Api;
 using Bloom.Book;
 using Bloom.Publish;
+using Bloom.ToPalaso;
 using Bloom.Utils;
 using Newtonsoft.Json;
 using SIL.IO;
@@ -111,7 +112,7 @@ namespace Bloom.web.controllers
 
 			try
 			{
-				Process.Start(jsonData.path);
+				ProcessExtra.SafeStartInFront(jsonData.path);
 			}
 			catch (Exception e)
 			{

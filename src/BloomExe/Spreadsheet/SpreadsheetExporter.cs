@@ -75,7 +75,11 @@ namespace Bloom.Spreadsheet
 		{
 			var spreadsheet = ExportToFolder(dom, bookFolderPath, outputFolder, out string outputFilePath,
 				progress);
-			resultCallback(outputFilePath);
+			// ExportToFolder will return null if export fails, in which case we don't want to open/foreground the spreadsheet
+			if (spreadsheet != null)
+			{
+				resultCallback(outputFilePath);
+			}
 			return progress.HaveProblemsBeenReported;
 		},"collectionTab", "Exporting Spreadsheet", showCancelButton: false);
 		}
@@ -724,9 +728,29 @@ namespace Bloom.Spreadsheet
 			}
 			catch (Exception e) when (e is IOException || e is SecurityException || e is UnauthorizedAccessException)
 			{
-				progress.MessageWithParams("Spreadsheet.WriteFailed", "",
-					"Bloom had problems writing files to that location ({0}). Check that you have permission to write there.",
-					ProgressKind.Error, _outputFolder);
+				if (e is IOException && (e.HResult & 0x0000FFFF) == 32) //ERROR_SHARING_VIOLATION
+				{
+					Console.WriteLine("Writing Spreadsheet failed. Do you have it open in another program?");
+					Console.WriteLine(e);
+					progress?.Message("Spreadsheet.SpreadsheetLocked", "",
+						"Bloom could not write to the spreadsheet because another program has it locked. Do you have it open in another program?",
+						ProgressKind.Error);
+				}
+				else
+				{
+					Console.WriteLine(String.Format("Bloom had problems writing files to that location ({0}). Check that you have permission to write there.", _outputFolder));
+					Console.WriteLine(e);
+					progress.MessageWithParams("Spreadsheet.WriteFailed", "",
+						"Bloom had problems writing files to that location ({0}). Check that you have permission to write there.",
+						ProgressKind.Error, _outputFolder);
+				}
+			}
+			catch (Exception e)
+			{
+				Console.WriteLine("Export failed: ");
+				Console.WriteLine(e);
+				progress.MessageWithParams("Spreadsheet.ExportFailed", "{0} is a placeholder for the exception message",
+					"Export failed: {0}", ProgressKind.Error, e.Message);
 			}
 
 			outputPath = null;

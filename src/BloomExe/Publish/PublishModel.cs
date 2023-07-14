@@ -3,6 +3,7 @@ using Bloom.Book;
 using Bloom.Collection;
 using Bloom.MiscUI;
 using Bloom.Publish.PDF;
+using Bloom.ToPalaso;
 using Bloom.Utils;
 using BloomTemp;
 using DesktopAnalytics;
@@ -686,30 +687,11 @@ namespace Bloom.Publish
 
 		public void DebugCurrentPDFLayout()
 		{
-
-			//			var dom = BookSelection.CurrentSelection.GetDomForPrinting(BookletPortion, _currentBookCollectionSelection.CurrentSelection, _bookServer);
-			//
-			//			SizeAndOrientation.UpdatePageSizeAndOrientationClasses(dom, PageLayout);
-			//			PageLayout.UpdatePageSplitMode(dom);
-			//
-			//			XmlHtmlConverter.MakeXmlishTagsSafeForInterpretationAsHtml(dom);
-			//			var tempHtml = BloomTemp.TempFile.CreateHtm5FromXml(dom); //nb: we intentially don't ever delete this, to aid in debugging
-			//			//var tempHtml = TempFile.WithExtension(".htm");
-			//
-			//			var settings = new XmlWriterSettings {Indent = true, CheckCharacters = true};
-			//			using (var writer = XmlWriter.Create(tempHtml.Path, settings))
-			//			{
-			//				dom.WriteContentTo(writer);
-			//				writer.Close();
-			//			}
-
-			//			System.Diagnostics.Process.Start(tempHtml.Path);
-
 			var htmlFilePath = MakeFinalHtmlForPdfMaker().Key;
 			if (SIL.PlatformUtilities.Platform.IsWindows)
-				Process.Start("Firefox.exe", '"' + htmlFilePath + '"');
+				ProcessExtra.SafeStartInFront(htmlFilePath);
 			else
-				SIL.Program.Process.SafeStart("xdg-open", '"' + htmlFilePath + '"');
+				ProcessExtra.SafeStartInFront("xdg-open", '"' + htmlFilePath + '"');
 		}
 
 		public void UpdateModelUponActivation()
@@ -854,7 +836,7 @@ namespace Bloom.Publish
 			contentLanguages.Add("z");
 			var xmatterLangsToKeep = new HashSet<string>(contentLanguages);
 			xmatterLangsToKeep.UnionWith(additionalXmatterLangsToKeep);
-			
+
 			// Don't change the div#bloomDataDiv:  thus we have an outer loop that
 			// selects only xmatter and user content pages.
 			// While we could probably safely remove elements from div#bloomDataDiv,
@@ -922,8 +904,8 @@ namespace Bloom.Publish
 			if (stylesNode != null)
 			{
 				var cssTextOrig = stylesNode.InnerXml;   // InnerXml needed to preserve CDATA markup
-				// For 5.3, we wholesale keep all L2/L3 rules even though this might result in incorrect error messages about fonts. (BL-11357)
-				// In 5.4, we hope to clean up all this font determination stuff by using a real browser to determine what is used.
+														 // For 5.3, we wholesale keep all L2/L3 rules even though this might result in incorrect error messages about fonts. (BL-11357)
+														 // In 5.4, we hope to clean up all this font determination stuff by using a real browser to determine what is used.
 				var cssText = HtmlDom.RemoveUnwantedLanguageRulesFromCss(cssTextOrig, styleLanguages);
 				if (cssText != cssTextOrig)
 					stylesNode.InnerXml = cssText;
@@ -1006,7 +988,7 @@ namespace Bloom.Publish
 				}
 			}
 
-			Process.Start(folderForThisBook.FolderPath);
+			ProcessExtra.SafeStartInFront(folderForThisBook.FolderPath);
 		}
 
 		public static string RemoveUnwantedLanguageDataFromAllTitles(string allTitles, string[] langsWanted)

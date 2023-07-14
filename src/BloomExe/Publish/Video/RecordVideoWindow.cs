@@ -13,6 +13,7 @@ using System.Windows.Forms;
 using Bloom.Api;
 using Bloom.Book;
 using Bloom.MiscUI;
+using Bloom.ToPalaso;
 using Bloom.Utils;
 using Bloom.web;
 using L10NSharp;
@@ -1206,7 +1207,7 @@ namespace Bloom.Publish.Video
 		{
 			if (!GotFullRecording)
 				return;
-			Process.Start(_finalVideo.Path);
+			ProcessExtra.SafeStartInFront(_finalVideo.Path);
 		}
 
 		/// <summary>

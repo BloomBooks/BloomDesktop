@@ -1,10 +1,10 @@
-﻿using System;
+using System;
 using System.IO;
 using L10NSharp;
 using SIL.IO;
 using SIL.PlatformUtilities;
-using SIL.Reporting;
 using Bloom.Properties;
+using System.Windows;
 
 namespace Bloom.MiscUI
 {
@@ -36,7 +36,7 @@ namespace Bloom.MiscUI
 			}
 			catch (Exception exc)
 			{
-				// Creating a previously non-existent file under these conditions just gives a WinIOError, "could not find file".
+				// Creating a previously non-existent file under these conditions just gives a FileNotFoundException, "could not find file".
 				ReportDefenderProblem(exc, Path.GetDirectoryName(testPath));
 				return false;
 			}
@@ -76,7 +76,9 @@ namespace Bloom.MiscUI
 			var mainMsg = LocalizationManager.GetString("Errors.DefenderFolderProtection",
 				"This might be caused by Windows Defender \"Controlled Folder Access\" or some other virus protection.");
 			var msg = string.Format(heading, failingFolder) + Environment.NewLine + Environment.NewLine + mainMsg;
-			ErrorReport.NotifyUserOfProblem(exc, msg);
+			var caption = LocalizationManager.GetString("Common.ProblemTitle", "Bloom Problem");
+			MessageBox.Show(msg, caption, System.Windows.MessageBoxButton.OK, MessageBoxImage.Exclamation);
+			SIL.Program.Process.SafeStart("https://docs.bloomlibrary.org/windows-controlled-folder-access");
 		}
 
 		private static void Cleanup(string testPath)

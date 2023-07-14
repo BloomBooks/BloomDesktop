@@ -118,10 +118,12 @@
       <trans-unit id="BloomIntegrity.WindowTitle">
         <source xml:lang="en">Bloom Problem</source>
         <note>ID: BloomIntegrity.WindowTitle</note>
+        <note>Obsolete as of Bloom 5.5 (replaced by Common.ProblemTitle)</note>
       </trans-unit>
       <trans-unit id="BloomIntegrityDialog.ReportProblem">
         <source xml:lang="en">Report Problem</source>
         <note>ID: BloomIntegrityDialog.ReportProblem</note>
+        <note>Obsolete as of Bloom 5.5.</note>
       </trans-unit>
       <trans-unit id="BloomPackInstallDialog.BadCharsInFileName">
         <source xml:lang="en">Possibly this is an old Bloom Pack created before Bloom Packs could handle special characters in file names. You may be able to get the author to re-create it using a current version. If that's not possible a technical expert may be able to repair things.</source>
@@ -1062,6 +1064,11 @@
       <trans-unit id="Common.Preview">
         <source xml:lang="en">Preview</source>
         <note>ID: Common.Preview</note>
+      </trans-unit>
+      <trans-unit id="Common.ProblemTitle">
+        <source xml:lang="en">Bloom Problem</source>
+        <note>ID: Common.ProblemTitle</note>
+        <note>Used as dialog title when Bloom needs to inform users of a problem.</note>
       </trans-unit>
       <trans-unit id="Common.Progress">
         <source xml:lang="en">Progress</source>
@@ -3011,9 +3018,14 @@
         <note xml:lang="en">OLD TEXT (before 3.9, added dots): About Bloom</note>
       </trans-unit>
       <trans-unit id="HelpMenu.DocumentationMenuItem">
-        <source xml:lang="en">Browse Help...</source>
+        <source xml:lang="en">Help...</source>
         <note>ID: HelpMenu.DocumentationMenuItem</note>
-        <note>Prior to 5.0, this was "Documentation"</note>
+        <note>Prior to 5.4, this was "Browse Help..."</note>
+      </trans-unit>
+      <trans-unit id="HelpMenu.OnlineHelpMenuItem">
+        <source xml:lang="en">More Help (Web)</source>
+        <note>ID: HelpMenu.OnlineHelpMenuItem</note>
+        <note>This takes you to https://docs.bloomlibrary.org</note>
       </trans-unit>
       <trans-unit id="HelpMenu.Help Menu">
         <source xml:lang="en">Help</source>
@@ -3036,6 +3048,10 @@
       <trans-unit id="HelpMenu.ReleaseNotesMenuItem">
         <source xml:lang="en">Release Notes...</source>
         <note>ID: HelpMenu.ReleaseNotesMenuItem</note>
+      </trans-unit>
+      <trans-unit id="HelpMenu.ReleaseNotesWebMenuItem">
+        <source xml:lang="en">Release Notes (Web)</source>
+        <note>ID: HelpMenu.ReleaseNotesWebMenuItem</note>
       </trans-unit>
       <trans-unit id="HelpMenu.ReportAProblemToolStripMenuItem">
         <source xml:lang="en">Report a Problem...</source>

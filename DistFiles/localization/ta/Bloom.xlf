@@ -3456,7 +3456,7 @@
         <note>ID: HelpMenu.CreditsMenuItem</note>
       </trans-unit>
       <trans-unit id="HelpMenu.DocumentationMenuItem" approved="yes">
-        <source xml:lang="en">Browse Help...</source>
+        <source xml:lang="en">Help...</source>
         <target xml:lang="ta" state="final">ஆவணப்படுத்தல்</target>
         <note>ID: HelpMenu.DocumentationMenuItem</note>
       </trans-unit>
