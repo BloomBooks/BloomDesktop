@@ -5,19 +5,21 @@ interface qtipInterface extends JQuery {
     qtip(options: string): JQuery;
 }
 
+// If the current selection is an insertion point in editableDiv (which MUST be a div!), return the index of the selection,
+// as a character offset within the text of editableDiv. If the selection is not in editableDiv, return -1.
 export class EditableDivUtils {
-    public static getElementSelectionIndex(element: HTMLElement): number {
+    public static getElementSelectionIndex(editableDiv: HTMLElement): number {
         const page: HTMLIFrameElement | null = <HTMLIFrameElement | null>(
             parent.window.document.getElementById("page")
         );
-        if (!page || !page.contentWindow) return -1; // unit testing?
+        if (!page || !page.contentWindow) return -1; // unit testing? Anyway there is no selection, so not in editableDiv.
 
         const selection = page.contentWindow.getSelection();
         if (!selection || !selection.anchorNode) return -1;
         const active = $(selection.anchorNode)
             .closest("div")
             .get(0);
-        if (active != element) return -1; // huh??
+        if (active != editableDiv) return -1; // the selection is not in editableDiv at all
         if (!active || selection.rangeCount == 0) {
             return -1;
         }
@@ -286,5 +288,126 @@ export class EditableDivUtils {
         setTimeout(() => {
             (<qtipInterface>$("div[data-hasqtip]")).qtip("reposition");
         }, 100); // make sure the DOM has the inserted text before we try to reposition qtips
+    }
+
+    // Get the cleaned up data (getData()) from ckeditor, rather than just the raw html.
+    // Specifically, we want it to remove the zero-width space characters that ckeditor inserts.
+    // See BL-12391.
+    // Return the bookmarks for each editable div, so that we can restore the selection after
+    // modifying the divs.
+    // Changes to this logic may need to be reflected in audioRecording.ts' cleanUpCkEditorHtml.
+    public static doCkEditorCleanup(
+        editableDivs: HTMLDivElement[],
+        createBookMarks: boolean
+    ): object[] {
+        const bookmarksForEachEditable: object[] = [];
+        editableDivs.forEach((div, index) => {
+            const ckeditorOfThisBox = (<any>div).bloomCkEditor;
+            if (ckeditorOfThisBox) {
+                if (createBookMarks) {
+                    const ckeditorSelection = ckeditorOfThisBox.getSelection();
+                    if (ckeditorSelection) {
+                        try {
+                            bookmarksForEachEditable[
+                                index
+                            ] = ckeditorSelection.createBookmarks(true);
+                        } catch (e) {
+                            console.error("createBookmarks failed");
+                            console.error(e);
+                            bookmarksForEachEditable[index] = {};
+                        }
+                    }
+                }
+
+                const ckEditorData = ckeditorOfThisBox.getData();
+                if (ckEditorData !== div.innerHTML) {
+                    div.innerHTML = ckEditorData;
+
+                    EditableDivUtils.fixUpEmptyishParagraphs(div);
+                }
+            }
+        });
+
+        // console.log("doCkEditorCleanup final result: ");
+        // EditableDivUtils.logElementsInnerHtml(editableDivs);
+
+        return bookmarksForEachEditable;
+    }
+
+    // I don't know why cdEditor's getData() converts paragraphs with only a <br>
+    // in them to contain &nbsp; instead. But when it does, we get various issues
+    // with extra spaces (which can also cause other toolbox markup issues).
+    // Note, this method works to clean up paragraphs which have only a ckeditor bookmark in them, too.
+    public static fixUpEmptyishParagraphs(element: HTMLElement) {
+        element.querySelectorAll("p").forEach(p => {
+            const pChildNodes = Array.from(p.childNodes);
+            if (pChildNodes.length < 1 || pChildNodes.length > 2) {
+                return; // (continue)
+            }
+
+            const childTextNodes = pChildNodes.filter(
+                n => n.nodeName === "#text"
+            );
+
+            if (
+                childTextNodes.length !== 1 ||
+                childTextNodes[0].textContent !== "\u00A0"
+            ) {
+                return; // (continue)
+            }
+
+            const childSpanNodes = pChildNodes.filter(
+                n => n.nodeName === "SPAN"
+            );
+
+            if (
+                childSpanNodes.length === 0 ||
+                (childSpanNodes.length === 1 &&
+                    childSpanNodes[0]["id"].startsWith("cke_bm_"))
+            ) {
+                p.replaceChild(document.createElement("br"), childTextNodes[0]);
+            }
+        });
+    }
+
+    public static restoreSelectionFromCkEditorBookmarks(
+        editableDivs: HTMLDivElement[],
+        ckEditorBookmarks: object[]
+    ) {
+        if (ckEditorBookmarks.length) {
+            editableDivs.forEach((div, index) => {
+                const ckeditorOfThisBox = (<any>div).bloomCkEditor;
+                if (ckeditorOfThisBox) {
+                    try {
+                        ckeditorOfThisBox
+                            .getSelection()
+                            .selectBookmarks(ckEditorBookmarks[index]);
+                    } catch (e) {
+                        // I don't understand why this throws sometimes.
+                        // But we don't want to crash or lose the user's work.
+                        // Or even inform the user.
+                        //
+                        // I think when this happens, it is mostly (always?) because
+                        // the bookmarks aren't in the DOM. But we'll play it
+                        // safe and remove any which are there.
+                        // (That's what a successful call to selectBookmarks does.)
+                        div.querySelectorAll("span[id^='cke_bm_']").forEach(
+                            span => {
+                                span.remove();
+                            }
+                        );
+                    }
+                }
+            });
+        }
+    }
+
+    // This is just a helpful debugging tool.
+    public static logElementsInnerHtml(elements: HTMLElement[]) {
+        elements.forEach((div, index) => {
+            console.log(
+                `   [${index}]: ${div.innerHTML.replace(/\u200b/g, "ZWSP")}`
+            );
+        });
     }
 }

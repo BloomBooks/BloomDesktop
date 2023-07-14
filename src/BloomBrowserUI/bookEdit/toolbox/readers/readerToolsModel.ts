@@ -1030,7 +1030,7 @@ export class ReaderToolsModel {
     /**
      * Displays the correct markup for the current page.
      */
-    public doMarkup(): void {
+    private doMarkup(createCkEditorBookMarks: boolean = true): void {
         if (!this.readyToDoMarkup()) return;
         if (this.currentMarkupType === MarkupType.None) return;
 
@@ -1042,15 +1042,29 @@ export class ReaderToolsModel {
 
         const editableElements = this.getElementsToCheck();
 
-        // qtips can be orphaned if the element they belong to is deleted
-        // (and so the mouse can't move off their owning element, and they never go away).
-        // BL-2758 But if we're in a source collection we may have valid source bubbles,
-        // don't delete them!
-        if (editableElements.length > 0)
+        // console.log('start of doMarkup:');
+        // EditableDivUtils.logElementsInnerHtml(editableElements.toArray());
+
+        let bookmarksForEachEditable: object[] = [];
+        if (editableElements.length > 0) {
+            // qtips can be orphaned if the element they belong to is deleted
+            // (and so the mouse can't move off their owning element, and they never go away).
+            // BL-2758 But if we're in a source collection we may have valid source bubbles,
+            // don't delete them!
             $(editableElements[0])
                 .closest("body")
                 .children('.qtip:not(".uibloomSourceTextsBubble")')
                 .remove();
+
+            if (
+                this.currentMarkupType === MarkupType.Decodable ||
+                this.currentMarkupType === MarkupType.Leveled
+            )
+                bookmarksForEachEditable = EditableDivUtils.doCkEditorCleanup(
+                    editableElements.toArray(),
+                    createCkEditorBookMarks
+                );
+        }
 
         switch (this.currentMarkupType) {
             case MarkupType.Leveled:
@@ -1119,6 +1133,15 @@ export class ReaderToolsModel {
 
             default:
         }
+
+        if (bookmarksForEachEditable.length)
+            EditableDivUtils.restoreSelectionFromCkEditorBookmarks(
+                editableElements.toArray(),
+                bookmarksForEachEditable
+            );
+
+        // console.log('start of doMarkup:');
+        // EditableDivUtils.logElementsInnerHtml(editableElements.toArray());
 
         if (
             this.activeElement &&

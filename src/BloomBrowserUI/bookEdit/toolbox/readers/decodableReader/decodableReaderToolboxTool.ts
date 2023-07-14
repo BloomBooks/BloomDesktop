@@ -58,8 +58,20 @@ export class DecodableReaderToolboxTool implements ITool {
         // invoke function when a bloom-editable element loses focus.
         $(container)
             .find(".bloom-editable")
-            .focusout(() => {
-                getTheOneReaderToolsModel().doMarkup();
+            .focusout(event => {
+                let createCkEditorBookMarks = true;
+                // We don't want to create bookmarks if we are switching from one text box on the page to another.
+                // Otherwise, we prevent switching text boxes altogether because the restoration of the bookmark
+                // will put focus back into the text box we are trying to leave.
+                // relatedTarget is what we are switching to, if anything.
+                if (
+                    event.relatedTarget &&
+                    event.relatedTarget !== event.target &&
+                    event.relatedTarget.matches(".bloom-editable")
+                )
+                    createCkEditorBookMarks = false;
+
+                getTheOneReaderToolsModel().doMarkup(createCkEditorBookMarks);
             });
 
         $(container)
@@ -168,7 +180,10 @@ export class DecodableReaderToolboxTool implements ITool {
     }
 
     public updateMarkup() {
-        getTheOneReaderToolsModel().doMarkup();
+        // Don't let this lower-level code create ckeditor bookmarks in this case.
+        // We've already created them in toolbox.ts which calls this.
+        const createCkEditorBookMarks = false;
+        getTheOneReaderToolsModel().doMarkup(createCkEditorBookMarks);
     }
     public async updateMarkupAsync() {
         // If you implement this, you may need to do something like cleanUpCkEditorHtml() in audioRecording.ts.

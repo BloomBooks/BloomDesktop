@@ -8,6 +8,7 @@ import { get, postString, wrapAxios } from "../../utils/bloomApi";
 import theOneLocalizationManager from "../../lib/localizationManager/localizationManager";
 import { hookupLinkHandler } from "../../utils/linkHandler";
 import { ckeditableSelector } from "../../utils/shared";
+import { EditableDivUtils } from "../js/editableDivUtils";
 
 export const isLongPressEvaluating: string = "isLongPressEvaluating";
 
@@ -33,6 +34,7 @@ export interface ITool {
     configureElements(container: HTMLElement);
     showTool(); // called when a new tool is chosen, but not necessarily when a new page is displayed.
     hideTool(); // called when changing tools or hiding the toolbox.
+    // Note, new implementations of updateMarkup may need to call EditableDivUtils.doCkEditorCleanup() like readerToolsModel.doMarkup() does.
     updateMarkup(); // called on most keypresses (but notably, not on arrow navigation, also not Ctrl+C). It is called on typing letters (obviously), Ctrl+X, Ctrl+V, Ctrl+Z, Ctrl+Y etc... or even just pressing and releasing Ctrl or Shift.
     // like updateMarkup, but expected to be async. Implement instead of updateMarkup if you need to use async functions.
     // Because it is async, it is not guaranteed that all the async processing will complete before another keystroke is received.
@@ -990,9 +992,12 @@ function handleKeyboardInput(): void {
                             actualUpdateFunc();
                         }
                     } else {
-                        // Replace the editable div contents with ckeditor's getData() result. See BL-12391.
-                        editableDiv.innerHTML = ckeditorOfThisBox.getData();
-
+                        // Note, the updateMarkup routine must be sure to use the result of
+                        // ckEditor's getData() method, not the raw HTML of the editableDivs.
+                        // See EditableDivUtils.doCkEditorCleanup() and .restoreSelectionFromCkEditorBookmarks().
+                        // Unfortunately, we can't easily do that in a top-level (general for all tools) way because of
+                        // our current architecture. Namely, the reader tools have a lower-level
+                        // doMarkup() which gets called more than just from here.
                         currentTool.updateMarkup();
                     }
                 }
