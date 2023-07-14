@@ -96,7 +96,7 @@ namespace Bloom.MiscUI
 				using (var dlg = new ShowReleaseNotesDialog(Resources.BloomIcon, tempFile.Path))
 				{
 					dlg.ApplyMarkdown = false;
-					dlg.Text = LocalizationManager.GetString("BloomIntegrity.WindowTitle", "Bloom Problem");
+					dlg.Text = LocalizationManager.GetString("Common.ProblemTitle", "Bloom Problem");
 					dlg.Height = 950;
 					dlg.Width = 750;
 					dlg.ShowDialog();
