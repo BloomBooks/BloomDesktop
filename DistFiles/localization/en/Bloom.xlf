@@ -118,6 +118,7 @@
       <trans-unit id="BloomIntegrity.WindowTitle">
         <source xml:lang="en">Bloom Problem</source>
         <note>ID: BloomIntegrity.WindowTitle</note>
+        <note>Obsolete as of Bloom 5.4 (replaced by Common.ProblemTitle)</note>
       </trans-unit>
       <trans-unit id="BloomIntegrityDialog.ReportProblem">
         <source xml:lang="en">Report Problem</source>
@@ -1085,6 +1086,11 @@
       <trans-unit id="Common.Preview">
         <source xml:lang="en">Preview</source>
         <note>ID: Common.Preview</note>
+      </trans-unit>
+      <trans-unit id="Common.ProblemTitle">
+        <source xml:lang="en">Bloom Problem</source>
+        <note>ID: Common.ProblemTitle</note>
+        <note>Used as dialog title when Bloom needs to inform users of a problem.</note>
       </trans-unit>
       <trans-unit id="Common.Progress">
         <source xml:lang="en">Progress</source>
