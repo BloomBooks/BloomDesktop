@@ -65,7 +65,10 @@ export class LeveledReaderToolboxTool implements ITool {
     }
 
     public updateMarkup() {
-        getTheOneReaderToolsModel().doMarkup();
+        // Don't let this lower-level code create ckeditor bookmarks in this case.
+        // We've already created them in toolbox.ts which calls this.
+        const createCkEditorBookMarks = false;
+        getTheOneReaderToolsModel().doMarkup(createCkEditorBookMarks);
     }
     public async updateMarkupAsync() {
         // If you implement this, you may need to do something like cleanUpCkEditorHtml() in audioRecording.ts.
