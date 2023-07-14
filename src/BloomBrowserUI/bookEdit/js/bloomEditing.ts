@@ -49,6 +49,7 @@ import {
     getHexColorsForPalette
 } from "../../react_components/color-picking/bloomPalette";
 import { ckeditableSelector } from "../../utils/shared";
+import { EditableDivUtils } from "./editableDivUtils";
 
 // Allows toolbox code to make an element properly in the context of this iframe.
 export function makeElement(
@@ -1291,15 +1292,16 @@ export const getBodyContentForSavePage = () => {
         document.activeElement.blur();
     }
 
-    // Get the cleaned up data (getData()) from ckeditor, rather than just the raw html.
-    // Specifically, we want it to remove the zero-width space characters that it inserts.
-    // It inserts them to aid in preserving the cursor position, but we're saving the page;
-    // we don't need the cursor position preserved.
-    // See BL-12391.
-    for (const property in CKEDITOR.instances) {
-        const instance = CKEDITOR.instances[property];
-        instance.element.setHtml(instance.getData());
-    }
+    const editableDivs = <HTMLDivElement[]>(
+        Array.from(document.querySelectorAll("div.bloom-editable"))
+    );
+
+    // We don't think we need to create ckEditor bookmarks and restore the selection
+    // in this case because we are just saving the page.
+    // In fact, it was causing problems when we were using them at one point.
+    // (unfortunately, I don't remember what those problems were...).
+    const createCkEditorBookMarks = false;
+    EditableDivUtils.doCkEditorCleanup(editableDivs, createCkEditorBookMarks);
 
     const result = document.body.innerHTML;
     if (bubbleEditingOn) {
