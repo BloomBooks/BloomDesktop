@@ -1484,6 +1484,8 @@ export function attachToCkEditor(element) {
 
     if ($(element).css("cursor") === "not-allowed") return;
 
+    // see bl-12448. Here we add a rule blocking visibility of the toolbar
+    $("body").addClass("hideAllCKEditors");
     const ckedit = CKEDITOR.inline(element);
 
     // Record the div of the edit box for use later in positioning the format bar.
@@ -1527,10 +1529,20 @@ export function attachToCkEditor(element) {
             colorPanels.forEach(
                 p => ((p as HTMLElement).style.display = "none")
             );
+
+            // see bl-12448. Here we remove the rule blocking visibility of the toolbar so that
+            // the `display` rule (managed by ckeditor) can take effect.
+            $("body").removeClass("hideAllCKEditors");
+        } else {
+            // see bl-12448. Here we add a rule blocking visibility of the toolbar
+            $("body").addClass("hideAllCKEditors");
         }
     });
 
     ckedit.on("focus", evt => {
+        // see bl-12448. This one prevents a flash when switching from a field that has selected
+        // text (and thus a visible toolbar) to another field.
+        $("body").addClass("hideAllCKEditors");
         const editor = evt["editor"];
         updateCkEditorButtonStatus(editor);
     });

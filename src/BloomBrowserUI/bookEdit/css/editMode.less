@@ -860,6 +860,7 @@ span.word-not-found {
     background-color: @DecodableReaderViolationColor;
     position: unset; // BL-11633, works around Chromium bug
 }
+
 div.bloom-editable {
     // Chrome 105 and later (ie, WebView2) has the :has selector.
     // These rules may not need the :has(span) selector, but I
@@ -1101,4 +1102,10 @@ body {
     [data-languageTipContent]:after {
         right: calc(100% + 2.8px) !important;
     }
+}
+
+// hideAllCKEditors is toggled by bloomEditing.ts to prevent bl-12448
+body.hideAllCKEditors .cke_chrome {
+    // "display" is manipulated on the `style` element by ckeditor, so we can't use that
+    visibility: hidden;
 }
