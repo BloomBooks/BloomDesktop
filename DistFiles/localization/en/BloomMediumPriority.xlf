@@ -270,6 +270,21 @@
         <note>ID: PublishTab.RecordVideo.ApologiesForNoLinux</note>
         <note>"Windows" and "Linux" are operating system names which may not translate.</note>
       </trans-unit>
+      <trans-unit id="PublishTab.Upload.WhyShareOnBlorg" sil:dynamic="true">
+        <source xml:lang="en">Why you should publish on the Web</source>
+        <note>ID: PublishTab.Upload.WhyShareOnBlorg</note>
+        <note>This phrase has a link to an explanation of the benefits of sharing books on BloomLibrary.org.</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.Help" sil:dynamic="true">
+        <source xml:lang="en">Documentation about this screen</source>
+        <note>ID: PublishTab.Upload.Help</note>
+        <note>This phrase has a link to bring up the help viewer on the topic "Publish to Web".</note>
+      </trans-unit>
+      <trans-unit id="PublishTab.Upload.AboutBlorg" sil:dynamic="true">
+        <source xml:lang="en">About BloomLibrary.org</source>
+        <note>ID: PublishTab.Upload.AboutBlorg</note>
+        <note>This phrase has a link to the "About Bloom" page on that website.</note>
+      </trans-unit>
     </body>
   </file>
 </xliff>
