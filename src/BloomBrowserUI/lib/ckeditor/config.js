@@ -100,7 +100,12 @@ CKEDITOR.editorConfig = function(config) {
     // Therefore for now we're limiting pasting to things that a translator could also do.
     // The {font-weight} annotation says that a <b> element's font-weight style may be pasted.
     // Code in our paste handler deals with this so it doesn't end up in our documents.
-    config.pasteFilter = "p br em i strong sup u; b{font-weight}; a[!href];";
+    // span{font-variant} allows pasting of text that has been formatted as small caps.
+    //
+    // Shown by experiment: when listing something like span{font-variant}, all other
+    //    attributes and style rules will be removed.
+    config.pasteFilter =
+        "p br em i strong sup u; b{font-weight}; a[!href]; span{font-variant};";
 
     //BL-3009: don't remove empty spans, since we use <span class="bloom-linebreak"></span> when you press shift-enter.
     //http://stackoverflow.com/a/23983357/723299
