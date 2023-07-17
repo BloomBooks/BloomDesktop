@@ -51,6 +51,7 @@ import Recordable from "./recordable";
 import { getMd5 } from "./md5Util";
 import { setupImageDescriptions } from "../imageDescription/imageDescription";
 import { TalkingBookAdvancedSection } from "./talkingBookAdvancedSection";
+import { EditableDivUtils } from "../../js/editableDivUtils";
 
 enum Status {
     Disabled, // Can't use button now (e.g., Play when there is no recording)
@@ -3318,6 +3319,8 @@ export default class AudioRecording {
         const ckeditorOfThisBox = (<any>editableDiv).bloomCkEditor;
         if (!ckeditorOfThisBox) return;
 
+        // Note, there is similar logic in EditableDivUtils.doCkEditorCleanup and .restoreSelectionFromCkEditorBookmarks.
+        // But, unfortunately, the complication here of data-element-we-are-processing means we can't easily share the code.
         if (editableDiv.innerHTML !== ckeditorOfThisBox.getData()) {
             // Flag the element we are processing so we can find it in the version we make from ckeditor's getData().
             element.setAttribute("data-element-we-are-processing", "this-one");
@@ -3326,6 +3329,7 @@ export default class AudioRecording {
             // getData() is for the whole text box, but we are processing one of the child elements.
             const newElement = document.createElement("div");
             newElement.innerHTML = ckeditorOfThisBox.getData(); // have to call getData() again so it contains data-element-we-are-processing
+            EditableDivUtils.fixUpEmptyishParagraphs(newElement);
             const newChild = newElement.querySelector(
                 "[data-element-we-are-processing]"
             );
