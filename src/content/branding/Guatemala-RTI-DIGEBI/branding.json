@@ -3,8 +3,8 @@
         {
             "data-book": "copyright",
             "lang": "*",
-            "content": "Ministerio de Educación de Guatemala",
-            "condition": "ifEmpty"
+            "content": "Copyright © 2023 Ministerio de Educación de Guatemala",
+            "condition": "always"
         },
         {
             "data-book": "credits-page-branding-top-html",

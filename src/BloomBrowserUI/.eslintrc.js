@@ -3,7 +3,7 @@ module.exports = {
         browser: true,
         es2021: true,
         jasmine: true,
-        jQuery: true
+        jquery: true
     },
     extends: [
         "eslint:recommended",
