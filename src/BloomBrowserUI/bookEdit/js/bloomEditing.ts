@@ -238,7 +238,7 @@ function AddEditKeyHandlers(container) {
     // for testing only: show invisibles
     $(container)
         .find("div.bloom-editable")
-        .on("keydown", null, "CTRL+SPACE", e => {
+        .on("keydown", null, "CTRL+ALT+SPACE", e => {
             e.preventDefault();
             // get the parent that has the class bloom-editable
             const editable = $(e.target).closest(".bloom-editable");
@@ -255,7 +255,7 @@ function AddEditKeyHandlers(container) {
                 return html;
             });
         })
-        .on("keyup", null, "CTRL+SPACE", e => {
+        .on("keyup", null, "CTRL+ALT+SPACE", e => {
             // restore all the original characters
             e.preventDefault();
             const editable = $(e.target).closest(".bloom-editable");
