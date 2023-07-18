@@ -49,6 +49,7 @@ import {
     getHexColorsForPalette
 } from "../../react_components/color-picking/bloomPalette";
 import { ckeditableSelector } from "../../utils/shared";
+import { EditableDivUtils } from "./editableDivUtils";
 
 // Allows toolbox code to make an element properly in the context of this iframe.
 export function makeElement(
@@ -1291,15 +1292,16 @@ export const getBodyContentForSavePage = () => {
         document.activeElement.blur();
     }
 
-    // Get the cleaned up data (getData()) from ckeditor, rather than just the raw html.
-    // Specifically, we want it to remove the zero-width space characters that it inserts.
-    // It inserts them to aid in preserving the cursor position, but we're saving the page;
-    // we don't need the cursor position preserved.
-    // See BL-12391.
-    for (const property in CKEDITOR.instances) {
-        const instance = CKEDITOR.instances[property];
-        instance.element.setHtml(instance.getData());
-    }
+    const editableDivs = <HTMLDivElement[]>(
+        Array.from(document.querySelectorAll("div.bloom-editable"))
+    );
+
+    // We don't think we need to create ckEditor bookmarks and restore the selection
+    // in this case because we are just saving the page.
+    // In fact, it was causing problems when we were using them at one point.
+    // (unfortunately, I don't remember what those problems were...).
+    const createCkEditorBookMarks = false;
+    EditableDivUtils.doCkEditorCleanup(editableDivs, createCkEditorBookMarks);
 
     const result = document.body.innerHTML;
     if (bubbleEditingOn) {
@@ -1482,6 +1484,8 @@ export function attachToCkEditor(element) {
 
     if ($(element).css("cursor") === "not-allowed") return;
 
+    // see bl-12448. Here we add a rule blocking visibility of the toolbar
+    $("body").addClass("hideAllCKEditors");
     const ckedit = CKEDITOR.inline(element);
 
     // Record the div of the edit box for use later in positioning the format bar.
@@ -1525,10 +1529,20 @@ export function attachToCkEditor(element) {
             colorPanels.forEach(
                 p => ((p as HTMLElement).style.display = "none")
             );
+
+            // see bl-12448. Here we remove the rule blocking visibility of the toolbar so that
+            // the `display` rule (managed by ckeditor) can take effect.
+            $("body").removeClass("hideAllCKEditors");
+        } else {
+            // see bl-12448. Here we add a rule blocking visibility of the toolbar
+            $("body").addClass("hideAllCKEditors");
         }
     });
 
     ckedit.on("focus", evt => {
+        // see bl-12448. This one prevents a flash when switching from a field that has selected
+        // text (and thus a visible toolbar) to another field.
+        $("body").addClass("hideAllCKEditors");
         const editor = evt["editor"];
         updateCkEditorButtonStatus(editor);
     });

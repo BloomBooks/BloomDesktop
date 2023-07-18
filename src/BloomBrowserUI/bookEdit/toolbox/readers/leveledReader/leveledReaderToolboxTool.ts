@@ -31,7 +31,10 @@ export class LeveledReaderToolboxTool implements ITool {
     }
 
     public configureElements(container: HTMLElement) {
-        // Implements ITool interface, but no work needs to be done.
+        // Leveled reader makes use of the setup in this.setupReaderKeyAndFocusHandlers(container).
+        // This would be the place to call it, but it is called by decodableReaderToolboxTool.ts' configureElements().
+        // And configureElements gets called for every tool, whether or not that tool is open,
+        // so it always get initialized by decodableReaderToolboxTool.ts, and we don't want to call it twice.
     }
     public isAlwaysEnabled(): boolean {
         return false;
@@ -65,7 +68,10 @@ export class LeveledReaderToolboxTool implements ITool {
     }
 
     public updateMarkup() {
-        getTheOneReaderToolsModel().doMarkup();
+        // Don't let this lower-level code create ckeditor bookmarks in this case.
+        // We've already created them in toolbox.ts which calls this.
+        const createCkEditorBookMarks = false;
+        getTheOneReaderToolsModel().doMarkup(createCkEditorBookMarks);
     }
     public async updateMarkupAsync() {
         // If you implement this, you may need to do something like cleanUpCkEditorHtml() in audioRecording.ts.

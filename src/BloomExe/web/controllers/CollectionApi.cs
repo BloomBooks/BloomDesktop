@@ -79,18 +79,34 @@ namespace Bloom.web.controllers
 						// This first method does minimal processing to come up with the right collection and BookInfo object
 						// without actually loading all the files. We need the title for the Performance Measurement and later
 						// we'll use the BookInfo object to get the fully updated book.
-						var newBookInfo = GetBookInfoFromPost(request);
-						var titleString = newBookInfo.QuickTitleUserDisplay;
-						using (PerformanceMeasurement.Global?.Measure("select book", titleString))
+						BookInfo newBookInfo = null;
+						try
 						{
-							// We could just put the PerformanceMeasurement in the CollectionModel.SelectBook() method,
-							// but this GetUpdatedBookObjectFromBookInfo() actually does a non-trivial amount of work,
-							// because it asks the CollectionModel to update the book files (including BringBookUpToDate).
-							var book = GetUpdatedBookObjectFromBookInfo(newBookInfo);
-							if (book.FolderPath != _bookSelection?.CurrentSelection?.FolderPath)
+							newBookInfo = GetBookInfoFromPost(request);
+							var titleString = newBookInfo.QuickTitleUserDisplay;
+							using (PerformanceMeasurement.Global?.Measure("select book", titleString))
 							{
-								_collectionModel.SelectBook(book);
+								// We could just put the PerformanceMeasurement in the CollectionModel.SelectBook() method,
+								// but this GetUpdatedBookObjectFromBookInfo() actually does a non-trivial amount of work,
+								// because it asks the CollectionModel to update the book files (including BringBookUpToDate).
+								var book = GetUpdatedBookObjectFromBookInfo(newBookInfo);
+								if (book.FolderPath != _bookSelection?.CurrentSelection?.FolderPath)
+								{
+									_collectionModel.SelectBook(book);
+								}
 							}
+						}
+						catch (Exception e)
+						{
+							if (newBookInfo?.FolderPath != null)
+							{
+								var ex = new Exception("Error selecting book: " + newBookInfo.FolderPath, e);
+								// For some reason, BookInfo can't be serialized, so we'll add the pieces to the exception.
+								ex.Data.Add("ErrorBookFolder", newBookInfo.FolderPath);
+								ex.Data.Add("ErrorBookName", newBookInfo.QuickTitleUserDisplay);
+								throw ex;
+							}
+							throw e;
 						}
 
 						request.PostSucceeded();

@@ -44,15 +44,16 @@ namespace Bloom.web.controllers
 			#region Readonly Properties
 			// These fields are readonly to provide assurance that they haven't been changed after the ReportInfo was constructed.
 			// (This makes proper threading/locking/synchronization easier to reason about)
-			public string HeadingHtml { get; }	// What shows at the top of the dialog to indicate the nature of the problem.
+			public readonly string HeadingHtml; // What shows at the top of the dialog to indicate the nature of the problem.
 
-			public string DetailedMessage { get; }	// usually from Bloom itself
-			public Exception Exception { get; }
-			public Bloom.Book.Book Book { get; }
-			public string BookName { get; }
-			public string UserEmail { get; }
-			public string UserFirstName { get; }
-			public string UserSurname { get; }
+			public readonly string DetailedMessage; // usually from Bloom itself
+			public readonly Exception Exception;
+			public readonly Bloom.Book.Book Book;
+			public readonly string BookName;
+			public readonly string UserEmail;
+			public readonly string UserFirstName;
+			public readonly string UserSurname;
+			public readonly string ErrorBookFolder;
 			#endregion
 
 			// We make a special allowance for ScreenshotTempFile since it uses a more complicated SafeInvoke to be assigned.
@@ -72,8 +73,13 @@ namespace Bloom.web.controllers
 
 				this.DetailedMessage = detailMessage;
 				this.Exception = exception;
+				if (exception?.Data != null && exception.Data.Contains("ErrorBookFolder"))
+					this.ErrorBookFolder = exception.Data["ErrorBookFolder"] as string;
 				this.Book = book;
-				this.BookName = bookName;
+				if (this.ErrorBookFolder != null && exception.Data.Contains("ErrorBookName"))
+					this.BookName = exception.Data["ErrorBookName"] as string;
+				else
+					this.BookName = bookName;
 				this.UserEmail = email;
 				this.UserFirstName = firstName;
 				this.UserSurname = surname;
@@ -98,7 +104,8 @@ namespace Bloom.web.controllers
 		/// </summary>
 		internal const string ScreenshotName = "ProblemReportScreenshot.png";
 
-		private string CollectionFolder => Path.GetDirectoryName(_bookSelection.CurrentSelection.StoragePageFolder);
+		private string CollectionFolder => Path.GetDirectoryName(
+			_bookSelection?.CurrentSelection?.StoragePageFolder ?? _reportInfo?.ErrorBookFolder);
 
 		public ProblemReportApi(BookSelection bookSelection)
 		{
@@ -286,7 +293,7 @@ namespace Bloom.web.controllers
 
 				if (includeBook)
 				{
-					_reportZipFile.AddDirectory(_bookSelection.CurrentSelection.StoragePageFolder);
+					_reportZipFile.AddDirectory(_reportInfo.ErrorBookFolder ?? _bookSelection?.CurrentSelection?.StoragePageFolder);
 					if (WantReaderInfo(true))
 					{
 						AddReaderInfo();
@@ -321,6 +328,8 @@ namespace Bloom.web.controllers
 
 		private void AddReaderInfo()
 		{
+			if (CollectionFolder == null)
+				return;
 			var filePaths = GetReaderFilePaths(CollectionFolder);
 			// If we have any files in the "Allowed Words" or "Sample Texts" folders, store those
 			// directories preserving the directory structure rather than individual files at the
@@ -347,6 +356,8 @@ namespace Bloom.web.controllers
 
 		private void AddCollectionSettings()
 		{
+			if (CollectionFolder == null)
+				return;
 			var filePaths = GetCollectionFilePaths(CollectionFolder);
 			foreach (var filePath in filePaths)
 			{
@@ -993,6 +1004,20 @@ namespace Bloom.web.controllers
 			var book = _reportInfo.Book;
 			var projectName = book?.CollectionSettings.CollectionName;
 			bldr.AppendLine("#### Additional User Environment Information");
+			if (_reportInfo.ErrorBookFolder != null)
+			{
+				bldr.AppendLine("Folder of book that could not be selected: " + _reportInfo.ErrorBookFolder);
+				bldr.AppendLine("Title of book that could not be selected: " + _reportInfo.BookName);
+				if (book == null)
+				{
+					AppendTimeZone(bldr);	// only setting that doesn't depend on book
+				}
+				else
+				{
+					bldr.AppendLine("**** Book information below is from the previously selected book, not the one that could not be selected. ****");
+					bldr.AppendLine("**** Collection information should be valid. ****");
+				}
+			}
 			if (book == null)
 			{
 				bldr.AppendLine("No Book was selected.");
@@ -1028,6 +1053,11 @@ namespace Bloom.web.controllers
 			bldr.AppendLine();
 			bldr.AppendLine("Enterprise status: " + enterpriseStatus);
 			bldr.AppendLine("Branding: " + (string.IsNullOrEmpty(branding) ? "None found" : branding));
+			AppendTimeZone(bldr);
+		}
+
+		private static void AppendTimeZone(StringBuilder bldr)
+		{
 			var tzName = TimeZone.CurrentTimeZone.IsDaylightSavingTime(DateTime.Now) ? TimeZone.CurrentTimeZone.DaylightName : TimeZone.CurrentTimeZone.StandardName;
 			var tzOffset = TimeZone.CurrentTimeZone.GetUtcOffset(DateTime.Now);
 			var tzFormatString = (tzOffset < TimeSpan.Zero ? "\\-" : "") + "hh\\:mm";
