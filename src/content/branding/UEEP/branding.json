@@ -15,13 +15,13 @@
         {
             "data-book": "outside-back-cover-USAID",
             "lang": "*",
-            "content": "<img src='Kyrgyzstan2020-English-USAID-logo.png'/><div lang='uz' class='USAID'>Ushbu kitob Amerika Qo'shma Shtatlari Xalqaro Taraqqiyot Agentligi (USAID) orqali Amerika xalqining ko'magida ishlab chiqilgan. Kitobdagi fikrlar va mulohazalar USAID yoki AQSH hukumatining qarashlarini aks ettirmaydi.</div>",
+            "content": "<img src='USAID_Horiz_Uzbek.png'/><div lang='uz' class='USAID'>Ushbu kitob Amerika Qo'shma Shtatlari Xalqaro Taraqqiyot Agentligi (USAID) orqali Amerika xalqining ko'magida ishlab chiqilgan. Kitobdagi fikrlar va mulohazalar USAID yoki AQSH hukumatining qarashlarini aks ettirmaydi.</div>",
             "condition": "always"
         },
         {
             "data-book": "outside-back-cover-ministry",
             "lang": "*",
-            "content": "<img src='UzbekistanMinistryOfPreschoolAndSchoolEducation.svg'/>",
+            "content": "<img src='Uzbekistan-MPSE-Logo.png'/>",
             "condition": "always"
         },
         {
