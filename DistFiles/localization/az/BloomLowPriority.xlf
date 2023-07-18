@@ -10,15 +10,14 @@
       <trans-unit id="Errors.CorruptImageFile" translate="no">
         <!-- added in 5.5 -->
         <source xml:lang="en">The image file {0} is corrupt and needs to be replaced. ({1})</source>
-        <note>ID: Errors.CorruptImageFile</note>
-        <note>The placeholder {0} represents the name of the corrupt file. The placeholder {0} represents a message describing the problem with the file.</note>
         <target xml:lang="az" state="needs-translation">The image file {0} is corrupt and needs to be replaced. ({1})</target>
+        <note>ID: Errors.CorruptImageFile</note>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.NoBookshelvesFromServer" sil:dynamic="true" translate="no">
         <!-- New in 5.5 -->
         <source xml:lang="en">Bloom could not reach the server to get the list of bookshelves.</source>
-        <note>ID: CollectionSettingsDialog.BookMakingTab.NoBookshelvesFromServer</note>
         <target xml:lang="az" state="needs-translation">Bloom could not reach the server to get the list of bookshelves.</target>
+        <note>ID: CollectionSettingsDialog.BookMakingTab.NoBookshelvesFromServer</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.ESpeakPreview.ConversionFileUsed">
         <source xml:lang="en">Conversion file used:</source>
@@ -63,8 +62,8 @@
       <trans-unit id="PublishTab.Upload.BookshelfError" translate="no">
         <!-- New in 5.5-->
         <source xml:lang="en">The collection's bookshelf was not on the list of bookshelves for this Enterprise subscription.</source>
-        <note>ID: PublishTab.Upload.BookshelfError</note>
         <target xml:lang="az" state="needs-translation">The collection's bookshelf was not on the list of bookshelves for this Enterprise subscription.</target>
+        <note>ID: PublishTab.Upload.BookshelfError</note>
       </trans-unit>
       <trans-unit id="Settings.Enterprise.Community">
         <source xml:lang="en">Funded by the local community only</source>
