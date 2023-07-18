@@ -5,6 +5,7 @@
         background-color: @bloom-darkestBackground;
     }
 }
+
 div.bloom-page.coverColor {
     background-color: @PreviewCoverColor;
 }
@@ -22,50 +23,54 @@ img[src=""] {
 input {
     border: 1px solid transparent;
 }
+
 textarea {
     /*we have javascript function which notices this border and makes it read-only
 (which isn't a style, so we can't set it ourselves*/
     border: 1px solid transparent;
 }
+
 div.bloom-page {
     border-bottom: 15px solid @bloom-darkestBackground !important;
     /*This invisible border is needed to make wkhtml 0.10.0 lay out the pages correctly*/
     background-color: white;
 }
+
 @media print {
     div.bloom-page {
-        /*This invisible border is needed to make wkhtml 0.10.0 lay out the pages correctly
-This invisible border is needed to make wkhtml 0.10.0 lay out the pages correctly
-This invisible border is needed to make wkhtml 0.10.0 lay out the pages correctly*/
+        /*This invisible border is needed to make wkhtml 0.10.0 lay out the pages correctly*/
         border: 0 none @WarningColor !important;
-        /*This invisible border is needed to make wkhtml 0.10.0 lay out the pages correctly
-This invisible border is needed to make wkhtml 0.10.0 lay out the pages correctly
-This invisible border is needed to make wkhtml 0.10.0 lay out the pages correctly
-This invisible border is needed to make wkhtml 0.10.0 lay out the pages correctly*/
     }
 }
+
 div#formatButton {
     display: none !important;
 }
+
 .bloom-page button {
     display: none;
 }
+
 /*this is the purple label in the upper-left corner above pages*/
 .pageLabel {
     display: none;
 }
+
 textarea.coverColor {
     background-color: @PreviewCoverColor;
 }
+
 input.coverColor {
     background-color: @PreviewCoverColor;
 }
+
 /*this could be placed on an element by hand, but it is notably added by jscript when the element has
 a bloom-doNotPublishIfParentOtherwiseEmpty class and the parent is empty*/
 *.bloom-hideWhenPublishing,
 *.bloom-classSwitchingCombobox {
     visibility: hidden;
 }
+
 div.coverBottomBookTopic div.topicN1 {
     border: none;
 }
@@ -102,6 +107,7 @@ and as a result, the labels are shifted to this many pixels to the width. This s
         background-size: 50px 50px;
         background-position: 50px 50px;
     }
+
     .numberedPage .pageLabel {
         position: absolute;
         z-index: 10000;

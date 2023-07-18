@@ -204,13 +204,21 @@ div.bloom-page {
     &:not(.bloom-templateMode) {
         overflow: hidden;
     }
+
+    &:before {
+        content: var(--preset-name); // using this during dev only
+        color: green;
+    }
 }
+
 div#bloomDataDiv {
     display: none;
 }
+
 .centered {
     text-align: center;
 }
+
 .centerJustify {
     text-align: center;
 }
@@ -470,132 +478,154 @@ body.publishingWithoutFullBleed {
         min-height: @A5Portrait-Height;
         max-height: @A5Portrait-Height;
     }
+
     &.A5Landscape {
         min-width: @A5Landscape-Width;
         max-width: @A5Landscape-Width;
         min-height: @A5Landscape-Height;
         max-height: @A5Landscape-Height;
     }
+
     &.B5Portrait {
         min-width: @B5Portrait-Width;
         max-width: @B5Portrait-Width;
         min-height: @B5Portrait-Height;
         max-height: @B5Portrait-Height;
     }
+
     &.A4Landscape {
         min-width: @A4Landscape-Width;
         max-width: @A4Landscape-Width;
         min-height: @A4Landscape-Height;
         max-height: @A4Landscape-Height;
     }
+
     &.A4Portrait {
         min-width: @A4Portrait-Width;
         max-width: @A4Portrait-Width;
         min-height: @A4Portrait-Height;
         max-height: @A4Portrait-Height;
     }
+
     &.A3Landscape {
         min-width: @A3Landscape-Width;
         max-width: @A3Landscape-Width;
         min-height: @A3Landscape-Height;
         max-height: @A3Landscape-Height;
     }
+
     &.A3Portrait {
         min-width: @A3Portrait-Width;
         max-width: @A3Portrait-Width;
         min-height: @A3Portrait-Height;
         max-height: @A3Portrait-Height;
     }
+
     &.A6Portrait {
         min-width: @A6Portrait-Width;
         max-width: @A6Portrait-Width;
         min-height: @A6Portrait-Height;
         max-height: @A6Portrait-Height;
     }
+
     &.A6Landscape {
         min-width: @A6Landscape-Width;
         max-width: @A6Landscape-Width;
         min-height: @A6Landscape-Height;
         max-height: @A6Landscape-Height;
     }
+
     &.QuarterLetterPortrait {
         min-width: @QuarterLetterPortrait-Width;
         max-width: @QuarterLetterPortrait-Width;
         min-height: @QuarterLetterPortrait-Height;
         max-height: @QuarterLetterPortrait-Height;
     }
+
     &.QuarterLetterLandscape {
         min-width: @QuarterLetterLandscape-Width;
         max-width: @QuarterLetterLandscape-Width;
         min-height: @QuarterLetterLandscape-Height;
         max-height: @QuarterLetterLandscape-Height;
     }
+
     &.HalfLetterPortrait {
         min-width: @HalfLetterPortrait-Width;
         max-width: @HalfLetterPortrait-Width;
         min-height: @HalfLetterPortrait-Height;
         max-height: @HalfLetterPortrait-Height;
     }
+
     &.HalfLetterLandscape {
         min-width: @HalfLetterLandscape-Width;
         max-width: @HalfLetterLandscape-Width;
         min-height: @HalfLetterLandscape-Height;
         max-height: @HalfLetterLandscape-Height;
     }
+
     &.LetterPortrait {
         min-width: @LetterPortrait-Width;
         max-width: @LetterPortrait-Width;
         min-height: @LetterPortrait-Height;
         max-height: @LetterPortrait-Height;
     }
+
     &.LetterLandscape {
         min-width: @LetterLandscape-Width;
         max-width: @LetterLandscape-Width;
         min-height: @LetterLandscape-Height;
         max-height: @LetterLandscape-Height;
     }
+
     &.HalfLegalPortrait {
         min-width: @HalfLegalPortrait-Width;
         max-width: @HalfLegalPortrait-Width;
         min-height: @HalfLegalPortrait-Height;
         max-height: @HalfLegalPortrait-Height;
     }
+
     &.HalfLegalLandscape {
         min-width: @HalfLegalLandscape-Width;
         max-width: @HalfLegalLandscape-Width;
         min-height: @HalfLegalLandscape-Height;
         max-height: @HalfLegalLandscape-Height;
     }
+
     &.LegalPortrait {
         min-width: @LegalPortrait-Width;
         max-width: @LegalPortrait-Width;
         min-height: @LegalPortrait-Height;
         max-height: @LegalPortrait-Height;
     }
+
     &.LegalLandscape {
         min-width: @LegalLandscape-Width;
         max-width: @LegalLandscape-Width;
         min-height: @LegalLandscape-Height;
         max-height: @LegalLandscape-Height;
     }
+
     &.Cm13Landscape {
         min-width: @Cm13Square-Side;
         max-width: @Cm13Square-Side;
         min-height: @Cm13Square-Side;
         max-height: @Cm13Square-Side;
     }
+
     &.USComicPortrait {
         min-width: @USComicPortrait-Width;
         max-width: @USComicPortrait-Width;
         min-height: @USComicPortrait-Height;
         max-height: @USComicPortrait-Height;
     }
+
     &.Size6x9Portrait {
         min-width: @Size6x9Portrait-Width;
         max-width: @Size6x9Portrait-Width;
         min-height: @Size6x9Portrait-Height;
         max-height: @Size6x9Portrait-Height;
     }
+
     &.Size6x9Landscape {
         min-width: @Size6x9Landscape-Width;
         max-width: @Size6x9Landscape-Width;
@@ -603,51 +633,63 @@ body.publishingWithoutFullBleed {
         max-height: @Size6x9Landscape-Height;
     }
 }
+
 /*Margins*/
 .textWholePage .marginBox {
-    position: absolute; /* see https://jira.sil.org/browse/BL-390; Without this, the "Just text" page causes the marginBox to drop down to the start of the vertically centered text, and then on PDF, you get an extra page. */
-}
-
-.SetMarginBoxHeight(@PageHeight) {
-    height: @PageHeight - (@MarginTop + @MarginBottom);
+    position: absolute;
+    /* see https://jira.sil.org/browse/BL-390; Without this, the "Just text" page causes the marginBox to drop down to the start of the vertically centered text, and then on PDF, you get an extra page. */
 }
 
 .marginBox {
     position: absolute;
-    top: @MarginTop;
+    top: var(--page-margin-top);
 }
 
 // Mixin for setting .marginBox margins.
 .SetMarginBox(@PageWidth, @PageHeight) {
-    height: @PageHeight - (@MarginTop + @MarginBottom);
-    width: @PageWidth - (@MarginOuter + @MarginInner);
+    height: calc(
+        ~"@{PageHeight} - (var(--page-margin-top) + var(--page-margin-bottom))"
+    );
+    //height: @PageHeight - (@MarginTop + @MarginBottom);
+    //width: @PageWidth - (@MarginOuter + @MarginInner);
+    width: calc(
+        ~"@{PageWidth} - (var(--page-margin-outer) + var(--page-margin-inner))"
+    );
 }
 
 .marginBox {
     .A3Portrait & {
         .SetMarginBox(@A3Landscape-Height, @A3Landscape-Width);
     }
+
     .A3Landscape & {
         .SetMarginBox(@A3Landscape-Width, @A3Landscape-Height);
     }
+
     .A4Portrait & {
         .SetMarginBox(@A4Portrait-Width, @A4Portrait-Height);
     }
+
     .A4Landscape & {
         .SetMarginBox(@A4Landscape-Width, @A4Landscape-Height);
     }
+
     .A5Portrait & {
         .SetMarginBox(@A5Portrait-Width, @A5Portrait-Height);
     }
+
     .A5Landscape & {
         .SetMarginBox(@A5Landscape-Width, @A5Landscape-Height);
     }
+
     .A6Portrait & {
         .SetMarginBox(@A6Portrait-Width, @A6Portrait-Height);
     }
+
     .A6Landscape & {
         .SetMarginBox(@A6Landscape-Width, @A6Landscape-Height);
     }
+
     .B5Portrait & {
         .SetMarginBox(@B5Portrait-Width, @B5Portrait-Height);
     }
@@ -702,17 +744,19 @@ body.publishingWithoutFullBleed {
 
 :not(.calendarFold)
     :not(.outsideFrontCover):not(.outsideBackCover):not(.screen-only) {
-    &.side-left  // maintained by c#
+    &.side-left // maintained by c#
+
  {
         .marginBox {
-            left: @MarginOuter;
+            left: var(--page-margin-outer);
         }
     }
 
     &.side-right // maintained by c#
+
  {
         .marginBox {
-            left: @MarginInner;
+            left: var(--page-margin-inner);
         }
     }
 }
@@ -912,14 +956,16 @@ books may contain divs with box-header-off, so we need a rule to hide them.*/
 .numberedPage {
     &:after {
         content: attr(data-page-number);
-        font-size: 14pt;
+        font-size: var(--pageNumberFontSize);
         position: absolute;
-        bottom: 20px;
+        bottom: var(--pageNumberBottom);
     }
-    &.side-left:after {
+
+    var(--pageNumberFontSize) &.side-left:after {
         // side-___ maintained by c#
         left: @OddPageNumberPosition;
     }
+
     &.side-right:after {
         // side-___ maintained by c#
         right: @EvenPageNumberPosition;
@@ -1035,3 +1081,22 @@ div[data-book*="branding"] {
 
 // now apply any book features
 @import "bookFeatures.less";
+
+@import "langVisibility.less";
+
+/* these are all controlled by appearance.css (which are set by the user through settings) */
+.Title-On-Cover-style.bloom-contentNational1 {
+    display: var(--coverShowTitleL2);
+}
+
+.Title-On-Cover-style.bloom-contentNational2 {
+    display: var(--coverShowTitleL3);
+}
+
+.coverBottomBookTopic {
+    display: var(--coverShowTopic);
+}
+
+.coverBottomLangName {
+    display: var(--coverShowLanguageName);
+}

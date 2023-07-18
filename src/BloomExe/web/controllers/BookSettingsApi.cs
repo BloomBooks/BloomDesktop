@@ -1,8 +1,10 @@
 using System;
-using System.Dynamic;
+using System.IO;
+using System.Linq;
 using Bloom.Book;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+
 
 namespace Bloom.Api
 {
@@ -13,20 +15,29 @@ namespace Bloom.Api
 	{
 		private readonly BookSelection _bookSelection;
 		private readonly PageRefreshEvent _pageRefreshEvent;
+		private readonly BookRefreshEvent _bookRefreshEvent;
 
-		public BookSettingsApi(BookSelection bookSelection, PageRefreshEvent pageRefreshEvent)
+		public BookSettingsApi(BookSelection bookSelection, PageRefreshEvent pageRefreshEvent, BookRefreshEvent bookRefreshEvent)
 		{
 			_bookSelection = bookSelection;
 			_pageRefreshEvent = pageRefreshEvent;
+			_bookRefreshEvent = bookRefreshEvent;
 		}
 
 		public void RegisterWithApiHandler(BloomApiHandler apiHandler)
 		{
 			// Not sure this needs UI thread, but it can result in saving the page, which seems
 			// safest to do that way.
-			apiHandler.RegisterEndpointLegacy("book/settings", HandleBookSettings, true);
+			apiHandler.RegisterEndpointHandler("book/settings", HandleBookSettings, true /* review */);
+			apiHandler.RegisterEndpointHandler("book/settings/available-preset-names", HandleGetAvailablePresetNames, false);
 		}
-
+		private void HandleGetAvailablePresetNames(ApiRequest request)
+		{
+			var names = from path in ProjectContext.GetAppearancePresetFileNames() select Path.GetFileName(path);
+			var x = from name in names.ToArray<string>() select new { label = name, value = name };
+			var json = JsonConvert.SerializeObject(x);
+			request.ReplyWithJson(json);
+		}
 		/// <summary>
 		/// Get a json of the book's settings.
 		/// Not used at present. May be obsolete if book settings are done using config-r
@@ -39,9 +50,9 @@ namespace Bloom.Api
 					var settings = new
 					{
 						currentToolBoxTool = _bookSelection.CurrentSelection.BookInfo.CurrentTool,
-						appearance = new { coverColor = _bookSelection.CurrentSelection.GetCoverColor() },
 						//bloomPUB = new { imageSettings = new { maxWidth= _bookSelection.CurrentSelection.BookInfo.PublishSettings.BloomPub.ImageSettings.MaxWidth, maxHeight= _bookSelection.CurrentSelection.BookInfo.PublishSettings.BloomPub.ImageSettings.MaxHeight} }
-						publish = _bookSelection.CurrentSelection.BookInfo.PublishSettings
+						publish = _bookSelection.CurrentSelection.BookInfo.PublishSettings,
+						appearance = _bookSelection.CurrentSelection.BookInfo.AppearanceSettings
 					};
 					var jsonData = JsonConvert.SerializeObject(settings);
 
@@ -55,15 +66,20 @@ namespace Bloom.Api
 					//an "edit settings", or a "book settings", or a combination of them.
 					var json = request.RequiredPostJson();
 					dynamic newSettings = Newtonsoft.Json.Linq.JObject.Parse(json);
-					var c = newSettings.appearance.coverColor;
-					_bookSelection.CurrentSelection.SetCoverColor(c.ToString());
-					// review: crazy bit here, that above I'm taking json, parsing it into object, and grabbing part of it. But then
+					//var c = newSettings.appearance.cover.coverColor;
+					//_bookSelection.CurrentSelection.SetCoverColor(c.ToString());
+					// review: crazy bit here, that above I'm taking json, parsing it into and object, and grabbing part of it. But then
 					// here we take it back to json and pass it to this thing that is going to parse it agian. In this case, speed
 					// is irrelevant. The nice thing is, it retains the identity of PublishSettings in case someone is holing on it.
 					var jsonOfJustPublishSettings = JsonConvert.SerializeObject(newSettings.publish);
 					_bookSelection.CurrentSelection.BookInfo.PublishSettings.LoadNewJson(jsonOfJustPublishSettings);
+					//var jsonOfJustAppearanceSettings = JsonConvert.SerializeObject(newSettings.appearance);
+					_bookSelection.CurrentSelection.BookInfo.AppearanceSettings.Update(newSettings.appearance);
 
-					_pageRefreshEvent.Raise(PageRefreshEvent.SaveBehavior.SaveBeforeRefresh);
+					_bookSelection.CurrentSelection.SettingsUpdated();
+					_bookRefreshEvent.Raise(_bookSelection.CurrentSelection);
+
+					//_pageRefreshEvent.Raise(PageRefreshEvent.SaveBehavior.SaveBeforeRefresh);
 
 #if UserControlledTemplate
 					UpdateBookTemplateMode(settings.isTemplateBook);

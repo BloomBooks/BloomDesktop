@@ -1,0 +1,9 @@
+:root {
+    --page-margin-top: 15mm;
+    --page-margin-bottom: 15mm;
+    --page-margin-inner: 25mm;
+    --page-margin-outer: 15mm;
+    --side-by-side-gap: 3mm;
+    --top-bottom-gap: 3mm;
+    --pageNumberFontSize: 14pt;
+}
