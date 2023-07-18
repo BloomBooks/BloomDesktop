@@ -63,4 +63,46 @@ describe("EditableDivUtils Tests", () => {
         // So we think we want to leave the p alone in this case.
         expect(div.innerHTML).toEqual("<p>&nbsp;</p>");
     });
+
+    it("safelyReplaceContentWithCkEditorData ensures no initial blank paragraph", () => {
+        // [0]:input div html, [1]:input ckeditor data, [2]:expected output
+        const testCases = [
+            // The main scenario we are trying to fix: ckeditor wraps lone initial bookmark in a paragraph; don't let it.
+            [
+                '<span id="cke_bm_49C" style="display: none;">&nbsp;</span><p>A</p>',
+                '<p><span id="cke_bm_49C" style="display: none;">&nbsp;</span>&nbsp;</p><p>A</p>',
+                '<span id="cke_bm_49C" style="display: none;">&nbsp;</span><p>A</p>'
+            ],
+            // Ensures we leave well enough alone
+            [
+                '<span id="cke_bm_49C" style="display: none;">&nbsp;</span><p>A</p>',
+                '<span id="cke_bm_49C" style="display: none;">&nbsp;</span><p>A</p>',
+                '<span id="cke_bm_49C" style="display: none;">&nbsp;</span><p>A</p>'
+            ],
+            // If ckeditor wants to wrap a non bookmark for some reason, leave it alone
+            [
+                "<span>&nbsp;</span><p>A</p>",
+                "<p><span>&nbsp;</span></p><p>A</p>",
+                "<p><span>&nbsp;</span></p><p>A</p>"
+            ],
+            // Not sure this can really happen, but prove we leave paragraph wrapping alone if there is content besides just nbsp
+            [
+                '<span id="cke_bm_49C" style="display: none;">&nbsp;</span>Z<p>A</p>',
+                '<p><span id="cke_bm_49C" style="display: none;">&nbsp;</span>Z</p><p>A</p>',
+                '<p><span id="cke_bm_49C" style="display: none;">&nbsp;</span>Z</p><p>A</p>'
+            ]
+        ];
+
+        for (const testCase of testCases) {
+            const div = document.createElement("div");
+            div.innerHTML = testCase[0];
+
+            EditableDivUtils.safelyReplaceContentWithCkEditorData(
+                div,
+                testCase[1]
+            );
+
+            expect(div.innerHTML).toEqual(testCase[2]);
+        }
+    });
 });
