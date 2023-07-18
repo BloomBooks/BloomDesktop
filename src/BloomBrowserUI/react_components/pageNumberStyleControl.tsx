@@ -70,7 +70,6 @@ const PageNumberStyleControl: React.FunctionComponent = () => {
         <div>
             <Typography
                 css={css`
-                    font-family: Segoe UI !important;
                     font-weight: 700 !important;
                 `}
             >

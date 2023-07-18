@@ -65,7 +65,7 @@ namespace Bloom
 				//	if (eventArgs.Uri.StartsWith("https://"))
 				//	{
 				//		eventArgs.Handled = true;
-				//		Process.Start(eventArgs.Uri);
+				//		ProcessExtra.SafeStartInFront(eventArgs.Uri);
 				//	}
 				//};
 				_webview.CoreWebView2.ContextMenuRequested += ContextMenuRequested;
@@ -81,6 +81,9 @@ namespace Bloom
 																	   | CoreWebView2PdfToolbarItems.MoreSettings; // none of its functions seem useful
 
 				_webview.CoreWebView2.Settings.IsStatusBarEnabled = false;
+				_webview.CoreWebView2.Settings.IsWebMessageEnabled = true;
+				// Disable swipe navigation, which is a problem on trackpads (and touch screens). See BL-12405.
+				_webview.CoreWebView2.Settings.IsSwipeNavigationEnabled = false;
 
 				// Based on https://github.com/MicrosoftEdge/WebView2Feedback/issues/308,
 				// this attempts to prevent Bloom asking permission to read the clipboard
@@ -158,6 +161,38 @@ namespace Bloom
 
 			var env = await CoreWebView2Environment.CreateAsync(browserExecutableFolder: AlternativeWebView2Path, userDataFolder: ProjectContext.GetBloomAppDataFolder(), options: op);
 			await _webview.EnsureCoreWebView2Async(env);
+
+			// I is kinda hard to get a click event from webview2. This needs to be explicitly sent from the browser code,
+			// e.g. (window as any).chrome.webview.postMessage("browser-clicked");
+			_webview.WebMessageReceived += (o, e) =>
+			{
+				// for now the only thing we're using this for is to close the page thumbnail list context menu when the user clicks outside it
+				if (e.TryGetWebMessageAsString() == "browser-clicked")
+				{
+					RaiseBrowserClick(null, null);
+				}
+			};
+
+			// Now do the same thing for any iframes. When an iframe is created...
+			_webview.CoreWebView2.FrameCreated += (o, e) =>
+			{
+				// ... register for a message that our javascript will send us.
+				// We are using this in the Edit View
+				// to know when to cancel a page context menu until we rewrite that in React.
+				// Note that _webview.GotFocus() is easier, but I was not able to get the
+				// winforms popup menu to receive focus such that the webview would lose it
+				// and thus tell us when it regained it.
+				e.Frame.WebMessageReceived += (a, b) =>
+				{
+					if (b.TryGetWebMessageAsString() == "browser-clicked")
+					{
+						RaiseBrowserClick(null, null);
+					}
+				};
+			};
+
+
+
 			if (!_clearedCache)
 			{
 				_clearedCache = true;
@@ -236,7 +271,7 @@ namespace Bloom
 			// can leave implementing this until someone identifies a difference in Gecko vs WV2 behavior
 			// that we think is due to not implementing it.
 		}
-		
+
 		protected override void UpdateDisplay(string newUrl)
 		{
 			EnsureBrowserReadyToNavigate();

@@ -202,6 +202,7 @@ const PageList: React.FunctionComponent<{ pageSize: string }> = props => {
     const handleGridItemClick = (e: React.MouseEvent<HTMLDivElement>) => {
         e.stopPropagation();
         e.preventDefault();
+        NotifyCSharpOfClick();
 
         // for manual testing
         if (e.getModifierState("Control")) {
@@ -230,6 +231,7 @@ const PageList: React.FunctionComponent<{ pageSize: string }> = props => {
     const handleContextMenu = (e: React.MouseEvent<HTMLDivElement>) => {
         e.stopPropagation();
         e.preventDefault();
+        NotifyCSharpOfClick();
         if (e.currentTarget) {
             const pageElt = e.currentTarget.closest("[id]")!;
             const pageId = pageElt.getAttribute("id");
@@ -397,7 +399,19 @@ $(window).ready(() => {
         <PageList pageSize={pageSize} />,
         document.getElementById("pageGridWrapper")
     );
+
+    // If the user clicks outside of the context menu, we want to close it.
+    // Since it is currently a winforms menu, we do that by sending a message
+    // back to c#-land.
+    // We can remove this in 5.6, or whenever we replace the winforms context menu with a rect menu.
+    $(window).click(() => {
+        NotifyCSharpOfClick();
+    });
 });
+
+function NotifyCSharpOfClick() {
+    (window as any).chrome.webview.postMessage("browser-clicked");
+}
 
 // Function invoked when dragging a page ends. Note that it is often
 // called when all the user intended was to click the page, presumably

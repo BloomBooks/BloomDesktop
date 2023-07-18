@@ -437,6 +437,13 @@ export default class OverflowChecker {
         return null;
     }
 
+    private static GetScrollInsteadOfOverflow(page: HTMLElement): boolean {
+        const $page = $(page);
+        return (
+            $page.hasClass("Device16x9Portrait") ||
+            $page.hasClass("Device16x9Landscape")
+        );
+    }
     // Make sure there are no boxes with class 'overflow' or 'thisOverflowingParent' on the page before removing
     // the page-level overflow marker 'pageOverflows', or add it if there are.
     private static UpdatePageOverflow(page) {
@@ -448,6 +455,12 @@ export default class OverflowChecker {
         )
             $page.removeClass("pageOverflows");
         else $page.addClass("pageOverflows");
+
+        // BL-11949: books with device layouts can ignore overflows because we'll show a scrollbar
+        if (this.GetScrollInsteadOfOverflow(page)) {
+            $page.removeClass("pageOverflows");
+            // note, we don't yet remove the bubble that says there is too much text. This code is already spaghetti enough, I didn't want to pay that price at this time. --JH
+        }
     }
 
     // Checks a couple of situations where we might need to modify min-height

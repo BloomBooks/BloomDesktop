@@ -539,7 +539,8 @@ div.pageLabel[contenteditable="true"] {
 }
 
 // NOTE: I don't think .coverColor textarea matches anything anymore. It and many of the textarea references may be able to be removed?
-.coverColor textarea,   /*need a darker border when we have a background color*/
+.coverColor textarea,
+/*need a darker border when we have a background color*/
 div.bloom-editable {
     // Allow book templates to define a custom borderColor, otherwise fallback to the default color
     border: thin solid
@@ -610,13 +611,22 @@ div.bloom-templateMode {
     border: 3px dashed black;
 }
 
-.overflow {
-    color: @OverflowColor !important;
-    border: solid thin @OverflowColor !important; //NB: can't afford to go "thick" because it throws off the calculation
+// We only make a big deal out of "overflow" if the layout is a *paper* size, rather than a *device* size.
+.bloom-page:not([class*="Device"]) {
+    .overflow {
+        color: @OverflowColor !important;
+        border: solid thin @OverflowColor !important; //NB: can't afford to go "thick" because it throws off the calculation
 
-    p:empty:after {
-        //br:after would be great but it doesn't work
-        content: "¶";
+        p:empty:after {
+            //br:after would be great but it doesn't work
+            content: "¶";
+        }
+    }
+}
+
+.bloom-page[class*="Device"] {
+    .bloom-editable.overflow {
+        overflow-y: scroll;
     }
 }
 
@@ -851,6 +861,20 @@ span.word-not-found {
     position: unset; // BL-11633, works around Chromium bug
 }
 
+div.bloom-editable {
+    // Chrome 105 and later (ie, WebView2) has the :has selector.
+    // These rules may not need the :has(span) selector, but I
+    // don't want to risk breaking something.  This is enough to
+    // work around the Chromium bug reported in BL-11633.
+    span[style]:has(span),
+    em:has(span),
+    strong:has(span),
+    u:has(span),
+    sup:has(span) {
+        position: unset; // BL-11633, works around Chromium bug
+    }
+}
+
 /* We are disabling the "Possible Word" feature at this time.
 SPAN.possible-word
 {
@@ -1002,15 +1026,19 @@ body {
             display: none !important;
         }
     }
+
     .ui-resizable-handle {
         display: none !important;
     }
+
     .bloom-dragHandle {
         display: none;
     }
+
     #formatButton {
         display: none;
     }
+
     .bloom-imageContainer {
         &:after {
             border: none; // overwrite rule from editMode.less
@@ -1033,6 +1061,7 @@ body {
                 &:hover {
                     background-color: white; // make it stand out more from the image behind
                 }
+
                 img {
                     // turns the cog purple to match other Comic affordances, without requiring
                     // a different SVG. (Don't do this to the whole button, it messes with
@@ -1041,6 +1070,7 @@ body {
                 }
             }
         }
+
         .bloom-dragHandle {
             filter: @ComicAffordanceFilter;
             position: absolute;
@@ -1061,13 +1091,21 @@ body {
     .bloom-dragHandle {
         right: calc(100% + 1.4px);
     }
+
     // we need to push the label left-ward to get out of the way of the fat part of the bubble
     [data-languageTipContent]:after {
         right: calc(100% + 14px) !important;
     }
 }
+
 [data-bubble*="caption"] {
     [data-languageTipContent]:after {
         right: calc(100% + 2.8px) !important;
     }
+}
+
+// hideAllCKEditors is toggled by bloomEditing.ts to prevent bl-12448
+body.hideAllCKEditors .cke_chrome {
+    // "display" is manipulated on the `style` element by ckeditor, so we can't use that
+    visibility: hidden;
 }

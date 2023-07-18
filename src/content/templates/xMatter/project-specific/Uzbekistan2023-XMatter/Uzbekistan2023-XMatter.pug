@@ -1,5 +1,14 @@
 include ../../bloom-xmatter-mixins.pug
 
+//- Since the Uzbek project can't have Cyrillic script in their books, they need to be able to edit this field
+//- that usually is not editable, so they can transcribe Cyrillic script to Latin.
+mixin field-acknowledgments-originalCopyrightLicense(lang="N1", hint="Original Copyright and License in {lang}")
+	+field-prototypeDeclaredExplicity(lang)
+		label.bubble
+			| #{hint}
+		+editable(lang).copyright.bloom-copyFromOtherLanguageIfNecessary.Credits-Page-style(data-derived="originalCopyrightAndLicense")&attributes(attributes)
+			| {Original Copyright and License}
+
 doctype html
 html
 	head
@@ -44,13 +53,11 @@ html
 				+field-prototypeDeclaredExplicity("N1")#funding
 					label.bubble Use this to acknowledge any funding agencies.
 					+editable(kLanguageForPrototypeOnly).funding.Content-On-Title-Page-style.bloom-copyFromOtherLanguageIfNecessary(data-book='funding')
-				div.smallFlexGap
+				div.fillPageFlexGap.
 				+field-prototypeDeclaredExplicity("N1")
 					label.bubble Place and year of issue
 					+editable(kLanguageForPrototypeOnly).Place-And-Year-style(data-book='placeAndYear')
-				div.largeFlexGap
-
-				div.fillPageFlexGap.
+				div.smallFlexGap
 				+title-page-branding-bottom
 
 		+page-xmatter("Credits Page").bloom-frontMatter.credits(data-export='front-matter-credits', data-xmatter-page='credits')#69E775AE-5BF1-49F1-89E7-2A932DAD932D
@@ -64,19 +71,20 @@ html
 					.licenseBlock
 						img.licenseImage(src="license.png" data-derived="licenseImage")
 						.licenseDescription(lang="uz").Credits-Page-style Ushbu asar Creative Commons Attribution- 4.0 (http://creativecommons.org/licenses/by/4.0/) xalqaro ruxsatnomasi bo‘yicha litsenziyadan o‘tgan
-						.licenseNotes.Credits-Page-style Siz mualiflar, rassomlar va boshqalarning mualliflik xuquqlarini saqlab qolishingiz kerak.
+						.licenseNotes.Credits-Page-style Siz mualliflar, rassomlar va boshqalarning mualliflik huquqlarini saqlab qolishingiz kerak.
 							| Siz ushbu asarni tijorat maqsadida ishlatishingiz mumkin.
-							| Siz ushbu asarni moslashtirishingiz va unga o‘zgarishlar kiritishingiz mumkin.
+							| Siz ushbu asarni moslashtirishingiz va unga o‘zgartirishlar kiritishingiz mumkin.
 				+field-acknowledgments-localizedVersion
 				//- Here code puts in something like "From the original Copyright Pratham Books 2016. CC-BY. Any license notes here."
-				.copyright(data-derived="originalCopyrightAndLicense").Credits-Page-style
+				//-.copyright(data-derived="originalCopyrightAndLicense").Credits-Page-style
+				+field-acknowledgments-originalCopyrightLicense
 				+field-acknowledgments-originalVersion
 				+credits-page-branding-bottom
 
 		+factoryStandard-insideBackCover
 
 		+page-xmatter('Outside Back Cover').cover.coverColor.outsideBackCover.bloom-backMatter(data-export='back-matter-back-cover', data-xmatter-page='outsideBackCover')&attributes(attributes)#4321D898-9E35-4423-99D4-132B46FAFDA4
-			img.branding.bloomBadge(src='made-with-bloom-badge-white.png')
+			img.branding.bloomBadge(src='made-with-bloom-badge-dark.svg')
 			.bloom-force-publish.back-cover-bottom
 				div(data-book="outside-back-cover-USAID" lang="*")
 				div(data-book="outside-back-cover-ministry" lang="*")

@@ -44,15 +44,16 @@ namespace Bloom.web.controllers
 			#region Readonly Properties
 			// These fields are readonly to provide assurance that they haven't been changed after the ReportInfo was constructed.
 			// (This makes proper threading/locking/synchronization easier to reason about)
-			public string HeadingHtml { get; }	// What shows at the top of the dialog to indicate the nature of the problem.
+			public readonly string HeadingHtml; // What shows at the top of the dialog to indicate the nature of the problem.
 
-			public string DetailedMessage { get; }	// usually from Bloom itself
-			public Exception Exception { get; }
-			public Bloom.Book.Book Book { get; }
-			public string BookName { get; }
-			public string UserEmail { get; }
-			public string UserFirstName { get; }
-			public string UserSurname { get; }
+			public readonly string DetailedMessage; // usually from Bloom itself
+			public readonly Exception Exception;
+			public readonly Bloom.Book.Book Book;
+			public readonly string BookName;
+			public readonly string UserEmail;
+			public readonly string UserFirstName;
+			public readonly string UserSurname;
+			public readonly string ErrorBookFolder;
 			#endregion
 
 			// We make a special allowance for ScreenshotTempFile since it uses a more complicated SafeInvoke to be assigned.
@@ -72,8 +73,13 @@ namespace Bloom.web.controllers
 
 				this.DetailedMessage = detailMessage;
 				this.Exception = exception;
+				if (exception?.Data != null && exception.Data.Contains("ErrorBookFolder"))
+					this.ErrorBookFolder = exception.Data["ErrorBookFolder"] as string;
 				this.Book = book;
-				this.BookName = bookName;
+				if (this.ErrorBookFolder != null && exception.Data.Contains("ErrorBookName"))
+					this.BookName = exception.Data["ErrorBookName"] as string;
+				else
+					this.BookName = bookName;
 				this.UserEmail = email;
 				this.UserFirstName = firstName;
 				this.UserSurname = surname;
@@ -98,7 +104,8 @@ namespace Bloom.web.controllers
 		/// </summary>
 		internal const string ScreenshotName = "ProblemReportScreenshot.png";
 
-		private string CollectionFolder => Path.GetDirectoryName(_bookSelection.CurrentSelection.StoragePageFolder);
+		private string CollectionFolder => Path.GetDirectoryName(
+			_bookSelection?.CurrentSelection?.StoragePageFolder ?? _reportInfo?.ErrorBookFolder);
 
 		public ProblemReportApi(BookSelection bookSelection)
 		{
@@ -286,7 +293,7 @@ namespace Bloom.web.controllers
 
 				if (includeBook)
 				{
-					_reportZipFile.AddDirectory(_bookSelection.CurrentSelection.StoragePageFolder);
+					_reportZipFile.AddDirectory(_reportInfo.ErrorBookFolder ?? _bookSelection?.CurrentSelection?.StoragePageFolder);
 					if (WantReaderInfo(true))
 					{
 						AddReaderInfo();
@@ -321,6 +328,8 @@ namespace Bloom.web.controllers
 
 		private void AddReaderInfo()
 		{
+			if (CollectionFolder == null)
+				return;
 			var filePaths = GetReaderFilePaths(CollectionFolder);
 			// If we have any files in the "Allowed Words" or "Sample Texts" folders, store those
 			// directories preserving the directory structure rather than individual files at the
@@ -347,6 +356,8 @@ namespace Bloom.web.controllers
 
 		private void AddCollectionSettings()
 		{
+			if (CollectionFolder == null)
+				return;
 			var filePaths = GetCollectionFilePaths(CollectionFolder);
 			foreach (var filePath in filePaths)
 			{
@@ -422,6 +433,66 @@ namespace Bloom.web.controllers
 		static bool _showingProblemReport;
 		// Extra locking object because 1) you can't lock primitives directly, and 2) you shouldn't use the object whose value you'll be reading as the lock object (reads to the object are not blocked)
 		static object _showingProblemReportLock = new object();
+
+		static bool IsOwnedForm(Form child, Form parent)
+		{
+			var test = child;
+			while (test != null)
+			{
+				if (test == parent)
+					return true;
+				test = test.Owner;
+			}
+
+			return false;
+		}
+
+		public static Form GetParentFormForErrorDialogs()
+		{
+			var active = Form.ActiveForm;
+			var shell = Shell.GetShellOrOtherOpenForm();
+			if (active == null)
+			{
+				// no active form. Might be because we are debugging, then typically, shell is the main shell and is good.
+				// It's also possible that we're in some startup or shutting-down state where there really
+				// is no active form, and probably, shell is null too. In such cases, there is no parent window to
+				// try to be in front of, so we just return null.
+				return shell;
+			}
+
+			if (shell is Shell)
+			{
+				// normal state, we have a Shell window available.
+				if (IsOwnedForm(active, shell))
+				{
+					// We can safely use the active form and still be in front of the shell, since the shell
+					// (directly or indirectly) is the owner of active (or simply IS the active form)
+					return active;
+				}
+				else
+				{
+					// This is an unfortunate situation. We should launch dialogs with an appropriate owner,
+					// so the dialog stays in front of its owner (and the shell) and starts on the same screen.
+					// Perhaps the ActiveForm is something quite unexpected, like the Toast window.
+					// It might be something that doesn't have a taskbar entry, so if the shell somehow later
+					// gets in front of the current active form, there will be no easy way to recover, especially
+					// once we launch another modal dialog and it gets behind the Shell (BL-12412).
+					// So, if we're in a debug build, we will stop and encourage the programmer to give the
+					// window an owner.
+					// Otherwise, it seems safest to return the Shell. At least that can be selected from the
+					// task bar, and then if it is the owner of the error dialog, then the dialog should be
+					// in front of it.
+					Debug.Fail("Dialogs should have owners!");
+					return shell;
+				}
+			}
+			else
+			{
+				// No Shell window active, maybe we're in startup or shutdown? May as well go with
+				// the most likely form, or anything we can find if there isn't an active one.
+				return active ?? shell;
+			}
+		}
 
 		// ENHANCE: Reduce duplication in HtmlErrorReporter and ProblemReportApi code. Some of the ProblemReportApi code can move to HtmlErrorReporter code.
 
@@ -531,10 +602,7 @@ namespace Bloom.web.controllers
 						try
 						{
 							// Keep dialog on top of program window if possible.  See https://issues.bloomlibrary.org/youtrack/issue/BL-10292.
-							if (controlForScreenshotting is Bloom.Shell)
-								dlg.ShowDialog(controlForScreenshotting);
-							else
-								dlg.ShowDialog();
+							dlg.ShowDialog(GetParentFormForErrorDialogs());
 						}
 						finally
 						{
@@ -936,6 +1004,20 @@ namespace Bloom.web.controllers
 			var book = _reportInfo.Book;
 			var projectName = book?.CollectionSettings.CollectionName;
 			bldr.AppendLine("#### Additional User Environment Information");
+			if (_reportInfo.ErrorBookFolder != null)
+			{
+				bldr.AppendLine("Folder of book that could not be selected: " + _reportInfo.ErrorBookFolder);
+				bldr.AppendLine("Title of book that could not be selected: " + _reportInfo.BookName);
+				if (book == null)
+				{
+					AppendTimeZone(bldr);	// only setting that doesn't depend on book
+				}
+				else
+				{
+					bldr.AppendLine("**** Book information below is from the previously selected book, not the one that could not be selected. ****");
+					bldr.AppendLine("**** Collection information should be valid. ****");
+				}
+			}
 			if (book == null)
 			{
 				bldr.AppendLine("No Book was selected.");
@@ -966,6 +1048,20 @@ namespace Bloom.web.controllers
 			AppendWritingSystem(book.BookData.Language3, "Language3", bldr);
 			AppendWritingSystem(book.BookData.SignLanguage, "SignLanguage", bldr);
 			AppendWritingSystem(book.BookData.MetadataLanguage1, "MetadataLanguage1", bldr);
+			var enterpriseStatus = settings.GetEnterpriseStatus().ToString();
+			var branding = settings.BrandingProjectKey;
+			bldr.AppendLine();
+			bldr.AppendLine("Enterprise status: " + enterpriseStatus);
+			bldr.AppendLine("Branding: " + (string.IsNullOrEmpty(branding) ? "None found" : branding));
+			AppendTimeZone(bldr);
+		}
+
+		private static void AppendTimeZone(StringBuilder bldr)
+		{
+			var tzName = TimeZone.CurrentTimeZone.IsDaylightSavingTime(DateTime.Now) ? TimeZone.CurrentTimeZone.DaylightName : TimeZone.CurrentTimeZone.StandardName;
+			var tzOffset = TimeZone.CurrentTimeZone.GetUtcOffset(DateTime.Now);
+			var tzFormatString = (tzOffset < TimeSpan.Zero ? "\\-" : "") + "hh\\:mm";
+			bldr.AppendLine("User timezone: UTC" + tzOffset.ToString(tzFormatString) + "  (" + tzName + ")");
 		}
 
 		void AppendWritingSystem(WritingSystem ws, string label, StringBuilder bldr)

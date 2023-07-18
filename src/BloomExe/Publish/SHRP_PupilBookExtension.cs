@@ -10,6 +10,7 @@ using System.Windows.Forms;
 using System.Xml;
 using Bloom.Book;
 using SIL.IO;
+using Bloom.ToPalaso;
 
 namespace Bloom.Publish
 {
@@ -100,7 +101,7 @@ namespace Bloom.Publish
 				}
 			}
 			//this folder won't be fully populated yet, but as they watch it will fill up
-			Process.Start("explorer.exe", " \"" + exportFolder + "\"");
+			ProcessExtra.SafeStartInFront(exportFolder);
 
 			//state.WriteToLog("Now sit tight and wait for the thumbnail directory to stop filling up.");
 		}
@@ -169,7 +170,7 @@ namespace Bloom.Publish
 			//just doing image.Save() works for .bmp and .jpg, but not .png
 			using (var b = new Bitmap(image))
 			{
-				RobustImageIO.SaveImage(b, Path.Combine(exportFolder, fileName));
+				SIL.IO.RobustImageIO.SaveImage(b, Path.Combine(exportFolder, fileName));
 			}
 		}
 	}

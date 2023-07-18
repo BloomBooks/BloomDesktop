@@ -1000,6 +1000,10 @@ export default class StyleEditor {
                     x => (x as HTMLElement).offsetHeight > 0 // need to find a visible one for a meaningful offsetLeft
                 );
                 leftPx = (editable as HTMLElement).offsetLeft;
+            } else {
+                // probably arithmetic template page, which has a numberRow instead of a TG.
+                //I think this is a better algorithm anyway, but play safe and avoid dangerous change near end of 5.5
+                leftPx = (eltBounds.left - parentBounds.left) / scale;
             }
 
             fmtButton.style.left = leftPx + "px";
@@ -1049,25 +1053,26 @@ export default class StyleEditor {
         // config.allowedContent, and data-cke-survive did not work.
         // The only solution we have found is to postpone adding the gear icon until CkEditor has done
         // its nefarious work. The following block achieves this.
-        // Enhance: this logic is roughly duplicated in toolbox.ts restoreToolboxSettingsWhenCkEditorReady.
+        // Enhance: this logic is roughly duplicated in toolbox.ts function doWhenCkEditorReadyCore.
         // There may be some way to refactor it into a common place, but I don't know where.
         const editorInstances = (<any>window).CKEDITOR.instances;
-        for (let i = 1; ; i++) {
-            const instance = editorInstances["editor" + i];
-            if (instance == null) {
-                if (i === 0) {
-                    // no instance at all...if one is later created, get us invoked.
-                    (<any>window).CKEDITOR.on("instanceReady", e =>
-                        this.AttachToBox(targetBox)
-                    );
-                    return;
-                }
-                break; // if we get here all instances are ready
-            }
+        // (The instances property leads to an object in which each property is an instance of CkEditor)
+        let gotOne = false;
+        for (const property in editorInstances) {
+            const instance = editorInstances[property];
+            gotOne = true;
             if (!instance.instanceReady) {
                 instance.on("instanceReady", e => this.AttachToBox(targetBox));
                 return;
             }
+        }
+        if (!gotOne) {
+            // If any editable divs exist, call us again once the page gets set up with ckeditor.
+            // no instance at all...if one is later created, get us invoked.
+            (<any>window).CKEDITOR.on("instanceReady", e =>
+                this.AttachToBox(targetBox)
+            );
+            return;
         }
         const oldCog = document.getElementById("formatButton");
         if (oldCog && this._previousBox == targetBox) {

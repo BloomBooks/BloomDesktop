@@ -574,7 +574,6 @@ namespace Bloom.Collection
 			this._automaticallyUpdate.TabIndex = 5;
 			this._automaticallyUpdate.Text = "Automatically Update Bloom";
 			this._automaticallyUpdate.UseVisualStyleBackColor = false;
-			this._automaticallyUpdate.CheckedChanged += new System.EventHandler(this._automaticallyUpdate_CheckedChanged);
 			// 
 			// label2
 			// 

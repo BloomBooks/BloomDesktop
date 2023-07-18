@@ -261,6 +261,15 @@ namespace Bloom.web.controllers
 				//	request.ReplyWithText(_languagesToPublish.Contains(langCode) ? "true" : "false");
 				//}
 			}, false);
+			apiHandler.RegisterBooleanEndpointHandler("publish/markAsDraft", 
+				readRequest =>
+				{
+					return readRequest.CurrentBook.BookInfo.MetaData.Draft;
+				},
+				(writeRequest, value) =>
+				{
+					writeRequest.CurrentBook.BookInfo.MetaData.Draft = value;
+				}, false);
 		}
 
 		private void HandleChooseSignLanguage(ApiRequest request)
@@ -346,6 +355,7 @@ namespace Bloom.web.controllers
 		/// <returns>True if the preview was updated successfully, false otherwise.</returns>
 		internal bool UpdatePreview(ApiRequest request, bool forVideo)
 		{
+			_progress.Reset(); // Otherwise errors get carried over between runs of the preview.
 			InitializeLanguagesInBook(request);
 			_lastSettings = GetSettings();
 			_lastThumbnailBackgroundColor = _thumbnailBackgroundColor;
@@ -370,9 +380,11 @@ namespace Bloom.web.controllers
 			// the page-range control.
 			_lastSettings.RemoveInteractivePages = forVideo;
 			PreviewUrl = MakeBloomPubForPreview(request.CurrentBook, _bookServer, _progress, _thumbnailBackgroundColor, _lastSettings);
-			if (_progress.HaveProblemsBeenReported)
+			if (PreviewUrl == null)
 			{
-				_webSocketServer.SendString(kWebSocketContext, kWebsocketEventId_Preview, "");
+				// Tried sending empty string, but SendString() ignores empty messages. "stopPreview" gets interpreted as a command to stop
+				// the preview spinner.
+				_webSocketServer.SendString(kWebSocketContext, kWebsocketEventId_Preview, "stopPreview");
 				return false;
 			}
 			_webSocketServer.SendString(kWebSocketContext, kWebsocketEventId_Preview, PreviewUrl);
@@ -412,7 +424,8 @@ namespace Bloom.web.controllers
 		/// <summary>
 		/// Generates an unzipped, staged BloomPUB from the book
 		/// </summary>
-		/// <returns>A valid, well-formed URL on localhost that points to the staged book's htm file</returns>
+		/// <returns>A valid, well-formed URL on localhost that points to the staged book's htm file,
+		/// or null if we aren't allowed to publish this book in this language (LicenseChecker).</returns>
 		public string MakeBloomPubForPreview(Book.Book book, BookServer bookServer, WebSocketProgress progress, Color backColor, BloomPubPublishSettings settings = null)
 		{
 			progress.Message("PublishTab.Epub.PreparingPreview", "Preparing Preview");  // message shared with Epub publishing

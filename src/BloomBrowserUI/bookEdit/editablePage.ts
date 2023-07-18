@@ -12,7 +12,6 @@ import { theOneBubbleManager, BubbleManager } from "./js/bubbleManager";
 // This allows strong typing to be done for exported functions
 export interface IPageFrameExports {
     pageSelectionChanging(): void;
-    prepareToSavePage(): void;
     pageUnloading(): void;
     disconnectForGarbageCollection(): void;
     copySelection(): void;
@@ -146,6 +145,15 @@ $(document).ready(() => {
         .find("*[data-i18n]")
         .localize();
     bootstrap();
+
+    // If the user clicks outside of the page thumbnail context menu, we want to close it.
+    // Since it is currently a winforms menu, we do that by sending a message
+    // back to c#-land. We have a similar listener in the pageThumbnailList itself.
+    // Note that to receive this, the c# code must be listening on this iframe.
+    // We can remove this in 5.6, or whenever we replace the winforms context menu with a react menu.
+    $(window).click(() => {
+        (window as any).chrome.webview.postMessage("browser-clicked");
+    });
 });
 
 export function SayHello() {

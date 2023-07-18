@@ -18,6 +18,8 @@ import PublishScreenTemplate from "../commonPublish/PublishScreenTemplate";
 import { PublishLanguagesGroup } from "../commonPublish/PublishLanguagesGroup";
 import { CoverColorGroup } from "../commonPublish/CoverColorGroup";
 import { useState } from "react";
+import { PublishVisibilityGroup } from "../commonPublish/PublishVisibilityGroup";
+import HelpLink from "../../react_components/helpLink";
 
 export const kWebSocketContext = "libraryPublish";
 
@@ -40,24 +42,7 @@ export const LibraryPublishScreen = () => {
             />
             <PublishFeaturesGroup generation={generation} />
             <CoverColorGroup />
-
-            {/*
-                <MuiCheckbox
-                label={
-                    <React.Fragment>
-                        <img src="/bloom/publish/LibraryPublish/DRAFT-Stamp.svg" />
-                        <Span l10nKey="PublishTab.Upload.Draft">
-                            Show this book only to reviewers with whom I
-                            share the URL of this book.
-                        </Span>
-                    </React.Fragment>
-                }
-                checked={false} //TODO
-                onCheckChanged={newValue => {
-                    //TODO
-                }}
-                disabled={!isReadyForUpload()}
-            /> */}
+            <PublishVisibilityGroup />
 
             {/* push everything below this to the bottom */}
             <div
@@ -66,11 +51,27 @@ export const LibraryPublishScreen = () => {
                 `}
             />
             <HelpGroup>
-                {/* TODO, not designed yet */}
+                <Link
+                    href="https://docs.bloomlibrary.org/why-share-on-blorg"
+                    l10nKey="PublishTab.Upload.WhyShareOnBlorg"
+                >
+                    Why you should publish to the Web
+                </Link>
+                <HelpLink
+                    helpId="Tasks/Publish_tasks/Publish to Web.htm"
+                    l10nKey="PublishTab.Upload.Help"
+                >
+                    Documentation about this screen
+                </HelpLink>
+                <HelpLink
+                    helpId="Tasks/Publish_tasks/Publish_tasks_overview.htm"
+                    l10nKey="PublishTab.TasksOverview"
+                >
+                    Publish tab tasks overview
+                </HelpLink>
                 <Link
                     href="https://bloomLibrary.org/about"
-                    l10nKey={"TODO"}
-                    temporarilyDisableI18nWarning={true}
+                    l10nKey={"PublishTab.Upload.AboutBlorg"}
                 >
                     About BloomLibrary.org
                 </Link>

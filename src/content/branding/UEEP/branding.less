@@ -40,18 +40,14 @@ img.bloomBadge {
     }
 
     [data-book="outside-back-cover-ministry"] img {
-        height: 100px;
-        // keep the USAID text away a bit
-        margin-left: 20px;
+        height: 50px;
+        // Keep the USAID text away a bit and give some right space too.
+        margin: 0 10px 0 20px;
     }
 }
 
-.A4Landscape {
-    .back-cover-bottom {
-        justify-content: unset;
-    }
-
-    .USAID {
-        max-width: 600px;
-    }
+.A4Landscape .USAID {
+    max-width: 400px;
+    display: inline-block; // they want the text to the right of the logo
+    margin-left: 20px;
 }
