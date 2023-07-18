@@ -99,34 +99,47 @@ namespace Bloom.Collection
 				_folderChangeDebounceTimer = new Timer();
 				_folderChangeDebounceTimer.Tick += (o, args) =>
 				{
-					_folderChangeDebounceTimer.Stop();
-					_folderChangeDebounceTimer.Dispose();
-					_folderChangeDebounceTimer = null;
-
-					// Updating the books involves selecting the modified book, which might involve changing
-					// some files (e.g., adding a branding image, BL-4914), which could trigger this again.
-					// So don't allow it to be triggered by changes to a folder we're already sending
-					// notifications about.
-					// (It's PROBABLY overkill to maintain a set of these...don't expect a notification about
-					// one folder to trigger a change to another...but better safe than sorry.)
-					// (Note that we don't need synchronized access to this dictionary, because all this
-					// happens only on the UI thread.)
-					if (!_changingFolders.Contains(fullPath))
+					try
 					{
-						try
+						_folderChangeDebounceTimer.Stop();
+						_folderChangeDebounceTimer.Dispose();
+						_folderChangeDebounceTimer = null;
+
+						// Updating the books involves selecting the modified book, which might involve changing
+						// some files (e.g., adding a branding image, BL-4914), which could trigger this again.
+						// So don't allow it to be triggered by changes to a folder we're already sending
+						// notifications about.
+						// (It's PROBABLY overkill to maintain a set of these...don't expect a notification about
+						// one folder to trigger a change to another...but better safe than sorry.)
+						// (Note that we don't need synchronized access to this dictionary, because all this
+						// happens only on the UI thread.)
+						if (!_changingFolders.Contains(fullPath))
 						{
-							_changingFolders.Add(fullPath);
-							_webSocketServer.SendEvent("editableCollectionList", "reload:" + PathToDirectory);
-							if (FolderContentChanged != null)
-								FolderContentChanged(this, new ProjectChangedEventArgs() { Path = fullPath });
+							try
+							{
+								_changingFolders.Add(fullPath);
+								_webSocketServer.SendEvent("editableCollectionList", "reload:" + PathToDirectory);
+								if (FolderContentChanged != null)
+								{
+									FolderContentChanged(this, new ProjectChangedEventArgs() { Path = fullPath });								
+								}
+							}
+							finally
+							{
+								// Now we need to arrange to remove it again. Not right now, because
+								// whatever changes might be made during event handling may get noticed slightly later.
+								// But we don't want to miss it if the book gets downloaded again.
+								RemoveFromChangingFoldersLater(fullPath);
+							}
 						}
-						finally
-						{
-							// Now we need to arrange to remove it again. Not right now, because
-							// whatever changes might be made during event handling may get noticed slightly later.
-							// But we don't want to miss it if the book gets downloaded again.
-							RemoveFromChangingFoldersLater(fullPath);
-						}
+					}
+					catch (Exception e)
+					{
+						// Prevent unhandled errors from the event handler from causing fatal errors!
+						NonFatalProblem.Report(ModalIf.Alpha, PassiveIf.All,
+							shortUserLevelMessage: "An error occurred while updating the downloaded book folder",	// Since this is expected to be very rare, we don't bother localizing this, not even in LowPriority.xlf
+							moreDetails: $"Folder: {fullPath}",
+							exception: e);
 					}
 				};
 				_folderChangeDebounceTimer.Interval = 500;
@@ -382,7 +395,7 @@ namespace Bloom.Collection
 
 		private FileSystemWatcher _watcher;
 		/// <summary>
-		/// Watch for changes to your directory (currently just additions). Raise CollectionChanged if you see anything.
+		/// Watch for changes to your directory (currently just additions and updates). Raise FolderContentChanged if you see anything.
 		/// </summary>
 		public void WatchDirectory()
 		{
@@ -390,10 +403,9 @@ namespace Bloom.Collection
 			_watcher.Path = PathToDirectory;
 			// The default filter, LastWrite|FileName|DirectoryName, is probably OK.
 			// Watch everything for now.
-			// watcher.Filter = "*.txt";
+			// _watcher.Filter = "*.txt";
 			_watcher.Created += WatcherOnChange;
-			_watcher.Changed += WatcherOnChange;
-
+			_watcher.Changed += WatcherOnChange;	// TODO: Actually, this raises events if the book folder or one of its file is deleted! Unfortunately, can't find easy way to filter these events out. See BL-12433			
 			// Begin watching.
 			_watcher.EnableRaisingEvents = true;
 		}

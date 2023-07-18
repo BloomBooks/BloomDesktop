@@ -61,7 +61,7 @@ namespace Bloom.Api
 			HaveOutput = true;
 		}
 
-		public void ReplyWithFileContent(string path, string originalPath = null, bool dontCache = false)
+		public void ReplyWithFileContent(string path, string originalPath = null)
 		{
 			ReplyImagePath = path;
 			WriteCompleteOutput(RobustFile.ReadAllText(path));
@@ -73,7 +73,7 @@ namespace Bloom.Api
 			throw new NotImplementedException();
 		}
 
-		public void ReplyWithImage(string path, string originalPath = null, bool dontCache = false)
+		public void ReplyWithImage(string path, string originalPath = null)
 		{
 			ReplyImagePath = path;
 		}

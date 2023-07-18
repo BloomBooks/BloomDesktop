@@ -281,6 +281,19 @@ namespace Bloom.Collection
 			return "Andika";
 		}
 
+		internal WritingSystem Clone()
+		{
+			var copy = new WritingSystem(this._languageNumberInCollection, this._tagOfDefaultLanguageForNaming);
+			copy.Tag = this.Tag;
+			copy.Name = this.Name;
+			copy.IsCustomName = this.IsCustomName;
+			copy.LineHeight = this.LineHeight;
+			copy.FontName = this.FontName;
+			copy.BreaksLinesOnlyAtSpaces = this.BreaksLinesOnlyAtSpaces;
+			copy.BaseUIFontSizeInPoints = this.BaseUIFontSizeInPoints;
+			return copy;
+		}
+
 		/*public string GetWritingSystemDisplayForUICss()
 		{
 			// I wanted to limit this with the language tag, but after 2 hours I gave up simply getting the current language tag

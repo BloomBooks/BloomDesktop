@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Dynamic;
@@ -111,7 +111,12 @@ namespace Bloom.web.controllers
 				request.Failed("Could not make a page thumbnail for "+filePath);
 				return;
 			}
-			request.ReplyWithImage(pathToExistingOrGeneratedThumbnail, dontCache: isGenerating);
+			// If we are generating the thumbnail, make sure the browser
+			// doesn't cache what we got on the first request.
+			// See RequestInfo.ShouldCache().
+			if (isGenerating)
+				pathToExistingOrGeneratedThumbnail += "?no-cache=true";
+			request.ReplyWithImage(pathToExistingOrGeneratedThumbnail);
 		}
 
 		List<Action> _idleUpdates = new List<Action>();

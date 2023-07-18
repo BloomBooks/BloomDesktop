@@ -5,6 +5,7 @@ using OfficeOpenXml;
 using OfficeOpenXml.Style;
 using System.Text.RegularExpressions;
 using System.Xml;
+using System.Drawing;
 
 namespace BloomTests.Spreadsheet
 {
@@ -53,6 +54,39 @@ namespace BloomTests.Spreadsheet
 		}
 
 		[Test]
+		public void ParsesColorBasic()
+		{
+			MarkedUpText parsed = MarkedUpText.ParseXml("<p>a<span style=\"color:#123def;\">b</span>c</p>");
+			Assert.That(parsed.Count, Is.EqualTo(3));
+			AssertHasFormatting(parsed.GetRun(0), "a", bolded: false, italicized: false, superscripted: false, underlined: false, color: Color.Empty);
+			AssertHasFormatting(parsed.GetRun(1), "b", bolded: false, italicized: false, superscripted: false, underlined: false, color: ColorTranslator.FromHtml("#123def"));
+			AssertHasFormatting(parsed.GetRun(2), "c", bolded: false, italicized: false, superscripted: false, underlined: false, color: Color.Empty);
+		}
+
+		[Test]
+		public void ParsesColorWithWhitespaceAndNoSemicolon()
+		{
+			MarkedUpText parsed = MarkedUpText.ParseXml("<p>a<span style=\"color : #123def \">b</span>c</p>");
+			Assert.That(parsed.Count, Is.EqualTo(3));
+			AssertHasFormatting(parsed.GetRun(0), "a", bolded: false, italicized: false, superscripted: false, underlined: false, color: Color.Empty);
+			AssertHasFormatting(parsed.GetRun(1), "b", bolded: false, italicized: false, superscripted: false, underlined: false, color: ColorTranslator.FromHtml("#123def"));
+			AssertHasFormatting(parsed.GetRun(2), "c", bolded: false, italicized: false, superscripted: false, underlined: false, color: Color.Empty);
+		}
+
+		[Test]
+		public void ParsesColorNested()
+		{
+			MarkedUpText parsed = MarkedUpText.ParseXml("<p>a<strong>b<span style=\"color:#123def;\">c<em>d</em></span>e</strong></p>");
+			Assert.That(parsed.Count, Is.EqualTo(5));
+			AssertHasFormatting(parsed.GetRun(0), "a", bolded: false, italicized: false, superscripted: false, underlined: false, color: Color.Empty);
+			AssertHasFormatting(parsed.GetRun(1), "b", bolded: true, italicized: false, superscripted: false, underlined: false, color: Color.Empty);
+			AssertHasFormatting(parsed.GetRun(2), "c", bolded: true, italicized: false, superscripted: false, underlined: false, color: ColorTranslator.FromHtml("#123def"));
+			AssertHasFormatting(parsed.GetRun(3), "d", bolded: true, italicized: true, superscripted: false, underlined: false, color: ColorTranslator.FromHtml("#123def"));
+			AssertHasFormatting(parsed.GetRun(4), "e", bolded: true, italicized: false, superscripted: false, underlined: false, color: Color.Empty);
+		}
+
+
+		[Test]
 		public void ParsesFormattedXml_nonXml_returnsOriginalString()
 		{
 			MarkedUpText parsed = MarkedUpText.ParseXml("An elephant walked into a bar.");
@@ -67,13 +101,17 @@ namespace BloomTests.Spreadsheet
 			Assert.That(parsed.ToString(), Is.EqualTo($"<p>This <strong>papaya</strong> </p>{Environment.NewLine}<p>tastes perfect</p>{Environment.NewLine}<p></p>"));
 		}
 
-		private void AssertHasFormatting(MarkedUpTextRun textRun, string text, bool bolded, bool italicized, bool superscripted, bool underlined)
+		private void AssertHasFormatting(MarkedUpTextRun textRun, string text, bool bolded, bool italicized, bool superscripted, bool underlined, Color? color=null)
 		{
 			Assert.That(textRun.Text, Is.EqualTo(text));
 			Assert.That(textRun.Bold, Is.EqualTo(bolded));
 			Assert.That(textRun.Italic, Is.EqualTo(italicized));
 			Assert.That(textRun.Superscript, Is.EqualTo(superscripted));
 			Assert.That(textRun.Underlined, Is.EqualTo(underlined));
+			if (color != null)
+			{
+				Assert.That(textRun.Color, Is.EqualTo(color));
+			}
 		}
 
 
@@ -166,8 +204,15 @@ namespace BloomTests.Spreadsheet
 			AddRunToCell(fourthCell, "Some text.\r\n", bolded: false, italicized: false, superscripted: false, underlined: false);
 
 			ExcelRange fifthCell = _worksheet.Cells[5, 5];
+			fifthCell.IsRichText = true;
+			AddRunToCell(fifthCell, "Head", bolded: false, italicized: false, superscripted: false, underlined: false);
+			AddRunToCell(fifthCell, " shoulders", bolded: false, italicized: false, superscripted: true, underlined: false, colorString: "#def123");
+			AddRunToCell(fifthCell, " knees", bolded: false, italicized: false, superscripted: true, underlined: false);
+			AddRunToCell(fifthCell, " and toes", bolded: false, italicized: false, superscripted: false, underlined: false, colorString: "#abcabc");
+
+			ExcelRange sixthCell = _worksheet.Cells[6, 6];
 			thirdCell.IsRichText = true;
-			AddRunToCell(fifthCell, "One.\r\nTwo.\r\n\xfeffThree.\r\nFour.", bolded: false, italicized: false, superscripted: false, underlined: false);
+			AddRunToCell(sixthCell, "One.\r\nTwo.\r\n\xfeffThree.\r\nFour.", bolded: false, italicized: false, superscripted: false, underlined: false);
 
 
 
@@ -180,7 +225,7 @@ namespace BloomTests.Spreadsheet
 
 		}
 
-		private void AddRunToCell(ExcelRange cell, string text, bool bolded, bool italicized, bool superscripted, bool underlined)
+		private void AddRunToCell(ExcelRange cell, string text, bool bolded, bool italicized, bool superscripted, bool underlined, string colorString=null)
 		{
 			ExcelRichText rt = cell.RichText.Add(text); 
 			rt.Bold = bolded;
@@ -189,6 +234,14 @@ namespace BloomTests.Spreadsheet
 			if (superscripted)
 			{
 				rt.VerticalAlign = ExcelVerticalAlignmentFont.Superscript;
+			}
+			if (colorString != null)
+			{
+				rt.Color = ColorTranslator.FromHtml(colorString);
+			}
+			else
+			{
+				rt.Color = Color.FromArgb(255, 0, 0, 0);
 			}
 		}
 
@@ -216,12 +269,23 @@ namespace BloomTests.Spreadsheet
 			Assert.That(xmlString, Is.EqualTo("<p>Some text.</p><p></p>"));
 		}
 
+		[Test]
+		public void BuildsXmlWithColors()
+		{
+			string possibleExpected = "<p>Head<sup><span style=\"color:#DEF123;\"> shoulders</span></sup><sup> knees</sup><span style=\"color:#ABCABC;\"> and toes</span></p>";
+			string supRegex = "<p>Head.*<sup>.* shoulders.*</sup>.*<sup> knees</sup><span style=\"color:#ABCABC;\"> and toes</span></p>";
+			string colorRegex = "<p>Head.*<span  style=\"color:#DEF123;\">.* shoulders.*</span>.*<sup> knees</sup><span style=\"color:#ABCABC;\"> and toes</span></p>";
+			ExcelRange fifthCell = _worksheet.Cells[5, 5];
+			string xmlString = SpreadsheetIO.BuildXmlString(fifthCell);
+			Assert.That(xmlString.Length, Is.EqualTo(possibleExpected.Length));
+			Assert.That(Regex.IsMatch(xmlString, supRegex));
+		}
 
 		[Test]
 		public void BuildsXmlBloomLinebreak()
 		{
-			ExcelRange fifthcell = _worksheet.Cells[5, 5];
-			string xmlString = SpreadsheetIO.BuildXmlString(fifthcell);
+			ExcelRange sixthcell = _worksheet.Cells[6, 6];
+			string xmlString = SpreadsheetIO.BuildXmlString(sixthcell);
 			Assert.That(xmlString, Is.EqualTo("<p>One.</p><p>Two.<span class=\"bloom-linebreak\"></span>\xfeffThree.</p><p>Four.</p>"));
 		}
 

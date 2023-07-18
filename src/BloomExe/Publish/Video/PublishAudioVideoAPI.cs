@@ -5,6 +5,7 @@ using System.Runtime.InteropServices;
 using System.Windows.Forms;
 using Bloom.Api;
 using Bloom.MiscUI;
+using Bloom.ToPalaso;
 using Bloom.web.controllers;
 using L10NSharp;
 using SIL.PlatformUtilities;
@@ -223,7 +224,7 @@ namespace Bloom.Publish.Video
 			apiHandler.RegisterEndpointHandler(kApiUrlPart + "updatePreview", request => { UpdatePreview(request); }, false);
 			apiHandler.RegisterEndpointHandler(kApiUrlPart + "displaySettings", request =>
 			{
-				Process.Start("desk.cpl");
+				ProcessExtra.SafeStartInFront("desk.cpl");
 				request.PostSucceeded();
 			}, false);
 			apiHandler.RegisterBooleanEndpointHandler(kApiUrlPart + "isScalingActive",

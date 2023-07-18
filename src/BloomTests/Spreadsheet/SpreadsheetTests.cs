@@ -484,26 +484,6 @@ namespace BloomTests.Spreadsheet
 		}
 
 		[Test]
-		public void RichtextNotUsedWhenNotNeeded()
-		{
-			using (var tempFile = TempFile.WithExtension("xslx"))
-			{
-				_sheetFromExport.WriteToFile(tempFile.Path);
-				var info = new FileInfo(tempFile.Path);
-				using (var package = new ExcelPackage(info))
-				{
-					var worksheet = package.Workbook.Worksheets[0];
-					int c = _sheetFromExport.StandardLeadingColumns.Length;
-					for (int r = 0; r < 4; r++)
-					{
-						ExcelRange currentCell = worksheet.Cells[r + 1, c + 1];
-						Assert.That(!currentCell.IsRichText);
-					}
-				}
-			}
-		}
-
-		[Test]
 		public void SpreadsheetIOWriteSpreadsheet_RetainMarkupOptionRetainsMarkup()
 		{
 			using (var tempFile = TempFile.WithExtension("xslx"))

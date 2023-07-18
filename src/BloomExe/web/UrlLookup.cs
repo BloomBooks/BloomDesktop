@@ -25,7 +25,8 @@ namespace Bloom.web
 		Support,
 		IssueTrackingSystem,
 		IssueTrackingSystemBackend,
-		LocalizingSystem
+		LocalizingSystem,
+		LastVersionForPreWindows10
 	}
 
 	public static class ErrorLevelExtensions
@@ -44,9 +45,9 @@ namespace Bloom.web
 			get { return UrlLookup.LookupUrl(UrlType.LibrarySite, null, BookUpload.UseSandbox); }
 		}
 
-		public static string BloomLibraryDetailPageUrlFromBookId(string bookId, bool myBooksBreadCrumb=false)
+		public static string BloomLibraryDetailPageUrlFromBookId(string bookId, bool myBooksBreadCrumb = false)
 		{
-			return BloomLibraryUrlPrefix + (myBooksBreadCrumb?"/my-books":"")+ "/book/" + bookId;
+			return BloomLibraryUrlPrefix + (myBooksBreadCrumb ? "/my-books" : "") + "/book/" + bookId;
 		}
 	}
 	public static class UrlLookup
@@ -245,7 +246,7 @@ namespace Bloom.web
 		{
 			try
 			{
-				var iNetRequest = (HttpWebRequest) WebRequest.Create(url);
+				var iNetRequest = (HttpWebRequest)WebRequest.Create(url);
 				iNetRequest.Timeout = 2500;
 				iNetRequest.KeepAlive = false;
 				var iNetResponse = iNetRequest.GetResponse();

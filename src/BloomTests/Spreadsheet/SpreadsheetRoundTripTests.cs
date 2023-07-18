@@ -4,6 +4,7 @@ using Moq;
 using NUnit.Framework;
 using OfficeOpenXml;
 using SIL.IO;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -181,6 +182,35 @@ namespace BloomTests.Spreadsheet
             </div>
          </div>
     </div>
+	    <div class=""bloom-page numberedPage customPage bloom-combinedPage A5Portrait side-right bloom-monolingual"" data-page="""" id=""dc90dbe0-7584-4d9f-bc06-0e0326060054"" data-pagelineage=""adcd48df-e9ab-4a07-afd4-6a24d0398382"" data-page-number=""1"" lang="""">
+        <div class=""pageLabel"" data-i18n=""TemplateBooks.PageLabel.Basic Text &amp; Picture"" lang=""en"">
+            Basic Text &amp; Picture
+        </div>
+
+        <div class=""pageDescription"" lang=""en""></div>
+
+        <div class=""split-pane-component marginBox"" style="""">
+            <div class=""split-pane horizontal-percent"" style=""min-height: 42px;"">
+                <div class=""split-pane-component position-top"">
+                    <div class=""split-pane-component-inner"" min-width=""60px 150px 250px"" min-height=""60px 150px 250px"">
+                        <div class=""bloom-translationGroup bloom-trailingElement"" data-default-languages=""auto"">
+                            <div class=""bloom-editable normal-style bloom-content1 bloom-visibility-code-on"" id=""colorTest"" style=""min-height: 24px;"" tabindex=""0"" spellcheck=""true"" role=""textbox"" aria-label=""false"" data-languagetipcontent=""español"" lang=""es"" contenteditable=""true"">
+                                <p>I have a<span style=""color:#ff0000;""> red</span> house and a <span style=""color:#ff00ff"">purple</span> pig.</p>
+                            </div>
+
+                            <div class=""bloom-editable normal-style"" style="""" lang=""z"" contenteditable=""true"">
+                                <p></p>
+                            </div>
+
+                            <div class=""bloom-editable normal-style bloom-contentNational1"" style="""" tabindex=""0"" spellcheck=""true"" role=""textbox"" aria-label=""false"" data-languagetipcontent=""English"" lang=""en"" contenteditable=""true"">
+                                <p></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </body>
 </html>
 ";
@@ -264,6 +294,22 @@ namespace BloomTests.Spreadsheet
 				bold: true, italic: false, underlined: false, superscript: false));
 		}
 
+		[Test]
+		public void RoundtripColor()
+		{
+			var nodeList = _roundtrippedDom.SafeSelectNodes("//div[@id='colorTest']");
+			Assert.That(nodeList.Count, Is.EqualTo(1));
+			var node = nodeList[0];
+			RemoveTopLevelWhitespace(node);
+			Assert.That(node.InnerText, Is.EqualTo("I have a red house and a purple pig."));
+			Assert.That(HasTextWithFormatting("//div[@id='colorTest']//", "I have a",
+				bold: false, italic: false, underlined: false, superscript: false, colorString: null));
+			Assert.That(HasTextWithFormatting("//div[@id='colorTest']//", " red",
+				bold: false, italic: false, underlined: false, superscript: false, colorString: "#FF0000"));
+			Assert.That(HasTextWithFormatting("//div[@id='colorTest']//", "purple",
+				bold: false, italic: false, underlined: false, superscript: false, colorString: "#FF00FF"));
+		}
+
 		//Remove the whitespace between <p> tags that was originally there just for readability
 		private void RemoveTopLevelWhitespace(XmlNode node)
 		{
@@ -329,13 +375,18 @@ namespace BloomTests.Spreadsheet
 			Assert.That(FormatNodeContainsText("//div[@id='bloomDataDiv']/div[@data-book='licenseImage' and not(@src)]", "license.png"));
 		}
 
-		private bool HasTextWithFormatting(string baseXPath, string text, bool bold, bool italic, bool underlined, bool superscript)
+		private bool HasTextWithFormatting(string baseXPath, string text, bool bold, bool italic, bool underlined, bool superscript, string colorString=null)
 		{
 			return
 				   FormatNodeContainsText(baseXPath + "strong", text) == bold
 				&& FormatNodeContainsText(baseXPath + "em", text) == italic
 				&& FormatNodeContainsText(baseXPath + "u", text) == underlined
-				&& FormatNodeContainsText(baseXPath + "sup", text) == superscript;
+				&& FormatNodeContainsText(baseXPath + "sup", text) == superscript
+				// if color = null, check that text exists with no color. Otherwise, check that text exists with the specified color.
+				&& (colorString == null && (FormatNodeContainsText(baseXPath + "span[not(contains(@style, 'color'))]", text) 
+											|| FormatNodeContainsText(baseXPath + "span[not(@style)]", text)
+											|| FormatNodeContainsText(baseXPath + "*", text))
+					|| (colorString != null && FormatNodeContainsText(baseXPath + String.Format("span[contains(@style, '{0}')]", colorString), text)));
 		}
 
 		private bool FormatNodeContainsText(string xPath, string text)

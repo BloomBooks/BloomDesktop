@@ -1,4 +1,5 @@
 import { createTheme, Theme } from "@mui/material/styles";
+import "./bloomWebFonts.less";
 import {
     kBloomDisabledOpacity,
     kBloomDisabledText,
@@ -42,7 +43,7 @@ export const kSelectCss = `
     .MuiSelect-select {padding: 7px 11px;}`;
 
 // Should match @UIFontStack in bloomWebFonts.less
-export const kUiFontStack = "NotoSans, Roboto, sans-serif";
+export const kUiFontStack = "Roboto, NotoSans, sans-serif";
 
 // the value that gets us to the 4.5 AA ratio depends on the background.
 // So the "aside"/features right-panel color effects this.

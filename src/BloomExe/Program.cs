@@ -211,6 +211,19 @@ namespace Bloom
 					OldVersionCheck();
 				}
 
+				// In early 2023, MS stopped updating WebView2 for Windows 7, 8, and 8.1.
+				if (Environment.OSVersion.Version.Major < 10)
+				{
+					using (_applicationContainer = new ApplicationContainer())
+					{
+						SetUpLocalization();
+						var msg = LocalizationManager.GetString("Errors.Pre10WindowsNotSupported", "We are sorry, but your version of Windows is no longer supported by Microsoft. This version of Bloom requires Windows 10 or greater. As a result, you will need to install Bloom version 5.4. Bloom will now open a web page where you can download Bloom 5.4.");
+						MessageBox.Show(msg, "Bloom");
+						SIL.Program.Process.SafeStart(UrlLookup.LookupUrl(UrlType.LastVersionForPreWindows10, null));
+						return 1;
+					}
+				}
+
 				if (IsWebviewMissingOrTooOld())
 					return 1;
 
@@ -571,12 +584,7 @@ namespace Bloom
 					MessageBox.Show(msgBldr.ToString());
 					// The new process showing a website should use the current culture, so we don't need to worry about that.
 					// We don't wait for this to finish, so we don't use the CommandLineRunner methods.
-					var psi = new ProcessStartInfo
-					{
-						FileName = "https://docs.bloomlibrary.org/webview2",
-						UseShellExecute = true
-					};
-					Process.Start(psi);
+					ProcessExtra.SafeStartInFront("https://docs.bloomlibrary.org/webview2");
 				}
 			}
 			return missingOrAntique;
@@ -860,6 +868,7 @@ namespace Bloom
 		/// </summary>
 		private static void ShowUserEmergencyShutdownMessage(Exception nasty)
 		{
+			StartupScreenManager.CloseSplashScreen();
 			if (SIL.PlatformUtilities.Platform.IsWindows)
 			{
 				try
@@ -886,7 +895,7 @@ namespace Bloom
 				writer.Flush();
 				writer.Close();
 			}
-			Process.Start(tempFileName);
+			ProcessExtra.SafeStartInFront(tempFileName);
 		}
 
 		private static bool IsBloomBookOrder(string[] args)
@@ -1134,7 +1143,7 @@ namespace Bloom
 		/// <param name="formToClose">If provided, this form will be closed after choosing a
 		/// collection and before opening it. Currently, this is used to close the Shell at the proper
 		/// time when switching collectons.</param>
-		public static void ChooseACollection(Form formToClose = null)
+		public static void ChooseACollection(Shell formToClose = null)
 		{
 			while (true)
 			{
@@ -1166,7 +1175,11 @@ namespace Bloom
 						return;
 					}
 
-					formToClose?.Close();
+					if (formToClose != null)
+					{
+						formToClose.UserWantsToOpenADifferentProject = true;
+						formToClose.Close();
+					}
 
 					if (OpenCollection(dlg.SelectedPath)) return;
 				}

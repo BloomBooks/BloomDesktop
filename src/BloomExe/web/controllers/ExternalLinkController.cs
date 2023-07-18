@@ -1,5 +1,6 @@
 ﻿using System.Text.RegularExpressions;
 using Bloom.Api;
+using Bloom.ToPalaso;
 
 namespace Bloom.web
 {
@@ -30,7 +31,7 @@ namespace Bloom.web
 		private static void HandleLink(ApiRequest request)
 		{
 			var href = request.RequiredPostString();
-			SIL.Program.Process.SafeStart(href);
+			ProcessExtra.SafeStartInFront(href);
 			request.PostSucceeded();
 		}
 
@@ -62,7 +63,7 @@ namespace Bloom.web
 			// changed the way to look up the browser path, and we were opening links in Internet Explorer regardless of the default browser. (BL-6952)
 			// So now we serve the file using Bloom as the server. This launches in the default browser and makes fragments work.
 			var urlToOpenInExternalBrowser = $"http://localhost:{BloomServer.portForHttp}/bloom/{cleanUrl}";
-			SIL.Program.Process.SafeStart(urlToOpenInExternalBrowser);
+			ProcessExtra.SafeStartInFront(urlToOpenInExternalBrowser);
 			request.ExternalLinkSucceeded();
 		}
 	}

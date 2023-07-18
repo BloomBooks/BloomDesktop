@@ -10,6 +10,7 @@ using Bloom.Api;
 using Bloom.Collection;
 using Bloom.Edit;
 using Bloom.Properties;
+using Bloom.ToPalaso;
 using Bloom.Utils;
 using Bloom.web.controllers;
 using Bloom.Workspace;
@@ -89,11 +90,6 @@ namespace Bloom
 			_contextMenu.Opening += _contextMenu_Opening;
 
 			_workspaceView = projectViewFactory();
-			_workspaceView.CloseCurrentProject += ((x, y) =>
-			{
-				UserWantsToOpenADifferentProject = true;
-				Program.ChooseACollection(this);
-			});
 
 			_workspaceView.ReopenCurrentProject += ((x, y) =>
 			{
@@ -394,7 +390,7 @@ namespace Bloom
 
 		private void showPerformancePageToolStripMenuItem_Click(object sender, EventArgs e)
 		{
-			Process.Start(BloomServer.ServerUrlWithBloomPrefixEndingInSlash + "performance/PerformanceLogPage.htm");
+			ProcessExtra.SafeStartInFront(BloomServer.ServerUrlWithBloomPrefixEndingInSlash + "performance/PerformanceLogPage.htm");
 		}
 
 		private void alwaysMeasureToolStripMenuItem_Click(object sender, EventArgs e)
