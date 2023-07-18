@@ -9,12 +9,12 @@
       </trans-unit>
       <trans-unit id="Errors.CorruptImageFile">
         <source xml:lang="en">The image file {0} is corrupt and needs to be replaced. ({1})</source>
-        <target xml:lang="fr" state="needs-translation">The image file {0} is corrupt and needs to be replaced. ({1})</target>
+        <target xml:lang="fr" state="translated">Le fichier image {0} est corrompu et doit être remplacé. ({1})</target>
         <note>ID: Errors.CorruptImageFile</note>
       </trans-unit>
       <trans-unit id="CollectionSettingsDialog.BookMakingTab.NoBookshelvesFromServer" sil:dynamic="true">
         <source xml:lang="en">Bloom could not reach the server to get the list of bookshelves.</source>
-        <target xml:lang="fr" state="needs-translation">Bloom could not reach the server to get the list of bookshelves.</target>
+        <target xml:lang="fr" state="translated">Bloom n'a pas pu rejoindre le serveur pour obtenir la liste des étagères.</target>
         <note>ID: CollectionSettingsDialog.BookMakingTab.NoBookshelvesFromServer</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.ESpeakPreview.ConversionFileUsed" approved="yes">
@@ -36,6 +36,11 @@
         <source xml:lang="en">Result of orthography conversion:</source>
         <target xml:lang="fr" state="final">Suite de la conversion orthographique:</target>
         <note>ID: EditTab.Toolbox.TalkingBookTool.ESpeakPreview.ResultOfOrthographyConversion</note>
+      </trans-unit>
+      <trans-unit id="Errors.CannotConnectToBloomServer.2" approved="yes">
+        <source xml:lang="en">Bloom was unable to start its own HTTP listener that it uses to talk to its embedded Web browser. If this happens even if you just restarted your computer, then ask someone to investigate if you have an aggressive firewall product installed, which may need to be uninstalled before you can use Bloom.</source>
+        <target xml:lang="fr" state="final">Bloom n’a pu faire démarrer son écouteur HTTP qu’il utilise pour s'adresser au navigateur Firefox qu'il comporte. Si cela se produit, même si vous venez juste de redémarrer votre ordinateur, demandez à quelqu'un de voir si votre pare-feu est trop sensible. Il faudra peut-être le désinstaller avant de pouvoir utiliser Bloom.</target>
+        <note>ID: Errors.CannotConnectToBloomServer.2</note>
       </trans-unit>
       <trans-unit id="OpenCreateCloneControl.InZipFileMessage" approved="yes">
         <source xml:lang="en">It looks like you are trying to open a Bloom Collection from inside of a ZIP file. You need to first unzip the ZIP file, and then open the collection.</source>
@@ -59,7 +64,7 @@
       </trans-unit>
       <trans-unit id="PublishTab.Upload.BookshelfError">
         <source xml:lang="en">The collection's bookshelf was not on the list of bookshelves for this Enterprise subscription.</source>
-        <target xml:lang="fr" state="needs-translation">The collection's bookshelf was not on the list of bookshelves for this Enterprise subscription.</target>
+        <target xml:lang="fr" state="translated">L'étagère de la collection ne figurait pas sur la liste des étagères pour cet abonnement Entreprise.</target>
         <note>ID: PublishTab.Upload.BookshelfError</note>
       </trans-unit>
       <trans-unit id="Settings.Enterprise.Community" approved="yes">
@@ -183,12 +188,12 @@
       </trans-unit>
       <trans-unit id="Spreadsheet.TroubleCopying">
         <source xml:lang="en">Bloom had trouble copying the file {0} to the video folder: {1}</source>
-        <target xml:lang="fr" state="needs-translation">Bloom had trouble copying the file {0} to the video folder: {1}</target>
+        <target xml:lang="fr" state="translated">Bloom a eu des difficultés à copier le fichier {0} dans le dossier vidéo : {1}</target>
         <note>ID: Spreadsheet.TroubleCopying</note>
       </trans-unit>
       <trans-unit id="Spreadsheet.TroubleCopyingFolder">
         <source xml:lang="en">Bloom had trouble copying the folder {0} to the activities folder: {1}</source>
-        <target xml:lang="fr" state="needs-translation">Bloom had trouble copying the folder {0} to the activities folder: {1}</target>
+        <target xml:lang="fr" state="translated">Bloom a eu des difficultés à copier le dossier {0} dans le dossier activités : {1}</target>
         <note>ID: Spreadsheet.TroubleCopyingFolder</note>
       </trans-unit>
       <trans-unit id="Spreadsheet.WriteFailed" approved="yes">
@@ -199,6 +204,16 @@
       <trans-unit id="Activity.Editing.MultipleChoice.CorrectAnswer" approved="yes">
         <source xml:lang="en">Put the correct answer in this button. Bloom will randomize the order later.</source>
         <target xml:lang="fr" state="final">Insérer la bonne réponse dans ce bouton. Bloom va aléatoirer l'ordre plus tard.</target>
+      </trans-unit>
+      <trans-unit id="Download.PleaseSendLogFile" approved="yes">
+        <source xml:lang="en">Please also send us the latest log file found at {0}.</source>
+        <target xml:lang="fr" state="final">Veuillez également nous envoyer le dernier fichier de log situé sur {0}.</target>
+        <note>ID: Download.PleaseSendLogFile</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.MicrophoneAccessProblem" approved="yes">
+        <source xml:lang="en">Bloom was not able to access a microphone.</source>
+        <target xml:lang="fr" state="final">Bloom n'a pas pu accéder à un microphone.</target>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.MicrophoneAccessProblem</note>
       </trans-unit>
     </body>
   </file>
