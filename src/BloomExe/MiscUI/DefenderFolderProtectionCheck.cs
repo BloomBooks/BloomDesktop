@@ -4,7 +4,7 @@ using L10NSharp;
 using SIL.IO;
 using SIL.PlatformUtilities;
 using Bloom.Properties;
-using System.Windows;
+using System.Windows.Forms;
 
 namespace Bloom.MiscUI
 {
@@ -77,7 +77,7 @@ namespace Bloom.MiscUI
 				"This might be caused by Windows Defender \"Controlled Folder Access\" or some other virus protection.");
 			var msg = string.Format(heading, failingFolder) + Environment.NewLine + Environment.NewLine + mainMsg;
 			var caption = LocalizationManager.GetString("Common.ProblemTitle", "Bloom Problem");
-			MessageBox.Show(msg, caption, System.Windows.MessageBoxButton.OK, MessageBoxImage.Exclamation);
+			MessageBox.Show(msg, caption, MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
 			SIL.Program.Process.SafeStart("https://docs.bloomlibrary.org/windows-controlled-folder-access");
 		}
 
