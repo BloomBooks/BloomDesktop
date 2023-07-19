@@ -65,7 +65,6 @@ namespace Bloom.Edit
             this._layoutChoices = new System.Windows.Forms.ToolStripDropDownButton();
             this._splitTemplateAndSource = new Bloom.ToPalaso.BetterSplitContainer(this.components);
             this._betterToolTip1 = new Bloom.ToPalaso.BetterToolTip(this.components);
-            this._settingsButton = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this._L10NSharpExtender)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this._splitContainer2)).BeginInit();
             this._splitContainer2.Panel1.SuspendLayout();
@@ -117,7 +116,6 @@ namespace Bloom.Edit
             // 
             // _topBarPanel
             // 
-            this._topBarPanel.Controls.Add(this._settingsButton);
             this._topBarPanel.Controls.Add(this._rightToolStrip);
             this._topBarPanel.Controls.Add(this._undoButton);
             this._topBarPanel.Controls.Add(this._cutButton);
@@ -126,7 +124,7 @@ namespace Bloom.Edit
             this._topBarPanel.Controls.Add(this._menusToolStrip);
             this._topBarPanel.Location = new System.Drawing.Point(83, 186);
             this._topBarPanel.Name = "_topBarPanel";
-            this._topBarPanel.Size = new System.Drawing.Size(468, 66);
+            this._topBarPanel.Size = new System.Drawing.Size(724, 66);
             this._topBarPanel.TabIndex = 3;
             // 
             // _rightToolStrip
@@ -134,36 +132,33 @@ namespace Bloom.Edit
             this._rightToolStrip.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(150)))), ((int)(((byte)(102)))), ((int)(((byte)(143)))));
             this._rightToolStrip.Dock = System.Windows.Forms.DockStyle.Right;
             this._rightToolStrip.GripStyle = System.Windows.Forms.ToolStripGripStyle.Hidden;
-            this._rightToolStrip.ImageScalingSize = new System.Drawing.Size(24, 24);
             this._rightToolStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this._bookSettingsButton});
             this._rightToolStrip.LayoutStyle = System.Windows.Forms.ToolStripLayoutStyle.HorizontalStackWithOverflow;
             this._L10NSharpExtender.SetLocalizableToolTip(this._rightToolStrip, null);
             this._L10NSharpExtender.SetLocalizationComment(this._rightToolStrip, null);
             this._L10NSharpExtender.SetLocalizationPriority(this._rightToolStrip, L10NSharp.LocalizationPriority.NotLocalizable);
-            this._L10NSharpExtender.SetLocalizingId(this._rightToolStrip, "WorkspaceView._toolStrip");
-            this._rightToolStrip.Location = new System.Drawing.Point(292, 0);
+            this._L10NSharpExtender.SetLocalizingId(this._rightToolStrip, "EditingView._rightToolStrip");
+            this._rightToolStrip.Location = new System.Drawing.Point(608, 0);
             this._rightToolStrip.Name = "_rightToolStrip";
             this._rightToolStrip.RightToLeft = System.Windows.Forms.RightToLeft.No;
-            this._rightToolStrip.Size = new System.Drawing.Size(176, 66);
+            this._rightToolStrip.Size = new System.Drawing.Size(116, 66);
             this._rightToolStrip.TabIndex = 32;
-            this._rightToolStrip.Text = "_toolStrip";
-            this._rightToolStrip.Visible = false;
+            this._rightToolStrip.Text = "_rightToolStrip";
             // 
             // _bookSettingsButton
             // 
-            this._bookSettingsButton.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-            this._bookSettingsButton.Image = global::Bloom.Properties.Resources.gear_black_24x24;
+            this._bookSettingsButton.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(49)))), ((int)(((byte)(32)))), ((int)(((byte)(46)))));
+            this._bookSettingsButton.Image = global::Bloom.Properties.Resources.book_settings;
             this._bookSettingsButton.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None;
             this._bookSettingsButton.ImageTransparentColor = System.Drawing.Color.Magenta;
             this._L10NSharpExtender.SetLocalizableToolTip(this._bookSettingsButton, null);
             this._L10NSharpExtender.SetLocalizationComment(this._bookSettingsButton, null);
             this._L10NSharpExtender.SetLocalizingId(this._bookSettingsButton, "Common.BookSettings");
             this._bookSettingsButton.Name = "_bookSettingsButton";
-            this._bookSettingsButton.Size = new System.Drawing.Size(126, 61);
+            this._bookSettingsButton.Size = new System.Drawing.Size(82, 63);
             this._bookSettingsButton.Text = "Book Settings";
             this._bookSettingsButton.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
-            this._bookSettingsButton.Visible = false;
             this._bookSettingsButton.Click += new System.EventHandler(this._bookSettingsButton_Click);
             // 
             // _undoButton
@@ -363,7 +358,7 @@ namespace Bloom.Edit
             this._L10NSharpExtender.SetLocalizationComment(this._contentLanguagesDropdown, null);
             this._L10NSharpExtender.SetLocalizingId(this._contentLanguagesDropdown, "EditTab.ContentLanguagesDropdown");
             this._contentLanguagesDropdown.Name = "_contentLanguagesDropdown";
-            this._contentLanguagesDropdown.Size = new System.Drawing.Size(191, 29);
+            this._contentLanguagesDropdown.Size = new System.Drawing.Size(129, 19);
             this._contentLanguagesDropdown.Text = "Multilingual Settings";
             // 
             // _layoutChoices
@@ -376,7 +371,7 @@ namespace Bloom.Edit
             this._L10NSharpExtender.SetLocalizationPriority(this._layoutChoices, L10NSharp.LocalizationPriority.NotLocalizable);
             this._L10NSharpExtender.SetLocalizingId(this._layoutChoices, "EditTab.PageSizeAndOrientationChoices");
             this._layoutChoices.Name = "_layoutChoices";
-            this._layoutChoices.Size = new System.Drawing.Size(74, 29);
+            this._layoutChoices.Size = new System.Drawing.Size(50, 19);
             this._layoutChoices.Text = "Paper";
             this._layoutChoices.ToolTipText = "(set dynamically, see code)";
             // 
@@ -410,20 +405,6 @@ namespace Bloom.Edit
             this._L10NSharpExtender.SetLocalizableToolTip(this._betterToolTip1, null);
             this._L10NSharpExtender.SetLocalizationComment(this._betterToolTip1, null);
             this._L10NSharpExtender.SetLocalizingId(this._betterToolTip1, "BTT_id");
-            // 
-            // _settingsButton
-            // 
-            this._settingsButton.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(150)))), ((int)(((byte)(102)))), ((int)(((byte)(143)))));
-            this._L10NSharpExtender.SetLocalizableToolTip(this._settingsButton, null);
-            this._L10NSharpExtender.SetLocalizationComment(this._settingsButton, null);
-            this._L10NSharpExtender.SetLocalizingId(this._settingsButton, "button1");
-            this._settingsButton.Location = new System.Drawing.Point(377, 10);
-            this._settingsButton.Name = "_settingsButton";
-            this._settingsButton.Size = new System.Drawing.Size(80, 45);
-            this._settingsButton.TabIndex = 33;
-            this._settingsButton.Text = "Settings";
-            this._settingsButton.UseVisualStyleBackColor = false;
-            this._settingsButton.Click += new System.EventHandler(this._bookSettingsButton_Click);
             // 
             // EditingView
             // 
@@ -472,6 +453,5 @@ namespace Bloom.Edit
 		private L10NSharp.UI.L10NSharpExtender _L10NSharpExtender;
 		private System.Windows.Forms.ToolStrip _rightToolStrip;
 		private System.Windows.Forms.ToolStripButton _bookSettingsButton;
-		private System.Windows.Forms.Button _settingsButton;
 	}
 }

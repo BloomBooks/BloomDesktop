@@ -303,8 +303,7 @@ namespace Bloom.CollectionTab
 		}
 
 		/// <summary>
-		/// TopBarControl.Width is not right here, because (a) the Send/Receive button currently never shows, and
-		/// (b) the Make Bloompack button only shows in source collections.
+		/// TopBarControl.Width is not right here, because the Team Collection status button only shows in team collections.
 		/// </summary>
 		public int WidthToReserveForTopBarControl => _openCreateCollectionButton.Width + _settingsButton.Width +
 			(_tcStatusButton.Visible ? _tcStatusButton.Width : 0);
