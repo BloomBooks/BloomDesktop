@@ -172,6 +172,10 @@
             <trans-unit id="Activity.Editing.MultipleChoice.CorrectAnswer">
                 <source xml:lang="en">Put the correct answer in this button. Bloom will randomize the order later.</source>
             </trans-unit>
+          <trans-unit id="EditTab.Toolbox.TalkingBookTool.MicrophoneAccessProblem">
+            <source xml:lang="en">Bloom was not able to access a microphone.</source>
+            <note>ID: EditTab.Toolbox.TalkingBookTool.MicrophoneAccessProblem</note>
+          </trans-unit>
         </body>
     </file>
 </xliff>

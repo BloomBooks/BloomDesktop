@@ -236,8 +236,22 @@ namespace Bloom.Edit
 			}
 			if (RecordingDevice != null)
 			{
-				Recorder.BeginMonitoring();
-				_monitoringAudio = true;
+				try
+				{
+					Recorder.BeginMonitoring(catchAndReportExceptions: false);
+					_monitoringAudio = true;
+				}
+				catch (NAudio.MmException)
+				{
+					var msg = LocalizationManager.GetString("EditTab.Toolbox.TalkingBookTool.MicrophoneAccessProblem",
+						"Bloom was not able to access a microphone.");
+					_webSocketServer.SendString(kWebsocketContext, "micError", msg);
+				}
+				catch (Exception e)
+				{
+					ErrorReport.NotifyUserOfProblem(new ShowOncePerSessionBasedOnExactMessagePolicy(),
+						e, "There was a problem starting up volume monitoring.");
+				}
 			}
 		}
 

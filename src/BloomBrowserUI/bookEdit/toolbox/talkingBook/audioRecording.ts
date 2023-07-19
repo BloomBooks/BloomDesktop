@@ -479,6 +479,7 @@ export default class AudioRecording {
         // you'll want your listeners to have been set up already.
         this.addAudioLevelListener();
         this.addAudioRecordStartListener();
+        this.addMicErrorListener();
     }
 
     // Called when the Talking Book Tool is chosen.
@@ -486,6 +487,15 @@ export default class AudioRecording {
         WebSocketManager.addListener(kWebsocketContext, e => {
             if (e.id == "peakAudioLevel")
                 this.setStaticPeakLevel(e.message ? e.message : "");
+        });
+    }
+    
+    public addMicErrorListener(): void {
+        WebSocketManager.addListener(kWebsocketContext, e => {
+            if (e.id == "micError")
+            {
+                toastr.error(e.message ? e.message : "");
+            }
         });
     }
 
