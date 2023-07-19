@@ -1,6 +1,7 @@
 using Bloom.Api;
 using Bloom.Book;
 using Bloom.Edit;
+using Bloom.Properties;
 using Microsoft.Web.WebView2.Core;
 using Microsoft.Web.WebView2.WinForms;
 using Microsoft.Win32;
@@ -134,7 +135,15 @@ namespace Bloom
 			//var op = new CoreWebView2EnvironmentOptions("--disable-gpu");
 			//var env = await CoreWebView2Environment.CreateAsync(null, null, op);
 			//await _webview.EnsureCoreWebView2Async(env);
-			var op = new CoreWebView2EnvironmentOptions("--autoplay-policy=no-user-gesture-required");
+			// Setting the UI language in the second parameter ought to work, but it doesn't.
+			// I'll leave it in case it starts to work eventually.
+			// In the meantime, setting the "accept-lang" additional browser switch does work.
+			// Unfortunately, this setting cannot be changed "on the fly", so Bloom will need to be restarted before
+			// a change in UI language will take effect at this level.
+			// See https://github.com/MicrosoftEdge/WebView2Feedback/issues/3635 (which was just opened last week!)
+			var op = new CoreWebView2EnvironmentOptions(
+				"--autoplay-policy=no-user-gesture-required --accept-lang=" + Settings.Default.UserInterfaceLanguage,
+				Settings.Default.UserInterfaceLanguage);
 
 
 			// John Hatton keeps getting broken by updates to WV2. This could happen to a user too. A workaround
