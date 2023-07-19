@@ -1195,7 +1195,7 @@ namespace Bloom.Api
 			}
 
 			return LocalizationManager.GetString("Errors.CannotConnectToBloomServer",
-												 "Bloom was unable to start its own HTTP listener that it uses to talk to its embedded Firefox browser. If this happens even if you just restarted your computer, then ask someone to investigate if you have an aggressive firewall product installed, which may need to be uninstalled before you can use Bloom.");
+												 "Bloom was unable to start its own HTTP listener that it uses to talk to its embedded browser. If this happens even if you just restarted your computer, then ask someone to investigate if you have an aggressive firewall product installed, which may need to be uninstalled before you can use Bloom.");
 		}
 
 		// After the initial startup, this should only be called inside a lock(_queue),
