@@ -3312,6 +3312,8 @@ export default class AudioRecording {
     // The "right" way to get text from ckeditor boxes is to call getData(). So that's what we're doing here.
     // It does clean up at least most of the zero-width spaces.
     // See BL-12391.
+    // Note, there is similar logic in EditableDivUtils.doCkEditorCleanup().
+    // But, unfortunately, the complication here of element vs copy means we can't easily share the code.
     private cleanUpCkEditorHtml(element: HTMLElement, copy: HTMLElement) {
         const editableDiv = element.closest(".bloom-editable") as HTMLElement;
         if (!editableDiv) return;
@@ -3319,8 +3321,6 @@ export default class AudioRecording {
         const ckeditorOfThisBox = (<any>editableDiv).bloomCkEditor;
         if (!ckeditorOfThisBox) return;
 
-        // Note, there is similar logic in EditableDivUtils.doCkEditorCleanup and .restoreSelectionFromCkEditorBookmarks.
-        // But, unfortunately, the complication here of data-element-we-are-processing means we can't easily share the code.
         if (editableDiv.innerHTML !== ckeditorOfThisBox.getData()) {
             // Flag the element we are processing so we can find it in the version we make from ckeditor's getData().
             element.setAttribute("data-element-we-are-processing", "this-one");
@@ -3328,8 +3328,11 @@ export default class AudioRecording {
             // Create a dummy element just so we can stash the result of getData() and then find our element in it.
             // getData() is for the whole text box, but we are processing one of the child elements.
             const newElement = document.createElement("div");
-            newElement.innerHTML = ckeditorOfThisBox.getData(); // have to call getData() again so it contains data-element-we-are-processing
-            EditableDivUtils.fixUpEmptyishParagraphs(newElement);
+            // have to call getData() again so it contains data-element-we-are-processing
+            EditableDivUtils.safelyReplaceContentWithCkEditorData(
+                newElement,
+                ckeditorOfThisBox.getData()
+            );
             const newChild = newElement.querySelector(
                 "[data-element-we-are-processing]"
             );
