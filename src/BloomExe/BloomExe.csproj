@@ -236,39 +236,19 @@ copy /Y "$(SolutionDir)\lib\dotnet\libtidy.dll" $(OutDir)
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\current-service-urls.json" />
-    <None Include="Resources\Logo27x32.png" />
-    <None Include="Resources\x-office-document.png" />
-    <None Include="Resources\WelcomeHeader.png" />
-    <None Include="Resources\menuButton.png" />
-    <None Include="Resources\booklet70x70.png" />
-    <None Include="Resources\bookletA5Horizontal70x70.png" />
-    <None Include="Resources\A5Landscapel70Wide.png" />
-    <None Include="Resources\A5Portraitl70Tall.png" />
     <None Include="Resources\DeleteMessageBoxButtonImage.png" />
     <None Include="Resources\DeleteMessageBoxImage.png" />
-    <None Include="Resources\RecycleBin.png" />
-    <None Include="Resources\newBook.png" />
-    <None Include="Resources\info16x16.png" />
     <None Include="Resources\open.png" />
     <None Include="Resources\edit.png" />
     <None Include="Resources\Error70x70.png" />
-    <None Include="Resources\settings.png" />
-    <None Include="Resources\spinner.gif" />
     <None Include="Resources\pagePlaceHolder.png" />
-    <None Include="Resources\construction.png" />
-    <None Include="Resources\Favicon16x16.png" />
-    <None Include="Resources\collection16x16.png" />
     <None Include="Resources\collection32x32.png" />
     <None Include="Resources\settings16x16.png" />
     <None Include="Resources\settings32x32.png" />
     <None Include="Resources\settings24x24.png" />
-    <None Include="Resources\feedback24x24.png" />
     <None Include="Resources\OpenCreateCollection24x24.png" />
     <None Include="Resources\help24x24.png" />
     <None Include="Resources\publish32x32.png" />
-    <None Include="Resources\helpTab32x32.png" />
-    <None Include="Resources\Usb.png" />
-    <None Include="Resources\print.png" />
     <None Include="Resources\coverOnly.png" />
     <None Include="Resources\insideBookletPages.png" />
     <None Include="Resources\simplePages.png" />
@@ -282,10 +262,7 @@ copy /Y "$(SolutionDir)\lib\dotnet\libtidy.dll" $(OutDir)
     <None Include="Resources\paste32x32.png" />
     <None Include="Resources\undo32x32.png" />
     <None Include="Resources\newCollection32x32.png" />
-    <None Include="Resources\newBook1.png" />
-    <None Include="Resources\LogoForLibraryChoosingDialog.png" />
     <None Include="Resources\BloomPack64x64.png" />
-    <None Include="Resources\Error70x701.png" />
     <None Include="Resources\copyDisable16x16.png" />
     <None Include="Resources\pasteDisabled32x32.png" />
     <None Include="Resources\copyDisable16x161.png" />
@@ -307,46 +284,18 @@ copy /Y "$(SolutionDir)\lib\dotnet\libtidy.dll" $(OutDir)
     </COMReference>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Resources\PackageFlat32x32.png" />
     <None Include="Resources\PackageFlat48x47.png" />
-    <None Include="Resources\delete-wordLarge.png" />
     <None Include="Resources\pdf16x16.png" />
-    <None Include="Resources\multilingualSettings.png" />
     <None Include="Resources\thumbnail.png" />
-    <None Include="Resources\sad_large.png" />
     <None Include="Resources\PackageFlat.png" />
-    <None Include="Resources\cloneFromInternet.png" />
-    <None Include="Resources\cloneFromUsb.png" />
     <None Include="Resources\placeHolderBookThumbnail.png" />
-    <None Include="Resources\cropMarks.png" />
-    <None Include="Resources\SILLogoBlue132x184.png" />
-    <None Include="Resources\sil logo on dark 132x127.png" />
-    <None Include="Resources\SILBlueWithTagline100x140.png" />
-    <None Include="Resources\SILBlueWithTagline101x141.png" />
-    <None Include="Resources\SILBlueWithTagline102x142.png" />
-    <None Include="Resources\SILInBlueNoTagLineWithTrademark100x50.png" />
-    <None Include="Resources\SILInBlueNoTagLineWithTrademark100x113.png" />
-    <None Include="Resources\SILInBlueNoTagLineWithTrademark80x90.png" />
-    <None Include="Resources\SILInBlue76.png" />
-    <None Include="Resources\SILInBlue100.png" />
-    <None Include="Resources\SIL_Logo_FadedBlue_Small_Transparent.png" />
-    <None Include="Resources\SIL_Logo_Blue_Smaller_Transparent.png" />
-    <None Include="Resources\cloud.png" />
     <None Include="Resources\upload.png" />
     <None Include="Resources\SIL_Logo_2014Small1.png" />
-    <None Include="Resources\unstable.png" />
     <None Include="Resources\duplicatePage32x32.png" />
     <None Include="Resources\duplicatePageDisabled32x32.png" />
-    <None Include="Resources\greyTriangleButton.png" />
-    <None Include="Resources\installerBackground.jpg" />
     <None Include="Resources\videos.png" />
-    <None Include="Resources\EpubIcon.bmp" />
     <None Include="Resources\settingsbw16x16.png" />
     <None Include="Resources\OpenCreateCollection16x16.png" />
-    <None Include="Resources\help16x16.png" />
-    <None Include="Resources\Hamburger.PNG" />
-    <None Include="Resources\AddPageIcon.PNG" />
-    <None Include="Resources\AddPageIcon %282%29.PNG" />
     <None Include="Resources\AddPageButton.PNG" />
     <None Include="Resources\AddPageButtonDisabled.PNG" />
     <None Include="Resources\epubPublishButton.png" />
@@ -354,28 +303,22 @@ copy /Y "$(SolutionDir)\lib\dotnet\libtidy.dll" $(OutDir)
   <ItemGroup>
     <Content Include="bloom.ico" />
     <None Include="Resources\book-settings.png" />
-    <None Include="Resources\GearBlack16x16.png" />
     <None Include="Resources\PdfPrint.png" />
     <None Include="Resources\BloomPUB.png" />
     <None Include="Resources\publish video.png" />
-    <None Include="Resources\bloom-enterprise-badge.png" />
     <None Include="Resources\Disconnected.png" />
-    <None Include="Resources\Error32x32.png" />
     <None Include="Resources\TC Button Grey Small Team.png" />
     <None Include="Resources\TC Button Warning.png" />
     <None Include="Resources\TC Button Updates Available.png" />
     <None Include="Resources\Team32x32.png" />
-    <None Include="Resources\lock.bmp" />
     <None Include="Resources\LogoForSplashScreen.png" />
     <None Include="Resources\help16x16Darker.png" />
     <None Include="Resources\sad16x16.png" />
     <None Include="Resources\weblink.png" />
-    <None Include="Resources\android.png" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="desktopAndTaskBar.ico" />
     <Content Include="desktopAndTaskBar.svg.ico" />
-    <None Include="Resources\normal.svg.ico" />
     <None Include="Resources\bloom.png" />
   </ItemGroup>
 </Project>
