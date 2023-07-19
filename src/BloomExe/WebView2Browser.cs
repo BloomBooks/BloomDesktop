@@ -1,7 +1,6 @@
 using Bloom.Api;
 using Bloom.Book;
 using Bloom.Edit;
-using Bloom.Properties;
 using Microsoft.Web.WebView2.Core;
 using Microsoft.Web.WebView2.WinForms;
 using Microsoft.Win32;
@@ -144,18 +143,7 @@ namespace Bloom
 			//var op = new CoreWebView2EnvironmentOptions("--disable-gpu");
 			//var env = await CoreWebView2Environment.CreateAsync(null, null, op);
 			//await _webview.EnsureCoreWebView2Async(env);
-			// Setting the UI language in the second parameter ought to work, but it doesn't.
-			// In the meantime, setting the "accept-lang" additional browser switch does work.
-			// Unfortunately, this setting cannot be changed "on the fly", so Bloom will need to be restarted before
-			// a change in UI language will take effect at this level.
-			// See https://github.com/MicrosoftEdge/WebView2Feedback/issues/3635 (which was just opened last week!)
-			var additionalBrowserArgs = "--autoplay-policy=no-user-gesture-required";
-			var uiLanguage = Settings.Default.UserInterfaceLanguage;
-			if (!string.IsNullOrEmpty(uiLanguage))
-			{
-				additionalBrowserArgs += " --accept-lang=" + uiLanguage;
-			}
-			var op = new CoreWebView2EnvironmentOptions(additionalBrowserArgs);
+			var op = new CoreWebView2EnvironmentOptions("--autoplay-policy=no-user-gesture-required");
 
 
 			// John Hatton keeps getting broken by updates to WV2. This could happen to a user too. A workaround
@@ -183,7 +171,7 @@ namespace Bloom
 			var env = await CoreWebView2Environment.CreateAsync(browserExecutableFolder: AlternativeWebView2Path, userDataFolder: ProjectContext.GetBloomAppDataFolder(), options: op);
 			await _webview.EnsureCoreWebView2Async(env);
 
-			// It is kinda hard to get a click event from webview2. This needs to be explicitly sent from the browser code,
+			// I is kinda hard to get a click event from webview2. This needs to be explicitly sent from the browser code,
 			// e.g. (window as any).chrome.webview.postMessage("browser-clicked");
 			_webview.WebMessageReceived += (o, e) =>
 			{
