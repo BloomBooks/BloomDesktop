@@ -489,11 +489,10 @@ export default class AudioRecording {
                 this.setStaticPeakLevel(e.message ? e.message : "");
         });
     }
-    
+
     public addMicErrorListener(): void {
         WebSocketManager.addListener(kWebsocketContext, e => {
-            if (e.id == "micError")
-            {
+            if (e.id == "micError") {
                 toastr.error(e.message ? e.message : "");
             }
         });
@@ -1125,13 +1124,12 @@ export default class AudioRecording {
     // to determine) Bloom's fault.
     private addAudioRecordStartListener(): void {
         WebSocketManager.addListener(kWebsocketContext, e => {
-            if (e.id === "recordStartStatus") {
-                // handle e.message "failure" ("success is a no-op")
-                if (e.message === "failure") {
-                    this.setStatus("record", Status.Disabled);
-                    this.recording = false;
-                    $("#mic-problem-message").removeClass("initiallyHidden");
-                }
+            // if the recording did start, we will get a message with e.id === "recordStartSucceeded"
+            // do nothing in this case
+            if (e.id === "recordStartFailed") {
+                this.setStatus("record", Status.Disabled);
+                this.recording = false;
+                toastr.error(e.message ? e.message : "");
             }
         });
     }
