@@ -96,8 +96,61 @@ namespace Bloom.Publish
 				RemoveUnwantedContentInternal(dom, book, removeInactiveLanguages, epubMaker, warningMessages, keepPageLabels);
 		}
 
+		/// <summary>
+		/// This javascript function is run in the browser to get the display and font information
+		/// for all the elements with an id.  The C# code must ensure that all elements that might
+		/// possibly be hidden by CSS have an id attribute before loading the document in the browser.
+		/// </summary>
+		/// <remarks>
+		/// Running this script and getting the results for the whole page is much faster than running
+		/// two trivial scripts for each element in WebView2. See BL-12402.
+		/// </remarks>
+		public const string GetElementDisplayAndFontInfoJavascript = @"(() =>
+{
+	const elementsInfo = [];
+	const elementsWithId = document.querySelectorAll(""[id]"");
+	elementsWithId.forEach(elt => {
+		const style = getComputedStyle(elt, null);
+		if (style) {
+			elementsInfo.push({
+				id: elt.id,
+				display: style.display,
+				fontFamily: style.getPropertyValue(""font-family"")
+			});
+		}
+	});
+	return { results: elementsInfo };
+})();";
+
+		/// <summary>
+		/// Store the display and font information for all the elements returned as JSON
+		/// from executing the script in GetElementDisplayAndFontInfoJavascript.
+		/// </summary>
+		/// <remarks>
+		/// This information will be loaded into two Dictionary objects, one mapping id to display
+		/// and the other mapping id to font-family for faster lookup.
+		/// </remarks>
+		private class ElementInfoArray
+		{
+			public ElementInfo[] results;
+		}
+
+		/// <summary>
+		/// Store the display and font information for a single element.
+		/// </summary>
+		private class ElementInfo
+		{
+			public string id;
+			public string display;
+			public string fontFamily;
+		}
+
+		Dictionary<string, string> _mapIdToDisplay = new Dictionary<string, string>();
+		Dictionary<string, string> _mapIdToFontFamily = new Dictionary<string, string>();
+
 		private void RemoveUnwantedContentInternal(HtmlDom dom, Book.Book book, bool removeInactiveLanguages, EpubMaker epubMaker, ISet<string> warningMessages, bool keepPageLabels = false)
 		{
+			var startRemoveTime = DateTime.Now;
 			// The ControlForInvoke can be null for tests.  If it's not null, we better not need an Invoke!
 			Debug.Assert(ControlForInvoke==null || !ControlForInvoke.InvokeRequired); // should be called on UI thread.
 			Debug.Assert(dom != null && dom.Body != null);
@@ -246,6 +299,17 @@ namespace Bloom.Publish
 			if (this != _latestInstance)
 				return;
 
+			// Get and store the display and font information for each element in the DOM.
+			var elementsInfo = BrowserForPageChecks.RunJavaScript(GetElementDisplayAndFontInfoJavascript);
+			var rawInfo = Newtonsoft.Json.JsonConvert.DeserializeObject<ElementInfoArray>(elementsInfo);
+			if (rawInfo != null)
+			{
+				foreach (var info in rawInfo.results)
+				{
+					_mapIdToDisplay[info.id] = info.display;
+					_mapIdToFontFamily[info.id] = info.fontFamily;
+				}
+			}
 			var toBeDeleted = new List<XmlElement>();
 			// Deleting the elements in place during the foreach messes up the list and some things that should be deleted aren't
 			// (See BL-5234). So we gather up the elements to be deleted and delete them afterwards.
@@ -288,9 +352,13 @@ namespace Bloom.Publish
 				{
 					StoreFontUsed(elt);
 				}
+				//Debug.WriteLine($"Removing {toBeDeleted.Count} elements from page");
 				RemoveTempIds(page); // don't need temporary IDs any more.
 				toBeDeleted.Clear();
 			}
+			var endRemoveTime = DateTime.Now;
+			//Debug.WriteLine($"Fonts found: {String.Join(",", FontsUsed)}");
+			Debug.WriteLine($"RemoveUnwantedContentInternal took {(endRemoveTime - startRemoveTime).TotalMilliseconds} ms");
 		}
 
 		public static void RemoveEnterpriseFeaturesIfNeeded(Book.Book book, List<XmlElement> pageElts, ISet<string> warningMessages)
@@ -346,8 +414,7 @@ namespace Bloom.Publish
 		private bool IsDisplayed(XmlElement elt, bool throwOnFailure)
 		{
 			var id = elt.Attributes["id"].Value;
-			var display = BrowserForPageChecks.RunJavaScript ("document.getElementById('" + id + "') ? getComputedStyle(document.getElementById('" + id + "'), null).display : 'not found'");
-			if (display == "not found")
+			if (!_mapIdToDisplay.TryGetValue(id, out var display))
 			{
 				Debug.WriteLine("element not found in IsDisplayed()");
 				if (throwOnFailure)
@@ -373,11 +440,7 @@ namespace Bloom.Publish
 		private void StoreFontUsed(XmlElement elt)
 		{
 			var id = elt.Attributes["id"].Value;
-			var fontFamily = BrowserForPageChecks.RunJavaScript($"document.getElementById('{id}') ? getComputedStyle(document.getElementById('{id}'), null).getPropertyValue('font-family') : 'not found'");
-			// 'fontFamily' could come back null if the user closed Bloom while a save was ongoing.
-			// The save will finish successfully after the Bloom screen goes away, but it may not have all the font information.
-			// We need a progress indicator, so that users will know when their file save completed.
-			if (fontFamily == null || fontFamily == "not found")
+			if (!_mapIdToFontFamily.TryGetValue(id, out var fontFamily))
 				return;	// Shouldn't happen, but ignore if it does.
 			// we actually can get a comma-separated list with fallback font options: split into an array so we can use just the first one
 			var fonts = fontFamily.Split(new[]{','}, StringSplitOptions.RemoveEmptyEntries);
