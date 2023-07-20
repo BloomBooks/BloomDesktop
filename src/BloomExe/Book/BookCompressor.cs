@@ -16,6 +16,7 @@ using SIL.Xml;
 using System.Collections.Generic;
 using Bloom.Collection;
 using Bloom.CollectionTab;
+using Bloom.Utils;
 
 namespace Bloom.Book
 {
@@ -177,6 +178,8 @@ namespace Bloom.Book
 				entryName = ZipEntry.CleanName(entryName);          // Removes drive from name and fixes slash direction
 				ZipEntry newEntry = new ZipEntry(entryName)
 				{
+					// Don't try to further compress videos, audio, or certain image types, they are already compressed.
+					CompressionMethod = BloomZipFile.ShouldCompressByFiletype(filePath) ? CompressionMethod.Deflated : CompressionMethod.Stored,
 					DateTime = fi.LastWriteTime,
 					IsUnicodeText = true
 				};
