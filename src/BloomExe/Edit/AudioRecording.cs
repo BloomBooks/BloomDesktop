@@ -557,7 +557,6 @@ namespace Bloom.Edit
 			try
 			{
 				Recorder.BeginRecording(PathToTemporaryWav);
-				_webSocketServer.SendString(kWebsocketContext, "recordStartSucceeded", "success");
 			}
 			catch (InvalidOperationException ex)
 			{
@@ -566,7 +565,7 @@ namespace Bloom.Edit
 				Logger.WriteError("Could not begin recording", ex);
 				var msg = LocalizationManager.GetString("EditTab.Toolbox.TalkingBook.MicrophoneProblem",
 					"Bloom is having problems connecting to your microphone. Please restart your computer and try again.");
-				_webSocketServer.SendString(kWebsocketContext, "recordStartFailed", msg);
+				_webSocketServer.SendString(kWebsocketContext, "micError", msg);
 			}
 		}
 

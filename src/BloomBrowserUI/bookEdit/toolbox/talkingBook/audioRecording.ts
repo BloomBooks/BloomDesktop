@@ -478,7 +478,6 @@ export default class AudioRecording {
         // then the user changes the layout to add a text box, and then...
         // you'll want your listeners to have been set up already.
         this.addAudioLevelListener();
-        this.addAudioRecordStartListener();
         this.addMicErrorListener();
     }
 
@@ -492,7 +491,9 @@ export default class AudioRecording {
 
     public addMicErrorListener(): void {
         WebSocketManager.addListener(kWebsocketContext, e => {
-            if (e.id == "micError") {
+            if (e.id === "micError") {
+                this.setStatus("record", Status.Disabled);
+                this.recording = false;
                 toastr.error(e.message ? e.message : "");
             }
         });
@@ -1117,21 +1118,6 @@ export default class AudioRecording {
                 "&nocache=" +
                 new Date().getTime()
         );
-    }
-
-    // Gets a definitive indication from C#-land that the recording did or did not actually start.
-    // "failure" message comes from an instance of BL-7568 and isn't (as far as we've been able
-    // to determine) Bloom's fault.
-    private addAudioRecordStartListener(): void {
-        WebSocketManager.addListener(kWebsocketContext, e => {
-            // if the recording did start, we will get a message with e.id === "recordStartSucceeded"
-            // do nothing in this case
-            if (e.id === "recordStartFailed") {
-                this.setStatus("record", Status.Disabled);
-                this.recording = false;
-                toastr.error(e.message ? e.message : "");
-            }
-        });
     }
 
     public async startRecordCurrentAsync(): Promise<void> {
