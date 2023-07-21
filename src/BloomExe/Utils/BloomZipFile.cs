@@ -37,12 +37,21 @@ namespace Bloom.Utils
 		// These file types are already highly compressed; further compression wastes time
 		// and is unlikely to save space. It might also increase the likelihood of spurious
 		// differences between file versions making Dropbox's sync less efficient.
-		private HashSet<string> extensionsNotToCompress = new HashSet<string>(new[] {".png", ".jpg", ".mp3", ".mp4"});
+		private static readonly HashSet<string> extensionsNotToCompress = new HashSet<string>(new[] {".png", ".jpg", ".mp3", ".mp4"});
 
-		protected override bool ShouldCompress(string fileFullPath)
+		/// <summary>
+		/// Decide whether to compress the file based on its extension. Some file types are already compressed so much
+		/// that it wastes time to compress them further.
+		/// </summary>
+		public static bool ShouldCompressByFiletype(string fileFullPath)
 		{
 			var fileExtension = Path.GetExtension(fileFullPath);
 			return !extensionsNotToCompress.Contains(fileExtension);
+		}
+
+		protected override bool ShouldCompress(string fileFullPath)
+		{
+			return ShouldCompressByFiletype(fileFullPath);
 		}
 
 		public void SetComment(string comment)
