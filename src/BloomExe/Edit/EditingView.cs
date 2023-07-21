@@ -121,6 +121,7 @@ namespace Bloom.Edit
 			// Adding this renderer prevents a white line from showing up under the components.
 			// BL-5071 We don't want a hover border on the items either.
 			_menusToolStrip.Renderer = new NoBorderToolStripRenderer();
+			_rightToolStrip.Renderer = new NoBorderToolStripRenderer();
 
 			//we're giving it to the parent control through the TopBarControls property
 			Controls.Remove(_topBarPanel);
