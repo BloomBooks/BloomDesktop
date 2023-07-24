@@ -1,7 +1,10 @@
-﻿using SIL.PlatformUtilities;
+﻿using SIL.IO;
+using SIL.PlatformUtilities;
+using SIL.Reporting;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
 
@@ -26,7 +29,7 @@ namespace Bloom.ToPalaso
 		/// </summary>
 		public static void SafeStartInFront(string urlOrCmd)
 		{
-			Debug.WriteLine($"DEBUG SafeStartInFront(\"{urlOrCmd}\")");
+			LogDebugInfo($"DEBUG SafeStartInFront(\"{urlOrCmd}\")");
 			// On Linux, we need to temporarily clear the LD_LIBRARY_PATH environment variable
 			// so that programs we start don't pick up the wrong version of various libraries.
 			string libpath = null;
@@ -37,6 +40,7 @@ namespace Bloom.ToPalaso
 					Environment.SetEnvironmentVariable("LD_LIBRARY_PATH", null);
 			}
 			var processList = Process.GetProcesses();
+			var windowMap = GetAllWindows();
 			Process.Start(urlOrCmd);
 
 			if (Platform.IsLinux && !String.IsNullOrEmpty(libpath))
@@ -46,7 +50,42 @@ namespace Bloom.ToPalaso
 			// The rest of this happens on a timeout, so that we don't have to sleep and hold things up
 			// Passing in a folder path opens window explorer, which doesn't show up in the processlist.
 			// But the path appears in the window title, so we can use that to find the window.
-			BringDesiredWindowToFront(urlOrCmd, processList);
+			var titleToMatch = urlOrCmd;
+			// Many programs show the filename of the file they load.  We can use that to find the window.
+			var extension = Path.GetExtension(urlOrCmd).ToLowerInvariant();
+			switch (extension)
+			{
+				case ".xlsx":
+				case ".pdf":
+				case ".txt":
+				case ".doc":
+				case ".csv":	// comma-separated values
+				case ".tsv":	// tab-separated values (audio timing file)
+				case ".3gp":	// audio/video extensions
+				case ".mp4":
+				case ".mp3":
+					titleToMatch = Path.GetFileName(urlOrCmd);
+					break;
+				default:
+					break;
+			}
+			BringDesiredWindowToFront(titleToMatch, processList, windowMap);
+		}
+
+		/// <summary>
+		/// Start the file explorer on the parent folder of the given file/folder, selecting the given
+		/// file/folder, and moving the file explorer window to the foreground if possible.
+		/// </summary>
+		public static void ShowFileInExplorerInFront(string path)
+		{
+			LogDebugInfo($"DEBUG ShowFileInExplorerInFront(\"{path}\")");
+			var processList = Process.GetProcesses();
+			var windowMap = GetAllWindows();
+			PathUtilities.SelectFileInExplorer(path);
+			// The rest of this happens on a timeout, so that we don't have to sleep and hold things up
+			// Windows explorer doesn't show up in the processlist, but the path appears in the window
+			// title, so we can use that to find the window.
+			BringDesiredWindowToFront(Path.GetDirectoryName(path), processList, windowMap);
 		}
 
 		/// <summary>
@@ -55,7 +94,7 @@ namespace Bloom.ToPalaso
 		/// </summary>
 		public static void SafeStartInFront(string command, string arguments)
 		{
-			Debug.WriteLine($"DEBUG SafeStartInFront(\"{command}\", \"{arguments}\")");
+			LogDebugInfo($"DEBUG SafeStartInFront(\"{command}\", \"{arguments}\")");
 			// On Linux, we need to temporarily clear the LD_LIBRARY_PATH environment variable
 			// so that programs we start don't pick up the wrong version of various libraries.
 			string libpath = null;
@@ -66,6 +105,7 @@ namespace Bloom.ToPalaso
 					Environment.SetEnvironmentVariable("LD_LIBRARY_PATH", null);
 			}
 			var processList = Process.GetProcesses();
+			var windowMap = GetAllWindows();
 			Process.Start(command, arguments);
 
 			if (Platform.IsLinux && !String.IsNullOrEmpty(libpath))
@@ -73,21 +113,24 @@ namespace Bloom.ToPalaso
 				Environment.SetEnvironmentVariable("LD_LIBRARY_PATH", libpath);
 			}
 			// The rest of this happens on a timeout, so that we don't have to sleep and hold things up
-			BringDesiredWindowToFront("", processList);
+			BringDesiredWindowToFront("", processList, windowMap);
 		}
 
 		public static void StartInFront(ProcessStartInfo startInfo)
 		{
+			LogDebugInfo($"DEBUG StartInFront(\"{startInfo}\")");
 			var processList = Process.GetProcesses();
+			var windowMap = GetAllWindows();
 			Process.Start(startInfo);
 
 			// The rest of this happens on a timeout, so that we don't have to sleep and hold things up
-			BringDesiredWindowToFront("", processList);
+			BringDesiredWindowToFront("", processList, windowMap);
 		}
 
-		private static void BringDesiredWindowToFront(string windowTitleToMatch, Process[] oldProcesses)
+		private static void BringDesiredWindowToFront(string windowTitleToMatch, Process[] oldProcesses,
+			Dictionary<IntPtr, string> windowMap)
 		{
-			if (SIL.PlatformUtilities.Platform.IsLinux)
+			if (Platform.IsLinux)
 				return; // TODO: implement this for Linux.  See CommmonApi.BringFolderToFrontInLinux() for ideas.
 
 			int count = 0;
@@ -96,11 +139,23 @@ namespace Bloom.ToPalaso
 			timer.Elapsed += (sender, e) =>
 			{
 				timer.Stop();
+
+				if (!String.IsNullOrEmpty(windowTitleToMatch))
+				{
+					IntPtr hWnd = FindNewWindowWithText(windowTitleToMatch, windowMap);
+					if (hWnd != IntPtr.Zero)
+					{
+						LogDebugInfo($"DEBUG BringDesiredWindowToFront(\"{windowTitleToMatch}\",...) found a new matching window in {count}.1 second(s)");
+						SetForegroundWindow(hWnd);
+						timer.Dispose();
+						return;
+					}
+				}
 				var newProcesses = Process.GetProcesses();
 				var process = FindNewOrRetitledProcess(oldProcesses, newProcesses);
 				if (process != null)
 				{
-					Debug.WriteLine($"DEBUG BringDesiredWindowToFront(\"{windowTitleToMatch}\",oldProcesses) found a new(?) process in {count}.1 second(s) [\"{process.MainWindowTitle}\" / {process.ProcessName}]");
+					LogDebugInfo($"DEBUG BringDesiredWindowToFront(\"{windowTitleToMatch}\",...) found a new(?) process in {count}.1 second(s) [\"{process.MainWindowTitle}\" / {process.ProcessName}]");
 					SetForegroundWindow(process.MainWindowHandle);
 					timer.Dispose();
 					return;
@@ -114,7 +169,7 @@ namespace Bloom.ToPalaso
 					var windows = FindWindowsWithText(windowTitleToMatch);
 					if (windows.Count > 0)
 					{
-						Debug.WriteLine($"DEBUG BringDesiredWindowToFront(\"{windowTitleToMatch}\",oldProcesses) matched {windows.Count} window(s) in {count}.1 second(s)");
+						LogDebugInfo($"DEBUG BringDesiredWindowToFront(\"{windowTitleToMatch}\",...) matched {windows.Count} window(s) in {count}.1 second(s)");
 						SetForegroundWindow(windows[0]);
 						timer.Dispose();
 						return;
@@ -123,9 +178,23 @@ namespace Bloom.ToPalaso
 
 				if (++count > 10)
 				{
-					Debug.WriteLine($"DEBUG BringDesiredWindowToFront(\"{windowTitleToMatch}\",oldProcesses): failed to match after 10.1 seconds");
+					var bldr = new StringBuilder();
+					bldr.Append($"DEBUG BringDesiredWindowToFront(\"{windowTitleToMatch}\",...): failed to match after 10.1 seconds");
 					foreach (var proc in newProcesses)
-						Debug.WriteLine($"    process: {proc.ProcessName} [\"{proc.MainWindowTitle}\"]");
+					{
+						if (!String.IsNullOrEmpty(proc.MainWindowTitle))
+							bldr.Append($"      process: {proc.ProcessName} [\"{proc.MainWindowTitle}\"]");
+					}
+					var allWindows = GetAllWindows();
+					foreach (var key in allWindows.Keys)
+					{
+						if (windowMap.ContainsKey(key))
+							continue;
+						var title = allWindows[key];
+						if (!String.IsNullOrEmpty(title))
+							bldr.Append($"      window: {key} [\"{title}\"]");
+					}
+					LogDebugInfo(bldr.ToString());
 					timer.Dispose();
 				}
 				else
@@ -135,6 +204,27 @@ namespace Bloom.ToPalaso
 					timer.Start();
 				}
 			};
+		}
+
+		private static IntPtr FindNewWindowWithText(string windowTitleToMatch, Dictionary<IntPtr, string> windowMap)
+		{
+			IntPtr hWndFound = IntPtr.Zero;
+			EnumWindows(delegate (IntPtr hWnd, IntPtr lParam)
+			{
+				// Look only at new windows.
+				if (!windowMap.ContainsKey(hWnd))
+				{
+					var title = GetWindowText(hWnd);
+					if (title.Contains(windowTitleToMatch))
+					{
+						hWndFound = hWnd;
+						return false;
+					}
+				}
+				// Return true here so that we iterate all windows until finding one that matches.
+				return true;
+			}, IntPtr.Zero);
+			return hWndFound;
 		}
 
 		private static Process FindNewOrRetitledProcess(Process[] oldProcesses, Process[] newProcesses)
@@ -151,7 +241,7 @@ namespace Bloom.ToPalaso
 						if (!String.IsNullOrEmpty(newProcess.MainWindowTitle) && !String.IsNullOrEmpty(oldProcess.MainWindowTitle) &&
 							newProcess.MainWindowTitle != oldProcess.MainWindowTitle)
 						{
-							Debug.WriteLine($"DEBUG: retitled from \"{oldProcess.MainWindowTitle}\" to \"{newProcess.MainWindowTitle}\" [{newProcess.ProcessName}]");
+							LogDebugInfo($"DEBUG FindNewOrRetitledProcess(): retitled from \"{oldProcess.MainWindowTitle}\" to \"{newProcess.MainWindowTitle}\" [{newProcess.ProcessName}]");
 							retitledProcess = newProcess;
 						}
 						break;
@@ -159,7 +249,7 @@ namespace Bloom.ToPalaso
 				}
 				if (!found && newProcess.MainWindowHandle != IntPtr.Zero)
 				{
-					Debug.WriteLine($"DEBUG: new process \"{newProcess.ProcessName}\" [\"{newProcess.MainWindowTitle}\", {newProcess.MainWindowHandle}]");
+					LogDebugInfo($"DEBUG FindNewOrRetitledProcess(): new process \"{newProcess.ProcessName}\" [\"{newProcess.MainWindowTitle}\", {newProcess.MainWindowHandle}]");
 					return newProcess;
 				}
 			}
@@ -221,8 +311,36 @@ namespace Bloom.ToPalaso
 		{
 			return FindWindows(delegate (IntPtr hWnd, IntPtr lParam)
 			{
-				return GetWindowText(hWnd).Contains(titleText);
+				var title = GetWindowText(hWnd);
+				if (title.Contains(titleText))
+				{
+					LogDebugInfo($"DEBUG FindWindowsWithText(\"{titleText}\") sees \"{title}\"");
+					return true;
+				}
+				return false;
 			});
+		}
+
+		private static Dictionary<IntPtr, string> GetAllWindows()
+		{
+			var windows = new Dictionary<IntPtr, string>();
+			if (Platform.IsLinux)
+				return windows; // TODO: implement this for Linux.
+			EnumWindows(delegate (IntPtr hWnd, IntPtr lParam)
+			{
+				windows[hWnd] = GetWindowText(hWnd);
+				return true;
+			}, IntPtr.Zero);
+			return windows;
+		}
+
+		private static void LogDebugInfo(string message)
+		{
+			if (ApplicationUpdateSupport.IsDevOrAlpha || ApplicationUpdateSupport.ChannelName.ToLowerInvariant().Contains("beta"))
+			{
+				Console.WriteLine(message);
+				Logger.WriteEvent(message);
+			}
 		}
 	}
 }

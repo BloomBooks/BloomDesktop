@@ -397,7 +397,7 @@ namespace Bloom.CollectionTab
 		{
 			try
 			{
-				PathUtilities.SelectFileInExplorer(_bookSelection.CurrentSelection.FolderPath);
+				ProcessExtra.ShowFileInExplorerInFront(_bookSelection.CurrentSelection.FolderPath);
 			}
 			catch (System.Runtime.InteropServices.COMException e)
 			{
@@ -652,7 +652,7 @@ namespace Bloom.CollectionTab
 
 						// show it
 						Logger.WriteEvent("Showing BloomPack on disk");
-						PathUtilities.SelectFileInExplorer(outputPath);
+						ProcessExtra.ShowFileInExplorerInFront(outputPath);
 						Analytics.Track("Create BloomPack");
 					}
 					finally

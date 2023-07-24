@@ -257,7 +257,7 @@ namespace Bloom.web.controllers
 		{
 			try
 			{
-				PathUtilities.SelectFileInExplorer(filePath.Replace("/", Path.DirectorySeparatorChar.ToString()));
+				ToPalaso.ProcessExtra.ShowFileInExplorerInFront(filePath.Replace("/", Path.DirectorySeparatorChar.ToString()));
 			}
 			catch (System.Runtime.InteropServices.COMException e)
 			{
