@@ -1,3 +1,5 @@
+using Bloom.Book;
+using Newtonsoft.Json;
 using System;
 using System.IO;
 using System.Linq;
@@ -51,7 +53,7 @@ namespace Bloom.Api
 						currentToolBoxTool = _bookSelection.CurrentSelection.BookInfo.CurrentTool,
 						//bloomPUB = new { imageSettings = new { maxWidth= _bookSelection.CurrentSelection.BookInfo.PublishSettings.BloomPub.ImageSettings.MaxWidth, maxHeight= _bookSelection.CurrentSelection.BookInfo.PublishSettings.BloomPub.ImageSettings.MaxHeight} }
 						publish = _bookSelection.CurrentSelection.BookInfo.PublishSettings,
-						appearance = _bookSelection.CurrentSelection.BookInfo.AppearanceSettings
+						appearance = _bookSelection.CurrentSelection.BookInfo.AppearanceSettings._properties // todo _properties exposure
 					};
 					var jsonData = JsonConvert.SerializeObject(settings);
 
@@ -73,12 +75,12 @@ namespace Bloom.Api
 					var jsonOfJustPublishSettings = JsonConvert.SerializeObject(newSettings.publish);
 					_bookSelection.CurrentSelection.BookInfo.PublishSettings.LoadNewJson(jsonOfJustPublishSettings);
 					//var jsonOfJustAppearanceSettings = JsonConvert.SerializeObject(newSettings.appearance);
-					_bookSelection.CurrentSelection.BookInfo.AppearanceSettings.Update(newSettings.appearance);
+					_bookSelection.CurrentSelection.BookInfo.AppearanceSettings.UpdateFromDynamic(newSettings.appearance);
 
 					_bookSelection.CurrentSelection.SettingsUpdated();
-					_bookRefreshEvent.Raise(_bookSelection.CurrentSelection);
+					//_bookRefreshEvent.Raise(_bookSelection.CurrentSelection);
 
-					//_pageRefreshEvent.Raise(PageRefreshEvent.SaveBehavior.SaveBeforeRefresh);
+					_pageRefreshEvent.Raise(PageRefreshEvent.SaveBehavior.SaveBeforeRefresh);
 
 #if UserControlledTemplate
 					UpdateBookTemplateMode(settings.isTemplateBook);

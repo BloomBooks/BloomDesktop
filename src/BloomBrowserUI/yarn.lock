@@ -2967,10 +2967,10 @@
     "@react-spring/shared" "~9.4.5"
     "@react-spring/types" "~9.4.5"
 
-"@sillsdev/config-r@^1.0.0-alpha.4":
-  version "1.0.0-alpha.4"
-  resolved "https://registry.yarnpkg.com/@sillsdev/config-r/-/config-r-1.0.0-alpha.4.tgz#542d63812f06838748b664acde7f73ce69d6f848"
-  integrity sha512-iHnIOZyFAUvV4u+1jkBHBTJFXJYVoWgaRG+mqEPPATpRF/cfX81Nk5LWBynMWlt/+gNxoimYJjtrU0Wwmmi3Ng==
+"@sillsdev/config-r@^1.0.0-alpha.7":
+  version "1.0.0-alpha.7"
+  resolved "https://registry.yarnpkg.com/@sillsdev/config-r/-/config-r-1.0.0-alpha.7.tgz#d4db9ccc6af1048c94456d73be66ce8d2a870a76"
+  integrity sha512-GZtmunpDLQU3eb1LtPpL71GkiSggjN1xJjFpXcwzMV1bGDUsQVuyCHh44NmD3fwBCC3T0u6/GFcgDofXgn9YWw==
   dependencies:
     "@textea/json-viewer" "^2.13.1"
     formik "^2.2.9"
