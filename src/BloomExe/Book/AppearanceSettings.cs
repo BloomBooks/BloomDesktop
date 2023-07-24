@@ -3,6 +3,7 @@ using Newtonsoft.Json;
 using SIL.Code;
 using SIL.Extensions;
 using SIL.IO;
+using System;
 using System.Collections.Generic;
 using System.Dynamic;
 using System.IO;
@@ -60,7 +61,7 @@ class CssDisplayVariableDef : CssPropertyDef
 	public CssDisplayVariableDef(string name, bool defaultValue, string overrideGroup)
 	{
 		Name = name;
-		TrueValue = "ignore-this"; // by using an illegal value, we just get a no-op rule, which is what we want
+		TrueValue = "bogus-value-so-default-is-used"; // by using an illegal value, we just get a no-op rule, which is what we want
 		FalseValue = "none";
 		DefaultValue = defaultValue;
 		OverrideGroup = overrideGroup;
@@ -68,14 +69,14 @@ class CssDisplayVariableDef : CssPropertyDef
 
 	public override string GetCssVariableDeclaration(dynamic property)
 	{
-		var value = property.Value ? TrueValue : FalseValue;
+		var value = (bool)property.Value ? TrueValue : FalseValue;
 		return $"--{Name}: {value};";
 	}
 }
 public class AppearanceSettings
 {
 
-	private dynamic _properties;
+	internal dynamic _properties;
 	public dynamic TestOnlyPropertiesAccess { get { return _properties; } }
 
 	// create an array of properties and fill it in
@@ -124,7 +125,7 @@ public class AppearanceSettings
 		if (RobustFile.Exists(jsonPath))
 		{
 			var json = RobustFile.ReadAllText(jsonPath);
-			settings.Update(json);
+			settings.UpdateFromJson(json);
 		}
 
 		return settings;
@@ -133,7 +134,9 @@ public class AppearanceSettings
 	{
 		var cssBuilder = new StringBuilder();
 		cssBuilder.AppendLine(":root{");
-		foreach (var property in _properties)
+
+		//foreach (var property in _properties.Properties())
+		foreach (var property in (IDictionary<string, object>)_properties)
 		{
 			if (property.Key == "overrides")
 				continue;
@@ -150,7 +153,7 @@ public class AppearanceSettings
 				if (overrides == null || !((string[])overrides.ToObject<string[]>()).Contains(definition.OverrideGroup))
 				{
 					var v = ((IDictionary<string, object>)parent._properties)[property.Key];
-					keyValuePair = new { Key = property.Key, Value = v };
+					keyValuePair = new KeyValuePair<string, object>(property.Key, v);
 				}
 			}
 
@@ -190,18 +193,22 @@ public class AppearanceSettings
 	}
 	internal void UpdateFromJson(string json)
 	{
-		//dynamic x = JObject.Parse("{overrides:[\"one\"]}");
-
-
-		JsonConvert.PopulateObject(json, _properties,
-					// Previously, various things could be null. As part of simplifying the use of PublishSettings,
-					// we now never have nulls; everything gets defaults when it is created.
-					// For backwards capabilty, if the json we are reading has a null for a value,
-					// do not override the default value that we already have loaded.
-					new JsonSerializerSettings() { NullValueHandling = NullValueHandling.Ignore });
+		// parse the json into an object
+		var x = JsonConvert.DeserializeObject<ExpandoObject>(json);
+		//and then for each property, copy into the _properties object
+		// For backwards capabilty, if the json we are reading has a null for a value,
+		// do not override the default value that we already have loaded.
+		foreach (var property in (IDictionary<string, object>)x)
+		{
+			((IDictionary<string, object>)_properties)[property.Key] = property.Value;
+		}
 	}
-	internal void Update(dynamic replacement)
+	internal void UpdateFromDynamic(Newtonsoft.Json.Linq.JObject replacement)
 	{
-		_properties = replacement;
+		foreach (var property in replacement)
+		{
+			((IDictionary<string, object>)_properties)[property.Key] = property.Value;
+		}
 	}
+
 }

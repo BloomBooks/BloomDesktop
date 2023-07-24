@@ -8,7 +8,9 @@ import {
     ConfigrCustomNumberInput,
     ConfigrColorPicker,
     ConfigrInput,
-    ConfigrCustomObjectInput
+    ConfigrCustomObjectInput,
+    ConfigrBoolean,
+    ConfigrSelect
 } from "@sillsdev/config-r";
 import React = require("react");
 import { kBloomBlue } from "../../bloomMaterialUITheme";
@@ -75,7 +77,9 @@ export const BookSettingsDialog: React.FunctionComponent<{}> = () => {
     return (
         <BloomDialog
             css={css`
-                background-color: #fbf8ff;
+                // TODO: we would like a background color, but setting it here makes the dialog's backdrop turn that color!
+                // conceivably we could wrap the current childen in a div that just provides the background color.
+                //background-color: #fbf8ff;
             `}
             {...propsForBloomDialog}
             onClose={closeDialog}
@@ -94,6 +98,15 @@ export const BookSettingsDialog: React.FunctionComponent<{}> = () => {
                     }
                     // normally we want this: overflow-y: scroll;
                     overflow-y: hidden; // but I need help on the css, so we're going with this for now
+
+                    // HACK: TODO get the divs to all just maximize height until the available space is used or we don't need anymore height
+                    form {
+                        overflow-y: scroll;
+                        max-height: 400px;
+                        #groups {
+                            margin-right: 10px; // make room for the scrollbar
+                        }
+                    }
                 `}
             >
                 {settings && (
@@ -115,14 +128,70 @@ export const BookSettingsDialog: React.FunctionComponent<{}> = () => {
                             //setSettings(s);
                         }}
                     >
-                        {/* we'll bring this back later
-                            <ConfigrGroup label="Appearance" level={1}>
+                        <ConfigrGroup label="Appearance" level={1}>
+                            <ConfigrSubgroup
+                                label="Cover Background"
+                                path={`appearance`}
+                            >
                                 <ConfigrCustomStringInput
                                     path={`appearance.coverColor`}
+                                    disabled={true} //  We need more work to switch to allowing appearance CSS to control the book cover.
+                                    //There is a work-in-progress branch called "CoverColorManager" that has my work on this.
                                     label="Cover Color"
+                                    description="(not implemented yet)"
                                     control={ColorPickerForConfigr}
                                 />
-                            </ConfigrGroup> */}
+                            </ConfigrSubgroup>
+                            <ConfigrSubgroup
+                                label="What to Show on Cover"
+                                path={`appearance`}
+                            >
+                                <ConfigrBoolean
+                                    path={`appearance.coverShowTitleL2`}
+                                    label="Show L2 Title"
+                                />
+                                <ConfigrBoolean
+                                    path={`appearance.coverShowTitleL3`}
+                                    label="Show L3 Title"
+                                />
+                                <ConfigrBoolean
+                                    path={`appearance.coverShowLanguageName`}
+                                    label="Show Language Name"
+                                />
+                                <ConfigrBoolean
+                                    path={`appearance.coverShowTopic`}
+                                    label="Show Topic"
+                                />
+                            </ConfigrSubgroup>
+                            <ConfigrSubgroup
+                                label="Page Style"
+                                path={`appearance`}
+                            >
+                                <ConfigrSelect
+                                    disabled={true}
+                                    label="Page Style Preset"
+                                    path={`appearance.cssThemeName`}
+                                    options={[{ label: "TODO", value: "TODO" }]}
+                                    description='Choose a "page style" to easily change margins, borders, an other page settings.'
+                                />
+                            </ConfigrSubgroup>
+                            <ConfigrSubgroup
+                                label="Front & Back Matter"
+                                path={`appearance`}
+                            >
+                                <ConfigrSelect
+                                    disabled={true}
+                                    label="Font & Back Matter"
+                                    path={`appearance.TODO`}
+                                    options={[
+                                        { label: "Page Saver", value: "TODO" }
+                                    ]}
+                                    description={
+                                        "Normally, books use the front & back matter pack that is chosen for the entire collection. Using this setting, you can cause this individual book to use a different one."
+                                    }
+                                />
+                            </ConfigrSubgroup>
+                        </ConfigrGroup>
                         <ConfigrGroup label="BloomPUB" level={1}>
                             <ConfigrSubgroup
                                 label="Resolution"
@@ -239,10 +308,12 @@ export function showBookSettingsDialog() {
 
 const ColorPickerForConfigr: React.FunctionComponent<{
     value: string;
+    disabled: boolean;
     onChange: (value: string) => void;
 }> = props => {
     return (
         <ColorDisplayButton
+            disabled={props.disabled}
             initialColor={props.value}
             localizedTitle={"foo"}
             transparency={false}

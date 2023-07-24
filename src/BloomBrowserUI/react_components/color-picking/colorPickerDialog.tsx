@@ -448,6 +448,7 @@ export const ColorDisplayButton: React.FC<IColorDisplayButtonProps> = props => {
                     background-color: white;
                     padding: 2px;
                     height: 19px;
+                    opacity: ${props.disabled ? 0.2 : 1};
                     ${widthString}
                 `}
             >
