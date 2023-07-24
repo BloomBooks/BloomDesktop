@@ -1042,7 +1042,7 @@ export class ReaderToolsModel {
 
         const editableElements = this.getElementsToCheck();
 
-        // console.log('start of doMarkup:');
+        // console.log("start of doMarkup:");
         // EditableDivUtils.logElementsInnerHtml(editableElements.toArray());
 
         let bookmarksForEachEditable: object[] = [];
@@ -1134,13 +1134,16 @@ export class ReaderToolsModel {
             default:
         }
 
+        // console.log("in doMarkup, before restoreSelection:");
+        // EditableDivUtils.logElementsInnerHtml(editableElements.toArray());
+
         if (bookmarksForEachEditable.length)
             EditableDivUtils.restoreSelectionFromCkEditorBookmarks(
                 editableElements.toArray(),
                 bookmarksForEachEditable
             );
 
-        // console.log('start of doMarkup:');
+        // console.log("end of doMarkup:");
         // EditableDivUtils.logElementsInnerHtml(editableElements.toArray());
 
         if (

@@ -308,6 +308,9 @@ export class EditableDivUtils {
                     const ckeditorSelection = ckeditorOfThisBox.getSelection();
                     if (ckeditorSelection) {
                         try {
+                            // console.log("doCkEditorCleanup, before createBookmarks: ");
+                            // EditableDivUtils.logElementsInnerHtml([div]);
+
                             bookmarksForEachEditable[
                                 index
                             ] = ckeditorSelection.createBookmarks(true);
@@ -321,17 +324,74 @@ export class EditableDivUtils {
 
                 const ckEditorData = ckeditorOfThisBox.getData();
                 if (ckEditorData !== div.innerHTML) {
-                    div.innerHTML = ckEditorData;
-
-                    EditableDivUtils.fixUpEmptyishParagraphs(div);
+                    this.safelyReplaceContentWithCkEditorData(
+                        div,
+                        ckEditorData
+                    );
                 }
             }
         });
 
-        // console.log("doCkEditorCleanup final result: ");
+        // console.log("doCkEditorCleanup, final result: ");
         // EditableDivUtils.logElementsInnerHtml(editableDivs);
 
         return bookmarksForEachEditable;
+    }
+
+    // public for unit testing
+    public static safelyReplaceContentWithCkEditorData(
+        div: HTMLDivElement,
+        ckEditorData: string
+    ) {
+        let needToRemoveInitialParagraph = false;
+        let divChildNodes = Array.from(div.childNodes);
+        if (
+            divChildNodes.length > 0 &&
+            EditableDivUtils.isNodeCkEditorBookmark(divChildNodes[0])
+        ) {
+            // For some reason, if the bookmark span is the first thing in the div,
+            // ckeditor wraps it in a p tag and adds a nbsp which introduces an empty paragraph.
+            // Make sure we don't do that.
+            needToRemoveInitialParagraph = true;
+        }
+
+        // console.log("safelyReplaceContentWithCkEditorData, before getData replacement: ");
+        // EditableDivUtils.logElementsInnerHtml([div]);
+
+        div.innerHTML = ckEditorData;
+
+        // console.log("safelyReplaceContentWithCkEditorData, after getData replacement: ");
+        // EditableDivUtils.logElementsInnerHtml([div]);
+
+        if (needToRemoveInitialParagraph) {
+            // Be very specific in what we change here. (Don't break some scenario we don't understand.)
+            // Only if the div starts with a bookmark and ckeditor wraps that in a p and adds a nbsp.
+            // e.g.       <span id="cke_bm_49C" style="display: none;">&nbsp;</span>
+            // becomes <p><span id="cke_bm_49C" style="display: none;">&nbsp;</span>&nbsp;</p>
+            divChildNodes = Array.from(div.childNodes);
+            if (divChildNodes.length > 0 && divChildNodes[0].nodeName === "P") {
+                const pChildNodes = Array.from(divChildNodes[0].childNodes);
+                if (
+                    pChildNodes.length === 2 &&
+                    EditableDivUtils.isNodeCkEditorBookmark(pChildNodes[0]) &&
+                    pChildNodes[1].nodeName === "#text" &&
+                    pChildNodes[1].textContent === "\u00A0"
+                ) {
+                    div.replaceChild(pChildNodes[0], divChildNodes[0]);
+
+                    // console.log(
+                    //     "safelyReplaceContentWithCkEditorData, after needToRemoveInitialParagraph change: "
+                    // );
+                    // EditableDivUtils.logElementsInnerHtml([div]);
+                }
+            }
+        }
+
+        EditableDivUtils.fixUpEmptyishParagraphs(div);
+    }
+
+    private static isNodeCkEditorBookmark(node: Node): boolean {
+        return node.nodeName === "SPAN" && node["id"].startsWith("cke_bm_");
     }
 
     // I don't know why cdEditor's getData() converts paragraphs with only a <br>
