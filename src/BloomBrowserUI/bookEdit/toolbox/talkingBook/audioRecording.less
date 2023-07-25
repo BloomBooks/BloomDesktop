@@ -7,7 +7,6 @@
 @sectionVerticalGap: 25px;
 @buttonColumnWidth: 40px;
 @splitAnimationTime: 300ms;
-@micProblemColor: @bloom-warning;
 @textOnLightBackground: black;
 @disablingOverlayZindex: 1001; // higher than #audio-devlist
 
@@ -464,18 +463,6 @@ body .cursor-progress {
 .toast-toolbox-bottom {
     left: 32px;
     bottom: 46px;
-}
-
-#mic-problem-message {
-    &.initiallyHidden {
-        display: none;
-    }
-
-    background-color: @micProblemColor;
-    color: @textOnLightBackground;
-    border-radius: 6px;
-    font-size: medium;
-    padding: 6px;
 }
 
 #audio-playbackOrderControl-wrapper {
