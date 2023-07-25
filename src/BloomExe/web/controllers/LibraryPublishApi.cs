@@ -4,6 +4,7 @@ using Bloom.Publish.BloomLibrary;
 using Bloom.WebLibraryIntegration;
 using Bloom.Workspace;
 using SIL.Progress;
+using SIL.Reporting;
 using System;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -46,6 +47,7 @@ namespace Bloom.web.controllers
 
 			ExternalApi.LoginSuccessful += (sender, args) =>
 			{
+				Logger.WriteEvent("External login successful. Sending message to js-land.");
 				_webSocketServer.SendString(kWebSocketContext, kWebSocketEventId_loginSuccessful, Model?.WebUserId);
 			};
 		}
@@ -326,14 +328,17 @@ namespace Bloom.web.controllers
 			// Why not just reply with the WebUserId instead?
 			// Because we already have this event hooked up for the user-initiated log in process.
 			// So it simplifies the client to just reuse this web socket event.
-			if (Model.LoggedIn)
+			if (Model.LoggedIn) {
+				Logger.WriteEvent("User already logged in. Sending message to js-land.");
 				_webSocketServer.SendString(kWebSocketContext, kWebSocketEventId_loginSuccessful, Model?.WebUserId);
+			}
 			request.PostSucceeded();
 		}
 
 		private void HandleLogin(ApiRequest request)
 		{
 			Model.LogIn();
+			Logger.WriteEvent("User attempting to login to bloomlibrary.org.");
 			request.PostSucceeded();
 		}
 

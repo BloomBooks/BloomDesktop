@@ -289,7 +289,9 @@ export const ProgressDialog: React.FunctionComponent<IProgressDialogProps> = pro
                                     variant="text"
                                     onClick={() => {
                                         postJson("problemReport/showDialog", {
-                                            message: messagesForErrorReporting,
+                                            message:
+                                                "ProgressDialog: " +
+                                                messagesForErrorReporting,
                                             shortMessage: `The user reported a problem from "${props.title}".`
                                         });
                                     }}
