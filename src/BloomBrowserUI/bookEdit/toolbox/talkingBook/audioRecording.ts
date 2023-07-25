@@ -491,10 +491,17 @@ export default class AudioRecording {
 
     public addMicErrorListener(): void {
         WebSocketManager.addListener(kWebsocketContext, e => {
-            if (e.id === "micError") {
-                this.setStatus("record", Status.Disabled);
-                this.recording = false;
+            if (
+                e.id === "recordingStartError" ||
+                e.id === "monitoringStartError"
+            ) {
                 toastr.error(e.message ? e.message : "");
+            }
+            // Don't disable recording for a monitoring error, as right now when switching mics we may
+            // kick off monitoring for the wrong mic
+            if (e.id === "recordingStartError") {
+                this.recording = false;
+                this.setStatus("record", Status.Disabled);
             }
         });
     }

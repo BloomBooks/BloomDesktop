@@ -246,7 +246,7 @@ namespace Bloom.Edit
 					Logger.WriteError("Could not begin monitoring microphone", e);
 					var msg = LocalizationManager.GetString("EditTab.Toolbox.TalkingBookTool.MicrophoneAccessProblem",
 						"Bloom was not able to access a microphone.");
-					_webSocketServer.SendString(kWebsocketContext, "micError", msg);
+					_webSocketServer.SendString(kWebsocketContext, "monitoringStartError", msg);
 				}
 			}
 		}
@@ -565,7 +565,7 @@ namespace Bloom.Edit
 				Logger.WriteError("Could not begin recording", ex);
 				var msg = LocalizationManager.GetString("EditTab.Toolbox.TalkingBook.MicrophoneProblem",
 					"Bloom is having problems connecting to your microphone. Please restart your computer and try again.");
-				_webSocketServer.SendString(kWebsocketContext, "micError", msg);
+				_webSocketServer.SendString(kWebsocketContext, "recordingStartError", msg);
 			}
 		}
 
