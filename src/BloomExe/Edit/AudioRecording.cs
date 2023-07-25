@@ -236,18 +236,8 @@ namespace Bloom.Edit
 			}
 			if (RecordingDevice != null)
 			{
-				try
-				{
-					Recorder.BeginMonitoring(catchAndReportExceptions: false);
-					_monitoringAudio = true;
-				}
-				catch (Exception e)
-				{
-					Logger.WriteError("Could not begin monitoring microphone", e);
-					var msg = LocalizationManager.GetString("EditTab.Toolbox.TalkingBookTool.MicrophoneAccessProblem",
-						"Bloom was not able to access a microphone.");
-					_webSocketServer.SendString(kWebsocketContext, "monitoringStartError", msg);
-				}
+				Recorder.BeginMonitoring();
+				_monitoringAudio = true;
 			}
 		}
 
@@ -557,15 +547,13 @@ namespace Bloom.Edit
 			try
 			{
 				Recorder.BeginRecording(PathToTemporaryWav);
+				_webSocketServer.SendString(kWebsocketContext, "recordStartStatus", "success");
 			}
-			catch (InvalidOperationException ex)
+			catch (InvalidOperationException)
 			{
 				// Likely a case of BL-7568, which as far as we can figure isn't Bloom's fault.
 				// Show a friendly message in the TalkingBook toolbox.
-				Logger.WriteError("Could not begin recording", ex);
-				var msg = LocalizationManager.GetString("EditTab.Toolbox.TalkingBook.MicrophoneProblem",
-					"Bloom is having problems connecting to your microphone. Please restart your computer and try again.");
-				_webSocketServer.SendString(kWebsocketContext, "recordingStartError", msg);
+				_webSocketServer.SendString(kWebsocketContext, "recordStartStatus", "failure");
 			}
 		}
 
