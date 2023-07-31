@@ -185,7 +185,7 @@ export const DialogReportButton: React.FunctionComponent<{
         onClick={() =>
             postJson("problemReport/showDialog", {
                 shortMessage: props.shortMessage,
-                message: props.messageGenerator()
+                message: "DialogReportButton: " + props.messageGenerator()
             })
         }
         css={css`
