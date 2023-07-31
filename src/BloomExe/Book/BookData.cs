@@ -1305,6 +1305,12 @@ namespace Bloom.Book
 		}
 
 		/// <summary>
+		/// Set of data-{collection,library} keys that the harvester does not know about, and which
+		/// we need to preserve when harvesting.  (See BL-12583.)
+		/// </summary>
+		private static string[] collectionDataForHarvester = new string[] { "languageLocation" };
+
+		/// <summary>
 		/// Where, for example, somewhere on a page something has data-book='foo' lang='fr',
 		/// we set the value of that element to French subvalue of the data item 'foo', if we have one.
 		/// </summary>
@@ -1332,6 +1338,8 @@ namespace Bloom.Book
 						{
 							key = node.GetAttribute("data-library").Trim(); //"library" is the old name for what is now "collection"
 						}
+						if (Program.RunningHarvesterMode && !String.IsNullOrEmpty(key) && collectionDataForHarvester.Contains(key))
+							continue;	// Don't update since harvester would get its info from here.  (See BL-12583.)
 					}
 
 					if (string.IsNullOrEmpty(key)) continue;
