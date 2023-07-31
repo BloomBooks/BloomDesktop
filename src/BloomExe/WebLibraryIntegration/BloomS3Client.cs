@@ -346,7 +346,7 @@ namespace Bloom.WebLibraryIntegration
 			}
 
 			fileSystemInfo.Attributes = FileAttributes.Normal; // thumbnails can be intentionally readonly (when they are created by hand)
-			RobustFile.Delete(fileSystemInfo.FullName);
+			fileSystemInfo.Delete();
 		}
 
 		public void RemoveUnwantedLanguageData(string destDirName, IEnumerable<string> languagesToInclude,
