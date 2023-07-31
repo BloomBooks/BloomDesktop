@@ -35,7 +35,11 @@ import {
     DialogResult
 } from "../../react_components/color-picking/colorPickerDialog";
 import { IColorInfo } from "../../react_components/color-picking/colorSwatch";
-import { postJson, useApiStringState } from "../../utils/bloomApi";
+import {
+    postJson,
+    useApiObject,
+    useApiStringState
+} from "../../utils/bloomApi";
 import { ShowEditViewDialog } from "../editViewFrame";
 
 let isOpenAlready = false;
@@ -55,6 +59,12 @@ export const BookSettingsDialog: React.FunctionComponent<{}> = () => {
         "{}",
         () => propsForBloomDialog.open
     );
+
+    const presetNames = useApiObject<Array<{ label: string; value: string }>>(
+        "book/settings/available-preset-names",
+        []
+    );
+
     const [settings, setSettings] = React.useState<object | undefined>(
         undefined
     );
@@ -102,7 +112,8 @@ export const BookSettingsDialog: React.FunctionComponent<{}> = () => {
                     // HACK: TODO get the divs to all just maximize height until the available space is used or we don't need anymore height
                     form {
                         overflow-y: scroll;
-                        max-height: 400px;
+                        height: 600px;
+                        width: 600px;
                         #groups {
                             margin-right: 10px; // make room for the scrollbar
                         }
@@ -130,7 +141,7 @@ export const BookSettingsDialog: React.FunctionComponent<{}> = () => {
                     >
                         <ConfigrGroup label="Appearance" level={1}>
                             <ConfigrSubgroup
-                                label="Cover Background"
+                                label="Cover Background  (Not implemented yet)"
                                 path={`appearance`}
                             >
                                 <ConfigrCustomStringInput
@@ -138,7 +149,6 @@ export const BookSettingsDialog: React.FunctionComponent<{}> = () => {
                                     disabled={true} //  We need more work to switch to allowing appearance CSS to control the book cover.
                                     //There is a work-in-progress branch called "CoverColorManager" that has my work on this.
                                     label="Cover Color"
-                                    description="(not implemented yet)"
                                     control={ColorPickerForConfigr}
                                 />
                             </ConfigrSubgroup>
@@ -148,11 +158,11 @@ export const BookSettingsDialog: React.FunctionComponent<{}> = () => {
                             >
                                 <ConfigrBoolean
                                     path={`appearance.coverShowTitleL2`}
-                                    label="Show L2 Title"
+                                    label="Show Written Language 2 Title"
                                 />
                                 <ConfigrBoolean
                                     path={`appearance.coverShowTitleL3`}
-                                    label="Show L3 Title"
+                                    label="Show Written Language 3 Title"
                                 />
                                 <ConfigrBoolean
                                     path={`appearance.coverShowLanguageName`}
@@ -168,15 +178,22 @@ export const BookSettingsDialog: React.FunctionComponent<{}> = () => {
                                 path={`appearance`}
                             >
                                 <ConfigrSelect
-                                    disabled={true}
                                     label="Page Style Preset"
                                     path={`appearance.cssThemeName`}
-                                    options={[{ label: "TODO", value: "TODO" }]}
+                                    options={presetNames.map(x => {
+                                        return {
+                                            label: x.label.replace(
+                                                "appearance-page-",
+                                                ""
+                                            ),
+                                            value: x.value
+                                        };
+                                    })}
                                     description='Choose a "page style" to easily change margins, borders, an other page settings.'
                                 />
                             </ConfigrSubgroup>
                             <ConfigrSubgroup
-                                label="Front & Back Matter"
+                                label="Front & Back Matter (Not implemented yet)"
                                 path={`appearance`}
                             >
                                 <ConfigrSelect
