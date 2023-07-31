@@ -1,3 +1,14 @@
+using Bloom.Api;
+using Bloom.Edit;
+using Bloom.Utils;
+using L10NSharp;
+using Newtonsoft.Json;
+using SIL.Code;
+using SIL.Extensions;
+using SIL.IO;
+using SIL.Reporting;
+using SIL.Text;
+using SIL.Windows.Forms.ClearShare;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -5,21 +16,9 @@ using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
-using System.Threading;
-using Bloom.ImageProcessing;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Windows.Forms;
-using Bloom.Api;
-using Bloom.Edit;
-using L10NSharp;
-using Newtonsoft.Json;
-using SIL.Extensions;
-using SIL.IO;
-using SIL.Reporting;
-using SIL.Windows.Forms.ClearShare;
-using SIL.Text;
-using Bloom.Utils;
-using SIL.Code;
 
 namespace Bloom.Book
 {
@@ -346,13 +345,9 @@ namespace Bloom.Book
 		{
 			PublishSettings.WriteToFolder(FolderPath);
 		}
-		public void BookPublishSettings()
-		{
-			AppearanceSettings.WriteAppearanceCss(FolderPath);
-		}
 		public void SaveAppearanceSettings()
 		{
-			AppearanceSettings.WriteAppearanceCss(FolderPath);
+			AppearanceSettings.WriteToFolder(FolderPath);
 		}
 
 		public void Save()

@@ -1,9 +1,10 @@
+/* The settings here should produce a page that looks like what you'd get in Bloom 5.5 */
 :root {
     --page-margin-top: 15mm;
     --page-margin-bottom: 15mm;
     --page-margin-inner: 25mm;
     --page-margin-outer: 15mm;
-    --side-by-side-gap: 3mm;
-    --top-bottom-gap: 3mm;
+    --side-by-side-gap: 3px;
+    --top-bottom-gap: 3px;
     --pageNumberFontSize: 14pt;
 }
