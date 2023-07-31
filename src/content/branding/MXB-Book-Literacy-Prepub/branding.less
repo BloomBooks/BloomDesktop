@@ -1,0 +1,30 @@
+@import "../branding-base.less";
+
+[data-book="outside-back-cover-branding-bottom-html"] img {
+    max-width: unset !important;
+    width: 50%;
+}
+
+[data-book="title-page-branding-bottom-html"] img {
+    width: 50%;
+}
+
+.prepub-invisible {
+    display: none !important;
+}
+
+.prepub-only {
+    display: block !important;
+}
+
+.bloom-page:before {
+    content: "Versión Preliminar";
+    position: absolute;
+    top: 10%;
+    left: 10px;
+    z-index: 100000;
+    opacity: 0.2;
+    font-size: 50px;
+    line-height: 1em;
+    transform: rotate(-20deg);
+}
