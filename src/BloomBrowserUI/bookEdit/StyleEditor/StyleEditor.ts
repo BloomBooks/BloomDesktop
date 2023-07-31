@@ -230,8 +230,17 @@ export default class StyleEditor {
     public getFormattingStyles(): FormattingStyle[] {
         const styles: FormattingStyle[] = [];
         for (let i = 0; i < document.styleSheets.length; i++) {
-            const sheet = <StyleSheet>(<any>document.styleSheets[i]);
-            const rules: CSSRuleList = (<any>sheet).cssRules;
+            let sheet: StyleSheet | undefined = undefined;
+            let rules: CSSRuleList | undefined = undefined;
+            try {
+                sheet = <StyleSheet>(<any>document.styleSheets[i]);
+                rules = (<any>sheet).cssRules;
+            } catch {
+                // Empty stylesheet! Usually customCollectionStyles.css or such.
+                // Since we are inside of an axios call, we don't want to throw an exception here, or Bloom
+                // may fail to display the Style dialog.
+                continue;
+            }
             if (rules) {
                 for (let j = 0; j < rules.length; j++) {
                     const index = rules[j].cssText.indexOf("{");
