@@ -88,22 +88,43 @@ namespace Bloom.ImageProcessing
 				{
 					// If only two colors are used, assume black and white line art that needs to have
 					// white made transparent.
+					bool whiteFound = false;
+					bool nonWhiteFound = false;
 					if (palette.Entries.Length == 2)
 					{
-						var whiteFound = IsNearWhite(palette.Entries[0]) || IsNearWhite(palette.Entries[1]);
-						return whiteFound;
+						if (palette.Entries[0].A < 255 || palette.Entries[1].A < 255)
+							return false;	// we already have transparent pixels
+						var whitish1 = IsNearWhite(palette.Entries[0]);
+						var whitish2 = IsNearWhite(palette.Entries[1]);
+						whiteFound = whitish1 || whitish2;
+						nonWhiteFound = !whitish1 || !whitish2;
 					}
 					else
 					{
-						return false;
+						// We allow grey-scale images to be made transparent below, so why not here?
+						foreach (var color in palette.Entries)
+						{
+							var whitish = IsNearWhite(color);
+							if (color.A < 255 || (!IsGrayish(color) && !whitish))
+								return false;   // either transparent already or not black and white/greyscale
+							whiteFound |= whitish;
+							nonWhiteFound |= !whitish;
+						}
 					}
+					return whiteFound && nonWhiteFound;
 				}
 			}
 			// Harder to check if not indexed...
 			if (imageInfo.Image is Bitmap bitmapImage)
 			{
+				var whiteFound = false;
+				var nonWhiteFound = false;
 				var color1 = new Color();
+				var whitish1 = false;
+				var grayish1 = false;
 				var color2 = new Color();
+				var whitish2 = false;
+				var grayish2 = false;
 				// Yes, this is as expensive as it looks.  But we only sample 100 pixels
 				// spread through the picture, stopping as soon as we hit either a
 				// transparent pixel or a 3rd distinct non-gray color.
@@ -127,40 +148,47 @@ namespace Bloom.ImageProcessing
 							return false;	// we already have transparent pixels
 
 						}
-						else if (color1 == Color.Empty)
+						var whitish = IsNearWhite(color);
+						if (whitish)
+							whiteFound = true;
+						else
+							nonWhiteFound = true;
+						var grayish = IsGrayish(color);
+						if (color1 == Color.Empty)
 						{
 							color1 = color;
+							whitish1 = whitish;
+							grayish1 = grayish;
 						}
 						else if (color != color1 && color2 == Color.Empty)
 						{
 							color2 = color;
+							whitish2 = whitish;
+							grayish2 = grayish;
 						}
 						else if (color != color1 && color != color2)
 						{
-							if (IsGrayish(color1) && IsGrayish(color2) && IsGrayish(color))
+							// NearWhite is not guaranteed to be Grayish, so we have to check both.
+							if ((grayish1||whitish1) && (grayish2||whitish2) && (grayish||whitish))
 								continue;	// It may be a grayscale picture, which can be made transparent safely.
 							return false;	// we have at least 3 colors
 						}
 					}
 				}
 				var colorCount = 0;
-				var whiteFound = false;
 				if (color1 != Color.Empty)
 				{
 					++colorCount;
-					if (IsNearWhite(color1))
-						whiteFound = true;
 				}
 				if (color2 != Color.Empty)
 				{
 					++colorCount;
-					if (IsNearWhite(color2))
-						whiteFound = true;
 				}
-				// Only two colors encountered, likely black and white in intent.
-				// But if neither of the two colors is white (or near white), return false.
-				// (Our code wouldn't make anything transparent anyway.)
-				return colorCount == 2 && whiteFound;
+				// At least two colors encountered, likely black and white or greyscale in intent.
+				// But if none of the colors is white (or all of them are), return false.
+				// (Our code wouldn't make anything transparent anyway, or would make everything
+				// transparent.)
+				return colorCount == 2 && whiteFound && nonWhiteFound;
 			}
 			// we can't tell, so err on the side of caution.
 			return false;
