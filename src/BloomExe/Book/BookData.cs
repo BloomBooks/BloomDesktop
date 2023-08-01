@@ -1020,6 +1020,45 @@ namespace Bloom.Book
 
 				location = TrimEnd(location, separator);
 
+				if (Program.RunningHarvesterMode && String.IsNullOrEmpty(location))
+				{
+					var nodesWithValue = _dom.RawDom.SafeSelectNodes("//*[@data-library='languageLocation']");
+					if (nodesWithValue != null && nodesWithValue.Count != 0)
+					{
+						var node = nodesWithValue[0];
+						location = node.InnerText.Trim();
+						Console.WriteLine("Language location from data-library node: \"{0}\"", location);
+						// We have the dataset value, but we need to preserve something in the actual
+						// collection settings.  Being in harvester mode, these are not saved to the file.
+						var pieces = location.Split(new[] {separator}, StringSplitOptions.RemoveEmptyEntries);
+						switch (pieces.Length)
+						{
+							case 0:
+								// We have no data, so we'll just leave the empty collection settings alone.
+								break;
+							case 1:
+								collectionSettings.Country = pieces[0];
+								break;
+							case 2:
+								collectionSettings.Province = pieces[0];
+								collectionSettings.Country = pieces[1];
+								break;
+							case 3:
+								collectionSettings.District = pieces[0];
+								collectionSettings.Province = pieces[1];
+								collectionSettings.Country = pieces[2];
+								break;
+							default:
+								collectionSettings.District = pieces[0];
+								collectionSettings.Province = pieces[1];
+								collectionSettings.Country = pieces[2];
+								for (var i = 3; i < pieces.Length; i++)
+									collectionSettings.Country += separator + pieces[i];
+								break;
+						}
+					}
+				}
+
 				data.UpdateGenericLanguageString("languageLocation", XmlString.FromUnencoded(location), true);
 			}
 		}
@@ -1305,12 +1344,6 @@ namespace Bloom.Book
 		}
 
 		/// <summary>
-		/// Set of data-{collection,library} keys that the harvester does not know about, and which
-		/// we need to preserve when harvesting.  (See BL-12583.)
-		/// </summary>
-		private static string[] collectionDataForHarvester = new string[] { "languageLocation" };
-
-		/// <summary>
 		/// Where, for example, somewhere on a page something has data-book='foo' lang='fr',
 		/// we set the value of that element to French subvalue of the data item 'foo', if we have one.
 		/// </summary>
@@ -1338,8 +1371,6 @@ namespace Bloom.Book
 						{
 							key = node.GetAttribute("data-library").Trim(); //"library" is the old name for what is now "collection"
 						}
-						if (Program.RunningHarvesterMode && !String.IsNullOrEmpty(key) && collectionDataForHarvester.Contains(key))
-							continue;	// Don't update since harvester would get its info from here.  (See BL-12583.)
 					}
 
 					if (string.IsNullOrEmpty(key)) continue;
