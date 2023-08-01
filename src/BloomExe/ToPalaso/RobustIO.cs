@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using SIL.Code;
 
@@ -16,7 +15,7 @@ namespace Bloom.ToPalaso
 			});
 			if (!exists)
 			{
-				throw new ArgumentException("The path '\" + path + \"' does not exist.\"");
+				throw new ArgumentException($"The path '{path}' does not exist.");
 			}
 		}
 	}
