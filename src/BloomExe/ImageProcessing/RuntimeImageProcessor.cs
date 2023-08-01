@@ -274,13 +274,13 @@ namespace Bloom.ImageProcessing
 
 					lock(ConvertWhiteToTransparent)
 					{
-						var imageAttributes = appearsToBeJpeg || ImageUtils.HasTransparency(coverImage.Image) ? null : ConvertWhiteToTransparent;
+						var imageAttributes = (appearsToBeJpeg || !ImageUtils.ShouldMakeBackgroundTransparent(coverImage)) ? null : ConvertWhiteToTransparent;
 						g.DrawImage(
 							coverImage.Image, // finally, draw the cover image
 							destRect, // with a scaled and centered destination
 							0, 0, coverImageWidth, coverImageHeight, // from the entire cover image,
 							GraphicsUnit.Pixel,
-							imageAttributes); // changing white to transparent if a png
+							imageAttributes); // changing white to transparent if a B&W/greyscale png
 					}
 					if (!appearsToBeJpeg || Path.GetExtension(pathToProcessedImage) == ".png")
 						ImageUtils.SaveOrDeletePngImageToPath(thumbnail, pathToProcessedImage);
