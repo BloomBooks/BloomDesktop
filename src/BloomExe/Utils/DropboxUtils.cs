@@ -37,10 +37,28 @@ namespace Bloom.Utils
 		/// called something else when a localized version is running? Might one Dropbox process
 		/// be running but not the one we really need? But it's the best we can find so far.
 		/// </summary>
-		public static bool IsDropboxProcessRunning =>
-			System.Diagnostics.Process.GetProcesses().Any(p => Platform.IsLinux ? p.ProcessName.Contains("dropbox") : p.ProcessName.Contains("Dropbox"))
-				|| (Platform.IsLinux && IsDropboxLogCurrent());
-
+		public static bool IsDropboxProcessRunning()
+		{
+			if (Platform.IsWindows)
+			{
+				// The primary Dropbox process is called Dropbox.exe on Windows, but shows up in C# as "Dropbox".
+				// There should be several copies of this process running, but we'll just check for at least one.
+				// The Dropbox Service process is called DbxSvc.exe, but shows up in C# as "DbxSvc".  It would
+				// seem to be necessary for Dropbox to be running, so we'll check for it as well.
+				// There is also a DropboxUpdate.exe process, but we don't care about it.
+				return System.Diagnostics.Process.GetProcessesByName("Dropbox").Any() &&
+					System.Diagnostics.Process.GetProcessesByName("DbxSvc").Any();
+			}
+			else if (Platform.IsFlatpak)
+			{
+				// Flatpak can't see external processes, so we'll have to check the log file.
+				return IsDropboxLogCurrent();
+			}
+			else
+			{
+				return System.Diagnostics.Process.GetProcesses().Any(p => p.ProcessName.Contains("dropbox"));
+			}
+		}
 		/// <summary>
 		/// Check whether an appropriate log file exists and has been written to in the last minute.
 		/// This works on Linux in the flatpak environment where process checking won't work.  (It
