@@ -47,7 +47,7 @@ namespace Bloom.ToPalaso
 			});
 			if (!exists)
 			{
-				throw new ArgumentException("The path '\" + path + \"' does not exist.\"");
+				throw new ArgumentException($"The path '{path}' does not exist.");
 			}
 		}
 	}
