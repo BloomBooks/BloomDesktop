@@ -343,10 +343,13 @@ namespace Bloom.WebLibraryIntegration
 				{
 					DeleteFileSystemInfo(childInfo);
 				}
+				SIL.IO.RobustIO.DeleteDirectory(fileSystemInfo.FullName);
 			}
-
-			fileSystemInfo.Attributes = FileAttributes.Normal; // thumbnails can be intentionally readonly (when they are created by hand)
-			fileSystemInfo.Delete();
+			else
+			{
+				fileSystemInfo.Attributes = FileAttributes.Normal; // thumbnails can be intentionally readonly (when they are created by hand)
+				RobustFile.Delete(fileSystemInfo.FullName);
+			}
 		}
 
 		public void RemoveUnwantedLanguageData(string destDirName, IEnumerable<string> languagesToInclude,
