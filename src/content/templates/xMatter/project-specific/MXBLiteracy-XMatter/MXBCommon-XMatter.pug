@@ -35,9 +35,14 @@ mixin mxb-titlePage-contents
 		.langName('data-library'='dialect')
 		.langName(data-library='languageLocation').bloom-writeOnly
 	+mxb-contributions
-	+field-prototypeDeclaredExplicity("N1")#funding
+	+field-prototypeDeclaredExplicity("N1")#funding.prepub-invisible
 		label.bubble Use this to acknowledge any funding agencies.
 		+editable(kLanguageForPrototypeOnly).funding.Funding-style.bloom-copyFromOtherLanguageIfNecessary(data-book='funding')
+	#prepubNotice.prepub-only
+		h3 Versión Preliminar
+	+field-prototypeDeclaredExplicity("N1")#printingHistory.bloom-clearWhenMakingDerivative.prepub-only
+		label.bubble Use this for Printing History (1st Edition, etc.)
+		+editable(kLanguageForPrototypeOnly).PrintingHistory-style.bloom-copyFromOtherLanguageIfNecessary(data-book='printingInfo')
 	+title-page-branding-bottom
 
 mixin mxb-titlePage
@@ -60,7 +65,7 @@ mixin mxb-nationalSummaryCreditsPage-back-title-page-contents
 		+editable(kLanguageForPrototypeOnly).OriginalAcknowledgments-style.bloom-copyFromOtherLanguageIfNecessary(data-book='originalAcknowledgments')
 			| {Original Acknowledgments}
 	+field-ISBN
-	+field-prototypeDeclaredExplicity("N1")#printingHistory.bloom-clearWhenMakingDerivative
+	+field-prototypeDeclaredExplicity("N1")#printingHistory.bloom-clearWhenMakingDerivative.prepub-invisible
 		label.bubble Use this for Printing History (1st Edition, etc.)
 		+editable(kLanguageForPrototypeOnly).PrintingHistory-style.bloom-copyFromOtherLanguageIfNecessary(data-book='printingInfo')
 

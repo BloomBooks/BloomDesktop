@@ -230,8 +230,15 @@ export default class StyleEditor {
     public getFormattingStyles(): FormattingStyle[] {
         const styles: FormattingStyle[] = [];
         for (let i = 0; i < document.styleSheets.length; i++) {
-            const sheet = <StyleSheet>(<any>document.styleSheets[i]);
-            const rules: CSSRuleList = (<any>sheet).cssRules;
+            const sheet = document.styleSheets[i] as CSSStyleSheet;
+            let rules: CSSRuleList | null = null;
+            try {
+                rules = sheet?.cssRules;
+            } catch {
+                // We had a problem with a style sheet that had inaccessible rules.
+                // This will allow the StyleEditor to continue to work.
+                continue;
+            }
             if (rules) {
                 for (let j = 0; j < rules.length; j++) {
                     const index = rules[j].cssText.indexOf("{");

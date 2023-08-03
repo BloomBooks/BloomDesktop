@@ -307,7 +307,17 @@ BookServer bookServer,
 				BloomPubFontsAndLangsUsed = helper.FontsAndLangsUsed;
 			}
 			if (!modifiedBook.IsTemplateBook)
-				modifiedBook.RemoveBlankPages(settings?.LanguagesToInclude);
+			{
+				if (settings?.LanguagesToInclude == null)
+					modifiedBook.RemoveBlankPages(null);
+				else
+				{
+					var languagesToInclude = new HashSet<string>(settings.LanguagesToInclude);
+					if (xmatterLangsToKeep != null)
+						languagesToInclude.UnionWith(xmatterLangsToKeep);
+					modifiedBook.RemoveBlankPages(languagesToInclude);
+				}
+			}
 
 			// See https://issues.bloomlibrary.org/youtrack/issue/BL-6835.
 			RemoveInvisibleImageElements(modifiedBook);
