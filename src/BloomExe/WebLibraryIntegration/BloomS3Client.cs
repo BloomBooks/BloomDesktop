@@ -251,6 +251,7 @@ namespace Bloom.WebLibraryIntegration
 			filter.AlwaysAccept(Path.GetFileNameWithoutExtension(pathToBloomBookDirectory) + BookInfo.BookOrderExtension);
 			if (isForBulkUpload)
 				filter.AlwaysAccept(".lastUploadInfo");
+			filter.AlwaysAccept(Path.Combine("collectionFiles","book.uploadCollectionSettings"));	// See BL-12583.
 			filter.CopyBookFolderFiltered(destDirName);
 
 			ProcessVideosInTempDirectory(destDirName);
@@ -263,25 +264,6 @@ namespace Bloom.WebLibraryIntegration
 			UploadDirectory(prefix, wrapperPath, progress);
 
 			DeleteFileSystemInfo(new DirectoryInfo(wrapperPath));
-		}
-
-		private readonly static string[] validSubFolders = { "audio", "video", "activities", "template" };
-		/// <summary>
-		/// Remove any subdirectories that are not in the our whitelist.
-		/// </summary>
-		/// <remarks>
-		/// See https://issues.bloomlibrary.org/youtrack/issue/BL-7616 and
-		/// https://issues.bloomlibrary.org/youtrack/issue/BL-11429.
-		/// </remarks>
-		private static void RemoveUnwantedSubdirectories(string directoryPath)
-		{
-			foreach (string subdir in Directory.GetDirectories(directoryPath))
-			{
-				var name = Path.GetFileName(subdir);
-				if (validSubFolders.Contains(name))
-					continue;
-				DeleteFileSystemInfo(new DirectoryInfo(subdir));	// This does a recursive delete.
-			}
 		}
 
 		private void ProcessVideosInTempDirectory(string destDirName)
@@ -562,6 +544,14 @@ namespace Bloom.WebLibraryIntegration
 			string[] endsToAvoid = { "/thumbs.db", ".pdf", ".map"};
 			if (endsToAvoid.Any(end => objectKey.ToLowerInvariant().EndsWith(end)))
 				return true;
+			// The harvester needs the collection settings file, but we don't want to download it
+			// when users are downloading books.  (See BL-12583.)
+			if (!Program.RunningHarvesterMode)
+			{
+				string[] moreEndsToAvoid = { ".uploadCollectionSettings" };
+				if (moreEndsToAvoid.Any(end => objectKey.ToLowerInvariant().EndsWith(end)))
+					return true;
+			}
 
 			// Removing this restriction on downloading narration per BL-9652
 			//if (!Program.RunningHarvesterMode)

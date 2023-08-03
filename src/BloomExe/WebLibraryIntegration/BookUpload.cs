@@ -448,13 +448,11 @@ namespace Bloom.WebLibraryIntegration
 
 
 		/// <summary>
-		/// If we do not have enterprise enabled, copy the book and remove all enterprise level features.
+		/// Copy the book.  If we do not have enterprise enabled, remove all enterprise level features from the copy.
+		/// Also copy a sanitized version of the collection settings to a subfolder of the copied book (BL-12583).
 		/// </summary>
-		internal static bool PrepareBookForUpload(ref Book.Book book, BookServer bookServer, string tempFolderPath, IProgress progress)
+		internal static void PrepareBookForUpload(ref Book.Book book, BookServer bookServer, string tempFolderPath, IProgress progress)
 		{
-			if (book.CollectionSettings.HaveEnterpriseFeatures)
-				return false;
-
 			// We need to be sure that any in-memory changes have been written to disk
 			// before we start copying/loading the new book to/from disk
 			book.Save();
@@ -465,17 +463,41 @@ namespace Bloom.WebLibraryIntegration
 			var bookInfo = new BookInfo(tempFolderPath, true, new AlwaysEditSaveContext());
 			var copiedBook = bookServer.GetBookFromBookInfo(bookInfo);
 			copiedBook.BringBookUpToDate(new NullProgress(), true);
-			var pages = new List<XmlElement>();
-			foreach (XmlElement page in copiedBook.GetPageElements())
-				pages.Add(page);
-			ISet<string> warningMessages = new HashSet<string>();
-			PublishHelper.RemoveEnterpriseFeaturesIfNeeded(copiedBook, pages, warningMessages);
-			PublishHelper.SendBatchedWarningMessagesToProgress(warningMessages, progress);
+			if (!book.CollectionSettings.HaveEnterpriseFeatures)
+			{
+				var pages = new List<XmlElement>();
+				foreach (XmlElement page in copiedBook.GetPageElements())
+					pages.Add(page);
+				ISet<string> warningMessages = new HashSet<string>();
+				PublishHelper.RemoveEnterpriseFeaturesIfNeeded(copiedBook, pages, warningMessages);
+				PublishHelper.SendBatchedWarningMessagesToProgress(warningMessages, progress);
+			}
 			copiedBook.Save();
 			copiedBook.UpdateSupportFiles();
+			CopyCollectionSettingsToTempFolder(book.CollectionSettings.SettingsFilePath, tempFolderPath);
 			book = copiedBook;
-			return true;
+		}
 
+		/// <summary>
+		/// Copy a sanitized (no subscription code) collection settings file to the temp folder so that
+		/// harvester will have access to it.
+		/// </summary>
+		/// <remarks>
+		/// See BL-12583.
+		/// </remarks>
+		private static void CopyCollectionSettingsToTempFolder(string settingsPath, string tempBookFolder)
+		{
+			if (String.IsNullOrEmpty(settingsPath) || !RobustFile.Exists(settingsPath))
+				return;
+			var settingsText = RobustFile.ReadAllText(settingsPath);
+			var doc = new XmlDocument();
+			doc.PreserveWhitespace = true;
+			doc.LoadXml(settingsText);
+			var subscriptionNode = doc.SelectSingleNode("/Collection/SubscriptionCode");
+			if (subscriptionNode != null)
+				subscriptionNode.InnerText = "";
+			Directory.CreateDirectory(Path.Combine(tempBookFolder, "collectionFiles"));
+			doc.Save(Path.Combine(tempBookFolder, "collectionFiles", "book.uploadCollectionSettings"));
 		}
 
 		/// <summary>
