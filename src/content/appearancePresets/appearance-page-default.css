@@ -3,16 +3,16 @@
     --page-margin-bottom: 10mm;
     --page-margin-inner: 20mm;
     --page-margin-outer: 10mm;
-    --side-by-side-gap: 5mm; /* review. In legacy, this was too small. */
+    --boxes-sideBySide-gap: 5mm; /* review. In legacy, this was too small. */
     --top-bottom-gap: 1mm;
-    --pageNumberFontSize: 14pt;
-    /* --pageNumberBottom: 20px; */
+    --pageNumber-font-size: 14pt;
+    --pageNumber-bottom: 10px;
     --page-background-color: white;
 }
 
-.device16x9portrait {
-    --page-margin-top: 2.5mm;
-    --page-margin-bottom: 2.5mm;
-    --page-margin-inner: 2.5mm;
-    --page-margin-outer: 2.5mm;
+.Device16x9Portrait {
+    --page-margin-top: 10px;
+    --page-margin-bottom: 45px; /* leave room for page number*/
+    --page-margin-inner: 10px;
+    --page-margin-outer: 10px;
 }

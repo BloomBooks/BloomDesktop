@@ -1,8 +1,8 @@
 :root {
-    --side-by-side-gap: 1mm;
+    --boxes-sideBySide-gap: 1mm;
     --top-bottom-gap: 1mm;
-    --pageNumberFontSize: 10pt;
-    --pageNumberBottom: 2mm;
+    --pageNumber-font-size: 10pt;
+    --pageNumber-bottom: 2mm;
 }
 
 /* Below you find the settings of this custom theme. This theme only applies to "Device 16x9 Landscape" and "Device 16x9 Portrait".   */

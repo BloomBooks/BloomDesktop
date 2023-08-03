@@ -4,7 +4,8 @@
     --page-margin-bottom: 15mm;
     --page-margin-inner: 25mm;
     --page-margin-outer: 15mm;
-    --side-by-side-gap: 3px;
+    --boxes-sideBySide-gap: 3px;
     --top-bottom-gap: 3px;
-    --pageNumberFontSize: 14pt;
+    --pageNumber-font-size: 14pt; /* bloom 5.5: confirmed */
+    --pageNumber-bottom: 20px; /* bloom 5.5: confirmed */
 }
