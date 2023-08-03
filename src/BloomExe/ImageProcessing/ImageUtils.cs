@@ -68,6 +68,13 @@ namespace Bloom.ImageProcessing
 			return false;
 		}
 
+		private class ColorInfo
+		{
+			public Color color;
+			public bool isGrayish;
+			public bool isNearWhite;
+		}
+
 		/// <summary>
 		/// Check whether we should try to make the background of this image transparent.
 		/// Return true only if this is a two-color image with one of the colors being white.
@@ -81,29 +88,27 @@ namespace Bloom.ImageProcessing
 			// JPEG pictures generally never meet that criteria and cannot be made transparent anyway.
 			if (!AppearsToBePng(imageInfo))
 				return false;
+			var colors = new List<ColorInfo>();
 			if ((imageInfo.Image.PixelFormat & PixelFormat.Indexed) == PixelFormat.Indexed)
 			{
 				var palette = imageInfo.Image.Palette;
 				if (palette != null && palette.Entries != null)
 				{
-					// If only two colors are used, assume black and white line art that needs to have
-					// white made transparent.
-					if (palette.Entries.Length == 2)
+					bool whiteFound = false;
+					foreach (var color in palette.Entries)
 					{
-						var whiteFound = IsNearWhite(palette.Entries[0]) || IsNearWhite(palette.Entries[1]);
-						return whiteFound;
+						if (color.A < 255)
+							return false;   // already have transparent pixels
+						if (!IsThisColorForLineDrawing(color, colors, ref whiteFound))
+							return false;   // have a 3rd distinct non-gray color
 					}
-					else
-					{
-						return false;
-					}
+					return colors.Count == 2 && whiteFound;
 				}
 			}
 			// Harder to check if not indexed...
 			if (imageInfo.Image is Bitmap bitmapImage)
 			{
-				var color1 = new Color();
-				var color2 = new Color();
+				var whiteFound = false;
 				// Yes, this is as expensive as it looks.  But we only sample 100 pixels
 				// spread through the picture, stopping as soon as we hit either a
 				// transparent pixel or a 3rd distinct non-gray color.
@@ -116,54 +121,65 @@ namespace Bloom.ImageProcessing
 					j = Math.Min(j, 9);
 					for (int i = 0, x = xDelta / 2; x < bitmapImage.Width; x += xDelta, ++i)
 					{
-						i = Math.Min(i,9);
+						i = Math.Min(i, 9);
 						var y1 = y + randomYFix[j, i];
 						var x1 = x + randomXFix[j, i];
 						y1 = Math.Min(Math.Max(y1, 0), bitmapImage.Height - 1);
 						x1 = Math.Min(Math.Max(x1, 0), bitmapImage.Width - 1);
 						var color = bitmapImage.GetPixel(x1, y1);
 						if (color.A < 255)
-						{
-							return false;	// we already have transparent pixels
-
-						}
-						else if (color1 == Color.Empty)
-						{
-							color1 = color;
-						}
-						else if (color != color1 && color2 == Color.Empty)
-						{
-							color2 = color;
-						}
-						else if (color != color1 && color != color2)
-						{
-							if (IsGrayish(color1) && IsGrayish(color2) && IsGrayish(color))
-								continue;	// It may be a grayscale picture, which can be made transparent safely.
-							return false;	// we have at least 3 colors
-						}
+							return false;   // already have transparent pixels
+						if (!IsThisColorForLineDrawing(color, colors, ref whiteFound))
+							return false;   // have a 3rd distinct non-gray color
 					}
 				}
-				var colorCount = 0;
-				var whiteFound = false;
-				if (color1 != Color.Empty)
-				{
-					++colorCount;
-					if (IsNearWhite(color1))
-						whiteFound = true;
-				}
-				if (color2 != Color.Empty)
-				{
-					++colorCount;
-					if (IsNearWhite(color2))
-						whiteFound = true;
-				}
-				// Only two colors encountered, likely black and white in intent.
-				// But if neither of the two colors is white (or near white), return false.
-				// (Our code wouldn't make anything transparent anyway.)
-				return colorCount == 2 && whiteFound;
+				// At least two colors encountered, likely black and white or greyscale in intent.
+				// But if none of the colors is white, return false. (Our code wouldn't make anything
+				// transparent anyway.)
+				return colors.Count == 2 && whiteFound;
 			}
 			// we can't tell, so err on the side of caution.
 			return false;
+		}
+
+		/// <summary>
+		/// Check whether this color is near white or grayish, and store the first two colors
+		/// encountered.  Return false if we encounter a third color and any of the three colors
+		/// are neither near white nor grayish.  (If only two colors are encountered, one of them
+		/// must be near white, but the other does not have to be grayish.)  It would be nice to
+		/// allow, for example, shades of purple, but that's too hard to do reliably.
+		/// </summary>
+		private static bool IsThisColorForLineDrawing(Color color, List<ColorInfo> colors, ref bool whiteFound)
+		{
+			var whitish = IsNearWhite(color);
+			var grayish = IsGrayish(color);
+			if (colors.Count == 0)
+			{
+				colors.Add(new ColorInfo { color = color, isGrayish = grayish, isNearWhite = whitish });
+			}
+			else if (colors.Count == 1 && color != colors[0].color)
+			{
+				colors.Add(new ColorInfo { color = color, isGrayish = grayish, isNearWhite = whitish });
+			}
+			else if (colors.Count == 2 && color != colors[0].color && color != colors[1].color)
+			{
+				// NearWhite is not guaranteed to be Grayish, so we have to check both.
+				if (!(colors[0].isGrayish || colors[0].isNearWhite) ||
+					!(colors[1].isGrayish || colors[1].isNearWhite) ||
+					!(grayish || whitish))
+				{
+					// we have at least 3 colors, at least one of which is neither white nor gray
+					return false;
+				}
+			}
+			// Enhance: store all distinct colors encountered, not just the first two, and store a
+			// count of how often they were found (for the bitmap check).  Then the caller could
+			// check all of them for grayishness and whiteness, or do a more sophisticated analysis
+			// for being shades of a given color, or (for the bitmap) look at the ratio of white vs
+			// non-white colors for line drawing detection.  (Of course, then the name of the method
+			// might no longer be appropriate and the return value wouldn't exist.)
+			whiteFound |= whitish;
+			return true;
 		}
 
 		private static int[,] GenerateRandomAdjustments(int seed, int range)
