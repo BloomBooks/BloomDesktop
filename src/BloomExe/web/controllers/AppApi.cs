@@ -44,7 +44,7 @@ namespace Bloom.Api
 					request.PostSucceeded();
 				}
 			}, false);
-			apiHandler.RegisterEndpointHandler(kAppUrlPrefix + "autoUpdateSoftwareChoice", HandleAutoUpdate, false);
+			apiHandler.RegisterEndpointHandler(kAppUrlPrefix + "userSettings", UserSettings, false);
 			apiHandler.RegisterEndpointHandler(kAppUrlPrefix + "showDownloadsPage", (request) =>
 			{
 				// Enhance: is there a market-specific version of Bloom Library? If so, ideal to link to it somehow.
@@ -111,22 +111,26 @@ namespace Bloom.Api
 			request.PostSucceeded();
 		}
 
-		public void HandleAutoUpdate(ApiRequest request)
+		// Get requests should have queryparam settingName
+		// Post requests should have a json object with settingName and settingValue
+		public void UserSettings(ApiRequest request)
 		{
 			if (request.HttpMethod == HttpMethods.Get)
 			{
-				var json = JsonConvert.SerializeObject(new
+				var settingName = request.Parameters["settingName"];
+				request.ReplyWithJson(new
 				{
-					autoUpdate = Settings.Default.AutoUpdate,
-					dialogShown = Settings.Default.AutoUpdateDialogShown
+					settingValue = Settings.Default[settingName]
 				});
-				request.ReplyWithJson(json);
 			}
 			else // post
 			{
 				var requestData = DynamicJson.Parse(request.RequiredPostJson());
-				Settings.Default.AutoUpdateDialogShown = (int)requestData.dialogShown;
-				Settings.Default.AutoUpdate = (bool)requestData.autoUpdate;
+				Type settingType = typeof(Settings).GetProperty(requestData.settingName).PropertyType;
+				var settingValue = Convert.ChangeType(requestData.settingValue, settingType);
+
+				Settings.Default[requestData.settingName] = settingValue;
+				Settings.Default.Save();
 				request.PostSucceeded();
 			}
 		}

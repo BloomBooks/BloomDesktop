@@ -52,6 +52,7 @@ import { Link } from "./link";
 import { BloomSplitButton } from "./bloomSplitButton";
 import { AutoUpdateSoftwareDialog } from "./AutoUpdateSoftwareDialog";
 import { VisuallyImpairedIcon } from "./icons/VisuallyImpairedIcon";
+import { ForumInvitationDialogLauncher } from "./forumInvitationDialog";
 
 const kLongText =
     "Bacon ipsum dolor amet ribeye spare ribs bresaola t-bone. Strip steak turkey shankle pig ground round, biltong t-bone kevin alcatra flank ribeye beef ribs meatloaf filet mignon. Buffalo ham t-bone short ribs.";
@@ -471,6 +472,9 @@ storiesOf("Misc", module)
                 dialogEnvironment={normalDialogEnvironmentForStorybook}
             />
         ))
+    )
+    .add("ForumInvitationDialog", () =>
+        React.createElement(() => <ForumInvitationDialogLauncher />)
     )
     .add("RadioGroup", () =>
         React.createElement(() => {

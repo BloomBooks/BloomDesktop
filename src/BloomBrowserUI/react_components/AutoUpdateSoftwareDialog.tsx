@@ -29,8 +29,8 @@ export const AutoUpdateSoftwareDialog: React.FunctionComponent<{
         "automatic"
     );
     useEffect(() => {
-        get("app/autoUpdateSoftwareChoice", result => {
-            const autoUpdateValue: boolean = result.data.autoUpdate;
+        get("app/userSettings?settingName=AutoUpdate", result => {
+            const autoUpdateValue: boolean = result.data.settingValue;
             setChosenRadio(autoUpdateValue ? "automatic" : "inform");
         });
     }, []);
@@ -77,9 +77,13 @@ export const AutoUpdateSoftwareDialog: React.FunctionComponent<{
                 <DialogOkButton
                     default={true}
                     onClick={() => {
-                        postData("app/autoUpdateSoftwareChoice", {
-                            dialogShown: 1,
-                            autoUpdate: isAutoUpdate
+                        postData("app/userSettings", {
+                            settingName: "AutoUpdateDialogShown",
+                            settingValue: 1
+                        });
+                        postData("app/userSettings", {
+                            settingName: "AutoUpdate",
+                            settingValue: isAutoUpdate
                         });
                         post("common/closeReactDialog");
                     }}
