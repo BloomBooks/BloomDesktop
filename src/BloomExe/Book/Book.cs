@@ -1605,7 +1605,11 @@ namespace Bloom.Book
 			bool doesAlreadyExist = RobustFile.Exists(path);
 			if (Program.RunningHarvesterMode && doesAlreadyExist)
 			{
-				// Would overwrite, but overwrite not allowed in Harvester mode.
+				// Would overwrite, but overwrite not allowed in Harvester mode because we need to preserve the language information.
+				// However, we do want to remove any font-face declarations as bloom-player provides its own, and these cause problems with
+				// synthesizing font variants. See BL-12594.
+				if (!WriteFontFaces)
+					RemoveFontFaceDeclarations(path);
 				return;
 			}
 
@@ -1618,9 +1622,11 @@ namespace Bloom.Book
 				// defaultLangStyles.css for any other languages that are there.  We start by setting
 				// languagesWeAlreadyHave to the languages we do NOT want to copy from defaultLangStyles.css
 				// (because we have more current data about them already).
-				var languagesWeAlreadyHave = new HashSet<string>();
-				languagesWeAlreadyHave.Add(CollectionSettings.Language1Tag);
-				languagesWeAlreadyHave.Add(CollectionSettings.Language2Tag);
+				var languagesWeAlreadyHave = new HashSet<string>
+				{
+					CollectionSettings.Language1Tag,
+					CollectionSettings.Language2Tag
+				};
 				if (!String.IsNullOrEmpty(CollectionSettings.Language3Tag))
 					languagesWeAlreadyHave.Add(CollectionSettings.Language3Tag);
 
@@ -1660,6 +1666,13 @@ namespace Bloom.Book
 				// Re-throw with additional debugging info.
 				throw new BloomUnauthorizedAccessException(path, e);
 			}
+		}
+
+		private void RemoveFontFaceDeclarations(string path)
+		{
+			var contents = RobustFile.ReadAllText(path);
+			contents = Regex.Replace(contents, "^@font-face.*$\n", "", RegexOptions.Multiline);
+			RobustFile.WriteAllText(path, contents);
 		}
 
 		private void UpdateCollectionSettingsInBookMetaData()
