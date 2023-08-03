@@ -176,34 +176,6 @@
             <source xml:lang="en">Bloom was not able to access a microphone.</source>
             <note>ID: EditTab.Toolbox.TalkingBookTool.MicrophoneAccessProblem</note>
           </trans-unit>
-          <trans-unit id="ForumInvitationDialog.BloomCommunityForum">
-            <source xml:lang="en">Bloom Community Forum</source>
-            <note>ID: ForumInvitationDialog.BloomCommunityForum</note>
-          </trans-unit>
-          <trans-unit id="ForumInvitationDialog.DoYouKnow">
-            <source xml:lang="en">Do you know about our Bloom forum? Join us to:</source>
-            <note>ID: ForumInvitationDialog.DoYouKnow</note>
-          </trans-unit>
-          <trans-unit id="ForumInvitationDialog.LearnAboutNewFeatures">
-            <source xml:lang="en">learn about new features</source>
-            <note>ID: ForumInvitationDialog.LearnAboutNewFeatures</note>
-          </trans-unit>
-          <trans-unit id="ForumInvitationDialog.RequestAndVote">
-            <source xml:lang="en">request and vote on new features</source>
-            <note>ID: ForumInvitationDialog.RequestAndVote</note>
-          </trans-unit>
-          <trans-unit id="ForumInvitationDialog.AskForAdvice">
-            <source xml:lang="en">ask for advice or technical help</source>
-            <note>ID: ForumInvitationDialog.AskForAdvice</note>
-          </trans-unit>
-          <trans-unit id="ForumInvitationDialog.ShowOff">
-            <source xml:lang="en">show off what you're doing with Bloom!</source>
-            <note>ID: ForumInvitationDialog.ShowOff</note>
-          </trans-unit>
-          <trans-unit id="ForumInvitationDialog.HowToJoin">
-            <source xml:lang="en">HOW TO JOIN</source>
-            <note>ID: ForumInvitationDialog.HowToJoin</note>
-          </trans-unit>
         </body>
     </file>
 </xliff>

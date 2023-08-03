@@ -18,7 +18,9 @@ import { DialogCloseButton } from "./BloomDialog/commonDialogComponents";
 import { css } from "@emotion/react";
 import { kBloomBlue } from "../bloomMaterialUITheme";
 
-export const ForumInvitationDialogLauncher: React.FunctionComponent<{}> = () => {
+export const ForumInvitationDialogLauncher: React.FunctionComponent<{
+    forceOpen?: boolean; // for storybook
+}> = props => {
     const {
         openingEvent,
         showDialog,
@@ -26,9 +28,16 @@ export const ForumInvitationDialogLauncher: React.FunctionComponent<{}> = () => 
         propsForBloomDialog
     } = useEventLaunchedBloomDialog("ForumInvitationDialog");
 
+    // for storybook
+    useEffect(() => {
+        if (props.forceOpen) {
+            showDialog();
+        }
+    }, []);
+
     useEffect(() => {
         get(
-            "app/UserSettings?settingName=ForumInvitationAcknowledged",
+            "app/UserSetting?settingName=ForumInvitationAcknowledged",
             result => {
                 if (result.data.settingValue) {
                     // forum invitation has been acknowledged, don't show dialog
@@ -36,7 +45,7 @@ export const ForumInvitationDialogLauncher: React.FunctionComponent<{}> = () => 
                 }
 
                 get(
-                    "app/UserSettings?settingName=ForumInvitationLastShown",
+                    "app/UserSetting?settingName=ForumInvitationLastShown",
                     result => {
                         const lastShownDate = new Date(
                             result.data.settingValue
@@ -47,7 +56,7 @@ export const ForumInvitationDialogLauncher: React.FunctionComponent<{}> = () => 
                         if (diffDays > 13) {
                             //show once every two weeks
                             showDialog();
-                            postData("app/UserSettings", {
+                            postData("app/UserSetting", {
                                 settingName: "ForumInvitationLastShown",
                                 settingValue: today.toISOString()
                             });
@@ -83,7 +92,6 @@ export const ForumInvitationDialog: React.FunctionComponent<{
                 css={css`
                     height: 170px;
                     width: 400px;
-                    position: sticky;
                 `}
             >
                 <Div l10nKey="ForumInvitationDialog.DoYouKnow">
@@ -116,9 +124,10 @@ export const ForumInvitationDialog: React.FunctionComponent<{
                 <BloomButton
                     l10nKey={"ForumInvitationDialog.HowToJoin"}
                     enabled={true}
+                    // href="https://docs.bloomlibrary.org/forum"
                     onClick={() => {
                         // Stop bringing back up the forum invitation once user has clicked "How to Join"
-                        postData("app/UserSettings", {
+                        postData("app/UserSetting", {
                             settingName: "ForumInvitationAcknowledged",
                             settingValue: "true"
                         });
@@ -130,7 +139,7 @@ export const ForumInvitationDialog: React.FunctionComponent<{
                     }}
                     hasText={true}
                 >
-                    HOW TO JOIN
+                    How to Join
                 </BloomButton>
 
                 <DialogCloseButton

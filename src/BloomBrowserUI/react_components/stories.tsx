@@ -474,7 +474,9 @@ storiesOf("Misc", module)
         ))
     )
     .add("ForumInvitationDialog", () =>
-        React.createElement(() => <ForumInvitationDialogLauncher />)
+        React.createElement(() => (
+            <ForumInvitationDialogLauncher forceOpen={true} />
+        ))
     )
     .add("RadioGroup", () =>
         React.createElement(() => {

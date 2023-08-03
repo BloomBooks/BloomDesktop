@@ -44,7 +44,7 @@ namespace Bloom.Api
 					request.PostSucceeded();
 				}
 			}, false);
-			apiHandler.RegisterEndpointHandler(kAppUrlPrefix + "userSettings", UserSettings, false);
+			apiHandler.RegisterEndpointHandler(kAppUrlPrefix + "userSetting", HandleUserSetting, false);
 			apiHandler.RegisterEndpointHandler(kAppUrlPrefix + "showDownloadsPage", (request) =>
 			{
 				// Enhance: is there a market-specific version of Bloom Library? If so, ideal to link to it somehow.
@@ -113,7 +113,7 @@ namespace Bloom.Api
 
 		// Get requests should have queryparam settingName
 		// Post requests should have a json object with settingName and settingValue
-		public void UserSettings(ApiRequest request)
+		public void HandleUserSetting(ApiRequest request)
 		{
 			if (request.HttpMethod == HttpMethods.Get)
 			{
