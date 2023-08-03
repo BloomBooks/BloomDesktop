@@ -1,25 +1,34 @@
 @import "common-mixins.less";
 
-// Contains css specifically targetting Device16x9Portrait, Device16x9Landscape and PictureStoryLandscape layouts
+// Contains css specifically targeting Device16x9Portrait, Device16x9Landscape and PictureStoryLandscape layouts
 
 // Mixin for setting .marginBox margins for Device layouts.
 .SetMarginBoxDevice(@PageWidth, @PageHeight) {
-    height: @PageHeight - (@DeviceMargin*2);
+    //height: @PageHeight - (@DeviceMargin*2);
+    height: calc(
+        ~"@{PageHeight} - (var(--page-margin-top) + var(--page-margin-bottom))"
+    );
     .SetWidth(@PageWidth);
+
     img {
-        max-width: @PageWidth - (@DeviceMargin*2);
+        max-width: @PageWidth - (@DeviceMargin*2); // TODO Appearance
     }
+
     top: @DeviceMargin;
     left: @DeviceMargin !important;
 }
 
 // Mixin to leave space for page number at the bottom of the marginBox
 .LeaveMarginForPageNumber(@PageHeight) {
-    height: @PageHeight - @DeviceBottomMargin;
+    //height: @PageHeight - @DeviceBottomMargin;
+    height: @PageHeight - var(--page-margin-bottom);
 }
 
 .SetWidth(@PageWidth) {
-    width: @PageWidth - (@DeviceMargin*2);
+    //width: @PageWidth - (@DeviceMargin*2);
+    width: calc(
+        ~"@{PageWidth} - (var(--page-margin-outer) + var(--page-margin-inner))"
+    );
 }
 
 // See the comments in basePage.less about WebView2 PDF publishing and page sizes.
@@ -39,6 +48,7 @@
             max-height: (floor((@Device16x9Portrait-Height / 25.4) * 96) / 96) *
                 25.4;
         }
+
         &.Device16x9Landscape {
             min-width: (floor((@Device16x9Landscape-Width / 25.4) * 96) / 96) *
                 25.4;
@@ -59,12 +69,14 @@
         min-height: @Device16x9Portrait-Height;
         max-height: @Device16x9Portrait-Height;
     }
+
     &.Device16x9Landscape {
         min-width: @Device16x9Landscape-Width;
         max-width: @Device16x9Landscape-Width;
         min-height: @Device16x9Landscape-Height;
         max-height: @Device16x9Landscape-Height;
     }
+
     &.PictureStoryLandscape {
         min-width: @PictureStoryLandscape-Width;
         max-width: @PictureStoryLandscape-Width;
@@ -93,15 +105,18 @@
             height: calc(100%) !important;
         }
     }
+
     &.numberedPage {
         &::after {
             bottom: 5px;
         }
+
         &.side-left::after {
             left: calc(
                 ~"100% / 2 - " (@DeviceMargin)
             ); // center page number on Device layouts
         }
+
         &.side-right::after {
             right: calc(
                 ~"100% / 2 - " (@DeviceMargin)
@@ -111,31 +126,30 @@
 }
 
 .marginBox {
-    .Device16x9Portrait & {
-        .SetMarginBoxDevice(
-            @Device16x9Portrait-Width,
-            @Device16x9Portrait-Height
-        );
-    }
-    .numberedPage.Device16x9Portrait & {
-        .LeaveMarginForPageNumber(@Device16x9Portrait-Height);
-    }
+    // .Device16x9Portrait & {
+    //     .SetMarginBoxDevice(@Device16x9Portrait-Width,
+    //         @Device16x9Portrait-Height );
+    // }
 
-    .Device16x9Landscape & {
-        .SetMarginBoxDevice(
-            @Device16x9Landscape-Width,
-            @Device16x9Landscape-Height
-        );
-    }
-    .numberedPage.Device16x9Landscape & {
-        .LeaveMarginForPageNumber(@Device16x9Landscape-Height);
-    }
+    // .numberedPage.Device16x9Portrait & {
+    //     .LeaveMarginForPageNumber(@Device16x9Portrait-Height);
+    // }
+
+    // .Device16x9Landscape & {
+    //     .SetMarginBoxDevice(@Device16x9Landscape-Width,
+    //         @Device16x9Landscape-Height );
+    // }
+
+    // .numberedPage.Device16x9Landscape & {
+    //     .LeaveMarginForPageNumber(@Device16x9Landscape-Height);
+    // }
 
     // Unfortunate that we have to basically duplicate this from .SetMarginBoxDevice,
     // but without this the width in basePage.less wins. This way, we win because we are more specific.
     .screen-only.Device16x9Portrait & {
         .SetWidth(@Device16x9Portrait-Width);
     }
+
     .screen-only.Device16x9Landscape & {
         .SetWidth(@Device16x9Landscape-Width);
     }
@@ -150,10 +164,12 @@
         .position-top {
             bottom: 0 !important;
         }
+
         .position-bottom {
             display: none;
         }
     }
+
     .numberedPage.PictureStoryLandscape & {
         .LeaveMarginForPageNumber(@PictureStoryLandscape-Height);
     }

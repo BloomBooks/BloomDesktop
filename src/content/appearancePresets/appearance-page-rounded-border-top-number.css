@@ -1,0 +1,19 @@
+:root {
+    /* taken from https://bloomlibrary.org/player/vPftT2H1eE */
+    --marginBox-border-radius: 25px;
+    --marginBox-border-color: rgb(77, 68, 68);
+    --marginBox-border-style: solid;
+    --marginBox-border-width: 1.5mm;
+    --pageNumber-bottom: unset;
+    --pageNumber-top: 30px; /* within the marginBox */
+    --page-margin-top: 7mm;
+    --page-margin-bottom: 7mm;
+    --page-margin-inner: 7mm;
+    --page-margin-outer: 7mm;
+}
+.Device16x9Portrait {
+    --page-margin-top: 73mm;
+    --page-margin-bottom: 7mm;
+    --page-margin-inner: 7mm;
+    --page-margin-outer: 7mm;
+}

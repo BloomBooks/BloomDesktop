@@ -6,6 +6,8 @@
 // NOTE: more style sheet imports are at the end of this document,
 // ones that should supersede the normal rules
 
+@import (inline) "../appearancePresets/appearance-page-default.css";
+
 @bloom-page-background: white;
 
 .Browser-Reset() {
@@ -98,6 +100,7 @@ div.bloomPlayer-page {
 .bloom-templateThumbnail {
     // template page thumbnail shouldn't have scrollbars (see BL-11855)
     overflow: clip;
+
     // template page thumbnail shouldn't have a page number
     .numberedPage:after {
         display: none;
@@ -139,7 +142,8 @@ div.bloomPlayer-page {
     }
 
     .pageOverflowsIcon {
-        background-image: url("/bloom/images/Attention.svg"); /* red triangle with exclamation point */
+        background-image: url("/bloom/images/Attention.svg");
+        /* red triangle with exclamation point */
         background-position: bottom;
         background-repeat: no-repeat;
         background-size: 70%;
@@ -701,6 +705,14 @@ body.publishingWithoutFullBleed {
     top: var(--page-margin-top);
 }
 
+/* Rules that come from appearance and effect only the content pages, not the xmatter */
+.numberedPage .marginBox {
+    border-radius: var(--marginBox-border-radius);
+    border-color: var(--marginBox-border-color);
+    border-style: var(--marginBox-border-style);
+    border-width: var(--marginBox-border-width);
+}
+
 // Mixin for setting .marginBox margins.
 .SetMarginBox(@PageWidth, @PageHeight) {
     height: calc(
@@ -714,6 +726,14 @@ body.publishingWithoutFullBleed {
 }
 
 .marginBox {
+    .Device16x9Portrait & {
+        .SetMarginBox(@Device16x9Portrait-Width, @Device16x9Portrait-Height);
+    }
+
+    .Device16x9Landscape & {
+        .SetMarginBox(@Device16x9Landscape-Width, @Device16x9Landscape-Height);
+    }
+
     .A3Portrait & {
         .SetMarginBox(@A3Landscape-Height, @A3Landscape-Width);
     }
@@ -1042,9 +1062,10 @@ books may contain divs with box-header-off, so we need a rule to hide them.*/
 .numberedPage {
     &:after {
         content: attr(data-page-number);
-        font-size: var(--pageNumberFontSize);
+        font-size: var(--pageNumber-font-size);
         position: absolute;
-        bottom: var(--pageNumberBottom);
+        bottom: var(--pageNumber-bottom);
+        top: var(--pageNumber-top);
     }
 
     &.side-left:after {
@@ -1167,6 +1188,7 @@ div[data-book*="branding"] {
 .bloom-page .bloom-editable.bloom-visibility-code-on {
     word-wrap: break-word;
 }
+
 //... to be continued. We sandwich most other sheets between this one and the langVisibility.css, which comes last-ish
 
 // now apply any book features
