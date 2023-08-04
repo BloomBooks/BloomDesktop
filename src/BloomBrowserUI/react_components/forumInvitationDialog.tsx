@@ -1,5 +1,4 @@
 import React = require("react");
-import * as ReactDOM from "react-dom";
 
 import {
     BloomDialog,
@@ -18,22 +17,12 @@ import { DialogCloseButton } from "./BloomDialog/commonDialogComponents";
 import { css } from "@emotion/react";
 import { kBloomBlue } from "../bloomMaterialUITheme";
 
-export const ForumInvitationDialogLauncher: React.FunctionComponent<{
-    forceOpen?: boolean; // for storybook
-}> = props => {
+export const ForumInvitationDialogLauncher: React.FunctionComponent<{}> = () => {
     const {
-        openingEvent,
         showDialog,
         closeDialog,
         propsForBloomDialog
     } = useEventLaunchedBloomDialog("ForumInvitationDialog");
-
-    // for storybook
-    useEffect(() => {
-        if (props.forceOpen) {
-            showDialog();
-        }
-    }, []);
 
     useEffect(() => {
         get(
@@ -124,7 +113,6 @@ export const ForumInvitationDialog: React.FunctionComponent<{
                 <BloomButton
                     l10nKey={"ForumInvitationDialog.HowToJoin"}
                     enabled={true}
-                    // href="https://docs.bloomlibrary.org/forum"
                     onClick={() => {
                         // Stop bringing back up the forum invitation once user has clicked "How to Join"
                         postData("app/UserSetting", {

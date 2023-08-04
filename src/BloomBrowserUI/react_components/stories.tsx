@@ -30,7 +30,10 @@ import {
     RequiresBloomEnterpriseNoticeDialog,
     RequiresBloomEnterpriseOverlayWrapper
 } from "./requiresBloomEnterprise";
-import { normalDialogEnvironmentForStorybook } from "./BloomDialog/BloomDialogPlumbing";
+import {
+    StorybookDialogWrapper,
+    normalDialogEnvironmentForStorybook
+} from "./BloomDialog/BloomDialogPlumbing";
 import {
     LocalizableMenuItem,
     LocalizableCheckboxMenuItem,
@@ -359,7 +362,7 @@ const pickerStyles: React.CSSProperties = {
     position: "absolute"
 };
 
-storiesOf("Misc", module)
+storiesOf("Misc/Dialogs", module)
     .add("ConfirmDialog", () =>
         React.createElement(() => (
             <div>
@@ -396,6 +399,20 @@ storiesOf("Misc", module)
             </div>
         ))
     )
+    .add("AutoUpdateSoftwareDialog", () =>
+        React.createElement(() => (
+            <AutoUpdateSoftwareDialog
+                dialogEnvironment={normalDialogEnvironmentForStorybook}
+            />
+        ))
+    )
+    .add("ForumInvitationDialog", () => (
+        <StorybookDialogWrapper id="ForumInvitationDialog" params={{}}>
+            <ForumInvitationDialogLauncher />
+        </StorybookDialogWrapper>
+    ));
+
+storiesOf("Misc", module)
     .add("Small Number Picker", () =>
         React.createElement(() => {
             const numberOfPagesTooltip = "Number of pages to add";
@@ -465,18 +482,6 @@ storiesOf("Misc", module)
                 </React.Fragment>
             );
         })
-    )
-    .add("AutoUpdateSoftwareDialog", () =>
-        React.createElement(() => (
-            <AutoUpdateSoftwareDialog
-                dialogEnvironment={normalDialogEnvironmentForStorybook}
-            />
-        ))
-    )
-    .add("ForumInvitationDialog", () =>
-        React.createElement(() => (
-            <ForumInvitationDialogLauncher forceOpen={true} />
-        ))
     )
     .add("RadioGroup", () =>
         React.createElement(() => {
