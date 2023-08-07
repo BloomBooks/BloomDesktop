@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -118,7 +118,13 @@ namespace Bloom.Api
 								{
 									//ok, so we don't have it translated yet. Make sure it's at least listed in the things that can be translated.
 									// And return the English string, which is what we would do the next time anyway.  (BL-3374)
-									LocalizationManager.GetDynamicString("Bloom", id, englishText);
+
+									//This is what we had before 5.5: LocalizationManager.GetDynamicString("Bloom", id, englishText);
+									// That apparently just gives us back whatever we already have in `englishText`, which is "" if
+									// the code did not have a duplicate of the string. We want to support the ideal (in Hatton's mind)
+									// that duplication is just asking for trouble by allowing the code to not know what the English is.
+									// So now, we just do this which just means "ah well, what's the English?".
+									GetSomeTranslation(id, "en", out englishText);
 								}
 							}
 						}
