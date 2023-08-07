@@ -10,9 +10,6 @@
     --page-margin-bottom: 7mm;
     --page-margin-inner: 17mm;
     --page-margin-outer: 7mm;
-
-    --marginBox-background-color: white;
-    --page-background-color: rgb(140, 69, 140);
 }
 .Device16x9Portrait {
     --page-margin-top: 73mm;
