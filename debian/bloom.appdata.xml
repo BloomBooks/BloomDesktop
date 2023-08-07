@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Copyright 2023 SIL International -->
+<component type="desktop-application">
+  <id>org.sil.Bloom</id>
+  <launchable type="desktop-id">bloom.desktop</launchable>
+  <metadata_license>MIT</metadata_license>
+  <project_license>MIT</project_license>
+  <name>Bloom</name>
+  <summary>Literacy materials development for language communities</summary>
+  <description>
+    <p>
+      Bloom Desktop is an application that dramatically "lowers the bar" for
+      language communities who want books in their own languages. Bloom delivers
+      a low-training, high-output system where mother tongue speakers and their
+      advocates work together to foster both community authorship and access to
+      external material in the vernacular.
+    </p>
+  </description>
+  <screenshots>
+    <screenshot type="default">
+      <image>https://bloomlibrary.org/assets/multilingual.png</image>
+      <caption>Multilingual books</caption>
+    </screenshot>
+    <screenshot type="default">
+      <image>https://bloomlibrary.org/assets/pdfbooklets.png</image>
+      <caption>Effortless PDF booklets</caption>
+    </screenshot>
+    <screenshot type="default">
+      <image>https://bloomlibrary.org/assets/allbooks.png</image>
+      <caption>All your books, a click away</caption>
+    </screenshot>
+    <screenshot type="default">
+      <image>https://bloomlibrary.org/assets/artofreading.png</image>
+      <caption>Pictures from the Art of Reading Collection</caption>
+    </screenshot>
+  </screenshots>
+  <url type="homepage">https://bloomlibrary.org</url>
+  <url type="bugtracker">https://issues.bloomlibrary.org/youtrack</url>
+  <url type="help">https://community.software.sil.org/c/bloom</url>
+  <releases>
+    <release version="5.4.1" date="2023-08-07">
+      <description>
+        <ul>
+          <li>Simple Choice Activities: We’ve added two new activities that you can add to your books. Just enter the correct answer in the first box. When someone reads the book, Bloom will shuffle the answers.  These are Choose Word from Picture and Choose Picture from Word</li>
+          <li>Smarter Splitter: We heard you: getting image and text boxes to just the right size was too hard. We’ve made the splitter smart in a couple of ways: 1) You can now double-click the splitter to make it snap to the position used by the previous page. 2) The splitter now “snaps” to some common locations such as 1/4, 1/3, 1/2, etc.</li>
+          <li>Fixed Layout ePUBs: Bloom can now create ePUBs in “Fixed” mode which asks ePUB players to preserve the page as you see it in Bloom. If you have a very simple book, Bloom will also let you choose the previous “Flowable” mode. With this improvement, you can now publish overlay (comic) books as ePUBs.</li>
+          <li>Color Chooser: We improved the color chooser and made the same chooser available everywhere you can set a color, including text, background colors in the overlay tool, and cover colors.</li>
+          <li>Text Color in Styles:  You can now set color as part of a style definition.  As before, you can also color individual words and letters.</li>
+          <li>“Needs Copyright” Button: We’ve noticed that sometimes people forget to add a copyright, which later prevents them from publishing the book to BloomLibrary.org. Now Bloom shows a button on the Credits page to prompt you.</li>
+          <li>Overlay Tool: We’ve added a new Bubble shape, “Rectangular”. You can now click on the background image in order to change it. If a bubble somehow ends up off-screen, Bloom will move it back on screen the next time it loads the page. (Note that a Bloom Enterprise subscription is required to add new Overlay (comic) images to a book.)</li>
+        </ul>
+      </description>
+    </release>
+    <release version="5.3.3" date="2023-05-11">
+      <description>bug fixes</description>
+    </release>
+    <release version="5.3.2" date="2023-02-10">
+      <description>bug fixes</description>
+    </release>
+    <release version="5.3.1" date="2023-01-11">
+      <description>
+        <ul>
+          <li>Publish to Audio or Video: You can now turn your book into a video that can be shared on Facebook or YouTube. You can also make a version that will work on inexpensive “feature phones” or mp3 players. [not available on Linux]</li>
+          <li>Text Color: To highlight a word or some characters, you can now select some text and set its color.</li>
+          <li>New Copyright / License Dialog: We’ve re-worked the copyright / license dialog in order to help you better understand your choices.</li>
+          <li>Font License Info: When you’re just making paper or PDF copies of your book, you can use whatever fonts are on your computer. However, many fonts are not freely licensed for use on the web or in ebooks. But how are you supposed to know? It turns out that inside many fonts, there is some metadata that indicates things like what the license is, where the font comes from, and what version of the font you have. Bloom now reads this information and uses color and icons to indicate how safe a font is to use.</li>
+        </ul>
+      </description>
+    </release>
+    <release version="5.2.2" date="2022-11-29">
+      <description>bug fixes</description>
+    </release>
+    <release version="5.2.1" date="2022-07-07">
+      <description>
+        <ul>
+          <li>Decodable Reader: When the Decodable Reader tool generates a report, it now includes a list of all the usable words for each level.</li> 
+          <li>Uploading to bloomlibrary.org: When you upload a book, Bloom checks to see if there is already a book with the same internal ID on the library. If it finds one, it now gives you two choices. You can replace the existing book or upload your book as a new item. The latter option fixes your book's ID to be unique.</li>
+          <li>Team Collections (Bloom Enterprise, Experimental): User can now enter checkin notes and view a history of checkin notes.  Administrators can forceably unlock a book that has been left checked out.</li>
+          <li>Export / Import Spreadsheet (Bloom Enterprise, Experimental): Bloom books can now be exported to / imported from Excel spreadsheets. Some users will find this helpful for large translation projects or for making bulk changes.</li>
+          <li>Collection Settings: Many Bloom Enterprise projects use their own custom front/back matter packs. Previously in Bloom, everyone could see these in the list of choices. Now, these custom choices are not listed but instead are automatically selected based on the Bloom Enterprise code.</li>
+        </ul>
+      </description>
+    </release>
+  </releases>
+  <content_rating type="oars-1.0"/>
+</component>
