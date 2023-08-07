@@ -1,9 +1,9 @@
 ﻿Format: http://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
-Upstream-Name: bloom-desktop-beta
+Upstream-Name: bloom-desktop
 Source: https://github.com/BloomBooks/BloomDesktop
 
 Files: *
-Copyright: 2015 SIL International
+Copyright: 2023 SIL International
 License: MIT
 
 License: MIT
@@ -25,11 +25,11 @@ License: MIT
  TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
  SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-Files: /usr/lib/bloom-desktop-beta/browser/bookEdit/css/origami.css
+Files: /usr/lib/bloom-desktop/browser/bookEdit/css/origami.css
 Copyright: 2014 Simon Hagström
 License: MIT
 
-Files: /usr/lib/bloom-desktop-beta/browser/lib/ckeditor/*
+Files: /usr/lib/bloom-desktop/browser/lib/ckeditor/*
 Copyright: 2003-2015, CKSource - Frederico Knabben.
 License: GPL-2 (or later) or LGPL-2.1 (or later) or MPL-1.1 (or later)
 Comment: URL = https://ckeditor.com/legal/ckeditor-oss-license/.
@@ -38,89 +38,89 @@ License: MPL-1.1
  On Debian and similar systems, the full text of the Mozilla Public License 1.1
  can be found in the file `/usr/share/common-licenses/MPL-1.1'.
 
-Files: /usr/lib/bloom-desktop-beta/browser/templates/template books/Wall Calendar/form2object.js
+Files: /usr/lib/bloom-desktop/browser/templates/template books/Wall Calendar/form2object.js
 Copyright: 2010 Maxim Vasiliev
 License: MIT
 
-Files: /usr/lib/bloom-desktop-beta/browser/templates/template books/Wall Calendar/jquery.toObject.js
+Files: /usr/lib/bloom-desktop/browser/templates/template books/Wall Calendar/jquery.toObject.js
 Copyright: 2011 Maxim Vasiliev
 License: MIT
 
-Files: /usr/lib/bloom-desktop-beta/browser/templates/template books/Wall Calendar/jquery-1.10.1.js
+Files: /usr/lib/bloom-desktop/browser/templates/template books/Wall Calendar/jquery-1.10.1.js
 Copyright: 2005, 2013 jQuery Foundation, Inc. and other contributors
 License: MIT
 
-Files: /usr/lib/bloom-desktop-beta/browser/templates/template books/Wall Calendar/jquery-1.10.1.js [Sizzle.js]
+Files: /usr/lib/bloom-desktop/browser/templates/template books/Wall Calendar/jquery-1.10.1.js [Sizzle.js]
 Copyright: 2011 The Dojo Foundation
 License: MIT or BSD or GPL
 
-Files: /usr/lib/bloom-desktop-beta/browser/jquery.min.js
+Files: /usr/lib/bloom-desktop/browser/jquery.min.js
 Copyright: 2005, 2013 jQuery Foundation, Inc. and other contributors
 License: MIT
 
-Files: /usr/lib/bloom-desktop-beta/browser/jquery.min.js [Sizzle.js]
+Files: /usr/lib/bloom-desktop/browser/jquery.min.js [Sizzle.js]
 Copyright: 2011 The Dojo Foundation
 License: MIT or BSD or GPL
 
-Files: /usr/lib/bloom-desktop-beta/pdf/web/l10n.js
+Files: /usr/lib/bloom-desktop/pdf/web/l10n.js
 Copyright: 2011-2013 Fabien Cazenave, Mozilla
 License: MIT
 
-Files: /usr/lib/bloom-desktop-beta/browser/modified_libraries/jquery-ui/jquery-ui-1.10.3.custom.min.js
+Files: /usr/lib/bloom-desktop/browser/modified_libraries/jquery-ui/jquery-ui-1.10.3.custom.min.js
 Copyright: 2013 jQuery Foundation and other contributors
 License: MIT
 
-Files: /usr/lib/bloom-desktop-beta/browser/bookEdit/js/toolbar/jquery.toolbar.js
+Files: /usr/lib/bloom-desktop/browser/bookEdit/js/toolbar/jquery.toolbar.js
 Copyright: 2013 Paul Kinzett
 License: MIT
 
-Files: /usr/lib/bloom-desktop-beta/browser/**/split-pane.*
+Files: /usr/lib/bloom-desktop/browser/lib/split-pane/*
 Copyright: 2014 Simon Hagström
 License: MIT
 
-Files: /usr/lib/bloom-desktop-beta/browser/lib/jquery.alphanum.js
+Files: /usr/lib/bloom-desktop/browser/lib/jquery.alphanum.js
 Copyright: 2012 Kevin Sheedy
 License: MIT
 
-Files: /usr/lib/bloom-desktop-beta/browser/lib/jquery.alphanum.js [embedded jquery.caret.js]
+Files: /usr/lib/bloom-desktop/browser/lib/jquery.alphanum.js [embedded jquery.caret.js]
 Copyright: 2011 Luke Morton
 License: MIT
 
-Files: /usr/lib/bloom-desktop-beta/browser/lib/long-press/jquery.longpress.*
+Files: /usr/lib/bloom-desktop/browser/lib/long-press/jquery.longpress.*
 Copyright: 2013 Quentin Thiaucourt
 License: MIT
 
-Files: /usr/lib/bloom-desktop-beta/browser/lib/long-press/jquery.mousewheel.js
+Files: /usr/lib/bloom-desktop/browser/lib/long-press/jquery.mousewheel.js
 Copyright: 2011 Brandon Aaron
 License: MIT
 
-Files: /usr/lib/bloom-desktop-beta/Analytics.NET.dll
+Files: /usr/lib/bloom-desktop/Analytics.NET.dll
 Copyright: 2015 Twilio Segment
 License: MIT
 
-Files: /usr/lib/bloom-desktop-beta/Autofac.*
+Files: /usr/lib/bloom-desktop/Autofac.*
 Copyright: 2020 Autofac Contributors
 License: MIT
 
-Files: /usr/lib/bloom-desktop-beta/NDesk.DBus.dll*
+Files: /usr/lib/bloom-desktop/NDesk.DBus.dll*
 Copyright: Copyright 2006 Alp Toker <alp@atoker.com>
 License: MIT
 Comment: URL = https://www.nuget.org/packages/NDesk.DBus/
 
-Files: /usr/lib/bloom-desktop-beta/Newtonsoft.Json.*
+Files: /usr/lib/bloom-desktop/Newtonsoft.Json.*
 Copyright: 2008 James Newton-King
 License: MIT
 Comment: URL = https://www.nuget.org/packages/Newtonsoft.Json/
 
-Files: /usr/lib/bloom-desktop-beta/PdfSharp.dll
+Files: /usr/lib/bloom-desktop/PdfSharp.dll
 Copyright: 2005-2014 empira Software GmbH, Troisdorf (Germany)
 License: MIT
 
-Files: /usr/lib/bloom-desktop-beta/TidyManaged.dll*
+Files: /usr/lib/bloom-desktop/TidyManaged.dll*
 Copyright: 2009 Mark Beaton
 License: MIT
 
-Files: /usr/lib/bloom-desktop-beta/pdf/*
+Files: /usr/lib/bloom-desktop/pdf/*
 Copyright: 2012 Mozilla Foundation
 License: Apache-2.0
 
@@ -129,31 +129,31 @@ License: Apache-2.0
  version 2.0 can be found in the file
  `/usr/share/common-licenses/Apache-2.0'.
 
-Files: /usr/lib/bloom-desktop-beta/pdf/build/pdf.worker.js [MurmurHash3]
+Files: /usr/lib/bloom-desktop/pdf/build/pdf.worker.js [MurmurHash3]
 Copyright: 2014 Opera Software ASA
 License: Apache-2.0
 
-Files: /usr/lib/bloom-desktop-beta/pdf/web/viewer.js [GrabToPan]
+Files: /usr/lib/bloom-desktop/pdf/web/viewer.js [GrabToPan]
 Copyright: 2013 Rob Wu <gwnRob@gmail.com>
 License: Apache-2.0
 
-Files: /usr/lib/bloom-desktop-beta/browser/bookEdit/js/toolbar/bootstrap.icons.css
+Files: /usr/lib/bloom-desktop/browser/bookEdit/js/toolbar/bootstrap.icons.css
 Copyright: 2012 Twitter, Inc
 License: Apache-2.0
 
-Files: /usr/lib/bloom-desktop-beta/browser/lib/tabpane.js
+Files: /usr/lib/bloom-desktop/browser/lib/tabpane.js
 Copyright: 2002, 2003, 2006 Erik Arvidsson
 License: Apache-2.0
 
-Files: /usr/lib/bloom-desktop-beta/AWSSDK.*
+Files: /usr/lib/bloom-desktop/AWSSDK.*
 Copyright: 2009-2013 Amazon.com, Inc. or its affiliates
 License: Apache-2.0
 
-Files: /usr/lib/bloom-desktop-beta/RestSharp.*
+Files: /usr/lib/bloom-desktop/RestSharp.*
 Copyright: 2010 John Sheehan
 License: Apache-2.0
 
-Files: /usr/lib/bloom-desktop-beta/browser/lib/jquery.sizes.js
+Files: /usr/lib/bloom-desktop/browser/lib/jquery.sizes.js
 Copyright: 2008-2010 Bram Stein
 License: BSD-3-Clause
 
@@ -184,7 +184,7 @@ License: BSD-3-Clause
  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  POSSIBILITY OF SUCH DAMAGE.
 
-Files: /usr/lib/bloom-desktop-beta/Enchant.Net.dll
+Files: /usr/lib/bloom-desktop/Enchant.Net.dll
 Copyright: 2007-2008 Eric Scott Albright
 License: MIT
 Comment: URL = https://github.com/AbiWord/enchantdotnet
@@ -194,7 +194,7 @@ License: LGPL-2.1
  Public License version 2.1 can be found in the file
  `/usr/share/common-licenses/LGPL-2.1'.
 
-Files: /usr/lib/bloom-desktop-beta/ICSharpCode.SharpZipLib.*
+Files: /usr/lib/bloom-desktop/ICSharpCode.SharpZipLib.*
 Copyright: 2001-2010 Mike Krueger, John Reilly
 License: GPL-2 with exception
  The library is released under the GPL with the following exception:
@@ -226,7 +226,7 @@ License: GPL-2
  License version 2 can be found in the file
  `/usr/share/common-licenses/GPL-2'.
 
-Files: /usr/lib/bloom-desktop-beta/TechTalk.JiraRestClient.dll
+Files: /usr/lib/bloom-desktop/TechTalk.JiraRestClient.dll
 Copyright: 2013, TechTalk Software Support Handelsgesellschaft m.b.H.
 License: TechTalk
  Redistribution and use in source and binary forms, with or without
@@ -254,7 +254,7 @@ License: TechTalk
  OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-Files: /usr/lib/bloom-desktop-beta/pdf/web/cmaps/*
+Files: /usr/lib/bloom-desktop/pdf/web/cmaps/*
 Copyright: 1990-2009 Adobe Systems Incorporated
 License: Adobe
  Redistribution and use in source and binary forms, with or
@@ -289,7 +289,7 @@ License: Adobe
  OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-Files: /usr/lib/bloom-desktop-beta/pdf/web/compressed.tracemonkey-pldi-09.pdf
+Files: /usr/lib/bloom-desktop/pdf/web/compressed.tracemonkey-pldi-09.pdf
 Copyright: 2009 ACM
 License: ACM
  Permission to make digital or hard copies of all or part of this work for
@@ -299,60 +299,60 @@ License: ACM
  to republish, to post on servers or to redistribute to lists, requires prior
  specific permission and/or a fee.
 
-Files: /usr/lib/bloom-desktop-beta/browser/lib/jquery-ui-REMOVE/jquery-ui.*
+Files: /usr/lib/bloom-desktop/browser/lib/jquery-ui-REMOVE/jquery-ui.*
 Copyright: 2015 AUTHORS.txt (http://jqueryui.com/about)
 License: MIT or GPL-2
 
-Files: /usr/lib/bloom-desktop-beta/browser/lib/jquery.easytabs*.js
+Files: /usr/lib/bloom-desktop/browser/lib/jquery.easytabs*.js
 Copyright: 2010-2011 Steve Schwartz (JangoSteve)
 License: MIT or GPL
 
-Files: /usr/lib/bloom-desktop-beta/browser/lib/jquery.hashchange.min.js
+Files: /usr/lib/bloom-desktop/browser/lib/jquery.hashchange.min.js
 Copyright: 2010 "Cowboy" Ben Alman
 License: MIT or GPL
 
-Files: /usr/lib/bloom-desktop-beta/browser/lib/jquery.qtip*
+Files: /usr/lib/bloom-desktop/browser/lib/jquery.qtip*
 Copyright: 2013 Craig Michael Thompson
 License: MIT or GPL
 
-Files: /usr/lib/bloom-desktop-beta/browser/lib/jquery.resize.js
+Files: /usr/lib/bloom-desktop/browser/lib/jquery.resize.js
 Copyright: 2010 "Cowboy" Ben Alman
 License: MIT or GPL
 
-Files: /usr/lib/bloom-desktop-beta/browser/lib/jquery.watermark.js
+Files: /usr/lib/bloom-desktop/browser/lib/jquery.watermark.js
 Copyright: 2009-2011 Todd Northrop
 License: MIT or GPL-2
 
-Files: /usr/lib/bloom-desktop-beta/browser/lib/oldjquery.qtip*
+Files: /usr/lib/bloom-desktop/browser/lib/oldjquery.qtip*
 Copyright: 2009-2010 Craig Michael Thompson
 License: MIT or GPL-2
 
-Files: /usr/lib/bloom-desktop-beta/CommandLine.*
+Files: /usr/lib/bloom-desktop/CommandLine.*
 Copyright: 2005 - 2013 Giacomo Stelluti Scala
 License: MIT
 Comment: URL = https://www.nuget.org/packages/CommandLineParser/
 
-Files: /usr/lib/bloom-desktop-beta/MarkdownDeep.*
+Files: /usr/lib/bloom-desktop/MarkdownDeep.*
 Copyright: 2010-2011 Topten Software
 License: Apache-2.0
 Comment: URL = https://www.nuget.org/packages/MarkdownDeep.NET/
 
-Files: /usr/lib/bloom-desktop-beta/L10NSharp.dll
+Files: /usr/lib/bloom-desktop/L10NSharp.dll
 Copyright: 2010-2014 SIL International
 License: MIT
 Comment: URL = https://github.com/sillsdev/l10nsharp/
 
-Files: /usr/lib/bloom-desktop-beta/ibusdotnet.dll
+Files: /usr/lib/bloom-desktop/ibusdotnet.dll
 Copyright: 2015 SIL International
 License: MIT
 Comment: URL = https://www.nuget.org/packages/ibusdotnet/
 
-Files: /usr/lib/bloom-desktop-beta/icu.net.dll*
+Files: /usr/lib/bloom-desktop/icu.net.dll*
 Copyright: 2007-2016 SIL International
 License: MIT
 Comment: URL = https://github.com/sillsdev/icu-dotnet
 
-Files: /usr/lib/bloom-desktop-beta/Spart.dll
+Files: /usr/lib/bloom-desktop/Spart.dll
 Copyright: 2003 Jonathan de Halleux, portions 2014 SIL International
 License: Zlib
 Comment: URL = https://github.com/sillsdev/spart
@@ -380,28 +380,28 @@ License: Zlib
  .
     3. This notice may not be removed or altered from any source distribution.
 
-Files: /usr/lib/bloom-desktop-beta/ColorProfiles/*
+Files: /usr/lib/bloom-desktop/ColorProfiles/*
 Copyright: 2013 Adobe Systems, Inc.
-License: ColorProfileDistributionLicense (/usr/lib/bloom-desktop-beta/AdobeColorProfileEULA.md)
+License: ColorProfileDistributionLicense (/usr/lib/bloom-desktop/AdobeColorProfileEULA.md)
 Comment: URL=https://www.adobe.com/support/downloads/iccprofiles/iccprofiles_win.html
 
-Files: /usr/lib/bloom-desktop-beta/Args.dll
+Files: /usr/lib/bloom-desktop/Args.dll
 Copyright: 2011 Brian Ball and contributors
 License: MIT
 
-Files: /usr/lib/bloom-desktop-beta/Castle.Core.dll
+Files: /usr/lib/bloom-desktop/Castle.Core.dll
 Copyright: 2004-2022 Castle Project
 License: Apache-2.0
 
-Files: /usr/lib/bloom-desktop-beta/DesktopAnalytics.dll
+Files: /usr/lib/bloom-desktop/DesktopAnalytics.dll
 Copyright: 2017 SIL International
 License: MIT
 
-Files: /usr/lib/bloom-desktop-beta/DialogAdapters.dll
+Files: /usr/lib/bloom-desktop/DialogAdapters.dll
 Copyright: 2020 SIL International
 License: MIT
 
-Files: /usr/lib/bloom-desktop-beta/EPPlus.dll
+Files: /usr/lib/bloom-desktop/EPPlus.dll
 Copyright: 2022 EPPlus Software AB
 License: Polyform Noncommercial License 1.0.0
 Comment: URL = https://www.nuget.org/packages/EPPlus/6.1.1/License
@@ -539,11 +539,11 @@ License: Polyform Noncommercial License 1.0.0
  **Use** means anything you do with the software requiring one
  of your licenses.
 
-Files: /usr/lib/bloom-desktop-beta/Fleck.dll
+Files: /usr/lib/bloom-desktop/Fleck.dll
 Copyright: 2010-2018 Jason Staten
 License: MIT
 
-Files: /usr/lib/bloom-desktop-beta/Geckofx-*.dll
+Files: /usr/lib/bloom-desktop/Geckofx-*.dll
 Copyright: 2015 Geckofx team
 License: MPL-2.0
 
@@ -551,11 +551,11 @@ License: MPL-2.0
  On Debian and similar systems, the full text of the Mozilla Public License 2.0
  can be found in the file `/usr/share/common-licenses/MPL-2.0'.
 
-Files: /usr/lib/bloom-desktop-beta/Glob.dll
+Files: /usr/lib/bloom-desktop/Glob.dll
 Copyright: 2013-2021 Kevin Thompson and Glob contributors
 License: MIT
 
-Files: /usr/lib/bloom-desktop-beta/Markdig.Signed.dll
+Files: /usr/lib/bloom-desktop/Markdig.Signed.dll
 Copyright: 2018-2019 Alexandre Mutel
 License: BSD-2-Clause
 
@@ -580,50 +580,50 @@ License: BSD-2-Clause
  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
  IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-Files: /usr/lib/bloom-desktop-beta/Microsoft.*
+Files: /usr/lib/bloom-desktop/Microsoft.*
 Copyright: 2022 Microsoft Corporation
 License: MIT
 
-Files: /usr/lib/bloom-desktop-beta/Mono.Unix.*
+Files: /usr/lib/bloom-desktop/Mono.Unix.*
 Copyright: 2021 Mono Project
 License: MIT
 
-Files: /usr/lib/bloom-desktop-beta/NAudio.dll
+Files: /usr/lib/bloom-desktop/NAudio.dll
 Copyright: 2022 Mark Heath
 License: MIT
 
-Files: /usr/lib/bloom-desktop-beta/Sentry.dll
+Files: /usr/lib/bloom-desktop/Sentry.dll
 Copyright: 2018 Sentry
 License: MIT
 
-Files: /usr/lib/bloom-desktop-beta/SharpFont.dll
+Files: /usr/lib/bloom-desktop/SharpFont.dll
 Copyright: 2012-2016 Robert Rouhani
 License: MIT
 
-Files: /usr/lib/bloom-desktop-beta/SIL.*
+Files: /usr/lib/bloom-desktop/SIL.*
 Copyright: 2010-2022 SIL International
 License: MIT
 
-Files: /usr/lib/bloom-desktop-beta/SourceMapDotNet.dll
+Files: /usr/lib/bloom-desktop/SourceMapDotNet.dll
 Copyright: 2014 Paul O'Neill
 License: MIT
 
-Files: /usr/lib/bloom-desktop-beta/SQLite-net.dll
+Files: /usr/lib/bloom-desktop/SQLite-net.dll
 Copyright: 2015-2021 Krueger Systems, Inc.
 License: MIT
 
-Files: /usr/lib/bloom-desktop-beta/SQLitePCLRaw.*.dll
+Files: /usr/lib/bloom-desktop/SQLitePCLRaw.*.dll
 Copyright: 2014-2023 SourceGear, LLC
 License: Apache-2.0
 
-Files: /usr/lib/bloom-desktop-beta/runtimes/linux-x64/native/libe_sqlite3.so
+Files: /usr/lib/bloom-desktop/runtimes/linux-x64/native/libe_sqlite3.so
 Copyright: 2014-2023 SourceGear, LLC
 License: Apache-2.0
 
-Files: /usr/lib/bloom-desktop-beta/System.*.dll
+Files: /usr/lib/bloom-desktop/System.*.dll
 Copyright: 2020 .NET Foundation and Contributors
 License: MIT
 
-Files: /usr/lib/bloom-desktop-beta/TagLibSharp.dll
+Files: /usr/lib/bloom-desktop/TagLibSharp.dll
 Copyright: 2006-2007 Brian Nickel. 2009-2019 Other contributors
 License: LGPL-2.1-only
