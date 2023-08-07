@@ -1,5 +1,5 @@
 @import "basePage-sharedRules.less";
-@import "device.less";
+//@import "device.less";
 @import "bubble.less";
 @import (reference) "../../BloomBrowserUI/bloomUI.less"; // importing by reference only brings in the constants
 // NOTE: more style sheet imports are at the end of this document,
@@ -8,6 +8,7 @@
 @import (inline) "../appearancePresets/appearance-page-default.css";
 @import "paperRules.less";
 @import "marginBox.less";
+@import "pageNumbers.less";
 
 .Browser-Reset() {
     /*+init {*/
@@ -405,31 +406,6 @@ books may contain divs with box-header-off, so we need a rule to hide them.*/
 
 .bloom-content3 {
     order: 2;
-}
-
-//Enhance: I think these could be computed, based on the current margin
-@OddPageNumberPosition: 57px;
-@EvenPageNumberPosition: 60px;
-
-.numberedPage {
-    &:after {
-        content: attr(data-page-number);
-        font-size: var(--pageNumber-font-size);
-        position: absolute;
-        bottom: var(--pageNumber-bottom);
-        top: var(--pageNumber-top);
-    }
-
-    &.side-left:after {
-        // side-___ maintained by c#
-        left: @OddPageNumberPosition;
-    }
-
-    &.side-right:after {
-        // side-___ maintained by c#
-        right: @EvenPageNumberPosition;
-        text-align: right;
-    }
 }
 
 // When bloom-showImageDescriptions is set (typically only when the relevant toolbox is showing, currently,

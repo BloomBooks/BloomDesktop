@@ -6,6 +6,9 @@
     height: 100%;
 }
 
+// REVIEW: would it better to have normal interior pages be the default and specify different rules for xmatter?
+// Another option would be to require each property to specify interior or xmatter.
+
 /* Rules that come from appearance and effect only the content pages, not the xmatter */
 .numberedPage .marginBox {
     border-radius: var(--marginBox-border-radius);
@@ -13,6 +16,7 @@
     border-style: var(--marginBox-border-style);
     border-width: var(--marginBox-border-width);
     background-color: var(--marginBox-background-color);
+    padding: var(--marginBox-padding);
 }
 
 /* REVIEW: why does this need anything special?
