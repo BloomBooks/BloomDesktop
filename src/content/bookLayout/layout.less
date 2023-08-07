@@ -1,0 +1,195 @@
+@import "paperRules.less";
+
+/*Margins*/
+.textWholePage .marginBox {
+    position: absolute;
+    /* see https://jira.sil.org/browse/BL-390; Without this, the "Just text" page causes the marginBox to drop down to the start of the vertically centered text, and then on PDF, you get an extra page. */
+}
+
+.marginBox {
+    position: absolute;
+    top: var(--page-margin-top);
+}
+
+/* Rules that come from appearance and effect only the content pages, not the xmatter */
+.numberedPage .marginBox {
+    border-radius: var(--marginBox-border-radius);
+    border-color: var(--marginBox-border-color);
+    border-style: var(--marginBox-border-style);
+    border-width: var(--marginBox-border-width);
+}
+
+// Mixin for setting .marginBox margins.
+.SetMarginBox(@PageWidth, @PageHeight) {
+    height: calc(
+        ~"@{PageHeight} - (var(--page-margin-top) + var(--page-margin-bottom))"
+    );
+    //height: @PageHeight - (@MarginTop + @MarginBottom);
+    //width: @PageWidth - (@MarginOuter + @MarginInner);
+    width: calc(
+        ~"@{PageWidth} - (var(--page-margin-outer) + var(--page-margin-inner))"
+    );
+}
+
+.marginBox {
+    .Device16x9Portrait & {
+        .SetMarginBox(@Device16x9Portrait-Width, @Device16x9Portrait-Height);
+    }
+
+    .Device16x9Landscape & {
+        .SetMarginBox(@Device16x9Landscape-Width, @Device16x9Landscape-Height);
+    }
+
+    .A3Portrait & {
+        .SetMarginBox(@A3Landscape-Height, @A3Landscape-Width);
+    }
+
+    .A3Landscape & {
+        .SetMarginBox(@A3Landscape-Width, @A3Landscape-Height);
+    }
+
+    .A4Portrait & {
+        .SetMarginBox(@A4Portrait-Width, @A4Portrait-Height);
+    }
+
+    .A4Landscape & {
+        .SetMarginBox(@A4Landscape-Width, @A4Landscape-Height);
+    }
+
+    .A5Portrait & {
+        .SetMarginBox(@A5Portrait-Width, @A5Portrait-Height);
+    }
+
+    .A5Landscape & {
+        .SetMarginBox(@A5Landscape-Width, @A5Landscape-Height);
+    }
+
+    .A6Portrait & {
+        .SetMarginBox(@A6Portrait-Width, @A6Portrait-Height);
+    }
+
+    .A6Landscape & {
+        .SetMarginBox(@A6Landscape-Width, @A6Landscape-Height);
+    }
+
+    .B5Portrait & {
+        .SetMarginBox(@B5Portrait-Width, @B5Portrait-Height);
+    }
+
+    .QuarterLetterPortrait & {
+        .SetMarginBox(
+            @QuarterLetterPortrait-Width,
+            @QuarterLetterPortrait-Height
+        );
+    }
+
+    .QuarterLetterLandscape & {
+        .SetMarginBox(
+            @QuarterLetterLandscape-Width,
+            @QuarterLetterLandscape-Height
+        );
+    }
+
+    .HalfLetterPortrait & {
+        .SetMarginBox(@HalfLetterPortrait-Width, @HalfLetterPortrait-Height);
+    }
+
+    .HalfLetterLandscape & {
+        .SetMarginBox(@HalfLetterLandscape-Width, @HalfLetterLandscape-Height);
+    }
+
+    .LetterPortrait & {
+        .SetMarginBox(@LetterPortrait-Width, @LetterPortrait-Height);
+    }
+
+    .LetterLandscape & {
+        .SetMarginBox(@LetterLandscape-Width, @LetterLandscape-Height);
+    }
+
+    .HalfLegalPortrait & {
+        .SetMarginBox(@HalfLegalPortrait-Width, @HalfLegalPortrait-Height);
+    }
+
+    .LegalPortrait & {
+        .SetMarginBox(@LegalPortrait-Width, @LegalPortrait-Height);
+    }
+
+    .LegalLandscape & {
+        .SetMarginBox(@LegalLandscape-Width, @LegalLandscape-Height);
+    }
+
+    .Cm13Landscape & {
+        .SetMarginBox(@Cm13Square-Side, @Cm13Square-Side);
+    }
+
+    .USComicPortrait & {
+        .SetMarginBox(@USComicPortrait-Width, @USComicPortrait-Height);
+    }
+
+    .Size6x9Portrait & {
+        .SetMarginBox(@Size6x9Portrait-Width, @Size6x9Portrait-Height);
+    }
+
+    .Size6x9Landscape & {
+        .SetMarginBox(@Size6x9Landscape-Width, @Size6x9Landscape-Height);
+    }
+}
+
+:not(.calendarFold)
+    :not(.outsideFrontCover):not(.outsideBackCover):not(.screen-only) {
+    &.side-left // maintained by c#
+
+ {
+        .marginBox {
+            left: var(--page-margin-outer);
+        }
+    }
+
+    &.side-right // maintained by c#
+
+ {
+        .marginBox {
+            left: var(--page-margin-inner);
+        }
+    }
+}
+
+// Needed for Translation Instruction pages
+.screen-only {
+    .marginBox {
+        left: 20px;
+        width: ~"calc(100% - 40px)";
+    }
+}
+
+// Note: we aren't making any assumption about this or that landscape being calendar fold.
+// The publishModel needs to make that decision (perhaps, in the future, user will be able to control that when
+// making the pdf). From the stylesheet's view, we just need to see this calendarFold class on the Body
+
+.calendarFold {
+    .marginBox {
+        /* balanced margin*/
+        left: @MarginBalanced;
+    }
+}
+
+// Custom Widget template page and Digital Comic Book both use this to make the page have no margins.
+// The .comic keeps pre-existing Digital Comic Books working.
+.no-margin-page,
+.comic {
+    &::after {
+        /* Hide page number */
+        display: none;
+    }
+
+    & .marginBox img {
+        max-width: unset; // device.less sets this, presumably expecting a margin
+    }
+
+    .marginBox {
+        left: 0 !important;
+        top: 0 !important;
+        height: 100% !important;
+        width: 100% !important;
+    }
+}
