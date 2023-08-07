@@ -1,18 +1,34 @@
 /* based on EFL's https://bloomlibrary.org/player/PbflFNDoRx */
-:root {
+
+.bloom-imageContainer,
+.bloom-imageContainer .img {
+    border-radius: 9px;
+}
+[class*="Device"] {
     --marginBox-border-radius: 25px;
-    --marginBox-border-color: rgb(77, 68, 68);
+    --marginBox-border-color: white;
     --marginBox-border-style: solid;
     --marginBox-border-width: 1.5mm;
-    --pageNumber-bottom: 30px; /* within the marginBox */
-    --page-margin-top: 7mm;
-    --page-margin-bottom: 7mm;
-    --page-margin-inner: 17mm;
-    --page-margin-outer: 7mm;
-}
-.Device16x9Portrait {
-    --page-margin-top: 73mm;
-    --page-margin-bottom: 7mm;
-    --page-margin-inner: 7mm;
-    --page-margin-outer: 7mm;
+    --page-margin-top: 5.5mm;
+    --page-margin-bottom: 5.5mm;
+    --page-margin-inner: 2.5mm;
+    --page-margin-outer: 2.5mm;
+
+    --marginBox-background-color: white;
+    --marginBox-padding: 2mm;
+    --page-background-color: rgb(78, 78, 78);
+
+    /* page number circle */
+    --pageNumber-always-left: 10px;
+    --pageNumber-bottom: 22px;
+    --pageNumber-font-size: 14pt;
+    --pageNumber-background-color: white;
+    --pageNumber-background-width: 44px; /* enhance... express in terms of --marginBox-border-radius */
+    --pageNumber-border-radius: 50%;
+    &.numberedPage::after {
+        display: inline-grid;
+        align-content: space-around;
+        justify-content: space-around;
+        border-radius: 50%;
+    }
 }

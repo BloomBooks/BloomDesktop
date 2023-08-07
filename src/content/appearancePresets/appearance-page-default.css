@@ -7,6 +7,8 @@
     --top-bottom-gap: 1mm;
     --pageNumber-font-size: 14pt;
     --pageNumber-bottom: 10px;
+    --pageNumber-background-width: unset; /* for when we need to have a colored background, e.g. a circle */
+    --pageNumber-always-left-margin: unset;
     --page-background-color: white;
     --marginBox-background-color: transparent;
 }

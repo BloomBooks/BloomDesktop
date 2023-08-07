@@ -443,4 +443,18 @@ body.publishingWithoutFullBleed {
     &.Size6x9Landscape {
         .SetPageDimensions(@Size6x9Landscape-Width, @Size6x9Landscape-Height);
     }
+
+    &.Device16x9Portrait {
+        .SetPageDimensions(
+            @Device16x9Portrait-Width,
+            @Device16x9Portrait-Height
+        );
+    }
+
+    &.Device16x9Landscape {
+        .SetPageDimensions(
+            @Device16x9Landscape-Width,
+            @Device16x9Landscape-Height
+        );
+    }
 }

@@ -1,0 +1,34 @@
+//Enhance: I think these could be computed, based on the current margin
+@OddPageNumberPosition: 57px;
+@EvenPageNumberPosition: 60px;
+
+.numberedPage {
+    &:after {
+        content: attr(data-page-number);
+        font-size: var(--pageNumber-font-size);
+        position: absolute;
+        width: var(
+            --pageNumber-background-width
+        ); // for when we need to have a colored background, e.g. a circle
+        height: var(--pageNumber-background-width);
+        bottom: var(--pageNumber-bottom);
+        top: var(--pageNumber-top);
+        background-color: var(--pageNumber-background-color);
+        border-radius: var(--pageNumber-border-radius);
+        z-index: 1000;
+    }
+
+    &.side-left:after {
+        left: var(
+            --pageNumber-left-margin
+        ) !important; // override the bloom-player (as of Bloom 5.5)
+    }
+
+    &.side-right:after {
+        right: var(--pageNumber-right-margin) !important;
+        left: var(
+            --pageNumber-always-left-margin
+        ) !important; // allow page number to always be on the left, regardless of page side. If this is used, --pageNumber-right-margin should be set to unset
+        text-align: right;
+    }
+}
