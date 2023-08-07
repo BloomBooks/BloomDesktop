@@ -1,18 +1,14 @@
-/* based onhttps://bloomlibrary.org/player/vPftT2H1eE */
+/* based on EFL's https://bloomlibrary.org/player/PbflFNDoRx */
 :root {
     --marginBox-border-radius: 25px;
     --marginBox-border-color: rgb(77, 68, 68);
     --marginBox-border-style: solid;
     --marginBox-border-width: 1.5mm;
-    --pageNumber-bottom: unset;
-    --pageNumber-top: 30px; /* within the marginBox */
+    --pageNumber-bottom: 30px; /* within the marginBox */
     --page-margin-top: 7mm;
     --page-margin-bottom: 7mm;
     --page-margin-inner: 17mm;
     --page-margin-outer: 7mm;
-
-    --marginBox-background-color: white;
-    --page-background-color: rgb(140, 69, 140);
 }
 .Device16x9Portrait {
     --page-margin-top: 73mm;
