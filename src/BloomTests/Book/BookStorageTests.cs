@@ -809,6 +809,28 @@ namespace BloomTests.Book
 		}
 
 		[Test]
+		public void SanitizeNameForFileSystem_FileNameIsLong_Truncates()
+		{
+			// variable that is 51 characters long
+			const string longName = "012345678901234567890123456789012345678901234567890";
+			var s = BookStorage.SanitizeNameForFileSystem(longName);
+			Assert.AreEqual(BookStorage.kMaxFilenameLength, s.Length);
+			Assert.AreEqual( "01234567890123456789012345678901234567890123456789",s);
+		
+			// now if the last two characters are a surrogate pair (Earth emoji), we need to cut off more
+			const string dangerous = "0123456789012345678901234567890123456789012345678\uD83C\uDF0D";
+			s = BookStorage.SanitizeNameForFileSystem(dangerous);
+			Assert.AreEqual(BookStorage.kMaxFilenameLength-1, s.Length);
+			Assert.AreEqual( "0123456789012345678901234567890123456789012345678",s);
+
+			// Once more for historical purposes: ref BL-12587
+			const string tirhutaScript = "\ud805\udcae\ud805\udca9\ud805\udcc2\ud805\udcab\ud805\udcb9\u0020\ud805\udca7\ud805\udcb0\ud805\udca2\ud805\udcab\ud805\udcb0\ud805\udcc1\u0020\ud805\udcae\ud805\udcc2\ud805\udcab\ud805\udc9e\ud805\udca2\ud805\udcc2\ud805\udc9e\ud805\udcc2\ud805\udca9\ud805\udcb0\ud805\udcc1\u0020\ud805\udcae\ud805\udca7\ud805\udcb3\ud805\udc9e\ud805\udcc2\ud805\udca3\ud805\udca2\ud805\udcc2\ud805\udca2\ud805\udcb0\ud805\udcc1\u0020\ud805\udcab\ud805\udca9\ud805\udcc2\ud805\udc9e\ud805\udca2\ud805\udcc2\ud805\udc9e\ud805\udcb9";
+			s = BookStorage.SanitizeNameForFileSystem(tirhutaScript);
+			Assert.AreEqual(BookStorage.kMaxFilenameLength - 1, s.Length);
+			Assert.IsFalse(char.IsHighSurrogate(s[s.Length - 1]));
+		}
+
+		[Test]
 		public void SetBookName_FolderWithSanitizedNameAlreadyExists_DoesNotChangeFolderOrBookName()
 		{
 			using (new TemporaryFolder(_folder, "foo"))

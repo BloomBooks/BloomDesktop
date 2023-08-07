@@ -878,7 +878,7 @@ namespace Bloom.Book
 		// We don't know exactly what directory we might want to unzip a book into
 		// (and even if this computer has been configured to allow longer paths, some other
 		// computer using the book might not be) so it makes sense to keep them fairly short.
-		public const int MaxFilenameLength = 50;
+		public const int kMaxFilenameLength = 50;
 
 		private string GetBackupFilePath()
 		{
@@ -2531,19 +2531,35 @@ namespace Bloom.Book
 		/// </summary>
 		public static string SanitizeNameForFileSystem(string name)
 		{
-			// We want NFC to prevent Dropbox complaining about encoding conflicts.
-			// May as well do that first as it may result in less truncation.
-			name = name.Normalize(NormalizationForm.FormC);
+			try
+			{
+				// Trim a single high surrogate character from the end of the string.
+				// Probably this could only happen if someone pasted in a title that
+				// was already corrupt with a dangling high surrogate at the end.
+				if (name.Length > 0 && char.IsHighSurrogate(name[name.Length - 1]))
+					name = name.Substring(0, name.Length - 1);
+
+				// We want NFC to prevent Dropbox complaining about encoding conflicts.
+				// May as well do that first as it may result in less truncation.
+				name = name.Normalize(NormalizationForm.FormC);
+			}
+			catch (ArgumentException e)
+			{
+				// See https://issues.bloomlibrary.org/youtrack/issue/BL-12587/Problems-with-unicode-surrogate-pair-in-title
+
+				Logger.WriteError($"SanitizeNameForFileSystem() while trying to normalize {name}, got", e);
+				name = "Book";
+			}
 			// Then replace invalid characters with spaces and trim off characters
 			// that shouldn't start or finish a directory name.
 			name = RemoveDangerousCharacters(name);
+
 			// Then make sure it's not too long.
-			if (name.Length > MaxFilenameLength)
-			{
-				name = name.Substring(0, MaxFilenameLength);
-				// Remove trailing whitespace and periods at the truncation point.
-				name = Regex.Replace(name, "[\\s.]*$", "", RegexOptions.Compiled);
-			}
+			name = MiscUtils.TruncateSafely(name, kMaxFilenameLength);
+
+			// Remove trailing whitespace, periods
+			name = Regex.Replace(name, "[\\s.]+$", "", RegexOptions.Compiled);
+
 			if (String.IsNullOrWhiteSpace(name))
 			{
 				// The localized default book name could itself have dangerous characters.
