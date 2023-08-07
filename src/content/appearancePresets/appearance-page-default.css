@@ -8,6 +8,7 @@
     --pageNumber-font-size: 14pt;
     --pageNumber-bottom: 10px;
     --page-background-color: white;
+    --marginBox-background-color: transparent;
 }
 
 .Device16x9Portrait {
@@ -15,4 +16,13 @@
     --page-margin-bottom: 45px; /* leave room for page number*/
     --page-margin-inner: 10px;
     --page-margin-outer: 10px;
+}
+
+.no-margin-page,
+.comic {
+    --page-margin-top: 0;
+    --page-margin-bottom: 0;
+    --page-margin-inner: 0;
+    --page-margin-outer: 0;
+    --pageNumber-font-size: 0; /* review will this work to hide it? */
 }

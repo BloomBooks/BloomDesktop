@@ -1,36 +1,6 @@
+/* Rules that apply DIRECTLY to the bloom-page div. Its height, width, and padding, etc. */
+
 @import "common-mixins.less";
-@bleed: 3mm; // Duplicated in editMode.less to remove circular dependency between BloomBrowserUI and content
-@RA5Portrait-Width: @A5Portrait-Width + @bleed + @bleed;
-@RA5Portrait-Height: @A5Portrait-Height + @bleed + @bleed;
-@RA5-Scale: unit(@RA5Portrait-Width / @A5Portrait-Width);
-@A5Portrait-HeightFB: @A5Portrait-Height * @RA5-Scale;
-@A5Portrait-Height-Excess: @A5Portrait-HeightFB - @RA5Portrait-Height;
-
-@RA4Portrait-Width: @A4Portrait-Width + @bleed + @bleed;
-@RA4Portrait-Height: @A4Portrait-Height + @bleed + @bleed;
-@RA4-Scale: unit(@RA4Portrait-Width / @A4Portrait-Width);
-@A4Portrait-HeightFB: @A4Portrait-Height * @RA4-Scale;
-@A4Portrait-Height-Excess: @A4Portrait-HeightFB - @RA4Portrait-Height;
-
-@RA3Portrait-Width: @A3Portrait-Width + @bleed + @bleed;
-@RA3Portrait-Height: @A3Portrait-Height + @bleed + @bleed;
-@RA3-Scale: unit(@RA3Portrait-Width / @A3Portrait-Width);
-@A3Portrait-HeightFB: @A3Portrait-Height * @RA3-Scale;
-@A3Portrait-Height-Excess: @A3Portrait-HeightFB - @RA3Portrait-Height;
-
-@RUSComicPortrait-Width: @USComicPortrait-Width + @bleed + @bleed;
-@RUSComicPortrait-Height: @USComicPortrait-Height + @bleed + @bleed;
-@RUSComic-Scale: unit(@RUSComicPortrait-Width / @USComicPortrait-Width);
-@USComicPortrait-HeightFB: @USComicPortrait-Height * @RUSComic-Scale;
-@USComicPortrait-Height-Excess: @USComicPortrait-HeightFB -
-    @RUSComicPortrait-Height;
-
-@RSize6x9Portrait-Width: @Size6x9Portrait-Width + @bleed + @bleed;
-@RSize6x9Portrait-Height: @Size6x9Portrait-Height + @bleed + @bleed;
-@RSize6x9-Scale: unit(@RSize6x9Portrait-Width / @Size6x9Portrait-Width);
-@Size6x9Portrait-HeightFB: @Size6x9Portrait-Height * @RSize6x9-Scale;
-@Size6x9Portrait-Height-Excess: @Size6x9Portrait-HeightFB -
-    @RSize6x9Portrait-Height;
 
 .bloom-fullBleed {
     //background-color: green;
@@ -210,6 +180,7 @@ body.publishingWithoutFullBleed {
 // see https://github.com/puppeteer/puppeteer/issues/2278.
 .pdfPublishMode {
     .bloom-page {
+        // TODO: This is copied in from old code, by why weren't macros & constants used????????
         &.A3Portrait {
             min-width: (floor((@A3Portrait-Width / 25.4) * 96) / 96) * 25.4;
             max-width: (floor((@A3Portrait-Width / 25.4) * 96) / 96) * 25.4;
@@ -282,167 +253,194 @@ body.publishingWithoutFullBleed {
     }
 }
 
+.SetPageDimensions(@PageWidth, @PageHeight) {
+    min-width: @PageWidth;
+    max-width: @PageWidth;
+    min-height: @PageHeight;
+    max-height: @PageHeight;
+    height: @PageHeight;
+    // review: why wasn't a width: needed?
+}
+
 // See device.less for all css involving the following layouts:
 // Device16x9Portrait, Device16x9Landscape and PictureStoryLandscape
 .bloom-page {
+    box-sizing: border-box;
+    padding-top: var(--page-margin-top);
+    padding-bottom: var(--page-margin-bottom);
+    padding-left: var(--page-margin-outer);
+    padding-right: var(--page-margin-inner);
+    background-color: var(--page-background-color);
+
+    display: block;
+
+    // Absolutely positioned elements can show outside the page
+    // because margin box is also absolutely positioned.
+    // So hide anything overflowing the page. BL-9352.
+    // Note that this does not negatively affect full-bleed because the bleed
+    // is still considered part of the page.
+    // Only hide overflow on non-template pages, since in templates this would hide the page label
+    // that we want to be able to edit (BL-9045). (We tried only hiding x overflow, but somehow it STILL
+    // hid the pageLabel!)
+    &:not(.bloom-templateMode) {
+        overflow: hidden;
+    }
+
+    &.side-left {
+        padding-left: var(--page-margin-outer);
+        padding-right: var(--page-margin-inner);
+    }
+
+    &.side-right {
+        padding-left: var(--page-margin-inner);
+        padding-right: var(--page-margin-outer);
+    }
+
+    &.outsideFrontCover,
+    &.outsideBackCover {
+        // we list these to get the same specificity as the default padding rules
+        &.side-left,
+        &.side-right {
+            padding-left: 0;
+            padding-right: 0;
+
+            // we just want balanced margins. REVIEW: for now, just using the two outer margins because there is no "inner" left/right margin
+            padding-left: var(--page-margin-outer);
+            padding-right: var(--page-margin-outer);
+        }
+    }
+
+    // this name "screen-only" is rather out of date now, but what it means is that the page is only shown
+    // in the Bloom-Editor, used for Translation Instructions
+    &.screen-only {
+        // we list these to get the same specificity as the default padding rules
+        &.side-left,
+        &.side-right {
+            padding-left: 0;
+            padding-right: 0;
+
+            // we just want balanced margins. REVIEW: for now, just using the two outer margins because there is no "inner" left/right margin
+            padding-left: var(--page-margin-outer);
+            padding-right: var(--page-margin-outer);
+        }
+    }
+
+    &.calendarFold {
+        // we list these to get the same specificity as the default padding rules
+        &.side-left,
+        &.side-right {
+            // we just want balanced margins. REVIEW: for now, just using the two outer margins because there is no "inner" left/right margin
+            padding-left: var(--page-margin-outer);
+            padding-right: var(--page-margin-outer);
+
+            // REVIEW: one would think we'd instead need top/bottom "inner" margin for stapling? That wasn't in the previous (up to Bloom 5.5) design
+        }
+    }
+
     &.A5Portrait {
-        min-width: @A5Portrait-Width;
-        max-width: @A5Portrait-Width;
-        min-height: @A5Portrait-Height;
-        max-height: @A5Portrait-Height;
+        .SetPageDimensions(@A5Portrait-Width, @A5Portrait-Height);
     }
 
     &.A5Landscape {
-        min-width: @A5Landscape-Width;
-        max-width: @A5Landscape-Width;
-        min-height: @A5Landscape-Height;
-        max-height: @A5Landscape-Height;
+        .SetPageDimensions(@A5Landscape-Width, @A5Landscape-Height);
     }
 
     &.B5Portrait {
-        min-width: @B5Portrait-Width;
-        max-width: @B5Portrait-Width;
-        min-height: @B5Portrait-Height;
-        max-height: @B5Portrait-Height;
+        .SetPageDimensions(@B5Portrait-Width, @B5Portrait-Height);
     }
 
     &.A4Landscape {
-        min-width: @A4Landscape-Width;
-        max-width: @A4Landscape-Width;
-        min-height: @A4Landscape-Height;
-        max-height: @A4Landscape-Height;
+        .SetPageDimensions(@A4Landscape-Width, @A4Landscape-Height);
     }
 
     &.A4Portrait {
-        min-width: @A4Portrait-Width;
-        max-width: @A4Portrait-Width;
-        min-height: @A4Portrait-Height;
-        max-height: @A4Portrait-Height;
+        .SetPageDimensions(@A4Portrait-Width, @A4Portrait-Height);
     }
 
     &.A3Landscape {
-        min-width: @A3Landscape-Width;
-        max-width: @A3Landscape-Width;
-        min-height: @A3Landscape-Height;
-        max-height: @A3Landscape-Height;
+        .SetPageDimensions(@A3Landscape-Width, @A3Landscape-Height);
     }
 
     &.A3Portrait {
-        min-width: @A3Portrait-Width;
-        max-width: @A3Portrait-Width;
-        min-height: @A3Portrait-Height;
-        max-height: @A3Portrait-Height;
+        .SetPageDimensions(@A3Portrait-Width, @A3Portrait-Height);
     }
 
     &.A6Portrait {
-        min-width: @A6Portrait-Width;
-        max-width: @A6Portrait-Width;
-        min-height: @A6Portrait-Height;
-        max-height: @A6Portrait-Height;
+        .SetPageDimensions(@A6Portrait-Width, @A6Portrait-Height);
     }
 
     &.A6Landscape {
-        min-width: @A6Landscape-Width;
-        max-width: @A6Landscape-Width;
-        min-height: @A6Landscape-Height;
-        max-height: @A6Landscape-Height;
+        .SetPageDimensions(@A6Landscape-Width, @A6Landscape-Height);
     }
 
     &.QuarterLetterPortrait {
-        min-width: @QuarterLetterPortrait-Width;
-        max-width: @QuarterLetterPortrait-Width;
-        min-height: @QuarterLetterPortrait-Height;
-        max-height: @QuarterLetterPortrait-Height;
+        .SetPageDimensions(
+            @QuarterLetterPortrait-Width,
+            @QuarterLetterPortrait-Height
+        );
     }
 
     &.QuarterLetterLandscape {
-        min-width: @QuarterLetterLandscape-Width;
-        max-width: @QuarterLetterLandscape-Width;
-        min-height: @QuarterLetterLandscape-Height;
-        max-height: @QuarterLetterLandscape-Height;
+        .SetPageDimensions(
+            @QuarterLetterLandscape-Width,
+            @QuarterLetterLandscape-Height
+        );
     }
 
     &.HalfLetterPortrait {
-        min-width: @HalfLetterPortrait-Width;
-        max-width: @HalfLetterPortrait-Width;
-        min-height: @HalfLetterPortrait-Height;
-        max-height: @HalfLetterPortrait-Height;
+        .SetPageDimensions(
+            @HalfLetterPortrait-Width,
+            @HalfLetterPortrait-Height
+        );
     }
 
     &.HalfLetterLandscape {
-        min-width: @HalfLetterLandscape-Width;
-        max-width: @HalfLetterLandscape-Width;
-        min-height: @HalfLetterLandscape-Height;
-        max-height: @HalfLetterLandscape-Height;
+        .SetPageDimensions(
+            @HalfLetterLandscape-Width,
+            @HalfLetterLandscape-Height
+        );
     }
 
     &.LetterPortrait {
-        min-width: @LetterPortrait-Width;
-        max-width: @LetterPortrait-Width;
-        min-height: @LetterPortrait-Height;
-        max-height: @LetterPortrait-Height;
+        .SetPageDimensions(@LetterPortrait-Width, @LetterPortrait-Height);
     }
 
     &.LetterLandscape {
-        min-width: @LetterLandscape-Width;
-        max-width: @LetterLandscape-Width;
-        min-height: @LetterLandscape-Height;
-        max-height: @LetterLandscape-Height;
+        .SetPageDimensions(@LetterLandscape-Width, @LetterLandscape-Height);
     }
 
     &.HalfLegalPortrait {
-        min-width: @HalfLegalPortrait-Width;
-        max-width: @HalfLegalPortrait-Width;
-        min-height: @HalfLegalPortrait-Height;
-        max-height: @HalfLegalPortrait-Height;
+        .SetPageDimensions(@HalfLegalPortrait-Width, @HalfLegalPortrait-Height);
     }
 
     &.HalfLegalLandscape {
-        min-width: @HalfLegalLandscape-Width;
-        max-width: @HalfLegalLandscape-Width;
-        min-height: @HalfLegalLandscape-Height;
-        max-height: @HalfLegalLandscape-Height;
+        .SetPageDimensions(
+            @HalfLegalLandscape-Width,
+            @HalfLegalLandscape-Height
+        );
     }
 
     &.LegalPortrait {
-        min-width: @LegalPortrait-Width;
-        max-width: @LegalPortrait-Width;
-        min-height: @LegalPortrait-Height;
-        max-height: @LegalPortrait-Height;
+        .SetPageDimensions(@LegalPortrait-Width, @LegalPortrait-Height);
     }
 
     &.LegalLandscape {
-        min-width: @LegalLandscape-Width;
-        max-width: @LegalLandscape-Width;
-        min-height: @LegalLandscape-Height;
-        max-height: @LegalLandscape-Height;
+        .SetPageDimensions(@LegalLandscape-Width, @LegalLandscape-Height);
     }
 
     &.Cm13Landscape {
-        min-width: @Cm13Square-Side;
-        max-width: @Cm13Square-Side;
-        min-height: @Cm13Square-Side;
-        max-height: @Cm13Square-Side;
+        .SetPageDimensions(@Cm13Square-Side, @Cm13Square-Side);
     }
 
     &.USComicPortrait {
-        min-width: @USComicPortrait-Width;
-        max-width: @USComicPortrait-Width;
-        min-height: @USComicPortrait-Height;
-        max-height: @USComicPortrait-Height;
+        .SetPageDimensions(@USComicPortrait-Width, @USComicPortrait-Height);
     }
 
     &.Size6x9Portrait {
-        min-width: @Size6x9Portrait-Width;
-        max-width: @Size6x9Portrait-Width;
-        min-height: @Size6x9Portrait-Height;
-        max-height: @Size6x9Portrait-Height;
+        .SetPageDimensions(@Size6x9Portrait-Width, @Size6x9Portrait-Height);
     }
 
     &.Size6x9Landscape {
-        min-width: @Size6x9Landscape-Width;
-        max-width: @Size6x9Landscape-Width;
-        min-height: @Size6x9Landscape-Height;
-        max-height: @Size6x9Landscape-Height;
+        .SetPageDimensions(@Size6x9Landscape-Width, @Size6x9Landscape-Height);
     }
 }
