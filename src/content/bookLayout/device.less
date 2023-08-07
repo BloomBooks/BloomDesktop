@@ -21,7 +21,7 @@
 // Mixin to leave space for page number at the bottom of the marginBox
 .LeaveMarginForPageNumber(@PageHeight) {
     //height: @PageHeight - @DeviceBottomMargin;
-    height: @PageHeight - var(--page-margin-bottom);
+    height: calc(~"@PageHeight - var(--page-margin-bottom)");
 }
 
 .SetWidth(@PageWidth) {
@@ -171,6 +171,7 @@
     }
 
     .numberedPage.PictureStoryLandscape & {
-        .LeaveMarginForPageNumber(@PictureStoryLandscape-Height);
+        //.LeaveMarginForPageNumber(@PictureStoryLandscape-Height);
+        .LeaveMarginForPageNumber(10mm);
     }
 }
