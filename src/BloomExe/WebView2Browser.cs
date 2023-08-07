@@ -41,7 +41,16 @@ namespace Bloom
 			_webview.CoreWebView2InitializationCompleted += (object sender, CoreWebView2InitializationCompletedEventArgs args) =>
 			{
 				try
-				{
+                {                   
+					// prevent the browser from opening external links, by intercepting NavigationStarting
+                    _webview.CoreWebView2.NavigationStarting += (object sender1, CoreWebView2NavigationStartingEventArgs args1) =>
+						{
+							if (args1.Uri.StartsWith("http") && !args1.Uri.StartsWith("http://localhost"))
+							{
+								args1.Cancel = true;
+								ToPalaso.ProcessExtra.SafeStartInFront(args1.Uri);
+							}
+						};
 					_webview.CoreWebView2.NavigationCompleted += (object sender2, CoreWebView2NavigationCompletedEventArgs args2) =>
 						{
 							RaiseDocumentCompleted(sender2, args2);

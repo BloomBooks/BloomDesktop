@@ -30,7 +30,10 @@ import {
     RequiresBloomEnterpriseNoticeDialog,
     RequiresBloomEnterpriseOverlayWrapper
 } from "./requiresBloomEnterprise";
-import { normalDialogEnvironmentForStorybook } from "./BloomDialog/BloomDialogPlumbing";
+import {
+    StorybookDialogWrapper,
+    normalDialogEnvironmentForStorybook
+} from "./BloomDialog/BloomDialogPlumbing";
 import {
     LocalizableMenuItem,
     LocalizableCheckboxMenuItem,
@@ -52,6 +55,7 @@ import { Link } from "./link";
 import { BloomSplitButton } from "./bloomSplitButton";
 import { AutoUpdateSoftwareDialog } from "./AutoUpdateSoftwareDialog";
 import { VisuallyImpairedIcon } from "./icons/VisuallyImpairedIcon";
+import { ForumInvitationDialogLauncher } from "./forumInvitationDialog";
 
 const kLongText =
     "Bacon ipsum dolor amet ribeye spare ribs bresaola t-bone. Strip steak turkey shankle pig ground round, biltong t-bone kevin alcatra flank ribeye beef ribs meatloaf filet mignon. Buffalo ham t-bone short ribs.";
@@ -358,7 +362,7 @@ const pickerStyles: React.CSSProperties = {
     position: "absolute"
 };
 
-storiesOf("Misc", module)
+storiesOf("Misc/Dialogs", module)
     .add("ConfirmDialog", () =>
         React.createElement(() => (
             <div>
@@ -395,6 +399,20 @@ storiesOf("Misc", module)
             </div>
         ))
     )
+    .add("AutoUpdateSoftwareDialog", () =>
+        React.createElement(() => (
+            <AutoUpdateSoftwareDialog
+                dialogEnvironment={normalDialogEnvironmentForStorybook}
+            />
+        ))
+    )
+    .add("ForumInvitationDialog", () => (
+        <StorybookDialogWrapper id="ForumInvitationDialog" params={{}}>
+            <ForumInvitationDialogLauncher />
+        </StorybookDialogWrapper>
+    ));
+
+storiesOf("Misc", module)
     .add("Small Number Picker", () =>
         React.createElement(() => {
             const numberOfPagesTooltip = "Number of pages to add";
@@ -464,13 +482,6 @@ storiesOf("Misc", module)
                 </React.Fragment>
             );
         })
-    )
-    .add("AutoUpdateSoftwareDialog", () =>
-        React.createElement(() => (
-            <AutoUpdateSoftwareDialog
-                dialogEnvironment={normalDialogEnvironmentForStorybook}
-            />
-        ))
     )
     .add("RadioGroup", () =>
         React.createElement(() => {

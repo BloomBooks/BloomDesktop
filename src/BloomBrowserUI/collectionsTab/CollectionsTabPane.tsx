@@ -32,6 +32,7 @@ import FolderOpenOutlinedIcon from "@mui/icons-material/FolderOpenOutlined";
 import { kBloomBlue } from "../bloomMaterialUITheme";
 import { BloomTooltip } from "../react_components/BloomToolTip";
 import { Link } from "../react_components/link";
+import { ForumInvitationDialogLauncher } from "../react_components/forumInvitationDialog";
 
 const kResizerSize = 10;
 
@@ -543,6 +544,7 @@ export const CollectionsTabPane: React.FunctionComponent<{}> = () => {
             )}
             <TeamCollectionDialogLauncher />
             <SpreadsheetExportDialogLauncher />
+            <ForumInvitationDialogLauncher />
             <EmbeddedProgressDialog id="collectionTab" />
         </div>
     );
