@@ -6,7 +6,7 @@ Homepage: http://bloomlibrary.org/
 Vcs-Git: git://github.com/BloomBooks/BloomDesktop.git
 Vcs-Browser: https://github.com/BloomBooks/BloomDesktop
 Standards-Version: 4.1.4
-Build-Depends: debhelper (>= 10.0.0), dh-python, cli-common-dev (>= 0.8),
+Build-Depends: debhelper (>= 10.0.0), cli-common-dev (>= 0.10), dh-python,
  wget, unzip, desktop-file-utils, curl, git,
  optipng, libsndfile1, graphicsmagick,
  mono5-sil, mono5-sil-msbuild, libgdiplus5-sil,

@@ -15,6 +15,9 @@ SHARE   = usr/share/$(PACKAGE)
 %:
 	dh $@ --with=cli --parallel
 
+clean:
+	dh clean
+
 override_dh_auto_configure:
 
 override_dh_auto_build:
