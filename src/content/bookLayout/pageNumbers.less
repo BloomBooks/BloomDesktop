@@ -11,8 +11,12 @@
             --pageNumber-background-width
         ); // for when we need to have a colored background, e.g. a circle
         height: var(--pageNumber-background-width);
-        bottom: var(--pageNumber-bottom);
-        top: var(--pageNumber-top);
+        bottom: var(
+            --pageNumber-bottom
+        ) !important; // override the bloom-player (as of Bloom 5.5)
+        top: var(
+            --pageNumber-top
+        ) !important; // override the bloom-player (as of Bloom 5.5)
         background-color: var(--pageNumber-background-color);
         border-radius: var(--pageNumber-border-radius);
         z-index: 1000;
@@ -21,7 +25,7 @@
     &.side-left:after {
         left: var(
             --pageNumber-left-margin
-        ) !important; // override the bloom-player (as of Bloom 5.5)
+        ) !important; // TODO: why is Bloom-player setting this at all? (wants to put in center)
     }
 
     &.side-right:after {
