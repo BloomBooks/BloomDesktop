@@ -270,7 +270,9 @@ body.publishingWithoutFullBleed {
     padding-bottom: var(--page-margin-bottom);
     padding-left: var(--page-margin-outer);
     padding-right: var(--page-margin-inner);
-    background-color: var(--page-background-color);
+    background-color: var(
+        --page-background-color
+    ) !important; // TODO: why is BLoom-player setting this to white?
 
     display: block;
 
