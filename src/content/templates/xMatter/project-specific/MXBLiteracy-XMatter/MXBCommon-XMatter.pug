@@ -64,7 +64,7 @@ mixin mxb-nationalSummaryCreditsPage-back-title-page-contents
 		label.bubble Original (or Shell) Acknowledgments in {lang}
 		+editable(kLanguageForPrototypeOnly).OriginalAcknowledgments-style.bloom-copyFromOtherLanguageIfNecessary(data-book='originalAcknowledgments')
 			| {Original Acknowledgments}
-	+field-ISBN
+	+field-ISBN.prepub-invisible
 	+field-prototypeDeclaredExplicity("N1")#printingHistory.bloom-clearWhenMakingDerivative.prepub-invisible
 		label.bubble Use this for Printing History (1st Edition, etc.)
 		+editable(kLanguageForPrototypeOnly).PrintingHistory-style.bloom-copyFromOtherLanguageIfNecessary(data-book='printingInfo')
