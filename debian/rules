@@ -44,7 +44,8 @@ override_dh_auto_build:
 override_dh_auto_test:
 
 override_dh_auto_clean:
-	$(MONO_PREFIX)/bin/msbuild /p:Configuration=$(BUILD) "Bloom.sln" /t:Clean
+	#$(MONO_PREFIX)/bin/msbuild /p:Configuration=$(BUILD) "Bloom.sln" /t:Clean
+	rm -rfv output src/*/obj
 	dh_clean
 
 override_dh_auto_install:
