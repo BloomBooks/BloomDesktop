@@ -5,18 +5,32 @@
     border-radius: 9px;
 }
 [class*="Device"] {
-    --marginBox-border-radius: 25px;
-    --marginBox-border-color: white;
-    --marginBox-border-style: solid;
-    --marginBox-border-width: 1.5mm;
     --page-margin-top: 5.5mm;
     --page-margin-bottom: 5.5mm;
     --page-margin-inner: 2.5mm;
     --page-margin-outer: 2.5mm;
+    --page-background-color: rgb(78, 78, 78);
 
+    --marginBox-border-radius: 25px;
+    --marginBox-border-color: white;
+    --marginBox-border-style: solid;
+    --marginBox-border-width: 1.5mm;
     --marginBox-background-color: white;
     --marginBox-padding: 2mm;
-    --page-background-color: rgb(78, 78, 78);
+
+    --bloom-editMode-custom-image-border: none;
+
+    .bloom-imageContainer {
+        /* TODO: 4px is this hack that I don't understand
+         Currently I can set this to one value to get a good
+         curve on full-page images, but would need another
+         to get a good curve on half-page images. */
+        width: calc(100% - 4px);
+        border-radius: 14px; /* TODO: make into css property? */
+    }
+    .bloom-imageContainer img {
+        object-fit: cover; /* let the rounded edges of the parent clip the img */
+    }
 
     /* page number circle */
     --pageNumber-always-left: 10px;
