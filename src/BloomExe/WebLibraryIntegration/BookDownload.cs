@@ -14,6 +14,7 @@ using L10NSharp;
 using SIL.Extensions;
 using SIL.IO;
 using SIL.Progress;
+using SIL.Reporting;
 using SIL.Windows.Forms.Progress;
 using Bloom.web.controllers;
 
