@@ -155,6 +155,14 @@ namespace Bloom.Api
 				_actualContext.Response.ContentLength64 = fs.Length;
 				_actualContext.Response.AppendHeader("PathOnDisk", HttpUtility.UrlEncode(path));
 				_actualContext.Response.AppendHeader("Access-Control-Allow-Origin", "*");
+				if (path.EndsWith(".mp4", StringComparison.InvariantCultureIgnoreCase))
+				{
+					// Apparently Chrome/WebView2 is more picky than Firefox about the need for an Accept-Ranges header if you're going to
+					// request a range in a file like a video (or perhaps audio). Without this extra header, setting the currentTime in
+					// SignLanguageTool.tsx setCurrentVideoPoint() doesn't work at all!
+					// https://stackoverflow.com/questions/36783521/why-does-setting-currenttime-of-html5-video-element-reset-time-in-chrome
+					_actualContext.Response.AppendHeader("Accept-Ranges", "bytes");
+				}
 
 				// 60000s is about a week...if someone spends longer editing one book, well, files will get loaded one more time...
 				// When we want the browser NOT to cache, we still need to specify the "no-store" value. Otherwise, the browser may

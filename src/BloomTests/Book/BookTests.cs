@@ -2536,6 +2536,66 @@ namespace BloomTests.Book
 		}
 
 		[Test]
+		public void BringBookUpToDate_FromHarvester_RemovesFontFacesFromDefaultLangStyles()
+		{
+			var book = CreateBook();
+
+			RobustFile.WriteAllText(Path.Combine(book.FolderPath, "defaultLangStyles.css"),
+@"@font-face { font-family: ABeeZee; src: url(./host/fonts/ABeeZee-Regular.woff2); }
+@font-face { font-family: ABeeZee; font-style: italic; src: url(./host/fonts/ABeeZee-Italic.woff2); }
+@font-face { font-family: Andika; src: url(./host/fonts/Andika-Regular.woff2); }
+@font-face { font-family: Andika; font-weight: bold; src: url(./host/fonts/Andika-Bold.woff2); }
+@font-face { font-family: Andika; font-style: italic; src: url(./host/fonts/Andika-Italic.woff2); }
+@font-face { font-family: Andika; font-weight: bold; font-style: italic; src: url(./host/fonts/Andika-BoldItalic.woff2); }
+@font-face { font-family: ""Andika New Basic""; font-weight: normal; font-style: normal; src: url(""./host/fonts/Andika New Basic""); }
+@font-face { font-family: ""Andika New Basic""; font-weight: bold; font-style: normal; src: url(""./host/fonts/Andika New Basic Bold""); }
+@font-face { font-family: ""Andika New Basic""; font-weight: normal; font-style: italic; src: url(""./host/fonts/Andika New Basic Italic""); }
+@font-face { font-family: ""Andika New Basic""; font-weight: bold; font-style: italic; src: url(""./host/fonts/Andika New Basic Bold Italic"") ; }
+/* *** DO NOT EDIT! ***   These styles are controlled by the Settings dialog box in Bloom. */
+/* They may be over-ridden by rules in customCollectionStyles.css or customBookStyles.css */
+
+.numberedPage::after
+{
+ font-family: 'ABeeZee';
+ direction: ltr;
+}
+
+[lang='mcr']
+{
+ font-family: 'ABeeZee';
+ direction: ltr;
+}
+");
+
+			Assert.That(RobustFile.Exists(Path.Combine(book.FolderPath, "defaultLangStyles.css")), Is.True);
+
+			Program.RunningHarvesterMode = true;
+			book.WriteFontFaces = false;
+
+			book.BringBookUpToDate(new NullProgress()); // SUT
+
+			var newContents = RobustFile.ReadAllText(Path.Combine(book.FolderPath, "defaultLangStyles.css"));
+			Assert.That(newContents, Is.EqualTo(
+@"/* *** DO NOT EDIT! ***   These styles are controlled by the Settings dialog box in Bloom. */
+/* They may be over-ridden by rules in customCollectionStyles.css or customBookStyles.css */
+
+.numberedPage::after
+{
+ font-family: 'ABeeZee';
+ direction: ltr;
+}
+
+[lang='mcr']
+{
+ font-family: 'ABeeZee';
+ direction: ltr;
+}
+"));
+
+			Program.RunningHarvesterMode = false;
+		}
+
+		[Test]
 		public void FixBookIdAndLineageIfNeeded_WithPageTemplateSourceBasicBook_SetsMissingLineageToBasicBook()
 		{
 			_bookDom = new HtmlDom(

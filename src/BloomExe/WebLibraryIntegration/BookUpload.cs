@@ -230,7 +230,7 @@ namespace Bloom.WebLibraryIntegration
 			try
 			{
 				_s3Client.UploadBook(s3BookId, bookFolder, progress, pdfToInclude, includeNarrationAudio, includeMusic,
-					languages, metadataLang1Code, metadataLang2Code, isForBulkUpload);
+					languages, metadataLang1Code, metadataLang2Code, collectionSettings?.SettingsFilePath, isForBulkUpload);
 				metadata.BaseUrl = _s3Client.BaseUrl;
 				metadata.BookOrder = _s3Client.BookOrderUrlOfRecentUpload;
 				var metaMsg = LocalizationManager.GetString("PublishTab.Upload.UploadingBookMetadata", "Uploading book metadata", "In this step, Bloom is uploading things like title, languages, and topic tags to the BloomLibrary.org database.");
