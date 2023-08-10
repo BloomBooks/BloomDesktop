@@ -566,6 +566,14 @@ namespace Bloom.WebLibraryIntegration
 					}
 				}
 
+				if (bookParams.IsForBulkUpload)
+				{
+					// Update all metadata features, since we are doing bulk upload and the user won't be able to do it
+					// by checking boxes individually. The two 'true' params mean to act like the user checked both Talking Book and
+					// Sign Language boxes. (BL-12553)
+					book.UpdateMetadataFeatures(true, true, null);
+				}
+
 				if (progress.CancelRequested)
 					return "";
 
