@@ -1,7 +1,6 @@
 ﻿using System.Globalization;
 using Bloom.Book;
 using Bloom.Publish.Epub;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NUnit.Framework;
 using SIL.Xml;
 using Assert = NUnit.Framework.Assert;
@@ -222,7 +221,7 @@ namespace BloomTests.Publish
 
 		private void HandleImageDescriptions(HtmlDom htmlDom, BookInfo.HowToPublishImageDescriptions howTo = BookInfo.HowToPublishImageDescriptions.None)
 		{
-			var obj = new PrivateObject(new Bloom.Publish.Epub.EpubMaker(null, null));
+			var obj = new ReflectionHelper.PrivateObject(new Bloom.Publish.Epub.EpubMaker(null, null));
 			obj.SetFieldOrProperty("PublishImageDescriptions", howTo);
 			obj.Invoke("HandleImageDescriptions", htmlDom);
 		}
