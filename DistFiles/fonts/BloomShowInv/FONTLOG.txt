@@ -1,0 +1,34 @@
+-----
+FONTLOG for the Bloom Show Inv font
+
+This file provides detailed information on the Bloom Show Inv Font Software.
+This information should be distributed along with the Bloom Show Inv fonts
+and any derivative works.
+
+Basic Font Information
+
+Bloom Show Inv is an open font used by Bloom (https://bloomlibrary.org/)
+for showing invisible characters in text. Font sources are in UFO3 format.
+
+ChangeLog
+
+11 July 2023 (SIL font development team) Bloom Show Inv version 2.000
+- Revised version with more glyphs and all encoded in the PUA
+
+5 July 2023 (SIL font development team) Bloom Show Inv version 1.000
+- Initial version with only nbspace and nnbsp encoded
+
+Acknowledgements
+
+If you make modifications be sure to add your name (N), email (E),
+web-address (if you have one) (W) and description (D).
+This list is in alphabetical order.
+
+N: SIL designers and developers
+E: https://software.sil.org/about/contact/
+W: https://software.sil.org/wstech/
+D: Designers and developers
+
+SIL International (https://www.sil.org/) serves language communities worldwide,
+building their capacity for sustainable language development by means of
+research, translation, training and materials development.

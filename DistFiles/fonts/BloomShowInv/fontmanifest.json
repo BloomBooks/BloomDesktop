@@ -1,0 +1,15 @@
+{
+    "bloomshowinv": {
+        "defaults": {
+            "ttf": "BloomShowInv-Regular.ttf"
+        },
+        "family": "Bloom Show Inv",
+        "files": {
+            "BloomShowInv-Regular.ttf": {
+                "axes": { "ital": 0, "wght": 400.0 },
+                "packagepath": "BloomShowInv-Regular.ttf"
+            }
+        },
+        "version": "2.000"
+    }
+}
