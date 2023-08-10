@@ -1054,6 +1054,8 @@ export function cleanUpNbsps(editableDiv: HTMLElement) {
         j = editableDivText.indexOf("\u00A0", j + 1);
         if (j === -1) {
             // Pathological case; nbsp in attribute?
+            // (We do put &nbsp; in a data-original attribute when replacing it with a symbol as part of showing
+            // invisibles, but if it is still there at this point something must have gone wrong)
             // Follow do no harm principle and just leave the div unaltered.
             console.error(
                 "Unexpected situation discovered in cleanUpNbsps. Html has nbsp but text doesn't."
