@@ -489,7 +489,7 @@ namespace BloomTests.Book
 
 			Assert.AreEqual(expectedTopicsList, bi.TopicsList);
 
-			BookMetaData metadata = (BookMetaData) ReflectionHelper.GetField(bi, "_metadata");
+			BookMetaData metadata = (BookMetaData)SIL.Reflection.ReflectionHelper.GetField(bi, "_metadata");
 			Assert.AreEqual(expectedTags, metadata.Tags);
 		}
 

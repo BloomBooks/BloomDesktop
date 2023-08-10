@@ -749,7 +749,7 @@ namespace BloomTests.web
 		{
 			string inputPath = "book-preview/image.png";
 
-			var runner = new Microsoft.VisualStudio.TestTools.UnitTesting.PrivateType(typeof(BloomServer));
+			var runner = new ReflectionHelper.PrivateType(typeof(BloomServer));
 			var result = (string)runner.InvokeStatic("GetLocalPathRoot", inputPath);
 
 			Assert.That(result, Is.EqualTo("book-preview"));
@@ -760,7 +760,7 @@ namespace BloomTests.web
 		{
 			string inputPath = "book-preview/activities/Title/resources/image.png";
 
-			var runner = new Microsoft.VisualStudio.TestTools.UnitTesting.PrivateType(typeof(BloomServer));
+			var runner = new ReflectionHelper.PrivateType(typeof(BloomServer));
 			var result = (string)runner.InvokeStatic("GetLocalPathRoot", inputPath);
 
 			Assert.That(result, Is.EqualTo("book-preview"));
@@ -771,7 +771,7 @@ namespace BloomTests.web
 		{
 			string inputPath = "book-preview/image.png";
 
-			var runner = new Microsoft.VisualStudio.TestTools.UnitTesting.PrivateType(typeof(BloomServer));
+			var runner = new ReflectionHelper.PrivateType(typeof(BloomServer));
 			var result = (string)runner.InvokeStatic("GetLocalPathAfterRoot", inputPath);
 
 
@@ -783,7 +783,7 @@ namespace BloomTests.web
 		{
 			string inputPath = "book-preview/activities/Title/resources/image.png";
 
-			var runner = new Microsoft.VisualStudio.TestTools.UnitTesting.PrivateType(typeof(BloomServer));
+			var runner = new ReflectionHelper.PrivateType(typeof(BloomServer));
 			var result = (string)runner.InvokeStatic("GetLocalPathAfterRoot", inputPath);
 
 			Assert.That(result, Is.EqualTo("activities/Title/resources/image.png"));

@@ -326,9 +326,9 @@ namespace Bloom.Workspace
 				}
 				else if (RobustFile.Exists(book.AboutBookMdPath))
 				{
-					var md = new MarkdownDeep.Markdown();
 					var mdContent = RobustFile.ReadAllText(book.AboutBookMdPath);
-					var htmlContent = string.Format("<html><head><meta charset=\"utf-8\"/></head><body>{0}</body></html>", md.Transform(mdContent));
+					var htmlContent = string.Format("<html><head><meta charset=\"utf-8\"/></head><body>{0}</body></html>",
+						Markdig.Markdown.ToHtml(mdContent));
 					if (_tempBookInfoHtmlPath != null && RobustFile.Exists(_tempBookInfoHtmlPath))
 						RobustFile.Delete(_tempBookInfoHtmlPath);
 					_tempBookInfoHtmlPath = Path.Combine(Path.GetTempPath(), Path.GetFileNameWithoutExtension(book.AboutBookMdPath) + ".html");

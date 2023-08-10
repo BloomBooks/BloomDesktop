@@ -4,7 +4,6 @@ using System.IO;
 using Bloom.Api;
 using Bloom.Book;
 using BloomTemp;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NUnit.Framework;
 using Assert = NUnit.Framework.Assert;
 
@@ -212,7 +211,7 @@ namespace BloomTests.Book
 		public void GetAllowedLanguageCodes_JsonMissingContentId_SkipsOverLine()
 		{
 			string badJson = GetBadJsonMissingContentId();
-			var invoker = new PrivateType(typeof(LicenseChecker));
+			var invoker = new ReflectionHelper.PrivateType(typeof(LicenseChecker));
 			var observedAllowedLangs = invoker.InvokeStatic("GetAllowedLanguageCodes", badJson, "") as HashSet<string>;
 			Assert.That(observedAllowedLangs.Contains(""), Is.False, "Empty string should be skipped over");
 			Assert.That(observedAllowedLangs.Count, Is.EqualTo(0));
@@ -228,7 +227,7 @@ namespace BloomTests.Book
 		public void GetAllowedLanguageCodes_JsonMissingLangCode_SkipsOverLine()
 		{
 			string badJson = GetBadJsonMissingLangCode();
-			var invoker = new PrivateType(typeof(LicenseChecker));
+			var invoker = new ReflectionHelper.PrivateType(typeof(LicenseChecker));
 			var observedAllowedLangs = invoker.InvokeStatic("GetAllowedLanguageCodes", badJson, "kingstone.superbible.*") as HashSet<string>;
 			Assert.That(observedAllowedLangs.Contains("tr"), Is.True);
 			Assert.That(observedAllowedLangs.Count, Is.GreaterThan(0));
