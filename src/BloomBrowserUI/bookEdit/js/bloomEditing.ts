@@ -160,9 +160,15 @@ function SetupDeletable(containerDiv) {
 }
 
 function invisibleToCode(invisible) {
-    if (invisible.length > 1) {
-        // This is not a single character; assume it is an html entity of a special whitespace character
+    // check if it is an html entity and return it if so
+    if (invisible[0] === "&" && invisible[invisible.length - 1] === ";") {
         return invisible;
+    }
+    if (invisible.length > 1) {
+        throw new Error(
+            "Something went wrong - invisible character is neither an html entity nor a single UTF-16 character: " +
+                invisible
+        );
     }
     const codePoint = invisible.charCodeAt(0);
     let unicodePoint = codePoint.toString(16);
