@@ -441,7 +441,8 @@ export const BookButton: React.FunctionComponent<{
                     </div>
                 }
             >
-                {renaming || label}
+                {(renaming && <span className="bookButton-label"></span>) ||
+                    label}
             </Button>
 
             {contextMousePoint && items.length > 0 && (
