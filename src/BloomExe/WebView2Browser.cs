@@ -167,7 +167,7 @@ namespace Bloom
 			// This even happens if it is a different copy of Bloom running. Our hypothesis is that this is because they are sharing
 			// the same user data folder. That is super rare, but expensive when it happens and the dev or user doesn't know why.
 			// Therefore,
-			// 1) we will only set the UI language of the borwser once per run of Bloom. As a result, we don't get to pass on the UI language to the
+			// 1) we will only set the UI language of the browser once per run of Bloom. As a result, we don't get to pass on the UI language to the
 			// browser until the next run, ah well. So things like full-stop vs. comma in numbers will be wrong until then.
 			// 2) we will use a different folder name for each language (to prevent collisions between running Blooms).
 
@@ -186,7 +186,7 @@ namespace Bloom
 
 			// In 5.5 time period, John Hatton kept getting into a situation where no version of Bloom would run,
 			// and even a "Hello World" of WV2 would not run.
-			// One hypothesis was that this was casused by an update to WV2, as it seemed to coincide, and also the
+			// One hypothesis was that this was caused by an update to WV2, as it seemed to coincide, and also the
 			// problem going away seemed to coincide. This could happen to a user too. A workaround
 			// is to point to the WV2 in edge using an environment variable.
 			// THIS IS DESCRIBED in the troubleshooting documentation at https://docs.bloomlibrary.org/wv2trouble,
@@ -211,7 +211,7 @@ namespace Bloom
 
 			// I suspect that some situations may require the user deleting this folder to get things working again.
 			// Normally, it seems to get deleted automatically when we exit. But if we crash, it may not.
-			// We are adding the language code becuase otherwise if you run two copies of Bloom with different languages, WV2 will fail to initialize.
+			// We are adding the language code because otherwise if you run two copies of Bloom with different languages, WV2 will fail to initialize.
 			var dataFolder = Path.Combine(Path.GetTempPath(), "Bloom WebView2 "+_uiLanguageOfThisRun);
 			var env = await CoreWebView2Environment.CreateAsync(browserExecutableFolder: AlternativeWebView2Path, userDataFolder: dataFolder, options: op);
 			await _webview.EnsureCoreWebView2Async(env);
