@@ -1,6 +1,7 @@
 using Bloom.Api;
 using Bloom.Book;
 using Bloom.Edit;
+using Bloom.Properties;
 using Microsoft.Web.WebView2.Core;
 using Microsoft.Web.WebView2.WinForms;
 using Microsoft.Win32;
@@ -39,8 +40,27 @@ namespace Bloom
 
 			_webview.CoreWebView2InitializationCompleted += (object sender, CoreWebView2InitializationCompletedEventArgs args) =>
 			{
+				if (args.IsSuccess == false)
+				{
+					// One way to get this to fail is to have a zombie Bloom running that has different "accept-lang" arguments.
+					// enhance: how to show using the winforms error dialog?
+					MessageBox.Show($"Bloom was unable to initialize the WebView2 browser. Please see https://docs.bloomlibrary.org/wv2trouble. \r\n\r\n{args.InitializationException.Message}\r\n{args.InitializationException.ToString()}\r\n{args.InitializationException.StackTrace}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+					// hard exit
+					Environment.Exit(1);
+				}
 				try
 				{
+					Logger.WriteEvent($"Initialized a WebView2  {_webview.CoreWebView2.Environment.BrowserVersionString} with UserDataFolder at '{_webview.CoreWebView2.Environment.UserDataFolder}");
+
+					// prevent the browser from opening external links, by intercepting NavigationStarting
+					_webview.CoreWebView2.NavigationStarting += (object sender1, CoreWebView2NavigationStartingEventArgs args1) =>
+						{
+							if (args1.Uri.StartsWith("http") && !args1.Uri.StartsWith("http://localhost"))
+							{
+								args1.Cancel = true;
+								ToPalaso.ProcessExtra.SafeStartInFront(args1.Uri);
+							}
+						};
 					_webview.CoreWebView2.NavigationCompleted += (object sender2, CoreWebView2NavigationCompletedEventArgs args2) =>
 						{
 							RaiseDocumentCompleted(sender2, args2);
@@ -116,6 +136,8 @@ namespace Bloom
 		}
 
 		private static bool _clearedCache;
+		private static string _uiLanguageOfThisRun;
+		private static bool _alreadyOpenedAWebView2Instance;
 
 		private async void InitWebView()
 		{
@@ -134,10 +156,38 @@ namespace Bloom
 			//var op = new CoreWebView2EnvironmentOptions("--disable-gpu");
 			//var env = await CoreWebView2Environment.CreateAsync(null, null, op);
 			//await _webview.EnsureCoreWebView2Async(env);
-			var op = new CoreWebView2EnvironmentOptions("--autoplay-policy=no-user-gesture-required");
+			// Setting the UI language in the second parameter ought to work, but it doesn't.
+			// In the meantime, setting the "accept-lang" additional browser switch does work.
+			// Unfortunately, this setting cannot be changed "on the fly", so Bloom will need to be restarted before
+			// a change in UI language will take effect at this level.
+			// See https://github.com/MicrosoftEdge/WebView2Feedback/issues/3635 (which was just opened last week!)
+			var additionalBrowserArgs = "--autoplay-policy=no-user-gesture-required";
+
+			// WebView2 can fail to initialize if we try to open a new one with different `--accept-lang` arguments.
+			// This even happens if it is a different copy of Bloom running. Our hypothesis is that this is because they are sharing
+			// the same user data folder. That is super rare, but expensive when it happens and the dev or user doesn't know why.
+			// Therefore,
+			// 1) we will only set the UI language of the borwser once per run of Bloom. As a result, we don't get to pass on the UI language to the
+			// browser until the next run, ah well. So things like full-stop vs. comma in numbers will be wrong until then.
+			// 2) we will use a different folder name for each language (to prevent collisions between running Blooms).
+
+			if (!_alreadyOpenedAWebView2Instance)
+			{
+				_alreadyOpenedAWebView2Instance = true;
+				_uiLanguageOfThisRun = Settings.Default.UserInterfaceLanguage;
+			}
+			if (!string.IsNullOrEmpty(_uiLanguageOfThisRun))
+			{
+				additionalBrowserArgs += " --accept-lang=" + _uiLanguageOfThisRun;
+			}
+
+			var op = new CoreWebView2EnvironmentOptions(additionalBrowserArgs);
 
 
-			// John Hatton keeps getting broken by updates to WV2. This could happen to a user too. A workaround
+			// In 5.5 time period, John Hatton kept getting into a situation where no version of Bloom would run,
+			// and even a "Hello World" of WV2 would not run.
+			// One hypothesis was that this was casused by an update to WV2, as it seemed to coincide, and also the
+			// problem going away seemed to coincide. This could happen to a user too. A workaround
 			// is to point to the WV2 in edge using an environment variable.
 			// THIS IS DESCRIBED in the troubleshooting documentation at https://docs.bloomlibrary.org/wv2trouble,
 			// so if you change it here, change the instructions there.
@@ -159,7 +209,11 @@ namespace Bloom
 				Bloom.ErrorReporter.BloomErrorReport.NotifyUserUnobtrusively("Using alternate WebView2 path: " + AlternativeWebView2Path, "");
 			}
 
-			var env = await CoreWebView2Environment.CreateAsync(browserExecutableFolder: AlternativeWebView2Path, userDataFolder: ProjectContext.GetBloomAppDataFolder(), options: op);
+			// I suspect that some situations may require the user deleting this folder to get things working again.
+			// Normally, it seems to get deleted automatically when we exit. But if we crash, it may not.
+			// We are adding the language code becuase otherwise if you run two copies of Bloom with different languages, WV2 will fail to initialize.
+			var dataFolder = Path.Combine(Path.GetTempPath(), "Bloom WebView2 "+_uiLanguageOfThisRun);
+			var env = await CoreWebView2Environment.CreateAsync(browserExecutableFolder: AlternativeWebView2Path, userDataFolder: dataFolder, options: op);
 			await _webview.EnsureCoreWebView2Async(env);
 
 			// I is kinda hard to get a click event from webview2. This needs to be explicitly sent from the browser code,
