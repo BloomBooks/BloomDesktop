@@ -212,7 +212,7 @@ namespace Bloom
 			// I suspect that some situations may require the user deleting this folder to get things working again.
 			// Normally, it seems to get deleted automatically when we exit. But if we crash, it may not.
 			// We are adding the language code because otherwise if you run two copies of Bloom with different languages, WV2 will fail to initialize.
-			var dataFolder = Path.Combine(Path.GetTempPath(), "Bloom WebView2 "+_uiLanguageOfThisRun);
+			var dataFolder = Path.Combine(Path.GetTempPath(), "Bloom WebView2 "+_uiLanguageOfThisRun).Trim();
 			var env = await CoreWebView2Environment.CreateAsync(browserExecutableFolder: AlternativeWebView2Path, userDataFolder: dataFolder, options: op);
 			await _webview.EnsureCoreWebView2Async(env);
 
