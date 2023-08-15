@@ -1,16 +1,21 @@
 -----
-FONTLOG for the Bloom Show Inv font
+FONTLOG for the SymChar fonts
 
-This file provides detailed information on the Bloom Show Inv Font Software.
-This information should be distributed along with the Bloom Show Inv fonts
-and any derivative works.
+This file provides detailed information on the SymChar Font Software.
+This information should be distributed along with the SymChar fonts
+(derived from the Bloom Show Inv and Keymanweb-OSK fonts) and any derivative works.
 
 Basic Font Information
 
-Bloom Show Inv is an open font used by Bloom (https://bloomlibrary.org/)
-for showing invisible characters in text. Font sources are in UFO3 format.
+SymChar is an open font that can be used by applications to show symbols
+that represent 'invisible' characters (such as NBSP). Font sources are in UFO3 format.
 
 ChangeLog
+
+14 Aug 2023 (SIL font development team) SymChar version 3.000
+- new name SymChar (Symbols for Characters)
+- extra glyphs as requested by application developers
+- incorporating symbols used in the Keymanweb-OSK font
 
 11 July 2023 (SIL font development team) Bloom Show Inv version 2.000
 - Revised version with more glyphs and all encoded in the PUA

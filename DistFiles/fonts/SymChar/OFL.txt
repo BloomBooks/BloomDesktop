@@ -1,5 +1,5 @@
-Copyright (c) 2023 SIL International (https://www.sil.org/)
-with Reserved Font Names "Bloom" and "SIL".
+Copyright (c) 2013-2023 SIL International (https://www.sil.org/)
+with Reserved Font Names "SymChar" and "SIL".
 
 This Font Software is licensed under the SIL Open Font License, Version 1.1.
 This license is copied below, and is also available with a FAQ at:
