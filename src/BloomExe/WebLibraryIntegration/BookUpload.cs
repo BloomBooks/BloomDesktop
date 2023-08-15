@@ -566,6 +566,18 @@ namespace Bloom.WebLibraryIntegration
 					}
 				}
 
+				if (bookParams.IsForBulkUpload)
+				{
+					// Convert the dictionary of language codes and booleans to a list of language codes.
+					var talkingBookLangs = book.BookInfo.PublishSettings.BloomLibrary.AudioLangs.
+						Where(kvp => kvp.Value.IsIncluded()).
+						Select(kvp => kvp.Key);
+					// Update all metadata features, since we are doing bulk upload and the user won't be able to do it
+					// by checking boxes individually. The two 'true' params mean to act like the user checked both Talking Book and
+					// Sign Language boxes. (BL-12553)
+					book.UpdateMetadataFeatures(true, true, talkingBookLangs);
+				}
+
 				if (progress.CancelRequested)
 					return "";
 
