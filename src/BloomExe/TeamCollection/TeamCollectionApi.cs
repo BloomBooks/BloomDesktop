@@ -478,6 +478,8 @@ namespace Bloom.TeamCollection
 							{"BookId", _bookSelection?.CurrentSelection?.ID},
 							{"BookName", _bookSelection?.CurrentSelection?.Title}
 						});
+
+					BookHistory.AddEvent(_bookSelection.CurrentSelection, BookHistoryEventType.CheckOut);
 				}
 
 				request.ReplyWithBoolean(success);

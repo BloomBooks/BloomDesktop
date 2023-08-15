@@ -6,6 +6,7 @@ namespace Bloom.History
 {
 	public enum BookHistoryEventType
 	{
+		CheckOut,
 		CheckIn,
 		Created,
 		Renamed,
