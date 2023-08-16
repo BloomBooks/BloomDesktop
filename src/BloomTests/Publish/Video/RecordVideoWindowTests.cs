@@ -99,8 +99,7 @@ namespace BloomTests.Publish.Video
 		public void GetSuggestedSaveFileNameBase_Simple()
 		{
 			var obj = new RecordVideoWindow(null);
-			var invoker = new ReflectionHelper.PrivateObject(obj);
-			invoker.SetFieldOrProperty("_pathToRealBook", @"C:\MyCollection\bookTitleL1");
+			SIL.Reflection.ReflectionHelper.SetField(obj, "_pathToRealBook", @"C:\MyCollection\bookTitleL1");
 			var result = obj.GetSuggestedSaveFileNameBase(out string langTag);
 
 			Assert.AreEqual("bookTitleL1", result);
@@ -126,8 +125,7 @@ namespace BloomTests.Publish.Video
 			obj.SetBook(mockBook.Object);
 
 			// Setup _pathToRealBook
-			var invoker = new ReflectionHelper.PrivateObject(obj);
-			invoker.SetFieldOrProperty("_pathToRealBook", @"C:\MyCollection\bookTitleL1");
+			SIL.Reflection.ReflectionHelper.SetField(obj, "_pathToRealBook", @"C:\MyCollection\bookTitleL1");
 
 			///////////////////////
 			// System Under Test //

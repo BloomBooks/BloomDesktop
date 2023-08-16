@@ -7,16 +7,29 @@
     <OutputPath>..\..\output\$(Configuration)\</OutputPath>
     <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
     <AssemblyTitle>BloomTests</AssemblyTitle>
+    <Company>SIL International</Company>
     <Product>BloomTests</Product>
-    <Copyright>Copyright © 2014</Copyright>
-    <AssemblyVersion>0.9.999.0</AssemblyVersion>
-    <FileVersion>0.9.999.0</FileVersion>
+    <Copyright>© SIL International 2014-2023</Copyright>
+    <Version>5.6.0.0</Version>
     <BuildDependsOn>$(BuildDependsOn);AfterBuildMigrated</BuildDependsOn>
     <TargetFramework>net472</TargetFramework>
     <LangVersion>7.3</LangVersion>
-    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
   </PropertyGroup>
+  <ItemGroup>
+    <AssemblyAttribute Include="System.Runtime.InteropServices.ComVisible">
+      <_Parameter1>false</_Parameter1>
+      <_Parameter1_IsLiteral>true</_Parameter1_IsLiteral>
+    </AssemblyAttribute>
+    <AssemblyAttribute Include="System.Runtime.InteropServices.Guid">
+      <_Parameter1>14d33709-2a2c-4165-a165-4312b141e716</_Parameter1>
+    </AssemblyAttribute>
+    <AssemblyAttribute Include="NUnit.Framework.Apartment">
+      <_Parameter1>System.Threading.ApartmentState.STA</_Parameter1>
+      <_Parameter1_IsLiteral>true</_Parameter1_IsLiteral>
+    </AssemblyAttribute>
+  </ItemGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugType>full</DebugType>
     <PlatformTarget>x86</PlatformTarget>
@@ -96,7 +109,6 @@
     <PackageReference Include="Microsoft.DotNet.PlatformAbstractions" Version="3.1.6" />
     <PackageReference Include="Microsoft.Extensions.DependencyModel" Version="3.1.6" />
     <PackageReference Include="Microsoft.IO.RecyclableMemoryStream" Version="1.4.1" />
-    <!--PackageReference Include="Microsoft.VisualStudio.QualityTools.UnitTestFramework.Updated" Version="15.0.26228" /-->
     <PackageReference Include="Mono.Unix" Version="7.1.0-final.1.21458.1" />
     <PackageReference Include="Moq" Version="4.14.7" />
     <PackageReference Include="NAudio" Version="1.10.0" />
@@ -173,9 +185,5 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\BloomExe\BloomExe.csproj" />
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Remove="ImageUpdaterTests.cs" />
-    <Compile Remove="obj\x86\Debug\.NETFramework,Version=v4.7.2.AssemblyAttributes.cs" />
   </ItemGroup>
 </Project>

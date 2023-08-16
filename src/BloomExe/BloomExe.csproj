@@ -5,14 +5,11 @@
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\..\</SolutionDir>
     <OutputPath>..\..\output\$(Configuration)\</OutputPath>
     <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
-    <ProductVersion>8.0.30703</ProductVersion>
     <AssemblyTitle>Bloom</AssemblyTitle>
-    <Company>SIL</Company>
+    <Company>SIL International</Company>
     <Product>Bloom</Product>
     <Copyright>© SIL International 2012-2020</Copyright>
-    <Version>5.6.000.0</Version>
-    <AssemblyVersion>5.6.000.0</AssemblyVersion>
-    <FileVersion>5.6.000.0</FileVersion>
+    <Version>5.6.0.0</Version>
     <BuildDependsOn>$(BuildDependsOn);AfterBuildMigrated</BuildDependsOn>
     <TargetFramework>net472</TargetFramework>
     <PostBuildEvent>
@@ -22,10 +19,46 @@ xcopy "$(SolutionDir)lib\RedistributableDlls" $(OutDir) /S /R /Y
 xcopy "$(SolutionDir)lib\gm" "$(OutDir)gm\" /S /R /Y
 copy /Y "$(SolutionDir)\lib\dotnet\libtidy.dll" $(OutDir)
     </PostBuildEvent>
-    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <LangVersion>7.3</LangVersion>
   </PropertyGroup>
+  <ItemGroup>
+    <AssemblyAttribute Include="System.Runtime.InteropServices.ComVisible">
+      <_Parameter1>false</_Parameter1>
+      <_Parameter1_IsLiteral>true</_Parameter1_IsLiteral>
+    </AssemblyAttribute>
+    <AssemblyAttribute Include="System.Runtime.InteropServices.Guid">
+      <_Parameter1>0afa7c29-4107-47a8-88cc-c15cb769f35e</_Parameter1>
+    </AssemblyAttribute>
+    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
+      <_Parameter1>BloomTests</_Parameter1>
+    </AssemblyAttribute>
+    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
+      <_Parameter1>BloomHarvester</_Parameter1>
+    </AssemblyAttribute>
+    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
+      <_Parameter1>BloomHarvesterTests</_Parameter1>
+    </AssemblyAttribute>
+    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
+      <_Parameter1>ClassLibrary1.Tests</_Parameter1>
+    </AssemblyAttribute>
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadata">
+      <_Parameter1>SquirrelAwareVersion</_Parameter1>
+      <_Parameter2>1</_Parameter2>
+    </AssemblyAttribute>
+    <!--
+      Without explicitly disabling DPI awareness here, the subsequent loading of
+      some System.Windows.Media components will cause the application to change
+      from DPI "Unaware" to DPI "System Aware". The one place we know this happens
+      currently is when loading font metadata. This causes problems when one monitor
+      is set to different font scaling than another. Depending on how far the UI has
+      gotten in setting up when the awareness status changes, it will either result
+      in inconsistent font/icon sizing or the whole window will shrink down.
+      See BL-10981.
+  	-->
+    <AssemblyAttribute Include="System.Windows.Media.DisableDpiAwareness" />
+  </ItemGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|Any CPU'">
     <DebugType>full</DebugType>
   </PropertyGroup>
@@ -548,11 +581,5 @@ copy /Y "$(SolutionDir)\lib\dotnet\libtidy.dll" $(OutDir)
     <Content Include="desktopAndTaskBar.svg.ico" />
     <None Include="Resources\normal.svg.ico" />
     <None Include="Resources\bloom.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Remove="Book\PhashHelper.cs" />
-    <Compile Remove="ImageProcessing\LowResImageCache.cs" />
-    <Compile Remove="Platform\Platform.cs" />
-    <Compile Remove="obj\x86\Debug\.NETFramework,Version=v4.7.2.AssemblyAttributes.cs" />
   </ItemGroup>
 </Project>
