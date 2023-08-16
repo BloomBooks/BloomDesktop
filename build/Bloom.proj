@@ -70,31 +70,32 @@
 	</Target>
 
 	<Target Name="VersionNumbers">
-	<Message Text="BUILD_NUMBER: $(BUILD_NUMBER)" Importance="high"/>
+		<Message Text="BUILD_NUMBER: $(BUILD_NUMBER)" Importance="high"/>
 
-	<Split Input="$(BUILD_NUMBER)" Delimiter="." OutputSubString="2">
-		<Output TaskParameter="ReturnValue" PropertyName="BuildCounter" />
-	</Split>
-	<Split Input="$(BUILD_NUMBER)" Delimiter="." OutputSubString="3">
-		<Output TaskParameter="ReturnValue" PropertyName="BuildHash" />
-	</Split>
+		<Split Input="$(BUILD_NUMBER)" Delimiter="." OutputSubString="2">
+			<Output TaskParameter="ReturnValue" PropertyName="BuildCounter" />
+		</Split>
+		<Split Input="$(BUILD_NUMBER)" Delimiter="." OutputSubString="3">
+			<Output TaskParameter="ReturnValue" PropertyName="BuildHash" />
+		</Split>
 
-	<Message Text="BuildCounter: $(BuildCounter)" Importance="high"/>
-	<Message Text="BuildHash: $(BuildHash)" Importance="high"/>
+		<Message Text="BuildCounter: $(BuildCounter)" Importance="high"/>
+		<Message Text="BuildHash: $(BuildHash)" Importance="high"/>
 
-	<!-- Note, after some thought, we've decided this is the best place to keep the version number (not on TeamCity, not in the assemblies).     -->
-	<CreateProperty Value="5.6.$(BuildCounter)">
-	  <Output PropertyName="Version" TaskParameter="Value"/>
-	</CreateProperty>
-	<CreateProperty Value="$(Version).$(BuildHash)">
-		<Output PropertyName="FullVersion" TaskParameter="Value"/>
-	</CreateProperty>
-	<CreateProperty Value="BloomInstaller.$(Version)$(dotChannel).msi">
-		<Output PropertyName="InstallerFileName" TaskParameter="Value"/>
-	</CreateProperty>
-	<CreateProperty Value="BloomInstaller.$(Version)$(dotChannel).exe">
-		<Output PropertyName="SquirrelInstallerFileName" TaskParameter="Value"/>
-	</CreateProperty>
+		<!-- Note, after some thought, we've decided this is the best place to keep the version number
+			(not on TeamCity, not in the projects). -->
+		<CreateProperty Value="5.6.$(BuildCounter)">
+			<Output PropertyName="Version" TaskParameter="Value"/>
+		</CreateProperty>
+		<CreateProperty Value="$(Version).$(BuildHash)">
+			<Output PropertyName="FullVersion" TaskParameter="Value"/>
+		</CreateProperty>
+		<CreateProperty Value="BloomInstaller.$(Version)$(dotChannel).msi">
+			<Output PropertyName="InstallerFileName" TaskParameter="Value"/>
+		</CreateProperty>
+		<CreateProperty Value="BloomInstaller.$(Version)$(dotChannel).exe">
+			<Output PropertyName="SquirrelInstallerFileName" TaskParameter="Value"/>
+		</CreateProperty>
 		<CreateProperty Value="Bloom$(channel)-$(Version)-full.nupkg">
 			<Output PropertyName="SquirrelFullPkg" TaskParameter="Value"/>
 		</CreateProperty>
@@ -106,22 +107,30 @@
 		<CreateProperty Value="$(SharedBuildDir)\Bloom$(channel)" Condition="$(SquirrelReleaseFolder)==''">
 			<Output PropertyName="SquirrelReleaseFolder" TaskParameter="Value"/>
 		</CreateProperty>
-	<Message Text="Version: $(Version)" Importance="high"/>
-	<Message Text="FullVersion: $(FullVersion)" Importance="high"/>
+		<Message Text="Version: $(Version)" Importance="high"/>
+		<Message Text="FullVersion: $(FullVersion)" Importance="high"/>
 	</Target>
 
 	<Target Name="SetAssemblyVersion" DependsOnTargets="VersionNumbers">
-	<ItemGroup>
-	<!-- warning... using wildcards wil break if it has to search deeper than MAX_PATHS, which can easily happen in node_modules
-	after npm shrinkwrapping (locking down dependencies). -->
-		<AssemblyInfoFiles Include="$(RootDir)/src/BloomExe/*/AssemblyInfo.cs"/>
-	</ItemGroup>
-	<StampAssemblies Version="$(Version)" InputAssemblyPaths="@(AssemblyInfoFiles)" />
-		<!--the product name also needs to have the channel in it. This controls (at least) the name used for the desktop icon.-->
-		<FileUpdate File="$(RootDir)\src\BloomExe\Properties\AssemblyInfo.cs"
-			 DatePlaceholder='RELEASE_DATE'
-			Regex='AssemblyProduct\("Bloom[^"]*"\)'
-			 ReplacementText ='AssemblyProduct("Bloom$(channel)")' />
+		<Message Text="Updating version in csproj files" Importance="high"/>
+		<!-- Version is the only variable needed.  AssemblyVersion and AssemblyFileVersion are both set from
+			Version if they are otherwise undefined. -->
+		<FileUpdate File="$(RootDir)\src\BloomExe\BloomExe.csproj"
+			Regex="&lt;Version&gt;[0-9]+.[0-9]+.[0-9]+.[0-9]+&lt;/Version&gt;"
+			ReplacementText="&lt;Version&gt;$(FullVersion)&lt;/Version&gt;" />
+		<FileUpdate File="$(RootDir)\src\BloomTests\BloomTests.csproj"
+			Regex="&lt;Version&gt;[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+&lt;/Version&gt;"
+			ReplacementText="&lt;Version&gt;$(FullVersion)&lt;/Version&gt;" />
+		<FileUpdate File="$(RootDir)\src\WebView2PdfMaker\WebView2PdfMaker.csproj"
+			Regex="&lt;Version&gt;[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+&lt;/Version&gt;"
+			ReplacementText="&lt;Version&gt;$(FullVersion)&lt;/Version&gt;" />
+		<!-- the product name also needs to have the channel in it. This controls (at least) the name used
+			for the desktop icon.-->
+		<Message Text="Updating Bloom product channel in csproj file" Importance="high"/>
+		<FileUpdate File="$(RootDir)\src\BloomExe\BloomExe.csproj"
+			DatePlaceholder='RELEASE_DATE'
+			Regex='&lt;Product&gt;Bloom.*&lt;/Product&gt;'
+			ReplacementText ='&lt;Product&gt;Bloom$(channel)&lt;/Product&gt;' />
 	</Target>
 
 	<Target Name="Build">

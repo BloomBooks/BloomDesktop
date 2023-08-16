@@ -211,13 +211,12 @@ namespace BloomTests.Book
 		public void GetAllowedLanguageCodes_JsonMissingContentId_SkipsOverLine()
 		{
 			string badJson = GetBadJsonMissingContentId();
-			var invoker = new ReflectionHelper.PrivateType(typeof(LicenseChecker));
-			var observedAllowedLangs = invoker.InvokeStatic("GetAllowedLanguageCodes", badJson, "") as HashSet<string>;
+			var observedAllowedLangs = SIL.Reflection.ReflectionHelper.GetResult(typeof(LicenseChecker), "GetAllowedLanguageCodes", new object[] { badJson, "" }) as HashSet<string>;
 			Assert.That(observedAllowedLangs.Contains(""), Is.False, "Empty string should be skipped over");
 			Assert.That(observedAllowedLangs.Count, Is.EqualTo(0));
 
 			// Now look it up with a more "realisitc" key
-			observedAllowedLangs = invoker.InvokeStatic("GetAllowedLanguageCodes", badJson, "kingstone.superbible.*") as HashSet<string>;
+			observedAllowedLangs = SIL.Reflection.ReflectionHelper.GetResult(typeof(LicenseChecker), "GetAllowedLanguageCodes", new object[] { badJson, "kingstone.superbible.*" }) as HashSet<string>;
 			Assert.That(observedAllowedLangs.Contains(""), Is.False);
 			Assert.That(observedAllowedLangs.Contains("tr"), Is.True);
 			Assert.That(observedAllowedLangs.Count, Is.GreaterThan(0), "Search for Kingstone should return the other valid values");
@@ -227,8 +226,7 @@ namespace BloomTests.Book
 		public void GetAllowedLanguageCodes_JsonMissingLangCode_SkipsOverLine()
 		{
 			string badJson = GetBadJsonMissingLangCode();
-			var invoker = new ReflectionHelper.PrivateType(typeof(LicenseChecker));
-			var observedAllowedLangs = invoker.InvokeStatic("GetAllowedLanguageCodes", badJson, "kingstone.superbible.*") as HashSet<string>;
+			var observedAllowedLangs = SIL.Reflection.ReflectionHelper.GetResult(typeof(LicenseChecker), "GetAllowedLanguageCodes", new object[] { badJson, "kingstone.superbible.*" }) as HashSet<string>;
 			Assert.That(observedAllowedLangs.Contains("tr"), Is.True);
 			Assert.That(observedAllowedLangs.Count, Is.GreaterThan(0));
 		}
