@@ -1270,14 +1270,17 @@ export function localizeCkeditorTooltips(bar: JQuery) {
         });
 }
 
-// This is invoked from C# when we are about to change pages. It is mainly for origami,
-// but saveChangesAndRethinkPageEvent currently has the (very important)
-// side effect of saving the changes to the current page.
-// [GJM: But this doesn't call saveChangesAndRethinkPageEvent! I'm confused.]
+// This is invoked from C# when we are about to change pages. The C# code will save the changes
+// to the page after we return from this (hopefully; certainly in debugging this is the case).
 export const pageSelectionChanging = () => {
-    const marginBox = $(".marginBox");
-    marginBox.removeClass("origami-layout-mode");
-    marginBox.find(".bloom-translationGroup .textBox-identifier").remove();
+    const marginBox = document.getElementsByClassName("marginBox")[0];
+    marginBox.classList.remove("origami-layout-mode");
+    const elements = marginBox.getElementsByClassName(
+        "bloom-translationGroup textBox-identifier"
+    );
+    for (let i = 0; i < elements.length; i++) {
+        elements[i].remove();
+    }
 };
 
 // Called from C# by a RunJavaScript() in EditingView.CleanHtmlAndCopyToPageDom via

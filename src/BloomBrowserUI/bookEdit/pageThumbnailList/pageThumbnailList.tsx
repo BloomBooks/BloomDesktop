@@ -205,7 +205,7 @@ const PageList: React.FunctionComponent<{ pageSize: string }> = props => {
         NotifyCSharpOfClick();
 
         // for manual testing
-        if (e.getModifierState("Control")) {
+        if (e.getModifierState("Control") && e.getModifierState("Alt")) {
             ContinueAutomatedPageClicking(realPageList);
         } else {
             if (e.currentTarget) {
@@ -222,7 +222,8 @@ const PageList: React.FunctionComponent<{ pageSize: string }> = props => {
                 const caption = pageElt.getAttribute("data-caption");
                 postJson("pageList/pageClicked", {
                     pageId,
-                    detail: caption
+                    detail: caption,
+                    logTest: false
                 });
             }
         }
@@ -438,7 +439,8 @@ function onDragStop(
         // click events than we really want.)
         postJson("pageList/pageClicked", {
             pageId: movedPageId,
-            detail: "unknown"
+            detail: "unknown",
+            logTest: false
         });
         return;
     }
@@ -454,9 +456,14 @@ function ContinueAutomatedPageClicking(
 ) {
     const kHowManyPages = 1000; // no way other than code to change this at the moment
     if (count > kHowManyPages) return;
+    const logTest = count === 0;
     postJson(
         "pageList/pageClicked",
-        { pageId: pagesRemaining[0].key, detail: pagesRemaining[0].caption },
+        {
+            pageId: pagesRemaining[0].key,
+            detail: pagesRemaining[0].caption,
+            logTest: logTest
+        },
         () => {
             const remaining = pagesRemaining.slice(1);
             if (remaining.length > 0)

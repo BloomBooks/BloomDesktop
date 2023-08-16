@@ -9,6 +9,7 @@ using Bloom.Api;
 using Bloom.Book;
 using Bloom.Edit;
 using Bloom.Utils;
+using SIL.Reporting;
 using SIL.Xml;
 
 namespace Bloom.web
@@ -56,6 +57,11 @@ namespace Bloom.web
 
 			var shiftIsDown = (Control.ModifierKeys & Keys.Shift) == Keys.Shift;
 			var label = shiftIsDown ? "Select Page (SHIFT)" : "Select Page";
+
+			if (requestData.logTest == true)
+			{
+				Logger.WriteEvent("Triggering test function: ContinueAutomatedPageClicking() in pageThumbnailList");
+			}
 
 			using (PerformanceMeasurement.Global?.Measure(label, requestData.detail ?? ""))
 			{
