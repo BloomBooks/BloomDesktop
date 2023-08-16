@@ -23,6 +23,7 @@ namespace BloomTests.TeamCollection
 		protected Mock<ITeamCollectionManager> _mockTcManager;
 		protected FolderTeamCollection _collection;
 		private string _checkMeOutOriginalChecksum;
+		private string _checksumConflictOriginalRepoChecksum;
 		protected List<string> _syncMessages;
 		protected ProgressSpy _progressSpy;
 		private TeamCollectionMessageLog _tcLog;
@@ -158,6 +159,18 @@ namespace BloomTests.TeamCollection
 			statusFilePath = Bloom.TeamCollection.TeamCollection.GetStatusFilePath("copy status", _collectionFolder.FolderPath);
 			RobustFile.Delete(statusFilePath);
 
+			// Simulate a book which has a local checksum which conflicts with the repo checksum.
+			// We don't expect this to happen, but it did. Possibly due to super-user file intervention. See BL-12590.
+			// Test result: current local state is saved in lost-and-found. Repo version of book and state
+			// copied to local. Warning to user.
+			MakeBook("Update content and status and warn3", "This simulates an unexpected local status modification");
+			_collection.AttemptLock("Update content and status and warn3", TeamCollectionManager.CurrentUser);
+			UpdateLocalBook("Update content and status and warn3", "This is supposed to be the newest value from local editing", false);
+			var oldStatus = _collection.GetLocalStatus("Update content and status and warn3");
+			newStatus = oldStatus.WithChecksum("abc").WithLockedBy(TeamCollectionManager.CurrentUser);
+			_checksumConflictOriginalRepoChecksum = oldStatus.checksum;
+			_collection.WriteLocalStatus("Update content and status and warn3", newStatus);
+
 			// Simulate a book that was copied from another TC, using File Explorer.
 			// It therefore has a book.status file, but with a different guid.
 			// Test result: it should survive, and on a new collection sync get copied into the repo
@@ -261,7 +274,7 @@ namespace BloomTests.TeamCollection
 		public virtual void SyncAtStartup_ProducesNoUnexpectedMessages()
 		{
 			Assert.That(_progressSpy.Warnings, Has.Count.EqualTo(3), "Unexpected number of progress warnings produced.");
-			Assert.That(_progressSpy.Errors, Has.Count.EqualTo(6), "Unexpected number of progress errors produced. Did you mean to add one?");
+			Assert.That(_progressSpy.Errors, Has.Count.EqualTo(7), "Unexpected number of progress errors produced. Did you mean to add one?");
 			Assert.That(_progressSpy.ProgressMessages, Has.Count.EqualTo(5), "Unexpected number of progress messages produced. Did you mean to add one?");
 		}
 
@@ -464,8 +477,26 @@ namespace BloomTests.TeamCollection
 			Assert.That(_collection.GetLocalStatus("Update content and status and warn2").lockedBy, Is.EqualTo("fred@somewhere.org"));
 			AssertProgressAndHistory("Update content and status and warn2",
 				"The book '{0}', which was checked out and edited, was checked out to someone else in the Team Collection. Local changes have been overwritten, but are saved to Lost-and-found."
-				, "Update content and status and warn2",null, MessageAndMilestoneType.ErrorNoReload);
+				, "Update content and status and warn2", null, MessageAndMilestoneType.ErrorNoReload);
 			AssertLostAndFound("Update content and status and warn2");
+		}
+
+		[Test]
+		public void SyncAtStartup_ConflictingLocalAndRemoteChecksum_RemoteWinsWithWarning()
+		{
+			AssertLocalContent("Update content and status and warn3", "This simulates an unexpected local status modification");
+			var localStatus = _collection.GetLocalStatus("Update content and status and warn3");
+			Assert.That(localStatus.checksum, Is.EqualTo(_checksumConflictOriginalRepoChecksum));
+			Assert.That(localStatus.lockedBy, Is.EqualTo(TeamCollectionManager.CurrentUser));
+			AssertProgressAndHistory("Update content and status and warn3",
+				"The book '{0}', which was checked out and edited on this computer, was modified in the Team Collection by someone else. Local changes have been overwritten, but are saved to Lost-and-found.",
+				"Update content and status and warn3",
+				null,
+				MessageAndMilestoneType.ErrorNoReload);
+			AssertLostAndFound("Update content and status and warn3");
+			var repoStatus = _collection.GetStatus("Update content and status and warn3");
+			Assert.That(repoStatus.checksum, Is.EqualTo(_checksumConflictOriginalRepoChecksum));
+			Assert.That(repoStatus.lockedBy, Is.EqualTo(TeamCollectionManager.CurrentUser));
 		}
 
 		[Test]
@@ -476,13 +507,12 @@ namespace BloomTests.TeamCollection
 			Assert.That(localStatus.checksum, Is.EqualTo(_checkMeOutOriginalChecksum));
 			Assert.That(localStatus.lockedBy, Is.EqualTo(Bloom.TeamCollection.TeamCollectionManager.CurrentUser));
 			var repoStatus = _collection.GetStatus("Check me out");
-			Assert.That(localStatus.checksum, Is.EqualTo(_checkMeOutOriginalChecksum));
-			Assert.That(localStatus.lockedBy, Is.EqualTo(Bloom.TeamCollection.TeamCollectionManager.CurrentUser));
+			Assert.That(repoStatus.checksum, Is.EqualTo(_checkMeOutOriginalChecksum));
+			Assert.That(repoStatus.lockedBy, Is.EqualTo(Bloom.TeamCollection.TeamCollectionManager.CurrentUser));
 		}
 
 		public void AssertLocalContent(string bookName, string expectedContent)
 		{
-
 			var bookFolder = Path.Combine(_collectionFolder.FolderPath, bookName);
 			Assert.That(Directory.Exists(bookFolder), Is.True);
 			var bookHtmlPath = Path.Combine(bookFolder, Path.ChangeExtension(bookName, "htm"));
@@ -635,7 +665,7 @@ namespace BloomTests.TeamCollection
 		public override void SyncAtStartup_ProducesNoUnexpectedMessages()
 		{
 			Assert.That(_progressSpy.Warnings, Has.Count.EqualTo(1), "Unexpected number of progress warnings produced. Did you mean to add one?");
-			Assert.That(_progressSpy.Errors, Has.Count.EqualTo(7), "Unexpected number of progress errors produced. Did you mean to add one?");
+			Assert.That(_progressSpy.Errors, Has.Count.EqualTo(8), "Unexpected number of progress errors produced. Did you mean to add one?");
 			Assert.That(_progressSpy.ProgressMessages, Has.Count.EqualTo(5), "Unexpected number of progress messages produced. Did you mean to add one?");
 		}
 

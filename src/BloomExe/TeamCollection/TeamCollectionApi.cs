@@ -303,9 +303,8 @@ namespace Bloom.TeamCollection
 		{
 			string whoHasBookLocked = null;
 			DateTime whenLocked = DateTime.MaxValue;
-			bool problem = false;
 			// bookFolderName may be null when no book is selected, e.g., after deleting one.
-			var status = bookFolderName == null ? null :_tcManager.CurrentCollection?.GetStatus(bookFolderName);
+			var status = bookFolderName == null ? null : _tcManager.CurrentCollection?.GetStatus(bookFolderName);
 			// At this level, we know this is the path to the .bloom file in the repo
 			// (though if we implement another backend, we'll have to generalize the notion somehow).
 			// For the Javascript, it's just an argument to pass to
@@ -318,7 +317,7 @@ namespace Bloom.TeamCollection
 					.UrlEncoded;
 			}
 
-			string hasInvalidRepoData = (status?.hasInvalidRepoData ?? false) ?
+			string invalidRepoDataErrorMsg = (status?.hasInvalidRepoData ?? false) ?
 					(folderTC)?.GetCouldNotOpenCorruptZipMessage()
 				: "";
 
@@ -336,18 +335,19 @@ namespace Bloom.TeamCollection
 						currentUser = CurrentUser,
 						currentUserName = TeamCollectionManager.CurrentUserFirstName,
 						currentMachine = TeamCollectionManager.CurrentMachine,
-						problem = "",
-						hasInvalidRepoData = false,
+						hasAProblem = false,
+						invalidRepoDataErrorMsg = "",
 						clickHereArg = "",
-						changedRemotely = false,
-						disconnected = false,
-						newLocalBook = true,
+						isChangedRemotely = false,
+						isDisconnected = false,
+						isNewLocalBook = true,
 						checkinMessage = "",
 						isUserAdmin = _tcManager.OkToEditCollectionSettings
 					});
 			}
 
-			bool newLocalBook = false;
+			bool isNewLocalBook = false;
+			bool hasConflictingChange = false;
 			try
 			{
 				whoHasBookLocked =
@@ -355,7 +355,7 @@ namespace Bloom.TeamCollection
 				// It's debatable whether to use CurrentCollectionEvenIfDisconnected everywhere. For now, I've only changed
 				// it for the two bits of information actually needed by the status panel when disconnected.
 				whenLocked = _tcManager.CurrentCollection?.WhenWasBookLocked(bookFolderName) ??
-				             DateTime.MaxValue;
+							 DateTime.MaxValue;
 				if (whoHasBookLocked == TeamCollection.FakeUserIndicatingNewBook)
 				{
 					// This situation comes about from two different scenarios:
@@ -371,18 +371,18 @@ namespace Bloom.TeamCollection
 					if (book?.IsSaveable ?? true)
 					{
 						whoHasBookLocked = CurrentUser;
-						newLocalBook = true;
+						isNewLocalBook = true;
 					}
 					else
 					{
 						whoHasBookLocked = null;
 					}
 				}
-				problem = _tcManager.CurrentCollection?.HasLocalChangesThatMustBeClobbered(bookFolderName) ?? false;
+				hasConflictingChange = _tcManager.CurrentCollection?.HasLocalChangesThatMustBeClobbered(bookFolderName) ?? false;
 			}
 			catch (Exception e) when (e is ICSharpCode.SharpZipLib.Zip.ZipException || e is IOException)
 			{
-					hasInvalidRepoData = (_tcManager.CurrentCollection as FolderTeamCollection)?.GetCouldNotOpenCorruptZipMessage();
+				invalidRepoDataErrorMsg = (_tcManager.CurrentCollection as FolderTeamCollection)?.GetCouldNotOpenCorruptZipMessage();
 			}
 
 			// If the request asked for the book by name, we don't have an actual Book object.
@@ -400,16 +400,17 @@ namespace Bloom.TeamCollection
 					currentUser = CurrentUser,
 					currentUserName = TeamCollectionManager.CurrentUserFirstName,
 					currentMachine = TeamCollectionManager.CurrentMachine,
-					problem,
-					hasInvalidRepoData,
-						clickHereArg,
-					changedRemotely = _tcManager.CurrentCollection?.HasBeenChangedRemotely(bookFolderName),
-					disconnected = _tcManager.CurrentCollectionEvenIfDisconnected?.IsDisconnected,
-					newLocalBook,
+					hasConflictingChange,
+					invalidRepoDataErrorMsg,
+					clickHereArg,
+					isChangedRemotely = _tcManager.CurrentCollection?.HasBeenChangedRemotely(bookFolderName),
+					isDisconnected = _tcManager.CurrentCollectionEvenIfDisconnected?.IsDisconnected,
+					isNewLocalBook,
 					checkinMessage,
 					isUserAdmin = _tcManager.OkToEditCollectionSettings
 				});
 		}
+
 		public void HandleSelectedBookStatus(ApiRequest request)
 		{
 			try

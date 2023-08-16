@@ -31,7 +31,7 @@ export type StatusPanelState =
     | "lockedByMe" // book is checked out to me, here...I can edit it
     | "lockedByMeElsewhere" // book is checked out to me, but on another computer, so I can't edit it here
     | "needsReload" // the collection needs to be reloaded before we can do anything with this book
-    | "problem" // The book has a problem, like a conflict between my changes and someone else's
+    | "conflictingChange" // The book has a conflict between my changes and someone else's
     | "hasInvalidRepoData" // the book has a catastrophic problem: the repo version is unreadable.
     | "disconnected" // Can't tell what's going on, because we don't have a good connection to the repo
     | "lockedByMeDisconnected" // We're disconnected, but before that happened the book was checked out to me, here
@@ -65,15 +65,15 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<IBookTeamCol
 
     // Calculate panel state
     React.useEffect(() => {
-        if (props.disconnected) {
+        if (props.isDisconnected) {
             setTcPanelState(
                 lockedByMe ? "lockedByMeDisconnected" : "disconnected"
             );
-        } else if (props.hasInvalidRepoData) {
+        } else if (props.invalidRepoDataErrorMsg) {
             setTcPanelState("hasInvalidRepoData");
-        } else if (props.hasAProblem) {
-            setTcPanelState("problem");
-        } else if (props.changedRemotely) {
+        } else if (props.hasConflictingChange) {
+            setTcPanelState("conflictingChange");
+        } else if (props.isChangedRemotely) {
             setTcPanelState("needsReload");
         } else if (props.who) {
             // locked by someone
@@ -90,13 +90,13 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<IBookTeamCol
             setTcPanelState("unlocked");
         }
     }, [
-        props.disconnected,
-        props.hasAProblem,
-        props.changedRemotely,
+        props.isDisconnected,
+        props.hasConflictingChange,
+        props.isChangedRemotely,
         props.who,
         lockedByMe,
         props.currentUser,
-        props.hasInvalidRepoData
+        props.invalidRepoDataErrorMsg
     ]);
 
     React.useEffect(() => {
@@ -243,8 +243,7 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<IBookTeamCol
         true
     );
 
-    // Also used for problem.
-    const mainTitleNeedsReload = useL10n(
+    const mainTitleRemoteChanged = useL10n(
         "The Team Collection folder received a changed version of the book you have selected.",
         "TeamCollection.NeedsReload",
         "",
@@ -253,7 +252,7 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<IBookTeamCol
         true
     );
 
-    const subTitleHasProblem = useL10n(
+    const subTitleConflictingChange = useL10n(
         "The Checkin/Checkout system should normally prevent this, but it has happened. Bloom cannot automatically join the work that came in with the work you were doing; you will need Bloom team support for that. Bloom will move your version of the book to the Team Collection Lost & Found when you Reload.",
         "TeamCollection.ConflictingChangeDetails",
         "",
@@ -321,7 +320,7 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<IBookTeamCol
             text: "Forget Changes & Check in Book...",
             l10nKey: "TeamCollection.ForgetChangesMenuItem",
             action: () => setForgetDialogOpen(true),
-            disabled: props.newLocalBook
+            disabled: props.isNewLocalBook
         });
     }
 
@@ -376,7 +375,6 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<IBookTeamCol
                 // This is just a fallback, which hopefully will never be seen.
                 return (
                     <StatusPanelCommon
-                        lockState={state}
                         title={props.error}
                         subTitle=""
                         icon={
@@ -411,7 +409,6 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<IBookTeamCol
                             ${busy &&
                                 "cursor: progress; .checkout-button{cursor:progress;}"}
                         `}
-                        lockState={state}
                         title={mainTitleUnlocked}
                         subTitle={subTitleUnlocked}
                         icon={
@@ -462,7 +459,6 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<IBookTeamCol
                                 margin-top: 10px; // leaves some extra space for the "What changes did you make" overlay
                             }
                         `}
-                        lockState={state}
                         title={
                             checkinProgress === 0
                                 ? mainTitleLockedByMe
@@ -492,6 +488,7 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<IBookTeamCol
                                 </ThemeProvider>
                             </StyledEngineProvider>
                         }
+                        useWarningColorForButton={true}
                         menu={menu}
                     >
                         {checkinProgress === 0 ? (
@@ -554,7 +551,6 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<IBookTeamCol
             case "lockedByMeElsewhere":
                 return (
                     <StatusPanelCommon
-                        lockState={state}
                         title={mainTitleLockedElsewhere}
                         subTitle={subTitleLockedElsewhere}
                         icon={avatar}
@@ -566,7 +562,6 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<IBookTeamCol
             case "locked":
                 return (
                     <StatusPanelCommon
-                        lockState={state}
                         title={mainTitleLocked}
                         subTitle={subTitleLocked}
                         icon={avatar}
@@ -575,12 +570,16 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<IBookTeamCol
                         {getLockedInfoChild(lockedInfo)}
                     </StatusPanelCommon>
                 );
-            case "problem":
+            case "conflictingChange":
+            case "needsReload":
                 return (
                     <StatusPanelCommon
-                        lockState={state}
-                        title={mainTitleNeedsReload}
-                        subTitle={subTitleHasProblem}
+                        title={mainTitleRemoteChanged}
+                        subTitle={
+                            state === "conflictingChange"
+                                ? subTitleConflictingChange
+                                : subTitleNeedsReload
+                        }
                         icon={avatar}
                         button={getBloomButton(
                             "Reload",
@@ -589,6 +588,7 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<IBookTeamCol
                             undefined,
                             () => post("common/reloadCollection")
                         )}
+                        useWarningColorForButton={state === "needsReload"} //REVIEW: why is it different?
                         menu={menu}
                     >
                         {getLockedInfoChild("")}
@@ -600,33 +600,13 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<IBookTeamCol
                         css={css`
                             max-width: 560px;
                         `} // to match StatusPanelCommon
-                        errorMessage={props.hasInvalidRepoData}
+                        errorMessage={props.invalidRepoDataErrorMsg}
                         clickHereArg={props.clickHereArg}
                     />
-                );
-            case "needsReload":
-                return (
-                    <StatusPanelCommon
-                        lockState={state}
-                        title={mainTitleNeedsReload}
-                        subTitle={subTitleNeedsReload}
-                        icon={avatar}
-                        button={getBloomButton(
-                            "Reload",
-                            "TeamCollection.Reload",
-                            "reload-button",
-                            undefined,
-                            () => post("common/reloadCollection")
-                        )}
-                        menu={menu}
-                    >
-                        {getLockedInfoChild("")}
-                    </StatusPanelCommon>
                 );
             case "disconnected":
                 return (
                     <StatusPanelCommon
-                        lockState={state}
                         title={mainTitleDisconnected}
                         subTitle={subTitleDisconnected}
                         icon={
@@ -640,7 +620,6 @@ export const TeamCollectionBookStatusPanel: React.FunctionComponent<IBookTeamCol
             case "lockedByMeDisconnected":
                 return (
                     <StatusPanelCommon
-                        lockState={state}
                         title={mainTitleLockedByMe}
                         subTitle={subTitleDisconnectedCheckedOut}
                         icon={avatar}

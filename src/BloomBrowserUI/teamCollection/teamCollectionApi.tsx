@@ -16,13 +16,13 @@ export interface IBookTeamCollectionStatus {
     currentUser: string;
     currentUserName: string;
     currentMachine: string;
-    hasAProblem: boolean;
-    hasInvalidRepoData: string; // error message, or empty if repo data is valid
+    hasConflictingChange: boolean; // and thus the book will move to Lost & Found
+    invalidRepoDataErrorMsg: string; // error message, or empty if repo data is valid
     clickHereArg: string; // argument (currently, repo file name) needed to construct "Click here for help" message for corrupt zip
-    changedRemotely: boolean;
-    disconnected: boolean;
-    newLocalBook: boolean;
-    error: string;
+    isChangedRemotely: boolean; // and thus needs to be reloaded
+    isDisconnected: boolean;
+    isNewLocalBook: boolean;
+    error: string; // This one is not current sent from the C# side.
     checkinMessage: string;
     isUserAdmin: boolean;
 }
@@ -36,12 +36,12 @@ export const initialBookStatus: IBookTeamCollectionStatus = {
     currentUser: "",
     currentUserName: "",
     currentMachine: "",
-    hasAProblem: false,
-    hasInvalidRepoData: "",
+    hasConflictingChange: false,
+    invalidRepoDataErrorMsg: "",
     clickHereArg: "",
-    changedRemotely: false,
-    disconnected: false,
-    newLocalBook: false,
+    isChangedRemotely: false,
+    isDisconnected: false,
+    isNewLocalBook: false,
     error: "",
     checkinMessage: "",
     isUserAdmin: false

@@ -21,11 +21,11 @@ declare module "@mui/styles/defaultTheme" {
 }
 
 export interface IStatusPanelProps {
-    lockState: StatusPanelState;
     title: string;
     subTitle: string;
     icon: JSX.Element;
     button?: JSX.Element;
+    useWarningColorForButton?: boolean;
     children?: JSX.Element;
     menu?: JSX.Element; // when book is checked out, About my Avatar... and Forget Changes and Check in Book
     className?: string; // additional class for  root div; enables emotion CSS.
@@ -35,10 +35,9 @@ export const StatusPanelCommon: React.FunctionComponent<IStatusPanelProps> = (
     props: IStatusPanelProps
 ) => {
     const outerTheme = useTheme();
-    const buttonColor =
-        props.lockState === "lockedByMe" || props.lockState === "needsReload"
-            ? outerTheme.palette.warning.main
-            : outerTheme.palette.primary.main;
+    const buttonColor = props.useWarningColorForButton
+        ? outerTheme.palette.warning.main
+        : outerTheme.palette.primary.main;
     const buttonTheme = createTheme(
         adaptV4Theme({
             palette: {

@@ -25,6 +25,12 @@ namespace Bloom.TeamCollection
 			return JsonConvert.SerializeObject(this);
 		}
 
+		public string ToSanitizedJson()
+		{
+			var sanitizedStatus = WithLockedBy(lockedBy == null ? null : lockedBy.Substring(0, 3) + "...", lockedByFirstName, lockedBySurname);
+			return sanitizedStatus.ToJson();
+		}
+
 		public static BookStatus FromJson(string input)
 		{
 			return JsonConvert.DeserializeObject<BookStatus>(input);

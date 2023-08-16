@@ -1158,15 +1158,42 @@ namespace Bloom.TeamCollection
 			if (!IsCheckedOutHereBy(localStatus))
 				return false;
 			var repoStatus = GetStatus(bookName);
-			var currentChecksum = MakeChecksum(Path.Combine(_localCollectionFolder,bookName));
+			var bookPath = Path.Combine(_localCollectionFolder, bookName);
+			var currentChecksum = MakeChecksum(bookPath);
+			if (String.IsNullOrEmpty(currentChecksum))
+			{
+				Logger.WriteEvent($"*** TeamCollection.HasLocalChangesThatMustBeClobbered() got an empty checksum for the local book.");
+				var haveHtm = BookStorage.FindBookHtmlInFolder(bookPath);
+				Logger.WriteEvent($"*** TeamCollection.HasLocalChangesThatMustBeClobbered() found htm file = {haveHtm}");
+			}
 			// If it hasn't actually been edited locally, we might have a problem, but not one that
 			// requires clobbering.
 			if (repoStatus.checksum == currentChecksum)
 				return false;
-			// We've checked it out and edited it...there's a problem if the repo disagrees
-			// about either content or status
-			return (!IsCheckedOutHereBy(repoStatus) || repoStatus.checksum != localStatus.checksum);
-		}
+
+			// We've checked it out and edited it...there's a problem if the repo disagrees about either content or status
+
+			var isConflictingCheckedOutStatus = !IsCheckedOutHereBy(repoStatus);
+			if (isConflictingCheckedOutStatus)
+			{
+				try //paranoia
+				{
+					Logger.WriteEvent($"*** TeamCollection.HasLocalChangesThatMustBeClobbered(): conflicting checked out status, local is {localStatus.ToSanitizedJson()}, repo is {repoStatus.ToSanitizedJson()}.");
+				}
+				catch (Exception)
+				{
+					// Don't crash for a log
+				}
+			}
+
+			// Note: localStatus.checksum is not the checksum of the local files,
+			// but rather a local record of what the remote checksum was when we checked it out.
+			var isConflictingCheckSum = repoStatus.checksum != localStatus.checksum;
+			if (isConflictingCheckSum)
+				Logger.WriteEvent($"*** TeamCollection.HasLocalChangesThatMustBeClobbered(): conflicting checksum. Current={currentChecksum} localStatus={localStatus.checksum} repoStatus={repoStatus.checksum}");
+
+			return isConflictingCheckedOutStatus || isConflictingCheckSum;
+		}				
 
 		private bool HasCheckoutConflict(string bookName)
 		{
@@ -1243,7 +1270,8 @@ namespace Bloom.TeamCollection
 					_tcLog.WriteMessage(MessageAndMilestoneType.Error, "TeamCollection.EditedFileChangedRemotely",
 						"One of your teammates has modified or checked out the book '{0}', which you have edited but not checked in. You need to reload the collection to sort things out.",
 						bookBaseName, null);
-				} else
+				}
+				else
 
 				// A lesser but still Error condition is that the repo has a conflicting notion of checkout status.
 				if (HasCheckoutConflict(bookBaseName))
@@ -2006,18 +2034,26 @@ namespace Bloom.TeamCollection
 						continue;
 					}
 
+					var localAndRepoChecksumsMatch = localStatus.checksum == repoStatus.checksum;
+
 					// At this point, we know there's a version of the book in the repo
 					// and a local version that is checked out here according to local status.
 					if (IsCheckedOutHereBy(repoStatus))
 					{
-						// the repo agrees. We could check that the checksums match, but there's no
-						// likely scenario for them not to. Everything is consistent, so we can move on
-						continue;
+						if (localAndRepoChecksumsMatch)
+							continue;
+						else
+						{
+							// We don't expect this to happen. But it did in BL-12590
+							// (though it is possible that was the result of a "super user" doing file manipulation).
+							// Anyway, if it happens, better be safe and move the local version to lost and found.
+							// That's what the UI already said we would do. We just hadn't hooked up the back end to do it.
+						}
 					}
 
 					// Now we know there's some sort of conflict. The local and repo status of this
 					// book don't match.
-					if (localStatus.checksum == repoStatus.checksum)
+					if (localAndRepoChecksumsMatch)
 					{
 						if (String.IsNullOrEmpty(repoStatus.lockedBy))
 						{

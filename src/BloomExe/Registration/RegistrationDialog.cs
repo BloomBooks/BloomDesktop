@@ -135,7 +135,7 @@ namespace Bloom.Registration
 			SIL.Windows.Forms.Registration.Registration.Default.FirstName = _firstName.Text;
 			SIL.Windows.Forms.Registration.Registration.Default.Surname = _surname.Text;
 			SIL.Windows.Forms.Registration.Registration.Default.Organization = _organization.Text;
-			SIL.Windows.Forms.Registration.Registration.Default.Email = _email.Text;
+			SIL.Windows.Forms.Registration.Registration.Default.Email = _email.Text == null ? null : _email.Text.Trim();
 			SIL.Windows.Forms.Registration.Registration.Default.HowUsing = _howAreYouUsing.Text;
 			SIL.Windows.Forms.Registration.Registration.Default.Save();
 			try
