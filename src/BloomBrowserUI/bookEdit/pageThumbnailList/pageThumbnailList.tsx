@@ -18,7 +18,7 @@ import * as toastr from "toastr";
 import "errorHandler";
 import WebSocketManager from "../../utils/WebSocketManager";
 import { Responsive } from "react-grid-layout";
-import { get, postJson, useApiData } from "../../utils/bloomApi";
+import { get, postJson, postString, useApiData } from "../../utils/bloomApi";
 import { PageThumbnail } from "./PageThumbnail";
 import LazyLoad, { forceCheck } from "react-lazyload";
 
@@ -205,7 +205,7 @@ const PageList: React.FunctionComponent<{ pageSize: string }> = props => {
         NotifyCSharpOfClick();
 
         // for manual testing
-        if (e.getModifierState("Control")) {
+        if (e.getModifierState("Control") && e.getModifierState("Alt")) {
             ContinueAutomatedPageClicking(realPageList);
         } else {
             if (e.currentTarget) {
@@ -454,9 +454,19 @@ function ContinueAutomatedPageClicking(
 ) {
     const kHowManyPages = 1000; // no way other than code to change this at the moment
     if (count > kHowManyPages) return;
+
+    if (count === 0) {
+        postString(
+            "common/logger/writeEvent",
+            "**  pageThumbnailList: user initiated Automated Page Clicking test function"
+        );
+    }
     postJson(
         "pageList/pageClicked",
-        { pageId: pagesRemaining[0].key, detail: pagesRemaining[0].caption },
+        {
+            pageId: pagesRemaining[0].key,
+            detail: pagesRemaining[0].caption
+        },
         () => {
             const remaining = pagesRemaining.slice(1);
             if (remaining.length > 0)
