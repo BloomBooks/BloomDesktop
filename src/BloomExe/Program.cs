@@ -621,7 +621,11 @@ namespace Bloom
 				"rw21mh2piu",
 				RegistrationDialog.GetAnalyticsUserInfo(),
 				propertiesThatGoWithEveryEvent,
-				false); // change to true if you want to test sending
+				allowTracking: false, // change to true if you want to test sending
+				retainPii: false,
+				clientType: DesktopAnalytics.ClientType.Segment,
+				host: "https://analytics.bloomlibrary.org"
+			);
 #else
 			var feedbackSetting = System.Environment.GetEnvironmentVariable("FEEDBACK");
 
