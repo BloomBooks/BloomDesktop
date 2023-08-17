@@ -83,45 +83,15 @@
     <RemoveDir Directories="@(RemoveForSILMedia)" />
   </Target>
   <ItemGroup>
-    <PackageReference Include="AtkSharp-signed" Version="3.22.24.37" />
-    <PackageReference Include="CairoSharp-signed" Version="3.22.24.37" />
-    <PackageReference Include="Castle.Core" Version="4.4.1" />
-    <PackageReference Include="CommandLineParser" Version="2.8.0" />
-    <!-- Don't let Nuget Package Manager automatically update (downgrade) this to DialogAdapters.Gtk2; it will break Bloom -->
-    <PackageReference Include="DialogAdapters" Version="0.1.11" />
-    <PackageReference Include="Enchant.Net" Version="1.4.2" />
     <PackageReference Include="EPPlus" Version="6.2.4" />
-    <PackageReference Include="EPPlus.Interfaces" Version="6.1.1" />
-    <PackageReference Include="EPPlus.System.Drawing" Version="6.1.1" />
-    <PackageReference Include="FFMpegCore" Version="5.0.0" />
-    <PackageReference Include="GdkSharp-signed" Version="3.22.24.37" />
-    <PackageReference Include="GioSharp-signed" Version="3.22.24.37" />
-    <PackageReference Include="GLibSharp-signed" Version="3.22.24.37" />
-    <PackageReference Include="GtkSharp-signed" Version="3.22.24.37" />
-    <PackageReference Include="ibusdotnet" Version="2.0.3" />
-    <PackageReference Include="icu.net" Version="2.8.1" />
-    <PackageReference Include="Instances" Version="3.0.0" />
-    <PackageReference Include="JsonFx" Version="2.0.1209.2802" />
     <PackageReference Include="L10NSharp" Version="6.0.0" />
-    <PackageReference Include="Markdig.Signed" Version="0.30.4" />
-    <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="7.0.0" />
     <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
-    <PackageReference Include="Microsoft.DotNet.PlatformAbstractions" Version="3.1.6" />
-    <PackageReference Include="Microsoft.Extensions.DependencyModel" Version="3.1.6" />
-    <PackageReference Include="Microsoft.IO.RecyclableMemoryStream" Version="1.4.1" />
     <PackageReference Include="Mono.Unix" Version="7.1.0-final.1.21458.1" />
     <PackageReference Include="Moq" Version="4.14.7" />
-    <PackageReference Include="NAudio" Version="1.10.0" />
-    <PackageReference Include="NDesk.DBus" Version="0.15.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.2" />
     <PackageReference Include="NUnit" Version="3.13.3" />
-    <PackageReference Include="NUnit.ConsoleRunner" Version="3.16.2" />
-    <PackageReference Include="NUnit.Extension.NUnitV2Driver" Version="3.9.0" />
-    <PackageReference Include="NUnit.Extension.NUnitV2ResultWriter" Version="3.7.0" />
     <PackageReference Include="NUnit.Extension.TeamCityEventListener" Version="1.0.7" />
-    <PackageReference Include="NUnit.Extension.VSProjectLoader" Version="3.9.0" />
     <PackageReference Include="NUnit3TestAdapter" Version="4.5.0" />
-    <PackageReference Include="PangoSharp-signed" Version="3.22.24.37" />
     <PackageReference Include="RestSharp" Version="106.12.0" />
     <PackageReference Include="SharpZipLib" Version="1.3.3" />
     <PackageReference Include="SIL.Core" Version="13.0.0-beta0050" />
@@ -129,59 +99,11 @@
     <PackageReference Include="SIL.Media" Version="13.0.0-beta0050" />
     <PackageReference Include="SIL.TestUtilities" Version="13.0.0-beta0050" />
     <PackageReference Include="SIL.Windows.Forms" Version="13.0.0-beta0050" />
-    <PackageReference Include="SIL.Windows.Forms.Keyboarding" Version="13.0.0-beta0050" />
-    <PackageReference Include="SIL.Windows.Forms.WritingSystems" Version="13.0.0-beta0050" />
-    <PackageReference Include="SIL.WritingSystems" Version="13.0.0-beta0050" />
-    <PackageReference Include="Spart" Version="1.0.0" />
-    <PackageReference Include="SQLitePCLRaw.bundle_green" Version="2.0.3" />
-    <PackageReference Include="SQLitePCLRaw.core" Version="2.0.3" />
-    <PackageReference Include="SQLitePCLRaw.lib.e_sqlite3" Version="2.0.3" />
-    <PackageReference Include="SQLitePCLRaw.provider.dynamic_cdecl" Version="2.0.3" />
-    <PackageReference Include="System.Buffers" Version="4.5.1" />
-    <PackageReference Include="System.Configuration.ConfigurationManager" Version="6.0.0" />
     <PackageReference Include="System.Drawing.Common" Version="6.0.0" />
-    <PackageReference Include="System.Globalization" Version="4.3.0" />
-    <PackageReference Include="System.IO" Version="4.3.0" />
-    <PackageReference Include="System.IO.FileSystem" Version="4.3.0" />
-    <PackageReference Include="System.IO.FileSystem.AccessControl" Version="5.0.0" />
-    <PackageReference Include="System.IO.FileSystem.Primitives" Version="4.3.0" />
-    <PackageReference Include="System.Memory" Version="4.5.5" />
-    <PackageReference Include="System.Net.Http" Version="4.3.4" />
-    <PackageReference Include="System.Numerics.Vectors" Version="4.5.0" />
-    <PackageReference Include="System.Resources.Extensions" Version="6.0.0" />
-    <PackageReference Include="System.Runtime" Version="4.3.0" />
-    <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="6.0.0" />
-    <PackageReference Include="System.Runtime.InteropServices.RuntimeInformation" Version="4.3.0" />
-    <PackageReference Include="System.Security.AccessControl" Version="6.0.0" />
-    <PackageReference Include="System.Security.Cryptography.Algorithms" Version="4.3.0" />
-    <PackageReference Include="System.Security.Cryptography.Encoding" Version="4.3.0" />
-    <PackageReference Include="System.Security.Cryptography.Primitives" Version="4.3.0" />
-    <PackageReference Include="System.Security.Cryptography.X509Certificates" Version="4.3.0" />
-    <PackageReference Include="System.Security.Permissions" Version="6.0.0" />
-    <PackageReference Include="System.Security.Principal.Windows" Version="5.0.0" />
-    <PackageReference Include="System.Text.Encodings.Web" Version="7.0.0" />
-    <PackageReference Include="System.Text.Json" Version="7.0.1" />
-    <PackageReference Include="System.Threading.Tasks.Extensions" Version="4.5.4" />
-    <PackageReference Include="System.ValueTuple" Version="4.5.0" />
-    <PackageReference Include="TagLibSharp" Version="2.3.0" />
   </ItemGroup>
   <ItemGroup>
-    <Reference Include="Microsoft.VisualBasic" />
-    <Reference Include="PresentationCore" />
-    <Reference Include="System.ComponentModel.Composition" />
-    <Reference Include="System.Configuration" />
-    <Reference Include="System.Data.OracleClient" />
-    <Reference Include="System.Management" />
-    <Reference Include="System.Net" />
-    <Reference Include="System.Security" />
-    <Reference Include="System.ServiceModel" />
-    <Reference Include="System.ServiceProcess" />
-    <Reference Include="System.Threading.Tasks" />
-    <Reference Include="System.Transactions" />
-    <Reference Include="System.Web.Extensions" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Web" />
-    <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\BloomExe\BloomExe.csproj" />

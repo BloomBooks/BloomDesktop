@@ -146,48 +146,27 @@ copy /Y "$(SolutionDir)\lib\dotnet\libtidy.dll" $(OutDir)
     <RemoveDir Directories="@(RemoveForSILMedia)" />
   </Target>
   <ItemGroup>
-    <PackageReference Include="Analytics" Version="2.0.2" />
-    <PackageReference Include="AtkSharp-signed" Version="3.22.24.37" />
     <PackageReference Include="Autofac" Version="6.0.0" />
     <PackageReference Include="AWSSDK.Core" Version="3.5.1.32" />
     <PackageReference Include="AWSSDK.S3" Version="3.5.3.10" />
     <PackageReference Include="CairoSharp-signed" Version="3.22.24.37" />
     <PackageReference Include="CommandLineParser" Version="2.8.0" />
     <PackageReference Include="DesktopAnalytics" Version="1.2.4.11" />
+    <!-- Don't let Nuget Package Manager automatically update (downgrade) this to DialogAdapters.Gtk2; it will break Bloom -->
     <PackageReference Include="DialogAdapters" Version="0.1.11" />
-    <PackageReference Include="Enchant.Net" Version="1.4.2" />
     <PackageReference Include="EPPlus" Version="6.2.4" />
-    <PackageReference Include="EPPlus.Interfaces" Version="6.1.1" />
-    <PackageReference Include="EPPlus.System.Drawing" Version="6.1.1" />
-    <PackageReference Include="FFMpegCore" Version="5.0.0" />
     <PackageReference Include="Fleck" Version="1.1.0" />
-    <PackageReference Include="GdkSharp-signed" Version="3.22.24.37" />
-    <PackageReference Include="GioSharp-signed" Version="3.22.24.37" />
-    <PackageReference Include="GLibSharp-signed" Version="3.22.24.37" />
     <PackageReference Include="Glob" Version="1.1.8" />
-    <PackageReference Include="GtkSharp-signed" Version="3.22.24.37" />
-    <PackageReference Include="ibusdotnet" Version="2.0.3" />
-    <PackageReference Include="icu.net" Version="2.8.1" />
-    <PackageReference Include="Instances" Version="3.0.0" />
-    <PackageReference Include="JsonFx" Version="2.0.1209.2802" />
     <PackageReference Include="L10NSharp" Version="6.0.0" />
     <PackageReference Include="LargeAddressAware" Version="1.0.5" />
     <PackageReference Include="Markdig.Signed" Version="0.30.4" />
-    <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="7.0.0" />
     <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
-    <PackageReference Include="Microsoft.DotNet.PlatformAbstractions" Version="3.1.6" />
     <PackageReference Include="Microsoft.Extensions.DependencyModel" Version="3.1.6" />
-    <PackageReference Include="Microsoft.IO.RecyclableMemoryStream" Version="1.4.1" />
     <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.1518.46" />
-    <PackageReference Include="Microsoft.Web.Xdt" Version="3.1.0" />
-    <PackageReference Include="Microsoft-WindowsAPICodePack-Core" Version="1.1.4" />
     <PackageReference Include="Microsoft-WindowsAPICodePack-Shell" Version="1.1.4" />
-    <PackageReference Include="Mono.Cecil" Version="0.11.3" />
     <PackageReference Include="Mono.Unix" Version="7.1.0-final.1.21458.1" />
     <PackageReference Include="NAudio" Version="1.10.0" />
-    <PackageReference Include="NDesk.DBus" Version="0.15.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.2" />
-    <PackageReference Include="PangoSharp-signed" Version="3.22.24.37" />
     <PackageReference Include="RestSharp" Version="106.12.0" />
     <PackageReference Include="Sentry" Version="3.9.4" />
     <PackageReference Include="SharpZipLib" Version="1.3.3" />
@@ -198,65 +177,27 @@ copy /Y "$(SolutionDir)\lib\dotnet\libtidy.dll" $(OutDir)
     <PackageReference Include="SIL.Windows.Forms.Keyboarding" Version="13.0.0-beta0050" />
     <PackageReference Include="SIL.Windows.Forms.WritingSystems" Version="13.0.0-beta0050" />
     <PackageReference Include="SIL.WritingSystems" Version="13.0.0-beta0050" />
-    <PackageReference Include="SourceMapDotNet" Version="1.0.5478.26629" />
-    <PackageReference Include="Spart" Version="1.0.0" />
     <PackageReference Include="sqlite-net-pcl" Version="1.7.335" />
     <PackageReference Include="SQLitePCLRaw.bundle_green" Version="2.0.3" />
     <PackageReference Include="SQLitePCLRaw.core" Version="2.0.3" />
     <PackageReference Include="SQLitePCLRaw.lib.e_sqlite3" Version="2.0.3" />
     <PackageReference Include="SQLitePCLRaw.provider.dynamic_cdecl" Version="2.0.3" />
-    <PackageReference Include="System.Buffers" Version="4.5.1" />
-    <PackageReference Include="System.Collections.Immutable" Version="5.0.0" />
-    <PackageReference Include="System.Configuration.ConfigurationManager" Version="6.0.0" />
-    <PackageReference Include="System.Diagnostics.DiagnosticSource" Version="4.7.1" />
-    <PackageReference Include="System.Drawing.Common" Version="6.0.0" />
-    <PackageReference Include="System.Globalization" Version="4.3.0" />
-    <PackageReference Include="System.IO" Version="4.3.0" />
     <PackageReference Include="System.IO.FileSystem" Version="4.3.0" />
-    <PackageReference Include="System.IO.FileSystem.AccessControl" Version="5.0.0" />
-    <PackageReference Include="System.IO.FileSystem.Primitives" Version="4.3.0" />
-    <PackageReference Include="System.Memory" Version="4.5.5" />
     <PackageReference Include="System.Net.Http" Version="4.3.4" />
-    <PackageReference Include="System.Numerics.Vectors" Version="4.5.0" />
-    <PackageReference Include="System.Reflection.Metadata" Version="5.0.0" />
-    <PackageReference Include="System.Resources.Extensions" Version="6.0.0" />
     <PackageReference Include="System.Runtime" Version="4.3.0" />
-    <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="6.0.0" />
-    <PackageReference Include="System.Runtime.InteropServices.RuntimeInformation" Version="4.3.0" />
-    <PackageReference Include="System.Security.AccessControl" Version="6.0.0" />
-    <PackageReference Include="System.Security.Cryptography.Algorithms" Version="4.3.0" />
-    <PackageReference Include="System.Security.Cryptography.Encoding" Version="4.3.0" />
-    <PackageReference Include="System.Security.Cryptography.Primitives" Version="4.3.0" />
-    <PackageReference Include="System.Security.Cryptography.X509Certificates" Version="4.3.0" />
-    <PackageReference Include="System.Security.Permissions" Version="6.0.0" />
-    <PackageReference Include="System.Security.Principal.Windows" Version="5.0.0" />
-    <PackageReference Include="System.Text.Encodings.Web" Version="7.0.0" />
-    <PackageReference Include="System.Text.Json" Version="7.0.1" />
-    <PackageReference Include="System.Threading.Tasks.Extensions" Version="4.5.4" />
     <PackageReference Include="TagLibSharp" Version="2.3.0" />
-    <PackageReference Include="TechTalk.JiraRestClient.RestSharp105" Version="2.3.0.1" />
   </ItemGroup>
   <ItemGroup>
-    <Reference Include="CustomMarshalers" />
-    <Reference Include="Microsoft.VisualBasic" />
     <Reference Include="PresentationCore" />
-    <Reference Include="PresentationFramework" />
     <Reference Include="System.ComponentModel.Composition" />
     <Reference Include="System.Configuration" />
-    <Reference Include="System.Data.OracleClient" />
     <Reference Include="System.Management" />
     <Reference Include="System.Net" />
     <Reference Include="System.Printing" />
-    <Reference Include="System.Security" />
-    <Reference Include="System.ServiceModel" />
-    <Reference Include="System.ServiceProcess" />
-    <Reference Include="System.Threading.Tasks, Version=4.0.11.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
-    <Reference Include="System.Transactions" />
     <Reference Include="System.Web" />
     <Reference Include="System.Web.Extensions" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="WindowsBase" />
-    <Reference Include="WindowsFormsIntegration" />
     <Reference Include="NuGet.Squirrel">
       <HintPath>..\..\lib\dotnet\NuGet.Squirrel.dll</HintPath>
     </Reference>
@@ -292,176 +233,62 @@ copy /Y "$(SolutionDir)\lib\dotnet\libtidy.dll" $(OutDir)
   <ItemGroup>
     <None Include="Resources\current-service-urls.json" />
     <None Include="Resources\Logo27x32.png" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\x-office-document.png" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\WelcomeHeader.png" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\menuButton.png" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\booklet70x70.png" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\bookletA5Horizontal70x70.png" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\A5Landscapel70Wide.png" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\A5Portraitl70Tall.png" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\DeleteMessageBoxButtonImage.png" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\DeleteMessageBoxImage.png" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\RecycleBin.png" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\newBook.png" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\info16x16.png" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\open.png" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\edit.png" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\Error70x70.png" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\settings.png" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\spinner.gif" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\pagePlaceHolder.png" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\construction.png" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\Favicon16x16.png" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\collection16x16.png" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\collection32x32.png" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\settings16x16.png" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\settings32x32.png" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\settings24x24.png" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\feedback24x24.png" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\OpenCreateCollection24x24.png" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\help24x24.png" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\publish32x32.png" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\helpTab32x32.png" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\Usb.png" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\print.png" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\coverOnly.png" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\insideBookletPages.png" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\simplePages.png" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\deletePage16x16.png" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\deletePage24x24.png" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\Cut16x16.png" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\Copy16x16.png" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\Paste16x16.png" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\Undo16x16.png" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\paste24x24.png" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\paste32x32.png" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\undo32x32.png" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\newCollection32x32.png" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\newBook1.png" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\LogoForLibraryChoosingDialog.png" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\BloomPack64x64.png" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\Error70x701.png" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\copyDisable16x16.png" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\pasteDisabled32x32.png" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\copyDisable16x161.png" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\undoDisabled32x32.png" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\DeletePageDisabled24x24.png" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\DeletePageDisabled32x32.png" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\DeletePage32x32.png" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\cutDisable16x16.png" />
   </ItemGroup>
   <ItemGroup>
@@ -477,23 +304,11 @@ copy /Y "$(SolutionDir)\lib\dotnet\libtidy.dll" $(OutDir)
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\PackageFlat32x32.png" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\PackageFlat48x47.png" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\delete-wordLarge.png" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\pdf16x16.png" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\multilingualSettings.png" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\thumbnail.png" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\sad_large.png" />
     <None Include="Resources\PackageFlat.png" />
     <None Include="Resources\cloneFromInternet.png" />
@@ -521,35 +336,15 @@ copy /Y "$(SolutionDir)\lib\dotnet\libtidy.dll" $(OutDir)
     <None Include="Resources\greyTriangleButton.png" />
     <None Include="Resources\installerBackground.jpg" />
     <None Include="Resources\videos.png" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\EpubIcon.bmp" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\settingsbw16x16.png" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\OpenCreateCollection16x16.png" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\help16x16.png" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\Hamburger.PNG" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\AddPageIcon.PNG" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\AddPageIcon %282%29.PNG" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\AddPageButton.PNG" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\AddPageButtonDisabled.PNG" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\epubPublishButton.png" />
   </ItemGroup>
   <ItemGroup>
