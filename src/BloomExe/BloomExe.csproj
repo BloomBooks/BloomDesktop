@@ -1,71 +1,94 @@
-<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="..\..\packages\SIL.Windows.Forms.Keyboarding.13.0.0-beta0050\build\SIL.Windows.Forms.Keyboarding.props" Condition="Exists('..\..\packages\SIL.Windows.Forms.Keyboarding.13.0.0-beta0050\build\SIL.Windows.Forms.Keyboarding.props')" />
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <ProjectGuid>{304D5612-167C-4725-AF27-B9F2BB788B57}</ProjectGuid>
-    <TargetFrameworkVersion Condition="'$(OS)'=='Windows_NT'">v4.7.2</TargetFrameworkVersion>
-    <TargetFrameworkVersion Condition="'$(OS)'!='Windows_NT'">v4.7.1</TargetFrameworkVersion>
-    <TargetFrameworkProfile>
-    </TargetFrameworkProfile>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\..\</SolutionDir>
-    <RestorePackages>true</RestorePackages>
-    <PackagesConfig Condition="'$(OS)'=='Windows_NT'">$(MSBuildProjectDirectory)\packages.config</PackagesConfig>
-    <PackagesConfig Condition="'$(OS)'!='Windows_NT'">$(MSBuildProjectDirectory)/Linux/packages.config</PackagesConfig>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <OutputPath>..\..\output\$(Configuration)\</OutputPath>
     <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
-    <ProductVersion>8.0.30703</ProductVersion>
-    <SchemaVersion>2.0</SchemaVersion>
-    <NuGetPackageImportStamp>
-    </NuGetPackageImportStamp>
+    <AssemblyTitle>Bloom</AssemblyTitle>
+    <Company>SIL International</Company>
+    <Product>Bloom</Product>
+    <Copyright>© SIL International 2012-2020</Copyright>
+    <Version>5.6.0.0</Version>
+    <BuildDependsOn>$(BuildDependsOn);AfterBuildMigrated</BuildDependsOn>
+    <TargetFramework>net472</TargetFramework>
+    <PostBuildEvent>
+copy /Y "$(SolutionDir)\lib\msvcr120.dll" $(OutDir)
+copy /Y "$(SolutionDir)\lib\ffmpeg.exe" $(OutDir)
+xcopy "$(SolutionDir)lib\RedistributableDlls" $(OutDir) /S /R /Y
+xcopy "$(SolutionDir)lib\gm" "$(OutDir)gm\" /S /R /Y
+copy /Y "$(SolutionDir)\lib\dotnet\libtidy.dll" $(OutDir)
+    </PostBuildEvent>
+    <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <LangVersion>7.3</LangVersion>
+  </PropertyGroup>
+  <ItemGroup>
+    <AssemblyAttribute Include="System.Runtime.InteropServices.ComVisible">
+      <_Parameter1>false</_Parameter1>
+      <_Parameter1_IsLiteral>true</_Parameter1_IsLiteral>
+    </AssemblyAttribute>
+    <AssemblyAttribute Include="System.Runtime.InteropServices.Guid">
+      <_Parameter1>0afa7c29-4107-47a8-88cc-c15cb769f35e</_Parameter1>
+    </AssemblyAttribute>
+    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
+      <_Parameter1>BloomTests</_Parameter1>
+    </AssemblyAttribute>
+    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
+      <_Parameter1>BloomHarvester</_Parameter1>
+    </AssemblyAttribute>
+    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
+      <_Parameter1>BloomHarvesterTests</_Parameter1>
+    </AssemblyAttribute>
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadata">
+      <_Parameter1>SquirrelAwareVersion</_Parameter1>
+      <_Parameter2>1</_Parameter2>
+    </AssemblyAttribute>
+    <!--
+      Without explicitly disabling DPI awareness here, the subsequent loading of
+      some System.Windows.Media components will cause the application to change
+      from DPI "Unaware" to DPI "System Aware". The one place we know this happens
+      currently is when loading font metadata. This causes problems when one monitor
+      is set to different font scaling than another. Depending on how far the UI has
+      gotten in setting up when the awareness status changes, it will either result
+      in inconsistent font/icon sizing or the whole window will shrink down.
+      See BL-10981.
+  	-->
+    <AssemblyAttribute Include="System.Windows.Media.DisableDpiAwareness" />
+  </ItemGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|Any CPU'">
+    <DebugType>full</DebugType>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|Any CPU'">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>false</Optimize>
+    <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
-    <DebugSymbols>true</DebugSymbols>
-    <OutputPath>..\..\output\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
     <DebugType>full</DebugType>
-    <PlatformTarget>x86</PlatformTarget>
     <CodeAnalysisLogFile>..\..\output\Debug\Bloom.exe.CodeAnalysisLog.xml</CodeAnalysisLogFile>
     <CodeAnalysisUseTypeNameInSuppression>true</CodeAnalysisUseTypeNameInSuppression>
     <CodeAnalysisModuleSuppressionsFile>GlobalSuppressions.cs</CodeAnalysisModuleSuppressionsFile>
-    <ErrorReport>prompt</ErrorReport>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
     <CodeAnalysisRuleSetDirectories>;C:\Program Files (x86)\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\\Rule Sets</CodeAnalysisRuleSetDirectories>
     <CodeAnalysisIgnoreBuiltInRuleSets>false</CodeAnalysisIgnoreBuiltInRuleSets>
     <CodeAnalysisRuleDirectories>;C:\Program Files (x86)\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\FxCop\\Rules</CodeAnalysisRuleDirectories>
     <CodeAnalysisIgnoreBuiltInRules>false</CodeAnalysisIgnoreBuiltInRules>
     <CodeAnalysisFailOnMissingRules>false</CodeAnalysisFailOnMissingRules>
-    <WarningLevel>4</WarningLevel>
-    <Optimize>false</Optimize>
-    <Prefer32Bit>false</Prefer32Bit>
-    <LangVersion>7.3</LangVersion>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(OS)'!='Windows_NT' AND '$(Configuration)|$(Platform)' == 'Debug|x86'">
-    <DefineConstants>__MonoCS__;DEBUG;TRACE</DefineConstants>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
-    <OutputPath>..\..\output\Release\</OutputPath>
     <DebugType>pdbonly</DebugType>
-    <PlatformTarget>x86</PlatformTarget>
     <CodeAnalysisLogFile>..\..\output\Release\Bloom.exe.CodeAnalysisLog.xml</CodeAnalysisLogFile>
     <CodeAnalysisUseTypeNameInSuppression>true</CodeAnalysisUseTypeNameInSuppression>
     <CodeAnalysisModuleSuppressionsFile>GlobalSuppressions.cs</CodeAnalysisModuleSuppressionsFile>
-    <ErrorReport>prompt</ErrorReport>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
     <CodeAnalysisRuleSetDirectories>;C:\Program Files (x86)\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\\Rule Sets</CodeAnalysisRuleSetDirectories>
     <CodeAnalysisIgnoreBuiltInRuleSets>true</CodeAnalysisIgnoreBuiltInRuleSets>
     <CodeAnalysisRuleDirectories>;C:\Program Files (x86)\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\FxCop\\Rules</CodeAnalysisRuleDirectories>
     <CodeAnalysisIgnoreBuiltInRules>false</CodeAnalysisIgnoreBuiltInRules>
     <CodeAnalysisFailOnMissingRules>false</CodeAnalysisFailOnMissingRules>
-    <WarningLevel>4</WarningLevel>
     <Optimize>false</Optimize>
     <DebugSymbols>true</DebugSymbols>
-    <DefineConstants>TRACE</DefineConstants>
-    <Prefer32Bit>false</Prefer32Bit>
-    <LangVersion>7.3</LangVersion>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(OS)'!='Windows_NT' AND '$(Configuration)|$(Platform)' == 'Release|x86'">
-    <DefineConstants>__MonoCS__;TRACE</DefineConstants>
   </PropertyGroup>
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
@@ -79,7 +102,7 @@
   <PropertyGroup>
     <AssemblyName>Bloom</AssemblyName>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(OS)'=='Windows_NT'">
+  <PropertyGroup>
     <!-- Uses a LargeAddressAware nuget package to specify that this executable is large address aware.
     This means that we promise to the OS that we/our dependencies handle pointers in the upper address space (from 2GB to 4GB range) correctly (hopefully!).
     In exchange, the OS allows the program to use up to 4 GB of virtual address space instead of 2 GB of virtual address space.
@@ -92,137 +115,91 @@
   <PropertyGroup>
     <StartupObject />
   </PropertyGroup>
+  <PropertyGroup>
+    <PostBuildEvent>
+copy /Y "$(SolutionDir)\lib\msvcr120.dll" $(OutDir)
+copy /Y "$(SolutionDir)\lib\ffmpeg.exe" $(OutDir)
+xcopy "$(SolutionDir)lib\RedistributableDlls" $(OutDir) /S /R /Y
+xcopy "$(SolutionDir)lib\gm" "$(OutDir)gm\" /S /R /Y
+copy /Y "$(SolutionDir)\lib\dotnet\libtidy.dll" $(OutDir)
+    </PostBuildEvent>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <Prefer32Bit>True</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <Prefer32Bit>True</Prefer32Bit>
+  </PropertyGroup>
+  <Target Name="AfterBuildMigrated">
+    <Copy SourceFiles="@(SourceFiles)" DestinationFolder="$(OutDir)" />
+    <Copy SourceFiles="@(LameFiles)" DestinationFolder="../../DistFiles" />
+    <Copy SourceFiles="@(BasicBookCssFiles)" DestinationFolder="../../DistFiles/factoryCollections/Templates/Leveled Reader" />
+    <Copy SourceFiles="@(BasicBookCssFiles)" DestinationFolder="../../DistFiles/factoryCollections/Templates/Decodable Reader" />
+    <Copy SourceFiles="@(RemoteDebugFiles)" DestinationFolder="$(OutDir)/remoteDebugging" Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'" />
+    <Copy SourceFiles="@(IccFiles)" DestinationFolder="$(OutDir)/ColorProfiles" />
+    <Message Text="AfterBuild target completed." Importance="high" />
+  </Target>
+  <Target Name="ReallyAfterBuild" DependsOnTargets="AfterBuild;CopyFilesToOutputDirectory">
+    <Copy SourceFiles="@(CopyForSILMedia)" DestinationFolder="$(OutDir)" />
+    <Delete Files="@(DeleteForSILMedia)" TreatErrorsAsWarnings="true" />
+    <RemoveDir Directories="@(RemoveForSILMedia)" />
+  </Target>
   <ItemGroup>
-    <Reference Include="Analytics.NET, Version=2.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Analytics.2.0.2\lib\Analytics.NET.dll</HintPath>
-    </Reference>
-    <Reference Include="AtkSharp, Version=1.0.0.0, Culture=neutral, PublicKeyToken=313398f2149d753f, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\AtkSharp-signed.3.22.24.37\lib\netstandard2.0\AtkSharp.dll</HintPath>
-    </Reference>
-    <Reference Include="Autofac, Version=6.0.0.0, Culture=neutral, PublicKeyToken=17863af14b0044da, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Autofac.6.0.0\lib\netstandard2.0\Autofac.dll</HintPath>
-    </Reference>
-    <Reference Include="AWSSDK.Core, Version=3.3.0.0, Culture=neutral, PublicKeyToken=885c28607f98e604, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\AWSSDK.Core.3.5.1.32\lib\net45\AWSSDK.Core.dll</HintPath>
-    </Reference>
-    <Reference Include="AWSSDK.S3, Version=3.3.0.0, Culture=neutral, PublicKeyToken=885c28607f98e604, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\AWSSDK.S3.3.5.3.10\lib\net45\AWSSDK.S3.dll</HintPath>
-    </Reference>
-    <Reference Include="CairoSharp, Version=3.22.24.37, Culture=neutral, PublicKeyToken=313398f2149d753f, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\CairoSharp-signed.3.22.24.37\lib\netstandard2.0\CairoSharp.dll</HintPath>
-    </Reference>
-    <Reference Include="CommandLine, Version=2.8.0.0, Culture=neutral, PublicKeyToken=5a870481e358d379, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\CommandLineParser.2.8.0\lib\net461\CommandLine.dll</HintPath>
-    </Reference>
-    <Reference Include="CustomMarshalers" />
-    <Reference Include="DesktopAnalytics, Version=1.2.4.11, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\DesktopAnalytics.1.2.4.11\lib\net40\DesktopAnalytics.dll</HintPath>
-    </Reference>
+    <PackageReference Include="Autofac" Version="6.0.0" />
+    <PackageReference Include="AWSSDK.Core" Version="3.5.1.32" />
+    <PackageReference Include="AWSSDK.S3" Version="3.5.3.10" />
+    <PackageReference Include="CairoSharp-signed" Version="3.22.24.37" />
+    <PackageReference Include="CommandLineParser" Version="2.8.0" />
+    <PackageReference Include="DesktopAnalytics" Version="1.2.4.11" />
     <!-- Don't let Nuget Package Manager automatically update (downgrade) this to DialogAdapters.Gtk2; it will break Bloom -->
-    <Reference Include="DialogAdapters, Version=0.1.11.0, Culture=neutral, PublicKeyToken=7dc842182b0626dc, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\DialogAdapters.0.1.11\lib\net461\DialogAdapters.dll</HintPath>
-    </Reference>
-    <Reference Include="Enchant.Net, Version=1.4.0.0, Culture=neutral, PublicKeyToken=ae135aeb3d479ab9, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Enchant.Net.1.4.2\lib\net461\Enchant.Net.dll</HintPath>
-    </Reference>
-    <Reference Include="EPPlus, Version=6.2.4.0, Culture=neutral, PublicKeyToken=ea159fdaa78159a1, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\EPPlus.6.2.4\lib\net462\EPPlus.dll</HintPath>
-    </Reference>
-    <Reference Include="EPPlus.Interfaces, Version=6.1.1.0, Culture=neutral, PublicKeyToken=a694d7f3b0907a61, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\EPPlus.Interfaces.6.1.1\lib\net462\EPPlus.Interfaces.dll</HintPath>
-    </Reference>
-    <Reference Include="EPPlus.System.Drawing, Version=6.1.1.0, Culture=neutral, PublicKeyToken=2308d35469c9bac0, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\EPPlus.System.Drawing.6.1.1\lib\net462\EPPlus.System.Drawing.dll</HintPath>
-    </Reference>
-    <Reference Include="FFMpegCore, Version=5.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\FFMpegCore.5.0.0\lib\netstandard2.0\FFMpegCore.dll</HintPath>
-    </Reference>
-    <Reference Include="Fleck, Version=1.1.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Fleck.1.1.0\lib\net45\Fleck.dll</HintPath>
-    </Reference>
-    <Reference Include="GdkSharp, Version=3.22.24.37, Culture=neutral, PublicKeyToken=313398f2149d753f, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\GdkSharp-signed.3.22.24.37\lib\netstandard2.0\GdkSharp.dll</HintPath>
-    </Reference>
-    <Reference Include="GioSharp, Version=3.22.24.37, Culture=neutral, PublicKeyToken=313398f2149d753f, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\GioSharp-signed.3.22.24.37\lib\netstandard2.0\GioSharp.dll</HintPath>
-    </Reference>
-    <Reference Include="GLibSharp, Version=1.0.0.0, Culture=neutral, PublicKeyToken=313398f2149d753f, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\GLibSharp-signed.3.22.24.37\lib\netstandard2.0\GLibSharp.dll</HintPath>
-    </Reference>
-    <Reference Include="Glob, Version=1.1.8.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Glob.1.1.8\lib\net46\Glob.dll</HintPath>
-    </Reference>
-    <Reference Include="GtkSharp, Version=3.22.24.37, Culture=neutral, PublicKeyToken=313398f2149d753f, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\GtkSharp-signed.3.22.24.37\lib\netstandard2.0\GtkSharp.dll</HintPath>
-    </Reference>
-    <Reference Include="ibusdotnet, Version=2.0.0.0, Culture=neutral, PublicKeyToken=c9ab93f7b23223fb, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\ibusdotnet.2.0.3\lib\net461\ibusdotnet.dll</HintPath>
-    </Reference>
-    <Reference Include="ICSharpCode.SharpZipLib, Version=1.3.3.11, Culture=neutral, PublicKeyToken=1b03e6acf1164f73, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\SharpZipLib.1.3.3\lib\net45\ICSharpCode.SharpZipLib.dll</HintPath>
-    </Reference>
-    <Reference Include="icu.net, Version=2.8.0.0, Culture=neutral, PublicKeyToken=416fdd914afa6b66, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\icu.net.2.8.1\lib\net451\icu.net.dll</HintPath>
-    </Reference>
-    <Reference Include="Instances, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Instances.3.0.0\lib\netstandard2.0\Instances.dll</HintPath>
-    </Reference>
-    <Reference Include="L10NSharp, Version=6.0.0.0, Culture=neutral, PublicKeyToken=fd0b3e309a5b7c28, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\L10NSharp.6.0.0\lib\net461\L10NSharp.dll</HintPath>
-    </Reference>
-    <Reference Include="Markdig.Signed, Version=0.30.0.0, Culture=neutral, PublicKeyToken=870da25a133885f8, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Markdig.Signed.0.30.4\lib\net452\Markdig.Signed.dll</HintPath>
-    </Reference>
-    <Reference Include="MarkdownDeep, Version=1.5.4615.26275, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\packages\MarkdownDeep.NET.1.5\lib\.NetFramework 3.5\MarkdownDeep.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.Bcl.AsyncInterfaces, Version=7.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Microsoft.Bcl.AsyncInterfaces.7.0.0\lib\net462\Microsoft.Bcl.AsyncInterfaces.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="Microsoft.DotNet.PlatformAbstractions, Version=3.1.6.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Microsoft.DotNet.PlatformAbstractions.3.1.6\lib\net45\Microsoft.DotNet.PlatformAbstractions.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.Extensions.DependencyModel, Version=3.1.6.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Microsoft.Extensions.DependencyModel.3.1.6\lib\net451\Microsoft.Extensions.DependencyModel.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.IO.RecyclableMemoryStream, Version=1.4.1.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Microsoft.IO.RecyclableMemoryStream.1.4.1\lib\net46\Microsoft.IO.RecyclableMemoryStream.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.VisualBasic" />
-    <Reference Include="Microsoft.Web.WebView2.Core, Version=1.0.1518.46, Culture=neutral, PublicKeyToken=2a8ab48044d2601e, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Microsoft.Web.WebView2.1.0.1518.46\lib\net45\Microsoft.Web.WebView2.Core.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.Web.WebView2.WinForms, Version=1.0.1518.46, Culture=neutral, PublicKeyToken=2a8ab48044d2601e, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Microsoft.Web.WebView2.1.0.1518.46\lib\net45\Microsoft.Web.WebView2.WinForms.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.Web.WebView2.Wpf, Version=1.0.1518.46, Culture=neutral, PublicKeyToken=2a8ab48044d2601e, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Microsoft.Web.WebView2.1.0.1518.46\lib\net45\Microsoft.Web.WebView2.Wpf.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.WindowsAPICodePack, Version=1.1.4.0, Culture=neutral, PublicKeyToken=8985beaab7ea3f04, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Microsoft-WindowsAPICodePack-Core.1.1.4\lib\net452\Microsoft.WindowsAPICodePack.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.WindowsAPICodePack.Shell, Version=1.1.4.0, Culture=neutral, PublicKeyToken=8985beaab7ea3f04, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Microsoft-WindowsAPICodePack-Shell.1.1.4\lib\net452\Microsoft.WindowsAPICodePack.Shell.dll</HintPath>
-    </Reference>
-    <Reference Include="Mono.Unix, Version=7.1.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Mono.Unix.7.1.0-final.1.21458.1\lib\net45\Mono.Unix.dll</HintPath>
-    </Reference>
-    <Reference Include="NAudio, Version=1.10.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\NAudio.1.10.0\lib\net35\NAudio.dll</HintPath>
-    </Reference>
-    <Reference Include="NDesk.DBus, Version=1.0.0.0, Culture=neutral, PublicKeyToken=f6716e4f9b2ed099, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\NDesk.DBus.0.15.0\lib\NDesk.DBus.dll</HintPath>
-    </Reference>
-    <Reference Include="Newtonsoft.Json, Version=13.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Newtonsoft.Json.13.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
-    </Reference>
-    <Reference Include="NuGet.Squirrel" Condition="'$(OS)'=='Windows_NT'">
+    <PackageReference Include="DialogAdapters" Version="0.1.11" />
+    <PackageReference Include="EPPlus" Version="6.2.4" />
+    <PackageReference Include="Fleck" Version="1.1.0" />
+    <PackageReference Include="Glob" Version="1.1.8" />
+    <PackageReference Include="L10NSharp" Version="6.0.0" />
+    <PackageReference Include="LargeAddressAware" Version="1.0.5" />
+    <PackageReference Include="Markdig.Signed" Version="0.30.4" />
+    <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
+    <PackageReference Include="Microsoft.Extensions.DependencyModel" Version="3.1.6" />
+    <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.1518.46" />
+    <PackageReference Include="Microsoft-WindowsAPICodePack-Shell" Version="1.1.4" />
+    <PackageReference Include="Mono.Unix" Version="7.1.0-final.1.21458.1" />
+    <PackageReference Include="NAudio" Version="1.10.0" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.2" />
+    <PackageReference Include="RestSharp" Version="106.12.0" />
+    <PackageReference Include="Sentry" Version="3.9.4" />
+    <PackageReference Include="SharpZipLib" Version="1.3.3" />
+    <PackageReference Include="SIL.Core" Version="13.0.0-beta0050" />
+    <PackageReference Include="SIL.Core.Desktop" Version="13.0.0-beta0050" />
+    <PackageReference Include="SIL.Media" Version="13.0.0-beta0050" />
+    <PackageReference Include="SIL.Windows.Forms" Version="13.0.0-beta0050" />
+    <PackageReference Include="SIL.Windows.Forms.Keyboarding" Version="13.0.0-beta0050" />
+    <PackageReference Include="SIL.Windows.Forms.WritingSystems" Version="13.0.0-beta0050" />
+    <PackageReference Include="SIL.WritingSystems" Version="13.0.0-beta0050" />
+    <PackageReference Include="sqlite-net-pcl" Version="1.7.335" />
+    <PackageReference Include="SQLitePCLRaw.bundle_green" Version="2.0.3" />
+    <PackageReference Include="SQLitePCLRaw.core" Version="2.0.3" />
+    <PackageReference Include="SQLitePCLRaw.lib.e_sqlite3" Version="2.0.3" />
+    <PackageReference Include="SQLitePCLRaw.provider.dynamic_cdecl" Version="2.0.3" />
+    <PackageReference Include="System.IO.FileSystem" Version="4.3.0" />
+    <PackageReference Include="System.Net.Http" Version="4.3.4" />
+    <PackageReference Include="System.Runtime" Version="4.3.0" />
+    <PackageReference Include="TagLibSharp" Version="2.3.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="PresentationCore" />
+    <Reference Include="System.ComponentModel.Composition" />
+    <Reference Include="System.Configuration" />
+    <Reference Include="System.Management" />
+    <Reference Include="System.Net" />
+    <Reference Include="System.Printing" />
+    <Reference Include="System.Web" />
+    <Reference Include="System.Web.Extensions" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="WindowsBase" />
+    <Reference Include="NuGet.Squirrel">
       <HintPath>..\..\lib\dotnet\NuGet.Squirrel.dll</HintPath>
-    </Reference>
-    <Reference Include="PangoSharp, Version=3.22.24.37, Culture=neutral, PublicKeyToken=313398f2149d753f, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\PangoSharp-signed.3.22.24.37\lib\netstandard2.0\PangoSharp.dll</HintPath>
     </Reference>
     <Reference Include="PdfDroplet">
       <HintPath>..\..\lib\dotnet\PdfDroplet.exe</HintPath>
@@ -233,1076 +210,89 @@
     <Reference Include="PodcastUtilities.PortableDevices">
       <HintPath>..\..\lib\dotnet\PodcastUtilities.PortableDevices.dll</HintPath>
     </Reference>
-    <Reference Include="PresentationCore" />
-    <Reference Include="PresentationFramework" />
-    <Reference Include="RestSharp, Version=106.12.0.0, Culture=neutral, PublicKeyToken=598062e77f915f75, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\RestSharp.106.12.0\lib\net452\RestSharp.dll</HintPath>
-    </Reference>
-    <Reference Include="Sentry, Version=3.9.4.0, Culture=neutral, PublicKeyToken=fba2ec45388e2af0, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Sentry.3.9.4\lib\net461\Sentry.dll</HintPath>
-    </Reference>
-    <Reference Include="SharpFont, Version=3.1.0, Culture=neutral, processorArchitecture=MSIL" Condition="'$(OS)'!='Windows_NT'">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>../../packages/SharpFont.3.1.0/lib/net20/SharpFont.dll</HintPath>
-    </Reference>
-    <Reference Include="SIL.Core, Version=13.0.0.0, Culture=neutral, PublicKeyToken=cab3c8c5232dfcf2, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\SIL.Core.13.0.0-beta0050\lib\net461\SIL.Core.dll</HintPath>
-    </Reference>
-    <Reference Include="SIL.Core.Desktop, Version=13.0.0.0, Culture=neutral, PublicKeyToken=cab3c8c5232dfcf2, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\SIL.Core.Desktop.13.0.0-beta0050\lib\net461\SIL.Core.Desktop.dll</HintPath>
-    </Reference>
-    <Reference Include="SIL.Media, Version=13.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\SIL.Media.13.0.0-beta0050\lib\net461\SIL.Media.dll</HintPath>
-    </Reference>
-    <Reference Include="SIL.Windows.Forms, Version=13.0.0.0, Culture=neutral, PublicKeyToken=cab3c8c5232dfcf2, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\SIL.Windows.Forms.13.0.0-beta0050\lib\net461\SIL.Windows.Forms.dll</HintPath>
-    </Reference>
-    <Reference Include="SIL.Windows.Forms.Keyboarding, Version=13.0.0.0, Culture=neutral, PublicKeyToken=cab3c8c5232dfcf2, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\SIL.Windows.Forms.Keyboarding.13.0.0-beta0050\lib\net461\SIL.Windows.Forms.Keyboarding.dll</HintPath>
-    </Reference>
-    <Reference Include="SIL.Windows.Forms.WritingSystems, Version=13.0.0.0, Culture=neutral, PublicKeyToken=cab3c8c5232dfcf2, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\SIL.Windows.Forms.WritingSystems.13.0.0-beta0050\lib\net461\SIL.Windows.Forms.WritingSystems.dll</HintPath>
-    </Reference>
-    <Reference Include="SIL.WritingSystems, Version=13.0.0.0, Culture=neutral, PublicKeyToken=cab3c8c5232dfcf2, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\SIL.WritingSystems.13.0.0-beta0050\lib\net461\SIL.WritingSystems.dll</HintPath>
-    </Reference>
-    <Reference Include="SourceMapDotNet, Version=1.0.5478.26629, Culture=neutral, PublicKeyToken=d357635542166cea, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\SourceMapDotNet.1.0.5478.26629\lib\SourceMapDotNet.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Spart, Version=1.0.0.0, Culture=neutral, PublicKeyToken=14d24e064e474331, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Spart.1.0.0\lib\net461\Spart.dll</HintPath>
-    </Reference>
     <Reference Include="Splat">
       <HintPath>..\..\lib\dotnet\Splat.dll</HintPath>
     </Reference>
-    <Reference Include="SQLite-net, Version=1.7.335.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\sqlite-net-pcl.1.7.335\lib\netstandard2.0\SQLite-net.dll</HintPath>
-    </Reference>
-    <Reference Include="SQLitePCLRaw.batteries_v2, Version=2.0.3.851, Culture=neutral, PublicKeyToken=8226ea5df37bcae9, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\SQLitePCLRaw.bundle_green.2.0.3\lib\net461\SQLitePCLRaw.batteries_v2.dll</HintPath>
-    </Reference>
-    <Reference Include="SQLitePCLRaw.core, Version=2.0.3.851, Culture=neutral, PublicKeyToken=1488e028ca7ab535, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\SQLitePCLRaw.core.2.0.3\lib\netstandard2.0\SQLitePCLRaw.core.dll</HintPath>
-    </Reference>
-    <Reference Include="SQLitePCLRaw.nativelibrary, Version=2.0.3.851, Culture=neutral, PublicKeyToken=502ed628492ab262, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\SQLitePCLRaw.bundle_green.2.0.3\lib\net461\SQLitePCLRaw.nativelibrary.dll</HintPath>
-    </Reference>
-    <Reference Include="SQLitePCLRaw.provider.dynamic_cdecl, Version=2.0.3.851, Culture=neutral, PublicKeyToken=b68184102cba0b3b, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\SQLitePCLRaw.provider.dynamic_cdecl.2.0.3\lib\netstandard2.0\SQLitePCLRaw.provider.dynamic_cdecl.dll</HintPath>
-    </Reference>
-    <Reference Include="Squirrel" Condition="'$(OS)'=='Windows_NT'">
+    <Reference Include="Squirrel">
       <HintPath>..\..\lib\dotnet\Squirrel.dll</HintPath>
-    </Reference>
-    <Reference Include="System">
-      <HintPath>..\..\..\..\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.7.2\System.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Collections.Immutable, Version=5.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\System.Collections.Immutable.5.0.0\lib\net461\System.Collections.Immutable.dll</HintPath>
-    </Reference>
-    <Reference Include="System.ComponentModel.Composition" />
-    <Reference Include="System.Configuration" />
-    <Reference Include="System.Configuration.ConfigurationManager, Version=6.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\System.Configuration.ConfigurationManager.6.0.0\lib\net461\System.Configuration.ConfigurationManager.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Core" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Data.OracleClient" />
-    <Reference Include="System.Diagnostics.DiagnosticSource, Version=4.0.5.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\System.Diagnostics.DiagnosticSource.4.7.1\lib\net46\System.Diagnostics.DiagnosticSource.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Drawing.Common, Version=6.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\System.Drawing.Common.6.0.0\lib\net461\System.Drawing.Common.dll</HintPath>
-    </Reference>
-    <Reference Include="System.IO, Version=4.1.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\System.IO.4.3.0\lib\net462\System.IO.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System.IO.Compression.FileSystem" />
-    <Reference Include="System.IO.FileSystem.AccessControl, Version=5.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\System.IO.FileSystem.AccessControl.5.0.0\lib\net461\System.IO.FileSystem.AccessControl.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Management" />
-    <Reference Include="System.Memory, Version=4.0.1.2, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\System.Memory.4.5.5\lib\net461\System.Memory.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Net" />
-    <Reference Include="System.Net.Http, Version=4.1.1.3, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\System.Net.Http.4.3.4\lib\net46\System.Net.Http.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System.Printing" Condition="'$(OS)'=='Windows_NT'" />
-    <Reference Include="System.Reflection.Metadata, Version=5.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\System.Reflection.Metadata.5.0.0\lib\net461\System.Reflection.Metadata.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Resources.Extensions, Version=6.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\packages\System.Resources.Extensions.6.0.0\lib\net461\System.Resources.Extensions.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Runtime, Version=4.1.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\System.Runtime.4.3.0\lib\net462\System.Runtime.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System.Runtime.CompilerServices.Unsafe, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\System.Runtime.CompilerServices.Unsafe.6.0.0\lib\net461\System.Runtime.CompilerServices.Unsafe.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Runtime.Serialization" />
-    <Reference Include="System.Numerics.Vectors">
-      <HintPath>..\..\packages\System.Numerics.Vectors.4.5.0\lib\net46\System.Numerics.Vectors.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Security" />
-    <Reference Include="System.Security.AccessControl, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\System.Security.AccessControl.6.0.0\lib\net461\System.Security.AccessControl.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Security.Cryptography.Algorithms, Version=4.2.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\System.Security.Cryptography.Algorithms.4.3.0\lib\net463\System.Security.Cryptography.Algorithms.dll</HintPath>
-      <Private>True</Private>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System.Security.Cryptography.Encoding, Version=4.0.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\System.Security.Cryptography.Encoding.4.3.0\lib\net46\System.Security.Cryptography.Encoding.dll</HintPath>
-      <Private>True</Private>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System.Security.Cryptography.Primitives, Version=4.0.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\System.Security.Cryptography.Primitives.4.3.0\lib\net46\System.Security.Cryptography.Primitives.dll</HintPath>
-      <Private>True</Private>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System.Security.Cryptography.X509Certificates, Version=4.1.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\System.Security.Cryptography.X509Certificates.4.3.0\lib\net461\System.Security.Cryptography.X509Certificates.dll</HintPath>
-      <Private>True</Private>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System.Security.Permissions, Version=6.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\System.Security.Permissions.6.0.0\lib\net461\System.Security.Permissions.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Security.Principal.Windows, Version=5.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\System.Security.Principal.Windows.5.0.0\lib\net461\System.Security.Principal.Windows.dll</HintPath>
-    </Reference>
-    <Reference Include="System.ServiceModel" />
-    <Reference Include="System.ServiceProcess" />
-    <Reference Include="System.Text.Encodings.Web, Version=7.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\System.Text.Encodings.Web.7.0.0\lib\net462\System.Text.Encodings.Web.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Text.Json, Version=7.0.0.1, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\System.Text.Json.7.0.1\lib\net462\System.Text.Json.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Threading.Tasks, Version=4.0.11.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
-    <Reference Include="System.Transactions" />
-    <Reference Include="System.ValueTuple, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\System.ValueTuple.4.5.0\lib\net47\System.ValueTuple.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Web" />
-    <Reference Include="System.Web.Extensions" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Drawing" />
-    <Reference Include="System.Windows.Forms" />
-    <Reference Include="System.Xml" />
-    <Reference Include="TagLibSharp, Version=2.3.0.0, Culture=neutral, PublicKeyToken=db62eba44689b5b0, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\TagLibSharp.2.3.0\lib\net462\TagLibSharp.dll</HintPath>
-    </Reference>
-    <Reference Include="TechTalk.JiraRestClient, Version=2.3.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\TechTalk.JiraRestClient.RestSharp105.2.3.0.1\lib\net40-Client\TechTalk.JiraRestClient.dll</HintPath>
-      <Private>True</Private>
     </Reference>
     <Reference Include="TidyManaged">
       <HintPath>..\..\lib\dotnet\TidyManaged.dll</HintPath>
     </Reference>
-    <Reference Include="WindowsBase" />
-    <Reference Include="WindowsFormsIntegration" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Book\BookFileFilter.cs" />
-    <Compile Include="Book\PublishSettings.cs" />
-    <Compile Include="Book\SaveContext.cs" />
-    <Compile Include="Book\WidgetHelper.cs" />
-    <Compile Include="CLI\SendFontAnalyticsCommand.cs" />
-    <Compile Include="Collection\BloomPack\ReaderToolsBloomPackCollectionFileFilter.cs" />
-    <Compile Include="Collection\BookCollectionHolder.cs" />
-    <Compile Include="Collection\CollectionFileFilter.cs" />
-    <Compile Include="Collection\CollectionLock.cs" />
-    <Compile Include="ErrorReporter\BloomErrorReport.cs" />
-    <Compile Include="ErrorReporter\IBloomErrorReporter.cs" />
-    <Compile Include="ErrorReporter\AllowSendReport.cs" />
-    <Compile Include="ErrorReporter\NotifyUserOfProblemSettings.cs" />
-    <Compile Include="FontProcessing\FontServe.cs" />
-    <Compile Include="History\CollectionHistory.cs" />
-    <Compile Include="History\HistoryEvent.cs" />
-    <Compile Include="Publish\Epub\ReadiumManifest.cs" />
-    <Compile Include="ToPalaso\CommandLineRunnerExtra.cs" />
-    <Compile Include="ToPalaso\ProcessExtra.cs" />
-    <Compile Include="ToPalaso\RobustIO.cs" />
-    <Compile Include="Utils\AsyncUtil.cs" />
-    <Compile Include="Publish\PDF\PublishPdfApi.cs" />
-    <Compile Include="ToPalaso\RobustImageIO.cs" />
-    <Compile Include="Utils\DisposableList.cs" />
-    <Compile Include="Utils\OutputFilenames.cs" />
-    <Compile Include="WebView2Browser.cs" Condition="'$(OS)'=='Windows_NT'">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="WebView2Browser.Designer.cs" Condition="'$(OS)'=='Windows_NT'">
-      <DependentUpon>WebView2Browser.cs</DependentUpon>
-    </Compile>
-    <Compile Include="IBrowser.cs" />
-    <Compile Include="MiscUI\BloomMessageBox.cs" />
-    <Compile Include="Publish\Video\Codec.cs" />
-    <Compile Include="Publish\Video\PublishAudioVideoAPI.cs" />
-    <Compile Include="Publish\Video\RecordVideoWindow.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="Publish\Video\RecordVideoWindow.Designer.cs">
-      <DependentUpon>RecordVideoWindow.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Publish\Video\Resolution.cs" />
-    <Compile Include="Publish\Video\FormatDimensionsResponseEntry.cs" />
-    <Compile Include="Spreadsheet\Header.cs" />
-    <Compile Include="FontProcessing\FontFileFinder.cs" />
-    <Compile Include="FontProcessing\FontGroup.cs" />
-    <Compile Include="FontProcessing\FontMetadata.cs" />
-    <Compile Include="Utils\BloomArchiveFile.cs" />
-    <Compile Include="Utils\BloomTarArchive.cs" />
-    <Compile Include="BloomWebClient.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Include="Book\LicenseChecker.cs" />
-    <Compile Include="Spreadsheet\SpreadsheetExportCommand.cs" />
-    <Compile Include="Spreadsheet\SpreadsheetImportCommand.cs" />
-    <Compile Include="CollectionTab\CollectionTabView.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="CollectionTab\CollectionTabView.Designer.cs">
-      <DependentUpon>CollectionTabView.cs</DependentUpon>
-    </Compile>
-    <Compile Include="CommonMessages.cs" />
-    <Compile Include="ErrorReporter\CompositeErrorReporter.cs" />
-    <Compile Include="ErrorReporter\ErrorReportUtils.cs" />
-    <Compile Include="ErrorReporter\ProblemLevel.cs" />
-    <Compile Include="ExperimentalFeatures.cs" />
-    <Compile Include="MiscUI\BrowserProgressDialog.cs" />
-    <Compile Include="MiscUI\Enterprise.cs" />
-    <Compile Include="MiscUI\StartupScreenManager.cs" />
-    <Compile Include="Publish\BloomPub\BulkBloomPubPublishSettings.cs" />
-    <Compile Include="Publish\InclusionSetting.cs" />
-    <Compile Include="Publish\LangsToPublishSetting.cs" />
-    <Compile Include="Publish\BloomPub\BulkBloomPubCreator.cs" />
-    <Compile Include="Publish\LanguagePublishInfo.cs" />
-    <Compile Include="Spreadsheet\MarkedUpText.cs" />
-    <Compile Include="Spreadsheet\ContentRow.cs" />
-    <Compile Include="Spreadsheet\HeaderRow.cs" />
-    <Compile Include="Spreadsheet\InternalSpreadsheet.cs" />
-    <Compile Include="Spreadsheet\SpreadsheetCell.cs" />
-    <Compile Include="Spreadsheet\SpreadsheetExporter.cs" />
-    <Compile Include="Spreadsheet\SpreadsheetExportParams.cs" />
-    <Compile Include="Spreadsheet\SpreadsheetImporter.cs" />
-    <Compile Include="Spreadsheet\SpreadsheetImportParams.cs" />
-    <Compile Include="Spreadsheet\SpreadsheetIO.cs" />
-    <Compile Include="Spreadsheet\SpreadsheetRow.cs" />
-    <Compile Include="History\BookHistory.cs" />
-    <Compile Include="TeamCollection\BookRepoChangeEventArgs.cs" />
-    <Compile Include="TeamCollection\DeleteRepoBookFileEventArgs.cs" />
-    <Compile Include="TeamCollection\BookStatus.cs" />
-    <Compile Include="TeamCollection\DisconnectedTeamCollection.cs" />
-    <Compile Include="TeamCollection\FileSystemEventRecord.cs" />
-    <Compile Include="TeamCollection\FolderTeamCollection.cs" />
-    <Compile Include="TeamCollection\RepoChangeEventArgs.cs" />
-    <Compile Include="TeamCollection\TeamCollection.cs" />
-    <Compile Include="TeamCollection\NewBookEventArgs.cs" />
-    <Compile Include="TeamCollection\TeamCollectionApi.cs" />
-    <Compile Include="FatalExceptionHandler.cs" />
-    <Compile Include="MiscUI\BrowserDialog.cs" />
-    <Compile Include="CLI\CreateArtifactsCommand.cs" />
-    <Compile Include="Collection\WritingSystem.cs" />
-    <Compile Include="ErrorReporter\SentryErrorReporter.cs" />
-    <Compile Include="ErrorReporter\HtmlErrorReporter.cs" />
-    <Compile Include="MiscUI\ReactDialogFactory.cs" />
-    <Compile Include="Publish\BloomPub\BloomPubPublishSettings.cs" />
-    <Compile Include="Publish\BloomPub\BloomPubMaker.cs" />
-    <Compile Include="Book\BookSelectionChangedEventArgs.cs" />
-    <Compile Include="Book\QuestionGroup.cs" />
-    <Compile Include="Book\VersionRequirements.cs" />
-    <Compile Include="CLI\ChangeLayoutCommand.cs" />
-    <Compile Include="Collection\BrandingProject.cs" />
-    <Compile Include="MiscUI\DefenderFolderProtectionCheck.cs" />
-    <Compile Include="Edit\PageControlsApi.cs" />
-    <Compile Include="Publish\BloomPub\usb\AndroidDeviceUsbConnection.cs" />
-    <Compile Include="ApplicationContainer.cs" />
-    <Compile Include="BloomFileLocator.cs" />
-    <Compile Include="BookThumbNailer.cs" />
-    <Compile Include="Book\BookCompressor.cs" />
-    <Compile Include="Book\BookCopyrightAndLicense.cs" />
-    <Compile Include="Book\BookInfo.cs" />
-    <Compile Include="Book\BookServer.cs" />
-    <Compile Include="Book\CurrentEditableCollectionSelection.cs" />
-    <Compile Include="CLI\DownloadBookCommand.cs" />
-    <Compile Include="CLI\GetUsedFontsCommand.cs" />
-    <Compile Include="CLI\UploadCommand.cs" />
-    <Compile Include="CLI\HydrateBookCommand.cs" />
-    <Compile Include="Edit\ToolboxToolState.cs" />
-    <Compile Include="Edit\DecodableReaderToolSettings.cs" />
-    <Compile Include="Edit\ToolboxView.cs" />
-    <Compile Include="ElementProxy.cs" />
-    <Compile Include="Publish\BloomPub\file\FilePublisher.cs" />
-    <Compile Include="Publish\BloomPub\wifi\BloomReaderUDPListener.cs" />
-    <Compile Include="Publish\BloomPub\wifi\WiFiAdvertiser.cs" />
-    <Compile Include="Publish\BloomPub\wifi\WiFiPublisher.cs" />
-    <Compile Include="Publish\AudioProcessor.cs" />
-    <Compile Include="Publish\BloomLibrary\BloomLibraryPublishModel.cs" />
-    <Compile Include="Publish\AccessibilityChecker\AccessibilityCheckWindow.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="Publish\AccessibilityChecker\AccessibilityCheckWindow.Designer.cs">
-      <DependentUpon>AccessibilityCheckWindow.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Publish\BloomPub\usb\UsbPublisher.cs" />
-    <Compile Include="Publish\Epub\PublishEpubApi.cs" />
-    <Compile Include="TeamCollection\BookStatusChangeEventArgs.cs" />
-    <Compile Include="MiscUI\ReactDialog.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="MiscUI\ReactDialog.Designer.cs">
-      <DependentUpon>ReactDialog.cs</DependentUpon>
-    </Compile>
-    <Compile Include="TeamCollection\TeamCollectionManager.cs" />
-    <Compile Include="TeamCollection\TeamCollectionMessage.cs" />
-    <Compile Include="TeamCollection\TeamCollectionMessageLog.cs" />
-    <Compile Include="TeamCollection\TeamCollectionStatusButton.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Include="ToPalaso\BackgroundWorkerProgressAdapter.cs" />
-    <Compile Include="Utils\BloomUnauthorizedAccessException.cs" />
-    <Compile Include="Utils\ConsoleProgress.cs" />
-    <Compile Include="Utils\DropboxUtils.cs" />
-    <Compile Include="Utils\FatalException.cs" />
-    <Compile Include="Utils\LongPathAware.cs" />
-    <Compile Include="Utils\MemoryUtils.cs" />
-    <Compile Include="Utils\FileSystemWatcherExtensions.cs" />
-    <Compile Include="Utils\MiscUtils.cs" />
-    <Compile Include="Utils\NumUtils.cs" />
-    <Compile Include="Utils\PerformanceMeasurement.cs" />
-    <Compile Include="Utils\RobustZip.cs" />
-    <Compile Include="WebLibraryIntegration\BookDownload.cs" />
-    <Compile Include="WebLibraryIntegration\BulkUploader.cs" />
-    <Compile Include="WebLibraryIntegration\BloomLibraryAuthentication.cs" />
-    <Compile Include="WebLibraryIntegration\S3Extensions.cs" />
-    <Compile Include="Spreadsheet\SpreadsheetApi.cs" />
-    <Compile Include="web\controllers\BookCommandsApi.cs" />
-    <Compile Include="web\controllers\CollectionApi.cs" />
-    <Compile Include="web\controllers\CopyrightAndLicenseApi.cs" />
-    <Compile Include="web\controllers\ExternalApi.cs" />
-    <Compile Include="web\controllers\ProgressDialogApi.cs" />
-    <Compile Include="web\controllers\PublishApi.cs" />
-    <Compile Include="web\controllers\WorkspaceApi.cs" />
-    <Compile Include="web\controllers\LibraryPublishApi.cs" />
-    <Compile Include="web\ReactControl.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="web\ReactControl.Designer.cs">
-      <DependentUpon>ReactControl.cs</DependentUpon>
-    </Compile>
-    <Compile Include="web\WebProgressAdapter.cs" />
-    <Compile Include="Publish\HtmlPublishPanel.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="Publish\HtmlPublishPanel.Designer.cs">
-      <DependentUpon>HtmlPublishPanel.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Publish\PublishHelper.cs" />
-    <Compile Include="RobustIO.cs" />
-    <Compile Include="NonFatalProblem.cs" />
-    <Compile Include="MiscUI\LanguageFontDetails.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="MiscUI\LanguageFontDetails.Designer.cs">
-      <DependentUpon>LanguageFontDetails.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Properties\Resources.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>Resources.resx</DependentUpon>
-    </Compile>
-    <Compile Include="Publish\Epub\EpubMaker.cs" />
-    <Compile Include="Book\RuntimeInformationInjector.cs" />
-    <Compile Include="Book\HtmlDom.cs" />
-    <Compile Include="Book\BookData.cs" />
-    <Compile Include="Book\ErrorBook.cs" />
-    <Compile Include="Book\ImageUpdater.cs" />
-    <Compile Include="Book\Layout.cs" />
-    <Compile Include="Book\SizeAndOrientation.cs" />
-    <Compile Include="Book\BookStarter.cs" />
-    <Compile Include="Book\BookStorage.cs" />
-    <Compile Include="Book\DataSet.cs" />
-    <Compile Include="Book\StyleSheetLinkSorter.cs" />
-    <Compile Include="Book\TranslationGroupManager.cs" />
-    <Compile Include="ToPalaso\DirectoryUtils.cs" />
-    <Compile Include="ToPalaso\SafeInvoke.cs" />
-    <Compile Include="ToPalaso\XmlExtensions.cs" />
-    <Compile Include="UrlPathString.cs" />
-    <Compile Include="Book\UserPrefs.cs" />
-    <Compile Include="Book\XMatterHelper.cs" />
-    <Compile Include="Book\XMatterInfo.cs" />
-    <Compile Include="Book\XMatterPackFinder.cs" />
-    <Compile Include="CollectionTab\MakeReaderTemplateBloomPackDlg.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="CollectionTab\MakeReaderTemplateBloomPackDlg.Designer.cs">
-      <DependentUpon>MakeReaderTemplateBloomPackDlg.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Collection\NaturalSortComparer.cs" />
-    <Compile Include="Utils\BloomZipFile.cs" />
-    <Compile Include="Collection\ScriptSettingsDialog.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="Collection\ScriptSettingsDialog.Designer.cs">
-      <DependentUpon>ScriptSettingsDialog.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Edit\AudioRecording.cs" />
-    <Compile Include="Edit\BloomMetadataEditorDialog.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="Edit\ConfirmRemovePageDialog.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="Edit\ConfirmRemovePageDialog.designer.cs">
-      <DependentUpon>ConfirmRemovePageDialog.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Edit\JpegWarningDialog.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="Edit\JpegWarningDialog.Designer.cs">
-      <DependentUpon>JpegWarningDialog.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Edit\LameEncoder.cs" />
-    <Compile Include="Edit\WebThumbNailList.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="Edit\WebThumbNailList.Designer.cs">
-      <DependentUpon>WebThumbNailList.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Edit\TransparentPanel.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Include="Extensions.cs" />
-    <Compile Include="ImageProcessing\ImageUtils.cs" />
-    <Compile Include="InstallerSupport.cs" />
-    <Compile Include="BloomIntegrityChecker.cs" />
-    <Compile Include="MiscUI\ToastNotifier.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="MiscUI\ToastNotifier.designer.cs">
-      <DependentUpon>ToastNotifier.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Publish\BulkUploadProgressDlg.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="Publish\BulkUploadProgressDlg.Designer.cs">
-      <DependentUpon>BulkUploadProgressDlg.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Publish\PDF\MakePdfUsingExternalPdfMakerProgram.cs" />
-    <Compile Include="Publish\PDF\ProcessPdfWithGhostscript.cs" />
-    <Compile Include="Publish\PDF\SamplePrintNotification.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="Publish\PDF\SamplePrintNotification.Designer.cs">
-      <DependentUpon>SamplePrintNotification.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Publish\SHRP_TeachersGuideExtension.cs" />
-    <Compile Include="Publish\SHRP_PupilBookExtension.cs" />
-    <Compile Include="Registration\LicenseDialog.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="Registration\LicenseDialog.Designer.cs">
-      <DependentUpon>LicenseDialog.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Registration\RegistrationDialog.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="Registration\RegistrationDialog.Designer.cs">
-      <DependentUpon>RegistrationDialog.cs</DependentUpon>
-    </Compile>
-    <Compile Include="ToPalaso\BetterSplitContainer.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Include="ToPalaso\BetterSplitContainer.Designer.cs">
-      <DependentUpon>BetterSplitContainer.cs</DependentUpon>
-    </Compile>
-    <Compile Include="ToPalaso\MessageLabelProgress.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Include="ToPalaso\ProgressDialogForeground.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="ToPalaso\ProgressDialogForeground.Designer.cs">
-      <DependentUpon>ProgressDialogForeground.cs</DependentUpon>
-    </Compile>
-    <Compile Include="ToPalaso\ProgressDialogBackground.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="ToPalaso\ProgressDialogBackground.Designer.cs">
-      <DependentUpon>ProgressDialogBackground.cs</DependentUpon>
-    </Compile>
-    <Compile Include="HelpLauncher.cs" />
-    <Compile Include="Collection\BloomPack\BloomPackInstallDialog.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="Collection\BloomPack\BloomPackInstallDialog.Designer.cs">
-      <DependentUpon>BloomPackInstallDialog.cs</DependentUpon>
-    </Compile>
-    <Compile Include="ImageProcessing\RuntimeImageProcessor.cs" />
-    <Compile Include="CollectionTab\IBloomTabArea.cs" />
-    <Compile Include="Collection\ShortcutMaker.cs" />
-    <Compile Include="CollectionCreating\LanguageLocationControl.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="CollectionCreating\LanguageLocationControl.Designer.cs">
-      <DependentUpon>LanguageLocationControl.cs</DependentUpon>
-    </Compile>
-    <Compile Include="CollectionCreating\LanguageIdControl.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="CollectionCreating\LanguageIdControl.Designer.cs">
-      <DependentUpon>LanguageIdControl.cs</DependentUpon>
-    </Compile>
-    <Compile Include="CollectionCreating\CollectionNameControl.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="CollectionCreating\CollectionNameControl.Designer.cs">
-      <DependentUpon>CollectionNameControl.cs</DependentUpon>
-    </Compile>
-    <Compile Include="CollectionCreating\NewCollectionWizard.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="CollectionCreating\NewCollectionWizard.Designer.cs">
-      <DependentUpon>NewCollectionWizard.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Palette.cs" />
-    <Compile Include="ToPalaso\BetterToolTip.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Include="ToPalaso\BetterTooltipTransparentOverlay.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Include="ApplicationUpdateSupport.cs" />
-    <Compile Include="UpdateVersionTable.cs" />
-    <Compile Include="Utils\MemoryManagement.cs" />
-    <Compile Include="Utils\TextUtils.cs" />
-    <Compile Include="Utils\ZipUtils.cs" />
-    <Compile Include="WebLibraryIntegration\BookDownloadSupport.cs" />
-    <Compile Include="WebLibraryIntegration\IProgressDialog.cs" />
-    <Compile Include="web\controllers\AudioSegmentationApi.cs" />
-    <Compile Include="web\controllers\ProblemReportApi.cs" />
-    <Compile Include="web\controllers\CollectionSettingsApi.cs" />
-    <Compile Include="web\controllers\AccessibilityCheckApi.cs" />
-    <Compile Include="Book\AccessibilityCheckers.cs" />
-    <Compile Include="web\controllers\ApiRequest.cs" />
-    <Compile Include="WebLibraryIntegration\ProblemBookUploader.cs" />
-    <Compile Include="web\BloomWebSocketServer.cs" />
-    <Compile Include="web\CommandAvailabilityPublisher.cs" />
-    <Compile Include="web\controllers\AddOrChangePageApi.cs" />
-    <Compile Include="Publish\BloomPub\wifi\AndroidMessageArgs.cs" />
-    <Compile Include="Publish\BloomPub\PublishToBloomPubApi.cs" />
-    <Compile Include="web\controllers\BookMetadataApi.cs" />
-    <Compile Include="web\controllers\CommonApi.cs" />
-    <Compile Include="web\controllers\FileIOApi.cs" />
-    <Compile Include="web\controllers\ImageApi.cs" />
-    <Compile Include="web\controllers\EditingViewApi.cs" />
-    <Compile Include="web\controllers\OrthographyConverter.cs" />
-    <Compile Include="web\controllers\PageTemplatesApi.cs" />
-    <Compile Include="web\controllers\KeyboardingConfigApi.cs" />
-    <Compile Include="web\controllers\BookSettingsApi.cs" />
-    <Compile Include="web\controllers\BrandingSettings.cs" />
-    <Compile Include="web\BloomHttpListenerContext.cs" />
-    <Compile Include="web\controllers\SignLanguageApi.cs" />
-    <Compile Include="web\controllers\TalkingBookApi.cs" />
-    <Compile Include="web\IBloomWebSocketServer.cs" />
-    <Compile Include="web\controllers\MusicApi.cs" />
-    <Compile Include="web\controllers\ToolboxApi.cs" />
-    <Compile Include="web\PageListApi.cs" />
-    <Compile Include="web\InMemoryHtmlFile.cs" />
-    <Compile Include="web\I18NApi.cs" />
-    <Compile Include="web\ReadersApi.cs" />
-    <Compile Include="web\controllers\ExternalLinkController.cs" />
-    <Compile Include="web\controllers\AppApi.cs" />
-    <Compile Include="web\UrlLookup.cs" />
-    <Compile Include="web\WebSocketProgress.cs" />
-    <Compile Include="web\YouTrackIssueSubmission.cs" />
-    <Compile Include="WindowsMonitorScaling.cs" />
-    <Compile Include="Wizard\WinForms\WizardControl.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Include="Wizard\WinForms\WizardPage.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Include="Wizard\WizardAdapterControl.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Include="WebLibraryIntegration\BloomLinkArgs.cs" />
-    <Compile Include="WebLibraryIntegration\BloomParseClient.cs" />
-    <Compile Include="WebLibraryIntegration\BloomS3Client.cs" />
-    <Compile Include="WebLibraryIntegration\BookDownloadedEventArgs.cs" />
-    <Compile Include="WebLibraryIntegration\BookUpload.cs" />
-    <Compile Include="WebLibraryIntegration\AccessKeys.cs" />
-    <Compile Include="Edit\ConfigurationDialog.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="Edit\ConfigurationDialog.Designer.cs">
-      <DependentUpon>ConfigurationDialog.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Edit\Configurator.cs" />
-    <Compile Include="Command.cs" />
-    <Compile Include="web\DynamicJson.cs" />
-    <Compile Include="Edit\JSONUtils.cs" />
-    <Compile Include="Edit\PageEditingModel.cs" />
-    <Compile Include="Edit\PlaceHolderPage.cs" />
-    <Compile Include="Edit\SourceTextControl.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="Edit\SourceTextControl.Designer.cs">
-      <DependentUpon>SourceTextControl.cs</DependentUpon>
-    </Compile>
-    <Compile Include="LanguageSettings.cs" />
-    <Compile Include="Collection\CollectionSettingsDialog.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="Collection\CollectionSettingsDialog.Designer.cs">
-      <DependentUpon>CollectionSettingsDialog.cs</DependentUpon>
-    </Compile>
-    <Compile Include="ProjectContext.cs" />
-    <Compile Include="Collection\CollectionSettings.cs" />
-    <Compile Include="Publish\PDF\PdfMaker.cs" />
-    <Compile Include="Publish\PublishModel.cs" />
-    <Compile Include="ResolveShortcut.cs" />
-    <Compile Include="SplashScreen.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="SplashScreen.Designer.cs">
-      <DependentUpon>SplashScreen.cs</DependentUpon>
-    </Compile>
-    <Compile Include="CollectionChoosing\MostRecentPathsList.cs" />
-    <Compile Include="CollectionChoosing\OpenCreateCloneControl.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="CollectionChoosing\OpenCreateCloneControl.designer.cs">
-      <DependentUpon>OpenCreateCloneControl.cs</DependentUpon>
-    </Compile>
-    <Compile Include="CollectionChoosing\OpenAndCreateCollectionDialog.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="CollectionChoosing\OpenAndCreateCollectionDialog.Designer.cs">
-      <DependentUpon>OpenAndCreateCollectionDialog.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Edit\PageSelection.cs" />
-    <Compile Include="Edit\EditingModel.cs" />
-    <Compile Include="Edit\EditingView.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="Edit\EditingView.Designer.cs">
-      <DependentUpon>EditingView.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Event.cs" />
-    <Compile Include="Book\Book.cs" />
-    <Compile Include="HtmlThumbNailer.cs" />
-    <Compile Include="Collection\BookCollection.cs" />
-    <Compile Include="Book\BookSelection.cs" />
-    <Compile Include="CollectionTab\CollectionModel.cs" />
-    <Compile Include="Edit\PageListView.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="Edit\PageListView.Designer.cs">
-      <DependentUpon>PageListView.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Book\Page.cs" />
-    <Compile Include="TempFiles.cs" />
-    <Compile Include="SourceCollectionsList.cs" />
-    <Compile Include="Workspace\IZoomManager.cs" />
-    <Compile Include="Workspace\TabStrip.cs" />
-    <Compile Include="Workspace\TabStripRenderer.cs" />
-    <Compile Include="Workspace\WorkspaceModel.cs" />
-    <Compile Include="Publish\PublishView.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="Publish\PublishView.Designer.cs">
-      <DependentUpon>PublishView.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Program.cs" />
-    <Compile Include="Workspace\WorkspaceTabSelection.cs" />
-    <Compile Include="Workspace\WorkspaceView.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="Workspace\WorkspaceView.Designer.cs">
-      <DependentUpon>WorkspaceView.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="XmlString.cs" />
-    <EmbeddedResource Include="WebView2Browser.resx" Condition="'$(OS)'=='Windows_NT'">
-      <DependentUpon>WebView2Browser.cs</DependentUpon>
-      <SubType>Designer</SubType>
-    </EmbeddedResource>
-    <EmbeddedResource Include="CollectionTab\MakeReaderTemplateBloomPackDlg.resx">
-      <DependentUpon>MakeReaderTemplateBloomPackDlg.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="CollectionTab\CollectionTabView.resx">
-      <DependentUpon>CollectionTabView.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Collection\ScriptSettingsDialog.resx">
-      <DependentUpon>ScriptSettingsDialog.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Edit\ConfirmRemovePageDialog.resx">
-      <DependentUpon>ConfirmRemovePageDialog.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Collection\BloomPack\BloomPackInstallDialog.resx">
-      <DependentUpon>BloomPackInstallDialog.cs</DependentUpon>
-      <SubType>Designer</SubType>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Edit\JpegWarningDialog.resx">
-      <DependentUpon>JpegWarningDialog.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Edit\WebThumbNailList.resx">
-      <DependentUpon>WebThumbNailList.cs</DependentUpon>
-      <SubType>Designer</SubType>
-    </EmbeddedResource>
-    <EmbeddedResource Include="MiscUI\LanguageFontDetails.resx">
-      <DependentUpon>LanguageFontDetails.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="MiscUI\ToastNotifier.resx">
-      <DependentUpon>ToastNotifier.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Publish\AccessibilityChecker\AccessibilityCheckWindow.resx">
-      <DependentUpon>AccessibilityCheckWindow.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Publish\Video\RecordVideoWindow.resx">
-      <DependentUpon>RecordVideoWindow.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Publish\BulkUploadProgressDlg.resx">
-      <DependentUpon>BulkUploadProgressDlg.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Publish\HtmlPublishPanel.resx">
-      <DependentUpon>HtmlPublishPanel.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Publish\PDF\SamplePrintNotification.resx">
-      <DependentUpon>SamplePrintNotification.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Registration\LicenseDialog.resx">
-      <DependentUpon>LicenseDialog.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Registration\RegistrationDialog.resx">
-      <DependentUpon>RegistrationDialog.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="MiscUI\ReactDialog.resx">
-      <DependentUpon>ReactDialog.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="ToPalaso\BetterSplitContainer.resx">
-      <DependentUpon>BetterSplitContainer.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="ToPalaso\ProgressDialogForeground.resx">
-      <DependentUpon>ProgressDialogForeground.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="ToPalaso\ProgressDialogBackground.resx">
-      <DependentUpon>ProgressDialogBackground.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="CollectionCreating\LanguageLocationControl.resx">
-      <DependentUpon>LanguageLocationControl.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="CollectionCreating\LanguageIdControl.resx">
-      <DependentUpon>LanguageIdControl.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="CollectionCreating\CollectionNameControl.resx">
-      <DependentUpon>CollectionNameControl.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="CollectionCreating\NewCollectionWizard.resx">
-      <DependentUpon>NewCollectionWizard.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="web\ReactControl.resx">
-      <DependentUpon>ReactControl.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Edit\ConfigurationDialog.resx">
-      <DependentUpon>ConfigurationDialog.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Edit\EditingView.resx">
-      <DependentUpon>EditingView.cs</DependentUpon>
-      <SubType>Designer</SubType>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Edit\SourceTextControl.resx">
-      <DependentUpon>SourceTextControl.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Edit\PageListView.resx">
-      <DependentUpon>PageListView.cs</DependentUpon>
-      <SubType>Designer</SubType>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Collection\CollectionSettingsDialog.resx">
-      <DependentUpon>CollectionSettingsDialog.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Publish\PublishView.resx">
-      <DependentUpon>PublishView.cs</DependentUpon>
-      <SubType>Designer</SubType>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Workspace\WorkspaceView.resx">
-      <DependentUpon>WorkspaceView.cs</DependentUpon>
-      <SubType>Designer</SubType>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Properties\Resources.resx">
-      <Generator>ResXFileCodeGenerator</Generator>
-      <SubType>Designer</SubType>
-      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Shell.resx">
-      <DependentUpon>Shell.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="SplashScreen.resx">
-      <DependentUpon>SplashScreen.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="CollectionChoosing\OpenCreateCloneControl.resx">
-      <DependentUpon>OpenCreateCloneControl.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="CollectionChoosing\OpenAndCreateCollectionDialog.resx">
-      <DependentUpon>OpenAndCreateCollectionDialog.cs</DependentUpon>
-      <SubType>Designer</SubType>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Workspace\ZoomControl.resx">
-      <DependentUpon>ZoomControl.cs</DependentUpon>
-    </EmbeddedResource>
     <None Include="app.manifest">
       <SubType>Designer</SubType>
     </None>
     <None Include="ClassDiagram1.cd" />
-    <None Include="packages.config">
-      <SubType>Designer</SubType>
-    </None>
     <None Include="Properties\Settings.settings">
       <Generator>PublicSettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
     </None>
-    <Compile Include="Properties\Settings.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Settings.settings</DependentUpon>
-      <DesignTimeSharedInput>True</DesignTimeSharedInput>
-    </Compile>
-    <Compile Include="Shell.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="Shell.Designer.cs">
-      <DependentUpon>Shell.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Workspace\ZoomControl.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="Workspace\ZoomControl.Designer.cs">
-      <DependentUpon>ZoomControl.cs</DependentUpon>
-    </Compile>
-    <Compile Include="XmlHtmlConverter.cs" />
-    <Compile Include="web\IRequestInfo.cs" />
-    <Compile Include="web\RequestInfo.cs" />
-    <Compile Include="web\WebClientWithTimeout.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Include="web\BloomServer.cs" />
-    <Compile Include="WebLibraryIntegration\ProxyManager.cs" />
-    <Compile Include="web\BloomApiHandler.cs" />
-    <Compile Include="MiscUI\BloomFolderChooser.cs" />
-    <Compile Include="FontProcessing\FontsApi.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\current-service-urls.json" />
     <None Include="Resources\Logo27x32.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="app.config">
-      <SubType>Designer</SubType>
-    </None>
     <None Include="Resources\x-office-document.png" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\WelcomeHeader.png" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\menuButton.png" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\booklet70x70.png" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\bookletA5Horizontal70x70.png" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\A5Landscapel70Wide.png" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\A5Portraitl70Tall.png" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\DeleteMessageBoxButtonImage.png" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\DeleteMessageBoxImage.png" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\RecycleBin.png" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\newBook.png" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\info16x16.png" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\open.png" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\edit.png" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\Error70x70.png" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\settings.png" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\spinner.gif" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\pagePlaceHolder.png" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\construction.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <BootstrapperPackage Include=".NETFramework,Version=v4.0">
-      <Visible>False</Visible>
-      <ProductName>Microsoft .NET Framework 4 %28x86 and x64%29</ProductName>
-      <Install>true</Install>
-    </BootstrapperPackage>
-    <BootstrapperPackage Include="Microsoft.Net.Client.3.5">
-      <Visible>False</Visible>
-      <ProductName>.NET Framework 3.5 SP1 Client Profile</ProductName>
-      <Install>false</Install>
-    </BootstrapperPackage>
-    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
-      <Visible>False</Visible>
-      <ProductName>.NET Framework 3.5 SP1</ProductName>
-      <Install>false</Install>
-    </BootstrapperPackage>
-    <BootstrapperPackage Include="Microsoft.Windows.Installer.3.1">
-      <Visible>False</Visible>
-      <ProductName>Windows Installer 3.1</ProductName>
-      <Install>true</Install>
-    </BootstrapperPackage>
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\Favicon16x16.png" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\collection16x16.png" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\collection32x32.png" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\settings16x16.png" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\settings32x32.png" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\settings24x24.png" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\feedback24x24.png" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\OpenCreateCollection24x24.png" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\help24x24.png" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\publish32x32.png" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\helpTab32x32.png" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\Usb.png" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\print.png" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\coverOnly.png" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\insideBookletPages.png" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\simplePages.png" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\deletePage16x16.png" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\deletePage24x24.png" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\Cut16x16.png" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\Copy16x16.png" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\Paste16x16.png" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\Undo16x16.png" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\paste24x24.png" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\paste32x32.png" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\undo32x32.png" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\newCollection32x32.png" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\newBook1.png" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\LogoForLibraryChoosingDialog.png" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\BloomPack64x64.png" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\Error70x701.png" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\copyDisable16x16.png" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\pasteDisabled32x32.png" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\copyDisable16x161.png" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\undoDisabled32x32.png" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\DeletePageDisabled24x24.png" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\DeletePageDisabled32x32.png" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\DeletePage32x32.png" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\cutDisable16x16.png" />
   </ItemGroup>
   <ItemGroup>
-    <COMReference Include="IWshRuntimeLibrary" Condition="'$(OS)'=='Windows_NT'">
+    <COMReference Include="IWshRuntimeLibrary">
       <Guid>{F935DC20-1CF0-11D0-ADB9-00C04FD58A0B}</Guid>
       <VersionMajor>1</VersionMajor>
       <VersionMinor>0</VersionMinor>
@@ -1314,23 +304,11 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\PackageFlat32x32.png" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\PackageFlat48x47.png" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\delete-wordLarge.png" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\pdf16x16.png" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\multilingualSettings.png" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\thumbnail.png" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\sad_large.png" />
     <None Include="Resources\PackageFlat.png" />
     <None Include="Resources\cloneFromInternet.png" />
@@ -1358,66 +336,15 @@
     <None Include="Resources\greyTriangleButton.png" />
     <None Include="Resources\installerBackground.jpg" />
     <None Include="Resources\videos.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <WCFMetadata Include="Service References\" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\EpubIcon.bmp" />
-  </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <PropertyGroup>
-    <PostBuildEvent Condition="'$(OS)'=='Windows_NT'">
-copy /Y "$(SolutionDir)\lib\msvcr120.dll" $(OutDir)
-copy /Y "$(SolutionDir)\lib\ffmpeg.exe" $(OutDir)
-xcopy "$(SolutionDir)lib\RedistributableDlls" $(OutDir) /S /R /Y
-xcopy "$(SolutionDir)lib\gm" "$(OutDir)gm\" /S /R /Y
-copy /Y "$(SolutionDir)\lib\dotnet\libtidy.dll" $(OutDir)
-    </PostBuildEvent>
-  </PropertyGroup>
-  <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
-  <!-- these operations cannot all be done BeforeBuild, because the nuget download occurs as part of Build after BeforeBuild -->
-  <Target Name="BeforeResolveReferences" Condition="'$(OS)'!='Windows_NT'">
-    <!-- compile the various typescript, jade, and less files in BloomBrowserUI. -->
-    <Exec Command="cd &quot;$(SolutionDir)/src/content&quot; &amp;&amp; ( [ -f node_modules/less-watch-compiler/package.json ] || yarn config set registry &quot;http://registry.npmjs.org&quot; &amp;&amp; yarn --network-timeout 600000) &amp;&amp; cd &quot;$(SolutionDir)/src/BloomBrowserUI&quot; &amp;&amp; ( [ -f node_modules/typescript/package.json ] || yarn config set registry &quot;http://registry.npmjs.org&quot; &amp;&amp; yarn --network-timeout 600000) &amp;&amp; ( [ -f ../../output/browser/commonBundle.js ] || yarn build)" />
-  </Target>
-  <ItemGroup>
-    <BasicBookCssFiles Include="..\..\DistFiles\factoryCollections\Templates\Basic Book\*.css" />
-  </ItemGroup>
-  <ItemGroup>
-    <SourceFiles Include="..\..\lib\dotnet\*.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <LameFiles Include="..\..\lib\lame\lame*.*" />
-  </ItemGroup>
-  <ItemGroup>
-    <RemoteDebugFiles Include="..\..\remoteDebugging\**" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\settingsbw16x16.png" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\OpenCreateCollection16x16.png" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\help16x16.png" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\Hamburger.PNG" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\AddPageIcon.PNG" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\AddPageIcon %282%29.PNG" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\AddPageButton.PNG" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\AddPageButtonDisabled.PNG" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\epubPublishButton.png" />
   </ItemGroup>
   <ItemGroup>
@@ -1447,108 +374,4 @@ copy /Y "$(SolutionDir)\lib\dotnet\libtidy.dll" $(OutDir)
     <None Include="Resources\normal.svg.ico" />
     <None Include="Resources\bloom.png" />
   </ItemGroup>
-  <ItemGroup>
-    <IccFiles Include="..\..\DistFiles\ColorProfiles\CMYK\USWebCoatedSWOP.icc" />
-    <IccFiles Include="..\..\DistFiles\ColorProfiles\RGB\AdobeRGB1998.icc" />
-  </ItemGroup>
-  <ItemGroup>
-    <Analyzer Include="..\..\packages\AWSSDK.S3.3.5.3.10\analyzers\dotnet\cs\AWSSDK.S3.CodeAnalysis.dll" />
-  </ItemGroup>
-  <Import Project="..\..\packages\icu.net.2.8.1\build\icu.net.props" Condition="Exists('..\..\packages\icu.net.2.8.1\build\icu.net.props')" />
-  <Import Project="..\..\packages\LargeAddressAware.1.0.5\build\LargeAddressAware.targets" Condition="'$(OS)'=='Windows_NT' AND Exists('..\..\packages\LargeAddressAware.1.0.5\build\LargeAddressAware.targets')" />
-  <Import Project="..\..\packages\NDesk.DBus.0.15.0\build\NDesk.DBus.targets" Condition="Exists('..\..\packages\NDesk.DBus.0.15.0\build\NDesk.DBus.targets')" />
-  <Import Project="..\..\packages\SQLitePCLRaw.lib.e_sqlite3.2.0.3\build\net461\SQLitePCLRaw.lib.e_sqlite3.targets" Condition="Exists('..\..\packages\SQLitePCLRaw.lib.e_sqlite3.2.0.3\build\net461\SQLitePCLRaw.lib.e_sqlite3.targets')" />
-  <Import Project="..\..\packages\Mono.Unix.7.1.0-final.1.21458.1\build\Mono.Unix.targets" Condition="Exists('..\..\packages\Mono.Unix.7.1.0-final.1.21458.1\build\Mono.Unix.targets')" />
-  <Import Project="..\..\packages\icu.net.2.8.1\build\icu.net.targets" Condition="Exists('..\..\packages\icu.net.2.8.1\build\icu.net.targets')" />
-  <Import Project="..\..\packages\Microsoft.Web.WebView2.1.0.1518.46\build\Microsoft.Web.WebView2.targets" Condition="Exists('..\..\packages\Microsoft.Web.WebView2.1.0.1518.46\build\Microsoft.Web.WebView2.targets')" />
-  <Import Project="..\..\packages\SIL.Windows.Forms.Keyboarding.13.0.0-beta0050\build\SIL.Windows.Forms.Keyboarding.targets" Condition="Exists('..\..\packages\SIL.Windows.Forms.Keyboarding.13.0.0-beta0050\build\SIL.Windows.Forms.Keyboarding.targets')" />
-  <Import Project="..\..\packages\SIL.Media.13.0.0-beta0050\build\SIL.Media.targets" Condition="Exists('..\..\packages\SIL.Media.13.0.0-beta0050\build\SIL.Media.targets')" />
-  <Import Project="..\..\packages\SIL.Windows.Forms.13.0.0-beta0050\build\SIL.Windows.Forms.targets" Condition="Exists('..\..\packages\SIL.Windows.Forms.13.0.0-beta0050\build\SIL.Windows.Forms.targets')" />
-  <Target Name="AfterBuild">
-    <Copy SourceFiles="@(SourceFiles)" DestinationFolder="$(OutDir)" />
-    <Copy SourceFiles="@(LameFiles)" DestinationFolder="../../DistFiles" Condition="'$(OS)'=='Windows_NT'" />
-    <Copy SourceFiles="@(BasicBookCssFiles)" DestinationFolder="../../DistFiles/factoryCollections/Templates/Leveled Reader" />
-    <Copy SourceFiles="@(BasicBookCssFiles)" DestinationFolder="../../DistFiles/factoryCollections/Templates/Decodable Reader" />
-    <Copy SourceFiles="@(RemoteDebugFiles)" DestinationFolder="$(OutDir)/remoteDebugging" Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'" />
-    <Copy SourceFiles="@(IccFiles)" DestinationFolder="$(OutDir)/ColorProfiles" />
-    <Message Text="AfterBuild target completed." Importance="high" />
-  </Target>
-  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
-    <PropertyGroup>
-      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
-    </PropertyGroup>
-    <Error Condition="'$(OS)'=='Windows_NT' AND !Exists('..\..\packages\LargeAddressAware.1.0.5\build\LargeAddressAware.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\LargeAddressAware.1.0.5\build\LargeAddressAware.targets'))" />
-    <Error Condition="!Exists('..\..\packages\NDesk.DBus.0.15.0\build\NDesk.DBus.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\NDesk.DBus.0.15.0\build\NDesk.DBus.targets'))" />
-    <Error Condition="'$(OS)'=='Windows_NT' AND !Exists('..\..\packages\Microsoft.Web.WebView2.1.0.1518.46\build\Microsoft.Web.WebView2.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\Microsoft.Web.WebView2.1.0.1518.46\build\Microsoft.Web.WebView2.targets'))" />
-    <Error Condition="!Exists('..\..\packages\Mono.Unix.7.1.0-final.1.21458.1\build\Mono.Unix.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\Mono.Unix.7.1.0-final.1.21458.1\build\Mono.Unix.targets'))" />
-    <Error Condition="!Exists('..\..\packages\icu.net.2.8.1\build\icu.net.props')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\icu.net.2.8.1\build\icu.net.props'))" />
-    <Error Condition="!Exists('..\..\packages\icu.net.2.8.1\build\icu.net.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\icu.net.2.8.1\build\icu.net.targets'))" />
-    <Error Condition="!Exists('..\..\packages\Microsoft.Web.WebView2.1.0.1518.46\build\Microsoft.Web.WebView2.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\Microsoft.Web.WebView2.1.0.1518.46\build\Microsoft.Web.WebView2.targets'))" />
-    <Error Condition="!Exists('..\..\packages\SIL.Windows.Forms.Keyboarding.13.0.0-beta0050\build\SIL.Windows.Forms.Keyboarding.props')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\SIL.Windows.Forms.Keyboarding.13.0.0-beta0050\build\SIL.Windows.Forms.Keyboarding.props'))" />
-    <Error Condition="!Exists('..\..\packages\SIL.Windows.Forms.Keyboarding.13.0.0-beta0050\build\SIL.Windows.Forms.Keyboarding.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\SIL.Windows.Forms.Keyboarding.13.0.0-beta0050\build\SIL.Windows.Forms.Keyboarding.targets'))" />
-    <Error Condition="!Exists('..\..\packages\SIL.Media.13.0.0-beta0050\build\SIL.Media.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\SIL.Media.13.0.0-beta0050\build\SIL.Media.targets'))" />
-    <Error Condition="!Exists('..\..\packages\SIL.Windows.Forms.13.0.0-beta0050\build\SIL.Windows.Forms.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\SIL.Windows.Forms.13.0.0-beta0050\build\SIL.Windows.Forms.targets'))" />
-  </Target>
-  <!-- msbuild mistakenly copies the 64-bit version of irrKlang.NET4.dll to $(Output) as it resolves
-       SIL.Media.dll in our 32-bit build.  It also always copies both the 32-bit and 64-bit versions
-       of the library files to $(Output)\lib\win-xXX.  We correct those errors here.  (We can't do
-       this in AfterBuild because that runs before _CopyFilesMarkedCopyLocal which does the incorrect
-       copying.) -->
-  <ItemGroup Condition="'$(OS)'=='Windows_NT' AND '$(Platform)'=='x86'">
-    <CopyForSILMedia Include="$(SolutionDir)packages\SIL.Media.*\build\lib\win-x86\*.dll" />
-  </ItemGroup>
-  <ItemGroup Condition="'$(OS)'=='Windows_NT' AND '$(Platform)'=='x64'">
-    <CopyForSILMedia Include="$(SolutionDir)packages\SIL.Media.*\build\lib\win-x64\*.dll" />
-  </ItemGroup>
-  <ItemGroup>
-    <DeleteForSILMedia Include="$(OutDir)lib\win-x64\*.*" />
-    <DeleteForSILMedia Include="$(OutDir)lib\win-x86\*.*" />
-    <RemoveForSILMedia Include="$(OutDir)lib\win-x86" />
-    <RemoveForSILMedia Include="$(OutDir)lib\win-x64" />
-    <RemoveForSILMedia Include="$(OutDir)lib" />
-  </ItemGroup>
-  <Target Name="ReallyAfterBuild" DependsOnTargets="AfterBuild;CopyFilesToOutputDirectory" Condition="'$(OS)'=='Windows_NT'">
-    <Copy SourceFiles="@(CopyForSILMedia)" DestinationFolder="$(OutDir)" />
-    <Delete Files="@(DeleteForSILMedia)" TreatErrorsAsWarnings="true" />
-    <RemoveDir Directories="@(RemoveForSILMedia)" />
-  </Target>
-  <ItemGroup Condition="'$(OS)'!='Windows_NT'">
-    <DeleteForLinux Include="$(OutDir)runtimes/linux-arm/native/*.*" />
-    <DeleteForLinux Include="$(OutDir)runtimes/linux-armel/native/*.*" />
-    <DeleteForLinux Include="$(OutDir)runtimes/linux-arm64/native/*.*" />
-    <DeleteForLinux Include="$(OutDir)runtimes/linux-x86/native/*.*" />
-    <RemoveForLinux Include="$(OutDir)runtimes/linux-arm/native" />
-    <RemoveForLinux Include="$(OutDir)runtimes/linux-armel/native" />
-    <RemoveForLinux Include="$(OutDir)runtimes/linux-arm64/native" />
-    <RemoveForLinux Include="$(OutDir)runtimes/linux-x86/native" />
-    <RemoveForLinux Include="$(OutDir)runtimes/linux-arm" />
-    <RemoveForLinux Include="$(OutDir)runtimes/linux-armel" />
-    <RemoveForLinux Include="$(OutDir)runtimes/linux-arm64" />
-    <RemoveForLinux Include="$(OutDir)runtimes/linux-x86" />
-    <CopyForMonoUnix Include="$(OutDir)runtimes/linux-x64/libMono.Unix.so" />
-    <DeleteForLinux Include="$(OutDir)runtimes/android-arm/*.*" />
-    <DeleteForLinux Include="$(OutDir)runtimes/android-arm64/*.*" />
-    <DeleteForLinux Include="$(OutDir)runtimes/android-x64/*.*" />
-    <DeleteForLinux Include="$(OutDir)runtimes/android-x86/*.*" />
-    <DeleteForLinux Include="$(OutDir)runtimes/osx-arm64/*.*" />
-    <DeleteForLinux Include="$(OutDir)runtimes/osx-x64/*.*" />
-    <RemoveForLinux Include="$(OutDir)runtimes/android-arm" />
-    <RemoveForLinux Include="$(OutDir)runtimes/android-arm64" />
-    <RemoveForLinux Include="$(OutDir)runtimes/android-x64" />
-    <RemoveForLinux Include="$(OutDir)runtimes/android-x86" />
-    <RemoveForLinux Include="$(OutDir)runtimes/osx-arm64" />
-    <RemoveForLinux Include="$(OutDir)runtimes/osx-x64" />
-  </ItemGroup>
-  <Target Name="ReallyAfterLinuxBuild" DependsOnTargets="Build;AfterBuild;CopyFilesToOutputDirectory" Condition="'$(OS)'!='Windows_NT'">
-    <Copy SourceFiles="@(CopyForMonoUnix)" DestinationFolder="$(OutDir)libruntimes/linux-x64" />
-    <Delete Files="@(DeleteForLinux)" TreatErrorsAsWarnings="true" />
-    <RemoveDir Directories="@(RemoveForLinux)" />
-    <Delete Files="@(DeleteForSILMedia)" TreatErrorsAsWarnings="true" />
-    <RemoveDir Directories="@(RemoveForSILMedia)" />
-  </Target>
-  <!-- Note: Visual Studio automatically inserts any imports from installing packages into the end here,
-  but the AfterBuild target may not run if .targets files are imported after it.
-  I recommend you move the Import statements before the "AfterBuild" target,
-  or if not, then please verify that AfterBuild's Message is still printed out.
-  -->
 </Project>
