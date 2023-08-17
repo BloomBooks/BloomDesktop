@@ -1275,9 +1275,15 @@ export function localizeCkeditorTooltips(bar: JQuery) {
 // side effect of saving the changes to the current page.
 // [GJM: But this doesn't call saveChangesAndRethinkPageEvent! I'm confused.]
 export const pageSelectionChanging = () => {
-    const marginBox = $(".marginBox");
-    marginBox.removeClass("origami-layout-mode");
-    marginBox.find(".bloom-translationGroup .textBox-identifier").remove();
+    // We are mirroring the origami layoutToggleClickHandler() here, in case the user changes
+    // pages while the origami toggle in on.
+    // The DOM here is for just one page, so there's only ever one marginBox.
+    const marginBox = document.getElementsByClassName("marginBox")[0];
+    marginBox.classList.remove("origami-layout-mode");
+    const textLabels = marginBox.getElementsByClassName("textBox-identifier");
+    for (let i = 0; i < textLabels.length; i++) {
+        textLabels[i].remove();
+    }
 };
 
 // Called from C# by a RunJavaScript() in EditingView.CleanHtmlAndCopyToPageDom via
