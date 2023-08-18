@@ -22,7 +22,7 @@ import {
 } from "../react_components/localizableMenuItem";
 import { TeamCollectionDialogLauncher } from "../teamCollection/TeamCollectionDialog";
 import { SpreadsheetExportDialogLauncher } from "./spreadsheet/SpreadsheetExportDialog";
-import { H1, Div } from "../react_components/l10nComponents";
+import { H1 } from "../react_components/l10nComponents";
 import { useL10n } from "../react_components/l10nHooks";
 import { useSubscribeToWebSocketForEvent } from "../utils/WebSocketManager";
 import { EmbeddedProgressDialog } from "../react_components/Progress/ProgressDialog";
@@ -33,6 +33,7 @@ import { kBloomBlue } from "../bloomMaterialUITheme";
 import { BloomTooltip } from "../react_components/BloomToolTip";
 import { Link } from "../react_components/link";
 import { ForumInvitationDialogLauncher } from "../react_components/forumInvitationDialog";
+import { BooksOnBlorgProgressBar } from "../booksOnBlorg/BooksOnBlorgProgressBar";
 
 const kResizerSize = 10;
 
@@ -432,6 +433,7 @@ export const CollectionsTabPane: React.FunctionComponent<{}> = () => {
                             margin: 10px;
                         `}
                     >
+                        <BooksOnBlorgProgressBar />
                         <h1>
                             {collections[0].name}
                             <IconButton

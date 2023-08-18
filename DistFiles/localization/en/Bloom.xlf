@@ -291,6 +291,19 @@
         <note>ID: BookMetadata.WhatsThis</note>
         <note>minimal question indicating a link to information</note>
       </trans-unit>
+      <trans-unit id="BooksOnBlorg.Progress.Goal" sil:dynamic="true" translate="no">
+        <!-- Added in 5.6 -->
+        <source xml:lang="en">Goal:</source>
+        <note>ID: BooksOnBlorg.Progress.Goal</note>
+        <note>Goal label under progress bar on Collection tab.</note>
+      </trans-unit>
+      <trans-unit id="BooksOnBlorg.Progress.CountOfBooksLabel" sil:dynamic="true" translate="no">
+        <!-- Added in 5.6 -->
+        <source xml:lang="en">{0} {1} books on BloomLibrary.org</source>
+        <note>ID: BooksOnBlorg.Progress.CountOfBooksLabel</note>
+        <note>Books on website label under progress bar on Collection tab.</note>
+        <note>{0} is the number of books, {1} is the language name</note>
+      </trans-unit>
       <trans-unit id="BookStorage.CorruptBook">
         <source xml:lang="en">Bloom had a problem reading this book and recovered by restoring a recent backup. Please check recent changes to this book. If this happens for no obvious reason, please report the problem to us.</source>
         <note>ID: BookStorage.CorruptBook</note>
