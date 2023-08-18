@@ -14,11 +14,12 @@
 /*jslint browser: true, onevar: true, undef: true, nomen: true, bitwise: true, regexp: true, newcap: true, immed: true, strict: true */
 /*global window: false, jQuery: false, console: false, define: false */
 
-
 /* hatton removed use of $browser for jquery 1.9... qtip has this fix in the pipeline but it's not out yet*/
 /* JohnT (Bloom) added code marked Adjust for zoom by transform: scale
+/* Noel (Bloom) added NaN checks (for 0-width or 0-length elements) to the code marked Adjust for zoom by transform: scale
 
 /* Cache window, document, undefined */
+// prettier-ignore
 (function( window, document, undefined ) {
 
 // Uses AMD or browser globals to create a jQuery plugin.
@@ -1232,6 +1233,12 @@ function QTip(target, options, id, attr)
                     var bounds = targetElem.getBoundingClientRect();
                     var scaleY = bounds.height / targetElem.offsetHeight;
                     var scaleX = bounds.width / targetElem.offsetWidth;
+                    if (isNaN(scaleX)) {
+                        scaleX = 1;
+                    }
+                    if (isNaN(scaleY)) {
+                        scaleY = 1;
+                    }
                     position.left = position.left / scaleX;
                     position.top = position.top / scaleY;
                 }
