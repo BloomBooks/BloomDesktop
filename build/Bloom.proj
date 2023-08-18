@@ -115,15 +115,16 @@
 		<Message Text="Updating version in csproj files" Importance="high"/>
 		<!-- Version is the only variable needed.  AssemblyVersion and AssemblyFileVersion are both set from
 			Version if they are otherwise undefined. -->
+		<!-- it might be nice to use some subsection of BuildHash for the fourth field, but the hash itself is invalid -->
 		<FileUpdate File="$(RootDir)\src\BloomExe\BloomExe.csproj"
 			Regex="&lt;Version&gt;[0-9]+.[0-9]+.[0-9]+.[0-9]+&lt;/Version&gt;"
-			ReplacementText="&lt;Version&gt;$(FullVersion)&lt;/Version&gt;" />
+			ReplacementText="&lt;Version&gt;$(Version).0&lt;/Version&gt;" />
 		<FileUpdate File="$(RootDir)\src\BloomTests\BloomTests.csproj"
 			Regex="&lt;Version&gt;[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+&lt;/Version&gt;"
-			ReplacementText="&lt;Version&gt;$(FullVersion)&lt;/Version&gt;" />
+			ReplacementText="&lt;Version&gt;$(Version).0&lt;/Version&gt;" />
 		<FileUpdate File="$(RootDir)\src\WebView2PdfMaker\WebView2PdfMaker.csproj"
 			Regex="&lt;Version&gt;[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+&lt;/Version&gt;"
-			ReplacementText="&lt;Version&gt;$(FullVersion)&lt;/Version&gt;" />
+			ReplacementText="&lt;Version&gt;$(Version).0&lt;/Version&gt;" />
 		<!-- the product name also needs to have the channel in it. This controls (at least) the name used
 			for the desktop icon.-->
 		<Message Text="Updating Bloom product channel in csproj file" Importance="high"/>
