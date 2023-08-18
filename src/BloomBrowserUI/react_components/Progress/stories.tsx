@@ -1,5 +1,9 @@
+/** @jsx jsx **/
+import { jsx, css } from "@emotion/react";
+
 import * as React from "react";
-import { storiesOf } from "@storybook/react";
+import { lightTheme } from "../../bloomMaterialUITheme";
+import { addDecorator, storiesOf } from "@storybook/react";
 import { ProgressDialog } from "./ProgressDialog";
 import WebSocketManager, {
     IBloomWebSocketProgressEvent
@@ -7,6 +11,19 @@ import WebSocketManager, {
 import { kBloomBlue } from "../../bloomMaterialUITheme";
 import { ProgressBox } from "./progressBox";
 import { normalDialogEnvironmentForStorybook } from "../BloomDialog/BloomDialogPlumbing";
+import { ProgressBar } from "./ProgressBar";
+import { StyledEngineProvider, ThemeProvider } from "@mui/material/styles";
+import { StorybookContext } from "../../.storybook/StoryBookContext";
+
+addDecorator(storyFn => (
+    <StyledEngineProvider injectFirst>
+        <ThemeProvider theme={lightTheme}>
+            <StorybookContext.Provider value={true}>
+                {storyFn()}
+            </StorybookContext.Provider>
+        </ThemeProvider>
+    </StyledEngineProvider>
+));
 
 interface IStoryMessage {
     id?: string;
@@ -23,7 +40,7 @@ const noFrameProps = {
     }
 };
 
-storiesOf("Progress Box", module).add(
+storiesOf("Progress/Progress Box", module).add(
     "Raw ProgressBox with preloaded log",
     () => {
         return React.createElement(() => {
@@ -162,7 +179,7 @@ const kLongListOfAllTypes: Array<IStoryMessage> = [
     }
 ];
 
-storiesOf("Progress Dialog", module)
+storiesOf("Progress/Progress Dialog", module)
     .add("Short, with report button if there is an error", () => {
         const [isOpen, setIsOpen] = React.useState(true);
         return React.createElement(() => {
@@ -292,3 +309,23 @@ storiesOf("Progress Dialog", module)
             );
         });
     });
+
+const barFrame = (progressBar: JSX.Element) => (
+    <div
+        css={css`
+            width: 280px;
+            height: 75px;
+            padding-top: 5px;
+            padding-right: 10px;
+            padding-left: 20px;
+            background-color: rgb(45, 45, 45);
+        `}
+    >
+        {progressBar}
+    </div>
+);
+
+storiesOf("Progress/Progress Bar", module)
+    .add("20%", () => barFrame(<ProgressBar percentage={20} />))
+    .add("100%", () => barFrame(<ProgressBar percentage={100} />))
+    .add("0%", () => barFrame(<ProgressBar percentage={0} />));

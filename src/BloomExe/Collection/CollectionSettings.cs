@@ -48,6 +48,7 @@ namespace Bloom.Collection
 		public WritingSystem SignLanguage;
 
 		private const int kDefaultAudioRecordingTrimEndMilliseconds = 40;
+		private const int kDefaultBooksOnWebGoal = 200;
 
 		/// <summary>
 		/// The branding the user wanted, but not confirmed by current SubscriptionCode, if any.
@@ -127,6 +128,7 @@ namespace Bloom.Collection
 			CollectionName = "dummy collection";
 			AudioRecordingMode = TalkingBookApi.AudioRecordingMode.Sentence;
 			AudioRecordingTrimEndMilliseconds = kDefaultAudioRecordingTrimEndMilliseconds;
+			BooksOnWebGoal = kDefaultBooksOnWebGoal;
 		}
 
 		public static void CreateNewCollection(NewCollectionSettings collectionInfo)
@@ -164,6 +166,7 @@ namespace Bloom.Collection
 
 			AudioRecordingMode = collectionInfo.AudioRecordingMode;
 			AudioRecordingTrimEndMilliseconds = collectionInfo.AudioRecordingTrimEndMilliseconds;
+			BooksOnWebGoal = collectionInfo.BooksOnWebGoal;
 
 			Save();
 		}
@@ -293,6 +296,7 @@ namespace Bloom.Collection
 			xml.Add(new XElement("AllowNewBooks", AllowNewBooks.ToString()));
 			xml.Add(new XElement("AudioRecordingMode", AudioRecordingMode.ToString()));
 			xml.Add(new XElement("AudioRecordingTrimEndMilliseconds", AudioRecordingTrimEndMilliseconds));
+			xml.Add(new XElement("BooksOnWebGoal", BooksOnWebGoal));
 			if (Administrators != null && Administrators.Length > 0)
 				xml.Add(new XElement("Administrators", string.Join(",", Administrators)));
 			if (!string.IsNullOrEmpty(DefaultBookshelf))
@@ -438,6 +442,7 @@ namespace Bloom.Collection
 				AudioRecordingMode = parsedAudioRecordingMode;
 				AudioRecordingTrimEndMilliseconds = ReadInteger(xml, "AudioRecordingTrimEndMilliseconds",
 					kDefaultAudioRecordingTrimEndMilliseconds);
+				BooksOnWebGoal = ReadInteger(xml, "BooksOnWebGoal", kDefaultBooksOnWebGoal);
 				Administrators = ReadString(xml, "Administrators", "")
 					.Split(new[] { "," }, StringSplitOptions.RemoveEmptyEntries);
 				var defaultTags = ReadString(xml, "DefaultBookTags", "").Split(',');
@@ -637,6 +642,8 @@ namespace Bloom.Collection
 		public TalkingBookApi.AudioRecordingMode AudioRecordingMode { get; set; }
 
 		public int AudioRecordingTrimEndMilliseconds { get; set; }
+
+		public int BooksOnWebGoal { get; set; }
 
 		public BulkBloomPubPublishSettings BulkPublishBloomPubSettings = new BulkBloomPubPublishSettings
 		{

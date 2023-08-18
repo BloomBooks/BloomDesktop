@@ -15,6 +15,7 @@ using Bloom.MiscUI;
 using Bloom.Properties;
 using Bloom.ToPalaso;
 using Bloom.Utils;
+using Bloom.WebLibraryIntegration;
 using Bloom.Workspace;
 using L10NSharp;
 using Newtonsoft.Json;
@@ -182,6 +183,7 @@ namespace Bloom.web.controllers
 			apiHandler.RegisterEndpointHandler(kApiUrlPart + "removeSourceCollection", HandleRemoveSourceCollection, false);
 			apiHandler.RegisterEndpointHandler(kApiUrlPart + "addSourceCollection", HandleAddSourceCollection, true);
 			apiHandler.RegisterEndpointHandler(kApiUrlPart + "removeSourceFolder", HandleRemoveSourceFolder, true);
+			apiHandler.RegisterEndpointHandler(kApiUrlPart + "getBookCountByLanguage", HandleGetBookCountByLanguage, true);
 		}
 
 		private void HandleRemoveSourceCollection(ApiRequest request)
@@ -217,6 +219,17 @@ namespace Bloom.web.controllers
 				request.Failed();
 				return;
 			}
+		}
+		
+		private void HandleGetBookCountByLanguage(ApiRequest request)
+		{
+			if (request.HttpMethod == HttpMethods.Post)
+				return; // should be Get
+
+			var client = new BloomParseClient();
+			var query = "{\"langPointers\":{\"$inQuery\":{\"where\":{\"isoCode\":\"" + _settings.Language1Tag + "\"},\"className\":\"language\"}}}";
+			var count = client.GetBookCount(query);
+			request.ReplyWithText(count.ToString());
 		}
 
 		internal void CheckForCollectionUpdates()
