@@ -141,14 +141,22 @@ namespace Bloom.WebLibraryIntegration
 			return MakeRequest(path, Method.DELETE);
 		}
 
-		public int GetBookCount()
+		public int GetBookCount(string query = null)
 		{
 			var request = MakeGetRequest("classes/books");
 			request.AddParameter("count", "1");
 			request.AddParameter("limit", "0");
+			if (!string.IsNullOrEmpty(query))
+				request.AddParameter("where", query, ParameterType.QueryString);
 			var response = Client.Execute(request);
 			var dy = JsonConvert.DeserializeObject<dynamic>(response.Content);
 			return dy.count;
+		}
+
+		public int GetBookCountByLanguage(string languageCode)
+		{
+			var query = "{\"langPointers\":{\"$inQuery\":{\"where\":{\"isoCode\":\"" + languageCode + "\"},\"className\":\"language\"}}}";
+			return GetBookCount(query);
 		}
 
 		// Setting param 'includeLanguageInfo' to true adds a param to the query that causes it to fold in

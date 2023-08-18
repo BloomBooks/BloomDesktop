@@ -262,12 +262,32 @@ namespace Bloom.web.controllers
 
 			apiHandler.RegisterEndpointHandler(kApiUrlPart + "getCustomPaletteColors", HandleGetCustomColorsRequest, false);
 			apiHandler.RegisterEndpointHandler(kApiUrlPart + "addCustomPaletteColor", HandleAddCustomColor, false);
+			apiHandler.RegisterEndpointHandler(kApiUrlPart + "webGoal", HandleWebGoalRequest, true);
+			apiHandler.RegisterEndpointHandler(kApiUrlPart + "languageName", HandleLanguageNameRequest, true);
 		}
 
 		private void ResetBookshelf()
 		{
 			if (DialogBeingEdited != null)
 				DialogBeingEdited.PendingDefaultBookshelf = "";
+		}
+
+		private void HandleWebGoalRequest(ApiRequest request)
+		{
+			if (request.HttpMethod == HttpMethods.Post)
+				return; // Should be a get
+
+			var goal = _collectionSettings.BooksOnWebGoal;
+			request.ReplyWithText(goal.ToString());
+		}
+
+		private void HandleLanguageNameRequest(ApiRequest request)
+		{
+			if (request.HttpMethod == HttpMethods.Post)
+				return; // Should be a get
+
+			var languageName = _collectionSettings.GetLanguageName(_collectionSettings.Language1Tag, _collectionSettings.Language1Tag);
+			request.ReplyWithText(languageName);
 		}
 
 		private void HandleGetCustomColorsRequest(ApiRequest request)
