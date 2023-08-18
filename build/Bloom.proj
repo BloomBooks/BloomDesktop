@@ -41,6 +41,10 @@
 		<BuildTasksAwsDll>$(RootDir)/packages/SIL.BuildTasks.AWS/tools/SIL.BuildTasks.AWS.dll</BuildTasksAwsDll>
 		<SharedBuildDir>Z:</SharedBuildDir>
 		<SquirrelLogPath>$(RootDir)\lib\dotnet\Squirrel-Releasify.log</SquirrelLogPath>
+
+		<NuGetPackageDir Condition="'$(OS)'=='Windows_NT'">$(UserProfile)/.nuget/packages</NuGetPackageDir>
+		<NuGetPackageDir Condition="'$(OS)'!='Windows_NT'">$(Home)/.nuget/packages</NuGetPackageDir>
+
 		<RestartBuild Condition="!Exists('$(BuildTasksDll)') Or !Exists('$(BuildTasksAwsDll)')">true</RestartBuild>
 		<RestartBuild Condition="Exists('$(BuildTasksDll)') And Exists('$(BuildTasksAwsDll)')">false</RestartBuild>
 	</PropertyGroup>
@@ -160,7 +164,7 @@
 		<NUnit3
 			Condition="$(isOnTeamCity) == false"
 			Assemblies="@(TestAssemblies)"
-			ToolPath="$(RootDir)/packages/NUnit.ConsoleRunner.3.16.2/tools"
+			ToolPath="$(NuGetPackageDir)/nunit.consolerunner/3.16.2/tools"
 			ExcludeCategory="$(excludedCategories)"
 			WorkingDirectory="$(RootDir)/output/$(Configuration)"
 			Force32Bit="$(useNUnit-x86)"
@@ -174,7 +178,7 @@
 		<NUnit3
 			Condition="$(isOnTeamCity) == true"
 			Assemblies="@(TestAssemblies)"
-			ToolPath="$(RootDir)/packages/NUnit.ConsoleRunner.3.16.2/tools"
+			ToolPath="$(NuGetPackageDir)/nunit.consolerunner/3.16.2/tools"
 			ExcludeCategory="SkipOnTeamCity,$(excludedCategories)"
 			WorkingDirectory="$(RootDir)/output/$(Configuration)"
 			Force32Bit="$(useNUnit-x86)"
