@@ -1,13 +1,6 @@
 ﻿using System;
-using System.IO;
-using System.Net;
-using System.Windows.Forms;
 using Bloom.Api;
-using Bloom.Book;
 using Bloom.MiscUI;
-using Bloom.Publish;
-using Bloom.Utils;
-using SIL.IO;
 
 namespace Bloom.web.controllers
 {
