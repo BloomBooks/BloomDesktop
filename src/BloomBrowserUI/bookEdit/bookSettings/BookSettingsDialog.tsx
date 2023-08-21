@@ -68,11 +68,6 @@ export const BookSettingsDialog: React.FunctionComponent<{}> = () => {
         () => propsForBloomDialog.open
     );
 
-    const presetNames = useApiObject<Array<{ label: string; value: string }>>(
-        "book/settings/available-preset-names",
-        []
-    );
-
     const [settings, setSettings] = React.useState<object | undefined>(
         undefined
     );
