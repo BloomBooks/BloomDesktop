@@ -622,7 +622,7 @@ namespace Bloom
 				RegistrationDialog.GetAnalyticsUserInfo(),
 				propertiesThatGoWithEveryEvent,
 				allowTracking: false, // change to true if you want to test sending
-				retainPii: false,
+				retainPii: true,
 				clientType: DesktopAnalytics.ClientType.Segment,
 				host: "https://analytics.bloomlibrary.org"
 			);
@@ -637,7 +637,11 @@ namespace Bloom
 				"c8ndqrrl7f0twbf2s6cv",
 				RegistrationDialog.GetAnalyticsUserInfo(),
 				propertiesThatGoWithEveryEvent,
-				allowTracking);
+				allowTracking,
+				retainPii: true,
+				clientType: DesktopAnalytics.ClientType.Segment,
+				host: "https://analytics.bloomlibrary.org"
+			);
 #endif
 		}
 
