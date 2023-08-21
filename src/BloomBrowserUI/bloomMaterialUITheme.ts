@@ -104,13 +104,8 @@ export const lightTheme = createTheme({
                 },
                 arrow: {
                     color: kBloomBlueTextBackground
-            text: { disabled: kBloomDisabledText },
-            action: {
-                disabled: kBloomDisabledText,
-                disabledOpacity: kBloomDisabledOpacity
-            }
                 }
-            ]
+            }
         },
         MuiDialogTitle: {
             styleOverrides: {

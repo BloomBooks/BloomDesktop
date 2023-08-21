@@ -34,16 +34,15 @@ import { getEditablePageBundleExports } from "./js/bloomFrames";
 export { getEditablePageBundleExports };
 import { showPageChooserDialog } from "../pageChooser/PageChooserDialog";
 export { showPageChooserDialog };
-export { showBookSettingsDialog };
+
 import "../lib/errorHandler";
-import { showBookSettingsDialog } from "./bookSettings/bookSettingsDialog";
+import { showBookSettingsDialog } from "./bookSettings/BookSettingsDialog";
 export { showBookSettingsDialog };
 import { reportError } from "../lib/errorHandler";
 import { IToolboxFrameExports } from "./toolbox/toolboxBootstrap";
 import { showCopyrightAndLicenseInfoOrDialog } from "./copyrightAndLicense/CopyrightAndLicenseDialog";
 import { showTopicChooserDialog } from "./TopicChooser/TopicChooserDialog";
 import ReactDOM = require("react-dom");
-import { showBookSettingsDialog } from "./bookSettings/BookSettingsDialog";
 import { FunctionComponentElement } from "react";
 export { getImageUrlFromImageButton } from "./js/bloomImages";
 
