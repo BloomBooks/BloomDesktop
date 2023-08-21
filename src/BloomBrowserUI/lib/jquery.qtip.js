@@ -1233,12 +1233,24 @@ function QTip(target, options, id, attr)
                     var bounds = targetElem.getBoundingClientRect();
                     var scaleY = bounds.height / targetElem.offsetHeight;
                     var scaleX = bounds.width / targetElem.offsetWidth;
-                    if (isNaN(scaleX)) {
+                    console.log(bounds);
+
+                    // If target element has height but no width or vice versa, use the same scale in both directions, 
+                    // which should generally be appropriate
+                    if (isNaN(scaleX) && !isNaN(scaleY)) {
+                        scaleX = scaleY;
+                    }
+                    if (isNaN(scaleY) && !isNaN(scaleX)) {
+                        scaleY = scaleX;
+                    }
+
+                    // I don't know of any current situation where we are putting a qtip on an item with no 
+                    // width and no height. But just in case, make the scale 1 so the qtips at least show up
+                    if (isNaN(scaleY) && isNaN(scaleX)) {
+                        scaleY = 1;
                         scaleX = 1;
                     }
-                    if (isNaN(scaleY)) {
-                        scaleY = 1;
-                    }
+
                     position.left = position.left / scaleX;
                     position.top = position.top / scaleY;
                 }
