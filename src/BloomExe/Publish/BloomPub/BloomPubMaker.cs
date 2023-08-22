@@ -352,7 +352,7 @@ BookServer bookServer,
 			StripContentEditableAndTabIndex(modifiedBook.RawDom);
 			InsertReaderStylesheet(modifiedBook.RawDom);
 			RobustFile.Copy(FileLocationUtilities.GetFileDistributedWithApplication(BloomFileLocator.BrowserRoot, "publish", "ReaderPublish", "readerStyles.css"),
-				Path.Combine(modifiedBookFolderPath, "readerStyles.css"));
+				Path.Combine(modifiedBookFolderPath, "readerStyles.css"), overwrite:true);
 			ConvertImagesToBackground(modifiedBook.RawDom);
 
 			AddDistributionFile(modifiedBookFolderPath, creator, settings);
