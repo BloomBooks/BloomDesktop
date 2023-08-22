@@ -892,12 +892,47 @@ namespace Bloom.Book
 			AddPreviewJavascript(previewDom);
 			previewDom.AddPublishClassToBody("preview");
 
+			SandboxActivityIframesToPreventFocus(previewDom);
+
 			// Not needed for preview mode, so just remove them to reduce memory usage.
 			PreventVideoAutoLoad(previewDom);
 			RemoveImageResolutionMessageAndAddMissingImageMessage(previewDom);
 
 			_previewDom = previewDom;
 			return previewDom;
+		}
+
+		/// <summary>
+		/// Activity pages need to run scripts even in preview to show their start page, but we don't
+		/// want them to be able to set the focus.  Active Presenter is one example of an activity
+		/// builder that has code on a timer loop that continually sets the focus to one of its elements.
+		/// This effectively prevents users from being able to rename the book via the Book Rename menu
+		/// item.
+		/// Other activity builders may have the same problem, but we haven't encountered them yet.
+		/// But some activity builders use WebSQL which requires the sandbox to opened up enough to
+		/// allow the focus calls to leak through.  Otherwise, the preview displays a disconcerting
+		/// popup message about the data storage not being available.  So for now, we sandbox only
+		/// Active Presenter generated activity iframes to prevent focus.
+		/// </summary>
+		/// <remarks>
+		/// See https://issues.bloomlibrary.org/youtrack/issue/BL-12598.
+		/// A proposed feature policy would apparently do exactly what we want here, but it's still
+		/// waiting four years after being proposed: https://chromestatus.com/feature/5179186249465856.
+		/// </remarks>
+		private void SandboxActivityIframesToPreventFocus(HtmlDom previewDom)
+		{
+			foreach (var iframe in previewDom.SafeSelectNodes("//div[@data-activity='iframe']//iframe[starts-with(@src,'activities/')]").Cast<XmlElement>())
+			{
+				var src = iframe.GetAttribute("src");
+				// The fileName might be URL encoded.
+				var path = UrlPathString.GetFullyDecodedPath(FolderPath, ref src);
+				if (RobustFile.Exists(path))
+				{
+					var html = RobustFile.ReadAllText(path);
+					if (html.Contains("ActivePresenter"))
+						iframe.SetAttribute("sandbox", "allow-scripts");
+				}
+			}
 		}
 
 		// Generally BringBookUpToDate only needs doing once, so keep track of whether we have.
