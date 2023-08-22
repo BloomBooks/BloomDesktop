@@ -615,6 +615,8 @@ namespace Bloom
 			propertiesThatGoWithEveryEvent.Remove("UserDomainName");
 			propertiesThatGoWithEveryEvent.Add("channel", ApplicationUpdateSupport.ChannelName);
 
+			DesktopAnalytics.Analytics.UrlThatReturnsExternalIpAddress = "http://icanhazip.com";
+
 #if DEBUG
 			_supressRegistrationDialog = true;
 			return new DesktopAnalytics.Analytics(
