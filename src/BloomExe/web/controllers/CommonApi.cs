@@ -247,7 +247,7 @@ namespace Bloom.web.controllers
 			_timerForOpenSettingsDialog.Dispose();
 			_timerForOpenSettingsDialog = null;
 			var tab = state as String;
-			WorkspaceView.OpenSettingsDialog(tab);
+			WorkspaceView.OpenLegacySettingsDialog(tab);
 		}
 
 		private void HandleLogEvent(ApiRequest request)

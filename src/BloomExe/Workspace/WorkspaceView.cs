@@ -788,18 +788,18 @@ namespace Bloom.Workspace
 			});
 		}
 
-		internal void OnSettingsButton_Click(object sender, EventArgs e)
+		internal void OnLegacySettingsButton_Click(object sender, EventArgs e)
 		{
-			OpenSettingsDialog();
+			OpenLegacySettingsDialog();
 		}
 
 		private CollectionSettingsDialog _currentlyOpenSettingsDialog;
 
-		public void OpenSettingsDialog(string tab=null)
+		public void OpenLegacySettingsDialog(string tab=null)
 		{
 			if (InvokeRequired)
 			{
-				SafeInvoke.Invoke("OpenSettingsDialog", this, true, false, (() => OpenSettingsDialog(tab)));
+				SafeInvoke.Invoke("OpenSettingsDialog", this, true, false, (() => OpenLegacySettingsDialog(tab)));
 			}
 			else
 			{
@@ -846,7 +846,7 @@ namespace Bloom.Workspace
 		private void BringUpEnterpriseSettings()
 		{
 			CollectionSettingsApi.PrepareForFixEnterpriseBranding(_collectionSettings.InvalidBranding, _collectionSettings.SubscriptionCode);
-			OnSettingsButton_Click(this, new EventArgs());
+			OnLegacySettingsButton_Click(this, new EventArgs());
 			CollectionSettingsApi.EndFixEnterpriseBranding();
 		}
 
