@@ -1270,10 +1270,8 @@ export function localizeCkeditorTooltips(bar: JQuery) {
         });
 }
 
-// This is invoked from C# when we are about to change pages. It is mainly for origami,
-// but saveChangesAndRethinkPageEvent currently has the (very important)
-// side effect of saving the changes to the current page.
-// [GJM: But this doesn't call saveChangesAndRethinkPageEvent! I'm confused.]
+// This is invoked from C# when we are about to change pages. The C# code will save the changes
+// to the page after we return from this (hopefully; certainly in debugging this is the case).
 export const pageSelectionChanging = () => {
     // We are mirroring the origami layoutToggleClickHandler() here, in case the user changes
     // pages while the origami toggle in on.

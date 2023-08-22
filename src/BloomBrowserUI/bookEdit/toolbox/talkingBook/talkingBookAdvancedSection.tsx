@@ -15,6 +15,7 @@ import { toolboxTheme } from "../../../bloomMaterialUITheme";
 import { BloomSwitch } from "../../../react_components/BloomSwitch";
 import { RecordingMode } from "./audioRecording";
 import { TriangleCollapse } from "../../../react_components/TriangleCollapse";
+import { LocalizedString } from "../../../react_components/l10nComponents";
 
 export const TalkingBookAdvancedSection: React.FunctionComponent<{
     isXmatter: boolean;
@@ -103,7 +104,15 @@ export const TalkingBookAdvancedSection: React.FunctionComponent<{
                     }
                     {...commonTooltipProps}
                 >
-                    <Typography variant="h2">Recording Mode</Typography>
+                    <Typography variant="h2">
+                        <LocalizedString
+                            l10nKey={
+                                "EditTab.Toolbox.TalkingBookTool.RecordingMode"
+                            }
+                        >
+                            Recording Mode
+                        </LocalizedString>
+                    </Typography>
                     <RadioGroup
                         value={props.recordingMode}
                         onChange={(
