@@ -3164,6 +3164,21 @@
         <target xml:lang="mam" state="final">Na'mxtaq t-xi' tx'ixpet tu'mel, b'inchama xtalb'il tu'n tel tiq'ina kyaqil q'oq'ojil toj wi'b'aj at toj t-xaq lu'.</target>
         <note>ID: EditTab.Toolbox.TalkingBookTool.RecordingModeClearExistingRecordings</note>
       </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.ESpeakPreview.Error" approved="yes">
+        <source xml:lang="en">eSpeak failed.</source>
+        <target xml:lang="mam" state="final">ma tz'el naj eSpeak.</target>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.ESpeakPreview.Error</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.RecordingModeSplitOrClearExistingRecordingTextBox" sil:dynamic="true" approved="yes">
+        <source xml:lang="en">Please split or clear the existing recording in this text box before changing modes.</source>
+        <target xml:lang="mam" state="final">B'inchama xtalb'il, pa'nkub'a ma qa iq'imila tq'ojq'ojil toj qwi'b'aj ku'n toj swejin txolyol na'mxtaq ttx''ixpet tu'mel.</target>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.RecordingModeSplitOrClearExistingRecordingTextBox</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.RecordingModeXMatter" sil:dynamic="true" approved="yes">
+        <source xml:lang="en">Sorry, front and back-matter pages must be recorded by sentences.</source>
+        <target xml:lang="mam" state="final">Najsama, aq'umb'il na'mx tkub' b'aj b'inchet/Ma qa ma b'aj b'inchet, ilti'j tu'n t-xi' k'u'yit toj piẍinyol.</target>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.RecordingModeXMatter</note>
+      </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.SpeakLabel" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Speak</source>
         <target xml:lang="mam" state="final">Yolil</target>

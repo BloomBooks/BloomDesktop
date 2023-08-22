@@ -3163,6 +3163,36 @@
         <target xml:lang="prs" state="final">لطفاً قبل از تغییر حالت، تمام ثبت های موجود را در این صفحه پاک کنید.</target>
         <note>ID: EditTab.Toolbox.TalkingBookTool.RecordingModeClearExistingRecordings</note>
       </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.ESpeakPreview.Error" approved="yes">
+        <source xml:lang="en">eSpeak failed.</source>
+        <target xml:lang="prs" state="final">eSpeak ناکام شد.</target>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.ESpeakPreview.Error</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.ImportRecording" sil:dynamic="true" approved="yes">
+        <source xml:lang="en">Import Recording</source>
+        <target xml:lang="prs" state="final">وارد کردن ثبت</target>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.ImportRecording</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.ImportRecording.ConfirmReplace" sil:dynamic="true" approved="yes">
+        <source xml:lang="en">Replace with new audio?</source>
+        <target xml:lang="prs" state="final">با صوت جدید جایگزین شوید?</target>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.ImportRecording.ConfirmReplace</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.ImportRecording.ConfirmReplaceMessage" sil:dynamic="true" approved="yes">
+        <source xml:lang="en">If you import this recording, it will replace all the audio for this text box.</source>
+        <target xml:lang="prs" state="final">اگر این ثبت را وارد کنید ، تمام صوت ها را برای این بکس متن تبدیل می کند.</target>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.ImportRecording.ConfirmReplaceMessage</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.RecordingModeSplitOrClearExistingRecordingTextBox" sil:dynamic="true" approved="yes">
+        <source xml:lang="en">Please split or clear the existing recording in this text box before changing modes.</source>
+        <target xml:lang="prs" state="final">لطفاً قبل از تغییر حالت، ثبت موجود را در این جعبه متن تقسیم یا پاک کنید.</target>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.RecordingModeSplitOrClearExistingRecordingTextBox</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.RecordingModeXMatter" sil:dynamic="true" approved="yes">
+        <source xml:lang="en">Sorry, front and back-matter pages must be recorded by sentences.</source>
+        <target xml:lang="prs" state="final">متأسفیم، صفحات مقدماتی و پشتی باید با جملات ثبت شوند.</target>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.RecordingModeXMatter</note>
+      </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.SpeakLabel" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Speak</source>
         <target xml:lang="prs" state="final">گپ بزنید</target>

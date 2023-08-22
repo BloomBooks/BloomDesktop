@@ -3163,6 +3163,41 @@
         <target xml:lang="ru" state="translated">Перед изменением режимов удалите все существующие записи на этой странице.</target>
         <note>ID: EditTab.Toolbox.TalkingBookTool.RecordingModeClearExistingRecordings</note>
       </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.ESpeakPreview.Error">
+        <source xml:lang="en">eSpeak failed.</source>
+        <target xml:lang="ru" state="translated">eSpeak не удалось.</target>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.ESpeakPreview.Error</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.ImportRecording" sil:dynamic="true">
+        <source xml:lang="en">Import Recording</source>
+        <target xml:lang="ru" state="translated">Импортировать запись</target>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.ImportRecording</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.ImportRecording.ConfirmReplace" sil:dynamic="true">
+        <source xml:lang="en">Replace with new audio?</source>
+        <target xml:lang="ru" state="translated">Заменить новым аудио?</target>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.ImportRecording.ConfirmReplace</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.ImportRecording.ConfirmReplaceMessage" sil:dynamic="true">
+        <source xml:lang="en">If you import this recording, it will replace all the audio for this text box.</source>
+        <target xml:lang="ru" state="translated">Если вы импортируете эту запись, она заменит все аудио для этого текстового окна.</target>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.ImportRecording.ConfirmReplaceMessage</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.RecordingModeSplitOrClearExistingRecordingTextBox" sil:dynamic="true">
+        <source xml:lang="en">Please split or clear the existing recording in this text box before changing modes.</source>
+        <target xml:lang="ru" state="translated">Пожалуйста, разделите или очистите существующую запись в этом текстовом окне перед изменением режимов.</target>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.RecordingModeSplitOrClearExistingRecordingTextBox</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.RecordingModeXMatter" sil:dynamic="true">
+        <source xml:lang="en">Sorry, front and back-matter pages must be recorded by sentences.</source>
+        <target xml:lang="ru" state="translated">К сожалению, передние и задние страницы должны быть записаны по предложениям.</target>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.RecordingModeXMatter</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.ShowPlaybackOrder" sil:dynamic="true">
+        <source xml:lang="en">Show playback order buttons</source>
+        <target xml:lang="ru" state="translated">Показать кнопки порядка воспроизведения</target>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.ShowPlaybackOrder</note>
+      </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.SpeakLabel" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Speak</source>
         <target xml:lang="ru" state="final">Говорите</target>

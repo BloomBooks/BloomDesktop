@@ -3163,6 +3163,41 @@
         <target xml:lang="pt-PT" state="final">Por favor, limpe todas as gravações existentes nesta página antes de alterar os modos.</target>
         <note>ID: EditTab.Toolbox.TalkingBookTool.RecordingModeClearExistingRecordings</note>
       </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.ESpeakPreview.Error" approved="yes">
+        <source xml:lang="en">eSpeak failed.</source>
+        <target xml:lang="pt-PT" state="final">eSpeak falhou.</target>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.ESpeakPreview.Error</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.ImportRecording" sil:dynamic="true" approved="yes">
+        <source xml:lang="en">Import Recording</source>
+        <target xml:lang="pt-PT" state="final">Importar gravação</target>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.ImportRecording</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.ImportRecording.ConfirmReplace" sil:dynamic="true" approved="yes">
+        <source xml:lang="en">Replace with new audio?</source>
+        <target xml:lang="pt-PT" state="final">Substituir com o novo áudio?</target>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.ImportRecording.ConfirmReplace</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.ImportRecording.ConfirmReplaceMessage" sil:dynamic="true" approved="yes">
+        <source xml:lang="en">If you import this recording, it will replace all the audio for this text box.</source>
+        <target xml:lang="pt-PT" state="final">Se importar esta gravação, ela irá substituir todo o áudio desta caixa de texto.</target>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.ImportRecording.ConfirmReplaceMessage</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.RecordingModeSplitOrClearExistingRecordingTextBox" sil:dynamic="true" approved="yes">
+        <source xml:lang="en">Please split or clear the existing recording in this text box before changing modes.</source>
+        <target xml:lang="pt-PT" state="final">Por favor, divida ou limpe a gravação existente nesta caixa de texto antes de alterar os modos.</target>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.RecordingModeSplitOrClearExistingRecordingTextBox</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.RecordingModeXMatter" sil:dynamic="true" approved="yes">
+        <source xml:lang="en">Sorry, front and back-matter pages must be recorded by sentences.</source>
+        <target xml:lang="pt-PT" state="final">Desculpe, as páginas da contracapa devem ser gravadas por frases.</target>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.RecordingModeXMatter</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.ShowPlaybackOrder" sil:dynamic="true" approved="yes">
+        <source xml:lang="en">Show playback order buttons</source>
+        <target xml:lang="pt-PT" state="final">Mostrar botões de ordem de reprodução</target>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.ShowPlaybackOrder</note>
+      </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.SpeakLabel" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Speak</source>
         <target xml:lang="pt-PT" state="final">Fale</target>

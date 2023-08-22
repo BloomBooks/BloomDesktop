@@ -3183,6 +3183,21 @@
         <target xml:lang="fr" state="final">Veuillez effacer tous les enregistrements existants sur cette page avant de changer de mode.</target>
         <note>ID: EditTab.Toolbox.TalkingBookTool.RecordingModeClearExistingRecordings</note>
       </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.RecordingModeSplitOrClearExistingRecordingTextBox" sil:dynamic="true" approved="yes">
+        <source xml:lang="en">Please split or clear the existing recording in this text box before changing modes.</source>
+        <target xml:lang="fr" state="final">Veuillez diviser ou effacer l'enregistrement existant dans cette zone de texte avant de changer de mode.</target>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.RecordingModeSplitOrClearExistingRecordingTextBox</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.RecordingModeXMatter" sil:dynamic="true" approved="yes">
+        <source xml:lang="en">Sorry, front and back-matter pages must be recorded by sentences.</source>
+        <target xml:lang="fr" state="final">Désolé, pour les pages de couverture et de dos il faut enregistrer le contenu phrase par phrase.</target>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.RecordingModeXMatter</note>
+      </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.ShowPlaybackOrder" sil:dynamic="true" approved="yes">
+        <source xml:lang="en">Show playback order buttons</source>
+        <target xml:lang="fr" state="final">Afficher les boutons d'ordre de lecture</target>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.ShowPlaybackOrder</note>
+      </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.SpeakLabel" sil:dynamic="true" approved="yes">
         <source xml:lang="en">Speak</source>
         <target xml:lang="fr" state="final">Parler</target>
