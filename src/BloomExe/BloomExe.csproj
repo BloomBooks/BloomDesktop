@@ -131,19 +131,41 @@ copy /Y "$(SolutionDir)\lib\dotnet\libtidy.dll" $(OutDir)
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
     <Prefer32Bit>True</Prefer32Bit>
   </PropertyGroup>
-  <Target Name="AfterBuildMigrated">
+  <ItemGroup>
+    <SourceFiles Include="..\..\lib\dotnet\*.config" />
+    <LameFiles Include="..\..\lib\lame\lame*.*" />
+    <BasicBookCssFiles Include="..\..\DistFiles\factoryCollections\Templates\Basic Book\*.css" />
+    <RemoteDebugFiles Include="..\..\remoteDebugging\**" />
+    <IccFiles Include="..\..\DistFiles\ColorProfiles\CMYK\USWebCoatedSWOP.icc" />
+    <IccFiles Include="..\..\DistFiles\ColorProfiles\RGB\AdobeRGB1998.icc" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(OS)'=='Windows_NT' AND '$(Platform)'=='x86'">
+    <CopyForSILMedia Include="$(SolutionDir)packages\SIL.Media.*\build\lib\win-x86\*.dll" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(OS)'=='Windows_NT' AND '$(Platform)'=='x64'">
+    <CopyForSILMedia Include="$(SolutionDir)packages\SIL.Media.*\build\lib\win-x64\*.dll" />
+  </ItemGroup>
+  <ItemGroup>
+    <DeleteForSILMedia Include="$(OutDir)lib\win-x64\*.*" />
+    <DeleteForSILMedia Include="$(OutDir)lib\win-x86\*.*" />
+    <RemoveForSILMedia Include="$(OutDir)lib\win-x86" />
+    <RemoveForSILMedia Include="$(OutDir)lib\win-x64" />
+    <RemoveForSILMedia Include="$(OutDir)lib" />
+  </ItemGroup>
+  <Target Name="CopySomeFiles" AfterTargets="Build">
     <Copy SourceFiles="@(SourceFiles)" DestinationFolder="$(OutDir)" />
     <Copy SourceFiles="@(LameFiles)" DestinationFolder="../../DistFiles" />
     <Copy SourceFiles="@(BasicBookCssFiles)" DestinationFolder="../../DistFiles/factoryCollections/Templates/Leveled Reader" />
     <Copy SourceFiles="@(BasicBookCssFiles)" DestinationFolder="../../DistFiles/factoryCollections/Templates/Decodable Reader" />
     <Copy SourceFiles="@(RemoteDebugFiles)" DestinationFolder="$(OutDir)/remoteDebugging" Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'" />
     <Copy SourceFiles="@(IccFiles)" DestinationFolder="$(OutDir)/ColorProfiles" />
-    <Message Text="AfterBuild target completed." Importance="high" />
+    <Message Text="CopySomeFiles target completed." Importance="high" />
   </Target>
-  <Target Name="ReallyAfterBuild" DependsOnTargets="AfterBuild;CopyFilesToOutputDirectory">
+  <Target Name="ReallyAfterBuild" AfterTargets="CopySomeFiles">
     <Copy SourceFiles="@(CopyForSILMedia)" DestinationFolder="$(OutDir)" />
     <Delete Files="@(DeleteForSILMedia)" TreatErrorsAsWarnings="true" />
     <RemoveDir Directories="@(RemoveForSILMedia)" />
+    <Message Text="ReallyAfterBuild target completed." Importance="high" />
   </Target>
   <ItemGroup>
     <PackageReference Include="Autofac" Version="6.0.0" />
