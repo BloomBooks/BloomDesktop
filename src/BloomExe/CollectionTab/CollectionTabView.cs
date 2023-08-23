@@ -258,6 +258,7 @@ namespace Bloom.CollectionTab
 		internal void ManageSettings(SettingsProtectionHelper settingsLauncherHelper)
 		{
 			//we have a couple of buttons which don't make sense for the remote (therefore vulnerable) low-end user
+			settingsLauncherHelper.ManageComponent(_legacySettingsButton);
 			settingsLauncherHelper.ManageComponent(_settingsButton);
 
 			//NB: this isn't really a setting, but we're using that feature to simplify this menu down to what makes sense for the easily-confused user
@@ -305,7 +306,7 @@ namespace Bloom.CollectionTab
 		/// <summary>
 		/// TopBarControl.Width is not right here, because the Team Collection status button only shows in team collections.
 		/// </summary>
-		public int WidthToReserveForTopBarControl => _openCreateCollectionButton.Width + _settingsButton.Width +
+		public int WidthToReserveForTopBarControl => _openCreateCollectionButton.Width + _settingsButton.Width + _legacySettingsButton.Width +
 			(_tcStatusButton.Visible ? _tcStatusButton.Width : 0);
 
 		public void PlaceTopBarControl()
@@ -323,9 +324,14 @@ namespace Bloom.CollectionTab
 			return ancestor as WorkspaceView;
 		}
 
+		private void _legacySettingsButton_Click(object sender, EventArgs e)
+		{
+			GetWorkspaceView().OnLegacySettingsButton_Click(sender, e);
+		}
+
 		private void _settingsButton_Click(object sender, EventArgs e)
 		{
-			GetWorkspaceView().OnSettingsButton_Click(sender, e);
+			_webSocketServer.LaunchDialog("CollectionSettingsDialog", new DynamicJson());
 		}
 
 		private void _openCreateCollectionButton_Click(object sender, EventArgs e)
