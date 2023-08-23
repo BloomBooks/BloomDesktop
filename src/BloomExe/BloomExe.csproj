@@ -173,7 +173,6 @@ copy /Y "$(SolutionDir)\lib\dotnet\libtidy.dll" $(OutDir)
     <PackageReference Include="AWSSDK.S3" Version="3.5.3.10" />
     <PackageReference Include="CairoSharp-signed" Version="3.22.24.37" />
     <PackageReference Include="CommandLineParser" Version="2.8.0" />
-    <PackageReference Include="DesktopAnalytics" Version="1.2.4.11" />
     <!-- Don't let Nuget Package Manager automatically update (downgrade) this to DialogAdapters.Gtk2; it will break Bloom -->
     <PackageReference Include="DialogAdapters" Version="0.1.11" />
     <PackageReference Include="EPPlus" Version="6.2.4" />
@@ -194,6 +193,7 @@ copy /Y "$(SolutionDir)\lib\dotnet\libtidy.dll" $(OutDir)
     <PackageReference Include="SharpZipLib" Version="1.3.3" />
     <PackageReference Include="SIL.Core" Version="13.0.0-beta0050" />
     <PackageReference Include="SIL.Core.Desktop" Version="13.0.0-beta0050" />
+    <PackageReference Include="SIL.DesktopAnalytics" Version="4.0.3" />
     <PackageReference Include="SIL.Media" Version="13.0.0-beta0050" />
     <PackageReference Include="SIL.Windows.Forms" Version="13.0.0-beta0050" />
     <PackageReference Include="SIL.Windows.Forms.Keyboarding" Version="13.0.0-beta0050" />
