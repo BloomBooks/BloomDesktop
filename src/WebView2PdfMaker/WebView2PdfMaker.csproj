@@ -9,7 +9,7 @@
     <OutputPath>..\..\output\$(Configuration)\</OutputPath>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <AssemblyTitle>BloomPdfMaker</AssemblyTitle>
-    <Company>SIL International</Company>
+    <Company>SIL</Company>
     <Product>BloomPdfMaker</Product>
     <Copyright>© SIL International 2023</Copyright>
     <Version>5.6.0.0</Version>

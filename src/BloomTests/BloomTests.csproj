@@ -7,7 +7,7 @@
     <OutputPath>..\..\output\$(Configuration)\</OutputPath>
     <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
     <AssemblyTitle>BloomTests</AssemblyTitle>
-    <Company>SIL International</Company>
+    <Company>SIL</Company>
     <Product>BloomTests</Product>
     <Copyright>© SIL International 2014-2023</Copyright>
     <Version>5.6.0.0</Version>
