@@ -1233,7 +1233,6 @@ function QTip(target, options, id, attr)
                     var bounds = targetElem.getBoundingClientRect();
                     var scaleY = bounds.height / targetElem.offsetHeight;
                     var scaleX = bounds.width / targetElem.offsetWidth;
-                    console.log(bounds);
 
                     // If target element has height but no width or vice versa, use the same scale in both directions, 
                     // which should generally be appropriate
