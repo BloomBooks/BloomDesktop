@@ -26,8 +26,8 @@
         /*There's no page number on the cover, so we might as well have the bottom stuff closer to the bottom*/
         height: @PageHeight - (@MarginTop + @BottomMargin-SmallerForCover);
         //Just center the margin box, (for now, we're ignoring the binding)
-        left: @MarginOuter;
-        width: @PageWidth - (2 * @MarginOuter);
+        // left: @MarginOuter;
+        // width: @PageWidth - (2 * @MarginOuter);
     }
     .A3Landscape& {
         .SetMarginBoxCover(@A3Landscape-Height, @A3Landscape-Width);
@@ -369,7 +369,6 @@
     }
 }
 
-
 .titlePage {
     #originalContributions {
         .bloom-editable {
@@ -382,7 +381,6 @@
         }
     }
 }
-
 
 .titlePage {
     @MarginBetweenMinorItems: 0.5em;
