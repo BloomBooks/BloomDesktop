@@ -1057,6 +1057,7 @@ namespace Bloom.Workspace
 			_originalToolStripPanelWidth = 0;
 			_viewInitialized = true;
 			ShowAutoUpdateDialogIfNeeded();
+			ShowForumInvitationDialogIfNeeded();
 			// Whether we showed the dialog or not we'll check for a new version in 1 minute.
 			_applicationUpdateCheckTimer.Enabled = true;
 		}
@@ -1073,7 +1074,7 @@ namespace Bloom.Workspace
 			{
 				// It's tempting to make the whole process of calling this function a startup action,
 				// but until we actually decide whether to show it, we don't know whether we need to
-				// hide the progress dialog. This is as much as we can postpone.
+				// hide the splash screen. This is as much as we can postpone.
 				StartupScreenManager.AddStartupAction( () =>
 					{
 						using (var dlg = new ReactDialog("autoUpdateSoftwareDlgBundle", "Auto Update"))
@@ -1085,6 +1086,46 @@ namespace Bloom.Workspace
 					}, shouldHideSplashScreen:true, lowPriority:false);
 			}
 
+		}
+
+		private void ShowForumInvitationDialogIfNeeded()
+		{
+			if (Settings.Default.ForumInvitationAcknowledged)
+				return;
+			var lastShown = Settings.Default.ForumInvitationLastShown;
+			var today = DateTime.Now;
+			if (lastShown == DateTime.MinValue)
+			{
+				// If Bloom is newly installed or we only had old versions before,
+				// wait 2 weeks before showing this nagging dialog.
+				Settings.Default.ForumInvitationLastShown = today;
+				Settings.Default.Save();
+				return;
+			}
+			// Show once every two weeks until the user gives up and acknowledges it.
+			if (today.Subtract(lastShown).TotalDays > 13)
+			{
+				// It's tempting to make the whole process of calling this function a startup action,
+				// but until we actually decide whether to show it, we don't know whether we need to
+				// hide the splash screen. This is as much as we can postpone.
+				AppApi.OpenDialogs.AddOrUpdate("ForumInvitationDialog", 0, (key, val) => val);
+				StartupScreenManager.AddStartupAction(() =>
+				{
+					AppApi.OpenDialogs.AddOrUpdate("ForumInvitationDialog", 1, (key, val) => val + 1);
+					if (AppApi.OpenDialogs.TryGetValue("ForumInvitationDialog", out var count) && count > 1)
+						return;
+					Settings.Default.ForumInvitationLastShown = today;
+					Settings.Default.Save();
+					_webSocketServer.LaunchDialog("ForumInvitationDialog", new DynamicJson());
+				}, shouldHideSplashScreen: true, lowPriority: true, needsToRun: () =>
+				{
+					var shouldShow = AppApi.OpenDialogs.TryGetValue("ForumInvitationDialog", out var count);
+					// 5000 idle cycles should be more than enough?  We don't want this running throughout the session
+					// in case the websocket or return api calls fail somehow.
+					// A debug build on an older development machine recorded 4654 cycles in about a minute.
+					return shouldShow && count < 5000;
+				});
+			}
 		}
 
 		private void OnRegistrationMenuItem_Click(object sender, EventArgs e)

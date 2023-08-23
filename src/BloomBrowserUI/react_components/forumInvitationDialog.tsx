@@ -9,8 +9,7 @@ import {
 } from "./BloomDialog/BloomDialog";
 import BloomButton from "./bloomButton";
 import { useEventLaunchedBloomDialog } from "./BloomDialog/BloomDialogPlumbing";
-import { useEffect } from "react";
-import { get, postData, postString } from "../utils/bloomApi";
+import { postData, postString } from "../utils/bloomApi";
 import { useL10n } from "./l10nHooks";
 import { Div, Label } from "./l10nComponents";
 import { DialogCloseButton } from "./BloomDialog/commonDialogComponents";
@@ -23,38 +22,6 @@ export const ForumInvitationDialogLauncher: React.FunctionComponent<{}> = () => 
         closeDialog,
         propsForBloomDialog
     } = useEventLaunchedBloomDialog("ForumInvitationDialog");
-
-    useEffect(() => {
-        get(
-            "app/UserSetting?settingName=ForumInvitationAcknowledged",
-            result => {
-                if (result.data.settingValue) {
-                    // forum invitation has been acknowledged, don't show dialog
-                    return;
-                }
-
-                get(
-                    "app/UserSetting?settingName=ForumInvitationLastShown",
-                    result => {
-                        const lastShownDate = new Date(
-                            result.data.settingValue
-                        );
-                        const today = new Date();
-                        const diff = today.getTime() - lastShownDate.getTime();
-                        const diffDays = Math.floor(diff / (1000 * 3600 * 24));
-                        if (diffDays > 13) {
-                            //show once every two weeks
-                            showDialog();
-                            postData("app/UserSetting", {
-                                settingName: "ForumInvitationLastShown",
-                                settingValue: today.toISOString()
-                            });
-                        }
-                    }
-                );
-            }
-        );
-    }, []);
 
     return propsForBloomDialog.open ? (
         <ForumInvitationDialog
@@ -74,6 +41,11 @@ export const ForumInvitationDialog: React.FunctionComponent<{
         "Bloom Community Forum",
         "ForumInvitationDialog.BloomCommunityForum"
     );
+    const closeDialog = () => {
+        // notify the server that we're closing the dialog.
+        postString("app/closeDialog", "ForumInvitationDialog");
+        props.closeDialog();
+    };
     return (
         <BloomDialog {...props.propsForBloomDialog}>
             <DialogTitle title={dialogTitle} />
@@ -123,7 +95,7 @@ export const ForumInvitationDialog: React.FunctionComponent<{
                             "link",
                             "https://docs.bloomlibrary.org/forum"
                         );
-                        props.closeDialog();
+                        closeDialog();
                     }}
                     hasText={true}
                 >
@@ -131,7 +103,7 @@ export const ForumInvitationDialog: React.FunctionComponent<{
                 </BloomButton>
 
                 <DialogCloseButton
-                    onClick={props.closeDialog}
+                    onClick={closeDialog}
                     css={css`
                         background-color: white;
                         color: ${kBloomBlue} !important;
