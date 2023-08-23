@@ -1057,6 +1057,7 @@ namespace Bloom.Workspace
 			_originalToolStripPanelWidth = 0;
 			_viewInitialized = true;
 			ShowAutoUpdateDialogIfNeeded();
+			ShowForumInvitationDialogIfNeeded();
 			// Whether we showed the dialog or not we'll check for a new version in 1 minute.
 			_applicationUpdateCheckTimer.Enabled = true;
 		}
@@ -1087,6 +1088,31 @@ namespace Bloom.Workspace
 
 		}
 
+		private void ShowForumInvitationDialogIfNeeded()
+		{
+			if (Settings.Default.ForumInvitationAcknowledged)
+				return;
+			var lastShown = Settings.Default.ForumInvitationLastShown;
+			var today = DateTime.Now;
+			// Show once every two weeks until the user gives up and acknowledges it.
+			if (today.Subtract(lastShown).TotalDays > 13)
+			{
+				// It's tempting to make the whole process of calling this function a startup action,
+				// but until we actually decide whether to show it, we don't know whether we need to
+				// hide the progress dialog. This is as much as we can postpone.
+				StartupScreenManager.AddStartupAction(() =>
+				{
+					Settings.Default.ForumInvitationLastShown = today;
+					Settings.Default.Save();
+					using (var dlg = new ReactDialog("forumInvitationDialogBundle", "Forum Invitation"))
+					{
+						dlg.Height = 250;
+						dlg.Width = 500;
+						dlg.ShowDialog(this);
+					}
+				}, shouldHideSplashScreen: true, lowPriority: false);
+			}
+		}
 		private void OnRegistrationMenuItem_Click(object sender, EventArgs e)
 		{
 			using (var dlg = new RegistrationDialog(true, _tcManager.UserMayChangeEmail))

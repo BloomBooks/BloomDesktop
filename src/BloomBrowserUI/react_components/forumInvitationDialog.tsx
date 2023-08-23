@@ -4,78 +4,33 @@ import {
     BloomDialog,
     DialogBottomButtons,
     DialogMiddle,
-    DialogTitle,
-    IBloomDialogProps
+    DialogTitle
 } from "./BloomDialog/BloomDialog";
 import BloomButton from "./bloomButton";
-import { useEventLaunchedBloomDialog } from "./BloomDialog/BloomDialogPlumbing";
-import { useEffect } from "react";
-import { get, postData, postString } from "../utils/bloomApi";
+import { post, postData, postString } from "../utils/bloomApi";
 import { useL10n } from "./l10nHooks";
 import { Div, Label } from "./l10nComponents";
 import { DialogCloseButton } from "./BloomDialog/commonDialogComponents";
 import { css } from "@emotion/react";
 import { kBloomBlue } from "../bloomMaterialUITheme";
-
-export const ForumInvitationDialogLauncher: React.FunctionComponent<{}> = () => {
-    const {
-        showDialog,
-        closeDialog,
-        propsForBloomDialog
-    } = useEventLaunchedBloomDialog("ForumInvitationDialog");
-
-    useEffect(() => {
-        get(
-            "app/UserSetting?settingName=ForumInvitationAcknowledged",
-            result => {
-                if (result.data.settingValue) {
-                    // forum invitation has been acknowledged, don't show dialog
-                    return;
-                }
-
-                get(
-                    "app/UserSetting?settingName=ForumInvitationLastShown",
-                    result => {
-                        const lastShownDate = new Date(
-                            result.data.settingValue
-                        );
-                        const today = new Date();
-                        const diff = today.getTime() - lastShownDate.getTime();
-                        const diffDays = Math.floor(diff / (1000 * 3600 * 24));
-                        if (diffDays > 13) {
-                            //show once every two weeks
-                            showDialog();
-                            postData("app/UserSetting", {
-                                settingName: "ForumInvitationLastShown",
-                                settingValue: today.toISOString()
-                            });
-                        }
-                    }
-                );
-            }
-        );
-    }, []);
-
-    return propsForBloomDialog.open ? (
-        <ForumInvitationDialog
-            closeDialog={closeDialog}
-            showDialog={showDialog}
-            propsForBloomDialog={propsForBloomDialog}
-        />
-    ) : null;
-};
+import {
+    IBloomDialogEnvironmentParams,
+    useSetupBloomDialog
+} from "./BloomDialog/BloomDialogPlumbing";
+import { WireUpForWinforms } from "../utils/WireUpWinform";
 
 export const ForumInvitationDialog: React.FunctionComponent<{
-    closeDialog: () => void;
-    showDialog: () => void;
-    propsForBloomDialog: IBloomDialogProps;
+    dialogEnvironment?: IBloomDialogEnvironmentParams;
 }> = props => {
+    const { propsForBloomDialog } = useSetupBloomDialog(
+        props.dialogEnvironment
+    );
     const dialogTitle = useL10n(
         "Bloom Community Forum",
         "ForumInvitationDialog.BloomCommunityForum"
     );
     return (
-        <BloomDialog {...props.propsForBloomDialog}>
+        <BloomDialog {...propsForBloomDialog}>
             <DialogTitle title={dialogTitle} />
             <DialogMiddle
                 css={css`
@@ -123,7 +78,7 @@ export const ForumInvitationDialog: React.FunctionComponent<{
                             "link",
                             "https://docs.bloomlibrary.org/forum"
                         );
-                        props.closeDialog();
+                        post("common/closeReactDialog");
                     }}
                     hasText={true}
                 >
@@ -131,7 +86,7 @@ export const ForumInvitationDialog: React.FunctionComponent<{
                 </BloomButton>
 
                 <DialogCloseButton
-                    onClick={props.closeDialog}
+                    onClick={() => post("common/closeReactDialog")}
                     css={css`
                         background-color: white;
                         color: ${kBloomBlue} !important;
@@ -142,3 +97,5 @@ export const ForumInvitationDialog: React.FunctionComponent<{
         </BloomDialog>
     );
 };
+
+WireUpForWinforms(ForumInvitationDialog);

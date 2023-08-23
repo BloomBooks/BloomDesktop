@@ -81,6 +81,8 @@ module.exports = merge(core, {
         autoUpdateSoftwareDlgBundle:
             "./react_components/AutoUpdateSoftwareDialog.tsx",
         duplicateManyDlgBundle: "./bookEdit/duplicateManyDialog.tsx",
+        forumInvitationDialogBundle:
+            "./react_components/forumInvitationDialog.tsx",
         uploadIDCollisionDlgBundle:
             "./publish/LibraryPublish/uploadCollisionDlg.tsx",
         copyrightAndLicenseBundle:
