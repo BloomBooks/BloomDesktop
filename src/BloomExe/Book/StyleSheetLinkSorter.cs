@@ -21,7 +21,7 @@ namespace Bloom.Book
 			{
 				_values = new Dictionary<string, int>();
 				var weight = 0;
-				BookStorage.OrderingOfKnownCssFiles.ForEach(x =>
+				BookStorage.KnownCssFilePrefixesInOrder.ForEach(x =>
 				{
 					if (x == "UNKNOWN_STYLESHEETS_HERE")
 						weight = kDefaultValueForStyleSheetsThatShouldListInTheMiddle + 1000;
@@ -56,7 +56,7 @@ namespace Bloom.Book
 			foreach (var pair in _values)
 			{
 				var key = pair.Key.ToLowerInvariant();
-				if (s.ToLowerInvariant() == key	//no path in there
+				if (s.ToLowerInvariant().StartsWith(key)	//no path in there
 					|| (s.ToLowerInvariant().EndsWith("/" + key))
 					|| (s.ToLowerInvariant().EndsWith("\\" + key)))
 					return pair.Value;

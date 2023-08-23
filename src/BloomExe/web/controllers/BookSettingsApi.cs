@@ -34,7 +34,7 @@ namespace Bloom.Api
 		}
 		private void HandleGetAvailablePresetNames(ApiRequest request)
 		{
-			var names = from path in ProjectContext.GetAppearancePresetFileNames() select Path.GetFileName(path);
+			var names = from path in ProjectContext.GetAppearancePresetFileNames() select Path.GetFileName(path).Replace("appearance-page-", "");
 			var x = from name in names.ToArray<string>() select new { label = name, value = name };
 			var json = JsonConvert.SerializeObject(x);
 			request.ReplyWithJson(json);
@@ -74,13 +74,13 @@ namespace Bloom.Api
 					// is irrelevant. The nice thing is, it retains the identity of PublishSettings in case someone is holing on it.
 					var jsonOfJustPublishSettings = JsonConvert.SerializeObject(newSettings.publish);
 					_bookSelection.CurrentSelection.BookInfo.PublishSettings.LoadNewJson(jsonOfJustPublishSettings);
-					//var jsonOfJustAppearanceSettings = JsonConvert.SerializeObject(newSettings.appearance);
 					_bookSelection.CurrentSelection.BookInfo.AppearanceSettings.UpdateFromDynamic(newSettings.appearance);
 
 					_bookSelection.CurrentSelection.SettingsUpdated();
-					//_bookRefreshEvent.Raise(_bookSelection.CurrentSelection);
 
-					_pageRefreshEvent.Raise(PageRefreshEvent.SaveBehavior.SaveBeforeRefresh);
+					// we want a "full" save, which means that the <links> in the <head> can be regenerated, i.e. in response
+					// to a change in the CssTheme from/to legacy that requires changing between "basePage.css" and "basePage-legacy-5-5.css"
+					_pageRefreshEvent.Raise(PageRefreshEvent.SaveBehavior.SaveBeforeRefreshFullSave);
 
 #if UserControlledTemplate
 					UpdateBookTemplateMode(settings.isTemplateBook);

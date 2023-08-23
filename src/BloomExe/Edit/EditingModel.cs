@@ -117,6 +117,10 @@ namespace Bloom.Edit
 						RethinkPageAndReloadIt();
 						break;
 
+					case PageRefreshEvent.SaveBehavior.SaveBeforeRefreshFullSave:
+						RethinkPageAndReloadIt(true);
+						break;
+
 					case PageRefreshEvent.SaveBehavior.JustRedisplay:
 						RefreshDisplayOfCurrentPage();
 						break;
@@ -1034,11 +1038,11 @@ namespace Bloom.Edit
 			request.PostSucceeded();
 		}
 
-		internal void RethinkPageAndReloadIt()
+		internal void RethinkPageAndReloadIt(bool forceFullSave = false)
 		{
 			if (CannotSavePage())
 				return;
-			FinishSavingPage();
+			FinishSavingPage(forceFullSave);
 			RefreshDisplayOfCurrentPage();
 		}
 
@@ -1050,13 +1054,13 @@ namespace Bloom.Edit
 		/// (Argument is required for JS callback, not used).
 		/// </summary>
 		/// <returns>true if it was aborted (nothing to save or refresh)</returns>
-		private void FinishSavingPage(string ignored = null)
+		private void FinishSavingPage(bool forceFullSave = false)
 		{
 			if (CannotSavePage())
 				return;
 
 			var stopwatch = Stopwatch.StartNew();
-			SaveNow();
+			SaveNow(forceFullSave);
 			stopwatch.Stop();
 			Debug.WriteLine("Save Now Elapsed Time: {0} ms", stopwatch.ElapsedMilliseconds);
 		}

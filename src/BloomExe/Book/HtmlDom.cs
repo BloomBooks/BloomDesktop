@@ -648,7 +648,7 @@ namespace Bloom.Book
 		{
 			var stylesheetsToIgnore = new List<string>();
 			// Remember, Linux filenames are case sensitive!
-			stylesheetsToIgnore.Add("basePage.css");
+			stylesheetsToIgnore.Add("basePage"); // will work for basePage.css, basePage-legacy-5-5.css, etc.
 			stylesheetsToIgnore.Add("editMode.css");
 			stylesheetsToIgnore.Add("previewMode.css");
 			stylesheetsToIgnore.Add("XMatter");
@@ -732,14 +732,18 @@ namespace Bloom.Book
 		}
 
 		/// <summary>
-		/// The chosen xmatter changes, so we need to clear out any old ones
+		/// clear out any old stylesheet links before we add them back. Things like xmatter.css and basePage might be replaced with different versions
 		/// </summary>
-		public void RemoveXMatterStyleSheets()
+		public void RemoveNormalStyleSheetsLinks()
 		{
 			foreach(XmlElement linkNode in RawDom.SafeSelectNodes("/html/head/link"))
 			{
 				var href = linkNode.GetAttribute("href");
-				if(Path.GetFileName(href).ToLowerInvariant().EndsWith("xmatter.css"))
+				var name = Path.GetFileName(href).ToLowerInvariant();
+				if (
+					name.EndsWith("xmatter.css") || BookStorage.KnownCssFilePrefixesInOrder.Any(
+						prefix => name.StartsWith(prefix.ToLowerInvariant()))
+					)
 				{
 					linkNode.ParentNode.RemoveChild(linkNode);
 				}

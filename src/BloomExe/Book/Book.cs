@@ -446,7 +446,7 @@ namespace Bloom.Book
 
 			var pageDom = GetHtmlDomWithJustOnePage(page);
 			pageDom.RemoveModeStyleSheets();
-			pageDom.AddStyleSheet("basePage.css");
+			pageDom.AddStyleSheet(this.BookInfo.AppearanceSettings.BasePageCssName);
 			pageDom.AddStyleSheet("editMode.css");
 			pageDom.AddStyleSheet("editPaneGlobal.css");
 			pageDom.AddStyleSheet("");
@@ -577,7 +577,7 @@ namespace Bloom.Book
 			}
 			var pageDom = GetHtmlDomWithJustOnePage(page);
 			pageDom.RemoveModeStyleSheets();
-			foreach (var cssFileName in BookStorage.CssFilesToLink)
+			foreach (var cssFileName in this.Storage.GetCssFilesToLink())
 			{
 				pageDom.AddStyleSheet(cssFileName);
 			}

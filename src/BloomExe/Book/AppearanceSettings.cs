@@ -1,4 +1,4 @@
-﻿using Bloom;
+using Bloom;
 using Newtonsoft.Json;
 using SIL.Extensions;
 using SIL.IO;
@@ -138,7 +138,7 @@ public class AppearanceSettings
 		// Now add the user's chosen preset if it isn't the default, which we already added above.
 		if (!string.IsNullOrEmpty(CssThemeName) && CssThemeName != "default")
 		{
-			var sourcePath = Path.Combine(ProjectContext.GetFolderContainingAppearancePresetFiles(), CssThemeName + ".css");
+			var sourcePath = Path.Combine(ProjectContext.GetFolderContainingAppearancePresetFiles(), $"appearance-page-{CssThemeName}.css");
 			if (!RobustFile.Exists(sourcePath))
 			{
 				// TODO: We should toast I suppose?
@@ -172,6 +172,12 @@ public class AppearanceSettings
 		}
 	}
 
+	/// <summary>
+	/// In version 5.6, we greatly simplified and modernize our basePage css. However, existing books that had custom css could rely on the old approach,
+	/// specifically for using margins (and possible other things like page nubmer size/location). Therefore we provide a CSS theme that
+	/// effectively just gives you the basePage.css that came with 5.5.
+	/// </summary>
+	internal string BasePageCssName => CssThemeName == "legacy-5-5" ? "basePage-legacy-5-5.css" : "basePage.css";
 }
 
 
