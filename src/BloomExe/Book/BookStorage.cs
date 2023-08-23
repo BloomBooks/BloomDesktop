@@ -92,6 +92,8 @@ namespace Bloom.Book
 		CollectionSettings CollectionSettings { get; }
 
 		void ReloadFromDisk(string renamedTo, Action betweenReloadAndEvents);
+
+		string[] GetCssFilesToLink();
 	}
 
 	public class BookStorage : IBookStorage
@@ -875,11 +877,11 @@ namespace Bloom.Book
 		}
 
 		public const string BackupFilename = "bookhtml.bak"; // need to know this in BookCollection too.
-		// We try to keep all filenames in the book folder less than this.
-		// The basic idea is to avoid running into the 260 character max path length.
-		// We don't know exactly what directory we might want to unzip a book into
-		// (and even if this computer has been configured to allow longer paths, some other
-		// computer using the book might not be) so it makes sense to keep them fairly short.
+															 // We try to keep all filenames in the book folder less than this.
+															 // The basic idea is to avoid running into the 260 character max path length.
+															 // We don't know exactly what directory we might want to unzip a book into
+															 // (and even if this computer has been configured to allow longer paths, some other
+															 // computer using the book might not be) so it makes sense to keep them fairly short.
 		public const int kMaxFilenameLength = 50;
 
 		private string GetBackupFilePath()
@@ -987,7 +989,7 @@ namespace Bloom.Book
 		internal static List<string> GetImagePathsRelativeToBook(XmlElement element)
 		{
 			return (from XmlElement img in HtmlDom.SelectChildImgAndBackgroundImageElements(element)
-				select HtmlDom.GetImageElementUrl(img).PathOnly.NotEncoded).Distinct().ToList();
+					select HtmlDom.GetImageElementUrl(img).PathOnly.NotEncoded).Distinct().ToList();
 		}
 
 		#endregion Image Files
@@ -1243,7 +1245,7 @@ namespace Bloom.Book
 		internal static List<string> GetVideoPathsRelativeToBook(XmlElement element)
 		{
 			return (from XmlElement videoContainerElements in HtmlDom.SelectChildVideoElements(element)
-				select HtmlDom.GetVideoElementUrl(new ElementProxy(videoContainerElements as XmlElement)).PathOnly.NotEncoded)
+					select HtmlDom.GetVideoElementUrl(new ElementProxy(videoContainerElements as XmlElement)).PathOnly.NotEncoded)
 				.Where(path => !String.IsNullOrEmpty(path)).Distinct().ToList();
 		}
 
@@ -1268,7 +1270,7 @@ namespace Bloom.Book
 			string tempPath = GetNameForATempFileInStorageFolder();
 			MakeCssLinksAppropriateForStoredFile(dom);
 			SetBaseForRelativePaths(dom, String.Empty);// remove any dependency on this computer, and where files are on it.
-			//CopyXMatterStylesheetsIntoFolder
+													   //CopyXMatterStylesheetsIntoFolder
 			return XmlHtmlConverter.SaveDOMAsHtml5(dom.RawDom, tempPath);
 		}
 
@@ -1542,11 +1544,11 @@ namespace Bloom.Book
 				}
 				foreach (var dir in Directory.GetDirectories(pathToFolderOfReplacementImages))
 				{
-//				    doesn't really matter
-//					if (dir == _folderPath)
-//				    {
-//						progress.WriteMessage("Skipping the directory of this book");
-//				    }
+					//				    doesn't really matter
+					//					if (dir == _folderPath)
+					//				    {
+					//						progress.WriteMessage("Skipping the directory of this book");
+					//				    }
 					if (AttemptToReplaceMissingImage(missingFile, dir, progress))
 						return true;
 				}
@@ -1637,7 +1639,7 @@ namespace Bloom.Book
 			{
 				return Directory.GetFiles(folderPath)
 
-						// Although GetFiles supports simple pattern matching, it doesn't support enforcing end-of-string matches...
+					// Although GetFiles supports simple pattern matching, it doesn't support enforcing end-of-string matches...
 					// So let's do the filtering this way instead, to make sure we don't get any extensions that start with "htm" but aren't exact matches.
 					.Where(name => name.EndsWith(".htm") || name.EndsWith(".html"));
 			}
@@ -1881,7 +1883,7 @@ namespace Bloom.Book
 				}
 
 				Dom = new HtmlDom(xmlDomFromHtmlFile); //with throw if there are errors
-				// Don't let spaces between <strong>, <em>, or <u> elements be removed. (BL-2484)
+													   // Don't let spaces between <strong>, <em>, or <u> elements be removed. (BL-2484)
 				Dom.RawDom.PreserveWhitespace = true;
 
 				// An earlier comment warned that this was taking 1/3 of startup time. However, it was being done anyway
@@ -2104,7 +2106,7 @@ namespace Bloom.Book
 			}
 			else
 			{
-				var supportFilesToAlwaysUpdate = new[] { "placeHolder.png", "basePage.css", "previewMode.css", "origami.css"};
+				var supportFilesToAlwaysUpdate = new[] { "placeHolder.png", BookInfo.AppearanceSettings.BasePageCssName, "previewMode.css", "origami.css" };
 				foreach (var supportFile in supportFilesToAlwaysUpdate)
 				{
 					Update(supportFile);
@@ -2129,9 +2131,10 @@ namespace Bloom.Book
 				// Instead, normally one is fetched from the right branding in CopyBrandingFiles,
 				// or if the branding is under development we generate a placeholder, or if there is no branding
 				// we generate an empty placeholder.
-				var cssFilesToSkipInThisPhase =	new ArrayList() {
+				var cssFilesToSkipInThisPhase = new ArrayList() {
 					// Files we just updated
-					"basepage.css", "previewmode.css", "origami.css" };
+					this.BookInfo.AppearanceSettings.					// Files we just updated
+					BasePageCssName, "previewmode.css", "origami.css" };
 				cssFilesToSkipInThisPhase.AddRange(BookStorage.CssFilesThatAreDynamicallyUpdated);
 
 				foreach (var path in Directory.GetFiles(FolderPath, "*.css"))
@@ -2191,7 +2194,7 @@ namespace Bloom.Book
 
 				var filesToCopy = Directory
 					.EnumerateFiles(brandingFolder) //<--- .NET 4.5
-					// note this is how the branding.css gets into a book folder
+													// note this is how the branding.css gets into a book folder
 					.Where(path =>
 						".png,.svg,.jpg,.css".Split(',').Contains(Path.GetExtension(path).ToLowerInvariant()));
 
@@ -2277,11 +2280,12 @@ namespace Bloom.Book
 			return (RobustFile.GetAttributes(path) & FileAttributes.ReadOnly) != 0;
 		}
 
-		public void Update(string fileName, string factoryPath = "")
+		public void Update(string sourceFileName, string sourcePathIncludingFileName = "")
 		{
+			var destinationName = sourceFileName; // preserve the destination name in case we redirect to another sourceFile to support legacy books
 			if (!IsUserOrTempFolder)
 			{
-				if (fileName.ToLowerInvariant().Contains("xmatter") && !fileName.ToLower().StartsWith("factory-xmatter"))
+				if (sourceFileName.ToLowerInvariant().Contains("xmatter") && !sourceFileName.ToLower().StartsWith("factory-xmatter"))
 				{
 					return; //we don't want to copy custom xmatters around to the program files directory, template directories, the Bloom src code folders, etc.
 				}
@@ -2316,32 +2320,32 @@ namespace Bloom.Book
 				}
 			}
 
-			string documentPath="notSet";
+			string documentPath = "notSet";
 			try
 			{
-				if(String.IsNullOrEmpty(factoryPath))
+				if (String.IsNullOrEmpty(sourcePathIncludingFileName))
 				{
-					factoryPath = _fileLocator.LocateFile(fileName);
+					sourcePathIncludingFileName = _fileLocator.LocateFile(sourceFileName);
 				}
-				if(String.IsNullOrEmpty(factoryPath))//happens during unit testing
+				if (String.IsNullOrEmpty(sourcePathIncludingFileName))//happens during unit testing
 					return;
 
-				documentPath = Path.Combine(FolderPath, fileName);
-				if(!RobustFile.Exists(documentPath))
+				documentPath = Path.Combine(FolderPath, destinationName);
+				if (!RobustFile.Exists(documentPath))
 				{
-					Logger.WriteMinorEvent("BookStorage.Update() Copying missing file {0} to {1}", factoryPath, documentPath);
+					Logger.WriteMinorEvent("BookStorage.Update() Copying missing file {0} to {1}", sourcePathIncludingFileName, documentPath);
 
 					// get rid of previous xmatter stylesheets
-					if (fileName.ToLowerInvariant().Contains("xmatter"))
+					if (destinationName.ToLowerInvariant().Contains("xmatter"))
 						RemoveExistingFilesBySuffix("XMatter.css");
 
-					RobustFile.Copy(factoryPath, documentPath);
+					RobustFile.Copy(sourcePathIncludingFileName, documentPath);
 					return;
 				}
 				// due to BL-2166, we no longer compare times since downloaded books often have
 				// more recent times than the DistFiles versions we want to use
 				// var documentTime = RobustFile.GetLastWriteTimeUtc(documentPath);
-				if (factoryPath == documentPath)
+				if (sourcePathIncludingFileName == documentPath)
 					return; // no point in trying to update self!
 				if (IsPathReadonly(documentPath))
 				{
@@ -2350,22 +2354,22 @@ namespace Bloom.Book
 					ErrorReport.NotifyUserOfProblem(msg);
 					return;
 				}
-				Logger.WriteMinorEvent("BookStorage.Update() Copying file {0} to {1}", factoryPath, documentPath);
+				Logger.WriteMinorEvent("BookStorage.Update() Copying file {0} to {1}", sourcePathIncludingFileName, documentPath);
 
-				RobustFile.Copy(factoryPath, documentPath, true);
+				RobustFile.Copy(sourcePathIncludingFileName, documentPath, true);
 				//if the source was locked, don't copy the lock over
 				RobustFile.SetAttributes(documentPath, FileAttributes.Normal);
 			}
 			catch (Exception e)
 			{
-				if(documentPath.Contains(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles))
+				if (documentPath.Contains(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles))
 					|| documentPath.ToLowerInvariant().Contains("program"))//english only
 				{
 					Logger.WriteEvent("Could not update file {0} because it was in the program directory.", documentPath);
 					return;
 				}
 
-				ReportCantUpdateSupportFile(factoryPath, documentPath);
+				ReportCantUpdateSupportFile(sourcePathIncludingFileName, documentPath);
 			}
 		}
 
@@ -2443,10 +2447,10 @@ namespace Bloom.Book
 		private void EnsureHasLinksToStylesheets(HtmlDom dom)
 		{
 			//clear out any old ones
-			Dom.RemoveXMatterStyleSheets();
+			Dom.RemoveNormalStyleSheetsLinks();
 			EnsureHasLinkToStyleSheet(dom, Path.GetFileName(PathToXMatterStylesheet));
 
-			BookStorage.MinimalCssFilesFromInstallThatDoNotChangeAtRuntime.ForEach(x => {
+			getMinimalCssFilesFromInstallThatDoNotChangeAtRuntime().ForEach(x => {
 				EnsureHasLinkToStyleSheet(dom, x);
 			});
 			BookStorage.CssFilesThatAreDynamicallyUpdated.ForEach(x => {
@@ -2507,8 +2511,10 @@ namespace Bloom.Book
 
 		// note: order is significant here, but I added branding.css at the end (the most powerful position) arbitrarily, until
 		// such time as it's clear if it matters.
-		public readonly static string[] CssFilesToLink =
-			{ "basePage.css", "previewMode.css", "origami.css", "appearance.css","branding.css" };
+		public string[] GetCssFilesToLink()
+		{
+			return new string[] { this.BookInfo.AppearanceSettings.BasePageCssName, "previewMode.css", "origami.css", "appearance.css", "branding.css" };
+		}
 
 		// While in Bloom, we could have an edit style sheet or (someday) other modes. But when stored,
 		// we want to make sure it's ready to be opened in a browser.
@@ -2672,8 +2678,8 @@ namespace Bloom.Book
 		}
 
 		public static string GenericBookProblemNotice => "<p>" + LocalizationManager.GetString("Errors.BookProblem",
-			                                                       "Bloom had a problem showing this book. This doesn't mean your work is lost, but it does mean that something is out of date, is missing, or has gone wrong.")
-		                                                       + "</p>";
+																   "Bloom had a problem showing this book. This doesn't mean your work is lost, but it does mean that something is out of date, is missing, or has gone wrong.")
+															   + "</p>";
 
 		//enhance: move to SIL.IO.RobustIO
 		public static void CopyDirectory(string sourceDir, string targetDir, string[] skipFileExtensionsLowerCase = null)
@@ -3003,24 +3009,35 @@ namespace Bloom.Book
 			"branding.css", "defaultLangStyles.css", "customCollectionStyles.css", "appearance.css", "customBookStyles.css"
 		};
 
-		public readonly static string[] MinimalCssFilesFromInstallThatDoNotChangeAtRuntime =
+		public string[] getMinimalCssFilesFromInstallThatDoNotChangeAtRuntime()
 		{
-			"basePage.css", /*"editMode.css",	"previewMode.css" REVIEW,*/ "origami.css"
-		};
+			return new string[]
+				{
+					this.BookInfo.AppearanceSettings.					BasePageCssName, /*"editMode.css",	"previewMode.css" REVIEW,*/ "origami.css"
+				};
+		}
+	
 
 		public readonly static string[] CssFilesThatAreObsolete =
 		{
 			"langVisibility.css", "editOriginalMode.css","editTranslationMode.css"
 		};
 
-		public readonly static string[] OrderingOfKnownCssFiles = 
+		public readonly static string[] KnownCssFilePrefixesInOrder = 
 		{
 			// list in the order that you want their <link> to appear
-			"basePage.css", "baseEPUB.css", "editMode.css",	"previewMode.css", "origami.css",
-			"UNKNOWN_STYLESHEETS_HERE",
-			"branding.css", "defaultLangStyles.css", "customCollectionStyles.css",
-			"appearance.css", "customBookStyles.css"
-		};
+				"basePage", // we leave off ".css" so that this can match version ones, like "basePage-legacy-5-5.css"
+				"baseEPUB.css",
+				"editMode.css",
+				"previewMode.css",
+				"origami.css",
+				"UNKNOWN_STYLESHEETS_HERE",
+				"branding.css",
+				"defaultLangStyles.css",
+				"customCollectionStyles.css",
+				"appearance.css",
+				"customBookStyles.css"
+			};
+		
 	}
-
 }

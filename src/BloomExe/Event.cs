@@ -180,7 +180,7 @@ namespace Bloom
 	{
 		public enum SaveBehavior
 		{
-			SaveBeforeRefresh, JustRedisplay
+			SaveBeforeRefresh, SaveBeforeRefreshFullSave, JustRedisplay
 		}
 		public PageRefreshEvent()
 			: base("PageRefreshEvent", LoggingLevel.Minor)

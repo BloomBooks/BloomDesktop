@@ -6,6 +6,6 @@
     --page-margin-outer: 15mm;
     --boxes-sideBySide-gap: 3px;
     --top-bottom-gap: 3px;
-    --pageNumber-font-size: 14pt; /* bloom 5.5: confirmed */
-    --pageNumber-bottom: 20px; /* bloom 5.5: confirmed */
+    --pageNumber-font-size: 14pt;
+    --pageNumber-bottom: 20px;
 }

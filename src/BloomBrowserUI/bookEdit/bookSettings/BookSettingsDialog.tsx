@@ -189,10 +189,7 @@ export const BookSettingsDialog: React.FunctionComponent<{}> = () => {
                                     path={`appearance.cssThemeName`}
                                     options={presetNames.map(x => {
                                         return {
-                                            label: x.label.replace(
-                                                "appearance-page-",
-                                                ""
-                                            ),
+                                            label: x.label,
                                             value: x.value
                                         };
                                     })}
