@@ -1,5 +1,6 @@
-using Amazon.Runtime.Internal.Util;
+﻿using Amazon.Runtime.Internal.Util;
 using Bloom;
+using Bloom.MiscUI;
 using Newtonsoft.Json;
 using SIL.Extensions;
 using SIL.IO;
@@ -10,6 +11,7 @@ using System.Dynamic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 
 public class AppearanceSettings
 {
@@ -24,7 +26,7 @@ public class AppearanceSettings
 		}
 	}
 
-	public static string kDoShowValueForDisplay = "doshow-css-will-ignore-this-and-use-default"; // by using an illegal value, we just get a no-op rule, which is what we want
+	public static string kDoShowValueForDisplay = "doShow-css-will-ignore-this-and-use-default"; // by using an illegal value, we just get a no-op rule, which is what we want
 	public static string kHideValueForDisplay = "none";
 	public static string kOverrideGroupsArrayKey = "groupsToOverrideFromParent"; // e.g. "coverFields, xmatter"
 
@@ -45,7 +47,7 @@ public class AppearanceSettings
 		new CssDisplayVariableDef("coverShowTopic",true, "coverFields"),
 		new CssDisplayVariableDef("coverShowLanguageName",false, "coverFields"),
 	};
-	private string CssThemeName { get { return _properties.cssThemeName; } }
+	private string CssThemeName { get { return _properties.cssThemeName; } set { _properties.cssThemeName = value; } }
 
 	/// <summary>
 	/// In version 5.6, we greatly simplified and modernize our basePage css. However, existing books that had custom css could rely on the old approach,
@@ -88,6 +90,17 @@ public class AppearanceSettings
 		{
 			var json = RobustFile.ReadAllText(jsonPath);
 			settings.UpdateFromJson(json);
+		}
+		else // this books doesn't have an appearance.json file, which will happen if it was created before 5.6
+		{
+			var customBookStylesPath = bookFolderPath.CombineForPath("customBookStyles.css");
+			var customBookCss = RobustFile.Exists(customBookStylesPath)? RobustFile.ReadAllText(customBookStylesPath): null;
+
+			// review: this seems to be copied into the book folder, so I'm just using it from there. Is that reliable and enough?
+			var customCollectionStylesPath = bookFolderPath.CombineForPath("../","customCollectionStyles.css");
+			var customCollectionCss = RobustFile.Exists(customCollectionStylesPath)? RobustFile.ReadAllText(customCollectionStylesPath): null;
+
+			settings.CssThemeName = AppearanceSettings.GetSafeThemeForBook(customCollectionCss, customBookCss);
 		}
 
 		return settings;
@@ -149,8 +162,16 @@ public class AppearanceSettings
 			}
 
 			if (definition is CssPropertyDef)
-				cssBuilder.AppendLine(((CssPropertyDef)definition).GetCssVariableDeclaration(keyValuePair));
+				cssBuilder.AppendLine(((PropertyDef)definition).GetCssVariableDeclaration(keyValuePair));
 		}
+
+		// just something to enable us easily visually point out that we are in legacy mode
+		if (((string)_properties.cssThemeName).StartsWith("legacy"))
+		{
+			// I don't think this is worth localizing at the moment
+			cssBuilder.AppendLine($"--cssThemeMessage: \"⚠️Using legacy theme\";");
+		}
+
 		cssBuilder.AppendLine("}");
 		return cssBuilder.ToString();
 	}
@@ -174,6 +195,8 @@ public class AppearanceSettings
 		// Add in all the user's settings
 		cssBuilder.AppendLine("/* From this book's appearance settings */");
 		cssBuilder.AppendLine(GetCssRootDeclaration(null));
+
+
 
 		// Add in the var declarations of the default, so that the display doesn't collapse just because a preset is missing
 		// some var that basepage.css relies on.
@@ -222,6 +245,24 @@ public class AppearanceSettings
 			((IDictionary<string, object>)_properties)[property.Key] = property.Value;
 		}
 	}
+
+	internal static string GetSafeThemeForBook(string customCollectionCss, string customBookCss)
+	{
+		const string kLegacy = "legacy-5-5";
+		// see if the css contains rules that nowadays should be using css variables, and would likely interfer with 5.6 and up:
+		const string kProbablyWillInterfere = "padding-|left:|top:|right:|bottom:|margin-|width:";
+
+		if (customBookCss != null && Regex.IsMatch(customBookCss, kProbablyWillInterfere, RegexOptions.IgnoreCase))
+		{
+			return kLegacy;
+		}
+		if(customCollectionCss != null && Regex.IsMatch(customCollectionCss, kProbablyWillInterfere, RegexOptions.IgnoreCase))
+		{
+			return kLegacy;
+		}
+
+		return "default";
+	}
 }
 
 
@@ -238,10 +279,12 @@ abstract class PropertyDef
 	/// The name of the group of properties that can a book can override from a collection, or a page can override from a book.
 	/// </summary>
 	public string OverrideGroup;
+
+	public abstract string GetCssVariableDeclaration(dynamic property);
 }
 abstract class CssPropertyDef : PropertyDef
 {
-	public abstract string GetCssVariableDeclaration(dynamic property);
+
 }
 class StringPropertyDef : PropertyDef
 {
@@ -251,6 +294,11 @@ class StringPropertyDef : PropertyDef
 		Name = name;
 		DefaultValue = defaultValue;
 		OverrideGroup = overrideGroup;
+	}
+
+	public override string GetCssVariableDeclaration(dynamic property)
+	{
+		return $"--{Name}: {property.Value};";
 	}
 }
 

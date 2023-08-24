@@ -19,6 +19,12 @@ namespace BloomTests.Book
 			Assert.IsFalse(appearance.TestOnlyPropertiesAccess.coverShowTitleL3);
 		}
 
+		[Test]
+		public void GetCssRootDeclaration_IncludesThemeName()
+		{
+			var appearance = new AppearanceSettings();
+			Assert.IsTrue(appearance.GetCssRootDeclaration().Contains("--cssThemeName"));
+		}
 
 		[Test]
 		public void GetCssRootDeclaration_HasCorrectTitleFieldsVariableValues()
@@ -66,5 +72,33 @@ namespace BloomTests.Book
 			// such a property, and at will not be emitted at all. This may not be sufficient for our needs, but until that is clear, this case just isn't handled.
 		}
 		*/
+
+		[Test]
+		public void GetSafeThemeForBook_CustomCollectionStylesIsEmpty_AndNoCustomBookCSS_Default()
+		{
+			Assert.AreEqual("default", AppearanceSettings.GetSafeThemeForBook(customCollectionCss: "", customBookCss: null));
+		}
+		[Test]
+		public void GetSafeThemeForBook_CustomCollectionStylesIsCommentsOnly_AndNoCustomBookCSS_Default()
+		{
+			Assert.AreEqual("default", AppearanceSettings.GetSafeThemeForBook(customCollectionCss: "/* hello */", customBookCss: null));
+		}
+		[Test]
+		public void GetSafeThemeForBook_AllCssDoesNotPostionOrSetWidth_Default()
+		{
+			Assert.AreEqual("default", AppearanceSettings.GetSafeThemeForBook(customCollectionCss: ".marginBox{ background-color:yellow}", customBookCss: ".marginBox{ background-color:yellow}"));
+		}
+
+		[Test]
+		public void GetSafeThemeForBook_CustomCollectionStylesIsCommentsOnly_CustomBookCSSPositionsMarginBox_Legacy()
+		{
+			Assert.AreEqual("legacy-5-5", AppearanceSettings.GetSafeThemeForBook(customCollectionCss: "/* hello */", customBookCss: "/* hello */\r\n.marginBox{ left: 2mm}"));
+		}
+
+		[Test]
+		public void GetSafeThemeForBook_CustomCollectionStylesPositionsMarginBox_NoCustomBookCSS_Legacy()
+		{
+			Assert.AreEqual("legacy-5-5", AppearanceSettings.GetSafeThemeForBook(customCollectionCss: ".position-right\r\n  > .split-pane-component-inner {\r\n  padding-left: 1mm;\r\n}", customBookCss: null));
+		}
 	}
 }
