@@ -745,7 +745,17 @@ namespace Bloom.Book
 						prefix => name.StartsWith(prefix.ToLowerInvariant()))
 					)
 				{
-					linkNode.ParentNode.RemoveChild(linkNode);
+					try 
+					{
+						// I don't know how it gets null, but I've seen it
+						// even if you try if(linkNode.ParentNode!=null), the following line may still find that it is null
+						// presumably there's some unwanted async going on
+						linkNode.ParentNode.RemoveChild(linkNode);
+					}
+					catch (Exception)
+					{
+						// ah well. Swallow
+					}
 				}
 			}
 		}
