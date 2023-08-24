@@ -1,9 +1,11 @@
+using Amazon.Runtime.Internal.Util;
 using Bloom;
 using Newtonsoft.Json;
 using SIL.Extensions;
 using SIL.IO;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Dynamic;
 using System.IO;
 using System.Linq;
@@ -11,8 +13,26 @@ using System.Text;
 
 public class AppearanceSettings
 {
+	public AppearanceSettings()
+	{
+		_properties = new ExpandoObject();
+
+		// copy in the default values from each definition
+		foreach (var definition in propertyDefinitions)
+		{
+			definition.SetDefault(_properties); // this is a workaround using ref because c# doesn't have union types, or `any`, sigh
+		}
+	}
+
+	public static string kDoShowValueForDisplay = "doshow-css-will-ignore-this-and-use-default"; // by using an illegal value, we just get a no-op rule, which is what we want
+	public static string kHideValueForDisplay = "none";
+	public static string kOverrideGroupsArrayKey = "groupsToOverrideFromParent"; // e.g. "coverFields, xmatter"
 
 	internal dynamic _properties;
+
+	// it's a big hassle working directly with the ExpandoObject. By casting it this way, you can do the things you expect.
+	internal IDictionary<string, object> Properties => (IDictionary<string, object>)_properties;
+
 	public dynamic TestOnlyPropertiesAccess { get { return _properties; } }
 
 	// create an array of properties and fill it in
@@ -27,16 +47,13 @@ public class AppearanceSettings
 	};
 	private string CssThemeName { get { return _properties.cssThemeName; } }
 
-	public AppearanceSettings()
-	{
-		_properties = new ExpandoObject();
+	/// <summary>
+	/// In version 5.6, we greatly simplified and modernize our basePage css. However, existing books that had custom css could rely on the old approach,
+	/// specifically for using margins (and possible other things like page nubmer size/location). Therefore we provide a CSS theme that
+	/// effectively just gives you the basePage.css that came with 5.5.
+	/// </summary>
+	internal string BasePageCssName => CssThemeName == "legacy-5-5" ? "basePage-legacy-5-5.css" : "basePage.css";
 
-		// copy in the default values from each definition
-		foreach (var definition in propertyDefinitions)
-		{
-			definition.SetDefault(_properties); // this is a workaround using ref because c# doesn't have union types, or `any`, sigh
-		}
-	}
 
 	/// <summary>
 	/// Each book gets an "appearance.css" that is a combination of the appearance-page-default.css and the css from selected appearance preset.
@@ -75,15 +92,25 @@ public class AppearanceSettings
 
 		return settings;
 	}
+	/// <summary>
+	/// Create something like this:
+	/// ":root{
+	///		--coverShowTitleL2: bogus-value-so-default-is-used;
+	///		--coverShowTitleL3: none;
+	///		--coverShowTopic: bogus-value-so-default-is-used;
+	///		--coverShowLanguageName: none;
+	///	}"
+	/// </summary>
 	public string GetCssRootDeclaration(AppearanceSettings parent = null)
 	{
 		var cssBuilder = new StringBuilder();
 		cssBuilder.AppendLine(":root{");
+		var overrides = Properties.ContainsKey(kOverrideGroupsArrayKey) ? (System.Collections.Generic.List<object>)Properties[kOverrideGroupsArrayKey]: null;
 
 		//foreach (var property in _properties.Properties())
 		foreach (var property in (IDictionary<string, object>)_properties)
 		{
-			if (property.Key == "overrides")
+			if (property.Key == kOverrideGroupsArrayKey)
 				continue;
 			var definition = propertyDefinitions.FirstOrDefault(d => d.Name == property.Key);
 			if (definition == null)
@@ -92,16 +119,32 @@ public class AppearanceSettings
 				NonFatalProblem.Report(ModalIf.None, PassiveIf.Alpha, $"Unexpected field {property.Key}", $"appearance.json has a field that this version of Bloom does not have a definition for: {property.Key}. This is not necessarily a problem.");
 			}
 
-			var keyValuePair = property;
-			if (parent != null)
+			var keyValuePair = property; // start by saying the value is whatever the child has
+			if (parent != null)  // then if there is a parent...
 			{
-				var overrides = this._properties.overrides;
-
-				// unless this group is listed as something to override, use the parent's value
-				if (overrides == null || !((string[])overrides.ToObject<string[]>()).Contains(definition.OverrideGroup))
+				// and this property is part of an override group...
+				if (!string.IsNullOrEmpty(definition.OverrideGroup))
 				{
-					var v = ((IDictionary<string, object>)parent._properties)[property.Key];
-					keyValuePair = new KeyValuePair<string, object>(property.Key, v);
+					// if _properties has a value for kOverrideGroupListPropertyKey
+					if (Properties.ContainsKey(kOverrideGroupsArrayKey))
+					{
+						// but that group is not listed as something to override...
+						if (overrides == null || !overrides.Contains(definition.OverrideGroup))
+						{
+							if (!((IDictionary<string, object>)parent._properties).ContainsKey(property.Key))
+							{
+								Debug.Assert(false, $"The property '{property.Key}' is defined as part of the override group '{definition.OverrideGroup}', but the parent does not have a value for it.");
+								SIL.Reporting.Logger.WriteMinorEvent($"Warning: The property '{property.Key}' is defined as part of the override group '{definition.OverrideGroup}', but the parent does not have a value for it.");
+								// we'll just use the child's value
+							}
+							else
+							{
+								// OK, the property is not part of a group that is overridden & the parent has a value, so use the parent's value.
+								var parentValue = ((IDictionary<string, object>)parent._properties)[property.Key];
+								keyValuePair = new KeyValuePair<string, object>(property.Key, parentValue);
+							}
+						}
+					}
 				}
 			}
 
@@ -111,6 +154,10 @@ public class AppearanceSettings
 		cssBuilder.AppendLine("}");
 		return cssBuilder.ToString();
 	}
+
+	/// <summary>
+	/// Save both the css and the json version of the settings to the book folder.
+	/// </summary>
 	public void WriteToFolder(string folder)
 	{
 		var targetPath = AppearanceCssPath(folder);
@@ -152,6 +199,10 @@ public class AppearanceSettings
 		RobustFile.WriteAllText(targetPath, cssBuilder.ToString());
 		RobustFile.WriteAllText(AppearanceJsonPath(folder), JsonConvert.SerializeObject(_properties, Formatting.Indented));
 	}
+
+	/// <summary>
+	/// Read in our settings from JSON
+	/// </summary>
 	internal void UpdateFromJson(string json)
 	{
 		// parse the json into an object
@@ -171,13 +222,6 @@ public class AppearanceSettings
 			((IDictionary<string, object>)_properties)[property.Key] = property.Value;
 		}
 	}
-
-	/// <summary>
-	/// In version 5.6, we greatly simplified and modernize our basePage css. However, existing books that had custom css could rely on the old approach,
-	/// specifically for using margins (and possible other things like page nubmer size/location). Therefore we provide a CSS theme that
-	/// effectively just gives you the basePage.css that came with 5.5.
-	/// </summary>
-	internal string BasePageCssName => CssThemeName == "legacy-5-5" ? "basePage-legacy-5-5.css" : "basePage.css";
 }
 
 
@@ -189,6 +233,10 @@ abstract class PropertyDef
 	{
 		((IDictionary<string, object>)prop)[Name] = DefaultValue;
 	}
+
+	/// <summary>
+	/// The name of the group of properties that can a book can override from a collection, or a page can override from a book.
+	/// </summary>
 	public string OverrideGroup;
 }
 abstract class CssPropertyDef : PropertyDef
@@ -232,8 +280,8 @@ class CssDisplayVariableDef : CssPropertyDef
 	public CssDisplayVariableDef(string name, bool defaultValue, string overrideGroup)
 	{
 		Name = name;
-		TrueValue = "bogus-value-so-default-is-used"; // by using an illegal value, we just get a no-op rule, which is what we want
-		FalseValue = "none";
+		TrueValue = AppearanceSettings.kDoShowValueForDisplay; // by using an illegal value, we just get a no-op rule, which is what we want
+		FalseValue = AppearanceSettings.kHideValueForDisplay;
 		DefaultValue = defaultValue;
 		OverrideGroup = overrideGroup;
 	}
