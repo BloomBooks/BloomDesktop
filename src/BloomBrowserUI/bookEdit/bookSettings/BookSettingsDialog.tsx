@@ -57,8 +57,8 @@ export const BookSettingsDialog: React.FunctionComponent<{}> = () => {
         dialogFrameProvidedExternally: false
     });
 
-    const presetNames: IPageStyles = useApiObject<IPageStyles>(
-        "book/settings/available-preset-names",
+    const themeNames: IPageStyles = useApiObject<IPageStyles>(
+        "book/settings/available-theme-names",
         []
     );
 
@@ -181,19 +181,19 @@ export const BookSettingsDialog: React.FunctionComponent<{}> = () => {
                                 />
                             </ConfigrSubgroup>
                             <ConfigrSubgroup
-                                label="Page Style"
+                                label="Page Theme"
                                 path={`appearance`}
                             >
                                 <ConfigrSelect
-                                    label="Page Style Preset"
+                                    label="Theme"
                                     path={`appearance.cssThemeName`}
-                                    options={presetNames.map(x => {
+                                    options={themeNames.map(x => {
                                         return {
                                             label: x.label,
                                             value: x.value
                                         };
                                     })}
-                                    description='Choose a "page style" to easily change margins, borders, an other page settings.'
+                                    description="Choose a theme to easily change margins, borders, an other page settings."
                                 />
                             </ConfigrSubgroup>
                             <ConfigrSubgroup

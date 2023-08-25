@@ -30,11 +30,11 @@ namespace Bloom.Api
 			// Not sure this needs UI thread, but it can result in saving the page, which seems
 			// safest to do that way.
 			apiHandler.RegisterEndpointHandler("book/settings", HandleBookSettings, true /* review */);
-			apiHandler.RegisterEndpointHandler("book/settings/available-preset-names", HandleGetAvailablePresetNames, false);
+			apiHandler.RegisterEndpointHandler("book/settings/available-theme-names", HandleGetAvailableAppearanceThemeNames, false);
 		}
-		private void HandleGetAvailablePresetNames(ApiRequest request)
+		private void HandleGetAvailableAppearanceThemeNames(ApiRequest request)
 		{
-			var names = from path in ProjectContext.GetAppearancePresetFileNames() select Path.GetFileName(path).Replace("appearance-page-", "");
+			var names = from path in ProjectContext.GetAppearanceThemeFileNames() select Path.GetFileName(path).Replace("appearance-theme-", "");
 			var x = from name in names.ToArray<string>() select new { label = name, value = name };
 			var json = JsonConvert.SerializeObject(x);
 			request.ReplyWithJson(json);

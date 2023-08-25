@@ -58,7 +58,7 @@ public class AppearanceSettings
 
 
 	/// <summary>
-	/// Each book gets an "appearance.css" that is a combination of the appearance-page-default.css and the css from selected appearance preset.
+	/// Each book gets an "appearance.css" that is a combination of the appearance-theme-default.css and the css from selected appearance theme.
 	/// We only write that file, we don't read it (the browser does, of course). This is the path to that file in the book folder.
 	/// </summary>
 	public static string AppearanceCssPath(string bookFolderPath)
@@ -168,7 +168,7 @@ public class AppearanceSettings
 		// just something to enable us easily visually point out that we are in legacy mode
 		if (((string)_properties.cssThemeName).StartsWith("legacy"))
 		{
-			// I don't think this is worth localizing at the moment
+			// I don't think this is worth localizing at the moment. We might not keep it at all.
 			cssBuilder.AppendLine($"--cssThemeMessage: \"⚠️Using legacy theme\";");
 		}
 
@@ -198,24 +198,24 @@ public class AppearanceSettings
 
 
 
-		// Add in the var declarations of the default, so that the display doesn't collapse just because a preset is missing
+		// Add in the var declarations of the default, so that the display doesn't collapse just because a theme is missing
 		// some var that basepage.css relies on.
 
-		var defaultPresetSourcePath = Path.Combine(ProjectContext.GetFolderContainingAppearancePresetFiles(), "appearance-page-default.css");
-		cssBuilder.AppendLine("/* From appearance-page-default.css */");
-		cssBuilder.AppendLine(RobustFile.ReadAllText(defaultPresetSourcePath, Encoding.UTF8));
+		var defaultThemeSourcePath = Path.Combine(ProjectContext.GetFolderContainingAppearanceThemeFiles(), "appearance-theme-default.css");
+		cssBuilder.AppendLine("/* From appearance-theme-default.css */");
+		cssBuilder.AppendLine(RobustFile.ReadAllText(defaultThemeSourcePath, Encoding.UTF8));
 
-		// Now add the user's chosen preset if it isn't the default, which we already added above.
+		// Now add the user's chosen theme if it isn't the default, which we already added above.
 		if (!string.IsNullOrEmpty(CssThemeName) && CssThemeName != "default")
 		{
-			var sourcePath = Path.Combine(ProjectContext.GetFolderContainingAppearancePresetFiles(), $"appearance-page-{CssThemeName}.css");
+			var sourcePath = Path.Combine(ProjectContext.GetFolderContainingAppearanceThemeFiles(), $"appearance-theme-{CssThemeName}.css");
 			if (!RobustFile.Exists(sourcePath))
 			{
 				// TODO: We should toast I suppose?
 			}
 			else
 			{
-				cssBuilder.AppendLine($"/* From the current appearance preset, '{CssThemeName}' */");
+				cssBuilder.AppendLine($"/* From the current appearance theme, '{CssThemeName}' */");
 				cssBuilder.AppendLine(RobustFile.ReadAllText(sourcePath, Encoding.UTF8));
 			}
 		}
