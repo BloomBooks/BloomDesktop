@@ -446,13 +446,13 @@ namespace Bloom
 			yield return FileLocationUtilities.GetDirectoryDistributedWithApplication(Path.Combine(BloomFileLocator.BrowserRoot, "publish/ePUBPublish"));
 		}
 
-		public static string GetFolderContainingAppearancePresetFiles()
+		public static string GetFolderContainingAppearanceThemeFiles()
 		{
-			return FileLocationUtilities.GetDirectoryDistributedWithApplication(Path.Combine(BloomFileLocator.BrowserRoot, "appearancePresets"));
+			return FileLocationUtilities.GetDirectoryDistributedWithApplication(Path.Combine(BloomFileLocator.BrowserRoot, "AppearanceThemes"));
 		}
-		public static IEnumerable<string> GetAppearancePresetFileNames()
+		public static IEnumerable<string> GetAppearanceThemeFileNames()
 		{
-			return from f in Directory.EnumerateFiles(GetFolderContainingAppearancePresetFiles(),
+			return from f in Directory.EnumerateFiles(GetFolderContainingAppearanceThemeFiles(),
 					"*.css") select Path.GetFileNameWithoutExtension(f);
 		}
 
