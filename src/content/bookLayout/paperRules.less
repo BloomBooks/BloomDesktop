@@ -174,10 +174,17 @@ body.publishingWithoutFullBleed {
 
 // Notes on WebView2 and page sizes: PrintToPdfAsync uses measurements in inches, and apparently quantizes
 // page sizes to a 1/96 inch grid.  (Traditional screen DPI, anyone?)  The quantization process usually
-// takes the floor for the page size calculation for fitting to 1/96 inches, but occastionally uses the ceiling
+// takes the floor for the page size calculation for fitting to 1/96 inches, but occasionally uses the ceiling
 // instead.  I haven't figured out any rhyme or reason for why it uses the ceiling the few times it does.
 // This is not the first time this kind of problem has been encountered with PDF printing via Chrome:
 // see https://github.com/puppeteer/puppeteer/issues/2278.
+
+// More notes from Steve in an old version of device.less:
+// See the comments in basePage.less about WebView2 PDF publishing and page sizes.
+// If we had a time machine, I would change the height and width to 8in and 4.5in
+// instead of 1.77777778mm and 100mm, but that's too radical a change to risk at
+// this point.  (My phone measures 117mm x 66mm, so the current measurements are a
+// better approximation of actual device sizes anyway although still too large.)
 .pdfPublishMode {
     .bloom-page {
         // TODO: This is copied in from old code, by why weren't macros & constants used????????
@@ -250,6 +257,28 @@ body.publishingWithoutFullBleed {
             min-height: (ceil((@Cm13Square-Side / 25.4) * 96) / 96) * 25.4;
             max-height: (ceil((@Cm13Square-Side / 25.4) * 96) / 96) * 25.4;
         }
+
+        &.Device16x9Portrait {
+            min-width: (floor((@Device16x9Portrait-Width / 25.4) * 96) / 96) *
+                25.4;
+            max-width: (floor((@Device16x9Portrait-Width / 25.4) * 96) / 96) *
+                25.4;
+            min-height: (floor((@Device16x9Portrait-Height / 25.4) * 96) / 96) *
+                25.4;
+            max-height: (floor((@Device16x9Portrait-Height / 25.4) * 96) / 96) *
+                25.4;
+        }
+
+        &.Device16x9Landscape {
+            min-width: (floor((@Device16x9Landscape-Width / 25.4) * 96) / 96) *
+                25.4;
+            max-width: (floor((@Device16x9Landscape-Width / 25.4) * 96) / 96) *
+                25.4;
+            min-height: (floor((@Device16x9Landscape-Height / 25.4) * 96) / 96) *
+                25.4;
+            max-height: (floor((@Device16x9Landscape-Height / 25.4) * 96) / 96) *
+                25.4;
+        }
     }
 }
 
@@ -262,8 +291,6 @@ body.publishingWithoutFullBleed {
     // review: why wasn't a width: needed?
 }
 
-// See device.less for all css involving the following layouts:
-// Device16x9Portrait, Device16x9Landscape and PictureStoryLandscape
 .bloom-page {
     box-sizing: border-box;
     padding-top: var(--page-margin-top);
@@ -463,6 +490,13 @@ body.publishingWithoutFullBleed {
         .SetPageDimensions(
             @Device16x9Landscape-Width,
             @Device16x9Landscape-Height
+        );
+    }
+
+    &.PictureStoryLandscape {
+        .SetPageDimensions(
+            @PictureStoryLandscape-Width,
+            @PictureStoryLandscape-Height
         );
     }
 }
