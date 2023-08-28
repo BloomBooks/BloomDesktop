@@ -3,7 +3,6 @@
     --page-margin-bottom: 10mm;
     --page-margin-inner: 20mm;
     --page-margin-outer: 10mm;
-    --boxes-sideBySide-gap: 5mm; /* review. In legacy, this was too small. */
     --top-bottom-gap: 1mm;
     --pageNumber-font-size: 14pt;
     --pageNumber-bottom: 10px;
@@ -11,6 +10,9 @@
     --pageNumber-always-left-margin: unset;
     --page-background-color: white;
     --marginBox-background-color: transparent;
+    --page-split-vertical-gap: 2mm;
+    --page-split-horizontal-gap: 1mm;
+    --multilingual-editable-vertical-gap: 0;
 }
 
 .Device16x9Portrait {
