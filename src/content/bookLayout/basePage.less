@@ -131,6 +131,8 @@ div.bloomPlayer-page {
         color: transparent;
         // BL-6582 But do display the div, because otherwise the text mockup won't show.
         display: block;
+
+        gap: var(--multilingual-editable-vertical-gap);
     }
 }
 
@@ -194,6 +196,7 @@ textarea,
     // filling it all if there is only one).
     height: auto;
     flex-grow: 1;
+    box-sizing: border-box; // review: appearance
 }
 
 /* The following has been split out from the above rule because it should probably be removed,
@@ -331,8 +334,11 @@ books may contain divs with box-header-off, so we need a rule to hide them.*/
     }
 
     .bloom-translationGroup {
-        height: ~"calc(100% - 2px)";
-        width: ~"calc(100% - 2px)"; //the -1 lets our border fall jus inside the marginbox border. Undesirable in terms of layout, but visually it looks a lot better in the editor
+        height: 100%; // review: appearance
+        width: 100%; // review: appearance
+        box-sizing: border-box; // review: appearance
+        //height: ~"calc(100% - 2px)";
+        // width: ~"calc(100% - 2px)"; //the -1 lets our border fall jus inside the marginbox border. Undesirable in terms of layout, but visually it looks a lot better in the editor
     }
 
     .split-pane-component {
@@ -527,4 +533,18 @@ div[data-book*="branding"] {
     //TODO: This is only for videos
     // Why is this not used for Device16x9Portrait too?!
     background-color: black;
+}
+
+.split-pane.vertical-percent
+    .split-pane-component.position-right
+    .split-pane-component-inner
+    > div {
+    padding-left: var(--page-split-vertical-gap);
+}
+
+.split-pane.horizontal-percent
+    .split-pane-component.position-bottom
+    .split-pane-component-inner
+    > div {
+    padding-top: var(--page-split-horizontal-gap);
 }
