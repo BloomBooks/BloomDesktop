@@ -1,5 +1,4 @@
 @import "basePage-sharedRules.less";
-//@import "device.less";
 @import "bubble.less";
 @import (reference) "../../BloomBrowserUI/bloomUI.less"; // importing by reference only brings in the constants
 // NOTE: more style sheet imports are at the end of this document,
@@ -521,4 +520,11 @@ div[data-book*="branding"] {
 
 .coverBottomLangName {
     display: var(--coverShowLanguageName);
+}
+
+.Device16x9Landscape,
+.PictureStoryLandscape {
+    //TODO: This is only for videos
+    // Why is this not used for Device16x9Portrait too?!
+    background-color: black;
 }
