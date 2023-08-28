@@ -72,7 +72,10 @@
 
 .Browser-Reset();
 
-body {
+// bloom-player uses a scoped style element, so everything on body is ignored. Must be applied to
+// div.bloomPlayer-page also in order to be WYSIWYG in bloom-player.
+body,
+div.bloomPlayer-page {
     /*
     We used to set font-size slightly larger in editPaneGlobal.less, to handle a mismatch between webkit
     pdf generation and geckofx edit mode. That no longer seems to be necessary and the Browser-Reset() above

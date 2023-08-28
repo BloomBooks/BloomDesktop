@@ -283,16 +283,42 @@ export const BookButton: React.FunctionComponent<{
         }
     }, [renaming, renameDiv.current]);
 
+    // BL-12597: If we remove the label when renaming, the button drops down, so we'll just change
+    // the label's visibility.
+    const labelVisibility = renaming ? "hidden" : "visible";
+
+    const buttonLabelCss = `
+        color: white;
+        text-transform: none;
+        font-size: 12px;
+        line-height: 14px;
+        margin-top: 5px;
+        width: 75px;
+        height: 106px;
+        visibility: ${labelVisibility};
+    `;
     // If the label is less than 14 characters, assume it will fit on two lines; this saves some
     // rendering cycles in TruncateMarkup. If it's longer, TruncateMarkup will carefully
     // measure what will fit on two lines and truncate nicely if necessary.
     const label =
         bookLabel.length > 14 ? (
             <TruncateMarkup lines={2}>
-                <span className="bookButton-label">{bookLabel}</span>
+                <span
+                    css={css`
+                        ${buttonLabelCss}
+                    `}
+                >
+                    {bookLabel}
+                </span>
             </TruncateMarkup>
         ) : (
-            <span className="bookButton-label">{bookLabel}</span>
+            <span
+                css={css`
+                    ${buttonLabelCss}
+                `}
+            >
+                {bookLabel}
+            </span>
         );
 
     const renameHeight = 40;
@@ -441,7 +467,7 @@ export const BookButton: React.FunctionComponent<{
                     </div>
                 }
             >
-                {renaming || label}
+                {label}
             </Button>
 
             {contextMousePoint && items.length > 0 && (
