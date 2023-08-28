@@ -249,7 +249,10 @@ namespace Bloom.WebLibraryIntegration
 			};
 			if (pdfToInclude != null)
 				filter.AlwaysAccept(pdfToInclude);
-			filter.AlwaysAccept(Path.GetFileNameWithoutExtension(pathToBloomBookDirectory) + BookInfo.BookOrderExtension);
+			// The book folder name is the same as the book file name, but without an extension.  The book
+			// name may contain periods, so we certainly don't want to use Path.GetFileNameWithoutExtension.
+			// See https://issues.bloomlibrary.org/youtrack/issue/BL-12649/.
+			filter.AlwaysAccept(Path.GetFileName(pathToBloomBookDirectory) + BookInfo.BookOrderExtension);
 			if (isForBulkUpload)
 				filter.AlwaysAccept(".lastUploadInfo");
 			filter.CopyBookFolderFiltered(destDirName);
