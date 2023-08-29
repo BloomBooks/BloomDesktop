@@ -15,6 +15,7 @@ using Bloom.MiscUI;
 using Bloom.Properties;
 using Bloom.ToPalaso;
 using Bloom.Utils;
+using Bloom.WebLibraryIntegration;
 using Bloom.Workspace;
 using L10NSharp;
 using Newtonsoft.Json;
@@ -182,6 +183,8 @@ namespace Bloom.web.controllers
 			apiHandler.RegisterEndpointHandler(kApiUrlPart + "removeSourceCollection", HandleRemoveSourceCollection, false);
 			apiHandler.RegisterEndpointHandler(kApiUrlPart + "addSourceCollection", HandleAddSourceCollection, true);
 			apiHandler.RegisterEndpointHandler(kApiUrlPart + "removeSourceFolder", HandleRemoveSourceFolder, true);
+			apiHandler.RegisterEndpointHandler(kApiUrlPart + "getBookOnBloomBadgeInfo", GetBookOnBloomBadgeInfo, false);
+
 		}
 
 		private void HandleRemoveSourceCollection(ApiRequest request)
@@ -437,6 +440,41 @@ namespace Bloom.web.controllers
 					request.ReplyWithStreamContent(stream, "image/png");
 					//request.Failed("Thumbnail doesn't exist, and making a new thumbnail is not yet implemented.");
 				}
+			}
+		}
+
+		private void GetBookOnBloomBadgeInfo(ApiRequest apiRequest)
+		{
+			var bookId = apiRequest.RequiredParam("book-id");
+			BloomParseClient parseClient = new BloomParseClient();
+
+			var json = parseClient.GetBookRecords(bookId, includeLanguageInfo: false, includeBooksFromOtherUploaders: true);
+			if (json == null || json.Count < 1)
+			{
+				apiRequest.ReplyWithJson(new
+				{
+					bookUrl = "",
+				});
+			}
+			else if (json.Count == 1)
+			{
+				var book = json[0];
+				apiRequest.ReplyWithJson(new
+				{
+					bookUrl = BloomLibraryUrls.BloomLibraryDetailPageUrlFromBookId(book.objectId.ToString()),
+					draft = book.draft,
+					inCirculation = book.inCirculation,
+				});
+			}
+			else
+			{
+				apiRequest.ReplyWithJson(new
+				{
+					bookUrl = "TODO insert url for listing of multiple books with same bookInstanceId",
+					draft = false,
+					inCirculation = true,
+				});
+
 			}
 		}
 
