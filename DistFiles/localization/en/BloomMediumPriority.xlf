@@ -285,6 +285,26 @@
         <note>ID: PublishTab.Upload.AboutBlorg</note>
         <note>This phrase has a link to the "About Bloom" page on that website.</note>
       </trans-unit>
+      <trans-unit id="CollectionTab.OnBlorgBadge.ViewOnBlorg" sil:dynamic="true" translate="no">
+        <!-- Added in 5.6 -->
+        <source xml:lang="en">View on BloomLibrary.org</source>
+        <note>CollectionTab.OnBlorgBadge.ViewBookOnBlorg</note>
+      </trans-unit>
+      <trans-unit id="CollectionTab.OnBlorgBadge.Published" sil:dynamic="true" translate="no">
+        <!-- Added in 5.6 -->
+        <source xml:lang="en">Published</source>
+        <note>CollectionTab.OnBlorgBadge.Published</note>
+      </trans-unit>
+      <trans-unit id="CollectionTab.OnBlorgBadge.MarkedAsDraft" sil:dynamic="true" translate="no">
+        <!-- Added in 5.6 -->
+        <source xml:lang="en">Marked as Draft</source>
+        <note>CollectionTab.OnBlorgBadge.MarkedAsDraft</note>
+      </trans-unit>
+      <trans-unit id="CollectionTab.OnBlorgBadge.Problem" sil:dynamic="true" translate="no">
+        <!-- Added in 5.6 -->
+        <source xml:lang="en">Problem</source>
+        <note>CollectionTab.OnBlorgBadge.Problem</note>
+      </trans-unit>
     </body>
   </file>
 </xliff>
