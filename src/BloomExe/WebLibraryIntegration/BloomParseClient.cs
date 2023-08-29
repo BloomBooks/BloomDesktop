@@ -185,9 +185,15 @@ namespace Bloom.WebLibraryIntegration
 			}
 		}
 
-		internal dynamic GetBookRecords(string id, bool includeLanguageInfo)
+		public dynamic GetBookRecords(string id, bool includeLanguageInfo, bool includeBooksFromOtherUploaders = false)
 		{
-			var response = GetBookRecordsByQuery("{\"bookInstanceId\":\"" + id + "\"," + UploaderJsonString + "}", includeLanguageInfo);
+			var query = "{\"bookInstanceId\":\"" + id + "\"";
+			if (!includeBooksFromOtherUploaders)
+			{
+				query += "," + UploaderJsonString;
+			}
+			query += "}";
+			var response = GetBookRecordsByQuery(query, includeLanguageInfo);
 			if (response.StatusCode != HttpStatusCode.OK)
 				return null;
 			dynamic json = JObject.Parse(response.Content);
