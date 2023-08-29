@@ -194,7 +194,10 @@ namespace Bloom.web.controllers
 				{
 					var url = BloomLibraryUrls.BloomLibraryDetailPageUrlFromBookId(parseId, true);
 					Model.AddHistoryRecordForLibraryUpload(url);
-					_webSocketServer.SendString(kWebSocketContext, kWebSocketEventId_uploadSuccessful, url);
+					dynamic result = new DynamicJson();
+					result.bookId = Model.Book.BookInfo.Id;
+					result.url = url;
+					_webSocketServer.SendBundle(kWebSocketContext, kWebSocketEventId_uploadSuccessful, result);
 				}
 			};
 			SetParentControlsState(false); // Last thing we do before launching the worker, so we can't get stuck in this state.
