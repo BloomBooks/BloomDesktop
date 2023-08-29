@@ -33,7 +33,7 @@ import { kBloomBlue } from "../bloomMaterialUITheme";
 import { BloomTooltip } from "../react_components/BloomToolTip";
 import { Link } from "../react_components/link";
 import { ForumInvitationDialogLauncher } from "../react_components/forumInvitationDialog";
-import { CollectionSettingsDialogLauncher } from "../collection/CollectionSettingsDialog";
+import { CollectionSettingsDialog } from "../collection/CollectionSettingsDialog";
 
 const kResizerSize = 10;
 
@@ -546,7 +546,7 @@ export const CollectionsTabPane: React.FunctionComponent<{}> = () => {
             <TeamCollectionDialogLauncher />
             <SpreadsheetExportDialogLauncher />
             <ForumInvitationDialogLauncher />
-            <CollectionSettingsDialogLauncher />
+            <CollectionSettingsDialog />
             <EmbeddedProgressDialog id="collectionTab" />
         </div>
     );

@@ -67,6 +67,19 @@ namespace Bloom.web.controllers
 
 		public void RegisterWithApiHandler(BloomApiHandler apiHandler)
 		{
+			apiHandler.RegisterEndpointHandler("collection/settings", request =>
+			{
+				if (request.HttpMethod == HttpMethods.Get)
+				{
+					// Just a placeholder for the skeleton dialog for now.
+					request.ReplyWithJson("{}");
+				}
+				else if (request.HttpMethod == HttpMethods.Post)
+				{
+					request.PostSucceeded();
+				}
+			}, true);
+
 			apiHandler.RegisterEndpointHandler(kApiUrlPart + "enterpriseEnabled", request =>
 			{
 				if (request.HttpMethod == HttpMethods.Get)
