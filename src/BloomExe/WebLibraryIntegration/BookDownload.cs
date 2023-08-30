@@ -14,6 +14,7 @@ using L10NSharp;
 using SIL.Extensions;
 using SIL.IO;
 using SIL.Progress;
+using SIL.Reporting;
 using SIL.Windows.Forms.Progress;
 using Bloom.web.controllers;
 
@@ -84,6 +85,7 @@ namespace Bloom.WebLibraryIntegration
 				{
 				}
 				var showSendReport = true;
+				// For most types of error, we will set 'showSendReport' to false to avoid an ugly yellow dialog box.
 				var message = LocalizationManager.GetString("Download.ProblemNotice",
 					"There was a problem downloading your book. You may need to restart Bloom or get technical help.");
 				// BL-1233, we've seen what appear to be timeout exceptions, can't confirm the actual Exception subclass though.
@@ -96,8 +98,12 @@ namespace Bloom.WebLibraryIntegration
 				}
 				if (e is AmazonServiceException || e is WebException || e is IOException) // Network problems, not an internal error, less alarming message called for
 				{
+					Logger.WriteError("Bloom had a download problem", e);
 					message = LocalizationManager.GetString("Download.GenericNetworkProblemNotice",
 						"There was a problem downloading the book.  You can try again at a different time, or write to us at issues@bloomlibrary.org if you cannot get the download to work from your location.");
+					var secondPart = string.Format(LocalizationManager.GetString("Download.PleaseSendLogFile",
+												"Please also send us the latest log file found at {0}."), Logger.LogPath);
+					message += Environment.NewLine + Environment.NewLine + secondPart;
 					showSendReport = false;
 				}
 				DisplayProblem(e, message, showSendReport);

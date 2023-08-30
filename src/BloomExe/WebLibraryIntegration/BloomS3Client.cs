@@ -209,7 +209,8 @@ namespace Bloom.WebLibraryIntegration
 		/// </summary>
 		public void UploadBook(string storageKeyOfBookFolder, string pathToBloomBookDirectory, IProgress progress,
 			string pdfToInclude, bool includeNarrationAudio, bool includeMusic,
-			string[] languagesToInclude, string metadataLang1Code, string metadataLang2Code, bool isForBulkUpload = false)
+			string[] languagesToInclude, string metadataLang1Code, string metadataLang2Code,
+			string collectionSettingsPath = null, bool isForBulkUpload = false)
 		{
 			BaseUrl = null;
 			BookOrderUrlOfRecentUpload = null;
@@ -248,12 +249,17 @@ namespace Bloom.WebLibraryIntegration
 			};
 			if (pdfToInclude != null)
 				filter.AlwaysAccept(pdfToInclude);
-			filter.AlwaysAccept(Path.GetFileNameWithoutExtension(pathToBloomBookDirectory) + BookInfo.BookOrderExtension);
+			// The book folder name is the same as the book file name, but without an extension.  The book
+			// name may contain periods, so we certainly don't want to use Path.GetFileNameWithoutExtension.
+			// See https://issues.bloomlibrary.org/youtrack/issue/BL-12649/.
+			filter.AlwaysAccept(Path.GetFileName(pathToBloomBookDirectory) + BookInfo.BookOrderExtension);
 			if (isForBulkUpload)
 				filter.AlwaysAccept(".lastUploadInfo");
 			filter.CopyBookFolderFiltered(destDirName);
 
 			ProcessVideosInTempDirectory(destDirName);
+			// temporarily removing this while waiting for testing of BL12583
+			// CopyCollectionSettingsToTempDirectory(collectionSettingsPath, destDirName);
 
 			if (languagesToInclude != null && languagesToInclude.Count() > 0)
 				RemoveUnwantedLanguageData(destDirName, languagesToInclude, metadataLang1Code, metadataLang2Code);
@@ -263,25 +269,6 @@ namespace Bloom.WebLibraryIntegration
 			UploadDirectory(prefix, wrapperPath, progress);
 
 			DeleteFileSystemInfo(new DirectoryInfo(wrapperPath));
-		}
-
-		private readonly static string[] validSubFolders = { "audio", "video", "activities", "template" };
-		/// <summary>
-		/// Remove any subdirectories that are not in the our whitelist.
-		/// </summary>
-		/// <remarks>
-		/// See https://issues.bloomlibrary.org/youtrack/issue/BL-7616 and
-		/// https://issues.bloomlibrary.org/youtrack/issue/BL-11429.
-		/// </remarks>
-		private static void RemoveUnwantedSubdirectories(string directoryPath)
-		{
-			foreach (string subdir in Directory.GetDirectories(directoryPath))
-			{
-				var name = Path.GetFileName(subdir);
-				if (validSubFolders.Contains(name))
-					continue;
-				DeleteFileSystemInfo(new DirectoryInfo(subdir));	// This does a recursive delete.
-			}
 		}
 
 		private void ProcessVideosInTempDirectory(string destDirName)
@@ -296,6 +283,28 @@ namespace Bloom.WebLibraryIntegration
 				return;
 			SignLanguageApi.ProcessVideos(videoContainerElements, destDirName);
 			XmlHtmlConverter.SaveDOMAsHtml5(domForVideoProcessing.RawDom, htmlFilePath);
+		}
+
+		/// <summary>
+		/// Copy a sanitized (no subscription code) collection settings file to the temp folder so that
+		/// harvester will have access to it.
+		/// </summary>
+		/// <remarks>
+		/// See BL-12583.
+		/// </remarks>
+		private static void CopyCollectionSettingsToTempDirectory(string settingsPath, string tempBookFolder)
+		{
+			if (String.IsNullOrEmpty(settingsPath) || !RobustFile.Exists(settingsPath))
+				return;
+			var settingsText = RobustFile.ReadAllText(settingsPath);
+			var doc = new XmlDocument();
+			doc.PreserveWhitespace = true;
+			doc.LoadXml(settingsText);
+			var subscriptionNode = doc.SelectSingleNode("/Collection/SubscriptionCode");
+			if (subscriptionNode != null)
+				subscriptionNode.InnerText = "";
+			Directory.CreateDirectory(Path.Combine(tempBookFolder, "collectionFiles"));
+			doc.Save(Path.Combine(tempBookFolder, "collectionFiles", "book.uploadCollectionSettings"));
 		}
 
 		private static void RemoveUnwantedVideoFiles(string destDirName, IEnumerable<string> videoFilesToInclude)
@@ -562,6 +571,14 @@ namespace Bloom.WebLibraryIntegration
 			string[] endsToAvoid = { "/thumbs.db", ".pdf", ".map"};
 			if (endsToAvoid.Any(end => objectKey.ToLowerInvariant().EndsWith(end)))
 				return true;
+			// The harvester needs the collection settings file, but we don't want to download it
+			// when users are downloading books.  (See BL-12583.)
+			if (!Program.RunningHarvesterMode)
+			{
+				string[] foldersToAvoid = { "collectionFiles/" };
+				if (foldersToAvoid.Any(folder => objectKey.ToLowerInvariant().Contains(folder)))
+					return true;
+			}
 
 			// Removing this restriction on downloading narration per BL-9652
 			//if (!Program.RunningHarvesterMode)

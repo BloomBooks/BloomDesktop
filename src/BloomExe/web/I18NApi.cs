@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -118,7 +118,13 @@ namespace Bloom.Api
 								{
 									//ok, so we don't have it translated yet. Make sure it's at least listed in the things that can be translated.
 									// And return the English string, which is what we would do the next time anyway.  (BL-3374)
-									LocalizationManager.GetDynamicString("Bloom", id, englishText);
+
+									//This is what we had before 5.5: LocalizationManager.GetDynamicString("Bloom", id, englishText);
+									// That apparently just gives us back whatever we already have in `englishText`, which is "" if
+									// the code did not have a duplicate of the string. We want to support the ideal (in Hatton's mind)
+									// that duplication is just asking for trouble by allowing the code to not know what the English is.
+									// So now, we just do this which just means "ah well, what's the English?".
+									GetSomeTranslation(id, "en", out englishText);
 								}
 							}
 						}
@@ -256,6 +262,7 @@ namespace Bloom.Api
 				LocalizationManager.GetDynamicString("Bloom", id, englishText, comment);
 				return;
 			}
+
 			if (ApplicationUpdateSupport.ChannelName.StartsWith("Developer"))
 			{
 				//It would be a nice improvement to l10n to allow us to write directly to the source-code XLF file, so that the
@@ -267,23 +274,26 @@ namespace Bloom.Api
 
 				var longMsg =
 					String.Format(
-						"Dear Developer: Ignore this if you are looking at a 3rd-party book that we don't ship with Bloom."+
-						" Please add this dynamic string to the english.xlf file: Id=\"{0}\" English =\"{1}\". " +
-						"The code at this time cannot add this for you, but we have created an element in your local xlf which you can copy over." +
-						" Search for CopyToDistributionXlf_, and remember to remove that from the ID. It needs to be " +
-						"added to the en.xlf, so that it can show up in the list of things to be localized even " +
-						"when the user has not encountered this part of the interface yet.",
+						"Dear Developer: Ignore this if you are looking at a 3rd-party book that we don't ship with Bloom. " +
+						"Please add this dynamic string to the english.xlf file: Id=\"{0}\" English =\"{1}\". " +
+						"The code at this time cannot add this for you, but we have created an element in your local xlf which you can copy over. " +
+						"Search for CopyToDistributionXlf_, and remember to remove that from the ID. It needs to be " +
+						"added to the en.xlf.",
 						id,
 						englishText);
-				NonFatalProblem.Report(ModalIf.None, PassiveIf.Alpha, "Missing l10n: " + englishText, longMsg, skipSentryReport: true);
+				NonFatalProblem.Report(ModalIf.None, PassiveIf.Alpha,
+					$"Missing l10n: {englishText}",
+					longMsg,
+					skipSentryReport: true);
 			}
-			else
+			// Below, we already only toast if Alpha, but we add the if condition here to prevent logging the error.
+			// These tend to overwhelm user logs.
+			else if (ApplicationUpdateSupport.ChannelName.Equals("Alpha"))
 			{
-				NonFatalProblem.Report(ModalIf.None, PassiveIf.Alpha, "Missing l10n: " + englishText,
-					"Ignore this if you are looking at a 3rd-party book that does not ship with Bloom directly. " +
-					"Otherwise, please report that " + id + " needs to be " +
-					"added to the en.xlf, so that it can show up in the list of things to be localized even " +
-					"when the user has not encountered this part of the interface yet.", skipSentryReport: true);
+				NonFatalProblem.Report(ModalIf.None, PassiveIf.Alpha,
+					$"Missing l10n: {englishText}",
+					$"Ignore this if you are looking at a 3rd-party book that does not ship with Bloom directly. Otherwise, please report that {id} needs to be added to the en.xlf.",
+					skipSentryReport: true);
 			}
 		}
 	}

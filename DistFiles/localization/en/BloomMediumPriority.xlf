@@ -98,10 +98,13 @@
         <source xml:lang="en">Control the order in which various boxes on the page are played back.</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.ShowPlaybackOrderTip</note>
       </trans-unit>
+      <trans-unit id="EditTab.Toolbox.TalkingBookTool.RecordingMode" sil:dynamic="true">
+        <source xml:lang="en">Recording Mode</source>
+        <note>ID: EditTab.Toolbox.TalkingBookTool.RecordingMode</note>
+      </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.RecordingModeSentence" sil:dynamic="true">
         <source xml:lang="en">By Sentence</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.RecordingModeSentence</note>
-        <note>__</note>
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.RecordingModeTextBox" sil:dynamic="true">
         <source xml:lang="en">By Whole Text Box</source>

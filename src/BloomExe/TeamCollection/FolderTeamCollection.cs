@@ -1025,7 +1025,7 @@ namespace Bloom.TeamCollection
 			var isOnLocalNetwork = IsFolderOnLocalNetwork(_repoFolderPath);
 			if (DropboxUtils.IsPathInDropboxFolder(_repoFolderPath))
 			{
-				if (!DropboxUtils.IsDropboxProcessRunning)
+				if (!DropboxUtils.IsDropboxProcessRunning())
 				{
 					if (isOnLocalNetwork)
 						_tcManager.MessageLog.WriteMessage(MessageAndMilestoneType.History, "TeamCollection.NeedDropboxRunningButLANOK",

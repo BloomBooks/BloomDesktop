@@ -172,6 +172,11 @@
             <trans-unit id="Activity.Editing.MultipleChoice.CorrectAnswer">
                 <source xml:lang="en">Put the correct answer in this button. Bloom will randomize the order later.</source>
             </trans-unit>
+            <trans-unit id="Download.PleaseSendLogFile">
+                <source xml:lang="en">Please also send us the latest log file found at {0}.</source>
+                <note>ID: Download.PleaseSendLogFile</note>
+                <note>{0} will be replaced with the location on the user's computer of the Bloom log file (usually Log.txt).</note>
+            </trans-unit>
         </body>
     </file>
 </xliff>

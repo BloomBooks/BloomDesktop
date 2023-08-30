@@ -621,11 +621,10 @@ namespace Bloom.Edit
 		// current page, we need to save changes to it. Currently this is a side effect of calling the JS
 		// pageSelectionChanging(), which calls back to our 'FinishSavingPage()'
 		// Note that this is fully synchronous event handling, all in the current thread:
-		// PageSelection.SelectPage [CS] raises PageSelectionChanging
+		// PageSelection.SelectPage [CS] raises PageSelection SelectionChanging event.
 		//		OnPageSelectionChanging() [CS, here] responds to this event
 		//			it calls pageSelectionChanging() [in JS]
-		//				pageSelectionChanging raises HTML event finishSavingPage
-		//					this class is listening for finishSavingPage, and handles it by calling FinishSavingPage() [CS]
+		//				and then calls FinishSavingPage() [CS] (hopefully after the JS code has finished executing)
 		//		all those calls return
 		//		SelectPage continues with actually changing the current page, and then calls PageChanged.
 		// I am confident that RunJavaScript does not return until it has finished executing the JavaScript function,

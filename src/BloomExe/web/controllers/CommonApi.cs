@@ -12,8 +12,8 @@ using Bloom.MiscUI;
 using Bloom.Workspace;
 using L10NSharp;
 using Newtonsoft.Json;
-using SIL.IO;
 using SIL.PlatformUtilities;
+using SIL.Reporting;
 using SIL.Windows.Forms.Miscellaneous;
 using ApplicationException = System.ApplicationException;
 using Timer = System.Windows.Forms.Timer;
@@ -53,6 +53,7 @@ namespace Bloom.web.controllers
 			apiHandler.RegisterEndpointHandler("common/canModifyCurrentBook", HandleCanModifyCurrentBook, true);
 			apiHandler.RegisterEndpointHandler("common/hasPreserveCoverColor", HandleHasPreserveCoverColor,true);
 			apiHandler.RegisterEndpointLegacy("common/showSettingsDialog", HandleShowSettingsDialog, false); // Common
+			apiHandler.RegisterEndpointHandler("common/logger/writeEvent", HandleLogEvent, false);
 			apiHandler.RegisterEndpointLegacy("common/problemWithBookMessage", request =>
 			{
 				request.ReplyWithText(CommonMessages.GetProblemWithBookMessage(Path.GetFileName(_bookSelection.CurrentSelection?.FolderPath)));
@@ -247,6 +248,13 @@ namespace Bloom.web.controllers
 			_timerForOpenSettingsDialog = null;
 			var tab = state as String;
 			WorkspaceView.OpenSettingsDialog(tab);
+		}
+
+		private void HandleLogEvent(ApiRequest request)
+		{
+			var message = request.RequiredPostString();
+			Logger.WriteEvent(message);
+			request.PostSucceeded();
 		}
 
 		/// <summary>

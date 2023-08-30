@@ -307,7 +307,7 @@ namespace Bloom.Book
 		/// will often be transmitted over slow network connections.  So rather than merely zipping up
 		/// an image file, we set its dimensions to within our desired limit (currently 600x600px) and
 		/// generate the bytes in the desired format.  If the original image is already small enough, we
-		/// retain its dimensions.  We also make png images have transparent backgrounds if requested so
+		/// retain its dimensions.  We also make two-color or graysceale png images have transparent backgrounds if requested so
 		/// that they will work for cover pages.  If transparency is not needed, the original image file
 		/// bytes are returned if that results in a smaller final image file.
 		/// </summary>
@@ -368,8 +368,9 @@ namespace Bloom.Book
 					// See https://issues.bloomlibrary.org/youtrack/issue/BH-5812.
 					imagePixelFormat = EnsureValidPixelFormat(imagePixelFormat);
 
-					var needTransparencyConversion =
-						!appearsToBeJpeg && needsTransparentBackground && !ImageUtils.HasTransparency(image);
+					// Making white pixels transparent for non-two-tone PNG files is not a good idea.  See BL-12570.
+					var needTransparencyConversion = needsTransparentBackground && !appearsToBeJpeg &&
+						ImageUtils.ShouldMakeBackgroundTransparent(originalImage);
 
 					using (var newImage = new Bitmap(newWidth, newHeight, imagePixelFormat))
 					{

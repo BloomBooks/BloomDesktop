@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
@@ -469,9 +469,9 @@ namespace Bloom.Utils
 			var userProfileFolder = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
 			// The download folder could have a .bloomCollection file, but it's inconceivable that
 			// it would actually be a collection folder.  See BL-11444.
-			var downloadFolder = Path.Combine(userProfileFolder, "Downloads");	// why isn't this in the enumeration?
+			var downloadFolder = Path.Combine(userProfileFolder, "Downloads");  // why isn't this in the enumeration?
 			if (folder == personalFolder || folder == userProfileFolder || folder == downloadFolder)
-				return false;	// There should be no need to go further.
+				return false;   // There should be no need to go further.
 			if (Directory.EnumerateFiles(folder, "*.bloomCollection").Any())
 			{
 				collectionFolder = folder;
@@ -506,12 +506,23 @@ namespace Bloom.Utils
 				// the content of some element like a data-div one, such as the coverImage src. See BL-9145.
 				// So we will just collapse them before we save the file.
 				basename = Regex.Replace(basename, @"\s+", " ");
-				if (basename.Length + extension.Length > BookStorage.MaxFilenameLength)
-					basename = basename.Substring(0, BookStorage.MaxFilenameLength - extension.Length);
+				if (basename.Length + extension.Length > BookStorage.kMaxFilenameLength)
+					basename = TruncateSafely(basename, BookStorage.kMaxFilenameLength - extension.Length);
 				if (!String.IsNullOrWhiteSpace(basename))
 					return basename.Trim();
 			}
 			return defaultName;
+		}
+
+		// truncate without the risk of cutting a surrogate pair in half. Ref BL-12587
+		public static string TruncateSafely(string input, int maxLength)
+		{
+			if (string.IsNullOrEmpty(input) || input.Length <= maxLength)
+				return input;
+			// Careful otherwise the truncation above can cut right through the middle of a surrogate pair.
+			if (char.IsHighSurrogate(input[maxLength - 1]))
+				return input.Substring(0, maxLength - 1);
+			return input.Substring(0, maxLength);
 		}
 
 		public static void DoOnceOnIdle(Action actionToDoOnIdle)
