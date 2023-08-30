@@ -8,12 +8,12 @@
     --pageNumber-top: 30px; /* within the marginBox */
     --page-margin-top: 7mm;
     --page-margin-bottom: 7mm;
-    --page-margin-inner: 17mm;
-    --page-margin-outer: 7mm;
+    --page-margin-right: 17mm;
+    --page-margin-left: 7mm;
 }
 .Device16x9Portrait {
     --page-margin-top: 73mm;
     --page-margin-bottom: 7mm;
-    --page-margin-inner: 7mm;
-    --page-margin-outer: 7mm;
+    --page-margin-right: 7mm;
+    --page-margin-left: 7mm;
 }
