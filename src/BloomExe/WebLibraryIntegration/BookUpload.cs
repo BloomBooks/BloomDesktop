@@ -149,11 +149,11 @@ namespace Bloom.WebLibraryIntegration
 		/// </summary>
 		internal string UploadBook(string bookFolder, IProgress progress)
 		{
-			return UploadBook(bookFolder, progress, out _, null, true, true, null, null, null, null);
+			return UploadBook(bookFolder, progress, out _, null, true, true, null, null, null, null, null);
 		}
 
 		private string UploadBook(string bookFolder, IProgress progress, out string parseId,
-			string pdfToInclude, bool includeNarrationAudio, bool includeMusic, string[] languages,
+			string pdfToInclude, bool includeNarrationAudio, bool includeMusic, string[] textLanguages, string[] audioLanguages,
 			CollectionSettings collectionSettings, string metadataLang1Code, string metadataLang2Code, bool isForBulkUpload = false)
 		{
 			// Books in the library should generally show as locked-down, so new users are automatically in localization mode.
@@ -230,7 +230,7 @@ namespace Bloom.WebLibraryIntegration
 			try
 			{
 				_s3Client.UploadBook(s3BookId, bookFolder, progress, pdfToInclude, includeNarrationAudio, includeMusic,
-					languages, metadataLang1Code, metadataLang2Code, collectionSettings?.SettingsFilePath, isForBulkUpload);
+					textLanguages, audioLanguages, metadataLang1Code, metadataLang2Code, collectionSettings?.SettingsFilePath, isForBulkUpload);
 				metadata.BaseUrl = _s3Client.BaseUrl;
 				metadata.BookOrder = _s3Client.BookOrderUrlOfRecentUpload;
 				var metaMsg = LocalizationManager.GetString("PublishTab.Upload.UploadingBookMetadata", "Uploading book metadata", "In this step, Bloom is uploading things like title, languages, and topic tags to the BloomLibrary.org database.");
@@ -242,7 +242,7 @@ namespace Bloom.WebLibraryIntegration
 				{
 					// Do NOT save this change in the book folder!
 					metadata.AllTitles = PublishModel.RemoveUnwantedLanguageDataFromAllTitles(metadata.AllTitles,
-						languages);
+						textLanguages);
 					var response = ParseClient.SetBookRecord(metadata.WebDataJson);
 					parseId = response.ResponseUri.LocalPath;
 					int index = parseId.LastIndexOf('/');
@@ -566,16 +566,17 @@ namespace Bloom.WebLibraryIntegration
 					}
 				}
 
+				// Figure out which languages to upload audio for.
+				// There's no point in including languages for which we won't have text.
+				var audioLanguagesToUpload = book.BookInfo.PublishSettings.BloomLibrary.AudioLangs.IncludedLanguages().
+					Intersect(book.BookInfo.PublishSettings.BloomLibrary.TextLangs.IncludedLanguages());
+
 				if (bookParams.IsForBulkUpload)
 				{
-					// Convert the dictionary of language codes and booleans to a list of language codes.
-					var talkingBookLangs = book.BookInfo.PublishSettings.BloomLibrary.AudioLangs.
-						Where(kvp => kvp.Value.IsIncluded()).
-						Select(kvp => kvp.Key);
 					// Update all metadata features, since we are doing bulk upload and the user won't be able to do it
 					// by checking boxes individually. The two 'true' params mean to act like the user checked both Talking Book and
 					// Sign Language boxes. (BL-12553)
-					book.UpdateMetadataFeatures(true, true, talkingBookLangs);
+					book.UpdateMetadataFeatures(true, true, audioLanguagesToUpload);
 				}
 
 				if (progress.CancelRequested)
@@ -587,6 +588,7 @@ namespace Bloom.WebLibraryIntegration
 					hasVideo ? null : Path.GetFileName(uploadPdfPath),
 					book.BookInfo.PublishSettings.BloomLibrary.IncludeAudio, !bookParams.ExcludeMusic,
 					languagesToUpload,
+					audioLanguagesToUpload.ToArray(),
 					book.CollectionSettings,
 					book.BookData.MetadataLanguage1Tag,
 					book.BookData.MetadataLanguage2Tag, bookParams.IsForBulkUpload);
