@@ -1,5 +1,5 @@
-@import "../../bookLayout/common-mixins.less";
 @import "bloom-xmatter-sharedRules.less";
+@import "../../bookLayout/paperDimensions.less";
 
 @XMatterPackName: "unknown";
 
@@ -17,14 +17,16 @@
     }
 }
 
-@BottomMargin-SmallerForCover: 10mm;
+/*
 //normally the marginBox sizing is done by the basePage, but for the front and back cover, we want to cheat to have
 //a smaller bottom margin, since there is no page number
 .outsideFrontCover .marginBox,
 .outsideBackCover .marginBox {
     .SetMarginBoxCover(@PageHeight, @PageWidth) {
-        /*There's no page number on the cover, so we might as well have the bottom stuff closer to the bottom*/
-        height: @PageHeight - (@MarginTop + @BottomMargin-SmallerForCover);
+        /*There's no page number on the cover, so we might as well have the bottom stuff closer to the bottom
+        height: calc(
+            @PageHeight - var(--cover-margin-top) + var(--cover-margin-bottom)
+        );
         //Just center the margin box, (for now, we're ignoring the binding)
         // left: @MarginOuter;
         // width: @PageWidth - (2 * @MarginOuter);
@@ -105,6 +107,7 @@
         .SetMarginBoxCover(@Size6x9Landscape-Height, @Size6x9Landscape-Width);
     }
 }
+*/
 
 .insideFrontCover {
     .bloom-translationGroup {
