@@ -1,4 +1,4 @@
-/* Rules that apply DIRECTLY to the bloom-page div. Its height, width, and padding, etc. */
+/* Sizing rules that apply DIRECTLY to the bloom-page div.  */
 
 @import "common-mixins.less";
 
@@ -292,86 +292,6 @@ body.publishingWithoutFullBleed {
 }
 
 .bloom-page {
-    box-sizing: border-box;
-    padding-top: var(--page-margin-top);
-    padding-bottom: var(--page-margin-bottom);
-    padding-left: var(--page-margin-outer);
-    padding-right: var(--page-margin-inner);
-
-    background-color: var(
-        --page-background-color
-    ) !important; // TODO: why is Bloom-player setting this to white?
-
-    &.bloom-frontMatter,
-    &.bloom-backMatter {
-        background-color: white !important;
-    }
-
-    display: block;
-
-    // Absolutely positioned elements can show outside the page
-    // because margin box is also absolutely positioned.
-    // So hide anything overflowing the page. BL-9352.
-    // Note that this does not negatively affect full-bleed because the bleed
-    // is still considered part of the page.
-    // Only hide overflow on non-template pages, since in templates this would hide the page label
-    // that we want to be able to edit (BL-9045). (We tried only hiding x overflow, but somehow it STILL
-    // hid the pageLabel!)
-    &:not(.bloom-templateMode) {
-        overflow: hidden;
-    }
-
-    &.side-left {
-        padding-left: var(--page-margin-outer);
-        padding-right: var(--page-margin-inner);
-    }
-
-    &.side-right {
-        padding-left: var(--page-margin-inner);
-        padding-right: var(--page-margin-outer);
-    }
-
-    &.outsideFrontCover,
-    &.outsideBackCover {
-        // we list these to get the same specificity as the default padding rules
-        &.side-left,
-        &.side-right {
-            padding-left: 0;
-            padding-right: 0;
-
-            // we just want balanced margins. REVIEW: for now, just using the two outer margins because there is no "inner" left/right margin
-            padding-left: var(--page-margin-outer);
-            padding-right: var(--page-margin-outer);
-        }
-    }
-
-    // this name "screen-only" is rather out of date now, but what it means is that the page is only shown
-    // in the Bloom-Editor, used for Translation Instructions
-    &.screen-only {
-        // we list these to get the same specificity as the default padding rules
-        &.side-left,
-        &.side-right {
-            padding-left: 0;
-            padding-right: 0;
-
-            // we just want balanced margins. REVIEW: for now, just using the two outer margins because there is no "inner" left/right margin
-            padding-left: var(--page-margin-outer);
-            padding-right: var(--page-margin-outer);
-        }
-    }
-
-    &.calendarFold {
-        // we list these to get the same specificity as the default padding rules
-        &.side-left,
-        &.side-right {
-            // we just want balanced margins. REVIEW: for now, just using the two outer margins because there is no "inner" left/right margin
-            padding-left: var(--page-margin-outer);
-            padding-right: var(--page-margin-outer);
-
-            // REVIEW: one would think we'd instead need top/bottom "inner" margin for stapling? That wasn't in the previous (up to Bloom 5.5) design
-        }
-    }
-
     &.A5Portrait {
         .SetPageDimensions(@A5Portrait-Width, @A5Portrait-Height);
     }

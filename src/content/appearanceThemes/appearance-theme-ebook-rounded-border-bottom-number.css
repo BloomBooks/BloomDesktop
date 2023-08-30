@@ -7,8 +7,8 @@
 [class*="Device"] {
     --page-margin-top: 5.5mm;
     --page-margin-bottom: 5.5mm;
-    --page-margin-inner: 2.5mm;
-    --page-margin-outer: 2.5mm;
+    --page-margin-right: 2.5mm;
+    --page-margin-left: 2.5mm;
     --page-background-color: rgb(78, 78, 78);
 
     --marginBox-border-radius: 25px;

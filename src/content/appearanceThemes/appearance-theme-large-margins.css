@@ -2,8 +2,8 @@
 :root {
     --page-margin-top: 15mm;
     --page-margin-bottom: 15mm;
-    --page-margin-inner: 25mm;
-    --page-margin-outer: 15mm;
+    --page-margin-right: 25mm;
+    --page-margin-left: 15mm;
     --boxes-sideBySide-gap: 3px;
     --top-bottom-gap: 3px;
     --pageNumber-font-size: 14pt;

@@ -1,8 +1,4 @@
 :root {
-    --page-margin-top: 10mm;
-    --page-margin-bottom: 10mm;
-    --page-margin-inner: 20mm;
-    --page-margin-outer: 10mm;
     --top-bottom-gap: 1mm;
     --pageNumber-font-size: 14pt;
     --pageNumber-bottom: 10px;
@@ -12,21 +8,64 @@
     --marginBox-background-color: transparent;
     --page-split-vertical-gap: 2mm;
     --page-split-horizontal-gap: 1mm;
-    --multilingual-editable-vertical-gap: 0;
+    --multilingual-editable-vertical-gap: 0mm;
+    --page-gutter: 0mm; /* most Bloom books are two small to need a gutter. NB: THIS MUST HAVE UNITS even when 0, else calc() fails */
+}
+
+/* the margin values here come from recommendations from Little Zebra
+> We just looked at several versions of the books in different Bloom formats and we think that having the same margins,
+> inside and outside on ALL pages is most useful.
+> A4 books are big, so we used 15mm for the top and bottom (short sides)
+> We also want to be sure that all the title pages and credit pages and inside cover pages have the same margins as the rest of the book.
+*/
+
+:root {
+    /* these are just defaults in case we miss some */
+    --page-margin-top: 12mm;
+    --page-margin-bottom: 12mm;
+    --page-margin-right: 12mm;
+    --page-margin-left: 12mm;
+}
+
+.A4Landscape {
+    --page-margin-top: 12mm;
+    --page-margin-bottom: 12mm;
+    --page-margin-right: 15mm;
+    --page-margin-left: 15mm;
+}
+.A4Portrait {
+    --page-margin-top: 15mm;
+    --page-margin-bottom: 15mm;
+    --page-margin-right: 12mm;
+    --page-margin-left: 12mm;
+}
+.A5Landscape,
+.A5Portrait {
+    --page-margin-top: 12mm;
+    --page-margin-bottom: 12mm;
+    --page-margin-right: 12mm;
+    --page-margin-left: 12mm;
+}
+.A6Portrait,
+.A6Landscape {
+    --page-margin-top: 10mm;
+    --page-margin-bottom: 10mm;
+    --page-margin-right: 10mm;
+    --page-margin-left: 10mm;
 }
 
 .Device16x9Portrait {
     --page-margin-top: 10px;
     --page-margin-bottom: 45px; /* leave room for page number*/
-    --page-margin-inner: 10px;
-    --page-margin-outer: 10px;
+    --page-margin-right: 10px;
+    --page-margin-left: 10px;
 }
 
 .no-margin-page,
 .comic {
     --page-margin-top: 0;
     --page-margin-bottom: 0;
-    --page-margin-inner: 0;
-    --page-margin-outer: 0;
+    --page-margin-right: 0;
+    --page-margin-left: 0;
     --pageNumber-font-size: 0; /* review will this work to hide it? */
 }
