@@ -209,7 +209,7 @@ namespace Bloom.WebLibraryIntegration
 		/// </summary>
 		public void UploadBook(string storageKeyOfBookFolder, string pathToBloomBookDirectory, IProgress progress,
 			string pdfToInclude, bool includeNarrationAudio, bool includeMusic,
-			string[] languagesToInclude, string metadataLang1Code, string metadataLang2Code,
+			string[] textLanguagesToInclude, string[] audioLanguagesToInclude, string metadataLang1Code, string metadataLang2Code,
 			string collectionSettingsPath = null, bool isForBulkUpload = false)
 		{
 			BaseUrl = null;
@@ -243,7 +243,7 @@ namespace Bloom.WebLibraryIntegration
 
 			var destDirName = Path.Combine(wrapperPath, Path.GetFileName(pathToBloomBookDirectory));
 			var filter = new BookFileFilter(pathToBloomBookDirectory) { IncludeFilesForContinuedEditing = true,
-				NarrationLanguages = (includeNarrationAudio? languagesToInclude : Array.Empty<string>()),
+				NarrationLanguages = (includeNarrationAudio? audioLanguagesToInclude : Array.Empty<string>()),
 				WantVideo = true,
 				WantMusic = includeMusic
 			};
@@ -258,8 +258,8 @@ namespace Bloom.WebLibraryIntegration
 			// temporarily removing this while waiting for testing of BL12583
 			// CopyCollectionSettingsToTempDirectory(collectionSettingsPath, destDirName);
 
-			if (languagesToInclude != null && languagesToInclude.Count() > 0)
-				RemoveUnwantedLanguageData(destDirName, languagesToInclude, metadataLang1Code, metadataLang2Code);
+			if (textLanguagesToInclude != null && textLanguagesToInclude.Count() > 0)
+				RemoveUnwantedLanguageData(destDirName, textLanguagesToInclude, metadataLang1Code, metadataLang2Code);
 
 			PublishHelper.ReportInvalidFonts(destDirName, progress);
 

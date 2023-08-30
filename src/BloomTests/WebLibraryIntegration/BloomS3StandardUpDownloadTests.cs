@@ -79,7 +79,7 @@ namespace BloomTests.WebLibraryIntegration
 
 		private void UploadBook(string bookFolder)
 		{
-			_client.UploadBook( _storageKeyOfBookFolder, bookFolder, new NullProgress(), pdfToInclude:"preview.pdf", true, true, null, null, null);
+			_client.UploadBook( _storageKeyOfBookFolder, bookFolder, new NullProgress(), pdfToInclude:"preview.pdf", true, true, null, null, null, null);
 		}
 
 		private void DownloadBook()
