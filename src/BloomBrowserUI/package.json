@@ -184,7 +184,6 @@
         "path": "^0.12.7",
         "postinstall-postinstall": "^2.1.0",
         "prettier": "^1.19.0",
-        "pretty-quick": "^1.10.0",
         "replace-ext": "^2.0.0",
         "run-sequence": "^2.2.1",
         "semver": "^7.3.4",
@@ -200,11 +199,12 @@
         "yarn": "^1.22.19"
     },
     "lint-staged": {
-        "!(*.d).{ts,tsx}": "eslint"
+        "!(*.d).{ts,tsx}": "eslint",
+        "NONO this conflicts with the no-stash thing since it does a write. For now, lets just rely on vscode *.{css,less}": "prettier --write"
     },
     "husky": {
         "hooks": {
-            "pre-commit": "pretty-quick --staged && lint-staged --no-stash",
+            "pre-commit": "lint-staged --no-stash",
             "pre-commit-comments": "// The '--no-stash' option makes linting much faster and is safe since our lint-staged doesn't currently modify any files. If it did modify files, you could still use --no-stash but there are some corner cases where you'd need to manually resolve conflicts."
         }
     },
