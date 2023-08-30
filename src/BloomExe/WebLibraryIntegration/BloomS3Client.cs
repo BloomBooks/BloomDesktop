@@ -258,8 +258,7 @@ namespace Bloom.WebLibraryIntegration
 			filter.CopyBookFolderFiltered(destDirName);
 
 			ProcessVideosInTempDirectory(destDirName);
-			// temporarily removing this while waiting for testing of BL12583
-			// CopyCollectionSettingsToTempDirectory(collectionSettingsPath, destDirName);
+			CopyCollectionSettingsToTempDirectory(collectionSettingsPath, destDirName);
 
 			if (languagesToInclude != null && languagesToInclude.Count() > 0)
 				RemoveUnwantedLanguageData(destDirName, languagesToInclude, metadataLang1Code, metadataLang2Code);
