@@ -191,7 +191,6 @@ namespace Bloom.Workspace
 			//
 			this._uiLanguageMenu.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
 			this._uiLanguageMenu.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(49)))), ((int)(((byte)(32)))), ((int)(((byte)(46)))));
-			this._uiLanguageMenu.Image = global::Bloom.Properties.Resources.multilingualSettings;
 			this._uiLanguageMenu.ImageTransparentColor = System.Drawing.Color.Magenta;
 			this._L10NSharpExtender.SetLocalizableToolTip(this._uiLanguageMenu, null);
 			this._L10NSharpExtender.SetLocalizationComment(this._uiLanguageMenu, null);
