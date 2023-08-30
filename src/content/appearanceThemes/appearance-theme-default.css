@@ -8,8 +8,10 @@
     --marginBox-background-color: transparent;
     --page-split-vertical-gap: 2mm;
     --page-split-horizontal-gap: 1mm;
-    --multilingual-editable-vertical-gap: 0mm;
+    --multilingual-editable-vertical-gap: 10px;
     --page-gutter: 0mm; /* most Bloom books are two small to need a gutter. NB: THIS MUST HAVE UNITS even when 0, else calc() fails */
+    --cover-margin-top: 12mm;
+    --cover-margin-bottom: 12mm;
 }
 
 /* the margin values here come from recommendations from Little Zebra
