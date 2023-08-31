@@ -567,6 +567,14 @@ namespace Bloom.WebLibraryIntegration
 			string[] endsToAvoid = { "/thumbs.db", ".pdf", ".map"};
 			if (endsToAvoid.Any(end => objectKey.ToLowerInvariant().EndsWith(end)))
 				return true;
+			// The harvester needs the collection settings file, but we don't want to download it
+			// when users are downloading books.  (See BL-12583.)
+			if (!Program.RunningHarvesterMode)
+			{
+				string[] foldersToAvoid = { "collectionfiles/" };
+				if (foldersToAvoid.Any(folder => objectKey.ToLowerInvariant().Contains(folder)))
+					return true;
+			}
 
 			// Removing this restriction on downloading narration per BL-9652
 			//if (!Program.RunningHarvesterMode)
