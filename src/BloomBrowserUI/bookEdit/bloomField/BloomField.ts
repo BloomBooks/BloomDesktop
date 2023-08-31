@@ -103,6 +103,40 @@ export default class BloomField {
         sel.collapseToEnd(); // moves the cursor to after the line break
     }
 
+    private static InsertParagraph() {
+        const sel = window.getSelection();
+        if (!sel) return;
+        const range = sel.getRangeAt(0);
+        range.deleteContents(); // If the user has selected a range, we replace it with the paragraph break.
+        const anchor = sel.anchorNode as Element;
+        if (
+            anchor?.nodeName === "#text" &&
+            anchor.parentElement?.nodeName === "P" &&
+            anchor.parentElement.childNodes.length === 1
+        ) {
+            const parentElement = anchor.parentElement;
+            const firstPara = document.createElement("p");
+            firstPara.innerText = parentElement.innerText.substring(
+                0,
+                sel.anchorOffset
+            );
+            const secondPara = document.createElement("p");
+            secondPara.innerText = parentElement.innerText.substring(
+                sel.anchorOffset
+            );
+            parentElement.replaceWith(firstPara, secondPara);
+            range.setStart(secondPara, 0);
+            range.setEnd(secondPara, 0);
+        } else {
+            const msg = `DEBUG InsertParagraph: anchor = ${anchor?.nodeName}, parent = ${anchor?.parentElement?.nodeName}, parent.childNodes.length = ${anchor?.parentElement?.childNodes.length}, anchorOffset = ${sel.anchorOffset}`;
+            console.log(msg); // should we throw an exception here?
+            // We should probably do something like the above, but much more complicated.
+            // For now, I don't know if we even ever hit this condition since this code is
+            // called only when CKEDITOR is not involved, and probably when audio is never
+            // involved.
+        }
+    }
+
     public static fixPasteData(input: string): string {
         // Deal with sources that still use <b> and <i> instead of <strong> and <em>.
         // Check if any of these markers are present, and if so, fix all of them.
@@ -454,20 +488,7 @@ export default class BloomField {
                 if (e.shiftKey) {
                     BloomField.InsertLineBreak();
                 } else {
-                    // If the enter didn't come with a shift key, just insert a paragraph.
-                    // Now, why are we doing this if firefox would do it anyway? Because if we previously pressed shift - enter
-                    // and got that <span class='bloom-linebreak'></span>, firefox will actually insert that span again, in the
-                    // new paragraphs (which would be reasonable if we had turned on a normal text-formating style, like a text color.
-                    // So we do the paragraph creation ourselves, so that we don't get any unwanted <span>s in it.
-                    // Note that this is going to remove that "make new spans automatically" feature entirely.
-                    // If we need it someday, we'll have to make this smarter and only override the normal behavior if we can detect
-                    // that the span it would create would be one of those bloom-linbreak ones.
-
-                    //The other thing going on is that Firefox doesn't like to see multiple empty <p></p>'s. It won't let us insert
-                    //two or more of these in a row. So we stick in a zero-width-non-joiner element to pacify it.
-                    //This has the downside that it takes two presses of "DEL" to remove the line; a future enhancement could fix
-                    //that.
-                    document.execCommand("insertHTML", false, "<p>&zwnj;</p>");
+                    BloomField.InsertParagraph();
                 }
                 e.stopPropagation();
                 e.preventDefault();
