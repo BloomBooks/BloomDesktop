@@ -614,6 +614,7 @@ namespace Bloom
 			propertiesThatGoWithEveryEvent.Remove("UserName");
 			propertiesThatGoWithEveryEvent.Remove("UserDomainName");
 			propertiesThatGoWithEveryEvent.Add("channel", ApplicationUpdateSupport.ChannelName);
+			DesktopAnalytics.Analytics.UrlThatReturnsExternalIpAddress = "http://icanhazip.com";
 
 #if DEBUG
 			_supressRegistrationDialog = true;
@@ -621,7 +622,11 @@ namespace Bloom
 				"rw21mh2piu",
 				RegistrationDialog.GetAnalyticsUserInfo(),
 				propertiesThatGoWithEveryEvent,
-				false); // change to true if you want to test sending
+				allowTracking: false, // change to true if you want to test sending
+				retainPii: true,
+				clientType: DesktopAnalytics.ClientType.Segment,
+				host: "https://analytics.bloomlibrary.org"
+			);
 #else
 			var feedbackSetting = System.Environment.GetEnvironmentVariable("FEEDBACK");
 
@@ -633,7 +638,11 @@ namespace Bloom
 				"c8ndqrrl7f0twbf2s6cv",
 				RegistrationDialog.GetAnalyticsUserInfo(),
 				propertiesThatGoWithEveryEvent,
-				allowTracking);
+				allowTracking,
+				retainPii: true,
+				clientType: DesktopAnalytics.ClientType.Segment,
+				host: "https://analytics.bloomlibrary.org"
+			);
 #endif
 		}
 
