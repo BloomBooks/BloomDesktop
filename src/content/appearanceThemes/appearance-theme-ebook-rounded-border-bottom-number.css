@@ -17,6 +17,7 @@
     --marginBox-border-width: 1.5mm;
     --marginBox-background-color: white;
     --marginBox-padding: 2mm;
+    --image-border-radius: 14px;
 
     --bloom-editMode-custom-image-border: none;
 
@@ -26,7 +27,6 @@
          curve on full-page images, but would need another
          to get a good curve on half-page images. */
         width: calc(100% - 4px);
-        border-radius: 14px; /* TODO: make into css property? */
     }
     .bloom-imageContainer img {
         object-fit: cover; /* let the rounded edges of the parent clip the img */
