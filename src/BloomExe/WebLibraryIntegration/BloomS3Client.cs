@@ -577,7 +577,7 @@ namespace Bloom.WebLibraryIntegration
 			// when users are downloading books.  (See BL-12583.)
 			if (!Program.RunningHarvesterMode)
 			{
-				string[] foldersToAvoid = { "collectionFiles/" };
+				string[] foldersToAvoid = { "collectionfiles/" };
 				if (foldersToAvoid.Any(folder => objectKey.ToLowerInvariant().Contains(folder)))
 					return true;
 			}
