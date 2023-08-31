@@ -16,6 +16,7 @@ import { makeMenuItems, MenuItemSpec } from "./CollectionsTabPane";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { useL10n } from "../react_components/l10nHooks";
 import { showBookSettingsDialog } from "../bookEdit/bookSettings/BookSettingsDialog";
+import { BookOnBlorgBadge } from "../react_components/BookOnBlorgBadge";
 
 export const bookButtonHeight = 120;
 export const bookButtonWidth = 90;
@@ -464,6 +465,7 @@ export const BookButton: React.FunctionComponent<{
                         <img
                             src={`/bloom/api/collections/book/thumbnail?book-id=${props.book.id}&${collectionQuery}&reload=${reload}`}
                         />
+                        <BookOnBlorgBadge book={props.book} />
                     </div>
                 }
             >

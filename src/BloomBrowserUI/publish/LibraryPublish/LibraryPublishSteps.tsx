@@ -264,12 +264,12 @@ export const LibraryPublishSteps: React.FunctionComponent = () => {
     const [bookUrl, setBookUrl] = useState<string>("");
 
     // When C# finishes the upload, it calls this.
-    useSubscribeToWebSocketForStringMessage(
+    useSubscribeToWebSocketForObject<{ bookId: string; url: string }>(
         kWebSocketContext,
         kWebSocketEventId_uploadSuccessful,
-        url => {
+        results => {
             setIsUploading(false);
-            setBookUrl(url);
+            setBookUrl(results.url);
             setIsUploadComplete(true);
         }
     );
