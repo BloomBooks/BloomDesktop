@@ -141,14 +141,33 @@ namespace Bloom.WebLibraryIntegration
 			return MakeRequest(path, Method.DELETE);
 		}
 
-		public int GetBookCount()
+		public int GetBookCount(string query = null)
 		{
 			var request = MakeGetRequest("classes/books");
 			request.AddParameter("count", "1");
 			request.AddParameter("limit", "0");
+			if (!string.IsNullOrEmpty(query))
+				request.AddParameter("where", query, ParameterType.QueryString);
 			var response = Client.Execute(request);
+			// If not successful return -1; this can happen if we aren't online.
+			if (!response.IsSuccessful)
+				return -1;
 			var dy = JsonConvert.DeserializeObject<dynamic>(response.Content);
 			return dy.count;
+		}
+
+		/// <summary>
+		/// Get the number of books on bloomlibrary.org that are in the given language.
+		/// </summary>
+		/// <remarks>Query should get all books where the isoCode matches the given languageCode
+		/// and 'rebrand' is not true and 'inCirculation' is not false and 'draft' is not true.</remarks>
+		public int GetBookCountByLanguage(string languageCode)
+		{
+			string query = @"{
+				""langPointers"":{""$inQuery"":{""where"":{""isoCode"":""" + languageCode + @"""},""className"":""language""}},
+				""rebrand"":{""$ne"":true},""inCirculation"":{""$ne"":false},""draft"":{""$ne"":true}
+			}";
+			return GetBookCount(query);
 		}
 
 		// Setting param 'includeLanguageInfo' to true adds a param to the query that causes it to fold in

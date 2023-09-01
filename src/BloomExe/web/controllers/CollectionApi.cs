@@ -184,7 +184,7 @@ namespace Bloom.web.controllers
 			apiHandler.RegisterEndpointHandler(kApiUrlPart + "addSourceCollection", HandleAddSourceCollection, true);
 			apiHandler.RegisterEndpointHandler(kApiUrlPart + "removeSourceFolder", HandleRemoveSourceFolder, true);
 			apiHandler.RegisterEndpointHandler(kApiUrlPart + "getBookOnBloomBadgeInfo", GetBookOnBloomBadgeInfo, false);
-
+			apiHandler.RegisterEndpointHandler(kApiUrlPart + "getBookCountByLanguage", HandleGetBookCountByLanguage, true);
 		}
 
 		private void HandleRemoveSourceCollection(ApiRequest request)
@@ -220,6 +220,16 @@ namespace Bloom.web.controllers
 				request.Failed();
 				return;
 			}
+		}
+		
+		private void HandleGetBookCountByLanguage(ApiRequest request)
+		{
+			if (request.HttpMethod == HttpMethods.Post)
+				return; // should be Get
+
+			var client = new BloomParseClient();
+			var count = client.GetBookCountByLanguage(_settings.Language1Tag);
+			request.ReplyWithText(count.ToString());
 		}
 
 		internal void CheckForCollectionUpdates()
