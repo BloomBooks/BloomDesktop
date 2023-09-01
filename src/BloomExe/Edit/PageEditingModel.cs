@@ -23,7 +23,7 @@ namespace Bloom.Edit
 		/// <param name="imgOrDivWithBackgroundImage">Can be an XmlElement (during testing)</param>
 		/// <param name="imageInfo"></param>
 		/// <param name="progress"></param>
-		public void ChangePicture(string bookFolderPath, ElementProxy imgOrDivWithBackgroundImage, PalasoImage imageInfo,
+		public void ChangePicture(string bookFolderPath, XmlElement imgOrDivWithBackgroundImage, PalasoImage imageInfo,
 			IProgress progress)
 		{
 			var isSameFile = IsSameFilePath(bookFolderPath, HtmlDom.GetImageElementUrl(imgOrDivWithBackgroundImage), imageInfo);
@@ -80,15 +80,15 @@ namespace Bloom.Edit
 			return false;
 		}
 
-		public static void UpdateMetadataAttributesOnImage(ElementProxy imgOrDivWithBackgroundImage, PalasoImage imageInfo)
+		public static void UpdateMetadataAttributesOnImage(XmlElement imgOrDivWithBackgroundImage, PalasoImage imageInfo)
 		{
 			//see also Book.UpdateMetadataAttributesOnImage(), which does the same thing but on the document itself, not the browser dom
 			imgOrDivWithBackgroundImage.SetAttribute("data-copyright",
-							 XmlString.FromUnencoded(imageInfo.Metadata.CopyrightNotice ?? ""));
+							 XmlString.FromUnencoded(imageInfo.Metadata.CopyrightNotice ?? "").Unencoded);
 			
-			imgOrDivWithBackgroundImage.SetAttribute("data-creator", XmlString.FromUnencoded(imageInfo.Metadata.Creator ?? ""));
+			imgOrDivWithBackgroundImage.SetAttribute("data-creator", XmlString.FromUnencoded(imageInfo.Metadata.Creator ?? "").Unencoded);
 
-			imgOrDivWithBackgroundImage.SetAttribute("data-license", XmlString.FromUnencoded(imageInfo.Metadata.License?.ToString() ?? ""));
+			imgOrDivWithBackgroundImage.SetAttribute("data-license", XmlString.FromUnencoded(imageInfo.Metadata.License?.ToString() ?? "").Unencoded);
 		}
 
 		/*

@@ -165,7 +165,7 @@ namespace BloomTests
 		{
 			var model = new PageEditingModel();
 			var node = (XmlElement) dom.SelectSingleNode("//*[@id='" + imageId + "']");
-			model.ChangePicture(bookFolderPath, new ElementProxy(node), imageInfo, null);
+			model.ChangePicture(bookFolderPath, node, imageInfo, null);
 		}
 
 	}

@@ -286,11 +286,11 @@ namespace BloomTests.Book
 			Assert.AreEqual("", HtmlDom.GetImageElementUrl(element).UrlEncoded);
 		}
 
-		private ElementProxy MakeElement(string xml)
+		private XmlElement MakeElement(string xml)
 		{
 			var dom = new XmlDocument();
 			dom.LoadXml(xml);
-			return new ElementProxy(dom.DocumentElement);
+			return dom.DocumentElement;
 		}
 
 		private void AssertHasClasses(string expectedString, string actualString)

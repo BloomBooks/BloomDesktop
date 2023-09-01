@@ -150,7 +150,7 @@ namespace Bloom.Book
 		public static void UpdateImgMetadataAttributesToMatchImage(string folderPath, XmlElement imgElement, IProgress progress, Metadata metadata)
 		{
 			//see also PageEditingModel.UpdateMetadataAttributesOnImage(), which does the same thing but on the browser dom
-			var url = HtmlDom.GetImageElementUrl(new ElementProxy(imgElement));
+			var url = HtmlDom.GetImageElementUrl(imgElement);
 			string fileName = url.PathOnly.NotEncoded;
 			if (IsPlaceholderOrLicense(fileName))
 				return;

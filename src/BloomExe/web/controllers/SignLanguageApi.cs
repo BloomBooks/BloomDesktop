@@ -499,7 +499,7 @@ namespace Bloom.web.controllers
 				// wants all of it.
 
 				var newSrcAttr = UrlPathString.CreateFromUnencodedString(BookStorage.GetVideoFolderName + Path.GetFileName(videoPath));
-				HtmlDom.SetSrcOfVideoElement(newSrcAttr, new ElementProxy((XmlElement)videoElts[0]), true, "?now=" + DateTime.Now.Ticks);
+				HtmlDom.SetSrcOfVideoElement(newSrcAttr, (XmlElement)videoElts[0], true, "?now=" + DateTime.Now.Ticks);
 			}
 
 			// We could try to figure out whether one of the modified videos is on the current page.
@@ -553,7 +553,7 @@ namespace Bloom.web.controllers
 				{
 					RobustFile.Delete(originalVideoFilePath);
 					var trimmedFileName = BookStorage.GetVideoFolderName + Path.GetFileName(tempName);
-					HtmlDom.SetVideoElementUrl(new ElementProxy(videoContainerElement), UrlPathString.CreateFromUnencodedString(trimmedFileName, true), false);
+					HtmlDom.SetVideoElementUrl(videoContainerElement, UrlPathString.CreateFromUnencodedString(trimmedFileName, true), false);
 				}
 				else
 				{

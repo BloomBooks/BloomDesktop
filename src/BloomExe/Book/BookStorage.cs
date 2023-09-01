@@ -1241,7 +1241,7 @@ namespace Bloom.Book
 		internal static List<string> GetVideoPathsRelativeToBook(XmlElement element)
 		{
 			return (from XmlElement videoContainerElements in HtmlDom.SelectChildVideoElements(element)
-				select HtmlDom.GetVideoElementUrl(new ElementProxy(videoContainerElements as XmlElement)).PathOnly.NotEncoded)
+				select HtmlDom.GetVideoElementUrl(videoContainerElements).PathOnly.NotEncoded)
 				.Where(path => !String.IsNullOrEmpty(path)).Distinct().ToList();
 		}
 

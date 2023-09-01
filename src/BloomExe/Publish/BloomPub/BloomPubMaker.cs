@@ -502,7 +502,7 @@ BookServer bookServer,
 					continue;
 				// The filename should be already urlencoded since src is a url.
 				var src = img.Attributes["src"].Value;
-				HtmlDom.SetImageElementUrl(new ElementProxy(imgContainer), UrlPathString.CreateFromUrlEncodedString(src));
+				HtmlDom.SetImageElementUrl(imgContainer, UrlPathString.CreateFromUrlEncodedString(src));
 				foreach (XmlAttribute attr in img.Attributes)
 				{
 					if (attr.Name.StartsWith("data-"))
