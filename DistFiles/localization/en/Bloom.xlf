@@ -1296,6 +1296,7 @@
       <trans-unit id="EditTab.BookContextMenu.openHtmlInBrowser">
         <source xml:lang="en">Open the HTML used to make this PDF, in Firefox (must be on path)</source>
         <note>ID: EditTab.BookContextMenu.openHtmlInBrowser</note>
+        <note>Obsolete as of Bloom 5.6</note>
       </trans-unit>
       <trans-unit id="EditTab.CannotChangeCopyright">
         <source xml:lang="en">Sorry, the copyright and license for this book cannot be changed.</source>
@@ -2873,6 +2874,7 @@
         <source xml:lang="en">Bloom was unable to start its own HTTP listener that it uses to talk to its embedded Firefox browser. If this happens even if you just restarted your computer, then ask someone to investigate if you have an aggressive firewall product installed, which may need to be uninstalled before you can use Bloom.</source>
         <note>ID: Errors.CannotConnectToBloomServer</note>
         <note xml:lang="en">OLD TEXT (before 3.9, shorter wording): Bloom was unable to start its own HTTP listener that it uses to talk to its embedded Firefox browser. If this happens even if you just restarted your computer, ask someone to investigate if you have an aggressive firewall product installed. The agressive firewall product may need to be uninstalled before you can use Bloom.</note>
+        <note>Obsolete as of Bloom 5.6. (Replaced with Errors.CannotConnectToBloomServer.2 in BloomLowPriority)</note>
       </trans-unit>
       <trans-unit id="Errors.CouldNotSavePage">
         <source xml:lang="en">Bloom had trouble saving a page. Please report the problem to us. Then quit Bloom, run it again, and check to see if the page you just edited is missing anything. Sorry!</source>

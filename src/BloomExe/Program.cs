@@ -119,7 +119,8 @@ namespace Bloom
 			// REVIEW: should the setting be used only for alpha and beta?
 			LocalizationManager.ReturnOnlyApprovedStrings = !Settings.Default.ShowUnapprovedLocalizations;
 
-			// Firefox60 uses Gtk3, so we need to as well.  (BL-10469)
+			// Old comment: Firefox60 uses Gtk3, so we need to as well.  (BL-10469)
+			// Aug 2023, we've moved away from GeckoFx/Firefox to wv2, but I don't know if this is still needed or not...
 			GraphicsManager.GtkVersionInUse = GraphicsManager.GtkVersion.Gtk3;
 
 #if DEBUG

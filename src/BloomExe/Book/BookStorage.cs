@@ -2090,7 +2090,7 @@ namespace Bloom.Book
 		}
 
 		/// <summary>
-		/// we update these so that the file continues to look the same when you just open it in firefox
+		/// we update these so that the file continues to look the same when you just open it in the browser
 		/// </summary>
 		public void UpdateSupportFiles()
 		{

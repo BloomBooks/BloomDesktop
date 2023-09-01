@@ -80,7 +80,7 @@ namespace Bloom.Utils
 			}
 			catch (Exception)
 			{
-				// swallow. This happens when we call from firefox, while debugging.
+				// swallow. This happens when we call from a browser, while debugging.
 			}
 			using (Measure("Initial Memory Reading"))
 			{

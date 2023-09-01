@@ -408,7 +408,7 @@ namespace Bloom.Book
 		}
 
 		/// <summary>
-		/// gecko 11 requires the file://, but modern firefox and chrome can't handle it. Checked also that IE10 works without it.
+		/// gecko 11 required the file://, but modern browsers can't handle it.
 		/// </summary>
 		public void RemoveFileProtocolFromStyleSheetLinks()
 		{
@@ -1631,7 +1631,7 @@ namespace Bloom.Book
 			//The SIL LEAD SHRP templates rely on "lang" on some ancestor to trigger the correct rules in labels.css.
 			//Those get set by putting data-metalanguage on Page, which then leads to a lang='xyz'. Let's save that
 			//back to the html in keeping with our goal of having the page look right if you were to just open the
-			//html file in Firefox.
+			//html file in a browser.
 			destinationPageDiv.SetAttribute("lang", edittedPageDiv.GetAttribute("lang"));
 
 			// Copy the two background audio attributes which can be set using the music toolbox.

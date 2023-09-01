@@ -1194,8 +1194,8 @@ namespace Bloom.Api
 				                                     "Bloom cannot start properly, and this symptom has been observed on machines with ZoneAlarm installed. Note: disabling ZoneAlarm does not help. Nor does restarting with it turned off. Something about the installation of ZoneAlarm causes the problem, and so far only uninstalling ZoneAlarm has been shown to fix the problem.");
 			}
 
-			return LocalizationManager.GetString("Errors.CannotConnectToBloomServer",
-												 "Bloom was unable to start its own HTTP listener that it uses to talk to its embedded Firefox browser. If this happens even if you just restarted your computer, then ask someone to investigate if you have an aggressive firewall product installed, which may need to be uninstalled before you can use Bloom.");
+			return LocalizationManager.GetString("Errors.CannotConnectToBloomServer.2",
+												 "Bloom was unable to start its own HTTP listener that it uses to talk to its embedded Web browser. If this happens even if you just restarted your computer, then ask someone to investigate if you have an aggressive firewall product installed, which may need to be uninstalled before you can use Bloom.");
 		}
 
 		// After the initial startup, this should only be called inside a lock(_queue),
