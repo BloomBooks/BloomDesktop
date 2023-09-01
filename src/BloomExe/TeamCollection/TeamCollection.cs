@@ -389,7 +389,7 @@ namespace Bloom.TeamCollection
 			// writing a file. It may also help to ensure that repo writing doesn't interfere somehow with
 			// whatever is changing things.
 			// (Form.ActiveForm should not be null when Bloom is running normally. However, it can be when we're displaying
-			// a page in Firefox, or when we're reloading Bloom after saving collection settings.)
+			// a page in a browser, or when we're reloading Bloom after saving collection settings.)
 			if (Form.ActiveForm != null)
 			{
 				SafeInvoke.InvokeIfPossible("Add SyncCollectionFilesToRepoOnIdle", Form.ActiveForm, false,

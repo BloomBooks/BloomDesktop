@@ -135,11 +135,11 @@ namespace Bloom.Publish
             // 
             this._L10NSharpExtender.SetLocalizableToolTip(this._openinBrowserMenuItem, null);
             this._L10NSharpExtender.SetLocalizationComment(this._openinBrowserMenuItem, null);
-            this._L10NSharpExtender.SetLocalizationPriority(this._openinBrowserMenuItem, L10NSharp.LocalizationPriority.Low);
+            this._L10NSharpExtender.SetLocalizationPriority(this._openinBrowserMenuItem, L10NSharp.LocalizationPriority.NotLocalizable);
             this._L10NSharpExtender.SetLocalizingId(this._openinBrowserMenuItem, "EditTab.BookContextMenu.openHtmlInBrowser");
             this._openinBrowserMenuItem.Name = "_openinBrowserMenuItem";
-            this._openinBrowserMenuItem.Size = new System.Drawing.Size(431, 22);
-            this._openinBrowserMenuItem.Text = "Open the HTML used to make this PDF, in Firefox (must be on path)";
+            this._openinBrowserMenuItem.Size = new System.Drawing.Size(439, 22);
+            this._openinBrowserMenuItem.Text = "Open the HTML used to make this PDF, in the default system browser";
             this._openinBrowserMenuItem.Click += new System.EventHandler(this._openinBrowserMenuItem_Click);
             // 
             // _openPDF
@@ -156,6 +156,7 @@ namespace Bloom.Publish
             // 
             this._L10NSharpExtender.SetLocalizableToolTip(this.exportAudioFiles1PerPageToolStripMenuItem, null);
             this._L10NSharpExtender.SetLocalizationComment(this.exportAudioFiles1PerPageToolStripMenuItem, null);
+            this._L10NSharpExtender.SetLocalizationPriority(this.exportAudioFiles1PerPageToolStripMenuItem, L10NSharp.LocalizationPriority.NotLocalizable);
             this._L10NSharpExtender.SetLocalizingId(this.exportAudioFiles1PerPageToolStripMenuItem, ".exportAudioFiles1PerPageToolStripMenuItem");
             this.exportAudioFiles1PerPageToolStripMenuItem.Name = "exportAudioFiles1PerPageToolStripMenuItem";
             this.exportAudioFiles1PerPageToolStripMenuItem.Size = new System.Drawing.Size(431, 22);

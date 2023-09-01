@@ -1,6 +1,6 @@
 The files in this folder are a subset of the standard download of font-awesome 4.70, from http://fortawesome.github.io/Font-Awesome/, licensed under the SIL Font license.
 
-Since we only need this to work in our embedded FF (gecko) browser, I only kept the smallest font that worked.
+Since we only need this to work in our embedded browser, I only kept the smallest font that worked.
 Since we're using them in very simple ways, I was able to delete a lot of other files too.
 
 The fonts are still complete ones. Since we're only using a few characters from it, in principle it should be possible to make a smaller file.
