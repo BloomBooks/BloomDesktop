@@ -212,7 +212,7 @@ namespace Bloom.ImageProcessing
 			if (string.IsNullOrEmpty(path) || !PatientFile.Exists(path))
 				return false;
 			byte[] bytes = new byte[10];
-			using (var file = System.IO.File.OpenRead(path))
+			using (var file = PatientFile.OpenRead(path))
 			{
 				file.Read(bytes, 0, 10);
 			}

@@ -7,6 +7,7 @@ using System.Text;
 using Bloom.Api;
 using Bloom.Book;
 using Bloom.Collection;
+using Bloom.Utils;
 using L10NSharp;
 using SIL.Code;
 

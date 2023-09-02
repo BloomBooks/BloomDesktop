@@ -219,9 +219,9 @@ namespace WebView2PdfMaker
 
 			var tempFileName = Path.GetTempFileName();
 			_pathToTempPdf = tempFileName + ".pdf";
-			PatientFile.Delete(tempFileName);
-			PatientFile.Delete(_pathToTempPdf);
-			PatientFile.Delete(_options.OutputPdfPath);
+			File.Delete(tempFileName);
+			File.Delete(_pathToTempPdf);
+			File.Delete(_options.OutputPdfPath);
 			_webview.Size = new Size(1920, 1320);
 			_uriOfDocument = new Uri(_options.InputHtmlUri);
 			_navigationCompleted = false;
