@@ -503,9 +503,9 @@ namespace Bloom.Book
 			// Read the old file and copy it to the new one, except for replacing the one page.
 			string tempPath = GetNameForATempFileInStorageFolder();
 			Patient.Retry(() => {
-				using (var reader = new StreamReader(new FileStream(PathToExistingHtml, FileMode.Open), Encoding.UTF8))
+				using (var reader = new StreamReader(PatientFile.CreateFileStream(PathToExistingHtml, FileMode.Open), Encoding.UTF8))
 				{
-					using (var writer = new StreamWriter(new FileStream(tempPath, FileMode.Create), Encoding.UTF8))
+					using (var writer = new StreamWriter(PatientFile.CreateFileStream(tempPath, FileMode.Create), Encoding.UTF8))
 					{
 						ReplacePage(pageId, reader, writer, pageHtml);
 					}

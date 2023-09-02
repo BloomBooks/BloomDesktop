@@ -11,6 +11,24 @@ namespace Bloom.Utils
 		private const int FileStreamBufferSize = 4096;
 
 		internal static int BufferSize = 4096;
+		public static FileStream CreateFileStream(string path, FileMode mode)
+		{
+			FileStream fs = null;
+			Patient.Retry(() => fs = new FileStream(path, mode), memo: "CreateFileStream " + path);
+			return fs;
+		}
+		public static FileStream CreateFileStream(string path, FileMode mode, FileAccess access)
+		{
+			FileStream fs = null;
+			Patient.Retry(() => fs = new FileStream(path, mode, access), memo: "CreateFileStream " + path);
+			return fs;
+		}
+		public static FileStream CreateFileStream(string path, FileMode mode, FileAccess access, FileShare share)
+		{
+			FileStream fs = null;
+			Patient.Retry(() => fs = new FileStream(path, mode, access, share), memo: "CreateFileStream " + path);
+			return fs;
+		}
 
 		public static void Copy(string sourceFileName, string destFileName, bool overwrite = false)
 		{
@@ -31,7 +49,7 @@ namespace Bloom.Utils
 					fileStream2.Flush(flushToDisk: true);
 				}
 
-			}, memo:"copy to"+destFileName);
+			}, memo: "copy to" + destFileName);
 		}
 
 		public static FileStream Create(string path)
@@ -154,7 +172,7 @@ namespace Bloom.Utils
 						throw ex;
 					}
 				}
-			},memo:"Replace "+destinationFileName);
+			}, memo: "Replace " + destinationFileName);
 		}
 
 		public static void ReplaceByCopyDelete(string sourcePath, string destinationPath, string backupPath)
@@ -170,9 +188,9 @@ namespace Bloom.Utils
 
 		public static void SetAttributes(string path, FileAttributes fileAttributes)
 		{
-	
-				File.SetAttributes(path, fileAttributes);
-		
+
+			File.SetAttributes(path, fileAttributes);
+
 		}
 
 		public static void WriteAllBytes(string path, byte[] bytes)
@@ -215,7 +233,7 @@ namespace Bloom.Utils
 					fileStream.Write(bytes, 0, bytes.Length);
 					fileStream.Close();
 				}
-			},memo:"WriteAllText "+path);
+			}, memo: "WriteAllText " + path);
 		}
 	}
 }

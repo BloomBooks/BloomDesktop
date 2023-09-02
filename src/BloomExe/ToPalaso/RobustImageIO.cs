@@ -38,7 +38,7 @@ namespace Bloom.ToPalaso
 
 		private static Image GetImageFromFileInternal(string path)
 		{
-			using (var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+			using (var stream = PatientFile.CreateFileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
 			{
 				using (var image = new Bitmap(stream))
 				{

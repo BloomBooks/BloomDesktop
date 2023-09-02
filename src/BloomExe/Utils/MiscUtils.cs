@@ -366,7 +366,7 @@ namespace Bloom.Utils
 
 		private static string ReadAllTextFromFileWhichMightGetWrittenToInternal(string path)
 		{
-			using (FileStream logFileStream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+			using (FileStream logFileStream = PatientFile.CreateFileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
 			using (StreamReader logFileReader = new StreamReader(logFileStream))
 			{
 				StringBuilder sb = new StringBuilder();

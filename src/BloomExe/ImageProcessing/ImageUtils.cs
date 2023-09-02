@@ -1322,7 +1322,7 @@ namespace Bloom.ImageProcessing
 				}
 				if (image != null)
 				{
-					using (Stream fs = new FileStream(imagePath, FileMode.Create))
+					using (Stream fs = PatientFile.CreateFileStream(imagePath, FileMode.Create))
 					{
 						SIL.IO.RobustImageIO.SaveImage(image, fs, ImageFormat.Png);
 					}

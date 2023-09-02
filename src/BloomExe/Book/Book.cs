@@ -4015,7 +4015,7 @@ namespace Bloom.Book
 						if (path == filePath)
 							continue; // we already included a simplified version of the main HTML file
 						//AppendDebugInfo(debugBldr, path);
-						using (var input = new FileStream(path, FileMode.Open, FileAccess.Read))
+						using (var input = PatientFile.CreateFileStream(path, FileMode.Open, FileAccess.Read))
 						{
 							byte[] buffer = new byte[4096];
 							int count;
