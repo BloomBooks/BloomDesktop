@@ -425,6 +425,7 @@
     <Compile Include="ToPalaso\RobustImageIO.cs" />
     <Compile Include="Utils\DisposableList.cs" />
     <Compile Include="Utils\OutputFilenames.cs" />
+    <Compile Include="Utils\PatientFile.cs" />
     <Compile Include="WebView2Browser.cs" Condition="'$(OS)'=='Windows_NT'">
       <SubType>UserControl</SubType>
     </Compile>
